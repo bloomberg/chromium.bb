@@ -4,10 +4,70 @@
 
 #include "app/gfx/skbitmap_operations.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkUnPreMultiply.h"
+
+// static
+SkBitmap SkBitmapOperations::CreateInvertedBitmap(const SkBitmap& image) {
+  DCHECK(image.config() == SkBitmap::kARGB_8888_Config);
+
+  SkAutoLockPixels lock_image(image);
+
+  SkBitmap inverted;
+  inverted.setConfig(SkBitmap::kARGB_8888_Config, image.width(), image.height(),
+                     0);
+  inverted.allocPixels();
+  inverted.eraseARGB(0, 0, 0, 0);
+
+  for (int y = 0; y < image.height(); ++y) {
+    uint32* image_row = image.getAddr32(0, y);
+    uint32* dst_row = inverted.getAddr32(0, y);
+
+    for (int x = 0; x < image.width(); ++x) {
+      uint32 image_pixel = image_row[x];
+      dst_row[x] = (image_pixel & 0xFF000000) |
+                   (0x00FFFFFF - (image_pixel & 0x00FFFFFF));
+    }
+  }
+
+  return inverted;
+}
+
+// static
+SkBitmap SkBitmapOperations::CreateSuperimposedBitmap(const SkBitmap& first,
+                                                      const SkBitmap& second) {
+  DCHECK(first.width() == second.width());
+  DCHECK(first.height() == second.height());
+  DCHECK(first.bytesPerPixel() == second.bytesPerPixel());
+  DCHECK(first.config() == SkBitmap::kARGB_8888_Config);
+
+  SkAutoLockPixels lock_first(first);
+  SkAutoLockPixels lock_second(second);
+
+  SkBitmap superimposed;
+  superimposed.setConfig(SkBitmap::kARGB_8888_Config,
+                         first.width(), first.height());
+  superimposed.allocPixels();
+  superimposed.eraseARGB(0, 0, 0, 0);
+
+  SkCanvas canvas(superimposed);
+
+  SkRect rect;
+  rect.fLeft = 0;
+  rect.fTop = 0;
+  rect.fRight = SkIntToScalar(first.width());
+  rect.fBottom = SkIntToScalar(first.height());
+
+  canvas.drawBitmapRect(first, NULL, rect);
+  canvas.drawBitmapRect(second, NULL, rect);
+
+  return superimposed;
+}
 
 // static
 SkBitmap SkBitmapOperations::CreateBlendedBitmap(const SkBitmap& first,
