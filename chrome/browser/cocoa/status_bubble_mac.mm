@@ -225,6 +225,8 @@ void StatusBubbleMac::MouseMoved() {
   cursor_location.x -= NSMaxX(window_frame);
   cursor_location.y -= NSMaxY(window_frame);
 
+  bool isShelfVisible = [delegate_ verticalOffsetForStatusBubble] > 0;
+
   // If the mouse is in a position where we think it would move the
   // status bubble, figure out where and how the bubble should be moved.
   if (cursor_location.y < kMousePadding &&
@@ -240,22 +242,37 @@ void StatusBubbleMac::MouseMoved() {
       offset = offset * ((kMousePadding - cursor_location.x) / kMousePadding);
     }
 
-    // Cap the offset and change the visual presentation of the bubble
-    // depending on where it ends up (so that rounded corners square off
-    // and mate to the edges of the tab content).
-    if (offset >= NSHeight(window_frame)) {
-      offset = NSHeight(window_frame);
-      [[window_ contentView] setCornerFlags:
-          kRoundedBottomLeftCorner | kRoundedBottomRightCorner];
-    } else if (offset > 0) {
-      [[window_ contentView] setCornerFlags:
-          kRoundedTopRightCorner | kRoundedBottomLeftCorner |
-          kRoundedBottomRightCorner];
-    } else {
-      [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
+    bool isOnScreen = true;
+    NSScreen* screen = [window_ screen];
+    if (screen &&
+        NSMinY([screen visibleFrame]) > NSMinY(window_frame) - offset) {
+      isOnScreen = false;
     }
 
-    window_frame.origin.y -= offset;
+    if (isOnScreen && !isShelfVisible) {
+      // Cap the offset and change the visual presentation of the bubble
+      // depending on where it ends up (so that rounded corners square off
+      // and mate to the edges of the tab content).
+      if (offset >= NSHeight(window_frame)) {
+        offset = NSHeight(window_frame);
+        [[window_ contentView] setCornerFlags:
+            kRoundedBottomLeftCorner | kRoundedBottomRightCorner];
+      } else if (offset > 0) {
+        [[window_ contentView] setCornerFlags:
+            kRoundedTopRightCorner | kRoundedBottomLeftCorner |
+            kRoundedBottomRightCorner];
+      } else {
+        [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
+      }
+      window_frame.origin.y -= offset;
+    } else {
+      // The bubble will obscure the download shelf.  Move the bubble to the
+      // right and reset Y offset_ to zero.
+      [[window_ contentView] setCornerFlags:kRoundedTopLeftCorner];
+
+      // Subtract border width + bubble width.
+      window_frame.origin.x += NSWidth([parent_ frame]) - NSWidth(window_frame);
+    }
   } else {
     [[window_ contentView] setCornerFlags:kRoundedTopRightCorner];
   }

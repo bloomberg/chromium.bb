@@ -655,7 +655,7 @@ void StatusBubbleViews::AvoidMouse() {
       view_->SetStyle(StatusView::STYLE_STANDARD_RIGHT);
       offset_ = 0;
 
-      // Substract border width + bubble width.
+      // Subtract border width + bubble width.
       int right_position_x = window_width - (position_.x() + size_.width());
       popup_->SetBounds(gfx::Rect(top_left.x() + right_position_x,
                                   top_left.y() + position_.y(),
