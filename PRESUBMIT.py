@@ -71,6 +71,33 @@ def CheckChangeOnCommit(input_api, output_api):
       '0',
       'http://chromium-status.appspot.com/current?format=raw'))
   results.extend(CheckTryJobExecution(input_api, output_api))
+  # These builders are just too slow.
+  IGNORED_BUILDERS = [
+    'Chromium XP',
+    'XP Unit (purify)',
+    'Modules XP (purify)',
+    'Webkit (purify)',
+    'Chromium Mac',
+    'Chromium Mac (valgrind)',
+    'Chromium Mac UI (valgrind)(1)',
+    'Chromium Mac UI (valgrind)(2)',
+    'Chromium Mac UI (valgrind)(3)',
+    'Chromium Mac (tsan)',
+    'Webkit Mac (valgrind)',
+    'Chromium Linux',
+    'Chromium Linux x64',
+    'Linux Tests (valgrind)(1)',
+    'Linux Tests (valgrind)(2)',
+    'Linux Tests (valgrind)(3)',
+    'Linux Tests (valgrind)(4)',
+    'Webkit Linux (valgrind layout)',
+  ]
+  results.extend(CheckPendingBuilds(
+      input_api,
+      output_api,
+      'http://build.chromium.org/buildbot/waterfall/json/builders',
+      6,
+      IGNORED_BUILDERS))
   return results
 
 
@@ -141,6 +168,36 @@ def CheckTreeIsOpen(input_api, output_api, url, closed, url_text):
       return [output_api.PresubmitError("The tree is closed.",
                                         long_text=long_text)]
   except IOError:
+    pass
+  return []
+
+
+def CheckPendingBuilds(input_api, output_api, url, max_pendings, ignored):
+  try:
+    connection = input_api.urllib2.urlopen(url)
+    raw_data = connection.read()
+    connection.close()
+    try:
+      import simplejson
+      data = simplejson.parse(raw_data)
+    except ImportError:
+      # simplejson is much safer. But we should be just fine enough with that:
+      data = eval(raw_data.replace('null', 'None'))
+    out = []
+    for (builder_name, builder)  in data.iteritems():
+      if builder_name in ignored:
+        continue
+      pending_builds_len = len(builder.get('pending_builds', []))
+      if pending_builds_len > max_pendings:
+        out.append('%s has %d build(s) pending' %
+                   (builder_name, pending_builds_len))
+    if out:
+      return [output_api.PresubmitPromptWarning(
+          'Build(s) pending. It is suggested to wait that no more than %d '
+              'builds are pending.' % max_pendings,
+          long_text='\n'.join(out))]
+  except IOError:
+    # Silently pass.
     pass
   return []
 
