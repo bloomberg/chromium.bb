@@ -288,4 +288,30 @@ TEST_F(SecurityTest, DisallowFileUrlUniversalAccessTest) {
   ASSERT_STREQ("Disallowed", value.c_str());
 }
 
+#if !defined(OS_MACOSX)
+class KioskModeTest : public UITest {
+ public:
+  KioskModeTest() {
+    launch_arguments_.AppendSwitch(switches::kKioskMode);
+  }
+};
+
+TEST_F(KioskModeTest, EnableKioskModeTest) {
+  // Load a dummy url.
+  FilePath test_file(test_data_directory_);
+  test_file = test_file.AppendASCII("title1.html");
+
+  // Verify that the window is present.
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
+  // Check if browser is in fullscreen mode.
+  bool is_visible;
+  ASSERT_TRUE(browser->IsFullscreen(&is_visible));
+  EXPECT_TRUE(is_visible);
+  ASSERT_TRUE(browser->IsFullscreenBubbleVisible(&is_visible));
+  EXPECT_FALSE(is_visible);
+}
+#endif
+
 }  // namespace

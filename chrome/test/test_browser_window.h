@@ -39,6 +39,7 @@ class TestBrowserWindow : public BrowserWindow {
   virtual bool IsMaximized() const { return false; }
   virtual void SetFullscreen(bool fullscreen) {}
   virtual bool IsFullscreen() const { return false; }
+  virtual bool IsFullscreenBubbleVisible() const { return false; }
   virtual LocationBar* GetLocationBar() const {
     return const_cast<TestLocationBar*>(&location_bar_);
   }

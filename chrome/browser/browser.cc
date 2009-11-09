@@ -921,6 +921,14 @@ void Browser::ConvertPopupToTabbedBrowser() {
 }
 
 void Browser::ToggleFullscreenMode() {
+#if !defined(OS_MACOSX)
+  // In kiosk mode, we always want to be fullscreen. When the browser first
+  // starts we're not yet fullscreen, so let the initial toggle go through.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode) &&
+      window_->IsFullscreen())
+    return;
+#endif
+
   UserMetrics::RecordAction(L"ToggleFullscreen", profile_);
   window_->SetFullscreen(!window_->IsFullscreen());
   // On Linux, setting fullscreen mode is an async call to the X server, which
@@ -2644,6 +2652,11 @@ void Browser::RemoveScheduledUpdatesFor(TabContents* contents) {
 // Browser, Getters for UI (private):
 
 StatusBubble* Browser::GetStatusBubble() {
+#if !defined(OS_MACOSX)
+  // In kiosk mode, we want to always hide the status bubble.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    return NULL;
+#endif
   return window_ ? window_->GetStatusBubble() : NULL;
 }
 

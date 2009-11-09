@@ -49,6 +49,7 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual bool IsMaximized() const;
   virtual void SetFullscreen(bool fullscreen);
   virtual bool IsFullscreen() const;
+  virtual bool IsFullscreenBubbleVisible() const;
   virtual LocationBar* GetLocationBar() const;
   virtual void SetFocusToLocationBar();
   virtual void UpdateStopGoState(bool is_loading, bool force);

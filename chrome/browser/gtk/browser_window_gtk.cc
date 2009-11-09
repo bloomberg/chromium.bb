@@ -1018,6 +1018,11 @@ bool BrowserWindowGtk::IsFullscreen() const {
   return (state_ & GDK_WINDOW_STATE_FULLSCREEN);
 }
 
+bool BrowserWindowGtk::IsFullscreenBubbleVisible() const {
+  // There is no fullscreen bubble for Linux.
+  return false;
+}
+
 LocationBar* BrowserWindowGtk::GetLocationBar() const {
   return toolbar_->GetLocationBar();
 }

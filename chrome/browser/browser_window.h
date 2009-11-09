@@ -118,6 +118,9 @@ class BrowserWindow {
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreen() const = 0;
 
+  // Returns true if the fullscreen bubble is visible.
+  virtual bool IsFullscreenBubbleVisible() const = 0;
+
   // Returns the location bar.
   virtual LocationBar* GetLocationBar() const = 0;
 

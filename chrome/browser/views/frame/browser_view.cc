@@ -893,8 +893,16 @@ void BrowserView::SetFullscreen(bool fullscreen) {
   frame_->GetWindow()->SetFullscreen(fullscreen);
 
   if (fullscreen) {
-    fullscreen_bubble_.reset(new FullscreenExitBubble(GetWidget(),
-                                                      browser_.get()));
+#if !defined(OS_MACOSX)
+    bool is_kosk =
+        CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+#else
+    bool is_kiosk = false;
+#endif
+    if (!is_kosk) {
+      fullscreen_bubble_.reset(new FullscreenExitBubble(GetWidget(),
+                                                        browser_.get()));
+    }
   } else {
 #if defined(OS_WIN)
     // Show the edit again since we're no longer in fullscreen mode.
@@ -914,6 +922,10 @@ void BrowserView::SetFullscreen(bool fullscreen) {
 
 bool BrowserView::IsFullscreen() const {
   return frame_->GetWindow()->IsFullscreen();
+}
+
+bool BrowserView::IsFullscreenBubbleVisible() const {
+  return fullscreen_bubble_.get() ? true : false;
 }
 
 LocationBar* BrowserView::GetLocationBar() const {

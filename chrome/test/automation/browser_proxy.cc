@@ -457,3 +457,23 @@ scoped_refptr<AutocompleteEditProxy> BrowserProxy::GetAutocompleteEdit() {
   result.swap(&p);
   return result;
 }
+
+bool BrowserProxy::IsFullscreen(bool* is_fullscreen) {
+  DCHECK(is_fullscreen);
+
+  if (!is_valid())
+    return false;
+
+  return sender_->Send(new AutomationMsg_IsFullscreen(0, handle_,
+                                                      is_fullscreen));
+}
+
+bool BrowserProxy::IsFullscreenBubbleVisible(bool* is_visible) {
+  DCHECK(is_visible);
+
+  if (!is_valid())
+    return false;
+
+  return sender_->Send(new AutomationMsg_IsFullscreenBubbleVisible(0, handle_,
+                                                                   is_visible));
+}

@@ -203,6 +203,9 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // Enable Native Web Worker support
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
+// Enable AutoFill++.
+const char kEnableNewAutoFill[]             = "enable-new-autofill";
+
 // Enable remote web font support. SVG font should always work whether
 // this option is specified or not.
 const char kEnableRemoteFonts[]             = "enable-remote-fonts";
@@ -303,6 +306,11 @@ const char kInternalNaCl[]                  = "internal-nacl";
 
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
+
+#if !defined(OS_MACOSX)
+// Enable Kiosk mode.
+const char kKioskMode[]                     = "kiosk";
+#endif
 
 // Load an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
@@ -691,8 +699,5 @@ const char kGearsPluginPathOverride[]       = "gears-plugin-path";
 // please put them in alphabetical order above, or in order inside the
 // appropriate ifdef at the bottom. The order should match the header.
 // -----------------------------------------------------------------------------
-
-// Enable AutoFill++.
-const char kEnableNewAutoFill[] = "enable-new-autofill";
 
 }  // namespace switches

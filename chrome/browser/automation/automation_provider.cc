@@ -321,6 +321,9 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_TabIndex, GetTabIndex)
     IPC_MESSAGE_HANDLER(AutomationMsg_TabURL, GetTabURL)
     IPC_MESSAGE_HANDLER(AutomationMsg_ShelfVisibility, GetShelfVisibility)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreen, IsFullscreen)
+    IPC_MESSAGE_HANDLER(AutomationMsg_IsFullscreenBubbleVisible,
+                        GetFullscreenBubbleVisibility)
     IPC_MESSAGE_HANDLER(AutomationMsg_HandleUnused, HandleUnused)
     IPC_MESSAGE_HANDLER(AutomationMsg_ApplyAccelerator, ApplyAccelerator)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_DomOperation,
@@ -1110,6 +1113,26 @@ void AutomationProvider::SetShelfVisibility(int handle, bool visible) {
   }
 }
 
+void AutomationProvider::IsFullscreen(int handle, bool* visible) {
+  *visible = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser)
+      *visible = browser->window()->IsFullscreen();
+  }
+}
+
+void AutomationProvider::GetFullscreenBubbleVisibility(int handle,
+                                                       bool* visible) {
+  *visible = false;
+
+  if (browser_tracker_->ContainsHandle(handle)) {
+    Browser* browser = browser_tracker_->GetResource(handle);
+    if (browser)
+      *visible = browser->window()->IsFullscreenBubbleVisible();
+  }
+}
 
 void AutomationProvider::GetConstrainedWindowCount(int handle, int* count) {
   *count = -1;  // -1 is the error code

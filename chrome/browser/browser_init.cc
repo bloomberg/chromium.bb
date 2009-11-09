@@ -559,6 +559,12 @@ Browser* BrowserInit::LaunchWithProfile::OpenURLsInBrowser(
   if (!browser || browser->type() != Browser::TYPE_NORMAL)
     browser = Browser::Create(profile_);
 
+#if !defined(OS_MACOSX)
+  // In kiosk mode, we want to always be fullscreen, so switch to that now.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
+    browser->ToggleFullscreenMode();
+#endif
+
   for (size_t i = 0; i < urls.size(); ++i) {
     // We skip URLs that we'd have to launch an external protocol handler for.
     // This avoids us getting into an infinite loop asking ourselves to open

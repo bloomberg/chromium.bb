@@ -347,6 +347,7 @@ class Browser : public TabStripModelDelegate,
   void RestoreTab();
   void WriteCurrentURLToClipboard();
   void ConvertPopupToTabbedBrowser();
+  // In kiosk mode, the first toggle is valid, the rest is discarded.
   void ToggleFullscreenMode();
   void Exit();
 #if defined(TOOLKIT_VIEWS)

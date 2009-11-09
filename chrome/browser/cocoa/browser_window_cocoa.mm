@@ -165,6 +165,10 @@ bool BrowserWindowCocoa::IsFullscreen() const {
   return !![controller_ isFullscreen];
 }
 
+bool BrowserWindowCocoa::IsFullscreenBubbleVisible() const {
+  return false;
+}
+
 gfx::Rect BrowserWindowCocoa::GetRootWindowResizerRect() const {
   NSRect tabRect = [controller_ selectedTabGrowBoxRect];
   return gfx::Rect(NSRectToCGRect(tabRect));

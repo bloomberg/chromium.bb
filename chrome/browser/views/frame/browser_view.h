@@ -204,6 +204,9 @@ class BrowserView : public BrowserWindow,
   // in the window caption area of the browser window.
   bool IsPositionInWindowCaption(const gfx::Point& point);
 
+  // Returns whether the fullscreen bubble is visible or not.
+  bool IsFullscreenBubbleVisible() const;
+
   // Overridden from BrowserWindow:
   virtual void Show();
   virtual void SetBounds(const gfx::Rect& bounds);

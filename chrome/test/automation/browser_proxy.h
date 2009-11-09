@@ -204,6 +204,13 @@ class BrowserProxy : public AutomationResourceProxy {
   // mahine).
   bool TerminateSession();
 
+  // Sets |is_fullscreen| to whether the browser is currently in fullscreen
+  // mode.
+  bool IsFullscreen(bool* is_fullscreen);
+
+  // Sets |is_visible| to whether the browser's fullscreen bubble is visible.
+  bool IsFullscreenBubbleVisible(bool* is_visible);
+
  protected:
   virtual ~BrowserProxy() {}
  private:

@@ -1016,6 +1016,16 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_SYNC_MESSAGE_ROUTED0_1(AutomationMsg_GetFilteredInetHitCount,
                              int /* hit_count */)
 
+  // Is the browser in fullscreen mode?
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_IsFullscreen,
+                             int /* browser_handle */,
+                             bool /* is_fullscreen */)
+
+  // Is the fullscreen bubble visible?
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_IsFullscreenBubbleVisible,
+                             int /* browser_handle */,
+                             bool /* is_visible */)
+
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   // See previous definition of this message for explanation of why it is
   // defined twice.

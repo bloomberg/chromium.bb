@@ -73,6 +73,7 @@ extern const char kDisableLocalStorage[];
 extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableNativeWebWorkers[];
+extern const char kEnableNewAutoFill[];
 extern const char kEnableRemoteFonts[];
 extern const char kEnableRendererAccessibility[];
 extern const char kEnableSeccompSandbox[];
@@ -96,6 +97,11 @@ extern const char kInProcessPlugins[];
 extern const char kIncognito[];
 extern const char kInternalNaCl[];
 extern const char kJavaScriptFlags[];
+
+#if !defined(OS_MACOSX)
+extern const char kKioskMode[];
+#endif
+
 extern const char kLoadExtension[];
 extern const char kLoadPlugin[];
 extern const char kLogFilterPrefix[];
@@ -205,8 +211,6 @@ extern const char kGearsPluginPathOverride[];
 
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
-
-extern const char kEnableNewAutoFill[];
 
 }  // namespace switches
 
