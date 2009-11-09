@@ -195,9 +195,11 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   if (targetController_) {
     [dragWindow_ setAlphaValue:0.0];
     [[draggedController_ overlayWindow] setHasShadow:YES];
+    [[targetController_ window] makeMainWindow];
   } else {
     [dragWindow_ setAlphaValue:0.5];
     [[draggedController_ overlayWindow] setHasShadow:NO];
+    [[draggedController_ window] makeMainWindow];
   }
   chromeIsVisible_ = shouldBeVisible;
 }
@@ -357,6 +359,7 @@ static const CGFloat kRapidCloseDist = 2.5;
       // When you finally leave the strip, we treat that as the origin.
       dragOrigin_.x = thisPoint.x;
     } else {
+      // Still dragging within the tab strip, wait for the next drag event.
       return;
     }
   }
@@ -409,6 +412,9 @@ static const CGFloat kRapidCloseDist = 2.5;
 
   // Create or identify the dragged controller.
   if (!draggedController_) {
+    // Get rid of any placeholder remaining in the original source window.
+    [sourceController_ removePlaceholder];
+
     // Detach from the current window and put it in a new window. If there are
     // no more tabs remaining after detaching, the source window is about to
     // go away (it's been autoreleased) so we need to ensure we don't reference
@@ -485,7 +491,7 @@ static const CGFloat kRapidCloseDist = 2.5;
   }
   [dragWindow_ setFrameOrigin:NSMakePoint(origin.x, origin.y)];
 
-  // If we're not hovering over any window, make the window is fully
+  // If we're not hovering over any window, make the window fully
   // opaque. Otherwise, find where the tab might be dropped and insert
   // a placeholder so it appears like it's part of that window.
   if (targetController_) {
