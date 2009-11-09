@@ -60,23 +60,28 @@ using WebKit::WebMessagePortChannel;
 using WebKit::WebSharedWorker;
 using WebKit::WebSharedWorkerRepository;
 
-// Callback class that keeps the Worker object alive while loads are potentially happening, and also translates load errors into error events on the worker.
-class SharedWorkerScriptLoader : public RefCounted<SharedWorkerScriptLoader>, private WorkerScriptLoaderClient {
+// Callback class that keeps the SharedWorker and WebSharedWorker objects alive while loads are potentially happening, and also translates load errors into error events on the worker.
+class SharedWorkerScriptLoader : private WorkerScriptLoaderClient, private WebSharedWorker::ConnectListener, private ActiveDOMObject {
 public:
   SharedWorkerScriptLoader(PassRefPtr<SharedWorker> worker, const KURL& url, const String& name, PassOwnPtr<MessagePortChannel> port, PassOwnPtr<WebSharedWorker> webWorker)
-      : m_worker(worker),
-        m_url(url),
-        m_name(name),
-        m_webWorker(webWorker),
-        m_port(port)
+      : ActiveDOMObject(worker->scriptExecutionContext(), this)
+      , m_worker(worker)
+      , m_url(url)
+      , m_name(name)
+      , m_webWorker(webWorker)
+      , m_port(port)
     {
     }
 
     void load();
-
+    virtual void contextDestroyed();
 private:
     // WorkerScriptLoaderClient callback
     virtual void notifyFinished();
+
+    virtual void connected();
+
+    void sendConnect();
 
     RefPtr<SharedWorker> m_worker;
     KURL m_url;
@@ -88,7 +93,11 @@ private:
 
 void SharedWorkerScriptLoader::load()
 {
-    m_scriptLoader.loadAsynchronously(m_worker->scriptExecutionContext(), m_url, DenyCrossOriginRequests, this);
+    // If the shared worker is not yet running, load the script resource for it, otherwise just send it a connect event.
+    if (m_webWorker->isStarted())
+        sendConnect();
+    else
+        m_scriptLoader.loadAsynchronously(m_worker->scriptExecutionContext(), m_url, DenyCrossOriginRequests, this);
 }
 
 // Extracts a WebMessagePortChannel from a MessagePortChannel.
@@ -103,13 +112,30 @@ static WebMessagePortChannel* getWebPort(PassOwnPtr<MessagePortChannel> port)
 
 void SharedWorkerScriptLoader::notifyFinished()
 {
-    if (m_scriptLoader.failed())
+    if (m_scriptLoader.failed()) {
         m_worker->dispatchEvent(Event::create(eventNames().errorEvent, false, true));
-    else {
+        delete this;
+    } else {
+        // Pass the script off to the worker, then send a connect event.
         m_webWorker->startWorkerContext(m_url, m_name, m_worker->scriptExecutionContext()->userAgent(m_url), m_scriptLoader.script());
-        m_webWorker->connect(getWebPort(m_port.release()));
+        sendConnect();
     }
+}
 
+void SharedWorkerScriptLoader::sendConnect()
+{
+    // Send the connect event off, and linger until it is done sending.
+    m_webWorker->connect(getWebPort(m_port.release()), this);
+}
+
+void SharedWorkerScriptLoader::contextDestroyed()
+{
+    ActiveDOMObject::contextDestroyed();
+    delete this;
+}
+
+void SharedWorkerScriptLoader::connected()
+{
     // Connect event has been sent, so free ourselves (this releases the SharedWorker so it can be freed as well if unreferenced).
     delete this;
 }
@@ -145,12 +171,10 @@ void SharedWorkerRepository::connect(PassRefPtr<SharedWorker> worker, PassOwnPtr
         return;
     }
 
-    if (!webWorker->isStarted()) {
-        // Need to kick off a load for the worker. The loader will connect to the worker once the script has been loaded, then free itself.
-        SharedWorkerScriptLoader* loader = new SharedWorkerScriptLoader(worker, url, name, port.release(), webWorker.release());
-        loader->load();
-    } else
-        webWorker->connect(getWebPort(port.release()));
+    // The loader object manages its own lifecycle (and the lifecycles of the two worker objects).
+    // It will free itself once loading is completed.
+    SharedWorkerScriptLoader* loader = new SharedWorkerScriptLoader(worker, url, name, port.release(), webWorker.release());
+    loader->load();
 }
 
 void SharedWorkerRepository::documentDetached(Document* document)

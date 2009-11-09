@@ -41,7 +41,7 @@ void WebSharedWorkerStub::OnStartWorkerContext(
 void WebSharedWorkerStub::OnConnect(int sent_message_port_id, int routing_id) {
   WebKit::WebMessagePortChannel* channel =
       new WebMessagePortChannelImpl(routing_id, sent_message_port_id);
-  impl_->connect(channel);
+  impl_->connect(channel, NULL);
 }
 
 void WebSharedWorkerStub::OnTerminateWorkerContext() {

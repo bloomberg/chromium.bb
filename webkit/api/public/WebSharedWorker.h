@@ -61,9 +61,14 @@ public:
                                     const WebString& name,
                                     const WebString& userAgent,
                                     const WebString& sourceCode) = 0;
+    class ConnectListener {
+    public:
+        // Invoked once the connect event has been sent so the caller can free this object.
+        virtual void connected() = 0;
+    };
 
-    // Sends a connect event to the SharedWorker context.
-    virtual void connect(WebMessagePortChannel*) = 0;
+    // Sends a connect event to the SharedWorker context. The listener is invoked when this async operation completes.
+    virtual void connect(WebMessagePortChannel*, ConnectListener*) = 0;
 
     // Invoked to shutdown the worker when there are no more associated documents.
     virtual void terminateWorkerContext() = 0;

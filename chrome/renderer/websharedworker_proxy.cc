@@ -12,7 +12,8 @@
 WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
                                            int route_id,
                                            int render_view_route_id)
-    : WebWorkerBase(child_thread, route_id, render_view_route_id) {
+    : WebWorkerBase(child_thread, route_id, render_view_route_id),
+      m_connectListener(NULL) {
 }
 
 bool WebSharedWorkerProxy::isStarted() {
@@ -37,7 +38,8 @@ void WebSharedWorkerProxy::clientDestroyed() {
   NOTREACHED();
 }
 
-void WebSharedWorkerProxy::connect(WebKit::WebMessagePortChannel* channel) {
+void WebSharedWorkerProxy::connect(WebKit::WebMessagePortChannel* channel,
+                                   ConnectListener* listener) {
   WebMessagePortChannelImpl* webchannel =
         static_cast<WebMessagePortChannelImpl*>(channel);
 
@@ -46,6 +48,12 @@ void WebSharedWorkerProxy::connect(WebKit::WebMessagePortChannel* channel) {
   webchannel->QueueMessages();
 
   Send(new WorkerMsg_Connect(route_id_, message_port_id, MSG_ROUTING_NONE));
+  if (HasQueuedMessages()) {
+    m_connectListener = listener;
+  } else
+    listener->connected();
+    // The listener may free this object, so do not access the object after
+    // this point.
 }
 
 void WebSharedWorkerProxy::OnMessageReceived(const IPC::Message& message) {
@@ -58,5 +66,11 @@ void WebSharedWorkerProxy::OnWorkerCreated() {
   // The worker is created - now send off the CreateWorkerContext message and
   // any other queued messages
   SendQueuedMessages();
+
+  // Inform any listener that the pending connect event has been sent
+  // (this can result in this object being freed).
+  if (m_connectListener) {
+    m_connectListener->connected();
+  }
 }
 

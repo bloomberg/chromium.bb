@@ -66,7 +66,7 @@ bool WebSharedWorkerImpl::isStarted()
     return workerThread();
 }
 
-void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
+void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel, ConnectListener* listener)
 {
     // Convert the WebMessagePortChanel to a WebCore::MessagePortChannel.
     RefPtr<PlatformMessagePortChannel> platform_channel =
@@ -77,6 +77,8 @@ void WebSharedWorkerImpl::connect(WebMessagePortChannel* webChannel)
 
     workerThread()->runLoop().postTask(
         createCallbackTask(&connectTask, this, channel.release()));
+    if (listener)
+        listener->connected();
 }
 
 void WebSharedWorkerImpl::connectTask(ScriptExecutionContext* context, WebSharedWorkerImpl* worker, PassOwnPtr<MessagePortChannel> channel)

@@ -26,7 +26,8 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
 
   // Implementations of WebSharedWorker APIs
   virtual bool isStarted();
-  virtual void connect(WebKit::WebMessagePortChannel* channel);
+  virtual void connect(WebKit::WebMessagePortChannel* channel,
+                       ConnectListener* listener);
   virtual void startWorkerContext(const WebKit::WebURL& script_url,
                                   const WebKit::WebString& name,
                                   const WebKit::WebString& user_agent,
@@ -39,6 +40,8 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
 
  private:
   void OnWorkerCreated();
+
+  ConnectListener* m_connectListener;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);
 };
