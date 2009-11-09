@@ -417,8 +417,6 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         SetBooleanPreference)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetPageCurrentEncoding,
                         GetPageCurrentEncoding)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ToggleEncodingAutoDetect,
-                        ToggleEncodingAutoDetect)
     IPC_MESSAGE_HANDLER(AutomationMsg_OverrideEncoding, OverrideEncoding)
     IPC_MESSAGE_HANDLER(AutomationMsg_SavePackageShouldPromptUser,
                         SavePackageShouldPromptUser)
@@ -1892,8 +1890,8 @@ void AutomationProvider::SetStringPreference(int handle,
 
 void AutomationProvider::GetBooleanPreference(int handle,
                                               const std::wstring& name,
-                                              bool* value,
-                                              bool* success) {
+                                              bool* success,
+                                              bool* value) {
   *success = false;
   *value = false;
   if (browser_tracker_->ContainsHandle(handle)) {
@@ -1928,30 +1926,7 @@ void AutomationProvider::GetPageCurrentEncoding(
   }
 }
 
-// Toggles the encoding auto-detect setting.
-// While the setting is global, the tab needs to be specified as it may need
-// to be reloaded.
-void AutomationProvider::ToggleEncodingAutoDetect(int tab_handle,
-                                                  bool* success) {
-  *success = false;
-#if defined(OS_WIN)
-  if (tab_tracker_->ContainsHandle(tab_handle)) {
-    NavigationController* nav = tab_tracker_->GetResource(tab_handle);
-    Browser* browser = FindAndActivateTab(nav);
-    DCHECK(browser);
-
-    if (browser->command_updater()->IsCommandEnabled(IDC_ENCODING_MENU)) {
-      browser->ToggleEncodingAutoDetect();
-      *success = true;
-    }
-  }
-#else
-  // TODO(port): Enable when encoding-related parts of Browser are ported.
-  NOTIMPLEMENTED();
-#endif
-}
-
-// Sets the override encoding for the page in the specified tab.
+// Gets the current used encoding name of the page in the specified tab.
 void AutomationProvider::OverrideEncoding(int tab_handle,
                                           const std::string& encoding_name,
                                           bool* success) {

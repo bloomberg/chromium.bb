@@ -112,9 +112,8 @@ TEST_F(BrowserEncodingTest, TestEncodingAliasMapping) {
 }
 
 #if defined(OS_WIN)
-// We are disabling these tests on MacOS and Linux because on those platforms
-// AutomationProvider::OverrideEncoding and ToggleEncodingAutoDetect are not
-// implemented yet.
+// We are disabling this test on MacOS and Linux because on those platforms
+// AutomationProvider::OverrideEncoding is not implemented yet.
 // TODO(port): Enable when encoding-related parts of Browser are ported.
 TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   const char* const kTestFileName = "gb18030_with_iso88591_meta.html";
@@ -159,92 +158,6 @@ TEST_F(BrowserEncodingTest, TestOverrideEncoding) {
   FilePath expected_file_name = FilePath().AppendASCII(kOverrideTestDir);
   expected_file_name = expected_file_name.AppendASCII(kExpectedFileName);
   CheckFile(full_file_name, expected_file_name, true);
-}
-
-// Test for fix to issue 2932 (http://crbug.com/2932)
-// as described in http://codereview.chromium.org/173265
-TEST_F(BrowserEncodingTest, TestToggleAutoDetect) {
-  const char* const kTestFileName = "gb18030_with_no_encoding_specified.html";
-  const char* const kToggleTestDir = "auto_detect";
-
-  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
-  ASSERT_TRUE(browser.get());
-
-  browser->SetStringPreference(prefs::kDefaultCharset, L"ISO-8859-1");
-
-  // Turn off auto-detect before loading the file.
-  EXPECT_TRUE(
-      browser->SetBooleanPreference(prefs::kWebKitUsesUniversalDetector,
-                                    false));
-
-  FilePath test_dir_path = FilePath(kTestDir).AppendASCII(kToggleTestDir);
-  test_dir_path = test_dir_path.AppendASCII(kTestFileName);
-  GURL url = URLRequestMockHTTPJob::GetMockUrl(test_dir_path);
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-  ASSERT_TRUE(tab_proxy.get());
-  ASSERT_TRUE(tab_proxy->NavigateToURL(url));
-  WaitUntilTabCount(1);
-
-  // Verify that file got default encoding.
-  std::string encoding;
-  EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-  EXPECT_EQ(encoding, "ISO-8859-1");
-
-  // Turn on auto-detect and verify that encoding changed.
-  int64 prev_nav_time = 0;
-  bool encoding_auto_detect = false;
-  EXPECT_TRUE(tab_proxy->GetLastNavigationTime(&prev_nav_time));
-  EXPECT_TRUE(tab_proxy->ToggleEncodingAutoDetect());
-  EXPECT_TRUE(tab_proxy->WaitForNavigation(prev_nav_time));
-  EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-  EXPECT_EQ(encoding, "gb18030");
-  EXPECT_TRUE(
-      browser->GetBooleanPreference(prefs::kWebKitUsesUniversalDetector,
-                                    &encoding_auto_detect));
-  EXPECT_TRUE(encoding_auto_detect);
-
-  // Turn off auto-detect and verify that no navigation occurs.
-  // The encoding shouldn't change as well.
-  int64 last_nav_time = 0;
-  EXPECT_TRUE(tab_proxy->GetLastNavigationTime(&prev_nav_time));
-  EXPECT_TRUE(tab_proxy->ToggleEncodingAutoDetect());
-  // TODO(rolandsteiner): HACK! this assumes the navigation (if any) will be
-  // completed in 500ms. Need a better way to ascertain that NO navigation
-  // was triggered.
-  EXPECT_TRUE(CrashAwareSleep(500));
-  EXPECT_TRUE(tab_proxy->GetLastNavigationTime(&last_nav_time));
-  EXPECT_EQ(prev_nav_time, last_nav_time);
-  EXPECT_TRUE(
-      browser->GetBooleanPreference(prefs::kWebKitUsesUniversalDetector,
-                                    &encoding_auto_detect));
-  EXPECT_FALSE(encoding_auto_detect);
-
-  // Choose another encoding and verify that page is reloaded and the new
-  // encoding set. Auto-detect encoding should still be off.
-  EXPECT_TRUE(tab_proxy->GetLastNavigationTime(&prev_nav_time));
-  EXPECT_TRUE(tab_proxy->OverrideEncoding("ISO-8859-13"));
-  EXPECT_TRUE(tab_proxy->WaitForNavigation(prev_nav_time));
-  EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-  EXPECT_EQ(encoding, "ISO-8859-13");
-  EXPECT_TRUE(
-      browser->GetBooleanPreference(prefs::kWebKitUsesUniversalDetector,
-                                    &encoding_auto_detect));
-  EXPECT_FALSE(encoding_auto_detect);
-
-  // Turn on auto-detect again and verify that encoding changed back
-  // to Chinese.
-  EXPECT_TRUE(tab_proxy->GetLastNavigationTime(&prev_nav_time));
-  EXPECT_TRUE(tab_proxy->ToggleEncodingAutoDetect());
-  EXPECT_TRUE(tab_proxy->WaitForNavigation(prev_nav_time));
-  EXPECT_TRUE(tab_proxy->GetPageCurrentEncoding(&encoding));
-  EXPECT_EQ(encoding, "gb18030");
-  EXPECT_TRUE(
-      browser->GetBooleanPreference(prefs::kWebKitUsesUniversalDetector,
-                                    &encoding_auto_detect));
-  EXPECT_TRUE(encoding_auto_detect);
-
-  // Close the tab explicitely (avoids spurious "leak" crash on exit)
-  EXPECT_TRUE(tab_proxy->Close(true));
 }
 #endif  // defined(OS_WIN)
 

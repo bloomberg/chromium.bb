@@ -664,16 +664,6 @@ bool TabProxy::GetPageCurrentEncoding(std::string* encoding) {
   return succeeded;
 }
 
-bool TabProxy::ToggleEncodingAutoDetect() {
-  if (!is_valid())
-    return false;
-
-  bool succeeded = false;
-  sender_->Send(new AutomationMsg_ToggleEncodingAutoDetect(0, handle_,
-                                                           &succeeded));
-  return succeeded;
-}
-
 bool TabProxy::OverrideEncoding(const std::string& encoding) {
   if (!is_valid())
     return false;
@@ -688,6 +678,7 @@ bool TabProxy::OverrideEncoding(const std::string& encoding) {
 void TabProxy::Reposition(HWND window, HWND window_insert_after, int left,
                           int top, int width, int height, int flags,
                           HWND parent_window) {
+
   IPC::Reposition_Params params = {0};
   params.window = window;
   params.window_insert_after = window_insert_after;
