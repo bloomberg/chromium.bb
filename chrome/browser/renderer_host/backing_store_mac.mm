@@ -34,7 +34,7 @@ BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
     // If we are not in a containing window yet, create a CGBitmapContext
     // to use as a stand-in for the layer.
     cg_bitmap_.reset(CGBitmapContextCreate(NULL, size.width(), size.height(),
-        8, size.width() * 8, mac_util::GetSystemColorSpace(),
+        8, size.width() * 4, mac_util::GetSystemColorSpace(),
         kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
   } else {
     CGContextRef context = static_cast<CGContextRef>(
@@ -143,7 +143,7 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
       // We don't have a layer, so scroll the contents of the CGBitmapContext.
       scoped_cftyperef<CGContextRef> new_bitmap(
           CGBitmapContextCreate(NULL, size_.width(), size_.height(), 8,
-              size_.width() * 8, mac_util::GetSystemColorSpace(),
+              size_.width() * 4, mac_util::GetSystemColorSpace(),
               kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
       scoped_cftyperef<CGImageRef> bitmap_image(
           CGBitmapContextCreateImage(cg_bitmap_));
