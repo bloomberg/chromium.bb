@@ -68,6 +68,11 @@ class Widget {
   // one is found. If a root view isn't found, null is returned.
   static RootView* FindRootView(gfx::NativeWindow native_window);
 
+  // Retrieve the Widget corresponding to the specified native_view, or NULL
+  // if there is no such Widget.
+  static Widget* GetWidgetFromNativeView(gfx::NativeView native_view);
+  static Widget* GetWidgetFromNativeWindow(gfx::NativeWindow native_window);
+
   // Initialize the Widget with a parent and an initial desired size.
   // |contents_view| is the view that will be the single child of RootView
   // within this Widget. As contents_view is inserted into RootView's tree,
@@ -82,11 +87,6 @@ class Widget {
   // fit the entire size of the RootView. The RootView takes ownership of this
   // View, unless it is set as not being parent-owned.
   virtual void SetContentsView(View* view) = 0;
-
-  // Retrieve the Widget corresponding to the specified native_view, or NULL
-  // if there is no such Widget.
-  static Widget* GetWidgetFromNativeView(gfx::NativeView native_view);
-  static Widget* GetWidgetFromNativeWindow(gfx::NativeWindow native_window);
 
   // Returns the bounds of this Widget in the screen coordinate system.
   // If the receiving Widget is a frame which is larger than its client area,
@@ -143,14 +143,14 @@ class Widget {
   // Returns whether the Widget is the currently active window.
   virtual bool IsActive() const = 0;
 
-  // Returns the TooltipManager for this Widget. If this Widget does not support
-  // tooltips, NULL is returned.
-  virtual TooltipManager* GetTooltipManager() = 0;
-
   // Starts a drag operation for the specified view. |point| is a position in
   // |view| coordinates that the drag was initiated from.
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point) = 0;
+
+  // Returns the TooltipManager for this Widget. If this Widget does not support
+  // tooltips, NULL is returned.
+  virtual TooltipManager* GetTooltipManager() = 0;
 
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.

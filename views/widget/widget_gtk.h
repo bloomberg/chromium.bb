@@ -64,7 +64,7 @@ class WidgetGtk
 
   // Returns the transient parent. See make_transient_to_parent for details on
   // what the transient parent is.
-  GtkWindow* GetTransientParent();
+  GtkWindow* GetTransientParent() const;
 
   // Makes the background of the window totally transparent. This must be
   // invoked before Init. This does a couple of checks and returns true if
@@ -106,8 +106,26 @@ class WidgetGtk
   // used for.
   bool in_paint_now() const { return in_paint_now_; }
 
+  // Sets the focus traversable parents.
+  void SetFocusTraversableParent(FocusTraversable* parent);
+  void SetFocusTraversableParentView(View* parent_view);
+
   // Invoked when the active status changes.
-  virtual void IsActiveChanged();
+  virtual void IsActiveChanged() {}
+
+  // Gets the WidgetGtk in the userdata section of the widget.
+  static WidgetGtk* GetViewForNative(GtkWidget* widget);
+
+  // Gets the WindowGtk in the userdata section of the widget.
+  // TODO(beng): move to WindowGtk
+  static WindowGtk* GetWindowForNative(GtkWidget* widget);
+
+  // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
+  // drop is done.
+  void ResetDropTarget();
+
+  // Returns the RootView for |widget|.
+  static RootView* GetRootViewForWidget(GtkWidget* widget);
 
   // Overriden from ActiveWindowWatcherX::Observer.
   virtual void ActiveWindowChanged(GdkWindow* active_window);
@@ -146,11 +164,11 @@ class WidgetGtk
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
 
-  // MessageLoopForUI::Observer.
+  // Overridden from MessageLoopForUI::Observer:
   virtual void WillProcessEvent(GdkEvent* event);
   virtual void DidProcessEvent(GdkEvent* event);
 
-  // FocusTraversable implementation:
+  // Overridden from FocusTraversable:
   virtual View* FindNextFocusableView(View* starting_view,
                                       bool reverse,
                                       Direction direction,
@@ -160,28 +178,11 @@ class WidgetGtk
   virtual FocusTraversable* GetFocusTraversableParent();
   virtual View* GetFocusTraversableParentView();
 
-  // Sets the focus traversable parents.
-  void SetFocusTraversableParent(FocusTraversable* parent);
-  void SetFocusTraversableParentView(View* parent_view);
-
-  // Gets the WidgetGtk in the userdata section of the widget.
-  static WidgetGtk* GetViewForNative(GtkWidget* widget);
-
-  // Gets the WindowGtk in the userdata section of the widget.
-  // TODO(beng): move to WindowGtk
-  static WindowGtk* GetWindowForNative(GtkWidget* widget);
-  
-  // Sets the drop target to NULL. This is invoked by DropTargetGTK when the
-  // drop is done.
-  void ResetDropTarget();
-
-  // Returns the RootView for |widget|.
-  static RootView* GetRootViewForWidget(GtkWidget* widget);
-
  protected:
   // Returns the view::Event::flags for a GdkEventButton.
   static int GetFlagsForEventButton(const GdkEventButton& event);
 
+  // Event handlers:
   virtual void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
   virtual void OnPaint(GtkWidget* widget, GdkEventExpose* event);
   virtual void OnDragDataGet(GdkDragContext* context,
@@ -264,9 +265,6 @@ class WidgetGtk
   bool ProcessMousePressed(GdkEventButton* event);
   void ProcessMouseReleased(GdkEventButton* event);
 
-  // Sets the WidgetGtk in the userdata section of the widget.
-  static void SetViewForNative(GtkWidget* widget, WidgetGtk* view);
-
   static void SetRootViewForWidget(GtkWidget* widget, RootView* root_view);
 
   // A set of static signal handlers that bridge
@@ -341,14 +339,12 @@ class WidgetGtk
   // Creates the GtkWidget.
   void CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds);
 
-  // Attaches the widget contents to the window's widget.
-  void AttachGtkWidgetToWindow();
-
   // Invoked from create widget to enable the various bits needed for a
   // transparent background. This is only invoked if MakeTransparent has been
   // invoked.
   void ConfigureWidgetForTransparentBackground();
 
+  // TODO(sky): documentation
   void HandleGrabBroke();
 
   const Type type_;
