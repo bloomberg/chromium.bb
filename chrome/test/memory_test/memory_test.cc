@@ -221,7 +221,7 @@ class MemoryTest : public UITest {
     }
 
     size_t stop_size = base::GetSystemCommitCharge();
-    PrintResults(test_name, (stop_size - start_size) / 1024);
+    PrintResults(test_name, (stop_size - start_size) * 1024);
   }
 
   void PrintResults(const char* test_name, size_t commit_size) {
