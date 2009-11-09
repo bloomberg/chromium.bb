@@ -5668,7 +5668,6 @@
                     'winspool.drv',
                     'comdlg32.dll',
                     'imagehlp.dll',
-                    'psapi.dll',
                     'urlmon.dll',
                     'imm32.dll',
                     'iphlpapi.dll',
