@@ -7,6 +7,11 @@
 
 #if ENABLE(VIDEO)
 
+// FIXME: GraphicsContext.h should include this itself!
+#if WEBKIT_USING_SKIA
+#include "PlatformContextSkia.h"
+#endif
+
 #include "CString.h"
 #include "Frame.h"
 #include "GraphicsContext.h"
@@ -15,9 +20,6 @@
 #include "KURL.h"
 #include "MediaPlayer.h"
 #include "NotImplemented.h"
-#if WEBKIT_USING_SKIA
-#include "PlatformContextSkia.h"
-#endif
 #include "TimeRanges.h"
 
 #include "WebCanvas.h"
