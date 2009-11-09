@@ -48,10 +48,10 @@
 
 using views::DropTargetEvent;
 
-static const int kDefaultAnimationDurationMs = 100;
-static const int kResizeLayoutAnimationDurationMs = 166;
-static const int kReorderAnimationDurationMs = 166;
-static const int kPinnedTabAnimationDurationMs = 166;
+static const int kDefaultAnimationDurationMs = 200;
+static const int kResizeLayoutAnimationDurationMs = 200;
+static const int kReorderAnimationDurationMs = 200;
+static const int kPinnedTabAnimationDurationMs = 200;
 
 static const int kNewTabButtonHOffset = -5;
 static const int kNewTabButtonVOffset = 5;
