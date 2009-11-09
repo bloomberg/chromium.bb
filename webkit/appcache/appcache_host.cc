@@ -11,7 +11,8 @@ namespace appcache {
 
 AppCacheHost::AppCacheHost(int host_id, AppCacheFrontend* frontend,
                            AppCacheService* service)
-    : host_id_(host_id), pending_selected_cache_id_(kNoCacheId),
+    : host_id_(host_id), pending_main_resource_cache_id_(kNoCacheId),
+      pending_selected_cache_id_(kNoCacheId),
       frontend_(frontend), service_(service),
       pending_get_status_callback_(NULL), pending_start_update_callback_(NULL),
       pending_swap_cache_callback_(NULL), pending_callback_param_(NULL) {
