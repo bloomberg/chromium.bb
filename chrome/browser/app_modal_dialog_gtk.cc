@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
-#include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "grit/generated_resources.h"
@@ -68,8 +68,8 @@ void OnDialogResponse(GtkDialog* dialog, gint response_id,
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
     GtkWindowGroup* window_group = gtk_window_group_new();
-    BrowserWindowGtk* window = static_cast<BrowserWindowGtk*>((*it)->window());
-    gtk_window_group_add_window(window_group, window->window());
+    gtk_window_group_add_window(window_group,
+                                (*it)->window()->GetNativeHandle());
     g_object_unref(window_group);
   }
 
@@ -117,8 +117,8 @@ void AppModalDialog::CreateAndShowDialog() {
   GtkWindowGroup* window_group = gtk_window_group_new();
   for (BrowserList::const_iterator it = BrowserList::begin();
        it != BrowserList::end(); ++it) {
-    BrowserWindowGtk* window = static_cast<BrowserWindowGtk*>((*it)->window());
-    gtk_window_group_add_window(window_group, window->window());
+    gtk_window_group_add_window(window_group,
+                                (*it)->window()->GetNativeHandle());
   }
   g_object_unref(window_group);
 
