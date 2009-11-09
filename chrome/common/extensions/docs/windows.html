@@ -248,43 +248,45 @@ create, modify, and rearrange windows in the browser.
 
 <h2 id="manifest">Manifest</h2>
 <p>
-You must declare the "tabs" permission
-in your extension's manifest to use the windows API.
+To use the windows API,
+you must declare the "tabs" permission
+in <a href="manifest.html">manifest.json</a>.
 (No, that isn't a typo —
 the window and tabs modules interact so closely we
 decided to just share one permission between them.)
 For example:
 </p>
-<pre>{
-  "name": "My extension that uses windows",
-  "version": "0.1",
-<b>  "permissions": [
-    "tabs"
-  ]</b>
-}</pre>
+<pre>"permissions": ["tabs"]
+</pre>
 
 <h2 id="current-window">The current window</h2>
 
 <p>Many functions in the extension system
-take an optional <var>windowId</var> parameter
-which is documented to default to the "current window".
+take an optional <var>windowId</var> parameter,
+which defaults to the current window.
+</p>
 
-</p><p>The <em>current window</em> is the window that
+<p>The <em>current window</em> is the window that
 contains the code that is currently executing.
 It's important to realize that this can be
 different from the topmost or focused window.
+</p>
 
-</p><p>For example, consider code running in a
-<a href="toolstrip.html">toolstrip</a>, that
-calls <a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a>.
-The current window is the window that contains the toolstrip that made
+<p>For example, say an extension
+creates a few tabs or windows from a single HTML file,
+and that the HTML file
+contains a call to
+<a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a>.
+The current window is the window that contains the page that made
 the call, no matter what the topmost window is.
+</p>
 
-</p><p>In the case of the <a href="background_pages.html">background page</a>,
+<p>In the case of the <a href="background_pages.html">background page</a>,
 the value of the current window falls back to the topmost window.
+</p>
 
 <!-- END AUTHORED CONTENT -->
-</p></div>
+</div>
 
         <!-- API PAGE -->
         <div class="apiPage">
