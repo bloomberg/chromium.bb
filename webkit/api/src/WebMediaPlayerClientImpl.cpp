@@ -7,11 +7,6 @@
 
 #if ENABLE(VIDEO)
 
-// FIXME: GraphicsContext.h should include this itself!
-#if WEBKIT_USING_SKIA
-#include "PlatformContextSkia.h"
-#endif
-
 #include "CString.h"
 #include "Frame.h"
 #include "GraphicsContext.h"
@@ -34,6 +29,11 @@
 #include "WebSize.h"
 #include "WebString.h"
 #include "WebURL.h"
+
+// WebCommon.h defines WEBKIT_USING_SKIA so this has to be included last.
+#if WEBKIT_USING_SKIA
+#include "PlatformContextSkia.h"
+#endif
 
 #include <wtf/Assertions.h>
 
