@@ -994,6 +994,17 @@ def Commit(change_info, args):
 def Change(change_info, args):
   """Creates/edits a changelist."""
   silent = FilterFlag(args, "--silent")
+
+  # Verify the user is running the change command from a read-write checkout.
+  svn_info = gclient_scm.CaptureSVNInfo('.')
+  if not svn_info:
+    ErrorExit("Current checkout is unversioned.  Please retry with a versioned "
+              "directory.")
+  if (svn_info.get('URL', '').startswith('http:') and
+    not FilterFlag(args, "--force")):
+    ErrorExit("This is a read-only checkout.  Retry in a read-write checkout "
+              "or use --force to override.")
+
   if (len(args) == 1):
     filename = args[0]
     f = open(filename, 'rU')
