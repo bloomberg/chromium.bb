@@ -209,6 +209,13 @@ class ExtensionsServiceTest
                    NotificationService::AllSources());
   }
 
+  ~ExtensionsServiceTest() {
+    // Drop our reference to ExtensionsService now, so that it can be destroyed
+    // while ChromeThreads and MessageLoop are still around (they are used
+    // in the ExtensionsService destruction process).
+    service_ = NULL;
+  }
+
   virtual void InitializeExtensionsService(const FilePath& pref_file,
       const FilePath& extensions_install_dir) {
     prefs_.reset(new PrefService(pref_file));

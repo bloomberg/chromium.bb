@@ -207,6 +207,10 @@ class ExtensionTestingProfile : public TestingProfile {
     service_->Init();
   }
 
+  void ShutdownExtensionsService() {
+    service_ = NULL;
+  }
+
   virtual ExtensionsService* GetExtensionsService() {
     return service_.get();
   }
@@ -239,6 +243,10 @@ class UserScriptListenerTest : public testing::Test {
   }
 
   virtual void TearDown() {
+    // Shutdown ExtensionsService now, so that it can be destroyed while
+    // ChromeThreads and MessageLoop are still around (they are used in the
+    // ExtensionsService destruction process).
+    profile_.ShutdownExtensionsService();
     io_thread_.reset();
     file_thread_.reset();
     ui_thread_.reset();
