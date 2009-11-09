@@ -9,10 +9,12 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/bubble_positioner.h"
+#include "chrome/browser/command_updater.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
 
 class AutocompleteEditViewGtk;
+class BackForwardMenuModelViews;
 class Browser;
 
 namespace views {
@@ -28,7 +30,8 @@ namespace chromeos {
 class CompactNavigationBar : public views::View,
                              public views::ButtonListener,
                              public AutocompleteEditController,
-                             public BubblePositioner {
+                             public BubblePositioner,
+                             public CommandUpdater::CommandObserver {
  public:
   explicit CompactNavigationBar(Browser* browser);
   virtual ~CompactNavigationBar();
@@ -58,21 +61,30 @@ class CompactNavigationBar : public views::View,
   virtual SkBitmap GetFavIcon() const;
   virtual std::wstring GetTitle() const;
 
-  // BubblePositioner:
+  // BubblePositioner implementation.
   virtual gfx::Rect GetLocationStackBounds() const;
 
+  // CommandUpdater::CommandObserver implementation.
+  virtual void EnabledStateChangedForCommand(int id, bool enabled);
+
+  // Add new tab for the given url. The location of new tab is
+  // controlled by the method |StatusAreaView::GetOpenTabsMode()|.
   void AddTabWithURL(const GURL& url, PageTransition::Type transition);
 
   Browser* browser_;
 
   bool initialized_;
 
-  views::ImageButton* back_button_;
+  views::ImageButton* back_;
   views::ImageView* bf_separator_;
-  views::ImageButton* forward_button_;
+  views::ImageButton* forward_;
 
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
   views::NativeViewHost* location_entry_view_;
+
+  // History menu for back and forward buttons.
+  scoped_ptr<BackForwardMenuModelViews> back_menu_model_;
+  scoped_ptr<BackForwardMenuModelViews> forward_menu_model_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactNavigationBar);
 };

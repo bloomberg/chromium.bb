@@ -5,16 +5,23 @@
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 
 #include "app/gfx/canvas.h"
+#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
 #include "base/logging.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
+#include "chrome/browser/back_forward_menu_model_views.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chromeos/status_area_view.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/event_utils.h"
+#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/controls/button/button_dropdown.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/image_view.h"
 #include "views/controls/native/native_view_host.h"
@@ -36,6 +43,9 @@ static const int kPreferredHeight = 25;
 // actually is.
 static const int kURLPadding = 2;
 
+////////////////////////////////////////////////////////////////////////////////
+// CompactNavigationBar public:
+
 CompactNavigationBar::CompactNavigationBar(Browser* browser)
     : browser_(browser),
       initialized_(false) {
@@ -50,26 +60,45 @@ void CompactNavigationBar::Init() {
   DCHECK(!initialized_);
   initialized_ = true;
 
+  browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
+  browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
+
+  back_menu_model_.reset(new BackForwardMenuModelViews(
+      browser_, BackForwardMenuModel::BACKWARD_MENU, GetWidget()));
+  forward_menu_model_.reset(new BackForwardMenuModelViews(
+      browser_, BackForwardMenuModel::FORWARD_MENU, GetWidget()));
+
   ResourceBundle& resource_bundle = ResourceBundle::GetSharedInstance();
 
-  back_button_ = new views::ImageButton(this);
-  back_button_->SetImage(views::CustomButton::BS_NORMAL,
-      resource_bundle.GetBitmapNamed(IDR_COMPACTNAV_BACK));
-  back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                  views::ImageButton::ALIGN_MIDDLE);
-  AddChildView(back_button_);
+  back_ = new views::ButtonDropDown(this, back_menu_model_.get());
+  back_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
+                                     views::Event::EF_MIDDLE_BUTTON_DOWN);
+  back_->set_tag(IDC_BACK);
+  back_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_BACK));
+  back_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_BACK));
+  back_->SetImage(views::CustomButton::BS_NORMAL,
+                  resource_bundle.GetBitmapNamed(IDR_COMPACTNAV_BACK));
+  back_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                           views::ImageButton::ALIGN_MIDDLE);
+
+  AddChildView(back_);
 
   bf_separator_ = new views::ImageView;
   bf_separator_->SetImage(
       resource_bundle.GetBitmapNamed(IDR_COMPACTNAV_SEPARATOR));
   AddChildView(bf_separator_);
 
-  forward_button_ = new views::ImageButton(this);
-  forward_button_->SetImage(views::CustomButton::BS_NORMAL,
-      resource_bundle.GetBitmapNamed(IDR_COMPACTNAV_FORWARD));
-  forward_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                     views::ImageButton::ALIGN_MIDDLE);
-  AddChildView(forward_button_);
+  forward_ = new views::ButtonDropDown(this, forward_menu_model_.get());
+  forward_->set_triggerable_event_flags(views::Event::EF_LEFT_BUTTON_DOWN |
+                                        views::Event::EF_MIDDLE_BUTTON_DOWN);
+  forward_->set_tag(IDC_FORWARD);
+  forward_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_FORWARD));
+  forward_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_FORWARD));
+  forward_->SetImage(views::CustomButton::BS_NORMAL,
+                     resource_bundle.GetBitmapNamed(IDR_COMPACTNAV_FORWARD));
+  forward_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                              views::ImageButton::ALIGN_MIDDLE);
+  AddChildView(forward_);
 
   // URL bar construction.
   location_entry_.reset(new AutocompleteEditViewGtk(
@@ -89,10 +118,10 @@ gfx::Size CompactNavigationBar::GetPreferredSize() {
   int width = 0;
 
   width += kURLWidth + kHorizPadding + kURLPadding * 2;  // URL bar.
-  width += back_button_->GetPreferredSize().width() + kHorizPadding +
+  width += back_->GetPreferredSize().width() + kHorizPadding +
       kInnerPadding * 2;
   width += bf_separator_->GetPreferredSize().width() + kHorizPadding;
-  width += forward_button_->GetPreferredSize().width() + kHorizPadding +
+  width += forward_->GetPreferredSize().width() + kHorizPadding +
       kInnerPadding * 2;
 
   width++;
@@ -105,7 +134,7 @@ void CompactNavigationBar::Layout() {
 
   // We hide navigation buttons when the entry has focus.  Navigation
   // buttons' visibility is controlled in OnKillFocus/OnSetFocus methods.
-  if (!back_button_->IsVisible()) {
+  if (!back_->IsVisible()) {
     // Fill the view with the entry view while it has focus.
     location_entry_view_->SetBounds(kURLPadding, 0,
                                     width() - kHorizPadding, height());
@@ -119,18 +148,18 @@ void CompactNavigationBar::Layout() {
     curx += kURLWidth + kHorizPadding + kURLPadding * 2;
 
     // "Back | Forward" section.
-    gfx::Size button_size = back_button_->GetPreferredSize();
+    gfx::Size button_size = back_->GetPreferredSize();
     button_size.set_width(button_size.width() + kInnerPadding * 2);
-    back_button_->SetBounds(curx, 0, button_size.width(), height());
+    back_->SetBounds(curx, 0, button_size.width(), height());
     curx += button_size.width() + kHorizPadding;
 
     button_size = bf_separator_->GetPreferredSize();
     bf_separator_->SetBounds(curx, 0, button_size.width(), height());
     curx += button_size.width() + kHorizPadding;
 
-    button_size = forward_button_->GetPreferredSize();
+    button_size = forward_->GetPreferredSize();
     button_size.set_width(button_size.width() + kInnerPadding * 2);
-    forward_button_->SetBounds(curx, 0, button_size.width(), height());
+    forward_->SetBounds(curx, 0, button_size.width(), height());
     curx += button_size.width() + kHorizPadding;
   }
 }
@@ -160,22 +189,28 @@ void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
                       height() - 5);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// views::ButtonListener implementation.
+
 void CompactNavigationBar::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  TabContents* tab_contents = browser_->GetSelectedTabContents();
-  if (!tab_contents)
-    return;
-
-  if (sender == back_button_) {
-    if (tab_contents->controller().CanGoBack())
-      tab_contents->controller().GoBack();
-  } else if (sender == forward_button_) {
-    if (tab_contents->controller().CanGoForward())
-      tab_contents->controller().GoForward();
-  } else {
-    NOTREACHED();
+  int id = sender->tag();
+  switch (id) {
+    case IDC_BACK:
+    case IDC_FORWARD:
+    case IDC_RELOAD:
+      // Forcibly reset the location bar, since otherwise it won't discard any
+      // ongoing user edits, since it doesn't realize this is a user-initiated
+      // action.
+      location_entry_->RevertAll();
+      break;
   }
+  browser_->ExecuteCommandWithDisposition(
+      id, event_utils::DispositionFromEventFlags(sender->mouse_event_flags()));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// AutocompleteController implementation.
 
 void CompactNavigationBar::OnAutocompleteAccept(
     const GURL& url,
@@ -193,17 +228,17 @@ void CompactNavigationBar::OnInputInProgress(bool in_progress) {
 }
 
 void CompactNavigationBar::OnKillFocus() {
-  back_button_->SetVisible(true);
+  back_->SetVisible(true);
   bf_separator_->SetVisible(true);
-  forward_button_->SetVisible(true);
+  forward_->SetVisible(true);
   Layout();
   SchedulePaint();
 }
 
 void CompactNavigationBar::OnSetFocus() {
-  back_button_->SetVisible(false);
+  back_->SetVisible(false);
   bf_separator_->SetVisible(false);
-  forward_button_->SetVisible(false);
+  forward_->SetVisible(false);
   Layout();
   SchedulePaint();
 }
@@ -216,11 +251,30 @@ std::wstring CompactNavigationBar::GetTitle() const {
   return std::wstring();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// BubblePositioner implementation.
+
 gfx::Rect CompactNavigationBar::GetLocationStackBounds() const {
   gfx::Point origin;
   ConvertPointToScreen(this, &origin);
   return gfx::Rect(origin, size());
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// CommandUpdater::CommandObserver implementation.
+void CompactNavigationBar::EnabledStateChangedForCommand(int id, bool enabled) {
+  switch (id) {
+    case IDC_BACK:
+      back_->SetEnabled(enabled);
+      break;
+    case IDC_FORWARD:
+      forward_->SetEnabled(enabled);
+      break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// CompactNavigationBar private:
 
 void CompactNavigationBar::AddTabWithURL(const GURL& url,
                                          PageTransition::Type transition) {
