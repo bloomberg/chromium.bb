@@ -7,10 +7,17 @@
 
 namespace flip {
 
-const unsigned int kStreamIdMask = 0x7fffffff;  // StreamId mask from the FlipHeader
-const unsigned int kControlFlagMask = 0x8000;   // Control flag mask from the FlipHeader
-const unsigned int kPriorityMask = 0xc0;        // Priority mask from the SYN_FRAME
-const unsigned int kLengthMask = 0xffffff;      // Mask the lower 24 bits.
+// StreamId mask from the FlipHeader
+const unsigned int kStreamIdMask = 0x7fffffff;
+
+// Control flag mask from the FlipHeader
+const unsigned int kControlFlagMask = 0x8000;
+
+// Priority mask from the SYN_FRAME
+const unsigned int kPriorityMask = 0xc0;
+
+// Mask the lower 24 bits.
+const unsigned int kLengthMask = 0xffffff;
 
 }  // flip
 
