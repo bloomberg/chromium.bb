@@ -68,7 +68,7 @@ void AppCacheHost::SelectCache(const GURL& document_url,
   // step is skipped here. See WebApplicationCacheHostImpl.cc
 
   if (cache_document_was_loaded_from != kNoCacheId) {
-    LoadCache(cache_document_was_loaded_from);
+    LoadSelectedCache(cache_document_was_loaded_from);
     return;
   }
 
@@ -176,9 +176,9 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
     return new AppCacheRequestHandler(this, true);
 
   if ((associated_cache() && associated_cache()->is_complete()) ||
-      is_selection_pending())
+      is_selection_pending()) {
     return new AppCacheRequestHandler(this, false);
-
+  }
   return NULL;
 }
 
@@ -201,19 +201,20 @@ void AppCacheHost::OnGroupLoaded(AppCacheGroup* group,
   FinishCacheSelection(NULL, group);
 }
 
-void AppCacheHost::LoadCache(int64 cache_id) {
+void AppCacheHost::LoadSelectedCache(int64 cache_id) {
   DCHECK(cache_id != kNoCacheId);
   pending_selected_cache_id_ = cache_id;
   service_->storage()->LoadCache(cache_id, this);
 }
 
 void AppCacheHost::OnCacheLoaded(AppCache* cache, int64 cache_id) {
-  DCHECK(cache_id == pending_selected_cache_id_);
-  pending_selected_cache_id_ = kNoCacheId;
-  if (cache)
+  if (cache_id == pending_main_resource_cache_id_) {
+    pending_main_resource_cache_id_ = kNoCacheId;
+    main_resource_cache_ = cache;
+  } else if (cache_id == pending_selected_cache_id_) {
+    pending_selected_cache_id_ = kNoCacheId;
     FinishCacheSelection(cache, NULL);
-  else
-    FinishCacheSelection(NULL, NULL);
+  }
 }
 
 void AppCacheHost::FinishCacheSelection(
@@ -279,6 +280,16 @@ void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
     swappable_cache_ = new_cache;
   else
     swappable_cache_ = NULL;
+}
+
+void AppCacheHost::LoadMainResourceCache(int64 cache_id) {
+  DCHECK(cache_id != kNoCacheId);
+  if (pending_main_resource_cache_id_ == cache_id ||
+      (main_resource_cache_ && main_resource_cache_->cache_id() == cache_id)) {
+    return;
+  }
+  pending_main_resource_cache_id_ = cache_id;
+  service_->storage()->LoadCache(cache_id, this);
 }
 
 void AppCacheHost::AssociateCache(AppCache* cache) {

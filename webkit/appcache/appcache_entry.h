@@ -42,6 +42,7 @@ class AppCacheEntry {
 
   int64 response_id() const { return response_id_; }
   void set_response_id(int64 id) { response_id_ = id; }
+  bool has_response_id() const { return response_id_ != kNoResponseId; }
 
  private:
   int types_;

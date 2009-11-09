@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/completion_callback.h"
 #include "net/http/http_response_info.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -30,12 +31,12 @@ class AppCacheResponseInfo
     : public base::RefCounted<AppCacheResponseInfo> {
  public:
   // AppCacheResponseInfo takes ownership of the http_info.
-  AppCacheResponseInfo(AppCacheService* service, int64 response_id,
-                       net::HttpResponseInfo* http_info);
-  // TODO(michaeln): should the ctor/dtor be hidden from public view?
+  AppCacheResponseInfo(AppCacheService* service, const GURL& manifest_url,
+                       int64 response_id, net::HttpResponseInfo* http_info);
+  // TODO(michaeln): should the ctor be hidden from public view?
 
+  const GURL& manifest_url() const { return manifest_url_; }
   int64 response_id() const { return response_id_; }
-
   const net::HttpResponseInfo* http_response_info() const {
     return http_response_info_.get();
   }
@@ -44,6 +45,7 @@ class AppCacheResponseInfo
   friend class base::RefCounted<AppCacheResponseInfo>;
   ~AppCacheResponseInfo();
 
+  const GURL manifest_url_;
   const int64 response_id_;
   const scoped_ptr<net::HttpResponseInfo> http_response_info_;
   const AppCacheService* service_;

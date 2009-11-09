@@ -29,7 +29,11 @@ MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
     : AppCacheStorage(service),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
       simulate_make_group_obsolete_failure_(false),
-      simulate_store_group_and_newest_cache_failure_(false) {
+      simulate_store_group_and_newest_cache_failure_(false),
+      simulate_find_main_resource_(false),
+      simulate_find_sub_resource_(false),
+      simulated_found_cache_id_(kNoCacheId),
+      simulated_found_network_namespace_(false) {
   last_cache_id_ = 0;
   last_entry_id_ = 0;
   last_group_id_ = 0;
@@ -86,6 +90,25 @@ void MockAppCacheStorage::FindResponseForMainRequest(
   ScheduleTask(method_factory_.NewRunnableMethod(
       &MockAppCacheStorage::ProcessFindResponseForMainRequest,
       url, GetOrCreateDelegateReference(delegate)));
+}
+
+void MockAppCacheStorage::FindResponseForSubRequest(
+    AppCache* cache, const GURL& url,
+    AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
+    bool* found_network_namespace) {
+  DCHECK(cache && cache->is_complete());
+
+  // This layer of indirection is here to facilitate testing.
+  if (simulate_find_sub_resource_) {
+    *found_entry = simulated_found_entry_;
+    *found_fallback_entry = simulated_found_fallback_entry_;
+    *found_network_namespace = simulated_found_network_namespace_;
+    simulate_find_sub_resource_ = false;
+    return;
+  }
+
+  cache->FindResponseForRequest(url, found_entry, found_fallback_entry,
+                                found_network_namespace);
 }
 
 void MockAppCacheStorage::MarkEntryAsForeign(
@@ -194,9 +217,21 @@ void MockAppCacheStorage::ProcessFindResponseForMainRequest(
   //   look for a fallback namespace
   //   look for a online namespace
   // }
+  AppCacheEntry found_entry;
+  AppCacheEntry found_fallback_entry;
+  int64 found_cache_id = kNoCacheId;
+  GURL found_manifest_url = GURL();
+  if (simulate_find_main_resource_) {
+    found_entry = simulated_found_entry_;
+    found_fallback_entry = simulated_found_fallback_entry_;
+    found_cache_id = simulated_found_cache_id_;
+    found_manifest_url = simulated_found_manifest_url_;
+    simulate_find_main_resource_ = false;
+  }
   if (delegate_ref->delegate) {
     delegate_ref->delegate->OnMainResponseFound(
-        url, AppCacheEntry(), kNoCacheId, GURL());
+        url, found_entry, found_fallback_entry,
+        found_cache_id, found_manifest_url);
   }
 }
 

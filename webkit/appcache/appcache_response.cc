@@ -52,10 +52,10 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
 // AppCacheResponseInfo ----------------------------------------------
 
 AppCacheResponseInfo::AppCacheResponseInfo(
-    AppCacheService* service, int64 response_id,
-    net::HttpResponseInfo* http_info)
-    : response_id_(response_id), http_response_info_(http_info),
-      service_(service) {
+    AppCacheService* service, const GURL& manifest_url,
+    int64 response_id,  net::HttpResponseInfo* http_info)
+    : manifest_url_(manifest_url), response_id_(response_id),
+      http_response_info_(http_info), service_(service) {
   DCHECK(http_info);
   DCHECK(response_id != kNoResponseId);
   service_->storage()->working_set()->AddResponseInfo(this);
@@ -222,6 +222,7 @@ void AppCacheResponseWriter::WriteInfo(HttpResponseInfoIOBuffer* info_buf,
   const bool kTruncated = false;
   Pickle* pickle = new Pickle;
   info_buf->http_info->Persist(pickle, kSkipTransientHeaders, kTruncated);
+  info_buffer_ = info_buf;
   write_amount_ = static_cast<int>(pickle->size());
   buffer_ = new WrappedPickleIOBuffer(pickle);  // takes ownership of pickle
   WriteRaw(kResponseInfoIndex, 0, buffer_, write_amount_);

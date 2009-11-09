@@ -42,9 +42,11 @@ class MockAppCacheStorageTest : public testing::Test {
     }
 
     void OnMainResponseFound(const GURL& url, const AppCacheEntry& entry,
+                             const AppCacheEntry& fallback_entry,
                              int64 cache_id, const GURL& manifest_url) {
       found_url_ = url;
       found_entry_ = entry;
+      found_fallback_entry_ = fallback_entry;
       found_cache_id_ = cache_id;
       found_manifest_url_ = manifest_url;
     }
@@ -59,6 +61,7 @@ class MockAppCacheStorageTest : public testing::Test {
     bool obsoleted_success_;
     GURL found_url_;
     AppCacheEntry found_entry_;
+    AppCacheEntry found_fallback_entry_;
     int64 found_cache_id_;
     GURL found_manifest_url_;
   };
@@ -351,7 +354,9 @@ TEST_F(MockAppCacheStorageTest, FindNoMainResponse) {
   EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
   EXPECT_EQ(kNoCacheId, delegate.found_cache_id_);
   EXPECT_EQ(kNoResponseId, delegate.found_entry_.response_id());
+  EXPECT_EQ(kNoResponseId, delegate.found_fallback_entry_.response_id());
   EXPECT_EQ(0, delegate.found_entry_.types());
+  EXPECT_EQ(0, delegate.found_fallback_entry_.types());
 }
 
 }  // namespace appcache

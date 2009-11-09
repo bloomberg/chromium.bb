@@ -12,6 +12,7 @@
 #include "webkit/appcache/mock_appcache_service.h"
 
 using net::IOBuffer;
+using net::WrappedIOBuffer;
 
 namespace appcache {
 
@@ -164,16 +165,21 @@ class AppCacheResponseTest : public testing::Test {
   // Wrappers to call AppCacheResponseReader/Writer Read and Write methods
 
   void WriteBasicResponse() {
-    static const char* kRawHttpHeaders =
-        "HTTP/1.0 200 OK\r\nContent-Length: 5\r\n\r\n";
-    static const char* kRawHttpBody = "Hello";
-    WriteResponse(MakeHttpResponseInfo(kRawHttpHeaders), kRawHttpBody);
+    static const char kHttpHeaders[] =
+        "HTTP/1.0 200 OK\0Content-Length: 5\0\0";
+    static const char* kHttpBody = "Hello";
+    scoped_refptr<IOBuffer> body = new WrappedIOBuffer(kHttpBody);
+    std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
+    WriteResponse(MakeHttpResponseInfo(raw_headers), body, strlen(kHttpBody));
   }
 
-  void WriteResponse(net::HttpResponseInfo* head, const char* body) {
+  void WriteResponse(net::HttpResponseInfo* head,
+                     IOBuffer* body, int body_len) {
+    DCHECK(body);
+    scoped_refptr<IOBuffer> body_ref(body);
     PushNextTask(method_factory_.NewRunnableMethod(
         &AppCacheResponseTest::WriteResponseBody,
-        new net::WrappedIOBuffer(body), strlen(body)));
+        body_ref, body_len));
     WriteResponseHead(head);
   }
 
@@ -238,7 +244,7 @@ class AppCacheResponseTest : public testing::Test {
 
   // Helpers to work with HttpResponseInfo objects
 
-  net::HttpResponseInfo* MakeHttpResponseInfo(const char* raw_headers) {
+  net::HttpResponseInfo* MakeHttpResponseInfo(const std::string& raw_headers) {
     net::HttpResponseInfo* info = new net::HttpResponseInfo;
     info->request_time = base::Time::Now();
     info->response_time = base::Time::Now();

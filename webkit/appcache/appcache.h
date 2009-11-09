@@ -75,6 +75,11 @@ class AppCache : public base::RefCounted<AppCache> {
   // Do not use the manifest after this call.
   void InitializeWithManifest(Manifest* manifest);
 
+  void FindResponseForRequest(const GURL& url,
+      AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
+      bool* found_network_namespace) {
+    return;  // TODO(michaeln): write me
+  }
  private:
   friend class AppCacheGroup;
   friend class AppCacheHost;

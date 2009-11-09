@@ -55,6 +55,7 @@ class AppCacheStorage {
     // containing cache and group are also returned.
     virtual void OnMainResponseFound(
         const GURL& url, const AppCacheEntry& entry,
+        const AppCacheEntry& fallback_entry,
         int64 cache_id, const GURL& mainfest_url) {}
   };
 
@@ -98,6 +99,13 @@ class AppCacheStorage {
   // completion the delegate will be called back.
   virtual void FindResponseForMainRequest(
       const GURL& url, Delegate* delegate) = 0;
+
+  // Performs an immediate lookup of the in-memory cache to
+  // identify a response for a sub resource request.
+  virtual void FindResponseForSubRequest(
+      AppCache* cache, const GURL& url,
+      AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
+      bool* found_network_namespace) = 0;
 
   // Immediately updates in-memory storage, if the cache is in memory,
   // and schedules a task to update persistent storage. If the cache is
@@ -201,15 +209,15 @@ class AppCacheStorage {
   class ResponseInfoLoadTask {
    public:
     ResponseInfoLoadTask(const GURL& manifest_url, int64 response_id,
-                         AppCacheStorage* storage) :
-      storage_(storage),
-      manifest_url_(manifest_url),
-      response_id_(response_id),
-      info_buffer_(new HttpResponseInfoIOBuffer),
-      ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
-          this, &ResponseInfoLoadTask::OnReadComplete)) {
-      ALLOW_THIS_IN_INITIALIZER_LIST(storage_->pending_info_loads_.insert(
-          PendingResponseInfoLoads::value_type(response_id, this)));
+                         AppCacheStorage* storage)
+        : storage_(storage),
+          manifest_url_(manifest_url),
+          response_id_(response_id),
+          info_buffer_(new HttpResponseInfoIOBuffer),
+          ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
+              this, &ResponseInfoLoadTask::OnReadComplete)) {
+      storage_->pending_info_loads_.insert(
+          PendingResponseInfoLoads::value_type(response_id, this));
     }
 
     int64 response_id() const { return response_id_; }
@@ -233,7 +241,7 @@ class AppCacheStorage {
       scoped_refptr<AppCacheResponseInfo> info;
       if (result >= 0) {
         info = new AppCacheResponseInfo(
-            storage_->service(), reader_->response_id(),
+            storage_->service(), manifest_url_, response_id_,
             info_buffer_->http_info.release());
       }
       FOR_EACH_DELEGATE(

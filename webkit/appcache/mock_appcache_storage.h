@@ -32,6 +32,10 @@ class MockAppCacheStorage : public AppCacheStorage {
   virtual void StoreGroupAndNewestCache(
       AppCacheGroup* group, Delegate* delegate);
   virtual void FindResponseForMainRequest(const GURL& url, Delegate* delegate);
+  virtual void FindResponseForSubRequest(
+      AppCache* cache, const GURL& url,
+      AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
+      bool * found_network_namespace);
   virtual void MarkEntryAsForeign(const GURL& entry_url, int64 cache_id);
   virtual void MakeGroupObsolete(AppCacheGroup* group, Delegate* delegate);
   virtual AppCacheResponseReader* CreateResponseReader(
@@ -41,6 +45,7 @@ class MockAppCacheStorage : public AppCacheStorage {
       const GURL& manifest_url, const std::vector<int64>& response_ids);
 
  private:
+  friend class AppCacheRequestHandlerTest;
   friend class AppCacheUpdateJobTest;
 
   typedef base::hash_map<int64, scoped_refptr<AppCache> > StoredCacheMap;
@@ -100,6 +105,32 @@ class MockAppCacheStorage : public AppCacheStorage {
     simulate_store_group_and_newest_cache_failure_ = true;
   }
 
+  // Simulate FindResponseFor results for testing.
+  void SimulateFindMainResource(
+      const AppCacheEntry& entry,
+      const AppCacheEntry& fallback_entry,
+      int64 cache_id, const GURL& manifest_url) {
+    simulate_find_main_resource_ = true;
+    simulate_find_sub_resource_ = false;
+    simulated_found_entry_ = entry;
+    simulated_found_fallback_entry_ = fallback_entry;
+    simulated_found_cache_id_ = cache_id;
+    simulated_found_manifest_url_ = manifest_url,
+    simulated_found_network_namespace_ = false;  // N/A to main resource loads
+  }
+  void SimulateFindSubResource(
+      const AppCacheEntry& entry,
+      const AppCacheEntry& fallback_entry,
+      bool network_namespace) {
+    simulate_find_main_resource_ = false;
+    simulate_find_sub_resource_ = true;
+    simulated_found_entry_ = entry;
+    simulated_found_fallback_entry_ = fallback_entry;
+    simulated_found_cache_id_ = kNoCacheId;  // N/A to sub resource loads
+    simulated_found_manifest_url_ = GURL();  // N/A to sub resource loads
+    simulated_found_network_namespace_ = network_namespace;
+  }
+
   StoredCacheMap stored_caches_;
   StoredGroupMap stored_groups_;
   DoomedResponseIds doomed_response_ids_;
@@ -109,6 +140,14 @@ class MockAppCacheStorage : public AppCacheStorage {
 
   bool simulate_make_group_obsolete_failure_;
   bool simulate_store_group_and_newest_cache_failure_;
+
+  bool simulate_find_main_resource_;
+  bool simulate_find_sub_resource_;
+  AppCacheEntry simulated_found_entry_;
+  AppCacheEntry simulated_found_fallback_entry_;
+  int64 simulated_found_cache_id_;
+  GURL simulated_found_manifest_url_;
+  bool simulated_found_network_namespace_;
 
   FRIEND_TEST(MockAppCacheStorageTest, CreateGroup);
   FRIEND_TEST(MockAppCacheStorageTest, LoadCache_FarHit);

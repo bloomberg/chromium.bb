@@ -81,18 +81,22 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // same as the cache that is currently associated with the host.
   void SetSwappableCache(AppCacheGroup* group);
 
+  // Used to ensure that a loaded appcache survives a frame navigation.
+  void LoadMainResourceCache(int64 cache_id);
+
   int host_id() const { return host_id_; }
   AppCacheService* service() const { return service_; }
   AppCacheFrontend* frontend() const { return frontend_; }
   AppCache* associated_cache() const { return associated_cache_.get(); }
 
- private:
   bool is_selection_pending() const {
     return pending_selected_cache_id_ != kNoCacheId ||
            !pending_selected_manifest_url_.is_empty();
   }
+
+ private:
   Status GetStatus();
-  void LoadCache(int64 cache_id);
+  void LoadSelectedCache(int64 cache_id);
   void LoadOrCreateGroup(const GURL& manifest_url);
 
   // AppCacheStorage::Delegate impl
@@ -125,6 +129,11 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // Keep a reference to the group being updated until the update completes.
   scoped_refptr<AppCacheGroup> group_being_updated_;
 
+  // Keep a reference to the cache of the main resource so it survives frame
+  // navigations.
+  scoped_refptr<AppCache> main_resource_cache_;
+  int64 pending_main_resource_cache_id_;
+
   // Cache loading is async, if we're loading a specific cache or group
   // for the purposes of cache selection, one or the other of these will
   // indicate which cache or group is being loaded.
@@ -153,6 +162,7 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // List of objects observing us.
   ObserverList<Observer> observers_;
 
+  friend class AppCacheRequestHandlerTest;
   FRIEND_TEST(AppCacheTest, CleanupUnusedCache);
   FRIEND_TEST(AppCacheGroupTest, CleanupUnusedGroup);
   FRIEND_TEST(AppCacheHostTest, Basic);

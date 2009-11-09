@@ -168,6 +168,8 @@
         'appcache/appcache_working_set.h',
         'appcache/appcache_update_job.cc',
         'appcache/appcache_update_job.h',
+        'appcache/appcache_url_request_job.cc',
+        'appcache/appcache_url_request_job.h',
         'appcache/manifest_parser.cc',
         'appcache/manifest_parser.h',
         'appcache/mock_appcache_storage.cc',
