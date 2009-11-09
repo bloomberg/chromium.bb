@@ -4309,18 +4309,34 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_COOKIES_ACCEPT_LABEL" desc="The documentation string of the 'accept cookies' preference">
         Cookie settings:
       </message>
-      <message name="IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES" desc="The label of the 'Accept all cookies' dropdown list item">
-        Allow all cookies
-      </message>
-      <message name="IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES" desc="The label of the 'Restrict third-party cookies' dropdown list item. This option accepts third-party cookies only from visited sites.">
-        Accept cookies only from sites I visit
-      </message>
-      <message name="IDS_OPTIONS_COOKIES_BLOCK_THIRD_PARTY_COOKIES" desc="The label of the 'Block third-party cookies' dropdown list item. This option does not accept or send any third-party cookies.">
-        Completely block third-party cookies
-      </message>
-      <message name="IDS_OPTIONS_COOKIES_BLOCK_ALL_COOKIES" desc="The label of the 'Block all cookies' dropdown list item">
-        Block all cookies
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES" desc="The label of the 'Accept all cookies' dropdown list item">
+          Allow all cookies
+        </message>
+        <message name="IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES" desc="The label of the 'Restrict third-party cookies' dropdown list item. This option accepts third-party cookies only from visited sites.">
+          Accept cookies only from sites I visit
+        </message>
+        <message name="IDS_OPTIONS_COOKIES_BLOCK_THIRD_PARTY_COOKIES" desc="The label of the 'Block third-party cookies' dropdown list item. This option does not accept or send any third-party cookies.">
+          Completely block third-party cookies
+        </message>
+        <message name="IDS_OPTIONS_COOKIES_BLOCK_ALL_COOKIES" desc="The label of the 'Block all cookies' dropdown list item">
+          Block all cookies
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES" desc="In Title Case: The label of the 'Accept all cookies' dropdown list item">
+          Allow All Cookies
+        </message>
+        <message name="IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES" desc="In Title Case: The label of the 'Restrict third-party cookies' dropdown list item. This option accepts third-party cookies only from visited sites.">
+          Accept Cookies Only from Sites I Visit
+        </message>
+        <message name="IDS_OPTIONS_COOKIES_BLOCK_THIRD_PARTY_COOKIES" desc="In Title Case: The label of the 'Block third-party cookies' dropdown list item. This option does not accept or send any third-party cookies.">
+          Completely Block Third-Party Cookies
+        </message>
+        <message name="IDS_OPTIONS_COOKIES_BLOCK_ALL_COOKIES" desc="In Title Case: The label of the 'Block all cookies' dropdown list item">
+          Block All Cookies
+        </message>
+      </if>
       <message name="IDS_OPTIONS_COOKIES_SHOWCOOKIES" desc="The label of the 'Show Cookies' button">
         Show cookies
       </message>
