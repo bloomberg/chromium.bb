@@ -57,6 +57,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::WebScriptController::registerExtension(
         extensions_v8::IntervalExtension::Get());
     WebKit::WebRuntimeFeatures::enableSockets(true);
+    WebKit::WebRuntimeFeatures::enableApplicationCache(true);
 
     // Load libraries for media and enable the media player.
     FilePath module_path;
