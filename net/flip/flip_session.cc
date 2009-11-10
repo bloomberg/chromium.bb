@@ -105,9 +105,8 @@ void CreateFlipHeadersFromHttpRequest(
   }
 
   (*headers)["method"] = info->method;
-  (*headers)["url"] = info->url.PathForRequest();
+  (*headers)["url"] = info->url.spec();
   (*headers)["version"] = kHttpProtocolVersion;
-  (*headers)["host"] = GetHostAndOptionalPort(info->url);
   if (info->user_agent.length())
     (*headers)["user-agent"] = info->user_agent;
   if (!info->referrer.is_empty())

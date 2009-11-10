@@ -197,16 +197,15 @@ TEST_F(FlipNetworkTransactionTest, Constructor) {
 TEST_F(FlipNetworkTransactionTest, Get) {
   static const unsigned char syn[] = {
     0x80, 0x01, 0x00, 0x01,                                        // header
-    0x01, 0x00, 0x00, 0x46,                                        // FIN, len
+    0x01, 0x00, 0x00, 0x45,                                        // FIN, len
     0x00, 0x00, 0x00, 0x01,                                        // stream id
-    0xc0, 0x00, 0x00, 0x04,                                        // 4 headers
-    0x00, 0x04, 'h', 'o', 's', 't',
-    0x00, 0x0e, 'w', 'w', 'w', '.', 'g', 'o', 'o', 'g', 'l', 'e',
-                '.', 'c', 'o', 'm',
+    0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
     0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
     0x00, 0x03, 'G', 'E', 'T',
     0x00, 0x03, 'u', 'r', 'l',
-    0x00, 0x01, '/',
+    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+                'm', '/',
     0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
     0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
   };
@@ -278,13 +277,12 @@ TEST_F(FlipNetworkTransactionTest, Post) {
   //  0x01, 0x00, 0x00, 0x46,                                      // FIN, len
   //  0x00, 0x00, 0x00, 0x01,                                      // stream id
   //  0xc0, 0x00, 0x00, 0x04,                                      // 4 headers
-  //  0x00, 0x04, 'h', 'o', 's', 't',
-  //  0x00, 0x0e, 'w', 'w', 'w', '.', 'g', 'o', 'o', 'g', 'l', 'e',
-  //              '.', 'c', 'o', 'm',
   //  0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
   //  0x00, 0x03, 'G', 'E', 'T',
   //  0x00, 0x03, 'u', 'r', 'l',
-  //  0x00, 0x01, '/',
+  //  0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+  //              '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+  //              'm', '/',
   //  0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
   //  0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
   //};
@@ -377,16 +375,15 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
 TEST_F(FlipNetworkTransactionTest, DISABLED_CancelledTransaction) {
   static const unsigned char syn[] = {
     0x80, 0x01, 0x00, 0x01,                                        // header
-    0x01, 0x00, 0x00, 0x46,                                        // FIN, len
+    0x01, 0x00, 0x00, 0x45,                                        // FIN, len
     0x00, 0x00, 0x00, 0x01,                                        // stream id
-    0xc0, 0x00, 0x00, 0x04,                                        // 4 headers
-    0x00, 0x04, 'h', 'o', 's', 't',
-    0x00, 0x0e, 'w', 'w', 'w', '.', 'g', 'o', 'o', 'g', 'l', 'e',
-                '.', 'c', 'o', 'm',
+    0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
     0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
     0x00, 0x03, 'G', 'E', 'T',
     0x00, 0x03, 'u', 'r', 'l',
-    0x00, 0x01, '/',
+    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+                'm', '/',
     0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
     0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
   };
