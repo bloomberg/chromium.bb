@@ -44,23 +44,19 @@ class ModelAssociator
   // bookmark node id.
   int64 GetSyncIdFromBookmarkId(int64 node_id) const;
 
-  // Stores bookmark node id for the given sync id in bookmark_id. Returns true
-  // if the bookmark id was successfully found; false otherwise.
-  bool GetBookmarkIdFromSyncId(int64 sync_id, int64* bookmark_id) const;
+  // Returns the bookmark node for the given sync id.
+  // Returns NULL if no bookmark node is found for the given sync id.
+  const BookmarkNode* GetBookmarkNodeFromSyncId(int64 sync_id);
 
   // Initializes the given sync node from the given bookmark node id.
   // Returns false if no sync node was found for the given bookmark node id or
   // if the initialization of sync node fails.
   bool InitSyncNodeFromBookmarkId(int64 node_id, sync_api::BaseNode* sync_node);
 
-  // Returns the bookmark node for the given sync id.
-  // Returns NULL if no bookmark node is found for the given sync id.
-  const BookmarkNode* GetBookmarkNodeFromSyncId(int64 sync_id);
-
-  // Associates the given bookmark node id with the given sync id.
-  void AssociateIds(int64 node_id, int64 sync_id);
-  // Disassociate the ids that correspond to the given sync id.
-  void DisassociateIds(int64 sync_id);
+  // Associates the given bookmark node with the given sync id.
+  void Associate(const BookmarkNode* node, int64 sync_id);
+  // Remove the association that corresponds to the given sync id.
+  void Disassociate(int64 sync_id);
 
   // Returns whether the bookmark model has user created nodes or not. That is,
   // whether there are nodes in the bookmark model except the bookmark bar and
@@ -94,7 +90,7 @@ class ModelAssociator
 
  private:
   typedef std::map<int64, int64> BookmarkIdToSyncIdMap;
-  typedef std::map<int64, int64> SyncIdToBookmarkIdMap;
+  typedef std::map<int64, const BookmarkNode*> SyncIdToBookmarkNodeMap;
   typedef std::set<int64> DirtyAssociationsSyncIds;
 
   // Posts a task to persist dirty associations.
@@ -125,7 +121,7 @@ class ModelAssociator
 
   ProfileSyncService* sync_service_;
   BookmarkIdToSyncIdMap id_map_;
-  SyncIdToBookmarkIdMap id_map_inverse_;
+  SyncIdToBookmarkNodeMap id_map_inverse_;
   // Stores sync ids for dirty associations.
   DirtyAssociationsSyncIds dirty_associations_sync_ids_;
 

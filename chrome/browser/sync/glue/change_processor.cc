@@ -74,10 +74,9 @@ void ChangeProcessor::RemoveOneSyncNode(sync_api::WriteTransaction* trans,
   // This node should have no children.
   DCHECK(sync_node.GetFirstChildId() == sync_api::kInvalidId);
   // Remove association and delete the sync node.
-  model_associator_->DisassociateIds(sync_node.GetId());
+  model_associator_->Disassociate(sync_node.GetId());
   sync_node.Remove();
 }
-
 
 void ChangeProcessor::RemoveSyncNodeHierarchy(const BookmarkNode* topmost) {
   sync_api::WriteTransaction trans(share_handle_);
@@ -156,7 +155,7 @@ int64 ChangeProcessor::CreateSyncNode(const BookmarkNode* parent,
 
   // Associate the ID from the sync domain with the bookmark node, so that we
   // can refer back to this item later.
-  associator->AssociateIds(child->id(), sync_child.GetId());
+  associator->Associate(child, sync_child.GetId());
 
   return sync_child.GetId();
 }
@@ -396,7 +395,7 @@ void ChangeProcessor::ApplyChangesFromSyncModel(
       DCHECK_EQ(dst->GetChildCount(), 0) << "Node being deleted has children";
       model->Remove(parent, parent->IndexOfChild(dst));
       dst = NULL;
-      model_associator_->DisassociateIds(changes[i].id);
+      model_associator_->Disassociate(changes[i].id);
     } else {
       DCHECK_EQ((changes[i].action ==
           sync_api::SyncManager::ChangeRecord::ACTION_ADD), (dst == NULL))
@@ -443,7 +442,7 @@ const BookmarkNode* ChangeProcessor::CreateOrUpdateBookmarkNode(
       src->GetId());
   if (!dst) {
     dst = CreateBookmarkNode(src, parent, model, index);
-    model_associator_->AssociateIds(dst->id(), src->GetId());
+    model_associator_->Associate(dst, src->GetId());
   } else {
     // URL and is_folder are not expected to change.
     // TODO(ncarter): Determine if such changes should be legal or not.
@@ -462,8 +461,8 @@ const BookmarkNode* ChangeProcessor::CreateOrUpdateBookmarkNode(
         src->GetIsFolder() ? GURL() : src->GetURL(),
         NULL);  // NULL because we don't need a BookmarkEditor::Handler.
     if (dst != old_dst) {  // dst was replaced with a new node with new URL.
-      model_associator_->DisassociateIds(src->GetId());
-      model_associator_->AssociateIds(dst->id(), src->GetId());
+      model_associator_->Disassociate(src->GetId());
+      model_associator_->Associate(dst, src->GetId());
     }
     SetBookmarkFavicon(src, dst, model->profile());
   }

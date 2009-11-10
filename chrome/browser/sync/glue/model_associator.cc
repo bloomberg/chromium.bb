@@ -167,13 +167,9 @@ int64 ModelAssociator::GetSyncIdFromBookmarkId(int64 node_id) const {
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
 }
 
-bool ModelAssociator::GetBookmarkIdFromSyncId(int64 sync_id,
-                                              int64* node_id) const {
-  SyncIdToBookmarkIdMap::const_iterator iter = id_map_inverse_.find(sync_id);
-  if (iter == id_map_inverse_.end())
-    return false;
-  *node_id = iter->second;
-  return true;
+const BookmarkNode* ModelAssociator::GetBookmarkNodeFromSyncId(int64 sync_id) {
+  SyncIdToBookmarkNodeMap::const_iterator iter = id_map_inverse_.find(sync_id);
+  return iter == id_map_inverse_.end() ? NULL : iter->second;
 }
 
 bool ModelAssociator::InitSyncNodeFromBookmarkId(
@@ -189,30 +185,22 @@ bool ModelAssociator::InitSyncNodeFromBookmarkId(
   return true;
 }
 
-const BookmarkNode* ModelAssociator::GetBookmarkNodeFromSyncId(int64 sync_id) {
-  int64 node_id;
-  if (!GetBookmarkIdFromSyncId(sync_id, &node_id))
-    return false;
-  BookmarkModel* model = sync_service_->profile()->GetBookmarkModel();
-  // TODO(munjal): Fix issue 26141.
-  return model->GetNodeByID(node_id);
-}
-
-void ModelAssociator::AssociateIds(int64 node_id, int64 sync_id) {
+void ModelAssociator::Associate(const BookmarkNode* node, int64 sync_id) {
+  int64 node_id = node->id();
   DCHECK_NE(sync_id, sync_api::kInvalidId);
   DCHECK(id_map_.find(node_id) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
   id_map_[node_id] = sync_id;
-  id_map_inverse_[sync_id] = node_id;
+  id_map_inverse_[sync_id] = node;
   dirty_associations_sync_ids_.insert(sync_id);
   PostPersistAssociationsTask();
 }
 
-void ModelAssociator::DisassociateIds(int64 sync_id) {
-  SyncIdToBookmarkIdMap::iterator iter = id_map_inverse_.find(sync_id);
+void ModelAssociator::Disassociate(int64 sync_id) {
+  SyncIdToBookmarkNodeMap::iterator iter = id_map_inverse_.find(sync_id);
   if (iter == id_map_inverse_.end())
     return;
-  id_map_.erase(iter->second);
+  id_map_.erase(iter->second->id());
   id_map_inverse_.erase(iter);
   dirty_associations_sync_ids_.erase(sync_id);
 }
@@ -282,7 +270,7 @@ bool ModelAssociator::AssociateTaggedPermanentNode(
   if (!GetSyncIdForTaggedNode(tag, &sync_id))
     return false;
 
-  AssociateIds(permanent_node->id(), sync_id);
+  Associate(permanent_node, sync_id);
   return true;
 }
 
@@ -401,7 +389,7 @@ bool ModelAssociator::BuildAssociations() {
         child_node = ChangeProcessor::CreateBookmarkNode(&sync_child_node,
             parent_node, model, index);
       }
-      AssociateIds(child_node->id(), sync_child_id);
+      Associate(child_node, sync_child_id);
       if (sync_child_node.GetIsFolder())
         dfs_stack.push(sync_child_id);
 
@@ -459,9 +447,9 @@ void ModelAssociator::PersistAssociations() {
       sync_service_->OnUnrecoverableError();
       return;
     }
-    int64 node_id;
-    if (GetBookmarkIdFromSyncId(sync_id, &node_id))
-      sync_node.SetExternalId(node_id);
+    const BookmarkNode* node = GetBookmarkNodeFromSyncId(sync_id);
+    if (node)
+      sync_node.SetExternalId(node->id());
     else
       NOTREACHED();
   }
@@ -534,7 +522,7 @@ bool ModelAssociator::LoadAssociations() {
         !NodesMatch(node, &sync_parent))
       return false;
 
-    AssociateIds(external_id, sync_parent.GetId());
+    Associate(node, sync_parent.GetId());
 
     // Add all children of the current node to the stack.
     int64 child_id = sync_parent.GetFirstChildId();
