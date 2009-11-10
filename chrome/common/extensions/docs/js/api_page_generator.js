@@ -200,7 +200,8 @@ function renderTemplate() {
 
 function removeJsTemplateAttributes(root) {
   var jsattributes = ["jscontent", "jsselect", "jsdisplay", "transclude",
-                      "jsvalues", "jsvars", "jseval", "jsskip", "jstcache"];
+                      "jsvalues", "jsvars", "jseval", "jsskip", "jstcache",
+                      "jsinstance"];
 
   var nodes = root.getElementsByTagName("*");
   for (var i = 0; i < nodes.length; i++) {

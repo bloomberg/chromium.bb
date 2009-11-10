@@ -1589,7 +1589,7 @@
         "description": "Get a message from the extension language catalog, for a current locale.",
         "parameters": [
           { "type": "string",
-            "name": "message_name",
+            "name": "messageName",
             "description": "Message name from the extension catalog."
           },
           {
@@ -1602,6 +1602,7 @@
                 "maxItems": 9
               }
             ],
+            "name": "substitutions",
             "optional": true,
             "description": "1 - 9 substitution parameters, if the message requires any."
           }
