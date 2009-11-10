@@ -37,7 +37,8 @@ template<>
 DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
   // Don't use a DOMUI for non-existent extensions.
   ExtensionsService* service = contents->profile()->GetExtensionsService();
-  bool valid_extension = (service && service->GetExtensionById(url.host()));
+  bool valid_extension =
+      (service && service->GetExtensionById(url.host(), false));
   if (valid_extension)
     return new ExtensionDOMUI(contents);
   return NULL;

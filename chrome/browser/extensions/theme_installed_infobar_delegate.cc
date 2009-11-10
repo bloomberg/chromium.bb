@@ -35,7 +35,7 @@ void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
       uninstall_id = previous_theme_id_;
     // It's possible that the theme was already uninstalled by someone so make
     // sure it exists.
-    if (!uninstall_id.empty() && service->GetExtensionById(uninstall_id))
+    if (!uninstall_id.empty() && service->GetExtensionById(uninstall_id, true))
       service->UninstallExtension(uninstall_id, false);
   }
   delete this;
@@ -80,7 +80,8 @@ bool ThemeInstalledInfoBarDelegate::Cancel() {
   if (!previous_theme_id_.empty()) {
     ExtensionsService* service = profile_->GetExtensionsService();
     if (service) {
-      Extension* previous_theme = service->GetExtensionById(previous_theme_id_);
+      Extension* previous_theme =
+          service->GetExtensionById(previous_theme_id_, true);
       if (previous_theme) {
         profile_->SetTheme(previous_theme);
         return true;

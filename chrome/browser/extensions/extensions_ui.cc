@@ -383,7 +383,8 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
   std::string extension_id;
   CHECK(list->GetString(0, &extension_id));
 
-  Extension *extension = extensions_service_->GetExtensionById(extension_id);
+  Extension *extension =
+      extensions_service_->GetExtensionById(extension_id, true);
   if (!extension)
     return;
 
@@ -412,7 +413,8 @@ void ExtensionsDOMHandler::HandleOptionsMessage(const Value* value) {
   CHECK(list->GetSize() == 1);
   std::string extension_id;
   CHECK(list->GetString(0, &extension_id));
-  Extension *extension = extensions_service_->GetExtensionById(extension_id);
+  Extension *extension =
+      extensions_service_->GetExtensionById(extension_id, false);
   if (!extension || extension->options_url().is_empty()) {
     return;
   }

@@ -731,13 +731,14 @@ function autoUpdate() {
           </td>
           <td align="right" valign="center" width="90">
                 <button
-                  jsdisplay="options_url"
+                  jsdisplay="options_url && enabled"
                   jsvalues=".extensionId:id"
                   onclick="handleOptions(this)"
                   i18n-content="options"
                   >OPTIONS</button>
                 <button
-                  jsdisplay="typeof(options_url) == 'undefined' ||
+                  jsdisplay="!enabled ||
+                             typeof(options_url) == 'undefined' ||
                              options_url.length == 0"
                   disabled="true"
                   i18n-content="options"

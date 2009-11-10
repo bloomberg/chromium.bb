@@ -253,7 +253,7 @@ void BrowserActionsToolbarGtk::CreateAllButtons() {
 
   for (size_t i = 0; i < extension_service->extensions()->size(); ++i) {
     Extension* extension = extension_service->GetExtensionById(
-        extension_service->extensions()->at(i)->id());
+        extension_service->extensions()->at(i)->id(), false);
     CreateButtonForExtension(extension);
   }
 }

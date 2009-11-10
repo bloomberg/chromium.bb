@@ -1166,7 +1166,7 @@ Extension* ProfileImpl::GetTheme() {
   if (id == BrowserThemeProvider::kDefaultThemeID)
     return NULL;
 
-  return extensions_service_->GetExtensionById(id);
+  return extensions_service_->GetExtensionById(id, false);
 }
 
 ThemeProvider* ProfileImpl::GetThemeProvider() {

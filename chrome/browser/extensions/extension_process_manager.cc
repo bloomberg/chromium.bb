@@ -137,7 +137,8 @@ void ExtensionProcessManager::RegisterExtensionProcess(
       browsing_instance_->profile()->GetExtensionsService();
 
   std::vector<std::string> page_action_ids;
-  Extension* extension = extension_service->GetExtensionById(extension_id);
+  Extension* extension =
+      extension_service->GetExtensionById(extension_id, false);
   if (extension->page_action())
     page_action_ids.push_back(extension->page_action()->id());
 

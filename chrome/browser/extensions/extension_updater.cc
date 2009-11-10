@@ -563,7 +563,7 @@ bool ExtensionUpdater::GetExistingVersion(const std::string& id,
       WideToASCII(prefs_->GetString(kExtensionBlacklistUpdateVersion));
     return true;
   }
-  Extension* extension = service_->GetExtensionById(id);
+  Extension* extension = service_->GetExtensionById(id, false);
   if (!extension) {
     return false;
   }

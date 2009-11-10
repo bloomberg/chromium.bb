@@ -338,7 +338,7 @@ class ExtensionsServiceTest
       EXPECT_EQ(0u, errors.size()) << path.value();
       EXPECT_EQ(total_successes_, service_->extensions()->size()) <<
           path.value();
-      EXPECT_TRUE(service_->GetExtensionById(loaded_[0]->id())) <<
+      EXPECT_TRUE(service_->GetExtensionById(loaded_[0]->id(), false)) <<
           path.value();
       for (std::vector<std::string>::iterator err = errors.begin();
         err != errors.end(); ++err) {
@@ -522,7 +522,7 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
   EXPECT_EQ(std::string("The first extension that I made."),
             loaded_[0]->description());
   EXPECT_EQ(Extension::INTERNAL, loaded_[0]->location());
-  EXPECT_TRUE(service_->GetExtensionById(loaded_[0]->id()));
+  EXPECT_TRUE(service_->GetExtensionById(loaded_[0]->id(), false));
   EXPECT_EQ(3u, service_->extensions()->size());
 
   ValidatePrefKeyCount(3);
@@ -1150,7 +1150,7 @@ TEST_F(ExtensionsServiceTest, UninstallExtension) {
   ValidatePrefKeyCount(0);
 
   // The extension should not be in the service anymore.
-  ASSERT_FALSE(service_->GetExtensionById(extension_id));
+  ASSERT_FALSE(service_->GetExtensionById(extension_id, false));
   loop_.RunAllPending();
 
   // The directory should be gone.

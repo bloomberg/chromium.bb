@@ -47,7 +47,8 @@ class ExtensionUpdateService {
   virtual ~ExtensionUpdateService() {}
   virtual const ExtensionList* extensions() const = 0;
   virtual void UpdateExtension(const std::string& id, const FilePath& path) = 0;
-  virtual Extension* GetExtensionById(const std::string& id) = 0;
+  virtual Extension* GetExtensionById(const std::string& id,
+                                      bool include_disabled) = 0;
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
 };
@@ -100,8 +101,8 @@ class ExtensionsService
   void Init();
 
   // Look up an extension by ID.
-  Extension* GetExtensionById(const std::string& id) {
-    return GetExtensionByIdInternal(id, true, false);
+  Extension* GetExtensionById(const std::string& id, bool include_disabled) {
+    return GetExtensionByIdInternal(id, true, include_disabled);
   }
 
   // Install the extension file at |extension_path|.  Will install as an

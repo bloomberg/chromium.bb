@@ -173,7 +173,7 @@ void ExtensionsService::UpdateExtension(const std::string& id,
 
 void ExtensionsService::ReloadExtension(const std::string& extension_id) {
   FilePath path;
-  Extension* current_extension = GetExtensionById(extension_id);
+  Extension* current_extension = GetExtensionById(extension_id, false);
 
   // Unload the extension if it's loaded. It might not be loaded if it crashed.
   if (current_extension) {
@@ -637,7 +637,7 @@ void ExtensionsService::OnExtensionInstalled(Extension* extension,
 }
 
 void ExtensionsService::OnExtensionOverinstallAttempted(const std::string& id) {
-  Extension* extension = GetExtensionById(id);
+  Extension* extension = GetExtensionById(id, false);
   if (extension && extension->IsTheme()) {
     NotificationService::current()->Notify(
         NotificationType::THEME_INSTALLED,
@@ -674,7 +674,7 @@ Extension* ExtensionsService::GetExtensionByIdInternal(const std::string& id,
 
 Extension* ExtensionsService::GetExtensionByURL(const GURL& url) {
   std::string host = url.host();
-  return GetExtensionById(host);
+  return GetExtensionById(host, false);
 }
 
 void ExtensionsService::ClearProvidersForTesting() {
@@ -700,7 +700,7 @@ void ExtensionsService::OnExternalExtensionFound(const std::string& id,
   // Before even bothering to unpack, check and see if we already have this
   // version. This is important because these extensions are going to get
   // installed on every startup.
-  Extension* existing = GetExtensionById(id);
+  Extension* existing = GetExtensionById(id, true);
   scoped_ptr<Version> other(Version::GetVersionFromString(version));
   if (existing) {
     switch (existing->version()->CompareTo(*other)) {

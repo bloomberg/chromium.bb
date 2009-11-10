@@ -247,7 +247,7 @@ Extension* ExtensionFunctionDispatcher::GetExtension() {
   ExtensionsService* service = profile()->GetExtensionsService();
   DCHECK(service);
 
-  Extension* extension = service->GetExtensionById(extension_id());
+  Extension* extension = service->GetExtensionById(extension_id(), false);
   DCHECK(extension);
 
   return extension;

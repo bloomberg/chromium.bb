@@ -52,7 +52,7 @@ class MockService : public ExtensionUpdateService {
     EXPECT_TRUE(false);
   }
 
-  virtual Extension* GetExtensionById(const std::string& id) {
+  virtual Extension* GetExtensionById(const std::string& id, bool) {
     EXPECT_TRUE(false);
     return NULL;
   }
@@ -120,7 +120,7 @@ class ServiceForManifestTests : public MockService {
 
   virtual ~ServiceForManifestTests() {}
 
-  virtual Extension* GetExtensionById(const std::string& id) {
+  virtual Extension* GetExtensionById(const std::string& id, bool) {
     for (ExtensionList::iterator iter = extensions_.begin();
         iter != extensions_.end(); ++iter) {
      if ((*iter)->id() == id) {
@@ -148,7 +148,7 @@ class ServiceForDownloadTests : public MockService {
     install_path_ = extension_path;
   }
 
-  virtual Extension* GetExtensionById(const std::string& id) {
+  virtual Extension* GetExtensionById(const std::string& id, bool) {
     last_inquired_extension_id_ = id;
     return NULL;
   }

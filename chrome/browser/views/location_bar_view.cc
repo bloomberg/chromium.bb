@@ -1296,7 +1296,7 @@ LocationBarView::PageActionImageView::PageActionImageView(
       current_tab_id_(-1),
       preview_enabled_(false) {
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
-      page_action->extension_id());
+      page_action->extension_id(), false);
   DCHECK(extension);
 
   // Load all the icons declared in the manifest. This is the contents of the

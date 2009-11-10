@@ -700,7 +700,7 @@ LocationBarViewGtk::PageActionViewGtk::PageActionViewGtk(
   gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
 
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
-      page_action->extension_id());
+      page_action->extension_id(), false);
   DCHECK(extension);
 
   // Load all the icons declared in the manifest. This is the contents of the
