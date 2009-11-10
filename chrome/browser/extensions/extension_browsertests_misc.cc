@@ -28,7 +28,7 @@
 #include "net/base/net_util.h"
 
 const std::wstring kSubscribePage =
-    L"files/extensions/samples/subscribe_page_action/subscribe.html";
+    L"files/extensions/subscribe_page_action/subscribe.html";
 const std::wstring kValidFeed0 = L"files/feeds/feed_script.xml";
 const std::wstring kValidFeed1 = L"files/feeds/feed1.xml";
 const std::wstring kValidFeed2 = L"files/feeds/feed2.xml";
@@ -214,8 +214,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
                     .AppendASCII("crash_25562")));
 
   ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("samples")
-                    .AppendASCII("subscribe_page_action")));
+      test_data_dir_.AppendASCII("subscribe_page_action")));
 
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
@@ -240,8 +239,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
 
 // Tests that the location bar forgets about unloaded page actions.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
-  FilePath extension_path(test_data_dir_.AppendASCII("samples")
-                                        .AppendASCII("subscribe_page_action"));
+  FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Navigation prompts the location bar to load page actions.
