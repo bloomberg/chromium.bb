@@ -27,6 +27,12 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_unittest.h"
 
+#if defined(OS_WIN)
+#define FLAKYONWIN(Test) FLAKY_ ## Test
+#else
+#define FLAKYONWIN(Test) Test
+#endif
+
 namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
@@ -176,7 +182,8 @@ class DownloadTest : public UITest {
 
 // Download a file with non-viewable content, verify that the
 // download tab opened and the file exists.
-TEST_F(DownloadTest, DownloadMimeType) {
+// FLAKYONWIN: see http://crbug.com/20809
+TEST_F(DownloadTest, FLAKYONWIN(DownloadMimeType)) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
 
   EXPECT_EQ(1, GetTabCount());
@@ -197,7 +204,8 @@ TEST_F(DownloadTest, DownloadMimeType) {
 
 // Access a file with a viewable mime-type, verify that a download
 // did not initiate.
-TEST_F(DownloadTest, NoDownload) {
+// FLAKYONWIN: see http://crbug.com/20809
+TEST_F(DownloadTest, FLAKYONWIN(NoDownload)) {
   FilePath file(FILE_PATH_LITERAL("download-test2.html"));
   FilePath file_path = download_prefix_.Append(file);
 
@@ -249,7 +257,8 @@ TEST_F(DownloadTest, FLAKY_ContentDisposition) {
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
 // See bug http://crbug.com/26325
-TEST_F(DownloadTest, FLAKY_PerWindowShelf) {
+// FLAKYONWIN: see http://crbug.com/20809
+TEST_F(DownloadTest, FLAKYONWIN(PerWindowShelf)) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
@@ -294,7 +303,8 @@ TEST_F(DownloadTest, FLAKY_PerWindowShelf) {
 // in the middle until the server receives a second request for
 // "download-finish.  At that time, the download will finish.
 // Flaky on Linux: http://code.google.com/p/chromium/issues/detail?id=14746
-TEST_F(DownloadTest, UnknownSize) {
+// FLAKYONWIN: see http://crbug.com/20809
+TEST_F(DownloadTest, FLAKYONWIN(UnknownSize)) {
   GURL url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
   FilePath filename;
   net::FileURLToFilePath(url, &filename);
@@ -315,7 +325,8 @@ TEST_F(DownloadTest, DISABLED_KnownSize) {
 
 // Test that when downloading an item in Incognito mode, we don't crash when
 // closing the last Incognito window (http://crbug.com/13983).
-TEST_F(DownloadTest, IncognitoDownload) {
+// FLAKYONWIN: see http://crbug.com/20809
+TEST_F(DownloadTest, FLAKYONWIN(IncognitoDownload)) {
   // Open a regular window and sanity check default values for window / tab
   // count and shelf visibility.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
@@ -356,3 +367,6 @@ TEST_F(DownloadTest, IncognitoDownload) {
 }
 
 }  // namespace
+
+#undef FLAKYONWIN
+
