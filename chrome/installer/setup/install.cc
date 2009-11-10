@@ -341,6 +341,12 @@ bool DoPostInstallTasks(HKEY reg_root,
                  L"\" --" + installer_util::switches::kRenameChromeExe;
     if (reg_root == HKEY_LOCAL_MACHINE)
       rename_cmd = rename_cmd + L" --" + installer_util::switches::kSystemLevel;
+
+    if (InstallUtil::IsChromeFrameProcess()) {
+      rename_cmd += L" --";
+      rename_cmd += installer_util::switches::kChromeFrame;
+    }
+
     inuse_list->AddSetRegValueWorkItem(reg_root,
                                        version_key,
                                        google_update::kRegRenameCmdField,
