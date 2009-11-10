@@ -1062,6 +1062,7 @@
    bug_26216
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN9Extension25LoadExtensionActionHelperEPK15DictionaryValuePSs
    fun:_ZN39ExtensionTest_LoadPageActionHelper_Test8TestBodyEv
 }
