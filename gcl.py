@@ -1239,12 +1239,19 @@ def main(argv=None):
     DeleteEmptyChangeLists()
     return 0
 
-  if len(argv) == 2:
-    if command == "change":
+  if command == "change":
+    if len(argv) == 2:
       # Generate a random changelist name.
       changename = GenerateChangeName()
+    elif argv[2] == '--force':
+      changename = GenerateChangeName()
+      # argv[3:] is passed to Change() as |args| later. Change() should receive
+      # |args| which includes '--force'.
+      argv.insert(2, changename)
     else:
-      ErrorExit("Need a changelist name.")
+      changename = argv[2]
+  elif len(argv) == 2:
+    ErrorExit("Need a changelist name.")
   else:
     changename = argv[2]
 
