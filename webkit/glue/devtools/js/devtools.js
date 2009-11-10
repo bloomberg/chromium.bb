@@ -120,7 +120,7 @@ devtools.ToolsAgent.prototype.evaluate = function(expr) {
  * @param {boolean} enabled New panel status.
  */
 WebInspector.setResourcesPanelEnabled = function(enabled) {
-  InspectorController.resourceTrackingEnabled_ = enabled;
+  InspectorController._resourceTrackingEnabled = enabled;
   WebInspector.panels.resources.reset();
 };
 
@@ -427,13 +427,13 @@ InjectedScriptAccess.evaluateInCallFrame = function(callFrameId, code,
 
 WebInspector.resourceTrackingWasEnabled = function()
 {
-    InspectorController.resourceTrackingEnabled_ = true;
+    InspectorController._resourceTrackingEnabled = true;
     this.panels.resources.resourceTrackingWasEnabled();
 };
 
 WebInspector.resourceTrackingWasDisabled = function()
 {
-    InspectorController.resourceTrackingEnabled_ = false;
+    InspectorController._resourceTrackingEnabled = false;
     this.panels.resources.resourceTrackingWasDisabled();
 };
 
