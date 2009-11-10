@@ -137,9 +137,18 @@ void AppCacheHost::StartUpdateWithCallback(StartUpdateCallback* callback,
 void AppCacheHost::DoPendingStartUpdate() {
   DCHECK(pending_start_update_callback_);
 
-  // TODO(michaeln): start an update if appropiate to do so
+  // 6.9.8 Application cache API
+  bool success = false;
+  if (associated_cache_) {
+    AppCacheGroup* group = associated_cache_->owning_group();
+    if (!group->is_obsolete()) {
+      success = true;
+      group->StartUpdate();
+    }
+  }
+
   pending_start_update_callback_->Run(
-      false, pending_callback_param_);
+      success, pending_callback_param_);
 
   pending_start_update_callback_ = NULL;
   pending_callback_param_ = NULL;
@@ -162,9 +171,22 @@ void AppCacheHost::SwapCacheWithCallback(SwapCacheCallback* callback,
 void AppCacheHost::DoPendingSwapCache() {
   DCHECK(pending_swap_cache_callback_);
 
-  // TODO(michaeln): swap if we have a cache that can be swapped.
+  // 6.9.8 Application cache API
+  bool success = false;
+  if (associated_cache_) {
+    if (associated_cache_->owning_group()->is_obsolete()) {
+      success = true;
+      AssociateCache(NULL);
+    } else if (swappable_cache_) {
+      DCHECK(swappable_cache_.get() ==
+             swappable_cache_->owning_group()->newest_complete_cache());
+      success = true;
+      AssociateCache(swappable_cache_);
+    }
+  }
+
   pending_swap_cache_callback_->Run(
-      false, pending_callback_param_);
+      success, pending_callback_param_);
 
   pending_swap_cache_callback_ = NULL;
   pending_callback_param_ = NULL;
@@ -184,9 +206,22 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
 }
 
 Status AppCacheHost::GetStatus() {
-  // TODO(michaeln): determine a real status value
-  Status status = associated_cache() ? IDLE : UNCACHED;
-  return status;
+  // 6.9.8 Application cache API
+  AppCache* cache = associated_cache();
+  if (!cache)
+    return UNCACHED;
+
+  DCHECK(cache->owning_group());
+
+  if (cache->owning_group()->is_obsolete())
+    return OBSOLETE;
+  if (cache->owning_group()->update_status() == AppCacheGroup::CHECKING)
+    return CHECKING;
+  if (cache->owning_group()->update_status() == AppCacheGroup::DOWNLOADING)
+    return DOWNLOADING;
+  if (swappable_cache_)
+    return UPDATE_READY;
+  return IDLE;
 }
 
 void AppCacheHost::LoadOrCreateGroup(const GURL& manifest_url) {
@@ -276,11 +311,15 @@ void AppCacheHost::OnUpdateComplete(AppCacheGroup* group) {
 }
 
 void AppCacheHost::SetSwappableCache(AppCacheGroup* group) {
-  AppCache* new_cache = group ? group->newest_complete_cache() : NULL;
-  if (new_cache != associated_cache_)
-    swappable_cache_ = new_cache;
-  else
+  if (!group) {
     swappable_cache_ = NULL;
+  } else {
+    AppCache* new_cache = group->newest_complete_cache();
+    if (new_cache != associated_cache_)
+      swappable_cache_ = new_cache;
+    else
+      swappable_cache_ = NULL;
+  }
 }
 
 void AppCacheHost::LoadMainResourceCache(int64 cache_id) {
