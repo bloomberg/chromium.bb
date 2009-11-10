@@ -130,7 +130,7 @@ union FlagsAndLength {
   uint32 length_;   // 24 bits
 };
 
-// The basic FLIP Frame.
+// The basic FLIP Frame structure.
 struct FlipFrameBlock {
   union {
     struct {
@@ -144,23 +144,23 @@ struct FlipFrameBlock {
   FlagsAndLength flags_length_;
 };
 
-// A Control Frame.
+// A Control Frame structure.
 struct FlipControlFrameBlock : FlipFrameBlock {
   FlipStreamId stream_id_;
 };
 
-// A SYN_STREAM Control Frame.
+// A SYN_STREAM Control Frame structure.
 struct FlipSynStreamControlFrameBlock : FlipControlFrameBlock {
   uint8 priority_;
   uint8 unused_;
 };
 
-// A SYN_REPLY Control Frame.
+// A SYN_REPLY Control Frame structure.
 struct FlipSynReplyControlFrameBlock : FlipControlFrameBlock {
   uint16 unused_;
 };
 
-// A FNI_STREAM Control Frame.
+// A FNI_STREAM Control Frame structure.
 struct FlipFinStreamControlFrameBlock : FlipControlFrameBlock {
   uint32 status_;
 };
@@ -174,7 +174,7 @@ struct FlipFinStreamControlFrameBlock : FlipControlFrameBlock {
 class FlipFrame {
  public:
   // Create a FlipFrame for a given sized buffer.
-  explicit FlipFrame(size_t size) : frame_(NULL), needs_delete_(true) {
+  explicit FlipFrame(size_t size) : frame_(NULL), owns_buffer_(true) {
     DCHECK_GE(size, sizeof(struct FlipFrameBlock));
     char* buffer = new char[size];
     memset(buffer, 0, size);
@@ -182,27 +182,28 @@ class FlipFrame {
   }
 
   // Create a FlipFrame using a pre-created buffer.
-  // If |needs_delete| is true, this class takes ownership of the buffer
+  // If |owns_buffer| is true, this class takes ownership of the buffer
   // and will delete it on cleanup.  The buffer must have been created using
   // new char[].
-  // If |needs_delete| is false, the caller retains ownership
-  // of the buffer and will keep the buffer alive longer than |this|.  In other
+  // If |owns_buffer| is false, the caller retains ownership of the buffer and
+  // is responsible for making sure the buffer outlives this frame.  In other
   // words, this class does NOT create a copy of the buffer.
-  FlipFrame(char* data, bool needs_delete)
+  FlipFrame(char* data, bool owns_buffer)
       : frame_(reinterpret_cast<struct FlipFrameBlock*>(data)),
-        needs_delete_(needs_delete) {
+        owns_buffer_(owns_buffer) {
     DCHECK(frame_);
   }
 
   virtual ~FlipFrame() {
-    if (needs_delete_) {
+    if (owns_buffer_) {
       char* buffer = reinterpret_cast<char*>(frame_);
       delete [] buffer;
     }
     frame_ = NULL;
   }
 
-  // Provide access to the frame bytes
+  // Provides access to the frame bytes, which is a buffer containing
+  // the frame packed as expected for sending over the wire.
   char* data() const { return reinterpret_cast<char*>(frame_); }
 
   uint8 flags() const { return frame_->flags_length_.flags_[0]; }
@@ -223,13 +224,18 @@ class FlipFrame {
         kControlFlagMask;
   }
 
+  // Returns the size of the FlipFrameBlock structure.
+  // Note: this is not the size of the FlipFrame class.
+  // Every FlipFrame* class has a static size() method for accessing
+  // the size of the data structure which will be sent over the wire.
+  // Note:  this is not the same as sizeof(FlipFrame).
   static size_t size() { return sizeof(struct FlipFrameBlock); }
 
  protected:
   FlipFrameBlock* frame_;
 
  private:
-  bool needs_delete_;
+  bool owns_buffer_;
   DISALLOW_COPY_AND_ASSIGN(FlipFrame);
 };
 
@@ -237,8 +243,8 @@ class FlipFrame {
 class FlipDataFrame : public FlipFrame {
  public:
   FlipDataFrame() : FlipFrame(size()) {}
-  FlipDataFrame(char* data, bool needs_delete)
-      : FlipFrame(data, needs_delete) {}
+  FlipDataFrame(char* data, bool owns_buffer)
+      : FlipFrame(data, owns_buffer) {}
   virtual ~FlipDataFrame() {}
 
   FlipStreamId stream_id() const {
@@ -253,7 +259,10 @@ class FlipDataFrame : public FlipFrame {
     frame_->data_.stream_id_ = htonl(id & kStreamIdMask);
   }
 
+  // Returns the size of the FlipFrameBlock structure.
+  // Note: this is not the size of the FlipDataFrame class.
   static size_t size() { return FlipFrame::size(); }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FlipDataFrame);
 };
@@ -262,8 +271,8 @@ class FlipDataFrame : public FlipFrame {
 class FlipControlFrame : public FlipFrame {
  public:
   explicit FlipControlFrame(size_t size) : FlipFrame(size) {}
-  FlipControlFrame(char* data, bool needs_delete)
-      : FlipFrame(data, needs_delete) {}
+  FlipControlFrame(char* data, bool owns_buffer)
+      : FlipFrame(data, owns_buffer) {}
   virtual ~FlipControlFrame() {}
 
   uint16 version() const {
@@ -283,6 +292,8 @@ class FlipControlFrame : public FlipFrame {
     block()->stream_id_ = htonl(id & kStreamIdMask);
   }
 
+  // Returns the size of the FlipControlFrameBlock structure.
+  // Note: this is not the size of the FlipControlFrame class.
   static size_t size() { return sizeof(FlipControlFrameBlock); }
 
  private:
@@ -296,8 +307,8 @@ class FlipControlFrame : public FlipFrame {
 class FlipSynStreamControlFrame : public FlipControlFrame {
  public:
   FlipSynStreamControlFrame() : FlipControlFrame(size()) {}
-  FlipSynStreamControlFrame(char* data, bool needs_delete)
-      : FlipControlFrame(data, needs_delete) {}
+  FlipSynStreamControlFrame(char* data, bool owns_buffer)
+      : FlipControlFrame(data, owns_buffer) {}
   virtual ~FlipSynStreamControlFrame() {}
 
   uint8 priority() const { return (block()->priority_ & kPriorityMask) >> 6; }
@@ -311,6 +322,8 @@ class FlipSynStreamControlFrame : public FlipControlFrame {
     return reinterpret_cast<const char*>(block()) + size();
   }
 
+  // Returns the size of the FlipSynStreamControlFrameBlock structure.
+  // Note: this is not the size of the FlipSynStreamControlFrame class.
   static size_t size() { return sizeof(FlipSynStreamControlFrameBlock); }
 
  private:
@@ -324,8 +337,8 @@ class FlipSynStreamControlFrame : public FlipControlFrame {
 class FlipSynReplyControlFrame : public FlipControlFrame {
  public:
   FlipSynReplyControlFrame() : FlipControlFrame(size()) {}
-  FlipSynReplyControlFrame(char* data, bool needs_delete)
-      : FlipControlFrame(data, needs_delete) {}
+  FlipSynReplyControlFrame(char* data, bool owns_buffer)
+      : FlipControlFrame(data, owns_buffer) {}
   virtual ~FlipSynReplyControlFrame() {}
 
   int header_block_len() const {
@@ -336,6 +349,8 @@ class FlipSynReplyControlFrame : public FlipControlFrame {
     return reinterpret_cast<const char*>(block()) + size();
   }
 
+  // Returns the size of the FlipSynReplyControlFrameBlock structure.
+  // Note: this is not the size of the FlipSynReplyControlFrame class.
   static size_t size() { return sizeof(FlipSynReplyControlFrameBlock); }
 
  private:
@@ -349,13 +364,15 @@ class FlipSynReplyControlFrame : public FlipControlFrame {
 class FlipFinStreamControlFrame : public FlipControlFrame {
  public:
   FlipFinStreamControlFrame() : FlipControlFrame(size()) {}
-  FlipFinStreamControlFrame(char* data, bool needs_delete)
-      : FlipControlFrame(data, needs_delete) {}
+  FlipFinStreamControlFrame(char* data, bool owns_buffer)
+      : FlipControlFrame(data, owns_buffer) {}
   virtual ~FlipFinStreamControlFrame() {}
 
   uint32 status() const { return ntohl(block()->status_); }
   void set_status(uint32 status) { block()->status_ = htonl(status); }
 
+  // Returns the size of the FlipFinStreamControlFrameBlock structure.
+  // Note: this is not the size of the FlipFinStreamControlFrame class.
   static size_t size() { return sizeof(FlipFinStreamControlFrameBlock); }
 
  private:

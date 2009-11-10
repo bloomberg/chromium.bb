@@ -14,7 +14,7 @@
 namespace flip {
 
 // The initial size of the control frame buffer; this is used internally
-// as we we parse though control frames.
+// as we parse through control frames.
 static const size_t kControlFrameBufferInitialSize = 32 * 1024;
 // The maximum size of the control frame buffer that we support.
 // TODO(mbelshe): We should make this stream-based so there are no limits.
@@ -240,9 +240,9 @@ size_t FlipFramer::ProcessCommonHeader(const char* data, size_t len) {
 }
 
 void FlipFramer::ProcessControlFrameHeader() {
-  FlipControlFrame current_control_frame(current_frame_buffer_, false);
   DCHECK_EQ(FLIP_NO_ERROR, error_code_);
   DCHECK_LE(FlipFrame::size(), current_frame_len_);
+  FlipControlFrame current_control_frame(current_frame_buffer_, false);
   // Do some sanity checking on the control frame sizes.
   switch (current_control_frame.type()) {
     case SYN_STREAM:
@@ -261,7 +261,7 @@ void FlipFramer::ProcessControlFrameHeader() {
         set_error(FLIP_INVALID_CONTROL_FRAME);
       break;
     case NOOP:
-      // NOP.  Swallow it.
+      // NOOP.  Swallow it.
       CHANGE_STATE(FLIP_AUTO_RESET);
       return;
     default:
@@ -340,7 +340,7 @@ size_t FlipFramer::ProcessDataFramePayload(const char* data, size_t len) {
         int rv = inflate(decompressor_.get(), Z_SYNC_FLUSH);
         if (rv != Z_OK) {
           set_error(FLIP_DECOMPRESS_FAILURE);
-          goto bottom;
+          return 0;
         }
         size_t decompressed_size = decompressed_max_size -
                                    decompressor_->avail_out;
@@ -371,8 +371,6 @@ size_t FlipFramer::ProcessDataFramePayload(const char* data, size_t len) {
   } else {
     CHANGE_STATE(FLIP_AUTO_RESET);
   }
-
- bottom:
   return original_len - len;
 }
 
@@ -458,9 +456,10 @@ FlipSynStreamControlFrame* FlipFramer::CreateSynStream(
   frame.WriteBytesToOffset(4, &flags_length, sizeof(flags_length));
 
   scoped_ptr<FlipFrame> syn_frame(frame.take());
-  if (compressed)
+  if (compressed) {
     return reinterpret_cast<FlipSynStreamControlFrame*>(
         CompressFrame(syn_frame.get()));
+  }
   return reinterpret_cast<FlipSynStreamControlFrame*>(syn_frame.release());
 }
 
@@ -504,9 +503,10 @@ FlipSynReplyControlFrame* FlipFramer::CreateSynReply(FlipStreamId stream_id,
   frame.WriteBytesToOffset(4, &flags_length, sizeof(flags_length));
 
   scoped_ptr<FlipFrame> reply_frame(frame.take());
-  if (compressed)
+  if (compressed) {
     return reinterpret_cast<FlipSynReplyControlFrame*>(
         CompressFrame(reply_frame.get()));
+  }
   return reinterpret_cast<FlipSynReplyControlFrame*>(reply_frame.release());
 }
 
