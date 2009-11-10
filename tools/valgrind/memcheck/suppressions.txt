@@ -1110,3 +1110,53 @@
    fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
    fun:_ZN12RenderThread23EnsureWebKitInitializedEv
 }
+{
+   bug_27313
+   Memcheck:Leak
+   ...
+   fun:FT_Open_Face
+   fun:_Z11ref_ft_facej
+   fun:_ZN24SkScalerContext_FreeTypeC1EPK12SkDescriptor
+   fun:_ZN10SkFontHost19CreateScalerContextEPK12SkDescriptor
+   fun:_ZN15SkScalerContext6CreateEPK12SkDescriptor
+   fun:_ZN12SkGlyphCacheC1EPK12SkDescriptor
+   fun:_ZN12SkGlyphCache10VisitCacheEPK12SkDescriptorPFbPKS_PvES5_
+   fun:_Z19FontMetricsDescProcPK12SkDescriptorPv
+   fun:_ZNK7SkPaint14descriptorProcEPK8SkMatrixPFvPK12SkDescriptorPvES6_
+   fun:_ZNK7SkPaint14getFontMetricsEPNS_11FontMetricsEf
+   fun:_ZN7WebCore14SimpleFontData12platformInitEv
+   fun:_ZN7WebCore14SimpleFontDataC1ERKNS_16FontPlatformDataEbbPNS_11SVGFontDataE
+}
+{
+   bug_27312
+   Memcheck:Addr4
+   fun:_ZNK12BookmarkNode2idEv
+   fun:_ZN12browser_sync15ModelAssociator12DisassociateEx
+   fun:_ZN12browser_sync15ChangeProcessor25ApplyChangesFromSyncModelEPKN8sync_api15BaseTransactionEPKNS1_11SyncManager12ChangeRecordEi
+   fun:_ZN16FakeServerChange19ApplyPendingChangesEPN12browser_sync25ChangeProcessingInterfaceE
+   fun:_ZN50ProfileSyncServiceTest_ServerChangeProcessing_Test8TestBodyEv
+}
+{
+   bug_27317
+   Memcheck:Leak
+   ...
+   fun:_ZN6WebKit17WebDataSourceImpl6createERKN7WebCore15ResourceRequestERKNS1_14SubstituteDataE
+   fun:_ZN6WebKit21FrameLoaderClientImpl20createDocumentLoaderERKN7WebCore15ResourceRequestERKNS1_14SubstituteDataE
+   fun:_ZN7WebCore11FrameLoader4initEv
+   fun:_ZN7WebCore5Frame4initEv
+   fun:_ZN6WebKit12WebFrameImpl21initializeAsMainFrameEPNS_11WebViewImplE
+   fun:_ZN6WebKit11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
+   fun:_ZN10RenderView4InitEiiRK19RendererPreferencesPN4base14RefCountedDataIiEEi
+   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEi
+   fun:_ZN12RenderThread15OnCreateNewViewEiRK19RendererPreferencesRK14WebPreferencesi
+}
+{
+   bug_27318 
+   Memcheck:Cond
+   fun:_ZN21MessagePortDispatcher7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN17WorkerProcessHostD0Ev
+   fun:_ZN16ChildProcessHost11OnChildDiedEv
+   fun:_ZN16ChildProcessHost12ListenerHook14OnChannelErrorEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+}
