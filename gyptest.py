@@ -79,17 +79,32 @@ class CommandRunner:
       args = command[1:]
       return func(*args)
     else:
-      if stdout is None:
-        stdout = subprocess.PIPE
-      if stderr is None:
-        stderr = subprocess.STDOUT
+      if stdout is sys.stdout:
+        # Same as passing sys.stdout, except python2.4 doesn't fail on it.
+        subout = None
+      else:
+        # Open pipe for anything else so Popen works on python2.4.
+        subout = subprocess.PIPE
+      if stderr is sys.stderr:
+        # Same as passing sys.stderr, except python2.4 doesn't fail on it.
+        suberr = None
+      elif stderr is None:
+        # Merge with stdout if stderr isn't specified.
+        suberr = subprocess.STDOUT
+      else:
+        # Open pipe for anything else so Popen works on python2.4.
+        suberr = subprocess.PIPE
       p = subprocess.Popen(command,
                            shell=(sys.platform == 'win32'),
-                           stdout=stdout,
-                           stderr=stderr)
+                           stdout=subout,
+                           stderr=suberr)
       p.wait()
-      if p.stdout:
+      if stdout is None:
         self.stdout = p.stdout.read()
+      elif stdout is not sys.stdout:
+        stdout.write(p.stdout.read())
+      if stderr not in (None, sys.stderr):
+        stderr.write(p.stderr.read())
       return p.returncode
 
   def run(self, command, display=None, stdout=None, stderr=None):

@@ -383,8 +383,11 @@ header = """\
 
 def Compilable(filename):
   """Return true if the file is compilable (should be in OBJS)."""
-  return any(filename.endswith(e) for e
-             in ['.c', '.cc', '.cpp', '.cxx', '.s', '.S'])
+  for res in (filename.endswith(e) for e
+             in ['.c', '.cc', '.cpp', '.cxx', '.s', '.S']):
+    if res:
+      return True
+  return False
 
 
 def Target(filename):
@@ -558,7 +561,10 @@ class MakefileWriter:
         command = 'mkdir -p %s' % ' '.join(dirs) + '; ' + command
       # Set LD_LIBRARY_PATH in case the action runs an executable from this
       # build which links to shared libs from this build.
-      cd_action = 'cd %s; ' % Sourceify(self.path) if self.path else ''
+      if self.path:
+        cd_action = 'cd %s; ' % Sourceify(self.path)
+      else:
+        cd_action = ''
       # actions run on the host, so they should in theory only use host
       # libraries, but until everything is made cross-compile safe, also use
       # target libraries.
@@ -642,8 +648,12 @@ class MakefileWriter:
         mkdirs = ''
         if len(dirs) > 0:
           mkdirs = 'mkdir -p %s; ' % ' '.join(dirs)
-        cd_action = 'cd %s; ' % Sourceify(self.path) if self.path else ''
-        self.WriteLn("cmd_%(name)s_%(count)d = %(cd_action)s%(mkdirs)s%(action)s" % {
+        if self.path:
+          cd_action = 'cd %s; ' % Sourceify(self.path)
+        else:
+          cd_action = ''
+        self.WriteLn(
+            "cmd_%(name)s_%(count)d = %(cd_action)s%(mkdirs)s%(action)s" % {
           'action': gyp.common.EncodePOSIXShellList(action),
           'cd_action': cd_action,
           'count': count,
@@ -944,8 +954,14 @@ class MakefileWriter:
     if phony:
       self.WriteLn('.PHONY: ' + ' '.join(outputs))
     # TODO(evanm): just make order_only a list of deps instead of these hacks.
-    order_insert = '| ' if order_only else ''
-    force_append = ' FORCE_DO_CMD' if force else ''
+    if order_only:
+      order_insert = '| '
+    else:
+      order_insert = ''
+    if force:
+      force_append = ' FORCE_DO_CMD'
+    else:
+      force_append = ''
     if actions:
       self.WriteLn("%s: TOOLSET := $(TOOLSET)" % outputs[0])
     self.WriteLn('%s: %s%s%s' % (outputs[0], order_insert, ' '.join(inputs),
