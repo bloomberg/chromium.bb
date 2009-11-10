@@ -24,23 +24,11 @@
 
 BackingStore::BackingStore(RenderWidgetHost* widget, const gfx::Size& size)
     : render_widget_host_(widget),
-      size_(size),
-      cg_layer_(NULL) {
-  // We want our CGLayer to be optimized for drawing into our containing
-  // window, so extract a CGContext corresponding to that window that we can
-  // pass to CGLayerCreateWithContext.
-  NSWindow* containing_window = [widget->view()->GetNativeView() window];
-  if (!containing_window) {
-    // If we are not in a containing window yet, create a CGBitmapContext
-    // to use as a stand-in for the layer.
-    cg_bitmap_.reset(CGBitmapContextCreate(NULL, size.width(), size.height(),
-        8, size.width() * 4, mac_util::GetSystemColorSpace(),
-        kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
-  } else {
-    CGContextRef context = static_cast<CGContextRef>(
-        [[containing_window graphicsContext] graphicsPort]);
-    CGLayerRef layer = CGLayerCreateWithContext(context, size.ToCGSize(), NULL);
-    cg_layer_.reset(layer);
+      size_(size) {
+  cg_layer_.reset(CreateCGLayer());
+  if (!cg_layer_) {
+    // The view isn't in a window yet.  Use a CGBitmapContext for now.
+    cg_bitmap_.reset(CreateCGBitmapContext());
   }
 }
 
@@ -68,19 +56,13 @@ void BackingStore::PaintRect(base::ProcessHandle process,
           data_provider, NULL, false, kCGRenderingIntentDefault));
 
   if (!cg_layer()) {
-    // we don't have a CGLayer yet, so see if we can create one.
-    NSWindow* containing_window =
-        [render_widget_host()->view()->GetNativeView() window];
-    if (containing_window) {
-      CGContextRef context = static_cast<CGContextRef>(
-          [[containing_window graphicsContext] graphicsPort]);
-      CGLayerRef layer =
-          CGLayerCreateWithContext(context, size().ToCGSize(), NULL);
-      cg_layer_.reset(layer);
+    // The view may have moved to a window.  Try to get a CGLayer.
+    cg_layer_.reset(CreateCGLayer());
+    if (cg_layer()) {
       // now that we have a layer, copy the cached image into it
       scoped_cftyperef<CGImageRef> bitmap_image(
           CGBitmapContextCreateImage(cg_bitmap_));
-      CGContextDrawImage(CGLayerGetContext(layer),
+      CGContextDrawImage(CGLayerGetContext(cg_layer()),
                          CGRectMake(0, 0, size().width(), size().height()),
                          bitmap_image);
       // Discard the cache bitmap, since we no longer need it.
@@ -130,9 +112,11 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
 
   if ((dx || dy) && abs(dx) < size_.width() && abs(dy) < size_.height()) {
     if (cg_layer()) {
-      CGContextRef context = CGLayerGetContext(cg_layer());
-      scoped_cftyperef<CGLayerRef> new_layer(
-          CGLayerCreateWithContext(context, size_.ToCGSize(), NULL));
+      scoped_cftyperef<CGLayerRef> new_layer(CreateCGLayer());
+
+      // If the current view is in a window, the replacement must be too.
+      DCHECK(new_layer);
+
       CGContextRef layer = CGLayerGetContext(new_layer);
       CGContextDrawLayerAtPoint(layer, CGPointMake(0, 0), cg_layer());
       CGContextSaveGState(layer);
@@ -145,10 +129,7 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
       cg_layer_.swap(new_layer);
     } else {
       // We don't have a layer, so scroll the contents of the CGBitmapContext.
-      scoped_cftyperef<CGContextRef> new_bitmap(
-          CGBitmapContextCreate(NULL, size_.width(), size_.height(), 8,
-              size_.width() * 4, mac_util::GetSystemColorSpace(),
-              kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host));
+      scoped_cftyperef<CGContextRef> new_bitmap(CreateCGBitmapContext());
       scoped_cftyperef<CGImageRef> bitmap_image(
           CGBitmapContextCreateImage(cg_bitmap_));
       CGContextDrawImage(new_bitmap,
@@ -170,4 +151,44 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
   // Now paint the new bitmap data
   PaintRect(process, bitmap, bitmap_rect);
   return;
+}
+
+CGLayerRef BackingStore::CreateCGLayer() {
+  // The CGLayer should be optimized for drawing into the containing window,
+  // so extract a CGContext corresponding to the window to be passed to
+  // CGLayerCreateWithContext.
+  NSWindow* window = [render_widget_host()->view()->GetNativeView() window];
+  if ([window windowNumber] <= 0) {
+    // This catches a nil |window|, as well as windows that exist but that
+    // aren't yet connected to WindowServer.
+    return NULL;
+  }
+
+  NSGraphicsContext* ns_context = [window graphicsContext];
+  DCHECK(ns_context);
+
+  CGContextRef cg_context = static_cast<CGContextRef>(
+      [ns_context graphicsPort]);
+  DCHECK(cg_context);
+
+  CGLayerRef layer = CGLayerCreateWithContext(cg_context,
+                                              size_.ToCGSize(),
+                                              NULL);
+  DCHECK(layer);
+
+  return layer;
+}
+
+CGContextRef BackingStore::CreateCGBitmapContext() {
+  // A CGBitmapContext serves as a stand-in for the layer before the view is
+  // in a containing window.
+  CGContextRef context = CGBitmapContextCreate(NULL,
+                                               size_.width(), size_.height(),
+                                               8, size_.width() * 4,
+                                               mac_util::GetSystemColorSpace(),
+                                               kCGImageAlphaPremultipliedFirst |
+                                                   kCGBitmapByteOrder32Host);
+  DCHECK(context);
+
+  return context;
 }
