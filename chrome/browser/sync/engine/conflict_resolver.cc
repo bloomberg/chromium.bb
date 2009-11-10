@@ -691,11 +691,6 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
 bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
                                         ConflictResolutionView* view,
                                         SyncerSession* session) {
-  if (view->HasBlockedItems()) {
-    LOG(INFO) << "Delaying conflict resolution, have " <<
-        view->BlockedItemsSize() << " blocked items.";
-    return false;
-  }
   bool rv = false;
   if (ResolveSimpleConflicts(dir, view, session))
     rv = true;
@@ -726,7 +721,6 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
     if (ProcessConflictSet(&trans, conflict_set, conflict_count, session)) {
       rv = true;
     }
-    SyncerStatus status(session);
     LogAndSignalIfConflictStuck(&trans, conflict_count,
                                 conflict_set->begin(),
                                 conflict_set->end(), view);

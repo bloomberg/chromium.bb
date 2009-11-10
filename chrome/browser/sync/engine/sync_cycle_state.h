@@ -189,8 +189,6 @@ class SyncCycleState {
     return over_quota_;
   }
 
-  void set_items_committed(bool b) { items_committed_ = b; }
-
   void set_item_committed() { items_committed_ |= true; }
 
   bool items_committed() const { return items_committed_; }

@@ -151,9 +151,7 @@ class GetCommitIdsCommand : public SyncerCommand {
            syncable::GET_BY_HANDLE, metahandle);
        VerifyCommitResult verify_result =
            SyncerUtil::ValidateCommitEntry(&entry);
-       if (verify_result == VERIFY_BLOCKED) {
-         session_->AddBlockedItem(entry.Get(syncable::ID));  // TODO(chron): Ew.
-       } else if (verify_result == VERIFY_UNSYNCABLE) {
+       if (verify_result == VERIFY_UNSYNCABLE) {
          // Drop unsyncable entries.
          entry.Put(syncable::IS_UNSYNCED, false);
        }

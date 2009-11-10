@@ -52,12 +52,6 @@ class ConflictResolutionView {
 
   void set_conflicting_commits(const int val);
 
-  int num_sync_cycles() const;
-
-  void increment_num_sync_cycles();
-
-  void zero_num_sync_cycles();
-
   // True iff we're stuck. Something has gone wrong with the syncer.
   bool syncer_stuck() const;
 
@@ -90,27 +84,15 @@ class ConflictResolutionView {
 
   bool HasCommitConflicts() const;
 
-  bool HasBlockedItems() const;
-
   int CommitConflictsSize() const;
-
-  int BlockedItemsSize() const;
 
   void AddCommitConflict(const syncable::Id& the_id);
 
-  void AddBlockedItem(const syncable::Id& the_id);
-
   void EraseCommitConflict(std::set<syncable::Id>::iterator it);
-
-  void EraseBlockedItem(std::set<syncable::Id>::iterator it);
 
   std::set<syncable::Id>::iterator CommitConflictsBegin() const;
 
-  std::set<syncable::Id>::iterator BlockedItemsBegin() const;
-
   std::set<syncable::Id>::iterator CommitConflictsEnd() const;
-
-  std::set<syncable::Id>::iterator BlockedItemsEnd() const;
 
  private:
   SyncProcessState* process_state_;

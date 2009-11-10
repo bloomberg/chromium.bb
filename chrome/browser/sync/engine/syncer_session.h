@@ -182,16 +182,8 @@ class SyncerSession {
     sync_process_state_->AddConflictingItem(the_id);
   }
 
-  void AddBlockedItem(const syncable::Id& the_id) {
-    sync_process_state_->AddBlockedItem(the_id);
-  }
-
   void EraseCommitConflict(const syncable::Id& the_id) {
     sync_process_state_->EraseConflictingItem(the_id);
-  }
-
-  void EraseBlockedItem(const syncable::Id& the_id) {
-    sync_process_state_->EraseBlockedItem(the_id);
   }
 
   // Returns true if at least one update application failed due to a conflict
@@ -240,22 +232,8 @@ class SyncerSession {
     LOG(INFO) << sync_cycle_state_->VerifiedUpdatesSize()
               << " updates verified";
     LOG(INFO) << sync_cycle_state_->AppliedUpdatesSize() << " updates applied";
-    LOG(INFO) << count_blocked_updates() << " updates blocked by open entry";
     LOG(INFO) << commit_ids().size() << " items to commit";
     LOG(INFO) << unsynced_count() << " unsynced items";
-  }
-
-  int64 count_blocked_updates() const {
-    std::vector<AppliedUpdate>::const_iterator it;
-    int64 count = 0;
-    for (it = sync_cycle_state_->AppliedUpdatesBegin();
-         it < sync_cycle_state_->AppliedUpdatesEnd();
-         ++it) {
-      if (it->first == BLOCKED) {
-        ++count;
-      }
-    }
-    return count;
   }
 
   void set_conflict_sets_built(const bool b) {
@@ -276,10 +254,6 @@ class SyncerSession {
 
   ModelSafeWorker* model_safe_worker() const {
     return sync_process_state_->model_safe_worker();
-  }
-
-  void set_items_committed(const bool b) {
-    sync_cycle_state_->set_items_committed(b);
   }
 
   void set_item_committed() {

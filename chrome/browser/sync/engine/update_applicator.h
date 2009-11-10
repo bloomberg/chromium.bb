@@ -54,7 +54,6 @@ class UpdateApplicator {
 
   // Track the result of the various items.
   std::vector<syncable::Id> conflicting_ids_;
-  std::vector<syncable::Id> blocked_ids_;
   std::vector<syncable::Id> successful_ids_;
 };
 

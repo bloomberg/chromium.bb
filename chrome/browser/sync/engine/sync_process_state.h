@@ -107,16 +107,8 @@ class SyncProcessState {
     return !conflicting_item_ids_.empty();
   }
 
-  bool HasBlockedItems() const {
-    return !blocked_item_ids_.empty();
-  }
-
   int ConflictingItemsSize() const {
     return conflicting_item_ids_.size();
-  }
-
-  int BlockedItemsSize() const {
-    return blocked_item_ids_.size();
   }
 
   void AddConflictingItem(const syncable::Id& the_id) {
@@ -125,20 +117,9 @@ class SyncProcessState {
     UpdateDirty(ret.second);
   }
 
-  void AddBlockedItem(const syncable::Id& the_id) {
-    std::pair<std::set<syncable::Id>::iterator, bool> ret =
-        blocked_item_ids_.insert(the_id);
-    UpdateDirty(ret.second);
-  }
-
   void EraseConflictingItem(std::set<syncable::Id>::iterator it) {
     UpdateDirty(true);
     conflicting_item_ids_.erase(it);
-  }
-
-  void EraseBlockedItem(std::set<syncable::Id>::iterator it) {
-    UpdateDirty(true);
-    blocked_item_ids_.erase(it);
   }
 
   void EraseConflictingItem(const syncable::Id& the_id) {
@@ -146,44 +127,19 @@ class SyncProcessState {
     UpdateDirty(0 != items_erased);
   }
 
-  void EraseBlockedItem(const syncable::Id& the_id) {
-    int items_erased = blocked_item_ids_.erase(the_id);
-    UpdateDirty(0 != items_erased);
-  }
-
   std::set<syncable::Id>::iterator ConflictingItemsBegin() {
     return conflicting_item_ids_.begin();
-  }
-
-  std::set<syncable::Id>::iterator BlockedItemsBegin() {
-    return blocked_item_ids_.begin();
   }
 
   std::set<syncable::Id>::iterator ConflictingItemsEnd() {
     return conflicting_item_ids_.end();
   }
 
-  std::set<syncable::Id>::iterator BlockedItemsEnd() {
-    return blocked_item_ids_.end();
-  }
-
-  void SetConflictingItems(const std::set<syncable::Id>& s) {
-    UpdateDirty(true);
-    conflicting_item_ids_ = s;
-  }
-
-  void SetBlockedItems(const std::set<syncable::Id>& s) {
-    UpdateDirty(true);
-    blocked_item_ids_ = s;
-  }
   // END item id set manipulation functions
 
   // Assorted other state info.
+  // DEPRECATED: USE ConflictingItemsSize.
   int conflicting_updates() const { return conflicting_item_ids_.size(); }
-
-  int num_sync_cycles() const { return num_sync_cycles_; }
-  void set_num_sync_cycles(const int val);
-  void increment_num_sync_cycles();
 
   base::TimeTicks silenced_until() const { return silenced_until_; }
   void set_silenced_until(const base::TimeTicks& val);
@@ -213,17 +169,9 @@ class SyncProcessState {
 
   bool IsShareUsable() const;
 
-  int error_commits() const { return error_commits_; }
-
-  void set_error_commits(const int val);
-
   int conflicting_commits() const { return conflicting_commits_; }
 
   void set_conflicting_commits(const int val);
-
-  int stalled_commits() const { return stalled_commits_; }
-
-  void set_stalled_commits(const int val);
 
   // WEIRD COUNTER manipulation functions.
   int consecutive_problem_get_updates() const {
@@ -263,18 +211,8 @@ class SyncProcessState {
   void zero_successful_commits();
   // end WEIRD COUNTER manipulation functions.
 
-  // Methods for managing error rate tracking.
-  void TallyNewError();
-
-  void TallyBigNewError();
-
-  void ForgetOldError();
-
-  void CheckErrorRateTooHigh();
-
   // Methods for tracking authentication state.
   void AuthFailed();
-  void AuthSucceeded();
 
   // Returns true if this object has been modified since last SetClean() call.
   bool IsDirty() const { return dirty_; }
@@ -291,22 +229,18 @@ class SyncProcessState {
  private:
   // For testing.
   SyncProcessState()
-      : num_sync_cycles_(0),
-        connection_manager_(NULL),
+      : connection_manager_(NULL),
         account_name_(PSTR("")),
         dirman_(NULL),
         resolver_(NULL),
         model_safe_worker_(NULL),
         syncer_event_channel_(NULL),
-        error_rate_(0),
         current_sync_timestamp_(0),
         num_server_changes_remaining_(0),
         syncing_(false),
         invalid_store_(false),
         syncer_stuck_(false),
-        error_commits_(0),
         conflicting_commits_(0),
-        stalled_commits_(0),
         consecutive_problem_get_updates_(0),
         consecutive_problem_commits_(0),
         consecutive_transient_error_commits_(0),
@@ -315,8 +249,6 @@ class SyncProcessState {
         dirty_(false),
         auth_dirty_(false),
         auth_failed_(false) {}
-
-  int num_sync_cycles_;
 
   ServerConnectionManager* connection_manager_;
   const PathString account_name_;
@@ -330,7 +262,6 @@ class SyncProcessState {
 
   // TODO(sync): move away from sets if it makes more sense.
   std::set<syncable::Id> conflicting_item_ids_;
-  std::set<syncable::Id> blocked_item_ids_;
   std::map<syncable::Id, ConflictSet*> id_to_conflict_set_;
   std::set<ConflictSet*> conflict_sets_;
 
@@ -339,8 +270,6 @@ class SyncProcessState {
 
   // Status information, as opposed to state info that may also be exposed for
   // status reporting purposes.
-  static const int ERROR_THRESHOLD = 500;
-  int error_rate_;  // A EMA in the range [0,65536)
   int64 current_sync_timestamp_;  // During inital sync these two members
   int64 num_server_changes_remaining_;  // Can be used to measure sync progress.
 
@@ -355,7 +284,6 @@ class SyncProcessState {
   // counts of various commit return values.
   int error_commits_;
   int conflicting_commits_;
-  int stalled_commits_;
 
   // WEIRD COUNTERS
   // Two variables that track the # on consecutive problem requests.

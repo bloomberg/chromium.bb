@@ -28,10 +28,6 @@ enum UpdateAttemptResponse {
   // Update was applied or safely ignored.
   SUCCESS,
 
-  // This state is deprecated.
-  // TODO(sync): Remove this state.
-  BLOCKED,
-
   // Conflicts with the local data representation. This can also mean that the
   // entry doesn't currently make sense if we applied it.
   CONFLICT,
@@ -74,7 +70,6 @@ enum VerifyResult {
 };
 
 enum VerifyCommitResult {
-  VERIFY_BLOCKED,
   VERIFY_UNSYNCABLE,
   VERIFY_OK,
 };

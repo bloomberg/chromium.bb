@@ -217,9 +217,9 @@ void AllStatus::HandleAuthWatcherEvent(const AuthWatcherEvent& auth_event) {
 void AllStatus::HandleSyncerEvent(const SyncerEvent& event) {
   ScopedStatusLockWithNotify lock(this);
   switch (event.what_happened) {
-    case SyncerEvent::SYNC_CYCLE_ENDED:
     case SyncerEvent::COMMITS_SUCCEEDED:
       break;
+    case SyncerEvent::SYNC_CYCLE_ENDED:
     case SyncerEvent::STATUS_CHANGED:
       status_ = CalcSyncing(event);
       break;

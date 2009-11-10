@@ -32,18 +32,6 @@ void ConflictResolutionView::set_conflicting_commits(const int val) {
   process_state_->set_conflicting_commits(val);
 }
 
-int ConflictResolutionView::num_sync_cycles() const {
-  return process_state_->num_sync_cycles();
-}
-
-void ConflictResolutionView::increment_num_sync_cycles() {
-  process_state_->increment_num_sync_cycles();
-}
-
-void ConflictResolutionView::zero_num_sync_cycles() {
-  process_state_->set_num_sync_cycles(0);
-}
-
 int64 ConflictResolutionView::current_sync_timestamp() const {
   return process_state_->current_sync_timestamp();
 }
@@ -114,34 +102,17 @@ bool ConflictResolutionView::HasCommitConflicts() const {
   return process_state_->HasConflictingItems();
 }
 
-bool ConflictResolutionView::HasBlockedItems() const {
-  return process_state_->HasBlockedItems();
-}
-
 int ConflictResolutionView::CommitConflictsSize() const {
   return process_state_->ConflictingItemsSize();
-}
-
-int ConflictResolutionView::BlockedItemsSize() const {
-  return process_state_->BlockedItemsSize();
 }
 
 void ConflictResolutionView::AddCommitConflict(const syncable::Id& the_id) {
   process_state_->AddConflictingItem(the_id);
 }
 
-void ConflictResolutionView::AddBlockedItem(const syncable::Id& the_id) {
-  process_state_->AddBlockedItem(the_id);
-}
-
 void ConflictResolutionView::EraseCommitConflict(
     set<syncable::Id>::iterator it) {
   process_state_->EraseConflictingItem(it);
-}
-
-void ConflictResolutionView::EraseBlockedItem(
-    set<syncable::Id>::iterator it) {
-  process_state_->EraseBlockedItem(it);
 }
 
 set<syncable::Id>::iterator
@@ -150,17 +121,8 @@ ConflictResolutionView::CommitConflictsBegin() const {
 }
 
 set<syncable::Id>::iterator
-ConflictResolutionView::BlockedItemsBegin() const {
-  return process_state_->BlockedItemsBegin();
-}
-
-set<syncable::Id>::iterator
 ConflictResolutionView::CommitConflictsEnd() const {
   return process_state_->ConflictingItemsEnd();
-}
-
-set<syncable::Id>::iterator ConflictResolutionView::BlockedItemsEnd() const {
-  return process_state_->BlockedItemsEnd();
 }
 
 }  // namespace browser_sync

@@ -77,8 +77,6 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
       << "All updates should have been attempted";
   EXPECT_EQ(0, process_state.ConflictingItemsSize())
       << "Simple update shouldn't result in conflicts";
-  EXPECT_EQ(0, process_state.BlockedItemsSize())
-      << "Blocked items shouldn't be possible under any circumstances";
   EXPECT_EQ(2, cycle_state.SuccessfullyAppliedUpdateCount())
       << "All items should have been successfully applied";
 }
@@ -104,8 +102,6 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
       << "All updates should have been attempted";
   EXPECT_EQ(0, process_state.ConflictingItemsSize())
       << "Simple update shouldn't result in conflicts, even if out-of-order";
-  EXPECT_EQ(0, process_state.BlockedItemsSize())
-      << "Blocked items shouldn't be possible under any circumstances";
   EXPECT_EQ(5, cycle_state.SuccessfullyAppliedUpdateCount())
       << "All updates should have been successfully applied";
 }
@@ -126,8 +122,6 @@ TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
       << "All updates should have been attempted";
   EXPECT_EQ(2, process_state.ConflictingItemsSize())
       << "All updates with an unknown ancestors should be in conflict";
-  EXPECT_EQ(0, process_state.BlockedItemsSize())
-      << "Blocked items shouldn't be possible under any circumstances";
   EXPECT_EQ(0, cycle_state.SuccessfullyAppliedUpdateCount())
       << "No item with an unknown ancestor should be applied";
 }
@@ -153,8 +147,6 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
       << "All updates should have been attempted";
   EXPECT_EQ(2, process_state.ConflictingItemsSize())
       << "The updates with unknown ancestors should be in conflict";
-  EXPECT_EQ(0, process_state.BlockedItemsSize())
-      << "Blocked items shouldn't be possible under any circumstances";
   EXPECT_EQ(4, cycle_state.SuccessfullyAppliedUpdateCount())
       << "The updates with known ancestors should be successfully applied";
 }

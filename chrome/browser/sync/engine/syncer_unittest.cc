@@ -1187,7 +1187,6 @@ TEST_F(SyncerTest, TestBasicUpdate) {
 
   syncer_->SyncShare(state_.get());
   SyncerStatus status(NULL, state_.get());
-  EXPECT_TRUE(0 == status.stalled_updates());
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     Entry entry(&trans, GET_BY_ID,
@@ -1226,7 +1225,6 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   SyncerStatus status(NULL, state_.get());
   // Ids 2 and 3 are expected to be in conflict now.
   EXPECT_TRUE(2 == conflict_view.conflicting_updates());
-  EXPECT_TRUE(0 == status.stalled_updates());
 
   // These entries will be used in the second set of updates.
   mock_server_->AddUpdateDirectory(4, 0, "newer_version", 20, 10);
@@ -1240,7 +1238,6 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   // The three items with an unresolved parent should be unapplied (3, 9, 100).
   // The name clash should also still be in conflict.
   EXPECT_TRUE(4 == conflict_view.conflicting_updates());
-  EXPECT_TRUE(0 == status.stalled_updates());
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     Entry name_clash(&trans, GET_BY_ID, ids_.FromNumber(2));
@@ -2270,9 +2267,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
   }
   syncer_->SyncShare(state_.get());
   SyncerStatus status(NULL, state_.get());
-  EXPECT_TRUE(0 == status.error_commits());
   EXPECT_TRUE(0 == status.conflicting_commits());
-  EXPECT_TRUE(0 == status.BlockedItemsSize());
 }
 
 // TODO(sync): Is this test useful anymore?

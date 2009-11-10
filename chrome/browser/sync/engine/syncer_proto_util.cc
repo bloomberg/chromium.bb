@@ -128,12 +128,6 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
       return false;
     }
 
-    // We use an exponential moving average to determine the rate of errors.
-    // It's more reactive to recent situations and uses no extra storage.
-    status.ForgetOldError();
-    // If we're decaying send out an update.
-    status.CheckErrorRateTooHigh();
-
     switch (response->error_code()) {
       case ClientToServerResponse::SUCCESS:
         if (!response->has_store_birthday() && birthday.empty()) {
@@ -166,8 +160,6 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
         break;
     }
 
-  } else if (session->connection_manager()->IsServerReachable()) {
-    status.TallyNewError();
   }
   return rv;
 }

@@ -133,10 +133,8 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
           break;
         case CommitResponse::OVER_QUOTA:
           over_quota = true;
-          // We handle over quota like a retry.
+          // We handle over quota like a retry, which is same as transient.
         case CommitResponse::RETRY:
-          session->AddBlockedItem(commit_ids[i]);
-          break;
         case CommitResponse::TRANSIENT_ERROR:
           ++transient_error_commits;
           break;
@@ -148,7 +146,6 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
 
   // TODO(sync): move status reporting elsewhere.
   status.set_conflicting_commits(conflicting_commits);
-  status.set_error_commits(error_commits);
   if (0 == successes) {
     status.increment_consecutive_transient_error_commits_by(
         transient_error_commits);
@@ -156,11 +153,6 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   } else {
     status.zero_consecutive_transient_error_commits();
     status.zero_consecutive_errors();
-  }
-  // If all commits are errors count it as an error.
-  if (commit_count == error_commits) {
-    // A larger error step than normal because a POST just succeeded.
-    status.TallyBigNewError();
   }
   if (commit_count != (conflicting_commits + error_commits +
                        transient_error_commits)) {

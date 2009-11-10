@@ -36,10 +36,6 @@ class SyncerStatus {
     return sync_process_state_->invalid_store();
   }
 
-  void set_invalid_store(const bool val) {
-    sync_process_state_->set_invalid_store(val);
-  }
-
   bool syncer_stuck() const {
     return sync_process_state_->syncer_stuck();
   }
@@ -92,22 +88,6 @@ class SyncerStatus {
 
   void set_conflicting_commits(const int val) {
     sync_process_state_->set_conflicting_commits(val);
-  }
-
-  int BlockedItemsSize() const {
-    return sync_process_state_->BlockedItemsSize();
-  }
-
-  int stalled_updates() const {
-    return sync_process_state_->BlockedItemsSize();
-  }
-
-  int error_commits() const {
-    return sync_process_state_->error_commits();
-  }
-
-  void set_error_commits(const int val) {
-    sync_process_state_->set_error_commits(val);
   }
 
   // WEIRD COUNTER manipulation functions.
@@ -179,26 +159,7 @@ class SyncerStatus {
 
   bool over_quota() const { return sync_cycle_state_->over_quota(); }
 
-  // Methods for managing error rate tracking in sync_process_state.
-  void TallyNewError() {
-    sync_process_state_->TallyNewError();
-  }
-
-  void TallyBigNewError() {
-    sync_process_state_->TallyBigNewError();
-  }
-
-  void ForgetOldError() {
-    sync_process_state_->ForgetOldError();
-  }
-
-  void CheckErrorRateTooHigh() {
-    sync_process_state_->CheckErrorRateTooHigh();
-  }
-
   void AuthFailed() { sync_process_state_->AuthFailed(); }
-
-  void AuthSucceeded() { sync_process_state_->AuthSucceeded(); }
 
   // Returns true if this object has been modified since last SetClean() call.
   bool IsDirty() const {
@@ -231,9 +192,6 @@ class SyncerStatus {
     LOG(INFO) << "unsynced_count = " << unsynced_count();
     LOG(INFO) << "conflicting_updates = " << conflicting_updates();
     LOG(INFO) << "conflicting_commits = " << conflicting_commits();
-    LOG(INFO) << "BlockedItemsSize = " << BlockedItemsSize();
-    LOG(INFO) << "stalled_updates = " << stalled_updates();
-    LOG(INFO) << "error_commits = " << error_commits();
 
     LOG(INFO) << "consecutive_problem_get_updates = "
               << consecutive_problem_get_updates();

@@ -17,8 +17,6 @@ SyncerEndCommand::SyncerEndCommand() {}
 SyncerEndCommand::~SyncerEndCommand() {}
 
 void SyncerEndCommand::ExecuteImpl(SyncerSession* session) {
-  ConflictResolutionView conflict_view(session);
-  conflict_view.increment_num_sync_cycles();
   SyncerStatus status(session);
   status.set_syncing(false);
 

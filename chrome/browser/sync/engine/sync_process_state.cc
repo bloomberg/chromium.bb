@@ -37,14 +37,12 @@ SyncProcessState::SyncProcessState(syncable::DirectoryManager* dirman,
                                    ConflictResolver* const resolver,
                                    SyncerEventChannel* syncer_event_channel,
                                    ModelSafeWorker* model_safe_worker)
-    : num_sync_cycles_(0),
-      connection_manager_(connection_manager),
+    : connection_manager_(connection_manager),
       account_name_(account_name),
       dirman_(dirman),
       resolver_(resolver),
       model_safe_worker_(model_safe_worker),
       syncer_event_channel_(syncer_event_channel),
-      error_rate_(0),
       current_sync_timestamp_(0),
       num_server_changes_remaining_(0),
       syncing_(false),
@@ -52,7 +50,6 @@ SyncProcessState::SyncProcessState(syncable::DirectoryManager* dirman,
       syncer_stuck_(false),
       error_commits_(0),
       conflicting_commits_(0),
-      stalled_commits_(0),
       consecutive_problem_get_updates_(0),
       consecutive_problem_commits_(0),
       consecutive_transient_error_commits_(0),
@@ -76,13 +73,10 @@ SyncProcessState& SyncProcessState::operator=(const SyncProcessState& counts) {
     return *this;
   }
   CleanupSets();
-  num_sync_cycles_ = counts.num_sync_cycles_;
   silenced_until_ = counts.silenced_until_;
-  error_rate_ = counts.error_rate_;
   current_sync_timestamp_ = counts.current_sync_timestamp_;
   num_server_changes_remaining_ = counts.num_server_changes_remaining_;
   error_commits_ = counts.error_commits_;
-  stalled_commits_ = counts.stalled_commits_;
   conflicting_commits_ = counts.conflicting_commits_;
   consecutive_problem_get_updates_ =
       counts.consecutive_problem_get_updates_;
@@ -92,7 +86,6 @@ SyncProcessState& SyncProcessState::operator=(const SyncProcessState& counts) {
       counts.consecutive_transient_error_commits_;
   consecutive_errors_ = counts.consecutive_errors_;
   conflicting_item_ids_ = counts.conflicting_item_ids_;
-  blocked_item_ids_ = counts.blocked_item_ids_;
   successful_commits_ = counts.successful_commits_;
   syncer_stuck_ = counts.syncer_stuck_;
 
@@ -128,16 +121,6 @@ SyncProcessState& SyncProcessState::operator=(const SyncProcessState& counts) {
     }
   }
   return *this;
-}
-
-void SyncProcessState::set_num_sync_cycles(const int val) {
-  UpdateDirty(val != num_sync_cycles_);
-  num_sync_cycles_ = val;
-}
-
-void SyncProcessState::increment_num_sync_cycles() {
-  UpdateDirty(true);
-  ++num_sync_cycles_;
 }
 
 void SyncProcessState::set_silenced_until(const base::TimeTicks& val) {
@@ -181,19 +164,9 @@ void SyncProcessState::set_num_server_changes_remaining(const int64 val) {
   num_server_changes_remaining_ = val;
 }
 
-void SyncProcessState::set_error_commits(const int val) {
-  UpdateDirty(val != error_commits_);
-  error_commits_ = val;
-}
-
-void SyncProcessState::set_stalled_commits(const int val) {
+void SyncProcessState::set_conflicting_commits(const int val) {
   UpdateDirty(val != conflicting_commits_);
   conflicting_commits_ = val;
-}
-
-void SyncProcessState::set_conflicting_commits(const int val) {
-  UpdateDirty(val != stalled_commits_);
-  stalled_commits_ = val;
 }
 
 // WEIRD COUNTER functions.
@@ -247,26 +220,6 @@ void SyncProcessState::zero_successful_commits() {
   UpdateDirty(0 != successful_commits_);
   successful_commits_ = 0;
 }
-
-// Methods for managing error rate tracking.
-void SyncProcessState::TallyNewError() {
-  UpdateDirty(true);
-  error_rate_ += (65536 - error_rate_) >> 2;
-}
-
-void SyncProcessState::TallyBigNewError() {
-  UpdateDirty(true);
-  error_rate_ += (65536 - error_rate_) >> 2;
-}
-
-void SyncProcessState::ForgetOldError() {
-  error_rate_ -= error_rate_ >> 2;
-}
-
-void SyncProcessState::CheckErrorRateTooHigh() {
-  UpdateDirty(error_rate_ > ERROR_THRESHOLD);
-}
-
 
 void SyncProcessState::MergeSets(const syncable::Id& id1,
                                  const syncable::Id& id2) {
@@ -329,12 +282,6 @@ void SyncProcessState::AuthFailed() {
   // Dirty if the last one DIDN'T fail.
   UpdateAuthDirty(true != auth_failed_);
   auth_failed_ = true;
-}
-
-void SyncProcessState::AuthSucceeded() {
-  // Dirty if the last one DID fail.
-  UpdateAuthDirty(false != auth_failed_);
-  auth_failed_ = false;
 }
 
 }  // namespace browser_sync

@@ -44,7 +44,6 @@ bool UpdateApplicator::AttemptOneApplication(
 
     // Clear the tracked failures to avoid double-counting.
     conflicting_ids_.clear();
-    blocked_ids_.clear();
   }
   syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *pointer_);
   UpdateAttemptResponse updateResponse =
@@ -60,10 +59,6 @@ bool UpdateApplicator::AttemptOneApplication(
       pointer_++;
       conflicting_ids_.push_back(entry.Get(syncable::ID));
       break;
-    case BLOCKED:
-      pointer_++;
-      blocked_ids_.push_back(entry.Get(syncable::ID));
-      break;
     default:
       NOTREACHED();
       break;
@@ -75,8 +70,7 @@ bool UpdateApplicator::AttemptOneApplication(
 }
 
 bool UpdateApplicator::AllUpdatesApplied() const {
-  return conflicting_ids_.empty() && blocked_ids_.empty() &&
-         begin_ == end_;
+  return conflicting_ids_.empty() && begin_ == end_;
 }
 
 void UpdateApplicator::SaveProgressIntoSessionState(SyncerSession* session) {
@@ -85,18 +79,11 @@ void UpdateApplicator::SaveProgressIntoSessionState(SyncerSession* session) {
 
   vector<syncable::Id>::const_iterator i;
   for (i = conflicting_ids_.begin(); i != conflicting_ids_.end(); ++i) {
-    session->EraseBlockedItem(*i);
     session->AddCommitConflict(*i);
     session->AddAppliedUpdate(CONFLICT, *i);
   }
-  for (i = blocked_ids_.begin(); i != blocked_ids_.end(); ++i) {
-    session->AddBlockedItem(*i);
-    session->EraseCommitConflict(*i);
-    session->AddAppliedUpdate(BLOCKED, *i);
-  }
   for (i = successful_ids_.begin(); i != successful_ids_.end(); ++i) {
     session->EraseCommitConflict(*i);
-    session->EraseBlockedItem(*i);
     session->AddAppliedUpdate(SUCCESS, *i);
   }
 }
