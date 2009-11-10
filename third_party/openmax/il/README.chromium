@@ -1,0 +1,10 @@
+URL: http://www.khronos.org/openmax/headers/omx_il_v1_1/omx_il_v1_1_2_headers.zip
+Version: 1.1.2
+License: BSD
+License File: LICENSE
+
+Description:
+Header files required to work with OpenMAX IL.
+
+Local Modifications:
+No Modifications
