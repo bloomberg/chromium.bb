@@ -226,8 +226,8 @@ def DeepDependencyTargets(target_dicts, roots):
   dependencies = set()
   for r in roots:
     spec = target_dicts[r]
-    r_deps = (spec.get('dependencies', []) +
-              spec.get('dependencies_original', []))
+    r_deps = list(set((spec.get('dependencies', []) +
+                       spec.get('dependencies_original', []))))
     for d in r_deps:
       if d not in roots:
         dependencies.add(d)
