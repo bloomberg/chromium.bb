@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <script type="text/javascript"
+            src="chrome_frame_tester_helpers.js"></script>
+    <script type="text/javascript"
+            src="CFInstall.js"></script>
+  </head>
+  <body>
+    <div id="statusPanel" style="border: 1px solid red; width: 100%">
+      Test running....
+    </div>
+
+    <script type="text/javascript">
+      var testName = 'CFInstallOverlay';
+      (function(){
+        try{
+          // Testing over-rides for GCF detection code.
+          CFInstall._force = true;
+          CFInstall._forceValue = false;
+
+          // Clobber prompt supression cookie if set.
+          document.cookie = 'disableGCFCheck=0;path=/';
+
+          CFInstall.check({
+            id: 'prompt',
+            mode: 'overlay'
+          });
+
+          var p = byId('prompt');
+
+          if (!p) {
+            onFailure(testName, 1, 'prompt not created with correct ID');
+            return;
+          }
+
+          // Make sure the prompt is parented in the display table.
+          if (p.parentNode != byId('chromeFrameIframeHolder')) {
+            onFailure(testName, 1, 'prompt not parented correctly');
+            return;
+          }
+
+          var lc = document.body.lastChild;
+
+          if (lc.nodeType != 1 || !lc.firstChild &&
+              lc.firstChild != byId('chromeFrameOverlayUnderlay')) {
+            onFailure(testName, 1, 'underlay placed incorrectly');
+            return;
+          }
+
+          if (lc.nodeType != 1 || !lc.firstChild &&
+              lc.firstChild.nextSibling != byId('chromeFrameOverlayContent')) {
+            onFailure(testName, 1, 'prompt placed incorrectly');
+            return;
+          }
+
+          onSuccess(testName, 1);
+
+        } catch (e) {
+          onFailure(testName, 1,
+                    'CFInstall overlay prompt failed with error: '+e);
+        }
+      })();
+    </script>
+    <p>Tests CFInstall overlay prompt</p>
+  </body>
+</html>
+

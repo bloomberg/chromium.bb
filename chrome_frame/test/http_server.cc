@@ -20,6 +20,12 @@ void ChromeFrameHTTPServer::SetUp() {
           FILE_PATH_LITERAL("test")).Append(
               FILE_PATH_LITERAL("data")).Append(
                   FILE_PATH_LITERAL("CFInstance.js")));  // NOLINT
+
+  file_util::CopyFile(cf_source_path.Append(FILE_PATH_LITERAL("CFInstall.js")),
+      cf_source_path.Append(
+          FILE_PATH_LITERAL("test")).Append(
+              FILE_PATH_LITERAL("data")).Append(
+                  FILE_PATH_LITERAL("CFInstall.js")));  // NOLINT
 }
 
 void ChromeFrameHTTPServer::TearDown() {
@@ -35,6 +41,16 @@ void ChromeFrameHTTPServer::TearDown() {
       .Append(FILE_PATH_LITERAL("test"))
       .Append(FILE_PATH_LITERAL("data"))
       .Append(FILE_PATH_LITERAL("CFInstance.js"));
+
+  file_util::Delete(cfi_path, false);
+
+  cfi_path.empty();
+  PathService::Get(base::DIR_SOURCE_ROOT, &cfi_path);
+  cfi_path = cfi_path
+      .Append(FILE_PATH_LITERAL("chrome_frame"))
+      .Append(FILE_PATH_LITERAL("test"))
+      .Append(FILE_PATH_LITERAL("data"))
+      .Append(FILE_PATH_LITERAL("CFInstall.js"));
 
   file_util::Delete(cfi_path, false);
 }

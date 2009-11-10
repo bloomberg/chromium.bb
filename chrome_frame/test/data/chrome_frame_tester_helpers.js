@@ -9,6 +9,10 @@ function onFailure(name, id, status) {
   onFinished(name, id, status);
 }
 
+function byId(id) {
+  return document.getElementById(id);
+}
+
 function getXHRObject(){
   var XMLHTTP_PROGIDS = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP',
                          'Msxml2.XMLHTTP.4.0'];
@@ -91,7 +95,7 @@ function onFinished(name, id, result) {
 }
 
 function appendStatus(message) {
-  var statusPanel = document.getElementById("statusPanel");
+  var statusPanel = byId("statusPanel");
   if (statusPanel) {
     statusPanel.innerHTML += '<BR>' + message;
   }
