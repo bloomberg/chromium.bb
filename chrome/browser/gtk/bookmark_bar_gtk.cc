@@ -863,22 +863,16 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender,
                                BookmarkBarGtk* bar) {
   const BookmarkNode* node = bar->GetNodeForToolButton(sender);
   DCHECK(node);
+  DCHECK(node->is_url());
   DCHECK(bar->page_navigator_);
 
   GdkEventButton* event =
       reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
 
-  if (node->is_url()) {
-    bar->page_navigator_->OpenURL(
-        node->GetURL(), GURL(),
-        event_utils::DispositionFromEventFlags(event->state),
-        PageTransition::AUTO_BOOKMARK);
-  } else {
-    GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(sender));
-    bookmark_utils::OpenAll(
-        window, bar->profile_, bar->page_navigator_, node,
-        event_utils::DispositionFromEventFlags(event->state));
-  }
+  bar->page_navigator_->OpenURL(
+      node->GetURL(), GURL(),
+      event_utils::DispositionFromEventFlags(event->state),
+      PageTransition::AUTO_BOOKMARK);
 
   UserMetrics::RecordAction(L"ClickedBookmarkBarURLButton", bar->profile_);
 }
