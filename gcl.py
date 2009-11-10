@@ -155,9 +155,11 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
         url_path = dir_info["URL"]
       content = ""
       while True:
-        # First, look for a locally modified version of the file.
-        local_path = os.path.join(local_dir, local_base)
-        r = gclient_scm.CaptureSVNStatus((local_path,))
+        # First, look for a locally modified version of the file if we can.
+        r = ""
+        if not use_root:
+          local_path = os.path.join(local_dir, local_base)
+          r = gclient_scm.CaptureSVNStatus((local_path,))
         rc = -1
         if r:
           (status, file) = r[0]
@@ -166,7 +168,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
           content = ReadFile(local_path)
           rc = 0
         else:
-          # Then look in the repository.
+          # Look in the repository if we didn't find something local.
           svn_path = url_path + "/" + filename
           content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
 
