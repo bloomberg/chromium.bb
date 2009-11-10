@@ -57,7 +57,7 @@ struct PrepopulatedEngine {
   // to appear for one country (e.g. Live Search U.S. English and Spanish), we
   // must use two different unique IDs (and different keywords).
   //
-  // The following unique IDs are available: 66, 93, 103+
+  // The following unique IDs are available: 58, 66, 93, 103+
   // NOTE: CHANGE THE ABOVE NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
   const int id;
 };
@@ -297,15 +297,45 @@ const PrepopulatedEngine bigmir = {
   33,
 };
 
-const PrepopulatedEngine bing_en_US = {  // "en_US" since we'll add more soon
+const PrepopulatedEngine bing_ar_XA = {
+  L"Bing",
+  L"",  // bing.com is taken by bing_en_XA.
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=ar-XA&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  7,  // Can't be 3 as this has to appear in the Arabian countries' lists
+      // alongside bing_en_XA.
+};
+
+const PrepopulatedEngine bing_en_US = {
   L"Bing",
   L"bing.com",
   "http://www.bing.com/s/wlflag.ico",
   L"http://www.bing.com/search?setmkt=en-US&q={searchTerms}",
   "UTF-8",
-  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}&"
-      L"form=OSDJAS",
-  3,  // Same unique ID as Live, since we'll be replacing it
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_XA = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-XA&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_hu_HU = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=hu-HU&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
 };
 
 const PrepopulatedEngine bluewin = {
@@ -732,16 +762,6 @@ const PrepopulatedEngine live_hr_HR = {
   L"live.com",
   "http://search.live.com/s/wlflag.ico",
   L"http://search.live.com/results.aspx?mkt=hr-HR&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_hu_HU = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=hu-HU&q={searchTerms}",
   "UTF-8",
   NULL,
   3,
@@ -1620,16 +1640,6 @@ const PrepopulatedEngine t_online = {
   49,
 };
 
-const PrepopulatedEngine tango = {
-  L"Tango",
-  L"tango.hu",
-  "http://tango.hu/favicon.ico",
-  L"http://tango.hu/search.php?q={searchTerms}",
-  "windows-1250",
-  NULL,
-  58,
-};
-
 const PrepopulatedEngine terra_ar = {
   L"Terra Argentina",
   L"terra.com.ar",
@@ -2272,7 +2282,7 @@ const PrepopulatedEngine* engines_default[] = { &google, &yahoo, &live, };
 
 // United Arab Emirates
 const PrepopulatedEngine* engines_AE[] =
-    { &google, &maktoob, &yahoo, &yamli, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &araby, &maktoob };
 
 // Albania
 const PrepopulatedEngine* engines_AL[] =
@@ -2424,7 +2434,7 @@ const PrepopulatedEngine* engines_HR[] =
     { &google, &yahoo, &pogodak_hr, &live_hr_HR, };
 
 // Hungary
-const PrepopulatedEngine* engines_HU[] = { &google, &tango, &ok, &live_hu_HU, };
+const PrepopulatedEngine* engines_HU[] = { &google, &ok, &bing_hu_HU, };
 
 // Indonesia
 const PrepopulatedEngine* engines_ID[] = { &google, &yahoo_id, &live_en_ID, };
@@ -3202,7 +3212,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 }
 
 int GetDataVersion() {
-  return 25;  // Increment this if you change the above data in ways that mean
+  return 26;  // Increment this if you change the above data in ways that mean
               // users with existing data should get a new version.
 }
 
