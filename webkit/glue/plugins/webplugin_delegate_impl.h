@@ -44,6 +44,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
     PLUGIN_QUIRK_WINDOWLESS_INVALIDATE_AFTER_SET_WINDOW = 512,  // Linux
     PLUGIN_QUIRK_NO_WINDOWLESS = 1024,  // Windows
     PLUGIN_QUIRK_PATCH_REGENUMKEYEXW = 2048, // Windows
+    PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS = 4096, // Windows
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,

@@ -260,6 +260,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     instance_->set_use_mozilla_user_agent();
     quirks_ |= PLUGIN_QUIRK_THROTTLE_WM_USER_PLUS_ONE;
     quirks_ |= PLUGIN_QUIRK_PATCH_SETCURSOR;
+    quirks_ |= PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS;
   } else if (filename == kAcrobatReaderPlugin) {
     // Check for the version number above or equal 9.
     std::vector<std::wstring> version;
