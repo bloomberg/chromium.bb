@@ -3074,3 +3074,6 @@ BUG_LEVIN WIN DEBUG : LayoutTests/fast/dom/Window/window-screen-properties.html 
 
 // Webkit 50667:50696
 BUG_LEVIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
+
+// Webkit 50717:50738, new test
+BUG_JAPHET WIN LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = IMAGE
