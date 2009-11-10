@@ -1059,14 +1059,6 @@
    fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
 }
 {
-   bug_26216
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN9Extension25LoadExtensionActionHelperEPK15DictionaryValuePSs
-   fun:_ZN39ExtensionTest_LoadPageActionHelper_Test8TestBodyEv
-}
-{
    bug_26966
    Memcheck:Leak
    fun:malloc

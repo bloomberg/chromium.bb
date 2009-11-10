@@ -302,8 +302,8 @@ TEST(ExtensionTest, LoadPageActionHelper) {
   DictionaryValue input;
 
   // First try with an empty dictionary.
-  ASSERT_TRUE(extension.LoadExtensionActionHelper(
-      &input, &error_msg) != NULL);
+  action.reset(extension.LoadExtensionActionHelper(&input, &error_msg));
+  ASSERT_TRUE(action != NULL);
   ASSERT_STREQ("", error_msg.c_str());
   error_msg = "";
 
