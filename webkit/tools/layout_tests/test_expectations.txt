@@ -2303,10 +2303,6 @@ BUG7482 LINUX MAC : LayoutTests/http/tests/misc/timer-vs-loading.html = TIMEOUT
 BUG7482 WIN : LayoutTests/http/tests/misc/timer-vs-loading.html = PASS TIMEOUT
 
 // Regressions from WebKit merge 40722:40785
-//
-// These ones look to just need fresh pixel baselines (likely caused by
-// transformation matrices now using doubles instead of floats):
-BUG10420 LINUX : LayoutTests/fast/transforms/matrix-02.html = FAIL
 // Misc failures:
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10420 LINUX : LayoutTests/svg/W3C-SVG-1.1/types-basicDOM-01-b.svg = FAIL
@@ -3058,7 +3054,7 @@ BUG9798 WIN : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS T
 
 // Flaky since at least WebKit 50258.
 BUG9798 WIN DEBUG : LayoutTests/media/video-empty-source.html = IMAGE PASS
-BUG9798 DEBUG : LayoutTests/fast/dom/defaultView.html = TEXT PASS
+BUG9798 DEBUG : LayoutTests/fast/dom/defaultView.html = TEXT PASS MISSING
 BUG9798 WIN RELEASE : LayoutTests/http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
 
 // WebKit 50358:50395
@@ -3158,4 +3154,5 @@ BUG_LEVIN WIN LINUX : LayoutTests/fast/block/positioning/relative-positioned-inl
 BUG_LEVIN WIN DEBUG : LayoutTests/svg/custom/gradient-stop-style-change.svg = TEXT
 BUG_LEVIN WIN DEBUG : LayoutTests/fast/dom/Window/window-screen-properties.html = TEXT
 
-
+// Webkit 50667:50696
+BUG_LEVIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
