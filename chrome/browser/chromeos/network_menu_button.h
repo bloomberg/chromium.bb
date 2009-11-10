@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_NETWORK_MENU_BUTTON_H_
 
 #include <string>
+#include <vector>
 
 #include "app/throb_animation.h"
 #include "base/timer.h"
@@ -28,6 +29,23 @@ namespace chromeos {
 // This class will handle getting the wifi networks and populating the menu.
 // It will also handle the status icon changing and connecting to another
 // wifi network.
+//
+// The network menu looks like this:
+//
+// <icon>  Wifi: <status> (disabled)
+//         Turn Wifi <action>
+// <icon>     Wifi Network A
+// <check>    Wifi Network B
+// <icon>     Wifi Network C
+// --------------------------------
+// <icon>  Ethernet: <status> (disabled)
+//         Turn Ethernet <action>
+//
+// <icon> will show the current state of the network device and the strength of
+//   the wifi networks.
+// <check> will be a check mark icon for the currently connected wifi.
+// <status> will be one of: Connected, Connecting, Disconnected, or Disabled.
+// <action> will be either On or Off depending on the current state.
 class NetworkMenuButton : public StatusAreaButton,
                           public views::ViewMenuDelegate,
                           public views::Menu2Model,
@@ -38,7 +56,7 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual ~NetworkMenuButton();
 
   // views::Menu2Model implementation.
-  virtual bool HasIcons() const  { return false; }
+  virtual bool HasIcons() const  { return true; }
   virtual int GetItemCount() const;
   virtual views::Menu2Model::ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const { return index; }
@@ -48,9 +66,9 @@ class NetworkMenuButton : public StatusAreaButton,
       views::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const { return 0; }
-  virtual bool GetIconAt(int index, SkBitmap* icon) const { return false; }
+  virtual bool GetIconAt(int index, SkBitmap* icon) const;
   virtual bool IsEnabledAt(int index) const;
-  virtual Menu2Model* GetSubmenuModelAt(int index) const { return NULL; }
+  virtual views::Menu2Model* GetSubmenuModelAt(int index) const { return NULL; }
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
@@ -72,8 +90,39 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void DrawIcon(gfx::Canvas* canvas);
 
  private:
+  enum MenuItemFlags {
+    FLAG_DISABLED        = 0x0001,
+    FLAG_TOGGLE_ETHERNET = 0x0010,
+    FLAG_TOGGLE_WIFI     = 0x0100,
+  };
+
+  struct MenuItem {
+    MenuItem()
+        : type(views::Menu2Model::TYPE_SEPARATOR),
+          flags(0) {}
+    MenuItem(views::Menu2Model::ItemType type, string16 label, SkBitmap icon,
+             WifiNetwork wifi_network, int flags)
+        : type(type),
+          label(label),
+          icon(icon),
+          wifi_network(wifi_network),
+          flags(flags) {}
+
+    views::Menu2Model::ItemType type;
+    string16 label;
+    SkBitmap icon;
+    WifiNetwork wifi_network;
+    int flags;
+  };
+  typedef std::vector<MenuItem> MenuItemVector;
+
+  static SkBitmap IconForWifiStrength(int strength);
+
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
+
+  // Called by RunMenu to initialize our list of menu items.
+  void InitMenuItems();
 
   // Set to true if we are currently refreshing the menu.
   bool refreshing_menu_;
@@ -87,8 +136,17 @@ class NetworkMenuButton : public StatusAreaButton,
   // The maximum opacity of the wifi bars.
   static const int kMaxOpacity;
 
-  // A list of wifi networks.
-  WifiNetworkVector wifi_networks_;
+  // The wifi icons used in menu. These are built on initialization.
+  static SkBitmap* menu_wifi_icons_;
+
+  // The ethernet icon used in menu,
+  static SkBitmap* menu_wired_icon_;
+
+  // The disconnected icon used in menu,
+  static SkBitmap* menu_disconnected_icon_;
+
+  // Our menu items.
+  MenuItemVector menu_items_;
 
   // The activated wifi network.
   WifiNetwork activated_wifi_network_;

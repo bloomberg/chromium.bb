@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
@@ -25,6 +26,9 @@ const int NetworkMenuButton::kNumWifiImages = 3;
 const int NetworkMenuButton::kMinOpacity = 50;
 const int NetworkMenuButton::kMaxOpacity = 256;
 const int NetworkMenuButton::kThrobDuration = 1000;
+SkBitmap* NetworkMenuButton::menu_wifi_icons_ = NULL;
+SkBitmap* NetworkMenuButton::menu_wired_icon_ = NULL;
+SkBitmap* NetworkMenuButton::menu_disconnected_icon_ = NULL;
 
 NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow browser_window)
     : StatusAreaButton(this),
@@ -33,6 +37,27 @@ NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow browser_window)
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_downloading_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_uploading_(this)) {
+  // Initialize the static menu icons.
+  static bool initialized = false;
+  if (!initialized) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    menu_wired_icon_ = new SkBitmap(SkBitmapOperations::CreateInvertedBitmap(
+        *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED)));
+    menu_disconnected_icon_ = new SkBitmap(
+        SkBitmapOperations::CreateInvertedBitmap(
+            *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED)));
+    menu_wifi_icons_ = new SkBitmap[kNumWifiImages + 1];
+    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_DOT);
+    menu_wifi_icons_[0] = SkBitmapOperations::CreateInvertedBitmap(icon);
+    for (int i = 0; i < kNumWifiImages; i++) {
+      icon = SkBitmapOperations::CreateSuperimposedBitmap(icon,
+          *rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_UP1 + i));
+      icon = SkBitmapOperations::CreateSuperimposedBitmap(icon,
+          *rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_DOWN1 + i));
+      menu_wifi_icons_[i + 1] = SkBitmapOperations::CreateInvertedBitmap(icon);
+    }
+    initialized = true;
+  }
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(SlideAnimation::NONE);
   animation_downloading_.SetThrobDuration(kThrobDuration);
@@ -51,30 +76,32 @@ NetworkMenuButton::~NetworkMenuButton() {
 // NetworkMenuButton, views::Menu2Model implementation:
 
 int NetworkMenuButton::GetItemCount() const {
-  // The menu contains the available wifi networks. If there are none, then it
-  // only has one item with a message that no networks are available.
-  return wifi_networks_.empty() ? 1 : static_cast<int>(wifi_networks_.size());
+  return static_cast<int>(menu_items_.size());
 }
 
 views::Menu2Model::ItemType NetworkMenuButton::GetTypeAt(int index) const {
-  return wifi_networks_.empty() ? views::Menu2Model::TYPE_COMMAND :
-      views::Menu2Model::TYPE_CHECK;
+  return menu_items_[index].type;
 }
 
 string16 NetworkMenuButton::GetLabelAt(int index) const {
-  return wifi_networks_.empty() ?
-      l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE) :
-      ASCIIToUTF16(wifi_networks_[index].ssid);
+  return menu_items_[index].label;
 }
 
 bool NetworkMenuButton::IsItemCheckedAt(int index) const {
-  // WifiNetwork that we are connected to (or connecting to) is checked.
-  return wifi_networks_.empty() ? false :
-      wifi_networks_[index].ssid == NetworkLibrary::Get()->wifi_ssid();
+  // All views::Menu2Model::TYPE_CHECK menu items are checked.
+  return true;
+}
+
+bool NetworkMenuButton::GetIconAt(int index, SkBitmap* icon) const {
+  if (!menu_items_[index].icon.empty()) {
+    *icon = menu_items_[index].icon;
+    return true;
+  }
+  return false;
 }
 
 bool NetworkMenuButton::IsEnabledAt(int index) const {
-  return !wifi_networks_.empty();
+  return !(menu_items_[index].flags & FLAG_DISABLED);
 }
 
 void NetworkMenuButton::ActivatedAt(int index) {
@@ -84,29 +111,35 @@ void NetworkMenuButton::ActivatedAt(int index) {
 
   NetworkLibrary* cros = NetworkLibrary::Get();
 
-  // If clicked on a network that we are already connected to or we are
-  // currently trying to connect to, then do nothing.
-  if (wifi_networks_[index].ssid == cros->wifi_ssid())
-    return;
-
-  activated_wifi_network_ = wifi_networks_[index];
-
-  // If wifi network is not encrypted, then directly connect.
-  // Otherwise, we open password dialog window.
-  if (!wifi_networks_[index].encrypted) {
-    cros->ConnectToWifiNetwork(wifi_networks_[index], string16());
+  if (menu_items_[index].flags & FLAG_TOGGLE_ETHERNET) {
+    cros->EnableEthernetNetworkDevice(!cros->ethernet_enabled());
+  } else if (menu_items_[index].flags & FLAG_TOGGLE_WIFI) {
+    cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
   } else {
-    PasswordDialogView* dialog = new PasswordDialogView(this,
-        wifi_networks_[index].ssid);
-    views::Window* window = views::Window::CreateChromeWindow(
-        browser_window_, gfx::Rect(), dialog);
-    // Draw the password dialog right below this button and right aligned.
-    gfx::Size size = dialog->GetPreferredSize();
-    gfx::Rect rect = bounds();
-    gfx::Point point = gfx::Point(rect.width() - size.width(), rect.height());
-    ConvertPointToScreen(this, &point);
-    window->SetBounds(gfx::Rect(point, size), browser_window_);
-    window->Show();
+    activated_wifi_network_ = menu_items_[index].wifi_network;
+
+    // If clicked on a network that we are already connected to or we are
+    // currently trying to connect to, then do nothing.
+    if (activated_wifi_network_.ssid == cros->wifi_ssid())
+      return;
+
+    // If wifi network is not encrypted, then directly connect.
+    // Otherwise, we open password dialog window.
+    if (!activated_wifi_network_.encrypted) {
+      cros->ConnectToWifiNetwork(activated_wifi_network_, string16());
+    } else {
+      PasswordDialogView* dialog = new PasswordDialogView(this,
+         activated_wifi_network_.ssid);
+      views::Window* window = views::Window::CreateChromeWindow(browser_window_,
+          gfx::Rect(), dialog);
+      // Draw the password dialog right below this button and right aligned.
+      gfx::Size size = dialog->GetPreferredSize();
+      gfx::Rect rect = bounds();
+      gfx::Point point = gfx::Point(rect.width() - size.width(), rect.height());
+      ConvertPointToScreen(this, &point);
+      window->SetBounds(gfx::Rect(point, size), browser_window_);
+      window->Show();
+    }
   }
 }
 
@@ -146,12 +179,13 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
   // If wifi, we draw the wifi signal bars.
   NetworkLibrary* cros = NetworkLibrary::Get();
   if (cros->wifi_connecting() ||
-          (!cros->ethernet_connected() && !cros->wifi_ssid().empty())) {
+      (!cros->ethernet_connected() && cros->wifi_connected())) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     // We want a value between 0-1.
     // 0 reperesents no signal and 1 represents full signal strength.
     double value = cros->wifi_connecting() ?
-        animation_connecting_.GetCurrentValue() : cros->wifi_strength() / 100.0;
+        animation_connecting_.GetCurrentValue() :
+        cros->wifi_strength() / 100.0;
     if (value < 0)
       value = 0;
     else if (value > 1)
@@ -223,18 +257,6 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, views::ViewMenuDelegate implementation:
-
-void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
-  wifi_networks_ = NetworkLibrary::Get()->wifi_networks();
-  refreshing_menu_ = true;
-  network_menu_.Rebuild();
-  network_menu_.UpdateStates();
-  refreshing_menu_ = false;
-  network_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, NetworkLibrary::Observer implementation:
 
 void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
@@ -259,7 +281,7 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
       // Always show the higher priority connection first. Ethernet then wifi.
       if (cros->ethernet_connected()) {
         id = IDR_STATUSBAR_WIRED;
-      } else if (!cros->wifi_ssid().empty()) {
+      } else if (cros->wifi_connected()) {
         id = IDR_STATUSBAR_WIFI_DOT;
       }
     }
@@ -270,7 +292,7 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
 }
 
 void NetworkMenuButton::NetworkTraffic(NetworkLibrary* cros, int traffic_type) {
-  if (!cros->ethernet_connected() && !cros->wifi_ssid().empty() &&
+  if (!cros->ethernet_connected() && cros->wifi_connected() &&
       !cros->wifi_connecting()) {
     // For downloading/uploading animation, we want to force at least one cycle
     // so that it looks smooth. And if we keep downloading/uploading, we will
@@ -280,6 +302,117 @@ void NetworkMenuButton::NetworkTraffic(NetworkLibrary* cros, int traffic_type) {
     if (traffic_type & TRAFFIC_UPLOAD)
       animation_uploading_.StartThrobbing(2);
   }
+}
+
+// static
+SkBitmap NetworkMenuButton::IconForWifiStrength(int strength) {
+  // Compose wifi icon by superimposing various icons.
+  int index = static_cast<int>(strength / 100.0 *
+      nextafter(static_cast<float>(kNumWifiImages + 1), 0));
+  if (index < 0)
+    index = 0;
+  if (index > kNumWifiImages)
+    index = kNumWifiImages;
+  return menu_wifi_icons_[index];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// NetworkMenuButton, views::ViewMenuDelegate implementation:
+
+void NetworkMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
+  refreshing_menu_ = true;
+  InitMenuItems();
+  network_menu_.Rebuild();
+  network_menu_.UpdateStates();
+  refreshing_menu_ = false;
+  network_menu_.RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+}
+
+void NetworkMenuButton::InitMenuItems() {
+  menu_items_.clear();
+  // Populate our MenuItems with the current list of wifi networks.
+  NetworkLibrary* cros = NetworkLibrary::Get();
+  const WifiNetworkVector& networks = cros->wifi_networks();
+
+  // Wifi: Status.
+  int status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
+  if (cros->wifi_connecting())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+  else if (cros->wifi_connected())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  else if (cros->wifi_enabled())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  string16 label =
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI),
+          l10n_util::GetStringUTF16(status));
+  SkBitmap icon = cros->wifi_connected() ?
+      IconForWifiStrength(cros->wifi_strength()) :
+      *menu_disconnected_icon_;
+  menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+      icon, WifiNetwork(), FLAG_DISABLED));
+
+  // Turn Wifi Off.
+  label = cros->wifi_enabled() ?
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)) :
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
+  menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+      SkBitmap(), WifiNetwork(), FLAG_TOGGLE_WIFI));
+
+  // Wifi networks ssids.
+  if (networks.empty()) {
+    // No networks available message.
+    label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
+    menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+        SkBitmap(), WifiNetwork(), FLAG_DISABLED));
+  } else {
+    for (size_t i = 0; i < networks.size(); ++i) {
+      label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
+          ASCIIToUTF16(networks[i].ssid));
+      if (networks[i].ssid == cros->wifi_ssid()) {
+        menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_CHECK, label,
+            SkBitmap(), networks[i], 0));
+      } else {
+        menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+            SkBitmap(), networks[i], 0));
+        // TODO(chocobo): Once we have better icons and more reliable strength
+        //   data, show icons for wifi ssids.
+//        menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+//            IconForWifiStrength(networks[i].strength), networks[i], 0));
+      }
+    }
+  }
+
+  // Separator.
+  menu_items_.push_back(MenuItem());
+
+  // Ethernet: Status.
+  status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
+  if (cros->ethernet_connecting())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+  else if (cros->ethernet_connected())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  else if (cros->ethernet_enabled())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
+      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
+      l10n_util::GetStringUTF16(status));
+  icon = cros->ethernet_connected() ? *menu_wired_icon_ :
+                                      *menu_disconnected_icon_;
+  menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+      icon, WifiNetwork(), FLAG_DISABLED));
+
+  // Turn Ethernet Off.
+  label = cros->ethernet_enabled() ?
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)) :
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
+  menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+      SkBitmap(), WifiNetwork(), FLAG_TOGGLE_ETHERNET));
 }
 
 }  // namespace chromeos
