@@ -5,10 +5,23 @@
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/in_process_webkit/storage_area.h"
 #include "chrome/browser/in_process_webkit/storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
+
+static const char* kLocalStorageDirectory = "Local Storage";
+
+// TODO(jorlow): Remove after Chrome 4 ships.
+static void MigrateLocalStorageDirectory(const FilePath& data_path) {
+  FilePath new_path = data_path.AppendASCII(kLocalStorageDirectory);
+  FilePath old_path = data_path.AppendASCII("localStorage");
+  if (!file_util::DirectoryExists(new_path) &&
+      file_util::DirectoryExists(old_path)) {
+    file_util::Move(old_path, new_path);
+  }
+}
 
 DOMStorageContext::DOMStorageContext(WebKitContext* webkit_context)
     : last_storage_area_id_(kFirstStorageAreaId),
@@ -42,8 +55,10 @@ StorageNamespace* DOMStorageContext::LocalStorage() {
 
   FilePath data_path = webkit_context_->data_path();
   FilePath dir_path;
-  if (!data_path.empty())
-    dir_path = data_path.AppendASCII("localStorage");
+  if (!data_path.empty()) {
+    MigrateLocalStorageDirectory(data_path);
+    dir_path = data_path.AppendASCII(kLocalStorageDirectory);
+  }
   return StorageNamespace::CreateLocalStorageNamespace(this, dir_path);
 }
 
