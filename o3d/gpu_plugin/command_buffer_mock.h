@@ -16,23 +16,22 @@ class MockCommandBuffer : public CommandBuffer {
  public:
   explicit MockCommandBuffer(NPP npp) : CommandBuffer(npp) {
     ON_CALL(*this, GetRingBuffer())
-      .WillByDefault(testing::Return(NPObjectPointer<NPObject>()));
-    ON_CALL(*this, GetRegisteredObject(testing::_))
-      .WillByDefault(testing::Return(NPObjectPointer<NPObject>()));
+      .WillByDefault(testing::Return(static_cast<::base::SharedMemory*>(NULL)));
+    ON_CALL(*this, GetTransferBuffer(testing::_))
+      .WillByDefault(testing::Return(static_cast<::base::SharedMemory*>(NULL)));
   }
 
-  MOCK_METHOD1(Initialize, bool(NPObjectPointer<NPObject> ring_buffer));
-  MOCK_METHOD0(GetRingBuffer, NPObjectPointer<NPObject>());
+  MOCK_METHOD1(Initialize, bool(::base::SharedMemory* ring_buffer));
+  MOCK_METHOD0(GetRingBuffer, ::base::SharedMemory*());
   MOCK_METHOD0(GetSize, int32());
   MOCK_METHOD1(SyncOffsets, int32(int32 put_offset));
   MOCK_METHOD0(GetGetOffset, int32());
   MOCK_METHOD1(SetGetOffset, void(int32 get_offset));
   MOCK_METHOD0(GetPutOffset, int32());
   MOCK_METHOD1(SetPutOffsetChangeCallback, void(Callback0::Type* callback));
-  MOCK_METHOD1(RegisterObject, int32(NPObjectPointer<NPObject> object));
-  MOCK_METHOD2(UnregisterObject, void(NPObjectPointer<NPObject> object,
-                                      int32 handle));
-  MOCK_METHOD1(GetRegisteredObject, NPObjectPointer<NPObject>(int32 handle));
+  MOCK_METHOD1(CreateTransferBuffer, int32(size_t size));
+  MOCK_METHOD1(DestroyTransferBuffer, void(int32 handle));
+  MOCK_METHOD1(GetTransferBuffer, ::base::SharedMemory*(int32 handle));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCommandBuffer);

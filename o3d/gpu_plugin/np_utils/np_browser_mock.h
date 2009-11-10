@@ -38,7 +38,11 @@ class MockNPBrowser : public StubNPBrowser {
   MOCK_METHOD1(GetWindowNPObject, NPObject*(NPP cpp));
   MOCK_METHOD3(PluginThreadAsyncCall,
                void(NPP npp, PluginThreadAsyncCallProc callback, void* data));
-  MOCK_METHOD3(MapMemory, void*(NPP npp, NPObject* object, size_t* size));
+  MOCK_METHOD4(ScheduleTimer, uint32(NPP npp,
+                                     uint32 interval,
+                                     bool repeat,
+                                     TimerProc callback));
+  MOCK_METHOD2(UnscheduleTimer, void(NPP npp, uint32 timer_id));
 };
 
 }  // namespace gpu_plugin

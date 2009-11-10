@@ -53,20 +53,26 @@
 #include "gpu_plugin/gpu_processor.h"
 #include "gpu_plugin/np_utils/np_browser.h"
 #include "gpu_plugin/np_utils/np_utils.h"
-#include "gpu_plugin/system_services/shared_memory.h"
+
+#if !defined(CB_SERVICE_REMOTE)
+#include "gpu_plugin/gpu_processor.h"
+#endif
 
 namespace o3d {
+using ::base::SharedMemory;
 using command_buffer::o3d::GAPIInterface;
 using command_buffer::O3DCmdHelper;
-using gpu_plugin::CommandBuffer;
-using gpu_plugin::GPUProcessor;
 using gpu_plugin::NPBrowser;
 using gpu_plugin::NPCreateObject;
 using gpu_plugin::NPGetProperty;
 using gpu_plugin::NPInvoke;
 using gpu_plugin::NPInvokeVoid;
 using gpu_plugin::NPObjectPointer;
-using gpu_plugin::SharedMemory;
+
+#if !defined(CB_SERVICE_REMOTE)
+using gpu_plugin::CommandBuffer;
+using gpu_plugin::GPUProcessor;
+#endif
 
 RendererCB::RendererCB(ServiceLocator* service_locator,
                        int32 transfer_memory_size)
@@ -88,12 +94,13 @@ RendererCB::~RendererCB() {
 }
 
 void RendererCB::Destroy() {
-  if (transfer_shm_id_ >= 0) {
-    NPInvokeVoid(npp_, command_buffer_, "unregisterObject", transfer_shm_id_);
-    transfer_shm_id_ = command_buffer::kInvalidSharedMemoryId;
+  if (command_buffer_.Get()) {
+    command_buffer_->DestroyTransferBuffer(transfer_shm_id_);
   }
 
-  transfer_shm_ = NPObjectPointer<NPObject>();
+  transfer_shm_id_ = command_buffer::kInvalidSharedMemoryId;
+  transfer_shm_ = NULL;
+  transfer_shm_address_ = NULL;
 
   if (allocator_) {
     delete allocator_;
@@ -298,30 +305,25 @@ Renderer::InitStatus RendererCB::InitPlatformSpecific(
     return INITIALIZATION_ERROR;
   }
 
-  // Create and map a block of memory for the transfer buffer.
-  transfer_shm_ = CreateSharedMemory(transfer_memory_size_, npp_);
-  if (!transfer_shm_.Get()) {
+  transfer_shm_id_ = command_buffer_->CreateTransferBuffer(
+      transfer_memory_size_);
+  if (transfer_shm_id_ < 0) {
     Destroy();
     return INITIALIZATION_ERROR;
   }
-  size_t size_bytes;
-  transfer_shm_address_ = NPBrowser::get()->MapMemory(npp_,
-                                                      transfer_shm_.Get(),
-                                                      &size_bytes);
-  if (!transfer_shm_address_) {
-    Destroy();
-    return INITIALIZATION_ERROR;
-  }
-  DCHECK(size_bytes == transfer_memory_size_);
 
-  // Register the transfer buffer so it can be identified with an integer
-  // in future commands.
-  if (!NPInvoke(npp_, command_buffer_, "registerObject", transfer_shm_,
-                &transfer_shm_id_)) {
+  transfer_shm_ = command_buffer_->GetTransferBuffer(transfer_shm_id_);
+  if (!transfer_shm_) {
     Destroy();
     return INITIALIZATION_ERROR;
   }
-  DCHECK_GE(transfer_shm_id_, 0);
+
+  if (!transfer_shm_->Map(transfer_memory_size_)) {
+    Destroy();
+    return INITIALIZATION_ERROR;
+  }
+
+  transfer_shm_address_ = transfer_shm_->memory();
 
   // Insert a token.
   frame_token_ = helper_->InsertToken();
@@ -340,11 +342,33 @@ Renderer::InitStatus RendererCB::InitPlatformSpecific(
   return SUCCESS;
 }
 
-static const unsigned int kDefaultCommandBufferSize = 256 << 10;
-
 // This should be enough to hold the biggest possible buffer
 // (2048x2048xABGR16F texture = 32MB)
 static const int32 kDefaultTransferMemorySize = 32 << 20;
+
+#if defined(CB_SERVICE_REMOTE)
+
+RendererCBRemote *RendererCBRemote::CreateDefault(
+    ServiceLocator* service_locator) {
+  return new RendererCBRemote(service_locator,
+                              kDefaultTransferMemorySize);
+}
+
+RendererCBRemote::RendererCBRemote(ServiceLocator* service_locator,
+                                   int32 transfer_memory_size)
+    : RendererCB(service_locator, transfer_memory_size) {
+}
+
+RendererCBRemote::~RendererCBRemote() {
+}
+
+Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
+  return RendererCBRemote::CreateDefault(service_locator);
+}
+
+#else  // CB_SERVICE_REMOTE
+
+static const unsigned int kDefaultCommandBufferSize = 256 << 10;
 
 RendererCBLocal *RendererCBLocal::CreateDefault(
     ServiceLocator* service_locator) {
@@ -363,23 +387,16 @@ RendererCBLocal::~RendererCBLocal() {
 NPObjectPointer<CommandBuffer> RendererCBLocal::CreateCommandBuffer(
     NPP npp, void* hwnd, int32 size) {
 #if defined(OS_WIN)
-  NPObjectPointer<SharedMemory> ring_buffer =
-      NPCreateObject<SharedMemory>(npp);
-  if (!ring_buffer->Initialize(size))
+  scoped_ptr<SharedMemory> ring_buffer(new SharedMemory);
+  if (!ring_buffer->Create(std::wstring(), false, false, size))
     return NPObjectPointer<CommandBuffer>();
 
-  size_t mapped_size;
-  if (!NPBrowser::get()->MapMemory(npp,
-                                   ring_buffer.Get(),
-                                   &mapped_size)) {
+  if (!ring_buffer->Map(size))
     return NPObjectPointer<CommandBuffer>();
-  }
-
-  DCHECK(mapped_size == size);
 
   NPObjectPointer<CommandBuffer> command_buffer =
       NPCreateObject<CommandBuffer>(npp);
-  if (!command_buffer->Initialize(ring_buffer))
+  if (!command_buffer->Initialize(ring_buffer.release()))
     return NPObjectPointer<CommandBuffer>();
 
   scoped_refptr<GPUProcessor> gpu_processor(
@@ -397,58 +414,10 @@ NPObjectPointer<CommandBuffer> RendererCBLocal::CreateCommandBuffer(
 #endif
 }
 
-NPObjectPointer<NPObject> RendererCBLocal::CreateSharedMemory(int32 size,
-                                                              NPP npp) {
-  NPObjectPointer<SharedMemory> shared_memory =
-      NPCreateObject<SharedMemory>(npp);
-
-  if (!shared_memory->Initialize(size))
-    return NPObjectPointer<NPObject>();
-
-  return shared_memory;
-}
-
-RendererCBRemote *RendererCBRemote::CreateDefault(
-    ServiceLocator* service_locator) {
-  return new RendererCBRemote(service_locator,
-                              kDefaultTransferMemorySize);
-}
-
-RendererCBRemote::RendererCBRemote(ServiceLocator* service_locator,
-                                   int32 transfer_memory_size)
-    : RendererCB(service_locator, transfer_memory_size) {
-}
-
-RendererCBRemote::~RendererCBRemote() {
-}
-
-NPObjectPointer<NPObject> RendererCBRemote::CreateSharedMemory(int32 size,
-                                                               NPP npp) {
-  NPObjectPointer<NPObject> shared_memory;
-
-  NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
-      NPBrowser::get()->GetWindowNPObject(npp));
-  if (!window.Get())
-    return shared_memory;
-
-  NPObjectPointer<NPObject> chromium;
-  if (!NPGetProperty(npp, window, "chromium", &chromium) || !chromium.Get())
-    return shared_memory;
-
-  NPObjectPointer<NPObject> system;
-  if (!NPGetProperty(npp, chromium, "system", &system) || !system.Get())
-    return shared_memory;
-
-  if (!NPInvoke(npp, system, "createSharedMemory", size,
-                &shared_memory)) {
-    return shared_memory;
-  }
-
-  return shared_memory;
-}
-
 Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
   return RendererCBLocal::CreateDefault(service_locator);
 }
+
+#endif  // CB_SERVICE_REMOTE
 
 }  // namespace o3d

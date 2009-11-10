@@ -9,15 +9,16 @@
 #include "o3d/gpu_plugin/np_utils/dynamic_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_object_mock.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
-#include "o3d/gpu_plugin/system_services/shared_memory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if defined(O3D_IN_CHROME)
 #include "webkit/glue/plugins/nphostapi.h"
 #else
-#include "o3d/third_party/npapi/include/npupp.h"
+#include "o3d/third_party/npapi/include/npfunctions.h"
 #endif
+
+using ::base::SharedMemory;
 
 using testing::_;
 using testing::DoAll;
@@ -202,15 +203,9 @@ TEST_F(GPUPluginObjectTest, CanGetScriptableNPObject) {
 }
 
 TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsInitializedCommandBuffer) {
-  NPObjectPointer<NPObject> ring_buffer =
-      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
-
-  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(
-      GPUPluginObject::kCommandBufferSize))
-    .WillOnce(Return(ring_buffer));
-
-  EXPECT_CALL(*command_buffer_.Get(), Initialize(ring_buffer))
-    .WillOnce(Return(true));
+  EXPECT_CALL(*command_buffer_.Get(), Initialize(NotNull()))
+    .WillOnce(DoAll(Invoke(DeleteObject<SharedMemory>),
+                    Return(true)));
 
   EXPECT_CALL(*processor_.get(), Initialize(NULL))
     .WillOnce(Return(true));
@@ -256,41 +251,12 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsNullIfWindowNotReady) {
   EXPECT_EQ(GPUPluginObject::kWaitingForSetWindow, plugin_object_->GetStatus());
 }
 
-TEST_F(GPUPluginObjectTest,
-    OpenCommandBufferReturnsNullIfCannotCreateRingBuffer) {
-  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(
-      GPUPluginObject::kCommandBufferSize))
-    .WillOnce(Return(NPObjectPointer<NPObject>()));
-
-  EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->New("application/foo",
-                                                0,
-                                                NULL,
-                                                NULL,
-                                                NULL));
-
-  // Set status as though SetWindow has been called. Avoids having to create a
-  // valid window handle to pass to SetWindow in tests.
-  plugin_object_->set_status(GPUPluginObject::kWaitingForOpenCommandBuffer);
-
-  EXPECT_EQ(NPObjectPointer<NPObject>(), plugin_object_->OpenCommandBuffer());
-
-  EXPECT_EQ(GPUPluginObject::kWaitingForOpenCommandBuffer,
-            plugin_object_->GetStatus());
-
-  EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
-}
 
 TEST_F(GPUPluginObjectTest,
     OpenCommandBufferReturnsNullIfCommandBufferCannotInitialize) {
-  NPObjectPointer<NPObject> ring_buffer =
-      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
-
-  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(
-      GPUPluginObject::kCommandBufferSize))
-    .WillOnce(Return(ring_buffer));
-
-  EXPECT_CALL(*command_buffer_.Get(), Initialize(ring_buffer))
-    .WillOnce(Return(false));
+  EXPECT_CALL(*command_buffer_.Get(), Initialize(NotNull()))
+    .WillOnce(DoAll(Invoke(DeleteObject<SharedMemory>),
+                    Return(false)));
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->New("application/foo",
                                                 0,
@@ -312,15 +278,9 @@ TEST_F(GPUPluginObjectTest,
 
 TEST_F(GPUPluginObjectTest,
     OpenCommandBufferReturnsNullIGPUProcessorCannotInitialize) {
-  NPObjectPointer<NPObject> ring_buffer =
-      NPCreateObject<StrictMock<MockSharedMemory> >(NULL);
-
-  EXPECT_CALL(*system_object_.Get(), CreateSharedMemory(
-      GPUPluginObject::kCommandBufferSize))
-    .WillOnce(Return(ring_buffer));
-
-  EXPECT_CALL(*command_buffer_.Get(), Initialize(ring_buffer))
-    .WillOnce(Return(true));
+  EXPECT_CALL(*command_buffer_.Get(), Initialize(NotNull()))
+    .WillOnce(DoAll(Invoke(DeleteObject<SharedMemory>),
+                    Return(true)));
 
   EXPECT_CALL(*processor_.get(), Initialize(NULL))
     .WillOnce(Return(false));

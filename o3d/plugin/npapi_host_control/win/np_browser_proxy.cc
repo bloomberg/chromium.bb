@@ -589,7 +589,7 @@ void NPBrowserProxy::NPN_ReleaseVariantValue(NPVariant *variant) {
       break;
     case NPVariantType_String:
       NPN_MemFree(
-          const_cast<NPUTF8*>(variant->value.stringValue.utf8characters));
+          const_cast<NPUTF8*>(variant->value.stringValue.UTF8Characters));
       break;
     case NPVariantType_Object:
       NPN_ReleaseObject(variant->value.objectValue);
@@ -765,7 +765,7 @@ bool NPBrowserProxy::NPN_Evaluate(NPP npp,
   if (ConstructObject(npp, window_object, "Object", NULL, 0, &result_object)) {
     CStringA function_code;
     function_code.Format("result_object.result = (%s);",
-                         script->utf8characters);
+                         script->UTF8Characters);
 
     NPVariant args[2];
     STRINGZ_TO_NPVARIANT("result_object", args[0]);

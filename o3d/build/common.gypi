@@ -245,5 +245,14 @@
         },
       },
     ],
+    ['cb_service == "remote"',
+      {
+        'target_defaults': {
+          'defines': [
+            'CB_SERVICE_REMOTE',
+          ],
+        },
+      },
+    ],
   ],
 }

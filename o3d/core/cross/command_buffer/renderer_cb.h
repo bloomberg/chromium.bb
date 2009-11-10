@@ -35,6 +35,7 @@
 #ifndef O3D_CORE_CROSS_COMMAND_BUFFER_RENDERER_CB_H_
 #define O3D_CORE_CROSS_COMMAND_BUFFER_RENDERER_CB_H_
 
+#include "base/shared_memory.h"
 #include "core/cross/precompile.h"
 #include <vector>
 #include "core/cross/renderer.h"
@@ -251,17 +252,13 @@ class RendererCB : public Renderer {
   virtual InitStatus InitPlatformSpecific(const DisplayWindow& display_window,
                                           bool off_screen);
 
-  // Create a shared memory object of the given size.
-  virtual gpu_plugin::NPObjectPointer<NPObject>
-      CreateSharedMemory(int32 size, NPP npp) = 0;
-
  private:
   int32 transfer_memory_size_;
-  gpu_plugin::NPObjectPointer<NPObject> transfer_shm_;
+  ::base::SharedMemory* transfer_shm_;
   int32 transfer_shm_id_;
   void *transfer_shm_address_;
   NPP npp_;
-  gpu_plugin::NPObjectPointer<NPObject> command_buffer_;
+  gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer> command_buffer_;
   ::command_buffer::O3DCmdHelper *helper_;
   ::command_buffer::FencedAllocatorWrapper *allocator_;
 
@@ -282,6 +279,27 @@ class RendererCB : public Renderer {
   DISALLOW_COPY_AND_ASSIGN(RendererCB);
 };
 
+#if defined(CB_SERVICE_REMOTE)
+
+// This subclass initializes itself with a remotely created, potentially out-
+// of-process CommandBuffer. It requires that the browser supports the "system
+// service" to create shared memory, which is not available in the mange branch
+// of Chrome. Use RendererCBLocal for now.
+class RendererCBRemote : public RendererCB {
+ public:
+  // Creates a default RendererCBRemote.
+  static RendererCBRemote *CreateDefault(ServiceLocator* service_locator);
+
+ protected:
+  RendererCBRemote(ServiceLocator* service_locator, int32 transfer_memory_size);
+  virtual ~RendererCBRemote();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RendererCBRemote);
+};
+
+#else  // CB_SERVICE_REMOTE
+
 // This subclass initializes itself with a locally created in-process
 // CommandBuffer and GPUProcessor. This class will eventually go away and the
 // code in RendererCBRemote will be merged into RendererCB.
@@ -298,36 +316,11 @@ class RendererCBLocal : public RendererCB {
                   int32 transfer_memory_size);
   virtual ~RendererCBLocal();
 
-  // Create a shared memory object of the given size using the system services
-  // library directly.
-  virtual gpu_plugin::NPObjectPointer<NPObject>
-      CreateSharedMemory(int32 size, NPP npp);
-
  private:
   DISALLOW_COPY_AND_ASSIGN(RendererCBLocal);
 };
 
-// This subclass initializes itself with a remotely created, potentially out-
-// of-process CommandBuffer. It requires that the browser supports the "system
-// service" to create shared memory, which is not available in the mange branch
-// of Chrome. Use RendererCBLocal for now.
-class RendererCBRemote : public RendererCB {
- public:
-  // Creates a default RendererCBRemote.
-  static RendererCBRemote *CreateDefault(ServiceLocator* service_locator);
-
- protected:
-  RendererCBRemote(ServiceLocator* service_locator, int32 transfer_memory_size);
-  virtual ~RendererCBRemote();
-
-  // Create a shared memory object using the browser's
-  // chromium.system.createSharedMemory method.
-  virtual gpu_plugin::NPObjectPointer<NPObject>
-      CreateSharedMemory(int32 size, NPP npp);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RendererCBRemote);
-};
+#endif  // CB_SERVICE_REMOTE
 
 }  // namespace o3d
 

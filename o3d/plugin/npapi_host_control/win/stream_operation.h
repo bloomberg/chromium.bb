@@ -49,7 +49,7 @@
 #include <atlstr.h>
 #include <urlmon.h>
 
-#include "third_party/npapi/include/npupp.h"
+#include "third_party/npapi/include/npfunctions.h"
 
 class NPPluginProxy;
 

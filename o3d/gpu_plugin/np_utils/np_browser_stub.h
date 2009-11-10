@@ -67,9 +67,13 @@ class StubNPBrowser : public NPBrowser {
   virtual void PluginThreadAsyncCall(NPP npp,
                                      PluginThreadAsyncCallProc callback,
                                      void* data);
-  virtual void* MapMemory(NPP npp,
-                          NPObject* object,
-                          size_t* size);
+
+  virtual uint32 ScheduleTimer(NPP npp,
+                               uint32 interval,
+                               bool repeat,
+                               TimerProc callback);
+
+  virtual void UnscheduleTimer(NPP npp, uint32 timer_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubNPBrowser);

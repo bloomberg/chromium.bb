@@ -786,7 +786,7 @@ Local<Value> NPV8Bridge::NPToV8Variant(const NPVariant& np_variant) {
       {
         NPString np_string = NPVARIANT_TO_STRING(np_variant);
         v8_result = Local<Value>::New(
-            v8::String::New(np_string.utf8characters, np_string.utf8length));
+            v8::String::New(np_string.UTF8Characters, np_string.UTF8Length));
         break;
       }
     case NPVariantType_Object:

@@ -456,6 +456,13 @@ class PluginObject: public NPObject {
   void set_last_click_time(Time value) { last_click_time_ = value; }
 #endif
 
+#if defined(CB_SERVICE_REMOTE)
+  void SetGPUPluginObject(NPObject* gpu_plugin_object);
+  NPObject* GetGPUPluginObject() {
+    return gpu_plugin_object_;
+  }
+#endif
+
  private:
   bool fullscreen_region_valid_;
   int fullscreen_region_x_;
@@ -471,6 +478,10 @@ class PluginObject: public NPObject {
   HCURSOR hCursor_;
   bool painted_once_;
 #endif  // OS_WIN
+
+#if defined(CB_SERVICE_REMOTE)
+  NPObject* gpu_plugin_object_;
+#endif
 };
 
 }  // namespace o3d

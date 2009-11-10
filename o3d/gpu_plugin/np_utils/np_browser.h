@@ -75,9 +75,13 @@ class NPBrowser {
                                      PluginThreadAsyncCallProc callback,
                                      void* data);
 
-  virtual void* MapMemory(NPP npp,
-                          NPObject* object,
-                          size_t* size);
+  typedef void (*TimerProc)(NPP npp, uint32 timer_id);
+  virtual uint32 ScheduleTimer(NPP npp,
+                               uint32 interval,
+                               bool repeat,
+                               TimerProc callback);
+
+  virtual void UnscheduleTimer(NPP npp, uint32 timer_id);
 
  private:
   static NPBrowser* browser_;

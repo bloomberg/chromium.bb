@@ -39,7 +39,7 @@
 #include <atlctl.h>
 #include <dispex.h>
 
-#include "third_party/npapi/include/npupp.h"
+#include "third_party/npapi/include/npfunctions.h"
 #include "plugin/npapi_host_control/win/np_browser_proxy.h"
 
 class NPBrowserProxy;

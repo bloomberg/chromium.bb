@@ -119,7 +119,6 @@
             ],
             'sources': [
               'mac/config_mac.mm',
-              'mac/main_mac.mm',
               'mac/o3d_plugin.r',
               'mac/plugin_logging-mac.mm',
               'mac/plugin_mac.h',
@@ -189,10 +188,16 @@
             ],
           },
         ],
+        ['OS == "mac" and cb_service != "remote"',
+          {
+            'sources': [
+              'mac/main_mac.mm',
+            ],
+          },
+        ],
         ['OS == "linux"',
           {
             'sources': [
-              'linux/main_linux.cc',
               'linux/config.cc',
               'linux/envvars.cc',
             ],
@@ -206,6 +211,13 @@
             ],
           },
         ],
+        ['OS == "linux" and cb_service != "remote"',
+          {
+            'sources': [
+              'linux/main_linux.cc',
+            ],
+          },
+        ],
         ['OS == "win"',
           {
             'dependencies': [
@@ -214,7 +226,6 @@
             'sources': [
               'win/config.cc',
               'win/logger_main.cc',
-              'win/main_win.cc',
               'win/o3dPlugin.def',
               'win/o3dPlugin.rc',
               'win/plugin_logging-win32.cc',
@@ -229,6 +240,13 @@
             },
           },
         ],
+        ['OS == "win" and cb_service != "remote"',
+          {
+            'sources': [
+              'win/main_win.cc',
+            ],
+          },
+        ],
         ['OS == "win" and renderer == "d3d9"',
           {
             'link_settings': {
@@ -239,13 +257,20 @@
             },
           },
         ],
-        ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9")',
+        ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9" or cb_service == "remote")',
           {
             'link_settings': {
               'libraries': [
                 '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
               ],
             },
+          },
+        ],
+        ['cb_service == "remote"',
+          {
+            'sources': [
+              'cross/main_remote_cb.cc',
+            ],
           },
         ],
       ],

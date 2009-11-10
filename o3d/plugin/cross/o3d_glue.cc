@@ -39,7 +39,10 @@
 #include <algorithm>
 #include "core/cross/renderer.h"
 #include "core/cross/client_info.h"
+#include "core/cross/command_buffer/display_window_cb.h"
 #include "gpu_plugin/np_utils/np_headers.h"
+#include "gpu_plugin/np_utils/np_object_pointer.h"
+#include "gpu_plugin/np_utils/np_utils.h"
 #include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/config.h"
 #include "plugin/cross/stream_manager.h"
@@ -49,6 +52,11 @@
 #ifdef OS_MACOSX
 #include "plugin_mac.h"
 #endif
+
+using o3d::DisplayWindowCB;
+using gpu_plugin::NPObjectPointer;
+using gpu_plugin::NPVariantToValue;
+using gpu_plugin::ValueToNPVariant;
 
 namespace glue {
 namespace _o3d {
@@ -148,6 +156,9 @@ PluginObject::PluginObject(NPP npp)
       fullscreen_pending_(false),
       draw_(true),
       in_plugin_(false),
+#endif
+#if defined(CB_SERVICE_REMOTE)
+      gpu_plugin_object_(NULL),
 #endif
       np_v8_bridge_(&service_locator_, npp),
       stream_manager_(new StreamManager(npp)),
@@ -400,7 +411,6 @@ bool PluginObject::SetRendererIsSoftware(bool state) {
 
 #endif  // OS_MACOSX
 
-
 void PluginObject::RegisterType(const ObjectBase::Class *clientclass,
                                 NPClass *npclass) {
   client_to_np_class_map_[clientclass] = npclass;
@@ -472,26 +482,51 @@ void PluginObject::LogAssertHandlerFunction(const std::string& str) {
   DLOG(ERROR) << "FATAL LOG ERROR: " << str;
 }
 
+#if defined(CB_SERVICE_REMOTE)
+void PluginObject::SetGPUPluginObject(NPObject* gpu_plugin_object) {
+  if (gpu_plugin_object) {
+    NPN_RetainObject(gpu_plugin_object);
+  }
+
+  if (gpu_plugin_object_) {
+    NPN_ReleaseObject(gpu_plugin_object_);
+  }
+
+  gpu_plugin_object_ = gpu_plugin_object;
+}
+#endif
+
 enum {
-  PROP_CLIENT,
-  PROP_GPU_CONFIG,
-  NUM_PROPERTY_IDS
+  kPropClient,
+  kPropGpuConfig,
+  kNumPropertyIds
 };
 
-static NPIdentifier property_ids[NUM_PROPERTY_IDS];
-static const NPUTF8 *property_names[NUM_PROPERTY_IDS] = {
+static NPIdentifier property_ids[kNumPropertyIds];
+static const NPUTF8 *property_names[kNumPropertyIds] = {
   "client",
   "gpuConfig",
 };
 
 enum {
-  METHOD_EVAL,
-  NUM_METHOD_IDS,
+  kMethodEval,
+
+#if defined(CB_SERVICE_REMOTE)
+  kMethodSetGPUPluginObject,
+  kMethodGetGPUPluginObject,
+#endif
+
+  kNumMethodIds,
 };
 
-static NPIdentifier method_ids[NUM_METHOD_IDS];
-static const NPUTF8 *method_names[NUM_METHOD_IDS] = {
+static NPIdentifier method_ids[kNumMethodIds];
+static const NPUTF8 *method_names[kNumMethodIds] = {
   "eval",
+
+#if defined(CB_SERVICE_REMOTE)
+  "setGPUPluginObject",
+  "getGPUPluginObject",
+#endif
 };
 
 static NPObject *PluginAllocate(NPP npp, NPClass *npclass) {
@@ -505,7 +540,7 @@ static void PluginDeallocate(NPObject *object) {
 static bool PluginHasMethod(NPObject *header, NPIdentifier name) {
   DebugScopedId id(name);
   PluginObject *plugin_object = static_cast<PluginObject *>(header);
-  for (int i = 0; i < NUM_METHOD_IDS; ++i) {
+  for (int i = 0; i < kNumMethodIds; ++i) {
     if (name == method_ids[i]) {
       return true;
     }
@@ -516,31 +551,51 @@ static bool PluginHasMethod(NPObject *header, NPIdentifier name) {
 }
 
 static bool PluginInvoke(NPObject *header, NPIdentifier name,
-                         const NPVariant *args, uint32_t argCount,
+                         const NPVariant *args, uint32_t arg_count,
                          NPVariant *np_result) {
   DebugScopedId id(name);
   PluginObject *plugin_object = static_cast<PluginObject *>(header);
-  if (name == method_ids[METHOD_EVAL]) {
-    return plugin_object->np_v8_bridge()->Evaluate(args, argCount, np_result);
-  } else {
+  if (name == method_ids[kMethodEval]) {
+    return plugin_object->np_v8_bridge()->Evaluate(args, arg_count, np_result);
+  }
+#if defined(CB_SERVICE_REMOTE)
+  else if (name == method_ids[kMethodGetGPUPluginObject]) {
+    if (arg_count != 0)
+      return false;
+    ValueToNPVariant(plugin_object->GetGPUPluginObject(), np_result);
+    return true;
+  } else if (name == method_ids[kMethodSetGPUPluginObject]) {
+    if (arg_count != 1)
+      return false;
+    VOID_TO_NPVARIANT(*np_result);
+    NPObjectPointer<NPObject> gpu_plugin_object;
+    if (NPVariantToValue(&gpu_plugin_object, args[0])) {
+      plugin_object->SetGPUPluginObject(gpu_plugin_object.Get());
+      return true;
+    } else {
+      return false;
+    }
+  }  // NOLINT
+#endif  // CB_SERVICE_REMOTE
+  else {  // NOLINT
     NPObject *globals = plugin_object->globals_npobject();
-    return globals->_class->invoke(globals, name, args, argCount, np_result);
+    return globals->_class->invoke(globals, name, args, arg_count, np_result);
   }
 }
 
 static bool PluginInvokeDefault(NPObject *header, const NPVariant *args,
-                                uint32_t argCount, NPVariant *result) {
+                                uint32_t arg_count, NPVariant *result) {
   PluginObject *plugin_object = static_cast<PluginObject *>(header);
   NPP npp = plugin_object->npp();
   NPObject *globals = plugin_object->globals_npobject();
-  return globals->_class->invokeDefault(globals, args, argCount, result);
+  return globals->_class->invokeDefault(globals, args, arg_count, result);
 }
 
 static bool PluginHasProperty(NPObject *header, NPIdentifier name) {
   DebugScopedId id(name);
   PluginObject *plugin_object = static_cast<PluginObject *>(header);
   NPP npp = plugin_object->npp();
-  for (unsigned int i = 0; i < NUM_PROPERTY_IDS; ++i) {
+  for (unsigned int i = 0; i < kNumPropertyIds; ++i) {
     if (name == property_ids[i]) return true;
   }
   NPObject *globals = plugin_object->globals_npobject();
@@ -552,7 +607,7 @@ static bool PluginGetProperty(NPObject *header, NPIdentifier name,
   DebugScopedId id(name);
   PluginObject *plugin_object = static_cast<PluginObject *>(header);
   NPP npp = plugin_object->npp();
-  if (name == property_ids[PROP_GPU_CONFIG]) {
+  if (name == property_ids[kPropGpuConfig]) {
     // Gets the GPU config (VendorID, DeviceID, name) as a string.
     // NOTE: this should probably be removed before we ship.
     o3d::GPUDevice device;
@@ -580,7 +635,7 @@ static bool PluginGetProperty(NPObject *header, NPIdentifier name,
     return temp;
   }
 
-  if (name == property_ids[PROP_CLIENT]) {
+  if (name == property_ids[kPropClient]) {
     NPObject *npobject = plugin_object->client_npobject();
     GLUE_PROFILE_START(npp, "retainobject");
     NPN_RetainObject(npobject);
@@ -597,7 +652,7 @@ static bool PluginSetProperty(NPObject *header, NPIdentifier name,
   DebugScopedId id(name);
   PluginObject *plugin_object = static_cast<PluginObject *>(header);
   NPP npp = plugin_object->npp();
-  if (name == property_ids[PROP_CLIENT]) {
+  if (name == property_ids[kPropClient]) {
     return false;
   }
   NPObject *globals = plugin_object->globals_npobject();
@@ -606,18 +661,18 @@ static bool PluginSetProperty(NPObject *header, NPIdentifier name,
 
 static bool PluginEnumerate(NPObject *header, NPIdentifier **value,
                             uint32_t *count) {
-  *count = NUM_PROPERTY_IDS + NUM_METHOD_IDS + glue::GetStaticPropertyCount();
+  *count = kNumPropertyIds + kNumMethodIds + glue::GetStaticPropertyCount();
   PluginObject *plugin_object = static_cast<PluginObject *>(header);
   NPP npp = plugin_object->npp();
   GLUE_PROFILE_START(npp, "memalloc");
   *value = static_cast<NPIdentifier *>(
       NPN_MemAlloc(*count * sizeof(NPIdentifier)));
   GLUE_PROFILE_STOP(npp, "memalloc");
-  memcpy(*value, property_ids, NUM_PROPERTY_IDS * sizeof(NPIdentifier));
-  memcpy(*value + NUM_PROPERTY_IDS, method_ids,
-         NUM_METHOD_IDS * sizeof(NPIdentifier));
+  memcpy(*value, property_ids, kNumPropertyIds * sizeof(NPIdentifier));
+  memcpy(*value + kNumPropertyIds, method_ids,
+         kNumMethodIds * sizeof(NPIdentifier));
   glue::StaticEnumeratePropertyHelper(
-      *value + NUM_PROPERTY_IDS + NUM_METHOD_IDS);
+      *value + kNumPropertyIds + kNumMethodIds);
   return true;
 }
 
@@ -646,8 +701,8 @@ PluginObject *PluginObject::Create(NPP npp) {
 
 void InitializeGlue(NPP npp) {
   GLUE_PROFILE_START(npp, "getstringidentifiers");
-  NPN_GetStringIdentifiers(property_names, NUM_PROPERTY_IDS, property_ids);
-  NPN_GetStringIdentifiers(method_names, NUM_METHOD_IDS, method_ids);
+  NPN_GetStringIdentifiers(property_names, kNumPropertyIds, property_ids);
+  NPN_GetStringIdentifiers(method_names, kNumMethodIds, method_ids);
   GLUE_PROFILE_STOP(npp, "getstringidentifiers");
   glue::InitializeGlue(npp);
 }
@@ -896,7 +951,7 @@ void PluginObject::AsyncTick() {
 }
 
 void PluginObject::Tick() {
-  DCHECK(pending_ticks_ > 0);
+  DCHECK_GT(pending_ticks_, 0);
   --pending_ticks_;
 
   client_->Tick();

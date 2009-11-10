@@ -9,6 +9,8 @@
 #include "o3d/gpu_plugin/gpu_plugin_object.h"
 #include "o3d/gpu_plugin/gpu_processor.h"
 
+using ::base::SharedMemory;
+
 namespace gpu_plugin {
 
 const NPUTF8 GPUPluginObject::kPluginType[] =
@@ -95,32 +97,11 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
   if (status_ != kWaitingForOpenCommandBuffer)
     return NPObjectPointer<NPObject>();
 
-  NPObjectPointer<NPObject> window = NPObjectPointer<NPObject>::FromReturned(
-      NPBrowser::get()->GetWindowNPObject(npp_));
-  if (!window.Get())
+  scoped_ptr<SharedMemory> ring_buffer(new SharedMemory);
+  if (!ring_buffer->Create(std::wstring(), false, false, kCommandBufferSize))
     return NPObjectPointer<NPObject>();
 
-  NPObjectPointer<NPObject> chromium;
-  if (!NPGetProperty(npp_, window, "chromium", &chromium)) {
-    return NPObjectPointer<NPObject>();
-  }
-
-  NPObjectPointer<NPObject> system;
-  if (!NPGetProperty(npp_, chromium, "system", &system)) {
-    return NPObjectPointer<NPObject>();
-  }
-
-  NPObjectPointer<NPObject> ring_buffer;
-  if (!NPInvoke(npp_, system, "createSharedMemory", kCommandBufferSize,
-                &ring_buffer)) {
-    return NPObjectPointer<NPObject>();
-  }
-
-  if (!ring_buffer.Get()) {
-    return NPObjectPointer<NPObject>();
-  }
-
-  if (command_buffer_->Initialize(ring_buffer)) {
+  if (command_buffer_->Initialize(ring_buffer.release())) {
     if (processor_->Initialize(static_cast<HWND>(window_.window))) {
       command_buffer_->SetPutOffsetChangeCallback(
           NewCallback(processor_.get(),

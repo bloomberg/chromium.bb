@@ -37,13 +37,14 @@
 
 namespace command_buffer {
 
+using gpu_plugin::CommandBuffer;
 using gpu_plugin::NPBrowser;
 using gpu_plugin::NPInvoke;
 using gpu_plugin::NPObjectPointer;
 
 CommandBufferHelper::CommandBufferHelper(
     NPP npp,
-    const NPObjectPointer<NPObject>& command_buffer)
+    const NPObjectPointer<CommandBuffer>& command_buffer)
     : npp_(npp),
       command_buffer_(command_buffer),
       entries_(NULL),
@@ -55,36 +56,19 @@ CommandBufferHelper::CommandBufferHelper(
 }
 
 bool CommandBufferHelper::Initialize() {
-  // Get the ring buffer from the GPU process.
-  if (!NPInvoke(npp_, command_buffer_, "getRingBuffer", &ring_buffer_) ||
-      !ring_buffer_.Get()) {
+  ring_buffer_ = command_buffer_->GetRingBuffer();
+  if (!ring_buffer_)
     return false;
-  }
 
   // Map the ring buffer into this process.
-  size_t size_bytes;
-  entries_ = static_cast<CommandBufferEntry*>(
-      NPBrowser::get()->MapMemory(npp_, ring_buffer_.Get(), &size_bytes));
-
-  // Get the command buffer size.
-  if (!NPInvoke(npp_, command_buffer_, "getSize", &entry_count_)) {
+  if (!ring_buffer_->Map(ring_buffer_->max_size()))
     return false;
-  }
 
-  // Get the initial get offset.
-  if (!NPInvoke(npp_, command_buffer_, "getGetOffset", &get_)) {
-    return false;
-  }
-
-  // Get the initial put offset.
-  if (!NPInvoke(npp_, command_buffer_, "getPutOffset", &put_)) {
-    return false;
-  }
-
-  // Get the last token.
-  if (!NPInvoke(npp_, command_buffer_, "getToken", &last_token_read_)) {
-    return false;
-  }
+  entries_ = static_cast<CommandBufferEntry*>(ring_buffer_->memory());
+  entry_count_ = command_buffer_->GetSize();
+  get_ = command_buffer_->GetGetOffset();
+  put_ = command_buffer_->GetPutOffset();
+  last_token_read_ = command_buffer_->GetToken();
 
   return true;
 }
@@ -93,8 +77,8 @@ CommandBufferHelper::~CommandBufferHelper() {
 }
 
 bool CommandBufferHelper::Flush() {
-  // If this fails it means the command buffer reader has been shutdown.
-  return NPInvoke(npp_, command_buffer_, "syncOffsets", put_, &get_);
+  get_ = command_buffer_->SyncOffsets(put_);
+  return !command_buffer_->GetErrorStatus();
 }
 
 // Calls Flush() and then waits until the buffer is empty. Break early if the
@@ -125,8 +109,7 @@ int32 CommandBufferHelper::InsertToken() {
   if (token_ == 0) {
     // we wrapped
     Finish();
-    if (!NPInvoke(npp_, command_buffer_, "getToken", &last_token_read_))
-      return -1;
+    last_token_read_ = command_buffer_->GetToken();
     DCHECK_EQ(token_, last_token_read_);
   }
   return token_;
@@ -141,8 +124,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   if (last_token_read_ >= token) return;  // fast path.
   if (token > token_) return;  // we wrapped
   Flush();
-  if (!NPInvoke(npp_, command_buffer_, "getToken", &last_token_read_))
-    return;
+  last_token_read_ = command_buffer_->GetToken();
   while (last_token_read_ < token) {
     if (get_ == put_) {
       LOG(FATAL) << "Empty command buffer while waiting on a token.";
@@ -152,8 +134,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
     // has shutdown.
     if (!Flush())
       return;
-    if (!NPInvoke(npp_, command_buffer_, "getToken", &last_token_read_))
-      return;
+    last_token_read_ = command_buffer_->GetToken();
   }
 }
 
@@ -209,8 +190,7 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
 }
 
 parse_error::ParseError CommandBufferHelper::GetParseError() {
-  int32 parse_error;
-  DCHECK(NPInvoke(npp_, command_buffer_, "resetParseError", &parse_error));
+  int32 parse_error = command_buffer_->ResetParseError();
   return static_cast<parse_error::ParseError>(parse_error);
 }
 

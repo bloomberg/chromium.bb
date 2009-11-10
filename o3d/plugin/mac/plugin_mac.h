@@ -34,7 +34,7 @@
 #define O3D_PLUGIN_MAC_PLUGIN_MAC_H_
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <npupp.h>
+#include <npfunctions.h>
 #include <AGL/agl.h>
 #include <vector>
 

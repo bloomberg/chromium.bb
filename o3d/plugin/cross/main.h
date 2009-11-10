@@ -39,7 +39,7 @@
 
 #include "core/cross/renderer_platform.h"
 
-#include <npupp.h>
+#include <npfunctions.h>
 #include <stdio.h>
 
 #include <fstream>

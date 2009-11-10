@@ -39,7 +39,6 @@
 #include "gpu_plugin/command_buffer.h"
 #include "gpu_plugin/gpu_processor.h"
 #include "gpu_plugin/np_utils/np_object_pointer.h"
-#include "gpu_plugin/system_services/shared_memory.h"
 
 namespace command_buffer {
 
@@ -70,17 +69,14 @@ class CommandBufferHelperTest : public testing::Test {
     EXPECT_CALL(*api_mock_, DoCommand(0, 0, _))
         .WillRepeatedly(Return(parse_error::kParseNoError));
 
-    NPObjectPointer<gpu_plugin::SharedMemory> ring_buffer =
-        NPCreateObject<gpu_plugin::SharedMemory>(NULL);
-    ring_buffer->Initialize(kCommandBufferSizeBytes);
-
-    size_t size_bytes;
-    void* buffer = NPN_MapMemory(NULL, ring_buffer.Get(), &size_bytes);
+    ::base::SharedMemory* ring_buffer = new ::base::SharedMemory;
+    ring_buffer->Create(std::wstring(), false, false, kCommandBufferSizeBytes);
+    ring_buffer->Map(1024);
 
     command_buffer_ = NPCreateObject<CommandBuffer>(NULL);
     command_buffer_->Initialize(ring_buffer);
 
-    parser_ = new command_buffer::CommandParser(buffer,
+    parser_ = new command_buffer::CommandParser(ring_buffer->memory(),
                                                 kCommandBufferSizeBytes,
                                                 0,
                                                 kCommandBufferSizeBytes,

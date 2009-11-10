@@ -6,6 +6,8 @@
 
 #include "o3d/gpu_plugin/gpu_processor.h"
 
+using ::base::SharedMemory;
+
 namespace gpu_plugin {
 
 GPUProcessor::GPUProcessor(NPP npp,
@@ -42,18 +44,14 @@ bool GPUProcessor::Initialize(HWND handle) {
     return false;
 
   // Map the ring buffer and create the parser.
-  NPObjectPointer<NPObject> ring_buffer =
-      command_buffer_->GetRingBuffer();
-
-  if (ring_buffer.Get()) {
-    size_t size;
-    void* ptr = NPBrowser::get()->MapMemory(npp_,
-                                            ring_buffer.Get(),
-                                            &size);
-    if (ptr == NULL) {
+  SharedMemory* ring_buffer = command_buffer_->GetRingBuffer();
+  if (ring_buffer) {
+    size_t size = ring_buffer->max_size();
+    if (!ring_buffer->Map(size)) {
       return false;
     }
 
+    void* ptr = ring_buffer->memory();
     parser_.reset(new command_buffer::CommandParser(ptr, size, 0, size, 0,
                                                     decoder_.get()));
   } else {

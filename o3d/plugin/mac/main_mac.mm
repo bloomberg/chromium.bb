@@ -155,7 +155,7 @@ void DispatchKeyboardEvent(PluginObject* obj,
       break;
     case keyUp:
       type = Event::TYPE_KEYUP;
-      break;      
+      break;
     default:
       return;
       break;
@@ -477,6 +477,8 @@ bool HandleCocoaEvent(NPP instance, NPCocoaEvent* the_event) {
       }
 
       break;
+    case NPCocoaEventTextInput:
+      break;
   }
 
   return handled;
@@ -651,7 +653,7 @@ NPError OSCALL NP_Initialize(NPNetscapeFuncs* browserFuncs) {
 #if !defined(O3D_INTERNAL_PLUGIN)
 
 // Wrapper that discards the return value to match the expected type of
-// NPP_ShutdownUPP.
+// NPP_ShutdownProcPtr.
 void NPP_ShutdownWrapper() {
   NP_Shutdown();
 }
@@ -661,7 +663,7 @@ void NPP_ShutdownWrapper() {
 // to be a main() to call to do basic setup.
 int main(NPNetscapeFuncs* browserFuncs,
          NPPluginFuncs* pluginFuncs,
-         NPP_ShutdownUPP* shutdownProc) {
+         NPP_ShutdownProcPtr* shutdownProc) {
   HANDLE_CRASHES;
   NPError error = NP_Initialize(browserFuncs);
   if (error == NPERR_NO_ERROR)
@@ -881,7 +883,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
           NSWindow * ns_window = reinterpret_cast<NSWindow*>(np_cg->window);
           new_window = reinterpret_cast<WindowRef>([ns_window windowRef]);
         } else {
-          new_window = np_cg->window;
+          new_window = static_cast<OpaqueWindowPtr*>(np_cg->window);
         }
         obj->mac_2d_context_ = np_cg->context;
       }

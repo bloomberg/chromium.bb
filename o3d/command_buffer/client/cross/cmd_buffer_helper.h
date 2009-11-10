@@ -38,6 +38,7 @@
 #include "command_buffer/common/cross/logging.h"
 #include "command_buffer/common/cross/constants.h"
 #include "command_buffer/common/cross/cmd_buffer_common.h"
+#include "o3d/gpu_plugin/command_buffer.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 
 namespace command_buffer {
@@ -61,7 +62,8 @@ class CommandBufferHelper {
  public:
   CommandBufferHelper(
       NPP npp,
-      const gpu_plugin::NPObjectPointer<NPObject>& command_buffer);
+      const gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>&
+          command_buffer);
   virtual ~CommandBufferHelper();
 
   bool Initialize();
@@ -192,8 +194,8 @@ class CommandBufferHelper {
   }
 
   NPP npp_;
-  gpu_plugin::NPObjectPointer<NPObject> command_buffer_;
-  gpu_plugin::NPObjectPointer<NPObject> ring_buffer_;
+  gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer> command_buffer_;
+  ::base::SharedMemory* ring_buffer_;
   CommandBufferEntry *entries_;
   int32 entry_count_;
   int32 token_;

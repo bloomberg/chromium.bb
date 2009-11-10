@@ -48,7 +48,8 @@ class O3DCmdHelper : public CommandBufferHelper {
  public:
   O3DCmdHelper(
       NPP npp,
-      const gpu_plugin::NPObjectPointer<NPObject>& command_buffer)
+      const gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>&
+          command_buffer)
       : CommandBufferHelper(npp, command_buffer) {
   }
   virtual ~O3DCmdHelper() {

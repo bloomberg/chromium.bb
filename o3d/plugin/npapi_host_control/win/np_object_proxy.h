@@ -44,7 +44,7 @@
 // type-lib.
 #include "npapi_host_control.h"
 
-#include "third_party/npapi/include/npupp.h"
+#include "third_party/npapi/include/npfunctions.h"
 
 struct NPObject;
 class NPBrowserProxy;

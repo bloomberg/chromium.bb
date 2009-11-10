@@ -8,7 +8,9 @@
 #include <set>
 #include <vector>
 
+#include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
+#include "base/shared_memory.h"
 #include "base/task.h"
 #include "o3d/gpu_plugin/np_utils/default_np_object.h"
 #include "o3d/gpu_plugin/np_utils/np_dispatcher.h"
@@ -22,11 +24,12 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   explicit CommandBuffer(NPP npp);
   virtual ~CommandBuffer();
 
-  // Initialize the command buffer with the given buffer.
-  virtual bool Initialize(NPObjectPointer<NPObject> ring_buffer);
+  // Initialize the command buffer with the given ring buffer. Takes ownership
+  // of ring buffer.
+  virtual bool Initialize(::base::SharedMemory* ring_buffer);
 
   // Gets the shared memory ring buffer object for the command buffer.
-  virtual NPObjectPointer<NPObject> GetRingBuffer();
+  virtual ::base::SharedMemory* GetRingBuffer();
 
   virtual int32 GetSize();
 
@@ -56,19 +59,15 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   // Takes ownership of callback. The callback is invoked on the plugin thread.
   virtual void SetPutOffsetChangeCallback(Callback0::Type* callback);
 
-  // Get an opaque integer handle for an NPObject. This can be used
-  // to identify the shared memory object from the ring buffer. Note that the
-  // object will be retained. Consider reference cycle issues. Returns zero for
-  // NULL, positive for non-NULL and -1 on error. Objects may be registered
-  // multiple times and have multiple associated handles. Each handle for a
-  // distinct object must be separately unregistered.
-  virtual int32 RegisterObject(NPObjectPointer<NPObject> object);
+  // Create a shared memory transfer buffer and return a handle that uniquely
+  // identifies it or -1 on error.
+  virtual int32 CreateTransferBuffer(size_t size);
 
-  // Unregister a previously registered NPObject. It is safe to unregister the
-  // zero handle.
-  virtual void UnregisterObject(NPObjectPointer<NPObject> object, int32 handle);
+  // Destroy a shared memory transfer buffer and recycle the handle.
+  virtual void DestroyTransferBuffer(int32 id);
 
-  virtual NPObjectPointer<NPObject> GetRegisteredObject(int32 handle);
+  // Get the shared memory associated with a handle.
+  virtual ::base::SharedMemory* GetTransferBuffer(int32 handle);
 
   // Get the current token value. This is used for by the writer to defer
   // changes to shared memory objects until the reader has reached a certain
@@ -103,16 +102,10 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
   }
 
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(CommandBuffer, DefaultNPObject<NPObject>)
-    NP_UTILS_DISPATCHER(Initialize, bool(NPObjectPointer<NPObject> ring_buffer))
-    NP_UTILS_DISPATCHER(GetRingBuffer, NPObjectPointer<NPObject>())
     NP_UTILS_DISPATCHER(GetSize, int32())
     NP_UTILS_DISPATCHER(SyncOffsets, int32(int32 get_offset))
     NP_UTILS_DISPATCHER(GetGetOffset, int32());
     NP_UTILS_DISPATCHER(GetPutOffset, int32());
-    NP_UTILS_DISPATCHER(RegisterObject,
-                        int32(NPObjectPointer<NPObject> object));
-    NP_UTILS_DISPATCHER(UnregisterObject,
-                        void(NPObjectPointer<NPObject> object, int32 handle));
     NP_UTILS_DISPATCHER(GetToken, int32());
     NP_UTILS_DISPATCHER(ResetParseError, int32());
     NP_UTILS_DISPATCHER(GetErrorStatus, bool());
@@ -120,12 +113,12 @@ class CommandBuffer : public DefaultNPObject<NPObject> {
 
  private:
   NPP npp_;
-  NPObjectPointer<NPObject> ring_buffer_;
+  scoped_ptr< ::base::SharedMemory> ring_buffer_;
   int32 size_;
   int32 get_offset_;
   int32 put_offset_;
   scoped_ptr<Callback0::Type> put_offset_change_callback_;
-  std::vector<NPObjectPointer<NPObject> > registered_objects_;
+  std::vector<linked_ptr< ::base::SharedMemory> > registered_objects_;
   std::set<int32> unused_registered_object_elements_;
   int32 token_;
   int32 parse_error_;

@@ -183,14 +183,14 @@ void NPVariantToVariant(NPBrowserProxy* browser_proxy,
       int required_size = 0;
       required_size = MultiByteToWideChar(
           CP_UTF8, 0,
-          source->value.stringValue.utf8characters,
-          source->value.stringValue.utf8length, NULL, 0);
+          source->value.stringValue.UTF8Characters,
+          source->value.stringValue.UTF8Length, NULL, 0);
 
       scoped_array<wchar_t> wide_value(new wchar_t[required_size + 1]);
       MultiByteToWideChar(
           CP_UTF8, 0,
-          source->value.stringValue.utf8characters,
-          source->value.stringValue.utf8length, wide_value.get(),
+          source->value.stringValue.UTF8Characters,
+          source->value.stringValue.UTF8Length, wide_value.get(),
           required_size + 1);
       wide_value[required_size] = 0;
 

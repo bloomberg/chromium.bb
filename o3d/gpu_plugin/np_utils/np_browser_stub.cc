@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "o3d/gpu_plugin/np_utils/np_browser_stub.h"
-#include "o3d/gpu_plugin/system_services/shared_memory.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 
@@ -113,10 +112,14 @@ void StubNPBrowser::PluginThreadAsyncCall(
                                    NewRunnableFunction(callback, data));
 }
 
-void* StubNPBrowser::MapMemory(NPP npp,
-                               NPObject* object,
-                               size_t* size) {
-  return NPN_MapMemory(npp, object, size);
+uint32 StubNPBrowser::ScheduleTimer(NPP npp,
+                                    uint32 interval,
+                                    bool repeat,
+                                    TimerProc callback) {
+  return 0;
+}
+
+void StubNPBrowser::UnscheduleTimer(NPP npp, uint32 timer_id) {
 }
 
 }  // namespace gpu_plugin

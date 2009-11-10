@@ -48,9 +48,6 @@
         'np_utils/np_utils.cc',
         'np_utils/np_utils.h',
         'np_utils/webkit_browser.h',
-        'system_services/shared_memory.cc',
-        'system_services/shared_memory.h',
-        'system_services/shared_memory_mock.h',
       ],
     },
 
@@ -79,7 +76,6 @@
         'np_utils/np_class_unittest.cc',
         'np_utils/np_object_pointer_unittest.cc',
         'np_utils/np_utils_unittest.cc',
-        'system_services/shared_memory_unittest.cc',
       ],
     },
 

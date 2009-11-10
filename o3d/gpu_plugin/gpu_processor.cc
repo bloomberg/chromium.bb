@@ -4,6 +4,8 @@
 
 #include "o3d/gpu_plugin/gpu_processor.h"
 
+using ::base::SharedMemory;
+
 namespace gpu_plugin {
 
 GPUProcessor::~GPUProcessor() {
@@ -49,23 +51,26 @@ void GPUProcessor::ProcessCommands() {
 }
 
 void *GPUProcessor::GetSharedMemoryAddress(int32 shm_id) {
-  NPObjectPointer<NPObject> shared_memory =
-      command_buffer_->GetRegisteredObject(shm_id);
+  SharedMemory* shared_memory = command_buffer_->GetTransferBuffer(shm_id);
+  if (!shared_memory)
+    return NULL;
 
-  size_t size;
-  return NPBrowser::get()->MapMemory(npp_, shared_memory.Get(), &size);
+  if (!shared_memory->memory()) {
+    if (!shared_memory->Map(shared_memory->max_size()))
+      return NULL;
+  }
+
+  return shared_memory->memory();
 }
 
 // TODO(apatrick): Consolidate this with the above and return both the address
 // and size.
 size_t GPUProcessor::GetSharedMemorySize(int32 shm_id) {
-  NPObjectPointer<NPObject> shared_memory =
-      command_buffer_->GetRegisteredObject(shm_id);
+  SharedMemory* shared_memory = command_buffer_->GetTransferBuffer(shm_id);
+  if (!shared_memory)
+    return 0;
 
-  size_t size;
-  NPBrowser::get()->MapMemory(npp_, shared_memory.Get(), &size);
-
-  return size;
+  return shared_memory->max_size();
 }
 
 void GPUProcessor::set_token(int32 token) {
