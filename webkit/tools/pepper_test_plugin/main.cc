@@ -82,7 +82,7 @@ void Log(NPP instance, const char* format, ...) {
                        browser->getstringidentifier("log"),
                        &message_variant, 1, &result)) {
     fprintf(stderr, "Failed to invoke console.log while logging: %s\n",
-            message);
+            message.c_str());
     browser->releaseobject(console_object);
     browser->releaseobject(window_object);
     return;
