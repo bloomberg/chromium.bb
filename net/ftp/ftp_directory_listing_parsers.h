@@ -52,7 +52,7 @@ class FtpLsDirectoryListingParser : public FtpDirectoryListingParser {
   FtpLsDirectoryListingParser();
 
   // FtpDirectoryListingParser methods:
-  virtual FtpServerType GetServerType() const { return SERVER_LSL; }
+  virtual FtpServerType GetServerType() const { return SERVER_LS; }
   virtual bool ConsumeLine(const string16& line);
   virtual bool EntryAvailable() const;
   virtual FtpDirectoryListingEntry PopEntry();
@@ -70,7 +70,7 @@ class FtpWindowsDirectoryListingParser : public FtpDirectoryListingParser {
   FtpWindowsDirectoryListingParser();
 
   // FtpDirectoryListingParser methods:
-  virtual FtpServerType GetServerType() const { return SERVER_DOS; }
+  virtual FtpServerType GetServerType() const { return SERVER_WINDOWS; }
   virtual bool ConsumeLine(const string16& line);
   virtual bool EntryAvailable() const;
   virtual FtpDirectoryListingEntry PopEntry();

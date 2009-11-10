@@ -82,28 +82,28 @@ void ExtractFullLinesFromBuffer(std::string* buffer,
 void LogFtpServerType(char server_type) {
   switch (server_type) {
     case 'E':
-      net::UpdateFtpServerTypeHistograms(net::SERVER_EPLF);
+      net::UpdateFtpServerTypeHistograms(net::SERVER_MOZ_EPLF);
       break;
     case 'V':
-      net::UpdateFtpServerTypeHistograms(net::SERVER_VMS);
+      net::UpdateFtpServerTypeHistograms(net::SERVER_MOZ_VMS);
       break;
     case 'C':
-      net::UpdateFtpServerTypeHistograms(net::SERVER_CMS);
+      net::UpdateFtpServerTypeHistograms(net::SERVER_MOZ_CMS);
       break;
     case 'W':
-      net::UpdateFtpServerTypeHistograms(net::SERVER_DOS);
+      net::UpdateFtpServerTypeHistograms(net::SERVER_MOZ_DOS);
       break;
     case 'O':
-      net::UpdateFtpServerTypeHistograms(net::SERVER_OS2);
+      net::UpdateFtpServerTypeHistograms(net::SERVER_MOZ_OS2);
       break;
     case 'U':
-      net::UpdateFtpServerTypeHistograms(net::SERVER_LSL);
+      net::UpdateFtpServerTypeHistograms(net::SERVER_MOZ_LSL);
       break;
     case 'w':
-      net::UpdateFtpServerTypeHistograms(net::SERVER_W16);
+      net::UpdateFtpServerTypeHistograms(net::SERVER_MOZ_W16);
       break;
     case 'D':
-      net::UpdateFtpServerTypeHistograms(net::SERVER_DLS);
+      net::UpdateFtpServerTypeHistograms(net::SERVER_MOZ_DLS);
       break;
     default:
       net::UpdateFtpServerTypeHistograms(net::SERVER_UNKNOWN);
