@@ -38,7 +38,7 @@
 
 #include "core/cross/render_surface.h"
 #include "core/cross/command_buffer/renderer_cb.h"
-#include "command_buffer/common/cross/resource.h"
+#include "command_buffer/common/resource.h"
 
 namespace o3d {
 

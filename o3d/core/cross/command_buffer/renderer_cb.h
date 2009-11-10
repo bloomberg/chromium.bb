@@ -39,10 +39,10 @@
 #include "core/cross/precompile.h"
 #include <vector>
 #include "core/cross/renderer.h"
-#include "command_buffer/common/cross/constants.h"
-#include "command_buffer/common/cross/resource.h"
-#include "command_buffer/client/cross/fenced_allocator.h"
-#include "command_buffer/client/cross/id_allocator.h"
+#include "command_buffer/common/constants.h"
+#include "command_buffer/common/resource.h"
+#include "command_buffer/client/fenced_allocator.h"
+#include "command_buffer/client/id_allocator.h"
 #include "gpu_plugin/command_buffer.h"
 #include "gpu_plugin/np_utils/np_object_pointer.h"
 

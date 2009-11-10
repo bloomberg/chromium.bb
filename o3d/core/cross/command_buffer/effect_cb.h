@@ -38,7 +38,7 @@
 #include <vector>
 #include "core/cross/effect.h"
 #include "core/cross/command_buffer/renderer_cb.h"
-#include "command_buffer/client/cross/effect_helper.h"
+#include "command_buffer/client/effect_helper.h"
 
 namespace o3d {
 

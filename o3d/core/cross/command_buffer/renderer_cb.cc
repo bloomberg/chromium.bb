@@ -34,9 +34,9 @@
 
 #include "core/cross/precompile.h"
 
-#include "command_buffer/client/cross/o3d_cmd_helper.h"
-#include "command_buffer/client/cross/fenced_allocator.h"
-#include "command_buffer/common/cross/gapi_interface.h"
+#include "command_buffer/client/o3d_cmd_helper.h"
+#include "command_buffer/client/fenced_allocator.h"
+#include "command_buffer/common/gapi_interface.h"
 #include "core/cross/command_buffer/buffer_cb.h"
 #include "core/cross/command_buffer/effect_cb.h"
 #include "core/cross/command_buffer/param_cache_cb.h"

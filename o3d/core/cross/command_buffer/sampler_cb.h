@@ -38,7 +38,7 @@
 
 #include "core/cross/precompile.h"
 #include "core/cross/sampler.h"
-#include "command_buffer/common/cross/resource.h"
+#include "command_buffer/common/resource.h"
 
 namespace o3d {
 

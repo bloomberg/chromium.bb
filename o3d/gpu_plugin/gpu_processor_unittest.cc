@@ -4,7 +4,7 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
-#include "o3d/command_buffer/service/cross/mocks.h"
+#include "o3d/command_buffer/service/mocks.h"
 #include "o3d/gpu_plugin/command_buffer_mock.h"
 #include "o3d/gpu_plugin/gpu_processor.h"
 #include "o3d/gpu_plugin/np_utils/np_browser_mock.h"

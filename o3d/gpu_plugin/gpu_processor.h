@@ -8,16 +8,16 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
-#include "o3d/command_buffer/service/cross/cmd_buffer_engine.h"
-#include "o3d/command_buffer/service/cross/cmd_parser.h"
-#include "o3d/command_buffer/service/cross/gapi_decoder.h"
+#include "o3d/command_buffer/service/cmd_buffer_engine.h"
+#include "o3d/command_buffer/service/cmd_parser.h"
+#include "o3d/command_buffer/service/gapi_decoder.h"
 #include "o3d/gpu_plugin/command_buffer.h"
 #include "o3d/gpu_plugin/np_utils/np_object_pointer.h"
 
 #if defined(CB_SERVICE_D3D9)
-#include "o3d/command_buffer/service/win/d3d9/gapi_d3d9.h"
+#include "o3d/command_buffer/service/gapi_d3d9.h"
 #elif defined(CB_SERVICE_GL)
-#include "o3d/command_buffer/service/cross/gl/gapi_gl.h"
+#include "o3d/command_buffer/service/gapi_gl.h"
 #else
 #error command buffer service not defined
 #endif
