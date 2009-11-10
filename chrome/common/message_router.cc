@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/common/message_router.h"
-#include "chrome/common/render_messages.h"
 
 void MessageRouter::OnControlMessageReceived(const IPC::Message& msg) {
   NOTREACHED() <<

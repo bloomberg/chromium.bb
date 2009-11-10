@@ -56,7 +56,6 @@
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #endif
 
 namespace base {

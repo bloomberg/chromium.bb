@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/logging.h"
 #include "base/string_piece.h"
 #include "base/sys_string_conversions.h"
 
@@ -26,9 +27,14 @@ bool MakeNTUnicodeString(const std::wstring& str,
                          UNICODE_STRING* nt_string) {
   if (str.empty())
     return false;
-  uint32 str_size_bytes = str.size() * sizeof(wchar_t);
-  nt_string->Length = str_size_bytes;
-  nt_string->MaximumLength = str_size_bytes;
+  size_t str_size_bytes = str.size() * sizeof(wchar_t);
+  if (kuint16max < str_size_bytes) {
+    // The string is too long - nt_string->Length is USHORT
+    NOTREACHED() << "The string is too long";
+    return false;
+  }
+  nt_string->Length = static_cast<USHORT>(str_size_bytes);
+  nt_string->MaximumLength = static_cast<USHORT>(str_size_bytes);
   nt_string->Buffer = const_cast<wchar_t*>(str.c_str());
   return true;
 }
