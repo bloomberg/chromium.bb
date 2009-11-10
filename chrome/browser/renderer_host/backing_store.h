@@ -105,19 +105,6 @@ class BackingStore {
                   const gfx::Size& view_size);
 
  private:
-#if defined(OS_MACOSX)
-  // Creates a CGLayer associated with its owner view's window's graphics
-  // context, sized properly for the backing store.  Returns NULL if the owner
-  // is not in a window with a CGContext.  cg_layer_ is assigned this method's
-  // result.
-  CGLayerRef CreateCGLayer();
-
-  // Creates a CGBitmapContext sized properly for the backing store.  The
-  // owner view need not be in a window.  cg_bitmap_ is assigned this method's
-  // result.
-  CGContextRef CreateCGBitmapContext();
-#endif
-
   // The owner of this backing store.
   RenderWidgetHost* render_widget_host_;
 
