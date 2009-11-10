@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Storage) {
+// TODO(jcampan): http://crbug.com/27216 disabled because failing.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Storage) {
   ASSERT_TRUE(RunExtensionTest("storage")) << message_;
 }
