@@ -111,15 +111,15 @@ void WebSharedWorkerImpl::clientDestroyed()
 
 WebWorkerClient* WebSharedWorkerImpl::client()
 {
-  // We should never be asked for a WebWorkerClient (only dedicated workers have an associated WebWorkerClient).
-  // It should not be possible for SharedWorkerContext to generate an API call outside those supported by WebCommonWorkerClient.
-  ASSERT_NOT_REACHED();
-  return 0;
+    // We should never be asked for a WebWorkerClient (only dedicated workers have an associated WebWorkerClient).
+    // It should not be possible for SharedWorkerContext to generate an API call outside those supported by WebCommonWorkerClient.
+    ASSERT_NOT_REACHED();
+    return 0;
 }
 
 WebSharedWorker* WebSharedWorker::create(WebCommonWorkerClient* client)
 {
-  return new WebSharedWorkerImpl(client);
+    return new WebSharedWorkerImpl(client);
 }
 
 #endif // ENABLE(SHARED_WORKERS)

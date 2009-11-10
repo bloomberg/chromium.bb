@@ -55,13 +55,15 @@ public:
 private:
     class ScopedStorageEventURL {
     public:
-        ScopedStorageEventURL(const WebURL& url) {
+        ScopedStorageEventURL(const WebURL& url)
+        {
             // FIXME: Once storage events are fired async in WebKit (as they should
-            //        be) this can be ASSERTed to be NULL rather than saved.
+            //        be) this can be ASSERTed to be 0 rather than saved.
             m_existingStorageEventURL = storageEventURL;
             storageEventURL = &url;
         }
-        ~ScopedStorageEventURL() {
+        ~ScopedStorageEventURL()
+        {
             storageEventURL = m_existingStorageEventURL;
         }
 

@@ -58,7 +58,7 @@ WebURLError& WebURLError::operator=(const ResourceError& error)
 
 WebURLError::operator ResourceError() const
 {
-    if (reason == 0)
+    if (!reason)
         return ResourceError();
     CString spec = unreachableURL.spec();
     return ResourceError(domain, reason,

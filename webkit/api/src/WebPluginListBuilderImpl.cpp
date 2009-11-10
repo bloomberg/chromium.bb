@@ -31,9 +31,8 @@
 #include "config.h"
 #include "WebPluginListBuilderImpl.h"
 
-#include "WebString.h"
-
 #include "PluginData.h"
+#include "WebString.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

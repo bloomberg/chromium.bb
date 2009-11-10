@@ -34,15 +34,18 @@
 // FIXME: This relative path is a temporary hack to support using this
 // header from webkit/glue.
 #include "../public/WebDataSource.h"
+
+#include "DocumentLoader.h"
+#include "KURL.h"
+
 #include "WebPluginLoadObserver.h"
 #include "WrappedResourceRequest.h"
 #include "WrappedResourceResponse.h"
 
-#include "DocumentLoader.h"
-#include "KURL.h"
-#include <wtf/PassOwnPtr.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
+
 
 namespace WebKit {
 

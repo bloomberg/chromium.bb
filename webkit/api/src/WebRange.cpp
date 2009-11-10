@@ -31,10 +31,9 @@
 #include "config.h"
 #include "WebRange.h"
 
+#include "Range.h"
 #include "WebNode.h"
 #include "WebString.h"
-
-#include "Range.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;

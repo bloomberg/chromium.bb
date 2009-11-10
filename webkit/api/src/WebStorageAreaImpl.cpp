@@ -40,7 +40,7 @@
 
 namespace WebKit {
 
-const WebURL* WebStorageAreaImpl::storageEventURL = NULL;
+const WebURL* WebStorageAreaImpl::storageEventURL = 0;
 
 WebStorageAreaImpl::WebStorageAreaImpl(PassRefPtr<WebCore::StorageArea> storageArea)
     : m_storageArea(storageArea)
@@ -73,12 +73,11 @@ void WebStorageAreaImpl::setItem(const WebString& key, const WebString& value, c
     ScopedStorageEventURL scope(url);
     m_storageArea->setItem(key, value, exceptionCode, 0);
 
-    if (exceptionCode != 0) {
+    if (exceptionCode) {
         ASSERT(exceptionCode == WebCore::QUOTA_EXCEEDED_ERR);
         quotaException = true;
-    } else {
+    } else
         quotaException = false;
-    }
 }
 
 void WebStorageAreaImpl::removeItem(const WebString& key, const WebURL& url)

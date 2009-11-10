@@ -421,7 +421,7 @@ WebCore::IntRect WebPluginContainerImpl::windowClipRect() const
     IntRect clipRect =
         convertToContainingWindow(IntRect(0, 0, width(), height()));
 
-    // document()->renderer() can be NULL when we receive messages from the
+    // document()->renderer() can be 0 when we receive messages from the
     // plugins while we are destroying a frame.
     if (m_element->renderer()->document()->renderer()) {
         // Take our element and get the clip rect from the enclosing layer and

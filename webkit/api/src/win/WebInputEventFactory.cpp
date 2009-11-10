@@ -388,7 +388,7 @@ WebMouseWheelEvent WebInputEventFactory::mouseWheelEvent(HWND hwnd, UINT message
 
     // Set coordinates by translating event coordinates from screen to client.
     POINT clientPoint = { result.globalX, result.globalY };
-    MapWindowPoints(NULL, hwnd, &clientPoint, 1);
+    MapWindowPoints(0, hwnd, &clientPoint, 1);
     result.x = clientPoint.x;
     result.y = clientPoint.y;
     result.windowX = result.x;

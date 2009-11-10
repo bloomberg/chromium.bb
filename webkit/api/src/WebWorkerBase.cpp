@@ -33,16 +33,17 @@
 
 #include "GenericWorkerTask.h"
 #include "MessagePortChannel.h"
-#include "WorkerThread.h"
-#include <wtf/MainThread.h>
-
 #include "PlatformMessagePortChannel.h"
+
 #include "WebDataSourceImpl.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebMessagePortChannel.h"
-#include "WebWorkerClient.h"
 #include "WebView.h"
+#include "WebWorkerClient.h"
+
+#include "WorkerThread.h"
+#include <wtf/MainThread.h>
 
 using namespace WebCore;
 

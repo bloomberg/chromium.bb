@@ -34,9 +34,8 @@
 #if ENABLE(DOM_STORAGE)
 
 #include "StorageEventDispatcherImpl.h"
-#include <wtf/OwnPtr.h>
-
 #include "WebStorageEventDispatcher.h"
+#include <wtf/OwnPtr.h>
 
 namespace WebKit {
 
@@ -46,7 +45,7 @@ public:
 
     virtual void dispatchStorageEvent(const WebString& key, const WebString& oldValue,
                                       const WebString& newValue, const WebString& origin,
-                                      const WebURL& url, bool isLocalStorage);
+                                      const WebURL&, bool isLocalStorage);
 
 private:
     OwnPtr<WebCore::StorageEventDispatcherImpl> m_eventDispatcher;

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "WebScriptController.h"
 
-#include "WebString.h"
-
 #include "V8Binding.h"
 #include "V8Proxy.h"
+
+#include "WebString.h"
 
 using namespace WebCore;
 

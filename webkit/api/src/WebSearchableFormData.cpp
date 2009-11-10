@@ -37,9 +37,9 @@
 #include "Frame.h"
 #include "HTMLFormControlElement.h"
 #include "HTMLFormElement.h"
-#include "HTMLOptionElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
+#include "HTMLOptionElement.h"
 #include "HTMLOptionsCollection.h"
 #include "HTMLSelectElement.h"
 #include "TextEncoding.h"
@@ -79,10 +79,10 @@ HTMLFormControlElement* GetButtonToActivate(HTMLFormElement* form)
     HTMLFormControlElement* firstSubmitButton = 0;
     for (Vector<HTMLFormControlElement*>::const_iterator i(form->formElements.begin()); i != form->formElements.end(); ++i) {
       HTMLFormControlElement* formElement = *i;
-      if (formElement->isActivatedSubmit()) {
+      if (formElement->isActivatedSubmit())
           // There's a button that is already activated for submit, return 0.
           return 0;
-      } else if (!firstSubmitButton && formElement->isSuccessfulSubmitButton())
+      if (!firstSubmitButton && formElement->isSuccessfulSubmitButton())
           firstSubmitButton = formElement;
     }
     return firstSubmitButton;
@@ -115,7 +115,8 @@ bool IsSelectInDefaultState(const HTMLSelectElement* select)
             // The page specified the option to select.
             initialSelected = optionElement;
             break;
-        } else if (!initialSelected)
+        }
+        if (!initialSelected)
             initialSelected = optionElement;
     }
     return initialSelected ? initialSelected->selected() : true;

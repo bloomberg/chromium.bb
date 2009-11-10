@@ -33,10 +33,11 @@
 
 #if ENABLE(NOTIFICATIONS)
 
+#include "Notification.h"
+
 #include "WebString.h"
 #include "WebURL.h"
 
-#include "Notification.h"
 #include <wtf/PassRefPtr.h>
 
 using namespace WebCore;

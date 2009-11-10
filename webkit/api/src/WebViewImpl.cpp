@@ -49,10 +49,10 @@
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "GraphicsContext.h"
-#include "HTMLNames.h"
+#include "HitTestResult.h"
 #include "HTMLInputElement.h"
 #include "HTMLMediaElement.h"
-#include "HitTestResult.h"
+#include "HTMLNames.h"
 #include "Image.h"
 #include "InspectorController.h"
 #include "IntRect.h"
@@ -167,7 +167,8 @@ void WebView::resetVisitedLinkState()
     Page::allVisitedStateChanged(PageGroup::pageGroup(pageGroupName));
 }
 
-void WebViewImpl::initializeMainFrame(WebFrameClient* frameClient) {
+void WebViewImpl::initializeMainFrame(WebFrameClient* frameClient)
+{
     // NOTE: The WebFrameImpl takes a reference to itself within InitMainFrame
     // and releases that reference once the corresponding Frame is destroyed.
     RefPtr<WebFrameImpl> frame = WebFrameImpl::create(frameClient);
@@ -444,7 +445,7 @@ bool WebViewImpl::keyEvent(const WebKeyboardEvent& event)
         return keyEventDefault(event);
 
 #if PLATFORM(WIN_OS) || PLATFORM(LINUX)
-    if (((event.modifiers == 0) && (event.windowsKeyCode == VKEY_APPS))
+    if ((!event.modifiers && (event.windowsKeyCode == VKEY_APPS))
         || ((event.modifiers == WebInputEvent::ShiftKey) && (event.windowsKeyCode == VKEY_F10))) {
         sendContextMenuEvent(event);
         return true;
@@ -917,9 +918,9 @@ void WebViewImpl::setFocus(bool enable)
                 // focused, then the focus element shows with a focus ring but
                 // no caret and does respond to keyboard inputs.
                 Element* element = static_cast<Element*>(focusedNode);
-                if (element->isTextFormControl()) {
+                if (element->isTextFormControl())
                     element->updateFocusAppearance(true);
-                } else {
+                else {
                     // updateFocusAppearance() selects all the text of
                     // contentseditable DIVs. So we set the selection explicitly
                     // instead. Note that this has the side effect of moving the
@@ -1596,7 +1597,8 @@ void WebViewImpl::hideAutofillPopup()
 
 // WebView --------------------------------------------------------------------
 
-bool WebViewImpl::setDropEffect(bool accept) {
+bool WebViewImpl::setDropEffect(bool accept)
+{
     if (m_dragTargetDispatch) {
         m_dropEffect = accept ? DropEffectCopy : DropEffectNone;
         return true;
@@ -1731,11 +1733,12 @@ NotificationPresenterImpl* WebViewImpl::notificationPresenterImpl()
 }
 #endif
 
-void WebViewImpl::refreshAutofillPopup() {
+void WebViewImpl::refreshAutofillPopup()
+{
     ASSERT(m_autocompletePopupShowing);
 
     // Hide the popup if it has become empty.
-    if (m_autocompletePopupClient->listSize() == 0) {
+    if (!m_autocompletePopupClient->listSize()) {
         hideAutoCompletePopup();
         return;
     }

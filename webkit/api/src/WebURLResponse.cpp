@@ -31,12 +31,12 @@
 #include "config.h"
 #include "WebURLResponse.h"
 
+#include "ResourceResponse.h"
+
 #include "WebHTTPHeaderVisitor.h"
 #include "WebString.h"
 #include "WebURL.h"
 #include "WebURLResponsePrivate.h"
-
-#include "ResourceResponse.h"
 
 using namespace WebCore;
 

@@ -31,11 +31,11 @@
 #include "config.h"
 #include "WebString.h"
 
-#include "WebCString.h"
-
+#include "AtomicString.h"
 #include "CString.h"
 #include "PlatformString.h"
-#include "AtomicString.h"
+
+#include "WebCString.h"
 
 namespace WebKit {
 

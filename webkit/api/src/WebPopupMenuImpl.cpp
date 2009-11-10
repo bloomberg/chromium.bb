@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebPopupMenuImpl.h"
 
-#include <skia/ext/platform_canvas.h>
-
 #include "Cursor.h"
 #include "FramelessScrollView.h"
 #include "FrameView.h"
@@ -42,10 +40,13 @@
 #include "PlatformMouseEvent.h"
 #include "PlatformWheelEvent.h"
 #include "SkiaUtils.h"
+
 #include "WebInputEvent.h"
+#include "WebInputEventConversion.h"
 #include "WebRect.h"
 #include "WebWidgetClient.h"
-#include "WebInputEventConversion.h"
+
+#include <skia/ext/platform_canvas.h>
 
 using namespace WebCore;
 
