@@ -422,8 +422,11 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
   } else {
     scoped_cftyperef<CGImageRef> image(
         CGBitmapContextCreateImage(background_context_));
+    CGRect source_rect = rect.ToCGRect();
+    // Flip the rect we use to pull from the canvas, since it's upside-down.
+    source_rect.origin.y = CGImageGetHeight(image) - rect.y() - rect.height();
     scoped_cftyperef<CGImageRef> sub_image(
-        CGImageCreateWithImageInRect(image, rect.ToCGRect()));
+        CGImageCreateWithImageInRect(image, source_rect));
     CGContextDrawImage(windowless_context_, rect.ToCGRect(), sub_image);
   }
   CGContextClipToRect(windowless_context_, rect.ToCGRect());

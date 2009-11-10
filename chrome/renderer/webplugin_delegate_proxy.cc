@@ -555,11 +555,17 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
 
   gfx::Rect offset_rect = rect;
   offset_rect.Offset(-plugin_rect_.x(), -plugin_rect_.y());
+  gfx::Rect canvas_rect = offset_rect;
+#if defined(OS_MACOSX)
+  // The canvases are flipped relative to the context, so flip the rect too.
+  FlipRectVerticallyWithHeight(&canvas_rect, plugin_rect_.height());
+#endif
 
   bool background_changed = false;
   if (background_store_canvas_.get() && BackgroundChanged(context, rect)) {
     background_changed = true;
-    BlitContextToCanvas(background_store_canvas_.get(), offset_rect,
+    gfx::Rect flipped_offset_rect = offset_rect;
+    BlitContextToCanvas(background_store_canvas_.get(), canvas_rect,
                         context, rect.origin());
   }
 
@@ -568,11 +574,8 @@ void WebPluginDelegateProxy::Paint(WebKit::WebCanvas* canvas,
     CopyFromTransportToBacking(offset_rect);
   }
 
-#if defined(OS_MACOSX)
-  FlipRectVerticallyWithHeight(&offset_rect, plugin_rect_.height());
-#endif
   BlitCanvasToContext(context, rect, backing_store_canvas_.get(),
-                      offset_rect.origin());
+                      canvas_rect.origin());
 
   if (invalidate_pending_) {
     // Only send the PaintAck message if this paint is in response to an
