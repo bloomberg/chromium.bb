@@ -40,9 +40,9 @@ GtkWidget* MakeMarkupLabel(const char* format, const std::string& str) {
 void OnDialogResponse(GtkDialog* dialog, int response_id,
                       ExtensionInstallUI::Delegate* delegate) {
   if (response_id == GTK_RESPONSE_ACCEPT) {
-    delegate->ContinueInstall();
+    delegate->InstallUIProceed();
   } else {
-    delegate->AbortInstall();
+    delegate->InstallUIAbort();
   }
 
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -51,10 +51,13 @@ void OnDialogResponse(GtkDialog* dialog, int response_id,
 void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
                              Extension *extension,
                              ExtensionInstallUI::Delegate *delegate,
-                             const std::string& warning_text) {
+                             const std::string& warning_text,
+                             bool is_uninstall) {
   // Build the dialog.
+  int title_id = is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_TITLE :
+                                IDS_EXTENSION_INSTALL_PROMPT_TITLE;
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_TITLE).c_str(),
+      l10n_util::GetStringUTF8(title_id).c_str(),
       parent,
       GTK_DIALOG_MODAL,
       GTK_STOCK_CANCEL,
@@ -80,8 +83,10 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
   GtkWidget* right_column_area = gtk_vbox_new(FALSE, 0);
   gtk_box_pack_start(GTK_BOX(icon_hbox), right_column_area, TRUE, TRUE, 0);
 
+  int heading_id = is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING :
+                                  IDS_EXTENSION_INSTALL_PROMPT_HEADING;
   std::string heading_text = WideToUTF8(l10n_util::GetStringF(
-      IDS_EXTENSION_PROMPT_HEADING, UTF8ToWide(extension->name())));
+      heading_id, UTF8ToWide(extension->name())));
   GtkWidget* heading_label = MakeMarkupLabel("<span weight=\"bold\">%s</span>",
                                              heading_text);
   gtk_misc_set_alignment(GTK_MISC(heading_label), 0.0, 0.5);
@@ -102,25 +107,25 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
 
 }  // namespace
 
-void ExtensionInstallUI::ShowExtensionInstallPrompt(
+void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const std::wstring& warning_text) {
+    const std::wstring& warning_text, bool is_uninstall) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
-    delegate->ContinueInstall();
+    delegate->InstallUIProceed();
     return;
   }
 
   BrowserWindowGtk* browser_window = static_cast<BrowserWindowGtk*>(
       browser->window());
   if (!browser_window) {
-    delegate->AbortInstall();
+    delegate->InstallUIAbort();
     return;
   }
 
   std::string warning_ascii = WideToASCII(warning_text);
-  ShowInstallPromptDialog(browser_window->window(), icon, extension, delegate,
-      warning_ascii);
+  ShowInstallPromptDialog(browser_window->window(), icon, extension,
+      delegate, warning_ascii, is_uninstall);
 }
 
 void ExtensionInstallUI::ShowExtensionInstallError(const std::string& error) {

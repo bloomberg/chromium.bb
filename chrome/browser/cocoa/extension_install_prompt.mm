@@ -18,24 +18,27 @@
 
 class Profile;
 
-void ExtensionInstallUI::ShowExtensionInstallPrompt(
+void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const std::wstring& warning_text) {
+    const std::wstring& warning_text, bool is_uninstall) {
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
   [alert addButtonWithTitle:l10n_util::GetNSString(
-      IDS_EXTENSION_PROMPT_INSTALL_BUTTON)];
+      is_uninstall ? IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON :
+                     IDS_EXTENSION_PROMPT_INSTALL_BUTTON)];
   [alert addButtonWithTitle:l10n_util::GetNSString(
       IDS_EXTENSION_PROMPT_CANCEL_BUTTON)];
   [alert setMessageText:l10n_util::GetNSStringF(
-      IDS_EXTENSION_PROMPT_HEADING, UTF8ToUTF16(extension->name()))];
+       is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING :
+                      IDS_EXTENSION_INSTALL_PROMPT_HEADING,
+       UTF8ToUTF16(extension->name()))];
   [alert setInformativeText:base::SysWideToNSString(warning_text)];
   [alert setAlertStyle:NSWarningAlertStyle];
   [alert setIcon:gfx::SkBitmapToNSImage(*icon)];
 
   if ([alert runModal] == NSAlertFirstButtonReturn) {
-    delegate->ContinueInstall();
+    delegate->InstallUIProceed();
   } else {
-    delegate->AbortInstall();
+    delegate->InstallUIAbort();
   }
 }
 

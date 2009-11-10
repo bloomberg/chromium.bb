@@ -2571,13 +2571,21 @@ each locale. -->
       </message>
 
       <!-- Extension install prompt -->
-      <message name="IDS_EXTENSION_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window">
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_TITLE" desc="Titlebar of the extension installation prompt window">
         Confirm Installation
       </message>
-      <message name="IDS_EXTENSION_PROMPT_HEADING" desc="First bold line in the content area of the extension installation prompt. Asks the user if they want to install a particular extension.">
+      <message name="IDS_EXTENSION_UNINSTALL_PROMPT_TITLE" desc="Titlebar of the extension uninstallation prompt window">
+        Confirm Uninstallation
+      </message>
+      <message name="IDS_EXTENSION_INSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension installation prompt. Asks the user if they want to install a particular extension.">
         Install "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
       </message>
-
+      <message name="IDS_EXTENSION_UNINSTALL_PROMPT_HEADING" desc="First bold line in the content area of the extension uninstallation prompt. Asks the user if they want to uninstall a particular extension.">
+        Uninstall "<ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>"?
+      </message>
+      <message name="IDS_EXTENSION_UNINSTALL_CONFIRMATION" desc="The warning you get when you are about to uninstall an extension.">
+        Are you sure you want to uninstall this extension?
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_NEW_BROWSER" desc="Warning displayed in body of extension dialog when the extension requires access to browser APIs.">
         This extension will have access to your browsing history.
       </message>
@@ -2729,6 +2737,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <message name="IDS_EXTENSION_PROMPT_INSTALL_BUTTON" desc="Text for the install button on the extension install prompt">
         Install
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
+        Uninstall
       </message>
       <message name="IDS_EXTENSION_PROMPT_CANCEL_BUTTON" desc="Text for the cancel button on the extension install prompt">
         Cancel

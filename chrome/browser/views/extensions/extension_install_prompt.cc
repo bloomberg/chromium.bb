@@ -34,8 +34,9 @@ const int kIconSize = 85;
 class InstallDialogContent : public views::View, public views::DialogDelegate {
  public:
   InstallDialogContent(ExtensionInstallUI::Delegate* delegate,
-      Extension* extension, SkBitmap* icon, const std::wstring& warning_text)
-          : delegate_(delegate), icon_(NULL) {
+      Extension* extension, SkBitmap* icon, const std::wstring& warning_text,
+      bool is_uninstall)
+          : delegate_(delegate), icon_(NULL), is_uninstall_(is_uninstall) {
     // Scale down to 85x85, but allow smaller icons (don't scale up).
     gfx::Size size(icon->width(), icon->height());
     if (size.width() > kIconSize || size.height() > kIconSize)
@@ -46,7 +47,9 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
     AddChildView(icon_);
 
     heading_ = new views::Label(
-        l10n_util::GetStringF(IDS_EXTENSION_PROMPT_HEADING,
+        l10n_util::GetStringF(is_uninstall ?
+                                  IDS_EXTENSION_UNINSTALL_PROMPT_HEADING :
+                                  IDS_EXTENSION_INSTALL_PROMPT_HEADING,
                               UTF8ToWide(extension->name())));
     heading_->SetFont(heading_->GetFont().DeriveFont(1, gfx::Font::BOLD));
     heading_->SetMultiLine(true);
@@ -65,7 +68,10 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
       MessageBoxFlags::DialogButton button) const {
     switch (button) {
       case MessageBoxFlags::DIALOGBUTTON_OK:
-        return l10n_util::GetString(IDS_EXTENSION_PROMPT_INSTALL_BUTTON);
+        if (is_uninstall_)
+          return l10n_util::GetString(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON);
+        else
+          return l10n_util::GetString(IDS_EXTENSION_PROMPT_INSTALL_BUTTON);
       case MessageBoxFlags::DIALOGBUTTON_CANCEL:
         return l10n_util::GetString(IDS_EXTENSION_PROMPT_CANCEL_BUTTON);
       default:
@@ -79,12 +85,12 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   }
 
   virtual bool Accept() {
-    delegate_->ContinueInstall();
+    delegate_->InstallUIProceed();
     return true;
   }
 
   virtual bool Cancel() {
-    delegate_->AbortInstall();
+    delegate_->InstallUIAbort();
     return true;
   }
 
@@ -92,7 +98,10 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   // WindowDelegate
   virtual bool IsModal() const { return true; }
   virtual std::wstring GetWindowTitle() const {
-    return l10n_util::GetString(IDS_EXTENSION_PROMPT_TITLE);
+    if (is_uninstall_)
+      return l10n_util::GetString(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
+    else
+      return l10n_util::GetString(IDS_EXTENSION_INSTALL_PROMPT_TITLE);
   }
   virtual views::View* GetContentsView() { return this; }
 
@@ -138,30 +147,32 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
   views::ImageView* icon_;
   views::Label* heading_;
   views::Label* warning_;
+  bool is_uninstall_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallDialogContent);
 };
 
 }  // namespace
 
-void ExtensionInstallUI::ShowExtensionInstallPrompt(
+// static
+void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const std::wstring& warning_text) {
+    const std::wstring& warning_text, bool is_uninstall) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
-    delegate->ContinueInstall();
+    delegate->InstallUIProceed();
     return;
   }
 
   BrowserWindow* window = browser->window();
   if (!window) {
-    delegate->AbortInstall();
+    delegate->InstallUIAbort();
     return;
   }
 
   views::Window::CreateChromeWindow(window->GetNativeHandle(), gfx::Rect(),
       new InstallDialogContent(delegate, extension, icon,
-                               warning_text))->Show();
+                               warning_text, is_uninstall))->Show();
 }
 
 void ExtensionInstallUI::ShowExtensionInstallError(const std::string& error) {

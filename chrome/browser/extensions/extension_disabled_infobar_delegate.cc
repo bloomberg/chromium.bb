@@ -26,7 +26,7 @@ class ExtensionDisabledDialogDelegate
                                   ExtensionsService* service,
                                   Extension* extension)
         : profile_(profile), service_(service), extension_(extension) {
-    AddRef();  // balanced in ContinueInstall or AbortInstall.
+    AddRef();  // Balanced in Proceed or Abort.
 
     // Do this now because we can't touch extension on the file loop.
     install_icon_resource_ =
@@ -38,11 +38,11 @@ class ExtensionDisabledDialogDelegate
   }
 
   // ExtensionInstallUI::Delegate
-  virtual void ContinueInstall() {
+  virtual void InstallUIProceed() {
     service_->EnableExtension(extension_->id());
     Release();
   }
-  virtual void AbortInstall() {
+  virtual void InstallUIAbort() {
     // Do nothing. The extension will remain disabled.
     Release();
   }

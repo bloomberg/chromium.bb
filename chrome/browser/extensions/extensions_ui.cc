@@ -15,6 +15,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/debugger/devtools_manager.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -381,7 +382,28 @@ void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
   CHECK(list->GetSize() == 1);
   std::string extension_id;
   CHECK(list->GetString(0, &extension_id));
-  extensions_service_->UninstallExtension(extension_id, false);
+
+  Extension *extension = extensions_service_->GetExtensionById(extension_id);
+  if (!extension)
+    return;
+
+  FilePath icon_path =
+      extension->GetIconPath(Extension::EXTENSION_ICON_LARGE).GetFilePath();
+  scoped_ptr<SkBitmap> uninstall_icon;
+  CrxInstaller::DecodeInstallIcon(icon_path, &uninstall_icon);
+
+  extension_id_uninstalling_ = extension_id;
+  ExtensionInstallUI client(dom_ui_->GetProfile());
+  client.ConfirmUninstall(this, extension, uninstall_icon.get());
+}
+
+void ExtensionsDOMHandler::InstallUIProceed() {
+  extensions_service_->UninstallExtension(extension_id_uninstalling_, false);
+  extension_id_uninstalling_ = "";
+}
+
+void ExtensionsDOMHandler::InstallUIAbort() {
+  extension_id_uninstalling_ = "";
 }
 
 void ExtensionsDOMHandler::HandleOptionsMessage(const Value* value) {

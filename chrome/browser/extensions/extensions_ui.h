@@ -10,6 +10,7 @@
 
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/extensions/extension_resource.h"
@@ -58,7 +59,8 @@ class ExtensionsDOMHandler
     : public DOMMessageHandler,
       public NotificationObserver,
       public PackExtensionJob::Client,
-      public SelectFileDialog::Listener {
+      public SelectFileDialog::Listener,
+      public ExtensionInstallUI::Delegate {
  public:
 
   // Helper class that loads the icons for the extensions in the management UI.
@@ -117,6 +119,11 @@ class ExtensionsDOMHandler
                              const FilePath& key_file);
 
   virtual void OnPackFailure(const std::wstring& message);
+
+  // ExtensionInstallUI::Delegate implementation, used for receiving
+  // notification about uninstall confirmation dialog selections.
+  virtual void InstallUIProceed();
+  virtual void InstallUIAbort();
 
  private:
   // Callback for "requestExtensionsData" message.
@@ -202,6 +209,9 @@ class ExtensionsDOMHandler
   // We monitor changes to the extension system so that we can reload when
   // necessary.
   NotificationRegistrar registrar_;
+
+  // The id of the extension we are about to un-install.
+  std::string extension_id_uninstalling_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsDOMHandler);
 };

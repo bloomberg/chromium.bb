@@ -87,6 +87,22 @@ ExtensionInstallUI::ExtensionInstallUI(Profile* profile)
 #endif
 {}
 
+// static
+void ExtensionInstallUI::ShowExtensionInstallPrompt(
+    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
+    const std::wstring& warning_text) {
+  ShowExtensionInstallUIPromptImpl(profile, delegate, extension, icon,
+                                   warning_text, false);  // uninstall == false.
+}
+
+// static
+void ExtensionInstallUI::ShowExtensionUninstallPrompt(
+    Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
+    const std::wstring& warning_text) {
+  ShowExtensionInstallUIPromptImpl(profile, delegate, extension, icon,
+                                   warning_text, true);  // uninstall == true.
+}
+
 void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
                                         Extension* extension,
                                         SkBitmap* install_icon) {
@@ -108,7 +124,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
         GtkThemeProvider::GetFrom(profile_)->UseGtkTheme();
 #endif
 
-    delegate->ContinueInstall();
+    delegate->InstallUIProceed();
     return;
   }
 
@@ -125,6 +141,21 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
 
   ShowExtensionInstallPrompt(profile_, delegate, extension, &icon_,
                              GetInstallWarning(extension));
+}
+
+void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
+                                          Extension* extension,
+                                          SkBitmap* icon) {
+  DCHECK(ui_loop_ == MessageLoop::current());
+
+  if (!icon) {
+    icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
+        IDR_EXTENSIONS_SECTION);
+  }
+
+  std::wstring message =
+      l10n_util::GetString(IDS_EXTENSION_UNINSTALL_CONFIRMATION);
+  ShowExtensionUninstallPrompt(profile_, delegate, extension, icon, message);
 }
 
 void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {

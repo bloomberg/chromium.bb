@@ -209,7 +209,7 @@ void CrxInstaller::ConfirmInstall() {
       frontend_->extension_prefs()->GetVersionString(extension_->id());
 
   if (client_.get()) {
-    AddRef();  // balanced in ContinueInstall() and AbortInstall().
+    AddRef();  // Balanced in Proceed() and Abort().
     client_->ConfirmInstall(this, extension_.get(), install_icon_.get());
   } else {
     ChromeThread::PostTask(
@@ -219,7 +219,7 @@ void CrxInstaller::ConfirmInstall() {
   return;
 }
 
-void CrxInstaller::ContinueInstall() {
+void CrxInstaller::InstallUIProceed() {
   ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
         NewRunnableMethod(this, &CrxInstaller::CompleteInstall));
@@ -227,7 +227,7 @@ void CrxInstaller::ContinueInstall() {
   Release();  // balanced in ConfirmInstall().
 }
 
-void CrxInstaller::AbortInstall() {
+void CrxInstaller::InstallUIAbort() {
   // Kill the theme loading bubble.
   NotificationService* service = NotificationService::current();
   service->Notify(NotificationType::NO_THEME_DETECTED,

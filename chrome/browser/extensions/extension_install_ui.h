@@ -21,26 +21,32 @@ class InfoBarDelegate;
 class SandboxedExtensionUnpacker;
 class TabContents;
 
-// Displays all the UI around extension installation.
+// Displays all the UI around extension installation and uninstallation.
 class ExtensionInstallUI {
  public:
   class Delegate {
    public:
-    // We call this method after ConfirmInstall() to signal that the
-    // installation should continue.
-    virtual void ContinueInstall() = 0;
+    // We call this method after ConfirmInstall()/ConfirmUninstall() to signal
+    // that the installation/uninstallation should continue.
+    virtual void InstallUIProceed() = 0;
 
-    // We call this method after ConfirmInstall() to signal that the
-    // installation should stop.
-    virtual void AbortInstall() = 0;
+    // We call this method after ConfirmInstall()/ConfirmUninstall() to signal
+    // that the installation/uninstallation should stop.
+    virtual void InstallUIAbort() = 0;
   };
 
-  // NOTE: The implementations of these functions are platform-specific.
   static void ShowExtensionInstallPrompt(Profile* profile,
                                          Delegate* delegate,
                                          Extension* extension,
                                          SkBitmap* install_icon,
                                          const std::wstring& warning_text);
+  static void ShowExtensionUninstallPrompt(Profile* profile,
+                                           Delegate* delegate,
+                                           Extension* extension,
+                                           SkBitmap* install_icon,
+                                           const std::wstring& warning_text);
+
+  // NOTE: The implementations of this function is platform-specific.
   static void ShowExtensionInstallError(const std::string& error);
 
   explicit ExtensionInstallUI(Profile* profile);
@@ -48,15 +54,23 @@ class ExtensionInstallUI {
   // This is called by the installer to verify whether the installation should
   // proceed.
   //
-  // We *MUST* eventually call either ContinueInstall() or AbortInstall()
+  // We *MUST* eventually call either Proceed() or Abort()
   // on |delegate|.
   void ConfirmInstall(Delegate* delegate, Extension* extension,
                       SkBitmap* icon);
 
+  // This is called by the extensions management page to verify whether the
+  // uninstallation should proceed.
+  //
+  // We *MUST* eventually call either Proceed() or Abort()
+  // on |delegate|.
+  void ConfirmUninstall(Delegate* delegate, Extension* extension,
+                        SkBitmap* icon);
+
   // Installation was successful.
   void OnInstallSuccess(Extension* extension);
 
-  // Intallation failed.
+  // Installation failed.
   void OnInstallFailure(const std::string& error);
 
   // The install was rejected because the same extension/version is already
@@ -72,6 +86,12 @@ class ExtensionInstallUI {
   // own function due to its platform-specific nature.
   InfoBarDelegate* GetNewInfoBarDelegate(Extension* new_theme,
                                          TabContents* tab_contents);
+
+  // Implements the showing of the install/uninstall dialog prompt.
+  // NOTE: The implementations of this function is platform-specific.
+  static void ShowExtensionInstallUIPromptImpl(
+      Profile* profile, Delegate* delegate, Extension* extension,
+      SkBitmap* icon, const std::wstring& warning_text, bool is_uninstall);
 
   Profile* profile_;
   MessageLoop* ui_loop_;

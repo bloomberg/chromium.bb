@@ -77,8 +77,8 @@ class CrxInstaller :
                                 scoped_ptr<SkBitmap>* result);
 
   // ExtensionInstallUI::Delegate
-  virtual void ContinueInstall();
-  virtual void AbortInstall();
+  virtual void InstallUIProceed();
+  virtual void InstallUIAbort();
 
  private:
   CrxInstaller(const FilePath& source_file,
