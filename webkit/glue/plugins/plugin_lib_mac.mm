@@ -88,6 +88,10 @@ bool ReadPlistPluginInfo(const FilePath& filename, CFBundleRef bundle,
 
     WebPluginMimeType mime;
     mime.mime_type = base::SysNSStringToUTF8([mime_type lowercaseString]);
+#ifndef OS_MACOSX_ALLOW_PDF_LOADING
+    if (mime.mime_type == "application/pdf")
+      continue;
+#endif
     if (mime_desc)
       mime.description = base::SysNSStringToWide(mime_desc);
     for (NSString* ext in mime_exts)
@@ -188,6 +192,10 @@ bool ReadSTRPluginInfo(const FilePath& filename, CFBundleRef bundle,
   for (size_t i = 0; i < num_types; ++i) {
     WebPluginMimeType mime;
     mime.mime_type = StringToLowerASCII(type_strings[2*i]);
+#ifndef OS_MACOSX_ALLOW_PDF_LOADING
+    if (mime.mime_type == "application/pdf")
+      continue;
+#endif
     if (have_type_descs && i < type_descs.size())
       mime.description = UTF8ToWide(type_descs[i]);
     SplitString(StringToLowerASCII(type_strings[2*i+1]), ',',
