@@ -58,7 +58,7 @@ class GclUnittest(GclTestsBase):
       'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile',
       'gclient_scm', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
       'shutil', 'string', 'subprocess', 'sys', 'tempfile',
-      'upload', 'urllib2', 'xml',
+      'upload', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)

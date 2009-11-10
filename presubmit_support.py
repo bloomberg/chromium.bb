@@ -345,16 +345,16 @@ class InputApi(object):
     files = self.AffectedSourceFiles(source_file_filter)
     return InputApi._RightHandSideLinesImpl(files)
 
-  def ReadFile(self, file, mode='r'):
+  def ReadFile(self, file_item, mode='r'):
     """Reads an arbitrary file.
 
     Deny reading anything outside the repository.
     """
-    if isinstance(file, AffectedFile):
-      file = file.AbsoluteLocalPath()
-    if not file.startswith(self.change.RepositoryRoot()):
+    if isinstance(file_item, AffectedFile):
+      file_item = file_item.AbsoluteLocalPath()
+    if not file_item.startswith(self.change.RepositoryRoot()):
       raise IOError('Access outside the repository root is denied.')
-    return gcl.ReadFile(file, mode)
+    return gcl.ReadFile(file_item, mode)
 
   @staticmethod
   def _RightHandSideLinesImpl(affected_files):
@@ -989,7 +989,7 @@ def ScanSubDirs(mask, recursive):
 def ParseFiles(args, recursive):
   files = []
   for arg in args:
-    files.extend([('M', file) for file in ScanSubDirs(arg, recursive)])
+    files.extend([('M', f) for f in ScanSubDirs(arg, recursive)])
   return files
 
 

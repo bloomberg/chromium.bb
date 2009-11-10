@@ -50,7 +50,7 @@ class BaseTestCase(super_mox.SuperMoxTestBase):
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     try:
       fn(*args, **kwargs)
-    except gclient.Error, e:
+    except gclient_utils.Error, e:
       self.assertEquals(e.args[0], msg)
     else:
       self.fail('%s not raised' % msg)
@@ -69,8 +69,8 @@ class GClientBaseTestCase(BaseTestCase):
     self.mox.StubOutWithMock(gclient.sys, 'stdout')
     self.mox.StubOutWithMock(gclient_utils, 'subprocess')
     # These are not tested.
-    self.mox.StubOutWithMock(gclient, 'FileRead')
-    self.mox.StubOutWithMock(gclient, 'FileWrite')
+    self.mox.StubOutWithMock(gclient_utils, 'FileRead')
+    self.mox.StubOutWithMock(gclient_utils, 'FileWrite')
     self.mox.StubOutWithMock(gclient_utils, 'SubprocessCall')
     self.mox.StubOutWithMock(gclient_utils, 'RemoveDirectory')
     # Mock them to be sure nothing bad happens.
@@ -125,8 +125,8 @@ class GClientCommandsTestCase(GClientBaseTestCase):
   def testCommands(self):
     known_commands = [gclient.DoCleanup, gclient.DoConfig, gclient.DoDiff,
                       gclient.DoExport, gclient.DoHelp, gclient.DoStatus,
-		      gclient.DoUpdate, gclient.DoRevert, gclient.DoRunHooks,
-		      gclient.DoRevInfo, gclient.DoPack]
+                      gclient.DoUpdate, gclient.DoRevert, gclient.DoRunHooks,
+                      gclient.DoRevInfo, gclient.DoPack]
     for (k,v) in gclient.gclient_command_map.iteritems():
       # If it fails, you need to add a test case for the new command.
       self.assert_(v in known_commands)
@@ -353,8 +353,9 @@ class GClientClassTestCase(GclientTestCase):
   def testSetConfig_ConfigContent_GetVar_SaveConfig_SetDefaultConfig(self):
     options = self.Options()
     text = "# Dummy content\nclient = 'my client'"
-    gclient.FileWrite(os.path.join(self.root_dir, options.config_filename),
-                      text)
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.config_filename),
+        text)
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -429,13 +430,15 @@ class GClientClassTestCase(GclientTestCase):
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
-    gclient.FileRead(os.path.join(self.root_dir,
-                     solution_name,
-                     options.deps_file)).AndRaise(IOError(2, 'No DEPS file'))
+    gclient_utils.FileRead(os.path.join(self.root_dir,
+                                        solution_name,
+                                        options.deps_file)
+                           ).AndRaise(IOError(2, 'No DEPS file'))
 
     # After everything is done, an attempt is made to write an entries
     # file.
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.entries_filename),
         IsOneOf((entries_content1, entries_content2)))
 
     self.mox.ReplayAll()
@@ -485,9 +488,9 @@ class GClientClassTestCase(GclientTestCase):
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
-    gclient.FileRead(os.path.join(self.root_dir,
-                     solution_name,
-                     options.deps_file)).AndReturn(deps)
+    gclient_utils.FileRead(os.path.join(self.root_dir,
+                                        solution_name,
+                                        options.deps_file)).AndReturn(deps)
 
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in deps and the relative path should now
@@ -500,7 +503,8 @@ class GClientClassTestCase(GclientTestCase):
 
     # After everything is done, an attempt is made to write an entries
     # file.
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
     self.mox.ReplayAll()
@@ -558,7 +562,7 @@ class GClientClassTestCase(GclientTestCase):
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
-    gclient.FileRead(os.path.join(checkout_path, options.deps_file)
+    gclient_utils.FileRead(os.path.join(checkout_path, options.deps_file)
         ).AndReturn(deps)
 
     # Next we expect an scm to be request for dep src/n even though it does not
@@ -580,7 +584,8 @@ class GClientClassTestCase(GclientTestCase):
 
     # After everything is done, an attempt is made to write an entries
     # file.
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
     self.mox.ReplayAll()
@@ -643,7 +648,8 @@ class GClientClassTestCase(GclientTestCase):
     gclient_scm.CreateSCM(url_a, self.root_dir, name_a).AndReturn(
         scm_wrapper_a)
     # Then an attempt will be made to read it's DEPS file.
-    gclient.FileRead(os.path.join(self.root_dir, name_a, options.deps_file)
+    gclient_utils.FileRead(
+        os.path.join(self.root_dir, name_a, options.deps_file)
         ).AndReturn(deps_a)
     # Then an update will be performed.
     scm_wrapper_a.RunCommand('update', options, self.args, [])
@@ -652,7 +658,8 @@ class GClientClassTestCase(GclientTestCase):
     gclient_scm.CreateSCM(url_b, self.root_dir, name_b).AndReturn(
         scm_wrapper_b)
     # Then an attempt will be made to read its DEPS file.
-    gclient.FileRead(os.path.join(self.root_dir, name_b, options.deps_file)
+    gclient_utils.FileRead(
+        os.path.join(self.root_dir, name_b, options.deps_file)
         ).AndReturn(deps_b)
     # Then an update will be performed.
     scm_wrapper_b.RunCommand('update', options, self.args, [])
@@ -664,7 +671,8 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_dep.RunCommand('update', options, self.args, [])
 
     # After everything is done, an attempt is made to write an entries file.
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
     self.mox.ReplayAll()
@@ -694,10 +702,11 @@ class GClientClassTestCase(GclientTestCase):
     gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient_scm.CreateSCM)
     gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
-    gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
+    gclient_utils.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn("Boo = 'a'")
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
-                      entries_content)
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.entries_filename),
+        entries_content)
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -768,10 +777,12 @@ deps_os = {
 
     # Also, pymox doesn't verify the order of function calling w.r.t. different
     # mock objects. Pretty lame. So reorder as we wish to make it clearer.
-    gclient.FileRead(os.path.join(self.root_dir, 'src', options.deps_file)
+    gclient_utils.FileRead(
+        os.path.join(self.root_dir, 'src', options.deps_file)
         ).AndReturn(deps_content)
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
-                      entries_content)
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.entries_filename),
+        entries_content)
 
     gclient.os.path.exists(os.path.join(self.root_dir, 'src', '.git')
         ).AndReturn(False)
@@ -853,7 +864,7 @@ deps_os = {
     exception = "Conflicting revision numbers specified."
     try:
       client.RunOnDeps('update', self.args)
-    except gclient.Error, e:
+    except gclient_utils.Error, e:
       self.assertEquals(e.args[0], exception)
     else:
       self.fail('%s not raised' % exception)
@@ -887,10 +898,12 @@ deps = {
     scm_wrapper_src = self.mox.CreateMockAnything()
 
     options = self.Options()
-    gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
+    gclient_utils.FileRead(
+        os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
-                      entries_content)
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.entries_filename),
+        entries_content)
 
     gclient.os.path.exists(os.path.join(self.root_dir, 'foo/third_party/WebKit',
                                         '.git')).AndReturn(False)
@@ -945,10 +958,12 @@ deps = {
     scm_wrapper_src = self.mox.CreateMockAnything()
 
     options = self.Options()
-    gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
+    gclient_utils.FileRead(
+        os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
-                      entries_content)
+    gclient_utils.FileWrite(
+        os.path.join(self.root_dir, options.entries_filename),
+        entries_content)
 
     gclient.os.path.exists(os.path.join(self.root_dir, 'foo/third_party/WebKit',
                                         '.git')
@@ -990,7 +1005,8 @@ deps = {
 }"""
 
     options = self.Options()
-    gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
+    gclient_utils.FileRead(
+        os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
     gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
         gclient_scm.CreateSCM)
@@ -1002,7 +1018,7 @@ deps = {
     exception = "Var is not defined: webkit"
     try:
       client.RunOnDeps('update', self.args)
-    except gclient.Error, e:
+    except gclient_utils.Error, e:
       self.assertEquals(e.args[0], exception)
     else:
       self.fail('%s not raised' % exception)

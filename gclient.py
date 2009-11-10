@@ -74,14 +74,12 @@ import optparse
 import os
 import pprint
 import re
-import stat
 import sys
 import urlparse
 import urllib
 
 import gclient_scm
 import gclient_utils
-from gclient_utils import Error, FileRead, FileWrite
 
 # default help text
 DEFAULT_USAGE_TEXT = (
@@ -312,6 +310,7 @@ class GClient(object):
       exec(content, self._config_dict)
     except SyntaxError, e:
       try:
+        __pychecker__ = 'no-objattrs'
         # Try to construct a human readable error message
         error_message = [
             'There is a syntax error in your configuration file.',
@@ -322,15 +321,16 @@ class GClient(object):
         raise e
       else:
         # Raise a new exception with the human readable message:
-        raise Error('\n'.join(error_message))
+        raise gclient_utils.Error('\n'.join(error_message))
 
   def SaveConfig(self):
-    FileWrite(os.path.join(self._root_dir, self._options.config_filename),
-              self._config_content)
+    gclient_utils.FileWrite(os.path.join(self._root_dir,
+                                         self._options.config_filename),
+                            self._config_content)
 
   def _LoadConfig(self):
-    client_source = FileRead(os.path.join(self._root_dir,
-                                          self._options.config_filename))
+    client_source = gclient_utils.FileRead(
+        os.path.join(self._root_dir, self._options.config_filename))
     self.SetConfig(client_source)
 
   def ConfigContent(self):
@@ -377,7 +377,7 @@ class GClient(object):
     """
     text = "entries = \\\n" + pprint.pformat(entries, 2) + '\n'
     file_path = os.path.join(self._root_dir, self._options.entries_filename)
-    FileWrite(file_path, text)
+    gclient_utils.FileWrite(file_path, text)
 
   def _ReadEntries(self):
     """Read the .gclient_entries file for the given client.
@@ -393,7 +393,7 @@ class GClient(object):
     filename = os.path.join(self._root_dir, self._options.entries_filename)
     if not os.path.exists(filename):
       return []
-    exec(FileRead(filename), scope)
+    exec(gclient_utils.FileRead(filename), scope)
     return scope["entries"]
 
   class FromImpl:
@@ -416,7 +416,7 @@ class GClient(object):
         return self._custom_vars[var_name]
       elif var_name in self._local_scope.get("vars", {}):
         return self._local_scope["vars"][var_name]
-      raise Error("Var is not defined: %s" % var_name)
+      raise gclient_utils.Error("Var is not defined: %s" % var_name)
 
   def _ParseSolutionDeps(self, solution_name, solution_deps_content,
                          custom_vars):
@@ -550,17 +550,17 @@ class GClient(object):
               # A relative url. Fetch the real base.
               path = parsed_url[2]
               if path[0] != "/":
-                raise Error(
+                raise gclient_utils.Error(
                     "relative DEPS entry \"%s\" must begin with a slash" % d)
               # Create a scm just to query the full url.
               scm = gclient_scm.CreateSCM(solution["url"], self._root_dir,
                                            None)
               url = scm.FullUrlForRelativeUrl(url)
         if d in deps and deps[d] != url:
-          raise Error(
+          raise gclient_utils.Error(
               "Solutions have conflicting versions of dependency \"%s\"" % d)
         if d in solution_urls and solution_urls[d] != url:
-          raise Error(
+          raise gclient_utils.Error(
               "Dependency \"%s\" conflicts with specified solution" % d)
         # Grab the dependency.
         deps[d] = url
@@ -613,7 +613,7 @@ class GClient(object):
     # match each hook's pattern.
     for hook_dict in hooks:
       pattern = re.compile(hook_dict['pattern'])
-      matching_file_list = [file for file in file_list if pattern.search(file)]
+      matching_file_list = [f for f in file_list if pattern.search(f)]
       if matching_file_list:
         self._RunHookAction(hook_dict, matching_file_list)
 
@@ -630,25 +630,25 @@ class GClient(object):
       Error: If the client has conflicting entries.
     """
     if not command in self.supported_commands:
-      raise Error("'%s' is an unsupported command" % command)
+      raise gclient_utils.Error("'%s' is an unsupported command" % command)
 
     # Check for revision overrides.
     revision_overrides = {}
     for revision in self._options.revisions:
       if revision.find("@") == -1:
-        raise Error(
+        raise gclient_utils.Error(
             "Specify the full dependency when specifying a revision number.")
       revision_elem = revision.split("@")
       # Disallow conflicting revs
       if revision_overrides.has_key(revision_elem[0]) and \
          revision_overrides[revision_elem[0]] != revision_elem[1]:
-        raise Error(
+        raise gclient_utils.Error(
             "Conflicting revision numbers specified.")
       revision_overrides[revision_elem[0]] = revision_elem[1]
 
     solutions = self.GetVar("solutions")
     if not solutions:
-      raise Error("No solution specified")
+      raise gclient_utils.Error("No solution specified")
 
     # When running runhooks --force, there's no need to consult the SCM.
     # All known hooks are expected to run unconditionally regardless of working
@@ -663,20 +663,21 @@ class GClient(object):
       name = solution["name"]
       deps_file = solution.get("deps_file", self._options.deps_file)
       if '/' in deps_file or '\\' in deps_file:
-        raise Error("deps_file name must not be a path, just a filename.")
+        raise gclient_utils.Error('deps_file name must not be a path, just a '
+                                  'filename.')
       if name in entries:
-        raise Error("solution %s specified more than once" % name)
+        raise gclient_utils.Error("solution %s specified more than once" % name)
       url = solution["url"]
       entries[name] = url
       if run_scm and url:
         self._options.revision = revision_overrides.get(name)
         scm = gclient_scm.CreateSCM(url, self._root_dir, name)
         scm.RunCommand(command, self._options, args, file_list)
-        file_list = [os.path.join(name, file.strip()) for file in file_list]
+        file_list = [os.path.join(name, f.strip()) for f in file_list]
         self._options.revision = None
       try:
-        deps_content = FileRead(os.path.join(self._root_dir, name,
-                                             deps_file))
+        deps_content = gclient_utils.FileRead(
+            os.path.join(self._root_dir, name, deps_file))
       except IOError, e:
         if e.errno != errno.ENOENT:
           raise
@@ -703,12 +704,11 @@ class GClient(object):
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:
       if type(deps[d]) != str:
-        sub_deps = self._ParseSolutionDeps(
-                           deps[d].module_name,
-                           FileRead(os.path.join(self._root_dir,
-                                                 deps[d].module_name,
-                                                 self._options.deps_file)),
-                           {})
+        filename = os.path.join(self._root_dir,
+                                deps[d].module_name,
+                                self._options.deps_file)
+        content =  gclient_utils.FileRead(filename)
+        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
         url = sub_deps[d]
         entries[d] = url
         if run_scm:
@@ -789,19 +789,19 @@ class GClient(object):
     revision_overrides = {}
     for revision in self._options.revisions:
       if revision.find("@") < 0:
-        raise Error(
+        raise gclient_utils.Error(
             "Specify the full dependency when specifying a revision number.")
       revision_elem = revision.split("@")
       # Disallow conflicting revs
       if revision_overrides.has_key(revision_elem[0]) and \
          revision_overrides[revision_elem[0]] != revision_elem[1]:
-        raise Error(
+        raise gclient_utils.Error(
             "Conflicting revision numbers specified.")
       revision_overrides[revision_elem[0]] = revision_elem[1]
 
     solutions = self.GetVar("solutions")
     if not solutions:
-      raise Error("No solution specified")
+      raise gclient_utils.Error("No solution specified")
 
     entries = {}
     entries_deps_content = {}
@@ -826,7 +826,7 @@ class GClient(object):
     for solution in solutions:
       name = solution["name"]
       if name in entries:
-        raise Error("solution %s specified more than once" % name)
+        raise gclient_utils.Error("solution %s specified more than once" % name)
       (url, rev) = GetURLAndRev(name, solution["url"])
       entries[name] = "%s@%s" % (url, rev)
       # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
@@ -854,21 +854,12 @@ class GClient(object):
       if type(deps[d]) != str:
         deps_parent_url = entries[deps[d].module_name]
         if deps_parent_url.find("@") < 0:
-          raise Error("From %s missing revisioned url" % deps[d].module_name)
-        deps_parent_url_components = deps_parent_url.split("@")
-        # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-        deps_parent_content = gclient_scm.CaptureSVN(
-                                ["cat",
-                                 "%s/%s@%s" % (deps_parent_url_components[0],
-                                               self._options.deps_file,
-                                               deps_parent_url_components[1])],
-                                os.getcwd())
-        sub_deps = self._ParseSolutionDeps(
-                           deps[d].module_name,
-                           FileRead(os.path.join(self._root_dir,
-                                                 deps[d].module_name,
-                                                 self._options.deps_file)),
-                           {})
+          raise gclient_utils.Error("From %s missing revisioned url" %
+                                        deps[d].module_name)
+        content =  gclient_utils.FileRead(os.path.join(self._root_dir,
+                                                       deps[d].module_name,
+                                                       self._options.deps_file))
+        sub_deps = self._ParseSolutionDeps(deps[d].module_name, content, {})
         (url, rev) = GetURLAndRev(d, sub_deps[d])
         entries[d] = "%s@%s" % (url, rev)
     print(";\n\n".join(["%s: %s" % (x, entries[x])
@@ -886,7 +877,7 @@ def DoCleanup(options, args):
   """
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -906,10 +897,11 @@ def DoConfig(options, args):
     Error: on usage error
   """
   if len(args) < 1 and not options.spec:
-    raise Error("required argument missing; see 'gclient help config'")
+    raise gclient_utils.Error("required argument missing; see 'gclient help "
+                              "config'")
   if os.path.exists(options.config_filename):
-    raise Error("%s file already exists in the current directory" %
-                options.config_filename)
+    raise gclient_utils.Error("%s file already exists in the current directory"
+                                  % options.config_filename)
   client = GClient('.', options)
   if options.spec:
     client.SetConfig(options.spec)
@@ -932,11 +924,11 @@ def DoExport(options, args):
     Error: on usage error
   """
   if len(args) != 1:
-    raise Error("Need directory name")
+    raise gclient_utils.Error("Need directory name")
   client = GClient.LoadCurrentConfig(options)
 
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
 
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
@@ -950,10 +942,12 @@ def DoHelp(options, args):
   Raises:
     Error: if the command is unknown.
   """
+  __pychecker__ = 'unusednames=options'
   if len(args) == 1 and args[0] in COMMAND_USAGE_TEXT:
     print(COMMAND_USAGE_TEXT[args[0]])
   else:
-    raise Error("unknown subcommand '%s'; see 'gclient help'" % args[0])
+    raise gclient_utils.Error("unknown subcommand '%s'; see 'gclient help'" %
+                                  args[0])
 
 
 def DoPack(options, args):
@@ -964,7 +958,7 @@ def DoPack(options, args):
   """
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -980,7 +974,7 @@ def DoStatus(options, args):
   """
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -997,7 +991,7 @@ def DoUpdate(options, args):
   client = GClient.LoadCurrentConfig(options)
 
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
 
   if not options.head:
     solutions = client.GetVar('solutions')
@@ -1034,7 +1028,7 @@ def DoDiff(options, args):
   """
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -1050,7 +1044,7 @@ def DoRevert(options, args):
   """
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
   return client.RunOnDeps('revert', args)
 
 
@@ -1062,7 +1056,7 @@ def DoRunHooks(options, args):
   """
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
@@ -1077,9 +1071,10 @@ def DoRevInfo(options, args):
   Raises:
     Error: if client isn't configured properly.
   """
+  __pychecker__ = 'unusednames=args'
   client = GClient.LoadCurrentConfig(options)
   if not client:
-    raise Error("client not configured; see 'gclient config'")
+    raise gclient_utils.Error("client not configured; see 'gclient config'")
   client.PrintRevInfo()
 
 
@@ -1107,7 +1102,8 @@ def DispatchCommand(command, options, args, command_map=None):
   if command in command_map:
     return command_map[command](options, args)
   else:
-    raise Error("unknown subcommand '%s'; see 'gclient help'" % command)
+    raise gclient_utils.Error("unknown subcommand '%s'; see 'gclient help'" %
+                                  command)
 
 
 def Main(argv):
@@ -1185,7 +1181,7 @@ def Main(argv):
 if "__main__" == __name__:
   try:
     result = Main(sys.argv)
-  except Error, e:
+  except gclient_utils.Error, e:
     print >> sys.stderr, "Error: %s" % str(e)
     result = 1
   sys.exit(result)

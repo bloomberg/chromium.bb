@@ -18,11 +18,9 @@ import socket
 import subprocess
 import sys
 import tempfile
-import traceback
 import urllib
 
 import gcl
-import gclient
 import gclient_scm
 import presubmit_support
 import upload
@@ -134,7 +132,7 @@ class SCM(object):
     self.options = options
 
   def ProcessOptions(self):
-    raise Unimplemented
+    raise NotImplementedError
 
 
 class SVN(SCM):
@@ -153,11 +151,11 @@ class SVN(SCM):
       os.chdir(root)
 
     diff = []
-    for file in files:
+    for filename in files:
       # Use svn info output instead of os.path.isdir because the latter fails
       # when the file is deleted.
-      if gclient_scm.CaptureSVNInfo(file).get("Node Kind") in ("dir",
-                                                               "directory"):
+      if gclient_scm.CaptureSVNInfo(filename).get("Node Kind") in (
+          "dir", "directory"):
         continue
       # If the user specified a custom diff command in their svn config file,
       # then it'll be used when we do svn diff, which we don't want to happen
@@ -173,26 +171,26 @@ class SVN(SCM):
       if not os.path.exists(bogus_dir):
         os.mkdir(bogus_dir)
       # Grabs the diff data.
-      data = gcl.RunShell(["svn", "diff", "--config-dir", bogus_dir, file])
+      data = gcl.RunShell(["svn", "diff", "--config-dir", bogus_dir, filename])
 
       # We know the diff will be incorrectly formatted. Fix it.
-      if gcl.IsSVNMoved(file):
+      if gcl.IsSVNMoved(filename):
         # The file is "new" in the patch sense. Generate a homebrew diff.
         # We can't use ReadFile() since it's not using binary mode.
-        file_handle = open(file, 'rb')
+        file_handle = open(filename, 'rb')
         file_content = file_handle.read()
         file_handle.close()
         # Prepend '+' to every lines.
         file_content = ['+' + i for i in file_content.splitlines(True)]
         nb_lines = len(file_content)
         # We need to use / since patch on unix will fail otherwise.
-        file = file.replace('\\', '/')
-        data = "Index: %s\n" % file
+        filename = filename.replace('\\', '/')
+        data = "Index: %s\n" % filename
         data += ("============================================================="
                  "======\n")
         # Note: Should we use /dev/null instead?
-        data += "--- %s\n" % file
-        data += "+++ %s\n" % file
+        data += "--- %s\n" % filename
+        data += "+++ %s\n" % filename
         data += "@@ -0,0 +1,%d @@\n" % nb_lines
         data += ''.join(file_content)
       diff.append(data)
@@ -255,7 +253,8 @@ class GIT(SCM):
     # patches?
     branch = upload.RunShell(['git', 'symbolic-ref', 'HEAD']).strip()
     if not branch.startswith('refs/heads/'):
-      raise "Couldn't figure out branch name"
+      # TODO(maruel): Find a better type.
+      raise NoTryServerAccess("Couldn't figure out branch name")
     branch = branch[len('refs/heads/'):]
     return branch
 
@@ -377,14 +376,14 @@ def _SendChangeSVN(options):
       # no-op if the file's content (the diff) is not modified. This is why the
       # file name contains the date and time.
       RunCommand(['svn', 'update', full_path])
-      file = open(full_path, 'wb')
-      file.write(options.diff)
-      file.close()
+      f = open(full_path, 'wb')
+      f.write(options.diff)
+      f.close()
     else:
       # Add the file to the repo
-      file = open(full_path, 'wb')
-      file.write(options.diff)
-      file.close()
+      f = open(full_path, 'wb')
+      f.write(options.diff)
+      f.close()
       RunCommand(["svn", "add", full_path])
     temp_file.write(description)
     temp_file.flush()
@@ -572,6 +571,7 @@ def TryChange(argv,
     except NoTryServerAccess, e:
       # If we got the diff, we don't care.
       if not options.diff:
+        # TODO(maruel): Raise what?
         raise
 
     # Get try slaves from PRESUBMIT.py files if not specified.
@@ -588,7 +588,7 @@ def TryChange(argv,
 
     if options.name is None:
       if options.issue:
-        patch_name = 'Issue %s' % options.issue
+        options.name = 'Issue %s' % options.issue
       else:
         options.name = 'Unnamed'
         print('Note: use --name NAME to change the try job name.')

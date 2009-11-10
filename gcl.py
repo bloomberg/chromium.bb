@@ -17,7 +17,6 @@ import sys
 import tempfile
 import upload
 import urllib2
-import xml.dom.minidom
 
 # gcl now depends on gclient.
 import gclient_scm
@@ -162,7 +161,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
           r = gclient_scm.CaptureSVNStatus((local_path,))
         rc = -1
         if r:
-          (status, file) = r[0]
+          status = r[0][0]
           rc = 0
         if not rc and status[0] in ('A','M'):
           content = ReadFile(local_path)
@@ -187,7 +186,7 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
       # fetch it each time.
       WriteFile(cached_file, content)
     else:
-      content = ReadFile(cached_settings_file)
+      content = ReadFile(cached_file)
     # Keep the content cached in memory.
     FILES_CACHE[filename] = content
   return FILES_CACHE[filename]
@@ -253,17 +252,17 @@ def RunShell(command, print_output=False):
 
 def ReadFile(filename, flags='r'):
   """Returns the contents of a file."""
-  file = open(filename, flags)
-  result = file.read()
-  file.close()
+  f = open(filename, flags)
+  result = f.read()
+  f.close()
   return result
 
 
 def WriteFile(filename, contents):
   """Overwrites the file with the given contents."""
-  file = open(filename, 'w')
-  file.write(contents)
-  file.close()
+  f = open(filename, 'w')
+  f.write(contents)
+  f.close()
 
 
 def FilterFlag(args, flag):
@@ -314,7 +313,7 @@ class ChangeInfo(object):
 
   def GetFileNames(self):
     """Returns the list of file names included in this change."""
-    return [file[1] for file in self._files]
+    return [f[1] for f in self._files]
 
   def GetFiles(self):
     """Returns the list of files included in this change with their status."""
@@ -330,12 +329,12 @@ class ChangeInfo(object):
 
   def _NonDeletedFileList(self):
     """Returns a list of files in this change, not including deleted files."""
-    return [file[1] for file in self.GetFiles()
-            if not file[0].startswith("D")]
+    return [f[1] for f in self.GetFiles()
+            if not f[0].startswith("D")]
 
   def _AddedFileList(self):
     """Returns a list of files added in this change."""
-    return [file[1] for file in self.GetFiles() if file[0].startswith("A")]
+    return [f[1] for f in self.GetFiles() if f[0].startswith("A")]
 
   def Save(self):
     """Writes the changelist information to disk."""
@@ -368,10 +367,10 @@ class ChangeInfo(object):
     """
     SOURCE_SUFFIXES = [".cc", ".cpp", ".c", ".m", ".mm"]
     # Ignore third_party entirely.
-    files = [file for file in self._NonDeletedFileList()
-             if file.find("third_party") == -1]
-    added_files = [file for file in self._AddedFileList()
-                   if file.find("third_party") == -1]
+    files = [f for f in self._NonDeletedFileList()
+             if f.find("third_party") == -1]
+    added_files = [f for f in self._AddedFileList()
+                   if f.find("third_party") == -1]
 
     # If the change is entirely in third_party, we're done.
     if len(files) == 0:
@@ -385,8 +384,8 @@ class ChangeInfo(object):
       return False
 
     # Any new source files?
-    source_files = [file for file in added_files
-                    if os.path.splitext(file)[1] in SOURCE_SUFFIXES]
+    source_files = [item for item in added_files
+                    if os.path.splitext(item)[1] in SOURCE_SUFFIXES]
     if len(source_files) > 0:
       return True
 
@@ -472,23 +471,23 @@ class ChangeInfo(object):
     files = []
     for line in split_data[1].splitlines():
       status = line[:7]
-      file = line[7:]
-      files.append((status, file))
+      filename = line[7:]
+      files.append((status, filename))
     description = split_data[2]
     save = False
     if update_status:
-      for file in files:
-        filename = os.path.join(local_root, file[1])
+      for item in files:
+        filename = os.path.join(local_root, item[1])
         status_result = gclient_scm.CaptureSVNStatus(filename)
         if not status_result or not status_result[0][0]:
           # File has been reverted.
           save = True
-          files.remove(file)
+          files.remove(item)
           continue
         status = status_result[0][0]
-        if status != file[0]:
+        if status != item[0]:
           save = True
-          files[files.index(file)] = (status, file[1])
+          files[files.index(item)] = (status, item[1])
     change_info = ChangeInfo(changename, issue, patchset, description, files,
                              local_root)
     if save:
@@ -607,7 +606,7 @@ def SendToRietveld(request_path, payload=None,
                                     save_cookies=True)
   try:
     return rpc_server.Send(request_path, payload, content_type, timeout)
-  except urllib2.URLError, e:
+  except urllib2.URLError:
     if timeout is None:
       ErrorExit("Error accessing url %s" % request_path)
     else:
@@ -633,17 +632,17 @@ def Opened(show_unknown_files):
     if len(change_info.GetFiles()) != len(files[cl_name]):
       note = " (Note: this changelist contains files outside this directory)"
     print "\n--- Changelist " + cl_name + note + ":"
-    for file in files[cl_name]:
-      print "".join(file)
+    for filename in files[cl_name]:
+      print "".join(filename)
   if show_unknown_files:
     unknown_files = UnknownFiles([])
   if (files.get('') or (show_unknown_files and len(unknown_files))):
     print "\n--- Not in any changelist:"
-    for file in files.get('', []):
-      print "".join(file)
+    for item in files.get('', []):
+      print "".join(item)
     if show_unknown_files:
-      for file in unknown_files:
-        print "?      %s" % file
+      for filename in unknown_files:
+        print "?      %s" % filename
 
 
 def Help(argv=None):
@@ -749,11 +748,11 @@ def GenerateDiff(files, root=None):
     os.chdir(root)
 
   diff = []
-  for file in files:
+  for filename in files:
     # Use svn info output instead of os.path.isdir because the latter fails
     # when the file is deleted.
-    if gclient_scm.CaptureSVNInfo(file).get("Node Kind") in ("dir",
-                                                             "directory"):
+    if gclient_scm.CaptureSVNInfo(filename).get("Node Kind") in ("dir",
+                                                                 "directory"):
       continue
     # If the user specified a custom diff command in their svn config file,
     # then it'll be used when we do svn diff, which we don't want to happen
@@ -768,13 +767,13 @@ def GenerateDiff(files, root=None):
     bogus_dir = os.path.join(parent_dir, "temp_svn_config")
     if not os.path.exists(bogus_dir):
       os.mkdir(bogus_dir)
-    output = RunShell(["svn", "diff", "--config-dir", bogus_dir, file])
+    output = RunShell(["svn", "diff", "--config-dir", bogus_dir, filename])
     if output:
       diff.append(output)
-    elif IsSVNMoved(file):
+    elif IsSVNMoved(filename):
       #  svn diff on a mv/cp'd file outputs nothing.
       # We put in an empty Index entry so upload.py knows about them.
-      diff.append("\nIndex: %s\n" % file)
+      diff.append("\nIndex: %s\n" % filename)
     else:
       # The file is not modified anymore. It should be removed from the set.
       pass
@@ -952,7 +951,6 @@ def Commit(change_info, args):
   # you'll get "svn: Cannot non-recursively commit a directory deletion of a
   # directory with child nodes". Yay...
   commit_cmd = ["svn", "commit"]
-  filename = ''
   if change_info.issue:
     # Get the latest description from Rietveld.
     change_info.description = GetIssueDescription(change_info.issue)
@@ -1087,8 +1085,8 @@ def Change(change_info, args):
     if line.startswith("---"):
       break
     status = line[:7]
-    file = line[7:]
-    new_cl_files.append((status, file))
+    filename = line[7:]
+    new_cl_files.append((status, filename))
 
   if (not len(change_info._files)) and (not change_info.issue) and \
       (not len(new_description) and (not new_cl_files)):
@@ -1128,14 +1126,14 @@ def Lint(change_info, args):
   if not black_list:
     black_list = DEFAULT_LINT_IGNORE_REGEX
   black_regex = re.compile(black_list)
-  for file in filenames:
-    if white_regex.match(file):
-      if black_regex.match(file):
-        print "Ignoring file %s" % file
+  for filename in filenames:
+    if white_regex.match(filename):
+      if black_regex.match(filename):
+        print "Ignoring file %s" % filename
       else:
-        cpplint.ProcessFile(file, cpplint._cpplint_state.verbose_level)
+        cpplint.ProcessFile(filename, cpplint._cpplint_state.verbose_level)
     else:
-      print "Skipping file %s" % file
+      print "Skipping file %s" % filename
 
   print "Total errors found: %d\n" % cpplint._cpplint_state.error_count
   os.chdir(previous_cwd)
@@ -1169,8 +1167,8 @@ def Changes():
   for cl in GetCLs():
     change_info = ChangeInfo.Load(cl, GetRepositoryRoot(), True, True)
     print "\n--- Changelist " + change_info.name + ":"
-    for file in change_info.GetFiles():
-      print "".join(file)
+    for filename in change_info.GetFiles():
+      print "".join(filename)
 
 
 def DeleteEmptyChangeLists():
@@ -1201,9 +1199,9 @@ def main(argv=None):
       # For smooth upgrade support, move the files in GetInfoDir() to
       # GetChangesDir().
       # TODO(maruel): Remove this code in August 2009.
-      for file in os.listdir(unicode(GetInfoDir())):
-        file_path = os.path.join(unicode(GetInfoDir()), file)
-        if os.path.isfile(file_path) and file != CODEREVIEW_SETTINGS_FILE:
+      for filename in os.listdir(unicode(GetInfoDir())):
+        file_path = os.path.join(unicode(GetInfoDir()), filename)
+        if os.path.isfile(file_path) and filename != CODEREVIEW_SETTINGS_FILE:
           shutil.move(file_path, GetChangesDir())
     if not os.path.exists(GetCacheDir()):
       os.mkdir(GetCacheDir())
@@ -1217,9 +1215,9 @@ def main(argv=None):
     Opened(command == "status")
     return 0
   if command == "nothave":
-    unknown_files = UnknownFiles(argv[2:])
-    for file in unknown_files:
-      print "?      " + "".join(file)
+    __pychecker__ = 'no-returnvalues'
+    for filename in UnknownFiles(argv[2:]):
+      print "?      " + "".join(filename)
     return 0
   if command == "changes":
     Changes()
@@ -1232,7 +1230,8 @@ def main(argv=None):
     print GenerateDiff([x[1] for x in files])
     return 0
   if command == "settings":
-    ignore = GetCodeReviewSetting("UNKNOWN");
+    # Force load settings
+    GetCodeReviewSetting("UNKNOWN");
     del CODEREVIEW_SETTINGS['__just_initialized']
     print '\n'.join(("%s: %s" % (str(k), str(v))
                      for (k,v) in CODEREVIEW_SETTINGS.iteritems()))

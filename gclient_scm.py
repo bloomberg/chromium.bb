@@ -96,16 +96,18 @@ class GitWrapper(SCMWrapper):
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
+    __pychecker__ = 'unusednames=args,file_list,options'
     self._RunGit(['prune'], redirect_stdout=False)
     self._RunGit(['fsck'], redirect_stdout=False)
     self._RunGit(['gc'], redirect_stdout=False)
 
   def diff(self, options, args, file_list):
-    # NOTE: This function does not currently modify file_list.
+    __pychecker__ = 'unusednames=args,file_list,options'
     merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
     self._RunGit(['diff', merge_base], redirect_stdout=False)
 
   def export(self, options, args, file_list):
+    __pychecker__ = 'unusednames=file_list,options'
     assert len(args) == 1
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     if not os.path.exists(export_path):
@@ -167,6 +169,7 @@ class GitWrapper(SCMWrapper):
 
     All reverted files will be appended to file_list.
     """
+    __pychecker__ = 'unusednames=args'
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
       # revert won't work if the directory doesn't exist. It needs to
@@ -181,6 +184,7 @@ class GitWrapper(SCMWrapper):
 
   def revinfo(self, options, args, file_list):
     """Display revision"""
+    __pychecker__ = 'unusednames=args,file_list,options'
     return self._RunGit(['rev-parse', 'HEAD'])
 
   def runhooks(self, options, args, file_list):
@@ -188,9 +192,10 @@ class GitWrapper(SCMWrapper):
 
   def status(self, options, args, file_list):
     """Display status information."""
+    __pychecker__ = 'unusednames=args,options'
     if not os.path.isdir(self.checkout_path):
       print('\n________ couldn\'t run status in %s:\nThe directory '
-            'does not exist.' % checkout_path)
+            'does not exist.' % self.checkout_path)
     else:
       merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
       self._RunGit(['diff', '--name-status', merge_base], redirect_stdout=False)
@@ -219,17 +224,20 @@ class SVNWrapper(SCMWrapper):
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
+    __pychecker__ = 'unusednames=file_list,options'
     command = ['cleanup']
     command.extend(args)
     RunSVN(command, os.path.join(self._root_dir, self.relpath))
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
+    __pychecker__ = 'unusednames=file_list,options'
     command = ['diff']
     command.extend(args)
     RunSVN(command, os.path.join(self._root_dir, self.relpath))
 
   def export(self, options, args, file_list):
+    __pychecker__ = 'unusednames=file_list,options'
     assert len(args) == 1
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     try:
@@ -361,6 +369,7 @@ class SVNWrapper(SCMWrapper):
     All reverted files will be appended to file_list, even if Subversion
     doesn't know about them.
     """
+    __pychecker__ = 'unusednames=args'
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
       # svn revert won't work if the directory doesn't exist. It needs to
@@ -369,9 +378,9 @@ class SVNWrapper(SCMWrapper):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    for file in CaptureSVNStatus(path):
-      file_path = os.path.join(path, file[1])
-      if file[0][0] == 'X':
+    for file_status in CaptureSVNStatus(path):
+      file_path = os.path.join(path, file_status[1])
+      if file_status[0][0] == 'X':
         # Ignore externals.
         logging.info('Ignoring external %s' % file_path)
         continue
@@ -380,7 +389,7 @@ class SVNWrapper(SCMWrapper):
         logging.info('%s%s' % (file[0], file[1]))
       else:
         print(file_path)
-      if file[0].isspace():
+      if file_status[0].isspace():
         logging.error('No idea what is the status of %s.\n'
                       'You just found a bug in gclient, please ping '
                       'maruel@chromium.org ASAP!' % file_path)
@@ -413,6 +422,7 @@ class SVNWrapper(SCMWrapper):
 
   def revinfo(self, options, args, file_list):
     """Display revision"""
+    __pychecker__ = 'unusednames=args,file_list,options'
     return CaptureSVNHeadRevision(self.url)
 
   def runhooks(self, options, args, file_list):
@@ -435,6 +445,7 @@ class SVNWrapper(SCMWrapper):
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
     repository."""
+    __pychecker__ = 'unusednames=file_list,options'
     path = os.path.join(self._root_dir, self.relpath)
     command = ['diff']
     command.extend(args)
@@ -757,13 +768,12 @@ def CaptureSVNStatus(files):
   if dom:
     # /status/target/entry/(wc-status|commit|author|date)
     for target in dom.getElementsByTagName('target'):
-      base_path = target.getAttribute('path')
       for entry in target.getElementsByTagName('entry'):
-        file = entry.getAttribute('path')
+        file_path = entry.getAttribute('path')
         wc_status = entry.getElementsByTagName('wc-status')
         assert len(wc_status) == 1
         # Emulate svn 1.5 status ouput...
-        statuses = [' ' for i in range(7)]
+        statuses = [' '] * 7
         # Col 0
         xml_item_status = wc_status[0].getAttribute('item')
         if xml_item_status in status_letter:
@@ -793,6 +803,6 @@ def CaptureSVNStatus(files):
         if wc_status[0].getAttribute('switched') == 'true':
           statuses[4] = 'S'
         # TODO(maruel): Col 5 and 6
-        item = (''.join(statuses), file)
+        item = (''.join(statuses), file_path)
         results.append(item)
   return results

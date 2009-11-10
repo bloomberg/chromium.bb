@@ -29,9 +29,9 @@ class TryChangeUnittest(TryChangeTestsBase):
       'GetTryServerSettings', 'GuessVCS',
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PathDifference',
       'RunCommand', 'SCM', 'SVN', 'TryChange', 'USAGE',
-      'datetime', 'gcl', 'gclient', 'gclient_scm', 'getpass', 'logging',
+      'datetime', 'gcl', 'gclient_scm', 'getpass', 'logging',
       'optparse', 'os', 'presubmit_support', 'shutil', 'socket', 'subprocess',
-      'sys', 'tempfile', 'traceback', 'upload', 'urllib',
+      'sys', 'tempfile', 'upload', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)

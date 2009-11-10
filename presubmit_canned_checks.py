@@ -262,11 +262,11 @@ def CheckSvnProperty(input_api, output_api, prop, expected, affected_files):
   bad = filter(lambda f: f.Property(prop) != expected, affected_files)
   if bad:
     if input_api.is_committing:
-      type = output_api.PresubmitError
+      res_type = output_api.PresubmitError
     else:
-      type = output_api.PresubmitNotifyResult
+      res_type = output_api.PresubmitNotifyResult
     message = "Run `svn pset %s %s <item>` on these files:" % (prop, expected)
-    return [type(message, items=bad)]
+    return [res_type(message, items=bad)]
   return []
 
 
