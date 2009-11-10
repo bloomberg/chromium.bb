@@ -2312,8 +2312,6 @@ BUG10420 LINUX : LayoutTests/svg/custom/use-transform.svg = FAIL
 // Likely just needs a rebaseline.
 BUG10421 LINUX : LayoutTests/fast/block/positioning/001.html = FAIL PASS
 
-// Regressions from WebKit merge 40875:41017
-BUG10426 LINUX : LayoutTests/fast/css-generated-content/beforeAfter-interdocument.html = FAIL
 // Selection highlight colors are wrong.
 BUG10426 LINUX : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 
