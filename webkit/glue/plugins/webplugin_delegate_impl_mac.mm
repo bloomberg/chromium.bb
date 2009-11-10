@@ -201,6 +201,12 @@ void WebPluginDelegateImpl::DestroyInstance() {
     // this before calling set_web_plugin(NULL) because the
     // instance uses the helper to do the download.
     instance_->CloseStreams();
+
+    window_.window = NULL;
+    if (!(quirks_ & PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY)) {
+      instance_->NPP_SetWindow(&window_);
+    }
+
     instance_->NPP_Destroy();
     instance_->set_web_plugin(NULL);
     instance_ = 0;
