@@ -105,6 +105,7 @@ class BrowserActionButton : public NotificationObserver,
   void OnImageLoaded(SkBitmap* image, size_t index) {
     if (image)
       default_icon_ = gfx::GdkPixbufFromSkBitmap(image);
+    tracker_ = NULL;  // The tracker object will delete itself when we return.
     UpdateState();
   }
 
