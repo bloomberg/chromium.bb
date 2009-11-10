@@ -12,17 +12,6 @@ class SkBitmap;
 
 class SkBitmapOperations {
  public:
-  // Create a bitmap that is an inverted image of the passed in image.
-  // Each color becomes its inverse in the color wheel. So (255, 15, 0) becomes
-  // (0, 240, 255). The alpha value is not inverted.
-  static SkBitmap CreateInvertedBitmap(const SkBitmap& image);
-
-  // Create a bitmap that is a superimposition of the second bitmap on top of
-  // the first. The provided bitmaps must use have the kARGB_8888_Config config
-  // and be of equal dimensions.
-  static SkBitmap CreateSuperimposedBitmap(const SkBitmap& first,
-                                           const SkBitmap& second);
-
   // Create a bitmap that is a blend of two others. The alpha argument
   // specifies the opacity of the second bitmap. The provided bitmaps must
   // use have the kARGB_8888_Config config and be of equal dimensions.

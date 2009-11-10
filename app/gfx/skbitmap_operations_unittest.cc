@@ -36,41 +36,6 @@ void FillDataToBitmap(int w, int h, SkBitmap* bmp) {
 
 }  // namespace
 
-// Invert bitmap and verify the each pixel is inverted and the alpha value is
-// not changed.
-TEST(SkBitmapOperationsTest, CreateInvertedBitmap) {
-  int src_w = 16, src_h = 16;
-  SkBitmap src;
-  src.setConfig(SkBitmap::kARGB_8888_Config, src_w, src_h);
-  src.allocPixels();
-
-  for (int y = 0; y < src_h; y++) {
-    for (int x = 0; x < src_w; x++) {
-      int i = y * src_w + x;
-      *src.getAddr32(x, y) =
-          SkColorSetARGB((255 - i) % 255, i % 255, i * 4 % 255, 0);
-    }
-  }
-
-  SkBitmap inverted = SkBitmapOperations::CreateInvertedBitmap(src);
-  SkAutoLockPixels src_lock(src);
-  SkAutoLockPixels inverted_lock(inverted);
-
-  for (int y = 0; y < src_h; y++) {
-    for (int x = 0; x < src_w; x++) {
-      int i = y * src_w + x;
-      EXPECT_EQ(static_cast<unsigned int>((255 - i) % 255),
-                SkColorGetA(*inverted.getAddr32(x, y)));
-      EXPECT_EQ(static_cast<unsigned int>(255 - (i % 255)),
-                SkColorGetR(*inverted.getAddr32(x, y)));
-      EXPECT_EQ(static_cast<unsigned int>(255 - (i * 4 % 255)),
-                SkColorGetG(*inverted.getAddr32(x, y)));
-      EXPECT_EQ(static_cast<unsigned int>(255),
-                SkColorGetB(*inverted.getAddr32(x, y)));
-    }
-  }
-}
-
 // Blend two bitmaps together at 50% alpha and verify that the result
 // is the middle-blend of the two.
 TEST(SkBitmapOperationsTest, CreateBlendedBitmap) {

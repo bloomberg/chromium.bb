@@ -18,25 +18,14 @@
 
 namespace chromeos {
 
-struct EthernetNetwork {
-  EthernetNetwork()
-      : connecting(false),
-        connected(false) {}
-  EthernetNetwork(bool connecting, bool connected)
-      : connecting(connecting),
-        connected(connected) {}
-
-  bool connecting;
-  bool connected;
-};
-
 struct WifiNetwork {
   WifiNetwork()
       : encrypted(false),
         encryption(chromeos::NONE),
         strength(0),
         connecting(false),
-        connected(false) {}
+        connected(false),
+        destroyed(false) {}
   WifiNetwork(const std::string& ssid, bool encrypted,
               chromeos::EncryptionType encryption, int strength,
               bool connecting, bool connected)
@@ -45,7 +34,8 @@ struct WifiNetwork {
         encryption(encryption),
         strength(strength),
         connecting(connecting),
-        connected(connected) {}
+        connected(connected),
+        destroyed(false) {}
 
   // WifiNetworks are sorted by ssids.
   bool operator< (const WifiNetwork& other) const {
@@ -58,6 +48,7 @@ struct WifiNetwork {
   int strength;
   bool connecting;
   bool connected;
+  bool destroyed;
 };
 typedef std::vector<WifiNetwork> WifiNetworkVector;
 
@@ -99,11 +90,9 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  bool ethernet_connecting() const { return ethernet_.connecting; }
-  bool ethernet_connected() const { return ethernet_.connected; }
+  bool ethernet_connected() const { return ethernet_connected_; }
   const std::string& wifi_ssid() const { return wifi_.ssid; }
   bool wifi_connecting() const { return wifi_.connecting; }
-  bool wifi_connected() const { return wifi_.connected; }
   int wifi_strength() const { return wifi_.strength; }
 
   // Returns the current list of wifi networks.
@@ -111,15 +100,6 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   // Connect to the specified wireless network with password.
   void ConnectToWifiNetwork(WifiNetwork network, const string16& password);
-
-  bool ethernet_enabled() const { return network_devices_ & TYPE_ETHERNET; }
-  bool wifi_enabled() const { return network_devices_ & TYPE_WIFI; }
-
-  // Enables/disables the ethernet network device.
-  void EnableEthernetNetworkDevice(bool enable);
-
-  // Enables/disables the wifi network device.
-  void EnableWifiNetworkDevice(bool enable);
 
  private:
   friend struct DefaultSingletonTraits<NetworkLibrary>;
@@ -133,22 +113,19 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
       const chromeos::ServiceStatus& service_status);
 
   // This parses ServiceStatus and creates a WifiNetworkVector of wifi networks.
-  // It also sets the ethernet connecting/connected status.
+  // It also sets ethernet_connected depending on if we have ethernet or not.
   static void ParseNetworks(const chromeos::ServiceStatus& service_status,
                             WifiNetworkVector* networks,
-                            EthernetNetwork* ethernet);
+                            bool* ethernet_connected);
 
   // This methods loads the initial list of networks on startup and starts the
   // monitoring of network changes.
   void Init();
 
-  // Enables/disables the specified network device.
-  void EnableNetworkDevice(chromeos::ConnectionType device, bool enable);
-
   // Update the network with the a list of wifi networks and ethernet status.
   // This will notify all the Observers.
   void UpdateNetworkStatus(const WifiNetworkVector& networks,
-                           const EthernetNetwork& ethernet);
+                           bool ethernet_connected);
 
   // Checks network traffic to see if there is any uploading.
   // If there is download traffic, then true is passed in for download.
@@ -182,18 +159,14 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // The network status connection for monitoring network status changes.
   chromeos::NetworkStatusConnection network_status_connection_;
 
-  // The ethernet network.
-  EthernetNetwork ethernet_;
+  // Whether or not we are connected to the ethernet line.
+  bool ethernet_connected_;
 
   // The list of available wifi networks.
   WifiNetworkVector wifi_networks_;
 
   // The current connected (or connecting) wifi network.
   WifiNetwork wifi_;
-
-  // The current enabled network devices. This is a bitwise flag of
-  // ConnectionTypes.
-  int network_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkLibrary);
 };

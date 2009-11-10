@@ -6039,36 +6039,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad speed factor.">
         Speed Sensitivity:
       </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET" desc="The ethernet network device.">
-        Ethernet
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_WIFI" desc="The wifi network device.">
-        Wifi
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING" desc="The network device status connecting.">
-        Connecting
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED" desc="The network device status connected.">
-        Connected
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED" desc="The network device status disconnected.">
-        Disconnected
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLED" desc="The network device status disabled.">
-        Disabled
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_ENABLE" desc="Enable the network device.">
-        Turn <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph> On
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLE" desc="Disable the network device.">
-        Turn <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph> Off
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_DEVICE_STATUS" desc="The status of the network device.">
-        <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>: <ph name="STATUS">$2<ex>Connecting</ex></ph>
-      </message>
-      <message name="IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT" desc="A menu item label with an indentation. For left-to-right languages, we use 3 spaces on the left.">
-        '''   <ph name="LABEL">$1<ex>Wifi SSID</ex></ph>'''
-      </message>
       <message name="IDS_STATUSBAR_NO_NETWORKS_MESSAGE" desc="No networks are available">
         No networks are available
       </message>
