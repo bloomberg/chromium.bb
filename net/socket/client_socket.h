@@ -56,7 +56,7 @@ class ClientSocket : public Socket {
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   // Identical to posix system call getpeername().
   // Needed by ssl_client_socket_nss and ssl_client_socket_mac.
-  virtual int GetPeerName(struct sockaddr *name, socklen_t *namelen);
+  virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen);
 #endif
 };
 
