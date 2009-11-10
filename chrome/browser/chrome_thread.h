@@ -142,6 +142,13 @@ class ChromeThread : public base::Thread {
   // class Foo
   //     : public base::RefCountedThreadSafe<
   //           Foo, ChromeThread::DeleteOnIOThread> {
+  //
+  // ...
+  //  private:
+  //   friend class ChromeThread;
+  //   friend class DeleteTask<Foo>;
+  //
+  //   ~Foo();
   struct DeleteOnUIThread : public DeleteOnThread<UI> { };
   struct DeleteOnIOThread : public DeleteOnThread<IO> { };
   struct DeleteOnFileThread : public DeleteOnThread<FILE> { };

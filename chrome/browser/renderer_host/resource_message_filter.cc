@@ -185,6 +185,8 @@ ResourceMessageFilter::ResourceMessageFilter(
   DCHECK(appcache_dispatcher_host_.get());
   DCHECK(dom_storage_dispatcher_host_.get());
   DCHECK(socket_stream_dispatcher_host_.get());
+
+  render_widget_helper_->Init(id(), resource_dispatcher_host_);
 }
 
 ResourceMessageFilter::~ResourceMessageFilter() {
@@ -205,11 +207,6 @@ ResourceMessageFilter::~ResourceMessageFilter() {
 
   if (handle())
     base::CloseProcessHandle(handle());
-}
-
-void ResourceMessageFilter::Init() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  render_widget_helper_->Init(id(), resource_dispatcher_host_);
 }
 
 // Called on the IPC thread:

@@ -88,9 +88,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                         Profile* profile,
                         RenderWidgetHelper* render_widget_helper,
                         SpellChecker* spellchecker);
-  virtual ~ResourceMessageFilter();
-
-  void Init();
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel);
@@ -121,6 +118,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                        const NotificationDetails& details);
 
  private:
+  friend class ChromeThread;
+  friend class DeleteTask<ResourceMessageFilter>;
+
+  virtual ~ResourceMessageFilter();
+
   void OnMsgCreateWindow(int opener_id, bool user_gesture, int* route_id);
   void OnMsgCreateWidget(int opener_id, bool activatable, int* route_id);
   void OnSetCookie(const GURL& url,

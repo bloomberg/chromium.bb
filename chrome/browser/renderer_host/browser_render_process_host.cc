@@ -354,8 +354,6 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
     }
   }
 
-  resource_message_filter->Init();
-
   // Now that the process is created, set its backgrounding accordingly.
   SetBackgrounded(backgrounded_);
 
