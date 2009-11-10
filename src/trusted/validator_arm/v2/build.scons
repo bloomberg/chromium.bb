@@ -63,7 +63,7 @@ if env.Bit('linux'):
                        ['ncvalidate.cc'],
                        LIBS=['arm_validator_core'])
 
-  ncval = env.ComponentProgram('new-arm-ncval',
+  ncval = env.ComponentProgram('arm-ncval-core',
                        ['ncval.cc'],
                        LIBS=['arm_validator_core',
                              'nchelper'])
@@ -78,3 +78,27 @@ if env.Bit('linux'):
 
   # TODO(cbiffle): get this wrapped in QEMU.
   #env.AddNodeToTestSuite(address_set_test, ['small_tests'], 'address_set_test')
+
+  validator_tests = {
+    'test_forbidden_instructions': 1,
+    'test_sp_updates': 1,
+    'test_stores': 1,
+  }
+
+  arm_cc = os.getenv('ARM_CC', 'NO-ARM-CC-SPECIFIED')
+  for test, exit_status in validator_tests.iteritems():
+    cmd = env.Command(target = test,
+                source = [ 'testdata/' + test + '.S' ],
+                action = [
+                  arm_cc + ' -static -nodefaultlibs -nostdlib '
+                      '-o ${TARGET.abspath} ${SOURCES[0].abspath}']
+               )
+    test_node = env.CommandTestAgainstGoldenOutput(
+        test + '_actual.out',
+        [ncval[0], cmd[0]],
+        exit_status = str(exit_status),
+        stdout_golden = env.File('testdata/' + test + '.out'),
+        stderr_filter = '^ncval',
+        stderr_golden = env.File('testdata/' + test + '.err'))
+
+    env.AddNodeToTestSuite(test_node, ['small_tests'], test)

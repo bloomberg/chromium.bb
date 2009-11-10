@@ -1,0 +1,4 @@
+ncval: 80000078 6 kProblemUnsafeDataWrite 00000000
+ncval: 80000088 6 kProblemUnsafeDataWrite 00000000
+ncval: 8000008C 6 kProblemPatternCrossesBundle 00000000
+ncval: 8000009C 6 kProblemPatternCrossesBundle 00000000

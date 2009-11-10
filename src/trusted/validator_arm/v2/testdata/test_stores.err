@@ -1,0 +1,3 @@
+ncval: 80000074 6 kProblemUnsafeStore 00000000
+ncval: 8000007C 6 kProblemUnsafeStore 00000000
+ncval: 8000008C 6 kProblemPatternCrossesBundle 00000000
