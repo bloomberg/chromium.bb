@@ -19,16 +19,10 @@
 __author__ = 'stephen5.ng@gmail.com (Stephen Ng)'
 
 import __builtin__
-import os
-import re
 import StringIO
-import unittest
 
 import gclient
-import gclient_scm
-import gclient_utils
-import super_mox
-from super_mox import mox
+from super_mox import mox, SuperMoxTestBase
 
 
 class IsOneOf(mox.Comparator):
@@ -42,15 +36,15 @@ class IsOneOf(mox.Comparator):
     return '<sequence or map containing \'%s\'>' % str(self._keys)
 
 
-class BaseTestCase(super_mox.SuperMoxTestBase):
+class BaseTestCase(SuperMoxTestBase):
   def setUp(self):
-    super_mox.SuperMoxTestBase.setUp(self)
+    SuperMoxTestBase.setUp(self)
 
   # Like unittest's assertRaises, but checks for Gclient.Error.
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     try:
       fn(*args, **kwargs)
-    except gclient_utils.Error, e:
+    except gclient.gclient_utils.Error, e:
       self.assertEquals(e.args[0], msg)
     else:
       self.fail('%s not raised' % msg)
@@ -67,27 +61,27 @@ class GClientBaseTestCase(BaseTestCase):
     self.mox.StubOutWithMock(gclient.os.path, 'isdir')
     self.mox.StubOutWithMock(gclient.os, 'remove')
     self.mox.StubOutWithMock(gclient.sys, 'stdout')
-    self.mox.StubOutWithMock(gclient_utils, 'subprocess')
+    self.mox.StubOutWithMock(gclient.gclient_utils, 'subprocess')
     # These are not tested.
-    self.mox.StubOutWithMock(gclient_utils, 'FileRead')
-    self.mox.StubOutWithMock(gclient_utils, 'FileWrite')
-    self.mox.StubOutWithMock(gclient_utils, 'SubprocessCall')
-    self.mox.StubOutWithMock(gclient_utils, 'RemoveDirectory')
+    self.mox.StubOutWithMock(gclient.gclient_utils, 'FileRead')
+    self.mox.StubOutWithMock(gclient.gclient_utils, 'FileWrite')
+    self.mox.StubOutWithMock(gclient.gclient_utils, 'SubprocessCall')
+    self.mox.StubOutWithMock(gclient.gclient_utils, 'RemoveDirectory')
     # Mock them to be sure nothing bad happens.
-    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVN')
-    self._CaptureSVNInfo = gclient_scm.CaptureSVNInfo
-    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVNInfo')
-    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVNStatus')
-    self.mox.StubOutWithMock(gclient_scm, 'RunSVN')
-    self.mox.StubOutWithMock(gclient_scm, 'RunSVNAndGetFileList')
+    self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVN')
+    self._CaptureSVNInfo = gclient.gclient_scm.CaptureSVNInfo
+    self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVNInfo')
+    self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVNStatus')
+    self.mox.StubOutWithMock(gclient.gclient_scm, 'RunSVN')
+    self.mox.StubOutWithMock(gclient.gclient_scm, 'RunSVNAndGetFileList')
     self._gclient_gclient = gclient.GClient
     gclient.GClient = self.mox.CreateMockAnything()
-    self._scm_wrapper = gclient_scm.CreateSCM
-    gclient_scm.CreateSCM = self.mox.CreateMockAnything()
+    self._scm_wrapper = gclient.gclient_scm.CreateSCM
+    gclient.gclient_scm.CreateSCM = self.mox.CreateMockAnything()
 
   def tearDown(self):
     gclient.GClient = self._gclient_gclient
-    gclient_scm.CreateSCM = self._scm_wrapper
+    gclient.gclient_scm.CreateSCM = self._scm_wrapper
     BaseTestCase.tearDown(self)
 
 
@@ -353,8 +347,8 @@ class GClientClassTestCase(GclientTestCase):
   def testSetConfig_ConfigContent_GetVar_SaveConfig_SetDefaultConfig(self):
     options = self.Options()
     text = "# Dummy content\nclient = 'my client'"
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.config_filename),
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.config_filename),
         text)
 
     self.mox.ReplayAll()
@@ -386,8 +380,8 @@ class GClientClassTestCase(GclientTestCase):
 
   def testLoadCurrentConfig(self):
     options = self.Options()
-    path = os.path.realpath(self.root_dir)
-    gclient.os.path.exists(os.path.join(path, options.config_filename)
+    path = gclient.os.path.realpath(self.root_dir)
+    gclient.os.path.exists(gclient.os.path.join(path, options.config_filename)
         ).AndReturn(True)
     gclient.GClient(path, options).AndReturn(gclient.GClient)
     gclient.GClient._LoadConfig()
@@ -417,28 +411,29 @@ class GClientClassTestCase(GclientTestCase):
 
     options = self.Options()
 
-    checkout_path = os.path.join(self.root_dir, solution_name)
-    gclient.os.path.exists(os.path.join(checkout_path, '.git')).AndReturn(False)
+    checkout_path = gclient.os.path.join(self.root_dir, solution_name)
+    gclient.os.path.exists(gclient.os.path.join(checkout_path, '.git')
+                           ).AndReturn(False)
     # Expect a check for the entries file and we say there is not one.
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
     scm_wrapper_sol = self.mox.CreateMockAnything()
-    gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
-    gclient_utils.FileRead(os.path.join(self.root_dir,
-                                        solution_name,
-                                        options.deps_file)
-                           ).AndRaise(IOError(2, 'No DEPS file'))
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, solution_name, options.deps_file)
+        ).AndRaise(IOError(2, 'No DEPS file'))
 
     # After everything is done, an attempt is made to write an entries
     # file.
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.entries_filename),
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
         IsOneOf((entries_content1, entries_content2)))
 
     self.mox.ReplayAll()
@@ -461,7 +456,8 @@ class GClientClassTestCase(GclientTestCase):
       "deps = {\n"
       "  'src/t': 'svn://scm.t/trunk',\n"
       "}\n")
-    entry_path = os.path.join(solution_name, 'src', 't').replace('\\', '\\\\')
+    entry_path = gclient.os.path.join(solution_name, 'src', 't'
+                                      ).replace('\\', '\\\\')
     entries_content = (
       "entries = \\\n"
       "{ '%s': '%s',\n"
@@ -473,38 +469,41 @@ class GClientClassTestCase(GclientTestCase):
 
     options = self.Options()
 
-    gclient.os.path.exists(os.path.join(self.root_dir, solution_name, 'src',
-                                        't', '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, solution_name, 'src', 't', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, solution_name, '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, solution_name, '.git')
         ).AndReturn(False)
     # Expect a check for the entries file and we say there is not one.
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
-    gclient_utils.FileRead(os.path.join(self.root_dir,
-                                        solution_name,
-                                        options.deps_file)).AndReturn(deps)
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, solution_name, options.deps_file)
+        ).AndReturn(deps)
 
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in deps and the relative path should now
     # be relative to the DEPS file.
-    gclient_scm.CreateSCM(
+    gclient.gclient_scm.CreateSCM(
         'svn://scm.t/trunk',
         self.root_dir,
-        os.path.join(solution_name, "src", "t")).AndReturn(scm_wrapper_t)
+        gclient.os.path.join(solution_name, "src", "t")
+        ).AndReturn(scm_wrapper_t)
     scm_wrapper_t.RunCommand('update', options, self.args, [])
 
     # After everything is done, an attempt is made to write an entries
     # file.
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.entries_filename),
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
     self.mox.ReplayAll()
@@ -545,37 +544,40 @@ class GClientClassTestCase(GclientTestCase):
 
     options = self.Options()
 
-    checkout_path = os.path.join(self.root_dir, solution_name)
-    gclient.os.path.exists(os.path.join(checkout_path, '.git')).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, 'src/n', '.git')
+    checkout_path = gclient.os.path.join(self.root_dir, solution_name)
+    gclient.os.path.exists(
+        gclient.os.path.join(checkout_path, '.git')).AndReturn(False)
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'src/n', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, 'src/t', '.git')
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'src/t', '.git')
         ).AndReturn(False)
 
     # Expect a check for the entries file and we say there is not one.
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
-    gclient_utils.FileRead(os.path.join(checkout_path, options.deps_file)
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(checkout_path, options.deps_file)
         ).AndReturn(deps)
 
     # Next we expect an scm to be request for dep src/n even though it does not
     # exist in the DEPS file.
-    gclient_scm.CreateSCM('svn://custom.n/trunk',
-                           self.root_dir,
-                           "src/n").AndReturn(scm_wrapper_n)
+    gclient.gclient_scm.CreateSCM('svn://custom.n/trunk',
+                                  self.root_dir,
+                                  "src/n").AndReturn(scm_wrapper_n)
 
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in custom_deps.
-    gclient_scm.CreateSCM('svn://custom.t/trunk',
-                       self.root_dir,
-                       "src/t").AndReturn(scm_wrapper_t)
+    gclient.gclient_scm.CreateSCM('svn://custom.t/trunk',
+                                  self.root_dir,
+                                  "src/t").AndReturn(scm_wrapper_t)
 
     scm_wrapper_n.RunCommand('update', options, self.args, [])
     scm_wrapper_t.RunCommand('update', options, self.args, [])
@@ -584,8 +586,8 @@ class GClientClassTestCase(GclientTestCase):
 
     # After everything is done, an attempt is made to write an entries
     # file.
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.entries_filename),
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
     self.mox.ReplayAll()
@@ -633,46 +635,47 @@ class GClientClassTestCase(GclientTestCase):
 
     options = self.Options()
 
-    gclient.os.path.exists(os.path.join(self.root_dir, name_a, '.git')
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, name_a, '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, name_b, '.git')
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, name_b, '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, 'src/t', '.git')
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'src/t', '.git')
         ).AndReturn(False)
 
     # Expect a check for the entries file and we say there is not one.
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     # An scm will be requested for the first solution.
-    gclient_scm.CreateSCM(url_a, self.root_dir, name_a).AndReturn(
+    gclient.gclient_scm.CreateSCM(url_a, self.root_dir, name_a).AndReturn(
         scm_wrapper_a)
     # Then an attempt will be made to read it's DEPS file.
-    gclient_utils.FileRead(
-        os.path.join(self.root_dir, name_a, options.deps_file)
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name_a, options.deps_file)
         ).AndReturn(deps_a)
     # Then an update will be performed.
     scm_wrapper_a.RunCommand('update', options, self.args, [])
 
     # An scm will be requested for the second solution.
-    gclient_scm.CreateSCM(url_b, self.root_dir, name_b).AndReturn(
+    gclient.gclient_scm.CreateSCM(url_b, self.root_dir, name_b).AndReturn(
         scm_wrapper_b)
     # Then an attempt will be made to read its DEPS file.
-    gclient_utils.FileRead(
-        os.path.join(self.root_dir, name_b, options.deps_file)
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name_b, options.deps_file)
         ).AndReturn(deps_b)
     # Then an update will be performed.
     scm_wrapper_b.RunCommand('update', options, self.args, [])
 
     # Finally, an scm is requested for the shared dep.
-    gclient_scm.CreateSCM('http://svn.t/trunk', self.root_dir, 'src/t'
+    gclient.gclient_scm.CreateSCM('http://svn.t/trunk', self.root_dir, 'src/t'
         ).AndReturn(scm_wrapper_dep)
     # And an update is run on it.
     scm_wrapper_dep.RunCommand('update', options, self.args, [])
 
     # After everything is done, an attempt is made to write an entries file.
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.entries_filename),
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
     self.mox.ReplayAll()
@@ -689,24 +692,32 @@ class GClientClassTestCase(GclientTestCase):
   'custom_deps': {},
 }, ]""" % (name, self.url)
 
-    entries_content = (
+    # pprint.pformat() is non-deterministic in this case!!
+    entries_content1 = (
       "entries = \\\n"
       "{ '%s': '%s'}\n"
     ) % (name, self.url)
+    entries_content2 = (
+      "entries = \\\n"
+      "{'%s': '%s'}\n"
+    ) % (name, self.url)
+
 
     options = self.Options()
-    gclient.os.path.exists(os.path.join(self.root_dir, name, '.git')
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, name, '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
-        gclient_scm.CreateSCM)
-    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
-    gclient_utils.FileRead(os.path.join(self.root_dir, name, options.deps_file)
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn("Boo = 'a'")
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.entries_filename),
-        entries_content)
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
+        IsOneOf((entries_content1, entries_content2)))
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -777,63 +788,67 @@ deps_os = {
 
     # Also, pymox doesn't verify the order of function calling w.r.t. different
     # mock objects. Pretty lame. So reorder as we wish to make it clearer.
-    gclient_utils.FileRead(
-        os.path.join(self.root_dir, 'src', options.deps_file)
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, 'src', options.deps_file)
         ).AndReturn(deps_content)
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.entries_filename),
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
-    gclient.os.path.exists(os.path.join(self.root_dir, 'src', '.git')
+    gclient.os.path.exists(gclient.os.path.join(self.root_dir, 'src', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, 'foo/third_party/WebKit',
-                                        '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, 'foo/third_party/WebKit', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, 'src/third_party/cygwin',
-                                        '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, 'src/third_party/cygwin', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir,
-                                         'src/third_party/python_24', '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, 'src/third_party/python_24', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, 'src/breakpad/bar',
-                                        '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, 'src/breakpad/bar', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
-    gclient_scm.CreateSCM(self.url, self.root_dir, 'src').AndReturn(
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, 'src').AndReturn(
         scm_wrapper_src)
     scm_wrapper_src.RunCommand('update', mox.Func(OptIsRev123), self.args, [])
 
-    gclient_scm.CreateSCM(self.url, self.root_dir,
-                       None).AndReturn(scm_wrapper_src2)
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir,
+                                  None).AndReturn(scm_wrapper_src2)
     scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/cygwin@3248'
         ).AndReturn(cygwin_path)
 
-    gclient_scm.CreateSCM(self.url, self.root_dir,
-                       None).AndReturn(scm_wrapper_src2)
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir,
+                                  None).AndReturn(scm_wrapper_src2)
     scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient_scm.CreateSCM(webkit_path, self.root_dir,
-                       'foo/third_party/WebKit').AndReturn(scm_wrapper_webkit)
+    gclient.gclient_scm.CreateSCM(
+        webkit_path, self.root_dir, 'foo/third_party/WebKit'
+        ).AndReturn(scm_wrapper_webkit)
     scm_wrapper_webkit.RunCommand('update', mox.Func(OptIsRev42), self.args, [])
 
-    gclient_scm.CreateSCM(
+    gclient.gclient_scm.CreateSCM(
         'http://google-breakpad.googlecode.com/svn/trunk/src@285',
         self.root_dir, 'src/breakpad/bar').AndReturn(scm_wrapper_breakpad)
     scm_wrapper_breakpad.RunCommand('update', mox.Func(OptIsRevNone),
                                     self.args, [])
 
-    gclient_scm.CreateSCM(cygwin_path, self.root_dir,
-                       'src/third_party/cygwin').AndReturn(scm_wrapper_cygwin)
+    gclient.gclient_scm.CreateSCM(
+        cygwin_path, self.root_dir, 'src/third_party/cygwin'
+        ).AndReturn(scm_wrapper_cygwin)
     scm_wrapper_cygwin.RunCommand('update', mox.Func(OptIsRev333), self.args,
                                   [])
 
-    gclient_scm.CreateSCM('svn://random_server:123/trunk/python_24@5580',
-                       self.root_dir,
-                       'src/third_party/python_24').AndReturn(
-                            scm_wrapper_python)
+    gclient.gclient_scm.CreateSCM(
+        'svn://random_server:123/trunk/python_24@5580',
+        self.root_dir,
+        'src/third_party/python_24'
+        ).AndReturn(scm_wrapper_python)
     scm_wrapper_python.RunCommand('update', mox.Func(OptIsRevNone), self.args,
                                   [])
 
@@ -864,7 +879,7 @@ deps_os = {
     exception = "Conflicting revision numbers specified."
     try:
       client.RunOnDeps('update', self.args)
-    except gclient_utils.Error, e:
+    except gclient.gclient_utils.Error, e:
       self.assertEquals(e.args[0], exception)
     else:
       self.fail('%s not raised' % exception)
@@ -898,31 +913,35 @@ deps = {
     scm_wrapper_src = self.mox.CreateMockAnything()
 
     options = self.Options()
-    gclient_utils.FileRead(
-        os.path.join(self.root_dir, name, options.deps_file)
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.entries_filename),
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
-    gclient.os.path.exists(os.path.join(self.root_dir, 'foo/third_party/WebKit',
-                                        '.git')).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, name, '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, 'foo/third_party/WebKit', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, name, '.git')
         ).AndReturn(False)
-    gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
-        gclient_scm.CreateSCM)
-    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
+        ).AndReturn(False)
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    gclient_scm.CreateSCM(self.url, self.root_dir,
-                       None).AndReturn(scm_wrapper_src)
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, None
+                                  ).AndReturn(scm_wrapper_src)
     scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient_scm.CreateSCM(webkit_path, self.root_dir,
-        'foo/third_party/WebKit').AndReturn(gclient_scm.CreateSCM)
-    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_scm.CreateSCM(
+        webkit_path, self.root_dir, 'foo/third_party/WebKit'
+        ).AndReturn(gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -958,32 +977,34 @@ deps = {
     scm_wrapper_src = self.mox.CreateMockAnything()
 
     options = self.Options()
-    gclient_utils.FileRead(
-        os.path.join(self.root_dir, name, options.deps_file)
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    gclient_utils.FileWrite(
-        os.path.join(self.root_dir, options.entries_filename),
+    gclient.gclient_utils.FileWrite(
+        gclient.os.path.join(self.root_dir, options.entries_filename),
         entries_content)
 
-    gclient.os.path.exists(os.path.join(self.root_dir, 'foo/third_party/WebKit',
-                                        '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, 'foo/third_party/WebKit', '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, name, '.git')
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, name, '.git')
         ).AndReturn(False)
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
-        gclient_scm.CreateSCM)
-    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
-    gclient_scm.CreateSCM(self.url, self.root_dir,
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir,
                        None).AndReturn(scm_wrapper_src)
     scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar_custom/WebKit'
         ).AndReturn(webkit_path)
 
-    gclient_scm.CreateSCM(webkit_path, self.root_dir,
-        'foo/third_party/WebKit').AndReturn(gclient_scm.CreateSCM)
-    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_scm.CreateSCM(webkit_path, self.root_dir,
+        'foo/third_party/WebKit').AndReturn(gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -1005,12 +1026,12 @@ deps = {
 }"""
 
     options = self.Options()
-    gclient_utils.FileRead(
-        os.path.join(self.root_dir, name, options.deps_file)
+    gclient.gclient_utils.FileRead(
+        gclient.os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
-        gclient_scm.CreateSCM)
-    gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
+    gclient.gclient_scm.CreateSCM(self.url, self.root_dir, name).AndReturn(
+        gclient.gclient_scm.CreateSCM)
+    gclient.gclient_scm.CreateSCM.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
     client = self._gclient_gclient(self.root_dir, options)
@@ -1018,7 +1039,7 @@ deps = {
     exception = "Var is not defined: webkit"
     try:
       client.RunOnDeps('update', self.args)
-    except gclient_utils.Error, e:
+    except gclient.gclient_utils.Error, e:
       self.assertEquals(e.args[0], exception)
     else:
       self.fail('%s not raised' % exception)
@@ -1068,8 +1089,8 @@ deps = {
 class SubprocessCallAndFilterTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(gclient_utils, 'subprocess')
-    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVN')
+    self.mox.StubOutWithMock(gclient.gclient_utils, 'subprocess')
+    self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVN')
 
   def testSubprocessCallAndFilter(self):
     command = ['boo', 'foo', 'bar']
@@ -1085,12 +1106,13 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
     print("\n________ running 'boo foo bar' in 'bleh'")
     for i in test_string:
       gclient.sys.stdout.write(i)
-    gclient_utils.subprocess.Popen(command, bufsize=0, cwd=in_directory,
-      shell=(gclient.sys.platform == 'win32'),
-      stdout=gclient_utils.subprocess.PIPE,
-      stderr=gclient_utils.subprocess.STDOUT).AndReturn(kid)
+    gclient.gclient_utils.subprocess.Popen(
+        command, bufsize=0, cwd=in_directory,
+        shell=(gclient.sys.platform == 'win32'),
+        stdout=gclient.gclient_utils.subprocess.PIPE,
+        stderr=gclient.gclient_utils.subprocess.STDOUT).AndReturn(kid)
     self.mox.ReplayAll()
-    compiled_pattern = re.compile(pattern)
+    compiled_pattern = gclient.re.compile(pattern)
     line_list = []
     capture_list = []
     def FilterLines(line):
@@ -1098,19 +1120,17 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
       match = compiled_pattern.search(line)
       if match:
         capture_list.append(match.group(1))
-    gclient_utils.SubprocessCallAndFilter(command, in_directory,
-                                          True, True,
-                                          fail_status, FilterLines)
+    gclient.gclient_utils.SubprocessCallAndFilter(
+        command, in_directory,
+        True, True,
+        fail_status, FilterLines)
     self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb'])
     self.assertEquals(capture_list, ['cc', 'dd'])
 
   def testCaptureSVNStatus(self):
-    x = self
-    def CaptureSVNMock(command, in_directory=None, print_error=True):
-      x.assertEquals(in_directory, None)
-      x.assertEquals(print_error, True)
-      x.assertEquals(['status', '--xml', '.'], command)
-      return r"""<?xml version="1.0"?>
+    gclient.gclient_scm.CaptureSVN(
+        ['status', '--xml', '.']
+        ).AndReturn(r"""<?xml version="1.0"?>
 <status>
 <target path=".">
 <entry path="unversionned_file.txt">
@@ -1146,9 +1166,9 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
 </entry>
 </target>
 </status>
-"""
-    gclient_scm.CaptureSVN = CaptureSVNMock
-    info = gclient_scm.CaptureSVNStatus('.')
+""")
+    self.mox.ReplayAll()
+    info = gclient.gclient_scm.CaptureSVNStatus('.')
     expected = [
       ('?      ', 'unversionned_file.txt'),
       ('M      ', 'build\\internal\\essential.vsprops'),
@@ -1159,23 +1179,22 @@ class SubprocessCallAndFilterTestCase(BaseTestCase):
     self.assertEquals(sorted(info), sorted(expected))
 
   def testCaptureSVNStatusEmpty(self):
-    x = self
-    def CaptureSVNMock(command, in_directory=None, print_error=True):
-      x.assertEquals(in_directory, None)
-      x.assertEquals(['status', '--xml'], command)
-      return r"""<?xml version="1.0"?>
+    gclient.gclient_scm.CaptureSVN(
+        ['status', '--xml']
+        ).AndReturn(r"""<?xml version="1.0"?>
 <status>
 <target
    path="perf">
 </target>
 </status>
-"""
-    gclient_scm.CaptureSVN = CaptureSVNMock
-    info = gclient_scm.CaptureSVNStatus(None)
+""")
+    self.mox.ReplayAll()
+    info = gclient.gclient_scm.CaptureSVNStatus(None)
     self.assertEquals(info, [])
 
 
 if __name__ == '__main__':
+  import unittest
   unittest.main()
 
 # vim: ts=2:sw=2:tw=80:et:
