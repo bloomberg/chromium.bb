@@ -92,7 +92,8 @@ interface IChromeFramePrivileged: IUnknown {
   // The profile name we want to use.
   HRESULT GetChromeProfileName([out] BSTR *profile_name);
   // The comma-separated list of extension API functions you wish to automate.
-  // Return S_FALSE to leave the default, which is to automate all functions.
+  // Return S_FALSE to leave the default, which is to not automate any 
+  // functions.
   HRESULT GetExtensionApisToAutomate([out] BSTR *extension_apis);
 };
 

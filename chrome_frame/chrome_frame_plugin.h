@@ -19,7 +19,6 @@ class ChromeFramePlugin : public ChromeFrameDelegateImpl {
   ChromeFramePlugin()
       : ignore_setfocus_(false),
         is_privileged_(false) {
-    functions_enabled_.push_back("*");
   }
   ~ChromeFramePlugin() {
     Uninitialize();
@@ -210,8 +209,10 @@ END_MSG_MAP()
   // When privileged, additional interfaces are made available to the user.
   bool is_privileged_;
 
-  // List of functions to enable for automation, or a single entry "*" to enable
-  // all functions for automation.  Ignored unless is_privileged_ is true.
+  // List of functions to enable for automation, or a single entry "*" to
+  // enable all functions for automation.  Ignored unless is_privileged_ is
+  // true.  Defaults to the empty list, meaning automation will not be
+  // turned on.
   std::vector<std::string> functions_enabled_;
 };
 
