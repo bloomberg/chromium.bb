@@ -165,7 +165,7 @@ void MenuItemView::SetSelected(bool selected) {
 }
 
 void MenuItemView::SetIcon(const SkBitmap& icon, int item_id) {
-  MenuItemView* item = GetDescendantByID(item_id);
+  MenuItemView* item = GetMenuItemByID(item_id);
   DCHECK(item);
   item->SetIcon(icon);
 }
@@ -214,6 +214,23 @@ wchar_t MenuItemView::GetMnemonic() {
     }
   } while (index != std::wstring::npos);
   return 0;
+}
+
+MenuItemView* MenuItemView::GetMenuItemByID(int id) {
+  if (GetCommand() == id)
+    return this;
+  if (!HasSubmenu())
+    return NULL;
+  for (int i = 0; i < GetSubmenu()->GetChildViewCount(); ++i) {
+    View* child = GetSubmenu()->GetChildViewAt(i);
+    if (child->GetID() == MenuItemView::kMenuItemViewID) {
+      MenuItemView* result = static_cast<MenuItemView*>(child)->
+          GetMenuItemByID(id);
+      if (result)
+        return result;
+    }
+  }
+  return NULL;
 }
 
 MenuItemView::MenuItemView(MenuItemView* parent,
@@ -289,23 +306,6 @@ MenuItemView* MenuItemView::AppendMenuItemInternal(int item_id,
     item->CreateSubmenu();
   submenu_->AddChildView(item);
   return item;
-}
-
-MenuItemView* MenuItemView::GetDescendantByID(int id) {
-  if (GetCommand() == id)
-    return this;
-  if (!HasSubmenu())
-    return NULL;
-  for (int i = 0; i < GetSubmenu()->GetChildViewCount(); ++i) {
-    View* child = GetSubmenu()->GetChildViewAt(i);
-    if (child->GetID() == MenuItemView::kMenuItemViewID) {
-      MenuItemView* result = static_cast<MenuItemView*>(child)->
-          GetDescendantByID(id);
-      if (result)
-        return result;
-    }
-  }
-  return NULL;
 }
 
 void MenuItemView::DropMenuClosed(bool notify_delegate) {

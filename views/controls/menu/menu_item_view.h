@@ -218,6 +218,9 @@ class MenuItemView : public View {
     has_icons_ = has_icons;
   }
 
+  // Returns the descendant with the specified command.
+  MenuItemView* GetMenuItemByID(int id);
+
  protected:
   // Creates a MenuItemView. This is used by the various AddXXX methods.
   MenuItemView(MenuItemView* parent, int command, Type type);
@@ -239,9 +242,6 @@ class MenuItemView : public View {
                                        const std::wstring& label,
                                        const SkBitmap& icon,
                                        Type type);
-
-  // Returns the descendant with the specified command.
-  MenuItemView* GetDescendantByID(int id);
 
   // Invoked by the MenuController when the menu closes as the result of
   // drag and drop run.

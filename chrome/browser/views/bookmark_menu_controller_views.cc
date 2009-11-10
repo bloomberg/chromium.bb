@@ -256,8 +256,7 @@ views::MenuItemView* BookmarkMenuController::GetSiblingMenu(
   if (!alt_menu)
     alt_menu = CreateMenu(node, start_index);
 
-  if (alt_menu)
-    menu_ = alt_menu;
+  menu_ = alt_menu;
 
   *button = bookmark_bar_->GetMenuButtonForNode(node);
   bookmark_bar_->GetAnchorPositionAndStartIndexForButton(
@@ -272,8 +271,20 @@ void BookmarkMenuController::BookmarkModelChanged() {
 
 void BookmarkMenuController::BookmarkNodeFavIconLoaded(
     BookmarkModel* model, const BookmarkNode* node) {
-  if (node_to_menu_id_map_.find(node) != node_to_menu_id_map_.end())
-    menu_->SetIcon(model->GetFavIcon(node), node_to_menu_id_map_[node]);
+  std::map<const BookmarkNode*, int>::iterator menu_pair =
+      node_to_menu_id_map_.find(node);
+  if (menu_pair == node_to_menu_id_map_.end())
+    return;  // We're not showing a menu item for the node.
+
+  // Iterate through the menus looking for the menu containing node.
+  for (NodeToMenuMap::iterator i = node_to_menu_map_.begin();
+       i != node_to_menu_map_.end(); ++i) {
+    MenuItemView* menu_item = i->second->GetMenuItemByID(menu_pair->second);
+    if (menu_item) {
+      menu_item->SetIcon(model->GetFavIcon(node));
+      return;
+    }
+  }
 }
 
 MenuItemView* BookmarkMenuController::CreateMenu(const BookmarkNode* parent,
