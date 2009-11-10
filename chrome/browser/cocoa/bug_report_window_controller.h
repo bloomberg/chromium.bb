@@ -34,15 +34,16 @@ class TabContents;
   NSString* pageURL_;  // Strong.
 
   // We keep a pointer to this button so we can change its title.
-  NSButton* sendReportButton_;  // Weak.
+  IBOutlet NSButton* sendReportButton_;
 
   // This button must be moved when the send report button changes title.
-  NSButton* cancelButton_;  // Weak.
+  IBOutlet NSButton* cancelButton_;
 
+  // If the user wants to send a screen shot.
   BOOL sendScreenshot_;
 
   // Disable screenshot if no browser window is open.
-  BOOL disableScreenshot_;
+  BOOL disableScreenshotCheckbox_;
 
   // Menu for the bug type popup button.  We create it here instead of in
   // IB so that we can nicely check whether the phishing page is selected,
@@ -69,12 +70,6 @@ class TabContents;
 // YES if the user has selected the phishing report option.
 - (BOOL)isPhishingReport;
 
-// The "send report" button may need to change its title to reflect that it's
-// bouncing to the phish report page instead of sending a report directly
-// from the dialog box (or vice versa). Observe the menu of bug types
-// and change the button title along with the selected bug.
-- (void)menu:(NSMenu*)menu willHighlightItem:(NSMenuItem *)item;
-
 // Force the description text field to allow "return" to go to the next line
 // within the description field. Without this delegate method, "return" falls
 // back to the "Send Report" action, because this button has been bound to
@@ -87,10 +82,8 @@ class TabContents;
 @property NSUInteger bugType;
 @property (copy, nonatomic) NSString* pageTitle;
 @property (copy, nonatomic) NSString* pageURL;
-@property (assign, nonatomic) IBOutlet NSButton* sendReportButton;
-@property (assign, nonatomic) IBOutlet NSButton* cancelButton;
 @property BOOL sendScreenshot;
-@property BOOL disableScreenshot;
+@property BOOL disableScreenshotCheckbox;
 @property (readonly, nonatomic) NSArray* bugTypeList;
 
 @end
