@@ -59,18 +59,7 @@ ConfirmMessageBoxDialog::ConfirmMessageBoxDialog(
           IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL)) {
   message_label_ = new views::Label(message_text);
   message_label_->SetMultiLine(true);
-  l10n_util::TextDirection direction =
-      l10n_util::GetFirstStrongCharacterDirection(message_label_->GetText());
-  views::Label::Alignment alignment;
-  if (direction == l10n_util::RIGHT_TO_LEFT)
-    alignment = views::Label::ALIGN_RIGHT;
-  else
-    alignment = views::Label::ALIGN_LEFT;
-  // In addition, we should set the RTL alignment mode as
-  // AUTO_DETECT_ALIGNMENT so that the alignment will not be flipped around
-  // in RTL locales.
-  message_label_->SetRTLAlignmentMode(views::Label::AUTO_DETECT_ALIGNMENT);
-  message_label_->SetHorizontalAlignment(alignment);
+  message_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddChildView(message_label_);
 }
 
