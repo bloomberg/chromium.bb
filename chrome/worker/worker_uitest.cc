@@ -4,6 +4,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/worker_host/worker_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
@@ -14,6 +15,11 @@ static const char kTestCompleteSuccess[] = "OK";
 class WorkerTest : public UILayoutTest {
  protected:
   virtual ~WorkerTest() { }
+
+  virtual void SetUp() {
+    launch_arguments_.AppendSwitch(switches::kEnableSharedWorkers);
+    UILayoutTest::SetUp();
+  }
 
   void RunTest(const std::wstring& test_case) {
     scoped_refptr<TabProxy> tab(GetActiveTab());
@@ -110,8 +116,51 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
+TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
+  static const char* kLayoutTestFiles[] = {
+    "shared-worker-constructor.html",
+    // Enable remaining SharedWorker tests when functionality is
+    // complete (http://crbug.com/26899)
+    "shared-worker-context-gc.html",
+    "shared-worker-event-listener.html",
+    //"shared-worker-exception.html",
+    //"shared-worker-frame-lifecycle.html",
+    "shared-worker-gc.html",
+    //"shared-worker-lifecycle.html",
+    "shared-worker-load-error.html",
+    "shared-worker-location.html",
+    //"shared-worker-name.html",
+    "shared-worker-navigator.html",
+    "shared-worker-replace-global-constructor.html",
+    "shared-worker-replace-self.html",
+    "shared-worker-script-error.html",
+    //"shared-worker-shared.html",
+    "shared-worker-simple.html",
+  };
+
+  FilePath fast_test_dir;
+  fast_test_dir = fast_test_dir.AppendASCII("LayoutTests");
+  fast_test_dir = fast_test_dir.AppendASCII("fast");
+
+  FilePath worker_test_dir;
+  worker_test_dir = worker_test_dir.AppendASCII("workers");
+  InitializeForLayoutTest(fast_test_dir, worker_test_dir, false);
+
+  // Worker tests also rely on common files in js/resources.
+  FilePath js_dir = fast_test_dir.AppendASCII("js");
+  FilePath resource_dir;
+  resource_dir = resource_dir.AppendASCII("resources");
+  AddResourceForLayoutTest(js_dir, resource_dir);
+
+  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
+    RunLayoutTest(kLayoutTestFiles[i], false);
+}
+
 TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
+    // Enable when shared workers are working (http://crbug.com/26899)
+    "shared-worker-importScripts.html",
+    "shared-worker-redirect.html",
     // flakey? BUG 16934 "text-encoding.html",
 #if defined(OS_WIN)
     // Fails on the mac (and linux?):
@@ -144,8 +193,18 @@ TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
     // http://code.google.com/p/chromium/issues/detail?id=22599
     "close.html",
 #endif
+    // These tests (and the shared-worker versions below) are disabled due to
+    // limitations in lighttpd (doesn't handle all of the HTTP methods).
     //"methods-async.html",
     //"methods.html",
+
+    "shared-worker-close.html",
+    // Disabled due to limitations in lighttpd (does not handle methods other
+    // than GET/PUT/POST).
+    //"shared-worker-methods-async.html",
+    //"shared-worker-methods.html",
+    "shared-worker-xhr-file-not-found.html",
+
     "xmlhttprequest-file-not-found.html"
   };
 
