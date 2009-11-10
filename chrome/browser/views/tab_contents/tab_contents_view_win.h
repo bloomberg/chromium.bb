@@ -107,7 +107,7 @@ class TabContentsViewWin : public TabContentsView,
 
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
   // visible.
-  scoped_ptr<SadTabView> sad_tab_;
+  SadTabView* sad_tab_;
 
   // Whether to ignore the next CHAR keyboard event.
   bool ignore_next_char_event_;

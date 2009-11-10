@@ -681,6 +681,11 @@
       <message name="IDS_CONFIRM_STOP_SYNCING_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         8
       </message>
+
+      <!-- The URL for the "Aw snap" page. -->
+      <message name="IDS_CRASH_REASON_URL" translateable="false">
+        http://www.google.com/support/chrome/bin/answer.py?answer=95669&amp;hl=[GRITLANGCODE]
+      </message>
     </messages>
   </release>
 </grit>

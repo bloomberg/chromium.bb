@@ -48,7 +48,8 @@ TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents)
     : TabContentsView(tab_contents),
       ignore_next_char_event_(false),
       focus_manager_(NULL),
-      close_tab_after_drag_ends_(false) {
+      close_tab_after_drag_ends_(false),
+      sad_tab_(NULL) {
   last_focused_view_storage_id_ =
       views::ViewStorage::GetSharedInstance()->CreateStorageID();
 }
@@ -96,6 +97,12 @@ RenderWidgetHostView* TabContentsViewWin::CreateViewForWidget(
     // making special ones (which go along with the special views).
     DCHECK(RenderViewHostFactory::has_factory());
     return render_widget_host->view();
+  }
+
+  // If we were showing sad tab, remove it now.
+  if (sad_tab_ != NULL) {
+    SetContentsView(new views::View());
+    sad_tab_ = NULL;
   }
 
   RenderWidgetHostViewWin* view =
@@ -239,7 +246,7 @@ void TabContentsViewWin::Focus() {
     return;
   }
 
-  if (tab_contents()->is_crashed() && sad_tab_.get()) {
+  if (tab_contents()->is_crashed() && sad_tab_ != NULL) {
     sad_tab_->RequestFocus();
     return;
   }
@@ -473,6 +480,10 @@ void TabContentsViewWin::OnMouseLeave() {
 
 LRESULT TabContentsViewWin::OnMouseRange(UINT msg,
                                          WPARAM w_param, LPARAM l_param) {
+  if (tab_contents()->is_crashed() && sad_tab_ != NULL) {
+    return WidgetWin::OnMouseRange(msg, w_param, l_param);
+  }
+
   switch (msg) {
     case WM_LBUTTONDOWN:
     case WM_MBUTTONDOWN:
@@ -499,8 +510,10 @@ LRESULT TabContentsViewWin::OnMouseRange(UINT msg,
 void TabContentsViewWin::OnPaint(HDC junk_dc) {
   if (tab_contents()->render_view_host() &&
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
-    if (!sad_tab_.get())
-      sad_tab_.reset(new SadTabView);
+    if (sad_tab_ == NULL) {
+      sad_tab_ = new SadTabView;
+      SetContentsView(sad_tab_);
+    }
     CRect cr;
     GetClientRect(&cr);
     sad_tab_->SetBounds(gfx::Rect(cr));
