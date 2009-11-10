@@ -403,6 +403,8 @@ def Sourceify(path):
   """Convert a path to its source directory form."""
   if '$(' in path:
     return path
+  if os.path.isabs(path):
+    return path
   return srcdir_prefix + path
 
 
@@ -1058,8 +1060,16 @@ def GenerateOutput(target_list, target_dicts, data, params):
       # The included_files entries are relative to the dir of the build file
       # that included them, so we have to undo that and then make them relative
       # to the root dir.
-      build_files.add(gyp.common.RelativePath(
-          gyp.common.UnrelativePath(included_file, build_file), options.depth))
+      relative_include_file = gyp.common.RelativePath(
+          gyp.common.UnrelativePath(included_file, build_file), options.depth)
+      abs_include_file = os.path.abspath(relative_include_file)
+      # If the include file is from the ~/.gyp dir, we should use absolute path
+      # so that relocating the src dir doesn't break the path.
+      if (params['home_dot_gyp'] and
+          abs_include_file.startswith(params['home_dot_gyp'])):
+        build_files.add(abs_include_file)
+      else:
+        build_files.add(relative_include_file)
 
     # Paths in gyp files are relative to the .gyp file, but we want
     # paths relative to the source root for the master makefile.  Grab

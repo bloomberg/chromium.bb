@@ -413,7 +413,8 @@ def main(args):
               'generator_flags': generator_flags,
               'cwd': os.getcwd(),
               'build_files_arg': build_files_arg,
-              'gyp_binary': sys.argv[0]}
+              'gyp_binary': sys.argv[0],
+              'home_dot_gyp': home_dot_gyp}
 
     # Start with the default variables from the command line.
     [generator, flat_list, targets, data] = Load(build_files, format,
