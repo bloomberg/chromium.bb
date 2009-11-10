@@ -29,7 +29,7 @@
 }
 
 - (void)sendEvent:(NSEvent*)event {
-  chrome_application_mac::ScopedSendingEvent sendingEventScoper(self);
+  chrome_application_mac::ScopedSendingEvent sendingEventScoper;
   [super sendEvent:event];
 }
 
@@ -37,8 +37,9 @@
 
 namespace chrome_application_mac {
 
-ScopedSendingEvent::ScopedSendingEvent(CrApplication* app) : app_(app) {
-  handling_ = [app_ isHandlingSendEvent];
+ScopedSendingEvent::ScopedSendingEvent()
+    : app_(static_cast<CrApplication*>([CrApplication sharedApplication])),
+      handling_([app_ isHandlingSendEvent]) {
   [app_ setHandlingSendEvent:YES];
 }
 

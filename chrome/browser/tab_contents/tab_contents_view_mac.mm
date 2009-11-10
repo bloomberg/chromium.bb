@@ -134,8 +134,7 @@ void TabContentsViewMac::StartDragging(const WebDropData& drop_data,
   // processing -sendEvent:, so Close() is deferred in that case.
   // Drags from web content do not come via -sendEvent:, this sets the
   // same flag -sendEvent: would.
-  chrome_application_mac::ScopedSendingEvent sendingEventScoper(
-      static_cast<CrApplication*>([CrApplication sharedApplication]));
+  chrome_application_mac::ScopedSendingEvent sendingEventScoper;
 
   // The drag invokes a nested event loop, arrange to continue
   // processing events.

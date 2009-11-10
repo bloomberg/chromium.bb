@@ -26,7 +26,7 @@ namespace chrome_application_mac {
 // reset properly.
 class ScopedSendingEvent {
  public:
-  explicit ScopedSendingEvent(CrApplication* app);
+  ScopedSendingEvent();
   ~ScopedSendingEvent();
 
  private:
