@@ -32,7 +32,7 @@ const char kNoIconSpecified[] = "Page action has no icons to show.";
 // TODO(EXTENSIONS_DEPRECATED): obsolete API.
 bool PageActionFunction::SetPageActionEnabled(bool enable) {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
+  const ListValue* args = args_as_list();
 
   std::string page_action_id;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(0, &page_action_id));
@@ -141,7 +141,7 @@ bool PageActionHideFunction::RunImpl() {
 
 bool PageActionSetIconFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+  const DictionaryValue* args = args_as_dictionary();
 
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
@@ -177,7 +177,7 @@ bool PageActionSetIconFunction::RunImpl() {
 
 bool PageActionSetTitleFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+  const DictionaryValue* args = args_as_dictionary();
 
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
@@ -196,7 +196,7 @@ bool PageActionSetTitleFunction::RunImpl() {
 // extension_function_dispatcher.
 bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+  const DictionaryValue* args = args_as_dictionary();
 
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
@@ -222,7 +222,7 @@ bool PageActionSetBadgeBackgroundColorFunction::RunImpl() {
 // extension_function_dispatcher.
 bool PageActionSetBadgeTextColorFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+  const DictionaryValue* args = args_as_dictionary();
 
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));
@@ -248,7 +248,7 @@ bool PageActionSetBadgeTextColorFunction::RunImpl() {
 // extension_function_dispatcher.
 bool PageActionSetBadgeTextFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+  const DictionaryValue* args = args_as_dictionary();
 
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(L"tabId", &tab_id));

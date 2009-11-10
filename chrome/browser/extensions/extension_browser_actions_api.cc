@@ -19,7 +19,7 @@ const char kIconIndexOutOfBounds[] =
 
 bool BrowserActionFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  details_ = static_cast<DictionaryValue*>(args_);
+  details_ = args_as_dictionary();
 
   if (details_->HasKey(L"tabId"))
     EXTENSION_FUNCTION_VALIDATE(details_->GetInteger(L"tabId", &tab_id_));

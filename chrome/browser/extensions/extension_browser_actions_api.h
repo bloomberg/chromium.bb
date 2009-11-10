@@ -20,7 +20,7 @@ class BrowserActionFunction : public SyncExtensionFunction {
 
   // All the browser action APIs take a single argument called details that is
   // a dictionary.
-  DictionaryValue* details_;
+  const DictionaryValue* details_;
 
   // The tab id the browser action function should apply to, if any, or
   // kDefaultTabId if none was specified.

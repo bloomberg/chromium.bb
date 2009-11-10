@@ -73,7 +73,7 @@ void PopupShowFunction::Run() {
 
 bool PopupShowFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
+  const ListValue* args = args_as_list();
 
   DictionaryValue* popup_info = NULL;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(0, &popup_info));

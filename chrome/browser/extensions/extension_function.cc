@@ -9,8 +9,8 @@
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 
 void AsyncExtensionFunction::SetArgs(const Value* args) {
-  DCHECK(!args_);  // Should only be called once.
-  args_ = args->DeepCopy();
+  DCHECK(!args_.get());  // Should only be called once.
+  args_.reset(args->DeepCopy());
 }
 
 const std::string AsyncExtensionFunction::GetResult() {

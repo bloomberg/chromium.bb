@@ -201,7 +201,7 @@ void HistoryFunctionWithCallback::SendResponseToCallback() {
 
 bool GetVisitsHistoryFunction::RunAsyncImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* json = static_cast<DictionaryValue*>(args_);
+  const DictionaryValue* json = args_as_dictionary();
 
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
@@ -238,7 +238,7 @@ void GetVisitsHistoryFunction::QueryComplete(
 
 bool SearchHistoryFunction::RunAsyncImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* json = static_cast<DictionaryValue*>(args_);
+  const DictionaryValue* json = args_as_dictionary();
 
   // Initialize the HistoryQuery
   std::wstring search_text;
@@ -288,7 +288,7 @@ void SearchHistoryFunction::SearchComplete(
 
 bool AddUrlHistoryFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* json = static_cast<DictionaryValue*>(args_);
+  const DictionaryValue* json = args_as_dictionary();
 
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
@@ -306,7 +306,7 @@ bool AddUrlHistoryFunction::RunImpl() {
 
 bool DeleteUrlHistoryFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* json = static_cast<DictionaryValue*>(args_);
+  const DictionaryValue* json = args_as_dictionary();
 
   Value* value;
   EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kUrlKey, &value));
@@ -324,7 +324,7 @@ bool DeleteUrlHistoryFunction::RunImpl() {
 
 bool DeleteRangeHistoryFunction::RunAsyncImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* json = static_cast<DictionaryValue*>(args_);
+  const DictionaryValue* json = args_as_dictionary();
 
   Value* value = NULL;
   EXTENSION_FUNCTION_VALIDATE(json->Get(keys::kStartTimeKey, &value));

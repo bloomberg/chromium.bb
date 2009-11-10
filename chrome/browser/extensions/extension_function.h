@@ -124,13 +124,20 @@ class AsyncExtensionFunction : public ExtensionFunction {
 
   void SendResponse(bool success);
 
+  const ListValue* args_as_list() {
+    return static_cast<ListValue*>(args_.get());
+  }
+  const DictionaryValue* args_as_dictionary() {
+    return static_cast<DictionaryValue*>(args_.get());
+  }
+
   // Note: After Run() returns, dispatcher() can be NULL.  Since these getters
   // rely on dispatcher(), make sure it is valid before using them.
   std::string extension_id();
   Profile* profile();
 
   // The arguments to the API. Only non-null if argument were specified.
-  Value* args_;
+  scoped_ptr<Value> args_;
 
   // The result of the API. This should be populated by the derived class before
   // SendResponse() is called.

@@ -20,7 +20,7 @@ const wchar_t* kFileKey = L"file";
 
 bool ExecuteCodeInTabFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
+  const ListValue* args = args_as_list();
 
   DictionaryValue* script_info;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &script_info));

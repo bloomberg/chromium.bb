@@ -242,7 +242,7 @@ bool GetAllWindowsFunction::RunImpl() {
   bool populate_tabs = false;
   if (!args_->IsType(Value::TYPE_NULL)) {
     EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-    const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+    const DictionaryValue* args = args_as_dictionary();
     if (args->HasKey(keys::kPopulateKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetBoolean(keys::kPopulateKey,
           &populate_tabs));
@@ -268,7 +268,7 @@ bool CreateWindowFunction::RunImpl() {
   // Look for optional url.
   if (!args_->IsType(Value::TYPE_NULL)) {
     EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-    const DictionaryValue *args = static_cast<const DictionaryValue*>(args_);
+    const DictionaryValue *args = args_as_dictionary();
     std::string url_input;
     if (args->HasKey(keys::kUrlKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetString(keys::kUrlKey,
@@ -302,7 +302,7 @@ bool CreateWindowFunction::RunImpl() {
 
   // Any part of the bounds can optionally be set by the caller.
   if (args_->IsType(Value::TYPE_DICTIONARY)) {
-    const DictionaryValue *args = static_cast<const DictionaryValue*>(args_);
+    const DictionaryValue *args = args_as_dictionary();
     int bounds_val;
     if (args->HasKey(keys::kLeftKey)) {
       EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kLeftKey,
@@ -345,7 +345,7 @@ bool CreateWindowFunction::RunImpl() {
 
 bool UpdateWindowFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
+  const ListValue* args = args_as_list();
   int window_id;
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(0, &window_id));
   DictionaryValue* update_props;
@@ -457,7 +457,7 @@ bool GetAllTabsInWindowFunction::RunImpl() {
 
 bool CreateTabFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+  const DictionaryValue* args = args_as_dictionary();
 
   Browser *browser;
   // windowId defaults to "current" window.
@@ -548,7 +548,7 @@ bool GetTabFunction::RunImpl() {
 bool UpdateTabFunction::RunImpl() {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
+  const ListValue* args = args_as_list();
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(0, &tab_id));
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &update_props));
@@ -628,7 +628,7 @@ bool UpdateTabFunction::RunImpl() {
 bool MoveTabFunction::RunImpl() {
   int tab_id;
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
+  const ListValue* args = args_as_list();
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(0, &tab_id));
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &update_props));

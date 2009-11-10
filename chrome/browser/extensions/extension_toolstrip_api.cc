@@ -67,7 +67,7 @@ bool ToolstripExpandFunction::RunImpl() {
   }
 
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+  const DictionaryValue* args = args_as_dictionary();
 
   int height;
   EXTENSION_FUNCTION_VALIDATE(args->GetInteger(keys::kHeightKey,
@@ -106,7 +106,7 @@ bool ToolstripCollapseFunction::RunImpl() {
   GURL url;
   if (args_->GetType() != Value::TYPE_NULL) {
     EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-    const DictionaryValue* args = static_cast<const DictionaryValue*>(args_);
+    const DictionaryValue* args = args_as_dictionary();
 
     if (args->HasKey(keys::kUrlKey)) {
       std::string url_string;

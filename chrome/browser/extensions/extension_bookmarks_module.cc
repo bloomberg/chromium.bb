@@ -277,7 +277,7 @@ bool GetBookmarksFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   scoped_ptr<ListValue> json(new ListValue());
   if (args_->IsType(Value::TYPE_LIST)) {
-    ListValue* ids = static_cast<ListValue*>(args_);
+    const ListValue* ids = args_as_list();
     size_t count = ids->GetSize();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {
@@ -379,7 +379,7 @@ bool RemoveBookmarkFunction::RunImpl() {
     return ExtensionBookmarks::RemoveNode(model, id, recursive, &error_);
   } else {
     EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-    ListValue* ids = static_cast<ListValue*>(args_);
+    const ListValue* ids = args_as_list();
     size_t count = ids->GetSize();
     EXTENSION_FUNCTION_VALIDATE(count > 0);
     for (size_t i = 0; i < count; ++i) {
@@ -395,7 +395,7 @@ bool RemoveBookmarkFunction::RunImpl() {
 
 bool CreateBookmarkFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_DICTIONARY));
-  DictionaryValue* json = static_cast<DictionaryValue*>(args_);
+  const DictionaryValue* json = args_as_dictionary();
 
   BookmarkModel* model = profile()->GetBookmarkModel();
   int64 parentId;
@@ -459,7 +459,7 @@ bool CreateBookmarkFunction::RunImpl() {
 
 bool MoveBookmarkFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
+  const ListValue* args = args_as_list();
   int64 id;
   std::string id_string;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(0, &id_string));
@@ -527,7 +527,7 @@ bool MoveBookmarkFunction::RunImpl() {
 
 bool UpdateBookmarkFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* args = static_cast<const ListValue*>(args_);
+  const ListValue* args = args_as_list();
   int64 id;
   std::string id_string;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(0, &id_string));
