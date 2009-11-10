@@ -3022,9 +3022,6 @@ BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS F
 // WebKit 50158:50171
 BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
 
-//  WebKit roll 50180:50186
-BUG_JORLOW LINUX WIN : LayoutTests/fast/repaint/inline-relative-positioned.html = FAIL
-
 // Not sure when this started being flaky
 BUG_JAPHET LINUX : LayoutTests/svg/custom/viewport-update2.svg = PASS FAIL
 
