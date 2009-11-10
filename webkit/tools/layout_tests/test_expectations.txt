@@ -3141,9 +3141,6 @@ BUG27044 : LayoutTests/accessibility/aria-tab-roles.html = TEXT
 // WebKit 50517:50527
 BUG27044 : LayoutTests/accessibility/aria-combobox.html = TEXT
 
-BUG_26969 MAC : LayoutTests/fast/forms/select-dirty-parent-pref-widths.html = MISSING
-BUG_26969 MAC : LayoutTests/fast/text/text-letter-spacing.html = IMAGE
-
 // WebKit 50603:50667
 BUG27164 : LayoutTests/plugins/document-open.html = TEXT
 BUG27164 : LayoutTests/plugins/window-open.html = TEXT
