@@ -1283,6 +1283,8 @@ def main(argv=None):
   else:
     # Everything else that is passed into gcl we redirect to svn, after adding
     # the files. This allows commands such as 'gcl diff xxx' to work.
+    if command == "diff" and not change_info.GetFileNames():
+      return 0
     args =["svn", command]
     root = GetRepositoryRoot()
     args.extend([os.path.join(root, x) for x in change_info.GetFileNames()])
