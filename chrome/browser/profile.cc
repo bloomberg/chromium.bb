@@ -1321,7 +1321,7 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
   bool notify = false;
   if (spellcheck_host_.get()) {
     spellcheck_host_->UnsetObserver();
-    spellcheck_host_.release();
+    spellcheck_host_ = NULL;
     spellcheck_host_ready_ = false;
     notify = true;
   }

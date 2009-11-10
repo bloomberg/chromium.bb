@@ -13,6 +13,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 
 class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
                            ChromeThread::DeleteOnFileThread>,
@@ -94,7 +95,7 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   bool tried_to_download_;
 
   // Used for downloading the dictionary file.
-  URLRequestContextGetter* request_context_getter_;
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
 
   // Used for downloading the dictionary file.
   scoped_ptr<URLFetcher> fetcher_;

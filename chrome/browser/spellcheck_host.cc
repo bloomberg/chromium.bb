@@ -220,7 +220,7 @@ void SpellCheckHost::DownloadDictionary() {
   GURL url = GURL(std::string(kDownloadServerUrl) + WideToUTF8(
       l10n_util::ToLower(bdict_file_.BaseName().ToWStringHack())));
   fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
-  fetcher_->set_request_context(request_context_getter_);
+  fetcher_->set_request_context(request_context_getter_.get());
   tried_to_download_ = true;
   fetcher_->Start();
 }
