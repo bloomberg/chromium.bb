@@ -52,11 +52,11 @@ static std::string StripQueryParams(const std::string& path) {
 
 DOMUIThemeSource::DOMUIThemeSource(Profile* profile)
     : DataSource(chrome::kChromeUIThemePath, MessageLoop::current()),
-      profile_(profile) {
+      profile_(profile->GetOriginalProfile()) {
   if (profile->IsOffTheRecord())
-    InitNewIncognitoTabCSS();
+    InitNewIncognitoTabCSS(profile);
   else
-    InitNewTabCSS();
+    InitNewTabCSS(profile);
 }
 
 void DOMUIThemeSource::StartDataRequest(const std::string& path,
@@ -116,8 +116,8 @@ MessageLoop* DOMUIThemeSource::MessageLoopForRequestPath(
 ////////////////////////////////////////////////////////////////////////////////
 // DOMUIThemeSource, private:
 
-void DOMUIThemeSource::InitNewTabCSS() {
-  ThemeProvider* tp = profile_->GetThemeProvider();
+void DOMUIThemeSource::InitNewTabCSS(Profile* profile) {
+  ThemeProvider* tp = profile->GetThemeProvider();
   DCHECK(tp);
 
   // Get our theme colors
@@ -163,7 +163,7 @@ void DOMUIThemeSource::InitNewTabCSS() {
 
   // Cache-buster for background.
   subst.push_back(WideToASCII(
-      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
+      profile->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
 
   // Colors.
   subst.push_back(SkColorToRGBAString(color_background));  // $2
@@ -184,7 +184,7 @@ void DOMUIThemeSource::InitNewTabCSS() {
   subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
 
-  if (profile_->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) > 0)
+  if (profile->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) > 0)
     subst2.push_back("block");  // $$8
   else
     subst2.push_back("none");  // $$8
@@ -201,8 +201,8 @@ void DOMUIThemeSource::InitNewTabCSS() {
       css_string, subst2, NULL);
 }
 
-void DOMUIThemeSource::InitNewIncognitoTabCSS() {
-  ThemeProvider* tp = profile_->GetThemeProvider();
+void DOMUIThemeSource::InitNewIncognitoTabCSS(Profile* profile) {
+  ThemeProvider* tp = profile->GetThemeProvider();
   DCHECK(tp);
 
   // Get our theme colors
@@ -214,7 +214,7 @@ void DOMUIThemeSource::InitNewIncognitoTabCSS() {
 
   // Cache-buster for background.
   subst.push_back(WideToUTF8(
-      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
+      profile->GetPrefs()->GetString(prefs::kCurrentThemeID)));  // $1
 
   // Colors.
   subst.push_back(SkColorToRGBAString(color_background));  // $2

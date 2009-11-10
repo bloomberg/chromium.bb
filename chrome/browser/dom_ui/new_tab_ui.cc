@@ -737,9 +737,8 @@ bool NewTabUI::NewTabHTMLSource::first_view_ = true;
 bool NewTabUI::NewTabHTMLSource::first_run_ = true;
 
 NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
-    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
-      profile_(profile) {
-  InitFullHTML();
+    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()) {
+  InitFullHTML(profile);
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
@@ -784,7 +783,7 @@ std::string NewTabUI::NewTabHTMLSource::GetCustomNewTabPageFromCommandLine() {
   return std::string();
 }
 
-void NewTabUI::NewTabHTMLSource::InitFullHTML() {
+void NewTabUI::NewTabHTMLSource::InitFullHTML(Profile* profile) {
   // Show the profile name in the title and most visited labels if the current
   // profile is not the default.
   std::wstring title;
@@ -804,10 +803,10 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
   }
   DictionaryValue localized_strings;
   localized_strings.SetString(L"bookmarkbarattached",
-      profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
+      profile->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
       "true" : "false");
   localized_strings.SetString(L"hasattribution",
-      profile_->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
+      profile->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
       "true" : "false");
   localized_strings.SetString(L"title", title);
   localized_strings.SetString(L"mostvisited", most_visited);
@@ -891,12 +890,12 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
-  if (profile_->GetProfileSyncService())
+  if (profile->GetProfileSyncService())
     localized_strings.SetString(L"syncispresent", "true");
   else
     localized_strings.SetString(L"syncispresent", "false");
 
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
+  if (!profile->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
     localized_strings.SetString(L"showsetashomepage", "true");
 
   SetFontAndTextDirection(&localized_strings);
@@ -907,8 +906,8 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
 
     // Decrement ntp promo counter; the default value is specified in
     // Browser::RegisterUserPrefs.
-    profile_->GetPrefs()->SetInteger(prefs::kNTPThemePromoRemaining,
-        profile_->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) - 1);
+    profile->GetPrefs()->SetInteger(prefs::kNTPThemePromoRemaining,
+        profile->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) - 1);
     first_view_ = false;
   }
 
@@ -918,7 +917,7 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML() {
   localized_strings.SetString(L"anim", anim);
 
   // Pass the shown_sections pref early so that we can prevent flicker.
-  const int shown_sections = profile_->GetPrefs()->GetInteger(
+  const int shown_sections = profile->GetPrefs()->GetInteger(
       prefs::kNTPShownSections);
   localized_strings.SetInteger(L"shown_sections", shown_sections);
 

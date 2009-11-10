@@ -91,7 +91,7 @@ class NewTabUI : public DOMUI,
     // A new NewTabHTMLSource object is used for each new tab page instance
     // and each reload of an existing new tab page, so there is no concern
     // about cached data becoming stale.
-    void InitFullHTML();
+    void InitFullHTML(Profile* profile);
 
     // The content to be served by StartDataRequest, stored by InitFullHTML.
     std::string full_html_;
@@ -102,9 +102,6 @@ class NewTabUI : public DOMUI,
 
     // Whether this is the first run.
     static bool first_run_;
-
-    // The user's profile.
-    Profile* profile_;
 
     DISALLOW_COPY_AND_ASSIGN(NewTabHTMLSource);
   };

@@ -36,8 +36,8 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
   // A new DOMUIThemeSource object is used for each new tab page instance
   // and each reload of an existing new tab page, so there is no concern about
   // cached data becoming stale.
-  void InitNewTabCSS();
-  void InitNewIncognitoTabCSS();
+  void InitNewTabCSS(Profile* profile);
+  void InitNewIncognitoTabCSS(Profile* profile);
 
   // Send the CSS for the new tab or the new incognito tab.
   void SendNewTabCSS(int request_id, const std::string& css_string);
@@ -58,6 +58,7 @@ class DOMUIThemeSource : public ChromeURLDataManager::DataSource {
   std::string new_tab_css_;
   std::string new_incognito_tab_css_;
 
+  // The original profile (never an OTR profile).
   Profile* profile_;
   DISALLOW_COPY_AND_ASSIGN(DOMUIThemeSource);
 };
