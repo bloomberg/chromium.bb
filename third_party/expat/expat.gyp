@@ -14,42 +14,60 @@
     'dependencies': [
     ]
   },
-  'targets': [
-    {
-      'target_name': 'expat',
-      'type': '<(library)',
-      'sources': [
-        'files/lib/expat.h',
-        'files/lib/xmlparse.c',
-        'files/lib/xmlrole.c',
-        'files/lib/xmltok.c',
+  'conditions': [
+    ['OS=="linux"', {
+      # On Linux, we implicitly already depend on expat via fontconfig;
+      # let's not pull it in twice.
+      'targets': [
+        {
+          'target_name': 'expat',
+          'type': 'settings',
+          'link_settings': {
+            'libraries': [
+              '-lexpat',
+            ],
+          },
+        },
       ],
-      
-      # Prefer adding a dependency to expat and relying on the following
-      # direct_dependent_settings rule over manually adding the include
-      # path.  This is because you'll want any translation units that
-      # #include these files to pick up the #defines as well.
-      'direct_dependent_settings': {
-        'include_dirs': [
-          'files/lib'
-        ],
-        'defines': [
-          'XML_STATIC',  # Tell dependants to expect static linkage.
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'defines': [
-            'COMPILED_FROM_DSP',
+    }, {  # OS != linux
+      'targets': [
+        {
+          'target_name': 'expat',
+          'type': '<(library)',
+          'sources': [
+            'files/lib/expat.h',
+            'files/lib/xmlparse.c',
+            'files/lib/xmlrole.c',
+            'files/lib/xmltok.c',
           ],
-        }],
-        ['OS=="linux" or OS=="mac"', {
-          'defines': [
-            'HAVE_EXPAT_CONFIG_H',
+
+          # Prefer adding a dependency to expat and relying on the following
+          # direct_dependent_settings rule over manually adding the include
+          # path.  This is because you'll want any translation units that
+          # #include these files to pick up the #defines as well.
+          'direct_dependent_settings': {
+            'include_dirs': [
+              'files/lib'
+            ],
+            'defines': [
+              'XML_STATIC',  # Tell dependants to expect static linkage.
+            ],
+          },
+          'conditions': [
+            ['OS=="win"', {
+              'defines': [
+                'COMPILED_FROM_DSP',
+              ],
+            }],
+            ['OS=="mac"', {
+              'defines': [
+                'HAVE_EXPAT_CONFIG_H',
+              ],
+            }],
           ],
-        }],
+        },
       ],
-    },
+    }],
   ],
 }
 
