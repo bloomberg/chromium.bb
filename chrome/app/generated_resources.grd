@@ -5687,6 +5687,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NOTIFICATION_PERMISSION_NO" desc="The label of the 'deny' button on the notification permission infobar.">
         Deny
       </message>
+      <message name="IDS_NOTIFICATION_OPTIONS_MENU_LABEL" desc="Text for the menu option">
+        Options
+      </message>
+      <message name="IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE" desc="Text for the menu option to revoke notification permission.">
+        Disable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
+      </message>
+
       
       <!-- New Tab Page Promotional messages -->
       <message name="IDS_NTP_PROMOTION_NEW" desc="Beginning of promotional message; a word in special red font signaling something new is coming.">

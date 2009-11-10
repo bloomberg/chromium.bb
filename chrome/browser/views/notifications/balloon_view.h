@@ -18,6 +18,9 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "views/controls/button/menu_button.h"
+#include "views/controls/menu/simple_menu_model.h"
+#include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 namespace views {
@@ -36,6 +39,8 @@ class SlideAnimation;
 // It draws a border, and within the border an HTML renderer.
 class BalloonViewImpl : public BalloonView,
                         public views::View,
+                        public views::ViewMenuDelegate,
+                        public views::SimpleMenuModel::Delegate,
                         public NotificationObserver,
                         public AnimationDelegate {
  public:
@@ -48,7 +53,7 @@ class BalloonViewImpl : public BalloonView,
   void Close(bool by_user);
 
  private:
-  // Overridden from views::View.
+  // views::View interface.
   virtual void Paint(gfx::Canvas* canvas);
   virtual void DidChangeBounds(const gfx::Rect& previous,
                                const gfx::Rect& current);
@@ -56,13 +61,29 @@ class BalloonViewImpl : public BalloonView,
     return gfx::Size(1000, 1000);
   }
 
-  // NotificationObserver method.
+  // views::ViewMenuDelegate interface.
+  void RunMenu(views::View* source, const gfx::Point& pt);
+
+  // views::SimpleMenuModel::Delegate interface.
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          views::Accelerator* accelerator);
+  virtual void ExecuteCommand(int command_id);
+
+  // NotificationObserver interface.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // AnimationDelegate method.
+  // AnimationDelegate interface.
   virtual void AnimationProgressed(const Animation* animation);
+
+  // Launches the options menu at screen coordinates |pt|.
+  void RunOptionsMenu(const gfx::Point& pt);
+
+  // Initializes the options menu.
+  void CreateOptionsMenu();
 
   // How to mask the balloon contents to fit within the frame.
   // Populates |path| with the outline.
@@ -125,6 +146,11 @@ class BalloonViewImpl : public BalloonView,
   scoped_ptr<SlideAnimation> animation_;
   gfx::Rect anim_frame_start_;
   gfx::Rect anim_frame_end_;
+
+  // The options menu.
+  scoped_ptr<views::SimpleMenuModel> options_menu_contents_;
+  scoped_ptr<views::Menu2> options_menu_menu_;
+  views::MenuButton* options_menu_button_;
 
   NotificationRegistrar notification_registrar_;
 

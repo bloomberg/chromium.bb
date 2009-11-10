@@ -16,6 +16,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/notifications/balloon.h"
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/views/notifications/balloon_view_host.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_source.h"
@@ -45,6 +47,10 @@ const int kShelfBorderTopOverlap = 2;
 const int kDismissButtonWidth = 46;
 const int kDismissButtonHeight = 20;
 
+// Properties of the options menu.
+const int kOptionsMenuWidth = 48;
+const int kOptionsMenuHeight = 20;
+
 // Properties of the origin label.
 const int kLeftLabelMargin = 5;
 
@@ -60,6 +66,9 @@ const bool kAnimateEnabled = true;
 // The shelf height for the system default font size.  It is scaled
 // with changes in the default font size.
 const int kDefaultShelfHeight = 22;
+
+// Menu commands
+const int kRevokePermissionCommand = 0;
 
 }  // namespace
 
@@ -89,6 +98,9 @@ BalloonViewImpl::BalloonViewImpl()
       close_button_(NULL),
       close_button_listener_(NULL),
       animation_(NULL),
+      options_menu_contents_(NULL),
+      options_menu_menu_(NULL),
+      options_menu_button_(NULL),
       method_factory_(this) {
   // This object is not to be deleted by the views hierarchy,
   // as it is owned by the balloon.
@@ -114,6 +126,10 @@ void BalloonViewImpl::Close(bool by_user) {
   MessageLoop::current()->PostTask(FROM_HERE,
       method_factory_.NewRunnableMethod(
           &BalloonViewImpl::DelayedClose, by_user));
+}
+
+void BalloonViewImpl::RunMenu(views::View* source, const gfx::Point& pt) {
+  RunOptionsMenu(pt);
 }
 
 void BalloonViewImpl::DelayedClose(bool by_user) {
@@ -239,6 +255,23 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                            kDismissButtonHeight);
   AddChildView(close_button_);
 
+  const std::wstring options_text =
+      l10n_util::GetString(IDS_NOTIFICATION_OPTIONS_MENU_LABEL);
+  options_menu_button_ = new views::MenuButton(NULL, options_text, this, false);
+  options_menu_button_->SetFont(
+      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::SmallFont));
+  options_menu_button_->SetEnabledColor(
+      BrowserThemeProvider::kDefaultColorTabText);
+  options_menu_button_->SetBounds(width() - kDismissButtonWidth
+                                          - kOptionsMenuWidth
+                                          - kRightMargin,
+                                  height() - kOptionsMenuHeight
+                                           - kShelfBorderTopOverlap
+                                           - kBottomMargin,
+                                  kOptionsMenuWidth,
+                                  kOptionsMenuHeight);
+  AddChildView(options_menu_button_);
+
   const std::wstring source_label_text = l10n_util::GetStringF(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
       ASCIIToWide(this->balloon_->notification().origin_url().spec()));
@@ -253,6 +286,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
                                    - kShelfBorderTopOverlap
                                    - kBottomMargin,
                           width() - kDismissButtonWidth
+                                  - kOptionsMenuWidth
                                   - kRightMargin,
                           kDismissButtonHeight);
   AddChildView(source_label);
@@ -265,6 +299,24 @@ void BalloonViewImpl::Show(Balloon* balloon) {
     NotificationType::NOTIFY_BALLOON_DISCONNECTED, Source<Balloon>(balloon));
 }
 
+void BalloonViewImpl::RunOptionsMenu(const gfx::Point& pt) {
+  CreateOptionsMenu();
+  options_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
+}
+
+void BalloonViewImpl::CreateOptionsMenu() {
+  if (options_menu_contents_.get())
+    return;
+
+  const std::wstring label_text = l10n_util::GetStringF(
+      IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
+      ASCIIToWide(this->balloon_->notification().origin_url().spec()));
+
+  options_menu_contents_.reset(new views::SimpleMenuModel(this));
+  options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
+
+  options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
+}
 
 void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,
                                       gfx::Path* path) const {
@@ -337,6 +389,35 @@ void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
   canvas->restore();
 
   View::Paint(canvas);
+}
+
+// SimpleMenuModel::Delegate methods
+bool BalloonViewImpl::IsCommandIdChecked(int /* command_id */) const {
+  // Nothing in the menu is checked.
+  return false;
+}
+
+bool BalloonViewImpl::IsCommandIdEnabled(int /* command_id */) const {
+  // All the menu options are always enabled.
+  return true;
+}
+
+bool BalloonViewImpl::GetAcceleratorForCommandId(
+    int /* command_id */, views::Accelerator* /* accelerator */) {
+  // Currently no accelerators.
+  return false;
+}
+
+void BalloonViewImpl::ExecuteCommand(int command_id) {
+  DesktopNotificationService* service =
+      balloon_->profile()->GetDesktopNotificationService();
+  switch (command_id) {
+    case kRevokePermissionCommand:
+      service->DenyPermission(balloon_->notification().origin_url());
+      break;
+    default:
+      NOTIMPLEMENTED();
+  }
 }
 
 void BalloonViewImpl::Observe(NotificationType type,

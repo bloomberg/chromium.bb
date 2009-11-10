@@ -78,7 +78,7 @@ bool NotificationProvider::ShowHTML(const WebNotification& notification,
                                     int id) {
   DCHECK(notification.isHTML());
   return Send(new ViewHostMsg_ShowDesktopNotification(view_->routing_id(),
-              GURL(view_->webview()->mainFrame()->url()),
+              GURL(view_->webview()->mainFrame()->url()).GetOrigin(),
               notification.url(), id));
 }
 
@@ -86,7 +86,7 @@ bool NotificationProvider::ShowText(const WebNotification& notification,
                                     int id) {
   DCHECK(!notification.isHTML());
   return Send(new ViewHostMsg_ShowDesktopNotificationText(view_->routing_id(),
-              GURL(view_->webview()->mainFrame()->url()),
+              GURL(view_->webview()->mainFrame()->url()).GetOrigin(),
               GURL(notification.icon()),
               notification.title(), notification.body(), id));
 }
