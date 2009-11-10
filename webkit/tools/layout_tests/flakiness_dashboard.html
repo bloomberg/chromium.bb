@@ -441,7 +441,7 @@
       return currentState.maxResults;
 
     // In individual tests view, show all the results since it renders faster.
-    return currentState.tests ? 750 : 200;
+    return currentState.tests || currentState.expectationsUpdate ? 750 : 200;
   }
 
   function getMatchingElement(stringToMatch, elementsMap) {
@@ -948,16 +948,24 @@
     var haveSeenNonFlakeResult = false;
     var numRealResults = 0;
 
+    var seenResults = {};
     for (var i = 0;
          i < rawResults.length && numResultsSeen < getMaxResults();
          i++) {
       var numResults = rawResults[i][0];
       numResultsSeen += numResults;
 
-      if (haveSeenNonFlakeResult && numResults >= MIN_RUNS_FOR_FLAKE) {
+      var hasMinRuns = numResults >= MIN_RUNS_FOR_FLAKE;
+      if (haveSeenNonFlakeResult && hasMinRuns) {
         continue;
-      } else if (numResults >= MIN_RUNS_FOR_FLAKE) {
+      } else if (hasMinRuns) {
         haveSeenNonFlakeResult = true;
+      } else if (!seenResults[rawResults[i][1]]) {
+        // Only consider a short-lived result if we've seen it more than once.
+        // Otherwise, we include lots of false-positives due to tests that fail
+        // for a couple runs and then start passing.
+        seenResults[rawResults[i][1]] = true;
+        continue;
       }
 
       var expectation = getExpectationsFileStringForResult(rawResults[i][1]);
