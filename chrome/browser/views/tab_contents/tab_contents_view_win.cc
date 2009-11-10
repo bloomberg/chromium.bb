@@ -400,7 +400,10 @@ bool TabContentsViewWin::HandleKeyboardEvent(
 
   if (tab_contents()->delegate() &&
       tab_contents()->delegate()->HandleKeyboardEvent(event)) {
-    return true;
+    // At this point the only tab contents delegate which handles a keyboard
+    // event is ChromeFrame. When the message comes back from ChromeFrame it
+    // is DefWindowProc'ed. We return false here on the same lines as below:-
+    return false;
   }
 
   // Any unhandled keyboard/character messages should be defproced.
