@@ -63,7 +63,7 @@
 - (NSDictionary*)linkAttributes {
   NSUInteger underlineMask = NSUnderlinePatternSolid | NSUnderlineStyleSingle;
   NSMutableParagraphStyle* paragraphStyle =
-    [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+    [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
   [paragraphStyle setAlignment:[self alignment]];
 
   return [NSDictionary dictionaryWithObjectsAndKeys:
