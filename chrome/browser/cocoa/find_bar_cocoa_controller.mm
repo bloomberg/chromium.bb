@@ -16,6 +16,7 @@
 #import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
 static float kFindBarOpenDuration = 0.2;
@@ -340,7 +341,7 @@ static float kFindBarCloseDuration = 0.15;
   currentAnimation_.reset(
       [[NSViewAnimation alloc]
         initWithViewAnimations:[NSArray arrayWithObjects:dict, nil]]);
-  [currentAnimation_ setDuration:duration];
+  [currentAnimation_ gtm_setDuration:duration];
   [currentAnimation_ setDelegate:self];
   [currentAnimation_ startAnimation];
 }

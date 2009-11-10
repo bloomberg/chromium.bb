@@ -2626,6 +2626,8 @@
             '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h',
             '../third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.m',
             '../third_party/GTM/AppKit/GTMWindowSheetController.m',
+            '../third_party/GTM/AppKit/GTMNSAnimation+Duration.m',
+            '../third_party/GTM/AppKit/GTMNSAnimation+Duration.h',
             '../third_party/GTM/Foundation/GTMNSNumber+64Bit.h',
             '../third_party/GTM/Foundation/GTMNSNumber+64Bit.m',
             # Build necessary Mozilla sources

@@ -13,6 +13,7 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bubble_view.h"
 #include "googleurl/src/gurl.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
@@ -407,7 +408,7 @@ void StatusBubbleMac::Fade(bool show) {
 
   // This will cancel an in-progress transition and replace it with this fade.
   [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:duration];
+  [[NSAnimationContext currentContext] gtm_setDuration:duration];
   [[window_ animator] setAlphaValue:opacity];
   [NSAnimationContext endGrouping];
 }

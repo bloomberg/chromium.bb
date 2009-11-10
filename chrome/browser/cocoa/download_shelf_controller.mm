@@ -21,6 +21,7 @@
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
 
@@ -112,7 +113,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
     ThemeProvider* provider = bridge_->browser()->profile()->GetThemeProvider();
     if (provider)
       useDefaultColor = provider->GetColor(
-          BrowserThemeProvider::COLOR_BOOKMARK_TEXT) == 
+          BrowserThemeProvider::COLOR_BOOKMARK_TEXT) ==
           BrowserThemeProvider::kDefaultColorBookmarkText;
   }
 
@@ -238,7 +239,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   // Adding at index 0 in NSMutableArrays is O(1).
   [downloadItemControllers_ insertObject:controller.get() atIndex:0];
 
-  [itemContainerView_ addSubview:[controller.get() view]];
+  [itemContainerView_ addSubview:[controller view]];
 
   // The controller is in charge of removing itself as an observer in its
   // dealloc.
@@ -254,15 +255,16 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
          object:itemContainerView_];
 
   // Start at width 0...
-  NSSize size = [controller.get() preferredSize];
+  NSSize size = [controller preferredSize];
   NSRect frame = NSMakeRect(0, 0, 0, size.height);
-  [[controller.get() view] setFrame:frame];
+  [[controller view] setFrame:frame];
 
   // ...then animate in
   frame.size.width = size.width;
   [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:kDownloadItemOpenDuration];
-  [[[controller.get() view] animator] setFrame:frame];
+  [[NSAnimationContext currentContext]
+      gtm_setDuration:kDownloadItemOpenDuration];
+  [[[controller view] animator] setFrame:frame];
   [NSAnimationContext endGrouping];
 
   // Keep only a limited number of items in the shelf.
@@ -283,9 +285,9 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 
 - (void)closed {
   NSUInteger i = 0;
-  while (i < [downloadItemControllers_.get() count]) {
-    DownloadItemController* itemController = [downloadItemControllers_.get()
-        objectAtIndex:i];
+  while (i < [downloadItemControllers_ count]) {
+    DownloadItemController* itemController =
+        [downloadItemControllers_ objectAtIndex:i];
     bool isTransferDone =
         [itemController download]->state() == DownloadItem::COMPLETE ||
         [itemController download]->state() == DownloadItem::CANCELLED;

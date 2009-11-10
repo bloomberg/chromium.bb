@@ -39,6 +39,7 @@
 #include "grit/locale_settings.h"
 #include "net/base/cookie_policy.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 NSString* const kUserDoneEditingPrefsNotification =
     @"kUserDoneEditingPrefsNotification";
@@ -431,7 +432,7 @@ class PrefObserverBridge : public NotificationObserver {
     [animation_ setDelegate:self];
     // The default duration is 0.5s, which actually feels slow in here, so speed
     // it up a bit.
-    [animation_ setDuration:0.2];
+    [animation_ gtm_setDuration:0.2];
     [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
   }
   return self;

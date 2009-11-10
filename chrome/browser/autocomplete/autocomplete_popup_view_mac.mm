@@ -14,6 +14,7 @@
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "grit/theme_resources.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
 
@@ -431,7 +432,8 @@ void AutocompletePopupViewMac::UpdatePopupAppearance() {
       r.origin.x == oldFrame.origin.x &&
       r.size.width == oldFrame.size.width) {
     [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext] setDuration:kShrinkAnimationDuration];
+    [[NSAnimationContext currentContext]
+        gtm_setDuration:kShrinkAnimationDuration];
     [[popup_ animator] setFrame:r display:YES];
     [NSAnimationContext endGrouping];
   } else {

@@ -19,6 +19,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "grit/theme_resources.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/skia/include/utils/mac/SkCGUtils.h"
 
 class DownloadAnimationTabObserver;
@@ -164,7 +165,7 @@ private:
       [CABasicAnimation animationWithKeyPath:@"position"];
   [animation setFromValue:[NSValue valueWithPoint:start]];
   [animation setToValue:[NSValue valueWithPoint:stop]];
-  [animation setDuration:0.6];
+  [animation gtm_setDuration:0.6];
   CAMediaTimingFunction* mediaFunction =
       [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
   [animation setTimingFunction:mediaFunction];
@@ -175,7 +176,7 @@ private:
   animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
   [animation setFromValue:[NSNumber numberWithFloat:1.0]];
   [animation setToValue:[NSNumber numberWithFloat:0.0]];
-  [animation setDuration:1.5];  // Slightly longer, so it doesn't fade too much.
+  [animation gtm_setDuration:1.5];  // Longer, so it doesn't fade too much.
   mediaFunction =
       [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
   [animation setTimingFunction:mediaFunction];

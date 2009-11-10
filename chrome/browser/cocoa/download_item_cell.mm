@@ -13,6 +13,7 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {
@@ -548,8 +549,8 @@ const int kCompleteAnimationDuration = 2.5;
 - (id)initWithDownloadItemCell:(DownloadItemCell*)cell
                       duration:(NSTimeInterval)duration
                 animationCurve:(NSAnimationCurve)animationCurve {
-  if ((self = [super initWithDuration:duration
-                       animationCurve:animationCurve])) {
+  if ((self = [super gtm_initWithDuration:duration
+                           animationCurve:animationCurve])) {
     cell_ = cell;
     [self setAnimationBlockingMode:NSAnimationNonblocking];
   }

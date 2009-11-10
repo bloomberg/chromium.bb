@@ -6,6 +6,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #import "chrome/browser/cocoa/animatable_view.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 // NSAnimation subclass that animates the height of an AnimatableView.  Allows
 // the caller to start and cancel the animation as desired.
@@ -27,8 +28,8 @@
 - (id)initWithView:(AnimatableView*)view
        finalHeight:(CGFloat)height
           duration:(NSTimeInterval)duration {
-  if ((self = [super initWithDuration:duration
-                       animationCurve:NSAnimationEaseIn])) {
+  if ((self = [super gtm_initWithDuration:duration
+                           animationCurve:NSAnimationEaseIn])) {
     view_ = view;
     startHeight_ = [view_ height];
     endHeight_ = height;

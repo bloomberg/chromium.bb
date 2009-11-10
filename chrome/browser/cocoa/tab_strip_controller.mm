@@ -36,6 +36,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
@@ -546,7 +547,7 @@ static const NSTimeInterval kAnimationDuration = 0.2;
 
   NSRect enclosingRect = NSZeroRect;
   [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
+  [[NSAnimationContext currentContext] gtm_setDuration:kAnimationDuration];
 
   // Update the current subviews and their z-order if requested.
   if (doUpdate)
@@ -912,7 +913,7 @@ static const NSTimeInterval kAnimationDuration = 0.2;
   NSRect newFrame = [tabView frame];
   newFrame = NSOffsetRect(newFrame, 0, -newFrame.size.height);
   [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] setDuration:kAnimationDuration];
+  [[NSAnimationContext currentContext] gtm_setDuration:kAnimationDuration];
   [[tabView animator] setFrame:newFrame];
   [NSAnimationContext endGrouping];
 }
