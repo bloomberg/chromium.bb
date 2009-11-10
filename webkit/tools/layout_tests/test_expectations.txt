@@ -687,8 +687,8 @@ BUG10275 : LayoutTests/http/tests/security/cross-frame-access-put.html = FAIL
 
 // TODO(joshia): Need some changes to the test shell in order to support
 // Java applet related unit tests. So disable the following for now.
-//BUG24193 : LayoutTests/fast/replaced/applet-disabled-positioned.html = FAIL
-//BUG24193 : LayoutTests/fast/replaced/applet-rendering-java-disabled.html = FAIL
+BUG27217 : LayoutTests/fast/replaced/applet-disabled-positioned.html = FAIL
+BUG27217 : LayoutTests/fast/replaced/applet-rendering-java-disabled.html = FAIL
 
 // Due to differences in error pages. Needs re-baselining.
 BUG24208 WIN SLOW : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
