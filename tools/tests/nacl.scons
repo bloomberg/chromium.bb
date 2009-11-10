@@ -56,7 +56,9 @@ if 'TRUSTED_ENV' in env:
   env2 = env.Clone()
   env2.PrependENVPath('PATH', env['TRUSTED_ENV'].SubstList2('${STAGING_DIR}'))
   toolchain_test = env2.Command(
-    'test_toolchain', ['${SCONSTRUCT_DIR}/tools/tests/test_toolchain.py'],
+    'test_toolchain',
+    ['${SCONSTRUCT_DIR}/tools/tests/test_toolchain.py',
+     env['TRUSTED_ENV'].SubstList2('${STAGING_DIR}/ncval${PROGSUFFIX}')],
     '$PYTHON ${SOURCES[0].abspath}')
 else:
   print ('WARNING: no trusted env specified so skipping toolchain test. '

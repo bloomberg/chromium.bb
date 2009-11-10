@@ -103,16 +103,18 @@ int AnalyzeSections(ncfile *ncf, struct NCValidatorState *vstate) {
 }
 
 
-static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
+static int AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
   PcAddress vbase, vlimit;
   struct NCValidatorState *vstate;
+  int result;
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NCValidateInit(vbase, vlimit, ncf->ncalign);
   if (AnalyzeSections(ncf, vstate) < 0) {
     Info("%s: text validate failed\n", fname);
   }
-  if (NCValidateFinish(vstate) != 0) {
+  result = NCValidateFinish(vstate);
+  if (result != 0) {
     Debug("***MODULE %s IS UNSAFE***\n", fname);
   } else {
     Debug("***module %s is safe***\n", fname);
@@ -120,6 +122,7 @@ static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
   Stats_Print(stdout, vstate);
   NCValidateFreeState(&vstate);
   Debug("Validated %s\n", fname);
+  return result;
 }
 
 /* make output deterministic */
@@ -127,6 +130,7 @@ static int GlobalPrintTiming = 0;
 
 
 int main(int argc, const char *argv[]) {
+  int result = 0;
   int i;
   for (i=1; i< argc; i++) {
     clock_t clock_0;
@@ -145,7 +149,9 @@ int main(int argc, const char *argv[]) {
     }
 
     clock_l = clock();
-    AnalyzeCodeSegments(ncf, argv[i]);
+    if (AnalyzeCodeSegments(ncf, argv[i]) != 0) {
+      result = 1;
+    }
     clock_v = clock();
 
     if (GlobalPrintTiming) {
@@ -157,5 +163,5 @@ int main(int argc, const char *argv[]) {
 
     nc_freefile(ncf);
   }
-  return 0;
+  return result;
 }

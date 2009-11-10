@@ -45,6 +45,27 @@ def check_call(*args, **kwargs):
 
 class ToolchainTests(TempDirTestCase):
 
+  def test_ncval_returns_errors(self):
+    # Check that ncval returns a non-zero return code when there is a
+    # validation failure.
+    code = """
+int main() {
+#ifdef __i386__
+  __asm__("ret");
+#else
+#  error Update this test for other architectures!
+#endif
+  return 0;
+}
+"""
+    temp_dir = self.make_temp_dir()
+    write_file(os.path.join(temp_dir, "code.c"), code)
+    check_call(["nacl-gcc", os.path.join(temp_dir, "code.c"),
+                "-o", os.path.join(temp_dir, "prog")])
+    rc = subprocess.call(["ncval", os.path.join(temp_dir, "prog")],
+                         stdout=open(os.devnull, "w"))
+    self.assertEquals(rc, 1)
+
   def test_computed_gotos(self):
     # Test for toolchain bug.
     # Bug 1:  gcc outputs "jmp *%eax", fails to validate.
@@ -71,8 +92,6 @@ int main() {
     check_call(["nacl-gcc", # "-c",
                 os.path.join(temp_dir, "code.c"),
                 "-o", os.path.join(temp_dir, "prog")])
-    # ncval isn't returning a non-zero exit code on validator failure.
-    # TODO: fix ncval.
     check_call(["ncval", os.path.join(temp_dir, "prog")],
                stdout=open(os.devnull, "w"))
 
