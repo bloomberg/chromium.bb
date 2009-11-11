@@ -16,6 +16,8 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
+#include "views/controls/button/image_button.h"
 #include "views/controls/label.h"
 #include "views/standard_layout.h"
 #include "views/view.h"
@@ -33,18 +35,22 @@ const int kBubbleBorderInsert = 6;
 const int kHorizOuterMargin = kPanelHorizMargin - kBubbleBorderInsert;
 const int kVertOuterMargin = kPanelVertMargin - kBubbleBorderInsert;
 
+// The image we use for the close button has three pixels of whitespace padding.
+const int kCloseButtonPadding = 3;
+
 // InstalledBubbleContent is the content view which is placed in the
 // ExtensionInstalledBubble. It displays the install icon and explanatory
 // text about the installed extension.
-class InstalledBubbleContent : public views::View {
+class InstalledBubbleContent : public views::View,
+                               public views::ButtonListener {
  public:
   InstalledBubbleContent(Extension* extension,
                          ExtensionInstalledBubble::BubbleType type,
                          SkBitmap* icon)
       : type_(type),
         info_(NULL) {
-    const gfx::Font& font =
-        ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    const gfx::Font& font = rb.GetFont(ResourceBundle::BaseFont);
 
     // Scale down to 43x43, but allow smaller icons (don't scale up).
     gfx::Size size(icon->width(), icon->height());
@@ -78,12 +84,30 @@ class InstalledBubbleContent : public views::View {
     manage_->SetMultiLine(true);
     manage_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
     AddChildView(manage_);
+
+    close_button_ = new views::ImageButton(this);
+    close_button_->SetImage(views::CustomButton::BS_NORMAL,
+        rb.GetBitmapNamed(IDR_CLOSE_BAR));
+    close_button_->SetImage(views::CustomButton::BS_HOT,
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+    close_button_->SetImage(views::CustomButton::BS_PUSHED,
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+    AddChildView(close_button_);
+  }
+
+  virtual void ButtonPressed(
+      views::Button* sender,
+      const views::Event& event) {
+    GetWidget()->Close();
   }
 
  private:
   virtual gfx::Size GetPreferredSize() {
     int width = kRightColumnWidth + kHorizOuterMargin + kHorizOuterMargin;
     width += kIconSize;
+    width += kPanelHorizMargin;
+    width += close_button_->GetPreferredSize().width();
+    width -= 2 * kCloseButtonPadding;
     width += kPanelHorizMargin;
 
     int height = kVertOuterMargin * 2;
@@ -123,13 +147,22 @@ class InstalledBubbleContent : public views::View {
     manage_->SizeToFit(kRightColumnWidth);
     manage_->SetX(x);
     manage_->SetY(y);
-  }
+
+    x += kRightColumnWidth + kPanelHorizMargin;
+    y = kVertOuterMargin;
+    gfx::Size sz = close_button_->GetPreferredSize();
+    close_button_->SetBounds(x - kCloseButtonPadding,
+                             y - kCloseButtonPadding,
+                             sz.width(),
+                             sz.height());
+}
 
   ExtensionInstalledBubble::BubbleType type_;
   views::ImageView* icon_;
   views::Label* heading_;
   views::Label* info_;
   views::Label* manage_;
+  views::ImageButton* close_button_;
 
   DISALLOW_COPY_AND_ASSIGN(InstalledBubbleContent);
 };
