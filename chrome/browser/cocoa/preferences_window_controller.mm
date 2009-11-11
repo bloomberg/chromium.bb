@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
@@ -26,6 +27,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
@@ -332,6 +335,9 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed.
 - (void)prefChanged:(std::wstring*)prefName;
+// Callback when sync state has changed.  sync_service_ needs to be
+// queries to find out what happened.
+- (void)syncStateChanged;
 // Record the user performed a certain action and save the preferences.
 - (void)recordUserAction:(const wchar_t*)action;
 - (void)registerPrefObservers;
@@ -361,10 +367,14 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 
 // A C++ class registered for changes in preferences. Bridges the
 // notification back to the PWC.
-class PrefObserverBridge : public NotificationObserver {
+class PrefObserverBridge : public NotificationObserver,
+                           public ProfileSyncServiceObserver {
  public:
   PrefObserverBridge(PreferencesWindowController* controller)
-      : controller_(controller) { }
+      : controller_(controller) {}
+
+  virtual ~PrefObserverBridge() {}
+
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -372,6 +382,12 @@ class PrefObserverBridge : public NotificationObserver {
     if (type == NotificationType::PREF_CHANGED)
       [controller_ prefChanged:Details<std::wstring>(details).ptr()];
   }
+
+  // Overridden from ProfileSyncServiceObserver.
+  virtual void OnStateChanged() {
+    [controller_ syncStateChanged];
+  }
+
  private:
   PreferencesWindowController* controller_;  // weak, owns us
 };
@@ -434,6 +450,18 @@ class PrefObserverBridge : public NotificationObserver {
     // it up a bit.
     [animation_ gtm_setDuration:0.2];
     [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
+
+    // TODO(akalin): handle incognito profiles?
+    sync_service_ = profile->GetProfileSyncService();
+    // TODO(akalin): is this the right place to put this?
+    if (sync_service_) {
+      sync_service_->AddObserver(observer_.get());
+    } else {
+      // Disable controls if sync is disabled.
+      [syncLabel_ setHidden:YES];
+      [syncStatus_ setHidden:YES];
+      [syncButton_ setHidden:YES];
+    }
   }
   return self;
 }
@@ -610,9 +638,17 @@ class PrefObserverBridge : public NotificationObserver {
 
   // TODO(pinkerton): save/restore position based on prefs.
   [[self window] center];
+
+  // Get initial sync state.
+  if (sync_service_) {
+    [self syncStateChanged];
+  }
 }
 
 - (void)dealloc {
+  if (sync_service_) {
+    sync_service_->RemoveObserver(observer_.get());
+  }
   [customPagesSource_ removeObserver:self forKeyPath:@"customHomePages"];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self unregisterPrefObservers];
@@ -1524,6 +1560,40 @@ const int kDisabledIndex = 1;
   [self basicsPrefChanged:prefName];
   [self userDataPrefChanged:prefName];
   [self underHoodPrefChanged:prefName];
+}
+
+// Callback when sync service state has changed.
+// TODO(akalin): Decomp this out since a lot of it is copied from the
+// Windows version.
+- (void)syncStateChanged {
+  DCHECK(sync_service_);
+  string16 status_label;
+  string16 link_label;
+  std::wstring button_label;
+  bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
+  bool status_has_error =
+    SyncStatusUIHelper::GetLabels(sync_service_, &status_label, &link_label)
+    == SyncStatusUIHelper::SYNC_ERROR;
+  if (sync_setup_completed) {
+    button_label = l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+  } else if (sync_service_->SetupInProgress()) {
+    button_label = l10n_util::GetString(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+  } else {
+    button_label = l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+  }
+
+  [syncStatus_ setStringValue:base::SysUTF16ToNSString(status_label)];
+  [syncButton_ setEnabled:!sync_service_->WizardIsVisible()];
+  [syncButton_ setTitle:base::SysWideToNSString(button_label)];
+  // sync_action_link_->SetText(link_label);
+  // sync_action_link_->SetVisible(!link_label.empty());
+  if (status_has_error) {
+    // sync_status_label_->set_background(CreateErrorBackground());
+    // sync_action_link_->set_background(CreateErrorBackground());
+  } else {
+    // sync_status_label_->set_background(NULL);
+    // sync_action_link_->set_background(NULL);
+  }
 }
 
 // Show the preferences window.
