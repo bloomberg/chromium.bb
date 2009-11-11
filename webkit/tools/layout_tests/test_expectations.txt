@@ -678,7 +678,7 @@ BUG21901 : LayoutTests/plugins/netscape-enumerate.html = FAIL
 // This tests the screen's pixel depth, which we don't set on the buildbots
 // so it depends on the users settings.  Making this a broken test for us.
 // The test must be fixed to not depend on user settings and rebaselined.  post-beta.
-BUG10274 WIN RELEASE : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL
+BUG10274 WIN RELEASE : LayoutTests/fast/dom/Window/window-screen-properties.html = PASS FAIL
 BUG10274 WIN DEBUG : LayoutTests/fast/dom/Window/window-screen-properties.html = PASS TEXT
 BUG10274 LINUX : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL
 
@@ -1370,7 +1370,7 @@ BUG10341 LINUX : LayoutTests/fast/lists/001.html = FAIL PASS
 
 // We fail to load a file URL with a port number -- how does this work on
 // Windows?
-BUG10342 MAC LINUX : LayoutTests/fast/loader/file-URL-with-port-number.html = FAIL
+BUG10342 MAC LINUX : LayoutTests/fast/loader/file-URL-with-port-number.html = PASS TEXT
 
 // Text doesn't display at all -- maybe we don't have the slow font
 // code enabled?
@@ -2486,7 +2486,7 @@ BUG9798 WIN DEBUG : LayoutTests/fast/lists/inlineBoxWrapperNullCheck.html = FAIL
 BUG9798 WIN SLOW : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
 BUG9798 MAC WIN : LayoutTests/http/tests/loading/preload-img-test.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
-BUG9798 LINUX MAC RELEASE : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
+BUG9798 LINUX MAC : LayoutTests/http/tests/misc/BOM-override-script.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/empty-file-formdata.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
@@ -2501,7 +2501,7 @@ BUG9798 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag.html =
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 MAC WIN : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS TIMEOUT
-BUG9798 MAC WIN : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
+BUG9798 : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/encode-request-url-2.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/null-auth.php = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/referer.html = TIMEOUT PASS
@@ -2664,7 +2664,7 @@ BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 
 // Details for all of these are in the bugs.
 BUG12361 WIN SLOW : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
-BUG12361 LINUX MAC : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
+BUG12361 LINUX MAC SLOW : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
 
 // WebKit 44286:44342
 BUG13174 WIN : LayoutTests/transitions/shorthand-border-transitions.html = PASS FAIL
@@ -2982,7 +2982,7 @@ BUG25208 LINUX WIN : LayoutTests/svg/W3C-SVG-1.1/masking-path-05-f.svg = FAIL
 BUG_JEREMY MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = CRASH FAIL
 
 // WebKit Roll 49684:49761
-BUG26042 LINUX : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = FAIL PASS
+BUG26042 : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
 
 // WebKit Roll 49809:49830
 // New test flakiness is being observed.
@@ -3090,3 +3090,28 @@ BUG27334 MAC DEBUG : LayoutTests/plugins/netscape-invoke-failure.html = PASS TEX
 
 BUG27341 LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = PASS TIMEOUT
 BUG27341 LINUX : LayoutTests/http/tests/local/stylesheet-and-script-load-order.html = PASS TIMEOUT
+
+// more test flakiness
+BUG27418 WIN : LayoutTests/http/tests/cookies/simple-cookies-max-age.html = PASS TIMEOUT
+BUG27418 WIN SLOW : LayoutTests/http/tests/misc/url-in-utf16le.html = PASS
+BUG27418 LINUX : LayoutTests/http/tests/local/send-dragged-file.html = TIMEOUT
+BUG27418 MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-double-quote.html = PASS TIMEOUT
+BUG27418 MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-src-redirect-safe.html = PASS TIMEOUT
+BUG27418 MAC : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
+BUG27418 MAC : LayoutTests/http/tests/security/escape-form-data-field-names.html = PASS TIMEOUT
+BUG27418 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/object-embed-tag-control-char.html = PASS TIMEOUT
+BUG27418 MAC SLOW : LayoutTests/http/tests/security/xssAuditor/javascript-link-ampersand.html = PASS
+BUG27418 MAC SLOW : LayoutTests/http/tests/security/xssAuditor/post-from-iframe.html = PASS
+BUG27418 MAC DEBUG SLOW : LayoutTests/http/tests/plugins/interrupted-get-url.html = PASS TEXT
+BUG27418 MAC RELEASE SLOW : LayoutTests/http/tests/plugins/interrupted-get-url.html = PASS
+BUG27418 MAC SLOW : LayoutTests/http/tests/navigation/postredirect-goback1.html = PASS
+BUG27418 MAC : LayoutTests/plugins/getintidentifier-special-values.html = PASS TEXT
+BUG27418 MAC : LayoutTests/plugins/netscape-construct.html = PASS TEXT
+BUG27418 MAC : LayoutTests/plugins/netscape-invoke-browserfuncs.html = PASS TEXT
+BUG27418 MAC : LayoutTests/plugins/netscape-get-property-return-value.html = PASS TEXT
+BUG27418 MAC : LayoutTests/plugins/netscape-throw-exception.html = PASS TEXT
+BUG27418 MAC DEBUG : LayoutTests/plugins/get-url-that-the-resource-load-delegate-will-disallow.html = PASS TEXT
+BUG27418 MAC DEBUG : LayoutTests/plugins/netscape-identifier-conversion.html = PASS TEXT
+BUG27418 MAC : LayoutTests/plugins/open-and-close-window-with-plugin.html = PASS TEXT
+BUG27418 MAC : LayoutTests/transitions/shorthand-border-transitions.html = PASS TEXT
+
