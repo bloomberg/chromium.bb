@@ -32,15 +32,11 @@ class BookmarkNode;
   BookmarkModel* model_;  // weak
   const BookmarkNode* node_;  // weak
 
-  // A mapping from NSComboBox index to parent nodes.
-  scoped_nsobject<NSMutableArray> parentMapping_;
-
   BOOL alreadyBookmarked_;
-  scoped_nsobject<NSString> chooseAnotherFolder_;
 
   IBOutlet NSTextField* bigTitle_;   // "Bookmark" or "Bookmark Added!"
   IBOutlet NSTextField* nameTextField_;
-  IBOutlet NSComboBox* folderComboBox_;
+  IBOutlet NSPopUpButton* folderPopUpButton_;
 }
 
 // |node| is the bookmark node we edit in this bubble.
@@ -61,19 +57,18 @@ class BookmarkNode;
 - (IBAction)ok:(id)sender;
 - (IBAction)remove:(id)sender;
 - (IBAction)cancel:(id)sender;
-
+- (IBAction)folderChanged:(id)sender;
 @end
 
 
 // Exposed only for unit testing.
 @interface BookmarkBubbleController(ExposedForUnitTesting)
-- (void)fillInFolderList;
-- (void)addFolderNodes:(const BookmarkNode*)parent toComboBox:(NSComboBox*)box;
-- (void)updateBookmarkNode;
-- (void)setTitle:(NSString*)title parentFolder:(NSString*)folder;
+- (void)addFolderNodes:(const BookmarkNode*)parent
+         toPopUpButton:(NSPopUpButton*)button;
+- (void)setTitle:(NSString*)title parentFolder:(const BookmarkNode*)parent;
 - (void)setParentFolderSelection:(const BookmarkNode*)parent;
-- (NSString*)chooseAnotherFolderString;
-- (NSComboBox*)folderComboBox;
++ (NSString*)chooseAnotherFolderString;
+- (NSPopUpButton*)folderPopUpButton;
 @end
 
 

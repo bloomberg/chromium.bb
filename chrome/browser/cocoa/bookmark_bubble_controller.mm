@@ -11,7 +11,29 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "grit/generated_resources.h"
 
+// An object to represent the ChooseAnotherFolder item in the pop up.
+@interface ChooseAnotherFolder : NSObject
+@end
+
+@implementation ChooseAnotherFolder
+@end
+
+@interface BookmarkBubbleController ()
+- (void)updateBookmarkNode;
+- (void)fillInFolderList;
+@end
+
 @implementation BookmarkBubbleController
+
++ (id)chooseAnotherFolderObject {
+  // Singleton object to act as a representedObject for the "choose another
+  // folder" item in the pop up.
+  static ChooseAnotherFolder* object = nil;
+  if (!object) {
+    object = [[ChooseAnotherFolder alloc] init];
+  }
+  return object;
+}
 
 - (id)initWithDelegate:(id<BookmarkBubbleControllerDelegate>)delegate
           parentWindow:(NSWindow*)parentWindow
@@ -29,8 +51,6 @@
     model_ = model;
     node_ = node;
     alreadyBookmarked_ = alreadyBookmarked;
-    // But this is strong.
-    parentMapping_.reset([[NSMutableArray alloc] init]);
   }
   return self;
 }
@@ -83,7 +103,7 @@
 // remove the bookmark.
 - (IBAction)cancel:(id)sender {
   if (!alreadyBookmarked_) {
-    // |-remove:| calls |-close| so we don't have to bother.
+    // |-remove:| calls |-close| so don't do it.
     [self remove:sender];
   } else {
     [self ok:sender];
@@ -97,67 +117,28 @@
   [self ok:sender];
 }
 
-// We are the delegate of the combo box so we can tell when "choose
-// another folder" was picked.
-- (void)comboBoxSelectionDidChange:(NSNotification*)notification {
-  NSString* selected = [folderComboBox_ objectValueOfSelectedItem];
-  if ([selected isEqual:chooseAnotherFolder_.get()]) {
+// The controller is  the target of the pop up button box action so it can
+// handle when "choose another folder" was picked.
+- (IBAction)folderChanged:(id)sender {
+  DCHECK([sender isEqual:folderPopUpButton_]);
+  NSMenuItem* selected = [folderPopUpButton_ selectedItem];
+  ChooseAnotherFolder* chooseItem = [[self class] chooseAnotherFolderObject];
+  if ([[selected representedObject] isEqual:chooseItem]) {
     UserMetrics::RecordAction(L"BookmarkBubble_EditFromCombobox",
                               model_->profile());
     [self showEditor];
   }
 }
 
-// We are the delegate of our own window so we know when we lose key.
-// When we lose key status we close, mirroring Windows behavior.
+// The controller is the delegate of the window so it receives did resign key
+// notifications. When key is resigned mirror Windows behavior and close the
+// window.
 - (void)windowDidResignKey:(NSNotification*)notification {
   DCHECK_EQ([notification object], [self window]);
 
-  // Can't call close from within a window delegate method. We can call
-  // close after it's finished though. So this will call close for us next
-  // time through the event loop.
+  // Can't call close from within a window delegate method. Call close for the
+  // next time through the event loop.
   [self performSelector:@selector(ok:) withObject:self afterDelay:0];
-}
-
-@end  // BookmarkBubbleController
-
-
-@implementation BookmarkBubbleController(ExposedForUnitTesting)
-
-
-// Fill in all information related to the folder combo box.
-- (void)fillInFolderList {
-  [nameTextField_ setStringValue:base::SysWideToNSString(node_->GetTitle())];
-  DCHECK([parentMapping_ count] == 0);
-  DCHECK([folderComboBox_ numberOfItems] == 0);
-  [self addFolderNodes:model_->root_node() toComboBox:folderComboBox_];
-
-  // Add "Choose another folder...".  Remember it for later to compare against.
-  chooseAnotherFolder_.reset(
-    [l10n_util::GetNSStringWithFixup(IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER)
-              retain]);
-  [folderComboBox_ addItemWithObjectValue:chooseAnotherFolder_.get()];
-
-  // Finally, select the current parent.
-  NSString* parentTitle = base::SysWideToNSString(
-    node_->GetParent()->GetTitle());
-  [folderComboBox_ selectItemWithObjectValue:parentTitle];
-}
-
-// For the given folder node, walk the tree and add folder names to
-// the given combo box.
-- (void)addFolderNodes:(const BookmarkNode*)parent toComboBox:(NSComboBox*)box {
-  NSString* title = base::SysWideToNSString(parent->GetTitle());
-  if ([title length])  {  // no title if root
-    [box addItemWithObjectValue:title];
-    [parentMapping_ insertObject:[NSValue valueWithPointer:parent]
-                         atIndex:[box numberOfItems]-1];
-  }
-  for (int i = 0; i < parent->GetChildCount(); i++) {
-    const BookmarkNode* child = parent->GetChild(i);
-    if (child->is_folder())
-      [self addFolderNodes:child toComboBox:box];
-  }
 }
 
 // Look at the dialog; if the user has changed anything, update the
@@ -175,55 +156,89 @@
   }
   // Then the parent folder.
   const BookmarkNode* oldParent = node_->GetParent();
-  NSInteger selectedIndex = [folderComboBox_ indexOfSelectedItem];
-  if (selectedIndex == -1)  // No selection ever made.
-    return;
-
-  if ((NSUInteger)selectedIndex == [parentMapping_ count]) {
+  NSMenuItem* selectedItem = [folderPopUpButton_ selectedItem];
+  id representedObject = [selectedItem representedObject];
+  if ([representedObject isEqual:[[self class] chooseAnotherFolderObject]]) {
     // "Choose another folder..."
     return;
   }
-  const BookmarkNode* newParent = static_cast<const BookmarkNode*>(
-      [[parentMapping_ objectAtIndex:selectedIndex] pointerValue]);
+  const BookmarkNode* newParent =
+      static_cast<const BookmarkNode*>([representedObject pointerValue]);
   DCHECK(newParent);
   if (oldParent != newParent) {
-      int index = newParent->GetChildCount();
-      model_->Move(node_, newParent, index);
-      UserMetrics::RecordAction(L"BookmarkBubble_ChangeParent",
-                                model_->profile());
+    int index = newParent->GetChildCount();
+    model_->Move(node_, newParent, index);
+    UserMetrics::RecordAction(L"BookmarkBubble_ChangeParent",
+                              model_->profile());
   }
 }
 
-- (void)setTitle:(NSString*)title parentFolder:(NSString*)folder {
+// Fill in all information related to the folder pop up button.
+- (void)fillInFolderList {
+  [nameTextField_ setStringValue:base::SysWideToNSString(node_->GetTitle())];
+  DCHECK([folderPopUpButton_ numberOfItems] == 0);
+  [self addFolderNodes:model_->root_node() toPopUpButton:folderPopUpButton_];
+  NSMenu* menu = [folderPopUpButton_ menu];
+  NSString* title = [[self class] chooseAnotherFolderString];
+  NSMenuItem *item = [menu addItemWithTitle:title
+                                     action:NULL
+                              keyEquivalent:@""];
+  ChooseAnotherFolder* obj = [[self class] chooseAnotherFolderObject];
+  [item setRepresentedObject:obj];
+  // Finally, select the current parent.
+  NSValue* parentValue = [NSValue valueWithPointer:node_->GetParent()];
+  NSInteger idx = [menu indexOfItemWithRepresentedObject:parentValue];
+  [folderPopUpButton_ selectItemAtIndex:idx];
+}
+
+@end  // BookmarkBubbleController
+
+
+@implementation BookmarkBubbleController(ExposedForUnitTesting)
+
++ (NSString*)chooseAnotherFolderString {
+  return l10n_util::GetNSStringWithFixup(
+      IDS_BOOMARK_BUBBLE_CHOOSER_ANOTHER_FOLDER);
+}
+
+// For the given folder node, walk the tree and add folder names to
+// the given pop up button.
+- (void)addFolderNodes:(const BookmarkNode*)parent
+         toPopUpButton:(NSPopUpButton*)button {
+  NSString* title = base::SysWideToNSString(parent->GetTitle());
+  if ([title length])  {  // no title if root
+    NSMenu* menu = [button menu];
+    NSMenuItem* item = [menu addItemWithTitle:title
+                                       action:NULL
+                                keyEquivalent:@""];
+    [item setRepresentedObject:[NSValue valueWithPointer:parent]];
+  }
+  for (int i = 0; i < parent->GetChildCount(); i++) {
+    const BookmarkNode* child = parent->GetChild(i);
+    if (child->is_folder())
+      [self addFolderNodes:child toPopUpButton:button];
+  }
+}
+
+- (void)setTitle:(NSString*)title parentFolder:(const BookmarkNode*)parent {
   [nameTextField_ setStringValue:title];
-  [folderComboBox_ selectItemWithObjectValue:folder];
+  [self setParentFolderSelection:parent];
 }
 
 // Pick a specific parent node in the selection by finding the right
-// combo box index.
+// pop up button index.
 - (void)setParentFolderSelection:(const BookmarkNode*)parent {
-  // Expectation: we have a parent mapping for all items in the
-  // folderComboBox except the last one ("Choose another folder...").
-  DCHECK((NSInteger)[parentMapping_ count] ==
-         [folderComboBox_ numberOfItems]-1);
-  for (NSUInteger i = 0; i < [parentMapping_ count]; i++) {
-    const BookmarkNode* possible = static_cast<const BookmarkNode*>(
-        [[parentMapping_ objectAtIndex:i] pointerValue]);
-    DCHECK(possible);
-    if (possible == parent) {
-      [folderComboBox_ selectItemAtIndex:i];
-      return;
-    }
-  }
-  NOTREACHED();
+  // Expectation: There is a parent mapping for all items in the
+  // folderPopUpButton except the last one ("Choose another folder...").
+  NSMenu* menu = [folderPopUpButton_ menu];
+  NSValue* parentValue = [NSValue valueWithPointer:parent];
+  NSInteger idx = [menu indexOfItemWithRepresentedObject:parentValue];
+  DCHECK(idx != -1);
+  [folderPopUpButton_ selectItemAtIndex:idx];
 }
 
-- (NSString*)chooseAnotherFolderString {
-  return chooseAnotherFolder_.get();
-}
-
-- (NSComboBox*)folderComboBox {
-  return folderComboBox_;
+- (NSPopUpButton*)folderPopUpButton {
+  return folderPopUpButton_;
 }
 
 @end  // implementation BookmarkBubbleController(ExposedForUnitTesting)

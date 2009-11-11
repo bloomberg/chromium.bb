@@ -118,28 +118,38 @@ TEST_F(BookmarkBubbleControllerTest, TestBubbleWindow) {
 TEST_F(BookmarkBubbleControllerTest, TestFillInFolder) {
   // Create some folders, including a nested folder
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node1 = model->AddGroup(model->GetBookmarkBarNode(),
-                                              0, L"one");
-  const BookmarkNode* node2 = model->AddGroup(model->GetBookmarkBarNode(),
-                                              1, L"two");
-  const BookmarkNode* node3 = model->AddGroup(model->GetBookmarkBarNode(),
-                                              2, L"three");
-  const BookmarkNode* node4 = model->AddGroup(node2,
-                                              0, L"sub");
-  model->AddURL(node1, 0, L"title1", GURL("http://www.google.com"));
-  model->AddURL(node3, 0, L"title2", GURL("http://www.google.com"));
-  model->AddURL(node4, 0, L"title3", GURL("http://www.google.com/reader"));
+  EXPECT_TRUE(model);
+  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  EXPECT_TRUE(bookmarkBarNode);
+  const BookmarkNode* node1 = model->AddGroup(bookmarkBarNode, 0, L"one");
+  EXPECT_TRUE(node1);
+  const BookmarkNode* node2 = model->AddGroup(bookmarkBarNode, 1, L"two");
+  EXPECT_TRUE(node2);
+  const BookmarkNode* node3 = model->AddGroup(bookmarkBarNode, 2, L"three");
+  EXPECT_TRUE(node3);
+  const BookmarkNode* node4 = model->AddGroup(node2, 0, L"sub");
+  EXPECT_TRUE(node4);
+  const BookmarkNode* node5 =
+      model->AddURL(node1, 0, L"title1", GURL("http://www.google.com"));
+  EXPECT_TRUE(node5);
+  const BookmarkNode* node6 =
+      model->AddURL(node3, 0, L"title2", GURL("http://www.google.com"));
+  EXPECT_TRUE(node6);
+  const BookmarkNode* node7 =
+      model->AddURL(node4, 0, L"title3", GURL("http://www.google.com/reader"));
+  EXPECT_TRUE(node7);
 
   BookmarkBubbleController* controller = ControllerForNode(node4);
   EXPECT_TRUE(controller);
 
-  NSArray* items = [[controller folderComboBox] objectValues];
-  EXPECT_TRUE([items containsObject:@"one"]);
-  EXPECT_TRUE([items containsObject:@"two"]);
-  EXPECT_TRUE([items containsObject:@"three"]);
-  EXPECT_TRUE([items containsObject:@"sub"]);
-  EXPECT_FALSE([items containsObject:@"title1"]);
-  EXPECT_FALSE([items containsObject:@"title2"]);
+  NSArray* titles =
+      [[[controller folderPopUpButton] itemArray] valueForKey:@"title"];
+  EXPECT_TRUE([titles containsObject:@"one"]);
+  EXPECT_TRUE([titles containsObject:@"two"]);
+  EXPECT_TRUE([titles containsObject:@"three"]);
+  EXPECT_TRUE([titles containsObject:@"sub"]);
+  EXPECT_FALSE([titles containsObject:@"title1"]);
+  EXPECT_FALSE([titles containsObject:@"title2"]);
 }
 
 // Click on edit; bubble gets closed.
@@ -179,17 +189,23 @@ TEST_F(BookmarkBubbleControllerTest, TestClose) {
 // User changes title and parent folder in the UI
 TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
   BookmarkModel* model = GetBookmarkModel();
-  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+  EXPECT_TRUE(model);
+  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  EXPECT_TRUE(bookmarkBarNode);
+  const BookmarkNode* node = model->AddURL(bookmarkBarNode,
                                            0,
                                            L"short-title",
                                            GURL("http://www.google.com"));
-  model->AddGroup(model->GetBookmarkBarNode(), 0, L"grandma");
-  model->AddGroup(model->GetBookmarkBarNode(), 0, L"grandpa");
+  const BookmarkNode* grandma = model->AddGroup(bookmarkBarNode, 0, L"grandma");
+  EXPECT_TRUE(grandma);
+  const BookmarkNode* grandpa = model->AddGroup(bookmarkBarNode, 0, L"grandpa");
+  EXPECT_TRUE(grandpa);
+
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
 
   // simulate a user edit
-  [controller setTitle:@"oops" parentFolder:@"grandma"];
+  [controller setTitle:@"oops" parentFolder:grandma];
   [controller edit:controller];
 
   // Make sure bookmark has changed
@@ -199,27 +215,56 @@ TEST_F(BookmarkBubbleControllerTest, TestUserEdit) {
 
 // Confirm happiness with parent nodes that have the same name.
 TEST_F(BookmarkBubbleControllerTest, TestNewParentSameName) {
+  BookmarkModel* model = GetBookmarkModel();
+  EXPECT_TRUE(model);
+  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  EXPECT_TRUE(bookmarkBarNode);
   for (int i=0; i<2; i++) {
-    BookmarkModel* model = GetBookmarkModel();
-    const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+    const BookmarkNode* node = model->AddURL(bookmarkBarNode,
                                              0,
                                              L"short-title",
                                              GURL("http://www.google.com"));
-    model->AddGroup(model->GetBookmarkBarNode(), 0, L"NAME");
-    model->AddGroup(model->GetBookmarkBarNode(), 0, L"NAME");
-    model->AddGroup(model->GetBookmarkBarNode(), 0, L"NAME");
+    EXPECT_TRUE(node);
+    const BookmarkNode* group = model->AddGroup(bookmarkBarNode, 0, L"NAME");
+    EXPECT_TRUE(group);
+    group = model->AddGroup(bookmarkBarNode, 0, L"NAME");
+    EXPECT_TRUE(group);
+    group = model->AddGroup(bookmarkBarNode, 0, L"NAME");
+    EXPECT_TRUE(group);
     BookmarkBubbleController* controller = ControllerForNode(node);
     EXPECT_TRUE(controller);
 
     // simulate a user edit
-    [controller setParentFolderSelection:
-                  model->GetBookmarkBarNode()->GetChild(i)];
+    [controller setParentFolderSelection:bookmarkBarNode->GetChild(i)];
     [controller edit:controller];
 
     // Make sure bookmark has changed, and that the parent is what we
     // expect.  This proves nobody did searching based on name.
-    EXPECT_EQ(node->GetParent(), model->GetBookmarkBarNode()->GetChild(i));
+    EXPECT_EQ(node->GetParent(), bookmarkBarNode->GetChild(i));
   }
+}
+
+// Confirm happiness with nodes with the same Name
+TEST_F(BookmarkBubbleControllerTest, TestDuplicateNodeNames) {
+  BookmarkModel* model = GetBookmarkModel();
+  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  EXPECT_TRUE(bookmarkBarNode);
+  const BookmarkNode* node1 = model->AddGroup(bookmarkBarNode, 0, L"NAME");
+  EXPECT_TRUE(node1);
+  const BookmarkNode* node2 = model->AddGroup(bookmarkBarNode, 0, L"NAME");
+  EXPECT_TRUE(node2);
+  BookmarkBubbleController* controller = ControllerForNode(bookmarkBarNode);
+  EXPECT_TRUE(controller);
+
+  NSPopUpButton* button = [controller folderPopUpButton];
+  [controller setParentFolderSelection:node1];
+  NSMenuItem* item = [button selectedItem];
+  id itemObject = [item representedObject];
+  EXPECT_TRUE([itemObject isEqual:[NSValue valueWithPointer:node1]]);
+  [controller setParentFolderSelection:node2];
+  item = [button selectedItem];
+  itemObject = [item representedObject];
+  EXPECT_TRUE([itemObject isEqual:[NSValue valueWithPointer:node2]]);
 }
 
 // Click the "remove" button
@@ -240,7 +285,7 @@ TEST_F(BookmarkBubbleControllerTest, TestRemove) {
 }
 
 // Confirm picking "choose another folder" caused edit: to be called.
-TEST_F(BookmarkBubbleControllerTest, ComboSelectionChanged) {
+TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
   BookmarkModel* model = GetBookmarkModel();
   GURL gurl("http://www.google.com");
   const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
@@ -249,9 +294,10 @@ TEST_F(BookmarkBubbleControllerTest, ComboSelectionChanged) {
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
 
-  NSString* chooseAnotherFolder = [controller chooseAnotherFolderString];
+  NSPopUpButton* button = [controller folderPopUpButton];
+  [button selectItemWithTitle:[[controller class] chooseAnotherFolderString]];
   EXPECT_EQ([delegate_ edits], 0);
-  [controller setTitle:@"DOH!" parentFolder:chooseAnotherFolder];
+  [button sendAction:[button action] to:[button target]];
   EXPECT_EQ([delegate_ edits], 1);
 }
 
