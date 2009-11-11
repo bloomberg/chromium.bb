@@ -49,6 +49,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
+#include "chrome/browser/chromeos/mount_library.h"
+#include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/views/tabs/tab_overview_message_listener.h"
 #endif
 
@@ -340,6 +342,14 @@ bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(switches::kEnableGView)) {
     chromeos::GViewRequestInterceptor::GetGViewRequestInterceptor();
+  }
+  if (process_startup) {
+    // TODO(dhg): Try to make this just USBMountObserver::Get()->set_profile
+    // and have the constructor take care of everything else.
+    chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
+    chromeos::USBMountObserver* observe = chromeos::USBMountObserver::Get();
+    observe->set_profile(profile);
+    lib->AddObserver(observe);
   }
 #endif
   return true;

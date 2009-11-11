@@ -2,32 +2,254 @@
 <html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
-<title i18n-content="title"></title>
+<title>Content Browser</title>
 <style type="text/css">
-</style>
-<link rel="icon" href="../../app/theme/history_favicon.png">
-<script src="local_strings.js"></script>
-<script>
-///////////////////////////////////////////////////////////////////////////////
-// Globals:
-var RESULTS_PER_PAGE = 150;
-var MAX_SEARCH_DEPTH_MONTHS = 18;
-
-// Amount of time between pageviews that we consider a 'break' in browsing,
-// measured in milliseconds.
-var BROWSING_GAP_TIME = 15 * 60 * 1000;
-
-function $(o) {return document.getElementById(o);}
-
-function encodeURIForCSS(uri) {
-  // CSS uris need to have '(' and ')' escaped.
-  return uri.replace(/\(/g, "\\(").replace(/\)/g, "\\)");
+div.header {
+  border-bottom: 1px solid #006;
+  padding: 8px;
+  margin: 0;
+  width: 100%;
+  left: 0;
+  top: 0;
+  min-height: 26px;
+  position: absolute;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  background-image: -webkit-gradient(linear, 0% 0%, 0% 90%, from(rgb(239, 242, 249)), to(rgba(201, 212, 245, 1)));
+  border-bottom-color: #999;
+  border-bottom-width: 1px;
+  color: black;
 }
 
-var localStrings;
-var pageState;
-var results_;
+a.iconlink {
+  display: block;
+  font-family: helvetica;
+  font-weight: bold;
+  font-size: 11px;
+  color: white;
+  text-decoration: none;
+}
 
+a.iconlink img {
+  margin-bottom: 5px;
+}
+
+ul.filebrowselist {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+li.filebrowserow div.icon {
+  float: left;
+  margin-left: -44px;
+  margin-top: -3px;
+  display: inline
+  position: relative;
+  width: 17px;
+  height: 17px;
+  background-repeat: no-repeat;
+}
+
+.rightarrow {
+  margin-top: 2px;
+  position: absolute;
+  right: 0;
+  top: 5px;
+  height: 100%;
+  width: 10px;
+}
+
+li.filebrowserow {
+  border-bottom: 1px solid #f7f7f7;
+  padding: 8px 5px 5px 54px;
+  overflow: hidden;
+  font-size:.8em;
+  font-family: helvetica;
+  position: relative;
+}
+
+li.filebrowserow span.name {
+  margin-top: 10px;
+  margin-left: -22px;
+  position: relative;
+}
+
+div.title {
+  text-align: center;
+  position: relative;
+  font-size: 18px;
+  padding-top: 10px;
+}
+
+div.controlbutton {
+  width: 20px;
+  display:inline;
+  position: absolute;
+  z-index:9999;
+  border:1px solid #abb6ce;
+  background-color: #f5f7fc;
+  padding-left: 7px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-right: 7px;
+  height: 20px;
+}
+
+div.iconmedia {
+  background: url('../../app/theme/icon_media.png');
+}
+
+div.iconfolder {
+  background: url('../../app/theme/icon_folder.png');
+}
+
+div.iconfile {
+  background: url('../../app/theme/icon_file.png');
+}
+
+div.iconphoto {
+  background: url('../../app/theme/icon_photo.png');
+}
+
+div.iconmusic {
+  background: url('../../app/theme/icon_media.png');
+}
+
+div.backbutton {
+  -webkit-border-top-left-radius: 5px;
+  -webkit-border-bottom-left-radius: 5px;
+  left: 10px;
+  top: 10px
+}
+
+div.fwdbutton {
+  -webkit-border-top-right-radius: 5px;
+  -webkit-border-bottom-right-radius: 5px;
+  left: 45px;
+  top: 10px;
+}
+
+div.playbackcontainer {
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: black;
+}
+
+div.container {
+  top: 50px;
+  position: absolute;
+  width: 95%;
+}
+
+.mediacontainer {
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+a:hover {
+  color: #3874be;
+  text-decoration: underline;
+  display: block;
+}
+
+</style>
+<script src="local_strings.js"></script>
+<script>
+
+
+
+function $(o) {
+  return document.getElementById(o);
+}
+
+var pathArray = [];
+var currentNode = -1;
+
+var goBackInList = function() {
+  if (currentNode > 0) {
+    currentNode--;
+    getDataForPath(pathArray[currentNode]);
+  }
+};
+
+var goForwardInList = function() {
+  if (currentNode < (pathArray.length - 1)) {
+    currentNode++;
+    getDataForPath(pathArray[currentNode]);
+  }
+};
+
+function fileBrowseResult(info, results) {
+   if (info.call == 'getRoots' || info.call == 'getChildren') {
+     currentNode++;
+     createNewList(' ', results);
+   }
+}
+
+var pathIsVideoFile = function(path) {
+  return /\.(mp4|ogg|mpg|avi)$/i.test(path);
+};
+
+var pathIsAudioFile = function(path) {
+  return /\.(mp3|m4a)$/i.test(path);
+};
+
+var pathIsImageFile = function(path) {
+  return /\.(jpg|png)$/i.test(path);
+};
+
+
+var setUpForPlayback = function(path) {
+   mediapath = 'file://' + path;
+   var header = $('header');
+   document.body.removeChild(header);
+   var main = $('main');
+   main.className = 'playbackcontainer';
+   var elementType;
+   if (pathIsVideoFile(path)) {
+     elementType = 'video';
+   } else if (pathIsAudioFile(path)) {
+     elementType = 'audio';
+   } else {
+     // close because we can't deal with this.
+     return;
+   }
+   var element = document.createElement(elementType);
+   element.className = 'mediacontainer';
+   element.autoplay = true;
+   element.controls = true;
+   element.src = mediapath;
+   main.appendChild(element);
+};
+
+var getClassForPath = function(path, isDirectory) {
+  if (isDirectory) {
+    return 'icon iconfolder';
+  } else if (pathIsImageFile(path)) {
+    return 'icon iconphoto';
+  } else if (pathIsVideoFile(path)) {
+    return 'icon iconmedia';
+  } else if (pathIsAudioFile(path)) {
+    return 'icon iconmusic';
+  }
+  return 'icon iconfile';
+};
+
+var getDataForPath = function(path) {
+  if (path == 'roots' ) {
+    chrome.send('getRoots', []);
+  } else {
+    chrome.send('getChildren', [path]);
+  }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
@@ -35,65 +257,114 @@ var results_;
  * Window onload handler, sets up the page.
  */
 function load() {
-
-  localStrings = new LocalStrings();
-  try {
-    chrome.send('getRoots', []);
-  } catch (e) {
-    //TODO: Do something smart here.
-  }
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// Helper functions
-
-var browseFile = function(path) {
-
-  try {
-    chrome.send('getChildren', [path]);
-  } catch (e) {
-    //TODO: Do something smart.
-    alert('uh-oh');
+  if (document.location.href.indexOf('#') != -1) {
+    var currentpathArray = document.location.href.split('#');
+    var path = currentpathArray[1];
+    if (pathIsVideoFile(path) || pathIsAudioFile(path)) {
+      setUpForPlayback(path);
+    } else {
+      pathArray.push(path);
+      getDataForPath(path);
+    }
+  } else {
+    pathArray.push('roots');
+    getDataForPath('roots');
   }
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// Chrome callbacks:
-/**
- * Our callback for when a system is completed.
- */
-function fileBrowseResult(info, results) {
-   try {
-   var output = "";
-   if (info.call == "getRoots" || info.call == "getChildren") {
-     for (var x=0; x < results.length; x++) {
-        if (results[x].isDirectory) {
-          output += "<a href='javascript:browseFile(\""+results[x].path+"\");'>";
-          output += results[x].title;
-          output += "</a><br/>";
-        } else {
-            output += results[x].title;
-            output += "<br/>";
-        }
-     }
-   }
-   results_ = results;
-   var main = $('main');
-   main.innerHTML = output;
-   } catch (e) {
-      alert(e);
-   }
-}
-</script>
-<link rel="stylesheet" href="dom_ui.css">
-<style>
+var decend = function(path) {
+  if (pathArray.length <currentNode) {
+    pathArray = pathArray.slice(0, currentNode);
+  }
+  pathArray.push(path);
+  getDataForPath(path);
+};
 
-</style>
-</head>
-<body onload="load();" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-<div class="header"></div>
-<div class="main" id="main"></div>
-<div class="footer">
-</div>
+function playMediaFile(path) {
+  // For now open it up using the filebrowser, maybe in the future just open with
+  // a file://
+  window.open('chrome://filebrowse#'+path, 'MediaPlayer', 'menubar=0,resizable=0,width=400,height=300');
+};
+
+function showImage(path) {
+  window.open('file://' + path, 'View Image', 'width=800,height=600');
+};
+
+// TODO(dhg): Do not use javascript: href, use onclick instead
+var createHrefForItem = function(path, isDirectory) {
+  if (isDirectory) {
+    return 'javascript:decend("'+path+'");';
+  } if (pathIsAudioFile(path)) {
+    return 'javascript:playMediaFile("'+path+'");';
+  } if (pathIsVideoFile(path)) {
+    return 'javascript:playMediaFile("'+path+'");';
+  } if (pathIsImageFile(path)) {
+    return 'javascript:showImage("'+path+'");';
+  } else {
+    return '';
+  }
+};
+
+var createNewItem = function(title, path, isDirectory) {
+  var element = document.createElement('li');
+  element.className = 'filebrowserow';
+
+  var link = document.createElement('a');
+  link.className = 'rowlink';
+  link.href = createHrefForItem(path, isDirectory);
+
+  var icon = document.createElement('div');
+  icon.className = getClassForPath(path, isDirectory);
+  link.appendChild(icon);
+
+  var span = document.createElement('span');
+  span.className = 'name';
+  span.textContent = title;
+  link.appendChild(span);
+
+  element.appendChild(link);
+  if (isDirectory) {
+    var rightarrow = document.createElement('div');
+    rightarrow.align = 'right';
+    rightarrow.innerHTML = '&raquo;';
+    rightarrow.className = 'rightarrow';
+    element.appendChild(rightarrow);
+  }
+
+  return element;
+};
+
+var clearChildren = function(element) {
+  element.innerHTML = '';
+};
+
+var createNewList = function(title, results) {
+  var list = document.createElement('ul');
+  list.className = 'filebrowselist';
+  var header = $('currenttitle');
+  header.innerHTML = title;
+  for (var x=0; x < results.length; x++) {
+    var element = createNewItem(results[x].title,
+                                results[x].path,
+                                results[x].isDirectory);
+    list.appendChild(element);
+  }
+  var main = $('main');
+  clearChildren(main);
+  main.appendChild(list);
+};
+
+</script>
+<body onload="load();">
+<div id='header' class='header'>
+  <div id='back' class='backbutton controlbutton' onclick='goBackInList();return false;'>
+    <img src="../../app/theme/filebrowse_back.png" width='100%' height='100%'>
+  </div>
+  <div id='fwd' class='fwdbutton controlbutton' onclick='goForwardInList();return false;'>
+    <img src="../../app/theme/filebrowse_forward.png" width='100%' height='100%'>
+  </div>
+  <div id='currenttitle' class='title'></div>
+</div><br>
+<div id='main' class='container'></div>
 </body>
 </html>

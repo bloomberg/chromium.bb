@@ -399,7 +399,15 @@
         <include name="IDR_STATUSBAR_WIFI_UP3P" file="statusbar_wifi_up3p.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WARNING" file="statusbar_wifi_warning.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
-      </if>
+        <include name="IDR_FILEBROWSER_BACK" file="filebrowse_back.png" type="BINDATA" />
+        <include name="IDR_FILEBROWSER_FWD" file="filebrowse_forward.png" type="BINDATA" />
+        <include name="IDR_ICON_APP" file="icon_app.png" type="BINDATA" />
+        <include name="IDR_ICON_FILE" file="icon_file.png" type="BINDATA" />
+        <include name="IDR_ICON_FOLDER" file="icon_folder.png" type="BINDATA" />
+        <include name="IDR_ICON_MEDIA" file="icon_media.png" type="BINDATA" />
+        <include name="IDR_ICON_PHOTO" file="icon_photo.png" type="BINDATA" />
+        <include name="IDR_ICON_WEBPAGE" file="icon_webpage.png" type="BINDATA" />
+       </if>
 
       <if expr="(pp_ifdef('chromeos') or pp_ifdef('toolkit_views')) and pp_ifdef('_google_chrome')">
         <include name="IDR_MAIN_MENU_BUTTON" file="google_chrome/button_menu.png" type="BINDATA" />
