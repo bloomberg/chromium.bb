@@ -16,13 +16,8 @@
 #include "views/controls/menu/menu_2.h"
 
 namespace {
-// Data passed to the UpdateStateCallback from gtk_container_foreach.
-struct UpdateStateData {
-  // The model to retrieve state from.
-  views::Menu2Model* model;
-  // The index within said model.
-  int index;
-};
+
+const char kPositionString[] = "position";
 
 // Data passed to the MenuPositionFunc from gtk_menu_popup
 struct Position {
@@ -68,7 +63,8 @@ namespace views {
 NativeMenuGtk::NativeMenuGtk(Menu2Model* model)
     : model_(model),
       menu_(NULL),
-      menu_shown_(false) {
+      menu_shown_(false),
+      suppress_activate_signal_(false) {
 }
 
 NativeMenuGtk::~NativeMenuGtk() {
@@ -79,6 +75,7 @@ NativeMenuGtk::~NativeMenuGtk() {
 // NativeMenuGtk, MenuWrapper implementation:
 
 void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
+  UpdateStates();
   Position position = { point, static_cast<Menu2::Alignment>(alignment) };
   // TODO(beng): value of '1' will not work for context menus!
   gtk_menu_popup(GTK_MENU(menu_), NULL, NULL, MenuPositionFunc, &position, 1,
@@ -116,8 +113,7 @@ void NativeMenuGtk::Rebuild() {
 }
 
 void NativeMenuGtk::UpdateStates() {
-  UpdateStateData data = { model_, 0 };
-  gtk_container_foreach(GTK_CONTAINER(menu_), &UpdateStateCallback, &data);
+  gtk_container_foreach(GTK_CONTAINER(menu_), &UpdateStateCallback, this);
 }
 
 gfx::NativeMenu NativeMenuGtk::GetNativeMenu() const {
@@ -195,7 +191,7 @@ void NativeMenuGtk::AddMenuItemAt(int index,
   if (model_->GetAcceleratorAt(index, &accelerator)) {
     // TODO(beng): accelerators w/gtk_widget_add_accelerator.
   }
-  g_object_set_data(G_OBJECT(menu_item), "position",
+  g_object_set_data(G_OBJECT(menu_item), kPositionString,
                              reinterpret_cast<void*>(index));
   g_signal_connect(G_OBJECT(menu_item), "activate", G_CALLBACK(CallActivate),
                    this);
@@ -203,13 +199,22 @@ void NativeMenuGtk::AddMenuItemAt(int index,
   gtk_menu_append(menu_, menu_item);
 }
 
-// static
-void NativeMenuGtk::UpdateStateCallback(GtkWidget* menu_item, gpointer data) {
-  UpdateStateData* usd = reinterpret_cast<UpdateStateData*>(data);
-  gtk_widget_set_sensitive(menu_item, usd->model->IsEnabledAt(usd->index));
+void NativeMenuGtk::ResetMenu() {
+  if (menu_)
+    gtk_widget_destroy(menu_);
+  menu_ = gtk_menu_new();
+}
+
+void NativeMenuGtk::UpdateMenuItemState(GtkWidget* menu_item) {
+  int index = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menu_item),
+                                                kPositionString));
+
+  gtk_widget_set_sensitive(menu_item, model_->IsEnabledAt(index));
   if (GTK_IS_CHECK_MENU_ITEM(menu_item)) {
+    suppress_activate_signal_ = true;
     gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item),
-                                   usd->model->IsItemCheckedAt(usd->index));
+                                   model_->IsItemCheckedAt(index));
+    suppress_activate_signal_ = false;
   }
   // Recurse into submenus, too.
   if (GTK_IS_MENU_ITEM(menu_item)) {
@@ -221,13 +226,12 @@ void NativeMenuGtk::UpdateStateCallback(GtkWidget* menu_item, gpointer data) {
         submenu->UpdateStates();
     }
   }
-  ++usd->index;
 }
 
-void NativeMenuGtk::ResetMenu() {
-  if (menu_)
-    gtk_widget_destroy(menu_);
-  menu_ = gtk_menu_new();
+// static
+void NativeMenuGtk::UpdateStateCallback(GtkWidget* menu_item, gpointer data) {
+  NativeMenuGtk* menu = reinterpret_cast<NativeMenuGtk*>(data);
+  menu->UpdateMenuItemState(menu_item);
 }
 
 // static
@@ -249,8 +253,10 @@ void NativeMenuGtk::MenuPositionFunc(GtkMenu* menu,
 }
 
 void NativeMenuGtk::OnActivate(GtkMenuItem* menu_item) {
+  if (suppress_activate_signal_)
+    return;
   int position = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(menu_item),
-                                                   "position"));
+                                                   kPositionString));
   if (model_->IsEnabledAt(position) &&
       MenuTypeCanExecute(model_->GetTypeAt(position))) {
     model_->ActivatedAt(position);

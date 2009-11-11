@@ -23,6 +23,7 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #endif
 #include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -48,8 +49,7 @@ class OptionsMenuModel : public views::SimpleMenuModel,
     CREATE_NEW_WINDOW = StatusAreaView::OPEN_TABS_ON_RIGHT + 1,
   };
 
-  explicit OptionsMenuModel(Browser* browser,
-                            views::SimpleMenuModel::Delegate* delegate)
+  explicit OptionsMenuModel(Browser* browser)
       : SimpleMenuModel(this),
         browser_(browser) {
 #if defined(TOOLKIT_VIEWS)
@@ -235,7 +235,7 @@ void StatusAreaView::CreateAppMenu() {
   if (app_menu_contents_.get())
     return;
 
-  options_menu_contents_.reset(new OptionsMenuModel(browser_, this));
+  options_menu_contents_.reset(new OptionsMenuModel(browser_));
 
   app_menu_contents_.reset(new views::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -277,6 +277,8 @@ void StatusAreaView::CreateAppMenu() {
 }
 
 bool StatusAreaView::IsCommandIdChecked(int command_id) const {
+  if (command_id == IDC_SHOW_BOOKMARK_BAR)
+    return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
   return false;
 }
 

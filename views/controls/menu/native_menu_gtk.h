@@ -33,9 +33,12 @@ class NativeMenuGtk : public MenuWrapper {
   void AddSeparatorAt(int index);
   void AddMenuItemAt(int index, GtkRadioMenuItem** last_radio_item);
 
-  static void UpdateStateCallback(GtkWidget* menu_item, gpointer data);
-
   void ResetMenu();
+
+  // Updates the menu item's state.
+  void UpdateMenuItemState(GtkWidget* menu_item);
+
+  static void UpdateStateCallback(GtkWidget* menu_item, gpointer data);
 
   // Callback for gtk_menu_popup to position the menu.
   static void MenuPositionFunc(GtkMenu* menu, int* x, int* y, gboolean* push_in,
@@ -52,6 +55,11 @@ class NativeMenuGtk : public MenuWrapper {
   GtkWidget* menu_;
 
   bool menu_shown_;
+
+  // A flag used to avoid misfiring ActivateAt call on the menu model.
+  // This is necessary as GTK menu fires an activate signal even when the
+  // state is changed by |UpdateStates()| API.
+  bool suppress_activate_signal_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
 };
