@@ -41,7 +41,9 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('sysbasic.nexe')],
     exit_status='69',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_sysbasic_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_sysbasic_test')
 
 
 env.ComponentProgram('tls_test.nexe',
@@ -54,4 +56,6 @@ node = env.CommandSelLdrTestNacl(
     exit_status='69',
     )
 
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_tls_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_tls_test')

@@ -48,4 +48,6 @@ node = env.CommandSelLdrTestNacl('mandel_test.out',
                                  stdin=env.File('test.stdin'),
                                  stdout_golden=env.File('test.stdout'),
                                  )
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       )

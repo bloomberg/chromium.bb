@@ -40,7 +40,9 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('noop.nexe')],
     stdout_golden=env.File('noop.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_noop_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_noop_test')
 
 
 env.ComponentProgram('noop2.nexe',
@@ -53,4 +55,6 @@ node = env.CommandSelLdrTestNacl(
     stdout_golden=env.File('noop.stdout'),
     exit_status='2',
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_noop2_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_noop2_test')

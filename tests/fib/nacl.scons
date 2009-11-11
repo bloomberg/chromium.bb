@@ -39,7 +39,9 @@ node = env.CommandSelLdrTestNacl(
     stdin=env.File('fib_array_test.stdin'),
     stdout_golden=env.File('fib_array_test.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_fib_array_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_fib_array_test')
 
 
 
@@ -52,4 +54,6 @@ node = env.CommandSelLdrTestNacl(
     stdin=env.File('fib_scalar_test.stdin'),
     stdout_golden=env.File('fib_scalar_test.stdout'),
       )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_fib_scalar_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_fib_scalar_test')

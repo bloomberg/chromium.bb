@@ -38,4 +38,6 @@ node = env.CommandSelLdrTestNacl('mmap_test.out',
                                  command=[env.File('mmap_test.nexe')],
                                  stdout_golden=env.File('mmap_test.stdout'),
                                  )
-env.AddNodeToTestSuite(node, ['small_tests'], 'run_mmap_test')
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'],
+                       'run_mmap_test')
