@@ -611,22 +611,21 @@ void TabProxy::HandleMessageFromExternalHost(const std::string& message,
   DCHECK(succeeded);
 }
 
-bool TabProxy::GetSSLInfoBarCount(int* count) {
+bool TabProxy::GetInfoBarCount(int* count) {
   if (!is_valid())
     return false;
 
-  return sender_->Send(new AutomationMsg_GetSSLInfoBarCount(0, handle_,
-                                                            count));
+  return sender_->Send(new AutomationMsg_GetInfoBarCount(0, handle_, count));
 }
 
-bool TabProxy::ClickSSLInfoBarLink(int info_bar_index,
-                                   bool wait_for_navigation) {
+bool TabProxy::ClickInfoBarAccept(int info_bar_index,
+                                  bool wait_for_navigation) {
   if (!is_valid())
     return false;
 
   AutomationMsg_NavigationResponseValues result =
       AUTOMATION_MSG_NAVIGATION_ERROR;
-  sender_->Send(new AutomationMsg_ClickSSLInfoBarLink(
+  sender_->Send(new AutomationMsg_ClickInfoBarAccept(
       0, handle_, info_bar_index, wait_for_navigation, &result));
   return result == AUTOMATION_MSG_NAVIGATION_SUCCESS ||
       result == AUTOMATION_MSG_NAVIGATION_AUTH_NEEDED;

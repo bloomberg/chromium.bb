@@ -413,15 +413,15 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
                                  const std::string& origin,
                                  const std::string& target);
 
-  // Retrieves the number of SSL related info-bars currently showing in |count|.
-  void GetSSLInfoBarCount(int handle, int* count);
+  // Retrieves the number of info-bars currently showing in |count|.
+  void GetInfoBarCount(int handle, int* count);
 
-  // Causes a click on the link of the info-bar at |info_bar_index|.  If
-  // |wait_for_navigation| is true, it sends the reply after a navigation has
+  // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
+  // If |wait_for_navigation| is true, it sends the reply after a navigation has
   // occurred.
-  void ClickSSLInfoBarLink(int handle, int info_bar_index,
-                           bool wait_for_navigation,
-                           IPC::Message* reply_message);
+  void ClickInfoBarAccept(int handle, int info_bar_index,
+                          bool wait_for_navigation,
+                          IPC::Message* reply_message);
 
   // Retrieves the last time a navigation occurred for the tab.
   void GetLastNavigationTime(int handle, int64* last_navigation_time);

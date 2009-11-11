@@ -773,16 +773,16 @@ IPC_BEGIN_MESSAGES(Automation)
                              bool, /* is_visible */
                              bool  /* still_animating */)
 
-  // This message requests the number of SSL related info bars opened.  It
+  // This message requests the number of related info bars opened.  It
   // returns -1 if an error occurred.
-  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_GetSSLInfoBarCount,
+  IPC_SYNC_MESSAGE_ROUTED1_1(AutomationMsg_GetInfoBarCount,
                              int /* tab_handle */,
                              int /* info bar count */)
 
-  // This message triggers the action associated with the link in the info-bar
-  // at the specified index.  If |wait for navigation| is true, it won't return
-  // until a navigation has occurred.
-  IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_ClickSSLInfoBarLink,
+  // This message triggers the action associated with the "accept" button in
+  // the info-bar at the specified index.  If |wait for navigation| is true, it
+  // won't return until a navigation has occurred.
+  IPC_SYNC_MESSAGE_ROUTED3_1(AutomationMsg_ClickInfoBarAccept,
                              int /* tab_handle */,
                              int /* info bar index */,
                              bool /* wait for navigation */,

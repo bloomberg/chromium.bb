@@ -315,13 +315,13 @@ class TabProxy : public AutomationResourceProxy {
                                      const std::string& origin,
                                      const std::string& target);
 
-  // Retrieves the number of SSL related info-bars currently showing in |count|.
-  bool GetSSLInfoBarCount(int* count);
+  // Retrieves the number of info-bars currently showing in |count|.
+  bool GetInfoBarCount(int* count);
 
-  // Causes a click on the link of the info-bar at |info_bar_index|.  If
-  // |wait_for_navigation| is true, this call does not return until a navigation
-  // has occured.
-  bool ClickSSLInfoBarLink(int info_bar_index, bool wait_for_navigation);
+  // Causes a click on the "accept" button of the info-bar at |info_bar_index|.
+  // If |wait_for_navigation| is true, this call does not return until a
+  // navigation has occured.
+  bool ClickInfoBarAccept(int info_bar_index, bool wait_for_navigation);
 
   // Retrieves the time at which the last navigation occured.  This is intended
   // to be used with WaitForNavigation (see below).

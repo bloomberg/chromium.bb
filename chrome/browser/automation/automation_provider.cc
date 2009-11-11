@@ -398,9 +398,9 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                         HandleFindWindowLocationRequest)
     IPC_MESSAGE_HANDLER(AutomationMsg_BookmarkBarVisibility,
                         GetBookmarkBarVisibility)
-    IPC_MESSAGE_HANDLER(AutomationMsg_GetSSLInfoBarCount, GetSSLInfoBarCount)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ClickSSLInfoBarLink,
-                                    ClickSSLInfoBarLink)
+    IPC_MESSAGE_HANDLER(AutomationMsg_GetInfoBarCount, GetInfoBarCount)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_ClickInfoBarAccept,
+                                    ClickInfoBarAccept)
     IPC_MESSAGE_HANDLER(AutomationMsg_GetLastNavigationTime,
                         GetLastNavigationTime)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WaitForNavigation,
@@ -1799,7 +1799,7 @@ void TestingAutomationProvider::OnRemoveProvider() {
   AutomationProviderList::GetInstance()->RemoveProvider(this);
 }
 
-void AutomationProvider::GetSSLInfoBarCount(int handle, int* count) {
+void AutomationProvider::GetInfoBarCount(int handle, int* count) {
   *count = -1;  // -1 means error.
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
@@ -1808,10 +1808,10 @@ void AutomationProvider::GetSSLInfoBarCount(int handle, int* count) {
   }
 }
 
-void AutomationProvider::ClickSSLInfoBarLink(int handle,
-                                             int info_bar_index,
-                                             bool wait_for_navigation,
-                                             IPC::Message* reply_message) {
+void AutomationProvider::ClickInfoBarAccept(int handle,
+                                            int info_bar_index,
+                                            bool wait_for_navigation,
+                                            IPC::Message* reply_message) {
   bool success = false;
   if (tab_tracker_->ContainsHandle(handle)) {
     NavigationController* nav_controller = tab_tracker_->GetResource(handle);
@@ -1837,7 +1837,7 @@ void AutomationProvider::ClickSSLInfoBarLink(int handle,
   // TODO(phajdan.jr): investgate whether the reply param (currently
   // AUTOMATION_MSG_NAVIGATION_ERROR) should depend on success.
   if (!wait_for_navigation || !success)
-    AutomationMsg_ClickSSLInfoBarLink::WriteReplyParams(
+    AutomationMsg_ClickInfoBarAccept::WriteReplyParams(
         reply_message, AUTOMATION_MSG_NAVIGATION_ERROR);
 }
 
