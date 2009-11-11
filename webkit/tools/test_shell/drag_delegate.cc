@@ -39,10 +39,3 @@ void TestDragDelegate::OnDragSourceDrop() {
   webview_->dragSourceEndedAt(client, screen, WebKit::WebDragOperationCopy);
   // TODO(snej): Pass the real drag operation instead
 }
-
-void TestDragDelegate::OnDragSourceMove() {
-  gfx::Point client;
-  gfx::Point screen;
-  GetCursorPositions(source_hwnd_, &client, &screen);
-  webview_->dragSourceMovedTo(client, screen);
-}

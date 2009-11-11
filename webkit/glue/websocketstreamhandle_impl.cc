@@ -42,7 +42,6 @@ class WebSocketStreamHandleImpl::Context
   void Detach();
 
   // WebSocketStreamHandleDelegate methods:
-  virtual void WillOpenStream(WebKit::WebSocketStreamHandle*, const GURL&);
   virtual void DidOpenStream(WebKit::WebSocketStreamHandle*, int);
   virtual void DidSendData(WebKit::WebSocketStreamHandle*, int);
   virtual void DidReceiveData(
@@ -102,13 +101,6 @@ void WebSocketStreamHandleImpl::Context::Detach() {
   // Otherwise, |bridge_| is NULL.
   if (bridge_)
     bridge_->Close();
-}
-
-void WebSocketStreamHandleImpl::Context::WillOpenStream(
-    WebKit::WebSocketStreamHandle* web_handle, const GURL& url) {
-  LOG(INFO) << "WillOpenStream url=" << url;
-  if (client_)
-    client_->willOpenStream(handle_, url);
 }
 
 void WebSocketStreamHandleImpl::Context::DidOpenStream(

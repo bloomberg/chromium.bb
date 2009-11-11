@@ -3066,8 +3066,6 @@ void RenderView::OnDragSourceEndedOrMoved(const gfx::Point& client_point,
                                           WebDragOperation op) {
   if (ended) {
     webview()->dragSourceEndedAt(client_point, screen_point, op);
-  } else {
-    webview()->dragSourceMovedTo(client_point, screen_point);
   }
 }
 

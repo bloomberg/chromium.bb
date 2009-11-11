@@ -363,7 +363,6 @@ void EventSendingController::DoMouseUp(const WebMouseEvent& e) {
     WebPoint client_point(e.x, e.y);
     WebPoint screen_point(e.globalX, e.globalY);
 
-    webview()->dragSourceMovedTo(client_point, screen_point);
     current_drag_effect = webview()->dragTargetDragOver(
         client_point, screen_point, current_drag_effects_allowed);
     if (current_drag_effect) {
@@ -415,7 +414,6 @@ void EventSendingController::DoMouseMove(const WebMouseEvent& e) {
     WebPoint client_point(e.x, e.y);
     WebPoint screen_point(e.globalX, e.globalY);
 
-    webview()->dragSourceMovedTo(client_point, screen_point);
     current_drag_effect = webview()->dragTargetDragOver(
         client_point, screen_point, current_drag_effects_allowed);
   }

@@ -112,7 +112,6 @@ BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/connection-err
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
-BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
 // --- collecting results for supported-xml-content-types.html ---
 BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
@@ -3113,4 +3112,29 @@ BUG27418 MAC DEBUG : LayoutTests/plugins/get-url-that-the-resource-load-delegate
 BUG27418 MAC DEBUG : LayoutTests/plugins/netscape-identifier-conversion.html = PASS TEXT
 BUG27418 MAC : LayoutTests/plugins/open-and-close-window-with-plugin.html = PASS TEXT
 BUG27418 MAC : LayoutTests/transitions/shorthand-border-transitions.html = PASS TEXT
+
+// Webkit merge 50756:50820
+BUG_JAPHET : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
+BUG_JAPHET : LayoutTests/fast/css/getComputedStyle/computed-style.html = TEXT
+BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT
+BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-host.html = TEXT
+BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
+BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-pathname.html = TEXT
+BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
+BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
+BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-search.html = TEXT
+BUG_JAPHET : LayoutTests/fast/events/drag-in-frames.html = TEXT
+BUG_JAPHET : LayoutTests/svg/css/getComputedStyle-basic.xhtml = TEXT
+// Add this expectation back in when passing again
+// BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
+BUG_JAPHET : LayoutTests/fast/css/color-correction-backgrounds-and-text.html = FAIL
+BUG_JAPHET : LayoutTests/fast/css/color-correction-on-backgrounds.html = FAIL
+BUG_JAPHET : LayoutTests/fast/css/color-correction-on-text.html = FAIL
+BUG_JAPHET : LayoutTests/fast/css/color-correction.html = FAIL
+BUG_JAPHET WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
+BUG_JAPHET WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
+BUG_JAPHET MAC : LayoutTests/traversal/acid3-test-2.html = TEXT
+
+BUG_JAPHET SKIP WIN LINUX : LayoutTests/fast/websockets = FAIL
+BUG_JAPHET SKIP WIN LINUX : LayoutTests/websocket = FAIL
 
