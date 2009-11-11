@@ -150,13 +150,9 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :
   public IPropertyNotifySinkCP<T>,
   public CComCoClass<T, &class_id>,
   public CComControl<T>,
-  public ChromeFramePlugin<T>,
-  public TaskMarshallerThroughWindowsMessages<
-            ChromeFrameActivexBase<T, class_id> > {
+  public ChromeFramePlugin<T> {
  protected:
   typedef std::set<ScopedComPtr<IDispatch> > EventHandlers;
-  typedef TaskMarshallerThroughWindowsMessages<
-      ChromeFrameActivexBase<T, class_id> > TaskMarshaller;
   typedef ChromeFrameActivexBase<T, class_id> Base;
 
  public:
@@ -204,7 +200,6 @@ BEGIN_MSG_MAP(ChromeFrameActivexBase)
   MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
   CHAIN_MSG_MAP(ChromeFramePlugin<T>)
   CHAIN_MSG_MAP(CComControl<T>)
-  CHAIN_MSG_MAP(TaskMarshaller)
   DEFAULT_REFLECTION_HANDLER()
 END_MSG_MAP()
 
@@ -448,7 +443,6 @@ END_MSG_MAP()
         request_info.extra_request_headers, request_info.upload_data.get(),
         static_cast<T*>(this)->is_frame_busting_enabled())) {
       request->set_worker_thread(&worker_thread_);
-      request->set_task_marshaller(this);
       // If Start is successful, it will add a self reference.
       request->Start();
       request->set_parent_window(m_hWnd);

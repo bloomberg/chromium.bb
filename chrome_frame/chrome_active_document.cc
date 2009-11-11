@@ -139,14 +139,6 @@ STDMETHODIMP ChromeActiveDocument::DoVerb(LONG verb,
                                                       pos);
 }
 
-STDMETHODIMP ChromeActiveDocument::InPlaceDeactivate(void) {
-  // Release the pointers we have no need for now.
-  doc_site_.Release();
-  in_place_frame_.Release();
-  return IOleInPlaceObjectWindowlessImpl<ChromeActiveDocument>::
-             InPlaceDeactivate();
-}
-
 // Override IOleInPlaceActiveObjectImpl::OnDocWindowActivate
 STDMETHODIMP ChromeActiveDocument::OnDocWindowActivate(BOOL activate) {
   DLOG(INFO) << __FUNCTION__;
@@ -298,6 +290,16 @@ HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
       g_active_doc_cache.Set(NULL);
       cached_document->Release();
     }
+
+    ScopedComPtr<IDocHostUIHandler> doc_host_handler;
+    doc_host_handler.QueryFrom(doc_site_);
+
+    if (doc_host_handler.get()) {
+      doc_host_handler->HideUI();
+    }
+
+    doc_site_.Release();
+    in_place_frame_.Release();
   }
   return Base::IOleObject_SetClientSite(client_site);
 }

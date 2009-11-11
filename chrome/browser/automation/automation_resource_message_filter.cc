@@ -21,6 +21,8 @@
 AutomationResourceMessageFilter::RenderViewMap
     AutomationResourceMessageFilter::filtered_render_views_;
 
+int AutomationResourceMessageFilter::unique_request_id_ = 1;
+
 AutomationResourceMessageFilter::AutomationResourceMessageFilter()
     : channel_(NULL) {
   ChromeThread::PostTask(
@@ -191,6 +193,37 @@ bool AutomationResourceMessageFilter::LookupRegisteredRenderView(
   }
 
   return found;
+}
+
+bool AutomationResourceMessageFilter::GetAutomationRequestId(
+    int request_id, int* automation_request_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  RequestMap::iterator it = request_map_.begin();
+  while (it != request_map_.end()) {
+    URLRequestAutomationJob* job = it->second;
+    DCHECK(job);
+    if (job && job->request_id() == request_id) {
+      *automation_request_id = job->id();
+      return true;
+    }
+    it++;
+  }
+
+  return false;
+}
+
+bool AutomationResourceMessageFilter::SendDownloadRequestToHost(
+    int routing_id, int tab_handle, int request_id) {
+  int automation_request_id = 0;
+  bool valid_id = GetAutomationRequestId(request_id, &automation_request_id);
+  if (!valid_id) {
+    NOTREACHED() << "Invalid request id: " << request_id;
+    return false;
+  }
+
+  return Send(new AutomationMsg_DownloadRequestInHost(0, tab_handle,
+                                                      automation_request_id));
 }
 
 void AutomationResourceMessageFilter::OnSetFilteredInet(bool enable) {

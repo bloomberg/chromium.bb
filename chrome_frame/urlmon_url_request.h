@@ -8,6 +8,7 @@
 #include <urlmon.h>
 #include <atlbase.h>
 #include <atlcom.h>
+#include <atlwin.h>
 
 #include <algorithm>
 
@@ -28,8 +29,13 @@ class UrlmonUrlRequest
       public IBindStatusCallback,
       public IHttpNegotiate,
       public IAuthenticate,
-      public IHttpSecurity {
+      public IHttpSecurity,
+      public CWindowImpl<UrlmonUrlRequest>,
+      public TaskMarshallerThroughWindowsMessages<UrlmonUrlRequest> {
  public:
+  typedef TaskMarshallerThroughWindowsMessages<UrlmonUrlRequest>
+      TaskMarshaller;
+
   UrlmonUrlRequest();
   ~UrlmonUrlRequest();
 
@@ -45,6 +51,10 @@ END_COM_MAP()
 BEGIN_SERVICE_MAP(UrlmonUrlRequest)
   SERVICE_ENTRY(IID_IHttpNegotiate);
 END_SERVICE_MAP()
+
+BEGIN_MSG_MAP(UrlmonUrlRequest)
+  CHAIN_MSG_MAP(TaskMarshaller)
+END_MSG_MAP()
 
   // PluginUrlRequest implementation
   virtual bool Start();
@@ -99,9 +109,7 @@ END_SERVICE_MAP()
     worker_thread_ = worker_thread;
   }
 
-  void set_task_marshaller(TaskMarshaller* task_marshaller) {
-    task_marshaller_ = task_marshaller;
-  }
+  virtual void OnFinalMessage(HWND window);
 
  protected:
   // The following functions issue and handle Urlmon requests on the dedicated
@@ -113,8 +121,6 @@ END_SERVICE_MAP()
   static const size_t kCopyChunkSize = 32 * 1024;
   // URL requests are handled on this thread.
   base::Thread* worker_thread_;
-
-  TaskMarshaller* task_marshaller_;
 
   // A fake stream class to make it easier to copy received data using
   // IStream::CopyTo instead of allocating temporary buffers and keeping

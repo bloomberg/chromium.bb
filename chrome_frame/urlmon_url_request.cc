@@ -27,8 +27,7 @@ UrlmonUrlRequest::UrlmonUrlRequest()
       thread_(PlatformThread::CurrentId()),
       redirect_status_(0),
       parent_window_(NULL),
-      worker_thread_(NULL),
-      task_marshaller_(NULL) {
+      worker_thread_(NULL) {
   DLOG(INFO) << StringPrintf("Created request. Obj: %X", this)
       << " Count: " << ++instance_count_;
 }
@@ -46,8 +45,15 @@ bool UrlmonUrlRequest::Start() {
     return false;
   }
 
+  Create(HWND_MESSAGE);
+  if (!IsWindow()) {
+    NOTREACHED() << "Failed to create urlmon message window: "
+                 << GetLastError();
+    return false;
+  }
+
   // Take a self reference to maintain COM lifetime. This will be released
-  // in EndRequest
+  // in OnFinalMessage
   AddRef();
   request_handler()->AddRequest(this);
 
@@ -100,6 +106,13 @@ void UrlmonUrlRequest::StopAsync() {
     status_.set_os_error(net::ERR_FAILED);
     EndRequest();
   }
+}
+
+void UrlmonUrlRequest::OnFinalMessage(HWND window) {
+  m_hWnd = NULL;
+  // Release the outstanding reference in the context of the UI thread to
+  // ensure that our instance gets deleted in the same thread which created it.
+  Release();
 }
 
 bool UrlmonUrlRequest::Read(int bytes_to_read) {
@@ -603,13 +616,10 @@ void UrlmonUrlRequest::EndRequest() {
 
   OnResponseEnd(status_);
 
-  DCHECK(task_marshaller_ != NULL);
-
   // Remove the request mapping and release the outstanding reference to us in
   // the context of the UI thread.
-  task_marshaller_->PostTask(
-      FROM_HERE, NewRunnableMethod(this,
-                                   &UrlmonUrlRequest::EndRequestInternal));
+  PostTask(FROM_HERE,
+           NewRunnableMethod(this, &UrlmonUrlRequest::EndRequestInternal));
 }
 
 void UrlmonUrlRequest::EndRequestInternal() {
@@ -617,9 +627,9 @@ void UrlmonUrlRequest::EndRequestInternal() {
   // OnRequestEnd callback which executes on receiving the
   // AutomationMsg_RequestEnd IPC from Chrome.
   request_handler()->RemoveRequest(this);
-  // Release the outstanding reference in the context of the UI thread to
-  // ensure that our instance gets deleted in the same thread which created it.
-  Release();
+  // The current instance could get destroyed in the context of DestroyWindow.
+  // We should not access the object after this.
+  DestroyWindow();
 }
 
 int UrlmonUrlRequest::GetHttpResponseStatus() const {

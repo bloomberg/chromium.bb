@@ -166,7 +166,6 @@ END_EXEC_COMMAND_MAP()
                     LONG index,
                     HWND parent_window,
                     LPCRECT pos);
-  STDMETHOD(InPlaceDeactivate)(void);
 
   // Override IOleInPlaceActiveObjectImpl::OnDocWindowActivate
   STDMETHOD(OnDocWindowActivate)(BOOL activate);

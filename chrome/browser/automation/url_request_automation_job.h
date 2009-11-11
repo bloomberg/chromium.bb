@@ -47,6 +47,10 @@ class URLRequestAutomationJob : public URLRequestJob {
     return id_;
   }
 
+  int request_id() const {
+    return request_id_;
+  }
+
  protected:
   // Protected URLRequestJob override.
   virtual bool ReadRawData(net::IOBuffer* buf, int buf_size, int* bytes_read);
@@ -75,6 +79,7 @@ class URLRequestAutomationJob : public URLRequestJob {
   scoped_refptr<net::HttpResponseHeaders> headers_;
   std::string redirect_url_;
   int redirect_status_;
+  int request_id_;
 
   static int instance_count_;
 

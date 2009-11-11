@@ -39,6 +39,12 @@ class AutomationResourceMessageFilter
   AutomationResourceMessageFilter();
   virtual ~AutomationResourceMessageFilter();
 
+  // Returns a new automation request id. This is unique across all instances
+  // of AutomationResourceMessageFilter.
+  int NewAutomationRequestId() {
+    return base::subtle::Barrier_AtomicIncrement(&unique_request_id_, 1);
+  }
+
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel);
   virtual void OnChannelConnected(int32 peer_pid);
@@ -63,7 +69,16 @@ class AutomationResourceMessageFilter
   static bool LookupRegisteredRenderView(
       int renderer_pid, int renderer_id, AutomationDetails* details);
 
+  // Sends the download request to the automation host.
+  bool SendDownloadRequestToHost(int routing_id, int tab_handle,
+                                 int request_id);
+
  protected:
+  // Retrieves the automation request id for the passed in chrome request
+  // id and returns it in the automation_request_id parameter.
+  // Returns true on success.
+  bool GetAutomationRequestId(int request_id, int* automation_request_id);
+
   static void RegisterRenderViewInIOThread(int renderer_pid, int renderer_id,
       int tab_handle, AutomationResourceMessageFilter* filter);
   static void UnRegisterRenderViewInIOThread(int renderer_pid, int renderer_id);
@@ -93,6 +108,9 @@ class AutomationResourceMessageFilter
   // The channel associated with the automation connection. This pointer is not
   // owned by this class.
   IPC::Channel* channel_;
+
+  // A unique request id per process.
+  static int unique_request_id_;
 
   // Map of outstanding requests.
   RequestMap request_map_;

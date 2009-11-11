@@ -52,13 +52,18 @@ URLRequest::ProtocolFactory* URLRequestAutomationJob::old_https_factory_
 URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
     int request_id, AutomationResourceMessageFilter* filter)
     : URLRequestJob(request),
-      id_(request_id),
       tab_(tab),
       message_filter_(filter),
       pending_buf_size_(0),
-      redirect_status_(0) {
+      redirect_status_(0),
+      request_id_(request_id) {
   DLOG(INFO) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
-  DCHECK_NE(id_, -1);
+  DCHECK(message_filter_ != NULL);
+
+  if (message_filter_) {
+    id_ = message_filter_->NewAutomationRequestId();
+    DCHECK_NE(id_, 0);
+  }
 }
 
 URLRequestAutomationJob::~URLRequestAutomationJob() {
@@ -217,7 +222,8 @@ bool URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message,
     case AutomationMsg_RequestEnd::ID: {
       void* iter = NULL;
       int tab = 0;
-      if (message.ReadInt(&iter, &tab) && message.ReadInt(&iter, request_id)) {
+      if (message.ReadInt(&iter, &tab) &&
+          message.ReadInt(&iter, request_id)) {
         return true;
       }
       break;

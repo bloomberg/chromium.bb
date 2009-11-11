@@ -404,10 +404,10 @@ bool ExternalTabContainer::TakeFocus(bool reverse) {
 bool ExternalTabContainer::CanDownload(int request_id) {
   if (load_requests_via_automation_) {
     if (automation_) {
-      // NOTE: The request_id must be the same id as used by corresponding
-      // URLRequestAutomationJob instance to communicate with the host.
-      automation_->Send(new AutomationMsg_DownloadRequestInHost(0, tab_handle_,
-                                                                request_id));
+      ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+          NewRunnableMethod(automation_resource_message_filter_,
+              &AutomationResourceMessageFilter::SendDownloadRequestToHost,
+              0, tab_handle_, request_id));
     }
   } else {
     DLOG(WARNING) << "Downloads are only supported with host browser network "
