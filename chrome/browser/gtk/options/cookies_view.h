@@ -13,9 +13,10 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/common/gtk_tree.h"
+#include "net/base/cookie_monster.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class CookiesTableModel;
+class CookiesTreeModel;
 class CookiesViewTest;
 class Profile;
 
@@ -25,26 +26,18 @@ class Profile;
 // Once the CookiesView is shown, it is responsible for deleting itself when the
 // user closes the dialog.
 
-class CookiesView : public gtk_tree::TableAdapter::Delegate {
+class CookiesView : public gtk_tree::TreeAdapter::Delegate {
  public:
   virtual ~CookiesView();
 
   // Create (if necessary) and show the cookie manager window.
   static void Show(Profile* profile);
 
-  // gtk_tree::TableAdapter::Delegate implementation.
+  // gtk_tree::TreeAdapter::Delegate implementation.
   virtual void OnAnyModelUpdateStart();
   virtual void OnAnyModelUpdate();
-  virtual void SetColumnValues(int row, GtkTreeIter* iter);
 
  private:
-  // Column ids for |list_store_|.
-  enum {
-    COL_SITE,
-    COL_COOKIE_NAME,
-    COL_COUNT,
-  };
-
   explicit CookiesView(Profile* profile);
 
   // Initialize the dialog contents and layout.
@@ -63,23 +56,14 @@ class CookiesView : public gtk_tree::TableAdapter::Delegate {
   void SetCookieDetailsSensitivity(gboolean enabled);
 
   // Show the details of the currently selected cookie.
-  void PopulateCookieDetails();
+  void PopulateCookieDetails(const std::string& domain,
+                             const net::CookieMonster::CanonicalCookie& cookie);
 
   // Reset the cookie details display.
   void ClearCookieDetails();
 
   // Remove any cookies that are currently selected.
-  void RemoveSelectedCookies();
-
-  // Compare the value of the given column at the given rows.
-  gint CompareRows(GtkTreeModel* model, GtkTreeIter* a, GtkTreeIter* b,
-                   int column_id);
-
-  // List sorting callbacks.
-  static gint CompareSite(GtkTreeModel* model, GtkTreeIter* a, GtkTreeIter* b,
-                          gpointer window);
-  static gint CompareCookieName(GtkTreeModel* model, GtkTreeIter* a,
-                                GtkTreeIter* b, gpointer window);
+  void RemoveSelectedItems();
 
   // Callback for dialog buttons.
   static void OnResponse(GtkDialog* dialog, int response_id,
@@ -92,29 +76,20 @@ class CookiesView : public gtk_tree::TableAdapter::Delegate {
   static void OnSelectionChanged(GtkTreeSelection *selection,
                                  CookiesView* window);
 
-  // Filter the list against the text in |filter_entry_|.
-  void UpdateFilterResults();
-
-  // Callbacks for user actions filtering the list.
-  static void OnFilterEntryActivated(GtkEntry* entry, CookiesView* window);
-  static void OnFilterEntryChanged(GtkEditable* editable, CookiesView* window);
-  static void OnFilterClearButtonClicked(GtkButton* button,
-                                         CookiesView* window);
+  // Callback for when user presses a key with the table focused.
+  static gboolean OnTreeViewKeyPress(GtkWidget* tree_view, GdkEventKey* key,
+                                     CookiesView* window);
 
   // The parent widget.
   GtkWidget* dialog_;
 
   // Widgets of the dialog.
   GtkWidget* description_label_;
-  GtkWidget* filter_entry_;
-  GtkWidget* filter_clear_button_;
   GtkWidget* remove_button_;
   GtkWidget* remove_all_button_;
 
   // The table listing the cookies.
   GtkWidget* tree_;
-  GtkListStore* list_store_;
-  GtkTreeModel* list_sort_;
   GtkTreeSelection* selection_;
 
   // The cookie details widgets.
@@ -131,28 +106,18 @@ class CookiesView : public gtk_tree::TableAdapter::Delegate {
   Profile* profile_;
 
   // The Cookies Table model.
-  scoped_ptr<CookiesTableModel> cookies_table_model_;
-  scoped_ptr<gtk_tree::TableAdapter> cookies_table_adapter_;
-
-  // A factory to construct Runnable Methods so that we can be called back to
-  // re-evaluate the model after the search query string changes.
-  ScopedRunnableMethodFactory<CookiesView> filter_update_factory_;
+  scoped_ptr<CookiesTreeModel> cookies_tree_model_;
+  scoped_ptr<gtk_tree::TreeAdapter> cookies_tree_adapter_;
 
   friend class CookiesViewTest;
   FRIEND_TEST(CookiesViewTest, Empty);
+  FRIEND_TEST(CookiesViewTest, Noop);
   FRIEND_TEST(CookiesViewTest, RemoveAll);
-  FRIEND_TEST(CookiesViewTest, RemoveAllWithAllSelected);
+  FRIEND_TEST(CookiesViewTest, RemoveAllWithDefaultSelected);
   FRIEND_TEST(CookiesViewTest, Remove);
-  FRIEND_TEST(CookiesViewTest, RemoveMultiple);
+  FRIEND_TEST(CookiesViewTest, RemoveCookiesByDomain);
+  FRIEND_TEST(CookiesViewTest, RemoveByDomain);
   FRIEND_TEST(CookiesViewTest, RemoveDefaultSelection);
-  FRIEND_TEST(CookiesViewTest, Filter);
-  FRIEND_TEST(CookiesViewTest, FilterRemoveAll);
-  FRIEND_TEST(CookiesViewTest, FilterRemove);
-  FRIEND_TEST(CookiesViewTest, Sort);
-  FRIEND_TEST(CookiesViewTest, SortRemove);
-  FRIEND_TEST(CookiesViewTest, SortFilterRemove);
-  FRIEND_TEST(CookiesViewTest, SortRemoveMultiple);
-  FRIEND_TEST(CookiesViewTest, SortRemoveDefaultSelection);
 
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
 };

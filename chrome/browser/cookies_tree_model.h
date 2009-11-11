@@ -184,7 +184,7 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   // CookiesTreeModel methods:
   void DeleteCookie(const net::CookieMonster::CookieListPair& cookie);
   void DeleteAllCookies();
-  void DeleteCookieNode(CookieTreeCookieNode* cookie_node);
+  void DeleteCookieNode(CookieTreeNode* cookie_node);
 
  private:
   enum CookieIconIndex {
@@ -204,4 +204,3 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
 };
 
 #endif  // CHROME_BROWSER_COOKIES_TREE_MODEL_H_
-

@@ -222,7 +222,7 @@ void CookiesTreeModel::DeleteAllCookies() {
   NotifyObserverTreeNodeChanged(root);
 }
 
-void CookiesTreeModel::DeleteCookieNode(CookieTreeCookieNode* cookie_node) {
+void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
   cookie_node->DeleteStoredObjects();
   // find the parent and index
   CookieTreeNode* parent_node = cookie_node->GetParent();

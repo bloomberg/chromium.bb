@@ -239,6 +239,11 @@ class TreeNodeModel : public TreeModel {
     return AsNode(parent)->GetChild(index);
   }
 
+  virtual int IndexOfChild(TreeModelNode* parent, TreeModelNode* child) {
+    DCHECK(parent);
+    return AsNode(parent)->IndexOfChild(AsNode(child));
+  }
+
   virtual TreeModelNode* GetParent(TreeModelNode* node) {
     DCHECK(node);
     return AsNode(node)->GetParent();

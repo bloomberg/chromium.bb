@@ -62,6 +62,9 @@ class TreeModel {
   // Returns the child node at the specified index.
   virtual TreeModelNode* GetChild(TreeModelNode* parent, int index) = 0;
 
+  // Returns the index of child node at the specified index.
+  virtual int IndexOfChild(TreeModelNode* parent, TreeModelNode* child) = 0;
+
   // Returns the parent of a node, or NULL if node is the root.
   virtual TreeModelNode* GetParent(TreeModelNode* node) = 0;
 
