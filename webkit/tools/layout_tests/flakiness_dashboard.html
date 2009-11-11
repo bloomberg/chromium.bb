@@ -422,6 +422,7 @@
       slowestTime: 0,
       meetsExpectations: true,
       isWontFixSkip: false,
+      isFlaky: false,
       // Sorted string of missing expectations
       missing: '',
       // String of extra expectations (i.e. expectations that never occur).
@@ -457,7 +458,7 @@
       // or build type, assume Windows Release.
       var currentBuildUppercase = builderName.toUpperCase();
       var platform = getMatchingElement(currentBuildUppercase, PLATFORMS) ||
-          'WIN-XP';
+          'WIN';
       var buildType = getMatchingElement(currentBuildUppercase, BUILD_TYPES) ||
           'RELEASE';
       perBuilderPlatformAndBuildType[builderName] = {platform: platform,
@@ -585,7 +586,7 @@
     var maxTime = isDebug(resultsForTest.builder) ?
         MIN_SECONDS_FOR_SLOW_TEST_DEBUG :
         MIN_SECONDS_FOR_SLOW_TEST;
-    return resultsForTest.slowestTime > maxTime;
+    return resultsForTest.slowestNonTimeoutCrashTime > maxTime;
   }
 
   function getAllTestsWithCondition(conditionFn) {
@@ -905,13 +906,33 @@
       resultsForTest.flips = rawResults.length - 1;
 
       var times = resultsByBuilder[builderName].tests[test].times;
+      var numTimesSeen = 0;
       var numResultsSeen = 0;
+      var resultsIndex = 0;
+      var currentResult;
       for (var i = 0;
-           i < times.length && numResultsSeen < getMaxResults();
+           i < times.length && numTimesSeen < getMaxResults();
            i++) {
-        numResultsSeen += times[i][0];
-        resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime,
-            times[i][1]);
+        numTimesSeen += times[i][0];
+
+        while (rawResults[resultsIndex] &&
+               numTimesSeen > (numResultsSeen + rawResults[resultsIndex][0])) {
+          numResultsSeen += rawResults[resultsIndex][0];
+          resultsIndex++;
+        }
+
+        if (rawResults && rawResults[resultsIndex])
+          currentResult = rawResults[resultsIndex][1];
+
+        time = times[i][1]
+
+        // Ignore times for crashing/timeout runs for the sake of seeing if
+        // a test should be marked slow.
+        if (currentResult != 'C' && currentResult != 'T') {
+          resultsForTest.slowestNonTimeoutCrashTime =
+              Math.max(resultsForTest.slowestNonTimeoutCrashTime, time);
+        }
+        resultsForTest.slowestTime = Math.max(resultsForTest.slowestTime, time);
       }
 
       processMissingAndExtraExpectations(resultsForTest);
@@ -940,11 +961,18 @@
     // MIN_RUNS_FOR_FLAKE.
     // This lets us rule out common cases of a test changing expectations for
     // a few runs, then being fixed or otherwise modified in a non-flaky way.
+    var rawResults = resultsForTest.rawResults;
+
+    // If the first result is no-data that means the test is skipped or is
+    // being run on a different builder (e.g. moved from one shard to another).
+    // Ignore these results since we have no real data about what's going on.
+    if (rawResults[0][1] == 'N')
+      return;
+
     var MIN_RUNS_FOR_FLAKE = 3;
     var unexpectedExpectations = [];
     var resultsMap = {}
     var numResultsSeen = 0;
-    var rawResults = resultsForTest.rawResults;
     var haveSeenNonFlakeResult = false;
     var numRealResults = 0;
 
@@ -989,9 +1017,6 @@
                   return false;
               }
               return true;
-            } else if (currentState.legacyExpectationsSemantics &&
-                       element == 'IMAGE+TEXT') {
-              element = 'IMAGE';
             }
           }
 
@@ -1010,11 +1035,11 @@
         if (currentState.legacyExpectationsSemantics) {
           if (expectation == 'FAIL') {
             for (var j = 0; j < FAIL_RESULTS.length; j++) {
-              if (result == FAIL_RESULTS[j])
+              if (result == FAIL_RESULTS[j]) {
                 hasExpectation = true;
+                break;
+              }
             }
-          } else if (result == 'IMAGE' && expectation == 'IMAGE+TEXT') {
-            hasExpectation = true;
           }
         }
 
@@ -1122,7 +1147,7 @@
     var buildNumbers = resultsByBuilder[builder].buildNumbers;
     html += '<li>' +
         getLinkHTMLToOpenWindow(BUILDERS_BASE_PATH + builder + '/builds/' +
-        buildNumbers[index], 'Build log and blamelist') + '</li></ul>';
+        buildNumbers[index], 'Build log') + '</li></ul>';
 
     showPopup(e, html);
   }
