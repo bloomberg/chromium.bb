@@ -89,18 +89,6 @@ void AppCacheGroup::RemoveCache(AppCache* cache) {
   }
 }
 
-void AppCacheGroup::RestoreCacheAsNewest(AppCache* former_newest_cache) {
-  newest_complete_cache_->set_owning_group(NULL);
-  newest_complete_cache_ = former_newest_cache;
-  if (former_newest_cache) {
-    DCHECK(former_newest_cache->owning_group() == this);
-    Caches::iterator it =
-        std::find(old_caches_.begin(), old_caches_.end(), former_newest_cache);
-    DCHECK(it != old_caches_.end());
-    old_caches_.erase(it);
-  }
-}
-
 void AppCacheGroup::StartUpdateWithNewMasterEntry(
     AppCacheHost* host, const GURL& new_master_resource) {
   if (!update_job_)

@@ -30,7 +30,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   virtual void LoadCache(int64 id, Delegate* delegate);
   virtual void LoadOrCreateGroup(const GURL& manifest_url, Delegate* delegate);
   virtual void StoreGroupAndNewestCache(
-      AppCacheGroup* group, Delegate* delegate);
+      AppCacheGroup* group, AppCache* newest_cache, Delegate* delegate);
   virtual void FindResponseForMainRequest(const GURL& url, Delegate* delegate);
   virtual void FindResponseForSubRequest(
       AppCache* cache, const GURL& url,

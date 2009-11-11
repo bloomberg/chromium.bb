@@ -168,10 +168,6 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // the notification when its status is set to IDLE in ~AppCacheUpdateJob.
   scoped_refptr<AppCache> protect_new_cache_;
 
-  // Hold a reference to the group's newest cache (prior to update) in order
-  // to restore the group's newest cache if storage fails.
-  scoped_refptr<AppCache> protect_former_newest_cache_;
-
   AppCacheGroup* group_;
 
   UpdateType update_type_;

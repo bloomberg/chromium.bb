@@ -210,7 +210,6 @@ TEST_F(MockAppCacheStorageTest, StoreNewGroup) {
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache = new AppCache(&service, cache_id);
   cache->set_complete(true);
-  group->AddCache(cache);
   // Hold a ref to the cache simulate the UpdateJob holding that ref,
   // and hold a ref to the group to simulate the CacheHost holding that ref.
 
@@ -218,7 +217,7 @@ TEST_F(MockAppCacheStorageTest, StoreNewGroup) {
   MockStorageDelegate delegate;
   EXPECT_TRUE(storage->stored_caches_.empty());
   EXPECT_TRUE(storage->stored_groups_.empty());
-  storage->StoreGroupAndNewestCache(group, &delegate);
+  storage->StoreGroupAndNewestCache(group, cache, &delegate);
   EXPECT_FALSE(delegate.stored_group_success_);
   EXPECT_TRUE(storage->stored_caches_.empty());
   EXPECT_TRUE(storage->stored_groups_.empty());
@@ -226,6 +225,7 @@ TEST_F(MockAppCacheStorageTest, StoreNewGroup) {
   EXPECT_TRUE(delegate.stored_group_success_);
   EXPECT_FALSE(storage->stored_caches_.empty());
   EXPECT_FALSE(storage->stored_groups_.empty());
+  EXPECT_EQ(cache, group->newest_complete_cache());
 }
 
 TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
@@ -248,8 +248,6 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   int64 new_cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> new_cache = new AppCache(&service, new_cache_id);
   new_cache->set_complete(true);
-  group->AddCache(new_cache);
-  EXPECT_EQ(new_cache.get(), group->newest_complete_cache());
   // Hold our refs to simulate the UpdateJob holding these refs.
 
   // Conduct the test.
@@ -258,7 +256,7 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
   EXPECT_TRUE(storage->IsCacheStored(old_cache));
   EXPECT_FALSE(storage->IsCacheStored(new_cache));
-  storage->StoreGroupAndNewestCache(group, &delegate);
+  storage->StoreGroupAndNewestCache(group, new_cache, &delegate);
   EXPECT_FALSE(delegate.stored_group_success_);
   EXPECT_EQ(size_t(1), storage->stored_caches_.size());
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
@@ -270,6 +268,7 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   EXPECT_EQ(size_t(1), storage->stored_groups_.size());
   EXPECT_FALSE(storage->IsCacheStored(old_cache));
   EXPECT_TRUE(storage->IsCacheStored(new_cache));
+  EXPECT_EQ(new_cache.get(), group->newest_complete_cache());
 }
 
 TEST_F(MockAppCacheStorageTest, MakeGroupObsolete) {

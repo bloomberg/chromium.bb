@@ -88,12 +88,14 @@ class AppCacheStorage {
   // Schedules a group and its newest complete cache to be initially stored or
   // incrementally updated with new changes. Upon completion the delegate
   // will be called back. A group without a newest cache cannot be stored.
-  // It's a programming error to call this method with such a group. A
+  // It's a programming error to call this method without a newest cache. A
   // side effect of storing a new newest cache is the removal of the group's
   // old caches and responses from persistent storage (although they may still
-  // linger in the in-memory working set until no longer needed).
+  // linger in the in-memory working set until no longer needed). The new
+  // cache will be added as the group's newest complete cache only if storage
+  // succeeds.
   virtual void StoreGroupAndNewestCache(
-      AppCacheGroup* group, Delegate* delegate) = 0;
+      AppCacheGroup* group, AppCache* newest_cache, Delegate* delegate) = 0;
 
   // Schedules a query to identify a response for a main request. Upon
   // completion the delegate will be called back.

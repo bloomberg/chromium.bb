@@ -557,17 +557,15 @@ void AppCacheUpdateJob::OnManifestDataWriteComplete(int result) {
 void AppCacheUpdateJob::CompleteInprogressCache() {
   inprogress_cache_->set_update_time(base::TimeTicks::Now());
   inprogress_cache_->set_complete(true);
-
-  protect_former_newest_cache_ = group_->newest_complete_cache();
-  group_->AddCache(inprogress_cache_);
+  service_->storage()->StoreGroupAndNewestCache(group_, inprogress_cache_,
+                                                this);  // async
   protect_new_cache_.swap(inprogress_cache_);
-
-  service_->storage()->StoreGroupAndNewestCache(group_, this);  // async
 }
 
 void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
                                                     bool success) {
   if (success) {
+    DCHECK_EQ(protect_new_cache_, group->newest_complete_cache());
     if (update_type_ == CACHE_ATTEMPT)
       NotifyAllAssociatedHosts(CACHED_EVENT);
     else
@@ -575,15 +573,11 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
     internal_state_ = COMPLETED;
     MaybeCompleteUpdate();  // will definitely complete
   } else {
-    // TODO(jennb): Change storage so clients won't need to revert group state?
-    // Change group back to reflect former newest group.
-    group_->RestoreCacheAsNewest(protect_former_newest_cache_);
     protect_new_cache_ = NULL;
 
     // Treat storage failure as if manifest refetch failed.
     HandleManifestRefetchFailure();
   }
-  protect_former_newest_cache_ = NULL;
 }
 
 void AppCacheUpdateJob::HandleManifestRefetchFailure() {

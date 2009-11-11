@@ -71,15 +71,14 @@ void MockAppCacheStorage::LoadOrCreateGroup(
 }
 
 void MockAppCacheStorage::StoreGroupAndNewestCache(
-    AppCacheGroup* group, Delegate* delegate) {
+    AppCacheGroup* group, AppCache* newest_cache, Delegate* delegate) {
   DCHECK(group && delegate);
-  DCHECK(group->newest_complete_cache());
+  DCHECK(newest_cache && newest_cache->is_complete());
 
   // Always make this operation look async.
   ScheduleTask(method_factory_.NewRunnableMethod(
       &MockAppCacheStorage::ProcessStoreGroupAndNewestCache,
-      group, group->newest_complete_cache(),
-      GetOrCreateDelegateReference(delegate)));
+      group, newest_cache, GetOrCreateDelegateReference(delegate)));
 }
 
 void MockAppCacheStorage::FindResponseForMainRequest(
@@ -179,8 +178,6 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
     scoped_refptr<AppCacheGroup> group,
     scoped_refptr<AppCache> newest_cache,
     scoped_refptr<DelegateReference> delegate_ref) {
-  DCHECK(group->newest_complete_cache() == newest_cache.get());
-
   if (simulate_store_group_and_newest_cache_failure_) {
     if (delegate_ref->delegate)
       delegate_ref->delegate->OnGroupAndNewestCacheStored(group, false);
@@ -188,7 +185,8 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
   }
 
   AddStoredGroup(group);
-  AddStoredCache(group->newest_complete_cache());
+  AddStoredCache(newest_cache);
+  group->AddCache(newest_cache);
 
   // Copy the collection prior to removal, on final release
   // of a cache the group's collection will change.
