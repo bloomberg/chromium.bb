@@ -263,11 +263,11 @@ void RemoveViewFromView(NSView* view, NSView* toRemove) {
   NSUInteger index = [views indexOfObject:toRemove];
   DCHECK_NE(index, NSNotFound);
   NSUInteger count = [views count];
-  CGFloat shiftDown = 0;
+  CGFloat shrinkHeight = 0;
   if (index < (count - 1)) {
     // The amount to shift is the bottom of |toRemove| to the bottom of the view
     // above it.
-    shiftDown =
+    CGFloat shiftDown =
         NSMinY([[views objectAtIndex:index + 1] frame]) -
         NSMinY([toRemove frame]);
 
@@ -278,6 +278,12 @@ void RemoveViewFromView(NSView* view, NSView* toRemove) {
       origin.y -= shiftDown;
       [view setFrameOrigin:origin];
     }
+
+    shrinkHeight = shiftDown;
+  } else if (index > 0) {
+    shrinkHeight =
+        NSMaxY([toRemove frame]) -
+        NSMaxY([[views objectAtIndex:index - 1] frame]);
   }
 
   // Remove |toRemove|.
@@ -286,7 +292,7 @@ void RemoveViewFromView(NSView* view, NSView* toRemove) {
   // Resize the view.
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:view
-                                      delta:NSMakeSize(0, -shiftDown)];
+                                      delta:NSMakeSize(0, -shrinkHeight)];
 }
 
 // Helper to tweak the layout of the "Under the Hood" content by autosizing all
