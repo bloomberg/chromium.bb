@@ -49,8 +49,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   const char* filename = "res.ico";
   FilePath root_resource = temp.path().AppendASCII(filename);
   std::string data = "some foo";
-  ASSERT_TRUE(file_util::WriteFile(root_resource.AppendASCII(filename),
-      data.c_str(), data.length()));
+  ASSERT_TRUE(file_util::WriteFile(root_resource, data.c_str(), data.length()));
 
   // Create l10n resources (for current locale and its parents).
   FilePath l10n_path = temp.path().AppendASCII(Extension::kLocaleFolder);
@@ -59,6 +58,7 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   std::vector<std::string> locales;
   extension_l10n_util::GetParentLocales(l10n_util::GetApplicationLocale(L""),
                                         &locales);
+  ASSERT_FALSE(locales.empty());
   for (size_t i = 0; i < locales.size(); i++) {
     FilePath make_path;
     make_path = l10n_path.AppendASCII(locales[i]);
@@ -71,9 +71,10 @@ TEST(ExtensionResourceTest, CreateWithAllResourcesOnDisk) {
   ExtensionResource resource(temp.path(), FilePath().AppendASCII(filename));
   FilePath resolved_path = resource.GetFilePath();
 
-  ASSERT_FALSE(locales.empty());
   FilePath expected_path;
-  expected_path = l10n_path.AppendASCII(locales[0]).AppendASCII(filename);
+  // Expect default path only, since fallback logic is disabled.
+  // See http://crbug.com/27359.
+  expected_path = root_resource;
   ASSERT_TRUE(file_util::AbsolutePath(&expected_path));
 
   EXPECT_EQ(ToLower(expected_path.value()), ToLower(resolved_path.value()));
