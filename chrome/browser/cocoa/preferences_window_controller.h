@@ -118,6 +118,7 @@ class ProfileSyncService;
 - (IBAction)clearData:(id)sender;
 - (IBAction)resetThemeToDefault:(id)sender;
 - (IBAction)themesGallery:(id)sender;
+- (IBAction)doSyncAction:(id)sender;
 
 // Under the hood
 - (IBAction)browseDownloadLocation:(id)sender;

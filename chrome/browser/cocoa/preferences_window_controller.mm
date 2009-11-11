@@ -1169,6 +1169,31 @@ const int kDisabledIndex = 1;
   }
 }
 
+- (IBAction)doSyncAction:(id)sender {
+  DCHECK(sync_service_);
+
+  if (sync_service_->HasSyncSetupCompleted()) {
+    sync_service_->DisableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+    /*
+    ConfirmMessageBoxDialog::RunWithCustomConfiguration(
+      GetWindow()->GetNativeWindow(),
+      this,
+      l10n_util::GetString(IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL),
+      l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL),
+      l10n_util::GetString(IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL),
+      l10n_util::GetString(IDS_CANCEL),
+      gfx::Size(views::Window::GetLocalizedContentsSize(
+                  IDS_CONFIRM_STOP_SYNCING_DIALOG_WIDTH_CHARS,
+                  IDS_CONFIRM_STOP_SYNCING_DIALOG_HEIGHT_LINES)));
+    return;
+    */
+  } else {
+    sync_service_->EnableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
+  }
+}
+
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value {
   if (value == kEnabledIndex)
     [self recordUserAction:L"Options_PasswordManager_Enable"];
