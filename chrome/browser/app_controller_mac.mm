@@ -463,18 +463,16 @@ static bool g_is_opening_new_window = false;
     NSInteger tag = [item tag];
     if (menuState_->SupportsCommand(tag)) {
       switch (tag) {
+        // The File Menu commands are not automatically disabled by Cocoa when a
+        // dialog sheet obscures the browser window, so we disable several of
+        // them here.  We don't need to include IDC_CLOSE_WINDOW, because
+        // app_controller is only activated when there are no key windows (see
+        // function comment).
         case IDC_RESTORE_TAB:
           enable = [self keyWindowIsMissingOrBlocked] && [self canRestoreTab];
           break;
-        // The File Menu commands are not automatically disabled by Cocoa when
-        // a dialog sheet obscures the browser window, so we disable them here.
-        // We don't need to include IDC_CLOSE_WINDOW, because app_controller
-        // is only activated when there are no key windows (see function
-        // comment).
         case IDC_OPEN_FILE:
-        case IDC_NEW_WINDOW:
         case IDC_NEW_TAB:
-        case IDC_NEW_INCOGNITO_WINDOW:
           enable = [self keyWindowIsMissingOrBlocked];
           break;
         default:
