@@ -687,10 +687,11 @@ static NPError FlushRenderContext(NPP id,
     webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
     // Do the flush.
     NPError err = delegate->FlushRenderContext(context);
+
     // Invoke the callback to inform the caller the work was done.
-    if (callback != NULL) {
+    if (callback != NULL)
       (*callback)(context, err, user_data);
-    }
+
     // Return any errors.
     return err;
   }
@@ -699,7 +700,11 @@ static NPError FlushRenderContext(NPP id,
 
 static NPError DestroyRenderContext(NPP id,
                                     NPRenderContext* context) {
-  // TODO(sehr) implement render context destruction.
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
+    return delegate->DestroyRenderContext(context);
+  }
   return NPERR_GENERIC_ERROR;
 }
 

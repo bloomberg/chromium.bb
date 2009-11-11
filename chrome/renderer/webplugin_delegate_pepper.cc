@@ -130,13 +130,14 @@ void WebPluginDelegatePepper::UpdateGeometry(
   if (window_rect_ == window_rect)
     return;
   window_rect_ = window_rect;
-  uint32 buffer_size = window_rect.height() *
-                       window_rect.width() *
-                       kBytesPerPixel;
-  if (buffer_size_ < buffer_size) {
-    buffer_size_ = buffer_size;
-    plugin_buffer_ = TransportDIB::Create(buffer_size, ++next_buffer_id);
-  }
+
+  // TODO(brettw) figure out how to tell the plugin that the size changed and it
+  // needs to repaint?
+  SkBitmap new_committed;
+  new_committed.setConfig(SkBitmap::kARGB_8888_Config,
+                          window_rect_.width(), window_rect.height());
+  new_committed.allocPixels();
+  committed_bitmap_ = new_committed;
 
   if (!instance())
     return;
@@ -411,17 +412,25 @@ NPError WebPluginDelegatePepper::InitializeRenderContext(
     case NPRenderGraphicsRGBA: {
       int width = window_rect_.width();
       int height = window_rect_.height();
+      uint32 buffer_size = width * height * kBytesPerPixel;
 
-      plugin_canvas_.reset(plugin_buffer_->GetPlatformCanvas(width, height));
-      if (!plugin_canvas_.get())
-        return NPERR_GENERIC_ERROR;
+      // Allocate the transport DIB and the PlatformCanvas pointing to it.
+      scoped_ptr<OpenPaintContext> paint_context(new OpenPaintContext);
+      paint_context->transport_dib.reset(
+          TransportDIB::Create(buffer_size, ++next_buffer_id));
+      if (!paint_context->transport_dib.get())
+        return NPERR_OUT_OF_MEMORY_ERROR;
+      paint_context->canvas.reset(
+          paint_context->transport_dib->GetPlatformCanvas(width, height));
+      if (!paint_context->canvas.get())
+        return NPERR_OUT_OF_MEMORY_ERROR;
 
       // Note that we need to get the address out of the bitmap rather than
       // using plugin_buffer_->memory(). The memory() is when the bitmap data
       // has had "Map" called on it. For Windows, this is separate than making a
       // bitmap using the shared section.
       const SkBitmap& plugin_bitmap =
-          plugin_canvas_->getTopPlatformDevice().accessBitmap(true);
+          paint_context->canvas->getTopPlatformDevice().accessBitmap(true);
       SkAutoLockPixels locker(plugin_bitmap);
 
       // TODO(brettw) this theoretically shouldn't be necessary. But the
@@ -429,8 +438,16 @@ NPError WebPluginDelegatePepper::InitializeRenderContext(
       // catch areas you didn't paint.
       plugin_bitmap.eraseARGB(0, 0, 0, 0);
 
+      // Save the canvas to the output context structure and save the
+      // OpenPaintContext for future reference.
       context->u.graphicsRgba.region = plugin_bitmap.getAddr32(0, 0);
       context->u.graphicsRgba.stride = width * kBytesPerPixel;
+      context->u.graphicsRgba.dirty.left = 0;
+      context->u.graphicsRgba.dirty.top = 0;
+      context->u.graphicsRgba.dirty.right = width;
+      context->u.graphicsRgba.dirty.bottom = height;
+      open_paint_contexts_[context->u.graphicsRgba.region] =
+          linked_ptr<OpenPaintContext>(paint_context.release());
       return NPERR_NO_ERROR;
     }
     default:
@@ -438,12 +455,48 @@ NPError WebPluginDelegatePepper::InitializeRenderContext(
   }
 }
 
+NPError WebPluginDelegatePepper::DestroyRenderContext(
+    NPRenderContext* context) {
+  OpenPaintContextMap::iterator found = open_paint_contexts_.find(
+      context->u.graphicsRgba.region);
+  if (found == open_paint_contexts_.end())
+    return NPERR_INVALID_PARAM;
+
+  open_paint_contexts_.erase(found);
+  return NPERR_NO_ERROR;
+}
+
 NPError WebPluginDelegatePepper::FlushRenderContext(NPRenderContext* context) {
-  // TODO(brettw): we should have some kind of swapping of the canvases so we
-  // can double buffer while avoiding this deep copy.
-  if (!plugin_canvas_->getTopPlatformDevice().accessBitmap(false).copyTo(
-          &committed_bitmap_, SkBitmap::kARGB_8888_Config))
-    return NPERR_OUT_OF_MEMORY_ERROR;
+  // Get the bitmap data associated with the incoming context.
+  OpenPaintContextMap::iterator found = open_paint_contexts_.find(
+      context->u.graphicsRgba.region);
+  if (found == open_paint_contexts_.end())
+    return NPERR_INVALID_PARAM;
+
+  OpenPaintContext* paint_context = found->second.get();
+
+  // Draw the bitmap to the backing store.
+  //
+  // TODO(brettw) we can optimize this in the case where the entire canvas is
+  // updated by actually taking ownership of the buffer and not telling the
+  // plugin we're done using it. This wat we can avoid the copy when the entire
+  // canvas has been updated.
+  SkIRect src_rect = { context->u.graphicsRgba.dirty.left,
+                       context->u.graphicsRgba.dirty.top,
+                       context->u.graphicsRgba.dirty.right,
+                       context->u.graphicsRgba.dirty.bottom };
+  SkRect dest_rect = { SkIntToScalar(context->u.graphicsRgba.dirty.left),
+                       SkIntToScalar(context->u.graphicsRgba.dirty.top),
+                       SkIntToScalar(context->u.graphicsRgba.dirty.right),
+                       SkIntToScalar(context->u.graphicsRgba.dirty.bottom) };
+  SkCanvas committed_canvas(committed_bitmap_);
+
+  // We want to replace the contents of the bitmap rather than blend.
+  SkPaint paint;
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  committed_canvas.drawBitmapRect(
+      paint_context->canvas->getTopPlatformDevice().accessBitmap(false),
+      &src_rect, dest_rect);
 
   committed_bitmap_.setIsOpaque(false);
   return NPERR_NO_ERROR;

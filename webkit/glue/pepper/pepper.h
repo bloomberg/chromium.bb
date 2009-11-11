@@ -133,6 +133,17 @@ typedef struct _NPRenderContext
     struct {
       void* region;
       int32 stride;
+
+      // The dirty region that the plugin has painted into the buffer. This
+      // will be initialized to the size of the plugin image in
+      // initializeRenderContextPtr. The plugin can change the values to only
+      // update portions of the image.
+      struct {
+        int32 left;
+        int32 top;
+        int32 right;
+        int32 bottom;
+      } dirty;
     } graphicsRgba;
   } u;
 } NPRenderContext;

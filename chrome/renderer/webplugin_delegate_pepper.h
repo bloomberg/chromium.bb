@@ -7,12 +7,13 @@
 
 #include "build/build_config.h"
 
-#include <list>
+#include <map>
 #include <string>
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
+#include "base/linked_ptr.h"
 #include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
@@ -97,6 +98,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // used for windowless plugins
   virtual NPError InitializeRenderContext(NPRenderType type,
                                           NPRenderContext* context);
+  virtual NPError DestroyRenderContext(NPRenderContext* context);
   virtual NPError FlushRenderContext(NPRenderContext* context);
 
   virtual NPError OpenFileInSandbox(const char* file_name, void** handle);
@@ -126,8 +128,21 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   size_t buffer_size_;
   TransportDIB* plugin_buffer_;
   static uint32 next_buffer_id;
-  scoped_ptr<skia::PlatformCanvas> plugin_canvas_;
   SkBitmap committed_bitmap_;
+
+  // Lists all contexts currently open for painting. These are ones requested by
+  // the plugin but not destroyed by it yet. The source pointer is the raw
+  // pixels. We use this to look up the corresponding transport DIB when the
+  // plugin tells us to flush or destroy it.
+  struct OpenPaintContext {
+    scoped_ptr<TransportDIB> transport_dib;
+
+    // The canvas associated with the transport DIB, containing the mapped
+    // memory of the image.
+    scoped_ptr<skia::PlatformCanvas> canvas;
+  };
+  typedef std::map< void*, linked_ptr<OpenPaintContext> > OpenPaintContextMap;
+  OpenPaintContextMap open_paint_contexts_;
 
   // The url with which the plugin was instantiated.
   std::string plugin_url_;

@@ -134,6 +134,10 @@ class WebPluginDelegate {
     return NPERR_GENERIC_ERROR;
   }
 
+  virtual NPError DestroyRenderContext(NPRenderContext* context) {
+    return NPERR_GENERIC_ERROR;
+  }
+
   virtual NPError FlushRenderContext(NPRenderContext* context) {
     return NPERR_GENERIC_ERROR;
   }
