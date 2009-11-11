@@ -590,14 +590,6 @@
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
           ],
         }],
-        [ 'target_arch != "arm"', {
-          'sources!': [
-            '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
-          ],
-          'sources': [
-            '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
-          ],
-        }],
         [ 'OS == "linux" or OS == "freebsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gdk',
