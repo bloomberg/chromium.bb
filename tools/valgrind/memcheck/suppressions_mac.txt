@@ -144,6 +144,19 @@
    fun:CGContextFillRect
    fun:NSRectFill
 }
+{
+   # Filed with Apple as rdar://7255382
+   bug_20451
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:CFRunLoopSourceCreate
+   fun:CFMachPortCreateRunLoopSource
+   fun:_ZN8Security12MachPlusPlus10CFAutoPort6enableEv
+   fun:_ZN8Security14SecurityServer14ThreadNotifierC2Ev
+   ...
+   fun:SecTrustSettingsEvaluateCert
+}
 
 # 2. Intentional unit test errors, stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing.
