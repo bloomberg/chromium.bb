@@ -370,7 +370,7 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
 #endif
 
   if (max_page_id_ != -1)
-    channel_->Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
+    Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
 
   return true;
 }
@@ -1118,25 +1118,25 @@ void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {
 }
 
 void BrowserRenderProcessHost::AddSpellCheckWord(const std::string& word) {
-  channel_->Send(new ViewMsg_SpellChecker_WordAdded(word));
+  Send(new ViewMsg_SpellChecker_WordAdded(word));
 }
 
 void BrowserRenderProcessHost::InitSpellChecker() {
   SpellCheckHost* spellcheck_host = profile()->GetSpellCheckHost();
   if (spellcheck_host) {
     PrefService* prefs = profile()->GetPrefs();
-    channel_->Send(new ViewMsg_SpellChecker_Init(
+    Send(new ViewMsg_SpellChecker_Init(
         spellcheck_host->bdict_fd(), spellcheck_host->custom_words(),
         spellcheck_host->language(),
         prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
   } else {
-    channel_->Send(new ViewMsg_SpellChecker_Init(
+    Send(new ViewMsg_SpellChecker_Init(
         base::FileDescriptor(), std::vector<std::string>(), std::string(),
         false));
   }
 }
 
 void BrowserRenderProcessHost::EnableAutoSpellCorrect(bool enable) {
-  channel_->Send(new ViewMsg_SpellChecker_EnableAutoSpellCorrect(enable));
+  Send(new ViewMsg_SpellChecker_EnableAutoSpellCorrect(enable));
 }
 #endif
