@@ -11,6 +11,7 @@
 #include "talk/base/common.h"
 #include "talk/base/criticalsection.h"
 #include "talk/base/logging.h"
+#include "talk/base/physicalsocketserver.h"
 #include "talk/base/scoped_ptr.h"
 
 namespace notifier {
@@ -102,6 +103,7 @@ class PlatformNetworkInfo {
         }
       }
     } while (true);
+
     LOG(INFO) << "alive: " << alive;
     return alive;
   }
@@ -215,7 +217,21 @@ class AsyncNetworkAliveWin32 : public AsyncNetworkAlive {
         return;
       }
     }
-    alive_ = network_info_->IsAlive(&error_);
+
+    if (network_info_->IsAlive(&error_)) {
+      // If there is an active connection, check that www.google.com:80
+      // is reachable.
+      talk_base::PhysicalSocketServer physical;
+      scoped_ptr<talk_base::Socket> socket(physical.CreateSocket(SOCK_STREAM));
+      if (socket->Connect(talk_base::SocketAddress("talk.google.com", 5222))) {
+        alive_ = false;
+      } else {
+        alive_ = true;
+      }
+    } else {
+      // If there are no available connections, then we aren't alive.
+      alive_ = false;
+    }
   }
 
   virtual void OnWorkStop() {
