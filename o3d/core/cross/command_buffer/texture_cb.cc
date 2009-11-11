@@ -38,10 +38,10 @@
 #include "core/cross/command_buffer/renderer_cb.h"
 #include "core/cross/command_buffer/texture_cb.h"
 
-#include "command_buffer/common/o3d_cmd_format.h"
-#include "command_buffer/common/resource.h"
-#include "command_buffer/client/o3d_cmd_helper.h"
-#include "command_buffer/client/fenced_allocator.h"
+#include "gpu/command_buffer/common/o3d_cmd_format.h"
+#include "gpu/command_buffer/common/resource.h"
+#include "gpu/command_buffer/client/o3d_cmd_helper.h"
+#include "gpu/command_buffer/client/fenced_allocator.h"
 
 namespace o3d {
 

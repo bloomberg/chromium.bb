@@ -105,16 +105,16 @@
         ['renderer == "cb"',
           {
             'dependencies': [
-              '../gpu_plugin/gpu_plugin.gyp:np_utils',
+              '../gpu/gpu.gyp:np_utils',
             ]
           },
         ],
         ['renderer == "cb" and cb_service != "remote"',
           {
             'dependencies': [
-              '../command_buffer/command_buffer.gyp:command_buffer_client_test',
-              '../command_buffer/command_buffer.gyp:command_buffer_common_test',
-              '../command_buffer/command_buffer.gyp:command_buffer_service_test',
+              '../gpu/gpu.gyp:command_buffer_client_test',
+              '../gpu/gpu.gyp:command_buffer_common_test',
+              '../gpu/gpu.gyp:command_buffer_service_test',
             ]
           },
         ],

@@ -37,8 +37,8 @@
 #define O3D_CORE_CROSS_COMMAND_BUFFER_STATES_CB_H_
 
 #include "core/cross/command_buffer/renderer_cb.h"
-#include "command_buffer/common/o3d_cmd_format.h"
-#include "command_buffer/client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/common/o3d_cmd_format.h"
+#include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace o3d {
 

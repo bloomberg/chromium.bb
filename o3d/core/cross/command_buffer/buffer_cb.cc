@@ -34,8 +34,8 @@
 
 #include "core/cross/precompile.h"
 #include "core/cross/command_buffer/buffer_cb.h"
-#include "command_buffer/client/o3d_cmd_helper.h"
-#include "command_buffer/client/fenced_allocator.h"
+#include "gpu/command_buffer/client/o3d_cmd_helper.h"
+#include "gpu/command_buffer/client/fenced_allocator.h"
 
 namespace o3d {
 using command_buffer::CommandBufferEntry;

@@ -34,8 +34,8 @@
 #define O3D_CORE_WIN_DISPLAY_WINDOW_CB_H_
 
 #include "core/cross/display_window.h"
-#include "gpu_plugin/command_buffer.h"
-#include "gpu_plugin/np_utils/np_object_pointer.h"
+#include "gpu/gpu_plugin/command_buffer.h"
+#include "gpu/np_utils/np_object_pointer.h"
 
 namespace o3d {
 
