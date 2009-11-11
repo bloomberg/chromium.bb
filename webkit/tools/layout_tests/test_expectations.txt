@@ -678,6 +678,8 @@ BUG21901 : LayoutTests/plugins/netscape-enumerate.html = FAIL
 // This tests the screen's pixel depth, which we don't set on the buildbots
 // so it depends on the users settings.  Making this a broken test for us.
 // The test must be fixed to not depend on user settings and rebaselined.  post-beta.
+BUG10274 WIN RELEASE : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL
+BUG10274 WIN DEBUG : LayoutTests/fast/dom/Window/window-screen-properties.html = PASS TEXT
 BUG10274 LINUX : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL
 
 // Expectations for this test changed upstream. We should fix this test, but
