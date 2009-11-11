@@ -50,7 +50,8 @@
         ['renderer=="cb"',
           {
             'dependencies': [
-              '../gpu_plugin/gpu_plugin.gyp:*',
+              '../gpu/gpu.gyp:gpu_plugin_unittests',
+              '../gpu/gpu.gyp:np_utils_unittests',
             ],
           },
         ],

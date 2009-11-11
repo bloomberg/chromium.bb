@@ -34,9 +34,9 @@
 
 #include "core/cross/precompile.h"
 
-#include "command_buffer/client/o3d_cmd_helper.h"
-#include "command_buffer/client/fenced_allocator.h"
-#include "command_buffer/common/gapi_interface.h"
+#include "gpu/command_buffer/client/o3d_cmd_helper.h"
+#include "gpu/command_buffer/client/fenced_allocator.h"
+#include "gpu/command_buffer/common/gapi_interface.h"
 #include "core/cross/command_buffer/buffer_cb.h"
 #include "core/cross/command_buffer/effect_cb.h"
 #include "core/cross/command_buffer/param_cache_cb.h"
@@ -49,13 +49,13 @@
 #include "core/cross/command_buffer/texture_cb.h"
 #include "core/cross/command_buffer/display_window_cb.h"
 #include "core/cross/renderer_platform.h"
-#include "gpu_plugin/command_buffer.h"
-#include "gpu_plugin/gpu_processor.h"
-#include "gpu_plugin/np_utils/np_browser.h"
-#include "gpu_plugin/np_utils/np_utils.h"
+#include "gpu/gpu_plugin/command_buffer.h"
+#include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/np_utils/np_browser.h"
+#include "gpu/np_utils/np_utils.h"
 
 #if !defined(CB_SERVICE_REMOTE)
-#include "gpu_plugin/gpu_processor.h"
+#include "gpu/gpu_plugin/gpu_processor.h"
 #endif
 
 namespace o3d {
