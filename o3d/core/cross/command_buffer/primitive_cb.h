@@ -37,7 +37,7 @@
 
 #include "core/cross/precompile.h"
 #include "core/cross/primitive.h"
-#include "gpu/command_buffer/common/resource.h"
+#include "command_buffer/common/resource.h"
 
 namespace o3d {
 

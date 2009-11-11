@@ -37,7 +37,7 @@
 #include "core/cross/state.h"
 #include "core/cross/command_buffer/renderer_cb.h"
 #include "core/cross/command_buffer/states_cb.h"
-#include "gpu/command_buffer/common/gapi_interface.h"
+#include "command_buffer/common/gapi_interface.h"
 
 namespace o3d {
 using command_buffer::CommandBufferEntry;

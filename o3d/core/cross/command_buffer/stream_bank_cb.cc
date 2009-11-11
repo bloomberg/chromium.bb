@@ -39,8 +39,8 @@
 #include "core/cross/command_buffer/buffer_cb.h"
 #include "core/cross/command_buffer/effect_cb.h"
 #include "core/cross/command_buffer/stream_bank_cb.h"
-#include "gpu/command_buffer/common/gapi_interface.h"
-#include "gpu/command_buffer/client/o3d_cmd_helper.h"
+#include "command_buffer/common/gapi_interface.h"
+#include "command_buffer/client/o3d_cmd_helper.h"
 
 // TODO: add unit tests.
 

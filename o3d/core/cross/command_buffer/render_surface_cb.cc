@@ -31,7 +31,7 @@
 
 
 #include "core/cross/command_buffer/render_surface_cb.h"
-#include "gpu/command_buffer/client/o3d_cmd_helper.h"
+#include "command_buffer/client/o3d_cmd_helper.h"
 
 namespace o3d {
 

@@ -39,8 +39,8 @@
 #include "core/cross/command_buffer/effect_cb.h"
 #include "core/cross/command_buffer/param_cache_cb.h"
 #include "core/cross/command_buffer/sampler_cb.h"
-#include "gpu/command_buffer/common/o3d_cmd_format.h"
-#include "gpu/command_buffer/client/o3d_cmd_helper.h"
+#include "command_buffer/common/o3d_cmd_format.h"
+#include "command_buffer/client/o3d_cmd_helper.h"
 
 namespace o3d {
 

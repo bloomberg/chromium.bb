@@ -39,7 +39,7 @@
 #include "core/cross/bitmap.h"
 #include "core/cross/texture.h"
 #include "core/cross/types.h"
-#include "gpu/command_buffer/common/resource.h"
+#include "command_buffer/common/resource.h"
 #include "core/cross/command_buffer/render_surface_cb.h"
 
 namespace o3d {

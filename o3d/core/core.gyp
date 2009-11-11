@@ -398,8 +398,8 @@
         ['renderer == "cb"',
           {
             'dependencies': [
-              '../gpu/gpu.gyp:command_buffer_client',
-              '../gpu/gpu.gyp:np_utils',
+              '../command_buffer/command_buffer.gyp:command_buffer_client',
+              '../gpu_plugin/gpu_plugin.gyp:np_utils',
             ],
             'sources': [
               'cross/command_buffer/buffer_cb.cc',
@@ -430,11 +430,11 @@
         ['renderer == "cb" and cb_service != "remote"',
           {
             'dependencies': [
-              '../gpu/gpu.gyp:command_buffer_service',
+              '../command_buffer/command_buffer.gyp:command_buffer_service',
 
               # These dependencies are only needed for RendererCBLocal. They can
               # be removed when RendererCBLocal is not needed.
-              '../gpu/gpu.gyp:command_buffer',
+              '../gpu_plugin/gpu_plugin.gyp:command_buffer',
             ],
           },
         ],

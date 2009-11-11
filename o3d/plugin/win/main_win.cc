@@ -54,7 +54,7 @@
 #if defined(RENDERER_CB)
 #include "core/cross/command_buffer/renderer_cb.h"
 #include "core/cross/command_buffer/display_window_cb.h"
-#include "gpu/gpu_plugin/command_buffer.h"
+#include "gpu_plugin/command_buffer.h"
 #endif
 
 using glue::_o3d::PluginObject;

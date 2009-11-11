@@ -37,10 +37,10 @@
 #include "core/cross/semantic_manager.h"
 #include "core/cross/service_locator.h"
 #include "core/cross/command_buffer/effect_cb.h"
-#include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/common/o3d_cmd_format.h"
-#include "gpu/command_buffer/client/fenced_allocator.h"
-#include "gpu/command_buffer/client/o3d_cmd_helper.h"
+#include "command_buffer/common/constants.h"
+#include "command_buffer/common/o3d_cmd_format.h"
+#include "command_buffer/client/fenced_allocator.h"
+#include "command_buffer/client/o3d_cmd_helper.h"
 
 namespace o3d {
 
