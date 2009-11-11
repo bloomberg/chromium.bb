@@ -33,8 +33,8 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
       state_(BS_NORMAL),
       theme_provider_(browser ?
                       GtkThemeProvider::GetFrom(browser->profile()) : NULL),
-      go_(theme_provider_, IDR_GO, IDR_GO_P, IDR_GO_H, 0),
-      stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0),
+      go_(theme_provider_, IDR_GO, IDR_GO_P, IDR_GO_H, 0, IDR_GO_MASK),
+      stop_(theme_provider_, IDR_STOP, IDR_STOP_P, IDR_STOP_H, 0, IDR_GO_MASK),
       widget_(gtk_chrome_button_new()) {
   gtk_widget_set_size_request(widget_.get(), go_.Width(), go_.Height());
 

@@ -33,7 +33,8 @@ class CustomDrawButtonBase : public NotificationObserver {
                        int normal_id,
                        int active_id,
                        int highlight_id,
-                       int depressed_id);
+                       int depressed_id,
+                       int background_id);
 
   ~CustomDrawButtonBase();
 
@@ -71,6 +72,7 @@ class CustomDrawButtonBase : public NotificationObserver {
   int active_id_;
   int highlight_id_;
   int depressed_id_;
+  int button_background_id_;
   GtkThemeProvider* theme_provider_;
 
   // Used to listen for theme change notifications.
@@ -97,6 +99,7 @@ class CustomDrawButton : public NotificationObserver {
                    int active_id,
                    int highlight_id,
                    int depressed_id,
+                   int background_id,
                    const char* stock_id,
                    GtkIconSize stock_size);
 

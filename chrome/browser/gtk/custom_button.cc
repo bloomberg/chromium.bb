@@ -18,13 +18,15 @@
 #include "grit/theme_resources.h"
 
 CustomDrawButtonBase::CustomDrawButtonBase(GtkThemeProvider* theme_provider,
-    int normal_id, int active_id, int highlight_id, int depressed_id)
+    int normal_id, int active_id, int highlight_id, int depressed_id,
+    int background_id)
     : background_image_(NULL),
       paint_override_(-1),
       normal_id_(normal_id),
       active_id_(active_id),
       highlight_id_(highlight_id),
       depressed_id_(depressed_id),
+      button_background_id_(background_id),
       theme_provider_(theme_provider) {
   for (int i = 0; i < (GTK_STATE_INSENSITIVE + 1); ++i)
     surfaces_[i].reset(new CairoCachedSurface);
@@ -127,11 +129,22 @@ void CustomDrawButtonBase::Observe(NotificationType type,
   surfaces_[GTK_STATE_SELECTED]->UsePixbuf(NULL);
   surfaces_[GTK_STATE_INSENSITIVE]->UsePixbuf(depressed_id_ ?
       theme_provider_->GetRTLEnabledPixbufNamed(depressed_id_) : NULL);
+
+  // Use the tinted background in some themes.
+  if (button_background_id_) {
+    SkColor color = theme_provider_->GetColor(
+        BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
+    SkBitmap* background = theme_provider_->GetBitmapNamed(
+        IDR_THEME_BUTTON_BACKGROUND);
+    SkBitmap* mask = theme_provider_->GetBitmapNamed(button_background_id_);
+
+    SetBackground(color, background, mask);
+  }
 }
 
 CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
     int highlight_id, int depressed_id)
-    : button_base_(NULL, normal_id, active_id, highlight_id, depressed_id),
+    : button_base_(NULL, normal_id, active_id, highlight_id, depressed_id, 0),
       theme_provider_(NULL),
       gtk_stock_name_(NULL),
       icon_size_(GTK_ICON_SIZE_INVALID) {
@@ -143,9 +156,9 @@ CustomDrawButton::CustomDrawButton(int normal_id, int active_id,
 
 CustomDrawButton::CustomDrawButton(GtkThemeProvider* theme_provider,
     int normal_id, int active_id, int highlight_id, int depressed_id,
-    const char* stock_id, GtkIconSize stock_size)
+    int background_id, const char* stock_id, GtkIconSize stock_size)
     : button_base_(theme_provider, normal_id, active_id, highlight_id,
-                   depressed_id),
+                   depressed_id, background_id),
       theme_provider_(theme_provider),
       gtk_stock_name_(stock_id),
       icon_size_(stock_size) {
@@ -208,7 +221,7 @@ CustomDrawButton* CustomDrawButton::CloseButton(
     GtkThemeProvider* theme_provider) {
   CustomDrawButton* button = new CustomDrawButton(
       theme_provider, IDR_CLOSE_BAR, IDR_CLOSE_BAR_P,
-      IDR_CLOSE_BAR_H, 0, GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
+      IDR_CLOSE_BAR_H, 0, 0, GTK_STOCK_CLOSE, GTK_ICON_SIZE_MENU);
   return button;
 }
 

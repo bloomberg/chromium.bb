@@ -164,10 +164,12 @@ void BrowserToolbarGtk::Init(Profile* profile,
   gtk_box_pack_start(GTK_BOX(toolbar_), back_forward_hbox_, FALSE, FALSE, 0);
 
   reload_.reset(BuildToolbarButton(IDR_RELOAD, IDR_RELOAD_P, IDR_RELOAD_H, 0,
-      l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD),
-      GTK_STOCK_REFRESH));
+                                   IDR_BUTTON_MASK,
+                                   l10n_util::GetStringUTF8(IDS_TOOLTIP_RELOAD),
+                                   GTK_STOCK_REFRESH));
 
   home_.reset(BuildToolbarButton(IDR_HOME, IDR_HOME_P, IDR_HOME_H, 0,
+                                 IDR_BUTTON_MASK,
                                  l10n_util::GetStringUTF8(IDS_TOOLTIP_HOME),
                                  GTK_STOCK_HOME));
   gtk_util::SetButtonTriggersNavigation(home_->widget());
@@ -453,10 +455,11 @@ gfx::Rect BrowserToolbarGtk::GetLocationStackBounds() const {
 
 CustomDrawButton* BrowserToolbarGtk::BuildToolbarButton(
     int normal_id, int active_id, int highlight_id, int depressed_id,
-    const std::string& localized_tooltip, const char* stock_id) {
+    int background_id, const std::string& localized_tooltip,
+    const char* stock_id) {
   CustomDrawButton* button = new CustomDrawButton(
       GtkThemeProvider::GetFrom(profile_),
-      normal_id, active_id, highlight_id, depressed_id, stock_id,
+      normal_id, active_id, highlight_id, depressed_id, background_id, stock_id,
       GTK_ICON_SIZE_SMALL_TOOLBAR);
 
   gtk_widget_set_tooltip_text(button->widget(),

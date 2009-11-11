@@ -108,6 +108,7 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                        int active_id,
                                        int highlight_id,
                                        int depressed_id,
+                                       int background_id,
                                        const std::string& localized_tooltip,
                                        const char* stock_id);
 

@@ -23,8 +23,10 @@ ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
       widget_(gtk_chrome_button_new()),
       is_starred_(false),
       theme_provider_(GtkThemeProvider::GetFrom(host->profile())),
-      unstarred_(theme_provider_, IDR_STAR, IDR_STAR_P, IDR_STAR_H, IDR_STAR_D),
-      starred_(theme_provider_, IDR_STARRED, IDR_STARRED_P, IDR_STARRED_H, 0) {
+      unstarred_(theme_provider_, IDR_STAR, IDR_STAR_P, IDR_STAR_H, IDR_STAR_D,
+                 IDR_STAR_MASK),
+      starred_(theme_provider_, IDR_STARRED, IDR_STARRED_P, IDR_STARRED_H, 0,
+               IDR_STAR_MASK) {
   gtk_widget_set_size_request(widget_.get(), unstarred_.Width(),
                               unstarred_.Height());
 
