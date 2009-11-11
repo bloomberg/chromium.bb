@@ -147,7 +147,8 @@ class AutocompleteResultView : public views::View {
                          const std::wstring& text,
                          int style,
                          int x,
-                         int y);
+                         int y,
+                         bool force_rtl_directionality);
 
   // Gets the font and text color for a fragment with the specified style.
   gfx::Font GetFragmentFont(int style) const;
@@ -513,10 +514,20 @@ int AutocompleteResultView::DrawString(
       int style = classifications[i].style;
       if (force_dim)
         style |= ACMatchClassification::DIM;
+
+      // We specify RTL directionlity explicitly only if the run is an RTL run
+      // and we can't specify the string directionlaity using an LRE/PDF pair.
+      // Note that URLs are always displayed using LTR directionality
+      // (regardless of the locale) and therefore they are excluded.
+      const bool force_rtl_directionality =
+           !(classifications[i].style & ACMatchClassification::URL) &&
+           (run_direction == UBIDI_RTL) &&
+           (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT);
+
       if (text_start < text_end) {
         x += DrawStringFragment(canvas,
                                 text.substr(text_start, text_end - text_start),
-                                style, x, y);
+                                style, x, y, force_rtl_directionality);
       }
     }
   }
@@ -528,16 +539,19 @@ int AutocompleteResultView::DrawStringFragment(
     const std::wstring& text,
     int style,
     int x,
-    int y) {
+    int y,
+    bool force_rtl_directionality) {
   gfx::Font display_font = GetFragmentFont(style);
   // Clamp text width to the available width within the popup so we elide if
   // necessary.
   int string_width = std::min(display_font.GetStringWidth(text),
                               width() - kRowRightPadding - x);
   int string_left = mirroring_context_->GetLeft(x, x + string_width);
+  const int flags = force_rtl_directionality ?
+      gfx::Canvas::FORCE_RTL_DIRECTIONALITY : 0;
   canvas->DrawStringInt(text, GetFragmentFont(style),
                         GetFragmentTextColor(style), string_left, y,
-                        string_width, display_font.height());
+                        string_width, display_font.height(), flags);
   return string_width;
 }
 

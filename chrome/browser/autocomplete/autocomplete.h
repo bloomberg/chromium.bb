@@ -287,7 +287,7 @@ struct AutocompleteMatch {
   //   0,         |   15,            |   4,
   //              11,match           0,match
   //
-  // This structure holds the classifiction information for each span.
+  // This structure holds the classification information for each span.
   struct ACMatchClassification {
     // The values in here are not mutually exclusive -- use them like a
     // bitfield.  This also means we use "int" instead of this enum type when

@@ -106,12 +106,16 @@ int ComputeFormatFlags(int flags, const std::wstring& text) {
   // Caveat: If the string is purely LTR, don't set DTL_RTLREADING since when
   // the flag is set, LRE-PDF don't have the desired effect of rendering
   // multiline English-only text as LTR.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT &&
-      (f & DT_RIGHT)) {
-    if (l10n_util::StringContainsStrongRTLChars(text)) {
-      f |= DT_RTLREADING;
-    }
+  //
+  // Note that if the caller is explicitly requesting displaying the text
+  // using RTL directionality then we respect that and pass DT_RTLREADING to
+  // ::DrawText even if the locale is LTR.
+  if ((flags & gfx::Canvas::FORCE_RTL_DIRECTIONALITY) ||
+      ((l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) &&
+       (f & DT_RIGHT) && l10n_util::StringContainsStrongRTLChars(text))) {
+    f |= DT_RTLREADING;
   }
+
   return f;
 }
 

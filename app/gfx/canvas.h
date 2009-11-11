@@ -66,6 +66,16 @@ class Canvas : public skia::PlatformCanvas {
     // Specifies if words can be split by new lines.
     // This only works with MULTI_LINE.
     CHARACTER_BREAK = 1024,
+
+    // Instructs DrawStringInt() to render the text using RTL directionality.
+    // In most cases, passing this flag is not necessary because information
+    // about the text directionality is going to be embedded within the string
+    // in the form of special Unicode characters. However, we don't insert
+    // directionality characters into strings if the locale is LTR because some
+    // platforms (for example, an English Windows XP with no RTL fonts
+    // installed) don't support these characters. Thus, this flag should be
+    // used to render text using RTL directionality when the locale is LTR.
+    FORCE_RTL_DIRECTIONALITY = 2048,
   };
 
   // Creates an empty Canvas. Callers must use initialize before using the
