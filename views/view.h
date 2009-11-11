@@ -144,7 +144,7 @@ class View : public AcceleratorTarget {
 
   // Return the bounds of the View, relative to the parent. If
   // |settings| is IGNORE_MIRRORING_TRANSFORMATION, the function returns the
-  // bounds_ rectangle. If |settings| is APPLY_MIRRORING_SETTINGS AND the
+  // bounds_ rectangle. If |settings| is APPLY_MIRRORING_TRANSFORMATION AND the
   // parent View is using a right-to-left UI layout, then the function returns
   // a shifted version of the bounds_ rectangle that represents the mirrored
   // View bounds.

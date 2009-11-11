@@ -800,24 +800,26 @@ const BookmarkNode* BookmarkBarView::GetNodeForButtonAt(const gfx::Point& loc,
   if (loc.x() < 0 || loc.x() >= width() || loc.y() < 0 || loc.y() >= height())
     return NULL;
 
+  gfx::Point adjusted_loc(MirroredXCoordinateInsideView(loc.x()), loc.y());
+
   // Check the buttons first.
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     views::View* child = GetChildViewAt(i);
     if (!child->IsVisible())
       break;
-    if (child->bounds().Contains(loc))
+    if (child->bounds().Contains(adjusted_loc))
       return model_->GetBookmarkBarNode()->GetChild(i);
   }
 
   // Then the overflow button.
   if (overflow_button_->IsVisible() &&
-      overflow_button_->bounds().Contains(loc)) {
+      overflow_button_->bounds().Contains(adjusted_loc)) {
     *start_index = GetFirstHiddenNodeIndex();
     return model_->GetBookmarkBarNode();
   }
 
   // And finally the other folder.
-  if (other_bookmarked_button_->bounds().Contains(loc))
+  if (other_bookmarked_button_->bounds().Contains(adjusted_loc))
     return model_->other_node();
 
   return NULL;
