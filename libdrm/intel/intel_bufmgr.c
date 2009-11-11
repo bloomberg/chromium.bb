@@ -224,6 +224,13 @@ int drm_intel_bo_busy(drm_intel_bo *bo)
 	return 0;
 }
 
+int drm_intel_bo_madvise(drm_intel_bo *bo, int madv)
+{
+	if (bo->bufmgr->bo_madvise)
+		return bo->bufmgr->bo_madvise(bo, madv);
+	return -1;
+}
+
 int drm_intel_bo_references(drm_intel_bo *bo, drm_intel_bo *target_bo)
 {
 	return bo->bufmgr->bo_references(bo, target_bo);

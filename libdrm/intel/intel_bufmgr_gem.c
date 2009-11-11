@@ -398,8 +398,8 @@ drm_intel_gem_bo_busy(drm_intel_bo *bo)
 }
 
 static int
-drm_intel_gem_bo_madvise(drm_intel_bufmgr_gem *bufmgr_gem,
-			 drm_intel_bo_gem *bo_gem, int state)
+drm_intel_gem_bo_madvise_internal(drm_intel_bufmgr_gem *bufmgr_gem,
+				  drm_intel_bo_gem *bo_gem, int state)
 {
 	struct drm_i915_gem_madvise madv;
 
@@ -409,6 +409,15 @@ drm_intel_gem_bo_madvise(drm_intel_bufmgr_gem *bufmgr_gem,
 	ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MADVISE, &madv);
 
 	return madv.retained;
+}
+
+static int
+drm_intel_gem_bo_madvise(drm_intel_bo *bo, int madv)
+{
+	return drm_intel_gem_bo_madvise_internal
+		((drm_intel_bufmgr_gem *) bo->bufmgr,
+		 (drm_intel_bo_gem *) bo,
+		 madv);
 }
 
 /* drop the oldest entries that have been purged by the kernel */
@@ -421,7 +430,7 @@ drm_intel_gem_bo_cache_purge_bucket(drm_intel_bufmgr_gem *bufmgr_gem,
 
 		bo_gem = DRMLISTENTRY(drm_intel_bo_gem,
 				      bucket->head.next, head);
-		if (drm_intel_gem_bo_madvise
+		if (drm_intel_gem_bo_madvise_internal
 		    (bufmgr_gem, bo_gem, I915_MADV_DONTNEED))
 			break;
 
@@ -493,7 +502,7 @@ retry:
 		}
 
 		if (alloc_from_cache) {
-			if (!drm_intel_gem_bo_madvise
+			if (!drm_intel_gem_bo_madvise_internal
 			    (bufmgr_gem, bo_gem, I915_MADV_WILLNEED)) {
 				drm_intel_gem_bo_free(&bo_gem->bo);
 				drm_intel_gem_bo_cache_purge_bucket(bufmgr_gem,
@@ -742,8 +751,8 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 
 		DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
 
-		drm_intel_gem_bo_madvise(bufmgr_gem, bo_gem,
-					 I915_MADV_DONTNEED);
+		drm_intel_gem_bo_madvise_internal(bufmgr_gem, bo_gem,
+						  I915_MADV_DONTNEED);
 		drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time);
 	} else {
 		drm_intel_gem_bo_free(bo);
@@ -1703,6 +1712,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	bufmgr_gem->bufmgr.bo_flink = drm_intel_gem_bo_flink;
 	bufmgr_gem->bufmgr.bo_exec = drm_intel_gem_bo_exec;
 	bufmgr_gem->bufmgr.bo_busy = drm_intel_gem_bo_busy;
+	bufmgr_gem->bufmgr.bo_madvise = drm_intel_gem_bo_madvise;
 	bufmgr_gem->bufmgr.destroy = drm_intel_bufmgr_gem_destroy;
 	bufmgr_gem->bufmgr.debug = 0;
 	bufmgr_gem->bufmgr.check_aperture_space =

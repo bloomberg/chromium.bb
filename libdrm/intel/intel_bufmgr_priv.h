@@ -216,6 +216,20 @@ struct _drm_intel_bufmgr {
 	 */
 	int (*bo_busy) (drm_intel_bo *bo);
 
+	/**
+	 * Specify the volatility of the buffer.
+	 * \param bo Buffer to create a name for
+	 * \param madv The purgeable status
+	 *
+	 * Use I915_MADV_DONTNEED to mark the buffer as purgeable, and it will be
+	 * reclaimed under memory pressure. If you subsequently require the buffer,
+	 * then you must pass I915_MADV_WILLNEED to mark the buffer as required.
+	 *
+	 * Returns 1 if the buffer was retained, or 0 if it was discarded whilst
+	 * marked as I915_MADV_DONTNEED.
+	 */
+	int (*bo_madvise) (drm_intel_bo *bo, int madv);
+
 	int (*check_aperture_space) (drm_intel_bo ** bo_array, int count);
 
 	/**
