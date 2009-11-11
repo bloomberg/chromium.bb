@@ -488,3 +488,15 @@ WebInspector.ElementsPanel.prototype._nodeSearchButtonClicked = function(
   this.nodeSearchButton.toggled = !this.nodeSearchButton.toggled;
 };
 })();
+
+
+(function() {
+// Temporary fix until fix for https://bugs.webkit.org/show_bug.cgi?id=31343
+// is landed.
+var original = WebInspector.addDOMStorage;
+WebInspector.addDOMStorage = function(payload) {
+  if (!this.panels.storage)
+    return;
+  return original.apply(this, arguments);
+};
+})();

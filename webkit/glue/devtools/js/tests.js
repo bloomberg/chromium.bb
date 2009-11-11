@@ -637,6 +637,31 @@ TestSuite.prototype.testPauseOnException = function() {
 };
 
 
+// Tests that debugger works correctly if pause event occurs when DevTools
+// frontend is being loaded.
+TestSuite.prototype.testPauseWhenLoadingDevTools = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  // Script execution can already be paused.
+  if (WebInspector.currentPanel.paused) {
+    var callFrame =
+        WebInspector.currentPanel.sidebarPanes.callstack.selectedCallFrame;
+    this.assertEquals('callDebugger', callFrame.functionName);
+    return;
+  }
+
+  this.addSniffer(
+      WebInspector,
+      'pausedScript',
+      function(callFrames) {
+        test.assertEquals('callDebugger', callFrames[0].functionName);
+        test.releaseControl();
+      });
+  this.takeControl();
+};
+
+
 /**
  * Serializes options collection to string.
  * @param {HTMLOptionsCollection} options

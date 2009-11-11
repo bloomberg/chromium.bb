@@ -51,6 +51,8 @@ const wchar_t kEvalTestPage[] = L"files/devtools/eval_test_page.html";
 const wchar_t kJsPage[] = L"files/devtools/js_page.html";
 const wchar_t kPauseOnExceptionTestPage[] =
     L"files/devtools/pause_on_exception.html";
+const wchar_t kPauseWhenLoadingDevTools[] =
+    L"files/devtools/pause_when_loading_devtools.html";
 const wchar_t kResourceContentLengthTestPage[] = L"files/devtools/image.html";
 const wchar_t kResourceTestPage[] = L"files/devtools/resource_test_page.html";
 const wchar_t kSimplePage[] = L"files/devtools/simple_page.html";
@@ -330,6 +332,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
 // Tests pause on exception.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseOnException) {
   RunTest("testPauseOnException", kPauseOnExceptionTestPage);
+}
+
+// Tests that debugger works correctly if pause event occurs when DevTools
+// frontend is being loaded.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
+  RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
 // Tests eval on call frame.
