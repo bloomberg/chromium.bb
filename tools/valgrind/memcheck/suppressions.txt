@@ -1050,15 +1050,6 @@
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
 }
 {
-   bug_24936
-   Memcheck:Free
-   fun:_ZdlPv
-   fun:_ZN7WebCore15CSSSelectorList19adoptSelectorVectorERN3WTF6VectorIPNS_11CSSSelectorELj0EEE
-   fun:_ZN7WebCore9CSSParser15createStyleRuleEPN3WTF6VectorIPNS_11CSSSelectorELj0EEE
-   fun:_Z10cssyyparsePv
-   fun:_ZN7WebCore9CSSParser10parseSheetEPNS_13CSSStyleSheetERKNS_6StringE
-}
-{
    bug_26966
    Memcheck:Leak
    fun:malloc
