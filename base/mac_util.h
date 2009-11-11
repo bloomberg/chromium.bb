@@ -89,6 +89,9 @@ void GrabWindowSnapshot(NSWindow* window,
 //   returns - path to the application bundle, or empty on error
 FilePath GetAppBundlePath(const FilePath& exec_name);
 
+// Set the Time Machine exclusion property for the given file.
+bool SetFileBackupExclusion(const FilePath& file_path, bool exclude);
+
 }  // namespace mac_util
 
 #endif  // BASE_MAC_UTIL_H_

@@ -8,6 +8,7 @@
 #include "base/mac_util.h"
 
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,4 +101,27 @@ TEST_F(MacUtilTest, TestGetAppBundlePath) {
     EXPECT_STREQ(valid_inputs[i].expected_out,
         out.value().c_str()) << "loop: " << i;
   }
+}
+
+TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
+  NSString* homeDirectory = NSHomeDirectory();
+  NSString* dummyFilePath =
+      [homeDirectory stringByAppendingPathComponent:@"DummyFile"];
+  const char* dummy_file_path = [dummyFilePath fileSystemRepresentation];
+  ASSERT_TRUE(dummy_file_path);
+  FilePath file_path(dummy_file_path);
+  // It is not actually necessary to have a physical file in order to
+  // set its exclusion property.
+  NSURL* fileURL = [NSURL URLWithString:dummyFilePath];
+  // Reset the exclusion in case it was set previously.
+  mac_util::SetFileBackupExclusion(file_path, false);
+  Boolean excludeByPath;
+  // Initial state should be non-excluded.
+  EXPECT_FALSE(CSBackupIsItemExcluded((CFURLRef)fileURL, &excludeByPath));
+  // Exclude the file.
+  EXPECT_TRUE(mac_util::SetFileBackupExclusion(file_path, true));
+  EXPECT_TRUE(CSBackupIsItemExcluded((CFURLRef)fileURL, &excludeByPath));
+  // Un-exclude the file.
+  EXPECT_TRUE(mac_util::SetFileBackupExclusion(file_path, false));
+  EXPECT_FALSE(CSBackupIsItemExcluded((CFURLRef)fileURL, &excludeByPath));
 }

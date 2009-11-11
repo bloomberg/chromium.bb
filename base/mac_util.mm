@@ -237,4 +237,22 @@ FilePath GetAppBundlePath(const FilePath& exec_name) {
   return FilePath();
 }
 
+bool SetFileBackupExclusion(const FilePath& file_path, bool exclude) {
+  NSString* filePath =
+      [NSString stringWithUTF8String:file_path.value().c_str()];
+  NSURL* url = [NSURL fileURLWithPath:filePath];
+  // Note that we always set CSBackupSetItemExcluded's excludeByPath param
+  // to true.  This prevents a problem with toggling the setting: if the file
+  // is excluded with excludeByPath set to true then excludeByPath must
+  // also be true when un-excluding the file, otherwise the un-excluding
+  // will be ignored.
+  bool success =
+      CSBackupSetItemExcluded((CFURLRef)url, exclude, true) == noErr;
+  if (!success)
+    LOG(WARNING) << "Failed to set backup excluson for file '"
+                 << file_path.value().c_str() << "'.  Continuing.";
+  return success;
+}
+
+
 }  // namespace mac_util

@@ -8,6 +8,9 @@
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/file_util.h"
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 #include "base/time.h"
 #include "base/string_util.h"
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
@@ -62,6 +65,15 @@ InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
   // Scope initialization in a transaction so we can't be partially initialized.
   sql::Transaction transaction(&db_);
   transaction.Begin();
+
+#if defined(OS_MACOSX)
+  // Exclude the thumbnails file and its journal from backups.
+  mac_util::SetFileBackupExclusion(db_name, true);
+  FilePath::StringType db_name_string(db_name.value());
+  db_name_string += "-journal";
+  FilePath db_journal_name(db_name_string);
+  mac_util::SetFileBackupExclusion(db_journal_name, true);
+#endif
 
   // Create the tables.
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,

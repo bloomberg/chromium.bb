@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <set>
 #include <string>
-
 #include "app/sql/transaction.h"
 #include "base/file_util.h"
+#if defined(OS_MACOSX)
+#include "base/mac_util.h"
+#endif
 #include "base/histogram.h"
 #include "base/rand_util.h"
 #include "base/string_util.h"
@@ -87,6 +89,15 @@ InitStatus HistoryDatabase::Init(const FilePath& history_name,
   sql::Transaction committer(&db_);
   if (!committer.Begin())
     return INIT_FAILURE;
+
+#if defined(OS_MACOSX)
+  // Exclude the history file and its journal from backups.
+  mac_util::SetFileBackupExclusion(history_name, true);
+  FilePath::StringType history_name_string(history_name.value());
+  history_name_string += "-journal";
+  FilePath history_journal_name(history_name_string);
+  mac_util::SetFileBackupExclusion(history_journal_name, true);
+#endif
 
   // Prime the cache.
   db_.Preload();
