@@ -403,7 +403,9 @@ void WidgetGtk::SetBounds(const gfx::Rect& bounds) {
     GtkWindow* gtk_window = GTK_WINDOW(widget_);
     // TODO: this may need to set an initial size if not showing.
     // TODO: need to constrain based on screen size.
-    gtk_window_resize(gtk_window, bounds.width(), bounds.height());
+    if (!bounds.IsEmpty()) {
+      gtk_window_resize(gtk_window, bounds.width(), bounds.height());
+    }
     gtk_window_move(gtk_window, bounds.x(), bounds.y());
   }
 }
@@ -1294,4 +1296,3 @@ Widget* Widget::GetWidgetFromNativeWindow(gfx::NativeWindow native_window) {
 }
 
 }  // namespace views
-

@@ -10,19 +10,13 @@
 
 void BrowserBubble::InitPopup() {
   gfx::NativeView native_view = frame_->GetNativeView();
-  gfx::NativeWindow native_window = frame_->GetWindow()->GetNativeWindow();
   views::WidgetGtk* pop = new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
   pop->SetOpacity(0xFF);
   pop->Init(native_view, bounds_);
   pop->SetContentsView(view_);
   popup_ = pop;
   Reposition();
-
-  BrowserView* browser_view =
-      BrowserView::GetBrowserViewForNativeWindow(native_window);
-  DCHECK(browser_view);
-  if (browser_view)
-    browser_view->AttachBrowserBubble(this);
+  AttachToBrowser();
 }
 
 void BrowserBubble::MovePopup(int x, int y, int w, int h) {

@@ -7,10 +7,13 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "views/widget/widget.h"
+
 #if defined(OS_WIN)
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
+#elif defined(OS_LINUX)
+#include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #endif
-#include "views/widget/widget.h"
 
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
     : host_(host),
@@ -91,6 +94,11 @@ void ExtensionView::CreateWidgetHostView() {
   HWND hwnd = view_win->Create(GetWidget()->GetNativeView());
   view_win->ShowWindow(SW_SHOW);
   Attach(hwnd);
+#elif defined(OS_LINUX)
+  RenderWidgetHostViewGtk* view_gtk =
+      static_cast<RenderWidgetHostViewGtk*>(view);
+  view_gtk->InitAsChild();
+  Attach(view_gtk->GetNativeView());
 #else
   NOTIMPLEMENTED();
 #endif
