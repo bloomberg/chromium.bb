@@ -156,8 +156,8 @@ class FlipNetworkTransactionTest : public PlatformTest {
     scoped_ptr<FlipNetworkTransaction> trans(
         new FlipNetworkTransaction(CreateSession(&session_deps)));
 
-    StaticMockSocket data(reads, writes);
-    session_deps.socket_factory.AddMockSocket(&data);
+    StaticSocketDataProvider data(reads, writes);
+    session_deps.socket_factory.AddSocketDataProvider(&data);
 
     TestCompletionCallback callback;
 
@@ -428,8 +428,8 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_CancelledTransaction) {
   scoped_ptr<FlipNetworkTransaction> trans(
       new FlipNetworkTransaction(CreateSession(&session_deps)));
 
-  StaticMockSocket data(reads, writes);
-  session_deps.socket_factory.AddMockSocket(&data);
+  StaticSocketDataProvider data(reads, writes);
+  session_deps.socket_factory.AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
 
