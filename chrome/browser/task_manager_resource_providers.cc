@@ -47,7 +47,10 @@
 TaskManagerTabContentsResource::TaskManagerTabContentsResource(
     TabContents* tab_contents)
     : tab_contents_(tab_contents),
-      pending_stats_update_(false) {
+      pending_stats_update_(false),
+      v8_memory_allocated_(0),
+      v8_memory_used_(0),
+      pending_v8_memory_allocated_update_(false) {
   // We cache the process as when the TabContents is closed the process
   // becomes NULL and the TaskManager still needs it.
   process_ = tab_contents_->process()->process().handle();
@@ -91,6 +94,10 @@ void TaskManagerTabContentsResource::Refresh() {
     tab_contents_->render_view_host()->Send(new ViewMsg_GetCacheResourceStats);
     pending_stats_update_ = true;
   }
+  if (!pending_v8_memory_allocated_update_) {
+    tab_contents_->render_view_host()->Send(new ViewMsg_GetV8HeapStats);
+    pending_v8_memory_allocated_update_ = true;
+  }
 }
 
 WebKit::WebCache::ResourceTypeStats
@@ -98,10 +105,25 @@ WebKit::WebCache::ResourceTypeStats
   return stats_;
 }
 
+size_t TaskManagerTabContentsResource::GetV8MemoryAllocated() const {
+  return v8_memory_allocated_;
+}
+
+size_t TaskManagerTabContentsResource::GetV8MemoryUsed() const {
+  return v8_memory_used_;
+}
+
 void TaskManagerTabContentsResource::NotifyResourceTypeStats(
     const WebKit::WebCache::ResourceTypeStats& stats) {
   stats_ = stats;
   pending_stats_update_ = false;
+}
+
+void TaskManagerTabContentsResource::NotifyV8HeapStats(
+    size_t v8_memory_allocated, size_t v8_memory_used) {
+  v8_memory_allocated_ = v8_memory_allocated;
+  v8_memory_used_ = v8_memory_used;
+  pending_v8_memory_allocated_update_ = false;
 }
 
 SkBitmap TaskManagerTabContentsResource::GetIcon() const {

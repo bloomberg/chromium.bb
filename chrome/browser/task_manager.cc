@@ -196,6 +196,19 @@ std::wstring TaskManagerModel::GetResourceSqliteMemoryUsed(int index) const {
   return GetMemCellText(resources_[index]->SqliteMemoryUsedBytes() / 1024);
 }
 
+std::wstring TaskManagerModel::GetResourceV8MemoryAllocatedSize(
+    int index) const {
+  if (!resources_[index]->ReportsV8MemoryStats())
+    return l10n_util::GetString(IDS_TASK_MANAGER_NA_CELL_TEXT);
+  return l10n_util::GetStringF(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
+      FormatBytes(resources_[index]->GetV8MemoryAllocated(),
+                  DATA_UNITS_KILOBYTE,
+                  false),
+      FormatBytes(resources_[index]->GetV8MemoryUsed(),
+                  DATA_UNITS_KILOBYTE,
+                  false));
+}
+
 bool TaskManagerModel::IsResourceFirstInGroup(int index) const {
   DCHECK(index < ResourceCount());
   TaskManager::Resource* resource = resources_[index];
@@ -617,6 +630,17 @@ void TaskManagerModel::NotifyResourceTypeStats(
        it != resources_.end(); ++it) {
     if (base::GetProcId((*it)->GetProcess()) == renderer_id) {
       (*it)->NotifyResourceTypeStats(stats);
+    }
+  }
+}
+
+void TaskManagerModel::NotifyV8HeapStats(base::ProcessId renderer_id,
+                                         size_t v8_memory_allocated,
+                                         size_t v8_memory_used) {
+  for (ResourceList::iterator it = resources_.begin();
+       it != resources_.end(); ++it) {
+    if (base::GetProcId((*it)->GetProcess()) == renderer_id) {
+      (*it)->NotifyV8HeapStats(v8_memory_allocated, v8_memory_used);
     }
   }
 }

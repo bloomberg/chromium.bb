@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+  // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -549,6 +549,9 @@ IPC_BEGIN_MESSAGES(View)
   // Asks the renderer to send back tcmalloc stats.
   IPC_MESSAGE_CONTROL0(ViewMsg_GetRendererTcmalloc)
 #endif
+
+  // Asks the renderer to send back V8 heap stats.
+  IPC_MESSAGE_CONTROL0(ViewMsg_GetV8HeapStats)
 
   // Notifies the renderer about ui theme changes
   IPC_MESSAGE_ROUTED0(ViewMsg_ThemeChanged)
@@ -1448,6 +1451,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
                        int          /* pid */,
                        std::string  /* tcmalloc debug output */)
 #endif
+
+  // Sends back stats about the V8 heap.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_V8HeapStats,
+                       int /* size of heap (allocated from the OS) */,
+                       int /* bytes in use */)
 
   // Request for a DNS prefetch of the names in the array.
   // NameList is typedef'ed std::vector<std::string>

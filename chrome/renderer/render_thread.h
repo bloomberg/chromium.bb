@@ -192,6 +192,7 @@ class RenderThread : public RenderThreadBase,
 
   // Send tcmalloc info to browser.
   void OnGetRendererTcmalloc();
+  void OnGetV8HeapStats();
 
   void OnExtensionMessageInvoke(const std::string& function_name,
                                 const ListValue& args);

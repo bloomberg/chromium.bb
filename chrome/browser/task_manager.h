@@ -59,6 +59,10 @@ class TaskManager {
   // if not applicable.
   virtual const Extension* GetExtension() const { return NULL; }
 
+    virtual bool ReportsV8MemoryStats() const { return false; }
+    virtual size_t GetV8MemoryAllocated() const { return 0; }
+    virtual size_t GetV8MemoryUsed() const { return 0; }
+
     // A helper function for ActivateFocusedTab.  Returns NULL by default
     // because not all resources have an associated tab.
     virtual TabContents* GetTabContents() const { return NULL; }
@@ -80,6 +84,8 @@ class TaskManager {
 
     virtual void NotifyResourceTypeStats(
         const WebKit::WebCache::ResourceTypeStats& stats) {}
+    virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
+                                   size_t v8_memory_used) {}
   };
 
   // ResourceProviders are responsible for adding/removing resources to the task
@@ -202,6 +208,7 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   std::wstring GetResourceWebCoreCSSCacheSize(int index) const;
   std::wstring GetResourceSqliteMemoryUsed(int index) const;
   std::wstring GetResourceGoatsTeleported(int index) const;
+  std::wstring GetResourceV8MemoryAllocatedSize(int index) const;
 
   // Returns true if the resource is first in its group (resources
   // rendered by the same process are groupped together).
@@ -246,8 +253,12 @@ class TaskManagerModel : public URLRequestJobTracker::JobObserver,
   void Clear();  // Removes all items.
 
   void NotifyResourceTypeStats(
-        base::ProcessId renderer_handle,
+        base::ProcessId renderer_id,
         const WebKit::WebCache::ResourceTypeStats& stats);
+
+  void NotifyV8HeapStats(base::ProcessId renderer_id,
+                         size_t v8_memory_allocated,
+                         size_t v8_memory_used);
 
  private:
   friend class base::RefCountedThreadSafe<TaskManagerModel>;

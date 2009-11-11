@@ -244,6 +244,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   static void OnResourceTypeStatsOnUIThread(WebKit::WebCache::ResourceTypeStats,
                                             base::ProcessId renderer_id);
 
+  void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
+  static void OnV8HeapStatsOnUIThread(int v8_memory_allocated,
+                                      int v8_memory_used,
+                                      base::ProcessId renderer_id);
+
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
   // ResolveProxyMsgHelper::Delegate implementation:

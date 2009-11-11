@@ -4,6 +4,8 @@
 
 #include "chrome/renderer/render_thread.h"
 
+#include <v8.h>
+
 #include <algorithm>
 #include <map>
 #include <vector>
@@ -310,6 +312,7 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_GetRendererTcmalloc,
                         OnGetRendererTcmalloc)
 #endif
+    IPC_MESSAGE_HANDLER(ViewMsg_GetV8HeapStats, OnGetV8HeapStats)
     IPC_MESSAGE_HANDLER(ViewMsg_GetCacheResourceStats,
                         OnGetCacheResourceStats)
     IPC_MESSAGE_HANDLER(ViewMsg_UserScripts_UpdatedScripts,
@@ -415,6 +418,13 @@ void RenderThread::OnGetRendererTcmalloc() {
   Send(new ViewHostMsg_RendererTcmalloc(pid, result));
 }
 #endif
+
+void RenderThread::OnGetV8HeapStats() {
+  v8::HeapStatistics heap_stats;
+  v8::V8::GetHeapStatistics(&heap_stats);
+  Send(new ViewHostMsg_V8HeapStats(heap_stats.total_heap_size(),
+                                   heap_stats.used_heap_size()));
+}
 
 void RenderThread::InformHostOfCacheStats() {
   EnsureWebKitInitialized();

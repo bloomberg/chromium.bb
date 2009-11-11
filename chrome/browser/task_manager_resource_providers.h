@@ -35,6 +35,10 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   virtual bool ReportsCacheStats() const { return true; }
   virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
 
+  virtual bool ReportsV8MemoryStats() const { return true; }
+  virtual size_t GetV8MemoryAllocated() const;
+  virtual size_t GetV8MemoryUsed() const;
+
   // TabContents always provide the network usage.
   bool SupportNetworkUsage() const { return true; }
   void SetSupportNetworkUsage() { }
@@ -44,17 +48,23 @@ class TaskManagerTabContentsResource : public TaskManager::Resource {
   virtual void NotifyResourceTypeStats(
       const WebKit::WebCache::ResourceTypeStats& stats);
 
+  virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
+                                 size_t v8_memory_used);
+
  private:
   TabContents* tab_contents_;
   base::ProcessHandle process_;
   int pid_;
   // The stats_ field holds information about resource usage in the renderer
-  // process and so it is updated asynchronously.  A query to any of the
-  // GetWebCore*CacheSize() functions will send an IPC to the renderer asking
-  // for an update unless a query is already outstanding.
+  // process and so it is updated asynchronously by the Refresh() call.
   WebKit::WebCache::ResourceTypeStats stats_;
   // This flag is true if we are waiting for the renderer to report its stats.
   bool pending_stats_update_;
+
+  // We do a similar dance to gather the V8 memory usage in a process.
+  size_t v8_memory_allocated_;
+  size_t v8_memory_used_;
+  bool pending_v8_memory_allocated_update_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerTabContentsResource);
 };

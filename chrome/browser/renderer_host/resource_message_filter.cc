@@ -369,6 +369,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                           OnAllocatePDFTransport)
 #endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
                                       OnGetDefaultPrintSettings)
@@ -825,6 +826,27 @@ void ResourceMessageFilter::OnResourceTypeStatsOnUIThread(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   TaskManager::GetInstance()->model()->NotifyResourceTypeStats(
       renderer_id, stats);
+}
+
+
+void ResourceMessageFilter::OnV8HeapStats(int v8_memory_allocated,
+                                          int v8_memory_used) {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableFunction(&ResourceMessageFilter::OnV8HeapStatsOnUIThread,
+                          v8_memory_allocated,
+                          v8_memory_used,
+                          base::GetProcId(handle())));
+}
+
+// static
+void ResourceMessageFilter::OnV8HeapStatsOnUIThread(
+    int v8_memory_allocated, int v8_memory_used, base::ProcessId renderer_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  TaskManager::GetInstance()->model()->NotifyV8HeapStats(
+      renderer_id,
+      static_cast<size_t>(v8_memory_allocated),
+      static_cast<size_t>(v8_memory_used));
 }
 
 void ResourceMessageFilter::OnResolveProxy(const GURL& url,
