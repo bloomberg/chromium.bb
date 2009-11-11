@@ -217,7 +217,7 @@ bool IsSameProcess(HANDLE process) {
 }
 
 bool IsValidImageSection(HANDLE section, PVOID *base, PLARGE_INTEGER offset,
-                         PULONG view_size) {
+                         PSIZE_T view_size) {
   if (!section || !base || !view_size || offset)
     return false;
 
@@ -366,14 +366,18 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path) {
 
   // Add one to the size so we can null terminate the string.
   size_t size_bytes = (start_pos - ix + 1) * sizeof(wchar_t);
+
+  // Based on the code above, size_bytes should always be small enough
+  // to make the static_cast below safe.
+  DCHECK_NT(kuint16max > size_bytes);
   char* str_buffer = new(NT_ALLOC) char[size_bytes + sizeof(UNICODE_STRING)];
   if (!str_buffer)
     return NULL;
 
   UNICODE_STRING* out_string = reinterpret_cast<UNICODE_STRING*>(str_buffer);
   out_string->Buffer = reinterpret_cast<wchar_t*>(&out_string[1]);
-  out_string->Length = size_bytes - sizeof(wchar_t);
-  out_string->MaximumLength = size_bytes;
+  out_string->Length = static_cast<USHORT>(size_bytes - sizeof(wchar_t));
+  out_string->MaximumLength = static_cast<USHORT>(size_bytes);
 
   NTSTATUS ret = CopyData(out_string->Buffer, &sep[1], out_string->Length);
   if (!NT_SUCCESS(ret)) {

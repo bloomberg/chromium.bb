@@ -125,7 +125,7 @@ UNICODE_STRING* ExtractModuleName(const UNICODE_STRING* module_path);
 
 // Returns true if the parameters correspond to a dll mapped as code.
 bool IsValidImageSection(HANDLE section, PVOID *base, PLARGE_INTEGER offset,
-                         PULONG view_size);
+                         PSIZE_T view_size);
 
 // Converts an ansi string to an UNICODE_STRING.
 UNICODE_STRING* AnsiToUnicode(const char* string);

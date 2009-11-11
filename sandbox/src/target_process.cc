@@ -220,7 +220,7 @@ ResultCode TargetProcess::TransferVariable(char* name, void* address,
   UNREFERENCED_PARAMETER(name);
 #endif
 
-  DWORD written;
+  SIZE_T written;
   if (!::WriteProcessMemory(sandbox_process_, child_var, address, size,
                             &written))
     return SBOX_ERROR_GENERIC;

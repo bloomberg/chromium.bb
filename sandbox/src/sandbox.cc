@@ -9,6 +9,13 @@
 #include "sandbox/src/broker_services.h"
 #include "sandbox/src/target_services.h"
 
+#ifdef _WIN64
+#error Sandbox code was not tested on 64-bit Windows. See \
+ http://code.google.com/p/chromium/issues/detail?id=27218 for details \
+ and progress log.
+#endif
+
+
 namespace sandbox {
 // The section for IPC and policy.
 SANDBOX_INTERCEPT HANDLE  g_shared_section = NULL;

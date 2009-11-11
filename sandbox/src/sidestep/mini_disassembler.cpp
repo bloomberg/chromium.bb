@@ -29,6 +29,10 @@
 
 // Implementation of MiniDisassembler.
 
+#ifdef _WIN64
+#error The code in this file should not be used on 64-bit Windows.
+#endif
+
 #include "sandbox/src/sidestep/mini_disassembler.h"
 
 namespace sidestep {

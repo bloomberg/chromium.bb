@@ -375,7 +375,7 @@ bool InterceptionManager::PatchNtdll(bool hot_patch_needed) {
     return false;
 
   // and now write the first part of the table to the child's memory
-  DWORD written;
+  SIZE_T written;
   bool ok = FALSE != ::WriteProcessMemory(child, thunks, &dll_data,
                                           offsetof(DllInterceptionData, thunks),
                                           &written);

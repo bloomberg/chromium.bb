@@ -116,7 +116,7 @@ bool WriteProtectedChildMemory(HANDLE child_process,
                           PAGE_WRITECOPY, &old_protection))
     return false;
 
-  DWORD written;
+  SIZE_T written;
   bool ok = ::WriteProcessMemory(child_process, address, buffer, length,
                                  &written) && (length == written);
 
@@ -197,7 +197,7 @@ size_t ServiceResolverThunk::GetThunkSize() const {
 
 bool ServiceResolverThunk::IsFunctionAService(void* local_thunk) const {
   ServiceEntry function_code;
-  DWORD read;
+  SIZE_T read;
   if (!::ReadProcessMemory(process_, target_, &function_code,
                            sizeof(function_code), &read))
     return false;
@@ -293,7 +293,7 @@ NTSTATUS ServiceResolverThunk::PerformPatch(void* local_thunk,
   size_t thunk_size = GetThunkSize();
 
   // copy the local thunk buffer to the child
-  DWORD written;
+  SIZE_T written;
   if (!::WriteProcessMemory(process_, remote_thunk, local_thunk,
                             thunk_size, &written))
     return STATUS_UNSUCCESSFUL;
@@ -319,7 +319,7 @@ NTSTATUS ServiceResolverThunk::PerformPatch(void* local_thunk,
 bool ServiceResolverThunk::SaveOriginalFunction(void* local_thunk,
                                                 void* remote_thunk) {
   ServiceEntry function_code;
-  DWORD read;
+  SIZE_T read;
   if (!::ReadProcessMemory(process_, target_, &function_code,
                            sizeof(function_code), &read))
     return false;
@@ -354,7 +354,7 @@ bool ServiceResolverThunk::SaveOriginalFunction(void* local_thunk,
 
 bool Wow64ResolverThunk::IsFunctionAService(void* local_thunk) const {
   Wow64Entry function_code;
-  DWORD read;
+  SIZE_T read;
   if (!::ReadProcessMemory(process_, target_, &function_code,
                            sizeof(function_code), &read))
     return false;
@@ -380,7 +380,7 @@ bool Wow64ResolverThunk::IsFunctionAService(void* local_thunk) const {
 
 bool Win2kResolverThunk::IsFunctionAService(void* local_thunk) const {
   ServiceEntry function_code;
-  DWORD read;
+  SIZE_T read;
   if (!::ReadProcessMemory(process_, target_, &function_code,
                            sizeof(function_code), &read))
     return false;
