@@ -130,7 +130,7 @@ void ExtensionInstallUI::ConfirmInstall(Delegate* delegate,
 
   if (!install_icon) {
     install_icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_EXTENSIONS_SECTION);
+        IDR_EXTENSION_DEFAULT_ICON);
   }
   icon_ = *install_icon;
 
@@ -150,7 +150,7 @@ void ExtensionInstallUI::ConfirmUninstall(Delegate* delegate,
 
   if (!icon) {
     icon = ResourceBundle::GetSharedInstance().GetBitmapNamed(
-        IDR_EXTENSIONS_SECTION);
+        IDR_EXTENSION_DEFAULT_ICON);
   }
 
   std::wstring message =
