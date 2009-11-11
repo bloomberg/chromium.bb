@@ -46,13 +46,14 @@ bool UrlmonUrlRequest::Start() {
     return false;
   }
 
-  worker_thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::StartAsync));
-
   // Take a self reference to maintain COM lifetime. This will be released
   // in EndRequest
   AddRef();
   request_handler()->AddRequest(this);
+
+  worker_thread_->message_loop()->PostTask(
+      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::StartAsync));
+
   return true;
 }
 
@@ -63,6 +64,11 @@ void UrlmonUrlRequest::Stop() {
     NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
     return;
   }
+
+  // We can remove the request from the map safely here if it is still valid.
+  // There is an additional reference on the UrlmonUrlRequest instance which
+  // is released when the task scheduled by the EndRequest function executes.
+  request_handler()->RemoveRequest(this);
 
   worker_thread_->message_loop()->PostTask(
       FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::StopAsync));
@@ -204,6 +210,8 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     status_.set_status(URLRequestStatus::SUCCESS);
     status_.set_os_error(0);
   }
+
+  DLOG(INFO) << "OnStopBinding received for request id: " << id();
 
   // Release these variables after reporting EndRequest since we might need to
   // access their state.
@@ -605,6 +613,9 @@ void UrlmonUrlRequest::EndRequest() {
 }
 
 void UrlmonUrlRequest::EndRequestInternal() {
+  // The request object could have been removed from the map in the
+  // OnRequestEnd callback which executes on receiving the
+  // AutomationMsg_RequestEnd IPC from Chrome.
   request_handler()->RemoveRequest(this);
   // Release the outstanding reference in the context of the UI thread to
   // ensure that our instance gets deleted in the same thread which created it.

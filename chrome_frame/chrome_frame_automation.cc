@@ -1018,8 +1018,13 @@ bool ChromeFrameAutomationClient::ReadRequest(
 
 void ChromeFrameAutomationClient::RemoveRequest(PluginUrlRequest* request) {
   DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
-  DCHECK(request_map_.end() != request_map_.find(request->id()));
-  request_map_.erase(request->id());
+
+  // We check if the request pointer passed in is actually present in the map
+  // before going ahead and deleting it. This avoids the issue where we would
+  // incorrectly delete a different request with the same request id.
+  if (IsValidRequest(request)) {
+    request_map_.erase(request->id());
+  }
 }
 
 void ChromeFrameAutomationClient::RemoveRequest(int request_id, bool abort) {
@@ -1081,17 +1086,23 @@ void ChromeFrameAutomationClient::CleanupRequests() {
 
 void ChromeFrameAutomationClient::CleanupAsyncRequests() {
   DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
+
+  std::vector<scoped_refptr<PluginUrlRequest> > request_list;
+  // We copy the pending requests into a temporary vector as the Stop
+  // function in the request could also try to delete the request from
+  // the request map and the iterator could end up being invalid.
   RequestMap::iterator index = request_map_.begin();
   while (index != request_map_.end()) {
     PluginUrlRequest* request = (*index).second;
-    if (request) {
-      int request_id = request->id();
-      request->Stop();
-    }
+    DCHECK(request != NULL);
+    request_list.push_back(request);
     index++;
   }
-
   request_map_.clear();
+
+  for (unsigned int index = 0; index < request_list.size(); ++index) {
+    request_list[index]->Stop();
+  }
 }
 
 bool ChromeFrameAutomationClient::Reinitialize(
@@ -1108,6 +1119,7 @@ bool ChromeFrameAutomationClient::Reinitialize(
     return false;
   }
 
+  CleanupAsyncRequests();
   chrome_frame_delegate_ = delegate;
   SetParentWindow(NULL);
   return true;
