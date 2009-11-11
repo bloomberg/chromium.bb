@@ -569,11 +569,17 @@ void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel) {
 }
 
 gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget) {
+  DCHECK(GTK_WIDGET_REALIZED(widget));
+
+  GtkWidget* toplevel = gtk_widget_get_toplevel(widget);
+  DCHECK(toplevel);
+  DCHECK(GTK_WIDGET_REALIZED(toplevel));
+
   gint x = 0, y = 0;
-  DCHECK(gtk_widget_translate_coordinates(widget,
-                                          gtk_widget_get_toplevel(widget),
-                                          0, 0,
-                                          &x, &y));
+  gtk_widget_translate_coordinates(widget,
+                                   toplevel,
+                                   0, 0,
+                                   &x, &y);
   return gfx::Rect(x, y, widget->allocation.width, widget->allocation.height);
 }
 
