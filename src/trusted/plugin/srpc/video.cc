@@ -1145,7 +1145,7 @@ bool VideoMap::SetWindow(PluginWindow *window) {
           reinterpret_cast<WNDPROC>(VideoMap::WindowProcedure));
       SetWindowLong(hwnd, GWL_USERDATA, reinterpret_cast<LONG>(this));
 #endif  // NACL_WINDOWS
-#if NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
+#if NACL_LINUX && defined(MOZ_X11) && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
       // open X11 display, add X11 event listener
       dprintf(("VideoMap::SetWindow adding X11 display\n"));
       set_platform_specific(XOpenDisplay(NULL));
@@ -1163,7 +1163,7 @@ bool VideoMap::SetWindow(PluginWindow *window) {
         XtAddEventHandler(widget, event_mask, False,
             reinterpret_cast<XtEventHandler>(&VideoMap::XEventHandler), this);
       }
-#endif  // NACL_LINUX && defined(MOZ_X11) && NACL_BUILD_ARCH != arm
+#endif  // NACL_LINUX && defined(MOZ_X11) && ...
     }
   }
   return true;
