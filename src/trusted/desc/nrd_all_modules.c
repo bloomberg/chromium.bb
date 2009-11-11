@@ -13,6 +13,7 @@
 #include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_secure_random.h"
+#include "native_client/src/shared/platform/nacl_time.h"
 
 void NaClNrdAllModulesInit(void) {
   /*
@@ -22,9 +23,11 @@ void NaClNrdAllModulesInit(void) {
   NaClLogModuleInit();
   NaClSecureRngModuleInit();
   NaClGlobalSecureRngInit();
+  NaClTimeInit();
 }
 
 void NaClNrdAllModulesFini(void) {
+  NaClTimeFini();
   NaClGlobalSecureRngFini();
   NaClSecureRngModuleFini();
   NaClLogModuleFini();
