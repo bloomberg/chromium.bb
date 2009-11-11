@@ -1259,8 +1259,8 @@ void BrowserView::TabDetachedAt(TabContents* contents, int index) {
     // We need to reset the current tab contents to NULL before it gets
     // freed. This is because the focus manager performs some operations
     // on the selected TabContents when it is removed.
-    infobar_container_->ChangeTabContents(NULL);
     contents_container_->ChangeTabContents(NULL);
+    infobar_container_->ChangeTabContents(NULL);
     UpdateDevToolsForContents(NULL);
   }
 }
@@ -1281,8 +1281,22 @@ void BrowserView::TabSelectedAt(TabContents* old_contents,
 
   // Update various elements that are interested in knowing the current
   // TabContents.
+
+  // When we toggle the NTP floating bookmarks bar,
+  // we don't want any TabContents to be attached, so that we
+  // avoid an unnecessary resize and re-layout of a TabContents.
+  contents_container_->ChangeTabContents(NULL);
+
   infobar_container_->ChangeTabContents(new_contents);
+
+  // Update all the UI bits.
+  UpdateTitleBar();
+  toolbar_->SetProfile(new_contents->profile());
+  UpdateToolbar(new_contents, true);
+  UpdateUIForContents(new_contents);
+
   contents_container_->ChangeTabContents(new_contents);
+
   UpdateDevToolsForContents(new_contents);
   // TODO(beng): This should be called automatically by ChangeTabContents, but I
   //             am striving for parity now rather than cleanliness. This is
@@ -1295,12 +1309,6 @@ void BrowserView::TabSelectedAt(TabContents* old_contents,
     // handlers when we are eventually shown.
     new_contents->view()->RestoreFocus();
   }
-
-  // Update all the UI bits.
-  UpdateTitleBar();
-  toolbar_->SetProfile(new_contents->profile());
-  UpdateToolbar(new_contents, true);
-  UpdateUIForContents(new_contents);
 }
 
 void BrowserView::TabStripEmpty() {

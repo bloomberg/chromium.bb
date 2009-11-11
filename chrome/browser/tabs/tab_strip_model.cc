@@ -117,15 +117,17 @@ void TabStripModel::InsertTabContentsAt(int index,
   }
   contents_data_.insert(contents_data_.begin() + index, data);
 
+  if (index <= selected_index_) {
+    // If a tab is inserted before the current selected index,
+    // then |selected_index| needs to be incremented.
+    ++selected_index_;
+  }
+
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
       TabInsertedAt(contents, index, foreground));
 
   if (foreground) {
     ChangeSelectedContentsFrom(selected_contents, index, false);
-  } else if (index <= selected_index_) {
-    // If a tab is inserted before the current selected index that is not
-    // foreground, |selected_index| needs to be incremented.
-    ++selected_index_;
   }
 }
 
