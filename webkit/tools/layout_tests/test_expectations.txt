@@ -420,7 +420,7 @@ WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects
 // These tests propagate auth credentials back to the renderer, which we
 // don't want to do.
 WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL TIMEOUT
-WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL
+WONTFIX BUG21840 : LayoutTests/http/tests/loading/basic-credentials-sent-automatically.html = FAIL TIMEOUT
 
 // This checks the IDN behavior of WebKit/WebKit on Mac, not WebKit/WebCore or
 // WebKit/JavaScriptCore. Chrome doesn't use WebKit/WebKit, and Chrome's IDN
@@ -847,8 +847,8 @@ BUG13907 BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
 BUG13907 : LayoutTests/media/controls-styling.html = FAIL
 
 // These tests are flaky with subtle pixel differences.
-BUG9798 BUG13907 MAC : LayoutTests/media/video-transformed.html = IMAGE
-BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = IMAGE
+BUG9798 BUG13907 MAC : LayoutTests/media/video-transformed.html = IMAGE PASS
+BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = IMAGE PASS
 
 // These tests are failing because they use position-dependent mouse clicks.
 BUG13907 BUG25375 : LayoutTests/media/video-controls-transformed.html = FAIL
@@ -1735,7 +1735,7 @@ BUG23498 MAC : LayoutTests/fast/text/wbr.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/text/whitespace/024.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/text/whitespace/pre-wrap-spaces-after-newline.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/text/word-break.html = IMAGE
-BUG23498 MAC : LayoutTests/fonts/cursive.html = IMAGE
+BUG23498 MAC : LayoutTests/fonts/cursive.html = IMAGE IMAGE+TEXT
 BUG23498 MAC : LayoutTests/fonts/default.html = IMAGE
 BUG23498 MAC : LayoutTests/fonts/fantasy.html = IMAGE
 BUG23498 MAC : LayoutTests/fonts/monospace.html = IMAGE
@@ -1745,7 +1745,7 @@ BUG23498 MAC : LayoutTests/http/tests/navigation/anchor-frames.html = IMAGE
 BUG9798 BUG23498 MAC : LayoutTests/http/tests/navigation/error404-frames.html = TIMEOUT IMAGE
 BUG23498 MAC : LayoutTests/http/tests/navigation/error404-subframeload.html = IMAGE
 // BUG23498 MAC : LayoutTests/http/tests/navigation/javascriptlink-frames.html = IMAGE
-BUG23498 MAC : LayoutTests/http/tests/navigation/post-frames.html = IMAGE
+BUG23498 MAC : LayoutTests/http/tests/navigation/post-frames.html = IMAGE PASS TIMEOUT
 BUG23498 MAC : LayoutTests/http/tests/navigation/postredirect-frames.html = IMAGE
 BUG23498 MAC : LayoutTests/svg/custom/altglyph.svg = IMAGE
 // BUG23498 MAC : LayoutTests/svg/custom/junk-data.svg = IMAGE
@@ -2488,7 +2488,7 @@ BUG9798 WIN DEBUG : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PA
 BUG9798 MAC RELEASE : LayoutTests/http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 MAC DEBUG : LayoutTests/http/tests/navigation/back-to-slow-frame.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/navigation/success200-frames-loadsame.html = TIMEOUT PASS
-BUG9798 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol-explicit-domain.html = FAIL PASS
+BUG9798 WIN : LayoutTests/http/tests/security/cross-frame-access-protocol-explicit-domain.html = FAIL PASS
 BUG9798 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol.html = FAIL PASS
 BUG9798 RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities.html = TIMEOUT PASS
@@ -2530,6 +2530,7 @@ BUG9798 MAC : LayoutTests/fast/forms/select-reset.html = PASS CRASH
 // This test definitely times out (i.e. is not just slow).
 BUG9798 RELEASE : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
+BUG9798 LINUX RELEASE : LayoutTests/http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
 BUG9798 LINUX DEBUG : LayoutTests/transitions/zero-duration-in-list.html = PASS TEXT
 BUG9798 LINUX DEBUG : LayoutTests/http/tests/multipart/invalid-image-data.html = PASS IMAGE
 BUG9798 LINUX DEBUG : LayoutTests/svg/custom/animate-path-discrete.svg = PASS IMAGE+TEXT
@@ -3052,7 +3053,7 @@ BUG9798 WIN : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS T
 
 // Flaky since at least WebKit 50258.
 BUG9798 WIN DEBUG : LayoutTests/media/video-empty-source.html = IMAGE PASS
-BUG9798 DEBUG : LayoutTests/fast/dom/defaultView.html = TEXT PASS MISSING
+BUG9798 : LayoutTests/fast/dom/defaultView.html = TEXT PASS MISSING
 BUG9798 WIN RELEASE : LayoutTests/http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
 
 // WebKit 50358:50395
@@ -3077,3 +3078,14 @@ BUG_LEVIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheade
 
 // Webkit 50717:50738, new test
 BUG_JAPHET WIN LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = IMAGE
+BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = PASS TEXT
+
+// more test flakiness
+BUG27335 WIN : LayoutTests/plugins/embed-attributes-setting.html = PASS TIMEOUT
+BUG27334 MAC : LayoutTests/http/tests/misc/xhtml.php = PASS TIMEOUT
+BUG27334 MAC : LayoutTests/http/tests/navigation/timerredirect-subframeload.html = PASS TIMEOUT
+BUG27334 MAC : LayoutTests/http/tests/security/xssAuditor/object-embed-tag.html = PASS
+BUG27334 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-non-simple-deny-cached.html = PASS TIMEOUT
+BUG27334 MAC : LayoutTests/http/tests/xmlhttprequest/re-login-async.html = PASS TIMEOUT
+BUG27334 MAC DEBUG : LayoutTests/plugins/netscape-destroy-plugin-script-objects.html = PASS TEXT
+BUG27334 MAC DEBUG : LayoutTests/plugins/netscape-invoke-failure.html = PASS TEXT
