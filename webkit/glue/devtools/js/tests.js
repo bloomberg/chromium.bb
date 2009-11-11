@@ -643,19 +643,39 @@ TestSuite.prototype.testPauseWhenLoadingDevTools = function() {
   this.showPanel('scripts');
   var test = this;
 
+  var expectations = {
+        functionsOnStack: ['callDebugger'],
+        lineNumber: 8,
+        lineText: '  debugger;'
+      };
+
+
   // Script execution can already be paused.
   if (WebInspector.currentPanel.paused) {
     var callFrame =
         WebInspector.currentPanel.sidebarPanes.callstack.selectedCallFrame;
-    this.assertEquals('callDebugger', callFrame.functionName);
+    this.assertEquals(expectations.functionsOnStack[0],
+                      callFrame.functionName);
+    var callbackInvoked = false;
+    this._checkSourceFrameWhenLoaded(expectations, function() {
+          callbackInvoked = true;
+          if (test.controlTaken_) {
+            test.releaseControl();
+          }
+        });
+    if (!callbackInvoked) {
+      test.takeControl();
+    }
     return;
   }
 
-  this.addSniffer(
-      WebInspector,
-      'pausedScript',
-      function(callFrames) {
-        test.assertEquals('callDebugger', callFrames[0].functionName);
+  this._waitForScriptPause(
+      {
+        functionsOnStack: ['callDebugger'],
+        lineNumber: 8,
+        lineText: '  debugger;'
+      },
+      function() {
         test.releaseControl();
       });
   this.takeControl();
@@ -1041,24 +1061,35 @@ TestSuite.prototype._waitForScriptPause = function(expectations, callback) {
             expectations.functionsOnStack.join(','),
             functionsOnStack.join(','), 'Unexpected stack.');
 
-        checkSourceFrameWhenLoaded();
+        // Check that execution line where the script is paused is
+        // expected one.
+        test._checkSourceFrameWhenLoaded(expectations, callback);
       });
+};
 
-  // Check that execution line where the script is paused is expected one.
-  function checkSourceFrameWhenLoaded() {
-    var frame = WebInspector.currentPanel.visibleView.sourceFrame;
-    if (frame._isContentLoaded()) {
-      checkExecLine();
-    } else {
-      frame.addEventListener('content loaded', checkExecLine);
-    }
-    function checkExecLine() {
-      test._checkExecutionLine(frame, expectations.lineNumber,
-                               expectations.lineText);
-      // Make sure we don't listen anymore.
-      frame.removeEventListener('content loaded', checkExecLine);
-      callback();
-    }
+
+/**
+ * Waits for current source frame to load, checks expectations, and invokes
+ * the callback.
+ * @param {Object} expectations  Dictionary of expectations
+ * @param {function():void} callback
+ */
+TestSuite.prototype._checkSourceFrameWhenLoaded = function(
+    expectations, callback) {
+  var test = this;
+
+  var frame = WebInspector.currentPanel.visibleView.sourceFrame;
+  if (frame._isContentLoaded()) {
+    checkExecLine();
+  } else {
+    frame.addEventListener('content loaded', checkExecLine);
+  }
+  function checkExecLine() {
+    test._checkExecutionLine(frame, expectations.lineNumber,
+                             expectations.lineText);
+    // Make sure we don't listen anymore.
+    frame.removeEventListener('content loaded', checkExecLine);
+    callback();
   }
 };
 

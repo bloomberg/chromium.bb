@@ -75,6 +75,21 @@ devtools.DebuggerAgent = function() {
   this.requestScriptsWhenContextIdSet_ = false;
 
   /**
+   * Whether the agent is waiting for initial scripts response.
+   * @type {boolean}
+   */
+  this.waitingForInitialScriptsResponse_ = false;
+
+  /**
+   * If backtrace response is received when initial scripts response
+   * is not yet processed the backtrace handling will be postponed until
+   * after the scripts response processing. The handler bound to its arguments
+   * and this agent will be stored in this field then.
+   * @type {?function()}
+   */
+  this.pendingBacktraceResponseHandler_ = null;
+
+  /**
    * Active profiler modules flags.
    * @type {number}
    */
@@ -138,6 +153,8 @@ devtools.DebuggerAgent.prototype.reset = function() {
   // No need to request scripts since they all will be pushed in AfterCompile
   // events.
   this.requestScriptsWhenContextIdSet_ = false;
+  this.waitingForInitialScriptsResponse_ = false;
+
   this.parsedScripts_ = {};
   this.requestNumberToBreakpointInfo_ = {};
   this.callFrames_ = [];
@@ -173,6 +190,7 @@ devtools.DebuggerAgent.prototype.initUI = function() {
     }
     return;
   }
+  this.waitingForInitialScriptsResponse_ = true;
   // Script list should be requested only when current context id is known.
   RemoteDebuggerAgent.GetContextId();
   this.requestScriptsWhenContextIdSet_ = true;
@@ -823,6 +841,14 @@ devtools.DebuggerAgent.prototype.setContextId_ = function(contextId) {
       if (contextId == debuggerAgent.contextId_) {
         debuggerAgent.handleScriptsResponse_(msg);
       }
+
+      // We received initial scripts response so flush the flag and
+      // see if there is an unhandled backtrace response.
+      debuggerAgent.waitingForInitialScriptsResponse_ = false;
+      if (debuggerAgent.pendingBacktraceResponseHandler_) {
+        debuggerAgent.pendingBacktraceResponseHandler_();
+        debuggerAgent.pendingBacktraceResponseHandler_ = null;
+      }
     };
   }
 };
@@ -1065,6 +1091,19 @@ devtools.DebuggerAgent.prototype.handleClearBreakpointResponse_ = function(
  * @param {devtools.DebuggerMessage} msg
  */
 devtools.DebuggerAgent.prototype.handleBacktraceResponse_ = function(msg) {
+  if (this.waitingForInitialScriptsResponse_) {
+    this.pendingBacktraceResponseHandler_ =
+        this.doHandleBacktraceResponse_.bind(this, msg);
+  } else {
+    this.doHandleBacktraceResponse_(msg);
+  }
+};
+
+
+/**
+ * @param {devtools.DebuggerMessage} msg
+ */
+devtools.DebuggerAgent.prototype.doHandleBacktraceResponse_ = function(msg) {
   var frames = msg.getBody().frames;
   this.callFrames_ = [];
   for (var i = 0; i <  frames.length; ++i) {
