@@ -921,7 +921,7 @@ BUG24206 : LayoutTests/http/tests/navigation/changing-frame-hierarchy-in-onload.
 // Depending upon when the snapshot is taken we get different results.
 BUG10280 WIN LINUX : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL PASS
 // WebKit roll 50313:50324
-BUG_ROLANDSTEINER MAC : LayoutTests/fast/inline/dirtyLinesForInline.html = IMAGE+TEXT
+BUG_ROLANDSTEINER MAC : LayoutTests/fast/inline/dirtyLinesForInline.html = TEXT
 
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
