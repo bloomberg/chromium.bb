@@ -103,6 +103,10 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 
   // "Other bookmarks" button on the right side.
   scoped_nsobject<NSButton> otherBookmarksButton_;
+
+  // Contains folder bookmark items that are created while the folder icon is
+  // still loading.
+  scoped_nsobject<NSMutableArray> itemsPendingBookmarkIcon_;
 }
 
 // Initializes the bookmark bar controller with the given browser
