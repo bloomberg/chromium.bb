@@ -6,7 +6,7 @@
   "content_scripts": [
     { "matches": ["http://*/*"], "js": ["mappy_content_script.js"] }
   ],
-  "permissions": [ 
+  "permissions": [
     "tabs",
     "http://maps.google.com/*"
   ],

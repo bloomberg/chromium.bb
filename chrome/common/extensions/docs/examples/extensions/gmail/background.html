@@ -75,7 +75,7 @@ function init() {
 
   chrome.browserAction.setIcon({path: "gmail_logged_in.png"});
   loadingAnimation.start();
-  
+
   startRequest();
 }
 
@@ -180,7 +180,7 @@ function ease(x) {
 function animateFlip() {
   rotation += 1/animationFrames;
   drawIconAtRotation();
-  
+
   if (rotation <= 1) {
     setTimeout("animateFlip()", animationSpeed);
   } else {
@@ -207,7 +207,7 @@ function drawIconAtRotation() {
       Math.ceil(canvas.width/2),
       Math.ceil(canvas.height/2));
   canvasContext.rotate(2*Math.PI*ease(rotation));
-  canvasContext.drawImage(loggedInImage, 
+  canvasContext.drawImage(loggedInImage,
       -Math.ceil(canvas.width/2),
       -Math.ceil(canvas.height/2));
   canvasContext.restore();

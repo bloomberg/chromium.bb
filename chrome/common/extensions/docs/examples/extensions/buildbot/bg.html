@@ -3,7 +3,7 @@ var statusURL = "http://chromium-status.appspot.com/current";
 
 function updateStatus(text) {
   // Page outputs a line like this:
-  // <div class="Notice">Tree is open (issue -> person) </div> 
+  // <div class="Notice">Tree is open (issue -> person) </div>
   // Although what's in the <div> is arbitrary and typed by a person.
   var results = (new RegExp('"Notice"[^>]*>(.*)<', 'g')).exec(text);
   if (!results || results.index < 0) {

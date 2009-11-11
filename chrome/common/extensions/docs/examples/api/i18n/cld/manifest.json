@@ -1,0 +1,12 @@
+{
+  "name": "CLD",
+  "description": "Displays the language of a tab",
+  "version": "0.1",
+  "background_page": "background.html",
+  "permissions": [
+    "tabs"
+  ],
+  "browser_action": {
+      "default_name": "Page Language"
+  }
+}

@@ -4,33 +4,29 @@ source code is governed by a BSD-style license that can be found in the
 LICENSE file.
 -->
 
-<html>
-  <head>
-    <script>
-
+<script>
 var selectedId = -1;
 function refreshLanguage() {
-  console.log("refeshing...");
   chrome.tabs.detectLanguage(null, function(language) {
-    document.getElementById("languageDiv").innerHTML = language;
+    console.log(language);
+    if (language == " invalid_language_code")
+      language = "???";
+    chrome.browserAction.setBadgeText({"text": language, tabId: selectedId});
   });
 }
 
 chrome.tabs.onUpdated.addListener(function(tabId, props) {
-  console.log("updated: " + tabId);
-  if (prop.status == "complete" && tabId == selectedId)
+  if (props.status == "complete" && tabId == selectedId)
     refreshLanguage();
 });
 
 chrome.tabs.onSelectionChanged.addListener(function(tabId, props) {
-  console.log("selection: " + tabId);
   selectedId = tabId;
   refreshLanguage();
 });
-    </script>
-  </head>
-  <body onload="refreshLanguage();">
-    <div id="languageDiv" class="toolstrip-button" onclick="refreshLanguage();">
-    </div>
-  </body>
-</html>
+
+chrome.tabs.getSelected(null, function(tab) {
+  selectedId = tab.id;
+  refreshLanguage();
+});
+</script>

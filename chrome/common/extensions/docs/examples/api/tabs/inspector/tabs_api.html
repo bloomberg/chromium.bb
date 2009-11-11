@@ -1,6 +1,6 @@
 <html>
 <head>
-<script src="jstemplate_compiled.js" type="text/javascript"></script> 
+<script src="jstemplate_compiled.js" type="text/javascript"></script>
 <script>
 
 tabs = {};
@@ -48,7 +48,7 @@ function updateTabData(id) {
     url: document.getElementById('url_' + id).value,
     selected: document.getElementById('selected_' + id).value ? true : false
   }
-  
+
   return retval;
 }
 
@@ -58,10 +58,10 @@ function updateTab(id){
   } catch (e) {
     alert(e);
   }
-} 
+}
 
 function moveTabData(id) {
-	return {
+  return {
     'index': parseInt(document.getElementById('index_' + id).value),
     'windowId': parseInt(document.getElementById('windowId_' + id).value)
   }
@@ -80,8 +80,8 @@ function createTabData(id) {
     'windowId': parseInt(document.getElementById('windowId_' + id).value),
     'index': parseInt(document.getElementById('index_' + id).value),
     'url': document.getElementById('url_' + id).value,
-    'selected': document.getElementById('selected_' + id).value ? true : false  
-  } 
+    'selected': document.getElementById('selected_' + id).value ? true : false
+  }
 }
 
 function createTab() {
@@ -91,7 +91,7 @@ function createTab() {
     delete args.windowId;
   if (!isInt(args.index))
     delete args.index;
- 
+
   try {
     chrome.tabs.create(args);
   } catch (e) {
@@ -102,7 +102,7 @@ function createTab() {
 function updateAll() {
   try {
     for (var i = 0; i < tabIds.length; i++) {
-      chrome.tabs.update(tabIds[i], updateTabData(tabIds[i])); 
+      chrome.tabs.update(tabIds[i], updateTabData(tabIds[i]));
     }
   } catch(e) {
     alert(e);
@@ -113,7 +113,7 @@ function moveAll() {
   appendToLog('moving all');
   try {
     for (var i = 0; i < tabIds.length; i++) {
-      chrome.tabs.move(tabIds[i], moveTabData(tabIds[i])); 
+      chrome.tabs.move(tabIds[i], moveTabData(tabIds[i]));
     }
   } catch(e) {
     alert(e);
@@ -174,7 +174,7 @@ function refreshTab(tabId) {
   chrome.tabs.get(tabId, function(tab) {
     var input = new JsExprContext(tab);
     var output = document.getElementById('tab_' + tab.id);
-    jstProcess(input, output);      
+    jstProcess(input, output);
     appendToLog('tab refreshed -- tabId: ' + tab.id + ' url: ' + tab.url);
   });
 }
@@ -207,7 +207,7 @@ function createWindow() {
     'height': parseInt(document.getElementById('new_window_height').value),
     'url': document.getElementById('new_window_url').value
   }
-  
+
   if (!isInt(args.left))
     delete args.left;
   if (!isInt(args.top))
@@ -218,7 +218,7 @@ function createWindow() {
     delete args.height;
   if (!args.url)
     delete args.url;
-  
+
   try {
     chrome.windows.create(args);
   } catch(e) {
@@ -233,7 +233,6 @@ function refreshWindow(windowId) {
       var input = new JsExprContext(window);
       var output = document.getElementById('window_' + window.id);
       jstProcess(input, output);
-      
       appendToLog('window refreshed -- windowId: ' + window.id + ' tab count:' + window.tabs.length);
     });
   });
@@ -246,7 +245,6 @@ function updateWindowData(id) {
     width: parseInt(document.getElementById('width_' + id).value),
     height: parseInt(document.getElementById('height_' + id).value)
   }
-         
   if (!isInt(retval.left))
     delete retval.left;
   if (!isInt(retval.top))
@@ -255,7 +253,7 @@ function updateWindowData(id) {
     delete retval.width;
   if (!isInt(retval.height))
     delete retval.height;
-     
+
   return retval;
 }
 
@@ -281,7 +279,7 @@ function refreshSelectedTab(windowId) {
   chrome.tabs.getSelected(windowId, function(tab) {
     var input = new JsExprContext(tab);
     var output = document.getElementById('tab_' + tab.id);
-    jstProcess(input, output);      
+    jstProcess(input, output);
     appendToLog('selected tab refreshed -- tabId: ' + tab.id + ' url:' + tab.url);
   });
 }
@@ -290,9 +288,9 @@ function refreshSelectedTab(windowId) {
 </head>
   <body onload="bootStrap();">
     <div id="windowList">
-      <div style="background-color: #AAEEEE; margin: 4px; padding: 8px; margin: 20px" jsselect="$this" 
+      <div style="background-color: #AAEEEE; margin: 4px; padding: 8px; margin: 20px" jsselect="$this"
           jsvalues="id:'window_' + id">
-        <div style="font-style: italic; width: 80px; display: inline-block"> 
+        <div style="font-style: italic; width: 80px; display: inline-block">
           Window: <span jscontent="id"></span>
         </div>
         <div style="display: inline-block">
@@ -309,7 +307,7 @@ function refreshSelectedTab(windowId) {
             <div style="background-color: #EEEEEE; margin: 8px; padding: 4px"  jsvalues="id:'tab_' + id">
               <div style="margin: 8px">
                 <div style="font-style: italic; width: 80px; display: inline-block" jscontent="'TabId: ' + id"></div>
-                <div style="width: 300px; display: inline-block"> 
+                <div style="width: 300px; display: inline-block">
                   index: <input style="width: 20px" type="text" jsvalues="value:$this.index;id:'index_' + id" />
                   windowId: <input style="width: 20px" type="text" jsvalues="value:windowId;id:'windowId_' + id" />
                   <button onclick="moveTab(this.jstdata);" jsvalues=".jstdata:id">Move</button>
@@ -340,7 +338,7 @@ function refreshSelectedTab(windowId) {
     <div style="background-color: #EEEEBB; margin: 20px; padding: 8px">
       <h3 style="text-align: center; margin: 8px"> Create Window</h3>
       <div style="margin: 8px">
-        <div style="width: 300px; display: inline-block"> 
+        <div style="width: 300px; display: inline-block">
           left: <input style="width: 20px" type="text" id="new_window_left" />
           top: <input style="width: 20px" type="text" id="new_window_top" />
           width: <input style="width: 20px" type="text" id="new_window_width" />
@@ -358,7 +356,7 @@ function refreshSelectedTab(windowId) {
     <div style="background-color: #EEEEAA; margin: 20px; padding: 8px">
       <h3 style="text-align: center; margin: 8px"> Create Tab</h3>
       <div style="margin: 8px">
-        <div style="width: 300px; display: inline-block"> 
+        <div style="width: 300px; display: inline-block">
           index: <input style="width: 20px" type="text" id="index_new" />
           windowId: <input style="width: 20px" type="text" id="windowId_new" />
           <button onclick="moveTab(this.jstdata);" jsvalues=".jstdata:id">Move</button>

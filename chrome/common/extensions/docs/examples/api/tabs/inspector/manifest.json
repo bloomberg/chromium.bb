@@ -1,0 +1,10 @@
+{
+  "name": "Tab Inspector",
+  "description": "Utility for working with the extension tabs api",
+  "version": "0.1",
+  "permissions": ["tabs"],
+  "background_page": "background.html",
+  "browser_action": {
+    "default_title": "show tab inspector"
+  }
+}
