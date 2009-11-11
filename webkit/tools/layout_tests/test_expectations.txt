@@ -3085,3 +3085,6 @@ BUG27334 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-non-si
 BUG27334 MAC : LayoutTests/http/tests/xmlhttprequest/re-login-async.html = PASS TIMEOUT
 BUG27334 MAC DEBUG : LayoutTests/plugins/netscape-destroy-plugin-script-objects.html = PASS TEXT
 BUG27334 MAC DEBUG : LayoutTests/plugins/netscape-invoke-failure.html = PASS TEXT
+
+BUG27341 LINUX : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache.html = PASS TIMEOUT
+BUG27341 LINUX : LayoutTests/http/tests/local/stylesheet-and-script-load-order.html = PASS TIMEOUT
