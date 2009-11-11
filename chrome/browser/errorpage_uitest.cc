@@ -186,7 +186,8 @@ TEST_F(ErrorPageTest, IFrameDNSError_GoBack) {
   EXPECT_TRUE(WaitForTitleMatching(L"Title Of Awesomeness"));
 }
 
-TEST_F(ErrorPageTest, IFrameDNSError_GoBackAndForward) {
+// Flaky on Linux too.
+TEST_F(ErrorPageTest, FLAKY_IFrameDNSError_GoBackAndForward) {
 #if defined(OS_WIN)
   // Flaky on XP, http://crbug.com/19361.
   if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA)
