@@ -271,18 +271,12 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
   EXPECT_EQ(L"set cookie on unload", tab_title);
 
-  // Navigate to a new cross-site URL that results in an error page.  We must
-  // wait for the error page to update the title.
+  // Navigate to a new cross-site URL that results in an error page.
   // TODO(creis): If this causes crashes or hangs, it might be for the same
-  // reason as ErrorPageTest::DNSError.  See bug 1199491.
-  tab->NavigateToURL(GURL(URLRequestFailedDnsJob::kTestUrl));
-  for (int i = 0; i < 10; ++i) {
-    PlatformThread::Sleep(sleep_timeout_ms());
-    if (GetActiveTabTitle() != L"set cookie on unload") {
-      // Success, bail out.
-      break;
-    }
-  }
+  // reason as ErrorPageTest::DNSError.  See bug 1199491 and
+  // http://crbug.com/22877.
+  tab->NavigateToURLBlockUntilNavigationsComplete(
+      GURL(URLRequestFailedDnsJob::kTestUrl), 2);
   EXPECT_NE(L"set cookie on unload", GetActiveTabTitle());
 
   // Check that the cookie was set, meaning that the onunload handler ran.
@@ -300,9 +294,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
   GURL test_url(server->TestServerPageW(L"files/title2.html"));
   std::string redirect_url = "javascript:window.location='" +
       test_url.possibly_invalid_spec() + "'";
-  tab->NavigateToURLAsync(GURL(redirect_url));
-  // Wait for JavaScript redirect to happen.
-  PlatformThread::Sleep(sleep_timeout_ms() * 3);
+  tab->NavigateToURL(GURL(redirect_url));
   EXPECT_TRUE(tab->GetTabTitle(&tab_title));
   EXPECT_EQ(L"Title Of Awesomeness", tab_title);
 }
