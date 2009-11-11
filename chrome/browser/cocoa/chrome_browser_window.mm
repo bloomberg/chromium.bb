@@ -222,6 +222,18 @@ namespace {
                                        owner:self
                                     userInfo:nil]);
     [frameView addTrackingArea:widgetTrackingArea_];
+
+    // Check to see if the cursor is still in trackingRect.
+    NSPoint point = [self mouseLocationOutsideOfEventStream];
+    point = [[self contentView] convertPoint:point fromView:nil];
+    BOOL newEntered = NSPointInRect (point, trackingRect);
+    if (newEntered != entered_) {
+      // Buttons have moved, so update button state.
+      entered_ = newEntered;
+      [closeButton_ setNeedsDisplay];
+      [zoomButton_ setNeedsDisplay];
+      [miniaturizeButton_ setNeedsDisplay];
+    }
   }
 }
 
