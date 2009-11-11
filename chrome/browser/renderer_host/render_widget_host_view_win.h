@@ -290,9 +290,6 @@ class RenderWidgetHostViewWin :
   // until that bug is fixed.
   bool renderer_accessible_;
 
-  // The time it took after this view was selected for it to be fully painted.
-  base::TimeTicks tab_switch_paint_time_;
-
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };
 

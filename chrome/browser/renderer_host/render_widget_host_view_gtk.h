@@ -120,9 +120,6 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   // value returns true for is_null() if we are not recording whiteout times.
   base::TimeTicks whiteout_start_time_;
 
-  // The time it took after this view was selected for it to be fully painted.
-  base::TimeTicks tab_switch_paint_time_;
-
   // Variables used only for popups --------------------------------------------
   // Our parent widget.
   RenderWidgetHostView* parent_host_view_;
