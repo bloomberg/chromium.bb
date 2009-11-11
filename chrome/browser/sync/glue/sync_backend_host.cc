@@ -20,6 +20,8 @@ static const char kGaiaSourceForChrome[] = "ChromiumBrowser";
 static const FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
 
+typedef GoogleServiceAuthError AuthError;
+
 namespace browser_sync {
 
 SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
@@ -31,7 +33,7 @@ SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
       frontend_(frontend),
       processor_(processor),
       sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
-      last_auth_error_(AUTH_ERROR_NONE) {
+      last_auth_error_(AuthError::None()) {
   core_ = new Core(this);
 }
 
@@ -125,7 +127,7 @@ string16 SyncBackendHost::GetAuthenticatedUsername() const {
   return UTF8ToUTF16(core_->syncapi()->GetAuthenticatedUsername());
 }
 
-AuthErrorState SyncBackendHost::GetAuthErrorState() const {
+const GoogleServiceAuthError& SyncBackendHost::GetAuthError() const {
   return last_auth_error_;
 }
 
@@ -214,23 +216,6 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   host_ = NULL;
 }
 
-static AuthErrorState AuthProblemToAuthError(
-    const sync_api::SyncManager::AuthProblem& auth_problem) {
-  switch (auth_problem) {
-    case sync_api::SyncManager::AUTH_PROBLEM_NONE:
-      return AUTH_ERROR_NONE;
-    case sync_api::SyncManager::AUTH_PROBLEM_INVALID_GAIA_CREDENTIALS:
-      return AUTH_ERROR_INVALID_GAIA_CREDENTIALS;
-    case sync_api::SyncManager::AUTH_PROBLEM_CONNECTION_FAILED:
-      return AUTH_ERROR_CONNECTION_FAILED;
-    case sync_api::SyncManager::AUTH_PROBLEM_USER_NOT_SIGNED_UP:
-      return AUTH_ERROR_USER_NOT_SIGNED_UP;
-  }
-
-  NOTREACHED() << "Unknown AuthProblem.";
-  return AUTH_ERROR_NONE;
-}
-
 void SyncBackendHost::Core::OnChangesApplied(
     const sync_api::BaseTransaction* trans,
     const sync_api::SyncManager::ChangeRecord* changes,
@@ -276,17 +261,16 @@ void SyncBackendHost::Core::OnInitializationComplete() {
       NewRunnableMethod(this, &Core::StartSavingChanges));
 }
 
-void SyncBackendHost::Core::OnAuthProblem(
-    sync_api::SyncManager::AuthProblem auth_problem) {
+void SyncBackendHost::Core::OnAuthError(const AuthError& auth_error) {
   // We could be on SyncEngine_AuthWatcherThread.  Post to our core loop so
   // we can modify state.
   host_->frontend_loop_->PostTask(FROM_HERE,
       NewRunnableMethod(this, &Core::HandleAuthErrorEventOnFrontendLoop,
-      AuthProblemToAuthError(auth_problem)));
+      auth_error));
 }
 
 void SyncBackendHost::Core::HandleAuthErrorEventOnFrontendLoop(
-    AuthErrorState new_auth_error) {
+    const GoogleServiceAuthError& new_auth_error) {
   if (!host_ || !host_->frontend_)
     return;
 

@@ -7,7 +7,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#include "chrome/browser/sync/auth_error_state.h"
 #include "chrome/test/live_sync/profile_sync_service_test_harness.h"
 #include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

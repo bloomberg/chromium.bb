@@ -14,8 +14,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/sync/auth_error_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
@@ -214,14 +214,14 @@ void SyncSetupFlow::OnDialogClosed(const std::string& json_retval) {
 // static
 void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
                                         DictionaryValue* args) {
-  AuthErrorState error(service->GetAuthErrorState());
+  const GoogleServiceAuthError& error = service->GetAuthError();
   if (!service->last_attempted_user_email().empty()) {
     args->SetString(L"user", service->last_attempted_user_email());
-    args->SetInteger(L"error", error);
+    args->SetInteger(L"error", error.state());
   } else {
     std::wstring user(UTF16ToWide(service->GetAuthenticatedUsername()));
     args->SetString(L"user", user);
-    args->SetInteger(L"error", user.empty() ? 0 : error);
+    args->SetInteger(L"error", user.empty() ? 0 : error.state());
   }
 }
 

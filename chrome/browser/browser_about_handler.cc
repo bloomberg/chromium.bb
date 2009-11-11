@@ -23,13 +23,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
-#include "chrome/browser/sync/auth_error_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/histogram_synchronizer.h"
@@ -487,13 +487,14 @@ static void AddIntSyncDetail(ListValue* details, const std::wstring& stat_name,
   details->Append(val);
 }
 
-static std::wstring MakeSyncAuthErrorText(AuthErrorState state) {
+static std::wstring MakeSyncAuthErrorText(
+    const GoogleServiceAuthError::State& state) {
   switch (state) {
-    case AUTH_ERROR_INVALID_GAIA_CREDENTIALS:
+    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
       return L"INVALID_GAIA_CREDENTIALS";
-    case AUTH_ERROR_USER_NOT_SIGNED_UP:
+    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
       return L"USER_NOT_SIGNED_UP";
-    case AUTH_ERROR_CONNECTION_FAILED:
+    case GoogleServiceAuthError::CONNECTION_FAILED:
       return L"CONNECTION_FAILED";
     default:
       return std::wstring();
@@ -521,7 +522,7 @@ std::string AboutSync() {
     strings.Set(L"authenticated",
         new FundamentalValue(full_status.authenticated));
     strings.SetString(L"auth_problem",
-        MakeSyncAuthErrorText(service->GetAuthErrorState()));
+        MakeSyncAuthErrorText(service->GetAuthError().state()));
 
     strings.SetString(L"time_since_sync", service->GetLastSyncedTimeString());
 

@@ -13,8 +13,8 @@
 #include "base/ref_counted.h"
 #include "base/thread.h"
 #include "base/timer.h"
+#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/net/url_request_context_getter.h"
-#include "chrome/browser/sync/auth_error_state.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/bookmark_model_worker.h"
 #include "googleurl/src/gurl.h"
@@ -102,7 +102,7 @@ class SyncBackendHost {
   // summarized form.
   Status GetDetailedStatus();
   StatusSummary GetStatusSummary();
-  AuthErrorState GetAuthErrorState() const;
+  const GoogleServiceAuthError& GetAuthError() const;
 
   const FilePath& sync_data_folder_path() const {
     return sync_data_folder_path_;
@@ -149,8 +149,7 @@ class SyncBackendHost {
         int change_count);
     virtual void OnSyncCycleCompleted();
     virtual void OnInitializationComplete();
-    virtual void OnAuthProblem(
-        sync_api::SyncManager::AuthProblem auth_problem);
+    virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
 
     // Note:
     //
@@ -240,7 +239,8 @@ class SyncBackendHost {
 
     // Dispatched to from HandleAuthErrorEventOnCoreLoop to handle updating
     // frontend UI components.
-    void HandleAuthErrorEventOnFrontendLoop(AuthErrorState new_auth_error);
+    void HandleAuthErrorEventOnFrontendLoop(
+        const GoogleServiceAuthError& new_auth_error);
 
     // Our parent SyncBackendHost
     SyncBackendHost* host_;
@@ -282,7 +282,7 @@ class SyncBackendHost {
   FilePath sync_data_folder_path_;
 
   // UI-thread cache of the last AuthErrorState received from syncapi.
-  AuthErrorState last_auth_error_;
+  GoogleServiceAuthError last_auth_error_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncBackendHost);
 };

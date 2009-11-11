@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/model_associator.h"
@@ -129,7 +130,7 @@ class ProfileSyncService : public NotificationObserver,
   browser_sync::SyncBackendHost::StatusSummary QuerySyncStatusSummary();
   browser_sync::SyncBackendHost::Status QueryDetailedSyncStatus();
 
-  AuthErrorState GetAuthErrorState() const {
+  const GoogleServiceAuthError& GetAuthError() const {
     return last_auth_error_;
   }
 
@@ -230,7 +231,7 @@ class ProfileSyncService : public NotificationObserver,
   // "expected" auth failure from observers.
   // TODO(timsteele): Same as expecting_first_run_auth_needed_event_. Remove
   // this!
-  AuthErrorState last_auth_error_;
+  GoogleServiceAuthError last_auth_error_;
 
   // Cache of the last name the client attempted to authenticate.
   std::string last_attempted_user_email_;

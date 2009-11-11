@@ -34,11 +34,13 @@ using browser_sync::ChangeProcessor;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 
+typedef GoogleServiceAuthError AuthError;
+
 // Default sync server URL.
 static const char kSyncServerUrl[] = "https://clients4.google.com/chrome-sync";
 
 ProfileSyncService::ProfileSyncService(Profile* profile)
-    : last_auth_error_(AUTH_ERROR_NONE),
+    : last_auth_error_(AuthError::None()),
       profile_(profile),
       sync_service_url_(kSyncServerUrl),
       backend_initialized_(false),
@@ -237,17 +239,17 @@ void ProfileSyncService::OnSyncCycleCompleted() {
 }
 
 void ProfileSyncService::OnAuthError() {
-  last_auth_error_ = backend_->GetAuthErrorState();
+  last_auth_error_ = backend_->GetAuthError();
   // Protect against the in-your-face dialogs that pop out of nowhere.
   // Require the user to click somewhere to run the setup wizard in the case
   // of a steady-state auth failure.
   if (WizardIsVisible() || expecting_first_run_auth_needed_event_) {
-    wizard_.Step(AUTH_ERROR_NONE == backend_->GetAuthErrorState() ?
+    wizard_.Step(AuthError::NONE == last_auth_error_.state() ?
         SyncSetupWizard::GAIA_SUCCESS : SyncSetupWizard::GAIA_LOGIN);
   }
 
   if (expecting_first_run_auth_needed_event_) {
-    last_auth_error_ = AUTH_ERROR_NONE;
+    last_auth_error_ = AuthError::None();
     expecting_first_run_auth_needed_event_ = false;
   }
 
@@ -276,7 +278,7 @@ void ProfileSyncService::ShowLoginDialog() {
     auth_error_time_ = base::TimeTicks();  // Reset auth_error_time_ to null.
   }
 
-  if (last_auth_error_ != AUTH_ERROR_NONE) {
+  if (last_auth_error_.state() != AuthError::NONE) {
     wizard_.Step(SyncSetupWizard::GAIA_LOGIN);
   }
 }

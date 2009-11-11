@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
@@ -20,6 +21,8 @@
 
 static const char* kTestUser = "chrome.p13n.test@gmail.com";
 static const char* kTestPassword = "passwd";
+
+typedef GoogleServiceAuthError AuthError;
 
 // A PSS subtype to inject.
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
@@ -48,9 +51,10 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
     return UTF8ToUTF16(username_);
   }
 
-  void set_auth_state(const std::string& last_email, AuthErrorState state) {
+  void set_auth_state(const std::string& last_email,
+                      const AuthError::State& state) {
     last_attempted_user_email_ = last_email;
-    last_auth_error_ = state;
+    last_auth_error_ = AuthError(state);
   }
 
   void ResetTestStats() {
@@ -208,7 +212,7 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   service_->ResetTestStats();
 
   // Simulate failed credentials.
-  service_->set_auth_state(kTestUser, AUTH_ERROR_INVALID_GAIA_CREDENTIALS);
+  service_->set_auth_state(kTestUser, AuthError::INVALID_GAIA_CREDENTIALS);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
@@ -221,8 +225,8 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_EQ(kTestUser, actual_user);
   int error = -1;
   dialog_args.GetInteger(L"error", &error);
-  EXPECT_EQ(static_cast<int>(AUTH_ERROR_INVALID_GAIA_CREDENTIALS), error);
-  service_->set_auth_state(kTestUser, AUTH_ERROR_NONE);
+  EXPECT_EQ(static_cast<int>(AuthError::INVALID_GAIA_CREDENTIALS), error);
+  service_->set_auth_state(kTestUser, AuthError::NONE);
 
   // Simulate success.
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
@@ -361,7 +365,7 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, test_window_->flow()->end_state_);
 
-  service_->set_auth_state(kTestUser, AUTH_ERROR_INVALID_GAIA_CREDENTIALS);
+  service_->set_auth_state(kTestUser, AuthError::INVALID_GAIA_CREDENTIALS);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
@@ -371,8 +375,8 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   EXPECT_EQ(kTestUser, actual_user);
   int error = -1;
   dialog_args.GetInteger(L"error", &error);
-  EXPECT_EQ(static_cast<int>(AUTH_ERROR_INVALID_GAIA_CREDENTIALS), error);
-  service_->set_auth_state(kTestUser, AUTH_ERROR_NONE);
+  EXPECT_EQ(static_cast<int>(AuthError::INVALID_GAIA_CREDENTIALS), error);
+  service_->set_auth_state(kTestUser, AuthError::NONE);
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());

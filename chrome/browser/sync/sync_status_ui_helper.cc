@@ -6,20 +6,22 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/sync/auth_error_state.h"
+#include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+typedef GoogleServiceAuthError AuthError;
+
 // Given an authentication state, this helper function returns the appropriate
 // status message and, if necessary, the text that should appear in the
 // re-login link.
-static void GetLabelsForAuthError(AuthErrorState auth_error,
+static void GetLabelsForAuthError(const AuthError& auth_error,
     ProfileSyncService* service, string16* status_label,
     string16* link_label) {
   if (link_label)
     link_label->assign(l10n_util::GetStringUTF16(IDS_SYNC_RELOGIN_LINK_LABEL));
-  if (auth_error == AUTH_ERROR_INVALID_GAIA_CREDENTIALS) {
+  if (auth_error.state() == AuthError::INVALID_GAIA_CREDENTIALS) {
     // If the user name is empty then the first login failed, otherwise the
     // credentials are out-of-date.
     if (service->GetAuthenticatedUsername().empty())
@@ -28,7 +30,7 @@ static void GetLabelsForAuthError(AuthErrorState auth_error,
     else
       status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_INFO_OUT_OF_DATE));
-  } else if (auth_error == AUTH_ERROR_CONNECTION_FAILED) {
+  } else if (auth_error.state() == AuthError::CONNECTION_FAILED) {
     // Note that there is little the user can do if the server is not
     // reachable. Since attempting to re-connect is done automatically by
     // the Syncer, we do not show the (re)login link.
@@ -69,19 +71,19 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
 
   if (service->HasSyncSetupCompleted()) {
     ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
-    AuthErrorState auth_error(service->GetAuthErrorState());
+    const AuthError& auth_error = service->GetAuthError();
 
     // Either show auth error information with a link to re-login, auth in prog,
     // or note that everything is OK with the last synced time.
     if (status.authenticated) {
       // Everything is peachy.
       status_label->assign(GetSyncedStateStatusLabel(service));
-      DCHECK_EQ(auth_error, AUTH_ERROR_NONE);
+      DCHECK_EQ(auth_error.state(), AuthError::NONE);
     } else if (service->UIShouldDepictAuthInProgress()) {
       status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
       result_type = PRE_SYNCED;
-    } else if (auth_error != AUTH_ERROR_NONE) {
+    } else if (auth_error.state() != AuthError::NONE) {
       GetLabelsForAuthError(auth_error, service, status_label, link_label);
       result_type = SYNC_ERROR;
     }
@@ -91,13 +93,13 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
     result_type = PRE_SYNCED;
     if (service->SetupInProgress()) {
       ProfileSyncService::Status status(service->QueryDetailedSyncStatus());
-      AuthErrorState auth_error(service->GetAuthErrorState());
+      const AuthError& auth_error = service->GetAuthError();
       status_label->assign(
           l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS));
       if (service->UIShouldDepictAuthInProgress()) {
         status_label->assign(
             l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
-      } else if (auth_error != AUTH_ERROR_NONE) {
+      } else if (auth_error.state() != AuthError::NONE) {
         status_label->clear();
         GetLabelsForAuthError(auth_error, service, status_label, NULL);
         result_type = SYNC_ERROR;

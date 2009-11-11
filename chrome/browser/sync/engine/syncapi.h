@@ -43,6 +43,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "build/build_config.h"
+#include "chrome/browser/google_service_auth_error.h"
 #include "googleurl/src/gurl.h"
 
 // The MSVC compiler for Windows requires that any classes exported by, or
@@ -357,23 +358,6 @@ class SYNC_EXPORT SyncManager {
     Action action;
   };
 
-  // When the SyncManager is unable to initiate the syncing process due to a
-  // failure during authentication, AuthProblem describes the actual problem
-  // more precisely.
-  enum AuthProblem {
-    AUTH_PROBLEM_NONE = 0,
-    // The credentials supplied to GAIA were either invalid, or the locally
-    // cached credentials have expired. If this happens, the sync system
-    // will continue as if offline until authentication is reattempted.
-    AUTH_PROBLEM_INVALID_GAIA_CREDENTIALS,
-    // The GAIA user is not authorized to use the sync service.
-    AUTH_PROBLEM_USER_NOT_SIGNED_UP,
-    // Could not connect to server to verify credentials. This could be in
-    // response to either failure to connect to GAIA or failure to connect to
-    // the sync service during authentication.
-    AUTH_PROBLEM_CONNECTION_FAILED,
-  };
-
   // Status encapsulates detailed state about the internals of the SyncManager.
   struct Status {
     // Summary is a distilled set of important information that the end-user may
@@ -471,7 +455,7 @@ class SYNC_EXPORT SyncManager {
     virtual void OnSyncCycleCompleted() = 0;
 
     // Called when user interaction may be required due to an auth problem.
-    virtual void OnAuthProblem(AuthProblem auth_problem) = 0;
+    virtual void OnAuthError(const GoogleServiceAuthError& auth_error) = 0;
 
     // Called when initialization is complete to the point that SyncManager can
     // process changes. This does not necessarily mean authentication succeeded

@@ -69,6 +69,8 @@ using std::vector;
 using syncable::Directory;
 using syncable::DirectoryManager;
 
+typedef GoogleServiceAuthError AuthError;
+
 static const int kServerReachablePollingIntervalMsec = 60000 * 60;
 static const int kThreadExitTimeoutMsec = 60000;
 static const int kSSLPort = 443;
@@ -667,7 +669,7 @@ class SyncManager::SyncInternal {
   explicit SyncInternal(SyncManager* sync_manager)
       : observer_(NULL),
         command_channel_(0),
-        auth_problem_(AUTH_PROBLEM_NONE),
+        auth_problem_(AuthError::NONE),
         sync_manager_(sync_manager),
         address_watch_thread_("SyncEngine_AddressWatcher"),
         notification_pending_(false),
@@ -878,8 +880,8 @@ class SyncManager::SyncInternal {
 
   // Our cache of a recent authentication problem. If no authentication problem
   // occurred, or if the last problem encountered has been cleared (by a
-  // subsequent AuthWatcherEvent), this is set to AUTH_PROBLEM_NONE.
-  AuthProblem auth_problem_;
+  // subsequent AuthWatcherEvent), this is set to NONE.
+  AuthError::State auth_problem_;
 
   // The sync dir_manager to which we belong.
   SyncManager* const sync_manager_;
@@ -1065,7 +1067,7 @@ void SyncManager::SyncInternal::Authenticate(const std::string& username,
     // TODO(timsteele): Seems like this shouldn't be needed, but auth_watcher
     // currently drops blank password attempts on the floor and doesn't update
     // state; it only LOGs an error in this case. We want to make sure we set
-    // our AuthProblem state to denote an error.
+    // our GoogleServiceAuthError state to denote an error.
     RaiseAuthNeededEvent();
   }
   auth_watcher()->Authenticate(username, password, true);
@@ -1109,9 +1111,9 @@ void SyncManager::SyncInternal::AuthenticateForLastKnownUser() {
 }
 
 void SyncManager::SyncInternal::RaiseAuthNeededEvent() {
-  auth_problem_ = AUTH_PROBLEM_INVALID_GAIA_CREDENTIALS;
+  auth_problem_ = AuthError::INVALID_GAIA_CREDENTIALS;
   if (observer_)
-    observer_->OnAuthProblem(auth_problem_);
+    observer_->OnAuthError(AuthError(auth_problem_));
 }
 
 SyncManager::~SyncManager() {
@@ -1383,14 +1385,14 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
 void SyncManager::SyncInternal::HandleAuthWatcherEvent(
     const AuthWatcherEvent& event) {
   // We don't care about an authentication attempt starting event, and we
-  // don't want to reset our state to AUTH_PROBLEM_NONE because the fact that
-  // an _attempt_ is starting doesn't change the fact that we have an auth
-  // problem.
+  // don't want to reset our state to GoogleServiceAuthError::NONE because the
+  // fact that an _attempt_ is starting doesn't change the fact that we have an
+  // auth problem.
   if (event.what_happened == AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START)
     return;
   // We clear our last auth problem cache on new auth watcher events, and only
   // set it to indicate a problem state for certain AuthWatcherEvent types.
-  auth_problem_ = AUTH_PROBLEM_NONE;
+  auth_problem_ = AuthError::NONE;
   switch (event.what_happened) {
     case AuthWatcherEvent::AUTH_SUCCEEDED:
       // We now know the supplied username and password were valid. If this
@@ -1405,7 +1407,7 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
           << ", event.user_email= " << event.user_email;
 
       if (observer_)
-        observer_->OnAuthProblem(AUTH_PROBLEM_NONE);
+        observer_->OnAuthError(AuthError::None());
 
       // Hook up the DirectoryChangeEvent listener, HandleChangeEvent.
       {
@@ -1429,24 +1431,37 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
             this, &SyncInternal::HandleSyncerEvent));
       }
       return;
-    // Authentication failures translate to Status::AuthProblem events.
+    // Authentication failures translate to GoogleServiceAuthError events.
     case AuthWatcherEvent::GAIA_AUTH_FAILED:     // Invalid GAIA credentials.
+      if (event.auth_results->auth_error == browser_sync::CaptchaRequired) {
+        auth_problem_ = AuthError::CAPTCHA_REQUIRED;
+        GURL captcha("http://www.google.com/accounts/");
+        GURL::Replacements replacer;
+        replacer.SetPathStr(captcha.path().append(
+            event.auth_results->captcha_url));
+        captcha = captcha.ReplaceComponents(replacer);
+        observer_->OnAuthError(AuthError::FromCaptchaChallenge(
+            event.auth_results->captcha_token, captcha,
+            GURL(event.auth_results->auth_error_url)));
+        return;
+      }
     case AuthWatcherEvent::SERVICE_AUTH_FAILED:  // Expired GAIA credentials.
-      auth_problem_ = AUTH_PROBLEM_INVALID_GAIA_CREDENTIALS;
+      auth_problem_ = AuthError::INVALID_GAIA_CREDENTIALS;
       break;
     case AuthWatcherEvent::SERVICE_USER_NOT_SIGNED_UP:
-      auth_problem_ = AUTH_PROBLEM_USER_NOT_SIGNED_UP;
+      auth_problem_ = AuthError::USER_NOT_SIGNED_UP;
       break;
     case AuthWatcherEvent::SERVICE_CONNECTION_FAILED:
-      auth_problem_ = AUTH_PROBLEM_CONNECTION_FAILED;
+      auth_problem_ = AuthError::CONNECTION_FAILED;
       break;
     default:  // We don't care about the many other AuthWatcherEvent types.
       return;
   }
 
+
   // Fire notification that the status changed due to an authentication error.
   if (observer_)
-    observer_->OnAuthProblem(auth_problem_);
+    observer_->OnAuthError(AuthError(auth_problem_));
 }
 
 SyncManager::Status::Summary SyncManager::GetStatusSummary() const {

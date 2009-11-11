@@ -1471,6 +1471,7 @@
         'browser/form_field_history_manager.h',
         'browser/gears_integration.cc',
         'browser/gears_integration.h',
+        'browser/google_service_auth_error.h',
         'browser/google_update.cc',
         'browser/google_update.h',
         'browser/google_update_settings_posix.cc',
