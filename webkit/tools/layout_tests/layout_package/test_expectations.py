@@ -47,7 +47,10 @@ class TestExpectations:
   def GetFixableFailures(self):
     # Avoid including TIMEOUT CRASH FAIL tests in the fail numbers since
     # crashes and timeouts are higher priority.
-    return (self._expected_failures.GetTestSet(NONE, FAIL) -
+    return ((self._expected_failures.GetTestSet(NONE, FAIL) |
+             self._expected_failures.GetTestSet(NONE, IMAGE) |
+             self._expected_failures.GetTestSet(NONE, TEXT) |
+             self._expected_failures.GetTestSet(NONE, IMAGE_PLUS_TEXT)) -
             self._expected_failures.GetTestSet(NONE, TIMEOUT) -
             self._expected_failures.GetTestSet(NONE, CRASH))
 
@@ -73,8 +76,13 @@ class TestExpectations:
             self._expected_failures.GetTestSet(DEFER))
 
   def GetDeferredFailures(self):
-    return self._expected_failures.GetTestSet(DEFER, FAIL,
-        include_skips=False)
+    return (
+        self._expected_failures.GetTestSet(DEFER, FAIL, include_skips=False) |
+        self._expected_failures.GetTestSet(DEFER, IMAGE, include_skips=False) |
+        self._expected_failures.GetTestSet(DEFER, TEXT, include_skips=False) |
+        self._expected_failures.GetTestSet(DEFER, IMAGE_PLUS_TEXT,
+                                           include_skips=False))
+
 
   def GetDeferredTimeouts(self):
     return self._expected_failures.GetTestSet(DEFER, TIMEOUT,
@@ -90,12 +98,19 @@ class TestExpectations:
   def GetWontFixFailures(self):
     # Avoid including TIMEOUT CRASH FAIL tests in the fail numbers since
     # crashes and timeouts are higher priority.
-    return (self._expected_failures.GetTestSet(WONTFIX, FAIL,
-                include_skips=False) -
-            self._expected_failures.GetTestSet(WONTFIX, TIMEOUT,
-                include_skips=False) -
-            self._expected_failures.GetTestSet(WONTFIX, CRASH,
-                include_skips=False))
+    return (
+        (self._expected_failures.GetTestSet(WONTFIX, FAIL,
+                                            include_skips=False) |
+         self._expected_failures.GetTestSet(WONTFIX, IMAGE,
+                                            include_skips=False) |
+         self._expected_failures.GetTestSet(WONTFIX, TEXT,
+                                            include_skips=False) |
+         self._expected_failures.GetTestSet(WONTFIX, IMAGE_PLUS_TEXT,
+                                            include_skips=False)) -
+        self._expected_failures.GetTestSet(WONTFIX, TIMEOUT,
+                                           include_skips=False) -
+        self._expected_failures.GetTestSet(WONTFIX, CRASH,
+                                           include_skips=False))
 
   def GetWontFixTimeouts(self):
     # Avoid including TIMEOUT CRASH tests in the timeout numbers since crashes

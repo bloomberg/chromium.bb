@@ -678,7 +678,6 @@ BUG21901 : LayoutTests/plugins/netscape-enumerate.html = FAIL
 // This tests the screen's pixel depth, which we don't set on the buildbots
 // so it depends on the users settings.  Making this a broken test for us.
 // The test must be fixed to not depend on user settings and rebaselined.  post-beta.
-BUG10274 WIN RELEASE : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL
 BUG10274 LINUX : LayoutTests/fast/dom/Window/window-screen-properties.html = FAIL
 
 // Expectations for this test changed upstream. We should fix this test, but
@@ -2009,9 +2008,6 @@ BUG23494 MAC : LayoutTests/css1/font_properties/font_family.html = IMAGE
 BUG23494 MAC : LayoutTests/css2.1/t1503-c522-font-family-00-b.html = IMAGE
 BUG23494 MAC : LayoutTests/fast/text/monospace-width-cache.html = IMAGE
 
-// Broken upstream? In "expected" image, "this line should be green" is red (ours is green)
-BUG23493 MAC : LayoutTests/css2.1/t040304-c64-uri-00-a-g.html = IMAGE
-
 // Broken upstream? Layout test should write a "PASS" or "FAIL" line; upstream has neither (ours is "PASS")
 BUG23492 MAC : LayoutTests/fast/frames/frame-src-attribute.html = IMAGE
 
@@ -2149,9 +2145,6 @@ BUG23482 MAC : LayoutTests/svg/text/text-ws-01-t.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-ws-02-t.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/textPathBoundsBug.svg = IMAGE
 
-// Upstream expected image is totally wrong for the html that supposedly generates it
-BUG23479 MAC : LayoutTests/fast/box-shadow/border-radius-big.html = IMAGE
-
 // Various drawing tests that are broken
 BUG23477 MAC : LayoutTests/fast/backgrounds/bgCompositeCopy.html = IMAGE
 BUG23477 MAC : LayoutTests/fast/canvas/canvas-as-image-incremental-repaint.html = IMAGE
@@ -2179,6 +2172,16 @@ BUG23475 MAC : LayoutTests/svg/custom/junk-data.svg = IMAGE
 
 // 116/136 of the repaint tests fail due to invalidation that doesn't match; further triage necessary
 BUG23473 MAC : LayoutTests/fast/repaint = IMAGE
+BUG23473 MAC : LayoutTests/fast/repaint/box-shadow-v.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/flexible-box-overflow.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/focus-layers.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/focus-ring.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/inline-block-overflow.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/layer-child-outline.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/layer-outline.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/table-cell-vertical-overflow.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/text-shadow.html = PASS
 BUG23473 MAC : pending/fast/repaint/bugzilla-6473.html = IMAGE
 
 // Thicker shadow than expected
@@ -3027,15 +3030,10 @@ BUG_JORLOW : LayoutTests/http/tests/ssl/referer-303.html = FAIL
 BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-00-c-o.html = PASS FAIL
 BUG_JORLOW MAC : LayoutTests/fast/css/counters/t1204-increment-01-c-o.html = PASS FAIL
 
-// WebKit roll 50235:50245
-BUG_VICTORW LINUX WIN : LayoutTests/fast/css/text-input-with-webkit-border-radius.html = IMAGE
-BUG_VICTORW WIN : chrome/fast/forms/basic-selects.html = IMAGE
-
 // WebKit roll 50248:50258
 BUG26195 : LayoutTests/accessibility/aria-option-role.html = TEXT
 BUG26195 LINUX : LayoutTests/fast/forms/select-empty-option-height.html = PASS TIMEOUT
 BUG26195 LINUX RELEASE : LayoutTests/fast/overflow/overflow_hidden.html = PASS CRASH
-BUG26195 MAC : chrome/plugins/script-object-invoke.html = TEXT
 
 // randomly started to be flaky on r30451 (revision had only a check-in of text_expectations.txt)
 BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = PASS TEXT
@@ -3048,7 +3046,6 @@ BUG26291 MAC : LayoutTests/fast/text/drawBidiText.html = IMAGE
 BUG26291 MAC : LayoutTests/transforms/2d/hindi-rotated.html = IMAGE
 
 // WebKit roll 50313:50324
-BUG_ROLANDSTEINER MAC : LayoutTests/http/tests/plugins/interrupted-get-url.html = TEXT
 BUG9798 WIN : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
 
 // Flaky since at least WebKit 50258.
@@ -3071,7 +3068,6 @@ BUG27164 : LayoutTests/plugins/document-open.html = TEXT
 BUG27164 : LayoutTests/plugins/window-open.html = TEXT
 BUG_LEVIN WIN LINUX : LayoutTests/fast/block/positioning/relative-positioned-inline-container.html = IMAGE+TEXT
 BUG_LEVIN WIN DEBUG : LayoutTests/svg/custom/gradient-stop-style-change.svg = TEXT
-BUG_LEVIN WIN DEBUG : LayoutTests/fast/dom/Window/window-screen-properties.html = TEXT
 
 // Webkit 50667:50696
 BUG_LEVIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
