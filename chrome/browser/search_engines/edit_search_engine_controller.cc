@@ -130,7 +130,7 @@ std::wstring EditSearchEngineController::GetFixedUpURL(
   url_parse::Parsed parts;
   std::string scheme(
       URLFixerUpper::SegmentURL(WideToUTF8(expanded_url), &parts));
-  if(!parts.scheme.is_valid()) {
+  if (!parts.scheme.is_valid()) {
     scheme.append("://");
     url.insert(0, UTF8ToWide(scheme));
   }

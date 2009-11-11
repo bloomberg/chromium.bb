@@ -34,7 +34,7 @@ bool ProcessInfoSnapshot::Sample(std::vector<base::ProcessId> pid_list) {
   argv.push_back("-o");
   argv.push_back("pid=,ppid=,ruid=,uid=,rss=,vsz=,comm=");
   // Only display the specified PIDs.
-  for(std::vector<base::ProcessId>::iterator it = pid_list.begin();
+  for (std::vector<base::ProcessId>::iterator it = pid_list.begin();
       it != pid_list.end(); ++it) {
     argv.push_back("-p");
     argv.push_back(Int64ToString(static_cast<int64>(*it)));

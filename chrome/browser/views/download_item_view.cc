@@ -72,7 +72,7 @@ static const int kDisabledOnOpenDuration = 3000;
 class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
                                     public views::Menu::Delegate {
  public:
-  DownloadShelfContextMenuWin(BaseDownloadItemModel* model)
+  explicit DownloadShelfContextMenuWin(BaseDownloadItemModel* model)
       : DownloadShelfContextMenu(model) {
     DCHECK(model);
   }

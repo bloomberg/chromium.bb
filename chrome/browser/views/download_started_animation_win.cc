@@ -36,7 +36,7 @@ class DownloadStartedAnimationWin : public Animation,
                                     public NotificationObserver,
                                     public views::ImageView {
  public:
-  DownloadStartedAnimationWin(TabContents* tab_contents);
+  explicit DownloadStartedAnimationWin(TabContents* tab_contents);
 
  private:
   // Move the animation to wherever it should currently be.

@@ -31,7 +31,7 @@ static void ParseLabelSet(const std::string& text,
   char* result = new char[text.size() + 1];
   char* next_write = result;
 
-  while(input_cur < input_end) {
+  while (input_cur < input_end) {
     if (*input_cur == '|') {
       if (next_write != result) {
         *next_write = '\0';

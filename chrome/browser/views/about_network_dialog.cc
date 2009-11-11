@@ -50,7 +50,7 @@ std::wstring URLForJob(URLRequestJob* job) {
 class JobTracker : public URLRequestJobTracker::JobObserver,
                    public base::RefCountedThreadSafe<JobTracker> {
  public:
-  JobTracker(AboutNetworkDialog* view);
+  explicit JobTracker(AboutNetworkDialog* view);
 
   // Called by the NetworkStatusView on the main application thread.
   void StartTracking();

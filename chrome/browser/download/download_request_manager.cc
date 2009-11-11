@@ -91,7 +91,7 @@ void DownloadRequestManager::TabDownloadState::Observe(
     return;
   }
 
-  switch(type.value) {
+  switch (type.value) {
     case NotificationType::NAV_ENTRY_PENDING: {
       // NOTE: resetting state on a pending navigate isn't ideal. In particular
       // it is possible that queued up downloads for the page before the

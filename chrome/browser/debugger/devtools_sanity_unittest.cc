@@ -146,7 +146,7 @@ class DevToolsSanityTest : public InProcessBrowserTest {
 
 class CancelableQuitTask : public Task {
  public:
-  CancelableQuitTask(const std::string& timeout_message)
+  explicit CancelableQuitTask(const std::string& timeout_message)
       : timeout_message_(timeout_message),
         cancelled_(false) {
   }

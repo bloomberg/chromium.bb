@@ -24,7 +24,7 @@ namespace keys = extension_manifest_keys;
 
 Extension* ConvertUserScriptToExtension(const FilePath& user_script_path,
                                         const GURL& original_url,
-                                        std::string* error){
+                                        std::string* error) {
   std::string content;
   if (!file_util::ReadFileToString(user_script_path, &content)) {
     *error = "Could not read source file: " +

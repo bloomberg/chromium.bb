@@ -53,7 +53,7 @@ bool VisitedLinkSlave::Init(base::SharedMemoryHandle shared_memory) {
 }
 
 void VisitedLinkSlave::FreeTable() {
-  if (shared_memory_ ) {
+  if (shared_memory_) {
     delete shared_memory_;
     shared_memory_ = NULL;
   }

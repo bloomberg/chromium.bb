@@ -270,8 +270,10 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   ResetUpdates();
 }
 
-void MockConnectionManager::ProcessAuthenticate(ClientToServerMessage* csm,
-    ClientToServerResponse* response, const std::string& auth_token){
+void MockConnectionManager::ProcessAuthenticate(
+    ClientToServerMessage* csm,
+    ClientToServerResponse* response,
+    const std::string& auth_token) {
   ASSERT_EQ(csm->message_contents(), ClientToServerMessage::AUTHENTICATE);
   EXPECT_FALSE(auth_token.empty());
 

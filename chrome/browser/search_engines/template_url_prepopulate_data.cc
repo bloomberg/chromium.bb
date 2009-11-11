@@ -2721,7 +2721,7 @@ int GeoIDToCountryID(GEOID geo_id) {
                                              static_cast<char>(isobuf[1]));
 
   // Various locations have ISO codes that Windows does not return.
-  switch(geo_id) {
+  switch (geo_id) {
     case 0x144:   // Guernsey
       return CountryCharsToCountryID('G', 'G');
     case 0x148:   // Jersey

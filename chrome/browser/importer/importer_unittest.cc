@@ -733,7 +733,7 @@ class Firefox3Observer : public ProfileWriter,
         password_count_(0), keyword_count_(0), import_search_engines_(true) {
   }
 
-  Firefox3Observer(bool import_search_engines)
+  explicit Firefox3Observer(bool import_search_engines)
       : ProfileWriter(NULL), bookmark_count_(0), history_count_(0),
         password_count_(0), keyword_count_(0),
         import_search_engines_(import_search_engines) {

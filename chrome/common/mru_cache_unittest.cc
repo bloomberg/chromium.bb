@@ -15,11 +15,11 @@ struct CachedItem {
     cached_item_live_count++;
   }
 
-  CachedItem(int new_value) : value(new_value) {
+  explicit CachedItem(int new_value) : value(new_value) {
     cached_item_live_count++;
   }
 
-  CachedItem(const CachedItem& other) : value(other.value) {
+  explicit CachedItem(const CachedItem& other) : value(other.value) {
     cached_item_live_count++;
   }
 

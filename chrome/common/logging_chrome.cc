@@ -206,7 +206,7 @@ size_t GetFatalAssertions(AssertionList* assertions) {
 
   std::string utf8_line;
   std::wstring wide_line;
-  while(!log_file.eof()) {
+  while (!log_file.eof()) {
     getline(log_file, utf8_line);
     if (utf8_line.find(":FATAL:") != std::string::npos) {
       wide_line = UTF8ToWide(utf8_line);

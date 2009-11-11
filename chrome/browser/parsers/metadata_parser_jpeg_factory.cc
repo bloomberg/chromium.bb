@@ -9,7 +9,8 @@
 #include "base/string_util.h"
 
 MetadataParserJpegFactory::MetadataParserJpegFactory()
-    : MetadataParserFactory(){}
+    : MetadataParserFactory() {
+}
 
 bool MetadataParserJpegFactory::CanParse(const FilePath& path,
                                          char* bytes,

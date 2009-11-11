@@ -11,7 +11,7 @@
 #include "base/string_util.h"
 
 FileMetadataParser::FileMetadataParser(const FilePath& path)
-   : MetadataParser(path){
+    : MetadataParser(path) {
   path_ = path;
 }
 
@@ -46,7 +46,7 @@ MetadataPropertyIterator* FileMetadataParser::GetPropertyIterator() {
 }
 
 FileMetadataPropertyIterator::FileMetadataPropertyIterator(
-    PropertyMap& properties): properties_(properties){
+    PropertyMap& properties) : properties_(properties) {
   it = properties_.begin();
 }
 

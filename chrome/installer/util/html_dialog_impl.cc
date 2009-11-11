@@ -47,7 +47,7 @@ namespace installer {
 
 class HTMLDialogWin : public HTMLDialog {
  public:
-  HTMLDialogWin(const std::wstring& url) : url_(url) {
+  explicit HTMLDialogWin(const std::wstring& url) : url_(url) {
     if (!mshtml_)
        mshtml_ = LoadLibrary(L"MSHTML.DLL");
   }

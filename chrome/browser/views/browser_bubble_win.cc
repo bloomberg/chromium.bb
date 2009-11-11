@@ -13,7 +13,8 @@
 class BubbleWidget : public views::WidgetWin
 {
 public:
-  BubbleWidget(BrowserBubble* bubble) : bubble_(bubble), closed_(false) {
+  explicit BubbleWidget(BrowserBubble* bubble)
+      : bubble_(bubble), closed_(false) {
   }
 
   void Show(bool activate) {

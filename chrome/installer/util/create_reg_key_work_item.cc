@@ -21,7 +21,7 @@ CreateRegKeyWorkItem::CreateRegKeyWorkItem(HKEY predefined_root,
 }
 
 bool CreateRegKeyWorkItem::Do() {
-  if(!InitKeyList()) {
+  if (!InitKeyList()) {
     // Nothing needs to be done here.
     LOG(INFO) << "no key to create";
     return true;
@@ -35,8 +35,8 @@ bool CreateRegKeyWorkItem::Do() {
     DWORD disposition;
     key_path.assign(key_list_[i - 1]);
 
-    if(key.CreateWithDisposition(predefined_root_, key_path.c_str(),
-                                 &disposition)) {
+    if (key.CreateWithDisposition(predefined_root_, key_path.c_str(),
+                                  &disposition)) {
       if (disposition == REG_OPENED_EXISTING_KEY) {
         if (key_created_) {
           // This should not happen. Someone created a subkey under the key
@@ -47,7 +47,7 @@ bool CreateRegKeyWorkItem::Do() {
         LOG(INFO) << key_path << " exists";
         // Remove the key path from list if it is already present.
         key_list_.pop_back();
-      } else if (disposition == REG_CREATED_NEW_KEY){
+      } else if (disposition == REG_CREATED_NEW_KEY) {
         LOG(INFO) << "created " << key_path;
         key_created_ = true;
       } else {
@@ -99,7 +99,7 @@ bool CreateRegKeyWorkItem::InitKeyList() {
     // This is pure string operation so it does not matter whether the
     // path is file path or registry path.
     file_util::UpOneDirectoryOrEmpty(&key_path);
-  } while(!key_path.empty());
+  } while (!key_path.empty());
 
   return true;
 }

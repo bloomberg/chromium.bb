@@ -240,7 +240,7 @@ ChromeURLRequestContext* FactoryForExtensions::Create() {
 // Factory that creates the ChromeURLRequestContext for incognito profile.
 class FactoryForOffTheRecord : public ChromeURLRequestContextFactory {
  public:
-  FactoryForOffTheRecord(Profile* profile)
+  explicit FactoryForOffTheRecord(Profile* profile)
       : ChromeURLRequestContextFactory(profile),
         original_context_getter_(
             static_cast<ChromeURLRequestContextGetter*>(
@@ -303,7 +303,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
 class FactoryForOffTheRecordExtensions
     : public ChromeURLRequestContextFactory {
  public:
-  FactoryForOffTheRecordExtensions(Profile* profile)
+  explicit FactoryForOffTheRecordExtensions(Profile* profile)
       : ChromeURLRequestContextFactory(profile) {}
 
   virtual ChromeURLRequestContext* Create();

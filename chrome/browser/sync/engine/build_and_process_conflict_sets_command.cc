@@ -54,8 +54,8 @@ bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
   bool rv = false;
   ConflictResolutionView conflict_view(session);
   set<ConflictSet*>::const_iterator all_sets_iterator;
-  for(all_sets_iterator = conflict_view.ConflictSetsBegin();
-      all_sets_iterator != conflict_view.ConflictSetsEnd() ; ) {
+  for (all_sets_iterator = conflict_view.ConflictSetsBegin();
+       all_sets_iterator != conflict_view.ConflictSetsEnd(); ) {
     const ConflictSet* conflict_set = *all_sets_iterator;
     CHECK(conflict_set->size() >= 2);
     // We scan the set to see if it consists of changes of only one type.
@@ -86,9 +86,9 @@ namespace {
 void StoreLocalDataForUpdateRollback(syncable::Entry* entry,
                                      syncable::EntryKernel* backup) {
   CHECK(!entry->Get(syncable::IS_UNSYNCED)) << " Storing Rollback data for "
-      "entry that's unsynced." << *entry ;
+      "entry that's unsynced." << *entry;
   CHECK(entry->Get(syncable::IS_UNAPPLIED_UPDATE)) << " Storing Rollback data "
-      "for entry that's not an unapplied update." << *entry ;
+      "for entry that's not an unapplied update." << *entry;
   *backup = entry->GetKernelCopy();
 }
 

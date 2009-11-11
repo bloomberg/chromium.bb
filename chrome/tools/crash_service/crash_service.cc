@@ -398,7 +398,7 @@ unsigned long CrashService::AsyncSendDump(void* context) {
 
     LOG(INFO) << "dump for pid =" << info->pid << " crash2 id =" << report_id;
     --retry_round;
-  } while(retry_round >= 0);
+  } while (retry_round >= 0);
 
   if (!::DeleteFileW(info->dump_path.c_str()))
     LOG(WARNING) << "could not delete " << info->dump_path;

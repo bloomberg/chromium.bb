@@ -55,7 +55,7 @@ void CreateDirWorkItem::Rollback() {
   // along the way.
   FilePath path_to_delete(path_);
 
-  while(1) {
+  while (1) {
     if (file_util::PathExists(path_to_delete)) {
       if (!RemoveDirectory(path_to_delete.value().c_str()))
         break;

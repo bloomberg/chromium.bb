@@ -58,7 +58,8 @@ class DownloadRequestManagerTest
   class DownloadRequestManagerTestDelegate
       : public DownloadRequestManager::TestingDelegate {
    public:
-    DownloadRequestManagerTestDelegate(DownloadRequestManagerTest* test)
+    explicit DownloadRequestManagerTestDelegate(
+        DownloadRequestManagerTest* test)
         : test_(test) { }
 
     virtual bool ShouldAllowDownload() {

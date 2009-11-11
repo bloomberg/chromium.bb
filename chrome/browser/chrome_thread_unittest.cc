@@ -33,7 +33,7 @@ class ChromeThreadTest : public testing::Test {
 
   class DummyTask : public Task {
    public:
-    DummyTask(bool* deleted) : deleted_(deleted) { }
+    explicit DummyTask(bool* deleted) : deleted_(deleted) { }
     ~DummyTask() {
       *deleted_ = true;
     }
@@ -50,7 +50,8 @@ class ChromeThreadTest : public testing::Test {
       : public base::RefCountedThreadSafe<
             DeletedOnIO, ChromeThread::DeleteOnIOThread> {
    public:
-    DeletedOnIO(MessageLoop* message_loop) : message_loop_(message_loop) { }
+    explicit DeletedOnIO(MessageLoop* message_loop)
+        : message_loop_(message_loop) { }
 
     ~DeletedOnIO() {
       CHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));

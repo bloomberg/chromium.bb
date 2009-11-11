@@ -1041,4 +1041,4 @@ void BiDiLineIterator::GetLogicalRun(int start,
   ubidi_getLogicalRun(bidi_, start, end, level);
 }
 
-}
+}  // namespace l10n_util

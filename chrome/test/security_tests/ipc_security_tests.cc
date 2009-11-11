@@ -102,7 +102,7 @@ HANDLE MakeServerPluginPipe(const std::wstring& prefix, int channel) {
 
 struct Context {
   HANDLE pipe;
-  Context(HANDLE arg_pipe) : pipe(arg_pipe) {
+  explicit Context(HANDLE arg_pipe) : pipe(arg_pipe) {
   }
 };
 

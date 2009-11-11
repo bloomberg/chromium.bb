@@ -50,10 +50,11 @@ void WebSharedWorkerProxy::connect(WebKit::WebMessagePortChannel* channel,
   Send(new WorkerMsg_Connect(route_id_, message_port_id, MSG_ROUTING_NONE));
   if (HasQueuedMessages()) {
     m_connectListener = listener;
-  } else
+  } else {
     listener->connected();
     // The listener may free this object, so do not access the object after
     // this point.
+  }
 }
 
 void WebSharedWorkerProxy::OnMessageReceived(const IPC::Message& message) {

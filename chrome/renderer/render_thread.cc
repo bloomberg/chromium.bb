@@ -201,7 +201,7 @@ void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
 
 void RenderThread::WidgetHidden() {
   DCHECK(hidden_widget_count_ < widget_count_);
-  hidden_widget_count_++ ;
+  hidden_widget_count_++;
   if (widget_count_ && hidden_widget_count_ == widget_count_) {
     // Reset the delay.
     idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
@@ -631,15 +631,15 @@ void RenderThread::OnPurgeMemory() {
 
   // Release all freeable memory from the SQLite process-global page cache (a
   // low-level object which backs the Connection-specific page caches).
-  while (sqlite3_release_memory(std::numeric_limits<int>::max()) > 0)
-    ;
+  while (sqlite3_release_memory(std::numeric_limits<int>::max()) > 0) {
+  }
 
   // Repeatedly call the V8 idle notification until it returns true ("nothing
   // more to free").  Note that it makes more sense to do this than to implement
   // a new "delete everything" pass because object references make it difficult
   // to free everything possible in just one pass.
-  while (!v8::V8::IdleNotification())
-    ;
+  while (!v8::V8::IdleNotification()) {
+  }
 
 #if defined(OS_WIN)
   // Tell tcmalloc to release any free pages it's still holding.

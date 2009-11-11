@@ -212,7 +212,7 @@ void PasswordFormManager::OnRequestDone(int handle,
     // path matches.
     if ((observed_form_.scheme == PasswordForm::SCHEME_HTML) &&
         (observed_form_.signon_realm == logins_result[i]->origin.spec()) &&
-        (current_score > 0) && (!logins_result[i]->blacklisted_by_user)){
+        (current_score > 0) && (!logins_result[i]->blacklisted_by_user)) {
       empties.push_back(*logins_result[i]);
     }
 

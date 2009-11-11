@@ -262,7 +262,7 @@ bool SendMouseEventsImpl(MouseButton type, int state, Task* task) {
   DWORD up_flags = MOUSEEVENTF_ABSOLUTE;
   UINT last_event;
 
-  switch(type) {
+  switch (type) {
     case LEFT:
       down_flags |= MOUSEEVENTF_LEFTDOWN;
       up_flags |= MOUSEEVENTF_LEFTUP;

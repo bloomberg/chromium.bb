@@ -30,7 +30,7 @@ class LoginHandlerWin : public LoginHandler,
                         public base::RefCountedThreadSafe<LoginHandlerWin>,
                         public views::DialogDelegate {
  public:
-  LoginHandlerWin(URLRequest* request)
+  explicit LoginHandlerWin(URLRequest* request)
       : dialog_(NULL),
         handled_auth_(false),
         request_(request),

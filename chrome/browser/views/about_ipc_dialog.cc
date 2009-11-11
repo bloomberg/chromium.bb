@@ -200,7 +200,7 @@ void CloseDialog() {
 }
 
 void OnButtonClick(int id) {
-  switch(id) {
+  switch (id) {
     case IDC_ViewAll:
       CheckButtons(settings_views.view, true);
       break;

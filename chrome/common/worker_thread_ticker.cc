@@ -12,7 +12,7 @@
 
 class WorkerThreadTicker::TimerTask : public Task {
  public:
-  TimerTask(WorkerThreadTicker* ticker) : ticker_(ticker) {
+  explicit TimerTask(WorkerThreadTicker* ticker) : ticker_(ticker) {
   }
 
   virtual void Run() {

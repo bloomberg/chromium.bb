@@ -78,7 +78,7 @@ class SSLUITest : public InProcessBrowserTest {
     base::Time timeToQuit = base::Time::Now() +
         base::TimeDelta::FromMilliseconds(30000);
 
-    while(base::Time::Now() < timeToQuit) {
+    while (base::Time::Now() < timeToQuit) {
       bool workerFinished = false;
       ASSERT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
           tab->render_view_host(), L"",

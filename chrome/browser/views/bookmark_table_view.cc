@@ -165,7 +165,7 @@ void BookmarkTableView::PostPaint() {
 }
 
 LRESULT BookmarkTableView::OnNotify(int w_param, LPNMHDR l_param) {
-  switch(l_param->code) {
+  switch (l_param->code) {
     case LVN_BEGINDRAG:
       BeginDrag();
       return 0;  // Return value doesn't matter for this message.

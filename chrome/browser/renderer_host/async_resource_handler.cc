@@ -28,7 +28,7 @@ const int kMaxReadBufSize = 524288;
 // Our version of IOBuffer that uses shared memory.
 class SharedIOBuffer : public net::IOBuffer {
  public:
-  SharedIOBuffer(int buffer_size)
+  explicit SharedIOBuffer(int buffer_size)
       : net::IOBuffer(),
         ok_(false),
         buffer_size_(buffer_size) {

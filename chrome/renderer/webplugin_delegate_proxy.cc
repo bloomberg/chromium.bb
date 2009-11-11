@@ -278,7 +278,7 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   // Flash to use windowless mode so that it use CoreGraphics instead of opening
   // OpenGL contexts overlaying the browser window (which will fail or crash
   // because Mac OS X does not allow that across processes).
-  if (!transparent_ && mime_type_ == "application/x-shockwave-flash" ) {
+  if (!transparent_ && mime_type_ == "application/x-shockwave-flash") {
     params.arg_names.push_back("wmode");
     params.arg_values.push_back("opaque");
   }
@@ -452,7 +452,8 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
     // scripts the plugin to start playing while it's in the middle of handling
     // an update geometry message, videos don't play.  See urls in bug 20260.
     msg = new PluginMsg_UpdateGeometrySync(instance_id_, param);
-  } else
+  }
+  else
 #endif
   {
     msg = new PluginMsg_UpdateGeometry(instance_id_, param);

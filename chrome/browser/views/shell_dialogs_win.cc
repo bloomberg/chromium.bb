@@ -358,7 +358,7 @@ void SelectFileDialogImpl::ExecuteSelectFile(
     success = win_util::SaveFileAsWithFilter(params.run_state.owner,
         params.default_path.ToWStringHack(), filter,
         params.default_extension, false, &filter_index, &path_as_wstring);
-    if(success) {
+    if (success) {
       path = FilePath::FromWStringHack(path_as_wstring);
     }
     DisableOwner(params.run_state.owner);
@@ -464,8 +464,7 @@ bool SelectFileDialogImpl::RunSelectFolderDialog(const std::wstring& title,
         *path = FilePath(out_dir_buffer.pOleStr);
         CoTaskMemFree(out_dir_buffer.pOleStr);
         result = true;
-      }
-      else {
+      } else {
         // Use old way if we don't get what we want.
         wchar_t old_out_dir_buffer[MAX_PATH + 1];
         if (SHGetPathFromIDList(list, old_out_dir_buffer)) {

@@ -119,7 +119,7 @@ void ResourceIPCAccumulator::GetClassifiedMessages(ClassifiedMessages* msgs) {
 // messages to go to the same place, which is why this forwards.
 class ForwardingReceiver : public ResourceDispatcherHost::Receiver {
  public:
-  ForwardingReceiver(ResourceDispatcherHost::Receiver* dest)
+  explicit ForwardingReceiver(ResourceDispatcherHost::Receiver* dest)
     : ResourceDispatcherHost::Receiver(dest->type(), -1),
       dest_(dest) {
     set_handle(dest->handle());

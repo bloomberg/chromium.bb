@@ -44,7 +44,7 @@ void DomAutomationController::Send(const CppArgumentList& args,
   // writer is lenient, and (b) on the receiving side we wrap the JSON string
   // in square brackets, converting it to an array, then parsing it and
   // grabbing the 0th element to get the value out.
-  switch(args[0].type) {
+  switch (args[0].type) {
     case NPVariantType_String: {
       value.reset(Value::CreateStringValue(args[0].ToString()));
       break;

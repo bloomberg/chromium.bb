@@ -433,7 +433,7 @@ DLLEXPORT BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
     }
   }
 
-  if(!handle)
+  if (!handle)
     return false;
 
   // At this point, there are several top-level Chrome windows

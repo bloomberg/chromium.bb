@@ -124,7 +124,7 @@ void Login::StartConnection() {
   single_attempt_->SignalRedirect.connect(this, &Login::OnRedirect);
   single_attempt_->SignalClientStateChange.connect(
       this,
-      &Login::OnClientStateChange) ;
+      &Login::OnClientStateChange);
   single_attempt_->SignalUnexpectedDisconnect.connect(
       this,
       &Login::OnUnexpectedDisconnect);

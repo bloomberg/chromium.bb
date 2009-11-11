@@ -167,7 +167,7 @@ class CancelTestURLRequestContext : public TestURLRequestContext {
 
 class CancelTestURLRequestContextGetter : public URLRequestContextGetter {
  public:
-  CancelTestURLRequestContextGetter(bool* destructor_called)
+  explicit CancelTestURLRequestContextGetter(bool* destructor_called)
       : destructor_called_(destructor_called) {
   }
 

@@ -48,7 +48,7 @@ SZ_RESULT SzFileSeekImp(void *object, CFileSize pos) {
   value.LowPart = SetFilePointer(s->File, value.LowPart, &value.HighPart,
                                  FILE_BEGIN);
   if (value.LowPart == 0xFFFFFFFF) {
-    if(GetLastError() != NO_ERROR) {
+    if (GetLastError() != NO_ERROR) {
       return SZE_FAIL;
     }
   }

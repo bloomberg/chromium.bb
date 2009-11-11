@@ -34,7 +34,7 @@ class LoginHandlerGtk : public LoginHandler,
                         public ConstrainedWindowGtkDelegate,
                         public LoginModelObserver {
  public:
-  LoginHandlerGtk(URLRequest* request)
+  explicit LoginHandlerGtk(URLRequest* request)
       : handled_auth_(false),
         dialog_(NULL),
         request_(request),

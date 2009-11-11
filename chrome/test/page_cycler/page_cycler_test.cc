@@ -140,8 +140,8 @@ void PopulateUBC(const FilePath &test_dir) {
       int fd = open(path.value().c_str(), O_RDONLY);
       if (fd >= 0) {
         ++loaded;
-        while (HANDLE_EINTR(read(fd, buf, sizeof(buf))) > 0)
-          ;
+        while (HANDLE_EINTR(read(fd, buf, sizeof(buf))) > 0) {
+        }
         HANDLE_EINTR(close(fd));
       }
     }

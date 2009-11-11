@@ -526,7 +526,7 @@ bool ShellUtil::GetDesktopPath(bool system_level, std::wstring* path) {
 }
 
 bool ShellUtil::GetQuickLaunchPath(bool system_level, std::wstring* path) {
-  const static wchar_t* kQuickLaunchPath =
+  static const wchar_t* kQuickLaunchPath =
       L"Microsoft\\Internet Explorer\\Quick Launch";
   wchar_t qlaunch[MAX_PATH];
   if (system_level) {

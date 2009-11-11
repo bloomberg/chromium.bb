@@ -172,7 +172,7 @@ HCURSOR LoadCursor(int cursor_id) {
 
 // Clipboard glue
 
-Clipboard* ClipboardGetClipboard(){
+Clipboard* ClipboardGetClipboard() {
   return NULL;
 }
 

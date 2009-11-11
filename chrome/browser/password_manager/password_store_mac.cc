@@ -22,7 +22,7 @@ using webkit_glue::PasswordForm;
 // search from a set of attributes.
 class KeychainSearch {
  public:
-  KeychainSearch(const MacKeychain& keychain);
+  explicit KeychainSearch(const MacKeychain& keychain);
   ~KeychainSearch();
 
   // Sets up a keycahin search based on an non "null" (NULL for char*,

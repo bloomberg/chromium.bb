@@ -389,7 +389,7 @@ ConflictResolver::ConflictSetCountMapKey ConflictResolver::GetSetKey(
   // binary_search in ProcessConflictSet.
   sort(set->begin(), set->end());
   std::stringstream rv;
-  for(ConflictSet::iterator i = set->begin() ; i != set->end() ; ++i )
+  for (ConflictSet::iterator i = set->begin() ; i != set->end() ; ++i )
     rv << *i << ".";
   return rv.str();
 }
@@ -399,7 +399,7 @@ namespace {
 bool AttemptToFixCircularConflict(WriteTransaction* trans,
                                   ConflictSet* conflict_set) {
   ConflictSet::const_iterator i, j;
-  for(i = conflict_set->begin() ; i != conflict_set->end() ; ++i) {
+  for (i = conflict_set->begin() ; i != conflict_set->end() ; ++i) {
     MutableEntry entryi(trans, syncable::GET_BY_ID, *i);
     if (entryi.Get(syncable::PARENT_ID) ==
             entryi.Get(syncable::SERVER_PARENT_ID) ||
@@ -655,7 +655,7 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
   // First iterate over simple conflict items (those that belong to no set).
   set<Id>::const_iterator conflicting_item_it;
   for (conflicting_item_it = view->CommitConflictsBegin();
-       conflicting_item_it != view->CommitConflictsEnd() ;
+       conflicting_item_it != view->CommitConflictsEnd();
        ++conflicting_item_it) {
     Id id = *conflicting_item_it;
     map<Id, ConflictSet*>::const_iterator item_set_it =
@@ -663,7 +663,7 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
     if (item_set_it == view->IdToConflictSetEnd() ||
         0 == item_set_it->second) {
       // We have a simple conflict.
-      switch(ProcessSimpleConflict(&trans, id, session)) {
+      switch (ProcessSimpleConflict(&trans, id, session)) {
         case NO_SYNC_PROGRESS:
           {
             int conflict_count = (simple_conflict_count_map_[id] += 2);

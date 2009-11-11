@@ -381,7 +381,7 @@ TEST_F(SafeBrowsing, DISABLED_CountIndexedWithID_500K) {
 
 class SafeBrowsingDatabaseTest {
  public:
-  SafeBrowsingDatabaseTest(const FilePath& filename) {
+  explicit SafeBrowsingDatabaseTest(const FilePath& filename) {
     logging::InitLogging(
         NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
         logging::LOCK_LOG_FILE,

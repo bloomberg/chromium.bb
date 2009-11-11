@@ -64,7 +64,7 @@ int OffsetY(views::View* parent, const gfx::Size prefsize) {
 
 class InfoBarBackground : public views::Background {
  public:
-  InfoBarBackground(InfoBarDelegate::Type infobar_type) {
+  explicit InfoBarBackground(InfoBarDelegate::Type infobar_type) {
     SkColor top_color;
     SkColor bottom_color;
     switch (infobar_type) {

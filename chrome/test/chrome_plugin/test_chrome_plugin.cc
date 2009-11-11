@@ -228,7 +228,7 @@ int STDCALL CPR_Read(CPRequest* request, void* buf, uint32 buf_size) {
 
 class RequestResponse {
 public:
-  RequestResponse(const std::string& raw_headers)
+  explicit RequestResponse(const std::string& raw_headers)
       : raw_headers_(raw_headers), offset_(0) {}
   void StartReading(CPRequest* request);
   void ReadCompleted(CPRequest* request, int bytes_read);

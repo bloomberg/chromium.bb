@@ -41,8 +41,8 @@ static void MoveMouse(const POINT& point) {
   // when a mouse move event is removed from the event queue.
   PostMessage(NULL, WM_MOUSEMOVE, 0, MAKELPARAM(point.x, point.y));
   MSG msg;
-  while (PeekMessage(&msg, NULL, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE))
-    ;
+  while (PeekMessage(&msg, NULL, WM_MOUSEMOVE, WM_MOUSEMOVE, PM_REMOVE)) {
+  }
 
   // Verify
 #ifndef NDEBUG

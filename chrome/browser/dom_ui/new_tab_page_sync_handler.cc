@@ -129,7 +129,7 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   // logged in to Google Accounts. If the user is not signed in to GA, we
   // should hide the sync status section entirely.
   if (!sync_service_->HasSyncSetupCompleted()) {
-    if(!sync_service_->SetupInProgress() && IsGoogleGAIACookieInstalled()) {
+    if (!sync_service_->SetupInProgress() && IsGoogleGAIACookieInstalled()) {
       SendSyncMessageToPage(PROMOTION,
           WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_PROMOTION_MESSAGE)),
           WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_START_NOW_LINK_LABEL)));
