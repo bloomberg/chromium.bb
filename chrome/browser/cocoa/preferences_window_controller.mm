@@ -452,16 +452,7 @@ class PrefObserverBridge : public NotificationObserver,
     [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
 
     // TODO(akalin): handle incognito profiles?
-    sync_service_ = profile->GetProfileSyncService();
-    // TODO(akalin): is this the right place to put this?
-    if (sync_service_) {
-      sync_service_->AddObserver(observer_.get());
-    } else {
-      // Disable controls if sync is disabled.
-      [syncLabel_ setHidden:YES];
-      [syncStatus_ setHidden:YES];
-      [syncButton_ setHidden:YES];
-    }
+    sync_service_ = profile_->GetProfileSyncService();
   }
   return self;
 }
@@ -590,6 +581,15 @@ class PrefObserverBridge : public NotificationObserver,
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:personalStuffView_
                                       delta:NSMakeSize(0.0, verticalShift)];
+
+  if (sync_service_) {
+    sync_service_->AddObserver(observer_.get());
+  } else {
+    // Disable controls if sync is disabled.
+    [syncLabel_ setHidden:YES];
+    [syncStatus_ setHidden:YES];
+    [syncButton_ setHidden:YES];
+  }  
 
   // Make the window as wide as the views.
   NSWindow* prefsWindow = [self window];
