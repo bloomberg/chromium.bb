@@ -200,6 +200,10 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return have_inspector_files_;
   }
 
+  void set_have_inspector_files(bool have_inspector_files) {
+    have_inspector_files_ = have_inspector_files;
+  }
+
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   virtual void SetIPCLoggingEnabled(bool enable);
 #endif

@@ -502,5 +502,6 @@ void BrowserProcessImpl::DoInspectorFilesCheck() {
     result = file_util::PathExists(inspector_dir);
   }
 
-  have_inspector_files_ = result;
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
+          this, &BrowserProcessImpl::set_have_inspector_files, result));
 }
