@@ -140,6 +140,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setXSSAuditorEnabled", &LayoutTestController::setXSSAuditorEnabled);
   BindMethod("evaluateScriptInIsolatedWorld", &LayoutTestController::evaluateScriptInIsolatedWorld);
   BindMethod("overridePreference", &LayoutTestController::overridePreference);
+  BindMethod("setAllowUniversalAccessFromFileURLs", &LayoutTestController::setAllowUniversalAccessFromFileURLs);
 
   // The fallback method is called when an unknown method is invoked.
   BindFallbackMethod(&LayoutTestController::fallbackMethod);
@@ -839,6 +840,16 @@ void LayoutTestController::evaluateScriptInIsolatedWorld(
     // sketchy, but it seems to be what other tests do.
     shell_->webView()->focusedFrame()->executeScriptInIsolatedWorld(
         args[0].ToInt32(), &source, 1, 1);
+  }
+  result->SetNull();
+}
+
+void LayoutTestController::setAllowUniversalAccessFromFileURLs(
+    const CppArgumentList& args, CppVariant* result) {
+  if (args.size() > 0 && args[0].isBool()) {
+    WebPreferences* prefs = shell_->GetWebPreferences();
+    prefs->allow_universal_access_from_file_urls = args[0].value.boolValue;
+    prefs->Apply(shell_->webView());
   }
   result->SetNull();
 }
