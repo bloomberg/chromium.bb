@@ -26,7 +26,7 @@ namespace {
 
 const int kIconSize = 43;
 
-const int kRightColumnWidth = 270;
+const int kRightColumnWidth = 285;
 
 // The InfoBubble uses a BubbleBorder which adds about 6 pixels of whitespace
 // around the content view. We compensate by reducing our outer borders by this
