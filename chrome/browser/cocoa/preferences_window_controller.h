@@ -12,7 +12,6 @@
 class PrefObserverBridge;
 class PrefService;
 class Profile;
-class ProfileSyncService;
 @class SearchEngineListModel;
 
 // A window controller that handles the preferences window. The bulk of the
@@ -31,8 +30,6 @@ class ProfileSyncService;
  @private
   Profile* profile_;  // weak ref
   PrefService* prefs_;  // weak ref - Obtained from profile_ for convenience.
-  // weak ref - Also obtained from profile_ for convenience.  May be NULL.
-  ProfileSyncService* sync_service_;
   scoped_ptr<PrefObserverBridge> observer_;  // Watches for pref changes.
 
   IBOutlet NSToolbar* toolbar_;
@@ -52,7 +49,6 @@ class ProfileSyncService;
   IBOutlet NSArray* basicsGroupDefaultBrowser_;
 
   // The groups of the Personal Stuff view for layout fixup.
-  IBOutlet NSArray* personalStuffGroupSync_;
   IBOutlet NSArray* personalStuffGroupPasswords_;
   IBOutlet NSArray* personalStuffGroupAutofill_;
   IBOutlet NSArray* personalStuffGroupBrowserData_;
@@ -77,9 +73,6 @@ class ProfileSyncService;
   // User Data panel
   BooleanPrefMember askSavePasswords_;
   BooleanPrefMember formAutofill_;
-  IBOutlet NSTextField* syncLabel_;
-  IBOutlet NSTextField* syncStatus_;
-  IBOutlet NSButton* syncButton_;
 
   // Under the hood panel
   IBOutlet NSView* underTheHoodContentView_;
@@ -119,7 +112,6 @@ class ProfileSyncService;
 - (IBAction)clearData:(id)sender;
 - (IBAction)resetThemeToDefault:(id)sender;
 - (IBAction)themesGallery:(id)sender;
-- (IBAction)doSyncAction:(id)sender;
 
 // Under the hood
 - (IBAction)browseDownloadLocation:(id)sender;
