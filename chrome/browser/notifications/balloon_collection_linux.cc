@@ -4,14 +4,12 @@
 
 #include "chrome/browser/notifications/balloon_collection.h"
 
-#include "base/gfx/size.h"
 #include "base/logging.h"
 
 Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
                                             Profile* profile) {
-  // TODO(johnnyg): http://crbug.com/23954.  Part of future Linux support.
-  NOTIMPLEMENTED();
-  return NULL;
+  // TODO(johnnyg): http://crbug.com/23954.  Hook up to views.
+  return new Balloon(notification, profile, this);
 }
 
 bool BalloonCollectionImpl::Layout::RefreshSystemMetrics() {

@@ -4712,6 +4712,8 @@
         'browser/net/test_url_fetcher_factory.h',
         'browser/net/url_fetcher_unittest.cc',
         'browser/net/url_fixer_upper_unittest.cc',
+        'browser/notifications/desktop_notifications_unittest.cc',
+        'browser/notifications/desktop_notifications_unittest.h',
         'browser/password_manager/encryptor_unittest.cc',
         'browser/password_manager/login_database_unittest.cc',
         'browser/password_manager/password_form_manager_unittest.cc',

@@ -24,15 +24,15 @@ class NotificationObjectProxy :
                           int notification_id, bool worker);
 
   // To be called when the desktop notification is actually shown.
-  void Display();
+  virtual void Display();
 
   // To be called when the desktop notification cannot be shown due to an
   // error.
-  void Error();
+  virtual void Error();
 
   // To be called when the desktop notification is closed.  If closed by a
   // user explicitly (as opposed to timeout/script), |by_user| should be true.
-  void Close(bool by_user);
+  virtual void Close(bool by_user);
 
   // Compares two proxies by ids to decide if they are equal.
   bool IsSame(const NotificationObjectProxy& other) const {
@@ -42,11 +42,12 @@ class NotificationObjectProxy :
             worker_ == other.worker_);
   }
 
- private:
+ protected:
   friend class base::RefCountedThreadSafe<NotificationObjectProxy>;
 
-  ~NotificationObjectProxy() {}
+  virtual ~NotificationObjectProxy() {}
 
+ private:
   // Called on UI thread to schedule a message for sending.
   void DeliverMessage(IPC::Message* message);
 

@@ -70,18 +70,6 @@ class BalloonCollectionImpl : public BalloonCollection,
   virtual void OnBalloonClosed(Balloon* source);
 
  protected:
-  // Creates a new balloon. Overridable by unit tests.  The caller is
-  // responsible for freeing the pointer returned.
-  virtual Balloon* MakeBalloon(const Notification& notification,
-                               Profile* profile);
-
- private:
-  // The number of balloons being displayed.
-  int count() const { return balloons_.size(); }
-
-  // Adjusts the positions of the balloons (e.g., when one is closed).
-  void PositionBalloons(bool is_reposition);
-
   // Calculates layout values for the balloons including
   // the scaling, the max/min sizes, and the upper left corner of each.
   class Layout {
@@ -92,10 +80,10 @@ class BalloonCollectionImpl : public BalloonCollection,
     void OnDisplaySettingsChanged();
 
     // TODO(johnnyg): Scale the size to account for the system font factor.
-    int min_balloon_width() const { return kBalloonMinWidth; }
-    int max_balloon_width() const { return kBalloonMaxWidth; }
-    int min_balloon_height() const { return kBalloonMinHeight; }
-    int max_balloon_height() const { return kBalloonMaxHeight; }
+    static int min_balloon_width() { return kBalloonMinWidth; }
+    static int max_balloon_width() { return kBalloonMaxWidth; }
+    static int min_balloon_height() { return kBalloonMinHeight; }
+    static int max_balloon_height() { return kBalloonMaxHeight; }
 
     // Returns both the total space available and the maximum
     // allowed per balloon.
@@ -139,6 +127,18 @@ class BalloonCollectionImpl : public BalloonCollection,
     gfx::Rect work_area_;
     DISALLOW_COPY_AND_ASSIGN(Layout);
   };
+
+  // Creates a new balloon. Overridable by unit tests.  The caller is
+  // responsible for freeing the pointer returned.
+  virtual Balloon* MakeBalloon(const Notification& notification,
+                               Profile* profile);
+
+ private:
+  // The number of balloons being displayed.
+  int count() const { return balloons_.size(); }
+
+  // Adjusts the positions of the balloons (e.g., when one is closed).
+  void PositionBalloons(bool is_reposition);
 
   // Non-owned pointer to an object listening for space changes.
   BalloonSpaceChangeListener* space_change_listener_;
