@@ -564,6 +564,9 @@ class PrefObserverBridge : public NotificationObserver,
                                       delta:NSMakeSize(0.0, verticalShift)];
 
   verticalShift = 0.0;
+  verticalShift += AutoSizeGroup(personalStuffGroupSync_,
+                                 kAutoSizeGroupBehaviorVerticalToFit,
+                                 verticalShift);
   verticalShift += AutoSizeGroup(personalStuffGroupThemes_,
                                  kAutoSizeGroupBehaviorHorizontalToFit,
                                  verticalShift);
@@ -582,6 +585,7 @@ class PrefObserverBridge : public NotificationObserver,
 
   if (sync_service_) {
     sync_service_->AddObserver(observer_.get());
+    [self syncStateChanged];
   } else {
     // Disable controls if sync is disabled.
     RemoveViewFromView(personalStuffView_, syncLabel_);
@@ -636,11 +640,6 @@ class PrefObserverBridge : public NotificationObserver,
 
   // TODO(pinkerton): save/restore position based on prefs.
   [[self window] center];
-
-  // Get initial sync state.
-  if (sync_service_) {
-    [self syncStateChanged];
-  }
 }
 
 - (void)dealloc {
