@@ -3097,7 +3097,6 @@ BUG27418 WIN SLOW : LayoutTests/http/tests/misc/url-in-utf16le.html = PASS
 BUG27418 LINUX : LayoutTests/http/tests/local/send-dragged-file.html = TIMEOUT
 BUG27418 MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-double-quote.html = PASS TIMEOUT
 BUG27418 MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-src-redirect-safe.html = PASS TIMEOUT
-BUG27418 MAC : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
 BUG27418 MAC : LayoutTests/http/tests/security/escape-form-data-field-names.html = PASS TIMEOUT
 BUG27418 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/object-embed-tag-control-char.html = PASS TIMEOUT
 BUG27418 MAC SLOW : LayoutTests/http/tests/security/xssAuditor/javascript-link-ampersand.html = PASS
