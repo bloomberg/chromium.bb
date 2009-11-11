@@ -637,6 +637,10 @@
             '../third_party/skia/src/core/SkMMapStream.cpp',
             '../third_party/skia/src/ports/SkThread_pthread.cpp',
             '../third_party/skia/src/ports/SkTime_Unix.cc',
+            '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+          ],
+          'sources': [
+            '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
           ],
           'include_dirs': [
             'config/win',
