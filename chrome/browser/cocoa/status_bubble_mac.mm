@@ -343,6 +343,7 @@ void StatusBubbleMac::Attach() {
 }
 
 void StatusBubbleMac::AnimationDidStop(CAAnimation* animation, bool finished) {
+  DCHECK([NSThread isMainThread]);
   DCHECK(state_ == kBubbleShowingFadeIn || state_ == kBubbleHidingFadeOut);
 
   if (finished) {
@@ -352,10 +353,10 @@ void StatusBubbleMac::AnimationDidStop(CAAnimation* animation, bool finished) {
     // properly synchronized.
     if (state_ == kBubbleShowingFadeIn) {
       DCHECK_EQ([[window_ animator] alphaValue], kBubbleOpacity);
-      state_ = kBubbleShown;
+      SetState(kBubbleShown);
     } else {
       DCHECK_EQ([[window_ animator] alphaValue], 0.0);
-      state_ = kBubbleHidden;
+      SetState(kBubbleHidden);
     }
   }
 }
@@ -371,6 +372,8 @@ void StatusBubbleMac::SetState(StatusBubbleState state) {
 }
 
 void StatusBubbleMac::Fade(bool show) {
+  DCHECK([NSThread isMainThread]);
+
   StatusBubbleState fade_state = kBubbleShowingFadeIn;
   StatusBubbleState target_state = kBubbleShown;
   NSTimeInterval full_duration = kShowFadeInDurationSeconds;
@@ -414,6 +417,7 @@ void StatusBubbleMac::Fade(bool show) {
 }
 
 void StatusBubbleMac::StartTimer(int64 delay_ms) {
+  DCHECK([NSThread isMainThread]);
   DCHECK(state_ == kBubbleShowingTimer || state_ == kBubbleHidingTimer);
 
   if (immediate_) {
@@ -431,12 +435,15 @@ void StatusBubbleMac::StartTimer(int64 delay_ms) {
 }
 
 void StatusBubbleMac::CancelTimer() {
+  DCHECK([NSThread isMainThread]);
+
   if (!timer_factory_.empty())
     timer_factory_.RevokeAll();
 }
 
 void StatusBubbleMac::TimerFired() {
   DCHECK(state_ == kBubbleShowingTimer || state_ == kBubbleHidingTimer);
+  DCHECK([NSThread isMainThread]);
 
   if (state_ == kBubbleShowingTimer) {
     SetState(kBubbleShowingFadeIn);
