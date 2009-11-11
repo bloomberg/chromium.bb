@@ -501,7 +501,6 @@ void DraggedTabController::DidProcessEvent(GdkEvent* event) {
 // DraggedTabController, private:
 
 void DraggedTabController::InitWindowCreatePoint() {
-  window_create_point_.SetPoint(mouse_offset_.x(), mouse_offset_.y());
   // window_create_point_ is only used in CompleteDrag() (through
   // GetWindowCreatePoint() to get the start point of the docked window) when
   // the attached_tabstrip_ is NULL and all the window's related bound
@@ -510,7 +509,14 @@ void DraggedTabController::InitWindowCreatePoint() {
   // the window_create_point_ is not in the correct coordinate system. Please
   // refer to http://crbug.com/6223 comment #15 for detailed information.
   Tab* first_tab = source_tabstrip_->GetTabAt(0);
-  views::View::ConvertPointToWidget(first_tab, &window_create_point_);
+  views::View::ConvertPointToWidget(first_tab, &first_source_tab_point_);
+  UpdateWindowCreatePoint();
+}
+
+void DraggedTabController::UpdateWindowCreatePoint() {
+  // See comments in InitWindowCreatePoint for details on this.
+  window_create_point_ = first_source_tab_point_;
+  window_create_point_.Offset(mouse_offset_.x(), mouse_offset_.y());
 }
 
 gfx::Point DraggedTabController::GetWindowCreatePoint() const {
@@ -726,7 +732,7 @@ void DraggedTabController::MakeDraggedTabPinned(int tab_index) {
   // Reset the hotspot (mouse_offset_) for the dragged tab. Otherwise the
   // dragged tab may be nowhere near the mouse.
   mouse_offset_.set_x(Tab::GetPinnedWidth() / 2 - 1);
-  InitWindowCreatePoint();
+  UpdateWindowCreatePoint();
   view_->set_mouse_tab_offset(mouse_offset_);
 
   // Resize the dragged tab.

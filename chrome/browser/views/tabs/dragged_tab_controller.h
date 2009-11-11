@@ -68,11 +68,7 @@ class DraggedTabController : public TabContentsDelegate,
   // Returns true if the specified Tab matches the Tab being dragged.
   bool IsDragSourceTab(Tab* tab) const;
 
-
-
   TabContents* dragged_contents() { return dragged_contents_; }
-
-
 
  private:
   class DockDisplayer;
@@ -127,8 +123,12 @@ class DraggedTabController : public TabContentsDelegate,
 #endif
 
   // Initialize the offset used to calculate the position to create windows
-  // in |GetWindowCreatePoint|.
+  // in |GetWindowCreatePoint|. This should only be invoked from
+  // |CaptureDragInfo|.
   void InitWindowCreatePoint();
+
+  // Updates the window create point from |mouse_offset_|.
+  void UpdateWindowCreatePoint();
 
   // Returns the point where a detached window should be created given the
   // current mouse position.
@@ -311,6 +311,10 @@ class DraggedTabController : public TabContentsDelegate,
   // were the distance of the mouse from the top left of the first tab in the
   // attached TabStrip from the top left of the window.
   gfx::Point window_create_point_;
+
+  // Location of the first tab in the source tabstrip in screen coordinates.
+  // This is used to calculate window_create_point_.
+  gfx::Point first_source_tab_point_;
 
   // The bounds of the browser window before the last Tab was detached. When
   // the last Tab is detached, rather than destroying the frame (which would
