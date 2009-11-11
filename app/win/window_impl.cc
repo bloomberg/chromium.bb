@@ -180,15 +180,7 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
   if (!window)
     return 0;
 
-  LRESULT return_code = window->OnWndProc(message, w_param, l_param);
-
-  // Clean up state.  Do this after the above call so subclasses still have a
-  // valid hwnd().  Can't wait until WM_NCDESTROY because by then |hwnd| is not
-  // guaranteed to be reported to us.
-  if (message == WM_DESTROY)
-    window->OnDestroy();
-
-  return return_code;
+  return window->OnWndProc(message, w_param, l_param);
 }
 
 std::wstring WindowImpl::GetWindowClassName() {
@@ -217,10 +209,6 @@ std::wstring WindowImpl::GetWindowClassName() {
   Singleton<ClassRegistrar>()->RegisterClass(class_info, name, atom);
 
   return name;
-}
-
-void WindowImpl::OnDestroy() {
-  hwnd_ = 0;
 }
 
 }  // namespace app

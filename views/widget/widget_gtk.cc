@@ -106,10 +106,9 @@ WidgetGtk::WidgetGtk(Type type)
 }
 
 WidgetGtk::~WidgetGtk() {
-  // If we're deleted directly, instead of via OnDestroy(), then clean up after
-  // ourselves.
-  delete_on_destroy_ = false;  // Prevent double free.
-  CloseNow();
+  if (type_ != TYPE_CHILD)
+    ActiveWindowWatcherX::RemoveObserver(this);
+  MessageLoopForUI::current()->RemoveObserver(this);
 }
 
 GtkWindow* WidgetGtk::GetTransientParent() const {
@@ -819,9 +818,6 @@ void WidgetGtk::OnGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 
 void WidgetGtk::OnDestroy() {
   widget_ = window_contents_ = NULL;
-  if (type_ != TYPE_CHILD)
-    ActiveWindowWatcherX::RemoveObserver(this);
-  MessageLoopForUI::current()->RemoveObserver(this);
   if (delete_on_destroy_) {
     // Delays the deletion of this WidgetGtk as we want its children to have
     // access to it when destroyed.
