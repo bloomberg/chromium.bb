@@ -25,7 +25,7 @@ namespace {
 // time taken for each switch. It then prints out the times on the console,
 // with the aim that the page cycler parser can interpret these numbers to
 // draw graphs for page cycler Tab Switching Performance.
-// Usage Flags: -enable-logging -dump-histograms-on-exit -log-level=0
+// Usage Flags: --enable-logging --dump-histograms-on-exit --log-level=0
 class TabSwitchingUITest : public UITest {
  public:
   TabSwitchingUITest() {
@@ -61,7 +61,7 @@ class TabSwitchingUITest : public UITest {
     EXPECT_TRUE(CloseBrowser(browser_proxy_.get(), &application_closed));
 
     // Now open the corresponding log file and collect average and std dev from
-    // the histogram stats generated for RenderWidgetHostHWND_WhiteoutDuration
+    // the histogram stats generated for RenderWidgetHost_TabSwitchPaintDuration
     FilePath log_file_name;
     ASSERT_TRUE(PathService::Get(chrome::DIR_LOGS, &log_file_name));
     log_file_name = log_file_name.AppendASCII("chrome_debug.log");
@@ -82,26 +82,28 @@ class TabSwitchingUITest : public UITest {
     const std::string average_str("average = ");
     const std::string std_dev_str("standard deviation = ");
     std::string::size_type pos = contents.find(
-        "Histogram: MPArch.RWHH_WhiteoutDuration", 0);
+        "Histogram: MPArch.RWH_TabSwitchPaintDuration", 0);
     std::string::size_type comma_pos;
     std::string::size_type number_length;
-    if (pos != std::string::npos) {
-      // Get the average.
-      pos = contents.find(average_str, pos);
-      comma_pos = contents.find(",", pos);
-      pos += average_str.length();
-      number_length = comma_pos - pos;
-      average = contents.substr(pos, number_length);
 
-      // Get the std dev.
-      pos = contents.find(std_dev_str, pos);
-      pos += std_dev_str.length();
-      comma_pos = contents.find(" ", pos);
-      number_length = comma_pos - pos;
-      std_dev = contents.substr(pos, number_length);
-    } else {
-      LOG(WARNING) << "Histogram: MPArch.RWHH_WhiteoutDuration wasn't found";
-    }
+    // Verify we found the TabSwitchPaintDuration histogram.
+    ASSERT_NE(pos, std::string::npos) <<
+        "Histogram: MPArch.RWH_TabSwitchPaintDuration wasn't found\n" <<
+        contents;
+
+    // Get the average.
+    pos = contents.find(average_str, pos);
+    comma_pos = contents.find(",", pos);
+    pos += average_str.length();
+    number_length = comma_pos - pos;
+    average = contents.substr(pos, number_length);
+
+    // Get the std dev.
+    pos = contents.find(std_dev_str, pos);
+    pos += std_dev_str.length();
+    comma_pos = contents.find(" ", pos);
+    number_length = comma_pos - pos;
+    std_dev = contents.substr(pos, number_length);
 
     // Print the average and standard deviation.
     PrintResultMeanAndError("tab_switch", "", "t",

@@ -255,6 +255,8 @@ void RenderWidgetHostViewWin::DidBecomeSelected() {
   if (!is_hidden_)
     return;
 
+  if (tab_switch_paint_time_.is_null())
+    tab_switch_paint_time_ = TimeTicks::Now();
   is_hidden_ = false;
   EnsureTooltip();
   render_widget_host_->WasRestored();
@@ -792,6 +794,15 @@ void RenderWidgetHostViewWin::OnPaint(HDC dc) {
       // Reset the start time to 0 so that we start recording again the next
       // time the backing store is NULL...
       whiteout_start_time_ = TimeTicks();
+    }
+    if (!tab_switch_paint_time_.is_null()) {
+      TimeDelta tab_switch_paint_duration = TimeTicks::Now() -
+          tab_switch_paint_time_;
+      UMA_HISTOGRAM_TIMES("MPArch.RWH_TabSwitchPaintDuration",
+          tab_switch_paint_duration);
+      // Reset tab_switch_paint_time_ to 0 so future tab selections are
+      // recorded.
+      tab_switch_paint_time_ = TimeTicks();
     }
   } else {
     DrawBackground(paint_dc.m_ps.rcPaint, &paint_dc);

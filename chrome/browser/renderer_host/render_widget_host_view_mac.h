@@ -140,6 +140,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // value returns true for is_null() if we are not recording whiteout times.
   base::TimeTicks whiteout_start_time_;
 
+  // The time it took after this view was selected for it to be fully painted.
+  base::TimeTicks tab_switch_paint_time_;
+
   // Variables used by our implementaion of the NSTextInput protocol.
   // An input method of Mac calls the methods of this protocol not only to
   // notify an application of its status, but also to retrieve the status of

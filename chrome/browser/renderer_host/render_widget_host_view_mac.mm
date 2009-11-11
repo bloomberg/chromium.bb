@@ -118,6 +118,8 @@ void RenderWidgetHostViewMac::DidBecomeSelected() {
   if (!is_hidden_)
     return;
 
+  if (tab_switch_paint_time_.is_null())
+    tab_switch_paint_time_ = base::TimeTicks::Now();
   is_hidden_ = false;
   render_widget_host_->WasRestored();
 }
@@ -822,6 +824,15 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
       // Reset the start time to 0 so that we start recording again the next
       // time the backing store is NULL...
       renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks();
+    }
+    if (!renderWidgetHostView_->tab_switch_paint_time_.is_null()) {
+      base::TimeDelta tab_switch_paint_duration = base::TimeTicks::Now() -
+          renderWidgetHostView_->tab_switch_paint_time_;
+      UMA_HISTOGRAM_TIMES("MPArch.RWH_TabSwitchPaintDuration",
+          tab_switch_paint_duration);
+      // Reset tab_switch_paint_time_ to 0 so future tab selections are
+      // recorded.
+      renderWidgetHostView_->tab_switch_paint_time_ = base::TimeTicks();
     }
   } else {
     [[NSColor whiteColor] set];
