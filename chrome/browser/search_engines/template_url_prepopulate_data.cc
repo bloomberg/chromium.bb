@@ -54,10 +54,13 @@ struct PrepopulatedEngine {
   // facilitates changes like adding more specific per-country data in the
   // future; in such a case the localized engines will transparently replace the
   // previous, non-localized versions.  For engines where we need two instances
-  // to appear for one country (e.g. Live Search U.S. English and Spanish), we
+  // to appear for one country (e.g. Bing Search U.S. English and Spanish), we
   // must use two different unique IDs (and different keywords).
   //
-  // The following unique IDs are available: 58, 66, 93, 103+
+  // The following unique IDs are available:
+  //    23, 30, 33, 34, 36, 39, 42, 43, 47, 48, 49, 50, 52, 53, 56, 58, 60, 61,
+  //    64, 65, 66, 70, 74, 78, 79, 80, 81, 84, 86, 88, 91, 92, 93, 94, 95, 96,
+  //    97, 102+
   // NOTE: CHANGE THE ABOVE NUMBERS IF YOU ADD A NEW ENGINE; ID conflicts = bad!
   const int id;
 };
@@ -70,41 +73,6 @@ const PrepopulatedEngine abcsok = {
   "UTF-8",
   NULL,
   72,
-};
-
-const PrepopulatedEngine adonde = {
-  L"Adonde.com",
-  L"adonde.com",
-  "http://www.adonde.com/favicon.ico",
-  L"http://www.adonde.com/peru/peru.html?sitesearch=adonde.com&"
-      L"client=pub-6263803831447773&ie={inputEncoding}&cof=GALT%3A%23CC0000"
-      L"%3BGL%3A1%3BDIV%3A%23E6E6E6%3BVLC%3A663399%3BAH%3Acenter%3BBGC%3AFFFFFF"
-      L"%3BLBGC%3AFFFFFF%3BALC%3A000000%3BLC%3A000000%3BT%3A0066CC%3BGFNT"
-      L"%3ACCCCCC%3BGIMP%3ACCCCCC%3BFORID%3A11&q={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  95,
-};
-
-const PrepopulatedEngine aeiou = {
-  L"AEIOU",
-  L"aeiou.pt",
-  "http://aeiou.pt/favicon.ico",
-  L"http://aeiou.pt/pesquisa/index.php?p={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  79,
-};
-
-const PrepopulatedEngine aladin = {
-  L"Aladin",
-  L"aladin.info",
-  "http://www.aladin.info/favicon.ico",
-  L"http://www.aladin.info/search/index.php?term={searchTerms}&req=search&"
-      L"source=2",
-  "UTF-8",
-  NULL,
-  18,
 };
 
 const PrepopulatedEngine altavista = {
@@ -122,26 +90,6 @@ const PrepopulatedEngine altavista_ar = {
   L"ar.altavista.com",
   "http://ar.altavista.com/favicon.ico",
   L"http://ar.altavista.com/web/results?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  89,
-};
-
-const PrepopulatedEngine altavista_es = {
-  L"AltaVista",
-  L"es.altavista.com",
-  "http://es.altavista.com/favicon.ico",
-  L"http://es.altavista.com/web/results?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  89,
-};
-
-const PrepopulatedEngine altavista_mx = {
-  L"AltaVista",
-  L"mx.altavista.com",
-  "http://mx.altavista.com/favicon.ico",
-  L"http://mx.altavista.com/web/results?q={searchTerms}",
   "UTF-8",
   NULL,
   89,
@@ -167,26 +115,6 @@ const PrepopulatedEngine aol = {
   35,
 };
 
-const PrepopulatedEngine aol_fr = {
-  L"AOL",
-  L"aol.fr",
-  "http://www.aol.fr/favicon.ico",
-  L"http://www.recherche.aol.fr/aol/search?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  35,
-};
-
-const PrepopulatedEngine aonde = {
-  L"AONDE.com",
-  L"aonde.com",
-  "http://busca.aonde.com/favicon.ico",
-  L"http://busca.aonde.com/?keys={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  80,
-};
-
 const PrepopulatedEngine araby = {
   L"\x0639\x0631\x0628\x064a",
   L"araby.com",
@@ -207,16 +135,6 @@ const PrepopulatedEngine ask = {
   4,
 };
 
-const PrepopulatedEngine ask_de = {
-  L"Ask.com Deutschland",
-  L"de.ask.com",
-  "http://de.ask.com/favicon.ico",
-  L"http://de.ask.com/web?q={searchTerms}",
-  "UTF-8",
-  L"http://ss.de.ask.com/query?q={searchTerms}&li=ff",
-  4,
-};
-
 const PrepopulatedEngine ask_es = {
   L"Ask.com Espa" L"\x00f1" L"a",
   L"es.ask.com",
@@ -234,16 +152,6 @@ const PrepopulatedEngine ask_it = {
   L"http://it.ask.com/web?q={searchTerms}",
   "UTF-8",
   L"http://ss.it.ask.com/query?q={searchTerms}&li=ff",
-  4,
-};
-
-const PrepopulatedEngine ask_uk = {
-  L"Ask.com UK",
-  L"uk.ask.com",
-  "http://uk.ask.com/favicon.ico",
-  L"http://uk.ask.com/web?q={searchTerms}",
-  "UTF-8",
-  L"http://ss.uk.ask.com/query?q={searchTerms}&li=ff",
   4,
 };
 
@@ -277,24 +185,14 @@ const PrepopulatedEngine baidu = {
   21,
 };
 
-const PrepopulatedEngine biglobe = {
-  L"BIGLOBE",
-  L"biglobe.ne.jp",
-  "http://cgi.search.biglobe.ne.jp/favicon.ico",
-  L"http://cgi.search.biglobe.ne.jp/cgi-bin/search2-b?q={searchTerms}",
-  "Shift_JIS",
-  NULL,
-  64,
-};
-
-const PrepopulatedEngine bigmir = {
-  L"bigmir)net",
-  L"bigmir.net",
-  "http://i.bigmir.net/favicon.ico",
-  L"http://search.bigmir.net/index.php?q={searchTerms}",
-  "windows-1251",
-  NULL,
-  33,
+const PrepopulatedEngine bing = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
 };
 
 const PrepopulatedEngine bing_ar_XA = {
@@ -306,6 +204,176 @@ const PrepopulatedEngine bing_ar_XA = {
   L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
   7,  // Can't be 3 as this has to appear in the Arabian countries' lists
       // alongside bing_en_XA.
+};
+
+const PrepopulatedEngine bing_bg_BG = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=bg-BG&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_cs_CZ = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=cs-CZ&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_da_DK = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=da-DK&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_de_AT = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=de-AT&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_de_CH = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=de-CH&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_de_DE = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=de-DE&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_el_GR = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=el-GR&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_AU = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-AU&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_CA = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-CA&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_GB = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-GB&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_ID = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-ID&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_IE = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-IE&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_IN = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-IN&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_MY = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-MY&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_NZ = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-NZ&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_PH = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-PH&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_en_SG = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-SG&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
 };
 
 const PrepopulatedEngine bing_en_US = {
@@ -328,6 +396,146 @@ const PrepopulatedEngine bing_en_XA = {
   3,
 };
 
+const PrepopulatedEngine bing_en_ZA = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=en-ZA&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_es_AR = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=es-AR&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_es_CL = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=es-CL&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_es_ES = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=es-ES&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_es_MX = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=es-MX&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_es_XL = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=es-XL&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_et_EE = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=et-EE&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_fi_FI = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=fi-FI&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_fr_BE = {
+  L"Bing",
+  L"",  // bing.com is taken by bing_nl_BE.
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=fr-BE&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  7,
+};
+
+const PrepopulatedEngine bing_fr_CA = {
+  L"Bing",
+  L"",  // bing.com is taken by bing_en_CA.
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=fr-CA&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  7,
+};
+
+const PrepopulatedEngine bing_fr_CH = {
+  L"Bing",
+  L"",  // bing.com is taken by bing_de_CH.
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=fr-CH&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  7,
+};
+
+const PrepopulatedEngine bing_fr_FR = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=fr-FR&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_he_IL = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=he-IL&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_hr_HR = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=hr-HR&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
 const PrepopulatedEngine bing_hu_HU = {
   L"Bing",
   L"bing.com",
@@ -338,14 +546,224 @@ const PrepopulatedEngine bing_hu_HU = {
   3,
 };
 
-const PrepopulatedEngine bluewin = {
-  L"Bluewin",
-  L"search.bluewin.ch",
-  "http://search.bluewin.ch/favicon.ico",
-  L"http://search.bluewin.ch/bw/search/web/de/result.jsp?query={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  52,
+const PrepopulatedEngine bing_it_IT = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=it-IT&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_ja_JP = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=ja-JP&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_ko_KR = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=ko-KR&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_lt_LT = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=lt-LT&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_lv_LV = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=lv-LV&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_nb_NO = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=nb-NO&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_nl_BE = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=nl-BE&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_nl_NL = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=nl-NL&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_pl_PL = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=pl-PL&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_pt_BR = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=pt-BR&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_pt_PT = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=pt-PT&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_ro_RO = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=ro-RO&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_ru_RU = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=ru-RU&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_sl_SI = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=sl-SI&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_sk_SK = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=sk-SK&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_sv_SE = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=sv-SE&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_th_TH = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=th-TH&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_tr_TR = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=tr-TR&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_uk_UA = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=uk-UA&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_zh_CN = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=zh-CN&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_zh_HK = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=zh-HK&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
+};
+
+const PrepopulatedEngine bing_zh_TW = {
+  L"Bing",
+  L"bing.com",
+  "http://www.bing.com/s/wlflag.ico",
+  L"http://www.bing.com/search?setmkt=zh-TW&q={searchTerms}",
+  "UTF-8",
+  L"http://api.bing.com/osjson.aspx?query={searchTerms}&language={language}",
+  3,
 };
 
 const PrepopulatedEngine centrum_cz = {
@@ -368,16 +786,6 @@ const PrepopulatedEngine centrum_sk = {
   26,
 };
 
-const PrepopulatedEngine conexcol = {
-  L"Conexcol.com",
-  L"conexcol.com",
-  "http://www.conexcol.com/favicon.ico",
-  L"http://buscar.conexcol.com/cgi-ps/busqueda.cgi?query={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  91,
-};
-
 const PrepopulatedEngine daum = {
   L"Daum",
   L"daum.net",
@@ -386,16 +794,6 @@ const PrepopulatedEngine daum = {
   "EUC-KR",
    L"http://sug.search.daum.net/search_nsuggest?mod=fxjson&q={searchTerms}",
   68,
-};
-
-const PrepopulatedEngine delfi_ee = {
-  L"DELFI",
-  L"delfi.ee",
-  "http://g.delfi.ee/s/search.png",
-  L"http://otsing.delfi.ee/i.php?q={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  45,
 };
 
 const PrepopulatedEngine delfi_lt = {
@@ -418,37 +816,14 @@ const PrepopulatedEngine delfi_lv = {
   45,
 };
 
-const PrepopulatedEngine embla = {
-  L"Embla",
-  L"embla.is",
-  "http://embla.is/favicon.ico",
-  L"http://embla.is/mm/embla/?s={searchTerms}",
-  "ISO-8859-1",
+const PrepopulatedEngine diri = {
+  L"diri",
+  L"diri.bg",
+  "http://i.dir.bg/diri/images/favicon.ico",
+  L"http://diri.bg/search.php?textfield={searchTerms}",
+  "windows-1251",
   NULL,
-  60,
-};
-
-const PrepopulatedEngine empas = {
-  L"\xc5e0\xd30c\xc2a4",
-  L"empas.com",
-  "http://search.empas.com/favicon.ico",
-  L"http://search.empas.com/search/all.html?q={searchTerms}",
-  "EUC-KR",
-  // http://www.empas.com/ac/do.tsp?q={searchTerms}
-  // returns non-Firefox JSON.  searchTerms needs to be in Java notation
-  // (\uAC00\uAC01).
-  NULL,
-  70,
-};
-
-const PrepopulatedEngine eniro_dk = {
-  L"Eniro",
-  L"eniro.dk",
-  "http://eniro.dk/favicon.ico",
-  L"http://eniro.dk/query?search_word={searchTerms}&what=web_local",
-  "ISO-8859-1",
-  NULL,
-  29,
+  32,
 };
 
 const PrepopulatedEngine eniro_fi = {
@@ -471,16 +846,6 @@ const PrepopulatedEngine eniro_se = {
   29,
 };
 
-const PrepopulatedEngine finna = {
-  L"FINNA",
-  L"finna.is",
-  "http://finna.is/favicon.ico",
-  L"http://finna.is/WWW_Search/?query={searchTerms}",
-  "UTF-8",
-  NULL,
-  61,
-};
-
 const PrepopulatedEngine fonecta_02_fi = {
   L"Fonecta 02.fi",
   L"www.fi",
@@ -489,26 +854,6 @@ const PrepopulatedEngine fonecta_02_fi = {
   "UTF-8",
   NULL,
   46,
-};
-
-const PrepopulatedEngine forthnet = {
-  L"Forthnet",
-  L"forthnet.gr",
-  "http://search.forthnet.gr/favicon.ico",
-  L"http://search.forthnet.gr/cgi-bin/query?mss=search&q={searchTerms}",
-  "windows-1253",
-  NULL,
-  53,
-};
-
-const PrepopulatedEngine gigabusca = {
-  L"GiGaBusca",
-  L"gigabusca.com.br",
-  "http://www.gigabusca.com.br/favicon.ico",
-  L"http://www.gigabusca.com.br/buscar.php?query={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  81,
 };
 
 const PrepopulatedEngine go = {
@@ -520,16 +865,6 @@ const PrepopulatedEngine go = {
   "ISO-8859-1",
   NULL,
   40,
-};
-
-const PrepopulatedEngine goo = {
-  L"goo",
-  L"goo.ne.jp",
-  "http://goo.ne.jp/gooicon.ico",
-  L"http://search.goo.ne.jp/web.jsp?MT={searchTerms}&IE={inputEncoding}",
-  "UTF-8",
-  NULL,
-  92,
 };
 
 const PrepopulatedEngine google = {
@@ -554,24 +889,14 @@ const PrepopulatedEngine guruji = {
   38,
 };
 
-const PrepopulatedEngine iafrica = {
-  L"iafrica.com",
-  L"iafrica.com",
+const PrepopulatedEngine hispavista = {
+  L"hispavista",
+  L"hispavista.com",
+  "http://buscar.hispavista.com/favicon.ico",
+  L"http://buscar.hispavista.com/?cadena={searchTerms}",
+  "iso-8859-1",
   NULL,
-  L"http://search.iafrica.com/search?q={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  43,
-};
-
-const PrepopulatedEngine ilse = {
-  L"Ilse",
-  L"ilse.nl",
-  "http://search.ilse.nl/images/favicon.ico",
-  L"http://search.ilse.nl/web?search_for={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  30,
+  18,
 };
 
 const PrepopulatedEngine in = {
@@ -594,16 +919,6 @@ const PrepopulatedEngine jabse = {
   19,
 };
 
-const PrepopulatedEngine jamaicalive = {
-  L"JamaicaLive",
-  L"jalive.com.jm",
-  "http://jalive.com.jm/favicon.ico",
-  L"http://jalive.com.jm/search/?mode=allwords&search={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  39,
-};
-
 const PrepopulatedEngine jubii = {
   L"Jubii",
   L"jubii.dk",
@@ -612,16 +927,6 @@ const PrepopulatedEngine jubii = {
   "ISO-8859-1",
   NULL,
   28,
-};
-
-const PrepopulatedEngine krstarica = {
-  L"Krstarica",
-  L"krstarica.rs",
-  "http://pretraga.krstarica.com/favicon.ico",
-  L"http://pretraga.krstarica.com/index.php?q={searchTerms}",
-  "windows-1250",
-  NULL,
-  84,
 };
 
 const PrepopulatedEngine kvasir = {
@@ -664,219 +969,6 @@ const PrepopulatedEngine libero = {
   63,
 };
 
-const PrepopulatedEngine live = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_ar_XA = {
-  L"Live Search (\x0627\x0644\x0639\x0631\x0628\x064a\x0629)",
-  L"",  // "live.com" is already taken by live_en_XA (see comment on ID below).
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?setlang=ar-XA&mkt=ar-XA&"
-      L"q={searchTerms}",
-  "UTF-8",
-  NULL,
-  7,  // Can't be 3 as this has to appear in the Arabian countries' lists
-      // alongside live_en_XA.
-};
-
-const PrepopulatedEngine live_bg_BG = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=bg-BG&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_cs_CZ = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=cs-CZ&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_el_GR = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=el-GR&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_en_ID = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=en_ID&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_en_NZ = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=en-NZ&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_en_XA = {
-  L"Live Search (English)",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?setlang=en-XA&mkt=en-XA&"
-      L"q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_et_EE = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=et-EE&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_hr_HR = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=hr-HR&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_it_IT = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=it-IT&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_lt_LT = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=lt-LT&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_pl_PL = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=pl-PL&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_pt_PT = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=pt-PT&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_ro_RO = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=ro-RO&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_ru_RU = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=ru-RU&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_sk_SK = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=sk-SK&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_sl_SI = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=sl-SI&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine live_th_TH = {
-  L"Live Search",
-  L"live.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=th-TH&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine lycos_es = {
-  L"Lycos Espa" L"\x00f1" L"a",
-  L"lycos.es",
-  "http://buscador.lycos.es/favicon.ico",
-  L"http://buscador.lycos.es/cgi-bin/pursuit?query={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  34,
-};
-
-const PrepopulatedEngine lycos_nl = {
-  L"Lycos",
-  L"lycos.nl",
-  "http://zoek.lycos.nl/favicon.ico",
-  L"http://zoek.lycos.nl/cgi-bin/pursuit?query={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  34,
-};
-
 const PrepopulatedEngine mail_ru = {
   L"@MAIL.RU",
   L"mail.ru",
@@ -907,408 +999,6 @@ const PrepopulatedEngine masrawy = {
   14,
 };
 
-const PrepopulatedEngine matkurja = {
-  L"Mat'Kurja",
-  L"matkurja.com",
-  "http://matkurja.com/favicon.ico",
-  L"http://matkurja.com/si/iskalnik/?q={searchTerms}&search_source=directory",
-  "ISO-8859-2",
-  NULL,
-  88,
-};
-
-const PrepopulatedEngine meta = {
-  L"<META>",
-  L"meta.ua",
-  "http://meta.ua/favicon.ico",
-  L"http://meta.ua/search.asp?q={searchTerms}",
-  "windows-1251",
-  L"http://meta.ua/suggestions/?output=fxjson&oe=utf-8&q={searchTerms}",
-  102,
-};
-
-const PrepopulatedEngine msn = {
-  L"MSN",
-  L"msn.com",
-  "http://search.msn.com/s/wlflag.ico",
-  L"http://search.msn.com/results.aspx?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_ar_XA = {
-  L"MSN (\x0627\x0644\x0639\x0631\x0628\x064a\x0629)",
-  L"",  // "arabia.msn.com" is already taken by msn_en_XA (see comment on ID
-        // below).
-  "http://search.msn.com/s/wlflag.ico",
-  L"http://search.msn.com/results.aspx?setlang=ar-XA&mkt=ar-XA&"
-      L"q={searchTerms}",
-  "UTF-8",
-  NULL,
-  7,  // Can't be 3 as this has to appear in the Arabian countries' lists
-      // alongside msn_en_XA.
-};
-
-const PrepopulatedEngine msn_da_DK = {
-  L"MSN Danmark",
-  L"dk.msn.com",
-  "http://search.msn.dk/s/wlflag.ico",
-  L"http://search.msn.dk/results.aspx?mkt=da-DK&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_de_AT = {
-  L"MSN \x00d6sterreich",
-  L"at.msn.com",
-  "http://search.msn.at/s/wlflag.ico",
-  L"http://search.msn.at/results.aspx?mkt=de-AT&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_de_CH = {
-  L"MSN Schweiz (Deutsch)",
-  L"ch.msn.com",
-  "http://search.msn.ch/s/wlflag.ico",
-  L"http://search.msn.ch/results.aspx?setlang=de-CH&mkt=de-CH&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_de_DE = {
-  L"MSN",
-  L"de.msn.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=de-DE&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_AU = {
-  L"ninemsn.com.au",
-  L"ninemsn.com.au",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=en-AU&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_CA = {
-  L"Sympatico / MSN (English)",
-  L"sympatico.msn.ca",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?setlang=en-CA&mkt=en-CA&"
-      L"q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_GB = {
-  L"MSN UK",
-  L"uk.msn.com",
-  "http://search.msn.co.uk/s/wlflag.ico",
-  L"http://search.msn.co.uk/results.aspx?mkt=en-GB&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_IE = {
-  L"MSN IE",
-  L"ie.msn.com",
-  "http://search.msn.ie/s/wlflag.ico",
-  L"http://search.msn.ie/results.aspx?mkt=en-IE&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_IN = {
-  L"MSN India",
-  L"in.msn.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=en-IN&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_MY = {
-  L"MSN Malaysia",
-  L"malaysia.msn.com",
-  "http://search.msn.com.my/s/wlflag.ico",
-  L"http://search.msn.com.my/results.aspx?mkt=en-MY&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_PH = {
-  L"MSN Philippines",
-  L"ph.msn.com",
-  "http://search.msn.com.ph/s/wlflag.ico",
-  L"http://search.msn.com.ph/results.aspx?mkt=en-PH&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_SG = {
-  L"MSN Singapore",
-  L"sg.msn.com",
-  "http://search.msn.com.sg/s/wlflag.ico",
-  L"http://search.msn.com.sg/results.aspx?mkt=en-SG&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_XA = {
-  L"MSN (English)",
-  L"arabia.msn.com",
-  "http://search.msn.com/s/wlflag.ico",
-  L"http://search.msn.com/results.aspx?setlang=en-XA&mkt=en-XA&"
-      L"q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_en_ZA = {
-  L"MSN ZA",
-  L"za.msn.com",
-  "http://search.msn.co.za/s/wlflag.ico",
-  L"http://search.msn.co.za/results.aspx?mkt=en-ZA&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_es_AR = {
-  L"MSN Argentina",
-  L"ar.msn.com",
-  "http://search.msn.com/s/wlflag.ico",
-  L"http://search.msn.com/results.aspx?mkt=es-AR&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_es_CL = {
-  L"MSN Chile",
-  L"cl.msn.com",
-  "http://search.msn.com/s/wlflag.ico",
-  L"http://search.msn.com/results.aspx?mkt=es-CL&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_es_CO = {
-  L"MSN Colombia",
-  L"co.msn.com",
-  "http://search.msn.com/s/wlflag.ico",
-  L"http://search.msn.com/results.aspx?mkt=es-CO&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_es_ES = {
-  L"MSN Espa" L"\x00f1" L"a",
-  L"es.msn.com",
-  "http://search.msn.es/s/wlflag.ico",
-  L"http://search.msn.es/results.aspx?mkt=es-ES&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_es_MX = {
-  L"Prodigy / MSN",
-  L"prodigy.msn.com",
-  "http://search.prodigy.msn.com/s/wlflag.ico",
-  L"http://search.prodigy.msn.com/results.aspx?mkt=es-MX&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_es_XL = {
-  L"MSN Latinoam\x00e9rica",
-  L"latam.msn.com",
-  "http://search.msn.com/s/wlflag.ico",
-  L"http://search.msn.com/results.aspx?mkt=es-XL&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_fi_FI = {
-  L"MSN",
-  L"fi.msn.com",
-  "http://search.msn.fi/s/wlflag.ico",
-  L"http://search.msn.fi/results.aspx?mkt=fi-FI&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_fr_BE = {
-  L"MSN Belgique (Fran" L"\x00e7" L"ais)",
-  L"",  // "be.msn.com" is already taken by msn_nl_BE (see comment on ID below).
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?setlang=fr-BE&mkt=fr-BE&"
-      L"q={searchTerms}",
-  "UTF-8",
-  NULL,
-  8,  // Can't be 3 as this has to appear in the Belgium list alongside
-      // msn_nl_BE.
-};
-
-const PrepopulatedEngine msn_fr_CA = {
-  L"Sympatico / MSN (Fran" L"\x00e7" L"ais)",
-  L"",  // "sympatico.msn.ca" is already taken by msn_en_CA (see comment on ID
-        // below).
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?setlang=fr-CA&mkt=fr-CA&"
-      L"q={searchTerms}",
-  "UTF-8",
-  NULL,
-  9,  // Can't be 3 as this has to appear in the Canada list alongside
-      // msn_en_CA.
-};
-
-const PrepopulatedEngine msn_fr_CH = {
-  L"MSN Suisse (Fran" L"\x00e7" L"ais)",
-  L"",  // "ch.msn.com" is already taken by msn_de_CH (see comment on ID below).
-  "http://search.msn.ch/s/wlflag.ico",
-  L"http://search.msn.ch/results.aspx?setlang=fr-CH&mkt=fr-CH&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  10,  // Can't be 3 as this has to appear in the Switzerland list alongside
-       // msn_de_CH.
-};
-
-const PrepopulatedEngine msn_fr_FR = {
-  L"MSN France",
-  L"fr.msn.com",
-  "http://search.msn.fr/s/wlflag.ico",
-  L"http://search.msn.fr/results.aspx?mkt=fr-FR&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_he_IL = {
-  L"msn.co.il",
-  L"msn.co.il",
-  "http://msn.co.il/favicon.ico",
-  L"http://search.msn.co.il/Search.aspx?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_ja_JP = {
-  L"MSN Japan",
-  L"jp.msn.com",
-  "http://search.msn.co.jp/s/wlflag.ico",
-  L"http://search.msn.co.jp/results.aspx?mkt=ja-JP&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_nb_NO = {
-  L"MSN Norge",
-  L"no.msn.com",
-  "http://search.msn.no/s/wlflag.ico",
-  L"http://search.msn.no/results.aspx?mkt=nb-NO&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_nl_BE = {
-  L"MSN (Nederlandstalige)",
-  L"be.msn.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?setlang=nl-BE&mkt=nl-BE&"
-      L"q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_nl_NL = {
-  L"MSN.nl",
-  L"nl.msn.com",
-  "http://search.msn.nl/s/wlflag.ico",
-  L"http://search.msn.nl/results.aspx?mkt=nl-NL&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_pt_BR = {
-  L"MSN Brasil",
-  L"br.msn.com",
-  "http://search.live.com/s/wlflag.ico",
-  L"http://search.live.com/results.aspx?mkt=pt-BR&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_sv_SE = {
-  L"MSN",
-  L"se.msn.com",
-  "http://search.msn.se/s/wlflag.ico",
-  L"http://search.msn.se/results.aspx?mkt=pv-SE&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_tr_TR = {
-  L"MSN T\x00fckiye'ye",
-  L"tr.msn.com",
-  "http://search.msn.com.tr/s/wlflag.ico",
-  L"http://search.msn.com.tr/results.aspx?mkt=tr-TR&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine msn_zh_HK = {
-  L"MSN Hong Kong",
-  L"hk.msn.com",
-  "http://search.msn.com.hk/s/wlflag.ico",
-  L"http://search.msn.com.hk/results.aspx?mkt=zh-HK&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  3,
-};
-
-const PrepopulatedEngine mweb = {
-  L"MWEB",
-  L"mweb.co.za",
-  "http://mweb.co.za/favicon.ico",
-  L"http://search.mweb.co.za/search?&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  42,
-};
-
 const PrepopulatedEngine mynet = {
   L"MYNET",
   L"mynet.com",
@@ -1319,17 +1009,6 @@ const PrepopulatedEngine mynet = {
   101,
 };
 
-const PrepopulatedEngine mywebsearch = {
-  L"mywebsearch",
-  L"mywebsearch.com",
-  NULL,
-  L"http://search.mywebsearch.com/mywebsearch/AJmain.jhtml?"
-      L"searchfor={searchTerms}",
-  "UTF-8",
-  NULL,
-  97,
-};
-
 const PrepopulatedEngine najdi = {
   L"Najdi.si",
   L"najdi.si",
@@ -1338,16 +1017,6 @@ const PrepopulatedEngine najdi = {
   "UTF-8",
   NULL,
   87,
-};
-
-const PrepopulatedEngine nana10 = {
-  L"\x05e0\x05e2\x05e0\x05e2 10",
-  L"nana10.co.il",
-  "http://f.nau.co.il/Common/Includes/favicon.ico",
-  L"http://index.nana10.co.il/search.asp?q={searchTerms}",
-  "windows-1255",
-  NULL,
-  56,
 };
 
 const PrepopulatedEngine nate = {
@@ -1382,40 +1051,14 @@ const PrepopulatedEngine neti = {
   44,
 };
 
-const PrepopulatedEngine netindex = {
-  L"NetINDEX",
-  L"netindex.pt",
-  "http://www.netindex.pt/favicon.ico",
-  L"http://www.netindex.pt/cgi-bin/index.cgi?question={searchTerms}",
-  "ISO-8859-1",
+const PrepopulatedEngine nur_kz = {
+  L"NUR.KZ",
+  L"nur.kz",
+  "http://www.nur.kz/favicon_kz.ico",
+  L"http://search.nur.kz/?encoding={inputEncoding}&query={searchTerms}",
+  "UTF-8",
   NULL,
-  78,
-};
-
-const PrepopulatedEngine nifty = {
-  L"@nifty",
-  L"nifty.com",
-  "http://www.nifty.com/favicon.ico",
-  L"http://search.nifty.com/cgi-bin/search.cgi?Text={searchTerms}",
-  "Shift_JIS",
-  NULL,
-  65,
-};
-
-const PrepopulatedEngine ohperu = {
-  L"Oh Per\x00fa",
-  L"ohperu.com",
-  NULL,
-  L"http://www.google.com.pe/custom?q={searchTerms}&"
-      L"client=pub-1950414869696311&ie={inputEncoding}&cof=GALT%3A%23000000"
-      L"%3BGL%3A1%3BDIV%3A%23FFFFFF%3BVLC%3A000000%3BAH%3Acenter%3BBGC%3AFFFFFF"
-      L"%3BLBGC%3AFFFFFF%3BALC%3A000000%3BLC%3A000000%3BT%3A000000%3BGFNT"
-      L"%3A000000%3BGIMP%3A000000%3BLH%3A50%3BLW%3A142%3BL%3Ahttp%3A%2F%2F"
-      L"www.ohperu.com%2Fohperu-logo-inv2.gif%3BS%3Ahttp%3A%2F%2Fwww.ohperu.com"
-      L"%3BFORID%3A1",
-  "ISO-8859-1",
-  NULL,
-  96,
+  20,
 };
 
 const PrepopulatedEngine ok = {
@@ -1436,17 +1079,6 @@ const PrepopulatedEngine onet = {
   "ISO-8859-2",
   NULL,
   75,
-};
-
-const PrepopulatedEngine orange = {
-  L"Orange",
-  L"orange.fr",
-  "http://www.orange.fr/favicon.ico",
-  L"http://rws.search.ke.voila.fr/RW/S/opensearch_orange?rdata={searchTerms}",
-  "ISO-8859-1",
-  L"http://search.ke.voila.fr/fr/cmplopensearch/xml/fullxml?"
-  L"rdata={searchTerms}",
-  48,
 };
 
 const PrepopulatedEngine ozu = {
@@ -1549,34 +1181,24 @@ const PrepopulatedEngine sapo = {
   77,
 };
 
-const PrepopulatedEngine search_ch = {
+const PrepopulatedEngine search_de_CH = {
   L"search.ch",
   L"search.ch",
   "http://www.search.ch/favicon.ico",
-  L"http://www.search.ch/?q={searchTerms}",
+  L"http://www.search.ch/index.de.html?q={searchTerms}",
   "ISO-8859-1",
   NULL,
   51,
 };
 
-const PrepopulatedEngine sensis = {
-  L"sensis.com.au",
-  L"sensis.com.au",
-  "http://www.sensis.com.au/favicon.ico",
-  L"http://www.sensis.com.au/search.do?find={searchTerms}",
-  "UTF-8",
+const PrepopulatedEngine search_fr_CH = {
+  L"search.ch",
+  L"",  // search.ch is taken by search_de_CH.
+  "http://www.search.ch/favicon.ico",
+  L"http://www.search.ch/index.fr.html?q={searchTerms}",
+  "ISO-8859-1",
   NULL,
-  32,
-};
-
-const PrepopulatedEngine sesam = {
-  L"Sesam",
-  L"sesam.no",
-  "http://sesam.no/images/favicon.gif",
-  L"http://sesam.no/search/?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  74,
+  22,
 };
 
 const PrepopulatedEngine seznam = {
@@ -1590,26 +1212,6 @@ const PrepopulatedEngine seznam = {
   25,
 };
 
-const PrepopulatedEngine sogou = {
-  L"\x641c\x72d7",
-  L"sogou.com",
-  "http://www.sogou.com/favicon.ico",
-  L"http://www.sogou.com/web?query={searchTerms}",
-  "GB2312",
-  NULL,
-  20,
-};
-
-const PrepopulatedEngine soso = {
-  L"\x641c\x641c",
-  L"soso.com",
-  "http://www.soso.com/favicon.ico",
-  L"http://www.soso.com/q?w={searchTerms}",
-  "GB2312",
-  NULL,
-  22,
-};
-
 const PrepopulatedEngine spray = {
   L"Spray",
   L"spray.se",
@@ -1620,42 +1222,11 @@ const PrepopulatedEngine spray = {
   99,
 };
 
-const PrepopulatedEngine szm = {
-  L"SZM.sk",
-  L"szm.sk",
-  "http://szm.sk/favicon.ico",
-  L"http://szm.sk/search/?co=1&q={searchTerms}",
-  "windows-1250",
-  NULL,
-  86,
-};
-
-const PrepopulatedEngine t_online = {
-  L"T-Online",
-  L"suche.t-online.de",
-  "http://suche.t-online.de/favicon.ico",
-  L"http://suche.t-online.de/fast-cgi/tsc?sr=chrome&q={searchTerms}",
-  "UTF-8",
-  NULL,
-  49,
-};
-
 const PrepopulatedEngine terra_ar = {
   L"Terra Argentina",
   L"terra.com.ar",
   "http://buscar.terra.com.ar/favicon.ico",
   L"http://buscar.terra.com.ar/Default.aspx?query={searchTerms}&source=Search",
-  "ISO-8859-1",
-  NULL,
-  90,
-};
-
-const PrepopulatedEngine terra_ec = {
-  L"Terra Ecuador",
-  L"terra.com.ec",
-  "http://buscador.terra.com.ec/favicon.ico",
-  L"http://buscador.terra.com.ec/Default.aspx?query={searchTerms}&"
-      L"source=Search",
   "ISO-8859-1",
   NULL,
   90,
@@ -1669,38 +1240,6 @@ const PrepopulatedEngine terra_es = {
   "ISO-8859-1",
   NULL,
   90,
-};
-
-const PrepopulatedEngine terra_mx = {
-  L"Terra",
-  L"terra.com.mx",
-  "http://buscador.terra.com.mx/favicon.ico",
-  L"http://buscador.terra.com.mx/Default.aspx?query={searchTerms}&"
-      L"source=Search",
-  "ISO-8859-1",
-  NULL,
-  90,
-};
-
-const PrepopulatedEngine terra_pe = {
-  L"Terra",
-  L"terra.com.pe",
-  "http://buscador.terra.com.pe/favicon.ico",
-  L"http://buscador.terra.com.pe/Default.aspx?query={searchTerms}&"
-      L"source=Search",
-  "ISO-8859-1",
-  NULL,
-  90,
-};
-
-const PrepopulatedEngine toile = {
-  L"La Toile du Qu" L"\x00e9" L"bec",
-  L"toile.com",
-  "http://static.search.canoe.ca/s-toile/img/favicon_toile.ico",
-  L"http://www.toile.com/search?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  36,
 };
 
 const PrepopulatedEngine tut = {
@@ -1723,35 +1262,14 @@ const PrepopulatedEngine uol = {
   82,
 };
 
-const PrepopulatedEngine vinden = {
-  L"Vinden.nl",
-  L"vinden.nl",
-  "http://www.vinden.nl/favicon.ico",
-  L"http://www.vinden.nl/?q={searchTerms}",
-  "UTF-8",
-  NULL,
-  31,
-};
-
 const PrepopulatedEngine virgilio = {
   L"Virgilio",
-  L"virgilio.alice.it",
+  L"virgilio.it",
   "http://ricerca.alice.it/favicon.ico",
   L"http://ricerca.alice.it/ricerca?qs={searchTerms}",
   "ISO-8859-1",
   NULL,
   62,
-};
-
-const PrepopulatedEngine voila = {
-  L"Voila",
-  L"voila.fr",
-  "http://search.ke.voila.fr/favicon.ico",
-  L"http://rws.search.ke.voila.fr/RW/S/opensearch_voila?rdata={searchTerms}",
-  "ISO-8859-1",
-  L"http://search.ke.voila.fr/fr/cmplopensearch/xml/fullxml?"
-  L"rdata={searchTerms}",
-  47,
 };
 
 const PrepopulatedEngine walla = {
@@ -1764,16 +1282,6 @@ const PrepopulatedEngine walla = {
   55,
 };
 
-const PrepopulatedEngine web_de = {
-  L"WEB.DE",
-  L"web.de",
-  "http://img.ui-portal.de/search/img/webde/favicon.ico",
-  L"http://suche.web.de/search/web/?su={searchTerms}",
-  "ISO-8859-1",
-  NULL,
-  50,
-};
-
 const PrepopulatedEngine wp = {
   L"Wirtualna Polska",
   L"wp.pl",
@@ -1782,16 +1290,6 @@ const PrepopulatedEngine wp = {
   "ISO-8859-2",
   NULL,
   76,
-};
-
-const PrepopulatedEngine yagua = {
-  L"Yagua.com",
-  L"yagua.com",
-  "http://yagua.paraguay.com/favicon.ico",
-  L"http://yagua.paraguay.com/buscador.php?q={searchTerms}&cs={inputEncoding}",
-  "ISO-8859-1",
-  NULL,
-  94,
 };
 
 const PrepopulatedEngine yahoo = {
@@ -2149,6 +1647,17 @@ const PrepopulatedEngine yahoo_ru = {
   2,
 };
 
+const PrepopulatedEngine yahoo_se = {
+  L"Yahoo! Sverige",
+  L"se.yahoo.com",
+  "http://se.search.yahoo.com/favicon.ico",
+  L"http://se.search.yahoo.com/search?ei={inputEncoding}&fr=crmas&"
+      L"p={searchTerms}",
+  "UTF-8",
+  NULL,
+  2,
+};
+
 const PrepopulatedEngine yahoo_sg = {
   L"Yahoo! Singapore",
   L"sg.yahoo.com",
@@ -2181,7 +1690,7 @@ const PrepopulatedEngine yahoo_tw = {
       L"p={searchTerms}",
   "UTF-8",
   // "http://tw.yahoo.com/ac/ac_search.php?eo=utf8&of=js&prop=web&query="
-  // returns a JSON file prepended with 'fxjson={'.
+  // returns a JSON file prepended with 'fxsearch=('.
   NULL,
   2,
 };
@@ -2220,16 +1729,6 @@ const PrepopulatedEngine yahoo_vn = {
   L"http://vn-sayt.ff.search.yahoo.com/gossip-vn-sayt?output=fxjson&"
       L"command={searchTerms}",
   2,
-};
-
-const PrepopulatedEngine yam = {
-  L"\x5929\x7a7a",
-  L"yam.com",
-  "http://www.yam.com/i/8/sky.ico",
-  L"http://search.yam.com/wps?k={searchTerms}",
-  "Big5",
-  NULL,
-  23,
 };
 
 const PrepopulatedEngine yamli = {
@@ -2278,400 +1777,436 @@ const PrepopulatedEngine zoznam = {
 // be the first engine.
 
 // Default (for countries with no better engine set)
-const PrepopulatedEngine* engines_default[] = { &google, &yahoo, &live, };
+const PrepopulatedEngine* engines_default[] =
+    { &google, &yahoo, &bing, };
 
 // United Arab Emirates
 const PrepopulatedEngine* engines_AE[] =
-    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &araby, &maktoob };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &araby, &maktoob, };
 
 // Albania
 const PrepopulatedEngine* engines_AL[] =
-    { &google, &yahoo, &live_en_XA, &live_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, };
 
 // Argentina
 const PrepopulatedEngine* engines_AR[] =
-    { &google, &msn_es_AR, &altavista_ar, &terra_ar, &yahoo_ar, };
+    { &google, &yahoo_ar, &bing_es_AR, &terra_ar, &altavista_ar, };
 
 // Austria
-const PrepopulatedEngine* engines_AT[] = { &google, &yahoo_at, &msn_de_AT, };
+const PrepopulatedEngine* engines_AT[] =
+    { &google, &yahoo_at, &bing_de_AT, };
 
 // Australia
 const PrepopulatedEngine* engines_AU[] =
-    { &google, &yahoo_au, &msn_en_AU, &sensis, };
+    { &google, &bing_en_AU, &yahoo_au, };
 
 // Bosnia and Herzegovina
 const PrepopulatedEngine* engines_BA[] =
-    { &google, &pogodak_ba, &yahoo, &live, };
+    { &google, &pogodak_ba, &yahoo, &bing, };
 
 // Belgium
 const PrepopulatedEngine* engines_BE[] =
-    { &google, &yahoo, &msn_nl_BE, &msn_fr_BE, };
+    { &google, &bing_nl_BE, &bing_fr_BE, &yahoo, };
 
 // Bulgaria
-// The commented-out entry for "dir" below is for dir.bg, &which we don't
-// currently support because it uses POST instead of GET for its searches.
-// See http://b/1196285
 const PrepopulatedEngine* engines_BG[] =
-    { &google, &/*dir,*/ yahoo, &jabse, &live_bg_BG, };
+    { &google, &bing_bg_BG, &yahoo, &diri, &jabse, };
 
 // Bahrain
 const PrepopulatedEngine* engines_BH[] =
-    { &google, &maktoob, &yamli, &yahoo, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, };
+
+// Burundi
+const PrepopulatedEngine* engines_BI[] =
+    { &google, &yahoo, &bing, };
 
 // Brunei
 const PrepopulatedEngine* engines_BN[] =
-    { &google, &yahoo_malaysia, &msn_en_MY, };
+    { &google, &yahoo_malaysia, &bing_en_MY, };
 
 // Bolivia
 const PrepopulatedEngine* engines_BO[] =
-    { &google, &altavista, &msn_es_XL, &yahoo, &ask_es, };
+    { &google, &altavista, &bing_es_XL, &yahoo, };
 
 // Brazil
 const PrepopulatedEngine* engines_BR[] =
-    { &google, &msn_pt_BR, &yahoo_br, &aonde, &gigabusca, &uol, };
+    { &google, &bing_pt_BR, &yahoo_br, &uol, };
 
 // Belarus
 const PrepopulatedEngine* engines_BY[] =
-    { &google, &yandex_ru, &rambler, &yahoo, &tut, };
+    { &google, &tut, &yandex_ru, &rambler, &yahoo, };
 
 // Belize
-const PrepopulatedEngine* engines_BZ[] = { &google, &yahoo, &live, &aol, };
+const PrepopulatedEngine* engines_BZ[] =
+    { &google, &yahoo, &bing, &aol, };
 
 // Canada
 const PrepopulatedEngine* engines_CA[] =
-    { &google, &msn_en_CA, &msn_fr_CA, &yahoo_ca, &yahoo_qc, &toile, };
+    { &google, &yahoo_ca, &yahoo_qc, &bing_en_CA, &bing_fr_CA, };
 
 // Switzerland
 const PrepopulatedEngine* engines_CH[] =
-    { &google, &search_ch, &yahoo_ch, &msn_de_CH, &msn_fr_CH, &bluewin, };
+    { &google, &yahoo_ch, &bing_de_CH, &bing_fr_CH, &search_de_CH, &search_fr_CH, };
 
 // Chile
 const PrepopulatedEngine* engines_CL[] =
-    { &google, &yahoo_cl, &altavista, &msn_es_CL, };
+    { &google, &yahoo_cl, &bing_es_CL, };
 
 // China
 const PrepopulatedEngine* engines_CN[] =
-    { &google, &baidu, &yahoo_cn, &sogou, &soso, };
+    { &google, &baidu, &yahoo_cn, &bing_zh_CN, };
 
 // Colombia
 const PrepopulatedEngine* engines_CO[] =
-    { &google, &msn_es_CO, &ask_es, &altavista, &conexcol, &yahoo_co, };
+    { &google, &bing_es_XL, &yahoo_co, };
 
 // Costa Rica
 const PrepopulatedEngine* engines_CR[] =
-    { &google, &msn_es_XL, &yahoo, &altavista, &aol, &lycos_es, };
+    { &google, &bing_es_XL, &yahoo, };
 
 // Czech Republic
 const PrepopulatedEngine* engines_CZ[] =
-    { &google, &seznam, &centrum_cz, &atlas_cz, &live_cs_CZ, };
+    { &google, &seznam, &centrum_cz, &atlas_cz, &bing_cs_CZ, };
 
 // Germany
 const PrepopulatedEngine* engines_DE[] =
-    { &google, &msn_de_DE, &yahoo_de, &t_online, &ask_de, &web_de, };
+    { &google, &yahoo_de, &bing_de_DE, };
 
 // Denmark
 const PrepopulatedEngine* engines_DK[] =
-    { &google, &jubii, &msn_da_DK, &yahoo_dk, &eniro_dk, };
+    { &google, &bing_da_DK, &yahoo_dk, };
 
 // Dominican Republic
 const PrepopulatedEngine* engines_DO[] =
-    { &google, &msn_es_XL, &yahoo, &altavista, &go, &aol, };
+    { &google, &bing_es_XL, &yahoo, };
 
 // Algeria
 const PrepopulatedEngine* engines_DZ[] =
-    { &google, &yahoo, &yamli, &msn_en_XA, &msn_ar_XA, &araby, };
+    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, &maktoob, };
 
 // Ecuador
 const PrepopulatedEngine* engines_EC[] =
-    { &google, &msn_es_XL, &yahoo, &terra_ec, };
+    { &google, &bing_es_XL, &yahoo, };
 
 // Estonia
 const PrepopulatedEngine* engines_EE[] =
-    { &google, &neti, &delfi_ee, &yahoo, &live_et_EE, };
+    { &google, &bing_et_EE, &neti, &yahoo, };
 
 // Egypt
 const PrepopulatedEngine* engines_EG[] =
-    { &google, &masrawy, &yahoo, &maktoob, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &masrawy, };
 
 // Spain
 const PrepopulatedEngine* engines_ES[] =
-    { &google, &msn_es_ES, &yahoo_es, &terra_es, &ozu, &altavista_es, };
+    { &google, &bing_es_ES, &yahoo_es, &terra_es, &hispavista, &ozu, };
 
 // Faroe Islands
 const PrepopulatedEngine* engines_FO[] =
-    { &google, &jubii, &msn_da_DK, &yahoo_dk, &eniro_dk, };
+    { &google, &bing_da_DK, &yahoo_dk, &jubii };
 
 // Finland
 const PrepopulatedEngine* engines_FI[] =
-    { &google, &msn_fi_FI, &yahoo_fi, &eniro_fi, &fonecta_02_fi, };
+    { &google, &bing_fi_FI, &yahoo_fi, &eniro_fi, &fonecta_02_fi, };
 
 // France
 const PrepopulatedEngine* engines_FR[] =
-    { &google, &voila, &yahoo_fr, &msn_fr_FR, &orange, &aol_fr, };
+    { &google, &bing_fr_FR, &yahoo_fr, };
 
 // United Kingdom
 const PrepopulatedEngine* engines_GB[] =
-    { &google, &yahoo_uk, &msn_en_GB, &ask_uk, };
+    { &google, &yahoo_uk, &bing_en_GB, };
 
 // Greece
 const PrepopulatedEngine* engines_GR[] =
-    { &google, &yahoo, &forthnet, &in, &live_el_GR };
+    { &google, &yahoo, &in, &bing_el_GR };
 
 // Guatemala
 const PrepopulatedEngine* engines_GT[] =
-    { &google, &msn_es_XL, &yahoo, &ask_es, &altavista, &go, };
+    { &google, &bing_es_XL, &yahoo, &ask_es, };
 
 // Hong Kong
 const PrepopulatedEngine* engines_HK[] =
-    { &google, &yahoo_hk, &msn_zh_HK, &sogou, &baidu, };
+    { &google, &yahoo_hk, &bing_zh_HK, &baidu, };
 
 // Honduras
 const PrepopulatedEngine* engines_HN[] =
-    { &google, &msn_es_XL, &yahoo, &ask_es, &altavista, };
+    { &google, &bing_es_XL, &yahoo, &ask_es, };
 
 // Croatia
 const PrepopulatedEngine* engines_HR[] =
-    { &google, &yahoo, &pogodak_hr, &live_hr_HR, };
+    { &google, &yahoo, &pogodak_hr, &bing_hr_HR, };
 
 // Hungary
-const PrepopulatedEngine* engines_HU[] = { &google, &ok, &bing_hu_HU, };
+const PrepopulatedEngine* engines_HU[] =
+    { &google, &ok, &bing_hu_HU, };
 
 // Indonesia
-const PrepopulatedEngine* engines_ID[] = { &google, &yahoo_id, &live_en_ID, };
+const PrepopulatedEngine* engines_ID[] =
+    { &google, &yahoo_id, &bing_en_ID, };
 
 // Ireland
-const PrepopulatedEngine* engines_IE[] = { &google, &yahoo_uk, &msn_en_IE, };
+const PrepopulatedEngine* engines_IE[] =
+    { &google, &yahoo_uk, &bing_en_IE, };
 
 // Israel
 const PrepopulatedEngine* engines_IL[] =
-    { &google, &walla, &nana10, &msn_he_IL, };
+    { &google, &walla, &bing_he_IL, };
 
 // India
 const PrepopulatedEngine* engines_IN[] =
-    { &google, &yahoo_in, &msn_en_IN, &rediff, &guruji, };
+    { &google, &yahoo_in, &bing_en_IN, &rediff, &guruji, };
 
 // Iraq
 const PrepopulatedEngine* engines_IQ[] =
-    { &google, &maktoob, &yamli, &yahoo, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &maktoob, &ask, };
 
 // Iran
-const PrepopulatedEngine* engines_IR[] = { &google, };
+const PrepopulatedEngine* engines_IR[] =
+    { &google, &yahoo, };
 
 // Iceland
-const PrepopulatedEngine* engines_IS[] = { &google, &leit, &embla, &finna, };
+const PrepopulatedEngine* engines_IS[] =
+    { &google, &yahoo, &bing, &leit, };
 
 // Italy
 const PrepopulatedEngine* engines_IT[] =
-    { &google, &virgilio, &yahoo_it, &libero, &ask_it, &live_it_IT, };
+    { &google, &virgilio, &yahoo_it, &libero, &ask_it, &bing_it_IT, };
 
 // Jamaica
 const PrepopulatedEngine* engines_JM[] =
-    { &google, &jamaicalive, &yahoo, &live, &go, &aol, };
+    { &google, &yahoo, &bing, &go, };
 
 // Jordan
 const PrepopulatedEngine* engines_JO[] =
-    { &google, &maktoob, &yamli, &yahoo, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &maktoob, &araby, };
 
 // Japan
 const PrepopulatedEngine* engines_JP[] =
-    { &google, &yahoo_jp, &msn_ja_JP, &biglobe, &goo, &nifty, };
+    { &google, &yahoo_jp, &bing_ja_JP, };
 
 // Kenya
-const PrepopulatedEngine* engines_KE[] = { &google, &yahoo, &msn, };
+const PrepopulatedEngine* engines_KE[] =
+    { &google, &yahoo, &bing, };
 
 // Kuwait
 const PrepopulatedEngine* engines_KW[] =
-    { &google, &maktoob, &yahoo, &yamli, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, &maktoob, &araby, };
 
 // South Korea
 const PrepopulatedEngine* engines_KR[] =
-    { &google, &naver, &daum, &yahoo_kr, &nate, &empas, };
+    { &google, &naver, &daum, &yahoo_kr, &nate, };
+
+// Kazakhstan
+const PrepopulatedEngine* engines_KZ[] =
+    { &google, &rambler, &yandex_ru, &nur_kz, };
 
 // Lebanon
 const PrepopulatedEngine* engines_LB[] =
-    { &google, &maktoob, &yahoo, &yamli, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &maktoob, &araby, };
 
 // Liechtenstein
 const PrepopulatedEngine* engines_LI[] =
-    { &google, &msn_de_DE, &yahoo_de, &t_online, &ask_de, &web_de, };
+    { &google, &bing_de_DE, &yahoo_de, };
 
 // Lithuania
 const PrepopulatedEngine* engines_LT[] =
-    { &google, &delfi_lt, &yahoo, &yandex_ru, &live_lt_LT, };
+    { &google, &delfi_lt, &yahoo, &bing_lt_LT, };
 
 // Luxembourg
 const PrepopulatedEngine* engines_LU[] =
-    { &google, &voila, &yahoo_fr, &msn_fr_FR, &orange, &aol_fr, };
+    { &google, &bing_fr_FR, &yahoo_fr, };
 
 // Latvia
 const PrepopulatedEngine* engines_LV[] =
-    { &google, &delfi_lv, &yahoo, &yandex_ru, &latne, };
+    { &google, &bing, &yandex_ru, &yahoo, &latne, };
 
 // Libya
 const PrepopulatedEngine* engines_LY[] =
-    { &google, &maktoob, &yahoo, &yamli, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &maktoob, &ask, };
 
 // Morocco
 const PrepopulatedEngine* engines_MA[] =
-    { &google, &yamli, &araby, &yahoo, &msn_en_XA, &msn_ar_XA, };
+    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, };
 
 // Monaco
 const PrepopulatedEngine* engines_MC[] =
-    { &google, &voila, &yahoo_fr, &msn_fr_FR, &orange, &aol_fr, };
+    { &google, &bing_fr_FR, &yahoo_fr, };
+
+// Moldova
+const PrepopulatedEngine* engines_MD[] =
+    { &google, &yandex_ru, &yahoo, &bing, };
 
 // Montenegro
 const PrepopulatedEngine* engines_ME[] =
-    { &google, &yahoo, &krstarica, &pogodak_rs, &aladin, &live, };
+    { &google, &yahoo, &bing };
 
 // Macedonia
-const PrepopulatedEngine* engines_MK[] = { &google, &pogodok, &yahoo, &live, };
+const PrepopulatedEngine* engines_MK[] =
+    { &google, &pogodok, &yahoo, &bing, };
 
 // Mexico
 const PrepopulatedEngine* engines_MX[] =
-    { &google, &msn_es_MX, &yahoo_mx, &ask_es, &altavista_mx, &terra_mx, };
+    { &google, &bing_es_MX, &yahoo_mx, };
 
 // Malaysia
 const PrepopulatedEngine* engines_MY[] =
-    { &google, &yahoo_malaysia, &msn_en_MY, };
+    { &google, &yahoo_malaysia, &bing_en_MY, };
 
 // Nicaragua
 const PrepopulatedEngine* engines_NI[] =
-    { &google, &msn_es_XL, &yahoo, &ask_es, &altavista, };
+    { &google, &bing_es_XL, &yahoo, &ask_es, };
 
 // Netherlands
 const PrepopulatedEngine* engines_NL[] =
-    { &google, &ilse, &msn_nl_NL, &yahoo_nl, &lycos_nl, &vinden, };
+    { &google, &bing_nl_NL, };
 
 // Norway
 const PrepopulatedEngine* engines_NO[] =
-    { &google, &msn_nb_NO, &abcsok, &yahoo_no, &kvasir, &sesam, };
+    { &google, &bing_nb_NO, &abcsok, &yahoo_no, &kvasir, };
 
 // New Zealand
-const PrepopulatedEngine* engines_NZ[] = { &google, &yahoo_nz, &live_en_NZ, };
+const PrepopulatedEngine* engines_NZ[] =
+    { &google, &yahoo_nz, &bing_en_NZ, };
 
 // Oman
 const PrepopulatedEngine* engines_OM[] =
-    { &google, &maktoob, &yahoo, &yamli, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, };
 
 // Panama
 const PrepopulatedEngine* engines_PA[] =
-    { &google, &msn_es_XL, &yahoo, &ask_es, &altavista, &lycos_es, };
+    { &google, &bing_es_XL, &yahoo, &ask_es, };
 
 // Peru
 const PrepopulatedEngine* engines_PE[] =
-    { &google, &msn_es_XL, &yahoo_pe, &terra_pe, &adonde, &ohperu, };
+    { &google, &bing_es_XL, &yahoo_pe, };
 
 // Philippines
-const PrepopulatedEngine* engines_PH[] = { &google, &yahoo_ph, &msn_en_PH, };
+const PrepopulatedEngine* engines_PH[] =
+    { &google, &yahoo_ph, &bing_en_PH, };
 
 // Pakistan
-const PrepopulatedEngine* engines_PK[] = { &google, &yahoo, &msn, };
+const PrepopulatedEngine* engines_PK[] =
+    { &google, &yahoo, &bing, };
 
 // Puerto Rico
 const PrepopulatedEngine* engines_PR[] =
-    { &google, &msn_es_XL, &yahoo, &ask_es, &altavista, &mywebsearch, };
+    { &google, &bing_es_XL, &yahoo, &ask_es, };
 
 // Poland
-const PrepopulatedEngine* engines_PL[] = { &google, &onet, &wp, &live_pl_PL, };
+const PrepopulatedEngine* engines_PL[] =
+    { &google, &onet, &wp, &bing_pl_PL, };
 
 // Portugal
 const PrepopulatedEngine* engines_PT[] =
-    { &google, &sapo, &yahoo, &live_pt_PT, &netindex, &aeiou, };
+    { &google, &sapo, &bing_pt_PT, &yahoo, };
 
 // Paraguay
 const PrepopulatedEngine* engines_PY[] =
-    { &google, &msn_es_XL, &yahoo, &lycos_es, &yagua, &go, };
+    { &google, &bing_es_XL, &yahoo, };
 
 // Qatar
 const PrepopulatedEngine* engines_QA[] =
-    { &google, &maktoob, &yahoo, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &maktoob, &araby };
 
 // Romania
-const PrepopulatedEngine* engines_RO[] = { &google, &yahoo, &live_ro_RO, };
+const PrepopulatedEngine* engines_RO[] =
+    { &google, &yahoo, &bing_ro_RO, };
 
 // Serbia
 const PrepopulatedEngine* engines_RS[] =
-    { &google, &yahoo, &krstarica, &pogodak_rs, &aladin, &live, };
+    { &google, &pogodak_rs, &bing, };
 
 // Russia
 const PrepopulatedEngine* engines_RU[] =
-    { &google, &yandex_ru, &rambler, &mail_ru, &yahoo_ru, &live_ru_RU, };
+    { &google, &yandex_ru, &rambler, &bing_ru_RU, };
+
+// Rwanda
+const PrepopulatedEngine* engines_RW[] =
+    { &google, &yahoo, &bing, };
 
 // Saudi Arabia
 const PrepopulatedEngine* engines_SA[] =
-    { &google, &yahoo, &araby, &msn_en_XA, &msn_ar_XA, &maktoob, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, };
 
 // Sweden
 const PrepopulatedEngine* engines_SE[] =
-    { &google, &eniro_se, &msn_sv_SE, &altavista_se, &spray, };
+    { &google, &bing_sv_SE, &yahoo_se, &altavista_se, &spray, &eniro_se };
 
 // Singapore
 const PrepopulatedEngine* engines_SG[] =
-    { &google, &yahoo_sg, &msn_en_SG, &rednano, };
+    { &google, &yahoo_sg, &bing_en_SG, &rednano, };
 
 // Slovenia
 const PrepopulatedEngine* engines_SI[] =
-    { &google, &najdi, &yahoo, &matkurja, &live_sl_SI, };
+    { &google, &najdi, &yahoo, &bing_sl_SI, };
 
 // Slovakia
 const PrepopulatedEngine* engines_SK[] =
-    { &google, &zoznam, &centrum_sk, &atlas_sk, &szm, &live_sk_SK, };
+    { &google, &zoznam, &bing_sk_SK, &atlas_sk, &centrum_sk };
 
 // El Salvador
 const PrepopulatedEngine* engines_SV[] =
-    { &google, &msn_es_XL, &yahoo, &ask_es, &altavista, &go, };
+    { &google, &bing_es_XL, &yahoo, };
 
 // Syria
 const PrepopulatedEngine* engines_SY[] =
-    { &google, &yahoo, &maktoob, &yamli, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, &maktoob, &yamli, };
 
 // Thailand
 const PrepopulatedEngine* engines_TH[] =
-    { &google, &sanook, &yahoo_th, &live_th_TH, };
+    { &google, &sanook, &yahoo_th, &bing_th_TH, };
 
 // Tunisia
 const PrepopulatedEngine* engines_TN[] =
-    { &google, &maktoob, &yamli, &yahoo, &msn_en_XA, &msn_ar_XA, };
+    { &google, &bing_en_XA, &bing_ar_XA, &yahoo, &maktoob, &yamli };
 
 // Turkey
 const PrepopulatedEngine* engines_TR[] =
-    { &google, &msn_tr_TR, &yahoo, &mynet, };
+    { &google, &bing_tr_TR, &yahoo, &mynet, };
 
 // Trinidad and Tobago
-const PrepopulatedEngine* engines_TT[] = { &google, &live, &yahoo, &go, &aol, };
+const PrepopulatedEngine* engines_TT[] =
+    { &google, &bing, &yahoo, &aol, };
 
 // Taiwan
-const PrepopulatedEngine* engines_TW[] = { &google, &yahoo_tw, &yam, };
+const PrepopulatedEngine* engines_TW[] =
+    { &google, &yahoo_tw, &bing_zh_TW, };
+
+// Tanzania
+const PrepopulatedEngine* engines_TZ[] =
+    { &google, &yahoo, &bing, };
 
 // Ukraine
 const PrepopulatedEngine* engines_UA[] =
-    { &google, &meta, &yandex_ua, &bigmir, &rambler, };
+    { &google, &yandex_ua, &mail_ru, &rambler, };
 
 // United States
 const PrepopulatedEngine* engines_US[] =
-    { &google, &yahoo, &bing_en_US, &aol, &ask, };
+    { &google, &yahoo, &bing_en_US, };
 
 // Uruguay
 const PrepopulatedEngine* engines_UY[] =
-    { &google, &msn_es_XL, &yahoo, &go, &lycos_es, };
+    { &google, &bing_es_XL, &yahoo, };
 
 // Venezuela
 const PrepopulatedEngine* engines_VE[] =
-    { &google, &msn_es_XL, &yahoo_ve, &altavista, };
+    { &google, &bing_es_XL, &yahoo_ve, };
 
 // Vietnam
-const PrepopulatedEngine* engines_VN[] = { &google, &yahoo_vn, };
+const PrepopulatedEngine* engines_VN[] =
+    { &google, &yahoo_vn, };
 
 // Yemen
 const PrepopulatedEngine* engines_YE[] =
-    { &google, &yahoo, &maktoob, &yamli, &araby, &msn_en_XA, &msn_ar_XA, };
+    { &google, &yahoo, &bing_en_XA, &bing_ar_XA, &maktoob, &araby, };
 
 // South Africa
 const PrepopulatedEngine* engines_ZA[] =
-    { &google, &yahoo, &msn_en_ZA, &mweb, &iafrica, };
+    { &google, &yahoo, &bing_en_ZA, };
 
 // Zimbabwe
-const PrepopulatedEngine* engines_ZW[] = { &google, &yahoo, &msn, };
+const PrepopulatedEngine* engines_ZW[] =
+    { &google, &yahoo, &bing, };
 
 // Geographic mappings /////////////////////////////////////////////////////////
 
@@ -2910,6 +2445,7 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     DECLARE_COUNTRY(B, E)  // Belgium
     DECLARE_COUNTRY(B, G)  // Bulgaria
     DECLARE_COUNTRY(B, H)  // Bahrain
+    DECLARE_COUNTRY(B, I)  // Burundi
     DECLARE_COUNTRY(B, N)  // Brunei
     DECLARE_COUNTRY(B, O)  // Bolivia
     DECLARE_COUNTRY(B, R)  // Brazil
@@ -2954,6 +2490,7 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     DECLARE_COUNTRY(K, E)  // Kenya
     DECLARE_COUNTRY(K, R)  // South Korea
     DECLARE_COUNTRY(K, W)  // Kuwait
+    DECLARE_COUNTRY(K, Z)  // Kazakhstan
     DECLARE_COUNTRY(L, B)  // Lebanon
     DECLARE_COUNTRY(L, I)  // Liechtenstein
     DECLARE_COUNTRY(L, T)  // Lithuania
@@ -2962,6 +2499,7 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     DECLARE_COUNTRY(L, Y)  // Libya
     DECLARE_COUNTRY(M, A)  // Morocco
     DECLARE_COUNTRY(M, C)  // Monaco
+    DECLARE_COUNTRY(M, D)  // Moldova
     DECLARE_COUNTRY(M, E)  // Montenegro
     DECLARE_COUNTRY(M, K)  // Macedonia
     DECLARE_COUNTRY(M, X)  // Mexico
@@ -2983,6 +2521,7 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     DECLARE_COUNTRY(R, O)  // Romania
     DECLARE_COUNTRY(R, S)  // Serbia
     DECLARE_COUNTRY(R, U)  // Russia
+    DECLARE_COUNTRY(R, W)  // Rwanda
     DECLARE_COUNTRY(S, A)  // Saudi Arabia
     DECLARE_COUNTRY(S, E)  // Sweden
     DECLARE_COUNTRY(S, G)  // Singapore
@@ -2995,6 +2534,7 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     DECLARE_COUNTRY(T, R)  // Turkey
     DECLARE_COUNTRY(T, T)  // Trinidad and Tobago
     DECLARE_COUNTRY(T, W)  // Taiwan
+    DECLARE_COUNTRY(T, Z)  // Tanzania
     DECLARE_COUNTRY(U, A)  // Ukraine
     DECLARE_COUNTRY(U, S)  // United States
     DECLARE_COUNTRY(U, Y)  // Uruguay
@@ -3025,7 +2565,6 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
 
     // Countries using the "France" engine set.
     UNHANDLED_COUNTRY(B, F)  // Burkina Faso
-    UNHANDLED_COUNTRY(B, I)  // Burundi
     UNHANDLED_COUNTRY(B, J)  // Benin
     UNHANDLED_COUNTRY(C, D)  // Congo - Kinshasa
     UNHANDLED_COUNTRY(C, F)  // Central African Republic
@@ -3094,7 +2633,6 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     UNHANDLED_COUNTRY(A, M)  // Armenia
     UNHANDLED_COUNTRY(A, Z)  // Azerbaijan
     UNHANDLED_COUNTRY(K, G)  // Kyrgyzstan
-    UNHANDLED_COUNTRY(K, Z)  // Kazakhstan
     UNHANDLED_COUNTRY(T, J)  // Tajikistan
     UNHANDLED_COUNTRY(T, M)  // Turkmenistan
     UNHANDLED_COUNTRY(U, Z)  // Uzbekistan
@@ -3167,7 +2705,6 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     UNHANDLED_COUNTRY(L, K)  // Sri Lanka
     UNHANDLED_COUNTRY(L, R)  // Liberia
     UNHANDLED_COUNTRY(L, S)  // Lesotho
-    UNHANDLED_COUNTRY(M, D)  // Moldova
     UNHANDLED_COUNTRY(M, G)  // Madagascar
     UNHANDLED_COUNTRY(M, H)  // Marshall Islands
     UNHANDLED_COUNTRY(M, M)  // Myanmar
@@ -3181,7 +2718,6 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     UNHANDLED_COUNTRY(N, R)  // Nauru
     UNHANDLED_COUNTRY(P, G)  // Papua New Guinea
     UNHANDLED_COUNTRY(P, W)  // Palau
-    UNHANDLED_COUNTRY(R, W)  // Rwanda
     UNHANDLED_COUNTRY(S, B)  // Solomon Islands
     UNHANDLED_COUNTRY(S, C)  // Seychelles
     UNHANDLED_COUNTRY(S, L)  // Sierra Leone
@@ -3190,7 +2726,6 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     UNHANDLED_COUNTRY(S, Z)  // Swaziland
     UNHANDLED_COUNTRY(T, O)  // Tonga
     UNHANDLED_COUNTRY(T, V)  // Tuvalu
-    UNHANDLED_COUNTRY(T, Z)  // Tanzania
     UNHANDLED_COUNTRY(U, G)  // Uganda
     UNHANDLED_COUNTRY(V, C)  // Saint Vincent and the Grenadines
     UNHANDLED_COUNTRY(V, U)  // Vanuatu
@@ -3212,7 +2747,7 @@ void RegisterUserPrefs(PrefService* prefs) {
 }
 
 int GetDataVersion() {
-  return 26;  // Increment this if you change the above data in ways that mean
+  return 27;  // Increment this if you change the above data in ways that mean
               // users with existing data should get a new version.
 }
 
