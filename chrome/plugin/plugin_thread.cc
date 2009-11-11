@@ -47,6 +47,12 @@ PluginThread::PluginThread()
     }
     argv[argc] = NULL;
     char **argv_pointer = argv.get();
+
+    // Flash has problems receiving clicks with newer GTKs due to the
+    // client-side windows change.  To be safe, we just always set the
+    // backwards-compat environment variable.
+    setenv("GDK_NATIVE_WINDOWS", "1", 1);
+
     gtk_init(&argc, &argv_pointer);
     for (size_t i = 0; i < args.size(); ++i) {
       free(argv[i]);
