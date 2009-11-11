@@ -15,6 +15,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/installer/util/chrome_frame_distribution.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chrome_frame_resources.h"
 #include "chrome_frame/resource.h"
@@ -32,6 +33,10 @@ const wchar_t kChromeProtocolPrefix[] = L"cf:";
 static const wchar_t kChromeFrameConfigKey[] =
     L"Software\\Google\\ChromeFrame";
 static const wchar_t kChromeFrameOptinUrlsKey[] = L"OptinUrls";
+
+static const wchar_t kChromeFrameNPAPIKey[] =
+    L"Software\\MozillaPlugins\\@google.com/ChromeFrame,version=1.0";
+static const wchar_t kChromeFramePersistNPAPIReg[] = L"PersistNPAPIReg";
 
 // Used to isolate chrome frame builds from google chrome release channels.
 const wchar_t kChromeFrameOmahaSuffix[] = L"-cf";
@@ -144,6 +149,48 @@ HRESULT UtilUnRegisterTypeLib(ITypeLib* typelib,
   }
   return hr;
 }
+
+bool UtilIsNPAPIPluginRegistered() {
+  std::wstring npapi_key_name(kChromeFrameNPAPIKey);
+  RegKey npapi_key(HKEY_LOCAL_MACHINE, npapi_key_name.c_str(), KEY_QUERY_VALUE);
+  return npapi_key.Valid();
+}
+
+bool UtilChangePersistentNPAPIMarker(bool set) {
+  BrowserDistribution* cf_dist = BrowserDistribution::GetDistribution();
+  std::wstring cf_state_key_path(cf_dist->GetStateKey());
+
+  RegKey cf_state_key(HKEY_LOCAL_MACHINE, cf_state_key_path.c_str(),
+                      KEY_READ | KEY_WRITE);
+
+  bool success = false;
+  if (cf_state_key.Valid()) {
+    if (set) {
+      success = cf_state_key.WriteValue(kChromeFramePersistNPAPIReg, 1);
+    } else {
+      success = cf_state_key.DeleteValue(kChromeFramePersistNPAPIReg);
+    }
+  }
+  return success;
+}
+
+bool UtilIsPersistentNPAPIMarkerSet() {
+  BrowserDistribution* cf_dist = BrowserDistribution::GetDistribution();
+  std::wstring cf_state_key_path(cf_dist->GetStateKey());
+
+  RegKey cf_state_key(HKEY_LOCAL_MACHINE, cf_state_key_path.c_str(),
+                      KEY_QUERY_VALUE);
+
+  bool success = false;
+  if (cf_state_key.Valid()) {
+    DWORD val = 0;
+    if (cf_state_key.ReadValueDW(kChromeFramePersistNPAPIReg, &val)) {
+      success = (val != 0);
+    }
+  }
+  return success;
+}
+
 
 HRESULT UtilGetXUACompatContentValue(const std::wstring& html_string,
                                      std::wstring* content_value) {

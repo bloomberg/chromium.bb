@@ -126,9 +126,9 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     ATL::CTrace::s_trace.ChangeCategory(atlTraceRegistrar, 0,
                                         ATLTRACESTATUS_DISABLED);
 #endif
+    g_exit_manager = new base::AtExitManager();
     CommandLine::Init(0, NULL);
     InitializeCrashReporting();
-    g_exit_manager = new base::AtExitManager();
     logging::InitLogging(NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
                         logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
   } else if (reason == DLL_PROCESS_DETACH) {
@@ -281,6 +281,10 @@ STDAPI DllRegisterServer() {
       hr = E_FAIL;
   }
 
+  if (UtilIsPersistentNPAPIMarkerSet()) {
+    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI, TRUE);
+  }
+
   return hr;
 }
 
@@ -296,18 +300,37 @@ STDAPI DllUnregisterServer() {
     if (!RegisterSecuredMimeHandler(false))
       hr = E_FAIL;
   }
+
+  if (UtilIsNPAPIPluginRegistered()) {
+    hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI, FALSE);
+  }
+
   return hr;
 }
 
+// Registers the NPAPI plugin and sets the persistent marker that tells us
+// to re-register it through updates.
 STDAPI RegisterNPAPIPlugin() {
   HRESULT hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI,
                                                       TRUE);
+  if (SUCCEEDED(hr)) {
+    if (!UtilChangePersistentNPAPIMarker(true)) {
+      hr = E_FAIL;
+    }
+  }
   return hr;
 }
 
+// Unregisters the NPAPI plugin and clears the persistent marker that tells us
+// to re-register it through updates.
 STDAPI UnregisterNPAPIPlugin() {
   HRESULT hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI,
                                                       FALSE);
+  if (SUCCEEDED(hr)) {
+    if (!UtilChangePersistentNPAPIMarker(false)) {
+      hr = E_FAIL;
+    }
+  }
   return hr;
 }
 

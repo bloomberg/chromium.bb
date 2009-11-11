@@ -56,7 +56,8 @@ class InstallUtil {
   static bool IsPerUserInstall(const wchar_t* const exe_path);
 
   // Returns true if this is a Chrome Frame installation (as indicated by the
-  // presence of --chrome-frame on the command line).
+  // presence of --chrome-frame on the command line) or if this is running
+  // inside of the Chrome Frame dll.
   static bool IsChromeFrameProcess();
 
   // Adds all DLLs in install_path whose names are given by dll_names to a

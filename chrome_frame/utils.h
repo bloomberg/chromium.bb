@@ -46,6 +46,16 @@ HRESULT UtilRegisterTypeLib(ITypeLib* typelib,
 HRESULT UtilUnRegisterTypeLib(ITypeLib* typelib,
                               bool for_current_user_only);
 
+// Utility function to tell if the NPAPI plugin is registered.
+bool UtilIsNPAPIPluginRegistered();
+
+// Sets or clears a marker that causes NPAPI registration to persist across
+// updates. The marker is added if set is true and is deleted otherwise.
+bool UtilChangePersistentNPAPIMarker(bool set);
+
+// Returns true if the persistent NPAPI marker is set, false otherwise.
+bool UtilIsPersistentNPAPIMarkerSet();
+
 // Given an HTML fragment, this function looks for the
 // <meta http-equiv="X-UA-Compatible"> tag and extracts the value of the
 // "content" attribute

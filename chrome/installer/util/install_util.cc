@@ -15,6 +15,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/registry.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
@@ -133,7 +134,15 @@ bool InstallUtil::IsChromeFrameProcess() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   DCHECK(command_line)
       << "IsChromeFrameProcess() called before ComamandLine::Init()";
-  return command_line->HasSwitch(installer_util::switches::kChromeFrame);
+
+  // Also assume this to be a ChromeFrame process if we are running inside
+  // the Chrome Frame DLL.
+  FilePath module_path;
+  PathService::Get(base::FILE_MODULE, &module_path);
+  std::wstring module_name(module_path.BaseName().value());
+
+  return command_line->HasSwitch(installer_util::switches::kChromeFrame) ||
+         module_name == installer_util::kChromeFrameDll;
 }
 
 bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
