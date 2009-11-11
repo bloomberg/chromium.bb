@@ -295,6 +295,12 @@ void RemoveViewFromView(NSView* view, NSView* toRemove) {
                                       delta:NSMakeSize(0, -shrinkHeight)];
 }
 
+void RemoveGroupFromView(NSView* view, NSArray* toRemove) {
+  for (NSView* viewToRemove in toRemove) {
+    RemoveViewFromView(view, viewToRemove);
+  }
+}
+
 // Helper to tweak the layout of the "Under the Hood" content by autosizing all
 // the views and moving things up vertically.  Special case the two controls for
 // download location as they are horizontal, and should fill the row.
@@ -594,9 +600,7 @@ class PrefObserverBridge : public NotificationObserver,
     [self syncStateChanged];
   } else {
     // Disable controls if sync is disabled.
-    RemoveViewFromView(personalStuffView_, syncLabel_);
-    RemoveViewFromView(personalStuffView_, syncStatus_);
-    RemoveViewFromView(personalStuffView_, syncButton_);
+    RemoveGroupFromView(personalStuffView_, personalStuffGroupSync_);
   }
 
   // Make the window as wide as the views.
