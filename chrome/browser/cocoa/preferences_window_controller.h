@@ -52,6 +52,7 @@ class ProfileSyncService;
   IBOutlet NSArray* basicsGroupDefaultBrowser_;
 
   // The groups of the Personal Stuff view for layout fixup.
+  IBOutlet NSArray* personalStuffGroupSync_;
   IBOutlet NSArray* personalStuffGroupPasswords_;
   IBOutlet NSArray* personalStuffGroupAutofill_;
   IBOutlet NSArray* personalStuffGroupBrowserData_;

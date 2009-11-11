@@ -252,7 +252,6 @@ NSInteger CompareFrameY(id view1, id view2, void* context) {
     return NSOrderedSame;
 }
 
-#if !defined(GOOGLE_CHROME_BUILD)
 // Helper to remove a view and move everything above it down to take over the
 // space.
 void RemoveViewFromView(NSView* view, NSView* toRemove) {
@@ -264,21 +263,21 @@ void RemoveViewFromView(NSView* view, NSView* toRemove) {
   NSUInteger index = [views indexOfObject:toRemove];
   DCHECK_NE(index, NSNotFound);
   NSUInteger count = [views count];
-  if (index == (count - 1))
-    return;  // It was the top item, nothing to do (shouldn't happen).
+  CGFloat shiftDown = 0;
+  if (index < (count - 1)) {
+    // The amount to shift is the bottom of |toRemove| to the bottom of the view
+    // above it.
+    shiftDown =
+        NSMinY([[views objectAtIndex:index + 1] frame]) -
+        NSMinY([toRemove frame]);
 
-  // The amount to shift is the bottom of |toRemove| to the bottom of the view
-  // above it.
-  CGFloat shiftDown =
-      NSMinY([[views objectAtIndex:index + 1] frame]) -
-      NSMinY([toRemove frame]);
-
-  // Now cycle over the views above it moving them down.
-  for (++index; index < count; ++index) {
-    NSView* view = [views objectAtIndex:index];
-    NSPoint origin = [view frame].origin;
-    origin.y -= shiftDown;
-    [view setFrameOrigin:origin];
+    // Now cycle over the views above it moving them down.
+    for (++index; index < count; ++index) {
+      NSView* view = [views objectAtIndex:index];
+      NSPoint origin = [view frame].origin;
+      origin.y -= shiftDown;
+      [view setFrameOrigin:origin];
+    }
   }
 
   // Remove |toRemove|.
@@ -289,7 +288,6 @@ void RemoveViewFromView(NSView* view, NSView* toRemove) {
       resizeViewWithoutAutoResizingSubViews:view
                                       delta:NSMakeSize(0, -shiftDown)];
 }
-#endif  // !defined(GOOGLE_CHROME_BUILD)
 
 // Helper to tweak the layout of the "Under the Hood" content by autosizing all
 // the views and moving things up vertically.  Special case the two controls for
@@ -483,7 +481,7 @@ class PrefObserverBridge : public NotificationObserver,
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
   // There are three problem children within the groups:
-  //   Bascis - Default Browser
+  //   Basics - Default Browser
   //   Personal Stuff - Themes
   //   Personal Stuff - Browser Data
   // These three have buttons that with some localizations are wider then the
@@ -586,10 +584,10 @@ class PrefObserverBridge : public NotificationObserver,
     sync_service_->AddObserver(observer_.get());
   } else {
     // Disable controls if sync is disabled.
-    [syncLabel_ setHidden:YES];
-    [syncStatus_ setHidden:YES];
-    [syncButton_ setHidden:YES];
-  }  
+    RemoveViewFromView(personalStuffView_, syncLabel_);
+    RemoveViewFromView(personalStuffView_, syncStatus_);
+    RemoveViewFromView(personalStuffView_, syncButton_);
+  }
 
   // Make the window as wide as the views.
   NSWindow* prefsWindow = [self window];
