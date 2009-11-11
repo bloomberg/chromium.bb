@@ -129,6 +129,7 @@ class WindowWin : public WidgetWin,
   virtual LRESULT OnNCHitTest(const CPoint& point);
   virtual void OnNCPaint(HRGN rgn);
   virtual void OnNCLButtonDown(UINT ht_component, const CPoint& point);
+  virtual void OnNCLButtonUp(UINT ht_component, const CPoint& point);
   virtual void OnNCRButtonDown(UINT ht_component, const CPoint& point);
   virtual void OnNCRButtonUp(UINT ht_component, const CPoint& point);
   virtual void OnRButtonUp(UINT ht_component, const CPoint& point);
@@ -292,6 +293,12 @@ class WindowWin : public WidgetWin,
   // Set to true when the user presses the right mouse button on the caption
   // area. We need this so we can correctly show the context menu on mouse-up.
   bool is_right_mouse_pressed_on_caption_;
+
+  // With our current behavior when we track popup menu we capture the mouse
+  // so doubleclick does not work. If user doubleclicks on the system icon
+  // the menu will be canceled and user will receive WM_NCLBUTTONUP.
+  // So we store the last time system menu was opened and canceled
+  DWORD last_time_system_menu_clicked_;
 
   // The last-seen monitor containing us, and its rect and work area.  These are
   // used to catch updates to the rect and work area and react accordingly.

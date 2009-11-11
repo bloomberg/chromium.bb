@@ -499,9 +499,8 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       ignore_pos_changes_factory_(this),
       force_hidden_count_(0),
       is_right_mouse_pressed_on_caption_(false),
-      last_monitor_(NULL),
-      drag_frame_saved_window_style_(0),
-      drag_frame_saved_window_ex_style_(false) {
+      last_time_system_menu_clicked_(0),
+      last_monitor_(NULL) {
   is_window_ = true;
   InitClass();
   DCHECK(window_delegate_);
@@ -590,6 +589,8 @@ void WindowWin::RunSystemMenu(const gfx::Point& point) {
   int id = ::TrackPopupMenu(system_menu, flags,
                             point.x(), point.y(), 0, GetNativeView(), NULL);
   ExecuteSystemMenuCommand(id);
+  if (id)  // something was selected
+    last_time_system_menu_clicked_ = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -966,10 +967,18 @@ void WindowWin::OnNCLButtonDown(UINT ht_component, const CPoint& point) {
   //             From my initial research, it looks like DefWindowProc tries
   //             to run it but fails before sending the initial WM_MENUSELECT
   //             for the sysmenu.
-  if (ht_component == HTSYSMENU)
+  // TODO(georgey): Remove the fix for double click when we figure out why
+  //                system menu does not open automatically and pass it to
+  //                default processing.
+  if (ht_component == HTSYSMENU) {
+    // We use 0 as a special value. If user is "lucky" and double clicks on
+    // system icon exactly 49.7x days after PC was started we ignore that
+    // click.
+    last_time_system_menu_clicked_ = GetTickCount();
     RunSystemMenu(non_client_view_->GetSystemMenuPoint());
-  else
+  } else {
     WidgetWin::OnNCLButtonDown(ht_component, point);
+  }
 
   /* TODO(beng): Fix the standard non-client over-painting bug. This code
                  doesn't work but identifies the problem.
@@ -985,6 +994,31 @@ void WindowWin::OnNCLButtonDown(UINT ht_component, const CPoint& point) {
     SetMsgHandled(TRUE);
   }
   */
+}
+
+void WindowWin::OnNCLButtonUp(UINT ht_component, const CPoint& point) {
+  // georgey : fix for double click on system icon not working
+  // As we do track on system menu, the following sequence occurs, when user
+  // double clicks:
+  //   1. Window gets WM_NCLBUTTONDOWN with ht_component == HTSYSMENU
+  //   2. We call TrackPopupMenu, that captures the mouse
+  //   3. Menu, not window, gets WM_NCLBUTTONUP
+  //   4. Menu gets WM_NCLBUTTONDOWN and closes returning 0 (canceled) from
+  //      TrackPopupMenu.
+  //   5. Window gets WM_NCLBUTTONUP with ht_component == HTSYSMENU
+  if (ht_component == HTSYSMENU) {
+    if (last_time_system_menu_clicked_) {
+      if ((GetTickCount() - last_time_system_menu_clicked_) <=
+          GetDoubleClickTime()) {
+        // User double clicked left mouse button on system menu - close
+        // window
+        ExecuteSystemMenuCommand(SC_CLOSE);
+      }
+      last_time_system_menu_clicked_ = 0;
+    }
+  }
+
+  WidgetWin::OnNCLButtonUp(ht_component, point);
 }
 
 void WindowWin::OnNCRButtonDown(UINT ht_component, const CPoint& point) {
