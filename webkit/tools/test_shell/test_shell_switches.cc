@@ -82,4 +82,7 @@ extern const char kGDB[] = "gdb";
 // Make functions of the Profiler class available in javascript
 extern const char kProfiler[] = "profiler";
 
+// Make functions of the HeapProfiler class available in javascript
+extern const char kHeapProfiler[] = "heap-profiler";
+
 }  // namespace test_shell

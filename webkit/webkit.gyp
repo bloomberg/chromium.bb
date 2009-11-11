@@ -379,18 +379,20 @@
 
         # These files used to be built in the webcore target, but moved here
         # since part of glue.
+        'extensions/v8/benchmarking_extension.cc',
+        'extensions/v8/benchmarking_extension.h',
         'extensions/v8/gc_extension.cc',
         'extensions/v8/gc_extension.h',
         'extensions/v8/gears_extension.cc',
         'extensions/v8/gears_extension.h',
+        'extensions/v8/heap_profiler_extension.cc',
+        'extensions/v8/heap_profiler_extension.h',
         'extensions/v8/interval_extension.cc',
         'extensions/v8/interval_extension.h',
         'extensions/v8/playback_extension.cc',
         'extensions/v8/playback_extension.h',
         'extensions/v8/profiler_extension.cc',
         'extensions/v8/profiler_extension.h',
-        'extensions/v8/benchmarking_extension.cc',
-        'extensions/v8/benchmarking_extension.h',
 
       ],
       # When glue is a dependency, it needs to be a hard dependency.

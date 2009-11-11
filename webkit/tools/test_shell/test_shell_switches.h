@@ -33,6 +33,7 @@ extern const char kAllowScriptsToCloseWindows[];
 extern const char kCheckLayoutTestSystemDeps[];
 extern const char kGDB[];
 extern const char kProfiler[];
+extern const char kHeapProfiler[];
 
 }  // namespace test_shell
 

@@ -29,6 +29,7 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/window_open_disposition.h"
 #include "webkit/extensions/v8/gc_extension.h"
+#include "webkit/extensions/v8/heap_profiler_extension.h"
 #include "webkit/extensions/v8/playback_extension.h"
 #include "webkit/extensions/v8/profiler_extension.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
@@ -223,6 +224,11 @@ int main(int argc, char* argv[]) {
   if (parsed_command_line.HasSwitch(test_shell::kProfiler)) {
     WebScriptController::registerExtension(
         extensions_v8::ProfilerExtension::Get());
+  }
+
+  if (parsed_command_line.HasSwitch(test_shell::kHeapProfiler)) {
+    WebScriptController::registerExtension(
+        extensions_v8::HeapProfilerExtension::Get());
   }
 
   // Load and initialize the stats table.  Attempt to construct a somewhat
