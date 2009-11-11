@@ -300,6 +300,7 @@ void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
        ++iter) {
     if ((*iter)->button()->extension() == extension) {
       RemoveChildView(*iter);
+      delete *iter;
       browser_action_views_.erase(iter);
       if (GetParent())
         GetParent()->SchedulePaint();
