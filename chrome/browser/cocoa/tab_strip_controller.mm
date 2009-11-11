@@ -505,7 +505,7 @@ static const NSTimeInterval kAnimationDuration = 0.2;
   placeholderTab_ = tab;
   placeholderFrame_ = frame;
   placeholderStretchiness_ = yStretchiness;
-  [self layoutTabsWithAnimation:YES regenerateSubviews:NO];
+  [self layoutTabsWithAnimation:initialLayoutComplete_ regenerateSubviews:NO];
 }
 
 - (BOOL)isTabFullyVisible:(TabView*)tab {
