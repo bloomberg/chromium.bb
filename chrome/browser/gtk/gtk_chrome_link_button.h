@@ -62,6 +62,10 @@ GtkWidget* gtk_chrome_link_button_new_with_markup(const char* markup);
 void gtk_chrome_link_button_set_use_gtk_theme(GtkChromeLinkButton* button,
                                               gboolean use_gtk);
 
+// Set the label text of the link.
+void gtk_chrome_link_button_set_label(GtkChromeLinkButton* button,
+                                      const char* text);
+
 GType gtk_chrome_link_button_get_type();
 
 G_END_DECLS

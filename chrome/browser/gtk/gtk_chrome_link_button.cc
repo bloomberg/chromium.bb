@@ -213,4 +213,28 @@ void gtk_chrome_link_button_set_use_gtk_theme(GtkChromeLinkButton* button,
   }
 }
 
+void gtk_chrome_link_button_set_label(GtkChromeLinkButton* button,
+                                      const char* text) {
+  if (button->text) {
+    free(button->text);
+  }
+  button->text = strdup(text);
+
+  // Clear the markup so we can redraw.
+  if (button->native_markup && (button->native_markup != button->blue_markup))
+    g_free(button->native_markup);
+  button->native_markup = NULL;
+  if (button->blue_markup) {
+    g_free(button->blue_markup);
+    button->blue_markup = NULL;
+  }
+  if (button->red_markup) {
+    g_free(button->red_markup);
+    button->red_markup = NULL;
+  }
+
+  if (GTK_WIDGET_VISIBLE(button))
+    gtk_widget_queue_draw(GTK_WIDGET(button));
+}
+
 G_END_DECLS
