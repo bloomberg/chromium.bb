@@ -14,60 +14,25 @@
 // AutocompletePopupGtk, public:
 
 AutocompletePopupGtk::AutocompletePopupGtk(
+    AutocompleteEditView* edit_view,
     AutocompletePopupContentsView* contents)
-    : WidgetGtk(WidgetGtk::TYPE_POPUP),
-      contents_(contents),
-      edit_view_(NULL),
-      is_open_(false) {
+    : WidgetGtk(WidgetGtk::TYPE_POPUP) {
+  // Create the popup.  // Owned by |contents|.
   set_delete_on_destroy(false);
+  MakeTransparent();
+  WidgetGtk::Init(gtk_widget_get_parent(edit_view->GetNativeView()),
+                  contents->GetPopupBounds());
+  // The contents is owned by the LocationBarView.
+  contents->set_parent_owned(false);
+  SetContentsView(contents);
+
+  Show();
+
+  // Restack the popup window directly above the browser's toplevel window.
+  GtkWidget* toplevel = gtk_widget_get_toplevel(edit_view->GetNativeView());
+  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
+  gtk_util::StackPopupWindow(GetNativeView(), toplevel);
 }
 
 AutocompletePopupGtk::~AutocompletePopupGtk() {
-}
-
-void AutocompletePopupGtk::Show() {
-  // Move the popup to the place appropriate for the window's current position -
-  // it may have been moved since it was last shown.
-  SetBounds(contents_->GetPopupBounds());
-  if (!IsVisible()) {
-    WidgetGtk::Show();
-    StackWindow();
-  }
-  is_open_ = true;
-}
-
-void AutocompletePopupGtk::Hide() {
-  WidgetGtk::Hide();
-  is_open_ = false;
-}
-
-void AutocompletePopupGtk::Init(AutocompleteEditView* edit_view,
-                                views::View* contents) {
-  MakeTransparent();
-  // Create the popup
-  WidgetGtk::Init(gtk_widget_get_parent(edit_view->GetNativeView()),
-                  contents_->GetPopupBounds());
-  // The contents is owned by the LocationBarView.
-  contents_->set_parent_owned(false);
-  SetContentsView(contents_);
-
-  edit_view_ = edit_view;
-
-  Show();
-}
-
-bool AutocompletePopupGtk::IsOpen() const {
-  const bool is_open = IsCreated() && IsVisible();
-  CHECK(is_open == is_open_);
-  return is_open;
-}
-
-bool AutocompletePopupGtk::IsCreated() const {
-  return GTK_IS_WIDGET(GetNativeView());
-}
-
-void AutocompletePopupGtk::StackWindow() {
-  GtkWidget* toplevel = gtk_widget_get_toplevel(edit_view_->GetNativeView());
-  DCHECK(GTK_WIDGET_TOPLEVEL(toplevel));
-  gtk_util::StackPopupWindow(GetNativeView(), toplevel);
 }

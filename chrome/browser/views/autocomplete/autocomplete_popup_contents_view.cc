@@ -596,17 +596,11 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
     AutocompleteEditModel* edit_model,
     Profile* profile,
     const BubblePositioner* bubble_positioner)
-#if defined(OS_WIN)
-    : popup_(new AutocompletePopupWin(this)),
-#else
-    : popup_(new AutocompletePopupGtk(this)),
-#endif
-      model_(new AutocompletePopupModel(this, edit_model, profile)),
+    : model_(new AutocompletePopupModel(this, edit_model, profile)),
       edit_view_(edit_view),
       bubble_positioner_(bubble_positioner),
       result_font_(font.DeriveFont(kEditFontAdjust)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)),
-      is_open_(false) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
   // The following little dance is required because set_border() requires a
   // pointer to a non-const object.
   BubbleBorder* bubble_border = new BubbleBorder;
@@ -634,9 +628,7 @@ gfx::Rect AutocompletePopupContentsView::GetPopupBounds() const {
 // AutocompletePopupContentsView, AutocompletePopupView overrides:
 
 bool AutocompletePopupContentsView::IsOpen() const {
-  const bool is_open = popup_->IsOpen();
-  CHECK(is_open == is_open_);
-  return is_open;
+  return (popup_ != NULL);
 }
 
 void AutocompletePopupContentsView::InvalidateLine(size_t line) {
@@ -646,11 +638,11 @@ void AutocompletePopupContentsView::InvalidateLine(size_t line) {
 void AutocompletePopupContentsView::UpdatePopupAppearance() {
   if (model_->result().empty()) {
     // No matches, close any existing popup.
-    if (popup_->IsCreated()) {
+    if (popup_ != NULL) {
       size_animation_.Stop();
-      popup_->Hide();
+      popup_->CloseNow();
+      popup_.reset();
     }
-    is_open_ = false;
     return;
   }
 
@@ -684,22 +676,19 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
     size_animation_.Reset();
   target_bounds_ = new_target_bounds;
 
-  if (!popup_->IsCreated()) {
-    // If we've never been shown, we need to create the window.
-    popup_->Init(edit_view_, this);
+  if (popup_ == NULL) {
+    // If the popup is currently closed, we need to create it.
+    popup_.reset(new AutocompletePopupClass(edit_view_, this));
   } else {
-    // Animate the popup shrinking, but don't animate growing larger (or
-    // appearing for the first time) since that would make the popup feel less
-    // responsive.
+    // Animate the popup shrinking, but don't animate growing larger since that
+    // would make the popup feel less responsive.
     GetWidget()->GetBounds(&start_bounds_, true);
-    if (popup_->IsVisible() &&
-        (target_bounds_.height() < start_bounds_.height()))
+    if (target_bounds_.height() < start_bounds_.height())
       size_animation_.Show();
     else
       start_bounds_ = target_bounds_;
-    popup_->Show();
+    popup_->SetBounds(GetPopupBounds());
   }
-  is_open_ = true;
 
   SchedulePaint();
 }
@@ -757,8 +746,8 @@ void AutocompletePopupContentsView::SetSelectedLine(size_t index,
 void AutocompletePopupContentsView::AnimationProgressed(
     const Animation* animation) {
   // We should only be running the animation when the popup is already visible.
-  CHECK(IsOpen());
-  popup_->Show();  // Adjusts bounds.
+  DCHECK(popup_ != NULL);
+  popup_->SetBounds(GetPopupBounds());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
