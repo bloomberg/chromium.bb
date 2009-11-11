@@ -157,7 +157,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
       std::vector<std::string> get_inode_cmdline;
       get_inode_cmdline.push_back(sandbox_binary);
       get_inode_cmdline.push_back(base::kFindInodeSwitch);
-      get_inode_cmdline.push_back(IntToString(inode));
+      get_inode_cmdline.push_back(Int64ToString(inode));
       CommandLine get_inode_cmd(get_inode_cmdline);
       if (base::GetAppOutput(get_inode_cmd, &inode_output)) {
         StringToInt(inode_output, &pid_);

@@ -274,7 +274,7 @@ class SandboxIPCProcess  {
     std::string inode_output;
 
     std::vector<std::string> sandbox_cmd = sandbox_cmd_;
-    sandbox_cmd.push_back(IntToString(inode));
+    sandbox_cmd.push_back(Int64ToString(inode));
     CommandLine get_inode_cmd(sandbox_cmd);
     if (base::GetAppOutput(get_inode_cmd, &inode_output))
       StringToInt(inode_output, &pid);
