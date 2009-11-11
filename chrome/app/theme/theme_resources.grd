@@ -240,7 +240,12 @@
       <include name="IDR_MENU_PAGE_RTL" file="menu_page_rtl.png" type="BINDATA" />
       <include name="IDR_MENU_CHROME_RTL" file="menu_chrome_rtl.png" type="BINDATA" />
       <include name="IDR_DOWNLOAD_ANIMATION_BEGIN" file="download_animation_begin.png" type="BINDATA" />
-      <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder.png" type="BINDATA" />
+      <if expr="os != 'darwin'">
+        <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder.png" type="BINDATA" />
+      </if>
+      <if expr="os == 'darwin'">
+        <include name="IDR_BOOKMARK_BAR_FOLDER" file="bookmark_bar_folder_mac.png" type="BINDATA" />
+      </if>
       <include name="IDR_THROBBER_LIGHT" file="throbber_light.png" type="BINDATA" />
       <include name="IDR_OTR_ICON_STANDALONE" file="otr_icon_standalone.png" type="BINDATA" />
       <include name="IDR_BOOKMARK_MANAGER_RECENT_ICON" file="bookmark_manager_recent.png" type="BINDATA" />
