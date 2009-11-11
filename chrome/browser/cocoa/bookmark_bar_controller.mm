@@ -5,7 +5,6 @@
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
-#include "base/scoped_nsautorelease_pool.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -57,37 +56,10 @@
 - (void)addButtonsToView;
 - (void)resizeButtons;
 - (void)centerNoItemsLabel;
-- (NSImage*)getFavIconForNode:(const BookmarkNode*)node item:(NSObject*)item;
+- (NSImage*)getFavIconForNode:(const BookmarkNode*)node;
 @end
 
 @implementation BookmarkBarController
-
-- (void)folderImageLoaded:(NSImage*)folderImage {
-  // The image loading thread retained |folderImage| already.
-  folderImage_.reset(folderImage);
-
-  for (NSObject* item in itemsPendingBookmarkIcon_.get()) {
-    DCHECK([item respondsToSelector:@selector(setImage:)]);
-    if ([item respondsToSelector:@selector(setImage:)]) {
-      // |item| is not really of type |NSCell*|, but some type that responds to
-      // |setImage:| is required to shut up a compiler warning.
-      [(NSCell*)item setImage:folderImage_];
-    }
-  }
-  itemsPendingBookmarkIcon_.reset(nil);
-}
-
-- (void)loadFolderImage:(NSObject*)ignored {
-  base::ScopedNSAutoreleasePool pool;
-  NSImage* folder =
-      [[NSWorkspace sharedWorkspace] iconForFileType:
-       NSFileTypeForHFSTypeCode(kGenericFolderIcon)];
-  [folder setSize:NSMakeSize(16, 16)];
-  
-  [self performSelectorOnMainThread:@selector(folderImageLoaded:)
-                         withObject:[folder retain]
-                      waitUntilDone:NO];
-}
 
 - (id)initWithBrowser:(Browser*)browser
          initialWidth:(float)initialWidth
@@ -107,15 +79,8 @@
         new TabStripModelObserverBridge(browser_->tabstrip_model(), self));
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
     defaultImage_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
-
-    // Loading |folderImage_| on the main thread regresses startup time by 5ms,
-    // so do it on a background thread.
-    [NSThread detachNewThreadSelector:@selector(loadFolderImage:)
-                             toTarget:self
-                           withObject:nil];
-    
-    itemsPendingBookmarkIcon_.reset([[NSMutableArray alloc] init]);
   }
   return self;
 }
@@ -405,7 +370,7 @@
                                                  action:nil
                                           keyEquivalent:@""] autorelease];
   [menu addItem:item];
-  [item setImage:[self getFavIconForNode:child item:item]];
+  [item setImage:[self getFavIconForNode:child]];
   if (child->is_folder()) {
     NSMenu* submenu = [[[NSMenu alloc] initWithTitle:title] autorelease];
     [menu setSubmenu:submenu forItem:item];
@@ -633,7 +598,7 @@
   DCHECK(cell);
   [cell setRepresentedObject:[NSValue valueWithPointer:node]];
 
-  NSImage* image = [self getFavIconForNode:node item:cell];
+  NSImage* image = [self getFavIconForNode:node];
   [cell setBookmarkCellText:title image:image];
   [cell setMenu:buttonContextMenu_];
   return cell;
@@ -900,7 +865,7 @@
     const BookmarkNode* cellnode = static_cast<const BookmarkNode*>(pointer);
     if (cellnode == node) {
       [cell setBookmarkCellText:[cell title]
-                          image:[self getFavIconForNode:node item:cell]];
+                          image:[self getFavIconForNode:node]];
       // Adding an image means we might need more room for the
       // bookmark.  Test for it by growing the button (if needed)
       // and shifting everything else over.
@@ -931,16 +896,9 @@
   return otherBookmarksButton_.get();
 }
 
-- (NSImage*)getFavIconForNode:(const BookmarkNode*)node item:(NSObject*)item {
-  if (node->is_folder()) {
-    if (!folderImage_) {
-      DCHECK([item respondsToSelector:@selector(setImage:)]);
-      [itemsPendingBookmarkIcon_.get() addObject:item];
-      return defaultImage_;
-    }
-
+- (NSImage*)getFavIconForNode:(const BookmarkNode*)node {
+  if (node->is_folder())
     return folderImage_;
-  }
 
   const SkBitmap& favIcon = bookmarkModel_->GetFavIcon(node);
   if (!favIcon.isNull())

@@ -34,10 +34,6 @@
   return size;
 }
 
-- (void)setImage:(NSImage*)image {
-  [self setBookmarkCellText:[self title] image:image];
-}
-
 - (void)setBookmarkCellText:(NSString*)title
                       image:(NSImage*)image {
   title = [title stringByReplacingOccurrencesOfString:@"\n"
@@ -45,7 +41,7 @@
   title = [title stringByReplacingOccurrencesOfString:@"\r"
                                            withString:@" "];
   if (image) {
-    [super setImage:image];
+    [self setImage:image];
     if ([title length] < 1) {
       [self setImagePosition:NSImageOnly];
     } else {
