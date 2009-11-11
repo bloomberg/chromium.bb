@@ -414,7 +414,7 @@ SkBitmap BackingStore::PaintRectToBitmap(const gfx::Rect& rect) {
     if (use_shared_memory_)
       DestroySharedImage(display_, image, &shminfo);
     else
-      XFree(image);
+      XDestroyImage(image);
     return SkBitmap();
   }
 
@@ -431,7 +431,7 @@ SkBitmap BackingStore::PaintRectToBitmap(const gfx::Rect& rect) {
   if (use_shared_memory_)
     DestroySharedImage(display_, image, &shminfo);
   else
-    XFree(image);
+    XDestroyImage(image);
 
   HISTOGRAM_TIMES("BackingStore.RetrievalFromX",
                   base::TimeTicks::Now() - begin_time);
