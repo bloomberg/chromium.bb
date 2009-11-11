@@ -202,19 +202,21 @@ bool InstallFramebufferObjects(const RenderSurface* surface,
     const RenderSurfaceGL *gl_surface =
         down_cast<const RenderSurfaceGL*>(surface);
     Texture *texture = gl_surface->texture();
+    GLuint handle = static_cast<GLuint>(reinterpret_cast<intptr_t>(
+        texture->GetTextureHandle()));
     if (texture->IsA(Texture2D::GetApparentClass())) {
       ::glFramebufferTexture2DEXT(
           GL_FRAMEBUFFER_EXT,
           GL_COLOR_ATTACHMENT0_EXT,
           GL_TEXTURE_2D,
-          reinterpret_cast<GLuint>(texture->GetTextureHandle()),
+          handle,
           gl_surface->mip_level());
     } else if (texture->IsA(TextureCUBE::GetApparentClass())) {
       ::glFramebufferTexture2DEXT(
           GL_FRAMEBUFFER_EXT,
           GL_COLOR_ATTACHMENT0_EXT,
           gl_surface->cube_face(),
-          reinterpret_cast<GLuint>(texture->GetTextureHandle()),
+          handle,
           gl_surface->mip_level());
     }
   }

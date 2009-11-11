@@ -99,6 +99,7 @@ for asset in assets:
   output_file.write("        {\n")
   output_file.write("          'action_name': '%s',\n" % name)
   output_file.write("          'inputs': [\n")
+  output_file.write("            '<(PRODUCT_DIR)/o3dConverter',\n")
   output_file.write("            '../o3d_assets/samples/%s',\n" % asset['path'])
   output_file.write("          ],\n")
   output_file.write("          'outputs': [\n")
@@ -112,16 +113,10 @@ for asset in assets:
     output_file.write("            '../samples/%s',\n" % output)
   output_file.write("          ],\n")
   output_file.write("          'action': [\n")
-  if sys.platform[:5] == 'linux':
-    output_file.write("            'LD_LIBRARY_PATH=<(PRODUCT_DIR):"
-                      ":<(PRODUCT_DIR)/lib"
-                      ":../../<(glewdir)/lib"
-                      ":../../<<(PRODUCT_DIR)/lib"
-                      "',\n")
   output_file.write("            '<(PRODUCT_DIR)/o3dConverter',\n")
   output_file.write("            '--no-condition',\n")
   output_file.write("            '--up-axis=%s',\n" % asset['up'])
-  output_file.write("            '<(_inputs)',\n")
+  output_file.write("            '../o3d_assets/samples/%s',\n" % asset['path'])
   output_file.write("            '<(_outputs)',\n")
   output_file.write("          ],\n")
   output_file.write("        },\n")

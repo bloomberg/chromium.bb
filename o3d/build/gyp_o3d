@@ -11,6 +11,7 @@ import os
 import sys
 
 chrome_src = os.path.join(os.path.dirname(sys.argv[0]), os.pardir, os.pardir)
+o3d_src = os.path.join(os.path.dirname(sys.argv[0]), os.pardir)
 
 try:
   import gyp
@@ -24,6 +25,7 @@ if __name__ == '__main__':
   # Always include common.gypi
   args += ['--depth', '.',
            '-I', os.path.join(chrome_src, 'build', 'common.gypi'),
+           '-I', os.path.join(o3d_src, 'build', 'common_global.gypi'),
            '-D', 'mac_deployment_target=10.4']
 
   # Off we go...
