@@ -5,8 +5,13 @@
 {
   'variables': {
     'chromium_code': 1,
-    'dx_redist_path': '../../o3d-internal/third_party/dx_nov_2007_redist',
+    'dx_redist_path':
+        '../../o3d-internal/third_party/dx_nov_2007_redist',
     'dx_redist_exists': '<!(python file_exists.py ../../o3d-internal/third_party/dx_nov_2007_redist/d3dx9_36.dll)',
+    'swiftshader_path':
+        '../../o3d-internal/third_party/swiftshader/files/swiftshader_d3d9.dll',
+    'swiftshader_exists':
+        '<!(python file_exists.py ../../o3d-internal/third_party/swiftshader/files/swiftshader_d3d9.dll)',
   },
   'includes': [
     'common.gypi',
@@ -204,6 +209,16 @@
                 '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
               ],
             },
+            'conditions' : [
+              ['"<(swiftshader_exists)" == "True"', {
+                'copies': [
+                  {
+                    'destination': '<(PRODUCT_DIR)/O3DExtras',
+                    'files': ['<(swiftshader_path)'],
+                  },
+                ],
+              }],
+            ],
             'copies': [
               {
                 'destination': '<(PRODUCT_DIR)',
