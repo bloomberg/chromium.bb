@@ -4,48 +4,67 @@
 
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_task.h"
 
-#include "base/message_loop.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
+#include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "net/websockets/websocket.h"
 
 namespace chrome_browser_net_websocket_experiment {
 
-URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher() {
-  return new URLFetcher(config_.http_url, URLFetcher::HEAD, task_);
+URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
+    const Config& config, URLFetcher::Delegate* delegate) {
+  URLRequestContextGetter* getter =
+      Profile::GetDefaultRequestContext();
+  DCHECK(getter);
+  DLOG(INFO) << "url=" << config.http_url;
+  URLFetcher* fetcher =
+      new URLFetcher(config.http_url, URLFetcher::GET, delegate);
+  fetcher->set_request_context(getter);
+  fetcher->set_load_flags(
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  return fetcher;
 }
 
-net::WebSocket* WebSocketExperimentTask::Context::CreateWebSocket() {
+net::WebSocket* WebSocketExperimentTask::Context::CreateWebSocket(
+    const Config& config, net::WebSocketDelegate* delegate) {
   URLRequestContextGetter* getter =
       Profile::GetDefaultRequestContext();
   DCHECK(getter);
   net::WebSocket::Request* request(
-      new net::WebSocket::Request(config_.url,
-                                  config_.ws_protocol,
-                                  config_.ws_origin,
-                                  config_.ws_location,
+      new net::WebSocket::Request(config.url,
+                                  config.ws_protocol,
+                                  config.ws_origin,
+                                  config.ws_location,
                                   getter->GetURLRequestContext()));
-  return new net::WebSocket(request, task_);
+  return new net::WebSocket(request, delegate);
 }
 
 WebSocketExperimentTask::WebSocketExperimentTask(
     const Config& config,
     net::CompletionCallback* callback)
     : config_(config),
-      context_(ALLOW_THIS_IN_INITIALIZER_LIST(new Context(config, this))),
-      message_loop_(MessageLoopForIO::current()),
+      context_(ALLOW_THIS_IN_INITIALIZER_LIST(new Context())),
       method_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       callback_(callback),
-      next_state_(STATE_NONE) {
-  DCHECK(message_loop_);
+      next_state_(STATE_NONE),
+      last_websocket_error_(net::OK) {
 }
 
 WebSocketExperimentTask::~WebSocketExperimentTask() {
+  DLOG(INFO) << "WebSocketExperimentTask finished";
   DCHECK(!websocket_);
 }
 
 void WebSocketExperimentTask::Run() {
   next_state_ = STATE_URL_FETCH;
+  DoLoop(net::OK);
+}
+
+void WebSocketExperimentTask::Cancel() {
+  next_state_ = STATE_NONE;
   DoLoop(net::OK);
 }
 
@@ -59,10 +78,12 @@ void WebSocketExperimentTask::OnURLFetchComplete(
     const std::string& data) {
   result_.url_fetch = base::TimeTicks::Now() - url_fetch_start_time_;
   RevokeTimeoutTimer();
+  DLOG(INFO) << "OnURLFetchCompleted";
   int result = net::ERR_FAILED;
-  if (next_state_ != STATE_URL_FETCH_COMPLETE)
+  if (next_state_ != STATE_URL_FETCH_COMPLETE) {
+    DLOG(INFO) << "unexpected state=" << next_state_;
     result = net::ERR_UNEXPECTED;
-  else if (response_code == 200)
+  } else if (response_code == 200 || response_code == 304)
     result = net::OK;
   DoLoop(result);
 }
@@ -72,10 +93,12 @@ void WebSocketExperimentTask::OnOpen(net::WebSocket* websocket) {
   result_.websocket_connect =
       base::TimeTicks::Now() - websocket_connect_start_time_;
   RevokeTimeoutTimer();
+  int result = net::ERR_UNEXPECTED;
   if (next_state_ == STATE_WEBSOCKET_CONNECT_COMPLETE)
-    DoLoop(net::OK);
+    result = net::OK;
   else
-    DoLoop(net::ERR_UNEXPECTED);
+    DLOG(INFO) << "unexpected state=" << next_state_;
+  DoLoop(result);
 }
 
 void WebSocketExperimentTask::OnMessage(
@@ -88,6 +111,7 @@ void WebSocketExperimentTask::OnMessage(
     result_.websocket_idle =
         base::TimeTicks::Now() - websocket_idle_start_time_;
   RevokeTimeoutTimer();
+  DLOG(INFO) << "OnMessage msg=" << msg;
   received_messages_.push_back(msg);
   int result = net::ERR_UNEXPECTED;
   switch (next_state_) {
@@ -97,6 +121,7 @@ void WebSocketExperimentTask::OnMessage(
       result = net::OK;
       break;
     default:
+      DLOG(INFO) << "unexpected state=" << next_state_;
       break;
   }
   DoLoop(result);
@@ -104,10 +129,21 @@ void WebSocketExperimentTask::OnMessage(
 
 void WebSocketExperimentTask::OnClose(net::WebSocket* websocket) {
   RevokeTimeoutTimer();
+  websocket_ = NULL;
+  result_.websocket_total =
+      base::TimeTicks::Now() - websocket_connect_start_time_;
   int result = net::ERR_CONNECTION_CLOSED;
+  if (last_websocket_error_ != net::OK)
+    result = last_websocket_error_;
   if (next_state_ == STATE_WEBSOCKET_CLOSE_COMPLETE)
     result = net::OK;
   DoLoop(result);
+}
+
+void WebSocketExperimentTask::OnError(
+    const net::WebSocket* websocket, int error) {
+  DLOG(INFO) << "WebSocket error=" << net::ErrorToString(error);
+  last_websocket_error_ = error;
 }
 
 void WebSocketExperimentTask::SetContext(Context* context) {
@@ -115,14 +151,20 @@ void WebSocketExperimentTask::SetContext(Context* context) {
 }
 
 void WebSocketExperimentTask::OnTimedOut() {
+  DLOG(INFO) << "OnTimedOut";
   RevokeTimeoutTimer();
   DoLoop(net::ERR_TIMED_OUT);
 }
 
 void WebSocketExperimentTask::DoLoop(int result) {
+  if (next_state_ == STATE_NONE) {
+    Finish(net::ERR_ABORTED);
+    return;
+  }
   do {
     State state = next_state_;
     next_state_ = STATE_NONE;
+    DLOG(INFO) << "WebSocketExperimentTask state=" << state;
     switch (state) {
       case STATE_URL_FETCH:
         result = DoURLFetch();
@@ -167,8 +209,11 @@ void WebSocketExperimentTask::DoLoop(int result) {
         NOTREACHED();
         break;
     }
+    result_.last_state = state;
   } while (result != net::ERR_IO_PENDING && next_state_ != STATE_NONE);
 
+  DLOG(INFO) << "WebSocketExperiemntTask Loop done next_state=" << next_state_
+             << " result=" << net::ErrorToString(result);
   if (result != net::ERR_IO_PENDING)
     Finish(result);
 }
@@ -177,15 +222,17 @@ int WebSocketExperimentTask::DoURLFetch() {
   next_state_ = STATE_URL_FETCH_COMPLETE;
   DCHECK(!url_fetcher_.get());
 
-  url_fetcher_.reset(context_->CreateURLFetcher());
+  url_fetcher_.reset(context_->CreateURLFetcher(config_, this));
+  SetTimeout(config_.url_fetch_deadline_ms);
+  DLOG(INFO) << "URLFetch url=" << url_fetcher_->url()
+             << " timeout=" << config_.url_fetch_deadline_ms;
   url_fetch_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
-
-  SetTimeout(config_.url_fetch_deadline_ms);
   return net::ERR_IO_PENDING;
 }
 
 int WebSocketExperimentTask::DoURLFetchComplete(int result) {
+  DLOG(INFO) << "DoURLFetchComplete result=" << result;
   url_fetcher_.reset();
 
   if (result < 0)
@@ -199,7 +246,7 @@ int WebSocketExperimentTask::DoWebSocketConnect() {
   DCHECK(!websocket_);
 
   next_state_ = STATE_WEBSOCKET_CONNECT_COMPLETE;
-  websocket_ = context_->CreateWebSocket();
+  websocket_ = context_->CreateWebSocket(config_, this);
   websocket_connect_start_time_ = base::TimeTicks::Now();
   websocket_->Connect();
 
@@ -328,10 +375,12 @@ int WebSocketExperimentTask::DoWebSocketCloseComplete(int result) {
 }
 
 void WebSocketExperimentTask::SetTimeout(int64 deadline_ms) {
-  message_loop_->PostDelayedTask(
+  bool r = ChromeThread::PostDelayedTask(
+      ChromeThread::IO,
       FROM_HERE,
       method_factory_.NewRunnableMethod(&WebSocketExperimentTask::OnTimedOut),
       deadline_ms);
+  DCHECK(r) << "No IO thread running?";
 }
 
 void WebSocketExperimentTask::RevokeTimeoutTimer() {
@@ -339,7 +388,15 @@ void WebSocketExperimentTask::RevokeTimeoutTimer() {
 }
 
 void WebSocketExperimentTask::Finish(int result) {
+  DLOG(INFO) << "Finish Task for " << config_.url
+             << " next_state=" << next_state_
+             << " result=" << net::ErrorToString(result);
+  url_fetcher_.reset();
+  scoped_refptr<net::WebSocket> websocket = websocket_;
+  websocket_ = NULL;
   callback_->Run(result);
+  if (websocket)
+    websocket->DetachDelegate();
 }
 
 }  // namespace chrome_browser_net

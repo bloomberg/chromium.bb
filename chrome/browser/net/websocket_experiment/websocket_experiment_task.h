@@ -46,8 +46,6 @@
 #include "net/base/net_errors.h"
 #include "net/websockets/websocket.h"
 
-class MessageLoop;
-
 namespace net {
 class WebSocket;
 }  // namespace net
@@ -72,6 +70,7 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
     STATE_WEBSOCKET_RECV_BYE,
     STATE_WEBSOCKET_CLOSE,
     STATE_WEBSOCKET_CLOSE_COMPLETE,
+    NUM_STATES,
   };
   class Config {
    public:
@@ -102,16 +101,13 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
   };
   class Context {
    public:
-    Context(const Config& config, WebSocketExperimentTask* task)
-        : config_(config), task_(task) {}
+    Context() {}
     virtual ~Context() {}
 
-    virtual URLFetcher* CreateURLFetcher();
-    virtual net::WebSocket* CreateWebSocket();
-
-   protected:
-    const Config& config_;
-    WebSocketExperimentTask* task_;
+    virtual URLFetcher* CreateURLFetcher(
+        const Config& config, URLFetcher::Delegate* delegate);
+    virtual net::WebSocket* CreateWebSocket(
+        const Config& config, net::WebSocketDelegate* delegate);
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Context);
@@ -119,7 +115,7 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
   class Result {
    public:
     Result()
-        : last_result(net::ERR_UNEXPECTED),
+        : last_result(net::OK),
           last_state(STATE_NONE) {}
     int last_result;
     State last_state;
@@ -128,6 +124,7 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
     base::TimeDelta websocket_connect;
     base::TimeDelta websocket_echo;
     base::TimeDelta websocket_idle;
+    base::TimeDelta websocket_total;
   };
 
   // WebSocketExperimentTask will call |callback| with the last status code
@@ -137,10 +134,10 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
   virtual ~WebSocketExperimentTask();
 
   void Run();
+  void Cancel();
 
-  const Result& GetResult() const {
-    return result_;
-  }
+  const Config& config() const { return config_; }
+  const Result& result() const { return result_; }
 
   // URLFetcher::Delegate method.
   virtual void OnURLFetchComplete(const URLFetcher* source,
@@ -154,6 +151,7 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
   virtual void OnOpen(net::WebSocket* websocket);
   virtual void OnMessage(net::WebSocket* websocket, const std::string& msg);
   virtual void OnClose(net::WebSocket* websocket);
+  virtual void OnError(const net::WebSocket* websocket, int error);
 
   void SetContext(Context* context);
 
@@ -183,7 +181,6 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
   scoped_ptr<Context> context_;
   Result result_;
 
-  MessageLoop* message_loop_;
   ScopedRunnableMethodFactory<WebSocketExperimentTask> method_factory_;
   net::CompletionCallback* callback_;
   State next_state_;
@@ -192,6 +189,7 @@ class WebSocketExperimentTask : public URLFetcher::Delegate,
   base::TimeTicks url_fetch_start_time_;
 
   scoped_refptr<net::WebSocket> websocket_;
+  int last_websocket_error_;
   std::deque<std::string> received_messages_;
   std::string push_message_;
   base::TimeTicks websocket_connect_start_time_;

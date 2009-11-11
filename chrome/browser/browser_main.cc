@@ -39,6 +39,7 @@
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
+#include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
@@ -831,7 +832,9 @@ int BrowserMain(const MainFunctionParams& parameters) {
       if (enabled)
         metrics->Start();
     }
+    chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
   }
+
   InstallJankometer(parsed_command_line);
 
 #if defined(OS_WIN) && !defined(GOOGLE_CHROME_BUILD)
@@ -877,6 +880,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       RunUIMessageLoop(browser_process.get());
     }
   }
+  chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Stop();
 
   process_singleton.Cleanup();
 
