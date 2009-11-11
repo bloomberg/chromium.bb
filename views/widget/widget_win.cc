@@ -58,7 +58,10 @@ WidgetWin::WidgetWin()
 }
 
 WidgetWin::~WidgetWin() {
-  MessageLoopForUI::current()->RemoveObserver(this);
+  // If we're deleted directly, instead of via a WM_NCDESTROY, then clean up
+  // after ourselves.
+  delete_on_destroy_ = false;  // Prevent double free.
+  CloseNow();
 }
 
 // static
@@ -115,17 +118,12 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
   // Windows special DWM window frame requires a special tooltip manager so
   // that window controls in Chrome windows don't flicker when you move your
   // mouse over them. See comment in aero_tooltip_manager.h.
-  if (GetThemeProvider()->ShouldUseNativeFrame()) {
-    tooltip_manager_.reset(new AeroTooltipManager(this));
-  } else {
-    tooltip_manager_.reset(new TooltipManagerWin(this));
-  }
+  tooltip_manager_.reset(GetThemeProvider()->ShouldUseNativeFrame() ?
+      new AeroTooltipManager(this) : new TooltipManagerWin(this));
 
   // This message initializes the window so that focus border are shown for
   // windows.
-  SendMessage(hwnd(),
-              WM_CHANGEUISTATE,
-              MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
+  SendMessage(hwnd(), WM_CHANGEUISTATE, MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
               0);
 
   // Bug 964884: detach the IME attached to this window.
@@ -827,6 +825,7 @@ void WidgetWin::OnThemeChanged() {
 }
 
 void WidgetWin::OnFinalMessage(HWND window) {
+  MessageLoopForUI::current()->RemoveObserver(this);
   if (delete_on_destroy_)
     delete this;
 }
@@ -1120,7 +1119,7 @@ LRESULT WidgetWin::OnWndProc(UINT message, WPARAM w_param, LPARAM l_param) {
   if (!ProcessWindowMessage(window, message, w_param, l_param, result))
     result = DefWindowProc(window, message, w_param, l_param);
   if (message == WM_NCDESTROY)
-    OnFinalMessage(window);
+    OnFinalMessage(window);  // CAUTION: May reset members and/or delete |this|!
   if (message == WM_ACTIVATE)
     PostProcessActivateMessage(this, LOWORD(w_param));
   if (message == WM_ENABLE && restore_focus_when_enabled_) {

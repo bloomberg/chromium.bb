@@ -87,6 +87,10 @@ class WindowImpl : public MessageMapInterface {
   // If necessary, this registers the window class.
   std::wstring GetWindowClassName();
 
+  // Called when the HWND gets a WM_DESTROY message; should cause us to clean
+  // up any state.
+  void OnDestroy();
+
   // All classes registered by WidgetWin start with this name.
   static const wchar_t* const kBaseClassName;
 
