@@ -74,24 +74,6 @@ int g_current_y_offset = 0;
 
 }  // namespace
 
-WebPluginDelegateImpl* WebPluginDelegateImpl::Create(
-    const FilePath& filename,
-    const std::string& mime_type,
-    gfx::PluginWindowHandle containing_view) {
-  scoped_refptr<NPAPI::PluginLib> plugin =
-      NPAPI::PluginLib::CreatePluginLib(filename);
-  if (plugin.get() == NULL)
-    return NULL;
-
-  NPError err = plugin->NP_Initialize();
-  if (err != NPERR_NO_ERROR)
-    return NULL;
-
-  scoped_refptr<NPAPI::PluginInstance> instance =
-      plugin->CreateInstance(mime_type);
-  return new WebPluginDelegateImpl(containing_view, instance.get());
-}
-
 WebPluginDelegateImpl::WebPluginDelegateImpl(
     gfx::PluginWindowHandle containing_view,
     NPAPI::PluginInstance *instance)
@@ -104,6 +86,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       qd_world_(0),
       quirks_(0),
       null_event_factory_(this),
+      waiting_to_die_(false),
       last_mouse_x_(0),
       last_mouse_y_(0),
       handle_event_depth_(0),
@@ -113,6 +96,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 #ifndef NP_NO_QUICKDRAW
   memset(&qd_port_, 0, sizeof(qd_port_));
 #endif
+  instance->set_windowless(true);
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
@@ -122,42 +106,48 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
     DisposeGWorld(qd_world_);
   }
 #endif
-  FakePluginWindowTracker::SharedInstance()->RemoveFakeWindowForDelegate(
-      this, reinterpret_cast<WindowRef>(cg_context_.window));
-  DestroyInstance();
 }
 
 void WebPluginDelegateImpl::PluginDestroyed() {
-  delete this;
+  FakePluginWindowTracker::SharedInstance()->RemoveFakeWindowForDelegate(
+      this, reinterpret_cast<WindowRef>(cg_context_.window));
+
+  if (instance_->event_model() == NPEventModelCarbon) {
+    if (instance_->drawing_model() == NPDrawingModelQuickDraw) {
+      // Tell the plugin it should stop drawing into the GWorld (which will go
+      // away when the next idle event arrives).
+      window_.x = 0;
+      window_.y = 0;
+      window_.width = 0;
+      window_.height = 0;
+      window_.clipRect.top = 0;
+      window_.clipRect.left = 0;
+      window_.clipRect.bottom = 0;
+      window_.clipRect.right = 0;
+      instance()->NPP_SetWindow(&window_);
+      QDFlushPortBuffer(qd_port_.port, NULL);
+    }
+    DestroyInstance();
+    // We have an idle event queued up to call us back in a few ms, so don't
+    // actually delete this until it arrives.  Set |waiting_to_die_| so that
+    // OnNullEvent knows to delete this rather than call into the now-destroyed
+    // plugin.
+    waiting_to_die_ = true;
+  } else {
+    DestroyInstance();
+    delete this;
+  }
 }
 
-bool WebPluginDelegateImpl::Initialize(const GURL& url,
-                                       const std::vector<std::string>& arg_names,
-                                       const std::vector<std::string>& arg_values,
-                                       WebPlugin* plugin,
-                                       bool load_manually) {
-  plugin_ = plugin;
+void WebPluginDelegateImpl::PlatformInitialize() {
+  // Don't set a NULL window handle on destroy for Mac plugins.  This matches
+  // Safari and other Mac browsers (see PluginView::stop() in PluginView.cpp,
+  // where code to do so is surrounded by an #ifdef that excludes Mac OS X, or
+  // destroyPlugin in WebNetscapePluginView.mm, for examples).
+  quirks_ |= PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY;
 
-  instance_->set_web_plugin(plugin);
-
-  int argc = 0;
-  scoped_array<char*> argn(new char*[arg_names.size()]);
-  scoped_array<char*> argv(new char*[arg_names.size()]);
-  for (size_t i = 0; i < arg_names.size(); ++i) {
-    if (quirks_ & PLUGIN_QUIRK_NO_WINDOWLESS &&
-        LowerCaseEqualsASCII(arg_names[i], "windowlessvideo")) {
-      continue;
-    }
-    argn[argc] = const_cast<char*>(arg_names[i].c_str());
-    argv[argc] = const_cast<char*>(arg_values[i].c_str());
-    argc++;
-  }
-
-  bool start_result = instance_->Start(
-      url, argn.get(), argv.get(), argc, load_manually);
-  if (!start_result)
-    return false;
-
+  // Create a stand-in for the browser window so that the plugin will have
+  // a non-NULL WindowRef to which it can refer.
   FakePluginWindowTracker* window_tracker =
       FakePluginWindowTracker::SharedInstance();
   cg_context_.window = window_tracker->GenerateFakeWindowForDelegate(this);
@@ -182,44 +172,17 @@ bool WebPluginDelegateImpl::Initialize(const GURL& url,
       break;
   }
 
-  plugin->SetWindow(NULL);
-  plugin_url_ = url.spec();
-
   // If the plugin wants Carbon events, fire up a source of idle events.
   if (instance_->event_model() == NPEventModelCarbon) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         null_event_factory_.NewRunnableMethod(
             &WebPluginDelegateImpl::OnNullEvent), kPluginIdleThrottleDelayMs);
   }
-  return true;
-}
-
-void WebPluginDelegateImpl::DestroyInstance() {
-  if (instance_ && (instance_->npp()->ndata != NULL)) {
-    // Shutdown all streams before destroying so that
-    // no streams are left "in progress".  Need to do
-    // this before calling set_web_plugin(NULL) because the
-    // instance uses the helper to do the download.
-    instance_->CloseStreams();
-    instance_->NPP_Destroy();
-    instance_->set_web_plugin(NULL);
-    instance_ = 0;
-  }
-}
-
-void WebPluginDelegateImpl::PlatformInitialize() {
-  // TODO(port): implement these after unforking.
+  plugin_->SetWindow(NULL);
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
   // TODO(port): implement these after unforking.
-}
-
-void WebPluginDelegateImpl::UpdateGeometry(
-    const gfx::Rect& window_rect,
-    const gfx::Rect& clip_rect) {
-  DCHECK(windowless_);
-  WindowlessUpdateGeometry(window_rect, clip_rect);
 }
 
 void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
@@ -272,52 +235,27 @@ void WebPluginDelegateImpl::Print(CGContextRef context) {
   // in .01 mm units.
 }
 
-NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
-  return instance_->GetPluginScriptableObject();
-}
-
-void WebPluginDelegateImpl::DidFinishLoadWithReason(
-    const GURL& url, NPReason reason, intptr_t notify_data) {
-  instance()->DidFinishLoadWithReason(
-      url, reason, reinterpret_cast<void*>(notify_data));
-}
-
-int WebPluginDelegateImpl::GetProcessId() {
-  // We are in process, so the plugin pid is this current process pid.
-  return getpid();
-}
-
-void WebPluginDelegateImpl::SendJavaScriptStream(const GURL& url,
-                                                 const std::string& result,
-                                                 bool success,
-                                                 bool notify_needed,
-                                                 intptr_t notify_data) {
-  instance()->SendJavaScriptStream(url, result, success, notify_needed,
-                                   notify_data);
-}
-
-void WebPluginDelegateImpl::DidReceiveManualResponse(
-    const GURL& url, const std::string& mime_type,
-    const std::string& headers, uint32 expected_length, uint32 last_modified) {
-  instance()->DidReceiveManualResponse(url, mime_type, headers,
-                                       expected_length, last_modified);
-}
-
-void WebPluginDelegateImpl::DidReceiveManualData(const char* buffer,
-                                                 int length) {
-  instance()->DidReceiveManualData(buffer, length);
-}
-
-void WebPluginDelegateImpl::DidFinishManualLoading() {
-  instance()->DidFinishManualLoading();
-}
-
-void WebPluginDelegateImpl::DidManualLoadFail() {
-  instance()->DidManualLoadFail();
-}
-
 void WebPluginDelegateImpl::InstallMissingPlugin() {
   NOTIMPLEMENTED();
+}
+
+bool WebPluginDelegateImpl::WindowedCreatePlugin() {
+  NOTREACHED();
+  return false;
+}
+
+void WebPluginDelegateImpl::WindowedDestroyWindow() {
+  NOTREACHED();
+}
+
+bool WebPluginDelegateImpl::WindowedReposition(const gfx::Rect& window_rect,
+                                               const gfx::Rect& clip_rect) {
+  NOTREACHED();
+  return false;
+}
+
+void WebPluginDelegateImpl::WindowedSetWindow() {
+  NOTREACHED();
 }
 
 void WebPluginDelegateImpl::WindowlessUpdateGeometry(
@@ -787,28 +725,14 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   return ret;
 }
 
-WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
-    int resource_id, const GURL& url, bool notify_needed,
-    intptr_t notify_data, intptr_t existing_stream) {
-  // Stream already exists. This typically happens for range requests
-  // initiated via NPN_RequestRead.
-  if (existing_stream) {
-    NPAPI::PluginStream* plugin_stream =
-        reinterpret_cast<NPAPI::PluginStream*>(existing_stream);
-
-    plugin_stream->CancelRequest();
-
-    return plugin_stream->AsResourceClient();
-  }
-
-  std::string mime_type;
-  NPAPI::PluginStreamUrl *stream = instance()->CreateStream(
-      resource_id, url, mime_type, notify_needed,
-      reinterpret_cast<void*>(notify_data));
-  return stream;
-}
-
 void WebPluginDelegateImpl::OnNullEvent() {
+  if (waiting_to_die_) {
+    // if |waiting_to_die_| is set, it means that the plugin has been destroyed,
+    // and the WebPluginDelegateImpl object was just waiting for this callback
+    // to arrive.  Delete this and return to the message loop.
+    delete this;
+    return;
+  }
 #ifndef NP_NO_CARBON
   if (!webkit_glue::IsPluginRunningInRendererProcess()) {
     switch (instance_->event_model()) {
