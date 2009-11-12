@@ -6,8 +6,8 @@
 #define WEBKIT_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_
 
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebApplicationCacheHostClient.h"
-#include "webkit/api/public/WebURLResponse.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebApplicationCacheHostClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
 namespace appcache {

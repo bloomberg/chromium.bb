@@ -18,7 +18,7 @@
 #include "base/string_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
-#include "webkit/api/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/pepper/pepper.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"

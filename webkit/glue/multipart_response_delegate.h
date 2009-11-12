@@ -51,7 +51,7 @@
 
 #include <string>
 
-#include "webkit/api/public/WebURLResponse.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 
 namespace WebKit {
 class WebURLLoader;

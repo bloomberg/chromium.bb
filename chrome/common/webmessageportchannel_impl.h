@@ -13,7 +13,7 @@
 #include "base/string16.h"
 #include "base/ref_counted.h"
 #include "ipc/ipc_channel.h"
-#include "webkit/api/public/WebMessagePortChannel.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMessagePortChannel.h"
 
 // This is thread safe.
 class WebMessagePortChannelImpl

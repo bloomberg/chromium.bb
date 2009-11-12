@@ -22,8 +22,8 @@
 #include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
 
-#include "webkit/api/public/WebScreenInfo.h"
-#include "webkit/api/public/x11/WebScreenInfoFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/x11/WebScreenInfoFactory.h"
 
 using WebKit::WebScreenInfo;
 using WebKit::WebScreenInfoFactory;

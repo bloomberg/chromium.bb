@@ -4,12 +4,12 @@
 
 #include "webkit/glue/webaccessibility.h"
 
-#include "webkit/api/public/WebAccessibilityCache.h"
-#include "webkit/api/public/WebAccessibilityObject.h"
-#include "webkit/api/public/WebAccessibilityRole.h"
-#include "webkit/api/public/WebPoint.h"
-#include "webkit/api/public/WebRect.h"
-#include "webkit/api/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityRole.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebAccessibilityCache;
 using WebKit::WebAccessibilityRole;

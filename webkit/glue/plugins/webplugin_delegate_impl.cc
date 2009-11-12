@@ -13,7 +13,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
-#include "webkit/api/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"

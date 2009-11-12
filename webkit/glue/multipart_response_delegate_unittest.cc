@@ -5,10 +5,10 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebURLLoaderClient.h"
-#include "webkit/api/public/WebURLResponse.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"

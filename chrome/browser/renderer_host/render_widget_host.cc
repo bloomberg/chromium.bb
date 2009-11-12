@@ -22,8 +22,8 @@
 #endif
 
 #if defined (OS_MACOSX)
-#include "webkit/api/public/WebScreenInfo.h"
-#include "webkit/api/public/mac/WebScreenInfoFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/mac/WebScreenInfoFactory.h"
 #endif
 
 using base::Time;

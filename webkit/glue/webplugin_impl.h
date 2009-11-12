@@ -15,11 +15,11 @@
 #include "base/task.h"
 #include "base/weak_ptr.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebPlugin.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURLLoaderClient.h"
-#include "webkit/api/public/WebURLRequest.h"
-#include "webkit/api/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPlugin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/webplugin.h"
 
 class WebViewDelegate;

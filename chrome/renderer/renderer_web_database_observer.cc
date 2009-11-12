@@ -5,7 +5,7 @@
 #include "chrome/renderer/renderer_web_database_observer.h"
 
 #include "chrome/common/render_messages.h"
-#include "webkit/api/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 
 RendererWebDatabaseObserver::RendererWebDatabaseObserver(
     IPC::Message::Sender* sender)

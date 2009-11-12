@@ -15,12 +15,12 @@
 #include "chrome/renderer/render_process.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkShader.h"
-#include "webkit/api/public/WebCursorInfo.h"
-#include "webkit/api/public/WebPopupMenu.h"
-#include "webkit/api/public/WebPopupMenuInfo.h"
-#include "webkit/api/public/WebRect.h"
-#include "webkit/api/public/WebScreenInfo.h"
-#include "webkit/api/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenu.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_POSIX)
@@ -28,7 +28,7 @@
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
 #endif  // defined(OS_POSIX)
 
-#include "webkit/api/public/WebWidget.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWidget.h"
 
 using WebKit::WebCompositionCommand;
 using WebKit::WebCursorInfo;

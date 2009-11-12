@@ -12,7 +12,7 @@
 #include "base/string16.h"
 #include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
-#include "webkit/api/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/window_open_disposition.h"
 
 struct ContextMenuParams;

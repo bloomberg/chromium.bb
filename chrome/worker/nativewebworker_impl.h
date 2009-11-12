@@ -6,8 +6,8 @@
 #define CHROME_WORKER_NATIVEWORKER_H_
 
 #include "base/basictypes.h"
-#include "webkit/api/public/WebWorker.h"
-#include "webkit/api/public/WebWorkerClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWorker.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWorkerClient.h"
 
 
 // Forward declaration for the listener thread pointer.

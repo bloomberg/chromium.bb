@@ -5,10 +5,10 @@
 #include "webkit/tools/test_shell/text_input_controller.h"
 
 #include "base/string_util.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebRange.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebFrame;

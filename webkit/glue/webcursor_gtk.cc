@@ -7,7 +7,7 @@
 #include <gdk/gdk.h>
 
 #include "base/logging.h"
-#include "webkit/api/public/WebCursorInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 
 using WebKit::WebCursorInfo;
 

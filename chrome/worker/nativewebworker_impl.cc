@@ -11,10 +11,10 @@
 #include "base/logging.h"
 #include "webkit/glue/glue_util.h"
 #include "base/thread.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebKitClient.h"
-#include "webkit/api/public/WebWorkerClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWorkerClient.h"
 
 // TODO(sehr): This will be changed to point to the real NaCl headers once
 // the builds are integrated.

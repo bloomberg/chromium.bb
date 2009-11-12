@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/task.h"
 #include "ipc/ipc_channel.h"
-#include "webkit/api/public/WebWorkerClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWorkerClient.h"
 
 namespace WebKit {
 class WebWorker;

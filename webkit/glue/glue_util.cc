@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 // TODO(darin): This file will be deleted once we complete the move to
-// webkit/api
+// third_party/WebKit/WebKit/chromium
 
 // In this file, we pretend to be part of the WebKit implementation.
 // This is just a temporary hack while glue is still being moved into
-// webkit/api.
+// third_party/WebKit/WebKit/chromium.
 #define WEBKIT_IMPLEMENTATION 1
 
 #include "config.h"
@@ -36,22 +36,22 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebAccessibilityObject.h"
-#include "webkit/api/public/WebCursorInfo.h"
-#include "webkit/api/public/WebDragData.h"
-#include "webkit/api/public/WebFormElement.h"
-#include "webkit/api/public/WebHistoryItem.h"
-#include "webkit/api/public/WebNode.h"
-#include "webkit/api/public/WebPoint.h"
-#include "webkit/api/public/WebRange.h"
-#include "webkit/api/public/WebRect.h"
-#include "webkit/api/public/WebSecurityOrigin.h"
-#include "webkit/api/public/WebSize.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebURLError.h"
-#include "webkit/api/public/WebURLRequest.h"
-#include "webkit/api/public/WebURLResponse.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 
 namespace webkit_glue {
 

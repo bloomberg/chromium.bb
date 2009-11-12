@@ -15,10 +15,10 @@
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
-#include "webkit/api/public/WebFormElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "webkit/glue/form_field_values.h"
 // Can include from api/src because this file will eventually be there too.
-#include "webkit/api/src/DOMUtilitiesPrivate.h"
+#include "third_party/WebKit/WebKit/chromium/src/DOMUtilitiesPrivate.h"
 #include "webkit/glue/glue_util.h"
 
 using WebKit::WebFormElement;

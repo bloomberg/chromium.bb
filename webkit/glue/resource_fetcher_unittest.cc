@@ -6,9 +6,9 @@
 #include <gtk/gtk.h>
 #endif
 
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebURLResponse.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/unittest_test_server.h"
 #include "webkit/glue/resource_fetcher.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"

@@ -11,7 +11,7 @@
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 
-#include "webkit/api/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 #include "webkit/glue/glue_util.h"

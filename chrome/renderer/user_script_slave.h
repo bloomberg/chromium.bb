@@ -14,7 +14,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_piece.h"
 #include "chrome/common/extensions/user_script.h"
-#include "webkit/api/public/WebScriptSource.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
 
 namespace WebKit {
 class WebFrame;

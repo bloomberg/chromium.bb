@@ -28,7 +28,7 @@
 #include "chrome/plugin/plugin_thread.h"
 #include "chrome/plugin/webplugin_delegate_stub.h"
 #include "skia/ext/platform_device.h"
-#include "webkit/api/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
 using WebKit::WebBindings;

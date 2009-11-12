@@ -14,9 +14,9 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "grit/renderer_resources.h"
-#include "webkit/api/public/WebDataSource.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 
 using bindings_utils::CallFunctionInContext;
 using bindings_utils::ContextInfo;

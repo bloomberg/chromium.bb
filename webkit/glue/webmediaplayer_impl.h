@@ -63,8 +63,8 @@
 #include "media/base/filters.h"
 #include "media/base/pipeline_impl.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/api/public/WebMediaPlayer.h"
-#include "webkit/api/public/WebMediaPlayerClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayer.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerClient.h"
 
 class GURL;
 

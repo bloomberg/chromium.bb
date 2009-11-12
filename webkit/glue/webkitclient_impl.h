@@ -7,7 +7,7 @@
 
 #include "base/platform_file.h"
 #include "base/timer.h"
-#include "webkit/api/public/WebKitClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #if defined(OS_WIN)
 #include "webkit/glue/webthemeengine_impl_win.h"
 #endif

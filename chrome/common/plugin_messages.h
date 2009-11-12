@@ -21,8 +21,8 @@
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "webkit/api/public/WebBindings.h"
-#include "webkit/api/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/npruntime_util.h"
 
 // Name prefix of the event handle when a message box is displayed.

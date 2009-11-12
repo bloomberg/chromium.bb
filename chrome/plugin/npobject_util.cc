@@ -8,7 +8,7 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/npobject_proxy.h"
 #include "chrome/plugin/plugin_channel_base.h"
-#include "webkit/api/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/plugins/nphostapi.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/webkit_glue.h"

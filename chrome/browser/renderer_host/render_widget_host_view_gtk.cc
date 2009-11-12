@@ -31,7 +31,7 @@
 #include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
 #include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
-#include "webkit/api/public/gtk/WebInputEventFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 #include "webkit/glue/webcursor_gtk_data.h"
 
 static const int kMaxWindowWidth = 4000;

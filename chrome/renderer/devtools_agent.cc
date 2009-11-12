@@ -7,9 +7,9 @@
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_view.h"
-#include "webkit/api/public/WebDevToolsAgent.h"
-#include "webkit/api/public/WebPoint.h"
-#include "webkit/api/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/glue_util.h"
 
 using WebKit::WebDevToolsAgent;

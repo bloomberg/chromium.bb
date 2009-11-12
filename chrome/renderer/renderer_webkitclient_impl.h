@@ -12,12 +12,12 @@
 #include "webkit/glue/webkitclient_impl.h"
 
 #if defined(OS_WIN)
-#include "webkit/api/public/win/WebSandboxSupport.h"
+#include "third_party/WebKit/WebKit/chromium/public/win/WebSandboxSupport.h"
 #elif defined(OS_LINUX)
 #include <string>
 #include <map>
 #include "base/lock.h"
-#include "webkit/api/public/linux/WebSandboxSupport.h"
+#include "third_party/WebKit/WebKit/chromium/public/linux/WebSandboxSupport.h"
 #endif
 
 class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {

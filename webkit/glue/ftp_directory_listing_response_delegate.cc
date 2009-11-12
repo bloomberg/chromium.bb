@@ -17,8 +17,8 @@
 #include "net/ftp/ftp_directory_listing_parsers.h"
 #include "net/ftp/ftp_server_type_histograms.h"
 #include "unicode/ucsdet.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 
 using WebKit::WebURLLoader;
 using WebKit::WebURLLoaderClient;

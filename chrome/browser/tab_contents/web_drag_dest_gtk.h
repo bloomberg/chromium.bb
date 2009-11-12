@@ -9,7 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "webkit/api/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/webdropdata.h"
 
 class TabContents;

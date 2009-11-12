@@ -19,7 +19,7 @@
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/api/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
 // Mock implementation of Javascript object proxy which logs events that
 // would have been fired on it.

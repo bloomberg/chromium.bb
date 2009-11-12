@@ -6,7 +6,7 @@
 #define WEBKIT_GLUE_WEBSOCKETSTREAMHANDLE_IMPL_H_
 
 #include "base/ref_counted.h"
-#include "webkit/api/public/WebSocketStreamHandle.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSocketStreamHandle.h"
 
 namespace webkit_glue {
 

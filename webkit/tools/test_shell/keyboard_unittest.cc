@@ -16,9 +16,9 @@ MSVC_POP_WARNING();
 
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/api/public/WebInputEvent.h"
-#include "webkit/api/src/EditorClientImpl.h"
-#include "webkit/api/src/WebInputEventConversion.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/src/EditorClientImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebInputEventConversion.h"
 
 using WebCore::PlatformKeyboardEvent;
 using WebCore::KeyboardEvent;

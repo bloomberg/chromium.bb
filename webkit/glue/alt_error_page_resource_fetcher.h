@@ -8,7 +8,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebURLError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 
 namespace WebKit {
 class WebFrame;

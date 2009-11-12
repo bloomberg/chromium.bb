@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "webkit/api/public/WebDevToolsFrontendClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsFrontendClient.h"
 
 namespace IPC {
 class Message;

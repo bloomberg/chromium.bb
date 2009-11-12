@@ -10,7 +10,7 @@
 #include "chrome/worker/webworker_stub.h"
 #include "chrome/worker/websharedworker_stub.h"
 #include "chrome/worker/worker_webkitclient_impl.h"
-#include "webkit/api/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 
 static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls(
     base::LINKER_INITIALIZED);

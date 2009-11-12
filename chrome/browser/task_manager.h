@@ -21,7 +21,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "net/url_request/url_request_job_tracker.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "webkit/api/public/WebCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
 class Extension;
 class SkBitmap;

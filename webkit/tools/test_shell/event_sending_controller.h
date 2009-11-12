@@ -19,8 +19,8 @@
 #include "build/build_config.h"
 #include "base/gfx/point.h"
 #include "base/task.h"
-#include "webkit/api/public/WebDragOperation.h"
-#include "webkit/api/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/cpp_bound_class.h"
 
 class TestShell;

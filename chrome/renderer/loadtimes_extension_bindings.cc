@@ -8,7 +8,7 @@
 
 #include "base/time.h"
 #include "chrome/renderer/navigation_state.h"
-#include "webkit/api/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "v8/include/v8.h"
 
 using WebKit::WebDataSource;

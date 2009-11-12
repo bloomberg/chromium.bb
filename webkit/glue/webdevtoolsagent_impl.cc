@@ -24,14 +24,14 @@
 #include <wtf/OwnPtr.h>
 #undef LOG
 
-#include "webkit/api/public/WebDataSource.h"
-#include "webkit/api/public/WebDevToolsAgentClient.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebURLRequest.h"
-#include "webkit/api/src/WebFrameImpl.h"
-#include "webkit/api/src/WebViewImpl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"

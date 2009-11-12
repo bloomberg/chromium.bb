@@ -7,9 +7,9 @@
 #include "webkit/tools/test_shell/plain_text_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
-#include "webkit/api/public/WebBindings.h"
-#include "webkit/api/public/WebRange.h"
-#include "webkit/api/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebBindings;
 using WebKit::WebRange;

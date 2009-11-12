@@ -4,9 +4,9 @@
 
 #include "webkit/glue/image_decoder.h"
 
-#include "webkit/api/public/WebData.h"
-#include "webkit/api/public/WebImage.h"
-#include "webkit/api/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 #if WEBKIT_USING_CG

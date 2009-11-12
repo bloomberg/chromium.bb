@@ -9,8 +9,8 @@
 #include "base/time.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
-#include "webkit/api/public/WebDataSource.h"
-#include "webkit/api/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 #include "webkit/glue/password_form.h"
 

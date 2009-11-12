@@ -38,14 +38,14 @@
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/api/public/WebHistoryItem.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #if defined(OS_WIN)
-#include "webkit/api/public/win/WebInputEventFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"
 #endif
-#include "webkit/api/src/WebFrameImpl.h"
-#include "webkit/api/src/WebViewImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/glue_util.h"
 

@@ -11,11 +11,11 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/units.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebRect.h"
-#include "webkit/api/public/WebScreenInfo.h"
-#include "webkit/api/public/WebSize.h"
-#include "webkit/api/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebScreenInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebFrame;

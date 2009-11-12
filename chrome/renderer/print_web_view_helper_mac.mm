@@ -14,9 +14,9 @@
 #include "chrome/renderer/render_view.h"
 #include "grit/generated_resources.h"
 #include "printing/native_metafile.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebCanvas.h"
-#include "webkit/api/public/WebConsoleMessage.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebConsoleMessage.h"
 
 using WebKit::WebFrame;
 using WebKit::WebCanvas;

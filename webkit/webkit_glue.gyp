@@ -135,7 +135,7 @@
       'msvs_guid': '0B945915-31A7-4A07-A5B5-568D737A39B1',
       'dependencies': [
         '../net/net.gyp:net',
-        'api/WebKit.gyp:webkit',
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         # This list contains all .h and .cc in appcache except for test code.
@@ -204,7 +204,7 @@
         '../net/net.gyp:net',
         'inspector_resources',
         '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-        'api/WebKit.gyp:webkit',
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
         'webkit_resources',
         'webkit_strings',
       ],

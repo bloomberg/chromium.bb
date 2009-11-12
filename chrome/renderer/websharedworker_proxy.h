@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "chrome/renderer/webworker_base.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebSharedWorker.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSharedWorker.h"
 
 class ChildThread;
 

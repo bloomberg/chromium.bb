@@ -4,8 +4,8 @@
 
 #include "webkit/tools/test_shell/drag_delegate.h"
 
-#include "webkit/api/public/WebPoint.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
 using WebKit::WebPoint;
 using WebKit::WebView;

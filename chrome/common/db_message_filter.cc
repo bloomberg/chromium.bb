@@ -6,7 +6,7 @@
 
 #include "chrome/common/child_process.h"
 #include "chrome/common/render_messages.h"
-#include "webkit/api/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 
 DBMessageFilter* DBMessageFilter::instance_ = NULL;
 

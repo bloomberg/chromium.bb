@@ -9,7 +9,7 @@
 #include "base/hash_tables.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/dom_storage_type.h"
-#include "webkit/api/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 class DOMStorageContext;
 class FilePath;

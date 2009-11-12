@@ -21,7 +21,7 @@
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/api/public/WebMediaPlayer.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayer.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 
 namespace webkit_glue {

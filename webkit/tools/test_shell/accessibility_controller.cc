@@ -7,10 +7,10 @@
 #include "webkit/tools/test_shell/accessibility_controller.h"
 
 #include "base/logging.h"
-#include "webkit/api/public/WebAccessibilityCache.h"
-#include "webkit/api/public/WebAccessibilityObject.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 using WebKit::WebAccessibilityCache;

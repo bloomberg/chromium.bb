@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/worker/worker_thread.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 using WebKit::WebClipboard;
 using WebKit::WebMessagePortChannel;

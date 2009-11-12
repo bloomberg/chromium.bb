@@ -28,7 +28,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_channel_proxy.h"
-#include "webkit/api/public/WebCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
 class AppCacheDispatcherHost;
 class AudioRendererHost;

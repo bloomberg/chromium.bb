@@ -10,8 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "webkit/api/public/WebInputElement.h"
-#include "webkit/api/public/WebPasswordAutocompleteListener.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPasswordAutocompleteListener.h"
 #include "webkit/glue/password_form_dom_manager.h"
 
 using WebKit::WebInputElement;

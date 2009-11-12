@@ -6,9 +6,9 @@
 
 #include "base/logging.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
-#include "webkit/api/public/WebData.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 WebKit::WebClipboard* BrowserWebKitClientImpl::clipboard() {
   NOTREACHED();

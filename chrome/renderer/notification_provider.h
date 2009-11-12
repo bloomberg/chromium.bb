@@ -9,8 +9,8 @@
 
 #include "chrome/common/desktop_notifications/active_notification_tracker.h"
 #include "ipc/ipc_channel.h"
-#include "webkit/api/public/WebNotification.h"
-#include "webkit/api/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNotification.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
 class RenderView;
 namespace WebKit {

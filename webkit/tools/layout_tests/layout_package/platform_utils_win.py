@@ -136,7 +136,7 @@ def KillAllTestShells(self):
 def _FindBinary(target, binary):
   """On Windows, we look for binaries that we compile in potentially
   two places: src/webkit/$target (preferably, which we get if we
-  built using webkit.gyp), or src/chrome/$target (if compiled some other
+  built using webkit_glue.gyp), or src/chrome/$target (if compiled some other
   way)."""
   try:
     return path_utils.PathFromBase('webkit', target, binary)

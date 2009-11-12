@@ -19,7 +19,7 @@
 #include "chrome/common/transport_dib.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/notification_registrar.h"
-#include "webkit/api/public/WebCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
 class AudioRendererHost;
 class CommandLine;

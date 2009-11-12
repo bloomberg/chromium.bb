@@ -5,7 +5,7 @@
 #include "webkit/glue/npruntime_util.h"
 
 #include "base/pickle.h"
-#include "webkit/api/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 
 using WebKit::WebBindings;
 

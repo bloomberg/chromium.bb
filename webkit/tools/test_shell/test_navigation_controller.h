@@ -12,7 +12,7 @@
 #include "base/linked_ptr.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebDataSource.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 
 class GURL;
 class TestShell;

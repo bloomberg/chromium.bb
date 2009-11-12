@@ -7,9 +7,9 @@
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/string_util.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebURLRequest.h"
-#include "webkit/api/public/WebURLResponse.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;

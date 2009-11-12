@@ -10,7 +10,7 @@
 #include <wtf/OwnPtr.h>
 
 #include "v8.h"
-#include "webkit/api/src/WebDevToolsAgentPrivate.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebDevToolsAgentPrivate.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 #include "webkit/glue/devtools/apu_agent_delegate.h"
 #include "webkit/glue/devtools/tools_agent.h"

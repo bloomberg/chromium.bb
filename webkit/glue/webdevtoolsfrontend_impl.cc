@@ -24,11 +24,11 @@
 #include <wtf/Vector.h>
 #undef LOG
 
-#include "webkit/api/public/WebDevToolsFrontendClient.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebScriptSource.h"
-#include "webkit/api/src/WebFrameImpl.h"
-#include "webkit/api/src/WebViewImpl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsFrontendClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebScriptSource.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent.h"
 #include "webkit/glue/devtools/devtools_rpc_js.h"

@@ -18,7 +18,7 @@
 #include "chrome/common/property_bag.h"
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "webkit/api/public/WebTextDirection.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 
 namespace gfx {
 class Rect;

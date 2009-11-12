@@ -6,9 +6,9 @@
 
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/common/worker_messages.h"
-#include "webkit/api/public/WebSharedWorker.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSharedWorker.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 WebSharedWorkerStub::WebSharedWorkerStub(
     const string16& name, int route_id)

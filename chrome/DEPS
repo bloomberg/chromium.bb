@@ -16,7 +16,7 @@ include_rules = [
   "-tools",
 
   # Allow inclusion of WebKit API files.
-  "+webkit/api",
+  "+third_party/WebKit/WebKit/chromium",
 
   # Allow inclusion of the appcache library.
   "+webkit/appcache",

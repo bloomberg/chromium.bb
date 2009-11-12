@@ -25,10 +25,10 @@
 #include "grit/renderer_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebKit.h"
-#include "webkit/api/public/WebSecurityPolicy.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityPolicy.h"
 
 using bindings_utils::GetStringResource;
 using bindings_utils::ContextInfo;

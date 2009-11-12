@@ -7,7 +7,7 @@
 #include "app/gfx/native_theme_win.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
-#include "webkit/api/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebColor;

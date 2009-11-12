@@ -27,7 +27,7 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "webkit/api/public/gtk/WebInputEventFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/gtk/WebInputEventFactory.h"
 
 namespace {
 

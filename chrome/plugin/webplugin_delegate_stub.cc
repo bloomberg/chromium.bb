@@ -18,8 +18,8 @@
 #include "third_party/npapi/bindings/npapi.h"
 #include "third_party/npapi/bindings/npruntime.h"
 #include "skia/ext/platform_device.h"
-#include "webkit/api/public/WebBindings.h"
-#include "webkit/api/public/WebCursorInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 #include "webkit/glue/webcursor.h"
 

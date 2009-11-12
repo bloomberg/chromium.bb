@@ -10,9 +10,9 @@
 #include <wtf/HashSet.h>
 #undef LOG
 
-#include "webkit/api/public/WebDevToolsAgent.h"
-#include "webkit/api/src/WebFrameImpl.h"
-#include "webkit/api/src/WebViewImpl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"

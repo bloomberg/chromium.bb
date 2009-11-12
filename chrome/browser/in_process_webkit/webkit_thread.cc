@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/in_process_webkit/browser_webkitclient_impl.h"
 #include "chrome/common/chrome_switches.h"
-#include "webkit/api/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 
 // This happens on the UI thread before the IO thread has been shut down.
 WebKitThread::WebKitThread() {

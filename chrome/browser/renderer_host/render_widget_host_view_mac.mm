@@ -18,8 +18,8 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/render_messages.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/api/public/mac/WebInputEventFactory.h"
-#include "webkit/api/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/webmenurunner_mac.h"
 
 using WebKit::WebInputEvent;

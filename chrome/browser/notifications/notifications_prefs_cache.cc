@@ -8,7 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/pref_service.h"
-#include "webkit/api/public/WebNotificationPresenter.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
 NotificationsPrefsCache::NotificationsPrefsCache(
     const ListValue* allowed, const ListValue* denied) {

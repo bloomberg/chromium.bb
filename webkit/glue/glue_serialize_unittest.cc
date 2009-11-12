@@ -7,9 +7,9 @@
 #include "base/pickle.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/api/public/WebHTTPBody.h"
-#include "webkit/api/public/WebPoint.h"
-#include "webkit/api/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebHTTPBody.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/glue/glue_serialize.h"
 
 using WebKit::WebData;

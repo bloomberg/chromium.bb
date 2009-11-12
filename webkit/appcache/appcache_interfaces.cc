@@ -6,7 +6,7 @@
 
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
-#include "webkit/api/public/WebApplicationCacheHost.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebApplicationCacheHost.h"
 
 using WebKit::WebApplicationCacheHost;
 

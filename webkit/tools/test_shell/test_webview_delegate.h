@@ -24,13 +24,13 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/weak_ptr.h"
-#include "webkit/api/public/WebContextMenuData.h"
-#include "webkit/api/public/WebFrameClient.h"
-#include "webkit/api/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrameClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
 #if defined(OS_MACOSX)
-#include "webkit/api/public/WebPopupMenuInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
 #endif
-#include "webkit/api/public/WebViewClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_page_delegate.h"
 #if defined(OS_WIN)

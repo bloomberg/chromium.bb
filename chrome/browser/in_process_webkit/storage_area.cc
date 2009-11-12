@@ -6,9 +6,9 @@
 
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/in_process_webkit/storage_namespace.h"
-#include "webkit/api/public/WebStorageArea.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 using WebKit::WebStorageArea;
 using WebKit::WebURL;

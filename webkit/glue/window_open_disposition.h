@@ -5,7 +5,7 @@
 #ifndef WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
 #define WEBKIT_GLUE_WINDOW_OPEN_DISPOSITION_H_
 
-#include "webkit/api/public/WebNavigationPolicy.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNavigationPolicy.h"
 
 enum WindowOpenDisposition {
   SUPPRESS_OPEN,

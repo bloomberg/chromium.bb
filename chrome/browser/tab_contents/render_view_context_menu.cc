@@ -33,8 +33,8 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
-#include "webkit/api/public/WebMediaPlayerAction.h"
-#include "webkit/api/public/WebContextMenuData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;

@@ -31,7 +31,7 @@
       'profile_import',
       'worker',
       '../printing/printing.gyp:printing',
-      '../webkit/webkit.gyp:inspector_resources',
+      '../webkit/webkit_glue.gyp:inspector_resources',
     ],
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
@@ -524,8 +524,8 @@
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../webkit/webkit.gyp:appcache',
-        '../webkit/webkit.gyp:glue',
+        '../webkit/webkit_glue.gyp:appcache',
+        '../webkit/webkit_glue.gyp:glue',
       ],
       'include_dirs': [
         '..',
@@ -791,8 +791,8 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/hunspell/hunspell.gyp:hunspell',
-        '../webkit/webkit.gyp:database',
-        '../webkit/webkit.gyp:glue',
+        '../webkit/webkit_glue.gyp:database',
+        '../webkit/webkit_glue.gyp:glue',
       ],
       'include_dirs': [
         '..',
@@ -3173,7 +3173,7 @@
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/hunspell/hunspell.gyp:hunspell',
-        '../webkit/webkit.gyp:glue',
+        '../webkit/webkit_glue.gyp:glue',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -3225,7 +3225,7 @@
         'chrome_resources',
         'chrome_strings',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../webkit/webkit.gyp:glue',
+        '../webkit/webkit_glue.gyp:glue',
         '../native_client/src/trusted/plugin/plugin.gyp:npGoogleNaClPluginChrome',
         '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel',
         '../native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
@@ -3276,9 +3276,11 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
+        # TODO(yaar): Should only stop depending on webcore and depend 
+        # only on webkit.
         '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-        '../webkit/webkit.gyp:glue',
-        '../webkit/api/WebKit.gyp:webkit',
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '../webkit/webkit_glue.gyp:glue',
       ],
       'include_dirs': [
         '..',
@@ -3474,7 +3476,7 @@
       'msvs_guid': 'C78D02D0-A366-4EC6-A248-AA8E64C4BA18',
       'dependencies': [
         '../base/base.gyp:base',
-        '../webkit/api/WebKit.gyp:webkit',
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'sources': [
         'worker/nativewebworker_impl.cc',
@@ -4475,8 +4477,7 @@
         '../net/net.gyp:net_resources',
         '../net/net.gyp:net_test_support',
         '../printing/printing.gyp:printing',
-        '../webkit/api/WebKit.gyp:webkit',
-        '../webkit/webkit.gyp:webkit_resources',
+        '../webkit/webkit_glue.gyp:webkit_resources',
         '../skia/skia.gyp:skia',
         '../testing/gmock.gyp:gmock',
         '../testing/gtest.gyp:gtest',
@@ -4485,6 +4486,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
       ],
       'include_dirs': [
         '..',
@@ -5639,7 +5641,7 @@
                 '../build/util/support/support.gyp:*',
                 '../third_party/cld/cld.gyp:cld',
                 '../views/views.gyp:views',
-                '../webkit/webkit.gyp:webkit_resources',
+                '../webkit/webkit_glue.gyp:webkit_resources',
                 '../gears/gears.gyp:gears',
               ],
               'defines': [
@@ -6333,7 +6335,7 @@
             '../base/base.gyp:test_support_perf',
             '../skia/skia.gyp:skia',
             '../testing/gtest.gyp:gtest',
-            '../webkit/webkit.gyp:glue',
+            '../webkit/webkit_glue.gyp:glue',
           ],
           'sources': [
             'browser/safe_browsing/database_perftest.cc',
@@ -6536,7 +6538,7 @@
             '../third_party/tcmalloc/tcmalloc.gyp:*',
             '../third_party/zlib/zlib.gyp:*',
             '../webkit/tools/test_shell/test_shell.gyp:*',
-            '../webkit/webkit.gyp:*',
+            '../webkit/webkit_glue.gyp:*',
 
             '../build/temp_gyp/googleurl.gyp:*',
 
@@ -6656,13 +6658,13 @@
               'syncapi',
               'test_support_unit',
               '../printing/printing.gyp:printing',
-              '../webkit/api/WebKit.gyp:webkit',
               '../skia/skia.gyp:skia',
               '../testing/gtest.gyp:gtest',
               '../third_party/icu/icu.gyp:icui18n',
               '../third_party/icu/icu.gyp:icuuc',
               '../third_party/libxml/libxml.gyp:libxml',
               '../third_party/npapi/npapi.gyp:npapi',
+              '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
             ],
             'include_dirs': [
               '..',

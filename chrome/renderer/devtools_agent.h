@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "webkit/api/public/WebDevToolsAgentClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
 
 namespace IPC {
 class Message;

@@ -11,7 +11,7 @@
 #define WEBKIT_GLUE_GLUE_SERIALIZE_H_
 
 #include <string>
-#include "webkit/api/public/WebHistoryItem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 
 namespace webkit_glue {
 

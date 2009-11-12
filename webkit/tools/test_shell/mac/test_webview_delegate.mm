@@ -7,9 +7,9 @@
 #import <Cocoa/Cocoa.h>
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "webkit/api/public/WebCursorInfo.h"
-#include "webkit/api/public/WebPopupMenu.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCursorInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenu.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"

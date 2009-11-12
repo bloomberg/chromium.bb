@@ -18,10 +18,10 @@
 #include "ipc/ipc_channel.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/api/public/WebCompositionCommand.h"
-#include "webkit/api/public/WebRect.h"
-#include "webkit/api/public/WebTextDirection.h"
-#include "webkit/api/public/WebWidgetClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCompositionCommand.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWidgetClient.h"
 #include "webkit/glue/webcursor.h"
 
 class RenderThreadBase;

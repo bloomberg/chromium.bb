@@ -39,7 +39,7 @@
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/api/public/WebFindOptions.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
 #include "webkit/glue/form_field_values.h"
 
 #if defined(OS_WIN)

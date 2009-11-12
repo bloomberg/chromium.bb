@@ -6,7 +6,7 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
-#include "webkit/api/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 using WebKit::WebString;
 using WebKit::WebURL;

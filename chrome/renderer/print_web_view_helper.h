@@ -10,7 +10,7 @@
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "webkit/api/public/WebViewClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebViewClient.h"
 
 namespace gfx {
 class Size;

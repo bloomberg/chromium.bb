@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_RENDERER_WEB_DATABASE_OBSERVER_H_
 
 #include "ipc/ipc_message.h"
-#include "webkit/api/public/WebDatabaseObserver.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDatabaseObserver.h"
 
 class RendererWebDatabaseObserver : public WebKit::WebDatabaseObserver {
  public:

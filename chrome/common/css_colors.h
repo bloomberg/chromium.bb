@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/basictypes.h"
-#include "webkit/api/public/WebColor.h"
-#include "webkit/api/public/WebColorName.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebColor.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebColorName.h"
 
 // Functionality related to sending the values of CSS colors to the renderer.
 class CSSColors {

@@ -6,7 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/renderer/render_view.h"
-#include "webkit/api/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 
 using WebKit::WebFrame;
 using WebKit::WebView;

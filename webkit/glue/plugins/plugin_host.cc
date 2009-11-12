@@ -14,7 +14,7 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "net/base/net_util.h"
-#include "webkit/api/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugininfo.h"

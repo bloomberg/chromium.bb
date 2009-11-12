@@ -17,8 +17,8 @@
             '../../third_party/icu/icu.gyp:icuuc',
             '../../third_party/libxml/libxml.gyp:libxml',
             '../../third_party/npapi/npapi.gyp:npapi',
-            '../webkit.gyp:webkit_resources',
-            '../webkit.gyp:webkit_strings',
+            '../webkit_glue.gyp:webkit_resources',
+            '../webkit_glue.gyp:webkit_strings',
           ],
           'include_dirs': [
             '../..',

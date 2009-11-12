@@ -12,7 +12,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "webkit/api/public/WebURLError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebURLError;

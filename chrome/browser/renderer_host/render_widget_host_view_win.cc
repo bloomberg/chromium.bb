@@ -30,8 +30,8 @@
 #include "chrome/common/render_messages.h"
 #include "grit/webkit_resources.h"
 #include "skia/ext/skia_utils_win.h"
-#include "webkit/api/public/WebInputEvent.h"
-#include "webkit/api/public/win/WebInputEventFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"
 #include "views/accessibility/view_accessibility.h"
 #include "views/focus/focus_util_win.h"
 // Included for views::kReflectedMessage - TODO(beng): move this to win_util.h!

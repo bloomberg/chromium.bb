@@ -9,9 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "webkit/api/public/WebMessagePortChannel.h"
-#include "webkit/api/public/WebWorker.h"
-#include "webkit/api/public/WebWorkerClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMessagePortChannel.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWorker.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWorkerClient.h"
 
 namespace WebKit {
 class WebNotificationPresenter;

@@ -13,7 +13,7 @@
 #include <wtf/RefPtr.h>
 
 #include "v8.h"
-#include "webkit/api/public/WebDevToolsFrontend.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsFrontend.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 
 namespace WebCore {

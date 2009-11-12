@@ -8,8 +8,8 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebNotificationPermissionCallback.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNotificationPermissionCallback.h"
 
 using WebKit::WebNotification;
 using WebKit::WebNotificationPresenter;

@@ -7,10 +7,10 @@
 
 #include "base/string_util.h"
 
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebNode.h"
-#include "webkit/api/public/WebVector.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webpasswordautocompletelistener_impl.h"
 

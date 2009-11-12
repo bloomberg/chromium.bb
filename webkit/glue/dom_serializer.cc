@@ -73,7 +73,7 @@ MSVC_POP_WARNING();
 #include "webkit/glue/dom_serializer.h"
 
 #include "base/string_util.h"
-#include "webkit/api/src/WebFrameImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/dom_serializer_delegate.h"

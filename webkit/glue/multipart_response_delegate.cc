@@ -7,10 +7,10 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/net_util.h"
-#include "webkit/api/public/WebHTTPHeaderVisitor.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebURLLoaderClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebHTTPHeaderVisitor.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "webkit/glue/glue_util.h"
 
 using WebKit::WebHTTPHeaderVisitor;

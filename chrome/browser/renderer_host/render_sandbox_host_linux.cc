@@ -22,7 +22,7 @@
 #include "base/string_util.h"
 #include "base/unix_domain_socket_posix.h"
 #include "chrome/common/sandbox_methods_linux.h"
-#include "webkit/api/public/gtk/WebFontInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/gtk/WebFontInfo.h"
 
 #include "SkFontHost_fontconfig_direct.h"
 #include "SkFontHost_fontconfig_ipc.h"

@@ -5,12 +5,12 @@
 #include "webkit/glue/webpreferences.h"
 
 #include "base/string_util.h"
-#include "webkit/api/public/WebRuntimeFeatures.h"
-#include "webkit/api/public/WebKit.h"
-#include "webkit/api/public/WebSettings.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSettings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebRuntimeFeatures;

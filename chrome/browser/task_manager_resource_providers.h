@@ -13,7 +13,7 @@
 #include "chrome/browser/task_manager.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/notification_observer.h"
-#include "webkit/api/public/WebCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 
 class Extension;
 class ExtensionHost;

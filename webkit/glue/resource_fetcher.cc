@@ -5,13 +5,13 @@
 #include "webkit/glue/resource_fetcher.h"
 
 #include "base/logging.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebKit.h"
-#include "webkit/api/public/WebKitClient.h"
-#include "webkit/api/public/WebURLError.h"
-#include "webkit/api/public/WebURLLoader.h"
-#include "webkit/api/public/WebURLRequest.h"
-#include "webkit/api/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLLoader.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
 using base::TimeDelta;
 using WebKit::WebFrame;

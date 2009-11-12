@@ -18,7 +18,7 @@
 #undef LOG
 
 #include "grit/webkit_resources.h"
-#include "webkit/api/src/WebViewImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/glue_util.h"

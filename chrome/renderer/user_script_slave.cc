@@ -13,7 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/renderer/extension_groups.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 
 #include "grit/renderer_resources.h"
 

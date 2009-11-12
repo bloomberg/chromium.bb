@@ -6,7 +6,7 @@
 #define WEBCLIPBOARD_IMPL_H_
 
 #include "app/clipboard/clipboard.h"
-#include "webkit/api/public/WebClipboard.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebClipboard.h"
 
 #include <string>
 

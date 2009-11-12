@@ -10,9 +10,9 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/null_audio_renderer.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/api/public/WebRect.h"
-#include "webkit/api/public/WebSize.h"
-#include "webkit/api/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRect.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "webkit/glue/media/video_renderer_impl.h"
 
 using WebKit::WebCanvas;

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/api/public/WebAccessibilityObject.h"
-#include "webkit/api/public/WebCString.h"
-#include "webkit/api/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/tools/test_shell/accessibility_ui_element.h"
 

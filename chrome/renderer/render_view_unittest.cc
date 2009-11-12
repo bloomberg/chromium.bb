@@ -13,8 +13,8 @@
 #include "printing/image.h"
 #include "printing/native_metafile.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURLError.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 
 using WebKit::WebCompositionCommand;
 using WebKit::WebFrame;

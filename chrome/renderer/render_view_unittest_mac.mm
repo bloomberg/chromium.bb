@@ -6,7 +6,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/test/render_view_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/api/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>  // for the kVK_* constants.

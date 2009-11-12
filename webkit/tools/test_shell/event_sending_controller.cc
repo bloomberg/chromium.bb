@@ -32,16 +32,16 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "webkit/api/public/WebDragData.h"
-#include "webkit/api/public/WebDragOperation.h"
-#include "webkit/api/public/WebPoint.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell.h"
 
 #if defined(OS_WIN)
-#include "webkit/api/public/win/WebInputEventFactory.h"
+#include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"
 using WebKit::WebInputEventFactory;
 #endif
 

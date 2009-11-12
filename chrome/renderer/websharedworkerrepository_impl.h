@@ -5,7 +5,7 @@
 #ifndef CHROME_RENDERER_WEB_SHARED_WORKER_REPOSITORY_IMPL_H_
 #define CHROME_RENDERER_WEB_SHARED_WORKER_REPOSITORY_IMPL_H_
 
-#include "webkit/api/public/WebSharedWorkerRepository.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSharedWorkerRepository.h"
 
 namespace WebKit {
   class WebSharedWorker;

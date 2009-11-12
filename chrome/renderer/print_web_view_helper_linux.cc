@@ -9,7 +9,7 @@
 #include "chrome/common/render_messages.h"
 #include "printing/native_metafile.h"
 #include "skia/ext/vector_canvas.h"
-#include "webkit/api/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 
 using WebKit::WebFrame;
 

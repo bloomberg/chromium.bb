@@ -9,7 +9,7 @@
 #include <wtf/Noncopyable.h>
 
 #include "v8/include/v8-debug.h"
-#include "webkit/api/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
 
 namespace WebCore {
 class PageGroupLoadDeferrer;

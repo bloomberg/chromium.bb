@@ -17,7 +17,7 @@
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "skia/ext/platform_canvas.h"
-#include "webkit/api/public/WebInputEvent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"

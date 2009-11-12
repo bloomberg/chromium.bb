@@ -5,7 +5,7 @@
 #include "chrome/renderer/render_view.h"
 
 #include "chrome/common/renderer_preferences.h"
-#include "webkit/api/public/linux/WebFontRendering.h"
+#include "third_party/WebKit/WebKit/chromium/public/linux/WebFontRendering.h"
 
 using WebKit::WebFontRendering;
 

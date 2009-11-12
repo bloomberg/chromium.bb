@@ -4,7 +4,7 @@
 
 
 #include "base/logging.h"
-#include "webkit/api/public/WebPasswordFormData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPasswordFormData.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/password_form_dom_manager.h"
 

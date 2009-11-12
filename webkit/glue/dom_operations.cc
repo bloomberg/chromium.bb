@@ -31,11 +31,11 @@ MSVC_POP_WARNING();
 #undef LOG
 
 #include "base/string_util.h"
-#include "webkit/api/public/WebVector.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 // TODO(yaar) Eventually should not depend on api/src.
-#include "webkit/api/src/DOMUtilitiesPrivate.h"
-#include "webkit/api/src/WebFrameImpl.h"
+#include "third_party/WebKit/WebKit/chromium/src/DOMUtilitiesPrivate.h"
+#include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/dom_operations_private.h"
 #include "webkit/glue/form_data.h"

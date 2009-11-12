@@ -6,7 +6,7 @@
 #define WEBMENUITEM_H_
 
 #include "base/string16.h"
-#include "webkit/api/public/WebPopupMenuInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
 
 // Container for information about entries in an HTML select popup menu.
 struct WebMenuItem {

@@ -5,7 +5,7 @@
 #ifndef CHROME_WORKER_WORKER_WEBKIT_CLIENT_IMPL_H_
 #define CHROME_WORKER_WORKER_WEBKIT_CLIENT_IMPL_H_
 
-#include "webkit/api/public/WebMimeRegistry.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMimeRegistry.h"
 #include "webkit/glue/webkitclient_impl.h"
 
 class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,

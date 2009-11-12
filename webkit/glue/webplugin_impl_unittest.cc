@@ -4,9 +4,9 @@
 
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/api/public/WebCString.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "webkit/glue/webplugin_impl.h"
 
 using WebKit::WebHTTPBody;

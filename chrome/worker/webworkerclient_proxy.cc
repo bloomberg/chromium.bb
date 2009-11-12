@@ -12,9 +12,9 @@
 #include "chrome/worker/webworker_stub_base.h"
 #include "chrome/worker/worker_thread.h"
 #include "ipc/ipc_logging.h"
-#include "webkit/api/public/WebString.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebWorker.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebWorker.h"
 
 using WebKit::WebMessagePortChannel;
 using WebKit::WebMessagePortChannelArray;

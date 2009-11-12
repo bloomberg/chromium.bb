@@ -6,7 +6,7 @@
 
 #include "base/compiler_specific.h"
 
-#include "webkit/api/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/cpp_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

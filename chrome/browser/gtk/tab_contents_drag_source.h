@@ -10,7 +10,7 @@
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/message_loop.h"
-#include "webkit/api/public/WebDragOperation.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 
 class TabContents;
 class TabContentsView;

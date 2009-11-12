@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "base/message_loop.h"
-#include "webkit/api/public/WebData.h"
-#include "webkit/api/public/WebFrame.h"
-#include "webkit/api/public/WebURL.h"
-#include "webkit/api/public/WebView.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/cpp_binding_example.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell_test.h"

@@ -10,7 +10,7 @@
 
 #include "base/time.h"
 #include "googleurl/src/gurl.h"
-#include "webkit/api/public/WebPasswordFormData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebPasswordFormData.h"
 
 namespace webkit_glue {
 
