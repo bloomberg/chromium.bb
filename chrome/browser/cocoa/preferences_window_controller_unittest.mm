@@ -91,4 +91,8 @@ TEST_F(PrefsControllerTest, ValidateCustomHomePagesTable) {
   EXPECT_EQ(1U, [[pref_controller_ customPagesSource] countOfCustomHomePages]);
 }
 
+// TODO(akalin): Figure out how to test sync controls.
+// TODO(akalin): Figure out how to test that sync controls are not shown
+// when there isn't a sync service.
+
 }  // namespace

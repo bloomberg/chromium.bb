@@ -6,7 +6,9 @@
 
 #include <algorithm>
 #include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
@@ -26,6 +28,8 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
@@ -249,7 +253,6 @@ NSInteger CompareFrameY(id view1, id view2, void* context) {
     return NSOrderedSame;
 }
 
-#if !defined(GOOGLE_CHROME_BUILD)
 // Helper to remove a view and move everything above it down to take over the
 // space.
 void RemoveViewFromView(NSView* view, NSView* toRemove) {
@@ -261,32 +264,48 @@ void RemoveViewFromView(NSView* view, NSView* toRemove) {
   NSUInteger index = [views indexOfObject:toRemove];
   DCHECK_NE(index, NSNotFound);
   NSUInteger count = [views count];
-  if (index == (count - 1))
-    return;  // It was the top item, nothing to do (shouldn't happen).
+  CGFloat shrinkHeight = 0;
+  if (index < (count - 1)) {
+    // If we're not the topmost control, the amount to shift is the bottom of
+    // |toRemove| to the bottom of the view above it.
+    CGFloat shiftDown =
+        NSMinY([[views objectAtIndex:index + 1] frame]) -
+        NSMinY([toRemove frame]);
 
-  // The amount to shift is the bottom of |toRemove| to the bottom of the view
-  // above it.
-  CGFloat shiftDown =
-      NSMinY([[views objectAtIndex:index + 1] frame]) -
-      NSMinY([toRemove frame]);
+    // Now cycle over the views above it moving them down.
+    for (++index; index < count; ++index) {
+      NSView* view = [views objectAtIndex:index];
+      NSPoint origin = [view frame].origin;
+      origin.y -= shiftDown;
+      [view setFrameOrigin:origin];
+    }
 
-  // Now cycle over the views above it moving them down.
-  for (++index; index < count; ++index) {
-    NSView* view = [views objectAtIndex:index];
-    NSPoint origin = [view frame].origin;
-    origin.y -= shiftDown;
-    [view setFrameOrigin:origin];
+    shrinkHeight = shiftDown;
+  } else if (index > 0) {
+    // If we're the topmost control, there's nothing to shift but we want to
+    // shrink until the top edge of the second-topmost control, unless it is
+    // actually higher than the topmost control (since we're sorting by the
+    // bottom edge).
+    shrinkHeight = std::max(0.f,
+        NSMaxY([toRemove frame]) -
+        NSMaxY([[views objectAtIndex:index - 1] frame]));
   }
+  // If we only have one control, don't do any resizing (for now).
 
   // Remove |toRemove|.
   [toRemove removeFromSuperview];
 
-  // Resize the view.
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:view
-                                      delta:NSMakeSize(0, -shiftDown)];
+                                      delta:NSMakeSize(0, -shrinkHeight)];
 }
-#endif  // !defined(GOOGLE_CHROME_BUILD)
+
+// Simply removes all the views in |toRemove|.
+void RemoveGroupFromView(NSView* view, NSArray* toRemove) {
+  for (NSView* viewToRemove in toRemove) {
+    RemoveViewFromView(view, viewToRemove);
+  }
+}
 
 // Helper to tweak the layout of the "Under the Hood" content by autosizing all
 // the views and moving things up vertically.  Special case the two controls for
@@ -332,6 +351,9 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 // Callback when preferences are changed. |prefName| is the name of the
 // pref that has changed.
 - (void)prefChanged:(std::wstring*)prefName;
+// Callback when sync state has changed.  syncService_ needs to be
+// queried to find out what happened.
+- (void)syncStateChanged;
 // Record the user performed a certain action and save the preferences.
 - (void)recordUserAction:(const wchar_t*)action;
 - (void)registerPrefObservers;
@@ -361,10 +383,14 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 
 // A C++ class registered for changes in preferences. Bridges the
 // notification back to the PWC.
-class PrefObserverBridge : public NotificationObserver {
+class PrefObserverBridge : public NotificationObserver,
+                           public ProfileSyncServiceObserver {
  public:
   PrefObserverBridge(PreferencesWindowController* controller)
-      : controller_(controller) { }
+      : controller_(controller) {}
+
+  virtual ~PrefObserverBridge() {}
+
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -372,6 +398,12 @@ class PrefObserverBridge : public NotificationObserver {
     if (type == NotificationType::PREF_CHANGED)
       [controller_ prefChanged:Details<std::wstring>(details).ptr()];
   }
+
+  // Overridden from ProfileSyncServiceObserver.
+  virtual void OnStateChanged() {
+    [controller_ syncStateChanged];
+  }
+
  private:
   PreferencesWindowController* controller_;  // weak, owns us
 };
@@ -434,6 +466,11 @@ class PrefObserverBridge : public NotificationObserver {
     // it up a bit.
     [animation_ gtm_setDuration:0.2];
     [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
+
+    // TODO(akalin): handle incognito profiles?  The windows version of this
+    // (in chrome/browser/views/options/content_page_view.cc) just does what
+    // we do below.
+    syncService_ = profile_->GetProfileSyncService();
   }
   return self;
 }
@@ -464,7 +501,7 @@ class PrefObserverBridge : public NotificationObserver {
 #endif  // !defined(GOOGLE_CHROME_BUILD)
 
   // There are three problem children within the groups:
-  //   Bascis - Default Browser
+  //   Basics - Default Browser
   //   Personal Stuff - Themes
   //   Personal Stuff - Browser Data
   // These three have buttons that with some localizations are wider then the
@@ -559,9 +596,23 @@ class PrefObserverBridge : public NotificationObserver {
   verticalShift += AutoSizeGroup(personalStuffGroupPasswords_,
                                  kAutoSizeGroupBehaviorVerticalToFit,
                                  verticalShift);
+  // We want to autosize the sync button but not the text field, so we use
+  // VerticalFirstToFit.
+  verticalShift += AutoSizeGroup(personalStuffGroupSync_,
+                                 kAutoSizeGroupBehaviorVerticalFirstToFit,
+                                 verticalShift);
   [GTMUILocalizerAndLayoutTweaker
       resizeViewWithoutAutoResizingSubViews:personalStuffView_
                                       delta:NSMakeSize(0.0, verticalShift)];
+
+  if (syncService_) {
+    syncService_->AddObserver(observer_.get());
+    // Update the controls according to the initial state.
+    [self syncStateChanged];
+  } else {
+    // If sync is disabled we don't want to show the sync controls at all.
+    RemoveGroupFromView(personalStuffView_, personalStuffGroupSync_);
+  }
 
   // Make the window as wide as the views.
   NSWindow* prefsWindow = [self window];
@@ -613,6 +664,9 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)dealloc {
+  if (syncService_) {
+    syncService_->RemoveObserver(observer_.get());
+  }
   [customPagesSource_ removeObserver:self forKeyPath:@"customHomePages"];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self unregisterPrefObservers];
@@ -1133,6 +1187,18 @@ const int kDisabledIndex = 1;
   }
 }
 
+- (IBAction)doSyncAction:(id)sender {
+  DCHECK(syncService_);
+  if (syncService_->HasSyncSetupCompleted()) {
+    syncService_->DisableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+    // TODO(akalin): Pop up a confirmation dialog before disabling syncing.
+  } else {
+    syncService_->EnableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
+  }
+}
+
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value {
   if (value == kEnabledIndex)
     [self recordUserAction:L"Options_PasswordManager_Enable"];
@@ -1524,6 +1590,36 @@ const int kDisabledIndex = 1;
   [self basicsPrefChanged:prefName];
   [self userDataPrefChanged:prefName];
   [self underHoodPrefChanged:prefName];
+}
+
+// Callback when sync service state has changed.
+//
+// TODO(akalin): Decomp this out since a lot of it is copied from the
+// Windows version.
+// TODO(akalin): Actually have a control for the link.
+// TODO(akalin): Change the background of the status label/link on error.
+// TODO(akalin): Make sure selecting the "Sync my bookmarks..." menu item
+// pops up this preference pane if syncing has already been set up.
+- (void)syncStateChanged {
+  DCHECK(syncService_);
+
+  [syncButton_ setEnabled:!syncService_->WizardIsVisible()];
+  NSString* buttonLabel;
+  if (syncService_->HasSyncSetupCompleted()) {
+    buttonLabel = l10n_util::GetNSStringWithFixup(
+        IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+  } else if (syncService_->SetupInProgress()) {
+    buttonLabel = l10n_util::GetNSStringWithFixup(
+        IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+  } else {
+    buttonLabel = l10n_util::GetNSStringWithFixup(
+        IDS_SYNC_START_SYNC_BUTTON_LABEL);
+  }
+  [syncButton_ setTitle:buttonLabel];
+
+  string16 statusLabel, linkLabel;
+  SyncStatusUIHelper::GetLabels(syncService_, &statusLabel, &linkLabel);
+  [syncStatus_ setStringValue:base::SysUTF16ToNSString(statusLabel)];
 }
 
 // Show the preferences window.
