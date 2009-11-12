@@ -602,9 +602,10 @@ void TreeView::RecursivelyDelete(NodeDetails* node) {
   DCHECK(item);
 
   // Recurse through children.
-  for (HTREEITEM child = TreeView_GetChild(tree_view_, item);
-       child ; child = TreeView_GetNextSibling(tree_view_, child)) {
+  for (HTREEITEM child = TreeView_GetChild(tree_view_, item); child ;) {
+    HTREEITEM next = TreeView_GetNextSibling(tree_view_, child);
     RecursivelyDelete(GetNodeDetailsByTreeItem(child));
+    child = next;
   }
 
   TreeView_DeleteItem(tree_view_, item);
