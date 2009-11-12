@@ -778,8 +778,9 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
 #else
   bool debug_mode = true;
 #endif
-  // Don't inspect inspector, new tab UI, etc.
-  if (active_entry->url().SchemeIs(chrome::kChromeUIScheme) && !debug_mode)
+  // Don't inspect new tab UI, etc.
+  if (active_entry->url().SchemeIs(chrome::kChromeUIScheme) && !debug_mode &&
+      active_entry->url().host() != chrome::kChromeUIDevToolsHost)
     return false;
 
   // Don't inspect about:network, about:memory, etc.
@@ -789,10 +790,16 @@ bool RenderViewContextMenu::IsDevCommandEnabled(int id) const {
       !LowerCaseEqualsASCII(active_entry->virtual_url().path(), "blank"))
     return false;
 
-  // Don't enable the web inspector if JavaScript is disabled
   if (id == IDS_CONTENT_CONTEXT_INSPECTELEMENT) {
+    // Don't enable the web inspector if JavaScript is disabled.
     if (!profile_->GetPrefs()->GetBoolean(prefs::kWebKitJavascriptEnabled) ||
         command_line.HasSwitch(switches::kDisableJavaScript))
+      return false;
+    // Don't enable the web inspector on web inspector if there is no process
+    // per tab flag set.
+    if (active_entry->url().SchemeIs(chrome::kChromeUIScheme) &&
+        active_entry->url().host() == chrome::kChromeUIDevToolsHost &&
+        !command_line.HasSwitch(switches::kProcessPerTab))
       return false;
   }
 
