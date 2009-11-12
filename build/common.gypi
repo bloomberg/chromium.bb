@@ -37,12 +37,6 @@
     # to compile as shared by default
     'library%': 'static_library',
 
-    # TODO(bradnelson): eliminate this when possible.
-    # To allow local gyp files to prevent release.vsprops from being included.
-    # Yes(1) means include release.vsprops.
-    # Once all vsprops settings are migrated into gyp, this can go away.
-    'msvs_use_common_release%': 1,
-
     # TODO(sgk): eliminate this if possible.
     # It would be nicer to support this via a setting in 'target_defaults'
     # in chrome/app/locales/locales.gypi overriding the setting in the
@@ -136,11 +130,99 @@
     ],
     'default_configuration': 'Debug',
     'configurations': {
-       # VCLinkerTool LinkIncremental values below:
-       #   0 == default
-       #   1 == /INCREMENTAL:NO
-       #   2 == /INCREMENTAL
-       # Debug links incremental, Release does not.
+      #
+      # Abstract base configurations to cover common
+      # attributes.
+      #
+      # Currently only implemented for Windows.
+      #
+      'Common_Base': {
+        'abstract': 1,
+        'msvs_configuration_attributes': {
+          'OutputDirectory':
+            '$(SolutionDir)$(ConfigurationName)-$(PlatformName)',
+          'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
+          'CharacterSet': '1',
+        },
+      },
+      'x86_Base': {
+        'abstract': 1,
+        'defines': [
+          'NACL_PLATFORM=x86',
+          'NACL_TARGET_SUBARCH=32',
+          'NACL_BUILD_SUBARCH=32',
+        ],
+        'configuration_platform': 'Win32',
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'TargetMachine': '1', # x86 - 32
+          },
+        },
+      },
+      'x64_Base': {
+        'abstract': 1,
+        'defines!': [
+          'NACL_PLATFORM=x86',
+          'NACL_TARGET_SUBARCH=32',
+          'NACL_BUILD_SUBARCH=32',
+        ],
+        'defines': [
+          'NACL_PLATFORM=x86',
+          'NACL_TARGET_SUBARCH=64',
+          'NACL_BUILD_SUBARCH=64',
+        ],
+        'msvs_configuration_platform': 'x64',
+        'msvs_settings': {
+          'VCLinkerTool': {
+            'TargetMachine': '1', # x86 - 32
+          },
+        },
+      },
+      'Debug_Base': {
+        'abstract': 1,
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'Optimization': '0',
+            'PreprocessorDefinitions': ['_DEBUG'],
+            'BasicRuntimeChecks': '3',
+            'RuntimeLibrary': '1',
+          },
+           # VCLinkerTool LinkIncremental values below:
+           #   0 == default
+           #   1 == /INCREMENTAL:NO
+           #   2 == /INCREMENTAL
+           # Debug links incremental, Release does not.
+          'VCLinkerTool': {
+            'LinkIncremental': '<(msvs_debug_link_incremental)',
+          },
+          'VCResourceCompilerTool': {
+            'PreprocessorDefinitions': ['_DEBUG'],
+          },
+        },
+      },
+      'Release_Base': {
+        'abstract': 1,
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'PreprocessorDefinitions': ['NDEBUG'],
+            'Optimization': '2',
+            'StringPooling': 'true',
+          },
+          'VCLinkerTool': {
+            'LinkIncremental': '1',
+            'OptimizationReferences': '2',
+            'EnableCOMDATFolding': '2',
+            'OptimizeForWindows98': '1',
+          },
+          'VCResourceCompilerTool': {
+            'PreprocessorDefinitions': ['NDEBUG'],
+          },
+        },
+      },
+      #
+      # Concrete configurations
+      #
+      #
       'Debug': {
         'conditions': [
           [ 'OS=="mac"', {
@@ -150,27 +232,8 @@
             }
           }],
           [ 'OS=="win"', {
-            'configuration_platform': 'Win32',
-            'msvs_configuration_attributes': {
-              'OutputDirectory': '$(SolutionDir)$(ConfigurationName)-$(PlatformName)',
-              'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
-              'CharacterSet': '1',
-            },
-            'msvs_props': ['x86_32.vsprops'],
-            'msvs_settings': {
-              'VCCLCompilerTool': {
-                'Optimization': '0',
-                'PreprocessorDefinitions': ['_DEBUG'],
-                'BasicRuntimeChecks': '3',
-                'RuntimeLibrary': '1',
-              },
-              'VCLinkerTool': {
-                'LinkIncremental': '<(msvs_debug_link_incremental)',
-              },
-              'VCResourceCompilerTool': {
-                'PreprocessorDefinitions': ['_DEBUG'],
-              },
-            },
+            # On Windows, the default Debug target is x86
+            'inherit_from': ['Common_Base', 'x86_Base', 'Debug_Base']
           }],
         ],
       },
@@ -184,59 +247,19 @@
               'DEAD_CODE_STRIPPING': 'YES',
             }
           }],
-          [ 'OS=="win" and msvs_use_common_release', {
-            'configuration_platform': 'Win32',
-#            'msvs_props': ['release.vsprops'],
-          }],
           [ 'OS=="win"', {
-            'configuration_platform': 'Win32',
-            'msvs_configuration_attributes': {
-              'OutputDirectory': '$(SolutionDir)$(ConfigurationName)-$(PlatformName)',
-              'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
-              'CharacterSet': '1',
-            },
-            'msvs_props': ['x86_32.vsprops'],
-            'msvs_settings': {
-              'VCCLCompilerTool': {
-                'PreprocessorDefinitions': ['NDEBUG'],
-                'Optimization': '2',
-                'StringPooling': 'true',
-              },
-              'VCLinkerTool': {
-                'LinkIncremental': '1',
-                'OptimizationReferences': '2',
-                'EnableCOMDATFolding': '2',
-                'OptimizeForWindows98': '1',
-              },
-              'VCResourceCompilerTool': {
-                'PreprocessorDefinitions': ['NDEBUG'],
-              },
-            },
+            # On Windows, the default Release target is x86
+            'inherit_from': ['Common_Base', 'x86_Base', 'Release_Base']
           }],
         ],
       },
       'conditions': [
         ['OS=="win"', {
-          'Common_x64': {
-            'defines!': [
-              'NACL_PLATFORM=x86',
-              'NACL_TARGET_SUBARCH=32',
-              'NACL_BUILD_SUBARCH=32',
-            ],
-            'defines': [
-              'NACL_PLATFORM=x86',
-              'NACL_TARGET_SUBARCH=64',
-              'NACL_BUILD_SUBARCH=64',
-            ],
-            'msvs_configuration_platform': 'x64',
-            'msvs_props!': ['x86_32.vsprops'],
-            'msvs_props': ['x86_64.vsprops']
-          },
           'Debug_x64': {
-            'inherit_from': ['Debug', 'Common_x64'],
+            'inherit_from': ['Common_Base', 'x64_Base', 'Debug_Base'],
           },
           'Release_x64': {
-            'inherit_from': ['Release', 'Common_x64'],
+            'inherit_from': ['Common_Base', 'x64_Base', 'Release_Base'],
           },
         }],
       ],
@@ -469,7 +492,8 @@
           'GCC_ENABLE_CPP_EXCEPTIONS': 'NO',        # -fno-exceptions
           'GCC_ENABLE_CPP_RTTI': 'NO',              # -fno-rtti
           'GCC_ENABLE_PASCAL_STRINGS': 'NO',        # No -mpascal-strings
-          'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES',  # -fvisibility-inlines-hidden
+          'GCC_INLINES_ARE_PRIVATE_EXTERN':
+            'YES',  # -fvisibility-inlines-hidden
           'GCC_OBJC_CALL_CXX_CDTORS': 'YES',        # -fobjc-call-cxx-cdtors
           'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',      # -fvisibility=hidden
           'GCC_THREADSAFE_STATICS': 'NO',           # -fno-threadsafe-statics
@@ -506,7 +530,8 @@
             },
             'target_conditions': [
               ['_type!="static_library"', {
-                'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-search_paths_first']},
+                'xcode_settings': {
+                  'OTHER_LDFLAGS': ['-Wl,-search_paths_first']},
               }],
               ['_mac_bundle', {
                 'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
@@ -562,27 +587,35 @@
     ['OS=="win"', {
       'variables': {
         'python_exe': [
-          '<(DEPTH)\\third_party\\python_24\\setup_env.bat && python',
+          r'$(SolutionDir)..\tools\win_py.cmd'
         ],
       },
       'target_defaults': {
         'rules': [
         {
-          'rule_name': 'cygwin_assembler',
+          'rule_name': 'assembler (gnu-compatible)',
           'msvs_cygwin_shell': 0,
           'msvs_quote_cmd': 0,
           'extension': 'S',
           'inputs': [
-            '../src/third_party/gnu_binutils/files/as.exe',
+            '../tools/win_as.py',
+            '$(InputPath)'
           ],
           'outputs': [
-            '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj',
+            '$(IntDir)/$(InputName).obj',
           ],
           'action':
-            # TODO(gregoryd): find a way to pass all other 'defines' that exist for the target.
-            ['cl /DNACL_BLOCK_SHIFT=5 /DNACL_BUILD_ARCH=$(nacl_build_arch) /DNACL_BUILD_SUBARCH=$(nacl_build_subarch) /DNACL_WINDOWS=1 /E /I', '<(DEPTH)', '<(RULE_INPUT_PATH)', '|', '<@(_inputs)', '-defsym', '@feat.00=1', '-o', '<(INTERMEDIATE_DIR)\\<(RULE_INPUT_ROOT).obj'],
-          'message': 'Building assembly file <(RULE_INPUT_PATH)',
-          'process_outputs_as_sources': 1,
+            ['<@(python_exe)',
+              '$(SolutionDir)../tools/win_as.py',
+              # target architecture: Win32 or x64
+              '-a', '$(PlatformName)',
+              # output path
+              '-o', '$(IntDir)/$(InputName).obj',
+              # path to top of tree, e.g. svn/nacl
+              '-p', '<(DEPTH)',
+              # .S file
+              '$(InputPath)'],
+          'message': 'Building assembly language file $(InputPath)',
         },],
         'defines': [
           '_WIN32_WINNT=0x0600',
