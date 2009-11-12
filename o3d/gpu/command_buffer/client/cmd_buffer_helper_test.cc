@@ -32,13 +32,15 @@
 
 // Tests for the Command Buffer Helper.
 
-#include "tests/common/win/testing_common.h"
+#include "base/at_exit.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/gpu_plugin/command_buffer.h"
 #include "gpu/gpu_plugin/gpu_processor.h"
 #include "gpu/np_utils/np_object_pointer.h"
+#include "gpu/np_utils/np_browser_stub.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace command_buffer {
 
@@ -138,6 +140,9 @@ class CommandBufferHelperTest : public testing::Test {
 
   CommandBufferOffset get_helper_put() { return helper_->put_; }
 
+  base::AtExitManager at_exit_manager_;
+  MessageLoop message_loop_;
+  gpu_plugin::StubNPBrowser browser_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   NPObjectPointer<CommandBuffer> command_buffer_;
   command_buffer::CommandParser* parser_;

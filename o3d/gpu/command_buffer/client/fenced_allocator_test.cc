@@ -32,7 +32,6 @@
 
 // This file contains the tests for the FencedAllocator class.
 
-#include "tests/common/win/testing_common.h"
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
@@ -40,7 +39,9 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/gpu_plugin/command_buffer.h"
 #include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/np_utils/np_browser_stub.h"
 #include "gpu/np_utils/np_object_pointer.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace command_buffer {
 
@@ -100,6 +101,8 @@ class BaseFencedAllocatorTest : public testing::Test {
     helper_.release();
   }
 
+  MessageLoop message_loop_;
+  gpu_plugin::StubNPBrowser browser_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   NPObjectPointer<CommandBuffer> command_buffer_;
   command_buffer::CommandParser* parser_;

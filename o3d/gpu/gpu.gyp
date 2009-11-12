@@ -38,7 +38,7 @@
       ],
     },
     {
-      'target_name': 'command_buffer_common_test',
+      'target_name': 'command_buffer_common_unittests',
       'type': 'none',
       'direct_dependent_settings': {
         'sources': [
@@ -67,7 +67,7 @@
       ],
     },
     {
-      'target_name': 'command_buffer_client_test',
+      'target_name': 'command_buffer_client_unittests',
       'type': 'none',
       'direct_dependent_settings': {
         'sources': [
@@ -80,9 +80,14 @@
     {
       'target_name': 'command_buffer_service',
       'type': 'static_library',
+      'include_dirs': [
+        '..',
+        '../..',
+      ],
       'all_dependent_settings': {
         'include_dirs': [
           '..',
+          '../..',
         ],
         'conditions': [
           ['OS == "win" and (renderer == "gl" or cb_service == "gl")',
@@ -185,7 +190,7 @@
       ],  # 'conditions'
     },
     {
-      'target_name': 'command_buffer_service_test',
+      'target_name': 'command_buffer_service_unittests',
       'type': 'none',
       'direct_dependent_settings': {
         'sources': [
@@ -244,28 +249,20 @@
     # gyp. At that point these can become part of the regular O3D unit tests.
     {
       'target_name': 'np_utils_unittests',
-      'type': 'executable',
-      'dependencies': [
-        'np_utils',
-        '../../testing/gmock.gyp:gmock',
-        '../../testing/gmock.gyp:gmockmain',
-        '../../testing/gtest.gyp:gtest',
-      ],
-      'include_dirs': [
-        '../..',
-      ],
-      'all_dependent_settings': {
+      'type': 'none',
+      'direct_dependent_settings': {
         'include_dirs': [
+          '..',
           '../..',
         ],
-      },  # 'all_dependent_settings'
-      'sources': [
-        'np_utils/dispatched_np_object_unittest.cc',
-        'np_utils/dynamic_np_object_unittest.cc',
-        'np_utils/np_class_unittest.cc',
-        'np_utils/np_object_pointer_unittest.cc',
-        'np_utils/np_utils_unittest.cc',
-      ],
+        'sources': [
+          'np_utils/dispatched_np_object_unittest.cc',
+          'np_utils/dynamic_np_object_unittest.cc',
+          'np_utils/np_class_unittest.cc',
+          'np_utils/np_object_pointer_unittest.cc',
+          'np_utils/np_utils_unittest.cc',
+        ],
+      },
     },
 
     # These can eventually be merged back into the gpu_plugin target. There
@@ -279,8 +276,13 @@
         'command_buffer_service',
         'np_utils',
       ],
+      'include_dirs': [
+        '..',
+        '../..',
+      ],
       'all_dependent_settings': {
         'include_dirs': [
+          '..',
           '../..',
         ],
       },  # 'all_dependent_settings'
@@ -304,8 +306,15 @@
         'np_utils',
       ],
       'include_dirs': [
+        '..',
         '../..',
       ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          '..',
+          '../..',
+        ],
+      },  # 'all_dependent_settings'
       'sources': [
         'gpu_plugin/gpu_plugin.cc',
         'gpu_plugin/gpu_plugin.h',
@@ -316,29 +325,40 @@
         'gpu_plugin/gpu_plugin_object_factory.h',
       ],
     },
-
-    # This is a standalone executable until O3D is fully moved over to using
-    # gyp. At that point these can become part of the regular O3D unit tests.
     {
       'target_name': 'gpu_plugin_unittests',
+      'type': 'none',
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+          '../..',
+        ],
+        'sources': [
+          'gpu_plugin/command_buffer_unittest.cc',
+          'gpu_plugin/gpu_plugin_unittest.cc',
+          'gpu_plugin/gpu_plugin_object_unittest.cc',
+          'gpu_plugin/gpu_plugin_object_factory_unittest.cc',
+          'gpu_plugin/gpu_processor_unittest.cc',
+        ],
+      },
+    },
+    {
+      'target_name': 'gpu_all_unittests',
       'type': 'executable',
-      'dependencies': [
-        'command_buffer_service',
-        'gpu_plugin',
-        'np_utils',
+        'dependencies': [
         '../../testing/gmock.gyp:gmock',
         '../../testing/gmock.gyp:gmockmain',
         '../../testing/gtest.gyp:gtest',
-      ],
-      'include_dirs': [
-        '../..',
-      ],
-      'sources': [
-        'gpu_plugin/command_buffer_unittest.cc',
-        'gpu_plugin/gpu_plugin_unittest.cc',
-        'gpu_plugin/gpu_plugin_object_unittest.cc',
-        'gpu_plugin/gpu_plugin_object_factory_unittest.cc',
-        'gpu_plugin/gpu_processor_unittest.cc',
+        'command_buffer_client',
+        'command_buffer_client_unittests',
+        'command_buffer_common',
+        'command_buffer_common_unittests',
+        'command_buffer_service',
+        'command_buffer_service_unittests',
+        'gpu_plugin',
+        'gpu_plugin_unittests',
+        'np_utils',
+        'np_utils_unittests',
       ],
     },
   ]

@@ -109,15 +109,6 @@
             ]
           },
         ],
-        ['renderer == "cb" and cb_service != "remote"',
-          {
-            'dependencies': [
-              '../gpu/gpu.gyp:command_buffer_client_test',
-              '../gpu/gpu.gyp:command_buffer_common_test',
-              '../gpu/gpu.gyp:command_buffer_service_test',
-            ]
-          },
-        ],
         ['OS == "mac"',
           {
             'dependencies': [
