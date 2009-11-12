@@ -90,7 +90,7 @@ class LeakTracker : public LinkNode<LeakTracker<T> > {
 
       ++count;
       LOG(ERROR) << "Leaked " << node << " which was allocated by:";
-      allocation_stack.PrintBacktrace();
+      allocation_stack.OutputToStream(&LOG(ERROR));
     }
 
     CHECK(0u == count);
