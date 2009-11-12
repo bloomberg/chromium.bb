@@ -37,6 +37,12 @@ void BalloonViewHost::Shutdown() {
   }
 }
 
+WebPreferences BalloonViewHost::GetWebkitPrefs() {
+  WebPreferences prefs;
+  prefs.allow_scripts_to_close_windows = true;
+  return prefs;
+}
+
 RendererPreferences BalloonViewHost::GetRendererPrefs() const {
   // We want links (a.k.a. top_level_requests) to be forwarded to the browser so
   // that we can open them in a new tab rather than in the balloon.
@@ -51,6 +57,10 @@ void BalloonViewHost::RequestOpenURL(const GURL& url,
   // Always open a link triggered within the notification balloon in a new tab.
   BrowserList::GetLastActive()->AddTabWithURL(url, referrer,
       PageTransition::LINK, true, 0, 0, GetSiteInstance());
+}
+
+void BalloonViewHost::Close(RenderViewHost* render_view_host) {
+  balloon_->CloseByScript();
 }
 
 void BalloonViewHost::RendererReady(RenderViewHost* /* render_view_host */) {

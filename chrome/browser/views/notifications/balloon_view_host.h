@@ -31,7 +31,7 @@ class BalloonViewHost : public views::NativeViewHost,
   void Shutdown();
 
   // RenderViewHostDelegate overrides.
-  virtual WebPreferences GetWebkitPrefs() { return WebPreferences(); }
+  virtual WebPreferences GetWebkitPrefs();
   virtual RendererPreferences GetRendererPrefs() const;
   virtual SiteInstance* GetSiteInstance() const {
     return site_instance_.get();
@@ -42,6 +42,7 @@ class BalloonViewHost : public views::NativeViewHost,
   }
   virtual void RequestOpenURL(const GURL& url, const GURL& referrer,
                               WindowOpenDisposition disposition);
+  virtual void Close(RenderViewHost* render_view_host);
   virtual void RendererReady(RenderViewHost* render_view_host);
   virtual void RendererGone(RenderViewHost* render_view_host);
   virtual void UpdateTitle(RenderViewHost* /* render_view_host */,
