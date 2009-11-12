@@ -23,24 +23,26 @@ const int kTextSize = 9;
 const int kBottomMargin = 0;
 const int kPadding = 2;
 const int kTopTextPadding = 0;
-const int kBadgeHeight = 11;
-const int kMaxTextWidth = 23;
-// The minimum width for center-aligning the badge.
-const int kCenterAlignThreshold = 20;
+#elif defined(OS_MACOSX)
+const int kTextSize = 9;
+const int kBottomMargin = 5;
+const int kPadding = 2;
+const int kTopTextPadding = 0;
 #else
 const int kTextSize = 8;
 const int kBottomMargin = 5;
 const int kPadding = 2;
 // The padding between the top of the badge and the top of the text.
 const int kTopTextPadding = 1;
+#endif
+
 const int kBadgeHeight = 11;
 const int kMaxTextWidth = 23;
 // The minimum width for center-aligning the badge.
 const int kCenterAlignThreshold = 20;
-#endif
 
 #if defined(OS_MACOSX)
-const char kPreferredTypeface[] = "Helvetica";
+const char kPreferredTypeface[] = "Helvetica Bold";
 #else
 const char kPreferredTypeface[] = "Arial";
 #endif

@@ -20,6 +20,7 @@
 @class BackForwardMenuController;
 @class BackgroundGradientView;
 class Browser;
+@class BrowserActionsController;
 class BubblePositioner;
 class CommandUpdater;
 @class DelayedMenuButton;
@@ -52,6 +53,7 @@ class ToolbarView;
   id<ViewResizer> resizeDelegate_;  // weak
   scoped_nsobject<BackForwardMenuController> backMenuController_;
   scoped_nsobject<BackForwardMenuController> forwardMenuController_;
+  scoped_nsobject<BrowserActionsController> browserActionsController_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
@@ -88,6 +90,7 @@ class ToolbarView;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
   IBOutlet NSMenu* encodingMenu_;
+  IBOutlet NSView* browserActionContainerView_;
 }
 
 // Initialize the toolbar and register for command updates. The profile is

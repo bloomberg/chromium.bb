@@ -1143,6 +1143,8 @@
         'browser/cocoa/extension_shelf_controller.mm',
         'browser/cocoa/extension_view_mac.h',
         'browser/cocoa/extension_view_mac.mm',
+        'browser/cocoa/extensions/browser_actions_controller.h',
+        'browser/cocoa/extensions/browser_actions_controller.mm',
         'browser/cocoa/external_protocol_dialog.h',
         'browser/cocoa/external_protocol_dialog.mm',
         'browser/cocoa/fast_resize_view.h',

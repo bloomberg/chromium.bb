@@ -16,6 +16,7 @@
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
 #import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
+#import "chrome/browser/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 #import "chrome/browser/cocoa/menu_button.h"
@@ -50,6 +51,8 @@ static const float kBookmarkBarOverlap = 6.0;
 @interface ToolbarController(Private)
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(std::wstring*)prefName;
+- (void)browserActionsChanged;
+- (void)adjustLocationAndGoPositionsBy:(CGFloat)dX;
 @end
 
 namespace {
@@ -126,6 +129,8 @@ class PrefObserverBridge : public NotificationObserver {
   // the "parent" view continues to work.
   hasToolbar_ = YES;
 
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+
   if (trackingArea_.get())
     [[self view] removeTrackingArea:trackingArea_.get()];
   [super dealloc];
@@ -178,7 +183,18 @@ class PrefObserverBridge : public NotificationObserver {
           initWithBrowser:browser_
                 modelType:BACK_FORWARD_MENU_TYPE_FORWARD
                    button:forwardButton_]);
-
+  browserActionsController_.reset([[BrowserActionsController alloc]
+          initWithBrowser:browser_
+            containerView:browserActionContainerView_]);
+  // When new browser actions are added/removed, the container view for them is
+  // resized, necessitating the probable resizing of surrounding elements
+  // handled by this controller.
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(browserActionsChanged)
+             name:kBrowserActionsChangedNotification
+           object:browserActionsController_];
+  [browserActionsController_ createButtons];
   // For a popup window, the toolbar is really just a location bar
   // (see override for [ToolbarController view], below).  When going
   // fullscreen, we remove the toolbar controller's view from the view
@@ -362,13 +378,13 @@ class PrefObserverBridge : public NotificationObserver {
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
             homeButton_, starButton_, goButton_, pageButton_, wrenchButton_,
-            locationBar_, encodingMenu_, nil];
+            locationBar_, encodingMenu_, browserActionContainerView_, nil];
 }
 
 // Moves |rect| to the right by |delta|, keeping the right side fixed by
 // shrinking the width to compensate. Passing a negative value for |deltaX|
 // moves to the left and increases the width.
-- (NSRect)adjustRect:(NSRect)rect byAmount:(float)deltaX {
+- (NSRect)adjustRect:(NSRect)rect byAmount:(CGFloat)deltaX {
   NSRect frame = NSOffsetRect(rect, deltaX, 0);
   frame.size.width -= deltaX;
   return frame;
@@ -377,7 +393,7 @@ class PrefObserverBridge : public NotificationObserver {
 // Computes the padding between the buttons that should have a separation from
 // the positions in the nib. Since the forward and reload buttons are always
 // visible, we use those buttons as the canonical spacing.
-- (float)interButtonSpacing {
+- (CGFloat)interButtonSpacing {
   NSRect forwardFrame = [forwardButton_ frame];
   NSRect reloadFrame = [reloadButton_ frame];
   DCHECK(NSMinX(reloadFrame) > NSMaxX(forwardFrame));
@@ -396,7 +412,7 @@ class PrefObserverBridge : public NotificationObserver {
   // Always shift the star and text field by the width of the home button plus
   // the appropriate gap width. If we're hiding the button, we have to
   // reverse the direction of the movement (to the left).
-  float moveX = [self interButtonSpacing] + [homeButton_ frame].size.width;
+  CGFloat moveX = [self interButtonSpacing] + [homeButton_ frame].size.width;
   if (hide)
     moveX *= -1;  // Reverse the direction of the move.
 
@@ -421,14 +437,20 @@ class PrefObserverBridge : public NotificationObserver {
   // buttons, we have to reverse the direction of movement (to the left). Unlike
   // the home button above, we only ever have to resize the text field, we don't
   // have to move it.
-  float moveX = 2 * [self interButtonSpacing] + NSWidth([pageButton_ frame]) +
-                  NSWidth([wrenchButton_ frame]);
+  CGFloat moveX = 2 * [self interButtonSpacing] + NSWidth([pageButton_ frame]) +
+      NSWidth([wrenchButton_ frame]);
+
+  // Adjust for the extra unit of inter-button spacing added when the page and
+  // wrench buttons are hidden.
+  if ([browserActionsController_ buttonCount] > 0)
+    moveX -= [self interButtonSpacing];
+
   if (!hide)
     moveX *= -1;  // Reverse the direction of the move.
-  [goButton_ setFrame:NSOffsetRect([goButton_ frame], moveX, 0)];
-  NSRect locationFrame = [locationBar_ frame];
-  locationFrame.size.width += moveX;
-  [locationBar_ setFrame:locationFrame];
+
+  [self adjustLocationAndGoPositionsBy:moveX];
+  [browserActionContainerView_ setFrame:NSOffsetRect(
+      [browserActionContainerView_ frame], moveX, 0)];
 
   [pageButton_ setHidden:hide];
   [wrenchButton_ setHidden:hide];
@@ -441,6 +463,50 @@ class PrefObserverBridge : public NotificationObserver {
   } else if (*prefName == prefs::kShowPageOptionsButtons) {
     [self showOptionalPageWrenchButtons];
   }
+}
+
+- (void)browserActionsChanged {
+  // Calculate the new width.
+  int buttonCount = [browserActionsController_ buttonCount];
+
+  CGFloat width = 0.0;
+  if (buttonCount > 0) {
+    width = (buttonCount *
+        (kBrowserActionWidth + kBrowserActionButtonPadding)) -
+            kBrowserActionButtonPadding;  // No padding after last button.
+  }
+
+  NSRect containerFrame = [browserActionContainerView_ frame];
+  CGFloat buttonSpacing = [self interButtonSpacing];
+  CGFloat dX = containerFrame.size.width - width;
+  containerFrame.size.width = width;
+
+  bool addingButton = (dX < 0);
+  // If a button is being added, add spacing inward by negating the value.
+  if (addingButton)
+    buttonSpacing *= -1;
+
+  // If the first button is being added or the last button is being removed,
+  // then account for the right padding it will need.
+  if ((buttonCount == 1 && addingButton) ||
+      (buttonCount == 0 && !addingButton)) {
+    dX += buttonSpacing;
+    // The offset of the buttons from the right side will be one button spacing
+    // unit more than if the wrench and page buttons were shown.
+    if ([pageButton_ isHidden] && [wrenchButton_ isHidden]) {
+      dX += buttonSpacing;
+    }
+  }
+
+  [browserActionContainerView_ setFrame:NSOffsetRect(containerFrame, dX, 0)];
+  [self adjustLocationAndGoPositionsBy:dX];
+}
+
+- (void)adjustLocationAndGoPositionsBy:(CGFloat)dX {
+  [goButton_ setFrame:NSOffsetRect([goButton_ frame], dX, 0)];
+  NSRect locationFrame = [locationBar_ frame];
+  locationFrame.size.width += dX;
+  [locationBar_ setFrame:locationFrame];
 }
 
 - (NSRect)starButtonInWindowCoordinates {

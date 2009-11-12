@@ -44,7 +44,8 @@ class ToolbarControllerTest : public PlatformTest {
   // |-toolbarViews| method.
   enum {
     kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kStarIndex, kGoIndex,
-    kPageIndex, kWrenchIndex, kLocationIndex, kEncodingMenuIndex
+    kPageIndex, kWrenchIndex, kLocationIndex, kEncodingMenuIndex,
+    kBrowserActionContainerViewIndex
   };
 
   ToolbarControllerTest() {
