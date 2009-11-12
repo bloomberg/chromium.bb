@@ -97,7 +97,8 @@ class MockAppCacheStorage : public AppCacheStorage {
     return disk_cache_.get();
   }
 
-  // Simulate failures for testing.
+  // Simulate failures for testing. Once set all subsequent calls
+  // to MakeGroupObsolete or StorageGroupAndNewestCache will fail.
   void SimulateMakeGroupObsoleteFailure() {
     simulate_make_group_obsolete_failure_ = true;
   }
@@ -105,7 +106,10 @@ class MockAppCacheStorage : public AppCacheStorage {
     simulate_store_group_and_newest_cache_failure_ = true;
   }
 
-  // Simulate FindResponseFor results for testing.
+  // Simulate FindResponseFor results for testing. These
+  // provided values will be return on the next call to
+  // the corresponding Find method, subsequent calls are
+  // unaffected.
   void SimulateFindMainResource(
       const AppCacheEntry& entry,
       const AppCacheEntry& fallback_entry,
@@ -149,7 +153,11 @@ class MockAppCacheStorage : public AppCacheStorage {
   GURL simulated_found_manifest_url_;
   bool simulated_found_network_namespace_;
 
+  FRIEND_TEST(MockAppCacheStorageTest, BasicFindMainResponse);
+  FRIEND_TEST(MockAppCacheStorageTest, BasicFindMainFallbackResponse);
   FRIEND_TEST(MockAppCacheStorageTest, CreateGroup);
+  FRIEND_TEST(MockAppCacheStorageTest, FindMainResponseExclusions);
+  FRIEND_TEST(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates);
   FRIEND_TEST(MockAppCacheStorageTest, LoadCache_FarHit);
   FRIEND_TEST(MockAppCacheStorageTest, LoadGroupAndCache_FarHit);
   FRIEND_TEST(MockAppCacheStorageTest, MakeGroupObsolete);

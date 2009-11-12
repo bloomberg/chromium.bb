@@ -75,11 +75,10 @@ class AppCache : public base::RefCounted<AppCache> {
   // Do not use the manifest after this call.
   void InitializeWithManifest(Manifest* manifest);
 
-  void FindResponseForRequest(const GURL& url,
+  bool FindResponseForRequest(const GURL& url,
       AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
-      bool* found_network_namespace) {
-    return;  // TODO(michaeln): write me
-  }
+      GURL* found_fallback_namespace, bool* found_network_namespace);
+
  private:
   friend class AppCacheGroup;
   friend class AppCacheHost;
@@ -90,6 +89,10 @@ class AppCache : public base::RefCounted<AppCache> {
 
   // Use AppCacheGroup::Add/RemoveCache() to manipulate owning group.
   void set_owning_group(AppCacheGroup* group) { owning_group_ = group; }
+
+  // FindResponseForRequest helpers
+  FallbackNamespace* FindFallbackNamespace(const GURL& url);
+  bool IsInNetworkNamespace(const GURL& url);
 
   // Use AppCacheHost::AssociateCache() to manipulate host association.
   void AssociateHost(AppCacheHost* host) {

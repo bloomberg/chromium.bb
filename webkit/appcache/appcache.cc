@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+
 #include "webkit/appcache/appcache.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -55,11 +58,74 @@ AppCacheEntry* AppCache::GetEntry(const GURL& url) {
   return (it != entries_.end()) ? &(it->second) : NULL;
 }
 
+namespace {
+
+bool SortByLength(
+    const FallbackNamespace& lhs, const FallbackNamespace& rhs) {
+  return lhs.first.spec().length() > rhs.first.spec().length();
+}
+
+}
+
 void AppCache::InitializeWithManifest(Manifest* manifest) {
   DCHECK(manifest);
   fallback_namespaces_.swap(manifest->fallback_namespaces);
   online_whitelist_namespaces_.swap(manifest->online_whitelist_namespaces);
   online_whitelist_all_ = manifest->online_whitelist_all;
+
+  // Sort the fallback namespaces by url string length, longest to shortest,
+  // since longer matches trump when matching a url to a namespace.
+  std::sort(fallback_namespaces_.begin(), fallback_namespaces_.end(),
+            SortByLength);
+}
+
+bool AppCache::FindResponseForRequest(const GURL& url,
+    AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
+    GURL* found_fallback_namespace, bool* found_network_namespace) {
+  AppCacheEntry* entry = GetEntry(url);
+  if (entry) {
+    *found_entry = *entry;
+    return true;
+  }
+
+  FallbackNamespace* fallback_namespace = FindFallbackNamespace(url);
+  if (fallback_namespace) {
+    entry = GetEntry(fallback_namespace->second);
+    DCHECK(entry);
+    *found_fallback_entry = *entry;
+    *found_fallback_namespace = fallback_namespace->first;
+    return true;
+  }
+
+  *found_network_namespace = IsInNetworkNamespace(url);
+  return *found_network_namespace;
+}
+
+FallbackNamespace* AppCache::FindFallbackNamespace(const GURL& url) {
+  size_t count = fallback_namespaces_.size();
+  for (size_t i = 0; i < count; ++i) {
+    if (StartsWithASCII(
+            url.spec(), fallback_namespaces_[i].first.spec(), true)) {
+      return &fallback_namespaces_[i];
+    }
+  }
+  return NULL;
+}
+
+bool AppCache::IsInNetworkNamespace(const GURL& url) {
+  if (online_whitelist_all_)
+    return true;
+
+  // TODO(michaeln): There are certainly better 'prefix matching'
+  // structures and algorithms that can be applied here and above.
+  size_t count = online_whitelist_namespaces_.size();
+  for (size_t i = 0; i < count; ++i) {
+    if (StartsWithASCII(
+            url.spec(), online_whitelist_namespaces_[i].spec(), true)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace appcache

@@ -323,7 +323,7 @@ TEST_F(MockAppCacheStorageTest, MarkEntryAsForeign) {
       reinterpret_cast<MockAppCacheStorage*>(service.storage());
 
   // Setup some preconditions. Create a cache with an entry.
-  GURL entry_url("http://blan/entry");
+  GURL entry_url("http://blah/entry");
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache = new AppCache(&service, cache_id);
   cache->AddEntry(entry_url, AppCacheEntry(AppCacheEntry::EXPLICIT));
@@ -350,6 +350,212 @@ TEST_F(MockAppCacheStorageTest, FindNoMainResponse) {
   EXPECT_NE(url, delegate.found_url_);
   MessageLoop::current()->RunAllPending();  // Do async task execution.
   EXPECT_EQ(url, delegate.found_url_);
+  EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
+  EXPECT_EQ(kNoCacheId, delegate.found_cache_id_);
+  EXPECT_EQ(kNoResponseId, delegate.found_entry_.response_id());
+  EXPECT_EQ(kNoResponseId, delegate.found_fallback_entry_.response_id());
+  EXPECT_EQ(0, delegate.found_entry_.types());
+  EXPECT_EQ(0, delegate.found_fallback_entry_.types());
+}
+
+TEST_F(MockAppCacheStorageTest, BasicFindMainResponse) {
+  // Should complete asyncly.
+  MockAppCacheService service;
+  MockAppCacheStorage* storage =
+      reinterpret_cast<MockAppCacheStorage*>(service.storage());
+
+  // Setup some preconditions. Create a complete cache with an entry.
+  const int64 kCacheId = storage->NewCacheId();
+  const GURL kEntryUrl("http://blah/entry");
+  const GURL kManifestUrl("http://blah/manifest");
+  const int64 kResponseId = 1;
+  scoped_refptr<AppCache> cache = new AppCache(&service, kCacheId);
+  cache->AddEntry(
+      kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, kResponseId));
+  cache->set_complete(true);
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, kManifestUrl);
+  group->AddCache(cache);
+  storage->AddStoredGroup(group);
+  storage->AddStoredCache(cache);
+
+  // Conduct the test.
+  MockStorageDelegate delegate;
+  EXPECT_NE(kEntryUrl, delegate.found_url_);
+  storage->FindResponseForMainRequest(kEntryUrl, &delegate);
+  EXPECT_NE(kEntryUrl, delegate.found_url_);
+  MessageLoop::current()->RunAllPending();  // Do async task execution.
+  EXPECT_EQ(kEntryUrl, delegate.found_url_);
+  EXPECT_EQ(kManifestUrl, delegate.found_manifest_url_);
+  EXPECT_EQ(kCacheId, delegate.found_cache_id_);
+  EXPECT_EQ(kResponseId, delegate.found_entry_.response_id());
+  EXPECT_TRUE(delegate.found_entry_.IsExplicit());
+  EXPECT_FALSE(delegate.found_fallback_entry_.has_response_id());
+}
+
+TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
+  // Should complete asyncly.
+  MockAppCacheService service;
+  MockAppCacheStorage* storage =
+      reinterpret_cast<MockAppCacheStorage*>(service.storage());
+
+  // Setup some preconditions. Create a complete cache with a
+  // fallback namespace and entry.
+  const int64 kCacheId = storage->NewCacheId();
+  const GURL kFallbackEntryUrl1("http://blah/fallback_entry1");
+  const GURL kFallbackNamespaceUrl1("http://blah/fallback_namespace/");
+  const GURL kFallbackEntryUrl2("http://blah/fallback_entry2");
+  const GURL kFallbackNamespaceUrl2("http://blah/fallback_namespace/longer");
+  const GURL kManifestUrl("http://blah/manifest");
+  const int64 kResponseId1 = 1;
+  const int64 kResponseId2 = 2;
+
+  Manifest manifest;
+  manifest.fallback_namespaces.push_back(
+      FallbackNamespace(kFallbackNamespaceUrl1, kFallbackEntryUrl1));
+  manifest.fallback_namespaces.push_back(
+      FallbackNamespace(kFallbackNamespaceUrl2, kFallbackEntryUrl2));
+
+  scoped_refptr<AppCache> cache = new AppCache(&service, kCacheId);
+  cache->InitializeWithManifest(&manifest);
+  cache->AddEntry(
+      kFallbackEntryUrl1, AppCacheEntry(AppCacheEntry::FALLBACK, kResponseId1));
+  cache->AddEntry(
+      kFallbackEntryUrl2, AppCacheEntry(AppCacheEntry::FALLBACK, kResponseId2));
+  cache->set_complete(true);
+
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, kManifestUrl);
+  group->AddCache(cache);
+  storage->AddStoredGroup(group);
+  storage->AddStoredCache(cache);
+
+  // The test url is in both fallback namespace urls, but should match
+  // the longer of the two.
+  const GURL kTestUrl("http://blah/fallback_namespace/longer/test");
+
+  // Conduct the test.
+  MockStorageDelegate delegate;
+  EXPECT_NE(kTestUrl, delegate.found_url_);
+  storage->FindResponseForMainRequest(kTestUrl, &delegate);
+  EXPECT_NE(kTestUrl, delegate.found_url_);
+  MessageLoop::current()->RunAllPending();  // Do async task execution.
+  EXPECT_EQ(kTestUrl, delegate.found_url_);
+  EXPECT_EQ(kManifestUrl, delegate.found_manifest_url_);
+  EXPECT_EQ(kCacheId, delegate.found_cache_id_);
+  EXPECT_FALSE(delegate.found_entry_.has_response_id());
+  EXPECT_EQ(kResponseId2, delegate.found_fallback_entry_.response_id());
+  EXPECT_TRUE(delegate.found_fallback_entry_.IsFallback());
+}
+
+TEST_F(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates) {
+  // Should complete asyncly.
+  MockAppCacheService service;
+  MockAppCacheStorage* storage =
+      reinterpret_cast<MockAppCacheStorage*>(service.storage());
+
+  // Setup some preconditions. Create 2 complete caches with an entry
+  // for the same url.
+
+  const GURL kEntryUrl("http://blah/entry");
+  const int64 kCacheId1 = storage->NewCacheId();
+  const int64 kCacheId2 = storage->NewCacheId();
+  const GURL kManifestUrl1("http://blah/manifest1");
+  const GURL kManifestUrl2("http://blah/manifest2");
+  const int64 kResponseId1 = 1;
+  const int64 kResponseId2 = 2;
+
+  // The first cache.
+  scoped_refptr<AppCache> cache = new AppCache(&service, kCacheId1);
+  cache->AddEntry(
+      kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, kResponseId1));
+  cache->set_complete(true);
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, kManifestUrl1);
+  group->AddCache(cache);
+  storage->AddStoredGroup(group);
+  storage->AddStoredCache(cache);
+  // Drop our references to cache1 so it appears as "not in use".
+  cache = NULL;
+  group = NULL;
+
+  // The second cache.
+  cache = new AppCache(&service, kCacheId2);
+  cache->AddEntry(
+      kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, kResponseId2));
+  cache->set_complete(true);
+  group = new AppCacheGroup(&service, kManifestUrl2);
+  group->AddCache(cache);
+  storage->AddStoredGroup(group);
+  storage->AddStoredCache(cache);
+
+  // Conduct the test, we should find the response from the second cache
+  // since it's "in use".
+  MockStorageDelegate delegate;
+  EXPECT_NE(kEntryUrl, delegate.found_url_);
+  storage->FindResponseForMainRequest(kEntryUrl, &delegate);
+  EXPECT_NE(kEntryUrl, delegate.found_url_);
+  MessageLoop::current()->RunAllPending();  // Do async task execution.
+  EXPECT_EQ(kEntryUrl, delegate.found_url_);
+  EXPECT_EQ(kManifestUrl2, delegate.found_manifest_url_);
+  EXPECT_EQ(kCacheId2, delegate.found_cache_id_);
+  EXPECT_EQ(kResponseId2, delegate.found_entry_.response_id());
+  EXPECT_TRUE(delegate.found_entry_.IsExplicit());
+  EXPECT_FALSE(delegate.found_fallback_entry_.has_response_id());
+}
+
+TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
+  // Should complete asyncly.
+  MockAppCacheService service;
+  MockAppCacheStorage* storage =
+      reinterpret_cast<MockAppCacheStorage*>(service.storage());
+
+  // Setup some preconditions. Create a complete cache with a
+  // foreign entry and an online namespace.
+
+  const int64 kCacheId = storage->NewCacheId();
+  const GURL kEntryUrl("http://blah/entry");
+  const GURL kManifestUrl("http://blah/manifest");
+  const GURL kOnlineNamespaceUrl("http://blah/online_namespace");
+  const int64 kResponseId = 1;
+
+  Manifest manifest;
+  manifest.online_whitelist_namespaces.push_back(kOnlineNamespaceUrl);
+
+  scoped_refptr<AppCache> cache = new AppCache(&service, kCacheId);
+  cache->InitializeWithManifest(&manifest);
+  cache->AddEntry(
+      kEntryUrl,
+      AppCacheEntry(AppCacheEntry::EXPLICIT | AppCacheEntry::FOREIGN,
+                    kResponseId));
+  cache->set_complete(true);
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, kManifestUrl);
+  group->AddCache(cache);
+  storage->AddStoredGroup(group);
+  storage->AddStoredCache(cache);
+
+  MockStorageDelegate delegate;
+
+  // We should not find anything for the foreign entry.
+  EXPECT_NE(kEntryUrl, delegate.found_url_);
+  storage->FindResponseForMainRequest(kEntryUrl, &delegate);
+  EXPECT_NE(kEntryUrl, delegate.found_url_);
+  MessageLoop::current()->RunAllPending();  // Do async task execution.
+  EXPECT_EQ(kEntryUrl, delegate.found_url_);
+  EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
+  EXPECT_EQ(kNoCacheId, delegate.found_cache_id_);
+  EXPECT_EQ(kNoResponseId, delegate.found_entry_.response_id());
+  EXPECT_EQ(kNoResponseId, delegate.found_fallback_entry_.response_id());
+  EXPECT_EQ(0, delegate.found_entry_.types());
+  EXPECT_EQ(0, delegate.found_fallback_entry_.types());
+
+  // We should not find anything for the online namespace.
+  EXPECT_NE(kOnlineNamespaceUrl, delegate.found_url_);
+  storage->FindResponseForMainRequest(kOnlineNamespaceUrl, &delegate);
+  EXPECT_NE(kOnlineNamespaceUrl, delegate.found_url_);
+  MessageLoop::current()->RunAllPending();  // Do async task execution.
+  EXPECT_EQ(kOnlineNamespaceUrl, delegate.found_url_);
   EXPECT_TRUE(delegate.found_manifest_url_.is_empty());
   EXPECT_EQ(kNoCacheId, delegate.found_cache_id_);
   EXPECT_EQ(kNoResponseId, delegate.found_entry_.response_id());

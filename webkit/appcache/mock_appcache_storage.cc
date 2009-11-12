@@ -106,8 +106,10 @@ void MockAppCacheStorage::FindResponseForSubRequest(
     return;
   }
 
-  cache->FindResponseForRequest(url, found_entry, found_fallback_entry,
-                                found_network_namespace);
+  GURL fallback_namespace_not_used;
+  cache->FindResponseForRequest(
+      url, found_entry, found_fallback_entry,
+      &fallback_namespace_not_used, found_network_namespace);
 }
 
 void MockAppCacheStorage::MarkEntryAsForeign(
@@ -205,32 +207,140 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
   // DoomResponses(group->manifest_url(), doomed_responses_);
 }
 
+namespace {
+
+struct FoundCandidate {
+  AppCacheEntry entry;
+  int64 cache_id;
+  GURL manifest_url;
+  bool is_cache_in_use;
+
+  FoundCandidate() : cache_id(kNoCacheId), is_cache_in_use(false) {}
+};
+
+}  // namespace
+
 void MockAppCacheStorage::ProcessFindResponseForMainRequest(
     const GURL& url, scoped_refptr<DelegateReference> delegate_ref) {
-  // TODO(michaeln): write me when doing AppCacheRequestHandler
-  // foreach(stored_group) {
-  //   if (group->manifest_url()->origin() != url.GetOrigin())
-  //     continue;
-  //   look for an entry
-  //   look for a fallback namespace
-  //   look for a online namespace
-  // }
-  AppCacheEntry found_entry;
-  AppCacheEntry found_fallback_entry;
-  int64 found_cache_id = kNoCacheId;
-  GURL found_manifest_url = GURL();
   if (simulate_find_main_resource_) {
-    found_entry = simulated_found_entry_;
-    found_fallback_entry = simulated_found_fallback_entry_;
-    found_cache_id = simulated_found_cache_id_;
-    found_manifest_url = simulated_found_manifest_url_;
     simulate_find_main_resource_ = false;
+    if (delegate_ref->delegate) {
+      delegate_ref->delegate->OnMainResponseFound(
+          url, simulated_found_entry_, simulated_found_fallback_entry_,
+          simulated_found_cache_id_, simulated_found_manifest_url_);
+    }
+    return;
   }
-  if (delegate_ref->delegate) {
+
+  // This call has no persistent side effects, if the delegate has gone
+  // away, we can just bail out early.
+  if (!delegate_ref->delegate)
+    return;
+
+  // TODO(michaeln): The heuristics around choosing amoungst
+  // multiple candidates is under specified, and just plain
+  // not fully understood. Refine these over time. In particular,
+  // * prefer candidates from newer caches
+  // * take into account the cache associated with the document
+  //   that initiated the navigation
+  // * take into account the cache associated with the document
+  //   currently residing in the frame being navigated
+  FoundCandidate found_candidate;
+  FoundCandidate found_fallback_candidate;
+  GURL found_fallback_candidate_namespace;
+
+  for (StoredGroupMap::const_iterator it = stored_groups_.begin();
+       it != stored_groups_.end(); ++it) {
+    AppCacheGroup* group = it->second.get();
+    AppCache* cache = group->newest_complete_cache();
+    if (group->is_obsolete() || !cache ||
+        (url.GetOrigin() != group->manifest_url().GetOrigin())) {
+      continue;
+    }
+
+    AppCacheEntry found_entry;
+    AppCacheEntry found_fallback_entry;
+    GURL found_fallback_namespace;
+    bool ignore_found_network_namespace = false;
+    bool found = cache->FindResponseForRequest(
+                            url, &found_entry, &found_fallback_entry,
+                            &found_fallback_namespace,
+                            &ignore_found_network_namespace);
+
+    // 6.11.1 Navigating across documents, Step 10.
+    // Network namespacing doesn't apply to main resource loads,
+    // and foreign entries are excluded.
+    if (!found || ignore_found_network_namespace ||
+        (found_entry.has_response_id() && found_entry.IsForeign()) ||
+        (found_fallback_entry.has_response_id() &&
+         found_fallback_entry.IsForeign())) {
+      continue;
+    }
+
+    // We have a bias for hits from caches that are in use.
+    bool is_in_use = IsCacheStored(cache) && !cache->HasOneRef();
+
+    if (found_entry.has_response_id()) {
+      found_candidate.entry = found_entry;
+      found_candidate.cache_id = cache->cache_id();
+      found_candidate.manifest_url = group->manifest_url();
+      found_candidate.is_cache_in_use = is_in_use;
+      if (is_in_use)
+        break;  // We break out of the loop with this direct hit.
+    } else {
+      DCHECK(found_fallback_entry.has_response_id());
+
+      bool take_new_candidate = true;
+
+      // Does the newly found entry trump our current candidate?
+      if (found_fallback_candidate.entry.has_response_id()) {
+        // Longer namespace prefix matches win.
+        size_t found_length =
+            found_fallback_namespace.spec().length();
+        size_t candidate_length =
+            found_fallback_candidate_namespace.spec().length();
+
+        if (found_length > candidate_length) {
+          take_new_candidate = true;
+        } else if (found_length == candidate_length &&
+                   is_in_use && !found_fallback_candidate.is_cache_in_use) {
+          take_new_candidate = true;
+        } else {
+          take_new_candidate = false;
+        }
+      }
+
+      if (take_new_candidate) {
+        found_fallback_candidate.entry = found_fallback_entry;
+        found_fallback_candidate.cache_id = cache->cache_id();
+        found_fallback_candidate.manifest_url = group->manifest_url();
+        found_fallback_candidate.is_cache_in_use = is_in_use;
+        found_fallback_candidate_namespace = found_fallback_namespace;
+      }
+    }
+  }
+
+  // Found a direct hit.
+  if (found_candidate.entry.has_response_id()) {
     delegate_ref->delegate->OnMainResponseFound(
-        url, found_entry, found_fallback_entry,
-        found_cache_id, found_manifest_url);
+        url, found_candidate.entry, AppCacheEntry(),
+        found_candidate.cache_id, found_candidate.manifest_url);
+    return;
   }
+
+  // Found a fallback namespace.
+  if (found_fallback_candidate.entry.has_response_id()) {
+    delegate_ref->delegate->OnMainResponseFound(
+        url, AppCacheEntry(), found_fallback_candidate.entry,
+        found_fallback_candidate.cache_id,
+        found_fallback_candidate.manifest_url);
+    return;
+  }
+
+  // Didn't find anything.
+  delegate_ref->delegate->OnMainResponseFound(
+      url, AppCacheEntry(), AppCacheEntry(),
+      kNoCacheId, GURL::EmptyGURL());
 }
 
 void MockAppCacheStorage::ProcessMakeGroupObsolete(
