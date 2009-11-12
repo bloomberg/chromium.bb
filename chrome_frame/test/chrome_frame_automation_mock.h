@@ -23,14 +23,14 @@ class AutomationMockDelegate
       const std::wstring& extra_chrome_arguments, bool incognito)
       : caller_message_loop_(caller_message_loop), is_connected_(false) {
     test_server_.SetUp();
-    automation_client_.reset(new ChromeFrameAutomationClient);
+    automation_client_ = new ChromeFrameAutomationClient;
     automation_client_->Initialize(this, launch_timeout, perform_version_check,
         profile_name, extra_chrome_arguments, incognito);
   }
   ~AutomationMockDelegate() {
     if (automation_client_.get()) {
       automation_client_->Uninitialize();
-      automation_client_.reset();
+      automation_client_ = NULL;
     }
     if (IsWindow())
       DestroyWindow();

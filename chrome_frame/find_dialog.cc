@@ -50,7 +50,7 @@ LRESULT CFFindDialog::OnCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl,
 LRESULT CFFindDialog::OnInitDialog(UINT msg, WPARAM wparam, LPARAM lparam,
                                    BOOL& handled) {
   // Init() must be called before Create() or DoModal()!
-  DCHECK(automation_client_);
+  DCHECK(automation_client_.get());
 
   InstallMessageHook();
   SendDlgItemMessage(IDC_FIND_TEXT, EM_EXLIMITTEXT, 0, kMaxFindChars);

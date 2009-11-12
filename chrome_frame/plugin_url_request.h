@@ -21,7 +21,9 @@ class PluginUrlRequest;
 
 // Interface for a class that keeps a collection of outstanding
 // reqeusts and offers an outgoing channel.
-class PluginRequestHandler : public IPC::Message::Sender {
+class PluginRequestHandler
+    : public IPC::Message::Sender,
+      public base::RefCountedThreadSafe<PluginRequestHandler> {
  public:
   virtual bool AddRequest(PluginUrlRequest* request) = 0;
   virtual void RemoveRequest(PluginUrlRequest* request) = 0;
@@ -127,7 +129,7 @@ class PluginUrlRequest : public UrlRequestReference {
   bool frame_busting_enabled_;
 
  private:
-  PluginRequestHandler* request_handler_;
+  scoped_refptr<PluginRequestHandler> request_handler_;
   int tab_;
   int remote_request_id_;
   uint64 post_data_len_;

@@ -58,7 +58,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
   ChromeActiveDocument* cached_document = g_active_doc_cache.Get();
   if (cached_document) {
     DCHECK(automation_client_.get() == NULL);
-    automation_client_.reset(cached_document->automation_client_.release());
+    automation_client_ = cached_document->automation_client_.release();
     DLOG(INFO) << "Reusing automation client instance from "
                << cached_document;
     DCHECK(automation_client_.get() != NULL);

@@ -134,7 +134,7 @@ extern bool g_first_launch_by_process_;
 // Common implementation for ActiveX and Active Document
 template <class T, const CLSID& class_id>
 class ATL_NO_VTABLE ChromeFrameActivexBase :
-  public CComObjectRootEx<CComSingleThreadModel>,
+  public CComObjectRootEx<CComMultiThreadModel>,
   public IOleControlImpl<T>,
   public IOleObjectImpl<T>,
   public IOleInPlaceActiveObjectImpl<T>,
@@ -508,7 +508,7 @@ END_MSG_MAP()
       worker_thread_.message_loop()->PostTask(
           FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
       if (automation_client_.get())
-        automation_client_->CleanupAsyncRequests();
+        automation_client_->CleanupRequests();
       worker_thread_.Stop();
     }
     return 0;

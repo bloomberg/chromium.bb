@@ -48,7 +48,7 @@ class CFFindDialog : public CDialogImpl<CFFindDialog> {
   static HHOOK msg_hook_;
 
   // We don't own these, and they must exist at least as long as we do.
-  ChromeFrameAutomationClient* automation_client_;
+  scoped_refptr<ChromeFrameAutomationClient> automation_client_;
 };
 
 #endif  // CHROME_FRAME_FIND_DIALOG_H_

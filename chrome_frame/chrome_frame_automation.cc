@@ -436,7 +436,6 @@ bool ChromeFrameAutomationClient::Initialize(
   chrome_frame_delegate_ = chrome_frame_delegate;
   incognito_ = incognito;
   ui_thread_id_ = PlatformThread::CurrentId();
-
 #ifndef NDEBUG
   // In debug mode give more time to work with a debugger.
   if (IsDebuggerPresent()) {
@@ -475,6 +474,11 @@ bool ChromeFrameAutomationClient::Initialize(
 
 void ChromeFrameAutomationClient::Uninitialize() {
   DLOG(INFO) << __FUNCTION__;
+
+  if (init_state_ == UNINITIALIZED) {
+    DLOG(WARNING) << __FUNCTION__ << ": Automation client not initialized";
+    return;
+  }
 
   init_state_ = UNINITIALIZING;
 
@@ -633,14 +637,14 @@ class InstallExtensionContext {
   }
 
   void InstallExtensionComplete(AutomationMsg_ExtensionResponseValues res) {
-    client_->PostTask(FROM_HERE, NewRunnableMethod(client_,
+    client_->PostTask(FROM_HERE, NewRunnableMethod(client_.get(),
         &ChromeFrameAutomationClient::InstallExtensionComplete, crx_path_,
         user_data_, res));
     delete this;
   }
 
  private:
-  ChromeFrameAutomationClient* client_;
+  scoped_refptr<ChromeFrameAutomationClient> client_;
   FilePath crx_path_;
   void* user_data_;
 };
@@ -1072,20 +1076,6 @@ bool ChromeFrameAutomationClient::IsValidRequest(
 
 void ChromeFrameAutomationClient::CleanupRequests() {
   DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
-  while (request_map_.size()) {
-    PluginUrlRequest* request = request_map_.begin()->second;
-    if (request) {
-      int request_id = request->id();
-      request->Stop();
-    }
-  }
-
-  DCHECK(request_map_.empty());
-  request_map_.clear();
-}
-
-void ChromeFrameAutomationClient::CleanupAsyncRequests() {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
 
   std::vector<scoped_refptr<PluginUrlRequest> > request_list;
   // We copy the pending requests into a temporary vector as the Stop
@@ -1119,7 +1109,7 @@ bool ChromeFrameAutomationClient::Reinitialize(
     return false;
   }
 
-  CleanupAsyncRequests();
+  CleanupRequests();
   chrome_frame_delegate_ = delegate;
   SetParentWindow(NULL);
   return true;

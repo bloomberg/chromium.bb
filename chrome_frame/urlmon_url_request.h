@@ -23,7 +23,7 @@
 #include "net/base/upload_data.h"
 
 class UrlmonUrlRequest
-    : public CComObjectRootEx<CComSingleThreadModel>,
+    : public CComObjectRootEx<CComMultiThreadModel>,
       public PluginUrlRequest,
       public IServiceProviderImpl<UrlmonUrlRequest>,
       public IBindStatusCallback,

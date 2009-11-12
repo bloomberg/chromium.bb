@@ -5,6 +5,7 @@
 #ifndef CHROME_FRAME_CHROME_FRAME_PLUGIN_H_
 #define CHROME_FRAME_CHROME_FRAME_PLUGIN_H_
 
+#include "base/ref_counted.h"
 #include "base/win_util.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/utils.h"
@@ -32,7 +33,7 @@ END_MSG_MAP()
 
   bool Initialize() {
     DCHECK(!automation_client_.get());
-    automation_client_.reset(CreateAutomationClient());
+    automation_client_ = CreateAutomationClient();
     if (!automation_client_.get()) {
       NOTREACHED() << "new ChromeFrameAutomationClient";
       return false;
@@ -44,7 +45,7 @@ END_MSG_MAP()
   void Uninitialize() {
     if (automation_client_.get()) {
       automation_client_->Uninitialize();
-      automation_client_.reset();
+      automation_client_ = NULL;
     }
   }
 
@@ -191,7 +192,7 @@ END_MSG_MAP()
 
  protected:
   // Our gateway to chrome land
-  scoped_ptr<ChromeFrameAutomationClient> automation_client_;
+  scoped_refptr<ChromeFrameAutomationClient> automation_client_;
 
   // Url of the containing document.
   std::string document_url_;

@@ -102,7 +102,7 @@ class NpProxyService : public NsISupportsImplBase<NpProxyService>,
   void Reset();
   DictionaryValue* BuildProxyValueSet();
 
-  ChromeFrameAutomationClient* automation_client_;
+  scoped_refptr<ChromeFrameAutomationClient> automation_client_;
 
   ScopedNsPtr<nsIServiceManager> service_manager_;
   ScopedNsPtr<nsIPrefService> pref_service_;

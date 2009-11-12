@@ -901,8 +901,8 @@ TEST(CFACWithChrome, CreateTooFast) {
   int timeout = 0;  // Chrome cannot send Hello message so fast.
   const std::wstring profile = L"Adam.N.Epilinter";
 
-  scoped_ptr<ChromeFrameAutomationClient> client;
-  client.reset(new ChromeFrameAutomationClient());
+  scoped_refptr<ChromeFrameAutomationClient> client;
+  client = new ChromeFrameAutomationClient();
 
   EXPECT_CALL(cfd, OnAutomationServerLaunchFailed(AUTOMATION_TIMEOUT,
                                                   testing::_))
@@ -924,8 +924,8 @@ TEST(CFACWithChrome, CreateNotSoFast) {
   const std::wstring profile = L"Adam.N.Epilinter";
   int timeout = 10000;
 
-  scoped_ptr<ChromeFrameAutomationClient> client;
-  client.reset(new ChromeFrameAutomationClient);
+  scoped_refptr<ChromeFrameAutomationClient> client;
+  client = new ChromeFrameAutomationClient;
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .Times(1)
@@ -938,7 +938,7 @@ TEST(CFACWithChrome, CreateNotSoFast) {
 
   loop.RunFor(11);
   client->Uninitialize();
-  client.reset(NULL);
+  client = NULL;
 }
 
 MATCHER_P(MsgType, msg_type, "IPC::Message::type()") {
@@ -960,8 +960,8 @@ TEST(CFACWithChrome, NavigateOk) {
   const std::string url = "about:version";
   int timeout = 10000;
 
-  scoped_ptr<ChromeFrameAutomationClient> client;
-  client.reset(new ChromeFrameAutomationClient);
+  scoped_refptr<ChromeFrameAutomationClient> client;
+  client = new ChromeFrameAutomationClient;
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
@@ -989,7 +989,7 @@ TEST(CFACWithChrome, NavigateOk) {
   EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile, L"", false));
   loop.RunFor(10);
   client->Uninitialize();
-  client.reset(NULL);
+  client = NULL;
 }
 
 // Bug: http://b/issue?id=2033644
@@ -1000,8 +1000,8 @@ TEST(CFACWithChrome, DISABLED_NavigateFailed) {
   const std::string url = "http://127.0.0.3:65412/";
   int timeout = 10000;
 
-  scoped_ptr<ChromeFrameAutomationClient> client;
-  client.reset(new ChromeFrameAutomationClient);
+  scoped_refptr<ChromeFrameAutomationClient> client;
+  client = new ChromeFrameAutomationClient;
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
@@ -1025,7 +1025,7 @@ TEST(CFACWithChrome, DISABLED_NavigateFailed) {
 
   loop.RunFor(10);
   client->Uninitialize();
-  client.reset(NULL);
+  client = NULL;
 }
 
 MATCHER_P(EqURLRequest, x, "IPC::AutomationURLRequest matcher") {
@@ -1056,8 +1056,8 @@ TEST(CFACWithChrome, UseHostNetworkStack) {
   const std::string url = "http://bongo.com";
   int timeout = 10000;
 
-  scoped_ptr<ChromeFrameAutomationClient> client;
-  client.reset(new ChromeFrameAutomationClient);
+  scoped_refptr<ChromeFrameAutomationClient> client;
+  client = new ChromeFrameAutomationClient;
   client->set_use_chrome_network(false);
   cfd.SetAutomationSender(client.get());
 
@@ -1131,7 +1131,7 @@ TEST(CFACWithChrome, UseHostNetworkStack) {
 
   loop.RunFor(10);
   client->Uninitialize();
-  client.reset(NULL);
+  client = NULL;
 }
 
 
@@ -1158,7 +1158,8 @@ class CFACMockTest : public testing::Test {
   scoped_ptr<AutomationHandleTracker> tracker_;
   MockAutomationMessageSender dummy_sender_;
   scoped_refptr<TabProxy> tab_;
-  scoped_ptr<ChromeFrameAutomationClient> client_;  // the victim of all tests
+  // the victim of all tests
+  scoped_refptr<ChromeFrameAutomationClient> client_;
 
   std::wstring profile_;
   int timeout_;
@@ -1210,7 +1211,7 @@ class CFACMockTest : public testing::Test {
     dummy_sender_.ForwardTo(&proxy_);
     tracker_.reset(new AutomationHandleTracker(&dummy_sender_));
 
-    client_.reset(new ChromeFrameAutomationClient);
+    client_ = new ChromeFrameAutomationClient;
     client_->set_proxy_factory(&factory_);
   }
 };
