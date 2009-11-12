@@ -427,28 +427,16 @@ TEST_F(SessionRestoreUITest, ShareProcessesOnRestore) {
 
   // Create two new tabs.
   ASSERT_TRUE(browser_proxy->RunCommand(IDC_NEW_TAB));
+  ASSERT_TRUE(browser_proxy->RunCommand(IDC_NEW_TAB));
   int new_tab_count;
   ASSERT_TRUE(browser_proxy->GetTabCount(&new_tab_count));
-  ASSERT_EQ(++tab_count, new_tab_count);
-  scoped_refptr<TabProxy> last_tab(browser_proxy->GetTab(tab_count - 1));
-  ASSERT_TRUE(last_tab.get() != NULL);
-  // Do a reload to ensure new tab page has loaded.
-  ASSERT_TRUE(last_tab->Reload());
-
-  ASSERT_TRUE(browser_proxy->RunCommand(IDC_NEW_TAB));
-  ASSERT_TRUE(browser_proxy->GetTabCount(&new_tab_count));
-  ASSERT_EQ(++tab_count, new_tab_count);
-  last_tab = browser_proxy->GetTab(tab_count - 1);
-  ASSERT_TRUE(last_tab.get() != NULL);
-  // Do a reload to ensure new tab page has loaded.
-  ASSERT_TRUE(last_tab->Reload());
+  ASSERT_EQ(tab_count + 2, new_tab_count);
 
   int expected_process_count = GetBrowserProcessCount();
-  int expected_tab_count = tab_count;
+  int expected_tab_count = new_tab_count;
 
   // Restart.
   browser_proxy = NULL;
-  last_tab = NULL;
   QuitBrowserAndRestore(3);
 
   // Wait for each tab to finish being restored, then make sure the process
