@@ -886,7 +886,7 @@ void BookmarkManagerGtk::OnRightSelectionChanged(GtkTreeSelection* selection,
   bm->ResetOrganizeMenu(false);
 }
 
-// statuc
+// static
 void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
     GtkWidget* tree_view,
     GdkDragContext* context,
@@ -896,7 +896,7 @@ void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
     guint target_type,
     guint time,
     BookmarkManagerGtk* bm) {
-  gboolean dnd_success = FALSE;
+  gboolean get_nodes_success = FALSE;
   gboolean delete_selection_data = FALSE;
 
   std::vector<const BookmarkNode*> nodes =
@@ -904,9 +904,9 @@ void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
                                             target_type,
                                             bm->profile_,
                                             &delete_selection_data,
-                                            &dnd_success);
+                                            &get_nodes_success);
 
-  if (nodes.empty()) {
+  if (nodes.empty() || !get_nodes_success) {
     gtk_drag_finish(context, FALSE, delete_selection_data, time);
     return;
   }
@@ -924,15 +924,22 @@ void BookmarkManagerGtk::OnLeftTreeViewDragReceived(
   gtk_tree_model_get_iter(GTK_TREE_MODEL(bm->left_store_), &iter, path);
   const BookmarkNode* folder =
       bm->GetNodeAt(GTK_TREE_MODEL(bm->left_store_), &iter);
-  for (std::vector<const BookmarkNode*>::iterator it = nodes.begin();
-       it != nodes.end(); ++it) {
-    // Don't try to drop a node into one of its descendants.
-    if (!folder->HasAncestor(*it))
-      bm->model_->Move(*it, folder, folder->GetChildCount());
+  gboolean dnd_success = FALSE;
+
+  if (folder) {
+    for (std::vector<const BookmarkNode*>::iterator it = nodes.begin();
+         it != nodes.end(); ++it) {
+      // Don't try to drop a node into one of its descendants.
+      if (!folder->HasAncestor(*it)) {
+        bm->model_->Move(*it, folder, folder->GetChildCount());
+        dnd_success = TRUE;
+      }
+    }
   }
 
   gtk_tree_path_free(path);
-  gtk_drag_finish(context, dnd_success, delete_selection_data, time);
+  gtk_drag_finish(context, dnd_success, delete_selection_data && dnd_success,
+                  time);
 }
 
 // static
@@ -1041,7 +1048,7 @@ void BookmarkManagerGtk::OnRightTreeViewDragReceived(
     GtkTreeModel* model = GTK_TREE_MODEL(bm->right_store_);
     gtk_tree_model_get_iter(model, &iter, path);
     const BookmarkNode* node = bm->GetNodeAt(model, &iter);
-    if (node->is_folder()) {
+    if (node && node->is_folder()) {
       parent = node;
       idx = parent->GetChildCount();
     } else {
