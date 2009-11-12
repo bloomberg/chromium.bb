@@ -8,7 +8,7 @@
 <style>
 body {
   font-size: 84%;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Helvetica, Arial, sans-serif;
   padding: 0.75em;
   margin: 0;
   min-width: 45em;
@@ -149,8 +149,10 @@ function computeResults(data) {
 }
 
 function jsinit() {
+  var extension = chrome.extension.getBackgroundPage();
+
   // Run the template to show results
-  var data = window.opener.results;
+  var data = extension.results;
   computeResults(data);
 
   var context = new JsEvalContext(data);
@@ -160,11 +162,10 @@ function jsinit() {
   jstProcess(context, template);
 
   // Set the options
-  var extension = window.opener;
   document.getElementById("iterations").value = extension.iterations;
   document.getElementById("clearconns").checked = extension.clearConnections;
   document.getElementById("clearcache").checked = extension.clearCache;
-  document.getElementById("testurl").value = extension.testUrl;
+  setUrl(extension.testUrl);
 }
 
 function getWidth(mean, max_width) {
@@ -173,7 +174,7 @@ function getWidth(mean, max_width) {
 
 // Apply configuration back to our extension
 function config() {
-  var extension = window.opener;
+  var extension = chrome.extension.getBackgroundPage();
   var iterations = parseInt(document.getElementById("iterations").value);
   var clearConnections = document.getElementById("clearconns").checked;
   var clearCache = document.getElementById("clearcache").checked;
@@ -187,11 +188,13 @@ function config() {
 // Set the url in the benchmark url box.
 function setUrl(url) {
   document.getElementById("testurl").value = url;
+  console.log(url);
+  console.log(document.getElementById("testurl").value);
 }
 
 // Start the benchmark.
 function run() {
-  var extension = window.opener;
+  var extension = chrome.extension.getBackgroundPage();
   var testUrl = document.getElementById("testurl").value;
   extension.testUrl = testUrl;
   extension.run();
@@ -199,7 +202,8 @@ function run() {
 
 // Clear the results
 function clearResults() {
-  window.opener.results.data = new Array();
+  var extension = chrome.extension.getBackgroundPage();
+  extension.results.data = new Array();
   jsinit();
 }
 </script>
@@ -218,7 +222,7 @@ function clearResults() {
 Clear Connections?<input id="clearconns" type="checkbox">
 Clear Cache?<input id="clearcache" type="checkbox">
 <input type="button" value="OK" onclick="config();"><P>
-URL to load <input type="text" id="testurl" size=100 value="http://www.google.com/"></input>
+URL to load <input type="text" id="testurl" size=100>
 <input type="button" value="Run" onclick="run();"><P>
 <p>
 

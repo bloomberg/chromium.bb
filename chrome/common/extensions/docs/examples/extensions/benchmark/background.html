@@ -37,23 +37,28 @@ window.results.data = new Array();
 window.testUrl = "";
 window.windowId = 0;
 
-var optionsForm = 0;
 function show_options() {
-  // This functionality is a bit fragile, probably due to the extension API.
-  // If we open the window from within the getSelected() callback, then the
-  // window opens in a new window rather than a new tab (is that a bug?).
-  // If we open the window before we call getSelected(), then the selected
-  // tab URL will be NULL, because the page won't have loaded yet, but it will
-  // be the selected tab.  So, we do this weird thing where we first call
-  // get selected, knowing that it is asynchronous.  Then we open the window,
-  // and finally when the callback occurs for getSelected, the window will
-  // be created and we can use it.
-  chrome.tabs.getSelected(windowId, function(tab) {
+  chrome.tabs.getSelected(null, function(tab) {
     window.testUrl = tab.url;
-    optionsForm.setUrl(window.testUrl);
+    var tabs = chrome.extension.getExtensionTabs();
+    if (tabs && tabs.length) {
+      tabs[0].setUrl(testUrl);
+      var optionsUrl = chrome.extension.getURL("options.html");
+      chrome.tabs.getAllInWindow(null, function(all) {
+        for (var i = 0; i < all.length; i++) {
+          if (all[i].url == optionsUrl) {
+            chrome.tabs.update(all[i].id, {selected: true });
+            return;
+          }
+        }
+      });
+    } else {
+      chrome.tabs.create({"url":"options.html"});
+    }
   });
-  optionsForm = window.open("options.html", "optionswindow");
 }
+
+chrome.browserAction.onClicked.addListener(show_options);
 
 function Benchmark() {
   var runCount_ = 0;
@@ -110,19 +115,27 @@ function Benchmark() {
     // push the result
     window.results.data.push(current_);
     current_ = 0;
-
-    // show the latest
-    show_options();
   }
 
   // Update the UI after a test run.
   this.displayResults = function() {
-    var span = document.getElementById("result");
     var score = 0;
     if (count_ > 0) {
       score = totalTime_ / count_;
+      var text = score.toFixed(1) + "ms avg";
+      chrome.browserAction.setTitle({"title": text});
     }
-    span.innerHTML = score.toFixed(1) + " (" + (runCount_) + ")";
+    if (runCount_) {
+      chrome.browserAction.setBadgeText({"text": "" + runCount_});
+      chrome.browserAction.setBadgeBackgroundColor({"color": [255, 0, 0, 255]});
+    } else {
+      chrome.browserAction.setBadgeText({"text": "" + score.toFixed()});
+      chrome.browserAction.setBadgeBackgroundColor({"color": [0, 255, 0, 255]});
+      var tabs = chrome.extension.getExtensionTabs();
+      if (tabs && tabs.length) {
+        tabs[0].location.reload();
+      }
+    }
   }
 
   // Run a single page in the benchmark
@@ -184,7 +197,6 @@ chrome.extension.onConnect.addListener(function(port) {
 });
 
 function run() {
-  show_options();
   var urls = testUrl.split(",");
   for (var i = 0; i < urls.length; i++) {
     var benchmark = new Benchmark();
@@ -198,16 +210,3 @@ chrome.windows.getCurrent(function(currentWindow) {
   window.windowId = currentWindow.id;
 });
 </script>
-
-<style>
-#result {
-  color: green;
-  text-align: center;
-  vertical-align: center;
-}
-</style>
-
-<div id="bench">
-<img src="stopwatch.jpg" height="25" width="25" align=top onclick="show_options()">
-<span id="result"></span>
-</div>

@@ -64,7 +64,7 @@ class BenchmarkingWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> GetCounter(const v8::Arguments& args) {
-    if (!args.Length() || !args[0]->IsString())
+    if (!args.Length() || !args[0]->IsString() || !StatsTable::current())
       return v8::Undefined();
 
     // Extract the name argument

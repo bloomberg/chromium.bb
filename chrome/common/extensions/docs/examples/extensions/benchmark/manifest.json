@@ -2,9 +2,12 @@
   "name": "Page Benchmarker",
   "version": "1.0",
   "description": "Chromium Page Benchmarker.",
-  "toolstrips": [
-    "toolstrip.html"
-  ],
+  "background_page": "background.html",
+  "browser_action": {
+    "default_title": "Benchmark page load time",
+    "default_icon": "stopwatch.jpg"
+  },
+  "options_page": "options.html",
   "content_scripts": [
     {
       "matches": ["http://*/*"],

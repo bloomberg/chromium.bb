@@ -457,7 +457,8 @@ int ChromeMain(int argc, char** argv) {
   // of the process.  It is not cleaned up.
   // TODO(port): we probably need to shut this down correctly to avoid
   // leaking shared memory regions on posix platforms.
-  if (parsed_command_line.HasSwitch(switches::kEnableStatsTable)) {
+  if (parsed_command_line.HasSwitch(switches::kEnableStatsTable) ||
+      parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
     std::string statsfile = StringPrintf("%s-%lld", chrome::kStatsFilename,
                                          static_cast<int64>(browser_pid));
     StatsTable *stats_table = new StatsTable(statsfile,
