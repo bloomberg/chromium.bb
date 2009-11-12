@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Toolstrip) {
   ASSERT_TRUE(RunExtensionTest("toolstrip")) << message_;
 }
+#endif
