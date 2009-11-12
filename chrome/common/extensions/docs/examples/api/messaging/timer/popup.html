@@ -1,0 +1,68 @@
+<head>
+<style>
+tr {
+  white-space: nowrap;
+}
+.results {
+  text-align: right;
+  min-width: 6em;
+}
+</style>
+<script>
+// Tests the roundtrip time of sendRquest().
+function testRequest() {
+  var results = document.getElementById("resultsRequest");
+  results.innerHTML = "running...";
+
+  chrome.tabs.getSelected(null, function(tab) {
+    var timer = new chromium.Interval();
+    timer.start();
+
+    chrome.tabs.sendRequest(tab.id, {counter: 1}, function handler(response) {
+      if (response.counter < 1000) {
+        chrome.tabs.sendRequest(tab.id, {counter: response.counter}, handler);
+      } else {
+        timer.stop();
+        var usec = Math.round(timer.microseconds() / response.counter);
+        results.innerHTML = usec + "usec";
+      }
+    });
+  });
+}
+
+// Tests the roundtrip time of Port.postMessage() after opening a channel.
+function testConnect() {
+  var results = document.getElementById("resultsConnect");
+  results.innerHTML = "running...";
+
+  chrome.tabs.getSelected(null, function(tab) {
+    var timer = new chromium.Interval();
+    timer.start();
+
+    var port = chrome.tabs.connect(tab.id);
+    port.postMessage({counter: 1});
+    port.onMessage.addListener(function getResp(response) {
+      if (response.counter < 1000) {
+        port.postMessage({counter: response.counter});
+      } else {
+        timer.stop();
+        var usec = Math.round(timer.microseconds() / response.counter);
+        results.innerHTML = usec + "usec";
+      }
+    });
+  });
+}
+</script>
+</head>
+<body>
+<table>
+  <tr>
+    <td><button onclick="testRequest()">Measure sendRequest</button></td>
+    <td id="resultsRequest" class="results">(results)</td>
+  </tr>
+  <tr>
+    <td><button onclick="testConnect()">Measure postMessage</button></td>
+    <td id="resultsConnect" class="results">(results)</td>
+  </tr>
+</table>
+</body>
