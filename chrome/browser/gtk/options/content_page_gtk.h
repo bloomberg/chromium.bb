@@ -7,11 +7,13 @@
 
 #include <gtk/gtk.h>
 
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_member.h"
 
-class ContentPageGtk : public OptionsPageBase {
+class ContentPageGtk : public OptionsPageBase,
+                       public ProfileSyncServiceObserver {
  public:
   explicit ContentPageGtk(Profile* profile);
   ~ContentPageGtk();
@@ -20,7 +22,13 @@ class ContentPageGtk : public OptionsPageBase {
     return page_;
   }
 
+  // ProfileSyncServiceObserver method.
+  virtual void OnStateChanged();
+
  private:
+  // Updates various sync controls based on the current sync state.
+  void UpdateSyncControls();
+
   // Overridden from OptionsPageBase.
   virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
@@ -37,6 +45,7 @@ class ContentPageGtk : public OptionsPageBase {
   GtkWidget* InitFormAutofillGroup();
   GtkWidget* InitBrowsingDataGroup();
   GtkWidget* InitThemesGroup();
+  GtkWidget* InitSyncGroup();
 
   // Callback for import button.
   static void OnImportButtonClicked(GtkButton* widget, ContentPageGtk* page);
@@ -73,6 +82,19 @@ class ContentPageGtk : public OptionsPageBase {
   static void OnAutofillRadioToggled(GtkToggleButton* widget,
                                      ContentPageGtk* page);
 
+  // Callback for sync start/stop button.
+  static void OnSyncStartStopButtonClicked(GtkButton* widget,
+                                           ContentPageGtk* page);
+
+  // Callback for sync action link.
+  static void OnSyncActionLinkClicked(GtkButton* widget,
+                                      ContentPageGtk* page);
+
+  // Callback for stop sync dialog.
+  static void OnStopSyncDialogResponse(GtkWidget* widget,
+                                       int response,
+                                       ContentPageGtk* page);
+
   // Widgets for the Password saving group.
   GtkWidget* passwords_asktosave_radio_;
   GtkWidget* passwords_neversave_radio_;
@@ -89,6 +111,13 @@ class ContentPageGtk : public OptionsPageBase {
   GtkWidget* gtk_theme_button_;
 #endif
 
+  // Widgets for the Sync group.
+  GtkWidget* sync_status_label_background_;
+  GtkWidget* sync_status_label_;
+  GtkWidget* sync_action_link_background_;
+  GtkWidget* sync_action_link_;
+  GtkWidget* sync_start_stop_button_;
+
   // The parent GtkTable widget
   GtkWidget* page_;
 
@@ -102,6 +131,10 @@ class ContentPageGtk : public OptionsPageBase {
   bool initializing_;
 
   NotificationRegistrar registrar_;
+
+  // Cached pointer to ProfileSyncService, if it exists. Kept up to date
+  // and NULL-ed out on destruction.
+  ProfileSyncService* sync_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentPageGtk);
 };

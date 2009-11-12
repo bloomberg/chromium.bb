@@ -17,6 +17,7 @@
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -27,15 +28,34 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
+// Background color for the status label when it's showing an error.
+static const GdkColor kSyncLabelErrorBgColor = GDK_COLOR_RGB(0xff, 0x9a, 0x9a);
+
 ///////////////////////////////////////////////////////////////////////////////
 // ContentPageGtk, public:
 
 ContentPageGtk::ContentPageGtk(Profile* profile)
     : OptionsPageBase(profile),
-      initializing_(true) {
+      sync_status_label_background_(NULL),
+      sync_status_label_(NULL),
+      sync_action_link_background_(NULL),
+      sync_action_link_(NULL),
+      sync_start_stop_button_(NULL),
+      initializing_(true),
+      sync_service_(NULL) {
+  if (profile->GetProfileSyncService()) {
+    sync_service_ = profile->GetProfileSyncService();
+    sync_service_->AddObserver(this);
+  }
 
   // Prepare the group options layout.
   OptionsLayoutBuilderGtk options_builder;
+  if (sync_service_) {
+    options_builder.AddOptionGroup(
+        l10n_util::GetStringUTF8(IDS_SYNC_OPTIONS_GROUP_NAME),
+        InitSyncGroup(), false);
+    UpdateSyncControls();
+  }
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_GROUP_NAME),
       InitPasswordSavingGroup(), false);
@@ -69,6 +89,19 @@ ContentPageGtk::ContentPageGtk(Profile* profile)
 }
 
 ContentPageGtk::~ContentPageGtk() {
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// ContentsPageView, ProfileSyncServiceObserver implementation:
+
+void ContentPageGtk::OnStateChanged() {
+  // If the UI controls are not yet initialized, then don't do anything. This
+  // can happen if the Options dialog is up, but the Content tab is not yet
+  // clicked.
+  if (!initializing_)
+    UpdateSyncControls();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -274,6 +307,86 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   return vbox;
 }
 
+GtkWidget* ContentPageGtk::InitSyncGroup() {
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
+  // Sync label.
+  GtkWidget* label_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
+  sync_status_label_background_ = gtk_event_box_new();
+  sync_status_label_ = gtk_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(sync_status_label_), TRUE);
+  gtk_misc_set_alignment(GTK_MISC(sync_status_label_), 0, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), label_hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(label_hbox), sync_status_label_background_, FALSE,
+                     FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(sync_status_label_background_),
+                    sync_status_label_);
+
+  // Sync action link.
+  GtkWidget* link_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
+  sync_action_link_background_ = gtk_event_box_new();
+  sync_action_link_ = gtk_chrome_link_button_new("");
+  g_signal_connect(G_OBJECT(sync_action_link_), "clicked",
+                   G_CALLBACK(OnSyncActionLinkClicked), this);
+  gtk_box_pack_start(GTK_BOX(vbox), link_hbox, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(link_hbox), sync_action_link_background_, FALSE,
+                     FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(sync_action_link_background_),
+                    sync_action_link_);
+
+  // Add the sync button into its own horizontal box so it does not
+  // depend on the spacing above.
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
+  gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
+  sync_start_stop_button_ = gtk_button_new_with_label("");
+  g_signal_connect(G_OBJECT(sync_start_stop_button_), "clicked",
+                   G_CALLBACK(OnSyncStartStopButtonClicked), this);
+  gtk_box_pack_start(GTK_BOX(button_hbox), sync_start_stop_button_, FALSE,
+                     FALSE, 0);
+
+  return vbox;
+}
+
+void ContentPageGtk::UpdateSyncControls() {
+  DCHECK(sync_service_);
+  string16 status_label;
+  string16 link_label;
+  std::string button_label;
+  bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
+  bool status_has_error = SyncStatusUIHelper::GetLabels(sync_service_,
+      &status_label, &link_label) == SyncStatusUIHelper::SYNC_ERROR;
+  if (sync_setup_completed) {
+    button_label = l10n_util::GetStringUTF8(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
+  } else if (sync_service_->SetupInProgress()) {
+    button_label = l10n_util::GetStringUTF8(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+  } else {
+    button_label = l10n_util::GetStringUTF8(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+  }
+
+  gtk_label_set_label(GTK_LABEL(sync_status_label_),
+                      UTF16ToUTF8(status_label).c_str());
+  gtk_widget_set_sensitive(sync_start_stop_button_,
+                           !sync_service_->WizardIsVisible());
+  gtk_button_set_label(GTK_BUTTON(sync_start_stop_button_),
+                       button_label.c_str());
+  gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(sync_action_link_),
+                                   UTF16ToUTF8(link_label).c_str());
+  if (link_label.empty()) {
+    gtk_widget_hide(sync_action_link_);
+  } else {
+    gtk_widget_show(sync_action_link_);
+  }
+  if (status_has_error) {
+    gtk_widget_modify_bg(sync_status_label_background_, GTK_STATE_NORMAL,
+                         &kSyncLabelErrorBgColor);
+    gtk_widget_modify_bg(sync_action_link_background_, GTK_STATE_NORMAL,
+                         &kSyncLabelErrorBgColor);
+  } else {
+    gtk_widget_modify_bg(sync_status_label_background_, GTK_STATE_NORMAL, NULL);
+    gtk_widget_modify_bg(sync_action_link_background_, GTK_STATE_NORMAL, NULL);
+  }
+}
+
 // static
 void ContentPageGtk::OnImportButtonClicked(GtkButton* widget,
                                            ContentPageGtk* page) {
@@ -392,4 +505,58 @@ void ContentPageGtk::OnAutofillRadioToggled(GtkToggleButton* widget,
                                   page->profile()->GetPrefs());
   }
   page->ask_to_save_form_autofill_.SetValue(enabled);
+}
+
+// static
+void ContentPageGtk::OnSyncStartStopButtonClicked(GtkButton* widget,
+                                                  ContentPageGtk* page) {
+  DCHECK(page->sync_service_);
+
+  if (page->sync_service_->HasSyncSetupCompleted()) {
+    GtkWidget* dialog = gtk_message_dialog_new(
+        GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
+        static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL),
+        GTK_MESSAGE_WARNING,
+        GTK_BUTTONS_NONE,
+        "%s",
+        l10n_util::GetStringUTF8(
+            IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL).c_str());
+    gtk_window_set_title(GTK_WINDOW(dialog),
+                         l10n_util::GetStringUTF8(
+                             IDS_SYNC_STOP_SYNCING_BUTTON_LABEL).c_str());
+    gtk_dialog_add_buttons(
+        GTK_DIALOG(dialog),
+        l10n_util::GetStringUTF8(
+            IDS_SYNC_STOP_SYNCING_CONFIRM_BUTTON_LABEL).c_str(),
+        GTK_RESPONSE_ACCEPT,
+        l10n_util::GetStringUTF8(IDS_CANCEL).c_str(),
+        GTK_RESPONSE_REJECT,
+        NULL);
+
+    g_signal_connect(dialog, "response",
+                     G_CALLBACK(OnStopSyncDialogResponse), page);
+
+    gtk_widget_show_all(dialog);
+    return;
+  } else {
+    page->sync_service_->EnableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_OPTIONS);
+  }
+}
+
+// static
+void ContentPageGtk::OnSyncActionLinkClicked(GtkButton* widget,
+                                             ContentPageGtk* page) {
+  DCHECK(page->sync_service_);
+  page->sync_service_->ShowLoginDialog();
+}
+
+// static
+void ContentPageGtk::OnStopSyncDialogResponse(GtkWidget* widget, int response,
+                                              ContentPageGtk* page) {
+  if (response == GTK_RESPONSE_ACCEPT) {
+    page->sync_service_->DisableForUser();
+    ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+  }
+  gtk_widget_destroy(widget);
 }
