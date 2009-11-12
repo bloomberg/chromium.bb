@@ -39,6 +39,8 @@
       'glue/devtools/js/devtools_host_stub.js',
       'glue/devtools/js/tests.js',
     ],
+
+    'debug_devtools%': 0,
   },
   'targets': [
     {
@@ -450,15 +452,24 @@
       'dependencies': [
         'devtools_html',
       ],
+      'conditions': [
+        ['debug_devtools==0', {
+          'dependencies+': [
+            'concatenated_devtools_js',
+          ],
+        }],
+      ],
       'copies': [
         {
           'destination': '<(PRODUCT_DIR)/resources/inspector',
           'files': [
-
             '<@(devtools_files)',
-
             '<@(webinspector_files)',
-
+          ],
+          'conditions': [
+            ['debug_devtools==0', {
+              'files/': [['exclude', '\\.js$']],
+            }],
           ],
         },
         {
@@ -501,7 +512,33 @@
           'action': ['python', '<@(_inputs)', '<@(_outputs)', '<@(devtools_files)'],
         },
       ],
-    }
+    },
+    {
+      'target_name': 'concatenated_devtools_js',
+      'type': 'none',
+      'msvs_guid': '8CCFDF4A-B702-4988-9207-623D1477D3E7',
+      'dependencies': [
+        'devtools_html',
+      ],
+      'sources': [
+        '<(PRODUCT_DIR)/resources/inspector/devtools.js',
+      ],
+      'actions': [
+        {
+          'action_name': 'concatenate_devtools_js',
+          'inputs': [
+            'build/concatenate_js_files.py',
+            '<(PRODUCT_DIR)/resources/inspector/devtools.html',
+            '<@(webinspector_files)',
+            '<@(devtools_files)',
+          ],
+          'outputs': [
+            '<(PRODUCT_DIR)/resources/inspector/devtools.js',
+          ],
+          'action': ['python', '<@(_inputs)', '<@(_outputs)'],
+        },
+      ],
+    },
   ], # targets
 }
 
