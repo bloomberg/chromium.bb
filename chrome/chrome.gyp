@@ -3573,14 +3573,6 @@
               'message': 'Generating manpage'
             },
           ],
-          'conditions': [
-            [ 'linux_use_tcmalloc==1', {
-                'dependencies': [
-                  '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
-                ],
-              },
-            ],
-          ],
           'dependencies': [
             # On Linux, link the dependencies (libraries) that make up actual
             # Chromium functionality directly into the executable.
