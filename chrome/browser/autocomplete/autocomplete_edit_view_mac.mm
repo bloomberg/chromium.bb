@@ -330,6 +330,13 @@ void AutocompleteEditViewMac::SetWindowTextAndCaretPos(const std::wstring& text,
   SetTextAndSelectedRange(text, NSMakeRange(caret_pos, caret_pos));
 }
 
+bool AutocompleteEditViewMac::IsSelectAll() {
+  if (![field_ currentEditor])
+    return true;
+  const NSRange all_range = NSMakeRange(0, [[field_ stringValue] length]);
+  return NSEqualRanges(all_range, GetSelectedRange());
+}
+
 void AutocompleteEditViewMac::SelectAll(bool reversed) {
   // TODO(shess): Figure out what |reversed| implies.  The gtk version
   // has it imply inverting the selection front to back, but I don't
@@ -610,10 +617,8 @@ void AutocompleteEditViewMac::OnPaste() {
   if ([editor shouldChangeTextInRange:selectedRange replacementString:s]) {
     // If this paste will be replacing all the text, record that, so
     // we can do different behaviors in such a case.
-    const NSRange allRange = NSMakeRange(0, [[field_ stringValue] length]);
-    if (NSEqualRanges(allRange, selectedRange)) {
+    if (IsSelectAll())
       model_->on_paste_replacing_all();
-    }
 
     // Force a Paste operation to trigger the text_changed code in
     // OnAfterPossibleChange(), even if identical contents are pasted

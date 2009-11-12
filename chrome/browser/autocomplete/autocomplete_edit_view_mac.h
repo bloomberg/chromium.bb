@@ -71,10 +71,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
 
   virtual void SetForcedQuery() { NOTIMPLEMENTED(); }
 
-  virtual bool IsSelectAll() {
-    NOTIMPLEMENTED();
-    return false;
-  }
+  virtual bool IsSelectAll();
 
   virtual void SelectAll(bool reversed);
   virtual void RevertAll();
