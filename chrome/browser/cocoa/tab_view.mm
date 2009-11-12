@@ -116,6 +116,28 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   }
 }
 
+// The tracking areas have been moved. Make sure that the close button is
+// highlighting correctly with respect to the cursor position with the new
+// tracking area locations.
+- (void)updateTrackingAreas {
+  [super updateTrackingAreas];
+
+  // Update the close buttons if the tab has moved.
+  NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
+  mouseLoc = [self convertPointFromBase:mouseLoc];
+  NSString* name = nil;
+  if (NSPointInRect(mouseLoc, [closeButton_ frame])) {
+    name = @"close_bar_h.pdf";
+  } else {
+    name = @"close_bar.pdf";
+  }
+  NSImage* newImage = nsimage_cache::ImageNamed(name);
+  NSImage* buttonImage = [closeButton_ image];
+  if (![buttonImage isEqual:newImage]) {
+    [closeButton_ setImage:newImage];
+  }
+}
+
 // Determines which view a click in our frame actually hit. It's either this
 // view or our child close button.
 - (NSView*)hitTest:(NSPoint)aPoint {
