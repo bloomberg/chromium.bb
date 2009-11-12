@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -201,9 +201,9 @@ bool SafeBrowsingDatabaseBloom::ResetDatabase() {
     return false;
   }
 
+  DeleteBloomFilter();
   bloom_filter_ = new BloomFilter(BloomFilter::kBloomFilterMinSize *
                                   BloomFilter::kBloomFilterSizeRatio);
-  file_util::Delete(bloom_filter_filename_, false);
 
   // TODO(paulg): Fix potential infinite recursion between Open and Reset.
   return Open();
@@ -271,8 +271,7 @@ bool SafeBrowsingDatabaseBloom::ContainsUrl(
       // and then fall back to the full hash if there's a hit.
       base::SHA256HashString(hosts[i] + paths[j], &full_hash,
                              sizeof(SBFullHash));
-      SBPrefix prefix;
-      memcpy(&prefix, &full_hash, sizeof(SBPrefix));
+      SBPrefix prefix = *reinterpret_cast<SBPrefix*>(&full_hash);
       if (bloom_filter_->Exists(prefix))
         prefix_hits->push_back(prefix);
     }
@@ -399,9 +398,8 @@ void SafeBrowsingDatabaseBloom::InsertAdd(SBPrefix host, SBEntry* entry) {
   if (entry->type() == SBEntry::ADD_FULL_HASH) {
     base::Time receive_time = base::Time::Now();
     for (int i = 0; i < entry->prefix_count(); ++i) {
-      SBPrefix prefix;
       SBFullHash full_hash = entry->FullHashAt(i);
-      memcpy(&prefix, full_hash.full_hash, sizeof(SBPrefix));
+      SBPrefix prefix = *reinterpret_cast<SBPrefix*>(&full_hash);
       InsertAddPrefix(prefix, encoded);
       InsertAddFullHash(prefix, encoded, receive_time, full_hash);
     }
@@ -476,9 +474,8 @@ void SafeBrowsingDatabaseBloom::InsertSub(
 
   if (entry->type() == SBEntry::SUB_FULL_HASH) {
     for (int i = 0; i < entry->prefix_count(); ++i) {
-      SBPrefix prefix;
       SBFullHash full_hash = entry->FullHashAt(i);
-      memcpy(&prefix, full_hash.full_hash, sizeof(SBPrefix));
+      SBPrefix prefix = *reinterpret_cast<SBPrefix*>(&full_hash);
       encoded_add = EncodeChunkId(entry->ChunkIdAtPrefix(i), entry->list_id());
       InsertSubPrefix(prefix, encoded, encoded_add);
       InsertSubFullHash(prefix, encoded, encoded_add, full_hash, false);
@@ -1072,8 +1069,7 @@ void SafeBrowsingDatabaseBloom::WriteFullHashList(const HashList& hash_list,
   HashList::const_iterator lit = hash_list.begin();
   for (; lit != hash_list.end(); ++lit) {
     const HashCacheEntry& entry = *lit;
-    SBPrefix prefix;
-    memcpy(&prefix, entry.full_hash.full_hash, sizeof(SBPrefix));
+    SBPrefix prefix = *reinterpret_cast<const SBPrefix*>(&entry.full_hash);
     if (is_add) {
       if (add_del_cache_.find(entry.add_chunk_id) == add_del_cache_.end()) {
         InsertAddFullHash(prefix, entry.add_chunk_id,
@@ -1340,9 +1336,7 @@ void SafeBrowsingDatabaseBloom::GetCachedFullHashes(
         // receive the next update (that doesn't sub it).
         if (max_age < last_update || eit->received > max_age) {
           SBFullHashResult full_hash;
-          memcpy(&full_hash.hash.full_hash,
-                 &eit->full_hash.full_hash,
-                 sizeof(SBFullHash));
+          full_hash.hash = eit->full_hash;
           full_hash.list_name = safe_browsing_util::GetListName(eit->list_id);
           full_hash.add_chunk_id = eit->add_chunk_id;
           full_hits->push_back(full_hash);
@@ -1374,14 +1368,13 @@ void SafeBrowsingDatabaseBloom::CacheHashResults(
   const Time now = Time::Now();
   for (std::vector<SBFullHashResult>::const_iterator it = full_hits.begin();
        it != full_hits.end(); ++it) {
-    SBPrefix prefix;
-    memcpy(&prefix, &it->hash.full_hash, sizeof(SBPrefix));
+    SBPrefix prefix = *reinterpret_cast<const SBPrefix*>(&it->hash);
     HashList& entries = (*hash_cache_)[prefix];
     HashCacheEntry entry;
     entry.received = now;
     entry.list_id = safe_browsing_util::GetListId(it->list_name);
     entry.add_chunk_id = EncodeChunkId(it->add_chunk_id, entry.list_id);
-    memcpy(&entry.full_hash, &it->hash.full_hash, sizeof(SBFullHash));
+    entry.full_hash = it->hash;
     entries.push_back(entry);
 
     // Also push a copy to the pending write queue.

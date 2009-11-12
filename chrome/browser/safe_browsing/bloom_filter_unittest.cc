@@ -1,7 +1,6 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
 
 #include "chrome/browser/safe_browsing/bloom_filter.h"
 
@@ -20,24 +19,24 @@
 
 namespace {
 
-uint32 GenHash() {
-  return static_cast<uint32>(base::RandUint64());
+SBPrefix GenHash() {
+  return static_cast<SBPrefix>(base::RandUint64());
 }
 
 }
 
 TEST(SafeBrowsingBloomFilter, BloomFilterUse) {
   // Use a small number for unit test so it's not slow.
-  uint32 count = 1000;
+  int count = 1000;
 
   // Build up the bloom filter.
   scoped_refptr<BloomFilter> filter =
       new BloomFilter(count * BloomFilter::kBloomFilterSizeRatio);
 
-  typedef std::set<int> Values;
+  typedef std::set<SBPrefix> Values;
   Values values;
-  for (uint32 i = 0; i < count; ++i) {
-    uint32 value = GenHash();
+  for (int i = 0; i < count; ++i) {
+    SBPrefix value = GenHash();
     values.insert(value);
     filter->Insert(value);
   }
@@ -49,24 +48,23 @@ TEST(SafeBrowsingBloomFilter, BloomFilterUse) {
       new BloomFilter(data_copy, filter->size(), filter->hash_keys_);
 
   // Check no false negatives by ensuring that every time we inserted exists.
-  for (Values::iterator i = values.begin(); i != values.end(); ++i) {
+  for (Values::const_iterator i = values.begin(); i != values.end(); ++i)
     EXPECT_TRUE(filter_copy->Exists(*i));
-  }
 
   // Check false positive error rate by checking the same number of items that
   // we inserted, but of different values, and calculating what percentage are
   // "found".
-  uint32 found_count = 0;
-  uint32 checked = 0;
+  int found_count = 0;
+  int checked = 0;
   while (true) {
-    uint32 value = GenHash();
-    if (values.find(value) != values.end())
+    SBPrefix value = GenHash();
+    if (values.count(value))
       continue;
 
     if (filter_copy->Exists(value))
       found_count++;
 
-    checked ++;
+    checked++;
     if (checked == count)
       break;
   }
@@ -106,14 +104,13 @@ TEST(SafeBrowsingBloomFilter, BloomFilterFile) {
   // Check data consistency.
   EXPECT_EQ(filter_write->hash_keys_.size(), filter_read->hash_keys_.size());
 
-  for (int i = 0; i < static_cast<int>(filter_write->hash_keys_.size()); ++i)
+  for (size_t i = 0; i < filter_write->hash_keys_.size(); ++i)
     EXPECT_EQ(filter_write->hash_keys_[i], filter_read->hash_keys_[i]);
 
   EXPECT_EQ(filter_write->size(), filter_read->size());
 
-  EXPECT_TRUE(memcmp(filter_write->data(),
-                     filter_read->data(),
-                     filter_read->size()) == 0);
+  EXPECT_EQ(0,
+      memcmp(filter_write->data(), filter_read->data(), filter_read->size()));
 
   file_util::Delete(filter_path, false);
 }

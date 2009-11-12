@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -23,19 +23,23 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/basictypes.h"
+#include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
  public:
+  typedef uint64 HashKey;
+  typedef std::vector<HashKey> HashKeys;
+
   // Constructs an empty filter with the given size.
   explicit BloomFilter(int bit_size);
 
   // Constructs a filter from serialized data. This object owns the memory and
   // will delete it on destruction.
-  BloomFilter(char* data, int size, const std::vector<uint64>& keys);
+  BloomFilter(char* data, int size, const HashKeys& keys);
 
-  void Insert(int hash);
-  bool Exists(int hash) const;
+  void Insert(SBPrefix hash);
+  bool Exists(SBPrefix hash) const;
 
   const char* data() const { return data_.get(); }
   int size() const { return byte_size_; }
@@ -70,7 +74,7 @@ class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
   scoped_array<char> data_;
 
   // Random keys used for hashing.
-  std::vector<uint64> hash_keys_;
+  HashKeys hash_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(BloomFilter);
 };

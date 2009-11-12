@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,19 +15,19 @@ namespace {
 
 // The Jenkins 96 bit mix function:
 // http://www.concentric.net/~Ttwang/tech/inthash.htm
-uint32 HashMix(uint64 hash_key, uint32 c) {
+uint32 HashMix(BloomFilter::HashKey hash_key, uint32 c) {
   uint32 a = static_cast<uint32>(hash_key)       & 0xFFFFFFFF;
   uint32 b = static_cast<uint32>(hash_key >> 32) & 0xFFFFFFFF;
 
-  a = a - b;  a = a - c;  a = a ^ (c >> 13);
-  b = b - c;  b = b - a;  b = b ^ (a << 8);
-  c = c - a;  c = c - b;  c = c ^ (b >> 13);
-  a = a - b;  a = a - c;  a = a ^ (c >> 12);
-  b = b - c;  b = b - a;  b = b ^ (a << 16);
-  c = c - a;  c = c - b;  c = c ^ (b >> 5);
-  a = a - b;  a = a - c;  a = a ^ (c >> 3);
-  b = b - c;  b = b - a;  b = b ^ (a << 10);
-  c = c - a;  c = c - b;  c = c ^ (b >> 15);
+  a -= (b + c);  a ^= (c >> 13);
+  b -= (c + a);  b ^= (a << 8);
+  c -= (a + b);  c ^= (b >> 13);
+  a -= (b + c);  a ^= (c >> 12);
+  b -= (c + a);  b ^= (a << 16);
+  c -= (a + b);  c ^= (b >> 5);
+  a -= (b + c);  a ^= (c >> 3);
+  b -= (c + a);  b ^= (a << 10);
+  c -= (a + b);  c ^= (b >> 15);
 
   return c;
 }
@@ -43,7 +43,7 @@ BloomFilter::BloomFilter(int bit_size) {
   memset(data_.get(), 0, byte_size_);
 }
 
-BloomFilter::BloomFilter(char* data, int size, const std::vector<uint64>& keys)
+BloomFilter::BloomFilter(char* data, int size, const HashKeys& keys)
     : hash_keys_(keys) {
   byte_size_ = size;
   bit_size_ = byte_size_ * 8;
@@ -53,31 +53,21 @@ BloomFilter::BloomFilter(char* data, int size, const std::vector<uint64>& keys)
 BloomFilter::~BloomFilter() {
 }
 
-void BloomFilter::Insert(int hash_int) {
-  uint32 hash;
-  memcpy(&hash, &hash_int, sizeof(hash));
-  for (int i = 0; i < static_cast<int>(hash_keys_.size()); ++i) {
-    uint32 mix = HashMix(hash_keys_[i], hash);
-    uint32 index = mix % bit_size_;
-    int byte = index / 8;
-    int bit = index % 8;
-    data_.get()[byte] |= 1 << bit;
+void BloomFilter::Insert(SBPrefix hash) {
+  uint32 hash_uint32 = static_cast<uint32>(hash);
+  for (size_t i = 0; i < hash_keys_.size(); ++i) {
+    uint32 index = HashMix(hash_keys_[i], hash_uint32) % bit_size_;
+    data_[index / 8] |= 1 << (index % 8);
   }
 }
 
-bool BloomFilter::Exists(int hash_int) const {
-  uint32 hash;
-  memcpy(&hash, &hash_int, sizeof(hash));
-  for (int i = 0; i < static_cast<int>(hash_keys_.size()); ++i) {
-    uint32 mix = HashMix(hash_keys_[i], hash);
-    uint32 index = mix % bit_size_;
-    int byte = index / 8;
-    int bit = index % 8;
-    char data = data_.get()[byte];
-    if (!(data & (1 << bit)))
+bool BloomFilter::Exists(SBPrefix hash) const {
+  uint32 hash_uint32 = static_cast<uint32>(hash);
+  for (size_t i = 0; i < hash_keys_.size(); ++i) {
+    uint32 index = HashMix(hash_keys_[i], hash_uint32) % bit_size_;
+    if (!(data_[index / 8] & (1 << (index % 8))))
       return false;
   }
-
   return true;
 }
 
@@ -104,9 +94,9 @@ BloomFilter* BloomFilter::LoadFile(const FilePath& filter_name) {
   if (bytes_read != sizeof(num_keys) || num_keys < 1 || num_keys > kNumHashKeys)
     return NULL;
 
-  std::vector<uint64> hash_keys;
+  HashKeys hash_keys;
   for (int i = 0; i < num_keys; ++i) {
-    uint64 key;
+    HashKey key;
     bytes_read = filter.Read(reinterpret_cast<char*>(&key), sizeof(key), NULL);
     if (bytes_read != sizeof(key))
       return NULL;
