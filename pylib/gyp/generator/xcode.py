@@ -98,7 +98,7 @@ class XcodeProject(object):
       if e.errno != errno.EEXIST:
         raise
 
-  def Finalize1(self, xcode_targets):
+  def Finalize1(self, xcode_targets, serialize_all_tests):
     # Collect a list of all of the build configuration names used by the
     # various targets in the file.  It is very heavily advised to keep each
     # target in an entire project (even across multiple project files) using
@@ -159,10 +159,10 @@ class XcodeProject(object):
     # knowledge of PBXProject - in this case, of its "targets" property.
 
     # ordinary_targets are ordinary targets that are already in the project
-    # file. test_targets are the targets that are unittests and should be used
-    # for the Run All Tests target.
+    # file. run_test_targets are the targets that run unittests and should be
+    # used for the Run All Tests target.
     ordinary_targets = []
-    test_targets = []
+    run_test_targets = []
 
     # targets is full list of targets in the project.
     targets = []
@@ -211,15 +211,13 @@ class XcodeProject(object):
         # test, if this has the 'test' attribute.  If the 'run_as' tag
         # doesn't exist (meaning that this must be a test), then we
         # define a default test command line.
-        # TODO(tvl): chromium specific
         command = target.get('run_as', {
-          'action': ['${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}',
-                     '--gtest_print_time']
+          'action': ['${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}']
           })
 
         script = ''
         if command.get('working_directory'):
-          script = 'cd "%s"\n' % \
+          script = script + 'cd "%s"\n' % \
                    gyp.xcodeproj_file.ConvertVariablesToShellSyntax(
                        command.get('working_directory'))
 
@@ -229,10 +227,24 @@ class XcodeProject(object):
              (key, gyp.xcodeproj_file.ConvertVariablesToShellSyntax(val))
              for (key, val) in command.get('environment').iteritems()]) + "\n"
 
+        # Some test end up using sockets, files on disk, etc. and can get
+        # confused if more then one test runs at a time.  The generator
+        # flag 'xcode_serialize_all_test_runs' controls the forcing of all
+        # tests serially.  It defaults to True.  To get serial runs this
+        # little bit of python does the same as the linux flock utility to
+        # make sure only one runs at a time.
+        command_prefix = ''
+        if is_test and serialize_all_tests:
+          command_prefix = \
+"""python -c "import fcntl, subprocess, sys
+file = open('$TMPDIR/GYP_serialize_test_runs', 'a')
+fcntl.flock(file.fileno(), fcntl.LOCK_EX)
+sys.exit(subprocess.call(sys.argv[1:]))" """
+
         # If we were unable to exec for some reason, we want to exit
         # with an error, and fixup variable references to be shell
         # syntax instead of xcode syntax.
-        script = script + 'exec %s\nexit 1\n' % \
+        script = script + 'exec ' + command_prefix + '%s\nexit 1\n' % \
                  gyp.xcodeproj_file.ConvertVariablesToShellSyntax(
                      gyp.common.EncodePOSIXShellList(command.get('action')))
 
@@ -245,7 +257,8 @@ class XcodeProject(object):
         # Add the run target to the project file.
         targets.append(run_target)
         if is_test:
-          test_targets.append(xcode_target)
+          run_test_targets.append(run_target)
+          xcode_target.test_runner = run_target
 
 
     # Make sure that the list of targets being replaced is the same length as
@@ -287,13 +300,8 @@ class XcodeProject(object):
       # though.
       self.project._properties['targets'].insert(0, all_target)
 
-    # The same, but for test targets.  Because we enable parallel target
-    # builds and a bunch of the unittests reuse common things (test http
-    # server, files on disk), the tests would be flaky if this target simply
-    # depended on the "Run * Tests" targets we generated above.  Instead,
-    # this target directly depends on the tests and uses its own script phases
-    # to run each test.
-    if len(test_targets) > 1:
+    # The same, but for run_test_targets.
+    if len(run_test_targets) > 1:
       xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
       for configuration in configurations:
         xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
@@ -305,17 +313,8 @@ class XcodeProject(object):
             'name':                   'Run All Tests',
           },
           parent=self.project)
-      for test_target in test_targets:
-        run_all_tests_target.AddDependency(test_target)
-        ttpn = test_target.GetProperty('productName')
-        script = 'echo note: running ' + ttpn + '\n' \
-                 'exec "${BUILT_PRODUCTS_DIR}/' + ttpn + '"\nexit 1\n'
-        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
-              'name':             'Run "' + ttpn + '"',
-              'shellScript':      script,
-              'showEnvVarsInLog': 0,
-            })
-        run_all_tests_target.AppendProperty('buildPhases', ssbp)
+      for run_test_target in run_test_targets:
+        run_all_tests_target.AddDependency(run_test_target)
 
       # Insert after the "All" target, which must exist if there is more than
       # one run_test_target.
@@ -331,8 +330,8 @@ class XcodeProject(object):
     # To support making a "test runner" target that will run all the tests
     # that are direct dependents of any given target, we look for
     # xcode_create_dependents_test_runner being set on an Aggregate target,
-    # and generate a second target that will run the tests found under the
-    # marked target.
+    # and generate a second target that will run the tests runners found under
+    # the marked target.
     for bf_tgt in self.build_file_dict['targets']:
       if int(bf_tgt.get('xcode_create_dependents_test_runner', 0)):
         tgt_name = bf_tgt['target_name']
@@ -341,41 +340,27 @@ class XcodeProject(object):
                                                       tgt_name, toolset)
         xcode_target = xcode_targets[qualified_target]
         if isinstance(xcode_target, gyp.xcodeproj_file.PBXAggregateTarget):
-          # Collect all the test targets.
-          all_tests = []
+          # Collect all the run test targets.
+          all_run_tests = []
           pbxtds = xcode_target.GetProperty('dependencies')
           for pbxtd in pbxtds:
             pbxcip = pbxtd.GetProperty('targetProxy')
             dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
             target_dict = xcode_target_to_target_dict[dependency_xct]
             if target_dict and int(target_dict.get('test', 0)):
-              all_tests.append(dependency_xct)
+              assert dependency_xct.test_runner
+              all_run_tests.append(dependency_xct.test_runner)
 
-          # We have to directly depend on all tests and then directly run
-          # them all ourselves.  If we used the runners, it would allow them
-          # to be run in parallel, and as noted on the runner creation, that
-          # could cause things to fail.
-          if len(all_tests) > 0:
+          # Directly depend on all the runners as they depend on the target
+          # that builds them.
+          if len(all_run_tests) > 0:
             run_all_target = gyp.xcodeproj_file.PBXAggregateTarget({
                   'name':        'Run %s Tests' % tgt_name,
                   'productName': tgt_name,
                 },
                 parent=self.project)
-            for test_target in all_tests:
-              # TODO(tvl): chromium specific
-              run_all_target.AddDependency(test_target)
-              ttpn = test_target.GetProperty('productName')
-              proj_name = test_target.PBXProjectAncestor().Name()
-              nice_name = '"' + ttpn + '" from "' + proj_name + '"'
-              script = 'echo note: running ' + nice_name + '\n' + \
-                       'exec "${BUILT_PRODUCTS_DIR}/' + ttpn + \
-                       '" --gtest_print_time\nexit 1\n'
-              ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
-                    'name':             'Run ' + nice_name,
-                    'shellScript':      script,
-                    'showEnvVarsInLog': 0,
-                  })
-              run_all_target.AppendProperty('buildPhases', ssbp)
+            for run_test_target in all_run_tests:
+              run_all_target.AddDependency(run_test_target)
 
             # Insert the test runner after the related target.
             idx = self.project._properties['targets'].index(xcode_target)
@@ -552,6 +537,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
   generator_flags = params.get('generator_flags', {})
   parallel_builds = generator_flags.get('xcode_parallel_builds', True)
+  serialize_all_tests = \
+      generator_flags.get('xcode_serialize_all_test_runs', True)
   xcode_projects = {}
   for build_file, build_file_dict in data.iteritems():
     (build_file_root, build_file_ext) = os.path.splitext(build_file)
@@ -1097,7 +1084,7 @@ exit 1
       build_files.append(build_file)
 
   for build_file in build_files:
-    xcode_projects[build_file].Finalize1(xcode_targets)
+    xcode_projects[build_file].Finalize1(xcode_targets, serialize_all_tests)
 
   for build_file in build_files:
     xcode_projects[build_file].Finalize2(xcode_targets,
