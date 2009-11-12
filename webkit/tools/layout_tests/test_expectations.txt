@@ -1307,7 +1307,7 @@ BUG4360 SKIP : LayoutTests/security/autocomplete-cleared-on-back.html = TIMEOUT
 // Linux pixeltest failure: caret is in the wrong place
 // Upstream WebKit also skips this test and Safari with latest WebKit shows
 // same behavior as Chromium. Not required for beta so marking as deferred.
-BUG10324 WIN LINUX MAC : LayoutTests/editing/selection/caret-rtl-2.html = IMAGE
+BUG10324 : LayoutTests/editing/selection/caret-rtl-2.html = IMAGE
 
 // This test assumes we're using unix paths and looks for a file:///test
 // path.  We correctly return file:///C:/test on Windows.  We should fix
@@ -2267,16 +2267,12 @@ BUG20439 WIN LINUX : LayoutTests/fast/forms/search-transformed.html = FAIL
 BUG10397 LINUX : LayoutTests/fast/transforms/transformed-document-element.html = FAIL
 
 // Merge 39744:39913? - regressions
-BUG10403 : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = TIMEOUT PASS
 BUG10403 LINUX : LayoutTests/svg/custom/animate-path-morphing.svg = FAIL PASS
 BUG10403 LINUX : LayoutTests/svg/custom/circular-marker-reference-1.svg = FAIL PASS
 BUG10403 LINUX : LayoutTests/transitions/change-values-during-transition.html = FAIL PASS
 
 // might need to be rebaselined in win, 'DRAFT' rendering incorrect before
 BUG10405 WIN : LayoutTests/svg/custom/struct-use-09-b.svg = FAIL
-
-// intermittent failures on the buildbot
-BUG10411 WIN RELEASE : LayoutTests/svg/custom/gradient-stop-style-change.svg = FAIL PASS
 
 // New tests added in http://trac.webkit.org/changeset/40424
 // Renders the width of "600" off by 3.  Looks OK but could still be a bug
@@ -2389,10 +2385,10 @@ BUG10458 LINUX : LayoutTests/fast/parser/comment-in-textarea.html = FAIL
 BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-vertical-metrics-adjustment.html = PASS
 
 // New failures from merge
-BUG10463 WIN : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
-BUG10463 RELEASE LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
-BUG10463 DEBUG LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL CRASH
-BUG10463 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL
+BUG27486 WIN : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
+BUG27486 RELEASE LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL
+BUG27486 DEBUG LINUX : LayoutTests/fast/forms/listbox-hit-test-zoomed.html = FAIL CRASH
+BUG27486 WIN LINUX : LayoutTests/fast/forms/slider-zoomed.html = FAIL
 
 // Needs rebaseline. See WebKit 41948
 BUG10468 MAC : LayoutTests/fast/replaced/border-radius-clip.html = FAIL
@@ -2413,9 +2409,6 @@ BUG10473 LINUX : LayoutTests/fast/replaced/width100percent-searchfield.html = FA
 BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = TIMEOUT
 BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT
 BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
-
-// This test isn't just slow -- sometimes it times out indefinitely.
-BUG10475 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
