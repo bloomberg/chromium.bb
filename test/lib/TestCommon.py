@@ -44,6 +44,8 @@ provided by the TestCommon class:
 
     test.must_match('file', "expected contents\n")
 
+    test.must_not_contain('file', 'required text\n')
+
     test.must_not_be_writable('file1', ['file2', ...])
 
     test.must_not_contain_any_line(output, lines, ['title', find])
@@ -332,6 +334,19 @@ class TestCommon(TestCmd):
             print "Unexpected contents of `%s'" % file
             self.diff(expect, file_contents, 'contents ')
             raise
+
+    def must_not_contain(self, file, banned, mode = 'rb'):
+        """Ensures that the specified file doesn't contain the banned text.
+        """
+        file_contents = self.read(file, mode)
+        contains = (string.find(file_contents, banned) != -1)
+        if contains:
+            print "File `%s' contains banned string." % file
+            print self.banner('Banned string ')
+            print banned
+            print self.banner('%s contents ' % file)
+            print file_contents
+            self.fail_test(not contains)
 
     def must_not_contain_any_line(self, output, lines, title=None, find=None):
         """Ensures that the specified output string (first argument)

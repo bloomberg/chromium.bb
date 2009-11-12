@@ -905,17 +905,20 @@ def _GetPathDict(root, path):
   return parent_dict[folder]
 
 
-def _DictsToFolders(base_path, bucket):
+def _DictsToFolders(base_path, bucket, flat):
   # Convert to folders recursively.
   children = []
   for folder, contents in bucket.iteritems():
     if type(contents) == dict:
       folder_children = _DictsToFolders(os.path.join(base_path, folder),
-                                        contents)
-      folder_children = MSVSNew.MSVSFolder(os.path.join(base_path, folder),
-                                           name='(' + folder + ')',
-                                           entries=folder_children)
-      children.append(folder_children)
+                                        contents, flat)
+      if flat:
+        children += folder_children
+      else:
+        folder_children = MSVSNew.MSVSFolder(os.path.join(base_path, folder),
+                                             name='(' + folder + ')',
+                                             entries=folder_children)
+        children.append(folder_children)
     else:
       children.append(contents)
   return children
@@ -936,7 +939,7 @@ def _CollapseSingles(parent, node):
   return node
 
 
-def _GatherSolutionFolders(project_objs):
+def _GatherSolutionFolders(project_objs, flat):
   root = {}
   # Convert into a tree of dicts on path.
   for p in project_objs.keys():
@@ -952,7 +955,7 @@ def _GatherSolutionFolders(project_objs):
   # Collapse singles.
   root = _CollapseSingles('', root)
   # Merge buckets until everything is a root entry.
-  return _DictsToFolders('', root)
+  return _DictsToFolders('', root, flat)
 
 
 def _ProjectObject(sln, qualified_target, project_objs, projects):
@@ -1077,7 +1080,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     for p in sln_projects:
       _ProjectObject(sln_path, p, project_objs, projects)
     # Create folder hierarchy.
-    root_entries = _GatherSolutionFolders(project_objs)
+    root_entries = _GatherSolutionFolders(
+        project_objs, flat=msvs_version.FlatSolution())
     # Create solution.
     sln = MSVSNew.MSVSSolution(sln_path,
                                entries=root_entries,

@@ -16,11 +16,12 @@ class VisualStudioVersion:
   """Information regarding a version of Visual Studio."""
 
   def __init__(self, short_name, description,
-               solution_version, project_version):
+               solution_version, project_version, flat_sln):
     self.short_name = short_name
     self.description = description
     self.solution_version = solution_version
     self.project_version = project_version
+    self.flat_sln = flat_sln
 
   def ShortName(self):
     return self.short_name
@@ -36,6 +37,9 @@ class VisualStudioVersion:
   def ProjectVersion(self):
     """Get the version number of the vcproj files."""
     return self.project_version
+
+  def FlatSolution(self):
+    return self.flat_sln
 
 
 def _RegistryGetValue(key, value):
@@ -66,18 +70,29 @@ def _RegistryGetValue(key, value):
 
 
 def _CreateVersion(name):
-  if name == '2008':
-    return VisualStudioVersion('2008',
-                               'Visual Studio 2008',
-                               solution_version='10.00',
-                               project_version='9.00')
-  elif name == '2005':
-    return VisualStudioVersion('2005',
-                               'Visual Studio 2005',
-                               solution_version='9.00',
-                               project_version='8.00')
-  else:
-    return None
+  versions = {
+      '2008': VisualStudioVersion('2008',
+                                  'Visual Studio 2008',
+                                  solution_version='10.00',
+                                  project_version='9.00',
+                                  flat_sln=False),
+      '2008e': VisualStudioVersion('2008e',
+                                   'Visual Studio 2008',
+                                   solution_version='10.00',
+                                   project_version='9.00',
+                                   flat_sln=True),
+      '2005': VisualStudioVersion('2005',
+                                  'Visual Studio 2005',
+                                  solution_version='9.00',
+                                  project_version='8.00',
+                                  flat_sln=False),
+      '2005e': VisualStudioVersion('2005e',
+                                   'Visual Studio 2005',
+                                   solution_version='9.00',
+                                   project_version='8.00',
+                                   flat_sln=True),
+  }
+  return versions.get(name)
 
 
 def _DetectVisualStudioVersions():
@@ -92,7 +107,7 @@ def _DetectVisualStudioVersions():
       2005 - Visual Studio 2005 (8)
       2008 - Visual Studio 2008 (9)
   """
-  version_to_year = { '8.0': '2005', '9.0': '2008' }
+  version_to_year = {'8.0': '2005', '9.0': '2008'}
   versions = []
   for version in ['9.0', '8.0']:
     # Get the install dir for this version.
@@ -100,11 +115,14 @@ def _DetectVisualStudioVersions():
     path = _RegistryGetValue(key, 'InstallDir')
     if not path:
       continue
-    # Check if there's anything actually there.
-    if not os.path.exists(os.path.join(path, 'devenv.exe')):
-      continue
-    # Add this one.
-    versions.append(_CreateVersion(version_to_year[version]))
+    # Check for full.
+    if os.path.exists(os.path.join(path, 'devenv.exe')):
+      # Add this one.
+      versions.append(_CreateVersion(version_to_year[version]))
+    # Check for express.
+    elif os.path.exists(os.path.join(path, 'vcexpress.exe')):
+      # Add this one.
+      versions.append(_CreateVersion(version_to_year[version] + 'e'))
   return versions
 
 
