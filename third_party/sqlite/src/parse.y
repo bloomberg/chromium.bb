@@ -121,12 +121,7 @@ trans_opt ::= .
 trans_opt ::= TRANSACTION.
 trans_opt ::= TRANSACTION nm.
 %type transtype {int}
-%ifdef SQLITE_TRANSACTION_DEFAULT_IMMEDIATE
-transtype(A) ::= .             {A = TK_IMMEDIATE;}
-%endif  SQLITE_TRANSACTION_DEFAULT_IMMEDIATE
-%ifndef SQLITE_TRANSACTION_DEFAULT_IMMEDIATE
 transtype(A) ::= .             {A = TK_DEFERRED;}
-%endif  SQLITE_TRANSACTION_DEFAULT_IMMEDIATE
 transtype(A) ::= DEFERRED(X).  {A = @X;}
 transtype(A) ::= IMMEDIATE(X). {A = @X;}
 transtype(A) ::= EXCLUSIVE(X). {A = @X;}
