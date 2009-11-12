@@ -40,11 +40,14 @@
     [self updateTheme:[self gtm_theme]];
 }
 
+// Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
   GTMTheme* theme = [aNotification object];
   [self updateTheme:theme];
 }
 
+// Adapt appearance to the current theme. Called after theme changes and before
+// this is shown for the first time.
 - (void)updateTheme:(GTMTheme*)theme {
   NSColor* color = [theme textColorForStyle:GTMThemeStyleBookmarksBarButton
                                       state:GTMThemeStateActiveWindow];

@@ -261,6 +261,7 @@ namespace {
   [super resignMainWindow];
 }
 
+// Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
   GTMTheme* theme = [aNotification object];
   if ([theme isEqual:[self gtm_theme]]) {

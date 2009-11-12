@@ -98,11 +98,14 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   [super dealloc];
 }
 
+// Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
   GTMTheme* theme = [aNotification object];
   [self updateTheme:theme];
 }
 
+// Adapt appearance to the current theme. Called after theme changes and before
+// this is shown for the first time.
 - (void)updateTheme:(GTMTheme*)theme {
   // For the default theme, use a blue color for the link. Ideally, we'd want to
   // compare the current theme id with kDefaultThemeID, but the classic theme

@@ -667,10 +667,11 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   if ([self retainCount] > 1 && [theEvent type] == NSKeyDown) {
     [self interpretKeyEvents:[NSArray arrayWithObject:theEvent]];
 
-    // We don't get insertText: calls if ctrl is down, so synthesize a keypress
-    // event for that case. Note that this makes our behavior deviate from the
-    // windows and linux versions of chrome (however, see http://crbug.com/13891
-    // ), but it makes us similar to how Safari behaves.
+    // We don't get insertText: calls if ctrl is down and not even a keyDown:
+    // call if cmd is down, so synthesize a keypress event for these cases.
+    // Note that this makes our behavior deviate from the windows and linux
+    // versions of chrome (however, see http://crbug.com/13891 ), but it makes
+    // us behave similar to how Safari behaves.
     if ([theEvent modifierFlags] & (NSControlKeyMask | NSCommandKeyMask) &&
         lastKeyPressedEvent_.get() != theEvent &&
         [[theEvent characters] length] > 0 &&
