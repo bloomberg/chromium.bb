@@ -1,7 +1,0 @@
-{
-  "name": "Mole",
-  "description": "Test animated popup moles",
-  "version": "0.1",
-  "toolstrips": ["mole.html"],
-  "permissions": ["tabs"]
-}
