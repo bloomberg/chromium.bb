@@ -71,6 +71,11 @@ class DesktopNotificationService {
  private:
   void InitPrefs();
 
+  // Returns a display name for an origin, to be used in permission infobar
+  // or on the frame of the notification toast.  Different from the origin
+  // itself when dealing with extensions.
+  std::wstring DisplayNameForOrigin(const GURL& origin);
+
   // The profile which owns this object.
   Profile* profile_;
 

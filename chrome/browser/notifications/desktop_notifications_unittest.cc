@@ -32,6 +32,7 @@ void MockBalloonCollection::Add(const Notification& notification,
   // balloon collection.
   Notification test_notification(notification.origin_url(),
                                  notification.content_url(),
+                                 notification.display_source(),
                                  log_proxy_.get());
   BalloonCollectionImpl::Add(test_notification, profile);
 }
@@ -39,6 +40,7 @@ void MockBalloonCollection::Add(const Notification& notification,
 bool MockBalloonCollection::Remove(const Notification& notification) {
   Notification test_notification(notification.origin_url(),
                                  notification.content_url(),
+                                 notification.display_source(),
                                  log_proxy_.get());
   return BalloonCollectionImpl::Remove(test_notification);
 }

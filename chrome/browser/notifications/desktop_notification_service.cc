@@ -11,6 +11,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -26,6 +27,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -100,11 +102,13 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   NotificationPermissionInfoBarDelegate(TabContents* contents,
                                         const GURL& origin,
+                                        const std::wstring& display_name,
                                         int process_id,
                                         int route_id,
                                         int callback_context)
       : ConfirmInfoBarDelegate(contents),
         origin_(origin),
+        display_name_(display_name),
         profile_(contents->profile()),
         process_id_(process_id),
         route_id_(route_id),
@@ -126,8 +130,7 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 
   virtual std::wstring GetMessageText() const {
-    return l10n_util::GetStringF(IDS_NOTIFICATION_PERMISSIONS,
-                                 UTF8ToWide(origin_.spec()));
+    return l10n_util::GetStringF(IDS_NOTIFICATION_PERMISSIONS, display_name_);
   }
 
   virtual SkBitmap* GetIcon() const {
@@ -162,6 +165,10 @@ class NotificationPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
   // The origin we are asking for permissions on.
   GURL origin_;
+
+  // The display name for the origin to be displayed.  Will be different from
+  // origin_ for extensions.
+  std::wstring display_name_;
 
   // The Profile that we restore sessions from.
   Profile* profile_;
@@ -260,8 +267,11 @@ void DesktopNotificationService::RequestPermission(
   TabContents* tab = browser->GetSelectedTabContents();
   if (!tab)
     return;
+
+  std::wstring display_name = DisplayNameForOrigin(origin);
+
   tab->AddInfoBar(new NotificationPermissionInfoBarDelegate(
-      tab, origin, process_id, route_id, callback_context));
+      tab, origin, display_name, process_id, route_id, callback_context));
 }
 
 void DesktopNotificationService::ShowNotification(
@@ -274,7 +284,7 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  Notification notif(GURL(), GURL(), proxy);
+  Notification notif(GURL(), GURL(), L"", proxy);
   return ui_manager_->Cancel(notif);
 }
 
@@ -287,7 +297,7 @@ bool DesktopNotificationService::ShowDesktopNotification(
       new NotificationObjectProxy(process_id, route_id,
                                   notification_id,
                                   source == WorkerNotification);
-  Notification notif(origin, url, proxy);
+  Notification notif(origin, url, DisplayNameForOrigin(origin), proxy);
   ShowNotification(notif);
   return true;
 }
@@ -303,7 +313,22 @@ bool DesktopNotificationService::ShowDesktopNotificationText(
                                   source == WorkerNotification);
   // "upconvert" the string parameters to a data: URL.
   string16 data_url = CreateDataUrl(icon, title, text);
-  Notification notif(origin, GURL(data_url), proxy);
+  Notification notif(
+      origin, GURL(data_url), DisplayNameForOrigin(origin), proxy);
   ShowNotification(notif);
   return true;
+}
+
+std::wstring DesktopNotificationService::DisplayNameForOrigin(
+    const GURL& origin) {
+  // If the source is an extension, lookup the display name.
+  if (origin.SchemeIs(chrome::kExtensionScheme)) {
+    ExtensionsService* ext_service = profile_->GetExtensionsService();
+    if (ext_service) {
+      Extension* extension = ext_service->GetExtensionByURL(origin);
+      if (extension)
+        return ASCIIToWide(extension->name());
+    }
+  }
+  return UTF8ToWide(origin.spec());
 }

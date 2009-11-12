@@ -274,7 +274,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   const std::wstring source_label_text = l10n_util::GetStringF(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
-      ASCIIToWide(this->balloon_->notification().origin_url().spec()));
+      this->balloon_->notification().display_source());
 
   views::Label* source_label = new views::Label(source_label_text);
   source_label->SetFont(ResourceBundle::GetSharedInstance().GetFont(
@@ -310,7 +310,7 @@ void BalloonViewImpl::CreateOptionsMenu() {
 
   const std::wstring label_text = l10n_util::GetStringF(
       IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
-      ASCIIToWide(this->balloon_->notification().origin_url().spec()));
+      this->balloon_->notification().display_source());
 
   options_menu_contents_.reset(new views::SimpleMenuModel(this));
   options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
