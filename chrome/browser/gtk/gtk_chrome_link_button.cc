@@ -70,18 +70,17 @@ static void gtk_chrome_link_button_set_text(GtkChromeLinkButton* button) {
 
   if (native_color) {
     gchar color_spec[9];
-    sprintf(color_spec, 9, "#%02X%02X%02X", native_color->red / 257,
-            native_color->green / 257, native_color->blue / 257);
+    snprintf(color_spec, 9, "#%02X%02X%02X", native_color->red / 257,
+             native_color->green / 257, native_color->blue / 257);
     gdk_color_free(native_color);
 
     if (!uses_markup) {
       button->native_markup = g_markup_printf_escaped(kLinkMarkup,
           color_spec, text);
     } else {
-      button->native_markup = static_cast<gchar*>(
-          g_malloc(strlen(kLinkMarkup) + strlen(color_spec) + strlen(text) +
-                   1));
-      sprintf(button->native_markup, kLinkMarkup, color_spec, text);
+      int length = strlen(kLinkMarkup) + strlen(color_spec) + strlen(text) + 1;
+      button->native_markup = static_cast<gchar*>(g_malloc(length));
+      snprintf(button->native_markup, length, kLinkMarkup, color_spec, text);
     }
   } else {
     // If the theme doesn't have a link color, just use blue. This matches the
