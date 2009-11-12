@@ -96,28 +96,26 @@ o3djs.manipulators.createManager = function(pack,
  * closest-point operations.
  * @constructor
  * @private
- * @param {o3djs.math.Vector3} opt_direction The direction of the
+ * @param {!o3djs.math.Vector3} opt_direction The direction of the
  *     line. Does not need to be normalized but must not be the zero
  *     vector. Defaults to [1, 0, 0] if not specified.
- * @param {o3djs.math.Vector3} opt_point A point through which the
+ * @param {!o3djs.math.Vector3} opt_point A point through which the
  *     line goes. Defaults to [0, 0, 0] if not specified.
  */
 o3djs.manipulators.Line_ = function(opt_direction,
                                     opt_point) {
-  if (opt_direction) {
-    this.direction_ = o3djs.math.copyVector(opt_direction);
-  } else {
-    this.direction_ = [1, 0, 0];
-  }
-
-  if (opt_point) {
-    this.point_ = o3djs.math.copyVector(opt_point);
-  } else {
-    this.point_ = [0, 0, 0];
-  }
-
-  // Helper for computing projections along the line
-  this.alongVec_ = [0, 0, 0];
+  /**
+   * The direction of the line.
+   * @private
+   * @type {!o3djs.math.Vector3}
+   */
+  this.direction_ = o3djs.math.copyVector(opt_direction || [1, 0, 0]);
+  /**
+   * A point through which the line goes.
+   * @private
+   * @type {!o3djs.math.Vector3}
+   */
+  this.point_ = o3djs.math.copyVector(opt_point || [0, 0, 0]);
   this.recalc_();
 }
 
@@ -177,8 +175,24 @@ o3djs.manipulators.Line_.prototype.projectPoint = function(point) {
                                                          this.direction_));
 }
 
+/**
+ * A threshold / error tolerance for determining if a number should be
+ * considered zero.
+ * @type {!number}
+ */
 o3djs.manipulators.EPSILON = 0.00001;
+
+/**
+ * A unit vector pointing along the positive X-axis.
+ * @type {!o3djs.math.Vector3}
+ */
 o3djs.manipulators.X_AXIS = [1, 0, 0];
+
+/**
+ * A unit vector pointing along the positive Z-axis.
+ * @type {!o3djs.math.Vector3}
+ */
+o3djs.manipulators.Z_AXIS = [0, 0, 1];
 
 
 /**
@@ -264,8 +278,14 @@ o3djs.manipulators.Line_.prototype.closestPointToRay = function(startPoint,
 o3djs.manipulators.Line_.prototype.recalc_ = function() {
   var denom = o3djs.math.lengthSquared(this.direction_);
   if (denom == 0.0) {
-    throw 'Line_.recalc: ERROR: direction was the zero vector (not allowed)';
+    throw 'Line_.recalc_: ERROR: direction was the zero vector (not allowed)';
   }
+
+  /**
+   * Helper (internal cache) for computing projections along the line.
+   * @private
+   * @type {!o3djs.math.Vector3}
+   */
   this.alongVec_ =
       o3djs.math.subVector(this.point_,
                            o3djs.math.mulScalarVector(
@@ -274,8 +294,147 @@ o3djs.manipulators.Line_.prototype.recalc_ = function() {
                                this.direction_));
 }
 
+/**
+ * A vector with 4 entries, the R,G,B, and A components of the default color
+ * for manipulators (used when not highlighted).
+ * @type {!o3djs.math.Vector4}
+ */
 o3djs.manipulators.DEFAULT_COLOR = [0.8, 0.8, 0.8, 1.0];
+
+/**
+ * A vector with 4 entries, the R,G,B, and A components of the color used
+ * for manipulators when they are highlighted.
+ * @type {!o3djs.math.Vector4}
+ */
 o3djs.manipulators.HIGHLIGHTED_COLOR = [0.9, 0.9, 0.0, 1.0];
+
+
+/**
+ * Creates a new Plane object.
+ * @constructor
+ * @private
+ * @param {!o3djs.math.Vector3} opt_normal The normal of the
+ *     plane. Does not need to be unit length, but must not be the zero
+ *     vector. Defaults to [0, 1, 0] if not specified.
+ * @param {!o3djs.math.Vector3} opt_point A point through which the
+ *     plane passes. Defaults to [0, 0, 0] if not specified.
+ */
+o3djs.manipulators.Plane_ = function(opt_normal,
+                                     opt_point) {
+  /**
+   * A point through which the plane passes.
+   * @private
+   * @type {!o3djs.math.Vector3}
+   */
+  this.point_ = o3djs.math.copyVector(opt_point || [0, 0, 0]);
+  this.setNormal(opt_normal || [0, 1, 0]);
+}
+
+/**
+ * Sets the normal of this plane.
+ * @private
+ * @param {!o3djs.math.Vector3} normal The new normal of the
+ *     plane. Does not need to be unit length, but must not be the zero
+ *     vector.
+ */
+o3djs.manipulators.Plane_.prototype.setNormal = function(normal) {
+  // Make sure the normal isn't zero.
+  var denom = o3djs.math.lengthSquared(normal);
+  if (denom == 0.0) {
+    throw 'Plane_.setNormal: ERROR: normal was the zero vector (not allowed)';
+  }
+
+  /**
+   * The normal to the plane. Normalized, cannot be zero.
+   * @private
+   * @type {!o3djs.math.Vector3}
+   */
+  this.normal_ = o3djs.math.normalize(normal); // Makes copy.
+  this.recalc_();
+}
+
+/**
+ * Gets the normal of this plane, as a unit vector.
+ * @private
+ * @return {!o3djs.math.Vector3} The (normalized) normal of the plane.
+ */
+o3djs.manipulators.Plane_.prototype.getNormal = function() {
+  return this.normal_;
+}
+
+/**
+ * Sets one point through which this plane passes.
+ * @private
+ * @param {!o3djs.math.Vector3} point A point through which the plane passes.
+ */
+o3djs.manipulators.Plane_.prototype.setPoint = function(point) {
+  this.point_ = o3djs.math.copyVector(point);
+  this.recalc_();
+}
+
+/**
+ * Gets one point through which this plane passes.
+ * @private
+ * @return {!o3djs.math.Vector3} A point which through the plane passes.
+ */
+o3djs.manipulators.Plane_.prototype.getPoint = function() {
+  return this.point_;
+}
+
+/**
+ * Projects a point onto the plane.
+ * @private
+ * @param {!o3djs.math.Vector3} point Point to be projected.
+ * @return {!o3djs.math.Vector3} Point on the plane closest to the
+ *     passed point.
+ */
+o3djs.manipulators.Plane_.prototype.projectPoint = function(point) {
+  var distFromPlane =
+      o3djs.math.dot(this.normal_, point) - this.normalDotPoint_;
+  return o3djs.math.subVector(point,
+                              o3djs.math.mulScalarVector(distFromPlane,
+                                                         this.normal_));
+}
+
+/**
+ * Intersects a ray with the plane. Returns the point of intersection.
+ * This is a two-sided ray cast. If the ray is parallel to the plane,
+ * returns null.
+ * @private
+ * @param {!o3djs.math.Vector3} rayStart Start point of ray.
+ * @param {!o3djs.math.Vector3} rayDirection Direction vector of ray.
+ *     Does not need to be normalized, but must not be the zero vector.
+ * @return {o3djs.math.Vector3} The point of intersection of the ray
+ *     with the plane, or null if the ray is parallel to the plane.
+ */
+o3djs.manipulators.Plane_.prototype.intersectRay = function(rayStart,
+                                                            rayDirection) {
+  var distFromPlane =
+      this.normalDotPoint_ - o3djs.math.dot(this.normal_, rayStart);
+  var denom = o3djs.math.dot(this.normal_, rayDirection);
+  if (denom == 0) {
+    return null;
+  }
+  var t = distFromPlane / denom;
+  return o3djs.math.addVector(rayStart,
+                              o3djs.math.mulScalarVector(t, rayDirection));
+}
+
+/**
+ * Performs internal recalculations when the parameters of the plane change.
+ * @private
+ */
+o3djs.manipulators.Plane_.prototype.recalc_ = function() {
+  /**
+   * Helper (internal cache) for computing projections into the plane.
+   * The dot product between normal_ and point_.
+   * @private
+   * @type {!number}
+   */
+  this.normalDotPoint_ = o3djs.math.dot(this.normal_, this.point_);
+}
+
+
 
 /**
  * Constructs a new manipulator manager. Do not call this directly;
@@ -297,24 +456,64 @@ o3djs.manipulators.Manager = function(pack,
                                       parentTransform,
                                       parentRenderNode,
                                       renderNodePriority) {
+  /**
+   * Pack in which manipulators' geometry and materials are created.
+   * @type {!o3d.Pack}
+   */
   this.pack = pack;
+  /**
+   * The draw list against which internal materials are created.
+   * @type {!o3d.DrawList}
+   */
   this.drawList = drawList;
+  /**
+   * The parent transform under which the manipulators' geometry
+   * shall be parented.
+   * @type {!o3d.Transform}
+   */
   this.parentTransform = parentTransform;
+  /**
+   * The parent render node under which the manipulators' draw elements
+   * shall be placed.
+   * @type {!o3d.RenderNode}
+   */
   this.parentRenderNode = parentRenderNode;
+  /**
+   * The priority that the manipulators' geometry should use for rendering.
+   * @type {number}
+   */
   this.renderNodePriority = renderNodePriority;
 
+  /**
+   * The light position used by the manipulators' shader.
+   * @type {!o3djs.math.Vector3}
+   */
   this.lightPosition = [10, 10, 10];
 
-  // Create the default and highlighted materials.
+  /**
+   * The default material for manipulators (used when not highlighted).
+   * @type {!o3d.Material}
+   */
   this.defaultMaterial =
       this.createPhongMaterial_(o3djs.manipulators.DEFAULT_COLOR);
+  /**
+   * The material used for manipulators when they are highlighted.
+   * (TODO(simonrad): This is not currently used; only defaultMaterial is used. Remove this?)
+   * @type {!o3d.Material}
+   */
   this.highlightedMaterial =
       this.createPhongMaterial_(o3djs.manipulators.HIGHLIGHTED_COLOR);
 
-  // This is a map from the manip's parent Transform clientId to the manip.
+  /**
+   * A map from the manip's parent Transform clientId to the manip.
+   * @type {!Array.<!o3djs.manipulators.Manip>}
+   */
   this.manipsByClientId = [];
 
-  // Presumably we need a TransformInfo for the parentTransform.
+  /**
+   * Presumably we need a TransformInfo for the parentTransform.
+   * @type {!o3djs.picking.TransformInfo}
+   */
   this.transformInfo =
       o3djs.picking.createTransformInfo(this.parentTransform, null);
 
@@ -367,6 +566,17 @@ o3djs.manipulators.Manager.prototype.createPhongMaterial_ =
  */
 o3djs.manipulators.Manager.prototype.createTranslate1 = function() {
   var manip = new o3djs.manipulators.Translate1(this);
+  this.add_(manip);
+  return manip;
+}
+
+/**
+ * Creates a new Translate2 manipulator. A Translate2 moves around the
+ * XY plane in its local coordinate system.
+ * @return {!o3djs.manipulators.Translate2} A new Translate2 manipulator.
+ */
+o3djs.manipulators.Manager.prototype.createTranslate2 = function() {
+  var manip = new o3djs.manipulators.Translate2(this);
   this.add_(manip);
   return manip;
 }
@@ -556,41 +766,68 @@ o3djs.manipulators.Manager.prototype.updateInactiveManipulators = function() {
  *     manipulator.
  */
 o3djs.manipulators.Manip = function(manager) {
+  /**
+   * The manager of this manipulator.
+   * @private
+   * @type {!o3djs.manipulators.Manager}
+   */
   this.manager_ = manager;
   var pack = manager.pack;
-  // This transform holds the local transformation of the manipulator,
-  // which is either applied to the transform to which it is attached,
-  // or (see below) consumed by the user in the manipulator's
-  // callbacks. After each interaction, if there is an attached
-  // transform, this local transform is added in to it and reset to
-  // the identity.
-  // TODO(kbr): add support for user callbacks on manipulators.
+
+  /**
+   * This transform holds the local transformation of the manipulator,
+   * which is either applied to the transform to which it is attached,
+   * or (see below) consumed by the user in the manipulator's
+   * callbacks. After each interaction, if there is an attached
+   * transform, this local transform is added in to it and reset to
+   * the identity.
+   * TODO(kbr): add support for user callbacks on manipulators.
+   * @private
+   * @type {!o3d.Transform}
+   */
   this.localTransform_ = pack.createObject('Transform');
 
-  // This transform provides an offset, if desired, between the
-  // manipulator's geometry and the transform (and, implicitly, the
-  // shape) to which it is attached. This allows the manipulator to be
-  // easily placed below an object, for example.
+  /**
+   * This transform provides an offset, if desired, between the
+   * manipulator's geometry and the transform (and, implicitly, the
+   * shape) to which it is attached. This allows the manipulator to be
+   * easily placed below an object, for example.
+   * @private
+   * @type {!o3d.Transform}
+   */
   this.offsetTransform_ = pack.createObject('Transform');
 
-  // This transform is the one which is actually parented to the
-  // manager's parentTransform. It is used to place the manipulator in
-  // world space, regardless of the world space location of the
-  // parentTransform supplied to the manager. If this manipulator is
-  // attached to a given transform, then upon completion of a
-  // particular drag interaction, this transform is adjusted to take
-  // into account the attached transform's new value.
+  /**
+   * This transform is the one which is actually parented to the
+   * manager's parentTransform. It is used to place the manipulator in
+   * world space, regardless of the world space location of the
+   * parentTransform supplied to the manager. If this manipulator is
+   * attached to a given transform, then upon completion of a
+   * particular drag interaction, this transform is adjusted to take
+   * into account the attached transform's new value.
+   * @private
+   * @type {!o3d.Transform}
+   */
   this.baseTransform_ = pack.createObject('Transform');
 
   // Hook up these transforms
   this.localTransform_.parent = this.offsetTransform_;
   this.offsetTransform_.parent = this.baseTransform_;
 
-  // This is the transform in the scene graph to which this
-  // manipulator is conceptually "attached", and whose local transform
-  // we are modifying.
+  /**
+   * This is the transform in the scene graph to which this
+   * manipulator is conceptually "attached", and whose local transform
+   * we are modifying.
+   * @private
+   * @type {o3d.Transform}
+   */
   this.attachedTransform_ = null;
 
+  /**
+   * Whether this manipulator is active (ie being dragged).
+   * @private
+   * @type {boolean}
+   */
   this.active_ = false;
 }
 
@@ -647,10 +884,9 @@ o3djs.manipulators.Manip.prototype.getTransform = function() {
  */
 o3djs.manipulators.Manip.prototype.setOffsetTranslation =
     function(translation) {
-  this.getOffsetTransform().localMatrix = 
+  this.getOffsetTransform().localMatrix =
     o3djs.math.matrix4.setTranslation(this.getOffsetTransform().localMatrix,
                                       translation);
-
 }
 
 /**
@@ -662,10 +898,9 @@ o3djs.manipulators.Manip.prototype.setOffsetTranslation =
  */
 o3djs.manipulators.Manip.prototype.setOffsetRotation = function(quaternion) {
   var rot = o3djs.quaternions.quaternionToRotation(quaternion);
-  this.getOffsetTransform().localMatrix = 
+  this.getOffsetTransform().localMatrix =
     o3djs.math.matrix4.setUpper3x3(this.getOffsetTransform().localMatrix,
                                    rot);
-  
 }
 
 /**
@@ -676,10 +911,9 @@ o3djs.manipulators.Manip.prototype.setOffsetRotation = function(quaternion) {
  *     this manipulator.
  */
 o3djs.manipulators.Manip.prototype.setTranslation = function(translation) {
-  this.getTransform().localMatrix = 
+  this.getTransform().localMatrix =
     o3djs.math.matrix4.setTranslation(this.getTransform().localMatrix,
                                       translation);
-
 }
 
 /**
@@ -690,10 +924,9 @@ o3djs.manipulators.Manip.prototype.setTranslation = function(translation) {
  */
 o3djs.manipulators.Manip.prototype.setRotation = function(quaternion) {
   var rot = o3djs.quaternions.quaternionToRotation(quaternion);
-  this.getTransform().localMatrix = 
+  this.getTransform().localMatrix =
     o3djs.math.matrix4.setUpper3x3(this.getTransform().localMatrix,
                                    rot);
-  
 }
 
 /**
@@ -746,7 +979,7 @@ o3djs.manipulators.Manip.prototype.makeInactive = function() {
  * Drags this manipulator according to the world-space ray specified
  * by startPoint and endPoint. makeActive must already have been
  * called with the initial pick result causing this manipulator to
- * become active. This method exists only to be overridden.
+ * become active.
  * @param {!o3djs.math.Vector3} startPoint Start point of the
  *     world-space ray through the current mouse position.
  * @param {!o3djs.math.Vector3} endPoint End point of the world-space
@@ -798,7 +1031,7 @@ o3djs.manipulators.Manip.prototype.updateAttachedTransformFromLocalTransform_ =
     var base = this.baseTransform_.worldMatrix;
     var local = this.localTransform_.localMatrix;
     var xlate = o3djs.math.matrix4.getTranslation(local);
-    var transformedXlate = 
+    var transformedXlate =
       o3djs.math.matrix4.transformDirection(
           this.offsetTransform_.localMatrix,
           o3djs.math.matrix4.getTranslation(local));
@@ -823,7 +1056,10 @@ o3djs.manipulators.Manip.prototype.updateAttachedTransformFromLocalTransform_ =
 
 /**
  * Sets the material of the given shape's draw elements.
+ * TODO(simonrad): This function is not used, remove it?
  * @private
+ * @param {!o3d.Shape} shape Shape to modify the material of.
+ * @param {!o3d.Material} material Material to set.
  */
 o3djs.manipulators.Manip.prototype.setMaterial_ = function(shape, material) {
   var elements = shape.elements;
@@ -837,13 +1073,55 @@ o3djs.manipulators.Manip.prototype.setMaterial_ = function(shape, material) {
 
 /**
  * Sets the materials of the given shapes' draw elements.
+ * TODO(simonrad): This function is not used, remove it?
  * @private
+ * @param {!Array.<!o3d.Shape>} shapes Array of shapes to modify the materials of.
+ * @param {!o3d.Material} material Material to set.
  */
 o3djs.manipulators.Manip.prototype.setMaterials_ = function(shapes, material) {
   for (var ii = 0; ii < shapes.length; ii++) {
     this.setMaterial_(shapes[ii], material);
   }
 }
+
+
+/**
+ * Create the geometry for a double-ended arrow going from
+ * (0, -1, 0) to (0, 1, 0), transformed by the given matrix.
+ * @private
+ * @param {!o3djs.math.Matrix4} matrix A matrix by which to multiply
+ *     all the vertices.
+ * @return {!o3djs.primitives.VertexInfo} The created vertices.
+ */
+o3djs.manipulators.createArrowVertices_ = function(matrix) {
+  var matrix4 = o3djs.math.matrix4;
+
+  var verts = o3djs.primitives.createTruncatedConeVertices(
+      0.15,    // Bottom radius.
+      0.0,     // Top radius.
+      0.3,     // Height.
+      4,       // Number of radial subdivisions.
+      1,       // Number of vertical subdivisions.
+      matrix4.mul(matrix4.translation([0, 0.85, 0]), matrix));
+
+  verts.append(o3djs.primitives.createCylinderVertices(
+      0.06,    // Radius.
+      1.4,     // Height.
+      4,       // Number of radial subdivisions.
+      1,       // Number of vertical subdivisions.
+      matrix));
+
+  verts.append(o3djs.primitives.createTruncatedConeVertices(
+      0.0,     // Bottom radius.
+      0.15,    // Top radius.
+      0.3,     // Height.
+      4,       // Number of radial subdivisions.
+      1,       // Number of vertical subdivisions.
+      matrix4.mul(matrix4.translation([0, -0.85, 0]), matrix)));
+
+  return verts;
+}
+
 
 /**
  * A manipulator allowing an object to be dragged along a line.
@@ -862,34 +1140,10 @@ o3djs.manipulators.Translate1 = function(manager) {
   if (!shape) {
     // Create the geometry for the manipulator, which looks like a
     // two-way arrow going from (-1, 0, 0) to (1, 0, 0).
-    var matrix4 = o3djs.math.matrix4;
-    var zRot = matrix4.rotationZ(Math.PI / 2);
-
-    var verts = o3djs.primitives.createTruncatedConeVertices(
-        0.15,  // Bottom radius.
-        0.0,   // Top radius.
-        0.3,   // Height.
-        4,     // Number of radial subdivisions.
-        1,     // Number of vertical subdivisions.
-        matrix4.mul(matrix4.translation([0, 0.85, 0]), zRot));
-
-    verts.append(o3djs.primitives.createCylinderVertices(
-        0.06,     // Radius.
-        1.4,     // Height.
-        4,       // Number of radial subdivisions.
-        1,       // Number of vertical subdivisions.
-        zRot));
-
-    verts.append(o3djs.primitives.createTruncatedConeVertices(
-        0.0,     // Bottom radius.
-        0.15,    // Top radius.
-        0.3,     // Height.
-        4,       // Number of radial subdivisions.
-        1,       // Number of vertical subdivisions.
-        matrix4.mul(matrix4.translation([0, -0.85, 0]), zRot)));
-
+    var verts = o3djs.manipulators.createArrowVertices_(
+        o3djs.math.matrix4.rotationZ(Math.PI / 2));
     shape = verts.createShape(pack, material);
-    manager.translate1Shape_ = shape;    
+    manager.translate1Shape_ = shape;
   }
 
   this.addShapes_([ shape ]);
@@ -897,13 +1151,21 @@ o3djs.manipulators.Translate1 = function(manager) {
   this.transformInfo = o3djs.picking.createTransformInfo(this.getTransform(),
                                                          manager.transformInfo);
 
-  // Add a parameter to our transform to be able to change the
-  // material's color for highlighting.
-  this.colorParam = this.getTransform().createParam('diffuse', 'ParamFloat4');
+  /**
+   * A parameter added to our transform to be able to change the
+   * material's color for highlighting.
+   * @private
+   * @type {!o3d.ParamFloat4}
+   */
+  this.colorParam_ = this.getTransform().createParam('diffuse', 'ParamFloat4');
   this.clearHighlight();
 
-  /** Dragging state */
-  this.dragLine = new o3djs.manipulators.Line_();
+  /**
+   * Line along which we are dragging.
+   * @private
+   * @type {!o3djs.manipulators.Line_}
+   */
+  this.dragLine_ = new o3djs.manipulators.Line_();
 }
 
 o3djs.base.inherit(o3djs.manipulators.Translate1, o3djs.manipulators.Manip);
@@ -912,21 +1174,21 @@ o3djs.manipulators.Translate1.prototype.highlight = function(pickResult) {
   // We can use instanced geometry for the entire Translate1 since its
   // entire color changes during highlighting.
   // TODO(kbr): support custom user geometry and associated callbacks.
-  this.colorParam.value = o3djs.manipulators.HIGHLIGHTED_COLOR;
+  this.colorParam_.value = o3djs.manipulators.HIGHLIGHTED_COLOR;
 }
 
 o3djs.manipulators.Translate1.prototype.clearHighlight = function() {
-  this.colorParam.value = o3djs.manipulators.DEFAULT_COLOR;
+  this.colorParam_.value = o3djs.manipulators.DEFAULT_COLOR;
 }
 
 o3djs.manipulators.Translate1.prototype.makeActive = function(pickResult) {
   o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
   this.highlight(pickResult);
   var worldMatrix = this.getTransform().worldMatrix;
-  this.dragLine.setDirection(
+  this.dragLine_.setDirection(
     o3djs.math.matrix4.transformDirection(worldMatrix,
                                           o3djs.manipulators.X_AXIS));
-  this.dragLine.setPoint(pickResult.worldIntersectionPosition);
+  this.dragLine_.setPoint(pickResult.worldIntersectionPosition);
 }
 
 o3djs.manipulators.Translate1.prototype.makeInactive = function() {
@@ -938,11 +1200,11 @@ o3djs.manipulators.Translate1.prototype.makeInactive = function() {
 
 o3djs.manipulators.Translate1.prototype.drag = function(startPoint,
                                                         endPoint) {
-  // Algorithm: Find closest point of ray to dragLine. Subtract this
+  // Algorithm: Find closest point of ray to dragLine_. Subtract this
   // point from the line's point to find difference vector; transform
   // from world to local coordinates to find new local offset of
   // manipulator.
-  var closestPoint = this.dragLine.closestPointToRay(startPoint, endPoint);
+  var closestPoint = this.dragLine_.closestPointToRay(startPoint, endPoint);
   if (closestPoint == null) {
     // Drag axis is parallel to ray. Punt.
     return;
@@ -950,12 +1212,117 @@ o3djs.manipulators.Translate1.prototype.drag = function(startPoint,
   // Need to do a world-to-local transformation on the difference vector.
   // Note that we also incorporate the translation portion of the matrix.
   var diffVector =
-      o3djs.math.subVector(closestPoint, this.dragLine.getPoint());
+      o3djs.math.subVector(closestPoint, this.dragLine_.getPoint());
   var worldToLocal =
       o3djs.math.matrix4.inverse(this.getTransform().worldMatrix);
   this.getTransform().localMatrix =
       o3djs.math.matrix4.setTranslation(
-          this.getTransform().localMatrix,    
+          this.getTransform().localMatrix,
+          o3djs.math.matrix4.transformDirection(worldToLocal,
+                                                diffVector));
+  this.updateAttachedTransformFromLocalTransform_();
+}
+
+
+/**
+ * A manipulator allowing an object to be dragged around a plane.
+ * @constructor
+ * @extends {o3djs.manipulators.Manip}
+ * @param {!o3djs.manipulators.Manager} manager The manager for the
+ *     new Translate2 manipulator.
+ */
+o3djs.manipulators.Translate2 = function(manager) {
+  o3djs.manipulators.Manip.call(this, manager);
+
+  var pack = manager.pack;
+  var material = manager.defaultMaterial;
+
+  var shape = manager.Translate2Shape_;
+  if (!shape) {
+    // Create the geometry for the manipulator, which looks like
+    // a two-way arrow going from (-1, 0, 0) to (1, 0, 0),
+    // and another one going from (0, -1, 0) to (0, 1, 0).
+    var verts = o3djs.manipulators.createArrowVertices_(
+        o3djs.math.matrix4.rotationZ(Math.PI / 2));
+    verts.append(o3djs.manipulators.createArrowVertices_(
+        o3djs.math.matrix4.rotationZ(0)));
+    shape = verts.createShape(pack, material);
+    manager.Translate2Shape_ = shape;
+  }
+
+  this.addShapes_([ shape ]);
+
+  this.transformInfo = o3djs.picking.createTransformInfo(this.getTransform(),
+                                                         manager.transformInfo);
+
+  /**
+   * A parameter added to our transform to be able to change the
+   * material's color for highlighting.
+   * @private
+   * @type {!o3d.ParamFloat4}
+   */
+  this.colorParam_ = this.getTransform().createParam('diffuse', 'ParamFloat4');
+  this.clearHighlight();
+
+  /**
+   * Plane through which we are dragging.
+   * @private
+   * @type {!o3djs.manipulators.Plane_}
+   */
+  this.dragPlane_ = new o3djs.manipulators.Plane_();
+}
+
+o3djs.base.inherit(o3djs.manipulators.Translate2, o3djs.manipulators.Manip);
+
+o3djs.manipulators.Translate2.prototype.highlight = function(pickResult) {
+  // We can use instanced geometry for the entire Translate2 since its
+  // entire color changes during highlighting.
+  // TODO(kbr): support custom user geometry and associated callbacks.
+  this.colorParam_.value = o3djs.manipulators.HIGHLIGHTED_COLOR;
+}
+
+o3djs.manipulators.Translate2.prototype.clearHighlight = function() {
+  this.colorParam_.value = o3djs.manipulators.DEFAULT_COLOR;
+}
+
+o3djs.manipulators.Translate2.prototype.makeActive = function(pickResult) {
+  o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
+  this.highlight(pickResult);
+  var worldMatrix = this.getTransform().worldMatrix;
+  this.dragPlane_.setNormal(
+    o3djs.math.matrix4.transformDirection(worldMatrix,
+                                          o3djs.manipulators.Z_AXIS));
+  this.dragPlane_.setPoint(pickResult.worldIntersectionPosition);
+}
+
+o3djs.manipulators.Translate2.prototype.makeInactive = function() {
+  o3djs.manipulators.Manip.prototype.makeInactive.call(this);
+  this.clearHighlight();
+  this.updateAttachedTransformFromLocalTransform_();
+  this.updateBaseTransformFromAttachedTransform_();
+}
+
+o3djs.manipulators.Translate2.prototype.drag = function(startPoint,
+                                                        endPoint) {
+  // Algorithm: Find intersection of ray with dragPlane_. Subtract this
+  // point from the plane's point to find difference vector; transform
+  // from world to local coordinates to find new local offset of
+  // manipulator.
+  var intersectPoint = this.dragPlane_.intersectRay(startPoint,
+      o3djs.math.subVector(endPoint, startPoint));
+  if (intersectPoint == null) {
+    // Drag plane is parallel to ray. Punt.
+    return;
+  }
+  // Need to do a world-to-local transformation on the difference vector.
+  // Note that we also incorporate the translation portion of the matrix.
+  var diffVector =
+      o3djs.math.subVector(intersectPoint, this.dragPlane_.getPoint());
+  var worldToLocal =
+      o3djs.math.matrix4.inverse(this.getTransform().worldMatrix);
+  this.getTransform().localMatrix =
+      o3djs.math.matrix4.setTranslation(
+          this.getTransform().localMatrix,
           o3djs.math.matrix4.transformDirection(worldToLocal,
                                                 diffVector));
   this.updateAttachedTransformFromLocalTransform_();
