@@ -13,7 +13,6 @@
 
 #include "app/resource_bundle.h"
 #include "base/scoped_cftyperef.h"
-#include "base/scoped_nsobject.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "chrome/common/notification_registrar.h"
@@ -25,32 +24,19 @@
 class DownloadAnimationTabObserver;
 
 // A class for managing the Core Animation download animation.
-@interface DownloadStartedAnimationMac : NSObject {
-  // The download arrow image which we are responsible for freeing.
-  scoped_cftyperef<CGImageRef> image_;
-
-  // The TabContents we will animate in (weak).
-  TabContents* tabContents_;
-
-  // The cocoa view object for our TabContents (weak).
-  NSView* view_;
-
+// Should be instantiated using +startAnimationWithTabContents:.
+@interface DownloadStartedAnimationMac : NSWindow {
+ @private
   // The observer for the TabContents we are drawing on.
   scoped_ptr<DownloadAnimationTabObserver> observer_;
-
-  // Our animation layer.
-  scoped_nsobject<CALayer> layer_;
-
-  // Set once the animation is complete, either by interrupting (via window
-  // close) or through normal a end of the animation.
-  BOOL isComplete_;
+  CGFloat imageWidth_;
 };
 
++ (void)startAnimationWithTabContents:(TabContents*)tabContents;
 // Called by our DownloadAnimationTabObserver if the tab is hidden or closed.
 - (void)animationComplete;
 
-@end  // interface DownloadStartedAnimationMac.
-
+@end
 
 // A helper class to monitor tab hidden and closed notifications. If we receive
 // such a notification, we stop the animation.
@@ -95,111 +81,155 @@ private:
   DISALLOW_COPY_AND_ASSIGN(DownloadAnimationTabObserver);
 };
 
-
 @implementation DownloadStartedAnimationMac
 
-// Load the image of the download arrow.
 - (id)initWithTabContents:(TabContents*)tabContents {
-  if ((self = [super init])) {
-    SkBitmap* image_bitmap =
-        ResourceBundle::GetSharedInstance().GetBitmapNamed(
-            IDR_DOWNLOAD_ANIMATION_BEGIN);
-    image_.reset(SkCreateCGImageRef(*image_bitmap));
-    tabContents_ = tabContents;
-    view_ = tabContents_->GetContentNativeView();
-    observer_.reset(new DownloadAnimationTabObserver(self, tabContents));
-    isComplete_ = NO;
-  }
-  return self;
-}
+  // Load the image of the download arrow.
+  ResourceBundle& bundle = ResourceBundle::GetSharedInstance();
+  SkBitmap* imageBitmap = bundle.GetBitmapNamed(IDR_DOWNLOAD_ANIMATION_BEGIN);
+  scoped_cftyperef<CGImageRef> image(SkCreateCGImageRef(*imageBitmap));
 
-// Common clean up code.
-- (void)animationComplete {
-  if (isComplete_)
-    return;
-  isComplete_ = YES;
-  [view_ setWantsLayer:NO];
-  [layer_ removeAllAnimations];
-  [layer_ removeFromSuperlayer];
-}
-
-// Set up the animation and let Core Animation do all the hard work.
-- (void)animate {
-  // Figure out the positioning in the current tab. We try to position ourselves
+  // Figure out the positioning in the current tab. Try to position the layer
   // against the left edge, and three times the download image's height from the
-  // bottom of the tab, assuming there is enough room. If there isn't enough, we
-  // won't show the animation and let the shelf speak for itself.
+  // bottom of the tab, assuming there is enough room. If there isn't enough,
+  // don't show the animation and let the shelf speak for itself.
   gfx::Rect bounds;
-  tabContents_->GetContainerBounds(&bounds);
-  int imageWidth = CGImageGetWidth(image_);
-  int imageHeight = CGImageGetHeight(image_);
-  CGRect imageBounds = CGRectMake(0, 0, imageWidth, imageHeight);
+  tabContents->GetContainerBounds(&bounds);
+  imageWidth_ = CGImageGetWidth(image);
+  CGFloat imageHeight = CGImageGetHeight(image);
+  CGRect imageBounds = CGRectMake(0, 0, imageWidth_, imageHeight);
 
   // Sanity check the size in case there's no room to display the animation.
   if (bounds.height() < imageHeight) {
     [self release];
-    return;
+    return nil;
   }
 
-  int animationHeight = std::min(bounds.height(), 3 * imageHeight);
-  NSPoint start = NSMakePoint(0, animationHeight);
-  NSPoint stop = NSMakePoint(0, 0);  // Bottom of the tab.
+  NSView* tabContentsView = tabContents->GetNativeView();
+  NSWindow* parentWindow = [tabContentsView window];
+  if (!parentWindow) {
+    // The tab is no longer frontmost.
+    [self release];
+    return nil;
+  }
 
-  // Set for the duration of the animation, or we won't see our layer. We reset
-  // this in the completion callback. Layers by default scale their content to
-  // fit, but we need them to clip their content instead, or else renderer
-  // resizes will look janky.
-  [view_ setWantsLayer:YES];
-  [[view_ layer] setContentsGravity:kCAGravityTopLeft];
+  NSPoint origin = [tabContentsView frame].origin;
+  origin = [tabContentsView convertPointToBase:origin];
+  origin = [parentWindow convertBaseToScreen:origin];
 
-  // CALayer initalization.
-  layer_.reset([[CALayer layer] retain]);
-  [layer_ setNeedsDisplay];
-  [layer_ setContents:(id)image_.get()];
-  [layer_ setAnchorPoint:CGPointMake(0, 0)];
-  [layer_ setFrame:imageBounds];
-  [[view_ layer] addSublayer:layer_];
+  // Create a window to host a layer that animates the sliding and fading.
+  CGFloat animationHeight = MIN(bounds.height(), 4 * imageHeight);
+  NSRect frame = NSMakeRect(origin.x, origin.y, imageWidth_, animationHeight);
+  if ((self = [super initWithContentRect:frame
+                               styleMask:NSBorderlessWindowMask
+                                 backing:NSBackingStoreBuffered
+                                   defer:NO])) {
+    [self setOpaque:NO];
+    [self setBackgroundColor:[NSColor clearColor]];
+    [self setIgnoresMouseEvents:YES];
 
-  // Positional animation.
-  CABasicAnimation *animation =
-      [CABasicAnimation animationWithKeyPath:@"position"];
-  [animation setFromValue:[NSValue valueWithPoint:start]];
-  [animation setToValue:[NSValue valueWithPoint:stop]];
-  [animation gtm_setDuration:0.6];
-  CAMediaTimingFunction* mediaFunction =
-      [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-  [animation setTimingFunction:mediaFunction];
-  [animation setDelegate:self];
-  [layer_ addAnimation:animation forKey:@"downloadPosition"];
+    // Must be set or else self will be leaked.
+    [self setReleasedWhenClosed:YES];
 
-  // Opacity animation.
-  animation = [CABasicAnimation animationWithKeyPath:@"opacity"];
-  [animation setFromValue:[NSNumber numberWithFloat:1.0]];
-  [animation setToValue:[NSNumber numberWithFloat:0.0]];
-  [animation gtm_setDuration:1.5];  // Longer, so it doesn't fade too much.
-  mediaFunction =
-      [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
-  [animation setTimingFunction:mediaFunction];
-  [layer_ addAnimation:animation forKey:@"downloadOpacity"];
+    // Set up to get notified about resize events on the parent window.
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(parentWindowChanged:)
+                   name:NSWindowDidResizeNotification
+                 object:parentWindow];
+    [parentWindow addChildWindow:self ordered:NSWindowAbove];
+
+    // Set up the root layer. By calling -setLayer: followed by -setWantsLayer:
+    // the view becomes a layer hosting view as opposed to a layer backed view.
+    NSView* view = [self contentView];
+    CALayer* rootLayer = [CALayer layer];
+    [view setLayer:rootLayer];
+    [view setWantsLayer:YES];
+
+    // Create the layer that will be animated.
+    CALayer* layer = [CALayer layer];
+    [layer setContents:(id)image.get()];
+    [layer setAnchorPoint:CGPointMake(0, 1)];
+    [layer setFrame:CGRectMake(0, 0, imageWidth_, imageHeight)];
+    [layer setNeedsDisplayOnBoundsChange:YES];
+    [rootLayer addSublayer:layer];
+
+    // Common timing function for all animations.
+    CAMediaTimingFunction* mediaFunction =
+        [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+
+    // Positional animation.
+    CABasicAnimation* positionAnimation =
+        [CABasicAnimation animationWithKeyPath:@"position"];
+    CGFloat animationHeight = MIN(bounds.height(), 3 * imageHeight);
+    NSPoint start = NSMakePoint(0, animationHeight);
+    NSPoint stop = NSMakePoint(0, imageHeight);
+    [positionAnimation setFromValue:[NSValue valueWithPoint:start]];
+    [positionAnimation setToValue:[NSValue valueWithPoint:stop]];
+    [positionAnimation gtm_setDuration:0.6];
+    [positionAnimation setTimingFunction:mediaFunction];
+
+    // Opacity animation.
+    CABasicAnimation* opacityAnimation =
+        [CABasicAnimation animationWithKeyPath:@"opacity"];
+    [opacityAnimation setFromValue:[NSNumber numberWithFloat:1.0]];
+    [opacityAnimation setToValue:[NSNumber numberWithFloat:0.4]];
+    [opacityAnimation gtm_setDuration:0.6];
+    [opacityAnimation setTimingFunction:mediaFunction];
+
+    // Group the animations together.
+    CAAnimationGroup* animationGroup = [CAAnimationGroup animation];
+    NSArray* animations =
+        [NSArray arrayWithObjects:positionAnimation, opacityAnimation, nil];
+    [animationGroup setAnimations:animations];
+
+    // Set self as delegate so self receives -animationDidStop:finished:;
+    [animationGroup setDelegate:self];
+    [animationGroup setTimingFunction:mediaFunction];
+    [animationGroup gtm_setDuration:0.6];
+    [layer addAnimation:animationGroup forKey:@"downloadOpacityAndPosition"];
+
+    observer_.reset(new DownloadAnimationTabObserver(self, tabContents));
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
+// Called when the parent window is resized.
+- (void)parentWindowChanged:(NSNotification*)notification {
+  NSWindow* parentWindow = [self parentWindow];
+  DCHECK([[notification object] isEqual:parentWindow]);
+  NSRect parentFrame = [parentWindow frame];
+  NSRect frame = parentFrame;
+  frame.size.width = MIN(imageWidth_, NSWidth(parentFrame));
+  [self setFrame:frame display:YES];
 }
 
 // CAAnimation delegate method called when the animation is complete.
 - (void)animationDidStop:(CAAnimation *)animation finished:(BOOL)flag {
   [self animationComplete];
-  [self release];
 }
 
-@end  // implementation DownloadStartedAnimationMac
+// Common clean up code.
+- (void)animationComplete {
+  [[self parentWindow] removeChildWindow:self];
+  [self close];
+}
 
++ (void)startAnimationWithTabContents:(TabContents*)contents {
+  // Will be deleted when the animation is complete in -animationComplete.
+  [[self alloc] initWithTabContents:contents];
+}
 
-// static
+@end
+
 void DownloadStartedAnimation::Show(TabContents* tab_contents) {
   DCHECK(tab_contents);
 
   // Will be deleted when the animation is complete.
-  DownloadStartedAnimationMac* downloadArrow =
-      [[DownloadStartedAnimationMac alloc] initWithTabContents:tab_contents];
-
-  // Go!
-  [downloadArrow animate];
+  [DownloadStartedAnimationMac startAnimationWithTabContents:tab_contents];
 }
