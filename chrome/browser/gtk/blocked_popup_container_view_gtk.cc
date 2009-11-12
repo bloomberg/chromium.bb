@@ -274,23 +274,31 @@ gboolean BlockedPopupContainerViewGtk::OnRoundedExposeCallback(
                     event->area.width, event->area.height);
     cairo_clip(cr);
 
-    // TODO(erg): We draw the gradient background only when GTK themes are
-    // off. This isn't a perfect solution as this isn't themed! The views
-    // version doesn't appear to be themed either, so at least for now,
-    // constants are OK.
-    int half_width = width / 2;
-    cairo_pattern_t* pattern = cairo_pattern_create_linear(
-        half_width, 0,  half_width, height);
-    cairo_pattern_add_color_stop_rgb(
-        pattern, 0.0,
-        kBackgroundColorTop[0], kBackgroundColorTop[1], kBackgroundColorTop[2]);
-    cairo_pattern_add_color_stop_rgb(
-        pattern, 1.0,
-        kBackgroundColorBottom[0], kBackgroundColorBottom[1],
-        kBackgroundColorBottom[2]);
-    cairo_set_source(cr, pattern);
-    cairo_paint(cr);
-    cairo_pattern_destroy(pattern);
+    if (container->theme_provider_->GetThemeID() ==
+        BrowserThemeProvider::kDefaultThemeID) {
+      // We are using the default theme. Use a fairly soft gradient for the
+      // background of the blocked popup notification.
+      int half_width = width / 2;
+      cairo_pattern_t* pattern = cairo_pattern_create_linear(
+          half_width, 0,  half_width, height);
+      cairo_pattern_add_color_stop_rgb(
+          pattern, 0.0, kBackgroundColorTop[0], kBackgroundColorTop[1],
+          kBackgroundColorTop[2]);
+      cairo_pattern_add_color_stop_rgb(
+          pattern, 1.0,
+          kBackgroundColorBottom[0], kBackgroundColorBottom[1],
+          kBackgroundColorBottom[2]);
+      cairo_set_source(cr, pattern);
+      cairo_paint(cr);
+      cairo_pattern_destroy(pattern);
+    } else {
+      // Use the toolbar color the theme specifies instead. It would be nice to
+      // have a gradient here, but there isn't a second color to use...
+      GdkColor color = container->theme_provider_->GetGdkColor(
+          BrowserThemeProvider::COLOR_TOOLBAR);
+      gdk_cairo_set_source_color(cr, &color);
+      cairo_paint(cr);
+    }
 
     cairo_destroy(cr);
   }
