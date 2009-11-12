@@ -279,7 +279,7 @@
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
   var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
       'extra', 'slowest run', 'flakiness (numbers are runtimes in seconds)'];
-  var MIN_SECONDS_FOR_SLOW_TEST = 3;
+  var MIN_SECONDS_FOR_SLOW_TEST = 4;
   var MIN_SECONDS_FOR_SLOW_TEST_DEBUG = 2 * MIN_SECONDS_FOR_SLOW_TEST;
   var FAIL_RESULTS = ['IMAGE', 'IMAGE+TEXT', 'TEXT', 'SIMPLIFIED', 'OTHER'];
   var CHUNK_SIZE = 25;
@@ -420,6 +420,7 @@
       html: '',
       flips: 0,
       slowestTime: 0,
+      slowestNonTimeoutCrashTime: 0,
       meetsExpectations: true,
       isWontFixSkip: false,
       isFlaky: false,
@@ -582,11 +583,26 @@
     });
   }
 
+  /**
+   * Returns whether this test's slowest time is above the cutoff for
+   * being a slow test.
+   */
   function isSlowTest(resultsForTest) {
     var maxTime = isDebug(resultsForTest.builder) ?
         MIN_SECONDS_FOR_SLOW_TEST_DEBUG :
         MIN_SECONDS_FOR_SLOW_TEST;
     return resultsForTest.slowestNonTimeoutCrashTime > maxTime;
+  }
+
+  /**
+   * Returns whether this test's slowest time is *well* below the cutoff for
+   * being a slow test.
+   */
+  function isFastTest(resultsForTest) {
+    var maxTime = isDebug(resultsForTest.builder) ?
+        MIN_SECONDS_FOR_SLOW_TEST_DEBUG :
+        MIN_SECONDS_FOR_SLOW_TEST;
+    return resultsForTest.slowestNonTimeoutCrashTime < maxTime / 2;
   }
 
   function getAllTestsWithCondition(conditionFn) {
@@ -1068,7 +1084,7 @@
         (!resultsForTest.modifiers ||
          !stringContains(resultsForTest.modifiers, 'SLOW'))) {
       missingExpectations.push('SLOW');
-    } else if (resultsForTest.slowestTime < 1 &&
+    } else if (isFastTest(resultsForTest) &&
                resultsForTest.modifiers &&
                stringContains(resultsForTest.modifiers, 'SLOW')) {
       extraExpectations.push('SLOW');
