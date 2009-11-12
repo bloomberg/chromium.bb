@@ -87,50 +87,22 @@ class SuperMoxTestBase(SuperMoxBaseTestBase):
     """Patch a few functions with know side-effects."""
     SuperMoxBaseTestBase.setUp(self)
     #self.mox.StubOutWithMock(__builtin__, 'open')
-    self.mox.StubOutWithMock(os, 'chdir')
-    self.mox.StubOutWithMock(os, 'chown')
-    self.mox.StubOutWithMock(os, 'close')
-    #self.mox.StubOutWithMock(os, 'closerange')
-    self.mox.StubOutWithMock(os, 'dup')
-    self.mox.StubOutWithMock(os, 'dup2')
-    self.mox.StubOutWithMock(os, 'fchdir')
-    #self.mox.StubOutWithMock(os, 'fchmod')
-    #self.mox.StubOutWithMock(os, 'fchown')
-    self.mox.StubOutWithMock(os, 'fdopen')
-    self.mox.StubOutWithMock(os, 'getcwd')
-    self.mox.StubOutWithMock(os, 'getpid')
-    self.mox.StubOutWithMock(os, 'lseek')
-    self.mox.StubOutWithMock(os, 'makedirs')
-    self.mox.StubOutWithMock(os, 'mkdir')
-    self.mox.StubOutWithMock(os, 'open')
-    self.mox.StubOutWithMock(os, 'popen')
-    self.mox.StubOutWithMock(os, 'popen2')
-    self.mox.StubOutWithMock(os, 'popen3')
-    self.mox.StubOutWithMock(os, 'popen4')
-    self.mox.StubOutWithMock(os, 'read')
-    self.mox.StubOutWithMock(os, 'remove')
-    self.mox.StubOutWithMock(os, 'removedirs')
-    self.mox.StubOutWithMock(os, 'rename')
-    self.mox.StubOutWithMock(os, 'renames')
-    self.mox.StubOutWithMock(os, 'rmdir')
-    self.mox.StubOutWithMock(os, 'symlink')
-    self.mox.StubOutWithMock(os, 'system')
-    self.mox.StubOutWithMock(os, 'tmpfile')
-    self.mox.StubOutWithMock(os, 'walk')
-    self.mox.StubOutWithMock(os, 'write')
-    self.mox.StubOutWithMock(os.path, 'abspath')
-    self.mox.StubOutWithMock(os.path, 'exists')
-    self.mox.StubOutWithMock(os.path, 'getsize')
-    self.mox.StubOutWithMock(os.path, 'isdir')
-    self.mox.StubOutWithMock(os.path, 'isfile')
-    self.mox.StubOutWithMock(os.path, 'islink')
-    self.mox.StubOutWithMock(os.path, 'ismount')
-    self.mox.StubOutWithMock(os.path, 'lexists')
-    self.mox.StubOutWithMock(os.path, 'realpath')
-    self.mox.StubOutWithMock(os.path, 'samefile')
-    self.mox.StubOutWithMock(os.path, 'walk')
-    self.mox.StubOutWithMock(subprocess, 'call')
-    self.mox.StubOutWithMock(subprocess, 'Popen')
-    #self.mox.StubOutWithMock(sys, 'stderr')
-    self.mox.StubOutWithMock(sys, 'stdin')
-    self.mox.StubOutWithMock(sys, 'stdout')
+    os_to_mock = ('chdir', 'chown', 'close', 'closerange', 'dup', 'dup2',
+      'fchdir', 'fchmod', 'fchown', 'fdopen', 'getcwd', 'getpid', 'lseek',
+      'makedirs', 'mkdir', 'open', 'popen', 'popen2', 'popen3', 'popen4',
+      'read', 'remove', 'removedirs', 'rename', 'renames', 'rmdir', 'symlink',
+      'system', 'tmpfile', 'walk', 'write')
+    self.MockList(os, os_to_mock)
+    os_path_to_mock = ('abspath', 'exists', 'getsize', 'isdir', 'isfile',
+      'islink', 'ismount', 'lexists', 'realpath', 'samefile', 'walk')
+    self.MockList(os.path, os_path_to_mock)
+    self.MockList(subprocess, ('call', 'Popen'))
+    # Don't mock stderr since it confuses unittests.
+    self.MockList(sys, ('stdin', 'stdout'))
+
+  def MockList(self, parent, items_to_mock):
+    for item in items_to_mock:
+      # Skip over items not present because of OS-specific implementation,
+      # implemented only in later python version, etc.
+      if hasattr(parent, item):
+        self.mox.StubOutWithMock(parent, item)
