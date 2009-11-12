@@ -626,7 +626,7 @@ HRESULT ChromeActiveDocument::IEExec(const GUID* cmd_group_guid,
   ScopedComPtr<IOleCommandTarget> frame_cmd_target;
 
   ScopedComPtr<IOleInPlaceSite> in_place_site(m_spInPlaceSite);
-  if (!in_place_site.get()) {
+  if (!in_place_site.get() && m_spClientSite != NULL) {
     in_place_site.QueryFrom(m_spClientSite);
   }
 
