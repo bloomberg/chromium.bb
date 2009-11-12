@@ -87,6 +87,7 @@ void CookiesView::Init() {
         l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_LABEL)).c_str(),
       GTK_STOCK_REMOVE,
       RESPONSE_REMOVE);
+  gtk_button_set_use_underline(GTK_BUTTON(remove_button_), TRUE);
   gtk_button_box_set_child_secondary(
       GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area),
       remove_button_,
@@ -98,6 +99,7 @@ void CookiesView::Init() {
           l10n_util::GetStringUTF8(IDS_COOKIES_REMOVE_ALL_LABEL)).c_str(),
       GTK_STOCK_CLEAR,
       RESPONSE_REMOVE_ALL);
+  gtk_button_set_use_underline(GTK_BUTTON(remove_all_button_), TRUE);
   gtk_button_box_set_child_secondary(
       GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area),
       remove_all_button_,
