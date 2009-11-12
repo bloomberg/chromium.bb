@@ -17,6 +17,9 @@ class NewTabUITest : public UITest {
  public:
   NewTabUITest() {
     dom_automation_enabled_ = true;
+    // Set home page to the empty string so that we can set the home page using
+    // preferences.
+    homepage_ = L"";
 
     // Setup the DEFAULT_THEME profile (has fake history entries).
     set_template_user_data(UITest::ComputeTypicalUserDataSource(
@@ -102,4 +105,72 @@ TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
 
   migrated = NewTabUI::UpdateUserPrefsVersion(&prefs);
   ASSERT_FALSE(migrated);
+}
+
+TEST_F(NewTabUITest, HomePageLink) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(browser.get());
+
+  ASSERT_TRUE(
+      browser->SetBooleanPreference(prefs::kHomePageIsNewTabPage, false));
+
+  int tab_count = -1;
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(1, tab_count);
+
+  // Bring up a new tab page.
+  browser->ApplyAccelerator(IDC_NEW_TAB);
+  WaitUntilTabCount(2);
+  int load_time;
+  ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
+
+  scoped_refptr<TabProxy> tab = browser->GetActiveTab();
+
+  // TODO(arv): Extract common patterns for doing js testing.
+
+  // Fire click
+  // TODO(arv): Find screen position of element and use a lower level click
+  // emulation.
+  bool result;
+  ASSERT_TRUE(tab->ExecuteAndExtractBool(L"",
+    L"window.domAutomationController.send("
+    L"(function() {"
+    L"  var e = document.createEvent('Event');"
+    L"  e.initEvent('click', true, true);"
+    L"  var el = document.querySelector('#set-as-home-page > *');"
+    L"  el.dispatchEvent(e);"
+    L"  return true;"
+    L"})()"
+    L")",
+    &result));
+  ASSERT_TRUE(result);
+
+  // Make sure set as home page element is hidden.
+  std::wstring style_display;
+  ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
+    L"window.domAutomationController.send("
+    L"(function() {"
+    L"  var el = document.querySelector('#set-as-home-page');"
+    L"  return el.style.display;"
+    L"})()"
+    L")",
+    &style_display));
+  ASSERT_EQ(L"none", style_display);
+
+  // Make sure that the notification is visible
+  bool has_class;
+  ASSERT_TRUE(tab->ExecuteAndExtractBool(L"",
+    L"window.domAutomationController.send("
+    L"(function() {"
+    L"  var el = document.querySelector('#notification');"
+    L"  return hasClass(el, 'show');"
+    L"})()"
+    L")",
+    &has_class));
+  ASSERT_TRUE(has_class);
+
+  bool is_home_page;
+  ASSERT_TRUE(browser->GetBooleanPreference(prefs::kHomePageIsNewTabPage,
+              &is_home_page));
+  ASSERT_TRUE(is_home_page);
 }

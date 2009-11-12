@@ -52,6 +52,7 @@ registerCallback('mostVisitedPages');
 registerCallback('recentlyClosedTabs');
 registerCallback('syncMessageChanged');
 registerCallback('tips');
+registerCallback('onHomePageSet');
 
 </script>
 <!-- template data placeholder -->
@@ -254,7 +255,7 @@ function updateSimpleSection(id, section) {
   </div>
   <script>updateSimpleSection('sync-status', Section.SYNC);</script>
 
-  <div id="set-as-homepage">
+  <div id="set-as-home-page">
     <button class="link">
       <span class="link-color" i18n-content="makethishomepage"></span>
     </button>

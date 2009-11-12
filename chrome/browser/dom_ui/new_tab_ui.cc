@@ -477,43 +477,41 @@ void MetricsHandler::HandleLogEventTime(const Value* content) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// NewTabPageSetHomepageHandler
+// NewTabPageSetHomePageHandler
 
-// Sets the new tab page as homepage when user clicks on "make this my homepage"
-// link.
-class NewTabPageSetHomepageHandler : public DOMMessageHandler {
+// Sets the new tab page as home page when user clicks on "make this my home
+// page" link.
+class NewTabPageSetHomePageHandler : public DOMMessageHandler {
  public:
-  NewTabPageSetHomepageHandler() {}
-  virtual ~NewTabPageSetHomepageHandler() {}
+  NewTabPageSetHomePageHandler() {}
+  virtual ~NewTabPageSetHomePageHandler() {}
 
   // DOMMessageHandler implementation.
   virtual void RegisterMessages();
 
-  // Callback for "SetHomepageLinkClicked".
-  void HandleSetHomepageLinkClicked(const Value* value);
+  // Callback for "setHomePage".
+  void HandleSetHomePage(const Value* value);
 
  private:
 
-  DISALLOW_COPY_AND_ASSIGN(NewTabPageSetHomepageHandler);
+  DISALLOW_COPY_AND_ASSIGN(NewTabPageSetHomePageHandler);
 };
 
-void NewTabPageSetHomepageHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("SetHomepageLinkClicked", NewCallback(
-      this, &NewTabPageSetHomepageHandler::HandleSetHomepageLinkClicked));
+void NewTabPageSetHomePageHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback("setHomePage", NewCallback(
+      this, &NewTabPageSetHomePageHandler::HandleSetHomePage));
 }
 
-void NewTabPageSetHomepageHandler::HandleSetHomepageLinkClicked(
+void NewTabPageSetHomePageHandler::HandleSetHomePage(
     const Value* value) {
   dom_ui_->GetProfile()->GetPrefs()->SetBoolean(prefs::kHomePageIsNewTabPage,
                                                 true);
-  // TODO(rahulk): Show some kind of notification that new tab page has been
-  // set as homepage. This tip only shows up for a brief moment and disappears
-  // when new tab page gets refreshed.
   ListValue list_value;
-  DictionaryValue* tip_dict = new DictionaryValue();
-  tip_dict->SetString(L"tip_html_text", L"Welcome to your home page!");
-  list_value.Append(tip_dict);
-  dom_ui_->CallJavascriptFunction(L"tips", list_value);
+  list_value.Append(new StringValue(
+      l10n_util::GetString(IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION)));
+  list_value.Append(new StringValue(
+      l10n_util::GetString(IDS_NEW_TAB_HOME_PAGE_HIDE_NOTIFICATION)));
+  dom_ui_->CallJavascriptFunction(L"onHomePageSet", list_value);
 }
 
 }  // namespace
@@ -570,7 +568,7 @@ NewTabUI::NewTabUI(TabContents* contents)
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     }
 
-    AddMessageHandler((new NewTabPageSetHomepageHandler())->Attach(this));
+    AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
 
     NewTabHTMLSource* html_source = new NewTabHTMLSource(GetProfile());
     bool posted = ChromeThread::PostTask(

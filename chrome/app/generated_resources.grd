@@ -4783,6 +4783,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
          desc="Menu item text used to show or hide the bookmark sync status.">
         Bookmark sync
       </message>
+      <message name="IDS_NEW_TAB_HOME_PAGE_SET_NOTIFICATION"
+         desc="Notification text to show after the user has made the NTP his/her home page.">
+        Welcome to your home page!
+      </message>
+      <message name="IDS_NEW_TAB_HOME_PAGE_HIDE_NOTIFICATION"
+         desc="The action text to show as the close link for the notification shown after the user has set his/her home page.">
+        Close
+      </message>
 
       <!-- New tab page web clips. These are not in use yet -->
       <message name="IDS_NEW_TAB_WEB_CLIPS_WEB_CLIPS"

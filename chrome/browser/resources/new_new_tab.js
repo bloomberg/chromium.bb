@@ -1236,7 +1236,7 @@ document.addEventListener('DOMContentLoaded',
 
 // This link allows user to make new tab page as homepage from the new tab
 // page itself (without going to Options dialog box).
-document.addEventListener('DOMContentLoaded', showSetAsHomepageLink);
+document.addEventListener('DOMContentLoaded', showSetAsHomePageLink);
 
 /**
  * The sync code is not yet built by default on all platforms so we have to
@@ -1250,21 +1250,26 @@ function callGetSyncMessageIfSyncIsPresent() {
 }
 
 function setAsHomePageLinkClicked(e) {
-  chrome.send('SetHomepageLinkClicked');
+  chrome.send('setHomePage');
   e.preventDefault();
 }
 
-function showSetAsHomepageLink() {
-  var setAsHomepageElement = $('set-as-homepage');
-  var style = setAsHomepageElement.style;
+function showSetAsHomePageLink() {
+  var setAsHomePageElement = $('set-as-home-page');
+  var style = setAsHomePageElement.style;
   if (document.documentElement.getAttribute('showsetashomepage') != 'true') {
     // Hide the section (if new tab page is already homepage).
     return;
   }
 
   style.display = 'block';
-  var buttonElement = setAsHomepageElement.firstElementChild;
+  var buttonElement = setAsHomePageElement.firstElementChild;
   buttonElement.addEventListener('click', setAsHomePageLinkClicked);
+}
+
+function onHomePageSet(data) {
+  $('set-as-home-page').style.display = 'none';
+  showNotification(data[0], data[1]);
 }
 
 function hideAllMenus() {
