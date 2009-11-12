@@ -3011,9 +3011,6 @@ BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = PASS F
 // WebKit 50158:50171
 BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
 
-// Not sure when this started being flaky
-BUG_JAPHET LINUX : LayoutTests/svg/custom/viewport-update2.svg = PASS FAIL
-
 // WebKit roll 50218:50235
 BUG_JORLOW : LayoutTests/http/tests/ssl/referer-301.html = FAIL
 BUG_JORLOW : LayoutTests/http/tests/ssl/referer-303.html = FAIL
@@ -3029,6 +3026,7 @@ BUG26195 LINUX RELEASE : LayoutTests/fast/overflow/overflow_hidden.html = PASS C
 // randomly started to be flaky on r30451 (revision had only a check-in of text_expectations.txt)
 BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = PASS TEXT
 BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size.html = PASS TEXT
+BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = PASS TEXT
 BUG26195 MAC DEBUG : LayoutTests/http/tests/security/xssAuditor/script-tag-addslashes-single-quote.html = PASS TIMEOUT
 
 // ==== WebKit roll 50258:50313 ====
@@ -3062,10 +3060,6 @@ BUG_LEVIN WIN DEBUG : LayoutTests/svg/custom/gradient-stop-style-change.svg = TE
 
 // Webkit 50667:50696
 BUG_LEVIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
-
-// Webkit 50717:50738, new test
-BUG_JAPHET WIN LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = IMAGE
-BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html = PASS TEXT
 
 // more test flakiness
 BUG27335 WIN : LayoutTests/plugins/embed-attributes-setting.html = PASS TIMEOUT
@@ -3102,27 +3096,31 @@ BUG27418 MAC DEBUG : LayoutTests/plugins/netscape-identifier-conversion.html = P
 BUG27418 MAC : LayoutTests/plugins/open-and-close-window-with-plugin.html = PASS TEXT
 BUG27418 MAC : LayoutTests/transitions/shorthand-border-transitions.html = PASS TEXT
 
-// Webkit merge 50756:50820
-BUG_JAPHET : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
-BUG_JAPHET : LayoutTests/fast/css/getComputedStyle/computed-style.html = TEXT
-BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT
-BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-host.html = TEXT
-BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
-BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-pathname.html = TEXT
-BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
-BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
-BUG_JAPHET : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-search.html = TEXT
-BUG_JAPHET : LayoutTests/fast/events/drag-in-frames.html = TEXT
-BUG_JAPHET : LayoutTests/svg/css/getComputedStyle-basic.xhtml = TEXT
+// WebKit r50784 implemented URL decomposition attributes for HTMLAnchorElement, and
+// this exposes a bunch of minor differences in our URL parsing/editing implementation,
+// as well as somethings that might be legitimate bugs.
+BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT
+BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-host.html = TEXT
+BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
+BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-pathname.html = TEXT
+BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
+BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
+BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-search.html = TEXT
+
+// New tests and regressions related to WebKit r50760 (appeared in WebKit merge 50756:50820).
+BUG27551 : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT
+BUG27551 : LayoutTests/fast/css/getComputedStyle/computed-style.html = TEXT
+BUG27551 : LayoutTests/svg/css/getComputedStyle-basic.xhtml = TEXT
 // Add this expectation back in when passing again
 // BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
-BUG_JAPHET : LayoutTests/fast/css/color-correction-backgrounds-and-text.html = FAIL
-BUG_JAPHET : LayoutTests/fast/css/color-correction-on-backgrounds.html = FAIL
-BUG_JAPHET : LayoutTests/fast/css/color-correction-on-text.html = FAIL
-BUG_JAPHET : LayoutTests/fast/css/color-correction.html = FAIL
-BUG_JAPHET WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
-BUG_JAPHET WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
+BUG27551 : LayoutTests/fast/css/color-correction-backgrounds-and-text.html = FAIL
+BUG27551 : LayoutTests/fast/css/color-correction-on-backgrounds.html = FAIL
+BUG27551 : LayoutTests/fast/css/color-correction-on-text.html = FAIL
+BUG27551 : LayoutTests/fast/css/color-correction.html = FAIL
+// May also be related to r50760, but not as confident.
+BUG27551 WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
 
-BUG_JAPHET SKIP WIN LINUX : LayoutTests/fast/websockets = FAIL
-BUG_JAPHET SKIP WIN LINUX : LayoutTests/websocket = FAIL
+// WebKit merge 50756:50820, possibly due to WebKit r50808/r50786 and Chromium r31715
+BUG27553 WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
 
+BUG27556 SKIP WIN LINUX : LayoutTests/websocket/tests = FAIL
