@@ -281,13 +281,12 @@ var decend = function(path) {
 };
 
 function playMediaFile(path) {
-  // For now open it up using the filebrowser, maybe in the future just open with
-  // a file://
-  window.open('chrome://filebrowse#'+path, 'MediaPlayer', 'menubar=0,resizable=0,width=400,height=300');
+  var newPath = 'chrome://filebrowse#' + path;
+  chrome.send('openNewPopupWindow', [newpath]);
 };
 
 function showImage(path) {
-  window.open('file://' + path, 'View Image', 'width=800,height=600');
+  chrome.send('openNewFullWindow', ['file://' + path]);
 };
 
 // TODO(dhg): Do not use javascript: href, use onclick instead

@@ -15,6 +15,8 @@
 #include "base/time.h"
 #include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -56,11 +58,11 @@ class FileBrowseUIHTMLSource : public ChromeURLDataManager::DataSource {
 };
 
 // The handler for Javascript messages related to the "filebrowse" view.
-class FileBrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
+class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
                           public DOMMessageHandler {
  public:
-  FileBrowseHandler();
-  virtual ~FileBrowseHandler();
+  FilebrowseHandler();
+  virtual ~FilebrowseHandler();
 
   // DirectoryLister::DirectoryListerDelegate methods:
   virtual void OnListFile(const file_util::FileEnumerator::FindInfo& data);
@@ -79,12 +81,20 @@ class FileBrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   // Callback for the "getMetadata" message.
   void HandleGetMetadata(const Value* value);
 
+  // Callback for the "openNewWindow" message.
+  void OpenNewFullWindow(const Value* value);
+  void OpenNewPopupWindow(const Value* value);
+
  private:
+
+  void OpenNewWindow(const Value* value, bool popup);
+
   scoped_ptr<ListValue> filelist_value_;
   FilePath currentpath_;
+  Profile* profile_;
   scoped_refptr<net::DirectoryLister> lister_;
 
-  DISALLOW_COPY_AND_ASSIGN(FileBrowseHandler);
+  DISALLOW_COPY_AND_ASSIGN(FilebrowseHandler);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,6 +110,8 @@ FileBrowseUIHTMLSource::FileBrowseUIHTMLSource()
 void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
                                               int request_id) {
   DictionaryValue localized_strings;
+  //TODO(dhg): Add stirings to localized strings, also add more strings
+  // that are currently hardcoded.
   localized_strings.SetString(L"devices", "devices");
 
   SetFontAndTextDirection(&localized_strings);
@@ -119,22 +131,24 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// FileBrowseHandler
+// FilebrowseHandler
 //
 ////////////////////////////////////////////////////////////////////////////////
-FileBrowseHandler::FileBrowseHandler() {
+FilebrowseHandler::FilebrowseHandler()
+    : profile_(NULL) {
+  // TODO(dhg): Check to see if this is really necessary
   lister_ = NULL;
 }
 
-FileBrowseHandler::~FileBrowseHandler() {
-  // TODO: Cancel any pending listings that are currently in flight.
+FilebrowseHandler::~FilebrowseHandler() {
+  // TODO(dhg): Cancel any pending listings that are currently in flight.
   if (lister_.get()) {
     lister_->Cancel();
     lister_->set_delegate(NULL);
   }
 }
 
-DOMMessageHandler* FileBrowseHandler::Attach(DOMUI* dom_ui) {
+DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
   // Create our favicon data source.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
@@ -142,20 +156,24 @@ DOMMessageHandler* FileBrowseHandler::Attach(DOMUI* dom_ui) {
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           new DOMUIFavIconSource(dom_ui->GetProfile())));
-
+  profile_ = dom_ui->GetProfile();
   return DOMMessageHandler::Attach(dom_ui);
 }
 
-void FileBrowseHandler::RegisterMessages() {
+void FilebrowseHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("getRoots",
-      NewCallback(this, &FileBrowseHandler::HandleGetRoots));
+      NewCallback(this, &FilebrowseHandler::HandleGetRoots));
   dom_ui_->RegisterMessageCallback("getChildren",
-      NewCallback(this, &FileBrowseHandler::HandleGetChildren));
+      NewCallback(this, &FilebrowseHandler::HandleGetChildren));
   dom_ui_->RegisterMessageCallback("getMetadata",
-      NewCallback(this, &FileBrowseHandler::HandleGetMetadata));
+      NewCallback(this, &FilebrowseHandler::HandleGetMetadata));
+  dom_ui_->RegisterMessageCallback("openNewPopupWindow",
+      NewCallback(this, &FilebrowseHandler::OpenNewPopupWindow));
+  dom_ui_->RegisterMessageCallback("openNewFullWindow",
+      NewCallback(this, &FilebrowseHandler::OpenNewFullWindow));
 }
 
-void FileBrowseHandler::HandleGetRoots(const Value* value) {
+void FilebrowseHandler::HandleGetRoots(const Value* value) {
   ListValue results_value;
   DictionaryValue info_value;
 
@@ -173,9 +191,55 @@ void FileBrowseHandler::HandleGetRoots(const Value* value) {
                                   info_value, results_value);
 }
 
-void FileBrowseHandler::HandleGetChildren(const Value* value) {
-  std::string path;
+void FilebrowseHandler::OpenNewFullWindow(const Value* value) {
+  OpenNewWindow(value, false);
+}
 
+void FilebrowseHandler::OpenNewPopupWindow(const Value* value) {
+  OpenNewWindow(value, true);
+}
+
+void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    Value* list_member;
+    std::string path;
+
+    // Get path string.
+    if (list_value->Get(0, &list_member) &&
+        list_member->GetType() == Value::TYPE_STRING) {
+      const StringValue* string_value =
+          static_cast<const StringValue*>(list_member);
+      string_value->GetAsString(&path);
+    } else {
+      LOG(ERROR) << "Unable to get string";
+      return;
+    }
+    Browser* browser;
+    if (popup) {
+      browser = Browser::CreateForPopup(profile_);
+    } else {
+      browser = Browser::Create(profile_);
+    }
+    browser->AddTabWithURL(
+        GURL(path), GURL(), PageTransition::LINK,
+        true, -1, false, NULL);
+    if (popup) {
+      // TODO(dhg): Remove these from being hardcoded. Allow javascript
+      // to specify.
+      browser->window()->SetBounds(gfx::Rect(0, 0, 400, 300));
+    } else {
+      browser->window()->SetBounds(gfx::Rect(0, 0, 800, 600));
+    }
+    browser->window()->Show();
+  } else {
+    LOG(ERROR) << "Wasn't able to get the List if requested files.";
+    return;
+  }
+}
+
+void FilebrowseHandler::HandleGetChildren(const Value* value) {
+  std::string path;
   if (value && value->GetType() == Value::TYPE_LIST) {
     const ListValue* list_value = static_cast<const ListValue*>(value);
     Value* list_member;
@@ -189,7 +253,7 @@ void FileBrowseHandler::HandleGetChildren(const Value* value) {
     }
 
   } else {
-    DLOG(ERROR) << "Wasn't able to get the List if requested files.";
+    LOG(ERROR) << "Wasn't able to get the List if requested files.";
     return;
   }
   filelist_value_.reset(new ListValue());
@@ -208,7 +272,7 @@ void FileBrowseHandler::HandleGetChildren(const Value* value) {
   lister_->Start();
 }
 
-void FileBrowseHandler::OnListFile(
+void FilebrowseHandler::OnListFile(
     const file_util::FileEnumerator::FindInfo& data) {
   DictionaryValue* file_value = new DictionaryValue();
 
@@ -230,7 +294,7 @@ void FileBrowseHandler::OnListFile(
   filelist_value_->Append(file_value);
 }
 
-void FileBrowseHandler::OnListDone(int error) {
+void FilebrowseHandler::OnListDone(int error) {
   DictionaryValue info_value;
   info_value.SetString(L"call", "getChildren");
   info_value.SetString(kPropertyPath, currentpath_.value());
@@ -238,7 +302,7 @@ void FileBrowseHandler::OnListDone(int error) {
                                   info_value, *(filelist_value_.get()));
 }
 
-void FileBrowseHandler::HandleGetMetadata(const Value* value) {
+void FilebrowseHandler::HandleGetMetadata(const Value* value) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -248,8 +312,7 @@ void FileBrowseHandler::HandleGetMetadata(const Value* value) {
 ////////////////////////////////////////////////////////////////////////////////
 
 FileBrowseUI::FileBrowseUI(TabContents* contents) : DOMUI(contents) {
-  AddMessageHandler((new FileBrowseHandler())->Attach(this));
-  DLOG(ERROR) << "Got call to filebrowseUI";
+  AddMessageHandler((new FilebrowseHandler())->Attach(this));
   FileBrowseUIHTMLSource* html_source = new FileBrowseUIHTMLSource();
 
   // Set up the chrome://filebrowse/ source.
