@@ -795,6 +795,7 @@ struct drm_gem_open {
 #define DRM_IOCTL_MODE_GETFB		DRM_IOWR(0xAD, struct drm_mode_fb_cmd)
 #define DRM_IOCTL_MODE_ADDFB		DRM_IOWR(0xAE, struct drm_mode_fb_cmd)
 #define DRM_IOCTL_MODE_RMFB		DRM_IOWR(0xAF, uint32_t)
+#define DRM_IOCTL_MODE_PAGE_FLIP	DRM_IOWR(0xB0, struct drm_mode_crtc_page_flip)
 
 /*@}*/
 
@@ -827,6 +828,7 @@ struct drm_event {
 };
 
 #define DRM_EVENT_VBLANK 0x01
+#define DRM_EVENT_FLIP_COMPLETE 0x02
 
 struct drm_event_vblank {
 	struct drm_event base;

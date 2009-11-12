@@ -270,4 +270,15 @@ struct drm_mode_crtc_lut {
 	uint64_t blue;
 };
 
+#define DRM_MODE_PAGE_FLIP_EVENT 0x01
+#define DRM_MODE_PAGE_FLIP_FLAGS DRM_MODE_PAGE_FLIP_EVENT
+
+struct drm_mode_crtc_page_flip {
+	uint32_t crtc_id;
+	uint32_t fb_id;
+	uint32_t flags;
+	uint32_t reserved;
+	uint64_t user_data;
+};
+
 #endif

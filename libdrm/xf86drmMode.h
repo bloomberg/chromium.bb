@@ -362,3 +362,5 @@ extern int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
 			       uint16_t *red, uint16_t *green, uint16_t *blue);
 extern int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
 			       uint16_t *red, uint16_t *green, uint16_t *blue);
+extern int drmModePageFlip(int fd, uint32_t crtc_id, uint32_t fb_id,
+			   uint32_t flags, void *user_data);
