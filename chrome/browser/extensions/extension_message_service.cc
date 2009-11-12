@@ -247,6 +247,9 @@ void ExtensionMessageService::OpenChannelToExtensionOnUIThread(
     return;
 
   RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
+  if (!source)
+    return;
+
   MessagePort receiver(
       profile_->GetExtensionProcessManager()->GetExtensionProcess(
           target_extension_id),
@@ -265,6 +268,9 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
     int tab_id, const std::string& extension_id,
     const std::string& channel_name) {
   RenderProcessHost* source = RenderProcessHost::FromID(source_process_id);
+  if (!source)
+    return;
+
   TabContents* contents;
   MessagePort receiver;
   receiver.debug_info = 2;
