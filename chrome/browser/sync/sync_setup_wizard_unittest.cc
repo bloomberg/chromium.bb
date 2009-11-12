@@ -21,6 +21,8 @@
 
 static const char* kTestUser = "chrome.p13n.test@gmail.com";
 static const char* kTestPassword = "passwd";
+static const char* kTestCaptcha = "pizzamyheart";
+static const char* kTestCaptchaUrl = "http://pizzamyheart/";
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -36,9 +38,11 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   virtual ~ProfileSyncServiceForWizardTest() { }
 
   virtual void OnUserSubmittedAuth(const std::string& username,
-                                   const std::string& password) {
+                                   const std::string& password,
+                                   const std::string& captcha) {
     username_ = username;
     password_ = password;
+    captcha_ = captcha;
   }
   virtual void OnUserAcceptedMergeAndSync() {
     user_accepted_merge_and_sync_ = true;
@@ -52,20 +56,22 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
   }
 
   void set_auth_state(const std::string& last_email,
-                      const AuthError::State& state) {
+                      const AuthError& error) {
     last_attempted_user_email_ = last_email;
-    last_auth_error_ = AuthError(state);
+    last_auth_error_ = error;
   }
 
   void ResetTestStats() {
     username_.clear();
     password_.clear();
+    captcha_.clear();
     user_accepted_merge_and_sync_ = false;
     user_cancelled_dialog_ = false;
   }
 
   std::string username_;
   std::string password_;
+  std::string captcha_;
   bool user_accepted_merge_and_sync_;
   bool user_cancelled_dialog_;
 
@@ -188,7 +194,8 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   ListValue credentials;
   std::string auth = "{\"user\":\"";
   auth += std::string(kTestUser) + "\",\"pass\":\"";
-  auth += std::string(kTestPassword) + "\"}";
+  auth += std::string(kTestPassword) + "\",\"captcha\":\"";
+  auth += std::string(kTestCaptcha) + "\"}";
   credentials.Append(new StringValue(auth));
 
   EXPECT_FALSE(wizard_->IsVisible());
@@ -207,26 +214,43 @@ TEST_F(SyncSetupWizardTest, InitialStepLogin) {
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
   EXPECT_EQ(kTestUser, service_->username_);
   EXPECT_EQ(kTestPassword, service_->password_);
+  EXPECT_EQ(kTestCaptcha, service_->captcha_);
   EXPECT_FALSE(service_->user_accepted_merge_and_sync_);
   EXPECT_FALSE(service_->user_cancelled_dialog_);
   service_->ResetTestStats();
 
   // Simulate failed credentials.
-  service_->set_auth_state(kTestUser, AuthError::INVALID_GAIA_CREDENTIALS);
+  AuthError invalid_gaia(AuthError::INVALID_GAIA_CREDENTIALS);
+  service_->set_auth_state(kTestUser, invalid_gaia);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   EXPECT_FALSE(test_window_->TestAndResetWasShowHTMLDialogCalled());
   EXPECT_EQ(SyncSetupWizard::GAIA_LOGIN, test_window_->flow()->current_state_);
   dialog_args.Clear();
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_TRUE(2 == dialog_args.GetSize());
+  EXPECT_TRUE(3 == dialog_args.GetSize());
   std::string actual_user;
   dialog_args.GetString(L"user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
   int error = -1;
   dialog_args.GetInteger(L"error", &error);
   EXPECT_EQ(static_cast<int>(AuthError::INVALID_GAIA_CREDENTIALS), error);
-  service_->set_auth_state(kTestUser, AuthError::NONE);
+  service_->set_auth_state(kTestUser, AuthError::None());
+
+  // Simulate captcha.
+  AuthError captcha_error(AuthError::FromCaptchaChallenge(
+      std::string(), GURL(kTestCaptchaUrl), GURL()));
+  service_->set_auth_state(kTestUser, captcha_error);
+  wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
+  SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
+  EXPECT_TRUE(3 == dialog_args.GetSize());
+  std::string captcha_url;
+  dialog_args.GetString(L"captchaUrl", &captcha_url);
+  EXPECT_EQ(kTestCaptchaUrl, GURL(captcha_url).spec());
+  error = -1;
+  dialog_args.GetInteger(L"error", &error);
+  EXPECT_EQ(static_cast<int>(AuthError::CAPTCHA_REQUIRED), error);
+  service_->set_auth_state(kTestUser, AuthError::None());
 
   // Simulate success.
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
@@ -365,18 +389,19 @@ TEST_F(SyncSetupWizardTest, DiscreteRun) {
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_EQ(SyncSetupWizard::GAIA_SUCCESS, test_window_->flow()->end_state_);
 
-  service_->set_auth_state(kTestUser, AuthError::INVALID_GAIA_CREDENTIALS);
+  AuthError invalid_gaia(AuthError::INVALID_GAIA_CREDENTIALS);
+  service_->set_auth_state(kTestUser, invalid_gaia);
   wizard_->Step(SyncSetupWizard::GAIA_LOGIN);
   EXPECT_TRUE(wizard_->IsVisible());
   SyncSetupFlow::GetArgsForGaiaLogin(service_, &dialog_args);
-  EXPECT_TRUE(2 == dialog_args.GetSize());
+  EXPECT_TRUE(3 == dialog_args.GetSize());
   std::string actual_user;
   dialog_args.GetString(L"user", &actual_user);
   EXPECT_EQ(kTestUser, actual_user);
   int error = -1;
   dialog_args.GetInteger(L"error", &error);
   EXPECT_EQ(static_cast<int>(AuthError::INVALID_GAIA_CREDENTIALS), error);
-  service_->set_auth_state(kTestUser, AuthError::NONE);
+  service_->set_auth_state(kTestUser, AuthError::None());
 
   wizard_->Step(SyncSetupWizard::GAIA_SUCCESS);
   EXPECT_TRUE(test_window_->TestAndResetWasShowHTMLDialogCalled());

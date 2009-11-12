@@ -87,7 +87,8 @@ class SyncBackendHost {
                   URLRequestContextGetter* baseline_context_getter);
 
   // Called on |frontend_loop_| to kick off asynchronous authentication.
-  void Authenticate(const std::string& username, const std::string& password);
+  void Authenticate(const std::string& username, const std::string& password,
+                    const std::string& captcha);
 
   // Called on |frontend_loop_| to kick off shutdown.
   // |sync_disabled| indicates if syncing is being disabled or not.
@@ -168,7 +169,8 @@ class SyncBackendHost {
     // Called on our SyncBackendHost's core_thread_ to perform authentication
     // on behalf of SyncBackendHost::Authenticate.
     void DoAuthenticate(const std::string& username,
-                        const std::string& password);
+                        const std::string& password,
+                        const std::string& captcha);
 
     // The shutdown order is a bit complicated:
     // 1) From |core_thread_|, invoke the syncapi Shutdown call to do a final

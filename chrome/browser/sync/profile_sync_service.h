@@ -118,7 +118,8 @@ class ProfileSyncService : public NotificationObserver,
 
   // Called when a user enters credentials through UI.
   virtual void OnUserSubmittedAuth(const std::string& username,
-                                   const std::string& password);
+                                   const std::string& password,
+                                   const std::string& captcha);
 
   // Called when a user decides whether to merge and sync or abort.
   virtual void OnUserAcceptedMergeAndSync();

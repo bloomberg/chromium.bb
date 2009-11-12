@@ -245,7 +245,7 @@ bool ProfileSyncServiceTestHarness::WaitForServiceInit() {
   }
 
   // Wait for the OnBackendInitialized callback.
-  service_->backend()->Authenticate(username_, password_);
+  service_->backend()->Authenticate(username_, password_, std::string());
   EXPECT_EQ(wait_state_, WAITING_FOR_READY_TO_PROCESS_CHANGES);
   if (!AwaitStatusChangeWithTimeout(30, "Waiting on backend initialization.")) {
     return false;

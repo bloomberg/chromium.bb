@@ -217,11 +217,19 @@ void AuthWatcher::DoAuthenticate(const AuthRequest& request) {
   SignIn const signin = user_settings_->
       RecallSigninType(request.email, GMAIL_SIGNIN);
 
+  // We let the caller be lazy and try using the last captcha token seen by
+  // the gaia authenticator if they haven't provided a token but have sent
+  // a challenge response. Of course, if the captcha token is specified,
+  // we use that one instead.
+  std::string captcha_token(request.captcha_token);
+  if (!request.captcha_value.empty() && captcha_token.empty())
+    captcha_token = gaia_->captcha_token();
+
   if (!request.password.empty()) {
     bool authenticated = false;
-    if (!request.captcha_token.empty() && !request.captcha_value.empty()) {
+    if (!captcha_token.empty()) {
       authenticated = gaia_->Authenticate(request.email, request.password,
-                                          save, request.captcha_token,
+                                          save, captcha_token,
                                           request.captcha_value, signin);
     } else {
       authenticated = gaia_->Authenticate(request.email, request.password,

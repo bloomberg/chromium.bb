@@ -116,7 +116,8 @@ void SyncSetupWizardGtk::OnDialogResponse(GtkWidget* widget, int response) {
   if (response == GTK_RESPONSE_ACCEPT) {
     service_->OnUserSubmittedAuth(
         gtk_entry_get_text(GTK_ENTRY(username_textbox_)),
-        gtk_entry_get_text(GTK_ENTRY(password_textbox_)));
+        gtk_entry_get_text(GTK_ENTRY(password_textbox_)),
+        std::string());
 
     service_->SetSyncSetupCompleted();
   }

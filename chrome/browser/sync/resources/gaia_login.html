@@ -35,17 +35,71 @@
         margin: 5px;
       }
       #gaia_loginform {
-        margin-bottom: 0.5em;
+        margin-bottom: 0;
       }
-    --></style> 
+
+    #captcha_wrapper {
+      -webkit-background-size: 200px 70px;
+      background: no-repeat;
+      background-position: center;
+      background-color: #e8eefa;
+      display: block;
+    }
+    .captcha_image {
+      display: block;
+      width: 200px;
+      height: 70px;
+    }
+    .toppageverticalspace {
+      height: 15px;
+    }
+    .bottompaddedcell {
+      padding-bottom: 3px;
+    }
+    .noverticalpadding {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+    .cancelspacenocaptcha {
+      height: 22px;
+    }
+    .cancelspaceforcaptcha {
+      height: 5px;
+    }
+    -->
+  </style> 
   </head> 
   <body bgcolor="#ffffff" vlink="#666666"
         i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
-        style="margin-bottom: 0" onload="initForm();"> 
+        style="margin-bottom: 0; margin-top: 6px;" onload="initForm();"> 
   <table width="100%" align="center" cellpadding="1" cellspacing="1"> 
   <tr> 
   <td valign="top"> <!-- LOGIN BOX --> 
-  <script>  
+  <script>
+    // Variable to track if a captcha challenge was issued. If this gets set to
+    // true, it stays that way until we are told about successful login from
+    // the browser.  This means subsequent errors (like invalid password) are
+    // rendered in the captcha state, which is basically identical except we
+    // don't show the top error blurb "Error Signing in" or the "Create
+    // account" link.
+    var g_is_captcha_challenge_active = false;
+
+    // Taken from new_new_tab.js.
+    // TODO(tim): Can this be unified?
+    function url(s) {
+      // http://www.w3.org/TR/css3-values/#uris
+      // Parentheses, commas, whitespace characters, single quotes (') and
+      // double quotes (") appearing in a URI must be escaped with a backslash
+      var s2 = s.replace(/(\(|\)|\,|\s|\'|\"|\\)/g, '\\$1');
+      // WebKit has a bug when it comes to URLs that end with \
+      // https://bugs.webkit.org/show_bug.cgi?id=28885
+      if (/\\\\$/.test(s2)) {
+        // Add a space to work around the WebKit bug.
+        s2 += ' ';
+      }
+      return 'url("' + s2 + '")';
+    }
+
     function gaia_setFocus() {
       var f = null;
       if (document.getElementById) { 
@@ -73,8 +127,8 @@
       throbber.style.display = "none";
       var f = document.getElementById("gaia_loginform");
       if (f) {        
-        f.Email.value = args.user; 
-      }     
+        f.Email.value = args.user;
+      }
       if (1 == args.error) {
         setElementDisplay("errormsg_1_Password", 'table-row');
         setBlurbError();
@@ -83,10 +137,37 @@
         setElementDisplay("errormsg_0_Connection", 'table-row');
         setBlurbError();
       }
+      if (4 == args.error) {
+        showCaptcha(args);
+      }
       document.getElementById("signIn").disabled = false;
       gaia_setFocus();
     }
-    
+
+    function showCaptcha(args) {
+      g_is_captcha_challenge_active = true;
+
+      // The captcha takes up lots of space, so make room.
+      setElementDisplay("top_blurb", "none");
+      setElementDisplay("top_blurb_error", "none");
+      setElementDisplay("createaccountdiv", "none");
+      setElementDisplay("topspacer", "none");
+      var gaiaTable = document.getElementById('gaia_table');
+      gaiaTable.cellPadding = 0;
+      gaiaTable.cellSpacing = 1;
+      document.getElementById('cancelspacer').className =
+          "cancelspaceforcaptcha";
+      document.getElementById('createaccountcell').height = 0;
+
+      // It's showtime for the captcha now.
+      setElementDisplay("captchadiv", "block");
+      document.getElementById('Email').disabled = true;
+      document.getElementById('Passwd').disabled = false;
+      document.getElementById('CaptchaValue').disabled = false;
+      document.getElementById('captcha_wrapper').style.backgroundImage =
+          url(args.captchaUrl);
+    }
+
     function CloseDialog() {
       chrome.send("DialogClose", [""]);
     }
@@ -126,12 +207,13 @@
 
       document.getElementById('Email').disabled = true;
       document.getElementById('Passwd').disabled = true;
-
+      document.getElementById('CaptchaValue').disabled = true;
       var throbber = document.getElementById('throbber_container');
       throbber.style.display = "inline";
       var f = document.getElementById("gaia_loginform");
       var result = JSON.stringify({"user" : f.Email.value,
-                                   "pass" : f.Passwd.value});
+                                   "pass" : f.Passwd.value,
+                                   "captcha" : f.CaptchaValue.value});
       document.getElementById("signIn").disabled = true;
       chrome.send("SubmitAuth", [result]);
     }
@@ -140,9 +222,11 @@
       var d = document.getElementById(id);
       if (d)
         d.style.display = display;
-    }    
-    
+    }
+
     function setBlurbError() {
+      if (g_is_captcha_challenge_active)
+        return;  // No blurb in captcha challenge mode.
       document.getElementById("top_blurb").style.display = "none";
       document.getElementById("top_blurb_error").style.display = "block";
       document.getElementById('Email').disabled = false;
@@ -198,17 +282,19 @@
 </div>
 <form id="gaia_loginform" onsubmit="sendCredentialsAndClose(); return false;"> 
 <div id="gaia_loginbox"> 
-<table class="form-noindent" cellspacing="3" cellpadding="5" width="75%"
-       border="0" align="center"> 
+<table id="content_table" class="form-noindent" cellspacing="0" cellpadding="5"
+       width="75%" border="0" align="center"> 
   <tr> 
     <td valign="top" style="text-align:center" nowrap="nowrap"
         bgcolor="#e8eefa"> 
-      <div class="loginBox"> 
+      <div> 
         <table id="gaia_table" align="center" border="0" cellpadding="1"
                cellspacing="0"> 
+          <tr>
+            <td id="topspacer" class="toppageverticalspace" colspan="2"></td>
+          </tr>
           <tr> 
             <td colspan="2" align="center"> 
-              <font size="-1"><span i18n-content="signinprefix"></span></font> 
               <table> 
                 <tr> 
                   <td valign="top" id="gaia_logo">
@@ -289,11 +375,40 @@
               <span i18n-content="invalidcredentials"></span>[<a href="http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444" target="_blank">?</a>]
               </div> 
             </td> 
-          </tr> 
+          </tr>
           <tr>
-            <td>
+            <td colspan="2">
+              <div id="captchadiv" style="display:none">
+                <table cellpadding="1" cellspacing="0" border="0">
+                  <tbody>
+                    <tr>
+                      <td colspan="2" align="center" class="bottompaddedcell">
+                        <font size="-1">
+                          <span i18n-content="captchainstructions"></span>
+                        </font>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" align="center" class="bottompaddedcell">
+                        <span id="captcha_wrapper">
+                          <span class="captcha_image"></span>
+                        </span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td colspan="2" align="center">
+                        <input type="text" name="CaptchaValue"
+                               id="CaptchaValue" size="18"
+                               value="" class="gaia le val" /> 
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </td>
-            <td>
+          </tr>
+          <tr>
+            <td colspan="2" align="center">
               <div class="errormsg" id="errormsg_0_Connection"
                    i18n-content="couldnotconnect">
               </div> 
@@ -306,10 +421,8 @@
             </td>
           </tr> 
           <tr> 
-            <td> 
-            </td> 
-            <td>
-              <table>
+            <td colspan="2">
+              <table align="center" cellpadding="0" cellspacing="0">
                 <tr>
                   <td>
                     <div id="throbber_container" style="display:none">
@@ -318,7 +431,7 @@
                       </div>
                     </div>
                   </td>
-                  <td>
+                  <td class="noverticalpadding">
                     <input id="signIn" type="button" class="gaia le button"
                            name="signIn" i18n-values="value:signin"
                            onclick="sendCredentialsAndClose();"
@@ -337,11 +450,13 @@
             </td>
           </tr> 
           <tr>
-            <td colspan="2" height="16.0" class="gaia le fpwd"
-                align="center" valign="bottom"> 
-              <a href="https://www.google.com/accounts/NewAccount?service=chromiumsync"
-                 i18n-content="createaccount" target="_blank">
-              </a> 
+            <td id="createaccountcell" colspan="2" height="16.0"
+                class="gaia le fpwd" align="center" valign="bottom">
+              <div id="createaccountdiv">
+                <a href="https://www.google.com/accounts/NewAccount?service=chromiumsync"
+                   i18n-content="createaccount" target="_blank">
+                </a>
+              </div>
            </td> 
           </tr>
         </table> 
@@ -352,7 +467,11 @@
 </div> 
 </form> 
 </td> 
-</tr> 
+</tr>
+<tr>
+  <td class="cancelspacenocaptcha" id="cancelspacer" colspan="2">
+  </td>
+</tr>
 </table> 
 <div class="endaligned">
   <input type="button" name="cancel" i18n-values="value:cancel"

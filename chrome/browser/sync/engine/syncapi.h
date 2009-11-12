@@ -522,8 +522,9 @@ class SYNC_EXPORT SyncManager {
   // The Observer may, in turn, decide to try again with new
   // credentials. Calling this method again is the appropriate course of action
   // to "retry".
-  // |username| and |password| are expected to be owned by the caller.
-  void Authenticate(const char* username, const char* password);
+  // |username|, |password|, and |captcha| are owned by the caller.
+  void Authenticate(const char* username, const char* password,
+                    const char* captcha);
 
   // Adds a listener to be notified of sync events.
   // NOTE: It is OK (in fact, it's probably a good idea) to call this before

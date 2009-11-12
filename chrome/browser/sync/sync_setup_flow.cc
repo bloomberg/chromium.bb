@@ -55,15 +55,16 @@ void FlowHandler::RegisterMessages() {
       NewCallback(this, &FlowHandler::HandleSubmitMergeAndSync));
 }
 
-static bool GetUsernameAndPassword(const std::string& json,
-    std::string* username, std::string* password) {
+static bool GetAuthData(const std::string& json,
+    std::string* username, std::string* password, std::string* captcha) {
   scoped_ptr<Value> parsed_value(base::JSONReader::Read(json, false));
   if (!parsed_value.get() || !parsed_value->IsType(Value::TYPE_DICTIONARY))
     return false;
 
   DictionaryValue* result = static_cast<DictionaryValue*>(parsed_value.get());
   if (!result->GetString(L"user", username) ||
-      !result->GetString(L"pass", password)) {
+      !result->GetString(L"pass", password) ||
+      !result->GetString(L"captcha", captcha)) {
       return false;
   }
   return true;
@@ -71,11 +72,11 @@ static bool GetUsernameAndPassword(const std::string& json,
 
 void FlowHandler::HandleSubmitAuth(const Value* value) {
   std::string json(GetJsonResponse(value));
-  std::string username, password;
+  std::string username, password, captcha;
   if (json.empty())
     return;
 
-  if (!GetUsernameAndPassword(json, &username, &password)) {
+  if (!GetAuthData(json, &username, &password, &captcha)) {
     // The page sent us something that we didn't understand.
     // This probably indicates a programming error.
     NOTREACHED();
@@ -83,7 +84,7 @@ void FlowHandler::HandleSubmitAuth(const Value* value) {
   }
 
   if (flow_)
-    flow_->OnUserSubmittedAuth(username, password);
+    flow_->OnUserSubmittedAuth(username, password, captcha);
 }
 
 void FlowHandler::HandleSubmitMergeAndSync(const Value* value) {
@@ -223,6 +224,8 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
     args->SetString(L"user", user);
     args->SetInteger(L"error", user.empty() ? 0 : error.state());
   }
+
+  args->SetString(L"captchaUrl", error.captcha().image_url.spec());
 }
 
 void SyncSetupFlow::GetDOMMessageHandlers(

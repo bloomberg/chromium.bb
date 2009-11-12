@@ -329,13 +329,14 @@ string16 ProfileSyncService::GetAuthenticatedUsername() const {
 }
 
 void ProfileSyncService::OnUserSubmittedAuth(
-    const std::string& username, const std::string& password) {
+    const std::string& username, const std::string& password,
+    const std::string& captcha) {
   last_attempted_user_email_ = username;
   is_auth_in_progress_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 
   auth_start_time_ = base::TimeTicks::Now();
-  backend_->Authenticate(username, password);
+  backend_->Authenticate(username, password, captcha);
 }
 
 void ProfileSyncService::OnUserAcceptedMergeAndSync() {

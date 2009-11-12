@@ -706,7 +706,8 @@ class SyncManager::SyncInternal {
   // the SyncManager::Observer. It may, in turn, decide to try again with new
   // credentials. Calling this method again is the appropriate course of action
   // to "retry".
-  void Authenticate(const std::string& username, const std::string& password);
+  void Authenticate(const std::string& username, const std::string& password,
+                    const std::string& captcha);
 
   // Call periodically from a database-safe thread to persist recent changes
   // to the syncapi model.
@@ -934,8 +935,10 @@ bool SyncManager::Init(const FilePath& database_location,
                      user_agent);
 }
 
-void SyncManager::Authenticate(const char* username, const char* password) {
-  data_->Authenticate(std::string(username), std::string(password));
+void SyncManager::Authenticate(const char* username, const char* password,
+    const char* captcha) {
+  data_->Authenticate(std::string(username), std::string(password),
+                      std::string(captcha));
 }
 
 const std::string& SyncManager::GetAuthenticatedUsername() {
@@ -1058,7 +1061,8 @@ void SyncManager::SyncInternal::MarkAndNotifyInitializationComplete() {
 }
 
 void SyncManager::SyncInternal::Authenticate(const std::string& username,
-                                             const std::string& password) {
+                                             const std::string& password,
+                                             const std::string& captcha) {
   DCHECK(username_for_share().empty() || username == username_for_share())
         << "Username change from valid username detected";
   if (allstatus()->status().authenticated)
@@ -1070,7 +1074,8 @@ void SyncManager::SyncInternal::Authenticate(const std::string& username,
     // our GoogleServiceAuthError state to denote an error.
     RaiseAuthNeededEvent();
   }
-  auth_watcher()->Authenticate(username, password, true);
+  auth_watcher()->Authenticate(username, password, std::string(),
+                               captcha, true);
 }
 
 void SyncManager::SyncInternal::AuthenticateForLastKnownUser() {
@@ -1435,11 +1440,9 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
     case AuthWatcherEvent::GAIA_AUTH_FAILED:     // Invalid GAIA credentials.
       if (event.auth_results->auth_error == browser_sync::CaptchaRequired) {
         auth_problem_ = AuthError::CAPTCHA_REQUIRED;
-        GURL captcha("http://www.google.com/accounts/");
-        GURL::Replacements replacer;
-        replacer.SetPathStr(captcha.path().append(
-            event.auth_results->captcha_url));
-        captcha = captcha.ReplaceComponents(replacer);
+        std::string url_string("http://www.google.com/accounts/");
+        url_string += event.auth_results->captcha_url;
+        GURL captcha(url_string);
         observer_->OnAuthError(AuthError::FromCaptchaChallenge(
             event.auth_results->captcha_token, captcha,
             GURL(event.auth_results->auth_error_url)));

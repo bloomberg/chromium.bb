@@ -56,10 +56,11 @@ void SyncBackendHost::Initialize(
 }
 
 void SyncBackendHost::Authenticate(const std::string& username,
-                                   const std::string& password) {
+                                   const std::string& password,
+                                   const std::string& captcha) {
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoAuthenticate,
-                        username, password));
+                        username, password, captcha));
 }
 
 void SyncBackendHost::Shutdown(bool sync_disabled) {
@@ -193,9 +194,10 @@ void SyncBackendHost::Core::DoInitialize(
 }
 
 void SyncBackendHost::Core::DoAuthenticate(const std::string& username,
-                                           const std::string& password) {
+                                           const std::string& password,
+                                           const std::string& captcha) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
-  syncapi_->Authenticate(username.c_str(), password.c_str());
+  syncapi_->Authenticate(username.c_str(), password.c_str(), captcha.c_str());
 }
 
 void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {

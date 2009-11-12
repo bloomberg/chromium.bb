@@ -85,6 +85,8 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
         l10n_util::GetString(IDS_SYNC_SUCCESS));
     localized_strings.SetString(L"errorsigningin",
         l10n_util::GetString(IDS_SYNC_ERROR_SIGNING_IN));
+    localized_strings.SetString(L"captchainstructions",
+        l10n_util::GetString(IDS_SYNC_GAIA_CAPTCHA_INSTRUCTIONS));
     static const base::StringPiece html(ResourceBundle::GetSharedInstance()
         .GetRawDataResource(IDR_GAIA_LOGIN_HTML));
     SetFontAndTextDirection(&localized_strings);
