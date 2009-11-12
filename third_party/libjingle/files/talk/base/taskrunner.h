@@ -61,6 +61,11 @@ class TaskRunner : public Task, public sigslot::has_slots<> {
   // dummy state machine - never run.
   virtual int ProcessStart() { return STATE_DONE; }
 
+  bool HasPendingTimeoutTask() {
+    return next_timeout_task_ != NULL &&
+        next_timeout_task_->TimedOut();
+  }
+
  private:
   std::vector<Task *> tasks_;
   Task *next_timeout_task_;

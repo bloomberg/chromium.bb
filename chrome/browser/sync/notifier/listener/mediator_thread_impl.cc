@@ -53,19 +53,20 @@ void MediatorThreadImpl::Run() {
   // Since we just changed the socket server, ensure that any queued up
   // messages are processed.
   socket_server->WakeUp();
-  ::MSG message;
-  while (::GetMessage(&message, NULL, 0, 0)) {
-    ::TranslateMessage(&message);
-    ::DispatchMessage(&message);
-    if (IsStopping()) {
-      break;
-    }
-    MessageLoop::current()->RunAllPending();
-  }
 #endif
 
   do {
+#if defined(OS_WIN)
+    ::MSG message;
+    if (::PeekMessage(&message, NULL, 0, 0, PM_REMOVE)) {
+      ::TranslateMessage(&message);
+      ::DispatchMessage(&message);
+    }
+#endif
     ProcessMessages(100);
+    if (pump_.get() && pump_->HasPendingTimeoutTask()) {
+      pump_->WakeTasks();
+    }
     MessageLoop::current()->RunAllPending();
   } while (!IsStopping());
 
