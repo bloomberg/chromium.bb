@@ -22,24 +22,10 @@ import __builtin__
 import StringIO
 
 import gclient
-from super_mox import mox, SuperMoxTestBase
-
-
-class IsOneOf(mox.Comparator):
-  def __init__(self, keys):
-    self._keys = keys
-
-  def equals(self, rhs):
-    return rhs in self._keys
-
-  def __repr__(self):
-    return '<sequence or map containing \'%s\'>' % str(self._keys)
+from super_mox import mox, IsOneOf, SuperMoxTestBase
 
 
 class BaseTestCase(SuperMoxTestBase):
-  def setUp(self):
-    SuperMoxTestBase.setUp(self)
-
   # Like unittest's assertRaises, but checks for Gclient.Error.
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     try:
@@ -56,12 +42,6 @@ class GClientBaseTestCase(BaseTestCase):
 
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(gclient.os.path, 'exists')
-    self.mox.StubOutWithMock(gclient.os.path, 'isfile')
-    self.mox.StubOutWithMock(gclient.os.path, 'isdir')
-    self.mox.StubOutWithMock(gclient.os, 'remove')
-    self.mox.StubOutWithMock(gclient.sys, 'stdout')
-    self.mox.StubOutWithMock(gclient.gclient_utils, 'subprocess')
     # These are not tested.
     self.mox.StubOutWithMock(gclient.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gclient.gclient_utils, 'FileWrite')
@@ -69,7 +49,6 @@ class GClientBaseTestCase(BaseTestCase):
     self.mox.StubOutWithMock(gclient.gclient_utils, 'RemoveDirectory')
     # Mock them to be sure nothing bad happens.
     self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVN')
-    self._CaptureSVNInfo = gclient.gclient_scm.CaptureSVNInfo
     self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVNInfo')
     self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVNStatus')
     self.mox.StubOutWithMock(gclient.gclient_scm, 'RunSVN')
@@ -380,10 +359,11 @@ class GClientClassTestCase(GclientTestCase):
 
   def testLoadCurrentConfig(self):
     options = self.Options()
-    path = gclient.os.path.realpath(self.root_dir)
-    gclient.os.path.exists(gclient.os.path.join(path, options.config_filename)
+    gclient.os.path.realpath(self.root_dir).AndReturn(self.root_dir)
+    gclient.os.path.exists(
+        gclient.os.path.join(self.root_dir, options.config_filename)
         ).AndReturn(True)
-    gclient.GClient(path, options).AndReturn(gclient.GClient)
+    gclient.GClient(self.root_dir, options).AndReturn(gclient.GClient)
     gclient.GClient._LoadConfig()
 
     self.mox.ReplayAll()
@@ -1089,7 +1069,6 @@ deps = {
 class SubprocessCallAndFilterTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(gclient.gclient_utils, 'subprocess')
     self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVN')
 
   def testSubprocessCallAndFilter(self):

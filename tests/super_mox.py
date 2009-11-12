@@ -5,13 +5,29 @@
 
 """Simplify unit tests based on pymox."""
 
+import __builtin__
 import os
 import random
 import string
-from pymox import mox 
+import subprocess
+import sys
+from pymox import mox
 
 
-class SuperMoxTestBase(mox.MoxTestBase):
+class IsOneOf(mox.Comparator):
+  def __init__(self, keys):
+    self._keys = keys
+
+  def equals(self, rhs):
+    return rhs in self._keys
+
+  def __repr__(self):
+    return '<sequence or map containing \'%s\'>' % str(self._keys)
+
+
+class SuperMoxBaseTestBase(mox.MoxTestBase):
+  """Base class with some additional functionalities. People will usually want
+  to use SuperMoxTestBase instead."""
   # Backup the separator in case it gets mocked
   _OS_SEP = os.sep
   _RANDOM_CHOICE = random.choice
@@ -57,3 +73,64 @@ class SuperMoxTestBase(mox.MoxTestBase):
               [i for i in expected_members if i not in actual_members])
       print diff
     self.assertEqual(actual_members, expected_members)
+
+  def UnMock(self, object, name):
+    """Restore an object inside a test."""
+    for (parent, old_child, child_name) in self.mox.stubs.cache:
+      if parent == object and child_name == name:
+        setattr(parent, child_name, old_child)
+        break
+
+
+class SuperMoxTestBase(SuperMoxBaseTestBase):
+  def setUp(self):
+    """Patch a few functions with know side-effects."""
+    SuperMoxBaseTestBase.setUp(self)
+    #self.mox.StubOutWithMock(__builtin__, 'open')
+    self.mox.StubOutWithMock(os, 'chdir')
+    self.mox.StubOutWithMock(os, 'chown')
+    self.mox.StubOutWithMock(os, 'close')
+    #self.mox.StubOutWithMock(os, 'closerange')
+    self.mox.StubOutWithMock(os, 'dup')
+    self.mox.StubOutWithMock(os, 'dup2')
+    self.mox.StubOutWithMock(os, 'fchdir')
+    #self.mox.StubOutWithMock(os, 'fchmod')
+    #self.mox.StubOutWithMock(os, 'fchown')
+    self.mox.StubOutWithMock(os, 'fdopen')
+    self.mox.StubOutWithMock(os, 'getcwd')
+    self.mox.StubOutWithMock(os, 'getpid')
+    self.mox.StubOutWithMock(os, 'lseek')
+    self.mox.StubOutWithMock(os, 'makedirs')
+    self.mox.StubOutWithMock(os, 'mkdir')
+    self.mox.StubOutWithMock(os, 'open')
+    self.mox.StubOutWithMock(os, 'popen')
+    self.mox.StubOutWithMock(os, 'popen2')
+    self.mox.StubOutWithMock(os, 'popen3')
+    self.mox.StubOutWithMock(os, 'popen4')
+    self.mox.StubOutWithMock(os, 'read')
+    self.mox.StubOutWithMock(os, 'remove')
+    self.mox.StubOutWithMock(os, 'removedirs')
+    self.mox.StubOutWithMock(os, 'rename')
+    self.mox.StubOutWithMock(os, 'renames')
+    self.mox.StubOutWithMock(os, 'rmdir')
+    self.mox.StubOutWithMock(os, 'symlink')
+    self.mox.StubOutWithMock(os, 'system')
+    self.mox.StubOutWithMock(os, 'tmpfile')
+    self.mox.StubOutWithMock(os, 'walk')
+    self.mox.StubOutWithMock(os, 'write')
+    self.mox.StubOutWithMock(os.path, 'abspath')
+    self.mox.StubOutWithMock(os.path, 'exists')
+    self.mox.StubOutWithMock(os.path, 'getsize')
+    self.mox.StubOutWithMock(os.path, 'isdir')
+    self.mox.StubOutWithMock(os.path, 'isfile')
+    self.mox.StubOutWithMock(os.path, 'islink')
+    self.mox.StubOutWithMock(os.path, 'ismount')
+    self.mox.StubOutWithMock(os.path, 'lexists')
+    self.mox.StubOutWithMock(os.path, 'realpath')
+    self.mox.StubOutWithMock(os.path, 'samefile')
+    self.mox.StubOutWithMock(os.path, 'walk')
+    self.mox.StubOutWithMock(subprocess, 'call')
+    self.mox.StubOutWithMock(subprocess, 'Popen')
+    #self.mox.StubOutWithMock(sys, 'stderr')
+    self.mox.StubOutWithMock(sys, 'stdin')
+    self.mox.StubOutWithMock(sys, 'stdout')

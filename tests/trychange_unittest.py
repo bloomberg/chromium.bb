@@ -6,17 +6,13 @@
 """Unit tests for trychange.py."""
 
 import optparse
-import unittest
 
 # Local imports
-import gcl
-import super_mox
 import trychange
-import upload
-from super_mox import mox
+from super_mox import mox, SuperMoxTestBase
 
 
-class TryChangeTestsBase(super_mox.SuperMoxTestBase):
+class TryChangeTestsBase(SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   pass
 
@@ -40,14 +36,15 @@ class TryChangeUnittest(TryChangeTestsBase):
 class SVNUnittest(TryChangeTestsBase):
   """trychange.SVN tests."""
   def setUp(self):
+    SuperMoxTestBase.setUp(self)
     self.fake_root = '/fake_root'
     self.expected_files = ['foo.txt', 'bar.txt']
-    change_info = gcl.ChangeInfo('test_change', 0, 0, 'desc',
-                                 [('M', f) for f in self.expected_files],
-                                 self.fake_root)
+    change_info = trychange.gcl.ChangeInfo(
+        'test_change', 0, 0, 'desc',
+        [('M', f) for f in self.expected_files],
+        self.fake_root)
     self.svn = trychange.SVN(None)
     self.svn.change_info = change_info
-    super_mox.SuperMoxTestBase.setUp(self)
 
   def testMembersChanged(self):
     members = [
@@ -69,13 +66,13 @@ class SVNUnittest(TryChangeTestsBase):
 class GITUnittest(TryChangeTestsBase):
   """trychange.GIT tests."""
   def setUp(self):
-    self.fake_root = gcl.os.path.join(gcl.os.path.dirname(__file__),
-                                      'fake_root')
+    self.fake_root = trychange.os.path.join(
+        trychange.os.path.dirname(__file__), 'fake_root')
     self.expected_files = ['foo.txt', 'bar.txt']
     options = optparse.Values()
     options.files = self.expected_files
     self.git = trychange.GIT(options)
-    super_mox.SuperMoxTestBase.setUp(self)
+    SuperMoxTestBase.setUp(self)
 
   def testMembersChanged(self):
     members = [
@@ -90,12 +87,14 @@ class GITUnittest(TryChangeTestsBase):
     self.assertEqual(self.git.GetFileNames(), self.expected_files)
 
   def testGetLocalRoot(self):
-    self.mox.StubOutWithMock(upload, 'RunShell')
-    upload.RunShell(['git', 'rev-parse', '--show-cdup']).AndReturn(
+    self.mox.StubOutWithMock(trychange.upload, 'RunShell')
+    trychange.upload.RunShell(['git', 'rev-parse', '--show-cdup']).AndReturn(
         self.fake_root)
+    trychange.os.path.abspath(self.fake_root).AndReturn(self.fake_root)
     self.mox.ReplayAll()
     self.assertEqual(self.git.GetLocalRoot(), self.fake_root)
 
 
 if __name__ == '__main__':
+  import unittest
   unittest.main()

@@ -5,29 +5,18 @@
 
 """Unit tests for gcl.py."""
 
-import unittest
-
 # Local imports
 import gcl
-import super_mox
-from super_mox import mox
+from super_mox import mox, SuperMoxTestBase
 
 
-class GclTestsBase(super_mox.SuperMoxTestBase):
+class GclTestsBase(SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   def setUp(self):
-    super_mox.SuperMoxTestBase.setUp(self)
+    SuperMoxTestBase.setUp(self)
     self.fake_root_dir = self.RootDir()
     self.mox.StubOutWithMock(gcl, 'RunShell')
     self.mox.StubOutWithMock(gcl.gclient_scm, 'CaptureSVNInfo')
-    self.mox.StubOutWithMock(gcl.os, 'getcwd')
-    self.mox.StubOutWithMock(gcl.os, 'chdir')
-    self.mox.StubOutWithMock(gcl.os, 'close')
-    self.mox.StubOutWithMock(gcl.os, 'remove')
-    self.mox.StubOutWithMock(gcl.os, 'write')
-    self.mox.StubOutWithMock(gcl.os.path, 'exists')
-    self.mox.StubOutWithMock(gcl.os.path, 'isdir')
-    self.mox.StubOutWithMock(gcl.os.path, 'isfile')
     self.mox.StubOutWithMock(gcl, 'tempfile')
     self.mox.StubOutWithMock(gcl.upload, 'RealMain')
     # These are not tested.
@@ -40,9 +29,9 @@ class GclUnittest(GclTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 
+      'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE',
       'Change', 'ChangeInfo', 'Changes', 'Commit',
-      'DEFAULT_LINT_IGNORE_REGEX', 'DEFAULT_LINT_REGEX', 
+      'DEFAULT_LINT_IGNORE_REGEX', 'DEFAULT_LINT_REGEX',
       'DeleteEmptyChangeLists', 'DoPresubmitChecks',
       'ErrorExit', 'FILES_CACHE', 'FilterFlag', 'GenerateChangeName',
       'GenerateDiff',
@@ -134,7 +123,6 @@ class GclUnittest(GclTestsBase):
     pass
 
   def testHelp(self):
-    self.mox.StubOutWithMock(gcl.sys, 'stdout')
     gcl.sys.stdout.write(mox.StrContains('GCL is a wrapper for Subversion'))
     gcl.sys.stdout.write('\n')
     self.mox.ReplayAll()
@@ -364,4 +352,5 @@ class UploadCLUnittest(GclTestsBase):
 
 
 if __name__ == '__main__':
+  import unittest
   unittest.main()

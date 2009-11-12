@@ -5,8 +5,6 @@
 
 """Unit tests for watchlists.py."""
 
-import os
-import unittest
 import super_mox
 import watchlists
 
@@ -142,8 +140,8 @@ class WatchlistsTest(super_mox.SuperMoxTestBase):
           'browser': %s,
         },
       } """ % watchers
-    saved_sep = os.sep
-    os.sep = '\\'  # to pose as win32
+    saved_sep = watchlists.os.sep
+    watchlists.os.sep = '\\'  # to pose as win32
     watchlists.Watchlists._HasWatchlistsFile().AndReturn(True)
     watchlists.Watchlists._ContentsOfWatchlistsFile().AndReturn(contents)
     self.mox.ReplayAll()
@@ -151,9 +149,10 @@ class WatchlistsTest(super_mox.SuperMoxTestBase):
     wl = watchlists.Watchlists(r'a\path')
     returned_watchers = wl.GetWatchersForPaths(
           [r'chrome\browser\renderer_host\render_widget_host.h'])
-    os.sep = saved_sep  # revert back os.sep before asserts
+    watchlists.os.sep = saved_sep  # revert back os.sep before asserts
     self.assertEqual(returned_watchers, watchers)
 
 
 if __name__ == '__main__':
+  import unittest
   unittest.main()

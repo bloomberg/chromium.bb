@@ -5,19 +5,15 @@
 
 """Unit tests for presubmit_support.py and presubmit_canned_checks.py."""
 
-import exceptions
-import os
 import StringIO
-import unittest
 
 # Local imports
 import presubmit_support as presubmit
 import presubmit_canned_checks
-import super_mox
-from super_mox import mox
+from super_mox import mox, SuperMoxTestBase
 
 
-class PresubmitTestsBase(super_mox.SuperMoxTestBase):
+class PresubmitTestsBase(SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   presubmit_text = """
 def CheckChangeOnUpload(input_api, output_api):
@@ -37,33 +33,17 @@ def GetPreferredTrySlaves():
 """
 
   def setUp(self):
-    super_mox.SuperMoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(presubmit, 'warnings')
-    # Stub out 'os' but keep os.path.commonprefix/dirname/join/normpath/splitext
-    # and os.sep.
-    os_sep = presubmit.os.sep
-    os_path_commonprefix = presubmit.os.path.commonprefix
-    os_path_dirname = presubmit.os.path.dirname
-    os_path_join = presubmit.os.path.join
-    os_path_normpath = presubmit.os.path.normpath
-    os_path_splitext = presubmit.os.path.splitext
-    self.mox.StubOutWithMock(presubmit, 'os')
-    self.mox.StubOutWithMock(presubmit.os, 'path')
-    presubmit.os.sep = os_sep
-    presubmit.os.path.join = os_path_join
-    presubmit.os.path.dirname = os_path_dirname
-    presubmit.os.path.normpath = os_path_normpath
-    presubmit.os.path.splitext = os_path_splitext
+    SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(presubmit, 'random')
-    self.mox.StubOutWithMock(presubmit, 'sys')
+    self.mox.StubOutWithMock(presubmit, 'warnings')
     presubmit._ASKED_FOR_FEEDBACK = False
-    presubmit.os.path.commonprefix = os_path_commonprefix
     self.fake_root_dir = self.RootDir()
     # Special mocks.
     def MockAbsPath(f):
       return f
     def MockChdir(f):
       return None
+    # SuperMoxTestBase already mock these but simplify our life.
     presubmit.os.path.abspath = MockAbsPath
     presubmit.os.getcwd = self.RootDir
     presubmit.os.chdir = MockChdir
@@ -281,13 +261,13 @@ class PresubmitUnittest(PresubmitTestsBase):
       fake_presubmit
     ))
 
-    self.assertRaises(exceptions.RuntimeError,
+    self.assertRaises(presubmit.exceptions.RuntimeError,
       executer.ExecPresubmitScript,
       'def CheckChangeOnCommit(input_api, output_api):\n'
       '  return "foo"',
       fake_presubmit)
 
-    self.assertRaises(exceptions.RuntimeError,
+    self.assertRaises(presubmit.exceptions.RuntimeError,
       executer.ExecPresubmitScript,
       'def CheckChangeOnCommit(input_api, output_api):\n'
       '  return ["foo"]',
@@ -424,7 +404,7 @@ def CheckChangeOnCommit(input_api, output_api):
   def testDirectoryHandling(self):
     files = [
       ['A', 'isdir'],
-      ['A', os.path.join('isdir', 'blat.cc')],
+      ['A', presubmit.os.path.join('isdir', 'blat.cc')],
     ]
     isdir = presubmit.os.path.join(self.fake_root_dir, 'isdir')
     blat = presubmit.os.path.join(isdir, 'blat.cc')
@@ -501,7 +481,7 @@ def CheckChangeOnCommit(input_api, output_api):
     not_list_result1 = "'foo'"
     not_list_result2 = "('a', 'tuple')"
     for result in starts_with_space_result, not_list_result1, not_list_result2:
-      self.assertRaises(exceptions.RuntimeError,
+      self.assertRaises(presubmit.exceptions.RuntimeError,
                         executer.ExecPresubmitScript,
                         self.presubmit_tryslave % result)
 
@@ -544,6 +524,8 @@ def CheckChangeOnCommit(input_api, output_api):
                                               output))
 
   def testMain(self):
+    # OptParser calls presubmit.os.path.exists and is a pain when mocked.
+    self.UnMock(presubmit.os.path, 'exists')
     self.mox.StubOutWithMock(presubmit, 'DoPresubmitChecks')
     self.mox.StubOutWithMock(presubmit, 'ParseFiles')
     presubmit.os.path.isdir(presubmit.os.path.join(self.fake_root_dir, '.git')
@@ -1477,4 +1459,5 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
 
 if __name__ == '__main__':
+  import unittest
   unittest.main()

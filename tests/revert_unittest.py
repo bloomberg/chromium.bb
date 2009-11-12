@@ -5,25 +5,17 @@
 
 """Unit tests for revert.py."""
 
-import os
-import unittest
-
-# Local imports
 import revert
-import super_mox
-from super_mox import mox
+from super_mox import mox, SuperMoxTestBase
 
 
-class RevertTestsBase(super_mox.SuperMoxTestBase):
+class RevertTestsBase(SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   def setUp(self):
-    super_mox.SuperMoxTestBase.setUp(self)
+    SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(revert, 'gcl')
     self.mox.StubOutWithMock(revert, 'gclient')
     self.mox.StubOutWithMock(revert, 'gclient_scm')
-    self.mox.StubOutWithMock(revert, 'os')
-    self.mox.StubOutWithMock(revert.os, 'path')
-    self.mox.StubOutWithMock(revert.sys, 'stdout')
 
     # These functions are not tested.
     self.mox.StubOutWithMock(revert, 'GetRepoBase')
@@ -47,14 +39,16 @@ class RevertMainUnittest(RevertTestsBase):
   def setUp(self):
     RevertTestsBase.setUp(self)
     self.mox.StubOutWithMock(revert, 'gcl')
-    self.mox.StubOutWithMock(revert, 'os')
-    self.mox.StubOutWithMock(revert.os, 'path')
-    self.mox.StubOutWithMock(revert, 'sys')
     self.mox.StubOutWithMock(revert, 'Revert')
+    self.fake_root = '/revert/RevertMainUnittest/ShouldntExist'
 
   def testMain(self):
-    revert.gcl.GetInfoDir().AndReturn('foo')
-    revert.os.path.exists('foo').AndReturn(True)
+    # OptParser calls revert.os.path.exists and is a pain when mocked.
+    self.UnMock(revert.os.path, 'exists')
+    revert.gcl.GetInfoDir().AndReturn(self.fake_root)
+    #revert.os.path.exists(self.fake_root).AndReturn(True)
+    revert.os.mkdir(self.fake_root)
+    revert.gcl.GetInfoDir().AndReturn(self.fake_root)
     revert.Revert([42, 23], True, True, False, 'bleh', ['foo@example.com']
         ).AndReturn(31337)
     self.mox.ReplayAll()
@@ -113,4 +107,5 @@ M    random_file
 
 
 if __name__ == '__main__':
+  import unittest
   unittest.main()
