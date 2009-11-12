@@ -232,6 +232,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 }
 
 - (void)addDownloadItem:(BaseDownloadItemModel*)model {
+  DCHECK([NSThread isMainThread]);
   // Insert new item at the left.
   scoped_nsobject<DownloadItemController> controller(
       [[DownloadItemController alloc] initWithModel:model shelf:self]);

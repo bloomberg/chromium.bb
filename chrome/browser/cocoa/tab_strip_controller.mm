@@ -51,6 +51,50 @@ static const float kIndentLeavingSpaceForControls = 64.0;
 // Time (in seconds) in which tabs animate to their final position.
 static const NSTimeInterval kAnimationDuration = 0.2;
 
+namespace {
+
+// Helper class for doing NSAnimationContext calls that takes a bool to disable
+// all the work.  Useful for code that wants to conditionally animate.
+class ScopedNSAnimationContextGroup {
+ public:
+  explicit ScopedNSAnimationContextGroup(bool animate)
+      : animate_(animate) {
+    if (animate_) {
+      [NSAnimationContext beginGrouping];
+    }
+  }
+
+  ~ScopedNSAnimationContextGroup() {
+    if (animate_) {
+      [NSAnimationContext endGrouping];
+    }
+  }
+
+  void SetCurrentContextDuration(NSTimeInterval duration) {
+    if (animate_) {
+      [[NSAnimationContext currentContext] gtm_setDuration:duration];
+    }
+  }
+
+  void SetCurrentContextShortestDuration() {
+    if (animate_) {
+      // The minimum representable time interval.  This used to stop an
+      // in-progress animation as quickly as possible.
+      const NSTimeInterval kMinimumTimeInterval =
+          std::numeric_limits<NSTimeInterval>::min();
+      // Directly set the duration to be short, avoiding the Steve slowmotion
+      // ettect the gtm_setDuration: provides.
+      [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
+    }
+  }
+
+private:
+  bool animate_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedNSAnimationContextGroup);
+};
+
+}  // namespace
+
 @interface TabStripController(Private)
 - (void)installTrackingArea;
 - (void)addSubviewToPermanentList:(NSView*)aView;
@@ -531,14 +575,10 @@ static const NSTimeInterval kAnimationDuration = 0.2;
 // tabs would cause an overflow.
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate {
+  DCHECK([NSThread isMainThread]);
   if (![tabArray_ count])
     return;
 
-  // The minimum representable time interval.  This can be used as the value
-  // passed to +[NSAnimationContext setDuration:] to stop an in-progress
-  // animation as quickly as possible.
-  const NSTimeInterval kMinimumTimeInterval =
-      std::numeric_limits<NSTimeInterval>::min();
   const float kTabOverlap = 20.0;
   const float kNewTabButtonOffset = 8.0;
   const float kMaxTabWidth = [TabController maxTabWidth];
@@ -546,12 +586,12 @@ static const NSTimeInterval kAnimationDuration = 0.2;
   const float kMinSelectedTabWidth = [TabController minSelectedTabWidth];
 
   NSRect enclosingRect = NSZeroRect;
-  [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] gtm_setDuration:kAnimationDuration];
+  ScopedNSAnimationContextGroup mainAnimationGroup(animate);
+  mainAnimationGroup.SetCurrentContextDuration(kAnimationDuration);
 
   // Update the current subviews and their z-order if requested.
   if (doUpdate)
-      [self regenerateSubviewList];
+    [self regenerateSubviewList];
 
   // Compute the base width of tabs given how much room we're allowed. We
   // may not be able to use the entire width if the user is quickly closing
@@ -603,14 +643,13 @@ static const NSTimeInterval kAnimationDuration = 0.2;
     if (isPlaceholder) {
       // Move the current tab to the correct location instantly.
       // We need a duration or else it doesn't cancel an inflight animation.
-      [NSAnimationContext beginGrouping];
-      [[NSAnimationContext currentContext] setDuration:kMinimumTimeInterval];
+      ScopedNSAnimationContextGroup localAnimationGroup(animate);
+      localAnimationGroup.SetCurrentContextShortestDuration();
       tabFrame.origin.x = placeholderFrame_.origin.x;
       // TODO(alcor): reenable this
       //tabFrame.size.height += 10.0 * placeholderStretchiness_;
       id target = animate ? [[tab view] animator] : [tab view];
       [target setFrame:tabFrame];
-      [NSAnimationContext endGrouping];
 
       // Store the frame by identifier to aviod redundant calls to animator.
       NSValue* identifier = [NSValue valueWithPointer:[tab view]];
@@ -699,15 +738,13 @@ static const NSTimeInterval kAnimationDuration = 0.2;
       // to use a very small duration to make sure we cancel any in-flight
       // animation to the left.
       if (visible && animate) {
-        [NSAnimationContext beginGrouping];
+        ScopedNSAnimationContextGroup localAnimationGroup(true);
         BOOL movingLeft = NSMinX(newTabNewFrame) < NSMinX(newTabTargetFrame_);
         if (!movingLeft) {
-          [[NSAnimationContext currentContext]
-              setDuration:kMinimumTimeInterval];
+          localAnimationGroup.SetCurrentContextShortestDuration();
         }
         [[newTabButton_ animator] setFrame:newTabNewFrame];
         newTabTargetFrame_ = newTabNewFrame;
-        [NSAnimationContext endGrouping];
       } else {
         [newTabButton_ setFrame:newTabNewFrame];
         newTabTargetFrame_ = newTabNewFrame;
@@ -715,7 +752,6 @@ static const NSTimeInterval kAnimationDuration = 0.2;
     }
   }
 
-  [NSAnimationContext endGrouping];
   [dragBlockingView_ setFrame:enclosingRect];
 
   // Mark that we've successfully completed layout of at least one tab.
@@ -887,6 +923,7 @@ static const NSTimeInterval kAnimationDuration = 0.2;
 // where to move the tab to. Registers a delegate to call back when the
 // animation is complete in order to remove the tab from the model.
 - (void)startClosingTabWithAnimation:(TabController*)closingTab {
+  DCHECK([NSThread isMainThread]);
   // Save off the controller into the set of animating tabs. This alerts
   // the layout method to not do anything with it and allows us to correctly
   // calculate offsets when working with indices into the model.
@@ -912,10 +949,9 @@ static const NSTimeInterval kAnimationDuration = 0.2;
   // Periscope down! Animate the tab.
   NSRect newFrame = [tabView frame];
   newFrame = NSOffsetRect(newFrame, 0, -newFrame.size.height);
-  [NSAnimationContext beginGrouping];
-  [[NSAnimationContext currentContext] gtm_setDuration:kAnimationDuration];
+  ScopedNSAnimationContextGroup animationGroup(true);
+  animationGroup.SetCurrentContextDuration(kAnimationDuration);
   [[tabView animator] setFrame:newFrame];
-  [NSAnimationContext endGrouping];
 }
 
 // Called when a notification is received from the model that the given tab

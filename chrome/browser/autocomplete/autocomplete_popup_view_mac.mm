@@ -44,7 +44,7 @@ const CGFloat kLeftRightMargin = 8.0;
 const CGFloat kTextXOffset = 33.0;
 
 // Animation duration when animating the popup window smaller.
-const float kShrinkAnimationDuration = 0.1;
+const CGFloat kShrinkAnimationDuration = 0.1;
 
 // Maximum fraction of the popup width that can be used to display match
 // contents.
@@ -365,6 +365,7 @@ void AutocompletePopupViewMac::CreatePopupIfNeeded() {
 }
 
 void AutocompletePopupViewMac::UpdatePopupAppearance() {
+  DCHECK([NSThread isMainThread]);
   const AutocompleteResult& result = model_->result();
   if (result.empty()) {
     [[popup_ parentWindow] removeChildWindow:popup_];
