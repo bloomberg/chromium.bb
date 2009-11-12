@@ -17,6 +17,8 @@
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
 #include "views/examples/tabbed_pane_example.h"
+#include "views/examples/table_example.h"
+#include "views/examples/table2_example.h"
 #include "views/examples/textfield_example.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/grid_layout.h"
@@ -26,6 +28,10 @@ namespace examples {
 
 views::View* ExamplesMain::GetContentsView() {
   return contents_;
+}
+
+void ExamplesMain::WindowClosing() {
+  MessageLoopForUI::current()->Quit();
 }
 
 void ExamplesMain::SetStatus(const std::wstring& status) {
@@ -98,6 +104,14 @@ void ExamplesMain::Run() {
   examples::ScrollViewExample scroll_view_example(this);
   tabbed_pane->AddTab(scroll_view_example.GetExampleTitle(),
                       scroll_view_example.GetExampleView());
+
+  examples::TableExample table_example(this);
+  tabbed_pane->AddTab(table_example.GetExampleTitle(),
+                      table_example.GetExampleView());
+
+  examples::Table2Example table2_example(this);
+  tabbed_pane->AddTab(table2_example.GetExampleTitle(),
+                      table2_example.GetExampleView());
 
   window->Show();
   views::AcceleratorHandler accelerator_handler;

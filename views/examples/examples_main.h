@@ -24,7 +24,9 @@ class ExamplesMain : public views::WindowDelegate {
   virtual ~ExamplesMain() {}
 
   // views::WindowDelegate implementation:
+  virtual bool CanResize() const { return true; }
   virtual views::View* GetContentsView();
+  virtual void WindowClosing();
 
   // Prints a message in the status area, at the bottom of the window.
   void SetStatus(const std::wstring& status);

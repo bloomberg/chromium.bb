@@ -10,6 +10,7 @@
 namespace views {
 
 class TableView;
+class TableView2;
 
 // TableViewObserver is notified about the TableView selection.
 class TableViewObserver {
@@ -30,6 +31,9 @@ class TableViewObserver {
 
   // Invoked when the user presses the delete key.
   virtual void OnTableViewDelete(TableView* table_view) {}
+
+  // Invoked when the user presses the delete key.
+  virtual void OnTableView2Delete(TableView2* table_view) {}
 };
 
 }  // namespace views
