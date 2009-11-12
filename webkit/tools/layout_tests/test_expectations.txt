@@ -3093,7 +3093,6 @@ BUG27341 LINUX : LayoutTests/http/tests/local/stylesheet-and-script-load-order.h
 // more test flakiness
 BUG27418 WIN : LayoutTests/http/tests/cookies/simple-cookies-max-age.html = PASS TIMEOUT
 BUG27418 WIN SLOW : LayoutTests/http/tests/misc/url-in-utf16le.html = PASS
-BUG27418 LINUX : LayoutTests/http/tests/local/send-dragged-file.html = TIMEOUT
 BUG27418 MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-with-source-double-quote.html = PASS TIMEOUT
 BUG27418 MAC : LayoutTests/http/tests/security/xssAuditor/script-tag-src-redirect-safe.html = PASS TIMEOUT
 BUG27418 MAC : LayoutTests/http/tests/security/escape-form-data-field-names.html = PASS TIMEOUT
@@ -3133,7 +3132,6 @@ BUG_JAPHET : LayoutTests/fast/css/color-correction-on-text.html = FAIL
 BUG_JAPHET : LayoutTests/fast/css/color-correction.html = FAIL
 BUG_JAPHET WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
 BUG_JAPHET WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
-BUG_JAPHET MAC : LayoutTests/traversal/acid3-test-2.html = TEXT
 
 BUG_JAPHET SKIP WIN LINUX : LayoutTests/fast/websockets = FAIL
 BUG_JAPHET SKIP WIN LINUX : LayoutTests/websocket = FAIL
