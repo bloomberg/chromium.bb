@@ -401,4 +401,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalGlobal) {
   RunTest("testEvalGlobal", kEvalTestPage);
 }
 
+// Test that Storage panel can be shown.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowStoragePanel) {
+  RunTest("testShowStoragePanel", kDebuggerTestPage);
+}
+
+
 }  // namespace

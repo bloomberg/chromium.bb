@@ -396,8 +396,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsGetApplicationLocale(
 // static
 v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsHiddenPanels(
     const v8::Arguments& args) {
-  Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
-  return v8String(page->settings()->databasesEnabled() ? "" : "databases");
+  return v8String("");
 }
 
 // static
