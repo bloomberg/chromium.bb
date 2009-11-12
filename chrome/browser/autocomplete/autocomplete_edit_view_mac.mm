@@ -871,6 +871,15 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 }
 
 - (void)controlTextDidBeginEditing:(NSNotification*)aNotification {
+  // After the user runs the Print or Page Layout panels, this
+  // notification starts coming at inappropriate times.  Ignore the
+  // notification when the field does not have a field editor.  See
+  // http://crbug.com/19116 for additional info.
+  NSTextField* field = static_cast<NSTextField*>([aNotification object]);
+  if ([field isKindOfClass:[NSTextField class]] && ![field currentEditor]) {
+    return;
+  }
+
   edit_view_->OnWillBeginEditing();
 }
 
