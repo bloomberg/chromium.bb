@@ -338,6 +338,7 @@ void AppCacheHost::AssociateCache(AppCache* cache) {
   }
 
   associated_cache_ = cache;
+  SetSwappableCache(cache ? cache->owning_group() : NULL);
 
   if (cache) {
     cache->AssociateHost(this);
@@ -345,8 +346,6 @@ void AppCacheHost::AssociateCache(AppCache* cache) {
   } else {
     frontend_->OnCacheSelected(host_id_, kNoCacheId, UNCACHED);
   }
-
-  SetSwappableCache(cache ? cache->owning_group() : NULL);
 }
 
 }  // namespace appcache

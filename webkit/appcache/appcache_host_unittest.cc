@@ -26,7 +26,9 @@ class AppCacheHostTest : public testing::Test {
    public:
     MockFrontend()
         : last_host_id_(-222), last_cache_id_(-222),
-          last_status_(appcache::OBSOLETE) {
+          last_status_(appcache::OBSOLETE),
+          last_status_changed_(appcache::OBSOLETE),
+          last_event_id_(appcache::OBSOLETE_EVENT) {
     }
 
     virtual void OnCacheSelected(int host_id, int64 cache_id ,
@@ -38,15 +40,19 @@ class AppCacheHostTest : public testing::Test {
 
     virtual void OnStatusChanged(const std::vector<int>& host_ids,
                                  appcache::Status status) {
+      last_status_changed_ = status;
     }
 
     virtual void OnEventRaised(const std::vector<int>& host_ids,
                                appcache::EventID event_id) {
+      last_event_id_ = event_id;
     }
 
     int last_host_id_;
     int64 last_cache_id_;
     appcache::Status last_status_;
+    appcache::Status last_status_changed_;
+    appcache::EventID last_event_id_;
   };
 
   void GetStatusCallback(Status status, void* param) {
@@ -153,7 +159,6 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   EXPECT_FALSE(host.is_selection_pending());
 }
 
-
 TEST_F(AppCacheHostTest, FailedCacheLoad) {
   // Reset our mock frontend
   mock_frontend_.last_cache_id_ = -333;
@@ -240,8 +245,15 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   host.SetSwappableCache(group1);
   EXPECT_EQ(cache1, host.swappable_cache_.get());
 
+  mock_frontend_.last_host_id_ = -222;  // to verify we received OnCacheSelected
+
   host.AssociateCache(cache1);
   EXPECT_FALSE(host.swappable_cache_.get());  // was same as associated cache
+  EXPECT_EQ(appcache::IDLE, host.GetStatus());
+  // verify OnCacheSelected was called
+  EXPECT_EQ(host.host_id(), mock_frontend_.last_host_id_);
+  EXPECT_EQ(cache1->cache_id(), mock_frontend_.last_cache_id_);
+  EXPECT_EQ(appcache::IDLE, mock_frontend_.last_status_);
 
   AppCache* cache2 = new AppCache(&service_, 222);
   cache2->set_complete(true);

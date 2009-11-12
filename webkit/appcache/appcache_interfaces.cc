@@ -22,7 +22,13 @@ const char kHttpHEADMethod[] = "HEAD";
 bool IsSchemeSupported(const GURL& url) {
   bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme);
 #ifndef NDEBUG
-  supported |= url.SchemeIsFile();
+  // TODO(michaeln): It would be really nice if this could optionally work for
+  // file urls too to help web developers experiment and test their apps,
+  // perhaps enabled via a cmd line flag or some other developer tool setting.
+  // Unfortunately file scheme URLRequest don't produce the same signalling
+  // (200 response codes, headers) as http URLRequests, so this doesn't work
+  // just yet.
+  // supported |= url.SchemeIsFile();
 #endif
   return supported;
 }
