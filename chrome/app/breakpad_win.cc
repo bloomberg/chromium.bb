@@ -147,9 +147,6 @@ struct CrashReporterInfo {
   std::wstring process_type;
 };
 
-// flag to indicate that we are already handling an exception.
-volatile LONG handling_exception = 0;
-
 // This callback is executed when the browser process has crashed, after
 // the crash dump has been created. We need to minimize the amount of work
 // done here since we have potentially corrupted process. Our job is to
@@ -159,12 +156,6 @@ volatile LONG handling_exception = 0;
 bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
                       EXCEPTION_POINTERS* ex_info,
                       MDRawAssertionInfo*, bool) {
-  // Capture every thread except the first one in the sleep. We don't
-  // want multiple threads to concurrently execute the rest of the code.
-  if (::InterlockedCompareExchange(&handling_exception, 1, 0) == 1) {
-    ::Sleep(INFINITE);
-  }
-
   // If the exception is because there was a problem loading a delay-loaded
   // module, then show the user a dialog explaining the problem and then exit.
   if (DelayLoadFailureExceptionMessageBox(ex_info))
@@ -185,6 +176,22 @@ bool DumpDoneCallback(const wchar_t*, const wchar_t*, void*,
   }
   // After this return we will be terminated. The actual return value is
   // not used at all.
+  return true;
+}
+
+// flag to indicate that we are already handling an exception.
+volatile LONG handling_exception = 0;
+
+// This callback is executed when the Chrome process has crashed and *before*
+// the crash dump is created. To prevent duplicate crash reports we
+// make every thread calling this method, except the very first one,
+// go to sleep.
+bool FilterCallback(void*, EXCEPTION_POINTERS*, MDRawAssertionInfo*) {
+  // Capture every thread except the first one in the sleep. We don't
+  // want multiple threads to concurrently report exceptions.
+  if (::InterlockedCompareExchange(&handling_exception, 1, 0) == 1) {
+    ::Sleep(INFINITE);
+  }
   return true;
 }
 
@@ -349,8 +356,9 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
   bool full_dump = command.HasSwitch(switches::kFullMemoryCrashReport);
   MINIDUMP_TYPE dump_type = full_dump ? MiniDumpWithFullMemory : MiniDumpNormal;
 
-  g_breakpad = new google_breakpad::ExceptionHandler(temp_dir, NULL, callback,
-                   NULL, google_breakpad::ExceptionHandler::HANDLER_ALL,
+  g_breakpad = new google_breakpad::ExceptionHandler(temp_dir, &FilterCallback,
+                   callback, NULL,
+                   google_breakpad::ExceptionHandler::HANDLER_ALL,
                    dump_type, pipe_name.c_str(), info->custom_info);
 
   if (!g_breakpad->IsOutOfProcess()) {
