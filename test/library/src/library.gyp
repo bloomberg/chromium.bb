@@ -50,8 +50,8 @@
   'conditions': [
     ['OS=="linux"', {
       'target_defaults': {
-        'cflags': ['-m32'],
-        'ldflags': ['-m32'],
+        # Support 64-bit shared libs (also works fine for 32-bit).
+        'cflags': ['-fPIC'],
       },
     }],
   ],

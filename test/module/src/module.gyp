@@ -13,8 +13,9 @@
       }],
       ['OS=="linux"', {
         'defines': ['PLATFORM_LINUX'],
-        'cflags': ['-m32'],
-        'ldflags': ['-m32', '-ldl'],
+        # Support 64-bit shared libs (also works fine for 32-bit).
+        'cflags': ['-fPIC'],
+        'ldflags': ['-ldl'],
       }],
     ],
   },

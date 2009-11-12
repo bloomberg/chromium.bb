@@ -46,12 +46,4 @@
       'sources': ['lib1.c'],
     },
   ],
-  'conditions': [
-    ['OS=="linux"', {
-      'target_defaults': {
-        'cflags': ['-m32'],
-        'ldflags': ['-m32'],
-      },
-    }],
-  ],
 }
