@@ -1112,7 +1112,7 @@
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5624,6 +5788,27 @@
+@@ -5624,6 +5788,25 @@
  	      abort ();
  	    }
  
@@ -1122,18 +1122,16 @@
 +	    {
 +	      if (i.rex & REX_X)
 +		{
-+		  p = frag_more (4);
-+		  p[0] = 0x41;
-+		  p[1] = 0x83; // AND instruction
-+		  p[2] = (0xe0 + i.sib.index);
-+		  p[3] = 0xff;
++		  p = frag_more (3);
++		  p[0] = 0x45;
++		  p[1] = 0x89; // MOV instruction
++		  p[2] = (0xc0 + i.sib.index + (i.sib.index << 3));
 +		}
 +	      else
 +		{
-+		  p = frag_more (3);
-+		  p[0] = 0x83; // AND instruction.
-+		  p[1] = (0xe0 + i.sib.index);
-+		  p[2] = 0xff;
++		  p = frag_more (2);
++		  p[0] = 0x89; // MOV instruction.
++		  p[1] = (0xc0 + i.sib.index + (i.sib.index << 3));
 +		}
 +	    }
 +#endif
