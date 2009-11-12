@@ -2410,6 +2410,9 @@ BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.ht
 BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT
 BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
 
+// This test isn't just slow -- sometimes it times out indefinitely.
+BUG10475 : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
+
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
 // Merge WebKit 42133:42199 regressions
