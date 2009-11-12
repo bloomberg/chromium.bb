@@ -107,7 +107,6 @@ private:
 - (void)animationDidStopForController:(TabController*)controller
                              finished:(BOOL)finished;
 - (NSInteger)indexFromModelIndex:(NSInteger)index;
-- (void)mouseMoved:(NSEvent*)event;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
@@ -893,15 +892,8 @@ private:
   // tell us what to swap in in its absence.
   [tabContentsArray_ removeObjectAtIndex:index];
 
-  NSView* tab = [controller view];
-
-  // Stop observing the tab's tracking areas.
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter removeObserver:self
-                           name:NSViewDidUpdateTrackingAreasNotification
-                         object:tab];
-
   // Remove the view from the tab strip.
+  NSView* tab = [controller view];
   [tab removeFromSuperview];
 
   // Clear the tab controller's target.
@@ -1191,27 +1183,6 @@ private:
   [self layoutTabsWithAnimation:NO regenerateSubviews:NO];
 }
 
-// Called when the tracking areas for any given tab are updated. This allows
-// the individual tabs to update their hover states correctly.
-// Only generates the event if the cursor is in the tab strip.
-- (void)tabUpdateTracking:(NSNotification*)notification {
-  DCHECK([[notification object] isKindOfClass:[TabView class]]);
-  NSWindow* window = [tabView_ window];
-  NSPoint location = [window mouseLocationOutsideOfEventStream];
-  if (NSPointInRect(location, [tabView_ frame])) {
-    NSEvent* mouseEvent = [NSEvent mouseEventWithType:NSMouseMoved
-                                             location:location
-                                        modifierFlags:0
-                                            timestamp:0
-                                         windowNumber:[window windowNumber]
-                                              context:nil
-                                          eventNumber:0
-                                           clickCount:0
-                                             pressure:0];
-    [self mouseMoved:mouseEvent];
-  }
-}
-
 - (BOOL)inRapidClosureMode {
   return availableResizeWidth_ != kUseFullAvailableWidth;
 }
@@ -1281,15 +1252,6 @@ private:
 // should call |-addSubviewToPermanentList:| (or better yet, call that and then
 // |-regenerateSubviewList| to actually add it).
 - (void)regenerateSubviewList {
-  // Remove self as an observer from all the old tabs before a new set of
-  // potentially different tabs is put in place.
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  for (NSView* view in [tabView_ subviews]) {
-    [defaultCenter removeObserver:self
-                             name:NSViewDidUpdateTrackingAreasNotification
-                           object:view];
-  }
-
   // Subviews to put in (in bottom-to-top order), beginning with the permanent
   // ones.
   NSMutableArray* subviews = [NSMutableArray arrayWithArray:permanentSubviews_];
@@ -1297,19 +1259,11 @@ private:
   NSView* selectedTabView = nil;
   // Go through tabs in reverse order, since |subviews| is bottom-to-top.
   for (TabController* tab in [tabArray_.get() reverseObjectEnumerator]) {
-    NSView* tabView = [tab view];
-
-    // Set self up to observe tabs so hover states will be correct as tabs move.
-    [defaultCenter addObserver:self
-                      selector:@selector(tabUpdateTracking:)
-                          name:NSViewDidUpdateTrackingAreasNotification
-                        object:tabView];
-
     if ([tab selected]) {
       DCHECK(!selectedTabView);
-      selectedTabView = tabView;
+      selectedTabView = [tab view];
     } else {
-      [subviews addObject:tabView];
+      [subviews addObject:[tab view]];
     }
   }
   if (selectedTabView)
