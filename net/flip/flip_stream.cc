@@ -123,5 +123,16 @@ void FlipStream::OnError(int err) {
     delegate_->OnClose(err);
 }
 
+int FlipStream::OnWriteComplete(int result) {
+  // We only write to the socket when there is a delegate.
+  DCHECK(delegate_);
+
+  delegate_->OnWriteComplete(result);
+
+  // TODO(mbelshe): we might want to remove the status code
+  //                since we're not doing anything useful with it.
+  return OK;
+}
+
 }  // namespace net
 

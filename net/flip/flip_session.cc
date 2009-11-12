@@ -68,7 +68,7 @@ FlipSession::~FlipSession() {
 net::Error FlipSession::Connect(const std::string& group_name,
                                 const HostResolver::RequestInfo& host,
                                 int priority) {
-  DCHECK(priority >= 0 && priority < 4);
+  DCHECK(priority >= FLIP_PRIORITY_HIGHEST && priority < FLIP_PRIORITY_LOWEST);
 
   // If the connect process is started, let the caller continue.
   if (connection_started_)
@@ -88,7 +88,6 @@ net::Error FlipSession::Connect(const std::string& group_name,
     return net::OK;
   return static_cast<net::Error>(rv);
 }
-
 
 // Create a FlipHeaderBlock for a Flip SYN_STREAM Frame from
 // a HttpRequestInfo block.
@@ -201,8 +200,6 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
   LOG(INFO) << "FETCHING: " << delegate->request()->url.spec();
 
 
-  // TODO(mbelshe): Implement POST Data here
-
   // Schedule to write to the socket after we've made it back
   // to the message loop so that we can aggregate multiple
   // requests.
@@ -214,22 +211,55 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
   return stream_id;
 }
 
-bool FlipSession::CancelStream(int id) {
-  LOG(INFO) << "Cancelling stream " << id;
-  if (!IsStreamActive(id))
+int FlipSession::WriteStreamData(flip::FlipStreamId stream_id,
+                                 net::IOBuffer* data, int len) {
+  const int kMss = 1430;  // This is somewhat arbitrary and not really fixed,
+                          // but it will always work reasonably with ethernet.
+  // Chop the world into 2-packet chunks.  This is somewhat arbitrary, but
+  // is reasonably small and ensures that we elicit ACKs quickly from TCP
+  // (because TCP tries to only ACK every other packet).
+  const int kMaxFlipFrameChunkSize = (2 * kMss) - flip::FlipFrame::size();
+
+  // Find our stream
+  DCHECK(IsStreamActive(stream_id));
+  FlipStream* stream = active_streams_[stream_id];
+  if (!stream)
+    return ERR_INVALID_FLIP_STREAM;
+
+  // Set the flags on the upload.
+  flip::FlipDataFlags flags = flip::DATA_FLAG_FIN;
+  if (len > kMaxFlipFrameChunkSize) {
+    len = kMaxFlipFrameChunkSize;
+    flags = flip::DATA_FLAG_NONE;
+  }
+
+  // TODO(mbelshe): reduce memory copies here.
+  scoped_ptr<flip::FlipDataFrame> frame(
+      flip_framer_.CreateDataFrame(stream_id, data->data(), len, flags));
+  int length = flip::FlipFrame::size() + frame->length();
+  IOBufferWithSize* buffer = new IOBufferWithSize(length);
+  memcpy(buffer->data(), frame->data(), length);
+  queue_.push(FlipIOBuffer(buffer, stream->delegate()->request()->priority,
+              stream));
+  return ERR_IO_PENDING;
+}
+
+bool FlipSession::CancelStream(flip::FlipStreamId stream_id) {
+  LOG(INFO) << "Cancelling stream " << stream_id;
+  if (!IsStreamActive(stream_id))
     return false;
 
   // TODO(mbelshe): Write a method for tearing down a stream
   //                that cleans it out of the active list, the pending list,
   //                etc.
-  FlipStream* stream = active_streams_[id];
-  DeactivateStream(id);
+  FlipStream* stream = active_streams_[stream_id];
+  DeactivateStream(stream_id);
   delete stream;
   return true;
 }
 
-bool FlipSession::IsStreamActive(int id) const {
-  return active_streams_.find(id) != active_streams_.end();
+bool FlipSession::IsStreamActive(flip::FlipStreamId stream_id) const {
+  return active_streams_.find(stream_id) != active_streams_.end();
 }
 
 LoadState FlipSession::GetLoadState() const {
@@ -336,9 +366,22 @@ void FlipSession::OnWriteComplete(int result) {
   LOG(INFO) << "Flip write complete (result=" << result << ")";
 
   if (result >= 0) {
-    // TODO(mbelshe) Verify that we wrote ALL the bytes we needed to.
+    // TODO(mbelshe) Verify that we wrote ALL the bytes of the frame.
     //               The code current is broken in the case of a partial write.
     DCHECK_EQ(static_cast<size_t>(result), in_flight_write_.size());
+
+    // We only notify the stream when we've fully written the pending flip
+    // frame.
+    FlipStream* stream = in_flight_write_.stream();
+    DCHECK(stream);
+
+    // Report the number of bytes written to the caller, but exclude the
+    // frame size overhead.
+    if (result > 0) {
+      DCHECK(result > static_cast<int>(flip::FlipFrame::size()));
+      result -= static_cast<int>(flip::FlipFrame::size());
+    }
+    stream->OnWriteComplete(result);
 
     // Cleanup the write which just completed.
     in_flight_write_.release();

@@ -55,14 +55,39 @@ class FlipStreamParser : public FlipDelegate {
   // FlipDelegate methods:
   virtual const HttpRequestInfo* request() const;
   virtual const UploadDataStream* data() const;
-  virtual void OnRequestSent(int status);
-  virtual void OnUploadDataSent(int result);
   virtual void OnResponseReceived(HttpResponseInfo* response);
   virtual void OnDataReceived(const char* buffer, int bytes);
+  virtual void OnWriteComplete(int status);
   virtual void OnClose(int status);
 
  private:
   friend class FlipStreamParserPeer;
+
+  enum State {
+    STATE_NONE,
+    STATE_SENDING_HEADERS,
+    STATE_HEADERS_SENT,
+    STATE_SENDING_BODY,
+    STATE_REQUEST_SENT,
+    STATE_READ_HEADERS,
+    STATE_READ_HEADERS_COMPLETE,
+    STATE_BODY_PENDING,
+    STATE_READ_BODY,
+    STATE_READ_BODY_COMPLETE,
+    STATE_DONE
+  };
+
+  // Try to make progress sending/receiving the request/response.
+  int DoLoop(int result);
+
+  // The implementations of each state of the state machine.
+  int DoSendHeaders(int result);
+  int DoHeadersSent(int result);
+  int DoSendBody(int result);
+  int DoReadHeaders();
+  int DoReadHeadersComplete(int result);
+  int DoReadBody();
+  int DoReadBodyComplete(int result);
 
   void DoCallback(int rv);
 
@@ -74,7 +99,9 @@ class FlipStreamParser : public FlipDelegate {
   scoped_ptr<HttpResponseInfo> response_;
   scoped_ptr<UploadDataStream> request_body_stream_;
 
-  bool response_complete_;
+  bool response_complete_;  // TODO(mbelshe): fold this into the io_state.
+  State io_state_;
+
   // We buffer the response body as it arrives asynchronously from the stream.
   // TODO(mbelshe):  is this infinite buffering?
   std::deque<scoped_refptr<IOBufferWithSize> > response_body_;

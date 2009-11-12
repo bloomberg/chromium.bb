@@ -4,6 +4,7 @@
 
 #include "net/flip/flip_network_transaction.h"
 
+#include "base/ref_counted.h"
 #include "net/base/completion_callback.h"
 #include "net/base/mock_host_resolver.h"
 #include "net/base/ssl_config_service_defaults.h"
@@ -123,6 +124,43 @@ TEST_F(FlipStreamParserTest, DISABLED_SendRequest) {
 
 }  // namespace
 
+// A DataProvider where the client must write a request before the reads (e.g.
+// the response) will complete.
+class DelayedSocketData : public StaticSocketDataProvider,
+                          public base::RefCounted<DelayedSocketData> {
+ public:
+  // Note: All MockReads and MockWrites must be async.
+  // Note: The MockRead and MockWrite lists musts end with a EOF
+  //       e.g. a MockRead(true, 0, 0);
+  DelayedSocketData(MockRead* r, MockWrite* w)
+    : StaticSocketDataProvider(r, w),
+      request_received_(false) {}
+
+  virtual MockRead GetNextRead() {
+    if (!request_received_)
+      return MockRead(true, ERR_IO_PENDING);
+    return StaticSocketDataProvider::GetNextRead();
+  }
+
+  virtual MockWriteResult OnWrite(const std::string& data) {
+    MockWriteResult rv = StaticSocketDataProvider::OnWrite(data);
+    // Now that our write has completed, we can allow reads to continue.
+    if (!request_received_) {
+      request_received_ = true;
+      MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        NewRunnableMethod(this, &DelayedSocketData::CompleteRead), 100);
+    }
+    return rv;
+  }
+
+  void CompleteRead() {
+    socket()->OnReadComplete(GetNextRead());
+  }
+
+ private:
+  bool request_received_;
+};
+
 class FlipNetworkTransactionTest : public PlatformTest {
  protected:
   virtual void SetUp() {
@@ -156,8 +194,8 @@ class FlipNetworkTransactionTest : public PlatformTest {
     scoped_ptr<FlipNetworkTransaction> trans(
         new FlipNetworkTransaction(CreateSession(&session_deps)));
 
-    StaticSocketDataProvider data(reads, writes);
-    session_deps.socket_factory.AddSocketDataProvider(&data);
+    scoped_refptr<DelayedSocketData> data(new DelayedSocketData(reads, writes));
+    session_deps.socket_factory.AddSocketDataProvider(data.get());
 
     TestCompletionCallback callback;
 
@@ -174,6 +212,10 @@ class FlipNetworkTransactionTest : public PlatformTest {
 
     rv = ReadTransaction(trans.get(), &out.response_data);
     EXPECT_EQ(OK, rv);
+
+    // Verify that we consumed all test data.
+    EXPECT_TRUE(data->at_read_eof());
+    EXPECT_TRUE(data->at_write_eof());
 
     return out;
   }
@@ -238,6 +280,7 @@ TEST_F(FlipNetworkTransactionTest, Get) {
 
   MockWrite writes[] = {
     MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockWrite(true, 0, 0)  // EOF
   };
 
   MockRead reads[] = {
@@ -272,26 +315,26 @@ TEST_F(FlipNetworkTransactionTest, Post) {
 
   // TODO(mbelshe): Hook up the write validation.
 
-  //static const unsigned char syn[] = {
-  //  0x80, 0x01, 0x00, 0x01,                                      // header
-  //  0x01, 0x00, 0x00, 0x46,                                      // FIN, len
-  //  0x00, 0x00, 0x00, 0x01,                                      // stream id
-  //  0xc0, 0x00, 0x00, 0x04,                                      // 4 headers
-  //  0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
-  //  0x00, 0x03, 'G', 'E', 'T',
-  //  0x00, 0x03, 'u', 'r', 'l',
-  //  0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
-  //              '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
-  //              'm', '/',
-  //  0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
-  //  0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
-  //};
+  static const unsigned char syn[] = {
+    0x80, 0x01, 0x00, 0x01,                                      // header
+    0x00, 0x00, 0x00, 0x46,                                      // flags, len
+    0x00, 0x00, 0x00, 0x01,                                      // stream id
+    0xc0, 0x00, 0x00, 0x03,                                      // 4 headers
+    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
+    0x00, 0x04, 'P', 'O', 'S', 'T',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+                'm', '/',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
 
-  //static const unsigned char upload_frame[] = {
-  //  0x00, 0x00, 0x00, 0x01,                                        // header
-  //  0x01, 0x00, 0x00, 0x06,                                        // FIN flag
-  //  'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
-  //};
+  static const unsigned char upload_frame[] = {
+    0x00, 0x00, 0x00, 0x01,                                        // header
+    0x01, 0x00, 0x00, 0x0c,                                        // FIN flag
+    'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\0'
+  };
 
   // The response
   static const unsigned char syn_reply[] = {
@@ -320,21 +363,24 @@ TEST_F(FlipNetworkTransactionTest, Post) {
     0x00, 0x00, 0x00, 0x00,
   };
 
-  //MockWrite writes[] = {
-  //  MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
-  //  MockWrite(true, reinterpret_cast<const char*>(upload_frame),
-  //            sizeof(upload_frame)),
-  //};
+  MockWrite writes[] = {
+    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockWrite(true, reinterpret_cast<const char*>(upload_frame),
+              sizeof(upload_frame)),
+    MockWrite(true, 0, 0)  // EOF
+  };
 
-  MockRead data_reads[] = {
-    MockRead(true, reinterpret_cast<const char*>(syn_reply), sizeof(syn_reply)),
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(syn_reply),
+             sizeof(syn_reply)),
     MockRead(true, reinterpret_cast<const char*>(body_frame),
              sizeof(body_frame)),
-    MockRead(true, reinterpret_cast<const char*>(fin_frame), sizeof(fin_frame)),
+    MockRead(true, reinterpret_cast<const char*>(fin_frame),
+             sizeof(fin_frame)),
     MockRead(true, 0, 0)  // EOF
   };
 
-  TransactionHelperResult out = TransactionHelper(request, data_reads, NULL);
+  TransactionHelperResult out = TransactionHelper(request, reads, writes);
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -354,7 +400,7 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
     0x00, 0x00, 0x00, 0x00,
   };
 
-  MockRead data_reads[] = {
+  MockRead reads[] = {
     MockRead(true, reinterpret_cast<const char*>(body_frame),
              sizeof(body_frame)),
     MockRead(true, reinterpret_cast<const char*>(fin_frame), sizeof(fin_frame)),
@@ -365,7 +411,7 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
   request.method = "GET";
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
-  TransactionHelperResult out = TransactionHelper(request, data_reads, NULL);
+  TransactionHelperResult out = TransactionHelper(request, reads, NULL);
   EXPECT_EQ(ERR_SYN_REPLY_NOT_RECEIVED, out.rv);
 }
 
@@ -405,6 +451,7 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_CancelledTransaction) {
 
   MockWrite writes[] = {
     MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockRead(true, 0, 0)  // EOF
   };
 
   MockRead reads[] = {

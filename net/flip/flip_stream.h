@@ -66,6 +66,11 @@ class FlipStream {
   // The caller should Deactivate and delete the FlipStream after this call.
   void OnError(int err);
 
+  // Called when data has been sent on the stream.
+  // |result| is either an error or the number of bytes written.
+  // Returns an error if the stream is errored, or OK.
+  int OnWriteComplete(int result);
+
  private:
   flip::FlipStreamId stream_id_;
   std::string path_;

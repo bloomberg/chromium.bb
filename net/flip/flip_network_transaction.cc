@@ -29,6 +29,7 @@ FlipStreamParser::FlipStreamParser()
       response_(NULL),
       request_body_stream_(NULL),
       response_complete_(false),
+      io_state_(STATE_NONE),
       response_status_(OK),
       user_callback_(NULL),
       user_buffer_(NULL),
@@ -53,26 +54,27 @@ int FlipStreamParser::SendRequest(FlipSession* flip,
   request_ = request;
   flip_ = flip;
 
-  // TODO(mbelshe): rethink this UploadDataStream wrapper.
-  if (request_->upload_data)
-    request_body_stream_.reset(new UploadDataStream(request_->upload_data));
-
-  CHECK(flip_stream_id_ == 0);
-  flip_stream_id_ = flip->CreateStream(this);
-
-  CHECK(!user_callback_);
-  user_callback_ = callback;
-
-  // The FlipSession will always call us back when the send is complete.
-  return ERR_IO_PENDING;
+  DCHECK(io_state_ == STATE_NONE);
+  io_state_ = STATE_SENDING_HEADERS;
+  int result = DoLoop(OK);
+  if (result == ERR_IO_PENDING) {
+    CHECK(!user_callback_);
+    user_callback_ = callback;
+  }
+  return result;
 }
 
 int FlipStreamParser::ReadResponseHeaders(CompletionCallback* callback) {
+  // Note: The FlipStream may have already received the response headers, so
+  //       this call may complete synchronously.
+  DCHECK_GT(io_state_, STATE_HEADERS_SENT);
   CHECK(callback);
 
+  // The SYN_REPLY has already been received.
   if (response_.get())
     return OK;
-  
+
+  io_state_ = STATE_READ_HEADERS;
   CHECK(!user_callback_);
   user_callback_ = callback;
   return ERR_IO_PENDING;
@@ -80,9 +82,14 @@ int FlipStreamParser::ReadResponseHeaders(CompletionCallback* callback) {
 
 int FlipStreamParser::ReadResponseBody(
     IOBuffer* buf, int buf_len, CompletionCallback* callback) {
+  DCHECK(io_state_ == STATE_BODY_PENDING ||
+         io_state_ == STATE_READ_BODY ||
+         io_state_ == STATE_DONE);
   CHECK(buf);
   CHECK(buf_len);
   CHECK(callback);
+
+  io_state_ = STATE_READ_BODY;
 
   // If we have data buffered, complete the IO immediately.
   if (response_body_.size()) {
@@ -138,19 +145,19 @@ const UploadDataStream* FlipStreamParser::data() const {
   return request_body_stream_.get();
 }
 
-void FlipStreamParser::OnRequestSent(int status) {
-  CHECK(user_callback_);
+void FlipStreamParser::OnWriteComplete(int status) {
+  if (io_state_ == STATE_SENDING_HEADERS)
+    io_state_ = STATE_HEADERS_SENT;
 
-  DoCallback(status);
-}
-
-void FlipStreamParser::OnUploadDataSent(int result) {
-  NOTIMPLEMENTED();
+  DoLoop(status);
 }
 
 void FlipStreamParser::OnResponseReceived(HttpResponseInfo* response) {
   response_.reset(new HttpResponseInfo);
   *response_ = *response;  // TODO(mbelshe): avoid copy.
+
+  DCHECK_GE(io_state_, STATE_HEADERS_SENT);
+  io_state_ = STATE_BODY_PENDING;
 
   if (user_callback_)
     DoCallback(OK);
@@ -200,6 +207,127 @@ void FlipStreamParser::DoCallback(int rv) {
   CompletionCallback* c = user_callback_;
   user_callback_ = NULL;
   c->Run(rv);
+}
+
+int FlipStreamParser::DoSendHeaders(int result) {
+  // TODO(mbelshe): rethink this UploadDataStream wrapper.
+  if (request_->upload_data)
+    request_body_stream_.reset(new UploadDataStream(request_->upload_data));
+
+  CHECK(flip_stream_id_ == 0);
+  flip_stream_id_ = flip_->CreateStream(this);
+
+  // The FlipSession will always call us back when the send is complete.
+  return ERR_IO_PENDING;
+}
+
+// DoSendBody is called to send the optional body for the request.  This call
+// will also be called as each write of a chunk of the body completes.
+int FlipStreamParser::DoSendBody(int result) {
+  // There is no body, move to the next state.
+  if (!request_body_stream_.get()) {
+    io_state_ = STATE_REQUEST_SENT;
+    return result;
+  }
+
+  DCHECK(result != 0);  // This should not happen.
+  if (result <= 0)
+    return result;
+
+  // If we're already in the STATE_SENDING_BODY state, then we've already
+  // sent a portion of the body.  In that case, we need to first consume
+  // the bytes written in the body stream.  Note that the bytes written is
+  // the number of bytes in the frame that were written, only consume the
+  // data portion, of course.
+  if (io_state_ == STATE_SENDING_BODY)
+    request_body_stream_->DidConsume(result);
+  else
+    io_state_ = STATE_SENDING_BODY;
+
+  if (request_body_stream_->position() < request_body_stream_->size()) {
+    int buf_len = static_cast<int>(request_body_stream_->buf_len());
+    int rv = flip_->WriteStreamData(flip_stream_id_,
+                                    request_body_stream_->buf(),
+                                    buf_len);
+    return rv;
+  }
+
+  io_state_ = STATE_REQUEST_SENT;
+  return result;
+}
+
+int FlipStreamParser::DoReadHeaders() {
+  // TODO(mbelshe): merge FlipStreamParser with FlipStream and then this
+  // makes sense.
+  return ERR_IO_PENDING;
+}
+
+int FlipStreamParser::DoReadHeadersComplete(int result) {
+  // TODO(mbelshe): merge FlipStreamParser with FlipStream and then this
+  // makes sense.
+  io_state_ = STATE_BODY_PENDING;
+  return ERR_IO_PENDING;
+}
+
+int FlipStreamParser::DoReadBody() {
+  // TODO(mbelshe): merge FlipStreamParser with FlipStream and then this
+  // makes sense.
+  return ERR_IO_PENDING;
+}
+
+int FlipStreamParser::DoReadBodyComplete(int result) {
+  // TODO(mbelshe): merge FlipStreamParser with FlipStream and then this
+  // makes sense.
+  return ERR_IO_PENDING;
+}
+
+int FlipStreamParser::DoLoop(int result) {
+  bool can_do_more = true;
+  do {
+    switch (io_state_) {
+      case STATE_SENDING_HEADERS:
+        result = DoSendHeaders(result);
+        break;
+      case STATE_HEADERS_SENT:
+      case STATE_SENDING_BODY:
+        if (result < 0)
+          can_do_more = false;
+        else
+          result = DoSendBody(result);
+        break;
+      case STATE_REQUEST_SENT:
+        DCHECK(result != ERR_IO_PENDING);
+        can_do_more = false;
+        break;
+      case STATE_READ_HEADERS:
+        result = DoReadHeaders();
+        break;
+      case STATE_READ_HEADERS_COMPLETE:
+        result = DoReadHeadersComplete(result);
+        break;
+      case STATE_BODY_PENDING:
+        DCHECK(result != ERR_IO_PENDING);
+        can_do_more = false;
+        break;
+      case STATE_READ_BODY:
+        result = DoReadBody();
+        // DoReadBodyComplete handles error conditions.
+        break;
+      case STATE_READ_BODY_COMPLETE:
+        result = DoReadBodyComplete(result);
+        break;
+      case STATE_DONE:
+        DCHECK(result != ERR_IO_PENDING);
+        can_do_more = false;
+        break;
+      default:
+        NOTREACHED();
+        can_do_more = false;
+        break;
+    }
+  } while (result != ERR_IO_PENDING && can_do_more);
+
+  return result;
 }
 
 //-----------------------------------------------------------------------------

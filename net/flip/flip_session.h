@@ -51,20 +51,6 @@ class FlipDelegate {
 
   // Callbacks.
 
-  // Called by the FlipSession when UploadData has been sent.  If the
-  // request has no upload data, this call will never be called.  This
-  // callback may be called multiple times if large amounts of data are
-  // being uploaded.  This callback will only be called prior to the
-  // OnRequestSent callback.
-  // |result| contains the number of bytes written or an error code.
-  virtual void OnUploadDataSent(int result) = 0;
-
-  // Called by the FlipSession when the Request has been entirely sent.
-  // If the request contains upload data, all upload data has been sent.
-  // |result| contains an error code if a failure has occurred or OK
-  // on success.
-  virtual void OnRequestSent(int result) = 0;
-
   // Called by the FlipSession when a response (e.g. a SYN_REPLY) has been
   // received for this request.  This callback will never be called prior
   // to the OnRequestSent() callback.
@@ -78,6 +64,12 @@ class FlipDelegate {
   // |bytes| is the number of bytes received or an error.
   //         A zero-length count does not indicate end-of-stream.
   virtual void OnDataReceived(const char* buffer, int bytes) = 0;
+
+  // Called by the FlipSession when a write has completed.  This callback
+  // will be called multiple times for each write which completes.  Writes
+  // include the SYN_STREAM write and also DATA frame writes.
+  // |result| is the number of bytes written or a net error code.
+  virtual void OnWriteComplete(int result) = 0;
 
   // Called by the FlipSession when the request is finished.  This callback
   // will always be called at the end of the request and signals to the
@@ -107,11 +99,16 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // Once the stream is created, the delegate should wait for a callback.
   int CreateStream(FlipDelegate* delegate);
 
+  // Write a data frame to the stream.
+  // Used to create and queue a data frame for the given stream.
+  int WriteStreamData(flip::FlipStreamId stream_id, net::IOBuffer* data,
+                      int len);
+
   // Cancel a stream.
-  bool CancelStream(int id);
+  bool CancelStream(flip::FlipStreamId stream_id);
 
   // Check if a stream is active.
-  bool IsStreamActive(int id) const;
+  bool IsStreamActive(flip::FlipStreamId stream_id) const;
 
   // The LoadState is used for informing the user of the current network
   // status, such as "resolving host", "connecting", etc.
