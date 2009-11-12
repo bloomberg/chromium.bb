@@ -23,6 +23,7 @@
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/cocoa/view_resizer.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
@@ -64,8 +65,7 @@
 - (id)initWithBrowser:(Browser*)browser
          initialWidth:(float)initialWidth
      compressDelegate:(id<ToolbarCompressable>)compressDelegate
-       resizeDelegate:(id<ViewResizer>)resizeDelegate
-          urlDelegate:(id<BookmarkURLOpener>)urlDelegate {
+       resizeDelegate:(id<ViewResizer>)resizeDelegate {
   if ((self = [super initWithNibName:@"BookmarkBar"
                               bundle:mac_util::MainAppBundle()])) {
     browser_ = browser;
@@ -74,7 +74,6 @@
     buttons_.reset([[NSMutableArray alloc] init]);
     compressDelegate_ = compressDelegate;
     resizeDelegate_ = resizeDelegate;
-    urlDelegate_ = urlDelegate;
     tabObserver_.reset(
         new TabStripModelObserverBridge(browser_->tabstrip_model(), self));
 
@@ -305,22 +304,31 @@
   return node;
 }
 
-// At this time, the only item which ever gets disabled is "Open All
-// Bookmarks".
+// At this time, the only items which ever get disabled are the "Open All
+// Bookmarks" options.
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   SEL action = [item action];
-  if ((action == @selector(openAllBookmarks:)) &&
+  if (((action == @selector(openAllBookmarks:)) ||
+       (action == @selector(openAllBookmarksNewWindow:)) ||
+       (action == @selector(openAllBookmarksIncognitoWindow:))) &&
       (![buttons_ count])) {
     return NO;
   }
   return YES;
 }
 
+// Actually open the URL.  This is the last chance for a unit test to
+// override.
+- (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition {
+  BrowserList::GetLastActive()->OpenURL(url, GURL(), disposition,
+                                        PageTransition::AUTO_BOOKMARK);
+}
+
 - (IBAction)openBookmark:(id)sender {
   BookmarkNode* node = [self nodeFromButton:sender];
-  [urlDelegate_ openBookmarkURL:node->GetURL()
-                    disposition:event_utils::WindowOpenDispositionFromNSEvent(
-                        [NSApp currentEvent])];
+  WindowOpenDisposition disposition =
+      event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+  [self openURL:node->GetURL() disposition:disposition];
 }
 
 // Given a NSMenuItem tag, return the appropriate bookmark node id.
@@ -475,17 +483,17 @@
 
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
-  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:NEW_FOREGROUND_TAB];
+  [self openURL:node->GetURL() disposition:NEW_FOREGROUND_TAB];
 }
 
 - (IBAction)openBookmarkInNewWindow:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
-  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:NEW_WINDOW];
+  [self openURL:node->GetURL() disposition:NEW_WINDOW];
 }
 
 - (IBAction)openBookmarkInIncognitoWindow:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
-  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:OFF_THE_RECORD];
+  [self openURL:node->GetURL() disposition:OFF_THE_RECORD];
 }
 
 - (IBAction)editBookmark:(id)sender {
@@ -533,14 +541,19 @@
                          node->GetParent()->IndexOfChild(node));
 }
 
-- (void)openBookmarkNodesRecursive:(BookmarkNode*)node {
+// An ObjC version of bookmark_utils::OpenAllImpl().
+- (void)openBookmarkNodesRecursive:(BookmarkNode*)node
+                       disposition:(WindowOpenDisposition)disposition {
   for (int i = 0; i < node->GetChildCount(); i++) {
     BookmarkNode* child = node->GetChild(i);
-    if (child->is_url())
-      [urlDelegate_ openBookmarkURL:child->GetURL()
-                     disposition:NEW_BACKGROUND_TAB];
-    else
-      [self openBookmarkNodesRecursive:child];
+    if (child->is_url()) {
+      [self openURL:child->GetURL() disposition:disposition];
+      // We revert to a basic disposition in case the initial
+      // disposition opened a new window.
+      disposition = NEW_BACKGROUND_TAB;
+    } else {
+      [self openBookmarkNodesRecursive:child disposition:disposition];
+    }
   }
 }
 
@@ -548,9 +561,24 @@
   // TODO(jrg):
   // Is there an easier way to get a non-const root node for the bookmark bar?
   // I can't iterate over them unless it's non-const.
+  BookmarkNode* node = const_cast<BookmarkNode*>(
+    bookmarkModel_->GetBookmarkBarNode());
+  [self openBookmarkNodesRecursive:node disposition:NEW_FOREGROUND_TAB];
+  UserMetrics::RecordAction(L"OpenAllBookmarks", browser_->profile());
+}
 
-  BookmarkNode* node = (BookmarkNode*)bookmarkModel_->GetBookmarkBarNode();
-  [self openBookmarkNodesRecursive:node];
+- (IBAction)openAllBookmarksNewWindow:(id)sender {
+  BookmarkNode* node = const_cast<BookmarkNode*>(
+    bookmarkModel_->GetBookmarkBarNode());
+  [self openBookmarkNodesRecursive:node disposition:NEW_WINDOW];
+  UserMetrics::RecordAction(L"OpenAllBookmarksNewWindow", browser_->profile());
+}
+
+- (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
+  BookmarkNode* node = const_cast<BookmarkNode*>(
+    bookmarkModel_->GetBookmarkBarNode());
+  [self openBookmarkNodesRecursive:node disposition:OFF_THE_RECORD];
+  UserMetrics::RecordAction(L"OpenAllBookmarksIncognitoWindow", browser_->profile());
 }
 
 // May be called from the bar or from a folder button.
@@ -600,7 +628,10 @@
 
   NSImage* image = [self getFavIconForNode:node];
   [cell setBookmarkCellText:title image:image];
-  [cell setMenu:buttonContextMenu_];
+  if (node->is_folder())
+    [cell setMenu:[[self view] menu]];
+  else
+    [cell setMenu:buttonContextMenu_];
   return cell;
 }
 
@@ -670,7 +701,7 @@
   const BookmarkNode* node = bookmarkModel_->GetNodeByID(tag);
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  [urlDelegate_ openBookmarkURL:node->GetURL() disposition:disposition];
+  [self openURL:node->GetURL() disposition:disposition];
 }
 
 // Create buttons for all items in the bookmark node tree.
@@ -878,10 +909,6 @@
 - (void)nodeChildrenReordered:(BookmarkModel*)model
                          node:(const BookmarkNode*)node {
   [self loaded:model];
-}
-
-- (void)setUrlDelegate:(id<BookmarkURLOpener>)urlDelegate {
-  urlDelegate_ = urlDelegate;
 }
 
 - (NSArray*)buttons {

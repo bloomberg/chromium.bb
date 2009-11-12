@@ -19,17 +19,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-// Pretend BookmarkURLOpener delegate to keep track of requests
-@interface BookmarkURLOpenerPong : NSObject<BookmarkURLOpener> {
+// Just like a BookmarkBarController but openURL: is stubbed out.
+@interface BookmarkBarControllerNoOpen : BookmarkBarController {
  @public
   std::vector<GURL> urls_;
   std::vector<WindowOpenDisposition> dispositions_;
 }
 @end
 
-@implementation BookmarkURLOpenerPong
-- (void)openBookmarkURL:(const GURL&)url
-            disposition:(WindowOpenDisposition)disposition {
+@implementation BookmarkBarControllerNoOpen
+- (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition {
   urls_.push_back(url);
   dispositions_.push_back(disposition);
 }
@@ -63,7 +62,7 @@
 @end
 
 // Remember the number of times we've gotten a frameDidChange notification.
-@interface BookmarkBarControllerTogglePong : BookmarkBarController {
+@interface BookmarkBarControllerTogglePong : BookmarkBarControllerNoOpen {
 @private
   int toggles_;
 }
@@ -81,7 +80,7 @@
 @end
 
 // A BookmarkBarController that always beleives that it's on the new tab page.
-@interface AlwaysNewTabPageBookmarkBarController : BookmarkBarController {
+@interface AlwaysNewTabPageBookmarkBarController : BookmarkBarControllerNoOpen {
 }
 @end
 
@@ -122,11 +121,11 @@ class BookmarkBarControllerTest : public PlatformTest {
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
     [parent_view_ setHidden:YES];
     bar_.reset(
-        [[BookmarkBarController alloc] initWithBrowser:helper_.browser()
-                                          initialWidth:NSWidth(parent_frame)
-                                      compressDelegate:compressDelegate_.get()
-                                        resizeDelegate:resizeDelegate_.get()
-                                           urlDelegate:nil]);
+      [[BookmarkBarControllerNoOpen alloc]
+          initWithBrowser:helper_.browser()
+             initialWidth:NSWidth(parent_frame)
+         compressDelegate:compressDelegate_.get()
+           resizeDelegate:resizeDelegate_.get()]);
 
     InstallAndToggleBar(bar_.get());
 
@@ -173,7 +172,7 @@ class BookmarkBarControllerTest : public PlatformTest {
   BrowserTestHelper helper_;
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
   scoped_nsobject<CompressablePong> compressDelegate_;
-  scoped_nsobject<BookmarkBarController> bar_;
+  scoped_nsobject<BookmarkBarControllerNoOpen> bar_;
   scoped_nsobject<NSMenu> menu_;
   scoped_nsobject<NSMenuItem> menu_item_;
   scoped_nsobject<NSButtonCell> cell_;
@@ -220,8 +219,7 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
           initWithBrowser:helper_.browser()
              initialWidth:800  // arbitrary
          compressDelegate:compressDelegate_.get()
-           resizeDelegate:resizeDelegate_.get()
-              urlDelegate:nil]);
+           resizeDelegate:resizeDelegate_.get()]);
   InstallAndToggleBar(bar.get());
 
   [bar setBookmarkBarEnabled:NO];
@@ -267,8 +265,7 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
           initWithBrowser:helper_.browser()
              initialWidth:100  // arbitrary
          compressDelegate:compressDelegate_.get()
-           resizeDelegate:resizeDelegate_.get()
-              urlDelegate:nil]);
+           resizeDelegate:resizeDelegate_.get()]);
   InstallAndToggleBar(bar.get());
 
   // Send a frame did change notification for the pong's view.
@@ -371,9 +368,6 @@ TEST_F(BookmarkBarControllerTest, MenuForFolderNode) {
 TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   GURL gurl("http://walla.walla.ding.dong.com");
   scoped_ptr<BookmarkNode> node(new BookmarkNode(gurl));
-  scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
-                                                init]);
-  [bar_ setUrlDelegate:pong.get()];
 
   scoped_nsobject<NSButtonCell> cell([[NSButtonCell alloc] init]);
   scoped_nsobject<NSButton> button([[NSButton alloc] init]);
@@ -381,19 +375,13 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   [cell setRepresentedObject:[NSValue valueWithPointer:node.get()]];
 
   [bar_ openBookmark:button];
-  EXPECT_EQ(pong.get()->urls_[0], node->GetURL());
-  EXPECT_EQ(pong.get()->dispositions_[0], CURRENT_TAB);
-
-  [bar_ setUrlDelegate:nil];
+  EXPECT_EQ(bar_.get()->urls_[0], node->GetURL());
+  EXPECT_EQ(bar_.get()->dispositions_[0], CURRENT_TAB);
 }
 
 // Confirm opening of bookmarks works from the menus (different
 // dispositions than clicking on the button).
 TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
-  scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
-                                                init]);
-  [bar_ setUrlDelegate:pong.get()];
-
   const char* urls[] = { "http://walla.walla.ding.dong.com",
                          "http://i_dont_know.com",
                          "http://cee.enn.enn.dot.com" };
@@ -409,11 +397,10 @@ TEST_F(BookmarkBarControllerTest, OpenBookmarkFromMenus) {
     GURL gurl(urls[i]);
     [bar_ performSelector:selectors[i]
                withObject:ItemForBookmarkBarMenu(gurl)];
-    EXPECT_EQ(pong.get()->urls_[0], gurl);
-    EXPECT_EQ(pong.get()->dispositions_[0], dispositions[i]);
-    [pong clear];
+    EXPECT_EQ(bar_.get()->urls_[0], gurl);
+    EXPECT_EQ(bar_.get()->dispositions_[0], dispositions[i]);
+    [bar_ clear];
   }
-  [bar_ setUrlDelegate:nil];
 }
 
 TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
@@ -535,10 +522,6 @@ TEST_F(BookmarkBarControllerTest, DeleteBookmark) {
 }
 
 TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
-  scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
-                                                init]);
-  [bar_ setUrlDelegate:pong.get()];
-
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
   const BookmarkNode* parent = model->GetBookmarkBarNode();
   // { one, { two-one, two-two }, three }
@@ -555,14 +538,14 @@ TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
                 L"title", GURL("https://three.com"));
   [bar_ openAllBookmarks:nil];
 
-  EXPECT_EQ(pong.get()->urls_.size(), 4U);
-  EXPECT_EQ(pong.get()->dispositions_.size(), 4U);
+  EXPECT_EQ(bar_.get()->urls_.size(), 4U);
+  EXPECT_EQ(bar_.get()->dispositions_.size(), 4U);
 
   // I can't use EXPECT_EQ() here since the macro can't expand
   // properly (no way to print the value of an iterator).
   std::vector<GURL>::iterator i;
-  std::vector<GURL>::iterator begin = pong.get()->urls_.begin();
-  std::vector<GURL>::iterator end = pong.get()->urls_.end();
+  std::vector<GURL>::iterator begin = bar_.get()->urls_.begin();
+  std::vector<GURL>::iterator end = bar_.get()->urls_.end();
   i = find(begin, end, GURL("http://two-one.com"));
   EXPECT_FALSE(i == end);
   i = find(begin, end, GURL("https://three.com"));
@@ -570,9 +553,7 @@ TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
   i = find(begin, end, GURL("https://will-not-be-found.com"));
   EXPECT_TRUE(i == end);
 
-  EXPECT_EQ(pong.get()->dispositions_[3], NEW_BACKGROUND_TAB);
-
-  [bar_ setUrlDelegate:nil];
+  EXPECT_EQ(bar_.get()->dispositions_[3], NEW_BACKGROUND_TAB);
 }
 
 // TODO(jrg): write a test to confirm that nodeFavIconLoaded calls
@@ -612,12 +593,8 @@ TEST_F(BookmarkBarControllerTest, MiddleClick) {
   NSButton* first = [[bar_ buttons] objectAtIndex:0];
   EXPECT_TRUE(first);
 
-  scoped_nsobject<BookmarkURLOpenerPong> pong([[BookmarkURLOpenerPong alloc]
-                                                  init]);
-  [bar_ setUrlDelegate:pong.get()];
   [first otherMouseUp:test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0)];
-  EXPECT_EQ(pong.get()->urls_.size(), 1U);
-  [bar_ setUrlDelegate:nil];
+  EXPECT_EQ(bar_.get()->urls_.size(), 1U);
 }
 
 TEST_F(BookmarkBarControllerTest, TestBuildOffTheSideMenu) {

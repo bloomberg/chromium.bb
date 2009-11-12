@@ -23,8 +23,7 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
    // Objective-C declarations may only appear in global scope")
 
 // Oddly, we are our own delegate.
-@interface FakeBookmarkBarController :
-  BookmarkBarController<BookmarkURLOpener> {
+@interface FakeBookmarkBarController : BookmarkBarController {
  @public
   scoped_nsobject<NSMutableArray> callbacks_;
   std::vector<OpenInfo> opens_;
@@ -37,8 +36,7 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
   if ((self = [super initWithBrowser:browser
                         initialWidth:100  // arbitrary
                     compressDelegate:nil
-                      resizeDelegate:nil
-                         urlDelegate:self])) {
+                      resizeDelegate:nil])) {
     callbacks_.reset([[NSMutableArray alloc] init]);
   }
   return self;

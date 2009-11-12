@@ -42,12 +42,6 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 
 }  // namespace
 
-// The interface for an object which can open URLs for a bookmark.
-@protocol BookmarkURLOpener
-- (void)openBookmarkURL:(const GURL&)url
-            disposition:(WindowOpenDisposition)disposition;
-@end
-
 // A controller for the bookmark bar in the browser window. Handles showing
 // and hiding based on the preference in the given profile.
 @interface BookmarkBarController :
@@ -91,9 +85,6 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
   // Delegate that can resize us.
   id<ViewResizer> resizeDelegate_;  // weak
 
-  // Delegate that can open URLs for us.
-  id<BookmarkURLOpener> urlDelegate_;  // weak
-
   // Lets us get TabSelectedAt notifications.
   scoped_ptr<TabStripModelObserverBridge> tabObserver_;
 
@@ -110,8 +101,7 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 - (id)initWithBrowser:(Browser*)browser
          initialWidth:(float)initialWidth
      compressDelegate:(id<ToolbarCompressable>)compressDelegate
-       resizeDelegate:(id<ViewResizer>)resizeDelegate
-          urlDelegate:(id<BookmarkURLOpener>)urlDelegate;
+       resizeDelegate:(id<ViewResizer>)resizeDelegate;
 
 // Returns the backdrop to the bookmark bar.
 - (BackgroundGradientView*)backgroundGradientView;
@@ -159,6 +149,8 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 - (IBAction)deleteBookmark:(id)sender;
 // From a context menu over the bar, ...
 - (IBAction)openAllBookmarks:(id)sender;
+- (IBAction)openAllBookmarksNewWindow:(id)sender;
+- (IBAction)openAllBookmarksIncognitoWindow:(id)sender;
 // Or from a context menu over either the bar or a button.
 - (IBAction)addPage:(id)sender;
 - (IBAction)addFolder:(id)sender;
@@ -188,8 +180,7 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
 
 // These APIs should only be used by unit tests (or used internally).
 @interface BookmarkBarController(InternalOrTestingAPI)
-// Set the delegate for a unit test.
-- (void)setUrlDelegate:(id<BookmarkURLOpener>)urlDelegate;
+- (void)openURL:(GURL)url disposition:(WindowOpenDisposition)disposition;
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node;
 - (void)clearBookmarkBar;
 - (BookmarkBarView*)buttonView;

@@ -44,7 +44,6 @@ class TabStripModelObserverBridge;
 
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
-                      BookmarkURLOpener,
                       BookmarkBubbleControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,

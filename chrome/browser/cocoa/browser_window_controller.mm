@@ -177,8 +177,7 @@ willPositionSheet:(NSWindow*)sheet
             initWithBrowser:browser_.get()
                initialWidth:NSWidth([[[self window] contentView] frame])
            compressDelegate:toolbarController_.get()
-             resizeDelegate:self
-                urlDelegate:self]);
+             resizeDelegate:self]);
 
     // Add bookmark bar to the view hierarchy.  This also triggers the
     // nib load.  The bookmark bar is defined (in the nib) to be
@@ -1043,12 +1042,6 @@ willPositionSheet:(NSWindow*)sheet
 
 - (BOOL)isFullscreen {
   return savedRegularWindow_ != nil;
-}
-
-// Called by the bookmark bar to open a URL.
-- (void)openBookmarkURL:(const GURL&)url
-            disposition:(WindowOpenDisposition)disposition {
-  browser_->OpenURL(url, GURL(), disposition, PageTransition::AUTO_BOOKMARK);
 }
 
 - (NSInteger)numberOfTabs {

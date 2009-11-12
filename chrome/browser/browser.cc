@@ -2410,7 +2410,9 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_TASK_MANAGER, true);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_PROFILE, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
+#if !defined(OS_MACOSX)  // http://crbug.com/13149
   command_updater_.UpdateCommandEnabled(IDC_SHOW_BOOKMARK_MANAGER, true);
+#endif
   command_updater_.UpdateCommandEnabled(IDC_SHOW_EXTENSION_SHELF, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
