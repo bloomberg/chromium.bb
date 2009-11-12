@@ -114,7 +114,7 @@ TEST_F(WatchdogTest, DisarmTest) {
 
   // ...but even after disarming, we can still use the alarm...
   // Set a time greater than the timeout into the past.
-  watchdog.ArmSomeTimeDeltaAgo(TimeDelta::FromSeconds(2));
+  watchdog.ArmSomeTimeDeltaAgo(TimeDelta::FromSeconds(10));
   // It should almost instantly go off, but certainly in less than 5 minutes.
   SPIN_FOR_TIMEDELTA_OR_UNTIL_TRUE(TimeDelta::FromMinutes(5),
                                    watchdog.alarm_counter() > 0);
