@@ -63,6 +63,9 @@ class Extension {
     EXTENSION_ICON_BITTY = 16,
   };
 
+  // The URL to browse the extensions gallery.
+  static const char* kGalleryBrowseUrl;
+
   // Icon sizes used by the extension system.
   static const int kIconSizes[];
 

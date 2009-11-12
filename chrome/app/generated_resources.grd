@@ -2646,6 +2646,9 @@ each locale. -->
       <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
         Boo... No extensions installed :-(
       </message>
+      <message name="IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY" desc="Text on next line after IDS_EXTENSIONS_NONE_INSTALLED that suggests the user look in the gallery for extensions to install.">
+        Want to <ph name="BEGIN_LINK">$1</ph>browse the gallery<ph name="END_LINK">$2</ph> instead?
+      </message>
       <message name="IDS_EXTENSIONS_DISABLED_EXTENSION" desc="Text that signifies that the extension is currently disabled.">
         (Disabled)
       </message>

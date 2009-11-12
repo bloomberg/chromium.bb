@@ -86,6 +86,9 @@ static const wchar_t* kValidThemeKeys[] = {
   keys::kUpdateURL
 };
 
+const char* Extension::kGalleryBrowseUrl =
+    "https://chrome.google.com/extensions";
+
 #if defined(OS_WIN)
 const char* Extension::kExtensionRegistryPath =
     "Software\\Google\\Chrome\\Extensions";

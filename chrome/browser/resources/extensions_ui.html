@@ -140,7 +140,14 @@ body.showDevMode .showInDevMode {
 }
 
 .no-extensions {
-  margin: 1em 0.5em;
+  margin: 6em 0 0;
+  text-align: center;
+  font-size: 1.2em;
+}
+
+#try-gallery {
+  margin-top: 1em;
+  font-weight :normal;
 }
 
 .extension-description {
@@ -363,6 +370,12 @@ function renderTemplate(extensionsData) {
   var input = new JsEvalContext(extensionsData);
   var output = document.getElementById('extensionTemplate');
   jstProcess(input, output);
+
+  // Blech, JSTemplate always inserts the strings as text, which is usually a
+  // feature, but in this case it contains HTML that we want to be rendered.
+  var elm = document.getElementById("try-gallery");
+  if (elm)
+    elm.innerHTML = elm.textContent;
 }
 
 /**
@@ -651,8 +664,10 @@ function autoUpdate() {
       </div>
 
       <div class="content">
-        <div class="extension-name no-extensions" jsdisplay="extensions.length === 0"
-             i18n-content="noExtensions">NO_EXTENSIONS_ARE_INSTALLED</div>
+        <div class="extension-name no-extensions" jsdisplay="extensions.length === 0">
+          <div i18n-content="noExtensions">NO_EXTENSIONS_ARE_INSTALLED</div>
+          <div i18n-content="suggestGallery" id="try-gallery">TRY_GALLERY</div>
+        </div>
 
         <div jsdisplay="extensions.length > 0">
         <div class="extension" jsselect="extensions">

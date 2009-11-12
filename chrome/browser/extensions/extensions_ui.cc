@@ -70,6 +70,12 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_UPDATE_BUTTON));
   localized_strings.SetString(L"noExtensions",
       l10n_util::GetString(IDS_EXTENSIONS_NONE_INSTALLED));
+  localized_strings.SetString(L"suggestGallery",
+      l10n_util::GetStringF(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
+          std::wstring(L"<a href='") + 
+              ASCIIToWide(Extension::kGalleryBrowseUrl) +
+              L"'>",
+          L"</a>"));
   localized_strings.SetString(L"extensionDisabled",
       l10n_util::GetString(IDS_EXTENSIONS_DISABLED_EXTENSION));
   localized_strings.SetString(L"inDevelopment",
