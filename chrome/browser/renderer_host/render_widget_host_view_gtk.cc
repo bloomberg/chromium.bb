@@ -257,8 +257,22 @@ class RenderWidgetHostViewGtkWidget {
 
   static gboolean CrossingEvent(GtkWidget* widget, GdkEventCrossing* event,
                                 RenderWidgetHostViewGtk* host_view) {
-    host_view->GetRenderWidgetHost()->ForwardMouseEvent(
-        WebInputEventFactory::mouseEvent(event));
+    const int any_button_mask =
+        GDK_BUTTON1_MASK |
+        GDK_BUTTON2_MASK |
+        GDK_BUTTON3_MASK |
+        GDK_BUTTON4_MASK |
+        GDK_BUTTON5_MASK;
+
+    // Only forward crossing events if the mouse button is not down.
+    // (When the mouse button is down, the proper events are already being
+    // sent by ButtonPressReleaseEvent and MouseMoveEvent, above, and if we
+    // additionally send this crossing event with the state indicating the
+    // button is down, it causes problems with drag and drop in WebKit.)
+    if (!(event->state & any_button_mask)) {
+      host_view->GetRenderWidgetHost()->ForwardMouseEvent(
+          WebInputEventFactory::mouseEvent(event));
+    }
 
     return FALSE;
   }
