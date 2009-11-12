@@ -4,8 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-// Content view for a Bookmark Bubble opened by clicking on the star
-// toolbar button.  This is where nonrectangular drawing happens.
-@interface BookmarkBubbleView : NSView
+// A rounded window with an arrow used for example when you click on the STAR
+// button or that pops up within our first-run UI.
+@interface InfoBubbleWindow : NSWindow
 @end
-

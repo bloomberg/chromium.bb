@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/cocoa/bookmark_bubble_window.h"
+#import "chrome/browser/cocoa/info_bubble_window.h"
 
-@implementation BookmarkBubbleWindow
+@implementation InfoBubbleWindow
 
 - (id)initWithContentRect:(NSRect)contentRect
                 styleMask:(NSUInteger)aStyle
@@ -25,9 +25,9 @@
 
 // According to
 // http://www.cocoabuilder.com/archive/message/cocoa/2006/6/19/165953,
-// NSBorderlessWindowMask windows cannot become key or main.  In our
-// case, however, we don't want all of that behavior.  (As an example,
-// our bubble has buttons!)
+// NSBorderlessWindowMask windows cannot become key or main. In our
+// case, however, we don't want all of that behavior. As an example,
+// our bubble could have buttons.
 
 - (BOOL)canBecomeKeyWindow {
   return YES;
