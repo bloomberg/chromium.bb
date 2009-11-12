@@ -249,12 +249,17 @@ class SandboxIPCProcess  {
     // out. Since we are a single-threaded process, this is safe.
     const struct tm* expanded_time = localtime(&time);
 
-    const std::string result_string(
-        reinterpret_cast<const char*>(expanded_time), sizeof(struct tm));
+    std::string result_string;
+    const char* time_zone_string = "";
+    if (expanded_time != NULL) {
+      result_string = std::string(reinterpret_cast<const char*>(expanded_time),
+                                  sizeof(struct tm));
+      time_zone_string = expanded_time->tm_zone;
+    }
 
     Pickle reply;
     reply.WriteString(result_string);
-    reply.WriteString(expanded_time->tm_zone);
+    reply.WriteString(time_zone_string);
     SendRendererReply(fds, reply, -1);
   }
 
