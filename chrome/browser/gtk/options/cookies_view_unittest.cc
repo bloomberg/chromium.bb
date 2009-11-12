@@ -10,7 +10,6 @@
 #include <gtk/gtk.h>
 
 #include "base/string_util.h"
-#include "chrome/browser/cookies_table_model.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/test/testing_profile.h"
 #include "net/url_request/url_request_context.h"

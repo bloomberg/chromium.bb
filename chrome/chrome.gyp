@@ -1268,8 +1268,6 @@
         'browser/cocoa/web_drop_target.mm',
         'browser/command_updater.cc',
         'browser/command_updater.h',
-        'browser/cookies_table_model.cc',
-        'browser/cookies_table_model.h',
         'browser/cookies_tree_model.cc',
         'browser/cookies_tree_model.h',
         'browser/cross_site_request_manager.cc',
