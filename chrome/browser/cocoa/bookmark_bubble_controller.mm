@@ -7,7 +7,6 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
-#import "chrome/browser/cocoa/bookmark_bubble_window.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "grit/generated_resources.h"
 

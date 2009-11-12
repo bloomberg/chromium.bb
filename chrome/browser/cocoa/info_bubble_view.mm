@@ -40,7 +40,7 @@ const CGFloat kBubbleArrowHeight = 8.0;
                                   yRadius:kBubbleCornerRadius];
 
   // Add the bubble arrow.
-  CGFloat dX;
+  CGFloat dX = 0;
   switch (arrowLocation_) {
     case kTopLeft:
       dX = kBubbleArrowXOffset;
