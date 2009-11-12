@@ -3,12 +3,13 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1050</int>
 		<string key="IBDocument.SystemVersion">9L31a</string>
-		<string key="IBDocument.InterfaceBuilderVersion">677</string>
+		<string key="IBDocument.InterfaceBuilderVersion">680</string>
 		<string key="IBDocument.AppKitVersion">949.54</string>
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<integer value="42"/>
+			<integer value="48"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -632,10 +633,32 @@
 						<reference key="NSMixedImage" ref="1070349142"/>
 						<int key="NSTag">40012</int>
 					</object>
+					<object class="NSMenuItem" id="163898806">
+						<reference key="NSMenu" ref="558188039"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="610745052"/>
+						<reference key="NSMixedImage" ref="1070349142"/>
+					</object>
+					<object class="NSMenuItem" id="1012539825">
+						<reference key="NSMenu" ref="558188039"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsHidden">YES</bool>
+						<string key="NSTitle">^IDS_SYNC_START_SYNC_BUTTON_LABEL</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="610745052"/>
+						<reference key="NSMixedImage" ref="1070349142"/>
+						<int key="NSTag">41108</int>
+					</object>
 					<object class="NSMenuItem" id="922630377">
 						<reference key="NSMenu" ref="558188039"/>
 						<bool key="NSIsDisabled">YES</bool>
 						<bool key="NSIsSeparator">YES</bool>
+						<bool key="NSIsHidden">YES</bool>
 						<string key="NSTitle"/>
 						<string key="NSKeyEquiv"/>
 						<int key="NSMnemonicLoc">2147483647</int>
@@ -1030,6 +1053,14 @@
 					</object>
 					<int key="connectionID">140</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">commandDispatch:</string>
+						<reference key="source" ref="1003"/>
+						<reference key="destination" ref="1012539825"/>
+					</object>
+					<int key="connectionID">143</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -1261,6 +1292,8 @@
 							<reference ref="922630377"/>
 							<reference ref="510846575"/>
 							<reference ref="306298564"/>
+							<reference ref="163898806"/>
+							<reference ref="1012539825"/>
 						</object>
 						<reference key="parent" ref="465075988"/>
 					</object>
@@ -1481,6 +1514,16 @@
 						<reference key="object" ref="306232897"/>
 						<reference key="parent" ref="465075988"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">141</int>
+						<reference key="object" ref="163898806"/>
+						<reference key="parent" ref="558188039"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">142</int>
+						<reference key="object" ref="1012539825"/>
+						<reference key="parent" ref="558188039"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -1509,6 +1552,8 @@
 					<string>13.IBPluginDependency</string>
 					<string>14.CustomClassName</string>
 					<string>14.IBPluginDependency</string>
+					<string>141.IBPluginDependency</string>
+					<string>142.IBPluginDependency</string>
 					<string>15.CustomClassName</string>
 					<string>15.IBPluginDependency</string>
 					<string>2.CustomClassName</string>
@@ -1604,6 +1649,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ToolbarButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>ClickHoldButtonCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>DelayedMenuButton</string>
@@ -1668,7 +1715,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>{{362, 523}, {306, 233}}</string>
+					<string>{{103, 206}, {335, 263}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1746,7 +1793,7 @@
 				</object>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">140</int>
+			<int key="maxID">143</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1939,6 +1986,7 @@
 							<string>addHomepage:</string>
 							<string>browseDownloadLocation:</string>
 							<string>clearData:</string>
+							<string>doSyncAction:</string>
 							<string>importData:</string>
 							<string>makeDefaultBrowser:</string>
 							<string>manageSearchEngines:</string>
@@ -1953,6 +2001,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1986,8 +2035,11 @@
 							<string>personalStuffGroupAutofill_</string>
 							<string>personalStuffGroupBrowserData_</string>
 							<string>personalStuffGroupPasswords_</string>
+							<string>personalStuffGroupSync_</string>
 							<string>personalStuffGroupThemes_</string>
 							<string>personalStuffView_</string>
+							<string>syncButton_</string>
+							<string>syncStatus_</string>
 							<string>toolbar_</string>
 							<string>underTheHoodContentView_</string>
 							<string>underTheHoodScroller_</string>
@@ -2009,7 +2061,10 @@
 							<string>NSArray</string>
 							<string>NSArray</string>
 							<string>NSArray</string>
+							<string>NSArray</string>
 							<string>NSView</string>
+							<string>NSButton</string>
+							<string>NSTextField</string>
 							<string>NSToolbar</string>
 							<string>NSView</string>
 							<string>NSScrollView</string>
