@@ -17,7 +17,11 @@ URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
     const Config& config, URLFetcher::Delegate* delegate) {
   URLRequestContextGetter* getter =
       Profile::GetDefaultRequestContext();
-  DCHECK(getter);
+  // Profile::GetDefaultRequestContext() is initialized lazily, on the UI
+  // thread. So here, where we access it from the IO thread, if the task runs
+  // before it has gotten lazily initialized yet.
+  if (!getter)
+    return NULL;
   DLOG(INFO) << "url=" << config.http_url;
   URLFetcher* fetcher =
       new URLFetcher(config.http_url, URLFetcher::GET, delegate);
@@ -32,7 +36,11 @@ net::WebSocket* WebSocketExperimentTask::Context::CreateWebSocket(
     const Config& config, net::WebSocketDelegate* delegate) {
   URLRequestContextGetter* getter =
       Profile::GetDefaultRequestContext();
-  DCHECK(getter);
+  // Profile::GetDefaultRequestContext() is initialized lazily, on the UI
+  // thread. So here, where we access it from the IO thread, if the task runs
+  // before it has gotten lazily initialized yet.
+  if (!getter)
+    return NULL;
   net::WebSocket::Request* request(
       new net::WebSocket::Request(config.url,
                                   config.ws_protocol,
@@ -219,10 +227,16 @@ void WebSocketExperimentTask::DoLoop(int result) {
 }
 
 int WebSocketExperimentTask::DoURLFetch() {
-  next_state_ = STATE_URL_FETCH_COMPLETE;
   DCHECK(!url_fetcher_.get());
 
   url_fetcher_.reset(context_->CreateURLFetcher(config_, this));
+  if (!url_fetcher_.get()) {
+    // Request context is not ready.
+    next_state_ = STATE_NONE;
+    return net::ERR_UNEXPECTED;
+  }
+
+  next_state_ = STATE_URL_FETCH_COMPLETE;
   SetTimeout(config_.url_fetch_deadline_ms);
   DLOG(INFO) << "URLFetch url=" << url_fetcher_->url()
              << " timeout=" << config_.url_fetch_deadline_ms;
@@ -245,8 +259,13 @@ int WebSocketExperimentTask::DoURLFetchComplete(int result) {
 int WebSocketExperimentTask::DoWebSocketConnect() {
   DCHECK(!websocket_);
 
-  next_state_ = STATE_WEBSOCKET_CONNECT_COMPLETE;
   websocket_ = context_->CreateWebSocket(config_, this);
+  if (!websocket_) {
+    // Request context is not ready.
+    next_state_ = STATE_NONE;
+    return net::ERR_UNEXPECTED;
+  }
+  next_state_ = STATE_WEBSOCKET_CONNECT_COMPLETE;
   websocket_connect_start_time_ = base::TimeTicks::Now();
   websocket_->Connect();
 
