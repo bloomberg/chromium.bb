@@ -88,6 +88,10 @@ void BrowserActionButton::LoadImage() {
   if (relative_path.empty())
     return;
 
+  // Cancel old image trackers. We can only track one at a time.
+  if (tracker_)
+    tracker_->StopTrackingImageLoad();
+
   tracker_ = new ImageLoadingTracker(this, 1);
   tracker_->PostLoadImageTask(
       extension()->GetResource(relative_path),
