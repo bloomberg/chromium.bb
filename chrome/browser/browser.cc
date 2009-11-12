@@ -2276,7 +2276,7 @@ void Browser::Observe(NotificationType type,
       if (!tab_contents)
         break;
       ExtensionsService* extensions_service =
-          Source<ExtensionsService>(source).ptr();
+          Source<Profile>(source).ptr()->GetExtensionsService();
       ExtensionHost* extension_host = Details<ExtensionHost>(details).ptr();
       tab_contents->AddInfoBar(new CrashedExtensionInfoBarDelegate(
           tab_contents, extensions_service, extension_host->extension()));
