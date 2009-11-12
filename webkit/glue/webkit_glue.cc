@@ -37,8 +37,14 @@
 #include "base/sys_string_conversions.h"
 #include "net/base/escape.h"
 #include "skia/ext/platform_canvas.h"
+#if defined(OS_MACOSX)
+#include "skia/ext/skia_utils_mac.h"
+#endif
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebImage.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #if defined(OS_WIN)
@@ -283,18 +289,18 @@ void CheckForLeaks() {
 }
 
 bool DecodeImage(const std::string& image_data, SkBitmap* image) {
-   RefPtr<WebCore::SharedBuffer> buffer(
-       WebCore::SharedBuffer::create(image_data.data(),
-                                     static_cast<int>(image_data.length())));
-  WebCore::ImageSource image_source;
-  image_source.setData(buffer.get(), true);
+  WebKit::WebData web_data(image_data.data(), image_data.length());
+  WebKit::WebImage web_image(WebKit::WebImage::fromData(web_data,
+                                                        WebKit::WebSize()));
+  if (web_image.isNull())
+    return false;
 
-  if (image_source.frameCount() > 0) {
-    *image = *reinterpret_cast<SkBitmap*>(image_source.createFrameAtIndex(0));
-    return true;
-  }
-  // We failed to decode the image.
-  return false;
+#if defined(OS_MACOSX)
+  *image = gfx::CGImageToSkBitmap(web_image.getCGImageRef());
+#else
+  *image = web_image.getSkBitmap();
+#endif
+  return true;
 }
 
 // NOTE: This pair of conversion functions are here instead of in glue_util.cc
