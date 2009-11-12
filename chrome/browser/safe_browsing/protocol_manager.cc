@@ -82,7 +82,7 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
 
-  // The first update must happen between 0-5 minutes of start up.
+  // The first update must happen between 1-5 minutes of start up.
   next_update_sec_ = base::RandInt(60, kSbTimerStartIntervalSec);
 
   scoped_ptr<FileVersionInfo> version_info(
