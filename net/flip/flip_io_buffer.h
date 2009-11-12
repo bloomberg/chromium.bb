@@ -29,7 +29,7 @@ class FlipIOBuffer {
         position_(++order_),
         stream_(stream) {
   }
-  FlipIOBuffer() : priority_(0), stream_(NULL) {}
+  FlipIOBuffer() : priority_(0), position_(0), stream_(NULL) {}
 
   // Accessors.
   IOBuffer* buffer() const { return buffer_; }

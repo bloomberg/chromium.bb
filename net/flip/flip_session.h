@@ -125,7 +125,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // Create a new FlipSession.
   // |host| is the hostname that this session connects to.
-  FlipSession(std::string host, HttpNetworkSession* session);
+  FlipSession(const std::string& host, HttpNetworkSession* session);
 
   // Closes all open streams.  Used as part of shutdown.
   void CloseAllStreams(net::Error code);
@@ -171,7 +171,7 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // Check if we have a pending pushed-stream for this url
   // Returns the stream if found (and returns it from the pending
   // list), returns NULL otherwise.
-  FlipStream* GetPushStream(std::string url);
+  FlipStream* GetPushStream(const std::string& url);
 
   // Callbacks for the Flip session.
   CompletionCallbackImpl<FlipSession> connect_callback_;

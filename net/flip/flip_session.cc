@@ -28,7 +28,7 @@ namespace net {
 // static
 bool FlipSession::use_ssl_ = true;
 
-FlipSession::FlipSession(std::string host, HttpNetworkSession* session)
+FlipSession::FlipSession(const std::string& host, HttpNetworkSession* session)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
           connect_callback_(this, &FlipSession::OnTCPConnect)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
@@ -551,7 +551,7 @@ void FlipSession::DeactivateStream(flip::FlipStreamId id) {
   active_streams_.erase(id);
 }
 
-FlipStream* FlipSession::GetPushStream(std::string path) {
+FlipStream* FlipSession::GetPushStream(const std::string& path) {
   static StatsCounter used_push_streams("flip.claimed_push_streams");
 
   LOG(INFO) << "Looking for push stream: " << path;
