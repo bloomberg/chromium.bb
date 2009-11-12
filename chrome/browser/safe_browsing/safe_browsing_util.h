@@ -41,8 +41,9 @@ typedef struct {
 typedef int SBPrefix;
 
 // A full hash.
-typedef struct {
+typedef union {
   char full_hash[32];
+  SBPrefix prefix;
 } SBFullHash;
 
 inline bool operator==(const SBFullHash& rhash, const SBFullHash& lhash) {

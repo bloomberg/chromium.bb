@@ -271,7 +271,7 @@ bool SafeBrowsingDatabaseBloom::ContainsUrl(
       // and then fall back to the full hash if there's a hit.
       base::SHA256HashString(hosts[i] + paths[j], &full_hash,
                              sizeof(SBFullHash));
-      SBPrefix prefix = *reinterpret_cast<SBPrefix*>(&full_hash);
+      SBPrefix prefix = full_hash.prefix;
       if (bloom_filter_->Exists(prefix))
         prefix_hits->push_back(prefix);
     }
@@ -399,7 +399,7 @@ void SafeBrowsingDatabaseBloom::InsertAdd(SBPrefix host, SBEntry* entry) {
     base::Time receive_time = base::Time::Now();
     for (int i = 0; i < entry->prefix_count(); ++i) {
       SBFullHash full_hash = entry->FullHashAt(i);
-      SBPrefix prefix = *reinterpret_cast<SBPrefix*>(&full_hash);
+      SBPrefix prefix = full_hash.prefix;
       InsertAddPrefix(prefix, encoded);
       InsertAddFullHash(prefix, encoded, receive_time, full_hash);
     }
@@ -475,7 +475,7 @@ void SafeBrowsingDatabaseBloom::InsertSub(
   if (entry->type() == SBEntry::SUB_FULL_HASH) {
     for (int i = 0; i < entry->prefix_count(); ++i) {
       SBFullHash full_hash = entry->FullHashAt(i);
-      SBPrefix prefix = *reinterpret_cast<SBPrefix*>(&full_hash);
+      SBPrefix prefix = full_hash.prefix;
       encoded_add = EncodeChunkId(entry->ChunkIdAtPrefix(i), entry->list_id());
       InsertSubPrefix(prefix, encoded, encoded_add);
       InsertSubFullHash(prefix, encoded, encoded_add, full_hash, false);
@@ -1069,7 +1069,7 @@ void SafeBrowsingDatabaseBloom::WriteFullHashList(const HashList& hash_list,
   HashList::const_iterator lit = hash_list.begin();
   for (; lit != hash_list.end(); ++lit) {
     const HashCacheEntry& entry = *lit;
-    SBPrefix prefix = *reinterpret_cast<const SBPrefix*>(&entry.full_hash);
+    SBPrefix prefix = entry.full_hash.prefix;
     if (is_add) {
       if (add_del_cache_.find(entry.add_chunk_id) == add_del_cache_.end()) {
         InsertAddFullHash(prefix, entry.add_chunk_id,
@@ -1368,7 +1368,7 @@ void SafeBrowsingDatabaseBloom::CacheHashResults(
   const Time now = Time::Now();
   for (std::vector<SBFullHashResult>::const_iterator it = full_hits.begin();
        it != full_hits.end(); ++it) {
-    SBPrefix prefix = *reinterpret_cast<const SBPrefix*>(&it->hash);
+    SBPrefix prefix = it->hash.prefix;
     HashList& entries = (*hash_cache_)[prefix];
     HashCacheEntry entry;
     entry.received = now;
