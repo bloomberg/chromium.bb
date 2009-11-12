@@ -8,6 +8,8 @@
 #import <Cocoa/Cocoa.h>
 #import "chrome/browser/cocoa/styled_text_field.h"
 
+#include "base/scoped_nsobject.h"
+
 @class AutocompleteTextFieldCell;
 
 // AutocompleteTextField intercepts UI actions for forwarding to
@@ -55,6 +57,10 @@ class AutocompleteTextFieldObserver {
 
 @interface AutocompleteTextField : StyledTextField {
  @private
+  // Undo manager for this text field.  We use a specific instance rather than
+  // the standard undo manager in order to let us clear the undo stack at will.
+  scoped_nsobject<NSUndoManager> undoManager_;
+
   AutocompleteTextFieldObserver* observer_;  // weak, owned by location bar.
 }
 
@@ -67,6 +73,9 @@ class AutocompleteTextFieldObserver {
 // problems for undo.  This version modifies the field editor's
 // contents if the control is already being edited.
 - (void)setAttributedStringValue:(NSAttributedString*)aString;
+
+// Clears the undo chain for this text field.
+- (void)clearUndoChain;
 
 @end
 

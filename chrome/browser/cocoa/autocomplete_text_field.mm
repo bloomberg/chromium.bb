@@ -160,4 +160,14 @@
   }
 }
 
+- (NSUndoManager*)undoManagerForTextView:(NSTextView*)textView {
+  if (!undoManager_.get())
+    undoManager_.reset([[NSUndoManager alloc] init]);
+  return undoManager_.get();
+}
+
+- (void)clearUndoChain {
+  [undoManager_ removeAllActions];
+}
+
 @end

@@ -671,6 +671,17 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringUndo) {
   EXPECT_TRUE([undoManager canUndo]);
   [field_ setAttributedStringValue:attributedString];
   EXPECT_TRUE([undoManager canUndo]);
+
+  // Verify that calling -clearUndoChain clears the undo chain.
+  [field_ clearUndoChain];
+  EXPECT_FALSE([undoManager canUndo]);
 }
 
+TEST_F(AutocompleteTextFieldTest, EditorGetsCorrectUndoManager) {
+  cocoa_helper_.makeFirstResponder(field_);
+
+  NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
+  EXPECT_TRUE(editor);
+  EXPECT_EQ([field_ undoManagerForTextView:editor], [editor undoManager]);
+}
 }  // namespace

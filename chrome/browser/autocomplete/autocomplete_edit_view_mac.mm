@@ -357,6 +357,7 @@ void AutocompleteEditViewMac::RevertAll() {
   // can be removed.
   EmphasizeURLComponents();
   controller_->OnChanged();
+  [field_ clearUndoChain];
 }
 
 void AutocompleteEditViewMac::UpdatePopup() {
@@ -478,6 +479,7 @@ void AutocompleteEditViewMac::OnTemporaryTextMaybeChanged(
 
   SetWindowTextAndCaretPos(display_text, display_text.size());
   controller_->OnChanged();
+  [field_ clearUndoChain];
 }
 
 bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
@@ -493,6 +495,7 @@ bool AutocompleteEditViewMac::OnInlineAutocompleteTextMaybeChanged(
   const NSRange range = NSMakeRange(user_text_length, display_text.size());
   SetTextAndSelectedRange(display_text, range);
   controller_->OnChanged();
+  [field_ clearUndoChain];
 
   return true;
 }
