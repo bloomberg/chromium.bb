@@ -31,6 +31,7 @@
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -565,12 +566,9 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new MetricsHandler())->Attach(this));
     if (WebResourcesEnabled())
       AddMessageHandler((new TipsHandler())->Attach(this));
-
-#if !defined(OS_POSIX)
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
+    if (ProfileSyncService::IsSyncEnabled()) {
       AddMessageHandler((new NewTabPageSyncHandler())->Attach(this));
     }
-#endif
 
     AddMessageHandler((new NewTabPageSetHomepageHandler())->Attach(this));
 

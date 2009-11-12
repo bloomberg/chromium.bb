@@ -26,6 +26,7 @@
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -1176,7 +1177,7 @@ void ToolbarView::CreateAppMenu() {
                                           IDS_SHOW_EXTENSIONS);
 
   app_menu_contents_->AddSeparator();
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
+  if (ProfileSyncService::IsSyncEnabled()) {
     string16 label;
     string16 link;
     // TODO(timsteele): Need a ui helper method to just get the type without

@@ -423,6 +423,14 @@ void ProfileSyncService::SyncEvent(SyncEventCodes code) {
   histogram.Add(code);
 }
 
+bool ProfileSyncService::IsSyncEnabled() {
+#if defined(OS_POSIX)
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync);
+#else
+  return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync);
+#endif
+}
+
 bool ProfileSyncService::ShouldPushChanges() {
   // True only after all bootstrapping has succeeded: the bookmark model is
   // loaded, the sync backend is initialized, the two domains are

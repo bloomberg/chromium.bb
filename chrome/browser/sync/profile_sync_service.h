@@ -195,6 +195,11 @@ class ProfileSyncService : public NotificationObserver,
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
 
+  // Returns whether sync is enabled.  Sync can be enabled/disabled both
+  // at compile time (e.g., on a per-OS basis) or at run time (e.g.,
+  // command-line switches).
+  static bool IsSyncEnabled();
+
   // UnrecoverableErrorHandler implementation.
   virtual void OnUnrecoverableError();
 

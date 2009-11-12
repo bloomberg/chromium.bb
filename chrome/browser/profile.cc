@@ -1439,14 +1439,12 @@ void ProfileImpl::StopCreateSessionServiceTimer() {
 }
 
 ProfileSyncService* ProfileImpl::GetProfileSyncService() {
-#if !defined(OS_POSIX)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync)) {
-    if (!sync_service_.get())
-      InitSyncService();
-    return sync_service_.get();
+  if (!ProfileSyncService::IsSyncEnabled()) {
+    return NULL;
   }
-#endif
-  return NULL;
+  if (!sync_service_.get())
+    InitSyncService();
+  return sync_service_.get();
 }
 
 void ProfileImpl::InitSyncService() {

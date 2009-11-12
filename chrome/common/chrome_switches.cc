@@ -226,6 +226,9 @@ const char kEnableSharedWorkers[]          = "enable-shared-workers";
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
+// Enable syncing bookmarks to a Google Account.
+const char kEnableSync[]                    = "enable-sync";
+
 // Enables the new Tabstrip on Windows.
 const char kEnableTabtastic2[]              = "enable-tabtastic2";
 
