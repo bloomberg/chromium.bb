@@ -376,9 +376,6 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   if (!instance())
     return;
 
-  if (window_rect_.IsEmpty())  // wait for geometry to be set.
-    return;
-
   window_.clipRect.top = 0;
   window_.clipRect.left = 0;
   window_.clipRect.bottom = window_rect_.height();
