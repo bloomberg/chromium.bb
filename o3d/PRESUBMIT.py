@@ -30,6 +30,11 @@
 import os
 import sys
 
+EXCLUDED_PATHS = (
+    r"breakpad[\\\/].*",
+    r"o3d_assets[\\\/].*",
+    r"third_party[\\\/].*",
+)
 
 def FindOnPage(input_api, url, regex):
   """Given a url, download it and find the part matching a regex.
@@ -82,8 +87,21 @@ def CheckTreeIsOpen(input_api, output_api, url, url_text):
       "The tree status can't be checked.")]
 
 
+def CheckChangeOnUpload(input_api, output_api):
+  report = []
+  black_list = input_api.DEFAULT_BLACK_LIST + EXCLUDED_PATHS
+  sources = lambda x: input_api.FilterSourceFile(x, black_list=black_list)
+  report.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
+      input_api, output_api, sources))
+  return report
+
+
 def CheckChangeOnCommit(input_api, output_api):
   report = []
+  black_list = input_api.DEFAULT_BLACK_LIST + EXCLUDED_PATHS
+  sources = lambda x: input_api.FilterSourceFile(x, black_list=black_list)
+  report.extend(input_api.canned_checks.CheckChangeSvnEolStyle(
+      input_api, output_api, sources))
   report.extend(CheckTreeIsOpen(
       input_api, output_api,
       'http://o3d-status.appspot.com/status',
