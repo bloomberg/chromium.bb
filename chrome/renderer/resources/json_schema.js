@@ -33,7 +33,9 @@
 // - null counts as 'unspecified' for optional values
 // - added the 'choices' property, to allow specifying a list of possible types
 //   for a value
-// - made additionalProperties default to false
+// - by default an "object" typed schema does not allow additional properties.
+//   if present, "additionalProperties" is to be a schema against which all
+//   additional properties will be validated.
 //==============================================================================
 
 (function() {
@@ -77,7 +79,8 @@ chromeHidden.JSONSchemaValidator.messages = {
   invalidChoice: "Value does not match any valid type choices.",
   invalidPropertyType: "Missing property type.",
   schemaRequired: "Schema value required.",
-  unknownSchemaReference: "Unknown schema reference: *."
+  unknownSchemaReference: "Unknown schema reference: *.",
+  notInstance: "Object must be an instance of *."
 };
 
 /**
@@ -270,6 +273,39 @@ chromeHidden.JSONSchemaValidator.prototype.validateObject = function(
     } else if (!schema.properties[prop].optional) {
       this.addError(propPath, "propertyRequired");
     }
+  }
+
+  // If "instanceof" property is set, check that this object inherits from
+  // the specified constructor (function).
+  if (schema.isInstanceOf) {
+    var isInstance = function() {
+      var constructor = this[schema.isInstanceOf];
+      if (constructor) {
+        return (instance instanceof constructor);
+      }
+
+      // Special-case constructors that can not always be found on the global
+      // object, but for which we to allow validation.
+      var allowedNamedConstructors = {
+        "DOMWindow": true,
+        "ImageData": true
+      }
+      if (!allowedNamedConstructors[schema.isInstanceOf]) {
+        throw "Attempt to validate against an instance ctor that could not be" +
+              "found: " + schema.isInstanceOf;
+      }
+      return (schema.isInstanceOf == instance.constructor.name)
+    }();
+
+    if (!isInstance)
+      this.addError(propPath, "notInstance", [schema.isInstanceOf]);
+  }
+
+  // Exit early from additional property check if "type":"any" is defined.
+  if (schema.additionalProperties &&
+      schema.additionalProperties.type &&
+      schema.additionalProperties.type == "any") {
+    return;
   }
 
   // By default, additional properties are not allowed on instance objects. This

@@ -366,6 +366,9 @@ function getTypeName(schema) {
   if (schema.type == "array")
     return "array of " + getTypeName(schema.items);
 
+  if (schema.isInstanceOf)
+    return schema.isInstanceOf;
+
   return schema.type;
 }
 

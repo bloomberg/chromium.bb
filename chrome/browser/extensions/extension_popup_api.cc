@@ -75,12 +75,8 @@ bool PopupShowFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
   const ListValue* args = args_as_list();
 
-  DictionaryValue* popup_info = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(0, &popup_info));
-
   std::string url_string;
-  EXTENSION_FUNCTION_VALIDATE(popup_info->GetString(kUrlKey,
-                                                    &url_string));
+  EXTENSION_FUNCTION_VALIDATE(args->GetString(0, &url_string));
 
   DictionaryValue* dom_anchor = NULL;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &dom_anchor));

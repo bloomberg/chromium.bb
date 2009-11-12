@@ -316,23 +316,22 @@ var chrome = chrome || {};
           apiFunctions[apiFunction.name] = apiFunction;
 
           module[functionDef.name] = bind(apiFunction, function() {
-            // If the function is marked with a custom handler, then bypass
-            // validation of the arguments.  This flag is required for
-            // extensions taking DOM objects as arguments.  DOM objects
-            // cannot be described using the type system in extension_api.json,
-            // and so cannot be validated.
-            // A good practice is to extract the primitive data needed to
-            // service the request, and then invoke validate against that data.
-            // See popup.show(...) for an example.
-            if (!functionDef.customHandler) {
-              chromeHidden.validate(arguments, this.definition.parameters);
-            }
-
+            chromeHidden.validate(arguments, this.definition.parameters);
+            
+            var retval;
             if (this.handleRequest)
-              return this.handleRequest.apply(this, arguments);
+              retval = this.handleRequest.apply(this, arguments);
             else
-              return sendRequest(this.name, arguments,
+              retval = sendRequest(this.name, arguments,
                                  this.definition.parameters);
+
+            // Validate return value if defined - only in debug.
+            if (chromeHidden.validateCallbacks &&
+                chromeHidden.validate &&
+                this.definition.returns) {
+              chromeHidden.validate([retval], [this.definition.returns]);
+            }
+            return retval;
           });
         });
       }
@@ -420,20 +419,9 @@ var chrome = chrome || {};
 
     apiFunctions["experimental.popup.show"].handleRequest =
         function(url, showDetails, callback) {
-      if (!showDetails || !showDetails.relativeTo) {
-        throw new Error("showDetails.relativeTo argument missing.");
-      }
-
-      var position = getAbsoluteRect(showDetails.relativeTo);
-      var popUpInfo = {
-        "url": url
-      };
-      var domAnchor = position;
-      var modifiedArgs = [popUpInfo, domAnchor, callback];
-      chromeHidden.validate(modifiedArgs, this.definition.parameters);
-
-      return sendRequest(this.name, modifiedArgs,
-                         this.definition.parameters);
+      var internalArgs = [url, getAbsoluteRect(showDetails.relativeTo),
+          callback];
+      return sendRequest(this.name, internalArgs, this.definition.parameters);
     }
 
     apiFunctions["experimental.extension.getPopupView"].handleRequest =

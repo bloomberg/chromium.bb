@@ -14,7 +14,9 @@ function assertValid(type, instance, schema, types) {
   validator["validate" + type](instance, schema, "");
   if (validator.errors.length != 0) {
     log("Got unexpected errors");
-    log(validator.errors);
+    for (var i = 0; i < validator.errors.length; i++) {
+      log(validator.errors[i].message + "  path: " + validator.errors[i].path);
+    }
     assert(false);
   }
 }
@@ -165,6 +167,16 @@ function testExtends() {
   assertValid("", 43, schema);
 }
 
+function ClassA() {
+  this.a = "a";
+}
+function ClassB() {
+}
+ClassB.prototype = new ClassA();
+function ClassC() {
+  this.a = "a";
+}
+
 function testObject() {
   var schema = {
     properties: {
@@ -201,6 +213,28 @@ function testObject() {
   assertValid("Object", {foo:"foo",bar:undefined}, schema);
   assertNotValid("Object", {foo:"foo", bar:"42"}, schema,
                  [formatError("invalidType", ["integer", "string"])]);
+
+  var classASchema = {
+    properties: {
+      "a": { type: "string" }
+    },
+    isInstanceOf: "ClassA"
+  };
+
+  var classBSchema = {
+    properties: {},
+    isInstanceOf: "ClassB"
+  };
+
+  var a = new ClassA();
+  var b = new ClassB();
+  var c = new ClassC();
+
+  assertValid("Object", a, classASchema);
+  assertValid("Object", b, classBSchema);
+  assertValid("Object", b, classASchema);
+  assertNotValid("Object", c, classASchema,
+                 [formatError("notInstance", [classASchema.isInstanceOf])]);              
 }
 
 function testTypeReference() {

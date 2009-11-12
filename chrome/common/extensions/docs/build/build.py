@@ -141,8 +141,9 @@ def GetAPIModuleNames():
   except ValueError, msg:
     raise Exception("File %s has a syntax error: %s" %
                     (_extension_api_json, msg))
-
-  return set(module['namespace'].encode() for module in extension_api)
+  # Exclude modules with a "nodoc" property.
+  return set(module['namespace'].encode() for module in extension_api
+             if "nodoc" not in module)
 
 def GetStaticFileNames():
   static_files = os.listdir(_static_dir)
@@ -151,6 +152,11 @@ def GetStaticFileNames():
              if file.endswith(".html"))
 
 def main():
+  # Prevent windows from using cygwin python.
+  if (sys.platform == "cygwin"):
+    raise Exception("Building docs not supported for cygwin python.\n"
+                    "Please run the build.bat script.");
+
   parser = OptionParser()
   parser.add_option("--test-shell-path", dest="test_shell_path")
   (options, args) = parser.parse_args()

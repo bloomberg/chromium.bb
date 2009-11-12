@@ -172,7 +172,8 @@
                   <li jsdisplay="functions && functions.length > 0">
                     <a href="#methods">Methods</a>
                     <ol>
-                      <li jsselect="functions.sort(sortByName)">
+                      <li jsselect="functions.sort(sortByName)"
+                          jsdisplay="!($this.nodoc)">
                         <a jscontent="name"
                            jsvalues=".href:'#method-' + name"
                            href="#method-anchor">methodName</a>
@@ -182,7 +183,8 @@
                   <li jsdisplay="events && events.length > 0">
                     <a href="#events">Events</a>
                     <ol>
-                      <li jsselect="events.sort(sortByName)">
+                      <li jsselect="events.sort(sortByName)"
+                          jsdisplay="!($this.nodoc)">
                         <a jscontent="name"
                            jsvalues=".href:'#event-' + name"
                            href="#event-anchor">eventName</a>
@@ -238,7 +240,8 @@
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem" jsselect="functions.sort(sortByName)">
+            <div class="apiItem" jsselect="functions.sort(sortByName)"
+                 jsdisplay="!($this.nodoc)">
               <a jsvalues=".name:'method-' + name"></a> <!-- method-anchor -->
               <h4 jscontent="name">method name</h4>
 
@@ -303,7 +306,8 @@
             <h3 id="events">Events</h3>
 
             <!-- iterates over all events -->
-            <div jsselect="events.sort(sortByName)" class="apiItem">
+            <div jsselect="events.sort(sortByName)" class="apiItem"
+                 jsdisplay="!($this.nodoc)">
               <a jsvalues=".name:'event-' + name"></a>
               <h4 jscontent="name">event name</h4>
 

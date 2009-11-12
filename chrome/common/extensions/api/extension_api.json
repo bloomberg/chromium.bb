@@ -12,20 +12,33 @@
         }
       },
       {
+        "id": "Event",
+        "type": "object",
+        "description": "An object which allows the addition and removal of listeners for a Chrome event.",
+        "properties": {
+          "addListener": {"type": "function"},
+          "removeListener": {"type": "function"},
+          "hasListener": {"type": "function"},
+          "hasListeners": {"type": "function"}
+        },
+        "additionalProperties": { "type": "any"}
+      },
+      {
         "id": "Port",
         "type": "object",
         "description": "An object which allows two way communication with other pages.",
         "properties": {
           "name": {"type": "string"},
-          "onDisconnect": {"type": "object"},
-          "onMessage": {"type": "object"},
+          "onDisconnect": { "$ref": "Event" },
+          "onMessage": { "$ref": "Event" },
           "postMessage": {"type": "function"},
           "sender": {
             "$ref": "MessageSender",
             "optional": true,
             "description": "This property will <b>only</b> be present on ports passed to onConnect/onConnectExternal listeners."
           }
-        }
+        },
+        "additionalProperties": { "type": "any"}
       }
     ],
     "properties": {
@@ -104,7 +117,7 @@
         "returns": {
           "type": "array",
           "description": "Array of global objects",
-          "items": { "type": "object" }
+          "items": { "type": "object", "isInstanceOf": "DOMWindow", "properties": {}, "additionalProperties": { "type": "any" } }
         }
       },
       {
@@ -113,8 +126,8 @@
         "description": "Returns the global JavaScript object for the background page running inside the current extension. Returns null if the extension has no backround page.",
         "parameters": [],
         "returns": {
-          "type": "object"
-        }
+          "type": "object", "isInstanceOf": "DOMWindow", "properties": {}, "additionalProperties": { "type": "any" }
+         }
       },
       {
         "name": "getToolstrips",
@@ -126,7 +139,7 @@
         "returns": {
           "type": "array",
           "description": "Array of global objects",
-          "items": { "type": "object" }
+          "items": { "type": "object", "isInstanceOf": "DOMWindow", "properties": {}, "additionalProperties": { "type": "any" } }
         }
       },
       {
@@ -139,7 +152,7 @@
         "returns": {
           "type": "array",
           "description": "Array of global objects",
-          "items": { "type": "object" }
+          "items": { "type": "object", "isInstanceOf": "DOMWindow", "properties": {}, "additionalProperties": { "type": "any" } }
         }
       }
     ],
@@ -184,16 +197,19 @@
   },
   {
     "namespace": "experimental.extension",
+    "nodoc": true,
     "types": [],
     "functions": [
       {
         "name": "getPopupView",
         "type": "function",
         "description": "Returns a reference to the window object of the popup view.",
-        "nodocs": "true",
         "parameters": [],
         "returns": {
-          "type": "object"
+          "type": "object",
+          "isInstanceOf": "DOMWindow",
+          "properties": {},
+          "additionalProperties": { "type": "any" }
         }
       }
     ],
@@ -709,11 +725,7 @@
             "description": "When all scripts are executed, this callback is called.",
             "parameters": []
           }
-        ],
-        "returns": {
-          "type": "boolean",
-          "description": "Whether this call is successful"
-        }
+        ]
       },
       {
         "name": "insertCSS",
@@ -738,11 +750,7 @@
             "description": "When all css are inserted, this callback is called.",
             "parameters": []
           }
-        ],
-        "returns": {
-          "type": "boolean",
-          "description": "Whether this call is successful"
-        }
+        ]
       }
     ],
     "events": [
@@ -872,6 +880,7 @@
   },
   {
     "namespace": "pageActions",
+    "nodoc": true,
     "types": [],
     "functions": [
       {
@@ -962,7 +971,10 @@
             "properties": {
               "tabId": {"type": "integer", "minimum": 0, "description": "The id of the tab for which you want to modify the page action."},
               "imageData": {
-                "type": "any",
+                "type": "object",
+                "isInstanceOf": "ImageData",
+                "properties": {},
+                "additionalProperties": { "type": "any" },
                 "description": "Pixel data for an image. Must be an ImageData object (for example, from a canvas element).",
                 "optional": true
               },
@@ -1032,7 +1044,10 @@
             "type": "object",
             "properties": {
               "imageData": {
-                "type": "any",
+                "type": "object",
+                "isInstanceOf": "ImageData",
+                "properties": {},
+                "additionalProperties": { "type": "any" },
                 "description": "Pixel data for an image. Must be an ImageData object (for example, from a <code>canvas</code> element).",
                 "optional": true
               },
@@ -1374,6 +1389,7 @@
   },
   {
     "namespace": "experimental.history",
+    "nodoc": true,
     "types": [
       {
         "id": "HistoryItem",
@@ -1528,6 +1544,7 @@
   },
   {
     "namespace": "toolstrip",
+    "nodoc": true,
     "types": [],
     "functions": [
       {
@@ -1586,6 +1603,7 @@
       {
         "name": "getMessage",
         "type": "function",
+        "nodoc": true,
         "description": "Get a message from the extension language catalog, for a current locale.",
         "parameters": [
           { "type": "string",
@@ -1617,30 +1635,31 @@
   },
   {
     "namespace": "experimental.popup",
+    "nodoc": true,
     "types": [],
     "functions": [
       {
         "name": "show",
         "type": "function",
         "description": "Displays a pop-up window hosting an extension view.",
-        "nodocs": "true",
         "customHandler": "true",
         "parameters": [
           {
-            "type": "object",
-            "name": "popupInfo",
-            "properties": {
-              "url": { "type": "string", "description": "The URL of the contents to which the pop-up will be navigated." }
-            }
+            "type": "string",
+            "name": "url",
+            "description": "The URL of the contents to which the pop-up will be navigated."
           },
           {
             "type": "object",
-            "name": "domAnchor",
+            "name": "showDetails",
             "properties": {
-              "top": { "type": "integer", "minimum": 0, "description": "Top pixel position of the dom-anchor." },
-              "left": { "type": "integer", "minimum": 0, "description": "Left pixel position of the dom-anchor." },
-              "width": { "type": "integer", "minimum": 0, "description": "Pixel width of the dom-anchor." },
-              "height": { "type": "integer", "minimum": 0, "description": "Pixel height of the dom-anchor." }
+              "relativeTo": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": { "type": "any" },
+                "isInstanceOf": "HTMLElement",
+                "description": "The HTMLElement whose position which serve as the anchor position of the popup."
+              }
             }
           },
           {
@@ -1654,10 +1673,12 @@
         "name": "getAnchorWindow",
         "type": "function",
         "description": "Returns a reference to the window object of the extension view that launched the popup.",
-        "nodocs": "true",
         "parameters": [],
         "returns": {
-          "type": "object"
+          "type": "object",
+          "isInstanceOf": "DOMWindow",
+          "properties": {},
+          "additionalProperties": { "type": "any" }
         }
       }
     ],
@@ -1672,14 +1693,13 @@
   },
   {
     "namespace": "devtools",
-    "types": [
-    ],
+    "types": [],
     "functions": [
       {
         "name": "getTabEvents",
         "type": "function",
         "description": "EXPERIMENTAL support for timeline API",
-        "nodocs": "true",
+        "nodoc": "true",
         "parameters": [
           {
             "name": "tab_id",
@@ -1688,6 +1708,8 @@
         ],
         "returns": {
           "type": "object",
+          "properties": {},
+          "additionalProperties": { "type": "any" },
           "description": "DevTools tab events object"
         }
       }
