@@ -117,6 +117,23 @@ void DeleteChromeShortcuts(bool system_uninstall) {
   }
 }
 
+bool ScheduleParentAndGrandparentForDeletion(const FilePath& path) {
+  FilePath parent_dir = path.DirName();
+  bool ret = ScheduleFileSystemEntityForDeletion(parent_dir.value().c_str());
+  if (!ret) {
+    LOG(ERROR) << "Failed to schedule parent dir for deletion: "
+               << parent_dir.value();
+  } else {
+    FilePath grandparent_dir(parent_dir.DirName());
+    ret = ScheduleFileSystemEntityForDeletion(grandparent_dir.value().c_str());
+    if (!ret) {
+      LOG(ERROR) << "Failed to schedule grandparent dir for deletion: "
+                 << grandparent_dir.value();
+    }
+  }
+  return ret;
+}
+
 // Deletes empty parent & empty grandparent dir of given path.
 bool DeleteEmptyParentDir(const std::wstring& path) {
   bool ret = true;
@@ -233,12 +250,23 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
         result = DELETE_FAILED;
       }
     }
-    DeleteEmptyParentDir(user_local_state.value());
+    if (result == DELETE_REQUIRES_REBOOT) {
+      ScheduleParentAndGrandparentForDeletion(user_local_state);
+    } else {
+      DeleteEmptyParentDir(user_local_state.value());
+    }
   }
 
-  // Now check and delete if the parent directories are empty
-  // For example Google\Chrome or Chromium
-  DeleteEmptyParentDir(install_path);
+  if (result == DELETE_REQUIRES_REBOOT) {
+    // If we need a reboot to continue, schedule the parent directories for
+    // deletion unconditionally. If they are not empty, the session manager
+    // will not delete them on reboot.
+    ScheduleParentAndGrandparentForDeletion(FilePath(install_path));
+  } else {
+    // Now check and delete if the parent directories are empty
+    // For example Google\Chrome or Chromium
+    DeleteEmptyParentDir(install_path);
+  }
   return result;
 }
 

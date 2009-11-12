@@ -54,6 +54,8 @@ bool IsSafeDirectoryNameForDeletion(const wchar_t* dir_name) {
   return ok;
 }
 
+}  // end namespace
+
 // Must only be called for regular files or directories that will be empty.
 bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
   // Check if the file exists, return false if not.
@@ -77,7 +79,6 @@ bool ScheduleFileSystemEntityForDeletion(const wchar_t* path) {
   LOG(INFO) << "Scheduled for deletion: " << path;
   return true;
 }
-}  // end namespace
 
 bool ScheduleDirectoryForDeletion(const wchar_t* dir_name) {
   if (!IsSafeDirectoryNameForDeletion(dir_name)) {

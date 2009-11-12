@@ -19,7 +19,10 @@ extern const wchar_t kPendingFileRenameOps[];
 
 typedef std::pair<std::wstring, std::wstring> PendingMove;
 
-// Attempts to schedule the directory for deletion.
+// Attempts to schedule only the item at path for deletion.
+bool ScheduleFileSystemEntityForDeletion(const wchar_t* path);
+
+// Attempts to recursively schedule the directory for deletion.
 bool ScheduleDirectoryForDeletion(const wchar_t* dir_name);
 
 // Removes all pending moves that are registered for |directory| and all
