@@ -20,6 +20,7 @@ int ChromeMain(int argc, const char** argv);
 
 int main(int argc, const char** argv) {
   base::EnableTerminationOnHeapCorruption();
+  base::EnableTerminationOnOutOfMemory();
 
   // The exit manager is in charge of calling the dtors of singletons.
   // Win has one here, but we assert with multiples from BrowserMain() if we

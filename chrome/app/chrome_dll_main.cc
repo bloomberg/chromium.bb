@@ -312,6 +312,7 @@ int ChromeMain(int argc, char** argv) {
   // is refactored to avoid such a dependency, it lives here.  See also the
   // TODO(mark) below at InitCrashReporter() and DestructCrashReporter().
   base::EnableTerminationOnHeapCorruption();
+  base::EnableTerminationOnOutOfMemory();
 #endif  // OS_MACOSX
 
   RegisterInvalidParamHandler();
