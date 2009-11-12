@@ -22,6 +22,8 @@ import __builtin__
 import StringIO
 
 import gclient
+# Temporary due to the "from scm import *" in gclient_scm.
+import scm
 from super_mox import mox, IsOneOf, SuperMoxTestBase
 
 
@@ -53,6 +55,11 @@ class GClientBaseTestCase(BaseTestCase):
     self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVNStatus')
     self.mox.StubOutWithMock(gclient.gclient_scm, 'RunSVN')
     self.mox.StubOutWithMock(gclient.gclient_scm, 'RunSVNAndGetFileList')
+    self.mox.StubOutWithMock(scm, 'CaptureSVN')
+    self.mox.StubOutWithMock(scm, 'CaptureSVNInfo')
+    self.mox.StubOutWithMock(scm, 'CaptureSVNStatus')
+    self.mox.StubOutWithMock(scm, 'RunSVN')
+    self.mox.StubOutWithMock(scm, 'RunSVNAndGetFileList')
     self._gclient_gclient = gclient.GClient
     gclient.GClient = self.mox.CreateMockAnything()
     self._scm_wrapper = gclient.gclient_scm.CreateSCM
@@ -1064,112 +1071,6 @@ deps = {
     pass
   def test_VarImpl(self):
     pass
-
-
-class SubprocessCallAndFilterTestCase(BaseTestCase):
-  def setUp(self):
-    BaseTestCase.setUp(self)
-    self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVN')
-
-  def testSubprocessCallAndFilter(self):
-    command = ['boo', 'foo', 'bar']
-    in_directory = 'bleh'
-    fail_status = None
-    pattern = 'a(.*)b'
-    test_string = 'ahah\naccb\nallo\naddb\n'
-    class Mock(object):
-      stdout = StringIO.StringIO(test_string)
-      def wait(self):
-        pass
-    kid = Mock()
-    print("\n________ running 'boo foo bar' in 'bleh'")
-    for i in test_string:
-      gclient.sys.stdout.write(i)
-    gclient.gclient_utils.subprocess.Popen(
-        command, bufsize=0, cwd=in_directory,
-        shell=(gclient.sys.platform == 'win32'),
-        stdout=gclient.gclient_utils.subprocess.PIPE,
-        stderr=gclient.gclient_utils.subprocess.STDOUT).AndReturn(kid)
-    self.mox.ReplayAll()
-    compiled_pattern = gclient.re.compile(pattern)
-    line_list = []
-    capture_list = []
-    def FilterLines(line):
-      line_list.append(line)
-      match = compiled_pattern.search(line)
-      if match:
-        capture_list.append(match.group(1))
-    gclient.gclient_utils.SubprocessCallAndFilter(
-        command, in_directory,
-        True, True,
-        fail_status, FilterLines)
-    self.assertEquals(line_list, ['ahah', 'accb', 'allo', 'addb'])
-    self.assertEquals(capture_list, ['cc', 'dd'])
-
-  def testCaptureSVNStatus(self):
-    gclient.gclient_scm.CaptureSVN(
-        ['status', '--xml', '.']
-        ).AndReturn(r"""<?xml version="1.0"?>
-<status>
-<target path=".">
-<entry path="unversionned_file.txt">
-<wc-status props="none" item="unversioned"></wc-status>
-</entry>
-<entry path="build\internal\essential.vsprops">
-<wc-status props="normal" item="modified" revision="14628">
-<commit revision="13818">
-<author>ajwong@chromium.org</author>
-<date>2009-04-16T00:42:06.872358Z</date>
-</commit>
-</wc-status>
-</entry>
-<entry path="chrome\app\d">
-<wc-status props="none" copied="true" tree-conflicted="true" item="added">
-</wc-status>
-</entry>
-<entry path="chrome\app\DEPS">
-<wc-status props="modified" item="modified" revision="14628">
-<commit revision="1279">
-<author>brettw@google.com</author>
-<date>2008-08-23T17:16:42.090152Z</date>
-</commit>
-</wc-status>
-</entry>
-<entry path="scripts\master\factory\gclient_factory.py">
-<wc-status props="normal" item="conflicted" revision="14725">
-<commit revision="14633">
-<author>nsylvain@chromium.org</author>
-<date>2009-04-27T19:37:17.977400Z</date>
-</commit>
-</wc-status>
-</entry>
-</target>
-</status>
-""")
-    self.mox.ReplayAll()
-    info = gclient.gclient_scm.CaptureSVNStatus('.')
-    expected = [
-      ('?      ', 'unversionned_file.txt'),
-      ('M      ', 'build\\internal\\essential.vsprops'),
-      ('A  +   ', 'chrome\\app\\d'),
-      ('MM     ', 'chrome\\app\\DEPS'),
-      ('C      ', 'scripts\\master\\factory\\gclient_factory.py'),
-    ]
-    self.assertEquals(sorted(info), sorted(expected))
-
-  def testCaptureSVNStatusEmpty(self):
-    gclient.gclient_scm.CaptureSVN(
-        ['status', '--xml']
-        ).AndReturn(r"""<?xml version="1.0"?>
-<status>
-<target
-   path="perf">
-</target>
-</status>
-""")
-    self.mox.ReplayAll()
-    info = gclient.gclient_scm.CaptureSVNStatus(None)
-    self.assertEquals(info, [])
 
 
 if __name__ == '__main__':
