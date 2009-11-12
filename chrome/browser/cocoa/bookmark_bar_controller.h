@@ -37,8 +37,8 @@ const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 const CGFloat kNoBookmarksHorizontalOffset = 5.0;
-const CGFloat kNoBookmarksVerticalOffset = 20.0;
-const CGFloat kNoBookmarksNTPVerticalOffset = 27.0;
+const CGFloat kNoBookmarksVerticalOffset = 22.0;
+const CGFloat kNoBookmarksNTPVerticalOffset = 28.0;
 
 }  // namespace
 
