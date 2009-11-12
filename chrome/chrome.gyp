@@ -76,10 +76,12 @@
       'browser/extensions/isolated_world_apitest.cc',
       'browser/extensions/page_action_apitest.cc',
       'browser/gtk/bookmark_manager_browsertest.cc',
-      'browser/gtk/view_id_util_browsertest.cc',
       'browser/net/ftp_browsertest.cc',
       'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
+    ],
+    'browser_tests_sources_gtk_specific': [
+      'browser/gtk/view_id_util_browsertest.cc',
     ],
     'browser_tests_sources_views_specific': [
       'browser/views/find_bar_host_browsertest.cc',
@@ -6473,6 +6475,11 @@
             ['OS=="linux" and toolkit_views==1', {
               'sources': [
                 '<@(browser_tests_sources_views_specific)',
+              ],
+            }],
+            ['OS=="linux" and toolkit_views==0', {
+              'sources': [
+                '<@(browser_tests_sources_gtk_specific)',
               ],
             }],
             ['OS=="mac"', {
