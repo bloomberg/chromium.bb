@@ -964,12 +964,14 @@ void TabStripGtk::TabInsertedAt(TabContents* contents,
 }
 
 void TabStripGtk::TabDetachedAt(TabContents* contents, int index) {
-  GenerateIdealBounds();
-  StartRemoveTabAnimation(index, contents);
-  // Have to do this _after_ calling StartRemoveTabAnimation, so that any
-  // previous remove is completed fully and index is valid in sync with the
-  // model index.
-  GetTabAt(index)->set_closing(true);
+  if (CanUpdateDisplay()) {
+    GenerateIdealBounds();
+    StartRemoveTabAnimation(index, contents);
+    // Have to do this _after_ calling StartRemoveTabAnimation, so that any
+    // previous remove is completed fully and index is valid in sync with the
+    // model index.
+    GetTabAt(index)->set_closing(true);
+  }
 }
 
 void TabStripGtk::TabSelectedAt(TabContents* old_contents,
@@ -978,18 +980,20 @@ void TabStripGtk::TabSelectedAt(TabContents* old_contents,
                                 bool user_gesture) {
   DCHECK(index >= 0 && index < static_cast<int>(GetTabCount()));
 
-  // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
-  // a different size to the selected ones.
-  bool tiny_tabs = current_unselected_width_ != current_selected_width_;
-  if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs))
-    Layout();
+  if (CanUpdateDisplay()) {
+    // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
+    // a different size to the selected ones.
+    bool tiny_tabs = current_unselected_width_ != current_selected_width_;
+    if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs))
+      Layout();
 
-  GetTabAt(index)->SchedulePaint();
+    GetTabAt(index)->SchedulePaint();
 
-  int old_index = model_->GetIndexOfTabContents(old_contents);
-  if (old_index >= 0) {
-    GetTabAt(old_index)->SchedulePaint();
-    GetTabAt(old_index)->StopPinnedTabTitleAnimation();
+    int old_index = model_->GetIndexOfTabContents(old_contents);
+    if (old_index >= 0) {
+      GetTabAt(old_index)->SchedulePaint();
+      GetTabAt(old_index)->StopPinnedTabTitleAnimation();
+    }
   }
 }
 
@@ -1772,6 +1776,17 @@ void TabStripGtk::StartPinAndMoveTabAnimation(int from_index,
   active_animation_.reset(
       new PinAndMoveAnimation(this, from_index, to_index, start_bounds));
   active_animation_->Start();
+}
+
+bool TabStripGtk::CanUpdateDisplay() {
+  // Don't bother laying out/painting when we're closing all tabs.
+  if (model_->closing_all()) {
+    // Make sure any active animation is ended, too.
+    if (active_animation_.get())
+      active_animation_->Stop();
+    return false;
+  }
+  return true;
 }
 
 void TabStripGtk::FinishAnimation(TabStripGtk::TabAnimation* animation,
