@@ -219,6 +219,8 @@
                     <a href="#types">Types</a>
                     <ol>
                       <li>
+                        <a href="#type-Event">Event</a>
+                      </li><li>
                         <a href="#type-Port">Port</a>
                       </li><li>
                         <a href="#type-MessageSender">MessageSender</a>
@@ -590,7 +592,7 @@ For details, see
               <a name="method-getBackgroundPage"></a> <!-- method-anchor -->
               <h4>getBackgroundPage</h4>
 
-              <div class="summary"><span>object</span>
+              <div class="summary"><span>DOMWindow</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.extension.getBackgroundPage</span>(<span style="display: none; "><span>, </span><span></span>
                       <var><span></span></var></span>)</div>
@@ -629,7 +631,7 @@ For details, see
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>object</span>
+                        <span>DOMWindow</span>
                       </span>
                     </span>
                   )
@@ -645,9 +647,9 @@ For details, see
           </dd>
 
           <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
+          <dd>
             <dl>
-              <div>
+              <div style="display: none; ">
                 <div>
                 </div>
               </div>
@@ -683,7 +685,7 @@ For details, see
               <a name="method-getExtensionTabs"></a> <!-- method-anchor -->
               <h4>getExtensionTabs</h4>
 
-              <div class="summary"><span>array of object</span>
+              <div class="summary"><span>array of DOMWindow</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.extension.getExtensionTabs</span>(<span class="optional"><span style="display: none; ">, </span><span>integer</span>
                       <var><span>windowId</span></var></span>)</div>
@@ -768,7 +770,7 @@ For details, see
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>object</span>
+                        <span>DOMWindow</span>
                       </span>
                     </span></span>
                         </span>
@@ -824,7 +826,7 @@ For details, see
               <a name="method-getToolstrips"></a> <!-- method-anchor -->
               <h4>getToolstrips</h4>
 
-              <div class="summary"><span>array of object</span>
+              <div class="summary"><span>array of DOMWindow</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.extension.getToolstrips</span>(<span class="optional"><span style="display: none; ">, </span><span>integer</span>
                       <var><span>windowId</span></var></span>)</div>
@@ -909,7 +911,7 @@ For details, see
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>object</span>
+                        <span>DOMWindow</span>
                       </span>
                     </span></span>
                         </span>
@@ -1094,7 +1096,7 @@ For details, see
               <a name="method-getViews"></a> <!-- method-anchor -->
               <h4>getViews</h4>
 
-              <div class="summary"><span>array of object</span>
+              <div class="summary"><span>array of DOMWindow</span>
                   <!-- Note: intentionally longer 80 columns -->
                   <span>chrome.extension.getViews</span>(<span style="display: none; "><span>, </span><span></span>
                       <var><span></span></var></span>)</div>
@@ -1139,7 +1141,7 @@ For details, see
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>object</span>
+                        <span>DOMWindow</span>
                       </span>
                     </span></span>
                         </span>
@@ -1849,6 +1851,220 @@ For details, see
 
             <!-- iterates over all types -->
             <div class="apiItem">
+              <a name="type-Event"></a>
+              <h4>Event</h4>
+
+              <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>An object which allows the addition and removal of listeners for a Chrome event.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>addListener</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>removeListener</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>hasListener</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>hasListeners</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+
+            </div><div class="apiItem">
               <a name="type-Port"></a>
               <h4>Port</h4>
 
@@ -1939,14 +2155,14 @@ For details, see
                   (
                     <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="extension.html#type-Event">Event</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>object</span>
+                        <span>paramType</span>
                       </span>
                     </span>
                   )
@@ -1982,14 +2198,14 @@ For details, see
                   (
                     <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
                       <span>
-                        <span style="display: none; ">
+                        <a href="extension.html#type-Event">Event</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
                           array of <span><span></span></span>
                         </span>
-                        <span>object</span>
+                        <span>paramType</span>
                       </span>
                     </span>
                   )
