@@ -100,7 +100,7 @@ all_targets :=
 all_deps :=
 
 # C++ apps need to be linked with g++.  Not sure what's appropriate.
-LINK := $(CXX)
+LINK ?= $(CXX)
 
 CC.target ?= $(CC)
 CXX.target ?= $(CXX)
