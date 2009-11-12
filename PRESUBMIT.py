@@ -13,10 +13,8 @@ UNIT_TESTS = [
   'tests.gcl_unittest',
   'tests.gclient_test',
   'tests.gclient_scm_test',
-  'tests.gclient_utils_test',
   'tests.presubmit_unittest',
   'tests.revert_unittest',
-  'tests.scm_unittest',
   'tests.trychange_unittest',
   'tests.watchlists_unittest',
 ]

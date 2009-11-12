@@ -267,6 +267,115 @@ class SVNWrapperTestCase(BaseTestCase):
     file_list = []
     scm.update(options, self.args, file_list)
 
+  def testGetSVNFileInfo(self):
+    xml_text = r"""<?xml version="1.0"?>
+<info>
+<entry kind="file" path="%s" revision="14628">
+<url>http://src.chromium.org/svn/trunk/src/chrome/app/d</url>
+<repository><root>http://src.chromium.org/svn</root></repository>
+<wc-info>
+<schedule>add</schedule>
+<depth>infinity</depth>
+<copy-from-url>http://src.chromium.org/svn/trunk/src/chrome/app/DEPS</copy-from-url>
+<copy-from-rev>14628</copy-from-rev>
+<checksum>369f59057ba0e6d9017e28f8bdfb1f43</checksum>
+</wc-info>
+</entry>
+</info>
+""" % self.url
+    gclient_scm.CaptureSVN(['info', '--xml', self.url],
+                       '.', True).AndReturn(xml_text)
+    expected = {
+      'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
+      'UUID': None,
+      'Repository Root': 'http://src.chromium.org/svn',
+      'Schedule': 'add',
+      'Copied From URL':
+        'http://src.chromium.org/svn/trunk/src/chrome/app/DEPS',
+      'Copied From Rev': '14628',
+      'Path': self.url,
+      'Revision': 14628,
+      'Node Kind': 'file',
+    }
+    self.mox.ReplayAll()
+    file_info = self._CaptureSVNInfo(self.url, '.', True)
+    self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
+
+  def testCaptureSvnInfo(self):
+    xml_text = """<?xml version="1.0"?>
+<info>
+<entry
+   kind="dir"
+   path="."
+   revision="35">
+<url>%s</url>
+<repository>
+<root>%s</root>
+<uuid>7b9385f5-0452-0410-af26-ad4892b7a1fb</uuid>
+</repository>
+<wc-info>
+<schedule>normal</schedule>
+<depth>infinity</depth>
+</wc-info>
+<commit
+   revision="35">
+<author>maruel</author>
+<date>2008-12-04T20:12:19.685120Z</date>
+</commit>
+</entry>
+</info>
+""" % (self.url, self.root_dir)
+    gclient_scm.CaptureSVN(['info', '--xml',
+                            self.url], '.', True).AndReturn(xml_text)
+    self.mox.ReplayAll()
+    file_info = self._CaptureSVNInfo(self.url, '.', True)
+    expected = {
+      'URL': self.url,
+      'UUID': '7b9385f5-0452-0410-af26-ad4892b7a1fb',
+      'Revision': 35,
+      'Repository Root': self.root_dir,
+      'Schedule': 'normal',
+      'Copied From URL': None,
+      'Copied From Rev': None,
+      'Path': '.',
+      'Node Kind': 'dir',
+    }
+    self.assertEqual(file_info, expected)
+
+  def testRevinfo(self):
+    options = self.Options(verbose=False)
+    xml_text = """<?xml version="1.0"?>
+<info>
+<entry
+   kind="dir"
+   path="."
+   revision="35">
+<url>%s</url>
+<repository>
+<root>%s</root>
+<uuid>7b9385f5-0452-0410-af26-ad4892b7a1fb</uuid>
+</repository>
+<wc-info>
+<schedule>normal</schedule>
+<depth>infinity</depth>
+</wc-info>
+<commit
+   revision="35">
+<author>maruel</author>
+<date>2008-12-04T20:12:19.685120Z</date>
+</commit>
+</entry>
+</info>
+""" % (self.url, self.root_dir)
+    gclient_scm.os.getcwd().AndReturn('bleh')
+    gclient_scm.CaptureSVN(['info', '--xml', self.url], 'bleh'
+                           ).AndReturn(xml_text)
+    self.mox.ReplayAll()
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
+    rev_info = scm.revinfo(options, self.args, None)
+    self.assertEqual(rev_info, '35')
+
 
 class GitWrapperTestCase(SuperMoxBaseTestBase):
   """This class doesn't use pymox."""
@@ -328,7 +437,6 @@ from :3
     return self.OptionsObject(self, *args, **kwargs)
 
   def CreateGitRepo(self, git_import, path):
-    """Do it for real."""
     try:
       Popen(['git', 'init'], stdout=PIPE, stderr=STDOUT,
             cwd=path).communicate()
@@ -502,6 +610,16 @@ from :3
                                 relpath=self.relpath)
     rev_info = scm.revinfo(options, (), None)
     self.assertEquals(rev_info, '069c602044c5388d2d15c3f875b057c852003458')
+
+
+class RunSVNTestCase(BaseTestCase):
+  def testRunSVN(self):
+    self.UnMock(gclient_scm, 'RunSVN')
+    param2 = 'bleh'
+    gclient_scm.gclient_utils.SubprocessCall(['svn', 'foo', 'bar'],
+                                             param2).AndReturn(None)
+    self.mox.ReplayAll()
+    gclient_scm.RunSVN(['foo', 'bar'], param2)
 
 
 if __name__ == '__main__':
