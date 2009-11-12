@@ -14,6 +14,7 @@
 #include "base/task.h"
 #include "base/timer.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -61,7 +62,8 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
     SafeBrowsingService* sb_service,
     const std::string& client_name,
     const std::string& client_key,
-    const std::string& wrapped_key)
+    const std::string& wrapped_key,
+    URLRequestContextGetter* request_context_getter)
     : sb_service_(sb_service),
       request_type_(NO_REQUEST),
       update_error_count_(0),
@@ -75,7 +77,8 @@ SafeBrowsingProtocolManager::SafeBrowsingProtocolManager(
       client_key_(client_key),
       wrapped_key_(wrapped_key),
       update_size_(0),
-      client_name_(client_name) {
+      client_name_(client_name),
+      request_context_getter_(request_context_getter) {
   // Set the backoff multiplier fuzz to a random value between 0 and 1.
   back_off_fuzz_ = static_cast<float>(base::RandDouble());
 
@@ -135,7 +138,7 @@ void SafeBrowsingProtocolManager::GetFullHash(
   parser.FormatGetHash(prefixes, &get_hash);
 
   fetcher->set_load_flags(net::LOAD_DISABLE_CACHE);
-  fetcher->set_request_context(Profile::GetDefaultRequestContext());
+  fetcher->set_request_context(request_context_getter_);
   fetcher->set_upload_data("text/plain", get_hash);
   fetcher->Start();
 }
@@ -511,7 +514,7 @@ void SafeBrowsingProtocolManager::IssueChunkRequest() {
   request_type_ = CHUNK_REQUEST;
   request_.reset(new URLFetcher(chunk_url, URLFetcher::GET, this));
   request_->set_load_flags(net::LOAD_DISABLE_CACHE);
-  request_->set_request_context(Profile::GetDefaultRequestContext());
+  request_->set_request_context(request_context_getter_);
   chunk_request_start_ = base::Time::Now();
   request_->Start();
 }
@@ -523,7 +526,7 @@ void SafeBrowsingProtocolManager::IssueKeyRequest() {
   request_type_ = GETKEY_REQUEST;
   request_.reset(new URLFetcher(key_url, URLFetcher::GET, this));
   request_->set_load_flags(net::LOAD_DISABLE_CACHE);
-  request_->set_request_context(Profile::GetDefaultRequestContext());
+  request_->set_request_context(request_context_getter_);
   request_->Start();
 }
 
@@ -573,7 +576,7 @@ void SafeBrowsingProtocolManager::OnGetChunksComplete(
   GURL update_url(url);
   request_.reset(new URLFetcher(update_url, URLFetcher::POST, this));
   request_->set_load_flags(net::LOAD_DISABLE_CACHE);
-  request_->set_request_context(Profile::GetDefaultRequestContext());
+  request_->set_request_context(request_context_getter_);
   request_->set_upload_data("text/plain", list_data);
   request_->Start();
 
@@ -615,7 +618,7 @@ void SafeBrowsingProtocolManager::ReportMalware(const GURL& malware_url,
   GURL report_url(report_str);
   URLFetcher* report = new URLFetcher(report_url, URLFetcher::GET, this);
   report->set_load_flags(net::LOAD_DISABLE_CACHE);
-  report->set_request_context(Profile::GetDefaultRequestContext());
+  report->set_request_context(request_context_getter_);
   report->Start();
   malware_reports_.insert(report);
 }

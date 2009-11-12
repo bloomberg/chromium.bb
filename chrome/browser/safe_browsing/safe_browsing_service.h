@@ -27,6 +27,7 @@ class PrefService;
 class SafeBrowsingBlockingPage;
 class SafeBrowsingDatabase;
 class SafeBrowsingProtocolManager;
+class URLRequestContextGetter;
 
 // Construction needs to happen on the main thread.
 class SafeBrowsingService
@@ -71,7 +72,8 @@ class SafeBrowsingService
 
   // Called to initialize objects that are used on the io_thread.
   void OnIOInitialize(const std::string& client_key,
-                      const std::string& wrapped_key);
+                      const std::string& wrapped_key,
+                      URLRequestContextGetter* request_context_getter);
 
   // Called to initialize objects that are used on the db_thread.
   void OnDBInitialize();

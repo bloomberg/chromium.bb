@@ -48,10 +48,13 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
   FRIEND_TEST(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes);
 
  public:
+  // Constructs a SafeBrowsingProtocolManager for |sb_service| that issues
+  // network requests using |request_context_getter|.
   SafeBrowsingProtocolManager(SafeBrowsingService* sb_service,
                               const std::string& client_name,
                               const std::string& client_key,
-                              const std::string& wrapped_key);
+                              const std::string& wrapped_key,
+                              URLRequestContextGetter* request_context_getter);
   ~SafeBrowsingProtocolManager();
 
   // Set up the update schedule and internal state for making periodic requests
@@ -235,6 +238,9 @@ class SafeBrowsingProtocolManager : public URLFetcher::Delegate {
 
   // The safe browsing client name sent in each request.
   std::string client_name_;
+
+  // The context we use to issue network requests.
+  scoped_refptr<URLRequestContextGetter> request_context_getter_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingProtocolManager);
 };

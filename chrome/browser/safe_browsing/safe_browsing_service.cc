@@ -13,6 +13,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_blocking_page.h"
@@ -33,6 +34,13 @@
 using base::Time;
 using base::TimeDelta;
 
+static Profile* GetDefaultProfile() {
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager->GetDefaultProfile(user_data_dir);
+}
+
 SafeBrowsingService::SafeBrowsingService()
     : database_(NULL),
       protocol_manager_(NULL),
@@ -48,11 +56,7 @@ SafeBrowsingService::~SafeBrowsingService() {
 // Only called on the UI thread.
 void SafeBrowsingService::Initialize() {
   // Get the profile's preference for SafeBrowsing.
-  FilePath user_data_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-  PrefService* pref_service = profile->GetPrefs();
+  PrefService* pref_service = GetDefaultProfile()->GetPrefs();
   if (pref_service->GetBoolean(prefs::kSafeBrowsingEnabled))
     Start();
 }
@@ -75,10 +79,16 @@ void SafeBrowsingService::Start() {
       WideToASCII(local_state->GetString(prefs::kSafeBrowsingWrappedKey));
   }
 
+  // We will issue network fetches using the default profile's request context.
+  URLRequestContextGetter* request_context_getter =
+      GetDefaultProfile()->GetRequestContext();
+  request_context_getter->AddRef();  // Balanced in OnIOInitialize.
+
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &SafeBrowsingService::OnIOInitialize, client_key, wrapped_key));
+          this, &SafeBrowsingService::OnIOInitialize, client_key, wrapped_key,
+          request_context_getter));
 
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SafeBrowsingService::OnDBInitialize));
@@ -90,8 +100,10 @@ void SafeBrowsingService::ShutDown() {
       NewRunnableMethod(this, &SafeBrowsingService::OnIOShutdown));
 }
 
-void SafeBrowsingService::OnIOInitialize(const std::string& client_key,
-                                         const std::string& wrapped_key) {
+void SafeBrowsingService::OnIOInitialize(
+    const std::string& client_key,
+    const std::string& wrapped_key,
+    URLRequestContextGetter* request_context_getter) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   enabled_ = true;
 
@@ -112,7 +124,12 @@ void SafeBrowsingService::OnIOInitialize(const std::string& client_key,
   protocol_manager_ = new SafeBrowsingProtocolManager(this,
                                                       client_name,
                                                       client_key,
-                                                      wrapped_key);
+                                                      wrapped_key,
+                                                      request_context_getter);
+
+  // Balance the reference added by Start().
+  request_context_getter->Release();
+
   // We want to initialize the protocol manager only after the database has
   // loaded, which we'll receive asynchronously (DatabaseLoadComplete). If
   // database_loaded_ isn't true, we'll wait for that notification to do the
