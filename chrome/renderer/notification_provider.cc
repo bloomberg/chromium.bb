@@ -55,10 +55,6 @@ WebNotificationPresenter::Permission NotificationProvider::checkPermission(
 
 void NotificationProvider::requestPermission(
     const WebString& origin, WebNotificationPermissionCallback* callback) {
-  // We only request permission in response to a user gesture.
-  if (!view_->webview()->mainFrame()->isProcessingUserGesture())
-    return;
-
   int id = manager_.RegisterPermissionRequest(callback);
 
   Send(new ViewHostMsg_RequestNotificationPermission(view_->routing_id(),
