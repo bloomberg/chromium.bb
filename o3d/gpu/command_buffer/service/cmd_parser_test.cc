@@ -34,10 +34,10 @@
 
 #include "gpu/command_buffer/service/precompile.h"
 
-#include "tests/common/win/testing_common.h"
+#include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/mocks.h"
-#include "base/scoped_ptr.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace command_buffer {
 

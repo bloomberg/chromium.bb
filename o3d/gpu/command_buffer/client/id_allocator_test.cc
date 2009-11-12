@@ -32,8 +32,8 @@
 
 // This file has the unit tests for the IdAllocator class.
 
-#include "tests/common/win/testing_common.h"
 #include "gpu/command_buffer/client/id_allocator.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace command_buffer {
 

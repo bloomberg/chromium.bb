@@ -33,8 +33,8 @@
 // Tests for the ResourceMap.
 
 #include "gpu/command_buffer/service/precompile.h"
-#include "tests/common/win/testing_common.h"
 #include "gpu/command_buffer/service/resource.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace command_buffer {
 

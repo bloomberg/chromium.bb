@@ -33,8 +33,8 @@
 // This file contains the unit tests for the effect utilities.
 
 #include "gpu/command_buffer/service/precompile.h"
-#include "tests/common/win/testing_common.h"
 #include "gpu/command_buffer/service/cross/effect_utils.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace o3d {
 namespace command_buffer {
