@@ -91,15 +91,13 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   // Create the "Show all downloads..." link and connect to the click event.
   std::string link_text =
       l10n_util::GetStringUTF8(IDS_SHOW_ALL_DOWNLOADS);
-  GtkWidget* link_button = gtk_chrome_link_button_new(link_text.c_str());
-  gtk_chrome_link_button_set_use_gtk_theme(
-      GTK_CHROME_LINK_BUTTON(link_button), FALSE);
-  g_signal_connect(link_button, "clicked",
+  link_button_ = gtk_chrome_link_button_new(link_text.c_str());
+  g_signal_connect(link_button_, "clicked",
                    G_CALLBACK(OnButtonClick), this);
-  gtk_util::SetButtonTriggersNavigation(link_button);
+  gtk_util::SetButtonTriggersNavigation(link_button_);
   // Until we switch to vector graphics, force the font size.
   // 13.4px == 10pt @ 96dpi
-  gtk_util::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(link_button)->label,
+  gtk_util::ForceFontSizePixels(GTK_CHROME_LINK_BUTTON(link_button_)->label,
                                 13.4);
 
   // Make the download arrow icon.
@@ -110,7 +108,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
   // Pack the link and the icon in an hbox.
   link_hbox_ = gtk_hbox_new(FALSE, 5);
   gtk_util::CenterWidgetInHBox(link_hbox_, download_image, false, 0);
-  gtk_util::CenterWidgetInHBox(link_hbox_, link_button, false, 0);
+  gtk_util::CenterWidgetInHBox(link_hbox_, link_button_, false, 0);
   gtk_box_pack_end(GTK_BOX(hbox_.get()), link_hbox_, FALSE, FALSE, 0);
 
   slide_widget_.reset(new SlideAnimatorGtk(shelf_.get(),
@@ -195,6 +193,21 @@ void DownloadShelfGtk::Observe(NotificationType type,
 
     color = theme_provider_->GetBorderColor();
     gtk_widget_modify_bg(top_border_, GTK_STATE_NORMAL, &color);
+
+    gtk_chrome_link_button_set_use_gtk_theme(
+        GTK_CHROME_LINK_BUTTON(link_button_), theme_provider_->UseGtkTheme());
+
+    // When using a non-standard, non-gtk theme, we make the link color match
+    // the bookmark text color. Otherwise, standard link blue can look very
+    // bad for some dark themes.
+    bool use_default_color = theme_provider_->GetColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT) ==
+        BrowserThemeProvider::kDefaultColorBookmarkText;
+    GdkColor bookmark_color = theme_provider_->GetGdkColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+    gtk_chrome_link_button_set_normal_color(
+        GTK_CHROME_LINK_BUTTON(link_button_),
+        use_default_color ? NULL : &bookmark_color);
   }
 }
 

@@ -86,6 +86,9 @@ class DownloadShelfGtk : public DownloadShelf,
   // distinction of being the leftmost non-download item widget on the shelf.
   GtkWidget* link_hbox_;
 
+  // The "Show all downloads..." link.
+  GtkWidget* link_button_;
+
   // The 'x' that the user can press to hide the download shelf.
   scoped_ptr<CustomDrawButton> close_button_;
 

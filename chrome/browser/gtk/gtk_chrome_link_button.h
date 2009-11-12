@@ -37,9 +37,10 @@ typedef struct _GtkChromeLinkButtonClass   GtkChromeLinkButtonClass;
 struct _GtkChromeLinkButton {
   GtkButton button;
   GtkWidget* label;
-  gchar* blue_markup;
-  gchar* red_markup;
-  gboolean is_blue;
+  gchar* normal_markup;
+  gchar* pressed_markup;
+  gboolean is_normal;
+  gchar normal_color[9];
   gchar* native_markup;
   gboolean using_native_theme;
   GdkCursor* hand_cursor;
@@ -65,6 +66,11 @@ void gtk_chrome_link_button_set_use_gtk_theme(GtkChromeLinkButton* button,
 // Set the label text of the link.
 void gtk_chrome_link_button_set_label(GtkChromeLinkButton* button,
                                       const char* text);
+
+// Set the color when the link is in a normal state (i.e. not pressed).
+// If not set, or called NULL |color|, the color will be blue.
+void gtk_chrome_link_button_set_normal_color(GtkChromeLinkButton* button,
+                                             const GdkColor* color);
 
 GType gtk_chrome_link_button_get_type();
 
