@@ -170,8 +170,18 @@ class NormalExtender : public BrowserExtender,
     return compact_navigation_bar_enabled_;
   }
 
+  virtual bool SetFocusToCompactNavigationBar() {
+    if (compact_navigation_bar_->IsFocusable()) {
+      compact_navigation_bar_->FocusLocation();
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   virtual void ToggleCompactNavigationBar() {
     compact_navigation_bar_enabled_ = !compact_navigation_bar_enabled_;
+    compact_navigation_bar_->SetFocusable(compact_navigation_bar_enabled_);
     status_area_->Update();
   }
 
@@ -306,6 +316,10 @@ class PopupExtender : public BrowserExtender {
   virtual bool ShouldForceHideToolbar() {
     // Always hide toolbar for popups.
     return true;
+  }
+
+  virtual bool SetFocusToCompactNavigationBar() {
+    return false;
   }
 
   virtual void ToggleCompactNavigationBar() {}

@@ -112,4 +112,3 @@ class CompactLocationBar : public views::View,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_COMPACT_LOCATION_BAR_H_
-

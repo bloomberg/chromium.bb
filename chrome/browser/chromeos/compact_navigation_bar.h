@@ -40,10 +40,14 @@ class CompactNavigationBar : public views::View,
   // widget.
   void Init();
 
+  // Set focus to the location entry in the compact navigation bar.
+  void FocusLocation();
+
   // views::View overrides.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
+  virtual void Focus();
 
  private:
   // views::ButtonListener implementation.

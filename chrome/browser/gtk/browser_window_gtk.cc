@@ -1029,8 +1029,17 @@ LocationBar* BrowserWindowGtk::GetLocationBar() const {
 }
 
 void BrowserWindowGtk::SetFocusToLocationBar() {
-  if (!IsFullscreen())
+  if (!IsFullscreen()) {
+#if defined(OS_CHROMEOS)
+    if (compact_navigation_bar_) {
+      compact_navigation_bar_->FocusLocation();
+    } else {
+      GetLocationBar()->FocusLocation();
+    }
+#else
     GetLocationBar()->FocusLocation();
+#endif
+  }
 }
 
 void BrowserWindowGtk::UpdateStopGoState(bool is_loading, bool force) {

@@ -56,6 +56,10 @@ class BrowserExtender {
   // to use the regular logic to decide.
   virtual bool ShouldForceHideToolbar() = 0;
 
+  // Returns true if the compact navigation bar is focusable and got 
+  // focus, false otherwise.
+  virtual bool SetFocusToCompactNavigationBar() = 0;
+
   // Toggles the visibility of CompactNavigationBar.
   virtual void ToggleCompactNavigationBar() = 0;
 

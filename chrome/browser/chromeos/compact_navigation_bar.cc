@@ -49,6 +49,7 @@ static const int kURLPadding = 2;
 CompactNavigationBar::CompactNavigationBar(Browser* browser)
     : browser_(browser),
       initialized_(false) {
+  SetFocusable(true);
 }
 
 CompactNavigationBar::~CompactNavigationBar() {
@@ -112,6 +113,15 @@ void CompactNavigationBar::Init() {
   AddChildView(location_entry_view_);
   location_entry_view_->set_focus_view(this);
   location_entry_view_->Attach(location_entry_->widget());
+}
+
+void CompactNavigationBar::Focus() {
+  location_entry_->SetFocus();
+}
+
+void CompactNavigationBar::FocusLocation() {
+  location_entry_->SetFocus();
+  location_entry_->SelectAll(true);
 }
 
 gfx::Size CompactNavigationBar::GetPreferredSize() {
