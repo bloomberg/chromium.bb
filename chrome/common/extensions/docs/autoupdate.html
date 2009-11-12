@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>AutoUpdate</title></head><body>  <div id="container">
+  <title>Autoupdating</title></head><body>  <div id="container">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -87,7 +87,7 @@
         <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&amp;lang=en"></script>
       </div>
       <div id="pageTitle">
-        <h1>AutoUpdate</h1>
+        <h1>Autoupdating</h1>
       </div>
     </div> <!-- /pageHeader -->
 
@@ -228,7 +228,7 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-title" class="pageData">AutoUpdate</div>
+        <div id="static"><div id="pageData-title" class="pageData">Autoupdating</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 <a name="H2-0"></a><h2>Introduction</h2>
 <p>We want extensions to be autoupdated for some of the same reasons as chrome itself: to incorporate bug and security fixes, add new features or performance enhancements, and improve user interfaces.</p>
@@ -246,13 +246,11 @@
 
 
 <a name="H3-2"></a><h3>Update URL</h3>
-<p>For those who are hosting their own extensions, you need to add the "update_url" key to your manifest.json file like this:</p>
+<p>For those who are hosting their own extensions, you need to add the "update_url" key to your <a href="manifest.html">manifest.json</a> file like this:</p>
 <pre>{
-  "name": "Test Extension",
-  "version": "1.0",
-  "description": "My test extension",
-  <b>"update_url": "http://myhost.com/mytestextension/updates.xml"</b>,
-  "toolstrips": ["mytoolstrip.html"]
+  ...
+  "update_url": "http://myhost.com/mytestextension/updates.xml",
+  ...
 }
 </pre>
 

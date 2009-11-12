@@ -1,4 +1,4 @@
-<div id="pageData-title" class="pageData">AutoUpdate</div>
+<div id="pageData-title" class="pageData">Autoupdating</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 <h2>Introduction</h2>
 <p>We want extensions to be autoupdated for some of the same reasons as chrome itself: to incorporate bug and security fixes, add new features or performance enhancements, and improve user interfaces.</p>
@@ -16,13 +16,11 @@
 
 
 <h3>Update URL</h3>
-<p>For those who are hosting their own extensions, you need to add the "update_url" key to your manifest.json file like this:</p>
+<p>For those who are hosting their own extensions, you need to add the "update_url" key to your <a href="manifest.html">manifest.json</a> file like this:</p>
 <pre>{
-  "name": "Test Extension",
-  "version": "1.0",
-  "description": "My test extension",
-  <b>"update_url": "http://myhost.com/mytestextension/updates.xml"</b>,
-  "toolstrips": ["mytoolstrip.html"]
+  ...
+  "update_url": "http://myhost.com/mytestextension/updates.xml",
+  ...
 }
 </pre>
 
