@@ -23,7 +23,8 @@ namespace views {
 class NativeViewHost;
 class Textfield;
 
-static const int kDefaultEditStyle = WS_CHILD | WS_VISIBLE;
+static const int kDefaultEditStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN |
+    WS_CLIPSIBLINGS;
 
 // TODO(beng): make a subclass of NativeControlWin instead.
 class NativeTextfieldWin
