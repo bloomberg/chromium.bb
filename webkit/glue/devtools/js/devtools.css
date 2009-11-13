@@ -58,6 +58,38 @@ body.attached #toolbar {
     bottom: 93px;
 }
 
+.heap-snapshot-view .data-grid th.count-column {
+    text-align: center;
+}
+
+.heap-snapshot-view .data-grid td.count-column {
+    text-align: right;
+}
+
+.heap-snapshot-view .data-grid th.size-column {
+    text-align: center;
+}
+
+.heap-snapshot-view .data-grid td.size-column {
+    text-align: right;
+}
+
+.heap-snapshot-view .data-grid th.countDelta-column {
+    text-align: center;
+}
+
+.heap-snapshot-view .data-grid td.countDelta-column {
+    text-align: right;
+}
+
+.heap-snapshot-view .data-grid th.sizeDelta-column {
+    text-align: center;
+}
+
+.heap-snapshot-view .data-grid td.sizeDelta-column {
+    text-align: right;
+}
+
 #heap-snapshot-summary {
     position: absolute;
     padding-top: 20px;

@@ -33,10 +33,10 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.parent = parent;
     this.parent.addEventListener("snapshot added", this._updateBaseOptions, this);
 
-    this.showCountAsPercent = true;
-    this.showSizeAsPercent = true;
-    this.showCountDeltaAsPercent = true;
-    this.showSizeDeltaAsPercent = true;
+    this.showCountAsPercent = false;
+    this.showSizeAsPercent = false;
+    this.showCountDeltaAsPercent = false;
+    this.showSizeDeltaAsPercent = false;
 
     this.categories = {
         code: new WebInspector.ResourceCategory("code", WebInspector.UIString("Code"), "rgb(255,121,0)"),
