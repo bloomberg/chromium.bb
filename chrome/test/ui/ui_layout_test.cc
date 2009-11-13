@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "base/test/test_file_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
@@ -25,32 +26,17 @@ static const char kPlatformName[] = "chromium-linux";
 static const char kTestCompleteCookie[] = "status";
 
 UILayoutTest::UILayoutTest()
-    : UITest(), initialized_for_layout_test_(false), test_count_(0) {
+    : initialized_for_layout_test_(false),
+      test_count_(0) {
 }
 
 UILayoutTest::~UILayoutTest() {
-  // The deletion might fail because HTTP server process might not been
-  // completely shut down yet and is still holding certain handle to it.
-  // To work around this problem, we try to repeat the deletion several
-  // times.
   if (!temp_test_dir_.empty()) {
-    static const int kRetryNum = 10;
-    static const int kRetryDelayTimeMs = 500;
-
-    int retry_time = 0;
-    for (int i = 0; i < kRetryNum; ++i) {
-      file_util::Delete(temp_test_dir_, true);
-      if (!file_util::DirectoryExists(temp_test_dir_))
-        break;
-
-      PlatformThread::Sleep(kRetryDelayTimeMs);
-      retry_time += kRetryDelayTimeMs;
-    }
-
-    if (retry_time) {
-      printf("Retrying %d ms to delete temp layout test directory.\n",
-             retry_time);
-    }
+    // The deletion might fail because HTTP server process might not been
+    // completely shut down yet and is still holding certain handle to it.
+    // To work around this problem, we try to repeat the deletion several
+    // times.
+    EXPECT_TRUE(file_util::DieFileDie(temp_test_dir_, true));
   }
 }
 
