@@ -51,6 +51,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 
 namespace WebKit {
@@ -128,6 +129,8 @@ class MultipartResponseDelegate {
   // true when we're done sending information.  At that point, we stop
   // processing AddData requests.
   bool stop_sending_;
+
+  DISALLOW_COPY_AND_ASSIGN(MultipartResponseDelegate);
 };
 
 }  // namespace webkit_glue

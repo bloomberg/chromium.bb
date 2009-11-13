@@ -160,18 +160,32 @@ TEST(MultipartResponseTest, Functions) {
   delegate_tester.data().assign(test_header);
   EXPECT_TRUE(delegate_tester.ParseHeaders());
   EXPECT_TRUE(delegate_tester.data().length() == 0);
-  EXPECT_EQ(webkit_glue::WebStringToStdString(
-              client.response_.httpHeaderField(
-                WebString::fromUTF8("Content-Type"))),
-            string("image/png"));
-  EXPECT_EQ(webkit_glue::WebStringToStdString(
-              client.response_.httpHeaderField(
-                WebString::fromUTF8("content-length"))),
-            string("10"));
+  EXPECT_EQ(string("image/png"),
+            webkit_glue::WebStringToStdString(
+                client.response_.httpHeaderField(
+                    WebString::fromUTF8("Content-Type"))));
+  EXPECT_EQ(string("10"),
+            webkit_glue::WebStringToStdString(
+                client.response_.httpHeaderField(
+                    WebString::fromUTF8("content-length"))));
   // This header is passed from the original request.
-  EXPECT_EQ(webkit_glue::WebStringToStdString(
-              client.response_.httpHeaderField(WebString::fromUTF8("foo"))),
-            string("Bar"));
+  EXPECT_EQ(string("Bar"),
+            webkit_glue::WebStringToStdString(
+                client.response_.httpHeaderField(WebString::fromUTF8("foo"))));
+
+  // Make sure we parse the right mime-type if a charset is provided.
+  client.Reset();
+  string test_header2("content-type: text/html; charset=utf-8\n\n");
+  delegate_tester.data().assign(test_header2);
+  EXPECT_TRUE(delegate_tester.ParseHeaders());
+  EXPECT_TRUE(delegate_tester.data().length() == 0);
+  EXPECT_EQ(string("text/html; charset=utf-8"),
+            webkit_glue::WebStringToStdString(
+                client.response_.httpHeaderField(
+                    WebString::fromUTF8("Content-Type"))));
+  EXPECT_EQ(string("utf-8"),
+            webkit_glue::WebStringToStdString(
+                client.response_.textEncodingName()));
 
   // FindBoundary tests
   struct {
@@ -247,7 +261,7 @@ TEST(MultipartResponseTest, MissingBoundaries) {
     "Content-type: text/plain\n\n"
     "This is a sample response\n");
   delegate3.OnReceivedData(no_boundaries.c_str(),
-                          static_cast<int>(no_boundaries.length()));
+                           static_cast<int>(no_boundaries.length()));
   EXPECT_EQ(1, client.received_response_);
   EXPECT_EQ(0, client.received_data_);
   EXPECT_EQ(string(), client.data_);

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "net/base/net_util.h"
+#include "net/http/http_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHTTPHeaderVisitor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -206,8 +207,12 @@ bool MultipartResponseDelegate::ParseHeaders() {
   // Create a WebURLResponse based on the original set of headers + the
   // replacement headers.  We only replace the same few headers that gecko
   // does.  See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
-  std::string mime_type = net::GetSpecificHeader(headers, "content-type");
-  std::string charset = net::GetHeaderParamValue(mime_type, "charset");
+  std::string content_type = net::GetSpecificHeader(headers, "content-type");
+  std::string mime_type;
+  std::string charset;
+  bool has_charset = false;
+  net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
+                                  &has_charset);
   WebURLResponse response(original_response_.url());
   response.setMIMEType(StdStringToWebString(mime_type));
   response.setTextEncodingName(StdStringToWebString(charset));
