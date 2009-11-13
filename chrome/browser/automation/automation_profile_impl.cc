@@ -63,7 +63,7 @@ class AutomationCookieStore : public net::CookieStore {
     if (cookie_set) {
       // TODO(eroman): Should NOT be accessing the profile from here, as this
       // is running on the IO thread.
-      SendIPCMessageOnIOThread(new AutomationMsg_SetCookieAsync(0,
+      automation_client_->Send(new AutomationMsg_SetCookieAsync(0,
           profile_->tab_handle(), url, cookie_line));
     }
     return cookie_set;
@@ -106,16 +106,6 @@ class AutomationCookieStore : public net::CookieStore {
   }
 
  protected:
-  void SendIPCMessageOnIOThread(IPC::Message* m) {
-    if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-      automation_client_->Send(m);
-    } else {
-      Task* task = NewRunnableMethod(this,
-          &AutomationCookieStore::SendIPCMessageOnIOThread, m);
-      ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, task);
-    }
-  }
-
   AutomationProfileImpl* profile_;
   net::CookieStore* original_cookie_store_;
   IPC::Message::Sender* automation_client_;
