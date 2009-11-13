@@ -61,7 +61,6 @@ bool SignatureCreator::Final(std::vector<uint8>* signature) {
   for (size_t i = temp.size(); i > 0; --i)
     signature->push_back(temp[i - 1]);
 
-  hash_object_ = 0;
   return true;
 }
 
