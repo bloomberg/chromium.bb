@@ -17,8 +17,11 @@
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
 #include "views/examples/tabbed_pane_example.h"
+#if defined(OS_WIN)
+// TableView and TableView2 are not yet ported to Linux.
 #include "views/examples/table_example.h"
 #include "views/examples/table2_example.h"
+#endif
 #include "views/examples/textfield_example.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/grid_layout.h"
@@ -105,6 +108,8 @@ void ExamplesMain::Run() {
   tabbed_pane->AddTab(scroll_view_example.GetExampleTitle(),
                       scroll_view_example.GetExampleView());
 
+#if defined(OS_WIN)
+  // TableView and TableView2 are not yet ported to Linux.
   examples::TableExample table_example(this);
   tabbed_pane->AddTab(table_example.GetExampleTitle(),
                       table_example.GetExampleView());
@@ -112,6 +117,7 @@ void ExamplesMain::Run() {
   examples::Table2Example table2_example(this);
   tabbed_pane->AddTab(table2_example.GetExampleTitle(),
                       table2_example.GetExampleView());
+#endif
 
   window->Show();
   views::AcceleratorHandler accelerator_handler;
