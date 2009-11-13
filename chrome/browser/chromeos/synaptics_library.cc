@@ -16,8 +16,8 @@ SynapticsLibrary* SynapticsLibrary::Get() {
 }
 
 // static
-bool SynapticsLibrary::loaded() {
-  return CrosLibrary::loaded();
+bool SynapticsLibrary::EnsureLoaded() {
+  return CrosLibrary::EnsureLoaded();
 }
 
 void SynapticsLibrary::SetBoolParameter(SynapticsParameter param, bool value) {
@@ -33,7 +33,7 @@ void SynapticsLibrary::SetRangeParameter(SynapticsParameter param, int value) {
 }
 
 void SynapticsLibrary::SetParameter(SynapticsParameter param, int value) {
-  if (CrosLibrary::loaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     // This calls SetSynapticsParameter in the cros library which is
     // potentially time consuming. So we run this on the FILE thread.
     ChromeThread::PostTask(

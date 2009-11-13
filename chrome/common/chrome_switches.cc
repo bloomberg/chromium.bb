@@ -310,11 +310,6 @@ const char kInternalNaCl[]                  = "internal-nacl";
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 
-#if !defined(OS_MACOSX)
-// Enable Kiosk mode.
-const char kKioskMode[]                     = "kiosk";
-#endif
-
 // Load an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
@@ -658,6 +653,10 @@ const char kCookiePipe[]                    = "cookie-pipe";
 // Enable the redirection of viewable document requests to the Google
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";
+
+// Attempts to load libcros and validate it, then exits. A nonzero return code
+// means the library could not be loaded correctly.
+const char kTestLoadLibcros[]               = "test-load-libcros";
 #endif
 
 #if defined(OS_LINUX)
@@ -688,6 +687,9 @@ const char kNoProcessSingletonDialog[]      = "no-process-singleton-dialog";
 // Cause the OS X sandbox write to syslog every time an access to a resource
 // is denied by the sandbox.
 const char kEnableSandboxLogging[]          = "enable-sandbox-logging";
+#else
+// Enable Kiosk mode.
+const char kKioskMode[]                     = "kiosk";
 #endif
 
 #ifndef NDEBUG

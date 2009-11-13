@@ -122,6 +122,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/cros_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
 #endif
 
@@ -129,7 +130,7 @@ namespace {
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the program.
-void HandleErrorTestParameters(const CommandLine& command_line) {
+void HandleTestParameters(const CommandLine& command_line) {
   // This parameter causes an assertion.
   if (command_line.HasSwitch(switches::kBrowserAssertTest)) {
     DCHECK(false);
@@ -140,6 +141,14 @@ void HandleErrorTestParameters(const CommandLine& command_line) {
     int* bad_pointer = NULL;
     *bad_pointer = 0;
   }
+
+#if defined(OS_CHROMEOS)
+  // Test loading libcros and exit. We return 0 if the library could be loaded,
+  // and 1 if it can't be. This is for validation that the library is installed
+  // and versioned properly for Chrome to find.
+  if (command_line.HasSwitch(switches::kTestLoadLibcros))
+    exit(!chromeos::CrosLibrary::EnsureLoaded());
+#endif
 }
 
 void RunUIMessageLoop(BrowserProcess* browser_process) {
@@ -844,7 +853,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif
 
-  HandleErrorTestParameters(parsed_command_line);
+  HandleTestParameters(parsed_command_line);
   Platform::RecordBreakpadStatusUMA(metrics);
   // Start up the extensions service. This should happen before Start().
   profile->InitExtensions();

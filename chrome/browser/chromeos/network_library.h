@@ -85,8 +85,9 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // This gets the singleton NetworkLibrary
   static NetworkLibrary* Get();
 
-  // Returns true if the ChromeOS library was loaded.
-  static bool loaded();
+  // Makes sure the library is loaded, loading it if necessary. Returns true if
+  // the library has been successfully loaded.
+  static bool EnsureLoaded();
 
   // URLRequestJobTracker::JobObserver methods (called on the IO thread):
   virtual void OnJobAdded(URLRequestJob* job);

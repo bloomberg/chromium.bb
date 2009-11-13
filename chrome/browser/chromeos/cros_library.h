@@ -12,10 +12,9 @@ namespace chromeos {
 // This class handles the loading of the ChromeOS shared library.
 class CrosLibrary {
  public:
-  // Returns true if the ChromeOS library was loaded.
-  // If this is the first time this method is called,
-  // we will attempt to load the ChromeOS shared library.
-  static bool loaded();
+  // Ensures that the library is loaded, loading it if needed. If the library
+  // could not be loaded, returns false.
+  static bool EnsureLoaded();
 
  private:
   CrosLibrary() {}

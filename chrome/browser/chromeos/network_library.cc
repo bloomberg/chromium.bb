@@ -30,14 +30,14 @@ const int NetworkLibrary::kNetworkTrafficeTimerSecs = 1;
 NetworkLibrary::NetworkLibrary()
     : traffic_type_(0),
       network_devices_(0) {
-  if (CrosLibrary::loaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     Init();
   }
   g_url_request_job_tracker.AddObserver(this);
 }
 
 NetworkLibrary::~NetworkLibrary() {
-  if (CrosLibrary::loaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     chromeos::DisconnectNetworkStatus(network_status_connection_);
   }
   g_url_request_job_tracker.RemoveObserver(this);
@@ -49,8 +49,8 @@ NetworkLibrary* NetworkLibrary::Get() {
 }
 
 // static
-bool NetworkLibrary::loaded() {
-  return CrosLibrary::loaded();
+bool NetworkLibrary::EnsureLoaded() {
+  return CrosLibrary::EnsureLoaded();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ static const char* GetEncryptionString(chromeos::EncryptionType encryption) {
 
 void NetworkLibrary::ConnectToWifiNetwork(WifiNetwork network,
                                           const string16& password) {
-  if (CrosLibrary::loaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     // This call kicks off a request to connect to this network, the results of
     // which we'll hear about through the monitoring we've set up in Init();
     chromeos::ConnectToWifiNetwork(
@@ -182,7 +182,7 @@ void NetworkLibrary::Init() {
 
 void NetworkLibrary::EnableNetworkDevice(chromeos::ConnectionType device,
                                          bool enable) {
-  if (!CrosLibrary::loaded())
+  if (!CrosLibrary::EnsureLoaded())
     return;
 
   // If network device is already enabled/disabled, then don't do anything.

@@ -18,7 +18,7 @@ namespace chromeos {
 bool CrosLibrary::loaded_ = false;
 
 // static
-bool CrosLibrary::loaded() {
+bool CrosLibrary::EnsureLoaded() {
   static bool initialized = false;
   if (!initialized) {
     FilePath path;

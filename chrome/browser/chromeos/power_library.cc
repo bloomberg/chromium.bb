@@ -20,13 +20,13 @@ struct RunnableMethodTraits<chromeos::PowerLibrary> {
 namespace chromeos {
 
 PowerLibrary::PowerLibrary() : status_(chromeos::PowerStatus()) {
-  if (CrosLibrary::loaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     Init();
   }
 }
 
 PowerLibrary::~PowerLibrary() {
-  if (CrosLibrary::loaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     chromeos::DisconnectPowerStatus(power_status_connection_);
   }
 }
@@ -37,8 +37,8 @@ PowerLibrary* PowerLibrary::Get() {
 }
 
 // static
-bool PowerLibrary::loaded() {
-  return CrosLibrary::loaded();
+bool PowerLibrary::EnsureLoaded() {
+  return CrosLibrary::EnsureLoaded();
 }
 
 void PowerLibrary::AddObserver(Observer* observer) {

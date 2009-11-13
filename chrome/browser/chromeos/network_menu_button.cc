@@ -261,7 +261,7 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
 
 void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
   int id = IDR_STATUSBAR_WARNING;
-  if (cros->loaded()) {
+  if (cros->EnsureLoaded()) {
     id = IDR_STATUSBAR_NETWORK_DISCONNECTED;
     if (cros->wifi_connecting()) {
       // Start the connecting animation if not running.

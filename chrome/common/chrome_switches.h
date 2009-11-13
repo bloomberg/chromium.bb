@@ -98,11 +98,6 @@ extern const char kInProcessPlugins[];
 extern const char kIncognito[];
 extern const char kInternalNaCl[];
 extern const char kJavaScriptFlags[];
-
-#if !defined(OS_MACOSX)
-extern const char kKioskMode[];
-#endif
-
 extern const char kLoadExtension[];
 extern const char kLoadPlugin[];
 extern const char kLogFilterPrefix[];
@@ -191,6 +186,7 @@ extern const char kZygoteProcess[];
 #if defined(OS_CHROMEOS)
 extern const char kCookiePipe[];
 extern const char kEnableGView[];
+extern const char kTestLoadLibcros[];
 #endif
 
 #if defined(OS_LINUX)
@@ -204,6 +200,8 @@ extern const char kNoProcessSingletonDialog[];
 
 #if defined(OS_MACOSX)
 extern const char kEnableSandboxLogging[];
+#else
+extern const char kKioskMode[];
 #endif
 
 #ifndef NDEBUG

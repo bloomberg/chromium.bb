@@ -102,7 +102,7 @@ void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
 void PowerMenuButton::UpdateIcon() {
   PowerLibrary* cros = PowerLibrary::Get();
   int id = IDR_STATUSBAR_BATTERY_UNKNOWN;
-  if (PowerLibrary::loaded()) {
+  if (PowerLibrary::EnsureLoaded()) {
     if (!cros->battery_is_present()) {
       id = IDR_STATUSBAR_BATTERY_MISSING;
     } else if (cros->line_power_on() && cros->battery_fully_charged()) {
