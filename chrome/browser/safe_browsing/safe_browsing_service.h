@@ -228,9 +228,6 @@ class SafeBrowsingService
   // database is a synchronous operation.
   void OnResetDatabase();
 
-  // Runs on the io thread when the reset is complete.
-  void OnResetComplete();
-
   // Store in-memory the GetHash response. Runs on the database thread.
   void CacheHashResults(const std::vector<SBPrefix>& prefixes,
                         const std::vector<SBFullHashResult>& full_hashes);
@@ -279,9 +276,6 @@ class SafeBrowsingService
 
   // Indicates if we are in the process of resetting the database.
   bool resetting_;
-
-  // Indicates if the database has finished initialization.
-  bool database_loaded_;
 
   // Indicates if we're currently in an update cycle.
   bool update_in_progress_;

@@ -40,7 +40,6 @@ SafeBrowsingService::SafeBrowsingService()
       protocol_manager_(NULL),
       enabled_(false),
       resetting_(false),
-      database_loaded_(false),
       update_in_progress_(false) {
 }
 
@@ -64,10 +63,10 @@ bool SafeBrowsingService::CanCheckUrl(const GURL& url) const {
 
 bool SafeBrowsingService::CheckUrl(const GURL& url, Client* client) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  if (!enabled_ || !database_)
+  if (!enabled_)
     return true;
 
-  if (resetting_ || !database_loaded_) {
+  if (!database_ || resetting_) {
     QueuedCheck check;
     check.client = client;
     check.url = url;
@@ -116,12 +115,10 @@ void SafeBrowsingService::CancelCheck(Client* client) {
 
   // Scan the queued clients store. Clients may be here if they requested a URL
   // check before the database has finished loading or resetting.
-  if (!database_loaded_ || resetting_) {
-    std::deque<QueuedCheck>::iterator it = queued_checks_.begin();
-    for (; it != queued_checks_.end(); ++it) {
-      if (it->client == client)
-        it->client = NULL;
-    }
+  for (std::deque<QueuedCheck>::iterator it(queued_checks_.begin());
+       it != queued_checks_.end(); ++it) {
+    if (it->client == client)
+      it->client = NULL;
   }
 }
 
@@ -306,12 +303,7 @@ void SafeBrowsingService::OnIOInitialize(
   // Balance the reference added by Start().
   request_context_getter->Release();
 
-  // We want to initialize the protocol manager only after the database has
-  // loaded, which we'll receive asynchronously (DatabaseLoadComplete). If
-  // database_loaded_ isn't true, we'll wait for that notification to do the
-  // init.
-  if (database_loaded_)
-    protocol_manager_->Initialize();
+  protocol_manager_->Initialize();
 }
 
 void SafeBrowsingService::OnDBInitialize() {
@@ -339,7 +331,6 @@ void SafeBrowsingService::OnIOShutdown() {
   safe_browsing_thread_.reset(NULL);
 
   database_ = NULL;
-  database_loaded_ = false;
 
   // Delete queued and pending checks once the database thread is done, calling
   // back any clients with 'URL_SAFE'.
@@ -385,7 +376,6 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
   TimeDelta open_time = Time::Now() - before;
   SB_DLOG(INFO) << "SafeBrowsing database open took " <<
       open_time.InMilliseconds() << " ms.";
-
   return database_;
 }
 
@@ -476,11 +466,6 @@ void SafeBrowsingService::DatabaseLoadComplete() {
   if (!enabled_)
     return;
 
-  database_loaded_ = true;
-
-  if (protocol_manager_)
-    protocol_manager_->Initialize();
-
   // If we have any queued requests, we can now check them.
   if (!resetting_)
     RunQueuedClients();
@@ -560,18 +545,10 @@ void SafeBrowsingService::Start() {
 void SafeBrowsingService::OnResetDatabase() {
   DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
   GetDatabase()->ResetDatabase();
+  resetting_ = false;
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(this, &SafeBrowsingService::OnResetComplete));
-}
-
-void SafeBrowsingService::OnResetComplete() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  if (enabled_) {
-    resetting_ = false;
-    database_loaded_ = true;
-    RunQueuedClients();
-  }
+      NewRunnableMethod(this, &SafeBrowsingService::DatabaseLoadComplete));
 }
 
 void SafeBrowsingService::CacheHashResults(
