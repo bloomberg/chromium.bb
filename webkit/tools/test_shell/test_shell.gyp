@@ -37,10 +37,10 @@
         '../../../third_party/npapi/npapi.gyp:npapi',
         '../../../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../../../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-        '../../webkit_glue.gyp:appcache',
-        '../../webkit_glue.gyp:database',
-        '../../webkit_glue.gyp:glue',
-        '../../webkit_glue.gyp:inspector_resources',
+        '../../webkit.gyp:appcache',
+        '../../webkit.gyp:database',
+        '../../webkit.gyp:glue',
+        '../../webkit.gyp:inspector_resources',
         'npapi_layout_test_plugin',
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
@@ -119,7 +119,7 @@
         '../../../net/net.gyp:net',
         '../../../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../../../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-        '../../webkit_glue.gyp:glue',
+        '../../webkit.gyp:glue',
       ],
       'conditions': [
         # http://code.google.com/p/chromium/issues/detail?id=18337
@@ -344,8 +344,8 @@
         }, { # OS != "mac"
           'dependencies': [
             '../../../net/net.gyp:net_resources',
-            '../../webkit_glue.gyp:webkit_resources',
-            '../../webkit_glue.gyp:webkit_strings',
+            '../../webkit.gyp:webkit_resources',
+            '../../webkit.gyp:webkit_strings',
           ]
         }],
       ],

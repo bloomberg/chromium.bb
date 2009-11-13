@@ -20,7 +20,7 @@
     '<(DEPTH)/testing/gtest.gyp:gtest',
     '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
     # run time dependency
-    '<(DEPTH)/webkit/webkit_glue.gyp:webkit_resources',
+    '<(DEPTH)/webkit/webkit.gyp:webkit_resources',
   ],
   'include_dirs': [
     '<(DEPTH)',

@@ -12,7 +12,7 @@
     'type': 'loadable_module',
     'dependencies': [
       '../../chrome.gyp:chrome_strings',
-      '../../../webkit/webkit_glue.gyp:webkit_strings',
+      '../../../webkit/webkit.gyp:webkit_strings',
       '../../../app/app.gyp:app_strings',
     ],
     'msvs_settings': {
