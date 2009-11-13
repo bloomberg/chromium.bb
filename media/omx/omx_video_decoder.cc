@@ -35,13 +35,14 @@ OmxVideoDecoder::~OmxVideoDecoder() {
   DCHECK(output_queue_.empty());
 }
 
-void OmxVideoDecoder::Setup(Codec codec) {
-  DCHECK_EQ(kEmpty, GetState());
+void OmxVideoDecoder::Setup(const char* component, Codec codec) {
+  DCHECK_EQ(kEmpty, state_);
+  component_ = component;
   codec_ = codec;
 }
 
 void OmxVideoDecoder::SetErrorCallback(Callback* callback) {
-  DCHECK_EQ(kEmpty, GetState());
+  DCHECK_EQ(kEmpty, state_);
   error_callback_.reset(callback);
 }
 
@@ -278,7 +279,8 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
 
   // 2. Get the handle to the component. After OMX_GetHandle(),
   //    the component is in loaded state.
-  component = GetComponentName(codec_);
+  // TODO(hclam): We should have a list of componant names instead.
+  component = component_;
   omxresult = OMX_GetHandle((OMX_HANDLETYPE*)(&decoder_handle_),
                             (OMX_STRING)component, this, &callback);
   if (omxresult != OMX_ErrorNone) {

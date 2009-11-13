@@ -11,7 +11,7 @@
 // // Initialization.
 // MessageLoop message_loop;
 // OmxVideoDecoder* decoder = new OmxVideoDecoder(&message_loop);
-// decoder->Setup(kCodecH264);
+// decoder->Setup(component_name, kCodecH264);
 // decoder->SetErrorCallback(NewCallback(this, &Client::ErrorCallback));
 //
 // // Start is asynchronous. But we don't need to wait for it to proceed.
@@ -104,9 +104,9 @@ class OmxVideoDecoder : public base::RefCountedThreadSafe<OmxVideoDecoder> {
   OmxVideoDecoder(MessageLoop* message_loop);
   virtual ~OmxVideoDecoder();
 
-  // Set the input codec format.
-  // TODO(hclam): Add input format and output format.
-  void Setup(Codec codec);
+  // Set the component name and input codec format.
+  // TODO(hclam): Add input format and output format. Also remove |component|.
+  void Setup(const char* component, Codec codec);
 
   // Set the error callback. In case of error the callback will be called.
   void SetErrorCallback(Callback* callback);
@@ -289,6 +289,8 @@ class OmxVideoDecoder : public base::RefCountedThreadSafe<OmxVideoDecoder> {
   State state_;
   State next_state_;
 
+  // TODO(hclam): We should keep a list of component names.
+  const char* component_;
   Codec codec_;
   MessageLoop* message_loop_;
 
