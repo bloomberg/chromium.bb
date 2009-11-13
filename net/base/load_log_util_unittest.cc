@@ -22,8 +22,7 @@ TEST(LoadLogUtilTest, Basic) {
 
   EXPECT_EQ(
     "t=  1: +HOST_RESOLVER_IMPL                    [dt=130]\n"
-    "t=  5:   +HOST_RESOLVER_IMPL_OBSERVER_ONSTART [dt=  3]\n"
-    "t=  8:   -HOST_RESOLVER_IMPL_OBSERVER_ONSTART\n"
+    "t=  5:    HOST_RESOLVER_IMPL_OBSERVER_ONSTART [dt=  3]\n"
     "t= 12:    CANCELLED\n"
     "t=131: -HOST_RESOLVER_IMPL",
     LoadLogUtil::PrettyPrintAsEventTree(log));

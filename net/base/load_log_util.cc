@@ -30,12 +30,17 @@ class FormatHelper {
     const int kSpacesPerIndentation = 2;
 
     for (size_t i = 0; i < entries_.size(); ++i) {
-      if (i > 0)
-        result += "\n";
-
       if (log->num_entries_truncated() > 0 && i + 1 == entries_.size()) {
         result += StringPrintf(" ... Truncated %d entries ...\n",
                                log->num_entries_truncated());
+      }
+
+      if (entries_[i].block_index != -1 &&
+          static_cast<size_t>(entries_[i].block_index + 1) == i) {
+        // If there were no entries in between the START/END block then don't
+        // bother printing a line for END (it just adds noise, and we already
+        // show the time delta besides START anyway).
+        continue;
       }
 
       int indentation_spaces = entries_[i].indentation * kSpacesPerIndentation;
@@ -54,6 +59,9 @@ class FormatHelper {
             PadStringLeft("", padding).c_str(),
             PadStringLeft(GetBlockDtString(i), max_dt_width).c_str());
       }
+
+      if (i + 1 != entries_.size())
+        result += "\n";
     }
 
     return result;
@@ -150,7 +158,17 @@ class FormatHelper {
     const LoadLog::Event* event = entries_[index].event;
     const char* type_str = LoadLog::EventTypeToString(event->type);
 
-    switch (event->phase) {
+    LoadLog::EventPhase phase = event->phase;
+
+    if (phase == LoadLog::PHASE_BEGIN &&
+        index + 1 < entries_.size() &&
+        static_cast<size_t>(entries_[index + 1].block_index) == index) {
+      // If this starts an empty block, we will pretend it is a PHASE_NONE
+      // so we don't print the "+" prefix.
+      phase = LoadLog::PHASE_NONE;
+    }
+
+    switch (phase) {
       case LoadLog::PHASE_BEGIN:
         return std::string("+") + type_str;
       case LoadLog::PHASE_END:
