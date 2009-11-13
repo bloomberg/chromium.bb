@@ -61,13 +61,28 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
 
   registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
                  Source<ExtensionAction>(browser_action_));
+
+  // The Browser Action API does not allow the default icon path to be changed
+  // at runtime, so we can load this now and cache it.
+  std::string relative_path = browser_action_->default_icon_path();
+  if (relative_path.empty())
+    return;
+
+  // This is a bit sketchy because if ImageLoadingTracker calls
+  // ::OnImageLoaded() before our creator appends up to the view heirarchy, we
+  // will crash. But since we know that ImageLoadingTracker is asynchronous,
+  // this should be OK. And doing this in the constructor means that we don't
+  // have to protect against it getting done multiple times.
+  tracker_ = new ImageLoadingTracker(this, 1);
+  tracker_->PostLoadImageTask(
+      extension->GetResource(relative_path),
+      gfx::Size(Extension::kBrowserActionIconMaxSize,
+                Extension::kBrowserActionIconMaxSize));
 }
 
 BrowserActionButton::~BrowserActionButton() {
-  if (tracker_) {
+  if (tracker_)
     tracker_->StopTrackingImageLoad();
-    tracker_ = NULL;  // The tracker object will be deleted when we return.
-  }
 }
 
 gfx::Insets BrowserActionButton::GetInsets() const {
@@ -80,30 +95,15 @@ void BrowserActionButton::ButtonPressed(
   panel_->OnBrowserActionExecuted(this);
 }
 
-void BrowserActionButton::LoadImage() {
-  // Load the default image from the browser action asynchronously on the file
-  // thread. We'll get a call back into OnImageLoaded if the image loads
-  // successfully.
-  std::string relative_path = browser_action()->default_icon_path();
-  if (relative_path.empty())
-    return;
-
-  // Cancel old image trackers. We can only track one at a time.
-  if (tracker_)
-    tracker_->StopTrackingImageLoad();
-
-  tracker_ = new ImageLoadingTracker(this, 1);
-  tracker_->PostLoadImageTask(
-      extension()->GetResource(relative_path),
-      gfx::Size(Extension::kBrowserActionIconMaxSize,
-                Extension::kBrowserActionIconMaxSize));
-}
-
 void BrowserActionButton::OnImageLoaded(SkBitmap* image, size_t index) {
   if (image)
-    SetIcon(*image);
+    default_icon_ = *image;
+
   tracker_ = NULL;  // The tracker object will delete itself when we return.
-  GetParent()->SchedulePaint();
+
+  // Call back to UpdateState() because a more specific icon might have been set
+  // while the load was outstanding.
+  UpdateState();
 }
 
 void BrowserActionButton::UpdateState() {
@@ -112,10 +112,10 @@ void BrowserActionButton::UpdateState() {
     return;
 
   SkBitmap image = browser_action()->GetIcon(tab_id);
-  if (image.isNull())
-    LoadImage();
-  else
+  if (!image.isNull())
     SetIcon(image);
+  else if (!default_icon_.isNull())
+    SetIcon(default_icon_);
 
   SetTooltipText(ASCIIToWide(browser_action()->GetTitle(tab_id)));
   GetParent()->SchedulePaint();

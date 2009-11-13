@@ -76,9 +76,6 @@ class BrowserActionButton : public views::MenuButton,
   virtual void PopupDidHide();
 
  private:
-  // If the image from the browser action needs to be loaded, load it.
-  void LoadImage();
-
   // The browser action this view represents. The ExtensionAction is not owned
   // by this class.
   ExtensionAction* browser_action_;
@@ -86,13 +83,14 @@ class BrowserActionButton : public views::MenuButton,
   // The extension associated with the browser action we're displaying.
   Extension* extension_;
 
-  // The icons representing different states for the browser action.
-  std::vector<SkBitmap> browser_action_icons_;
-
   // The object that is waiting for the image loading to complete
   // asynchronously. This object can potentially outlive the BrowserActionView,
   // and takes care of deleting itself.
   ImageLoadingTracker* tracker_;
+
+  // The default icon for our browser action. This might be non-empty if the
+  // browser action had a value for default_icon in the manifest.
+  SkBitmap default_icon_;
 
   // The browser action shelf.
   BrowserActionsContainer* panel_;
