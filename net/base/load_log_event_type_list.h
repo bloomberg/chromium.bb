@@ -140,3 +140,20 @@ EVENT_TYPE(HTTP_CACHE_READ_INFO)
 // the cache entry to become available (for example if we are waiting for
 // exclusive access to an existing entry).
 EVENT_TYPE(HTTP_CACHE_WAITING)
+
+// ------------------------------------------------------------------------
+// HttpNetworkTransaction
+// ------------------------------------------------------------------------
+
+// Measures the time taken to send the request to the server.
+EVENT_TYPE(HTTP_TRANSACTION_SEND_REQUEST)
+
+// Measures the time to read HTTP response headers from the server.
+EVENT_TYPE(HTTP_TRANSACTION_READ_HEADERS)
+
+// Measures the time to read the entity body from the server.
+EVENT_TYPE(HTTP_TRANSACTION_READ_BODY)
+
+// Measures the time taken to read the response out of the socket before
+// restarting for authentication, on keep alive connections.
+EVENT_TYPE(HTTP_TRANSACTION_DRAIN_BODY_FOR_AUTH_RESTART)
