@@ -418,3 +418,24 @@
    fun:_ZN7WebCore11MessagePort11postMessageEN3WTF10PassRefPtrINS_21SerializedScriptValueEEEPKNS1_6VectorINS1_6RefPtrIS0_EELm1EEERi
    fun:_ZN7WebCore8V8Custom32v8MessagePortPostMessageCallbackERKN2v89ArgumentsE
 }
+{
+   bug_27644
+   Memcheck:Leak
+   ...
+   fun:_ZN19WebSharedWorkerStub9OnConnectEii
+   fun:_Z16DispatchToMethodI19WebSharedWorkerStubMS0_FviiEiiEvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple2IiiEE8DispatchI19WebSharedWorkerStubMS5_FviiEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN19WebSharedWorkerStub17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN13MessageRouter12RouteMessageERKN3IPC7MessageE
+   fun:_ZN13MessageRouter17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
