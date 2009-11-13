@@ -142,8 +142,7 @@ std::wstring DumpRenderer(WebFrame* web_frame) {
   WebFrameImpl* webFrameImpl = static_cast<WebFrameImpl*>(web_frame);
   WebCore::Frame* frame = webFrameImpl->frame();
 
-  WebCore::String frameText =
-      WebCore::externalRepresentation(frame->contentRenderer());
+  WebCore::String frameText = WebCore::externalRepresentation(frame);
   return StringToStdWString(frameText);
 }
 
