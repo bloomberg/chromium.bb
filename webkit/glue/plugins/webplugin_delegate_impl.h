@@ -45,6 +45,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
     PLUGIN_QUIRK_NO_WINDOWLESS = 1024,  // Windows
     PLUGIN_QUIRK_PATCH_REGENUMKEYEXW = 2048, // Windows
     PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS = 4096, // Windows
+    PLUGIN_QUIRK_IGNORE_NEGOTIATED_DRAWING_MODEL = 8192,  // Mac
   };
 
   static WebPluginDelegateImpl* Create(const FilePath& filename,
@@ -166,6 +167,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   static void OnThrottleMessage();
   static void ThrottleMessage(WNDPROC proc, HWND hwnd, UINT message,
       WPARAM wParam, LPARAM lParam);
+#endif
+
+#if defined(OS_MACOSX)
+  // Returns the drawing model to use for the plugin.
+  int PluginDrawingModel();
 #endif
 
   //----------------------------

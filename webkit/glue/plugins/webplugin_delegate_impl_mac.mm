@@ -97,6 +97,14 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
   memset(&qd_port_, 0, sizeof(qd_port_));
 #endif
   instance->set_windowless(true);
+
+  const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
+  if (plugin_info.name.find(L"QuickTime") != std::wstring::npos) {
+    // In some cases, QuickTime inexpicably negotiates the CoreGraphics drawing
+    // model, but then proceeds as if it were using QuickDraw. Until we support
+    // CoreAnimation, just ignore what QuickTime asks for.
+    quirks_ |= PLUGIN_QUIRK_IGNORE_NEGOTIATED_DRAWING_MODEL;
+  }
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
@@ -113,7 +121,7 @@ void WebPluginDelegateImpl::PluginDestroyed() {
       this, reinterpret_cast<WindowRef>(cg_context_.window));
 
   if (instance_->event_model() == NPEventModelCarbon) {
-    if (instance_->drawing_model() == NPDrawingModelQuickDraw) {
+    if (PluginDrawingModel() == NPDrawingModelQuickDraw) {
       // Tell the plugin it should stop drawing into the GWorld (which will go
       // away when the next idle event arrives).
       window_.x = 0;
@@ -156,7 +164,7 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   SetWindowBounds(reinterpret_cast<WindowRef>(cg_context_.window),
                   kWindowContentRgn, &window_bounds);
 
-  switch (instance_->drawing_model()) {
+  switch (PluginDrawingModel()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw:
       window_.window = &qd_port_;
@@ -193,7 +201,7 @@ void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
   if (context != cg_context_.context) {
     cg_context_.context = context;
 #ifndef NP_NO_QUICKDRAW
-    if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
+    if (PluginDrawingModel() == NPDrawingModelQuickDraw) {
       if (qd_port_.port) {
         DisposeGWorld(qd_port_.port);
         DisposeGWorld(qd_world_);
@@ -285,7 +293,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   static StatsRate plugin_paint("Plugin.Paint");
   StatsScope<StatsRate> scope(plugin_paint);
 
-  switch (instance()->drawing_model()) {
+  switch (PluginDrawingModel()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw: {
       // Plugins using the QuickDraw drawing model do not restrict their
@@ -412,6 +420,12 @@ void WebPluginDelegateImpl::SetFocus() {
       break;
     }
   }
+}
+
+int WebPluginDelegateImpl::PluginDrawingModel() {
+  if (quirks_ & PLUGIN_QUIRK_IGNORE_NEGOTIATED_DRAWING_MODEL)
+    return NPDrawingModelQuickDraw;
+  return instance()->drawing_model();
 }
 
 static bool WebInputEventIsWebMouseEvent(const WebInputEvent& event) {
@@ -689,7 +703,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 #endif
 
   bool ret = false;
-  switch (instance()->drawing_model()) {
+  switch (PluginDrawingModel()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw:
       SetGWorld(qd_port_.port, NULL);
@@ -768,7 +782,7 @@ void WebPluginDelegateImpl::OnNullEvent() {
   // repaint.
   // TODO: only do this if the contents of the offscreen GWorld has changed,
   // so as not to spam the renderer with an unchanging image.
-  if (instance_->drawing_model() == NPDrawingModelQuickDraw)
+  if (PluginDrawingModel() == NPDrawingModelQuickDraw)
     instance()->webplugin()->Invalidate();
 #endif
 
