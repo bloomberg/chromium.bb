@@ -22,8 +22,10 @@ def main(argv):
     print 'usage: %s inspector_html devtools_html css_and_js_files_list' % argv[0]
     return 1
 
-  inspector_html = open(argv[1], 'r')
-  devtools_html = open(argv[2], 'w')
+  inspector_html_name = argv[1]
+  devtools_html_name = argv[2]
+  inspector_html = open(inspector_html_name, 'r')
+  devtools_html = open(devtools_html_name, 'w')
 
   for line in inspector_html:
     if '</head>' in line:
@@ -32,6 +34,15 @@ def main(argv):
         devtools_html.write(GenerateIncludeTag(resource))
       devtools_html.write('    <!-- End of auto-added files list -->\n')
     devtools_html.write(line)
+
+  devtools_html.close()
+  inspector_html.close()
+
+  # Touch output file directory to make sure that Xcode will copy
+  # modified resource files.
+  if sys.platform == 'darwin':
+    output_dir_name = os.path.dirname(devtools_html_name)
+    os.utime(output_dir_name, None)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

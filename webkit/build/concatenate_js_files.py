@@ -37,7 +37,7 @@ def main(argv):
 
   full_paths = {}
   for full_path in argv[2:]:
-    (dir_name, file_name) = os.path.split(full_path)
+    file_name = os.path.basename(full_path)
     if file_name.endswith('.js'):
       full_paths[file_name] = full_path
 
@@ -59,6 +59,12 @@ def main(argv):
   output_file.write(output.getvalue())
   output_file.close()
   output.close()
+
+  # Touch output file directory to make sure that Xcode will copy
+  # modified resource files.
+  if sys.platform == 'darwin':
+    output_dir_name = os.path.dirname(output_file_name)
+    os.utime(output_dir_name, None)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))
