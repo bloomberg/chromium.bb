@@ -141,13 +141,6 @@ Alloc Location
 ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody(void) [unit_tests.exe]
 Alloc Location
    ...
-   chrome/browser/chrome_thread_unittest.cc:107  ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody(void)
-   testing/gtest/src/gtest.cc:2074  testing::Test::Run(void)
-   ^^^
-
-ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody(void) [unit_tests.exe]
-Alloc Location
-   ...
    chrome/browser/chrome_thread_unittest.cc  ChromeThreadTest_NotReleasedIfTargetThreadNonExistent_Test::TestBody(void)
    testing/gtest/src/gtest.cc  testing::Test::Run(void)
    ^^^
