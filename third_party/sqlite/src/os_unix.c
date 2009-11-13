@@ -3497,32 +3497,9 @@ typedef const sqlite3_io_methods *(*finder_type)(const char*,unixFile*);
 */
 
 /*
-** Initializes a unixFile structure with zeros.
-*/
-void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file) {
-  memset(file, 0, sizeof(unixFile));
-}
-
-// TODO(dumi): remove as soon as the WebKit patch is landed
-void initUnixFile(sqlite3_file* file) {
-  chromium_sqlite3_initialize_unix_sqlite3_file(file);
-}
-
-int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
-                                               int fd,
-                                               int dirfd,
-                                               sqlite3_file* file,
-                                               const char* fileName,
-                                               int noLock,
-                                               int isDelete) {
-  return fillInUnixFile(vfs, fd, dirfd, file, fileName, noLock, isDelete);
-}
-
-// TODO(dumi): make this function static again as soon as the WebKit patch is landed
-/*
 ** Initialize the contents of the unixFile structure pointed to by pId.
 */
-int fillInUnixFile(
+static int fillInUnixFile(
   sqlite3_vfs *pVfs,      /* Pointer to vfs object */
   int h,                  /* Open file descriptor of file being opened */
   int dirfd,              /* Directory file descriptor */
@@ -3833,6 +3810,26 @@ static UnixUnusedFd *findReusableFd(const char *zPath, int flags){
   }
 #endif    /* if !OS_VXWORKS */
   return pUnused;
+}
+
+/*
+** Initializes a unixFile structure with zeros.
+*/
+void chromium_sqlite3_initialize_unix_sqlite3_file(sqlite3_file* file) {
+  memset(file, 0, sizeof(unixFile));
+}
+
+/*
+** Fills up a unixFile structure with the given values.
+*/
+int chromium_sqlite3_fill_in_unix_sqlite3_file(sqlite3_vfs* vfs,
+                                               int fd,
+                                               int dirfd,
+                                               sqlite3_file* file,
+                                               const char* fileName,
+                                               int noLock,
+                                               int isDelete) {
+  return fillInUnixFile(vfs, fd, dirfd, file, fileName, noLock, isDelete);
 }
 
 /*
