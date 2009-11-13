@@ -99,14 +99,6 @@
 }
 
 {
-  bug_25645 (WebKit)
-  ThreadSanitizer:Race
-  fun:*WTF*RefCountedBase*ref*
-  ...
-  fun:*WebCore*StringImpl*
-}
-
-{
   bug_25913 (libjingle) (1)
   ThreadSanitizer:Race
   fun:*talk_base*MessageQueue*Stop*
