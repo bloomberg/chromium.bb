@@ -69,6 +69,14 @@ void SelectAboutChromeFrame();
 // Returns NULL on failure.
 HWND GetChromeRendererWindow();
 
+// Sends the specified input to the window passed in.
+void SendInputToWindow(HWND window, const std::string& input_string);
+
+// Helper function to set keyboard focus to a window. This is achieved by
+// sending a mouse move followed by a mouse down/mouse up combination to the
+// window.
+void SetKeyboardFocusToWindow(HWND window, int x, int y);
+
 }  // namespace chrome_frame_test
 
 #endif  // CHROME_FRAME_CHROMETAB_UNITTESTS_CF_TEST_UTILS_H_

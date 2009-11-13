@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <title>ChromeFrame keyevent test</title>
+    <script type="text/javascript"
+        src="chrome_frame_tester_helpers.js"></script>
+
+    <script type="text/javascript">
+      function ValidateUserAgent() {
+        if (isRunningInMSIE()) {
+          onFailure("FullTab_KeyboardTest", 1, "Failed");
+        }
+      }
+
+      var key_count = 0;
+      var input_string = "";
+
+      function OnKeyPress() {
+        if (key_count <= 6) {
+          input_string += String.fromCharCode(event.keyCode).toString();
+        }
+
+        if (input_string == "Chrome") {
+          onSuccess("FullTab_KeyboardTest", 1);
+        } else if (key_count >= 6) {
+          onFailure("FullTab_KeyboardTest", 1, "Invalid input string");
+        }
+      }
+    </script>
+  </head>
+
+  <body onLoad="setTimeout(ValidateUserAgent, 100);" onkeypress="OnKeyPress()">
+    ChromeFrame full tab mode keyboard test. Verifies that keypress events make
+    it correctly into ChromeFrame.
+  </body>
+</html>

@@ -420,6 +420,8 @@ void ShowChromeFrameContextMenuTask() {
   HWND renderer_window = GetChromeRendererWindow();
   EXPECT_TRUE(IsWindow(renderer_window));
 
+  SetKeyboardFocusToWindow(renderer_window, 100, 100);
+
   // Bring up the context menu in the Chrome renderer window.
   PostMessage(renderer_window, WM_RBUTTONDOWN, MK_RBUTTON, MAKELPARAM(50, 50));
   PostMessage(renderer_window, WM_RBUTTONUP, MK_RBUTTON, MAKELPARAM(50, 50));
@@ -437,6 +439,64 @@ void ShowChromeFrameContextMenu() {
       FROM_HERE,
       NewRunnableFunction(ShowChromeFrameContextMenuTask),
       kContextMenuDelay);
+}
+
+void SetKeyboardFocusToWindow(HWND window, int x, int y) {
+  if (!IsTopLevelWindow(window)) {
+    window = GetAncestor(window, GA_ROOT);
+  }
+  ForceSetForegroundWindow(window);
+
+  POINT cursor_position = {130, 130};
+  ClientToScreen(window, &cursor_position);
+
+  double screen_width = ::GetSystemMetrics( SM_CXSCREEN ) - 1;
+  double screen_height = ::GetSystemMetrics( SM_CYSCREEN ) - 1;
+  double location_x =  cursor_position.x * (65535.0f / screen_width);
+  double location_y =  cursor_position.y * (65535.0f / screen_height);
+
+  INPUT input_info = {0};
+  input_info.type = INPUT_MOUSE;
+  input_info.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
+  input_info.mi.dx = static_cast<long>(location_x);
+  input_info.mi.dy = static_cast<long>(location_y);
+  ::SendInput(1, &input_info, sizeof(INPUT));
+
+  Sleep(10);
+
+  input_info.mi.dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_ABSOLUTE;
+  ::SendInput(1, &input_info, sizeof(INPUT));
+
+  Sleep(10);
+
+  input_info.mi.dwFlags = MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE;
+  ::SendInput(1, &input_info, sizeof(INPUT));
+}
+
+void SendInputToWindow(HWND window, const std::string& input_string) {
+  SetKeyboardFocusToWindow(window, 100, 100);
+
+  for (size_t index = 0; index < input_string.length(); index++) {
+    bool is_upper_case = isupper(input_string[index]);
+    if (is_upper_case) {
+      INPUT input = { INPUT_KEYBOARD };
+      input.ki.wVk = VK_SHIFT;
+      input.ki.dwFlags = 0;
+      SendInput(1, &input, sizeof(input));
+      Sleep(200);
+    }
+
+    // The WM_KEYDOWN and WM_KEYUP messages for characters always contain
+    // the uppercase character codes.
+    SendVirtualKey(toupper(input_string[index]), false);
+
+    if (is_upper_case) {
+      INPUT input = { INPUT_KEYBOARD };
+      input.ki.wVk = VK_SHIFT;
+      input.ki.dwFlags = KEYEVENTF_KEYUP;
+      SendInput(1, &input, sizeof(input));
+    }
+  }
 }
 
 void SelectAboutChromeFrame() {

@@ -1364,6 +1364,7 @@ HRESULT WebBrowserEventSink::LaunchIEAndNavigate(
   return hr;
 }
 
+const int kChromeFrameLaunchDelay = 5;
 const int kChromeFrameLongNavigationTimeoutInSeconds = 10;
 
 // This class provides functionality to add expectations to IE full tab mode
@@ -1505,7 +1506,7 @@ const wchar_t kChromeFrameAboutVersion[] =
 // with the chrome revision. The test finally checks for success by comparing
 // the URL of the window being opened with cf:about:version, which indicates
 // that the operation succeeded.
-TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_AboutChromeFrame) {
   TimedMsgLoop loop;
 
   CComObjectStackEx<MockWebBrowserEventSink> mock;
@@ -1539,5 +1540,26 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
 
   mock.Uninitialize();
   chrome_frame_test::CloseAllIEWindows();
+}
+
+const wchar_t kChromeFrameFullTabModeKeyEventUrl[] = L"files/keyevent.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ChromeFrameKeyboardTest) {
+  TimedMsgLoop loop;
+
+  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeKeyEventUrl));
+
+  // Allow some time for chrome to be launched.
+  loop.RunFor(kChromeFrameLaunchDelay);
+
+  HWND renderer_window = chrome_frame_test::GetChromeRendererWindow();
+  EXPECT_TRUE(IsWindow(renderer_window));
+
+  chrome_frame_test::SendInputToWindow(renderer_window, "Chrome");
+
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+
+  chrome_frame_test::CloseAllIEWindows();
+  ASSERT_TRUE(CheckResultFile(L"FullTab_KeyboardTest", "OK"));
 }
 
