@@ -25,8 +25,8 @@ MountLibrary* MountLibrary::Get() {
 }
 
 // static
-bool MountLibrary::loaded() {
-  return CrosLibrary::loaded();
+bool MountLibrary::EnsureLoaded() {
+  return CrosLibrary::EnsureLoaded();
 }
 
 void MountLibrary::AddObserver(Observer* observer) {
@@ -53,7 +53,7 @@ void MountLibrary::ParseDisks(const MountStatus& status) {
 }
 
 MountLibrary::MountLibrary() {
-  if (CrosLibrary::loaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     Init();
   } else {
     LOG(ERROR) << "Cros Library has not been loaded";
@@ -61,7 +61,7 @@ MountLibrary::MountLibrary() {
 }
 
 MountLibrary::~MountLibrary() {
-  if (CrosLibrary::loaded()) {
+  if (CrosLibrary::EnsureLoaded()) {
     DisconnectMountStatus(mount_status_connection_);
   }
 }

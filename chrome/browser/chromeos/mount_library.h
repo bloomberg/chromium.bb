@@ -42,7 +42,7 @@ class MountLibrary {
   static MountLibrary* Get();
 
   // Returns true if the ChromeOS library was loaded.
-  static bool loaded();
+  static bool EnsureLoaded();
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
