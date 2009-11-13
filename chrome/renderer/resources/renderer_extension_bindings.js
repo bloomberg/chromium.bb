@@ -141,7 +141,7 @@ var chrome = chrome || {};
 
   // This function is called on context initialization for both content scripts
   // and extension contexts.
-  chrome.initExtension = function(extensionId) {
+  chrome.initExtension = function(extensionId, warnOnPrivilegedApiAccess) {
     delete chrome.initExtension;
     chromeHidden.extensionId = extensionId;
 
@@ -200,5 +200,53 @@ var chrome = chrome || {};
     chrome.extension.getURL = function(path) {
       return "chrome-extension://" + extensionId + "/" + path;
     };
+
+    if (warnOnPrivilegedApiAccess) {
+      setupApiStubs();
+    }
   }
+
+  var notSupportedSuffix = " is not supported in content scripts. " +
+      "See the content scripts documentation for more details.";
+
+  // Setup to throw an error message when trying to access |name| on the chrome
+  // object. The |name| can be a dot-separated path.
+  function createStub(name) {
+    var module = chrome;
+    var parts = name.split(".");
+    for (var i = 0; i < parts.length - 1; i++) {
+      var nextPart = parts[i];
+      // Make sure an object at the path so far is defined.
+      module[nextPart] = module[nextPart] || {};
+      module = module[nextPart];
+    }
+    var finalPart = parts[parts.length-1];
+    module.__defineGetter__(finalPart, function() {
+      throw new Error("chrome." + name + notSupportedSuffix);
+    });
+  }
+
+  // Sets up stubs to throw a better error message for the common case of
+  // developers trying to call extension API's that aren't allowed to be
+  // called from content scripts.
+  function setupApiStubs() {
+    // TODO(asargent) It would be nice to eventually generate this
+    // programmatically from extension_api.json (there is already a browser test
+    // that should prevent it from getting stale).
+    var privileged = [
+      // Entire namespaces.
+      "bookmarks", "browserAction", "devtools", "experimental.extension",
+      "experimental.history", "experimental.popup", "i18n", "pageAction",
+      "pageActions", "tabs", "test", "toolstrip", "windows",
+
+      // Functions/events/properties within the extension namespace.
+      "extension.getBackgroundPage", "extension.getExtensionTabs",
+      "extension.getToolstrips", "extension.getViews", "extension.lastError",
+      "extension.onConnectExternal", "extension.onRequestExternal"
+    ];
+    for (var i = 0; i < privileged.length; i++) {
+      createStub(privileged[i]);
+    }
+  }
+
 })();

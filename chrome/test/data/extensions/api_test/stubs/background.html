@@ -1,0 +1,16 @@
+<script>
+
+chrome.extension.onRequest.addListener(function(msg, sender, responseFunc) {
+  if (msg == "getApi") {
+    responseFunc(JSON.parse(chrome.test.getApiDefinitions()));
+  } else if (msg == "pass") {
+    chrome.test.notifyPass();
+  } else {
+    chrome.test.notifyFail("failed");
+  }
+});
+
+// On first install, send a success message so the test can continue.
+chrome.test.notifyPass();
+
+</script>

@@ -272,7 +272,7 @@ var chrome = chrome || {};
   }
 
   chromeHidden.onLoad.addListener(function (extensionId) {
-    chrome.initExtension(extensionId);
+    chrome.initExtension(extensionId, false);
 
     // |apiFunctions| is a hash of name -> object that stores the
     // name & definition of the apiFunction. Custom handling of api functions
@@ -317,7 +317,7 @@ var chrome = chrome || {};
 
           module[functionDef.name] = bind(apiFunction, function() {
             chromeHidden.validate(arguments, this.definition.parameters);
-            
+
             var retval;
             if (this.handleRequest)
               retval = this.handleRequest.apply(this, arguments);
@@ -497,6 +497,10 @@ var chrome = chrome || {};
     apiFunctions["pageAction.setIcon"].handleRequest = function(details) {
       setIconCommon(details, this.name, this.definition.parameters);
     };
+
+    if (chrome.test) {
+      chrome.test.getApiDefinitions = GetExtensionAPIDefinition;
+    }
 
     setupBrowserActionEvent(extensionId);
     setupPageActionEvents(extensionId);

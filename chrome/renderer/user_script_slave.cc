@@ -28,7 +28,8 @@ static const char kUserScriptTail[] = "\n})(window);";
 // Sets up the chrome.extension module. This may be run multiple times per
 // context, but the init method deletes itself after the first time.
 static const char kInitExtension[] =
-  "if (chrome.initExtension) chrome.initExtension('%s');";
+  "if (chrome.initExtension) chrome.initExtension('%s', true);";
+
 
 int UserScriptSlave::GetIsolatedWorldId(const std::string& extension_id) {
   typedef std::map<std::string, int> IsolatedWorldMap;

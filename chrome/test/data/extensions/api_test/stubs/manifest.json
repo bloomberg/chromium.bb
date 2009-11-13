@@ -1,0 +1,11 @@
+{
+  "name": "Content Script Extension API Stubs Test",
+  "version": "1.0",
+  "background_page": "background.html",
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "file://*"],
+      "js":["content_script.js"]
+    }
+  ]
+}
