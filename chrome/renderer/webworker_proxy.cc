@@ -26,16 +26,18 @@ WebWorkerProxy::WebWorkerProxy(
       client_(client) {
 }
 
-void WebWorkerProxy::Disconnect() {
+WebWorkerProxy::~WebWorkerProxy() {
+  // If we're midway through starting a worker, cancel it.
+  CancelCreation();
+}
+
+void WebWorkerProxy::CancelCreation() {
   if (route_id_ == MSG_ROUTING_NONE)
     return;
 
   // Tell the browser to not start our queued worker.
   if (!IsStarted())
     child_thread_->Send(new ViewHostMsg_CancelCreateDedicatedWorker(route_id_));
-
-  // Call our superclass to shutdown the routing
-  WebWorkerBase::Disconnect();
 }
 
 void WebWorkerProxy::startWorkerContext(
@@ -48,6 +50,7 @@ void WebWorkerProxy::startWorkerContext(
 void WebWorkerProxy::terminateWorkerContext() {
   if (route_id_ != MSG_ROUTING_NONE) {
     Send(new WorkerMsg_TerminateWorkerContext(route_id_));
+    CancelCreation();
     Disconnect();
   }
 }

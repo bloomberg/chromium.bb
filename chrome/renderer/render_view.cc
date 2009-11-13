@@ -1805,13 +1805,19 @@ WebWorker* RenderView::createWorker(WebFrame* frame, WebWorkerClient* client) {
 
 WebSharedWorker* RenderView::createSharedWorker(
     WebFrame* frame, const WebURL& url, const WebString& name,
-    unsigned long long documentId) {
+    unsigned long long document_id) {
 
-  // TODO(atwilson): Call to the browser process to check if there's an existing
-  // worker (passing MSG_ROUTING_NONE for now, to indicate no existing worker).
-  int worker_route_id = MSG_ROUTING_NONE;
-  return new WebSharedWorkerProxy(
-      RenderThread::current(), worker_route_id, routing_id_);
+  int route_id = MSG_ROUTING_NONE;
+  bool url_mismatch = false;
+  Send(new ViewHostMsg_LookupSharedWorker(
+      url, name, document_id, &route_id, &url_mismatch));
+  if (url_mismatch) {
+    return NULL;
+  } else {
+    return new WebSharedWorkerProxy(RenderThread::current(),
+                                    route_id,
+                                    routing_id_);
+  }
 }
 
 WebMediaPlayer* RenderView::createMediaPlayer(

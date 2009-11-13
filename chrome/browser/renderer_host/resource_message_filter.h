@@ -173,6 +173,12 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                       const string16& name,
                       int render_view_route_id,
                       int* route_id);
+  void OnLookupSharedWorker(const GURL& url,
+                            const string16& name,
+                            unsigned long long document_id,
+                            int* route_id,
+                            bool* url_error);
+  void OnDocumentDetached(unsigned long long document_id);
   void OnCancelCreateDedicatedWorker(int route_id);
   void OnForwardToWorker(const IPC::Message& msg);
   void OnDownloadUrl(const IPC::Message& message,

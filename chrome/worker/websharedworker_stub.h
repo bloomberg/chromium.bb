@@ -33,6 +33,7 @@ class WebSharedWorkerStub : public WebWorkerStubBase {
 
   WebKit::WebSharedWorker* impl_;
   string16 name_;
+  bool started_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerStub);
 };

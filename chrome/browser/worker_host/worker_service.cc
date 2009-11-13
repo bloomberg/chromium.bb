@@ -15,6 +15,7 @@
 #include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/worker_messages.h"
 #include "net/base/registry_controlled_domain.h"
 
@@ -50,22 +51,18 @@ bool WorkerService::CreateWorker(const GURL &url,
                                  int renderer_id,
                                  int render_view_route_id,
                                  IPC::Message::Sender* sender,
-                                 int sender_id,
                                  int sender_route_id) {
   // Generate a unique route id for the browser-worker communication that's
   // unique among all worker processes.  That way when the worker process sends
   // a wrapped IPC message through us, we know which WorkerProcessHost to give
   // it to.
-  WorkerProcessHost::WorkerInstance instance;
-  instance.url = url;
-  instance.name = name;
-  instance.renderer_id = renderer_id;
-  instance.render_view_route_id = render_view_route_id;
-  instance.worker_route_id = next_worker_route_id();
-  instance.sender = sender;
-  instance.sender_id = sender_id;
-  instance.sender_route_id = sender_route_id;
-  instance.is_shared = is_shared;
+  WorkerProcessHost::WorkerInstance instance(url,
+                                             is_shared,
+                                             name,
+                                             renderer_id,
+                                             render_view_route_id,
+                                             next_worker_route_id());
+  instance.AddSender(sender, sender_route_id);
 
   WorkerProcessHost* worker = NULL;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -81,6 +78,38 @@ bool WorkerService::CreateWorker(const GURL &url,
     }
   }
 
+  // Check to see if this shared worker is already running (two pages may have
+  // tried to start up the worker simultaneously).
+  if (is_shared) {
+    // See if a worker with this name already exists.
+    WorkerProcessHost::WorkerInstance* existing_instance =
+        FindSharedWorkerInstance(url, name);
+    // If this worker is already running, no need to create a new copy. Just
+    // inform the caller that the worker has been created.
+    if (existing_instance) {
+      existing_instance->AddSender(sender, sender_route_id);
+      sender->Send(new ViewMsg_WorkerCreated(sender_route_id));
+      return true;
+    }
+
+    // Look to see if there's a pending instance.
+    WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(url, name);
+    // If there's no instance *and* no pending instance, then it means the
+    // worker started up and exited already. Log a warning because this should
+    // be a very rare occurrence and is probably a bug, but it *can* happen so
+    // handle it gracefully.
+    if (!pending) {
+      DLOG(WARNING) << "Pending worker already exited";
+      return false;
+    }
+
+    // Assign the accumulated document set and sender list for this pending
+    // worker to the new instance.
+    DCHECK(!pending->IsDocumentSetEmpty());
+    instance.CopyDocumentSet(*pending);
+    RemovePendingInstance(url, name);
+  }
+
   if (!worker) {
     worker = new WorkerProcessHost(resource_dispatcher_host_);
     if (!worker->Init()) {
@@ -93,15 +122,88 @@ bool WorkerService::CreateWorker(const GURL &url,
   return true;
 }
 
-void WorkerService::CancelCreateDedicatedWorker(int sender_id,
+bool WorkerService::LookupSharedWorker(const GURL &url,
+                                       const string16& name,
+                                       unsigned long long document_id,
+                                       IPC::Message::Sender* sender,
+                                       int sender_route_id,
+                                       bool* url_mismatch) {
+  bool found_instance = true;
+  WorkerProcessHost::WorkerInstance* instance =
+      FindSharedWorkerInstance(url, name);
+
+  if (!instance) {
+    // If no worker instance currently exists, we need to create a pending
+    // instance - this is to make sure that any subsequent lookups passing a
+    // mismatched URL get the appropriate url_mismatch error at lookup time.
+    // Having named shared workers was a Really Bad Idea due to details like
+    // this.
+    instance = CreatePendingInstance(url, name);
+    found_instance = false;
+  }
+
+  // Make sure the passed-in instance matches the URL - if not, return an
+  // error.
+  if (url != instance->url()) {
+    *url_mismatch = true;
+    return false;
+  } else {
+    *url_mismatch = false;
+  }
+
+  // Add our route ID to the existing instance so we can send messages to it.
+  if (found_instance)
+    instance->AddSender(sender, sender_route_id);
+
+  // Add the passed sender/document_id to the worker instance.
+  instance->AddToDocumentSet(sender, document_id);
+  return found_instance;
+}
+
+void WorkerService::DocumentDetached(IPC::Message::Sender* sender,
+                                     unsigned long long document_id) {
+  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+       !iter.Done(); ++iter) {
+    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+    worker->DocumentDetached(sender, document_id);
+  }
+
+  // Remove any queued shared workers for this document.
+  for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
+       iter != queued_workers_.end();) {
+    if (iter->is_shared()) {
+      iter->RemoveFromDocumentSet(sender, document_id);
+      if (iter->IsDocumentSetEmpty()) {
+        iter = queued_workers_.erase(iter);
+        continue;
+      }
+    }
+    ++iter;
+  }
+
+  // Remove the document from any pending shared workers.
+  for (WorkerProcessHost::Instances::iterator iter =
+           pending_shared_workers_.begin();
+       iter != pending_shared_workers_.end(); ) {
+    iter->RemoveFromDocumentSet(sender, document_id);
+    if (iter->IsDocumentSetEmpty()) {
+      iter = pending_shared_workers_.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+
+}
+
+void WorkerService::CancelCreateDedicatedWorker(IPC::Message::Sender* sender,
                                                 int sender_route_id) {
   for (WorkerProcessHost::Instances::iterator i = queued_workers_.begin();
        i != queued_workers_.end(); ++i) {
-     if (i->sender_id == sender_id &&
-         i->sender_route_id == sender_route_id) {
-       queued_workers_.erase(i);
-       return;
-     }
+    if (i->HasSender(sender, sender_route_id)) {
+      DCHECK(!i->is_shared());
+      queued_workers_.erase(i);
+      return;
+    }
   }
 
   // There could be a race condition where the WebWorkerProxy told us to cancel
@@ -113,12 +215,11 @@ void WorkerService::CancelCreateDedicatedWorker(int sender_id,
     for (WorkerProcessHost::Instances::const_iterator instance =
              worker->instances().begin();
          instance != worker->instances().end(); ++instance) {
-      if (instance->sender_id == sender_id &&
-          instance->sender_route_id == sender_route_id) {
+      if (instance->HasSender(sender, sender_route_id)) {
         // Fake a worker destroyed message so that WorkerProcessHost cleans up
         // properly.
         WorkerHostMsg_WorkerContextDestroyed msg(sender_route_id);
-        ForwardMessage(msg, sender_id);
+        ForwardMessage(msg, sender);
         return;
       }
     }
@@ -128,11 +229,11 @@ void WorkerService::CancelCreateDedicatedWorker(int sender_id,
 }
 
 void WorkerService::ForwardMessage(const IPC::Message& message,
-                                   int sender_pid) {
+                                   IPC::Message::Sender* sender) {
   for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
-    if (worker->FilterMessage(message, sender_pid))
+    if (worker->FilterMessage(message, sender))
       return;
   }
 
@@ -151,7 +252,7 @@ WorkerProcessHost* WorkerService::GetProcessForDomain(const GURL& url) {
              worker->instances().begin();
          instance != worker->instances().end(); ++instance) {
       if (net::RegistryControlledDomainService::GetDomainAndRegistry(
-          instance->url) == domain) {
+              instance->url()) == domain) {
         return worker;
       }
     }
@@ -200,8 +301,9 @@ bool WorkerService::CanCreateWorkerProcess(
       total_workers++;
       if (total_workers >= kMaxWorkersWhenSeparate)
         return false;
-      if (cur_instance->renderer_id == instance.renderer_id &&
-          cur_instance->render_view_route_id == instance.render_view_route_id) {
+      if (cur_instance->renderer_id() == instance.renderer_id() &&
+          cur_instance->render_view_route_id() ==
+            instance.render_view_route_id()) {
         workers_per_tab++;
         if (workers_per_tab >= kMaxWorkersPerTabWhenSeparate)
           return false;
@@ -237,10 +339,23 @@ void WorkerService::SenderShutdown(IPC::Message::Sender* sender) {
   // See if that render process had any queued workers.
   for (WorkerProcessHost::Instances::iterator i = queued_workers_.begin();
        i != queued_workers_.end();) {
-    if (i->sender == sender) {
+    i->RemoveSenders(sender);
+    if (i->NumSenders() == 0) {
       i = queued_workers_.erase(i);
     } else {
       ++i;
+    }
+  }
+
+  // Also, see if that render process had any pending shared workers.
+  for (WorkerProcessHost::Instances::iterator iter =
+           pending_shared_workers_.begin();
+       iter != pending_shared_workers_.end(); ) {
+    iter->RemoveAllAssociatedDocuments(sender);
+    if (iter->IsDocumentSetEmpty()) {
+      iter = pending_shared_workers_.erase(iter);
+    } else {
+      ++iter;
     }
   }
 }
@@ -280,4 +395,65 @@ const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
     return instance == worker->instances().end() ? NULL : &*instance;
   }
   return NULL;
+}
+
+WorkerProcessHost::WorkerInstance*
+WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name) {
+  for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
+       !iter.Done(); ++iter) {
+    WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
+    for (WorkerProcessHost::Instances::iterator instance_iter =
+             worker->mutable_instances().begin();
+         instance_iter != worker->mutable_instances().end();
+         ++instance_iter) {
+      if (instance_iter->Matches(url, name))
+        return &(*instance_iter);
+    }
+  }
+  return NULL;
+}
+
+WorkerProcessHost::WorkerInstance*
+WorkerService::FindPendingInstance(const GURL& url, const string16& name) {
+  // Walk the pending instances looking for a matching pending worker.
+  for (WorkerProcessHost::Instances::iterator iter =
+           pending_shared_workers_.begin();
+       iter != pending_shared_workers_.end();
+       ++iter) {
+    if (iter->Matches(url, name)) {
+      return &(*iter);
+    }
+  }
+  return NULL;
+}
+
+
+void WorkerService::RemovePendingInstance(const GURL& url,
+                                          const string16& name) {
+  // Walk the pending instances looking for a matching pending worker.
+  for (WorkerProcessHost::Instances::iterator iter =
+           pending_shared_workers_.begin();
+       iter != pending_shared_workers_.end();
+       ++iter) {
+    if (iter->Matches(url, name)) {
+      pending_shared_workers_.erase(iter);
+      break;
+    }
+  }
+}
+
+WorkerProcessHost::WorkerInstance*
+WorkerService::CreatePendingInstance(const GURL& url,
+                                     const string16& name) {
+  // Look for an existing pending worker.
+  WorkerProcessHost::WorkerInstance* instance =
+      FindPendingInstance(url, name);
+  if (instance)
+    return instance;
+
+  // No existing pending worker - create a new one.
+  WorkerProcessHost::WorkerInstance pending(
+      url, true, name, 0, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
+  pending_shared_workers_.push_back(pending);
+  return &pending_shared_workers_.back();
 }

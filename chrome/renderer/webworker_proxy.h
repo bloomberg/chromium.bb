@@ -27,6 +27,7 @@ class WebWorkerProxy : public WebKit::WebWorker, private WebWorkerBase {
   WebWorkerProxy(WebKit::WebWorkerClient* client,
                  ChildThread* child_thread,
                  int render_view_route_id);
+  ~WebWorkerProxy();
 
   // WebWorker implementation.
   virtual void startWorkerContext(const WebKit::WebURL& script_url,
@@ -43,8 +44,7 @@ class WebWorkerProxy : public WebKit::WebWorker, private WebWorkerBase {
   void OnMessageReceived(const IPC::Message& message);
 
  private:
-  virtual void Disconnect();
-
+  void CancelCreation();
   void OnWorkerCreated();
   void OnWorkerContextDestroyed();
   void OnPostMessage(const string16& message,

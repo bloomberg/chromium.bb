@@ -1745,6 +1745,27 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               int /* render_view_route_id */,
                               int /* route_id */)
 
+  // This message is sent to the browser to see if an instance of this shared
+  // worker already exists (returns route_id != MSG_ROUTING_NONE). This route
+  // id can be used to forward messages to the worker via ForwardToWorker. If a
+  // non-empty name is passed, also validates that the url matches the url of
+  // the existing worker. If a matching worker is found, the passed-in
+  // document_id is associated with that worker, to ensure that the worker
+  // stays alive until the document is detached.
+  IPC_SYNC_MESSAGE_CONTROL3_2(ViewHostMsg_LookupSharedWorker,
+                              GURL /* url */,
+                              string16 /* name */,
+                              unsigned long long /* document_id */,
+                              int /* route_id */,
+                              bool /* url_mismatch */)
+
+  // A renderer sends this to the browser process when a document has been
+  // detached. The browser will use this to constrain the lifecycle of worker
+  // processes (SharedWorkers are shut down when their last associated document
+  // is detached).
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_DocumentDetached,
+                       unsigned long long /* document_id */)
+
   // A message sent to the browser on behalf of a renderer which wants to show
   // a desktop notification.
   IPC_MESSAGE_ROUTED3(ViewHostMsg_ShowDesktopNotification,

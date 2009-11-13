@@ -32,15 +32,32 @@ class WorkerService : public NotificationObserver {
                     int renderer_pid,
                     int render_view_route_id,
                     IPC::Message::Sender* sender,
-                    int sender_id,
                     int sender_route_id);
 
+  // Validates the passed URL and checks for the existence of matching shared
+  // worker. Returns true if the url was found, and sets the url_mismatch out
+  // param to true/false depending on whether there's a url mismatch with an
+  // existing shared worker with the same name.
+  bool LookupSharedWorker(const GURL &url,
+                          const string16& name,
+                          unsigned long long document_id,
+                          IPC::Message::Sender* sender,
+                          int sender_route_id,
+                          bool* url_mismatch);
+
+  // Notification from the renderer that a given document has detached, so any
+  // associated shared workers can be shut down.
+  void DocumentDetached(IPC::Message::Sender* sender,
+                        unsigned long long document_id);
+
   // Cancel creation of a dedicated worker that hasn't started yet.
-  void CancelCreateDedicatedWorker(int sender_id, int sender_route_id);
+  void CancelCreateDedicatedWorker(IPC::Message::Sender* sender,
+                                   int sender_route_id);
 
   // Called by the worker creator when a message arrives that should be
   // forwarded to the worker process.
-  void ForwardMessage(const IPC::Message& message, int sender_id);
+  void ForwardMessage(const IPC::Message& message,
+                      IPC::Message::Sender* sender);
 
   int next_worker_route_id() { return ++next_worker_route_id_; }
 
@@ -48,6 +65,9 @@ class WorkerService : public NotificationObserver {
   // is how it is today until V8 can run in separate threads.
   const WorkerProcessHost::WorkerInstance* FindWorkerInstance(
       int worker_process_id);
+
+  WorkerProcessHost::WorkerInstance* FindSharedWorkerInstance(
+      const GURL& url, const string16& name);
 
   // Used when multiple workers can run in the same process.
   static const int kMaxWorkerProcessesWhenSharing;
@@ -90,11 +110,23 @@ class WorkerService : public NotificationObserver {
   // Notifies us that a worker process has closed.
   void WorkerProcessDestroyed(WorkerProcessHost* process);
 
+  // APIs for manipulating our set of pending shared worker instances.
+  WorkerProcessHost::WorkerInstance* CreatePendingInstance(
+      const GURL& url, const string16& name);
+  WorkerProcessHost::WorkerInstance* FindPendingInstance(
+      const GURL& url, const string16& name);
+  void RemovePendingInstance(const GURL& url, const string16& name);
+
   NotificationRegistrar registrar_;
   int next_worker_route_id_;
   ResourceDispatcherHost* resource_dispatcher_host_;
 
   WorkerProcessHost::Instances queued_workers_;
+
+  // These are shared workers that have been looked up, but not created yet.
+  // We need to keep a list of these to synchronously detect shared worker
+  // URL mismatches when two pages launch shared workers simultaneously.
+  WorkerProcessHost::Instances pending_shared_workers_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerService);
 };

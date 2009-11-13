@@ -13,7 +13,8 @@
 WebSharedWorkerStub::WebSharedWorkerStub(
     const string16& name, int route_id)
     : WebWorkerStubBase(route_id),
-      name_(name) {
+      name_(name),
+      started_(false) {
 
   // TODO(atwilson): Add support for NaCl when they support MessagePorts.
   impl_ = WebKit::WebSharedWorker::create(client());
@@ -35,10 +36,16 @@ void WebSharedWorkerStub::OnMessageReceived(const IPC::Message& message) {
 
 void WebSharedWorkerStub::OnStartWorkerContext(
     const GURL& url, const string16& user_agent, const string16& source_code) {
+  // Ignore multiple attempts to start this worker (can happen if two pages
+  // try to start it simultaneously).
+  if (started_)
+    return;
   impl_->startWorkerContext(url, name_, user_agent, source_code);
+  started_ = true;
 }
 
 void WebSharedWorkerStub::OnConnect(int sent_message_port_id, int routing_id) {
+  DCHECK(started_);
   WebKit::WebMessagePortChannel* channel =
       new WebMessagePortChannelImpl(routing_id, sent_message_port_id);
   impl_->connect(channel, NULL);
@@ -49,4 +56,5 @@ void WebSharedWorkerStub::OnTerminateWorkerContext() {
 
   // Call the client to make sure context exits.
   EnsureWorkerContextTerminates();
+  started_ = false;
 }

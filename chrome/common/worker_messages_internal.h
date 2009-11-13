@@ -123,5 +123,7 @@ IPC_BEGIN_MESSAGES(WorkerHost)
   IPC_MESSAGE_ROUTED1(WorkerHostMsg_ReportPendingActivity,
                       bool /* bool has_pending_activity */)
 
+  IPC_MESSAGE_CONTROL1(WorkerHostMsg_WorkerContextClosed,
+                       int /* worker_route_id */)
   IPC_MESSAGE_ROUTED0(WorkerHostMsg_WorkerContextDestroyed)
 IPC_END_MESSAGES(WorkerHost)

@@ -36,7 +36,7 @@ class WebWorkerBase : public IPC::Channel::Listener {
   bool IsStarted();
 
   // Disconnects the worker (stops listening for incoming messages).
-  virtual void Disconnect();
+  void Disconnect();
 
   // Sends a message to the worker thread (forwarded via the RenderViewHost).
   // If WorkerStarted() has not yet been called, message is queued.

@@ -20,6 +20,7 @@ class ChildThread;
 class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
                              private WebWorkerBase {
  public:
+  // If the worker not loaded yet, route_id == MSG_ROUTING_NONE
   WebSharedWorkerProxy(ChildThread* child_thread,
                        int route_id,
                        int render_view_route_id);
@@ -35,13 +36,13 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   virtual void terminateWorkerContext();
   virtual void clientDestroyed();
 
-  // IPC::Channel::Listener proxyementation.
+  // IPC::Channel::Listener implementation.
   void OnMessageReceived(const IPC::Message& message);
 
  private:
   void OnWorkerCreated();
 
-  ConnectListener* m_connectListener;
+  ConnectListener* connect_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);
 };

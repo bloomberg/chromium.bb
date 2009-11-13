@@ -17,16 +17,82 @@ class WorkerProcessHost : public ChildProcessHost {
  public:
   // Contains information about each worker instance, needed to forward messages
   // between the renderer and worker processes.
-  struct WorkerInstance {
-    GURL url;
-    bool is_shared;
-    string16 name;
-    int renderer_id;
-    int render_view_route_id;
-    int worker_route_id;
-    IPC::Message::Sender* sender;
-    int sender_id;
-    int sender_route_id;
+  class WorkerInstance {
+   public:
+    WorkerInstance(const GURL& url,
+                   bool is_shared,
+                   const string16& name,
+                   int renderer_id,
+                   int render_view_route_id,
+                   int worker_route_id);
+
+    // Unique identifier for a worker client.
+    typedef std::pair<IPC::Message::Sender*, int> SenderInfo;
+
+    // APIs to manage the sender list for a given instance.
+    void AddSender(IPC::Message::Sender* sender, int sender_route_id);
+    void RemoveSender(IPC::Message::Sender* sender, int sender_route_id);
+    void RemoveSenders(IPC::Message::Sender* sender);
+    bool HasSender(IPC::Message::Sender* sender, int sender_route_id) const;
+    int NumSenders() const { return senders_.size(); }
+    // Returns the single sender (must only be one).
+    SenderInfo GetSender() const;
+
+    // Checks if this WorkerInstance matches the passed url/name params
+    // (per the comparison algorithm in the WebWorkers spec). This API only
+    // applies to shared workers.
+    bool Matches(const GURL& url, const string16& name) const;
+
+    // Adds a document to a shared worker's document set.
+    void AddToDocumentSet(IPC::Message::Sender* parent,
+                          unsigned long long document_id);
+
+    // Checks to see if a document is in a shared worker's document set.
+    bool IsInDocumentSet(IPC::Message::Sender* parent,
+                         unsigned long long document_id) const;
+
+    // Removes a specific document from a shared worker's document set when
+    // that document is detached.
+    void RemoveFromDocumentSet(IPC::Message::Sender* parent,
+                               unsigned long long document_id);
+
+    // Copies the document set from one instance to another
+    void CopyDocumentSet(const WorkerInstance& instance) {
+      document_set_ = instance.document_set_;
+    };
+
+    // Invoked when a render process exits, to remove all associated documents
+    // from a shared worker's document set.
+    void RemoveAllAssociatedDocuments(IPC::Message::Sender* parent);
+
+    bool IsDocumentSetEmpty() const { return document_set_.empty(); }
+
+
+    // Accessors
+    bool is_shared() const { return shared_; }
+    bool is_closed() const { return closed_; }
+    void set_closed(bool closed) { closed_ = closed; }
+    const GURL& url() const { return url_; }
+    const string16 name() const { return name_; }
+    int renderer_id() const { return renderer_id_; }
+    int render_view_route_id() const { return render_view_route_id_; }
+    int worker_route_id() const { return worker_route_id_; }
+
+   private:
+    // Unique identifier for an associated document.
+    typedef std::pair<IPC::Message::Sender*, unsigned long long> DocumentInfo;
+    typedef std::set<DocumentInfo> DocumentSet;
+    // Set of all senders (clients) associated with this worker.
+    typedef std::set<SenderInfo> SenderSet;
+    GURL url_;
+    bool shared_;
+    bool closed_;
+    string16 name_;
+    int renderer_id_;
+    int render_view_route_id_;
+    int worker_route_id_;
+    SenderSet senders_;
+    DocumentSet document_set_;
   };
 
   WorkerProcessHost(ResourceDispatcherHost* resource_dispatcher_host_);
@@ -40,15 +106,21 @@ class WorkerProcessHost : public ChildProcessHost {
 
   // Returns true iff the given message from a renderer process was forwarded to
   // the worker.
-  bool FilterMessage(const IPC::Message& message, int sender_pid);
+  bool FilterMessage(const IPC::Message& message, IPC::Message::Sender* sender);
 
   void SenderShutdown(IPC::Message::Sender* sender);
+
+  // Shuts down any shared workers that are no longer referenced by active
+  // documents.
+  void DocumentDetached(IPC::Message::Sender* sender,
+                        unsigned long long document_id);
 
  protected:
   friend class WorkerService;
 
   typedef std::list<WorkerInstance> Instances;
   const Instances& instances() const { return instances_; }
+  Instances& mutable_instances() { return instances_; }
 
  private:
   // ResourceDispatcherHost::Receiver implementation:
@@ -58,6 +130,16 @@ class WorkerProcessHost : public ChildProcessHost {
 
   // Called when a message arrives from the worker process.
   void OnMessageReceived(const IPC::Message& message);
+
+  // Called when the app invokes close() from within worker context.
+  void OnWorkerContextClosed(int worker_route_id);
+
+  // Called if a worker tries to connect to a shared worker.
+  void OnLookupSharedWorker(const GURL& url,
+                            const string16& name,
+                            unsigned long long document_id,
+                            int* route_id,
+                            bool* url_error);
 
   // Given a Sender, returns the callback that generates a new routing id.
   static CallbackWithReturnValue<int>::Type* GetNextRouteIdCallback(

@@ -80,7 +80,7 @@ WorkerProcessHost::~WorkerProcessHost() {
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        new WorkerCrashTask(i->renderer_id, i->render_view_route_id));
+        new WorkerCrashTask(i->renderer_id(), i->render_view_route_id()));
   }
 
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());
@@ -141,26 +141,25 @@ bool WorkerProcessHost::Init() {
 
 void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
   ChildProcessSecurityPolicy::GetInstance()->GrantRequestURL(
-      id(), instance.url);
+      id(), instance.url());
 
   instances_.push_back(instance);
-  Send(new WorkerProcessMsg_CreateWorker(instance.url,
-                                         instance.is_shared,
-                                         instance.name,
-                                         instance.worker_route_id));
+  Send(new WorkerProcessMsg_CreateWorker(instance.url(),
+                                         instance.is_shared(),
+                                         instance.name(),
+                                         instance.worker_route_id()));
 
   UpdateTitle();
-  instances_.back().sender->Send(
-      new ViewMsg_WorkerCreated(instance.sender_route_id));
+  WorkerInstance::SenderInfo info = instances_.back().GetSender();
+  info.first->Send(new ViewMsg_WorkerCreated(info.second));
 }
 
 bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
-                                      int sender_pid) {
+                                      IPC::Message::Sender* sender) {
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    if (i->sender_id == sender_pid &&
-        i->sender_route_id == message.routing_id()) {
+    if (!i->is_closed() && i->HasSender(sender, message.routing_id())) {
       RelayMessage(
-          message, this, i->worker_route_id, next_route_id_callback_.get());
+          message, this, i->worker_route_id(), next_route_id_callback_.get());
       return true;
     }
   }
@@ -174,6 +173,20 @@ URLRequestContext* WorkerProcessHost::GetRequestContext(
   return NULL;
 }
 
+// Sent to notify the browser process when a worker context invokes close(), so
+// no new connections are sent to shared workers.
+void WorkerProcessHost::OnWorkerContextClosed(int worker_route_id) {
+  for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
+    if (i->worker_route_id() == worker_route_id) {
+      // Set the closed flag - this will stop any further messages from
+      // being sent to the worker (messages can still be sent from the worker,
+      // for exception reporting, etc).
+      i->set_closed(true);
+      break;
+    }
+  }
+}
+
 void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
   bool msg_is_ok = true;
   bool handled = MessagePortDispatcher::GetInstance()->OnMessageReceived(
@@ -183,8 +196,11 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
     handled = true;
     IPC_BEGIN_MESSAGE_MAP_EX(WorkerProcessHost, message, msg_is_ok)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_LookupSharedWorker, OnLookupSharedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
                           OnCancelCreateDedicatedWorker)
+      IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerContextClosed,
+                          OnWorkerContextClosed);
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
                           OnForwardToWorker)
       IPC_MESSAGE_UNHANDLED(handled = false)
@@ -200,10 +216,15 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
     return;
 
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    if (i->worker_route_id == message.routing_id()) {
-      CallbackWithReturnValue<int>::Type* next_route_id =
-          GetNextRouteIdCallback(i->sender);
-      RelayMessage(message, i->sender, i->sender_route_id, next_route_id);
+    if (i->worker_route_id() == message.routing_id()) {
+      if (!i->is_shared()) {
+        // Don't relay messages from shared workers (all communication is via
+        // the message port).
+        WorkerInstance::SenderInfo info = i->GetSender();
+        CallbackWithReturnValue<int>::Type* next_route_id =
+            GetNextRouteIdCallback(info.first);
+        RelayMessage(message, info.first, info.second, next_route_id);
+      }
 
       if (message.type() == WorkerHostMsg_WorkerContextDestroyed::ID) {
         instances_.erase(i);
@@ -293,8 +314,18 @@ void WorkerProcessHost::RelayMessage(
 
 void WorkerProcessHost::SenderShutdown(IPC::Message::Sender* sender) {
   for (Instances::iterator i = instances_.begin(); i != instances_.end();) {
-    if (i->sender == sender) {
-      Send(new WorkerMsg_TerminateWorkerContext(i->worker_route_id));
+    bool shutdown = false;
+    i->RemoveSenders(sender);
+    if (i->is_shared()) {
+      i->RemoveAllAssociatedDocuments(sender);
+      if (i->IsDocumentSetEmpty()) {
+        shutdown = true;
+      }
+    } else if (i->NumSenders() == 0) {
+      shutdown = true;
+    }
+    if (shutdown) {
+      Send(new WorkerMsg_TerminateWorkerContext(i->worker_route_id()));
       i = instances_.erase(i);
     } else {
       ++i;
@@ -306,13 +337,13 @@ void WorkerProcessHost::UpdateTitle() {
   std::set<std::string> titles;
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     std::string title =
-        net::RegistryControlledDomainService::GetDomainAndRegistry(i->url);
+        net::RegistryControlledDomainService::GetDomainAndRegistry(i->url());
     // Use the host name if the domain is empty, i.e. localhost or IP address.
     if (title.empty())
-      title = i->url.host();
+      title = i->url().host();
     // If the host name is empty, i.e. file url, use the path.
     if (title.empty())
-      title = i->url.path();
+      title = i->url().path();
     titles.insert(title);
   }
 
@@ -327,6 +358,17 @@ void WorkerProcessHost::UpdateTitle() {
   set_name(ASCIIToWide(display_title));
 }
 
+void WorkerProcessHost::OnLookupSharedWorker(const GURL& url,
+                                                 const string16& name,
+                                                 unsigned long long document_id,
+                                                 int* route_id,
+                                                 bool* url_mismatch) {
+  int new_route_id = WorkerService::GetInstance()->next_worker_route_id();
+  bool worker_found = WorkerService::GetInstance()->LookupSharedWorker(
+      url, name, document_id, this, new_route_id, url_mismatch);
+  *route_id = worker_found ? new_route_id : MSG_ROUTING_NONE;
+}
+
 void WorkerProcessHost::OnCreateWorker(const GURL& url,
                                        bool is_shared,
                                        const string16& name,
@@ -335,14 +377,149 @@ void WorkerProcessHost::OnCreateWorker(const GURL& url,
   DCHECK(instances_.size() == 1);  // Only called when one process per worker.
   *route_id = WorkerService::GetInstance()->next_worker_route_id();
   WorkerService::GetInstance()->CreateWorker(
-      url, is_shared, name, instances_.front().renderer_id,
-      instances_.front().render_view_route_id, this, id(), *route_id);
+      url, is_shared, name, instances_.front().renderer_id(),
+      instances_.front().render_view_route_id(), this, *route_id);
 }
 
 void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
-  WorkerService::GetInstance()->CancelCreateDedicatedWorker(id(), route_id);
+  WorkerService::GetInstance()->CancelCreateDedicatedWorker(this, route_id);
 }
 
 void WorkerProcessHost::OnForwardToWorker(const IPC::Message& message) {
-  WorkerService::GetInstance()->ForwardMessage(message, id());
+  WorkerService::GetInstance()->ForwardMessage(message, this);
 }
+
+void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,
+                                         unsigned long long document_id)
+{
+  // Walk all instances and remove the document from their document set.
+  for (Instances::iterator i = instances_.begin(); i != instances_.end();) {
+    if (!i->is_shared()) {
+      ++i;
+    } else {
+      i->RemoveFromDocumentSet(parent, document_id);
+      if (i->IsDocumentSetEmpty()) {
+        // This worker has no more associated documents - shut it down.
+        Send(new WorkerMsg_TerminateWorkerContext(i->worker_route_id()));
+        i = instances_.erase(i);
+      } else {
+        ++i;
+      }
+    }
+  }
+}
+
+WorkerProcessHost::WorkerInstance::WorkerInstance(const GURL& url,
+                                                  bool is_shared,
+                                                  const string16& name,
+                                                  int renderer_id,
+                                                  int render_view_route_id,
+                                                  int worker_route_id)
+    : url_(url),
+      shared_(is_shared),
+      closed_(false),
+      name_(name),
+      renderer_id_(renderer_id),
+      render_view_route_id_(render_view_route_id),
+      worker_route_id_(worker_route_id) {
+}
+
+// Compares an instance based on the algorithm in the WebWorkers spec - an
+// instance matches if the origins of the URLs match, and:
+// a) the names are non-empty and equal
+// -or-
+// b) the names are both empty, and the urls are equal
+bool WorkerProcessHost::WorkerInstance::Matches(
+    const GURL& match_url, const string16& match_name) const {
+  // Only match open shared workers.
+  if (!shared_ || closed_)
+    return false;
+
+  if (url_.GetOrigin() != match_url.GetOrigin())
+    return false;
+
+  if (name_.empty() && match_name.empty())
+    return url_ == match_url;
+
+  return name_ == match_name;
+}
+
+void WorkerProcessHost::WorkerInstance::AddToDocumentSet(
+    IPC::Message::Sender* parent, unsigned long long document_id) {
+  DocumentInfo info(parent, document_id);
+  document_set_.insert(info);
+}
+
+bool WorkerProcessHost::WorkerInstance::IsInDocumentSet(
+    IPC::Message::Sender* parent, unsigned long long document_id) const {
+  DocumentInfo info(parent, document_id);
+  return document_set_.find(info) != document_set_.end();
+}
+
+void WorkerProcessHost::WorkerInstance::RemoveFromDocumentSet(
+    IPC::Message::Sender* parent, unsigned long long document_id) {
+  DocumentInfo info(parent, document_id);
+  document_set_.erase(info);
+}
+
+void WorkerProcessHost::WorkerInstance::RemoveAllAssociatedDocuments(
+    IPC::Message::Sender* parent) {
+  for (DocumentSet::iterator i = document_set_.begin();
+       i != document_set_.end();) {
+    // Windows set.erase() has a non-standard API (invalidates the iter).
+#if defined(OS_WIN)
+    if (i->first == parent)
+      i = document_set_.erase(i);
+    else
+      ++i;
+#else
+    if (i->first == parent)
+      document_set_.erase(i);
+    ++i;
+#endif
+  }
+}
+
+void WorkerProcessHost::WorkerInstance::AddSender(IPC::Message::Sender* sender,
+                                                  int sender_route_id) {
+  SenderInfo info(sender, sender_route_id);
+  senders_.insert(info);
+  // Only shared workers can have more than one associated sender.
+  DCHECK(shared_ || senders_.size() == 1);
+}
+
+void WorkerProcessHost::WorkerInstance::RemoveSender(
+    IPC::Message::Sender* sender, int sender_route_id) {
+  SenderInfo info(sender, sender_route_id);
+  senders_.erase(info);
+}
+
+void WorkerProcessHost::WorkerInstance::RemoveSenders(
+    IPC::Message::Sender* sender) {
+  for (SenderSet::iterator i = senders_.begin(); i != senders_.end();) {
+    // Windows set.erase() has a non-standard API (invalidates the iter).
+#if defined(OS_WIN)
+    if (i->first == sender)
+      i = senders_.erase(i);
+    else
+      ++i;
+#else
+    if (i->first == sender)
+      senders_.erase(i);
+    ++i;
+#endif
+  }
+}
+
+bool WorkerProcessHost::WorkerInstance::HasSender(
+    IPC::Message::Sender* sender, int sender_route_id) const {
+  SenderInfo info(sender, sender_route_id);
+  return senders_.find(info) != senders_.end();
+}
+
+WorkerProcessHost::WorkerInstance::SenderInfo
+WorkerProcessHost::WorkerInstance::GetSender() const {
+  DCHECK(NumSenders() == 1);
+  return *senders_.begin();
+}
+

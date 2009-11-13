@@ -13,7 +13,7 @@ WebSharedWorkerProxy::WebSharedWorkerProxy(ChildThread* child_thread,
                                            int route_id,
                                            int render_view_route_id)
     : WebWorkerBase(child_thread, route_id, render_view_route_id),
-      m_connectListener(NULL) {
+      connect_listener_(NULL) {
 }
 
 bool WebSharedWorkerProxy::isStarted() {
@@ -25,6 +25,7 @@ void WebSharedWorkerProxy::startWorkerContext(
     const WebKit::WebString& name,
     const WebKit::WebString& user_agent,
     const WebKit::WebString& source_code) {
+  DCHECK(!isStarted());
   CreateWorkerContext(script_url, true, name, user_agent, source_code);
 }
 
@@ -49,7 +50,7 @@ void WebSharedWorkerProxy::connect(WebKit::WebMessagePortChannel* channel,
 
   Send(new WorkerMsg_Connect(route_id_, message_port_id, MSG_ROUTING_NONE));
   if (HasQueuedMessages()) {
-    m_connectListener = listener;
+    connect_listener_ = listener;
   } else {
     listener->connected();
     // The listener may free this object, so do not access the object after
@@ -70,8 +71,7 @@ void WebSharedWorkerProxy::OnWorkerCreated() {
 
   // Inform any listener that the pending connect event has been sent
   // (this can result in this object being freed).
-  if (m_connectListener) {
-    m_connectListener->connected();
+  if (connect_listener_) {
+    connect_listener_->connected();
   }
 }
-

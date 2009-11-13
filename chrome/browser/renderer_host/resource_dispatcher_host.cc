@@ -1505,8 +1505,8 @@ bool ResourceDispatcherHost::RenderViewForRequest(const URLRequest* request,
         *render_view_host_id = -1;
         return false;
       }
-      *render_process_host_id = worker_instance->renderer_id;
-      *render_view_host_id = worker_instance->render_view_route_id;
+      *render_process_host_id = worker_instance->renderer_id();
+      *render_view_host_id = worker_instance->render_view_route_id();
   } else {
     *render_process_host_id = info->child_id();
     *render_view_host_id = info->route_id();

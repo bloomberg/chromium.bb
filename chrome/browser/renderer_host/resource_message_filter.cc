@@ -310,6 +310,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                                       OnOpenChannelToPlugin)
       IPC_MESSAGE_HANDLER(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_LookupSharedWorker, OnLookupSharedWorker)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentDetached, OnDocumentDetached)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CancelCreateDedicatedWorker,
                           OnCancelCreateDedicatedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
@@ -654,15 +656,32 @@ void ResourceMessageFilter::OnCreateWorker(const GURL& url,
                                            int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
   WorkerService::GetInstance()->CreateWorker(
-      url, is_shared, name, id(), render_view_route_id, this, id(), *route_id);
+      url, is_shared, name, id(), render_view_route_id, this, *route_id);
+}
+
+void ResourceMessageFilter::OnLookupSharedWorker(const GURL& url,
+                                                 const string16& name,
+                                                 unsigned long long document_id,
+                                                 int* route_id,
+                                                 bool* url_mismatch) {
+  int new_route_id = render_widget_helper_->GetNextRoutingID();
+  bool worker_found = WorkerService::GetInstance()->LookupSharedWorker(
+      url, name, document_id, this, new_route_id, url_mismatch);
+  *route_id = worker_found ? new_route_id : MSG_ROUTING_NONE;
+}
+
+void ResourceMessageFilter::OnDocumentDetached(unsigned long long document_id) {
+  // Notify the WorkerService that the passed document was detached so any
+  // associated shared workers can be shut down.
+  WorkerService::GetInstance()->DocumentDetached(this, document_id);
 }
 
 void ResourceMessageFilter::OnCancelCreateDedicatedWorker(int route_id) {
-  WorkerService::GetInstance()->CancelCreateDedicatedWorker(id(), route_id);
+  WorkerService::GetInstance()->CancelCreateDedicatedWorker(this, route_id);
 }
 
 void ResourceMessageFilter::OnForwardToWorker(const IPC::Message& message) {
-  WorkerService::GetInstance()->ForwardMessage(message, id());
+  WorkerService::GetInstance()->ForwardMessage(message, this);
 }
 
 void ResourceMessageFilter::OnDownloadUrl(const IPC::Message& message,

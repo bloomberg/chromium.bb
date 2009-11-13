@@ -47,7 +47,7 @@ class ResourceRequestDetails {
     const WorkerProcessHost::WorkerInstance* worker_instance =
         WorkerService::GetInstance()->FindWorkerInstance(info->child_id());
     origin_child_id_ =
-        worker_instance ? worker_instance->renderer_id : info->child_id();
+        worker_instance ? worker_instance->renderer_id() : info->child_id();
   }
 
   virtual ~ResourceRequestDetails() {}

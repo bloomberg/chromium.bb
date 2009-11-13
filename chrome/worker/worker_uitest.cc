@@ -116,25 +116,25 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
+TEST_F(WorkerTest, DISABLED_SharedWorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "shared-worker-constructor.html",
-    // Enable remaining SharedWorker tests when functionality is
-    // complete (http://crbug.com/26899)
     "shared-worker-context-gc.html",
     "shared-worker-event-listener.html",
-    //"shared-worker-exception.html",
-    //"shared-worker-frame-lifecycle.html",
+    "shared-worker-exception.html",
     "shared-worker-gc.html",
+    // Lifecycle tests rely on layoutTestController.workerThreadCount which is
+    // not currently implemented.
+    //"shared-worker-frame-lifecycle.html",
     //"shared-worker-lifecycle.html",
     "shared-worker-load-error.html",
     "shared-worker-location.html",
-    //"shared-worker-name.html",
+    "shared-worker-name.html",
     "shared-worker-navigator.html",
     "shared-worker-replace-global-constructor.html",
     "shared-worker-replace-self.html",
     "shared-worker-script-error.html",
-    //"shared-worker-shared.html",
+    "shared-worker-shared.html",
     "shared-worker-simple.html",
   };
 
