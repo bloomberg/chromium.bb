@@ -1,8 +1,8 @@
-layer at (0,0) size 785x3617
+layer at (0,0) size 785x3611
   RenderView at (0,0) size 785x600
-layer at (0,0) size 785x3617
-  RenderBlock {HTML} at (0,0) size 785x3617
-    RenderBody {BODY} at (8,21) size 769x3588
+layer at (0,0) size 785x3611
+  RenderBlock {HTML} at (0,0) size 785x3611
+    RenderBody {BODY} at (8,21) size 769x3582
       RenderBlock {H1} at (0,0) size 769x37
         RenderText {#text} at (0,0) size 500x36
           text run at (0,0) width 500: "The Residual Style Master Test Case"
@@ -123,7 +123,7 @@ layer at (0,0) size 785x3617
       RenderBlock (anonymous) at (0,535) size 769x20
         RenderText {#text} at (0,0) size 70x19
           text run at (0,0) width 70: "BUTTON: "
-        RenderButton {BUTTON} at (70,7) size 4x6 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
+        RenderButton {BUTTON} at (70,7) size 4x6 [bgcolor=#DDDDDD] [border: (2px outset #DDDDDD)]
           RenderBlock (anonymous) at (2,2) size 6x2
             RenderInline {FONT} at (0,0) size 0x0 [color=#008000]
         RenderInline {FONT} at (0,0) size 160x19 [color=#008000]
@@ -560,31 +560,31 @@ layer at (0,0) size 785x3617
             text run at (0,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
       RenderBlock {HR} at (0,2559) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2569) size 769x24
-        RenderText {#text} at (0,2) size 90x19
-          text run at (0,2) width 90: "OPTGROUP: "
-        RenderInline {FONT} at (0,0) size 217x19 [color=#008000]
-          RenderMenuList {SELECT} at (92,2) size 49x20 [color=#000000] [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-            RenderBlock (anonymous) at (1,1) size 47x18
+      RenderBlock (anonymous) at (0,2569) size 769x22
+        RenderText {#text} at (0,1) size 90x19
+          text run at (0,1) width 90: "OPTGROUP: "
+        RenderInline {FONT} at (0,0) size 215x19 [color=#008000]
+          RenderMenuList {SELECT} at (92,2) size 47x18 [color=#000000] [bgcolor=#DDDDDD]
+            RenderBlock (anonymous) at (0,0) size 47x18
               RenderText at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
-          RenderText {#text} at (143,2) size 164x19
-            text run at (143,2) width 164: " All of this should be green."
+          RenderText {#text} at (141,1) size 164x19
+            text run at (141,1) width 164: " All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2601) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2611) size 769x24
-        RenderText {#text} at (0,2) size 66x19
-          text run at (0,2) width 66: "OPTION: "
-        RenderInline {FONT} at (0,0) size 217x19 [color=#008000]
-          RenderMenuList {SELECT} at (68,2) size 49x20 [color=#000000] [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-            RenderBlock (anonymous) at (1,1) size 47x18
+      RenderBlock {HR} at (0,2599) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2609) size 769x22
+        RenderText {#text} at (0,1) size 66x19
+          text run at (0,1) width 66: "OPTION: "
+        RenderInline {FONT} at (0,0) size 215x19 [color=#008000]
+          RenderMenuList {SELECT} at (68,2) size 47x18 [color=#000000] [bgcolor=#DDDDDD]
+            RenderBlock (anonymous) at (0,0) size 47x18
               RenderText at (4,1) size 24x16
                 text run at (4,1) width 24: "One"
-          RenderText {#text} at (119,2) size 164x19
-            text run at (119,2) width 164: " All of this should be green."
+          RenderText {#text} at (117,1) size 164x19
+            text run at (117,1) width 164: " All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2643) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2653) size 769x20
+      RenderBlock {HR} at (0,2639) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2649) size 769x20
         RenderText {#text} at (0,0) size 16x19
           text run at (0,0) width 16: "P: "
         RenderInline {P} at (0,0) size 0x19
@@ -593,8 +593,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (16,0) size 160x19
             text run at (16,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2681) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2691) size 769x20
+      RenderBlock {HR} at (0,2677) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2687) size 769x20
         RenderText {#text} at (0,0) size 62x19
           text run at (0,0) width 62: "PARAM: "
         RenderInline {FONT} at (0,0) size 160x19 [color=#008000]
@@ -603,19 +603,19 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (62,0) size 160x19
             text run at (62,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2719) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2729) size 769x20
+      RenderBlock {HR} at (0,2715) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2725) size 769x20
         RenderText {#text} at (0,0) size 31x19
           text run at (0,0) width 31: "PRE:"
-      RenderBlock {PRE} at (0,2762) size 769x0
+      RenderBlock {PRE} at (0,2758) size 769x0
         RenderInline {FONT} at (0,0) size 0x0 [color=#008000]
-      RenderBlock (anonymous) at (0,2762) size 769x20
+      RenderBlock (anonymous) at (0,2758) size 769x20
         RenderInline {FONT} at (0,0) size 160x19 [color=#008000]
           RenderText {#text} at (0,0) size 160x19
             text run at (0,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2790) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2800) size 769x20
+      RenderBlock {HR} at (0,2786) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2796) size 769x20
         RenderText {#text} at (0,0) size 19x19
           text run at (0,0) width 19: "Q: "
         RenderInline {Q} at (0,0) size 10x19
@@ -630,8 +630,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (29,0) size 160x19
             text run at (29,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2828) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2838) size 769x20
+      RenderBlock {HR} at (0,2824) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2834) size 769x20
         RenderText {#text} at (0,0) size 16x19
           text run at (0,0) width 16: "S: "
         RenderInline {S} at (0,0) size 0x19
@@ -640,8 +640,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (16,0) size 160x19
             text run at (16,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2866) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2876) size 769x20
+      RenderBlock {HR} at (0,2862) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2872) size 769x20
         RenderText {#text} at (0,0) size 50x19
           text run at (0,0) width 50: "SAMP: "
         RenderInline {SAMP} at (0,0) size 0x16
@@ -650,19 +650,19 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (50,0) size 160x19
             text run at (50,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2904) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2914) size 769x24
-        RenderText {#text} at (0,2) size 63x19
-          text run at (0,2) width 63: "SELECT: "
-        RenderInline {FONT} at (0,0) size 189x19 [color=#008000]
-          RenderMenuList {SELECT} at (65,2) size 25x20 [color=#000000] [bgcolor=#FFFFFF] [border: (1px solid #000000)]
-            RenderBlock (anonymous) at (1,1) size 23x18
-              RenderBR at (4,1) size 0x16 [bgcolor=#FFFFFF]
-          RenderText {#text} at (92,2) size 160x19
-            text run at (92,2) width 160: "All of this should be green."
+      RenderBlock {HR} at (0,2900) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2910) size 769x22
+        RenderText {#text} at (0,1) size 63x19
+          text run at (0,1) width 63: "SELECT: "
+        RenderInline {FONT} at (0,0) size 187x19 [color=#008000]
+          RenderMenuList {SELECT} at (65,2) size 23x18 [color=#000000] [bgcolor=#DDDDDD]
+            RenderBlock (anonymous) at (0,0) size 23x18
+              RenderBR at (4,1) size 0x16 [bgcolor=#DDDDDD]
+          RenderText {#text} at (90,1) size 160x19
+            text run at (90,1) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2946) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2956) size 769x20
+      RenderBlock {HR} at (0,2940) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2950) size 769x20
         RenderText {#text} at (0,0) size 59x19
           text run at (0,0) width 59: "SMALL: "
         RenderInline {SMALL} at (0,0) size 0x15
@@ -671,8 +671,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (59,0) size 160x19
             text run at (59,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,2984) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,2994) size 769x20
+      RenderBlock {HR} at (0,2978) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,2988) size 769x20
         RenderText {#text} at (0,0) size 48x19
           text run at (0,0) width 48: "SPAN: "
         RenderInline {SPAN} at (0,0) size 0x19
@@ -681,8 +681,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (48,0) size 160x19
             text run at (48,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3022) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3032) size 769x20
+      RenderBlock {HR} at (0,3016) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3026) size 769x20
         RenderText {#text} at (0,0) size 61x19
           text run at (0,0) width 61: "STRIKE: "
         RenderInline {STRIKE} at (0,0) size 0x19
@@ -691,8 +691,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (61,0) size 160x19
             text run at (61,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3060) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3070) size 769x20
+      RenderBlock {HR} at (0,3054) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3064) size 769x20
         RenderText {#text} at (0,0) size 70x19
           text run at (0,0) width 70: "STRONG: "
         RenderInline {STRONG} at (0,0) size 0x19
@@ -701,8 +701,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (70,0) size 160x19
             text run at (70,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3098) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3108) size 769x23
+      RenderBlock {HR} at (0,3092) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3102) size 769x23
         RenderText {#text} at (0,0) size 37x19
           text run at (0,0) width 37: "SUB: "
         RenderInline {SUB} at (0,0) size 0x15
@@ -711,8 +711,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (37,0) size 160x19
             text run at (37,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3139) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3149) size 769x23
+      RenderBlock {HR} at (0,3133) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3143) size 769x23
         RenderText {#text} at (0,3) size 36x19
           text run at (0,3) width 36: "SUP: "
         RenderInline {SUP} at (0,0) size 0x15
@@ -721,8 +721,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (36,3) size 160x19
             text run at (36,3) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3180) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3190) size 769x20
+      RenderBlock {HR} at (0,3174) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3184) size 769x20
         RenderText {#text} at (0,0) size 55x19
           text run at (0,0) width 55: "TABLE: "
         RenderInline {FONT} at (0,0) size 164x19 [color=#008000]
@@ -732,8 +732,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (59,0) size 160x19
             text run at (59,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3218) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3228) size 769x20
+      RenderBlock {HR} at (0,3212) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3222) size 769x20
         RenderText {#text} at (0,0) size 60x19
           text run at (0,0) width 60: "TBODY: "
         RenderInline {FONT} at (0,0) size 164x19 [color=#008000]
@@ -743,8 +743,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (64,0) size 160x19
             text run at (64,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3256) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3266) size 769x20
+      RenderBlock {HR} at (0,3250) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3260) size 769x20
         RenderText {#text} at (0,0) size 27x19
           text run at (0,0) width 27: "TD: "
         RenderInline {FONT} at (0,0) size 166x19 [color=#008000]
@@ -756,8 +756,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (33,0) size 160x19
             text run at (33,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3294) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3304) size 769x20
+      RenderBlock {HR} at (0,3288) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3298) size 769x20
         RenderText {#text} at (0,0) size 58x19
           text run at (0,0) width 58: "TFOOT: "
         RenderInline {FONT} at (0,0) size 164x19 [color=#008000]
@@ -767,8 +767,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (62,0) size 160x19
             text run at (62,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3332) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3342) size 769x20
+      RenderBlock {HR} at (0,3326) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3336) size 769x20
         RenderText {#text} at (0,0) size 58x19
           text run at (0,0) width 58: "THEAD: "
         RenderInline {FONT} at (0,0) size 164x19 [color=#008000]
@@ -778,8 +778,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (62,0) size 160x19
             text run at (62,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3370) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3380) size 769x20
+      RenderBlock {HR} at (0,3364) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3374) size 769x20
         RenderText {#text} at (0,0) size 26x19
           text run at (0,0) width 26: "TR: "
         RenderInline {FONT} at (0,0) size 164x19 [color=#008000]
@@ -790,8 +790,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (30,0) size 160x19
             text run at (30,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3408) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3418) size 769x20
+      RenderBlock {HR} at (0,3402) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3412) size 769x20
         RenderText {#text} at (0,0) size 25x19
           text run at (0,0) width 25: "TT: "
         RenderInline {TT} at (0,0) size 0x16
@@ -800,8 +800,8 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (25,0) size 160x19
             text run at (25,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3446) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3456) size 769x20
+      RenderBlock {HR} at (0,3440) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3450) size 769x20
         RenderText {#text} at (0,0) size 18x19
           text run at (0,0) width 18: "U: "
         RenderInline {U} at (0,0) size 0x19
@@ -810,19 +810,19 @@ layer at (0,0) size 785x3617
           RenderText {#text} at (18,0) size 160x19
             text run at (18,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3484) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3494) size 769x20
+      RenderBlock {HR} at (0,3478) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3488) size 769x20
         RenderText {#text} at (0,0) size 23x19
           text run at (0,0) width 23: "UL:"
-      RenderBlock {UL} at (0,3530) size 769x0
+      RenderBlock {UL} at (0,3524) size 769x0
         RenderInline {FONT} at (0,0) size 0x0 [color=#008000]
-      RenderBlock (anonymous) at (0,3530) size 769x20
+      RenderBlock (anonymous) at (0,3524) size 769x20
         RenderInline {FONT} at (0,0) size 160x19 [color=#008000]
           RenderText {#text} at (0,0) size 160x19
             text run at (0,0) width 160: "All of this should be green."
         RenderText {#text} at (0,0) size 0x0
-      RenderBlock {HR} at (0,3558) size 769x2 [border: (1px inset #000000)]
-      RenderBlock (anonymous) at (0,3568) size 769x20
+      RenderBlock {HR} at (0,3552) size 769x2 [border: (1px inset #000000)]
+      RenderBlock (anonymous) at (0,3562) size 769x20
         RenderText {#text} at (0,0) size 39x19
           text run at (0,0) width 39: "VAR: "
         RenderInline {VAR} at (0,0) size 0x19
