@@ -528,7 +528,8 @@ TEST_F(ProfileSyncServiceTest, BookmarkModelOperations) {
   ExpectModelMatch();
 }
 
-TEST_F(ProfileSyncServiceTest, ServerChangeProcessing) {
+// TODO(ncarter): fix free memory access error, refer to http://crbug.com/27631
+TEST_F(ProfileSyncServiceTest, DISABLED_ServerChangeProcessing) {
   LoadBookmarkModel(DELETE_EXISTING_STORAGE, DONT_SAVE_TO_STORAGE);
   StartSyncService();
 
