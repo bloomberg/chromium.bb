@@ -51,7 +51,8 @@ typedef NSInteger ButtonType;
             showHighlightGradient:(BOOL)showHighlightGradient
                        hoverAlpha:(CGFloat)hoverAlpha
                            active:(BOOL)active
-                        cellFrame:(NSRect)cellFrame;
+                        cellFrame:(NSRect)cellFrame
+                  defaultGradient:(NSGradient*)defaultGradient;
 
 // An image to underlay beneath the existing image; not themed. May be nil.
 - (NSImage*)underlayImage;

@@ -11,6 +11,7 @@
 #include "base/file_path.h"
 
 class BaseDownloadItemModel;
+@class GTMTheme;
 
 // A button cell that implements the weird button/popup button hybrid that is
 // used by the download items.
@@ -42,6 +43,8 @@ enum DownloadItemMousePosition {
   CGFloat titleY_;
   CGFloat statusAlpha_;
   scoped_nsobject<NSAnimation> hideStatusAnimation_;
+
+  scoped_nsobject<GTMTheme> theme_;
 }
 
 - (void)setStateFromDownload:(BaseDownloadItemModel*)downloadModel;

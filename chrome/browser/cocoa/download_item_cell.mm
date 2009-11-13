@@ -88,6 +88,7 @@ const int kCompleteAnimationDuration = 2.5;
        progressed:(NSAnimationProgress)progress;
 - (NSString*)elideTitle:(int)availableWidth;
 - (NSString*)elideStatus:(int)availableWidth;
+- (GTMTheme*)backgroundTheme:(NSView*)controlView;
 @end
 
 @implementation DownloadItemCell
@@ -322,6 +323,48 @@ const int kCompleteAnimationDuration = 2.5;
       availableWidth));
 }
 
+- (GTMTheme*)backgroundTheme:(NSView*)controlView {
+  if (!theme_) {
+    theme_.reset([[GTMTheme alloc] init]);
+    NSColor* bgColor = [NSColor colorWithCalibratedRed:241/255.0
+                                                 green:245/255.0
+                                                  blue:250/255.0 
+                                                 alpha:77/255.0];
+    NSColor* clickedColor = [NSColor colorWithCalibratedRed:239/255.0
+                                                      green:245/255.0
+                                                       blue:252/255.0
+                                                      alpha:51/255.0];
+
+    NSColor* borderColor = [NSColor colorWithCalibratedWhite:0 alpha:36/255.0];
+    scoped_nsobject<NSGradient> bgGradient([[NSGradient alloc]
+        initWithColors:[NSArray arrayWithObject:bgColor]]);
+    scoped_nsobject<NSGradient> clickedGradient([[NSGradient alloc]
+        initWithColors:[NSArray arrayWithObject:clickedColor]]);
+ 
+    GTMThemeState states[] = {
+        GTMThemeStateActiveWindow, GTMThemeStateInactiveWindow
+    };
+
+    for (size_t i = 0; i < arraysize(states); ++i) {
+      [theme_.get() setValue:bgGradient
+                forAttribute:@"gradient"
+                       style:GTMThemeStyleToolBarButton
+                       state:states[i]];
+
+      [theme_.get() setValue:clickedGradient
+                forAttribute:@"gradient"
+                       style:GTMThemeStyleToolBarButtonPressed
+                       state:states[i]];
+
+      [theme_.get() setValue:borderColor
+                forAttribute:@"iconColor"
+                       style:GTMThemeStyleToolBarButton
+                       state:states[i]];
+    }
+  }
+  return theme_.get();
+}
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Constants from Cole.  Will kConstant them once the feedback loop
   // is complete.
@@ -332,7 +375,21 @@ const int kCompleteAnimationDuration = 2.5;
   NSWindow* window = [controlView window];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
 
+  // In the default theme, draw download items with the bookmark button
+  // gradient. For some themes, this leads to unreadable text, so draw the item
+  // with a background that looks like windows (some transparent white) if a
+  // theme is used. Use custom theme object with a white color gradient to trick
+  // the superclass into drawing what we want.
   GTMTheme* theme = [controlView gtm_theme];
+  bool isDefaultTheme = [theme
+      backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES] == nil;
+
+  NSGradient* bgGradient = nil;
+  if (!isDefaultTheme) {
+    theme = [self backgroundTheme:controlView];
+    bgGradient = [theme gradientForStyle:GTMThemeStyleToolBarButton
+                                   state:active];
+  }
 
   NSRect buttonDrawRect, dropdownDrawRect;
   NSDivideRect(drawFrame, &dropdownDrawRect, &buttonDrawRect,
@@ -359,9 +416,10 @@ const int kCompleteAnimationDuration = 2.5;
             showHighlightGradient:[self isMouseOverButtonPart]
                        hoverAlpha:0.0
                            active:active
-                        cellFrame:cellFrame];
+                        cellFrame:cellFrame
+                  defaultGradient:bgGradient];
 
-  [self drawBorderAndFillForTheme: theme
+  [self drawBorderAndFillForTheme:theme
                       controlView:controlView
                         outerPath:dropdownOuterPath
                         innerPath:dropdownInnerPath
@@ -369,7 +427,8 @@ const int kCompleteAnimationDuration = 2.5;
             showHighlightGradient:[self isMouseOverDropdownPart]
                        hoverAlpha:0.0
                            active:active
-                        cellFrame:cellFrame];
+                        cellFrame:cellFrame
+                  defaultGradient:bgGradient];
 
   [self drawInteriorWithFrame:innerFrame inView:controlView];
 }

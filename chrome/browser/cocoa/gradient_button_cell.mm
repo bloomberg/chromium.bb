@@ -165,9 +165,13 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
             showHighlightGradient:(BOOL)showHighlightGradient
                        hoverAlpha:(CGFloat)hoverAlpha
                            active:(BOOL)active
-                        cellFrame:(NSRect)cellFrame {
+                        cellFrame:(NSRect)cellFrame
+                  defaultGradient:(NSGradient*)defaultGradient {
   NSImage* backgroundImage =
       [theme backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES];
+
+  if (!defaultGradient)
+    defaultGradient = gradient_;
 
   if (backgroundImage) {
     NSColor* patternColor = [NSColor colorWithPatternImage:backgroundImage];
@@ -209,7 +213,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
     NSGradient *gradient = nil;
     if (hoverAlpha == 0 && !isCustomTheme) {
-      gradient = gradient_;
+      gradient = defaultGradient;
     } else {
       gradient = [self gradientForHoverAlpha:hoverAlpha isThemed:isCustomTheme];
     }
@@ -284,7 +288,8 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
               showHighlightGradient:[self isHighlighted]
                          hoverAlpha:[self hoverAlpha]
                              active:active
-                          cellFrame:cellFrame];
+                          cellFrame:cellFrame
+                    defaultGradient:nil];
   }
 
   // If this is the left side of a segmented button, draw a slight shadow.
