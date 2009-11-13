@@ -30,6 +30,8 @@
 #ifndef CHROME_TEST_SYNC_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_
 #define CHROME_TEST_SYNC_ENGINE_TEST_DIRECTORY_SETTER_UPPER_H_
 
+#include <string>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/sync_types.h"
@@ -56,18 +58,18 @@ class TestDirectorySetterUpper {
   virtual void TearDown();
 
   syncable::DirectoryManager* manager() const { return manager_.get(); }
-  const PathString& name() const { return name_; }
+  const std::string& name() const { return name_; }
 
  protected:
   // Subclasses may want to use a different directory name.
-  explicit TestDirectorySetterUpper(const PathString& name);
+  explicit TestDirectorySetterUpper(const std::string& name);
   virtual void Init();
 
  private:
   void RunInvariantCheck(const syncable::ScopedDirLookup& dir);
 
   scoped_ptr<syncable::DirectoryManager> manager_;
-  const PathString name_;
+  const std::string name_;
   FilePath file_path_;
 };
 

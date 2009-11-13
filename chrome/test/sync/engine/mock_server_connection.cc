@@ -29,7 +29,7 @@ using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 
 MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
-                                             PathString name)
+                                             const string& name)
     : ServerConnectionManager("unused", 0, false, "version", "id"),
       conflict_all_commits_(false),
       conflict_n_commits_(0),
@@ -377,7 +377,7 @@ SyncEntity* MockConnectionManager::AddUpdateBookmark(
 }
 
 void MockConnectionManager::AddUpdateExtendedAttributes(SyncEntity* ent,
-    PathString* xattr_key, syncable::Blob* xattr_value, int xattr_count) {
+    string* xattr_key, syncable::Blob* xattr_value, int xattr_count) {
   sync_pb::ExtendedAttributes* mutable_extended_attributes =
       ent->mutable_extended_attributes();
   for (int i = 0; i < xattr_count; i++) {

@@ -5,15 +5,17 @@
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_PATH_NAME_CMP_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_PATH_NAME_CMP_H_
 
+#include <string>
+
 #include "chrome/browser/sync/util/sync_types.h"
 
 namespace syncable {
 
 struct LessPathNames {
-  bool operator() (const PathString&, const PathString&) const;
+  bool operator() (const std::string&, const std::string&) const;
 };
 
-int ComparePathNames(const PathString& a, const PathString& b);
+int ComparePathNames(const std::string& a, const std::string& b);
 
 }  // namespace syncable
 

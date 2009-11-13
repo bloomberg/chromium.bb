@@ -38,12 +38,12 @@ vector<uint8> MD5Calculator::GetDigest() {
   return bin_digest_;
 }
 
-PathString MD5Calculator::GetHexDigest() {
+std::string MD5Calculator::GetHexDigest() {
   CalcDigest();
   string hex = HexEncode(reinterpret_cast<char*>(&bin_digest_.front()),
                          bin_digest_.size());
   StringToLowerASCII(&hex);
-  return PathString(hex.begin(), hex.end());
+  return hex;
 }
 
 void GetRandomBytes(char* output, int output_length) {

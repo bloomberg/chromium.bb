@@ -14,6 +14,7 @@
 
 #include <map>
 #include <set>
+#include <string>
 #include <utility>  // for pair<>
 
 #include "base/atomicops.h"
@@ -37,7 +38,7 @@ class SyncProcessState {
   ~SyncProcessState();
   SyncProcessState(
       syncable::DirectoryManager* dirman,
-      PathString account_name,
+      std::string account_name,
       ServerConnectionManager* connection_manager,
       ConflictResolver* const resolver,
       SyncerEventChannel* syncer_event_channel,
@@ -47,7 +48,7 @@ class SyncProcessState {
   SyncProcessState(const SyncProcessState& counts);
   SyncProcessState& operator=(const SyncProcessState& that);
 
-  PathString account_name() const { return account_name_; }
+  std::string account_name() const { return account_name_; }
 
   syncable::DirectoryManager* dirman() const { return dirman_; }
 
@@ -251,7 +252,7 @@ class SyncProcessState {
         auth_failed_(false) {}
 
   ServerConnectionManager* connection_manager_;
-  const PathString account_name_;
+  const std::string account_name_;
   syncable::DirectoryManager* const dirman_;
   ConflictResolver* const resolver_;
   ModelSafeWorker* const model_safe_worker_;

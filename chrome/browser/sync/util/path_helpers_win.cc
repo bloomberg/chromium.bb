@@ -19,7 +19,7 @@
 using std::string;
 
 namespace {
-const PathString kWindowsIllegalBaseFilenames[] = {
+const string kWindowsIllegalBaseFilenames[] = {
     "CON", "PRN", "AUX", "NUL", "COM1", "COM2",
     "COM3", "COM4", "COM5", "COM6", "COM7",
     "COM8", "COM9", "LPT1", "LPT2", "LPT3",
@@ -31,14 +31,14 @@ const PathString kWindowsIllegalBaseFilenames[] = {
 // en-us/fileio/fs/naming_a_file.asp
 // note that * and ? are not listed on the page as illegal characters,
 // but they are.
-PathString MakePathComponentOSLegal(const PathString& component) {
+string MakePathComponentOSLegal(const string& component) {
   CHECK(!component.empty());
-  PathString mutable_component = component;
+  string mutable_component = component;
 
   // Remove illegal characters.
-  for (PathString::iterator i = mutable_component.begin();
+  for (string::iterator i = mutable_component.begin();
        i != mutable_component.end();) {
-    if ((PathString::npos != PathString("<>:\"/\\|*?").find(*i)) ||
+    if ((string::npos != string("<>:\"/\\|*?").find(*i)) ||
         ((static_cast<unsigned short>(*i) >= 0) &&
          (static_cast<unsigned short>(*i) <= 31))) {
       mutable_component.erase(i);
@@ -61,11 +61,11 @@ PathString MakePathComponentOSLegal(const PathString& component) {
   // From this point out, we break mutable_component into two strings, and use
   // them this way: we save anything after and including the first dot (usually
   // the extension) and only mess with stuff before the first dot.
-  PathString::size_type first_dot = mutable_component.find_first_of('.');
-  if (PathString::npos == first_dot)
+  string::size_type first_dot = mutable_component.find_first_of('.');
+  if (string::npos == first_dot)
     first_dot = mutable_component.size();
-  PathString sub = mutable_component.substr(0, first_dot);
-  PathString postsub = mutable_component.substr(first_dot);
+  string sub = mutable_component.substr(0, first_dot);
+  string postsub = mutable_component.substr(first_dot);
   CHECK(sub + postsub == mutable_component);
   for (int i = 0; i < ARRAYSIZE(kWindowsIllegalBaseFilenames); i++) {
     // ComparePathNames(a, b) == 0 -> same

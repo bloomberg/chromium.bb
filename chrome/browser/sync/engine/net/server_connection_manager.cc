@@ -345,7 +345,7 @@ void ServerConnectionManager::GetServerParameters(string* server_url,
 
 bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
                                  syncable::DirectoryManager* manager,
-                                 const PathString &share) {
+                                 const std::string& share) {
   syncable::ScopedDirLookup dir(manager, share);
   if (!dir.good()) {
     LOG(INFO) << "Dir lookup failed";

@@ -344,7 +344,7 @@ class ServerConnectionManager {
 // settings.
 bool FillMessageWithShareDetails(sync_pb::ClientToServerMessage* csm,
                                  syncable::DirectoryManager* manager,
-                                 const PathString &share);
+                                 const std::string& share);
 
 }  // namespace browser_sync
 

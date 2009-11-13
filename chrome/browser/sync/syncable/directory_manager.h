@@ -12,6 +12,7 @@
 #ifndef CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_MANAGER_H_
 #define CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_MANAGER_H_
 
+#include <string>
 #include <vector>
 
 #include "base/atomicops.h"
@@ -36,7 +37,7 @@ struct DirectoryManagerEvent {
     CLOSED_ALL,
     SHUTDOWN,
   } what_happened;
-  PathString dirname;
+  std::string dirname;
   DirOpenResult error;  // Only for OPEN_FAILED.
   typedef DirectoryManagerEvent EventType;
   static inline bool IsChannelShutdownEvent(const EventType& event) {
@@ -60,23 +61,23 @@ class DirectoryManager {
   // Opens a directory.  Returns false on error.
   // Name parameter is the the user's login,
   // MUST already have been converted to a common case.
-  bool Open(const PathString& name);
+  bool Open(const std::string& name);
 
   // Marks a directory as closed.  It might take a while until all the
   // file handles and resources are freed by other threads.
-  void Close(const PathString& name);
+  void Close(const std::string& name);
 
   // Should be called at App exit.
   void FinalSaveChangesForAll();
 
   // Gets the list of currently open directory names.
-  typedef std::vector<PathString> DirNames;
+  typedef std::vector<std::string> DirNames;
   void GetOpenDirectories(DirNames* result);
 
   Channel* channel() const { return channel_; }
 
  protected:
-  DirOpenResult OpenImpl(const PathString& name, const FilePath& path,
+  DirOpenResult OpenImpl(const std::string& name, const FilePath& path,
                          bool* was_open);
 
   // Helpers for friend class ScopedDirLookup:
@@ -98,7 +99,7 @@ class DirectoryManager {
 
 class ScopedDirLookup {
  public:
-  ScopedDirLookup(DirectoryManager* dirman, const PathString& name);
+  ScopedDirLookup(DirectoryManager* dirman, const std::string& name);
   ~ScopedDirLookup();
 
   inline bool good() {

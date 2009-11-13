@@ -15,8 +15,8 @@ class CharacterSetConverterTest : public testing::Test {
 
 TEST(NameTruncation, WindowsNameTruncation) {
   using browser_sync::TrimPathStringToValidCharacter;
-  PathChar array[] = {'1', '2', '\xc0', '\xe0', '3', '4', '\0'};
-  PathString message = array;
+  char array[] = {'1', '2', '\xc0', '\xe0', '3', '4', '\0'};
+  std::string message(array);
   ASSERT_EQ(message.length(), arraysize(array) - 1);
   string::size_type old_length = message.length();
   while (old_length != 0) {

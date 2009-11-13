@@ -28,7 +28,7 @@ class MD5Calculator {
   void AddData(const char* data, int length) {
     AddData(reinterpret_cast<const uint8*>(data), length);
   }
-  PathString GetHexDigest();
+  std::string GetHexDigest();
   std::vector<uint8> GetDigest();
  private:
   DISALLOW_COPY_AND_ASSIGN(MD5Calculator);

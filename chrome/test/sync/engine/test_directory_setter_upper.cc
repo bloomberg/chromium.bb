@@ -18,7 +18,7 @@ using syncable::ScopedDirLookup;
 namespace browser_sync {
 
 TestDirectorySetterUpper::TestDirectorySetterUpper() : name_(PSTR("Test")) {}
-TestDirectorySetterUpper::TestDirectorySetterUpper(const PathString& name)
+TestDirectorySetterUpper::TestDirectorySetterUpper(const std::string& name)
     : name_(name) {}
 
 TestDirectorySetterUpper::~TestDirectorySetterUpper() {}

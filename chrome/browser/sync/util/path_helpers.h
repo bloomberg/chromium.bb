@@ -75,6 +75,6 @@ class PathSegmentIterator : public std::iterator<std::forward_iterator_tag,
 // on mac/linux we let names stay unicode normalization form C in the system
 // and convert to another normal form in fuse handlers. but, if a '/' is in
 // a filename, we handle it here.
-PathString MakePathComponentOSLegal(const PathString& component);
+std::string MakePathComponentOSLegal(const std::string& component);
 
 #endif  // CHROME_BROWSER_SYNC_UTIL_PATH_HELPERS_H_

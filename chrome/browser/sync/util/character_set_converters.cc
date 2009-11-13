@@ -6,7 +6,7 @@
 
 namespace browser_sync {
 
-void TrimPathStringToValidCharacter(PathString* string) {
+void TrimPathStringToValidCharacter(std::string* string) {
   // Constants from http://en.wikipedia.org/wiki/UTF-8
   CHECK(string);
   if (string->empty())

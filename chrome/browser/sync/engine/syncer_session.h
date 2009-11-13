@@ -11,6 +11,7 @@
 #ifndef CHROME_BROWSER_SYNC_ENGINE_SYNCER_SESSION_H_
 #define CHROME_BROWSER_SYNC_ENGINE_SYNCER_SESSION_H_
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -100,7 +101,7 @@ class SyncerSession {
     return sync_cycle_state_->HasAppliedUpdates();
   }
 
-  PathString account_name() const {
+  std::string account_name() const {
     return sync_process_state_->account_name();
   }
 

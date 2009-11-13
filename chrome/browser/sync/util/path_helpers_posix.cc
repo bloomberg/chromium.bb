@@ -10,11 +10,13 @@
 #error Compile this file on Mac OS X or Linux only.
 #endif
 
+using std::string;
+
 // Convert /s to :s.
-PathString MakePathComponentOSLegal(const PathString& component) {
-  if (PathString::npos == component.find("/"))
-    return PSTR("");
-  PathString new_name(component);
+string MakePathComponentOSLegal(const string& component) {
+  if (string::npos == component.find("/"))
+    return "";
+  string new_name(component);
   std::replace(new_name.begin(), new_name.end(), '/', ':');
   return new_name;
 }

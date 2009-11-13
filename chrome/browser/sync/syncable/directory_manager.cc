@@ -48,7 +48,7 @@ DirectoryManager::~DirectoryManager() {
   delete channel_;
 }
 
-bool DirectoryManager::Open(const PathString& name) {
+bool DirectoryManager::Open(const std::string& name) {
   bool was_open = false;
   const DirOpenResult result = OpenImpl(name,
       GetSyncDataDatabasePath(), &was_open);
@@ -67,7 +67,7 @@ bool DirectoryManager::Open(const PathString& name) {
 }
 
 // Opens a directory.  Returns false on error.
-DirOpenResult DirectoryManager::OpenImpl(const PathString& name,
+DirOpenResult DirectoryManager::OpenImpl(const std::string& name,
                                          const FilePath& path,
                                          bool* was_open) {
   bool opened = false;
@@ -96,7 +96,7 @@ DirOpenResult DirectoryManager::OpenImpl(const PathString& name,
 
 // Marks a directory as closed.  It might take a while until all the file
 // handles and resources are freed by other threads.
-void DirectoryManager::Close(const PathString& name) {
+void DirectoryManager::Close(const std::string& name) {
   // Erase from mounted and opened directory lists.
   {
     AutoLock lock(lock_);
@@ -131,7 +131,7 @@ void DirectoryManager::GetOpenDirectories(DirNames* result) {
 }
 
 ScopedDirLookup::ScopedDirLookup(DirectoryManager* dirman,
-                                 const PathString& name) : dirman_(dirman) {
+                                 const std::string& name) : dirman_(dirman) {
   dir_ = dirman->managed_directory_ &&
          (ComparePathNames(name, dirman->managed_directory_->name()) == 0) ?
          dirman->managed_directory_ : NULL;

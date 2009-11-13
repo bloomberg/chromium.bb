@@ -121,7 +121,7 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
     case Authenticator::SUCCESS:
       {
         status_ = GAIA_AUTHENTICATED;
-        const PathString& share_name = email;
+        const std::string& share_name = email;
         user_settings_->SwitchUser(email);
 
         // Set the authentication token for notifications
@@ -163,7 +163,7 @@ bool AuthWatcher::AuthenticateLocally(string email) {
     gaia_->SetUsername(email);
     status_ = LOCALLY_AUTHENTICATED;
     user_settings_->SwitchUser(email);
-    const PathString& share_name = email;
+    const std::string& share_name = email;
     LoadDirectoryListAndOpen(share_name);
     NotifyAuthSucceeded(email);
     return true;
@@ -289,7 +289,7 @@ void AuthWatcher::DoHandleServerConnectionEvent(
   }
 }
 
-bool AuthWatcher::LoadDirectoryListAndOpen(const PathString& login) {
+bool AuthWatcher::LoadDirectoryListAndOpen(const std::string& login) {
   DCHECK_EQ(MessageLoop::current(), message_loop());
   LOG(INFO) << "LoadDirectoryListAndOpen(" << login << ")";
   bool initial_sync_ended = false;

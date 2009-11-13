@@ -12,6 +12,6 @@ TEST(ChecksumTest, MD5ChecksumTest) {
   }
   MD5Calculator md5;
   md5.AddData(buffer, arraysize(buffer));
-  PathString checksum(PSTR("e2c865db4162bed963bfaa9ef6ac18f0"));
+  std::string checksum("e2c865db4162bed963bfaa9ef6ac18f0");
   ASSERT_EQ(checksum, md5.GetHexDigest());
 }

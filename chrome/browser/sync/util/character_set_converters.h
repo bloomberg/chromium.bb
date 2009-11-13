@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_UTIL_CHARACTER_SET_CONVERTERS_H_
 #define CHROME_BROWSER_SYNC_UTIL_CHARACTER_SET_CONVERTERS_H_
 
+#include <string>
+
 #include "base/file_path.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -21,7 +23,7 @@ std::string FilePathToUTF8(const FilePath& file_path);
 // Returns FilePath from the given UTF8 string.
 FilePath UTF8ToFilePath(const std::string& utf8);
 
-void TrimPathStringToValidCharacter(PathString* string);
+void TrimPathStringToValidCharacter(std::string* string);
 
 }  // namespace browser_sync
 

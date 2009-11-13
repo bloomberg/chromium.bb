@@ -32,7 +32,7 @@ SyncProcessState::SyncProcessState(const SyncProcessState& counts)
 }
 
 SyncProcessState::SyncProcessState(syncable::DirectoryManager* dirman,
-                                   PathString account_name,
+                                   std::string account_name,
                                    ServerConnectionManager* connection_manager,
                                    ConflictResolver* const resolver,
                                    SyncerEventChannel* syncer_event_channel,

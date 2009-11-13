@@ -96,7 +96,7 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
 
   // Returns true if the open share has gotten zero updates from the sync
   // server (initial sync complete).
-  bool LoadDirectoryListAndOpen(const PathString& login);
+  bool LoadDirectoryListAndOpen(const std::string& login);
 
   typedef EventChannel<AuthWatcherEvent, Lock> Channel;
 

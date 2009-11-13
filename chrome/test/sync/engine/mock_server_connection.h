@@ -36,7 +36,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     virtual void Observe() = 0;
   };
 
-  MockConnectionManager(syncable::DirectoryManager* dirmgr, PathString name);
+  MockConnectionManager(syncable::DirectoryManager* dirmgr,
+                        const std::string& name);
   virtual ~MockConnectionManager();
 
   // Overridden ServerConnectionManager functions.
@@ -97,7 +98,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                                          int64 version,
                                          int64 sync_ts);
   void AddUpdateExtendedAttributes(sync_pb::SyncEntity* ent,
-                                   PathString* xattr_key,
+                                   std::string* xattr_key,
                                    syncable::Blob* xattr_value,
                                    int xattr_count);
   // Prepare to add checksums.
@@ -204,7 +205,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // Our directory.
   syncable::DirectoryManager* directory_manager_;
-  PathString directory_name_;
+  std::string directory_name_;
 
   // The updates we'll return to the next request.
   sync_pb::GetUpdatesResponse updates_;
