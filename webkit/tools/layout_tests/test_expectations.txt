@@ -3090,8 +3090,6 @@ BUG27418 MAC : LayoutTests/transitions/shorthand-border-transitions.html = PASS 
 // as well as somethings that might be legitimate bugs.
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-host.html = TEXT
-BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hostname.html = TEXT
-BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-pathname.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-search.html = TEXT
