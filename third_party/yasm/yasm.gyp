@@ -60,6 +60,7 @@
     {
       'target_name': 'yasm',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [
         'config_sources',
         'genmacro',
@@ -337,6 +338,7 @@
     {
       'target_name': 'config_sources',
       'type': 'none',
+      'toolsets': ['host'],
       'sources': [
         'source/config/<(OS)/Makefile',
         'source/config/<(OS)/config.h',
@@ -346,6 +348,7 @@
     {
       'target_name': 'generate_files',
       'type': 'none',
+      'toolsets': ['host'],
       'dependencies': [
         'genperf',
         'genversion',
@@ -407,6 +410,7 @@
     {
       'target_name': 'genperf_libs',
       'type': 'static_library',
+      'toolsets': ['host'],
       'dependencies': [ 'config_sources', ],
       'sources': [
          'source/patched-yasm/libyasm/phash.c',
@@ -424,6 +428,7 @@
     {
       'target_name': 'genstring',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [ 'config_sources', ],
       'sources': [
          'source/patched-yasm/genstring.c',
@@ -438,6 +443,7 @@
     {
       'target_name': 'genperf',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [
         'genperf_libs',
       ],
@@ -455,6 +461,7 @@
     {
       'target_name': 'genmacro',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [ 'config_sources', ],
       'sources': [
         'source/patched-yasm/tools/genmacro/genmacro.c',
@@ -469,6 +476,7 @@
     {
       'target_name': 'genversion',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [ 'config_sources', ],
       'sources': [
          'source/patched-yasm/modules/preprocs/nasm/genversion.c',
@@ -483,6 +491,7 @@
     {
       'target_name': 're2c',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [ 'config_sources', ],
       'sources': [
          'source/patched-yasm/tools/re2c/main.c',
@@ -505,6 +514,7 @@
     {
       'target_name': 'genmodule',
       'type': 'executable',
+      'toolsets': ['host'],
       'dependencies': [
         'config_sources',
       ],

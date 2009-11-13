@@ -49,15 +49,20 @@
       'variables': {
         'target_for_binaries': 'ffmpegsumo_nolink',
         'ffmpeg_include_root': 'source/patched-ffmpeg-mt',
+        'conditions': [
+          ['target_arch=="x64" or target_arch=="ia32"', {
+            'ffmpeg_asm_lib': 1,
+          }],
+          ['target_arch=="arm"', {
+            'ffmpeg_asm_lib': 0,
+          }],
+        ],
       },
       'targets': [
         {
           'target_name': 'ffmpegsumo',
           'product_name': 'libffmpegsumo',
           'type': 'shared_library',
-          'dependencies': [
-            'make_ffmpeg_asm_lib',
-          ],
           'sources': [
             'source/patched-ffmpeg-mt/libavcodec/aac.c',
             'source/patched-ffmpeg-mt/libavcodec/aac_ac3_parser.c',
@@ -103,20 +108,6 @@
             'source/patched-ffmpeg-mt/libavcodec/vorbis_dec.c',
             'source/patched-ffmpeg-mt/libavcodec/vp3.c',
             'source/patched-ffmpeg-mt/libavcodec/vp3dsp.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/cpuid.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/dnxhd_mmx.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/dsputil_mmx.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/fdct_mmx.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/fft_3dn.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/fft_3dn2.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/fft_sse.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/idct_mmx_xvid.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/idct_sse2_xvid.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/motion_est_mmx.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/mpegvideo_mmx.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/simple_idct_mmx.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/vp3dsp_mmx.c',
-            'source/patched-ffmpeg-mt/libavcodec/x86/vp3dsp_sse2.c',
             'source/patched-ffmpeg-mt/libavcodec/xiph.c',
             'source/patched-ffmpeg-mt/libavformat/allformats.c',
             'source/patched-ffmpeg-mt/libavformat/avio.c',
@@ -188,6 +179,27 @@
                 'source/patched-ffmpeg-mt/libavformat/mp3.c',
               ],
             }],  # ffmpeg_branding
+            ['target_arch=="ia32" or target_arch=="x64"', {
+              'dependencies': [
+                'make_ffmpeg_asm_lib',
+              ],
+              'sources': [
+                'source/patched-ffmpeg-mt/libavcodec/x86/cpuid.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/dnxhd_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/dsputil_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/fdct_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/fft_3dn.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/fft_3dn2.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/fft_sse.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/idct_mmx_xvid.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/idct_sse2_xvid.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/motion_est_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/mpegvideo_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/simple_idct_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/vp3dsp_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/vp3dsp_sse2.c',
+              ],
+            }],
             ['target_arch=="x64"', {
               # x64 requires PIC for shared libraries. This is opposite
               # of ia32 where due to a slew of inline assembly using ebx,
@@ -198,7 +210,30 @@
               'cflags': [
                 '-fPIC',
               ],
-            }],  # target_arch
+            }],  # target_arch=="x64"
+            ['target_arch=="arm"', {
+              'defines': [
+                'PIC',
+              ],
+              'cflags': [
+                '-fPIC',
+                '-march=armv7-a',
+                '-mtune=cortex-a8',
+                '-mfpu=neon',
+                '-mfloat-abi=softfp',
+              ],
+              'sources': [
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_arm.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_arm_s.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_vfp.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/float_arm_vfp.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/jrevdct_arm.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_arm.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv5te.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv6.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
+              ],
+            }],  # target_arch=="arm"
             ['OS=="linux" or OS=="freebsd"', {
               'defines': [
                 '_ISOC99_SOURCE',
@@ -222,12 +257,17 @@
                   '-L<(shared_generated_dir)',
                 ],
                 'libraries': [
-                  # TODO(ajwong): When scons is dead, collapse this with the
-                  # absolute path entry inside the OS="mac" conditional, and
-                  # move it out of the conditionals block altogether.
-                  '-l<(asm_library)',
-
                   '-lz',
+                ],
+                'conditions': [
+                  ['ffmpeg_asm_lib==1', {
+                    'libraries': [
+                      # TODO(ajwong): When scons is dead, collapse this with the
+                      # absolute path entry inside the OS="mac" conditional, and
+                      # move it out of the conditionals block altogether.
+                      '-l<(asm_library)',
+                    ],
+                  }],
                 ],
               },
             }],  # OS=="linux" or OS=="freebsd"
@@ -293,7 +333,7 @@
           'target_name': 'assemble_ffmpeg_asm',
           'type': 'none',
           'dependencies': [
-            '../yasm/yasm.gyp:yasm',
+            '../yasm/yasm.gyp:yasm#host',
           ],
           'sources': [
             # The FFmpeg yasm files.
@@ -323,6 +363,11 @@
                           '-m', 'amd64',
                           '-DPIC',
                         ],
+                      },
+                    }],
+                    ['target_arch=="arm"', {
+                      'variables': {
+                        'yasm_flags': [],
                       },
                     }],
                   ],

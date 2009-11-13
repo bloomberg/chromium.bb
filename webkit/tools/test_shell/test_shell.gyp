@@ -537,7 +537,7 @@
             ],
           },
         }],
-        ['OS=="linux" and target_arch=="x64"', {
+        ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
           # Shared libraries need -fPIC on x86-64
           'cflags': ['-fPIC']
         }],
