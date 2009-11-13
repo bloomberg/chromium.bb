@@ -801,8 +801,8 @@ void TestWebViewDelegate::didReceiveTitle(
   std::wstring wtitle = UTF16ToWideHack(title);
 
   if (shell_->ShouldDumpFrameLoadCallbacks()) {
-    printf("%S - didReceiveTitle\n",
-           GetFrameDescription(frame).c_str());
+    printf("%S - didReceiveTitle: %S\n",
+           GetFrameDescription(frame).c_str(), wtitle.c_str());
   }
 
   if (shell_->ShouldDumpTitleChanges()) {

@@ -2888,9 +2888,6 @@ BUG21919 WIN RELEASE : LayoutTests/http/tests/security/mixedContent/insecure-css
 BUG21958 LINUX DEBUG : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 BUG21958 MAC : LayoutTests/svg/hixie/error/012.xml = FAIL PASS
 
-// WK roll 48399:48423 (brettw)
-BUG22014 : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = FAIL
-
 // WebKit merge 48500:48585, newly implemented Object.defineProperty.
 BUG22526 : LayoutTests/fast/js/Object-create.html = FAIL
 BUG22526 : LayoutTests/fast/js/Object-defineProperties.html = FAIL
