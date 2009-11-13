@@ -20,6 +20,17 @@ class TabContents;
 
 class BugReportUtil {
  public:
+  enum BugType {
+    PAGE_WONT_LOAD = 0,
+    PAGE_LOOKS_ODD,
+    PHISHING_PAGE,
+    CANT_SIGN_IN,
+    CHROME_MISBEHAVES,
+    SOMETHING_MISSING,
+    BROWSER_CRASH,
+    OTHER_PROBLEM
+  };
+
   // SetOSVersion copies the maj.minor.build + servicePack_string
   // into a string. We currently have:
   //   win_util::GetWinVersion returns WinVersion, which is just

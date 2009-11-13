@@ -31,9 +31,9 @@ TEST_F(BugReportWindowControllerUnittest, ReportBugWithNewTabPageOpen) {
                   profile:profile_.get()];
 
   // The phishing report bug is stored at index 2 in the Report Bug dialog.
-  [controller setBugType:2];
+  [controller setBugTypeIndex:2];
   EXPECT_TRUE([controller isPhishingReport]);
-  [controller setBugType:1];
+  [controller setBugTypeIndex:1];
   EXPECT_FALSE([controller isPhishingReport]);
 
   // Make sure that the tab was correctly recorded.

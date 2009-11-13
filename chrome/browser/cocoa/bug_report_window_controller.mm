@@ -17,7 +17,7 @@
 @implementation BugReportWindowController
 
 @synthesize bugDescription = bugDescription_;
-@synthesize bugType = bugType_;
+@synthesize bugTypeIndex = bugTypeIndex_;
 @synthesize pageURL = pageURL_;
 @synthesize pageTitle = pageTitle_;
 @synthesize sendScreenshot = sendScreenshot_;
@@ -32,6 +32,15 @@
     currentTab_ = currentTab;
     profile_ = profile;
 
+    // The order of strings in this array must match the order of the bug types
+    // declared below in the bugTypeFromIndex function.
+    bugTypeList_ = [[NSMutableArray alloc] initWithObjects:
+        l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_CHROME_MISBEHAVES),
+        l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_SOMETHING_MISSING),
+        l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_BROWSER_CRASH),
+        l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_OTHER_PROBLEM),
+        nil];
+
     if (currentTab_ != NULL) {
       // Get data from current tab, if one exists. This dialog could be called
       // from the main menu with no tab contents, so currentTab_ is not
@@ -40,16 +49,16 @@
       // window exists.
       [self setSendScreenshot:YES];
       [self setDisableScreenshotCheckbox:NO];
-      bugTypeList_ = [[NSArray alloc] initWithObjects:
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PAGE_WONT_LOAD),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PAGE_LOOKS_ODD),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PHISHING_PAGE),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_CANT_SIGN_IN),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_CHROME_MISBEHAVES),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_SOMETHING_MISSING),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_BROWSER_CRASH),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_OTHER_PROBLEM),
-          nil];
+      // Insert menu items about bugs related to specific pages.
+      [bugTypeList_ insertObjects:
+          [NSArray arrayWithObjects:
+              l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PAGE_WONT_LOAD),
+              l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PAGE_LOOKS_ODD),
+              l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PHISHING_PAGE),
+              l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_CANT_SIGN_IN),
+              nil]
+          atIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(0, 4)]];
+
       [self setPageURL:base::SysUTF8ToNSString(
           currentTab_->controller().GetActiveEntry()->url().spec())];
       [self setPageTitle:base::SysUTF16ToNSString(currentTab_->GetTitle())];
@@ -60,12 +69,6 @@
       // options, with page URL and title empty, and screenshot disabled.
       [self setSendScreenshot:NO];
       [self setDisableScreenshotCheckbox:YES];
-      bugTypeList_ = [[NSArray alloc] initWithObjects:
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_CHROME_MISBEHAVES),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_SOMETHING_MISSING),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_BROWSER_CRASH),
-          l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_OTHER_PROBLEM),
-          nil];
     }
   }
   return self;
@@ -76,6 +79,7 @@
   [pageTitle_ release];
   [bugDescription_ release];
   [bugTypeList_ release];
+  [bugTypeDictionary_ release];
   [super dealloc];
 }
 
@@ -103,7 +107,7 @@
     BugReportUtil::SendReport(
         profile_,
         base::SysNSStringToUTF8(pageTitle_),
-        bugType_,
+        [self bugTypeFromIndex],
         base::SysNSStringToUTF8(pageURL_),
         base::SysNSStringToUTF8(bugDescription_),
         sendScreenshot_ && !pngData_.empty() ?
@@ -118,13 +122,32 @@
 }
 
 - (BOOL)isPhishingReport {
-  return bugType_ == [bugTypeList_ indexOfObject:
-      l10n_util::GetNSStringWithFixup(IDS_BUGREPORT_PHISHING_PAGE)];
+  return [self bugTypeFromIndex] == BugReportUtil::PHISHING_PAGE;
+}
+
+- (int)bugTypeFromIndex {
+  // The order of these bugs must match the ordering in the bugTypeList_,
+  // and thereby the menu in the popup button in the dialog box.
+  const BugReportUtil::BugType typesForMenuIndices[] = {
+    BugReportUtil::PAGE_WONT_LOAD,
+    BugReportUtil::PAGE_LOOKS_ODD,
+    BugReportUtil::PHISHING_PAGE,
+    BugReportUtil::CANT_SIGN_IN,
+    BugReportUtil::CHROME_MISBEHAVES,
+    BugReportUtil::SOMETHING_MISSING,
+    BugReportUtil::BROWSER_CRASH,
+    BugReportUtil::OTHER_PROBLEM
+  };
+  // The bugs for the shorter menu start at index 4.
+  NSUInteger adjustedBugTypeIndex_ = [bugTypeList_ count] == 8 ? bugTypeIndex_ :
+      bugTypeIndex_ + 4;
+  DCHECK_LT(adjustedBugTypeIndex_, arraysize(typesForMenuIndices));
+  return typesForMenuIndices[adjustedBugTypeIndex_];
 }
 
 // Custom setter to update the UI for different bug types.
-- (void)setBugType:(NSUInteger)bugType {
-  bugType_ = bugType;
+- (void)setBugTypeIndex:(NSUInteger)bugTypeIndex {
+  bugTypeIndex_ = bugTypeIndex;
 
   // The "send" button's title is based on the type of report.
   NSString* buttonTitle = [self isPhishingReport] ?
@@ -164,6 +187,19 @@
     const NSTimeInterval kQuickTransitionInterval = 0.1;
     [animation setDuration:kQuickTransitionInterval];
     [animation startAnimation];
+
+    // Save or reload description when moving between phishing page and other
+    // bug report types.
+    if ([self isPhishingReport]) {
+        saveBugDescription_.reset([[self bugDescription] retain]);
+        [self setBugDescription:nil];
+        saveSendScreenshot_ = sendScreenshot_;
+        [self setSendScreenshot:NO];
+    } else {
+        [self setBugDescription:saveBugDescription_.get()];
+        saveBugDescription_.reset();
+        [self setSendScreenshot:saveSendScreenshot_];
+    }
   }
 }
 
@@ -182,11 +218,10 @@
 + (NSSet*)keyPathsForValuesAffectingValueForKey:(NSString*)key {
   NSSet* paths = [super keyPathsForValuesAffectingValueForKey:key];
   if ([key isEqualToString:@"isPhishingReport"]) {
-    paths = [paths setByAddingObject:@"bugType"];
+    paths = [paths setByAddingObject:@"bugTypeIndex"];
   }
   return paths;
 }
 
 @end
-
 

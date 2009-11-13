@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/scoped_ptr.h"
+#include "base/scoped_nsobject.h"
 
 class Profile;
 class TabContents;
@@ -29,7 +29,7 @@ class TabContents;
   // Values bound to data in the dialog box. These values cannot be boxed in
   // scoped_nsobjects because we use them for bindings.
   NSString* bugDescription_;  // Strong.
-  NSUInteger bugType_;
+  NSUInteger bugTypeIndex_;
   NSString* pageTitle_;  // Strong.
   NSString* pageURL_;  // Strong.
 
@@ -39,7 +39,10 @@ class TabContents;
   // This button must be moved when the send report button changes title.
   IBOutlet NSButton* cancelButton_;
 
-  // If the user wants to send a screen shot.
+  // The popup button that allows choice of bug type.
+  IBOutlet NSPopUpButton* bugTypePopUpButton_;
+
+  // YES sends a screenshot along with the bug report.
   BOOL sendScreenshot_;
 
   // Disable screenshot if no browser window is open.
@@ -49,7 +52,17 @@ class TabContents;
   // IB so that we can nicely check whether the phishing page is selected,
   // and so that we can create a menu without "page" options when no browser
   // window is open.
-  NSArray* bugTypeList_;  // Strong.
+  NSMutableArray* bugTypeList_;  // Strong.
+
+  // When dialog switches from regular bug reports to phishing page, "save
+  // screenshot" and "description" are disabled. Save the state of this value
+  // to restore if the user switches back to a regular bug report before
+  // sending.
+  BOOL saveSendScreenshot_;
+  scoped_nsobject<NSString> saveBugDescription_;  // Strong
+
+  // Maps bug type menu item title strings to BugReportUtil::BugType ints.
+  NSDictionary* bugTypeDictionary_;  // Strong
 }
 
 // Initialize with the contents of the tab to be reported as buggy / wrong.
@@ -70,6 +83,10 @@ class TabContents;
 // YES if the user has selected the phishing report option.
 - (BOOL)isPhishingReport;
 
+// Converts the bug type from the menu into the correct value for the bug type
+// from BugReportUtil::BugType.
+- (int)bugTypeFromIndex;
+
 // Force the description text field to allow "return" to go to the next line
 // within the description field. Without this delegate method, "return" falls
 // back to the "Send Report" action, because this button has been bound to
@@ -79,7 +96,7 @@ class TabContents;
 
 // Properties for bindings.
 @property (copy, nonatomic) NSString* bugDescription;
-@property NSUInteger bugType;
+@property NSUInteger bugTypeIndex;
 @property (copy, nonatomic) NSString* pageTitle;
 @property (copy, nonatomic) NSString* pageURL;
 @property BOOL sendScreenshot;
