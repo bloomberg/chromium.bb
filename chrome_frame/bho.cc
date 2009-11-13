@@ -247,19 +247,27 @@ Bho* Bho::GetCurrentThreadBhoInstance() {
   return bho_current_thread_instance_.Pointer()->Get();
 }
 
-void PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
-  if (state_ != UNKNOWN)
-    return;
+bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
+  bool ret = false;
 
-  HttpNegotiatePatch::Initialize();
+  _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
 
-  bool patch_protocol = GetConfigBool(true, kPatchProtocols);
-  if (patch_protocol) {
-    ProtocolSinkWrap::PatchProtocolHandlers();
-    state_ = PATCH_PROTOCOL;
-  } else {
-    state_ = PATCH_IBROWSER;
+  if (state_ == UNKNOWN) {
+    HttpNegotiatePatch::Initialize();
+
+    bool patch_protocol = GetConfigBool(true, kPatchProtocols);
+    if (patch_protocol) {
+      ProtocolSinkWrap::PatchProtocolHandlers();
+      state_ = PATCH_PROTOCOL;
+    } else {
+      state_ = PATCH_IBROWSER;
+    }
+    ret = true;
   }
+
+  _pAtlModule->m_csStaticDataInitAndTypeInfo.Unlock();
+
+  return ret;
 }
 
 void PatchHelper::PatchBrowserService(IBrowserService* browser_service) {

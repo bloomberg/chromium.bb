@@ -259,8 +259,8 @@ STDAPI DllCanUnloadNow() {
 
 // Returns a class factory to create an object of the requested type
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
-  if (g_patch_helper.state() == PatchHelper::UNKNOWN) {
-    g_patch_helper.InitializeAndPatchProtocolsIfNeeded();
+  if (g_patch_helper.InitializeAndPatchProtocolsIfNeeded()) {
+    // We should only get here once.
     UrlMkSetSessionOption(URLMON_OPTION_USERAGENT_REFRESH, NULL, 0, 0);
   }
 

@@ -30,7 +30,10 @@ class PatchHelper {
     return state_;
   }
 
-  void InitializeAndPatchProtocolsIfNeeded();
+  // Returns true if protocols were patched, false if patching has already
+  // been done.
+  bool InitializeAndPatchProtocolsIfNeeded();
+
   void PatchBrowserService(IBrowserService* p);
   void UnpatchIfNeeded();
  protected:
