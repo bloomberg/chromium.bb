@@ -280,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceContentLength) {
 }
 
 // Tests resource headers.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestResourceHeaders) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
   RunTest("testResourceHeaders", kResourceTestPage);
 }
 
@@ -330,44 +330,44 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestSetBreakpoint) {
 }
 
 // Tests pause on exception.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseOnException) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseOnException) {
   RunTest("testPauseOnException", kPauseOnExceptionTestPage);
 }
 
 // Tests that debugger works correctly if pause event occurs when DevTools
 // frontend is being loaded.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestPauseWhenLoadingDevTools) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
 }
 
 // Tests eval on call frame.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestEvalOnCallFrame) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
 }
 
 // Tests step over functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepOver) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOver) {
   RunTest("testStepOver", kDebuggerStepTestPage);
 }
 
 // Tests step out functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepOut) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepOut) {
   RunTest("testStepOut", kDebuggerStepTestPage);
 }
 
 // Tests step in functionality in the debugger.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestStepIn) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepIn) {
   RunTest("testStepIn", kDebuggerStepTestPage);
 }
 
 // Tests that scope can be expanded and contains expected variables.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestExpandScope) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestExpandScope) {
   RunTest("testExpandScope", kDebuggerClosurePage);
 }
 
 // Tests that intrinsic properties(__proto__, prototype, constructor) are
 // present.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestDebugIntrinsicProperties) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDebugIntrinsicProperties) {
   RunTest("testDebugIntrinsicProperties", kDebuggerIntrinsicPropertiesPage);
 }
 
@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestAutoContinueOnSyntaxError) {
   RunTest("testAutoContinueOnSyntaxError", kSyntaxErrorTestPage);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestCompletionOnPause) {
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCompletionOnPause) {
   RunTest("testCompletionOnPause", kCompletionOnPause);
 }
 

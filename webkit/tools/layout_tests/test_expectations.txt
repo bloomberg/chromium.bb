@@ -3131,4 +3131,3 @@ BUG27555 : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
 
 BUG27555 WIN LINUX : LayoutTests/fast/canvas/canvas-shadow.html = TEXT
 BUG27555 WIN LINUX : LayoutTests/fast/multicol/single-line.html = IMAGE+TEXT
-
