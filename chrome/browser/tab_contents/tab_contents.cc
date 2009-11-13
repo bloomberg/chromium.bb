@@ -533,10 +533,12 @@ const std::wstring TabContents::GetDefaultTitle() const {
 }
 
 bool TabContents::ShouldDisplayURL() {
-  // Don't hide the url in view source mode.
+  // Don't hide the url in view source mode and with interstitials.
   NavigationEntry* entry = controller_.GetActiveEntry();
-  if (entry && entry->IsViewSourceMode())
+  if (entry && (entry->IsViewSourceMode() ||
+                entry->page_type() == NavigationEntry::INTERSTITIAL_PAGE)) {
     return true;
+  }
 
   DOMUI* dom_ui = GetDOMUIForCurrentState();
   if (dom_ui)
