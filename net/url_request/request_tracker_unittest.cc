@@ -29,7 +29,7 @@ class TestRequest {
   friend class RequestTracker<TestRequest>;
 
   void GetInfoForTracker(
-      RequestTracker<TestRequest>::RecentRequestInfo *info) const {
+      RequestTracker<TestRequest>::RecentRequestInfo* info) const {
     info->original_url = url_;
     info->load_log = load_log_;
   }
