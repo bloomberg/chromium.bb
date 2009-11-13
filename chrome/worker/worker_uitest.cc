@@ -116,7 +116,13 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-TEST_F(WorkerTest, DISABLED_SharedWorkerFastLayoutTests) {
+#if defined(OS_WIN)
+// http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
+// generated on the windows try bots.
+#define SharedWorkerFastLayoutTests DISABLED_SharedWorkerFastLayoutTests
+#endif
+
+TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "shared-worker-constructor.html",
     "shared-worker-context-gc.html",
