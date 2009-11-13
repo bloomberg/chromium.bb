@@ -1151,3 +1151,19 @@
    fun:_ZN16ChildProcessHost12ListenerHook14OnChannelErrorEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
 }
+{
+   bug_27647
+   Memcheck:Addr4
+   fun:_ZNK12BookmarkNode2idEv
+   fun:_ZN12browser_sync15ModelAssociator12DisassociateEx
+   fun:_ZN12browser_sync15ChangeProcessor25ApplyChangesFromSyncModelEPKN8sync_api15BaseTransactionEPKNS1_11SyncManager12ChangeRecordEi
+   fun:_ZN16FakeServerChange19ApplyPendingChangesEPN12browser_sync25ChangeProcessingInterfaceE
+   fun:_ZN61ProfileSyncServiceTest_ServerChangeRequiringFosterParent_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
