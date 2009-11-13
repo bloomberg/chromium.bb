@@ -1964,14 +1964,10 @@ BUG23496 MAC : LayoutTests/fast/forms/001.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/basic-inputs.html = IMAGE
 // BUG23496 MAC : LayoutTests/fast/forms/box-shadow-override.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/checkbox-radio-onchange.html = IMAGE
-BUG23496 MAC : LayoutTests/fast/forms/file-input-disabled.html = IMAGE
-BUG23496 MAC : LayoutTests/fast/forms/form-element-geometry.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/formmove.html = IMAGE
 // Recently became crashy. See http://crbug.com/24721
 BUG23496 MAC : LayoutTests/fast/forms/formmove2.html = IMAGE CRASH
 BUG23496 MAC : LayoutTests/fast/forms/indeterminate.html = IMAGE
-BUG23496 MAC : LayoutTests/fast/forms/input-appearance-height.html = IMAGE
-BUG23496 MAC : LayoutTests/fast/forms/input-value.html = IMAGE
 // BUG23496 MAC : LayoutTests/fast/forms/menulist-narrow-width.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/menulist-no-overflow.html = IMAGE
 BUG23496 MAC : LayoutTests/fast/forms/radio-attr-order.html = IMAGE
@@ -1995,7 +1991,6 @@ BUG23496 MAC : LayoutTests/tables/mozilla_expected_failures/core/captions2.html 
 
 // Big button widgets are broken
 BUG23495 MAC : LayoutTests/fast/forms/basic-buttons.html = IMAGE
-BUG23495 MAC : LayoutTests/fast/forms/box-shadow-override.html = IMAGE
 BUG23495 MAC : LayoutTests/fast/forms/button-sizes.html = IMAGE
 
 // Text declared as "monospace" with no size is bigger in Chromium
@@ -2930,8 +2925,10 @@ BUG24331 LINUX : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL PASS
 BUG_JPARENT WIN DEBUG : LayoutTests/fast/frames/calculate-percentage.html = CRASH PASS
 BUG_JPARENT LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PASS
 
-// Started failing for no apparent reason at r28124
-BUG23972 LINUX : LayoutTests/fast/forms/form-element-geometry.html = CRASH PASS
+// Started crashing for no apparent reason at r28124
+// IMAGE+TEXT failure is from WebKit 50804:50904, used to occationally pass
+// before that.
+BUG23972 LINUX : LayoutTests/fast/forms/form-element-geometry.html = CRASH IMAGE+TEXT
 
 // Flaky timeouts first appearing at r27764 (webkit 48947)
 BUG9798 RELEASE : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
@@ -3124,3 +3121,25 @@ BUG27551 WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
 BUG27553 WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
 
 BUG27556 SKIP WIN LINUX : LayoutTests/websocket/tests = FAIL
+
+// Regressions:
+BUG27555 WIN MAC : LayoutTests/fast/forms/form-element-geometry.html = IMAGE+TEXT
+BUG27555 LINUX WIN MAC : LayoutTests/fast/forms/file-input-direction.html = TEXT
+// This one's MAC IMAGE failure was previously covered by BUG23496.
+BUG27555 LINUX WIN MAC : LayoutTests/fast/forms/file-input-disabled.html = IMAGE+TEXT
+BUG27555 LINUX WIN MAC : LayoutTests/fast/forms/hidden-input-file.html = TEXT
+// Input-appearance-height and input-value's MAC IMAGE failure was previously from bug 24721, the text failure is new.
+BUG27555 LINUX WIN MAC : LayoutTests/fast/forms/input-appearance-height.html = IMAGE+TEXT
+BUG27555 LINUX WIN MAC : LayoutTests/fast/forms/input-value.html = IMAGE+TEXT
+BUG27555 LINUX : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE+TEXT
+BUG27555 LINUX : LayoutTests/fast/css/color-correction-on-text-shadow.html = IMAGE+TEXT
+BUG27555 LINUX : LayoutTests/fast/multicol/single-line.html = IMAGE+TEXT
+BUG27555 MAC : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE
+BUG27555 MAC : LayoutTests/fast/css/color-correction-on-text-shadow.html = IMAGE
+// This one's previous MAC IMAGE failur is from BUG23496. TEXT failure is new.
+BUG27555 MAC : LayoutTests/fast/forms/box-shadow-override.html = IMAGE+TEXT
+// Timeouts:
+BUG27555 SKIP LINUX WIN MAC : LayoutTests/media/media-fullscreen-inline.html = TIMEOUT
+BUG27555 SKIP LINUX WIN MAC : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
+// No results:
+BUG27555 LINUX WIN MAC : LayoutTests/fast/forms/input-file-re-render.html = MISSING
