@@ -537,17 +537,11 @@ class MakefileWriter:
 
       # Build up a list of outputs.
       # Collect the output dirs we'll need.
-      #
-      # HACK: to make file_version_info always rebuild, the gyp file
-      # uses a '.bogus' filename.  That could be improved but for now
-      # we work around it here.
       dirs = set()
-      for i, out in enumerate(outputs):
+      for out in outputs:
         dir = os.path.split(out)[0]
         if dir:
           dirs.add(dir)
-        if out.endswith('.bogus'):
-          outputs[i] = out[:-len('.bogus')] + '.h'
       if int(action.get('process_outputs_as_sources', False)):
         extra_sources += outputs
 
