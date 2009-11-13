@@ -9,7 +9,7 @@
 using webkit_database::DatabaseUtil;
 
 static void TestVfsFilePath(bool expected_result,
-                            const char* vfs_file_path,
+                            const char* vfs_file_name,
                             const char* expected_origin_identifier = "",
                             const char* expected_database_name = "",
                             const char* expected_sqlite_suffix = "") {
@@ -17,7 +17,7 @@ static void TestVfsFilePath(bool expected_result,
   string16 database_name;
   string16 sqlite_suffix;
   EXPECT_EQ(expected_result,
-            DatabaseUtil::CrackVfsFilePath(ASCIIToUTF16(vfs_file_path),
+            DatabaseUtil::CrackVfsFileName(ASCIIToUTF16(vfs_file_name),
                                            &origin_identifier,
                                            &database_name,
                                            &sqlite_suffix));

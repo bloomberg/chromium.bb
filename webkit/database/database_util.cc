@@ -10,15 +10,15 @@
 
 namespace webkit_database {
 
-bool DatabaseUtil::CrackVfsFilePath(const string16& vfs_file_path,
+bool DatabaseUtil::CrackVfsFileName(const string16& vfs_file_name,
                                     string16* origin_identifier,
                                     string16* database_name,
                                     string16* sqlite_suffix) {
-  // 'vfs_file_path' is of the form <origin_identifier>/<db_name>#<suffix>.
+  // 'vfs_file_name' is of the form <origin_identifier>/<db_name>#<suffix>.
   // <suffix> is optional.
-  DCHECK(!vfs_file_path.empty());
-  size_t first_slash_index = vfs_file_path.find('/');
-  size_t last_pound_index = vfs_file_path.rfind('#');
+  DCHECK(!vfs_file_name.empty());
+  size_t first_slash_index = vfs_file_name.find('/');
+  size_t last_pound_index = vfs_file_name.rfind('#');
   // '/' and '#' must be present in the string. Also, the string cannot start
   // with a '/' (origin_identifier cannot be empty) and '/' must come before '#'
   if ((first_slash_index == string16::npos) ||
@@ -28,20 +28,20 @@ bool DatabaseUtil::CrackVfsFilePath(const string16& vfs_file_path,
     return false;
   }
 
-  *origin_identifier = vfs_file_path.substr(0, first_slash_index);
-  *database_name = vfs_file_path.substr(
+  *origin_identifier = vfs_file_name.substr(0, first_slash_index);
+  *database_name = vfs_file_name.substr(
       first_slash_index + 1, last_pound_index - first_slash_index - 1);
-  *sqlite_suffix = vfs_file_path.substr(
-      last_pound_index + 1, vfs_file_path.length() - last_pound_index - 1);
+  *sqlite_suffix = vfs_file_name.substr(
+      last_pound_index + 1, vfs_file_name.length() - last_pound_index - 1);
   return true;
 }
 
 FilePath DatabaseUtil::GetFullFilePathForVfsFile(
-    DatabaseTracker* db_tracker, const string16& vfs_file_path) {
+    DatabaseTracker* db_tracker, const string16& vfs_file_name) {
   string16 origin_identifier;
   string16 database_name;
   string16 sqlite_suffix;
-  if (!CrackVfsFilePath(vfs_file_path, &origin_identifier,
+  if (!CrackVfsFileName(vfs_file_name, &origin_identifier,
                         &database_name, &sqlite_suffix)) {
     return FilePath(); // invalid vfs_file_name
   }

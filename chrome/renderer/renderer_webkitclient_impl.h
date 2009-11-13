@@ -56,12 +56,14 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
       const WebKit::WebURL& url, bool is_local_storage);
 
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
-      const WebKit::WebString& file_name, int desired_flags,
+      const WebKit::WebString& vfs_file_name, int desired_flags,
       WebKit::WebKitClient::FileHandle* dir_handle);
-  virtual int databaseDeleteFile(const WebKit::WebString& file_name,
-      bool sync_dir);
-  virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
-  virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
+  virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
+                                 bool sync_dir);
+  virtual long databaseGetFileAttributes(
+      const WebKit::WebString& vfs_file_name);
+  virtual long long databaseGetFileSize(
+      const WebKit::WebString& vfs_file_name);
   virtual WebKit::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index,
       const WebKit::WebString& challenge,

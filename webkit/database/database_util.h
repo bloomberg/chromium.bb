@@ -14,12 +14,12 @@ class DatabaseTracker;
 
 class DatabaseUtil {
  public:
-  static bool CrackVfsFilePath(const string16& vfs_file_path,
+  static bool CrackVfsFileName(const string16& vfs_file_name,
                                string16* origin_identifier,
                                string16* database_name,
                                string16* sqlite_suffix);
   static FilePath GetFullFilePathForVfsFile(DatabaseTracker* db_tracker,
-                                            const string16& vfs_file_path);
+                                            const string16& vfs_file_name);
 
 };
 

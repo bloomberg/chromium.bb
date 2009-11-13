@@ -1949,24 +1949,24 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Asks the browser process to open a DB file with the given name
   IPC_MESSAGE_CONTROL3(ViewHostMsg_DatabaseOpenFile,
-                       FilePath /* file name */,
+                       string16 /* vfs file name */,
                        int /* desired flags */,
                        int32 /* a unique message ID */)
 
   // Asks the browser process to delete a DB file
   IPC_MESSAGE_CONTROL3(ViewHostMsg_DatabaseDeleteFile,
-                       FilePath /* the name of the file */,
+                       string16 /* vfs file name */,
                        bool /* whether or not to sync the directory */,
                        int32 /* a unique message ID */)
 
   // Asks the browser process to return the attributes of a DB file
   IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseGetFileAttributes,
-                       FilePath /* the name of the file */,
+                       string16 /* vfs file name */,
                        int32 /* a unique message ID */)
 
   // Asks the browser process to return the size of a DB file
   IPC_MESSAGE_CONTROL2(ViewHostMsg_DatabaseGetFileSize,
-                       FilePath /* the name of the file */,
+                       string16 /* vfs file name */,
                        int32 /* a unique message ID */)
 
   // Notifies the browser process that a new database has been opened

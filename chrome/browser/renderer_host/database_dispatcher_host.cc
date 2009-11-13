@@ -70,16 +70,6 @@ void DatabaseDispatcherHost::RemoveObserver() {
   db_tracker_->RemoveObserver(this);
 }
 
-// TODO(dumi): remove this function when switching IPC parameters
-// from FilePath to string16
-FilePath DatabaseDispatcherHost::GetFullFilePathForVfsFile(
-    const FilePath& vfs_file_name) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  DCHECK(!vfs_file_name.empty());
-  return DatabaseUtil::GetFullFilePathForVfsFile(
-      db_tracker_, WideToUTF16(vfs_file_name.ToWStringHack()));
-}
-
 bool DatabaseDispatcherHost::OnMessageReceived(
     const IPC::Message& message, bool* message_was_ok) {
   DCHECK(!shutdown_);
@@ -115,7 +105,7 @@ void DatabaseDispatcherHost::SendMessage(IPC::Message* message) {
     delete message;
 }
 
-void DatabaseDispatcherHost::OnDatabaseOpenFile(const FilePath& vfs_file_name,
+void DatabaseDispatcherHost::OnDatabaseOpenFile(const string16& vfs_file_name,
                                                 int desired_flags,
                                                 int32 message_id) {
   if (!observer_added_) {
@@ -150,7 +140,7 @@ static void SetOpenFileResponseParams(
 // Opens the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process with the file handle.
-void DatabaseDispatcherHost::DatabaseOpenFile(const FilePath& vfs_file_name,
+void DatabaseDispatcherHost::DatabaseOpenFile(const string16& vfs_file_name,
                                               int desired_flags,
                                               int32 message_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
@@ -161,7 +151,8 @@ void DatabaseDispatcherHost::DatabaseOpenFile(const FilePath& vfs_file_name,
                                         desired_flags, process_handle_,
                                         &target_handle, &target_dir_handle);
   } else {
-    FilePath db_file = GetFullFilePathForVfsFile(vfs_file_name);
+    FilePath db_file =
+        DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
     if (!db_file.empty()) {
       VfsBackend::OpenFile(db_file, desired_flags, process_handle_,
                            &target_handle, &target_dir_handle);
@@ -178,7 +169,7 @@ void DatabaseDispatcherHost::DatabaseOpenFile(const FilePath& vfs_file_name,
                             message_id, response_params)));
 }
 
-void DatabaseDispatcherHost::OnDatabaseDeleteFile(const FilePath& vfs_file_name,
+void DatabaseDispatcherHost::OnDatabaseDeleteFile(const string16& vfs_file_name,
                                                   const bool& sync_dir,
                                                   int32 message_id) {
   ChromeThread::PostTask(
@@ -195,7 +186,7 @@ void DatabaseDispatcherHost::OnDatabaseDeleteFile(const FilePath& vfs_file_name,
 // Deletes the given database file, then schedules
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process with the error code.
-void DatabaseDispatcherHost::DatabaseDeleteFile(const FilePath& vfs_file_name,
+void DatabaseDispatcherHost::DatabaseDeleteFile(const string16& vfs_file_name,
                                                 bool sync_dir,
                                                 int32 message_id,
                                                 int reschedule_count) {
@@ -204,7 +195,8 @@ void DatabaseDispatcherHost::DatabaseDeleteFile(const FilePath& vfs_file_name,
   // Return an error if the file name is invalid or if the file could not
   // be deleted after kNumDeleteRetries attempts.
   int error_code = SQLITE_IOERR_DELETE;
-  FilePath db_file = GetFullFilePathForVfsFile(vfs_file_name);
+  FilePath db_file =
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
   if (!db_file.empty()) {
     error_code = VfsBackend::DeleteFile(db_file, sync_dir);
     if ((error_code == SQLITE_IOERR_DELETE) && reschedule_count) {
@@ -231,7 +223,7 @@ void DatabaseDispatcherHost::DatabaseDeleteFile(const FilePath& vfs_file_name,
 }
 
 void DatabaseDispatcherHost::OnDatabaseGetFileAttributes(
-    const FilePath& vfs_file_name,
+    const string16& vfs_file_name,
     int32 message_id) {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
@@ -246,11 +238,12 @@ void DatabaseDispatcherHost::OnDatabaseGetFileAttributes(
 // a task on the IO thread's message loop to send an IPC back to
 // corresponding renderer process.
 void DatabaseDispatcherHost::DatabaseGetFileAttributes(
-    const FilePath& vfs_file_name,
+    const string16& vfs_file_name,
     int32 message_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   int32 attributes = -1;
-  FilePath db_file = GetFullFilePathForVfsFile(vfs_file_name);
+  FilePath db_file =
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
   if (!db_file.empty())
     attributes = VfsBackend::GetFileAttributes(db_file);
   ChromeThread::PostTask(
@@ -262,7 +255,7 @@ void DatabaseDispatcherHost::DatabaseGetFileAttributes(
 }
 
 void DatabaseDispatcherHost::OnDatabaseGetFileSize(
-  const FilePath& vfs_file_name, int32 message_id) {
+  const string16& vfs_file_name, int32 message_id) {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(this,
@@ -275,11 +268,12 @@ void DatabaseDispatcherHost::OnDatabaseGetFileSize(
 // Gets the size of the given file, then schedules a task
 // on the IO thread's message loop to send an IPC back to
 // the corresponding renderer process.
-void DatabaseDispatcherHost::DatabaseGetFileSize(const FilePath& vfs_file_name,
+void DatabaseDispatcherHost::DatabaseGetFileSize(const string16& vfs_file_name,
                                                  int32 message_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   int64 size = 0;
-  FilePath db_file = GetFullFilePathForVfsFile(vfs_file_name);
+  FilePath db_file =
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
   if (!db_file.empty())
     size = VfsBackend::GetFileSize(db_file);
   ChromeThread::PostTask(

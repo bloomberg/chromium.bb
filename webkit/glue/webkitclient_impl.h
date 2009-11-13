@@ -38,12 +38,14 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   virtual bool isDirectory(const WebKit::WebString& path);
   virtual WebKit::WebURL filePathToURL(const WebKit::WebString& path);
   virtual base::PlatformFile databaseOpenFile(
-      const WebKit::WebString& file_name, int desired_flags,
+      const WebKit::WebString& vfs_file_name,
+      int desired_flags,
       base::PlatformFile* dir_handle);
-  virtual int databaseDeleteFile(const WebKit::WebString& file_name,
-      bool sync_dir);
-  virtual long databaseGetFileAttributes(const WebKit::WebString& file_name);
-  virtual long long databaseGetFileSize(const WebKit::WebString& file_name);
+  virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
+                                 bool sync_dir);
+  virtual long databaseGetFileAttributes(
+      const WebKit::WebString& vfs_file_name);
+  virtual long long databaseGetFileSize(const WebKit::WebString& vfs_file_name);
   virtual WebKit::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index, const WebKit::WebString& challenge,
       const WebKit::WebURL& url);

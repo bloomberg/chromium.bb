@@ -300,7 +300,7 @@ WebString RendererWebKitClientImpl::SandboxSupport::getFontFamilyForCharacters(
 //------------------------------------------------------------------------------
 
 WebKitClient::FileHandle RendererWebKitClientImpl::databaseOpenFile(
-  const WebString& file_name, int desired_flags,
+  const WebString& vfs_file_name, int desired_flags,
   WebKitClient::FileHandle* dir_handle) {
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
@@ -316,8 +316,7 @@ WebKitClient::FileHandle RendererWebKitClientImpl::databaseOpenFile(
   ViewMsg_DatabaseOpenFileResponse_Params result =
       db_message_filter->SendAndWait(
           new ViewHostMsg_DatabaseOpenFile(
-              FilePath(webkit_glue::WebStringToFilePathString(file_name)),
-              desired_flags, message_id),
+              vfs_file_name, desired_flags, message_id),
           message_id, default_response);
 
 #if defined(OS_WIN)
@@ -334,35 +333,29 @@ WebKitClient::FileHandle RendererWebKitClientImpl::databaseOpenFile(
 }
 
 int RendererWebKitClientImpl::databaseDeleteFile(
-  const WebString& file_name, bool sync_dir) {
+  const WebString& vfs_file_name, bool sync_dir) {
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
   return db_message_filter->SendAndWait(
-      new ViewHostMsg_DatabaseDeleteFile(
-          FilePath(webkit_glue::WebStringToFilePathString(file_name)), sync_dir,
-          message_id),
+      new ViewHostMsg_DatabaseDeleteFile(vfs_file_name, sync_dir, message_id),
       message_id, SQLITE_IOERR_DELETE);
 }
 
 long RendererWebKitClientImpl::databaseGetFileAttributes(
-  const WebString& file_name) {
+  const WebString& vfs_file_name) {
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
   return db_message_filter->SendAndWait(
-      new ViewHostMsg_DatabaseGetFileAttributes(
-          FilePath(webkit_glue::WebStringToFilePathString(file_name)),
-          message_id),
+      new ViewHostMsg_DatabaseGetFileAttributes(vfs_file_name, message_id),
       message_id, -1L);
 }
 
 long long RendererWebKitClientImpl::databaseGetFileSize(
-  const WebString& file_name) {
+  const WebString& vfs_file_name) {
   DBMessageFilter* db_message_filter = DBMessageFilter::GetInstance();
   int message_id = db_message_filter->GetUniqueID();
   return db_message_filter->SendAndWait(
-      new ViewHostMsg_DatabaseGetFileSize(
-          FilePath(webkit_glue::WebStringToFilePathString(file_name)),
-          message_id),
+      new ViewHostMsg_DatabaseGetFileSize(vfs_file_name, message_id),
       message_id, 0LL);
 }
 

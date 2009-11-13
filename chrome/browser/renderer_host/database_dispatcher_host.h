@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_DATABASE_DISPATCHER_HOST_H_
 #define CHROME_BROWSER_RENDERER_HOST_DATABASE_DISPATCHER_HOST_H_
 
-#include "base/file_path.h"
 #include "base/hash_tables.h"
 #include "base/process.h"
 #include "base/ref_counted.h"
@@ -25,15 +24,15 @@ class DatabaseDispatcherHost
   bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
 
   // VFS message handlers (IO thread)
-  void OnDatabaseOpenFile(const FilePath& vfs_file_name,
+  void OnDatabaseOpenFile(const string16& vfs_file_name,
                           int desired_flags,
                           int32 message_id);
-  void OnDatabaseDeleteFile(const FilePath& vfs_file_name,
+  void OnDatabaseDeleteFile(const string16& vfs_file_name,
                             const bool& sync_dir,
                             int32 message_id);
-  void OnDatabaseGetFileAttributes(const FilePath& vfs_file_name,
+  void OnDatabaseGetFileAttributes(const string16& vfs_file_name,
                                    int32 message_id);
-  void OnDatabaseGetFileSize(const FilePath& vfs_file_name,
+  void OnDatabaseGetFileSize(const string16& vfs_file_name,
                              int32 message_id);
 
   // Database tracker message handlers (IO thread)
@@ -55,22 +54,21 @@ class DatabaseDispatcherHost
  private:
   void AddObserver();
   void RemoveObserver();
-  FilePath GetFullFilePathForVfsFile(const FilePath& vfs_file_name);
 
   void ReceivedBadMessage(uint16 msg_type);
   void SendMessage(IPC::Message* message);
 
   // VFS message handlers (file thread)
-  void DatabaseOpenFile(const FilePath& vfs_file_name,
+  void DatabaseOpenFile(const string16& vfs_file_name,
                         int desired_flags,
                         int32 message_id);
-  void DatabaseDeleteFile(const FilePath& vfs_file_name,
+  void DatabaseDeleteFile(const string16& vfs_file_name,
                           bool sync_dir,
                           int32 message_id,
                           int reschedule_count);
-  void DatabaseGetFileAttributes(const FilePath& vfs_file_name,
+  void DatabaseGetFileAttributes(const string16& vfs_file_name,
                                  int32 message_id);
-  void DatabaseGetFileSize(const FilePath& vfs_file_name,
+  void DatabaseGetFileSize(const string16& vfs_file_name,
                            int32 message_id);
 
   // Database tracker message handlers (file thread)
