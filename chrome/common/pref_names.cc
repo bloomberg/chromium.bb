@@ -366,16 +366,6 @@ const wchar_t kStabilityPageLoadCount[] =
 const wchar_t kStabilityRendererCrashCount[] =
     L"user_experience_metrics.stability.renderer_crash_count";
 
-// Number of times a renderer started in the sandbox and successfully
-// used the sandbox desktop.
-const wchar_t kSecurityRendererOnSboxDesktop[] =
-    L"user_experience_metrics.security.renderer_on_sbox_desktop";
-
-// Number of times a renderer started in the sandbox and failed to
-// used the sandbox desktop.
-const wchar_t kSecurityRendererOnDefaultDesktop[] =
-    L"user_experience_metrics.security.renderer_on_default_desktop";
-
 // Time when the app was last launched, in seconds since the epoch.
 const wchar_t kStabilityLaunchTimeSec[] =
     L"user_experience_metrics.stability.launch_time_sec";

@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
-#include "chrome/common/notification_service.h"
 #include "sandbox/src/sandbox.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
@@ -425,13 +424,6 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
 
   if (sandbox::SBOX_ALL_OK != result)
     return 0;
-
-  if (type == ChildProcessInfo::RENDER_PROCESS) {
-    NotificationService::current()->Notify(
-        NotificationType::RENDERER_PROCESS_IN_SBOX,
-        NotificationService::AllSources(),
-        Details<bool>(&on_sandbox_desktop));
-  }
 
   ResumeThread(target.hThread);
   CloseHandle(target.hThread);

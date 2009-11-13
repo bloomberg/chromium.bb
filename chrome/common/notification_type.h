@@ -362,12 +362,6 @@ class NotificationType {
     // hung view, and no details are expected.
     RENDERER_PROCESS_HANG,
 
-    // Indicates that a render process is created in the sandbox. The source
-    // will be the RenderProcessHost that corresponds to the created process
-    // and the detail is a bool telling us if the process got created on the
-    // sandbox desktop or not.
-    RENDERER_PROCESS_IN_SBOX,
-
     // This is sent to notify that the RenderViewHost displayed in a
     // TabContents has changed.  Source is the TabContents for which the change
     // happened, details is the previous RenderViewHost (can be NULL when the

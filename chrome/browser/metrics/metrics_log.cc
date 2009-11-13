@@ -502,17 +502,6 @@ void MetricsLog::RecordEnvironment(
   }
 
   {
-    OPEN_ELEMENT_FOR_SCOPE("security");
-    WriteIntAttribute("rendereronsboxdesktop",
-                      pref->GetInteger(prefs::kSecurityRendererOnSboxDesktop));
-    pref->SetInteger(prefs::kSecurityRendererOnSboxDesktop, 0);
-
-    WriteIntAttribute("rendererondefaultdesktop",
-        pref->GetInteger(prefs::kSecurityRendererOnDefaultDesktop));
-    pref->SetInteger(prefs::kSecurityRendererOnDefaultDesktop, 0);
-  }
-
-  {
     OPEN_ELEMENT_FOR_SCOPE("memory");
     WriteIntAttribute("mb", base::SysInfo::AmountOfPhysicalMemoryMB());
 #if defined(OS_WIN)

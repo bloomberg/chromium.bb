@@ -326,8 +326,6 @@ void MetricsService::RegisterPrefs(PrefService* local_state) {
   local_state->RegisterIntegerPref(prefs::kStabilityIncompleteSessionEndCount,
                                    0);
   local_state->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
-  local_state->RegisterIntegerPref(prefs::kSecurityRendererOnSboxDesktop, 0);
-  local_state->RegisterIntegerPref(prefs::kSecurityRendererOnDefaultDesktop, 0);
   local_state->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
   local_state->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
   local_state->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationFail,
@@ -372,9 +370,6 @@ void MetricsService::DiscardOldStabilityStats(PrefService* local_state) {
   local_state->SetInteger(prefs::kStabilityPageLoadCount, 0);
   local_state->SetInteger(prefs::kStabilityRendererCrashCount, 0);
   local_state->SetInteger(prefs::kStabilityRendererHangCount, 0);
-
-  local_state->SetInteger(prefs::kSecurityRendererOnSboxDesktop, 0);
-  local_state->SetInteger(prefs::kSecurityRendererOnDefaultDesktop, 0);
 
   local_state->SetString(prefs::kStabilityLaunchTimeSec, L"0");
   local_state->SetString(prefs::kStabilityLastTimestampSec, L"0");
@@ -482,8 +477,6 @@ void MetricsService::SetRecording(bool enabled) {
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::LOAD_STOP,
                    NotificationService::AllSources());
-    registrar_.Add(this, NotificationType::RENDERER_PROCESS_IN_SBOX,
-                   NotificationService::AllSources());
     registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::RENDERER_PROCESS_HANG,
@@ -567,10 +560,6 @@ void MetricsService::Observe(NotificationType type,
 
     case NotificationType::RENDERER_PROCESS_HANG:
       LogRendererHang();
-      break;
-
-    case NotificationType::RENDERER_PROCESS_IN_SBOX:
-      LogRendererInSandbox(*Details<bool>(details).ptr());
       break;
 
     case NotificationType::CHILD_PROCESS_HOST_CONNECTED:
@@ -1666,15 +1655,6 @@ void MetricsService::LogLoadStarted() {
   IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);
   // We need to save the prefs, as page load count is a critical stat, and it
   // might be lost due to a crash :-(.
-}
-
-void MetricsService::LogRendererInSandbox(bool on_sandbox_desktop) {
-  PrefService* prefs = g_browser_process->local_state();
-  DCHECK(prefs);
-  if (on_sandbox_desktop)
-    IncrementPrefValue(prefs::kSecurityRendererOnSboxDesktop);
-  else
-    IncrementPrefValue(prefs::kSecurityRendererOnDefaultDesktop);
 }
 
 void MetricsService::LogRendererCrash() {

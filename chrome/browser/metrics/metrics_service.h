@@ -331,10 +331,6 @@ class MetricsService : public NotificationObserver,
   // Records a renderer process hang.
   void LogRendererHang();
 
-  // Records the desktop security status of a renderer in the sandbox at
-  // creation time.
-  void LogRendererInSandbox(bool on_sandbox_desktop);
-
   // Set the value in preferences for the number of bookmarks and folders
   // in node. The pref key for the number of bookmarks in num_bookmarks_key and
   // the pref key for number of folders in num_folders_key.

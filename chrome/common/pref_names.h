@@ -146,9 +146,6 @@ extern const wchar_t kStabilityBreakpadRegistrationFail[];
 extern const wchar_t kStabilityDebuggerPresent[];
 extern const wchar_t kStabilityDebuggerNotPresent[];
 
-extern const wchar_t kSecurityRendererOnSboxDesktop[];
-extern const wchar_t kSecurityRendererOnDefaultDesktop[];
-
 extern const wchar_t kStabilityPluginStats[];
 extern const wchar_t kStabilityPluginName[];
 extern const wchar_t kStabilityPluginLaunches[];
