@@ -137,5 +137,4 @@ class AutocompletePopupContentsView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupContentsView);
 };
 
-
-#endif  // #ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_
+#endif  // CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_CONTENTS_VIEW_H_

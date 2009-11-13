@@ -42,7 +42,7 @@ class PluginHelper : public NotificationObserver, public NonThreadSafe {
  public:
   static void DestroyAllHelpersForPlugin(ChromePluginLib* plugin);
 
-  PluginHelper(ChromePluginLib* plugin);
+  explicit PluginHelper(ChromePluginLib* plugin);
   virtual ~PluginHelper();
 
   // NotificationObserver
@@ -60,7 +60,7 @@ class PluginHelper : public NotificationObserver, public NonThreadSafe {
 
 // A class of utility functions for dealing with request responses.
 class PluginResponseUtils {
-public:
+ public:
   // Helper to convert request load flags from the plugin API to the net API
   // versions.
   static uint32 CPLoadFlagsToNetFlags(uint32 flags);

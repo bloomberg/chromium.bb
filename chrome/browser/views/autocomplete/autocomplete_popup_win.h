@@ -26,4 +26,4 @@ class AutocompletePopupWin : public views::WidgetWin {
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupWin);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_WIN_H_
+#endif  // CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_WIN_H_

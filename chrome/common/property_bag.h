@@ -154,7 +154,7 @@ class PropertyAccessor : public PropertyAccessorBase {
  private:
   class Container : public PropertyBag::Prop {
    public:
-    Container(const T& data) : data_(data) {}
+    explicit Container(const T& data) : data_(data) {}
 
     T* get() { return &data_; }
     const T* get() const { return &data_; }

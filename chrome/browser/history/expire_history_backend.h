@@ -96,7 +96,7 @@ class ExpireHistoryBackend {
   }
 
  private:
-  //friend class ExpireHistoryTest_DeleteFaviconsIfPossible_Test;
+  // friend class ExpireHistoryTest_DeleteFaviconsIfPossible_Test;
   FRIEND_TEST(ExpireHistoryTest, DeleteTextIndexForURL);
   FRIEND_TEST(ExpireHistoryTest, DeleteFaviconsIfPossible);
   FRIEND_TEST(ExpireHistoryTest, ArchiveSomeOldHistory);

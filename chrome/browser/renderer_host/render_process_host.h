@@ -41,7 +41,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
     TYPE_EXTENSION,  // Renderer with extension privileges.
   };
 
-  RenderProcessHost(Profile* profile);
+  explicit RenderProcessHost(Profile* profile);
   virtual ~RenderProcessHost();
 
   // Returns the user profile associated with this renderer process.

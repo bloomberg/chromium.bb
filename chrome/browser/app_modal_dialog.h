@@ -122,4 +122,4 @@ class AppModalDialog : public NotificationObserver {
   IPC::Message* reply_msg_;
 };
 
-#endif  // #ifndef CHROME_BROWSER_APP_MODAL_DIALOG_H_
+#endif  // CHROME_BROWSER_APP_MODAL_DIALOG_H_

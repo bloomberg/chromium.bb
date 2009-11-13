@@ -25,10 +25,10 @@ class SkBitmap;
 //                      don't specify a default icon.
 //
 // ExtensionInstallBubble manages its own lifetime.
-class ExtensionInstalledBubble :
-    public InfoBubbleDelegate,
-    public NotificationObserver,
-    public base::RefCountedThreadSafe<ExtensionInstalledBubble> {
+class ExtensionInstalledBubble
+    : public InfoBubbleDelegate,
+      public NotificationObserver,
+      public base::RefCountedThreadSafe<ExtensionInstalledBubble> {
  public:
   // The behavior and content of this InfoBubble comes in three varieties.
   enum BubbleType {
@@ -43,7 +43,7 @@ class ExtensionInstalledBubble :
   // icon of the extension.
   static void Show(Extension *extension, Browser *browser, SkBitmap icon);
 
-private:
+ private:
   friend class base::RefCountedThreadSafe<ExtensionInstalledBubble>;
 
   // Private ctor. Registers a listener for EXTENSION_LOADED.

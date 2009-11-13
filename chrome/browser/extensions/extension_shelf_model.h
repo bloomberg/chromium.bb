@@ -24,7 +24,7 @@ class ExtensionShelfModelObserver;
 // are specific to a Browser.
 class ExtensionShelfModel : public NotificationObserver {
  public:
-  ExtensionShelfModel(Browser* browser);
+  explicit ExtensionShelfModel(Browser* browser);
   virtual ~ExtensionShelfModel();
 
   struct ToolstripItem {

@@ -95,7 +95,7 @@ class WorkerProcessHost : public ChildProcessHost {
     DocumentSet document_set_;
   };
 
-  WorkerProcessHost(ResourceDispatcherHost* resource_dispatcher_host_);
+  explicit WorkerProcessHost(ResourceDispatcherHost* resource_dispatcher_host_);
   ~WorkerProcessHost();
 
   // Starts the process.  Returns true iff it succeeded.

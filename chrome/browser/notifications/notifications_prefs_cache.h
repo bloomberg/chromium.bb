@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATIONS_PREFS_CACHE_H
-#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATIONS_PREFS_CACHE_H
+#ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATIONS_PREFS_CACHE_H_
+#define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATIONS_PREFS_CACHE_H_
 
 #include <set>
 
@@ -16,8 +16,8 @@ class ListValue;
 // Construction occurs on the UI thread when the contents
 // of the profile preferences are initially cached.  Once constructed
 // this class should only be accessed on the IO thread.
-class NotificationsPrefsCache :
-    public base::RefCountedThreadSafe<NotificationsPrefsCache> {
+class NotificationsPrefsCache
+    : public base::RefCountedThreadSafe<NotificationsPrefsCache> {
  public:
   NotificationsPrefsCache(const ListValue* allowed, const ListValue* denied);
 
@@ -46,4 +46,4 @@ class NotificationsPrefsCache :
   DISALLOW_COPY_AND_ASSIGN(NotificationsPrefsCache);
 };
 
-#endif  // #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATIONS_PREFS_CACHE_H
+#endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATIONS_PREFS_CACHE_H_

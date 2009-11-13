@@ -67,4 +67,4 @@ namespace URLFixerUpper {
   extern const char* home_directory_override;
 };
 
-#endif  // #ifndef CHROME_BROWSER_NET_URL_FIXER_UPPER_H_
+#endif  // CHROME_BROWSER_NET_URL_FIXER_UPPER_H_

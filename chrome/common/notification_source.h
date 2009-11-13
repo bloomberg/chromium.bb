@@ -31,7 +31,7 @@ class NotificationSource {
   }
 
  protected:
-  NotificationSource(const void* ptr) : ptr_(ptr) {}
+  explicit NotificationSource(const void* ptr) : ptr_(ptr) {}
 
   // Declaring this const allows Source<T> to be used with both T = Foo and
   // T = const Foo.
@@ -41,9 +41,9 @@ class NotificationSource {
 template <class T>
 class Source : public NotificationSource {
  public:
-  Source(T* ptr) : NotificationSource(ptr) {}
-
-  Source(const NotificationSource& other)
+  // TODO(erg): Our code hard relies on implicit conversion
+  Source(T* ptr) : NotificationSource(ptr) {}  // NOLINT
+  Source(const NotificationSource& other)      // NOLINT
     : NotificationSource(other) {}
 
   T* operator->() const { return ptr(); }

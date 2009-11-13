@@ -65,7 +65,7 @@ class ChromePluginLib : public base::RefCounted<ChromePluginLib>  {
  private:
   friend class base::RefCounted<ChromePluginLib>;
 
-  ChromePluginLib(const FilePath& filename);
+  explicit ChromePluginLib(const FilePath& filename);
   ~ChromePluginLib();
 
   // Method to initialize a Plugin.

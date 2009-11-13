@@ -35,4 +35,4 @@ class AdvancedScrollViewContainer : public views::View {
   DISALLOW_EVIL_CONSTRUCTORS(AdvancedScrollViewContainer);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H__
+#endif  // CHROME_BROWSER_VIEWS_OPTIONS_ADVANCED_CONTENTS_VIEW_H__

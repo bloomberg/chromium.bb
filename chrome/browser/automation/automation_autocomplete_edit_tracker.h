@@ -10,8 +10,8 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 
-class AutomationAutocompleteEditTracker :
-    public AutomationResourceTracker<AutocompleteEditView*> {
+class AutomationAutocompleteEditTracker
+    : public AutomationResourceTracker<AutocompleteEditView*> {
  public:
   explicit AutomationAutocompleteEditTracker(IPC::Message::Sender* automation)
       : AutomationResourceTracker<AutocompleteEditView*>(automation) { }

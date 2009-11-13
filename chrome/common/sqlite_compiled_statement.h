@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_SQLITE_COMPILED_STATEMENT_
-#define CHROME_COMMON_SQLITE_COMPILED_STATEMENT_
+#ifndef CHROME_COMMON_SQLITE_COMPILED_STATEMENT_H_
+#define CHROME_COMMON_SQLITE_COMPILED_STATEMENT_H_
 
 #include <map>
 #include <string>
@@ -132,4 +132,4 @@ class SqliteCompiledStatement {
 #define SQLITE_UNIQUE_STATEMENT(var_name, cache, sql) \
     SqliteCompiledStatement var_name(__FILE__, __LINE__, cache, sql)
 
-#endif  // CHROME_COMMON_SQLITE_COMPILED_STATEMENT_
+#endif  // CHROME_COMMON_SQLITE_COMPILED_STATEMENT_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_FORM_MANAGER_H__
-#define CHROME_BROWSER_PASSWORD_FORM_MANAGER_H__
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_MANAGER_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_MANAGER_H_
 
 #include "build/build_config.h"
 
@@ -160,4 +160,4 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   DISALLOW_EVIL_CONSTRUCTORS(PasswordFormManager);
 };
-#endif  // CHROME_BROWSER_PASSWORD_FORM_MANAGER_H__
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_FORM_MANAGER_H_

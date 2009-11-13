@@ -49,11 +49,11 @@ static const wchar_t* const kRenderWidgetHostHWNDClass =
 //     If the render process dies, the RenderWidgetHostHWND goes away and all
 //     references to it must become NULL."
 //
-class RenderWidgetHostViewWin :
-  public CWindowImpl<RenderWidgetHostViewWin,
-                     CWindow,
-                     RenderWidgetHostHWNDTraits>,
-  public RenderWidgetHostView {
+class RenderWidgetHostViewWin
+    : public CWindowImpl<RenderWidgetHostViewWin,
+                         CWindow,
+                         RenderWidgetHostHWNDTraits>,
+      public RenderWidgetHostView {
  public:
   // The view will associate itself with the given widget.
   explicit RenderWidgetHostViewWin(RenderWidgetHost* widget);

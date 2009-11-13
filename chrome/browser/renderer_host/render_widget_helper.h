@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_RENDEDER_HOST_RENDER_WIDGET_HELPER_H_
-#define CHROME_BROWSER_RENDEDER_HOST_RENDER_WIDGET_HELPER_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HELPER_H_
+#define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HELPER_H_
 
 #include <map>
 
@@ -84,8 +84,8 @@ struct ViewMsg_ClosePage_Params;
 //   allocation and maintains the set of allocated transport DIBs which the
 //   renderers can refer to.
 //
-class RenderWidgetHelper :
-    public base::RefCountedThreadSafe<RenderWidgetHelper> {
+class RenderWidgetHelper
+    : public base::RefCountedThreadSafe<RenderWidgetHelper> {
  public:
   RenderWidgetHelper();
 
@@ -195,4 +195,4 @@ class RenderWidgetHelper :
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHelper);
 };
 
-#endif  // CHROME_BROWSER_RENDEDER_HOST_RENDER_WIDGET_HELPER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HELPER_H_

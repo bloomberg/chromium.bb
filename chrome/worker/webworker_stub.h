@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_WORKER_WEB_WORKER_STUB_H_
-#define CHROME_WORKER_WEB_WORKER_STUB_H_
+#ifndef CHROME_WORKER_WEBWORKER_STUB_H_
+#define CHROME_WORKER_WEBWORKER_STUB_H_
 
 #include "chrome/worker/webworker_stub_base.h"
 #include "chrome/worker/webworkerclient_proxy.h"
@@ -35,4 +35,4 @@ class WebWorkerStub : public WebWorkerStubBase {
   DISALLOW_COPY_AND_ASSIGN(WebWorkerStub);
 };
 
-#endif  // CHROME_WORKER_WEB_WORKER_STUB_H_
+#endif  // CHROME_WORKER_WEBWORKER_STUB_H_

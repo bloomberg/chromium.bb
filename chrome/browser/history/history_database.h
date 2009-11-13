@@ -41,7 +41,7 @@ class HistoryDatabase : public DownloadDatabase,
   // support rollback since the history database doesn't, either.
   class TransactionScoper {
    public:
-    TransactionScoper(HistoryDatabase* db) : db_(db) {
+    explicit TransactionScoper(HistoryDatabase* db) : db_(db) {
       db_->BeginTransaction();
     }
     ~TransactionScoper() {

@@ -126,4 +126,4 @@ class ConflictResolver {
 
 }  // namespace browser_sync
 
-#endif // CHROME_BROWSER_SYNC_ENGINE_CONFLICT_RESOLVER_H_
+#endif  // CHROME_BROWSER_SYNC_ENGINE_CONFLICT_RESOLVER_H_

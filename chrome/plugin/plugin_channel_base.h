@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_WEBKIT_GLUE_PLUGIN_CHANNEL_BASE_H_
-#define CHROME_WEBKIT_GLUE_PLUGIN_CHANNEL_BASE_H_
+#ifndef CHROME_PLUGIN_PLUGIN_CHANNEL_BASE_H_
+#define CHROME_PLUGIN_PLUGIN_CHANNEL_BASE_H_
 
 #include <string>
 
@@ -125,4 +125,4 @@ class PluginChannelBase : public IPC::Channel::Listener,
   DISALLOW_COPY_AND_ASSIGN(PluginChannelBase);
 };
 
-#endif  // CHROME_WEBKIT_GLUE_PLUGIN_CHANNEL_BASE_H_
+#endif  // CHROME_PLUGIN_PLUGIN_CHANNEL_BASE_H_

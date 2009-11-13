@@ -16,7 +16,7 @@ class Profile;
 class WebResourceService
     : public UtilityProcessHost::Client {
  public:
-  WebResourceService(Profile* profile);
+  explicit WebResourceService(Profile* profile);
 
   // Sleep until cache needs to be updated, but always for at least 5 seconds
   // so we don't interfere with startup.  Then begin updating resources.

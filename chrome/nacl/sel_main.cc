@@ -40,12 +40,12 @@ static void __attribute__ ((noinline)) _ovly_debug_event (void) {
 
 #endif
 
-static void StopForDebuggerInit (const struct NaClApp *state) {
+static void StopForDebuggerInit(const struct NaClApp *state) {
   /* Put xlate_base in a place where gdb can find it.  */
   nacl_global_xlate_base = state->xlate_base;
 
 #ifdef __GNUC__
-  _ovly_debug_event ();
+  _ovly_debug_event();
 #endif
 }
 

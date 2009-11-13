@@ -88,4 +88,4 @@ class CommandUpdater {
   DISALLOW_EVIL_CONSTRUCTORS(CommandUpdater);
 };
 
-#endif // CHROME_BROWSER_COMMAND_UPDATER_H_
+#endif  // CHROME_BROWSER_COMMAND_UPDATER_H_

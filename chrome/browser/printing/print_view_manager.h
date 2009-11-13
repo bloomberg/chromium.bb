@@ -26,7 +26,7 @@ class PrintViewManager : public NotificationObserver,
                          public PrintedPagesSource,
                          public RenderViewHostDelegate::Printing {
  public:
-  PrintViewManager(TabContents& owner);
+  explicit PrintViewManager(TabContents& owner);
   virtual ~PrintViewManager();
 
   // Cancels the print job.

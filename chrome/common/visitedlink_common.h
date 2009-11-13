@@ -134,4 +134,4 @@ class VisitedLinkCommon {
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkCommon);
 };
 
-#endif // WIN_COMMON_VISITEDLINK_COMMON_H__
+#endif  // CHROME_COMMON_VISITEDLINK_COMMON_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_WORKER_NATIVEWORKER_H_
-#define CHROME_WORKER_NATIVEWORKER_H_
+#ifndef CHROME_WORKER_NATIVEWEBWORKER_IMPL_H_
+#define CHROME_WORKER_NATIVEWEBWORKER_IMPL_H_
 
 #include "base/basictypes.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebWorker.h"
@@ -43,4 +43,4 @@ class NativeWebWorkerImpl : public WebKit::WebWorker {
   DISALLOW_COPY_AND_ASSIGN(NativeWebWorkerImpl);
 };
 
-#endif  // CHROME_WORKER_NATIVEWEBWORKER_H_
+#endif  // CHROME_WORKER_NATIVEWEBWORKER_IMPL_H_

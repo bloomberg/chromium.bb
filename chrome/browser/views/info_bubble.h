@@ -75,7 +75,7 @@ class InfoBubbleDelegate {
   // Whether the InfoBubble should be closed when the Esc key is pressed.
   virtual bool CloseOnEscape() = 0;
 
-  // Whether the default placement of the anchor is on the origin side of the 
+  // Whether the default placement of the anchor is on the origin side of the
   // text direction. For example: if true (the default) in LTR text direction,
   // the ArrowLocation will be TOP_LEFT, if false it will be TOP_RIGHT.
   // RTL is the reverse.

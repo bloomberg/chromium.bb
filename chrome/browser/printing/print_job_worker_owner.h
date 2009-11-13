@@ -15,10 +15,9 @@ namespace printing {
 class PrintJobWorker;
 class PrintSettings;
 
-class PrintJobWorkerOwner :
-    public base::RefCountedThreadSafe<PrintJobWorkerOwner> {
+class PrintJobWorkerOwner
+    : public base::RefCountedThreadSafe<PrintJobWorkerOwner> {
  public:
-
   // Finishes the initialization began by PrintJobWorker::Init(). Creates a
   // new PrintedDocument if necessary. Solely meant to be called by
   // PrintJobWorker.

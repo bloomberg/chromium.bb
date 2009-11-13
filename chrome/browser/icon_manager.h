@@ -119,4 +119,4 @@ class IconManager : public IconLoader::Delegate,
   DISALLOW_COPY_AND_ASSIGN(IconManager);
 };
 
-#endif  // #ifndef CHROME_BROWSER_ICON_MANAGER_H_
+#endif  // CHROME_BROWSER_ICON_MANAGER_H_

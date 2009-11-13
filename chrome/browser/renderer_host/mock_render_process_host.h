@@ -15,7 +15,7 @@ class TransportDIB;
 // IPC messages are sent into the message sink for inspection by tests.
 class MockRenderProcessHost : public RenderProcessHost {
  public:
-  MockRenderProcessHost(Profile* profile);
+  explicit MockRenderProcessHost(Profile* profile);
   virtual ~MockRenderProcessHost();
 
   // Provides access to all IPC messages that would have been sent to the

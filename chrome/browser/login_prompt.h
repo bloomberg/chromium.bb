@@ -69,7 +69,8 @@ class LoginHandler {
 // for testing.
 class LoginNotificationDetails {
  public:
-  LoginNotificationDetails(LoginHandler* handler) : handler_(handler) {}
+  explicit LoginNotificationDetails(LoginHandler* handler)
+      : handler_(handler) {}
   LoginHandler* handler() const { return handler_; }
 
  private:

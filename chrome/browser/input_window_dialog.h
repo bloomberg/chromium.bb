@@ -48,4 +48,4 @@ class InputWindowDialog {
   DISALLOW_COPY_AND_ASSIGN(InputWindowDialog);
 };
 
-#endif // CHROME_BROWSER_INPUT_WINDOW_DIALOG_H_
+#endif  // CHROME_BROWSER_INPUT_WINDOW_DIALOG_H_

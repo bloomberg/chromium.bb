@@ -22,8 +22,8 @@ class TabContents;
 // initialize the profile.
 class BrowserInit {
  public:
-  BrowserInit() {};
-  ~BrowserInit() {};
+  BrowserInit() {}
+  ~BrowserInit() {}
 
   // Adds a url to be opened during first run. This overrides the standard
   // tabs shown at first run.

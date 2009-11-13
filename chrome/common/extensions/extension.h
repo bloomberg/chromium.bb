@@ -302,7 +302,7 @@ class Extension {
                        int content_script_index,
                        const wchar_t* globs_property_name,
                        std::string* error,
-                       void (UserScript::*add_method) (const std::string& glob),
+                       void(UserScript::*add_method)(const std::string& glob),
                        UserScript *instance);
 
   // Helper method to load an ExtensionAction from the page_action or

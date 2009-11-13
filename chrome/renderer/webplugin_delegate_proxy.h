@@ -36,11 +36,11 @@ class WaitableEvent;
 
 // An implementation of WebPluginDelegate that proxies all calls to
 // the plugin process.
-class WebPluginDelegateProxy :
-    public webkit_glue::WebPluginDelegate,
-    public IPC::Channel::Listener,
-    public IPC::Message::Sender,
-    public base::SupportsWeakPtr<WebPluginDelegateProxy> {
+class WebPluginDelegateProxy
+    : public webkit_glue::WebPluginDelegate,
+      public IPC::Channel::Listener,
+      public IPC::Message::Sender,
+      public base::SupportsWeakPtr<WebPluginDelegateProxy> {
  public:
   WebPluginDelegateProxy(const std::string& mime_type,
                          const base::WeakPtr<RenderView>& render_view);

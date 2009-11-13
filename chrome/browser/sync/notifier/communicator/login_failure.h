@@ -28,7 +28,7 @@ class LoginFailure {
     PROXY_AUTHENTICATION_ERROR,
   };
 
-  LoginFailure(LoginError error);
+  explicit LoginFailure(LoginError error);
   LoginFailure(LoginError error,
                buzz::XmppEngine::Error xmpp_error,
                int subcode);

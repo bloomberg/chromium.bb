@@ -26,7 +26,7 @@ class UserScriptListener
     : public base::RefCountedThreadSafe<UserScriptListener>,
       public NotificationObserver {
  public:
-  UserScriptListener(ResourceDispatcherHost* rdh);
+  explicit UserScriptListener(ResourceDispatcherHost* rdh);
 
   void OnResourceDispatcherHostGone() { resource_dispatcher_host_ = NULL; }
 

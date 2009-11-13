@@ -28,4 +28,4 @@ class ExtensionApiTestV8Extension {
   static v8::Extension* Get();
 };
 
-#endif  // CHROME_RENDERER_JS_ONLY_V8_EXTENSIONS_H_
+#endif  // CHROME_RENDERER_EXTENSIONS_JS_ONLY_V8_EXTENSIONS_H_

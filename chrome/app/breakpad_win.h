@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APP_BREAKPAD_H_
-#define CHROME_APP_BREAKPAD_H_
+#ifndef CHROME_APP_BREAKPAD_WIN_H_
+#define CHROME_APP_BREAKPAD_WIN_H_
 
 #include <windows.h>
 #include <string>
@@ -20,4 +20,4 @@ void InitDefaultCrashCallback();
 // a dialog asking for permission to continue execution or to exit now.
 bool ShowRestartDialogIfCrashed(bool* exit_now);
 
-#endif  // CHROME_APP_BREAKPAD_H_
+#endif  // CHROME_APP_BREAKPAD_WIN_H_

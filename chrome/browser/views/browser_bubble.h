@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_BROWSER_BUBBLE_
-#define CHROME_BROWSER_VIEWS_BROWSER_BUBBLE_
+#ifndef CHROME_BROWSER_VIEWS_BROWSER_BUBBLE_H_
+#define CHROME_BROWSER_VIEWS_BROWSER_BUBBLE_H_
 
 #include "views/view.h"
 #include "views/widget/widget.h"
@@ -114,4 +114,4 @@ class BrowserBubble {
   DISALLOW_COPY_AND_ASSIGN(BrowserBubble);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_BROWSER_BUBBLE_
+#endif  // CHROME_BROWSER_VIEWS_BROWSER_BUBBLE_H_

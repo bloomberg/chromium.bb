@@ -41,10 +41,10 @@ class NSSDecryptor {
   // The result will be stored in |forms|.
   bool ReadAndParseSignons(const FilePath& sqlite_file,
                            std::vector<webkit_glue::PasswordForm>* forms);
-private:
+ private:
   // Does not actually free the slot, since we'll free it when NSSDecryptor is
   // destroyed.
-  void FreeSlot(PK11SlotInfo* slot) const {};
+  void FreeSlot(PK11SlotInfo* slot) const {}
   PK11SlotInfo* GetKeySlotForDB() const { return db_slot_; }
 
   SECStatus PK11SDR_DecryptWithSlot(

@@ -196,4 +196,4 @@ class ConfirmInfoBar : public AlertInfoBar {
 };
 
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_INFOBARS_INFOBARS_H_
+#endif  // CHROME_BROWSER_VIEWS_INFOBARS_INFOBARS_H_

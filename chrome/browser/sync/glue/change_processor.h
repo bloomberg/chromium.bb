@@ -23,7 +23,7 @@ class UnrecoverableErrorHandler;
 class ChangeProcessor : public BookmarkModelObserver,
                         public ChangeProcessingInterface {
  public:
-  ChangeProcessor(UnrecoverableErrorHandler* error_handler)
+  explicit ChangeProcessor(UnrecoverableErrorHandler* error_handler)
       : running_(false), error_handler_(error_handler),
         bookmark_model_(NULL), share_handle_(NULL), model_associator_(NULL) {}
   virtual ~ChangeProcessor() { Stop(); }
@@ -181,4 +181,4 @@ class ChangeProcessor : public BookmarkModelObserver,
 
 }  // namespace browser_sync
 
-#endif  // CHROME_BROWSER_SYNC_GLUE_CHANGE_APPLICATOR_H_
+#endif  // CHROME_BROWSER_SYNC_GLUE_CHANGE_PROCESSOR_H_

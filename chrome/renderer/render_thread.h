@@ -81,7 +81,7 @@ class RenderThread : public RenderThreadBase,
   // Grabs the IPC channel name from the command line.
   RenderThread();
   // Constructor that's used when running in single process mode.
-  RenderThread(const std::string& channel_name);
+  explicit RenderThread(const std::string& channel_name);
   virtual ~RenderThread();
 
   // Returns the one render thread for this process.  Note that this should only

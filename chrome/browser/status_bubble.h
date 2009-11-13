@@ -46,4 +46,4 @@ class StatusBubble {
   virtual void UpdateDownloadShelfVisibility(bool visible) = 0;
 };
 
-#endif  // #ifndef CHROME_BROWSER_STATUS_BUBBLE_H_
+#endif  // CHROME_BROWSER_STATUS_BUBBLE_H_

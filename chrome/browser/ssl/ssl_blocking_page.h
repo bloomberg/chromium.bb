@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_BLOCKING_PAGE_H_
-#define CHROME_BROWSER_SSL_BLOCKING_PAGE_H_
+#ifndef CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_H_
+#define CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_H_
 
 #include <string>
 
@@ -70,4 +70,4 @@ class SSLBlockingPage : public InterstitialPage {
   DISALLOW_COPY_AND_ASSIGN(SSLBlockingPage);
 };
 
-#endif  // #ifndef CHROME_BROWSER_SSL_BLOCKING_PAGE_H_
+#endif  // CHROME_BROWSER_SSL_SSL_BLOCKING_PAGE_H_

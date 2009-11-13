@@ -23,7 +23,7 @@ namespace setup_util {
   // distribution related install options. Merge them if any command line
   // options present (command line value takes precedence).
   DictionaryValue* GetInstallPreferences(const CommandLine& cmd_line);
-                     
+
   // Find the version of Chrome from an install source directory.
   // Chrome_path should contain a version folder.
   // Returns the first version found or NULL if no version is found.

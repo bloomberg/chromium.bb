@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_NOTIFICATION_TRACKER_H_
-#define CHROME_TEST_NOTIFICATION_TRACKER_H_
+#ifndef CHROME_TEST_TEST_NOTIFICATION_TRACKER_H_
+#define CHROME_TEST_TEST_NOTIFICATION_TRACKER_H_
 
 #include <vector>
 
@@ -76,4 +76,4 @@ class TestNotificationTracker : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestNotificationTracker);
 };
 
-#endif  // CHROME_TEST_NOTIFICATION_TRACKER_H_
+#endif  // CHROME_TEST_TEST_NOTIFICATION_TRACKER_H_

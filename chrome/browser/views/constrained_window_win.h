@@ -71,4 +71,4 @@ class ConstrainedWindowWin : public ConstrainedWindow,
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowWin);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_CONSTRAINED_WINDOW_WIN_H_
+#endif  // CHROME_BROWSER_VIEWS_CONSTRAINED_WINDOW_WIN_H_

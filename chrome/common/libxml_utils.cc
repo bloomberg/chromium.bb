@@ -117,9 +117,9 @@ bool XmlReader::SkipToElement() {
 
 // XmlWriter functions
 
-XmlWriter::XmlWriter() :
-    writer_(NULL),
-    buffer_(NULL) {}
+XmlWriter::XmlWriter()
+    : writer_(NULL),
+      buffer_(NULL) {}
 
 XmlWriter::~XmlWriter() {
   if (writer_)

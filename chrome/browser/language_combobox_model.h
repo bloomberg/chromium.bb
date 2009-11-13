@@ -71,4 +71,4 @@ class LanguageComboboxModel : public ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(LanguageComboboxModel);
 };
 
-#endif  // #ifndef CHROME_BROWSER_LANGUAGE_COMBOBOX_MODEL_H_
+#endif  // CHROME_BROWSER_LANGUAGE_COMBOBOX_MODEL_H_

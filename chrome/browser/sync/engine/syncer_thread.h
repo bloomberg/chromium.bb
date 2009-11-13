@@ -74,7 +74,7 @@ class SyncerThread : public base::RefCountedThreadSafe<SyncerThread> {
   FRIEND_TEST(SyncerThreadWithSyncerTest, Throttling);
   friend class SyncerThreadWithSyncerTest;
   friend class SyncerThreadFactory;
-public:
+ public:
   // Encapsulates the parameters that make up an interval on which the
   // syncer thread is sleeping.
   struct WaitInterval {

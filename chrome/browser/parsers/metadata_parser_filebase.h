@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METADATA_PARSER_FILEBASE_H_
-#define CHROME_BROWSER_METADATA_PARSER_FILEBASE_H_
+#ifndef CHROME_BROWSER_PARSERS_METADATA_PARSER_FILEBASE_H_
+#define CHROME_BROWSER_PARSERS_METADATA_PARSER_FILEBASE_H_
 
 #include "chrome/browser/parsers/metadata_parser.h"
 
@@ -13,7 +13,7 @@ typedef base::hash_map<std::string, std::string> PropertyMap;
 // properties assiciated with files.
 class FileMetadataParser : public MetadataParser {
  public:
-  FileMetadataParser(const FilePath& path);
+  explicit FileMetadataParser(const FilePath& path);
 
   // Implementation of MetadataParser
   virtual bool Parse();
@@ -31,7 +31,7 @@ class FileMetadataParser : public MetadataParser {
 
 class FileMetadataPropertyIterator : public MetadataPropertyIterator {
  public:
-  FileMetadataPropertyIterator(PropertyMap& properties);
+  explicit FileMetadataPropertyIterator(PropertyMap& properties);
 
   // Implementation of MetadataPropertyIterator
   virtual bool GetNext(std::string* key, std::string* value);
@@ -45,4 +45,4 @@ class FileMetadataPropertyIterator : public MetadataPropertyIterator {
   DISALLOW_COPY_AND_ASSIGN(FileMetadataPropertyIterator);
 };
 
-#endif  // CHROME_BROWSER_METADATA_PARSER_FILEBASE_H_
+#endif  // CHROME_BROWSER_PARSERS_METADATA_PARSER_FILEBASE_H_

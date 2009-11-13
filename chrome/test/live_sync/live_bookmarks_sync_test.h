@@ -78,4 +78,4 @@ class LiveBookmarksSyncTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(LiveBookmarksSyncTest);
 };
 
-#endif  // CHROME_TEST_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_
+#endif  // CHROME_TEST_LIVE_SYNC_LIVE_BOOKMARKS_SYNC_TEST_H_

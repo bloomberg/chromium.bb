@@ -23,7 +23,7 @@ class DicReader {
   typedef std::pair<std::string, std::vector<int> > WordEntry;
   typedef std::vector<WordEntry> WordList;
 
-  DicReader(const std::string& filename);
+  explicit DicReader(const std::string& filename);
   ~DicReader();
 
   // Non-numeric affixes will be added to the given AffReader and converted into

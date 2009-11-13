@@ -140,7 +140,7 @@ class Upgrade {
 // so we don't fetch as we have no IO thread (see bug #1292702).
 class FirstRunBrowserProcess : public BrowserProcessImpl {
  public:
-  FirstRunBrowserProcess(const CommandLine& command_line)
+  explicit FirstRunBrowserProcess(const CommandLine& command_line)
       : BrowserProcessImpl(command_line) {
   }
   virtual ~FirstRunBrowserProcess() { }

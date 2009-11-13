@@ -30,4 +30,4 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   DISALLOW_COPY_AND_ASSIGN(ChromeViewsDelegate);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_CHROME_VIEWS_DELEGATE_H_
+#endif  // CHROME_BROWSER_VIEWS_CHROME_VIEWS_DELEGATE_H_

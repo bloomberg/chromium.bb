@@ -21,4 +21,4 @@ class AutocompletePopupGtk : public views::WidgetGtk {
   DISALLOW_COPY_AND_ASSIGN(AutocompletePopupGtk);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_GTK_H_
+#endif  // CHROME_BROWSER_VIEWS_AUTOCOMPLETE_AUTOCOMPLETE_POPUP_GTK_H_

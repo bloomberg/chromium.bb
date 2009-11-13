@@ -342,8 +342,8 @@ typedef CancelableRequestConsumerT<int, 0> CancelableRequestConsumer;
 // other thread for the callback, but will still be destroyed properly.
 
 // Non-templatized base class that provides cancellation
-class CancelableRequestBase :
-    public base::RefCountedThreadSafe<CancelableRequestBase> {
+class CancelableRequestBase
+    : public base::RefCountedThreadSafe<CancelableRequestBase> {
  public:
   friend class CancelableRequestProvider;
 

@@ -22,8 +22,8 @@ struct ViewMsg_DOMStorageEvent_Params;
 // This class handles the logistics of DOM Storage within the browser process.
 // It mostly ferries information between IPCs and the WebKit implementations,
 // but it also handles some special cases like when renderer processes die.
-class DOMStorageDispatcherHost :
-    public base::RefCountedThreadSafe<DOMStorageDispatcherHost> {
+class DOMStorageDispatcherHost
+    : public base::RefCountedThreadSafe<DOMStorageDispatcherHost> {
  public:
   // Only call the constructor from the UI thread.
   DOMStorageDispatcherHost(IPC::Message::Sender* message_sender,

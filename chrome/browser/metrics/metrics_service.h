@@ -5,8 +5,8 @@
 // This file defines a service that collects information about the user
 // experience in order to help improve future versions of the app.
 
-#ifndef CHROME_BROWSER_METRICS_SERVICE_H_
-#define CHROME_BROWSER_METRICS_SERVICE_H_
+#ifndef CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
+#define CHROME_BROWSER_METRICS_METRICS_SERVICE_H_
 
 #include <list>
 #include <map>
@@ -38,7 +38,7 @@ class TemplateURLModel;
 // reported to the UMA server on next launch.
 struct ChildProcessStats {
  public:
-  ChildProcessStats(ChildProcessInfo::ProcessType type)
+  explicit ChildProcessStats(ChildProcessInfo::ProcessType type)
       : process_launches(0),
         process_crashes(0),
         instances(0),
@@ -502,4 +502,4 @@ class MetricsService : public NotificationObserver,
   DISALLOW_COPY_AND_ASSIGN(MetricsService);
 };
 
-#endif  // CHROME_BROWSER_METRICS_SERVICE_H_
+#endif  // CHROME_BROWSER_METRICS_METRICS_SERVICE_H_

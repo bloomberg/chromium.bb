@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_
 
 #include <map>
 #include <vector>
@@ -55,4 +55,4 @@ class PasswordStoreWin : public PasswordStoreDefault {
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreWin);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_WIN_H_

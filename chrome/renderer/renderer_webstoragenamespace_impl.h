@@ -33,4 +33,4 @@ class RendererWebStorageNamespaceImpl : public WebKit::WebStorageNamespace {
   static const int64 kUninitializedNamespaceId = -1;
 };
 
-#endif  // CHROME_RENDERER_WEBSTORAGENAMESPACE_IMPL_H_
+#endif  // CHROME_RENDERER_RENDERER_WEBSTORAGENAMESPACE_IMPL_H_

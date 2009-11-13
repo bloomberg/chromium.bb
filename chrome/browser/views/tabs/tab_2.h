@@ -245,4 +245,4 @@ class Tab2 : public views::View,
   DISALLOW_COPY_AND_ASSIGN(Tab2);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_TABS_TAB_2_H_
+#endif  // CHROME_BROWSER_VIEWS_TABS_TAB_2_H_

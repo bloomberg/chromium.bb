@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET_H_
 
 #include <dbus/dbus-glib.h>
 #include <glib.h>
@@ -109,4 +109,4 @@ class PasswordStoreKWallet : public PasswordStore {
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreKWallet);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_KWALLET_H_

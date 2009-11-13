@@ -8,7 +8,7 @@
 
 using views::View;
 
-//static
+// static
 const int Grid::kCellXPadding = 15;
 // static
 const int Grid::kCellYPadding = 15;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_USER_METRICS_H__
-#define CHROME_BROWSER_USER_METRICS_H__
+#ifndef CHROME_BROWSER_METRICS_USER_METRICS_H_
+#define CHROME_BROWSER_METRICS_USER_METRICS_H_
 
 #include <string>
 
@@ -37,4 +37,4 @@ class UserMetrics {
                                    Profile* profile);
 };
 
-#endif  // CHROME_BROWSER_USER_METRICS_H__
+#endif  // CHROME_BROWSER_METRICS_USER_METRICS_H_

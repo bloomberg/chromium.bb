@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_DEBUGGER_DEV_TOOLS_WINDOW_H_
-#define CHROME_BROWSER_DEBUGGER_DEV_TOOLS_WINDOW_H_
+#ifndef CHROME_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
+#define CHROME_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_
 
 #include <string>
 
@@ -24,10 +24,10 @@ class Profile;
 class RenderViewHost;
 class TabContents;
 
-class DevToolsWindow :
-    public DevToolsClientHost,
-    public NotificationObserver,
-    TabContentsDelegate {
+class DevToolsWindow
+    : public DevToolsClientHost,
+      public NotificationObserver,
+      public TabContentsDelegate {
  public:
   static TabContents* GetDevToolsContents(TabContents* inspected_tab);
 
@@ -46,7 +46,7 @@ class DevToolsWindow :
 
   TabContents* tab_contents() { return tab_contents_; }
   Browser* browser() { return browser_; } //  For tests.
-  bool is_docked() { return docked_; };
+  bool is_docked() { return docked_; }
 
  private:
   void CreateDevToolsBrowser();
@@ -93,4 +93,4 @@ class DevToolsWindow :
   DISALLOW_COPY_AND_ASSIGN(DevToolsWindow);
 };
 
-#endif  // CHROME_BROWSER_DEBUGGER_DEV_TOOLS_WINDOW_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEVTOOLS_WINDOW_H_

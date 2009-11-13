@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_
-#define CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_
+#ifndef CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_H_
+#define CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_H_
 
 #include <string>
 #include <vector>
@@ -49,4 +49,4 @@ class TestRunnerFactory {
 
 }  // namespace
 
-#endif  // CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_
+#endif  // CHROME_TEST_TEST_LAUNCHER_TEST_RUNNER_H_

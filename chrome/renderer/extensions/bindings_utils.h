@@ -119,7 +119,7 @@ RenderView* GetRenderViewForCurrentContext();
 
 // Call the named javascript function with the given arguments in a context.
 // The function name should be reachable from the chromeHidden object, and can
-// be a sub-property like "Port.dispatchOnMessage". Returns the result of 
+// be a sub-property like "Port.dispatchOnMessage". Returns the result of
 // the function call. If an exception is thrown an empty Handle will be
 // returned.
 v8::Handle<v8::Value> CallFunctionInContext(v8::Handle<v8::Context> context,

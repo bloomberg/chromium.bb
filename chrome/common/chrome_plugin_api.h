@@ -563,4 +563,4 @@ typedef CPError (STDCALL *CP_InitializeFunc)(
 } // extern "C"
 #endif
 
-#endif // CHROME_COMMON_CHROME_PLUGIN_API_H__
+#endif  // CHROME_COMMON_CHROME_PLUGIN_API_H_

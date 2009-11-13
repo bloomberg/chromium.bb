@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H__
-#define CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H__
+#ifndef CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H_
+#define CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H_
 
 #include <queue>
 
@@ -70,4 +70,4 @@ class AppModalDialogQueue {
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogQueue);
 };
 
-#endif // CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H__
+#endif  // CHROME_BROWSER_APP_MODAL_DIALOG_QUEUE_H_

@@ -14,7 +14,7 @@ namespace convert_dict {
 
 class AffReader {
  public:
-  AffReader(const std::string& filename);
+  explicit AffReader(const std::string& filename);
   ~AffReader();
 
   bool Read();
@@ -60,7 +60,7 @@ class AffReader {
   int AddAffixGroup(std::string* rule);  // Returns the new affix group ID.
   void AddAffix(std::string* rule);  // SFX/PFX
   void AddReplacement(std::string* rule);
-  //void HandleFlag(std::string* rule);
+  // void HandleFlag(std::string* rule);
 
   // Used to handle "other" commands. The "raw" just saves the line as-is.
   // The "encoded" version converts the line to UTF-8 and saves it.

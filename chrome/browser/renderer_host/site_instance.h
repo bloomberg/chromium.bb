@@ -138,7 +138,7 @@ class SiteInstance : public base::RefCounted<SiteInstance>,
   // Create a new SiteInstance.  Protected to give access to BrowsingInstance
   // and tests; most callers should use CreateSiteInstance or
   // GetRelatedSiteInstance instead.
-  SiteInstance(BrowsingInstance* browsing_instance);
+  explicit SiteInstance(BrowsingInstance* browsing_instance);
 
   // Returns the type of renderer process this instance belongs in, for grouping
   // purposes.

@@ -56,12 +56,12 @@ class SelectFileDialog
     // Notifies the Listener that many files have been selected. The
     // files are in |files|. |params| is contextual passed to SelectFile.
     virtual void MultiFilesSelected(
-      const std::vector<FilePath>& files, void* params) {};
+      const std::vector<FilePath>& files, void* params) {}
 
     // Notifies the Listener that the file/folder selection was aborted (via
     // the  user canceling or closing the selection dialog box, for example).
     // |params| is contextual passed to SelectFile.
-    virtual void FileSelectionCanceled(void* params) {};
+    virtual void FileSelectionCanceled(void* params) {}
   };
 
   // Creates a dialog box helper. This object is ref-counted, but the returned
@@ -141,7 +141,7 @@ class SelectFontDialog
     // Notifies the Listener that the font selection was aborted (via the user
     // canceling or closing the selection dialog box, for example). |params| is
     // contextual passed to SelectFont.
-    virtual void FontSelectionCanceled(void* params) {};
+    virtual void FontSelectionCanceled(void* params) {}
   };
 
   // Creates a dialog box helper. This object is ref-counted, but the returned

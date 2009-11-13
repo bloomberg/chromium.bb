@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_DB_H_
-#define CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_DB_H_
+#ifndef CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_STORE_H_
+#define CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_STORE_H_
 
 #include <cstdio>
 #include <string>
@@ -98,4 +98,4 @@ class BlacklistStoreInput {
   DISALLOW_COPY_AND_ASSIGN(BlacklistStoreInput);
 };
 
-#endif
+#endif  // CHROME_BROWSER_PRIVACY_BLACKLIST_BLACKLIST_STORE_H_

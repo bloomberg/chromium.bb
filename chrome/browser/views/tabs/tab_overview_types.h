@@ -147,7 +147,7 @@ class TabOverviewTypes {
     Message() {
       Init(UNKNOWN);
     }
-    Message(Type type) {
+    explicit Message(Type type) {
       Init(type);
     }
 

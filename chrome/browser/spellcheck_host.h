@@ -35,7 +35,7 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // update.
   void AddWord(const std::string& word);
 
-  const base::PlatformFile& bdict_file() const { return file_; };
+  const base::PlatformFile& bdict_file() const { return file_; }
 
   const std::vector<std::string>& custom_words() const { return custom_words_; }
 

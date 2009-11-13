@@ -35,7 +35,7 @@ class AutomationProviderList {
 
   static AutomationProviderList* GetInstance();
 
-private:
+ private:
   AutomationProviderList();
   void OnLastProviderRemoved();
   list_type automation_providers_;

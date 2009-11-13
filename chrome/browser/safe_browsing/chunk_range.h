@@ -22,7 +22,7 @@
 
 class ChunkRange {
  public:
-  ChunkRange(int start);
+  explicit ChunkRange(int start);
   ChunkRange(int start, int stop);
   ChunkRange(const ChunkRange& rhs);
 

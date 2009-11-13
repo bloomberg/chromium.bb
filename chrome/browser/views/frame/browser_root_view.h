@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_ROOT_VIEW_H
-#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_ROOT_VIEW_H
+#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_ROOT_VIEW_H_
+#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_ROOT_VIEW_H_
 
 #include "views/widget/root_view.h"
 
@@ -59,4 +59,4 @@ class BrowserRootView : public views::RootView {
   DISALLOW_COPY_AND_ASSIGN(BrowserRootView);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_ROOT_VIEW_H
+#endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_ROOT_VIEW_H_

@@ -104,16 +104,16 @@ class BubbleBorder : public views::Border {
 // A Background that clips itself to the specified BubbleBorder and uses
 // the background color of the BubbleBorder.
 class BubbleBackground : public views::Background {
-public:
-  BubbleBackground(BubbleBorder* border) : border_(border) {}
+ public:
+  explicit BubbleBackground(BubbleBorder* border) : border_(border) {}
 
   // Background overrides.
   virtual void Paint(gfx::Canvas* canvas, views::View* view) const;
 
-private:
+ private:
   BubbleBorder* border_;
 
   DISALLOW_COPY_AND_ASSIGN(BubbleBackground);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_
+#endif  // CHROME_BROWSER_VIEWS_BUBBLE_BORDER_H_

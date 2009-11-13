@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 // This class simulates what wininet does when a dns lookup fails.
 
-#ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_URL_REQUEST_JOB_H_
-#define CHROME_BROWSER_AUTOMATION_AUTOMATION_URL_REQUEST_JOB_H_
+#ifndef CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
+#define CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 
 #include "chrome/common/ref_counted_util.h"
 #include "net/http/http_response_headers.h"
@@ -92,5 +92,5 @@ class URLRequestAutomationJob : public URLRequestJob {
   DISALLOW_COPY_AND_ASSIGN(URLRequestAutomationJob);
 };
 
-#endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_URL_REQUEST_JOB_H_
+#endif  // CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 

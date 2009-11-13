@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_PANEL_H_
-#define CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_PANEL_H_
+#ifndef CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
+#define CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
 
 #include <vector>
 
@@ -227,4 +227,4 @@ class BrowserActionsContainer : public views::View,
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_PANEL_H_
+#endif  // CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_CONTAINER_H_

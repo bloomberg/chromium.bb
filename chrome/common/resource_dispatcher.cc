@@ -20,7 +20,7 @@
 #include "webkit/glue/webkit_glue.h"
 
 // Uncomment to enable logging of request traffic
-//#define LOG_RESOURCE_REQUESTS
+// #define LOG_RESOURCE_REQUESTS
 
 #ifdef LOG_RESOURCE_REQUESTS
 # define RESOURCE_LOG(stuff) LOG(INFO) << stuff

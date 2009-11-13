@@ -10,7 +10,7 @@
 
 class AutoFillField : public webkit_glue::FormField {
  public:
-  AutoFillField(const webkit_glue::FormField& field);
+  explicit AutoFillField(const webkit_glue::FormField& field);
 
   const FieldTypeSet& possible_types() const { return possible_types_; }
 

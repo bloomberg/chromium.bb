@@ -190,7 +190,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   // Copies the dependencies from |other| into |this|. If you use this
   // constructor, then you should hold a reference to |other|, as we
   // depend on |other| being alive.
-  ChromeURLRequestContext(ChromeURLRequestContext* other);
+  explicit ChromeURLRequestContext(ChromeURLRequestContext* other);
   virtual ~ChromeURLRequestContext();
 
  public:
@@ -286,7 +286,7 @@ class ChromeURLRequestContextFactory {
  public:
   // Extract properties of interested from |profile|, for setting later into
   // a ChromeURLRequestContext using ApplyProfileParametersToContext().
-  ChromeURLRequestContextFactory(Profile* profile);
+  explicit ChromeURLRequestContextFactory(Profile* profile);
 
   virtual ~ChromeURLRequestContextFactory();
 

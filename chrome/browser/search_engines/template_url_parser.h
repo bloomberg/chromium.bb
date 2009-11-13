@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TEMPLATE_URL_PARSER_H__
-#define CHROME_BROWSER_TEMPLATE_URL_PARSER_H__
+#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_PARSER_H_
+#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_PARSER_H_
 
 #include <string>
 
@@ -44,4 +44,4 @@ class TemplateURLParser {
   DISALLOW_EVIL_CONSTRUCTORS(TemplateURLParser);
 };
 
-#endif // CHROME_BROWSER_TEMPLATE_URL_PARSER_H__
+#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_PARSER_H_

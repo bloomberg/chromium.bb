@@ -498,7 +498,7 @@ gboolean AutocompletePopupViewGtk::HandleExpose(GtkWidget* widget,
     actual_content_width /= PANGO_SCALE;
     actual_content_height /= PANGO_SCALE;
 
-    //DCHECK_LT(actual_content_height, kHeightPerResult);  // Font is too tall.
+    // DCHECK_LT(actual_content_height, kHeightPerResult);  // Font is too tall.
     // Center the text within the line.
     int content_y = std::max(line_rect.y(),
         line_rect.y() + ((kHeightPerResult - actual_content_height) / 2));

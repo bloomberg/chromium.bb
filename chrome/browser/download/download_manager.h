@@ -100,7 +100,7 @@ class DownloadItem {
   };
 
   // Constructing from persistent store:
-  DownloadItem(const DownloadCreateInfo& info);
+  explicit DownloadItem(const DownloadCreateInfo& info);
 
   // Constructing from user action:
   DownloadItem(int32 download_id,

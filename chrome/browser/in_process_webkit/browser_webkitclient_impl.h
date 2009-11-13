@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CLIENT_IMPL_H_
-#define CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CLIENT_IMPL_H_
+#ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
+#define CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_
 
 #include "webkit/glue/webkitclient_impl.h"
 
@@ -40,4 +40,4 @@ class BrowserWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebSharedWorkerRepository* sharedWorkerRepository();
 };
 
-#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CLIENT_IMPL_H_
+#endif  // CHROME_BROWSER_IN_PROCESS_WEBKIT_BROWSER_WEBKITCLIENT_IMPL_H_

@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDERER_WEBKIT_CLIENT_IMPL_H_
-#define CHROME_RENDERER_RENDERER_WEBKIT_CLIENT_IMPL_H_
+#ifndef CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
+#define CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
 
 #include "base/platform_file.h"
 #include "chrome/renderer/websharedworkerrepository_impl.h"
@@ -122,4 +122,4 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
 
 };
 
-#endif  // CHROME_RENDERER_WEBKIT_CLIENT_IMPL_H_
+#endif  // CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_

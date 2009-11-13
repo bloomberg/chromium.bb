@@ -93,7 +93,7 @@ class TriggeredOpenTestDirectorySetterUpper : public TestDirectorySetterUpper {
   // A triggered open is typically in response to a successful auth event just
   // as in "real life".  In this case, the name that will be used should be
   // deterministically known at construction, and is passed in |name|.
-  TriggeredOpenTestDirectorySetterUpper(const std::string& name);
+  explicit TriggeredOpenTestDirectorySetterUpper(const std::string& name);
   virtual void SetUp();
   virtual void TearDown();
 };

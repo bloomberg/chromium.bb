@@ -15,7 +15,7 @@ class PanelScroller;
 
 class PanelScrollerHeader : public views::View {
  public:
-  PanelScrollerHeader(PanelScroller* scroller);
+  explicit PanelScrollerHeader(PanelScroller* scroller);
   virtual ~PanelScrollerHeader();
 
   void set_title(const string16& title) {

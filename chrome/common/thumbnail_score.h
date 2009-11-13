@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_COMMON_THUMBNAIL_SCORE_H__
-#define CHROME_BROWSER_COMMON_THUMBNAIL_SCORE_H__
+#ifndef CHROME_COMMON_THUMBNAIL_SCORE_H_
+#define CHROME_COMMON_THUMBNAIL_SCORE_H_
 
 #include "base/time.h"
 
@@ -79,4 +79,4 @@ struct ThumbnailScore {
 bool ShouldReplaceThumbnailWith(const ThumbnailScore& current,
                                 const ThumbnailScore& replacement);
 
-#endif  // CHROME_BROWSER_COMMON_THUMBNAIL_SCORE_H__
+#endif  // CHROME_COMMON_THUMBNAIL_SCORE_H_

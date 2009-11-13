@@ -10,9 +10,8 @@
 #include "views/widget/widget_win.h"
 #include "views/window/window.h"
 
-class BubbleWidget : public views::WidgetWin
-{
-public:
+class BubbleWidget : public views::WidgetWin {
+ public:
   explicit BubbleWidget(BrowserBubble* bubble)
       : bubble_(bubble), closed_(false) {
   }
@@ -62,7 +61,7 @@ public:
     }
   }
 
-private:
+ private:
   bool closed_;
   BrowserBubble* bubble_;
 };

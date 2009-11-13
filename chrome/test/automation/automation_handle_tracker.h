@@ -74,7 +74,7 @@ class AutomationResourceProxy
 // discard the handle.
 class AutomationHandleTracker {
  public:
-  AutomationHandleTracker(AutomationMessageSender* sender)
+  explicit AutomationHandleTracker(AutomationMessageSender* sender)
       : sender_(sender) {}
   ~AutomationHandleTracker();
 

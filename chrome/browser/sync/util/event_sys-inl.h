@@ -294,12 +294,12 @@ class SimpleHookup
 template <typename EventChannel, typename EventTraits,
           typename CallbackObject, typename CallbackMethod,
           typename CallbackArg0>
-class ArgHookup :
-    public EventListenerHookupImpl<EventChannel, EventTraits,
-                                   ArgHookup<EventChannel, EventTraits,
-                                             CallbackObject,
-                                             CallbackMethod,
-                                             CallbackArg0> > {
+class ArgHookup
+    : public EventListenerHookupImpl<EventChannel, EventTraits,
+                                     ArgHookup<EventChannel, EventTraits,
+                                               CallbackObject,
+                                               CallbackMethod,
+                                               CallbackArg0> > {
  public:
   ArgHookup(EventChannel* channel, CallbackObject* cbobject,
             CallbackMethod cbmethod, CallbackArg0 arg0)

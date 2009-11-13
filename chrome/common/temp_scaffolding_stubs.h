@@ -48,7 +48,7 @@ namespace printing {
 
 class PrintViewManager : public RenderViewHostDelegate::Printing {
  public:
-  PrintViewManager(TabContents& owner) : owner_(owner) { }
+  explicit PrintViewManager(TabContents& owner) : owner_(owner) { }
   void Stop() { NOTIMPLEMENTED(); }
   void Destroy() { }
   bool OnRenderViewGone(RenderViewHost*) {

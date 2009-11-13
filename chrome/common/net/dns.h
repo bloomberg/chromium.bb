@@ -5,9 +5,8 @@
 // This file has shared types used across IPC between render_dns_master.cc
 // and dns_master.cc
 
-
-#ifndef CHROME_COMMON_DNS_H_
-#define CHROME_COMMON_DNS_H_
+#ifndef CHROME_COMMON_NET_DNS_H_
+#define CHROME_COMMON_NET_DNS_H_
 
 #include <string>
 #include <vector>
@@ -21,4 +20,4 @@ namespace chrome_common_net {
 typedef std::vector<std::string> NameList;
 }
 
-#endif  // CHROME_COMMON_DNS_H_
+#endif  // CHROME_COMMON_NET_DNS_H_

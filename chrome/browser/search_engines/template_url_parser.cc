@@ -252,7 +252,7 @@ class ParsingContext {
   DISALLOW_EVIL_CONSTRUCTORS(ParsingContext);
 };
 
-//static
+// static
 std::map<std::string,ParsingContext::ElementType>*
     ParsingContext::kElementNameToElementTypeMap = NULL;
 

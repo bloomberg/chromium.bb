@@ -26,4 +26,4 @@ class NativeViewPhotoboothGtk : public NativeViewPhotobooth {
   DISALLOW_COPY_AND_ASSIGN(NativeViewPhotoboothGtk);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_GTK_H_
+#endif  // CHROME_BROWSER_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_GTK_H_

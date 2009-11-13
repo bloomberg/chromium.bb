@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_BASE_STATIC_ASSERT_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_BASE_STATIC_ASSERT_H_
 
-template <bool> struct STATIC_ASSERTION_FAILURE;
+template<bool> struct STATIC_ASSERTION_FAILURE;
 
-template <> struct STATIC_ASSERTION_FAILURE<true> { enum { value = 1 }; };
+template<> struct STATIC_ASSERTION_FAILURE<true> {
+  enum { value = 1 };
+};
 
 template<int> struct static_assert_test{};
 

@@ -35,4 +35,4 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
                            const std::wstring& message_text,
                            IPC::Message* reply_msg);
 
-#endif // CHROME_BROWSER_JSMESSAGE_BOX_HANDLER_H_
+#endif  // CHROME_BROWSER_JSMESSAGE_BOX_HANDLER_H_

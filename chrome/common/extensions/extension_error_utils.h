@@ -8,7 +8,7 @@
 #include <string>
 
 class ExtensionErrorUtils {
-public:
+ public:
   // Creates an error messages from a pattern.
   static std::string FormatErrorMessage(const std::string& format,
     const std::string& s1);

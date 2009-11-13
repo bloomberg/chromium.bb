@@ -723,7 +723,7 @@ TabStrip::TabStrip(TabStripModel* model)
 
 TabStrip::~TabStrip() {
   // TODO(beng): (1031854) Restore this line once XPFrame/VistaFrame are dead.
-  //model_->RemoveObserver(this);
+  // model_->RemoveObserver(this);
 
   // TODO(beng): remove this if it doesn't work to fix the TabSelectedAt bug.
   drag_controller_.reset(NULL);

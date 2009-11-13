@@ -78,7 +78,7 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
   void AttachClientHost(int client_host_cookie,
                         RenderViewHost* to_rvh);
 
-private:
+ private:
   friend class base::RefCounted<DevToolsManager>;
 
   virtual ~DevToolsManager();

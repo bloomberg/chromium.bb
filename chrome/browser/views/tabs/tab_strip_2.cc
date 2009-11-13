@@ -190,7 +190,7 @@ void TabStrip2::DetachDragEnded() {
       gfx::Point screen_point = views::Screen::GetCursorScreenPoint();
       gfx::Rect tsb = GetDraggedTabScreenBounds(screen_point);
       // TODO(beng): figure this one out.
-      //drop_tabstrip_->AttachTab(tabstrip->DetachTab(0), screen_point, tsb);
+      // drop_tabstrip_->AttachTab(tabstrip->DetachTab(0), screen_point, tsb);
     } else {
       GetWindow()->SetUseDragFrame(detached_drag_mode_);
       SendDraggedTabHome();

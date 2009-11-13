@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_ERROR_REPORTER_H_
-#define CHROME_COMMON_EXTENSIONS_ERROR_REPORTER_H_
+#ifndef CHROME_COMMON_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_
+#define CHROME_COMMON_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_
 
 #include <string>
 #include <vector>
@@ -40,11 +40,11 @@ class ExtensionErrorReporter {
  private:
   static ExtensionErrorReporter* instance_;
 
-  ExtensionErrorReporter(bool enable_noisy_errors);
+  explicit ExtensionErrorReporter(bool enable_noisy_errors);
 
   MessageLoop* ui_loop_;
   std::vector<std::string> errors_;
   bool enable_noisy_errors_;
 };
 
-#endif  // CHROME_COMMON_EXTENSIONS_ERROR_REPORTER_H_
+#endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_ERROR_REPORTER_H_

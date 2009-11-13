@@ -54,7 +54,7 @@ struct URLsDeletedDetails : public HistoryDetails {
 
 // Details for NOTIFY_URLS_STARRED.
 struct URLsStarredDetails : public HistoryDetails {
-  URLsStarredDetails(bool being_starred) : starred(being_starred) {}
+  explicit URLsStarredDetails(bool being_starred) : starred(being_starred) {}
 
   // The new starred state of the list of URLs. True when they are being
   // starred, false when they are being unstarred.

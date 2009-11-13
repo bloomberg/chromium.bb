@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CHROME_RENDERER_WEB_SHARED_WORKER_REPOSITORY_IMPL_H_
-#define CHROME_RENDERER_WEB_SHARED_WORKER_REPOSITORY_IMPL_H_
+#ifndef CHROME_RENDERER_WEBSHAREDWORKERREPOSITORY_IMPL_H_
+#define CHROME_RENDERER_WEBSHAREDWORKERREPOSITORY_IMPL_H_
 
 #include "third_party/WebKit/WebKit/chromium/public/WebSharedWorkerRepository.h"
 
@@ -27,4 +27,4 @@ class WebSharedWorkerRepositoryImpl : public WebKit::WebSharedWorkerRepository {
     DocumentSet shared_worker_parents_;
 };
 
-#endif  // CHROME_RENDERER_WEB_SHARED_WORKER_REPOSITORY_IMPL_H_
+#endif  // CHROME_RENDERER_WEBSHAREDWORKERREPOSITORY_IMPL_H_

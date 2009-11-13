@@ -47,7 +47,7 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
                            const FilePath& path,
                            std::string* error_string) {
   DCHECK(blacklist);
-  
+
   // Memory map for efficient parsing. If the file cannot fit in available
   // memory it would be the least of our worries. Typical blacklist files
   // are less than 200K.
@@ -56,36 +56,36 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
     *error_string = "File I/O error. Check path and permissions.";
     return false;
   }
-  
+
   const char* cur = reinterpret_cast<const char*>(input.data());
   const char* end = cur + input.length();
-  
+
   // Check header.
   if (!StartsWith(cur, end, header, arraysize(header))) {
     *error_string = "Incorrect header.";
     return false;
   }
-  
+
   Blacklist::EntryList entries;
   Blacklist::ProviderList providers;
-  
+
   Blacklist::Provider* provider = new Blacklist::Provider;
   providers.push_back(linked_ptr<Blacklist::Provider>(provider));
-  
+
   cur = std::find(cur, end, '\n') + 1;  // Skip past EOL.
-  
+
   // Each loop iteration takes care of one input line.
   while (cur < end) {
     // Skip whitespace at beginning of line.
     cur = std::find_if(cur, end, IsNotWhiteSpace());
     if (cur == end)
       break;
-    
+
     if (*cur == '#') {
       cur = std::find(cur, end, '\n') + 1;
       continue;
     }
-    
+
     if (*cur == '|') {
       ++cur;
       if (StartsWith(cur, end, name_tag, arraysize(name_tag))) {
@@ -104,29 +104,29 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
       cur = std::find(cur, end, '\n') + 1;
       continue;
     }
-    
+
     const char* skip = std::find_if(cur, end, IsWhiteSpace());
     std::string pattern(cur, skip);
-    
+
     cur = std::find_if(cur + pattern.size(), end, IsNotWhiteSpace());
     if (!StartsWith(cur, end, arrow_tag, arraysize(arrow_tag))) {
       *error_string = "Missing => in rule.";
       return false;
     }
-    
+
     linked_ptr<Blacklist::Entry> entry(new Blacklist::Entry(pattern, provider));
-    
+
     cur = std::find_if(cur + arraysize(arrow_tag), end, IsNotWhiteSpace());
     skip = std::find_first_of(cur, end, eol, eol + 2);
     std::string buf(cur, skip);
     cur = skip + 1;
-    
+
     StringTokenizer tokenizer(buf, " (),\n\r");
     tokenizer.set_options(StringTokenizer::RETURN_DELIMS);
-    
+
     bool in_attribute = false;
     unsigned int last_attribute = 0;
-    
+
     while (tokenizer.GetNext()) {
       if (tokenizer.token_is_delim()) {
         switch (*tokenizer.token_begin()) {
@@ -149,7 +149,7 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
             continue;
         }
       }
-      
+
       if (in_attribute) {
         // The only attribute to support sub_tokens is kBlockByType, for now.
         if (last_attribute == Blacklist::kBlockByType)
@@ -162,7 +162,7 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
     }
     entries.push_back(entry);
   }
-  
+
   for (Blacklist::EntryList::iterator i = entries.begin();
        i != entries.end(); ++i) {
     blacklist->AddEntry(i->release());
@@ -171,29 +171,29 @@ bool BlacklistIO::ReadText(Blacklist* blacklist,
        i != providers.end(); ++i) {
     blacklist->AddProvider(i->release());
   }
-  
+
   return true;
 }
 
 // static
 bool BlacklistIO::ReadBinary(Blacklist* blacklist, const FilePath& path) {
   DCHECK(blacklist);
-  
+
   FILE* fp = file_util::OpenFile(path, "rb");
   if (fp == NULL)
     return false;
-  
+
   BlacklistStoreInput input(fp);
-  
+
   // Read the providers.
   uint32 num_providers = input.ReadNumProviders();
   if (num_providers == std::numeric_limits<uint32>::max())
     return false;
-  
+
   Blacklist::EntryList entries;
   Blacklist::ProviderList providers;
   std::map<size_t, Blacklist::Provider*> provider_map;
-  
+
   std::string name;
   std::string url;
   for (size_t i = 0; i < num_providers; ++i) {
@@ -202,26 +202,26 @@ bool BlacklistIO::ReadBinary(Blacklist* blacklist, const FilePath& path) {
     provider_map[i] = new Blacklist::Provider(name.c_str(), url.c_str());
     providers.push_back(linked_ptr<Blacklist::Provider>(provider_map[i]));
   }
-  
+
   // Read the entries.
   uint32 num_entries = input.ReadNumEntries();
   if (num_entries == std::numeric_limits<uint32>::max())
     return false;
-  
+
   std::string pattern;
   unsigned int attributes, provider;
   std::vector<std::string> types;
   for (size_t i = 0; i < num_entries; ++i) {
     if (!input.ReadEntry(&pattern, &attributes, &types, &provider))
       return false;
-    
+
     Blacklist::Entry* entry =
         new Blacklist::Entry(pattern, provider_map[provider]);
     entry->AddAttributes(attributes);
     entry->SwapTypes(&types);
     entries.push_back(linked_ptr<Blacklist::Entry>(entry));
   }
-  
+
   for (Blacklist::EntryList::iterator i = entries.begin();
        i != entries.end(); ++i) {
     blacklist->AddEntry(i->release());
@@ -230,8 +230,8 @@ bool BlacklistIO::ReadBinary(Blacklist* blacklist, const FilePath& path) {
        i != providers.end(); ++i) {
     blacklist->AddProvider(i->release());
   }
-  
-  return true;  
+
+  return true;
 }
 
 // static
@@ -240,7 +240,7 @@ bool BlacklistIO::WriteBinary(const Blacklist* blacklist,
   BlacklistStoreOutput output(file_util::OpenFile(file, "wb"));
   if (!output.is_good())
     return false;
-  
+
   Blacklist::EntryList entries(blacklist->entries_begin(),
                                blacklist->entries_end());
   Blacklist::ProviderList providers(blacklist->providers_begin(),

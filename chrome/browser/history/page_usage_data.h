@@ -23,7 +23,7 @@ class SkBitmap;
 /////////////////////////////////////////////////////////////////////////////
 class PageUsageData {
  public:
-  PageUsageData(history::URLID id)
+  explicit PageUsageData(history::URLID id)
       : id_(id),
         thumbnail_(NULL),
         thumbnail_set_(false),

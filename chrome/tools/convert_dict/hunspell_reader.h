@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TOOLS_DIC_CONVERTER_HUNSPELL_READER_H__
-#define CHROME_TOOLS_DIC_CONVERTER_HUNSPELL_READER_H__
+#ifndef CHROME_TOOLS_CONVERT_DICT_HUNSPELL_READER_H_
+#define CHROME_TOOLS_CONVERT_DICT_HUNSPELL_READER_H_
 
 #include <string>
 
@@ -22,4 +22,4 @@ void StripComment(std::string* line);
 
 }  // namespace convert_dict
 
-#endif  // CHROME_TOOLS_DIC_CONVERTER_HUNSPELL_READER_H__
+#endif  // CHROME_TOOLS_CONVERT_DICT_HUNSPELL_READER_H_

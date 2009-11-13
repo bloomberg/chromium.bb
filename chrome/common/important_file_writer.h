@@ -50,7 +50,7 @@ class ImportantFileWriter : public NonThreadSafe {
   // Initialize the writer.
   // |path| is the name of file to write.
   // All non-const methods, ctor and dtor must be called on the same thread.
-  ImportantFileWriter(const FilePath& path);
+  explicit ImportantFileWriter(const FilePath& path);
 
   // You have to ensure that there are no pending writes at the moment
   // of destruction.

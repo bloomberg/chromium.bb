@@ -55,4 +55,4 @@ size_t GetFatalAssertions(AssertionList* assertions);
 
 } // namespace logging
 
-#endif
+#endif  // CHROME_COMMON_LOGGING_CHROME_H_

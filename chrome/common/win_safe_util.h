@@ -48,4 +48,4 @@ bool SetInternetZoneIdentifier(const FilePath& full_path);
 
 }  // namespace win_util
 
-#endif // CHROME_COMMON_WIN_SAFE_UTIL_H__
+#endif  // CHROME_COMMON_WIN_SAFE_UTIL_H_

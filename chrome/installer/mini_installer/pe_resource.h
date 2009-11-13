@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_
-#define CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_
+#ifndef CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_H_
+#define CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_H_
 
 #include <windows.h>
 
@@ -38,4 +38,4 @@ class PEResource {
   HMODULE module_;
 };
 
-#endif  // CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_
+#endif  // CHROME_INSTALLER_MINI_INSTALLER_PE_RESOURCE_H_

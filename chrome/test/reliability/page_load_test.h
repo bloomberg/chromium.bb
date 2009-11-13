@@ -13,4 +13,4 @@
 // Parse the command line options and set the page range accordingly.
 void SetPageRange(const CommandLine&);
 
-#endif // CHROME_TEST_RELIABILITY_PAGE_LOAD_TEST_H_
+#endif  // CHROME_TEST_RELIABILITY_PAGE_LOAD_TEST_H_

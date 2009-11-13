@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_TEST_AUTOMATION_AUTOCOMPLETE_EDIT_PROXY_H__
-#define CHROME_TEST_AUTOMATION_AUTOCOMPLETE_EDIT_PROXY_H__
+#ifndef CHROME_TEST_AUTOMATION_AUTOCOMPLETE_EDIT_PROXY_H_
+#define CHROME_TEST_AUTOMATION_AUTOCOMPLETE_EDIT_PROXY_H_
 
 #include <string>
 #include <vector>
@@ -149,4 +149,4 @@ class AutocompleteEditProxy : public AutomationResourceProxy {
   DISALLOW_EVIL_CONSTRUCTORS(AutocompleteEditProxy);
 };
 
-#endif  // #define CHROME_TEST_AUTOMATION_AUTOCOMPLETE_EDIT_PROXY_H__
+#endif  // CHROME_TEST_AUTOMATION_AUTOCOMPLETE_EDIT_PROXY_H_

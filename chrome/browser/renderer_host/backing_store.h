@@ -72,7 +72,7 @@ class BackingStore {
   void PaintToRect(const gfx::Rect& dest_rect, CGContextRef target);
 #elif defined(OS_LINUX)
   Display* display() const { return display_; }
-  XID root_window() const { return root_window_; };
+  XID root_window() const { return root_window_; }
 
   // Copy from the server-side backing store to the target window
   //   display: the display of the backing store and target window

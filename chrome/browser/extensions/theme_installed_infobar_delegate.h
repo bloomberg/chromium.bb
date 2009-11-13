@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_
-#define CHROME_BROWSER_VIEWS_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_
+#define CHROME_BROWSER_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_
 
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 
@@ -43,4 +43,4 @@ class ThemeInstalledInfoBarDelegate : public ConfirmInfoBarDelegate {
   std::string previous_theme_id_;
 };
 
-#endif  // CHROME_BROWSER_VIEWS_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_THEME_INSTALLED_INFOBAR_DELEGATE_H_

@@ -4,8 +4,8 @@
 //
 // This file contains helper functions used by setup.
 
-#ifndef CHROME_INSTALLER_UTIL_HELPER_H__
-#define CHROME_INSTALLER_UTIL_HELPER_H__
+#ifndef CHROME_INSTALLER_UTIL_HELPER_H_
+#define CHROME_INSTALLER_UTIL_HELPER_H_
 
 #include <string>
 
@@ -47,4 +47,4 @@ void RemoveOldVersionDirs(const std::wstring& chrome_path,
 
 }  // namespace installer
 
-#endif
+#endif  // CHROME_INSTALLER_UTIL_HELPER_H_

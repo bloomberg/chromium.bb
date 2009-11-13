@@ -1040,8 +1040,8 @@ TemplateURLFetcher* ProfileImpl::GetTemplateURLFetcher() {
   return template_url_fetcher_.get();
 }
 
-SearchVersusNavigateClassifier* ProfileImpl::GetSearchVersusNavigateClassifier()
-{
+SearchVersusNavigateClassifier*
+ProfileImpl::GetSearchVersusNavigateClassifier() {
   if (!search_versus_navigate_classifier_.get()) {
     search_versus_navigate_classifier_.reset(
         new SearchVersusNavigateClassifier(this));

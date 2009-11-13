@@ -6,8 +6,8 @@
 // related).
 // It is based on URLRequestMockHttpJob.
 
-#ifndef CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_H_
-#define CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_H_
+#ifndef CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
+#define CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_
 
 #include "chrome/browser/net/url_request_mock_http_job.h"
 
@@ -67,4 +67,4 @@ class URLRequestMockNetErrorJob : public URLRequestMockHTTPJob {
   DISALLOW_EVIL_CONSTRUCTORS(URLRequestMockNetErrorJob);
 };
 
-#endif  // #define CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_H_
+#endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_NET_ERROR_JOB_H_

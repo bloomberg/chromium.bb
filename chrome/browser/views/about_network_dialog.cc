@@ -310,7 +310,7 @@ void AboutNetworkDialog::SetupControls() {
   //
   // This raises the maximum number of chars from 32K to some large maximum,
   // probably 2GB. 32K is not nearly enough for our use-case.
-  //SendMessageW(text_field_->GetNativeComponent(), EM_SETLIMITTEXT, 0, 0);
+  // SendMessageW(text_field_->GetNativeComponent(), EM_SETLIMITTEXT, 0, 0);
 
   static const int first_column_set = 1;
   views::ColumnSet* column_set = layout->AddColumnSet(first_column_set);

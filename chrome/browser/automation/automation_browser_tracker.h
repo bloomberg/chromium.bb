@@ -10,8 +10,8 @@
 
 // Tracks Browser objects.
 class AutomationBrowserTracker : public AutomationResourceTracker<Browser*> {
-public:
-  AutomationBrowserTracker(IPC::Message::Sender* automation)
+ public:
+  explicit AutomationBrowserTracker(IPC::Message::Sender* automation)
       : AutomationResourceTracker<Browser*>(automation) { }
 
   virtual ~AutomationBrowserTracker() {

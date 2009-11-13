@@ -309,7 +309,7 @@ class ExtensionsServiceBackend
   // |rdh| can be NULL in the case of test environment.
   // |extension_prefs| contains a dictionary value that points to the extension
   // preferences.
-  ExtensionsServiceBackend(const FilePath& install_directory);
+  explicit ExtensionsServiceBackend(const FilePath& install_directory);
 
   // Loads a single extension from |path| where |path| is the top directory of
   // a specific extension where its manifest file lives.

@@ -45,4 +45,4 @@ class URLRequestMockHTTPJob : public URLRequestFileJob {
   static FilePath base_path_;
 };
 
-# endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_
+#endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_HTTP_JOB_H_

@@ -104,4 +104,4 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView {
   DISALLOW_EVIL_CONSTRUCTORS(GlassBrowserFrameView);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_
+#endif  // CHROME_BROWSER_VIEWS_FRAME_GLASS_BROWSER_FRAME_VIEW_H_

@@ -5,8 +5,8 @@
 // The LoadTimesExtension is a v8 extension to access the time it took
 // to load a page.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_LOADTIMES_EXTENSION_BINDINGS_H_
-#define CHROME_RENDERER_EXTENSIONS_LOADTIMES_EXTENSION_BINDINGS_H_
+#ifndef CHROME_RENDERER_LOADTIMES_EXTENSION_BINDINGS_H_
+#define CHROME_RENDERER_LOADTIMES_EXTENSION_BINDINGS_H_
 
 namespace v8 {
 class Extension;
@@ -21,4 +21,4 @@ class LoadTimesExtension {
 
 }  // namespace extensions_v8
 
-#endif  // CHROME_RENDERER_EXTENSIONS_LOADTIMES_EXTENSION_BINDINGS_H_
+#endif  // CHROME_RENDERER_LOADTIMES_EXTENSION_BINDINGS_H_

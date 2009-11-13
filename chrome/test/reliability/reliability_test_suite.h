@@ -9,12 +9,11 @@
 #include "chrome/test/ui/ui_test_suite.h"
 
 class ReliabilityTestSuite : public UITestSuite {
-public:
+ public:
   ReliabilityTestSuite(int argc, char** argv) : UITestSuite(argc, argv) {
   }
 
-protected:
-
+ protected:
   virtual void Initialize() {
     UITestSuite::Initialize();
 
@@ -22,4 +21,4 @@ protected:
   }
 };
 
-#endif // CHROME_TEST_RELIABILITY_RELIABILITY_TEST_SUITE_H_
+#endif  // CHROME_TEST_RELIABILITY_RELIABILITY_TEST_SUITE_H_

@@ -39,12 +39,11 @@ static const char SALT[] = "salt2";
 static const int kSaltSize = 20;
 static const int kCurrentDBVersion = 11;
 
-UserSettings::ScopedDBHandle::ScopedDBHandle(UserSettings* settings) :
-  mutex_lock_(settings->dbhandle_mutex_), handle_(&settings->dbhandle_) {
+UserSettings::ScopedDBHandle::ScopedDBHandle(UserSettings* settings)
+    : mutex_lock_(settings->dbhandle_mutex_), handle_(&settings->dbhandle_) {
 }
 
-UserSettings::UserSettings() :
-  dbhandle_(NULL) {
+UserSettings::UserSettings() : dbhandle_(NULL) {
 }
 
 string UserSettings::email() const {

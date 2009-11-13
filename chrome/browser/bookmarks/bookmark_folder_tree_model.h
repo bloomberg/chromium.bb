@@ -77,7 +77,7 @@ class BookmarkFolderTreeModel : public TreeNodeModel<FolderNode>,
   virtual void GetIcons(std::vector<SkBitmap>* icons);
   virtual int GetIconIndex(TreeModelNode* node);
 
-private:
+ private:
   // Invoked from the constructor to create the children of the root node.
   void AddRootChildren();
 

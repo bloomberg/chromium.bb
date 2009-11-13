@@ -51,7 +51,7 @@ class ExternalExtensionWrapper : public v8::Extension {
     if (!renderview) return v8::Undefined();
 
     std::string name = std::string(*v8::String::Utf8Value(args[0]));
-    if (!name.length()) return v8::Undefined();;
+    if (!name.length()) return v8::Undefined();
 
     renderview->AddSearchProvider(name);
     return v8::Undefined();

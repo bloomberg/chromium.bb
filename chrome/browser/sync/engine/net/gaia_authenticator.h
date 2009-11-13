@@ -153,8 +153,8 @@ class GaiaAuthenticator {
     std::string captcha_url;
     SignIn signin;
 
-    AuthResults () : credentials_saved(DONT_SAVE_CREDENTIALS),
-                     auth_error(None) { }
+    AuthResults() : credentials_saved(DONT_SAVE_CREDENTIALS),
+                    auth_error(None) { }
   };
 
  protected:

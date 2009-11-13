@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METADATA_PARSER_H_
-#define CHROME_BROWSER_METADATA_PARSER_H_
+#ifndef CHROME_BROWSER_PARSERS_METADATA_PARSER_H_
+#define CHROME_BROWSER_PARSERS_METADATA_PARSER_H_
 
 #include <string>
 
@@ -28,7 +28,7 @@ class MetadataPropertyIterator {
 // Represents a single instance of parsing on a particular file.
 class MetadataParser {
  public:
-  MetadataParser(const FilePath& path) {}
+  explicit MetadataParser(const FilePath& path) {}
 
   static const char* kPropertyType;
   static const char* kPropertyFilesize;
@@ -45,4 +45,4 @@ class MetadataParser {
   virtual MetadataPropertyIterator* GetPropertyIterator() = 0;
 };
 
-#endif  // CHROME_BROWSER-METADATA_PARSER_H_
+#endif  // CHROME_BROWSER_PARSERS_METADATA_PARSER_H_

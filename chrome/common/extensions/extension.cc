@@ -330,7 +330,7 @@ bool Extension::LoadGlobsHelper(
     int content_script_index,
     const wchar_t* globs_property_name,
     std::string* error,
-    void (UserScript::*add_method) (const std::string& glob),
+    void(UserScript::*add_method)(const std::string& glob),
     UserScript *instance) {
   if (!content_script->HasKey(globs_property_name))
     return true;  // they are optional

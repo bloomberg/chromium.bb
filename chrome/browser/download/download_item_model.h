@@ -16,7 +16,8 @@ class SavePackage;
 // depending on the type of download.
 class BaseDownloadItemModel {
  public:
-  BaseDownloadItemModel(DownloadItem* download) : download_(download) { }
+  explicit BaseDownloadItemModel(DownloadItem* download)
+      : download_(download) { }
   virtual ~BaseDownloadItemModel() { }
 
   // Cancel the task corresponding to the item.
@@ -36,7 +37,7 @@ class BaseDownloadItemModel {
 // status.
 class DownloadItemModel : public BaseDownloadItemModel {
  public:
-  DownloadItemModel(DownloadItem* download);
+  explicit DownloadItemModel(DownloadItem* download);
   virtual ~DownloadItemModel() { }
 
   // Cancel the downloading.

@@ -163,4 +163,4 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   DISALLOW_EVIL_CONSTRUCTORS(OpaqueBrowserFrameView);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_H_
+#endif  // CHROME_BROWSER_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H
-#define CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H
+#ifndef CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H_
+#define CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H_
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
@@ -18,8 +18,8 @@ class URLRequest;
 // authentication by the user.
 // It is self-owned and deletes itself when the UI reports the user selection or
 // when the URLRequest is cancelled.
-class SSLClientAuthHandler :
-    public base::RefCountedThreadSafe<SSLClientAuthHandler> {
+class SSLClientAuthHandler
+    : public base::RefCountedThreadSafe<SSLClientAuthHandler> {
  public:
   SSLClientAuthHandler(URLRequest* request,
                        net::SSLCertRequestInfo* cert_request_info);
@@ -55,4 +55,4 @@ class SSLClientAuthHandler :
   DISALLOW_COPY_AND_ASSIGN(SSLClientAuthHandler);
 };
 
-#endif  // CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H
+#endif  // CHROME_BROWSER_SSL_SSL_CLIENT_AUTH_HANDLER_H_

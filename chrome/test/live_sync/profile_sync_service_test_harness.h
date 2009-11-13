@@ -105,4 +105,4 @@ class ProfileSyncServiceTestHarness : public ProfileSyncServiceObserver {
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncServiceTestHarness);
 };
 
-#endif  // CHROME_TEST_SYNC_PROFILE_SYNC_SERVICE_TEST_HARNESS_H_
+#endif  // CHROME_TEST_LIVE_SYNC_PROFILE_SYNC_SERVICE_TEST_HARNESS_H_

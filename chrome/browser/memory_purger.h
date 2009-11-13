@@ -17,7 +17,7 @@ template<typename Type>
 struct DefaultSingletonTraits;
 
 class MemoryPurger : public base::SystemMonitor::PowerObserver {
-public:
+ public:
   static MemoryPurger* GetSingleton();
 
   // PowerObserver

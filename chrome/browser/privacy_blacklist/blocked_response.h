@@ -22,7 +22,7 @@ extern const char kBlockScheme[];
 
 class BlockedResponse {
  public:
-  BlockedResponse() {};
+  BlockedResponse() {}
 
   // Returns the HTML document used as substituted content for blacklisted
   // elements.

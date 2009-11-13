@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TEMPLATE_URL_PREPOPULATE_DATA_H__
-#define CHROME_BROWSER_TEMPLATE_URL_PREPOPULATE_DATA_H__
+#ifndef CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_PREPOPULATE_DATA_H_
+#define CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_PREPOPULATE_DATA_H_
 
 #include <vector>
 
@@ -28,4 +28,4 @@ void GetPrepopulatedEngines(PrefService* prefs,
 
 }  // namespace TemplateURLPrepopulateData
 
-#endif  // CHROME_BROWSER_TEMPLATE_URL_PREPOPULATE_DATA_H__
+#endif  // CHROME_BROWSER_SEARCH_ENGINES_TEMPLATE_URL_PREPOPULATE_DATA_H_

@@ -10,7 +10,7 @@
 
 class URLRequestFailedDnsJob : public URLRequestJob {
  public:
-  URLRequestFailedDnsJob(URLRequest* request)
+  explicit URLRequestFailedDnsJob(URLRequest* request)
       : URLRequestJob(request) { }
 
   virtual void Start();

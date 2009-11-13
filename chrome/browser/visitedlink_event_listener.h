@@ -6,8 +6,8 @@
 // processes. It also coalesces the updates to avoid excessive broadcasting of
 // messages to the renderers.
 
-#ifndef VISITEDLINK_EVENT_LISTENER_H_
-#define VISITEDLINK_EVENT_LISTENER_H_
+#ifndef CHROME_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
+#define CHROME_BROWSER_VISITEDLINK_EVENT_LISTENER_H_
 
 #include "base/timer.h"
 #include "chrome/browser/visitedlink_master.h"
@@ -34,4 +34,4 @@ class VisitedLinkEventListener : public VisitedLinkMaster::Listener {
   DISALLOW_COPY_AND_ASSIGN(VisitedLinkEventListener);
 };
 
-#endif  // VISITEDLINK_EVENT_LISTENER_H_
+#endif  // CHROME_BROWSER_VISITEDLINK_EVENT_LISTENER_H_

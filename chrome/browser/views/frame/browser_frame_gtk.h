@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_FRAME_GTK_BROWSER_FRAME_GTK_H_
-#define CHROME_BROWSER_VIEWS_FRAME_GTK_BROWSER_FRAME_GTK_H_
+#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_GTK_H_
+#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_GTK_H_
 
 #include "base/basictypes.h"
 #include "chrome/browser/views/frame/browser_frame.h"
@@ -67,4 +67,4 @@ class BrowserFrameGtk : public BrowserFrame,
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameGtk);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_FRAME_GTK_BROWSER_FRAME_GTK_H_
+#endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_FRAME_GTK_H_

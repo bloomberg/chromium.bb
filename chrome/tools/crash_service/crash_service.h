@@ -1,8 +1,9 @@
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_TOOLS_CRASH_SERVICE__
-#define CHROME_TOOLS_CRASH_SERVICE__
+
+#ifndef CHROME_TOOLS_CRASH_SERVICE_CRASH_SERVICE_H_
+#define CHROME_TOOLS_CRASH_SERVICE_CRASH_SERVICE_H_
 
 #include <string>
 
@@ -28,7 +29,7 @@ class CrashService {
  public:
   // The ctor takes a directory that needs to be writable and will create
   // a subdirectory inside to keep logs, crashes and checkpoint files.
-  CrashService(const std::wstring& report_dir);
+  explicit CrashService(const std::wstring& report_dir);
   ~CrashService();
 
   // Starts servicing crash dumps. The command_line specifies various behaviors,
@@ -110,5 +111,4 @@ class CrashService {
   DISALLOW_EVIL_CONSTRUCTORS(CrashService);
 };
 
-
-#endif  // CHROME_TOOLS_CRASH_SERVICE__
+#endif  // CHROME_TOOLS_CRASH_SERVICE_CRASH_SERVICE_H_

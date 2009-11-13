@@ -1401,7 +1401,8 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_NEW_WINDOW_PROFILE_6:
     case IDC_NEW_WINDOW_PROFILE_7:
     case IDC_NEW_WINDOW_PROFILE_8:
-        NewProfileWindowByIndex(id - IDC_NEW_WINDOW_PROFILE_0);    break;
+        NewProfileWindowByIndex(id - IDC_NEW_WINDOW_PROFILE_0);
+        break;
     case IDC_CLOSE_WINDOW:          CloseWindow();                 break;
     case IDC_NEW_TAB:               NewTab();                      break;
     case IDC_CLOSE_TAB:             CloseTab();                    break;
@@ -2428,37 +2429,35 @@ void Browser::InitCommandState() {
 #endif
 
   // Initialize other commands based on the window type.
-  {
-    bool normal_window = type() == TYPE_NORMAL;
+  bool normal_window = type() == TYPE_NORMAL;
 
-    // Navigation commands
-    command_updater_.UpdateCommandEnabled(IDC_HOME, normal_window);
+  // Navigation commands
+  command_updater_.UpdateCommandEnabled(IDC_HOME, normal_window);
 
-    // Window management commands
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
-                                          normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_NEXT, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_PREVIOUS, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_0, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_1, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_2, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_3, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_4, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_5, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_6, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
-    command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
-                                          !profile_->IsOffTheRecord());
+  // Window management commands
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB,
+                                        normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_NEXT, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_PREVIOUS, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_0, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_1, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_2, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_3, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_4, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_5, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_6, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
+  command_updater_.UpdateCommandEnabled(IDC_RESTORE_TAB,
+                                        !profile_->IsOffTheRecord());
 
-    // Page-related commands
-    command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);
+  // Page-related commands
+  command_updater_.UpdateCommandEnabled(IDC_BOOKMARK_PAGE, normal_window);
 
-    // Show various bits of UI
-    command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,
-                                          normal_window);
-  }
+  // Show various bits of UI
+  command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA,
+                                        normal_window);
 
   // Initialize other commands whose state changes based on fullscreen mode.
   UpdateCommandsForFullscreenMode(false);

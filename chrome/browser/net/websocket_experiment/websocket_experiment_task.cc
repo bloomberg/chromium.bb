@@ -91,8 +91,9 @@ void WebSocketExperimentTask::OnURLFetchComplete(
   if (next_state_ != STATE_URL_FETCH_COMPLETE) {
     DLOG(INFO) << "unexpected state=" << next_state_;
     result = net::ERR_UNEXPECTED;
-  } else if (response_code == 200 || response_code == 304)
+  } else if (response_code == 200 || response_code == 304) {
     result = net::OK;
+  }
   DoLoop(result);
 }
 

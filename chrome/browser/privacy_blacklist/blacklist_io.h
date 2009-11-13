@@ -17,11 +17,11 @@ class BlacklistIO {
   // On error returns false and fills |error_string|.
   static bool ReadText(Blacklist* blacklist, const FilePath& path,
                        std::string* error_string);
-  
+
   // Reads a blacklist stored on disk in a binary format.
   // Returns true on success.
   static bool ReadBinary(Blacklist* blacklist, const FilePath& path);
-  
+
   // Writes |blacklist| to |path| in a binary format. Returns true on success.
   static bool WriteBinary(const Blacklist* blacklist, const FilePath& path);
 };

@@ -89,8 +89,8 @@ class BookmarkManagerView : public views::View,
   virtual std::wstring GetWindowName() const;
   virtual View* GetContentsView() { return this; }
   // TODO(sky): implement these when we have an icon.
-  //virtual SkBitmap GetWindowIcon();
-  //virtual bool ShouldShowWindowIcon() const { return true; }
+  // virtual SkBitmap GetWindowIcon();
+  // virtual bool ShouldShowWindowIcon() const { return true; }
   virtual void WindowClosing();
 
   // ProfileSyncServiceObserver method.

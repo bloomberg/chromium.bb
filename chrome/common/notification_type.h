@@ -774,7 +774,8 @@ class NotificationType {
     NOTIFICATION_TYPE_COUNT
   };
 
-  NotificationType(Type v) : value(v) {}
+  // TODO(erg): Our notification system relies on implicit conversion.
+  NotificationType(Type v) : value(v) {}  // NOLINT
 
   bool operator==(NotificationType t) const { return value == t.value; }
   bool operator!=(NotificationType t) const { return value != t.value; }

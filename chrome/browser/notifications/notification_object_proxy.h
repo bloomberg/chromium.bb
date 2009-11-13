@@ -16,8 +16,8 @@ class Message;
 // which corresponds to a notification toast on the desktop.  It can be signaled
 // when various events occur regarding the desktop notification, and the
 // attached JS listeners will be invoked in the renderer or worker process.
-class NotificationObjectProxy :
-    public base::RefCountedThreadSafe<NotificationObjectProxy> {
+class NotificationObjectProxy
+    : public base::RefCountedThreadSafe<NotificationObjectProxy> {
  public:
   // Creates a Proxy object with the necessary callback information.
   NotificationObjectProxy(int process_id, int route_id,

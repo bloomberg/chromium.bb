@@ -5,8 +5,8 @@
 // This file defines a set of user experience metrics data recorded by
 // the MetricsService.  This is the unit of data that is sent to the server.
 
-#ifndef CHROME_BROWSER_METRICS_LOG_H__
-#define CHROME_BROWSER_METRICS_LOG_H__
+#ifndef CHROME_BROWSER_METRICS_METRICS_LOG_H_
+#define CHROME_BROWSER_METRICS_METRICS_LOG_H_
 
 #include <libxml/xmlwriter.h>
 
@@ -202,4 +202,4 @@ class MetricsLog {
   DISALLOW_EVIL_CONSTRUCTORS(MetricsLog);
 };
 
-#endif  // CHROME_BROWSER_METRICS_LOG_H__
+#endif  // CHROME_BROWSER_METRICS_METRICS_LOG_H_

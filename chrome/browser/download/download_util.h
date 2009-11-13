@@ -35,7 +35,7 @@ namespace download_util {
 template<class DownloadView>
 class DownloadProgressTask : public Task {
  public:
-  DownloadProgressTask(DownloadView* view) : view_(view) {}
+  explicit DownloadProgressTask(DownloadView* view) : view_(view) {}
   virtual ~DownloadProgressTask() {}
   virtual void Run() {
     view_->UpdateDownloadProgress();

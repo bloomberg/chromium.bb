@@ -14,7 +14,7 @@
 class LzmaUtil {
  public:
   // Utility method that does the job of calling OpenArchive(), UnPack()
-  // and CloseArchive() in order. Returns error code (NO_ERROR if successful). 
+  // and CloseArchive() in order. Returns error code (NO_ERROR if successful).
   static int32 UnPackArchive(const std::wstring& archive,
                              const std::wstring& output_dir,
                              std::wstring* output_file);

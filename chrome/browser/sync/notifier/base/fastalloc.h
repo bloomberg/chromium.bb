@@ -12,7 +12,7 @@ namespace notifier {
 template<class T, size_t Size>
 class FastAlloc {
  public:
-  FastAlloc() : buffer_(NULL), size_(0) { };
+  FastAlloc() : buffer_(NULL), size_(0) { }
   ~FastAlloc() { freeBuffer(); }
   T* get_buffer(size_t size) {
     if (size_ != 0) {

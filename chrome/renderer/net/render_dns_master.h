@@ -18,8 +18,8 @@
 // sent names.  If the entire queue is processed, then the list of "sent names"
 // is cleared so that future gatherings may again pass along the same names.
 
-#ifndef CHROME_RENDERER_RENDER_NET_DNS_MASTER_H__
-#define CHROME_RENDERER_RENDER_NET_DNS_MASTER_H__
+#ifndef CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_
+#define CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_
 
 #include <map>
 #include <string>
@@ -106,4 +106,4 @@ class RenderDnsMaster {
   DISALLOW_EVIL_CONSTRUCTORS(RenderDnsMaster);
 };  // class RenderDnsMaster
 
-#endif  // CHROME_RENDERER_RENDER_NET_DNS_MASTER_H__
+#endif  // CHROME_RENDERER_NET_RENDER_DNS_MASTER_H_

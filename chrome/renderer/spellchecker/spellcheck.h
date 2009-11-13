@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECKER_H_
-#define CHROME_RENDERER_SPELLCHECKER_SPELLCHECKER_H_
+#ifndef CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
+#define CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_
 
 #include <queue>
 #include <string>
@@ -120,4 +120,4 @@ class SpellCheck {
   DISALLOW_COPY_AND_ASSIGN(SpellCheck);
 };
 
-#endif  // CHROME_RENDERER_SPELLCHECKER_SPELLCHECKER_H_
+#endif  // CHROME_RENDERER_SPELLCHECKER_SPELLCHECK_H_

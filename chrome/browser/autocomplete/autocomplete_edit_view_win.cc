@@ -949,7 +949,9 @@ bool AutocompleteEditViewWin::IsCommandIdEnabled(int command_id) const {
     case IDS_SELECT_ALL:   return !!CanSelectAll();
     case IDS_EDIT_SEARCH_ENGINES:
       return command_updater_->IsCommandEnabled(IDC_EDIT_SEARCH_ENGINES);
-    default:               NOTREACHED(); return false;
+    default:
+      NOTREACHED();
+      return false;
   }
 }
 

@@ -4,18 +4,18 @@
 
 // This class exists to interpret the response from the metrics server.
 
-#ifndef CHROME_BROWSER_METRICS_RESPONSE_H__
-#define CHROME_BROWSER_METRICS_RESPONSE_H__
+#ifndef CHROME_BROWSER_METRICS_METRICS_RESPONSE_H_
+#define CHROME_BROWSER_METRICS_METRICS_RESPONSE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 
 class MetricsResponse {
-public:
+ public:
   // Parses metrics response XML into the information we care about
   // (how often to send metrics info, which info to send).
-  MetricsResponse(const std::string& response_xml);
+  explicit MetricsResponse(const std::string& response_xml);
 
   // True if the XML passed to the constructor was valid and parseable.
   bool valid() { return valid_; }
@@ -45,7 +45,7 @@ public:
   // in each log (in seconds).  (If 0, no value was provided.)
   int interval() { return interval_; }
 
-private:
+ private:
   bool valid_;
   int collectors_;
   int events_;
@@ -54,4 +54,4 @@ private:
   DISALLOW_EVIL_CONSTRUCTORS(MetricsResponse);
 };
 
-#endif  // CHROME_BROWSER_METRICS_RESPONSE_H__
+#endif  // CHROME_BROWSER_METRICS_METRICS_RESPONSE_H_

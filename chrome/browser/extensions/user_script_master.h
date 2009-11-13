@@ -28,7 +28,7 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
  public:
   // For testability, the constructor takes the path the scripts live in.
   // This is normally a directory inside the profile.
-  UserScriptMaster(const FilePath& script_dir);
+  explicit UserScriptMaster(const FilePath& script_dir);
 
   // Add a watched directory. All scripts will be reloaded when any file in
   // this directory changes.

@@ -35,4 +35,4 @@ void ShowOptionsWindow(OptionsPage page,
                        OptionsGroup highlight_group,
                        Profile* profile);
 
-#endif  // #ifndef CHROME_BROWSER_OPTIONS_WINDOW_H__
+#endif  // CHROME_BROWSER_OPTIONS_WINDOW_H_

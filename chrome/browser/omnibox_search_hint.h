@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OMNIBOX_SEARCH_HINT_
-#define CHROME_BROWSER_OMNIBOX_SEARCH_HINT_
+#ifndef CHROME_BROWSER_OMNIBOX_SEARCH_HINT_H_
+#define CHROME_BROWSER_OMNIBOX_SEARCH_HINT_H_
 
 #include <map>
 #include <string>
@@ -58,4 +58,4 @@ class OmniboxSearchHint : public NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(OmniboxSearchHint);
 };
 
-#endif  // CHROME_BROWSER_OMNIBOX_SEARCH_HINT_
+#endif  // CHROME_BROWSER_OMNIBOX_SEARCH_HINT_H_

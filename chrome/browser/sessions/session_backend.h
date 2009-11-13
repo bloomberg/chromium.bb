@@ -135,4 +135,4 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   DISALLOW_COPY_AND_ASSIGN(SessionBackend);
 };
 
-#endif  // #define CHROME_BROWSER_SESSIONS_SESSION_BACKEND_H_
+#endif  // CHROME_BROWSER_SESSIONS_SESSION_BACKEND_H_

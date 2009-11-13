@@ -33,7 +33,7 @@ struct WebMenuItem;
 // changes.
 class RenderWidgetHostView {
  public:
-  virtual ~RenderWidgetHostView(){};
+  virtual ~RenderWidgetHostView() {}
 
   // Platform-specific creator. Use this to construct new RenderWidgetHostViews
   // rather than using RenderWidgetHostViewWin & friends.
@@ -133,7 +133,7 @@ class RenderWidgetHostView {
   virtual void SetTooltipText(const std::wstring& tooltip_text) = 0;
 
   // Notifies the View that the renderer text selection has changed.
-  virtual void SelectionChanged(const std::string& text) { };
+  virtual void SelectionChanged(const std::string& text) {}
 
   // Tells the View whether the context menu is showing. This is used on Linux
   // to suppress updates to webkit focus for the duration of the show.

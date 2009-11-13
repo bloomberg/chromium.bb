@@ -75,4 +75,4 @@ class TestURLFetcherFactory : public URLFetcher::Factory {
   DISALLOW_COPY_AND_ASSIGN(TestURLFetcherFactory);
 };
 
-#endif  // CHROME_TEST_TEST_URL_FETCHER_FACTORY_H_
+#endif  // CHROME_BROWSER_NET_TEST_URL_FETCHER_FACTORY_H_

@@ -54,4 +54,4 @@ class NativeViewPhotoboothWin : public NativeViewPhotobooth {
   DISALLOW_COPY_AND_ASSIGN(NativeViewPhotoboothWin);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_WIN_H_
+#endif  // CHROME_BROWSER_VIEWS_TABS_NATIVE_VIEW_PHOTOBOOTH_WIN_H_

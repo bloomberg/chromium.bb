@@ -18,7 +18,7 @@
 
 class GURL;
 
-//#define SB_LOGGING_ENABLED
+// #define SB_LOGGING_ENABLED
 #ifdef SB_LOGGING_ENABLED
 #define SB_DLOG(severity) DLOG_IF(INFO, 1)
 #else
@@ -77,7 +77,7 @@ struct SBListChunkRanges {
   std::string adds;  // The ranges for add chunks.
   std::string subs;  // The ranges for sub chunks.
 
-  SBListChunkRanges(const std::string& n) : name(n) { }
+  explicit SBListChunkRanges(const std::string& n) : name(n) { }
 };
 
 // Container for deleting chunks from the database.

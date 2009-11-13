@@ -98,7 +98,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
     DISALLOW_COPY_AND_ASSIGN(RequestContextGetter);
   };
 
-  HttpBridge(RequestContextGetter* context);
+  explicit HttpBridge(RequestContextGetter* context);
 
   // sync_api::HttpPostProvider implementation.
   virtual void SetUserAgent(const char* user_agent);

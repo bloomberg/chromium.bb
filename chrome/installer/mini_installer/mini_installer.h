@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_INSTALLER_MINI_INSTALLER_
-#define CHROME_INSTALLER_MINI_INSTALLER_
+#ifndef CHROME_INSTALLER_MINI_INSTALLER_MINI_INSTALLER_H_
+#define CHROME_INSTALLER_MINI_INSTALLER_MINI_INSTALLER_H_
 
 // The windows command line to uncompress a LZ compressed file. It is a define
 // because we need the string to be writable. We don't need the full path
@@ -64,4 +64,5 @@ const wchar_t kManifestFilename[] = L"packed_files.txt";
 
 }  // namespace mini_installer
 
-#endif  // CHROME_INSTALLER_MINI_INSTALLER_
+#endif  // CHROME_INSTALLER_MINI_INSTALLER_MINI_INSTALLER_H_
+

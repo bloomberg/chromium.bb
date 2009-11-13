@@ -79,7 +79,7 @@ class URLRequestContextGetter;
 class SaveFileManager
     : public base::RefCountedThreadSafe<SaveFileManager> {
  public:
-  SaveFileManager(ResourceDispatcherHost* rdh);
+  explicit SaveFileManager(ResourceDispatcherHost* rdh);
 
   // Lifetime management.
   void Shutdown();

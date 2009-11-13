@@ -7,8 +7,8 @@
 // reading.  This is useful for callers who simply want to get the data from a
 // URL and don't care about all the nitty-gritty details.
 
-#ifndef CHROME_BROWSER_URL_FETCHER_H_
-#define CHROME_BROWSER_URL_FETCHER_H_
+#ifndef CHROME_BROWSER_NET_URL_FETCHER_H_
+#define CHROME_BROWSER_NET_URL_FETCHER_H_
 
 #include "base/leak_tracker.h"
 #include "base/message_loop.h"
@@ -163,4 +163,4 @@ class URLFetcher {
   DISALLOW_EVIL_CONSTRUCTORS(URLFetcher);
 };
 
-#endif  // CHROME_BROWSER_URL_FETCHER_H_
+#endif  // CHROME_BROWSER_NET_URL_FETCHER_H_

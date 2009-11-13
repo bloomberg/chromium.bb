@@ -26,4 +26,4 @@ void GetRebarGradientColors(int width, int x1, int x2,
 // Gets the color used to draw dark (inset beveled) lines.
 void GetDarkLineColor(SkColor* dark_color);
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_THEME_HELPERS_H__
+#endif  // CHROME_BROWSER_VIEWS_THEME_HELPERS_H__

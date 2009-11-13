@@ -331,7 +331,7 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // TODO(brettw) Support deletion, we need to track whether anything was
   // deleted during the rebuild here. Then we should delete any of these
   // entries from the complete table later.
-  //std::vector<Fingerprint> removed_since_rebuild_;
+  // std::vector<Fingerprint> removed_since_rebuild_;
 
   // The currently open file with the table in it. This may be NULL if we're
   // rebuilding and haven't written a new version yet. Writing to the file may
@@ -392,4 +392,4 @@ inline void VisitedLinkMaster::DebugValidate() {
 }
 #endif
 
-#endif // CHROME_BROWSER_VISITEDLINK_MASTER_H__
+#endif  // CHROME_BROWSER_VISITEDLINK_MASTER_H__

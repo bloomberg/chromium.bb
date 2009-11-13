@@ -988,7 +988,7 @@ bool TemplateURLModel::BuildQueryTerms(const GURL& url,
           // this as if the term doesn't occur by setting the value to an empty
           // string.
           (*query_terms)[key_string] = std::string();
-          DCHECK (valid_term_count > 0);
+          DCHECK(valid_term_count > 0);
           valid_term_count--;
         }
       } else {

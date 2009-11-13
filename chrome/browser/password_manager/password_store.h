@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE
-#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE
+#ifndef CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_H_
+#define CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_H_
 
 #include <set>
 #include <vector>
@@ -145,4 +145,4 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   DISALLOW_COPY_AND_ASSIGN(PasswordStore);
 };
 
-#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE
+#endif  // CHROME_BROWSER_PASSWORD_MANAGER_PASSWORD_STORE_H_

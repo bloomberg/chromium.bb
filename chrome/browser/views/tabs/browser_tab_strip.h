@@ -79,4 +79,4 @@ class BrowserTabStrip : public TabStrip2Model,
   DISALLOW_COPY_AND_ASSIGN(BrowserTabStrip);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_TABS_BROWSER_TAB_STRIP_H_
+#endif  // CHROME_BROWSER_VIEWS_TABS_BROWSER_TAB_STRIP_H_

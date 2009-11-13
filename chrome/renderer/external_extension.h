@@ -4,8 +4,8 @@
 
 // Implements the window.external object.
 
-#ifndef CHROME_RENDERER_EXTENSIONS_V8_EXTERNAL_EXTENSION_H_
-#define CHROME_RENDERER_EXTENSIONS_V8_EXTERNAL_EXTENSION_H_
+#ifndef CHROME_RENDERER_EXTERNAL_EXTENSION_H_
+#define CHROME_RENDERER_EXTERNAL_EXTENSION_H_
 
 namespace v8 {
 class Extension;
@@ -20,4 +20,4 @@ class ExternalExtension {
 
 }  // namespace extensions_v8
 
-#endif  // CHROME_RENDERER_EXTENSIONS_V8_EXTERNAL_EXTENSION_H_
+#endif  // CHROME_RENDERER_EXTERNAL_EXTENSION_H_

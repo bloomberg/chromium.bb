@@ -33,7 +33,7 @@ class NotificationDetails {
   }
 
  protected:
-  NotificationDetails(const void* ptr) : ptr_(ptr) {}
+  explicit NotificationDetails(const void* ptr) : ptr_(ptr) {}
 
   // Declaring this const allows Details<T> to be used with both T = Foo and
   // T = const Foo.
@@ -43,8 +43,9 @@ class NotificationDetails {
 template <class T>
 class Details : public NotificationDetails {
  public:
-  Details(T* ptr) : NotificationDetails(ptr) {}
-  Details(const NotificationDetails& other)
+  // TODO(erg): Our code hard relies on implicit conversion
+  Details(T* ptr) : NotificationDetails(ptr) {}  // NOLINT
+  Details(const NotificationDetails& other)      // NOLINT
     : NotificationDetails(other) {}
 
   T* operator->() const { return ptr(); }

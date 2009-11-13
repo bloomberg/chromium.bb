@@ -329,11 +329,11 @@ void SelectFileDialogImpl::ListenerDestroyed() {
 void SelectFileDialogImpl::ExecuteSelectFile(
     const ExecuteSelectParams& params) {
   std::vector<std::wstring> exts;
-  for (size_t i=0; i<params.file_types.extensions.size(); ++i) {
+  for (size_t i = 0; i < params.file_types.extensions.size(); ++i) {
     const std::vector<std::wstring>& inner_exts =
         params.file_types.extensions[i];
     std::wstring ext_string;
-    for (size_t j=0; j<inner_exts.size(); ++j) {
+    for (size_t j = 0; j < inner_exts.size(); ++j) {
       if (!ext_string.empty())
         ext_string.push_back(L';');
       ext_string.append(L"*.");
@@ -420,8 +420,7 @@ void SelectFileDialogImpl::FileNotSelected(void* params, RunState run_state) {
 int CALLBACK SelectFileDialogImpl::BrowseCallbackProc(HWND window,
                                                       UINT message,
                                                       LPARAM parameter,
-                                                      LPARAM data)
-{
+                                                      LPARAM data) {
   if (message == BFFM_INITIALIZED) {
     // WParam is TRUE since passing a path.
     // data lParam member of the BROWSEINFO structure.

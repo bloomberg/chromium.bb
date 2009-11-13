@@ -53,7 +53,7 @@ class MRUCacheBase {
   // a new item is inserted. If the caller wants to manager this itself (for
   // example, maybe it has special work to do when something is evicted), it
   // can pass NO_AUTO_EVICT to not restrict the cache size.
-  MRUCacheBase(size_type max_size) : max_size_(max_size) {
+  explicit MRUCacheBase(size_type max_size) : max_size_(max_size) {
   }
 
   virtual ~MRUCacheBase() {
@@ -205,7 +205,7 @@ class MRUCache : public MRUCacheBase<KeyType,
 
  public:
   // See MRUCacheBase, noting the possibility of using NO_AUTO_EVICT.
-  MRUCache(typename ParentType::size_type max_size)
+  explicit MRUCache(typename ParentType::size_type max_size)
       : ParentType(max_size) {
   }
   virtual ~MRUCache() {
@@ -239,7 +239,7 @@ class OwningMRUCache
 
  public:
   // See MRUCacheBase, noting the possibility of using NO_AUTO_EVICT.
-  OwningMRUCache(typename ParentType::size_type max_size)
+  explicit OwningMRUCache(typename ParentType::size_type max_size)
       : ParentType(max_size) {
   }
   virtual ~OwningMRUCache() {

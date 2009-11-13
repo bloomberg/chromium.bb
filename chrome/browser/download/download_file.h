@@ -86,7 +86,7 @@ struct DownloadBuffer {
 // cancelled, the DownloadFile is destroyed.
 class DownloadFile {
  public:
-  DownloadFile(const DownloadCreateInfo* info);
+  explicit DownloadFile(const DownloadCreateInfo* info);
   ~DownloadFile();
 
   bool Initialize();
@@ -167,7 +167,7 @@ class DownloadFile {
 class DownloadFileManager
     : public base::RefCountedThreadSafe<DownloadFileManager> {
  public:
-  DownloadFileManager(ResourceDispatcherHost* rdh);
+  explicit DownloadFileManager(ResourceDispatcherHost* rdh);
 
   // Called on shutdown on the UI thread.
   void Shutdown();

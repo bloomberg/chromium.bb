@@ -12,7 +12,7 @@
 namespace installer {
 
 class Version {
-public:
+ public:
   virtual ~Version();
 
   // Check if the current version is higher than the version object passed
@@ -29,7 +29,7 @@ public:
   // Caller is responsible for freeing the Version object once done.
   static Version* GetVersionFromString(const std::wstring& version_str);
 
-private:
+ private:
   int64 major_;
   int64 minor_;
   int64 build_;
@@ -43,4 +43,4 @@ private:
 
 }  // namespace installer
 
-#endif
+#endif  // CHROME_INSTALLER_UTIL_VERSION_H_

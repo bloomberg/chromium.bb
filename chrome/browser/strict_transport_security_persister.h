@@ -30,15 +30,17 @@
 //   copies the current state of the StrictTransportSecurityState, serialises
 //   and writes to disk.
 
+#ifndef CHROME_BROWSER_STRICT_TRANSPORT_SECURITY_PERSISTER_H_
+#define CHROME_BROWSER_STRICT_TRANSPORT_SECURITY_PERSISTER_H_
+
 #include "base/file_path.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "net/base/strict_transport_security_state.h"
 
-
-class StrictTransportSecurityPersister :
-    public base::RefCountedThreadSafe<StrictTransportSecurityPersister>,
-    public net::StrictTransportSecurityState::Delegate {
+class StrictTransportSecurityPersister
+    : public base::RefCountedThreadSafe<StrictTransportSecurityPersister>,
+      public net::StrictTransportSecurityState::Delegate {
  public:
   StrictTransportSecurityPersister(net::StrictTransportSecurityState* state,
                                    const FilePath& profile_path);
@@ -68,3 +70,5 @@ class StrictTransportSecurityPersister :
   // The path to the file in which we store the serialised state.
   const FilePath state_file_;
 };
+
+#endif  // CHROME_BROWSER_STRICT_TRANSPORT_SECURITY_PERSISTER_H_

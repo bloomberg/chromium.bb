@@ -16,7 +16,7 @@ class JSONStringValueSerializer : public ValueSerializer {
   // json_string is the string that will be source of the deserialization
   // or the destination of the serialization.  The caller of the constructor
   // retains ownership of the string.
-  JSONStringValueSerializer(std::string* json_string)
+  explicit JSONStringValueSerializer(std::string* json_string)
       : json_string_(json_string),
         initialized_with_const_string_(false),
         pretty_print_(false),
@@ -25,7 +25,7 @@ class JSONStringValueSerializer : public ValueSerializer {
 
   // This version allows initialization with a const string reference for
   // deserialization only.
-  JSONStringValueSerializer(const std::string& json_string)
+  explicit JSONStringValueSerializer(const std::string& json_string)
       : json_string_(&const_cast<std::string&>(json_string)),
         initialized_with_const_string_(true),
         pretty_print_(false),

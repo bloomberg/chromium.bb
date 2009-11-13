@@ -37,7 +37,7 @@ class HistoryAddPageArgs
         referrer(arg_referrer),
         redirects(arg_redirects),
         transition(arg_transition),
-        did_replace_entry(arg_did_replace_entry){
+        did_replace_entry(arg_did_replace_entry) {
   }
 
   GURL url;

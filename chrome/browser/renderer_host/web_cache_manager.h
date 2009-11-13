@@ -5,8 +5,8 @@
 // This is the browser side of the cache manager, it tracks the activity of the
 // render processes and allocates available memory cache resources.
 
-#ifndef CHROME_BROWSER_WEB_CACHE_MANAGER_H_
-#define CHROME_BROWSER_WEB_CACHE_MANAGER_H_
+#ifndef CHROME_BROWSER_RENDERER_HOST_WEB_CACHE_MANAGER_H_
+#define CHROME_BROWSER_RENDERER_HOST_WEB_CACHE_MANAGER_H_
 
 #include <map>
 #include <list>
@@ -192,4 +192,4 @@ class WebCacheManager {
   DISALLOW_COPY_AND_ASSIGN(WebCacheManager);
 };
 
-#endif  // CHROME_BROWSER_WEB_CACHE_MANAGER_H_
+#endif  // CHROME_BROWSER_RENDERER_HOST_WEB_CACHE_MANAGER_H_

@@ -50,4 +50,4 @@ class DropdownBarView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(DropdownBarView);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_DROPDOW_BAR_VIEW_H_
+#endif  // CHROME_BROWSER_VIEWS_DROPDOWN_BAR_VIEW_H_

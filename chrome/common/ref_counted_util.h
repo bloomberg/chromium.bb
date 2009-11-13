@@ -11,11 +11,11 @@
 // RefCountedVector is just a vector wrapped up with
 // RefCountedThreadSafe.
 template<class T>
-class RefCountedVector :
-    public base::RefCountedThreadSafe<RefCountedVector<T> > {
+class RefCountedVector
+    : public base::RefCountedThreadSafe<RefCountedVector<T> > {
  public:
   RefCountedVector() {}
-  RefCountedVector(const std::vector<T>& initializer)
+  explicit RefCountedVector(const std::vector<T>& initializer)
       : data(initializer) {}
 
   std::vector<T> data;

@@ -40,4 +40,4 @@ class URLRequestSlowHTTPJob : public URLRequestMockHTTPJob {
   static FilePath base_path_;
 };
 
-# endif  // CHROME_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_
+#endif  // CHROME_BROWSER_NET_URL_REQUEST_SLOW_HTTP_JOB_H_

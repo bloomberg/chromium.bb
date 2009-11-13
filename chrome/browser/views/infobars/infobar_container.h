@@ -85,4 +85,4 @@ class InfoBarContainer : public views::View,
   DISALLOW_COPY_AND_ASSIGN(InfoBarContainer);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_
+#endif  // CHROME_BROWSER_VIEWS_INFOBARS_INFOBAR_CONTAINER_H_

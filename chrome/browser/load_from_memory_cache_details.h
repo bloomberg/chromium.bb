@@ -34,7 +34,7 @@ class LoadFromMemoryCacheDetails {
   int ssl_cert_id() const { return cert_id_; }
   int ssl_cert_status() const { return cert_status_; }
 
-private:
+ private:
   GURL url_;
   std::string frame_origin_;
   std::string main_frame_origin_;

@@ -32,4 +32,4 @@ class RendererWebStorageAreaImpl : public WebKit::WebStorageArea {
   int64 storage_area_id_;
 };
 
-#endif  // CHROME_RENDERER_WEBSTORAGEAREA_IMPL_H_
+#endif  // CHROME_RENDERER_RENDERER_WEBSTORAGEAREA_IMPL_H_

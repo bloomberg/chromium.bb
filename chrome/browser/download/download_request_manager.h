@@ -40,8 +40,8 @@ class TabContents;
 //   the user allowed the download, multiple downloads are allowed without any
 //   user intervention until the user navigates to a different host.
 
-class DownloadRequestManager :
-    public base::RefCountedThreadSafe<DownloadRequestManager> {
+class DownloadRequestManager
+    : public base::RefCountedThreadSafe<DownloadRequestManager> {
  public:
   // Download status for a particular page. See class description for details.
   enum DownloadStatus {

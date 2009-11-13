@@ -51,8 +51,8 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
                         const SkBitmap& thumbnail,
                         const ThumbnailScore& score);
 
-  //TODO(brettw) write this.
-  //bool GetPageThumbnail(const GURL& url, RefCountedBytes** data) const;
+  // TODO(brettw): write this.
+  // bool GetPageThumbnail(const GURL& url, RefCountedBytes** data) const;
 
  private:
   friend class TopSitesTest;
@@ -61,8 +61,8 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
     scoped_refptr<RefCountedBytes> thumbnail;
     ThumbnailScore thumbnail_score;
 
-    // TODO(brettw) this will eventually store the favicon.
-    //scoped_refptr<RefCountedBytes> favicon;
+    // TODO(brettw): this will eventually store the favicon.
+    // scoped_refptr<RefCountedBytes> favicon;
   };
 
   // Saves the set of the top URLs visited by this user. The 0th item is the
@@ -118,8 +118,8 @@ class TopSites : public base::RefCountedThreadSafe<TopSites> {
   // maps the redirects to the index into top_sites_ that contains it.
   std::map<GURL, size_t> canonical_urls_;
 
-  // TODO(brettw) use the blacklist.
-  //std::set<GURL> blacklist_;
+  // TODO(brettw): use the blacklist.
+  // std::set<GURL> blacklist_;
 
   DISALLOW_COPY_AND_ASSIGN(TopSites);
 };

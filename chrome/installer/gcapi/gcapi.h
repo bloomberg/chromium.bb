@@ -50,4 +50,4 @@ typedef BOOL (__stdcall * GCCC_LaunchGC)(HANDLE *);
 typedef BOOL (__stdcall * GCCC_LaunchGCWithDimensions)(int, int, int, int);
 }  // extern "C"
 
-#endif  // # CHROME_INSTALLER_GCAPI_GCAPI_H_
+#endif  // CHROME_INSTALLER_GCAPI_GCAPI_H_

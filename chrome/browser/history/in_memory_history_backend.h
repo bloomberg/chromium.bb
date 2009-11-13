@@ -77,4 +77,4 @@ class InMemoryHistoryBackend : public NotificationObserver {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_IN_MEMORY_HISTORY_BACKEND_H_
+#endif  // CHROME_BROWSER_HISTORY_IN_MEMORY_HISTORY_BACKEND_H_

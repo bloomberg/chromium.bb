@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H_
-#define CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H_
+#ifndef CHROME_BROWSER_HISTORY_IN_MEMORY_DATABASE_H_
+#define CHROME_BROWSER_HISTORY_IN_MEMORY_DATABASE_H_
 
 #include <string>
 
@@ -48,4 +48,4 @@ class InMemoryDatabase : public URLDatabase {
 
 }  // namespace history
 
-#endif  // CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H_
+#endif  // CHROME_BROWSER_HISTORY_IN_MEMORY_DATABASE_H_

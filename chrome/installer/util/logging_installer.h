@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_INSTALLER_LOGGING_INSTALLER_H__
-#define CHROME_INSTALLER_LOGGING_INSTALLER_H__
+#ifndef CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_
+#define CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_
 
 #include <string>
 
@@ -24,4 +24,4 @@ std::wstring GetLogFilePath(const CommandLine& command_line);
 
 } // namespace installer
 
-#endif
+#endif  // CHROME_INSTALLER_UTIL_LOGGING_INSTALLER_H_

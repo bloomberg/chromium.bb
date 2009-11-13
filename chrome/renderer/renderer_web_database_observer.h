@@ -19,4 +19,4 @@ class RendererWebDatabaseObserver : public WebKit::WebDatabaseObserver {
   IPC::Message::Sender* sender_;
 };
 
-#endif  // CHROME_RENDERER_WEB_DATABASE_OBSERVER_H_
+#endif  // CHROME_RENDERER_RENDERER_WEB_DATABASE_OBSERVER_H_

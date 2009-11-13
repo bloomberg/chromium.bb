@@ -16,8 +16,8 @@ class ListValue;
 
 class DebuggerHost : public base::RefCountedThreadSafe<DebuggerHost> {
  public:
-  DebuggerHost() {};
-  virtual ~DebuggerHost() {};
+  DebuggerHost() {}
+  virtual ~DebuggerHost() {}
 
   // call before other methods
   virtual void Start() = 0;
@@ -45,4 +45,4 @@ class DebuggerHost : public base::RefCountedThreadSafe<DebuggerHost> {
   DISALLOW_COPY_AND_ASSIGN(DebuggerHost);
 };
 
-#endif // CHROME_BROWSER_DEBUGGER_DEBUGGER_HOST_H_
+#endif  // CHROME_BROWSER_DEBUGGER_DEBUGGER_HOST_H_

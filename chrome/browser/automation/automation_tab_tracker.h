@@ -15,8 +15,8 @@
 
 class AutomationTabTracker
   : public AutomationResourceTracker<NavigationController*> {
-public:
-  AutomationTabTracker(IPC::Message::Sender* automation)
+ public:
+  explicit AutomationTabTracker(IPC::Message::Sender* automation)
       : AutomationResourceTracker<NavigationController*>(automation) {}
 
   virtual ~AutomationTabTracker() {

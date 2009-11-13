@@ -110,7 +110,7 @@ FileBrowseUIHTMLSource::FileBrowseUIHTMLSource()
 void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
                                               int request_id) {
   DictionaryValue localized_strings;
-  //TODO(dhg): Add stirings to localized strings, also add more strings
+  // TODO(dhg): Add stirings to localized strings, also add more strings
   // that are currently hardcoded.
   localized_strings.SetString(L"devices", "devices");
 

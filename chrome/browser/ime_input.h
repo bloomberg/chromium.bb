@@ -303,4 +303,4 @@ class ImeInput {
   DISALLOW_EVIL_CONSTRUCTORS(ImeInput);
 };
 
-#endif  // #ifndef CHROME_BROWSER_IME_INPUT_H_
+#endif  // CHROME_BROWSER_IME_INPUT_H_

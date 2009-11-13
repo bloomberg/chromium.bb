@@ -23,7 +23,7 @@ SkBitmap* BubbleBorder::bottom_left_ = NULL;
 SkBitmap* BubbleBorder::top_arrow_ = NULL;
 SkBitmap* BubbleBorder::bottom_arrow_ = NULL;
 
-//static
+// static
 int BubbleBorder::arrow_x_offset_;
 
 // The height inside the arrow image, in pixels.

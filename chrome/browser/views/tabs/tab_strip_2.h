@@ -199,4 +199,4 @@ class TabStrip2 : public views::View,
   DISALLOW_COPY_AND_ASSIGN(TabStrip2);
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_2_H_
+#endif  // CHROME_BROWSER_VIEWS_TABS_TAB_STRIP_2_H_

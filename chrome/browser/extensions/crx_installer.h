@@ -34,9 +34,9 @@ class SkBitmap;
 // long enough to receive the result of unpacking.
 //
 // TODO(aa): Pull out a frontend interface for testing?
-class CrxInstaller :
-    public SandboxedExtensionUnpackerClient,
-    public ExtensionInstallUI::Delegate {
+class CrxInstaller
+    : public SandboxedExtensionUnpackerClient,
+      public ExtensionInstallUI::Delegate {
  public:
   // Starts the installation of the crx file in |source_file| into
   // |install_directory|.

@@ -54,7 +54,7 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   class Iterator {
    public:
     Iterator();
-    Iterator(ProcessType type);
+    explicit Iterator(ProcessType type);
     ChildProcessHost* operator->() { return *iterator_; }
     ChildProcessHost* operator*() { return *iterator_; }
     ChildProcessHost* operator++();
@@ -105,7 +105,7 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   // calling the subclass' implementation.
   class ListenerHook : public IPC::Channel::Listener {
    public:
-    ListenerHook(ChildProcessHost* host);
+    explicit ListenerHook(ChildProcessHost* host);
     virtual void OnMessageReceived(const IPC::Message& msg);
     virtual void OnChannelConnected(int32 peer_pid);
     virtual void OnChannelError();

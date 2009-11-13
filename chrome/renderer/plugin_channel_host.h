@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_PLUGIN_PLUGIN_CHANNEL_HOST_H__
-#define CHROME_PLUGIN_PLUGIN_CHANNEL_HOST_H__
+#ifndef CHROME_RENDERER_PLUGIN_CHANNEL_HOST_H_
+#define CHROME_RENDERER_PLUGIN_CHANNEL_HOST_H_
 
 #include "base/hash_tables.h"
 #include "chrome/plugin/plugin_channel_base.h"
@@ -54,4 +54,4 @@ class PluginChannelHost : public PluginChannelBase {
   DISALLOW_EVIL_CONSTRUCTORS(PluginChannelHost);
 };
 
-#endif  // CHROME_PLUGIN_PLUGIN_CHANNEL_HOST_H__
+#endif  // CHROME_RENDERER_PLUGIN_CHANNEL_HOST_H_

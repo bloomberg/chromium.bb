@@ -50,7 +50,8 @@ const wchar_t kFullInstall[] = L"Full";
 const wchar_t kChromeMetaInstallerExe[] =
     L"\\\\172.23.44.61\\shared\\chrome_autotest\\beta_build\\ChromeSetup.exe";
 const wchar_t kChromeStandAloneInstallerLocation[] =
-    L"\\\\172.24.6.7\\shares\\googleclient\\nightly\\builds\\Win-OmahaInstallers\\latest\\opt-win\\staging\\";
+    L"\\\\172.24.6.7\\shares\\googleclient\\nightly\\builds\\"
+    L"Win-OmahaInstallers\\latest\\opt-win\\staging\\";
 const wchar_t kChromeApplyTagExe[] =
     L"\\\\172.23.44.61\\shared\\chrome_autotest\\ApplyTag.exe";
 const wchar_t kChromeApplyTagParameters[] =

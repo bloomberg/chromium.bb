@@ -528,7 +528,7 @@ void WebPluginProxy::SetWindowlessBuffer(
       windowless_context_);
 }
 
-#elif defined (OS_LINUX)
+#elif defined(OS_LINUX)
 
 void WebPluginProxy::SetWindowlessBuffer(
     const TransportDIB::Handle& windowless_buffer,

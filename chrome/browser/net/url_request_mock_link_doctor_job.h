@@ -11,7 +11,7 @@
 
 class URLRequestMockLinkDoctorJob : public URLRequestMockHTTPJob {
  public:
-  URLRequestMockLinkDoctorJob(URLRequest* request);
+  explicit URLRequestMockLinkDoctorJob(URLRequest* request);
 
   static URLRequest::ProtocolFactory Factory;
 
@@ -22,4 +22,4 @@ class URLRequestMockLinkDoctorJob : public URLRequestMockHTTPJob {
   ~URLRequestMockLinkDoctorJob() {}
 };
 
-# endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_LINK_DOCTOR_JOB_H_
+#endif  // CHROME_BROWSER_NET_URL_REQUEST_MOCK_LINK_DOCTOR_JOB_H_

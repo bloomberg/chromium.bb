@@ -77,7 +77,7 @@ class UserSettings {
 
  protected:
   struct ScopedDBHandle {
-    ScopedDBHandle(UserSettings* settings);
+    explicit ScopedDBHandle(UserSettings* settings);
     inline sqlite3* get() const { return *handle_; }
     AutoLock mutex_lock_;
     sqlite3** const handle_;

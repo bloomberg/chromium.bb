@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_WORKER_WEB_WORKER_STUB_BASE_H_
-#define CHROME_WORKER_WEB_WORKER_STUB_BASE_H_
+#ifndef CHROME_WORKER_WEBWORKER_STUB_BASE_H_
+#define CHROME_WORKER_WEBWORKER_STUB_BASE_H_
 
 #include "chrome/worker/webworkerclient_proxy.h"
 #include "ipc/ipc_channel.h"
@@ -12,7 +12,7 @@
 // WebSharedWorkerStub and contains common setup/teardown functionality.
 class WebWorkerStubBase : public IPC::Channel::Listener {
  public:
-  WebWorkerStubBase(int route_id);
+  explicit WebWorkerStubBase(int route_id);
   virtual ~WebWorkerStubBase();
 
   // Invoked when the WebWorkerClientProxy is shutting down.
@@ -33,4 +33,4 @@ class WebWorkerStubBase : public IPC::Channel::Listener {
   DISALLOW_COPY_AND_ASSIGN(WebWorkerStubBase);
 };
 
-#endif  // CHROME_WORKER_WEB_WORKER_STUB_BASE_H_
+#endif  // CHROME_WORKER_WEBWORKER_STUB_BASE_H_

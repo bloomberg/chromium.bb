@@ -135,4 +135,4 @@ class DesktopNotificationsTest : public testing::Test {
   static std::string log_output_;
 };
 
-#endif
+#endif  // CHROME_BROWSER_NOTIFICATIONS_DESKTOP_NOTIFICATIONS_UNITTEST_H_

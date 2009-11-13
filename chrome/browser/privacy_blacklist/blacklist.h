@@ -28,10 +28,10 @@ class Blacklist {
  public:
   class Entry;
   class Provider;
-  
+
   typedef std::vector<linked_ptr<Entry> > EntryList;
   typedef std::vector<linked_ptr<Provider> > ProviderList;
-  
+
   // Filter attributes (more to come):
   static const unsigned int kBlockAll;
   static const unsigned int kDontSendCookies;
@@ -79,7 +79,7 @@ class Blacklist {
    public:
     // Construct with given pattern.
     Entry(const std::string& pattern, const Provider* provider);
-    
+
     // Returns the pattern which this entry matches.
     const std::string& pattern() const { return pattern_; }
 
@@ -101,13 +101,13 @@ class Blacklist {
 
     void AddAttributes(unsigned int attributes);
     void AddType(const std::string& type);
-    
+
     // Swap the contents of the internal types vector with the given vector.
     void SwapTypes(std::vector<std::string>* types);
 
    private:
     friend class BlacklistIO;
-    
+
     // Merge the attributes and types of the given entry with this one.
     void Merge(const Entry& entry);
 
@@ -150,25 +150,25 @@ class Blacklist {
 
   // Destructor.
   ~Blacklist();
-  
+
   // Adds a new entry to the blacklist. It is now owned by the blacklist.
   void AddEntry(Entry* entry);
-  
+
   // Adds a new provider to the blacklist. It is now owned by the blacklist.
   void AddProvider(Provider* provider);
-  
+
   EntryList::const_iterator entries_begin() const {
     return blacklist_.begin();
   }
-  
+
   EntryList::const_iterator entries_end() const {
     return blacklist_.end();
   }
-  
+
   ProviderList::const_iterator providers_begin() const {
     return providers_.begin();
   }
-  
+
   ProviderList::const_iterator providers_end() const {
     return providers_.end();
   }

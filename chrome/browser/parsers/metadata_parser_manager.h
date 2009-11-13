@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_METADATA_PARSER_MANAGER_H_
-#define CHROME_BROWSER_METADATA_PARSER_MANAGER_H_
+#ifndef CHROME_BROWSER_PARSERS_METADATA_PARSER_MANAGER_H_
+#define CHROME_BROWSER_PARSERS_METADATA_PARSER_MANAGER_H_
 
 #include <vector>
 
@@ -37,4 +37,4 @@ class MetadataParserManager {
   DISALLOW_COPY_AND_ASSIGN(MetadataParserManager);
 };
 
-#endif  // CHROME_BROWSER_METADATA_PARSER_MANAGER_H_
+#endif  // CHROME_BROWSER_PARSERS_METADATA_PARSER_MANAGER_H_

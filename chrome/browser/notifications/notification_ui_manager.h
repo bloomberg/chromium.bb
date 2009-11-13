@@ -19,8 +19,8 @@ class SiteInstance;
 
 // The notification manager manages use of the desktop for notifications.
 // It maintains a queue of pending notifications when space becomes constrained.
-class NotificationUIManager :
-    public BalloonCollectionImpl::BalloonSpaceChangeListener {
+class NotificationUIManager
+    : public BalloonCollectionImpl::BalloonSpaceChangeListener {
  public:
   NotificationUIManager();
   virtual ~NotificationUIManager();

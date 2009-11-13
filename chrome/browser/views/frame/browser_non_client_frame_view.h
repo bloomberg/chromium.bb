@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_
-#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_
+#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
+#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
 #include "views/window/non_client_view.h"
 
@@ -23,4 +23,4 @@ class BrowserNonClientFrameView : public views::NonClientFrameView {
   virtual void UpdateThrobber(bool running) = 0;
 };
 
-#endif  // #ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_
+#endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_

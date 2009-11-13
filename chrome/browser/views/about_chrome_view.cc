@@ -250,8 +250,10 @@ void AboutChromeView::Init() {
   // Add up the height of the various elements on the page.
   int height = about_background_logo->height() +
                kRelatedControlVerticalSpacing +
-               font.height() +                // Copyright line.
-               dummy_text.GetHeightForWidth(  // Main label.
+               // Copyright line.
+               font.height() +
+               // Main label.
+               dummy_text.GetHeightForWidth(
                    dialog_dimensions_.width() - (2 * kPanelHorizMargin)) +
                kRelatedControlVerticalSpacing;
 

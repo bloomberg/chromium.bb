@@ -94,4 +94,4 @@ typedef struct _GearsCreateShortcutResult {
 } // extern "C"
 #endif
 
-#endif // CHROME_COMMON_GEARS_API_H__
+#endif  // CHROME_COMMON_GEARS_API_H_

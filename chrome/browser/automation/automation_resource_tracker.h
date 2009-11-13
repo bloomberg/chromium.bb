@@ -30,8 +30,8 @@ struct AutomationResourceTraits<T*> {
 // This class exists for the sole purpose of allowing some of the implementation
 // of AutomationResourceTracker to live in a .cc file.
 class AutomationResourceTrackerImpl {
-public:
-  AutomationResourceTrackerImpl(IPC::Message::Sender* sender)
+ public:
+  explicit AutomationResourceTrackerImpl(IPC::Message::Sender* sender)
     : sender_(sender) {}
 
   virtual ~AutomationResourceTrackerImpl() {}
@@ -51,13 +51,13 @@ public:
   int GetHandleImpl(void* resource);
   void HandleCloseNotification(void* resource);
 
-protected:
+ protected:
   typedef std::map<void*, int> ResourceToHandleMap;
   typedef std::map<int, void*> HandleToResourceMap;
   ResourceToHandleMap resource_to_handle_;
   HandleToResourceMap handle_to_resource_;
 
-private:
+ private:
   DISALLOW_EVIL_CONSTRUCTORS(AutomationResourceTrackerImpl);
 
   IPC::Message::Sender* sender_;
@@ -72,7 +72,7 @@ template <class T>
 class AutomationResourceTracker : public NotificationObserver,
                                   private AutomationResourceTrackerImpl {
  public:
-  AutomationResourceTracker(IPC::Message::Sender* automation)
+  explicit AutomationResourceTracker(IPC::Message::Sender* automation)
     : AutomationResourceTrackerImpl(automation) {}
 
   virtual ~AutomationResourceTracker() {
@@ -125,7 +125,7 @@ class AutomationResourceTracker : public NotificationObserver,
   // that the associated handle is now invalid.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
-                       const NotificationDetails& details){
+                       const NotificationDetails& details) {
      T resource =
         Source<typename AutomationResourceTraits<T>::ValueType>(source).ptr();
 

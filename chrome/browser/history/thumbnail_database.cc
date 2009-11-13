@@ -111,29 +111,6 @@ InitStatus ThumbnailDatabase::Init(const FilePath& db_name,
     return INIT_FAILURE;
   }
 
-  // The following code is useful in debugging the thumbnail database. Upon
-  // startup, it will spit out a file for each thumbnail in the database so you
-  // can open them in an external viewer. Insert the path name on your system
-  // into the string below (I recommend using a blank directory since there may
-  // be a lot of files).
-#if 0
-  sql::Statement statement(db_.GetUniqueStatement(
-      "SELECT id, image_data FROM favicons"));
-  while (statement.Step()) {
-    int idx = statement.ColumnInt(0);
-    std::vector<unsigned char> data;
-    statement.ColumnBlobAsVector(1, &data);
-
-    char filename[256];
-    sprintf(filename, "<<< YOUR PATH HERE >>>\\%d.png", idx);
-    if (!data.empty()) {
-      file_util::WriteFile(ASCIIToWide(std::string(filename)),
-                           reinterpret_cast<char*>(&data[0]),
-                           data.size());
-    }
-  }
-#endif
-
   return INIT_OK;
 }
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_EXTERNAL_WIN_H_
-#define CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_EXTERNAL_WIN_H_
+#ifndef CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_EXTERNAL_WIN_H_
+#define CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_EXTERNAL_WIN_H_
 
 #include <vector>
 
@@ -34,4 +34,4 @@ class RenderViewContextMenuExternalWin : public RenderViewContextMenuWin {
   std::vector<int> disabled_menu_ids_;
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_EXTERNAL_WIN_H_
+#endif  // CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_EXTERNAL_WIN_H_

@@ -155,7 +155,7 @@ class TestRenderViewHost : public RenderViewHost {
 // registered at a time, you can only have one of these objects at a time.
 class TestRenderViewHostFactory : public RenderViewHostFactory {
  public:
-  TestRenderViewHostFactory(RenderProcessHostFactory* rph_factory)
+  explicit TestRenderViewHostFactory(RenderProcessHostFactory* rph_factory)
       : render_process_host_factory_(rph_factory) {
     RenderViewHostFactory::RegisterFactory(this);
   }

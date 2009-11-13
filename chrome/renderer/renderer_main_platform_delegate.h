@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_RENDERER_PLATFORM_DELEGATE_H_
-#define CHROME_RENDERER_RENDERER_PLATFORM_DELEGATE_H_
+#ifndef CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
+#define CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_
 
 #include "chrome/common/main_function_params.h"
 
 class RendererMainPlatformDelegate {
  public:
-  RendererMainPlatformDelegate(const MainFunctionParams& parameters);
+  explicit RendererMainPlatformDelegate(const MainFunctionParams& parameters);
   ~RendererMainPlatformDelegate();
 
   // Called first thing and last thing in the process' lifecycle, i.e. before
@@ -36,4 +36,4 @@ class RendererMainPlatformDelegate {
   DISALLOW_COPY_AND_ASSIGN(RendererMainPlatformDelegate);
 };
 
-#endif  // CHROME_RENDERER_RENDERER_PLATFORM_DELEGATE_H_
+#endif  // CHROME_RENDERER_RENDERER_MAIN_PLATFORM_DELEGATE_H_

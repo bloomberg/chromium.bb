@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_BROWSING_INSTANCE_H__
-#define CHROME_BROWSER_BROWSING_INSTANCE_H__
+#ifndef CHROME_BROWSER_BROWSING_INSTANCE_H_
+#define CHROME_BROWSER_BROWSING_INSTANCE_H_
 
 #include "base/hash_tables.h"
 #include "base/logging.h"
@@ -55,7 +55,7 @@ class SiteInstance;
 class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
  public:
   // Create a new BrowsingInstance.
-  BrowsingInstance(Profile* profile)
+  explicit BrowsingInstance(Profile* profile)
       : profile_(profile) {
   }
 
@@ -133,4 +133,4 @@ class BrowsingInstance : public base::RefCounted<BrowsingInstance> {
   DISALLOW_EVIL_CONSTRUCTORS(BrowsingInstance);
 };
 
-#endif  //  CHROME_BROWSER_BROWSING_INSTANCE_H__
+#endif  // CHROME_BROWSER_BROWSING_INSTANCE_H_

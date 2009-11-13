@@ -47,4 +47,4 @@ class JavaScriptMessageBoxClient {
   virtual TabContents* AsTabContents() = 0;
 };
 
-# endif  // CHROME_BROWSER_JSMESSAGE_BOX_CLIENT_H_
+#endif  // CHROME_BROWSER_JSMESSAGE_BOX_CLIENT_H_
