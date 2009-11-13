@@ -230,11 +230,13 @@ int64 BufferedResourceLoader::GetBufferedLastBytePosition() {
 //     webkit_glue::ResourceLoaderBridge::Peer implementations
 bool BufferedResourceLoader::OnReceivedRedirect(
     const GURL& new_url,
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
+    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    GURL* new_first_party_for_cookies) {
   DCHECK(bridge_.get());
 
   // Save the new URL.
   url_ = new_url;
+  *new_first_party_for_cookies = GURL();
 
   // The load may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.

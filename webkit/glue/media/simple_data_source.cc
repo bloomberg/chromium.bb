@@ -122,8 +122,10 @@ void SimpleDataSource::OnUploadProgress(uint64 position, uint64 size) {}
 
 bool SimpleDataSource::OnReceivedRedirect(
     const GURL& new_url,
-    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info) {
+    const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    GURL* new_first_party_for_cookies) {
   SetURL(new_url);
+  *new_first_party_for_cookies = GURL();
   return true;
 }
 

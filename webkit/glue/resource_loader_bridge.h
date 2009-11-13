@@ -14,8 +14,8 @@
 // In turn, the bridge's owner on the WebKit end will implement the Peer
 // interface, which we will use to communicate notifications back.
 
-#ifndef RESOURCE_LOADER_BRIDGE_H_
-#define RESOURCE_LOADER_BRIDGE_H_
+#ifndef WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_
+#define WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_
 
 #include "build/build_config.h"
 #if defined(OS_POSIX)
@@ -110,9 +110,14 @@ class ResourceLoaderBridge {
     // Called when a redirect occurs.  The implementation may return false to
     // suppress the redirect.  The given ResponseInfo provides complete
     // information about the redirect, and new_url is the URL that will be
-    // loaded if this method returns true.
+    // loaded if this method returns true.  If this method returns true, it
+    // stores in *new_first_party_for_cookies the new URL that should be
+    // consulted for the third-party cookie blocking policy.  If the cookie
+    // policy URL doesn't need changing, it stores an empty, invalid URL in
+    // *new_first_party_for_cookies.
     virtual bool OnReceivedRedirect(const GURL& new_url,
-                                    const ResponseInfo& info) = 0;
+                                    const ResponseInfo& info,
+                                    GURL* new_first_party_for_cookies) = 0;
 
     // Called when response headers are available (after all redirects have
     // been followed).  |content_filtered| is set to true if the contents is
@@ -232,4 +237,4 @@ class ResourceLoaderBridge {
 
 }  // namespace webkit_glue
 
-#endif  // RESOURCE_LOADER_BRIDGE_
+#endif  // WEBKIT_GLUE_RESOURCE_LOADER_BRIDGE_H_

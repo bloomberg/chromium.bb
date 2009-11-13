@@ -142,8 +142,13 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
                      bool from_renderer);
 
   // Follows a deferred redirect for the given request.
+  // new_first_party_for_cookies, if non-empty, is the new cookie policy URL
+  // for the redirected URL.  Pass an empty, invalid URL as
+  // new_first_party_for_cookies to indicate that the cookie policy URL
+  // doesn't need changing.
   void FollowDeferredRedirect(int process_unique_id,
-                              int request_id);
+                              int request_id,
+                              const GURL& new_first_party_for_cookies);
 
   // Returns true if it's ok to send the data. If there are already too many
   // data messages pending, it pauses the request and returns false. In this
@@ -400,7 +405,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void OnDataReceivedACK(int request_id);
   void OnUploadProgressACK(int request_id);
   void OnCancelRequest(int request_id);
-  void OnFollowRedirect(int request_id);
+  void OnFollowRedirect(int request_id,
+                        const GURL& new_first_party_for_cookies);
 
   // Returns true if the message passed in is a resource related message.
   static bool IsResourceDispatcherHostMessage(const IPC::Message&);

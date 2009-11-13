@@ -62,7 +62,6 @@
 #if defined(OS_POSIX)
 #include "chrome/common/temp_scaffolding_stubs.h"
 #elif defined(OS_WIN)
-#include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #endif
 
@@ -657,8 +656,11 @@ void ResourceDispatcherHost::OnCancelRequest(int request_id) {
   CancelRequest(receiver_->id(), request_id, true, true);
 }
 
-void ResourceDispatcherHost::OnFollowRedirect(int request_id) {
-  FollowDeferredRedirect(receiver_->id(), request_id);
+void ResourceDispatcherHost::OnFollowRedirect(
+    int request_id,
+    const GURL& new_first_party_for_cookies) {
+  FollowDeferredRedirect(receiver_->id(), request_id,
+                         new_first_party_for_cookies);
 }
 
 void ResourceDispatcherHost::OnClosePageACK(
@@ -829,8 +831,10 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
   CancelRequest(child_id, request_id, from_renderer, true);
 }
 
-void ResourceDispatcherHost::FollowDeferredRedirect(int child_id,
-                                                    int request_id) {
+void ResourceDispatcherHost::FollowDeferredRedirect(
+    int child_id,
+    int request_id,
+    const GURL& new_first_party_for_cookies) {
   PendingRequestList::iterator i = pending_requests_.find(
       GlobalRequestID(child_id, request_id));
   if (i == pending_requests_.end()) {
@@ -838,6 +842,8 @@ void ResourceDispatcherHost::FollowDeferredRedirect(int child_id,
     return;
   }
 
+  if (!new_first_party_for_cookies.is_empty())
+    i->second->set_first_party_for_cookies(new_first_party_for_cookies);
   i->second->FollowDeferredRedirect();
 }
 

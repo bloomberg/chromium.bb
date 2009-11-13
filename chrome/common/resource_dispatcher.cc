@@ -421,9 +421,12 @@ void ResourceDispatcher::OnReceivedRedirect(
   RESOURCE_LOG("Dispatching redirect for " <<
                request_info.peer->GetURLForDebugging().possibly_invalid_spec());
 
-  if (request_info.peer->OnReceivedRedirect(new_url, info)) {
+  GURL new_first_party_for_cookies;
+  if (request_info.peer->OnReceivedRedirect(new_url, info,
+                                            &new_first_party_for_cookies)) {
     message_sender()->Send(
-        new ViewHostMsg_FollowRedirect(message.routing_id(), request_id));
+        new ViewHostMsg_FollowRedirect(message.routing_id(), request_id,
+                                       new_first_party_for_cookies));
   } else {
     CancelPendingRequest(message.routing_id(), request_id);
   }

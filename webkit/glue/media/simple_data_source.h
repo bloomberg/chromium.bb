@@ -55,7 +55,8 @@ class SimpleDataSource : public media::DataSource,
   virtual void OnUploadProgress(uint64 position, uint64 size);
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info);
+      const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
       bool content_filtered);

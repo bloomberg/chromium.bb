@@ -185,7 +185,7 @@ void PopulateURLResponse(
   }
 }
 
-} // namespace
+}  // namespace
 
 // WebURLLoaderImpl::Context --------------------------------------------------
 
@@ -209,7 +209,9 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   // ResourceLoaderBridge::Peer methods:
   virtual void OnUploadProgress(uint64 position, uint64 size);
   virtual bool OnReceivedRedirect(
-      const GURL& new_url, const ResourceLoaderBridge::ResponseInfo& info);
+      const GURL& new_url,
+      const ResourceLoaderBridge::ResponseInfo& info,
+      GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(
       const ResourceLoaderBridge::ResponseInfo& info, bool content_filtered);
   virtual void OnReceivedData(const char* data, int len);
@@ -388,7 +390,8 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
     const GURL& new_url,
-    const ResourceLoaderBridge::ResponseInfo& info) {
+    const ResourceLoaderBridge::ResponseInfo& info,
+    GURL* new_first_party_for_cookies) {
   if (!client_)
     return false;
 
@@ -403,8 +406,9 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   if (response.httpStatusCode() == 307)
     new_request.setHTTPMethod(request_.httpMethod());
 
-  request_ = new_request;
   client_->willSendRequest(loader_, new_request, response);
+  request_ = new_request;
+  *new_first_party_for_cookies = request_.firstPartyForCookies();
 
   // Only follow the redirect if WebKit left the URL unmodified.
   if (new_url == GURL(new_request.url()))

@@ -241,8 +241,10 @@ void SafeBrowsingResourceHandler::ResumeRedirect() {
   bool defer = false;
   next_handler_->OnRequestRedirected(redirect_id_, redirect_url_,
                                      redirect_response_, &defer);
-  if (!defer)
-    rdh_->FollowDeferredRedirect(render_process_host_id_, redirect_id_);
+  if (!defer) {
+    rdh_->FollowDeferredRedirect(render_process_host_id_, redirect_id_,
+                                 GURL());
+  }
 
   redirect_response_ = NULL;
   redirect_id_ = -1;

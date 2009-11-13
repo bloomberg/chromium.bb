@@ -68,9 +68,11 @@ class PluginRequestHandlerProxy
 
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
-      const ResourceLoaderBridge::ResponseInfo& info) {
+      const ResourceLoaderBridge::ResponseInfo& info,
+      GURL* new_first_party_for_cookies) {
     plugin_->functions().response_funcs->received_redirect(
         cprequest_.get(), new_url.spec().c_str());
+    *new_first_party_for_cookies = GURL();
     return true;
   }
 
