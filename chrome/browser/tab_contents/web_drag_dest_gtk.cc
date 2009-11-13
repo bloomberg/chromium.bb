@@ -5,9 +5,11 @@
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 
 #include "app/gtk_dnd_util.h"
+#include "base/file_path.h"
 #include "base/string_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
+#include "net/base/net_util.h"
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationCopy;
@@ -120,7 +122,9 @@ void WebDragDestGtk::OnDragDataReceived(
       if (uris) {
         for (gchar** uri_iter = uris; *uri_iter; uri_iter++) {
           // TODO(estade): Can the filenames have a non-UTF8 encoding?
-          drop_data_->filenames.push_back(UTF8ToUTF16(*uri_iter));
+          FilePath file_path;
+          if (net::FileURLToFilePath(GURL(*uri_iter), &file_path))
+            drop_data_->filenames.push_back(UTF8ToUTF16(file_path.value()));
         }
         // Also, write the first URI as the URL.
         if (uris[0])
