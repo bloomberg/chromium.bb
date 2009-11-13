@@ -117,7 +117,7 @@ void BrowserActionButton::UpdateState() {
   else if (!default_icon_.isNull())
     SetIcon(default_icon_);
 
-  SetTooltipText(ASCIIToWide(browser_action()->GetTitle(tab_id)));
+  SetTooltipText(UTF8ToWide(browser_action()->GetTitle(tab_id)));
   GetParent()->SchedulePaint();
 }
 

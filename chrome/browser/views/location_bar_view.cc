@@ -1406,7 +1406,7 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
   if (visible) {
     // Set the tooltip.
     tooltip_ = page_action_->GetTitle(current_tab_id_);
-    SetTooltipText(ASCIIToWide(tooltip_));
+    SetTooltipText(UTF8ToWide(tooltip_));
 
     // Set the image.
     // It can come from three places. In descending order of priority:

@@ -1,0 +1,11 @@
+<html>
+<script>
+  chrome.self.onConnect.addListener(function(port) {
+    port.onMessage.addListener(function(mybool) {
+      // Let Chrome know that the PageAction needs to be enabled for this tabId
+      // and for the url of this page.
+      chrome.pageAction.show(port.tab.id);
+    });
+  });
+</script>
+</html>

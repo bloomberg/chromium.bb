@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
 #include "chrome/browser/profile.h"
@@ -255,6 +256,56 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
 
   // Make sure the page action goes away when it's unloaded.
   ASSERT_TRUE(WaitForPageActionCountChangeTo(0));
+}
+
+// Tests that tooltips of a browser action icon can be specified using UTF8.
+// See http://crbug.com/25349.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
+  FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
+                                        .AppendASCII("title_localized"));
+  ASSERT_TRUE(LoadExtension(extension_path));
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(1u, extensions->size());
+  Extension* extension = extensions->at(0);
+
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n browser action").c_str(),
+               extension->description().c_str());
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
+               extension->name().c_str());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
+               extension->browser_action()->GetTitle(tab_id).c_str());
+}
+
+// Tests that tooltips of a page action icon can be specified using UTF8.
+// See http://crbug.com/25349.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
+  FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
+                                        .AppendASCII("title_localized_pa"));
+  ASSERT_TRUE(LoadExtension(extension_path));
+
+  // Any navigation prompts the location bar to load the page action.
+  FilePath test_dir;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
+  FilePath path = extension_path.AppendASCII("simple.html");
+
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(path));
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  const ExtensionList* extensions = service->extensions();
+  ASSERT_EQ(1u, extensions->size());
+  Extension* extension = extensions->at(0);
+
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur: l10n page action").c_str(),
+               extension->description().c_str());
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur is my name").c_str(),
+               extension->name().c_str());
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+  EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
+               extension->page_action()->GetTitle(tab_id).c_str());
 }
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
