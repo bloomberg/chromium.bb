@@ -3129,7 +3129,7 @@ BUG27556 SKIP WIN LINUX : LayoutTests/websocket/tests = FAIL
 BUG27555 : LayoutTests/accessibility/document-attributes.html = TEXT
 BUG27555 : LayoutTests/fast/forms/file-input-direction.html = TEXT
 BUG27555 : LayoutTests/fast/forms/hidden-input-file.html = TEXT
-BUG27555 : LayoutTests/fast/forms/input-file-re-render.html = MISSING
+BUG27555 : LayoutTests/fast/forms/input-file-re-render.html = MISSING TEXT
 
 BUG27555 MAC : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE
 BUG27555 WIN LINUX : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE+TEXT
@@ -3141,10 +3141,10 @@ BUG27555 WIN LINUX : LayoutTests/fast/reflections/opacity-reflection-transform.h
 BUG27555 WIN LINUX : LayoutTests/fast/forms/file-input-disabled.html = TEXT
 BUG27555 WIN : LayoutTests/fast/forms/form-element-geometry.html = TEXT
 BUG27555 WIN LINUX : LayoutTests/fast/forms/input-appearance-height.html = TEXT
-BUG27555 WIN LINUX : LayoutTests/fast/forms/input-value.html = IMAGE+TEXT
+BUG27555 WIN LINUX : LayoutTests/fast/forms/input-value.html = IMAGE TEXT
 
-BUG27555 WIN MAC : LayoutTests/media/media-fullscreen-inline.html = TIMEOUT
-BUG27555 WIN MAC : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
+BUG27555 : LayoutTests/media/media-fullscreen-inline.html = TIMEOUT
+BUG27555 : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
 
 BUG27555 WIN LINUX : LayoutTests/fast/canvas/canvas-shadow.html = TEXT
 BUG27555 WIN LINUX : LayoutTests/fast/multicol/single-line.html = IMAGE+TEXT
