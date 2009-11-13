@@ -124,7 +124,7 @@ class SelectFileDialog
 
 // Shows a dialog box for selecting a font.
 class SelectFontDialog
-    : public base::RefCountedThreadSafe<SelectFileDialog>,
+    : public base::RefCountedThreadSafe<SelectFontDialog>,
       public BaseShellDialog {
  public:
 
@@ -135,12 +135,12 @@ class SelectFontDialog
    public:
     // Notifies the Listener that a font selection has been made. The font
     // details are supplied in |font|. |params| is contextual passed to
-    // SelectFile.
+    // SelectFont.
     virtual void FontSelected(const gfx::Font& font, void* params) = 0;
 
     // Notifies the Listener that the font selection was aborted (via the user
     // canceling or closing the selection dialog box, for example). |params| is
-    // contextual passed to SelectFile.
+    // contextual passed to SelectFont.
     virtual void FontSelectionCanceled(void* params) {};
   };
 
@@ -171,7 +171,7 @@ class SelectFontDialog
                           int font_size) = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<SelectFileDialog>;
+  friend class base::RefCountedThreadSafe<SelectFontDialog>;
 
   virtual ~SelectFontDialog() {}
 };
