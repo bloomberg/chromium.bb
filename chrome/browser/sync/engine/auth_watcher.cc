@@ -107,24 +107,30 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
   Authenticator auth(scm_, user_settings_);
   Authenticator::AuthenticationResult result =
       auth.AuthenticateToken(auth_token);
+  string email = gaia_email;
+  if (auth.display_email() && *auth.display_email()) {
+    email = auth.display_email();
+    LOG(INFO) << "Auth returned email " << email << " for gaia email " <<
+        gaia_email;
+  }
   AuthWatcherEvent event = {AuthWatcherEvent::ILLEGAL_VALUE , 0};
-  gaia_->SetUsername(gaia_email);
+  gaia_->SetUsername(email);
   gaia_->SetAuthToken(auth_token, SAVE_IN_MEMORY_ONLY);
   const bool was_authenticated = NOT_AUTHENTICATED != status_;
   switch (result) {
     case Authenticator::SUCCESS:
       {
         status_ = GAIA_AUTHENTICATED;
-        const PathString& share_name = gaia_email;
-        user_settings_->SwitchUser(gaia_email);
+        const PathString& share_name = email;
+        user_settings_->SwitchUser(email);
 
         // Set the authentication token for notifications
-        talk_mediator_->SetAuthToken(gaia_email, auth_token);
+        talk_mediator_->SetAuthToken(email, auth_token);
         scm_->set_auth_token(auth_token);
 
         if (!was_authenticated)
           LoadDirectoryListAndOpen(share_name);
-        NotifyAuthSucceeded(gaia_email);
+        NotifyAuthSucceeded(email);
         return;
       }
   case Authenticator::BAD_AUTH_TOKEN:
@@ -142,7 +148,7 @@ void AuthWatcher::DoAuthenticateWithToken(const std::string& gaia_email,
     return;
   }
   // Always fall back to local authentication.
-  if (was_authenticated || AuthenticateLocally(gaia_email)) {
+  if (was_authenticated || AuthenticateLocally(email)) {
     if (AuthWatcherEvent::SERVICE_CONNECTION_FAILED == event.what_happened)
       return;
   }
