@@ -370,11 +370,13 @@ private:
   DCHECK(newTab);
   if (newTab) {
     TabContents::ConstrainedWindowList::iterator it, end;
+    it = newTab->constrained_window_begin();
     end = newTab->constrained_window_end();
-    NSWindowController* controller = [[newView window] windowController];
-    DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
 
-    for (it = newTab->constrained_window_begin(); it != end; ++it) {
+    // GTMWindowSheetController supports only one sheet at a time.
+    if (it != end) {
+      NSWindowController* controller = [[newView window] windowController];
+      DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
       ConstrainedWindow* constrainedWindow = *it;
       static_cast<ConstrainedWindowMac*>(constrainedWindow)->Realize(
           static_cast<BrowserWindowController*>(controller));
@@ -1292,7 +1294,7 @@ private:
     tabModel_->SelectTabContentsAt(index, false /* not a user gesture */);
 }
 
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window {
+- (BOOL)attachConstrainedWindow:(ConstrainedWindowMac*)window {
   // TODO(thakis, avi): Figure out how to make this work when tabs are dragged
   // out or if fullscreen mode is toggled.
 
@@ -1305,7 +1307,6 @@ private:
   // to pass it to the sheet controller here.
   NSView* tabContentsView =
       [[window->owner()->GetNativeView() superview] superview];
-  window->delegate()->RunSheet([self sheetController], tabContentsView);
 
   // TODO(avi, thakis): GTMWindowSheetController has no api to move tabsheets
   // between windows. Until then, we have to prevent having to move a tabsheet
@@ -1317,8 +1318,23 @@ private:
   DCHECK(controller != nil);
   DCHECK(index >= 0);
   if (index >= 0) {
-    [controller setTab:[self viewAtIndex:index] isDraggable:NO];
+    NSView* tab = [self viewAtIndex:index];
+    [controller setTab:tab isDraggable:NO];
+
+    std::deque<ConstrainedWindowMac*>& windows = constrainedWindows_[tab];
+    std::deque<ConstrainedWindowMac*>::iterator it =
+        find(windows.begin(), windows.end(), window);
+    if (it == windows.end())
+      constrainedWindows_[tab].push_back(window);
+
+    if (constrainedWindows_[tab].size() == 1) {
+      [controller setTab:tab isDraggable:NO];
+      window->SetVisible();
+      window->delegate()->RunSheet([self sheetController], tabContentsView);
+      return YES;
+    }
   }
+  return NO;
 }
 
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window {
@@ -1334,7 +1350,28 @@ private:
       (BrowserWindowController*)[[switchView_ window] windowController];
   DCHECK(index >= 0);
   if (index >= 0) {
-    [controller setTab:[self viewAtIndex:index] isDraggable:YES];
+    NSView* tab = [self viewAtIndex:index];
+
+    std::deque<ConstrainedWindowMac*>& windows = constrainedWindows_[tab];
+    std::deque<ConstrainedWindowMac*>::iterator it =
+        find(windows.begin(), windows.end(), window);
+    DCHECK(it != windows.end());
+
+    bool removedVisibleSheet = it == windows.begin();
+
+    if (it != windows.end())
+      windows.erase(it);
+
+    if (windows.size() == 0) {
+      [controller setTab:tab isDraggable:YES];
+      constrainedWindows_.erase(tab);
+    } else if (removedVisibleSheet && tab == [self selectedTabView]) {
+      // Show next sheet
+      NSWindowController* controller = [[tab window] windowController];
+      DCHECK([controller isKindOfClass:[BrowserWindowController class]]);
+      windows.front()->Realize(
+          static_cast<BrowserWindowController*>(controller));
+    }
   }
 }
 

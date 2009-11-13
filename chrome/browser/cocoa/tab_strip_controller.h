@@ -7,6 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <deque>
+#include <map>
+
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
@@ -96,6 +99,12 @@ class ToolbarModel;
 
   // Manages per-tab sheets.
   scoped_nsobject<GTMWindowSheetController> sheetController_;
+
+  // GTMWindowSheetController supports only one per-tab sheet at a time.
+  // Thus, keep a queue of sheets for every tab. The first element in the queue
+  // is the currently visible sheet, and when this sheet is closed, the next
+  // sheet in the queue will be shown.
+  std::map<NSView*, std::deque<ConstrainedWindowMac*> > constrainedWindows_;
 }
 
 // Initialize the controller with a view and browser that contains
@@ -169,7 +178,9 @@ class ToolbarModel;
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
 
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
+// See comments in browser_window_controller.h for documentation about these
+// functions.
+- (BOOL)attachConstrainedWindow:(ConstrainedWindowMac*)window;
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
 
 @end

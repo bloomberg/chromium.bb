@@ -125,8 +125,11 @@ class ConstrainedWindowMac : public ConstrainedWindow {
   // Returns the window's delegate.
   ConstrainedWindowMacDelegate* delegate() { return delegate_; }
 
-  // Makes the constrained window visible, if it is not yet visible.
+  // Tells |controller_| that the sheet would like to be displayed.
   void Realize(BrowserWindowController* controller);
+
+  // Called by |controller_| to inform the sheet that it now is visible.
+  void SetVisible();
 
  private:
   friend class ConstrainedWindow;

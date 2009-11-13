@@ -160,7 +160,15 @@ class TabStripModelObserverBridge;
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
 
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
+// Requests that |window| is opened as a per-tab sheet to the current tab.
+// Returns YES if the window became the active per-tab sheet of the current tab,
+// or NO if the current tab already has a per-tab sheet. If this returns NO,
+// the window's |Realize()| method will be called again when the curren sheet
+// disappears. The window should then call |attachConstrainedWindow:| again.
+- (BOOL)attachConstrainedWindow:(ConstrainedWindowMac*)window;
+
+// Closes the tab sheet |window| and potentially shows the next sheet in the
+// tab's sheet queue.
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
 
 // Delegate method called when window is resized.

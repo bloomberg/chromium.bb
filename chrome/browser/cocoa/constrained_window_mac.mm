@@ -82,7 +82,13 @@ void ConstrainedWindowMac::Realize(BrowserWindowController* controller) {
 
   // Remember the controller we're adding ourselves to, so that we can later
   // remove us from it.
-  controller_ = controller;
-  [controller_ attachConstrainedWindow:this];
+  if ([controller attachConstrainedWindow:this])
+    controller_ = controller;
+}
+
+void ConstrainedWindowMac::SetVisible() {
+  // Only notify the delegate that the sheet is open after the sheet appeared
+  // on screen (as opposed to when the sheet was added to the current tab's
+  // sheet queue).
   delegate_->set_sheet_open(true);
 }
