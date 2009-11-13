@@ -81,9 +81,9 @@ class WorkerProcessHost : public ChildProcessHost {
    private:
     // Unique identifier for an associated document.
     typedef std::pair<IPC::Message::Sender*, unsigned long long> DocumentInfo;
-    typedef std::set<DocumentInfo> DocumentSet;
+    typedef std::list<DocumentInfo> DocumentSet;
     // Set of all senders (clients) associated with this worker.
-    typedef std::set<SenderInfo> SenderSet;
+    typedef std::list<SenderInfo> SenderList;
     GURL url_;
     bool shared_;
     bool closed_;
@@ -91,7 +91,7 @@ class WorkerProcessHost : public ChildProcessHost {
     int renderer_id_;
     int render_view_route_id_;
     int worker_route_id_;
-    SenderSet senders_;
+    SenderList senders_;
     DocumentSet document_set_;
   };
 

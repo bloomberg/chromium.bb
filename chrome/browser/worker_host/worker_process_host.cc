@@ -446,75 +446,86 @@ bool WorkerProcessHost::WorkerInstance::Matches(
 
 void WorkerProcessHost::WorkerInstance::AddToDocumentSet(
     IPC::Message::Sender* parent, unsigned long long document_id) {
-  DocumentInfo info(parent, document_id);
-  document_set_.insert(info);
+  if (!IsInDocumentSet(parent, document_id)) {
+    DocumentInfo info(parent, document_id);
+    document_set_.push_back(info);
+  }
 }
 
 bool WorkerProcessHost::WorkerInstance::IsInDocumentSet(
     IPC::Message::Sender* parent, unsigned long long document_id) const {
-  DocumentInfo info(parent, document_id);
-  return document_set_.find(info) != document_set_.end();
+  for (DocumentSet::const_iterator i = document_set_.begin();
+       i != document_set_.end(); ++i) {
+    if (i->first == parent && i->second == document_id)
+      return true;
+  }
+  return false;
 }
 
 void WorkerProcessHost::WorkerInstance::RemoveFromDocumentSet(
     IPC::Message::Sender* parent, unsigned long long document_id) {
-  DocumentInfo info(parent, document_id);
-  document_set_.erase(info);
+  for (DocumentSet::iterator i = document_set_.begin();
+       i != document_set_.end(); i++) {
+    if (i->first == parent && i->second == document_id) {
+      document_set_.erase(i);
+      break;
+    }
+  }
+  // Should not be duplicate copies in the document set.
+  DCHECK(!IsInDocumentSet(parent, document_id));
 }
 
 void WorkerProcessHost::WorkerInstance::RemoveAllAssociatedDocuments(
     IPC::Message::Sender* parent) {
   for (DocumentSet::iterator i = document_set_.begin();
        i != document_set_.end();) {
-    // Windows set.erase() has a non-standard API (invalidates the iter).
-#if defined(OS_WIN)
     if (i->first == parent)
       i = document_set_.erase(i);
     else
       ++i;
-#else
-    if (i->first == parent)
-      document_set_.erase(i);
-    ++i;
-#endif
   }
 }
 
 void WorkerProcessHost::WorkerInstance::AddSender(IPC::Message::Sender* sender,
                                                   int sender_route_id) {
-  SenderInfo info(sender, sender_route_id);
-  senders_.insert(info);
+  if (!HasSender(sender, sender_route_id)) {
+    SenderInfo info(sender, sender_route_id);
+    senders_.push_back(info);
+  }
   // Only shared workers can have more than one associated sender.
   DCHECK(shared_ || senders_.size() == 1);
 }
 
 void WorkerProcessHost::WorkerInstance::RemoveSender(
     IPC::Message::Sender* sender, int sender_route_id) {
-  SenderInfo info(sender, sender_route_id);
-  senders_.erase(info);
+  for (SenderList::iterator i = senders_.begin(); i != senders_.end();) {
+    if (i->first == sender && i->second == sender_route_id)
+      i = senders_.erase(i);
+    else
+      ++i;
+  }
+  // Should not be duplicate copies in the sender set.
+  DCHECK(!HasSender(sender, sender_route_id));
 }
 
 void WorkerProcessHost::WorkerInstance::RemoveSenders(
     IPC::Message::Sender* sender) {
-  for (SenderSet::iterator i = senders_.begin(); i != senders_.end();) {
-    // Windows set.erase() has a non-standard API (invalidates the iter).
-#if defined(OS_WIN)
+  for (SenderList::iterator i = senders_.begin(); i != senders_.end();) {
     if (i->first == sender)
       i = senders_.erase(i);
     else
       ++i;
-#else
-    if (i->first == sender)
-      senders_.erase(i);
-    ++i;
-#endif
   }
 }
 
 bool WorkerProcessHost::WorkerInstance::HasSender(
     IPC::Message::Sender* sender, int sender_route_id) const {
-  SenderInfo info(sender, sender_route_id);
-  return senders_.find(info) != senders_.end();
+  for (SenderList::const_iterator i = senders_.begin(); i != senders_.end();
+       ++i) {
+    if (i->first == sender && i->second == sender_route_id)
+      return true;
+  }
+  return false;
 }
 
 WorkerProcessHost::WorkerInstance::SenderInfo
