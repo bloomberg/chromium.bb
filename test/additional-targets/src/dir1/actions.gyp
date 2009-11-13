@@ -46,4 +46,11 @@
       'sources': ['lib1.c'],
     },
   ],
+  'conditions': [
+    ['OS=="linux"', {
+      'target_defaults': {
+        'cflags': ['-fPIC'],
+      },
+    }],
+  ],
 }
