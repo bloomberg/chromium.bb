@@ -809,7 +809,7 @@ class GClient(object):
     # Inner helper to generate base url and rev tuple (including honoring
     # |revision_overrides|)
     def GetURLAndRev(name, original_url):
-      revision, url = gclient_utils.SplitUrlRevision(original_url)
+      url, revision = gclient_utils.SplitUrlRevision(original_url)
       if not revision:
         if revision_overrides.has_key(name):
           return (url, revision_overrides[name])
