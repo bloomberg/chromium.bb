@@ -1000,10 +1000,6 @@ def Change(change_info, args):
   if not svn_info:
     ErrorExit("Current checkout is unversioned.  Please retry with a versioned "
               "directory.")
-  if (svn_info.get('URL', '').startswith('http:') and
-      not FilterFlag(args, "--force")):
-    ErrorExit("This is a read-only checkout.  Retry in a read-write checkout "
-              "or use --force to override.")
 
   if (len(args) == 1):
     filename = args[0]
@@ -1093,8 +1089,11 @@ def Change(change_info, args):
     ErrorExit("Empty changelist not saved")
 
   change_info._files = new_cl_files
-
   change_info.Save()
+  if svn_info.get('URL', '').startswith('http:'):
+    Warn("WARNING: Creating CL in a read-only checkout.  You will not be "
+         "able to commit it!")
+
   print change_info.name + " changelist saved."
   if change_info.MissingTests():
     Warn("WARNING: " + MISSING_TEST_MSG)
