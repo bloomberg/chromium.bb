@@ -809,18 +809,18 @@ class GClient(object):
     # Inner helper to generate base url and rev tuple (including honoring
     # |revision_overrides|)
     def GetURLAndRev(name, original_url):
-      if original_url.find("@") < 0:
+      revision, url = gclient_utils.SplitUrlRevision(original_url)
+      if not revision:
         if revision_overrides.has_key(name):
-          return (original_url, revision_overrides[name])
+          return (url, revision_overrides[name])
         else:
           scm = gclient_scm.CreateSCM(solution["url"], self._root_dir, name)
-          return (original_url, scm.revinfo(self._options, [], None))
+          return (url, scm.revinfo(self._options, [], None))
       else:
-        url_components = original_url.split("@")
         if revision_overrides.has_key(name):
-          return (url_components[0], revision_overrides[name])
+          return (url, revision_overrides[name])
         else:
-          return (url_components[0], url_components[1])
+          return (url, revision)
 
     # Run on the base solutions first.
     for solution in solutions:

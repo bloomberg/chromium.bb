@@ -46,6 +46,35 @@ class SubprocessCallAndFilterTestCase(SuperMoxTestBase):
     self.assertEquals(capture_list, ['cc', 'dd'])
 
 
+class SplitUrlRevisionTestCase(SuperMoxTestBase):
+  def testSSHUrl(self):
+    url = "ssh://test@example.com/test.git"
+    rev = "ac345e52dc"
+    out_url, out_rev = gclient_utils.SplitUrlRevision(url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
+    out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
+    url = "ssh://example.com/test.git"
+    out_url, out_rev = gclient_utils.SplitUrlRevision(url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
+    out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
+
+  def testSVNUrl(self):
+    url = "svn://example.com/test"
+    rev = "ac345e52dc"
+    out_url, out_rev = gclient_utils.SplitUrlRevision(url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
+    out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
+
+
 if __name__ == '__main__':
   import unittest
   unittest.main()

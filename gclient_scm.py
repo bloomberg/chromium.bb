@@ -129,23 +129,16 @@ class GitWrapper(SCMWrapper):
     if args:
       raise gclient_utils.Error("Unsupported argument(s): %s" % ",".join(args))
 
-    if self.url.startswith('ssh:'):
-      # Make sure ssh://test@example.com/test.git@stable works
-      regex = r"(ssh://(?:[\w]+@)?[-\w:\.]+/[-\w\.]+)(?:@([\w/]+))?"
-      components = re.search(regex, self.url).groups()
-    else:
-      components = self.url.split("@")
-    url = components[0]
-    revision = None
+    url, revision = gclient_utils.SplitUrlRevision(self.url)
+    rev_str = ""
     if options.revision:
-      revision = options.revision
-    elif len(components) == 2:
-      revision = components[1]
+      # Override the revision number.
+      revision = str(options.revision)
+    if revision:
+      url = '%s@%s' % (url, revision)
+      rev_str = ' at %s' % revision
 
     if options.verbose:
-      rev_str = ""
-      if revision:
-        rev_str = ' at %s' % revision
       print("\n_____ %s%s" % (self.relpath, rev_str))
 
     if not os.path.exists(self.checkout_path):
@@ -269,21 +262,16 @@ class SVNWrapper(SCMWrapper):
     if args:
       raise gclient_utils.Error("Unsupported argument(s): %s" % ",".join(args))
 
-    url = self.url
-    components = url.split("@")
-    revision = None
+    url, revision = gclient_utils.SplitUrlRevision(self.url)
+    base_url = url
     forced_revision = False
+    rev_str = ""
     if options.revision:
       # Override the revision number.
-      url = '%s@%s' % (components[0], str(options.revision))
-      revision = options.revision
-      forced_revision = True
-    elif len(components) == 2:
-      revision = components[1]
-      forced_revision = True
-
-    rev_str = ""
+      revision = str(options.revision)
     if revision:
+      forced_revision = True
+      url = '%s@%s' % (url, revision)
       rev_str = ' at %s' % revision
 
     if not os.path.exists(checkout_path):
@@ -309,7 +297,7 @@ class SVNWrapper(SCMWrapper):
         revision = str(from_info_live['Revision'])
         rev_str = ' at %s' % revision
 
-    if from_info['URL'] != components[0]:
+    if from_info['URL'] != base_url:
       to_info = CaptureSVNInfo(url, '.')
       if not to_info.get('Repository Root') or not to_info.get('UUID'):
         # The url is invalid or the server is not accessible, it's safer to bail
