@@ -95,7 +95,7 @@ private:
 
 }  // namespace
 
-@interface TabStripController(Private)
+@interface TabStripController (Private)
 - (void)installTrackingArea;
 - (void)addSubviewToPermanentList:(NSView*)aView;
 - (void)regenerateSubviewList;
@@ -107,6 +107,8 @@ private:
 - (void)animationDidStopForController:(TabController*)controller
                              finished:(BOOL)finished;
 - (NSInteger)indexFromModelIndex:(NSInteger)index;
+- (void)mouseMoved:(NSEvent*)event;
+- (void)setTabTrackingAreasEnabled:(BOOL)enabled;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
@@ -1185,6 +1187,28 @@ private:
   [self layoutTabsWithAnimation:NO regenerateSubviews:NO];
 }
 
+// Called when the tracking areas for any given tab are updated. This allows
+// the individual tabs to update their hover states correctly.
+// Only generates the event if the cursor is in the tab strip.
+- (void)tabUpdateTracking:(NSNotification*)notification {
+  DCHECK([[notification object] isKindOfClass:[TabView class]]);
+  DCHECK(mouseInside_);
+  NSWindow* window = [tabView_ window];
+  NSPoint location = [window mouseLocationOutsideOfEventStream];
+  if (NSPointInRect(location, [tabView_ frame])) {
+    NSEvent* mouseEvent = [NSEvent mouseEventWithType:NSMouseMoved
+                                             location:location
+                                        modifierFlags:0
+                                            timestamp:0
+                                         windowNumber:[window windowNumber]
+                                              context:nil
+                                          eventNumber:0
+                                           clickCount:0
+                                             pressure:0];
+    [self mouseMoved:mouseEvent];
+  }
+}
+
 - (BOOL)inRapidClosureMode {
   return availableResizeWidth_ != kUseFullAvailableWidth;
 }
@@ -1217,6 +1241,8 @@ private:
 - (void)mouseEntered:(NSEvent*)event {
   NSTrackingArea* area = [event trackingArea];
   if ([area isEqual:trackingArea_]) {
+    mouseInside_ = YES;
+    [self setTabTrackingAreasEnabled:YES];
     [self mouseMoved:event];
   } else if ([area isEqual:newTabTrackingArea_]) {
     [newTabButton_ setImage:nsimage_cache::ImageNamed(@"newtab_h.pdf")];
@@ -1229,13 +1255,35 @@ private:
 - (void)mouseExited:(NSEvent*)event {
   NSTrackingArea* area = [event trackingArea];
   if ([area isEqual:trackingArea_]) {
+    mouseInside_ = NO;
+    [self setTabTrackingAreasEnabled:NO];
     availableResizeWidth_ = kUseFullAvailableWidth;
-
     [hoveredTab_ mouseExited:event];
     hoveredTab_ = nil;
     [self layoutTabs];
   } else if ([area isEqual:newTabTrackingArea_]) {
     [newTabButton_ setImage:nsimage_cache::ImageNamed(@"newtab.pdf")];
+  }
+}
+
+// Enable/Disable the tracking areas for the tabs. They are only enabled
+// when the mouse is in the tabstrip.
+- (void)setTabTrackingAreasEnabled:(BOOL)enabled {
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  for (TabController* controller in tabArray_.get()) {
+    TabView* tabView = [controller tabView];
+    if (enabled) {
+      // Set self up to observe tabs so hover states will be correct.
+      [defaultCenter addObserver:self
+                        selector:@selector(tabUpdateTracking:)
+                            name:NSViewDidUpdateTrackingAreasNotification
+                          object:tabView];
+    } else {
+      [defaultCenter removeObserver:self
+                               name:NSViewDidUpdateTrackingAreasNotification
+                             object:tabView];
+    }
+    [tabView setTrackingEnabled:enabled];
   }
 }
 
@@ -1254,24 +1302,30 @@ private:
 // should call |-addSubviewToPermanentList:| (or better yet, call that and then
 // |-regenerateSubviewList| to actually add it).
 - (void)regenerateSubviewList {
+  // Remove self as an observer from all the old tabs before a new set of
+  // potentially different tabs is put in place.
+  [self setTabTrackingAreasEnabled:NO];
+
   // Subviews to put in (in bottom-to-top order), beginning with the permanent
   // ones.
   NSMutableArray* subviews = [NSMutableArray arrayWithArray:permanentSubviews_];
 
   NSView* selectedTabView = nil;
   // Go through tabs in reverse order, since |subviews| is bottom-to-top.
-  for (TabController* tab in [tabArray_.get() reverseObjectEnumerator]) {
+  for (TabController* tab in [tabArray_ reverseObjectEnumerator]) {
+    NSView* tabView = [tab view];
     if ([tab selected]) {
       DCHECK(!selectedTabView);
-      selectedTabView = [tab view];
+      selectedTabView = tabView;
     } else {
-      [subviews addObject:[tab view]];
+      [subviews addObject:tabView];
     }
   }
-  if (selectedTabView)
+  if (selectedTabView) {
     [subviews addObject:selectedTabView];
-
+  }
   [tabView_ setSubviews:subviews];
+  [self setTabTrackingAreasEnabled:mouseInside_];
 }
 
 - (GTMWindowSheetController*)sheetController {

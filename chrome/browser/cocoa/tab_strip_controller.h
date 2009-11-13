@@ -100,6 +100,9 @@ class ToolbarModel;
   // Manages per-tab sheets.
   scoped_nsobject<GTMWindowSheetController> sheetController_;
 
+  // Is the mouse currently inside the strip;
+  BOOL mouseInside_;
+
   // GTMWindowSheetController supports only one per-tab sheet at a time.
   // Thus, keep a queue of sheets for every tab. The first element in the queue
   // is the currently visible sheet, and when this sheet is closed, the next

@@ -35,24 +35,12 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
 - (void)awakeFromNib {
   [self setShowsDivider:NO];
-  // Set up the tracking rect for the close button mouseover.  Add it
-  // to the |closeButton_| view, but we'll handle the message ourself.
-  // The mouseover is always enabled, because the close button works
-  // regardless of key/main/active status.
-  closeTrackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:[closeButton_ bounds]
-                                   options:NSTrackingMouseEnteredAndExited |
-                                           NSTrackingActiveAlways
-                                     owner:self
-                                  userInfo:nil]);
-  [closeButton_ addTrackingArea:closeTrackingArea_.get()];
 }
 
 - (void)dealloc {
   // Cancel any delayed requests that may still be pending (drags or hover).
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
-  // [self gtm_unregisterForThemeNotifications];
-  [closeButton_ removeTrackingArea:closeTrackingArea_.get()];
+  [self setTrackingEnabled:NO];
   [super dealloc];
 }
 
@@ -113,6 +101,52 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     isMouseInside_ = NO;
     [self adjustHoverValue];
     [self setNeedsDisplay:YES];
+  }
+}
+
+// Enable/Disable tracking for the closeButton.
+- (void)setTrackingEnabled:(BOOL)enabled {
+  if (enabled) {
+    // Set up the tracking rect for the close button mouseover.  Add it
+    // to the |closeButton_| view, but |self| will handle the messages.
+    // The mouseover is always enabled, because the close button works
+    // regardless of key/main/active status.
+    DCHECK(closeTrackingArea_.get() == nil);
+    closeTrackingArea_.reset(
+        [[NSTrackingArea alloc] initWithRect:[closeButton_ bounds]
+                                     options:NSTrackingMouseEnteredAndExited |
+                                             NSTrackingActiveAlways
+                                       owner:self
+                                    userInfo:nil]);
+    [closeButton_ addTrackingArea:closeTrackingArea_.get()];
+  } else {
+    if (closeTrackingArea_.get()) {
+      [closeButton_ removeTrackingArea:closeTrackingArea_.get()];
+      closeTrackingArea_.reset(nil);
+    }
+  }
+}
+
+// The tracking areas have been moved. Make sure that the close button is
+// highlighting correctly with respect to the cursor position with the new
+// tracking area locations.
+- (void)updateTrackingAreas {
+  [super updateTrackingAreas];
+  if (closeTrackingArea_.get()) {
+    // Update the close buttons if the tab has moved.
+    NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
+    mouseLoc = [self convertPointFromBase:mouseLoc];
+    NSString* name = nil;
+    if (NSPointInRect(mouseLoc, [closeButton_ frame])) {
+      name = @"close_bar_h.pdf";
+    } else {
+      name = @"close_bar.pdf";
+    }
+    NSImage* newImage = nsimage_cache::ImageNamed(name);
+    NSImage* buttonImage = [closeButton_ image];
+    if (![buttonImage isEqual:newImage]) {
+      [closeButton_ setImage:newImage];
+    }
   }
 }
 

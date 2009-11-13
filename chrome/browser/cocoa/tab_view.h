@@ -56,11 +56,15 @@
   NSCellStateValue state_;
 }
 @property(assign) NSCellStateValue state;
-@property(assign, nonatomic)CGFloat hoverAlpha;
+@property(assign, nonatomic) CGFloat hoverAlpha;
 
 // Determines if the tab is in the process of animating closed. It may still
 // be visible on-screen, but should not respond to/initiate any events.
-@property(assign, nonatomic)BOOL isClosing;
+@property(assign, nonatomic) BOOL isClosing;
+
+// Enables/Disables tracking regions for the tab.
+- (void)setTrackingEnabled:(BOOL)enabled;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_VIEW_H_
