@@ -81,7 +81,6 @@ BUG24182 WIN SLOW : LayoutTests/svg/hixie/perf/007.xml = PASS
 BUG24182 WIN LINUX DEBUG : LayoutTests/fast/backgrounds/size/contain-and-cover.html = PASS
 BUG24182 MAC SLOW : LayoutTests/dom/html/level2/html/HTMLImageElement01.html = PASS
 BUG24182 SLOW WIN DEBUG : LayoutTests/svg/carto.net/scrollbar.svg = PASS
-BUG24182 SLOW WONTFIX DEBUG : LayoutTests/platform/mac-snowleopard/accessibility/aria-list-and-listitem.html = PASS
 BUG24182 SLOW WIN : LayoutTests/http/tests/local/file-url-sent-as-referer.html = PASS
 BUG24182 SLOW WIN : LayoutTests/svg/carto.net/window.svg = PASS
 BUG24182 SLOW WIN LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug149275-2.html = PASS
