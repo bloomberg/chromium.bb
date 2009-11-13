@@ -183,8 +183,8 @@ void HungRendererDialogGtk::OnDialogResponse(gint response_id) {
   switch (response_id) {
     case kKillPagesButtonResponse:
       // Kill the process.
-      base::KillProcess(contents_->process()->process().handle(),
-                        ResultCodes::HUNG, false);
+      base::KillProcess(contents_->process()->GetHandle(), ResultCodes::HUNG,
+                        false);
       break;
 
     case GTK_RESPONSE_OK:

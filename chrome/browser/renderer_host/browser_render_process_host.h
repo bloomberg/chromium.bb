@@ -70,6 +70,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void ResetVisitedLinks();
   virtual bool FastShutdownIfPossible();
   virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
+  virtual base::ProcessHandle GetHandle();
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
 
   // IPC::Channel::Sender via RenderProcessHost.
@@ -138,10 +139,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   base::ProcessHandle ExecuteRenderer(CommandLine* cmd_line,
                                       bool has_cmd_prefix);
 
-  // Gets a handle to the renderer process, normalizing the case where we were
-  // started with --single-process.
-  base::ProcessHandle GetRendererProcessHandle();
-
   // Callers can reduce the RenderProcess' priority.
   // Returns true if the priority is backgrounded; false otherwise.
   void SetBackgrounded(bool boost);
@@ -204,6 +201,8 @@ class BrowserRenderProcessHost : public RenderProcessHost,
 
   // True iff the renderer is a child of a zygote process.
   bool zygote_child_;
+
+  base::Process process_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRenderProcessHost);
 };

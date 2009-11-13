@@ -1005,7 +1005,7 @@ void RenderWidgetHost::PaintBackingStoreRect(TransportDIB* bitmap,
 
   bool needs_full_paint = false;
   BackingStoreManager::PrepareBackingStore(this, view_size,
-                                           process_->process().handle(),
+                                           process_->GetHandle(),
                                            bitmap, bitmap_rect,
                                            &needs_full_paint);
   if (needs_full_paint) {
@@ -1034,7 +1034,7 @@ void RenderWidgetHost::ScrollBackingStoreRect(TransportDIB* bitmap,
   BackingStore* backing_store = BackingStoreManager::Lookup(this);
   if (!backing_store || (backing_store->size() != view_size))
     return;
-  backing_store->ScrollRect(process_->process().handle(), bitmap, bitmap_rect,
+  backing_store->ScrollRect(process_->GetHandle(), bitmap, bitmap_rect,
                             dx, dy, clip_rect, view_size);
 }
 

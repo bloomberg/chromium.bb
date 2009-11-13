@@ -281,7 +281,7 @@ void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {
     CHECK(false);
   } else {
     NOTREACHED();
-    base::KillProcess(render_view_host_->process()->process().handle(),
+    base::KillProcess(render_view_host_->process()->GetHandle(),
                       ResultCodes::KILLED_BAD_MESSAGE, false);
   }
 }

@@ -53,7 +53,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
       pending_v8_memory_allocated_update_(false) {
   // We cache the process as when the TabContents is closed the process
   // becomes NULL and the TaskManager still needs it.
-  process_ = tab_contents_->process()->process().handle();
+  process_ = tab_contents_->process()->GetHandle();
   pid_ = base::GetProcId(process_);
   stats_.images.size = 0;
   stats_.cssStyleSheets.size = 0;
@@ -162,14 +162,14 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
   if (!tab_contents)  // Not one of our resource.
     return NULL;
 
-  if (!tab_contents->process()->process().handle()) {
+  if (!tab_contents->process()->GetHandle()) {
     // We should not be holding on to a dead tab (it should have been removed
     // through the NOTIFY_TAB_CONTENTS_DISCONNECTED notification.
     NOTREACHED();
     return NULL;
   }
 
-  int pid = tab_contents->process()->process().pid();
+  int pid = base::GetProcId(tab_contents->process()->GetHandle());
   if (pid != origin_pid)
     return NULL;
 
@@ -241,7 +241,7 @@ void TaskManagerTabContentsResourceProvider::Add(TabContents* tab_contents) {
   // Don't add dead tabs or tabs that haven't yet connected.
   // Also ignore tabs which display extension content. We collapse
   // all of these into one extension row.
-  if (!tab_contents->process()->process().handle() ||
+  if (!tab_contents->process()->GetHandle() ||
       !tab_contents->notify_disconnection() ||
       tab_contents->HostsExtension()) {
     return;
@@ -515,9 +515,8 @@ TaskManagerExtensionProcessResource::TaskManagerExtensionProcessResource(
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     default_icon_ = rb.GetBitmapNamed(IDR_PLUGIN);
   }
-  base::Process process(extension_host_->render_process_host()->process());
-  process_handle_ = process.handle();
-  pid_ = process.pid();
+  process_handle_ = extension_host_->render_process_host()->GetHandle();
+  pid_ = base::GetProcId(process_handle_);
   std::wstring extension_name(UTF8ToWide(GetExtension()->name()));
   DCHECK(!extension_name.empty());
   // Since the extension_name will be concatenated with a prefix, we need

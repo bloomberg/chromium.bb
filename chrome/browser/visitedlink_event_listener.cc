@@ -25,7 +25,7 @@ void VisitedLinkEventListener::NewTable(base::SharedMemory* table_memory) {
       continue;
 
     base::SharedMemoryHandle new_table;
-    base::ProcessHandle process = i.GetCurrentValue()->process().handle();
+    base::ProcessHandle process = i.GetCurrentValue()->GetHandle();
     if (!process) {
       // process can be null if it's started with the --single-process flag.
       process = base::Process::Current().handle();

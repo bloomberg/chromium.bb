@@ -316,8 +316,7 @@ void HungRendererDialogView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == kill_button_) {
     // Kill the process.
-    HANDLE process = contents_->process()->process().handle();
-    TerminateProcess(process, ResultCodes::HUNG);
+    TerminateProcess(contents_->process()->GetHandle(), ResultCodes::HUNG);
   }
 }
 

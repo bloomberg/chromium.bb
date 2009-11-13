@@ -92,8 +92,10 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
          RenderProcessHost::AllHostsIterator()); !renderer_iter.IsAtEnd();
          renderer_iter.Advance()) {
       DCHECK(renderer_iter.GetCurrentValue());
-      if (process.pid != renderer_iter.GetCurrentValue()->process().pid())
+      if (process.pid !=
+              base::GetProcId(renderer_iter.GetCurrentValue()->GetHandle())) {
         continue;
+      }
       process.type = ChildProcessInfo::RENDER_PROCESS;
       // The RenderProcessHost may host multiple TabContents.  Any
       // of them which contain diagnostics information make the whole

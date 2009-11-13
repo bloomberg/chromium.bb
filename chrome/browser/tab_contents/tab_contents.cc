@@ -2223,8 +2223,7 @@ void TabContents::DidStopLoading() {
   // if an iframe injected by script into a blank page finishes loading.
   if (entry) {
     scoped_ptr<base::ProcessMetrics> metrics(
-        base::ProcessMetrics::CreateProcessMetrics(
-            process()->process().handle()));
+        base::ProcessMetrics::CreateProcessMetrics(process()->GetHandle()));
 
     base::TimeDelta elapsed = base::TimeTicks::Now() - current_load_start_;
 

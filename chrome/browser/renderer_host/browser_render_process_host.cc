@@ -645,9 +645,10 @@ base::ProcessHandle BrowserRenderProcessHost::ExecuteRenderer(
 
 #endif  // defined(OS_POSIX)
 
-base::ProcessHandle BrowserRenderProcessHost::GetRendererProcessHandle() {
+base::ProcessHandle BrowserRenderProcessHost::GetHandle() {
   if (run_renderer_in_process())
     return base::Process::Current().handle();
+
   return process_.handle();
 }
 
@@ -658,8 +659,7 @@ void BrowserRenderProcessHost::InitVisitedLinks() {
   }
 
   base::SharedMemoryHandle handle_for_process;
-  bool r = visitedlink_master->ShareToProcess(GetRendererProcessHandle(),
-                                              &handle_for_process);
+  bool r = visitedlink_master->ShareToProcess(GetHandle(), &handle_for_process);
   DCHECK(r);
 
   if (base::SharedMemory::IsHandleValid(handle_for_process)) {
@@ -691,8 +691,7 @@ void BrowserRenderProcessHost::InitExtensions() {
 void BrowserRenderProcessHost::SendUserScriptsUpdate(
     base::SharedMemory *shared_memory) {
   base::SharedMemoryHandle handle_for_process;
-  if (!shared_memory->ShareToProcess(GetRendererProcessHandle(),
-                                     &handle_for_process)) {
+  if (!shared_memory->ShareToProcess(GetHandle(), &handle_for_process)) {
     // This can legitimately fail if the renderer asserts at startup.
     return;
   }
@@ -770,7 +769,7 @@ TransportDIB* BrowserRenderProcessHost::MapTransportDIB(
 #if defined(OS_WIN)
   // On Windows we need to duplicate the handle from the remote process
   HANDLE section = win_util::GetSectionFromProcess(
-      dib_id.handle, GetRendererProcessHandle(), false /* read write */);
+      dib_id.handle, GetHandle(), false /* read write */);
   return TransportDIB::Map(section);
 #elif defined(OS_MACOSX)
   // On OSX, the browser allocates all DIBs and keeps a file descriptor around
@@ -1131,8 +1130,7 @@ void BrowserRenderProcessHost::InitSpellChecker() {
     file = base::FileDescriptor(spellcheck_host->bdict_file(), false);
 #elif defined(OS_WIN)
     ::DuplicateHandle(::GetCurrentProcess(), spellcheck_host->bdict_file(),
-                      process().handle(), &file,
-                      0, false, DUPLICATE_SAME_ACCESS);
+                      GetHandle(), &file, 0, false, DUPLICATE_SAME_ACCESS);
 #endif
     Send(new ViewMsg_SpellChecker_Init(
         file,

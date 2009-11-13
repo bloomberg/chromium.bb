@@ -468,7 +468,7 @@ AppModalDialog* WaitForAppModalDialog() {
 
 void CrashTab(TabContents* tab) {
   RenderProcessHost* rph = tab->render_view_host()->process();
-  base::KillProcess(rph->process().handle(), 0, false);
+  base::KillProcess(rph->GetHandle(), 0, false);
   SimpleNotificationObserver<RenderProcessHost>
       crash_observer(NotificationType::RENDERER_PROCESS_CLOSED, rph);
 }

@@ -11,9 +11,8 @@
 
 class TransportDIB;
 
-// A mock render process host that has no corresponding renderer process. The
-// process() refers to the current process, and all IPC messages are sent into
-// the message sink for inspection by tests.
+// A mock render process host that has no corresponding renderer process.  All
+// IPC messages are sent into the message sink for inspection by tests.
 class MockRenderProcessHost : public RenderProcessHost {
  public:
   MockRenderProcessHost(Profile* profile);
@@ -47,6 +46,10 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void ResetVisitedLinks();
   virtual bool FastShutdownIfPossible();
   virtual bool SendWithTimeout(IPC::Message* msg, int timeout_ms);
+  virtual base::ProcessHandle GetHandle() {
+    return base::kNullProcessHandle;
+  }
+
   virtual TransportDIB* GetTransportDIB(TransportDIB::Id dib_id);
 
   // IPC::Channel::Sender via RenderProcessHost.

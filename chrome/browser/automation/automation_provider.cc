@@ -13,6 +13,7 @@
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -1049,7 +1050,7 @@ void AutomationProvider::GetTabProcessID(int handle, int* process_id) {
     TabContents* tab_contents =
         tab_tracker_->GetResource(handle)->tab_contents();
     if (tab_contents->process())
-      *process_id = tab_contents->process()->process().pid();
+      *process_id = base::GetProcId(tab_contents->process()->GetHandle());
   }
 }
 
