@@ -157,3 +157,17 @@ EVENT_TYPE(HTTP_TRANSACTION_READ_BODY)
 // Measures the time taken to read the response out of the socket before
 // restarting for authentication, on keep alive connections.
 EVENT_TYPE(HTTP_TRANSACTION_DRAIN_BODY_FOR_AUTH_RESTART)
+
+// ------------------------------------------------------------------------
+// SocketStream
+// ------------------------------------------------------------------------
+
+// Measures the time between SocketStream::Connect() and
+// SocketStream::DidEstablishConnection()
+EVENT_TYPE(SOCKET_STREAM_CONNECT)
+
+// A message sent on the SocketStream.
+EVENT_TYPE(SOCKET_STREAM_SENT)
+
+// A message received on the SocketStream.
+EVENT_TYPE(SOCKET_STREAM_RECEIVED)

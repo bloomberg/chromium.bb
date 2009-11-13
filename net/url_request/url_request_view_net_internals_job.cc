@@ -20,6 +20,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/proxy/proxy_service.h"
+#include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/view_cache_helper.h"
@@ -330,7 +331,7 @@ class URLRequestLiveSubSection : public SubSection {
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
     std::vector<URLRequest*> requests =
-        context->request_tracker()->GetLiveRequests();
+        context->url_request_tracker()->GetLiveRequests();
 
     out->append("<ol>");
     for (size_t i = 0; i < requests.size(); ++i) {
@@ -351,8 +352,8 @@ class URLRequestRecentSubSection : public SubSection {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    URLRequestTracker::RecentRequestInfoList recent =
-        context->request_tracker()->GetRecentlyDeceased();
+    RequestTracker<URLRequest>::RecentRequestInfoList recent =
+        context->url_request_tracker()->GetRecentlyDeceased();
 
     out->append("<ol>");
     for (size_t i = 0; i < recent.size(); ++i) {
@@ -400,6 +401,58 @@ class HttpCacheSection : public SubSection {
   }
 };
 
+class SocketStreamLiveSubSection : public SubSection {
+ public:
+  SocketStreamLiveSubSection(SubSection* parent)
+      : SubSection(parent, "live", "Live SocketStreams") {
+  }
+
+  virtual void OutputBody(URLRequestContext* context, std::string* out) {
+    std::vector<net::SocketStream*> sockets =
+        context->socket_stream_tracker()->GetLiveRequests();
+
+    out->append("<ol>");
+    for (size_t i = 0; i < sockets.size(); ++i) {
+      // Reverse the list order, so we dispay from most recent to oldest.
+      size_t index = sockets.size() - i - 1;
+      OutputURLAndLoadLog(sockets[index]->url(),
+                          sockets[index]->load_log(),
+                          out);
+    }
+    out->append("</ol>");
+  }
+};
+
+class SocketStreamRecentSubSection : public SubSection {
+ public:
+  SocketStreamRecentSubSection(SubSection* parent)
+      : SubSection(parent, "recent", "Recently completed SocketStreams") {
+  }
+
+  virtual void OutputBody(URLRequestContext* context, std::string* out) {
+    RequestTracker<net::SocketStream>::RecentRequestInfoList recent =
+        context->socket_stream_tracker()->GetRecentlyDeceased();
+
+    out->append("<ol>");
+    for (size_t i = 0; i < recent.size(); ++i) {
+      // Reverse the list order, so we dispay from most recent to oldest.
+      size_t index = recent.size() - i - 1;
+      OutputURLAndLoadLog(recent[index].original_url,
+                          recent[index].load_log, out);
+    }
+    out->append("</ol>");
+  }
+};
+
+class SocketStreamSubSection : public SubSection {
+ public:
+  SocketStreamSubSection(SubSection* parent)
+      : SubSection(parent, "socketstream", "SocketStream") {
+    AddSubSection(new SocketStreamLiveSubSection(this));
+    AddSubSection(new SocketStreamRecentSubSection(this));
+  }
+};
+
 class AllSubSections : public SubSection {
  public:
   AllSubSections() : SubSection(NULL, "", "") {
@@ -407,6 +460,7 @@ class AllSubSections : public SubSection {
     AddSubSection(new HostResolverSubSection(this));
     AddSubSection(new URLRequestSubSection(this));
     AddSubSection(new HttpCacheSection(this));
+    AddSubSection(new SocketStreamSubSection(this));
   }
 };
 
@@ -480,4 +534,3 @@ bool URLRequestViewNetInternalsJob::GetData(std::string* mime_type,
 
   return true;
 }
-
