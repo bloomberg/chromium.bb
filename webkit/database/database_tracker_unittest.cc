@@ -82,12 +82,13 @@ TEST(DatabaseTrackerTest, TestIt) {
   // Open three new databases.
   int64 database_size = 0;
   int64 space_available = 0;
-  const string16 kOrigin1 = ASCIIToUTF16("kOrigin1");
-  const string16 kOrigin2 = ASCIIToUTF16("kOrigin2");
-  const string16 kDB1 = ASCIIToUTF16("kDB1");
-  const string16 kDB2 = ASCIIToUTF16("kDB2");
-  const string16 kDB3 = ASCIIToUTF16("kDB3");
-  const string16 kDescription = ASCIIToUTF16("database_kDescription");
+  const string16 kOrigin1 = ASCIIToUTF16("origin1");
+  const string16 kOrigin2 = ASCIIToUTF16("origin2");
+  const string16 kDB1 = ASCIIToUTF16("db1");
+  const string16 kDB2 = ASCIIToUTF16("db2");
+  const string16 kDB3 = ASCIIToUTF16("db3");
+  const string16 kDescription = ASCIIToUTF16("database_description");
+
   tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
                           &database_size, &space_available);
   EXPECT_EQ(0, database_size);
@@ -109,6 +110,10 @@ TEST(DatabaseTrackerTest, TestIt) {
 
   // Write some data to each file and check that the listeners are
   // called with the appropriate values.
+  EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
+      FilePath::FromWStringHack(UTF16ToWide(kOrigin1)))));
+  EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
+      FilePath::FromWStringHack(UTF16ToWide(kOrigin2)))));
   EXPECT_EQ(1, file_util::WriteFile(
       tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
   EXPECT_EQ(2, file_util::WriteFile(

@@ -73,6 +73,8 @@ TEST(DatabasesTableTest, TestIt) {
       details_in1.origin_identifier,
       details_in1.database_name,
       &details_out1));
+  EXPECT_EQ(1, databases_table.GetDatabaseID(details_in1.origin_identifier,
+                                             details_in1.database_name));
 
   // Check that the details were correctly written to the database.
   CheckDetailsAreEqual(details_in1, details_out1);
@@ -87,6 +89,8 @@ TEST(DatabasesTableTest, TestIt) {
   details_in2.description = ASCIIToUTF16("description_db2");
   details_in2.estimated_size = 200;
   EXPECT_TRUE(databases_table.InsertDatabaseDetails(details_in2));
+  EXPECT_EQ(2, databases_table.GetDatabaseID(details_in2.origin_identifier,
+                                             details_in2.database_name));
 
   // Insert details for a third database with a different origin.
   DatabaseDetails details_in3;
@@ -95,6 +99,8 @@ TEST(DatabasesTableTest, TestIt) {
   details_in3.description = ASCIIToUTF16("description_db3");
   details_in3.estimated_size = 300;
   EXPECT_TRUE(databases_table.InsertDatabaseDetails(details_in3));
+  EXPECT_EQ(3, databases_table.GetDatabaseID(details_in3.origin_identifier,
+                                             details_in3.database_name));
 
   // There should be no database with origin "origin3".
   std::vector<DatabaseDetails> details_out_origin3;

@@ -41,9 +41,15 @@ base::PlatformFile SimpleDatabaseSystem::OpenFile(
       const FilePath& file_name, int desired_flags,
       base::PlatformFile* dir_handle) {
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
-  VfsBackend::OpenFile(GetDBFileFullPath(file_name), GetDBDir(), desired_flags,
-                       base::GetCurrentProcessHandle(), &file_handle,
-                       dir_handle);
+  if (file_name.empty()) {
+    VfsBackend::OpenTempFileInDirectory(
+        GetDBDir(), desired_flags, base::GetCurrentProcessHandle(),
+        &file_handle, dir_handle);
+  } else {
+    VfsBackend::OpenFile(GetDBFileFullPath(file_name), desired_flags,
+                         base::GetCurrentProcessHandle(), &file_handle,
+                         dir_handle);
+  }
 
   // HACK: Currently, the DB object that keeps track of the main database
   // (DatabaseTracker) is a singleton that is declared as a static variable
@@ -75,7 +81,7 @@ int SimpleDatabaseSystem::DeleteFile(
   int error_code = SQLITE_OK;
   do {
     error_code = VfsBackend::DeleteFile(
-        GetDBFileFullPath(file_name), GetDBDir(), sync_dir);
+        GetDBFileFullPath(file_name), sync_dir);
   } while ((++num_retries < kNumDeleteRetries) &&
            (error_code == SQLITE_IOERR_DELETE) &&
            (PlatformThread::Sleep(10), 1));

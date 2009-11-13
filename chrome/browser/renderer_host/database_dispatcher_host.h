@@ -18,8 +18,8 @@ class DatabaseDispatcherHost
       public webkit_database::DatabaseTracker::Observer {
  public:
   DatabaseDispatcherHost(webkit_database::DatabaseTracker* db_tracker,
-                         IPC::Message::Sender* message_sender,
-                         base::ProcessHandle process_handle);
+                         IPC::Message::Sender* message_sender);
+  void Init(base::ProcessHandle process_handle);
   void Shutdown();
 
   bool OnMessageReceived(const IPC::Message& message, bool* message_was_ok);
@@ -55,7 +55,7 @@ class DatabaseDispatcherHost
  private:
   void AddObserver();
   void RemoveObserver();
-  FilePath GetDBFileFullPath(const FilePath& vfs_file_name);
+  FilePath GetFullFilePathForVfsFile(const FilePath& vfs_file_name);
 
   void ReceivedBadMessage(uint16 msg_type);
   void SendMessage(IPC::Message* message);
@@ -93,7 +93,7 @@ class DatabaseDispatcherHost
   IPC::Message::Sender* message_sender_;
 
   // The handle of this process.
-  const base::ProcessHandle process_handle_;
+  base::ProcessHandle process_handle_;
 
   // True if and only if this instance was added as an observer
   // to DatabaseTracker.

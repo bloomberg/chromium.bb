@@ -171,8 +171,7 @@ ResourceMessageFilter::ResourceMessageFilter(
           new DOMStorageDispatcherHost(this, profile->GetWebKitContext(),
               resource_dispatcher_host->webkit_thread()))),
       ALLOW_THIS_IN_INITIALIZER_LIST(db_dispatcher_host_(
-          new DatabaseDispatcherHost(profile->GetDatabaseTracker(),
-                                     this, handle()))),
+          new DatabaseDispatcherHost(profile->GetDatabaseTracker(), this))),
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
       socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
@@ -239,6 +238,7 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
   appcache_dispatcher_host_->Initialize(this, id(), handle());
   socket_stream_dispatcher_host_->Initialize(this, id());
   dom_storage_dispatcher_host_->Init(handle());
+  db_dispatcher_host_->Init(handle());
 }
 
 void ResourceMessageFilter::OnChannelError() {

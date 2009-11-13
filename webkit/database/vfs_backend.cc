@@ -12,21 +12,11 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/logging.h"
 
 namespace webkit_database {
 
-bool VfsBackend::OpenFileFlagsAreConsistent(const FilePath& file_name,
-                                            const FilePath& db_dir,
-                                            int desired_flags) {
-  // Is this a request for a temp file?
-  // We should be able to delete temp files when they're closed
-  // and create them as needed
-  if ((file_name == db_dir) &&
-      (!(desired_flags & SQLITE_OPEN_DELETEONCLOSE) ||
-       !(desired_flags & SQLITE_OPEN_CREATE))) {
-    return false;
-  }
-
+bool VfsBackend::OpenFileFlagsAreConsistent(int desired_flags) {
   const int file_type = desired_flags & 0x00007F00;
   const bool is_exclusive = (desired_flags & SQLITE_OPEN_EXCLUSIVE) != 0;
   const bool is_delete = (desired_flags & SQLITE_OPEN_DELETEONCLOSE) != 0;
@@ -64,16 +54,17 @@ bool VfsBackend::OpenFileFlagsAreConsistent(const FilePath& file_name,
          (file_type == SQLITE_OPEN_TRANSIENT_DB);
 }
 
-void VfsBackend::OpenFile(const FilePath& file_name,
-                          const FilePath& db_dir,
+void VfsBackend::OpenFile(const FilePath& file_path,
                           int desired_flags,
                           base::ProcessHandle handle,
                           base::PlatformFile* target_handle,
                           base::PlatformFile* target_dir_handle) {
+  DCHECK(!file_path.empty());
+
   // Verify the flags for consistency and create the database
   // directory if it doesn't exist.
-  if (!OpenFileFlagsAreConsistent(file_name, db_dir, desired_flags) ||
-      !file_util::CreateDirectory(db_dir))
+  if (!OpenFileFlagsAreConsistent(desired_flags) ||
+      !file_util::CreateDirectory(file_path.DirName()))
     return;
 
   int flags = 0;
@@ -99,19 +90,9 @@ void VfsBackend::OpenFile(const FilePath& file_name,
              base::PLATFORM_FILE_DELETE_ON_CLOSE;
   }
 
-  // If this is a request for a handle to a temp file, get a unique file name.
-  FilePath db_file_name;
-  if (file_name == db_dir) {
-    if (!file_util::CreateTemporaryFileInDir(db_dir, &db_file_name))
-      db_file_name = FilePath();
-  } else {
-    db_file_name = file_name;
-  }
-
   // Try to open/create the DB file.
-  base::PlatformFile file_handle = (db_file_name.empty() ?
-       base::kInvalidPlatformFileValue :
-       base::CreatePlatformFile(db_file_name.ToWStringHack(), flags, NULL));
+  base::PlatformFile file_handle =
+      base::CreatePlatformFile(file_path.ToWStringHack(), flags, NULL);
   if (file_handle != base::kInvalidPlatformFileValue) {
 #if defined(OS_WIN)
     // Duplicate the file handle.
@@ -132,7 +113,7 @@ void VfsBackend::OpenFile(const FilePath& file_name,
       // systems the VFS might want to fsync it after changing a file.
       // By returning it here, we avoid an extra IPC call.
       *target_dir_handle = base::CreatePlatformFile(
-          db_dir.ToWStringHack(),
+          file_path.DirName().ToWStringHack(),
           base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ, NULL);
       if (*target_dir_handle == base::kInvalidPlatformFileValue) {
         base::ClosePlatformFile(*target_handle);
@@ -143,19 +124,39 @@ void VfsBackend::OpenFile(const FilePath& file_name,
   }
 }
 
-int VfsBackend::DeleteFile(const FilePath& file_name,
-                           const FilePath& db_dir,
-                           bool sync_dir) {
-  if (!file_util::PathExists(file_name))
+void VfsBackend::OpenTempFileInDirectory(
+    const FilePath& dir_path,
+    int desired_flags,
+    base::ProcessHandle handle,
+    base::PlatformFile* target_handle,
+    base::PlatformFile* target_dir_handle) {
+  // We should be able to delete temp files when they're closed
+  // and create them as needed
+  if (!(desired_flags & SQLITE_OPEN_DELETEONCLOSE) ||
+      !(desired_flags & SQLITE_OPEN_CREATE)) {
+    return;
+  }
+
+  // Get a unique temp file name in the database directory.
+  FilePath temp_file_path;
+  if (!file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path))
+    return;
+
+  OpenFile(temp_file_path, desired_flags, handle,
+           target_handle, target_dir_handle);
+}
+
+int VfsBackend::DeleteFile(const FilePath& file_path, bool sync_dir) {
+  if (!file_util::PathExists(file_path))
     return SQLITE_OK;
-  if (!file_util::Delete(file_name, false))
+  if (!file_util::Delete(file_path, false))
     return SQLITE_IOERR_DELETE;
 
   int error_code = SQLITE_OK;
 #if defined(OS_POSIX)
   if (sync_dir) {
     base::PlatformFile dir_fd = base::CreatePlatformFile(
-        db_dir.ToWStringHack(), base::PLATFORM_FILE_READ, NULL);
+        file_path.DirName().ToWStringHack(), base::PLATFORM_FILE_READ, NULL);
     if (dir_fd == base::kInvalidPlatformFileValue) {
       error_code = SQLITE_CANTOPEN;
     } else {
@@ -168,14 +169,14 @@ int VfsBackend::DeleteFile(const FilePath& file_name,
   return error_code;
 }
 
-uint32 VfsBackend::GetFileAttributes(const FilePath& file_name) {
+uint32 VfsBackend::GetFileAttributes(const FilePath& file_path) {
 #if defined(OS_WIN)
-  uint32 attributes = ::GetFileAttributes(file_name.value().c_str());
+  uint32 attributes = ::GetFileAttributes(file_path.value().c_str());
 #elif defined(OS_POSIX)
   uint32 attributes = 0;
-  if (!access(file_name.value().c_str(), R_OK))
+  if (!access(file_path.value().c_str(), R_OK))
     attributes |= static_cast<uint32>(R_OK);
-  if (!access(file_name.value().c_str(), W_OK))
+  if (!access(file_path.value().c_str(), W_OK))
     attributes |= static_cast<uint32>(W_OK);
   if (!attributes)
     attributes = -1;
@@ -183,9 +184,9 @@ uint32 VfsBackend::GetFileAttributes(const FilePath& file_name) {
   return attributes;
 }
 
-int64 VfsBackend::GetFileSize(const FilePath& file_name) {
+int64 VfsBackend::GetFileSize(const FilePath& file_path) {
   int64 size = 0;
-  return (file_util::GetFileSize(file_name, &size) ? size : 0);
+  return (file_util::GetFileSize(file_path, &size) ? size : 0);
 }
 
 } // namespace webkit_database

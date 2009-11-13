@@ -20,9 +20,11 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/common/render_messages.h"
+#include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"
 
 using webkit_database::DatabaseTracker;
+using webkit_database::DatabaseUtil;
 using webkit_database::VfsBackend;
 
 const int kNumDeleteRetries = 2;
@@ -30,15 +32,22 @@ const int kDelayDeleteRetryMs = 100;
 
 DatabaseDispatcherHost::DatabaseDispatcherHost(
     DatabaseTracker* db_tracker,
-    IPC::Message::Sender* message_sender,
-    base::ProcessHandle process_handle)
+    IPC::Message::Sender* message_sender)
     : db_tracker_(db_tracker),
       message_sender_(message_sender),
-      process_handle_(process_handle),
+      process_handle_(0),
       observer_added_(false),
       shutdown_(false) {
   DCHECK(db_tracker_);
   DCHECK(message_sender_);
+}
+
+void DatabaseDispatcherHost::Init(base::ProcessHandle process_handle) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(!shutdown_);
+  DCHECK(!process_handle_);
+  DCHECK(process_handle);
+  process_handle_ = process_handle;
 }
 
 void DatabaseDispatcherHost::Shutdown() {
@@ -61,47 +70,14 @@ void DatabaseDispatcherHost::RemoveObserver() {
   db_tracker_->RemoveObserver(this);
 }
 
-FilePath DatabaseDispatcherHost::GetDBFileFullPath(
+// TODO(dumi): remove this function when switching IPC parameters
+// from FilePath to string16
+FilePath DatabaseDispatcherHost::GetFullFilePathForVfsFile(
     const FilePath& vfs_file_name) {
-  // 'vfs_file_name' can be one of 3 things:
-  // 1. Empty string: It means the VFS wants to open a temp file. In this case
-  //    we need to return the path to the directory that stores all databases.
-  // 2. origin_identifier/database_name: In this case, we need to extract
-  //    'origin_identifier' and 'database_name' and pass them to
-  //    DatabaseTracker::GetFullDBFilePath().
-  // 3. origin_identifier/database_name-suffix: '-suffix' could be '-journal',
-  //    for example. In this case, we need to extract 'origin_identifier' and
-  //    'database_name-suffix' and pass them to
-  //    DatabaseTracker::GetFullDBFilePath(). 'database_name-suffix' is not
-  //    a database name as expected by DatabaseTracker::GetFullDBFilePath(),
-  //    but due to its implementation, it's OK to pass in 'database_name-suffix'
-  //    too.
-  //
-  // We also check that the given string doesn't contain invalid characters
-  // that would result in a DB file stored outside of the directory where
-  // all DB files are supposed to be stored.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  if (vfs_file_name.empty())
-    return db_tracker_->DatabaseDirectory();
-
-  std::wstring str = vfs_file_name.ToWStringHack();
-  size_t slashIndex = str.find('/');
-  if (slashIndex == std::wstring::npos)
-    return FilePath();  // incorrect format
-  std::wstring origin_identifier = str.substr(0, slashIndex);
-  std::wstring database_name =
-      str.substr(slashIndex + 1, str.length() - slashIndex);
-  if ((origin_identifier.find('\\') != std::wstring::npos) ||
-      (origin_identifier.find('/') != std::wstring::npos) ||
-      (origin_identifier.find(':') != std::wstring::npos) ||
-      (database_name.find('\\') != std::wstring::npos) ||
-      (database_name.find('/') != std::wstring::npos) ||
-      (database_name.find(':') != std::wstring::npos)) {
-    return FilePath();
-  }
-
-  return db_tracker_->GetFullDBFilePath(
-      WideToUTF16(origin_identifier), WideToUTF16(database_name));
+  DCHECK(!vfs_file_name.empty());
+  return DatabaseUtil::GetFullFilePathForVfsFile(
+      db_tracker_, WideToUTF16(vfs_file_name.ToWStringHack()));
 }
 
 bool DatabaseDispatcherHost::OnMessageReceived(
@@ -180,11 +156,16 @@ void DatabaseDispatcherHost::DatabaseOpenFile(const FilePath& vfs_file_name,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   base::PlatformFile target_handle = base::kInvalidPlatformFileValue;
   base::PlatformFile target_dir_handle = base::kInvalidPlatformFileValue;
-  FilePath db_file_name = GetDBFileFullPath(vfs_file_name);
-  if (!db_file_name.empty()) {
-    FilePath db_dir = db_tracker_->DatabaseDirectory();
-    VfsBackend::OpenFile(db_file_name, db_dir, desired_flags,
-                         process_handle_, &target_handle, &target_dir_handle);
+  if (vfs_file_name.empty()) {
+    VfsBackend::OpenTempFileInDirectory(db_tracker_->DatabaseDirectory(),
+                                        desired_flags, process_handle_,
+                                        &target_handle, &target_dir_handle);
+  } else {
+    FilePath db_file = GetFullFilePathForVfsFile(vfs_file_name);
+    if (!db_file.empty()) {
+      VfsBackend::OpenFile(db_file, desired_flags, process_handle_,
+                           &target_handle, &target_dir_handle);
+    }
   }
 
   ViewMsg_DatabaseOpenFileResponse_Params response_params;
@@ -223,10 +204,9 @@ void DatabaseDispatcherHost::DatabaseDeleteFile(const FilePath& vfs_file_name,
   // Return an error if the file name is invalid or if the file could not
   // be deleted after kNumDeleteRetries attempts.
   int error_code = SQLITE_IOERR_DELETE;
-  FilePath db_file_name = GetDBFileFullPath(vfs_file_name);
-  if (!db_file_name.empty()) {
-    FilePath db_dir = db_tracker_->DatabaseDirectory();
-    error_code = VfsBackend::DeleteFile(db_file_name, db_dir, sync_dir);
+  FilePath db_file = GetFullFilePathForVfsFile(vfs_file_name);
+  if (!db_file.empty()) {
+    error_code = VfsBackend::DeleteFile(db_file, sync_dir);
     if ((error_code == SQLITE_IOERR_DELETE) && reschedule_count) {
       // If the file could not be deleted, try again.
       ChromeThread::PostDelayedTask(
@@ -270,9 +250,9 @@ void DatabaseDispatcherHost::DatabaseGetFileAttributes(
     int32 message_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   int32 attributes = -1;
-  FilePath db_file_name = GetDBFileFullPath(vfs_file_name);
-  if (!db_file_name.empty())
-    attributes = VfsBackend::GetFileAttributes(db_file_name);
+  FilePath db_file = GetFullFilePathForVfsFile(vfs_file_name);
+  if (!db_file.empty())
+    attributes = VfsBackend::GetFileAttributes(db_file);
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this,
@@ -299,9 +279,9 @@ void DatabaseDispatcherHost::DatabaseGetFileSize(const FilePath& vfs_file_name,
                                                  int32 message_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   int64 size = 0;
-  FilePath db_file_name = GetDBFileFullPath(vfs_file_name);
-  if (!db_file_name.empty())
-    size = VfsBackend::GetFileSize(db_file_name);
+  FilePath db_file = GetFullFilePathForVfsFile(vfs_file_name);
+  if (!db_file.empty())
+    size = VfsBackend::GetFileSize(db_file);
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this,

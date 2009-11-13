@@ -33,6 +33,20 @@ bool DatabasesTable::Init() {
            "CREATE UNIQUE INDEX unique_index ON Databases (origin, name)"));
 }
 
+int64 DatabasesTable::GetDatabaseID(const string16& origin_identifier,
+                                    const string16& database_name) {
+  sql::Statement select_statement(db_->GetCachedStatement(
+      SQL_FROM_HERE, "SELECT id FROM Databases WHERE origin = ? AND name = ?"));
+  if (select_statement.is_valid() &&
+      select_statement.BindString(0, UTF16ToUTF8(origin_identifier)) &&
+      select_statement.BindString(1, UTF16ToUTF8(database_name)) &&
+      select_statement.Step()) {
+    return select_statement.ColumnInt64(0);
+  }
+
+  return -1;
+}
+
 bool DatabasesTable::GetDatabaseDetails(const string16& origin_identifier,
                                         const string16& database_name,
                                         DatabaseDetails* details) {

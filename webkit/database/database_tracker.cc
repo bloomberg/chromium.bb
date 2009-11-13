@@ -96,8 +96,16 @@ void DatabaseTracker::CloseTrackerDatabaseAndClearCaches() {
 FilePath DatabaseTracker::GetFullDBFilePath(
     const string16& origin_identifier,
     const string16& database_name) const {
-  return db_dir_.Append(FilePath::FromWStringHack(UTF16ToWide(
-      origin_identifier + ASCIIToUTF16("_") + database_name)));
+  DCHECK(!origin_identifier.empty());
+  DCHECK(!database_name.empty());
+  int64 id = databases_table_->GetDatabaseID(
+      origin_identifier, database_name);
+  if (id < 0)
+    return FilePath();
+
+  FilePath file_name = FilePath::FromWStringHack(Int64ToWString(id));
+  return db_dir_.Append(FilePath::FromWStringHack(
+      UTF16ToWide(origin_identifier))).Append(file_name);
 }
 
 bool DatabaseTracker::LazyInit() {

@@ -29,6 +29,8 @@ class DatabasesTable {
   explicit DatabasesTable(sql::Connection* db) : db_(db) { }
 
   bool Init();
+  int64 GetDatabaseID(const string16& origin_identifier,
+                      const string16& database_name);
   bool GetDatabaseDetails(const string16& origin_identifier,
                           const string16& database_name,
                           DatabaseDetails* details);

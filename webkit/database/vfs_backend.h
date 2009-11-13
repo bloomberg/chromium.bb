@@ -7,6 +7,7 @@
 
 #include "base/platform_file.h"
 #include "base/process.h"
+#include "base/string16.h"
 
 class FilePath;
 
@@ -14,25 +15,25 @@ namespace webkit_database {
 
 class VfsBackend {
  public:
-  static void OpenFile(const FilePath& file_name,
-                       const FilePath& db_dir,
+  static void OpenFile(const FilePath& file_path,
                        int desired_flags,
                        base::ProcessHandle handle,
                        base::PlatformFile* target_handle,
                        base::PlatformFile* target_dir_handle);
+  static void OpenTempFileInDirectory(const FilePath& dir_path,
+                                      int desired_flags,
+                                      base::ProcessHandle handle,
+                                      base::PlatformFile* target_handle,
+                                      base::PlatformFile* target_dir_handle);
 
-  static int DeleteFile(const FilePath& file_name,
-                        const FilePath& db_dir,
-                        bool sync_dir);
+  static int DeleteFile(const FilePath& file_path, bool sync_dir);
 
-  static uint32 GetFileAttributes(const FilePath& file_name);
+  static uint32 GetFileAttributes(const FilePath& file_path);
 
-  static int64 GetFileSize(const FilePath& file_name);
+  static int64 GetFileSize(const FilePath& file_path);
 
  private:
-  static bool OpenFileFlagsAreConsistent(const FilePath& file_name,
-                                         const FilePath& db_dir,
-                                         int desired_flags);
+  static bool OpenFileFlagsAreConsistent(int desired_flags);
 };
 
 } // namespace webkit_database

@@ -193,6 +193,8 @@
         'database/databases_table.h',
         'database/database_tracker.cc',
         'database/database_tracker.h',
+        'database/database_util.cc',
+        'database/database_util.h',
         'database/vfs_backend.cc',
         'database/vfs_backend.h',
       ],
