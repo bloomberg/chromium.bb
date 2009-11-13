@@ -197,6 +197,10 @@
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/external_metrics.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 
@@ -1921,3 +1925,10 @@ static bool IsSingleThreaded() {
     thread_id = PlatformThread::CurrentId();
   return PlatformThread::CurrentId() == thread_id;
 }
+
+#if defined(OS_CHROMEOS)
+void MetricsService::StartExternalMetrics(Profile* profile) {
+  external_metrics_ = new chromeos::ExternalMetrics;
+  external_metrics_->Start(profile);
+}
+#endif

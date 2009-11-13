@@ -25,6 +25,10 @@
 #include "webkit/glue/webplugininfo.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/external_metrics.h"
+#endif
+
 class BookmarkModel;
 class BookmarkNode;
 class HistogramSynchronizer;
@@ -119,6 +123,12 @@ class MetricsService : public NotificationObserver,
   // Save any unsent logs into a persistent store in a pref.  We always do this
   // at shutdown, but we can do it as we reduce the list as well.
   void StoreUnsentLogs();
+
+#if defined(OS_CHROMEOS)
+  // Start the external metrics service, which collects metrics from Chrome OS
+  // and passes them to UMA.
+  void StartExternalMetrics(Profile* profile);
+#endif
 
  private:
   // The MetricsService has a lifecycle that is stored as a state.
@@ -495,6 +505,11 @@ class MetricsService : public NotificationObserver,
 
   // Indicate that a timer for sending the next log has already been queued.
   bool timer_pending_;
+
+#if defined(OS_CHROMEOS)
+  // The external metric service is used to log ChromeOS UMA events.
+  scoped_refptr<chromeos::ExternalMetrics> external_metrics_;
+#endif
 
   FRIEND_TEST(MetricsServiceTest, ClientIdGeneratesAllZeroes);
   FRIEND_TEST(MetricsServiceTest, ClientIdGeneratesCorrectly);

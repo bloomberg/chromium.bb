@@ -124,6 +124,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros_library.h"
 #include "chrome/browser/chromeos/external_cookie_handler.h"
+#include "chrome/browser/chromeos/external_metrics.h"
 #endif
 
 namespace {
@@ -869,6 +870,10 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Stat the directory with the inspector's files so that we can know if we
   // should display the entry in the context menu or not.
   browser_process->CheckForInspectorFiles();
+
+#if defined(OS_CHROMEOS)
+  metrics->StartExternalMetrics(profile);
+#endif
 
   int result_code = ResultCodes::NORMAL_EXIT;
   if (parameters.ui_task) {
