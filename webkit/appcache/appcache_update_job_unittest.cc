@@ -260,8 +260,8 @@ class AppCacheUpdateJobTest : public testing::Test,
       group_ = new AppCacheGroup(service_.get(), GURL("http://failme"));
 
       // Give the group some existing caches.
-      AppCache* cache1 = MakeCacheForGroup(1);
-      AppCache* cache2 = MakeCacheForGroup(2);
+      AppCache* cache1 = MakeCacheForGroup(1, 111);
+      AppCache* cache2 = MakeCacheForGroup(2, 222);
 
       // Associate some hosts with caches in the group.
       MockFrontend mock_frontend1;
@@ -350,7 +350,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(1);
+    AppCache* cache = MakeCacheForGroup(1, 111);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -438,7 +438,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(1);
+    AppCache* cache = MakeCacheForGroup(1, 111);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -521,7 +521,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(1);
+    AppCache* cache = MakeCacheForGroup(1, 111);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -556,19 +556,17 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(1);
+    // Create response writer to get a response id.
+    response_writer_.reset(
+        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+
+    AppCache* cache = MakeCacheForGroup(1, response_writer_->response_id());
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
     AppCacheHost* host2 = MakeHost(2, frontend2);
     host1->AssociateCache(cache);
     host2->AssociateCache(cache);
-
-    // TODO(jennb): simulate this by mocking storage behavior instead
-    update->SimulateManifestChanged(false);  // unchanged
-
-    update->StartUpdate(NULL, GURL::EmptyGURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -581,6 +579,34 @@ class AppCacheUpdateJobTest : public testing::Test,
     MockFrontend::HostIds ids2(1, host2->host_id());
     frontend2->AddExpectedEvent(ids2, CHECKING_EVENT);
     frontend2->AddExpectedEvent(ids2, NO_UPDATE_EVENT);
+
+    // Seed storage with expected manifest data.
+    const std::string seed_data(
+        "CACHE MANIFEST\n"
+        "explicit1\n"
+        "FALLBACK:\n"
+        "fallback1 fallback1a\n"
+        "NETWORK:\n"
+        "*\n");
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        new net::StringIOBuffer(seed_data);
+    write_callback_.reset(
+        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingManifestData));
+    response_writer_->WriteData(io_buffer, seed_data.length(),
+                                write_callback_.get());
+
+    // Start update after data write completes asynchronously.
+  }
+
+  void StartUpdateAfterSeedingManifestData(int result) {
+    ASSERT_GT(result, 0);
+    write_callback_.reset();
+    response_writer_.reset();
+
+    AppCacheUpdateJob* update = group_->update_job_;
+    update->StartUpdate(NULL, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
 
     WaitForUpdateToFinish();
   }
@@ -619,19 +645,18 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
+    // Create a response writer to get a response id.
+    response_writer_.reset(
+        service_->storage()->CreateResponseWriter(group_->manifest_url()));
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(),
+                                        response_writer_->response_id());
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
     AppCacheHost* host2 = MakeHost(2, frontend2);
     host1->AssociateCache(cache);
     host2->AssociateCache(cache);
-
-    // TODO(jennb): simulate this by mocking storage behavior instead
-    update->SimulateManifestChanged(true);  // changed
-
-    update->StartUpdate(NULL, GURL::EmptyGURL());
-    EXPECT_TRUE(update->manifest_url_request_ != NULL);
 
     // Set up checks for when update job finishes.
     do_checks_after_update_finished_ = true;
@@ -652,7 +677,17 @@ class AppCacheUpdateJobTest : public testing::Test,
     frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);
     frontend2->AddExpectedEvent(ids2, UPDATE_READY_EVENT);
 
-    WaitForUpdateToFinish();
+    // Seed storage with expected manifest data different from manifest1.
+    const std::string seed_data("different");
+    scoped_refptr<net::StringIOBuffer> io_buffer =
+        new net::StringIOBuffer(seed_data);
+    write_callback_.reset(
+        new net::CompletionCallbackImpl<AppCacheUpdateJobTest>(this,
+            &AppCacheUpdateJobTest::StartUpdateAfterSeedingManifestData));
+    response_writer_->WriteData(io_buffer, seed_data.length(),
+                                write_callback_.get());
+
+    // Start update after data write completes asynchronously.
   }
 
   void UpgradeSuccessMergedTypesTest() {
@@ -664,7 +699,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 42);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -676,9 +711,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     // entries in the manifest.
     cache->AddEntry(http_server_->TestServerPage("files/explicit1"),
                     AppCacheEntry(AppCacheEntry::MASTER, 111));
-
-    // TODO(jennb): simulate this by mocking storage behavior instead
-    update->SimulateManifestChanged(true);  // changed
 
     update->StartUpdate(NULL, GURL::EmptyGURL());
     EXPECT_TRUE(update->manifest_url_request_ != NULL);
@@ -693,12 +725,14 @@ class AppCacheUpdateJobTest : public testing::Test,
     frontend1->AddExpectedEvent(ids1, CHECKING_EVENT);
     frontend1->AddExpectedEvent(ids1, DOWNLOADING_EVENT);
     frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // explicit1 (load)
+    frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // manifest (load)
     frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // explicit1 (fetch)
-    frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // manifest
+    frontend1->AddExpectedEvent(ids1, PROGRESS_EVENT);  // manifest (fetch)
     frontend1->AddExpectedEvent(ids1, UPDATE_READY_EVENT);
     MockFrontend::HostIds ids2(1, host2->host_id());
     frontend2->AddExpectedEvent(ids2, CHECKING_EVENT);
     frontend2->AddExpectedEvent(ids2, DOWNLOADING_EVENT);
+    frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);
     frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);
     frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);
     frontend2->AddExpectedEvent(ids2, PROGRESS_EVENT);
@@ -740,16 +774,13 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 99);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
     AppCacheHost* host2 = MakeHost(2, frontend2);
     host1->AssociateCache(cache);
     host2->AssociateCache(cache);
-
-    // TODO(jennb): simulate this by mocking storage behavior instead
-    update->SimulateManifestChanged(true);  // changed
 
     update->StartUpdate(NULL, GURL::EmptyGURL());
     EXPECT_TRUE(update->manifest_url_request_ != NULL);
@@ -786,7 +817,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 25);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -804,9 +835,6 @@ class AppCacheUpdateJobTest : public testing::Test,
     cache->AddEntry(
         http_server_->TestServerPage("files/servererror"),
         AppCacheEntry(AppCacheEntry::MASTER, 444));
-
-    // TODO(jennb): simulate this by mocking storage behavior instead
-    update->SimulateManifestChanged(true);  // changed
 
     update->StartUpdate(NULL, GURL::EmptyGURL());
     EXPECT_TRUE(update->manifest_url_request_ != NULL);
@@ -860,16 +888,13 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 33);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
     AppCacheHost* host2 = MakeHost(2, frontend2);
     host1->AssociateCache(cache);
     host2->AssociateCache(cache);
-
-    // TODO(jennb): simulate this by mocking storage behavior instead
-    update->SimulateManifestChanged(true);  // changed
 
     update->StartUpdate(NULL, GURL::EmptyGURL());
     EXPECT_TRUE(update->manifest_url_request_ != NULL);
@@ -1083,16 +1108,13 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId());
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 11);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
     AppCacheHost* host2 = MakeHost(2, frontend2);
     host1->AssociateCache(cache);
     host2->AssociateCache(cache);
-
-    // TODO(jennb): simulate this by mocking storage behavior instead
-    update->SimulateManifestChanged(true);  // changed
 
     update->StartUpdate(NULL, GURL::EmptyGURL());
 
@@ -1158,7 +1180,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
     group_->update_job_ = update;
 
-    AppCache* cache = MakeCacheForGroup(1);
+    AppCache* cache = MakeCacheForGroup(1, 111);
     MockFrontend* frontend1 = MakeMockFrontend();
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host1 = MakeHost(1, frontend1);
@@ -1229,11 +1251,16 @@ class AppCacheUpdateJobTest : public testing::Test,
     service_->set_request_context(request_context_);
   }
 
-  AppCache* MakeCacheForGroup(int64 cache_id) {
+  AppCache* MakeCacheForGroup(int64 cache_id, int64 manifest_response_id) {
     AppCache* cache = new AppCache(service_.get(), cache_id);
     cache->set_complete(true);
     cache->set_update_time(base::TimeTicks::Now());
     group_->AddCache(cache);
+
+    // Add manifest entry to cache.
+    cache->AddEntry(group_->manifest_url(),
+        AppCacheEntry(AppCacheEntry::MANIFEST, manifest_response_id));
+
     return cache;
   }
 
@@ -1449,6 +1476,10 @@ class AppCacheUpdateJobTest : public testing::Test,
   scoped_refptr<AppCacheGroup> group_;
   scoped_refptr<AppCache> protect_newest_cache_;
   scoped_ptr<base::WaitableEvent> event_;
+
+  scoped_ptr<AppCacheResponseWriter> response_writer_;
+  scoped_ptr<net::CompletionCallbackImpl<AppCacheUpdateJobTest> >
+      write_callback_;
 
   // Hosts used by an async test that need to live until update job finishes.
   // Otherwise, test can put host on the stack instead of here.

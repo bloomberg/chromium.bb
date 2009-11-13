@@ -111,7 +111,9 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
       ALLOW_THIS_IN_INITIALIZER_LIST(manifest_info_write_callback_(
           this, &AppCacheUpdateJob::OnManifestInfoWriteComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(manifest_data_write_callback_(
-          this, &AppCacheUpdateJob::OnManifestDataWriteComplete)) {
+          this, &AppCacheUpdateJob::OnManifestDataWriteComplete)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(manifest_data_read_callback_(
+          this, &AppCacheUpdateJob::OnManifestDataReadComplete)) {
   DCHECK(group_);
   manifest_url_ = group_->manifest_url();
 }
@@ -637,22 +639,30 @@ void AppCacheUpdateJob::NotifyAllAssociatedHosts(EventID event_id) {
 
 void AppCacheUpdateJob::CheckIfManifestChanged() {
   DCHECK(update_type_ == UPGRADE_ATTEMPT);
-  /*
   AppCacheEntry* entry =
       group_->newest_complete_cache()->GetEntry(manifest_url_);
-  */
-  // TODO(jennb): load manifest data from entry (async), continues in callback
-  // callback invokes ContinueCheckIfManifestChanged
-  // For now, schedule a task to continue checking with fake loaded data
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(
-          &AppCacheUpdateJob::ContinueCheckIfManifestChanged,
-          simulate_manifest_changed_ ? "different" : manifest_data_));
+  DCHECK(entry);
+
+  // Load manifest data from storage to compare against fetched manifest.
+  manifest_response_reader_.reset(
+      service_->storage()->CreateResponseReader(manifest_url_,
+                                                entry->response_id()));
+  read_manifest_buffer_ = new net::IOBuffer(kBufferSize);
+  manifest_response_reader_->ReadData(read_manifest_buffer_, kBufferSize,
+      &manifest_data_read_callback_);  // async read
 }
 
-void AppCacheUpdateJob::ContinueCheckIfManifestChanged(
-    const std::string& loaded_manifest) {
-  ContinueHandleManifestFetchCompleted(manifest_data_ != loaded_manifest);
+void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
+  if (result > 0) {
+    loaded_manifest_data_.append(read_manifest_buffer_->data(), result);
+    manifest_response_reader_->ReadData(read_manifest_buffer_, kBufferSize,
+        &manifest_data_read_callback_);  // read more
+  } else {
+    read_manifest_buffer_ = NULL;
+    manifest_response_reader_.reset();
+    ContinueHandleManifestFetchCompleted(
+        result < 0 || manifest_data_ != loaded_manifest_data_);
+  }
 }
 
 void AppCacheUpdateJob::BuildUrlFileList(const Manifest& manifest) {

@@ -111,12 +111,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // Checks if manifest is byte for byte identical with the manifest
   // in the newest application cache.
   void CheckIfManifestChanged();
-  void ContinueCheckIfManifestChanged(const std::string& loaded_manifest);
-
-  // TODO(jennb): delete when able to mock storage behavior
-  void SimulateManifestChanged(bool changed) {
-    simulate_manifest_changed_ = changed;
-  }
+  void OnManifestDataReadComplete(int result);
 
   // Creates the list of files that may need to be fetched and initiates
   // fetches. Section 6.9.4 steps 12-17
@@ -194,12 +189,13 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   std::string manifest_refetch_data_;
   scoped_ptr<net::HttpResponseInfo> manifest_response_info_;
   scoped_ptr<AppCacheResponseWriter> manifest_response_writer_;
+  scoped_refptr<net::IOBuffer> read_manifest_buffer_;
+  std::string loaded_manifest_data_;
+  scoped_ptr<AppCacheResponseReader> manifest_response_reader_;
 
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_info_write_callback_;
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;
-
-  // TODO(jennb): delete when able to mock storage behavior
-  bool simulate_manifest_changed_;
+  net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_read_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheUpdateJob);
 };
