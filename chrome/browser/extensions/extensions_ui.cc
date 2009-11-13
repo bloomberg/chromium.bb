@@ -76,6 +76,12 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
               ASCIIToWide(Extension::kGalleryBrowseUrl) +
               L"'>",
           L"</a>"));
+  localized_strings.SetString(L"getMoreExtensions",
+      std::wstring(L"<a href='") +
+          ASCIIToWide(Extension::kGalleryBrowseUrl) +
+          L"'>" +
+          l10n_util::GetString(IDS_GET_MORE_EXTENSIONS) +
+          L"</a>");
   localized_strings.SetString(L"extensionDisabled",
       l10n_util::GetString(IDS_EXTENSIONS_DISABLED_EXTENSION));
   localized_strings.SetString(L"inDevelopment",

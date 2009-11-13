@@ -150,6 +150,12 @@ body.showDevMode .showInDevMode {
   font-weight :normal;
 }
 
+#get-moar-extensions {
+  margin-top: 1em;
+  text-align: right;
+  font-weight: bold;
+}
+
 .extension-description {
   margin-top: 0.4em;
 }
@@ -370,12 +376,6 @@ function renderTemplate(extensionsData) {
   var input = new JsEvalContext(extensionsData);
   var output = document.getElementById('extensionTemplate');
   jstProcess(input, output);
-
-  // Blech, JSTemplate always inserts the strings as text, which is usually a
-  // feature, but in this case it contains HTML that we want to be rendered.
-  var elm = document.getElementById("try-gallery");
-  if (elm)
-    elm.innerHTML = elm.textContent;
 }
 
 /**
@@ -390,6 +390,9 @@ function requestExtensionsData() {
 // Used for observing function of the backend datasource for this page by
 // tests.
 var domui_responded_ = false;
+
+// Used to only do some work the first time we render.
+var rendered_once_ = false;
 
 /**
  * Called by the dom_ui_ to re-populate the page with data representing
@@ -425,6 +428,21 @@ function returnExtensionsData(extensionsData){
   bodyContainer.style.visibility = "visible";
   body.className = devModeExpanded ?
      "showDevModeInitial" : "hideDevModeInitial";
+
+  if (rendered_once_)
+    return;
+
+  // Blech, JSTemplate always inserts the strings as text, which is usually a
+  // feature, but in this case it contains HTML that we want to be rendered.
+  var elm = document.getElementById("try-gallery");
+  if (elm)
+    elm.innerHTML = elm.textContent;
+
+  elm = document.getElementById("get-moar-extensions");
+  if (elm)
+    elm.innerHTML = elm.textContent;
+
+  rendered_once_ = true;
 }
 
 /**
@@ -763,6 +781,9 @@ function autoUpdate() {
           </table>
         </div>
         </div>
+
+        <div id="get-moar-extensions" jsdisplay="extensions.length > 0"
+            i18n-content="getMoreExtensions"></div>
       </div>
     </div>
   </div>

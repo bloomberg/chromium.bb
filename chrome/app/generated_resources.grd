@@ -2679,7 +2679,7 @@ each locale. -->
       <message name="IDS_EXTENSIONS_OPTIONS" desc="The button text for the options button.">
         Options
       </message>
-      <message name="IDS_GET_MORE_EXTENSIONS" desc="The link for getting more extensions.">
+      <message name="IDS_GET_MORE_EXTENSIONS" desc="The link for getting more extensions. Displayed at bottom of extension management page when there is at least one extension installed.">
         Get more extensions >>
       </message>
       <message name="IDS_EXTENSION_LOAD_FROM_DIRECTORY" desc="Title of directory browse dialog when user wants to load an extension from a directory.">
