@@ -393,9 +393,9 @@ void ChangeProcessor::ApplyChangesFromSyncModel(
         }
       }
       DCHECK_EQ(dst->GetChildCount(), 0) << "Node being deleted has children";
+      model_associator_->Disassociate(changes[i].id);
       model->Remove(parent, parent->IndexOfChild(dst));
       dst = NULL;
-      model_associator_->Disassociate(changes[i].id);
     } else {
       DCHECK_EQ((changes[i].action ==
           sync_api::SyncManager::ChangeRecord::ACTION_ADD), (dst == NULL))
