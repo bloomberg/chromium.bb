@@ -216,7 +216,6 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
     : render_widget_host_(widget),
       track_mouse_leave_(false),
       ime_notification_(false),
-      capture_enter_key_(false),
       is_hidden_(false),
       about_to_validate_and_paint_(false),
       close_on_deactivate_(false),
@@ -1188,32 +1187,7 @@ LRESULT RenderWidgetHostViewWin::OnKeyEvent(UINT message, WPARAM wparam,
     }
   }
 
-  // Special processing for enter key: When user hits enter in omnibox
-  // we change focus to render host after the navigation, so repeat WM_KEYDOWNs
-  // and WM_KEYUP are going to render host, despite being initiated in other
-  // window. This code filters out these messages.
-  bool ignore_keyboard_event = false;
-  if (wparam == VK_RETURN) {
-    if (message == WM_KEYDOWN) {
-      if (KF_REPEAT & HIWORD(lparam)) {
-        // this is a repeated key
-        if (!capture_enter_key_)
-          ignore_keyboard_event = true;
-      } else {
-        capture_enter_key_ = true;
-      }
-    } else if (message == WM_KEYUP) {
-      if (!capture_enter_key_)
-        ignore_keyboard_event = true;
-      capture_enter_key_ = false;
-    } else {
-      // Ignore all other keyboard events for the enter key if not captured.
-      if (!capture_enter_key_)
-        ignore_keyboard_event = true;
-    }
-  }
-
-  if (render_widget_host_ && !ignore_keyboard_event) {
+  if (render_widget_host_) {
     render_widget_host_->ForwardKeyboardEvent(
         NativeWebKeyboardEvent(m_hWnd, message, wparam, lparam));
   }

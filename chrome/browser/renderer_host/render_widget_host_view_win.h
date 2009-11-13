@@ -241,9 +241,6 @@ class RenderWidgetHostViewWin :
   // messages about the focused edit control from a renderer process.
   bool ime_notification_;
 
-  // true if Enter was hit when render widget host was in focus.
-  bool capture_enter_key_;
-
   // true if the View is not visible.
   bool is_hidden_;
 
