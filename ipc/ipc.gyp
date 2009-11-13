@@ -52,6 +52,7 @@
         'ipc_message_macros.h',
         'ipc_message_utils.cc',
         'ipc_message_utils.h',
+        'ipc_platform_file.h',
         'ipc_switches.cc',
         'ipc_switches.h',
         'ipc_sync_channel.cc',

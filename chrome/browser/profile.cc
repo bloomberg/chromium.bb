@@ -1339,8 +1339,8 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
 }
 
 void ProfileImpl::SpellCheckHostInitialized() {
-  spellcheck_host_ready_ =
-      spellcheck_host_ && spellcheck_host_->bdict_fd().fd != -1;
+  spellcheck_host_ready_ = spellcheck_host_ &&
+      spellcheck_host_->bdict_file() != base::kInvalidPlatformFileValue;
   NotificationService::current()->Notify(
       NotificationType::SPELLCHECK_HOST_REINITIALIZED,
           Source<Profile>(this), NotificationService::NoDetails());

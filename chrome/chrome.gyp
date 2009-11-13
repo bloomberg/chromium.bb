@@ -2118,6 +2118,8 @@
         'browser/shell_integration_mac.mm',
         'browser/shell_integration_linux.cc',
         'browser/shell_integration_win.cc',
+        'browser/spellcheck_host.cc',
+        'browser/spellcheck_host.h',
         'browser/spellcheck_worditerator.cc',
         'browser/spellcheck_worditerator.h',
         'browser/spellchecker.cc',
@@ -2560,8 +2562,6 @@
           'sources': [
             'browser/crash_handler_host_linux.h',
             'browser/net/ssl_config_service_manager_pref.cc',
-            'browser/spellcheck_host.cc',
-            'browser/spellcheck_host.h',
           ],
           'sources/': [
             # Exclude most of printing.
@@ -3379,6 +3379,10 @@
         'renderer/renderer_web_database_observer.h',
         'renderer/socket_stream_dispatcher.cc',
         'renderer/socket_stream_dispatcher.h',
+        'renderer/spellchecker/spellcheck.cc',
+        'renderer/spellchecker/spellcheck.h',
+        'renderer/spellchecker/spellcheck_worditerator.cc',
+        'renderer/spellchecker/spellcheck_worditerator.h',
         'renderer/user_script_idle_scheduler.cc',
         'renderer/user_script_idle_scheduler.h',
         'renderer/user_script_slave.cc',
@@ -3415,12 +3419,6 @@
             '../build/linux/system.gyp:gtk',
             '../sandbox/sandbox.gyp:sandbox',
           ],
-          'sources': [
-            'renderer/spellchecker/spellcheck.cc',
-            'renderer/spellchecker/spellcheck.h',
-            'renderer/spellchecker/spellcheck_worditerator.cc',
-            'renderer/spellchecker/spellcheck_worditerator.h',
-          ],
         }],
         # Windows-specific rules.
         ['OS=="win"', {
@@ -3432,6 +3430,15 @@
           ],
           'export_dependent_settings': [
             '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
+        },],
+        # Mac-specific rules.
+        ['OS=="mac"', {
+          'sources!': [
+            'renderer/spellchecker/spellcheck.cc',
+            'renderer/spellchecker/spellcheck.h',
+            'renderer/spellchecker/spellcheck_worditerator.cc',
+            'renderer/spellchecker/spellcheck_worditerator.h',
           ],
         },],
       ],

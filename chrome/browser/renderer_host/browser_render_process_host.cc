@@ -57,6 +57,7 @@
 #include "grit/generated_resources.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_switches.h"
 
 #if defined(OS_WIN)
@@ -1125,13 +1126,24 @@ void BrowserRenderProcessHost::InitSpellChecker() {
   SpellCheckHost* spellcheck_host = profile()->GetSpellCheckHost();
   if (spellcheck_host) {
     PrefService* prefs = profile()->GetPrefs();
+    IPC::PlatformFileForTransit file;
+#if defined(OS_POSIX)
+    file = base::FileDescriptor(spellcheck_host->bdict_file(), false);
+#elif defined(OS_WIN)
+    ::DuplicateHandle(::GetCurrentProcess(), spellcheck_host->bdict_file(),
+                      process().handle(), &file,
+                      0, false, DUPLICATE_SAME_ACCESS);
+#endif
     Send(new ViewMsg_SpellChecker_Init(
-        spellcheck_host->bdict_fd(), spellcheck_host->custom_words(),
+        file,
+        spellcheck_host->custom_words(),
         spellcheck_host->language(),
         prefs->GetBoolean(prefs::kEnableAutoSpellCorrect)));
   } else {
     Send(new ViewMsg_SpellChecker_Init(
-        base::FileDescriptor(), std::vector<std::string>(), std::string(),
+        IPC::PlatformFileForTransit(),
+        std::vector<std::string>(),
+        std::string(),
         false));
   }
 }

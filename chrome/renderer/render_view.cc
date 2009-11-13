@@ -1505,9 +1505,13 @@ void RenderView::spellCheck(const WebString& text,
 
 #if defined(SPELLCHECKER_IN_RENDERER)
   string16 word(text);
-  RenderThread::current()->spellchecker()->SpellCheckWord(
-      word.c_str(), word.size(), document_tag_,
-      &misspelled_offset, &misspelled_length, NULL);
+  RenderThread* thread = RenderThread::current();
+  // Will be NULL during unit tests.
+  if (thread) {
+    RenderThread::current()->spellchecker()->SpellCheckWord(
+        word.c_str(), word.size(), document_tag_,
+        &misspelled_offset, &misspelled_length, NULL);
+  }
 #else
   Send(new ViewHostMsg_SpellCheck(routing_id_, text, document_tag_,
                                   &misspelled_offset, &misspelled_length));
@@ -1520,9 +1524,13 @@ WebString RenderView::autoCorrectWord(const WebKit::WebString& word) {
   if (command_line.HasSwitch(switches::kExperimentalSpellcheckerFeatures)) {
     EnsureDocumentTag();
 #if defined(SPELLCHECKER_IN_RENDERER)
-    autocorrect_word =
-        RenderThread::current()->spellchecker()->GetAutoCorrectionWord(
-            word, document_tag_);
+    RenderThread* thread = RenderThread::current();
+    // Will be NULL during unit tests.
+    if (thread) {
+      autocorrect_word =
+          RenderThread::current()->spellchecker()->GetAutoCorrectionWord(
+              word, document_tag_);
+    }
 #else
     Send(new ViewHostMsg_GetAutoCorrectWord(
         routing_id_, word, document_tag_, &autocorrect_word));

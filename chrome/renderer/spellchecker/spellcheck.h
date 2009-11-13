@@ -10,17 +10,13 @@
 #include <vector>
 
 #include "app/l10n_util.h"
-#include "base/file_descriptor_posix.h"
+#include "base/platform_file.h"
 #include "base/string16.h"
 #include "base/time.h"
 #include "chrome/renderer/spellchecker/spellcheck_worditerator.h"
 #include "unicode/uscript.h"
 
 class Hunspell;
-
-namespace base {
-class FileDescriptor;
-}
 
 namespace file_util {
 class MemoryMappedFile;
@@ -32,7 +28,7 @@ class SpellCheck {
 
   ~SpellCheck();
 
-  void Init(const base::FileDescriptor& bdict_fd,
+  void Init(base::PlatformFile file,
             const std::vector<std::string>& custom_words,
             const std::string language);
 
@@ -101,7 +97,7 @@ class SpellCheck {
   // The hunspell dictionary in use.
   scoped_ptr<Hunspell> hunspell_;
 
-  base::FileDescriptor fd_;
+  base::PlatformFile file_;
   std::vector<std::string> custom_words_;
 
   // Represents character attributes used for filtering out characters which
