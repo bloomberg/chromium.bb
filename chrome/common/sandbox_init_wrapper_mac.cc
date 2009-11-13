@@ -22,6 +22,9 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   } else if (process_type == switches::kRendererProcess) {
     // Renderer process sandbox.
     sandbox_process_type = sandbox::SANDBOX_TYPE_RENDERER;
+  } else if (process_type == switches::kExtensionProcess) {
+    // Extension process sandbox.
+    sandbox_process_type = sandbox::SANDBOX_TYPE_RENDERER;
   } else if (process_type == switches::kUtilityProcess) {
     // Utility process sandbox.
     sandbox_process_type = sandbox::SANDBOX_TYPE_UTILITY;

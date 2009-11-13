@@ -259,6 +259,9 @@ const char kExperimentalSpellcheckerFeatures[] =
 // numbers.
 const char kExplicitlyAllowedPorts[]        = "explicitly-allowed-ports";
 
+// Causes the process to run as an extension subprocess.
+const char kExtensionProcess[]              = "extension";
+
 // Frequency in seconds for Extensions auto-update.
 const char kExtensionsUpdateFrequency[]     = "extensions-update-frequency";
 

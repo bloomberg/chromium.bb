@@ -545,7 +545,8 @@ int ChromeMain(int argc, char** argv) {
 #if defined (OS_MACOSX)
   // On OS X the renderer sandbox needs to be initialized later in the startup
   // sequence in RendererMainPlatformDelegate::PlatformInitialize().
-  if (process_type != switches::kRendererProcess)
+  if (process_type != switches::kRendererProcess &&
+      process_type != switches::kExtensionProcess)
     sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
 #endif  // OS_MACOSX
 
@@ -557,6 +558,10 @@ int ChromeMain(int argc, char** argv) {
   // TODO(port): turn on these main() functions as they've been de-winified.
   int rv = -1;
   if (process_type == switches::kRendererProcess) {
+    rv = RendererMain(main_params);
+  } else if (process_type == switches::kExtensionProcess) {
+    // An extension process is just a renderer process. We use a different
+    // command line argument to differentiate crash reports.
     rv = RendererMain(main_params);
   } else if (process_type == switches::kPluginProcess) {
     rv = PluginMain(main_params);

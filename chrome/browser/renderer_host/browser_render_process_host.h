@@ -202,7 +202,12 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // True iff the renderer is a child of a zygote process.
   bool zygote_child_;
 
+  // True iff this process is being used as an extension process. Not valid
+  // when running in single-process mode.
+  bool extension_process_;
+
   base::Process process_;
+
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRenderProcessHost);
 };

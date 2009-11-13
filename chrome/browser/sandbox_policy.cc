@@ -339,6 +339,9 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
   std::string type_str = cmd_line->GetSwitchValueASCII(switches::kProcessType);
   if (type_str == switches::kRendererProcess) {
     type = ChildProcessInfo::RENDER_PROCESS;
+  } else if (type_str == switches::kExtensionProcess) {
+    // Extensions are just renderers with another name.
+    type = ChildProcessInfo::RENDER_PROCESS;
   } else if (type_str == switches::kPluginProcess) {
     type = ChildProcessInfo::PLUGIN_PROCESS;
   } else if (type_str == switches::kWorkerProcess) {

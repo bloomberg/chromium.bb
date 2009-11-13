@@ -200,7 +200,8 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
-      zygote_child_(false) {
+      zygote_child_(false),
+      extension_process_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
@@ -263,8 +264,16 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
 bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
-  if (channel_.get())
+  if (channel_.get()) {
+    // Ensure that |is_extensions_process| doesn't change across multiple calls
+    // to Init().
+    if (!run_renderer_in_process()) {
+      DCHECK_EQ(extension_process_, is_extensions_process);
+    }
     return true;
+  }
+
+  extension_process_ = is_extensions_process;
 
   // run the IPC channel on the shared IO thread.
   base::Thread* io_thread = g_browser_process->io_thread();
@@ -458,8 +467,11 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
     command_line->AppendSwitch(switches::kNoErrorDialogs);
 
   // Pass the process type first, so it shows first in process listings.
+  // Extensions use a special pseudo-process type to make them distinguishable,
+  // even though they're just renderers.
   command_line->AppendSwitchWithValue(switches::kProcessType,
-                                      switches::kRendererProcess);
+      extension_process_ ? switches::kExtensionProcess :
+                           switches::kRendererProcess);
 
   // Now send any options from our own command line we want to propogate.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
