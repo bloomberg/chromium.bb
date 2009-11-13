@@ -31,14 +31,63 @@
   // What to show when we cannot parse the feed name.
   var unknownName = "Unknown feed name";
 
+  // Various text messages within the edit dialog.
+  var assistText = "Insert %s in the URL where the feed url should appear.";
+  var savedMsg = "Your changes have been saved.";
+  var setDefaultMsg = "This reader has been set as your default reader.";
+
+  // A list of feed readers, populated by localStorage if available, otherwise
+  // hard coded.
+  var feedReaderList;
+
+  // Whether we can modify the list of readers.
+  var storageEnabled = window.localStorage != null;
+
   // Navigates to the reader of the user's choice (for subscribing to the feed).
   function navigate() {
-    var select = document.getElementById('readers');
-    var url = select.options[select.selectedIndex].value + feedUrl;
+    var select = document.getElementById('readerDropdown');
+    var url = feedReaderList[select.selectedIndex].url.replace("%s", feedUrl);
     document.location = url;
   }
 
+  /**
+   * The main function. Sets up the selection list for possible readers and
+   * fetches the data.
+   */
   function main() {
+    // This is the default list, unless replaced by what was saved previously.
+    feedReaderList = [
+      {'url': 'http://www.google.com/reader/view/feed/%s',
+       'description': 'Google Reader'},
+      {'url': 'http://www.google.com/ig/adde?moduleurl=%s',
+       'description': 'iGoogle'},
+      {'url': 'http://www.bloglines.com/login?r=/sub/%s',
+       'description': 'Bloglines'},
+      {'url': 'http://add.my.yahoo.com/rss?url=%s',
+       'description': 'My Yahoo'}];
+
+    if (!storageEnabled) {
+      // No local storage means we can't make changes to the list, so disable
+      // the Edit and the Remove link permanently.
+      document.getElementById('editLink').innerHTML = "";
+      document.getElementById('removeLink').innerHTML = "";
+    } else {
+      if (window.localStorage.readerList)
+        feedReaderList = JSON.parse(window.localStorage.readerList);
+    }
+
+    // Populate the list of readers.
+    var readerDropdown = document.getElementById('readerDropdown');
+    for (i = 0; i < feedReaderList.length; ++i) {
+      readerDropdown.options[i] = new Option(feedReaderList[i].description, i);
+      if (storageEnabled && isDefaultReader(feedReaderList[i].url))
+        readerDropdown.selectedIndex = i;
+    }
+
+    if (storageEnabled)
+      readerDropdown.options[i] = new Option("Add new...", "");
+
+    // Now fetch the data.
     req = new XMLHttpRequest();
     if (synchronousRequest) {
       // Tests that load the html page directly through a file:// url don't have
@@ -148,6 +197,187 @@
     // Add an IFRAME with the html contents.
     embedAsIframe(req.responseText);
   }
+
+  /**
+   * Check to see if the current item is set as default reader.
+   */
+  function isDefaultReader(url) {
+    defaultReader = window.localStorage.defaultReader ?
+                      window.localStorage.defaultReader : "";
+    return url == defaultReader;
+  }
+
+  /**
+   * Shows the Edit Feed Reader dialog.
+   */
+  function showDialog() {
+    // Set the values for this dialog box before showing it.
+    document.getElementById('statusMsg').innerText = "";
+    document.getElementById('urlAssist').innerText = assistText;
+    document.getElementById('setDefault').display = "none";
+
+    var readerDropdown = document.getElementById('readerDropdown');
+
+    if (readerDropdown.value != "") {
+      // We are not adding a new value, so we populate the dialog box.
+      document.getElementById('urlText').value =
+        feedReaderList[readerDropdown.value].url;
+      document.getElementById('descriptionText').value =
+        readerDropdown.options[readerDropdown.selectedIndex].text;
+    }
+
+    validateInput(null);
+
+    var url = document.getElementById('urlText').value;
+    if (url.length > 0 && !isDefaultReader(url)) {
+      var setDefault = document.getElementById('setDefault');
+      setDefault.disabled = false;
+      setDefault.style.display = "inline";
+    }
+
+    // Show the dialog box.
+    document.getElementById('dialogBackground').style.display = "-webkit-box";
+  }
+
+  /**
+   * Hides the Edit Feed Reader dialog.
+   */
+  function hideDialog() {
+    var selected = readerDropdown.selectedIndex;
+    var addNew = readerDropdown.value.length == 0;
+
+    var setDefault = document.getElementById('setDefault');
+    setDefault.disabled = true;
+    setDefault.style.display = "none";
+
+    document.getElementById('dialogBackground').style.display = "none";
+
+    if (addNew && readerDropdown[selected].text == "")
+      removeEntry(true);  // User cancelled. Remove the entry without prompting.
+  }
+
+  function saveFeedReaderList() {
+    window.localStorage.readerList = JSON.stringify(feedReaderList);
+  }
+
+  /**
+   * Handler for saving the values.
+   */
+  function save() {
+    var readerDropdown = document.getElementById('readerDropdown');
+    var selected = readerDropdown.selectedIndex;
+    var addNew = readerDropdown.value.length == 0;
+    var oldUrl = addNew ? "" : feedReaderList[selected].url;
+    var url = document.getElementById('urlText').value;
+    var description = document.getElementById('descriptionText').value;
+
+    // Update the UI to reflect the changes.
+    readerDropdown.options[selected].text = description;
+    readerDropdown.options[selected].value = selected;
+    document.getElementById('statusMsg').innerText = savedMsg;
+    document.getElementById('save').disabled = true;
+
+    if (addNew) {
+      feedReaderList.push({'url': url, 'description': description});
+    } else {
+      feedReaderList[selected].description = description;
+      feedReaderList[selected].url = url;
+    }
+
+    saveFeedReaderList();
+
+    var wasDefault = isDefaultReader(oldUrl);
+
+    if (wasDefault) {
+      // If this was the default, it should still be the default after we
+      // modify it.
+      window.localStorage.defaultReader = url;
+    } else if (!isDefaultReader(url)) {
+      // Enable the set as default button.
+      var setDefault = document.getElementById('setDefault');
+      setDefault.disabled = false;
+      setDefault.style.display = "inline";
+    }
+  }
+
+  /**
+   * Removes an entry from the list.
+   */
+  function removeEntry(force) {
+    var selected = readerDropdown.selectedIndex;
+
+    if (!force) {
+      // Minimum number of entries (1 plus "Add New...").
+      var minEntries = 2;
+      if (readerDropdown.options.length == minEntries) {
+        alert('There must be at least one entry in this list');
+        return;
+      }
+
+      var reply = confirm("Are you sure you want to remove '" +
+                          readerDropdown[selected].text + "'?");
+      if (!reply)
+        return;
+    }
+
+    feedReaderList.splice(selected, 1);
+    readerDropdown.remove(selected);
+    saveFeedReaderList();
+  }
+
+  /**
+   * Validates the input in the form (making sure something is entered in both
+   * fields and that %s is not missing from the url field.
+   */
+  function validateInput() {
+    document.getElementById('statusMsg').innerText = "";
+    document.getElementById('setDefault').disabled = true;
+
+    var description = document.getElementById('descriptionText');
+    var url = document.getElementById('urlText');
+
+    var valid = description.value.length > 0 &&
+                url.value.length > 0 &&
+                url.value.indexOf("%s") > -1;
+
+    document.getElementById('save').disabled = !valid;
+  }
+
+  /**
+   * Handler for setting the current reader as default.
+   */
+  function setAsDefault() {
+    window.localStorage.defaultReader =
+        document.getElementById('urlText').value;
+
+    document.getElementById('statusMsg').innerText = setDefaultMsg;
+
+    document.getElementById('setDefault').disabled = true;
+  }
+
+  /**
+   * Handler for when selection changes.
+   */
+  function onSelectChanged() {
+    if (!storageEnabled)
+      return;
+
+    var readerDropdown = document.getElementById('readerDropdown');
+
+    // If the last item (Add new...) was selected we need to add an empty item
+    // for it. But adding values to the dropdown resets the selectedIndex, so we
+    // need to save it first.
+    var oldSelection = readerDropdown.selectedIndex;
+    if (readerDropdown.selectedIndex == readerDropdown.length - 1) {
+      readerDropdown[readerDropdown.selectedIndex] = new Option("", "");
+      readerDropdown.options[readerDropdown.length] =
+          new Option("Add new...", "");
+      readerDropdown.selectedIndex = oldSelection;
+      document.getElementById('urlText').value = "";
+      document.getElementById('descriptionText').value = "";
+      showDialog();
+    }
+  }
 </script>
 <link rel="stylesheet" href="style.css" type="text/css" />
 <style>
@@ -155,18 +385,22 @@ body {
   display:-webkit-box;
   -webkit-box-orient:vertical;
 }
+
 body>* {
   display:-webkit-box;
 }
+
 #items {
   -webkit-box-flex:1;
   -webkit-box-orient:vertical;
   -webkit-box-align:stretch;
 }
+
 iframe {
   display:-webkit-box;
   -webkit-box-flex:1;
 }
+
 .splitter {
   padding: 2px 8px 2px 5px;
   border-top: solid 1px #9CC2EF;
@@ -174,36 +408,181 @@ iframe {
   font-size: 13px;
   font-weight:bold;
 }
+
+.editLinks {
+  font-size: 10px;
+}
+
+#dialogBackground, #dialogBackground div {
+  display: -webkit-box;
+  -webkit-box-align: center;
+}
+
+#dialog input[type="button"] {
+  font-size: 12px;
+  height: 25px;
+  width: 100px;
+}
+
+#dialog input[type="text"] {
+  font-size: 12px;
+  font-family: Arial, Helvetica, sans-serif;
+  width: 220px;
+}
+
+#dialogBackground {
+  background-color: rgba(0, 0, 0, .2);
+  display: none;
+  height: 100%;
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1;
+  -webkit-box-orient: vertical;
+  -webkit-user-select:none;
+}
+
+#dialogHBackground {
+  height: 100%;
+  -webkit-box-orient: horizontal;
+}
+
+#dialog {
+  background-color: #5296DE;
+  border: 1px solid #3A75BD;
+  border-radius: 6px 6px;
+  font-size: 12px;
+  width: 355px;
+  -webkit-box-orient: vertical;
+}
+
+#dialogHeader {
+  background-color: rgba(0,0,0,0);
+  color: white;
+  font-weight: bold;
+  margin: 4px;
+  width: 100%;
+}
+
+#dialogBody {
+  background-color: rgb(240, 240, 240);
+  border: 1px solid #3A75BD;
+  border-bottom-left-radius: 4px 4px;
+  border-bottom-right-radius: 4px 4px;
+  margin: 0px 2px 2px 2px;
+  padding-bottom: 10px;
+  padding-right: 10px;
+  padding-top: 10px;
+  -webkit-box-orient: vertical;
+  width: 340px;
+}
+
+.dialogRow {
+  margin-left: -24px;
+  width: 100%;
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+}
+
+.dialogRow>* {
+  margin: 2px
+}
+
+#dialogContentFooter {
+  margin-bottom: 6px;
+  margin-left: -12px;
+  margin-top: 20px;
+  padding-right: 10px;
+}
+
+.status {
+  background-color: #FFF18A;
+}
 </style>
 </head>
 
 <body onload="main();">
-  <table>
+  <table border="0" cellpadding="0" cellspacing="0">
   <tr>
-    <td width="75">
+    <td width="75" rowspan="2">
       <img src="feed-icon-64x64.png" alt="feed-icon" align="absmiddle" />
     </td>
-    <td>
+    <td height="60" valign="bottom">
       <b><span id="title"></span></b><br>
       <span>Subscribe to this feed using:</span>
-      <select id="readers">
-        <option value="http://www.google.com/reader/view/feed/">
-          Google Reader
-        </option>
-        <option value="http://www.google.com/ig/adde?moduleurl=">
-          iGoogle
-        </option>
-        <option value="http://www.bloglines.com/login?r=/sub/">
-          Bloglines
-        </option>
-        <option value="http://add.my.yahoo.com/rss?url=">
-          My Yahoo
-        </option>
-      </select>
+      <select id="readerDropdown" onChange="onSelectChanged()"></select>
+    </td>
+    <td valign="bottom">
       <button onclick="navigate();">Subscribe Now</button>
     </td>
   </tr>
+  <tr>
+    <td align="right" valign="top">
+      <a id="editLink" class="editLinks" href="javascript:void()"
+         onclick="showDialog()">Edit</a>&nbsp;
+      <a id="removeLink" class="editLinks" href="javascript:void()"
+         onclick="removeEntry()">Remove</a>&nbsp;
+    </td>
+    <td>
+    </td>
+  </tr>
   </table>
+
+  <div id="dialogBackground">
+    <div id="dialogHBackground">
+      <div id="dialog">
+
+        <div id="dialogHeader">
+          Edit feed reader
+        </div>
+
+        <div id="dialogBody">
+
+          <div class="dialogRow">
+            &nbsp;<div class="status" id="statusMsg"></div>
+          </div>
+
+          <div class="dialogRow">
+            <div>
+              Description:
+            </div>
+            <div>
+              <input type="text" id="descriptionText" onkeyup="validateInput()">
+            </div>
+          </div>
+
+          <div class="dialogRow">
+            <div>
+              URL:
+            </div>
+            <div>
+              <input type="text" id="urlText" onkeyup="validateInput()">
+            </div>
+          </div>
+
+          <div class="dialogRow">
+            <div id="urlAssist"></div>
+          </div>
+
+          <div class="dialogRow" id="dialogContentFooter">
+            <div>
+              <input type="button" id="setDefault" value="Set as default"
+                     style="display:none" onclick="setAsDefault()">
+            </div>
+            <div>
+              <input type="button" id="save" value="Save" onclick="save()">
+            </div>
+            <div>
+              <input type="button" value="Close" onclick="hideDialog()">
+            </div>
+          </div>
+
+        </div> <!-- /dialogBody -->
+
+      </div>
+    </div>
+  </div>
 
   <div>&nbsp;</div>
   <div class="splitter"><b>Feed preview</b></div><br>

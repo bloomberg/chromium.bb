@@ -1,7 +1,7 @@
 {
   "name": "RSS Subscription Extension",
   "description": "Adds one-click subscription to your toolbar",
-  "version": "1.4",
+  "version": "1.6.1",
   "permissions": [
     "tabs",
     "http://*/*"
@@ -14,10 +14,8 @@
     }
   ],
   "icons": { "128": "feed-icon-128x128.png" },
-  "page_actions": [
-    {
-      "default_title": "Subscribe to this feed",
-      "default_icon": "feed-icon-16x16.png"
-    }
-  ]
+  "page_action": {
+    "default_title": "Subscribe to this feed",
+    "default_icon": "feed-icon-16x16.png"
+  }
 }
