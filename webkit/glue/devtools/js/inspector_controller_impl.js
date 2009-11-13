@@ -29,6 +29,7 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('releaseWrapperObjectGroup');
   this.installInspectorControllerDelegate_('removeAttribute');
   this.installInspectorControllerDelegate_('removeDOMStorageItem');
+  this.installInspectorControllerDelegate_('removeNode');
   this.installInspectorControllerDelegate_('setAttribute');
   this.installInspectorControllerDelegate_('setDOMStorageItem');
   this.installInspectorControllerDelegate_('setSetting');
