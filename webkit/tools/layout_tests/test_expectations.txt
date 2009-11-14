@@ -705,10 +705,34 @@ BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-
 // TODO(jorlow): Is this really still slow?  If so, why?
 BUG_JORLOW SLOW LINUX DEBUG : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = PASS
 
-// HTML5 DB layout tests that do not pass in test_shell
-BUG27697 : LayoutTests/storage/hash-change-with-xhr.html = TIMEOUT
-WONTFIX SKIP : LayoutTests/storage/private-browsing-readonly.html = PASS
-WONTFIX SKIP : LayoutTests/storage/quota-tracking.html = PASS
+// HTML5 layout tests are still very flacky
+BUG_DUMI SKIP : LayoutTests/storage/close-during-stress-test.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/database-lock-after-reload.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/empty-statement.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/execute-sql-args.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/hash-change-with-xhr.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/multiple-databases-garbage-collection.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/multiple-transactions.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/open-database-empty-version.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/open-database-set-empty-version.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/private-browsing-readonly.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/quota-tracking.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/sql-data-types.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/sql-data-types.js = PASS
+BUG_DUMI SKIP : LayoutTests/storage/success-callback.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/transaction-callback-exception-crash.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/transaction-error-callback.html = PASS
+BUG_DUMI SKIP : LayoutTests/fast/js/exceptions-thrown-in-callbacks.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/test-authorizer.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/open-database-while-transaction-in-progress.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/read-transactions-running-concurrently.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/multiple-transactions-on-different-handles.html = PASS
+BUG_DUMI SKIP : LayoutTests/storage/change-version-handle-reuse.html = FAIL
+BUG_DUMI SKIP : LayoutTests/storage/change-version.html = TIMEOUT
+BUG_DUMI SKIP : LayoutTests/storage/statement-error-callback.html = FAIL
+BUG_DUMI SKIP : LayoutTests/fast/js/global-function-resolve.html = FAIL
+BUG_DUMI SKIP : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL
 
 // Implement HTML5 Geolocation API.
 BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
