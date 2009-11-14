@@ -465,7 +465,7 @@ class ResizeLayoutAnimation : public TabStripGtk::TabAnimation {
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const Animation* animation) {
-    tabstrip_->resize_layout_scheduled_ = false;
+    tabstrip_->needs_resize_layout_ = false;
     TabStripGtk::TabAnimation::AnimationEnded(animation);
   }
 
@@ -607,7 +607,7 @@ class PinAndMoveAnimation : public TabStripGtk::TabAnimation {
   }
 
   virtual void AnimationEnded(const Animation* animation) {
-    tabstrip_->resize_layout_scheduled_ = false;
+    tabstrip_->needs_resize_layout_ = false;
     TabStripGtk::TabAnimation::AnimationEnded(animation);
   }
 
@@ -676,7 +676,7 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
     : current_unselected_width_(TabGtk::GetStandardSize().width()),
       current_selected_width_(TabGtk::GetStandardSize().width()),
       available_width_for_tabs_(-1),
-      resize_layout_scheduled_(false),
+      needs_resize_layout_(false),
       model_(model),
       window_(window),
       theme_provider_(GtkThemeProvider::GetFrom(model->profile())),
@@ -984,7 +984,7 @@ void TabStripGtk::TabSelectedAt(TabContents* old_contents,
     // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
     // a different size to the selected ones.
     bool tiny_tabs = current_unselected_width_ != current_selected_width_;
-    if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs))
+    if (!IsAnimating() && (!needs_resize_layout_ || tiny_tabs))
       Layout();
 
     GetTabAt(index)->SchedulePaint();
@@ -1071,7 +1071,7 @@ void TabStripGtk::CloseTab(TabGtk* tab) {
     // Tabs are not resized until a later time (when the mouse pointer leaves
     // the TabStrip).
     available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
-    resize_layout_scheduled_ = true;
+    needs_resize_layout_ = true;
     // We hook into the message loop in order to receive mouse move events when
     // the mouse is outside of the tabstrip.  We unhook once the resize layout
     // animation is started.
@@ -1296,7 +1296,7 @@ void TabStripGtk::LayoutNewTabButton(double last_tab_right,
   gfx::Rect bounds(0, kNewTabButtonVOffset,
                    newtab_button_->width(), newtab_button_->height());
   int delta = abs(Round(unselected_width) - TabGtk::GetStandardSize().width());
-  if (delta > 1 && !resize_layout_scheduled_) {
+  if (delta > 1 && !needs_resize_layout_) {
     // We're shrinking tabs, so we need to anchor the New Tab button to the
     // right edge of the TabStrip's bounds, rather than the right edge of the
     // right-most Tab, otherwise it'll bounce when animating.

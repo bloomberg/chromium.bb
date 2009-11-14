@@ -315,8 +315,7 @@ class TabStrip : public views::View,
 
   // True if a resize layout animation should be run a short delay after the
   // mouse exits the TabStrip.
-  // TODO(beng): (Cleanup) this would be better named "needs_resize_layout_".
-  bool resize_layout_scheduled_;
+  bool needs_resize_layout_;
 
   // The "New Tab" button.
   views::ImageButton* newtab_button_;

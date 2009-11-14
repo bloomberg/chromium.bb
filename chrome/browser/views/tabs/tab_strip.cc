@@ -504,7 +504,7 @@ class TabStrip::ResizeLayoutAnimation : public TabStrip::TabAnimation {
 
   // Overridden from AnimationDelegate:
   virtual void AnimationEnded(const Animation* animation) {
-    tabstrip_->resize_layout_scheduled_ = false;
+    tabstrip_->needs_resize_layout_ = false;
     TabStrip::TabAnimation::AnimationEnded(animation);
   }
 
@@ -645,7 +645,7 @@ class TabStrip::PinAndMoveAnimation : public TabStrip::TabAnimation {
   }
 
   virtual void AnimationEnded(const Animation* animation) {
-    tabstrip_->resize_layout_scheduled_ = false;
+    tabstrip_->needs_resize_layout_ = false;
     TabStrip::TabAnimation::AnimationEnded(animation);
   }
 
@@ -714,7 +714,7 @@ TabStrip::TabStrip(TabStripModel* model)
     : model_(model),
       resize_layout_factory_(this),
       added_as_message_loop_observer_(false),
-      resize_layout_scheduled_(false),
+      needs_resize_layout_(false),
       current_unselected_width_(Tab::GetStandardSize().width()),
       current_selected_width_(Tab::GetStandardSize().width()),
       available_width_for_tabs_(-1) {
@@ -1052,7 +1052,7 @@ void TabStrip::TabSelectedAt(TabContents* old_contents,
   // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
   // a different size to the selected ones.
   bool tiny_tabs = current_unselected_width_ != current_selected_width_;
-  if (!IsAnimating() && (!resize_layout_scheduled_ || tiny_tabs)) {
+  if (!IsAnimating() && (!needs_resize_layout_ || tiny_tabs)) {
     Layout();
   } else {
     SchedulePaint();
@@ -1126,7 +1126,7 @@ void TabStrip::CloseTab(Tab* tab) {
     // Tabs are not resized until a later time (when the mouse pointer leaves
     // the TabStrip).
     available_width_for_tabs_ = GetAvailableWidthForTabs(last_tab);
-    resize_layout_scheduled_ = true;
+    needs_resize_layout_ = true;
     AddMessageLoopObserver();
     // Note that the next call might not close the tab (because of unload
     // hanlders or if the delegate veto the close).
@@ -1800,7 +1800,7 @@ void TabStrip::GenerateIdealBounds() {
 void TabStrip::LayoutNewTabButton(double last_tab_right,
                                   double unselected_width) {
   int delta = abs(Round(unselected_width) - Tab::GetStandardSize().width());
-  if (delta > 1 && !resize_layout_scheduled_) {
+  if (delta > 1 && !needs_resize_layout_) {
     // We're shrinking tabs, so we need to anchor the New Tab button to the
     // right edge of the TabStrip's bounds, rather than the right edge of the
     // right-most Tab, otherwise it'll bounce when animating.
