@@ -88,9 +88,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     "worker-replace-self.html",
     "worker-script-error.html",
     "worker-terminate.html",
-    // clearInterval() sometimes lets the timer continue to fire
-    // http://code.google.com/p/chromium/issues/detail?id=25548
-    // "worker-timeout.html"
+    "worker-timeout.html"
   };
 
   FilePath fast_test_dir;
