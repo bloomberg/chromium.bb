@@ -11,10 +11,12 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/google_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/url_constants.h"
+#include "googleurl/src/gurl.h"
 #include "grit/app_resources.h"
 #include "grit/browser_resources.h"
 
@@ -33,11 +35,27 @@ class SyncResourcesSource : public ChromeURLDataManager::DataSource {
       return "text/html";
   }
 
+  static const char* kInvalidPasswordHelpUrl;
+  static const char* kCanNotAccessAccountUrl;
+  static const char* kCreateNewAccountUrl;
+
  private:
   virtual ~SyncResourcesSource() {}
 
+  // Takes a string containing an URL and returns an URL containing a CGI
+  // parameter of the form "&hl=xy" where 'xy' is the language code of the
+  // current locale.
+  std::string GetLocalizedUrl(const std::string& url) const;
+
   DISALLOW_COPY_AND_ASSIGN(SyncResourcesSource);
 };
+
+const char* SyncResourcesSource::kInvalidPasswordHelpUrl =
+  "http://www.google.com/support/accounts/bin/answer.py?ctx=ch&answer=27444";
+const char* SyncResourcesSource::kCanNotAccessAccountUrl =
+  "http://www.google.com/support/accounts/bin/answer.py?answer=48598";
+const char* SyncResourcesSource::kCreateNewAccountUrl =
+  "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 
 void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
                                            int request_id) {
@@ -53,6 +71,15 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
   std::string response;
   if (path_raw == chrome::kSyncGaiaLoginPath) {
     DictionaryValue localized_strings;
+
+    // Start by setting the per-locale URLs we show on the setup wizard.
+    localized_strings.SetString(L"invalidpasswordhelpurl",
+        GetLocalizedUrl(kInvalidPasswordHelpUrl));
+    localized_strings.SetString(L"cannotaccessaccounturl",
+        GetLocalizedUrl(kCanNotAccessAccountUrl));
+    localized_strings.SetString(L"createnewaccounturl",
+        GetLocalizedUrl(kCreateNewAccountUrl));
+
     localized_strings.SetString(L"settingupsync",
         l10n_util::GetString(IDS_SYNC_LOGIN_SETTING_UP_SYNC));
     localized_strings.SetString(L"introduction",
@@ -136,6 +163,14 @@ void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
   html_bytes->data.resize(response.size());
   std::copy(response.begin(), response.end(), html_bytes->data.begin());
   SendResponse(request_id, html_bytes);
+}
+
+std::string SyncResourcesSource::GetLocalizedUrl(
+    const std::string& url) const {
+  GURL original_url(url);
+  DCHECK(original_url.is_valid());
+  GURL localized_url = google_util::AppendGoogleLocaleParam(original_url);
+  return localized_url.spec();
 }
 
 SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
