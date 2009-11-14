@@ -1280,22 +1280,21 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
   int length = [im_text length];
-  int cursor;
+  int cursor = newSelRange.location;
+
   int target_start;
   int target_end;
   if (!newSelRange.length) {
-    // The given text doesn't have any range to be highlighted.
-    // Put the cursor to the end of this text and clear the selection range.
-    cursor = length;
+    // The given text doesn't have any range to be highlighted. Clear the
+    // selection range.
     target_start = 0;
     target_end = 0;
   } else {
     // The given text has a range to be highlighted.
     // Set the selection range to the given one and put the cursor at the
     // beginning of the selection range.
-    cursor = newSelRange.location;
     target_start = newSelRange.location;
-    target_end = newSelRange.location + newSelRange.length;
+    target_end = NSMaxRange(newSelRange);
   }
 
   // Dispatch this IME event to the renderer and update the IME state of this
