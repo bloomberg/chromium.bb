@@ -3,13 +3,13 @@
 
 <p>
 This tutorial walks you through creating a simple extension.
-You'll add a button to Google Chrome
+You'll add an icon to Google Chrome
 that, when clicked, displays an automatically generated page.
-The button and page will look something like this:
+The icon and page will look something like this:
 </p>
 
 <img src="images/hello-world-small.png"
-  width="300" height="199"
+  width="300" height="243"
   alt="a window with a grid of images related to HELLO WORLD" />
 
 
@@ -46,14 +46,14 @@ to the toolbar of Google Chrome.
     create a text file called <strong><code>manifest.json</code></strong>,
     and put this in it:
 <pre>{
-  &quot;name&quot;: &quot;My First Extension&quot;,
-  &quot;version&quot;: &quot;1.0&quot;,
-  &quot;description&quot;: &quot;The first extension that I made.&quot;,
-  &quot;browser_action&quot;: {
-    &quot;"default_icon": "icon.png"&quot;
+  "name": "My First Extension",
+  "version": "1.0",
+  "description": "The first extension that I made.",
+  "browser_action": {
+    "default_icon": "icon.png"
   },
-  &quot;permissions&quot;: [
-    &quot;http://api.flickr.com/&quot;
+  "permissions": [
+    "http://api.flickr.com/"
   ]
 }</pre>
   </li>
@@ -62,10 +62,10 @@ to the toolbar of Google Chrome.
     <table cellpadding="0" cellspacing="0">
       <tr>
         <td style="text-align:center; border:0;"><a
-          href="samples/hello_world/icon.png"
-            ><img src="samples/hello_world/icon.png"
+          href="examples/tutorials/getstarted/icon.png"
+            ><img src="examples/tutorials/getstarted/icon.png"
               width="19" height="19" border="0"></a><br>
-          <a href="samples/hello_world/icon.png"
+          <a href="examples/tutorials/getstarted/icon.png"
             >Download icon.png</a></td>
       </tr>
     </table>
@@ -73,7 +73,18 @@ to the toolbar of Google Chrome.
   <li> Load the extension.
     <ol type="a">
       <li>
-      Bring up the Extensions management page by clicking the wrench icon, and selecting the "Extensions" menu item.
+      Bring up the extensions management page
+      by clicking the Tools menu
+      <img src="images/toolsmenu.gif" width="43" height="34" alt=""
+           align="absmiddle">
+      and choosing <b>Extensions</b>.
+      </li>
+
+      <li>
+      If <b>Developer mode</b> has a + by it,
+      click the + to add developer information to the page.
+      The + changes to a -,
+      and more buttons and information appear.
       </li>
 
       <li>
@@ -85,23 +96,23 @@ to the toolbar of Google Chrome.
       In the file dialog,
       navigate to your extension's folder
       (<code>c:\myext</code>, for example)
-      and click the <b>OK</b> button.
+      and click <b>OK</b>.
       </li>
     </ol> </li>
   </ol>
 
 <p>
 If your extension is valid,
-information about it
-appears in the <b>Installed extensions</b> part
-of the Extensions page,
+its icon appears next to the address bar,
+and information about the extension
+appears in the extensions page,
 as the following screenshot shows.
 </p>
 
 <p>
 <a href="images/load_after.png"><img
   src="images/load_after_small.png"
-  width="327" height="206" /></a>
+  width="300" height="194" /></a>
 </p>
 
 <h2 id="code">Add code to the extension</h2>
@@ -112,28 +123,30 @@ as the following screenshot shows.
 <pre>
   ...
   "browser_action": {
-    "default_icon": "icon.png",
-    <b style="background:yellow">"popup": "popup.html"</b>
+    "default_icon": "icon.png"<b>,
+    "popup": "popup.html"</b>
   },
   ...
 </pre>
     <p> Inside your extension's folder,
     create a text file called <strong><code>popup.html</code></strong>,
     and add the following code to it:</p>
-    <blockquote> <a href="samples/hello_world/popup.html" onclick="window.open('view-source:' + this.href); return false;">CSS
+    <blockquote> <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/tutorials/getstarted/popup.html?content-type=text/plain"
+    target="_blank">CSS
     and JavaScript code for hello_world</a></blockquote>
   </li>
   <li>
-    Return to <b>chrome://extensions</b>,
+    Return to the extensions management page,
     and click the <b>Reload</b> button
     to load the new version of the extension.</li>
-  <li>Click the button.
-  A popup bubble should come up that displays <code>popup.html</code>. </li>
+  <li>Click the extension's icon.
+  A popup should appear that displays the contents of
+  <code>popup.html</code>. </li>
 </ol>
 <p> It should look something like this:</p>
 
 <img src="images/hello-world.png"
-  width="583" height="387"
+  width="500" height="405"
   alt="a popup with a grid of images related to HELLO WORLD" />
 
 <p> If you don't see the popup,
@@ -172,6 +185,6 @@ Here are some suggestions for what to do next:
   </li>
   <li>
     Look at some
-    <a href="http://sites.google.com/a/chromium.org/dev/developers/design-documents/extensions/samples">sample extensions</a>
+    <a href="samples.html">sample extensions</a>
   </li>
 </ul>
