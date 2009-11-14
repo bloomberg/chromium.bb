@@ -3100,3 +3100,9 @@ BUG27555 : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
 
 BUG27555 WIN LINUX : LayoutTests/fast/canvas/canvas-shadow.html = TEXT
 BUG27555 WIN LINUX : LayoutTests/fast/multicol/single-line.html = IMAGE+TEXT
+
+// hbono's new test.
+BUG27679 WIN LINUX MAC : LayoutTests/fast/events/ime-composition-events-001.html = TEXT
+
+// Failure from merge 50947:50972
+BUG27683 : LayoutTests/svg/custom/viewport-update2.svg = IMAGE+TEXT
