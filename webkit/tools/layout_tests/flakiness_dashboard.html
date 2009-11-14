@@ -363,6 +363,7 @@
         return true;
 
       case 'showCorrectExpectations':
+      case 'showWrongExpectations':
       case 'showExpectations':
       case 'showFlaky':
       case 'showLargeExpectations':
@@ -384,6 +385,7 @@
     sortOrder: BACKWARD,
     sortColumn: 'flakiness',
     showCorrectExpectations: false,
+    showWrongExpectations: true,
     showExpectations: false,
     showFlaky: true,
     showLargeExpectations: false,
@@ -870,7 +872,8 @@
           // the following:
           // LayoutTests/foo/bar = FAIL
           // LayoutTests/foo/bar/baz.html = PASS
-          noFailures.push(test);
+          noFailures.push({test: test, expectations: expectations.expectations,
+              modifiers: expectations.modifiers});
         }
       }
     }
@@ -985,7 +988,8 @@
     if (rawResults[0][1] == 'N')
       return;
 
-    var MIN_RUNS_FOR_FLAKE = 3;
+    // Only consider flake if it doesn't happen twice in a row.
+    var MIN_RUNS_FOR_FLAKE = 2;
     var unexpectedExpectations = [];
     var resultsMap = {}
     var numResultsSeen = 0;
@@ -1244,8 +1248,13 @@
     if (tests.length) {
       html +=  '<h3>Have not failed in last ' +
           resultsByBuilder[builder].buildNumbers.length +
-          ' runs.</h3><div id="passing-tests">' + open +
-          tests.join('</div>' + open) + '</div></div>';
+          ' runs.</h3><div id="passing-tests">';
+
+      for (var i = 0; i < tests.length; i++) {
+        html += open + tests[i].test + '</div>';
+      }
+
+      html += '</div>';
     }
 
     if (skippedPaths.length) {
@@ -1287,7 +1296,7 @@
     if (testResult.meetsExpectations)
       return !currentState.showCorrectExpectations;
 
-    return false;
+    return !currentState.showWrongExpectations;
   }
 
   /**
@@ -1427,6 +1436,22 @@
     tests.sort(sortFunctionGetter(resultsProperty, order == BACKWARD));
   }
 
+  function addUpdate(testsNeedingUpdate, test, builderName, missing, extra) {
+    if (!testsNeedingUpdate[test])
+      testsNeedingUpdate[test] = {};
+
+    var buildInfo = getPlatformAndBuildType(builderName);
+    var builder = buildInfo.platform + ' ' + buildInfo.buildType;
+    if (!testsNeedingUpdate[test][builder])
+      testsNeedingUpdate[test][builder] = {};
+
+    if (missing)
+      testsNeedingUpdate[test][builder].missing = missing;
+
+    if (extra)
+      testsNeedingUpdate[test][builder].extra = extra;
+  }
+
   function generatePageForExpectationsUpdate() {
     processTestRunsForAllBuilders();
     var testsNeedingUpdate = {};
@@ -1437,21 +1462,19 @@
         if (!thisResult.missing && !thisResult.extra)
           continue;
 
-        if (!testsNeedingUpdate[test])
-          testsNeedingUpdate[test] = {};
-
-        var buildInfo = getPlatformAndBuildType(thisResult.builder);
-        var builder = buildInfo.platform + ' ' + buildInfo.buildType;
-        if (!testsNeedingUpdate[test][builder])
-          testsNeedingUpdate[test][builder] = {};
-
-        if (thisResult.missing)
-          testsNeedingUpdate[test][builder].missing = thisResult.missing;
-
-        if (thisResult.extra)
-          testsNeedingUpdate[test][builder].extra = thisResult.extra;
+        addUpdate(testsNeedingUpdate, test, thisResult.builder,
+            thisResult.missing, thisResult.extra);
       }
     }
+
+    for (var builder in builders) {
+      var tests = perBuilderWithExpectationsButNoFailures[builder]
+      for (var i = 0; i < tests.length; i++) {
+        addUpdate(testsNeedingUpdate, tests[i].test, builder,
+            null, tests[i].expectations + ' ' + tests[i].modifiers);
+      }
+    }
+
     appendHTML(JSON.stringify(testsNeedingUpdate));
     hideLoadingUI();
   }
@@ -1905,6 +1928,8 @@
         ' | ' +
         getLinkHTMLToToggleState('showCorrectExpectations',
             'tests with correct expectations') + ' | ' +
+        getLinkHTMLToToggleState('showWrongExpectations',
+            'tests with wrong expectations') + ' | ' +
         getLinkHTMLToToggleState('showFlaky', 'flaky') + ' | ' +
         getLinkHTMLToToggleState('showSlow', 'slow') + ' | ' +
         'All columns are sortable. | ' +
