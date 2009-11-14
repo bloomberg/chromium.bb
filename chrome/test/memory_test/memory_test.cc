@@ -23,9 +23,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_LINUX) && __x86_64__
-#define MAYBE_SingleTabTest FLAKY_SingleTabTest
-#define MAYBE_FiveTabTest FLAKY_FiveTabTest
-#define MAYBE_TwelveTabTest FLAKY_TwelveTabTest
+#define MAYBE_SingleTabTest DISABLED_SingleTabTest
+#define MAYBE_FiveTabTest DISABLED_FiveTabTest
+#define MAYBE_TwelveTabTest DISABLED_TwelveTabTest
 #else
 #define MAYBE_SingleTabTest SingleTabTest
 #define MAYBE_FiveTabTest FiveTabTest
