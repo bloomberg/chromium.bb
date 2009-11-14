@@ -58,10 +58,29 @@ void FlipStream::OnReply(const flip::FlipHeaderBlock* headers) {
   raw_headers.append("\0", 1);
   flip::FlipHeaderBlock::const_iterator it;
   for (it = headers->begin(); it != headers->end(); ++it) {
-    raw_headers.append(it->first);
-    raw_headers.append(":", 1);
-    raw_headers.append(it->second);
-    raw_headers.append("\0", 1);
+    // For each value, if the server sends a NUL-separated
+    // list of values, we separate that back out into
+    // individual headers for each value in the list.
+    // e.g.
+    //    Set-Cookie "foo\0bar"
+    // becomes
+    //    Set-Cookie: foo\0
+    //    Set-Cookie: bar\0
+    std::string value = it->second;
+    size_t start = 0;
+    size_t end = 0;
+    do {
+      end = value.find('\0', start);
+      std::string tval;
+      if (end != value.npos)
+        tval = value.substr(start, (end - start));
+      else
+        tval = value.substr(start);
+      raw_headers.append(it->first);
+      raw_headers.append(":", 1);
+      raw_headers.append(tval);
+      start = end + 1;
+    } while (end != value.npos);
   }
 
   LOG(INFO) << "FlipStream: SynReply received for " << stream_id_;

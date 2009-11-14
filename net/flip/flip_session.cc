@@ -100,7 +100,14 @@ void CreateFlipHeadersFromHttpRequest(
                                "\r\n");
   while (it.GetNext()) {
     std::string name = StringToLowerASCII(it.name());
-    (*headers)[name] = it.values();
+    if (headers->find(name) == headers->end()) {
+      (*headers)[name] = it.values();
+    } else {
+      std::string new_value = (*headers)[name];
+      new_value += "\0";
+      new_value += it.values();
+      (*headers)[name] = new_value;
+    }
   }
 
   (*headers)["method"] = info->method;
