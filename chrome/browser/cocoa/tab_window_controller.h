@@ -49,6 +49,9 @@
 - (void)removeOverlayAfterDelay:(NSTimeInterval)delay;
 - (NSWindow*)overlayWindow;
 
+// Returns YES if it is ok to constrain the window's frame to fit the screen.
+- (BOOL)shouldConstrainFrameRect;
+
 // A collection of methods, stubbed out in this base class, that provide
 // the implementation of tab dragging based on whatever model is most
 // appropriate.

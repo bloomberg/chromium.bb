@@ -329,4 +329,18 @@ namespace {
   return shouldHideTitle_;
 }
 
+// This method is called whenever a window is moved in order to ensure it fits
+// on the screen.  We cannot always handle resizes without breaking, so we
+// prevent frame constraining in those cases.
+- (NSRect)constrainFrameRect:(NSRect)frame toScreen:(NSScreen*)screen {
+  // Do not constrain the frame rect if our delegate says no.  In this case,
+  // return the original (unconstrained) frame.
+  id delegate = [self delegate];
+  if ([delegate respondsToSelector:@selector(shouldConstrainFrameRect)] &&
+      ![delegate shouldConstrainFrameRect])
+    return frame;
+
+  return [super constrainFrameRect:frame toScreen:screen];
+}
+
 @end

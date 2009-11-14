@@ -125,6 +125,12 @@
   return overlayWindow_;
 }
 
+- (BOOL)shouldConstrainFrameRect {
+  // If we currently have an overlay window, do not attempt to change the
+  // window's size, as our overlay window doesn't know how to resize properly.
+  return overlayWindow_ == nil;
+}
+
 - (BOOL)canReceiveFrom:(TabWindowController*)source {
   // subclass must implement
   NOTIMPLEMENTED();
