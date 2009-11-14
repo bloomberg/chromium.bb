@@ -66,6 +66,8 @@ static ViewHostMsg_Resource_Request CreateResourceRequest(const char* method,
   request.resource_type = ResourceType::SUB_RESOURCE;
   request.request_context = 0;
   request.appcache_host_id = appcache::kNoHostId;
+  request.host_renderer_id = -1;
+  request.host_render_view_id = -1;
   return request;
 }
 
@@ -344,7 +346,7 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
 
 // Tests whether messages get canceled properly. We issue three requests,
 // cancel one of them, and make sure that each sent the proper notifications.
-TEST_F(ResourceDispatcherHostTest, DISABLED_Cancel) {
+TEST_F(ResourceDispatcherHostTest, Cancel) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   MakeTestRequest(0, 1, URLRequestTestJob::test_url_1());
