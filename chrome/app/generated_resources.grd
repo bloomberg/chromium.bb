@@ -2635,13 +2635,13 @@ each locale. -->
         Developer mode:
       </message>
       <message name="IDS_EXTENSIONS_LOAD_UNPACKED_BUTTON" desc="Text of the 'Load Extension' button.">
-        Load Extension...
+        Load extension...
       </message>
       <message name="IDS_EXTENSIONS_PACK_BUTTON" desc="Text for the 'Pack Extension' button.">
-        Pack Extension...
+        Pack extension...
       </message>
       <message name="IDS_EXTENSIONS_UPDATE_BUTTON" desc="Text for the 'Update extensions' button.">
-        Update Extensions now
+        Update extensions now
       </message>
       <message name="IDS_EXTENSIONS_NONE_INSTALLED" desc="Text that lets the user know that no extensions are installed.">
         Boo... No extensions installed :-(
