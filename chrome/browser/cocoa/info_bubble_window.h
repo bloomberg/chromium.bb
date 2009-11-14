@@ -6,5 +6,9 @@
 
 // A rounded window with an arrow used for example when you click on the STAR
 // button or that pops up within our first-run UI.
-@interface InfoBubbleWindow : NSWindow
+@interface InfoBubbleWindow : NSWindow {
+ @private
+  // Is self in the process of closing.
+  BOOL closing_;
+}
 @end
