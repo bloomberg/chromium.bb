@@ -7,6 +7,7 @@
 #include <algorithm>
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
+#include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/string16.h"
 #include "base/string_util.h"
@@ -377,8 +378,8 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setMetricsRecording:(BOOL)value;
 - (void)setCookieBehavior:(NSInteger)value;
 - (void)setAskForSaveLocation:(BOOL)value;
-- (void)displayPreferenceViewForToolbarItem:(NSToolbarItem*)toolbarItem
-                                    animate:(BOOL)animate;
+- (void)displayPreferenceViewForPage:(OptionsPage)page
+                             animate:(BOOL)animate;
 @end
 
 // A C++ class registered for changes in preferences. Bridges the
@@ -410,7 +411,7 @@ class PrefObserverBridge : public NotificationObserver,
 
 @implementation PreferencesWindowController
 
-- (id)initWithProfile:(Profile*)profile {
+- (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage {
   DCHECK(profile);
   // Use initWithWindowNibPath:: instead of initWithWindowNibName: so we
   // can override it in a unit test.
@@ -419,6 +420,7 @@ class PrefObserverBridge : public NotificationObserver,
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
     profile_ = profile;
+    initialPage_ = initialPage;
     prefs_ = profile->GetPrefs();
     DCHECK(prefs_);
     observer_.reset(new PrefObserverBridge(self));
@@ -647,17 +649,7 @@ class PrefObserverBridge : public NotificationObserver,
   [underTheHoodContentView_ scrollPoint:
       NSMakePoint(0, underTheHoodContentSize.height)];
 
-  // Get the last visited page from local state.
-  OptionsPage page = static_cast<OptionsPage>(lastSelectedPage_.GetValue());
-  if (page == OPTIONS_PAGE_DEFAULT)
-    page = OPTIONS_PAGE_GENERAL;
-
-  NSUInteger pageIndex = (NSUInteger)page;
-  if (pageIndex >= [[toolbar_ items] count])
-    pageIndex = 0;
-  NSToolbarItem* firstItem = [[toolbar_ items] objectAtIndex:pageIndex];
-  [self displayPreferenceViewForToolbarItem:firstItem animate:NO];
-  [toolbar_ setSelectedItemIdentifier:[firstItem itemIdentifier]];
+  [self switchToPage:initialPage_ animate:NO];
 
   // TODO(pinkerton): save/restore position based on prefs.
   [[self window] center];
@@ -1305,34 +1297,18 @@ const int kDisabledIndex = 1;
 
 - (IBAction)toolbarButtonSelected:(id)sender {
   DCHECK([sender isKindOfClass:[NSToolbarItem class]]);
-  [self displayPreferenceViewForToolbarItem:sender
-                                    animate:YES];
+  OptionsPage page = [self getPageForToolbarItem:sender];
+  [self displayPreferenceViewForPage:page animate:YES];
 }
 
-// Helper to update the window to display a preferences view for a toolbaritem.
-- (void)displayPreferenceViewForToolbarItem:(NSToolbarItem*)toolbarItem
-                                    animate:(BOOL)animate {
-  NSView* prefsView = NULL;
-  OptionsPage page = OPTIONS_PAGE_DEFAULT;
-  // Tags are set in the nib file.
-  switch ([toolbarItem tag]) {
-    case 0:  // Basics
-      prefsView = basicsView_;
-      page = OPTIONS_PAGE_GENERAL;
-      break;
-    case 1:  // Personal Stuff
-      prefsView = personalStuffView_;
-      page = OPTIONS_PAGE_CONTENT;
-      break;
-    case 2:  // Under the Hood
-      prefsView = underTheHoodView_;
-      page = OPTIONS_PAGE_ADVANCED;
-      break;
-    default:
-      NOTIMPLEMENTED();
-  }
-
+// Helper to update the window to display a preferences view for a page.
+- (void)displayPreferenceViewForPage:(OptionsPage)page
+                             animate:(BOOL)animate {
   NSWindow* prefsWindow = [self window];
+
+  // Needs to go *after* the call to [self window], which triggers
+  // awakeFromNib if necessary.
+  NSView* prefsView = [self getPrefsViewForPage:page];
   NSView* contentView = [prefsWindow contentView];
 
   // Normally there is only one view, but if the user clicks really quickly, the
@@ -1382,6 +1358,7 @@ const int kDisabledIndex = 1;
   [prefsWindow setInitialFirstResponder:prefsView];
 
   // Update the window title.
+  NSToolbarItem* toolbarItem = [self getToolbarItemForPage:page];
   [prefsWindow setTitle:[toolbarItem label]];
 
   // Figure out the size of the window.
@@ -1627,6 +1604,12 @@ const int kDisabledIndex = 1;
   [self showWindow:sender];
 }
 
+- (void)switchToPage:(OptionsPage)page animate:(BOOL)animate {
+  [self displayPreferenceViewForPage:page animate:animate];
+  NSToolbarItem* toolbarItem = [self getToolbarItemForPage:page];
+  [toolbar_ setSelectedItemIdentifier:[toolbarItem itemIdentifier]];
+}
+
 // Called when the window is being closed. Send out a notification that the user
 // is done editing preferences. Make sure there are no pending field editors
 // by clearing the first responder.
@@ -1646,6 +1629,89 @@ const int kDisabledIndex = 1;
 
 - (void)controlTextDidEndEditing:(NSNotification*)notification {
   [customPagesSource_ validateURLs];
+}
+
+@end
+
+@implementation PreferencesWindowController(Testing)
+
+- (IntegerPrefMember*)lastSelectedPage {
+  return &lastSelectedPage_;
+}
+
+- (NSToolbar*)toolbar {
+  return toolbar_;
+}
+
+- (NSView*)basicsView {
+  return basicsView_;
+}
+
+- (NSView*)personalStuffView {
+  return personalStuffView_;
+}
+
+- (NSView*)underTheHoodView {
+  return underTheHoodView_;
+}
+
+- (OptionsPage)normalizePage:(OptionsPage)page {
+  if (page == OPTIONS_PAGE_DEFAULT) {
+    // Get the last visited page from local state.
+    page = static_cast<OptionsPage>(lastSelectedPage_.GetValue());
+    if (page == OPTIONS_PAGE_DEFAULT) {
+      page = OPTIONS_PAGE_GENERAL;
+    }
+  }
+  return page;
+}
+
+- (NSToolbarItem*)getToolbarItemForPage:(OptionsPage)page {
+  NSUInteger pageIndex = (NSUInteger)[self normalizePage:page];
+  NSArray* items = [toolbar_ items];
+  NSUInteger itemCount = [items count];
+  DCHECK_GE(pageIndex, 0U);
+  if (pageIndex >= itemCount) {
+    NOTIMPLEMENTED();
+    pageIndex = 0;
+  }
+  DCHECK_GT(itemCount, 0U);
+  return [items objectAtIndex:pageIndex];
+}
+
+- (OptionsPage)getPageForToolbarItem:(NSToolbarItem*)toolbarItem {
+  // Tags are set in the nib file.
+  switch ([toolbarItem tag]) {
+    case 0:  // Basics
+      return OPTIONS_PAGE_GENERAL;
+    case 1:  // Personal Stuff
+      return OPTIONS_PAGE_CONTENT;
+    case 2:  // Under the Hood
+      return OPTIONS_PAGE_ADVANCED;
+    default:
+      NOTIMPLEMENTED();
+      return OPTIONS_PAGE_GENERAL;
+  }
+}
+
+- (NSView*)getPrefsViewForPage:(OptionsPage)page {
+  // The views will be NULL if this is mistakenly called before awakeFromNib.
+  DCHECK(basicsView_);
+  DCHECK(personalStuffView_);
+  DCHECK(underTheHoodView_);
+  page = [self normalizePage:page];
+  switch (page) {
+    case OPTIONS_PAGE_GENERAL:
+      return basicsView_;
+    case OPTIONS_PAGE_CONTENT:
+      return personalStuffView_;
+    case OPTIONS_PAGE_ADVANCED:
+      return underTheHoodView_;
+    case OPTIONS_PAGE_DEFAULT:
+    case OPTIONS_PAGE_COUNT:
+      LOG(DFATAL) << "Invalid page value " << page;
+  }
+  return basicsView_;
 }
 
 @end

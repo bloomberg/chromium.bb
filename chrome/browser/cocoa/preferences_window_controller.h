@@ -6,6 +6,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
+#include "chrome/browser/options_window.h"
 #include "chrome/common/pref_member.h"
 
 @class CustomHomePagesModel;
@@ -30,6 +31,7 @@ class ProfileSyncService;
 @interface PreferencesWindowController : NSWindowController {
  @private
   Profile* profile_;  // weak ref
+  OptionsPage initialPage_;
   PrefService* prefs_;  // weak ref - Obtained from profile_ for convenience.
   // weak ref - Also obtained from profile_ for convenience.  May be NULL.
   ProfileSyncService* syncService_;
@@ -98,10 +100,13 @@ class ProfileSyncService;
 }
 
 // Designated initializer. |profile| should not be NULL.
-- (id)initWithProfile:(Profile*)profile;
+- (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage;
 
 // Show the preferences window.
 - (void)showPreferences:(id)sender;
+
+// Switch to the given preference page.
+- (void)switchToPage:(OptionsPage)page animate:(BOOL)animate;
 
 // IBAction methods for responding to user actions.
 
@@ -134,3 +139,30 @@ class ProfileSyncService;
 extern NSString* const kUserDoneEditingPrefsNotification;
 
 @end
+
+@interface PreferencesWindowController(Testing)
+
+- (IntegerPrefMember*)lastSelectedPage;
+- (NSToolbar*)toolbar;
+- (NSView*)basicsView;
+- (NSView*)personalStuffView;
+- (NSView*)underTheHoodView;
+
+// Converts the given OptionsPage value (which may be OPTIONS_PAGE_DEFAULT)
+// into a concrete OptionsPage value.
+- (OptionsPage)normalizePage:(OptionsPage)page;
+
+// Returns the toolbar item corresponding to the given page.  Should be
+// called only after awakeFromNib is.
+- (NSToolbarItem*)getToolbarItemForPage:(OptionsPage)page;
+
+// Returns the (normalized) page corresponding to the given toolbar item.
+// Should be called only after awakeFromNib is.
+- (OptionsPage)getPageForToolbarItem:(NSToolbarItem*)toolbarItem;
+
+// Returns the view corresponding to the given page.  Should be called
+// only after awakeFromNib is.
+- (NSView*)getPrefsViewForPage:(OptionsPage)page;
+
+@end
+

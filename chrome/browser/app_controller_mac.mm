@@ -52,6 +52,9 @@
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
 - (BOOL)userWillWaitForInProgressDownloads:(int)downloadCount;
 - (BOOL)shouldQuitWithInProgressDownloads;
+- (void)showPreferencesWindow:(id)sender
+                         page:(OptionsPage)page
+                      profile:(Profile*)profile;
 @end
 
 // True while AppController is calling Browser::OpenEmptyWindow(). We need a
@@ -686,9 +689,20 @@ static bool g_is_opening_new_window = false;
 // Show the preferences window, or bring it to the front if it's already
 // visible.
 - (IBAction)showPreferences:(id)sender {
-  if (!prefsController_.get()) {
+  [self showPreferencesWindow:sender
+                         page:OPTIONS_PAGE_DEFAULT
+                      profile:[self defaultProfile]];
+}
+
+- (void)showPreferencesWindow:(id)sender
+                         page:(OptionsPage)page
+                      profile:(Profile*)profile {
+  if (prefsController_.get()) {
+    [prefsController_ switchToPage:page animate:YES];
+  } else {
     prefsController_.reset([[PreferencesWindowController alloc]
-                              initWithProfile:[self defaultProfile]]);
+                              initWithProfile:profile
+                                  initialPage:page]);
     // Watch for a notification of when it goes away so that we can destroy
     // the controller.
     [[NSNotificationCenter defaultCenter]
@@ -762,11 +776,12 @@ static bool g_is_opening_new_window = false;
 
 //---------------------------------------------------------------------------
 
-// Stub for cross-platform method that isn't called on Mac OS X.
 void ShowOptionsWindow(OptionsPage page,
                        OptionsGroup highlight_group,
                        Profile* profile) {
-  NOTIMPLEMENTED();
+  // TODO(akalin): Use highlight_group.
+  AppController* appController = [NSApp delegate];
+  [appController showPreferencesWindow:nil page:page profile:profile];
 }
 
 namespace app_controller_mac {
