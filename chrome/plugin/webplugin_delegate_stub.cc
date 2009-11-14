@@ -59,7 +59,7 @@ WebPluginDelegateStub::WebPluginDelegateStub(
 
 WebPluginDelegateStub::~WebPluginDelegateStub() {
   in_destructor_ = true;
-  child_process_logging::ScopedActiveURLSetter url_setter(page_url_);
+  child_process_logging::SetActiveURL(page_url_);
 
   if (channel_->in_send()) {
     // The delegate or an npobject is in the callstack, so don't delete it
@@ -76,7 +76,7 @@ WebPluginDelegateStub::~WebPluginDelegateStub() {
 }
 
 void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
-  child_process_logging::ScopedActiveURLSetter url_setter(page_url_);
+  child_process_logging::SetActiveURL(page_url_);
 
   // A plugin can execute a script to delete itself in any of its NPP methods.
   // Hold an extra reference to ourself so that if this does occur and we're
@@ -128,7 +128,7 @@ bool WebPluginDelegateStub::Send(IPC::Message* msg) {
 void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                    bool* result) {
   page_url_ = params.page_url;
-  child_process_logging::ScopedActiveURLSetter url_setter(page_url_);
+  child_process_logging::SetActiveURL(page_url_);
 
   *result = false;
   if (params.arg_names.size() != params.arg_values.size()) {

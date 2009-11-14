@@ -55,7 +55,7 @@ void NPObjectStub::OnPluginDestroyed() {
 }
 
 void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
-  child_process_logging::ScopedActiveURLSetter url_setter(page_url_);
+  child_process_logging::SetActiveURL(page_url_);
 
   if (!npobject_) {
     if (msg.is_sync()) {
