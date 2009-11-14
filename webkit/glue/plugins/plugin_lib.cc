@@ -109,6 +109,13 @@ NPError PluginLib::NP_Initialize() {
                                            &plugin_funcs_);
 #else
   NPError rv = entry_points_.np_initialize(host->host_functions());
+#if defined(OS_MACOSX)
+  // On the Mac, we need to get entry points after calling np_initialize to
+  // match the behavior of other browsers.
+  if (rv == NPERR_NO_ERROR) {
+    rv = entry_points_.np_getentrypoints(&plugin_funcs_);
+  }
+#endif  // OS_MACOSX
 #endif
   LOG(INFO) << "PluginLib::NP_Initialize(" << web_plugin_info_.path.value() <<
                "): result=" << rv;
@@ -190,11 +197,11 @@ bool PluginLib::Load() {
   if (rv) {
     plugin_funcs_.size = sizeof(plugin_funcs_);
     plugin_funcs_.version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
-#if !defined(OS_LINUX) && !defined(OS_FREEBSD)
+#if !defined(OS_LINUX) && !defined(OS_FREEBSD) && !defined(OS_MACOSX)
     if (entry_points_.np_getentrypoints(&plugin_funcs_) != NPERR_NO_ERROR)
       rv = false;
 #else
-    // On Linux, we get the plugin entry points during NP_Initialize.
+    // On Linux and Mac, we get the plugin entry points during NP_Initialize.
 #endif
   }
 
