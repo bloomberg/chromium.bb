@@ -53,46 +53,6 @@
 #include <X11/Xlib.h>
 #endif
 
-static void log(NPP instance, const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    char message[2048] = "PLUGIN: ";
-    vsprintf(message + strlen(message), format, args);
-    va_end(args);
-
-    NPObject* windowObject = 0;
-    NPError error = browser->getvalue(instance, NPNVWindowNPObject, &windowObject);
-    if (error != NPERR_NO_ERROR) {
-        fprintf(stderr, "Failed to retrieve window object while logging: %s\n", message);
-        return;
-    }
-
-    NPVariant consoleVariant;
-    if (!browser->getproperty(instance, windowObject, browser->getstringidentifier("console"), &consoleVariant)) {
-        fprintf(stderr, "Failed to retrieve console object while logging: %s\n", message);
-        browser->releaseobject(windowObject);
-        return;
-    }
-
-    NPObject* consoleObject = NPVARIANT_TO_OBJECT(consoleVariant);
-
-    NPVariant messageVariant;
-    STRINGZ_TO_NPVARIANT(message, messageVariant);
-
-    NPVariant result;
-    if (!browser->invoke(instance, consoleObject, browser->getstringidentifier("log"), &messageVariant, 1, &result)) {
-        fprintf(stderr, "Failed to invoke console.log while logging: %s\n", message);
-        browser->releaseobject(consoleObject);
-        browser->releaseobject(windowObject);
-        return;
-    }
-
-    browser->releasevariantvalue(&result);
-    browser->releaseobject(consoleObject);
-    browser->releaseobject(windowObject);
-}
-
 // Plugin entry points
 extern "C" {
     EXPORT NPError NPAPI NP_Initialize(NPNetscapeFuncs *browserFuncs
@@ -174,8 +134,13 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, int16 argc, ch
                         fflush(stdout);
                     }
                 }
-            } else if (strcasecmp(argn[i], "cleardocumentduringnew") == 0)
+            } else if (strcasecmp(argn[i], "cleardocumentduringnew") == 0) {
                 executeScript(obj, "document.body.innerHTML = ''");
+            } else if (strcasecmp(argn[i], "testdocumentopenindestroystream") == 0) {
+                obj->testDocumentOpenInDestroyStream = TRUE;
+            } else if (strcasecmp(argn[i], "testwindowopen") == 0) {
+                obj->testWindowOpen = TRUE;
+            }
         }
 
         instance->pdata = obj;
@@ -218,6 +183,11 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window)
             log(instance, "NPP_SetWindow: %d %d", (int)window->width, (int)window->height);
             fflush(stdout);
             obj->logSetWindow = false;
+        }
+
+        if (obj->testWindowOpen) {
+            testWindowOpen(instance);
+            obj->testWindowOpen = FALSE;
         }
     }
 
@@ -263,6 +233,11 @@ NPError NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason)
 
     if (obj->onStreamDestroy)
         executeScript(obj, obj->onStreamDestroy);
+
+    if (obj->testDocumentOpenInDestroyStream) {
+        testDocumentOpen(instance);
+        obj->testDocumentOpenInDestroyStream = FALSE;
+    }
 
     return NPERR_NO_ERROR;
 }

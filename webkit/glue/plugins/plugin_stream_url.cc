@@ -29,6 +29,9 @@ PluginStreamUrl::~PluginStreamUrl() {
 }
 
 bool PluginStreamUrl::Close(NPReason reason) {
+  // Protect the stream against it being destroyed or the whole plugin instance
+  // being destroyed within the destroy stream handler.
+  scoped_refptr<PluginStream> protect(this);
   CancelRequest();
   bool result = PluginStream::Close(reason);
   instance()->RemoveStream(this);
@@ -45,6 +48,10 @@ void PluginStreamUrl::DidReceiveResponse(const std::string& mime_type,
                                          uint32 expected_length,
                                          uint32 last_modified,
                                          bool request_is_seekable) {
+  // Protect the stream against it being destroyed or the whole plugin instance
+  // being destroyed within the new stream handler.
+  scoped_refptr<PluginStream> protect(this);
+
   bool opened = Open(mime_type,
                      headers,
                      expected_length,
@@ -63,6 +70,10 @@ void PluginStreamUrl::DidReceiveData(const char* buffer, int length,
                                      int data_offset) {
   if (!open())
     return;
+
+  // Protect the stream against it being destroyed or the whole plugin instance
+  // being destroyed within the write handlers
+  scoped_refptr<PluginStream> protect(this);
 
   if (length > 0) {
     // The PluginStreamUrl instance could get deleted if the plugin fails to

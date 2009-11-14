@@ -21,6 +21,10 @@ PluginStringStream::~PluginStringStream() {
 
 void PluginStringStream::SendToPlugin(const std::string &data,
                                       const std::string &mime_type) {
+  // Protect the stream against it being destroyed or the whole plugin instance
+  // being destroyed within the plugin stream callbacks.
+  scoped_refptr<PluginStringStream> protect(this);
+
   int length = static_cast<int>(data.length());
   if (Open(mime_type, std::string(), length, 0, false)) {
     // TODO - check if it was not fully sent, and figure out a backup plan.

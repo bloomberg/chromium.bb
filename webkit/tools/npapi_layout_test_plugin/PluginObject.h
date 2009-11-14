@@ -36,6 +36,8 @@ typedef struct {
     NPBool returnErrorFromNewStream;
     NPObject* testObject;
     NPStream* stream;
+    NPBool testWindowOpen;
+    NPBool testDocumentOpenInDestroyStream;
     char* onStreamLoad;
     char* onStreamDestroy;
     char* onURLNotify;
@@ -49,3 +51,6 @@ extern NPClass *getPluginClass(void);
 extern void handleCallback(PluginObject* object, const char *url, NPReason reason, void *notifyData);
 extern void notifyStream(PluginObject* object, const char *url, const char *headers);
 extern void testNPRuntime(NPP npp);
+extern bool testDocumentOpen(NPP npp);
+extern bool testWindowOpen(NPP npp);
+extern void log(NPP instance, const char* format, ...);
