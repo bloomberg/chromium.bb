@@ -10,7 +10,6 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/command_observer_bridge.h"
-#import "chrome/browser/cocoa/toolbar_compressable.h"
 #import "chrome/browser/cocoa/delayedmenu_button.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/common/pref_member.h"
@@ -18,7 +17,6 @@
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
 @class BackForwardMenuController;
-@class BackgroundGradientView;
 class Browser;
 @class BrowserActionsController;
 class BubblePositioner;
@@ -41,7 +39,7 @@ class ToolbarView;
 // the web content view.
 
 @interface ToolbarController :
-    NSViewController<CommandObserverProtocol, ToolbarCompressable> {
+    NSViewController<CommandObserverProtocol> {
  @private
   ToolbarModel* toolbarModel_;  // weak, one per window
   CommandUpdater* commands_;  // weak, one per window
@@ -111,9 +109,6 @@ class ToolbarView;
 // returns nil if we don't want to override the custom field editor for |obj|.
 - (id)customFieldEditorForObject:(id)obj;
 
-// Returns the backdrop to the toolbar.
-- (BackgroundGradientView*)backgroundGradientView;
-
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar;
 
@@ -139,6 +134,14 @@ class ToolbarView;
 // The bookmark bubble (when you click the star) needs to know where to go.
 // Somewhere near the star button seems like a good start.
 - (NSRect)starButtonInWindowCoordinates;
+
+// Chop off the bottom of the toolbar by |compressByHeight|; needed when the
+// bookmark bar is attached.
+- (void)setHeightCompression:(CGFloat)compressByHeight;
+
+// Display (or not) the divider (line at bottom); needed when the bookmark bar
+// is attached.
+- (void)setShowsDivider:(BOOL)showDivider;
 
 @end
 

@@ -12,9 +12,8 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "chrome/browser/cocoa/background_gradient_view.h"
+#import "chrome/browser/cocoa/animatable_view.h"
 
-@protocol BookmarkBarFloating;
 @class BookmarkBarView;
 class TabContents;
 class ThemeProvider;
@@ -22,8 +21,8 @@ class ThemeProvider;
 // An interface to allow mocking of a BookmarkBarController by the
 // BookmarkBarToolbarView.
 @protocol BookmarkBarToolbarViewController
-// Displaying the bookmark toolbar background in floating mode requires the
-// size of the currently selected tab to properly calculate where the
+// Displaying the bookmark toolbar background in bubble (floating) mode requires
+// the size of the currently selected tab to properly calculate where the
 // background image is joined.
 - (int)currentTabContentsHeight;
 
@@ -32,11 +31,11 @@ class ThemeProvider;
 
 // Returns true if the bookmark bar should be drawn as if it's a disconnected
 // bookmark bar on the New Tag Page.
-- (BOOL)drawAsFloatingBar;
+- (BOOL)isShownAsDetachedBar;
 
 @end
 
-@interface BookmarkBarToolbarView : BackgroundGradientView {
+@interface BookmarkBarToolbarView : AnimatableView {
  @private
    // The controller which tells us how we should be drawing (as normal or as a
    // floating bar).

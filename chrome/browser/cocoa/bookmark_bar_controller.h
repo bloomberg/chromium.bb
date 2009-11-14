@@ -15,17 +15,16 @@
 #include "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #include "webkit/glue/window_open_disposition.h"
 
-@class BackgroundGradientView;
-@class BookmarkBarStateController;
+@class BookmarkBarController;
 class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBarView;
 class Browser;
-@protocol ToolbarCompressable;
 class GURL;
 @class MenuButton;
 class Profile;
 class PrefService;
+class TabContents;
 @class ToolbarController;
 @protocol ViewResizer;
 
@@ -40,19 +39,57 @@ const CGFloat kNoBookmarksHorizontalOffset = 5.0;
 const CGFloat kNoBookmarksVerticalOffset = 22.0;
 const CGFloat kNoBookmarksNTPVerticalOffset = 28.0;
 
-}  // namespace
+// States for the bookmark bar.
+enum VisualState {
+  kInvalidState  = 0,
+  kHiddenState   = 1,
+  kShowingState  = 2,
+  kDetachedState = 3,
+};
+
+}  // namespace bookmarks
+
+// The interface for the bookmark bar controller's delegate. Currently, the
+// delegate is the BWC and is responsible for ensuring that the toolbar is
+// displayed correctly (as specified by |-getDesiredToolbarHeightCompression|
+// and |-shouldToolbarShowDivider|) at the beginning and at the end of an
+// animation (or after a state change).
+@protocol BookmarkBarControllerDelegate
+
+// Sent when the state has changed (after any animation), but before the final
+// display update.
+- (void)bookmarkBar:(BookmarkBarController*)controller
+ didChangeFromState:(bookmarks::VisualState)oldState
+            toState:(bookmarks::VisualState)newState;
+
+// Sent before the animation begins.
+- (void)bookmarkBar:(BookmarkBarController*)controller
+willAnimateFromState:(bookmarks::VisualState)oldState
+            toState:(bookmarks::VisualState)newState;
+
+@end
 
 // A controller for the bookmark bar in the browser window. Handles showing
 // and hiding based on the preference in the given profile.
 @interface BookmarkBarController :
-  NSViewController<BookmarkBarToolbarViewController> {
+    NSViewController<BookmarkBarToolbarViewController> {
  @private
+  // The visual state of the bookmark bar. If an animation is running, this is
+  // set to the "destination" and |lastVisualState_| is set to the "original"
+  // state. This is set to |kInvalidState| on initialization (when the
+  // appropriate state is not yet known).
+  bookmarks::VisualState visualState_;
+
+  // The "original" state of the bookmark bar if an animation is running,
+  // otherwise it should be |kInvalidState|.
+  bookmarks::VisualState lastVisualState_;
+
   Browser* browser_;              // weak; owned by its window
   BookmarkModel* bookmarkModel_;  // weak; part of the profile owned by the
                                   // top-level Browser object.
 
   // Our initial view width, which is applied in awakeFromNib.
-  float initialWidth_;
+  CGFloat initialWidth_;
 
   // BookmarkNodes have a 64bit id.  NSMenuItems have a 32bit tag used
   // to represent the bookmark node they refer to.  This map provides
@@ -78,15 +115,11 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 28.0;
   // BookmarkModelObserver)
   scoped_ptr<BookmarkBarBridge> bridge_;
 
-  // Delegate that is alerted about whether it should be compressed because
-  // it's right next to us.
-  id<ToolbarCompressable> compressDelegate_;  // weak
+  // Delegate that is informed about state changes in the bookmark bar.
+  id<BookmarkBarControllerDelegate> delegate_;  // weak
 
   // Delegate that can resize us.
   id<ViewResizer> resizeDelegate_;  // weak
-
-  // Lets us get TabSelectedAt notifications.
-  scoped_ptr<TabStripModelObserverBridge> tabObserver_;
 
   IBOutlet BookmarkBarView* buttonView_;
   IBOutlet MenuButton* offTheSideButton_;  // aka the chevron
@@ -96,22 +129,24 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 28.0;
   scoped_nsobject<NSButton> otherBookmarksButton_;
 }
 
+@property(readonly, nonatomic) bookmarks::VisualState visualState;
+@property(readonly, nonatomic) bookmarks::VisualState lastVisualState;
+@property(assign, nonatomic) id<BookmarkBarControllerDelegate> delegate;
+
 // Initializes the bookmark bar controller with the given browser
 // profile and delegates.
 - (id)initWithBrowser:(Browser*)browser
-         initialWidth:(float)initialWidth
-     compressDelegate:(id<ToolbarCompressable>)compressDelegate
+         initialWidth:(CGFloat)initialWidth
+             delegate:(id<BookmarkBarControllerDelegate>)delegate
        resizeDelegate:(id<ViewResizer>)resizeDelegate;
 
-// Returns the backdrop to the bookmark bar.
-- (BackgroundGradientView*)backgroundGradientView;
+// Updates the bookmark bar (from its current, possibly in-transition) state to
+// the one appropriate for the new conditions.
+- (void)updateAndShowNormalBar:(BOOL)showNormalBar
+               showDetachedBar:(BOOL)showDetachedBar
+                 withAnimation:(BOOL)animate;
 
-// Tell the bar to show itself if needed (e.g. if the kShowBookmarkBar
-// is set).  Called once after the controller is first created.
-- (void)showIfNeeded;
-
-// Update the visible state of the bookmark bar based on the current value of
-// -[BookmarkBarController isAlwaysVisible].
+// Update the visible state of the bookmark bar.
 - (void)updateVisibility;
 
 // Turn on or off the bookmark bar and prevent or reallow its
@@ -119,19 +154,27 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 28.0;
 // if needed.  For fullscreen mode.
 - (void)setBookmarkBarEnabled:(BOOL)enabled;
 
-// Returns YES if the bookmarks bar is currently visible, either because the
-// user has asked for it to always be visible, or because the current tab is the
-// New Tab page.
+// Returns YES if the bookmarks bar is currently visible (as a normal toolbar or
+// as a detached bar on the NTP), NO otherwise.
 - (BOOL)isVisible;
 
-// Returns true if the bookmark bar needs to be shown currently because a tab
-// that requires it is selected. The bookmark bar will have a different
-// appearance when it is shown if isAlwaysVisible returns NO.
-- (BOOL)isNewTabPage;
+// Returns YES if an animation is currently running, NO otherwise.
+- (BOOL)isAnimationRunning;
 
-// Returns true if the bookmark bar is visible for all tabs. (This corresponds
-// to the user having selected "Always show the bookmark bar")
-- (BOOL)isAlwaysVisible;
+// Returns YES if the bookmarks bar is (to be) shown as part of the normal
+// toolbar, NO otherwise. This is exclusive of |-isShownAsDetachedBar|.
+- (BOOL)isShownAsToolbar;
+
+// Returns YES if the bookmarks bar is (to be) shown as a detached bar, NO
+// otherwise; required for the |BookmarkBarToolbarViewController| protocol. This
+// is exclusive of |-isShownAsToolbar|.
+- (BOOL)isShownAsDetachedBar;
+
+// Returns the amount by which the toolbar above should be compressed.
+- (CGFloat)getDesiredToolbarHeightCompression;
+
+// Returns whether or not the toolbar above should show the divider.
+- (BOOL)shouldToolbarShowDivider;
 
 // Returns true if at least one bookmark was added.
 - (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point;
@@ -176,7 +219,6 @@ const CGFloat kNoBookmarksNTPVerticalOffset = 28.0;
 - (void)nodeChildrenReordered:(BookmarkModel*)model
                          node:(const BookmarkNode*)node;
 @end
-
 
 // These APIs should only be used by unit tests (or used internally).
 @interface BookmarkBarController(InternalOrTestingAPI)

@@ -15,6 +15,7 @@
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/back_forward_menu_controller.h"
+#import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
@@ -45,12 +46,10 @@ static NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
 // Height of the toolbar in pixels when the bookmark bar is closed.
 static const float kBaseToolbarHeight = 36.0;
 
-// Overlap (in pixels) between the toolbar and the bookmark bar.
-static const float kBookmarkBarOverlap = 6.0;
-
 @interface ToolbarController(Private)
 - (void)initCommandStatus:(CommandUpdater*)commands;
 - (void)prefChanged:(std::wstring*)prefName;
+- (BackgroundGradientView*)backgroundGradientView;
 - (void)browserActionsChanged;
 - (void)adjustLocationAndGoPositionsBy:(CGFloat)dX;
 @end
@@ -352,7 +351,10 @@ class PrefObserverBridge : public NotificationObserver {
   return locationBar_;
 }
 
+// (Private) Returns the backdrop to the toolbar.
 - (BackgroundGradientView*)backgroundGradientView {
+  // We really do mean |[super view]|; see our override of |-view|.
+  DCHECK([[super view] isKindOfClass:[BackgroundGradientView class]]);
   return (BackgroundGradientView*)[super view];
 }
 
@@ -514,12 +516,14 @@ class PrefObserverBridge : public NotificationObserver {
                                                 fromView:starButton_];
 }
 
-- (void)setShouldBeCompressed:(BOOL)compressed {
-  CGFloat newToolbarHeight = kBaseToolbarHeight;
-  if (compressed)
-    newToolbarHeight -= kBookmarkBarOverlap;
-
+- (void)setHeightCompression:(CGFloat)compressByHeight {
+  // Resize.
+  CGFloat newToolbarHeight = kBaseToolbarHeight - compressByHeight;
   [resizeDelegate_ resizeView:[self view] newHeight:newToolbarHeight];
+}
+
+- (void)setShowsDivider:(BOOL)showDivider {
+  [[self backgroundGradientView] setShowsDivider:showDivider];
 }
 
 - (NSString*)view:(NSView*)view

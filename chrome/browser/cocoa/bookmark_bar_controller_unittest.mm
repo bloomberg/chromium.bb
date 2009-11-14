@@ -12,7 +12,6 @@
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/cocoa/toolbar_compressable.h"
 #include "chrome/browser/cocoa/test_event_utils.h"
 #import "chrome/browser/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
@@ -79,34 +78,6 @@
 
 @end
 
-// A BookmarkBarController that always beleives that it's on the new tab page.
-@interface AlwaysNewTabPageBookmarkBarController : BookmarkBarControllerNoOpen {
-}
-@end
-
-@implementation AlwaysNewTabPageBookmarkBarController
--(BOOL)isNewTabPage {
-  return YES;
-}
-@end
-
-@interface CompressablePong : NSObject<ToolbarCompressable> {
-@private
-  BOOL compressed_;
-}
-@property (readonly) BOOL compressed;
-@end
-
-@implementation CompressablePong
-
-@synthesize compressed = compressed_;
-
-- (void)setShouldBeCompressed:(BOOL)compressed {
-  compressed_ = compressed;
-}
-
-@end
-
 namespace {
 
 static const int kContentAreaHeight = 500;
@@ -116,7 +87,6 @@ class BookmarkBarControllerTest : public PlatformTest {
  public:
   BookmarkBarControllerTest() {
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
-    compressDelegate_.reset([[CompressablePong alloc] init]);
     NSRect parent_frame = NSMakeRect(0, 0, 800, 50);
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
     [parent_view_ setHidden:YES];
@@ -124,7 +94,7 @@ class BookmarkBarControllerTest : public PlatformTest {
       [[BookmarkBarControllerNoOpen alloc]
           initWithBrowser:helper_.browser()
              initialWidth:NSWidth(parent_frame)
-         compressDelegate:compressDelegate_.get()
+                 delegate:nil
            resizeDelegate:resizeDelegate_.get()]);
 
     InstallAndToggleBar(bar_.get());
@@ -149,8 +119,17 @@ class BookmarkBarControllerTest : public PlatformTest {
     frame.origin.y = 100;
     [[[bar view] superview] setFrame:frame];
 
-    // make sure it's open so certain things aren't no-ops
-    helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+    // Make sure it's open so certain things aren't no-ops.
+    [bar updateAndShowNormalBar:YES
+                showDetachedBar:NO
+                  withAnimation:NO];
+  }
+
+  // Update the state of the bookmark bar.
+  void UpdateBookmarkBar() {
+    [bar_ updateAndShowNormalBar:[bar_ isShownAsToolbar]
+                 showDetachedBar:[bar_ isShownAsDetachedBar]
+                   withAnimation:NO];
   }
 
   // Return a menu item that points to the right URL.
@@ -166,12 +145,10 @@ class BookmarkBarControllerTest : public PlatformTest {
     return menu_item_;
   }
 
-
   CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<NSView> parent_view_;
   BrowserTestHelper helper_;
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
-  scoped_nsobject<CompressablePong> compressDelegate_;
   scoped_nsobject<BookmarkBarControllerNoOpen> bar_;
   scoped_nsobject<NSMenu> menu_;
   scoped_nsobject<NSMenuItem> menu_item_;
@@ -180,9 +157,11 @@ class BookmarkBarControllerTest : public PlatformTest {
 };
 
 TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
-  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
-  [bar_ updateVisibility];
-
+  [bar_ updateAndShowNormalBar:YES
+               showDetachedBar:NO
+                 withAnimation:NO];
+  EXPECT_TRUE([bar_ isShownAsToolbar]);
+  EXPECT_FALSE([bar_ isShownAsDetachedBar]);
   EXPECT_TRUE([bar_ isVisible]);
   EXPECT_FALSE([[bar_ view] isHidden]);
   EXPECT_GT([resizeDelegate_ height], 0);
@@ -190,9 +169,11 @@ TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
 }
 
 TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarFalse) {
-  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
-  [bar_ updateVisibility];
-
+  [bar_ updateAndShowNormalBar:NO
+               showDetachedBar:NO
+                 withAnimation:NO];
+  EXPECT_FALSE([bar_ isShownAsToolbar]);
+  EXPECT_FALSE([bar_ isShownAsDetachedBar]);
   EXPECT_FALSE([bar_ isVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
   EXPECT_EQ(0, [resizeDelegate_ height]);
@@ -200,10 +181,12 @@ TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarFalse) {
 }
 
 TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarTrueButDisabled) {
-  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
   [bar_ setBookmarkBarEnabled:NO];
-  [bar_ updateVisibility];
-
+  [bar_ updateAndShowNormalBar:YES
+               showDetachedBar:NO
+                 withAnimation:NO];
+  EXPECT_TRUE([bar_ isShownAsToolbar]);
+  EXPECT_FALSE([bar_ isShownAsDetachedBar]);
   EXPECT_FALSE([bar_ isVisible]);
   EXPECT_TRUE([[bar_ view] isHidden]);
   EXPECT_EQ(0, [resizeDelegate_ height]);
@@ -211,24 +194,15 @@ TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarTrueButDisabled) {
 }
 
 TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
-  helper_.profile()->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, false);
-
-  scoped_nsobject<BookmarkBarControllerTogglePong> bar;
-  bar.reset(
-      [[AlwaysNewTabPageBookmarkBarController alloc]
-          initWithBrowser:helper_.browser()
-             initialWidth:800  // arbitrary
-         compressDelegate:compressDelegate_.get()
-           resizeDelegate:resizeDelegate_.get()]);
-  InstallAndToggleBar(bar.get());
-
-  [bar setBookmarkBarEnabled:NO];
-  [bar updateVisibility];
-
-  EXPECT_TRUE([bar isVisible]);
-  EXPECT_FALSE([[bar view] isHidden]);
-  EXPECT_GT([resizeDelegate_ height], 0);
-  EXPECT_GT([[bar view] frame].size.height, 0);
+  [bar_ updateAndShowNormalBar:NO
+               showDetachedBar:YES
+                 withAnimation:NO];
+  EXPECT_FALSE([bar_ isShownAsToolbar]);
+  EXPECT_TRUE([bar_ isShownAsDetachedBar]);
+  EXPECT_TRUE([bar_ isVisible]);
+  EXPECT_FALSE([[bar_ view] isHidden]);
+  ;EXPECT_GT([resizeDelegate_ height], 0);
+  EXPECT_GT([[bar_ view] frame].size.height, 0);
 
   // Make sure no buttons fall off the bar, either now or when resized
   // bigger or smaller.
@@ -237,23 +211,29 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
   for (unsigned x = 0; x < arraysize(sizes); x++) {
     // Confirm the buttons moved from the last check (which may be
     // init but that's fine).
-    CGFloat newX = [[bar offTheSideButton] frame].origin.x;
+    CGFloat newX = [[bar_ offTheSideButton] frame].origin.x;
     EXPECT_NE(previousX, newX);
     previousX = newX;
 
-    // Confirm the buttons have a reasonable bounds.
-    EXPECT_TRUE(NSContainsRect([[bar buttonView] frame],
-                               [[bar offTheSideButton] frame]));
-    EXPECT_TRUE(NSContainsRect([[bar buttonView] frame],
-                               [[bar otherBookmarksButton] frame]));
+    // Confirm the buttons have a reasonable bounds. Recall that |-frame|
+    // returns rectangles in the superview's coordinates.
+    NSRect buttonViewFrame =
+        [[bar_ buttonView] convertRect:[[bar_ buttonView] frame]
+                              fromView:[[bar_ buttonView] superview]];
+    EXPECT_EQ([bar_ buttonView], [[bar_ offTheSideButton] superview]);
+    EXPECT_TRUE(NSContainsRect(buttonViewFrame,
+                               [[bar_ offTheSideButton] frame]));
+    EXPECT_EQ([bar_ buttonView], [[bar_ otherBookmarksButton] superview]);
+    EXPECT_TRUE(NSContainsRect(buttonViewFrame,
+                               [[bar_ otherBookmarksButton] frame]));
 
     // Now move them implicitly.
     // We confirm FrameChangeNotification works in the next unit test;
     // we simply assume it works here to resize or reposition the
     // buttons above.
-    NSRect frame = [[bar view] frame];
+    NSRect frame = [[bar_ view] frame];
     frame.size.width += sizes[x];
-    [[bar view] setFrame:frame];
+    [[bar_ view] setFrame:frame];
   }
 }
 
@@ -264,7 +244,7 @@ TEST_F(BookmarkBarControllerTest, FrameChangeNotification) {
     [[BookmarkBarControllerTogglePong alloc]
           initWithBrowser:helper_.browser()
              initialWidth:100  // arbitrary
-         compressDelegate:compressDelegate_.get()
+                 delegate:nil
            resizeDelegate:resizeDelegate_.get()]);
   InstallAndToggleBar(bar.get());
 
@@ -415,13 +395,17 @@ TEST_F(BookmarkBarControllerTest, TestAddRemoveAndClear) {
   EXPECT_EQ(initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl1("http://superfriends.hall-of-justice.edu");
-  std::wstring title1(L"Protectors of the Universe");
+  // Short titles increase the chances of this test succeeding if the view is
+  // narrow.
+  // TODO(viettrungluu): make the test independent of window/view size, font
+  // metrics, button size and spacing, and everything else.
+  std::wstring title1(L"x");
   model->SetURLStarred(gurl1, title1, true);
   EXPECT_EQ(1U, [[bar_ buttons] count]);
   EXPECT_EQ(1+initial_subview_count, [[buttonView subviews] count]);
 
   GURL gurl2("http://legion-of-doom.gov");
-  std::wstring title2(L"Bad doodz");
+  std::wstring title2(L"y");
   model->SetURLStarred(gurl2, title2, true);
   EXPECT_EQ(2U, [[bar_ buttons] count]);
   EXPECT_EQ(2+initial_subview_count, [[buttonView subviews] count]);

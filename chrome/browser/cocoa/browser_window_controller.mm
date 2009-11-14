@@ -42,6 +42,7 @@
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #include "grit/generated_resources.h"
@@ -83,6 +84,13 @@ willPositionSheet:(NSWindow*)sheet
 
 // Repositions the windows subviews.
 - (void)layoutSubviews;
+
+// Should we show the normal bookmark bar?
+- (BOOL)shouldShowBookmarkBar;
+
+// Is the current page one for which the bookmark should be shown detached *if*
+// the normal bookmark bar is not shown?
+- (BOOL)shouldShowDetachedBookmarkBar;
 
 @end
 
@@ -176,7 +184,7 @@ willPositionSheet:(NSWindow*)sheet
         [[BookmarkBarController alloc]
             initWithBrowser:browser_.get()
                initialWidth:NSWidth([[[self window] contentView] frame])
-           compressDelegate:toolbarController_.get()
+                   delegate:self
              resizeDelegate:self]);
 
     // Add bookmark bar to the view hierarchy.  This also triggers the
@@ -192,10 +200,10 @@ willPositionSheet:(NSWindow*)sheet
       [bookmarkBarController_ setBookmarkBarEnabled:NO];
     }
 
-    // We don't want to try and show the bar before it gets placed in
-    // it's parent view, so this step shoudn't be inside the bookmark
-    // bar controller's awakeFromNib.
-    [bookmarkBarController_ showIfNeeded];
+    // We don't want to try and show the bar before it gets placed in its parent
+    // view, so this step shoudn't be inside the bookmark bar controller's
+    // |-awakeFromNib|.
+    [self updateBookmarkBarVisibilityWithAnimation:NO];
 
     if (browser_->SupportsWindowFeature(Browser::FEATURE_EXTENSIONSHELF)) {
       // Create the extension shelf.
@@ -474,10 +482,10 @@ willPositionSheet:(NSWindow*)sheet
          view == [downloadShelfController_ view] ||
          view == [bookmarkBarController_ view]);
 
-  // Change the height of the view and call layoutViews.  We set the height here
-  // without regard to where the view is on the screen or whether it needs to
-  // "grow up" or "grow down."  The below call to layoutSubviews will position
-  // each view correctly.
+  // Change the height of the view and call |-layoutSubViews|. We set the height
+  // here without regard to where the view is on the screen or whether it needs
+  // to "grow up" or "grow down."  The below call to |-layoutSubviews| will
+  // position each view correctly.
   NSRect frame = [view frame];
   if (frame.size.height == height)
     return;
@@ -934,8 +942,11 @@ willPositionSheet:(NSWindow*)sheet
   return [bookmarkBarController_ isVisible];
 }
 
-- (void)updateBookmarkBarVisibility {
-  [bookmarkBarController_ updateVisibility];
+- (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate {
+  [bookmarkBarController_
+      updateAndShowNormalBar:[self shouldShowBookmarkBar]
+             showDetachedBar:[self shouldShowDetachedBookmarkBar]
+               withAnimation:animate];
 }
 
 - (BOOL)isDownloadShelfVisible {
@@ -1082,6 +1093,9 @@ willPositionSheet:(NSWindow*)sheet
   UpdateToolbar(newContents, true);
   UpdateUIForContents(newContents);
 #endif
+
+  // Update the bookmark bar.
+  [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
 - (void)tabChangedWithContents:(TabContents*)contents
@@ -1091,6 +1105,9 @@ willPositionSheet:(NSWindow*)sheet
     // Update titles if this is the currently selected tab.
     windowShim_->UpdateTitleBar();
   }
+
+  // Update the bookmark bar.
+  [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
 - (void)userChangedTheme {
@@ -1199,6 +1216,28 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
+// (Needed for |BookmarkBarControllerDelegate| protocol.)
+- (void)bookmarkBar:(BookmarkBarController*)controller
+ didChangeFromState:(bookmarks::VisualState)oldState
+            toState:(bookmarks::VisualState)newState {
+  [toolbarController_
+      setHeightCompression:[controller getDesiredToolbarHeightCompression]];
+  [toolbarController_ setShowsDivider:[controller shouldToolbarShowDivider]];
+
+  // TODO(viettrungluu): anything else?
+}
+
+// (Needed for |BookmarkBarControllerDelegate| protocol.)
+- (void)bookmarkBar:(BookmarkBarController*)controller
+willAnimateFromState:(bookmarks::VisualState)oldState
+            toState:(bookmarks::VisualState)newState {
+  [toolbarController_
+      setHeightCompression:[controller getDesiredToolbarHeightCompression]];
+  [toolbarController_ setShowsDivider:[controller shouldToolbarShowDivider]];
+
+  // TODO(viettrungluu): anything else?
+}
+
 @end
 
 @implementation BrowserWindowController (Private)
@@ -1285,25 +1324,30 @@ willPositionSheet:(NSWindow*)sheet
 - (NSRect)window:(NSWindow*)window
 willPositionSheet:(NSWindow*)sheet
        usingRect:(NSRect)defaultSheetRect {
-  // Any sheet should come from right above the apparent content area, or
-  // equivalently right below the apparent toolbar.
-  NSRect toolbarFrame = [[toolbarController_ view] frame];
-  defaultSheetRect.origin.y = toolbarFrame.origin.y;
-
-  // Position as follows:
-  //  - On a normal (non-NTP) page, position the sheet under the bookmark bar if
-  //    it's visible. Else put it immediately below the normal toolbar.
-  //  - On the NTP, if the bookmark bar is enabled ("always visible"), then it
-  //    looks like a normal bookmark bar, so position the sheet under it; if it
-  //    isn't enabled, the bookmark bar will look as if it's a part of the
-  //    content area, so just put it immediately below the toolbar.
-  if ([bookmarkBarController_ isVisible] &&
-      (![bookmarkBarController_ isNewTabPage] ||
-        [bookmarkBarController_ isAlwaysVisible])) {
-    NSRect bookmarkBarFrame = [[bookmarkBarController_ view] frame];
-    defaultSheetRect.origin.y -= bookmarkBarFrame.size.height;
+  // Position the sheet as follows:
+  //  - If the bookmark bar is hidden or shown as a bubble (on the NTP when the
+  //    bookmark bar is disabled), position the sheet immediately below the
+  //    normal toolbar.
+  //  - If the bookmark bar is shown (attached to the normal toolbar), position
+  //    the sheet below the bookmark bar.
+  //  - If the bookmark bar is currently animating, position the sheet according
+  //    to where the bar will be when the animation ends.
+  switch ([bookmarkBarController_ visualState]) {
+    case bookmarks::kShowingState: {
+      NSRect bookmarkBarFrame = [[bookmarkBarController_ view] frame];
+      defaultSheetRect.origin.y = bookmarkBarFrame.origin.y;
+      break;
+    }
+    case bookmarks::kHiddenState:
+    case bookmarks::kDetachedState: {
+      NSRect toolbarFrame = [[toolbarController_ view] frame];
+      defaultSheetRect.origin.y = toolbarFrame.origin.y;
+      break;
+    }
+    default:
+    case bookmarks::kInvalidState:
+      NOTREACHED();
   }
-
   return defaultSheetRect;
 }
 
@@ -1384,7 +1428,18 @@ willPositionSheet:(NSWindow*)sheet
   }
   [toolbarView setFrame:toolbarFrame];
 
-  if ([bookmarkBarController_ isAlwaysVisible]) {
+  bookmarks::VisualState bookmarkBarState =
+      [bookmarkBarController_ visualState];
+  bookmarks::VisualState lastBookmarkBarState =
+      [bookmarkBarController_ lastVisualState];
+
+  // If the bookmark bar is showing, or animating between showing and hidden,
+  // place the bookmark bar immediately below the toolbar.
+  // TODO(viettrungluu): Improve/abstract this when I implement other
+  // animations.
+  if ((bookmarkBarState == bookmarks::kShowingState) ||
+      (bookmarkBarState == bookmarks::kHiddenState &&
+       lastBookmarkBarState == bookmarks::kShowingState)) {
     NSView* bookmarkBarView = [bookmarkBarController_ view];
     [bookmarkBarView setHidden:NO];
     NSRect bookmarkBarFrame = [bookmarkBarView frame];
@@ -1402,8 +1457,8 @@ willPositionSheet:(NSWindow*)sheet
   [infoBarView setFrame:infoBarFrame];
   maxY -= NSHeight(infoBarFrame);
 
-  if (![bookmarkBarController_ isAlwaysVisible] &&
-      [bookmarkBarController_ isVisible]) {
+  // If the bookmark bar is detached, place it at the bottom of the stack.
+  if (bookmarkBarState == bookmarks::kDetachedState) {
     NSView* bookmarkBarView = [bookmarkBarController_ view];
     [bookmarkBarView setHidden:NO];
     NSRect bookmarkBarFrame = [bookmarkBarView frame];
@@ -1411,12 +1466,6 @@ willPositionSheet:(NSWindow*)sheet
     bookmarkBarFrame.size.width = NSWidth(contentFrame);
     [bookmarkBarView setFrame:bookmarkBarFrame];
     maxY -= NSHeight(bookmarkBarFrame);
-  }
-
-  if (![bookmarkBarController_ isVisible]) {
-    // If the bookmark bar is not visible in either mode, we need to hide it
-    // otherwise it'll render over other elements.
-    [[bookmarkBarController_ view] setHidden:YES];
   }
 
   // Place the extension shelf at the bottom of the view, if it exists.
@@ -1453,15 +1502,22 @@ willPositionSheet:(NSWindow*)sheet
 
   verticalOffsetForStatusBubble_ = minY;
 
-  // The bottom of the visible toolbar stack is the one that shows the
-  // divider stroke. If the bookmark bar is visible and not in new tab page
-  // mode, it is the bottom visible toolbar and so it must, otherwise the
-  // main toolbar is.
-  BOOL bookmarkToolbarShowsDivider = [bookmarkBarController_ isAlwaysVisible];
-  [[toolbarController_ backgroundGradientView]
-      setShowsDivider:!bookmarkToolbarShowsDivider];
-  [[bookmarkBarController_ backgroundGradientView]
-      setShowsDivider:bookmarkToolbarShowsDivider];
+  // Normally, we don't need to tell the toolbar whether or not to show the
+  // divider, but things break down during animation.
+  [toolbarController_
+      setShowsDivider:[bookmarkBarController_ shouldToolbarShowDivider]];
+}
+
+- (BOOL)shouldShowBookmarkBar {
+  DCHECK(browser_.get());
+  return browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
+      YES : NO;
+}
+
+- (BOOL)shouldShowDetachedBookmarkBar {
+  DCHECK(browser_.get());
+  TabContents* contents = browser_->GetSelectedTabContents();
+  return (contents && contents->ShouldShowBookmarkBar()) ? YES : NO;
 }
 
 @end

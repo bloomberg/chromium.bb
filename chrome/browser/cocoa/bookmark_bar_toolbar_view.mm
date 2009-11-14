@@ -17,18 +17,18 @@
 const CGFloat kBorderRadius = 3.0;
 
 @interface BookmarkBarToolbarView (Private)
-- (void)drawRectAsFloating:(NSRect)rect;
+- (void)drawRectAsBubble:(NSRect)rect;
 @end
 
 @implementation BookmarkBarToolbarView
 
 - (BOOL)isOpaque {
-  return [controller_ drawAsFloatingBar];
+  return [controller_ isShownAsDetachedBar];
 }
 
 - (void)drawRect:(NSRect)rect {
-  if ([controller_ drawAsFloatingBar]) {
-    [self drawRectAsFloating:rect];
+  if ([controller_ isShownAsDetachedBar]) {
+    [self drawRectAsBubble:rect];
   } else {
     NSPoint phase = [self gtm_themePatternPhase];
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
@@ -36,7 +36,7 @@ const CGFloat kBorderRadius = 3.0;
   }
 }
 
-- (void)drawRectAsFloating:(NSRect)rect {
+- (void)drawRectAsBubble:(NSRect)rect {
   NSRect bounds = [self bounds];
 
   ThemeProvider* themeProvider = [controller_ themeProvider];

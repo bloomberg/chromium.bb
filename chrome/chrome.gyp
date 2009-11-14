@@ -1262,7 +1262,6 @@
         'browser/cocoa/throbber_view.mm',
         'browser/cocoa/toolbar_button_cell.h',
         'browser/cocoa/toolbar_button_cell.mm',
-        'browser/cocoa/toolbar_compressable.h',
         'browser/cocoa/toolbar_controller.h',
         'browser/cocoa/toolbar_controller.mm',
         'browser/cocoa/toolbar_view.h',

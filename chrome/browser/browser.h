@@ -712,10 +712,10 @@ class Browser : public TabStripModelDelegate,
   NotificationRegistrar registrar_;
 
   // This Browser's type.
-  Type type_;
+  const Type type_;
 
   // This Browser's profile.
-  Profile* profile_;
+  Profile* const profile_;
 
   // This Browser's window.
   BrowserWindow* window_;

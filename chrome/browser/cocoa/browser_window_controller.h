@@ -44,6 +44,7 @@ class TabStripModelObserverBridge;
 
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
+                      BookmarkBarControllerDelegate,
                       BookmarkBubbleControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
@@ -122,8 +123,9 @@ class TabStripModelObserverBridge;
 
 - (BOOL)isBookmarkBarVisible;
 
-// Called after the visibility perf changed.
-- (void)updateBookmarkBarVisibility;
+// Called after bookmark bar visibility changes (due to pref change or change in
+// tab/tab contents).
+- (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate;
 
 - (BOOL)isDownloadShelfVisible;
 

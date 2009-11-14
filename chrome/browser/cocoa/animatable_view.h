@@ -9,6 +9,7 @@
 
 #import "base/cocoa_protocols_mac.h"
 #include "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 
 // A view that provides an animatable height property.  Provides methods to
@@ -19,7 +20,7 @@
 // animation ends normally and an |animationDidStop:| message when the animation
 // was canceled (even when canceled as a result of a new animation starting).
 
-@interface AnimatableView : NSView<NSAnimationDelegate> {
+@interface AnimatableView : BackgroundGradientView<NSAnimationDelegate> {
  @protected
   IBOutlet id delegate_;  // weak, used to send animation ended messages.
 

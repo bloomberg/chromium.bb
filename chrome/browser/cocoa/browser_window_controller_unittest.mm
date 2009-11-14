@@ -105,6 +105,7 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   // Force the bookmark bar to be shown.
   browser_helper_.profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
+  [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
 
   // Make sure a normal BrowserWindowController is, uh, normal.
   EXPECT_TRUE([controller_ isNormalWindow]);
@@ -139,7 +140,7 @@ TEST_F(BrowserWindowControllerTest, BookmarkBarControllerIndirection) {
   browser_helper_.profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
 
-  [controller_ updateBookmarkBarVisibility];
+  [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
   EXPECT_TRUE([controller_ isBookmarkBarVisible]);
 }
 

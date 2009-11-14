@@ -10,6 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
@@ -35,6 +36,77 @@
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
+// Bookmark bar state changing and animations
+//
+// The bookmark bar has three real states: "showing" (a normal bar attached to
+// the toolbar), "hidden", and "detached" (pretending to be part of the web
+// content on the NTP). It can, or at least should be able to, animate between
+// these states. There are several complications even without animation:
+//  - The placement of the bookmark bar is done by the BWC, and it needs to know
+//    the state in order to place the bookmark bar correctly (immediately below
+//    the toolbar when showing, below the infobar when detached).
+//  - The "divider" (a black line) needs to be drawn by either the toolbar (when
+//    the bookmark bar is hidden or detached) or by the bookmark bar (when it is
+//    showing). It should not be drawn by both.
+//  - The toolbar needs to vertically "compress" when the bookmark bar is
+//    showing. This ensures the proper display of both the bookmark bar and the
+//    toolbar, and gives a padded area around the bookmark bar items for right
+//    clicks, etc.
+//
+// Our model is that the BWC controls us and also the toolbar. We try not to
+// talk to the browser nor the toolbar directly, instead centralizing control in
+// the BWC. The key method by which the BWC controls us is
+// |-updateAndShowNormalBar:showDetachedBar:withAnimation:|. This invokes state
+// changes, and at appropriate times we request that the BWC do things for us
+// via either the resize delegate or our general delegate. If the BWC needs any
+// information about what it should do, or tell the toolbar to do, it can then
+// query us back (e.g., |-isShownAs...|, |-getDesiredToolbarHeightCompression|,
+// |-shouldToolbarShowDivider|, etc.).
+//
+// Animation-related complications:
+//  - Compression of the toolbar is touchy during animation. It must not be
+//    compressed while the bookmark bar is animating to/from showing (from/to
+//    hidden), otherwise it would look like the bookmark bar's contents are
+//    sliding out of the controls inside the toolbar. As such, we have to make
+//    sure that the bookmark bar is shown at the right location and at the
+//    right height (at various points in time).
+//  - Showing the divider is also complicated during animation between hidden
+//    and showing. We have to make sure that the toolbar does not show the
+//    divider despite the fact that it's not compressed. The exception to this
+//    is at the beginning/end of the animation when the toolbar is still
+//    uncompressed but the bookmark bar has height 0. If we're not careful, we
+//    get a flicker at this point.
+//  - We have to ensure that we do the right thing if we're told to change state
+//    while we're running an animation. The generic/easy thing to do is to jump
+//    to the end state of our current animation, and (if the new state change
+//    again involves an animation) begin the new animation. We can do better
+//    than that, however, and sometimes just change the current animation to go
+//    to the new end state (e.g., by "reversing" the animation in the showing ->
+//    hidden -> showing case). We also have to ensure that demands to
+//    immediately change state are always honoured.
+//
+// Pointers to animation logic:
+//  - |-moveToVisualState:withAnimation:| starts animations, deciding which ones
+//    we know how to handle.
+//  - |showBookmarkBarWithAnimation:| has most of the actual logic.
+//  - |-getDesiredToolbarHeightCompression| and |-shouldToolbarShowDivider|
+//    contain related logic.
+//  - The BWC's |-layoutSubviews| needs to know how to position things.
+//  - The BWC should implement |-bookmarkBar:didChangeFromState:toState:| and
+//    |-bookmarkBar:willAnimateFromState:toState:| in order to inform the
+//    toolbar of required changes.
+
+namespace {
+
+// Overlap (in pixels) between the toolbar and the bookmark bar (when showing in
+// normal mode).
+const CGFloat kBookmarkBarOverlap = 6.0;
+
+// Duration of the bookmark bar animations.
+const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
+
+}  // namespace
+
 // Specialization of NSButton that responds to middle-clicks. By default,
 // NSButton ignores them.
 @interface BookmarkButton : NSButton
@@ -47,7 +119,34 @@
 @end
 
 @interface BookmarkBarController(Private)
-- (void)showBookmarkBar:(BOOL)enable immediately:(BOOL)immediately;
+// Determines the appropriate state for the given situation.
++ (bookmarks::VisualState)visualStateToShowNormalBar:(BOOL)showNormalBar
+                                     showDetachedBar:(BOOL)showDetachedBar;
+
+// Moves to the given next state (from the current state), possibly animating.
+// If |animate| is NO, it will stop any running animation and jump to the given
+// state. If YES, it may either (depending on implementation) jump to the end of
+// the current animation and begin the next one, or stop the current animation
+// mid-flight and animate to the next state.
+- (void)moveToVisualState:(bookmarks::VisualState)nextVisualState
+            withAnimation:(BOOL)animate;
+
+// Return the backdrop to the bookmark bar as various types.
+- (BackgroundGradientView*)backgroundGradientView;
+- (AnimatableView*)animatableView;
+
+// Puts stuff into the final visual state without animating, stopping a running
+// animation if necessary.
+- (void)finalizeVisualState;
+
+// Stops any current animation in its tracks (midway).
+- (void)stopCurrentAnimation;
+
+// Show/hide the bookmark bar. Handles animating the resize of the content view.
+// if |animate| is YES, the changes are made using the animator; otherwise they
+// are made immediately.
+- (void)showBookmarkBarWithAnimation:(BOOL)animate;
+
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
 - (void)tagEmptyMenu:(NSMenu*)menu;
@@ -62,20 +161,27 @@
 
 @implementation BookmarkBarController
 
+@synthesize visualState = visualState_;
+@synthesize lastVisualState = lastVisualState_;
+@synthesize delegate = delegate_;
+
 - (id)initWithBrowser:(Browser*)browser
          initialWidth:(float)initialWidth
-     compressDelegate:(id<ToolbarCompressable>)compressDelegate
+             delegate:(id<BookmarkBarControllerDelegate>)delegate
        resizeDelegate:(id<ViewResizer>)resizeDelegate {
   if ((self = [super initWithNibName:@"BookmarkBar"
                               bundle:mac_util::MainAppBundle()])) {
+    // Initialize to an invalid state.
+    visualState_ = bookmarks::kInvalidState;
+    lastVisualState_ = bookmarks::kInvalidState;
+
     browser_ = browser;
     initialWidth_ = initialWidth;
     bookmarkModel_ = browser_->profile()->GetBookmarkModel();
     buttons_.reset([[NSMutableArray alloc] init]);
-    compressDelegate_ = compressDelegate;
+    delegate_ = delegate;
     resizeDelegate_ = resizeDelegate;
-    tabObserver_.reset(
-        new TabStripModelObserverBridge(browser_->tabstrip_model(), self));
+    [[self animatableView] setResizeDelegate:resizeDelegate];
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
@@ -85,6 +191,9 @@
 }
 
 - (void)dealloc {
+  // We better stop any in-flight animation if we're being killed.
+  [[self animatableView] stopAnimation];
+
   // Remove our view from its superview so it doesn't attempt to reference
   // it when the controller is gone.
   //TODO(dmaclach): Remove -- http://crbug.com/25845
@@ -112,8 +221,8 @@
 
   DCHECK([offTheSideButton_ attachedMenu]);
 
-  // To make life happier when the bookmark bar is floating, the
-  // chevron is a child of the button view.
+  // To make life happier when the bookmark bar is floating, the chevron is a
+  // child of the button view.
   [offTheSideButton_ removeFromSuperview];
   [buttonView_ addSubview:offTheSideButton_];
 
@@ -127,14 +236,16 @@
            object:[self view]];
 }
 
-// Method is the same as [self view], but is provided to be explicit.
+// (Private) Method is the same as [self view], but is provided to be explicit.
 - (BackgroundGradientView*)backgroundGradientView {
+  DCHECK([[self view] isKindOfClass:[BackgroundGradientView class]]);
   return (BackgroundGradientView*)[self view];
 }
 
-- (void)showIfNeeded {
-  if (browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar))
-    [self showBookmarkBar:YES immediately:YES];
+// (Private) Method is the same as [self view], but is provided to be explicit.
+- (AnimatableView*)animatableView {
+  DCHECK([[self view] isKindOfClass:[AnimatableView class]]);
+  return (AnimatableView*)[self view];
 }
 
 // Position the off-the-side chevron to the left of the otherBookmarks button.
@@ -185,16 +296,15 @@
   NSPoint newOrigin;
   newOrigin.x = parent.origin.x + bookmarks::kNoBookmarksHorizontalOffset;
   newOrigin.y = parent.origin.y + parent.size.height -
-      ([self isAlwaysVisible] ? bookmarks::kNoBookmarksVerticalOffset :
-                                bookmarks::kNoBookmarksNTPVerticalOffset);
+      ([self isShownAsToolbar] ? bookmarks::kNoBookmarksVerticalOffset :
+                                 bookmarks::kNoBookmarksNTPVerticalOffset);
   [noItemsView setFrameOrigin:newOrigin];
 }
 
-// Change the layout of the bookmark bar's subviews in response to a
-// visibility change (e.g. show or hide the bar) or style change
-// (attached or floating).
+// Change the layout of the bookmark bar's subviews in response to a visibility
+// change (e.g., show or hide the bar) or style change (attached or floating).
 - (void)layoutSubviews {
-  if ([self drawAsFloatingBar]) {
+  if (visualState_ == bookmarks::kDetachedState) {
     // The internal bookmark bar should have padding to center it.
     NSRect frame = [[self view] frame];
     [buttonView_ setFrame:
@@ -212,49 +322,125 @@
   }
 }
 
-// Show or hide the bar based on the value of |show|. Handles animating the
-// resize of the content view.  if |immediately| is YES, make changes
-// immediately instead of using an animator. The routine which enables the bar
-// will show it if relevant using other mechanisms (the pref) to determine
-// desired state.
-- (void)showBookmarkBar:(BOOL)show immediately:(BOOL)immediately {
-  BOOL compressed = [self isAlwaysVisible];
-  [compressDelegate_ setShouldBeCompressed:compressed];
+// (Private)
+- (void)showBookmarkBarWithAnimation:(BOOL)animate {
+  if (animate) {
+    // Animating from hidden to normal bar.
+    if (lastVisualState_ == bookmarks::kHiddenState &&
+        visualState_ == bookmarks::kShowingState) {
+      [[self backgroundGradientView] setShowsDivider:YES];
+      [[self view] setHidden:NO];
+      AnimatableView* view = [self animatableView];
+      // Height takes into account the extra height we have since the toolbar
+      // only compresses when we're done.
+      [view animateToNewHeight:([self preferredHeight] - kBookmarkBarOverlap)
+                      duration:kBookmarkBarAnimationDuration];
+      return;
+    }
 
+    // Animating from normal bar to hidden.
+    if (lastVisualState_ == bookmarks::kShowingState &&
+        visualState_ == bookmarks::kHiddenState) {
+      // The toolbar uncompresses immediately at the beginning (otherwise the
+      // slide looks wrong, since we slide into the bottom of stuff in the
+      // toolbar). Do this only if we're at the beginning height since we may
+      // enter this mid-animation.
+      if (NSHeight([[self view] frame]) == bookmarks::kBookmarkBarHeight) {
+        [resizeDelegate_ resizeView:[self view]
+                          newHeight:(bookmarks::kBookmarkBarHeight -
+                                        kBookmarkBarOverlap)];
+      }
+      [[self backgroundGradientView] setShowsDivider:YES];
+      [[self view] setHidden:NO];
+      AnimatableView* view = [self animatableView];
+      [view animateToNewHeight:0
+                      duration:kBookmarkBarAnimationDuration];
+      return;
+    }
+
+    // TODO(viettrungluu): other animation cases. Note: will need to fade in/out
+    // divider when animating from/to detached bar (to/from normal bar).
+
+    // Fall through for any cases we don't know about.
+  }
+
+  BOOL show = [self isVisible];
   CGFloat height = show ? [self preferredHeight] : 0;
   [resizeDelegate_ resizeView:[self view] newHeight:height];
-  [[self view] setHidden:show ? NO : YES];
 
-  DCHECK([[self view] isKindOfClass:[BookmarkBarToolbarView class]]);
+  // Only show the divider if showing the normal bookmark bar.
+  BOOL showDivider = (visualState_ == bookmarks::kShowingState ||
+                      lastVisualState_ == bookmarks::kShowingState) ? YES : NO;
+  [[self backgroundGradientView] setShowsDivider:showDivider];
+
+  // Make sure we're shown.
+  [[self view] setHidden:(show ? NO : YES)];
   [self layoutSubviews];
   [self frameDidChange];
 }
 
-// We don't change a preference; we only change visibility.
-// Preference changing (global state) is handled in
-// BrowserWindowCocoa::ToggleBookmarkBar(). We simply update the visibility of
-// the bar based on the current value of the pref.
+// We don't change a preference; we only change visibility. Preference changing
+// (global state) is handled in |BrowserWindowCocoa::ToggleBookmarkBar()|. We
+// simply update based on what we're told.
 - (void)updateVisibility {
-  [self showBookmarkBar:[self isVisible] immediately:YES];
+  [self showBookmarkBarWithAnimation:NO];
 }
 
 - (void)setBookmarkBarEnabled:(BOOL)enabled {
-  barIsEnabled_ = enabled ? YES : NO;
+  barIsEnabled_ = enabled;
   [self updateVisibility];
 }
 
 - (BOOL)isVisible {
-  return ([self isAlwaysVisible] && barIsEnabled_) || [self isNewTabPage];
+  return (barIsEnabled_ && (visualState_ == bookmarks::kShowingState ||
+                            visualState_ == bookmarks::kDetachedState)) ?
+      YES : NO;
 }
 
-- (BOOL)isNewTabPage {
-  return browser_ && browser_->GetSelectedTabContents() &&
-      browser_->GetSelectedTabContents()->ShouldShowBookmarkBar();
+- (BOOL)isAnimationRunning {
+  return (lastVisualState_ == bookmarks::kInvalidState) ? NO : YES;
 }
 
-- (BOOL)isAlwaysVisible {
-  return browser_ &&
-      browser_->profile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
+- (BOOL)isShownAsToolbar {
+  return (visualState_ == bookmarks::kShowingState) ? YES : NO;
+}
+
+- (BOOL)isShownAsDetachedBar {
+  return (visualState_ == bookmarks::kDetachedState) ? YES : NO;
+}
+
+- (CGFloat)getDesiredToolbarHeightCompression {
+  // Some special cases....
+  if ([self isAnimationRunning]) {
+    // No toolbar compression when animating between showing and hidden.
+    if ((lastVisualState_ == bookmarks::kHiddenState &&
+         visualState_ == bookmarks::kShowingState) ||
+        (lastVisualState_ == bookmarks::kShowingState &&
+         visualState_ == bookmarks::kHiddenState))
+      return 0;
+
+    // TODO(viettrungluu): other animation cases.
+  }
+
+  return (visualState_ == bookmarks::kShowingState) ? kBookmarkBarOverlap : 0;
+}
+
+- (BOOL)shouldToolbarShowDivider {
+  // Some special cases....
+  if ([self isAnimationRunning]) {
+    // In general, the toolbar shouldn't show a divider while we're animating
+    // between showing and hidden. The exception is when our height is < 1, in
+    // which case we can't draw it.
+    if ((lastVisualState_ == bookmarks::kHiddenState &&
+         visualState_ == bookmarks::kShowingState) ||
+        (lastVisualState_ == bookmarks::kShowingState &&
+         visualState_ == bookmarks::kHiddenState))
+      return (NSHeight([[self view] frame]) < 1) ? YES : NO;
+
+    // TODO(viettrungluu): other animation cases.
+  }
+
+  return (visualState_ == bookmarks::kShowingState) ? NO : YES;
 }
 
 - (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point {
@@ -274,16 +460,13 @@
 }
 
 - (int)currentTabContentsHeight {
-  return browser_->GetSelectedTabContents()->view()->GetContainerSize().
-      height();
+  return browser_->GetSelectedTabContents() ?
+      browser_->GetSelectedTabContents()->view()->GetContainerSize().height() :
+      0;
 }
 
 - (ThemeProvider*)themeProvider {
   return browser_->profile()->GetThemeProvider();
-}
-
-- (BOOL)drawAsFloatingBar {
-  return ![self isAlwaysVisible] && [self isNewTabPage];
 }
 
 // Return nil if menuItem has no delegate.
@@ -349,25 +532,8 @@
 }
 
 - (int)preferredHeight {
-  return [self isAlwaysVisible] ? bookmarks::kBookmarkBarHeight :
+  return [self isShownAsToolbar] ? bookmarks::kBookmarkBarHeight :
       bookmarks::kNTPBookmarkBarHeight;
-}
-
-- (void)selectTabWithContents:(TabContents*)newContents
-             previousContents:(TabContents*)oldContents
-                      atIndex:(NSInteger)index
-                  userGesture:(bool)wasUserGesture {
-  // We need selectTabWithContents: for when we change from a tab that is the
-  // new tab page to a tab that isn't.
-  [self updateVisibility];
-}
-
-- (void)tabChangedWithContents:(TabContents*)contents
-                       atIndex:(NSInteger)index
-                   loadingOnly:(BOOL)loading {
-  // We need tabChangedWithContents: for when the user clicks a bookmark from
-  // the bookmark bar on the new tab page.
-  [self updateVisibility];
 }
 
 // Recursively add the given bookmark node and all its children to
@@ -932,6 +1098,108 @@
     return gfx::SkBitmapToNSImage(favIcon);
 
   return defaultImage_;
+}
+
+// Determines the appropriate state for the given situation.
++ (bookmarks::VisualState)visualStateToShowNormalBar:(BOOL)showNormalBar
+                                     showDetachedBar:(BOOL)showDetachedBar {
+  if (showNormalBar)
+    return bookmarks::kShowingState;
+  if (showDetachedBar)
+    return bookmarks::kDetachedState;
+  return bookmarks::kHiddenState;
+}
+
+- (void)moveToVisualState:(bookmarks::VisualState)nextVisualState
+            withAnimation:(BOOL)animate {
+  BOOL isAnimationRunning = [self isAnimationRunning];
+
+  // No-op if the next state is the same as the "current" one, subject to the
+  // following conditions:
+  //  - no animation is running; or
+  //  - an animation is running and |animate| is YES ([*] if it's NO, we'd want
+  //    to cancel the animation and jump to the final state).
+  if ((nextVisualState == visualState_) && (!isAnimationRunning || animate))
+    return;
+
+  // If an animation is running, we want to finalize it. Otherwise we'd have to
+  // be able to animate starting from the middle of one type of animation. We
+  // assume that animations that we know about can be "reversed".
+  if (isAnimationRunning) {
+    // Don't cancel if we're going to reverse the animation.
+    if (nextVisualState != lastVisualState_) {
+      [self stopCurrentAnimation];
+      [self finalizeVisualState];
+    }
+
+    // If we're in case [*] above, we can stop here.
+    if (nextVisualState == visualState_)
+      return;
+  }
+
+  // Now update with the new state change.
+  lastVisualState_ = visualState_;
+  visualState_ = nextVisualState;
+
+  if (animate) {
+    // Take care of any animation cases we know how to handle.
+
+    // We know how to handle hidden <-> normal....
+    if ((lastVisualState_ == bookmarks::kHiddenState &&
+         visualState_ == bookmarks::kShowingState) ||
+        (lastVisualState_ == bookmarks::kShowingState &&
+         visualState_ == bookmarks::kHiddenState)) {
+      [delegate_ bookmarkBar:self willAnimateFromState:lastVisualState_
+                                               toState:visualState_];
+      [self showBookmarkBarWithAnimation:YES];
+      return;
+    }
+
+    // TODO(viettrungluu): we don't know about any yet....
+
+    // Let any animation cases which we don't know how to handle fall through to
+    // the unanimated case.
+  }
+
+  // Just jump to the state.
+  [self finalizeVisualState];
+}
+
+// N.B.: |-moveToVisualState:...| will check if this should be a no-op or not.
+- (void)updateAndShowNormalBar:(BOOL)showNormalBar
+               showDetachedBar:(BOOL)showDetachedBar
+                 withAnimation:(BOOL)animate {
+  bookmarks::VisualState newVisualState =
+      [BookmarkBarController visualStateToShowNormalBar:showNormalBar
+                                        showDetachedBar:showDetachedBar];
+  [self moveToVisualState:newVisualState
+            withAnimation:animate];
+}
+
+// (Private)
+- (void)finalizeVisualState {
+  // We promise that our delegate that the variables will be finalized before
+  // the call to |-bookmarkBar:didChangeFromState:toState:|.
+  bookmarks::VisualState oldVisualState = lastVisualState_;
+  lastVisualState_ = bookmarks::kInvalidState;
+
+  // Notify our delegate.
+  [delegate_ bookmarkBar:self didChangeFromState:oldVisualState
+                                         toState:visualState_];
+
+  // Update ourselves visually.
+  [self updateVisibility];
+}
+
+// (Private)
+- (void)stopCurrentAnimation {
+  [[self animatableView] stopAnimation];
+}
+
+// Delegate method for |AnimatableView| (a superclass of
+// |BookmarkBarToolbarView|).
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [self finalizeVisualState];
 }
 
 @end

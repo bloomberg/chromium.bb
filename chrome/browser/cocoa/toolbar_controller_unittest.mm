@@ -296,14 +296,11 @@ TEST_F(ToolbarControllerTest, PopulateEncodingMenu) {
   EXPECT_NE(0, [encodings numberOfItems]);
 }
 
-TEST_F(ToolbarControllerTest, CorrectHeightWhenCompressed) {
-  [bar_ setShouldBeCompressed:YES];
-  EXPECT_EQ(30.0, [resizeDelegate_ height]);
-}
-
-TEST_F(ToolbarControllerTest, CorrectHeightWhenUnompressed) {
-  [bar_ setShouldBeCompressed:NO];
-  EXPECT_EQ(36.0, [resizeDelegate_ height]);
+TEST_F(ToolbarControllerTest, HeightCompression) {
+  for (int i = 0; i <= 10; i++) {
+    [bar_ setHeightCompression:static_cast<CGFloat>(i)];
+    EXPECT_EQ(static_cast<CGFloat>(36 - i), [resizeDelegate_ height]);
+  }
 }
 
 }  // namespace

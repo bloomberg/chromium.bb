@@ -423,7 +423,7 @@ void BrowserWindowCocoa::Observe(NotificationType type,
     // Only the key window gets a direct toggle from the menu.
     // Other windows hear about it from the notification.
     case NotificationType::BOOKMARK_BAR_VISIBILITY_PREF_CHANGED:
-      [controller_ updateBookmarkBarVisibility];
+      [controller_ updateBookmarkBarVisibilityWithAnimation:YES];
       break;
     default:
       NOTREACHED();  // we don't ask for anything else!

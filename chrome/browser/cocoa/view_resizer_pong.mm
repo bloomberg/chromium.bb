@@ -14,6 +14,7 @@
   [self setHeight:height];
 
   // Set the view's height and width, in case it uses that as important state.
-  [view setFrame:NSMakeRect(100, 100, 250, height)];
+  [view setFrame:NSMakeRect(100, 50,
+                            NSWidth([[view superview] frame]) - 50, height)];
 }
 @end
