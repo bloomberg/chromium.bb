@@ -82,9 +82,8 @@
 
 // Shows the bookmark editor sheet for more advanced editing.
 - (void)showEditor {
-  [self updateBookmarkNode];
+  [self ok:nil];
   [delegate_ editBookmarkNode:node_];
-  [self close];
 }
 
 - (IBAction)edit:(id)sender {

@@ -9,30 +9,24 @@
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/info_bubble_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 @interface BBDelegate : NSObject<BookmarkBubbleControllerDelegate> {
  @private
-  BOOL windowClosed_;
+  InfoBubbleWindow* window_;
   int edits_;
 }
 
 @property (readonly) int edits;
-@property (readonly) BOOL windowClosed;
+@property (readonly, getter=isWindowClosing) BOOL windowClosing;
 
 @end
 
 @implementation BBDelegate
 
 @synthesize edits = edits_;
-@synthesize windowClosed = windowClosed_;
-
-- (void)dealloc {
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  [nc removeObserver:self];
-  [super dealloc];
-}
 
 - (NSPoint)topLeftForBubble {
   return NSMakePoint(10, 300);
@@ -43,20 +37,14 @@
 }
 
 - (void)setWindowController:(NSWindowController *)controller {
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  [nc removeObserver:self];
-  if (controller) {
-    [nc addObserver:self
-           selector:@selector(windowWillClose:)
-               name:NSWindowWillCloseNotification
-             object:[controller window]];
-  }
-  windowClosed_ = NO;
+  window_ = static_cast<InfoBubbleWindow*>([controller window]);
+  EXPECT_TRUE([window_ isKindOfClass:[InfoBubbleWindow class]]);
 }
 
-- (void)windowWillClose:(NSNotification*)notification {
-  windowClosed_ = YES;
+- (BOOL)isWindowClosing {
+  return [window_ isClosing];
 }
+
 @end
 
 namespace {
@@ -163,10 +151,10 @@ TEST_F(BookmarkBubbleControllerTest, TestEdit) {
   EXPECT_TRUE(controller);
 
   EXPECT_EQ([delegate_ edits], 0);
-  EXPECT_FALSE([delegate_ windowClosed]);
+  EXPECT_FALSE([delegate_ isWindowClosing]);
   [controller edit:controller];
   EXPECT_EQ([delegate_ edits], 1);
-  EXPECT_TRUE([delegate_ windowClosed]);
+  EXPECT_TRUE([delegate_ isWindowClosing]);
 }
 
 // CallClose; bubble gets closed.
@@ -180,10 +168,10 @@ TEST_F(BookmarkBubbleControllerTest, TestClose) {
 
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
-  EXPECT_FALSE([delegate_ windowClosed]);
+  EXPECT_FALSE([delegate_ isWindowClosing]);
   [controller ok:controller];
   EXPECT_EQ([delegate_ edits], 0);
-  EXPECT_TRUE([delegate_ windowClosed]);
+  EXPECT_TRUE([delegate_ isWindowClosing]);
 }
 
 // User changes title and parent folder in the UI
@@ -281,7 +269,7 @@ TEST_F(BookmarkBubbleControllerTest, TestRemove) {
 
   [controller remove:controller];
   EXPECT_FALSE(model->IsBookmarked(gurl));
-  EXPECT_TRUE([delegate_ windowClosed]);
+  EXPECT_TRUE([delegate_ isWindowClosing]);
 }
 
 // Confirm picking "choose another folder" caused edit: to be called.

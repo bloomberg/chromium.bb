@@ -11,4 +11,15 @@
   // Is self in the process of closing.
   BOOL closing_;
 }
+
+@end
+
+// Methods to only be used by unittests.
+@interface InfoBubbleWindow (UnitTest)
+
+// Returns YES if the window is in the process of closing.
+// Can't use "windowWillClose" notification because that will be sent
+// after the closing animation has completed.
+- (BOOL)isClosing;
+
 @end

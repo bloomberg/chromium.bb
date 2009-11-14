@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/info_bubble_window.h"
 
 #include "base/logging.h"
+#include "base/scoped_nsobject.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
@@ -12,6 +13,41 @@ const CGFloat kOrderInSlideOffset = 10;
 const NSTimeInterval kOrderInAnimationDuration = 0.3;
 const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 }
+
+@interface InfoBubbleWindow (Private)
+- (void)finishCloseAfterAnimation;
+@end
+
+// A delegate object for watching the alphaValue animation on InfoBubbleWindows.
+// An InfoBubbleWindow instance cannot be the delegate for its own animation
+// because CAAnimations retain their delegates, and since the InfoBubbleWindow
+// retains its animations a retain loop would be formed.
+@interface InfoBubbleWindowCloser : NSObject {
+ @private
+  InfoBubbleWindow* window_;  // Weak. Window to close.
+}
+- (id)initWithWindow:(InfoBubbleWindow*)window;
+@end
+
+@implementation InfoBubbleWindowCloser
+
+- (id)initWithWindow:(InfoBubbleWindow*)window {
+  if ((self = [super init])) {
+    window_ = window;
+  }
+  return self;
+}
+
+// Callback for the alpha animation. Closes window_ if appropriate.
+- (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag {
+  // When alpha reaches zero, close window_.
+  if ([window_ alphaValue] == 0.0) {
+    [window_ finishCloseAfterAnimation];
+  }
+}
+
+@end
+
 
 @implementation InfoBubbleWindow
 
@@ -37,10 +73,13 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
     // Notice that only the alphaValue Animation is replaced in case
     // superclasses set up animations.
     CAAnimation* alphaAnimation = [CABasicAnimation animation];
-    [alphaAnimation setDelegate:self];
+    scoped_nsobject<InfoBubbleWindowCloser> delegate(
+        [[InfoBubbleWindowCloser alloc] initWithWindow:self]);
+    [alphaAnimation setDelegate:delegate];
     NSMutableDictionary* animations =
         [NSMutableDictionary dictionaryWithDictionary:[self animations]];
     [animations setObject:alphaAnimation forKey:@"alphaValue"];
+    [self setAnimations:animations];
   }
   return self;
 }
@@ -54,7 +93,26 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
   return YES;
 }
 
-// Adds animation for info bubbles being ordered to the front and ordered out.
+- (void)close {
+  // Block the window from receiving events while it fades out.
+  closing_ = YES;
+  // Apply animations to hide self.
+  [NSAnimationContext beginGrouping];
+  [[NSAnimationContext currentContext]
+      gtm_setDuration:kOrderOutAnimationDuration];
+  [[self animator] setAlphaValue:0.0];
+  [NSAnimationContext endGrouping];
+}
+
+// Called by InfoBubbleWindowCloser when the window is to be really closed
+// after the fading animation is complete.
+- (void)finishCloseAfterAnimation {
+  if (closing_) {
+    [super close];
+  }
+}
+
+// Adds animation for info bubbles being ordered to the front.
 - (void)orderWindow:(NSWindowOrderingMode)orderingMode
          relativeTo:(NSInteger)otherWindowNumber {
   // According to the documentation '0' is the otherWindowNumber when the window
@@ -77,16 +135,6 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
     [[self animator] setAlphaValue:1.0];
     [[self animator] setFrame:frame display:YES];
     [NSAnimationContext endGrouping];
-  } else if (orderingMode == NSWindowOut) {
-    // Flag self as closing to block events while animation is occurring.
-    closing_ = YES;
-
-    // Apply animations to hide self.
-    [NSAnimationContext beginGrouping];
-    [[NSAnimationContext currentContext]
-        gtm_setDuration:kOrderOutAnimationDuration];
-    [[self animator] setAlphaValue:0.0];
-    [NSAnimationContext endGrouping];
   } else {
     [super orderWindow:orderingMode relativeTo:otherWindowNumber];
   }
@@ -100,12 +148,7 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
   }
 }
 
-// Callback for the alpha animation set up in designated initializer.
-- (void)animationDidStop:(CAAnimation*)anim finished:(BOOL)flag {
-  // When alpha reaches zero, close self.
-  if ([self alphaValue] == 0.0) {
-    [self close];
-  }
+- (BOOL)isClosing {
+  return closing_;
 }
-
 @end
