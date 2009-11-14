@@ -32,6 +32,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/escape.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNotificationPresenter.h"
 
 using WebKit::WebNotificationPresenter;
@@ -56,8 +57,8 @@ static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
   else
     subst.push_back(EmptyString16());
 
-  subst.push_back(title);
-  subst.push_back(body);
+  subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(title))));
+  subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(body))));
 
   if (icon_url.is_valid()) {
     subst.push_back(ASCIIToUTF16("block"));

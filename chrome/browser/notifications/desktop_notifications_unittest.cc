@@ -250,3 +250,22 @@ TEST_F(DesktopNotificationsTest, TestEarlyDestruction) {
   }
   service_.reset(NULL);
 }
+
+TEST_F(DesktopNotificationsTest, TestUserInputEscaping) {
+  // Create a test script with some HTML; assert that it doesn't get into the
+  // data:// URL that's produced for the balloon.
+  EXPECT_TRUE(service_->ShowDesktopNotificationText(
+      GURL("http://www.google.com"),
+      GURL("/icon.png"),
+      ASCIIToUTF16("<script>window.alert('uh oh');</script>"),
+      ASCIIToUTF16("<i>this text is in italics</i>"),
+      0, 0, DesktopNotificationService::PageNotification, 1));
+
+  MessageLoopForUI::current()->RunAllPending();
+  EXPECT_EQ(1, balloon_collection_->count());
+  Balloon* balloon = (*balloon_collection_->balloons().begin());
+  GURL data_url = balloon->notification().content_url();
+  EXPECT_EQ(std::string::npos, data_url.spec().find("<script>"));
+  EXPECT_EQ(std::string::npos, data_url.spec().find("<i>"));
+}
+
