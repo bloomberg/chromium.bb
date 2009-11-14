@@ -75,6 +75,9 @@ const char kDisableByteRangeSupport[]       = "disable-byte-range-support";
 // Disables the custom JumpList on Windows 7.
 const char kDisableCustomJumpList[]         = "disable-custom-jumplist";
 
+// Disables desktop notifications (default enabled on windows).
+const char kDisableDesktopNotifications[]   = "disable-desktop-notifications";
+
 // Browser flag to disable the web inspector for all renderers.
 const char kDisableDevTools[]               = "disable-dev-tools";
 
@@ -170,9 +173,6 @@ const char kEnableBenchmarking[]            = "enable-benchmarking";
 
 // Enables HTML5 DB support.
 const char kEnableDatabases[]               = "enable-databases";
-
-// Enabled desktop notifications.
-const char kEnableDesktopNotifications[]    = "enable-desktop-notifications";
 
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =

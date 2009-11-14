@@ -13,7 +13,6 @@
 class NotificationsPermissionTest : public UITest {
  public:
   NotificationsPermissionTest() {
-    launch_arguments_.AppendSwitch(switches::kEnableDesktopNotifications);
     dom_automation_enabled_ = true;
     show_window_ = true;
   }
