@@ -315,8 +315,6 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
   CommandLine cmd_line(renderer_path);
   cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
                                  ASCIIToWide(channel_id));
-  if (is_extensions_process)
-    cmd_line.AppendSwitch(switches::kEnableDatabases);
   bool has_cmd_prefix;
   AppendRendererCommandLine(&cmd_line, &has_cmd_prefix);
 
@@ -560,6 +558,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kDisableDesktopNotifications,
     switches::kDisableWebSockets,
     switches::kDisableLocalStorage,
+    switches::kDisableDatabases,
     switches::kEnableSessionStorage,
     switches::kDisableSharedWorkers,
     switches::kEnableApplicationCache,
@@ -572,12 +571,6 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
 #endif
   };
 
-  // Propagate the following switches to the renderer command line (along
-  // with any associated values) only if we're not in incognito mode.
-  static const char* const not_otr_switch_names[] = {
-    switches::kEnableDatabases,
-  };
-
   for (size_t i = 0; i < arraysize(switch_names); ++i) {
     if (browser_cmd.HasSwitch(switch_names[i])) {
       renderer_cmd->AppendSwitchWithValue(switch_names[i],
@@ -585,13 +578,10 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     }
   }
 
-  if (!profile()->IsOffTheRecord()) {
-    for (size_t i = 0; i < arraysize(not_otr_switch_names); ++i) {
-      if (browser_cmd.HasSwitch(not_otr_switch_names[i])) {
-        renderer_cmd->AppendSwitchWithValue(not_otr_switch_names[i],
-            browser_cmd.GetSwitchValueASCII(not_otr_switch_names[i]));
-      }
-    }
+  // Disable databases in incognito mode.
+  if (profile()->IsOffTheRecord() &&
+      !browser_cmd.HasSwitch(switches::kDisableDatabases)) {
+    renderer_cmd->AppendSwitch(switches::kDisableDatabases);
   }
 }
 
