@@ -13,3 +13,6 @@ SSLUITest.*
 
 # Bug: http://crbug.com/8675
 SessionRestoreUITest.RestoresCrossSiteForwardAndBackwardNavs
+
+# Intentional memory leak.
+ChromeThreadTest.NotReleasedIfTargetThreadNonExistent
