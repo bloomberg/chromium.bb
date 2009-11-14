@@ -705,34 +705,10 @@ BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-
 // TODO(jorlow): Is this really still slow?  If so, why?
 BUG_JORLOW SLOW LINUX DEBUG : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = PASS
 
-// HTML5 databases are not supported in test_shell yet
-BUG4359 SKIP : LayoutTests/storage/close-during-stress-test.html = PASS
-BUG4359 SKIP : LayoutTests/storage/database-lock-after-reload.html = PASS
-BUG4359 SKIP : LayoutTests/storage/empty-statement.html = PASS
-BUG4359 SKIP : LayoutTests/storage/execute-sql-args.html = PASS
-BUG4359 SKIP : LayoutTests/storage/hash-change-with-xhr.html = PASS
-BUG4359 SKIP : LayoutTests/storage/multiple-databases-garbage-collection.html = PASS
-BUG4359 SKIP : LayoutTests/storage/multiple-transactions.html = PASS
-BUG4359 SKIP : LayoutTests/storage/open-database-empty-version.html = PASS
-BUG4359 SKIP : LayoutTests/storage/open-database-set-empty-version.html = PASS
-BUG4359 SKIP : LayoutTests/storage/private-browsing-readonly.html = PASS
-BUG4359 SKIP : LayoutTests/storage/quota-tracking.html = PASS
-BUG4359 SKIP : LayoutTests/storage/sql-data-types.html = PASS
-BUG4359 SKIP : LayoutTests/storage/sql-data-types.js = PASS
-BUG4359 SKIP : LayoutTests/storage/success-callback.html = PASS
-BUG4359 SKIP : LayoutTests/storage/transaction-callback-exception-crash.html = PASS
-BUG4359 SKIP : LayoutTests/storage/transaction-error-callback.html = PASS
-BUG4359 SKIP : LayoutTests/fast/js/exceptions-thrown-in-callbacks.html = PASS
-BUG4359 SKIP : LayoutTests/storage/test-authorizer.html = PASS
-BUG4359 SKIP : LayoutTests/storage/open-database-while-transaction-in-progress.html = PASS
-BUG4359 SKIP : LayoutTests/storage/read-and-write-transactions-dont-run-together.html = PASS
-BUG4359 SKIP : LayoutTests/storage/read-transactions-running-concurrently.html = PASS
-BUG4359 SKIP : LayoutTests/storage/multiple-transactions-on-different-handles.html = PASS
-BUG4359 SKIP : LayoutTests/storage/change-version-handle-reuse.html = FAIL
-BUG4359 SKIP : LayoutTests/storage/change-version.html = TIMEOUT
-
-// Need to implement clearAllDatabases in layoutTestController.
-BUG20995 SKIP : LayoutTests/storage/statement-error-callback.html = FAIL
+// HTML5 DB layout tests that do not pass in test_shell
+BUG27697 : LayoutTests/storage/hash-change-with-xhr.html = TIMEOUT
+WONTFIX SKIP : LayoutTests/storage/private-browsing-readonly.html = PASS
+WONTFIX SKIP : LayoutTests/storage/quota-tracking.html = PASS
 
 // Implement HTML5 Geolocation API.
 BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
@@ -2948,11 +2924,6 @@ BUG_JOHNNYG LINUX DEBUG : LayoutTests/svg/custom/marker-overflow-clip.svg = PASS
 // WebKit roll 49961:49992
 // Added in http://trac.webkit.org/changeset/49990
 BUG25884 WIN LINUX : LayoutTests/fast/dom/Document/CaretRangeFromPoint/caretRangeFromPoint-in-zoom-and-scroll.html = FAIL
-
-// window.openDatabase doesn't exist yet as of r29980.  That's causing these
-// tests to fail.
-BUG26107 : LayoutTests/fast/js/global-function-resolve.html = FAIL
-BUG26107 WIN LINUX : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL
 
 BUG26344 LINUX DEBUG : LayoutTests/fast/text/atsui-partial-selection.html = CRASH
 BUG26344 LINUX DEBUG : LayoutTests/platform/mac/editing/deleting/backward-delete.html = CRASH

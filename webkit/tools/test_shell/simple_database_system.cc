@@ -13,9 +13,13 @@
 #include "base/file_util.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"
-#include "webkit/glue/webkit_glue.h"
 
+using webkit_database::DatabaseTracker;
+using webkit_database::DatabaseUtil;
 using webkit_database::VfsBackend;
 
 SimpleDatabaseSystem* SimpleDatabaseSystem::instance_ = NULL;
@@ -25,63 +29,48 @@ SimpleDatabaseSystem* SimpleDatabaseSystem::GetInstance() {
   return instance_;
 }
 
-SimpleDatabaseSystem::SimpleDatabaseSystem()
-    : hack_main_db_handle_(base::kInvalidPlatformFileValue) {
+SimpleDatabaseSystem::SimpleDatabaseSystem() {
   temp_dir_.CreateUniqueTempDir();
+  db_tracker_ = new DatabaseTracker(temp_dir_.path());
   DCHECK(!instance_);
   instance_ = this;
 }
 
 SimpleDatabaseSystem::~SimpleDatabaseSystem() {
-  base::ClosePlatformFile(hack_main_db_handle_);
   instance_ = NULL;
 }
 
 base::PlatformFile SimpleDatabaseSystem::OpenFile(
-      const FilePath& file_name, int desired_flags,
+      const string16& vfs_file_name, int desired_flags,
       base::PlatformFile* dir_handle) {
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
+  FilePath file_name =
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
   if (file_name.empty()) {
     VfsBackend::OpenTempFileInDirectory(
-        GetDBDir(), desired_flags, base::GetCurrentProcessHandle(),
-        &file_handle, dir_handle);
+        db_tracker_->DatabaseDirectory(), desired_flags,
+        base::GetCurrentProcessHandle(), &file_handle, dir_handle);
   } else {
-    VfsBackend::OpenFile(GetDBFileFullPath(file_name), desired_flags,
+    VfsBackend::OpenFile(file_name, desired_flags,
                          base::GetCurrentProcessHandle(), &file_handle,
                          dir_handle);
-  }
-
-  // HACK: Currently, the DB object that keeps track of the main database
-  // (DatabaseTracker) is a singleton that is declared as a static variable
-  // in a function, so it gets destroyed at the very end of the program.
-  // Because of that, we have a handle opened to the main DB file until the
-  // very end of the program, which prevents temp_dir_'s destructor from
-  // deleting the database directory.
-  //
-  // We will properly solve this problem when we reimplement DatabaseTracker.
-  // For now, however, we are going to take advantage of the fact that in order
-  // to do anything related to DBs, we have to call openDatabase() first, which
-  // opens a handle to the main DB before opening handles to any other DB files.
-  // We are going to cache the first file handle we get, and we are going to
-  // manually close it in the destructor.
-  if (hack_main_db_handle_ == base::kInvalidPlatformFileValue) {
-    hack_main_db_handle_ = file_handle;
   }
 
   return file_handle;
 }
 
 int SimpleDatabaseSystem::DeleteFile(
-    const FilePath& file_name, bool sync_dir) {
+    const string16& vfs_file_name, bool sync_dir) {
   // We try to delete the file multiple times, because that's what the default
   // VFS does (apparently deleting a file can sometimes fail on Windows).
   // We sleep for 10ms between retries for the same reason.
   const int kNumDeleteRetries = 3;
   int num_retries = 0;
   int error_code = SQLITE_OK;
+  FilePath file_name =
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
   do {
-    error_code = VfsBackend::DeleteFile(
-        GetDBFileFullPath(file_name), sync_dir);
+    error_code = VfsBackend::DeleteFile(file_name, sync_dir);
   } while ((++num_retries < kNumDeleteRetries) &&
            (error_code == SQLITE_IOERR_DELETE) &&
            (PlatformThread::Sleep(10), 1));
@@ -89,25 +78,65 @@ int SimpleDatabaseSystem::DeleteFile(
   return error_code;
 }
 
-long SimpleDatabaseSystem::GetFileAttributes(
-    const FilePath& file_name) {
-  return VfsBackend::GetFileAttributes(GetDBFileFullPath(file_name));
+long SimpleDatabaseSystem::GetFileAttributes(const string16& vfs_file_name) {
+  return VfsBackend::GetFileAttributes(
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name));
 }
 
-long long SimpleDatabaseSystem::GetFileSize(
-    const FilePath& file_name) {
-  return VfsBackend::GetFileSize(GetDBFileFullPath(file_name));
+long long SimpleDatabaseSystem::GetFileSize(const string16& vfs_file_name) {
+  return VfsBackend::GetFileSize(
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name));
+}
+
+void SimpleDatabaseSystem::DatabaseOpened(const string16& origin_identifier,
+                                          const string16& database_name,
+                                          const string16& description,
+                                          int64 estimated_size) {
+  int64 database_size = 0;
+  int64 space_available = 0;
+  db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
+                              estimated_size, &database_size, &space_available);
+  OnDatabaseSizeChanged(origin_identifier, database_name,
+                        database_size, space_available);
+}
+
+void SimpleDatabaseSystem::DatabaseModified(const string16& origin_identifier,
+                                            const string16& database_name) {
+  db_tracker_->DatabaseModified(origin_identifier, database_name);
+}
+
+void SimpleDatabaseSystem::DatabaseClosed(const string16& origin_identifier,
+                                          const string16& database_name) {
+  db_tracker_->DatabaseClosed(origin_identifier, database_name);
+}
+
+void SimpleDatabaseSystem::OnDatabaseSizeChanged(
+    const string16& origin_identifier,
+    const string16& database_name,
+    int64 database_size,
+    int64 space_available) {
+  WebKit::WebDatabase::updateDatabaseSize(
+      origin_identifier, database_name, database_size, space_available);
+}
+
+void SimpleDatabaseSystem::databaseOpened(const WebKit::WebDatabase& database) {
+  DatabaseOpened(database.securityOrigin().databaseIdentifier(),
+                 database.name(), database.displayName(),
+                 database.estimatedSize());
+}
+
+void SimpleDatabaseSystem::databaseModified(
+    const WebKit::WebDatabase& database) {
+  DatabaseModified(database.securityOrigin().databaseIdentifier(),
+                   database.name());
+}
+
+void SimpleDatabaseSystem::databaseClosed(const WebKit::WebDatabase& database) {
+  DatabaseClosed(database.securityOrigin().databaseIdentifier(),
+                 database.name());
 }
 
 void SimpleDatabaseSystem::ClearAllDatabases() {
-  // TODO(dumi): implement this once we refactor DatabaseTracker
-  //file_util::Delete(GetDBDir(), true);
-}
-
-FilePath SimpleDatabaseSystem::GetDBDir() {
-  return temp_dir_.path().Append(FILE_PATH_LITERAL("databases"));
-}
-
-FilePath SimpleDatabaseSystem::GetDBFileFullPath(const FilePath& file_name) {
-  return GetDBDir().Append(file_name);
+  db_tracker_->CloseTrackerDatabaseAndClearCaches();
+  file_util::Delete(db_tracker_->DatabaseDirectory(), true);
 }

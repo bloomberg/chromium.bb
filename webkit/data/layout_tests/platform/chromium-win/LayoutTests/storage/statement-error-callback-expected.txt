@@ -1,0 +1,5 @@
+CONSOLE MESSAGE: line 54: Uncaught Exception in Statement error callback
+This test confirms that if the statement error callback returns true or throws an exception we do not execute any further statements in that transaction and instead execute the transaction error callback immediately.
+PASS - the transaction error callback was invoked.
+PASS - the transaction error callback was invoked.
+Test Complete

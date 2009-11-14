@@ -12,6 +12,7 @@
 #include "base/string_util.h"
 #include "media/base/media.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
@@ -58,6 +59,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
         extensions_v8::IntervalExtension::Get());
     WebKit::WebRuntimeFeatures::enableSockets(true);
     WebKit::WebRuntimeFeatures::enableApplicationCache(true);
+    WebKit::WebRuntimeFeatures::enableDatabase(true);
 
     // Load libraries for media and enable the media player.
     FilePath module_path;
@@ -70,6 +72,8 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     // content during the run. Upon exit that directory is deleted.
     if (appcache_dir_.CreateUniqueTempDir())
       SimpleAppCacheSystem::InitializeOnUIThread(appcache_dir_.path());
+
+    WebKit::WebDatabase::setObserver(&database_system_);
 
 #if defined(OS_WIN)
     // Ensure we pick up the default theme engine.
@@ -104,27 +108,27 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   }
 
   virtual WebKit::WebKitClient::FileHandle databaseOpenFile(
-      const WebKit::WebString& file_name, int desired_flags,
+      const WebKit::WebString& vfs_file_name, int desired_flags,
       WebKit::WebKitClient::FileHandle* dir_handle) {
     return SimpleDatabaseSystem::GetInstance()->OpenFile(
-        webkit_glue::WebStringToFilePath(file_name),
-        desired_flags, dir_handle);
+        vfs_file_name, desired_flags, dir_handle);
   }
 
-  virtual int databaseDeleteFile(const WebKit::WebString& file_name,
+  virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
                                  bool sync_dir) {
     return SimpleDatabaseSystem::GetInstance()->DeleteFile(
-        webkit_glue::WebStringToFilePath(file_name), sync_dir);
+        vfs_file_name, sync_dir);
   }
 
-  virtual long databaseGetFileAttributes(const WebKit::WebString& file_name) {
+  virtual long databaseGetFileAttributes(
+      const WebKit::WebString& vfs_file_name) {
     return SimpleDatabaseSystem::GetInstance()->GetFileAttributes(
-        webkit_glue::WebStringToFilePath(file_name));
+        vfs_file_name);
   }
 
-  virtual long long databaseGetFileSize(const WebKit::WebString& file_name) {
-    return SimpleDatabaseSystem::GetInstance()->GetFileSize(
-        webkit_glue::WebStringToFilePath(file_name));
+  virtual long long databaseGetFileSize(
+      const WebKit::WebString& vfs_file_name) {
+    return SimpleDatabaseSystem::GetInstance()->GetFileSize(vfs_file_name);
   }
 
   virtual bool getFileSize(const WebKit::WebString& path, long long& result) {
