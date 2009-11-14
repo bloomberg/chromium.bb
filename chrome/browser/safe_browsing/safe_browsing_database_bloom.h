@@ -178,9 +178,6 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   // Cache of compiled statements for our database.
   scoped_ptr<SqliteStatementCache> statement_cache_;
 
-  // True iff the database has been opened successfully.
-  bool init_;
-
   // Called after an add/sub chunk is processed.
   scoped_ptr<Callback0::Type> chunk_inserted_callback_;
 
@@ -202,8 +199,13 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   // Transaction for protecting database integrity during updates.
   scoped_ptr<SQLTransaction> insert_transaction_;
 
-  // Lock for protecting access to the bloom filter and hash cache.
+  // Lock for protecting access to variables that may be used on the IO thread.
+  // This includes |bloom_filter_|, |hash_cache_| and |prefix_miss_cache_|.
   Lock lookup_lock_;
+
+  // True if we're in the middle of a reset.  This is used to prevent possible
+  // infinite recursion.
+  bool performing_reset_;
 
   // A store for GetHash results that have not yet been written to the database.
   HashList pending_full_hashes_;

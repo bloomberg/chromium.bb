@@ -10,6 +10,7 @@
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
+#include "base/scoped_bool.h"
 #include "base/sha2.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
@@ -38,9 +39,9 @@ static const FilePath::CharType kBloomFilterFileSuffix[] =
 
 SafeBrowsingDatabaseBloom::SafeBrowsingDatabaseBloom()
     : db_(NULL),
-      init_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(reset_factory_(this)),
-      add_count_(0) {
+      add_count_(0),
+      performing_reset_(false) {
 }
 
 SafeBrowsingDatabaseBloom::~SafeBrowsingDatabaseBloom() {
@@ -49,16 +50,17 @@ SafeBrowsingDatabaseBloom::~SafeBrowsingDatabaseBloom() {
 
 void SafeBrowsingDatabaseBloom::Init(const FilePath& filename,
                                      Callback0::Type* chunk_inserted_callback) {
-  DCHECK(!init_ && filename_.empty());
+  DCHECK(filename_.empty());  // Ensure we haven't been run before.
 
   filename_ = FilePath(filename.value() + kBloomFilterFileSuffix);
   bloom_filter_filename_ = BloomFilterFilename(filename_);
 
+  // NOTE: There is no need to grab the lock in this function, since until it
+  // returns, there are no pointers to this class on other threads.
   hash_cache_.reset(new HashCache);
 
   LoadBloomFilter();
 
-  init_ = true;
   chunk_inserted_callback_.reset(chunk_inserted_callback);
 }
 
@@ -186,26 +188,33 @@ bool SafeBrowsingDatabaseBloom::CreateTables() {
   return true;
 }
 
-// The SafeBrowsing service assumes this operation is run synchronously on the
-// database thread. Any URLs that the service needs to check when this is
-// running are queued up and run once the reset is done.
 bool SafeBrowsingDatabaseBloom::ResetDatabase() {
-  hash_cache_->clear();
-  ClearUpdateCaches();
+  // Open() can call us when trying to handle potential database corruption.
+  // Because we call Open() at the bottom of the function, we need to guard
+  // against recursion here.
+  if (performing_reset_)
+    return false;  // Don't recurse.
 
+  ScopedBool preforming_reset_scope_(&performing_reset_);
+
+  // Delete files on disk.
   bool rv = Close();
   DCHECK(rv);
-
   if (!file_util::Delete(filename_, false)) {
     NOTREACHED();
     return false;
   }
-
   DeleteBloomFilter();
-  bloom_filter_ = new BloomFilter(BloomFilter::kBloomFilterMinSize *
-                                  BloomFilter::kBloomFilterSizeRatio);
 
-  // TODO(paulg): Fix potential infinite recursion between Open and Reset.
+  // Reset objects in memory.
+  {
+    AutoLock lock(lookup_lock_);
+    hash_cache_->clear();
+    ClearUpdateCaches();
+    bloom_filter_ = new BloomFilter(BloomFilter::kBloomFilterMinSize *
+                                    BloomFilter::kBloomFilterSizeRatio);
+  }
+
   return Open();
 }
 
@@ -225,6 +234,7 @@ bool SafeBrowsingDatabaseBloom::CheckCompatibleVersion() {
 }
 
 void SafeBrowsingDatabaseBloom::ClearUpdateCaches() {
+  AutoLock lock(lookup_lock_);
   add_del_cache_.clear();
   sub_del_cache_.clear();
   add_chunk_cache_.clear();
@@ -1214,6 +1224,7 @@ void SafeBrowsingDatabaseBloom::BuildBloomFilter() {
 
   add_count_ = GetAddPrefixCount();
   if (add_count_ == 0) {
+    AutoLock lock(lookup_lock_);
     bloom_filter_ = NULL;
     return;
   }
@@ -1318,6 +1329,7 @@ void SafeBrowsingDatabaseBloom::GetCachedFullHashes(
     std::vector<SBFullHashResult>* full_hits,
     Time last_update) {
   DCHECK(prefix_hits && full_hits);
+  lookup_lock_.AssertAcquired();
 
   Time max_age = Time::Now() - TimeDelta::FromMinutes(kMaxStalenessMinutes);
 

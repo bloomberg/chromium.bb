@@ -274,9 +274,6 @@ class SafeBrowsingService
   // The SafeBrowsing thread that runs database operations.
   scoped_ptr<base::Thread> safe_browsing_thread_;
 
-  // Indicates if we are in the process of resetting the database.
-  bool resetting_;
-
   // Indicates if we're currently in an update cycle.
   bool update_in_progress_;
 

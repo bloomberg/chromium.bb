@@ -39,7 +39,6 @@ SafeBrowsingService::SafeBrowsingService()
     : database_(NULL),
       protocol_manager_(NULL),
       enabled_(false),
-      resetting_(false),
       update_in_progress_(false) {
 }
 
@@ -66,7 +65,7 @@ bool SafeBrowsingService::CheckUrl(const GURL& url, Client* client) {
   if (!enabled_)
     return true;
 
-  if (!database_ || resetting_) {
+  if (!database_) {
     QueuedCheck check;
     check.client = client;
     check.url = url;
@@ -114,7 +113,7 @@ void SafeBrowsingService::CancelCheck(Client* client) {
   }
 
   // Scan the queued clients store. Clients may be here if they requested a URL
-  // check before the database has finished loading or resetting.
+  // check before the database has finished loading.
   for (std::deque<QueuedCheck>::iterator it(queued_checks_.begin());
        it != queued_checks_.end(); ++it) {
     if (it->client == client)
@@ -261,7 +260,6 @@ void SafeBrowsingService::RegisterPrefs(PrefService* prefs) {
 
 void SafeBrowsingService::ResetDatabase() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  resetting_ = true;
   safe_browsing_thread_->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
       this, &SafeBrowsingService::OnResetDatabase));
 }
@@ -317,7 +315,6 @@ void SafeBrowsingService::OnIOShutdown() {
     return;
 
   enabled_ = false;
-  resetting_ = false;
 
   // This cancels all in-flight GetHash requests.
   delete protocol_manager_;
@@ -467,8 +464,7 @@ void SafeBrowsingService::DatabaseLoadComplete() {
     return;
 
   // If we have any queued requests, we can now check them.
-  if (!resetting_)
-    RunQueuedClients();
+  RunQueuedClients();
 }
 
 void SafeBrowsingService::HandleChunkForDatabase(
@@ -545,7 +541,6 @@ void SafeBrowsingService::Start() {
 void SafeBrowsingService::OnResetDatabase() {
   DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
   GetDatabase()->ResetDatabase();
-  resetting_ = false;
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this, &SafeBrowsingService::DatabaseLoadComplete));
@@ -651,19 +646,22 @@ void SafeBrowsingService::ReportMalware(const GURL& malware_url,
                                         const GURL& referrer_url) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
-  if (!enabled_ || !database_)
+  if (!enabled_)
     return;
 
-  // Check if 'page_url' is already blacklisted (exists in our cache). Only
-  // report if it's not there.
-  std::string list;
-  std::vector<SBPrefix> prefix_hits;
-  std::vector<SBFullHashResult> full_hits;
-  database_->ContainsUrl(page_url, &list, &prefix_hits, &full_hits,
-                         protocol_manager_->last_update());
+  if (database_) {
+    // Check if 'page_url' is already blacklisted (exists in our cache). Only
+    // report if it's not there.
+    std::string list;
+    std::vector<SBPrefix> prefix_hits;
+    std::vector<SBFullHashResult> full_hits;
+    database_->ContainsUrl(page_url, &list, &prefix_hits, &full_hits,
+                           protocol_manager_->last_update());
+    if (!full_hits.empty())
+      return;
+  }
 
-  if (full_hits.empty())
-    protocol_manager_->ReportMalware(malware_url, page_url, referrer_url);
+  protocol_manager_->ReportMalware(malware_url, page_url, referrer_url);
 }
 
 void SafeBrowsingService::RunQueuedClients() {
