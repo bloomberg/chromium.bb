@@ -16,11 +16,6 @@ class WorkerTest : public UILayoutTest {
  protected:
   virtual ~WorkerTest() { }
 
-  virtual void SetUp() {
-    launch_arguments_.AppendSwitch(switches::kEnableSharedWorkers);
-    UILayoutTest::SetUp();
-  }
-
   void RunTest(const std::wstring& test_case) {
     scoped_refptr<TabProxy> tab(GetActiveTab());
     ASSERT_TRUE(tab.get());
@@ -164,7 +159,6 @@ TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
 
 TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
-    // Enable when shared workers are working (http://crbug.com/26899)
     "shared-worker-importScripts.html",
     "shared-worker-redirect.html",
     // flakey? BUG 16934 "text-encoding.html",

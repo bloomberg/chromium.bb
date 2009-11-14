@@ -120,6 +120,9 @@ const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
+// Enable shared workers. Functionality not yet complete.
+const char kDisableSharedWorkers[]          = "disable-shared-workers";
+
 // Disable syncing bookmarks to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -219,9 +222,6 @@ const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
 // Enable session storage.  Still buggy.
 const char kEnableSessionStorage[]          = "enable-session-storage";
-
-// Enable shared workers. Functionality not yet complete.
-const char kEnableSharedWorkers[]          = "enable-shared-workers";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";

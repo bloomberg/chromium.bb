@@ -361,8 +361,8 @@ long long RendererWebKitClientImpl::databaseGetFileSize(
 
 WebKit::WebSharedWorkerRepository*
 RendererWebKitClientImpl::sharedWorkerRepository() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableSharedWorkers)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSharedWorkers)) {
     return &shared_worker_repository_;
   } else {
     return NULL;

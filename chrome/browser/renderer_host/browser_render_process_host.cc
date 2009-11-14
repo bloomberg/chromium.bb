@@ -560,7 +560,7 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kDisableWebSockets,
     switches::kDisableLocalStorage,
     switches::kEnableSessionStorage,
-    switches::kEnableSharedWorkers,
+    switches::kDisableSharedWorkers,
     switches::kEnableDesktopNotifications,
     switches::kEnableApplicationCache,
     // We propagate the Chrome Frame command line here as well in case the
