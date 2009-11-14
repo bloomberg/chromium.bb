@@ -154,6 +154,12 @@ void ThemeInstallBubbleView::Show(NSWindow* window) {
   return size;
 }
 
+// Update the layout to keep the view centered when the window is resized.
+- (void)resizeWithOldSuperviewSize:(NSSize)oldBoundsSize {
+  [super resizeWithOldSuperviewSize:oldBoundsSize];
+  [self layout];
+}
+
 - (void)layout {
   NSRect bounds = [self bounds];
 
