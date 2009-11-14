@@ -94,11 +94,14 @@ class TabContentsDelegate {
   // Notification that the starredness of the current URL changed.
   virtual void URLStarredChanged(TabContents* source, bool starred) = 0;
 
-  // Notification that the target URL has changed
+  // Notification that the target URL has changed.
   virtual void UpdateTargetURL(TabContents* source, const GURL& url) = 0;
 
-  // Notification that there was a mouse event
-  virtual void ContentsMouseEvent(TabContents* source, bool motion) { }
+  // Notification that there was a mouse event, along with the absolute
+  // coordinates of the mouse pointer and whether it was a normal motion event
+  // (otherwise, the pointer left the contents area).
+  virtual void ContentsMouseEvent(
+      TabContents* source, const gfx::Point& location, bool motion) { }
 
   // Request the delegate to change the zoom level of the current tab.
   virtual void ContentsZoomChange(bool zoom_in) { }

@@ -26,8 +26,9 @@
 #include "chrome/browser/views/blocked_popup_container_view_views.h"
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_win.h"
-#include "views/focus/view_storage.h"
 #include "views/controls/native/native_view_host.h"
+#include "views/focus/view_storage.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 
 using WebKit::WebDragOperation;
@@ -62,7 +63,8 @@ gboolean OnFocus(GtkWidget* widget, GtkDirectionType focus,
 gboolean OnLeaveNotify2(GtkWidget* widget, GdkEventCrossing* event,
                         TabContents* tab_contents) {
   if (tab_contents->delegate())
-    tab_contents->delegate()->ContentsMouseEvent(tab_contents, false);
+    tab_contents->delegate()->ContentsMouseEvent(
+        tab_contents, views::Screen::GetCursorScreenPoint(), false);
   return FALSE;
 }
 
@@ -70,7 +72,8 @@ gboolean OnLeaveNotify2(GtkWidget* widget, GdkEventCrossing* event,
 gboolean OnMouseMove(GtkWidget* widget, GdkEventMotion* event,
                      TabContents* tab_contents) {
   if (tab_contents->delegate())
-    tab_contents->delegate()->ContentsMouseEvent(tab_contents, true);
+    tab_contents->delegate()->ContentsMouseEvent(
+        tab_contents, views::Screen::GetCursorScreenPoint(), true);
   return FALSE;
 }
 
@@ -423,4 +426,3 @@ void TabContentsViewGtk::SetFloatingPosition(const gfx::Size& size) {
     PositionChild(widget, child_x, 0, requisition.width, requisition.height);
   }
 }
-

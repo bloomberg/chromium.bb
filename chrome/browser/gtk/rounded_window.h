@@ -39,12 +39,20 @@ void ActAsRoundedWindow(
     GtkWidget* widget, const GdkColor& color, int corner_size,
     int rounded_edges, int drawn_borders);
 
-// Undo most of the actions of ActAsRoundedWindow.
+// Undoes most of the actions of ActAsRoundedWindow().
 void StopActingAsRoundedWindow(GtkWidget* widget);
 
-// Sets the color of the border on a widget that was returned from
-// ActAsRoundedWindow().
+// Sets edge and border properties on a widget that has already been configured
+// with ActAsRoundedWindow().
+void SetRoundedWindowEdgesAndBorders(GtkWidget* widget,
+                                     int corner_size,
+                                     int rounded_edges,
+                                     int drawn_borders);
+
+// Sets the color of the border on a widget that has already been configured
+// with ActAsRoundedWindow().
 void SetRoundedWindowBorderColor(GtkWidget* widget, GdkColor color);
+
 
 }  // namespace gtk_util
 

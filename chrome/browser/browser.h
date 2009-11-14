@@ -35,6 +35,9 @@ class Profile;
 class SkBitmap;
 class StatusBubble;
 class TabNavigation;
+namespace gfx {
+class Point;
+}
 
 class Browser : public TabStripModelDelegate,
                 public TabStripModelObserver,
@@ -542,7 +545,8 @@ class Browser : public TabStripModelDelegate,
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
   virtual void URLStarredChanged(TabContents* source, bool starred);
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
-  virtual void ContentsMouseEvent(TabContents* source, bool motion);
+  virtual void ContentsMouseEvent(
+      TabContents* source, const gfx::Point& location, bool motion);
   virtual void ContentsZoomChange(bool zoom_in);
   virtual void TabContentsFocused(TabContents* tab_content);
   virtual bool TakeFocus(bool reverse);

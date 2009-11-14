@@ -8,6 +8,7 @@
 
 #include "app/gfx/text_elider.h"
 #include "base/compiler_specific.h"
+#include "base/gfx/point.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -206,10 +207,15 @@ void StatusBubbleMac::Hide() {
   url_text_ = nil;
 }
 
-void StatusBubbleMac::MouseMoved() {
+void StatusBubbleMac::MouseMoved(
+    const gfx::Point& location, bool left_content) {
+  if (left_content)
+    return;
+
   if (!window_)
     return;
 
+  // TODO(thakis): Use 'location' here instead of NSEvent.
   NSPoint cursor_location = [NSEvent mouseLocation];
   --cursor_location.y;  // docs say the y coord starts at 1 not 0; don't ask why
 
@@ -330,7 +336,7 @@ void StatusBubbleMac::Create() {
   Attach();
 
   [view setCornerFlags:kRoundedTopRightCorner];
-  MouseMoved();
+  MouseMoved(gfx::Point(), false);
 }
 
 void StatusBubbleMac::Attach() {

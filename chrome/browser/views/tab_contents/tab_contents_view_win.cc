@@ -31,6 +31,7 @@
 #include "chrome/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "views/focus/view_storage.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "webkit/glue/webdropdata.h"
 
@@ -474,7 +475,8 @@ void TabContentsViewWin::OnMouseLeave() {
   // Let our delegate know that the mouse moved (useful for resetting status
   // bubble state).
   if (tab_contents()->delegate())
-    tab_contents()->delegate()->ContentsMouseEvent(tab_contents(), false);
+    tab_contents()->delegate()->ContentsMouseEvent(
+        tab_contents(), views::Screen::GetCursorScreenPoint(), false);
   SetMsgHandled(FALSE);
 }
 
@@ -496,9 +498,9 @@ LRESULT TabContentsViewWin::OnMouseRange(UINT msg,
     case WM_MOUSEMOVE:
       // Let our delegate know that the mouse moved (useful for resetting status
       // bubble state).
-      if (tab_contents()->delegate()) {
-        tab_contents()->delegate()->ContentsMouseEvent(tab_contents(), true);
-      }
+      if (tab_contents()->delegate())
+        tab_contents()->delegate()->ContentsMouseEvent(
+            tab_contents(), views::Screen::GetCursorScreenPoint(), true);
       break;
     default:
       break;

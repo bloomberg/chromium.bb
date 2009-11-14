@@ -127,7 +127,7 @@ DownloadShelfGtk::DownloadShelfGtk(Browser* browser, GtkWidget* parent)
                    FALSE, FALSE, 0);
   // Make sure we are at the very end.
   gtk_box_reorder_child(GTK_BOX(parent), slide_widget_->widget(), 0);
-  slide_widget_->Open();
+  Show();
 }
 
 DownloadShelfGtk::~DownloadShelfGtk() {
@@ -155,6 +155,7 @@ bool DownloadShelfGtk::IsClosing() const {
 
 void DownloadShelfGtk::Show() {
   slide_widget_->Open();
+  browser_->UpdateDownloadShelfVisibility(true);
 }
 
 void DownloadShelfGtk::Close() {
@@ -162,8 +163,6 @@ void DownloadShelfGtk::Close() {
   // we are on top.
   gdk_window_raise(shelf_.get()->window);
   slide_widget_->Close();
-
-  // TODO(estade): Remove. The status bubble should query its window instead.
   browser_->UpdateDownloadShelfVisibility(false);
 }
 
@@ -224,8 +223,6 @@ void DownloadShelfGtk::RemoveDownloadItem(DownloadItemGtk* download_item) {
   delete download_item;
   if (download_items_.empty()) {
     slide_widget_->CloseWithoutAnimation();
-
-    // TODO(estade): Remove. The status bubble should query its window instead.
     browser_->UpdateDownloadShelfVisibility(false);
   }
 }

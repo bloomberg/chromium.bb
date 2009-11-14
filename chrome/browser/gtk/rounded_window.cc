@@ -184,6 +184,8 @@ void ActAsRoundedWindow(
     GtkWidget* widget, const GdkColor& color, int corner_size,
     int rounded_edges, int drawn_borders) {
   DCHECK(widget);
+  DCHECK(!g_object_get_data(G_OBJECT(widget), kRoundedData));
+
   gtk_widget_set_app_paintable(widget, TRUE);
   g_signal_connect(G_OBJECT(widget), "expose-event",
                    G_CALLBACK(OnRoundedWindowExpose), NULL);
@@ -209,8 +211,24 @@ void StopActingAsRoundedWindow(GtkWidget* widget) {
   g_signal_handlers_disconnect_by_func(widget,
       reinterpret_cast<gpointer>(OnStyleSet), NULL);
 
+  delete static_cast<RoundedWindowData*>(
+      g_object_steal_data(G_OBJECT(widget), kRoundedData));
+
   if (GTK_WIDGET_REALIZED(widget))
     gdk_window_shape_combine_mask(widget->window, NULL, 0, 0);
+}
+
+void SetRoundedWindowEdgesAndBorders(GtkWidget* widget,
+                                     int corner_size,
+                                     int rounded_edges,
+                                     int drawn_borders) {
+  DCHECK(widget);
+  RoundedWindowData* data = static_cast<RoundedWindowData*>(
+      g_object_get_data(G_OBJECT(widget), kRoundedData));
+  DCHECK(data);
+  data->corner_size = corner_size;
+  data->rounded_edges = rounded_edges;
+  data->drawn_borders = drawn_borders;
 }
 
 void SetRoundedWindowBorderColor(GtkWidget* widget, GdkColor color) {

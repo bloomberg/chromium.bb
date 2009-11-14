@@ -69,7 +69,8 @@ gboolean OnFocus(GtkWidget* widget, GtkDirectionType focus,
 gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event,
                        TabContents* tab_contents) {
   if (tab_contents->delegate())
-    tab_contents->delegate()->ContentsMouseEvent(tab_contents, false);
+    tab_contents->delegate()->ContentsMouseEvent(
+        tab_contents, gfx::Point(event->x_root, event->y_root), false);
   return FALSE;
 }
 
@@ -77,7 +78,8 @@ gboolean OnLeaveNotify(GtkWidget* widget, GdkEventCrossing* event,
 gboolean OnMouseMove(GtkWidget* widget, GdkEventMotion* event,
                      TabContents* tab_contents) {
   if (tab_contents->delegate())
-    tab_contents->delegate()->ContentsMouseEvent(tab_contents, true);
+    tab_contents->delegate()->ContentsMouseEvent(
+        tab_contents, gfx::Point(event->x_root, event->y_root), true);
   return FALSE;
 }
 

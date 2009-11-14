@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/animation.h"
 #include "app/resource_bundle.h"
+#include "base/gfx/point.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -572,14 +573,18 @@ void StatusBubbleViews::Hide() {
     view_->Hide();
 }
 
-void StatusBubbleViews::MouseMoved() {
+void StatusBubbleViews::MouseMoved(const gfx::Point& location,
+                                   bool left_content) {
+  if (left_content)
+    return;
+
   if (view_) {
     view_->ResetTimer();
 
     if (view_->GetState() != StatusView::BUBBLE_HIDDEN &&
         view_->GetState() != StatusView::BUBBLE_HIDING_FADE &&
         view_->GetState() != StatusView::BUBBLE_HIDING_TIMER) {
-      AvoidMouse();
+      AvoidMouse(location);
     }
   }
 }
@@ -588,42 +593,40 @@ void StatusBubbleViews::UpdateDownloadShelfVisibility(bool visible) {
   download_shelf_is_visible_ = visible;
 }
 
-void StatusBubbleViews::AvoidMouse() {
+void StatusBubbleViews::AvoidMouse(const gfx::Point& location) {
   // Get the position of the frame.
   gfx::Point top_left;
   views::RootView* root = frame_->GetRootView();
   views::View::ConvertPointToScreen(root, &top_left);
   int window_width = root->GetLocalBounds(true).width();  // border included.
 
-  // Our status bubble is located in screen coordinates, so we should get
-  // those rather than attempting to reverse decode the web contents
-  // coordinates.
-  gfx::Point cursor_location = views::Screen::GetCursorScreenPoint();
-
   // Get the cursor position relative to the popup.
+  gfx::Point relative_location = location;
   if (view_->UILayoutIsRightToLeft()) {
     int top_right_x = top_left.x() + window_width;
-    cursor_location.set_x(top_right_x - cursor_location.x());
+    relative_location.set_x(top_right_x - relative_location.x());
   } else {
-    cursor_location.set_x(cursor_location.x() - (top_left.x() + position_.x()));
+    relative_location.set_x(
+        relative_location.x() - (top_left.x() + position_.x()));
   }
-  cursor_location.set_y(cursor_location.y() - (top_left.y() + position_.y()));
+  relative_location.set_y(
+      relative_location.y() - (top_left.y() + position_.y()));
 
   // If the mouse is in a position where we think it would move the
   // status bubble, figure out where and how the bubble should be moved.
-  if (cursor_location.y() > -kMousePadding &&
-      cursor_location.x() < size_.width() + kMousePadding) {
-    int offset = kMousePadding + cursor_location.y();
+  if (relative_location.y() > -kMousePadding &&
+      relative_location.x() < size_.width() + kMousePadding) {
+    int offset = kMousePadding + relative_location.y();
 
     // Make the movement non-linear.
     offset = offset * offset / kMousePadding;
 
     // When the mouse is entering from the right, we want the offset to be
     // scaled by how horizontally far away the cursor is from the bubble.
-    if (cursor_location.x() > size_.width()) {
+    if (relative_location.x() > size_.width()) {
       offset = static_cast<int>(static_cast<float>(offset) * (
           static_cast<float>(kMousePadding -
-              (cursor_location.x() - size_.width())) /
+              (relative_location.x() - size_.width())) /
           static_cast<float>(kMousePadding)));
     }
 

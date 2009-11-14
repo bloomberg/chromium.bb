@@ -7,6 +7,7 @@
 #include "app/animation.h"
 #include "app/l10n_util.h"
 #include "base/command_line.h"
+#include "base/gfx/point.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -2020,16 +2021,15 @@ void Browser::URLStarredChanged(TabContents* source, bool starred) {
     window_->SetStarredState(starred);
 }
 
-void Browser::ContentsMouseEvent(TabContents* source, bool motion) {
+void Browser::ContentsMouseEvent(
+    TabContents* source, const gfx::Point& location, bool motion) {
   if (!GetStatusBubble())
     return;
 
   if (source == GetSelectedTabContents()) {
-    if (motion) {
-      GetStatusBubble()->MouseMoved();
-    } else {
+    GetStatusBubble()->MouseMoved(location, !motion);
+    if (!motion)
       GetStatusBubble()->SetURL(GURL(), std::wstring());
-    }
   }
 }
 
