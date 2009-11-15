@@ -661,10 +661,10 @@ void BrowserView::TraverseNextAccessibleToolbar(bool forward) {
   // TODO(mohamed) This needs to be smart, that applies to all toolbars.
   //               Currently it just traverses between bookmarks and toolbar.
   if (forward && toolbar_->IsVisible() && toolbar_->IsEnabled()) {
-    toolbar_->RequestFocus();
+    toolbar_->InitiateTraversal();
   } else if (!forward && bookmark_bar_view_->IsVisible() &&
              bookmark_bar_view_->IsEnabled()) {
-    bookmark_bar_view_->RequestFocus();
+    bookmark_bar_view_->InitiateTraversal();
   }
 }
 
@@ -2086,7 +2086,7 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
     new_view->SetBounds((*old_view)->bounds());
     new_view->SchedulePaint();
   } else if (new_view) {
-    DCHECK_EQ(new_height, 0);
+    DCHECK_EQ(0, new_height);
     // The heights are the same, but the old view is null. This only happens
     // when the height is zero. Zero out the bounds.
     new_view->SetBounds(0, 0, 0, 0);

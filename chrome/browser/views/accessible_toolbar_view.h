@@ -9,36 +9,16 @@
 
 // This class provides keyboard access to any view that extends it by intiating
 // ALT+SHIFT+T. And once you press TAB or SHIFT-TAB, it will traverse all the
-// toolbars within Chrome. It traverses child views in the order of adding them,
-// not necessarily the visual order.
-//
-// If a toolbar needs to be traversal then it needs to be focusable. But we do
-// not want the toolbar to have any focus, so some hacking needs to be done to
-// tell the focus manager that this view is focusable while it's not. The main
-// purpose of this class is to provide keyboard access to any View that extends
-// this. It will properly hot track and add the tooltip to the first level
-// children if visited.
+// toolbars within Chrome. Child views are traversed in the order they were
+// added.
 
 class AccessibleToolbarView : public views::View {
  public:
   AccessibleToolbarView();
   virtual ~AccessibleToolbarView();
 
-  // Returns the index of the next view of the toolbar, starting from the given
-  // view index, in the given navigation direction, |forward| when true means it
-  // will navigate from left to right, and vice versa when false. When
-  // |view_index| is -1, it finds the first accessible child.
-  int GetNextAccessibleViewIndex(int view_index, bool forward);
-
-  // Invoked when you press left and right arrows while traversing in the view.
-  // The default implementation is true, where every child in the view is
-  // traversable.
-  virtual bool IsAccessibleViewTraversable(views::View* view);
-
-  // Sets the accessible focused view.
-  void set_acc_focused_view(views::View* acc_focused_view) {
-    acc_focused_view_ = acc_focused_view;
-  }
+  // Initiate the traversal on the toolbar.
+  void InitiateTraversal();
 
   // Overridden from views::View:
   virtual void DidGainFocus();
@@ -51,7 +31,19 @@ class AccessibleToolbarView : public views::View {
   virtual bool GetAccessibleName(std::wstring* name);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual void SetAccessibleName(const std::wstring& name);
-  virtual View* GetAccFocusedChildView() { return acc_focused_view_; }
+  virtual View* GetAccFocusedChildView() { return selected_focused_view_; }
+
+ protected:
+  // Returns the index of the next view of the toolbar, starting from the given
+  // view index. |forward| when true means it will navigate from left to right,
+  // and vice versa when false. If |view_index| is -1 the first accessible child
+  // is returned.
+  int GetNextAccessibleViewIndex(int view_index, bool forward);
+
+  // Invoked from GetNextAccessibleViewIndex to determine if |view| can be
+  // traversed to. Default implementation returns true, override to return false
+  // for views you don't want reachable.
+  virtual bool IsAccessibleViewTraversable(views::View* view);
 
  private:
   // Sets the focus to the currently |acc_focused_view_| view.
@@ -60,8 +52,8 @@ class AccessibleToolbarView : public views::View {
   // Storage of strings needed for accessibility.
   std::wstring accessible_name_;
 
-  // Child view currently having accessibility focus.
-  views::View* acc_focused_view_;
+  // Selected child view currently having accessibility focus.
+  views::View* selected_focused_view_;
 
   // Last focused view that issued this traversal.
   int last_focused_view_storage_id_;
