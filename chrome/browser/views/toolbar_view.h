@@ -12,7 +12,6 @@
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/user_data_manager.h"
-#include "chrome/browser/views/accessible_toolbar_view.h"
 #include "chrome/browser/views/go_button.h"
 #include "chrome/browser/views/location_bar_view.h"
 #include "chrome/common/pref_member.h"
@@ -64,8 +63,8 @@ class ZoomMenuModel : public views::SimpleMenuModel {
   DISALLOW_COPY_AND_ASSIGN(ZoomMenuModel);
 };
 
-// The Browser Window's toolbar.
-class ToolbarView : public AccessibleToolbarView,
+// The Browser Window's toolbar. Used within BrowserView.
+class ToolbarView : public views::View,
                     public views::ViewMenuDelegate,
                     public views::DragController,
                     public views::SimpleMenuModel::Delegate,
@@ -92,6 +91,19 @@ class ToolbarView : public AccessibleToolbarView,
   // (such as user editing) as well.
   void Update(TabContents* tab, bool should_restore_state);
 
+  // Returns the index of the next view of the toolbar, starting from the given
+  // view index (skipping the location bar), in the given navigation direction
+  // (nav_left true means navigation right to left, and vice versa). -1 finds
+  // first accessible child, based on the above policy.
+  int GetNextAccessibleViewIndex(int view_index, bool nav_left);
+
+  // Initialize the MSAA focus traversal on the toolbar.
+  void InitializeTraversal();
+
+  void set_acc_focused_view(views::View* acc_focused_view) {
+    acc_focused_view_ = acc_focused_view;
+  }
+
   // Accessors...
   Browser* browser() const { return browser_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
@@ -100,9 +112,6 @@ class ToolbarView : public AccessibleToolbarView,
   LocationBarView* location_bar() const { return location_bar_; }
   views::MenuButton* page_menu() const { return page_menu_; }
   views::MenuButton* app_menu() const { return app_menu_; }
-
-  // Overridden from AccessibleToolbarView:
-  virtual bool IsAccessibleViewTraversable(views::View* view);
 
   // Overridden from Menu::BaseControllerDelegate:
   virtual bool GetAcceleratorInfo(int id, views::Accelerator* accel);
@@ -143,6 +152,17 @@ class ToolbarView : public AccessibleToolbarView,
   virtual void Layout();
   virtual void Paint(gfx::Canvas* canvas);
   virtual void ThemeChanged();
+  virtual void ShowContextMenu(int x, int y, bool is_mouse_gesture);
+  virtual void DidGainFocus();
+  virtual void WillLoseFocus();
+  virtual void RequestFocus();
+  virtual bool OnKeyPressed(const views::KeyEvent& e);
+  virtual bool OnKeyReleased(const views::KeyEvent& e);
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual void SetAccessibleName(const std::wstring& name);
+  virtual View* GetAccFocusedChildView() { return acc_focused_view_; }
 
  private:
   // Overridden from views::DragController:
@@ -190,6 +210,13 @@ class ToolbarView : public AccessibleToolbarView,
 
   // The model that contains the security level, text, icon to display...
   ToolbarModel* model_;
+
+  // Storage of strings needed for accessibility.
+  std::wstring accessible_name_;
+  // Child view currently having MSAA focus (location bar excluded from arrow
+  // navigation).
+  views::View* acc_focused_view_;
+  int last_focused_view_storage_id_;
 
   // Controls
   views::ImageButton* back_;

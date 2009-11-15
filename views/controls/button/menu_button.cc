@@ -35,9 +35,6 @@ static const SkBitmap* kMenuMarker = NULL;
 static const int kMenuMarkerPaddingLeft = 3;
 static const int kMenuMarkerPaddingRight = -1;
 
-// static
-const char MenuButton::kViewClassName[] = "views/MenuButton";
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // MenuButton - constructors, destructors, initialization
@@ -253,10 +250,6 @@ bool MenuButton::GetAccessibleState(AccessibilityTypes::State* state) {
 
   *state = AccessibilityTypes::STATE_HASPOPUP;
   return true;
-}
-
-std::string MenuButton::GetClassName() const {
-  return kViewClassName;
 }
 
 }  // namespace views

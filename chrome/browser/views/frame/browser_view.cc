@@ -125,7 +125,7 @@ static const int kNewtabBarRoundness = 5;
 // ------------
 
 // Returned from BrowserView::GetClassName.
-const char BrowserView::kViewClassName[] = "browser/views/BrowserView";
+static const char kBrowserViewClassName[] = "browser/views/BrowserView";
 
 ///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
@@ -657,17 +657,6 @@ void BrowserView::PrepareToRunSystemMenu(HMENU menu) {
 }
 #endif
 
-void BrowserView::TraverseNextAccessibleToolbar(bool forward) {
-  // TODO(mohamed) This needs to be smart, that applies to all toolbars.
-  //               Currently it just traverses between bookmarks and toolbar.
-  if (!forward && toolbar_->IsVisible() && toolbar_->IsEnabled()) {
-    toolbar_->InitiateTraversal();
-  } else if (forward && bookmark_bar_view_->IsVisible() &&
-             bookmark_bar_view_->IsEnabled()) {
-    bookmark_bar_view_->InitiateTraversal();
-  }
-}
-
 // static
 void BrowserView::RegisterBrowserViewPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kPluginMessageResponseTimeout,
@@ -970,7 +959,7 @@ void BrowserView::UpdateToolbar(TabContents* contents,
 }
 
 void BrowserView::FocusToolbar() {
-  toolbar_->InitiateTraversal();
+  toolbar_->InitializeTraversal();
 }
 
 void BrowserView::DestroyBrowser() {
@@ -1565,6 +1554,7 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
   // Determine if the TabStrip exists and is capable of being clicked on. We
   // might be a popup window without a TabStrip.
   if (IsTabStripVisible()) {
+
     // See if the mouse pointer is within the bounds of the TabStrip.
     gfx::Point point_in_tabstrip_coords(point);
     View::ConvertPointToView(GetParent(), tabstrip_->GetView(),
@@ -1652,7 +1642,7 @@ gfx::Size BrowserView::GetMinimumSize() {
 // BrowserView, views::View overrides:
 
 std::string BrowserView::GetClassName() const {
-  return kViewClassName;
+  return kBrowserViewClassName;
 }
 
 void BrowserView::Layout() {
@@ -2086,7 +2076,7 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
     new_view->SetBounds((*old_view)->bounds());
     new_view->SchedulePaint();
   } else if (new_view) {
-    DCHECK_EQ(0, new_height);
+    DCHECK(new_height == 0);
     // The heights are the same, but the old view is null. This only happens
     // when the height is zero. Zero out the bounds.
     new_view->SetBounds(0, 0, 0, 0);

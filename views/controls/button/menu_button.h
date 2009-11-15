@@ -5,8 +5,6 @@
 #ifndef VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
 #define VIEWS_CONTROLS_BUTTON_MENU_BUTTON_H_
 
-#include <string>
-
 #include "app/gfx/font.h"
 #include "base/time.h"
 #include "views/background.h"
@@ -27,9 +25,6 @@ class ViewMenuDelegate;
 ////////////////////////////////////////////////////////////////////////////////
 class MenuButton : public TextButton {
  public:
-  // The menu button's class name.
-  static const char kViewClassName[];
-
   //
   // Create a Button
   MenuButton(ButtonListener* listener,
@@ -60,9 +55,6 @@ class MenuButton : public TextButton {
   virtual bool GetAccessibleDefaultAction(std::wstring* action);
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual bool GetAccessibleState(AccessibilityTypes::State* state);
-
-  // Returns views/MenuButton.
-  virtual std::string GetClassName() const;
 
  protected:
   // True if the menu is currently visible.

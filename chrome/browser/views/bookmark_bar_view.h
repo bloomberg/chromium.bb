@@ -71,7 +71,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   static const int kNewtabBarHeight;
 
-  BookmarkBarView(Profile* profile, Browser* browser);
+  explicit BookmarkBarView(Profile* profile, Browser* browser);
   virtual ~BookmarkBarView();
 
   // Resets the profile. This removes any buttons for the current profile and
@@ -112,9 +112,9 @@ class BookmarkBarView : public DetachableToolbarView,
   virtual int OnDragUpdated(const views::DropTargetEvent& event);
   virtual void OnDragExited();
   virtual int OnPerformDrop(const views::DropTargetEvent& event);
-
-  // AccessibleToolbarView methods:
-  virtual bool IsAccessibleViewTraversable(views::View* view);
+  virtual bool GetAccessibleName(std::wstring* name);
+  virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
+  virtual void SetAccessibleName(const std::wstring& name);
 
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();
@@ -484,6 +484,9 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Background for extension toolstrips.
   SkBitmap toolstrip_background_;
+
+  // Storage of strings needed for accessibility.
+  std::wstring accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarView);
 };
