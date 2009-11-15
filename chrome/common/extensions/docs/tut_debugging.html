@@ -162,28 +162,35 @@
           <p>Contents</p>
           <ol>
             <li>
-              <a href="#files"> Get the source code </a>
+              <a href="#extension-info"> View extension information </a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#load"> Load and inspect the extension </a>
+              <a href="#inspect-popup"> Inspect the popup </a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#debug"> Debug the extension </a>
+              <a href="#debug"> Use the debugger </a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#summary">Now what?</a>
+              <a href="#summary">Summary</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#next">Now what?</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -238,178 +245,261 @@
 <div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
-This tutorial shows you how to use
-Google Chrome's built-in developer tools
-to view your extension's code,
-display debugging output,
-and interactively debug your extension.
+This tutorial introduces you to using
+Google Chrome's built-in Developer Tools
+to interactively debug an extension.
 </p>
 
-<p class="comment">
-[PENDING: Rewrite this when we update the example.]
-</p>
 
-<h2 id="files"> Get the source code </h2>
+<h2 id="extension-info"> View extension information </h2>
 
 <p>
-To follow this tutorial,
-you use a modified version of
+To follow this tutorial, you need
 the Hello World extension that was featured in
 <a href="getstarted.html">Getting Started</a>.
 </p>
 
 <ol>
-
   <li>
     <p>
-    Find your copy of the Hello World extension's files.
-    If you don't have a handy copy,
-    extract them from this
-    <a href="samples/tut_debugging.zip">ZIP file</a>.
+      Load the Hello World extension if it isn't already running.
+      If the extension is running,
+      you'll see the Hello World icon
+      <img src="examples/tutorials/getstarted/icon.png" width="19" height="19" alt="">
+      to the right of
+      your browser's address bar.
+    </p>
+
+    <p>
+      If the Hello World extension isn't already running,
+      find the extension files and load them.
+      If you don't have a handy copy of the files,
+      extract them from this
+      <a href="examples/tutorials/getstarted/getstarted.zip">ZIP file</a>.
+      See Getting Started if you need
+      <a href="getstarted.html#load-ext">instructions
+      for loading the extension</a>.
     </p>
   </li>
-  <li>
-    <p> Edit <code>my_toolstrip.html</code> so that it has the following code: </p>
-<pre><b>&lt;script&gt;
-function helloWorld() {
-  var hwFile = 'hello_world.html';
-  console.log("in helloWorld()");
-  window.open(hwFile);
-}
-&lt;/script&gt;</b>
 
-&lt;div class="toolstrip-button" onclick="<b>helloWorld();</b>"&gt;
-&lt;span&gt;Hello, World!&lt;/span&gt;
-&lt;/div&gt;</pre>
-    <p> The revised code has the same effect
-    but now has some debugging output,
-    thanks to the call to <code>console.log()</code>.</p>
+  <li>
+  Go to the Installed Extensions page
+  (<b>chrome://extensions</b>),
+  and make sure the page is in Developer mode.
   </li>
+
+  <li>
+  Look at the Hello World extension's information on that page.
+  You can see details such as the extension's
+  name, description, and ID.
+
+<p class="comment">
+[PENDING: screenshot here?]
+</p>
+
+  </li>
+
+  <li>
+  Keeping an eye on the Installed Extensions page,
+  click the Hello World extension's icon
+  <img src="examples/tutorials/getstarted/icon.png" width="19" height="19" alt="">.
+  A popup appears,
+  and a link named <b>popup.html</b> appears in extension's information,
+  under a new "Inspect active views:" heading.
+
+  <p>
+  <img src="images/debug-popup.png" width="" height="" alt="">
+
+  </p></li>
 </ol>
 
-<h2 id="load"> Load and inspect the extension </h2>
+<p>
+Normally, you can inspect a page
+by clicking its link in the Installed Extensions page.
+However, clicking the link for a popup just
+makes the popup disappear.
+(This happens because a popup goes away as soon as it loses the keyboard focus.)
+The next section shows how you can inspect popup pages.
+</p>
+
+
+<h2 id="inspect-popup"> Inspect the popup </h2>
+
+<p>
+Using the <b>chrome-extension</b> protocol,
+you can view any file in your extension.
+<span class="comment">
+[PENDING: check]
+</span>
+This feature is especially handy for debugging popups.
+</p>
 
 <ol>
   <li>
-  <em>Optional:</em>
-  Close all your Google Chrome windows, except for one.
-  <br>
-  The fewer windows you have open,
-  the easier it'll be to debug the extension.
-  <span class="comment">
-  [PENDING: OK to say?
-  Is there a better way
-  to match extensions to windows?]
-  </span>
-  </li>
-  <li>
-  Go to <b>chrome://extensions</b>.
-  If the extension is already running, click <b>Reload</b>.
-  Otherwise, load the extension by clicking
-  <b>Load unpacked extension</b>
-  and choosing the folder that contains
-  the modified extension files.
+  Get the ID for the Hello World extension
+  from the Installed Extensions page.
+  Example: <b>opnnhifacfpohionnikhlecfgheooenk</b>
   </li>
 
   <li>
-  In <b>chrome://extensions</b>,
-  click the <b>Inspect</b> link
-  next to <b>my_toolstrip.html</b>.
-  <span class="comment">[PENDING: show this?]</span>
-  <br>
-  A Developer Tools window like this should appear:
+  Open a new tab or window,
+  and enter the following in the address box:
+
+  <blockquote>
+  <b>chrome-extension://</b><em>extensionId</em><b>/popup.html</b>
+  </blockquote>
 
   <p>
-     <img src="images/devtools-1.gif" alt="">  </p>
-
-  <p>
-  <b>Note:</b>
-  If you have multiple browser windows open,
-  you'll see multiple copies of <b>my_toolstrip.html</b>
-  in <b>chrome://extensions</b>.
-  Each copy corresponds to a window —
-  or, more precisely, to an instance of the toolstrip.
+  You should see a full-page version of the popup's contents,
+  like the following:
   </p>
+
+  <p>
+  <img src="images/debug-popup-tab.png" width="" height="" alt="">
+  </p>
+
+  </li><li>
+  Back in the Installed Extensions page,
+  press <b>F5</b> or click the browser's Reload button
+  to update the Hello World extension's information.
+  <span class="comment">[PENDING: this seems like it should be unnecessary --
+  like the page should update itself]</span>
+  </li>
+
+  <li>
+  Click the link to <b>popup.html</b>.
+  A Developer Tools window like the following should appear,
+  displaying the code for <b>popup.html</b>.
+
+  <p>
+     <img src="images/devtools-1.png" alt="" width="669" height="394">
+     </p>
   </li>
   <li>
   If the <strong>Scripts</strong> button isn't already selected,
   click it.
+  <span class="comment">[PENDING: can we omit this step?]</span>
   </li>
   <li>
-  If <strong>my_toolstrip.html</strong> isn't already selected,
-  choose it from the list of scripts.
-  The result should be something like this:
-  <p>
-  <img src="images/devtools-2.gif" alt="">  </p>
-  </li>
-</ol>
-
-<h2 id="debug"> Debug the extension </h2>
-<ol>
-  <li>
-  Set a debugging breakpoint at the <code>window.open()</code> statement
-  by clicking <strong>5</strong> in the left column:
-  <p>
-  <img src="images/devtools-3.gif" alt="">  </p>
-  </li>
-  <li>
-  Click the Console button
+  Click the console button
+  <img src="images/console-button.gif" style="border:1px black solid" width="18" height="14" alt="">
   (second from left, at the bottom of the Developer Tools window)
   so that you can see both the code and the console.
-  <p>
-  <img src="images/devtools-4.gif" alt=""></p>
   </li>
-  <li>
-  Back in the main browser window,
-  click the <strong>Hello, World!</strong> button,
-  so that the extension begins executing.
-  You should see the output of <code>console.log()</code>
-  along with the line number,
-  and execution should stop just before
-  the call to <code>window.open()</code>.
-  <p>
-  <img src="images/devtools-5.gif" alt="">
-  </p>
-
-  <p>
-  The Call Stack area at the right of the tools window shows that
-  the <code>helloWorld()</code> method was called by an anonymous function
-  that was called by <code>onclick</code>.
-  Anywhere in the Call Stack or console that you see a file and line number
-  (for example, "my_toolstrip.html:4"),
-  you can click that text to see the relevant line of code.  </p>
-  </li>
-  <li>
-  In the upper right part of the tools window,
-  scroll down (if necessary) until you can see the local scope variables.
-  This section shows the current values of all variables in the current scope.
-  For example, you can see that <code>hwFile</code> is a local variable
-  that has the value "hello_world.html".
-  <p>
-  <img src="images/devtools-6.gif" alt="">  </p>
-  </li>
-  <li>
-  Click the buttons at the upper right of the window
-  to resume execution or to step through the code.
-  Once the call to <code>window.open()</code> returns,
-  the main browser window should open a new tab
-  that displays the contents of <code>hello_world.html</code>.</li>
 </ol>
 
-<div class="comment">
-[PENDING: more stuff we might want to cover:]
+<h2 id="debug"> Use the debugger </h2>
+
+<p>
+In this section,
+you'll follow the execution of the popup page
+as it adds images to itself.
+</p>
+
+<ol>
+  <li>
+  Set a breakpoint inside the image-adding loop
+  by searching for the string <b>img.src</b>
+  and clicking the number of the line where it occurs
+  (for example, <strong>37</strong>):
+  <p>
+  <img src="images/devtools-2.png" alt="" width="669" height="394">
+  </p>
+  </li>
+
+  <li>
+  Make sure you can see the <b>popup.html</b> tab.
+  It should show 20 "hello world" images.
+  </li>
+
+  <li>
+  At the console prompt, reload the popup page
+  by entering <b>location.reload()</b>:
+
+<pre>&gt; <b>location.reload()</b>
+</pre>
+
+  <p>
+  The popup page goes blank as it begins to reload,
+  and its execution stops at line 37.
+  </p>
+  </li>
+
+  <li>
+  In the upper right part of the tools window,
+  you should see the local scope variables.
+  This section shows the current values of all variables in the current scope.
+  For example, in the following screenshot
+  the value of <code>i</code> is 0, and
+  <code>photos</code> is a <code>NodeList</code>
+  that contains at least one <code>Element</code>.
+  (In fact, it contains 20 elements at indexes 0 through 19,
+  each one representing a photo.)
+
+  <p>
+  <img src="images/devtools-localvars.png" alt="" width="226" height="123">
+  </p>
+  </li>
+
+  <li>
+  Click the play/pause button
+  <img src="images/play-button.gif" style="border:1px black solid" width="14" height="12" alt="">
+  (near the top right of the Developer Tools window)
+  to go through the image-processing loop a single time.
+  Each time you click that button,
+  the value of <code>i</code> increments and
+  another icon appears in the popup page.
+  For example, when <code>i</code> is 10,
+  the popup page looks something like this:
+  </li>
+
+  <p>
+  <img src="images/devtools-3.png" width="723" height="270" alt="the popup page with 10 images">
+  </p>
+
+  <li>
+  Use the buttons next to the play/pause button
+  to step over, into, and out of function calls.
+  To let the page finish loading,
+  click line <b>37</b> to disable the breakpoint,
+  and then press play/pause
+  <img src="images/play-button.gif" style="border:1px black solid" width="14" height="12" alt="">
+  to continue execution.
+  </li>
+
+</ol>
+
+
+<h2 id="summary">Summary</h2>
+
+<p>
+This tutorial demonstrated some techniques you can use
+to debug your extensions:
+</p>
+
 <ul>
   <li>
-    You can't currently use the debugger with content scripts;
-    you need to use console.*.
+    Find your extension's ID and links to its pages in
+    the <b>Installed Extensions</b> page
+    (<b>chrome://extensions</b>).
   </li>
   <li>
-    location.reload()
+    View hard-to-reach pages
+    (and any other file in your extension) using
+    <b>chrome-extension://</b><em>extensionId</em><b>/</b><em>filename</em>.
+  </li>
+  <li>
+    Use Developer Tools to inspect
+    and step through a page's JavaScript code.
+  </li>
+  <li>
+    Reload the currently inspected page from the console
+    using <b>location.reload()</b>.
   </li>
 </ul>
-</div>
 
-<h2 id="summary">Now what?</h2>
+
+<h2 id="next">Now what?</h2>
 
 <p>
 Now that you've been introduced to debugging,
@@ -418,17 +508,27 @@ here are suggestions for what to do next:
 
 <ul>
   <li>
-    Explore the developer tools to find more features
-    <span class="comment">
-    [PENDING: should point to dev tools doc]
-    </span>
+    Try installing and inspecting other extensions,
+    such as the
+    <a href="samples.html">samples</a>.
   </li>
   <li>
-    Try installing and debugging other extensions,
-    such as the
-    <a href="http://dev.chromium.org/developers/design-documents/extensions/samples">samples</a>
+    Try using widely available debugging APIs such as
+    <code>console.log()</code> and <code>console.error()</code>
+    in your extension's JavaScript code.
+    Example: <code>console.log("Hello, world!")</code>
+  </li>
+  <li>
+    Explore the
+    <a href="http://www.chromium.org/devtools">Developer Tools site</a>,
+    and watch some video tutorials.
   </li>
 </ul>
+
+<p class="comment">
+[PENDING: do something to help people debug
+content scripts, which show up in blue]
+</p>
 
 <p>
 For more ideas,
