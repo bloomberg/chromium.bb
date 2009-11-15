@@ -199,6 +199,36 @@ void IncognitoTabHTMLSource::InitFullHTML() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// PromotionalMessageHandler
+
+class PromotionalMessageHandler : public DOMMessageHandler {
+ public:
+  PromotionalMessageHandler() {}
+  virtual ~PromotionalMessageHandler() {}
+
+  // DOMMessageHandler implementation.
+  virtual void RegisterMessages();
+
+  // Zero promotional message counter.
+  void HandleClosePromotionalMessage(const Value* content);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PromotionalMessageHandler);
+};
+
+void PromotionalMessageHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback("stopPromoMessages",
+      NewCallback(this,
+                  &PromotionalMessageHandler::HandleClosePromotionalMessage));
+}
+
+void PromotionalMessageHandler::HandleClosePromotionalMessage(
+    const Value* content) {
+  dom_ui_->GetProfile()->GetPrefs()->SetInteger(prefs::kNTPPromoRemaining, 0);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // RecentlyClosedTabsHandler
 
 class RecentlyClosedTabsHandler : public DOMMessageHandler,
@@ -569,6 +599,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     }
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
+    AddMessageHandler((new PromotionalMessageHandler())->Attach(this));
 
     NewTabHTMLSource* html_source = new NewTabHTMLSource(GetProfile());
     bool posted = ChromeThread::PostTask(
@@ -883,6 +914,15 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML(Profile* profile) {
       l10n_util::GetString(IDS_NEW_TAB_TIPS));
   localized_strings.SetString(L"sync",
       l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_BOOKMARK_SYNC));
+  localized_strings.SetString(L"promonew",
+      l10n_util::GetString(IDS_NTP_PROMOTION_NEW));
+  localized_strings.SetString(L"promomessage",
+      l10n_util::GetStringF(IDS_NTP_PROMOTION_MESSAGE,
+          l10n_util::GetString(IDS_PRODUCT_NAME),
+          ASCIIToWide(Extension::kGalleryBrowseUrl),
+          l10n_util::GetString(IDS_SYNC_SERVICE_HELP_URL)));
+  localized_strings.SetString(L"extensionslink",
+      ASCIIToWide(Extension::kGalleryBrowseUrl));
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.
@@ -902,8 +942,8 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML(Profile* profile) {
 
     // Decrement ntp promo counter; the default value is specified in
     // Browser::RegisterUserPrefs.
-    profile->GetPrefs()->SetInteger(prefs::kNTPThemePromoRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) - 1);
+    profile->GetPrefs()->SetInteger(prefs::kNTPPromoRemaining,
+        profile->GetPrefs()->GetInteger(prefs::kNTPPromoRemaining) - 1);
     first_view_ = false;
   }
 

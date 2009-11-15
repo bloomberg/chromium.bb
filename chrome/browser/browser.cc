@@ -1344,7 +1344,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterIntegerPref(prefs::kDeleteTimePeriod, 0);
   prefs->RegisterBooleanPref(prefs::kCheckDefaultBrowser, true);
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);
-  prefs->RegisterIntegerPref(prefs::kNTPThemePromoRemaining, 5);
+  prefs->RegisterIntegerPref(prefs::kNTPPromoRemaining, 5);
   prefs->RegisterBooleanPref(prefs::kShowExtensionShelf, true);
 }
 

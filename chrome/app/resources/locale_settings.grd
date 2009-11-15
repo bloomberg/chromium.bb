@@ -656,6 +656,11 @@
         http://www.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
       </message>
       
+      <!-- Help for the bookmark sync service. -->
+      <message name="IDS_SYNC_SERVICE_HELP_URL" translateable="false">
+        http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=165139
+      </message>
+      
       <!-- The width of the sync setup wizard / login dialog in characters. -->
       <message name="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
         46

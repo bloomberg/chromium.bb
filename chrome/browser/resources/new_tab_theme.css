@@ -101,6 +101,10 @@ body {
   color: $$6; /* COLOR_NTP_LINK_UNDERLINE */
 }
 
-#themes-promo {
+#promo-line {
+  display: $$9;
+}
+
+#bottom-right-promo {
   display: $$8;
 }

@@ -184,10 +184,13 @@ void DOMUIThemeSource::InitNewTabCSS(Profile* profile) {
   subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
 
-  if (profile->GetPrefs()->GetInteger(prefs::kNTPThemePromoRemaining) > 0)
+  if (profile->GetPrefs()->GetInteger(prefs::kNTPPromoRemaining) > 0) {
     subst2.push_back("block");  // $$8
-  else
+    subst2.push_back("inline-block");  // $$9
+  } else {
     subst2.push_back("none");  // $$8
+    subst2.push_back("none");  // $$9
+  }
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(

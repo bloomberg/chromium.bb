@@ -283,10 +283,10 @@ const wchar_t kUseCustomChromeFrame[] = L"browser.custom_chrome_frame";
 // directly from the omnibox should be shown.
 const wchar_t kShowOmniboxSearchHint[] = L"browser.show_omnibox_search_hint";
 
-// Integer that counts the number of times the theme promo has left to be
+// Integer that counts the number of times the promo on the NTP has left to be
 // shown; this decrements each time the NTP is shown for the first time
 // in a session.
-const wchar_t kNTPThemePromoRemaining[] = L"browser.ntp.theme_promo_remaining";
+const wchar_t kNTPPromoRemaining[] = L"browser.ntp.promo_remaining";
 
 // The list of origins which are allowed|denied to show desktop notifications.
 const wchar_t kDesktopNotificationAllowedOrigins[] =

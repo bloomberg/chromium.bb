@@ -687,20 +687,70 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
   margin: 10px 0;
 }
 
-#themes-promo {
+/* promotions line */
+#bottom-right-promo {
   position: absolute;
+  display: block;
+  width: 180px;
+  height: 131px;
+  border: 0;
   bottom: 0px;
   right: 0px;
 }
 
-#themes-promo * {
+#footer {
+  position: fixed;
+  bottom: 0px;
+  left: 0px;
+  text-align: center;
+  width: 100%;
   display: block;
 }
 
-#themes-promo img {
-  width: 150px;
-  height: 180px;
-  border: 0;
+#promo-line {
+  background-color: hsl(52, 100%, 80%);
+  border: 1px solid rgb(211, 211, 211);
+  -webkit-border-radius: 6px;
+  padding: 7px 10px;
+  white-space: nowrap;
+  display: inline-block;
+  color: black;
+}
+
+#promo-line > * {
+  display: inline-block;
+  font-weight: bold;
+  text-overflow: ellipsis;
+}
+
+#promo-line a {
+  color: rgb(6, 45, 117);
+  text-decoration: underline;
+}
+
+#promo-new {
+  color: red;
+}
+
+#promo-close {
+  display: inline-block;
+  border: 0px;
+  margin-left: 10px;
+  margin-right: auto;
+  vertical-align: middle;
+  width: 16px;
+  height: 16px;
+  background: no-repeat;
+  background-image: url(chrome://theme/close_bar);
+}
+
+#promo-close:hover,
+#promo-close:focus {
+  background-image: url(chrome://theme/close_bar_h);
+}
+
+#promo-close:active {
+  background-image: url(chrome://theme/close_bar_p);
 }
 
 /* small */
