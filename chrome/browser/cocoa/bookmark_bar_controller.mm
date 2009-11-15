@@ -184,11 +184,15 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     buttons_.reset([[NSMutableArray alloc] init]);
     delegate_ = delegate;
     resizeDelegate_ = resizeDelegate;
-    [[self animatableView] setResizeDelegate:resizeDelegate];
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
     defaultImage_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
+
+    // This call triggers an awakeFromNib, which builds the bar, which
+    // might uses folderImage_.  So make sure it happens after
+    // folderImage_ is loaded.
+    [[self animatableView] setResizeDelegate:resizeDelegate];
   }
   return self;
 }
