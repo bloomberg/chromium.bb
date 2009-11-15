@@ -4,6 +4,7 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
+#import "chrome/browser/cocoa/bookmark_menu.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -29,21 +30,6 @@ TEST_F(BookmarkButtonCellTest, SizeForBounds) {
   NSSize size = [cell.get() cellSizeForBounds:r];
   EXPECT_TRUE(size.width > 0 && size.height > 0);
   EXPECT_TRUE(size.width < 200 && size.height < 200);
-}
-
-// Make sure a cell's menu has the cell itself as the delegate.  This
-// is our convention for reusing the context menu across all bookmarks
-// while being unambiguous when used.
-TEST_F(BookmarkButtonCellTest, MenuDelegate) {
-  scoped_nsobject<BookmarkButtonCell> cell([[BookmarkButtonCell alloc]
-                                               initTextCell:@"Testing"]);
-  EXPECT_FALSE([cell.get() menu]);
-
-  scoped_nsobject<NSMenu> menu([[NSMenu alloc] initWithTitle:@"foo"]);
-  [cell setMenu:menu.get()];
-  EXPECT_TRUE([cell.get() menu]);
-  EXPECT_EQ([[cell.get() menu] delegate], cell.get());
-  [cell setMenu:nil];
 }
 
 // Make sure the default from the base class is overridden

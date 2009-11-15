@@ -19,6 +19,7 @@
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
+#import "chrome/browser/cocoa/bookmark_menu.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/menu_button.h"
@@ -118,6 +119,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 }
 @end
 
+
 @interface BookmarkBarController(Private)
 // Determines the appropriate state for the given situation.
 + (bookmarks::VisualState)visualStateToShowNormalBar:(BOOL)showNormalBar
@@ -157,6 +159,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (void)resizeButtons;
 - (void)centerNoItemsLabel;
 - (NSImage*)getFavIconForNode:(const BookmarkNode*)node;
+- (void)setNodeForBarMenu;
 @end
 
 @implementation BookmarkBarController
@@ -215,16 +218,16 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // We are enabled by default.
   barIsEnabled_ = YES;
 
-  // Don't pass ourself along (as 'self') until our init is completely
-  // done.  Thus, this call is (almost) last.
-  bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
-
   DCHECK([offTheSideButton_ attachedMenu]);
 
   // To make life happier when the bookmark bar is floating, the chevron is a
   // child of the button view.
   [offTheSideButton_ removeFromSuperview];
   [buttonView_ addSubview:offTheSideButton_];
+
+  // Copy the bar menu so we know if it's from the bar or a folder.
+  // Then we set its represented item to be the bookmark bar.
+  buttonFolderContextMenu_.reset([[[self view] menu] copy]);
 
   // When resized we may need to add new buttons, or remove them (if
   // no longer visible), or add/remove the "off the side" menu.
@@ -234,6 +237,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
          selector:@selector(frameDidChange)
              name:NSViewFrameDidChangeNotification
            object:[self view]];
+
+  // Don't pass ourself along (as 'self') until our init is completely
+  // done.  Thus, this call is (almost) last.
+  bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
 }
 
 // (Private) Method is the same as [self view], but is provided to be explicit.
@@ -469,16 +476,6 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return browser_->profile()->GetThemeProvider();
 }
 
-// Return nil if menuItem has no delegate.
-- (BookmarkNode*)nodeFromMenuItem:(id)menuItem {
-  NSCell* cell = reinterpret_cast<NSCell*>([[menuItem menu] delegate]);
-  if (!cell)
-    return nil;
-  BookmarkNode* node = static_cast<BookmarkNode*>(
-      [[cell representedObject] pointerValue]);
-  return node;
-}
-
 - (BookmarkNode*)nodeFromButton:(id)button {
   NSCell* cell = [button cell];
   BookmarkNode* node = static_cast<BookmarkNode*>(
@@ -487,16 +484,47 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return node;
 }
 
-// At this time, the only items which ever get disabled are the "Open All
-// Bookmarks" options.
-- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+// Enable or disable items.  We are the menu delegate for both the bar
+// and for bookmark folder buttons.
+- (BOOL)validateUserInterfaceItem:(id)item {
+  if (![item isKindOfClass:[NSMenuItem class]])
+    return YES;
+
+  BookmarkNode* node = [self nodeFromMenuItem:item];
+
+  // If this is the bar menu, we only have things to do if there are
+  // buttons.  If this is a folder button menu, we only have things to
+  // do if the folder has items.
+  NSMenu* menu = [item menu];
+  BOOL thingsToDo = NO;
+  if (menu == [[self view] menu]) {
+    thingsToDo = [buttons_ count] ? YES : NO;
+  } else {
+    if (node && node->is_folder() && node->GetChildCount()) {
+      thingsToDo = YES;
+    }
+  }
+
+  // Disable openAll* if we have nothing to do.
   SEL action = [item action];
-  if (((action == @selector(openAllBookmarks:)) ||
+  if ((!thingsToDo) &&
+      ((action == @selector(openAllBookmarks:)) ||
        (action == @selector(openAllBookmarksNewWindow:)) ||
-       (action == @selector(openAllBookmarksIncognitoWindow:))) &&
-      (![buttons_ count])) {
+       (action == @selector(openAllBookmarksIncognitoWindow:)))) {
     return NO;
   }
+
+  if ((action == @selector(editBookmark:)) ||
+      (action == @selector(deleteBookmark:))) {
+    // Don't allow edit/delete of the bar node, or of "Other Bookmarks"
+    if ((node == nil) ||
+        (node == bookmarkModel_->other_node()) ||
+        (node == bookmarkModel_->GetBookmarkBarNode())) {
+      return NO;
+    }
+  }
+
+  // Enabled by default.
   return YES;
 }
 
@@ -723,26 +751,28 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   }
 }
 
+// Return the BookmarkNode associated with the given NSMenuItem.
+- (BookmarkNode*)nodeFromMenuItem:(id)sender {
+  BookmarkMenu* menu = (BookmarkMenu*)[sender menu];
+  if ([menu isKindOfClass:[BookmarkMenu class]])
+    return const_cast<BookmarkNode*>([menu node]);
+  return NULL;
+}
+
 - (IBAction)openAllBookmarks:(id)sender {
-  // TODO(jrg):
-  // Is there an easier way to get a non-const root node for the bookmark bar?
-  // I can't iterate over them unless it's non-const.
-  BookmarkNode* node = const_cast<BookmarkNode*>(
-    bookmarkModel_->GetBookmarkBarNode());
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:NEW_FOREGROUND_TAB];
   UserMetrics::RecordAction(L"OpenAllBookmarks", browser_->profile());
 }
 
 - (IBAction)openAllBookmarksNewWindow:(id)sender {
-  BookmarkNode* node = const_cast<BookmarkNode*>(
-    bookmarkModel_->GetBookmarkBarNode());
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:NEW_WINDOW];
   UserMetrics::RecordAction(L"OpenAllBookmarksNewWindow", browser_->profile());
 }
 
 - (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
-  BookmarkNode* node = const_cast<BookmarkNode*>(
-    bookmarkModel_->GetBookmarkBarNode());
+  BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:OFF_THE_RECORD];
   UserMetrics::RecordAction(L"OpenAllBookmarksIncognitoWindow", browser_->profile());
 }
@@ -795,7 +825,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   NSImage* image = [self getFavIconForNode:node];
   [cell setBookmarkCellText:title image:image];
   if (node->is_folder())
-    [cell setMenu:[[self view] menu]];
+    [cell setMenu:buttonFolderContextMenu_];
   else
     [cell setMenu:buttonContextMenu_];
   return cell;
@@ -1015,6 +1045,15 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [self addNonBookmarkButtonsToView];
   [self addButtonsToView];
   [self showOrHideOffTheSideButton];
+  [self setNodeForBarMenu];
+}
+
+// Now that the model is loaded, set the bookmark bar root as the node
+// represented by the bookmark bar (default, background) menu.
+- (void)setNodeForBarMenu {
+  const BookmarkNode* node = bookmarkModel_->GetBookmarkBarNode();
+  BookmarkMenu* menu = static_cast<BookmarkMenu*>([[self view] menu]);
+  [menu setRepresentedObject:[NSValue valueWithPointer:node]];
 }
 
 - (void)beingDeleted:(BookmarkModel*)model {

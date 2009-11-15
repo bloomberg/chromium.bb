@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
+#import "chrome/browser/cocoa/bookmark_menu.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 @implementation BookmarkButtonCell
@@ -53,12 +54,10 @@
 
 // We share the context menu among all bookmark buttons.  To allow us
 // to disambiguate when needed (e.g. "open bookmark"), we set the
-// menu's delegate to be us.  We (the cell) have the bookmark encoded
-// in our represented object.
-// Convention needed in -[BookmarkBarController openBookmarkIn***] calls.
+// menu's associated node to be our represented object.
 - (NSMenu*)menu {
-  NSMenu* menu = [super menu];
-  [menu setDelegate:self];
+  BookmarkMenu* menu = (BookmarkMenu*)[super menu];
+  [menu setRepresentedObject:[self representedObject]];
   return menu;
 }
 

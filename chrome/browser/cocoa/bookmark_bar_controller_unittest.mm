@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
+#import "chrome/browser/cocoa/bookmark_menu.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/cocoa/test_event_utils.h"
@@ -100,7 +101,7 @@ class BookmarkBarControllerTest : public PlatformTest {
     InstallAndToggleBar(bar_.get());
 
     // Create a menu/item to act like a sender
-    menu_.reset([[NSMenu alloc] initWithTitle:@"I_dont_care"]);
+    menu_.reset([[BookmarkMenu alloc] initWithTitle:@"I_dont_care"]);
     menu_item_.reset([[NSMenuItem alloc]
                        initWithTitle:@"still_dont_care"
                               action:NULL
@@ -135,13 +136,13 @@ class BookmarkBarControllerTest : public PlatformTest {
   // Return a menu item that points to the right URL.
   NSMenuItem* ItemForBookmarkBarMenu(GURL& gurl) {
     node_.reset(new BookmarkNode(gurl));
-    [cell_ setRepresentedObject:[NSValue valueWithPointer:node_.get()]];
+    [menu_ setRepresentedObject:[NSValue valueWithPointer:node_.get()]];
     return menu_item_;
   }
 
   // Does NOT take ownership of node.
   NSMenuItem* ItemForBookmarkBarMenu(const BookmarkNode* node) {
-    [cell_ setRepresentedObject:[NSValue valueWithPointer:node]];
+    [menu_ setRepresentedObject:[NSValue valueWithPointer:node]];
     return menu_item_;
   }
 
@@ -150,7 +151,7 @@ class BookmarkBarControllerTest : public PlatformTest {
   BrowserTestHelper helper_;
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
   scoped_nsobject<BookmarkBarControllerNoOpen> bar_;
-  scoped_nsobject<NSMenu> menu_;
+  scoped_nsobject<BookmarkMenu> menu_;
   scoped_nsobject<NSMenuItem> menu_item_;
   scoped_nsobject<NSButtonCell> cell_;
   scoped_ptr<BookmarkNode> node_;
@@ -520,8 +521,9 @@ TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
                 L"title", GURL("http://two-two.com"));
   model->AddURL(parent, parent->GetChildCount(),
                 L"title", GURL("https://three.com"));
-  [bar_ openAllBookmarks:nil];
 
+  // Our first OpenAll... is from the bar itself.
+  [bar_ openAllBookmarks:ItemForBookmarkBarMenu(parent)];
   EXPECT_EQ(bar_.get()->urls_.size(), 4U);
   EXPECT_EQ(bar_.get()->dispositions_.size(), 4U);
 
@@ -538,6 +540,14 @@ TEST_F(BookmarkBarControllerTest, OpenAllBookmarks) {
   EXPECT_TRUE(i == end);
 
   EXPECT_EQ(bar_.get()->dispositions_[3], NEW_BACKGROUND_TAB);
+
+  // Now try an OpenAll... from a folder node.
+  bar_.get()->urls_.clear();
+  bar_.get()->dispositions_.clear();
+  [bar_ openAllBookmarks:ItemForBookmarkBarMenu(folder)];
+
+  EXPECT_EQ(bar_.get()->urls_.size(), 2U);
+  EXPECT_EQ(bar_.get()->dispositions_.size(), 2U);
 }
 
 // TODO(jrg): write a test to confirm that nodeFavIconLoaded calls
@@ -689,6 +699,63 @@ TEST_F(BookmarkBarControllerTest, DropBookmarks) {
     EXPECT_EQ(parent->GetChild(i)->GetURL(), GURL(urls[i]));
     EXPECT_EQ(parent->GetChild(i)->GetTitle(), titles[i]);
   }
+}
+
+TEST_F(BookmarkBarControllerTest, TestButtonOrBar) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  GURL gurl1("http://www.google.com");
+  std::wstring title1(L"x");
+  model->SetURLStarred(gurl1, title1, true);
+
+  GURL gurl2("http://www.google.com/gurl_power");
+  std::wstring title2(L"gurl power");
+  model->SetURLStarred(gurl2, title2, true);
+
+  NSButton* first = [[bar_ buttons] objectAtIndex:0];
+  NSButton* second = [[bar_ buttons] objectAtIndex:1];
+  EXPECT_TRUE(first && second);
+
+  NSMenuItem* menuItem = [[[first cell] menu] itemAtIndex:0];
+  BookmarkNode* node = [bar_ nodeFromMenuItem:menuItem];
+  EXPECT_TRUE(node);
+  EXPECT_EQ(node, model->GetBookmarkBarNode()->GetChild(0));
+
+  menuItem = [[[second cell] menu] itemAtIndex:0];
+  node = [bar_ nodeFromMenuItem:menuItem];
+  EXPECT_TRUE(node);
+  EXPECT_EQ(node, model->GetBookmarkBarNode()->GetChild(1));
+
+  menuItem = [[[bar_ view] menu] itemAtIndex:0];
+  node = [bar_ nodeFromMenuItem:menuItem];
+  EXPECT_TRUE(node);
+  EXPECT_EQ(node, model->GetBookmarkBarNode());
+}
+
+TEST_F(BookmarkBarControllerTest, TestMenuNodeAndDisable) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* folder = model->AddGroup(parent,
+                                               parent->GetChildCount(),
+                                               L"group");
+  NSButton* button = [[bar_ buttons] objectAtIndex:0];
+  EXPECT_TRUE(button);
+
+  // Confirm the menu knows which node it is talking about
+  BookmarkMenu* menu = static_cast<BookmarkMenu*>([[button cell] menu]);
+  EXPECT_TRUE(menu);
+  EXPECT_TRUE([menu isKindOfClass:[BookmarkMenu class]]);
+  EXPECT_EQ(folder, [menu node]);
+
+  // Make sure "Open All" is disabled (nothing to open -- no children!)
+  // (Assumes "Open All" is the 1st item)
+  NSMenuItem* item = [menu itemAtIndex:0];
+  EXPECT_FALSE([bar_ validateUserInterfaceItem:item]);
+
+  // Now add a child and make sure the item would be enabled.
+  model->AddURL(folder, folder->GetChildCount(),
+                L"super duper wide title",
+                GURL("http://superfriends.hall-of-justice.edu"));
+  EXPECT_TRUE([bar_ validateUserInterfaceItem:item]);
 }
 
 }  // namespace

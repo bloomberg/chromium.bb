@@ -1085,6 +1085,8 @@
         'browser/cocoa/bookmark_editor_base_controller.mm',
         'browser/cocoa/bookmark_editor_controller.h',
         'browser/cocoa/bookmark_editor_controller.mm',
+        'browser/cocoa/bookmark_menu.h',
+        'browser/cocoa/bookmark_menu.mm',
         'browser/cocoa/bookmark_menu_bridge.h',
         'browser/cocoa/bookmark_menu_bridge.mm',
         'browser/cocoa/bookmark_menu_cocoa_controller.h',
@@ -1398,7 +1400,7 @@
         'browser/extensions/extension_host.cc',
         'browser/extensions/extension_host.h',
         'browser/extensions/extension_i18n_api.cc',
-        'browser/extensions/extension_i18n_api.h',        
+        'browser/extensions/extension_i18n_api.h',
         'browser/extensions/extension_install_ui.cc',
         'browser/extensions/extension_install_ui.h',
         'browser/extensions/extension_message_service.cc',
@@ -2653,7 +2655,7 @@
             '../third_party/mozilla/include/NSURL+Utils.m',
             '../third_party/mozilla/include/NSWorkspace+Utils.h',
             '../third_party/mozilla/include/NSWorkspace+Utils.m',
-            # Headers so that IB can find classes it needs to resolve classes  
+            # Headers so that IB can find classes it needs to resolve classes
             # in XIB files.
             '../base/chrome_application_mac.h',
           ],
@@ -2844,7 +2846,7 @@
                 ['include', '^browser/views/event_utils.h'],
                 ['include', '^browser/views/extensions/extension_install_prompt.cc'],
                 ['include', '^browser/views/extensions/extension_installed_bubble.cc'],
-                ['include', '^browser/views/extensions/extension_installed_bubble.h'],               
+                ['include', '^browser/views/extensions/extension_installed_bubble.h'],
                 ['include', '^browser/views/extensions/extension_popup.cc'],
                 ['include', '^browser/views/extensions/extension_popup.h'],
                 ['include', '^browser/views/extensions/extension_shelf.cc'],
@@ -4560,6 +4562,7 @@
         'browser/cocoa/bookmark_button_cell_unittest.mm',
         'browser/cocoa/bookmark_editor_base_controller_unittest.mm',
         'browser/cocoa/bookmark_editor_controller_unittest.mm',
+        'browser/cocoa/bookmark_menu_unittest.mm',
         'browser/cocoa/bookmark_menu_bridge_unittest.mm',
         'browser/cocoa/bookmark_menu_cocoa_controller_unittest.mm',
         'browser/cocoa/bookmark_name_folder_controller_unittest.mm',

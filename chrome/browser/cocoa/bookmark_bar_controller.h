@@ -19,6 +19,7 @@
 class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBarView;
+@class BookmarkMenu;
 class Browser;
 class GURL;
 @class MenuButton;
@@ -127,6 +128,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
   // "Other bookmarks" button on the right side.
   scoped_nsobject<NSButton> otherBookmarksButton_;
+
+  // We have a special menu for folder buttons.  This starts as a copy
+  // of the bar menu.
+  scoped_nsobject<BookmarkMenu> buttonFolderContextMenu_;
 }
 
 @property(readonly, nonatomic) bookmarks::VisualState visualState;
@@ -238,6 +243,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (NSMenu*)offTheSideMenu;
 - (NSButton*)offTheSideButton;
 - (NSButton*)otherBookmarksButton;
+- (BookmarkNode*)nodeFromMenuItem:(id)sender;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_
