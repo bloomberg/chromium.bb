@@ -470,22 +470,6 @@ class MakefileWriter:
     self.WriteLn("TOOLSET := " + self.toolset)
     self.WriteLn("TARGET := " + self.target)
 
-    sources = filter(Compilable, spec.get('sources', []))
-    if sources:
-      self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT1)
-      extensions = set([os.path.splitext(s)[1] for s in sources])
-      for ext in extensions:
-        if ext in SHARED_HEADER_SUFFIX_RULES_SRCDIR:
-          self.WriteLn(SHARED_HEADER_SUFFIX_RULES_SRCDIR[ext])
-      self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT2)
-      for ext in extensions:
-        if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR1:
-          self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR1[ext])
-      for ext in extensions:
-        if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR2:
-          self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR2[ext])
-      self.WriteLn('# End of this set of suffix rules')
-
     # Actions must come first, since they can generate more OBJs for use below.
     if 'actions' in spec:
       self.WriteActions(spec['actions'], extra_sources, extra_outputs,
@@ -498,9 +482,26 @@ class MakefileWriter:
     if 'copies' in spec:
       self.WriteCopies(spec['copies'], extra_outputs, part_of_all)
 
-    if 'sources' in spec or extra_sources:
-      self.WriteSources(configs, deps, spec.get('sources', []) + extra_sources,
+    all_sources = spec.get('sources', []) + extra_sources
+    if all_sources:
+      self.WriteSources(configs, deps, all_sources,
                         extra_outputs, extra_link_deps, part_of_all)
+      sources = filter(Compilable, all_sources)
+      if sources:
+        self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT1)
+        extensions = set([os.path.splitext(s)[1] for s in sources])
+        for ext in extensions:
+          if ext in SHARED_HEADER_SUFFIX_RULES_SRCDIR:
+            self.WriteLn(SHARED_HEADER_SUFFIX_RULES_SRCDIR[ext])
+        self.WriteLn(SHARED_HEADER_SUFFIX_RULES_COMMENT2)
+        for ext in extensions:
+          if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR1:
+            self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR1[ext])
+        for ext in extensions:
+          if ext in SHARED_HEADER_SUFFIX_RULES_OBJDIR2:
+            self.WriteLn(SHARED_HEADER_SUFFIX_RULES_OBJDIR2[ext])
+        self.WriteLn('# End of this set of suffix rules')
+
 
     self.WriteTarget(spec, configs, deps,
                      extra_link_deps + link_deps, extra_outputs, part_of_all)

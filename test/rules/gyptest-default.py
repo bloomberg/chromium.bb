@@ -30,6 +30,17 @@ else:
   chdir = 'relocate/src'
 test.run_built_executable('program', chdir=chdir, stdout=expect)
 
+expect = """\
+Hello from program.c
+Hello from function3.in
+"""
+
+if test.format == 'xcode':
+  chdir = 'relocate/src/subdir3'
+else:
+  chdir = 'relocate/src'
+test.run_built_executable('program2', chdir=chdir, stdout=expect)
+
 test.must_match('relocate/src/subdir2/file1.out', "Hello from file1.in\n")
 test.must_match('relocate/src/subdir2/file2.out', "Hello from file2.in\n")
 
