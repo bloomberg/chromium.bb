@@ -970,7 +970,7 @@ void BrowserView::UpdateToolbar(TabContents* contents,
 }
 
 void BrowserView::FocusToolbar() {
-  toolbar_->RequestFocus();
+  toolbar_->InitiateTraversal();
 }
 
 void BrowserView::DestroyBrowser() {
