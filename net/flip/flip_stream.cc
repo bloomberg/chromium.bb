@@ -79,6 +79,7 @@ void FlipStream::OnReply(const flip::FlipHeaderBlock* headers) {
       raw_headers.append(it->first);
       raw_headers.append(":", 1);
       raw_headers.append(tval);
+      raw_headers.append("\0", 1);
       start = end + 1;
     } while (end != value.npos);
   }
