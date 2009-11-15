@@ -58,8 +58,15 @@
   [self autorelease];
 }
 
-- (void)windowDidLoad {
-  NSWindow* window = [self window];
+
+// We want this to be a child of a browser window.  addChildWindow:
+// (called from this function) will bring the window on-screen;
+// unfortunately, [NSWindowController showWindow:] will also bring it
+// on-screen (but will cause unexpected changes to the window's
+// position).  We cannot have an addChildWindow: and a subsequent
+// showWindow:. Thus, we have our own version.
+- (void)showWindow:(id)sender {
+  NSWindow* window = [self window];  // completes nib load
   NSPoint origin = [parentWindow_ convertBaseToScreen:topLeftForBubble_];
   origin.y -= NSHeight([window frame]);
   [window setFrameOrigin:origin];
@@ -73,10 +80,13 @@
   }
 
   [self fillInFolderList];
+
+  [[self window] makeKeyAndOrderFront:self];
 }
 
 - (void)close {
   [parentWindow_ removeChildWindow:[self window]];
+  [delegate_ bubbleWindowWillClose:[self window]];
   [super close];
 }
 
@@ -133,6 +143,12 @@
 // window.
 - (void)windowDidResignKey:(NSNotification*)notification {
   DCHECK_EQ([notification object], [self window]);
+
+  // We must tell our delegate our window is gone RIGHT NOW.  The
+  // performSelector: call below triggers a close but it might get
+  // processed after a request to show a new bubble (e.g. in another
+  // window).
+  [delegate_ bubbleWindowWillClose:[self window]];
 
   // Can't call close from within a window delegate method. Call close for the
   // next time through the event loop.

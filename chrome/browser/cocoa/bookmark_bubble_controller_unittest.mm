@@ -36,10 +36,18 @@
   edits_++;
 }
 
+// Tell us (a delegate) which controller it will "own".  This sets up
+// the test classes (e.g. simulates what Chromium would do after
+// creating a BookmarkBubbleController).
 - (void)setWindowController:(NSWindowController *)controller {
   window_ = static_cast<InfoBubbleWindow*>([controller window]);
-  EXPECT_TRUE([window_ isKindOfClass:[InfoBubbleWindow class]]);
+  [controller showWindow:self];
 }
+
+// The bubble tells the delegate when it will go away.
+- (void)bubbleWindowWillClose:(NSWindow*)window {
+  // empty
+ }
 
 - (BOOL)isWindowClosing {
   return [window_ isClosing];

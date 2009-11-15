@@ -16,6 +16,9 @@ class BookmarkNode;
 // The bubble asks the delegate to perform an edit when needed.
 - (void)editBookmarkNode:(const BookmarkNode*)node;
 
+// The bubble tells the delegate when it will go away.
+- (void)bubbleWindowWillClose:(NSWindow*)window;
+
 @end
 
 // Controller for the bookmark bubble.  The bookmark bubble is a
@@ -58,6 +61,7 @@ class BookmarkNode;
 - (IBAction)remove:(id)sender;
 - (IBAction)cancel:(id)sender;
 - (IBAction)folderChanged:(id)sender;
+
 @end
 
 

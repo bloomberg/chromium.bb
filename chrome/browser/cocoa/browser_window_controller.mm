@@ -1172,27 +1172,17 @@ willPositionSheet:(NSWindow*)sheet
                                                      model:model
                                                       node:node
                                          alreadyBookmarked:alreadyBookmarked];
-    NSWindow* bookmarkBubbleWindow = [bookmarkBubbleController_ window];
-    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-    [nc addObserver:self
-           selector:@selector(bubbleWindowWillClose:)
-               name:NSWindowWillCloseNotification
-             object:bookmarkBubbleWindow];
     [bookmarkBubbleController_ showWindow:self];
   }
 }
 
-// Notification sent when our bubble window is closed.
-- (void)bubbleWindowWillClose:(NSNotification*)notification {
-  DCHECK([[notification object] windowController] == bookmarkBubbleController_);
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  [nc removeObserver:self
-                name:NSWindowWillCloseNotification
-              object:[bookmarkBubbleController_ window]];
-  bookmarkBubbleController_ = nil;
+// Implement BookmarkBubbleControllerDelegate.
+- (void)bubbleWindowWillClose:(NSWindow*)window {
+  if (window == [bookmarkBubbleController_ window])
+    bookmarkBubbleController_ = nil;
 }
 
-// Implement BookmarkBubbleControllerDelegate
+// Implement BookmarkBubbleControllerDelegate.
 - (void)editBookmarkNode:(const BookmarkNode*)node {
   // A BookmarkEditorController is a sheet that owns itself, and
   // deallocates itself when closed.
