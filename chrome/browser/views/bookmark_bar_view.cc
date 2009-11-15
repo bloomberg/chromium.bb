@@ -39,7 +39,6 @@
 #include "grit/theme_resources.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
-#include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_item_view.h"
 #include "views/drag_utils.h"
 #include "views/view_constants.h"
@@ -693,25 +692,8 @@ int BookmarkBarView::OnPerformDrop(const DropTargetEvent& event) {
                                              index);
 }
 
-bool BookmarkBarView::GetAccessibleName(std::wstring* name) {
-  DCHECK(name);
-
-  if (!accessible_name_.empty()) {
-    name->assign(accessible_name_);
-    return true;
-  }
-  return false;
-}
-
-bool BookmarkBarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_TOOLBAR;
-  return true;
-}
-
-void BookmarkBarView::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
+bool BookmarkBarView::IsAccessibleViewTraversable(views::View* view) {
+  return view != bookmarks_separator_view_ && view != instructions_;
 }
 
 void BookmarkBarView::OnStateChanged() {
@@ -871,14 +853,14 @@ void BookmarkBarView::Init() {
   if (!kDefaultFavIcon)
     kDefaultFavIcon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
 
-  other_bookmarked_button_ = CreateOtherBookmarkedButton();
-  AddChildView(other_bookmarked_button_);
-
   sync_error_button_ = CreateSyncErrorButton();
   AddChildView(sync_error_button_);
 
   overflow_button_ = CreateOverflowButton();
   AddChildView(overflow_button_);
+
+  other_bookmarked_button_ = CreateOtherBookmarkedButton();
+  AddChildView(other_bookmarked_button_);
 
   bookmarks_separator_view_ = new ButtonSeparatorView();
   bookmarks_separator_view_->SetAccessibleName(

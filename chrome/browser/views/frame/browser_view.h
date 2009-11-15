@@ -71,6 +71,9 @@ class BrowserView : public BrowserWindow,
                     public views::WindowDelegate,
                     public views::ClientView {
  public:
+  // The browser view's class name.
+  static const char kViewClassName[];
+
   // Explicitly sets how windows are shown. Use a value of -1 to give the
   // default behavior. This is used during testing and not generally useful
   // otherwise.
@@ -180,6 +183,10 @@ class BrowserView : public BrowserWindow,
   // to add or delete entries.
   void PrepareToRunSystemMenu(HMENU menu);
 #endif
+
+  // Traverses to the next toolbar. |forward| when true, will navigate from left
+  // to right and vice versa when false.
+  void TraverseNextAccessibleToolbar(bool forward);
 
   // Returns true if the Browser object associated with this BrowserView is a
   // normal-type window (i.e. a browser window, not an app or popup).

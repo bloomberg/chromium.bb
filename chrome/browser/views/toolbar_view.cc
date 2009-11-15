@@ -51,9 +51,6 @@
 #include "views/controls/button/button_dropdown.h"
 #include "views/controls/label.h"
 #include "views/drag_utils.h"
-#include "views/focus/view_storage.h"
-#include "views/widget/root_view.h"
-#include "views/widget/tooltip_manager.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 
@@ -153,9 +150,6 @@ void ZoomMenuModel::Build() {
 
 ToolbarView::ToolbarView(Browser* browser)
     : model_(browser->toolbar_model()),
-      acc_focused_view_(NULL),
-      last_focused_view_storage_id_(
-          views::ViewStorage::GetSharedInstance()->CreateStorageID()),
       back_(NULL),
       forward_(NULL),
       reload_(NULL),
@@ -224,48 +218,11 @@ void ToolbarView::Update(TabContents* tab, bool should_restore_state) {
     browser_actions_->RefreshBrowserActionViews();
 }
 
-int ToolbarView::GetNextAccessibleViewIndex(int view_index, bool nav_left) {
-  int modifier = 1;
+////////////////////////////////////////////////////////////////////////////////
+// ToolbarView, AccessibleToolbarView overrides:
 
-  if (nav_left)
-    modifier = -1;
-
-  int current_view_index = view_index + modifier;
-
-  while ((current_view_index >= 0) &&
-         (current_view_index < GetChildViewCount())) {
-    // Skip the location bar, as it has its own keyboard navigation. Also skip
-    // any views that cannot be interacted with.
-    if (current_view_index == GetChildIndex(location_bar_) ||
-        !GetChildViewAt(current_view_index)->IsEnabled() ||
-        !GetChildViewAt(current_view_index)->IsVisible()) {
-      current_view_index += modifier;
-      continue;
-    }
-    // Update view_index with the available button index found.
-    view_index = current_view_index;
-    break;
-  }
-  // Returns the next available button index, or if no button is available in
-  // the specified direction, remains where it was.
-  return view_index;
-}
-
-void ToolbarView::InitializeTraversal() {
-  // If MSAA focus exists, we don't need to traverse, since its already active.
-  if (acc_focused_view_ != NULL)
-    return;
-
-  // Save the last focused view so that when the user presses ESC, it will
-  // return back to the last focus.
-  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
-  view_storage->StoreView(last_focused_view_storage_id_,
-                          GetRootView()->GetFocusedView());
-
-  // HACK: Do not use RequestFocus() here, as the toolbar is not marked as
-  // "focusable".  Instead bypass the sanity check in RequestFocus() and just
-  // force it to focus, which will do the right thing.
-  GetRootView()->FocusView(this);
+bool ToolbarView::IsAccessibleViewTraversable(views::View* view) {
+  return view != location_bar_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -627,204 +584,6 @@ void ToolbarView::ThemeChanged() {
   LoadLeftSideControlsImages();
   LoadCenterStackImages();
   LoadRightSideControlsImages();
-}
-
-void ToolbarView::ShowContextMenu(int x, int y, bool is_mouse_gesture) {
-  if (acc_focused_view_)
-    acc_focused_view_->ShowContextMenu(x, y, is_mouse_gesture);
-}
-
-void ToolbarView::DidGainFocus() {
-  // Check to see if MSAA focus should be restored to previously focused button,
-  // and if button is an enabled, visibled child of toolbar.
-  if (!acc_focused_view_ ||
-      (acc_focused_view_->GetParent()->GetID() != VIEW_ID_TOOLBAR) ||
-      !acc_focused_view_->IsEnabled() ||
-      !acc_focused_view_->IsVisible()) {
-    // Find first accessible child (-1 to start search at parent).
-    int first_acc_child = GetNextAccessibleViewIndex(-1, false);
-
-    // No buttons enabled or visible.
-    if (first_acc_child == -1)
-      return;
-
-    set_acc_focused_view(GetChildViewAt(first_acc_child));
-  }
-
-  // Default focus is on the toolbar.
-  int view_index = VIEW_ID_TOOLBAR;
-
-  // Set hot-tracking for child, and update focused_view for MSAA focus event.
-  if (acc_focused_view_) {
-    acc_focused_view_->SetHotTracked(true);
-
-    // Show the tooltip for the view that got the focus.
-    if (GetWidget()->GetTooltipManager())
-      GetWidget()->GetTooltipManager()->ShowKeyboardTooltip(acc_focused_view_);
-
-    // Update focused_view with MSAA-adjusted child id.
-    view_index = acc_focused_view_->GetID();
-  }
-
-#if defined(OS_WIN)
-  gfx::NativeView wnd = GetWidget()->GetNativeView();
-
-  // Notify Access Technology that there was a change in keyboard focus.
-  ::NotifyWinEvent(EVENT_OBJECT_FOCUS, wnd, OBJID_CLIENT,
-                   static_cast<LONG>(view_index));
-#else
-  // TODO(port): deal with toolbar a11y focus.
-  NOTIMPLEMENTED();
-#endif
-}
-
-void ToolbarView::WillLoseFocus() {
-  // Any tooltips that are active should be hidden when toolbar loses focus.
-  if (GetWidget() && GetWidget()->GetTooltipManager())
-    GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
-
-  // Removes the Child MSAA view's focus and the view from the ViewStorage,
-  // when toolbar loses focus.
-  if (acc_focused_view_) {
-    acc_focused_view_->SetHotTracked(false);
-    acc_focused_view_ = NULL;
-    views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
-    view_storage->RemoveView(last_focused_view_storage_id_);
-  }
-}
-
-void ToolbarView::RequestFocus() {
-  // When the toolbar needs to request focus, the default implementation of
-  // View::RequestFocus requires the View to be focusable. Since ToolbarView is
-  // not technically focused, we need to temporarily set and remove focus so
-  // that it can focus back to its MSAA focused state. |acc_focused_view_| is
-  // not necessarily set since it can be null if this view has already lost
-  // focus, such as traversing through the context menu.
-  SetFocusable(true);
-  View::RequestFocus();
-  SetFocusable(false);
-}
-
-bool ToolbarView::OnKeyPressed(const views::KeyEvent& e) {
-  // Paranoia check, button should be initialized upon toolbar gaining focus.
-  if (!acc_focused_view_)
-    return false;
-
-  int focused_view = GetChildIndex(acc_focused_view_);
-  int next_view = focused_view;
-
-  switch (e.GetKeyCode()) {
-    case base::VKEY_LEFT:
-      next_view = GetNextAccessibleViewIndex(focused_view, true);
-      break;
-    case base::VKEY_RIGHT:
-      next_view = GetNextAccessibleViewIndex(focused_view, false);
-      break;
-    case base::VKEY_DOWN:
-    case base::VKEY_RETURN:
-      // VKEY_SPACE is already handled by the default case.
-      if (acc_focused_view_->GetID() == VIEW_ID_PAGE_MENU ||
-          acc_focused_view_->GetID() == VIEW_ID_APP_MENU) {
-        // If a menu button in toolbar is activated and its menu is displayed,
-        // then active tooltip should be hidden.
-        if (GetWidget()->GetTooltipManager())
-          GetWidget()->GetTooltipManager()->HideKeyboardTooltip();
-        // Safe to cast, given to above view id check.
-        static_cast<views::MenuButton*>(acc_focused_view_)->Activate();
-        if (!acc_focused_view_) {
-          // Activate triggered a focus change, don't try to change focus.
-          return true;
-        }
-        // Re-enable hot-tracking, as Activate() will disable it.
-        acc_focused_view_->SetHotTracked(true);
-        break;
-      }
-    default:
-      // If key is not handled explicitly, pass it on to view.
-      return acc_focused_view_->OnKeyPressed(e);
-  }
-
-  // No buttons enabled or visible.
-  if (next_view == -1)
-    return false;
-
-  // Only send an event if focus moved.
-  if (next_view != focused_view) {
-    // Remove hot-tracking from old focused button.
-    acc_focused_view_->SetHotTracked(false);
-
-    // All is well, update the focused child member variable.
-    acc_focused_view_ = GetChildViewAt(next_view);
-
-    // Hot-track new focused button.
-    acc_focused_view_->SetHotTracked(true);
-
-    // Show the tooltip for the view that got the focus.
-    if (GetWidget()->GetTooltipManager()) {
-      GetWidget()->GetTooltipManager()->
-          ShowKeyboardTooltip(GetChildViewAt(next_view));
-    }
-#if defined(OS_WIN)
-    // Retrieve information to generate an MSAA focus event.
-    gfx::NativeView wnd = GetWidget()->GetNativeView();
-    int view_id = acc_focused_view_->GetID();
-    // Notify Access Technology that there was a change in keyboard focus.
-    ::NotifyWinEvent(EVENT_OBJECT_FOCUS, wnd, OBJID_CLIENT,
-                     static_cast<LONG>(view_id));
-#else
-    NOTIMPLEMENTED();
-#endif
-    return true;
-  }
-  return false;
-}
-
-bool ToolbarView::OnKeyReleased(const views::KeyEvent& e) {
-  // Paranoia check, button should be initialized upon toolbar gaining focus.
-  if (!acc_focused_view_)
-    return false;
-
-  // Have keys be handled by the views themselves.
-  return acc_focused_view_->OnKeyReleased(e);
-}
-
-bool ToolbarView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
-  if (acc_focused_view_ && e.GetKeyCode() == base::VKEY_ESCAPE) {
-    // Retrieve the focused view from the storage so we can request focus back
-    // to it. If |focus_view| is null, we place focus on the location bar.
-    // |acc_focused_view_| doesn't need to be resetted here since it will be
-    // dealt within the WillLoseFocus method.
-    views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
-    views::View* focused_view =
-        view_storage->RetrieveView(last_focused_view_storage_id_);
-    if (focused_view) {
-      view_storage->RemoveView(last_focused_view_storage_id_);
-      focused_view->RequestFocus();
-    } else {
-      location_bar_->RequestFocus();
-    }
-    return true;
-  }
-  return false;
-}
-
-bool ToolbarView::GetAccessibleName(std::wstring* name) {
-  if (!accessible_name_.empty()) {
-    (*name).assign(accessible_name_);
-    return true;
-  }
-  return false;
-}
-
-bool ToolbarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
-  DCHECK(role);
-
-  *role = AccessibilityTypes::ROLE_TOOLBAR;
-  return true;
-}
-
-void ToolbarView::SetAccessibleName(const std::wstring& name) {
-  accessible_name_.assign(name);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
