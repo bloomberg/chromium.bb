@@ -10,7 +10,7 @@
       'dependencies': [
         'subdir1/executable.gyp:*',
         'subdir2/none.gyp:*',
-        'subdir3/executable.gyp:*',
+        'subdir3/executable2.gyp:*',
       ],
     },
   ],
