@@ -2,13 +2,6 @@
 # Chromium
 
 {
-  bug_21259
-  ThreadSanitizer:Race
-  ...
-  fun:*tracked_objects*ThreadData*StartTracking*
-}
-
-{
   bug_21468
   ThreadSanitizer:Race
   ...
@@ -44,22 +37,6 @@
   bug_24419
   ThreadSanitizer:Race
   fun:*BrowserProcessImpl*nspector*iles*
-}
-
-{
-  bug_24715 (1)
-  ThreadSanitizer:Race
-  fun:*base*internal*WeakReference*
-  ...
-  fun:*AppCacheUpdateJobTest*
-}
-
-{
-  bug_24715 (2)
-  ThreadSanitizer:Race
-  fun:*base*internal*WeakReference*
-  ...
-  fun:*AppCacheResponseTest*
 }
 
 {
