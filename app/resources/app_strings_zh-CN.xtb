@@ -3,14 +3,15 @@
 <translationbundle lang="zh-CN">
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
-<translation id="528468243742722775">结束</translation>
+<translation id="528468243742722775">End</translation>
 <translation id="5613020302032141669">向左箭头</translation>
+<translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> 文件 (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3660179305079774227">向上箭头</translation>
 <translation id="3990502903496589789">右边缘</translation>
-<translation id="932327136139879170">Home</translation>
+<translation id="932327136139879170">主页</translation>
 <translation id="3909791450649380159">剪切(&amp;T)</translation>
 <translation id="5076340679995252485">粘贴(&amp;P)</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -18,7 +19,7 @@
 <translation id="3087734570205094154">底部</translation>
 <translation id="6364916375976753737">向左滚动</translation>
 <translation id="8210608804940886430">向下翻页</translation>
-<translation id="6659594942844771486">Tab 键</translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="2497284189126895209">所有文件</translation>
 <translation id="7814458197256864873">复制(&amp;C)</translation>
 <translation id="3889424535448813030">向右箭头</translation>
@@ -37,7 +38,7 @@
 <translation id="8179976553408161302">Enter</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>
 <translation id="5583640892426849032">退格</translation>
-<translation id="436869212180315161">按下</translation>
+<translation id="436869212180315161">按</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="7000311294523403548">无标题网页</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>

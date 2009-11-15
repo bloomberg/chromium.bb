@@ -76,7 +76,6 @@
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
 <translation id="8820817407110198400">ବୁକମାର୍କଗୁଡିକ</translation>
 <translation id="2994458892329442723">ପ୍ଲଗ୍-ଇନ୍ସ ସକ୍ଷମ କରନ୍ତୁ</translation>
-<translation id="1669397342410349095">ଫିସିଙ୍ଗ ୱେବସାଇଟ୍ ରିପୋର୍ଟ କରନ୍ତୁ...</translation>
 <translation id="1674989413181946727">କମ୍ପ୍ୟୁଟର୍-ପ୍ରସ୍ଥ SSL ସେଟିଂସମୂହ:</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/> ସହ ଆପଣଙ୍କର ସଂଯୋଜନା ଏନକ୍ରିପ୍ଟ ହୋଇ ନାହିଁ ।</translation>
 <translation id="1644574205037202324">ଇତିବୃତ୍ତି</translation>
@@ -154,7 +153,6 @@
 <translation id="8899851313684471736">ନୂତନ ୱିଣ୍ଡୋରେ ଲିଙ୍କଗୁଡିକ ଖୋଲନ୍ତୁ</translation>
 <translation id="6686490380836145850">ଦକ୍ଷିଣ ସହ ଟ୍ୟାବଗୁଡିକ ନିକଟକୁ କରନ୍ତୁ</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ଘଣ୍ଟା</translation>
-<translation id="3990502903496589789">ଠିକ୍ ଧାର</translation>
 <translation id="2790948358747073186">ଅହୁରି ଅଧିକ</translation>
 <translation id="2423578206845792524">&amp;ପ୍ରତିଛବି ଏହି ଭାବେ ସଞ୍ଚୟ କରନ୍ତୁ...</translation>
 <translation id="1095038624419434542">ଏକ ପ୍ରୋଗ୍ରାମ୍ ଉତ୍ସ ଲୋଡ କରିବାବେଳେ ଏକ ତ୍ରୁଟି ଘଟିଲା । ପୁନଃ ସଂସ୍ଥାପନ କରିବାକୁ ଚେଷ୍ଟା କରନ୍ତୁ ।</translation>
@@ -208,6 +206,7 @@
 <translation id="1087119889335281750">&amp;କୌଣସି ବନାନ ମତାମତଗୁଡିକ ନାହିଁ</translation>
 <translation id="5076340679995252485">&amp;ଲେପନ</translation>
 <translation id="14171126816530869"><ph name="ISSUER"/> ଦ୍ଵାରା <ph name="LOCALITY"/> ରେ <ph name="ORGANIZATION"/> ର ପରିଚୟ ପରୀକ୍ଷା-ନିରୀକ୍ଷା କରାଯାଇଅଛି ।</translation>
+<translation id="1587275751631642843">&amp;JavaScript କନସୋଲେ</translation>
 <translation id="5821894118254011366">ତୃତୀୟ-ପକ୍ଷ କୁକୀଗୁଡିକୁ ସମ୍ପୂର୍ଣ୍ଣରୂପେ ଅବରୋଧ କରନ୍ତୁ</translation>
 <translation id="1134009406053225289">ଗୁପ୍ତ ୱ୍ଵିଣ୍ଡୋରେ ଖୋଲିଛି</translation>
 <translation id="3473105180351527598">ଫିସିଙ୍ଗ୍ ଓ ନକଲି ରକ୍ଷାରକ୍ଷଣ ସକ୍ଷମ କରନ୍ତୁ</translation>
@@ -254,7 +253,6 @@
 <translation id="4250680216510889253">ନାହିଁ</translation>
 <translation id="7905536804357499080">ସଂପ୍ରତି ଉପଯୋଗ କରନ୍ତୁ</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="3087734570205094154">ନିମ୍ନଭାଗ</translation>
 <translation id="1871540228654219948">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ରେ ୱେବସାଇଟ୍ ,ସାଇଟଗୁଡିକ ଠାରୁ ଉପାଶଂଗୁଡିକୁ ଧାରଣ କରିଛି ଯାହା ମାଲୱେର୍ ଧାରଣ କରିଥିବା ପରି ଦର୍ଶାଉଛି –ଯେଉଁ ସଫ୍ଟୱେୟାର୍ ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟରକୁ କ୍ଷତି ପହଞ୍ଚାଇପାରେ କିମ୍ଵା ଆପଣଙ୍କ ବିନା ଅବଗତରେ ସଂଞ୍ଚାଳିତ ହୋଇପାରେ ।  କେବଳ ଏକ ସାଇଟ୍ ପରିଦର୍ଶନ କରିବା ଯାହା ମାଲୱେର ଧାରଣ କରିଥାଏ ତାହା ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟରକୁ ସଂକ୍ରମଣ କରିପାରେ ।</translation>
 <translation id="8899388739470541164">ଭିଏତନାମିୟ</translation>
 <translation id="6631671511957507878">ପୂର୍ଣ୍ଣ ଇତିବୃତି ଦର୍ଶନ କରନ୍ତୁ</translation>
@@ -266,7 +264,6 @@
 <translation id="2592884116796016067">ଏହି ପୃଷ୍ଠାର ଏକ ଅଂଶ (HTML ୱେବୱାର୍କର୍) କ୍ରାସ୍ ହୋଇଛି, ତେଣୁ ଏହା ସଠିକ ଭାବରେ କାର୍ଯ୍ୟ କରିନପାରେ ।</translation>
 <translation id="5568069709869097550">ସାଇନ୍ ଇନ୍ କରିପାରିବ ନାହିଁ</translation>
 <translation id="4181898366589410653">ସର୍ଭରର ସାର୍ଟିଫିକେଟରେ କୌଣସି ବାତିଲଯୋଗ୍ୟ ଯାନ୍ତ୍ରିକତା ଖୋଜି ପାଇଲା ନାହିଁ ।</translation>
-<translation id="6364916375976753737">ବାମକୁ ସ୍କ୍ରୋଲ୍ କରନ୍ତୁ</translation>
 <translation id="1665770420914915777">ନୂତନ ଟ୍ୟାବ୍ ପୃଷ୍ଠାଟି ଉପଯୋଗ କରନ୍ତୁ</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> hour ago</translation>
 <translation id="7789175495288668515">ଡିଫଲ୍ଟ ସଂସ୍ଥାପନା ବିକଳ୍ପଗୁଡିକ ପରିବର୍ତ୍ତନ କରନ୍ତୁ ।</translation>
@@ -289,6 +286,7 @@
 <translation id="1425127764082410430">'<ph name="SEARCH_TERMS"/>' ପାଇଁ <ph name="SEARCH_ENGINE"/> &amp;ସନ୍ଧାନ କରନ୍ତୁ</translation>
 <translation id="877010697526426622">&lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; ରେ ୱେବପୃଷ୍ଠାଟି ନିଶ୍ଚିତଭାବେ ସାମୟିକଭାବେ ଶୀଥିଳ ହୋଇଥାଇପାରେ ବା ଏହା ଏକ ନୂତନ ୱେବ୍ ଠିକଣାକୁ ସ୍ଥାୟୀଭାବେ ଚଳନ କରାଯାଇଥାଇ ପାରେ ।</translation>
 <translation id="4378551569595875038">ସଂଯୋଗ କରୁଛି...</translation>
+<translation id="7029809446516969842">ପାସୱାର୍ଡଗୁଡିକ</translation>
 <translation id="3513979718339724672">ଥମ୍ଵନେଲଗୁଡିକୁ ଦେଖାନ୍ତୁ</translation>
 <translation id="7300965843904003671">ସର୍ବଦା <ph name="URL"/> ରୁ ପପ୍-ଅପଗୁଡିକ ଦେଖାନ୍ତୁ</translation>
 <translation id="8211437954284917092">ଆପଣଙ୍କ ବୁକମାର୍କଗୁଡିକ ସନ୍ଧାନ କରିବାକୁ ଉପର ପାଠ କ୍ଷେତ୍ରରେ ଏକ ଜିଜ୍ଞାସା ପ୍ରବେଶ କରନ୍ତୁ ।</translation>
@@ -320,7 +318,6 @@
 <translation id="8730621377337864115">ସମାପ୍ତ ହୋଇଛି</translation>
 <translation id="6267166720438879315"><ph name="HOST_NAME"/> କୁ ନିଜକୁ ପ୍ରାମାଣିକରଣ କରିବାକୁ ଏକ ସାର୍ଟିଫିକେଟ୍ ଚୟନ କରନ୍ତୁ</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> ମିନିଟ୍</translation>
-<translation id="8210608804940886430">ତଳ ପୃଷ୍ଠା</translation>
 <translation id="5015344424288992913">ପ୍ରକ୍ସି ନିର୍ଦ୍ଦିଷ୍ଟକରଣ...</translation>
 <translation id="3675321783533846350">ନେଟୱାର୍କକୁ ସଂଯୋଗ କରିବାକୁ ଏକ ପ୍ରୋକ୍ସି ସେଟ୍ ଅପ୍ କରନ୍ତୁ ।</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> ଦିନ</translation>
@@ -416,7 +413,6 @@
 <translation id="965674096648379287">ଯଥାକ୍ରମେ ଉପଯୁକ୍ତଭାବେ ପ୍ରଦର୍ଶିତ ହେବା ଲାଗି ପୂର୍ବେ ଯାହାକୁ ଆପଣ ପ୍ରବେଶ କରିଥିଲେ ସେହି ଡାଟା ଏହି ୱେବ୍ ପୃଷ୍ଠାଟି ଆବଶ୍ୟକ କରେ । ଆପଣ ପୁନରାୟ ଏହି ଡାଟା ପଠାଇ ପାରିବେ, କିନ୍ତୁ ଏହିପରି କରିବା ଦ୍ଵାରା ପୂର୍ବେ ଏହି ପୃଷ୍ଠା ସମ୍ପାଦିତ କରିଥିବା ଯେକୌଣସି କ୍ରିୟାକୁ ଆପଣ ପୁନର୍ବାର କରିବେ । ସେହି ଡାଟା ପଠାଇବା ଲାଗି ପୁନଃଲୋଡ୍ କରନ୍ତୁ ଦବାନ୍ତୁ ଏବଂ ଏହି ପୃଷ୍ଠାଟି ପ୍ରଦର୍ଶନ କରନ୍ତୁ ।</translation>
 <translation id="43742617823094120">ଏହି କ୍ଷେତ୍ରରେ, ଆପଣଙ୍କର ବ୍ରାଉଜର୍କୁ ଉପସ୍ଥାପନା କରାଯାଇଥିବା ପ୍ରମାଣପତ୍ରଟି ଏହାର ପ୍ରେରକଙ୍କ ଦ୍ଵାରା ପ୍ରତ୍ୟାହାର କରିଦିଆଯାଇଛି । ସାଧାରଣତଃ ଏହା ଅର୍ଥ ପ୍ରକାଶ କରେ ଯେ ଏହି ପ୍ରମାଣପତ୍ରଟିର ପୂର୍ଣ୍ଣତା ଆପୋଷ ନିଷ୍ପତ୍ତି ହୋଇସାରିଛି, ତଥା ସେହି ପ୍ରମାଣପତ୍ରଟି ଆସ୍ଥାଭାଜିତ ହେବା ଉଚିତ ନୁହେଁ । ଆପଣ ଏହି ବିଷୟଟି ସମ୍ପୂର୍ଣ୍ଣଭାବେ ଅତୀତତକୁ ଯିବାକୁ ନ ଦେବା ଉଚିତ ।</translation>
 <translation id="2065985942032347596">ପ୍ରମାଣିକରଣତାର ଆବଶ୍ୟକତା</translation>
-<translation id="1894212533919304402">“<ph name="THUMBNAIL_TITLE"/>” ପାଇଁ ଥମ୍ଵନେଲ୍ ଆଉ ଦୃଶ୍ୟଲବ୍ଧ ହେବ ନାହିଁ ।</translation>
 <translation id="1175364870820465910">&amp;ମୁଦ୍ରଣ...</translation>
 <translation id="3866249974567520381">ବିବରଣୀ</translation>
 <translation id="6549689063733911810">ବର୍ତ୍ତମାନ</translation>
@@ -456,7 +452,6 @@
 <translation id="4229495110203539533"><ph name="NUMBER_ONE"/> sec ago</translation>
 <translation id="6419902127459849040">କେନ୍ଦ୍ରୀୟ ଇଉରୋପୀୟ</translation>
 <translation id="5298219193514155779">ଦ୍ଵାରା ଥିମ୍ ସୃଷ୍ଟି ହୋଇଛି</translation>
-<translation id="1714078437629572290">ମୂଳପୃଷ୍ଠା ଖୋଲନ୍ତୁ</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> ଅବଶିଷ୍ଟ ସେକେଣ୍ଡସମୂହ</translation>
 <translation id="2454247629720664989">କୀୱାର୍ଡ</translation>
 <translation id="1628736721748648976">ଏନକୋଡିଂ</translation>
@@ -491,7 +486,6 @@
 <translation id="6192792657125177640">ବ୍ୟତିକ୍ରମଣଗୁଡିକ</translation>
 <translation id="2822650824848709219">ସମସ୍ତ ବିପଦସଙ୍କୁଳ ବିଷୟବସ୍ତୁକୁ ଅବରୋଧ କରନ୍ତୁ</translation>
 <translation id="1901303067676059328">&amp;ସମସ୍ତ ଚୟନ କରନ୍ତୁ</translation>
-<translation id="2168039046890040389">ଉପର ପୃଷ୍ଠା</translation>
 <translation id="1559333154119355392"><ph name="DOWNLOAD_SIZE"/>, ସମାପ୍ତ</translation>
 <translation id="2435457462613246316">ପାସୱାର୍ଡ ଦେଖାନ୍ତୁ</translation>
 <translation id="394984172568887996">IE ରୁ ଆମଦାନି କରାଗଲା</translation>
@@ -529,7 +523,6 @@
 <translation id="8004582292198964060">ବ୍ରାଉଜର</translation>
 <translation id="2224551243087462610">ଫୋଲ୍ଡର ନାମ ସଂପାଦନ କରନ୍ତୁ</translation>
 <translation id="5433207235435438329">ବନାନ-ଯାଞ୍ଚକାରୀ ଭାଷା:</translation>
-<translation id="3183922693828471536">ଏଠାକୁ ସ୍କ୍ରୋଲ୍ କରନ୍ତୁ</translation>
 <translation id="2527167509808613699">ଯେକୌଣସି ପ୍ରକାରର ସଂଯୋଜନା</translation>
 <translation id="3491001008184346538">ଅପସାରିତ ହୋଇଛି</translation>
 <translation id="1234466194727942574">ଟ୍ୟାବଷ୍ଟ୍ରିପ୍</translation>
@@ -577,7 +570,6 @@
 <translation id="152482086482215392"><ph name="NUMBER_ONE"/> ଅବଶିଷ୍ଟ ସେକଣ୍ଡ</translation>
 <translation id="8447116497070723931">PgUp</translation>
 <translation id="1970746430676306437">ପୃଷ୍ଠା &amp;ସୂଚନା ଦର୍ଶନ କରନ୍ତୁ</translation>
-<translation id="4588090240171750605">ଦକ୍ଷିଣକୁ ସ୍କ୍ରୋଲ୍ କରନ୍ତୁ</translation>
 <translation id="8940262601983387853">କୁକୀ ନାମ</translation>
 <translation id="8053959338015477773">ଏହି ପୃଷ୍ଠାରେ କେତେକ ଅତିରିକ୍ତ ଉପାଦାନଗୁଡିକ ପ୍ରଦର୍ଶନ କରିବା ଲାଗି ଏକ ଅତିରିକ୍ତ ପ୍ଲଗ୍-ଇନ୍ ର ଆବଶ୍ୟକତା ରହିଛି ।</translation>
 <translation id="5825982513659277632"><ph name="HOUR"/>S ଘଣ୍ଟା/ଘଣ୍ଟା ପୂର୍ବରୁ</translation>
@@ -591,8 +583,6 @@
 <translation id="2979639724566107830">ନୂତନ ୱିଣ୍ଡୋରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="2822854841007275488">ଆରବୀୟ</translation>
 <translation id="2815448242176260024">ପାସୱାର୍ଡଗୁଡିକୁ କଦାପି ସଞ୍ଚୟ କରନ୍ତୁ ନାହିଁ</translation>
-<translation id="2666092431469916601">ଶୀର୍ଷ</translation>
-<translation id="4047498523333824092">ପୂର୍ବରୁ ଖୋଲାଯାଇଥିବା ସେହି ପୃଷ୍ଠାଗୁଡିକୁ ପୁନଃସଞ୍ଚୟ କରନ୍ତୁ</translation>
 <translation id="6503077044568424649">ସର୍ବାଧିକ ପରିଦୃଷ୍ଟ</translation>
 <translation id="1040471547130882189">ପ୍ଲଗ-ଇନ ଅପ୍ରତିକ୍ରିୟାଶୀଳ</translation>
 <translation id="790025292736025802"><ph name="URL"/> ଖୋଜି ପାଇଲା ନାହିଁ</translation>
@@ -605,7 +595,6 @@
 <translation id="3627588569887975815">ଗୁପ୍ତ ୱିଣ୍ଡୋରେ ଲିଙ୍କ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="5578327870501192725"><ph name="DOMAIN"/> ସହ ଆପଣଙ୍କର ସଂଯୋଜନା <ph name="BIT_COUNT"/> -ବିଟ୍ ଏନକ୍ରିପେସନ୍ ସହିତ ଏନକ୍ରିପଟଡ୍ ଅଟେ ।</translation>
 <translation id="7079333361293827276">ସର୍ଭରର ସାର୍ଟିଫିକେଟଟି ଆସ୍ଥାଭାଜନ ହେଲା ନାହିଁ</translation>
-<translation id="8331626408530291785">ସ୍କ୍ରୋଲ୍ ଅପ୍ କରନ୍ତୁ</translation>
 <translation id="1526560967942511387">ଆଖ୍ୟାବିହୀନ ଡକ୍ୟୁମେଣ୍ଟ</translation>
 <translation id="5538307496474303926">ଖାଲି କରୁଛି...</translation>
 <translation id="1285631718404404702">*ବର୍ତ୍ତମାନର କାର୍ଯ୍ୟକଳାପଗୁଡିକୁ ଦେଖାନ୍ତୁ</translation>
@@ -629,7 +618,6 @@
 <translation id="1293699935367580298">Esc</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> କଷ୍ଟୋମାଇଜ୍ ଓ ନିୟନ୍ତ୍ରଣ କରନ୍ତୁ</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> hours ago</translation>
-<translation id="815598010540052116">ତଳକୁ ସ୍କ୍ରୋଲ କରନ୍ତୁ</translation>
 <translation id="7180865173735832675">କଷ୍ଟୋମାଇଜ୍</translation>
 <translation id="1430594899542257414">ଟିପ୍ପଣୀଗୁଡିକ ଏବଂ କୌଶଳଗୁଡିକ</translation>
 <translation id="2115926821277323019">ନିଶ୍ଚିତରୂପେ ଏକ ଵୈଧ URL ହେବାକୁ ହେବ</translation>
@@ -727,7 +715,6 @@
 <translation id="5139955368427980650">&amp;ଖୋଲନ୍ତୁ</translation>
 <translation id="7088615885725309056">ପୁରାତନ</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
-<translation id="746319800473277382">ସାଇଟର ମୂଳପୃଷ୍ଠାକୁ ଯାଆନ୍ତୁ:</translation>
 <translation id="8562413501751825163">ଆମଦାନି କରିବା ପୂର୍ବରୁ Firefox ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="5034259512732355072">ଅନ୍ୟଏକ ଡିରେକ୍ଟୋରୀ ମନୋନୟନ କରନ୍ତୁ...</translation>
 <translation id="5074322878757699801">ଡାଟା ଆମଦାନୀ କରନ୍ତୁ...</translation>
@@ -782,7 +769,6 @@
 <translation id="1232569758102978740">ବେନାମୀ</translation>
 <translation id="9149866541089851383">ସମ୍ପାଦନ...</translation>
 <translation id="7000311294523403548">ଆଖ୍ୟାବିହୀନ ୱେବପୃଷ୍ଠା</translation>
-<translation id="4390382296735319084">ଟିପ୍ପଣୀ ଏବଂ ମତାମତଗୁଡିକ</translation>
 <translation id="7649070708921625228">ସହାୟତା</translation>
 <translation id="6119719873954126908">ଉତ୍ତମ ଭାବରେ ବ୍ରାଉଜିଂ ପାଇଁ ଟିପ୍ପଣୀ ଏବଂ ମତାମତଗୁଡିକ ପାଇଁ ଏହି ସ୍ଥାନ ଦେଖନ୍ତୁ!</translation>
 <translation id="7442246004212327644">ଖାଲି କରନ୍ତୁ</translation>
@@ -919,6 +905,5 @@
 <translation id="724208122063442954">ଡାଉନଲୋଡିଂ ପରେ ସ୍ଵତଃସ୍ଫୂର୍ତ୍ତଭାବେ କେତେକ ନିର୍ଦ୍ଦିଷ୍ଟ ଫାଇଲ୍ ପ୍ରକାରକୁ ଖୋଲିବା ଲାଗି ଆପଣ ପସନ୍ଦ କରିଛନ୍ତି । ଆପଣ ସେଟିଂସମୂହକୁ ଖାଲି କରିପାରିବେ ଯଦ୍ଦ୍ଵାରା ଡାଉନଲୋଡ୍ ଫାଇଲଗୁଡିକ ସ୍ଵତଃସ୍ଫୂର୍ତ୍ତଭାବେ ଖୋଲି ହେବ ନାହିଁ ।</translation>
 <translation id="4477534650265381513">ଦ୍ରୁତ ପ୍ରବେଶ ପାଇଁ, ବୁକମାର୍କ ଦଣ୍ଡିକାରେ ଆପଣଙ୍କ ବୁକମାର୍କସ୍ ସ୍ଥାନିତ କରନ୍ତୁ ।</translation>
 <translation id="8080048886850452639">ଅଡିଓ URL &amp;କପି କରନ୍ତୁ</translation>
-<translation id="8328145009876646418">ବାମ ଧାର</translation>
 <translation id="406259880812417922">(କୀ ଶବ୍ଦ: <ph name="KEYWORD"/>)</translation>
 </translationbundle>
