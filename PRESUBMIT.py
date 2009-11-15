@@ -5,7 +5,7 @@
 """Top-level presubmit script for Chromium.
 
 See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
-for more details on the presubmit API built into gcl.
+for more details about the presubmit API built into gcl.
 """
 
 EXCLUDED_PATHS = (
