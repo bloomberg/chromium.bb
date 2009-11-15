@@ -53,9 +53,8 @@ int AccessibleToolbarView::GetNextAccessibleViewIndex(int view_index,
     current_view_index += modifier;
   }
 
-  // No button is available in the specified direction, the accessible view
-  // remains in |view_index| position.
-  return view_index;
+  // No button is available in the specified direction.
+  return -1;
 }
 
 bool AccessibleToolbarView::IsAccessibleViewTraversable(views::View* view) {
@@ -156,7 +155,7 @@ bool AccessibleToolbarView::OnKeyPressed(const views::KeyEvent& e) {
   }
 
   // No buttons enabled, visible, or focus hasn't moved.
-  if (next_view == -1 || next_view == focused_view)
+  if (next_view == -1)
     return false;
 
   // Remove hot-tracking from old focused button.
@@ -215,9 +214,9 @@ bool AccessibleToolbarView::SkipDefaultKeyEventProcessing(
     }
     case base::VKEY_TAB: {
       if (e.IsShiftDown()) {
-        browser_view->TraverseNextAccessibleToolbar(true);
-      } else {
         browser_view->TraverseNextAccessibleToolbar(false);
+      } else {
+        browser_view->TraverseNextAccessibleToolbar(true);
       }
       return true;
     }
@@ -239,6 +238,16 @@ bool AccessibleToolbarView::GetAccessibleRole(AccessibilityTypes::Role* role) {
 
 void AccessibleToolbarView::SetAccessibleName(const std::wstring& name) {
   accessible_name_ = name;
+}
+
+void AccessibleToolbarView::ViewHierarchyChanged(bool is_add, View* parent,
+                                                 View* child) {
+  // When the toolbar is removed, traverse to the next accessible toolbar.
+  if (!is_add && parent->GetClassName() == BrowserView::kViewClassName) {
+    // Given the check above, we can ensure its a BrowserView.
+    BrowserView* browser_view = static_cast<BrowserView*>(parent);
+    browser_view->TraverseNextAccessibleToolbar(true);
+  }
 }
 
 void AccessibleToolbarView::SetFocusToAccessibleView() {

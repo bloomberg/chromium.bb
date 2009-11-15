@@ -660,9 +660,9 @@ void BrowserView::PrepareToRunSystemMenu(HMENU menu) {
 void BrowserView::TraverseNextAccessibleToolbar(bool forward) {
   // TODO(mohamed) This needs to be smart, that applies to all toolbars.
   //               Currently it just traverses between bookmarks and toolbar.
-  if (forward && toolbar_->IsVisible() && toolbar_->IsEnabled()) {
+  if (!forward && toolbar_->IsVisible() && toolbar_->IsEnabled()) {
     toolbar_->InitiateTraversal();
-  } else if (!forward && bookmark_bar_view_->IsVisible() &&
+  } else if (forward && bookmark_bar_view_->IsVisible() &&
              bookmark_bar_view_->IsEnabled()) {
     bookmark_bar_view_->InitiateTraversal();
   }

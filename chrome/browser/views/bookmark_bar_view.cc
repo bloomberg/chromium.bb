@@ -853,7 +853,8 @@ void BookmarkBarView::Init() {
   if (!kDefaultFavIcon)
     kDefaultFavIcon = rb.GetBitmapNamed(IDR_DEFAULT_FAVICON);
 
-  // Order matters here. Child views are traversed in the order they were added.
+  // Child views are traversed in the order they are added. Make sure the order
+  // they are added matches the visual order.
   sync_error_button_ = CreateSyncErrorButton();
   AddChildView(sync_error_button_);
 
