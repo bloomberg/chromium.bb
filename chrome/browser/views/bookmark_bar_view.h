@@ -71,7 +71,7 @@ class BookmarkBarView : public DetachableToolbarView,
 
   static const int kNewtabBarHeight;
 
-  explicit BookmarkBarView(Profile* profile, Browser* browser);
+  BookmarkBarView(Profile* profile, Browser* browser);
   virtual ~BookmarkBarView();
 
   // Resets the profile. This removes any buttons for the current profile and
