@@ -1,5 +1,5 @@
 {
-  "name": "My First Extension",
+  "name": "Hello World",
   "version": "1.0",
   "description": "The first extension that I made.",
   "browser_action": {
