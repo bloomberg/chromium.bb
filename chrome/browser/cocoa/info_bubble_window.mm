@@ -10,7 +10,7 @@
 
 namespace {
 const CGFloat kOrderInSlideOffset = 10;
-const NSTimeInterval kOrderInAnimationDuration = 0.3;
+const NSTimeInterval kOrderInAnimationDuration = 0.2;
 const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 }
 
