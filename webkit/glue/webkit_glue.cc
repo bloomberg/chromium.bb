@@ -344,7 +344,13 @@ struct UserAgentState {
   }
 
   std::string user_agent;
+
+  // The UA string when we're pretending to be Chrome 1.
   std::string mimic_chrome1_user_agent;
+
+  // The UA string when we're pretending to be Windows Chrome.
+  std::string mimic_windows_user_agent;
+
   bool user_agent_requested;
   bool user_agent_is_overridden;
 };
@@ -404,7 +410,12 @@ std::string BuildOSCpuInfo() {
   return os_cpu;
 }
 
-void BuildUserAgent(bool mimic_chrome1, std::string* result) {
+// Construct the User-Agent header, filling in |result|.
+// The other parameters are workarounds for broken websites:
+// - If mimic_chrome1 is true, produce a fake Chrome 1 string.
+// - If mimic_windows is true, produce a fake Windows Chrome string.
+void BuildUserAgent(bool mimic_chrome1, bool mimic_windows,
+                    std::string* result) {
   const char kUserAgentPlatform[] =
 #if defined(OS_WIN)
       "Windows";
@@ -444,9 +455,9 @@ void BuildUserAgent(bool mimic_chrome1, std::string* result) {
       result,
       "Mozilla/5.0 (%s; %c; %s; %s) AppleWebKit/%d.%d"
       " (KHTML, like Gecko) %s Safari/%d.%d",
-      kUserAgentPlatform,
+      mimic_windows ? "Windows" : kUserAgentPlatform,
       kUserAgentSecurity,
-      BuildOSCpuInfo().c_str(),
+      ((mimic_windows ? "Windows " : "") + BuildOSCpuInfo()).c_str(),
       kUserAgentLocale,
       WEBKIT_VERSION_MAJOR,
       WEBKIT_VERSION_MINOR,
@@ -457,7 +468,7 @@ void BuildUserAgent(bool mimic_chrome1, std::string* result) {
 }
 
 void SetUserAgentToDefault() {
-  BuildUserAgent(false, &g_user_agent->user_agent);
+  BuildUserAgent(false, false, &g_user_agent->user_agent);
 }
 
 }  // namespace
@@ -477,15 +488,23 @@ const std::string& GetUserAgent(const GURL& url) {
     SetUserAgentToDefault();
   g_user_agent->user_agent_requested = true;
   if (!g_user_agent->user_agent_is_overridden) {
-    // For cnn.com, which uses pointroll.com to serve their front door promo,
-    // we must spoof Chrome 1.0 in order to avoid blank page due to mis-sniffing
-    // of the UA on the server side (http://crbug.com/25934)
-    // TODO(dglazkov): Remove this once CNN's front door promo is over or when
-    // pointroll fixes their sniffing.
+    // Workarounds for sites that use misguided UA sniffing.
     if (MatchPattern(url.host(), "*.pointroll.com")) {
+      // For cnn.com, which uses pointroll.com to serve their front door promo,
+      // we must spoof Chrome 1.0 in order to avoid a blank page.
+      // http://crbug.com/25934
+      // TODO(dglazkov): Remove this once CNN's front door promo is
+      // over or when pointroll fixes their sniffing.
       if (g_user_agent->mimic_chrome1_user_agent.empty())
-        BuildUserAgent(true, &g_user_agent->mimic_chrome1_user_agent);
+        BuildUserAgent(true, false, &g_user_agent->mimic_chrome1_user_agent);
       return g_user_agent->mimic_chrome1_user_agent;
+    } else if (MatchPattern(url.host(), "*.mail.yahoo.com")) {
+      // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
+      // http://bugs.chromium.org/11136
+      // TODO(evanm): remove this if Yahoo fixes their sniffing.
+      if (g_user_agent->mimic_windows_user_agent.empty())
+        BuildUserAgent(false, true, &g_user_agent->mimic_windows_user_agent);
+      return g_user_agent->mimic_windows_user_agent;
     }
   }
   return g_user_agent->user_agent;
