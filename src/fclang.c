@@ -537,9 +537,10 @@ FcChar32
 FcLangSetHash (const FcLangSet *ls)
 {
     FcChar32	h = 0;
-    int		i;
+    int		i, count;
 
-    for (i = 0; i < ls->map_size; i++)
+    count = FC_MIN (ls->map_size, NUM_LANG_SET_MAP);
+    for (i = 0; i < count; i++)
 	h ^= ls->map[i];
     if (ls->extra)
 	h ^= ls->extra->num;
@@ -777,7 +778,9 @@ FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l)
 
     if (!l_serialize)
 	return NULL;
-    *l_serialize = *l;
+    memset (l_serialize->map, '\0', sizeof (l_serialize->map));
+    memcpy (l_serialize->map, l->map, FC_MIN (sizeof (l_serialize->map), l->map_size * sizeof (l->map[0])));
+    l_serialize->map_size = NUM_LANG_SET_MAP;
     l_serialize->extra = NULL; /* We don't serialize ls->extra */
     return l_serialize;
 }
