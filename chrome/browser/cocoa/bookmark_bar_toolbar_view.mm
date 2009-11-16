@@ -50,8 +50,18 @@ const CGFloat kBorderRadius = 3.0;
   {
     // CanvasPaint draws to the NSGraphicsContext during its destructor, so
     // explicitly scope this.
-    gfx::CanvasPaint canvas(rect, true);
-    gfx::Rect area(0, 0, NSWidth(rect), NSHeight(rect));
+    //
+    // Paint the entire bookmark bar, even if the damage rect is much smaller
+    // because PaintBackgroundDetachedMode() assumes that area's origin is
+    // (0, 0) and that its size is the size of the bookmark bar.
+    //
+    // In practice, this sounds worse than it is because redraw time is still
+    // minimal compared to the pause between frames of animations. We were
+    // already repainting the rest of the bookmark bar below without setting a
+    // clip area, anyway. Also, the only time we weren't asked to redraw the
+    // whole bookmark bar is when the find bar is drawn over it.
+    gfx::CanvasPaint canvas(bounds, true);
+    gfx::Rect area(0, 0, NSWidth(bounds), NSHeight(bounds));
 
     NtpBackgroundUtil::PaintBackgroundDetachedMode(themeProvider, &canvas,
         area, [controller_ currentTabContentsHeight]);
