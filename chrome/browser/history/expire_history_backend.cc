@@ -349,7 +349,7 @@ void ExpireHistoryBackend::DeleteVisitRelatedInfo(
     // Add the URL row to the affected URL list.
     std::map<URLID, URLRow>::const_iterator found =
         dependencies->affected_urls.find(visits[i].url_id);
-    const URLRow* cur_row;
+    const URLRow* cur_row = NULL;
     if (found == dependencies->affected_urls.end()) {
       URLRow row;
       if (!main_db_->GetURLRow(visits[i].url_id, &row))

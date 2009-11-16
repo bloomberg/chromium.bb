@@ -54,7 +54,7 @@ void CancelableRequestProvider::CancelRequestLocked(Handle handle) {
 }
 
 void CancelableRequestProvider::RequestCompleted(Handle handle) {
-  CancelableRequestConsumerBase* consumer;
+  CancelableRequestConsumerBase* consumer = NULL;
   {
     AutoLock lock(pending_request_lock_);
 

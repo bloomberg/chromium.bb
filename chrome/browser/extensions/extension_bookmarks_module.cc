@@ -481,7 +481,7 @@ bool MoveBookmarkFunction::RunImpl() {
     return false;
   }
 
-  const BookmarkNode* parent;
+  const BookmarkNode* parent = NULL;
   if (!destination->HasKey(keys::kParentIdKey)) {
     // Optional, defaults to current parent.
     parent = node->GetParent();

@@ -228,7 +228,7 @@ void PrefetchObserver::OnFinishResolutionWithStatus(
   if (request_info.is_speculative())
     return;  // One of our own requests.
   DnsHostInfo navigation_info;
-  size_t startup_count;
+  size_t startup_count = 0;
   {
     AutoLock auto_lock(*lock);
     ObservedResolutionMap::iterator it = resolutions->find(request_id);

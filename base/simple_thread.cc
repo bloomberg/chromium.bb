@@ -89,7 +89,7 @@ void DelegateSimpleThreadPool::AddWork(Delegate* delegate, int repeat_count) {
 }
 
 void DelegateSimpleThreadPool::Run() {
-  Delegate* work;
+  Delegate* work = NULL;
 
   while (true) {
     dry_.Wait();

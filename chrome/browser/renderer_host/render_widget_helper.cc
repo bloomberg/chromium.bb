@@ -137,7 +137,7 @@ bool RenderWidgetHelper::WaitForPaintMsg(int render_widget_id,
 void RenderWidgetHelper::DidReceivePaintMsg(const IPC::Message& msg) {
   int render_widget_id = msg.routing_id();
 
-  PaintMsgProxy* proxy;
+  PaintMsgProxy* proxy = NULL;
   {
     AutoLock lock(pending_paints_lock_);
 
