@@ -104,7 +104,8 @@ bool SimpleMenuModel::IsItemCheckedAt(int index) const {
   if (!delegate_)
     return false;
   int item_index = FlipIndex(index);
-  return (items_[item_index].type == TYPE_CHECK) ?
+  Menu2Model::ItemType item_type = items_[item_index].type;
+  return (item_type == TYPE_CHECK || item_type == TYPE_RADIO) ?
       delegate_->IsCommandIdChecked(GetCommandIdAt(index)) : false;
 }
 
