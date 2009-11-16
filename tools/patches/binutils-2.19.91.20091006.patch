@@ -1036,10 +1036,10 @@
 +    }
 +    if (i.operands == 2) {
 +      p = frag_more (3);
-+      p[0] = 0x48 | ((i.rex & REX_B) ? REX_R : 0)
-+		  | ((i.rex & REX_R) ? REX_B : 0);
++      p[0] = 0x48 | ((i.rex & REX_B) ? REX_B : 0)
++		  | ((i.rex & REX_R) ? REX_R : 0);
 +      p[1] = 0x01;
-+      p[2] = 0xc0 | i.rm.reg | (i.rm.regmem << 3);
++      p[2] = 0xc0 | i.rm.regmem | (i.rm.reg << 3);
 +      // Clear %rbase from call
 +      i.rex &= ~(REX_W | REX_R);
 +      if (!i.rex && i.prefix[REX_PREFIX]) {
