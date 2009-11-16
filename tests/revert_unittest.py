@@ -61,7 +61,6 @@ class RevertMainUnittest(RevertTestsBase):
 class RevertRevertUnittest(RevertTestsBase):
   def setUp(self):
     RevertTestsBase.setUp(self)
-    self.mox.StubOutWithMock(revert.gclient_scm.scm.SVN, 'CaptureStatus')
 
   def testRevert(self):
     revert.gcl.GetRepositoryRoot().AndReturn('foo')
@@ -74,7 +73,7 @@ class RevertRevertUnittest(RevertTestsBase):
     }]
     revert.CaptureSVNLog(['-r', '42', '-v']).AndReturn(entries)
     revert.GetRepoBase().AndReturn('proto://fqdn/repo/')
-    revert.gclient_scm.scm.SVN.CaptureStatus(['random_file']).AndReturn([])
+    revert.gclient_scm.CaptureSVNStatus(['random_file']).AndReturn([])
     revert.gcl.RunShell(['svn', 'up', 'random_file'])
     revert.os.path.isdir('random_file').AndReturn(False)
     status = """--- Reverse-merging r42 into '.':

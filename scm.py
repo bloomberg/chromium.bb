@@ -2,415 +2,335 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""SCM-specific utility classes."""
+"""SCM-specific functions."""
 
 import os
 import re
 import subprocess
 import sys
-import tempfile
 import xml.dom.minidom
 
 import gclient_utils
 
 
-class GIT(object):
-  COMMAND = "git"
+SVN_COMMAND = "svn"
+GIT_COMMAND = "git"
 
-  @staticmethod
-  def Capture(args, in_directory=None, print_error=True):
-    """Runs git, capturing output sent to stdout as a string.
-
-    Args:
-      args: A sequence of command line parameters to be passed to git.
-      in_directory: The directory where git is to be run.
-
-    Returns:
-      The output sent to stdout as a string.
-    """
-    c = [GIT.COMMAND]
-    c.extend(args)
-
-    # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for
-    # the git.exe executable, but shell=True makes subprocess on Linux fail
-    # when it's called with a list because it only tries to execute the
-    # first string ("git").
-    stderr = None
-    if not print_error:
-      stderr = subprocess.PIPE
-    return subprocess.Popen(c,
-                            cwd=in_directory,
-                            shell=sys.platform.startswith('win'),
-                            stdout=subprocess.PIPE,
-                            stderr=stderr).communicate()[0]
+# -----------------------------------------------------------------------------
+# Git utils:
 
 
-  @staticmethod
-  def CaptureStatus(files, upstream_branch='origin'):
-    """Returns git status.
+def CaptureGit(args, in_directory=None, print_error=True):
+  """Runs git, capturing output sent to stdout as a string.
 
-    @files can be a string (one file) or a list of files.
+  Args:
+    args: A sequence of command line parameters to be passed to git.
+    in_directory: The directory where git is to be run.
 
-    Returns an array of (status, file) tuples."""
-    command = ["diff", "--name-status", "-r", "%s.." % upstream_branch]
-    if not files:
-      pass
-    elif isinstance(files, basestring):
-      command.append(files)
-    else:
-      command.extend(files)
+  Returns:
+    The output sent to stdout as a string.
+  """
+  c = [GIT_COMMAND]
+  c.extend(args)
 
-    status = GIT.Capture(command).rstrip()
-    results = []
-    if status:
-      for statusline in status.split('\n'):
-        m = re.match('^(\w)\t(.+)$', statusline)
-        if not m:
-          raise Exception("status currently unsupported: %s" % statusline)
-        results.append(('%s      ' % m.group(1), m.group(2)))
-    return results
+  # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for
+  # the git.exe executable, but shell=True makes subprocess on Linux fail
+  # when it's called with a list because it only tries to execute the
+  # first string ("git").
+  stderr = None
+  if not print_error:
+    stderr = subprocess.PIPE
+  return subprocess.Popen(c,
+                          cwd=in_directory,
+                          shell=sys.platform.startswith('win'),
+                          stdout=subprocess.PIPE,
+                          stderr=stderr).communicate()[0]
 
 
-class SVN(object):
-  COMMAND = "svn"
+def CaptureGitStatus(files, upstream_branch='origin'):
+  """Returns git status.
 
-  @staticmethod
-  def Run(args, in_directory):
-    """Runs svn, sending output to stdout.
+  @files can be a string (one file) or a list of files.
 
-    Args:
-      args: A sequence of command line parameters to be passed to svn.
-      in_directory: The directory where svn is to be run.
+  Returns an array of (status, file) tuples."""
+  command = ["diff", "--name-status", "-r", "%s.." % upstream_branch]
+  if not files:
+    pass
+  elif isinstance(files, basestring):
+    command.append(files)
+  else:
+    command.extend(files)
 
-    Raises:
-      Error: An error occurred while running the svn command.
-    """
-    c = [SVN.COMMAND]
-    c.extend(args)
+  status = CaptureGit(command).rstrip()
+  results = []
+  if status:
+    for statusline in status.split('\n'):
+      m = re.match('^(\w)\t(.+)$', statusline)
+      if not m:
+        raise Exception("status currently unsupported: %s" % statusline)
+      results.append(('%s      ' % m.group(1), m.group(2)))
+  return results
 
-    gclient_utils.SubprocessCall(c, in_directory)
 
-  @staticmethod
-  def Capture(args, in_directory=None, print_error=True):
-    """Runs svn, capturing output sent to stdout as a string.
+# -----------------------------------------------------------------------------
+# SVN utils:
 
-    Args:
-      args: A sequence of command line parameters to be passed to svn.
-      in_directory: The directory where svn is to be run.
 
-    Returns:
-      The output sent to stdout as a string.
-    """
-    c = [SVN.COMMAND]
-    c.extend(args)
+def RunSVN(args, in_directory):
+  """Runs svn, sending output to stdout.
 
-    # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for
-    # the svn.exe executable, but shell=True makes subprocess on Linux fail
-    # when it's called with a list because it only tries to execute the
-    # first string ("svn").
-    stderr = None
-    if not print_error:
-      stderr = subprocess.PIPE
-    return subprocess.Popen(c,
-                            cwd=in_directory,
-                            shell=(sys.platform == 'win32'),
-                            stdout=subprocess.PIPE,
-                            stderr=stderr).communicate()[0]
+  Args:
+    args: A sequence of command line parameters to be passed to svn.
+    in_directory: The directory where svn is to be run.
 
-  @staticmethod
-  def RunAndGetFileList(options, args, in_directory, file_list):
-    """Runs svn checkout, update, or status, output to stdout.
+  Raises:
+    Error: An error occurred while running the svn command.
+  """
+  c = [SVN_COMMAND]
+  c.extend(args)
 
-    The first item in args must be either "checkout", "update", or "status".
+  gclient_utils.SubprocessCall(c, in_directory)
 
-    svn's stdout is parsed to collect a list of files checked out or updated.
-    These files are appended to file_list.  svn's stdout is also printed to
-    sys.stdout as in Run.
 
-    Args:
-      options: command line options to gclient
-      args: A sequence of command line parameters to be passed to svn.
-      in_directory: The directory where svn is to be run.
+def CaptureSVN(args, in_directory=None, print_error=True):
+  """Runs svn, capturing output sent to stdout as a string.
 
-    Raises:
-      Error: An error occurred while running the svn command.
-    """
-    command = [SVN.COMMAND]
-    command.extend(args)
+  Args:
+    args: A sequence of command line parameters to be passed to svn.
+    in_directory: The directory where svn is to be run.
 
-    # svn update and svn checkout use the same pattern: the first three columns
-    # are for file status, property status, and lock status.  This is followed
-    # by two spaces, and then the path to the file.
-    update_pattern = '^...  (.*)$'
+  Returns:
+    The output sent to stdout as a string.
+  """
+  c = [SVN_COMMAND]
+  c.extend(args)
 
-    # The first three columns of svn status are the same as for svn update and
-    # svn checkout.  The next three columns indicate addition-with-history,
-    # switch, and remote lock status.  This is followed by one space, and then
-    # the path to the file.
-    status_pattern = '^...... (.*)$'
+  # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for
+  # the svn.exe executable, but shell=True makes subprocess on Linux fail
+  # when it's called with a list because it only tries to execute the
+  # first string ("svn").
+  stderr = None
+  if not print_error:
+    stderr = subprocess.PIPE
+  return subprocess.Popen(c,
+                          cwd=in_directory,
+                          shell=(sys.platform == 'win32'),
+                          stdout=subprocess.PIPE,
+                          stderr=stderr).communicate()[0]
 
-    # args[0] must be a supported command.  This will blow up if it's something
-    # else, which is good.  Note that the patterns are only effective when
-    # these commands are used in their ordinary forms, the patterns are invalid
-    # for "svn status --show-updates", for example.
-    pattern = {
-          'checkout': update_pattern,
-          'status':   status_pattern,
-          'update':   update_pattern,
-        }[args[0]]
 
-    compiled_pattern = re.compile(pattern)
+def RunSVNAndGetFileList(options, args, in_directory, file_list):
+  """Runs svn checkout, update, or status, output to stdout.
 
-    def CaptureMatchingLines(line):
-      match = compiled_pattern.search(line)
-      if match:
-        file_list.append(match.group(1))
+  The first item in args must be either "checkout", "update", or "status".
 
-    SVN.RunAndFilterOutput(args,
-                            in_directory,
-                            options.verbose,
-                            True,
-                            CaptureMatchingLines)
+  svn's stdout is parsed to collect a list of files checked out or updated.
+  These files are appended to file_list.  svn's stdout is also printed to
+  sys.stdout as in RunSVN.
 
-  @staticmethod
-  def RunAndFilterOutput(args,
-                         in_directory,
-                         print_messages,
-                         print_stdout,
-                         filter):
-    """Runs svn checkout, update, status, or diff, optionally outputting
-    to stdout.
+  Args:
+    options: command line options to gclient
+    args: A sequence of command line parameters to be passed to svn.
+    in_directory: The directory where svn is to be run.
 
-    The first item in args must be either "checkout", "update",
-    "status", or "diff".
+  Raises:
+    Error: An error occurred while running the svn command.
+  """
+  command = [SVN_COMMAND]
+  command.extend(args)
 
-    svn's stdout is passed line-by-line to the given filter function. If
-    print_stdout is true, it is also printed to sys.stdout as in Run.
+  # svn update and svn checkout use the same pattern: the first three columns
+  # are for file status, property status, and lock status.  This is followed
+  # by two spaces, and then the path to the file.
+  update_pattern = '^...  (.*)$'
 
-    Args:
-      args: A sequence of command line parameters to be passed to svn.
-      in_directory: The directory where svn is to be run.
-      print_messages: Whether to print status messages to stdout about
-        which Subversion commands are being run.
-      print_stdout: Whether to forward Subversion's output to stdout.
-      filter: A function taking one argument (a string) which will be
-        passed each line (with the ending newline character removed) of
-        Subversion's output for filtering.
+  # The first three columns of svn status are the same as for svn update and
+  # svn checkout.  The next three columns indicate addition-with-history,
+  # switch, and remote lock status.  This is followed by one space, and then
+  # the path to the file.
+  status_pattern = '^...... (.*)$'
 
-    Raises:
-      Error: An error occurred while running the svn command.
-    """
-    command = [SVN.COMMAND]
-    command.extend(args)
+  # args[0] must be a supported command.  This will blow up if it's something
+  # else, which is good.  Note that the patterns are only effective when
+  # these commands are used in their ordinary forms, the patterns are invalid
+  # for "svn status --show-updates", for example.
+  pattern = {
+        'checkout': update_pattern,
+        'status':   status_pattern,
+        'update':   update_pattern,
+      }[args[0]]
 
-    gclient_utils.SubprocessCallAndFilter(command,
-                                          in_directory,
-                                          print_messages,
-                                          print_stdout,
-                                          filter=filter)
+  compiled_pattern = re.compile(pattern)
 
-  @staticmethod
-  def CaptureInfo(relpath, in_directory=None, print_error=True):
-    """Returns a dictionary from the svn info output for the given file.
+  def CaptureMatchingLines(line):
+    match = compiled_pattern.search(line)
+    if match:
+      file_list.append(match.group(1))
 
-    Args:
-      relpath: The directory where the working copy resides relative to
-        the directory given by in_directory.
-      in_directory: The directory where svn is to be run.
-    """
-    output = SVN.Capture(["info", "--xml", relpath], in_directory, print_error)
-    dom = gclient_utils.ParseXML(output)
-    result = {}
-    if dom:
-      GetNamedNodeText = gclient_utils.GetNamedNodeText
-      GetNodeNamedAttributeText = gclient_utils.GetNodeNamedAttributeText
-      def C(item, f):
-        if item is not None: return f(item)
-      # /info/entry/
-      #   url
-      #   reposityory/(root|uuid)
-      #   wc-info/(schedule|depth)
-      #   commit/(author|date)
-      # str() the results because they may be returned as Unicode, which
-      # interferes with the higher layers matching up things in the deps
-      # dictionary.
-      # TODO(maruel): Fix at higher level instead (!)
-      result['Repository Root'] = C(GetNamedNodeText(dom, 'root'), str)
-      result['URL'] = C(GetNamedNodeText(dom, 'url'), str)
-      result['UUID'] = C(GetNamedNodeText(dom, 'uuid'), str)
-      result['Revision'] = C(GetNodeNamedAttributeText(dom, 'entry',
-                                                       'revision'),
-                             int)
-      result['Node Kind'] = C(GetNodeNamedAttributeText(dom, 'entry', 'kind'),
-                              str)
-      # Differs across versions.
-      if result['Node Kind'] == 'dir':
-        result['Node Kind'] = 'directory'
-      result['Schedule'] = C(GetNamedNodeText(dom, 'schedule'), str)
-      result['Path'] = C(GetNodeNamedAttributeText(dom, 'entry', 'path'), str)
-      result['Copied From URL'] = C(GetNamedNodeText(dom, 'copy-from-url'), str)
-      result['Copied From Rev'] = C(GetNamedNodeText(dom, 'copy-from-rev'), str)
-    return result
+  RunSVNAndFilterOutput(args,
+                        in_directory,
+                        options.verbose,
+                        True,
+                        CaptureMatchingLines)
 
-  @staticmethod
-  def CaptureHeadRevision(url):
-    """Get the head revision of a SVN repository.
+def RunSVNAndFilterOutput(args,
+                          in_directory,
+                          print_messages,
+                          print_stdout,
+                          filter):
+  """Runs svn checkout, update, status, or diff, optionally outputting
+  to stdout.
 
-    Returns:
-      Int head revision
-    """
-    info = SVN.Capture(["info", "--xml", url], os.getcwd())
-    dom = xml.dom.minidom.parseString(info)
-    return dom.getElementsByTagName('entry')[0].getAttribute('revision')
+  The first item in args must be either "checkout", "update",
+  "status", or "diff".
 
-  @staticmethod
-  def CaptureStatus(files):
-    """Returns the svn 1.5 svn status emulated output.
+  svn's stdout is passed line-by-line to the given filter function. If
+  print_stdout is true, it is also printed to sys.stdout as in RunSVN.
 
-    @files can be a string (one file) or a list of files.
+  Args:
+    args: A sequence of command line parameters to be passed to svn.
+    in_directory: The directory where svn is to be run.
+    print_messages: Whether to print status messages to stdout about
+      which Subversion commands are being run.
+    print_stdout: Whether to forward Subversion's output to stdout.
+    filter: A function taking one argument (a string) which will be
+      passed each line (with the ending newline character removed) of
+      Subversion's output for filtering.
 
-    Returns an array of (status, file) tuples."""
-    command = ["status", "--xml"]
-    if not files:
-      pass
-    elif isinstance(files, basestring):
-      command.append(files)
-    else:
-      command.extend(files)
+  Raises:
+    Error: An error occurred while running the svn command.
+  """
+  command = [SVN_COMMAND]
+  command.extend(args)
 
-    status_letter = {
-      None: ' ',
-      '': ' ',
-      'added': 'A',
-      'conflicted': 'C',
-      'deleted': 'D',
-      'external': 'X',
-      'ignored': 'I',
-      'incomplete': '!',
-      'merged': 'G',
-      'missing': '!',
-      'modified': 'M',
-      'none': ' ',
-      'normal': ' ',
-      'obstructed': '~',
-      'replaced': 'R',
-      'unversioned': '?',
-    }
-    dom = gclient_utils.ParseXML(SVN.Capture(command))
-    results = []
-    if dom:
-      # /status/target/entry/(wc-status|commit|author|date)
-      for target in dom.getElementsByTagName('target'):
-        #base_path = target.getAttribute('path')
-        for entry in target.getElementsByTagName('entry'):
-          file_path = entry.getAttribute('path')
-          wc_status = entry.getElementsByTagName('wc-status')
-          assert len(wc_status) == 1
-          # Emulate svn 1.5 status ouput...
-          statuses = [' '] * 7
-          # Col 0
-          xml_item_status = wc_status[0].getAttribute('item')
-          if xml_item_status in status_letter:
-            statuses[0] = status_letter[xml_item_status]
-          else:
-            raise Exception('Unknown item status "%s"; please implement me!' %
-                            xml_item_status)
-          # Col 1
-          xml_props_status = wc_status[0].getAttribute('props')
-          if xml_props_status == 'modified':
-            statuses[1] = 'M'
-          elif xml_props_status == 'conflicted':
-            statuses[1] = 'C'
-          elif (not xml_props_status or xml_props_status == 'none' or
-                xml_props_status == 'normal'):
-            pass
-          else:
-            raise Exception('Unknown props status "%s"; please implement me!' %
-                            xml_props_status)
-          # Col 2
-          if wc_status[0].getAttribute('wc-locked') == 'true':
-            statuses[2] = 'L'
-          # Col 3
-          if wc_status[0].getAttribute('copied') == 'true':
-            statuses[3] = '+'
-          # Col 4
-          if wc_status[0].getAttribute('switched') == 'true':
-            statuses[4] = 'S'
-          # TODO(maruel): Col 5 and 6
-          item = (''.join(statuses), file_path)
-          results.append(item)
-    return results
+  gclient_utils.SubprocessCallAndFilter(command,
+                                        in_directory,
+                                        print_messages,
+                                        print_stdout,
+                                        filter=filter)
 
-  @staticmethod
-  def IsMoved(filename):
-    """Determine if a file has been added through svn mv"""
-    info = SVN.CaptureInfo(filename)
-    return (info.get('Copied From URL') and
-            info.get('Copied From Rev') and
-            info.get('Schedule') == 'add')
+def CaptureSVNInfo(relpath, in_directory=None, print_error=True):
+  """Returns a dictionary from the svn info output for the given file.
 
-  @staticmethod
-  def GetFileProperty(file, property_name):
-    """Returns the value of an SVN property for the given file.
+  Args:
+    relpath: The directory where the working copy resides relative to
+      the directory given by in_directory.
+    in_directory: The directory where svn is to be run.
+  """
+  output = CaptureSVN(["info", "--xml", relpath], in_directory, print_error)
+  dom = gclient_utils.ParseXML(output)
+  result = {}
+  if dom:
+    GetNamedNodeText = gclient_utils.GetNamedNodeText
+    GetNodeNamedAttributeText = gclient_utils.GetNodeNamedAttributeText
+    def C(item, f):
+      if item is not None: return f(item)
+    # /info/entry/
+    #   url
+    #   reposityory/(root|uuid)
+    #   wc-info/(schedule|depth)
+    #   commit/(author|date)
+    # str() the results because they may be returned as Unicode, which
+    # interferes with the higher layers matching up things in the deps
+    # dictionary.
+    # TODO(maruel): Fix at higher level instead (!)
+    result['Repository Root'] = C(GetNamedNodeText(dom, 'root'), str)
+    result['URL'] = C(GetNamedNodeText(dom, 'url'), str)
+    result['UUID'] = C(GetNamedNodeText(dom, 'uuid'), str)
+    result['Revision'] = C(GetNodeNamedAttributeText(dom, 'entry', 'revision'),
+                           int)
+    result['Node Kind'] = C(GetNodeNamedAttributeText(dom, 'entry', 'kind'),
+                            str)
+    result['Schedule'] = C(GetNamedNodeText(dom, 'schedule'), str)
+    result['Path'] = C(GetNodeNamedAttributeText(dom, 'entry', 'path'), str)
+    result['Copied From URL'] = C(GetNamedNodeText(dom, 'copy-from-url'), str)
+    result['Copied From Rev'] = C(GetNamedNodeText(dom, 'copy-from-rev'), str)
+  return result
 
-    Args:
-      file: The file to check
-      property_name: The name of the SVN property, e.g. "svn:mime-type"
 
-    Returns:
-      The value of the property, which will be the empty string if the property
-      is not set on the file.  If the file is not under version control, the
-      empty string is also returned.
-    """
-    output = SVN.Run(["propget", property_name, file], None)
-    if (output and
-        output.startswith("svn: ") and
-        output.endswith("is not under version control")):
-      return ""
-    else:
-      return output
+def CaptureSVNHeadRevision(url):
+  """Get the head revision of a SVN repository.
 
-  @staticmethod
-  def DiffItem(filename):
-    """Diff a single file"""
-    # Use svn info output instead of os.path.isdir because the latter fails
-    # when the file is deleted.
-    if SVN.CaptureInfo(filename).get("Node Kind") == "directory":
-      return None
-    # If the user specified a custom diff command in their svn config file,
-    # then it'll be used when we do svn diff, which we don't want to happen
-    # since we want the unified diff.  Using --diff-cmd=diff doesn't always
-    # work, since they can have another diff executable in their path that
-    # gives different line endings.  So we use a bogus temp directory as the
-    # config directory, which gets around these problems.
-    if sys.platform.startswith("win"):
-      parent_dir = tempfile.gettempdir()
-    else:
-      parent_dir = sys.path[0]  # tempdir is not secure.
-    bogus_dir = os.path.join(parent_dir, "temp_svn_config")
-    if not os.path.exists(bogus_dir):
-      os.mkdir(bogus_dir)
-    # Grabs the diff data.
-    data = SVN.Capture(["diff", "--config-dir", bogus_dir, filename], None)
+  Returns:
+    Int head revision
+  """
+  info = CaptureSVN(["info", "--xml", url], os.getcwd())
+  dom = xml.dom.minidom.parseString(info)
+  return dom.getElementsByTagName('entry')[0].getAttribute('revision')
 
-    # We know the diff will be incorrectly formatted. Fix it.
-    if SVN.IsMoved(filename):
-      # The file is "new" in the patch sense. Generate a homebrew diff.
-      # We can't use ReadFile() since it's not using binary mode.
-      file_handle = open(filename, 'rb')
-      file_content = file_handle.read()
-      file_handle.close()
-      # Prepend '+' to every lines.
-      file_content = ['+' + i for i in file_content.splitlines(True)]
-      nb_lines = len(file_content)
-      # We need to use / since patch on unix will fail otherwise.
-      filename = filename.replace('\\', '/')
-      data = "Index: %s\n" % filename
-      data += ("============================================================="
-               "======\n")
-      # Note: Should we use /dev/null instead?
-      data += "--- %s\n" % filename
-      data += "+++ %s\n" % filename
-      data += "@@ -0,0 +1,%d @@\n" % nb_lines
-      data += ''.join(file_content)
-    return data
+
+def CaptureSVNStatus(files):
+  """Returns the svn 1.5 svn status emulated output.
+
+  @files can be a string (one file) or a list of files.
+
+  Returns an array of (status, file) tuples."""
+  command = ["status", "--xml"]
+  if not files:
+    pass
+  elif isinstance(files, basestring):
+    command.append(files)
+  else:
+    command.extend(files)
+
+  status_letter = {
+    None: ' ',
+    '': ' ',
+    'added': 'A',
+    'conflicted': 'C',
+    'deleted': 'D',
+    'external': 'X',
+    'ignored': 'I',
+    'incomplete': '!',
+    'merged': 'G',
+    'missing': '!',
+    'modified': 'M',
+    'none': ' ',
+    'normal': ' ',
+    'obstructed': '~',
+    'replaced': 'R',
+    'unversioned': '?',
+  }
+  dom = gclient_utils.ParseXML(CaptureSVN(command))
+  results = []
+  if dom:
+    # /status/target/entry/(wc-status|commit|author|date)
+    for target in dom.getElementsByTagName('target'):
+      for entry in target.getElementsByTagName('entry'):
+        file_path = entry.getAttribute('path')
+        wc_status = entry.getElementsByTagName('wc-status')
+        assert len(wc_status) == 1
+        # Emulate svn 1.5 status ouput...
+        statuses = [' '] * 7
+        # Col 0
+        xml_item_status = wc_status[0].getAttribute('item')
+        if xml_item_status in status_letter:
+          statuses[0] = status_letter[xml_item_status]
+        else:
+          raise Exception('Unknown item status "%s"; please implement me!' %
+                          xml_item_status)
+        # Col 1
+        xml_props_status = wc_status[0].getAttribute('props')
+        if xml_props_status == 'modified':
+          statuses[1] = 'M'
+        elif xml_props_status == 'conflicted':
+          statuses[1] = 'C'
+        elif (not xml_props_status or xml_props_status == 'none' or
+              xml_props_status == 'normal'):
+          pass
+        else:
+          raise Exception('Unknown props status "%s"; please implement me!' %
+                          xml_props_status)
+        # Col 2
+        if wc_status[0].getAttribute('wc-locked') == 'true':
+          statuses[2] = 'L'
+        # Col 3
+        if wc_status[0].getAttribute('copied') == 'true':
+          statuses[3] = '+'
+        # Col 4
+        if wc_status[0].getAttribute('switched') == 'true':
+          statuses[4] = 'S'
+        # TODO(maruel): Col 5 and 6
+        item = (''.join(statuses), file_path)
+        results.append(item)
+  return results

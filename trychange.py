@@ -21,11 +21,11 @@ import tempfile
 import urllib
 
 import gcl
-import scm
+import gclient_scm
 import presubmit_support
 import upload
 
-__version__ = '1.1.2'
+__version__ = '1.1.1'
 
 
 # Constants
@@ -150,8 +150,50 @@ class SVN(SCM):
     else:
       os.chdir(root)
 
-    # Directories will return None so filter them out.
-    diff = filter(None, [scm.SVN.DiffItem(f) for f in files])
+    diff = []
+    for filename in files:
+      # Use svn info output instead of os.path.isdir because the latter fails
+      # when the file is deleted.
+      if gclient_scm.CaptureSVNInfo(filename).get("Node Kind") in (
+          "dir", "directory"):
+        continue
+      # If the user specified a custom diff command in their svn config file,
+      # then it'll be used when we do svn diff, which we don't want to happen
+      # since we want the unified diff.  Using --diff-cmd=diff doesn't always
+      # work, since they can have another diff executable in their path that
+      # gives different line endings.  So we use a bogus temp directory as the
+      # config directory, which gets around these problems.
+      if sys.platform.startswith("win"):
+        parent_dir = tempfile.gettempdir()
+      else:
+        parent_dir = sys.path[0]  # tempdir is not secure.
+      bogus_dir = os.path.join(parent_dir, "temp_svn_config")
+      if not os.path.exists(bogus_dir):
+        os.mkdir(bogus_dir)
+      # Grabs the diff data.
+      data = gcl.RunShell(["svn", "diff", "--config-dir", bogus_dir, filename])
+
+      # We know the diff will be incorrectly formatted. Fix it.
+      if gcl.IsSVNMoved(filename):
+        # The file is "new" in the patch sense. Generate a homebrew diff.
+        # We can't use ReadFile() since it's not using binary mode.
+        file_handle = open(filename, 'rb')
+        file_content = file_handle.read()
+        file_handle.close()
+        # Prepend '+' to every lines.
+        file_content = ['+' + i for i in file_content.splitlines(True)]
+        nb_lines = len(file_content)
+        # We need to use / since patch on unix will fail otherwise.
+        filename = filename.replace('\\', '/')
+        data = "Index: %s\n" % filename
+        data += ("============================================================="
+                 "======\n")
+        # Note: Should we use /dev/null instead?
+        data += "--- %s\n" % filename
+        data += "+++ %s\n" % filename
+        data += "@@ -0,0 +1,%d @@\n" % nb_lines
+        data += ''.join(file_content)
+      diff.append(data)
     os.chdir(previous_cwd)
     return "".join(diff)
 
@@ -365,7 +407,6 @@ def GuessVCS(options):
   Returns:
     A SCM instance. Exits if the SCM can't be guessed.
   """
-  __pychecker__ = 'no-returnvalues'
   # Subversion has a .svn in all working directories.
   if os.path.isdir('.svn'):
     logging.info("Guessed VCS = Subversion")

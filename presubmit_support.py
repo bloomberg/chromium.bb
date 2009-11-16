@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.3.4'
+__version__ = '1.3.3'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -35,10 +35,11 @@ import urllib2  # Exposed through the API.
 import warnings
 
 # Local imports.
+# TODO(joi) Would be cleaner to factor out utils in gcl to separate module, but
+# for now it would only be a couple of functions so hardly worth it.
 import gcl
-import gclient_utils
+import gclient_scm
 import presubmit_canned_checks
-import scm
 
 
 # Ask for feedback only once in program lifetime.
@@ -240,7 +241,7 @@ class InputApi(object):
 
       Remember to check for the None case and show an appropriate error!
     """
-    local_path = scm.SVN.CaptureInfo(depot_path).get('Path')
+    local_path = gclient_scm.CaptureSVNInfo(depot_path).get('Path')
     if local_path:
       return local_path
 
@@ -253,7 +254,7 @@ class InputApi(object):
     Returns:
       The depot path (SVN URL) of the file if mapped, otherwise None.
     """
-    depot_path = scm.SVN.CaptureInfo(local_path).get('URL')
+    depot_path = gclient_scm.CaptureSVNInfo(local_path).get('URL')
     if depot_path:
       return depot_path
 
@@ -353,7 +354,7 @@ class InputApi(object):
       file_item = file_item.AbsoluteLocalPath()
     if not file_item.startswith(self.change.RepositoryRoot()):
       raise IOError('Access outside the repository root is denied.')
-    return gclient_utils.FileRead(file_item, mode)
+    return gcl.ReadFile(file_item, mode)
 
   @staticmethod
   def _RightHandSideLinesImpl(affected_files):
@@ -431,8 +432,7 @@ class AffectedFile(object):
     if self.IsDirectory():
       return []
     else:
-      return gclient_utils.FileRead(self.AbsoluteLocalPath(),
-                                    'rU').splitlines()
+      return gcl.ReadFile(self.AbsoluteLocalPath()).splitlines()
 
   def OldContents(self):
     """Returns an iterator over the lines in the old version of file.
@@ -464,7 +464,7 @@ class SvnAffectedFile(AffectedFile):
 
   def ServerPath(self):
     if self._server_path is None:
-      self._server_path = scm.SVN.CaptureInfo(
+      self._server_path = gclient_scm.CaptureSVNInfo(
           self.AbsoluteLocalPath()).get('URL', '')
     return self._server_path
 
@@ -476,13 +476,13 @@ class SvnAffectedFile(AffectedFile):
         # querying subversion, especially on Windows.
         self._is_directory = os.path.isdir(path)
       else:
-        self._is_directory = scm.SVN.CaptureInfo(
+        self._is_directory = gclient_scm.CaptureSVNInfo(
             path).get('Node Kind') in ('dir', 'directory')
     return self._is_directory
 
   def Property(self, property_name):
     if not property_name in self._properties:
-      self._properties[property_name] = scm.SVN.GetFileProperty(
+      self._properties[property_name] = gcl.GetSVNFileProperty(
           self.AbsoluteLocalPath(), property_name).rstrip()
     return self._properties[property_name]
 
@@ -494,8 +494,8 @@ class SvnAffectedFile(AffectedFile):
       elif self.IsDirectory():
         self._is_text_file = False
       else:
-        mime_type = scm.SVN.GetFileProperty(self.AbsoluteLocalPath(),
-                                            'svn:mime-type')
+        mime_type = gcl.GetSVNFileProperty(self.AbsoluteLocalPath(),
+                                           'svn:mime-type')
         self._is_text_file = (not mime_type or mime_type.startswith('text/'))
     return self._is_text_file
 
@@ -809,7 +809,7 @@ def DoGetTrySlaves(changed_files,
     if verbose:
       output_stream.write("Running %s\n" % filename)
     # Accept CRLF presubmit script.
-    presubmit_script = gclient_utils.FileRead(filename, 'rU')
+    presubmit_script = gcl.ReadFile(filename, 'rU')
     results += executer.ExecPresubmitScript(presubmit_script)
 
   slaves = list(set(results))
@@ -925,7 +925,7 @@ def DoPresubmitChecks(change,
     if verbose:
       output_stream.write("Running %s\n" % filename)
     # Accept CRLF presubmit script.
-    presubmit_script = gclient_utils.FileRead(filename, 'rU')
+    presubmit_script = gcl.ReadFile(filename, 'rU')
     results += executer.ExecPresubmitScript(presubmit_script, filename)
 
   errors = []
@@ -1022,7 +1022,7 @@ def Main(argv):
         options.files = ParseFiles(args, options.recursive)
       else:
         # Grab modified files.
-        options.files = scm.GIT.CaptureStatus([options.root])
+        options.files = gclient_scm.CaptureGitStatus([options.root])
   elif os.path.isdir(os.path.join(options.root, '.svn')):
     change_class = SvnChange
     if not options.files:
@@ -1030,7 +1030,7 @@ def Main(argv):
         options.files = ParseFiles(args, options.recursive)
       else:
         # Grab modified files.
-        options.files = scm.SVN.CaptureStatus([options.root])
+        options.files = gclient_scm.CaptureSVNStatus([options.root])
   else:
     # Doesn't seem under source control.
     change_class = Change

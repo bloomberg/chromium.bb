@@ -16,7 +16,7 @@ class GclTestsBase(SuperMoxTestBase):
     SuperMoxTestBase.setUp(self)
     self.fake_root_dir = self.RootDir()
     self.mox.StubOutWithMock(gcl, 'RunShell')
-    self.mox.StubOutWithMock(gcl.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(gcl.gclient_scm, 'CaptureSVNInfo')
     self.mox.StubOutWithMock(gcl, 'tempfile')
     self.mox.StubOutWithMock(gcl.upload, 'RealMain')
     # These are not tested.
@@ -29,21 +29,25 @@ class GclUnittest(GclTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 'Change',
-        'ChangeInfo', 'Changes', 'Commit', 'DEFAULT_LINT_IGNORE_REGEX',
-        'DEFAULT_LINT_REGEX', 'DeleteEmptyChangeLists', 'DoPresubmitChecks',
-        'ErrorExit', 'FILES_CACHE', 'FilterFlag', 'GenerateChangeName',
-        'GenerateDiff', 'GetCLs', 'GetCacheDir', 'GetCachedFile',
-        'GetChangelistInfoFile', 'GetChangesDir', 'GetCodeReviewSetting',
-        'GetEditor', 'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
-        'GetModifiedFiles', 'GetRepositoryRoot', 'Help', 'Lint',
-        'LoadChangelistInfoForMultiple', 'MISSING_TEST_MSG', 'Opened',
-        'OptionallyDoPresubmitChecks', 'PresubmitCL', 'REPOSITORY_ROOT',
-        'ReadFile', 'RunShell', 'RunShellWithReturnCode', 'SVN',
-        'SendToRietveld', 'TryChange', 'UnknownFiles', 'UploadCL', 'Warn',
-        'WriteFile', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
-        'shutil', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
-        'urllib2',
+      'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE',
+      'Change', 'ChangeInfo', 'Changes', 'Commit',
+      'DEFAULT_LINT_IGNORE_REGEX', 'DEFAULT_LINT_REGEX',
+      'DeleteEmptyChangeLists', 'DoPresubmitChecks',
+      'ErrorExit', 'FILES_CACHE', 'FilterFlag', 'GenerateChangeName',
+      'GenerateDiff',
+      'GetCacheDir', 'GetCachedFile', 'GetChangesDir', 'GetCLs',
+      'GetChangelistInfoFile', 'GetCodeReviewSetting', 'GetEditor',
+      'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
+      'GetModifiedFiles', 'GetRepositoryRoot',
+      'GetSVNFileProperty', 'Help', 'IsSVNMoved',
+      'Lint', 'LoadChangelistInfoForMultiple',
+      'MISSING_TEST_MSG', 'Opened', 'OptionallyDoPresubmitChecks',
+      'PresubmitCL', 'ReadFile', 'REPOSITORY_ROOT', 'RunShell',
+      'RunShellWithReturnCode', 'SendToRietveld', 'TryChange',
+      'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile',
+      'gclient_scm', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
+      'shutil', 'string', 'subprocess', 'sys', 'tempfile',
+      'upload', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
@@ -66,7 +70,8 @@ class GclUnittest(GclTestsBase):
     result = {
       "Repository Root": ""
     }
-    gcl.SVN.CaptureInfo("/bleh/prout", print_error=False).AndReturn(result)
+    gcl.gclient_scm.CaptureSVNInfo("/bleh/prout", print_error=False).AndReturn(
+        result)
     self.mox.ReplayAll()
     self.assertRaises(Exception, gcl.GetRepositoryRoot)
 
@@ -75,11 +80,13 @@ class GclUnittest(GclTestsBase):
     root_path = gcl.os.path.join('bleh', 'prout', 'pouet')
     gcl.os.getcwd().AndReturn(root_path)
     result1 = { "Repository Root": "Some root" }
-    gcl.SVN.CaptureInfo(root_path, print_error=False).AndReturn(result1)
+    gcl.gclient_scm.CaptureSVNInfo(root_path,
+                                   print_error=False).AndReturn(result1)
     gcl.os.getcwd().AndReturn(root_path)
     results2 = { "Repository Root": "A different root" }
-    gcl.SVN.CaptureInfo(gcl.os.path.dirname(root_path),
-                        print_error=False).AndReturn(results2)
+    gcl.gclient_scm.CaptureSVNInfo(
+        gcl.os.path.dirname(root_path),
+        print_error=False).AndReturn(results2)
     self.mox.ReplayAll()
     self.assertEquals(gcl.GetRepositoryRoot(), root_path)
 

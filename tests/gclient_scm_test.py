@@ -33,12 +33,12 @@ class BaseTestCase(GCBaseTestCase):
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'SubprocessCall')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'RemoveDirectory')
-    self._CaptureSVNInfo = gclient_scm.scm.SVN.CaptureInfo
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureInfo')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureStatus')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Run')
-    self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'RunAndGetFileList')
+    self._CaptureSVNInfo = gclient_scm.CaptureSVNInfo
+    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVN')
+    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVNInfo')
+    self.mox.StubOutWithMock(gclient_scm, 'CaptureSVNStatus')
+    self.mox.StubOutWithMock(gclient_scm, 'RunSVN')
+    self.mox.StubOutWithMock(gclient_scm, 'RunSVNAndGetFileList')
     self._scm_wrapper = gclient_scm.CreateSCM
 
 
@@ -64,11 +64,9 @@ class SVNWrapperTestCase(BaseTestCase):
 
   def testDir(self):
     members = [
-        'COMMAND', 'Capture', 'CaptureHeadRevision', 'CaptureInfo',
-        'CaptureStatus', 'DiffItem', 'FullUrlForRelativeUrl', 'GetFileProperty',
-        'IsMoved', 'Run', 'RunAndFilterOutput', 'RunAndGetFileList',
-        'RunCommand', 'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
-        'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
+      'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'export',
+      'pack', 'relpath', 'revert', 'revinfo', 'runhooks', 'scm_name', 'status',
+      'update', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
@@ -115,9 +113,8 @@ class SVNWrapperTestCase(BaseTestCase):
     # Checkout.
     gclient_scm.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
-                                          ['checkout', self.url, base_path],
-                                          self.root_dir, files_list)
+    gclient_scm.RunSVNAndGetFileList(options, ['checkout', self.url, base_path],
+                                     self.root_dir, files_list)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -128,10 +125,9 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     gclient_scm.os.path.isdir(base_path).AndReturn(True)
-    gclient_scm.scm.SVN.CaptureStatus(base_path).AndReturn([])
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
-                                          ['update', '--revision', 'BASE'],
-                                          base_path, mox.IgnoreArg())
+    gclient_scm.CaptureSVNStatus(base_path).AndReturn([])
+    gclient_scm.RunSVNAndGetFileList(options, ['update', '--revision', 'BASE'],
+                                     base_path, mox.IgnoreArg())
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -149,16 +145,15 @@ class SVNWrapperTestCase(BaseTestCase):
     ]
     file_path1 = gclient_scm.os.path.join(base_path, 'a')
     file_path2 = gclient_scm.os.path.join(base_path, 'b')
-    gclient_scm.scm.SVN.CaptureStatus(base_path).AndReturn(items)
+    gclient_scm.CaptureSVNStatus(base_path).AndReturn(items)
     gclient_scm.os.path.exists(file_path1).AndReturn(True)
     gclient_scm.os.path.isfile(file_path1).AndReturn(True)
     gclient_scm.os.remove(file_path1)
     gclient_scm.os.path.exists(file_path2).AndReturn(True)
     gclient_scm.os.path.isfile(file_path2).AndReturn(True)
     gclient_scm.os.remove(file_path2)
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
-                                          ['update', '--revision', 'BASE'],
-                                          base_path, mox.IgnoreArg())
+    gclient_scm.RunSVNAndGetFileList(options, ['update', '--revision', 'BASE'],
+                                     base_path, mox.IgnoreArg())
     print(gclient_scm.os.path.join(base_path, 'a'))
     print(gclient_scm.os.path.join(base_path, 'b'))
 
@@ -175,7 +170,7 @@ class SVNWrapperTestCase(BaseTestCase):
     items = [
       ('~      ', 'a'),
     ]
-    gclient_scm.scm.SVN.CaptureStatus(base_path).AndReturn(items)
+    gclient_scm.CaptureSVNStatus(base_path).AndReturn(items)
     file_path = gclient_scm.os.path.join(base_path, 'a')
     print(file_path)
     gclient_scm.os.path.exists(file_path).AndReturn(True)
@@ -183,9 +178,8 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
     gclient_scm.gclient_utils.RemoveDirectory(file_path)
     file_list1 = []
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
-                                          ['update', '--revision', 'BASE'],
-                                          base_path, mox.IgnoreArg())
+    gclient_scm.RunSVNAndGetFileList(options, ['update', '--revision', 'BASE'],
+                                     base_path, mox.IgnoreArg())
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -197,9 +191,8 @@ class SVNWrapperTestCase(BaseTestCase):
     options = self.Options(verbose=True)
     base_path = gclient_scm.os.path.join(self.root_dir, self.relpath)
     gclient_scm.os.path.isdir(base_path).AndReturn(True)
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
-                                          ['status'] + self.args,
-                                          base_path, []).AndReturn(None)
+    gclient_scm.RunSVNAndGetFileList(options, ['status'] + self.args,
+                                     base_path, []).AndReturn(None)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -223,9 +216,8 @@ class SVNWrapperTestCase(BaseTestCase):
     # Checkout.
     gclient_scm.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient_scm.scm.SVN.RunAndGetFileList(options,
-                                          ['checkout', self.url, base_path],
-                                          self.root_dir, files_list)
+    gclient_scm.RunSVNAndGetFileList(options, ['checkout', self.url,
+                                     base_path], self.root_dir, files_list)
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -246,19 +238,17 @@ class SVNWrapperTestCase(BaseTestCase):
                                ).AndReturn(False)
     # Checkout or update.
     gclient_scm.os.path.exists(base_path).AndReturn(True)
-    gclient_scm.scm.SVN.CaptureInfo(
-        gclient_scm.os.path.join(base_path, "."), '.'
-        ).AndReturn(file_info)
+    gclient_scm.CaptureSVNInfo(gclient_scm.os.path.join(base_path, "."), '.'
+                               ).AndReturn(file_info)
     # Cheat a bit here.
-    gclient_scm.scm.SVN.CaptureInfo(file_info['URL'], '.').AndReturn(file_info)
+    gclient_scm.CaptureSVNInfo(file_info['URL'], '.').AndReturn(file_info)
     additional_args = []
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
     files_list = []
-    gclient_scm.scm.SVN.RunAndGetFileList(
-        options,
-        ['update', base_path] + additional_args,
-        self.root_dir, files_list)
+    gclient_scm.RunSVNAndGetFileList(options,
+                                     ['update', base_path] + additional_args,
+                                     self.root_dir, files_list)
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
@@ -366,9 +356,9 @@ from :3
 
   def testDir(self):
     members = [
-        'COMMAND', 'Capture', 'CaptureStatus', 'FullUrlForRelativeUrl',
-        'RunCommand', 'cleanup', 'diff', 'export', 'relpath', 'revert',
-        'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
+      'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'export',
+      'relpath', 'revert', 'revinfo', 'runhooks', 'scm_name', 'status',
+      'update', 'url',
     ]
 
     # If you add a member, be sure to add the relevant test!
