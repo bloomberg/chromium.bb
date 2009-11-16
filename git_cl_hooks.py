@@ -35,7 +35,7 @@ class ChangeOptions:
     name = m.group(1)
     description = m.group(2)
     files = scm.GIT.CaptureStatus([root], upstream_branch)
-    issue = Backquote(['cl', 'status', '--field=id'])
+    issue = Backquote(['git', 'cl', 'status', '--field=id'])
     patchset = None
     self.change = presubmit_support.GitChange(name, description, root, files,
                                               issue, patchset)
