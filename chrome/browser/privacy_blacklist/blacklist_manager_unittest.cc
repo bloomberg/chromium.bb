@@ -96,6 +96,7 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
   }
 
   virtual void TearDown() {
+    mock_file_thread_.Stop();
     loop_.RunAllPending();
   }
 
