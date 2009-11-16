@@ -90,6 +90,10 @@ const char kCreditsPath[] = "credits";
 const char kTermsPath[] = "terms";
 const char kSyncPath[] = "sync";
 
+#if defined(OS_CHROMEOS)
+const char kOSCreditsPath[] = "os-credits";
+#endif
+
 // Points to the singleton AboutSource object, if any.
 ChromeURLDataManager::DataSource* about_source = NULL;
 
@@ -190,6 +194,16 @@ std::string AboutCredits() {
 
   return credits_html;
 }
+
+#if defined(OS_CHROMEOS)
+std::string AboutOSCredits() {
+  static const std::string os_credits_html =
+      ResourceBundle::GetSharedInstance().GetDataResource(
+          IDR_OS_CREDITS_HTML);
+
+  return os_credits_html;
+}
+#endif
 
 std::string AboutDns() {
   std::string data;
@@ -624,6 +638,10 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 #endif
   } else if (path == kCreditsPath) {
     response = AboutCredits();
+#if defined(OS_CHROMEOS)
+  } else if (path == kOSCreditsPath) {
+    response = AboutOSCredits();
+#endif
   } else if (path == kTermsPath) {
     response = AboutTerms();
   } else if (path == kSyncPath) {
