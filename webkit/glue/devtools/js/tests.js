@@ -339,12 +339,12 @@ TestSuite.prototype.testResourceHeaders = function() {
           var responseHeaders = JSON.stringify(resource.responseHeaders);
           test.assertContains(responseHeaders, 'Content-type');
           test.assertContains(responseHeaders, 'Content-Length');
-          test.assertTrue(typeof resource.responseReceivedTime != 'undefnied');
+          test.assertTrue(typeof resource.responseReceivedTime != 'undefined');
           responseOk = true;
         }
 
         if (payload.didTimingChange) {
-          test.assertTrue(typeof resource.startTime != 'undefnied');
+          test.assertTrue(typeof resource.startTime != 'undefined');
           timingOk = true;
         }
 
@@ -352,7 +352,7 @@ TestSuite.prototype.testResourceHeaders = function() {
           test.assertTrue(requestOk);
           test.assertTrue(responseOk);
           test.assertTrue(timingOk);
-          test.assertTrue(typeof resource.endTime != 'undefnied');
+          test.assertTrue(typeof resource.endTime != 'undefined');
           test.releaseControl();
         }
       }, true);
@@ -363,7 +363,7 @@ TestSuite.prototype.testResourceHeaders = function() {
 
 
 /**
- * Test that profiler works.
+ * Tests that profiler works.
  */
 TestSuite.prototype.testProfilerTab = function() {
   this.showPanel('profiles');
