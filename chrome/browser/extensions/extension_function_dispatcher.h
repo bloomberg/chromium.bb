@@ -14,8 +14,10 @@
 
 class Browser;
 class Extension;
+class ExtensionDOMUI;
 class ExtensionFunction;
 class ExtensionHost;
+class ExtensionPopupHost;
 class Profile;
 class RenderViewHost;
 class RenderViewHostDelegate;
@@ -33,6 +35,7 @@ class ExtensionFunctionDispatcher {
    public:
     virtual Browser* GetBrowser() = 0;
     virtual ExtensionHost* GetExtensionHost() { return NULL; }
+    virtual ExtensionDOMUI* GetExtensionDOMUI() { return NULL; }
   };
 
   // The peer object allows us to notify ExtensionFunctions when we are
@@ -43,10 +46,10 @@ class ExtensionFunctionDispatcher {
         : dispatcher_(dispatcher) {}
     ExtensionFunctionDispatcher* dispatcher_;
 
-  private:
-   friend class base::RefCounted<Peer>;
+   private:
+    friend class base::RefCounted<Peer>;
 
-   ~Peer() {}
+    ~Peer() {}
   };
 
   // Gets a list of all known extension function names.
@@ -79,9 +82,17 @@ class ExtensionFunctionDispatcher {
   // example, for positioning windows, or alert boxes, or creating tabs.
   Browser* GetBrowser();
 
+  // Get the extension popup hosting environment for the ExtensionHost
+  // or ExtensionDOMUI associted with this dispatcher.
+  ExtensionPopupHost* GetPopupHost();
+
   // Gets the ExtensionHost associated with this object.  In the case of
   // tab hosted extension pages, this will return NULL.
   ExtensionHost* GetExtensionHost();
+
+  // Gets the ExtensionDOMUI associated with this object.  In the case of
+  // non-tab-hosted extension pages, this will return NULL.
+  ExtensionDOMUI* GetExtensionDOMUI();
 
   // Gets the extension the function is being invoked by. This should not ever
   // return NULL.

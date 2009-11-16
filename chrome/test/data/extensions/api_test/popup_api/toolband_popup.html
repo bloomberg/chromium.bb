@@ -1,3 +1,4 @@
+<html>
 <head>
 <script>
 function theAnswer() {
@@ -5,7 +6,7 @@ function theAnswer() {
 }
 
 function manipulateHost() {
-  var popupHost = chrome.experimental.popup.getAnchorWindow();
+  var popupHost = chrome.experimental.popup.getParentWindow();
   if (popupHost && popupHost.globalValue) {
     popupHost.globalValue = 42;
   }
@@ -15,3 +16,4 @@ function manipulateHost() {
 <body>
 Popup-Contents
 </body>
+</html>

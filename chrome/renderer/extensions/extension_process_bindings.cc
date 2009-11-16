@@ -231,8 +231,8 @@ class ExtensionImpl : public ExtensionBase {
       return v8::FunctionTemplate::New(GetL10nMessage);
     } else if (name->Equals(v8::String::New("GetPopupView"))) {
       return v8::FunctionTemplate::New(GetPopupView);
-    } else if (name->Equals(v8::String::New("GetPopupAnchorView"))) {
-      return v8::FunctionTemplate::New(GetPopupAnchorView);
+    } else if (name->Equals(v8::String::New("GetPopupParentWindow"))) {
+      return v8::FunctionTemplate::New(GetPopupParentWindow);
     } else if (name->Equals(v8::String::New("SetExtensionActionIcon"))) {
       return v8::FunctionTemplate::New(SetExtensionActionIcon);
     }
@@ -289,7 +289,7 @@ class ExtensionImpl : public ExtensionBase {
     return PopupViewFinder(args, ViewType::EXTENSION_POPUP);
   }
 
-  static v8::Handle<v8::Value> GetPopupAnchorView(const v8::Arguments& args) {
+  static v8::Handle<v8::Value> GetPopupParentWindow(const v8::Arguments& args) {
     return PopupViewFinder(args, ViewType::EXTENSION_TOOLSTRIP);
   }
 

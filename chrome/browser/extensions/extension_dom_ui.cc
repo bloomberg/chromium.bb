@@ -218,6 +218,10 @@ void ExtensionDOMUI::UnregisterChromeURLOverride(const std::string& page,
   }
 }
 
+RenderViewHost* ExtensionDOMUI::GetRenderViewHost() {
+  return tab_contents() ? tab_contents()->render_view_host() : NULL;
+}
+
 // static
 void ExtensionDOMUI::UnregisterChromeURLOverrides(
     Profile* profile, const Extension::URLOverrideMap& overrides) {

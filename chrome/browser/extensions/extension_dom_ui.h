@@ -5,19 +5,24 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_DOM_UI_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_DOM_UI_H_
 
+#include <string>
+
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_popup_host.h"
 #include "chrome/common/extensions/extension.h"
 
 class ListValue;
 class PrefService;
+class RenderViewHost;
 class TabContents;
 
 // This class implements DOMUI for extensions and allows extensions to put UI in
 // the main tab contents area.
 class ExtensionDOMUI
     : public DOMUI,
+      public ExtensionPopupHost::PopupDelegate,
       public ExtensionFunctionDispatcher::Delegate {
  public:
   explicit ExtensionDOMUI(TabContents* tab_contents);
@@ -36,6 +41,10 @@ class ExtensionDOMUI
 
   // ExtensionFunctionDispatcher::Delegate
   virtual Browser* GetBrowser();
+  virtual ExtensionDOMUI* GetExtensionDOMUI() { return this; }
+
+  // ExtensionPopupHost::Delegate
+  virtual RenderViewHost* GetRenderViewHost();
 
   // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url, Profile* profile);

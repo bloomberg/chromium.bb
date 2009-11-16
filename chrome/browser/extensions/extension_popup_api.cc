@@ -12,10 +12,12 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "views/view.h"
@@ -32,6 +34,7 @@ namespace {
 // Errors.
 const char kBadAnchorArgument[] = "Invalid anchor argument.";
 const char kInvalidURLError[] = "Invalid URL.";
+const char kNotAnExtension[] = "Not an extension view.";
 
 // Keys.
 const wchar_t kUrlKey[] = L"url";
@@ -111,17 +114,62 @@ bool PopupShowFunction::RunImpl() {
   }
 
 #if defined(TOOLKIT_VIEWS)
-  views::View* extension_view = dispatcher()->GetExtensionHost()->view();
   gfx::Point origin(dom_left, dom_top);
-  views::View::ConvertPointToScreen(extension_view, &origin);
+  if (!ConvertHostPointToScreen(&origin)) {
+    error_ = kNotAnExtension;
+    return false;
+  }
   gfx::Rect rect(origin.x(), origin.y(), dom_width, dom_height);
 
+  // Pop-up from extension views (ExtensionShelf, etc.), and drop-down when
+  // in a TabContents view.
+  BubbleBorder::ArrowLocation arrow_location =
+      (NULL != dispatcher()->GetExtensionHost()) ? BubbleBorder::BOTTOM_LEFT :
+                                                   BubbleBorder::TOP_LEFT;
   popup_ = ExtensionPopup::Show(url, dispatcher()->GetBrowser(), rect,
-                                BubbleBorder::BOTTOM_LEFT);
+                                arrow_location);
 
-  dispatcher()->GetExtensionHost()->set_child_popup(popup_);
-  popup_->set_delegate(dispatcher()->GetExtensionHost());
-#endif
+  ExtensionPopupHost* popup_host = dispatcher()->GetPopupHost();
+  DCHECK(popup_host);
+
+  popup_host->set_child_popup(popup_);
+  popup_->set_delegate(popup_host);
+#endif  // defined(TOOLKIT_VIEWS)
+  return true;
+}
+
+bool PopupShowFunction::ConvertHostPointToScreen(gfx::Point* point) {
+  DCHECK(point);
+
+  // If the popup is being requested from an ExtensionHost, then compute
+  // the sreen coordinates based on the views::View object of the ExtensionHost.
+  if (dispatcher()->GetExtensionHost()) {
+    // A dispatcher cannot have both an ExtensionHost, and an ExtensionDOMUI.
+    DCHECK(!dispatcher()->GetExtensionDOMUI());
+
+#if defined(TOOLKIT_VIEWS)
+    views::View* extension_view = dispatcher()->GetExtensionHost()->view();
+    if (!extension_view)
+      return false;
+
+    views::View::ConvertPointToScreen(extension_view, point);
+#else
+    // TODO(port)
+    NOTIMPLEMENTED();
+#endif  // defined(TOOLKIT_VIEWS)
+  } else if (dispatcher()->GetExtensionDOMUI()) {
+    // Otherwise, the popup is being requested from a TabContents, so determine
+    // the screen-space position through the TabContentsView.
+    ExtensionDOMUI* dom_ui = dispatcher()->GetExtensionDOMUI();
+    TabContents* tab_contents = dom_ui->tab_contents();
+    if (!tab_contents)
+      return false;
+
+    gfx::Rect content_bounds;
+    tab_contents->GetContainerBounds(&content_bounds);
+    point->Offset(content_bounds.x(), content_bounds.y());
+  }
+
   return true;
 }
 
@@ -144,7 +192,7 @@ void PopupShowFunction::Observe(NotificationType type,
     SendResponse(false);
     Release();  // Balanced in Run().
   }
-#endif
+#endif  // defined(TOOLKIT_VIEWS)
 }
 
 // static

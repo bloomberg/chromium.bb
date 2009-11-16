@@ -8,6 +8,10 @@
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/notification_registrar.h"
 
+namespace gfx {
+class Point;
+}  // namespace gfx
+
 class Profile;
 class ExtensionPopup;
 
@@ -24,6 +28,10 @@ class PopupShowFunction : public AsyncExtensionFunction,
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.popup.show")
 
  private:
+  // Computes the screen-space position of the frame-relative point in the
+  // extension view that is requesting to display a popup.
+  bool ConvertHostPointToScreen(gfx::Point* point);
+
   // NotificationObserver methods.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,

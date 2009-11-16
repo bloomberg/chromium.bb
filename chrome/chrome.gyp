@@ -1412,6 +1412,8 @@
         'browser/extensions/extension_page_actions_module_constants.h',
         'browser/extensions/extension_popup_api.cc',
         'browser/extensions/extension_popup_api.h',
+        'browser/extensions/extension_popup_host.cc',
+        'browser/extensions/extension_popup_host.h',
         'browser/extensions/extension_prefs.cc',
         'browser/extensions/extension_prefs.h',
         'browser/extensions/extension_process_manager.cc',

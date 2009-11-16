@@ -16,7 +16,7 @@ var chrome = chrome || {};
   native function OpenChannelToTab();
   native function GetRenderViewId();
   native function GetL10nMessage();
-  native function GetPopupAnchorView();
+  native function GetPopupParentWindow();
   native function GetPopupView();
   native function SetExtensionActionIcon();
 
@@ -226,8 +226,8 @@ var chrome = chrome || {};
   // in browser coordinates relative to the frame hosting the element.
   function getAbsoluteRect(domElement) {
     var rect = findAbsolutePosition(domElement);
-    rect.width = domElement.width || 0;
-    rect.height = domElement.height || 0;
+    rect.width = domElement.offsetWidth || 0;
+    rect.height = domElement.offsetHeight || 0;
     return rect;
   }
 
@@ -319,11 +319,12 @@ var chrome = chrome || {};
             chromeHidden.validate(arguments, this.definition.parameters);
 
             var retval;
-            if (this.handleRequest)
+            if (this.handleRequest) {
               retval = this.handleRequest.apply(this, arguments);
-            else
+            } else {
               retval = sendRequest(this.name, arguments,
-                                 this.definition.parameters);
+                                   this.definition.parameters);
+            }
 
             // Validate return value if defined - only in debug.
             if (chromeHidden.validateCallbacks &&
@@ -419,9 +420,26 @@ var chrome = chrome || {};
 
     apiFunctions["experimental.popup.show"].handleRequest =
         function(url, showDetails, callback) {
-      var internalArgs = [url, getAbsoluteRect(showDetails.relativeTo),
-          callback];
-      return sendRequest(this.name, internalArgs, this.definition.parameters);
+      // Second argument is a transform from HTMLElement to Rect.
+      var internalSchema = [
+        this.definition.parameters[0],
+        {
+          type: "object",
+          name: "domAnchor",
+          properties: {
+            top: { type: "integer", minimum: 0 },
+            left: { type: "integer", minimum: 0 },
+            width: { type: "integer", minimum: 0 },
+            height: { type: "integer", minimum: 0 }
+          }
+        },
+        this.definition.parameters[2]
+      ];
+      return sendRequest(this.name,
+                         [url,
+                          getAbsoluteRect(showDetails.relativeTo),
+                          callback],
+                         internalSchema);
     }
 
     apiFunctions["experimental.extension.getPopupView"].handleRequest =
@@ -429,9 +447,9 @@ var chrome = chrome || {};
       return GetPopupView();
     }
 
-    apiFunctions["experimental.popup.getAnchorWindow"].handleRequest =
+    apiFunctions["experimental.popup.getParentWindow"].handleRequest =
         function() {
-      return GetPopupAnchorView();
+      return GetPopupParentWindow();
     }
 
     var canvas;

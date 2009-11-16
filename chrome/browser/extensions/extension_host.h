@@ -10,11 +10,11 @@
 #include "base/perftimer.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
+#include "chrome/browser/extensions/extension_popup_host.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/extensions/extension_view.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/gtk/extension_view_gtk.h"
@@ -26,9 +26,6 @@
 
 class Browser;
 class Extension;
-#if defined(TOOLKIT_VIEWS)
-class ExtensionPopup;
-#endif
 class ExtensionProcessManager;
 class RenderProcessHost;
 class RenderWidgetHost;
@@ -40,10 +37,7 @@ struct WebPreferences;
 // It handles setting up the renderer process, if needed, with special
 // privileges available to extensions.  It may have a view to be shown in the
 // in the browser UI, or it may be hidden.
-class ExtensionHost :  // NOLINT
-#if defined(TOOLKIT_VIEWS)
-                      public BrowserBubble::Delegate,
-#endif
+class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
                       public RenderViewHostDelegate,
                       public RenderViewHostDelegate::View,
                       public ExtensionFunctionDispatcher::Delegate,
@@ -84,14 +78,6 @@ class ExtensionHost :  // NOLINT
   }
   Profile* profile() const { return profile_; }
 
-#if defined(TOOLKIT_VIEWS)
-  ExtensionPopup* child_popup() const { return child_popup_; }
-  void set_child_popup(ExtensionPopup* popup) { child_popup_ = popup; }
-#endif
-
-  // Dismiss the hosted pop-up, if one is present.
-  void DismissPopup();
-
   // Sets the the ViewType of this host (e.g. mole, toolstrip).
   void SetRenderViewType(ViewType::Type type);
 
@@ -108,22 +94,6 @@ class ExtensionHost :  // NOLINT
 
   // Insert the theme CSS for a toolstrip/mole.
   void InsertThemeCSS();
-
-#if defined(TOOLKIT_VIEWS)
-  // BrowserBubble::Delegate implementation.
-  // Called when the Browser Window that this bubble is attached to moves.
-  virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
-
-  // Called with the Browser Window that this bubble is attached to is
-  // about to close.
-  virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
-
-  // Called when the bubble became active / got focus.
-  virtual void BubbleGotFocus(BrowserBubble* bubble);
-
-  // Called when the bubble became inactive / lost focus.
-  virtual void BubbleLostFocus(BrowserBubble* bubble);
-#endif  // defined(TOOLKIT_VIEWS)
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
@@ -204,6 +174,9 @@ class ExtensionHost :  // NOLINT
   virtual Browser* GetBrowser();
   virtual ExtensionHost* GetExtensionHost() { return this; }
 
+  // ExtensionPopupHost::Delegate
+  virtual RenderViewHost* GetRenderViewHost() { return render_view_host(); }
+
   // Returns true if we're hosting a background page.
   // This isn't valid until CreateRenderView is called.
   bool is_background_page() const { return !view(); }
@@ -237,12 +210,6 @@ class ExtensionHost :  // NOLINT
 
   // The URL being hosted.
   GURL url_;
-
-#if defined(TOOLKIT_VIEWS)
-  // A popup view that is anchored to and owned by this ExtensionHost.  However,
-  // the popup contains its own separate ExtensionHost
-  ExtensionPopup* child_popup_;
-#endif
 
   NotificationRegistrar registrar_;
 

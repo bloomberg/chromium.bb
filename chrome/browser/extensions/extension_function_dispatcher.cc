@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_browser_actions_api.h"
+#include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_history_api.h"
 #include "chrome/browser/extensions/extension_i18n_api.h"
@@ -239,8 +240,24 @@ Browser* ExtensionFunctionDispatcher::GetBrowser() {
   return delegate_->GetBrowser();
 }
 
+ExtensionPopupHost* ExtensionFunctionDispatcher::GetPopupHost() {
+  ExtensionHost* extension_host = GetExtensionHost();
+  if (extension_host) {
+    DCHECK(!GetExtensionDOMUI()) <<
+        "Function dispatcher registered in too many environments.";
+    return extension_host->popup_host();
+  } else {
+    ExtensionDOMUI* dom_ui = GetExtensionDOMUI();
+    return dom_ui->popup_host();
+  }
+}
+
 ExtensionHost* ExtensionFunctionDispatcher::GetExtensionHost() {
   return delegate_->GetExtensionHost();
+}
+
+ExtensionDOMUI* ExtensionFunctionDispatcher::GetExtensionDOMUI() {
+  return delegate_->GetExtensionDOMUI();
 }
 
 Extension* ExtensionFunctionDispatcher::GetExtension() {

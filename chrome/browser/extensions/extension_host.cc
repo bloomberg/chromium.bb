@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/jsmessage_box_handler.h"
-#include "chrome/browser/extensions/extension_popup_api.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -42,7 +41,6 @@
 #include "webkit/glue/context_menu.h"
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/views/extensions/extension_popup.h"
 #include "views/widget/widget.h"
 #endif
 
@@ -121,25 +119,14 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
       did_stop_loading_(false),
       document_element_available_(false),
       url_(url),
-#if defined(TOOLKIT_VIEWS)
-      child_popup_(NULL),
-#endif
       extension_host_type_(host_type) {
   render_view_host_ = new RenderViewHost(site_instance, this, MSG_ROUTING_NONE);
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)
     render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
-
-#if defined(TOOLKIT_VIEWS)
-  // Listen for view close requests, so that we can dismiss a hosted pop-up
-  // view, if necessary.
-  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 Source<Profile>(profile_));
-#endif
 }
 
 ExtensionHost::~ExtensionHost() {
-  DismissPopup();
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_HOST_DESTROYED,
       Source<Profile>(profile_),
@@ -229,15 +216,6 @@ void ExtensionHost::Observe(NotificationType type,
     NavigateToURL(url_);
   } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
     InsertThemeCSS();
-#if defined(TOOLKIT_VIEWS)
-  } else if (type == NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE) {
-    // If we aren't the host of the popup, then disregard the notification.
-    if (!child_popup_ ||
-        Details<ExtensionHost>(child_popup_->host()) != details)
-      return;
-
-    DismissPopup();
-#endif
   } else {
     NOTREACHED();
   }
@@ -323,38 +301,6 @@ void ExtensionHost::InsertThemeCSS() {
   // to blend in with the chrome UI.
   render_view_host()->InsertCSSInWebFrame(L"", css, "ToolstripThemeCSS");
 }
-
-void ExtensionHost::DismissPopup() {
-#if defined(TOOLKIT_VIEWS)
-  if (child_popup_) {
-    child_popup_->Hide();
-    child_popup_->DetachFromBrowser();
-    delete child_popup_;
-    child_popup_ = NULL;
-
-    PopupEventRouter::OnPopupClosed(GetBrowser()->profile(),
-                                    view()->render_view_host()->routing_id());
-  }
-#endif
-}
-
-#if defined(TOOLKIT_VIEWS)
-void ExtensionHost::BubbleBrowserWindowMoved(BrowserBubble* bubble) {
-  DismissPopup();
-}
-void ExtensionHost::BubbleBrowserWindowClosing(BrowserBubble* bubble) {
-  DismissPopup();
-}
-
-void ExtensionHost::BubbleGotFocus(BrowserBubble* bubble) {
-}
-
-void ExtensionHost::BubbleLostFocus(BrowserBubble* bubble) {
-  // TODO(twiz):  Dismiss the pop-up upon loss of focus of the bubble, but not
-  // if the focus is transitioning to the host which owns the popup!
-  // DismissPopup();
-}
-#endif  // defined(TOOLKIT_VIEWS)
 
 void ExtensionHost::DidStopLoading() {
   bool notify = !did_stop_loading_;
