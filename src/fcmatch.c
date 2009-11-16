@@ -129,7 +129,7 @@ FcCompareLang (FcValue *v1, FcValue *v2)
 static double
 FcCompareBool (FcValue *v1, FcValue *v2)
 {
-    if (fc_storage_type(v2) != FcTypeBool || fc_storage_type(v1) != FcTypeBool)
+    if (v2->type != FcTypeBool || v1->type != FcTypeBool)
 	return -1.0;
     return (double) v2->u.b != v1->u.b;
 }

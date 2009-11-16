@@ -220,7 +220,7 @@ FcStringHash (const FcChar8 *s)
 static FcChar32
 FcValueHash (const FcValue *v)
 {
-    switch (fc_storage_type(v)) {
+    switch (v->type) {
     case FcTypeVoid:
 	return 0;
     case FcTypeInteger:

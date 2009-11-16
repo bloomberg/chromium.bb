@@ -426,7 +426,6 @@ typedef struct _FcCaseFold {
 #define fc_value_string(v)	FcValueString(v)
 #define fc_value_charset(v)	FcValueCharSet(v)
 #define fc_value_langset(v)	FcValueLangSet(v)
-#define fc_storage_type(v)	((v)->type)
 
 #define FC_CACHE_MAGIC_MMAP	    0xFC02FC04
 #define FC_CACHE_MAGIC_ALLOC	    0xFC02FC05
