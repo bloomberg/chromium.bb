@@ -421,12 +421,6 @@ typedef struct _FcCaseFold {
 
 #define FC_MAX_FILE_LEN	    4096
 
-/* XXX remove these when we're ready */
-
-#define fc_value_string(v)	FcValueString(v)
-#define fc_value_charset(v)	FcValueCharSet(v)
-#define fc_value_langset(v)	FcValueLangSet(v)
-
 #define FC_CACHE_MAGIC_MMAP	    0xFC02FC04
 #define FC_CACHE_MAGIC_ALLOC	    0xFC02FC05
 #define FC_CACHE_CONTENT_VERSION    3 /* also check FC_CACHE_VERSION */

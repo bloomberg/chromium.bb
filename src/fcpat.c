@@ -75,15 +75,15 @@ FcValueCanonicalize (const FcValue *v)
     switch (v->type)
     {
     case FcTypeString:
-	new.u.s = fc_value_string(v);
+	new.u.s = FcValueString(v);
 	new.type = FcTypeString;
 	break;
     case FcTypeCharSet:
-	new.u.c = fc_value_charset(v);
+	new.u.c = FcValueCharSet(v);
 	new.type = FcTypeCharSet;
 	break;
     case FcTypeLangSet:
-	new.u.l = fc_value_langset(v);
+	new.u.l = FcValueLangSet(v);
 	new.type = FcTypeLangSet;
 	break;
     default:
@@ -228,7 +228,7 @@ FcValueHash (const FcValue *v)
     case FcTypeDouble:
 	return FcDoubleHash (v->u.d);
     case FcTypeString:
-	return FcStringHash (fc_value_string(v));
+	return FcStringHash (FcValueString(v));
     case FcTypeBool:
 	return (FcChar32) v->u.b;
     case FcTypeMatrix:
@@ -237,12 +237,12 @@ FcValueHash (const FcValue *v)
 		FcDoubleHash (v->u.m->yx) ^ 
 		FcDoubleHash (v->u.m->yy));
     case FcTypeCharSet:
-	return (FcChar32) fc_value_charset(v)->num;
+	return (FcChar32) FcValueCharSet(v)->num;
     case FcTypeFTFace:
 	return FcStringHash ((const FcChar8 *) ((FT_Face) v->u.f)->family_name) ^
 	       FcStringHash ((const FcChar8 *) ((FT_Face) v->u.f)->style_name);
     case FcTypeLangSet:
-	return FcLangSetHash (fc_value_langset(v));
+	return FcLangSetHash (FcValueLangSet(v));
     }
     return FcFalse;
 }

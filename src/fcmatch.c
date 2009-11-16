@@ -61,7 +61,7 @@ FcCompareNumber (FcValue *value1, FcValue *value2)
 static double
 FcCompareString (FcValue *v1, FcValue *v2)
 {
-    return (double) FcStrCmpIgnoreCase (fc_value_string(v1), fc_value_string(v2)) != 0;
+    return (double) FcStrCmpIgnoreCase (FcValueString(v1), FcValueString(v2)) != 0;
 }
 
 static double
@@ -69,8 +69,8 @@ FcCompareFamily (FcValue *v1, FcValue *v2)
 {
     /* rely on the guarantee in FcPatternAddWithBinding that
      * families are always FcTypeString. */
-    const FcChar8* v1_string = fc_value_string(v1);
-    const FcChar8* v2_string = fc_value_string(v2);
+    const FcChar8* v1_string = FcValueString(v1);
+    const FcChar8* v2_string = FcValueString(v2);
 
     if (FcToLower(*v1_string) != FcToLower(*v2_string) &&
 	*v1_string != ' ' && *v2_string != ' ')
@@ -137,7 +137,7 @@ FcCompareBool (FcValue *v1, FcValue *v2)
 static double
 FcCompareCharSet (FcValue *v1, FcValue *v2)
 {
-    return (double) FcCharSetSubtractCount (fc_value_charset(v1), fc_value_charset(v2));
+    return (double) FcCharSetSubtractCount (FcValueCharSet(v1), FcValueCharSet(v2));
 }
 
 static double
