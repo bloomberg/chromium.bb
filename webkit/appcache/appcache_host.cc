@@ -139,7 +139,7 @@ void AppCacheHost::DoPendingStartUpdate() {
 
   // 6.9.8 Application cache API
   bool success = false;
-  if (associated_cache_) {
+  if (associated_cache_ && associated_cache_->owning_group()) {
     AppCacheGroup* group = associated_cache_->owning_group();
     if (!group->is_obsolete()) {
       success = true;
@@ -173,7 +173,7 @@ void AppCacheHost::DoPendingSwapCache() {
 
   // 6.9.8 Application cache API
   bool success = false;
-  if (associated_cache_) {
+  if (associated_cache_ && associated_cache_->owning_group()) {
     if (associated_cache_->owning_group()->is_obsolete()) {
       success = true;
       AssociateCache(NULL);
@@ -208,10 +208,8 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
 Status AppCacheHost::GetStatus() {
   // 6.9.8 Application cache API
   AppCache* cache = associated_cache();
-  if (!cache)
+  if (!cache || !cache->owning_group())
     return UNCACHED;
-
-  DCHECK(cache->owning_group());
 
   if (cache->owning_group()->is_obsolete())
     return OBSOLETE;
