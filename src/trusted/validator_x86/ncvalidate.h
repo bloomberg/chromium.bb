@@ -80,7 +80,7 @@ struct NCValidatorState *NCValidateInit(const PcAddress vbase,
  * NCValidateSegment is used by sel_ldr. For dev/debug purposes,
  * use NCDecodeSegment(). See ncval.c for an example.
  */
-void NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t sz,
+void NCValidateSegment(uint8_t *mbase, PcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate);
 
 /* Check targets and alignment. Returns non-zero if there are */

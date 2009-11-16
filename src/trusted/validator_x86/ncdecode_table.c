@@ -190,7 +190,7 @@ static void fatal(const char* s) {
 static char* aprintf(const char* fmt, const char* s) {
   char *rstring = NULL;
   /* there will be one spare byte, because %s is replaced, but it's ok */
-  int length = strlen(fmt) + strlen(s);
+  size_t length = strlen(fmt) + strlen(s);
   rstring = malloc(length);
   if (rstring != NULL) {
     SNPRINTF(rstring, length, fmt, s);
@@ -253,7 +253,7 @@ static const char* ModedGenRegs(const char* format, RunMode mode) {
           int i;
           char* substr = rformat;
           for (i = 0; i < NUM_GP_X86_32_REGS; ++i) {
-            int name_size = strlen(gp_x86_32_regs[i]);
+            size_t name_size = strlen(gp_x86_32_regs[i]);
             char* loc;
             assert(name_size == strlen(corresp_gp_x86_64_regs[i]));
             loc = strstr(substr, gp_x86_32_regs[i]);

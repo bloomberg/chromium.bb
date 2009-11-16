@@ -800,7 +800,7 @@ void ValidateInst(const struct NCDecoderState *mstate) {
   if (squashme) memset(mstate->inst.maddr, kNaClFullStop, mstate->inst.length);
 }
 
-void NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t sz,
+void NCValidateSegment(uint8_t *mbase, PcAddress vbase, size_t sz,
                        struct NCValidatorState *vstate) {
   if (sz == 0) {
     ValidatePrintError(0, "Bad text segment (zero size)");

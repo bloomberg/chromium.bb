@@ -33,13 +33,19 @@
  * nacl_cpuid.c
  * Retrieve and decode CPU model specific feature mask.
  */
-#include "native_client/src/include/portability.h"
-#include "native_client/src/include/portability_io.h"
+#if NACL_WINDOWS
+#include <intrin.h> /* __cpuid intrinsic */
+#endif /* NACL_WINDOWS  */
+
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+
+#include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_io.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
+
 
 /*
  * TODO(bradchen): consolidate to use one debug print mechanism.
@@ -276,18 +282,7 @@ static void asm_CPUID(uint32_t op, volatile uint32_t reg[4]) {
                    : "cc");
 #endif
 #if NACL_WINDOWS
-  /* There is no need to save %ebx and %esi, it's done automatically
-   * by the compiler.
-   */
-  __asm {
-    mov eax, op
-    cpuid
-    mov esi, [reg]
-    mov [esi], eax
-    mov [esi+1*4], ebx
-    mov [esi+2*4], ecx
-    mov [esi+3*4], edx
-  }
+  __cpuid((uint32_t*)reg, op);
 #endif
 }
 
