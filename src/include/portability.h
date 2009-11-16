@@ -66,7 +66,7 @@
 
 /* MSVC supports "inline" only in C++ */
 #if NACL_WINDOWS
-# define INLINE __inline
+# define INLINE __forceinline
 #else
 # if __GNUC_MINOR__ >= 2
 #  define INLINE __inline__ __attribute__((gnu_inline))
