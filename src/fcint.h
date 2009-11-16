@@ -428,8 +428,6 @@ typedef struct _FcCaseFold {
 #define fc_value_langset(v)	FcValueLangSet(v)
 #define fc_storage_type(v)	((v)->type)
 
-#define fc_alignof(type) offsetof (struct { char c; type member; }, member)
-
 #define FC_CACHE_MAGIC_MMAP	    0xFC02FC04
 #define FC_CACHE_MAGIC_ALLOC	    0xFC02FC05
 #define FC_CACHE_CONTENT_VERSION    3 /* also check FC_CACHE_VERSION */
@@ -519,9 +517,6 @@ typedef struct _FcFileTime {
 } FcFileTime;
 
 typedef struct _FcCharMap FcCharMap;
-
-/* watch out; assumes that v is void * -PL */
-#define ALIGN(v,type) ((void *)(((uintptr_t)(v) + fc_alignof(type) - 1) & ~(fc_alignof(type) - 1)))
 
 /* fcblanks.c */
 
