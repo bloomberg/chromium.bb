@@ -97,6 +97,18 @@ devtools.DebuggerAgent = function() {
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_NONE;
 
   /**
+   * Interval for polling profiler state.
+   * @type {number}
+   */
+  this.getActiveProfilerModulesInterval_ = null;
+
+  /**
+   * Whether log contents retrieval must be forced next time.
+   * @type {boolean}
+   */
+  this.forceGetLogLines_ = false;
+
+  /**
    * Profiler processor instance.
    * @type {devtools.profiler.Processor}
    */
@@ -698,7 +710,9 @@ devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
  */
 devtools.DebuggerAgent.prototype.initializeProfiling = function() {
   this.setupProfilerProcessorCallbacks();
-  RemoteDebuggerAgent.GetActiveProfilerModules();
+  this.forceGetLogLines_ = true;
+  this.getActiveProfilerModulesInterval_ = setInterval(
+        function() { RemoteDebuggerAgent.GetActiveProfilerModules(); }, 1000);
 };
 
 
@@ -712,8 +726,6 @@ devtools.DebuggerAgent.prototype.startProfiling = function(modules) {
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT) {
     // Active modules will not change, instead, a snapshot will be logged.
     RemoteDebuggerAgent.GetNextLogLines();
-  } else {
-    RemoteDebuggerAgent.GetActiveProfilerModules();
   }
 };
 
@@ -1025,19 +1037,16 @@ devtools.DebuggerAgent.prototype.didGetActiveProfilerModules_ = function(
     modules) {
   var profModules = devtools.DebuggerAgent.ProfilerModules;
   var profModuleNone = profModules.PROFILER_MODULE_NONE;
-  if (modules != profModuleNone &&
-      this.activeProfilerModules_ == profModuleNone) {
+  if (this.forceGetLogLines_ ||
+      (modules != profModuleNone &&
+      this.activeProfilerModules_ == profModuleNone)) {
+    this.forceGetLogLines_ = false;
     // Start to query log data.
     RemoteDebuggerAgent.GetNextLogLines();
   }
   this.activeProfilerModules_ = modules;
   // Update buttons.
   WebInspector.setRecordingProfile(modules & profModules.PROFILER_MODULE_CPU);
-  if (modules != profModuleNone) {
-    // Monitor profiler state. It can stop itself on buffer fill-up.
-    setTimeout(
-        function() { RemoteDebuggerAgent.GetActiveProfilerModules(); }, 1000);
-  }
 };
 
 
