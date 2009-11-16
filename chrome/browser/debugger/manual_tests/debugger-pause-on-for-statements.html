@@ -1,0 +1,14 @@
+<script>
+function test()
+{
+    debugger;
+}
+
+for (var i = 0; i < 1; ++i)
+    test();
+</script>
+
+<p>To test, open the DevTools (Ctrl+Shift+I) and reload the page. When the debugger breaks, select the
+(anonymous function) node in the call stack, you should see the execution line on the call to test().</p>
+<br><br>
+Also set a breakpoint on the call to test(), and reload. It should break before the test() function is called.

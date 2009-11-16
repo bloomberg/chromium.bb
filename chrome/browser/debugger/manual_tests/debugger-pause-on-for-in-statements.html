@@ -1,0 +1,16 @@
+<script>
+function test()
+{
+    debugger;
+}
+
+var object = { test: 1 };
+
+for (var property in object)
+    test();
+</script>
+
+<p>To test, open the DevTools (Ctrl+Shift+I) and reload the page. When the debugger breaks, select
+the (anonymous function) node in the call stack, you should see the execution line on the call to test().
+<br><br>
+Also set a breakpoint on the call to test(), and reload. It should break before the test() function is called.

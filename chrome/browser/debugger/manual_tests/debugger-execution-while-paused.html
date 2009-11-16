@@ -1,0 +1,17 @@
+<script>
+function stepOne()
+{
+    console.log(1);
+}
+
+function stepTwo()
+{
+    alert("Test failed. The second button event still fired.");
+}
+</script>
+
+<p>To test, open the DevTools (Ctrl+Shift+I) and reload the page. Set a break point inside the stepOne() function.
+Now click the Step One button in the page. The breakpoint should be hit. While paused at the breakpoint
+click on the Step Two button. You should not see an alert dialog. Continue script.</p>
+<button onclick="stepOne()">Step One</button><br><br>
+<button onclick="stepTwo()">Step Two</button>

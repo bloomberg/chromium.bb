@@ -1,0 +1,79 @@
+<p>Test for watched expression</p>
+
+<p>To begin test, open DevTools, go the Scripts Panel 
+and then click this link: <a href="javascript:runTest()">[begin test]</a>.
+
+<p>Perform the following steps, and note the expected results:
+    
+<ol>
+    
+<li><p>After clicking the link above, you should now be paused in the body of 
+the test method, thanks to the <code>debugger</code> statement.
+
+<li><p>Add the following expressions to the "Watch Expressions" section of the
+Scripts panel sidebar pane: "<code>this</code>", "<code>a</code>", 
+"<code>b</code>", "<code>c</code>" and "<code>d</code>". Do <b>NOT</b> enter the quotes.
+
+<li><p>The values of the expressions as shown in the window should be 
+<code>Object</code> for <code>this</code>, <code>undefined</code> for
+the <code>a</code>, <code>b</code>, and <code>c</code> variables, and a 
+value of <code>ReferenceError: d is not defined</code>
+for the <code>d</code> variable.
+
+<li><p>Note that the value for <code>d</code> should not change for the life of 
+the test, as the variable <code>d</code> is never introduced in the program.
+
+<li><p>Step through the code, and you'll see the values of <code>a</code>,
+<code>b</code>, and <code>c</code> change, as the variables are assigned.
+Also note that as the scope changes due to the function invocation, values
+will be changed to refer to their current scope.  The <code>this</code>
+expression will change when the method is invoked on the object constructed by
+the test.
+
+<li><p>Click different stack frames in the Call Stack section to ensure the
+expressions change value appropriately as the current stack frame changes.
+
+</ol>
+
+<script>
+function runTest() {
+    
+    // a nested function
+    function subFunction() {
+        debugger;
+        var a = "a in subFunction()";
+        
+        subSubFunction();
+        
+        // another nested function
+        function subSubFunction() {
+            debugger;
+            var b = "b in subSubFunction()";
+        }
+    }
+    
+    // a class
+    function aClass() {
+        this.x = "xxx";
+        this.y = "yyy";
+    }
+    
+    aClass.prototype.aMethod = function() {
+        debugger;
+        var c = "c in aMethod()";
+    }
+    
+    // main logic
+    debugger;
+    
+    var a = "a in runTest()";
+    var b = "b in runTest()";
+    var c = "c in runTest()";
+    
+    subFunction();
+    
+    var object = new aClass();
+    object.aMethod();
+    
+}
+</script>

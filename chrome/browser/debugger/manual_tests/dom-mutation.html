@@ -1,0 +1,32 @@
+<script>
+function test1() {
+    document.getElementById("test").src = "resources/mutate-frame.html";
+}
+
+function test2() {
+    document.getElementById("test").src = "resources/mutate-frame-2.html";
+}
+
+var count = 1;
+function run() {
+    var container = document.getElementById("test2");
+    var div = document.createElement("div");
+    div.textContent = "Testing " + (count++);
+    container.appendChild(div);
+    if (count > 10)
+        container.removeChild(container.firstChild);
+}
+
+setInterval(run, 1000);
+</script>
+<p>To begin test, open DevTools, Elements Panel and watch the DOM change to match the page.
+Clicking the buttons will navigate the subframe, and the all the subframe child nodes should change.
+Expand DOM nodes in the Elements Panel to see new nodes appearing in the list live.</p>
+<div style="clear: both">
+<button onclick="test1()">Test Frame 1</button>
+<button onclick="test2()">Test Frame 2</button>
+</div>
+<div style="float: left">
+<iframe id="test" src="resources/mutate-frame.html" width="200" height="300"></iframe>
+</div>
+<div style="float: left; margin-left: 10px;" id="test2"></div>
