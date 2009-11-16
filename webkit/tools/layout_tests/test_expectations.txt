@@ -3034,9 +3034,7 @@ BUG27418 MAC DEBUG : LayoutTests/transitions/shorthand-border-transitions.html =
 // this exposes a bunch of minor differences in our URL parsing/editing implementation,
 // as well as somethings that might be legitimate bugs.
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-host.html = TEXT
-BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
-BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-search.html = TEXT
 
 // New tests and regressions related to WebKit r50760 (appeared in WebKit merge 50756:50820).
 BUG27551 WIN DEBUG : LayoutTests/fast/css/getComputedStyle/computed-style-without-renderer.html = TEXT CRASH
