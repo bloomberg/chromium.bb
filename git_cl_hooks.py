@@ -7,9 +7,8 @@ import re
 import subprocess
 import sys
 
-# Imported from depot_tools.
-import gclient_scm
 import presubmit_support
+import scm
 
 def Backquote(cmd, cwd=None):
   """Like running `cmd` in a shell script."""
@@ -35,8 +34,8 @@ class ChangeOptions:
       raise Exception("Could not parse log message: %s" % log)
     name = m.group(1)
     description = m.group(2)
-    files = gclient_scm.CaptureGitStatus([root], upstream_branch)
-    issue = Backquote(['git', 'cl', 'status', '--field=id'])
+    files = scm.GIT.CaptureStatus([root], upstream_branch)
+    issue = Backquote(['cl', 'status', '--field=id'])
     patchset = None
     self.change = presubmit_support.GitChange(name, description, root, files,
                                               issue, patchset)

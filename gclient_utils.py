@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""Generic utils."""
+
 import errno
 import os
 import re
@@ -21,8 +23,6 @@ import sys
 import time
 import xml.dom.minidom
 import xml.parsers.expat
-
-## Generic utils
 
 
 def SplitUrlRevision(url):
@@ -76,9 +76,9 @@ class PrintableObject(object):
     return output
 
 
-def FileRead(filename):
+def FileRead(filename, mode='rU'):
   content = None
-  f = open(filename, "rU")
+  f = open(filename, mode)
   try:
     content = f.read()
   finally:
@@ -86,8 +86,8 @@ def FileRead(filename):
   return content
 
 
-def FileWrite(filename, content):
-  f = open(filename, "w")
+def FileWrite(filename, content, mode='w'):
+  f = open(filename, mode)
   try:
     f.write(content)
   finally:
@@ -201,9 +201,9 @@ def SubprocessCallAndFilter(command,
   only if we actually need to print something else as well, so you can
   get the context of the output. If print_messages is false and print_stdout
   is false, no output at all is generated.
-  
-  Also, if print_stdout is true, the command's stdout is also forwarded 
-  to stdout. 
+
+  Also, if print_stdout is true, the command's stdout is also forwarded
+  to stdout.
 
   If a filter function is specified, it is expected to take a single
   string argument, and it will be called with each line of the
@@ -223,7 +223,7 @@ def SubprocessCallAndFilter(command,
   # executable, but shell=True makes subprocess on Linux fail when it's called
   # with a list because it only tries to execute the first item in the list.
   kid = subprocess.Popen(command, bufsize=0, cwd=in_directory,
-      shell=(sys.platform == 'win32'), stdout=subprocess.PIPE, 
+      shell=(sys.platform == 'win32'), stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT)
 
   # Also, we need to forward stdout to prevent weird re-ordering of output.
@@ -238,7 +238,7 @@ def SubprocessCallAndFilter(command,
         if not print_messages:
           print("\n________ running \'%s\' in \'%s\'"
               % (' '.join(command), in_directory))
-          print_messages = True 
+          print_messages = True
         sys.stdout.write(in_byte)
       if in_byte != "\n":
         in_line += in_byte

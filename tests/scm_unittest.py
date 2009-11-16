@@ -5,9 +5,12 @@
 
 """Unit tests for scm.py."""
 
+import shutil
+import tempfile
+
 from gclient_test import BaseTestCase
 import scm
-from super_mox import mox
+from super_mox import mox, SuperMoxBaseTestBase
 
 
 class BaseSCMTestCase(BaseTestCase):
@@ -21,17 +24,14 @@ class RootTestCase(BaseSCMTestCase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'CaptureGit', 'CaptureGitStatus', 'GIT_COMMAND',
-        'CaptureSVN', 'CaptureSVNHeadRevision', 'CaptureSVNInfo',
-        'CaptureSVNStatus', 'RunSVN', 'RunSVNAndFilterOutput',
-        'RunSVNAndGetFileList', 'SVN_COMMAND',
-        'gclient_utils', 'os', 're', 'subprocess', 'sys', 'xml',
+        'GIT', 'SVN',
+        'gclient_utils', 'os', 're', 'subprocess', 'sys', 'tempfile', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm, members)
 
 
-class GitWrapperTestCase(BaseSCMTestCase):
+class GitWrapperTestCase(SuperMoxBaseTestBase):
   sample_git_import = """blob
 mark :1
 data 6
@@ -80,30 +80,44 @@ from :3
 
   def CreateGitRepo(self, git_import, path):
     try:
-      subprocess.Popen(['git', 'init'], stdout=subprocess.PIPE,
-                       stderr=subprocess.STDOUT, cwd=path).communicate()
-    except WindowsError:
+      scm.subprocess.Popen(['git', 'init'],
+                           stdout=scm.subprocess.PIPE,
+                           stderr=scm.subprocess.STDOUT,
+                           cwd=path).communicate()
+    except OSError:
       # git is not available, skip this test.
       return False
-    subprocess.Popen(['git', 'fast-import'], stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                     cwd=path).communicate(input=git_import)
-    subprocess.Popen(['git', 'checkout'], stdout=subprocess.PIPE,
-                     stderr=subprocess.STDOUT, cwd=path).communicate()
+    scm.subprocess.Popen(['git', 'fast-import'],
+                         stdin=scm.subprocess.PIPE,
+                         stdout=scm.subprocess.PIPE,
+                         stderr=scm.subprocess.STDOUT,
+                         cwd=path).communicate(input=git_import)
+    scm.subprocess.Popen(['git', 'checkout'],
+                         stdout=scm.subprocess.PIPE,
+                         stderr=scm.subprocess.STDOUT,
+                         cwd=path).communicate()
     return True
 
   def setUp(self):
-    BaseSCMTestCase.setUp(self)
+    SuperMoxBaseTestBase.setUp(self)
     self.args = self.Args()
     self.url = 'git://foo'
     self.root_dir = tempfile.mkdtemp()
     self.relpath = '.'
-    self.base_path = os.path.join(self.root_dir, self.relpath)
+    self.base_path = scm.os.path.join(self.root_dir, self.relpath)
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
 
   def tearDown(self):
     shutil.rmtree(self.root_dir)
-    gclient_test.BaseTestCase.tearDown(self)
+    SuperMoxBaseTestBase.tearDown(self)
+
+  def testMembersChanged(self):
+    self.mox.ReplayAll()
+    members = [
+        'COMMAND', 'Capture', 'CaptureStatus',
+    ]
+    # If this test fails, you should add the relevant test.
+    self.compareMembers(scm.GIT, members)
 
 
 class SVNTestCase(BaseSCMTestCase):
@@ -114,7 +128,17 @@ class SVNTestCase(BaseSCMTestCase):
     self.url = self.Url()
     self.relpath = 'asf'
 
-  def testGetSVNFileInfo(self):
+  def testMembersChanged(self):
+    self.mox.ReplayAll()
+    members = [
+        'COMMAND', 'Capture', 'CaptureHeadRevision', 'CaptureInfo',
+        'CaptureStatus', 'DiffItem', 'GetFileProperty', 'IsMoved', 'Run',
+        'RunAndFilterOutput', 'RunAndGetFileList',
+    ]
+    # If this test fails, you should add the relevant test.
+    self.compareMembers(scm.SVN, members)
+
+  def testGetFileInfo(self):
     xml_text = r"""<?xml version="1.0"?>
 <info>
 <entry kind="file" path="%s" revision="14628">
@@ -130,8 +154,8 @@ class SVNTestCase(BaseSCMTestCase):
 </entry>
 </info>
 """ % self.url
-    self.mox.StubOutWithMock(scm, 'CaptureSVN')
-    scm.CaptureSVN(['info', '--xml', self.url], '.', True).AndReturn(xml_text)
+    self.mox.StubOutWithMock(scm.SVN, 'Capture')
+    scm.SVN.Capture(['info', '--xml', self.url], '.', True).AndReturn(xml_text)
     expected = {
       'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
       'UUID': None,
@@ -145,10 +169,10 @@ class SVNTestCase(BaseSCMTestCase):
       'Node Kind': 'file',
     }
     self.mox.ReplayAll()
-    file_info = scm.CaptureSVNInfo(self.url, '.', True)
+    file_info = scm.SVN.CaptureInfo(self.url, '.', True)
     self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
 
-  def testCaptureSvnInfo(self):
+  def testCaptureInfo(self):
     xml_text = """<?xml version="1.0"?>
 <info>
 <entry
@@ -172,10 +196,10 @@ class SVNTestCase(BaseSCMTestCase):
 </entry>
 </info>
 """ % (self.url, self.root_dir)
-    self.mox.StubOutWithMock(scm, 'CaptureSVN')
-    scm.CaptureSVN(['info', '--xml', self.url], '.', True).AndReturn(xml_text)
+    self.mox.StubOutWithMock(scm.SVN, 'Capture')
+    scm.SVN.Capture(['info', '--xml', self.url], '.', True).AndReturn(xml_text)
     self.mox.ReplayAll()
-    file_info = scm.CaptureSVNInfo(self.url, '.', True)
+    file_info = scm.SVN.CaptureInfo(self.url, '.', True)
     expected = {
       'URL': self.url,
       'UUID': '7b9385f5-0452-0410-af26-ad4892b7a1fb',
@@ -185,11 +209,11 @@ class SVNTestCase(BaseSCMTestCase):
       'Copied From URL': None,
       'Copied From Rev': None,
       'Path': '.',
-      'Node Kind': 'dir',
+      'Node Kind': 'directory',
     }
     self.assertEqual(file_info, expected)
 
-  def testCaptureSVNStatus(self):
+  def testCaptureStatus(self):
     text =r"""<?xml version="1.0"?>
 <status>
 <target path=".">
@@ -236,7 +260,7 @@ class SVNTestCase(BaseSCMTestCase):
     proc.communicate().AndReturn((text, 0))
 
     self.mox.ReplayAll()
-    info = scm.CaptureSVNStatus('.')
+    info = scm.SVN.CaptureStatus('.')
     expected = [
       ('?      ', 'unversionned_file.txt'),
       ('M      ', 'build\\internal\\essential.vsprops'),
@@ -246,14 +270,14 @@ class SVNTestCase(BaseSCMTestCase):
     ]
     self.assertEquals(sorted(info), sorted(expected))
 
-  def testRunSVN(self):
+  def testRun(self):
     param2 = 'bleh'
     scm.gclient_utils.SubprocessCall(['svn', 'foo', 'bar'],
                                      param2).AndReturn(None)
     self.mox.ReplayAll()
-    scm.RunSVN(['foo', 'bar'], param2)
+    scm.SVN.Run(['foo', 'bar'], param2)
 
-  def testCaptureSVNStatusEmpty(self):
+  def testCaptureStatusEmpty(self):
     text = r"""<?xml version="1.0"?>
     <status>
     <target
@@ -268,7 +292,7 @@ class SVNTestCase(BaseSCMTestCase):
                          stdout=scm.subprocess.PIPE).AndReturn(proc)
     proc.communicate().AndReturn((text, 0))
     self.mox.ReplayAll()
-    info = scm.CaptureSVNStatus(None)
+    info = scm.SVN.CaptureStatus(None)
     self.assertEquals(info, [])
 
 

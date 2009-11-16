@@ -146,7 +146,7 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
   print ""
 
   # Make sure these files are unmodified with svn status.
-  status = gclient_scm.CaptureSVNStatus(files)
+  status = gclient_scm.scm.SVN.CaptureStatus(files)
   if status:
     if force:
       # TODO(maruel): Use the tool to correctly revert '?' files.
