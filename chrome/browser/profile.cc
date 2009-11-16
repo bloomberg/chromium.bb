@@ -1318,11 +1318,12 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
   if (!force && spellcheck_host_.get())
     return;
 
+  spellcheck_host_ready_ = false;
+
   bool notify = false;
   if (spellcheck_host_.get()) {
     spellcheck_host_->UnsetObserver();
     spellcheck_host_ = NULL;
-    spellcheck_host_ready_ = false;
     notify = true;
   }
 
@@ -1332,6 +1333,7 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
     spellcheck_host_ = new SpellCheckHost(this,
         WideToASCII(prefs->GetString(prefs::kSpellCheckDictionary)),
         GetRequestContext());
+    spellcheck_host_->Initialize();
   } else if (notify) {
     // The spellchecker has been disabled.
     SpellCheckHostInitialized();

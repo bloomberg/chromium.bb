@@ -144,14 +144,16 @@ SpellCheckHost::SpellCheckHost(Observer* observer,
   PathService::Get(chrome::DIR_USER_DATA, &personal_file_directory);
   custom_dictionary_file_ =
       personal_file_directory.Append(chrome::kCustomDictionaryFileName);
-
-  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &SpellCheckHost::Initialize));
 }
 
 SpellCheckHost::~SpellCheckHost() {
   if (fd_.fd != -1)
     close(fd_.fd);
+}
+
+void SpellCheckHost::Initialize() {
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &SpellCheckHost::InitializeInternal));
 }
 
 void SpellCheckHost::UnsetObserver() {
@@ -172,7 +174,7 @@ void SpellCheckHost::AddWord(const std::string& word) {
       Source<SpellCheckHost>(this), NotificationService::NoDetails());
 }
 
-void SpellCheckHost::Initialize() {
+void SpellCheckHost::InitializeInternal() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   if (!observer_)

@@ -22,16 +22,6 @@
 #include "net/base/net_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX) && __x86_64__
-#define MAYBE_SingleTabTest DISABLED_SingleTabTest
-#define MAYBE_FiveTabTest DISABLED_FiveTabTest
-#define MAYBE_TwelveTabTest DISABLED_TwelveTabTest
-#else
-#define MAYBE_SingleTabTest SingleTabTest
-#define MAYBE_FiveTabTest FiveTabTest
-#define MAYBE_TwelveTabTest TwelveTabTest
-#endif
-
 namespace {
 
 static const FilePath::CharType kTempDirName[] =
@@ -643,15 +633,15 @@ std::string MembusterMemoryTest::source_urls_[] = {
 size_t MembusterMemoryTest::urls_length_ =
     arraysize(MembusterMemoryTest::source_urls_);
 
-TEST_F(GeneralMixMemoryTest, MAYBE_SingleTabTest) {
+TEST_F(GeneralMixMemoryTest, SingleTabTest) {
   RunTest("1t", 1);
 }
 
-TEST_F(GeneralMixMemoryTest, MAYBE_FiveTabTest) {
+TEST_F(GeneralMixMemoryTest, FiveTabTest) {
   RunTest("5t", 5);
 }
 
-TEST_F(GeneralMixMemoryTest, MAYBE_TwelveTabTest) {
+TEST_F(GeneralMixMemoryTest, TwelveTabTest) {
   RunTest("12t", 12);
 }
 

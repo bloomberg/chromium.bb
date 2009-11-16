@@ -28,6 +28,8 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
                  const std::string& language,
                  URLRequestContextGetter* request_context_getter);
 
+  void Initialize();
+
   // Clear |observer_|. Used to prevent calling back to a deleted object.
   void UnsetObserver();
 
@@ -52,7 +54,7 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
 
   // Load and parse the custom words dictionary and open the bdic file.
   // Executed on the file thread.
-  void Initialize();
+  void InitializeInternal();
 
   // Inform |observer_| that initialization has finished.
   void InformObserverOfInitialization();
