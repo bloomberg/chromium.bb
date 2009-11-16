@@ -58,7 +58,6 @@
 #include "webkit/database/database_tracker.h"
 
 #if defined(OS_LINUX)
-#include "net/ocsp/nss_ocsp.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
 
@@ -776,14 +775,8 @@ ProfileImpl::~ProfileImpl() {
 #endif
   DeleteSpellCheckerImpl(false);
 
-  if (default_request_context_ == request_context_) {
-#if defined(OS_LINUX)
-    // We use default_request_context_ for OCSP.
-    // Release URLRequestContext used in OCSP handlers.
-    net::SetURLRequestContextForOCSP(NULL);
-#endif
+  if (default_request_context_ == request_context_)
     default_request_context_ = NULL;
-  }
 
   CleanupRequestContext(request_context_);
   CleanupRequestContext(media_request_context_);

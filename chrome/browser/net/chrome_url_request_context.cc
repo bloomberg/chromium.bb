@@ -646,6 +646,13 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
   if (appcache_service_.get() && appcache_service_->request_context() == this)
     appcache_service_->set_request_context(NULL);
 
+#if defined(OS_LINUX)
+  if (this == net::GetURLRequestContextForOCSP()) {
+    // We are releasing the URLRequestContext used by OCSP handlers.
+    net::SetURLRequestContextForOCSP(NULL);
+  }
+#endif
+
   NotificationService::current()->Notify(
       NotificationType::URL_REQUEST_CONTEXT_RELEASED,
       Source<URLRequestContext>(this),
