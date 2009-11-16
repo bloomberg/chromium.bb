@@ -25,7 +25,7 @@
 #include <ctype.h>
 
 #define ENDIAN_TEST 0x12345678
-#define MACHINE_SIGNATURE_SIZE (9*21 + 1)
+#define MACHINE_SIGNATURE_SIZE (9*22 + 1)
 
 static char *
 FcCacheMachineSignature (void)
@@ -36,8 +36,9 @@ FcCacheMachineSignature (void)
 
     sprintf (buf, "%2x%2x%2x%2x_"
 	     "%08x_%08x_%08x_%08x_%08x_%08x_%08x_%08x_%08x_%08x_%08x_%08x_"
-	     "%08x_%08x_%08x_%08x_%08x_%08x_%08x_%08x",
+	     "%08x_%08x_%08x_%08x_%08x_%08x_%08x_%08x_%08x",
 	     m[0], m[1], m[2], m[3],
+	     (unsigned int)sizeof (FcAlign),
 	     (unsigned int)sizeof (char),
 	     (unsigned int)sizeof (char *),
 	     (unsigned int)sizeof (int),
