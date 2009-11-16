@@ -67,7 +67,7 @@ typedef int		FcBool;
  * it means multiple copies of the font information.
  */
 
-#define FC_CACHE_VERSION    "2"
+#define FC_CACHE_VERSION    "3"
 
 #define FcTrue		1
 #define FcFalse		0

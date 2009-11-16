@@ -38,12 +38,38 @@ typedef struct {
 #include "../fc-lang/fclang.h"
 
 struct _FcLangSet {
-    FcChar32	map[NUM_LANG_SET_MAP];
     FcStrSet	*extra;
+    int         map_size;
+    FcChar32	map[NUM_LANG_SET_MAP];
 };
 
-#define FcLangSetBitSet(ls, id)	((ls)->map[(fcLangCharSetIndices[id])>>5] |= ((FcChar32) 1 << ((fcLangCharSetIndices[id]) & 0x1f)))
-#define FcLangSetBitGet(ls, id) (((ls)->map[(fcLangCharSetIndices[id])>>5] >> ((fcLangCharSetIndices[id]) & 0x1f)) & 1)
+static void
+FcLangSetBitSet (FcLangSet    *ls,
+		 unsigned int  id)
+{
+  int bucket;
+
+  id = fcLangCharSetIndices[id];
+  bucket = id >> 5;
+  if (bucket >= ls->map_size)
+    return; /* shouldn't happen really */
+
+  ls->map[bucket] |= ((FcChar32) 1 << (id & 0x1f));
+}
+
+static FcBool
+FcLangSetBitGet (const FcLangSet *ls,
+		 unsigned int     id)
+{
+  int bucket;
+
+  id = fcLangCharSetIndices[id];
+  bucket = id >> 5;
+  if (bucket >= ls->map_size)
+    return FcFalse;
+
+  return ((ls->map[bucket] >> (id & 0x1f)) & 1) ? FcTrue : FcFalse;
+}
 
 FcLangSet *
 FcFreeTypeLangSet (const FcCharSet  *charset, 
@@ -210,6 +236,7 @@ FcLangGetCharSet (const FcChar8 *lang)
 	case FcLangDifferentTerritory:
 	    if (country == -1)
 		country = i;
+	case FcLangDifferentLang:
 	default:
 	    break;
 	}
@@ -245,6 +272,7 @@ FcLangSetCreate (void)
 	return 0;
     FcMemAlloc (FC_MEM_LANGSET, sizeof (FcLangSet));
     memset (ls->map, '\0', sizeof (ls->map));
+    ls->map_size = NUM_LANG_SET_MAP;
     ls->extra = 0;
     return ls;
 }
@@ -266,7 +294,8 @@ FcLangSetCopy (const FcLangSet *ls)
     new = FcLangSetCreate ();
     if (!new)
 	goto bail0;
-    memcpy (new->map, ls->map, sizeof (new->map));
+    memset (new->map, '\0', sizeof (new->map));
+    memcpy (new->map, ls->map, FC_MIN (sizeof (new->map), ls->map_size * sizeof (ls->map[0])));
     if (ls->extra)
     {
 	FcStrList	*list;
@@ -442,15 +471,17 @@ FcLangSetCompareStrSet (const FcLangSet *ls, FcStrSet *set)
 FcLangResult
 FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb)
 {
-    int		    i, j;
+    int		    i, j, count;
     FcLangResult    best, r;
 
-    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+    count = FC_MIN (lsa->map_size, lsb->map_size);
+    count = FC_MIN (NUM_LANG_SET_MAP, count);
+    for (i = 0; i < count; i++)
 	if (lsa->map[i] & lsb->map[i])
 	    return FcLangEqual;
     best = FcLangDifferentLang;
     for (j = 0; j < NUM_COUNTRY_SET; j++)
-	for (i = 0; i < NUM_LANG_SET_MAP; i++)
+	for (i = 0; i < count; i++)
 	    if ((lsa->map[i] & fcLangCountrySets[j][i]) &&
 		(lsb->map[i] & fcLangCountrySets[j][i]))
 	    {
@@ -508,7 +539,7 @@ FcLangSetHash (const FcLangSet *ls)
     FcChar32	h = 0;
     int		i;
 
-    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+    for (i = 0; i < ls->map_size; i++)
 	h ^= ls->map[i];
     if (ls->extra)
 	h ^= ls->extra->num;
@@ -518,7 +549,7 @@ FcLangSetHash (const FcLangSet *ls)
 FcLangSet *
 FcNameParseLangSet (const FcChar8 *string)
 {
-    FcChar8	    lang[32],c;
+    FcChar8	    lang[32], c = 0;
     int i;
     FcLangSet	    *ls;
 
@@ -551,11 +582,12 @@ bail0:
 FcBool
 FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls)
 {
-    int		i, bit;
+    int		i, bit, count;
     FcChar32	bits;
     FcBool	first = FcTrue;
 
-    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+    count = FC_MIN (ls->map_size, NUM_LANG_SET_MAP);
+    for (i = 0; i < count; i++)
     {
 	if ((bits = ls->map[i]))
 	{
@@ -602,9 +634,11 @@ FcNameUnparseLangSet (FcStrBuf *buf, const FcLangSet *ls)
 FcBool
 FcLangSetEqual (const FcLangSet *lsa, const FcLangSet *lsb)
 {
-    int	    i;
+    int	    i, count;
 
-    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+    count = FC_MIN (lsa->map_size, lsb->map_size);
+    count = FC_MIN (NUM_LANG_SET_MAP, count);
+    for (i = 0; i < count; i++)
     {
 	if (lsa->map[i] != lsb->map[i])
 	    return FcFalse;
@@ -672,7 +706,7 @@ FcLangSetContainsLang (const FcLangSet *ls, const FcChar8 *lang)
 FcBool
 FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb)
 {
-    int		    i, j;
+    int		    i, j, count;
     FcChar32	    missing;
 
     if (FcDebug() & FC_DBG_MATCHV)
@@ -684,7 +718,9 @@ FcLangSetContains (const FcLangSet *lsa, const FcLangSet *lsb)
     /*
      * check bitmaps for missing language support
      */
-    for (i = 0; i < NUM_LANG_SET_MAP; i++)
+    count = FC_MIN (lsa->map_size, lsb->map_size);
+    count = FC_MIN (NUM_LANG_SET_MAP, count);
+    for (i = 0; i < count; i++)
     {
 	missing = lsb->map[i] & ~lsa->map[i];
 	if (missing)
@@ -742,6 +778,7 @@ FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l)
     if (!l_serialize)
 	return NULL;
     *l_serialize = *l;
+    l_serialize->extra = NULL; /* We don't serialize ls->extra */
     return l_serialize;
 }
 
