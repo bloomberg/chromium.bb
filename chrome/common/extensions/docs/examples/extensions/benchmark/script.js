@@ -10,8 +10,14 @@ var benchmarkExtensionPort = chrome.extension.connect();
 var benchmarkExtensionUrl = window.location.toString();
 
 function sendTimesToExtension() {
+  if (window.parent != window) {
+    return;
+  }
+
   var times = window.chrome.loadTimes();
 
+  // If the load is not finished yet, schedule a timer to check again in a
+  // little bit.
   if (times.finishLoadTime != 0) {
     benchmarkExtensionPort.postMessage({message: "load", url: benchmarkExtensionUrl, values: times});
   } else {
@@ -19,11 +25,6 @@ function sendTimesToExtension() {
   }
 }
 
-function loadComplete() {
-  // Only trigger for top-level frames (e.g. the one we benchmarked)
-  if (window.parent == window) {
-    sendTimesToExtension();
-  }
-}
-
-window.addEventListener("load", loadComplete);
+// We can't use the onload event because this script runs at document idle,
+// which may run after the onload has completed.
+sendTimesToExtension();
