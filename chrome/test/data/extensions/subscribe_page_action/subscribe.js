@@ -41,7 +41,8 @@ var storageEnabled = window.localStorage != null;
 // Navigates to the reader of the user's choice (for subscribing to the feed).
 function navigate() {
   var select = document.getElementById('readerDropdown');
-  var url = feedReaderList[select.selectedIndex].url.replace("%s", feedUrl);
+  var url =
+      feedReaderList[select.selectedIndex].url.replace("%s", escape(feedUrl));
   document.location = url;
 }
 
