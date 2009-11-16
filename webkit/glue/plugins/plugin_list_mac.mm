@@ -85,7 +85,6 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   const char* blacklisted_plugin_mimes[] = {
     "application/x-director",             // Crashes during initialization.
     "application/x-googlegears",          // Safari-specific.
-    "application/x-vnd.movenetworks.qm",  // Crashes during initialization.
     "application/vnd.o3d.auto",           // Doesn't render, and having it
                                           // detected can prevent fallbacks.
   };
@@ -102,6 +101,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     "application/googletalk",
     "application/x-picasa-detect",
     "application/x-shockwave-flash",
+    "application/x-silverlight",
     "application/x-webkit-test-netscape",
   };
 
