@@ -2995,10 +2995,6 @@ BUG27044 : LayoutTests/accessibility/aria-tab-roles.html = TEXT
 BUG27044 : LayoutTests/accessibility/aria-combobox.html = TEXT
 
 // WebKit 50603:50667
-BUG27164 WIN DEBUG : LayoutTests/plugins/document-open.html = TIMEOUT CRASH
-BUG27164 RELEASE : LayoutTests/plugins/document-open.html = TIMEOUT
-BUG27164 LINUX MAC DEBUG : LayoutTests/plugins/document-open.html = TIMEOUT
-BUG27164 : LayoutTests/plugins/window-open.html = TIMEOUT
 BUG_LEVIN WIN LINUX : LayoutTests/fast/block/positioning/relative-positioned-inline-container.html = IMAGE+TEXT
 BUG_LEVIN WIN DEBUG : LayoutTests/svg/custom/gradient-stop-style-change.svg = TEXT PASS
 
@@ -3081,9 +3077,6 @@ BUG27555 WIN LINUX : LayoutTests/fast/canvas/canvas-shadow.html = TEXT
 
 // hbono's new test.
 BUG27679 WIN LINUX MAC : LayoutTests/fast/events/ime-composition-events-001.html = TEXT
-
-// Failure from merge 50947:50972
-BUG27683 : LayoutTests/svg/custom/viewport-update2.svg = IMAGE+TEXT
 
 // Failures from merge 50972:51042
 BUGYAAR : LayoutTests/editing/selection/4960116.html = IMAGE
