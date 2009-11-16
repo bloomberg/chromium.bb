@@ -363,7 +363,8 @@ class SVN(object):
       empty string is also returned.
     """
     output = SVN.Run(["propget", property_name, file], None)
-    if (output.startswith("svn: ") and
+    if (output and
+        output.startswith("svn: ") and
         output.endswith("is not under version control")):
       return ""
     else:

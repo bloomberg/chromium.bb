@@ -151,7 +151,7 @@ class SVN(SCM):
       os.chdir(root)
 
     # Directories will return None so filter them out.
-    diff = filter(None, [scm.SVN.Diff(f) for f in files])
+    diff = filter(None, [scm.SVN.DiffItem(f) for f in files])
     os.chdir(previous_cwd)
     return "".join(diff)
 
