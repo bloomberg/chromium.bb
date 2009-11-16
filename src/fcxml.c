@@ -134,18 +134,6 @@ FcExprCreateBool (FcConfig *config, FcBool b)
 }
 
 static FcExpr *
-FcExprCreateNil (FcConfig *config)
-{
-    FcExpr *e = FcConfigAllocExpr (config);
-    if (e)
-    {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
-	e->op = FcOpNil;
-    }
-    return e;
-}
-
-static FcExpr *
 FcExprCreateField (FcConfig *config, const char *field)
 {
     FcExpr *e = FcConfigAllocExpr (config);
