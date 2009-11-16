@@ -39,7 +39,7 @@ typedef struct {
 
 struct _FcLangSet {
     FcStrSet	*extra;
-    int         map_size;
+    FcChar32    map_size;
     FcChar32	map[NUM_LANG_SET_MAP];
 };
 
