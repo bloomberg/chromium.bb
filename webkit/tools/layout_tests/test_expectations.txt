@@ -3037,7 +3037,6 @@ BUG27418 MAC DEBUG : LayoutTests/transitions/shorthand-border-transitions.html =
 // WebKit r50784 implemented URL decomposition attributes for HTMLAnchorElement, and
 // this exposes a bunch of minor differences in our URL parsing/editing implementation,
 // as well as somethings that might be legitimate bugs.
-BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-hash.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-host.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-port.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
