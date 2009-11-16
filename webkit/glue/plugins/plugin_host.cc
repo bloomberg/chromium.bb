@@ -955,8 +955,8 @@ NPError  NPN_SetValue(NPP id, NPPVariable variable, void *value) {
     // we support Carbon and Cocoa event models
     int model = reinterpret_cast<int>(value);
     switch (model) {
-      case NPNVsupportsCarbonBool:
-      case NPNVsupportsCocoaBool:
+      case NPEventModelCarbon:
+      case NPEventModelCocoa:
         plugin->set_event_model(model);
         return NPERR_NO_ERROR;
         break;
