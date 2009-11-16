@@ -79,10 +79,17 @@ function handleValidHashParameterWrapper(key, value) {
 
     case 'useWebKitCanary':
     case 'useV8Canary':
-    case 'debug':
       currentState[key] = value == 'true';
-
       return true;
+
+    case 'buildDir':
+      currentState['testType'] = 'layout-test-results';
+      if (value === 'Debug' || value == 'Release') {
+        currentState[key] = value;
+        return true;
+      } else {
+        return false;
+      }
 
     default:
       return handleValidHashParameter(key, value);
@@ -93,7 +100,7 @@ var defaultCrossDashboardStateValues = {
   testType: 'layout_test_results',
   useWebKitCanary: false,
   useV8Canary: false,
-  debug: false
+  buildDir : '',
 }
 
 // Generic utility functions.
@@ -183,11 +190,13 @@ var currentState;
 parseParameters();
 
 var builders, builderBase;
-if (currentState.debug) {
-  // In debug mode point to the results.json and expectations.json in the
+if (currentState.buildDir) {
+  // If buildDir is set, point to the results.json and expectations.json in the
   // local tree. Useful for debugging changes to the python JSON generator.
   builders = {'DUMMY_BUILDER_NAME': ''};
-  builderBase = '../../Debug/';
+  var loc = document.location.toString();
+  var offset = loc.indexOf('webkit/');
+  builderBase = loc.substr(loc, offset + 7) + currentState.buildDir + "/";
 } else {
   // Map of builderName (the name shown in the waterfall)
   // to builderPath (the path used in the builder's URL)
