@@ -199,3 +199,16 @@
 -i=FEC8                                  #0000000000000000: fe c8                                        dec %al
 -i=FECC                                  #0000000000000000: fe cc                                        dec %ah
 -i=41FEC8                                #0000000000000000: 41 fe c8                                     dec %r8b
+-i=F00FB13521C63100                      #0000000000000000: f0 0f b1 35 21 c6 31 00                      cmpxchg [%rip+0x31c621], %esi
+-i=0FB13512C63100                        #0000000000000000: 0f b1 35 12 c6 31 00                         cmpxchg [%rip+0x31c612], %esi
+-i=f0410fb130                            #0000000000000000: f0 41 0f b1 30                               cmpxchg [%r8], %esi
+-i=F00FC102                              #0000000000000000: f0 0f c1 02                                  xadd [%rdx], %eax
+-i=F00FC14318                            #0000000000000000: f0 0f c1 43 18                               xadd [%rbx+0x18], %eax
+-i=F0410FC100                            #0000000000000000: f0 41 0f c1 00                               xadd [%r8], %eax
+-i=0F05                                  #0000000000000000: 0f 05                                        syscall
+-i=E408                                  #0000000000000000: e4 08                                        in %al, 0x8; *NACL Disallows!*
+-i=66E508                                #0000000000000000: 66 e5 08                                     in %ax, 0x8; *NACL Disallows!*
+-i=E508                                  #0000000000000000: e5 08                                        in %eax, 0x8; *NACL Disallows!*
+-i=EC                                    #0000000000000000: ec                                           in %al, %dx; *NACL Disallows!*
+-i=66ED                                  #0000000000000000: 66 ed                                        in %ax, %dx; *NACL Disallows!*
+-i=ED                                    #0000000000000000: ed                                           in %eax, %dx; *NACL Disallows!*

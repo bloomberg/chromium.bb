@@ -46,6 +46,7 @@ Cmpsd
 Cmpsd_xmm
 Cmpsq
 Cmpsw
+Cmpxchg
 Cpuid
 Cqo
 Cvtsd2ss
@@ -86,6 +87,7 @@ Fsubr
 Hlt
 Idiv
 Imul
+In
 Inc
 Insb
 Insd
@@ -322,10 +324,12 @@ Stosw
 Sub
 Subsd
 Subss
+Syscall
 Test
 Ucomisd
 Ucomiss
 Wait
+Xadd
 Xchg
 Xor
 Xorpd

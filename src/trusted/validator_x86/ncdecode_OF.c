@@ -133,6 +133,10 @@ void Define0FOpcodes() {
   DefineCmovCC(0x4e, InstCmovle);
   DefineCmovCC(0x4f, InstCmovnle);
 
+  DefineOpcode(0x05, NACLi_SYSCALL, InstFlag(Opcode64Only), InstSyscall);
+  DefineOperand(RegRCX, OpFlag(OpSet) | OpFlag(OpImplicit));
+  DefineOperand(RegRIP, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+
   DefineOpcode(0x77, NACLi_MMX, 0, InstEmms);
 
   /* JMPcc */
@@ -191,6 +195,30 @@ void Define0FOpcodes() {
                InstImul);
   DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(E_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xB0, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
+               InstFlag(OpcodeLockable),
+               InstCmpxchg);
+  DefineOperand(RegAL, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xB1, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v) | InstFlag(OpcodeLockable),
+               InstCmpxchg);
+  DefineOperand(RegREAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xB1, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeLockable),
+               InstCmpxchg);
+  DefineOperand(RegRAX, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpUse));
 
   /* MOVZX */
   DefineOpcode(0xb6, NACLi_386,
@@ -277,5 +305,27 @@ void Define0FOpcodes() {
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(Ew_Operand, OpFlag(OpUse));
 
+  DefineOpcode(0xC0, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
+               InstFlag(OpcodeLockable),
+               InstXadd);
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xC1, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
+               InstFlag(OperandSize_v) | InstFlag(OpcodeLockable),
+               InstXadd);
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  DefineOpcode(0xC1, NACLi_386L,
+               InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeLockable),
+               InstXadd);
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+  DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
+
+  /* Defines C8 throught CF */
   DefineBswap();
 }

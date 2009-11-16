@@ -73,7 +73,15 @@ typedef enum {
   NACLi_INVALID,      /* not valid on any known x86 */
   NACLi_SYSTEM,       /* ring-0 instruction, not allowed in NaCl */
   NACLi_386,          /* an allowed instruction on all i386 implementations */
-  NACLi_386L,         /* subset of i386 that allows LOCK prefix */
+                      /* subset of i386 that allows LOCK prefix. NOTE:
+                       * This is only used for the 32 bit validator. The new
+                       * 64 bit validator uses "InstFlag(OpcodeLockable)"
+                       * to communicate this (which separates the CPU ID
+                       * information from whether the instruction is lockable.
+                       * Hopefully, in future releases, this enumerated type
+                       * will be removed.
+                       */
+  NACLi_386L,
   NACLi_386R,         /* subset of i386 that allow REP prefix */
   NACLi_386RE,        /* subset of i386 that allow REPE/REPZ prefixes */
   NACLi_JMP8,

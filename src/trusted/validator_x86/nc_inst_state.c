@@ -124,7 +124,6 @@ static Bool ConsumePrefixBytes(NcInstState* state) {
   uint8_t next_byte;
   int i;
   uint32_t prefix_form;
-  int lock_index = -1;
   int rex_index = -1;
   for (i = 0; i < kMaximumPrefixBytes; ++i) {
     /* Quit early if no more bytes in segment. */
@@ -150,22 +149,20 @@ static Bool ConsumePrefixBytes(NcInstState* state) {
       if (prefix_form == kPrefixREX) {
         state->rexprefix = next_byte;
         rex_index = i;
-      } else if (prefix_form == kPrefixLOCK) {
-        lock_index = i;
       }
     }
   }
   if (NACL_TARGET_SUBARCH == 64) {
     /* REX prefix must be last, unless FO exists. If FO
-     * exists, it must be after REX.
+     * exists, it must be after REX (Intel Manual).
+     *
+     * NOTE: (karl) It appears that this constraint is violated
+     * with compiled code of /bin/ld_static. According to AMD,
+     * the rex prefix must be last. Changing code to allow REX
+     * prefix to occur anywhere.
      */
     if (rex_index >= 0) {
-      if (lock_index >= 0) {
-        return ((rex_index + 1) == lock_index) &&
-          ((lock_index + 1) == state->num_prefix_bytes);
-      } else {
-        return (rex_index + 1) == state->num_prefix_bytes;
-      }
+      return (rex_index + 1) == state->num_prefix_bytes;
     }
   }
   return TRUE;

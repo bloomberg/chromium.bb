@@ -302,9 +302,9 @@ RegR15
 
 # Stack register, based on address size - ESP in 32-bits, RSP in 64-bits.
 RegRESP
-# Use AX, EAX, or RAX, based on operand size.
+# Use AL, AX, EAX, or RAX, based on operand size.
 RegREAX
-# Use DX, EDX, or RDX, based on operand size.
+# Use DL, DX, EDX, or RDX, based on operand size.
 RegREDX
 # Use EIP or RIP, based on address size - EIP in 32-bits, RIP in 64-bits.
 RegREIP
