@@ -897,13 +897,6 @@ BUG23270 WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
 BUG24206 WIN : LayoutTests/http/tests/navigation/changing-frame-hierarchy-in-onload.html = FAIL PASS
 BUG24206 LINUX MAC : LayoutTests/http/tests/navigation/changing-frame-hierarchy-in-onload.html = FAIL
 
-// This test has hover effects that change the font size. This test also
-// moves the mouse around, resulting in a layout that dances around.
-// Depending upon when the snapshot is taken we get different results.
-BUG10280 LINUX WIN : LayoutTests/fast/inline/dirtyLinesForInline.html = FAIL
-// WebKit roll 50313:50324
-BUG_ROLANDSTEINER MAC : LayoutTests/fast/inline/dirtyLinesForInline.html = TEXT
-
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
 BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
