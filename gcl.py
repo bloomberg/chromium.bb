@@ -719,9 +719,10 @@ def GenerateDiff(files, root=None):
 
   diff = []
   for filename in files:
+    # TODO(maruel): Use SVN.DiffItem().
     # Use svn info output instead of os.path.isdir because the latter fails
     # when the file is deleted.
-    if SVN.CaptureInfo(file).get('Node Kind') == 'directory':
+    if SVN.CaptureInfo(filename).get('Node Kind') == 'directory':
       continue
     # If the user specified a custom diff command in their svn config file,
     # then it'll be used when we do svn diff, which we don't want to happen
