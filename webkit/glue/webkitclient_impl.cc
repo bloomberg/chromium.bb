@@ -2,15 +2,9 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include <math.h>
-#include "config.h"
-
-#include "FrameView.h"
-#include "ScrollView.h"
-#include <wtf/Assertions.h>
-#undef LOG
-
 #include "webkit/glue/webkitclient_impl.h"
+
+#include <math.h>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -390,9 +384,7 @@ bool WebKitClientImpl::isDirectory(const WebKit::WebString& path) {
 }
 
 WebKit::WebURL WebKitClientImpl::filePathToURL(const WebKit::WebString& path) {
-  FilePath file_path(webkit_glue::WebStringToFilePathString(path));
-  GURL file_url = net::FilePathToFileURL(file_path);
-  return webkit_glue::KURLToWebURL(webkit_glue::GURLToKURL(file_url));
+  return net::FilePathToFileURL(webkit_glue::WebStringToFilePath(path));
 }
 
 }  // namespace webkit_glue
