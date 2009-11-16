@@ -39,7 +39,6 @@
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/in_memory_database.h"
 #include "chrome/browser/history/in_memory_history_backend.h"
-#include "chrome/browser/history/visit_log.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_constants.h"
@@ -55,31 +54,7 @@ using history::HistoryBackend;
 
 namespace {
 
-// The history thread is intentionally not a ChromeThread because the
-// sync integration unit tests depend on being able to create more than one
-// history thread.
 static const char* kHistoryThreadName = "Chrome_HistoryThread";
-
-class ChromeHistoryThread : public base::Thread {
- public:
-  ChromeHistoryThread() : base::Thread(kHistoryThreadName) {}
-  virtual ~ChromeHistoryThread() {
-    // We cannot rely on our base class to call Stop() since we want our
-    // CleanUp function to run.
-    Stop();
-  }
- protected:
-  virtual void CleanUp() {
-    history::ClearVisitLog();
-  }
-  virtual void Run(MessageLoop* message_loop) {
-    // Allocate VisitLog on local stack so it will be saved in crash dump.
-    history::VisitLog visit_log;
-    history::InitVisitLog(&visit_log);
-    message_loop->Run();
-    history::ClearVisitLog();
-  }
-};
 
 }  // namespace
 
@@ -127,8 +102,11 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
 // static
 const history::StarID HistoryService::kBookmarkBarID = 1;
 
+// The history thread is intentionally not a ChromeThread because the
+// sync integration unit tests depend on being able to create more than one
+// history thread.
 HistoryService::HistoryService()
-    : thread_(new ChromeHistoryThread()),
+    : thread_(new base::Thread(kHistoryThreadName)),
       profile_(NULL),
       backend_loaded_(false),
       bookmark_service_(NULL),
@@ -141,7 +119,7 @@ HistoryService::HistoryService()
 }
 
 HistoryService::HistoryService(Profile* profile)
-    : thread_(new ChromeHistoryThread()),
+    : thread_(new base::Thread(kHistoryThreadName)),
       profile_(profile),
       backend_loaded_(false),
       bookmark_service_(NULL),
