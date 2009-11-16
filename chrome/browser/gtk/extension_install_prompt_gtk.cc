@@ -56,13 +56,15 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
   // Build the dialog.
   int title_id = is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_TITLE :
                                 IDS_EXTENSION_INSTALL_PROMPT_TITLE;
+  int button_id = is_uninstall ? IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON :
+                                 IDS_EXTENSION_PROMPT_INSTALL_BUTTON;
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(title_id).c_str(),
       parent,
       GTK_DIALOG_MODAL,
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_CLOSE,
-      "Install",
+      l10n_util::GetStringUTF8(button_id).c_str(),
       GTK_RESPONSE_ACCEPT,
       NULL);
   gtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
