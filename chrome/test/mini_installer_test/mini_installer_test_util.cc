@@ -96,7 +96,7 @@ std::wstring MiniInstallerTestUtil::GetFilePath(const wchar_t* exe_name) {
 // builds, sorted on creation time. Then goes through each build folder
 // until it finds the installer file that matches the pattern argument.
 bool MiniInstallerTestUtil::GetInstaller(const wchar_t* pattern,
-    std::wstring *path, const wchar_t* channel_type) {
+    std::wstring *path, const wchar_t* channel_type, bool chrome_frame) {
   FileInfoList builds_list;
   FileInfoList exe_list;
   std::wstring chrome_diff_installer(
@@ -111,7 +111,10 @@ bool MiniInstallerTestUtil::GetInstaller(const wchar_t* pattern,
   while (builds_list_size != builds_list.rend()) {
     path->assign(mini_installer_constants::kChromeDiffInstallerLocation);
     file_util::AppendToPath(path, builds_list_size->name_);
-    file_util::AppendToPath(path, L"win");
+    if (chrome_frame)
+      file_util::AppendToPath(path, L"win_cf");
+    else
+      file_util::AppendToPath(path, L"win");
     std::wstring installer_path(path->c_str());
     file_util::AppendToPath(&installer_path, L"*.exe");
     if (!GetLatestFile(installer_path.c_str(), pattern, &exe_list)) {
@@ -198,7 +201,7 @@ bool MiniInstallerTestUtil::GetPreviousBuildNumber(const std::wstring& path,
 // build information from the filename, then computes the
 // path for previous full installer.
 bool MiniInstallerTestUtil::GetPreviousFullInstaller(
-    const std::wstring& diff_path, std::wstring *previous) {
+    const std::wstring& diff_path, std::wstring *previous, bool chrome_frame) {
   std::wstring build_no;
 
   if (!GetPreviousBuildNumber(diff_path, &build_no))
@@ -212,7 +215,10 @@ bool MiniInstallerTestUtil::GetPreviousFullInstaller(
   // Create the full installer path.
   FilePath installer = FilePath(
       mini_installer_constants::kChromeDiffInstallerLocation);
-  installer = installer.Append(build_no).Append(L"win").Append(name);
+  if (chrome_frame)
+    installer = installer.Append(build_no).Append(L"win_cf").Append(name);
+  else
+    installer = installer.Append(build_no).Append(L"win").Append(name);
   previous->assign(installer.value());
 
   return file_util::PathExists(installer);

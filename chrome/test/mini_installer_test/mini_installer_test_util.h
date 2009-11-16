@@ -52,7 +52,7 @@ class MiniInstallerTestUtil {
   // installer is full or differential. The 'channel_type' parameter decides if
   // the build is stable/dev/beta.
   static bool GetInstaller(const wchar_t* pattern, std::wstring *name,
-                           const wchar_t* channel_type);
+                           const wchar_t* channel_type, bool chrome_frame);
 
   // This method will create a command line to run apply tag.
   static bool GetCommandForTagging(std::wstring *return_command);
@@ -77,7 +77,7 @@ class MiniInstallerTestUtil {
   // parameter decides if the build is stable/dev/beta. The 'diff_file'
   // parameter will hold the latest diff installer name.
   static bool GetPreviousFullInstaller(const std::wstring& diff_file,
-      std::wstring *previous);
+      std::wstring *previous, bool chrome_frame);
 
   // This method will return standalone installer file name.
   static bool GetStandaloneInstallerFileName(FileInfoList *file_name);

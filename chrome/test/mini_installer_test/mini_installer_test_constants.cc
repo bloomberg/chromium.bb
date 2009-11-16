@@ -23,19 +23,24 @@ const wchar_t kChromeUninstallDialogName[] = L"Uninstall Chromium";
 #endif
 const wchar_t kBrowserAppName[] = L"Google - Google Chrome";
 const wchar_t kBrowserTabName[] = L"New Tab - Google Chrome";
+const wchar_t kChromeFrameAppDir[] = L"Google\\Chrome Frame\\Application\\";
+const wchar_t kChromeFrameAppName[] = L"Google Chrome Frame";
+const wchar_t kChromeFrameFullInstallerPattern[] = L"_chromeframe_installer";
+const wchar_t kChromeFrameProductName[] = L"Chrome Frame";
 const wchar_t kChromeMiniInstallerExecutable[] = L"mini_installer.exe";
 const wchar_t kChromeMetaInstallerExecutable[] = L"chrome_installer.exe";
+const wchar_t kChromeProductName[] = L"Chrome";
 const wchar_t kChromeSetupExecutable[] = L"setup.exe";
-const wchar_t kChromeUserDataDir[] = L"User Data";
 const wchar_t kChromeUserDataBackupDir[] = L"User Data Copy";
+const wchar_t kChromeUserDataDir[] = L"User Data";
 const wchar_t kDiffInstall[] = L"Diff";
 const wchar_t kDiffInstallerPattern[] = L"_from_";
 const wchar_t kFullInstallerPattern[] = L"_chrome_installer";
 const wchar_t kGoogleUpdateExecutable[] = L"GoogleUpdate.exe";
 const wchar_t kIEExecutable[] = L"iexplore.exe";
 const wchar_t kInstallerWindow[] = L"Chrome Installer";
-const wchar_t kSystemInstall[] = L"system";
 const wchar_t kStandaloneInstaller[] = L"ChromeSetupTest.exe";
+const wchar_t kSystemInstall[] = L"system";
 const wchar_t kUserInstall[] = L"user";
 const wchar_t kUntaggedInstallerPattern[] = L"ChromeStandaloneSetup_";
 
@@ -45,6 +50,8 @@ const wchar_t kStableChannelBuild[] = L"2.0.";
 const wchar_t kFullInstall[] = L"Full";
 
 
+const wchar_t kIELocation[] = L"Internet Explorer\\";
+const wchar_t kIEProcessName[] = L"IEXPLORE.EXE";
 
 // Google Chrome meta installer location.
 const wchar_t kChromeMetaInstallerExe[] =

@@ -6,6 +6,7 @@
 #include "base/scoped_ptr.h"
 #include "base/win_util.h"
 #include "chrome/installer/util/install_util.h"
+#include "chrome/installer/util/util_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,15 +24,28 @@ class MiniInstallTest : public testing::Test {
     // Whether these tests should be run regardless of our running platform.
     bool force_tests_;
 
+    // Decided if ChromeFrame tests should be run.
+    bool chrome_frame_;
+
     // Installers created in test fixture setup for convenience.
     scoped_ptr<ChromeMiniInstaller> user_inst_, sys_inst_;
 
    public:
+
     static void CleanTheSystem() {
-      ChromeMiniInstaller userinstall(kUserInstall);
-      userinstall.UnInstall();
-      ChromeMiniInstaller systeminstall(kSystemInstall);
-      systeminstall.UnInstall();
+      const CommandLine* cmd = CommandLine::ForCurrentProcess();
+      if (cmd->HasSwitch(installer_util::switches::kChromeFrame)) {
+        ChromeMiniInstaller systeminstall(kSystemInstall,
+            cmd->HasSwitch(installer_util::switches::kChromeFrame));
+        systeminstall.UnInstall();
+      } else {
+        ChromeMiniInstaller userinstall(kUserInstall,
+            cmd->HasSwitch(installer_util::switches::kChromeFrame));
+        userinstall.UnInstall();
+        ChromeMiniInstaller systeminstall(kSystemInstall,
+            cmd->HasSwitch(installer_util::switches::kChromeFrame));
+        systeminstall.UnInstall();
+      }
     }
 
     virtual void SetUp() {
@@ -40,22 +54,28 @@ class MiniInstallTest : public testing::Test {
       std::wstring build = cmd->GetSwitchValue(L"build");
       if (build.empty())
         build = L"latest";
-
       force_tests_ = cmd->HasSwitch(L"force");
-
+      chrome_frame_ = cmd->HasSwitch(installer_util::switches::kChromeFrame);
       if (win_util::GetWinVersion() < win_util::WINVERSION_VISTA ||
-          force_tests_) {
+        force_tests_) {
         CleanTheSystem();
         // Separate the test output from cleaning output
         printf("\nBEGIN test----------------------------------------\n");
 
         // Create a few differently configured installers that are used in
         // the tests, for convenience.
-        user_inst_.reset(new ChromeMiniInstaller(kUserInstall));
-        user_inst_->SetBuildUnderTest(build);
-        sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall));
-        sys_inst_->SetBuildUnderTest(build);
-
+        if (chrome_frame_) {
+          sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall,
+                                                  chrome_frame_));
+          sys_inst_->SetBuildUnderTest(build);
+        } else {
+          user_inst_.reset(new ChromeMiniInstaller(kUserInstall,
+                                                   chrome_frame_));
+          user_inst_->SetBuildUnderTest(build);
+          sys_inst_.reset(new ChromeMiniInstaller(kSystemInstall,
+                                                  chrome_frame_));
+          sys_inst_->SetBuildUnderTest(build);
+        }
       } else {
         printf("These tests don't run on this platform.\n");
         exit(0);
@@ -74,65 +94,82 @@ class MiniInstallTest : public testing::Test {
 // these tests will often be run manually, don't want to have obscure test
 // names.
 
-// Install full installer.
-TEST_F(MiniInstallTest, FullInstallerUser) {
-  user_inst_->InstallFullInstaller(false);
-}
+// Install full installer at system level.
 TEST_F(MiniInstallTest, FullInstallerSys) {
   sys_inst_->InstallFullInstaller(false);
 }
 
+// Install full installer at user level.
+TEST_F(MiniInstallTest, FullInstallerUser) {
+  if (!chrome_frame_)
+    user_inst_->InstallFullInstaller(false);
+}
 // Overinstall full installer.
 TEST_F(MiniInstallTest, FullOverPreviousFullUser) {
-  user_inst_->OverInstallOnFullInstaller(kFullInstall);
+  if (!chrome_frame_)
+    user_inst_->OverInstallOnFullInstaller(kFullInstall);
 }
 TEST_F(MiniInstallTest, FullOverPreviousFullSys) {
-  sys_inst_->OverInstallOnFullInstaller(kFullInstall);
+  if (!chrome_frame_)
+    sys_inst_->OverInstallOnFullInstaller(kFullInstall);
 }
 
 // Overinstall diff installer.
 TEST_F(MiniInstallTest, DiffOverPreviousFullUser) {
-  user_inst_->OverInstallOnFullInstaller(kDiffInstall);
+  if (!chrome_frame_)
+    user_inst_->OverInstallOnFullInstaller(kDiffInstall);
 }
+
 TEST_F(MiniInstallTest, DiffOverPreviousFullSys) {
-  sys_inst_->OverInstallOnFullInstaller(kDiffInstall);
+  if (!chrome_frame_)
+    sys_inst_->OverInstallOnFullInstaller(kDiffInstall);
 }
 
 // Repair version folder.
 TEST_F(MiniInstallTest, RepairFolderOnFullUser) {
-  user_inst_->Repair(ChromeMiniInstaller::VERSION_FOLDER);
+  if (!chrome_frame_)
+    user_inst_->Repair(ChromeMiniInstaller::VERSION_FOLDER);
 }
+
 TEST_F(MiniInstallTest, RepairFolderOnFullSys) {
-  sys_inst_->Repair(ChromeMiniInstaller::VERSION_FOLDER);
+  if (!chrome_frame_)
+    sys_inst_->Repair(ChromeMiniInstaller::VERSION_FOLDER);
 }
 
 // Repair registry.
 TEST_F(MiniInstallTest, RepairRegistryOnFullUser) {
-  user_inst_->Repair(ChromeMiniInstaller::REGISTRY);
+  if (!chrome_frame_)
+    user_inst_->Repair(ChromeMiniInstaller::REGISTRY);
 }
 TEST_F(MiniInstallTest, RepairRegistryOnFullSys) {
-  sys_inst_->Repair(ChromeMiniInstaller::REGISTRY);
+  if (!chrome_frame_)
+    sys_inst_->Repair(ChromeMiniInstaller::REGISTRY);
 }
 
 // Install standalone.
 TEST_F(MiniInstallTest, InstallStandaloneUser) {
-  user_inst_->InstallStandaloneInstaller();
+  if (!chrome_frame_)
+    user_inst_->InstallStandaloneInstaller();
 }
 
 // This test doesn't make sense. Disabling for now.
 TEST_F(MiniInstallTest, DISABLED_MiniInstallerOverChromeMetaInstallerTest) {
-  user_inst_->OverInstall();
+  if (!chrome_frame_)
+    user_inst_->OverInstall();
 }
 
 // Encountering issue 9593. Disabling temporarily.
 TEST_F(MiniInstallTest,
        DISABLED_InstallLatestStableFullInstallerOverChromeMetaInstaller) {
-  user_inst_->OverInstall();
+  if (!chrome_frame_)
+    user_inst_->OverInstall();
 }
+
 // Encountering issue 9593. Disabling temporarily.
 TEST_F(MiniInstallTest,
        DISABLED_InstallLatestDevFullInstallerOverChromeMetaInstallerTest) {
-  user_inst_->OverInstall();
+  if (!chrome_frame_)
+    user_inst_->OverInstall();
 }
 #endif
 
@@ -141,7 +178,8 @@ TEST_F(MiniInstallTest, InstallMiniInstallerSys) {
 }
 
 TEST_F(MiniInstallTest, InstallMiniInstallerUser) {
-  user_inst_->Install();
+  if (!chrome_frame_)
+    user_inst_->Install();
 }
 
 TEST_F(MiniInstallTest, MiniInstallTestValidWindowsVersion) {

@@ -17,8 +17,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Constructor.
-ChromeMiniInstaller::ChromeMiniInstaller(const std::wstring& install_type) {
-  install_type_ = install_type;
+ChromeMiniInstaller::ChromeMiniInstaller(const std::wstring& install_type,
+    bool is_chrome_frame) : is_chrome_frame_(is_chrome_frame),
+                            install_type_(install_type) {
   installer_name_ = StringPrintf(L"%ls (%ls)",
       mini_installer_constants::kChromeBuildType, install_type_.c_str());
 
@@ -39,18 +40,25 @@ void ChromeMiniInstaller::SetBuildUnderTest(const std::wstring& build) {
   else
     build_prefix = build.c_str();
 
+  std::wstring full_installer_pattern;
+  if (is_chrome_frame_)
+    full_installer_pattern =
+        mini_installer_constants::kChromeFrameFullInstallerPattern;
+  else
+    full_installer_pattern = mini_installer_constants::kFullInstallerPattern;
+
   // Do not fail here if cannot find the installer. Set the bool and allow
   // to fail in the particular test.
   has_full_installer_ = MiniInstallerTestUtil::GetInstaller(
-      mini_installer_constants::kFullInstallerPattern,
-      &full_installer_, build_prefix);
+      full_installer_pattern.c_str(),
+      &full_installer_, build_prefix, is_chrome_frame_);
   has_diff_installer_ = MiniInstallerTestUtil::GetInstaller(
       mini_installer_constants::kDiffInstallerPattern,
-      &diff_installer_, build_prefix);
+      &diff_installer_, build_prefix, is_chrome_frame_);
 
   if (has_diff_installer_) {
     has_prev_installer_ = MiniInstallerTestUtil::GetPreviousFullInstaller(
-        diff_installer_, &prev_installer_);
+        diff_installer_, &prev_installer_, is_chrome_frame_);
   }
 
   // Find the version names. The folder two-levels up from the installer
@@ -133,13 +141,7 @@ void ChromeMiniInstaller::InstallMiniInstaller(bool over_install,
   LaunchInstaller(path, exe_name.c_str());
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   ASSERT_TRUE(CheckRegistryKey(dist->GetVersionKey()));
-  printf("\nInstall Checks:\n\n");
-  if ((install_type_ == mini_installer_constants::kUserInstall) &&
-      (!over_install))
-    CloseFirstRunUIDialog(over_install);
-  PlatformThread::Sleep(800);
-  FindChromeShortcut();
-  LaunchAndCloseChrome(over_install);
+  VerifyInstall(over_install);
 }
 
 // This method tests the standalone installer by verifying the steps listed at:
@@ -233,41 +235,49 @@ void ChromeMiniInstaller::Repair(
 // Deletes App dir.
 // Closes feedback form.
 void ChromeMiniInstaller::UnInstall() {
-  printf("\n\nVerifying if Chrome is installed...\n\n");
+  std::wstring product_name;
+  if (is_chrome_frame_)
+    product_name = mini_installer_constants::kChromeFrameProductName;
+  else
+    product_name = mini_installer_constants::kChromeProductName;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   if (!CheckRegistryKey(dist->GetVersionKey())) {
-    printf("Chrome is not installed.\n");
+    printf("%ls is not installed.\n", product_name.c_str());
     return;
   }
-  printf("\n\nUninstalling Chrome...\n");
-  printf("Closing Chrome processes, if any...\n");
+  if (is_chrome_frame_)
+    MiniInstallerTestUtil::CloseProcesses(L"IEXPLORE.EXE");
   MiniInstallerTestUtil::CloseProcesses(installer_util::kChromeExe);
   std::wstring uninstall_path = GetUninstallPath();
   if (uninstall_path == L"") {
-    printf("\n Chrome install is in a weird state. Cleaning the machine...\n");
+    printf("\n %ls install is in a weird state. Cleaning the machine...\n",
+            product_name.c_str());
     CleanChromeInstall();
     return;
   }
   ASSERT_TRUE(file_util::PathExists(FilePath::FromWStringHack(uninstall_path)));
-  std::wstring uninstall_args = L"\"" + uninstall_path +
-                                L"\"" + L" --uninstall --force-uninstall";
+  std::wstring uninstall_args(L"\"");
+  uninstall_args.append(uninstall_path);
+  uninstall_args.append(L"\" --uninstall --force-uninstall");
+  if (is_chrome_frame_)
+    uninstall_args.append(L" --chrome-frame");
   if (install_type_ == mini_installer_constants::kSystemInstall)
     uninstall_args = uninstall_args + L" --system-level";
   base::LaunchApp(uninstall_args, false, false, NULL);
-  printf("Launched setup.exe. Here are the commands passed: %ls\n",
-         uninstall_args.c_str());
-  // ASSERT_TRUE(CloseUninstallWindow());
+  if (is_chrome_frame_)
+    ASSERT_TRUE(CloseUninstallWindow());
   ASSERT_TRUE(MiniInstallerTestUtil::VerifyProcessClose(
       mini_installer_constants::kChromeSetupExecutable));
-  printf("\n\nUninstall Checks:\n\n");
   ASSERT_FALSE(CheckRegistryKeyOnUninstall(dist->GetVersionKey()));
-  printf("Deleting user data folder after uninstall\n");
   DeleteUserDataFolder();
-  FindChromeShortcut();
-  MiniInstallerTestUtil::CloseProcesses(
-      mini_installer_constants::kIEExecutable);
-  ASSERT_EQ(0,
-      base::GetProcessCount(mini_installer_constants::kIEExecutable, NULL));
+  // Close IE survey window that gets launched on uninstall.
+  if (!is_chrome_frame_) {
+    FindChromeShortcut();
+    MiniInstallerTestUtil::CloseProcesses(
+        mini_installer_constants::kIEExecutable);
+    ASSERT_EQ(0,
+        base::GetProcessCount(mini_installer_constants::kIEExecutable, NULL));
+  }
 }
 
 // Will clean up the machine if Chrome install is messed up.
@@ -279,9 +289,13 @@ void ChromeMiniInstaller::CleanChromeInstall() {
 bool ChromeMiniInstaller::CloseUninstallWindow() {
   HWND hndl = NULL;
   int timer = 0;
+  std::wstring window_name;
+  if (is_chrome_frame_)
+    window_name = mini_installer_constants::kChromeFrameAppName;
+  else
+    window_name = mini_installer_constants::kChromeUninstallDialogName;
   while (hndl == NULL && timer < 5000) {
-    hndl = FindWindow(NULL,
-        mini_installer_constants::kChromeUninstallDialogName);
+    hndl = FindWindow(NULL, window_name.c_str());
     PlatformThread::Sleep(200);
     timer = timer + 200;
   }
@@ -389,17 +403,27 @@ void ChromeMiniInstaller::DeleteFolder(const wchar_t* folder_name) {
 
 // Will delete user data profile.
 void ChromeMiniInstaller::DeleteUserDataFolder() {
+  std::wstring path = GetUserDataDirPath();
+  if (file_util::PathExists(FilePath::FromWStringHack(path.c_str())))
+    ASSERT_TRUE(file_util::Delete(path.c_str(), true));
+}
+
+// Gets user data directory path
+std::wstring ChromeMiniInstaller::GetUserDataDirPath() {
   FilePath path;
   PathService::Get(base::DIR_LOCAL_APP_DATA, &path);
   std::wstring profile_path = path.ToWStringHack();
-  file_util::AppendToPath(&profile_path,
-                          mini_installer_constants::kChromeAppDir);
+  if (is_chrome_frame_) {
+    file_util::AppendToPath(&profile_path,
+        mini_installer_constants::kChromeFrameAppDir);
+  } else {
+    file_util::AppendToPath(&profile_path,
+        mini_installer_constants::kChromeAppDir);
+  }
   file_util::UpOneDirectory(&profile_path);
   file_util::AppendToPath(&profile_path,
                           mini_installer_constants::kChromeUserDataDir);
-  printf("\nDeleting this path after uninstall%ls\n", profile_path.c_str());
-  if (file_util::PathExists(FilePath::FromWStringHack(profile_path)))
-    ASSERT_TRUE(file_util::Delete(profile_path.c_str(), true));
+  return profile_path;
 }
 
 // Deletes pv key from Clients.
@@ -468,7 +492,11 @@ std::wstring ChromeMiniInstaller::GetUninstallPath() {
   if (!GetChromeVersionFromRegistry(&reg_key_value))
     return L"";
   path = GetChromeInstallDirectoryLocation();
-  file_util::AppendToPath(&path, mini_installer_constants::kChromeAppDir);
+  if (is_chrome_frame_)
+    file_util::AppendToPath(&path,
+        mini_installer_constants::kChromeFrameAppDir);
+  else
+    file_util::AppendToPath(&path, mini_installer_constants::kChromeAppDir);
   file_util::AppendToPath(&path, reg_key_value);
   file_util::AppendToPath(&path, installer_util::kInstallerDir);
   file_util::AppendToPath(&path,
@@ -484,7 +512,7 @@ std::wstring ChromeMiniInstaller::GetUninstallPath() {
 
 // Returns Chrome pv registry key value
 bool ChromeMiniInstaller::GetChromeVersionFromRegistry(
-    std::wstring* build_key_value ) {
+    std::wstring* build_key_value) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   RegKey key(GetRootRegistryKey(), dist->GetVersionKey().c_str());
   if (!key.ReadValue(L"pv", build_key_value)) {
@@ -508,7 +536,13 @@ void ChromeMiniInstaller::LaunchInstaller(const std::wstring& path,
                                           const wchar_t* process_name) {
   ASSERT_TRUE(file_util::PathExists(FilePath::FromWStringHack(path)));
   if (install_type_ == mini_installer_constants::kSystemInstall) {
-    std::wstring launch_args = L" -system-level";
+    std::wstring launch_args;
+    if (is_chrome_frame_) {
+      launch_args.append(L" --do-not-create-shortcuts");
+      launch_args.append(L" --do-not-register-for-update-launch");
+      launch_args.append(L" --chrome-frame");
+    }
+    launch_args.append(L" --system-level");
     base::LaunchApp(L"\"" + path + L"\"" + launch_args, false, false, NULL);
   } else {
     base::LaunchApp(L"\"" + path + L"\"", false, false, NULL);
@@ -541,10 +575,60 @@ void ChromeMiniInstaller::LaunchAndCloseChrome(bool over_install) {
 void ChromeMiniInstaller::VerifyChromeLaunch(bool expected_status) {
   std::wstring launch_path;
   GetChromeLaunchPath(&launch_path);
-  base::LaunchApp(L"\"" + launch_path + L"\"", false, false, NULL);
+  LaunchBrowser(launch_path, L"", installer_util::kChromeExe, expected_status);
+}
+
+// Verifies Chrome/Chrome Frame install.
+void ChromeMiniInstaller::VerifyInstall(bool over_install) {
+  if (is_chrome_frame_) {
+    VerifyChromeFrameInstall();
+  } else {
+    if ((install_type_ == mini_installer_constants::kUserInstall) &&
+        (!over_install))
+      CloseFirstRunUIDialog(over_install);
+    PlatformThread::Sleep(800);
+    FindChromeShortcut();
+    LaunchAndCloseChrome(over_install);
+  }
+}
+
+// This method will verify if ChromeFrame installed successfully. It will
+// launch IE with cf:about:version, then check if
+// chrome.exe process got spawned.
+void ChromeMiniInstaller::VerifyChromeFrameInstall() {
+  std::wstring browser_path = GetChromeInstallDirectoryLocation();
+  if (is_chrome_frame_) {
+    file_util::AppendToPath(&browser_path,
+                            mini_installer_constants::kIELocation);
+    file_util::AppendToPath(&browser_path,
+                            mini_installer_constants::kIEProcessName);
+  }
+
+  // Launch IE
+  LaunchBrowser(browser_path, L"cf:about:version",
+                mini_installer_constants::kIEProcessName,
+                true);
+
+  // Check if Chrome process got spawned.
+  MiniInstallerTestUtil::VerifyProcessLaunch(installer_util::kChromeExe, true);
+  PlatformThread::Sleep(1500);
+
+  // Verify if IExplore folder got created
+  std::wstring path = GetUserDataDirPath();
+  file_util::AppendToPath(&path, L"IEXPLORE");
+  ASSERT_TRUE(file_util::PathExists(FilePath::FromWStringHack(path.c_str())));
+}
+
+// This method will launch any requested browser.
+void ChromeMiniInstaller::LaunchBrowser(const std::wstring& launch_path,
+                                        const std::wstring& launch_args,
+                                        const std::wstring& process_name,
+                                        bool expected_status) {
+  base::LaunchApp(L"\"" + launch_path + L"\"" + L" " + launch_args,
+      false, false, NULL);
   PlatformThread::Sleep(1000);
-  MiniInstallerTestUtil::VerifyProcessLaunch(
-      installer_util::kChromeExe, expected_status);
+  MiniInstallerTestUtil::VerifyProcessLaunch(process_name.c_str(),
+                                             expected_status);
 }
 
 // This method compares the registry keys after overinstall.

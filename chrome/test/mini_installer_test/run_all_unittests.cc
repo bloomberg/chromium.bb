@@ -5,17 +5,19 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/test/test_suite.h"
+#include "chrome/installer/util/util_constants.h"
 #include "chrome/test/mini_installer_test/mini_installer_test_constants.h"
 #include "chrome_mini_installer.h"
 
 
-void BackUpProfile() {
+void BackUpProfile(bool chrome_frame) {
   if (base::GetProcessCount(L"chrome.exe", NULL) > 0) {
     printf("Chrome is currently running and cannot backup the profile."
            "Please close Chrome and run the tests again.\n");
     exit(1);
   }
-  ChromeMiniInstaller installer(mini_installer_constants::kUserInstall);
+  ChromeMiniInstaller installer(mini_installer_constants::kUserInstall,
+                                chrome_frame);
   FilePath path =
       FilePath::FromWStringHack(installer.GetChromeInstallDirectoryLocation());
   path = path.Append(mini_installer_constants::kChromeAppDir).DirName();
@@ -23,7 +25,8 @@ void BackUpProfile() {
   // Will hold User Data path that needs to be backed-up.
   path = path.Append(mini_installer_constants::kChromeUserDataDir);
   // Will hold new backup path to save the profile.
-  backup_path = path.Append(mini_installer_constants::kChromeUserDataBackupDir);
+  backup_path = backup_path.Append(
+      mini_installer_constants::kChromeUserDataBackupDir);
   // Will check if User Data profile is available.
   if (file_util::PathExists(path)) {
     // Will check if User Data is already backed up.
@@ -41,11 +44,13 @@ int main(int argc, char** argv) {
   // with cleaning the system or make a backup before continuing.
   CommandLine::Init(argc, argv);
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  TestSuite test_suite = TestSuite(argc, argv);
   if (command_line.HasSwitch("clean")) {
     printf("Current version of Chrome will be uninstalled "
            "from all levels before proceeding with tests.\n");
   } else if (command_line.HasSwitch("backup")) {
-    BackUpProfile();
+    BackUpProfile(command_line.HasSwitch(
+        installer_util::switches::kChromeFrame));
   } else {
     printf("This test needs command line arguments.\n");
     printf("Usage: %ls -{clean|backup} [-build <version>] [-force] \n",
@@ -63,5 +68,5 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  return TestSuite(argc, argv).Run();
+  return test_suite.Run();
 }
