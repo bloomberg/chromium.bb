@@ -2537,9 +2537,6 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
     return FcFalse;
 }
 
-#define FC_MIN(a,b) ((a) < (b) ? (a) : (b))
-#define FC_MAX(a,b) ((a) > (b) ? (a) : (b))
-#define FC_ABS(a)   ((a) < 0 ? -(a) : (a))
 #define APPROXIMATELY_EQUAL(x,y) (FC_ABS ((x) - (y)) <= FC_MAX (FC_ABS (x), FC_ABS (y)) / 33)
 
 static FcCharSet *

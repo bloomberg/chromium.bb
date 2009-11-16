@@ -111,6 +111,10 @@
 #define FC_BANK_FIRST 1
 #define FC_BANK_LANGS	    0xfcfcfcfc
 
+#define FC_MIN(a,b) ((a) < (b) ? (a) : (b))
+#define FC_MAX(a,b) ((a) > (b) ? (a) : (b))
+#define FC_ABS(a)   ((a) < 0 ? -(a) : (a))
+
 /* slim_internal.h */
 #if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && defined(__ELF__) && !defined(__sun)
 #define FcPrivate		__attribute__((__visibility__("hidden")))
