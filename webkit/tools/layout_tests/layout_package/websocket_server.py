@@ -45,10 +45,13 @@ class PyWebSocket(http_server.Lighttpd):
   def __init__(self, output_dir, port=_DEFAULT_WS_PORT,
                use_tls=False,
                private_key=http_server.Lighttpd._pem_file,
-               certificate=http_server.Lighttpd._pem_file):
+               certificate=http_server.Lighttpd._pem_file,
+               register_cygwin=None):
     """Args:
       output_dir: the absolute path to the layout test result directory
     """
+    http_server.Lighttpd.__init__(self, output_dir, port=port,
+                                  register_cygwin=register_cygwin)
     self._output_dir = output_dir
     self._process = None
     self._port = port
@@ -163,6 +166,9 @@ if '__main__' == __name__:
                            default='', help='TLS private key file.')
   option_parser.add_option('-c', '--certificate', dest='certificate',
                            default='', help='TLS certificate file.')
+  option_parser.add_option('--register_cygwin', action="store_true",
+                           dest="register_cygwin",
+                           help='Register Cygwin paths (on Win try bots)')
   options, args = option_parser.parse_args()
 
   if not options.port:
@@ -177,6 +183,7 @@ if '__main__' == __name__:
     kwds['private_key'] = options.private_key
   if options.certificate:
     kwds['certificate'] = options.certificate
+  kwds['register_cygwin'] = options.register_cygwin
 
   pywebsocket = PyWebSocket(tempfile.gettempdir(), **kwds)
   pywebsocket.Start()

@@ -3070,8 +3070,6 @@ BUG27551 WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
 // WebKit merge 50756:50820, possibly due to WebKit r50808/r50786 and Chromium r31715
 BUG27553 WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
 
-BUG27556 SKIP WIN LINUX : LayoutTests/websocket/tests = FAIL
-
 // WebKit merge 50840:50929
 BUG27555 : LayoutTests/accessibility/document-attributes.html = TEXT
 BUG27555 : LayoutTests/fast/forms/file-input-direction.html = TEXT
