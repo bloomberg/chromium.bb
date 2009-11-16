@@ -38,6 +38,9 @@
 #define NATIVE_CLIENT_SRC_INCLUDE_PORTABILITY_STRING_H_ 1
 
 #include <string.h>
+
+typedef char utf8char_t;
+
 #if NACL_OSX
 /* NOTE:: Mac doesn't define strnlen in the headers. */
 #if defined( __cplusplus)

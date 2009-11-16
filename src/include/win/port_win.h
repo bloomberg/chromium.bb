@@ -48,13 +48,13 @@
 #pragma warning(disable : 4127)
 
 /* TODO: limit this include to files that really need it */
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 
-// types missing on Windows
+/* types missing on Windows */
 typedef long              off_t;
-//typedef __int64 intptr_t;
-typedef unsigned int      size_t;
-typedef int               ssize_t;
 typedef unsigned int      uint32_t;
 typedef int               int32_t;
 typedef unsigned char     uint8_t;
@@ -70,6 +70,13 @@ typedef unsigned long     DWORD;
 typedef long              clock_t;
 typedef __int64           int64_t;
 typedef unsigned __int64  uint64_t;
+
+#ifdef _WIN64
+typedef int64_t           ssize_t;
+#else
+typedef int32_t           ssize_t;
+#endif /* _WIN64 */
+
 
 #if !defined(__cplusplus) || defined(__STDC_LIMIT_MACROS)
 /* only what we need so far */
@@ -89,11 +96,11 @@ typedef unsigned __int64  uint64_t;
 
 EXTERN_C_BEGIN
 
-//arguments processing
+/* arguments processing */
 int ffs(int x);
 int getopt(int argc, char *argv[], char *optstring);
-extern char *optarg;  // global argument pointer
-extern int optind;   // global argv index
+extern char *optarg;  /* global argument pointer */
+extern int optind;   /* global argv index */
 
 EXTERN_C_END
 
