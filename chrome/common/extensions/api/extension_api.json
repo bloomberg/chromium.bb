@@ -57,7 +57,7 @@
         "name": "connect",
         "type": "function",
         "unprivileged": true,
-        "description": "Attempts to connect to other listeners within the extension (listeners may be toolstrips or the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href='broken'><var>chrome.tabs.connectToTab</var></a>.",
+        "description": "Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href='broken'><var>chrome.tabs.connectToTab</var></a>.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           {
@@ -116,7 +116,7 @@
       {
         "name": "getViews",
         "type": "function",
-        "description": "Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes toolstrips, background pages, and tabs.",
+        "description": "Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes background pages and tabs.",
         "parameters": [],
         "returns": {
           "type": "array",
@@ -135,6 +135,7 @@
       },
       {
         "name": "getToolstrips",
+        "nodoc": true,
         "type": "function",
         "description": "Returns an array of the global JavaScript objects for each of the toolstrip views running inside the current extension. If windowId is specified, returns only the toolstrips attached to the specified window.",
         "parameters": [

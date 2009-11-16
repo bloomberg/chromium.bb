@@ -228,8 +228,8 @@
                         <a href="#method-getBackgroundPage">getBackgroundPage</a>
                       </li><li>
                         <a href="#method-getExtensionTabs">getExtensionTabs</a>
-                      </li><li>
-                        <a href="#method-getToolstrips">getToolstrips</a>
+                      </li><li style="display: none; ">
+                        <a href="#method-anchor">methodName</a>
                       </li><li>
                         <a href="#method-getURL">getURL</a>
                       </li><li>
@@ -427,7 +427,7 @@ For details, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Attempts to connect to other listeners within the extension (listeners may be toolstrips or the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href="broken"><var>chrome.tabs.connectToTab</var></a>.</p>
+                <p>Attempts to connect to other listeners within the extension (such as the extension's background page). This is primarily useful for content scripts connecting to their extension processes. Extensions may connect to content scripts embedded in tabs via <a href="broken"><var>chrome.tabs.connectToTab</var></a>.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -860,65 +860,27 @@ For details, see
 
               </div> <!-- /description -->
 
-            </div><div class="apiItem">
-              <a name="method-getToolstrips"></a> <!-- method-anchor -->
-              <h4>getToolstrips</h4>
+            </div><div class="apiItem" style="display: none; ">
+              <a></a> <!-- method-anchor -->
+              <h4>method name</h4>
 
-              <div class="summary"><span>array of DOMWindow</span>
+              <div class="summary"><span>void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.extension.getToolstrips</span>(<span class="optional"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>windowId</span></var></span>)</div>
+                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
+                      <var><span></span></var></span>)</div>
 
               <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Returns an array of the global JavaScript objects for each of the toolstrip views running inside the current extension. If windowId is specified, returns only the toolstrips attached to the specified window.</p>
+                <p class="todo">Undocumented.</p>
+                <p>
+                  A description from the json schema def of the function goes here.
+                </p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
-          <dt>
-            <var>windowId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
+                    </div>
                   </div>
                 </dl>
 
@@ -927,60 +889,12 @@ For details, see
                 <dl>
                   <div>
                     <div>
-          <dt>
-            <var style="display: none; ">paramName</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span>
-                          array of <span><span>
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>DOMWindow</span>
-                      </span>
-                    </span></span>
-                        </span>
-                        <span style="display: none; ">paramType</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Array of global objects</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
+                    </div>
                   </div>
                 </dl>
 
                 <!-- CALLBACK -->
-                <div style="display: none; ">
+                <div>
                   <div>
                   <h4>Callback function</h4>
                   <p>
@@ -1141,7 +1055,7 @@ For details, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes toolstrips, background pages, and tabs.</p>
+                <p>Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes background pages and tabs.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
