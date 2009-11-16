@@ -180,6 +180,7 @@ class FlipNetworkTransactionTest : public PlatformTest {
     int rv;
     std::string status_line;
     std::string response_data;
+    HttpResponseInfo response_info;
   };
 
   TransactionHelperResult TransactionHelper(const HttpRequestInfo& request,
@@ -209,6 +210,7 @@ class FlipNetworkTransactionTest : public PlatformTest {
     const HttpResponseInfo* response = trans->GetResponseInfo();
     EXPECT_TRUE(response->headers != NULL);
     out.status_line = response->headers->GetStatusLine();
+    out.response_info = *response;  // Make a copy so we can verify.
 
     rv = ReadTransaction(trans.get(), &out.response_data);
     EXPECT_EQ(OK, rv);
@@ -487,6 +489,152 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_CancelledTransaction) {
   // Flush the MessageLoop while the SessionDependencies (in particular, the
   // MockClientSocketFactory) are still alive.
   MessageLoop::current()->RunAllPending();
+}
+
+// Verify that various SynReply headers parse correctly through the
+// HTTP layer.
+TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
+  static const unsigned char syn[] = {
+    0x80, 0x01, 0x00, 0x01,                                        // header
+    0x01, 0x00, 0x00, 0x45,                                        // FIN, len
+    0x00, 0x00, 0x00, 0x01,                                        // stream id
+    0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
+    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
+    0x00, 0x03, 'G', 'E', 'T',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+                'm', '/',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  // This uses a multi-valued cookie header.
+  static const unsigned char syn_reply1[] = {
+    0x80, 0x01, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x4c,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,
+    0x00, 0x06, 'c', 'o', 'o', 'k', 'i', 'e',
+    0x00, 0x09, 'v', 'a', 'l', '1', '\0',
+                'v', 'a', 'l', '2',
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',
+    0x00, 0x03, '2', '0', '0',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  // This is the minimalist set of headers.
+  static const unsigned char syn_reply2[] = {
+    0x80, 0x01, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x39,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',
+    0x00, 0x03, '2', '0', '0',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  // Headers with a comma separated list.
+  static const unsigned char syn_reply3[] = {
+    0x80, 0x01, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x4c,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,
+    0x00, 0x06, 'c', 'o', 'o', 'k', 'i', 'e',
+    0x00, 0x09, 'v', 'a', 'l', '1', ',', 'v', 'a', 'l', '2',
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',
+    0x00, 0x03, '2', '0', '0',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  static const unsigned char body_frame[] = {
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x06,
+    'h', 'e', 'l', 'l', 'o', '!',
+  };
+  static const unsigned char fin_frame[] = {
+    0x80, 0x01, 0x00, 0x03,
+    0x00, 0x00, 0x00, 0x08,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00,
+  };
+
+  struct SynReplyTests {
+    const unsigned char* syn_reply;
+    int syn_reply_length;
+    const char* expected_headers;
+  } test_cases[] = {
+    // Test the case of a multi-valued cookie.  When the value is delimited
+    // with NUL characters, it needs to be unfolded into multiple headers.
+    { syn_reply1, sizeof(syn_reply1),
+      "cookie: val1\n"
+      "cookie: val2\n"
+      "status: 200\n"
+      "url: /index.php\n"
+      "version: HTTP/1.1\n"
+    },
+    // This is the simplest set of headers possible.
+    { syn_reply2, sizeof(syn_reply2),
+      "status: 200\n"
+      "url: /index.php\n"
+      "version: HTTP/1.1\n"
+    },
+    // Test that a comma delimited list is NOT interpreted as a multi-value
+    // name/value pair.  The comma-separated list is just a single value.
+    { syn_reply3, sizeof(syn_reply3),
+      "cookie: val1,val2\n"
+      "status: 200\n"
+      "url: /index.php\n"
+      "version: HTTP/1.1\n"
+    }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    MockWrite writes[] = {
+      MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+      MockWrite(true, 0, 0)  // EOF
+    };
+
+    MockRead reads[] = {
+      MockRead(true, reinterpret_cast<const char*>(test_cases[i].syn_reply),
+               test_cases[i].syn_reply_length),
+      MockRead(true, reinterpret_cast<const char*>(body_frame),
+               sizeof(body_frame)),
+      MockRead(true, reinterpret_cast<const char*>(fin_frame),
+               sizeof(fin_frame)),
+      MockRead(true, 0, 0)  // EOF
+    };
+
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("http://www.google.com/");
+    request.load_flags = 0;
+    TransactionHelperResult out = TransactionHelper(request, reads, writes);
+    EXPECT_EQ(OK, out.rv);
+    EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+    EXPECT_EQ("hello!", out.response_data);
+
+    scoped_refptr<HttpResponseHeaders> headers = out.response_info.headers;
+    EXPECT_TRUE(headers.get() != NULL);
+    void* iter = NULL;
+    std::string name, value, lines;
+    while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
+      lines.append(name);
+      lines.append(": ");
+      lines.append(value);
+      lines.append("\n");
+    }
+    EXPECT_EQ(std::string(test_cases[i].expected_headers), lines);
+  }
 }
 
 }  // namespace net
