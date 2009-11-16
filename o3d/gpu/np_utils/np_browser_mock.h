@@ -8,7 +8,7 @@
 #include "gpu/np_utils/np_browser_stub.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // This mocks certain member functions of the stub browser. Those relating
 // to identifiers, memory management, reference counting and forwarding to
@@ -45,6 +45,6 @@ class MockNPBrowser : public StubNPBrowser {
   MOCK_METHOD2(UnscheduleTimer, void(NPP npp, uint32 timer_id));
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_BROWSER_MOCK_H_

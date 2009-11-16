@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/gpu_plugin/command_buffer_mock.h"
+#include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/gpu_plugin/gpu_plugin_object.h"
-#include "gpu/gpu_plugin/gpu_processor_mock.h"
+#include "gpu/command_buffer/service/gpu_processor_mock.h"
 #include "gpu/np_utils/np_browser_mock.h"
 #include "gpu/np_utils/dynamic_np_object.h"
 #include "gpu/np_utils/np_object_mock.h"
@@ -19,7 +19,12 @@
 #endif
 
 using ::base::SharedMemory;
-
+using command_buffer::GPUProcessor;
+using command_buffer::MockCommandBuffer;
+using command_buffer::MockGPUProcessor;
+using np_utils::MockNPBrowser;
+using np_utils::NPBrowser;
+using np_utils::NPObjectPointer;
 using testing::_;
 using testing::DoAll;
 using testing::Invoke;
@@ -30,51 +35,24 @@ using testing::StrictMock;
 
 namespace gpu_plugin {
 
-class MockSystemNPObject : public DefaultNPObject<NPObject> {
- public:
-  explicit MockSystemNPObject(NPP npp) {
-  }
-
-  MOCK_METHOD1(CreateSharedMemory, NPObjectPointer<NPObject>(int32 size));
-
-  NP_UTILS_BEGIN_DISPATCHER_CHAIN(MockSystemNPObject, DefaultNPObject<NPObject>)
-    NP_UTILS_DISPATCHER(CreateSharedMemory,
-                        NPObjectPointer<NPObject>(int32 size))
-  NP_UTILS_END_DISPATCHER_CHAIN
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSystemNPObject);
-};
-
 class GPUPluginObjectTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    plugin_object_ = NPCreateObject<GPUPluginObject>(NULL);
+    plugin_object_ = np_utils::NPCreateObject<GPUPluginObject>(NULL);
 
-    command_buffer_ = NPCreateObject<MockCommandBuffer>(NULL);
+    command_buffer_ = new MockCommandBuffer;
+
+    // Takes ownership.
     plugin_object_->set_command_buffer(command_buffer_);
 
-    processor_ = new MockGPUProcessor(NULL, command_buffer_.Get());
+    processor_ = new MockGPUProcessor(command_buffer_);
     plugin_object_->set_gpu_processor(processor_.get());
-
-    window_object_ = NPCreateObject<DynamicNPObject>(NULL);
-    ON_CALL(mock_browser_, GetWindowNPObject(NULL))
-      .WillByDefault(Return(window_object_.ToReturned()));
-
-    chromium_object_ = NPCreateObject<DynamicNPObject>(NULL);
-    NPSetProperty(NULL, window_object_, "chromium", chromium_object_);
-
-    system_object_ = NPCreateObject<StrictMock<MockSystemNPObject> >(NULL);
-    NPSetProperty(NULL, chromium_object_, "system", system_object_);
   }
 
   MockNPBrowser mock_browser_;
   NPObjectPointer<GPUPluginObject> plugin_object_;
-  NPObjectPointer<MockCommandBuffer> command_buffer_;
+  MockCommandBuffer* command_buffer_;
   scoped_refptr<MockGPUProcessor> processor_;
-  NPObjectPointer<DynamicNPObject> window_object_;
-  NPObjectPointer<DynamicNPObject> chromium_object_;
-  NPObjectPointer<MockSystemNPObject> system_object_;
 };
 
 namespace {
@@ -203,14 +181,14 @@ TEST_F(GPUPluginObjectTest, CanGetScriptableNPObject) {
 }
 
 TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsInitializedCommandBuffer) {
-  EXPECT_CALL(*command_buffer_.Get(), Initialize(NotNull()))
+  EXPECT_CALL(*command_buffer_, Initialize(NotNull()))
     .WillOnce(DoAll(Invoke(DeleteObject<SharedMemory>),
                     Return(true)));
 
   EXPECT_CALL(*processor_.get(), Initialize(NULL))
     .WillOnce(Return(true));
 
-  EXPECT_CALL(*command_buffer_.Get(), SetPutOffsetChangeCallback(NotNull()))
+  EXPECT_CALL(*command_buffer_, SetPutOffsetChangeCallback(NotNull()))
     .WillOnce(Invoke(DeleteObject<Callback0::Type>));
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->New("application/foo",
@@ -231,7 +209,7 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsInitializedCommandBuffer) {
   EXPECT_EQ(GPUPluginObject::kInitializationSuccessful,
             plugin_object_->GetStatus());
 
-  EXPECT_CALL(*command_buffer_.Get(), SetPutOffsetChangeCallback(NULL));
+  EXPECT_CALL(*command_buffer_, SetPutOffsetChangeCallback(NULL));
 
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
 }
@@ -246,7 +224,7 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsNullIfWindowNotReady) {
   // Set status as though SetWindow has not been called.
   plugin_object_->set_status(GPUPluginObject::kWaitingForSetWindow);
 
-  EXPECT_EQ(NPObjectPointer<NPObject>(), plugin_object_->OpenCommandBuffer());
+  EXPECT_TRUE(NULL == plugin_object_->OpenCommandBuffer());
 
   EXPECT_EQ(GPUPluginObject::kWaitingForSetWindow, plugin_object_->GetStatus());
 }
@@ -254,7 +232,7 @@ TEST_F(GPUPluginObjectTest, OpenCommandBufferReturnsNullIfWindowNotReady) {
 
 TEST_F(GPUPluginObjectTest,
     OpenCommandBufferReturnsNullIfCommandBufferCannotInitialize) {
-  EXPECT_CALL(*command_buffer_.Get(), Initialize(NotNull()))
+  EXPECT_CALL(*command_buffer_, Initialize(NotNull()))
     .WillOnce(DoAll(Invoke(DeleteObject<SharedMemory>),
                     Return(false)));
 
@@ -268,7 +246,7 @@ TEST_F(GPUPluginObjectTest,
   // valid window handle to pass to SetWindow in tests.
   plugin_object_->set_status(GPUPluginObject::kWaitingForOpenCommandBuffer);
 
-  EXPECT_EQ(NPObjectPointer<NPObject>(), plugin_object_->OpenCommandBuffer());
+  EXPECT_TRUE(NULL == plugin_object_->OpenCommandBuffer());
 
   EXPECT_EQ(GPUPluginObject::kWaitingForOpenCommandBuffer,
             plugin_object_->GetStatus());
@@ -278,7 +256,7 @@ TEST_F(GPUPluginObjectTest,
 
 TEST_F(GPUPluginObjectTest,
     OpenCommandBufferReturnsNullIGPUProcessorCannotInitialize) {
-  EXPECT_CALL(*command_buffer_.Get(), Initialize(NotNull()))
+  EXPECT_CALL(*command_buffer_, Initialize(NotNull()))
     .WillOnce(DoAll(Invoke(DeleteObject<SharedMemory>),
                     Return(true)));
 
@@ -295,7 +273,7 @@ TEST_F(GPUPluginObjectTest,
   // valid window handle to pass to SetWindow in tests.
   plugin_object_->set_status(GPUPluginObject::kWaitingForOpenCommandBuffer);
 
-  EXPECT_EQ(NPObjectPointer<NPObject>(), plugin_object_->OpenCommandBuffer());
+  EXPECT_TRUE(NULL == plugin_object_->OpenCommandBuffer());
 
   EXPECT_EQ(GPUPluginObject::kWaitingForOpenCommandBuffer,
             plugin_object_->GetStatus());
@@ -303,7 +281,7 @@ TEST_F(GPUPluginObjectTest,
   EXPECT_EQ(NPERR_NO_ERROR, plugin_object_->Destroy(NULL));
 }
 
-class MockEventSync : public DefaultNPObject<NPObject> {
+class MockEventSync : public np_utils::DefaultNPObject<NPObject> {
  public:
   explicit MockEventSync(NPP npp) {
   }
@@ -326,7 +304,7 @@ TEST_F(GPUPluginObjectTest, SendsResizeEventOnSetWindow) {
                                                 NULL));
 
   NPObjectPointer<MockEventSync> event_sync =
-      NPCreateObject<MockEventSync>(NULL);
+      np_utils::NPCreateObject<MockEventSync>(NULL);
   plugin_object_->SetEventSync(event_sync);
 
   EXPECT_CALL(*event_sync.Get(), Resize(100, 200));

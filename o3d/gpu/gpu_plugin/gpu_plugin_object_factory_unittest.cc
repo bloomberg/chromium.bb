@@ -8,6 +8,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using np_utils::PluginObject;
+
 namespace gpu_plugin {
 
 class PluginObjectFactoryTest : public testing::Test {
@@ -20,7 +22,7 @@ class PluginObjectFactoryTest : public testing::Test {
     delete factory_;
   }
 
-  StubNPBrowser stub_browser_;
+  np_utils::StubNPBrowser stub_browser_;
   GPUPluginObjectFactory* factory_;
 };
 

@@ -4,14 +4,13 @@
 
 #include <windows.h>
 
-#include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_processor.h"
 
 using ::base::SharedMemory;
 
-namespace gpu_plugin {
+namespace command_buffer {
 
-GPUProcessor::GPUProcessor(NPP npp,
-                           CommandBuffer* command_buffer)
+GPUProcessor::GPUProcessor(NPP npp, CommandBuffer* command_buffer)
     : npp_(npp),
       command_buffer_(command_buffer),
       commands_per_update_(100) {
@@ -21,13 +20,12 @@ GPUProcessor::GPUProcessor(NPP npp,
   decoder_->set_engine(this);
 }
 
-GPUProcessor::GPUProcessor(NPP npp,
-                           CommandBuffer* command_buffer,
+GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
                            GPUGAPIInterface* gapi,
                            command_buffer::o3d::GAPIDecoder* decoder,
                            command_buffer::CommandParser* parser,
                            int commands_per_update)
-    : npp_(npp),
+    : npp_(NULL),
       command_buffer_(command_buffer),
       commands_per_update_(commands_per_update) {
   DCHECK(command_buffer);
@@ -44,7 +42,7 @@ bool GPUProcessor::Initialize(HWND handle) {
     return false;
 
   // Map the ring buffer and create the parser.
-  SharedMemory* ring_buffer = command_buffer_->GetRingBuffer();
+  ::base::SharedMemory* ring_buffer = command_buffer_->GetRingBuffer();
   if (ring_buffer) {
     size_t size = ring_buffer->max_size();
     if (!ring_buffer->Map(size)) {
@@ -82,4 +80,4 @@ bool GPUProcessor::SetWindow(HWND handle, int width, int height) {
   }
 }
 
-}  // namespace gpu_plugin
+}  // namespace command_buffer

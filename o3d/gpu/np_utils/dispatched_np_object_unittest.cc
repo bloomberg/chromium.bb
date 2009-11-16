@@ -14,7 +14,7 @@
 using testing::Return;
 using testing::StrictMock;
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // This mock class has a dispatcher chain with an entry for each mocked
 // function. The tests that follow that invoking an NPAPI method calls the
@@ -400,4 +400,4 @@ TEST_F(DispatchedNPObjectTest, EnumeratesAllAvailableMethods) {
   NPBrowser::get()->MemFree(names);
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils

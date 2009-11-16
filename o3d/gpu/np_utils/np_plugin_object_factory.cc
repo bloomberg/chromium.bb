@@ -5,7 +5,7 @@
 #include "gpu/gpu_plugin/gpu_plugin_object_factory.h"
 #include "base/logging.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 NPPluginObjectFactory* NPPluginObjectFactory::factory_;
 
@@ -27,4 +27,4 @@ NPPluginObjectFactory::~NPPluginObjectFactory() {
   factory_ = previous_factory_;
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils

@@ -14,6 +14,10 @@
 #include "o3d/third_party/npapi/include/npfunctions.h"
 #endif
 
+using np_utils::NPBrowser;
+using np_utils::NPPluginObjectFactory;
+using np_utils::PluginObject;
+
 namespace gpu_plugin {
 
 // Definitions of NPAPI plugin entry points.

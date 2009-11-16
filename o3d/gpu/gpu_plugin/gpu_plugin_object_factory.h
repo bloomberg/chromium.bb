@@ -10,12 +10,13 @@
 namespace gpu_plugin {
 
 // Plugin object factory for creating the GPUPluginObject.
-class GPUPluginObjectFactory : public NPPluginObjectFactory {
+class GPUPluginObjectFactory : public np_utils::NPPluginObjectFactory {
  public:
   GPUPluginObjectFactory();
   virtual ~GPUPluginObjectFactory();
 
-  virtual PluginObject* CreatePluginObject(NPP npp, NPMIMEType plugin_type);
+  virtual np_utils::PluginObject* CreatePluginObject(NPP npp,
+                                                     NPMIMEType plugin_type);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUPluginObjectFactory);

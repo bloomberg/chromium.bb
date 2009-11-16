@@ -10,7 +10,7 @@
 #include "gpu/np_utils/default_np_object.h"
 #include "gpu/np_utils/np_utils.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // NPObjects of this type have a dictionary of property name / variant pairs
 // that can be changed at runtime through NPAPI.
@@ -30,6 +30,6 @@ class DynamicNPObject : public DefaultNPObject<NPObject> {
   PropertyMap properties_;
   DISALLOW_COPY_AND_ASSIGN(DynamicNPObject);
 };
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_DYNAMIC_NP_OBJECT_H_

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_GPU_PLUGIN_GPU_PROCESSOR_H_
-#define GPU_GPU_PLUGIN_GPU_PROCESSOR_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
+#define GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_
 
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/gapi_decoder.h"
-#include "gpu/gpu_plugin/command_buffer.h"
 #include "gpu/np_utils/np_object_pointer.h"
 
 #if defined(CB_SERVICE_D3D9)
@@ -22,7 +22,7 @@
 #error command buffer service not defined
 #endif
 
-namespace gpu_plugin {
+namespace command_buffer {
 
 // This class processes commands in a command buffer. It is event driven and
 // posts tasks to the current message loop to do additional work.
@@ -37,12 +37,10 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
 #error command buffer service not defined
 #endif
 
-  GPUProcessor(NPP npp,
-               CommandBuffer* command_buffer);
+  GPUProcessor(NPP npp, CommandBuffer* command_buffer);
 
   // This constructor is for unit tests.
-  GPUProcessor(NPP npp,
-               CommandBuffer* command_buffer,
+  GPUProcessor(CommandBuffer* command_buffer,
                GPUGAPIInterface* gapi,
                command_buffer::o3d::GAPIDecoder* decoder,
                command_buffer::CommandParser* parser,
@@ -91,13 +89,13 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
   scoped_ptr<command_buffer::CommandParser> parser_;
 };
 
-}  // namespace gpu_plugin
+}  // namespace command_buffer
 
 // Callbacks to the GPUProcessor hold a reference count.
 template <typename Method>
-class CallbackStorage<gpu_plugin::GPUProcessor, Method> {
+class CallbackStorage<command_buffer::GPUProcessor, Method> {
  public:
-  CallbackStorage(gpu_plugin::GPUProcessor* obj, Method method)
+  CallbackStorage(command_buffer::GPUProcessor* obj, Method method)
       : obj_(obj),
         meth_(method) {
     DCHECK(obj_);
@@ -109,11 +107,11 @@ class CallbackStorage<gpu_plugin::GPUProcessor, Method> {
   }
 
  protected:
-  gpu_plugin::GPUProcessor* obj_;
+  command_buffer::GPUProcessor* obj_;
   Method meth_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CallbackStorage);
 };
 
-#endif  // GPU_GPU_PLUGIN_GPU_PROCESSOR_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_H_

@@ -4,7 +4,7 @@
 
 #include "gpu/np_utils/np_dispatcher.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 bool DispatcherHasMethodHelper(BaseNPDispatcher* chain,
                                NPObject* object,
@@ -83,4 +83,4 @@ BaseNPDispatcher::BaseNPDispatcher(BaseNPDispatcher* next, const NPUTF8* name)
 BaseNPDispatcher::~BaseNPDispatcher() {
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils

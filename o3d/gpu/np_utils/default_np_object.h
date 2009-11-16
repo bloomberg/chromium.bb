@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "gpu/np_utils/np_headers.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class BaseNPDispatcher;
 
@@ -79,6 +79,6 @@ class DefaultNPObject : public RootClass {
  private:
   DISALLOW_COPY_AND_ASSIGN(DefaultNPObject);
 };
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_DEFAULT_NP_OBJECT_H_

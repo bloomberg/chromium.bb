@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/gpu_plugin/command_buffer.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
 
 using ::base::SharedMemory;
 
-namespace gpu_plugin {
+namespace command_buffer {
 
-CommandBuffer::CommandBuffer(NPP npp)
-    : npp_(npp),
-      size_(0),
+CommandBufferService::CommandBufferService()
+    : size_(0),
       get_offset_(0),
       put_offset_(0),
       token_(0),
@@ -20,10 +19,10 @@ CommandBuffer::CommandBuffer(NPP npp)
   registered_objects_.push_back(linked_ptr<SharedMemory>());
 }
 
-CommandBuffer::~CommandBuffer() {
+CommandBufferService::~CommandBufferService() {
 }
 
-bool CommandBuffer::Initialize(::base::SharedMemory* ring_buffer) {
+bool CommandBufferService::Initialize(::base::SharedMemory* ring_buffer) {
   DCHECK(ring_buffer);
 
   // Fail if already initialized.
@@ -37,15 +36,15 @@ bool CommandBuffer::Initialize(::base::SharedMemory* ring_buffer) {
   return true;
 }
 
-SharedMemory* CommandBuffer::GetRingBuffer() {
+SharedMemory* CommandBufferService::GetRingBuffer() {
   return ring_buffer_.get();
 }
 
-int32 CommandBuffer::GetSize() {
+int32 CommandBufferService::GetSize() {
   return size_;
 }
 
-int32 CommandBuffer::SyncOffsets(int32 put_offset) {
+int32 CommandBufferService::SyncOffsets(int32 put_offset) {
   if (put_offset < 0 || put_offset >= size_)
     return -1;
 
@@ -58,24 +57,25 @@ int32 CommandBuffer::SyncOffsets(int32 put_offset) {
   return get_offset_;
 }
 
-int32 CommandBuffer::GetGetOffset() {
+int32 CommandBufferService::GetGetOffset() {
   return get_offset_;
 }
 
-void CommandBuffer::SetGetOffset(int32 get_offset) {
+void CommandBufferService::SetGetOffset(int32 get_offset) {
   DCHECK(get_offset >= 0 && get_offset < size_);
   get_offset_ = get_offset;
 }
 
-int32 CommandBuffer::GetPutOffset() {
+int32 CommandBufferService::GetPutOffset() {
   return put_offset_;
 }
 
-void CommandBuffer::SetPutOffsetChangeCallback(Callback0::Type* callback) {
+void CommandBufferService::SetPutOffsetChangeCallback(
+    Callback0::Type* callback) {
   put_offset_change_callback_.reset(callback);
 }
 
-int32 CommandBuffer::CreateTransferBuffer(size_t size) {
+int32 CommandBufferService::CreateTransferBuffer(size_t size) {
   linked_ptr<SharedMemory> buffer(new SharedMemory);
   if (!buffer->Create(std::wstring(), false, false, size))
     return -1;
@@ -98,7 +98,7 @@ int32 CommandBuffer::CreateTransferBuffer(size_t size) {
   return handle;
 }
 
-void CommandBuffer::DestroyTransferBuffer(int32 handle) {
+void CommandBufferService::DestroyTransferBuffer(int32 handle) {
   if (handle <= 0)
     return;
 
@@ -118,7 +118,7 @@ void CommandBuffer::DestroyTransferBuffer(int32 handle) {
   }
 }
 
-::base::SharedMemory* CommandBuffer::GetTransferBuffer(int32 handle) {
+::base::SharedMemory* CommandBufferService::GetTransferBuffer(int32 handle) {
   if (handle < 0)
     return NULL;
 
@@ -128,16 +128,32 @@ void CommandBuffer::DestroyTransferBuffer(int32 handle) {
   return registered_objects_[handle].get();
 }
 
-int32 CommandBuffer::ResetParseError() {
+int32 CommandBufferService::GetToken() {
+  return token_;
+}
+
+void CommandBufferService::SetToken(int32 token) {
+  token_ = token;
+}
+
+int32 CommandBufferService::ResetParseError() {
   int32 last_error = parse_error_;
   parse_error_ = 0;
   return last_error;
 }
 
-void CommandBuffer::SetParseError(int32 parse_error) {
+void CommandBufferService::SetParseError(int32 parse_error) {
   if (parse_error_ == 0) {
     parse_error_ = parse_error;
   }
 }
 
-}  // namespace gpu_plugin
+bool CommandBufferService::GetErrorStatus() {
+  return error_status_;
+}
+
+void CommandBufferService::RaiseErrorStatus() {
+  error_status_ = true;
+}
+
+}  // namespace command_buffer

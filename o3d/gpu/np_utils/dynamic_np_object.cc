@@ -4,7 +4,7 @@
 
 #include "gpu/np_utils/dynamic_np_object.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 DynamicNPObject::DynamicNPObject(NPP npp) {
 }
@@ -56,4 +56,4 @@ bool DynamicNPObject::Enumerate(NPIdentifier** names, uint32_t* count) {
 
   return true;
 }
-}  // namespace gpu_plugin
+}  // namespace np_utils

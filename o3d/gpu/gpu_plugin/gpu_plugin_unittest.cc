@@ -21,6 +21,8 @@
 #define INITIALIZE_PLUGIN_FUNCS
 #endif
 
+using np_utils::MockPluginObject;
+using np_utils::PluginObject;
 using testing::_;
 using testing::DoAll;
 using testing::NiceMock;
@@ -37,9 +39,9 @@ class GPUPluginTest : public testing::Test {
     memset(&browser_funcs_, 0, sizeof(browser_funcs_));
     memset(&plugin_funcs_, 0, sizeof(plugin_funcs_));
 
-    plugin_object_factory_ = new StrictMock<MockPluginObjectFactory>;
+    plugin_object_factory_ = new StrictMock<np_utils::MockPluginObjectFactory>;
 
-    np_class_ = NPGetClass<StrictMock<MockNPObject> >();
+    np_class_ = np_utils::NPGetClass<StrictMock<np_utils::MockNPObject> >();
   }
 
   virtual void TearDown() {
@@ -49,7 +51,7 @@ class GPUPluginTest : public testing::Test {
   NPP_t npp_;
   NPNetscapeFuncs browser_funcs_;
   NPPluginFuncs plugin_funcs_;
-  MockPluginObjectFactory* plugin_object_factory_;
+  np_utils::MockPluginObjectFactory* plugin_object_factory_;
   const NPClass* np_class_;
 };
 
@@ -144,7 +146,7 @@ TEST_F(GPUPluginTest, HandleEventReturnsFalseForInvalidInstance) {
 }
 
 TEST_F(GPUPluginTest, NewCreatesAPluginObjectAndInitializesIt) {
-  StrictMock<MockPluginObject> plugin_object;
+  StrictMock<np_utils::MockPluginObject> plugin_object;
 
   EXPECT_CALL(*plugin_object_factory_, CreatePluginObject(
       &npp_, const_cast<NPMIMEType>(GPUPluginObject::kPluginType)))

@@ -35,22 +35,18 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_CROSS_O3D_CMD_HELPER_H_
 #define GPU_COMMAND_BUFFER_CLIENT_CROSS_O3D_CMD_HELPER_H_
 
+#include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/common/logging.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/common/o3d_cmd_format.h"
-#include "gpu/np_utils/np_object_pointer.h"
 
 namespace command_buffer {
 
 // A helper for O3D command buffers.
 class O3DCmdHelper : public CommandBufferHelper {
  public:
-  O3DCmdHelper(
-      NPP npp,
-      const gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>&
-          command_buffer)
-      : CommandBufferHelper(npp, command_buffer) {
+  explicit O3DCmdHelper(command_buffer::CommandBuffer* command_buffer)
+      : CommandBufferHelper(command_buffer) {
   }
   virtual ~O3DCmdHelper() {
   }

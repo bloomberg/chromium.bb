@@ -29,6 +29,8 @@
         'command_buffer/common/bitfield_helpers.h',
         'command_buffer/common/cmd_buffer_common.h',
         'command_buffer/common/cmd_buffer_common.cc',
+        'command_buffer/common/command_buffer.h',
+        'command_buffer/common/command_buffer_mock.h',
         'command_buffer/common/gles2_cmd_format.cc',
         'command_buffer/common/gles2_cmd_format.h',
         'command_buffer/common/gles2_cmd_utils.cc',
@@ -164,17 +166,26 @@
       },  # 'all_dependent_settings'
       'dependencies': [
         'command_buffer_common',
+
+        # TODO(apatrick): Remove this dependency when the synchronous messages
+        #    are via IPC.
+        'np_utils',
       ],
       'sources': [
         'command_buffer/service/common_decoder.cc',
         'command_buffer/service/common_decoder.h',
         'command_buffer/service/cmd_buffer_engine.h',
+        'command_buffer/service/command_buffer_service.cc',
+        'command_buffer/service/command_buffer_service.h',
         'command_buffer/service/cmd_parser.cc',
         'command_buffer/service/cmd_parser.h',
         'command_buffer/service/effect_utils.cc',
         'command_buffer/service/effect_utils.h',
         'command_buffer/service/gapi_decoder.cc',
         'command_buffer/service/gapi_decoder.h',
+        'command_buffer/service/gpu_processor.h',
+        'command_buffer/service/gpu_processor.cc',
+        'command_buffer/service/gpu_processor_mock.h',
         'command_buffer/service/mocks.h',
         'command_buffer/service/precompile.cc',
         'command_buffer/service/precompile.h',
@@ -253,6 +264,13 @@
             ],
           },
         ],
+        ['OS == "win"',
+          {
+            'sources': [
+              'command_buffer/service/gpu_processor_win.cc',
+            ],
+          },
+        ],
       ],  # 'conditions'
     },
     {
@@ -261,6 +279,8 @@
       'direct_dependent_settings': {
         'sources': [
           'command_buffer/service/cmd_parser_test.cc',
+          'command_buffer/service/command_buffer_service_unittest.cc',
+          'command_buffer/service/gpu_processor_unittest.cc',
           'command_buffer/service/resource_test.cc',
         ],
       },
@@ -330,45 +350,12 @@
         ],
       },
     },
-
-    # These can eventually be merged back into the gpu_plugin target. There
-    # separated for now so O3D can statically link against them and use command
-    # buffers in-process without the GPU plugin.
-    {
-      'target_name': 'command_buffer',
-      'type': '<(library)',
-      'dependencies': [
-        '../../base/base.gyp:base',
-        'command_buffer_service',
-        'np_utils',
-      ],
-      'include_dirs': [
-        '..',
-        '../..',
-      ],
-      'all_dependent_settings': {
-        'include_dirs': [
-          '..',
-          '../..',
-        ],
-      },  # 'all_dependent_settings'
-      'sources': [
-        'gpu_plugin/command_buffer.cc',
-        'gpu_plugin/command_buffer.h',
-        'gpu_plugin/command_buffer_mock.h',
-        'gpu_plugin/gpu_processor.h',
-        'gpu_plugin/gpu_processor.cc',
-        'gpu_plugin/gpu_processor_mock.h',
-        'gpu_plugin/gpu_processor_win.cc',
-      ],
-    },
-
     {
       'target_name': 'gpu_plugin',
       'type': '<(library)',
       'dependencies': [
         '../../base/base.gyp:base',
-        'command_buffer',
+        'command_buffer_service',
         'np_utils',
       ],
       'include_dirs': [
@@ -400,11 +387,9 @@
           '../..',
         ],
         'sources': [
-          'gpu_plugin/command_buffer_unittest.cc',
           'gpu_plugin/gpu_plugin_unittest.cc',
           'gpu_plugin/gpu_plugin_object_unittest.cc',
           'gpu_plugin/gpu_plugin_object_factory_unittest.cc',
-          'gpu_plugin/gpu_processor_unittest.cc',
         ],
       },
     },

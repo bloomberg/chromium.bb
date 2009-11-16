@@ -39,11 +39,11 @@
 #include "core/cross/precompile.h"
 #include <vector>
 #include "core/cross/renderer.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/resource.h"
 #include "gpu/command_buffer/client/fenced_allocator.h"
 #include "gpu/command_buffer/client/id_allocator.h"
-#include "gpu/gpu_plugin/command_buffer.h"
 #include "gpu/np_utils/np_object_pointer.h"
 
 namespace command_buffer {
@@ -249,6 +249,7 @@ class RendererCB : public Renderer {
 
  protected:
   // Initializes the renderer for use, claiming hardware resources.
+  // Takes ownership of CommandBuffer.
   virtual InitStatus InitPlatformSpecific(const DisplayWindow& display_window,
                                           bool off_screen);
 
@@ -258,7 +259,7 @@ class RendererCB : public Renderer {
   int32 transfer_shm_id_;
   void *transfer_shm_address_;
   NPP npp_;
-  gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer> command_buffer_;
+  scoped_ptr<::command_buffer::CommandBuffer> command_buffer_;
   ::command_buffer::O3DCmdHelper *helper_;
   ::command_buffer::FencedAllocatorWrapper *allocator_;
 
@@ -305,8 +306,8 @@ class RendererCBRemote : public RendererCB {
 // code in RendererCBRemote will be merged into RendererCB.
 class RendererCBLocal : public RendererCB {
  public:
-  static gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>
-      CreateCommandBuffer(NPP npp, void* hwnd, int32 size);
+  static ::command_buffer::CommandBuffer* CreateCommandBuffer(
+      NPP npp, void* hwnd, int32 size);
 
   // Creates a default RendererCBLocal.
   static RendererCBLocal *CreateDefault(ServiceLocator* service_locator);

@@ -8,7 +8,7 @@
 #include "gpu/np_utils/np_object_pointer.h"
 #include "gpu/np_utils/np_headers.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // Interface for a plugin instance. The NPP plugin calls forwards to an instance
 // of this interface.
@@ -45,6 +45,6 @@ class PluginObject {
   DISALLOW_COPY_AND_ASSIGN(PluginObject);
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_PLUGIN_OBJECT_H_

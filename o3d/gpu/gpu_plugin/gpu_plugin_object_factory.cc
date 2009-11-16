@@ -14,11 +14,11 @@ GPUPluginObjectFactory::GPUPluginObjectFactory() {
 GPUPluginObjectFactory::~GPUPluginObjectFactory() {
 }
 
-PluginObject* GPUPluginObjectFactory::CreatePluginObject(
+np_utils::PluginObject* GPUPluginObjectFactory::CreatePluginObject(
     NPP npp,
     NPMIMEType plugin_type) {
   if (strcmp(plugin_type, GPUPluginObject::kPluginType) == 0) {
-    return NPCreateObject<GPUPluginObject>(npp).ToReturned();
+    return np_utils::NPCreateObject<GPUPluginObject>(npp).ToReturned();
   }
 
   return NULL;

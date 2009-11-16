@@ -10,7 +10,7 @@
 
 typedef struct _NPNetscapeFuncs NPNetscapeFuncs;
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // This class exposes the functions provided by the browser to a plugin (the
 // ones prefixed NPN_).
@@ -90,6 +90,6 @@ class NPBrowser {
   DISALLOW_COPY_AND_ASSIGN(NPBrowser);
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_BROWSER_H_

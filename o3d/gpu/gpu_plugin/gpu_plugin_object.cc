@@ -5,11 +5,17 @@
 #include <stdlib.h>
 
 #include "base/logging.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/np_utils/np_utils.h"
 #include "gpu/gpu_plugin/gpu_plugin_object.h"
-#include "gpu/gpu_plugin/gpu_processor.h"
 
 using ::base::SharedMemory;
+using command_buffer::CommandBuffer;
+using command_buffer::CommandBufferService;
+using command_buffer::GPUProcessor;
+using np_utils::NPBrowser;
+using np_utils::NPObjectPointer;
 
 namespace gpu_plugin {
 
@@ -19,8 +25,8 @@ const NPUTF8 GPUPluginObject::kPluginType[] =
 GPUPluginObject::GPUPluginObject(NPP npp)
     : npp_(npp),
       status_(kWaitingForNew),
-      command_buffer_(NPCreateObject<CommandBuffer>(npp)),
-      processor_(new GPUProcessor(npp, command_buffer_.Get())) {
+      command_buffer_(new CommandBufferService),
+      processor_(new GPUProcessor(npp, command_buffer_.get())) {
   memset(&window_, 0, sizeof(window_));
 }
 
@@ -68,7 +74,7 @@ NPError GPUPluginObject::Destroy(NPSavedData** saved) {
   if (status_ == kWaitingForNew || status_ == kDestroyed)
     return NPERR_GENERIC_ERROR;
 
-  if (command_buffer_.Get()) {
+  if (command_buffer_.get()) {
     command_buffer_->SetPutOffsetChangeCallback(NULL);
   }
 
@@ -87,19 +93,19 @@ NPObject*GPUPluginObject::GetScriptableNPObject() {
   return this;
 }
 
-NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
+CommandBuffer* GPUPluginObject::OpenCommandBuffer() {
   if (status_ == kInitializationSuccessful)
-    return command_buffer_;
+    return command_buffer_.get();
 
   // SetWindow must have been called before OpenCommandBuffer.
   // PlatformSpecificSetWindow advances the status to
   // kWaitingForOpenCommandBuffer.
   if (status_ != kWaitingForOpenCommandBuffer)
-    return NPObjectPointer<NPObject>();
+    return NULL;
 
   scoped_ptr<SharedMemory> ring_buffer(new SharedMemory);
   if (!ring_buffer->Create(std::wstring(), false, false, kCommandBufferSize))
-    return NPObjectPointer<NPObject>();
+    return NULL;
 
   if (command_buffer_->Initialize(ring_buffer.release())) {
     if (processor_->Initialize(static_cast<HWND>(window_.window))) {
@@ -107,11 +113,11 @@ NPObjectPointer<NPObject> GPUPluginObject::OpenCommandBuffer() {
           NewCallback(processor_.get(),
                       &GPUProcessor::ProcessCommands));
       status_ = kInitializationSuccessful;
-      return command_buffer_;
+      return command_buffer_.get();
     }
   }
 
-  return NPObjectPointer<CommandBuffer>();
+  return NULL;
 }
 
 }  // namespace gpu_plugin

@@ -53,7 +53,6 @@
 #if defined(RENDERER_CB)
 #include "core/cross/command_buffer/renderer_cb.h"
 #include "core/cross/command_buffer/display_window_cb.h"
-#include "gpu/gpu_plugin/command_buffer.h"
 #include "gpu/np_utils/np_browser_stub.h"
 #endif
 
@@ -61,9 +60,8 @@ using o3d::DisplayWindowWindows;
 
 #if defined(RENDERER_CB)
 using o3d::DisplayWindowCB;
-using gpu_plugin::CommandBuffer;
-using gpu_plugin::NPObjectPointer;
-using gpu_plugin::StubNPBrowser;
+using np_utils::NPObjectPointer;
+using np_utils::StubNPBrowser;
 using o3d::RendererCBLocal;
 #endif
 
@@ -190,8 +188,8 @@ int WINAPI WinMain(HINSTANCE instance,
 #if defined(RENDERER_CB)
   const unsigned int kDefaultCommandBufferSize = 256 << 10;
 
+  // RendererCB takes ownership of CommandBuffer.
   DisplayWindowCB* display_window = new o3d::DisplayWindowCB;
-  display_window->set_npp(NULL);
   display_window->set_command_buffer(RendererCBLocal::CreateCommandBuffer(
       NULL,
       g_window_handle,

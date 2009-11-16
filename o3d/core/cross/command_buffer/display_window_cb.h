@@ -34,8 +34,7 @@
 #define O3D_CORE_WIN_DISPLAY_WINDOW_CB_H_
 
 #include "core/cross/display_window.h"
-#include "gpu/gpu_plugin/command_buffer.h"
-#include "gpu/np_utils/np_object_pointer.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 
 namespace o3d {
 
@@ -43,25 +42,14 @@ namespace o3d {
 // an out-of-process command buffer renderer.
 class DisplayWindowCB : public DisplayWindow {
  public:
-  DisplayWindowCB() : npp_(NULL), width_(0), height_(0) {}
+  DisplayWindowCB() : width_(0), height_(0) {}
   virtual ~DisplayWindowCB() {}
 
-  NPP npp() const {
-    return npp_;
-  }
-
-  void set_npp(NPP npp) {
-    npp_ = npp;
-  }
-
-  gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>
-      command_buffer() const {
+  command_buffer::CommandBuffer* command_buffer() const {
     return command_buffer_;
   }
 
-  void set_command_buffer(
-      const gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>
-          command_buffer) {
+  void set_command_buffer(command_buffer::CommandBuffer* command_buffer) {
     command_buffer_ = command_buffer;
   }
 
@@ -82,8 +70,7 @@ class DisplayWindowCB : public DisplayWindow {
   }
 
  private:
-  NPP npp_;
-  gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer> command_buffer_;
+  command_buffer::CommandBuffer* command_buffer_;
   int width_;
   int height_;
   DISALLOW_COPY_AND_ASSIGN(DisplayWindowCB);

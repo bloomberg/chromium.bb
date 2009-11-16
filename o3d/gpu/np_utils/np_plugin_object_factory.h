@@ -8,7 +8,7 @@
 #include "base/basictypes.h"
 #include "gpu/np_utils/np_headers.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class PluginObject;
 
@@ -32,6 +32,6 @@ class NPPluginObjectFactory {
   DISALLOW_COPY_AND_ASSIGN(NPPluginObjectFactory);
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_PLUGIN_OBJECT_FACTORY_H_

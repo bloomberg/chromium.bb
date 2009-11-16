@@ -431,10 +431,6 @@
           {
             'dependencies': [
               '../gpu/gpu.gyp:command_buffer_service',
-
-              # These dependencies are only needed for RendererCBLocal. They can
-              # be removed when RendererCBLocal is not needed.
-              '../gpu/gpu.gyp:command_buffer',
             ],
           },
         ],

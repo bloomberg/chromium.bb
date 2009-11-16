@@ -9,7 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // Mockable factory used to create instances of PluginObject based on plugin
 // mime type.
@@ -18,6 +18,6 @@ class MockPluginObjectFactory : public NPPluginObjectFactory {
   MOCK_METHOD2(CreatePluginObject, PluginObject*(NPP, NPMIMEType));
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_PLUGIN_OBJECT_FACTORY_MOCK_H_

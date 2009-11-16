@@ -12,7 +12,7 @@
 using testing::Return;
 using testing::StrictMock;
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class DerivedNPObject : public MockNPObject {
  public:
@@ -217,4 +217,4 @@ TEST_F(NPObjectPointerTest, NULLPointerCanBeReturnedAsARawNPObject) {
   EXPECT_TRUE(NULL == p.ToReturned());
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils

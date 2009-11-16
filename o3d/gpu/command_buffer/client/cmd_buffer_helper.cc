@@ -33,20 +33,18 @@
 // This file contains the implementation of the command buffer helper class.
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/np_utils/np_utils.h"
 
 namespace command_buffer {
 
-using gpu_plugin::CommandBuffer;
-using gpu_plugin::NPBrowser;
-using gpu_plugin::NPInvoke;
-using gpu_plugin::NPObjectPointer;
+using command_buffer::CommandBuffer;
+using np_utils::NPBrowser;
+using np_utils::NPInvoke;
+using np_utils::NPObjectPointer;
 
-CommandBufferHelper::CommandBufferHelper(
-    NPP npp,
-    const NPObjectPointer<CommandBuffer>& command_buffer)
-    : npp_(npp),
-      command_buffer_(command_buffer),
+CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
+    : command_buffer_(command_buffer),
       entries_(NULL),
       entry_count_(0),
       token_(0),

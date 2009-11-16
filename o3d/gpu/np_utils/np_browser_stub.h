@@ -10,7 +10,7 @@
 
 #include "gpu/np_utils/np_browser.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // Simple implementation of subset of the NPN functions for testing.
 class StubNPBrowser : public NPBrowser {
@@ -79,6 +79,6 @@ class StubNPBrowser : public NPBrowser {
   DISALLOW_COPY_AND_ASSIGN(StubNPBrowser);
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_BROWSER_STUB_H_

@@ -9,7 +9,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class MockPluginObject : public PluginObject {
  public:
@@ -21,6 +21,6 @@ class MockPluginObject : public PluginObject {
   MOCK_METHOD0(GetScriptableNPObject, NPObject*());
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_PLUGIN_OBJECT_MOCK_H_

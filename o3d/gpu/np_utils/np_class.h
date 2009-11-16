@@ -13,7 +13,7 @@
 // function pointers will invoke the most derived corresponding member
 // functions in T.
 
-namespace gpu_plugin {
+namespace np_utils {
 
 namespace np_class_impl {
   // This template version of the NPClass allocate function creates a subclass
@@ -120,6 +120,6 @@ const NPClass* NPGetClass() {
   return &np_class;
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_CLASS_H_

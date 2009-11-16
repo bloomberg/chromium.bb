@@ -4,7 +4,7 @@
 
 #include "gpu/np_utils/np_utils.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 bool NPVariantToValue(bool* value, const NPVariant& variant) {
   if (NPVARIANT_IS_BOOLEAN(variant)) {
@@ -167,4 +167,4 @@ bool NPRemoveProperty(NPP npp,
       NPBrowser::get()->GetStringIdentifier(name));
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils

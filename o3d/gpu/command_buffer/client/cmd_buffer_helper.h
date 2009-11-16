@@ -38,8 +38,7 @@
 #include "gpu/command_buffer/common/logging.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
-#include "gpu/gpu_plugin/command_buffer.h"
-#include "gpu/np_utils/np_object_pointer.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 
 namespace command_buffer {
 
@@ -60,10 +59,7 @@ namespace command_buffer {
 //                              // commands have been executed.
 class CommandBufferHelper {
  public:
-  CommandBufferHelper(
-      NPP npp,
-      const gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>&
-          command_buffer);
+  explicit CommandBufferHelper(command_buffer::CommandBuffer* command_buffer);
   virtual ~CommandBufferHelper();
 
   bool Initialize();
@@ -202,8 +198,7 @@ class CommandBufferHelper {
     return (get_ - put_ - 1 + entry_count_) % entry_count_;
   }
 
-  NPP npp_;
-  gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer> command_buffer_;
+  command_buffer::CommandBuffer* command_buffer_;
   ::base::SharedMemory* ring_buffer_;
   CommandBufferEntry *entries_;
   int32 entry_count_;

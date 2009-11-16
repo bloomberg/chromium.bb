@@ -8,7 +8,7 @@
 #include "gpu/np_utils/np_browser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class MockNPObject : public NPObject {
  public:
@@ -31,6 +31,6 @@ class MockNPObject : public NPObject {
   DISALLOW_COPY_AND_ASSIGN(MockNPObject);
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_OBJECT_MOCK_H_

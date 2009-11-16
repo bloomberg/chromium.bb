@@ -17,7 +17,7 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class NPUtilsTest : public testing::Test {
  protected:
@@ -421,4 +421,4 @@ TEST_F(NPUtilsTest, CanRemovePropertyValue) {
   EXPECT_TRUE(NPRemoveProperty(NULL, object, "foo"));
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils

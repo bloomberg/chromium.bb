@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_processor.h"
+#include "gpu/np_utils/np_browser.h"
 
 using ::base::SharedMemory;
+using np_utils::NPBrowser;
 
-namespace gpu_plugin {
+namespace command_buffer {
 
 GPUProcessor::~GPUProcessor() {
 }
@@ -51,7 +53,8 @@ void GPUProcessor::ProcessCommands() {
 }
 
 void *GPUProcessor::GetSharedMemoryAddress(int32 shm_id) {
-  SharedMemory* shared_memory = command_buffer_->GetTransferBuffer(shm_id);
+  ::base::SharedMemory* shared_memory =
+      command_buffer_->GetTransferBuffer(shm_id);
   if (!shared_memory)
     return NULL;
 
@@ -66,7 +69,8 @@ void *GPUProcessor::GetSharedMemoryAddress(int32 shm_id) {
 // TODO(apatrick): Consolidate this with the above and return both the address
 // and size.
 size_t GPUProcessor::GetSharedMemorySize(int32 shm_id) {
-  SharedMemory* shared_memory = command_buffer_->GetTransferBuffer(shm_id);
+  ::base::SharedMemory* shared_memory =
+      command_buffer_->GetTransferBuffer(shm_id);
   if (!shared_memory)
     return 0;
 
@@ -77,4 +81,4 @@ void GPUProcessor::set_token(int32 token) {
   command_buffer_->SetToken(token);
 }
 
-}  // namespace gpu_plugin
+}  // namespace command_buffer

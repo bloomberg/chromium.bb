@@ -17,7 +17,7 @@
 typedef struct _NPNetscapeFuncs NPNetscapeFuncs;
 typedef struct _NPChromiumFuncs NPChromiumFuncs;
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // This class implements NPBrowser for the WebKit WebBindings.
 class WebKitBrowser : public NPBrowser {
@@ -112,6 +112,6 @@ class WebKitBrowser : public NPBrowser {
   DISALLOW_COPY_AND_ASSIGN(WebKitBrowser);
 };
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_WEBKIT_BROWSER_H_

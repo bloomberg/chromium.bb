@@ -36,18 +36,18 @@
 #include "base/message_loop.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/service/mocks.h"
-#include "gpu/gpu_plugin/command_buffer.h"
-#include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/np_utils/np_object_pointer.h"
 #include "gpu/np_utils/np_browser_stub.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace command_buffer {
 
-using gpu_plugin::CommandBuffer;
-using gpu_plugin::GPUProcessor;
-using gpu_plugin::NPCreateObject;
-using gpu_plugin::NPObjectPointer;
+using command_buffer::CommandBufferService;
+using command_buffer::GPUProcessor;
+using np_utils::NPCreateObject;
+using np_utils::NPObjectPointer;
 using testing::Return;
 using testing::Mock;
 using testing::Truly;
@@ -75,7 +75,7 @@ class CommandBufferHelperTest : public testing::Test {
     ring_buffer->Create(std::wstring(), false, false, kCommandBufferSizeBytes);
     ring_buffer->Map(1024);
 
-    command_buffer_ = NPCreateObject<CommandBuffer>(NULL);
+    command_buffer_.reset(new CommandBufferService);
     command_buffer_->Initialize(ring_buffer);
 
     parser_ = new command_buffer::CommandParser(ring_buffer->memory(),
@@ -86,13 +86,13 @@ class CommandBufferHelperTest : public testing::Test {
                                                 api_mock_.get());
 
     scoped_refptr<GPUProcessor> gpu_processor(new GPUProcessor(
-        NULL, command_buffer_.Get(), NULL, NULL, parser_, 1));
+        command_buffer_.get(), NULL, NULL, parser_, 1));
     command_buffer_->SetPutOffsetChangeCallback(NewCallback(
         gpu_processor.get(), &GPUProcessor::ProcessCommands));
 
     api_mock_->set_engine(gpu_processor.get());
 
-    helper_.reset(new CommandBufferHelper(NULL, command_buffer_));
+    helper_.reset(new CommandBufferHelper(command_buffer_.get()));
     helper_->Initialize();
   }
 
@@ -142,9 +142,9 @@ class CommandBufferHelperTest : public testing::Test {
 
   base::AtExitManager at_exit_manager_;
   MessageLoop message_loop_;
-  gpu_plugin::StubNPBrowser browser_;
+  np_utils::StubNPBrowser browser_;
   scoped_ptr<AsyncAPIMock> api_mock_;
-  NPObjectPointer<CommandBuffer> command_buffer_;
+  scoped_ptr<CommandBufferService> command_buffer_;
   command_buffer::CommandParser* parser_;
   scoped_ptr<CommandBufferHelper> helper_;
   Sequence sequence_;

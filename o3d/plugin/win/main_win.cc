@@ -54,7 +54,7 @@
 #if defined(RENDERER_CB)
 #include "core/cross/command_buffer/renderer_cb.h"
 #include "core/cross/command_buffer/display_window_cb.h"
-#include "gpu/gpu_plugin/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer.h"
 #endif
 
 using glue::_o3d::PluginObject;
@@ -63,8 +63,7 @@ using o3d::DisplayWindowWindows;
 using o3d::Event;
 
 #if defined(RENDERER_CB)
-using gpu_plugin::CommandBuffer;
-using gpu_plugin::NPObjectPointer;
+using command_buffer::CommandBuffer;
 #endif
 
 namespace {
@@ -75,7 +74,7 @@ HINSTANCE g_module_instance;
 //    move over to gyp. This is just to avoid having to write scons files for
 //    np_utils.
 #if defined(RENDERER_CB)
-gpu_plugin::NPBrowser* g_browser;
+np_utils::NPBrowser* g_browser;
 #endif
 }  // namespace anonymous
 
@@ -738,7 +737,7 @@ NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs) {
   HANDLE_CRASHES;
 
 #if defined(RENDERER_CB)
-  g_browser = new gpu_plugin::NPBrowser(browserFuncs);
+  g_browser = new np_utils::NPBrowser(browserFuncs);
 #endif
 
   NPError retval = InitializeNPNApi(browserFuncs);
@@ -918,13 +917,14 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
   // create and assign the graphics context
 #if defined(RENDERER_CB)
   const unsigned int kDefaultCommandBufferSize = 256 << 10;
-  NPObjectPointer<CommandBuffer> command_buffer =
+
+  // RendererCB takes ownership of CommandBuffer.
+  CommandBuffer* command_buffer =
       RendererCBLocal::CreateCommandBuffer(instance,
                                            obj->GetHWnd(),
                                            kDefaultCommandBufferSize);
 
   DisplayWindowCB default_display;
-  default_display.set_npp(instance);
   default_display.set_command_buffer(command_buffer);
 
   obj->CreateRenderer(default_display);

@@ -11,7 +11,7 @@
 #include "o3d/third_party/npapi/include/npfunctions.h"
 #endif
 
-namespace gpu_plugin {
+namespace np_utils {
 
 NPBrowser* NPBrowser::browser_;
 
@@ -125,4 +125,4 @@ void NPBrowser::UnscheduleTimer(NPP npp, uint32 timer_id) {
   netscape_funcs_->unscheduletimer(npp, timer_id);
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils

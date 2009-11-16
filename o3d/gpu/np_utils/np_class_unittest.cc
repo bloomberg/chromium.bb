@@ -9,7 +9,7 @@
 
 using testing::StrictMock;
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class NPClassTest : public testing::Test {
  protected:
@@ -140,4 +140,4 @@ TEST_F(NPClassTest, ConstructForwards) {
 
   np_class->deallocate(object);
 }
-}  // namespace gpu_plugin
+}  // namespace np_utils

@@ -39,12 +39,13 @@
   NP_UTILS_DISPATCHER_JOIN(dispatcher, __LINE__)
 
 #define NP_UTILS_BEGIN_DISPATCHER_CHAIN(Class, BaseClass)                      \
-  static BaseNPDispatcher* GetDispatcherChain() {                              \
+  static ::np_utils::BaseNPDispatcher* GetDispatcherChain() {                  \
     typedef Class ThisClass;                                                   \
-    BaseNPDispatcher* top_dispatcher = BaseClass::GetDispatcherChain();        \
+    ::np_utils::BaseNPDispatcher* top_dispatcher =                             \
+        BaseClass::GetDispatcherChain();                                       \
 
 #define NP_UTILS_DISPATCHER(name, Signature)                                   \
-    static NPDispatcher<ThisClass, Signature>                                  \
+    static ::np_utils::NPDispatcher<ThisClass, Signature>                      \
         NP_UTILS_DISPATCHER_UNIQUE(                                            \
             top_dispatcher,                                                    \
             #name,                                                             \
@@ -55,27 +56,28 @@
     return top_dispatcher;                                                     \
   }                                                                            \
   bool HasMethod(NPIdentifier name) {                                          \
-    return DispatcherHasMethodHelper(GetDispatcherChain(), this, name);        \
+    return ::np_utils::DispatcherHasMethodHelper(                              \
+        GetDispatcherChain(), this, name);                                     \
   }                                                                            \
   bool Invoke(NPIdentifier name,                                               \
               const NPVariant* args,                                           \
               uint32_t num_args,                                               \
               NPVariant* result) {                                             \
-    return DispatcherInvokeHelper(GetDispatcherChain(),                        \
-                                  this,                                        \
-                                  name,                                        \
-                                  args,                                        \
-                                  num_args,                                    \
-                                  result);                                     \
+    return ::np_utils::DispatcherInvokeHelper(GetDispatcherChain(),            \
+                                              this,                            \
+                                              name,                            \
+                                              args,                            \
+                                              num_args,                        \
+                                              result);                         \
   }                                                                            \
   bool Enumerate(NPIdentifier** names, uint32_t* num_names) {                  \
-    return DispatcherEnumerateHelper(GetDispatcherChain(),                     \
-                                     this,                                     \
-                                     names,                                    \
-                                     num_names);                               \
+    return ::np_utils::DispatcherEnumerateHelper(GetDispatcherChain(),         \
+                                                 this,                         \
+                                                 names,                        \
+                                                 num_names);                   \
   }                                                                            \
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class BaseNPDispatcher {
  public:
@@ -217,6 +219,6 @@ struct NPDispatcher {
 
 #undef TO_NPVARIANT
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_DISPATCHER_H_

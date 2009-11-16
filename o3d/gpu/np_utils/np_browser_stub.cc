@@ -6,7 +6,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 StubNPBrowser::StubNPBrowser() : NPBrowser(NULL) {
 }
@@ -122,4 +122,4 @@ uint32 StubNPBrowser::ScheduleTimer(NPP npp,
 void StubNPBrowser::UnscheduleTimer(NPP npp, uint32 timer_id) {
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils

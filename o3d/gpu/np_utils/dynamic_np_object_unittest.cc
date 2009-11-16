@@ -13,7 +13,7 @@
 using testing::Return;
 using testing::StrictMock;
 
-namespace gpu_plugin {
+namespace np_utils {
 
 class NPDynamicNPObjectTest : public testing::Test {
  protected:
@@ -80,4 +80,4 @@ TEST_F(NPDynamicNPObjectTest, InvalidateNullsObjectProperties) {
   EXPECT_EQ(2, object_->referenceCount);
   NPBrowser::get()->ReleaseObject(object_.Get());
 }
-}  // namespace gpu_plugin
+}  // namespace np_utils

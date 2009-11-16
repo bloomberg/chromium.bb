@@ -2,19 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_GPU_PLUGIN_GPU_PROCESSOR_MOCK_H_
-#define GPU_GPU_PLUGIN_GPU_PROCESSOR_MOCK_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_MOCK_H_
+#define GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_MOCK_H_
 
-#include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace gpu_plugin {
+namespace command_buffer {
 
 class MockGPUProcessor : public GPUProcessor {
  public:
-  MockGPUProcessor(NPP npp,
-                   CommandBuffer* command_buffer)
-      : GPUProcessor(npp, command_buffer) {
+  explicit MockGPUProcessor(CommandBuffer* command_buffer)
+      : GPUProcessor(NULL, command_buffer) {
   }
 
 #if defined(OS_WIN)
@@ -36,6 +35,6 @@ class MockGPUProcessor : public GPUProcessor {
   DISALLOW_COPY_AND_ASSIGN(MockGPUProcessor);
 };
 
-}  // namespace gpu_plugin
+}  // namespace command_buffer
 
-#endif  // GPU_GPU_PLUGIN_GPU_PROCESSOR_MOCK_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GPU_PROCESSOR_MOCK_H_

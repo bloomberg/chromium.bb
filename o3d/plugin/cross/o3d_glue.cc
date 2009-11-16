@@ -54,9 +54,9 @@
 #endif
 
 using o3d::DisplayWindowCB;
-using gpu_plugin::NPObjectPointer;
-using gpu_plugin::NPVariantToValue;
-using gpu_plugin::ValueToNPVariant;
+using np_utils::NPObjectPointer;
+using np_utils::NPVariantToValue;
+using np_utils::ValueToNPVariant;
 
 namespace glue {
 namespace _o3d {

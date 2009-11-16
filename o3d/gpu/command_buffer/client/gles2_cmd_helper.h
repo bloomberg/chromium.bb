@@ -15,11 +15,8 @@ namespace gles2 {
 // A class that helps write GL command buffers.
 class GLES2CmdHelper : public CommandBufferHelper {
  public:
-  GLES2CmdHelper(
-      NPP npp,
-      const gpu_plugin::NPObjectPointer<gpu_plugin::CommandBuffer>&
-          command_buffer)
-      : CommandBufferHelper(npp, command_buffer) {
+  explicit GLES2CmdHelper(command_buffer::CommandBuffer* command_buffer)
+      : CommandBufferHelper(command_buffer) {
   }
   virtual ~GLES2CmdHelper() {
   }
@@ -29,6 +26,7 @@ class GLES2CmdHelper : public CommandBufferHelper {
   // file instead of having to edit some template or the code generator.
   #include "gpu/command_buffer/client/gles2_cmd_helper_autogen.h"
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GLES2CmdHelper);
 };
 

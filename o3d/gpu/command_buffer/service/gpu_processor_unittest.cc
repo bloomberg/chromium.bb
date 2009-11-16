@@ -4,15 +4,12 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
+#include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/mocks.h"
-#include "gpu/gpu_plugin/command_buffer_mock.h"
-#include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/np_utils/np_browser_mock.h"
-#include "gpu/np_utils/np_object_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-using ::base::SharedMemory;
 
 using testing::_;
 using testing::DoAll;
@@ -22,7 +19,7 @@ using testing::Return;
 using testing::SetArgumentPointee;
 using testing::StrictMock;
 
-namespace gpu_plugin {
+namespace command_buffer {
 
 const size_t kRingBufferSize = 1024;
 const size_t kRingBufferEntries = kRingBufferSize / sizeof(int32);
@@ -30,7 +27,7 @@ const size_t kRingBufferEntries = kRingBufferSize / sizeof(int32);
 class GPUProcessorTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    shared_memory_.reset(new SharedMemory);
+    shared_memory_.reset(new ::base::SharedMemory);
     shared_memory_->Create(std::wstring(), false, false, kRingBufferSize);
     shared_memory_->Map(kRingBufferSize);
     buffer_ = static_cast<int32*>(shared_memory_->memory());
@@ -39,13 +36,14 @@ class GPUProcessorTest : public testing::Test {
 
     // Don't mock PluginThreadAsyncCall. Have it schedule the task.
     ON_CALL(mock_browser_, PluginThreadAsyncCall(_, _, _))
-      .WillByDefault(Invoke(&mock_browser_,
-                            &MockNPBrowser::ConcretePluginThreadAsyncCall));
+      .WillByDefault(
+          Invoke(&mock_browser_,
+                 &np_utils::MockNPBrowser::ConcretePluginThreadAsyncCall));
 
-    command_buffer_ = NPCreateObject<MockCommandBuffer>(NULL);
-    ON_CALL(*command_buffer_.Get(), GetRingBuffer())
+    command_buffer_.reset(new MockCommandBuffer);
+    ON_CALL(*command_buffer_.get(), GetRingBuffer())
       .WillByDefault(Return(shared_memory_.get()));
-    ON_CALL(*command_buffer_.Get(), GetSize())
+    ON_CALL(*command_buffer_.get(), GetSize())
       .WillByDefault(Return(kRingBufferEntries));
 
 #if defined(OS_WIN)
@@ -63,8 +61,7 @@ class GPUProcessorTest : public testing::Test {
                                                 0,
                                                 async_api_.get());
 
-    processor_ = new GPUProcessor(NULL,
-                                  command_buffer_.Get(),
+    processor_ = new GPUProcessor(command_buffer_.get(),
                                   gapi_,
                                   decoder_,
                                   parser_,
@@ -79,9 +76,9 @@ class GPUProcessorTest : public testing::Test {
 
   base::AtExitManager at_exit_manager;
   MessageLoop message_loop;
-  MockNPBrowser mock_browser_;
-  NPObjectPointer<MockCommandBuffer> command_buffer_;
-  scoped_ptr<SharedMemory> shared_memory_;
+  np_utils::MockNPBrowser mock_browser_;
+  scoped_ptr<MockCommandBuffer> command_buffer_;
+  scoped_ptr<::base::SharedMemory> shared_memory_;
   int32* buffer_;
   command_buffer::o3d::GAPIDecoder* decoder_;
   command_buffer::CommandParser* parser_;
@@ -199,11 +196,10 @@ TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
     .WillOnce(Return(
         command_buffer::parse_error::kParseUnknownCommand));
 
-  processor_->ProcessCommands();
+  EXPECT_CALL(*command_buffer_,
+      SetParseError(command_buffer::parse_error::kParseUnknownCommand));
 
-  EXPECT_EQ(command_buffer::parse_error::kParseUnknownCommand,
-            command_buffer_->ResetParseError());
-  EXPECT_FALSE(command_buffer_->GetErrorStatus());
+  processor_->ProcessCommands();
 }
 
 TEST_F(GPUProcessorTest,
@@ -226,11 +222,10 @@ TEST_F(GPUProcessorTest,
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[1]))
     .WillOnce(Return(command_buffer::parse_error::kParseNoError));
 
-  processor_->ProcessCommands();
+  EXPECT_CALL(*command_buffer_,
+      SetParseError(command_buffer::parse_error::kParseUnknownCommand));
 
-  EXPECT_EQ(command_buffer::parse_error::kParseUnknownCommand,
-            command_buffer_->ResetParseError());
-  EXPECT_FALSE(command_buffer_->GetErrorStatus());
+  processor_->ProcessCommands();
 }
 
 TEST_F(GPUProcessorTest, UnrecoverableParseErrorsRaiseTheErrorStatus) {
@@ -247,37 +242,26 @@ TEST_F(GPUProcessorTest, UnrecoverableParseErrorsRaiseTheErrorStatus) {
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
     .WillOnce(Return(command_buffer::parse_error::kParseInvalidSize));
 
-  processor_->ProcessCommands();
+  EXPECT_CALL(*command_buffer_,
+      SetParseError(command_buffer::parse_error::kParseInvalidSize));
 
-  EXPECT_EQ(command_buffer::parse_error::kParseInvalidSize,
-            command_buffer_->ResetParseError());
-  EXPECT_TRUE(command_buffer_->GetErrorStatus());
+  EXPECT_CALL(*command_buffer_, RaiseErrorStatus());
+
+  processor_->ProcessCommands();
 }
 
 TEST_F(GPUProcessorTest, ProcessCommandsDoesNothingAfterUnrecoverableError) {
-  command_buffer::CommandHeader* header =
-      reinterpret_cast<command_buffer::CommandHeader*>(&buffer_[0]);
-  header[0].command = 7;
-  header[0].size = 1;
-  header[1].command = 8;
-  header[1].size = 1;
+  EXPECT_CALL(*command_buffer_, GetErrorStatus())
+    .WillOnce(Return(true));
 
   EXPECT_CALL(*command_buffer_, GetPutOffset())
-    .WillOnce(Return(2));
-
-  EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
-    .WillOnce(Return(command_buffer::parse_error::kParseInvalidSize));
+    .Times(0);
 
   processor_->ProcessCommands();
-  processor_->ProcessCommands();
-
-  EXPECT_EQ(command_buffer::parse_error::kParseInvalidSize,
-            command_buffer_->ResetParseError());
-  EXPECT_TRUE(command_buffer_->GetErrorStatus());
 }
 
 TEST_F(GPUProcessorTest, CanGetAddressOfSharedMemory) {
-  EXPECT_CALL(*command_buffer_.Get(), GetTransferBuffer(7))
+  EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_.get()));
 
   EXPECT_EQ(&buffer_[0], processor_->GetSharedMemoryAddress(7));
@@ -288,22 +272,22 @@ ACTION_P2(SetPointee, address, value) {
 }
 
 TEST_F(GPUProcessorTest, GetAddressOfSharedMemoryMapsMemoryIfUnmapped) {
-  EXPECT_CALL(*command_buffer_.Get(), GetTransferBuffer(7))
+  EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_.get()));
 
   EXPECT_EQ(&buffer_[0], processor_->GetSharedMemoryAddress(7));
 }
 
 TEST_F(GPUProcessorTest, CanGetSizeOfSharedMemory) {
-  EXPECT_CALL(*command_buffer_.Get(), GetTransferBuffer(7))
+  EXPECT_CALL(*command_buffer_.get(), GetTransferBuffer(7))
     .WillOnce(Return(shared_memory_.get()));
 
   EXPECT_EQ(kRingBufferSize, processor_->GetSharedMemorySize(7));
 }
 
 TEST_F(GPUProcessorTest, SetTokenForwardsToCommandBuffer) {
+  EXPECT_CALL(*command_buffer_, SetToken(7));
   processor_->set_token(7);
-  EXPECT_EQ(7, command_buffer_->GetToken());
 }
 
-}  // namespace gpu_plugin
+}  // namespace command_buffer

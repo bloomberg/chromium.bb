@@ -4,8 +4,8 @@
 
 #include <windows.h>
 
+#include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/gpu_plugin/gpu_plugin_object.h"
-#include "gpu/gpu_plugin/gpu_processor.h"
 
 namespace gpu_plugin {
 

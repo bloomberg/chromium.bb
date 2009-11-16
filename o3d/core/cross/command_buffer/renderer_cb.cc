@@ -49,29 +49,26 @@
 #include "core/cross/command_buffer/texture_cb.h"
 #include "core/cross/command_buffer/display_window_cb.h"
 #include "core/cross/renderer_platform.h"
-#include "gpu/gpu_plugin/command_buffer.h"
-#include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/command_buffer/service/command_buffer_service.h"
+#include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/np_utils/np_browser.h"
 #include "gpu/np_utils/np_utils.h"
 
-#if !defined(CB_SERVICE_REMOTE)
-#include "gpu/gpu_plugin/gpu_processor.h"
-#endif
-
 namespace o3d {
 using ::base::SharedMemory;
+using ::command_buffer::CommandBufferService;
 using command_buffer::o3d::GAPIInterface;
 using command_buffer::O3DCmdHelper;
-using gpu_plugin::NPBrowser;
-using gpu_plugin::NPCreateObject;
-using gpu_plugin::NPGetProperty;
-using gpu_plugin::NPInvoke;
-using gpu_plugin::NPInvokeVoid;
-using gpu_plugin::NPObjectPointer;
+using np_utils::NPBrowser;
+using np_utils::NPCreateObject;
+using np_utils::NPGetProperty;
+using np_utils::NPInvoke;
+using np_utils::NPInvokeVoid;
+using np_utils::NPObjectPointer;
 
 #if !defined(CB_SERVICE_REMOTE)
-using gpu_plugin::CommandBuffer;
-using gpu_plugin::GPUProcessor;
+using command_buffer::CommandBuffer;
+using command_buffer::GPUProcessor;
 #endif
 
 RendererCB::RendererCB(ServiceLocator* service_locator,
@@ -94,7 +91,7 @@ RendererCB::~RendererCB() {
 }
 
 void RendererCB::Destroy() {
-  if (command_buffer_.Get()) {
+  if (command_buffer_.get()) {
     command_buffer_->DestroyTransferBuffer(transfer_shm_id_);
   }
 
@@ -294,12 +291,11 @@ Renderer::InitStatus RendererCB::InitPlatformSpecific(
   const DisplayWindowCB& display_platform =
       static_cast<const DisplayWindowCB&>(display_window);
 
-  npp_ = display_platform.npp();
-  command_buffer_ = display_platform.command_buffer();
-  DCHECK(command_buffer_.Get());
+  command_buffer_.reset(display_platform.command_buffer());
+  DCHECK(command_buffer_.get());
 
   // Create and initialize a O3DCmdHelper.
-  helper_ = new O3DCmdHelper(npp_, command_buffer_);
+  helper_ = new O3DCmdHelper(command_buffer_.get());
   if (!helper_->Initialize()) {
     Destroy();
     return INITIALIZATION_ERROR;
@@ -384,33 +380,33 @@ RendererCBLocal::RendererCBLocal(ServiceLocator* service_locator,
 RendererCBLocal::~RendererCBLocal() {
 }
 
-NPObjectPointer<CommandBuffer> RendererCBLocal::CreateCommandBuffer(
-    NPP npp, void* hwnd, int32 size) {
+CommandBuffer* RendererCBLocal::CreateCommandBuffer(NPP npp,
+                                                    void* hwnd,
+                                                    int32 size) {
 #if defined(OS_WIN)
   scoped_ptr<SharedMemory> ring_buffer(new SharedMemory);
   if (!ring_buffer->Create(std::wstring(), false, false, size))
-    return NPObjectPointer<CommandBuffer>();
+    return NULL;
 
   if (!ring_buffer->Map(size))
-    return NPObjectPointer<CommandBuffer>();
+    return NULL;
 
-  NPObjectPointer<CommandBuffer> command_buffer =
-      NPCreateObject<CommandBuffer>(npp);
+  scoped_ptr<CommandBufferService> command_buffer(new CommandBufferService);
   if (!command_buffer->Initialize(ring_buffer.release()))
-    return NPObjectPointer<CommandBuffer>();
+    return NULL;
 
   scoped_refptr<GPUProcessor> gpu_processor(
-      new GPUProcessor(npp, command_buffer.Get()));
+      new GPUProcessor(npp, command_buffer.get()));
   if (!gpu_processor->Initialize(reinterpret_cast<HWND>(hwnd)))
-    return NPObjectPointer<CommandBuffer>();
+    return NULL;
 
   command_buffer->SetPutOffsetChangeCallback(
       NewCallback(gpu_processor.get(), &GPUProcessor::ProcessCommands));
 
-  return command_buffer;
+  return command_buffer.release();
 
 #else
-  return NPObjectPointer<CommandBuffer>();
+  return NULL;
 #endif
 }
 

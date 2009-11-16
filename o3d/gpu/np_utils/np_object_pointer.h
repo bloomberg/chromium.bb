@@ -9,7 +9,7 @@
 #include "gpu/np_utils/np_browser.h"
 #include "gpu/np_utils/np_headers.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // Smart pointer for NPObjects that automatically handles reference counting.
 template <typename NPObjectType>
@@ -114,6 +114,6 @@ std::ostream& operator<<(std::ostream& stream,
                          const NPObjectPointer<NPObjectType>& pointer) {
   return stream << pointer.Get();
 }
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_OBJECT_POINTER_H_

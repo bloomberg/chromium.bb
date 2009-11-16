@@ -9,8 +9,8 @@
 
 #include "base/ref_counted.h"
 #include "base/thread.h"
-#include "gpu/gpu_plugin/command_buffer.h"
-#include "gpu/gpu_plugin/gpu_processor.h"
+#include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/np_utils/default_np_object.h"
 #include "gpu/np_utils/np_dispatcher.h"
 #include "gpu/np_utils/np_headers.h"
@@ -20,8 +20,8 @@
 namespace gpu_plugin {
 
 // The scriptable object for the GPU plugin.
-class GPUPluginObject : public DefaultNPObject<NPObject>,
-                        public PluginObject {
+class GPUPluginObject : public np_utils::DefaultNPObject<NPObject>,
+                        public np_utils::PluginObject {
  public:
   static const int32 kCommandBufferSize = 1024 * 1024;
 
@@ -78,42 +78,43 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
 
   // Set the object that receives notifications of GPU plugin object events
   // such as resize and keyboard and mouse input.
-  void SetEventSync(NPObjectPointer<NPObject> event_sync) {
+  void SetEventSync(np_utils::NPObjectPointer<NPObject> event_sync) {
     event_sync_ = event_sync;
   }
 
-  NPObjectPointer<NPObject> GetEventSync() {
+  np_utils::NPObjectPointer<NPObject> GetEventSync() {
     return event_sync_;
   }
 
   // Initializes and returns the command buffer object. Returns NULL if the
   // command buffer cannot be initialized, for example if the plugin does not
   // yet have a window handle.
-  NPObjectPointer<NPObject> OpenCommandBuffer();
+  command_buffer::CommandBuffer* OpenCommandBuffer();
 
   // Set the status for testing.
   void set_status(Status status) {
     status_ = status;
   }
 
-  // Replace the default command buffer for testing.
-  void set_command_buffer(
-      const NPObjectPointer<CommandBuffer>& command_buffer) {
-    command_buffer_ = command_buffer;
+  // Replace the default command buffer for testing. Takes ownership.
+  void set_command_buffer(command_buffer::CommandBuffer*
+      command_buffer) {
+    command_buffer_.reset(command_buffer);
   }
 
   // Replace the default GPU processor for testing.
-  void set_gpu_processor(const scoped_refptr<GPUProcessor>& processor) {
+  void set_gpu_processor(
+      const scoped_refptr<command_buffer::GPUProcessor>& processor) {
     processor_ = processor;
   }
 
   NP_UTILS_BEGIN_DISPATCHER_CHAIN(GPUPluginObject, DefaultNPObject<NPObject>)
-    NP_UTILS_DISPATCHER(GetStatus, int32());
-    NP_UTILS_DISPATCHER(GetWidth, int32());
-    NP_UTILS_DISPATCHER(GetHeight, int32());
-    NP_UTILS_DISPATCHER(SetEventSync, void(NPObjectPointer<NPObject> sync));
-    NP_UTILS_DISPATCHER(GetEventSync, NPObjectPointer<NPObject>());
-    NP_UTILS_DISPATCHER(OpenCommandBuffer, NPObjectPointer<NPObject>())
+    NP_UTILS_DISPATCHER(GetStatus, int32())
+    NP_UTILS_DISPATCHER(GetWidth, int32())
+    NP_UTILS_DISPATCHER(GetHeight, int32())
+    NP_UTILS_DISPATCHER(SetEventSync,
+        void(np_utils::NPObjectPointer<NPObject> sync))
+    NP_UTILS_DISPATCHER(GetEventSync, np_utils::NPObjectPointer<NPObject>())
   NP_UTILS_END_DISPATCHER_CHAIN
 
  private:
@@ -122,9 +123,9 @@ class GPUPluginObject : public DefaultNPObject<NPObject>,
   NPP npp_;
   Status status_;
   NPWindow window_;
-  NPObjectPointer<CommandBuffer> command_buffer_;
-  scoped_refptr<GPUProcessor> processor_;
-  NPObjectPointer<NPObject> event_sync_;
+  scoped_ptr<command_buffer::CommandBuffer> command_buffer_;
+  scoped_refptr<command_buffer::GPUProcessor> processor_;
+  np_utils::NPObjectPointer<NPObject> event_sync_;
 };
 
 }  // namespace gpu_plugin

@@ -12,7 +12,7 @@
 #include "gpu/np_utils/np_object_pointer.h"
 #include "gpu/np_utils/np_headers.h"
 
-namespace gpu_plugin {
+namespace np_utils {
 
 // Convert NPVariant to C++ type. Returns whether the conversion was successful.
 bool NPVariantToValue(bool* value, const NPVariant& variant);
@@ -266,6 +266,6 @@ NPObjectPointer<NPObjectType> NPCreateObject(NPP npp) {
   return NPObjectPointer<NPObjectType>::FromReturned(object);
 }
 
-}  // namespace gpu_plugin
+}  // namespace np_utils
 
 #endif  // GPU_NP_UTILS_NP_UTILS_H_
