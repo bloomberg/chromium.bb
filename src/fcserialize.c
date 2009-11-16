@@ -22,14 +22,6 @@
 
 #include "fcint.h"
 
-typedef union _FcAlign {
-    double	d;
-    int		i;
-    intptr_t	ip;
-    FcBool	b;
-    void	*p;
-} FcAlign;
-
 intptr_t
 FcAlignSize (intptr_t size)
 {

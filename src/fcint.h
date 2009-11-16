@@ -351,6 +351,14 @@ struct _FcCache {
 
 #define FC_SERIALIZE_HASH_SIZE	8191
 
+typedef union _FcAlign {
+    double	d;
+    int		i;
+    intptr_t	ip;
+    FcBool	b;
+    void	*p;
+} FcAlign;
+
 typedef struct _FcSerializeBucket {
     struct _FcSerializeBucket *next;
     const void	*object;
