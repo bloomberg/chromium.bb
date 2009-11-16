@@ -27,8 +27,9 @@ static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls(
 
 PluginThread::PluginThread()
     : preloaded_plugin_module_(NULL) {
-  plugin_path_ = FilePath::FromWStringHack(
-      CommandLine::ForCurrentProcess()->GetSwitchValue(switches::kPluginPath));
+  plugin_path_ =
+      CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kPluginPath);
 
   lazy_tls.Pointer()->Set(this);
 #if defined(OS_LINUX)

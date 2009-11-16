@@ -32,8 +32,8 @@ class NodeLeakTest : public TestShellTest {
   virtual void SetUp() {
     const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
 
-    FilePath cache_path = FilePath::FromWStringHack(
-        parsed_command_line.GetSwitchValue(test_shell::kCacheDir));
+    FilePath cache_path =
+        parsed_command_line.GetSwitchValuePath(test_shell::kCacheDir);
     if (cache_path.empty()) {
       PathService::Get(base::DIR_EXE, &cache_path);
       cache_path = cache_path.AppendASCII("cache");
@@ -75,9 +75,8 @@ class NodeLeakTest : public TestShellTest {
 
 TEST_F(NodeLeakTest, TestURL) {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
-  if (parsed_command_line.HasSwitch(kTestUrlSwitch)) {
+  if (parsed_command_line.HasSwitch(kTestUrlSwitch))
     NavigateToURL(parsed_command_line.GetSwitchValue(kTestUrlSwitch).c_str());
-  }
 }
 
 }  // namespace

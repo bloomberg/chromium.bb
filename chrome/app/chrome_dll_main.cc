@@ -495,8 +495,8 @@ int ChromeMain(int argc, char** argv) {
 #endif
 
   // Notice a user data directory override if any
-  const FilePath user_data_dir = FilePath::FromWStringHack(
-      parsed_command_line.GetSwitchValue(switches::kUserDataDir));
+  const FilePath user_data_dir =
+      parsed_command_line.GetSwitchValuePath(switches::kUserDataDir);
   if (!user_data_dir.empty())
     CHECK(PathService::Override(chrome::DIR_USER_DATA, user_data_dir));
 

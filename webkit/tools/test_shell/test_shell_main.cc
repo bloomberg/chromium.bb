@@ -135,8 +135,8 @@ int main(int argc, char* argv[]) {
       parsed_command_line.HasSwitch(test_shell::kEnableFileCookies))
     net::CookieMonster::EnableFileScheme();
 
-  FilePath cache_path = FilePath::FromWStringHack(
-      parsed_command_line.GetSwitchValue(test_shell::kCacheDir));
+  FilePath cache_path =
+      parsed_command_line.GetSwitchValuePath(test_shell::kCacheDir);
   // If the cache_path is empty and it's layout_test_mode, leave it empty
   // so we use an in-memory cache. This makes running multiple test_shells
   // in parallel less flaky.

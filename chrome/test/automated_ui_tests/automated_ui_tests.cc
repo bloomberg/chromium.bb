@@ -73,8 +73,7 @@ void SilentRuntimeReportHandler(const std::string& str) {
 FilePath GetInputFilePath() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(kInputFilePathSwitch)) {
-    return FilePath::FromWStringHack(
-        parsed_command_line.GetSwitchValue(kInputFilePathSwitch));
+    return parsed_command_line.GetSwitchValuePath(kInputFilePathSwitch);
   } else {
     return FilePath(kDefaultInputFilePath);
   }
@@ -83,8 +82,7 @@ FilePath GetInputFilePath() {
 FilePath GetOutputFilePath() {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   if (parsed_command_line.HasSwitch(kOutputFilePathSwitch)) {
-    return FilePath::FromWStringHack(
-        parsed_command_line.GetSwitchValue(kOutputFilePathSwitch));
+    return parsed_command_line.GetSwitchValuePath(kOutputFilePathSwitch);
   } else {
     return FilePath(kDefaultOutputFilePath);
   }

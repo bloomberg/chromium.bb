@@ -667,10 +667,8 @@ void SetPageRange(const CommandLine& parsed_command_line) {
 
   ASSERT_TRUE(g_end_index >= g_start_index);
 
-  if (parsed_command_line.HasSwitch(kListSwitch)) {
-    g_url_file_path = FilePath::FromWStringHack(
-        parsed_command_line.GetSwitchValue(kListSwitch));
-  }
+  if (parsed_command_line.HasSwitch(kListSwitch))
+    g_url_file_path = parsed_command_line.GetSwitchValuePath(kListSwitch);
 
   if (parsed_command_line.HasSwitch(kIterationSwitch)) {
     ASSERT_TRUE(
@@ -690,11 +688,8 @@ void SetPageRange(const CommandLine& parsed_command_line) {
         parsed_command_line.GetSwitchValue(kEndURLSwitch));
   }
 
-  if (parsed_command_line.HasSwitch(kLogFileSwitch)) {
-    g_log_file_path =
-        FilePath::FromWStringHack(
-            parsed_command_line.GetSwitchValue(kLogFileSwitch));
-  }
+  if (parsed_command_line.HasSwitch(kLogFileSwitch))
+    g_log_file_path = parsed_command_line.GetSwitchValuePath(kLogFileSwitch);
 
   if (parsed_command_line.HasSwitch(kTimeoutSwitch)) {
     ASSERT_TRUE(
@@ -721,11 +716,9 @@ void SetPageRange(const CommandLine& parsed_command_line) {
         CommandLine v8_command_line(
             parsed_command_line.GetSwitchValuePath(switches::kJavaScriptFlags));
         if (v8_command_line.HasSwitch(kV8LogFileSwitch)) {
-          g_v8_log_path = FilePath::FromWStringHack(
-              v8_command_line.GetSwitchValue(kV8LogFileSwitch));
-          if (!file_util::AbsolutePath(&g_v8_log_path)) {
+          g_v8_log_path = v8_command_line.GetSwitchValuePath(kV8LogFileSwitch);
+          if (!file_util::AbsolutePath(&g_v8_log_path))
             g_v8_log_path = FilePath();
-          }
         }
       }
     }

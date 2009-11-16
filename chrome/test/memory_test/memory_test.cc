@@ -83,9 +83,9 @@ class MemoryTest : public UITest {
       launch_arguments_.AppendSwitch(switches::kNoEvents);
 
       // Get the specified user data dir (optional)
-      FilePath profile_dir = FilePath::FromWStringHack(
-          CommandLine::ForCurrentProcess()->GetSwitchValue(
-          switches::kUserDataDir));
+      FilePath profile_dir =
+          CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kUserDataDir);
 
       if (profile_dir.empty()) {
         if (!SetupTempDirectory(GetUserDataDirSource())) {
