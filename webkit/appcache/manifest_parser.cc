@@ -135,7 +135,7 @@ bool ParseManifest(const GURL& manifest_url, const char* data, int length,
       const wchar_t *line_end = line_p + line.length();
 
       // Look for whitespace separating the URL from subsequent ignored tokens.
-      while (line_p < line_end && *line_p != '\t' && *p != ' ')
+      while (line_p < line_end && *line_p != '\t' && *line_p != ' ')
         ++line_p;
 
       string16 url16;

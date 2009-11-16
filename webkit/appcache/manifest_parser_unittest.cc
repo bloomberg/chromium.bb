@@ -301,5 +301,17 @@ TEST(ManifestParserTest, UnusualUtf8) {
   EXPECT_TRUE(urls.find("http://bad.com/nonbmp%F1%84%AB%BC") != urls.end());
 }
 
+TEST(ManifestParserTest, IgnoreAfterSpace) {
+  Manifest manifest;
+  const GURL kUrl("http://smorg.borg");
+  const std::string kData(
+    "CACHE MANIFEST\r"
+    "resource.txt this stuff after the white space should be ignored\r");
+  EXPECT_TRUE(ParseManifest(kUrl, kData.c_str(), kData.length(), manifest));
+
+  base::hash_set<std::string> urls = manifest.explicit_urls;
+  EXPECT_TRUE(urls.find("http://smorg.borg/resource.txt") != urls.end());
+}
+
 }  // namespace appcache
 
