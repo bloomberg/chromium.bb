@@ -32,6 +32,7 @@
 
 // This file contains the declaration of class FileOutputStreamProcessor.
 
+#include <stdio.h>
 #include "base/logging.h"
 #include "import/cross/file_output_stream_processor.h"
 

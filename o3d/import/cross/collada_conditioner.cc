@@ -133,10 +133,10 @@ const PassDeclaration* FindValidTechnique(
     if (i->pass.size() != 1) continue;
 
     const PassDeclaration& pass = i->pass[0];
-    if (pass.vertex_shader_profile == "vs_2_0" &&
-        pass.fragment_shader_profile == "ps_2_0" ||
-        pass.vertex_shader_profile == "arbvp1" &&
-        pass.fragment_shader_profile == "arbfp1") {
+    if ((pass.vertex_shader_profile == "vs_2_0" &&
+         pass.fragment_shader_profile == "ps_2_0") ||
+        (pass.vertex_shader_profile == "arbvp1" &&
+         pass.fragment_shader_profile == "arbfp1")) {
       return &pass;
     }
   }
