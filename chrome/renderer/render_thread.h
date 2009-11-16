@@ -18,6 +18,7 @@
 #include "chrome/common/dom_storage_type.h"
 #include "chrome/renderer/renderer_histogram_snapshots.h"
 #include "chrome/renderer/visitedlink_slave.h"
+#include "ipc/ipc_platform_file.h"
 
 class AppCacheDispatcher;
 class DBMessageFilter;
@@ -200,7 +201,7 @@ class RenderThread : public RenderThreadBase,
   void OnPurgePluginListCache(bool reload_pages);
 
 #if defined(SPELLCHECKER_IN_RENDERER)
-  void OnInitSpellChecker(const base::FileDescriptor& bdict_fd,
+  void OnInitSpellChecker(IPC::PlatformFileForTransit bdict_file,
                           const std::vector<std::string>& custom_words,
                           const std::string& language,
                           bool auto_spell_correct);

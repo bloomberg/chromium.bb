@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
-#include "base/file_descriptor_posix.h"
 #include "base/file_path.h"
+#include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
@@ -37,7 +37,7 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // update.
   void AddWord(const std::string& word);
 
-  const base::FileDescriptor& bdict_fd() const { return fd_; };
+  const base::PlatformFile& bdict_file() const { return file_; }
 
   const std::vector<std::string>& custom_words() const { return custom_words_; }
 
@@ -51,6 +51,14 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   friend class DeleteTask<SpellCheckHost>;
 
   virtual ~SpellCheckHost();
+
+  // Figure out the location for the dictionary. This is only non-trivial for
+  // Windows:
+  // The default place whether the spellcheck dictionary can reside is
+  // chrome::DIR_APP_DICTIONARIES. However, for systemwide installations,
+  // this directory may not have permissions for download. In that case, the
+  // alternate directory for download is chrome::DIR_USER_DATA.
+  void InitializeDictionaryLocation();
 
   // Load and parse the custom words dictionary and open the bdic file.
   // Executed on the file thread.
@@ -66,7 +74,7 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   void WriteWordToCustomDictionary(const std::string& word);
 
   // URLFetcher::Delegate implementation.  Called when we finish downloading the
-  // spellcheck dictionary; saves the dictionary to disk.
+  // spellcheck dictionary; saves the dictionary to |data_|.
   virtual void OnURLFetchComplete(const URLFetcher* source,
                                   const GURL& url,
                                   const URLRequestStatus& status,
@@ -77,8 +85,8 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // May be NULL.
   Observer* observer_;
 
-  // The desired location of the dictionary file (whether or not it exists yet).
-  FilePath bdict_file_;
+  // The desired location of the dictionary file (whether or not t exists yet).
+  FilePath bdict_file_path_;
 
   // The location of the custom words file.
   FilePath custom_dictionary_file_;
@@ -86,8 +94,8 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // The language of the dictionary file.
   std::string language_;
 
-  // On POSIX, the file descriptor for the dictionary file.
-  base::FileDescriptor fd_;
+  // The file descriptor/handle for the dictionary file.
+  base::PlatformFile file_;
 
   // In-memory cache of the custom words file.
   std::vector<std::string> custom_words_;
