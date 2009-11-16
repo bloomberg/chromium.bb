@@ -498,7 +498,9 @@ const std::string& GetUserAgent(const GURL& url) {
       if (g_user_agent->mimic_chrome1_user_agent.empty())
         BuildUserAgent(true, false, &g_user_agent->mimic_chrome1_user_agent);
       return g_user_agent->mimic_chrome1_user_agent;
-    } else if (MatchPattern(url.host(), "*.mail.yahoo.com")) {
+    }
+#if defined(OS_LINUX)
+    else if (MatchPattern(url.host(), "*.mail.yahoo.com")) {
       // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
       // http://bugs.chromium.org/11136
       // TODO(evanm): remove this if Yahoo fixes their sniffing.
@@ -506,6 +508,7 @@ const std::string& GetUserAgent(const GURL& url) {
         BuildUserAgent(false, true, &g_user_agent->mimic_windows_user_agent);
       return g_user_agent->mimic_windows_user_agent;
     }
+#endif
   }
   return g_user_agent->user_agent;
 }
