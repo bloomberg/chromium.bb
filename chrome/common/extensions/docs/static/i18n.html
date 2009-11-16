@@ -3,8 +3,11 @@
 <!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
 Use the <code>chrome.i18n</code> module to manipulate the i18n related browser
-settings, such as the accept languages, or to get localized messages for current
-locale.
+settings, such as the accept languages.
+<span class="comment">
+[PENDING: add when getMessage works:
+"or to get localized messages for the current locale."]
+</span>
 </p>
 
 <h3 id="overview-examples">Examples</h3>
@@ -23,8 +26,11 @@ function getAcceptLanguages() {
 }
 </pre>
 
+<div class="comment">
+[PENDING: add the following when getMessage is working]
+
 <p>
-The following code gets localized message from the browser and displays it as a
+The following code gets a localized message from the browser and displays it as a
 string. It replaces two placeholders within the message with values arg1 and
 arg2.
 </p>
@@ -35,4 +41,5 @@ function getMessage() {
   document.getElementById("languageSpan").innerHTML = message;
 }
 </pre>
+</div>
 <!-- END AUTHORED CONTENT -->

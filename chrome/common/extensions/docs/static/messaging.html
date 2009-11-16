@@ -84,7 +84,7 @@ chrome.extension.onRequest.addListener(
 <p>
 Sometimes it's useful to have a conversation that lasts longer than a single
 request and response. In this case, you can open a long-lived channel from
-your content script to an extension page, or vice versa, using 
+your content script to an extension page, or vice versa, using
 <a href="extension.html#method-connect">chrome.extension.connect()</a>
 or
 <a href="tabs.html#method-connect">chrome.tabs.connect()</a> respectively. The
@@ -155,7 +155,7 @@ You may want to find out when a connection is closed, for example if you are
 maintaining separate state for each open port. For this you can listen to the
 <a href="extension.html#type-Port">Port.onDisconnect</a>
 event. This event is fired either when the other side of the channel manually
-calls 
+calls
 <a href="extension.html#type-Port">Port.disconnect()</a>, or when the page
 containing the port is unloaded (for example if the tab is navigated).
 onDisconnect is guaranteed to be fired only once for any given port.

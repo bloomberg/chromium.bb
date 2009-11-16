@@ -84,7 +84,7 @@ function renderPage() {
     alert("Empty page name for: " + document.location.href);
     return;
   }
-  
+
   pageName = pageBase.replace(/([A-Z])/g, " $1");
   pageName = pageName.substring(0, 1).toUpperCase() + pageName.substring(1);
 
@@ -94,7 +94,7 @@ function renderPage() {
     fetchStatic();
   }, function(error) {
     alert("Failed to load " + API_TEMPLATE + ". " + error);
-  });	
+  });
 }
 
 function fetchStatic() {
@@ -115,7 +115,7 @@ function fetchSchema() {
   fetchContent(SCHEMA, function(schemaContent) {
     schema = JSON.parse(schemaContent);
     renderTemplate();
-    
+
   }, function(error) {
     alert("Failed to load " + SCHEMA);
   });
@@ -171,10 +171,10 @@ function renderTemplate() {
     if (mod.namespace == pageBase) {
       // This page is an api page. Setup types and apiDefinition.
       module = mod;
-      apiModuleTitle = "chrome." + module.namespace;  
+      apiModuleTitle = "chrome." + module.namespace;
       pageData.apiDefinition = module;
     }
-    
+
     if (mod.types) {
       mod.types.each(function(type) {
         typeModule[type.id] = mod;
@@ -188,7 +188,7 @@ function renderTemplate() {
   jstProcess(input, output);
 
   selectCurrentPageOnLeftNav();
-  
+
   document.title = getPageTitle();
   // Show
   if (window.postRender)
@@ -225,7 +225,7 @@ function evalXPathFromNode(expression, node) {
   while(n = results.iterateNext()) {
     retval.push(n);
   }
-  
+
   return retval;
 }
 
@@ -233,7 +233,7 @@ function evalXPathFromId(expression, id) {
   return evalXPathFromNode(expression, document.getElementById(id));
 }
 
-// Select the current page on the left nav. Note: if already rendered, this 
+// Select the current page on the left nav. Note: if already rendered, this
 // will not effect any nodes.
 function selectCurrentPageOnLeftNav() {
   function finalPathPart(str) {
@@ -241,10 +241,10 @@ function selectCurrentPageOnLeftNav() {
     var lastPart = pathParts[pathParts.length - 1];
     return lastPart.split(/\?/)[0];
   }
-  
+
   var pageBase = finalPathPart(document.location.href);
-  
-  evalXPathFromId(".//li/a", "leftNav").select(function(node) {
+
+  evalXPathFromId(".//li/a", "gc-toc").select(function(node) {
     if (pageBase == finalPathPart(node.href)) {
       var parent = node.parentNode;
       if (node.firstChild.nodeName == 'DIV') {
@@ -255,7 +255,7 @@ function selectCurrentPageOnLeftNav() {
       parent.removeChild(node);
       parent.insertBefore(node.firstChild, parent.firstChild);
       return true;
-    }  
+    }
   });
 }
 
@@ -287,7 +287,7 @@ function getStaticTOC() {
   var staticHNodes = evalXPathFromId(".//h2|h3", "static");
   var retval = [];
   var lastH2;
-  
+
   staticHNodes.each(function(n, i) {
     var anchorName = n.id || n.nodeName + "-" + i;
     if (!n.id) {
@@ -296,7 +296,7 @@ function getStaticTOC() {
       n.parentNode.insertBefore(a, n);
     }
     var dataNode = { name: n.innerHTML, href: anchorName };
-    
+
     if (n.nodeName == "H2") {
       retval.push(dataNode);
       lastH2 = dataNode;
@@ -305,7 +305,7 @@ function getStaticTOC() {
       lastH2.children.push(dataNode);
     }
   });
-   
+
   return retval;
 }
 
@@ -314,8 +314,8 @@ function getTypeRefPage(type) {
 }
 
 function getPageTitle() {
-  return getDataFromPageHTML("pageData-title") || 
-         apiModuleTitle || 
+  return getDataFromPageHTML("pageData-title") ||
+         apiModuleTitle ||
          pageName;
 }
 
@@ -378,7 +378,7 @@ function getSignatureString(parameters) {
     retval.push(getTypeName(param) + " " + param.name);
   });
 
-  return retval.join(", ");	
+  return retval.join(", ");
 }
 
 function sortByName(a, b) {
