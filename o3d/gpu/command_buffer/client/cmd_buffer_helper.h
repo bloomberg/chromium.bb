@@ -162,9 +162,18 @@ class CommandBufferHelper {
 
   // Typed version of GetSpace for immediate commands.
   template <typename T>
-  T& GetImmediateCmdSpace(size_t space) {
+  T& GetImmediateCmdSpace(size_t data_space) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-    uint32 space_needed = ComputeNumEntries(sizeof(T) + space);
+    uint32 space_needed = ComputeNumEntries(sizeof(T) + data_space);
+    void* data = GetSpace(space_needed);
+    return *reinterpret_cast<T*>(data);
+  }
+
+  // Typed version of GetSpace for immediate commands.
+  template <typename T>
+  T& GetImmediateCmdSpaceTotalSize(size_t total_space) {
+    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+    uint32 space_needed = ComputeNumEntries(total_space);
     void* data = GetSpace(space_needed);
     return *reinterpret_cast<T*>(data);
   }

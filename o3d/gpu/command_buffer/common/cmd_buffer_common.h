@@ -80,11 +80,20 @@ struct CommandHeader {
     Init(T::kCmdId, ComputeNumEntries(sizeof(T)));  // NOLINT
   }
 
+  // Sets the header by a size in bytes of the immediate data after the command.
+  template <typename T>
+  void SetCmdBySize(uint32 size_of_data_in_bytes) {
+    COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+    Init(T::kCmdId,
+         ComputeNumEntries(sizeof(T) + size_of_data_in_bytes));  // NOLINT
+  }
+
   // Sets the header by a size in bytes.
   template <typename T>
-  void SetCmdBySize(uint32 size_in_bytes) {
+  void SetCmdByTotalSize(uint32 size_in_bytes) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
-    Init(T::kCmdId, ComputeNumEntries(sizeof(T) + size_in_bytes));  // NOLINT
+    DCHECK_GE(size_in_bytes, sizeof(T));  // NOLINT
+    Init(T::kCmdId, ComputeNumEntries(size_in_bytes));
   }
 };
 
@@ -137,6 +146,19 @@ void* NextImmediateCmdAddress(void* cmd, uint32 size_of_data_in_bytes) {
   COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
   return reinterpret_cast<char*>(cmd) + sizeof(T) +   // NOLINT
       RoundSizeToMultipleOfEntries(size_of_data_in_bytes);
+}
+
+// Gets the address of the place to put the next command in a typesafe way.
+// This can only be used for variable sized command like IMMEDIATE commands.
+// Parameters:
+//   cmd: Address of command.
+//   size_of_cmd_in_bytes: Size of the cmd and data.
+template <typename T>
+void* NextImmediateCmdAddressTotalSize(void* cmd, uint32 total_size_in_bytes) {
+  COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
+  DCHECK_GE(total_size_in_bytes, sizeof(T));  // NOLINT
+  return reinterpret_cast<char*>(cmd) +
+      RoundSizeToMultipleOfEntries(total_size_in_bytes);
 }
 
 struct SharedMemory {

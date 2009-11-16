@@ -14,11 +14,13 @@
       'target_name': 'command_buffer_common',
       'type': 'static_library',
       'include_dirs': [
+        'command_buffer/common',
         '..',
         '../..',
       ],
       'all_dependent_settings': {
         'include_dirs': [
+          'command_buffer/common',
           '..',
           '../..',
         ],
@@ -27,6 +29,10 @@
         'command_buffer/common/bitfield_helpers.h',
         'command_buffer/common/cmd_buffer_common.h',
         'command_buffer/common/cmd_buffer_common.cc',
+        'command_buffer/common/gles2_cmd_format.cc',
+        'command_buffer/common/gles2_cmd_format.h',
+        'command_buffer/common/gles2_cmd_utils.cc',
+        'command_buffer/common/gles2_cmd_utils.h',
         'command_buffer/common/o3d_cmd_format.h',
         'command_buffer/common/o3d_cmd_format.cc',
         'command_buffer/common/gapi_interface.h',
@@ -38,11 +44,64 @@
       ],
     },
     {
+      # Library helps make GLES2 command buffers.
+      'target_name': 'gles2_cmd_helper',
+      'type': 'static_library',
+      'dependencies': [
+        'command_buffer_common',
+        'np_utils',
+      ],
+      'sources': [
+        'command_buffer/client/gles2_cmd_helper.cc',
+        'command_buffer/client/gles2_cmd_helper.h',
+        'command_buffer/client/gles2_cmd_helper_autogen.h',
+      ],
+    },
+    {
+      # Library emulates GLES2 using command_buffers.
+      'target_name': 'gles2_implementation',
+      'type': 'static_library',
+      'dependencies': [
+        'gles2_cmd_helper',
+      ],
+      'sources': [
+        'command_buffer/client/gles2_implementation_autogen.h',
+        'command_buffer/client/gles2_implementation.cc',
+        'command_buffer/client/gles2_implementation_gen.h',
+        'command_buffer/client/gles2_implementation.h',
+      ],
+    },
+    {
+      # Stub to expose gles2_implementation as a namespace rather than a class
+      # so GLES2 programs can work with no changes.
+      'target_name': 'gles2_lib',
+      'type': 'static_library',
+      'dependencies': [
+        'gles2_implementation',
+      ],
+      'sources': [
+        'command_buffer/client/gles2_lib.cc',
+        'command_buffer/client/gles2_lib.h',
+        'command_buffer/client/gles2_lib_autogen.h',
+      ],
+    },
+    {
       'target_name': 'command_buffer_common_unittests',
       'type': 'none',
+      'include_dirs': [
+        'command_buffer/common',
+      ],
+      'dependencies': [
+        'gles2_lib',
+        'gles2_implementation',
+        'gles2_cmd_helper',
+      ],
       'direct_dependent_settings': {
         'sources': [
           'command_buffer/common/bitfield_helpers_test.cc',
+          'command_buffer/common/gles2_cmd_format_test.cc',
+          'command_buffer/common/gles2_cmd_format_test_autogen.h',
+          'command_buffer/common/gles2_cmd_id_test.cc',
         ],
       },
     },
@@ -80,6 +139,9 @@
     {
       'target_name': 'command_buffer_service',
       'type': 'static_library',
+      'defines': [
+        'GPU_SERVICE=1',
+      ],
       'include_dirs': [
         '..',
         '../..',
@@ -168,6 +230,10 @@
               'command_buffer/service/gapi_gl.h',
               'command_buffer/service/geometry_gl.cc',
               'command_buffer/service/geometry_gl.h',
+              'command_buffer/service/gles2_cmd_decoder.h',
+              'command_buffer/service/gles2_cmd_decoder_validate.h',
+              'command_buffer/service/gles2_cmd_decoder_autogen.h',
+              'command_buffer/service/gles2_cmd_decoder.cc',
               'command_buffer/service/gl_utils.h',
               'command_buffer/service/render_surface_gl.cc',
               'command_buffer/service/render_surface_gl.h',
