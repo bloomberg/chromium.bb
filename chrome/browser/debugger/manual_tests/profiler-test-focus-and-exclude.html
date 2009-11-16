@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <title>Profiler: focusing and exclusion test</title>
+    <script type="text/javascript" src="resources/fib.js"></script>
+  </head>
+  <body onload="run_fib()">
+    This test runs a simple looped computation to test focusing and
+    exclusion functionality of profile view grid.
+    <br>
+    <br>
+    To use this test:
+    <ul>
+      <li>load file in the browser;
+      <li>open DevTools (Ctrl+Shift+I on Win/Linux, Command+Option+I on Mac);
+      <li>go to 'Profiles' page;
+      <li>press 'Start profiling' button
+        (gray dot on the left side of status bar);
+      <li>wait for 5 seconds;
+      <li>press 'Stop profiling' button
+        (red dot on the left side of status bar);
+    </ul>
+    <br>
+    On the left pane under 'CPU profiles' section, an item called
+    'Profile 1' must appear, and a grid with profile data must
+    appear on the right. Now test the following functionality in the grid:
+    <br>
+    TEST 1:
+    <ul>
+      <li>select 'eternal_fib' function entry (without expanding it),
+        press 'Focus
+        on selected function' button (eye on the right of the status bar);
+      <li>ensure that only 'eternal_fib' function and its children are 
+        left in the tree, and 'Total' column for the function shows
+        '100%' value;
+      <li>expand 'eternal_fib' function node;
+      <li>press 'Restore all functions' button;
+      <li>verify that the value in 'Total' column is less than 100%;
+      <li>verify that 'eternal_fib' function node is can still be
+        collapsed and expanded back;
+    </ul>
+    <br>
+    TEST 2:
+    <ul>
+      <li>expand two levels of 'Script:' node, select the second-level
+        node;
+      <li>repeat the same steps for the selected node (in this case, immediate
+        parent nodes of the focused node must also remain visible after
+        focusing);
+    </ul>
+    <br>
+    TEST 3:
+    <ul>
+      <li>by expanding 'Script:' node, make sure that at least 3
+        'eternal_fib' function nodes are visible;
+      <li>select any of 'eternal_fib' nodes and press
+        'Exclude selected function' (cross) button on the status bar;
+      <li>verify that all 'eternal_fib' nodes are no more visible;
+      <li>expand more 'Script:' node levels, verify that no new
+        'eternal_fib' nodes appear with expansion;
+      <li>press 'Restore all functions' button;
+      <li>verify that 'eternal_fib' nodes are now visible;
+    </ul>
+    <br>
+    TESTS 4 and 5:
+    <br>
+    Now switch to 'Tree (Top Down)' view and repeat testing steps.
+    For the 'Exclude selected function' function test, use 
+    'Script:' function node, as 'eternal_fib' has only
+    one entry in this view.
+  </body>
+</html>

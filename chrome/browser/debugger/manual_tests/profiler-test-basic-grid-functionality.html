@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <title>Profiler: basic grid functionality test</title>
+    <script type="text/javascript" src="resources/fib.js"></script>
+  </head>
+  <body onload="run_fib()">
+    This test runs a simple looped computation to test basic
+    functionality of profile view grid.
+    <br>
+    <br>
+    To use this test:
+    <ul>
+      <li>load file in the browser;
+      <li>open DevTools (Ctrl+Shift+I on Win/Linux, Command+Option+I on Mac);
+      <li>go to 'Profiles' page;
+      <li>press 'Start profiling' button
+        (gray dot on the left side of status bar);
+      <li>wait for 5 seconds;
+      <li>press 'Stop profiling' button
+        (red dot on the left side of status bar);
+    </ul>
+    <br>
+    On the left pane under 'CPU profiles' section, an item called
+    'Profile 1' must appear, and a grid with profile data must
+    appear on the right. Now test the following functionality in the grid:
+    <ul>
+      <li>change sorting order in each column by clicking on its header;
+      <li>resize each column;
+      <li>toggle between showing absolute times and percents
+        (button with percent sign on the status bar);
+      <li>double-click on numbers in 'Self' and
+        'Total' columns to toggle between times and percents for
+        this column only;
+      <li>expanding and collapsing tree nodes;
+      <li>toggling between "Heavy" and "Tree" views.
+    </ul>
+  </body>
+</html>
