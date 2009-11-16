@@ -3064,8 +3064,6 @@ BUG27553 WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
 
 // WebKit merge 50840:50929
 BUG27555 : LayoutTests/accessibility/document-attributes.html = TEXT
-BUG27555 : LayoutTests/fast/forms/file-input-direction.html = TEXT
-BUG27555 : LayoutTests/fast/forms/hidden-input-file.html = TEXT
 BUG27555 : LayoutTests/fast/forms/input-file-re-render.html = MISSING TEXT
 
 BUG27555 MAC : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE
@@ -3075,10 +3073,6 @@ BUG27555 WIN LINUX : LayoutTests/fast/css/color-correction-on-text-shadow.html =
 BUG27555 MAC : LayoutTests/fast/reflections/opacity-reflection-transform.html = IMAGE
 BUG27555 WIN LINUX : LayoutTests/fast/reflections/opacity-reflection-transform.html = IMAGE+TEXT
 
-BUG27555 WIN LINUX : LayoutTests/fast/forms/file-input-disabled.html = TEXT
-BUG27555 WIN : LayoutTests/fast/forms/form-element-geometry.html = TEXT
-BUG27555 WIN LINUX : LayoutTests/fast/forms/input-appearance-height.html = TEXT
-BUG27555 LINUX WIN : LayoutTests/fast/forms/input-value.html = TEXT
 
 BUG27555 : LayoutTests/media/media-fullscreen-inline.html = TIMEOUT
 BUG27555 : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
