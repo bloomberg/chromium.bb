@@ -1142,7 +1142,7 @@
    fun:_ZN12RenderThread15OnCreateNewViewEiRK19RendererPreferencesRK14WebPreferencesi
 }
 {
-   bug_27318 
+   bug_27318
    Memcheck:Cond
    fun:_ZN21MessagePortDispatcher7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
    fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
@@ -1160,10 +1160,85 @@
    fun:_ZN16FakeServerChange19ApplyPendingChangesEPN12browser_sync25ChangeProcessingInterfaceE
    fun:_ZN61ProfileSyncServiceTest_ServerChangeRequiringFosterParent_Test8TestBodyEv
    fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8internal12TestInfoIm	pl3RunEv
    fun:_ZN7testing8TestCase3RunEv
    fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
    fun:_ZN7testing8UnitTest3RunEv
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+
+# The following three suppressions are related to the workers code.
+{
+   bug_27837
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN19WebSharedWorkerStub9OnConnectEii
+   fun:_Z16DispatchToMethodI19WebSharedWorkerStubMS0_FviiEiiEvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple2IiiEE8DispatchI19WebSharedWorkerStubMS5_FviiEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN19WebSharedWorkerStub17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN13MessageRouter12RouteMessageERKN3IPC7MessageE
+   fun:_ZN13MessageRouter17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_27838
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN7WebCore18MessagePortChannel6createEN3WTF10PassRefPtrINS_26PlatformMessagePortChannelEEE
+   fun:_ZN6WebKit19WebSharedWorkerImpl7connectEPNS_21WebMessagePortChannelEPNS_15WebSharedWorker15ConnectListenerE
+   fun:_ZN19WebSharedWorkerStub9OnConnectEii
+   fun:_Z16DispatchToMethodI19WebSharedWorkerStubMS0_FviiEiiEvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN3IPC16MessageWithTupleI6Tuple2IiiEE8DispatchI19WebSharedWorkerStubMS5_FviiEEEbPKNS_7MessageEPT_T0_
+   fun:_ZN19WebSharedWorkerStub17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN13MessageRouter12RouteMessageERKN3IPC7MessageE
+   fun:_ZN13MessageRouter17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN11ChildThread17OnMessageReceivedERKN3IPC7MessageE
+   fun:_ZN3IPC12ChannelProxy7Context17OnDispatchMessageERKNS_7MessageE
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEES3_EvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvRKNS0_7MessageEE6Tuple1IS3_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_27839
+   Memcheck:Cond
+   fun:_ZN21MessagePortDispatcher7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN21ResourceMessageFilterD0Ev
+   fun:_ZN12ChromeThread14DeleteOnThreadILNS_2IDE4EE8DestructI21ResourceMessageFilterEEvPT_
+   fun:_ZN21ResourceMessageFilter10OnDestructEv
+   fun:_ZN3IPC12ChannelProxy19MessageFilterTraits8DestructEPNS0_13MessageFilterE
+   fun:_ZN4base20RefCountedThreadSafeIN3IPC12ChannelProxy13MessageFilterENS2_19MessageFilterTraitsEE7ReleaseEv
+   fun:_ZN13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEED1Ev
+   fun:_ZSt8_DestroyI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEEEvPT_
+   fun:_ZSt13__destroy_auxIP13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEEEvT_S6_St12__false_type
+   fun:_ZSt8_DestroyIP13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEEEvT_S6_
+   fun:_ZSt8_DestroyIP13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEES4_EvT_S6_SaIT0_E
+   fun:_ZNSt6vectorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE15_M_erase_at_endEPS4_
+   fun:_ZNSt6vectorI13scoped_refptrIN3IPC12ChannelProxy13MessageFilterEESaIS4_EE5clearEv
+   fun:_ZN3IPC12ChannelProxy7Context15OnChannelClosedEv
+   fun:_ZN3IPC11SyncChannel11SyncContext15OnChannelClosedEv
+   fun:_Z16DispatchToMethodIN3IPC12ChannelProxy7ContextEMS2_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN14RunnableMethodIN3IPC12ChannelProxy7ContextEMS2_FvvE6Tuple0E3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+}
+
