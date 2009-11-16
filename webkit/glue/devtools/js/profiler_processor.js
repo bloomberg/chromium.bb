@@ -228,6 +228,12 @@ devtools.profiler.Processor = function() {
   this.ticksCount_ = 0;
 
   /**
+   * Interval id for updating processing status.
+   * @type {number}
+   */
+  this.processingInterval_ = null;
+
+  /**
    * The current heap snapshot.
    * @type {string}
    */
@@ -302,7 +308,6 @@ devtools.profiler.Processor.prototype.setNewProfileCallback = function(
 
 devtools.profiler.Processor.prototype.processProfiler_ = function(
     state, params) {
-  var processingInterval = null;
   switch (state) {
     case 'resume':
       if (this.currentProfile_ == null) {
@@ -317,7 +322,7 @@ devtools.profiler.Processor.prototype.processProfiler_ = function(
         this.ticksCount_ = 0;
         var self = this;
         if (this.profileProcessingStatus_) {
-          processingInterval = window.setInterval(
+          this.processingInterval_ = window.setInterval(
               function() { self.profileProcessingStatus_(self.ticksCount_); },
               1000);
         }
@@ -325,7 +330,8 @@ devtools.profiler.Processor.prototype.processProfiler_ = function(
       break;
     case 'pause':
       if (this.currentProfile_ != null) {
-        window.clearInterval(processingInterval);
+        window.clearInterval(this.processingInterval_);
+        this.processingInterval_ = null;
         if (this.finishedProfileProcessing_) {
           this.finishedProfileProcessing_(this.createProfileForView());
         }
