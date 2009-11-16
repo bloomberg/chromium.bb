@@ -587,7 +587,7 @@
     ['OS=="win"', {
       'variables': {
         'python_exe': [
-          r'$(SolutionDir)..\tools\win_py.cmd'
+          r'<(DEPTH)\native_client\tools\win_py.cmd'
         ],
       },
       'target_defaults': {
@@ -598,7 +598,7 @@
           'msvs_quote_cmd': 0,
           'extension': 'S',
           'inputs': [
-            '../tools/win_as.py',
+            '<(DEPTH)/native_client/tools/win_as.py',
             '$(InputPath)'
           ],
           'outputs': [
@@ -606,7 +606,7 @@
           ],
           'action':
             ['<@(python_exe)',
-              '$(SolutionDir)../tools/win_as.py',
+              '<(DEPTH)/native_client/tools/win_as.py',
               # target architecture: Win32 or x64
               '-a', '$(PlatformName)',
               # output path
