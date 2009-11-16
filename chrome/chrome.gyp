@@ -60,6 +60,7 @@
       'browser/download/save_page_browsertest.cc',
       'browser/extensions/autoupdate_interceptor.cc',
       'browser/extensions/autoupdate_interceptor.h',
+      'browser/extensions/browser_action_apitest.cc',
       'browser/extensions/cross_origin_xhr_apitest.cc',
       'browser/extensions/execute_script_apitest.cc',
       'browser/extensions/extension_apitest.cc',
@@ -88,7 +89,6 @@
       'browser/views/find_bar_host_browsertest.cc',
     ],
     'browser_tests_sources_win_specific': [
-      'browser/extensions/browser_action_apitest.cc',
       'browser/extensions/extension_devtools_browsertest.cc',
       'browser/extensions/extension_devtools_browsertest.h',
       'browser/extensions/extension_devtools_browsertests.cc',
@@ -108,6 +108,7 @@
       'browser/views/browser_views_accessibility_browsertest.cc',
     ],
     'browser_tests_sources_exclude_on_mac': [
+      'browser/extensions/browser_action_apitest.cc',
       'browser/extensions/cross_origin_xhr_apitest.cc',
       'browser/extensions/execute_script_apitest.cc',
       'browser/extensions/extension_apitest.cc',
