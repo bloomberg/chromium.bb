@@ -986,7 +986,7 @@
        temp_seg = i.seg[0];
        i.seg[0] = i.seg[1];
        i.seg[1] = temp_seg;
-@@ -5560,19 +5619,124 @@
+@@ -5560,19 +5619,123 @@
  }
  
  static void
@@ -1035,12 +1035,11 @@
 +#endif
 +    }
 +    if (i.operands == 2) {
-+      p = frag_more (4);
-+      p[0] = 0x48 | ((i.rex & REX_B) ? REX_B | REX_R : 0)
-+		  | ((i.rex & REX_R) ? REX_X : 0);
-+      p[1] = 0x8d;
-+      p[2] = 0x04 | (i.rm.regmem << 3);
-+      p[3] = 0x00 | i.rm.regmem | (i.rm.reg << 3);
++      p = frag_more (3);
++      p[0] = 0x48 | ((i.rex & REX_B) ? REX_R : 0)
++		  | ((i.rex & REX_R) ? REX_B : 0);
++      p[1] = 0x01;
++      p[2] = 0xc0 | i.rm.reg | (i.rm.regmem << 3);
 +      // Clear %rbase from call
 +      i.rex &= ~(REX_W | REX_R);
 +      if (!i.rex && i.prefix[REX_PREFIX]) {
