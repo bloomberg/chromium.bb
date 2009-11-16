@@ -107,6 +107,9 @@ deps = {
   "base":
     Var("chromium_trunk") + "/src/base@" + Var("chromium_rev"),
 
+  "ipc":
+    Var("chromium_trunk") + "/src/ipc@" + Var("chromium_rev"),
+
   "native_client":
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" + Var("nacl_rev"),
 
