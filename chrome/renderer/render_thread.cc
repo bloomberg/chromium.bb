@@ -58,7 +58,6 @@
 #endif
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
-#include "ipc/ipc_platform_file.h"
 #include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebColor.h"
@@ -661,12 +660,11 @@ void RenderThread::OnPurgePluginListCache(bool reload_pages) {
 
 #if defined(SPELLCHECKER_IN_RENDERER)
 void RenderThread::OnInitSpellChecker(
-    IPC::PlatformFileForTransit bdict_file,
+    const base::FileDescriptor& bdict_fd,
     const std::vector<std::string>& custom_words,
     const std::string& language,
     bool auto_spell_correct) {
-  spellchecker_->Init(IPC::PlatformFileForTransitToPlatformFile(bdict_file),
-                      custom_words, language);
+  spellchecker_->Init(bdict_fd, custom_words, language);
   spellchecker_->EnableAutoSpellCorrect(auto_spell_correct);
 }
 

@@ -29,7 +29,6 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/dom_operations.h"
@@ -840,7 +839,7 @@ IPC_BEGIN_MESSAGES(View)
   // be called directly after startup or in (async) response to a
   // RequestDictionary ViewHost message.
   IPC_MESSAGE_CONTROL4(ViewMsg_SpellChecker_Init,
-                       IPC::PlatformFileForTransit /* bdict_file */,
+                       base::FileDescriptor /* bdict_file */,
                        std::vector<std::string> /* custom_dict_words */,
                        std::string /* language */,
                        bool /* auto spell correct */)

@@ -121,18 +121,6 @@ FilePath GetVersionedFileName(const std::string& input_language,
   return dict_dir.AppendASCII(versioned_bdict_file_name);
 }
 
-FilePath GetFirstChoiceFilePath(const std::string& language) {
-  FilePath dict_dir;
-  PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
-  return GetVersionedFileName(language, dict_dir);
-}
-
-FilePath GetFallbackFilePath(const FilePath& first_choice) {
-  FilePath dict_dir;
-  PathService::Get(chrome::DIR_USER_DATA, &dict_dir);
-  return dict_dir.Append(first_choice.BaseName());
-}
-
 }  // namespace
 
 // Constructed on UI thread.
@@ -141,26 +129,29 @@ SpellCheckHost::SpellCheckHost(Observer* observer,
                                URLRequestContextGetter* request_context_getter)
     : observer_(observer),
       language_(language),
-      file_(base::kInvalidPlatformFileValue),
       tried_to_download_(false),
       request_context_getter_(request_context_getter) {
   DCHECK(observer_);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // TODO(estade): for Windows, we need to fall back to DIR_USER_DATA if
+  // DIR_APP_DICTIONARIES is not writeable.
+  FilePath dict_dir;
+  PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
+  bdict_file_ = GetVersionedFileName(language, dict_dir);
 
   FilePath personal_file_directory;
   PathService::Get(chrome::DIR_USER_DATA, &personal_file_directory);
   custom_dictionary_file_ =
       personal_file_directory.Append(chrome::kCustomDictionaryFileName);
 
-  bdict_file_path_ = GetFirstChoiceFilePath(language);
-
   ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this, &SpellCheckHost::InitializeDictionaryLocation));
+      NewRunnableMethod(this, &SpellCheckHost::Initialize));
 }
 
 SpellCheckHost::~SpellCheckHost() {
-  if (file_ != base::kInvalidPlatformFileValue)
-    base::ClosePlatformFile(file_);
+  if (fd_.fd != -1)
+    close(fd_.fd);
 }
 
 void SpellCheckHost::UnsetObserver() {
@@ -181,39 +172,24 @@ void SpellCheckHost::AddWord(const std::string& word) {
       Source<SpellCheckHost>(this), NotificationService::NoDetails());
 }
 
-void SpellCheckHost::InitializeDictionaryLocation() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-
-#if defined(OS_WIN)
-  // Check if the dictionary exists in the fallback location. If so, use it
-  // rather than downloading anew.
-  FilePath fallback = GetFallbackFilePath(bdict_file_path_);
-  if (!file_util::PathExists(bdict_file_path_) &&
-      file_util::PathExists(fallback)) {
-    bdict_file_path_ = fallback;
-  }
-#endif
-
-  Initialize();
-}
-
 void SpellCheckHost::Initialize() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
   if (!observer_)
     return;
 
-  file_ = base::CreatePlatformFile(bdict_file_path_,
-       base::PLATFORM_FILE_READ | base::PLATFORM_FILE_OPEN,
-       NULL);
+  // We set |auto_close| to false because we don't want IPC to close the fd.
+  // We will close it manually in the destructor.
+  fd_ = base::FileDescriptor(open(bdict_file_.value().c_str(), O_RDONLY),
+                             false);
 
   // File didn't exist. Download it.
-  if (file_ == base::kInvalidPlatformFileValue && !tried_to_download_) {
+  if (fd_.fd == -1 && !tried_to_download_) {
     DownloadDictionary();
     return;
   }
 
-  if (file_ != base::kInvalidPlatformFileValue) {
+  if (fd_.fd != -1) {
     // Load custom dictionary.
     std::string contents;
     file_util::ReadFileToString(custom_dictionary_file_, &contents);
@@ -242,7 +218,7 @@ void SpellCheckHost::DownloadDictionary() {
   static const char kDownloadServerUrl[] =
       "http://cache.pack.google.com/edgedl/chrome/dict/";
   GURL url = GURL(std::string(kDownloadServerUrl) + WideToUTF8(
-      l10n_util::ToLower(bdict_file_path_.BaseName().ToWStringHack())));
+      l10n_util::ToLower(bdict_file_.BaseName().ToWStringHack())));
   fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
   fetcher_->set_request_context(request_context_getter_.get());
   tried_to_download_ = true;
@@ -287,27 +263,15 @@ void SpellCheckHost::OnURLFetchComplete(const URLFetcher* source,
   }
 
   size_t bytes_written =
-      file_util::WriteFile(bdict_file_path_, data.data(), data.length());
+      file_util::WriteFile(bdict_file_, data.data(), data.length());
   if (bytes_written != data.length()) {
-    bool success = false;
-#if defined(OS_WIN)
-    bdict_file_path_ = GetFallbackFilePath(bdict_file_path_);
-    bytes_written =
-        file_util::WriteFile(GetFallbackFilePath(bdict_file_path_),
-                                                 data.data(), data.length());
-    if (bytes_written == data.length())
-      success = true;
-#endif
-
-    if (!success) {
-      LOG(ERROR) << "Failure to save dictionary.";
-      // To avoid trying to load a partially saved dictionary, shortcut the
-      // Initialize() call.
-      ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
-          NewRunnableMethod(this,
-              &SpellCheckHost::InformObserverOfInitialization));
-      return;
-    }
+    LOG(ERROR) << "Failure to save dictionary.";
+    // To avoid trying to load a partially saved dictionary, shortcut the
+    // Initialize() call.
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &SpellCheckHost::InformObserverOfInitialization));
+    return;
   }
 
   Initialize();

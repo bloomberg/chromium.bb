@@ -12,7 +12,6 @@
 #include "app/clipboard/clipboard.h"
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/string16.h"
@@ -32,7 +31,6 @@
 #include "chrome/common/webkit_param_traits.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message_utils.h"
-#include "ipc/ipc_platform_file.h"
 #include "media/audio/audio_output.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
@@ -52,7 +50,12 @@
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webpreferences.h"
 
+#if defined(OS_WIN)
+#include "base/platform_file.h"
+#endif
+
 #if defined(OS_POSIX)
+#include "base/file_descriptor_posix.h"
 #endif
 
 namespace base {
@@ -407,8 +410,10 @@ struct ViewMsg_PrintPages_Params {
 };
 
 struct ViewMsg_DatabaseOpenFileResponse_Params {
-  IPC::PlatformFileForTransit file_handle;     // DB file handle
-#if defined(OS_POSIX)
+#if defined(OS_WIN)
+  base::PlatformFile file_handle;     // DB file handle
+#elif defined(OS_POSIX)
+  base::FileDescriptor file_handle;   // DB file handle
   base::FileDescriptor dir_handle;    // DB directory handle
 #endif
 };
@@ -416,7 +421,11 @@ struct ViewMsg_DatabaseOpenFileResponse_Params {
 struct ViewMsg_OpenFileForPluginResponse_Params {
   // Note: if we end up having to add a directory handle, this should be
   // combined with the DatabaseOpenFileResponse_Params struct.
-  IPC::PlatformFileForTransit file_handle;
+#if defined(OS_WIN)
+  base::PlatformFile file_handle;
+#elif defined(OS_POSIX)
+  base::FileDescriptor file_handle;
+#endif
 };
 
 // Parameters to describe a rendered page.

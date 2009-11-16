@@ -16,8 +16,7 @@ static const int kMaxSuggestions = 5;
 using base::TimeTicks;
 
 SpellCheck::SpellCheck()
-    : file_(base::kInvalidPlatformFileValue),
-      auto_spell_correct_turned_on_(false),
+    : auto_spell_correct_turned_on_(false),
       // TODO(estade): initialize this properly.
       is_using_platform_spelling_engine_(false),
       initialized_(false) {
@@ -27,13 +26,13 @@ SpellCheck::SpellCheck()
 SpellCheck::~SpellCheck() {
 }
 
-void SpellCheck::Init(base::PlatformFile file,
+void SpellCheck::Init(const base::FileDescriptor& fd,
                       const std::vector<std::string>& custom_words,
                       const std::string language) {
   initialized_ = true;
   hunspell_.reset();
   bdict_file_.reset();
-  file_ = file;
+  fd_ = fd;
   character_attributes_.SetDefaultLanguage(language);
 
   custom_words_.insert(custom_words_.end(),
@@ -58,7 +57,7 @@ bool SpellCheck::SpellCheckWord(
     return true;
 
   // Do nothing if spell checking is disabled.
-  if (initialized_ && file_ == base::kInvalidPlatformFileValue)
+  if (initialized_ && fd_.fd == -1)
     return true;
 
   *misspelling_start = 0;
@@ -165,7 +164,7 @@ void SpellCheck::InitializeHunspell() {
 
   bdict_file_.reset(new file_util::MemoryMappedFile);
 
-  if (bdict_file_->Initialize(file_)) {
+  if (bdict_file_->Initialize(fd_)) {
     TimeTicks start_time = TimeTicks::Now();
 
     hunspell_.reset(
@@ -195,8 +194,7 @@ bool SpellCheck::InitializeIfNeeded() {
   }
 
   // Check if the platform spellchecker is being used.
-  if (!is_using_platform_spelling_engine_ &&
-      file_ != base::kInvalidPlatformFileValue) {
+  if (!is_using_platform_spelling_engine_ && fd_.fd != -1) {
     // If it isn't, init hunspell.
     InitializeHunspell();
   }

@@ -545,6 +545,7 @@ class NotificationType {
     // profile.
     SPELLCHECKER_REINITIALIZED,
 
+#if defined(SPELLCHECKER_IN_RENDERER)
     // Sent when SpellCheckHost has been reloaded. The source is the profile,
     // the details are NoDetails.
     SPELLCHECK_HOST_REINITIALIZED,
@@ -552,6 +553,7 @@ class NotificationType {
     // Sent when a new word has been added to the custom dictionary. The source
     // is the SpellCheckHost, the details are NoDetails.
     SPELLCHECK_WORD_ADDED,
+#endif
 
     // Sent when the bookmark bubble is shown for a particular URL. The source
     // is the profile, the details the URL.
