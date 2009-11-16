@@ -5493,9 +5493,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <!-- Sync strings -->
 
       <!-- Sync options dialog strings -->
-      <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
-        Bookmark Sync:
-      </message>
+      <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
+        <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="The name of the sync group in the options dialog.">
+          Bookmark sync:
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase') and os == 'linux2'">
+        <message name="IDS_SYNC_OPTIONS_GROUP_NAME" desc="In Title Case and without trailing colon: The name of the sync group in the options dialog.">
+          Bookmark Sync
+        </message>
+      </if>
       <message name="IDS_SYNC_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when sync has not been set up by the user.">
         You are not set up to sync your bookmarks with your other computers.
       </message>
