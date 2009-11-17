@@ -55,7 +55,7 @@ libdrm_la_SOURCES =				\
 libdrmincludedir = ${includedir}
 libdrminclude_HEADERS = xf86drm.h xf86drmMode.h
 
-EXTRA_DIST = ChangeLog TODO libdrm.pc.in include/drm/*
+EXTRA_DIST = libdrm.pc.in include/drm/*
 
 copy-headers :
 	cp -r $(kernel_source)/usr/include/drm $(top_srcdir)/include
