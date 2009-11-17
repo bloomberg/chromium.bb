@@ -12,22 +12,24 @@
 #include "chrome/common/chrome_paths.h"
 #include "net/base/strict_transport_security_state.h"
 
-StrictTransportSecurityPersister::StrictTransportSecurityPersister(
-    net::StrictTransportSecurityState* state,
-    const FilePath& profile_path)
-    : state_is_dirty_(false),
-      strict_transport_security_state_(state),
-      state_file_(profile_path.Append(
-          FILE_PATH_LITERAL("StrictTransportSecurity"))) {
+StrictTransportSecurityPersister::StrictTransportSecurityPersister()
+    : state_is_dirty_(false) {
+}
+
+StrictTransportSecurityPersister::~StrictTransportSecurityPersister() {
+  strict_transport_security_state_->SetDelegate(NULL);
+}
+
+void StrictTransportSecurityPersister::Initialize(
+    net::StrictTransportSecurityState* state, const FilePath& profile_path) {
+  strict_transport_security_state_ = state;
+  state_file_ =
+      profile_path.Append(FILE_PATH_LITERAL("StrictTransportSecurity"));
   state->SetDelegate(this);
 
   Task* task = NewRunnableMethod(this,
       &StrictTransportSecurityPersister::LoadState);
   ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE, task, 1000);
-}
-
-StrictTransportSecurityPersister::~StrictTransportSecurityPersister() {
-  strict_transport_security_state_->SetDelegate(NULL);
 }
 
 void StrictTransportSecurityPersister::LoadState() {

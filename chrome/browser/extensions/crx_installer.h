@@ -169,9 +169,6 @@ class CrxInstaller
   // temp_dir_, so we don't have to delete it explicitly.
   FilePath unpacked_extension_root_;
 
-  // The unpacker we will use to unpack the extension.
-  SandboxedExtensionUnpacker* unpacker_;
-
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };
 

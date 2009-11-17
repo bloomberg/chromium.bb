@@ -884,7 +884,9 @@ net::StrictTransportSecurityState*
     ProfileImpl::GetStrictTransportSecurityState() {
   if (!strict_transport_security_state_.get()) {
     strict_transport_security_state_ = new net::StrictTransportSecurityState();
-    strict_transport_security_persister_ = new StrictTransportSecurityPersister(
+    strict_transport_security_persister_ =
+        new StrictTransportSecurityPersister();
+    strict_transport_security_persister_->Initialize(
         strict_transport_security_state_.get(), path_);
   }
 

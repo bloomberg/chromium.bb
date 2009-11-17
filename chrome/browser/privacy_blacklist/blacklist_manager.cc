@@ -19,14 +19,19 @@
 BlacklistPathProvider::~BlacklistPathProvider() {
 }
 
-BlacklistManager::BlacklistManager(Profile* profile,
-                                   BlacklistPathProvider* path_provider)
+BlacklistManager::BlacklistManager()
     : first_read_finished_(false),
-      profile_(profile),
-      compiled_blacklist_path_(
-        profile->GetPath().Append(chrome::kPrivacyBlacklistFileName)),
-      path_provider_(path_provider) {
+      profile_(NULL),
+      path_provider_(NULL) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+}
+
+void BlacklistManager::Initialize(Profile* profile,
+                                  BlacklistPathProvider* path_provider) {
+  profile_ = profile;
+  compiled_blacklist_path_ =
+      profile->GetPath().Append(chrome::kPrivacyBlacklistFileName);
+  path_provider_ = path_provider;
 
   registrar_.Add(this,
                  NotificationType::EXTENSION_LOADED,

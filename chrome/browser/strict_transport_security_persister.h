@@ -42,8 +42,9 @@ class StrictTransportSecurityPersister
     : public base::RefCountedThreadSafe<StrictTransportSecurityPersister>,
       public net::StrictTransportSecurityState::Delegate {
  public:
-  StrictTransportSecurityPersister(net::StrictTransportSecurityState* state,
-                                   const FilePath& profile_path);
+  StrictTransportSecurityPersister();
+  void Initialize(net::StrictTransportSecurityState* state,
+                  const FilePath& profile_path);
 
   // Called by the StrictTransportSecurityState when it changes its state.
   virtual void StateIsDirty(net::StrictTransportSecurityState*);
@@ -68,7 +69,7 @@ class StrictTransportSecurityPersister
   scoped_refptr<net::StrictTransportSecurityState>
       strict_transport_security_state_;
   // The path to the file in which we store the serialised state.
-  const FilePath state_file_;
+  FilePath state_file_;
 };
 
 #endif  // CHROME_BROWSER_STRICT_TRANSPORT_SECURITY_PERSISTER_H_

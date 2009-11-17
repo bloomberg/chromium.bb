@@ -149,8 +149,8 @@ bool BlacklistHasMatch(const Blacklist* blacklist, const char* url) {
 }
 
 TEST_F(BlacklistManagerTest, Basic) {
-  scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, &path_provider_));
+  scoped_refptr<BlacklistManager> manager(new BlacklistManager());
+  manager->Initialize(&profile_, &path_provider_);
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist = manager->GetCompiledBlacklist();
@@ -161,8 +161,8 @@ TEST_F(BlacklistManagerTest, Basic) {
 }
 
 TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
-  scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, &path_provider_));
+  scoped_refptr<BlacklistManager> manager(new BlacklistManager());
+  manager->Initialize(&profile_, &path_provider_);
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
@@ -196,7 +196,8 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
   path_provider_.clear();
   path_provider_.AddPersistentPath(
       test_data_dir_.AppendASCII("annoying_ads.pbl"));
-  manager = new BlacklistManager(&profile_, &path_provider_);
+  manager = new BlacklistManager();
+  manager->Initialize(&profile_, &path_provider_);
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist4 = manager->GetCompiledBlacklist();
@@ -206,8 +207,8 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
 }
 
 TEST_F(BlacklistManagerTest, BlacklistPathReadError) {
-  scoped_refptr<BlacklistManager> manager(
-      new BlacklistManager(&profile_, &path_provider_));
+  scoped_refptr<BlacklistManager> manager(new BlacklistManager());
+  manager->Initialize(&profile_, &path_provider_);
   WaitForBlacklistUpdate();
 
   FilePath bogus_path(test_data_dir_.AppendASCII("does_not_exist_randomness"));
@@ -223,8 +224,8 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
   FilePath compiled_blacklist_path;
 
   {
-    scoped_refptr<BlacklistManager> manager(
-        new BlacklistManager(&profile_, &path_provider_));
+    scoped_refptr<BlacklistManager> manager(new BlacklistManager());
+    manager->Initialize(&profile_, &path_provider_);
     WaitForBlacklistUpdate();
 
     path_provider_.AddPersistentPath(
@@ -241,8 +242,8 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
   ASSERT_TRUE(file_util::Delete(compiled_blacklist_path, false));
 
   {
-    scoped_refptr<BlacklistManager> manager(
-        new BlacklistManager(&profile_, &path_provider_));
+    scoped_refptr<BlacklistManager> manager(new BlacklistManager());
+    manager->Initialize(&profile_, &path_provider_);
     WaitForBlacklistUpdate();
 
     // The manager should recompile the blacklist.

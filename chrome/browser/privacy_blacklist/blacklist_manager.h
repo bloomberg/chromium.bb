@@ -33,7 +33,8 @@ class BlacklistManager
       public base::RefCountedThreadSafe<BlacklistManager,
                                         ChromeThread::DeleteOnUIThread> {
  public:
-  BlacklistManager(Profile* profile, BlacklistPathProvider* path_provider);
+  BlacklistManager();
+  void Initialize(Profile* profile, BlacklistPathProvider* path_provider);
 
   const Blacklist* GetCompiledBlacklist() const {
     // TODO(phajdan.jr): Determine on which thread this should be invoked (IO?).

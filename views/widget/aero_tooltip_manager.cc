@@ -47,7 +47,8 @@ void AeroTooltipManager::OnMouse(UINT u_msg, WPARAM w_param, LPARAM l_param) {
       initial_delay_ = static_cast<int>(
           ::SendMessage(tooltip_hwnd_, TTM_GETDELAYTIME, TTDT_INITIAL, 0));
     }
-    initial_timer_ = new InitialTimer(this, initial_delay_);
+    initial_timer_ = new InitialTimer(this);
+    initial_timer_->Start(initial_delay_);
   } else {
     // Hide the tooltip and cancel any timers.
     ::SendMessage(tooltip_hwnd_, TTM_POP, 0, 0);
@@ -108,8 +109,11 @@ void AeroTooltipManager::OnTimer() {
 ///////////////////////////////////////////////////////////////////////////////
 // AeroTooltipManager::InitialTimer
 
-AeroTooltipManager::InitialTimer::InitialTimer(AeroTooltipManager* manager,
-                                               int time) : manager_(manager) {
+AeroTooltipManager::InitialTimer::InitialTimer(AeroTooltipManager* manager)
+    : manager_(manager) {
+}
+
+void AeroTooltipManager::InitialTimer::Start(int time) {
   MessageLoop::current()->PostDelayedTask(FROM_HERE, NewRunnableMethod(
       this, &InitialTimer::Execute), time);
 }

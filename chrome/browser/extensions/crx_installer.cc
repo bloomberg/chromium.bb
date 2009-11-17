@@ -45,13 +45,16 @@ void CrxInstaller::Start(const FilePath& crx_path,
   installer->expected_id_ = expected_id;
   installer->allow_privilege_increase_ = allow_privilege_increase;
 
-  installer->unpacker_ = new SandboxedExtensionUnpacker(
-      installer->source_file_, g_browser_process->resource_dispatcher_host(),
-      installer);
+  scoped_refptr<SandboxedExtensionUnpacker> unpacker(
+      new SandboxedExtensionUnpacker(
+          installer->source_file_,
+          g_browser_process->resource_dispatcher_host(),
+          installer));
 
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(installer->unpacker_, &SandboxedExtensionUnpacker::Start));
+      NewRunnableMethod(
+          unpacker.get(), &SandboxedExtensionUnpacker::Start));
 }
 
 void CrxInstaller::InstallUserScript(const FilePath& source_file,

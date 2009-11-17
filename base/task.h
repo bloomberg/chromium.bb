@@ -221,6 +221,13 @@ struct RunnableMethodTraits {
   }
 
   void RetainCallee(T* obj) {
+#ifndef NDEBUG
+    // Catch NewRunnableMethod being called in an object's constructor.  This
+    // isn't safe since the method can be invoked before the constructor
+    // completes, causing the object to be deleted.
+    obj->AddRef();
+    obj->Release();
+#endif
     obj->AddRef();
   }
 
