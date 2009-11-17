@@ -1538,17 +1538,21 @@ willPositionSheet:(NSWindow*)sheet
                                                         alpha:1.0];
     [theme setBackgroundColor:incognitoColor];
     [theme setValue:[NSColor blackColor]
-      forAttribute:@"textColor"
-             style:GTMThemeStyleTabBarSelected
-             state:GTMThemeStateActiveWindow];
+       forAttribute:@"textColor"
+              style:GTMThemeStyleTabBarSelected
+              state:GTMThemeStateActiveWindow];
     [theme setValue:[NSColor blackColor]
-      forAttribute:@"textColor"
-             style:GTMThemeStyleTabBarDeselected
-             state:GTMThemeStateActiveWindow];
+       forAttribute:@"textColor"
+              style:GTMThemeStyleTabBarDeselected
+              state:GTMThemeStateActiveWindow];
     [theme setValue:[NSColor blackColor]
-      forAttribute:@"textColor"
-             style:GTMThemeStyleBookmarksBarButton
-             state:GTMThemeStateActiveWindow];
+       forAttribute:@"textColor"
+              style:GTMThemeStyleBookmarksBarButton
+              state:GTMThemeStateActiveWindow];
+    [theme setValue:[NSColor blackColor]
+       forAttribute:@"iconColor"
+              style:GTMThemeStyleToolBarButton
+              state:GTMThemeStateActiveWindow];
     return theme;
   }
 
@@ -1603,9 +1607,9 @@ willPositionSheet:(NSWindow*)sheet
       provider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND);
   if (toolbarButtonImage) {
     [theme setValue:toolbarButtonImage
-     forAttribute:@"backgroundImage"
-            style:GTMThemeStyleToolBarButton
-            state:GTMThemeStateActiveWindow];
+       forAttribute:@"backgroundImage"
+              style:GTMThemeStyleToolBarButton
+              state:GTMThemeStateActiveWindow];
   } else {
     NSColor* startColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.0];
     NSColor* endColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.3];
