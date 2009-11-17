@@ -164,7 +164,7 @@ void BackForwardMenuModel::ExecuteCommandById(int menu_id) {
 
   // Execute the command for the last item: "Show Full History".
   if (menu_id == GetTotalItemCount()) {
-    UserMetrics::RecordComputedAction(BuildActionName(L"ShowFullHistory", -1),
+    UserMetrics::RecordComputedAction(BuildActionName("ShowFullHistory", -1),
                                       controller.profile());
     browser_->ShowSingleDOMUITab(GURL(chrome::kChromeUIHistoryURL));
     return;
@@ -173,10 +173,10 @@ void BackForwardMenuModel::ExecuteCommandById(int menu_id) {
   // Log whether it was a history or chapter click.
   if (menu_id <= GetHistoryItemCount()) {
     UserMetrics::RecordComputedAction(
-        BuildActionName(L"HistoryClick", menu_id), controller.profile());
+        BuildActionName("HistoryClick", menu_id), controller.profile());
   } else {
     UserMetrics::RecordComputedAction(
-        BuildActionName(L"ChapterClick", menu_id - GetHistoryItemCount() - 1),
+        BuildActionName("ChapterClick", menu_id - GetHistoryItemCount() - 1),
         controller.profile());
   }
 
@@ -284,17 +284,17 @@ NavigationEntry* BackForwardMenuModel::GetNavigationEntry(int menu_id) const {
   return GetTabContents()->controller().GetEntryAtIndex(index);
 }
 
-std::wstring BackForwardMenuModel::BuildActionName(
-    const std::wstring& action, int index) const {
+std::string BackForwardMenuModel::BuildActionName(
+    const std::string& action, int index) const {
   DCHECK(!action.empty());
   DCHECK(index >= -1);
-  std::wstring metric_string;
+  std::string metric_string;
   if (model_type_ == FORWARD_MENU)
-    metric_string += L"ForwardMenu_";
+    metric_string += "ForwardMenu_";
   else
-    metric_string += L"BackMenu_";
+    metric_string += "BackMenu_";
   metric_string += action;
   if (index != -1)
-    metric_string += IntToWString(index);
+    metric_string += IntToString(index);
   return metric_string;
 }

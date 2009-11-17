@@ -140,7 +140,7 @@ class BackForwardMenuModel {
   // identifier for logging user behavior.
   // E.g. BuildActionName("Click", 2) returns "BackMenu_Click2".
   // An index of -1 means no index.
-  std::wstring BuildActionName(const std::wstring& name, int index) const;
+  std::string BuildActionName(const std::string& name, int index) const;
 
   Browser* browser_;
 

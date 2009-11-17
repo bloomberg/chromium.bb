@@ -560,35 +560,35 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       break;
 
     case IDS_CONTENT_CONTEXT_PLAY:
-      UserMetrics::RecordAction(L"MediaContextMenu_Play", profile_);
+      UserMetrics::RecordAction("MediaContextMenu_Play", profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Play, true));
       break;
 
     case IDS_CONTENT_CONTEXT_PAUSE:
-      UserMetrics::RecordAction(L"MediaContextMenu_Pause", profile_);
+      UserMetrics::RecordAction("MediaContextMenu_Pause", profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Play, false));
       break;
 
     case IDS_CONTENT_CONTEXT_MUTE:
-      UserMetrics::RecordAction(L"MediaContextMenu_Mute", profile_);
+      UserMetrics::RecordAction("MediaContextMenu_Mute", profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Mute, true));
       break;
 
     case IDS_CONTENT_CONTEXT_UNMUTE:
-      UserMetrics::RecordAction(L"MediaContextMenu_Unmute", profile_);
+      UserMetrics::RecordAction("MediaContextMenu_Unmute", profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Mute, false));
       break;
 
     case IDS_CONTENT_CONTEXT_LOOP:
-      UserMetrics::RecordAction(L"MediaContextMenu_Loop", profile_);
+      UserMetrics::RecordAction("MediaContextMenu_Loop", profile_);
       MediaPlayerActionAt(gfx::Point(params_.x, params_.y),
                           WebMediaPlayerAction(
                               WebMediaPlayerAction::Loop,

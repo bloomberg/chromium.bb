@@ -261,7 +261,7 @@ void AutocompleteEditModel::SendOpenNotification(size_t selected_line,
   const TemplateURL* const template_url =
       template_url_model->GetTemplateURLForKeyword(keyword);
   if (template_url) {
-    UserMetrics::RecordAction(L"AcceptedKeyword", profile_);
+    UserMetrics::RecordAction("AcceptedKeyword", profile_);
     template_url_model->IncrementUsageCount(template_url);
   }
 
@@ -279,7 +279,7 @@ void AutocompleteEditModel::AcceptKeyword() {
                                // since the edit contents have disappeared.  It
                                // doesn't really matter, but we clear it to be
                                // consistent.
-  UserMetrics::RecordAction(L"AcceptedKeywordHint", profile_);
+  UserMetrics::RecordAction("AcceptedKeywordHint", profile_);
 }
 
 void AutocompleteEditModel::ClearKeyword(const std::wstring& visible_text) {

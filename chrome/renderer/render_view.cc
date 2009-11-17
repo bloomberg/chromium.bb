@@ -336,7 +336,7 @@ void RenderView::SetNextPageID(int32 next_page_id) {
   next_page_id_ = next_page_id;
 }
 
-void RenderView::UserMetricsRecordAction(const std::wstring& action) {
+void RenderView::UserMetricsRecordAction(const std::string& action) {
   Send(new ViewHostMsg_UserMetricsRecordAction(routing_id_, action));
 }
 
@@ -881,7 +881,7 @@ void RenderView::OnUndo() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Undo"));
-  UserMetricsRecordAction(L"Undo");
+  UserMetricsRecordAction("Undo");
 }
 
 void RenderView::OnRedo() {
@@ -889,7 +889,7 @@ void RenderView::OnRedo() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Redo"));
-  UserMetricsRecordAction(L"Redo");
+  UserMetricsRecordAction("Redo");
 }
 
 void RenderView::OnCut() {
@@ -897,7 +897,7 @@ void RenderView::OnCut() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Cut"));
-  UserMetricsRecordAction(L"Cut");
+  UserMetricsRecordAction("Cut");
 }
 
 void RenderView::OnCopy() {
@@ -905,7 +905,7 @@ void RenderView::OnCopy() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Copy"));
-  UserMetricsRecordAction(L"Copy");
+  UserMetricsRecordAction("Copy");
 }
 
 #if defined(OS_MACOSX)
@@ -922,7 +922,7 @@ void RenderView::OnCopyToFindPboard() {
         new ViewHostMsg_ClipboardFindPboardWriteStringAsync(selection));
   }
 
-  UserMetricsRecordAction(L"CopyToFindPboard");
+  UserMetricsRecordAction("CopyToFindPboard");
 }
 #endif
 
@@ -931,7 +931,7 @@ void RenderView::OnPaste() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Paste"));
-  UserMetricsRecordAction(L"Paste");
+  UserMetricsRecordAction("Paste");
 }
 
 void RenderView::OnReplace(const string16& text) {
@@ -972,7 +972,7 @@ void RenderView::OnDelete() {
     return;
 
   webview()->focusedFrame()->executeCommand(WebString::fromUTF8("Delete"));
-  UserMetricsRecordAction(L"DeleteSelection");
+  UserMetricsRecordAction("DeleteSelection");
 }
 
 void RenderView::OnSelectAll() {
@@ -981,7 +981,7 @@ void RenderView::OnSelectAll() {
 
   webview()->focusedFrame()->executeCommand(
       WebString::fromUTF8("SelectAll"));
-  UserMetricsRecordAction(L"SelectAll");
+  UserMetricsRecordAction("SelectAll");
 }
 
 void RenderView::OnSetInitialFocus(bool reverse) {
@@ -1465,10 +1465,10 @@ void RenderView::didChangeSelection(bool is_empty_selection) {
 }
 
 void RenderView::didExecuteCommand(const WebString& command_name) {
-  const std::wstring& name = UTF16ToWideHack(command_name);
-  if (StartsWith(name, L"Move", true) ||
-      StartsWith(name, L"Insert", true) ||
-      StartsWith(name, L"Delete", true))
+  const std::string& name = UTF16ToUTF8(command_name);
+  if (StartsWithASCII(name, "Move", true) ||
+      StartsWithASCII(name, "Insert", true) ||
+      StartsWithASCII(name, "Delete", true))
     return;
   UserMetricsRecordAction(name);
 }

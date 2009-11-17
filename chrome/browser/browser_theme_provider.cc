@@ -509,7 +509,7 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
 
   WriteImagesToDisk();
   NotifyThemeChanged();
-  UserMetrics::RecordAction(L"Themes_Installed", profile_);
+  UserMetrics::RecordAction("Themes_Installed", profile_);
 }
 
 void BrowserThemeProvider::RemoveUnusedThemes() {
@@ -534,7 +534,7 @@ void BrowserThemeProvider::RemoveUnusedThemes() {
 void BrowserThemeProvider::UseDefaultTheme() {
   ClearAllThemeData();
   NotifyThemeChanged();
-  UserMetrics::RecordAction(L"Themes_Reset", profile_);
+  UserMetrics::RecordAction("Themes_Reset", profile_);
 }
 
 std::string BrowserThemeProvider::GetThemeID() const {
@@ -804,9 +804,9 @@ void BrowserThemeProvider::LoadThemePrefs() {
 
   if (process_images_) {
     WriteImagesToDisk();
-    UserMetrics::RecordAction(L"Migrated noncached to cached theme.", profile_);
+    UserMetrics::RecordAction("Migrated noncached to cached theme.", profile_);
   }
-  UserMetrics::RecordAction(L"Themes_loaded", profile_);
+  UserMetrics::RecordAction("Themes_loaded", profile_);
 }
 
 void BrowserThemeProvider::NotifyThemeChanged() {

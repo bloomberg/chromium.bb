@@ -198,7 +198,7 @@ bool FirstRunViewBase::CreateQuickLaunchShortcut() {
 }
 
 bool FirstRunViewBase::SetDefaultBrowser() {
-  UserMetrics::RecordAction(L"FirstRun_Do_DefBrowser", profile_);
+  UserMetrics::RecordAction("FirstRun_Do_DefBrowser", profile_);
   return ShellIntegration::SetAsDefaultBrowser();
 }
 

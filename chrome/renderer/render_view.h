@@ -176,7 +176,7 @@ class RenderView : public RenderWidget,
   virtual void OnMissingPluginStatus(
       WebPluginDelegateProxy* delegate,
       int status);
-  virtual void UserMetricsRecordAction(const std::wstring& action);
+  virtual void UserMetricsRecordAction(const std::string& action);
   virtual void DnsPrefetch(const std::vector<std::string>& host_names);
 
   // WebKit::WebViewClient

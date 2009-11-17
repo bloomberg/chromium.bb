@@ -93,6 +93,6 @@ void BackForwardMenuModelViews::ActivatedAt(int index) {
 }
 
 void BackForwardMenuModelViews::MenuWillShow() {
-  UserMetrics::RecordComputedAction(BuildActionName(L"Popup", -1),
+  UserMetrics::RecordComputedAction(BuildActionName("Popup", -1),
                                     browser_->profile());
 }

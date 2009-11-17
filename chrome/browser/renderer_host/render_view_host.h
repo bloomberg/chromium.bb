@@ -554,7 +554,7 @@ class RenderViewHost : public RenderWidgetHost,
   void OnDevToolsRuntimeFeatureStateChanged(const std::string& feature,
                                             bool enabled);
 
-  void OnUserMetricsRecordAction(const std::wstring& action);
+  void OnUserMetricsRecordAction(const std::string& action);
   void OnMissingPluginStatus(int status);
   void OnCrashedPlugin(const FilePath& plugin_path);
 

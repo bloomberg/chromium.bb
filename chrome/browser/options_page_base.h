@@ -37,7 +37,7 @@ class OptionsPageBase : public NotificationObserver {
   Profile* profile() const { return profile_; }
 
   // Records a user action and schedules the prefs file to be saved.
-  void UserMetricsRecordAction(const wchar_t* action, PrefService* prefs);
+  void UserMetricsRecordAction(const char* action, PrefService* prefs);
 
   // Allows the UI to update when a preference value changes. The parameter is
   // the specific pref that changed, or NULL if all pref UI should be

@@ -66,7 +66,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     HistoryService* history_service =
         profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
     if (history_service) {
-      UserMetrics::RecordAction(L"ClearBrowsingData_History", profile_);
+      UserMetrics::RecordAction("ClearBrowsingData_History", profile_);
       waiting_for_clear_history_ = true;
       history_service->ExpireHistoryBetween(delete_begin_, delete_end_,
           &request_consumer_,
@@ -98,14 +98,14 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_DOWNLOADS) {
-    UserMetrics::RecordAction(L"ClearBrowsingData_Downloads", profile_);
+    UserMetrics::RecordAction("ClearBrowsingData_Downloads", profile_);
     DownloadManager* download_manager = profile_->GetDownloadManager();
     download_manager->RemoveDownloadsBetween(delete_begin_, delete_end_);
     download_manager->ClearLastDownloadPath();
   }
 
   if (remove_mask & REMOVE_COOKIES) {
-    UserMetrics::RecordAction(L"ClearBrowsingData_Cookies", profile_);
+    UserMetrics::RecordAction("ClearBrowsingData_Cookies", profile_);
     // Since we are running on the UI thread don't call GetURLRequestContext().
     net::CookieMonster* cookie_monster =
         profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
@@ -114,7 +114,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {
-    UserMetrics::RecordAction(L"ClearBrowsingData_Passwords", profile_);
+    UserMetrics::RecordAction("ClearBrowsingData_Passwords", profile_);
     PasswordStore* password_store =
         profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 
@@ -122,7 +122,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   }
 
   if (remove_mask & REMOVE_FORM_DATA) {
-    UserMetrics::RecordAction(L"ClearBrowsingData_Autofill", profile_);
+    UserMetrics::RecordAction("ClearBrowsingData_Autofill", profile_);
     WebDataService* web_data_service =
         profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
 
@@ -133,7 +133,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
   if (remove_mask & REMOVE_CACHE) {
     // Invoke ClearBrowsingDataView::ClearCache on the IO thread.
     waiting_for_clear_cache_ = true;
-    UserMetrics::RecordAction(L"ClearBrowsingData_Cache", profile_);
+    UserMetrics::RecordAction("ClearBrowsingData_Cache", profile_);
 
     URLRequestContextGetter* main_context_getter =
         profile_->GetRequestContext();

@@ -34,11 +34,11 @@ static Profile* external_metrics_profile = NULL;
 // call RecordAction in a way that gets picked up by the processing scripts.
 
 static void RecordTabOverviewKeystroke(const char* ignore) {
-  UserMetrics::RecordAction(L"TabOverview_Keystroke", external_metrics_profile);
+  UserMetrics::RecordAction("TabOverview_Keystroke", external_metrics_profile);
 }
 
 static void RecordTabOverviewExitMouse(const char* ignore) {
-  UserMetrics::RecordAction(L"TabOverview_ExitMouse", external_metrics_profile);
+  UserMetrics::RecordAction("TabOverview_ExitMouse", external_metrics_profile);
 }
 
 static void RecordBootTime(const char* info) {

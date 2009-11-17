@@ -356,7 +356,7 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 // queried to find out what happened.
 - (void)syncStateChanged;
 // Record the user performed a certain action and save the preferences.
-- (void)recordUserAction:(const wchar_t*)action;
+- (void)recordUserAction:(const char*)action;
 - (void)registerPrefObservers;
 - (void)unregisterPrefObservers;
 
@@ -754,7 +754,7 @@ class PrefObserverBridge : public NotificationObserver,
 }
 
 // Record the user performed a certain action and save the preferences.
-- (void)recordUserAction:(const wchar_t*)action {
+- (void)recordUserAction:(const char*)action {
   UserMetrics::RecordComputedAction(action, profile_);
   if (prefs_)
     prefs_->ScheduleSavePersistentPrefs();
@@ -877,13 +877,13 @@ class PrefObserverBridge : public NotificationObserver,
       static_cast<SessionStartupPref::Type>(type);
   switch (startupType) {
     case SessionStartupPref::DEFAULT:
-      [self recordUserAction:L"Options_Startup_Homepage"];
+      [self recordUserAction:"Options_Startup_Homepage"];
       break;
     case SessionStartupPref::LAST:
-      [self recordUserAction:L"Options_Startup_LastSession"];
+      [self recordUserAction:"Options_Startup_LastSession"];
       break;
     case SessionStartupPref::URLS:
-      [self recordUserAction:L"Options_Startup_Custom"];
+      [self recordUserAction:"Options_Startup_Custom"];
       break;
     default:
       NOTREACHED();
@@ -971,9 +971,9 @@ enum { kHomepageNewTabPage, kHomepageURL };
 - (void)setNewTabPageIsHomePageIndex:(NSInteger)index {
   bool useNewTabPage = index == kHomepageNewTabPage ? true : false;
   if (useNewTabPage)
-    [self recordUserAction:L"Options_Homepage_UseNewTab"];
+    [self recordUserAction:"Options_Homepage_UseNewTab"];
   else
-    [self recordUserAction:L"Options_Homepage_UseURL"];
+    [self recordUserAction:"Options_Homepage_UseURL"];
   newTabPageIsHomePage_.SetValue(useNewTabPage);
 }
 
@@ -1011,9 +1011,9 @@ enum { kHomepageNewTabPage, kHomepageURL };
 // based on |value|.
 - (void)setShowHomeButton:(BOOL)value {
   if (value)
-    [self recordUserAction:L"Options_Homepage_ShowHomeButton"];
+    [self recordUserAction:"Options_Homepage_ShowHomeButton"];
   else
-    [self recordUserAction:L"Options_Homepage_HideHomeButton"];
+    [self recordUserAction:"Options_Homepage_HideHomeButton"];
   showHomeButton_.SetValue(value ? true : false);
 }
 
@@ -1027,9 +1027,9 @@ enum { kHomepageNewTabPage, kHomepageURL };
 // be displayed based on |value|.
 - (void)setShowPageOptionsButtons:(BOOL)value {
   if (value)
-    [self recordUserAction:L"Options_Homepage_ShowPageOptionsButtons"];
+    [self recordUserAction:"Options_Homepage_ShowPageOptionsButtons"];
   else
-    [self recordUserAction:L"Options_Homepage_HidePageOptionsButtons"];
+    [self recordUserAction:"Options_Homepage_HidePageOptionsButtons"];
   showPageOptionButtons_.SetValue(value ? true : false);
 }
 
@@ -1046,7 +1046,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
 }
 
 - (void)setSearchEngineSelectedIndex:(NSUInteger)index {
-  [self recordUserAction:L"Options_SearchEngineChanged"];
+  [self recordUserAction:"Options_SearchEngineChanged"];
   [searchEngineModel_ setDefaultIndex:index];
 }
 
@@ -1066,7 +1066,7 @@ enum { kHomepageNewTabPage, kHomepageURL };
   [self willChangeValueForKey:@"defaultBrowser"];
 
   ShellIntegration::SetAsDefaultBrowser();
-  [self recordUserAction:L"Options_SetAsDefaultBrowser"];
+  [self recordUserAction:"Options_SetAsDefaultBrowser"];
   // If the user made Chrome the default browser, then he/she arguably wants
   // to be notified when that changes.
   prefs_->SetBoolean(prefs::kCheckDefaultBrowser, true);
@@ -1135,7 +1135,7 @@ const int kDisabledIndex = 1;
 // passwords.
 - (IBAction)showSavedPasswords:(id)sender {
   NSString* const kKeychainBundleId = @"com.apple.keychainaccess";
-  [self recordUserAction:L"Options_ShowPasswordsExceptions"];
+  [self recordUserAction:"Options_ShowPasswordsExceptions"];
   [[NSWorkspace sharedWorkspace]
       launchAppWithBundleIdentifier:kKeychainBundleId
                             options:0L
@@ -1158,12 +1158,12 @@ const int kDisabledIndex = 1;
 }
 
 - (IBAction)resetThemeToDefault:(id)sender {
-  [self recordUserAction:L"Options_ThemesReset"];
+  [self recordUserAction:"Options_ThemesReset"];
   profile_->ClearTheme();
 }
 
 - (IBAction)themesGallery:(id)sender {
-  [self recordUserAction:L"Options_ThemesGallery"];
+  [self recordUserAction:"Options_ThemesGallery"];
   Browser* browser =
       BrowserList::FindBrowserWithType(profile_, Browser::TYPE_NORMAL);
 
@@ -1193,9 +1193,9 @@ const int kDisabledIndex = 1;
 
 - (void)setPasswordManagerEnabledIndex:(NSInteger)value {
   if (value == kEnabledIndex)
-    [self recordUserAction:L"Options_PasswordManager_Enable"];
+    [self recordUserAction:"Options_PasswordManager_Enable"];
   else
-    [self recordUserAction:L"Options_PasswordManager_Disable"];
+    [self recordUserAction:"Options_PasswordManager_Disable"];
   askSavePasswords_.SetValue(value == kEnabledIndex ? true : false);
 }
 
@@ -1205,9 +1205,9 @@ const int kDisabledIndex = 1;
 
 - (void)setFormAutofillEnabledIndex:(NSInteger)value {
   if (value == kEnabledIndex)
-    [self recordUserAction:L"Options_FormAutofill_Enable"];
+    [self recordUserAction:"Options_FormAutofill_Enable"];
   else
-    [self recordUserAction:L"Options_FormAutofill_Disable"];
+    [self recordUserAction:"Options_FormAutofill_Disable"];
   formAutofill_.SetValue(value == kEnabledIndex ? true : false);
 }
 
@@ -1217,9 +1217,9 @@ const int kDisabledIndex = 1;
 
 - (void)setIsUsingDefaultTheme:(BOOL)value {
   if (value)
-    [self recordUserAction:L"Options_IsUsingDefaultTheme_Enable"];
+    [self recordUserAction:"Options_IsUsingDefaultTheme_Enable"];
   else
-    [self recordUserAction:L"Options_IsUsingDefaultTheme_Disable"];
+    [self recordUserAction:"Options_IsUsingDefaultTheme_Disable"];
 }
 
 - (BOOL)isUsingDefaultTheme {
@@ -1263,7 +1263,7 @@ const int kDisabledIndex = 1;
                            code:(NSInteger)returnCode
                         context:(void*)context {
   if (returnCode == NSOKButton) {
-    [self recordUserAction:L"Options_SetDownloadDirectory"];
+    [self recordUserAction:"Options_SetDownloadDirectory"];
     NSURL* path = [[panel URLs] lastObject];  // We only allow 1 item.
     [self willChangeValueForKey:@"defaultDownloadLocation"];
     defaultDownloadLocation_.SetValue(base::SysNSStringToWide([path path]));
@@ -1417,9 +1417,9 @@ const int kDisabledIndex = 1;
 // should be displayed based on |value|.
 - (void)setShowAlternateErrorPages:(BOOL)value {
   if (value)
-    [self recordUserAction:L"Options_LinkDoctorCheckbox_Enable"];
+    [self recordUserAction:"Options_LinkDoctorCheckbox_Enable"];
   else
-    [self recordUserAction:L"Options_LinkDoctorCheckbox_Disable"];
+    [self recordUserAction:"Options_LinkDoctorCheckbox_Disable"];
   alternateErrorPages_.SetValue(value ? true : false);
 }
 
@@ -1433,9 +1433,9 @@ const int kDisabledIndex = 1;
 // displayed based on |value|.
 - (void)setUseSuggest:(BOOL)value {
   if (value)
-    [self recordUserAction:L"Options_UseSuggestCheckbox_Enable"];
+    [self recordUserAction:"Options_UseSuggestCheckbox_Enable"];
   else
-    [self recordUserAction:L"Options_UseSuggestCheckbox_Disable"];
+    [self recordUserAction:"Options_UseSuggestCheckbox_Disable"];
   useSuggest_.SetValue(value ? true : false);
 }
 
@@ -1449,9 +1449,9 @@ const int kDisabledIndex = 1;
 // displayed based on |value|.
 - (void)setDnsPrefetch:(BOOL)value {
   if (value)
-    [self recordUserAction:L"Options_DnsPrefetchCheckbox_Enable"];
+    [self recordUserAction:"Options_DnsPrefetchCheckbox_Enable"];
   else
-    [self recordUserAction:L"Options_DnsPrefetchCheckbox_Disable"];
+    [self recordUserAction:"Options_DnsPrefetchCheckbox_Disable"];
   dnsPrefetch_.SetValue(value ? true : false);
   chrome_browser_net::EnableDnsPrefetch(value ? true : false);
 }
@@ -1466,9 +1466,9 @@ const int kDisabledIndex = 1;
 // displayed based on |value|.
 - (void)setSafeBrowsing:(BOOL)value {
   if (value)
-    [self recordUserAction:L"Options_SafeBrowsingCheckbox_Enable"];
+    [self recordUserAction:"Options_SafeBrowsingCheckbox_Enable"];
   else
-    [self recordUserAction:L"Options_SafeBrowsingCheckbox_Disable"];
+    [self recordUserAction:"Options_SafeBrowsingCheckbox_Disable"];
   bool enabled = value ? true : false;
   safeBrowsing_.SetValue(enabled);
   SafeBrowsingService* safeBrowsingService =
@@ -1487,9 +1487,9 @@ const int kDisabledIndex = 1;
 // displayed based on |value|.
 - (void)setMetricsRecording:(BOOL)value {
   if (value)
-    [self recordUserAction:L"Options_MetricsReportingCheckbox_Enable"];
+    [self recordUserAction:"Options_MetricsReportingCheckbox_Enable"];
   else
-    [self recordUserAction:L"Options_MetricsReportingCheckbox_Disable"];
+    [self recordUserAction:"Options_MetricsReportingCheckbox_Disable"];
   bool enabled = value ? true : false;
 
   GoogleUpdateSettings::SetCollectStatsConsent(enabled);
@@ -1528,10 +1528,10 @@ const int kDisabledIndex = 1;
   net::CookiePolicy::Type policy = net::CookiePolicy::ALLOW_ALL_COOKIES;
   if (net::CookiePolicy::ValidType(index))
     policy = net::CookiePolicy::FromInt(index);
-  const wchar_t* kUserMetrics[] = {
-      L"Options_AllowAllCookies",
-      L"Options_BlockThirdPartyCookies",
-      L"Options_BlockAllCookies"
+  const char* kUserMetrics[] = {
+      "Options_AllowAllCookies",
+      "Options_BlockThirdPartyCookies",
+      "Options_BlockAllCookies"
   };
   DCHECK(policy >= 0 && (unsigned int)policy < arraysize(kUserMetrics));
   [self recordUserAction:kUserMetrics[policy]];
@@ -1550,9 +1550,9 @@ const int kDisabledIndex = 1;
 
 - (void)setAskForSaveLocation:(BOOL)value {
   if (value) {
-    [self recordUserAction:L"Options_AskForSaveLocation_Enable"];
+    [self recordUserAction:"Options_AskForSaveLocation_Enable"];
   } else {
-    [self recordUserAction:L"Options_AskForSaveLocation_Disable"];
+    [self recordUserAction:"Options_AskForSaveLocation_Disable"];
   }
   askForSaveLocation_.SetValue(value);
 }

@@ -22,18 +22,18 @@ class UserMetrics {
   // interacting with the browser.
   // WARNING: Call this function exactly like this, with the string literal
   // inline:
-  //   UserMetrics::RecordAction(L"foo bar", profile);
+  //   UserMetrics::RecordAction("foo bar", profile);
   // because otherwise our processing scripts won't pick up on new actions.
   //
   // For more complicated situations (like when there are many different
   // possible actions), see RecordComputedAction.
-  static void RecordAction(const wchar_t* action, Profile* profile);
+  static void RecordAction(const char* action, Profile* profile);
 
   // This function has identical input and behavior to RecordAction, but is
   // not automatically found by the action-processing scripts.  It can be used
   // when it's a pain to enumerate all possible actions, but if you use this
   // you need to also update the rules for extracting known actions.
-  static void RecordComputedAction(const std::wstring& action,
+  static void RecordComputedAction(const std::string& action,
                                    Profile* profile);
 };
 

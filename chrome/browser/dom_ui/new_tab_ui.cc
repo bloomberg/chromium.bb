@@ -489,7 +489,8 @@ void MetricsHandler::HandleMetrics(const Value* content) {
           static_cast<const StringValue*>(list_member);
       std::wstring wstring_value;
       if (string_value->GetAsString(&wstring_value)) {
-        UserMetrics::RecordComputedAction(wstring_value, dom_ui_->GetProfile());
+        UserMetrics::RecordComputedAction(WideToASCII(wstring_value),
+                                          dom_ui_->GetProfile());
       }
     }
   }

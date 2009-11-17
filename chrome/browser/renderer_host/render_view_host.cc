@@ -1477,7 +1477,7 @@ void RenderViewHost::OnDevToolsRuntimeFeatureStateChanged(
       RuntimeFeatureStateChanged(this, feature, enabled);
 }
 
-void RenderViewHost::OnUserMetricsRecordAction(const std::wstring& action) {
+void RenderViewHost::OnUserMetricsRecordAction(const std::string& action) {
   UserMetrics::RecordComputedAction(action.c_str(), process()->profile());
 }
 

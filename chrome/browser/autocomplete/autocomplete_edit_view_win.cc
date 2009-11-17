@@ -2325,10 +2325,10 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
     drag_utils::SetURLAndDragImage(url, title, favicon, &data);
     data.SetURL(url, title);
     supported_modes |= DROPEFFECT_LINK;
-    UserMetrics::RecordAction(L"Omnibox_DragURL", model_->profile());
+    UserMetrics::RecordAction("Omnibox_DragURL", model_->profile());
   } else {
     supported_modes |= DROPEFFECT_MOVE;
-    UserMetrics::RecordAction(L"Omnibox_DragString", model_->profile());
+    UserMetrics::RecordAction("Omnibox_DragString", model_->profile());
   }
 
   data.SetString(GetSelectedText());

@@ -136,10 +136,10 @@ std::string MetricsLog::CreateBase64Hash(const std::string& string) {
   return std::string();
 }
 
-void MetricsLog::RecordUserAction(const wchar_t* key) {
+void MetricsLog::RecordUserAction(const char* key) {
   DCHECK(!locked_);
 
-  std::string command_hash = CreateBase64Hash(WideToUTF8(key));
+  std::string command_hash = CreateBase64Hash(key);
   if (command_hash.empty()) {
     NOTREACHED() << "Unable generate encoded hash of command: " << key;
     return;

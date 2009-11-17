@@ -47,7 +47,7 @@ NewBrowserWindowWidget::~NewBrowserWindowWidget() {
 
 void NewBrowserWindowWidget::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  UserMetrics::RecordAction(L"TabOverview_PressedCreateNewBrowserButton",
+  UserMetrics::RecordAction("TabOverview_PressedCreateNewBrowserButton",
                             profile_);
 
   Browser* browser = Browser::Create(profile_);

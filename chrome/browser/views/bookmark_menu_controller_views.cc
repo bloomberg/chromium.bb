@@ -225,7 +225,7 @@ void BookmarkMenuController::WriteDragData(MenuItemView* sender,
                                            OSExchangeData* data) {
   DCHECK(sender && data);
 
-  UserMetrics::RecordAction(L"BookmarkBar_DragFromFolder", profile_);
+  UserMetrics::RecordAction("BookmarkBar_DragFromFolder", profile_);
 
   BookmarkDragData drag_data(menu_id_to_node_map_[sender->GetCommand()]);
   drag_data.Write(profile_, data);

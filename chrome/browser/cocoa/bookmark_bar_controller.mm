@@ -766,19 +766,19 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (IBAction)openAllBookmarks:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:NEW_FOREGROUND_TAB];
-  UserMetrics::RecordAction(L"OpenAllBookmarks", browser_->profile());
+  UserMetrics::RecordAction("OpenAllBookmarks", browser_->profile());
 }
 
 - (IBAction)openAllBookmarksNewWindow:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:NEW_WINDOW];
-  UserMetrics::RecordAction(L"OpenAllBookmarksNewWindow", browser_->profile());
+  UserMetrics::RecordAction("OpenAllBookmarksNewWindow", browser_->profile());
 }
 
 - (IBAction)openAllBookmarksIncognitoWindow:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
   [self openBookmarkNodesRecursive:node disposition:OFF_THE_RECORD];
-  UserMetrics::RecordAction(L"OpenAllBookmarksIncognitoWindow", browser_->profile());
+  UserMetrics::RecordAction("OpenAllBookmarksIncognitoWindow", browser_->profile());
 }
 
 // May be called from the bar or from a folder button.

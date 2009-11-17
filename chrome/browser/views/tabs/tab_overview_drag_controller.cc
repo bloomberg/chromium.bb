@@ -94,7 +94,7 @@ void TabOverviewDragController::Drag(const gfx::Point& location) {
     dragging_ = true;
     controller_->DragStarted();
     grid()->set_floating_index(current_index_);
-    UserMetrics::RecordAction(L"TabOverview_DragCell",
+    UserMetrics::RecordAction("TabOverview_DragCell",
                               original_model_->profile());
   }
   if (dragging_)
@@ -110,7 +110,7 @@ void TabOverviewDragController::CommitDrag(const gfx::Point& location) {
     if (mouse_over_mini_window_) {
       // Dragged over a mini window, add as the last tab to the browser.
       Attach(model()->count());
-      UserMetrics::RecordAction(L"TabOverview_DropOnMiniWindow",
+      UserMetrics::RecordAction("TabOverview_DropOnMiniWindow",
                                 original_model_->profile());
     } else {
       DropTab(location);
@@ -339,7 +339,7 @@ void TabOverviewDragController::Detach(const gfx::Point& location) {
     return;
   }
 
-  UserMetrics::RecordAction(L"TabOverview_DetachCell",
+  UserMetrics::RecordAction("TabOverview_DetachCell",
                             original_model_->profile());
 
   detached_window_ = CreateDetachedWindow(

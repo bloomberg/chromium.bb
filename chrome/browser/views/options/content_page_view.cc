@@ -85,10 +85,10 @@ void ContentPageView::ButtonPressed(
       sender == passwords_neversave_radio_) {
     bool enabled = passwords_asktosave_radio_->checked();
     if (enabled) {
-      UserMetricsRecordAction(L"Options_PasswordManager_Enable",
+      UserMetricsRecordAction("Options_PasswordManager_Enable",
                               profile()->GetPrefs());
     } else {
-      UserMetricsRecordAction(L"Options_PasswordManager_Disable",
+      UserMetricsRecordAction("Options_PasswordManager_Disable",
                               profile()->GetPrefs());
     }
     ask_to_save_passwords_.SetValue(enabled);
@@ -96,18 +96,18 @@ void ContentPageView::ButtonPressed(
              sender == form_autofill_neversave_radio_) {
     bool enabled = form_autofill_asktosave_radio_->checked();
     if (enabled) {
-      UserMetricsRecordAction(L"Options_FormAutofill_Enable",
+      UserMetricsRecordAction("Options_FormAutofill_Enable",
                               profile()->GetPrefs());
     } else {
-      UserMetricsRecordAction(L"Options_FormAutofill_Disable",
+      UserMetricsRecordAction("Options_FormAutofill_Disable",
                               profile()->GetPrefs());
     }
     ask_to_save_form_autofill_.SetValue(enabled);
   } else if (sender == passwords_exceptions_button_) {
-    UserMetricsRecordAction(L"Options_ShowPasswordsExceptions", NULL);
+    UserMetricsRecordAction("Options_ShowPasswordsExceptions", NULL);
     PasswordsExceptionsWindowView::Show(profile());
   } else if (sender == themes_reset_button_) {
-    UserMetricsRecordAction(L"Options_ThemesReset", profile()->GetPrefs());
+    UserMetricsRecordAction("Options_ThemesReset", profile()->GetPrefs());
     profile()->ClearTheme();
   } else if (sender == import_button_) {
     views::Window::CreateChromeWindow(
@@ -143,7 +143,7 @@ void ContentPageView::ButtonPressed(
 
 void ContentPageView::LinkActivated(views::Link* source, int event_flags) {
   if (source == themes_gallery_link_) {
-    UserMetricsRecordAction(L"Options_ThemesGallery", profile()->GetPrefs());
+    UserMetricsRecordAction("Options_ThemesGallery", profile()->GetPrefs());
     BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
     return;
   }

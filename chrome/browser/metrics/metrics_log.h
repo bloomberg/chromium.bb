@@ -35,7 +35,7 @@ class MetricsLog {
   static void RegisterPrefs(PrefService* prefs);
 
   // Records a user-initiated action.
-  void RecordUserAction(const wchar_t* key);
+  void RecordUserAction(const char* key);
 
   enum WindowEventType {
     WINDOW_CREATE = 0,

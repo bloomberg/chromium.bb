@@ -1440,7 +1440,7 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Send back a string to be recorded by UserMetrics.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UserMetricsRecordAction,
-                      std::wstring /* action */)
+                      std::string /* action */)
 
   // Send back histograms as vector of pickled-histogram strings.
   IPC_MESSAGE_CONTROL2(ViewHostMsg_RendererHistograms,

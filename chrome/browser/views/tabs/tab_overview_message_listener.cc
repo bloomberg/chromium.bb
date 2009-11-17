@@ -128,7 +128,7 @@ void TabOverviewMessageListener::ProcessMessage(
       select_message.set_param(0, message.param(1));
       TabOverviewTypes::instance()->SendMessage(select_message);
 
-      UserMetrics::RecordAction(L"TabOverview_DragOverMiniWindow",
+      UserMetrics::RecordAction("TabOverview_DragOverMiniWindow",
                                 browser_window->browser()->profile());
     }
 

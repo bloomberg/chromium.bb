@@ -281,7 +281,7 @@ void BookmarkBubbleGtk::HandleNameActivate() {
 void BookmarkBubbleGtk::HandleFolderChanged() {
   size_t cur_folder = gtk_combo_box_get_active(GTK_COMBO_BOX(folder_combo_));
   if (cur_folder == folder_nodes_.size()) {
-    UserMetrics::RecordAction(L"BookmarkBubble_EditFromCombobox", profile_);
+    UserMetrics::RecordAction("BookmarkBubble_EditFromCombobox", profile_);
     // GTK doesn't handle having the combo box destroyed from the changed
     // signal.  Since showing the editor also closes the bubble, delay this
     // so that GTK can unwind.  Specifically gtk_menu_shell_button_release
@@ -303,7 +303,7 @@ void BookmarkBubbleGtk::HandleFolderPopupShown() {
 }
 
 void BookmarkBubbleGtk::HandleEditButton() {
-  UserMetrics::RecordAction(L"BookmarkBubble_Edit", profile_);
+  UserMetrics::RecordAction("BookmarkBubble_Edit", profile_);
   ShowEditor();
 }
 
@@ -312,7 +312,7 @@ void BookmarkBubbleGtk::HandleCloseButton() {
 }
 
 void BookmarkBubbleGtk::HandleRemoveButton() {
-  UserMetrics::RecordAction(L"BookmarkBubble_Unstar", profile_);
+  UserMetrics::RecordAction("BookmarkBubble_Unstar", profile_);
 
   apply_edits_ = false;
   remove_bookmark_ = true;
@@ -333,7 +333,7 @@ void BookmarkBubbleGtk::ApplyEdits() {
 
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
-      UserMetrics::RecordAction(L"BookmarkBubble_ChangeTitleInBubble",
+      UserMetrics::RecordAction("BookmarkBubble_ChangeTitleInBubble",
                                 profile_);
     }
 
@@ -343,7 +343,7 @@ void BookmarkBubbleGtk::ApplyEdits() {
     if (cur_folder < folder_nodes_.size()) {
       const BookmarkNode* new_parent = folder_nodes_[cur_folder];
       if (new_parent != node->GetParent()) {
-        UserMetrics::RecordAction(L"BookmarkBubble_ChangeParent", profile_);
+        UserMetrics::RecordAction("BookmarkBubble_ChangeParent", profile_);
         model->Move(node, new_parent, new_parent->GetChildCount());
       }
     }

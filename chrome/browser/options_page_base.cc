@@ -18,7 +18,7 @@ OptionsPageBase::OptionsPageBase(Profile* profile)
 OptionsPageBase::~OptionsPageBase() {
 }
 
-void OptionsPageBase::UserMetricsRecordAction(const wchar_t* action,
+void OptionsPageBase::UserMetricsRecordAction(const char* action,
                                               PrefService* prefs) {
   UserMetrics::RecordComputedAction(action, profile());
   if (prefs)

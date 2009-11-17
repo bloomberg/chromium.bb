@@ -406,7 +406,7 @@ void ContentPageGtk::OnClearBrowsingDataButtonClicked(GtkButton* widget,
 // static
 void ContentPageGtk::OnGtkThemeButtonClicked(GtkButton* widget,
                                              ContentPageGtk* page) {
-  page->UserMetricsRecordAction(L"Options_GtkThemeSet",
+  page->UserMetricsRecordAction("Options_GtkThemeSet",
                                 page->profile()->GetPrefs());
   page->profile()->SetNativeTheme();
 }
@@ -414,7 +414,7 @@ void ContentPageGtk::OnGtkThemeButtonClicked(GtkButton* widget,
 // static
 void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkButton* widget,
                                                       ContentPageGtk* page) {
-  page->UserMetricsRecordAction(L"Options_ThemesReset",
+  page->UserMetricsRecordAction("Options_ThemesReset",
                                 page->profile()->GetPrefs());
   page->profile()->ClearTheme();
 }
@@ -422,7 +422,7 @@ void ContentPageGtk::OnResetDefaultThemeButtonClicked(GtkButton* widget,
 // static
 void ContentPageGtk::OnGetThemesButtonClicked(GtkButton* widget,
                                               ContentPageGtk* page) {
-  page->UserMetricsRecordAction(L"Options_ThemesGallery",
+  page->UserMetricsRecordAction("Options_ThemesGallery",
                                 page->profile()->GetPrefs());
   BrowserList::GetLastActive()->OpenThemeGalleryTabAndActivate();
 }
@@ -443,10 +443,10 @@ void ContentPageGtk::OnSystemTitleBarRadioToggled(GtkToggleButton* widget,
   bool use_custom = gtk_toggle_button_get_active(
       GTK_TOGGLE_BUTTON(page->system_title_bar_hide_radio_));
   if (use_custom) {
-    page->UserMetricsRecordAction(L"Options_CustomFrame_Enable",
+    page->UserMetricsRecordAction("Options_CustomFrame_Enable",
                                   page->profile()->GetPrefs());
   } else {
-    page->UserMetricsRecordAction(L"Options_CustomFrame_Disable",
+    page->UserMetricsRecordAction("Options_CustomFrame_Disable",
                                   page->profile()->GetPrefs());
   }
 
@@ -474,10 +474,10 @@ void ContentPageGtk::OnPasswordRadioToggled(GtkToggleButton* widget,
   bool enabled = gtk_toggle_button_get_active(
       GTK_TOGGLE_BUTTON(page->passwords_asktosave_radio_));
   if (enabled) {
-    page->UserMetricsRecordAction(L"Options_PasswordManager_Enable",
+    page->UserMetricsRecordAction("Options_PasswordManager_Enable",
                                   page->profile()->GetPrefs());
   } else {
-    page->UserMetricsRecordAction(L"Options_PasswordManager_Disable",
+    page->UserMetricsRecordAction("Options_PasswordManager_Disable",
                                   page->profile()->GetPrefs());
   }
   page->ask_to_save_passwords_.SetValue(enabled);
@@ -498,10 +498,10 @@ void ContentPageGtk::OnAutofillRadioToggled(GtkToggleButton* widget,
   bool enabled = gtk_toggle_button_get_active(
       GTK_TOGGLE_BUTTON(page->form_autofill_asktosave_radio_));
   if (enabled) {
-    page->UserMetricsRecordAction(L"Options_FormAutofill_Enable",
+    page->UserMetricsRecordAction("Options_FormAutofill_Enable",
                                   page->profile()->GetPrefs());
   } else {
-    page->UserMetricsRecordAction(L"Options_FormAutofill_Disable",
+    page->UserMetricsRecordAction("Options_FormAutofill_Disable",
                                   page->profile()->GetPrefs());
   }
   page->ask_to_save_form_autofill_.SetValue(enabled);

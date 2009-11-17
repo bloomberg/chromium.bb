@@ -306,16 +306,16 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
       WindowOpenDisposition initial_disposition;
       if (id == IDS_BOOMARK_BAR_OPEN_ALL) {
         initial_disposition = NEW_FOREGROUND_TAB;
-        UserMetrics::RecordAction(L"BookmarkBar_ContextMenu_OpenAll",
+        UserMetrics::RecordAction("BookmarkBar_ContextMenu_OpenAll",
                                   profile_);
       } else if (id == IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW) {
         initial_disposition = NEW_WINDOW;
-        UserMetrics::RecordAction(
-            L"BookmarkBar_ContextMenu_OpenAllInNewWindow", profile_);
+        UserMetrics::RecordAction("BookmarkBar_ContextMenu_OpenAllInNewWindow",
+                                  profile_);
       } else {
         initial_disposition = OFF_THE_RECORD;
-        UserMetrics::RecordAction(
-            L"BookmarkBar_ContextMenu_OpenAllIncognito", profile_);
+        UserMetrics::RecordAction("BookmarkBar_ContextMenu_OpenAllIncognito",
+                                  profile_);
       }
 
       bookmark_utils::OpenAll(wnd_, profile_, navigator, selection_,
@@ -325,7 +325,7 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
 
     case IDS_BOOKMARK_BAR_RENAME_FOLDER:
     case IDS_BOOKMARK_BAR_EDIT:
-      UserMetrics::RecordAction(L"BookmarkBar_ContextMenu_Edit", profile_);
+      UserMetrics::RecordAction("BookmarkBar_ContextMenu_Edit", profile_);
 
       if (selection_.size() != 1) {
         NOTREACHED();
@@ -348,7 +348,7 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
       break;
 
     case IDS_BOOKMARK_BAR_REMOVE: {
-      UserMetrics::RecordAction(L"BookmarkBar_ContextMenu_Remove", profile_);
+      UserMetrics::RecordAction("BookmarkBar_ContextMenu_Remove", profile_);
       BookmarkModel* model = RemoveModelObserver();
 
       for (size_t i = 0; i < selection_.size(); ++i) {
@@ -360,7 +360,7 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
     }
 
     case IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK: {
-      UserMetrics::RecordAction(L"BookmarkBar_ContextMenu_Add", profile_);
+      UserMetrics::RecordAction("BookmarkBar_ContextMenu_Add", profile_);
 
       BookmarkEditor::Configuration editor_config;
       BookmarkEditor::Handler* handler = NULL;
@@ -378,7 +378,7 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
     }
 
     case IDS_BOOMARK_BAR_NEW_FOLDER: {
-      UserMetrics::RecordAction(L"BookmarkBar_ContextMenu_NewFolder",
+      UserMetrics::RecordAction("BookmarkBar_ContextMenu_NewFolder",
                                 profile_);
       EditFolderController::Show(profile_, wnd_, GetParentForNewNodes(),
                                  true, (configuration_ != BOOKMARK_BAR));
@@ -390,7 +390,7 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
       break;
 
     case IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER:
-      UserMetrics::RecordAction(L"BookmarkBar_ContextMenu_ShowInFolder",
+      UserMetrics::RecordAction("BookmarkBar_ContextMenu_ShowInFolder",
                                 profile_);
 
       if (selection_.size() != 1) {
@@ -402,12 +402,12 @@ void BookmarkContextMenuGtk::ExecuteCommand(int id) {
       break;
 
     case IDS_BOOKMARK_MANAGER:
-      UserMetrics::RecordAction(L"ShowBookmarkManager", profile_);
+      UserMetrics::RecordAction("ShowBookmarkManager", profile_);
       BookmarkManager::Show(profile_);
       break;
 
     case IDS_BOOKMARK_MANAGER_SORT:
-      UserMetrics::RecordAction(L"BookmarkManager_Sort", profile_);
+      UserMetrics::RecordAction("BookmarkManager_Sort", profile_);
       model_->SortChildren(parent_);
       break;
 

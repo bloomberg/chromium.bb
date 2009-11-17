@@ -435,13 +435,13 @@ void GeneralPageView::ButtonPressed(
       sender == startup_custom_radio_) {
     SaveStartupPref();
     if (sender == startup_homepage_radio_) {
-      UserMetricsRecordAction(L"Options_Startup_Homepage",
+      UserMetricsRecordAction("Options_Startup_Homepage",
                               profile()->GetPrefs());
     } else if (sender == startup_last_session_radio_) {
-      UserMetricsRecordAction(L"Options_Startup_LastSession",
+      UserMetricsRecordAction("Options_Startup_LastSession",
                               profile()->GetPrefs());
     } else if (sender == startup_custom_radio_) {
-      UserMetricsRecordAction(L"Options_Startup_Custom",
+      UserMetricsRecordAction("Options_Startup_Custom",
                               profile()->GetPrefs());
     }
   } else if (sender == startup_add_custom_page_button_) {
@@ -451,33 +451,33 @@ void GeneralPageView::ButtonPressed(
   } else if (sender == startup_use_current_page_button_) {
     SetStartupURLToCurrentPage();
   } else if (sender == homepage_use_newtab_radio_) {
-    UserMetricsRecordAction(L"Options_Homepage_UseNewTab",
+    UserMetricsRecordAction("Options_Homepage_UseNewTab",
                             profile()->GetPrefs());
     SetHomepage(GetNewTabUIURLString());
     EnableHomepageURLField(false);
   } else if (sender == homepage_use_url_radio_) {
-    UserMetricsRecordAction(L"Options_Homepage_UseURL",
+    UserMetricsRecordAction("Options_Homepage_UseURL",
                             profile()->GetPrefs());
     SetHomepage(homepage_use_url_textfield_->text());
     EnableHomepageURLField(true);
   } else if (sender == homepage_show_home_button_checkbox_) {
     bool show_button = homepage_show_home_button_checkbox_->checked();
     if (show_button) {
-      UserMetricsRecordAction(L"Options_Homepage_ShowHomeButton",
+      UserMetricsRecordAction("Options_Homepage_ShowHomeButton",
                               profile()->GetPrefs());
     } else {
-      UserMetricsRecordAction(L"Options_Homepage_HideHomeButton",
+      UserMetricsRecordAction("Options_Homepage_HideHomeButton",
                               profile()->GetPrefs());
     }
     show_home_button_.SetValue(show_button);
   } else if (sender == default_browser_use_as_default_button_) {
     default_browser_worker_->StartSetAsDefaultBrowser();
-    UserMetricsRecordAction(L"Options_SetAsDefaultBrowser", NULL);
+    UserMetricsRecordAction("Options_SetAsDefaultBrowser", NULL);
     // If the user made Chrome the default browser, then he/she arguably wants
     // to be notified when that changes.
     profile()->GetPrefs()->SetBoolean(prefs::kCheckDefaultBrowser, true);
   } else if (sender == default_search_manage_engines_button_) {
-    UserMetricsRecordAction(L"Options_ManageSearchEngines", NULL);
+    UserMetricsRecordAction("Options_ManageSearchEngines", NULL);
     KeywordEditorView::Show(profile());
   }
 }
@@ -489,7 +489,7 @@ void GeneralPageView::ItemChanged(views::Combobox* combobox,
                                   int prev_index, int new_index) {
   if (combobox == default_search_engine_combobox_) {
     SetDefaultSearchProvider();
-    UserMetricsRecordAction(L"Options_SearchEngineChanged", NULL);
+    UserMetricsRecordAction("Options_SearchEngineChanged", NULL);
   }
 }
 

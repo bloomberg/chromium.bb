@@ -773,19 +773,19 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
 
   switch (result) {
     case UPGRADE_STARTED:
-      UserMetrics::RecordAction(L"Upgrade_Started", profile_);
+      UserMetrics::RecordAction("Upgrade_Started", profile_);
       check_button_status_ = CHECKBUTTON_DISABLED;
       show_throbber = true;
       update_label_.SetText(l10n_util::GetString(IDS_UPGRADE_STARTED));
       break;
     case UPGRADE_CHECK_STARTED:
-      UserMetrics::RecordAction(L"UpgradeCheck_Started", profile_);
+      UserMetrics::RecordAction("UpgradeCheck_Started", profile_);
       check_button_status_ = CHECKBUTTON_HIDDEN;
       show_throbber = true;
       update_label_.SetText(l10n_util::GetString(IDS_UPGRADE_CHECK_STARTED));
       break;
     case UPGRADE_IS_AVAILABLE:
-      UserMetrics::RecordAction(L"UpgradeCheck_UpgradeIsAvailable", profile_);
+      UserMetrics::RecordAction("UpgradeCheck_UpgradeIsAvailable", profile_);
       check_button_status_ = CHECKBUTTON_ENABLED;
       update_label_.SetText(
           l10n_util::GetStringF(IDS_UPGRADE_AVAILABLE,
@@ -802,7 +802,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
           installer::Version::GetVersionFromString(current_version_));
       if (!installed_version.get() ||
           !installed_version->IsHigherThan(running_version.get())) {
-        UserMetrics::RecordAction(L"UpgradeCheck_AlreadyUpToDate", profile_);
+        UserMetrics::RecordAction("UpgradeCheck_AlreadyUpToDate", profile_);
         check_button_status_ = CHECKBUTTON_HIDDEN;
         std::wstring update_label_text =
             l10n_util::GetStringF(IDS_UPGRADE_ALREADY_UP_TO_DATE,
@@ -820,9 +820,9 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
     }
     case UPGRADE_SUCCESSFUL: {
       if (result == UPGRADE_ALREADY_UP_TO_DATE)
-        UserMetrics::RecordAction(L"UpgradeCheck_AlreadyUpgraded", profile_);
+        UserMetrics::RecordAction("UpgradeCheck_AlreadyUpgraded", profile_);
       else
-        UserMetrics::RecordAction(L"UpgradeCheck_Upgraded", profile_);
+        UserMetrics::RecordAction("UpgradeCheck_Upgraded", profile_);
       check_button_status_ = CHECKBUTTON_HIDDEN;
       const std::wstring& update_string = new_version_available_.empty()
           ? l10n_util::GetStringF(IDS_UPGRADE_SUCCESSFUL_NOVERSION,
@@ -836,7 +836,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       break;
     }
     case UPGRADE_ERROR:
-      UserMetrics::RecordAction(L"UpgradeCheck_Error", profile_);
+      UserMetrics::RecordAction("UpgradeCheck_Error", profile_);
       check_button_status_ = CHECKBUTTON_HIDDEN;
       update_label_.SetText(l10n_util::GetStringF(IDS_UPGRADE_ERROR,
                                                   IntToWString(error_code)));

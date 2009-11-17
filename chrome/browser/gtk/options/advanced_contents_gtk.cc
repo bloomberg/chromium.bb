@@ -272,7 +272,7 @@ void DownloadSection::OnDownloadLocationChanged(GtkFileChooser* widget,
   // metric if something actually changed.
   if (path.ToWStringHack() != section->default_download_location_.GetValue()) {
     section->default_download_location_.SetValue(path.ToWStringHack());
-    section->UserMetricsRecordAction(L"Options_SetDownloadDirectory",
+    section->UserMetricsRecordAction("Options_SetDownloadDirectory",
                                      section->profile()->GetPrefs());
   }
 }
@@ -284,10 +284,10 @@ void DownloadSection::OnDownloadAskForSaveLocationChanged(
     return;
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   if (enabled) {
-    section->UserMetricsRecordAction(L"Options_AskForSaveLocation_Enable",
+    section->UserMetricsRecordAction("Options_AskForSaveLocation_Enable",
                                      section->profile()->GetPrefs());
   } else {
-    section->UserMetricsRecordAction(L"Options_AskForSaveLocation_Disable",
+    section->UserMetricsRecordAction("Options_AskForSaveLocation_Disable",
                                      section->profile()->GetPrefs());
   }
   section->ask_for_save_location_.SetValue(enabled);
@@ -297,7 +297,7 @@ void DownloadSection::OnDownloadAskForSaveLocationChanged(
 void DownloadSection::OnResetFileHandlersClicked(GtkButton *button,
                                                  DownloadSection* section) {
   section->profile()->GetDownloadManager()->ResetAutoOpenFiles();
-  section->UserMetricsRecordAction(L"Options_ResetAutoOpenFiles",
+  section->UserMetricsRecordAction("Options_ResetAutoOpenFiles",
                                    section->profile()->GetPrefs());
 }
 
@@ -362,7 +362,7 @@ NetworkSection::NetworkSection(Profile* profile)
 // static
 void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
                                                   NetworkSection* section) {
-  section->UserMetricsRecordAction(L"Options_ChangeProxies", NULL);
+  section->UserMetricsRecordAction("Options_ChangeProxies", NULL);
 
   scoped_ptr<base::EnvironmentVariableGetter> env_getter(
       base::EnvironmentVariableGetter::Create());
@@ -646,8 +646,8 @@ void PrivacySection::OnEnableLinkDoctorChange(GtkWidget* widget,
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
       enabled ?
-      L"Options_LinkDoctorCheckbox_Enable" :
-      L"Options_LinkDoctorCheckbox_Disable",
+          "Options_LinkDoctorCheckbox_Enable" :
+          "Options_LinkDoctorCheckbox_Disable",
       privacy_section->profile()->GetPrefs());
   privacy_section->alternate_error_pages_.SetValue(enabled);
 }
@@ -660,8 +660,8 @@ void PrivacySection::OnEnableSuggestChange(GtkWidget* widget,
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
       enabled ?
-      L"Options_UseSuggestCheckbox_Enable" :
-      L"Options_UseSuggestCheckbox_Disable",
+          "Options_UseSuggestCheckbox_Enable" :
+          "Options_UseSuggestCheckbox_Disable",
       privacy_section->profile()->GetPrefs());
   privacy_section->use_suggest_.SetValue(enabled);
 }
@@ -674,8 +674,8 @@ void PrivacySection::OnDNSPrefetchingChange(GtkWidget* widget,
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
       enabled ?
-      L"Options_DnsPrefetchCheckbox_Enable" :
-      L"Options_DnsPrefetchCheckbox_Disable",
+          "Options_DnsPrefetchCheckbox_Enable" :
+          "Options_DnsPrefetchCheckbox_Disable",
       privacy_section->profile()->GetPrefs());
   privacy_section->dns_prefetch_enabled_.SetValue(enabled);
   chrome_browser_net::EnableDnsPrefetch(enabled);
@@ -689,8 +689,8 @@ void PrivacySection::OnSafeBrowsingChange(GtkWidget* widget,
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
       enabled ?
-      L"Options_SafeBrowsingCheckbox_Enable" :
-      L"Options_SafeBrowsingCheckbox_Disable",
+          "Options_SafeBrowsingCheckbox_Enable" :
+          "Options_SafeBrowsingCheckbox_Disable",
       privacy_section->profile()->GetPrefs());
   privacy_section->safe_browsing_.SetValue(enabled);
   SafeBrowsingService* safe_browsing_service =
@@ -707,8 +707,8 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
   bool enabled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   privacy_section->UserMetricsRecordAction(
       enabled ?
-      L"Options_MetricsReportingCheckbox_Enable" :
-      L"Options_MetricsReportingCheckbox_Disable",
+          "Options_MetricsReportingCheckbox_Enable" :
+          "Options_MetricsReportingCheckbox_Disable",
       privacy_section->profile()->GetPrefs());
   // Prevent us from being called again by ResolveMetricsReportingEnabled
   // resetting the checkbox if there was a problem.
@@ -731,10 +731,10 @@ void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
     return;
   net::CookiePolicy::Type cookie_policy =
       net::CookiePolicy::FromInt(gtk_combo_box_get_active(combo_box));
-  const wchar_t* kUserMetrics[] = {
-      L"Options_AllowAllCookies",
-      L"Options_BlockThirdPartyCookies",
-      L"Options_BlockAllCookies"
+  const char* kUserMetrics[] = {
+      "Options_AllowAllCookies",
+      "Options_BlockThirdPartyCookies",
+      "Options_BlockAllCookies"
   };
   if (cookie_policy < 0 ||
       static_cast<size_t>(cookie_policy) >= arraysize(kUserMetrics)) {
@@ -749,7 +749,7 @@ void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
 // static
 void PrivacySection::OnShowCookiesButtonClicked(
     GtkButton *button, PrivacySection* privacy_section) {
-  privacy_section->UserMetricsRecordAction(L"Options_ShowCookies", NULL);
+  privacy_section->UserMetricsRecordAction("Options_ShowCookies", NULL);
   CookiesView::Show(privacy_section->profile());
 }
 
@@ -951,10 +951,10 @@ void SecuritySection::OnRevCheckingEnabledToggled(GtkToggleButton* togglebutton,
 
   bool enabled = gtk_toggle_button_get_active(togglebutton);
   if (enabled) {
-    section->UserMetricsRecordAction(L"Options_CheckCertRevocation_Enable",
+    section->UserMetricsRecordAction("Options_CheckCertRevocation_Enable",
                                      NULL);
   } else {
-    section->UserMetricsRecordAction(L"Options_CheckCertRevocation_Disable",
+    section->UserMetricsRecordAction("Options_CheckCertRevocation_Disable",
                                      NULL);
   }
   section->rev_checking_enabled_.SetValue(enabled);
@@ -968,9 +968,9 @@ void SecuritySection::OnSSL2EnabledToggled(GtkToggleButton* togglebutton,
 
   bool enabled = gtk_toggle_button_get_active(togglebutton);
   if (enabled) {
-    section->UserMetricsRecordAction(L"Options_SSL2_Enable", NULL);
+    section->UserMetricsRecordAction("Options_SSL2_Enable", NULL);
   } else {
-    section->UserMetricsRecordAction(L"Options_SSL2_Disable", NULL);
+    section->UserMetricsRecordAction("Options_SSL2_Disable", NULL);
   }
   section->ssl2_enabled_.SetValue(enabled);
 }
@@ -983,9 +983,9 @@ void SecuritySection::OnSSL3EnabledToggled(GtkToggleButton* togglebutton,
 
   bool enabled = gtk_toggle_button_get_active(togglebutton);
   if (enabled) {
-    section->UserMetricsRecordAction(L"Options_SSL3_Enable", NULL);
+    section->UserMetricsRecordAction("Options_SSL3_Enable", NULL);
   } else {
-    section->UserMetricsRecordAction(L"Options_SSL3_Disable", NULL);
+    section->UserMetricsRecordAction("Options_SSL3_Disable", NULL);
   }
   section->ssl3_enabled_.SetValue(enabled);
 }
@@ -998,9 +998,9 @@ void SecuritySection::OnTLS1EnabledToggled(GtkToggleButton* togglebutton,
 
   bool enabled = gtk_toggle_button_get_active(togglebutton);
   if (enabled) {
-    section->UserMetricsRecordAction(L"Options_TLS1_Enable", NULL);
+    section->UserMetricsRecordAction("Options_TLS1_Enable", NULL);
   } else {
-    section->UserMetricsRecordAction(L"Options_TLS1_Disable", NULL);
+    section->UserMetricsRecordAction("Options_TLS1_Disable", NULL);
   }
   section->tls1_enabled_.SetValue(enabled);
 }

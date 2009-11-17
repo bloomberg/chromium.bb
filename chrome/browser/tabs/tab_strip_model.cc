@@ -524,23 +524,23 @@ void TabStripModel::ExecuteContextMenuCommand(
   DCHECK(command_id > CommandFirst && command_id < CommandLast);
   switch (command_id) {
     case CommandNewTab:
-      UserMetrics::RecordAction(L"TabContextMenu_NewTab", profile_);
+      UserMetrics::RecordAction("TabContextMenu_NewTab", profile_);
       delegate()->AddBlankTabAt(context_index + 1, true);
       break;
     case CommandReload:
-      UserMetrics::RecordAction(L"TabContextMenu_Reload", profile_);
+      UserMetrics::RecordAction("TabContextMenu_Reload", profile_);
       GetContentsAt(context_index)->controller().Reload(true);
       break;
     case CommandDuplicate:
-      UserMetrics::RecordAction(L"TabContextMenu_Duplicate", profile_);
+      UserMetrics::RecordAction("TabContextMenu_Duplicate", profile_);
       delegate_->DuplicateContentsAt(context_index);
       break;
     case CommandCloseTab:
-      UserMetrics::RecordAction(L"TabContextMenu_CloseTab", profile_);
+      UserMetrics::RecordAction("TabContextMenu_CloseTab", profile_);
       CloseTabContentsAt(context_index);
       break;
     case CommandCloseOtherTabs: {
-      UserMetrics::RecordAction(L"TabContextMenu_CloseOtherTabs", profile_);
+      UserMetrics::RecordAction("TabContextMenu_CloseOtherTabs", profile_);
       TabContents* contents = GetTabContentsAt(context_index);
       std::vector<int> closing_tabs;
       for (int i = count() - 1; i >= 0; --i) {
@@ -551,7 +551,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       break;
     }
     case CommandCloseTabsToRight: {
-      UserMetrics::RecordAction(L"TabContextMenu_CloseTabsToRight", profile_);
+      UserMetrics::RecordAction("TabContextMenu_CloseTabsToRight", profile_);
       std::vector<int> closing_tabs;
       for (int i = count() - 1; i > context_index; --i) {
         closing_tabs.push_back(i);
@@ -560,18 +560,18 @@ void TabStripModel::ExecuteContextMenuCommand(
       break;
     }
     case CommandCloseTabsOpenedBy: {
-      UserMetrics::RecordAction(L"TabContextMenu_CloseTabsOpenedBy", profile_);
+      UserMetrics::RecordAction("TabContextMenu_CloseTabsOpenedBy", profile_);
       std::vector<int> closing_tabs = GetIndexesOpenedBy(context_index);
       InternalCloseTabs(closing_tabs, true);
       break;
     }
     case CommandRestoreTab: {
-      UserMetrics::RecordAction(L"TabContextMenu_RestoreTab", profile_);
+      UserMetrics::RecordAction("TabContextMenu_RestoreTab", profile_);
       delegate_->RestoreTab();
       break;
     }
     case CommandTogglePinned: {
-      UserMetrics::RecordAction(L"TabContextMenu_TogglePinned", profile_);
+      UserMetrics::RecordAction("TabContextMenu_TogglePinned", profile_);
 
       SelectTabContentsAt(context_index, true);
       SetTabPinned(context_index, !IsTabPinned(context_index));
@@ -579,7 +579,7 @@ void TabStripModel::ExecuteContextMenuCommand(
     }
 
     case CommandBookmarkAllTabs: {
-      UserMetrics::RecordAction(L"TabContextMenu_BookmarkAllTabs", profile_);
+      UserMetrics::RecordAction("TabContextMenu_BookmarkAllTabs", profile_);
 
       delegate_->BookmarkAllTabs();
       break;

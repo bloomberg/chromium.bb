@@ -194,15 +194,15 @@ bool FirstRunCustomizeView::Accept() {
   quick_shortcut_cbox_->SetEnabled(false);
 
   if (desktop_shortcut_cbox_->checked()) {
-    UserMetrics::RecordAction(L"FirstRunCustom_Do_DesktopShortcut", profile_);
+    UserMetrics::RecordAction("FirstRunCustom_Do_DesktopShortcut", profile_);
     CreateDesktopShortcut();
   }
   if (quick_shortcut_cbox_->checked()) {
-    UserMetrics::RecordAction(L"FirstRunCustom_Do_QuickLShortcut", profile_);
+    UserMetrics::RecordAction("FirstRunCustom_Do_QuickLShortcut", profile_);
     CreateQuickLaunchShortcut();
   }
   if (!import_cbox_->checked()) {
-    UserMetrics::RecordAction(L"FirstRunCustom_No_Import", profile_);
+    UserMetrics::RecordAction("FirstRunCustom_No_Import", profile_);
   } else {
     int browser_selected = import_from_combo_->selected_item();
     FirstRun::ImportSettings(profile_,

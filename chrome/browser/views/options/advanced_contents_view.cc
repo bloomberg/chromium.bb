@@ -534,30 +534,30 @@ void PrivacySection::ButtonPressed(
   if (sender == enable_link_doctor_checkbox_) {
     bool enabled = enable_link_doctor_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
-                                L"Options_LinkDoctorCheckbox_Enable" :
-                                L"Options_LinkDoctorCheckbox_Disable",
+                                "Options_LinkDoctorCheckbox_Enable" :
+                                "Options_LinkDoctorCheckbox_Disable",
                             profile()->GetPrefs());
     alternate_error_pages_.SetValue(enabled);
   } else if (sender == enable_suggest_checkbox_) {
     bool enabled = enable_suggest_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
-                                L"Options_UseSuggestCheckbox_Enable" :
-                                L"Options_UseSuggestCheckbox_Disable",
+                                "Options_UseSuggestCheckbox_Enable" :
+                                "Options_UseSuggestCheckbox_Disable",
                             profile()->GetPrefs());
     use_suggest_.SetValue(enabled);
   } else if (sender == enable_dns_prefetching_checkbox_) {
     bool enabled = enable_dns_prefetching_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
-                                L"Options_DnsPrefetchCheckbox_Enable" :
-                                L"Options_DnsPrefetchCheckbox_Disable",
+                                "Options_DnsPrefetchCheckbox_Enable" :
+                                "Options_DnsPrefetchCheckbox_Disable",
                             profile()->GetPrefs());
     dns_prefetch_enabled_.SetValue(enabled);
     chrome_browser_net::EnableDnsPrefetch(enabled);
   } else if (sender == enable_safe_browsing_checkbox_) {
     bool enabled = enable_safe_browsing_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
-                                L"Options_SafeBrowsingCheckbox_Enable" :
-                                L"Options_SafeBrowsingCheckbox_Disable",
+                                "Options_SafeBrowsingCheckbox_Enable" :
+                                "Options_SafeBrowsingCheckbox_Disable",
                             profile()->GetPrefs());
     safe_browsing_.SetValue(enabled);
     SafeBrowsingService* safe_browsing_service =
@@ -567,15 +567,15 @@ void PrivacySection::ButtonPressed(
   } else if (sender == reporting_enabled_checkbox_) {
     bool enabled = reporting_enabled_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
-                                L"Options_MetricsReportingCheckbox_Enable" :
-                                L"Options_MetricsReportingCheckbox_Disable",
+                                "Options_MetricsReportingCheckbox_Enable" :
+                                "Options_MetricsReportingCheckbox_Disable",
                             profile()->GetPrefs());
     ResolveMetricsReportingEnabled();
     if (enabled == reporting_enabled_checkbox_->checked())
       RestartMessageBox::ShowMessageBox(GetWindow()->GetNativeWindow());
     enable_metrics_recording_.SetValue(enabled);
   } else if (sender == show_cookies_button_) {
-    UserMetricsRecordAction(L"Options_ShowCookies", NULL);
+    UserMetricsRecordAction("Options_ShowCookies", NULL);
     CookiesView::ShowCookiesWindow(profile());
   }
 }
@@ -610,10 +610,10 @@ void PrivacySection::ItemChanged(views::Combobox* sender,
   if (sender == cookie_behavior_combobox_) {
     net::CookiePolicy::Type cookie_policy =
         CookieBehaviorComboModel::IndexToCookiePolicy(new_index);
-    const wchar_t* kUserMetrics[] = {
-        L"Options_AllowAllCookies",
-        L"Options_BlockThirdPartyCookies",
-        L"Options_BlockAllCookies"
+    const char* kUserMetrics[] = {
+        "Options_AllowAllCookies",
+        "Options_BlockThirdPartyCookies",
+        "Options_BlockAllCookies"
     };
     DCHECK(cookie_policy >= 0 && cookie_policy < arraysize(kUserMetrics));
     UserMetricsRecordAction(kUserMetrics[cookie_policy], profile()->GetPrefs());
@@ -788,7 +788,7 @@ WebContentSection::WebContentSection(Profile* profile)
 void WebContentSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == gears_settings_button_) {
-    UserMetricsRecordAction(L"Options_GearsSettings", NULL);
+    UserMetricsRecordAction("Options_GearsSettings", NULL);
     GearsSettingsPressed(GetAncestor(GetWidget()->GetNativeView(), GA_ROOT));
   } else if (sender == change_content_fonts_button_) {
     views::Window::CreateChromeWindow(
@@ -889,21 +889,21 @@ void SecuritySection::ButtonPressed(
   if (sender == enable_ssl2_checkbox_) {
     bool enabled = enable_ssl2_checkbox_->checked();
     if (enabled) {
-      UserMetricsRecordAction(L"Options_SSL2_Enable", NULL);
+      UserMetricsRecordAction("Options_SSL2_Enable", NULL);
     } else {
-      UserMetricsRecordAction(L"Options_SSL2_Disable", NULL);
+      UserMetricsRecordAction("Options_SSL2_Disable", NULL);
     }
     net::SSLConfigServiceWin::SetSSL2Enabled(enabled);
   } else if (sender == check_for_cert_revocation_checkbox_) {
     bool enabled = check_for_cert_revocation_checkbox_->checked();
     if (enabled) {
-      UserMetricsRecordAction(L"Options_CheckCertRevocation_Enable", NULL);
+      UserMetricsRecordAction("Options_CheckCertRevocation_Enable", NULL);
     } else {
-      UserMetricsRecordAction(L"Options_CheckCertRevocation_Disable", NULL);
+      UserMetricsRecordAction("Options_CheckCertRevocation_Disable", NULL);
     }
     net::SSLConfigServiceWin::SetRevCheckingEnabled(enabled);
   } else if (sender == manage_certificates_button_) {
-    UserMetricsRecordAction(L"Options_ManagerCerts", NULL);
+    UserMetricsRecordAction("Options_ManagerCerts", NULL);
     CRYPTUI_CERT_MGR_STRUCT cert_mgr = { 0 };
     cert_mgr.dwSize = sizeof(CRYPTUI_CERT_MGR_STRUCT);
     cert_mgr.hwndParent = GetWindow()->GetNativeWindow();
@@ -1039,7 +1039,7 @@ NetworkSection::NetworkSection(Profile* profile)
 void NetworkSection::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == change_proxies_button_) {
-    UserMetricsRecordAction(L"Options_ChangeProxies", NULL);
+    UserMetricsRecordAction("Options_ChangeProxies", NULL);
     base::Thread* thread = g_browser_process->file_thread();
     DCHECK(thread);
     thread->message_loop()->PostTask(FROM_HERE, new OpenConnectionDialogTask);
@@ -1156,23 +1156,23 @@ void DownloadSection::ButtonPressed(
   } else if (sender == download_ask_for_save_location_checkbox_) {
     bool enabled = download_ask_for_save_location_checkbox_->checked();
     if (enabled) {
-      UserMetricsRecordAction(L"Options_AskForSaveLocation_Enable",
+      UserMetricsRecordAction("Options_AskForSaveLocation_Enable",
                               profile()->GetPrefs());
     } else {
-      UserMetricsRecordAction(L"Options_AskForSaveLocation_Disable",
+      UserMetricsRecordAction("Options_AskForSaveLocation_Disable",
                               profile()->GetPrefs());
     }
     ask_for_save_location_.SetValue(enabled);
   } else if (sender == reset_file_handlers_button_) {
     profile()->GetDownloadManager()->ResetAutoOpenFiles();
-    UserMetricsRecordAction(L"Options_ResetAutoOpenFiles",
+    UserMetricsRecordAction("Options_ResetAutoOpenFiles",
                             profile()->GetPrefs());
   }
 }
 
 void DownloadSection::FileSelected(const FilePath& path,
                                    int index, void* params) {
-  UserMetricsRecordAction(L"Options_SetDownloadDirectory",
+  UserMetricsRecordAction("Options_SetDownloadDirectory",
                           profile()->GetPrefs());
   default_download_location_.SetValue(path.ToWStringHack());
   // We need to call this manually here since because we're setting the value

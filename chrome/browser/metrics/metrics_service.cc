@@ -536,7 +536,7 @@ void MetricsService::Observe(NotificationType type,
 
   switch (type.value) {
     case NotificationType::USER_ACTION:
-        current_log_->RecordUserAction(*Details<const wchar_t*>(details).ptr());
+        current_log_->RecordUserAction(*Details<const char*>(details).ptr());
       break;
 
     case NotificationType::BROWSER_OPENED:

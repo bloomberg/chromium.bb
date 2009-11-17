@@ -503,7 +503,7 @@ private:
 
   TabContents* contents = tabModel_->GetTabContentsAt(index);
   if (contents)
-    UserMetrics::RecordAction(L"CloseTab_Mouse", contents->profile());
+    UserMetrics::RecordAction("CloseTab_Mouse", contents->profile());
   const NSInteger numberOfTabViews = [self numberOfTabViews];
   if (numberOfTabViews > 1) {
     bool isClosingLastTab = index == numberOfTabViews - 1;

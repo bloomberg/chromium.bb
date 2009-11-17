@@ -478,7 +478,7 @@ void LanguagesPageGtk::OnDictionaryLanguageChanged() {
     spellcheck_language_added_ = "";
   }
 
-  UserMetricsRecordAction(L"Options_DictionaryLanguage",
+  UserMetricsRecordAction("Options_DictionaryLanguage",
                           profile()->GetPrefs());
   dictionary_language_.SetValue(ASCIIToWide(language));
 }

@@ -1081,7 +1081,7 @@ void BookmarkBarView::WriteDragData(View* sender,
                                     int press_x,
                                     int press_y,
                                     OSExchangeData* data) {
-  UserMetrics::RecordAction(L"BookmarkBar_DragButton", profile_);
+  UserMetrics::RecordAction("BookmarkBar_DragButton", profile_);
 
   for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
     if (sender == GetBookmarkButton(i)) {
@@ -1177,7 +1177,7 @@ void BookmarkBarView::ButtonPressed(views::Button* sender,
     bookmark_utils::OpenAll(GetWindow()->GetNativeWindow(), profile_,
         GetPageNavigator(), node, disposition_from_event_flags);
   }
-  UserMetrics::RecordAction(L"ClickedBookmarkBarURLButton", profile_);
+  UserMetrics::RecordAction("ClickedBookmarkBarURLButton", profile_);
 }
 
 void BookmarkBarView::ShowContextMenu(View* source,

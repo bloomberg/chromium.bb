@@ -881,7 +881,7 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender,
       event_utils::DispositionFromEventFlags(event->state),
       PageTransition::AUTO_BOOKMARK);
 
-  UserMetrics::RecordAction(L"ClickedBookmarkBarURLButton", bar->profile_);
+  UserMetrics::RecordAction("ClickedBookmarkBarURLButton", bar->profile_);
 }
 
 // static

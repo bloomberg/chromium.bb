@@ -512,7 +512,7 @@ void BookmarkManagerView::OnTreeViewKeyDown(base::KeyboardCode keycode) {
 void BookmarkManagerView::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   if (sender == sync_status_button_) {
-    UserMetrics::RecordAction(L"BookmarkManager_Sync", profile_);
+    UserMetrics::RecordAction("BookmarkManager_Sync", profile_);
     OpenSyncMyBookmarksDialog();
   }
 }
@@ -575,12 +575,12 @@ void BookmarkManagerView::RunMenu(views::View* source, const gfx::Point& pt) {
 void BookmarkManagerView::ExecuteCommand(int id) {
   switch (id) {
     case IDS_BOOKMARK_MANAGER_IMPORT_MENU:
-      UserMetrics::RecordAction(L"BookmarkManager_Import", profile_);
+      UserMetrics::RecordAction("BookmarkManager_Import", profile_);
       ShowImportBookmarksFileChooser();
       break;
 
     case IDS_BOOKMARK_MANAGER_EXPORT_MENU:
-      UserMetrics::RecordAction(L"BookmarkManager_Export", profile_);
+      UserMetrics::RecordAction("BookmarkManager_Export", profile_);
       ShowExportBookmarksFileChooser();
       break;
 

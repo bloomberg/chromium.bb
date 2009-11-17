@@ -93,7 +93,7 @@ void EditSearchEngineController::AcceptAddOrEdit(
     modifiable_url->SetURL(url_string, 0, 0);
     // TemplateURLModel takes ownership of template_url_.
     profile_->GetTemplateURLModel()->Add(modifiable_url);
-    UserMetrics::RecordAction(L"KeywordEditor_AddKeywordJS", profile_);
+    UserMetrics::RecordAction("KeywordEditor_AddKeywordJS", profile_);
   } else {
     // Adding or modifying an entry via the Delegate.
     edit_keyword_delegate_->OnEditedKeyword(template_url_,
