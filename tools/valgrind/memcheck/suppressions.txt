@@ -1241,4 +1241,21 @@
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
 }
+{
+   bug_27922
+   Memcheck:Cond
+   fun:_ZN21MessagePortDispatcher7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN21ResourceMessageFilter14OnChannelErrorEv
+   fun:_ZN3IPC12ChannelProxy7Context14OnChannelErrorEv
+   fun:_ZN3IPC11SyncChannel11SyncContext14OnChannelErrorEv
+   fun:_ZN3IPC12ChannelProxy7Context13OnSendMessageEPNS_7MessageE
+   fun:_ZN3IPC8SendTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
 
