@@ -44,7 +44,8 @@ DebuggerAgentImpl::DebuggerAgentImpl(
     : web_view_impl_(web_view_impl),
       delegate_(delegate),
       webdevtools_agent_(webdevtools_agent),
-      profiler_log_position_(0) {
+      profiler_log_position_(0),
+      auto_continue_on_exception_(false) {
   DebuggerAgentManager::DebugAttach(this);
 }
 

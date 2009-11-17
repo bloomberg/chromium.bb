@@ -49,6 +49,12 @@ class DebuggerAgentImpl : public DebuggerAgent {
 
   void DebuggerOutput(const WebCore::String& out);
 
+  void set_auto_continue_on_exception(bool auto_continue) {
+    auto_continue_on_exception_ = auto_continue;
+  }
+
+  bool auto_continue_on_exception() { return auto_continue_on_exception_; }
+
   // Executes function with the given name in the utility context. Passes node
   // and json args as parameters. Note that the function called must be
   // implemented in the inject_dispatch.js file.
@@ -76,6 +82,7 @@ class DebuggerAgentImpl : public DebuggerAgent {
   DebuggerAgentDelegate* delegate_;
   WebDevToolsAgentImpl* webdevtools_agent_;
   int profiler_log_position_;
+  bool auto_continue_on_exception_;
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_

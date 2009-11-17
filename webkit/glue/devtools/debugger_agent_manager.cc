@@ -228,6 +228,12 @@ void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
     if (host_id != -1) {
       DebuggerAgentImpl* agent = DebuggerAgentForHostId(host_id);
       if (agent) {
+        if (agent->auto_continue_on_exception()
+            && message.GetEvent() == v8::Exception) {
+          SendContinueCommandToV8();
+          return;
+        }
+
         agent->DebuggerOutput(out);
         return;
       }

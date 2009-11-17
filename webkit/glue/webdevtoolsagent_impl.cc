@@ -401,6 +401,7 @@ void WebDevToolsAgentImpl::setApuAgentEnabled(bool enabled) {
       // user could turn off resource tracking while apu agent is on.
       ic->enableResourceTracking(false, false);
     }
+    debugger_agent_impl_->set_auto_continue_on_exception(true);
   } else {
     ic->stopTimelineProfiler();
     if (!resource_tracking_was_enabled_) {
