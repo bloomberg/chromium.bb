@@ -305,8 +305,11 @@ END_MSG_MAP()
   // of this template should implement this method based on how
   // it "feels" from a security perspective. If it's hosted in another
   // scriptable document, return true, else false.
+  //
+  // The base implementation returns true unless we are in privileged
+  // mode, in which case we always trust our container so we return false.
   bool is_frame_busting_enabled() const {
-    return true;
+    return !is_privileged_;
   }
 
   // Needed to support PostTask.

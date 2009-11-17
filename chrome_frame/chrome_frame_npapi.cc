@@ -669,7 +669,7 @@ void ChromeFrameNPAPI::OnRequestStart(int tab_handle, int request_id,
   if (new_request->Initialize(automation_client_.get(), tab_handle,
                               request_id, request.url, request.method,
                               request.referrer, request.extra_request_headers,
-                              request.upload_data.get(), true)) {
+                              request.upload_data.get(), !is_privileged_)) {
     if (new_request->Start()) {
       // Keep additional reference on request for NPSTREAM
       // This will be released in NPP_UrlNotify
