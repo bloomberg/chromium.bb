@@ -375,6 +375,26 @@ be available for now. -->
       <message name="IDS_AUTOFILL_INFOBAR_TEXT" desc="Text to show in the autofill request infobar.">
         Do you want Chromium to save this information?
       </message>
+      <!-- Try Chrome Toast Dialog -->
+      <message name="IDS_TRY_TOAST_HEADING" desc="Top line of the try-chrome-again dialog">
+        There is a new version of Chromium available.
+      </message>
+      <message name="IDS_TRY_TOAST_TRY_OPT" desc="First option radio button on the dialog to try chrome">
+        Try it out (already installed)
+      </message>
+      <message name="IDS_TRY_TOAST_UNINSTALL_OPT" desc="Second option radio button on the dialog to try chrome">
+        Uninstall Chromium
+      </message>
+      <message name="IDS_TRY_TOAST_DOIT" desc="Try chrome again dialog standard OK button">
+        OK
+      </message>
+      <message name="IDS_TRY_TOAST_CANCEL" desc="Try chrome again dialog Cancel button">
+        Don't bug me
+      </message>
+      <message name="IDS_TRY_TOAST_WHY" desc="Text of the url link that explains why this dialog is being shown">
+        Why am I seeing this?
+      </message>
+
       <if expr="os == 'darwin'">
         <message name="IDS_SHORT_PRODUCT_NAME" desc="The application's short name, used for the Mac's application menu, activity monitor, etc. This should be less than 16 characters. Example: Chrome, not Google Chrome.">
           Chromium
