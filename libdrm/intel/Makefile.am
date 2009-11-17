@@ -27,7 +27,7 @@ AM_CFLAGS = \
 	-I$(top_srcdir)/libdrm \
 	-I$(top_srcdir)/libdrm/intel \
 	$(PTHREADSTUBS_CFLAGS) \
-	-I$(top_srcdir)/shared-core
+	-I$(top_srcdir)/include/drm
 
 libdrm_intel_la_LTLIBRARIES = libdrm_intel.la
 libdrm_intel_ladir = $(libdir)

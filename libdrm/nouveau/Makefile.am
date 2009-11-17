@@ -3,7 +3,7 @@ AM_CFLAGS = \
 	-I$(top_srcdir)/libdrm \
 	-I$(top_srcdir)/libdrm/nouveau \
 	$(PTHREADSTUBS_CFLAGS) \
-	-I$(top_srcdir)/shared-core
+	-I$(top_srcdir)/include/drm
 
 libdrm_nouveau_la_LTLIBRARIES = libdrm_nouveau.la
 libdrm_nouveau_ladir = $(libdir)

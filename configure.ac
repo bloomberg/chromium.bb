@@ -204,7 +204,6 @@ AC_OUTPUT([
 	libdrm/radeon/libdrm_radeon.pc
 	libdrm/nouveau/Makefile
 	libdrm/nouveau/libdrm_nouveau.pc
-	shared-core/Makefile
 	tests/Makefile
 	tests/modeprint/Makefile
 	tests/modetest/Makefile

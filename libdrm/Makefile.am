@@ -37,7 +37,7 @@ libdrm_ladir = $(libdir)
 libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
 libdrm_la_LIBADD = @CLOCK_LIB@
 
-AM_CFLAGS = -I$(top_srcdir)/shared-core
+AM_CFLAGS = -I$(top_srcdir)/include/drm
 libdrm_la_SOURCES = xf86drm.c xf86drmHash.c xf86drmRandom.c xf86drmSL.c \
 	xf86drmMode.c libdrm_lists.h
 

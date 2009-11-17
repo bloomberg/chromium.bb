@@ -1,5 +1,5 @@
 AM_CFLAGS = \
-	-I$(top_srcdir)/shared-core \
+	-I$(top_srcdir)/include/drm \
 	-I$(top_srcdir)/libdrm/intel/ \
 	-I$(top_srcdir)/libdrm \
 	$(CAIRO_CFLAGS)

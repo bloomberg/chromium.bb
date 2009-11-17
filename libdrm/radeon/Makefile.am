@@ -27,7 +27,7 @@ AM_CFLAGS = \
 	-I$(top_srcdir)/libdrm \
 	-I$(top_srcdir)/libdrm/radeon \
 	$(PTHREADSTUBS_CFLAGS) \
-	-I$(top_srcdir)/shared-core
+	-I$(top_srcdir)/include/drm
 
 libdrm_radeon_la_LTLIBRARIES = libdrm_radeon.la
 libdrm_radeon_ladir = $(libdir)

@@ -18,11 +18,8 @@
 #  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-# eventually someone might want to build the kernel modules or tests from 
-# here too, but let's just do libdrm for now
-
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = libdrm shared-core tests
+SUBDIRS = libdrm tests
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc

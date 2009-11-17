@@ -1,7 +1,7 @@
 NULL:=#
 
 AM_CPPFLAGS = \
-	-I $(top_srcdir)/shared-core \
+	-I $(top_srcdir)/include/drm \
 	-I $(top_srcdir)/libdrm
 
 LDADD = $(top_builddir)/libdrm/libdrm.la
