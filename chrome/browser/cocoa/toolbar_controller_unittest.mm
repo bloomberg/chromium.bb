@@ -146,8 +146,9 @@ TEST_F(ToolbarControllerTest, FocusLocation) {
   EXPECT_EQ([window firstResponder], [(id)locationBar currentEditor]);
 }
 
+// TODO(dmaclach) disabled due to crash: crbug.com/27920
 // Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(ToolbarControllerTest, Display) {
+TEST_F(ToolbarControllerTest, DISABLED_Display) {
   [[bar_ view] display];
 }
 
