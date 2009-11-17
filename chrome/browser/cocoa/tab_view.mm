@@ -111,7 +111,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     // to the |closeButton_| view, but |self| will handle the messages.
     // The mouseover is always enabled, because the close button works
     // regardless of key/main/active status.
-    DCHECK(closeTrackingArea_.get() == nil);
     closeTrackingArea_.reset(
         [[NSTrackingArea alloc] initWithRect:[closeButton_ bounds]
                                      options:NSTrackingMouseEnteredAndExited |
