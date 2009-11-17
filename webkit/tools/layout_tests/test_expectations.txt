@@ -596,17 +596,7 @@ BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
 
 // Implement layoutTestController.display()
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/clip-with-layout-delta.html = FAIL
-BUG8630 WIN LINUX RELEASE : LayoutTests/fast/repaint/line-flow-with-floats-1.html = FAIL
-BUG8630 WIN LINUX DEBUG SLOW : LayoutTests/fast/repaint/line-flow-with-floats-1.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-2.html = FAIL
-BUG8630 LINUX WIN RELEASE : LayoutTests/fast/repaint/line-flow-with-floats-6.html = IMAGE+TEXT
-BUG8630 DEBUG : LayoutTests/fast/repaint/line-flow-with-floats-6.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-8.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-flow-with-floats-9.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/line-overflow.html = FAIL
-BUG8630 WIN LINUX RELEASE : LayoutTests/fast/repaint/make-children-non-inline.html = FAIL
-BUG8630 LINUX WIN DEBUG : LayoutTests/fast/repaint/make-children-non-inline.html = FAIL
+BUG8630 WIN LINUX DEBUG SLOW : LayoutTests/fast/repaint/line-flow-with-floats-1.html = PASS
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/overflow-outline-repaint.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/selected-replaced.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
@@ -621,8 +611,6 @@ BUG8630 LINUX WIN DEBUG : LayoutTests/fast/overflow/hidden-scrollbar-resize.html
 BUG8630 WIN LINUX RELEASE : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 LINUX WIN DEBUG : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
-BUG8630 WIN LINUX RELEASE : pending/fast/repaint/bugzilla-6473.html = FAIL
-BUG8630 LINUX WIN DEBUG : pending/fast/repaint/bugzilla-6473.html = FAIL
 BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
 BUG18772 LINUX : LayoutTests/fast/backgrounds/001.html = FAIL
 
