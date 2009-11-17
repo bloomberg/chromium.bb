@@ -22,6 +22,7 @@ using WebKit::WebString;
 using WebKit::WebTextDirection;
 using WebKit::WebURLError;
 
+#if !defined(OS_LINUX)
 static WebCompositionCommand ToCompositionCommand(int string_type) {
   switch (string_type) {
     default:
@@ -34,6 +35,7 @@ static WebCompositionCommand ToCompositionCommand(int string_type) {
       return WebKit::WebCompositionCommandConfirm;
   }
 }
+#endif
 
 TEST_F(RenderViewTest, OnLoadAlternateHTMLText) {
   // Test a new navigation.
@@ -141,6 +143,8 @@ TEST_F(RenderViewTest, OnImeStateChanged) {
 // cases, this test should not only call IME-related functions in the
 // RenderWidget class, but also call some RenderWidget members, e.g.
 // ExecuteJavaScript(), RenderWidget::OnSetFocus(), etc.
+// Disabled on Linux: http://crbug.com/27927
+#if !defined(OS_LINUX)
 TEST_F(RenderViewTest, ImeComposition) {
   enum ImeCommand {
     IME_INITIALIZE,
@@ -258,6 +262,7 @@ TEST_F(RenderViewTest, ImeComposition) {
     }
   }
 }
+#endif
 
 // Test that the RenderView::OnSetTextDirection() function can change the text
 // direction of the selected input element.
