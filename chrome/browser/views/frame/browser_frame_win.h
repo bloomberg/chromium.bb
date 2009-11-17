@@ -12,7 +12,6 @@
 class AeroGlassNonClientView;
 class BrowserNonClientFrameView;
 class BrowserRootView;
-class BrowserTabStrip;
 class BrowserView;
 class NonClientFrameView;
 class Profile;
@@ -38,9 +37,9 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
 
   // BrowserFrame implementation.
   virtual views::Window* GetWindow();
-  virtual void TabStripCreated(TabStripWrapper* tabstrip);
+  virtual void TabStripCreated(TabStrip* tabstrip);
   virtual int GetMinimizeButtonOffset() const;
-  virtual gfx::Rect GetBoundsForTabStrip(TabStripWrapper* tabstrip) const;
+  virtual gfx::Rect GetBoundsForTabStrip(TabStrip* tabstrip) const;
   virtual void UpdateThrobber(bool running);
   virtual void ContinueDraggingDetachedTab();
   virtual ThemeProvider* GetThemeProviderForFrame() const;

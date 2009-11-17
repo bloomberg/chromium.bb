@@ -26,9 +26,9 @@ class BrowserFrameGtk : public BrowserFrame,
 
   // Overridden from BrowserFrame:
   virtual views::Window* GetWindow();
-  virtual void TabStripCreated(TabStripWrapper* tabstrip);
+  virtual void TabStripCreated(TabStrip* tabstrip);
   virtual int GetMinimizeButtonOffset() const;
-  virtual gfx::Rect GetBoundsForTabStrip(TabStripWrapper* tabstrip) const;
+  virtual gfx::Rect GetBoundsForTabStrip(TabStrip* tabstrip) const;
   virtual void UpdateThrobber(bool running);
   virtual void ContinueDraggingDetachedTab();
   virtual ThemeProvider* GetThemeProviderForFrame() const;

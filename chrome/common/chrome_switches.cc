@@ -229,9 +229,6 @@ const char kEnableStatsTable[]              = "enable-stats-table";
 // Enable syncing bookmarks to a Google Account.
 const char kEnableSync[]                    = "enable-sync";
 
-// Enables the new Tabstrip on Windows.
-const char kEnableTabtastic2[]              = "enable-tabtastic2";
-
 // Whether the multiple profiles feature based on the user-data-dir flag is
 // enabled or not.
 const char kEnableUserDataDirProfiles[]     = "enable-udd-profiles";

@@ -11,7 +11,7 @@
 #include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/browser_frame.h"
-#include "chrome/browser/views/tabs/tab_strip_wrapper.h"
+#include "chrome/browser/views/tabs/tab_strip.h"
 
 BrowserRootView::BrowserRootView(BrowserView* browser_view,
                                  views::Widget* widget)
@@ -23,8 +23,7 @@ BrowserRootView::BrowserRootView(BrowserView* browser_view,
 bool BrowserRootView::GetDropFormats(
       int* formats,
       std::set<OSExchangeData::CustomFormat>* custom_formats) {
-  if (tabstrip() && tabstrip()->GetView()->IsVisible() &&
-      !tabstrip()->IsAnimating()) {
+  if (tabstrip() && tabstrip()->IsVisible() && !tabstrip()->IsAnimating()) {
     *formats = OSExchangeData::URL | OSExchangeData::STRING;
     return true;
   }
@@ -36,8 +35,7 @@ bool BrowserRootView::AreDropTypesRequired() {
 }
 
 bool BrowserRootView::CanDrop(const OSExchangeData& data) {
-  if (!tabstrip() || !tabstrip()->GetView()->IsVisible() ||
-      tabstrip()->IsAnimating())
+  if (!tabstrip() || !tabstrip()->IsVisible() || tabstrip()->IsAnimating())
     return false;
 
   // If there is a URL, we'll allow the drop.
@@ -53,7 +51,7 @@ void BrowserRootView::OnDragEntered(const views::DropTargetEvent& event) {
     forwarding_to_tab_strip_ = true;
     scoped_ptr<views::DropTargetEvent> mapped_event(
         MapEventToTabStrip(event, event.GetData()));
-    tabstrip()->GetView()->OnDragEntered(*mapped_event.get());
+    tabstrip()->OnDragEntered(*mapped_event.get());
   }
 }
 
@@ -62,13 +60,13 @@ int BrowserRootView::OnDragUpdated(const views::DropTargetEvent& event) {
     scoped_ptr<views::DropTargetEvent> mapped_event(
         MapEventToTabStrip(event, event.GetData()));
     if (!forwarding_to_tab_strip_) {
-      tabstrip()->GetView()->OnDragEntered(*mapped_event.get());
+      tabstrip()->OnDragEntered(*mapped_event.get());
       forwarding_to_tab_strip_ = true;
     }
-    return tabstrip()->GetView()->OnDragUpdated(*mapped_event.get());
+    return tabstrip()->OnDragUpdated(*mapped_event.get());
   } else if (forwarding_to_tab_strip_) {
     forwarding_to_tab_strip_ = false;
-    tabstrip()->GetView()->OnDragExited();
+    tabstrip()->OnDragExited();
   }
   return DragDropTypes::DRAG_NONE;
 }
@@ -76,7 +74,7 @@ int BrowserRootView::OnDragUpdated(const views::DropTargetEvent& event) {
 void BrowserRootView::OnDragExited() {
   if (forwarding_to_tab_strip_) {
     forwarding_to_tab_strip_ = false;
-    tabstrip()->GetView()->OnDragExited();
+    tabstrip()->OnDragExited();
   }
 }
 
@@ -103,32 +101,32 @@ int BrowserRootView::OnPerformDrop(const views::DropTargetEvent& event) {
   forwarding_to_tab_strip_ = false;
   scoped_ptr<views::DropTargetEvent> mapped_event(
       MapEventToTabStrip(event, mapped_data));
-  return tabstrip()->GetView()->OnPerformDrop(*mapped_event);
+  return tabstrip()->OnPerformDrop(*mapped_event);
 }
 
 bool BrowserRootView::ShouldForwardToTabStrip(
     const views::DropTargetEvent& event) {
-  if (!tabstrip()->GetView()->IsVisible())
+  if (!tabstrip()->IsVisible())
     return false;
 
   // Allow the drop as long as the mouse is over the tabstrip or vertically
   // before it.
   gfx::Point tab_loc_in_host;
-  ConvertPointToView(tabstrip()->GetView(), this, &tab_loc_in_host);
-  return event.y() < tab_loc_in_host.y() + tabstrip()->GetView()->height();
+  ConvertPointToView(tabstrip(), this, &tab_loc_in_host);
+  return event.y() < tab_loc_in_host.y() + tabstrip()->height();
 }
 
 views::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
     const views::DropTargetEvent& event,
     const OSExchangeData& data) {
   gfx::Point tab_strip_loc(event.location());
-  ConvertPointToView(this, tabstrip()->GetView(), &tab_strip_loc);
+  ConvertPointToView(this, tabstrip(), &tab_strip_loc);
   return new views::DropTargetEvent(data, tab_strip_loc.x(),
                                     tab_strip_loc.y(),
                                     event.GetSourceOperations());
 }
 
-TabStripWrapper* BrowserRootView::tabstrip() const {
+TabStrip* BrowserRootView::tabstrip() const {
   return browser_view_->tabstrip();
 }
 

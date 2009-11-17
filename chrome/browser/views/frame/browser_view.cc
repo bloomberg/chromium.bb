@@ -44,7 +44,6 @@
 #include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/status_bubble_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
-#include "chrome/browser/views/tabs/browser_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_star_toggle.h"
 #include "chrome/browser/views/toolbar_view.h"
@@ -559,7 +558,7 @@ int BrowserView::GetTabStripHeight() const {
   // We want to return tabstrip_->height(), but we might be called in the midst
   // of layout, when that hasn't yet been updated to reflect the current state.
   // So return what the tabstrip height _ought_ to be right now.
-  return IsTabStripVisible() ? tabstrip_->GetView()->GetPreferredSize().height()
+  return IsTabStripVisible() ? tabstrip_->GetPreferredSize().height()
                              : 0;
 }
 
@@ -677,7 +676,7 @@ void BrowserView::DetachBrowserBubble(BrowserBubble* bubble) {
 
 bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
   gfx::Point tabstrip_point(point);
-  View::ConvertPointToView(this, tabstrip()->GetView(), &tabstrip_point);
+  View::ConvertPointToView(this, tabstrip(), &tabstrip_point);
   return tabstrip()->IsPositionInWindowCaption(tabstrip_point)
       && !browser_extender_->NonClientHitTest(point);
 }
@@ -1561,9 +1560,8 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
 
     // See if the mouse pointer is within the bounds of the TabStrip.
     gfx::Point point_in_tabstrip_coords(point);
-    View::ConvertPointToView(GetParent(), tabstrip_->GetView(),
-                             &point_in_tabstrip_coords);
-    if (tabstrip_->GetView()->HitTest(point_in_tabstrip_coords)) {
+    View::ConvertPointToView(GetParent(), tabstrip_, &point_in_tabstrip_coords);
+    if (tabstrip_->HitTest(point_in_tabstrip_coords)) {
       if (tabstrip_->IsPositionInWindowCaption(point_in_tabstrip_coords))
         return HTCAPTION;
       return HTCLIENT;
@@ -1574,7 +1572,7 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
     // makes sense visually).
     if (!IsMaximized() &&
         (point_in_browser_view_coords.y() <
-         (tabstrip_->GetView()->y() + kTabShadowSize))) {
+         (tabstrip_->y() + kTabShadowSize))) {
       // We return HTNOWHERE as this is a signal to our containing
       // NonClientView that it should figure out what the correct hit-test
       // code is given the mouse position...
@@ -1618,7 +1616,7 @@ gfx::Size BrowserView::GetMinimumSize() {
   // (OTR + tabstrip + caption buttons) width.
   gfx::Size tabstrip_size(
       browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
-      tabstrip_->GetView()->GetMinimumSize() : gfx::Size());
+      tabstrip_->GetMinimumSize() : gfx::Size());
   gfx::Size toolbar_size(
       (browser_->SupportsWindowFeature(Browser::FEATURE_TOOLBAR) ||
        browser_->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR)) ?
@@ -1728,10 +1726,9 @@ void BrowserView::Init() {
   LoadAccelerators();
   SetAccessibleName(l10n_util::GetString(IDS_PRODUCT_NAME));
 
-  tabstrip_ = TabStripWrapper::CreateTabStrip(browser_->tabstrip_model());
-  tabstrip_->
-      GetView()->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
-  AddChildView(tabstrip_->GetView());
+  tabstrip_ = new TabStrip(browser_->tabstrip_model());
+  tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
+  AddChildView(tabstrip_);
   frame_->TabStripCreated(tabstrip_);
 
   toolbar_ = new ToolbarView(browser_.get());
@@ -1818,9 +1815,8 @@ int BrowserView::LayoutTabStrip() {
   int y = visible ? tabstrip_bounds.y() : 0;
   int height = visible ? tabstrip_bounds.height() : 0;
   int bottom = y + height;
-  tabstrip_->GetView()->SetVisible(visible);
-  tabstrip_->GetView()->SetBounds(tabstrip_bounds.x(), y,
-                                  tabstrip_bounds.width(), height);
+  tabstrip_->SetVisible(visible);
+  tabstrip_->SetBounds(tabstrip_bounds.x(), y, tabstrip_bounds.width(), height);
   return bottom;
 }
 

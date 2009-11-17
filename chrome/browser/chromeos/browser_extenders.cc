@@ -16,7 +16,6 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
-#include "chrome/browser/views/tabs/tab_strip_wrapper.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -103,7 +102,7 @@ class NormalExtender : public BrowserExtender,
     if (compact_navigation_bar_->IsVisible()) {
       // Update the size and location of the compact location bar.
       compact_location_bar_->UpdateBounds(
-          browser_view()->tabstrip()->AsTabStrip()->GetSelectedTab());
+          browser_view()->tabstrip()->GetSelectedTab());
     }
 
     // Layout main menu before tab strip.
@@ -203,7 +202,7 @@ class NormalExtender : public BrowserExtender,
     if (!compact_navigation_bar_enabled_)
       return;
     compact_location_bar_->Update(
-        browser_view()->tabstrip()->AsTabStrip()->GetSelectedTab(),
+        browser_view()->tabstrip()->GetSelectedTab(),
         browser_view()->browser()->GetSelectedTabContents());
   }
 

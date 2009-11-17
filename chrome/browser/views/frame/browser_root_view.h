@@ -9,7 +9,7 @@
 
 class BrowserView;
 class OSExchangeData;
-class TabStripWrapper;
+class TabStrip;
 
 // RootView implementation used by BrowserFrame. This forwards drop events to
 // the TabStrip. Visually the tabstrip extends to the top of the frame, but in
@@ -41,7 +41,7 @@ class BrowserRootView : public views::RootView {
       const views::DropTargetEvent& event,
       const OSExchangeData& data);
 
-  TabStripWrapper* tabstrip() const;
+  inline TabStrip* tabstrip() const;
 
   // Returns true if |data| has string contents and the user can "paste and go".
   // If |url| is non-NULL and the user can "paste and go", |url| is set to the

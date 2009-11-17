@@ -15,7 +15,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/tabs/tab_strip_wrapper.h"
+#include "chrome/browser/views/tabs/tab_strip.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -208,7 +208,7 @@ OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
-    TabStripWrapper* tabstrip) const {
+    TabStrip* tabstrip) const {
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_bounds_.right() + kOTRSideSpacing) :
       NonClientBorderThickness();
@@ -387,7 +387,7 @@ bool OpaqueBrowserFrameView::HitTest(const gfx::Point& l) const {
     return in_nonclient;
 
   // Otherwise claim it only if it's in a non-tab portion of the tabstrip.
-  if (l.y() > browser_view_->tabstrip()->GetView()->bounds().bottom())
+  if (l.y() > browser_view_->tabstrip()->bounds().bottom())
     return false;
 
   // We convert from our parent's coordinates since we assume we fill its bounds

@@ -9,7 +9,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/tab.h"
-#include "chrome/browser/views/tabs/tab_strip_wrapper.h"
 #include "views/controls/button/image_button.h"
 #include "views/view.h"
 
@@ -44,8 +43,7 @@ class TabStrip : public views::View,
                  public TabStripModelObserver,
                  public Tab::TabDelegate,
                  public views::ButtonListener,
-                 public MessageLoopForUI::Observer,
-                 public TabStripWrapper {
+                 public MessageLoopForUI::Observer {
  public:
   explicit TabStrip(TabStripModel* model);
   virtual ~TabStrip();
@@ -72,6 +70,36 @@ class TabStrip : public views::View,
 
   // Create the new tab button.
   void InitTabStripButtons();
+
+  // Returns the preferred height of this TabStrip. This is based on the
+  // typical height of its constituent tabs.
+  int GetPreferredHeight();
+
+  // Returns true if Tabs in this TabStrip are currently changing size or
+  // position.
+  bool IsAnimating() const;
+
+  // Set the background offset used by inactive tabs to match the frame image.
+  void SetBackgroundOffset(gfx::Point offset);
+
+  // Returns true if the specified point(TabStrip coordinates) is
+  // in the window caption area of the browser window.
+  bool IsPositionInWindowCaption(const gfx::Point& point);
+
+  // Returns true if a drag session is currently active.
+  bool IsDragSessionActive() const;
+
+  // Return true if this tab strip is compatible with the provided tab strip.
+  // Compatible tab strips can transfer tabs during drag and drop.
+  bool IsCompatibleWith(TabStrip* other) const;
+
+  // Sets the bounds of the tab at the specified |tab_index|. |tab_bounds| are
+  // in TabStrip coordinates.
+  void SetDraggedTabBounds(int tab_index, const gfx::Rect& tab_bounds);
+
+  // Updates the loading animations displayed by tabs in the tabstrip to the
+  // next frame.
+  void UpdateLoadingAnimations();
 
   // views::View overrides:
   virtual void PaintChildren(gfx::Canvas* canvas);
@@ -138,20 +166,6 @@ class TabStrip : public views::View,
   virtual void WillProcessEvent(GdkEvent* event);
   virtual void DidProcessEvent(GdkEvent* event);
 #endif
-
-  // TabStripWrapper implementation:
-  virtual int GetPreferredHeight();
-  virtual bool IsAnimating() const;
-  virtual void SetBackgroundOffset(gfx::Point offset);
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
-  virtual bool IsDragSessionActive() const;
-  virtual bool IsCompatibleWith(TabStripWrapper* other) const;
-  virtual void SetDraggedTabBounds(int tab_index,
-                                   const gfx::Rect& tab_bounds);
-  virtual void UpdateLoadingAnimations();
-  virtual views::View* GetView();
-  virtual BrowserTabStrip* AsBrowserTabStrip();
-  virtual TabStrip* AsTabStrip();
 
   // Horizontal gap between pinned and non-pinned tabs.
   static const int pinned_to_non_pinned_gap_;

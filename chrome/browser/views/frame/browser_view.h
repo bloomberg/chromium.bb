@@ -15,18 +15,18 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
-#if defined(OS_WIN)
-#include "chrome/browser/hang_monitor/hung_plugin_action.h"
-#include "chrome/browser/hang_monitor/hung_window_detector.h"
-#endif
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/frame/browser_frame.h"
-#if defined(OS_WIN)
-#include "views/controls/menu/native_menu_win.h"
-#endif
+#include "chrome/browser/views/tabs/tab_strip.h"
 #include "views/controls/menu/simple_menu_model.h"
 #include "views/window/client_view.h"
 #include "views/window/window_delegate.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/hang_monitor/hung_plugin_action.h"
+#include "chrome/browser/hang_monitor/hung_window_detector.h"
+#include "views/controls/menu/native_menu_win.h"
+#endif
 
 // NOTE: For more information about the objects and files in this directory,
 // view: http://dev.chromium.org/developers/design-documents/browser-window
@@ -47,7 +47,6 @@ class JumpList;
 class LocationBarView;
 class StatusBubbleViews;
 class TabContentsContainer;
-class TabStripWrapper;
 class ToolbarView;
 class ZoomMenuModel;
 
@@ -131,7 +130,7 @@ class BrowserView : public BrowserWindow,
   gfx::Rect GetTabStripBounds() const;
 
   // Accessor for the TabStrip.
-  TabStripWrapper* tabstrip() const { return tabstrip_; }
+  TabStrip* tabstrip() const { return tabstrip_; }
 
   // Accessor for the ExtensionShelf.
   ExtensionShelf* extension_shelf() const { return extension_shelf_; }
@@ -443,7 +442,7 @@ class BrowserView : public BrowserWindow,
   views::View* active_bookmark_bar_;
 
   // The TabStrip.
-  TabStripWrapper* tabstrip_;
+  TabStrip* tabstrip_;
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
   ToolbarView* toolbar_;

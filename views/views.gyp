@@ -55,8 +55,6 @@
         'accessibility/view_accessibility.h',
         'accessibility/view_accessibility_wrapper.cc',
         'accessibility/view_accessibility_wrapper.h',
-        'animator.cc',
-        'animator.h',
         'background.cc',
         'background.h',
         'border.cc',

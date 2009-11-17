@@ -19,7 +19,6 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/glass_browser_frame_view.h"
 #include "chrome/browser/views/frame/opaque_browser_frame_view.h"
-#include "chrome/browser/views/tabs/browser_tab_strip.h"
 #include "grit/theme_resources.h"
 #include "views/screen.h"
 #include "views/window/window_delegate.h"
@@ -62,7 +61,7 @@ views::Window* BrowserFrameWin::GetWindow() {
   return this;
 }
 
-void BrowserFrameWin::TabStripCreated(TabStripWrapper* tabstrip) {
+void BrowserFrameWin::TabStripCreated(TabStrip* tabstrip) {
 }
 
 int BrowserFrameWin::GetMinimizeButtonOffset() const {
@@ -77,8 +76,7 @@ int BrowserFrameWin::GetMinimizeButtonOffset() const {
   return minimize_button_corner.x;
 }
 
-gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(
-    TabStripWrapper* tabstrip) const {
+gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(TabStrip* tabstrip) const {
   return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
 }
 
@@ -136,14 +134,10 @@ void BrowserFrameWin::OnEndSession(BOOL ending, UINT logoff) {
 }
 
 void BrowserFrameWin::OnEnterSizeMove() {
-  if (TabStrip2::Enabled())
-    browser_view_->tabstrip()->AsBrowserTabStrip()->view()->DetachDragStarted();
   browser_view_->WindowMoveOrResizeStarted();
 }
 
 void BrowserFrameWin::OnExitSizeMove() {
-  if (TabStrip2::Enabled())
-    browser_view_->tabstrip()->AsBrowserTabStrip()->view()->DetachDragEnded();
   WidgetWin::OnExitSizeMove();
 }
 
@@ -187,9 +181,6 @@ LRESULT BrowserFrameWin::OnNCHitTest(const CPoint& pt) {
 }
 
 void BrowserFrameWin::OnWindowPosChanged(WINDOWPOS* window_pos) {
-  if (TabStrip2::Enabled())
-    browser_view_->tabstrip()->AsBrowserTabStrip()->view()->DetachDragMoved();
-
   // Windows lies to us about the position of the minimize button before a
   // window is visible. We use the position of the minimize button to place the
   // distributor logo in official builds. When the window is shown, we need to

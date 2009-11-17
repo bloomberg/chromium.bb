@@ -10,7 +10,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/tabs/tab_strip_wrapper.h"
+#include "chrome/browser/views/tabs/tab_strip.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
 #include "views/window/client_view.h"
@@ -80,7 +80,7 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 // GlassBrowserFrameView, BrowserNonClientFrameView implementation:
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
-    TabStripWrapper* tabstrip) const {
+    TabStrip* tabstrip) const {
   int minimize_button_offset = frame_->GetMinimizeButtonOffset();
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_bounds_.right() + kOTRSideSpacing) :
