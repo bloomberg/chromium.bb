@@ -229,6 +229,14 @@ void Browser::CreateBrowserWindow() {
 
   window_ = BrowserWindow::CreateBrowserWindow(this);
 
+#if defined(OS_WIN)
+  // Set the app user model id for this application to that of the application
+  // name.  See http://crbug.com/7028.
+  win_util::SetAppIdForWindow(type_ & TYPE_APP ? app_name_ :
+                              l10n_util::GetString(IDS_PRODUCT_NAME),
+                              window()->GetNativeHandle());
+#endif
+
   NotificationService::current()->Notify(
       NotificationType::BROWSER_WINDOW_READY,
       Source<Browser>(this),
@@ -315,12 +323,6 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
   Browser* browser = Browser::CreateForApp(app_name, profile, false);
   browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, true, -1,
                          false, NULL);
-
-#if defined(OS_WIN)
-  // Set the app user model id for this application to that of the application
-  // name.  See http://crbug.com/7028.
-  win_util::SetAppIdForWindow(app_name, browser->window()->GetNativeHandle());
-#endif
 
   TabContents* tab_contents = browser->GetSelectedTabContents();
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
