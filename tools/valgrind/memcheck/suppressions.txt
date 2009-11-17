@@ -1274,4 +1274,238 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+   bug_27989
+   Memcheck:Leak
+   fun:_Znam
+   fun:_ZN2v88internalL8NewArrayIPNS0_6ObjectEEEPT_i
+   fun:_ZN2v88internal22HandleScopeImplementer18GetSpareOrNewBlockEv
+   fun:_ZN2v88internal11HandleScope6ExtendEv
+   fun:_ZN2v88internal11HandleScope12CreateHandleINS0_6StringEEEPPT_S5_
+   fun:_ZN2v88internal6HandleINS0_6StringEEC2EPS2_
+   fun:_ZN2v88internal6HandleINS0_6StringEEC1EPS2_
+   fun:_ZN2v88internal7Factory12LookupSymbolENS0_6VectorIKcEE
+   fun:_ZN2v88internal24AstBuildingParserFactory12LookupSymbolEPKci
+   fun:_ZN2v88internal6Parser15ParseIdentifierEPb
+   fun:_ZN2v88internal6Parser22ParsePrimaryExpressionEPb
+   fun:_ZN2v88internal6Parser36ParseMemberWithNewPrefixesExpressionEPNS0_13PositionStackEPb
+   fun:_ZN2v88internal6Parser21ParseMemberExpressionEPb
+   fun:_ZN2v88internal6Parser27ParseLeftHandSideExpressionEPb
+   fun:_ZN2v88internal6Parser22ParsePostfixExpressionEPb
+   fun:_ZN2v88internal6Parser20ParseUnaryExpressionEPb
+   fun:_ZN2v88internal6Parser21ParseBinaryExpressionEibPb
+   fun:_ZN2v88internal6Parser26ParseConditionalExpressionEbPb
+   fun:_ZN2v88internal6Parser25ParseAssignmentExpressionEbPb
+   fun:_ZN2v88internal6Parser15ParseExpressionEbPb
+   fun:_ZN2v88internal6Parser22ParsePrimaryExpressionEPb
+   fun:_ZN2v88internal6Parser36ParseMemberWithNewPrefixesExpressionEPNS0_13PositionStackEPb
+}
+{
+   bug_27989
+   Memcheck:Leak
+   fun:_Znam
+   fun:_ZN2v88internalL8NewArrayIPNS0_6ObjectEEEPT_i
+   fun:_ZN2v88internal22HandleScopeImplementer18GetSpareOrNewBlockEv
+   fun:_ZN2v88internal11HandleScope6ExtendEv
+   fun:_ZN2v88internal11HandleScope12CreateHandleINS0_6StringEEEPPT_S5_
+   fun:_ZN2v88internal6HandleINS0_6StringEEC2EPS2_
+   fun:_ZN2v88internal6HandleINS0_6StringEEC1EPS2_
+   fun:_ZN2v88internal7Factory12LookupSymbolENS0_6VectorIKcEE
+   fun:_ZN2v88internal24AstBuildingParserFactory12LookupSymbolEPKci
+   fun:_ZN2v88internal6Parser15ParseIdentifierEPb
+   fun:_ZN2v88internal6Parser22ParsePrimaryExpressionEPb
+   fun:_ZN2v88internal6Parser36ParseMemberWithNewPrefixesExpressionEPNS0_13PositionStackEPb
+   fun:_ZN2v88internal6Parser21ParseMemberExpressionEPb
+   fun:_ZN2v88internal6Parser27ParseLeftHandSideExpressionEPb
+   fun:_ZN2v88internal6Parser22ParsePostfixExpressionEPb
+   fun:_ZN2v88internal6Parser20ParseUnaryExpressionEPb
+   fun:_ZN2v88internal6Parser21ParseBinaryExpressionEibPb
+   fun:_ZN2v88internal6Parser26ParseConditionalExpressionEbPb
+   fun:_ZN2v88internal6Parser25ParseAssignmentExpressionEbPb
+   fun:_ZN2v88internal6Parser15ParseExpressionEbPb
+   fun:_ZN2v88internal6Parser34ParseExpressionOrLabelledStatementEPNS0_8ZoneListINS0_6HandleINS0_6StringEEEEEPb
+   fun:_ZN2v88internal6Parser14ParseStatementEPNS0_8ZoneListINS0_6HandleINS0_6StringEEEEEPb
+}
+{
+   bug_27989
+   Memcheck:Leak
+   fun:_Znam
+   fun:_ZN2v88internalL8NewArrayIPNS0_6ObjectEEEPT_i
+   fun:_ZN2v88internal22HandleScopeImplementer18GetSpareOrNewBlockEv
+   fun:_ZN2v88internal11HandleScope6ExtendEv
+   fun:_ZN2v88internal11HandleScope12CreateHandleINS0_6StringEEEPPT_S5_
+   fun:_ZN2v88internal6HandleINS0_6StringEEC2EPS2_
+   fun:_ZN2v88internal6HandleINS0_6StringEEC1EPS2_
+   fun:_ZN2v88internal7Factory12LookupSymbolENS0_6VectorIKcEE
+   fun:_ZN2v88internal24AstBuildingParserFactory12LookupSymbolEPKci
+   fun:_ZN2v88internal6Parser15ParseIdentifierEPb
+   fun:_ZN2v88internal6Parser22ParsePrimaryExpressionEPb
+   fun:_ZN2v88internal6Parser36ParseMemberWithNewPrefixesExpressionEPNS0_13PositionStackEPb
+   fun:_ZN2v88internal6Parser21ParseMemberExpressionEPb
+   fun:_ZN2v88internal6Parser27ParseLeftHandSideExpressionEPb
+   fun:_ZN2v88internal6Parser22ParsePostfixExpressionEPb
+   fun:_ZN2v88internal6Parser20ParseUnaryExpressionEPb
+   fun:_ZN2v88internal6Parser21ParseBinaryExpressionEibPb
+   fun:_ZN2v88internal6Parser26ParseConditionalExpressionEbPb
+   fun:_ZN2v88internal6Parser25ParseAssignmentExpressionEbPb
+   fun:_ZN2v88internal6Parser14ParseArgumentsEPb
+   fun:_ZN2v88internal6Parser27ParseLeftHandSideExpressionEPb
+   fun:_ZN2v88internal6Parser22ParsePostfixExpressionEPb
+}
+{
+   bug_27989
+   Memcheck:Leak
+   fun:_Znam
+   fun:_ZN2v88internalL8NewArrayIPNS0_6ObjectEEEPT_i
+   fun:_ZN2v88internal22HandleScopeImplementer18GetSpareOrNewBlockEv
+   fun:_ZN2v88internal11HandleScope6ExtendEv
+   fun:_ZN2v88internal11HandleScope12CreateHandleINS0_6StringEEEPPT_S5_
+   fun:_ZN2v88internal6HandleINS0_6StringEEC2EPS2_
+   fun:_ZN2v88internal6HandleINS0_6StringEEC1EPS2_
+   fun:_ZN2v88internal15FunctionLiteralC2ENS0_6HandleINS0_6StringEEEPNS0_5ScopeEPNS0_8ZoneListIPNS0_9StatementEEEiibNS2_INS0_10FixedArrayEEEiiib
+   fun:_ZN2v88internal15FunctionLiteralC1ENS0_6HandleINS0_6StringEEEPNS0_5ScopeEPNS0_8ZoneListIPNS0_9StatementEEEiibNS2_INS0_10FixedArrayEEEiiib
+   fun:_ZN2v88internal6Parser20ParseFunctionLiteralENS0_6HandleINS0_6StringEEEiNS1_19FunctionLiteralTypeEPb
+   fun:_ZN2v88internal6Parser24ParseFunctionDeclarationEPb
+   fun:_ZN2v88internal6Parser14ParseStatementEPNS0_8ZoneListINS0_6HandleINS0_6StringEEEEEPb
+   fun:_ZN2v88internal6Parser19ParseSourceElementsEPNS0_15ZoneListWrapperINS0_9StatementEEEiPb
+   fun:_ZN2v88internal6Parser12ParseProgramENS0_6HandleINS0_6StringEEEPN7unibrow15CharacterStreamEb
+   fun:_ZN2v88internal7MakeASTEbNS0_6HandleINS0_6ScriptEEEPNS_9ExtensionEPNS0_14ScriptDataImplE
+   fun:_ZN2v88internalL12MakeFunctionEbbNS0_8Compiler15ValidationStateENS0_6HandleINS0_6ScriptEEENS3_INS0_7ContextEEEPNS_9ExtensionEPNS0_14ScriptDataImplE
+   fun:_ZN2v88internal8Compiler7CompileENS0_6HandleINS0_6StringEEENS2_INS0_6ObjectEEEiiPNS_9ExtensionEPNS0_14ScriptDataImplE
+   fun:_ZN2v88internal5Debug21CompileDebuggerScriptEi
+   fun:_ZN2v88internal5Debug4LoadEv
+   fun:_ZN2v88internal13EnterDebuggerC2Ev
+   fun:_ZN2v88internal13EnterDebuggerC1Ev
+   fun:_ZN2v88internal8Debugger4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEPb
+}
+{
+   bug_27991
+   Memcheck:Addr4
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base24MessagePumpCFRunLoopBase7RunWorkEv
+   fun:_ZN4base24MessagePumpCFRunLoopBase13RunWorkSourceEPv
+   fun:CFRunLoopRunSpecific
+   fun:CFRunLoopRunInMode
+   fun:RunCurrentEventLoopInMode
+   fun:ReceiveNextEventCommon
+   fun:BlockUntilNextEventMatchingListInMode
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:-[NSApplication run]
+   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
+   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_27993
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackI22AppCacheDispatcherHostbPvEPN9Callback2IT0_T1_E4TypeEPT_MS8_FvS3_S4_E
+   fun:_ZN22AppCacheDispatcherHost10InitializeEPN3IPC7Message6SenderEii
+   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
+   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   fun:event_process_active
+   fun:event_base_loop
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_27993
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z11NewCallbackI22AppCacheDispatcherHostN8appcache6StatusEPvEPN9Callback2IT0_T1_E4TypeEPT_MSA_FvS5_S6_E
+   fun:_ZN22AppCacheDispatcherHost10InitializeEPN3IPC7Message6SenderEii
+   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
+   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   fun:event_process_active
+   fun:event_base_loop
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_27993
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorISt13_Rb_tree_nodeIP24DOMStorageDispatcherHostEE8allocateEmPKv
+   fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE11_M_get_nodeEv
+   fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE14_M_create_nodeERKS1_
+   fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE9_M_insertEPSt18_Rb_tree_node_baseS9_RKS1_
+   fun:_ZNSt8_Rb_treeIP24DOMStorageDispatcherHostS1_St9_IdentityIS1_ESt4lessIS1_ESaIS1_EE13insert_uniqueERKS1_
+   fun:_ZNSt3setIP24DOMStorageDispatcherHostSt4lessIS1_ESaIS1_EE6insertERKS1_
+   fun:_ZN17DOMStorageContext22RegisterDispatcherHostEP24DOMStorageDispatcherHost
+   fun:_ZN24DOMStorageDispatcherHost4InitEi
+   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
+   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+   fun:event_process_active
+   fun:event_base_loop
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_27993
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIP4TaskE8allocateEmPKv
+   fun:_ZNSt11_Deque_baseIP4TaskSaIS1_EE16_M_allocate_nodeEv
+   fun:_ZNSt11_Deque_baseIP4TaskSaIS1_EE15_M_create_nodesEPPS1_S5_
+   fun:_ZNSt11_Deque_baseIP4TaskSaIS1_EE17_M_initialize_mapEm
+   fun:_ZNSt11_Deque_baseIP4TaskSaIS1_EEC2ERKS2_m
+   fun:_ZNSt5dequeIP4TaskSaIS1_EEC2ERKS2_
+   fun:_ZNSt5dequeIP4TaskSaIS1_EEC1ERKS2_
+   fun:_ZN8appcache19MockAppCacheStorageC2EPNS_15AppCacheServiceE
+   fun:_ZN8appcache19AppCacheStorageImplC2EPNS_15AppCacheServiceE
+   fun:_ZN8appcache19AppCacheStorageImplC1EPNS_15AppCacheServiceE
+   fun:_ZN8appcache15AppCacheService10InitializeERK8FilePath
+   fun:_ZN21ChromeAppCacheServiceC2ERK8FilePathb
+   fun:_ZN21ChromeAppCacheServiceC1ERK8FilePathb
+   fun:_ZN12_GLOBAL__N_118FactoryForOriginal6CreateEv
+   fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN22AppCacheDispatcherHost10InitializeEPN3IPC7Message6SenderEii
+   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
+   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+   fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
+   fun:_ZN4base19MessagePumpLibevent22OnLibeventNotificationEisPv
+}
+{
+   bug_27993
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN9__gnu_cxx13new_allocatorIPNS_15_Hashtable_nodeISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEEEEE8allocateEmPKv
+   fun:_ZNSt12_Vector_baseIPN9__gnu_cxx15_Hashtable_nodeISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEEEESaISA_EE11_M_allocateEm
+   fun:_ZNSt6vectorIPN9__gnu_cxx15_Hashtable_nodeISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEEEESaISA_EE20_M_allocate_and_copyIPSA_EESE_mT_SF_
+   fun:_ZNSt6vectorIPN9__gnu_cxx15_Hashtable_nodeISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEEEESaISA_EE7reserveEm
+   fun:_ZN9__gnu_cxx9hashtableISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEExNS_4hashIxEESt10_Select1stIS7_ESt8equal_toIxESaIS6_EE21_M_initialize_bucketsEm
+   fun:_ZN9__gnu_cxx9hashtableISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEExNS_4hashIxEESt10_Select1stIS7_ESt8equal_toIxESaIS6_EEC2EmRKS9_RKSD_RKSaIS7_E
+   fun:_ZN9__gnu_cxx9hashtableISt4pairIKx13scoped_refptrIN8appcache8AppCacheEEExNS_4hashIxEESt10_Select1stIS7_ESt8equal_toIxESaIS6_EEC1EmRKS9_RKSD_RKSaIS7_E
+   fun:_ZN9__gnu_cxx8hash_mapIx13scoped_refptrIN8appcache8AppCacheEENS_4hashIxEESt8equal_toIxESaIS4_EEC2Ev
+   fun:_ZN9__gnu_cxx8hash_mapIx13scoped_refptrIN8appcache8AppCacheEENS_4hashIxEESt8equal_toIxESaIS4_EEC1Ev
+   fun:_ZN8appcache19MockAppCacheStorageC2EPNS_15AppCacheServiceE
+   fun:_ZN8appcache19AppCacheStorageImplC2EPNS_15AppCacheServiceE
+   fun:_ZN8appcache19AppCacheStorageImplC1EPNS_15AppCacheServiceE
+   fun:_ZN8appcache15AppCacheService10InitializeERK8FilePath
+   fun:_ZN21ChromeAppCacheServiceC2ERK8FilePathb
+   fun:_ZN21ChromeAppCacheServiceC1ERK8FilePathb
+   fun:_ZN12_GLOBAL__N_118FactoryForOriginal6CreateEv
+   fun:_ZN29ChromeURLRequestContextGetter20GetURLRequestContextEv
+   fun:_ZN22AppCacheDispatcherHost10InitializeEPN3IPC7Message6SenderEii
+   fun:_ZN21ResourceMessageFilter18OnChannelConnectedEi
+   fun:_ZN3IPC12ChannelProxy7Context18OnChannelConnectedEi
+   fun:_ZN3IPC7Channel11ChannelImpl23ProcessIncomingMessagesEv
+}
 
