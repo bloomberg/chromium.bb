@@ -3074,3 +3074,8 @@ BUGYUKOT : LayoutTests/fast/forms/get-forms-to-about-blank.html = FAIL
 BUGYUKOT : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = FAIL
 BUGYUKOT : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = FAIL
 BUG28034 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny.html = FAIL
+
+BUG28040 LINUX : LayoutTests/fast/body-propagation/overflow/004.html = PASS FAIL
+BUG28041 MAC : LayoutTests/storage/domstorage/clear.html = PASS FAIL
+BUG28044 WIN LINUX : LayoutTests/websocket/tests/frame-length-skip.html = PASS FAIL
+
