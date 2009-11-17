@@ -290,14 +290,6 @@
           ],
         }],
         ['OS=="linux"', {
-          'conditions': [
-            [ 'linux_use_tcmalloc==1', {
-                'dependencies': [
-                  '../../../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
-                ],
-              },
-            ],
-          ],
           'dependencies': [
             '../../../build/linux/system.gyp:gtk',
             'test_shell_resources',

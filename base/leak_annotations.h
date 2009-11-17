@@ -5,7 +5,7 @@
 #ifndef BASE_LEAK_ANNOTATIONS_H_
 #define BASE_LEAK_ANNOTATIONS_H_
 
-#if defined(LINUX_USE_TCMALLOC)
+#if defined(LINUX_USE_TCMALLOC) && defined(LINUX_USE_HEAPCHECKER)
 
 #include "third_party/tcmalloc/heap-checker.h"
 
