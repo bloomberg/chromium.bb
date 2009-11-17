@@ -439,9 +439,10 @@ void RenderWidgetHost::ForwardKeyboardEvent(
     // Tab switching/closing accelerators aren't sent to the renderer to avoid a
     // hung/malicious renderer from interfering.
     if (!ShouldSendToRenderer(key_event)) {
-      UnhandledKeyboardEvent(key_event);
       if (key_event.type == WebKeyboardEvent::RawKeyDown)
         suppress_next_char_events_ = true;
+      UnhandledKeyboardEvent(key_event);
+      // We might be deleted now.
       return;
     }
 
