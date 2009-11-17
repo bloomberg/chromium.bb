@@ -1252,6 +1252,33 @@ LRESULT AutocompleteEditViewWin::OnImeComposition(UINT message,
   ScopedFreeze freeze(this, GetTextObjectModel());
   OnBeforePossibleChange();
   LRESULT result = DefWindowProc(message, wparam, lparam);
+
+  // Some IMEs insert whitespace characters instead of input characters while
+  // they are composing text, and trimming these whitespace characters at the
+  // beginning of this control (in OnAfterPossibleChange()) prevents users from
+  // inputting text on these IMEs.
+  // To prevent this problem, we should not start auto-complete if the
+  // composition string starts with whitespace characters.
+  // (When we type a space key to insert a whitespace character, IMEs don't
+  // insert the whitespace character to their composition string but their
+  // result string. So, this code doesn't prevent us from updating autocomplete
+  // when we insert a whitespace character.)
+  if (lparam & GCS_COMPSTR) {
+    std::wstring text;
+    HIMC context = ImmGetContext(m_hWnd);
+    if (context) {
+      int size = ImmGetCompositionString(context, GCS_COMPSTR, NULL, 0);
+      if (size > 0) {
+        wchar_t* text_data = WriteInto(&text, size / sizeof(wchar_t) + 1);
+        if (text_data)
+          ImmGetCompositionString(context, GCS_COMPSTR, text_data, size);
+      }
+      ImmReleaseContext(m_hWnd, context);
+    }
+    if (!text.empty() && IsWhitespace(text[0]))
+      return result;
+  }
+
   if (!OnAfterPossibleChange() && (lparam & GCS_RESULTSTR)) {
     // The result string changed, but the text in the popup didn't actually
     // change.  This means the user finalized the composition.  Rerun
