@@ -2951,9 +2951,6 @@ BUG25889 MAC DEBUG : LayoutTests/fast/forms/select-empty-option-height.html = PA
 BUG25955 LINUX DEBUG : LayoutTests/fast/forms/textarea-placeholder-set-value.html = PASS CRASH
 BUG_JORLOW LINUX : LayoutTests/fast/multicol/column-rules-stacking.html = FAIL
 
-// WebKit 50158:50171
-BUG_JORLOW : LayoutTests/fast/dom/error-to-string-stack-overflow.html = FAIL
-
 // WebKit roll 50218:50235
 BUG_JORLOW : LayoutTests/http/tests/ssl/referer-301.html = FAIL
 BUG_JORLOW DEBUG : LayoutTests/http/tests/ssl/referer-303.html = FAIL
