@@ -104,7 +104,8 @@ class MSVSFolder:
 class MSVSProject:
   """Visual Studio project."""
 
-  def __init__(self, path, name = None, dependencies = None, guid = None):
+  def __init__(self, path, name = None, dependencies = None, guid = None,
+               config_platform_overrides = None):
     """Initializes the project.
 
     Args:
@@ -114,6 +115,8 @@ class MSVSProject:
       dependencies: List of other Project objects this project is dependent
           upon, if not None.
       guid: GUID to use for project, if not None.
+      config_platform_overrides: optional dict of configuration platforms to
+          used in place of the default for this target.
     """
     self.path = path
     self.guid = guid
@@ -128,6 +131,11 @@ class MSVSProject:
     self.dependencies = list(dependencies or [])
 
     self.entry_type_guid = ENTRY_TYPE_GUIDS['project']
+
+    if config_platform_overrides:
+      self.config_platform_overrides = config_platform_overrides
+    else:
+      self.config_platform_overrides = {}
 
   def get_guid(self):
     if self.guid is None:
@@ -275,25 +283,30 @@ class MSVSSolution:
 
     # Sort config guids for easier diffing of solution changes.
     config_guids = []
+    config_guids_overrides = {}
     for e in all_entries:
       if isinstance(e, MSVSProject):
         config_guids.append(e.get_guid())
+        config_guids_overrides[e.get_guid()] = e.config_platform_overrides
     config_guids.sort()
 
     f.write('\tGlobalSection(ProjectConfigurationPlatforms) = postSolution\r\n')
     for g in config_guids:
       for v in self.variants:
+        nv = config_guids_overrides[g].get(v, v)
+        # Pick which project configuration to build for this solution
+        # configuration.
         f.write('\t\t%s.%s.ActiveCfg = %s\r\n' % (
             g,              # Project GUID
             v,              # Solution build configuration
-            v,              # Project build config for that solution config
+            nv,             # Project build config for that solution config
         ))
 
-        # Enable project in this solution configuratation
+        # Enable project in this solution configuration.
         f.write('\t\t%s.%s.Build.0 = %s\r\n' % (
             g,              # Project GUID
             v,              # Solution build configuration
-            v,              # Project build config for that solution config
+            nv,             # Project build config for that solution config
         ))
     f.write('\tEndGlobalSection\r\n')
 

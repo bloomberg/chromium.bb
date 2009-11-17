@@ -171,11 +171,16 @@ def _ConfigPlatform(config_data):
   return config_data.get('msvs_configuration_platform', 'Win32')
 
 
+def _ConfigBaseName(config_name, platform_name):
+  if config_name.endswith('_' + platform_name):
+    return config_name[0:-len(platform_name)-1]
+  else:
+    return config_name
+
+
 def _ConfigFullName(config_name, config_data):
-  platform = _ConfigPlatform(config_data)
-  if config_name.endswith('_' + platform):
-    config_name = config_name[0:-len(platform)-1]
-  return '|'.join((config_name, platform))
+  platform_name = _ConfigPlatform(config_data)
+  return '%s|%s' % (_ConfigBaseName(config_name, platform_name), platform_name)
 
 
 def _PrepareActionRaw(spec, cmd, cygwin_shell, has_input_path, quote_cmd):
@@ -971,12 +976,22 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
   vcproj_rel_path = gyp.common.RelativePath(
       projects[qualified_target]['vcproj_path'], os.path.split(sln)[0])
   vcproj_rel_path = _FixPath(vcproj_rel_path)
+  # Prepare a dict indicating which project configurations are used for which
+  # solution configurations for this target.
+  config_platform_overrides = {}
+  for config_name, c in spec['configurations'].iteritems():
+    config_fullname = _ConfigFullName(config_name, c)
+    platform = c.get('msvs_target_platform', _ConfigPlatform(c))
+    fixed_config_fullname = '%s|%s' % (
+        _ConfigBaseName(config_name, _ConfigPlatform(c)), platform)
+    config_platform_overrides[config_fullname] = fixed_config_fullname
   # Create object for this project.
   obj = MSVSNew.MSVSProject(
       vcproj_rel_path,
       name=spec['target_name'],
       guid=projects[qualified_target]['guid'],
-      dependencies=deps)
+      dependencies=deps,
+      config_platform_overrides=config_platform_overrides)
   # Store it to the list of objects.
   project_objs[qualified_target] = obj
   # Return project object.
