@@ -119,7 +119,6 @@ class GitWrapper(SCMWrapper, scm.GIT):
       # Override the revision number.
       revision = str(options.revision)
     if revision:
-      url = '%s@%s' % (url, revision)
       rev_str = ' at %s' % revision
 
     if options.verbose:
