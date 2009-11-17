@@ -3070,3 +3070,6 @@ BUGYAAR WIN LINUX : LayoutTests/fast/overflow/line-clamp.html = IMAGE+TEXT
 BUGYAAR MAC : LayoutTests/fast/overflow/line-clamp.html = IMAGE
 BUG27850 : LayoutTests/fast/history/back-forward-reset-after-error-handling.html = TEXT
 BUG27849 : LayoutTests/http/tests/security/isolatedWorld/didClearWindowObject.html = TEXT
+
+// Failures from merge 51042:51062
+BUG27923: LayoutTests/accessibility/aria-labelledby-overrides-label.html = TEXT
