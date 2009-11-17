@@ -841,6 +841,12 @@ void WebPluginImpl::HandleURLRequestInternal(
       return;
     }
 
+    // CreateResourceClient() sends a synchronous IPC message so it's possible
+    // that TearDownPluginInstance() may have been called in the nested
+    // message loop.  If so, don't start the request.
+    if (!delegate_)
+      return;
+
     InitiateHTTPRequest(resource_id, resource_client, method, buf, len,
                         complete_url, NULL, use_plugin_src_as_referrer);
   }
