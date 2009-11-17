@@ -83,5 +83,19 @@ bool WordIterator::IsWord() const {
 
 std::wstring WordIterator::GetWord() const {
   DCHECK(prev_ != npos && pos_ != npos);
+#if defined(WCHAR_T_IS_UTF16)
   return string_.substr(prev_, pos_ - prev_);
+#else  // WCHAR_T_IS_UTF16
+  // See comment in Init().  If there are no surrogate pairs,
+  // |out_length| will be exactly |in_length|, if there are surrogate
+  // pairs it will be less than |in_length|.
+  int32_t out_length;
+  UErrorCode error = U_ZERO_ERROR;
+  const int32_t in_length = pos_ - prev_;
+  std::vector<std::wstring::value_type> out_buffer(in_length);
+  u_strToWCS(&out_buffer[0], in_length, &out_length,
+             &chars_[prev_], in_length, &error);
+  DCHECK_LE(out_length, in_length);
+  return std::wstring(&out_buffer[0], out_length);
+#endif
 }
