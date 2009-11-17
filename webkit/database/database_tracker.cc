@@ -110,6 +110,10 @@ FilePath DatabaseTracker::GetFullDBFilePath(
 
 bool DatabaseTracker::LazyInit() {
   if (!initialized_) {
+    DCHECK(!db_->is_open());
+    DCHECK(!databases_table_.get());
+    DCHECK(!meta_table_.get());
+
     // If the tracker database exists, but it's corrupt or doesn't
     // have a meta table, delete the database directory
     const FilePath kTrackerDatabaseFullPath =
@@ -128,10 +132,15 @@ bool DatabaseTracker::LazyInit() {
 
     initialized_ =
         file_util::CreateDirectory(db_dir_) &&
-        db_->Open(kTrackerDatabaseFullPath) &&
+        (db_->is_open() || db_->Open(kTrackerDatabaseFullPath)) &&
         meta_table_->Init(db_.get(), kCurrentVersion, kCompatibleVersion) &&
         (meta_table_->GetCompatibleVersionNumber() <= kCurrentVersion) &&
         databases_table_->Init();
+    if (!initialized_) {
+      databases_table_.reset(NULL);
+      meta_table_.reset(NULL);
+      db_->Close();
+    }
   }
   return initialized_;
 }
