@@ -2397,8 +2397,8 @@ BUG10473 LINUX : LayoutTests/fast/forms/searchfield-heights.html = FAIL
 BUG10473 LINUX : LayoutTests/fast/replaced/width100percent-searchfield.html = FAIL
 
 // Changed in http://trac.webkit.org/changeset/42082
-BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = TIMEOUT
-BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT
+// TODO(YUKOT): uncomment BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = TIMEOUT
+// TODO(YUKOT): uncomment BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = TIMEOUT
 BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = TIMEOUT
 
 // This test isn't just slow -- sometimes it times out indefinitely.
@@ -3073,3 +3073,14 @@ BUG27849 : LayoutTests/http/tests/security/isolatedWorld/didClearWindowObject.ht
 
 // Failures from merge 51042:51062
 BUG27923: LayoutTests/accessibility/aria-labelledby-overrides-label.html = TEXT
+
+// Failures from merge 51062:51075
+BUGYAAR WIN LINUX : LayoutTests/fast/inspector-support/matchedrules.html = IMAGE+TEXT
+BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom1-exception.html = TEXT
+BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom3-exception.html = TEXT
+BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom8-exception.html = TEXT
+BUGYUKOT : LayoutTests/fast/forms/get-forms-to-about-blank.html = FAIL
+// TODO(YUKOT): Uncomment previous timeout expectations (above) for the following 2 layout tests.
+BUGYUKOT : LayoutTests/http/tests/navigation/onload-navigation-iframe.html = FAIL
+BUGYUKOT : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = FAIL
+
