@@ -237,7 +237,8 @@ class TestExpectationsFile:
                    'crash': CRASH,
                    'missing': MISSING }
 
-  PLATFORMS = [ 'mac', 'linux', 'win', 'win-xp', 'win-vista', 'win-7' ]
+  BASE_PLATFORMS = [ 'linux', 'mac', 'win' ]
+  PLATFORMS = BASE_PLATFORMS + [ 'win-xp', 'win-vista', 'win-7' ]
 
   BUILD_TYPES = [ 'debug', 'release' ]
 
@@ -249,7 +250,7 @@ class TestExpectationsFile:
                 'none': NONE }
 
   def __init__(self, path, full_test_list, platform, is_debug_mode,
-      is_lint_mode):
+      is_lint_mode, expectations_as_str=None, suppress_errors=False):
     """
     path: The path to the expectation file. An error is thrown if a test is
         listed more than once.
@@ -258,11 +259,16 @@ class TestExpectationsFile:
     platform: Which platform from self.PLATFORMS to filter tests for.
     is_debug_mode: Whether we testing a test_shell built debug mode.
     is_lint_mode: Whether this is just linting test_expecatations.txt.
+    expectations_as_str: Contents of the expectations file. Used instead of
+        the path. This makes unittesting sane.
+    suppress_errors: Whether to suppress lint errors.
     """
 
     self._path = path
+    self._expectations_as_str = expectations_as_str
     self._is_lint_mode = is_lint_mode
     self._full_test_list = full_test_list
+    self._suppress_errors = suppress_errors
     self._errors = []
     self._non_fatal_errors = []
     self._platform = self.ToTestPlatformName(platform)
@@ -294,7 +300,20 @@ class TestExpectationsFile:
     for expectation in self.EXPECTATIONS.itervalues():
       self._expectation_to_tests[expectation] = set()
 
-    self._Read(path)
+    self._Read(self._GetIterableExpectations())
+
+  def _GetIterableExpectations(self):
+    """Returns an object that can be iterated over. Allows for not caring about
+    whether we're iterating over a file or a new-line separated string.
+    """
+    if self._expectations_as_str:
+      iterable = [x + "\n" for x in self._expectations_as_str.split("\n")]
+      # Strip final entry if it's empty to avoid added in an extra newline.
+      if iterable[len(iterable) - 1] == "\n":
+        return iterable[:len(iterable) - 1]
+      return iterable
+    else:
+      return open(self._path)
 
   def ToTestPlatformName(self, name):
     """Returns the test expectation platform that will be used for a
@@ -357,7 +376,7 @@ class TestExpectationsFile:
     new_file = self._path + '.new'
     logging.debug('Original file: "%s"', self._path)
     logging.debug('New file: "%s"', new_file)
-    f_orig = open(self._path)
+    f_orig = self._GetIterableExpectations()
     f_new = open(new_file, 'w')
 
     tests_removed = 0
@@ -415,6 +434,32 @@ class TestExpectationsFile:
     os.rename(new_file, self._path)
     return True
 
+  def ParseExpectationsLine(self, line):
+    """Parses a line from test_expectations.txt and returns a tuple with the
+    test path, options as a list, expectations as a list, options as a string
+    and expectations as a string.
+    """
+    line = StripComments(line)
+    if not line:
+      return (None, None, None)
+
+    options = []
+    if line.find(":") is -1:
+      test_and_expectation = line.split("=")
+    else:
+      parts = line.split(":")
+      options = self._GetOptionsList(parts[0])
+      test_and_expectation = parts[1].split('=')
+
+    test = test_and_expectation[0].strip()
+    if (len(test_and_expectation) is not 2):
+      self._AddError(lineno, "Missing expectations.", test_and_expectation)
+      expectations = None
+    else:
+      expectations = self._GetOptionsList(test_and_expectation[1])
+
+    return (test, options, expectations)
+
   def _GetPlatformUpdateAction(self, line, tests, platform):
     """Check the platform option and return the action needs to be taken.
 
@@ -429,21 +474,8 @@ class TestExpectationsFile:
       REMOVE_PLATFORM: remove this platform option from the test.
       ADD_PLATFORMS_EXCEPT_THIS: add all the platforms except this one.
     """
-
-    line = StripComments(line)
-    if not line:
-      return NO_CHANGE
-
-    options = []
-    if line.find(':') is -1:
-      test_and_expectation = line.split('=')
-    else:
-      parts = line.split(':')
-      options = self._GetOptionsList(parts[0])
-      test_and_expectation = parts[1].split('=')
-
-    test = test_and_expectation[0].strip()
-    if not test in tests:
+    test, options, expectations = self.ParseExpectationsLine(line)
+    if not test or test not in tests:
       return NO_CHANGE
 
     has_any_platform = False
@@ -530,51 +562,33 @@ class TestExpectationsFile:
     self._all_expectations[test].append(
         ModifiersAndExpectations(options, expectations))
 
-  def _Read(self, path):
-    """For each test in an expectations file, generate the expectations for it.
+  def _Read(self, expectations):
+    """For each test in an expectations iterable, generate the expectations for
+    it.
     """
     lineno = 0
-    for line in open(path):
+    for line in expectations:
       lineno += 1
-      line = StripComments(line)
-      if not line: continue
 
-      options_string = None
-      expectations_string = None
-
-      if line.find(':') is -1:
-        self._AddError(lineno, 'Must have some modifier (e.g. bug number).',
-            line)
+      test_list_path, options, expectations = self.ParseExpectationsLine(line)
+      if not expectations:
         continue
 
-      parts = line.split(':')
-      test_and_expectations = parts[1]
-      options_string = parts[0]
-
-      tests_and_expectation_parts = test_and_expectations.split('=')
-      if (len(tests_and_expectation_parts) is not 2):
-        self._AddError(lineno, 'Missing expectations.', test_and_expectations)
-        continue
-
-      test_list_path = tests_and_expectation_parts[0].strip()
-      expectations_string = tests_and_expectation_parts[1]
-
-      self._AddToAllExpectations(test_list_path, options_string,
-          expectations_string)
+      self._AddToAllExpectations(test_list_path, "".join(options),
+          "".join(expectations))
 
       modifiers = set()
-      options = self._GetOptionsList(options_string)
       if options and not self._HasValidModifiersForCurrentPlatform(options,
-          lineno, test_and_expectations, modifiers):
+          lineno, test_list_path, modifiers):
         continue
 
-      expectations = self._ParseExpectations(expectations_string, lineno,
+      expectations = self._ParseExpectations(expectations, lineno,
           test_list_path)
 
       if 'slow' in options and TIMEOUT in expectations:
         self._AddError(lineno, 'A test should not be both slow and timeout. '
             'If it times out indefinitely, then it should be just timeout.',
-            test_and_expectations)
+            test_list_path)
 
       full_path = os.path.join(path_utils.LayoutTestsDir(test_list_path),
                                test_list_path)
@@ -598,13 +612,15 @@ class TestExpectationsFile:
       self._AddTests(tests, expectations, test_list_path, lineno,
           modifiers, options)
 
-    if len(self._errors) or len(self._non_fatal_errors):
+    if not self._suppress_errors and (
+        len(self._errors) or len(self._non_fatal_errors)):
       if self._is_debug_mode:
         build_type = 'DEBUG'
       else:
         build_type = 'RELEASE'
       print "\nFAILURES FOR PLATFORM: %s, BUILD_TYPE: %s" \
           % (self._platform.upper(), build_type)
+
       for error in self._non_fatal_errors:
         logging.error(error)
       if len(self._errors):
@@ -613,9 +629,9 @@ class TestExpectationsFile:
   def _GetOptionsList(self, listString):
     return [part.strip().lower() for part in listString.strip().split(' ')]
 
-  def _ParseExpectations(self, string, lineno, test_list_path):
+  def _ParseExpectations(self, expectations, lineno, test_list_path):
     result = set()
-    for part in self._GetOptionsList(string):
+    for part in expectations:
       if not part in self.EXPECTATIONS:
         self._AddError(lineno, 'Unsupported expectation: %s' % part,
             test_list_path)
