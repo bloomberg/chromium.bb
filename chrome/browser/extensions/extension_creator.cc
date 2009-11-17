@@ -13,6 +13,7 @@
 #include "base/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/zip.h"
@@ -49,6 +50,15 @@ bool ExtensionCreator::InitializeInput(
                        "Reuse that key or delete it first.";
       return false;
   }
+
+  // Load the extension once. We don't really need it, but this does a lot of
+  // useful validation of the structure.
+  scoped_ptr<Extension> extension(
+      extension_file_util::LoadExtension(extension_dir,
+                                         false,  // key not required
+                                         &error_message_));
+  if (!extension.get())
+    return false;  // LoadExtension already set error_message_.
 
   return true;
 }

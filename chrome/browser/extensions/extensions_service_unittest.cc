@@ -740,7 +740,6 @@ TEST_F(ExtensionsServiceTest, DISABLED_InstallExtension) {
 }
 
 // Test Packaging and installing an extension.
-// TODO(rafaelw): add more tests for failure cases.
 TEST_F(ExtensionsServiceTest, PackExtension) {
   InitializeEmptyExtensionsService();
   FilePath extensions_path;
@@ -765,6 +764,27 @@ TEST_F(ExtensionsServiceTest, PackExtension) {
 
   ASSERT_TRUE(file_util::PathExists(privkey_path));
   InstallExtension(crx_path, true);
+
+  // Try packing with invalid paths.
+  creator.reset(new ExtensionCreator());
+  ASSERT_FALSE(creator->Run(FilePath(), FilePath(), FilePath(), FilePath()));
+
+  // Try packing an empty directory. Should fail because an empty directory is
+  // not a valid extension.
+  ScopedTempDir temp_dir2;
+  ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
+  creator.reset(new ExtensionCreator());
+  ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
+                            FilePath()));
+
+  // Try packing with an invalid manifest.
+  std::string invalid_manifest_content = "I am not a manifest.";
+  ASSERT_TRUE(file_util::WriteFile(
+      temp_dir2.path().AppendASCII(Extension::kManifestFilename),
+      invalid_manifest_content.c_str(), invalid_manifest_content.size()));
+  creator.reset(new ExtensionCreator());
+  ASSERT_FALSE(creator->Run(temp_dir2.path(), crx_path, privkey_path,
+                            FilePath()));
 }
 
 // Test Packaging and installing an extension using an openssl generated key.
