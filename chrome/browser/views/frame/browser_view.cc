@@ -894,12 +894,12 @@ void BrowserView::SetFullscreen(bool fullscreen) {
 
   if (fullscreen) {
 #if !defined(OS_MACOSX)
-    bool is_kosk =
+    bool is_kiosk =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
 #else
     bool is_kiosk = false;
 #endif
-    if (!is_kosk) {
+    if (!is_kiosk) {
       fullscreen_bubble_.reset(new FullscreenExitBubble(GetWidget(),
                                                         browser_.get()));
     }

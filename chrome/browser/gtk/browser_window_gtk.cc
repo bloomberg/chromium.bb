@@ -68,6 +68,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/window_sizer.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -1020,8 +1021,7 @@ bool BrowserWindowGtk::IsFullscreen() const {
 }
 
 bool BrowserWindowGtk::IsFullscreenBubbleVisible() const {
-  // There is no fullscreen bubble for Linux.
-  return false;
+  return fullscreen_exit_bubble_.get() ? true : false;
 }
 
 LocationBar* BrowserWindowGtk::GetLocationBar() const {
@@ -1435,8 +1435,12 @@ void BrowserWindowGtk::OnStateChanged(GdkWindowState state,
       tabstrip_->Hide();
       if (IsBookmarkBarSupported())
         bookmark_bar_->EnterFullscreen();
-      fullscreen_exit_bubble_.reset(new FullscreenExitBubbleGtk(
-          GTK_FLOATING_CONTAINER(render_area_floating_container_)));
+      bool is_kiosk =
+          CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+      if (!is_kiosk) {
+        fullscreen_exit_bubble_.reset(new FullscreenExitBubbleGtk(
+            GTK_FLOATING_CONTAINER(render_area_floating_container_)));
+      }
       gtk_widget_hide(toolbar_border_);
 #if defined(OS_CHROMEOS)
       if (main_menu_button_)
