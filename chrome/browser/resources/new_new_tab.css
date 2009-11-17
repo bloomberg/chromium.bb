@@ -690,21 +690,25 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
 /* promotions line */
 #bottom-right-promo {
   position: absolute;
-  display: block;
   width: 180px;
   height: 131px;
   border: 0;
   bottom: 0px;
   right: 0px;
+  z-index: -1;
 }
 
 #footer {
   position: fixed;
-  bottom: 0px;
+  bottom: 0;
   left: 0px;
   text-align: center;
   width: 100%;
-  display: block;
+  -webkit-transition: bottom .15s;
+}
+
+#footer.hide-footer {
+  bottom: -40px;
 }
 
 #promo-line {

@@ -113,7 +113,8 @@ extern const wchar_t kExtensionsUIDeveloperMode[];
 extern const wchar_t kCheckDefaultBrowser[];
 extern const wchar_t kUseCustomChromeFrame[];
 extern const wchar_t kShowOmniboxSearchHint[];
-extern const wchar_t kNTPPromoRemaining[];
+extern const wchar_t kNTPPromoLineRemaining[];
+extern const wchar_t kNTPPromoImageRemaining[];
 extern const wchar_t kDesktopNotificationAllowedOrigins[];
 extern const wchar_t kDesktopNotificationDeniedOrigins[];
 
