@@ -311,10 +311,6 @@ void BookmarkBarGtk::Show(bool animate) {
 }
 
 void BookmarkBarGtk::Hide(bool animate) {
-#if defined(OS_CHROMEOS)
-  bool was_floating = floating_;
-#endif
-
   UpdateFloatingState();
 
   // After coming out of fullscreen, the browser window sets the bookmark bar
@@ -328,19 +324,6 @@ void BookmarkBarGtk::Hide(bool animate) {
     gtk_widget_hide(bookmark_hbox_);
     slide_animation_->Reset(0);
     AnimationProgressed(slide_animation_.get());
-
-#if defined(OS_CHROMEOS)
-    if (floating_ != was_floating) {
-      // For some reason when switching between ntp and non-ntp (and other
-      // similar scenarios) the bookmark bar gets layed out a size of 1x1 and we
-      // get painting artifacts across the top of the window. By forcing a
-      // layout now we ensure the bookmark bar isn't sized to 1x1. This may not
-      // be specific to chromeos, but that's how we're scoping it for now.
-      GtkWidget* parent = gtk_widget_get_parent(widget());
-      if (parent)
-        gtk_widget_size_allocate(parent, &parent->allocation);
-    }
-#endif
   }
 }
 
@@ -602,7 +585,9 @@ void BookmarkBarGtk::UpdateFloatingState() {
     return;
 
   if (floating_) {
+#if !defined(OS_CHROMEOS)
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), TRUE);
+#endif
     GdkColor stroke_color = theme_provider_->UseGtkTheme() ?
         theme_provider_->GetBorderColor() :
         theme_provider_->GetGdkColor(BrowserThemeProvider::COLOR_NTP_HEADER);
@@ -615,7 +600,9 @@ void BookmarkBarGtk::UpdateFloatingState() {
     gtk_container_set_border_width(GTK_CONTAINER(bookmark_hbox_), kNTPPadding);
   } else {
     gtk_util::StopActingAsRoundedWindow(paint_box_);
+#if !defined(OS_CHROMEOS)
     gtk_event_box_set_visible_window(GTK_EVENT_BOX(paint_box_), FALSE);
+#endif
     gtk_alignment_set_padding(GTK_ALIGNMENT(ntp_padding_box_), 0, 0, 0, 0);
     gtk_container_set_border_width(GTK_CONTAINER(bookmark_hbox_), 0);
   }
@@ -655,8 +642,11 @@ void BookmarkBarGtk::UpdateEventBoxPaintability() {
   // When using the GTK+ theme, we need to have the event box be visible so
   // buttons don't get a halo color from the background.  When using Chromium
   // themes, we want to let the background show through the toolbar.
+
+#if !defined(OS_CHROMEOS)
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()),
                                    theme_provider_->UseGtkTheme());
+#endif
 }
 
 void BookmarkBarGtk::PaintEventBox() {
