@@ -86,7 +86,7 @@ void WebDragSource::Observe(NotificationType type,
     // That's OK, we can continue the drag, we just can't send messages back to
     // our drag source.
     render_view_host_ = NULL;
-  } else if (NotificationType::TAB_CONTENTS_DISCONNECTED) {
+  } else if (NotificationType::TAB_CONTENTS_DISCONNECTED == type) {
     NOTREACHED();
   }
 }
