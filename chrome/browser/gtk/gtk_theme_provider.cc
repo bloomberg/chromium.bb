@@ -83,6 +83,8 @@ GtkThemeProvider::~GtkThemeProvider() {
   gtk_widget_destroy(fake_window_);
   fake_label_.Destroy();
 
+  // We have to call this because ClearCaches in ~BrowserThemeProvider doesn't
+  // call the right virutal FreePlatformCaches.
   FreePerDisplaySurfaces();
 
   // Disconnect from the destroy signal of any redisual widgets in

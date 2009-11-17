@@ -151,19 +151,23 @@ const color_utils::HSL BrowserThemeProvider::kDefaultTintBackgroundTab =
 // Saved default values.
 const char* BrowserThemeProvider::kDefaultThemeID = "";
 
+Lock BrowserThemeProvider::themed_image_cache_lock_;
+
+namespace {
+
 // Default display properties.
-static const int kDefaultDisplayPropertyNTPAlignment =
+const int kDefaultDisplayPropertyNTPAlignment =
     BrowserThemeProvider::ALIGN_BOTTOM;
-static const int kDefaultDisplayPropertyNTPTiling =
+const int kDefaultDisplayPropertyNTPTiling =
     BrowserThemeProvider::NO_REPEAT;
-static const int kDefaultDisplayPropertyNTPInverseLogo = 0;
+const int kDefaultDisplayPropertyNTPInverseLogo = 0;
 
 // The sum of kFrameBorderThickness and kNonClientRestoredExtraThickness from
 // OpaqueBrowserFrameView.
-static const int kRestoredTabVerticalOffset = 15;
+const int kRestoredTabVerticalOffset = 15;
 
 // The image resources that will be tinted by the 'button' tint value.
-static const int kToolbarButtonIDs[] = {
+const int kToolbarButtonIDs[] = {
   IDR_BACK, IDR_BACK_D, IDR_BACK_H, IDR_BACK_P,
   IDR_FORWARD, IDR_FORWARD_D, IDR_FORWARD_H, IDR_FORWARD_P,
   IDR_RELOAD, IDR_RELOAD_H, IDR_RELOAD_P,
@@ -182,11 +186,17 @@ static const int kToolbarButtonIDs[] = {
   IDR_LOCATIONBG
 };
 
-// A map for kToolbarButtonIDs.
-static std::map<const int, bool> button_images_;
+bool HasButtonImage(int toolbar_button_id) {
+  static std::map<int, bool> button_images;
+  if (button_images.empty()) {
+    for (size_t i = 0; i < arraysize(kToolbarButtonIDs); ++i)
+      button_images[kToolbarButtonIDs[i]] = true;
+  }
+  return button_images.count(toolbar_button_id) > 0;
+}
 
 // The image resources we will allow people to theme.
-static const int kThemeableImages[] = {
+const int kThemeableImages[] = {
   IDR_THEME_FRAME,
   IDR_THEME_FRAME_INACTIVE,
   IDR_THEME_FRAME_INCOGNITO,
@@ -203,16 +213,16 @@ static const int kThemeableImages[] = {
   IDR_THEME_WINDOW_CONTROL_BACKGROUND
 };
 
-// A map for kThemeableImages.
-static std::map<const int, bool> themeable_images;
+bool HasThemeableImage(int themeable_image_id) {
+  static std::map<int, bool> themeable_images;
+  if (themeable_images.empty()) {
+    for (size_t i = 0; i < arraysize(kThemeableImages); ++i)
+      themeable_images[kThemeableImages[i]] = true;
+  }
+  return themeable_images.count(themeable_image_id) > 0;
+}
 
-// A map of frame image IDs to the tints for those ids.
-typedef std::map<const int, int> FrameTintMap;
-static FrameTintMap frame_tints;
 
-Lock BrowserThemeProvider::themed_image_cache_lock_;
-
-namespace {
 
 class WriteImagesToDiskTask : public Task {
  public:
@@ -257,45 +267,31 @@ class WriteImagesToDiskTask : public Task {
   const BrowserThemeProvider::ImagesDiskCache& images_disk_cache_;
   const BrowserThemeProvider::ImageCache& themed_image_cache_;
 };
-}
+
+}  // namespace
 
 BrowserThemeProvider::BrowserThemeProvider()
     : rb_(ResourceBundle::GetSharedInstance()),
       profile_(NULL),
       process_images_(false) {
-  static bool initialized = false;
-  if (!initialized) {
-    for (size_t i = 0; i < arraysize(kToolbarButtonIDs); ++i)
-      button_images_[kToolbarButtonIDs[i]] = true;
-    for (size_t i = 0; i < arraysize(kThemeableImages); ++i)
-      themeable_images[kThemeableImages[i]] = true;
-    frame_tints[IDR_THEME_FRAME] = TINT_FRAME;
-    frame_tints[IDR_THEME_FRAME_INACTIVE] = TINT_FRAME_INACTIVE;
-    frame_tints[IDR_THEME_FRAME_OVERLAY] = TINT_FRAME;
-    frame_tints[IDR_THEME_FRAME_OVERLAY_INACTIVE] = TINT_FRAME_INACTIVE;
-    frame_tints[IDR_THEME_FRAME_INCOGNITO] = TINT_FRAME_INCOGNITO;
-    frame_tints[IDR_THEME_FRAME_INCOGNITO_INACTIVE] =
-        TINT_FRAME_INCOGNITO_INACTIVE;
-
-    resource_names_[IDR_THEME_FRAME] = "theme_frame";
-    resource_names_[IDR_THEME_FRAME_INACTIVE] = "theme_frame_inactive";
-    resource_names_[IDR_THEME_FRAME_OVERLAY] = "theme_frame_overlay";
-    resource_names_[IDR_THEME_FRAME_OVERLAY_INACTIVE] =
-        "theme_frame_overlay_inactive";
-    resource_names_[IDR_THEME_FRAME_INCOGNITO] = "theme_frame_incognito";
-    resource_names_[IDR_THEME_FRAME_INCOGNITO_INACTIVE] =
-        "theme_frame_incognito_inactive";
-    resource_names_[IDR_THEME_TAB_BACKGROUND] = "theme_tab_background";
-    resource_names_[IDR_THEME_TAB_BACKGROUND_INCOGNITO] =
-        "theme_tab_background_incognito";
-    resource_names_[IDR_THEME_TOOLBAR] = "theme_toolbar";
-    resource_names_[IDR_THEME_TAB_BACKGROUND_V] = "theme_tab_background_v";
-    resource_names_[IDR_THEME_NTP_BACKGROUND] = "theme_ntp_background";
-    resource_names_[IDR_THEME_BUTTON_BACKGROUND] = "theme_button_background";
-    resource_names_[IDR_THEME_NTP_ATTRIBUTION] = "theme_ntp_attribution";
-    resource_names_[IDR_THEME_WINDOW_CONTROL_BACKGROUND] =
-        "theme_window_control_background";
-  }
+  resource_names_[IDR_THEME_FRAME] = "theme_frame";
+  resource_names_[IDR_THEME_FRAME_INACTIVE] = "theme_frame_inactive";
+  resource_names_[IDR_THEME_FRAME_OVERLAY] = "theme_frame_overlay";
+  resource_names_[IDR_THEME_FRAME_OVERLAY_INACTIVE] =
+      "theme_frame_overlay_inactive";
+  resource_names_[IDR_THEME_FRAME_INCOGNITO] = "theme_frame_incognito";
+  resource_names_[IDR_THEME_FRAME_INCOGNITO_INACTIVE] =
+      "theme_frame_incognito_inactive";
+  resource_names_[IDR_THEME_TAB_BACKGROUND] = "theme_tab_background";
+  resource_names_[IDR_THEME_TAB_BACKGROUND_INCOGNITO] =
+      "theme_tab_background_incognito";
+  resource_names_[IDR_THEME_TOOLBAR] = "theme_toolbar";
+  resource_names_[IDR_THEME_TAB_BACKGROUND_V] = "theme_tab_background_v";
+  resource_names_[IDR_THEME_NTP_BACKGROUND] = "theme_ntp_background";
+  resource_names_[IDR_THEME_BUTTON_BACKGROUND] = "theme_button_background";
+  resource_names_[IDR_THEME_NTP_ATTRIBUTION] = "theme_ntp_attribution";
+  resource_names_[IDR_THEME_WINDOW_CONTROL_BACKGROUND] =
+      "theme_window_control_background";
 }
 
 BrowserThemeProvider::~BrowserThemeProvider() {
@@ -342,7 +338,7 @@ SkBitmap* BrowserThemeProvider::GetBitmapNamed(int id) const {
   if (result.get()) {
     // If the requested image is part of the toolbar button set, and we have
     // a provided tint for that set, tint it appropriately.
-    if (button_images_.count(id) && tints_.count(kTintButtons)) {
+    if (HasButtonImage(id) && tints_.count(kTintButtons)) {
       SkBitmap* tinted =
           new SkBitmap(TintBitmap(*result.release(), TINT_BUTTONS));
       result.reset(tinted);
@@ -436,7 +432,7 @@ bool BrowserThemeProvider::ShouldUseNativeFrame() const {
 }
 
 bool BrowserThemeProvider::HasCustomImage(int id) const {
-  if (!themeable_images.count(id))
+  if (!HasThemeableImage(id))
     return false;
 
   // A custom image = base name is NOT equal to resource name.  See note in
@@ -682,6 +678,19 @@ void BrowserThemeProvider::GenerateFrameColors() {
 }
 
 void BrowserThemeProvider::GenerateFrameImages() const {
+  // A map of frame image IDs to the tints for those ids.
+  typedef std::map<int, int> FrameTintMap;
+  static FrameTintMap frame_tints;
+  if (frame_tints.empty()) {
+    frame_tints[IDR_THEME_FRAME] = TINT_FRAME;
+    frame_tints[IDR_THEME_FRAME_INACTIVE] = TINT_FRAME_INACTIVE;
+    frame_tints[IDR_THEME_FRAME_OVERLAY] = TINT_FRAME;
+    frame_tints[IDR_THEME_FRAME_OVERLAY_INACTIVE] = TINT_FRAME_INACTIVE;
+    frame_tints[IDR_THEME_FRAME_INCOGNITO] = TINT_FRAME_INCOGNITO;
+    frame_tints[IDR_THEME_FRAME_INCOGNITO_INACTIVE] =
+        TINT_FRAME_INCOGNITO_INACTIVE;
+  }
+
   for (FrameTintMap::const_iterator iter(frame_tints.begin());
        iter != frame_tints.end(); ++iter) {
     int id = iter->first;
@@ -820,7 +829,7 @@ void BrowserThemeProvider::NotifyThemeChanged() {
 SkBitmap* BrowserThemeProvider::LoadThemeBitmap(int id) const {
   DCHECK(CalledOnValidThread());
 
-  if (!themeable_images.count(id))
+  if (!HasThemeableImage(id))
     return NULL;
 
   scoped_refptr<RefCountedMemory> raw_data;
