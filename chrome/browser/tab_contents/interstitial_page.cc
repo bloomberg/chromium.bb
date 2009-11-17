@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_operation_notification_details.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -391,7 +392,13 @@ TabContentsView* InterstitialPage::CreateTabContentsView() {
       tab_contents_view->CreateViewForWidget(render_view_host_);
   render_view_host_->set_view(view);
   render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
-  render_view_host_->CreateRenderView();
+
+  scoped_refptr<URLRequestContextGetter> request_context =
+      tab()->request_context();
+  if (!request_context.get())
+    request_context = tab()->profile()->GetRequestContext();
+
+  render_view_host_->CreateRenderView(request_context.get());
   view->SetSize(tab_contents_view->GetContainerSize());
   // Don't show the interstitial until we have navigated to it.
   view->Hide();

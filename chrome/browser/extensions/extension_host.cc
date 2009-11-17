@@ -172,7 +172,7 @@ void ExtensionHost::CreateRenderViewSoon(RenderWidgetHostView* host_view) {
 }
 
 void ExtensionHost::CreateRenderViewNow() {
-  render_view_host_->CreateRenderView();
+  render_view_host_->CreateRenderView(profile_->GetRequestContext());
   NavigateToURL(url_);
   DCHECK(IsRenderViewLive());
   LOG(INFO) << "Sending EXTENSION_PROCESS_CREATED";

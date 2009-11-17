@@ -19,6 +19,8 @@
 class Profile;
 struct ViewMsg_ClosePage_Params;
 
+class URLRequestContextGetter;
+
 // Virtual interface that represents the browser side of the browser <->
 // renderer communication channel. There will generally be one
 // RenderProcessHost per renderer process.
@@ -133,7 +135,8 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // be called once before the object can be used, but can be called after
   // that with no effect. Therefore, if the caller isn't sure about whether
   // the process has been created, it should just call Init().
-  virtual bool Init(bool is_extensions_process) = 0;
+  virtual bool Init(bool is_extensions_process,
+                    URLRequestContextGetter* request_context) = 0;
 
   // Gets the next available routing id.
   virtual int GetNextRoutingID() = 0;

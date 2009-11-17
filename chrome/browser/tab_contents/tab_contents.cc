@@ -2598,7 +2598,12 @@ bool TabContents::CreateRenderViewForRenderManager(
         render_manager_.pending_dom_ui()->bindings());
 
   RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
-  if (!render_view_host->CreateRenderView())
+
+  scoped_refptr<URLRequestContextGetter> request_context = request_context_;
+  if (!request_context.get())
+    request_context = profile()->GetRequestContext();
+
+  if (!render_view_host->CreateRenderView(request_context))
     return false;
 
   // Now that the RenderView has been created, we need to tell it its size.

@@ -14,6 +14,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_factory.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
@@ -151,7 +152,7 @@ MainMenu::MainMenu()
 
   rwhv_ = new RenderWidgetHostViewGtk(menu_rvh_);
   rwhv_->InitAsChild();
-  menu_rvh_->CreateRenderView();
+  menu_rvh_->CreateRenderView(browser_->profile()->GetRequestContext());
   menu_popup->AddChild(rwhv_->GetNativeView());
   gfx::Size rwhv_size = CalculateRWHVSize(popup_size);
   menu_popup->PositionChild(rwhv_->GetNativeView(), kRendererX, kRendererY,

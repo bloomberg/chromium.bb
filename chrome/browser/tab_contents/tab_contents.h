@@ -23,6 +23,7 @@
 #include "chrome/browser/fav_icon_helper.h"
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/jsmessage_box_client.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
@@ -622,6 +623,15 @@ class TabContents : public PageNavigator,
   // times, subsequent calls are ignored.
   void OnCloseStarted();
 
+  // Getter/Setters for the url request context to be used for this tab.
+  void set_request_context(URLRequestContextGetter* context) {
+    request_context_ = context;
+  }
+
+  URLRequestContextGetter* request_context() const {
+    return request_context_;
+  }
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -1178,6 +1188,11 @@ class TabContents : public PageNavigator,
 
   // The time that we started to close the tab.
   base::TimeTicks tab_close_start_time_;
+
+  // Contextual information to be used for requests created here.
+  // Can be NULL in which case we defer to the request context from the
+  // profile
+  scoped_refptr<URLRequestContextGetter> request_context_;
 
   // ---------------------------------------------------------------------------
 

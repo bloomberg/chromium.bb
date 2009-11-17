@@ -81,17 +81,6 @@ bool ExternalTabContainer::Init(Profile* profile,
   // is the same as the lifetime of the window
   SetProp(GetNativeView(), kWindowObjectKey, this);
 
-  if (load_requests_via_automation) {
-    // Customize our profile.
-    // TODO(joshia): If we are loading requests via automation
-    // and handling cookies in automation then it's probably better to
-    // use OTR profile so that cookies are not persisted in chrome.
-    automation_profile_.reset(new AutomationProfileImpl);
-    automation_profile_->Initialize(profile,
-                                    automation_resource_message_filter_);
-    profile = automation_profile_.get();
-  }
-
   if (existing_contents) {
     tab_contents_ = existing_contents;
     tab_contents_->controller().set_profile(profile);
@@ -182,6 +171,11 @@ void ExternalTabContainer::Uninitialize() {
     delete tab_contents_;
     tab_contents_ = NULL;
   }
+
+  if (request_context_.get()) {
+    AutomationRequestContext::CleanupRequestContext(
+        request_context_.release());
+  }
 }
 
 bool ExternalTabContainer::Reinitialize(
@@ -202,11 +196,6 @@ bool ExternalTabContainer::Reinitialize(
           rvh->process()->id(), rvh->routing_id(),
           tab_handle_, automation_resource_message_filter_);
     }
-
-    DCHECK(automation_profile_.get() != NULL);
-    Profile* profile = tab_contents_->profile()->GetOriginalProfile();
-    DCHECK(profile != NULL);
-    automation_profile_->Initialize(profile, filter);
   }
 
   // We cannot send the navigation state right away as the automation channel
@@ -216,6 +205,13 @@ bool ExternalTabContainer::Reinitialize(
       external_method_factory_.NewRunnableMethod(
           &ExternalTabContainer::NavigationStateChanged, tab_contents_, 0));
   return true;
+}
+
+void ExternalTabContainer::SetTabHandle(int handle) {
+  tab_handle_ = handle;
+  if (load_requests_via_automation_) {
+    InitializeAutomationRequestContext(handle);
+  }
 }
 
 void ExternalTabContainer::ProcessUnhandledAccelerator(const MSG& msg) {
@@ -700,3 +696,20 @@ bool ExternalTabContainer::OnGoToEntryOffset(int offset) {
 
   return true;
 }
+
+void ExternalTabContainer::InitializeAutomationRequestContext(
+    int tab_handle) {
+  if (request_context_.get()) {
+    AutomationRequestContext::CleanupRequestContext(
+        request_context_.release());
+  }
+
+  request_context_ =
+      AutomationRequestContext::CreateAutomationURLRequestContextForTab(
+          tab_handle, tab_contents_->profile(),
+          automation_resource_message_filter_);
+
+  DCHECK(request_context_.get() != NULL);
+  tab_contents_->set_request_context(request_context_.get());
+}
+

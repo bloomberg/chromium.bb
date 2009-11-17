@@ -104,7 +104,7 @@ void BalloonViewHost::Init(gfx::NativeView parent_hwnd) {
 #endif
 
   // Start up the renderer and point it at the balloon contents URL.
-  rvh->CreateRenderView();
+  rvh->CreateRenderView(GetProfile()->GetRequestContext());
   rvh->NavigateToURL(balloon_->notification().content_url());
   initialized_ = true;
 }

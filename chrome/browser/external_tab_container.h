@@ -11,6 +11,7 @@
 #include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/automation/automation_profile_impl.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_observer.h"
@@ -43,11 +44,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   TabContents* tab_contents() const { return tab_contents_; }
 
   // Temporary hack so we can send notifications back
-  void set_tab_handle(int handle) {
-    tab_handle_ = handle;
-    if (automation_profile_.get())
-      automation_profile_->set_tab_handle(handle);
-  }
+  void SetTabHandle(int handle);
 
   int tab_handle() const {
     return tab_handle_;
@@ -174,6 +171,9 @@ class ExternalTabContainer : public TabContentsDelegate,
                           int relative_offset);
   void Navigate(const GURL& url, const GURL& referrer);
 
+  // Initializes the request context to be used for automation HTTP requests.
+  void InitializeAutomationRequestContext(int tab_handle);
+
  private:
   friend class base::RefCounted<ExternalTabContainer>;
 
@@ -216,9 +216,6 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Scoped browser object for this ExternalTabContainer instance.
   scoped_ptr<Browser> browser_;
 
-  // A customized profile for automation specific needs.
-  scoped_ptr<AutomationProfileImpl> automation_profile_;
-
   // Contains ExternalTabContainers that have not been connected to as yet.
   static PendingTabs pending_tabs_;
 
@@ -228,6 +225,9 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Allows us to run tasks on the ExternalTabContainer instance which are
   // bound by its lifetime.
   ScopedRunnableMethodFactory<ExternalTabContainer> external_method_factory_;
+
+  // The URL request context to be used for this tab. Can be NULL.
+  scoped_refptr<ChromeURLRequestContextGetter> request_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

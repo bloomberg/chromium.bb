@@ -14,7 +14,8 @@ MockRenderProcessHost::~MockRenderProcessHost() {
   delete transport_dib_;
 }
 
-bool MockRenderProcessHost::Init(bool is_extensions_process) {
+bool MockRenderProcessHost::Init(bool is_extensions_process,
+                                 URLRequestContextGetter* request_context) {
   return true;
 }
 

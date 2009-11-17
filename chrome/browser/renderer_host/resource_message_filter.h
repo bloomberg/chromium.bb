@@ -87,7 +87,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                         printing::PrintJobManager* print_job_manager,
                         Profile* profile,
                         RenderWidgetHelper* render_widget_helper,
-                        SpellChecker* spellchecker);
+                        SpellChecker* spellchecker,
+                        URLRequestContextGetter* request_context);
 
   // IPC::ChannelProxy::MessageFilter methods:
   virtual void OnFilterAdded(IPC::Channel* channel);

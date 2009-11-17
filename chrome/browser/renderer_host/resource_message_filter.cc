@@ -150,7 +150,8 @@ ResourceMessageFilter::ResourceMessageFilter(
     printing::PrintJobManager* print_job_manager,
     Profile* profile,
     RenderWidgetHelper* render_widget_helper,
-    SpellChecker* spellchecker)
+    SpellChecker* spellchecker,
+    URLRequestContextGetter* request_context)
     : Receiver(RENDER_PROCESS, child_id),
       channel_(NULL),
       resource_dispatcher_host_(resource_dispatcher_host),
@@ -158,7 +159,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       print_job_manager_(print_job_manager),
       spellchecker_(spellchecker),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
-      request_context_(profile->GetRequestContext()),
+      request_context_(request_context),
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       extensions_message_service_(profile->GetExtensionMessageService()),

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
 #define CHROME_BROWSER_TAB_CONTENTS_TEST_TAB_CONTENTS_H_
 
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
 class RenderViewHostFactory;
@@ -42,7 +43,7 @@ class TestTabContents : public TabContents {
   // Prevent interaction with views.
   bool CreateRenderViewForRenderManager(RenderViewHost* render_view_host) {
     // This will go to a TestRenderViewHost.
-    render_view_host->CreateRenderView();
+    render_view_host->CreateRenderView(profile()->GetRequestContext());
     return true;
   }
   void UpdateRenderViewSizeForRenderManager() {}

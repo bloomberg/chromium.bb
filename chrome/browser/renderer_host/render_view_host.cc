@@ -21,6 +21,7 @@
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -165,7 +166,8 @@ void RenderViewHost::Observe(NotificationType type,
   }
 }
 
-bool RenderViewHost::CreateRenderView() {
+bool RenderViewHost::CreateRenderView(
+    URLRequestContextGetter* request_context) {
   DCHECK(!IsRenderViewLive()) << "Creating view twice";
   CHECK(process());
   CHECK(!process()->ListenersIterator().IsAtEnd()) <<
@@ -177,7 +179,7 @@ bool RenderViewHost::CreateRenderView() {
   // ignored, so this is safe.
   bool is_extensions_process =
       BindingsPolicy::is_extension_enabled(enabled_bindings_);
-  if (!process()->Init(is_extensions_process))
+  if (!process()->Init(is_extensions_process, request_context))
     return false;
   DCHECK(process()->HasConnection());
   DCHECK(process()->profile());

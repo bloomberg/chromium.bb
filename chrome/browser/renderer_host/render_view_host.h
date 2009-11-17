@@ -52,6 +52,8 @@ namespace WebKit {
 struct WebMediaPlayerAction;
 }
 
+class URLRequestContextGetter;
+
 //
 // RenderViewHost
 //
@@ -98,7 +100,7 @@ class RenderViewHost : public RenderWidgetHost,
 
   // Set up the RenderView child process. Virtual because it is overridden by
   // TestRenderViewHost.
-  virtual bool CreateRenderView();
+  virtual bool CreateRenderView(URLRequestContextGetter* request_context);
 
   // Returns true if the RenderView is active and has not crashed. Virtual
   // because it is overridden by TestRenderViewHost.

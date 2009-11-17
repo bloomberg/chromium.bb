@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
@@ -261,7 +262,8 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
       NotificationService::NoDetails());
 }
 
-bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
+bool BrowserRenderProcessHost::Init(bool is_extensions_process,
+                                    URLRequestContextGetter* request_context) {
   // calling Init() more than once does nothing, this makes it more convenient
   // for the view host which may not be sure in some cases
   if (channel_.get()) {
@@ -289,7 +291,8 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process) {
                                 g_browser_process->print_job_manager(),
                                 profile(),
                                 widget_helper_,
-                                profile()->GetSpellChecker());
+                                profile()->GetSpellChecker(),
+                                request_context);
 
   // Find the renderer before creating the channel so if this fails early we
   // return without creating the channel.

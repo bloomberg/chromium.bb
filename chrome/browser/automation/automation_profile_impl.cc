@@ -5,9 +5,11 @@
 #include "chrome/browser/automation/automation_profile_impl.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/profile.h"
+#include "net/url_request/url_request_context.h"
 #include "chrome/test/automation/automation_messages.h"
 
-namespace {
+namespace AutomationRequestContext {
 
 // A special Request context for automation. Substitute a few things
 // like cookie store, proxy settings etc to handle them differently
@@ -49,12 +51,12 @@ class AutomationURLRequestContext : public ChromeURLRequestContext {
 // behavior for cookies.
 class AutomationCookieStore : public net::CookieStore {
  public:
-  AutomationCookieStore(AutomationProfileImpl* profile,
-                        net::CookieStore* original_cookie_store,
-                        IPC::Message::Sender* automation_client)
-      : profile_(profile),
-        original_cookie_store_(original_cookie_store),
-        automation_client_(automation_client) {
+  AutomationCookieStore(net::CookieStore* original_cookie_store,
+                        IPC::Message::Sender* automation_client,
+                        int tab_handle)
+      : original_cookie_store_(original_cookie_store),
+        automation_client_(automation_client),
+        tab_handle_(tab_handle) {
   }
 
   // CookieStore implementation.
@@ -64,7 +66,7 @@ class AutomationCookieStore : public net::CookieStore {
       // TODO(eroman): Should NOT be accessing the profile from here, as this
       // is running on the IO thread.
       SendIPCMessageOnIOThread(new AutomationMsg_SetCookieAsync(0,
-          profile_->tab_handle(), url, cookie_line));
+          tab_handle_, url, cookie_line));
     }
     return cookie_set;
   }
@@ -116,9 +118,9 @@ class AutomationCookieStore : public net::CookieStore {
     }
   }
 
-  AutomationProfileImpl* profile_;
   net::CookieStore* original_cookie_store_;
   IPC::Message::Sender* automation_client_;
+  int tab_handle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutomationCookieStore);
@@ -127,12 +129,13 @@ class AutomationCookieStore : public net::CookieStore {
 class Factory : public ChromeURLRequestContextFactory {
  public:
   Factory(ChromeURLRequestContextGetter* original_context_getter,
-          AutomationProfileImpl* profile,
-          IPC::Message::Sender* automation_client)
+          Profile* profile,
+          IPC::Message::Sender* automation_client,
+          int tab_handle)
       : ChromeURLRequestContextFactory(profile),
         original_context_getter_(original_context_getter),
-        profile_(profile),
-        automation_client_(automation_client) {
+        automation_client_(automation_client),
+        tab_handle_(tab_handle) {
   }
 
   virtual ChromeURLRequestContext* Create() {
@@ -141,9 +144,9 @@ class Factory : public ChromeURLRequestContextFactory {
 
     // Create an automation cookie store.
     scoped_refptr<net::CookieStore> automation_cookie_store =
-        new AutomationCookieStore(profile_,
-                                  original_context->cookie_store(),
-                                  automation_client_);
+        new AutomationCookieStore(original_context->cookie_store(),
+                                  automation_client_,
+                                  tab_handle_);
 
     return new AutomationURLRequestContext(original_context,
                                            automation_cookie_store);
@@ -151,8 +154,8 @@ class Factory : public ChromeURLRequestContextFactory {
 
  private:
   scoped_refptr<ChromeURLRequestContextGetter> original_context_getter_;
-  AutomationProfileImpl* profile_;
   IPC::Message::Sender* automation_client_;
+  int tab_handle_;
 };
 
 // TODO(eroman): This duplicates CleanupRequestContext() from profile.cc.
@@ -163,23 +166,21 @@ void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
   ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, context);
 }
 
-}  // namespace
-
-AutomationProfileImpl::~AutomationProfileImpl() {
-  CleanupRequestContext(alternate_request_context_);
-}
-
-void AutomationProfileImpl::Initialize(Profile* original_profile,
+ChromeURLRequestContextGetter* CreateAutomationURLRequestContextForTab(
+    int tab_handle,
+    Profile* profile,
     IPC::Message::Sender* automation_client) {
-  DCHECK(original_profile);
-  original_profile_ = original_profile;
-
   ChromeURLRequestContextGetter* original_context =
       static_cast<ChromeURLRequestContextGetter*>(
-          original_profile_->GetRequestContext());
-  alternate_request_context_ = new ChromeURLRequestContextGetter(
-      NULL, // Don't register an observer on PrefService.
-      new Factory(original_context, this, automation_client));
-  alternate_request_context_->AddRef();  // Balananced in the destructor.
+          profile->GetRequestContext());
+
+  ChromeURLRequestContextGetter* request_context =
+      new ChromeURLRequestContextGetter(
+          NULL,  // Don't register an observer on PrefService.
+          new Factory(original_context, profile, automation_client,
+                      tab_handle));
+  return request_context;
 }
+
+}  // namespace AutomationRequestContext
 
