@@ -42,6 +42,7 @@
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
+#include "chrome/browser/gtk/create_application_shortcuts_dialog_gtk.h"
 #include "chrome/browser/gtk/download_in_progress_dialog_gtk.h"
 #include "chrome/browser/gtk/download_shelf_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
@@ -1216,6 +1217,16 @@ int BrowserWindowGtk::GetCommandId(const NativeWebKeyboardEvent& event) {
   if (command == -1)
     command = GetCustomCommandId(keyval, modifier);
   return command;
+}
+
+void BrowserWindowGtk::ShowCreateShortcutsDialog(TabContents* tab_contents) {
+  SkBitmap bitmap;
+  if (tab_contents->FavIconIsValid())
+    bitmap = tab_contents->GetFavIcon();
+  CreateApplicationShortcutsDialogGtk::Show(window_,
+                                            tab_contents->GetURL(),
+                                            tab_contents->GetTitle(),
+                                            bitmap);
 }
 
 void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {

@@ -225,6 +225,11 @@ extern const wchar_t kDevToolsSplitLocation[];
 
 extern const wchar_t kSyncLastSyncedTime[];
 extern const wchar_t kSyncHasSetupCompleted[];
-}
+
+extern const wchar_t kWebAppCreateOnDesktop[];
+extern const wchar_t kWebAppCreateInAppsMenu[];
+extern const wchar_t kWebAppCreateInQuickLaunchBar[];
+
+}  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

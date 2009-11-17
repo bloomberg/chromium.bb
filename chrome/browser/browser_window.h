@@ -271,10 +271,13 @@ class BrowserWindow {
   // keyboard event if one exists, otherwise -1.
   virtual int GetCommandId(const NativeWebKeyboardEvent& event) = 0;
 
+  // Shows the create web app shortcut dialog box.
+  virtual void ShowCreateShortcutsDialog(TabContents* tab_contents) = 0;
+
 #if defined(TOOLKIT_VIEWS)
   // Toggles compact navigation bar.
   virtual void ToggleCompactNavigationBar() = 0;
-#endif
+#endif  // defined(TOOLKIT_VIEWS)
 
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);

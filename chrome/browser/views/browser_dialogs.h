@@ -101,6 +101,10 @@ void EditSearchEngine(gfx::NativeWindow parent,
 void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
                                  TabContents* tab_contents);
 
+// Shows the create web app shortcut dialog box.
+void ShowCreateShortcutsDialog(gfx::NativeWindow parent_window,
+                               TabContents* tab_contents);
+
 }  // namespace browser
 
 #endif  // CHROME_BROWSER_VIEWS_BROWSER_DIALOGS_H_

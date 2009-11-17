@@ -11,10 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
-
-#if defined(OS_LINUX)
 #include "third_party/skia/include/core/SkBitmap.h"
-#endif
 
 class FilePath;
 
@@ -44,6 +41,22 @@ class ShellIntegration {
   // user. This method is very fast so it can be invoked in the UI thread.
   static bool IsFirefoxDefaultBrowser();
 
+  struct ShortcutInfo {
+    GURL url;
+    string16 title;
+    string16 description;
+    SkBitmap favicon;
+
+    bool create_on_desktop;
+    bool create_in_applications_menu;
+
+    // For Windows, this refers to quick launch bar prior to Win7. In Win7,
+    // this means "pin to taskbar". For Mac/Linux, this could be used for
+    // Mac dock or the gnome/kde application launcher. However, those are not
+    // implemented yet.
+    bool create_in_quick_launch_bar;
+  };
+
 #if defined(OS_LINUX)
   // Returns filename for .desktop file based on |url|, sanitized for security.
   static FilePath GetDesktopShortcutFilename(const GURL& url);
@@ -54,15 +67,6 @@ class ShellIntegration {
   static std::string GetDesktopFileContents(
       const std::string& template_contents, const GURL& url,
       const string16& title, const std::string& icon_name);
-
-  struct ShortcutInfo {
-    GURL url;
-    string16 title;
-    SkBitmap favicon;
-
-    bool create_on_desktop;
-    bool create_in_applications_menu;
-  };
 
   // Creates a desktop shortcut. It is not guaranteed to exist immediately after
   // returning from this function, because actual file operation is done on the

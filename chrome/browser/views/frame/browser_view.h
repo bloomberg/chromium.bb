@@ -274,9 +274,10 @@ class BrowserView : public BrowserWindow,
   virtual void ShowAppMenu();
   virtual void ShowPageMenu();
   virtual int GetCommandId(const NativeWebKeyboardEvent& event);
+  virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
 #if defined(TOOLKIT_VIEWS)
   virtual void ToggleCompactNavigationBar();
-#endif
+#endif  // defined(TOOLKIT_VIEWS)
 
   // Overridden from BrowserWindowTesting:
   virtual BookmarkBarView* GetBookmarkBarView() const;

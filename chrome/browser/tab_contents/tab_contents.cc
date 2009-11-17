@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/form_field_history_manager.h"
-#include "chrome/browser/gears_integration.h"
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/hung_renderer_dialog.h"
 #include "chrome/browser/jsmessage_box_handler.h"
@@ -77,11 +76,6 @@
 // For GdkScreen
 #include <gdk/gdk.h>
 #endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_LINUX)
-#include "chrome/browser/gtk/create_application_shortcuts_dialog_gtk.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
-#endif  // defined(OS_LINUX)
 
 // Cross-Site Navigations
 //
@@ -211,23 +205,6 @@ void MakeNavigateParams(Profile* profile, const NavigationEntry& entry,
 // static
 int TabContents::find_request_id_counter_ = -1;
 
-class TabContents::GearsCreateShortcutCallbackFunctor {
- public:
-  explicit GearsCreateShortcutCallbackFunctor(TabContents* contents)
-     : contents_(contents) {}
-
-  void Run(const GearsShortcutData2& shortcut_data, bool success) {
-    if (contents_)
-      contents_->OnGearsCreateShortcutDone(shortcut_data, success);
-    delete this;
-  }
-  void Cancel() {
-    contents_ = NULL;
-  }
-
- private:
-  TabContents* contents_;
-};
 
 TabContents::TabContents(Profile* profile,
                          SiteInstance* site_instance,
@@ -249,7 +226,6 @@ TabContents::TabContents(Profile* profile,
       plugin_installer_(),
       ALLOW_THIS_IN_INITIALIZER_LIST(fav_icon_helper_(this)),
       select_file_dialog_(),
-      pending_install_(),
       is_loading_(false),
       is_crashed_(false),
       waiting_for_response_(false),
@@ -283,9 +259,6 @@ TabContents::TabContents(Profile* profile,
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI) {
-  pending_install_.page_id = 0;
-  pending_install_.callback_functor = NULL;
-
 #if defined(OS_CHROMEOS)
   // Make sure the thumbnailer is started before starting the render manager.
   // The thumbnailer will want to listen for RVH creations, one of which will
@@ -347,9 +320,6 @@ TabContents::~TabContents() {
 
   NotifyDisconnected();
   HungRendererDialog::HideForTabContents(this);
-
-  if (pending_install_.callback_functor)
-    pending_install_.callback_functor->Cancel();
 
   // First cleanly close all child windows.
   // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
@@ -778,38 +748,6 @@ TabContents* TabContents::Clone() {
                                     MSG_ROUTING_NONE, this);
   tc->controller().CopyStateFrom(controller_);
   return tc;
-}
-
-void TabContents::CreateShortcut() {
-  NavigationEntry* entry = controller_.GetLastCommittedEntry();
-  if (!entry)
-    return;
-
-#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-  SkBitmap bitmap;
-  if (FavIconIsValid())
-    bitmap = GetFavIcon();
-  CreateApplicationShortcutsDialogGtk::Show(view()->GetTopLevelNativeWindow(),
-                                            GetURL(), GetTitle(), bitmap);
-#else
-  // We only allow one pending install request. By resetting the page id we
-  // effectively cancel the pending install request.
-  pending_install_.page_id = entry->page_id();
-  pending_install_.icon = GetFavIcon();
-  pending_install_.title = GetTitle();
-  pending_install_.url = GetURL();
-  if (pending_install_.callback_functor) {
-    pending_install_.callback_functor->Cancel();
-    pending_install_.callback_functor = NULL;
-  }
-  DCHECK(!pending_install_.icon.isNull()) << "Menu item should be disabled.";
-  if (pending_install_.title.empty())
-    pending_install_.title = UTF8ToUTF16(GetURL().spec());
-
-  // Request the application info. When done OnDidGetApplicationInfo is invoked
-  // and we'll create the shortcut.
-  render_view_host()->GetApplicationInfo(pending_install_.page_id);
-#endif
 }
 
 void TabContents::ShowPageInfo(const GURL& url,
@@ -1296,24 +1234,6 @@ void TabContents::ExpireInfoBars(
   }
 }
 
-void TabContents::OnGearsCreateShortcutDone(
-    const GearsShortcutData2& shortcut_data, bool success) {
-  NavigationEntry* current_entry = controller_.GetLastCommittedEntry();
-  bool same_page =
-      current_entry && pending_install_.page_id == current_entry->page_id();
-
-  if (success && same_page) {
-    // Only switch to app mode if the user chose to create a shortcut and
-    // we're still on the same page that it corresponded to.
-    if (delegate())
-      delegate()->ConvertContentsToApplication(this);
-  }
-
-  // Reset the page id to indicate no requests are pending.
-  pending_install_.page_id = 0;
-  pending_install_.callback_functor = NULL;
-}
-
 DOMUI* TabContents::GetDOMUIForCurrentState() {
   // When there is a pending navigation entry, we want to use the pending DOMUI
   // that goes along with it to control the basic flags. For example, we want to
@@ -1789,15 +1709,10 @@ void TabContents::OnCrashedWorker() {
 void TabContents::OnDidGetApplicationInfo(
     int32 page_id,
     const webkit_glue::WebApplicationInfo& info) {
-  if (pending_install_.page_id != page_id)
-    return;  // The user clicked create on a separate page. Ignore this.
+  web_app_info_ = info;
 
-  pending_install_.callback_functor =
-      new GearsCreateShortcutCallbackFunctor(this);
-  GearsCreateShortcut(
-      info, pending_install_.title, pending_install_.url, pending_install_.icon,
-      NewCallback(pending_install_.callback_functor,
-                  &GearsCreateShortcutCallbackFunctor::Run));
+  if (delegate())
+    delegate()->OnDidGetApplicationInfo(this, page_id);
 }
 
 void TabContents::DidStartProvisionalLoadForFrame(

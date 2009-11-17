@@ -51,9 +51,10 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void ShowPageMenu() {}
   virtual void ShowAppMenu() {}
   virtual int GetCommandId(const NativeWebKeyboardEvent& event) { return -1; }
+  virtual void ShowCreateShortcutsDialog(TabContents* tab_contents) {}
 #if defined(TOOLKIT_VIEWS)
   virtual void ToggleCompactNavigationBar() {}
-#endif
+#endif  // defined(TOOLKIT_VIEWS)
 
   virtual bool IsBookmarkBarVisible() const { return false; }
   virtual bool IsToolbarVisible() const { return false; }

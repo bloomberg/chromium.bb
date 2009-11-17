@@ -416,6 +416,10 @@ int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
   return -1;
 }
 
+void BrowserWindowCocoa::ShowCreateShortcutsDialog(TabContents* tab_contents) {
+  NOTIMPLEMENTED();
+}
+
 void BrowserWindowCocoa::Observe(NotificationType type,
                                  const NotificationSource& source,
                                  const NotificationDetails& details) {

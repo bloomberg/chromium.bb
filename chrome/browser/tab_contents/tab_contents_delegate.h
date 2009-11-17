@@ -25,6 +25,10 @@ class RenderViewHost;
 class TabContents;
 class TemplateURL;
 
+namespace webkit_glue {
+struct WebApplicationInfo;
+}
+
 // Objects implement this interface to get notified about changes in the
 // TabContents and to provide necessary functionality.
 class TabContentsDelegate {
@@ -246,6 +250,11 @@ class TabContentsDelegate {
 
   // Returns whether this tab contents should add navigations to history.
   virtual bool ShouldAddNavigationsToHistory() const { return true; }
+
+  // Notification when web app info data is available
+  virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
+                                       int32 page_id) {
+  }
 
  protected:
   ~TabContentsDelegate() {}

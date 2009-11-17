@@ -122,6 +122,7 @@ class BrowserWindowGtk : public BrowserWindow,
   virtual void ShowPageMenu();
   virtual void ShowAppMenu();
   virtual int GetCommandId(const NativeWebKeyboardEvent& event);
+  virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,

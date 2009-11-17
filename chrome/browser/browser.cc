@@ -1148,7 +1148,17 @@ void Browser::OpenFile() {
 void Browser::OpenCreateShortcutsDialog() {
   UserMetrics::RecordAction(L"CreateShortcut", profile_);
 #if defined(OS_WIN) || defined(OS_LINUX)
-  GetSelectedTabContents()->CreateShortcut();
+  TabContents* current_tab = GetSelectedTabContents();
+  DCHECK(current_tab && current_tab->FavIconIsValid()) <<
+      "Menu item should be disabled.";
+
+  NavigationEntry* entry = current_tab->controller().GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  // Start fetching web app info for CreateApplicatoinShortcut dialog and
+  // show the dialog when the data is available in OnDidGetApplicationInfo.
+  current_tab->render_view_host()->GetApplicationInfo(entry->page_id());
 #else
   NOTIMPLEMENTED();
 #endif
@@ -1348,6 +1358,9 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kShowOmniboxSearchHint, true);
   prefs->RegisterIntegerPref(prefs::kNTPPromoRemaining, 5);
   prefs->RegisterBooleanPref(prefs::kShowExtensionShelf, true);
+  prefs->RegisterBooleanPref(prefs::kWebAppCreateOnDesktop, true);
+  prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);
+  prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
 }
 
 // static
@@ -2202,6 +2215,19 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
 bool Browser::ShouldAddNavigationsToHistory() const {
   // Don't update history if running as app.
   return !IsApplication();
+}
+
+void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
+                                      int32 page_id) {
+  TabContents* current_tab = GetSelectedTabContents();
+  if (current_tab != tab_contents)
+    return;
+
+  NavigationEntry* entry = current_tab->controller().GetLastCommittedEntry();
+  if (!entry || (entry->page_id() != page_id))
+    return;
+
+  window()->ShowCreateShortcutsDialog(current_tab);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

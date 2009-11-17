@@ -32,12 +32,12 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
-#include "chrome/common/gears_api.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/renderer_preferences.h"
 #include "net/base/load_states.h"
+#include "webkit/glue/dom_operations.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -61,9 +61,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace webkit_glue {
-struct WebApplicationInfo;
-}
 
 namespace IPC {
 class Message;
@@ -245,6 +242,10 @@ class TabContents : public PageNavigator,
     encoding_.clear();
   }
 
+  const webkit_glue::WebApplicationInfo& web_app_info() const {
+    return web_app_info_;
+  }
+
   // Internal state ------------------------------------------------------------
 
   // This flag indicates whether the tab contents is currently being
@@ -331,9 +332,6 @@ class TabContents : public PageNavigator,
   // Creates a new TabContents with the same state as this one. The returned
   // heap-allocated pointer is owned by the caller.
   virtual TabContents* Clone();
-
-  // Tell Gears to create a shortcut for the current page.
-  void CreateShortcut();
 
   // Shows the page info.
   void ShowPageInfo(const GURL& url,
@@ -657,21 +655,6 @@ class TabContents : public PageNavigator,
 
   // So InterstitialPage can access SetIsLoading.
   friend class InterstitialPage;
-  // When CreateShortcut is invoked RenderViewHost::GetApplicationInfo is
-  // invoked. CreateShortcut caches the state of the page needed to create the
-  // shortcut in PendingInstall. When OnDidGetApplicationInfo is invoked, it
-  // uses the information from PendingInstall and the WebApplicationInfo
-  // to create the shortcut.
-  class GearsCreateShortcutCallbackFunctor;
-  struct PendingInstall {
-    int32 page_id;
-    SkBitmap icon;
-    string16 title;
-    GURL url;
-    // This object receives the GearsCreateShortcutCallback and routes the
-    // message back to the TabContents, if we haven't been deleted.
-    GearsCreateShortcutCallbackFunctor* callback_functor;
-  };
 
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;
@@ -719,12 +702,6 @@ class TabContents : public PageNavigator,
   // user navigated to another page).
   void ExpireInfoBars(
       const NavigationController::LoadCommittedDetails& details);
-
-  // Called when the user dismisses the shortcut creation dialog.  'success' is
-  // true if the shortcut was created.
-  void OnGearsCreateShortcutDone(const GearsShortcutData2& shortcut_data,
-                                 bool success);
-
 
   // Returns the DOMUI for the current state of the tab. This will either be
   // the pending DOMUI, the committed DOMUI, or NULL.
@@ -1035,8 +1012,8 @@ class TabContents : public PageNavigator,
   // Dialog box used for choosing files to upload from file form fields.
   scoped_refptr<SelectFileDialog> select_file_dialog_;
 
-  // Web app installation.
-  PendingInstall pending_install_;
+  // Cached web app info data.
+  webkit_glue::WebApplicationInfo web_app_info_;
 
   // Data for loading state ----------------------------------------------------
 

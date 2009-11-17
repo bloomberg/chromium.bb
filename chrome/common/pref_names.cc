@@ -590,4 +590,11 @@ const wchar_t kSyncLastSyncedTime[] = L"sync.last_synced_time";
 // Boolean specifying whether the user finished setting up sync.
 const wchar_t kSyncHasSetupCompleted[] = L"sync.has_setup_completed";
 
+// Create web application shortcut dialog preferences.
+const wchar_t kWebAppCreateOnDesktop[] = L"browser.web_app.create_on_desktop";
+const wchar_t kWebAppCreateInAppsMenu[] =
+    L"browser.web_app.create_in_apps_menu";
+const wchar_t kWebAppCreateInQuickLaunchBar[] =
+    L"browser.web_app.create_in_quick_launch_bar";
+
 }  // namespace prefs
