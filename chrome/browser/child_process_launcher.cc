@@ -210,11 +210,12 @@ base::ProcessHandle ChildProcessLauncher::GetHandle() {
 bool ChildProcessLauncher::DidProcessCrash() {
   bool did_crash, child_exited;
   base::ProcessHandle handle = context_->process_.handle();
-  if (context_->zygote_) {
 #if defined(OS_LINUX)
+  if (context_->zygote_) {
     did_crash = Singleton<ZygoteHost>()->DidProcessCrash(handle, &child_exited);
+  } else
 #endif
-  } else {
+  {
     did_crash = base::DidProcessCrash(&child_exited, handle);
   }
 
