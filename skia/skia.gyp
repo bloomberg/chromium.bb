@@ -349,8 +349,7 @@
         '../third_party/skia/src/images/SkScaledBitmapSampler.cpp',
         '../third_party/skia/src/images/SkScaledBitmapSampler.h',
 
-        '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
-        '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+        '../third_party/skia/src/opts/opts_check_SSE2.cpp',
 
         #'../third_party/skia/src/ports/SkFontHost_FONTPATH.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
@@ -587,12 +586,12 @@
             '-mthumb',
           ],
           'sources!': [
-            '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
-            '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
+            '../third_party/skia/src/opts/opts_check_SSE2.cpp'
           ],
           'sources': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_arm.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.cpp',
+            '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
           ],
         }],
         [ 'OS == "linux" or OS == "freebsd"', {
@@ -642,15 +641,14 @@
             '../third_party/skia/src/core/SkMMapStream.cpp',
             '../third_party/skia/src/ports/SkThread_pthread.cpp',
             '../third_party/skia/src/ports/SkTime_Unix.cc',
-            '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
-          ],
-          'sources': [
-            '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
           ],
           'include_dirs': [
             'config/win',
           ],
         },],
+      ],
+      'dependencies': [
+        'skia_sse2'
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -663,6 +661,50 @@
           '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
         ],
       },
+    },
+
+    # Due to an unfortunate intersection of lameness between gcc and gyp,
+    # we have to build the *_SSE2.cpp files in a separate target.  The
+    # gcc lameness is that, in order to compile SSE2 intrinsics code, it
+    # must be passed the -msse2 flag.  However, with this flag, it may 
+    # emit SSE2 instructions even for scalar code, such as the CPUID
+    # test used to test for the presence of SSE2.  So that, and all other
+    # code must be compiled *without* -msse2.  The gyp lameness is that it
+    # does not allow file-specific CFLAGS, so we must create this extra
+    # target for those files to be compiled with -msse2.
+    #
+    # This is actually only a problem on 32-bit Linux (all Intel Macs have
+    # SSE2, Linux x86_64 has SSE2 by definition, and MSC will happily emit
+    # SSE2 from instrinsics, which generating plain ol' 386 for everything
+    # else).  However, to keep the .gyp file simple and avoid platform-specific
+    # build breakage, we do this on all platforms.
+
+    {
+      'target_name': 'skia_sse2',
+      'type': '<(library)',
+      'include_dirs': [
+        '..',
+        'config',
+        '../third_party/skia/include/core',
+        '../third_party/skia/include/effects',
+        '../third_party/skia/include/images',
+        '../third_party/skia/include/utils',
+        '../third_party/skia/src/core',
+      ],
+      'conditions': [
+        [ 'OS == "linux" and target_arch != "arm"', {
+          'cflags': [
+            '-msse2',
+          ],
+        }],
+        [ 'target_arch != "arm"', {
+          'sources': [
+            '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlitRow_opts_SSE2.cpp',
+            '../third_party/skia/src/opts/SkUtils_opts_SSE2.cpp',
+          ],
+        }],
+      ],
     },
   ],
 }
