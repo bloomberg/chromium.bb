@@ -246,7 +246,7 @@ void KeywordEditorView::ButtonPressed(
     browser::EditSearchEngine(GetWindow()->GetNativeWindow(), NULL, this,
                               profile_);
   } else if (sender == remove_button_) {
-    DCHECK_EQ(1, table_view_->SelectedRowCount());
+    DCHECK_GT(table_view_->SelectedRowCount(), 0);
     int last_view_row = -1;
     for (views::TableView::iterator i = table_view_->SelectionBegin();
          i != table_view_->SelectionEnd(); ++i) {
