@@ -139,6 +139,10 @@ class SafeBrowsingService
   // Preference handling.
   static void RegisterPrefs(PrefService* prefs);
 
+  // Called on the IO thread to close the database, freeing the memory
+  // associated with it.  The database will be automatically reopened as needed.
+  void CloseDatabase();
+
   // Called on the IO thread to reset the database.
   void ResetDatabase();
 
@@ -177,11 +181,15 @@ class SafeBrowsingService
                       const std::string& wrapped_key,
                       URLRequestContextGetter* request_context_getter);
 
-  // Called to initialize objects that are used on the db_thread.
-  void OnDBInitialize();
-
   // Called to shutdown operations on the io_thread.
   void OnIOShutdown();
+
+  // Called on the IO thread.  Returns whether |database_| exists.  If it does
+  // not exist, queues up a call on the db thread to create it.
+  //
+  // Note that this is only needed outside the db thread, since functions on the
+  // db thread can call GetDatabase() directly.
+  bool MakeDatabaseAvailable();
 
   // Should only be called on db thread as SafeBrowsingDatabase is not
   // threadsafe.
@@ -223,6 +231,9 @@ class SafeBrowsingService
   // the user checks the "Enable SafeBrowsing" option in the Advanced options
   // UI.
   void Start();
+
+  // Called on the db thread to close the database.  See CloseDatabase().
+  void OnCloseDatabase();
 
   // Runs on the db thread to reset the database. We assume that resetting the
   // database is a synchronous operation.
@@ -272,10 +283,18 @@ class SafeBrowsingService
   bool enabled_;
 
   // The SafeBrowsing thread that runs database operations.
+  //
+  // Note: Functions that run on this thread should run synchronously and return
+  // to the IO thread, not post additional tasks back to this thread, lest we
+  // cause a race condition at shutdown time that leads to a database leak.
   scoped_ptr<base::Thread> safe_browsing_thread_;
 
   // Indicates if we're currently in an update cycle.
   bool update_in_progress_;
+
+  // Indicates if we're in the midst of trying to close the database.  If this
+  // is true, nothing on the IO thread should access the database.
+  bool closing_database_;
 
   std::deque<QueuedCheck> queued_checks_;
 
