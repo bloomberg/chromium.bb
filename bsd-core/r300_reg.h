@@ -1,1 +1,0 @@
-../shared-core/r300_reg.h
