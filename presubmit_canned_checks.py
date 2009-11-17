@@ -5,7 +5,6 @@
 
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
-
 ### Description checks
 
 def CheckChangeHasTestField(input_api, output_api):
@@ -74,6 +73,51 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
       text = 'Found ' + keyword + ' in %s, line %s' % (f.LocalPath(), line_num)
       return [output_api.PresubmitError(text)]
   return []
+
+
+def CheckChangeLintsClean(input_api, output_api, source_file_filter=None):
+  """Checks that all ".cc" and ".h" files pass cpplint.py."""
+  _RE_IS_TEST = input_api.re.compile(r'.*tests?.(cc|h)$')
+  result = []
+
+  # Initialize cpplint.
+  import cpplint
+  cpplint._cpplint_state.ResetErrorCounts()
+
+  # Justifications for each filter:
+  #
+  # - build/include       : Too many; fix in the future.
+  # - build/include_order : Not happening; #ifdefed includes.
+  # - build/namespace     : I'm surprised by how often we violate this rule.
+  # - readability/casting : Mistakes a whole bunch of function pointer.
+  # - runtime/int         : Can be fixed long term; volume of errors too high
+  # - runtime/virtual     : Broken now, but can be fixed in the future?
+  # - whitespace/braces   : We have a lot of explicit scoping in chrome code.
+  cpplint._SetFilters("-build/include,-build/include_order,-build/namespace,"
+                      "-readability/casting,-runtime/int,-runtime/virtual,"
+                      "-whitespace/braces")
+
+  # We currently are more strict with normal code than unit tests; 4 and 5 are
+  # the verbosity level that would normally be passed to cpplint.py through
+  # --verbose=#. Hopefully, in the future, we can be more verbose.
+  files = [f.AbsoluteLocalPath() for f in
+           input_api.AffectedSourceFiles(source_file_filter)]
+  for file_name in files:
+    if _RE_IS_TEST.match(file_name):
+      level = 5
+    else:
+      level = 4
+
+    cpplint.ProcessFile(file_name, level)
+
+  if cpplint._cpplint_state.error_count > 0:
+    if input_api.is_committing:
+      res_type = output_api.PresubmitError
+    else:
+      res_type = output_api.PresubmitPromptWarning
+    result = [res_type("Changelist failed cpplint.py check.")]
+
+  return result
 
 
 def CheckChangeHasNoCR(input_api, output_api, source_file_filter=None):
