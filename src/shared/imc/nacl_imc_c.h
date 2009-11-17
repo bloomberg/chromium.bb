@@ -41,10 +41,9 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_IMC_NACL_IMC_C_H_
 #define NATIVE_CLIENT_SRC_SHARED_IMC_NACL_IMC_C_H_
 
-#if NACL_WINDOWS
-#include <windows.h>
-#endif
-#include <sys/types.h>
+#include <native_client/src/include/portability.h>
+#include <native_client/src/trusted/service_runtime/include/machine/_types.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,7 +51,6 @@ extern "C" {
 
 /* Get the last error message string. */
 int NaClGetLastErrorString(char* buffer, size_t length);
-
 
 
 /*
@@ -92,8 +90,8 @@ typedef struct NaClSocketAddress {
 */
 
 typedef struct NaClIOVec {
-  void*   base;
-  size_t  length;
+  void*           base;
+  nacl_abi_size_t length;
 } NaClIOVec;
 
 /* The maximum number of handles to be passed by NaClSendDatagram() */
@@ -186,7 +184,8 @@ int NaClSendTo(NaClHandle socket, const void* buffer, size_t length, int flags,
 /*
  * Receives a message from a socket.
  *
- * The receive functions return the number of bytes received, or -1 upon failure.
+ * The receive functions return the number of bytes received,
+ * or -1 upon failure.
  *
  * If NACL_DONT_WAIT flag is specified with the call and no messages are
  * available in the queue, the function returns -1 and the subsequent
