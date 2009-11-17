@@ -1508,8 +1508,8 @@
     return html + '<div class=expectations test=' + test + '><div>' +
         getLinkHTMLToToggleState('showExpectations', 'expectations') + ' | ' +
         getLinkHTMLToToggleState('showLargeExpectations', 'large thumbnails') +
-        ' | <b>Only shows actual results from the most recent run on each ' +
-        'bot.</b></div></div>';
+        ' | <b>Only shows actual results/diffs from the most recent *failure*' +
+        ' on each bot.</b></div></div>';
   }
 
   function getExpectationsContainer(expectationsContainers, parentContainer,
@@ -1692,7 +1692,17 @@
 
     var innerHTML;
     if (builder) {
-      innerHTML = 'ACTUAL RESULTS: ' + builder;
+      var resultsType;
+      if (endsWidth(path, '-stack.txt')) {
+        resultsType = 'STACKTRACE';
+      } else if (endsWidth(path, '-actual.txt') ||
+                 endsWidth(path, '-actual.checksum') ||
+                 endsWidth(path, '-actual.png')) {
+        resultsType = 'ACTUAL RESULTS';
+      } else {
+        resultsType = 'DIFF';
+      }
+      innerHTML = resultsType + ': ' + builder;
     } else if (platform == LAYOUT_TESTS_PREFIX) {
       var parts = path.split('/');
       innerHTML = parts[parts.length - 1];
@@ -1757,7 +1767,7 @@
     }
 
     var actualResultSuffixes = ['-actual.txt', '-actual.checksum',
-        '-actual.png', '-stack.png'];
+        '-actual.png', '-stack.txt', '-diff.txt', '-wdiff.html', '-diff.png'];
 
     for (var builder in builders) {
       var actualResultsBase =

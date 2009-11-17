@@ -120,6 +120,10 @@ function startsWith(a, b) {
   return a.indexOf(b) == 0;
 }
 
+function endsWidth(a, b) {
+  return a.lastIndexOf(b) == a.length - b.length;
+}
+
 function isValidName(str) {
   return str.match(/[A-Za-z0-9\-\_,]/);
 }
