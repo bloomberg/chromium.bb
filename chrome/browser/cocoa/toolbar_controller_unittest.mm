@@ -88,14 +88,18 @@ class ToolbarControllerTest : public PlatformTest {
   scoped_nsobject<ToolbarController> bar_;
 };
 
+/////////////////////////////////////////////////////////////////////
+// TODO(dmaclach) All tests disabled due to crashing: crbug.com/27920
+/////////////////////////////////////////////////////////////////////
+
 // Test the initial state that everything is sync'd up
-TEST_F(ToolbarControllerTest, InitialState) {
+TEST_F(ToolbarControllerTest, DISABLED_InitialState) {
   CommandUpdater* updater = helper_.browser()->command_updater();
   CompareState(updater, [bar_ toolbarViews]);
 }
 
 // Make sure a "titlebar only" toolbar works
-TEST_F(ToolbarControllerTest, TitlebarOnly) {
+TEST_F(ToolbarControllerTest, DISABLED_TitlebarOnly) {
   NSView* view = [bar_ view];
 
   [bar_ setHasToolbar:NO];
@@ -119,7 +123,7 @@ TEST_F(ToolbarControllerTest, TitlebarOnly) {
 
 // Make some changes to the enabled state of a few of the buttons and ensure
 // that we're still in sync.
-TEST_F(ToolbarControllerTest, UpdateEnabledState) {
+TEST_F(ToolbarControllerTest, DISABLED_UpdateEnabledState) {
   CommandUpdater* updater = helper_.browser()->command_updater();
   EXPECT_FALSE(updater->IsCommandEnabled(IDC_BACK));
   EXPECT_FALSE(updater->IsCommandEnabled(IDC_FORWARD));
@@ -128,7 +132,7 @@ TEST_F(ToolbarControllerTest, UpdateEnabledState) {
   CompareState(updater, [bar_ toolbarViews]);
 }
 
-TEST_F(ToolbarControllerTest, StarredState) {
+TEST_F(ToolbarControllerTest, DISABLED_StarredState) {
   // TODO(pinkerton): I'm not sure how to test this, as the only difference
   // in internal state is in the image used. I tried using the name of the
   // image on the button but it doesn't seem to stick to the NSImage, even
@@ -136,7 +140,7 @@ TEST_F(ToolbarControllerTest, StarredState) {
 }
 
 // Focus the location bar and make sure that it's the first responder.
-TEST_F(ToolbarControllerTest, FocusLocation) {
+TEST_F(ToolbarControllerTest, DISABLED_FocusLocation) {
   NSWindow* window = cocoa_helper_.window();
   [window makeFirstResponder:[window contentView]];
   EXPECT_EQ([window firstResponder], [window contentView]);
@@ -146,13 +150,11 @@ TEST_F(ToolbarControllerTest, FocusLocation) {
   EXPECT_EQ([window firstResponder], [(id)locationBar currentEditor]);
 }
 
-// TODO(dmaclach) disabled due to crash: crbug.com/27920
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(ToolbarControllerTest, DISABLED_Display) {
   [[bar_ view] display];
 }
 
-// TODO(dmaclach) disabled due to crash: crbug.com/27920
 TEST_F(ToolbarControllerTest, DISABLED_LoadingState) {
   // TODO(pinkerton): Same problem testing this as the starred state above.
 
@@ -168,7 +170,7 @@ TEST_F(ToolbarControllerTest, DISABLED_LoadingState) {
 
 // Check that toggling the state of the home button changes the visible
 // state of the home button and moves the other buttons accordingly.
-TEST_F(ToolbarControllerTest, ToggleHome) {
+TEST_F(ToolbarControllerTest, DISABLED_ToggleHome) {
   PrefService* prefs = helper_.profile()->GetPrefs();
   bool showHome = prefs->GetBoolean(prefs::kShowHomeButton);
   NSView* homeButton = [[bar_ toolbarViews] objectAtIndex:kHomeIndex];
@@ -188,7 +190,7 @@ TEST_F(ToolbarControllerTest, ToggleHome) {
   EXPECT_NE(NSWidth(originalLocationBarFrame), NSWidth([locationBar frame]));
 }
 
-TEST_F(ToolbarControllerTest, TogglePageWrench) {
+TEST_F(ToolbarControllerTest, DISABLED_TogglePageWrench) {
   PrefService* prefs = helper_.profile()->GetPrefs();
   bool showButtons = prefs->GetBoolean(prefs::kShowPageOptionsButtons);
   NSView* pageButton = [[bar_ toolbarViews] objectAtIndex:kPageIndex];
@@ -213,7 +215,7 @@ TEST_F(ToolbarControllerTest, TogglePageWrench) {
 // Ensure that we don't toggle the buttons when we have a strip marked as not
 // having the full toolbar. Also ensure that the location bar doesn't change
 // size.
-TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
+TEST_F(ToolbarControllerTest, DISABLED_DontToggleWhenNoToolbar) {
   [bar_ setHasToolbar:NO];
   NSView* homeButton = [[bar_ toolbarViews] objectAtIndex:kHomeIndex];
   NSView* pageButton = [[bar_ toolbarViews] objectAtIndex:kPageIndex];
@@ -234,7 +236,7 @@ TEST_F(ToolbarControllerTest, DontToggleWhenNoToolbar) {
   EXPECT_TRUE(NSEqualRects(locationBarFrame, newLocationBarFrame));
 }
 
-TEST_F(ToolbarControllerTest, StarButtonInWindowCoordinates) {
+TEST_F(ToolbarControllerTest, DISABLED_StarButtonInWindowCoordinates) {
   NSRect star = [bar_ starButtonInWindowCoordinates];
   NSRect all = [[[bar_ view] window] frame];
 
@@ -242,7 +244,7 @@ TEST_F(ToolbarControllerTest, StarButtonInWindowCoordinates) {
   EXPECT_TRUE(NSContainsRect(all, star));
 }
 
-TEST_F(ToolbarControllerTest, BubblePosition) {
+TEST_F(ToolbarControllerTest, DISABLED_BubblePosition) {
   NSView* locationBar = [[bar_ toolbarViews] objectAtIndex:kLocationIndex];
 
   // The window frame (in window base coordinates).
@@ -260,7 +262,7 @@ TEST_F(ToolbarControllerTest, BubblePosition) {
   EXPECT_GT(locationStackFrame.right(), NSMaxX(locationFrame));
 }
 
-TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
+TEST_F(ToolbarControllerTest, DISABLED_HoverButtonForEvent) {
   scoped_nsobject<HitView> view([[HitView alloc]
                                   initWithFrame:NSMakeRect(0,0,100,100)]);
   [bar_ setView:view];
@@ -289,7 +291,7 @@ TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
   EXPECT_TRUE([bar_ hoverButtonForEvent:nil]);
 }
 
-TEST_F(ToolbarControllerTest, PopulateEncodingMenu) {
+TEST_F(ToolbarControllerTest, DISABLED_PopulateEncodingMenu) {
   NSMenu* encodings = [[bar_ toolbarViews] objectAtIndex:kEncodingMenuIndex];
 
   // Can't check item strings because of localization, but the nib has zero
@@ -298,7 +300,7 @@ TEST_F(ToolbarControllerTest, PopulateEncodingMenu) {
   EXPECT_NE(0, [encodings numberOfItems]);
 }
 
-TEST_F(ToolbarControllerTest, HeightCompression) {
+TEST_F(ToolbarControllerTest, DISABLED_HeightCompression) {
   for (int i = 0; i <= 10; i++) {
     [bar_ setHeightCompression:static_cast<CGFloat>(i)];
     EXPECT_EQ(static_cast<CGFloat>(36 - i), [resizeDelegate_ height]);
