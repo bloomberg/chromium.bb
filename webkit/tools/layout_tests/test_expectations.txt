@@ -611,6 +611,8 @@ BUG8630 LINUX WIN DEBUG : LayoutTests/fast/overflow/hidden-scrollbar-resize.html
 BUG8630 WIN LINUX RELEASE : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 LINUX WIN DEBUG : LayoutTests/fast/reflections/inline-crash.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/text/font-initial.html = FAIL
+BUG8630 WIN LINUX RELEASE : pending/fast/repaint/bugzilla-6473.html = FAIL
+BUG8630 LINUX WIN DEBUG : pending/fast/repaint/bugzilla-6473.html = FAIL
 BUG8630 LINUX : LayoutTests/svg/custom/use-detach.svg = FAIL PASS
 BUG18772 LINUX : LayoutTests/fast/backgrounds/001.html = FAIL
 
