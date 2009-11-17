@@ -335,8 +335,8 @@ namespace {
 
 class ServerDeletedPathChecker {
  public:
-  bool CausingConflict(const syncable::Entry& e,
-                       const syncable::Entry& log_entry) {
+  static bool CausingConflict(const syncable::Entry& e,
+                              const syncable::Entry& log_entry) {
     CHECK(e.good()) << "Missing parent in path of: " << log_entry;
     if (e.Get(syncable::IS_UNAPPLIED_UPDATE) &&
         e.Get(syncable::SERVER_IS_DEL)) {
@@ -349,11 +349,12 @@ class ServerDeletedPathChecker {
       return false;
     }
   }
+
   // returns 0 if we should stop investigating the path.
-  syncable::Id GetAndExamineParent(syncable::BaseTransaction* trans,
-                            syncable::Id id,
-                            syncable::Id check_id,
-                            const syncable::Entry& log_entry) {
+  static syncable::Id GetAndExamineParent(syncable::BaseTransaction* trans,
+                                          syncable::Id id,
+                                          syncable::Id check_id,
+                                          const syncable::Entry& log_entry) {
     syncable::Entry parent(trans, syncable::GET_BY_ID, id);
     CHECK(parent.good()) << "Tree inconsitency, missing id" << id << " "
         << log_entry;
@@ -366,15 +367,16 @@ class ServerDeletedPathChecker {
 
 class LocallyDeletedPathChecker {
  public:
-  bool CausingConflict(const syncable::Entry& e,
-                       const syncable::Entry& log_entry) {
+  static bool CausingConflict(const syncable::Entry& e,
+                              const syncable::Entry& log_entry) {
     return e.good() && e.Get(syncable::IS_DEL) && e.Get(syncable::IS_UNSYNCED);
   }
+
   // returns 0 if we should stop investigating the path.
-  syncable::Id GetAndExamineParent(syncable::BaseTransaction* trans,
-                                   syncable::Id id,
-                                   syncable::Id check_id,
-                                   const syncable::Entry& log_entry) {
+  static syncable::Id GetAndExamineParent(syncable::BaseTransaction* trans,
+                                          syncable::Id id,
+                                          syncable::Id check_id,
+                                          const syncable::Entry& log_entry) {
     syncable::Entry parent(trans, syncable::GET_BY_ID, id);
     if (!parent.good())
       return syncable::kNullId;
