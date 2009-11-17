@@ -66,7 +66,7 @@ Hooks
 """
 
 __author__ = "darinf@gmail.com (Darin Fisher)"
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 
 import errno
 import logging
@@ -747,9 +747,9 @@ class GClient(object):
         # Use entry and not entry_fixed there.
         if entry not in entries and os.path.exists(e_dir):
           modified_files = False
-          if isinstance(prev_entries,list):
+          if isinstance(prev_entries, list):
             # old .gclient_entries format was list, now dict
-            modified_files = gclient_scm.CaptureSVNStatus(e_dir)
+            modified_files = gclient_scm.scm.SVN.CaptureStatus(e_dir)
           else:
             file_list = []
             scm = gclient_scm.CreateSCM(prev_entries[entry], self._root_dir,
@@ -830,7 +830,7 @@ class GClient(object):
       (url, rev) = GetURLAndRev(name, solution["url"])
       entries[name] = "%s@%s" % (url, rev)
       # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-      entries_deps_content[name] = gclient_scm.CaptureSVN(
+      entries_deps_content[name] = gclient_scm.scm.SVN.Capture(
                                      ["cat",
                                       "%s/%s@%s" % (url,
                                                     self._options.deps_file,

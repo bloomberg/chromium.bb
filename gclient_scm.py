@@ -1,16 +1,6 @@
-# Copyright 2009 Google Inc.  All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Gclient-specific SCM-specific operations."""
 
@@ -18,18 +8,12 @@ import logging
 import os
 import re
 import subprocess
-import sys
-import xml.dom.minidom
 
+import scm
 import gclient_utils
-# TODO(maruel): Temporary.
-from scm import CaptureGit, CaptureGitStatus, CaptureSVN
-from scm import CaptureSVNHeadRevision, CaptureSVNInfo, CaptureSVNStatus
-from scm import RunSVN, RunSVNAndFilterOutput, RunSVNAndGetFileList
 
 
 ### SCM abstraction layer
-
 
 # Factory Method for SCM wrapper creation
 
@@ -93,20 +77,20 @@ class SCMWrapper(object):
     return getattr(self, command)(options, args, file_list)
 
 
-class GitWrapper(SCMWrapper):
+class GitWrapper(SCMWrapper, scm.GIT):
   """Wrapper for Git"""
 
   def cleanup(self, options, args, file_list):
     """Cleanup working copy."""
     __pychecker__ = 'unusednames=args,file_list,options'
-    self._RunGit(['prune'], redirect_stdout=False)
-    self._RunGit(['fsck'], redirect_stdout=False)
-    self._RunGit(['gc'], redirect_stdout=False)
+    self._Run(['prune'], redirect_stdout=False)
+    self._Run(['fsck'], redirect_stdout=False)
+    self._Run(['gc'], redirect_stdout=False)
 
   def diff(self, options, args, file_list):
     __pychecker__ = 'unusednames=args,file_list,options'
-    merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
-    self._RunGit(['diff', merge_base], redirect_stdout=False)
+    merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
+    self._Run(['diff', merge_base], redirect_stdout=False)
 
   def export(self, options, args, file_list):
     __pychecker__ = 'unusednames=file_list,options'
@@ -114,8 +98,8 @@ class GitWrapper(SCMWrapper):
     export_path = os.path.abspath(os.path.join(args[0], self.relpath))
     if not os.path.exists(export_path):
       os.makedirs(export_path)
-    self._RunGit(['checkout-index', '-a', '--prefix=%s/' % export_path],
-                 redirect_stdout=False)
+    self._Run(['checkout-index', '-a', '--prefix=%s/' % export_path],
+              redirect_stdout=False)
 
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
@@ -142,21 +126,21 @@ class GitWrapper(SCMWrapper):
       print("\n_____ %s%s" % (self.relpath, rev_str))
 
     if not os.path.exists(self.checkout_path):
-      self._RunGit(['clone', url, self.checkout_path],
-                   cwd=self._root_dir, redirect_stdout=False)
+      self._Run(['clone', url, self.checkout_path],
+                cwd=self._root_dir, redirect_stdout=False)
       if revision:
-        self._RunGit(['reset', '--hard', revision], redirect_stdout=False)
-      files =  self._RunGit(['ls-files']).split()
+        self._Run(['reset', '--hard', revision], redirect_stdout=False)
+      files = self._Run(['ls-files']).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       return
 
-    self._RunGit(['remote', 'update'], redirect_stdout=False)
+    self._Run(['remote', 'update'], redirect_stdout=False)
     new_base = 'origin'
     if revision:
       new_base = revision
-    files = self._RunGit(['diff', new_base, '--name-only']).split()
+    files = self._Run(['diff', new_base, '--name-only']).split()
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
-    self._RunGit(['rebase', '-v', new_base], redirect_stdout=False)
+    self._Run(['rebase', '-v', new_base], redirect_stdout=False)
     print "Checked out revision %s." % self.revinfo(options, (), None)
 
   def revert(self, options, args, file_list):
@@ -172,15 +156,15 @@ class GitWrapper(SCMWrapper):
       print("\n_____ %s is missing, synching instead" % self.relpath)
       # Don't reuse the args.
       return self.update(options, [], file_list)
-    merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
-    files = self._RunGit(['diff', merge_base, '--name-only']).split()
-    self._RunGit(['reset', '--hard', merge_base], redirect_stdout=False)
+    merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
+    files = self._Run(['diff', merge_base, '--name-only']).split()
+    self._Run(['reset', '--hard', merge_base], redirect_stdout=False)
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def revinfo(self, options, args, file_list):
     """Display revision"""
     __pychecker__ = 'unusednames=args,file_list,options'
-    return self._RunGit(['rev-parse', 'HEAD'])
+    return self._Run(['rev-parse', 'HEAD'])
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
@@ -192,29 +176,30 @@ class GitWrapper(SCMWrapper):
       print('\n________ couldn\'t run status in %s:\nThe directory '
             'does not exist.' % self.checkout_path)
     else:
-      merge_base = self._RunGit(['merge-base', 'HEAD', 'origin'])
-      self._RunGit(['diff', '--name-status', merge_base], redirect_stdout=False)
-      files = self._RunGit(['diff', '--name-only', merge_base]).split()
+      merge_base = self._Run(['merge-base', 'HEAD', 'origin'])
+      self._Run(['diff', '--name-status', merge_base], redirect_stdout=False)
+      files = self._Run(['diff', '--name-only', merge_base]).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
-  def _RunGit(self, args, cwd=None, checkrc=True, redirect_stdout=True):
+  def _Run(self, args, cwd=None, checkrc=True, redirect_stdout=True):
+    # TODO(maruel): Merge with Capture?
     stdout=None
     if redirect_stdout:
       stdout=subprocess.PIPE
     if cwd == None:
       cwd = self.checkout_path
-    cmd = ['git']
+    cmd = [self.COMMAND]
     cmd.extend(args)
     sp = subprocess.Popen(cmd, cwd=cwd, stdout=stdout)
     if checkrc and sp.returncode:
       raise gclient_utils.Error('git command %s returned %d' %
                                 (args[0], sp.returncode))
     output = sp.communicate()[0]
-    if output != None:
+    if output is not None:
       return output.strip()
 
 
-class SVNWrapper(SCMWrapper):
+class SVNWrapper(SCMWrapper, scm.SVN):
   """ Wrapper for SVN """
 
   def cleanup(self, options, args, file_list):
@@ -222,14 +207,14 @@ class SVNWrapper(SCMWrapper):
     __pychecker__ = 'unusednames=file_list,options'
     command = ['cleanup']
     command.extend(args)
-    RunSVN(command, os.path.join(self._root_dir, self.relpath))
+    self.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
     __pychecker__ = 'unusednames=file_list,options'
     command = ['diff']
     command.extend(args)
-    RunSVN(command, os.path.join(self._root_dir, self.relpath))
+    self.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def export(self, options, args, file_list):
     __pychecker__ = 'unusednames=file_list,options'
@@ -242,7 +227,7 @@ class SVNWrapper(SCMWrapper):
     assert os.path.exists(export_path)
     command = ['export', '--force', '.']
     command.append(export_path)
-    RunSVN(command, os.path.join(self._root_dir, self.relpath))
+    self.Run(command, os.path.join(self._root_dir, self.relpath))
 
   def update(self, options, args, file_list):
     """Runs SCM to update or transparently checkout the working copy.
@@ -279,11 +264,11 @@ class SVNWrapper(SCMWrapper):
       command = ['checkout', url, checkout_path]
       if revision:
         command.extend(['--revision', str(revision)])
-      RunSVNAndGetFileList(options, command, self._root_dir, file_list)
+      self.RunAndGetFileList(options, command, self._root_dir, file_list)
       return
 
     # Get the existing scm url and the revision number of the current checkout.
-    from_info = CaptureSVNInfo(os.path.join(checkout_path, '.'), '.')
+    from_info = self.CaptureInfo(os.path.join(checkout_path, '.'), '.')
     if not from_info:
       raise gclient_utils.Error("Can't update/checkout %r if an unversioned "
                                 "directory is present. Delete the directory "
@@ -293,12 +278,12 @@ class SVNWrapper(SCMWrapper):
     if options.manually_grab_svn_rev:
       # Retrieve the current HEAD version because svn is slow at null updates.
       if not revision:
-        from_info_live = CaptureSVNInfo(from_info['URL'], '.')
+        from_info_live = self.CaptureInfo(from_info['URL'], '.')
         revision = str(from_info_live['Revision'])
         rev_str = ' at %s' % revision
 
     if from_info['URL'] != base_url:
-      to_info = CaptureSVNInfo(url, '.')
+      to_info = self.CaptureInfo(url, '.')
       if not to_info.get('Repository Root') or not to_info.get('UUID'):
         # The url is invalid or the server is not accessible, it's safer to bail
         # out right now.
@@ -320,12 +305,12 @@ class SVNWrapper(SCMWrapper):
                    from_info['Repository Root'],
                    to_info['Repository Root'],
                    self.relpath]
-        RunSVN(command, self._root_dir)
+        self.Run(command, self._root_dir)
         from_info['URL'] = from_info['URL'].replace(
             from_info['Repository Root'],
             to_info['Repository Root'])
       else:
-        if CaptureSVNStatus(checkout_path):
+        if self.CaptureStatus(checkout_path):
           raise gclient_utils.Error("Can't switch the checkout to %s; UUID "
                                     "don't match and there is local changes "
                                     "in %s. Delete the directory and "
@@ -337,7 +322,7 @@ class SVNWrapper(SCMWrapper):
         command = ['checkout', url, checkout_path]
         if revision:
           command.extend(['--revision', str(revision)])
-        RunSVNAndGetFileList(options, command, self._root_dir, file_list)
+        self.RunAndGetFileList(options, command, self._root_dir, file_list)
         return
 
 
@@ -351,7 +336,7 @@ class SVNWrapper(SCMWrapper):
     command = ["update", checkout_path]
     if revision:
       command.extend(['--revision', str(revision)])
-    RunSVNAndGetFileList(options, command, self._root_dir, file_list)
+    self.RunAndGetFileList(options, command, self._root_dir, file_list)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications. Subversion specific.
@@ -368,7 +353,7 @@ class SVNWrapper(SCMWrapper):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    for file_status in CaptureSVNStatus(path):
+    for file_status in self.CaptureStatus(path):
       file_path = os.path.join(path, file_status[1])
       if file_status[0][0] == 'X':
         # Ignore externals.
@@ -403,7 +388,7 @@ class SVNWrapper(SCMWrapper):
     try:
       # svn revert is so broken we don't even use it. Using
       # "svn up --revision BASE" achieve the same effect.
-      RunSVNAndGetFileList(options, ['update', '--revision', 'BASE'], path,
+      self.RunAndGetFileList(options, ['update', '--revision', 'BASE'], path,
                            file_list)
     except OSError, e:
       # Maybe the directory disapeared meanwhile. We don't want it to throw an
@@ -413,7 +398,7 @@ class SVNWrapper(SCMWrapper):
   def revinfo(self, options, args, file_list):
     """Display revision"""
     __pychecker__ = 'unusednames=args,file_list,options'
-    return CaptureSVNHeadRevision(self.url)
+    return self.CaptureHeadRevision(self.url)
 
   def runhooks(self, options, args, file_list):
     self.status(options, args, file_list)
@@ -430,7 +415,7 @@ class SVNWrapper(SCMWrapper):
             % (' '.join(command), path))
       # There's no file list to retrieve.
     else:
-      RunSVNAndGetFileList(options, command, path, file_list)
+      self.RunAndGetFileList(options, command, path, file_list)
 
   def pack(self, options, args, file_list):
     """Generates a patch file which can be applied to the root of the
@@ -475,4 +460,4 @@ class SVNWrapper(SCMWrapper):
             print line
 
     filterer = DiffFilterer(self.relpath)
-    RunSVNAndFilterOutput(command, path, False, False, filterer.Filter)
+    self.RunAndFilterOutput(command, path, False, False, filterer.Filter)

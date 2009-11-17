@@ -22,8 +22,6 @@ import __builtin__
 import StringIO
 
 import gclient
-# Temporary due to the "from scm import *" in gclient_scm.
-import scm
 from super_mox import mox, IsOneOf, SuperMoxTestBase
 
 
@@ -50,16 +48,11 @@ class GClientBaseTestCase(BaseTestCase):
     self.mox.StubOutWithMock(gclient.gclient_utils, 'SubprocessCall')
     self.mox.StubOutWithMock(gclient.gclient_utils, 'RemoveDirectory')
     # Mock them to be sure nothing bad happens.
-    self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVN')
-    self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVNInfo')
-    self.mox.StubOutWithMock(gclient.gclient_scm, 'CaptureSVNStatus')
-    self.mox.StubOutWithMock(gclient.gclient_scm, 'RunSVN')
-    self.mox.StubOutWithMock(gclient.gclient_scm, 'RunSVNAndGetFileList')
-    self.mox.StubOutWithMock(scm, 'CaptureSVN')
-    self.mox.StubOutWithMock(scm, 'CaptureSVNInfo')
-    self.mox.StubOutWithMock(scm, 'CaptureSVNStatus')
-    self.mox.StubOutWithMock(scm, 'RunSVN')
-    self.mox.StubOutWithMock(scm, 'RunSVNAndGetFileList')
+    self.mox.StubOutWithMock(gclient.gclient_scm.scm.SVN, 'Capture')
+    self.mox.StubOutWithMock(gclient.gclient_scm.scm.SVN, 'CaptureInfo')
+    self.mox.StubOutWithMock(gclient.gclient_scm.scm.SVN, 'CaptureStatus')
+    self.mox.StubOutWithMock(gclient.gclient_scm.scm.SVN, 'Run')
+    self.mox.StubOutWithMock(gclient.gclient_scm.scm.SVN, 'RunAndGetFileList')
     self._gclient_gclient = gclient.GClient
     gclient.GClient = self.mox.CreateMockAnything()
     self._scm_wrapper = gclient.gclient_scm.CreateSCM
