@@ -105,10 +105,6 @@ PREFIX : base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_
 PREFIX : npn_invalidaterect___webplugindelegateimpl
 PREFIX : runnablemethod<ipc::channelproxy::context,void (__thiscall ipc::channelproxy::context::*)(ipc::message const &),tuple1<ipc::message> >::run___base::messagepumpforui::dorunloop
 
-# 21054
-REGEX : ^deletetask.*::run___messageloop::runtask___messageloop::dowork
-PREFIX : messageloop::dowork
-
 # 21295
 PREFIX : renderwidgethost::getbackingstore
 
