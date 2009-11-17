@@ -2765,9 +2765,6 @@ BUG16823 MAC : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 // New test from WebKit merge 46050:46087
 BUG17170 : LayoutTests/fast/dom/prototype-inheritance.html = FAIL
 
-// Test failures from WebKit merge r46143:46194
-BUG17398 LINUX : LayoutTests/fast/forms/search-zoomed.html = FAIL
-
 // New tests with WebKit merge 46288:46363
 BUG18116 : LayoutTests/fast/dom/constructed-objects-prototypes.html = FAIL
 BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
