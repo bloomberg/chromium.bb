@@ -41,8 +41,8 @@
 # include <stdint.h>
 # include <machine/_default_types.h>
 #else
-#endif
 # include "native_client/src/include/portability.h"
+#endif
 
 #define __need_size_t
 #include <stddef.h>
