@@ -13,6 +13,8 @@ bsd-core/*/machine
 .deps
 .libs
 .tmp_versions
+.*check*
+.*install*
 Makefile
 Makefile.in
 aclocal.m4

@@ -188,6 +188,11 @@ fi
 
 AM_CONDITIONAL(HAVE_INTEL, [test "x$INTEL" != "xno"])
 
+AC_ARG_WITH([kernel-source],
+            [AS_HELP_STRING([--with-kernel-source],
+              [specify path to linux kernel source])],
+	    [kernel_source="$with_kernel_source"])
+AC_SUBST(kernel_source)
 
 AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([

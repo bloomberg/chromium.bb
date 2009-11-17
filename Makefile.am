@@ -28,3 +28,10 @@ pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
 
 EXTRA_DIST = libdrm.pc.in
+
+copy-headers :
+	cp -r $(kernel_source)/usr/include/drm $(top_srcdir)/include
+
+commit-headers : copy-headers
+	git add include
+	git commit -am "Copy headers from kernel $$(GIT_DIR=$(kernel_source)/.git git describe)"
