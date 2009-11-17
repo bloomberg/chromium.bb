@@ -24,7 +24,7 @@ AC_USE_SYSTEM_EXTENSIONS
 AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE([dist-bzip2])
 
-AM_CONFIG_HEADER([libdrm/config.h])
+AM_CONFIG_HEADER([config.h])
 
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
@@ -197,13 +197,12 @@ AC_SUBST(kernel_source)
 AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([
 	Makefile
-	libdrm/Makefile
-	libdrm/intel/Makefile
-	libdrm/intel/libdrm_intel.pc
-	libdrm/radeon/Makefile
-	libdrm/radeon/libdrm_radeon.pc
-	libdrm/nouveau/Makefile
-	libdrm/nouveau/libdrm_nouveau.pc
+	intel/Makefile
+	intel/libdrm_intel.pc
+	radeon/Makefile
+	radeon/libdrm_radeon.pc
+	nouveau/Makefile
+	nouveau/libdrm_nouveau.pc
 	tests/Makefile
 	tests/modeprint/Makefile
 	tests/modetest/Makefile

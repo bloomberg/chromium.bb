@@ -1,7 +1,7 @@
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
-	-I$(top_srcdir)/libdrm \
-	-I$(top_srcdir)/libdrm/nouveau \
+	-I$(top_srcdir) \
+	-I$(top_srcdir)/nouveau \
 	$(PTHREADSTUBS_CFLAGS) \
 	-I$(top_srcdir)/include/drm
 
@@ -30,6 +30,7 @@ libdrm_nouveaucommoninclude_HEADERS = \
 				nouveau_bo.h \
 				nouveau_resource.h \
 				nouveau_class.h
+
 
 libdrm_nouveauincludedir = ${includedir}/drm
 libdrm_nouveauinclude_HEADERS = \

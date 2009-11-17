@@ -19,12 +19,43 @@
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = libdrm tests
 
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
 
-EXTRA_DIST = libdrm.pc.in include/drm/*
+if HAVE_INTEL
+INTEL_SUBDIR = intel
+endif
+
+if HAVE_NOUVEAU
+NOUVEAU_SUBDIR = nouveau
+endif
+
+if HAVE_RADEON
+RADEON_SUBDIR = radeon
+endif
+
+SUBDIRS = . $(INTEL_SUBDIR) $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR) tests
+
+libdrm_la_LTLIBRARIES = libdrm.la
+libdrm_ladir = $(libdir)
+libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
+libdrm_la_LIBADD = @CLOCK_LIB@
+
+libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
+
+libdrm_la_SOURCES =				\
+	xf86drm.c				\
+	xf86drmHash.c				\
+	xf86drmRandom.c				\
+	xf86drmSL.c				\
+	xf86drmMode.c				\
+	libdrm_lists.h
+
+libdrmincludedir = ${includedir}
+libdrminclude_HEADERS = xf86drm.h xf86drmMode.h
+
+EXTRA_DIST = ChangeLog TODO libdrm.pc.in include/drm/*
 
 copy-headers :
 	cp -r $(kernel_source)/usr/include/drm $(top_srcdir)/include

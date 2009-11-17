@@ -1,4 +1,4 @@
-# Copyright © 2008 Intel Corporation
+# Copyright © 2008 Jérôme Glisse
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -20,31 +20,35 @@
 # IN THE SOFTWARE.
 #
 # Authors:
-#    Eric Anholt <eric@anholt.net>
+#    Jérôme Glisse <glisse@freedesktop.org>
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
-	-I$(top_srcdir)/libdrm \
-	-I$(top_srcdir)/libdrm/intel \
+	-I$(top_srcdir) \
+	-I$(top_srcdir)/radeon \
 	$(PTHREADSTUBS_CFLAGS) \
 	-I$(top_srcdir)/include/drm
 
-libdrm_intel_la_LTLIBRARIES = libdrm_intel.la
-libdrm_intel_ladir = $(libdir)
-libdrm_intel_la_LDFLAGS = -version-number 1:0:0 -no-undefined
-libdrm_intel_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@ @CLOCK_LIB@
+libdrm_radeon_la_LTLIBRARIES = libdrm_radeon.la
+libdrm_radeon_ladir = $(libdir)
+libdrm_radeon_la_LDFLAGS = -version-number 1:0:0 -no-undefined
+libdrm_radeon_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@
 
-libdrm_intel_la_SOURCES = \
-	intel_atomic.h \
-	intel_bufmgr.c \
-	intel_bufmgr_priv.h \
-	intel_bufmgr_fake.c \
-	intel_bufmgr_gem.c \
-	intel_chipset.h \
-	mm.c \
-	mm.h
+libdrm_radeon_la_SOURCES = \
+	radeon_bo_gem.c \
+	radeon_cs_gem.c \
+	radeon_cs_space.c \
+	radeon_track.c
 
-libdrm_intelincludedir = ${includedir}
-libdrm_intelinclude_HEADERS = intel_bufmgr.h
+libdrm_radeonincludedir = ${includedir}/drm
+libdrm_radeoninclude_HEADERS = \
+	radeon_bo.h \
+	radeon_cs.h \
+	radeon_bo_gem.h \
+	radeon_cs_gem.h \
+	radeon_track.h
 
-pkgconfig_DATA = libdrm_intel.pc
+pkgconfigdir = @pkgconfigdir@
+pkgconfig_DATA = libdrm_radeon.pc
+
+EXTRA_DIST = libdrm_radeon.pc.in
