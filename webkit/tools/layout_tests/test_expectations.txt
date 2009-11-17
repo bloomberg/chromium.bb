@@ -2852,9 +2852,6 @@ BUG22526 : LayoutTests/http/tests/security/xss-DENIED-defineProperty.html = TIME
 // WebKit merge 48500:48585, due to newly added support for MathML.
 BUG22554 SKIP : LayoutTests/mathml = FAIL
 
-// WebKit update 48734:48747
-BUG24175 : LayoutTests/platform/gtk/scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html = TIMEOUT
-
 // WebKit update 48766:48796
 BUG24174 : LayoutTests/fast/dom/Attr/access-after-element-destruction.html = FAIL
 

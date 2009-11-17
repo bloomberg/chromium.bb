@@ -49,6 +49,7 @@ class EventSendingController : public CppBoundClass {
   void mouseDown(const CppArgumentList& args, CppVariant* result);
   void mouseUp(const CppArgumentList& args, CppVariant* result);
   void mouseMoveTo(const CppArgumentList& args, CppVariant* result);
+  void mouseWheelTo(const CppArgumentList& args, CppVariant* result);
   void leapForward(const CppArgumentList& args, CppVariant* result);
   void keyDown(const CppArgumentList& args, CppVariant* result);
   void dispatchMessage(const CppArgumentList& args, CppVariant* result);

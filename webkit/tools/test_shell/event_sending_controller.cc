@@ -56,6 +56,7 @@ using WebKit::WebDragData;
 using WebKit::WebInputEvent;
 using WebKit::WebKeyboardEvent;
 using WebKit::WebMouseEvent;
+using WebKit::WebMouseWheelEvent;
 using WebKit::WebPoint;
 using WebKit::WebString;
 using WebKit::WebView;
@@ -105,6 +106,10 @@ static int click_count = 0;
 // to register as a double or triple click
 static const double kMultiClickTimeSec = 1;
 static const int kMultiClickRadiusPixels = 5;
+
+// How much we should scroll per event - the value here is chosen to
+// match the WebKit impl and layout test results.
+static const float kScrollbarPixelsPerTick = 40.0f;
 
 inline bool outside_multiclick_radius(const gfx::Point &a, const gfx::Point &b) {
   return ((a.x() - b.x()) * (a.x() - b.x()) + (a.y() - b.y()) * (a.y() - b.y())) >
@@ -183,6 +188,7 @@ EventSendingController::EventSendingController(TestShell* shell)
   BindMethod("mouseUp", &EventSendingController::mouseUp);
   BindMethod("contextClick", &EventSendingController::contextClick);
   BindMethod("mouseMoveTo", &EventSendingController::mouseMoveTo);
+  BindMethod("mouseWheelTo", &EventSendingController::mouseWheelTo);
   BindMethod("leapForward", &EventSendingController::leapForward);
   BindMethod("keyDown", &EventSendingController::keyDown);
   BindMethod("dispatchMessage", &EventSendingController::dispatchMessage);
@@ -400,6 +406,32 @@ void EventSendingController::mouseMoveTo(
                      mouse_pos, &event);
       DoMouseMove(event);
     }
+  }
+}
+
+void EventSendingController::mouseWheelTo(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+
+  if (args.size() >= 2 && args[0].isNumber() && args[1].isNumber()) {
+    // Force a layout here just to make sure every position has been
+    // determined before we send events (as well as all the other methods
+    // that send an event do). The layout test calling this
+    // (scrollbars/overflow-scrollbar-horizontal-wheel-scroll.html, only one
+    // for now) does not rely on this though.
+    webview()->layout();
+
+    int horizontal = args[0].ToInt32();
+    int vertical = args[1].ToInt32();
+
+    WebMouseWheelEvent event;
+    InitMouseEvent(WebInputEvent::MouseWheel, pressed_button_,
+                   last_mouse_pos_, &event);
+    event.wheelTicksX = static_cast<float>(horizontal);
+    event.wheelTicksY = static_cast<float>(vertical);
+    event.deltaX = -horizontal * kScrollbarPixelsPerTick;
+    event.deltaY = -vertical * kScrollbarPixelsPerTick;
+    webview()->handleInputEvent(event);
   }
 }
 
