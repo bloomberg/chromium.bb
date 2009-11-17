@@ -311,6 +311,10 @@ void BookmarkBarGtk::Show(bool animate) {
 }
 
 void BookmarkBarGtk::Hide(bool animate) {
+#if defined(OS_CHROMEOS)
+  bool was_floating = floating_;
+#endif
+
   UpdateFloatingState();
 
   // After coming out of fullscreen, the browser window sets the bookmark bar
@@ -324,6 +328,19 @@ void BookmarkBarGtk::Hide(bool animate) {
     gtk_widget_hide(bookmark_hbox_);
     slide_animation_->Reset(0);
     AnimationProgressed(slide_animation_.get());
+
+#if defined(OS_CHROMEOS)
+    if (floating_ != was_floating) {
+      // For some reason when switching between ntp and non-ntp (and other
+      // similar scenarios) the bookmark bar gets layed out a size of 1x1 and we
+      // get painting artifacts across the top of the window. By forcing a
+      // layout now we ensure the bookmark bar isn't sized to 1x1. This may not
+      // be specific to chromeos, but that's how we're scoping it for now.
+      GtkWidget* parent = gtk_widget_get_parent(widget());
+      if (parent)
+        gtk_widget_size_allocate(parent, &parent->allocation);
+    }
+#endif
   }
 }
 
