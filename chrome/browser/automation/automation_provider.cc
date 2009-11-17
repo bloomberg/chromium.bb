@@ -1023,9 +1023,14 @@ void AutomationProvider::SetCookie(const GURL& url,
   if (url.is_valid() && tab_tracker_->ContainsHandle(handle)) {
     NavigationController* tab = tab_tracker_->GetResource(handle);
 
+    scoped_refptr<URLRequestContextGetter> request_context =
+        tab->tab_contents()->request_context();
+    if (!request_context.get())
+      request_context = tab->profile()->GetRequestContext();
+
     // Since we are running on the UI thread don't call GetURLRequestContext().
     scoped_refptr<net::CookieStore> cookie_store =
-        tab->profile()->GetRequestContext()->GetCookieStore();
+        request_context->GetCookieStore();
 
     if (cookie_store->SetCookie(url, value))
       *response_value = 1;
