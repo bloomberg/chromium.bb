@@ -209,18 +209,24 @@ void KeywordEditorView::InitLayoutManager() {
 }
 
 void KeywordEditorView::OnSelectionChanged() {
-  const int selected_row_count = table_view_->SelectedRowCount();
-  edit_button_->SetEnabled(selected_row_count == 1);
-  bool can_make_default = false;
-  bool can_remove = false;
-  if (selected_row_count == 1) {
+  if (table_view_->SelectedRowCount() == 1) {
+    edit_button_->SetEnabled(true);
     const TemplateURL* selected_url =
         controller_->GetTemplateURL(table_view_->FirstSelectedRow());
-    can_make_default = controller_->CanMakeDefault(selected_url);
-    can_remove = controller_->CanRemove(selected_url);
+    make_default_button_->SetEnabled(controller_->CanMakeDefault(selected_url));
+    remove_button_->SetEnabled(controller_->CanRemove(selected_url));
+  } else {
+    make_default_button_->SetEnabled(false);
+    for (views::TableView::iterator i = table_view_->SelectionBegin();
+         i != table_view_->SelectionEnd(); ++i) {
+      const TemplateURL* selected_url = controller_->GetTemplateURL(*i);
+      if (!controller_->CanRemove(selected_url)) {
+        remove_button_->SetEnabled(false);
+        return;
+      }
+    }
+    remove_button_->SetEnabled(true);
   }
-  remove_button_->SetEnabled(can_remove);
-  make_default_button_->SetEnabled(can_make_default);
 }
 
 void KeywordEditorView::OnDoubleClick() {
