@@ -258,19 +258,6 @@ bool VisitedLinkMaster::Init() {
   return true;
 }
 
-bool VisitedLinkMaster::ShareToProcess(base::ProcessHandle process,
-                                       base::SharedMemoryHandle *new_handle) {
-  if (shared_memory_)
-    return shared_memory_->ShareToProcess(process, new_handle);
-
-  NOTREACHED();
-  return false;
-}
-
-base::SharedMemoryHandle VisitedLinkMaster::GetSharedMemoryHandle() {
-  return shared_memory_->handle();
-}
-
 VisitedLinkMaster::Hash VisitedLinkMaster::TryToAddURL(const GURL& url) {
   // Extra check that we are not off the record. This should not happen.
   if (profile_ && profile_->IsOffTheRecord()) {

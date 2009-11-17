@@ -346,6 +346,11 @@ class NotificationType {
     // details are expected.
     CWINDOW_CLOSED,
 
+    // Indicates that a RenderProcessHost was created and its handle is now
+    // available. The source will be the RenderProcessHost that corresponds to
+    // the process.
+    RENDERER_PROCESS_CREATED,
+
     // Indicates that a RenderProcessHost is destructing. The source will be the
     // RenderProcessHost that corresponds to the process.
     RENDERER_PROCESS_TERMINATED,
@@ -372,7 +377,7 @@ class NotificationType {
     // the RenderWidgetHost, the details are not used.
     RENDER_WIDGET_HOST_DESTROYED,
 
-    // Sent from ~RenderViewHost. The source is the RenderViewHost.
+    // Sent from ~RenderViewHost. The source is the TabContents.
     RENDER_VIEW_HOST_DELETED,
 
     // Indicates a RenderWidgetHost has been hidden or restored. The source is

@@ -53,6 +53,10 @@ void MockRenderProcessHost::ViewCreated() {
 void MockRenderProcessHost::AddWord(const string16& word) {
 }
 
+void MockRenderProcessHost::SendVisitedLinkTable(
+    base::SharedMemory* table_memory) {
+}
+
 void MockRenderProcessHost::AddVisitedLinks(
     const VisitedLinkCommon::Fingerprints& links) {
 }
