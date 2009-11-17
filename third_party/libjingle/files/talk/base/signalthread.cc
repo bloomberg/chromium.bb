@@ -10,10 +10,11 @@ using namespace talk_base;
 SignalThread::SignalThread()
 : main_(Thread::Current()), state_(kInit)
 {
-  worker_.parent_ = this;
+  worker_.SetParent(this);
 }
 
 SignalThread::~SignalThread() {
+  worker_.SetParent(NULL);
 }
 
 void SignalThread::SetPriority(ThreadPriority priority) {

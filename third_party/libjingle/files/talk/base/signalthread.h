@@ -73,8 +73,19 @@ private:
   friend class Worker;
   class Worker : public Thread {
   public:
+    virtual void Run() {
+      CritScope cs(&parent_crit_);
+      if (parent_)
+        parent_->Run();
+    }
+    void SetParent(SignalThread* parent) {
+      CritScope cs(&parent_crit_);
+      parent_ = parent;
+    }
+
+  private:
     SignalThread* parent_;
-    virtual void Run() { parent_->Run(); }
+    CriticalSection parent_crit_;
   };
 
   void Run();
