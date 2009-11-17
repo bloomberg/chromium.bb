@@ -3028,11 +3028,22 @@ BUG27418 MAC DEBUG : LayoutTests/transitions/shorthand-border-transitions.html =
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-host.html = TEXT
 BUG27548 : LayoutTests/fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
 
-// New tests and regressions related to WebKit r50760 (appeared in WebKit merge 50756:50820).
-BUG27551 : LayoutTests/fast/css/color-correction-backgrounds-and-text.html = FAIL
-BUG27551 : LayoutTests/fast/css/color-correction-on-backgrounds.html = FAIL
-BUG27551 : LayoutTests/fast/css/color-correction-on-text.html = FAIL
-BUG27551 : LayoutTests/fast/css/color-correction.html = FAIL
+// The following upstream patches add -Webkit-color-correction support:
+// http://trac.webkit.org/changeset/50760
+// http://trac.webkit.org/changeset/50852
+// The ColorSpace was only implemented for CG, more port implementation
+// required in order for Chromium to support color correction.
+BUG28005 : LayoutTests/fast/css/color-correction-backgrounds-and-text.html = FAIL
+BUG28005 : LayoutTests/fast/css/color-correction-on-backgrounds.html = FAIL
+BUG28005 : LayoutTests/fast/css/color-correction-on-text.html = FAIL
+BUG28005 : LayoutTests/fast/css/color-correction.html = FAIL
+BUG28005 MAC : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE
+BUG28005 WIN LINUX : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE+TEXT
+BUG28005 MAC : LayoutTests/fast/css/color-correction-on-text-shadow.html = IMAGE
+BUG28005 WIN LINUX : LayoutTests/fast/css/color-correction-on-text-shadow.html = IMAGE+TEXT
+BUG28005 MAC : LayoutTests/fast/reflections/opacity-reflection-transform.html = IMAGE
+BUG28005 WIN LINUX : LayoutTests/fast/reflections/opacity-reflection-transform.html = IMAGE+TEXT
+
 // May also be related to r50760, but not as confident.
 BUG27551 WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
 
@@ -3042,14 +3053,6 @@ BUG27553 WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
 // WebKit merge 50840:50929
 BUG27555 : LayoutTests/accessibility/document-attributes.html = TEXT
 BUG27555 : LayoutTests/fast/forms/input-file-re-render.html = MISSING TEXT
-
-BUG27555 MAC : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE
-BUG27555 WIN LINUX : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE+TEXT
-BUG27555 MAC : LayoutTests/fast/css/color-correction-on-text-shadow.html = IMAGE
-BUG27555 WIN LINUX : LayoutTests/fast/css/color-correction-on-text-shadow.html = IMAGE+TEXT
-BUG27555 MAC : LayoutTests/fast/reflections/opacity-reflection-transform.html = IMAGE
-BUG27555 WIN LINUX : LayoutTests/fast/reflections/opacity-reflection-transform.html = IMAGE+TEXT
-
 
 BUG27555 : LayoutTests/media/media-fullscreen-inline.html = TIMEOUT
 BUG27555 : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
