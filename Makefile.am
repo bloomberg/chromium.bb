@@ -27,7 +27,7 @@ SUBDIRS = libdrm shared-core tests
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
 
-EXTRA_DIST = libdrm.pc.in
+EXTRA_DIST = libdrm.pc.in include/drm/*
 
 copy-headers :
 	cp -r $(kernel_source)/usr/include/drm $(top_srcdir)/include
