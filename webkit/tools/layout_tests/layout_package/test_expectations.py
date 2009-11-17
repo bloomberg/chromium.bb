@@ -574,8 +574,8 @@ class TestExpectationsFile:
       if not expectations:
         continue
 
-      self._AddToAllExpectations(test_list_path, "".join(options),
-          "".join(expectations))
+      self._AddToAllExpectations(test_list_path, " ".join(options).upper(),
+          " ".join(expectations).upper())
 
       modifiers = set()
       if options and not self._HasValidModifiersForCurrentPlatform(options,
