@@ -258,45 +258,10 @@ typedef nacl_abi___time_t nacl_abi_time_t;
 typedef uint32_t NACL_NO_STRIP(size_t);
 #endif
 
-#define NACL_ABI_SIZE_T_MIN ((nacl_abi_size_t) 0)
-#define NACL_ABI_SIZE_T_MAX ((nacl_abi_size_t) -1)
-
 #ifndef nacl_abi_ssize_t_defined
 #define nacl_abi_ssize_t_defined
 typedef int32_t NACL_NO_STRIP(ssize_t);
 #endif
-
-#define NACL_ABI_SSIZE_T_MIN ((nacl_abi_ssize_t) 1 << 31)
-#define NACL_ABI_SSIZE_T_MAX (~((nacl_abi_ssize_t) 1 << 31))
-
-#define PRIdNACL_SIZE NACL_PRI_(d, 32)
-#define PRIiNACL_SIZE NACL_PRI_(i, 32)
-#define PRIoNACL_SIZE NACL_PRI_(o, 32)
-#define PRIuNACL_SIZE NACL_PRI_(u, 32)
-#define PRIxNACL_SIZE NACL_PRI_(x, 32)
-#define PRIXNACL_SIZE NACL_PRI_(X, 32)
-
-/**
- * Inline functions to aid in conversion between system (s)size_t and
- * nacl_abi_(s)size_t
- */
-static INLINE nacl_abi_size_t nacl_abi_size_t_saturate(size_t x) {
-  if (x > NACL_ABI_SIZE_T_MAX) {
-    return NACL_ABI_SIZE_T_MAX;
-  } else {
-    return (nacl_abi_size_t)x;
-  }
-}
-
-static INLINE nacl_abi_ssize_t nacl_abi_ssize_t_saturate(ssize_t x) {
-  if (x > NACL_ABI_SSIZE_T_MAX) {
-    return NACL_ABI_SSIZE_T_MAX;
-  } else if (x < NACL_ABI_SSIZE_T_MIN) {
-    return NACL_ABI_SSIZE_T_MIN;
-  } else {
-    return (nacl_abi_ssize_t) x;
-  }
-}
 
 #undef NACL_NO_STRIP
 
