@@ -606,7 +606,7 @@ void SafeBrowsingService::Start() {
 
 void SafeBrowsingService::OnCloseDatabase() {
   DCHECK(MessageLoop::current() == safe_browsing_thread_->message_loop());
-  DCHECK(database_available());
+  DCHECK(closing_database_);
 
   // Because |closing_database_| is true, nothing on the IO thread will be
   // accessing the database, so it's safe to delete and then NULL the pointer.
