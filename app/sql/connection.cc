@@ -264,6 +264,11 @@ const char* Connection::GetErrorMessage() const {
 }
 
 bool Connection::OpenInternal(const std::string& file_name) {
+  if (db_) {
+    NOTREACHED() << "sql::Connection is already open.";
+    return false;
+  }
+
   int err = sqlite3_open(file_name.c_str(), &db_);
   if (err != SQLITE_OK) {
     OnSqliteError(err, NULL);
