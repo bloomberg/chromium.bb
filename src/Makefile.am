@@ -83,7 +83,12 @@ noinst_HEADERS=fcint.h fcftint.h fcdeprecate.h
 
 ALIAS_FILES = fcalias.h fcaliastail.h fcftalias.h fcftaliastail.h
 
-BUILT_SOURCES = $(ALIAS_FILES)
+BUILT_SOURCES = $(ALIAS_FILES) ../fc-lang/fclang.h ../fc-arch/fcarch.h
+
+../fc-lang/fclang.h:
+	cd ../fc-lang && $(MAKE) $(AM_MAKEFLAGS) fclang.h
+../fc-arch/fcarch.h:
+	cd ../fc-arch && $(MAKE) $(AM_MAKEFLAGS) fcarch.h
 
 libfontconfig_la_SOURCES = \
 	fcatomic.c \
