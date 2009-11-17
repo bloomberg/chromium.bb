@@ -47,10 +47,10 @@ void ErrorExit(jpeg_common_struct* cinfo) {
 namespace {
 
 // Initial size for the output buffer in the JpegEncoderState below.
-const static int initial_output_buffer_size = 8192;
+static const int initial_output_buffer_size = 8192;
 
 struct JpegEncoderState {
-  JpegEncoderState(std::vector<unsigned char>* o)
+  explicit JpegEncoderState(std::vector<unsigned char>* o)
       : out(o),
         image_buffer_used(0) {
   }

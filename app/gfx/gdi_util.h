@@ -33,4 +33,4 @@ void SubtractRectanglesFromRegion(HRGN hrgn,
 
 }  // namespace gfx
 
-#endif // APP_GFX_GDI_UTIL_H_
+#endif  // APP_GFX_GDI_UTIL_H_

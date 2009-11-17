@@ -88,4 +88,4 @@ class TreeModel {
   virtual int GetIconIndex(TreeModelNode* node) { return -1; }
 };
 
-#endif  // APP_TREE_TREE_MODEL_H_
+#endif  // APP_TREE_MODEL_H_

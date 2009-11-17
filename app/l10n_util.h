@@ -277,10 +277,10 @@ UCollationResult CompareStringWithCollator(const icu::Collator* collator,
 // Used by SortStringsUsingMethod. Invokes a method on the objects passed to
 // operator (), comparing the string results using a collator.
 template <class T, class Method>
-class StringMethodComparatorWithCollator :
-    public std::binary_function<const std::wstring&,
-                                const std::wstring&,
-                                bool> {
+class StringMethodComparatorWithCollator
+    : public std::binary_function<const std::wstring&,
+                                  const std::wstring&,
+                                  bool> {
  public:
   StringMethodComparatorWithCollator(icu::Collator* collator, Method method)
       : collator_(collator),

@@ -191,7 +191,7 @@ class TreeNodeWithValue : public TreeNode< TreeNodeWithValue<ValueType> > {
  public:
   TreeNodeWithValue() { }
 
-  TreeNodeWithValue(const ValueType& value)
+  explicit TreeNodeWithValue(const ValueType& value)
       : ParentType(std::wstring()), value(value) { }
 
   TreeNodeWithValue(const std::wstring& title, const ValueType& value)

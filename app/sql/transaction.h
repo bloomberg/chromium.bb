@@ -17,7 +17,7 @@ class Transaction {
   // transaction. If you have begun a transaction and not committed it, the
   // constructor will roll back the transaction. If you want to commit, you
   // need to manually call Commit before this goes out of scope.
-  Transaction(Connection* connection);
+  explicit Transaction(Connection* connection);
   ~Transaction();
 
   // Returns true when there is a transaction that has been successfully begun.

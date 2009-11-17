@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_GFX_GTK_UTIL_H_
-#define BASE_GFX_GTK_UTIL_H_
+#ifndef APP_GFX_GTK_UTIL_H_
+#define APP_GFX_GTK_UTIL_H_
 
 #include <stdint.h>
 #include <vector>
@@ -64,4 +64,4 @@ struct ScopedGObject {
   typedef scoped_ptr_malloc<T, GObjectUnrefer<T> > Type;
 };
 
-#endif  // BASE_GFX_GTK_UTIL_H_
+#endif  // APP_GFX_GTK_UTIL_H_

@@ -42,7 +42,7 @@ class CoMemReleaser {
       CoTaskMemFree(mem_ptr_);
   }
 
-  T** operator&() {
+  T** operator&() {  // NOLINT
     return &mem_ptr_;
   }
 

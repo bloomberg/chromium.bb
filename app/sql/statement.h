@@ -42,7 +42,7 @@ class Statement {
   // you initialize it via Assign.
   Statement();
 
-  Statement(scoped_refptr<Connection::StatementRef> ref);
+  explicit Statement(scoped_refptr<Connection::StatementRef> ref);
   ~Statement();
 
   // Initializes this object with the given statement, which may or may not

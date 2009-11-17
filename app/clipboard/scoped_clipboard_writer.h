@@ -27,7 +27,7 @@ class Pickle;
 class ScopedClipboardWriter {
  public:
   // Create an instance that is a simple wrapper around clipboard.
-  ScopedClipboardWriter(Clipboard* clipboard);
+  explicit ScopedClipboardWriter(Clipboard* clipboard);
 
   ~ScopedClipboardWriter();
 
