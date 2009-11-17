@@ -215,6 +215,7 @@ function run() {
 // Clear the results
 function clearResults() {
   var extension = chrome.extension.getBackgroundPage();
+  extension.results = {};
   extension.results.data = new Array();
   jsinit();
 }
@@ -233,14 +234,15 @@ function clearResults() {
 <input type="button" value="Clear Results" onclick="clearResults();">
 Clear Connections?<input id="clearconns" type="checkbox">
 Clear Cache?<input id="clearcache" type="checkbox">
-<input type="button" value="OK" onclick="config();"><P>
-URL to load <input type="text" id="testurl" size=100>
-<input type="button" value="Run" onclick="run();"><P>
+<form onsubmit="config(); run()">
+  URL to load <input type="text" id="testurl" size=100>
+  <input type="submit" value="Run"><P>
+</form>
 <p>
 
 <h1>Results</h1>
 
-<table class="list" width="100%">
+<table id="t" class="list" width="100%">
   <tr>
   <th width=30%>url</th>
   <th width=50>doc load mean</th>
@@ -256,7 +258,7 @@ URL to load <input type="text" id="testurl" size=100>
   <th samples</th>
   </tr>
 
-  <tr id="t" jsselect="data">
+  <tr jsselect="data">
   <td class="url" jseval="$width = getWidth($this.mean, 600)"><div jsvalues=".style.width:$width" class="bggraph"><a jsvalues="href:$this.url" jscontent="url"></a></div></td>
   <td class="avg" jscontent="docLoadMean"></td>
   <td class="avg" jscontent="paintMean"></td>
@@ -270,6 +272,10 @@ URL to load <input type="text" id="testurl" size=100>
   <td class="avg" jscontent="writebps"></td>
   <td class="data"><span jsselect="totalResults"><span jscontent="$this"></span>,</span> </td>
   </tr>
+  <tr jsdisplay="data.length == 0">
+  <td colspan=11>No tests have been run yet.</td>
+  </tr>
+  </div>
 </table>
 
 <script>
