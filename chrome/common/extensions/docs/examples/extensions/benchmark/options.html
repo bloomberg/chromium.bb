@@ -99,12 +99,24 @@ Array.min = function(array) {
   return Math.min.apply( Math, array );
 };
 
-// Compute the average of an array
+// Compute the average of an array, removing the min/max.
 Array.avg = function(array) {
   var count = array.length;
   var sum = 0;
+  var min = array[0];
+  var max = array[0];
   for (var i = 0; i < count; i++) {
     sum += array[i];
+    if (array[i] < min) {
+      min = array[i];
+    }
+    if (array[i] > max) {
+      max = array[i];
+    }
+  }
+  if (count >= 3) {
+    sum = sum - min - max;
+    count -= 2;
   }
   return (sum / count).toFixed(1);
 }
