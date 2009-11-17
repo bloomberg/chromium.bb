@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_URL_REQUEST_CONTEXT_GETTER_H_
 
 #include "base/ref_counted.h"
+#include "chrome/browser/chrome_thread.h"
 
 namespace net {
 class CookieStore;
@@ -15,7 +16,8 @@ class URLRequestContext;
 
 // Interface for retrieving an URLRequestContext.
 class URLRequestContextGetter
-    : public base::RefCountedThreadSafe<URLRequestContextGetter> {
+    : public base::RefCountedThreadSafe<URLRequestContextGetter,
+                                        ChromeThread::DeleteOnIOThread> {
  public:
   virtual URLRequestContext* GetURLRequestContext() = 0;
 
@@ -24,7 +26,8 @@ class URLRequestContextGetter
   virtual net::CookieStore* GetCookieStore();
 
  protected:
-  friend class base::RefCountedThreadSafe<URLRequestContextGetter>;
+  friend class ChromeThread;
+  friend class DeleteTask<URLRequestContextGetter>;
 
   virtual ~URLRequestContextGetter() {}
 };

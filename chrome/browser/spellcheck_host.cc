@@ -169,6 +169,8 @@ void SpellCheckHost::UnsetObserver() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   observer_ = NULL;
+  request_context_getter_ = NULL;
+  fetcher_.reset();
 }
 
 void SpellCheckHost::AddWord(const std::string& word) {
@@ -210,10 +212,16 @@ void SpellCheckHost::InitializeInternal() {
       NULL);
 
   // File didn't exist. Download it.
-  if (file_ == base::kInvalidPlatformFileValue && !tried_to_download_) {
-    DownloadDictionary();
+  if (file_ == base::kInvalidPlatformFileValue && !tried_to_download_ &&
+      request_context_getter_) {
+    // We download from the ui thread because we need to know that
+    // |request_context_getter_| is still valid before initiating the download.
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &SpellCheckHost::DownloadDictionary));
     return;
   }
+
+  request_context_getter_ = NULL;
 
   if (file_ != base::kInvalidPlatformFileValue) {
     // Load custom dictionary.
@@ -230,6 +238,13 @@ void SpellCheckHost::InitializeInternal() {
           &SpellCheckHost::InformObserverOfInitialization));
 }
 
+void SpellCheckHost::InitializeOnFileThread() {
+  DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &SpellCheckHost::Initialize));
+}
+
 void SpellCheckHost::InformObserverOfInitialization() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
@@ -238,7 +253,12 @@ void SpellCheckHost::InformObserverOfInitialization() {
 }
 
 void SpellCheckHost::DownloadDictionary() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  if (!request_context_getter_) {
+    InitializeOnFileThread();
+    return;
+  }
 
   // Determine URL of file to download.
   static const char kDownloadServerUrl[] =
@@ -246,9 +266,10 @@ void SpellCheckHost::DownloadDictionary() {
   GURL url = GURL(std::string(kDownloadServerUrl) + WideToUTF8(
       l10n_util::ToLower(bdict_file_path_.BaseName().ToWStringHack())));
   fetcher_.reset(new URLFetcher(url, URLFetcher::GET, this));
-  fetcher_->set_request_context(request_context_getter_.get());
+  fetcher_->set_request_context(request_context_getter_);
   tried_to_download_ = true;
   fetcher_->Start();
+  request_context_getter_ = NULL;
 }
 
 void SpellCheckHost::WriteWordToCustomDictionary(const std::string& word) {
@@ -269,12 +290,13 @@ void SpellCheckHost::OnURLFetchComplete(const URLFetcher* source,
                                         const ResponseCookies& cookies,
                                         const std::string& data) {
   DCHECK(source);
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  fetcher_.reset();
 
   if ((response_code / 100) != 2) {
     // Initialize will not try to download the file a second time.
     LOG(ERROR) << "Failure to download dictionary.";
-    Initialize();
+    InitializeOnFileThread();
     return;
   }
 
@@ -284,25 +306,35 @@ void SpellCheckHost::OnURLFetchComplete(const URLFetcher* source,
   if (data.size() < 4 || data[0] != 'B' || data[1] != 'D' || data[2] != 'i' ||
       data[3] != 'c') {
     LOG(ERROR) << "Failure to download dictionary.";
-    Initialize();
+    InitializeOnFileThread();
     return;
   }
 
+  data_ = data;
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &SpellCheckHost::SaveDictionaryData));
+}
+
+void SpellCheckHost::SaveDictionaryData() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
   size_t bytes_written =
-      file_util::WriteFile(bdict_file_path_, data.data(), data.length());
-  if (bytes_written != data.length()) {
+      file_util::WriteFile(bdict_file_path_, data_.data(), data_.length());
+  if (bytes_written != data_.length()) {
     bool success = false;
 #if defined(OS_WIN)
     bdict_file_path_ = GetFallbackFilePath(bdict_file_path_);
     bytes_written =
         file_util::WriteFile(GetFallbackFilePath(bdict_file_path_),
-                                                 data.data(), data.length());
-    if (bytes_written == data.length())
+                                                 data_.data(), data_.length());
+    if (bytes_written == data_.length())
       success = true;
 #endif
+    data_.clear();
 
     if (!success) {
       LOG(ERROR) << "Failure to save dictionary.";
+      file_util::Delete(bdict_file_path_, false);
       // To avoid trying to load a partially saved dictionary, shortcut the
       // Initialize() call.
       ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
@@ -312,5 +344,6 @@ void SpellCheckHost::OnURLFetchComplete(const URLFetcher* source,
     }
   }
 
+  data_.clear();
   Initialize();
 }

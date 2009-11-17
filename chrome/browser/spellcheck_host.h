@@ -64,6 +64,8 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // Executed on the file thread.
   void InitializeInternal();
 
+  void InitializeOnFileThread();
+
   // Inform |observer_| that initialization has finished.
   void InformObserverOfInitialization();
 
@@ -81,6 +83,9 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
                                   int response_code,
                                   const ResponseCookies& cookies,
                                   const std::string& data);
+
+  // Saves |data_| to disk. Run on the file thread.
+  void SaveDictionaryData();
 
   // May be NULL.
   Observer* observer_;
@@ -104,8 +109,12 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // once.
   bool tried_to_download_;
 
-  // Used for downloading the dictionary file.
-  scoped_refptr<URLRequestContextGetter> request_context_getter_;
+  // Data received from the dictionary download.
+  std::string data_;
+
+  // Used for downloading the dictionary file. We don't hold a reference, and
+  // it is only valid to use it on the UI thread.
+  URLRequestContextGetter* request_context_getter_;
 
   // Used for downloading the dictionary file.
   scoped_ptr<URLFetcher> fetcher_;

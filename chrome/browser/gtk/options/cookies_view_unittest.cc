@@ -61,6 +61,12 @@ class CookieTestingProfile : public TestingProfile {
 
 class CookiesViewTest : public testing::Test {
  public:
+  CookiesViewTest() : io_thread_(ChromeThread::IO, &message_loop_) {
+  }
+
+  virtual ~CookiesViewTest() {
+  }
+
   virtual void SetUp() {
     profile_.reset(new CookieTestingProfile());
   }
@@ -153,7 +159,9 @@ class CookiesViewTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForUI message_loop_;
+  MessageLoop message_loop_;
+  ChromeThread io_thread_;
+
   scoped_ptr<CookieTestingProfile> profile_;
 };
 

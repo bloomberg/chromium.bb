@@ -50,10 +50,14 @@ class CookieTestingProfile : public TestingProfile {
   scoped_refptr<URLRequestContextGetter> url_request_context_getter_;
 };
 
-
-
 class CookiesTreeModelTest : public testing::Test {
  public:
+  CookiesTreeModelTest() : io_thread_(ChromeThread::IO, &message_loop_) {
+  }
+
+  virtual ~CookiesTreeModelTest() {
+  }
+
   virtual void SetUp() {
     profile_.reset(new CookieTestingProfile());
   }
@@ -109,10 +113,11 @@ class CookiesTreeModelTest : public testing::Test {
     delete parent_node->GetModel()->Remove(parent_node, ct_node_index);
   }
  protected:
-  MessageLoopForUI message_loop_;
+  MessageLoop message_loop_;
+  ChromeThread io_thread_;
+
   scoped_ptr<CookieTestingProfile> profile_;
 };
-
 
 TEST_F(CookiesTreeModelTest, RemoveAll) {
   net::CookieMonster* monster = profile_->GetCookieMonster();
