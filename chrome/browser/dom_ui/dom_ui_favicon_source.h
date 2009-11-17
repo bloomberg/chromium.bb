@@ -23,7 +23,9 @@ class DOMUIFavIconSource : public ChromeURLDataManager::DataSource {
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
-  virtual void StartDataRequest(const std::string& path, int request_id);
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_off_the_record,
+                                int request_id);
 
   virtual std::string GetMimeType(const std::string&) const {
     // We need to explicitly return a mime type, otherwise if the user tries to

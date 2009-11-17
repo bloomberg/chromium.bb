@@ -15,7 +15,7 @@ DOMUIFavIconSource::DOMUIFavIconSource(Profile* profile)
 }
 
 void DOMUIFavIconSource::StartDataRequest(const std::string& path,
-                                          int request_id) {
+    bool is_off_the_record, int request_id) {
   FaviconService* favicon_service =
       profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
   if (favicon_service) {

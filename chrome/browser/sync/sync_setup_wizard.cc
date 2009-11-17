@@ -26,7 +26,9 @@ class SyncResourcesSource : public ChromeURLDataManager::DataSource {
       : DataSource(chrome::kSyncResourcesHost, MessageLoop::current()) {
   }
 
-  virtual void StartDataRequest(const std::string& path, int request_id);
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_off_the_record,
+                                int request_id);
 
   virtual std::string GetMimeType(const std::string& path) const {
     if (path == chrome::kSyncThrobberPath)
@@ -58,7 +60,7 @@ const char* SyncResourcesSource::kCreateNewAccountUrl =
   "https://www.google.com/accounts/NewAccount?service=chromiumsync";
 
 void SyncResourcesSource::StartDataRequest(const std::string& path_raw,
-                                           int request_id) {
+    bool is_off_the_record, int request_id) {
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   if (path_raw == chrome::kSyncThrobberPath) {
     scoped_refptr<RefCountedMemory> throbber(

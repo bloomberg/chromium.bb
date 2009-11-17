@@ -130,7 +130,9 @@ class IncognitoTabHTMLSource : public ChromeURLDataManager::DataSource {
 
   // Called when the network layer has requested a resource underneath
   // the path we registered.
-  virtual void StartDataRequest(const std::string& path, int request_id);
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_off_the_record,
+                                int request_id);
 
   virtual std::string GetMimeType(const std::string&) const {
     return "text/html";
@@ -170,7 +172,7 @@ IncognitoTabHTMLSource::IncognitoTabHTMLSource(bool bookmark_bar_attached)
 }
 
 void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
-                                              int request_id) {
+    bool is_off_the_record, int request_id) {
   scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
   html_bytes->data.resize(full_html_.size());
   std::copy(full_html_.begin(), full_html_.end(), html_bytes->data.begin());
@@ -769,7 +771,7 @@ NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
-                                                  int request_id) {
+    bool is_off_the_record, int request_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!path.empty()) {
     // A path under new-tab was requested; it's likely a bad relative

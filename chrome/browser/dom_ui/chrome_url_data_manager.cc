@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/ref_counted_util.h"
 #include "chrome/common/url_constants.h"
@@ -228,19 +229,22 @@ bool ChromeURLDataManager::StartRequest(const GURL& url,
   // going to get called once we return.
   job->SetMimeType(source->GetMimeType(path));
 
+  ChromeURLRequestContext* context = static_cast<ChromeURLRequestContext*>(
+      job->request()->context());
+
   // Forward along the request to the data source.
   MessageLoop* target_message_loop = source->MessageLoopForRequestPath(path);
   if (!target_message_loop) {
     // The DataSource is agnostic to which thread StartDataRequest is called
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
-    source->StartDataRequest(path, request_id);
+    source->StartDataRequest(path, context->is_off_the_record(), request_id);
   } else {
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
     target_message_loop->PostTask(FROM_HERE,
         NewRunnableMethod(source, &DataSource::StartDataRequest,
-                          path, request_id));
+                          path, context->is_off_the_record(), request_id));
   }
   return true;
 }

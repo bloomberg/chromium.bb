@@ -22,7 +22,7 @@ FileIconSource::~FileIconSource() {
 }
 
 void FileIconSource::StartDataRequest(const std::string& path,
-                                      int request_id) {
+    bool is_off_the_record, int request_id) {
   IconManager* im = g_browser_process->icon_manager();
 
   std::string escaped_path = UnescapeURLComponent(path, UnescapeRule::SPACES);

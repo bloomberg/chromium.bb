@@ -60,12 +60,12 @@ TEST_F(DOMUISourcesTest, ThemeSourceMimeTypes) {
 TEST_F(DOMUISourcesTest, ThemeSourceImages) {
   // We used to PNGEncode the images ourselves, but encoder differences
   // invalidated that. We now just check that the image exists.
-  theme_source()->StartDataRequest("theme_frame_incognito", 1);
+  theme_source()->StartDataRequest("theme_frame_incognito", true, 1);
   size_t min = 0;
   EXPECT_EQ(theme_source()->result_request_id_, 1);
   EXPECT_GT(theme_source()->result_data_size_, min);
 
-  theme_source()->StartDataRequest("theme_toolbar", 2);
+  theme_source()->StartDataRequest("theme_toolbar", true, 2);
   EXPECT_EQ(theme_source()->result_request_id_, 2);
   EXPECT_GT(theme_source()->result_data_size_, min);
 }
@@ -77,16 +77,16 @@ TEST_F(DOMUISourcesTest, ThemeSourceCSS) {
   // just check for a successful request and data that is non-null.
   size_t empty_size = 0;
 
-  theme_source()->StartDataRequest("css/newtab.css", 1);
+  theme_source()->StartDataRequest("css/newtab.css", false, 1);
   EXPECT_EQ(theme_source()->result_request_id_, 1);
   EXPECT_NE(theme_source()->result_data_size_, empty_size);
 
-  theme_source()->StartDataRequest("css/newtab.css?pie", 3);
+  theme_source()->StartDataRequest("css/newtab.css?pie", false, 3);
   EXPECT_EQ(theme_source()->result_request_id_, 3);
   EXPECT_NE(theme_source()->result_data_size_, empty_size);
 
   // Check that we send NULL back when we can't find what we're looking for.
-  theme_source()->StartDataRequest("css/WRONGURL", 7);
+  theme_source()->StartDataRequest("css/WRONGURL", false, 7);
   EXPECT_EQ(theme_source()->result_request_id_, 7);
   EXPECT_EQ(theme_source()->result_data_size_, empty_size);
 }

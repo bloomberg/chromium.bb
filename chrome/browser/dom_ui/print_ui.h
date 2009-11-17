@@ -25,7 +25,9 @@ class PrintUIHTMLSource : public ChromeURLDataManager::DataSource {
   PrintUIHTMLSource();
 
   // ChromeURLDataManager overrides.
-  virtual void StartDataRequest(const std::string& path, int request_id);
+  virtual void StartDataRequest(const std::string& path,
+                                bool is_off_the_record,
+                                int request_id);
   virtual std::string GetMimeType(const std::string&) const {
     return "text/html";
   }

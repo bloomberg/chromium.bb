@@ -60,7 +60,7 @@ DOMUIThemeSource::DOMUIThemeSource(Profile* profile)
 }
 
 void DOMUIThemeSource::StartDataRequest(const std::string& path,
-                                        int request_id) {
+    bool is_off_the_record, int request_id) {
   // Our path may include cachebuster arguments, so trim them off.
   std::string uncached_path = StripQueryParams(path);
 

@@ -54,7 +54,7 @@ ExtensionsUIHTMLSource::ExtensionsUIHTMLSource()
 }
 
 void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
-                                              int request_id) {
+    bool is_off_the_record, int request_id) {
   DictionaryValue localized_strings;
   localized_strings.SetString(L"title",
       l10n_util::GetString(IDS_EXTENSIONS_TITLE));
