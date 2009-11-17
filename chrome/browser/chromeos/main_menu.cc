@@ -146,13 +146,13 @@ MainMenu::MainMenu()
   GURL menu_url(GetMenuURL());
   DCHECK(BrowserList::begin() != BrowserList::end());
   // TODO(sky): this shouldn't pick a random profile to use.
-  site_instance_ = SiteInstance::CreateSiteInstanceForURL(
-      (*BrowserList::begin())->profile(), menu_url);
+  Profile* profile = (*BrowserList::begin())->profile();
+  site_instance_ = SiteInstance::CreateSiteInstanceForURL(profile, menu_url);
   menu_rvh_ = new RenderViewHost(site_instance_, this, MSG_ROUTING_NONE);
 
   rwhv_ = new RenderWidgetHostViewGtk(menu_rvh_);
   rwhv_->InitAsChild();
-  menu_rvh_->CreateRenderView(browser_->profile()->GetRequestContext());
+  menu_rvh_->CreateRenderView(profile->GetRequestContext());
   menu_popup->AddChild(rwhv_->GetNativeView());
   gfx::Size rwhv_size = CalculateRWHVSize(popup_size);
   menu_popup->PositionChild(rwhv_->GetNativeView(), kRendererX, kRendererY,
