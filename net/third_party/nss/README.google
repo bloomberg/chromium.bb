@@ -1,0 +1,9 @@
+This directory includes a copy of NSS's libssl from the CVS repo at:
+  :pserver:anonymous@cvs-mirror.mozilla.org:/cvsroot
+
+The snapshot was taken at Thu Nov 12 17:19:36 PST 2009.
+
+There are no local patches.
+
+The ssl/bodge directory contains files taken from the NSS repo that we required
+for building libssl outside of its usual build environment.
