@@ -581,6 +581,11 @@
             '__ARM_HAVE_NEON',
             '__ARM_ARCH__=7',
           ],
+          'cflags!': [
+            # These files contain ARM assembly, and building with thumb breaks
+            # the assembler.
+            '-mthumb',
+          ],
           'sources!': [
             '../third_party/skia/src/opts/SkBitmapProcState_opts_none.cpp',
             '../third_party/skia/src/opts/SkBlitRow_opts_none.cpp',
