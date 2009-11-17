@@ -152,7 +152,8 @@ TEST_F(ToolbarControllerTest, DISABLED_Display) {
   [[bar_ view] display];
 }
 
-TEST_F(ToolbarControllerTest, LoadingState) {
+// TODO(dmaclach) disabled due to crash: crbug.com/27920
+TEST_F(ToolbarControllerTest, DISABLED_LoadingState) {
   // TODO(pinkerton): Same problem testing this as the starred state above.
 
   // In its initial state, the go button has a tag of IDC_GO. When loading,
