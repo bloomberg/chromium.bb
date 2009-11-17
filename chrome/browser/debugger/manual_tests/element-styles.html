@@ -1,0 +1,40 @@
+<style>
+.classTest {
+  -webkit-transform:skew(-10deg,-3deg);
+  color: green;
+  background: #CCC;
+  border: 2px solid blue;
+  padding: 5px 6px 7px 8px;
+}
+</style>
+<p>To begin test, open DevTools, select the Elements panel. Expand the Styles pane in the sidebar.</p>
+<ul>
+  <li>Choose the <b>&lt;div class="classTest"...></b> element in the DOM tree.
+You should see the following element styles in the ".classTest (inline stylesheet)" section:
+<pre>
+  -webkit-transform:skew(-10deg,-3deg);
+  color: green;
+  background: #CCC;
+  border: 2px solid blue;
+  padding: 5px 6px 7px 8px;
+</pre>
+  While changing all the property values, you should see corresponding live page changes.
+  <li>Double click the "-webkit-transform" rule and place the cursor at the second argument (-3deg).
+  <li>Press Up/Down keys do see the argument value change in 1.0 steps (0.1 steps in the [-1; 1] range).
+  <li>Press Shift+Up/Down keys to see the argument value change in 10.0 steps.
+  <li>Press Alt(Cmd)+Up/Downkeys to see the argument value change in 0.1 steps (1.0 steps in the [-1; 1] range).
+  <li>Move the mouse pointer within the section to display checkboxes to the right of the property values.
+  <li>Click the checkboxes to disable/enable the corresponding style properties and observe the page changes.
+You can disable the "-webkit-transform" property if the element overlaps the instructions.
+  <li>Double-click the "background" rule and alter the color to "#FFF". The text background should turn white.
+  <li>Double-click the "color" rule and alter the color to "black". The text background should turn black.
+  <li>Expand the "padding" shorthand property using the arrow at the left. You should see the following
+property values beneath: padding-top: 5px; padding-right: 6px; padding-bottom: 7px; padding-left: 8px;
+  <li>In the "Styles" pane titlebar click the gear button and choose "New Style Rule". In the editbox that appears, type:
+<pre>
+font-family: monospace;
+</pre>
+      The font of the test string should alter to a monospaced one.
+</ul>
+
+<div class="classTest">CLASS_TEST CLASS_TEST CLASS_TEST CLASS_TEST CLASS_TEST CLASS_TEST CLASS_TEST</div>
