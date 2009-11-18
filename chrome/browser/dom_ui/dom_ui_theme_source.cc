@@ -184,22 +184,13 @@ void DOMUIThemeSource::InitNewTabCSS(Profile* profile) {
   subst2.push_back(SkColorToRGBAString(color_link_underline));  // $$6
   subst2.push_back(SkColorToRGBAString(color_section_link_underline));  // $$7
 
-#if defined(OS_MACOSX)
-  // No extensions available on Mac yet.
-  subst2.push_back("none");  // $$8: display of lower right promo image
-  subst2.push_back("none");  // $$9: display of butterbar footer promo line
-#else
-  if (profile->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) > 0) {
+  if (profile->GetPrefs()->GetInteger(prefs::kNTPPromoRemaining) > 0) {
     subst2.push_back("block");  // $$8
-  } else {
-    subst2.push_back("none");  // $$8
-  }
-  if (profile->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) > 0) {
     subst2.push_back("inline-block");  // $$9
   } else {
+    subst2.push_back("none");  // $$8
     subst2.push_back("none");  // $$9
   }
-#endif
 
   // Get our template.
   static const base::StringPiece new_tab_theme_css(

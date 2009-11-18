@@ -285,10 +285,8 @@ const wchar_t kShowOmniboxSearchHint[] = L"browser.show_omnibox_search_hint";
 
 // Integer that counts the number of times the promo on the NTP has left to be
 // shown; this decrements each time the NTP is shown for the first time
-// in a session. The message line can be closed separately from the promo
-// image, so we store two separate values for number of remaining views.
-const wchar_t kNTPPromoLineRemaining[] = L"browser.ntp.promo_line_remaining";
-const wchar_t kNTPPromoImageRemaining[] = L"browser.ntp.promo_image_remaining";
+// in a session.
+const wchar_t kNTPPromoRemaining[] = L"browser.ntp.promo_remaining";
 
 // The list of origins which are allowed|denied to show desktop notifications.
 const wchar_t kDesktopNotificationAllowedOrigins[] =
