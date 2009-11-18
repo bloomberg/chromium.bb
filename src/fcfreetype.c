@@ -2326,10 +2326,10 @@ FcUcs4ToGlyphName (FcChar32 ucs4)
     int		r = 0;
     FcGlyphId	gn;
 
-    while ((gn = ucs_to_name[i]) != -1)
+    while ((gn = _fc_ucs_to_name[i]) != -1)
     {
-	if (glyphs[gn].ucs == ucs4)
-	    return glyphs[gn].name;
+	if (_fc_glyph_names[gn].ucs == ucs4)
+	    return _fc_glyph_names[gn].name;
 	if (!r) 
 	{
 	    r = (int) (ucs4 % FC_GLYPHNAME_REHASH);
@@ -2351,10 +2351,10 @@ FcGlyphNameToUcs4 (FcChar8 *name)
     int		r = 0;
     FcGlyphId	gn;
 
-    while ((gn = name_to_ucs[i]) != -1)
+    while ((gn = _fc_name_to_ucs[i]) != -1)
     {
-	if (!strcmp ((char *) name, (char *) glyphs[gn].name))
-	    return glyphs[gn].ucs;
+	if (!strcmp ((char *) name, (char *) _fc_glyph_names[gn].name))
+	    return _fc_glyph_names[gn].ucs;
 	if (!r) 
 	{
 	    r = (int) (h % FC_GLYPHNAME_REHASH);
@@ -2952,7 +2952,6 @@ FcFontCapabilities(FT_Face face)
     FT_ULong *gsubtags=NULL, *gpostags=NULL;
     FT_UShort gsub_count=0, gpos_count=0;
     FT_ULong maxsize;
-    FT_Memory  memory = face->stream->memory;
     FcChar8 *complex_ = NULL;
     int indx1 = 0, indx2 = 0;
 

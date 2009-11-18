@@ -297,7 +297,7 @@ main (int argc, char **argv)
      * Dump out entries
      */
     
-    printf ("static const struct { const FcChar32 ucs; const FcChar8 name[%d]; } glyphs[%d] = {\n",
+    printf ("static const struct { const FcChar32 ucs; const FcChar8 name[%d]; } _fc_glyph_names[%d] = {\n",
 	    max_name_len + 1, nraw);
     
     for (i = 0; i < nraw; i++)
@@ -310,12 +310,12 @@ main (int argc, char **argv)
      * Dump out name_to_ucs table
      */
 
-    dump (name_to_ucs, "name_to_ucs");
+    dump (name_to_ucs, "_fc_name_to_ucs");
     
     /*
      * Dump out ucs_to_name table
      */
-    dump (ucs_to_name, "ucs_to_name");
+    dump (ucs_to_name, "_fc_ucs_to_name");
 
     while (fgets (line, sizeof (line), stdin))
 	fputs (line, stdout);
