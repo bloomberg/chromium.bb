@@ -52,7 +52,7 @@ if MS_LIB_AVAILABLE
 noinst_DATA = fontconfig.lib
 
 fontconfig.lib : libfontconfig.la
-	lib -name:libfontconfig-$(lt_current_minus_age).dll -def:fontconfig.def -out:$@
+	lib -name:libfontconfig-@LIBT_CURRENT_MINUS_AGE@.dll -def:fontconfig.def -out:$@
 
 install-ms-import-lib:
 	$(INSTALL) fontconfig.lib $(DESTDIR)$(libdir)
