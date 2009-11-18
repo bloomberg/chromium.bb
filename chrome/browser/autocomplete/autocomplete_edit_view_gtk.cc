@@ -77,6 +77,30 @@ PropertyAccessor<AutocompleteEditState>* GetStateAccessor() {
   return &state;
 }
 
+// Set up style properties to override the default GtkTextView; if a theme has
+// overridden some of these properties, an inner-line will be displayed inside
+// the fake GtkTextEntry.
+void SetEntryStyle() {
+  static bool style_was_set = false;
+
+  if (style_was_set)
+    return;
+  style_was_set = true;
+
+  gtk_rc_parse_string(
+      "style \"chrome-location-bar-entry\" {"
+      "  xthickness = 0\n"
+      "  ythickness = 0\n"
+      "  GtkWidget::focus_padding = 0\n"
+      "  GtkWidget::focus-line-width = 0\n"
+      "  GtkWidget::interior_focus = 0\n"
+      "  GtkWidget::internal-padding = 0\n"
+      "  GtkContainer::border-width = 0\n"
+      "}\n"
+      "widget \"*chrome-location-bar-entry\" "
+      "style \"chrome-location-bar-entry\"");
+}
+
 }  // namespace
 
 AutocompleteEditViewGtk::AutocompleteEditViewGtk(
@@ -140,6 +164,8 @@ AutocompleteEditViewGtk::~AutocompleteEditViewGtk() {
 }
 
 void AutocompleteEditViewGtk::Init() {
+  SetEntryStyle();
+
   // The height of the text view is going to change based on the font used.  We
   // don't want to stretch the height, and we want it vertically centered.
   alignment_.Own(gtk_alignment_new(0., 0.5, 1.0, 0.0));
@@ -160,6 +186,9 @@ void AutocompleteEditViewGtk::Init() {
       popup_window_mode_ ?
       browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
       browser_defaults::kAutocompleteEditFontPixelSize);
+
+  // See SetEntryStyle() comments.
+  gtk_widget_set_name(text_view_, "chrome-location-bar-entry");
 
   // The text view was floating.  It will now be owned by the alignment.
   gtk_container_add(GTK_CONTAINER(alignment_.get()), text_view_);
