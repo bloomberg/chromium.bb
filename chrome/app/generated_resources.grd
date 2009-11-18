@@ -5969,6 +5969,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_SHOW_DOWNLOADS_MAC" desc="The Mac menu item to show downloads in the window menu.">
           Downloads
         </message>
+        <message name="IDS_SHOW_EXTENSIONS_MAC" desc="The Mac menu item to show extensions in the window menu.">
+          Extensions
+        </message>
         <message name="IDS_ALL_WINDOWS_FRONT_MAC" desc="The Mac menu item for bring all to front the window menu.">
           Bring All to Front
         </message>

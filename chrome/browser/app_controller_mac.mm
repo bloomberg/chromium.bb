@@ -535,6 +535,9 @@ static bool g_is_opening_new_window = false;
     case IDC_SHOW_DOWNLOADS:
       Browser::OpenDownloadsWindow(defaultProfile);
       break;
+    case IDC_MANAGE_EXTENSIONS:
+      Browser::OpenExtensionsWindow(defaultProfile);
+      break;
     case IDC_HELP_PAGE:
       Browser::OpenHelpWindow(defaultProfile);
       break;
@@ -583,6 +586,7 @@ static bool g_is_opening_new_window = false;
   menuState_->UpdateCommandEnabled(IDC_FOCUS_LOCATION, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
+  menuState_->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);
   menuState_->UpdateCommandEnabled(IDC_HELP_PAGE, true);
   menuState_->UpdateCommandEnabled(IDC_REPORT_BUG, true);
   // TODO(pinkerton): ...more to come...

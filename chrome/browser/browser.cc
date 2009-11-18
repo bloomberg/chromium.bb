@@ -349,6 +349,13 @@ void Browser::OpenDownloadsWindow(Profile* profile) {
 }
 
 // static
+void Browser::OpenExtensionsWindow(Profile* profile) {
+  Browser* browser = Browser::Create(profile);
+  browser->ShowExtensionsTab();
+  browser->window()->Show();
+}
+
+// static
 void Browser::OpenHelpWindow(Profile* profile) {
   Browser* browser = Browser::Create(profile);
   browser->OpenHelpTab();

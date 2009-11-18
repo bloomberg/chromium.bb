@@ -176,6 +176,7 @@ class Browser : public TabStripModelDelegate,
   // no windows).
   static void OpenHistoryWindow(Profile* profile);
   static void OpenDownloadsWindow(Profile* profile);
+  static void OpenExtensionsWindow(Profile* profile);
   static void OpenHelpWindow(Profile* profile);
 #endif
 
