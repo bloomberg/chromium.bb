@@ -85,8 +85,8 @@ class PluginChannelBase : public IPC::Channel::Listener,
   virtual void OnChannelError();
 
   // If this is set, sync messages that are sent will only unblock the receiver
-  // if this channel is in the middle of a dispatch.
-  void SendUnblockingOnlyDuringDispatch();
+  // if this channel is in the middle of a sync dispatch.
+  void SendUnblockingOnlyDuringSyncDispatch();
 
   virtual bool Init(MessageLoop* ipc_message_loop, bool create_pipe_now);
 
@@ -114,13 +114,13 @@ class PluginChannelBase : public IPC::Channel::Listener,
   // error. This flag is used to indicate the same.
   bool channel_valid_;
 
-  // Track whether we're within a dispatch; works like a refcount, 0 when we're
-  // not.
-  int in_dispatch_;
+  // Track whether we're within a synchronous dispatch; works like a refcount,
+  // 0 when we're not.
+  int in_sync_dispatch_;
 
   // If true, sync messages will only be marked as unblocking if the channel is
-  // in the middle of dispatching a message.
-  bool send_unblocking_only_during_dispatch_;
+  // in the middle of dispatching a synchronous message.
+  bool send_unblocking_only_during_sync_dispatch_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginChannelBase);
 };

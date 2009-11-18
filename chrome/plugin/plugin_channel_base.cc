@@ -60,8 +60,8 @@ PluginChannelBase::PluginChannelBase()
       peer_pid_(0),
       in_remove_route_(false),
       channel_valid_(false),
-      in_dispatch_(0),
-      send_unblocking_only_during_dispatch_(false) {
+      in_sync_dispatch_(0),
+      send_unblocking_only_during_sync_dispatch_(false) {
 }
 
 PluginChannelBase::~PluginChannelBase() {
@@ -100,7 +100,7 @@ bool PluginChannelBase::Send(IPC::Message* message) {
     return false;
   }
 
-  if (send_unblocking_only_during_dispatch_ && in_dispatch_ == 0 &&
+  if (send_unblocking_only_during_sync_dispatch_ && in_sync_dispatch_ == 0 &&
       message->is_sync()) {
     message->set_unblock(false);
   }
@@ -117,7 +117,8 @@ void PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
   // ourself so that we can send the reply and decrement back in_dispatch_.
   scoped_refptr<PluginChannelBase> me(this);
 
-  in_dispatch_++;
+  if (message.is_sync())
+    in_sync_dispatch_++;
   if (message.routing_id() == MSG_ROUTING_CONTROL) {
     OnControlMessageReceived(message);
   } else {
@@ -130,7 +131,8 @@ void PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
       Send(reply);
     }
   }
-  in_dispatch_--;
+  if (message.is_sync())
+    in_sync_dispatch_--;
 }
 
 void PluginChannelBase::OnChannelConnected(int32 peer_pid) {
@@ -214,6 +216,6 @@ void PluginChannelBase::OnChannelError() {
   channel_valid_ = false;
 }
 
-void PluginChannelBase::SendUnblockingOnlyDuringDispatch() {
-  send_unblocking_only_during_dispatch_ = true;
+void PluginChannelBase::SendUnblockingOnlyDuringSyncDispatch() {
+  send_unblocking_only_during_sync_dispatch_ = true;
 }

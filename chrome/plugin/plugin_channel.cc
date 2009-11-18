@@ -161,7 +161,7 @@ PluginChannel::PluginChannel()
       in_send_(0),
       off_the_record_(false),
       filter_(new MessageFilter()) {
-  SendUnblockingOnlyDuringDispatch();
+  SendUnblockingOnlyDuringSyncDispatch();
   ChildProcess::current()->AddRefProcess();
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
