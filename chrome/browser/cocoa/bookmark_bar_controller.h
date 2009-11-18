@@ -16,15 +16,16 @@
 #include "webkit/glue/window_open_disposition.h"
 
 @class BookmarkBarController;
-class BookmarkModel;
-class BookmarkNode;
 @class BookmarkBarView;
+@class BookmarkButton;
+class BookmarkModel;
 @class BookmarkMenu;
+class BookmarkNode;
 class Browser;
 class GURL;
 @class MenuButton;
-class Profile;
 class PrefService;
+class Profile;
 class TabContents;
 @class ToolbarController;
 @protocol ViewResizer;
@@ -183,6 +184,11 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 // Returns true if at least one bookmark was added.
 - (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point;
+
+// Complete a drag of a bookmark button to this location on the main bar.
+// TODO(jrg): submenu DnD.
+// Returns YES on success.
+- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point;
 
 // Actions for manipulating bookmarks.
 // From a button, ...

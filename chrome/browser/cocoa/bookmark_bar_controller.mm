@@ -16,11 +16,12 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
+#import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
-#import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
 #import "chrome/browser/cocoa/bookmark_menu_cocoa_controller.h"
+#import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/menu_button.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
@@ -107,18 +108,6 @@ const CGFloat kBookmarkBarOverlap = 6.0;
 const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 }  // namespace
-
-// Specialization of NSButton that responds to middle-clicks. By default,
-// NSButton ignores them.
-@interface BookmarkButton : NSButton
-@end
-
-@implementation BookmarkButton
-- (void)otherMouseUp:(NSEvent*) event {
-  [self performClick:self];
-}
-@end
-
 
 @interface BookmarkBarController(Private)
 // Determines the appropriate state for the given situation.
@@ -467,6 +456,47 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
         base::SysNSStringToWide([titles objectAtIndex:i]),
         GURL([[urls objectAtIndex:i] UTF8String]));
   }
+  return YES;
+}
+
+- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point {
+  DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
+
+  void* pointer = [[[sourceButton cell] representedObject] pointerValue];
+  const BookmarkNode* sourceNode = static_cast<const BookmarkNode*>(pointer);
+  DCHECK(sourceNode);
+
+  // Identify which buttons we are between.  For now, assume a button
+  // location is at the center point of its view, and that an exact
+  // match means "place before".
+  // TODO(jrg): revisit position info based on UI team feedback.
+  // dropLocation is in bar local coordinates.
+  NSPoint dropLocation = [[self view] convertPoint:point
+                                          fromView:[[[self view] window]
+                                                     contentView]];
+  NSButton* buttonToTheRightOfDraggedButton = nil;
+  for (NSButton* button in buttons_.get()) {
+    CGFloat midpoint = NSMidX([button frame]);
+    if (dropLocation.x <= midpoint) {
+      buttonToTheRightOfDraggedButton = button;
+      break;
+    }
+  }
+  if (buttonToTheRightOfDraggedButton) {
+    pointer = [[[buttonToTheRightOfDraggedButton cell]
+                 representedObject] pointerValue];
+    const BookmarkNode* afterNode = static_cast<const BookmarkNode*>(pointer);
+    bookmarkModel_->Move(sourceNode, sourceNode->GetParent(),
+                         afterNode->GetParent()->IndexOfChild(afterNode));
+  } else {
+    // If nothing is to my right I am at the end!
+    bookmarkModel_->Move(sourceNode, sourceNode->GetParent(),
+                         sourceNode->GetParent()->GetChildCount());
+  }
+
+  // Movement of a node triggers observers (like us) to rebuild the
+  // bar so we don't have to do so explicitly.
+
   return YES;
 }
 
@@ -1017,7 +1047,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:&ignored];
   frame.origin.x = [[self buttonView] bounds].size.width - frame.size.width;
   frame.origin.x -= bookmarks::kBookmarkHorizontalPadding;
-  NSButton* button = [[BookmarkButton alloc] initWithFrame:frame];
+  BookmarkButton* button = [[BookmarkButton alloc] initWithFrame:frame];
+  [button setDraggable:NO];
   otherBookmarksButton_.reset(button);
 
   // Peg at right; keep same height as bar.

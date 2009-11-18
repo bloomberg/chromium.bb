@@ -63,7 +63,7 @@
 
 // Remember the number of times we've gotten a frameDidChange notification.
 @interface BookmarkBarControllerTogglePong : BookmarkBarControllerNoOpen {
-@private
+ @private
   int toggles_;
 }
 @property (readonly) int toggles;
@@ -756,6 +756,37 @@ TEST_F(BookmarkBarControllerTest, TestMenuNodeAndDisable) {
                 L"super duper wide title",
                 GURL("http://superfriends.hall-of-justice.edu"));
   EXPECT_TRUE([bar_ validateUserInterfaceItem:item]);
+}
+
+TEST_F(BookmarkBarControllerTest, TestDragButton) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  GURL gurls[] = { GURL("http://www.google.com/a"),
+                   GURL("http://www.google.com/b"),
+                   GURL("http://www.google.com/c") };
+  std::wstring titles[] = { L"a", L"b", L"c" };
+  for (unsigned i = 0; i < arraysize(titles); i++) {
+    model->SetURLStarred(gurls[i], titles[i], true);
+  }
+
+  EXPECT_EQ([[bar_ buttons] count], arraysize(titles));
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"a"]);
+
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:2] to:NSMakePoint(0, 0)];
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"c"]);
+
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:1] to:NSMakePoint(1000, 0)];
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"c"]);
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"b"]);
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
+
+  // Finally, a drop of the 1st between the next 2
+  CGFloat x = NSMinX([[[bar_ buttons] objectAtIndex:2] frame]);
+  x += [[bar_ view] frame].origin.x;
+  [bar_ dragButton:[[bar_ buttons] objectAtIndex:0] to:NSMakePoint(x, 0)];
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"b"]);
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"c"]);
+  EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
 }
 
 }  // namespace

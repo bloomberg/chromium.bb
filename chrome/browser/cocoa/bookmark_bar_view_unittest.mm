@@ -4,23 +4,85 @@
 
 #include "base/scoped_nsobject.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
+#import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+// Fake DraggingInfo, fake BookmarkBarController, fake pasteboard...
+@interface FakeBookmarkDraggingInfo : NSObject {
+  scoped_nsobject<NSData> data_;
+  BOOL pong_;
+}
+@end
+
+@implementation FakeBookmarkDraggingInfo
+
+- (id)init {
+  if ((self = [super init])) {
+    data_.reset([[NSData dataWithBytes:&self length:sizeof(self)] retain]);
+  }
+  return self;
+}
+
+// So we can be both info and pasteboard.
+- (id)draggingPasteboard {
+  return self;
+}
+
+// So we can look local.
+- (id)draggingSource {
+  return self;
+}
+
+- (BOOL)containsURLData {
+  return NO;
+}
+
+- (NSPoint)draggingLocation {
+  return NSMakePoint(10, 10);
+}
+
+- (NSData*)dataForType:(NSString*)type {
+  if ([type isEqual:kBookmarkButtonDragType])
+    return data_.get();
+  return nil;
+}
+
+// Fake a controller for callback ponging
+- (BOOL)dragButton:(BookmarkButton*)button to:(NSPoint)point {
+  pong_ = YES;
+  return YES;
+}
+
+// Confirm the pong.
+- (BOOL)dragButtonToPong {
+  return pong_;
+}
+
+@end
+
 namespace {
 
-class BookmarkBarViewTest : public PlatformTest {
+class BookmarkBarViewTest : public CocoaTest {
  public:
-  CocoaTestHelper cocoa_helper_;
   scoped_nsobject<BookmarkBarView> view_;
 };
 
-// This class only needs to do one thing: prevent mouse down events from moving
-// the parent window around.
 TEST_F(BookmarkBarViewTest, CanDragWindow) {
   view_.reset([[BookmarkBarView alloc] init]);
   EXPECT_FALSE([view_.get() mouseDownCanMoveWindow]);
+}
+
+TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
+  view_.reset([[BookmarkBarView alloc] init]);
+  scoped_nsobject<FakeBookmarkDraggingInfo>
+    info([[FakeBookmarkDraggingInfo alloc] init]);
+
+  [view_ setController:info.get()];
+  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
+  EXPECT_TRUE([info dragButtonToPong]);
 }
 
 }  // namespace

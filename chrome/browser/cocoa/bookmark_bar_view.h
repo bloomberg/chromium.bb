@@ -17,9 +17,11 @@
   IBOutlet BookmarkBarController* controller_;
   IBOutlet NSTextField* noItemTextfield_;
 }
-
 - (NSTextField*)noItemTextfield;
-
 @end
-  
+
+@interface BookmarkBarView(TestingAPI)
+- (void)setController:(id)controller;
+@end
+
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_VIEW_H_

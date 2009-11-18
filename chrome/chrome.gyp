@@ -1083,6 +1083,8 @@
         'browser/cocoa/bookmark_bar_toolbar_view.mm',
         'browser/cocoa/bookmark_bubble_controller.h',
         'browser/cocoa/bookmark_bubble_controller.mm',
+        'browser/cocoa/bookmark_button.h',
+        'browser/cocoa/bookmark_button.mm',
         'browser/cocoa/bookmark_button_cell.h',
         'browser/cocoa/bookmark_button_cell.mm',
         'browser/cocoa/bookmark_editor_base_controller.h',
@@ -3280,7 +3282,7 @@
         '../third_party/icu/icu.gyp:icui18n',
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
-        # TODO(yaar): Should only stop depending on webcore and depend 
+        # TODO(yaar): Should only stop depending on webcore and depend
         # only on webkit.
         '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
         '../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
@@ -4563,6 +4565,7 @@
         'browser/cocoa/bookmark_bar_toolbar_view_unittest.mm',
         'browser/cocoa/bookmark_bar_view_unittest.mm',
         'browser/cocoa/bookmark_bubble_controller_unittest.mm',
+        'browser/cocoa/bookmark_button_unittest.mm',
         'browser/cocoa/bookmark_button_cell_unittest.mm',
         'browser/cocoa/bookmark_editor_base_controller_unittest.mm',
         'browser/cocoa/bookmark_editor_controller_unittest.mm',

@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_button.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
@@ -30,8 +31,12 @@
                       object:nil];
 
   DCHECK(controller_ && "Expected this to be hooked up via Interface Builder");
-  NSArray* types = [NSArray arrayWithObjects:NSStringPboardType,
-      NSHTMLPboardType, NSURLPboardType, nil];
+  NSArray* types = [NSArray arrayWithObjects:
+                              NSStringPboardType,
+                              NSHTMLPboardType,
+                              NSURLPboardType,
+                              kBookmarkButtonDragType,
+                              nil];
   [self registerForDraggedTypes:types];
 }
 
@@ -69,6 +74,8 @@
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   if ([[info draggingPasteboard] containsURLData])
     return NSDragOperationCopy;
+  if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType])
+    return NSDragOperationMove;
   return NSDragOperationNone;
 }
 
@@ -80,16 +87,19 @@
 }
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info {
-  if ([[info draggingPasteboard] containsURLData])
-    return NSDragOperationCopy;
-  return NSDragOperationNone;
+  // For now it's the same as draggingEntered:.
+  // TODO(jrg): once we return YES for wantsPeriodicDraggingUpdates,
+  // this should ping the controller_ to perform animations.
+  return [self draggingEntered:info];
 }
 
 - (BOOL)prepareForDragOperation:(id<NSDraggingInfo>)info {
   return YES;
 }
 
-- (BOOL)performDragOperation:(id<NSDraggingInfo>)info {
+// Implement NSDraggingDestination protocol method
+// performDragOperation: for URLs.
+- (BOOL)performDragOperationForURL:(id<NSDraggingInfo>)info {
   NSPasteboard* pboard = [info draggingPasteboard];
   DCHECK([pboard containsURLData]);
 
@@ -102,4 +112,40 @@
                            at:[info draggingLocation]];
 }
 
+// Implement NSDraggingDestination protocol method
+// performDragOperation: for bookmarks.
+- (BOOL)performDragOperationForBookmark:(id<NSDraggingInfo>)info {
+  BOOL rtn = NO;
+  NSData* data = [[info draggingPasteboard]
+                   dataForType:kBookmarkButtonDragType];
+  // [info draggingSource] is nil if not the same application.
+  if (data && [info draggingSource]) {
+    BookmarkButton* button = nil;
+    [data getBytes:&button length:sizeof(button)];
+    rtn = [controller_ dragButton:button to:[info draggingLocation]];
+  }
+  return rtn;
+}
+
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)info {
+  NSPasteboard* pboard = [info draggingPasteboard];
+  if ([pboard containsURLData]) {
+    return [self performDragOperationForURL:info];
+  } else if ([pboard dataForType:kBookmarkButtonDragType]) {
+    return [self performDragOperationForBookmark:info];
+  } else {
+    NOTREACHED() << "Unknown drop type onto bookmark bar.";
+    return NO;
+  }
+}
+
 @end  // @implementation BookmarkBarView
+
+
+@implementation BookmarkBarView(TestingAPI)
+
+- (void)setController:(id)controller {
+  controller_ = controller;
+}
+
+@end  // @implementation BookmarkBarView(TestingAPI)
