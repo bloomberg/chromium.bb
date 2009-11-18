@@ -31,7 +31,6 @@ class PrefObserverBridge;
 class Profile;
 class TabContents;
 class ToolbarModel;
-class ToolbarView;
 
 // A controller for the toolbar in the browser window. Manages
 // updating the state for location bar and back/fwd/reload/go buttons.
@@ -139,9 +138,9 @@ class ToolbarView;
 // bookmark bar is attached.
 - (void)setHeightCompression:(CGFloat)compressByHeight;
 
-// Display (or not) the divider (line at bottom); needed when the bookmark bar
-// is attached.
-- (void)setShowsDivider:(BOOL)showDivider;
+// Set the opacity of the divider (the line at the bottom) *if* we have a
+// |ToolbarView| (0 means don't show it); no-op otherwise.
+- (void)setDividerOpacity:(CGFloat)opacity;
 
 @end
 

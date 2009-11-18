@@ -247,6 +247,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   // Force a display of the bookmark bar.
   browser_helper_.profile()->GetPrefs()->
       SetBoolean(prefs::kShowBookmarkBar, true);
+  [controller_ updateBookmarkBarVisibilityWithAnimation:NO];
 
   TabStripView* tabstrip = [controller_ tabStripView];
   NSView* contentView = [[tabstrip window] contentView];

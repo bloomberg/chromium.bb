@@ -126,13 +126,6 @@ class BookmarkBarControllerTest : public PlatformTest {
                   withAnimation:NO];
   }
 
-  // Update the state of the bookmark bar.
-  void UpdateBookmarkBar() {
-    [bar_ updateAndShowNormalBar:[bar_ isShownAsToolbar]
-                 showDetachedBar:[bar_ isShownAsDetachedBar]
-                   withAnimation:NO];
-  }
-
   // Return a menu item that points to the right URL.
   NSMenuItem* ItemForBookmarkBarMenu(GURL& gurl) {
     node_.reset(new BookmarkNode(gurl));
@@ -161,9 +154,10 @@ TEST_F(BookmarkBarControllerTest, ShowWhenShowBookmarkBarTrue) {
   [bar_ updateAndShowNormalBar:YES
                showDetachedBar:NO
                  withAnimation:NO];
-  EXPECT_TRUE([bar_ isShownAsToolbar]);
-  EXPECT_FALSE([bar_ isShownAsDetachedBar]);
+  EXPECT_TRUE([bar_ isInState:bookmarks::kShowingState]);
+  EXPECT_FALSE([bar_ isInState:bookmarks::kDetachedState]);
   EXPECT_TRUE([bar_ isVisible]);
+  EXPECT_FALSE([bar_ isAnimationRunning]);
   EXPECT_FALSE([[bar_ view] isHidden]);
   EXPECT_GT([resizeDelegate_ height], 0);
   EXPECT_GT([[bar_ view] frame].size.height, 0);
@@ -173,9 +167,10 @@ TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarFalse) {
   [bar_ updateAndShowNormalBar:NO
                showDetachedBar:NO
                  withAnimation:NO];
-  EXPECT_FALSE([bar_ isShownAsToolbar]);
-  EXPECT_FALSE([bar_ isShownAsDetachedBar]);
+  EXPECT_FALSE([bar_ isInState:bookmarks::kShowingState]);
+  EXPECT_FALSE([bar_ isInState:bookmarks::kDetachedState]);
   EXPECT_FALSE([bar_ isVisible]);
+  EXPECT_FALSE([bar_ isAnimationRunning]);
   EXPECT_TRUE([[bar_ view] isHidden]);
   EXPECT_EQ(0, [resizeDelegate_ height]);
   EXPECT_EQ(0, [[bar_ view] frame].size.height);
@@ -186,9 +181,10 @@ TEST_F(BookmarkBarControllerTest, HideWhenShowBookmarkBarTrueButDisabled) {
   [bar_ updateAndShowNormalBar:YES
                showDetachedBar:NO
                  withAnimation:NO];
-  EXPECT_TRUE([bar_ isShownAsToolbar]);
-  EXPECT_FALSE([bar_ isShownAsDetachedBar]);
+  EXPECT_TRUE([bar_ isInState:bookmarks::kShowingState]);
+  EXPECT_FALSE([bar_ isInState:bookmarks::kDetachedState]);
   EXPECT_FALSE([bar_ isVisible]);
+  EXPECT_FALSE([bar_ isAnimationRunning]);
   EXPECT_TRUE([[bar_ view] isHidden]);
   EXPECT_EQ(0, [resizeDelegate_ height]);
   EXPECT_EQ(0, [[bar_ view] frame].size.height);
@@ -198,11 +194,12 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
   [bar_ updateAndShowNormalBar:NO
                showDetachedBar:YES
                  withAnimation:NO];
-  EXPECT_FALSE([bar_ isShownAsToolbar]);
-  EXPECT_TRUE([bar_ isShownAsDetachedBar]);
+  EXPECT_FALSE([bar_ isInState:bookmarks::kShowingState]);
+  EXPECT_TRUE([bar_ isInState:bookmarks::kDetachedState]);
   EXPECT_TRUE([bar_ isVisible]);
+  EXPECT_FALSE([bar_ isAnimationRunning]);
   EXPECT_FALSE([[bar_ view] isHidden]);
-  ;EXPECT_GT([resizeDelegate_ height], 0);
+  EXPECT_GT([resizeDelegate_ height], 0);
   EXPECT_GT([[bar_ view] frame].size.height, 0);
 
   // Make sure no buttons fall off the bar, either now or when resized
@@ -235,6 +232,68 @@ TEST_F(BookmarkBarControllerTest, ShowOnNewTabPage) {
     NSRect frame = [[bar_ view] frame];
     frame.size.width += sizes[x];
     [[bar_ view] setFrame:frame];
+  }
+}
+
+// Test whether |-updateAndShowNormalBar:...| sets states as we expect. Make
+// sure things don't crash.
+TEST_F(BookmarkBarControllerTest, StateChanges) {
+  // First, go in one-at-a-time cycle.
+  [bar_ updateAndShowNormalBar:NO
+               showDetachedBar:NO
+                 withAnimation:NO];
+  EXPECT_EQ(bookmarks::kHiddenState, [bar_ visualState]);
+  EXPECT_FALSE([bar_ isVisible]);
+  EXPECT_FALSE([bar_ isAnimationRunning]);
+  [bar_ updateAndShowNormalBar:YES
+               showDetachedBar:NO
+                 withAnimation:NO];
+  EXPECT_EQ(bookmarks::kShowingState, [bar_ visualState]);
+  EXPECT_TRUE([bar_ isVisible]);
+  EXPECT_FALSE([bar_ isAnimationRunning]);
+  [bar_ updateAndShowNormalBar:YES
+               showDetachedBar:YES
+                 withAnimation:NO];
+  EXPECT_EQ(bookmarks::kShowingState, [bar_ visualState]);
+  EXPECT_TRUE([bar_ isVisible]);
+  EXPECT_FALSE([bar_ isAnimationRunning]);
+  [bar_ updateAndShowNormalBar:NO
+               showDetachedBar:YES
+                 withAnimation:NO];
+  EXPECT_EQ(bookmarks::kDetachedState, [bar_ visualState]);
+  EXPECT_TRUE([bar_ isVisible]);
+  EXPECT_FALSE([bar_ isAnimationRunning]);
+
+  // Now try some "jumps".
+  for (int i = 0; i < 2; i++) {
+    [bar_ updateAndShowNormalBar:NO
+                 showDetachedBar:NO
+                   withAnimation:NO];
+    EXPECT_EQ(bookmarks::kHiddenState, [bar_ visualState]);
+    EXPECT_FALSE([bar_ isVisible]);
+    EXPECT_FALSE([bar_ isAnimationRunning]);
+    [bar_ updateAndShowNormalBar:YES
+                 showDetachedBar:YES
+                   withAnimation:NO];
+    EXPECT_EQ(bookmarks::kShowingState, [bar_ visualState]);
+    EXPECT_TRUE([bar_ isVisible]);
+    EXPECT_FALSE([bar_ isAnimationRunning]);
+  }
+
+  // Now try some "jumps".
+  for (int i = 0; i < 2; i++) {
+    [bar_ updateAndShowNormalBar:YES
+                 showDetachedBar:NO
+                   withAnimation:NO];
+    EXPECT_EQ(bookmarks::kShowingState, [bar_ visualState]);
+    EXPECT_TRUE([bar_ isVisible]);
+    EXPECT_FALSE([bar_ isAnimationRunning]);
+    [bar_ updateAndShowNormalBar:NO
+                 showDetachedBar:YES
+                   withAnimation:NO];
+    EXPECT_EQ(bookmarks::kDetachedState, [bar_ visualState]);
+    EXPECT_TRUE([bar_ isVisible]);
+    EXPECT_FALSE([bar_ isAnimationRunning]);
   }
 }
 
@@ -788,5 +847,7 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"c"]);
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
 }
+
+// TODO(viettrungluu): figure out how to test animations.
 
 }  // namespace

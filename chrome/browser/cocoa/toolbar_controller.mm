@@ -21,6 +21,7 @@
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 #import "chrome/browser/cocoa/menu_button.h"
+#import "chrome/browser/cocoa/toolbar_view.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/toolbar_model.h"
@@ -522,8 +523,16 @@ class PrefObserverBridge : public NotificationObserver {
   [resizeDelegate_ resizeView:[self view] newHeight:newToolbarHeight];
 }
 
-- (void)setShowsDivider:(BOOL)showDivider {
-  [[self backgroundGradientView] setShowsDivider:showDivider];
+- (void)setDividerOpacity:(CGFloat)opacity {
+  BackgroundGradientView* view = [self backgroundGradientView];
+  [view setShowsDivider:(opacity > 0 ? YES : NO)];
+
+  // We may not have a toolbar view (e.g., popup windows only have a location
+  // bar).
+  if ([view isKindOfClass:[ToolbarView class]]) {
+    ToolbarView* toolbarView = (ToolbarView*)view;
+    [toolbarView setDividerOpacity:opacity];
+  }
 }
 
 - (NSString*)view:(NSView*)view

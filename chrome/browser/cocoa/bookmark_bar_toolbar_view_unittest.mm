@@ -53,20 +53,52 @@ class MockThemeProvider : public ThemeProvider {
 
 // Allows us to control which way the view is rendered.
 @interface DrawDetachedBarFakeController :
-    NSObject<BookmarkBarToolbarViewController> {
-  int current_tab_contents_height_;
-  ThemeProvider* theme_provider_;
-  BOOL isShownAsDetachedBar_;
+    NSObject<BookmarkBarState, BookmarkBarToolbarViewController> {
+ @private
+  int currentTabContentsHeight_;
+  ThemeProvider* themeProvider_;
+  bookmarks::VisualState visualState_;
 }
 @property(assign) int currentTabContentsHeight;
 @property(assign) ThemeProvider* themeProvider;
-@property(assign) BOOL isShownAsDetachedBar;
+@property(assign) bookmarks::VisualState visualState;
+
+// |BookmarkBarState| protocol:
+- (BOOL)isVisible;
+- (BOOL)isAnimationRunning;
+- (BOOL)isInState:(bookmarks::VisualState)state;
+- (BOOL)isAnimatingToState:(bookmarks::VisualState)state;
+- (BOOL)isAnimatingFromState:(bookmarks::VisualState)state;
+- (BOOL)isAnimatingFromState:(bookmarks::VisualState)fromState
+                     toState:(bookmarks::VisualState)toState;
+- (BOOL)isAnimatingBetweenState:(bookmarks::VisualState)fromState
+                       andState:(bookmarks::VisualState)toState;
+- (CGFloat)detachedMorphProgress;
 @end
 
 @implementation DrawDetachedBarFakeController
-@synthesize currentTabContentsHeight = current_tab_contents_height_;
-@synthesize themeProvider = theme_provider_;
-@synthesize isShownAsDetachedBar = isShownAsDetachedBar_;
+@synthesize currentTabContentsHeight = currentTabContentsHeight_;
+@synthesize themeProvider = themeProvider_;
+@synthesize visualState = visualState_;
+
+- (id)init {
+  if ((self = [super init])) {
+    [self setVisualState:bookmarks::kHiddenState];
+  }
+  return self;
+}
+
+- (BOOL)isVisible { return YES; }
+- (BOOL)isAnimationRunning { return NO; }
+- (BOOL)isInState:(bookmarks::VisualState)state
+    { return ([self visualState] == state) ? YES : NO; }
+- (BOOL)isAnimatingToState:(bookmarks::VisualState)state { return NO; }
+- (BOOL)isAnimatingFromState:(bookmarks::VisualState)state { return NO; }
+- (BOOL)isAnimatingFromState:(bookmarks::VisualState)fromState
+                     toState:(bookmarks::VisualState)toState { return NO; }
+- (BOOL)isAnimatingBetweenState:(bookmarks::VisualState)fromState
+                       andState:(bookmarks::VisualState)toState { return NO; }
+- (CGFloat)detachedMorphProgress { return 1; }
 @end
 
 class BookmarkBarToolbarViewTest : public PlatformTest {
@@ -94,13 +126,13 @@ TEST_F(BookmarkBarToolbarViewTest, AddRemove) {
 
 // Test drawing (part 1), mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsNormalBar) {
-  [controller_.get() setIsShownAsDetachedBar:NO];
+  [controller_.get() setVisualState:bookmarks::kShowingState];
   [view_ display];
 }
 
 // Test drawing (part 2), mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithNoImage) {
-  [controller_.get() setIsShownAsDetachedBar:YES];
+  [controller_.get() setVisualState:bookmarks::kDetachedState];
 
   // Tests where we don't have a background image, only a color.
   MockThemeProvider provider;
@@ -126,7 +158,7 @@ ACTION(SetAlignLeft) {
 
 // Test drawing (part 3), mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
-  [controller_.get() setIsShownAsDetachedBar:YES];
+  [controller_.get() setVisualState:bookmarks::kDetachedState];
 
   // Tests where we have a background image, with positioning information.
   MockThemeProvider provider;
@@ -158,3 +190,5 @@ TEST_F(BookmarkBarToolbarViewTest, DisplayAsDetachedBarWithBgImage) {
 
   [view_ display];
 }
+
+// TODO(viettrungluu): write more unit tests, especially after my refactoring.

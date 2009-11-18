@@ -13,6 +13,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "chrome/browser/cocoa/animatable_view.h"
+#import "chrome/browser/cocoa/bookmark_bar_state.h"
 
 @class BookmarkBarView;
 class TabContents;
@@ -20,7 +21,7 @@ class ThemeProvider;
 
 // An interface to allow mocking of a BookmarkBarController by the
 // BookmarkBarToolbarView.
-@protocol BookmarkBarToolbarViewController
+@protocol BookmarkBarToolbarViewController <BookmarkBarState>
 // Displaying the bookmark toolbar background in bubble (floating) mode requires
 // the size of the currently selected tab to properly calculate where the
 // background image is joined.
@@ -28,10 +29,6 @@ class ThemeProvider;
 
 // Current theme provider, passed to the cross platform NtpBackgroundUtil class.
 - (ThemeProvider*)themeProvider;
-
-// Returns true if the bookmark bar should be drawn as if it's a disconnected
-// bookmark bar on the New Tag Page.
-- (BOOL)isShownAsDetachedBar;
 
 @end
 

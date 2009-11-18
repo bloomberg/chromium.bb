@@ -30,7 +30,8 @@
 }
 
 // Properties for bindings.
-@property(assign) id delegate;
+@property(assign, nonatomic) id delegate;
+@property(assign, nonatomic) id<ViewResizer> resizeDelegate;
 
 // Gets the current height of the view.  If an animation is currently running,
 // this will give the current height at the time of the call, not the target
@@ -49,9 +50,8 @@
 // (mid-animation) height.
 - (void)stopAnimation;
 
-// Sets the delegate that gets notified when this view needs to chanage its
-// height.
-- (void)setResizeDelegate:(id<ViewResizer>)resizeDelegate;
+// Gets the progress of any current animation.
+- (NSAnimationProgress)currentAnimationProgress;
 
 @end
 

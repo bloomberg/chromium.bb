@@ -49,6 +49,7 @@
 
 @implementation AnimatableView
 @synthesize delegate = delegate_;
+@synthesize resizeDelegate = resizeDelegate_;
 
 - (void)dealloc {
   // Stop the animation if it is running, since it holds a pointer to this view.
@@ -84,8 +85,8 @@
   [currentAnimation_ stopAnimation];
 }
 
-- (void)setResizeDelegate:(id<ViewResizer>)resizeDelegate {
-  resizeDelegate_ = resizeDelegate;
+- (NSAnimationProgress)currentAnimationProgress {
+  return [currentAnimation_ currentProgress];
 }
 
 - (void)animationDidStop:(NSAnimation*)animation {

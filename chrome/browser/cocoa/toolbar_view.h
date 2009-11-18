@@ -12,7 +12,14 @@
 // this time it only draws a gradient.  Future changes (e.g. themes)
 // may require new functionality here.
 
-@interface ToolbarView : BackgroundGradientView
+@interface ToolbarView : BackgroundGradientView {
+ @private
+  // The opacity of the divider line (at the bottom of the toolbar); used when
+  // the detached bookmark bar is morphing to the normal bar and vice versa.
+  CGFloat dividerOpacity_;
+}
+
+@property(assign, nonatomic) CGFloat dividerOpacity;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TOOLBAR_VIEW_H_

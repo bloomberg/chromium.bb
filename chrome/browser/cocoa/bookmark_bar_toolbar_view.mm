@@ -23,11 +23,13 @@ const CGFloat kBorderRadius = 3.0;
 @implementation BookmarkBarToolbarView
 
 - (BOOL)isOpaque {
-  return [controller_ isShownAsDetachedBar];
+  return [controller_ isInState:bookmarks::kDetachedState];
 }
 
 - (void)drawRect:(NSRect)rect {
-  if ([controller_ isShownAsDetachedBar]) {
+  if ([controller_ isInState:bookmarks::kDetachedState] ||
+      [controller_ isAnimatingToState:bookmarks::kDetachedState] ||
+      [controller_ isAnimatingFromState:bookmarks::kDetachedState]) {
     [self drawRectAsBubble:rect];
   } else {
     NSPoint phase = [self gtm_themePatternPhase];
@@ -37,16 +39,20 @@ const CGFloat kBorderRadius = 3.0;
 }
 
 - (void)drawRectAsBubble:(NSRect)rect {
+  // The state of our morph; 1 is total bubble, 0 is the regular bar. We use it
+  // to morph the bubble to a regular bar (shape and colour).
+  CGFloat morph = [controller_ detachedMorphProgress];
+
   NSRect bounds = [self bounds];
 
   ThemeProvider* themeProvider = [controller_ themeProvider];
   if (!themeProvider)
     return;
 
-  NSGraphicsContext* theContext = [NSGraphicsContext currentContext];
-  [theContext saveGraphicsState];
+  NSGraphicsContext* context = [NSGraphicsContext currentContext];
+  [context saveGraphicsState];
 
-  // Draw the background
+  // Draw the background.
   {
     // CanvasPaint draws to the NSGraphicsContext during its destructor, so
     // explicitly scope this.
@@ -69,16 +75,19 @@ const CGFloat kBorderRadius = 3.0;
 
   // Draw our bookmark bar border on top of the background.
   NSRect frameRect =
-      NSMakeRect(bookmarks::kNTPBookmarkBarPadding,
-                 bookmarks::kNTPBookmarkBarPadding,
-                 NSWidth(bounds) - 2 * bookmarks::kNTPBookmarkBarPadding,
-                 NSHeight(bounds) - 2 * bookmarks::kNTPBookmarkBarPadding);
-  // Now draw a bezier path with rounded rectangles around the area
-  frameRect = NSInsetRect(frameRect, 0.5, 0.5);
+      NSMakeRect(
+          morph * bookmarks::kNTPBookmarkBarPadding,
+          morph * bookmarks::kNTPBookmarkBarPadding,
+          NSWidth(bounds) - 2 * morph * bookmarks::kNTPBookmarkBarPadding,
+          NSHeight(bounds) - 2 * morph * bookmarks::kNTPBookmarkBarPadding);
+  // Now draw a bezier path with rounded rectangles around the area.
+  frameRect = NSInsetRect(frameRect, morph * 0.5, morph * 0.5);
   NSBezierPath* border =
       [NSBezierPath bezierPathWithRoundedRect:frameRect
-                                      xRadius:kBorderRadius
-                                      yRadius:kBorderRadius];
+                                      xRadius:(morph * kBorderRadius)
+                                      yRadius:(morph * kBorderRadius)];
+
+  // Draw the rounded rectangle.
   NSColor* toolbarColor =
       [[self gtm_theme] backgroundColorForStyle:GTMThemeStyleToolBar
                                           state:GTMThemeStateActiveWindow];
@@ -89,16 +98,43 @@ const CGFloat kBorderRadius = 3.0;
     toolbarColor = nil;
   if (!toolbarColor)
     toolbarColor = [NSColor colorWithCalibratedWhite:0.9 alpha:1.0];
-  [toolbarColor set];
+  [[toolbarColor colorWithAlphaComponent:morph] set];  // Set with opacity.
   [border fill];
 
+  // Fade in/out the background.
+  [context saveGraphicsState];
+  [border setClip];
+  CGContextRef cgContext = (CGContextRef)[context graphicsPort];
+  CGContextBeginTransparencyLayer(cgContext, NULL);
+  CGContextSetAlpha(cgContext, 1 - morph);
+  [context setPatternPhase:[self gtm_themePatternPhase]];
+  [self drawBackground];
+  CGContextEndTransparencyLayer(cgContext);
+  [context restoreGraphicsState];
+
+  // Draw the border of the rounded rectangle.
   NSColor* borderColor =
       [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBarButton
                                       state:GTMThemeStateActiveWindow];
-  [borderColor set];
+  [[borderColor colorWithAlphaComponent:morph] set];  // Set with opacity.
   [border stroke];
 
-  [theContext restoreGraphicsState];
+  // Fade in/out the divider.
+  // TODO(viettrungluu): It's not obvious that this divider lines up exactly
+  // with |BackgroundGradientView|'s (in fact, it probably doesn't).
+  [[[self strokeColor] colorWithAlphaComponent:(1 - morph)] set];
+  NSBezierPath* divider = [NSBezierPath bezierPath];
+  NSPoint dividerStart =
+      NSMakePoint(morph * bookmarks::kNTPBookmarkBarPadding + morph * 0.5,
+                  morph * bookmarks::kNTPBookmarkBarPadding + morph * 0.5);
+  CGFloat dividerWidth =
+      NSWidth(bounds) - 2 * morph * bookmarks::kNTPBookmarkBarPadding - 2 * 0.5;
+  [divider moveToPoint:dividerStart];
+  [divider relativeLineToPoint:NSMakePoint(dividerWidth, 0)];
+  [divider stroke];
+
+  // Restore the graphics context.
+  [context restoreGraphicsState];
 }
 
 @end  // @implementation BookmarkBarToolbarView

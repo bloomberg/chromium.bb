@@ -11,6 +11,7 @@
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/bookmark_bar_bridge.h"
+#import "chrome/browser/cocoa/bookmark_bar_state.h"
 #import "chrome/browser/cocoa/bookmark_bar_toolbar_view.h"
 #include "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #include "webkit/glue/window_open_disposition.h"
@@ -38,24 +39,15 @@ const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 const CGFloat kNoBookmarksHorizontalOffset = 5.0;
-const CGFloat kNoBookmarksVerticalOffset = 22.0;
-const CGFloat kNoBookmarksNTPVerticalOffset = 28.0;
-
-// States for the bookmark bar.
-enum VisualState {
-  kInvalidState  = 0,
-  kHiddenState   = 1,
-  kShowingState  = 2,
-  kDetachedState = 3,
-};
+const CGFloat kNoBookmarksVerticalOffset = 6.0;
 
 }  // namespace bookmarks
 
 // The interface for the bookmark bar controller's delegate. Currently, the
 // delegate is the BWC and is responsible for ensuring that the toolbar is
 // displayed correctly (as specified by |-getDesiredToolbarHeightCompression|
-// and |-shouldToolbarShowDivider|) at the beginning and at the end of an
-// animation (or after a state change).
+// and |-toolbarDividerOpacity|) at the beginning and at the end of an animation
+// (or after a state change).
 @protocol BookmarkBarControllerDelegate
 
 // Sent when the state has changed (after any animation), but before the final
@@ -74,7 +66,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // A controller for the bookmark bar in the browser window. Handles showing
 // and hiding based on the preference in the given profile.
 @interface BookmarkBarController :
-    NSViewController<BookmarkBarToolbarViewController> {
+    NSViewController<BookmarkBarState, BookmarkBarToolbarViewController> {
  @private
   // The visual state of the bookmark bar. If an animation is running, this is
   // set to the "destination" and |lastVisualState_| is set to the "original"
@@ -160,30 +152,20 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // if needed.  For fullscreen mode.
 - (void)setBookmarkBarEnabled:(BOOL)enabled;
 
-// Returns YES if the bookmarks bar is currently visible (as a normal toolbar or
-// as a detached bar on the NTP), NO otherwise.
-- (BOOL)isVisible;
-
-// Returns YES if an animation is currently running, NO otherwise.
-- (BOOL)isAnimationRunning;
-
-// Returns YES if the bookmarks bar is (to be) shown as part of the normal
-// toolbar, NO otherwise. This is exclusive of |-isShownAsDetachedBar|.
-- (BOOL)isShownAsToolbar;
-
-// Returns YES if the bookmarks bar is (to be) shown as a detached bar, NO
-// otherwise; required for the |BookmarkBarToolbarViewController| protocol. This
-// is exclusive of |-isShownAsToolbar|.
-- (BOOL)isShownAsDetachedBar;
-
 // Returns the amount by which the toolbar above should be compressed.
 - (CGFloat)getDesiredToolbarHeightCompression;
 
-// Returns whether or not the toolbar above should show the divider.
-- (BOOL)shouldToolbarShowDivider;
+// Gets the appropriate opacity for the toolbar's divider; 0 means that it
+// shouldn't be shown.
+- (CGFloat)toolbarDividerOpacity;
 
 // Returns true if at least one bookmark was added.
 - (BOOL)addURLs:(NSArray*)urls withTitles:(NSArray*)titles at:(NSPoint)point;
+
+// Updates the sizes and positions of the subviews.
+// TODO(viettrungluu): I'm not convinced this should be public, but I currently
+// need it for animations. Try not to propagate its use.
+- (void)layoutSubviews;
 
 // Complete a drag of a bookmark button to this location on the main bar.
 // TODO(jrg): submenu DnD.
