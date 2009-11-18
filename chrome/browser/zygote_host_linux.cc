@@ -106,6 +106,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   bool using_suid_sandbox = false;
   if (!sandbox_cmd.empty() && stat(sandbox_binary, &st) == 0) {
     if (access(sandbox_binary, X_OK) == 0 &&
+        (st.st_uid == 0) &&
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {
       using_suid_sandbox = true;
@@ -116,7 +117,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
       LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
                     "configured correctly. Rather than run without sandboxing "
                     "I'm aborting now. You need to make sure that "
-                 << sandbox_binary << " is mode 4755.";
+                 << sandbox_binary << " is mode 4755 and owned by root.";
     }
   }
 
