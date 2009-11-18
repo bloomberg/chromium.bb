@@ -110,13 +110,13 @@ class ResourceLoaderBridge {
     // Called when a redirect occurs.  The implementation may return false to
     // suppress the redirect.  The given ResponseInfo provides complete
     // information about the redirect, and new_url is the URL that will be
-    // loaded if this method returns true.  If this method returns true, it
-    // stores in *new_first_party_for_cookies the new URL that should be
-    // consulted for the third-party cookie blocking policy.  If the cookie
-    // policy URL doesn't need changing, it stores an empty, invalid URL in
-    // *new_first_party_for_cookies.
+    // loaded if this method returns true.  If this method returns true, the
+    // output parameter *has_new_first_party_for_cookies indicates whether the
+    // output parameter *new_first_party_for_cookies contains the new URL that
+    // should be consulted for the third-party cookie blocking policy.
     virtual bool OnReceivedRedirect(const GURL& new_url,
                                     const ResponseInfo& info,
+                                    bool* has_new_first_party_for_cookies,
                                     GURL* new_first_party_for_cookies) = 0;
 
     // Called when response headers are available (after all redirects have
@@ -158,8 +158,8 @@ class ResourceLoaderBridge {
   // the standard MIME header encoding rules.  The headers parameter can also
   // be null if no extra request headers need to be set.
   //
-  // policy_url is the URL of the document in the top-level window, which may be
-  // checked by the third-party cookie blocking policy.
+  // first_party_for_cookies is the URL of the document in the top-level
+  // window, which may be checked by the third-party cookie blocking policy.
   //
   // load_flags is composed of the values defined in url_request_load_flags.h
   //
@@ -173,7 +173,7 @@ class ResourceLoaderBridge {
   // frame's network context.
   static ResourceLoaderBridge* Create(const std::string& method,
                                       const GURL& url,
-                                      const GURL& policy_url,
+                                      const GURL& first_party_for_cookies,
                                       const GURL& referrer,
                                       const std::string& frame_origin,
                                       const std::string& main_frame_origin,

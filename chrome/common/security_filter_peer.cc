@@ -107,6 +107,7 @@ void SecurityFilterPeer::OnUploadProgress(uint64 position, uint64 size) {
 bool SecurityFilterPeer::OnReceivedRedirect(
     const GURL& new_url,
     const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   NOTREACHED();
   return false;

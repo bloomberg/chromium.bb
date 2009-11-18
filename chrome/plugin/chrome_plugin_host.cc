@@ -69,10 +69,12 @@ class PluginRequestHandlerProxy
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const ResourceLoaderBridge::ResponseInfo& info,
+      bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies) {
     plugin_->functions().response_funcs->received_redirect(
         cprequest_.get(), new_url.spec().c_str());
-    *new_first_party_for_cookies = GURL();
+    // TODO(wtc): should we return a new first party for cookies URL?
+    *has_new_first_party_for_cookies = false;
     return true;
   }
 

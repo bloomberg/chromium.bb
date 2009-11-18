@@ -143,11 +143,14 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // Follows a deferred redirect for the given request.
   // new_first_party_for_cookies, if non-empty, is the new cookie policy URL
-  // for the redirected URL.  Pass an empty, invalid URL as
-  // new_first_party_for_cookies to indicate that the cookie policy URL
-  // doesn't need changing.
+  // for the redirected URL.  If the cookie policy URL needs changing, pass
+  // true as has_new_first_party_for_cookies and the new cookie policy URL as
+  // new_first_party_for_cookies.  Otherwise, pass false as
+  // has_new_first_party_for_cookies, and new_first_party_for_cookies will not
+  // be used.
   void FollowDeferredRedirect(int process_unique_id,
                               int request_id,
+                              bool has_new_first_party_for_cookies,
                               const GURL& new_first_party_for_cookies);
 
   // Returns true if it's ok to send the data. If there are already too many
@@ -406,6 +409,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void OnUploadProgressACK(int request_id);
   void OnCancelRequest(int request_id);
   void OnFollowRedirect(int request_id,
+                        bool has_new_first_party_for_cookies,
                         const GURL& new_first_party_for_cookies);
 
   // Returns true if the message passed in is a resource related message.

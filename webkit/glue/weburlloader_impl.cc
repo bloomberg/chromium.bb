@@ -211,6 +211,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const ResourceLoaderBridge::ResponseInfo& info,
+      bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(
       const ResourceLoaderBridge::ResponseInfo& info, bool content_filtered);
@@ -391,6 +392,7 @@ void WebURLLoaderImpl::Context::OnUploadProgress(uint64 position, uint64 size) {
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
     const GURL& new_url,
     const ResourceLoaderBridge::ResponseInfo& info,
+    bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   if (!client_)
     return false;
@@ -408,6 +410,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
 
   client_->willSendRequest(loader_, new_request, response);
   request_ = new_request;
+  *has_new_first_party_for_cookies = true;
   *new_first_party_for_cookies = request_.firstPartyForCookies();
 
   // Only follow the redirect if WebKit left the URL unmodified.

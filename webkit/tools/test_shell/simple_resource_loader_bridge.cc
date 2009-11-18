@@ -153,12 +153,14 @@ class RequestProxy : public URLRequest::Delegate,
 
   void NotifyReceivedRedirect(const GURL& new_url,
                               const ResourceLoaderBridge::ResponseInfo& info) {
+    bool has_new_first_party_for_cookies = false;
     GURL new_first_party_for_cookies;
     if (peer_ && peer_->OnReceivedRedirect(new_url, info,
+                                           &has_new_first_party_for_cookies,
                                            &new_first_party_for_cookies)) {
       io_thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
           this, &RequestProxy::AsyncFollowDeferredRedirect,
-          new_first_party_for_cookies));
+          has_new_first_party_for_cookies, new_first_party_for_cookies));
     } else {
       Cancel();
     }
@@ -241,12 +243,13 @@ class RequestProxy : public URLRequest::Delegate,
     Done();
   }
 
-  void AsyncFollowDeferredRedirect(const GURL& new_first_party_for_cookies) {
+  void AsyncFollowDeferredRedirect(bool has_new_first_party_for_cookies,
+                                   const GURL& new_first_party_for_cookies) {
     // This can be null in cases where the request is already done.
     if (!request_.get())
       return;
 
-    if (!new_first_party_for_cookies.is_empty())
+    if (has_new_first_party_for_cookies)
       request_->set_first_party_for_cookies(new_first_party_for_cookies);
     request_->FollowDeferredRedirect();
   }

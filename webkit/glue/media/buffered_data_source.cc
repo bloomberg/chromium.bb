@@ -231,12 +231,14 @@ int64 BufferedResourceLoader::GetBufferedLastBytePosition() {
 bool BufferedResourceLoader::OnReceivedRedirect(
     const GURL& new_url,
     const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   DCHECK(bridge_.get());
 
   // Save the new URL.
   url_ = new_url;
-  *new_first_party_for_cookies = GURL();
+  // TODO(wtc): should we return a new first party for cookies URL?
+  *has_new_first_party_for_cookies = false;
 
   // The load may have been stopped and |start_callback| is destroyed.
   // In this case we shouldn't do anything.

@@ -658,8 +658,10 @@ void ResourceDispatcherHost::OnCancelRequest(int request_id) {
 
 void ResourceDispatcherHost::OnFollowRedirect(
     int request_id,
+    bool has_new_first_party_for_cookies,
     const GURL& new_first_party_for_cookies) {
   FollowDeferredRedirect(receiver_->id(), request_id,
+                         has_new_first_party_for_cookies,
                          new_first_party_for_cookies);
 }
 
@@ -834,6 +836,7 @@ void ResourceDispatcherHost::CancelRequest(int child_id,
 void ResourceDispatcherHost::FollowDeferredRedirect(
     int child_id,
     int request_id,
+    bool has_new_first_party_for_cookies,
     const GURL& new_first_party_for_cookies) {
   PendingRequestList::iterator i = pending_requests_.find(
       GlobalRequestID(child_id, request_id));
@@ -842,7 +845,7 @@ void ResourceDispatcherHost::FollowDeferredRedirect(
     return;
   }
 
-  if (!new_first_party_for_cookies.is_empty())
+  if (has_new_first_party_for_cookies)
     i->second->set_first_party_for_cookies(new_first_party_for_cookies);
   i->second->FollowDeferredRedirect();
 }

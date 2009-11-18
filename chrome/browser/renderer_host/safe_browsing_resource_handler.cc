@@ -242,8 +242,9 @@ void SafeBrowsingResourceHandler::ResumeRedirect() {
   next_handler_->OnRequestRedirected(redirect_id_, redirect_url_,
                                      redirect_response_, &defer);
   if (!defer) {
+    // TODO(wtc): should we pass a new first party for cookies URL?
     rdh_->FollowDeferredRedirect(render_process_host_id_, redirect_id_,
-                                 GURL());
+                                 false, GURL());
   }
 
   redirect_response_ = NULL;

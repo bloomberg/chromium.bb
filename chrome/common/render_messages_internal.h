@@ -1054,8 +1054,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Follows a redirect that occured for the resource request with the ID given
   // as the parameter.
-  IPC_MESSAGE_ROUTED2(ViewHostMsg_FollowRedirect,
+  IPC_MESSAGE_ROUTED3(ViewHostMsg_FollowRedirect,
                       int /* request_id */,
+                      bool /* has_new_first_party_for_cookies */,
                       GURL /* new_first_party_for_cookies */)
 
   // Makes a synchronous resource request via the browser.

@@ -35,8 +35,9 @@ class TestRequestCallback : public ResourceLoaderBridge::Peer {
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const ResourceLoaderBridge::ResponseInfo& info,
+      bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies) {
-    *new_first_party_for_cookies = GURL();
+    *has_new_first_party_for_cookies = false;
     return true;
   }
 
@@ -246,8 +247,9 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const ResourceLoaderBridge::ResponseInfo& info,
+      bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies) {
-    *new_first_party_for_cookies = GURL();
+    *has_new_first_party_for_cookies = false;
     return true;
   }
 

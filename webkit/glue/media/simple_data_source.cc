@@ -123,9 +123,11 @@ void SimpleDataSource::OnUploadProgress(uint64 position, uint64 size) {}
 bool SimpleDataSource::OnReceivedRedirect(
     const GURL& new_url,
     const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+    bool* has_new_first_party_for_cookies,
     GURL* new_first_party_for_cookies) {
   SetURL(new_url);
-  *new_first_party_for_cookies = GURL();
+  // TODO(wtc): should we return a new first party for cookies URL?
+  *has_new_first_party_for_cookies = false;
   return true;
 }
 

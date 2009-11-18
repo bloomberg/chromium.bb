@@ -56,6 +56,7 @@ class SimpleDataSource : public media::DataSource,
   virtual bool OnReceivedRedirect(
       const GURL& new_url,
       const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
+      bool* has_new_first_party_for_cookies,
       GURL* new_first_party_for_cookies);
   virtual void OnReceivedResponse(
       const webkit_glue::ResourceLoaderBridge::ResponseInfo& info,
