@@ -15,7 +15,7 @@ etc/fonts/fonts.conf
 EOF
 
 rm -f $DEVZIP
-zip -r $DEVZIP -@ <<EOF
+zip -r -D $DEVZIP -@ <<EOF
 etc/fonts/fonts.dtd
 include/fontconfig
 lib/libfontconfig.dll.a
@@ -24,10 +24,6 @@ lib/fontconfig.def
 lib/pkgconfig/fontconfig.pc
 bin/fc-list.exe
 bin/fc-cache.exe
-man/man1/fc-cache.1
-man/man1/fc-list.1
-man/man5/fonts-conf.5
+share/man
 share/doc/fontconfig
 EOF
-
-zip $DEVZIP man/man3/Fc*.3
