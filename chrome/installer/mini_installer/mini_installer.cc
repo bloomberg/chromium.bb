@@ -406,7 +406,7 @@ void AppendCommandLineFlags(wchar_t* buffer, int size) {
   if (args_num <= 0)
     return;
 
-  wchar_t* cmd_to_append = NULL;
+  wchar_t* cmd_to_append = L"";
   if (!StrEndsWith(args[0], exe_name)) {
     // Current executable name not in the command line so just append
     // the whole command line.
