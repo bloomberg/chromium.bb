@@ -438,6 +438,9 @@ kern_return_t catch_exception_raise(mach_port_t port, mach_port_t failed_thread,
                                     exception_type_t exception,
                                     exception_data_t code,
                                     mach_msg_type_number_t code_count) {
+  if (task != mach_task_self()) {
+    return KERN_FAILURE;
+  }
   return ForwardException(task, failed_thread, exception, code, code_count);
 }
 
