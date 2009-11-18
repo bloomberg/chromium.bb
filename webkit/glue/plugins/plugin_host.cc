@@ -851,7 +851,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
   }
   case NPNVsupportsCoreGraphicsBool:
   case NPNVsupportsCarbonBool:
-  case NPNVsupportsCocoaBool:
   {
     // we do support these drawing and event models.
     NPBool* supports_model = reinterpret_cast<NPBool*>(value);
@@ -861,6 +860,7 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
   }
   case NPNVsupportsOpenGLBool:
   case NPNVsupportsCoreAnimationBool:
+  case NPNVsupportsCocoaBool:
   {
     // we do not support these drawing and event models.
     NPBool* supports_model = reinterpret_cast<NPBool*>(value);
@@ -952,11 +952,10 @@ NPError  NPN_SetValue(NPP id, NPPVariable variable, void *value) {
   }
   case NPPVpluginEventModel:
   {
-    // we support Carbon and Cocoa event models
+    // we only support the Carbon event model
     int model = reinterpret_cast<int>(value);
     switch (model) {
       case NPEventModelCarbon:
-      case NPEventModelCocoa:
         plugin->set_event_model(model);
         return NPERR_NO_ERROR;
         break;
