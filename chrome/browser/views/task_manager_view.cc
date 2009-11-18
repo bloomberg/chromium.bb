@@ -254,7 +254,6 @@ class TaskManagerView : public views::View,
   bool GetSavedAlwaysOnTopState(bool* always_on_top) const;
 
   views::NativeButton* purge_memory_button_;
-  bool purge_memory_button_in_purge_mode_;
   views::NativeButton* kill_button_;
   views::Link* about_memory_link_;
   views::GroupTableView* tab_table_;
@@ -287,7 +286,6 @@ TaskManagerView* TaskManagerView::instance_ = NULL;
 
 TaskManagerView::TaskManagerView()
     : purge_memory_button_(NULL),
-      purge_memory_button_in_purge_mode_(true),
       task_manager_(TaskManager::GetInstance()),
       model_(TaskManager::GetInstance()->model()),
       is_always_on_top_(false) {
@@ -492,14 +490,7 @@ void TaskManagerView::Show() {
 void TaskManagerView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (purge_memory_button_ && (sender == purge_memory_button_)) {
-    if (purge_memory_button_in_purge_mode_) {
-      MemoryPurger::GetSingleton()->OnSuspend();
-      purge_memory_button_->SetLabel(L"Reset purger");
-    } else {
-      MemoryPurger::GetSingleton()->OnResume();
-      purge_memory_button_->SetLabel(L"Purge Memory");
-    }
-    purge_memory_button_in_purge_mode_ = !purge_memory_button_in_purge_mode_;
+    MemoryPurger::PurgeAll();
   } else {
     DCHECK_EQ(sender, kill_button_);
     for (views::TableSelectionIterator iter  = tab_table_->SelectionBegin();

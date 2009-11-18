@@ -34,7 +34,6 @@
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/first_run.h"
-#include "chrome/browser/memory_purger.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/metadata_url_request.h"
@@ -325,8 +324,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // timer settings. But it's necessary only on Windows.
   base::Time::StartSystemMonitorObserver();
 #endif  // defined(OS_WIN)
-  // Start the MemoryPurger, which observes the SystemMonitor as well.
-  MemoryPurger::GetSingleton();
 
   // Initialize statistical testing infrastructure.
   FieldTrialList field_trial;

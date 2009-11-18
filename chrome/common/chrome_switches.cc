@@ -466,7 +466,7 @@ const char kProxyServer[]                   = "proxy-server";
 
 // Adds a "Purge memory" button to the Task Manager, which tries to dump as
 // much memory as possible.  This is mostly useful for testing how well the
-// MemoryPurger functionality (which is normally triggered on Suspend) works.
+// MemoryPurger functionality works.
 //
 // NOTE: This is only implemented for Views.
 const char kPurgeMemoryButton[]             = "purge-memory-button";

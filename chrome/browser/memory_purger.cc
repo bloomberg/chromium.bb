@@ -4,58 +4,153 @@
 
 #include "chrome/browser/memory_purger.h"
 
-#include "base/singleton.h"
+#include "base/thread.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
+#include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/renderer_host/backing_store_manager.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/common/render_messages.h"
+#include "net/proxy/proxy_resolver.h"
+#include "net/url_request/url_request_context.h"
+#include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
+#include "v8/include/v8.h"
+
+// PurgeMemoryHelper -----------------------------------------------------------
+
+// This is a small helper class used to ensure that the objects we want to use
+// on multiple threads are properly refed, so they don't get deleted out from
+// under us.
+class PurgeMemoryIOHelper
+    : public base::RefCountedThreadSafe<PurgeMemoryIOHelper> {
+ public:
+  explicit PurgeMemoryIOHelper(SafeBrowsingService* safe_browsing_service)
+      : safe_browsing_service_(safe_browsing_service) {
+  }
+
+  void AddRequestContextGetter(URLRequestContextGetter* request_context_getter);
+
+  void PurgeMemoryOnIOThread();
+
+ private:
+  typedef scoped_refptr<URLRequestContextGetter> RequestContextGetter;
+  typedef std::set<RequestContextGetter> RequestContextGetters;
+
+  RequestContextGetters request_context_getters_;
+  scoped_refptr<SafeBrowsingService> safe_browsing_service_;
+
+  DISALLOW_COPY_AND_ASSIGN(PurgeMemoryIOHelper);
+};
+
+void PurgeMemoryIOHelper::AddRequestContextGetter(
+    URLRequestContextGetter* request_context_getter) {
+  if (!request_context_getters_.count(request_context_getter)) {
+    request_context_getters_.insert(
+        RequestContextGetter(request_context_getter));
+  }
+}
+
+void PurgeMemoryIOHelper::PurgeMemoryOnIOThread() {
+  // Ask ProxyServices to purge any memory they can (generally garbage in the
+  // wrapped ProxyResolver's JS engine).
+  for (RequestContextGetters::const_iterator i(
+           request_context_getters_.begin());
+       i != request_context_getters_.end(); ++i)
+    (*i)->GetURLRequestContext()->proxy_service()->PurgeMemory();
+
+  // Close the Safe Browsing database, freeing memory used to cache sqlite as
+  // well as a number of in-memory structures.
+  safe_browsing_service_->CloseDatabase();
+}
+
+// -----------------------------------------------------------------------------
 
 // static
-MemoryPurger* MemoryPurger::GetSingleton() {
-  return Singleton<MemoryPurger>::get();
+void MemoryPurger::PurgeAll() {
+  PurgeBrowser();
+  PurgeRenderers();
+
+  // TODO(pkasting):
+  // * Tell the plugin processes to release their free memory?  Other stuff?
+  // * Enumerate what other processes exist and what to do for them.
 }
 
-void MemoryPurger::OnSuspend() {
-  // TODO:
+// static
+void MemoryPurger::PurgeBrowser() {
+  // Dump the backing stores.
+  BackingStoreManager::RemoveAllBackingStores();
+
+  // Per-profile cleanup.
+  scoped_refptr<PurgeMemoryIOHelper> purge_memory_io_helper(
+      new PurgeMemoryIOHelper(g_browser_process->resource_dispatcher_host()->
+          safe_browsing_service()));
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  for (ProfileManager::iterator i(profile_manager->begin());
+       i != profile_manager->end(); ++i) {
+    Profile* profile = *i;
+    purge_memory_io_helper->AddRequestContextGetter(
+        profile->GetRequestContext());
+
+    // NOTE: Some objects below may be duplicates across profiles.  We could
+    // conceivably put all these in sets and then iterate over the sets.
+
+    // Unload all history backends (freeing memory used to cache sqlite).
+    // Spinning up the history service is expensive, so we avoid doing it if it
+    // hasn't been done already.
+    HistoryService* history_service =
+        profile->GetHistoryServiceWithoutCreating();
+    if (history_service)
+      history_service->UnloadBackend();
+
+    // Unload all web databases (freeing memory used to cache sqlite).
+    WebDataService* web_data_service =
+        profile->GetWebDataServiceWithoutCreating();
+    if (web_data_service)
+      web_data_service->UnloadDatabase();
+
+    // Ask all WebKitContexts to purge memory (freeing memory used to cache
+    // the LocalStorage sqlite DB).  WebKitContext creation is basically free so
+    // we don't bother with a "...WithoutCreating()" function.
+    profile->GetWebKitContext()->PurgeMemory();
+  }
+
+  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(purge_memory_io_helper.get(),
+                        &PurgeMemoryIOHelper::PurgeMemoryOnIOThread));
+
+  // TODO(pkasting):
+  // * Purge AppCache memory.  Not yet implemented sufficiently.
+  // * Browser-side DatabaseTracker.  Not implemented sufficiently.
+
+#if defined(OS_WIN)
+  // Tell tcmalloc to release any free pages it's still holding.
   //
-  // * For the browser process:
-  //   * Commit all the sqlite databases and unload them from memory; at the
-  // very least, do this with the history system, then use the prefetch trick to
-  // reload it on wake.
-  //   * Repeatedly call the V8 idle notification until it returns true
-  // ("nothing more to free").  Note that it makes more sense to do this than to
-  // implement a new "delete everything" pass because object references make it
-  // difficult to free everything possible in just one pass.
-  //   * Dump the backing stores.
-  //   * Destroy the spellcheck object.
-  //   * Tell tcmalloc to free everything it can.  (This is vague since it's not
-  // clear to me what this means; Jim, Mike, and Anton will know more here.
-  // Also, do we need to do this in each renderer process too?)
-  //
-  // * For each renderer process:
-  //   * Repeatedly call the V8 idle notification until it returns true.
-  //   * Tell the WebCore cache manager to set its global limit to 0, which
-  // should flush the image/script/css/etc. caches.
-  //   * Destroy the WebCore glyph caches.
-  //   * Tell tcmalloc to free everything it can.
-  //
-  // Concern: If we tell a bunch of renderer processes to destroy their data,
-  // they may have to page everything in to do it, which could end up
-  // overflowing the amount of time we have to work with.
+  // TODO(pkasting): A lot of the above calls kick off actions on other threads.
+  // Maybe we should find a way to avoid calling this until those actions
+  // complete?
+  MallocExtension::instance()->ReleaseFreeMemory();
+#endif
 }
 
-void MemoryPurger::OnResume() {
-  // TODO:
+// static
+void MemoryPurger::PurgeRenderers() {
+  // Direct all renderers to free everything they can.
   //
-  // * For the browser process:
-  //   * Reload the history system and any other needed sqlite databases.
-  //
-  // * For each renderer process:
-  //   * Reset the WebCore cache manager global limit to the default.
+  // Concern: Telling a bunch of renderer processes to destroy their data may
+  // cause them to page everything in to do it, which could take a lot of time/
+  // cause jank.
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance())
+    PurgeRendererForHost(i.GetCurrentValue());
 }
 
-MemoryPurger::MemoryPurger() {
-  base::SystemMonitor::Get()->AddObserver(this);
-}
-
-MemoryPurger::~MemoryPurger() {
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
-  if (system_monitor)
-    system_monitor->RemoveObserver(this);
+// static
+void MemoryPurger::PurgeRendererForHost(RenderProcessHost* host) {
+  // Direct the renderer to free everything it can.
+  host->Send(new ViewMsg_PurgeMemory());
 }

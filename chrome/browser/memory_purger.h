@@ -2,35 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// MemoryPurger is designed to be used a singleton which listens for
-// suspend/resume notifications and purges as much memory as possible before
-// suspend.  The hope is that it will be faster to recalculate or manually
-// reload this data on resume than to let the OS page everything out and then
-// fault it back in.
+// MemoryPurger provides static APIs to purge as much memory as possible from
+// all processes.  These can be hooked to various signals to try and balance
+// memory consumption, speed, page swapping, etc.
 
 #ifndef CHROME_BROWSER_MEMORY_PURGER_H_
 #define CHROME_BROWSER_MEMORY_PURGER_H_
 
-#include "base/system_monitor.h"
+#include "base/basictypes.h"
 
-template<typename Type>
-struct DefaultSingletonTraits;
+class RenderProcessHost;
+class SafeBrowsingService;
 
-class MemoryPurger : public base::SystemMonitor::PowerObserver {
+class MemoryPurger {
  public:
-  static MemoryPurger* GetSingleton();
-
-  // PowerObserver
-  virtual void OnSuspend();
-  virtual void OnResume();
+  // Call any of these on the UI thread to purge memory from the named places.
+  static void PurgeAll();
+  static void PurgeBrowser();
+  static void PurgeRenderers();
+  static void PurgeRendererForHost(RenderProcessHost* host);
 
  private:
-  MemoryPurger();
-  virtual ~MemoryPurger();
-
-  friend struct DefaultSingletonTraits<MemoryPurger>;
-
-  DISALLOW_COPY_AND_ASSIGN(MemoryPurger);
+  DISALLOW_IMPLICIT_CONSTRUCTORS(MemoryPurger);
 };
 
 #endif  // CHROME_BROWSER_MEMORY_PURGER_H_
