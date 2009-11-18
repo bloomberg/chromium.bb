@@ -5732,7 +5732,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NTP_PROMOTION_MESSAGE" desc="Promotional message about new extensions and bookmark sync features.">
         <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> now has <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions<ph name="END_LINK">&lt;/a&gt;</ph> and <ph name="BEGIN2_LINK">&lt;a href="$3"&gt;</ph>bookmark sync<ph name="END2_LINK">&lt;/a&gt;</ph>.
       </message>
-        
+      <message name="IDS_NTP_PROMO_MESSAGE" desc="Promotional message about new extensions and bookmark sync features.">
+        <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> now has <ph name="BEGIN_LINK">&lt;a href="$2"&gt;</ph>extensions<ph name="END_LINK">&lt;/a&gt;</ph> and <ph name="BEGIN_BUTTON">&lt;button&gt;</ph>bookmark sync<ph name="END_BUTTON">&lt;/button&gt;</ph>.
+      </message>
+
       <!-- Mac Menubar Menus -->
       <if expr="os == 'darwin'">
         <!-- Menubar Menu Titles -->
