@@ -9,7 +9,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -80,6 +79,10 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
     received_response_ = received_data_ = 0;
     data_.clear();
     response_.reset();
+  }
+
+  string GetResponseHeader(const char* name) const {
+    return string(response_.httpHeaderField(WebString::fromUTF8(name)).utf8());
   }
 
   int received_response_, received_data_;
@@ -160,18 +163,10 @@ TEST(MultipartResponseTest, Functions) {
   delegate_tester.data().assign(test_header);
   EXPECT_TRUE(delegate_tester.ParseHeaders());
   EXPECT_TRUE(delegate_tester.data().length() == 0);
-  EXPECT_EQ(string("image/png"),
-            webkit_glue::WebStringToStdString(
-                client.response_.httpHeaderField(
-                    WebString::fromUTF8("Content-Type"))));
-  EXPECT_EQ(string("10"),
-            webkit_glue::WebStringToStdString(
-                client.response_.httpHeaderField(
-                    WebString::fromUTF8("content-length"))));
+  EXPECT_EQ(string("image/png"), client.GetResponseHeader("Content-Type"));
+  EXPECT_EQ(string("10"), client.GetResponseHeader("content-length"));
   // This header is passed from the original request.
-  EXPECT_EQ(string("Bar"),
-            webkit_glue::WebStringToStdString(
-                client.response_.httpHeaderField(WebString::fromUTF8("foo"))));
+  EXPECT_EQ(string("Bar"), client.GetResponseHeader("foo"));
 
   // Make sure we parse the right mime-type if a charset is provided.
   client.Reset();
@@ -180,12 +175,9 @@ TEST(MultipartResponseTest, Functions) {
   EXPECT_TRUE(delegate_tester.ParseHeaders());
   EXPECT_TRUE(delegate_tester.data().length() == 0);
   EXPECT_EQ(string("text/html; charset=utf-8"),
-            webkit_glue::WebStringToStdString(
-                client.response_.httpHeaderField(
-                    WebString::fromUTF8("Content-Type"))));
+            client.GetResponseHeader("Content-Type"));
   EXPECT_EQ(string("utf-8"),
-            webkit_glue::WebStringToStdString(
-                client.response_.textEncodingName()));
+            string(client.response_.textEncodingName().utf8()));
 
   // FindBoundary tests
   struct {

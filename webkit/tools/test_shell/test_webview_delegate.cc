@@ -6,10 +6,6 @@
 // as the WebViewDelegate for the TestShellWebHost.  The host is expected to
 // have initialized a MessageLoop before these methods are called.
 
-#include "config.h"
-
-#undef LOG
-
 #include "webkit/tools/test_shell/test_webview_delegate.h"
 
 #include "app/gfx/native_widget_types.h"
@@ -591,11 +587,7 @@ WebPlugin* TestWebViewDelegate::createPlugin(
 
 WebWorker* TestWebViewDelegate::createWorker(
     WebFrame* frame, WebWorkerClient* client) {
-#if ENABLE(WORKERS)
   return new TestWebWorker();
-#else
-  return NULL;
-#endif
 }
 
 WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(

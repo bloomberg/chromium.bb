@@ -23,7 +23,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "webkit/glue/ftp_directory_listing_response_delegate.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/multipart_response_delegate.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue.h"
@@ -56,8 +55,8 @@ class HeaderFlattener : public WebHTTPHeaderVisitor {
   virtual void visitHeader(const WebString& name, const WebString& value) {
     // TODO(darin): is UTF-8 really correct here?  It is if the strings are
     // already ASCII (i.e., if they are already escaped properly).
-    const std::string& name_utf8 = WebStringToStdString(name);
-    const std::string& value_utf8 = WebStringToStdString(value);
+    const std::string& name_utf8 = name.utf8();
+    const std::string& value_utf8 = value.utf8();
 
     // Skip over referrer headers found in the header map because we already
     // pulled it out as a separate parameter.  We likewise prune the UA since
@@ -148,8 +147,8 @@ void PopulateURLResponse(
     const ResourceLoaderBridge::ResponseInfo& info,
     WebURLResponse* response) {
   response->setURL(url);
-  response->setMIMEType(StdStringToWebString(info.mime_type));
-  response->setTextEncodingName(StdStringToWebString(info.charset));
+  response->setMIMEType(WebString::fromUTF8(info.mime_type));
+  response->setTextEncodingName(WebString::fromUTF8(info.charset));
   response->setExpectedContentLength(info.content_length);
   response->setSecurityInfo(info.security_info);
   response->setAppCacheID(info.appcache_id);
@@ -160,7 +159,7 @@ void PopulateURLResponse(
     return;
 
   response->setHTTPStatusCode(headers->response_code());
-  response->setHTTPStatusText(StdStringToWebString(headers->GetStatusText()));
+  response->setHTTPStatusText(WebString::fromUTF8(headers->GetStatusText()));
 
   // TODO(darin): We should leverage HttpResponseHeaders for this, and this
   // should be using the same code as ResourceDispatcherHost.
@@ -180,8 +179,8 @@ void PopulateURLResponse(
   void* iter = NULL;
   std::string name;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    response->addHTTPHeaderField(StdStringToWebString(name),
-                                 StdStringToWebString(value));
+    response->addHTTPHeaderField(WebString::fromUTF8(name),
+                                 WebString::fromUTF8(value));
   }
 }
 
@@ -283,9 +282,9 @@ void WebURLLoaderImpl::Context::Start(
     return;
   }
 
-  GURL referrer_url(WebStringToStdString(
-      request.httpHeaderField(WebString::fromUTF8("Referer"))));
-  const std::string& method = WebStringToStdString(request.httpMethod());
+  GURL referrer_url(
+      request.httpHeaderField(WebString::fromUTF8("Referer")).utf8());
+  const std::string& method = request.httpMethod().utf8();
 
   int load_flags = net::LOAD_NORMAL;
   switch (request.cachePolicy()) {
@@ -362,8 +361,7 @@ void WebURLLoaderImpl::Context::Start(
           }
           break;
         case WebHTTPBody::Element::TypeFile:
-          bridge_->AppendFileToUpload(
-              FilePath(WebStringToFilePathString(element.filePath)));
+          bridge_->AppendFileToUpload(WebStringToFilePath(element.filePath));
           break;
         default:
           NOTREACHED();

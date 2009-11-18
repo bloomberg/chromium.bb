@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/string_util.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webpasswordautocompletelistener_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

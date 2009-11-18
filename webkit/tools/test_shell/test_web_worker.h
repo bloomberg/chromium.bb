@@ -5,8 +5,6 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_WEB_WORKER_H_
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_WEB_WORKER_H_
 
-#if ENABLE(WORKERS)
-
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMessagePortChannel.h"
@@ -84,7 +82,5 @@ class TestWebWorker : public WebKit::WebWorker,
 
   DISALLOW_COPY_AND_ASSIGN(TestWebWorker);
 };
-
-#endif
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_TEST_WEB_WORKER_H_

@@ -14,13 +14,6 @@
 // The behavior of queuing events and replaying them can be disabled by a
 // layout test by setting eventSender.dragMode to false.
 
-// TODO(darin): This is very wrong.  We should not be including WebCore headers
-// directly like this!!
-#include "config.h"
-#include "KeyboardCodes.h"
-
-#undef LOG
-
 #include "webkit/tools/test_shell/event_sending_controller.h"
 
 #include <queue>
@@ -28,6 +21,7 @@
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -469,25 +463,25 @@ void EventSendingController::keyDown(
     bool needs_shift_key_modifier = false;
     if (L"\n" == code_str) {
       generate_char = true;
-      code = WebCore::VKEY_RETURN;
+      code = base::VKEY_RETURN;
     } else if (L"rightArrow" == code_str) {
-      code = WebCore::VKEY_RIGHT;
+      code = base::VKEY_RIGHT;
     } else if (L"downArrow" == code_str) {
-      code = WebCore::VKEY_DOWN;
+      code = base::VKEY_DOWN;
     } else if (L"leftArrow" == code_str) {
-      code = WebCore::VKEY_LEFT;
+      code = base::VKEY_LEFT;
     } else if (L"upArrow" == code_str) {
-      code = WebCore::VKEY_UP;
+      code = base::VKEY_UP;
     } else if (L"delete" == code_str) {
-      code = WebCore::VKEY_BACK;
+      code = base::VKEY_BACK;
     } else if (L"pageUp" == code_str) {
-      code = WebCore::VKEY_PRIOR;
+      code = base::VKEY_PRIOR;
     } else if (L"pageDown" == code_str) {
-      code = WebCore::VKEY_NEXT;
+      code = base::VKEY_NEXT;
     } else if (L"home" == code_str) {
-      code = WebCore::VKEY_HOME;
+      code = base::VKEY_HOME;
     } else if (L"end" == code_str) {
-      code = WebCore::VKEY_END;
+      code = base::VKEY_END;
     } else {
       // Compare the input string with the function-key names defined by the
       // DOM spec (i.e. "F1",...,"F24"). If the input string is a function-key
@@ -497,7 +491,7 @@ void EventSendingController::keyDown(
         function_key_name += L"F";
         function_key_name += IntToWString(i);
         if (function_key_name == code_str) {
-          code = WebCore::VKEY_F1 + (i - 1);
+          code = base::VKEY_F1 + (i - 1);
           break;
         }
       }

@@ -15,7 +15,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebData;
