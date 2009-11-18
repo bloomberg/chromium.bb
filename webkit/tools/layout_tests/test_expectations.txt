@@ -586,19 +586,6 @@ BUG21888 : LayoutTests/fast/history/subframe-is-visited.html = FAIL
 // Need to implement LayoutTestController.setCacheModel
 BUG13920 : LayoutTests/fast/dom/HTMLScriptElement/nested-execution.html = FAIL
 
-// Implement layoutTestController.testRepaint()
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-horizontal.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-horizontal.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-vertical.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-vertical.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow-horizontal.html = FAIL
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
-
-// To be rebaselined. These were accidentally wall-papered over.
-BUG21510 : LayoutTests/fast/repaint/box-shadow-v.html = IMAGE
-BUG21510 LINUX : LayoutTests/fast/repaint/flexible-box-overflow-horizontal.html = IMAGE
-BUG21510 WIN LINUX : LayoutTests/fast/repaint/list-marker.html = IMAGE
-
 // Implement layoutTestController.display()
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
 BUG8630 WIN LINUX DEBUG SLOW : LayoutTests/fast/repaint/line-flow-with-floats-1.html = PASS
@@ -883,6 +870,10 @@ BUG23270 WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
 // Make canvas shadow work with drawImage.
 BUG11153 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
 BUG11153 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
+
+// Repaint issues are revealed by these tests.
+BUG28183 : LayoutTests/fast/repaint/box-shadow-v.html = IMAGE
+BUG28183 WIN LINUX : LayoutTests/fast/repaint/list-marker.html = IMAGE
 
 // Extra space at end of test results.  Since this is a crash test, a
 // FAIL here is just as good as running the test normally.
