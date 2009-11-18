@@ -17,6 +17,13 @@ TEST(StackTrace, OutputToStream) {
   trace.OutputToStream(&os);
   std::string backtrace_message = os.str();
 
+#if defined(OS_LINUX) && NDEBUG
+  // Stack traces require an extra data table that bloats our binaries,
+  // so they're turned off for release builds.  We stop the test here,
+  // at least letting us verify that the calls don't crash.
+  return;
+#endif  // defined(OS_LINUX) && NDEBUG
+
   size_t frames_found = 0;
   trace.Addresses(&frames_found);
   ASSERT_GE(frames_found, 5u) <<
