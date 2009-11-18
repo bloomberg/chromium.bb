@@ -586,7 +586,7 @@ class TCMallocImplementation : public MallocExtension {
     if (strcmp(name, "generic.committed_bytes") == 0) {
       TCMallocStats stats;
       ExtractStats(&stats, NULL);
-      *value = Static::pageheap()->CommittedBytes();
+      *value = stats.committed_bytes + stats.metadata_bytes;
       return true;
     }
 
