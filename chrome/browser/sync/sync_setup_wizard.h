@@ -7,12 +7,7 @@
 
 #include "base/basictypes.h"
 
-#if defined(TOOLKIT_GTK)
-typedef struct _GtkWidget GtkWidget;
-typedef struct _GtkWindow GtkWindow;
-#else
 class SyncSetupFlowContainer;
-#endif
 
 class ProfileSyncService;
 
@@ -53,10 +48,6 @@ class SyncSetupWizard {
   // if various buttons in the UI should be enabled or disabled.
   bool IsVisible() const;
 
-#if defined(TOOLKIT_GTK)
-  void set_visible(bool visible) { visible_ = visible; }
-#endif
-
  private:
   // If we just need to pop open an individual dialog, say to collect
   // gaia credentials in the event of a steady-state auth failure, this is
@@ -69,14 +60,10 @@ class SyncSetupWizard {
 
   ProfileSyncService* service_;
 
-#if defined(TOOLKIT_GTK)
-  bool visible_;
-#else
   // The use of ShowHtmlDialog and SyncSetupFlowContainer is disabled on Linux
   // until BrowserShowHtmlDialog() is implemented.
   // See: http://code.google.com/p/chromium/issues/detail?id=25260
   SyncSetupFlowContainer* flow_container_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupWizard);
 };

@@ -3010,8 +3010,6 @@
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],
-                ['exclude', '^browser/sync/sync_setup_flow.cc'],
-                ['exclude', '^browser/sync/sync_setup_wizard.cc'],
               ],
             }],
             ['chromeos==1 or toolkit_views==1',{
@@ -3109,12 +3107,6 @@
         ['OS=="win" or toolkit_views==1',{
           'dependencies': [
             '../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-          ],
-        }],
-        ['OS=="linux"', {
-          'sources': [
-            'browser/gtk/sync_setup_wizard_gtk.cc',
-            'browser/gtk/sync_setup_wizard_gtk.h',
           ],
         }],
       ],
@@ -4863,7 +4855,6 @@
             'browser/renderer_host/gtk_key_bindings_handler_unittest.cc',
           ],
           'sources!': [
-            'browser/sync/sync_setup_wizard_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/options/cookies_view_unittest.cc',
             # Compact Language Detection (cld) is not supported in linux yet.
