@@ -144,7 +144,6 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
     FcChar16	*numbers = FcCharSetNumbers (fcs);
 
     ucs4 >>= 8;
-    /* XXX We can't handle Unicode values in Plane 16 */
     if (ucs4 >= 0x10000)
 	return FcFalse;
 
