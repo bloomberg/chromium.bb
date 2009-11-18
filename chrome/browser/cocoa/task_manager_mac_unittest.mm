@@ -12,14 +12,19 @@
 
 namespace {
 
-class TaskManagerWindowControllerTest : public PlatformTest {
+class TaskManagerWindowControllerTest : public CocoaTest {
  public:
-  TaskManagerWindowControllerTest() {
-    controller_.reset([[TaskManagerWindowController alloc] init]);
+  virtual void SetUp() {
+    CocoaTest::SetUp();
+    controller_ = [[TaskManagerWindowController alloc] init];
   }
 
-  scoped_nsobject<TaskManagerWindowController> controller_;
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  virtual void TearDown() {
+    [controller_ close];
+    CocoaTest::TearDown();
+  }
+
+  TaskManagerWindowController *controller_;
 };
 
 // Test creation, to ensure nothing leaks or crashes
