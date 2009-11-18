@@ -229,7 +229,7 @@ BaseSessionService::Handle BaseSessionService::ScheduleGetLastSessionCommands(
   AddRequest(request, consumer);
   if (backend_thread()) {
     backend_thread()->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(
-        backend(), &SessionBackend::ReadLastSessionCommands, request));
+        backend(), &SessionBackend::ReadLastSessionCommands, request_wrapper));
   } else {
     backend()->ReadLastSessionCommands(request);
   }
