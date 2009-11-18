@@ -645,7 +645,7 @@ void GeneralPageView::Layout() {
 
 void GeneralPageView::SetDefaultBrowserUIState(
     ShellIntegration::DefaultBrowserUIState state) {
-  bool button_enabled = state == ShellIntegration::STATE_NOT_DEFAULT;
+  bool button_enabled = state != ShellIntegration::STATE_IS_DEFAULT;
   default_browser_use_as_default_button_->SetEnabled(button_enabled);
   if (state == ShellIntegration::STATE_IS_DEFAULT) {
     default_browser_status_label_->SetText(
