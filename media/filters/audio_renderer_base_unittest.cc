@@ -15,6 +15,7 @@ using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::StrictMock;
 
 namespace media {
@@ -47,12 +48,21 @@ class AudioRendererBaseTest : public ::testing::Test {
   // Give the decoder some non-garbage media properties.
   AudioRendererBaseTest()
       : renderer_(new MockAudioRendererBase()),
-        decoder_(new MockAudioDecoder(1, 44100, 16)) {
+        decoder_(new MockAudioDecoder()) {
     renderer_->set_host(&host_);
 
     // Queue all reads from the decoder.
     EXPECT_CALL(*decoder_, Read(NotNull()))
         .WillRepeatedly(Invoke(this, &AudioRendererBaseTest::EnqueueCallback));
+
+    // Sets the essential media format keys for this decoder.
+    decoder_media_format_.SetAsString(MediaFormat::kMimeType,
+                                      mime_type::kUncompressedAudio);
+    decoder_media_format_.SetAsInteger(MediaFormat::kChannels, 1);
+    decoder_media_format_.SetAsInteger(MediaFormat::kSampleRate, 44100);
+    decoder_media_format_.SetAsInteger(MediaFormat::kSampleBits, 16);
+    EXPECT_CALL(*decoder_, media_format())
+        .WillRepeatedly(ReturnRef(decoder_media_format_));
   }
 
   virtual ~AudioRendererBaseTest() {
@@ -71,6 +81,7 @@ class AudioRendererBaseTest : public ::testing::Test {
   scoped_refptr<MockAudioDecoder> decoder_;
   StrictMock<MockFilterHost> host_;
   StrictMock<MockFilterCallback> callback_;
+  MediaFormat decoder_media_format_;
 
   // Receives asynchronous read requests sent to |decoder_|.
   std::deque<Callback1<Buffer*>::Type*> read_queue_;

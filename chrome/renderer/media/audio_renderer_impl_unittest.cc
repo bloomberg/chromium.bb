@@ -5,9 +5,12 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "media/base/data_buffer.h"
+#include "media/base/media_format.h"
 #include "media/base/mock_filter_host.h"
 #include "media/base/mock_filters.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::ReturnRef;
 
 class AudioRendererImplTest : public ::testing::Test {
  public:
@@ -28,7 +31,16 @@ class AudioRendererImplTest : public ::testing::Test {
     // Setup expectations for initialization.
     EXPECT_CALL(callback_, OnFilterCallback());
     EXPECT_CALL(callback_, OnCallbackDestroyed());
-    decoder_ = new media::MockAudioDecoder(2, 48000, 16);
+    decoder_ = new media::MockAudioDecoder();
+
+    // Associate media format with decoder
+    decoder_media_format_.SetAsString(media::MediaFormat::kMimeType,
+                                      media::mime_type::kUncompressedAudio);
+    decoder_media_format_.SetAsInteger(media::MediaFormat::kChannels, 2);
+    decoder_media_format_.SetAsInteger(media::MediaFormat::kSampleRate, 48000);
+    decoder_media_format_.SetAsInteger(media::MediaFormat::kSampleBits, 16);
+    EXPECT_CALL(*decoder_, media_format())
+        .WillRepeatedly(ReturnRef(decoder_media_format_));
 
     // Create and initialize audio renderer.
     renderer_ = new AudioRendererImpl(filter_);
@@ -53,6 +65,7 @@ class AudioRendererImplTest : public ::testing::Test {
   media::MockFilterCallback callback_;
   scoped_refptr<media::MockAudioDecoder> decoder_;
   scoped_refptr<AudioRendererImpl> renderer_;
+  media::MediaFormat decoder_media_format_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImplTest);
@@ -66,15 +79,15 @@ TEST_F(AudioRendererImplTest, SetPlaybackRate) {
   renderer_->SetPlaybackRate(1.0f);
   renderer_->SetPlaybackRate(0.0f);
 
-  message_loop_->RunAllPending();
   renderer_->Stop();
+  message_loop_->RunAllPending();
 }
 
 TEST_F(AudioRendererImplTest, SetVolume) {
   // Execute SetVolume() codepath to create an IPC message.
   renderer_->SetVolume(0.5f);
-  message_loop_->RunAllPending();
   renderer_->Stop();
+  message_loop_->RunAllPending();
 }
 
 TEST_F(AudioRendererImplTest, Stop) {
