@@ -26,6 +26,8 @@ class ZygoteHost {
  public:
   void Init(const std::string& sandbox_cmd);
 
+  // Tries to start a renderer process.  Returns its pid on success, otherwise
+  // base::kNullProcessHandle;
   pid_t ForkRenderer(const std::vector<std::string>& command_line,
                      const base::GlobalDescriptors::Mapping& mapping);
   void EnsureProcessTerminated(pid_t process);

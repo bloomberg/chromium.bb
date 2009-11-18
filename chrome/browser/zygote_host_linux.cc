@@ -200,11 +200,11 @@ pid_t ZygoteHost::ForkRenderer(
   }
 
   if (!base::SendMsg(control_fd_, pickle.data(), pickle.size(), fds))
-    return -1;
+    return base::kNullProcessHandle;
 
   pid_t pid;
   if (HANDLE_EINTR(read(control_fd_, &pid, sizeof(pid))) != sizeof(pid))
-    return -1;
+    return base::kNullProcessHandle;
 
   return pid;
 }

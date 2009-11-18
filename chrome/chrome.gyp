@@ -974,6 +974,8 @@
         'browser/cert_store.h',
         'browser/character_encoding.cc',
         'browser/character_encoding.h',
+	'browser/child_process_launcher.cc',
+        'browser/child_process_launcher.h',
         'browser/child_process_security_policy.cc',
         'browser/child_process_security_policy.h',
         'browser/chrome_browser_application_mac.h',

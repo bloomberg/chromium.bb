@@ -43,6 +43,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   virtual void WidgetHidden();
   virtual void ViewCreated();
   virtual void AddWord(const string16& word);
+  virtual void SendVisitedLinkTable(base::SharedMemory* table_memory);
   virtual void AddVisitedLinks(
       const VisitedLinkCommon::Fingerprints& visited_links);
   virtual void ResetVisitedLinks();

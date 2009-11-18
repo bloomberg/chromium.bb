@@ -116,15 +116,10 @@ bool ExtensionBrowserTest::InstallOrUpdateExtension(
 }
 
 void ExtensionBrowserTest::ReloadExtension(const std::string& extension_id) {
-  NotificationRegistrar registrar;
-  registrar.Add(this, NotificationType::EXTENSION_LOADED,
-                NotificationService::AllSources());
-
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->ReloadExtension(extension_id);
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE, new MessageLoop::QuitTask, kTimeoutMs);
-  ui_test_utils::RunMessageLoop();
+  ui_test_utils::RegisterAndWait(NotificationType::EXTENSION_PROCESS_CREATED,
+                                 this, kTimeoutMs);
 }
 
 void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
@@ -256,6 +251,11 @@ void ExtensionBrowserTest::Observe(NotificationType type,
 
     case NotificationType::EXTENSION_OVERINSTALL_ERROR:
       std::cout << "Got EXTENSION_OVERINSTALL_ERROR notification.\n";
+      MessageLoopForUI::current()->Quit();
+      break;
+
+    case NotificationType::EXTENSION_PROCESS_CREATED:
+      std::cout << "Got EXTENSION_PROCESS_CREATED notification.\n";
       MessageLoopForUI::current()->Quit();
       break;
 

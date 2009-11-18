@@ -2139,9 +2139,6 @@ void TabContents::DidStopLoading() {
   // An entry may not exist for a stop when loading an initial blank page or
   // if an iframe injected by script into a blank page finishes loading.
   if (entry) {
-    scoped_ptr<base::ProcessMetrics> metrics(
-        base::ProcessMetrics::CreateProcessMetrics(process()->GetHandle()));
-
     base::TimeDelta elapsed = base::TimeTicks::Now() - current_load_start_;
 
     details.reset(new LoadNotificationDetails(

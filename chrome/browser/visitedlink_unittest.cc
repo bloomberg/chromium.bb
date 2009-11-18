@@ -131,7 +131,8 @@ class VisitedLinkTest : public testing::Test {
     // Create a slave database.
     VisitedLinkSlave slave;
     base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
-    master_->ShareToProcess(base::GetCurrentProcessHandle(), &new_handle);
+    master_->shared_memory()->ShareToProcess(
+        base::GetCurrentProcessHandle(), &new_handle);
     bool success = slave.Init(new_handle);
     ASSERT_TRUE(success);
     g_slaves.push_back(&slave);
@@ -271,7 +272,8 @@ TEST_F(VisitedLinkTest, DeleteAll) {
   {
     VisitedLinkSlave slave;
     base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
-    master_->ShareToProcess(base::GetCurrentProcessHandle(), &new_handle);
+    master_->shared_memory()->ShareToProcess(
+        base::GetCurrentProcessHandle(), &new_handle);
     ASSERT_TRUE(slave.Init(new_handle));
     g_slaves.push_back(&slave);
 
@@ -319,7 +321,8 @@ TEST_F(VisitedLinkTest, Resizing) {
   // ...and a slave
   VisitedLinkSlave slave;
   base::SharedMemoryHandle new_handle = base::SharedMemory::NULLHandle();
-  master_->ShareToProcess(base::GetCurrentProcessHandle(), &new_handle);
+  master_->shared_memory()->ShareToProcess(
+      base::GetCurrentProcessHandle(), &new_handle);
   bool success = slave.Init(new_handle);
   ASSERT_TRUE(success);
   g_slaves.push_back(&slave);
