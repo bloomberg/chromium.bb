@@ -3,6 +3,7 @@ vars = {
     "http://svn.webkit.org/repository/webkit/trunk",
   "webkit_revision": "51102",
   "ffmpeg_revision": "30374",
+  "chromium_git": "http://src.chromium.org/git",
 }
 
 deps = {
@@ -171,6 +172,14 @@ deps_os = {
     "src/third_party/ffmpeg/binaries/chromium/linux/x64_dbg":
       "/trunk/deps/third_party/ffmpeg/binaries/linux_64_dbg@" +
       Var("ffmpeg_revision"),
+  },
+  "chromeos": {
+     "src/third_party/cros":
+       Var("chromium_git") + "/cros.git@c4c0d4bc",
+     "src/third_party/chromeos_login_manager": 
+       Var("chromium_git") + "/login_manager.git@4659678c",
+     "src/third_party/chromeos_login_manager/include":
+       Var("chromium_git") + "/pam-dev.git@3971bd3f",
   },
 }
 
