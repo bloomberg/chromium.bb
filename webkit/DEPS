@@ -1,6 +1,10 @@
 # checkdeps.py shouldn't check include paths for files in these dirs:
 skip_child_includes = [
+  "api",
   "build",
+  # Skip port and pending because they use webkit style for includes.
+  "pending",
+  "port",
 ]
 
 include_rules = [
