@@ -35,7 +35,7 @@ bool GetUrlFromHDrop(IDataObject* data_object, std::wstring* url,
     if (0 == _wcsicmp(PathFindExtensionW(filename), L".url") &&
         GetPrivateProfileStringW(L"InternetShortcut", L"url", 0, url_buffer,
                                  arraysize(url_buffer), filename)) {
-      *url = url_buffer;
+      url->assign(url_buffer);
       PathRemoveExtension(filename);
       title->assign(PathFindFileName(filename));
       success = true;
@@ -49,21 +49,18 @@ bool GetUrlFromHDrop(IDataObject* data_object, std::wstring* url,
   return success;
 }
 
-bool SplitUrlAndTitle(const std::wstring& str, std::wstring* url,
-    std::wstring* title) {
+void SplitUrlAndTitle(const std::wstring& str,
+                      std::wstring* url,
+                      std::wstring* title) {
   DCHECK(url && title);
   size_t newline_pos = str.find('\n');
-  bool success = false;
-  if (newline_pos != std::string::npos) {
-    *url = str.substr(0, newline_pos);
-    title->assign(str.substr(newline_pos + 1));
-    success = true;
+  if (newline_pos != std::wstring::npos) {
+    url->assign(str, 0, newline_pos);
+    title->assign(str, newline_pos + 1, std::wstring::npos);
   } else {
-    *url = str;
+    url->assign(str);
     title->assign(str);
-    success = true;
   }
-  return success;
 }
 
 }  // namespace
@@ -191,40 +188,37 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
 
   // Try to extract a URL from |data_object| in a variety of formats.
   STGMEDIUM store;
-  if (GetUrlFromHDrop(data_object, url, title)) {
+  if (GetUrlFromHDrop(data_object, url, title))
     return true;
-  }
 
   if (SUCCEEDED(data_object->GetData(GetMozUrlFormat(), &store)) ||
       SUCCEEDED(data_object->GetData(GetUrlWFormat(), &store))) {
     // Mozilla URL format or unicode URL
     ScopedHGlobal<wchar_t> data(store.hGlobal);
-    bool success = SplitUrlAndTitle(data.get(), url, title);
+    SplitUrlAndTitle(data.get(), url, title);
     ReleaseStgMedium(&store);
-    if (success)
-      return true;
+    return true;
   }
 
   if (SUCCEEDED(data_object->GetData(GetUrlFormat(), &store))) {
     // URL using ascii
     ScopedHGlobal<char> data(store.hGlobal);
-    bool success = SplitUrlAndTitle(UTF8ToWide(data.get()), url, title);
+    SplitUrlAndTitle(UTF8ToWide(data.get()), url, title);
     ReleaseStgMedium(&store);
-    if (success)
-      return true;
+    return true;
   }
 
   if (SUCCEEDED(data_object->GetData(GetFilenameWFormat(), &store))) {
     // filename using unicode
     ScopedHGlobal<wchar_t> data(store.hGlobal);
     bool success = false;
-    if (data.get() && data.get()[0] && (PathFileExists(data.get()) ||
-                                        PathIsUNC(data.get()))) {
+    if (data.get() && data.get()[0] &&
+        (PathFileExists(data.get()) || PathIsUNC(data.get()))) {
       wchar_t file_url[INTERNET_MAX_URL_LENGTH];
-      DWORD file_url_len = sizeof(file_url) / sizeof(file_url[0]);
+      DWORD file_url_len = arraysize(file_url);
       if (SUCCEEDED(::UrlCreateFromPathW(data.get(), file_url, &file_url_len,
                                          0))) {
-        *url = file_url;
+        url->assign(file_url);
         title->assign(file_url);
         success = true;
       }
@@ -241,12 +235,10 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
     if (data.get() && data.get()[0] && (PathFileExistsA(data.get()) ||
                                         PathIsUNCA(data.get()))) {
       char file_url[INTERNET_MAX_URL_LENGTH];
-      DWORD file_url_len = sizeof(file_url) / sizeof(file_url[0]);
-      if (SUCCEEDED(::UrlCreateFromPathA(data.get(),
-                                         file_url,
-                                         &file_url_len,
+      DWORD file_url_len = arraysize(file_url);
+      if (SUCCEEDED(::UrlCreateFromPathA(data.get(), file_url, &file_url_len,
                                          0))) {
-        *url = UTF8ToWide(file_url);
+        url->assign(UTF8ToWide(file_url));
         title->assign(*url);
         success = true;
       }
@@ -296,52 +288,49 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
     return false;
 
   STGMEDIUM store;
-  bool success = false;
   if (SUCCEEDED(data_object->GetData(GetPlainTextWFormat(), &store))) {
     // Unicode text
     ScopedHGlobal<wchar_t> data(store.hGlobal);
     plain_text->assign(data.get());
     ReleaseStgMedium(&store);
-    success = true;
-  } else if (SUCCEEDED(data_object->GetData(GetPlainTextFormat(), &store))) {
+    return true;
+  }
+
+  if (SUCCEEDED(data_object->GetData(GetPlainTextFormat(), &store))) {
     // ascii text
     ScopedHGlobal<char> data(store.hGlobal);
     plain_text->assign(UTF8ToWide(data.get()));
     ReleaseStgMedium(&store);
-    success = true;
-  } else {
-    // If a file is dropped on the window, it does not provide either of the
-    // plain text formats, so here we try to forcibly get a url.
-    std::wstring title;
-    success = GetUrl(data_object, plain_text, &title);
+    return true;
   }
 
-  return success;
+  // If a file is dropped on the window, it does not provide either of the
+  // plain text formats, so here we try to forcibly get a url.
+  std::wstring title;
+  return GetUrl(data_object, plain_text, &title);
 }
 
 bool ClipboardUtil::GetHtml(IDataObject* data_object,
                             std::wstring* html, std::string* base_url) {
   DCHECK(data_object && html && base_url);
 
-  if (SUCCEEDED(data_object->QueryGetData(GetHtmlFormat()))) {
-    STGMEDIUM store;
-    if (SUCCEEDED(data_object->GetData(GetHtmlFormat(), &store))) {
-      // MS CF html
-      ScopedHGlobal<char> data(store.hGlobal);
+  STGMEDIUM store;
+  if (SUCCEEDED(data_object->QueryGetData(GetHtmlFormat())) &&
+      SUCCEEDED(data_object->GetData(GetHtmlFormat(), &store))) {
+    // MS CF html
+    ScopedHGlobal<char> data(store.hGlobal);
 
-      std::string html_utf8;
-      CFHtmlToHtml(std::string(data.get(), data.Size()), &html_utf8, base_url);
-      html->assign(UTF8ToWide(html_utf8));
+    std::string html_utf8;
+    CFHtmlToHtml(std::string(data.get(), data.Size()), &html_utf8, base_url);
+    html->assign(UTF8ToWide(html_utf8));
 
-      ReleaseStgMedium(&store);
-      return true;
-    }
+    ReleaseStgMedium(&store);
+    return true;
   }
 
   if (FAILED(data_object->QueryGetData(GetTextHtmlFormat())))
     return false;
 
-  STGMEDIUM store;
   if (FAILED(data_object->GetData(GetTextHtmlFormat(), &store)))
     return false;
 
@@ -355,11 +344,8 @@ bool ClipboardUtil::GetHtml(IDataObject* data_object,
 bool ClipboardUtil::GetFileContents(IDataObject* data_object,
     std::wstring* filename, std::string* file_contents) {
   DCHECK(data_object && filename && file_contents);
-  bool has_data =
-      SUCCEEDED(data_object->QueryGetData(GetFileContentFormatZero())) ||
-      SUCCEEDED(data_object->QueryGetData(GetFileDescriptorFormat()));
-
-  if (!has_data)
+  if (!SUCCEEDED(data_object->QueryGetData(GetFileContentFormatZero())) &&
+      !SUCCEEDED(data_object->QueryGetData(GetFileDescriptorFormat())))
     return false;
 
   STGMEDIUM content;
