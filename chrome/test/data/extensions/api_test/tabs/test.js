@@ -8,8 +8,6 @@ var secondWindowId = null;
 var firstTabIndex = null;
 var testTabId = null;
 
-var moveWindow1 = null;
-var moveWindow2 = null;
 var windowEventsWindow = null;
 var moveTabIds = {};
 
@@ -31,12 +29,7 @@ chrome.test.runTests([
     }));
   },
 
-  function openNewTab() {
-    // TODO(asargent) Add more tests for the following cases:
-    //  1) two windows open. create tab in "other" window.
-    //  2) don't pass windowId. confirm created in "this" window.
-    //  3) pass index. confirm placed at correct index position.
-    //  4) pass selected. confirm is selected.
+  function create() {
     chrome.tabs.create({"windowId" : firstWindowId, "selected" : false},
                        pass(function(tab){
       assertTrue(tab.index > firstTabIndex);
@@ -46,28 +39,52 @@ chrome.test.runTests([
     }));
   },
 
-  // Setup a new window for later tests, and open some tabs in the
-  // first and second windows.
-  function createWindow() {
-    // TODO(asargent) Add more tests for:
-    //  1) window sizing/positioning.
-    //  2) passed url (relative & absolute)
+  function createInOtherWindow() {
     chrome.windows.create({}, pass(function(win) {
-      assertTrue(win.id > 0);
-      secondWindowId = win.id;
-      // Create first window.
-      chrome.tabs.create({"windowId" : firstWindowId, "url" : pageUrl("a")},
-                         pass(function() {
-        // Create second window.
-        chrome.tabs.create({"windowId" : secondWindowId, "url" :pageUrl("b")},
-                           pass());
+      // The newly created window is now the currentWindow.
+      // Create a tab in the older window.
+      chrome.tabs.create({"windowId" : firstWindowId, "selected" : false},
+                         pass(function(tab) {
+        assertEq(firstWindowId, tab.windowId);
+      }));
+      // Create a tab in this new window.
+      chrome.tabs.create({"windowId" : win.id}, pass(function(tab) {
+        assertEq(win.id, tab.windowId);
       }));
     }));
   },
 
-  function getAllFirstWindow() {
-    // TODO(asargent) Add test for passing null for windowId - this should
-    // default to the "current" window.
+  function createAtIndex() {
+    chrome.tabs.create({"windowId" : firstWindowId, "index" : 1},
+                       pass(function(tab) {
+      assertEq(1, tab.index);
+    }));
+  },
+
+  function createSelected() {
+    chrome.tabs.create({"windowId" : firstWindowId, "selected" : true},
+                       pass(function(tab) {
+      assertTrue(tab.selected);
+      chrome.tabs.getSelected(firstWindowId, pass(function(selectedTab) {
+        assertEq(tab.id, selectedTab.id);
+      }));
+    }));
+  },
+
+  function setupTwoWindows() {
+    setupWindow(["about:blank", "chrome://newtab/", pageUrl("a")],
+                        pass(function(winId, tabIds) {
+      firstWindowId = winId;
+      testTabId = tabIds[2];
+
+      createWindow(["chrome://newtab/", pageUrl("b")],
+                           pass(function(winId, tabIds) {
+        secondWindowId = winId;
+      }));
+    }));
+  },
+
+  function getAllInWindow() {
     chrome.tabs.getAllInWindow(firstWindowId,
                                pass(function(tabs) {
       assertEq(3, tabs.length);
@@ -81,11 +98,8 @@ chrome.test.runTests([
       assertEq("about:blank", tabs[0].url);
       assertEq("chrome://newtab/", tabs[1].url);
       assertEq(pageUrl("a"), tabs[2].url);
-      testTabId = tabs[2].id;
     }));
-  },
 
-  function getAllSecondWindow() {
     chrome.tabs.getAllInWindow(secondWindowId,
                                pass(function(tabs) {
       assertEq(2, tabs.length);
@@ -98,7 +112,17 @@ chrome.test.runTests([
     }));
   },
 
-  function updateUrl() {
+  /* TODO: Enable this test when crbug.com/28055 is fixed. This bug causes a
+     newly created window not to be set as the current window, if
+     Chrome was not the foreground window when the create call was made.
+  function getAllInWindowNullArg() {
+    chrome.tabs.getAllInWindow(null, pass(function(tabs) {
+      assertEq(2, tabs.length);
+      assertEq(secondWindowId, tabs[0].windowId);
+    }));
+  }, */
+
+  function update() {
     chrome.tabs.get(testTabId, pass(function(tab) {
       assertEq(pageUrl("a"), tab.url);
       // Update url.
@@ -140,46 +164,6 @@ chrome.test.runTests([
     }));
   },
 
-  // Create 2 new windows, close existing windows.
-  function moveTabsSetup1() {
-    chrome.windows.create({}, pass(function(win1) {
-      moveWindow1 = win1.id;
-      chrome.windows.create({}, pass(function(win2) {
-        moveWindow2 = win2.id;
-        chrome.windows.remove(firstWindowId, pass(function(){
-          chrome.windows.remove(secondWindowId, pass());
-        }));
-      }));
-    }));
-  },
-
-  // Create a bunch of tabs and record the resulting ids.
-  function moveTabsSetup2() {
-    var letters = ['a', 'b', 'c', 'd', 'e'];
-    for (var i in letters) {
-      chrome.tabs.create({"windowId": moveWindow1,
-                          "url": pageUrl(letters[i])},
-                         pass(function(tab) {
-        var letter = tab.url[tab.url.length-6];
-        moveTabIds[letter] = tab.id;
-
-        // Assert on last callback that tabs were added in the order we created
-        // them.
-        if (letter == 'e') {
-          chrome.tabs.getAllInWindow(moveWindow1, pass(function(tabs) {
-            assertEq(6, tabs.length);
-            assertEq("chrome://newtab/", tabs[0].url);
-            assertEq(pageUrl("a"), tabs[1].url);
-            assertEq(pageUrl("b"), tabs[2].url);
-            assertEq(pageUrl("c"), tabs[3].url);
-            assertEq(pageUrl("d"), tabs[4].url);
-            assertEq(pageUrl("e"), tabs[5].url);
-          }));
-        }
-      }));
-    }
-  },
-
   // Do a series of moves so that we get the following
   //
   // Before:
@@ -189,42 +173,66 @@ chrome.test.runTests([
   // After:
   //  Window1: (newtab),a,e,c
   //  Window2: b,(newtab),d
-  function moveTabs() {
-    chrome.tabs.move(moveTabIds['b'], {"windowId": moveWindow2, "index": 0},
+  function setupLetterPages() {
+    var pages = ["chrome://newtab/", pageUrl('a'), pageUrl('b'),
+                   pageUrl('c'), pageUrl('d'), pageUrl('e')];
+    setupWindow(pages, pass(function(winId, tabIds) {
+      firstWindowId = winId;
+      moveTabIds['a'] = tabIds[1];
+      moveTabIds['b'] = tabIds[2];
+      moveTabIds['c'] = tabIds[3];
+      moveTabIds['d'] = tabIds[4];
+      moveTabIds['e'] = tabIds[5];
+      createWindow(["chrome://newtab/"], pass(function(winId, tabIds) {
+        secondWindowId = winId;
+      }));
+      chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
+        assertEq(pages.length, tabs.length);
+        for (var i in tabs) {
+          assertEq(pages[i], tabs[i].url);
+        }
+      }));
+    }));
+  },
+
+  function move() {
+    // Check that the tab/window state is what we expect after doing moves.
+    function checkMoveResults()
+    {
+      chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
+        assertEq(4, tabs.length);
+        assertEq("chrome://newtab/", tabs[0].url);
+        assertEq(pageUrl("a"), tabs[1].url);
+        assertEq(pageUrl("e"), tabs[2].url);
+        assertEq(pageUrl("c"), tabs[3].url);
+
+        chrome.tabs.getAllInWindow(secondWindowId, pass(function(tabs) {
+          assertEq(3, tabs.length);
+          assertEq(pageUrl("b"), tabs[0].url);
+          assertEq("chrome://newtab/", tabs[1].url);
+          assertEq(pageUrl("d"), tabs[2].url);
+        }));
+      }));
+    }
+
+    chrome.tabs.move(moveTabIds['b'], {"windowId": secondWindowId, "index": 0},
                      pass(function(tabB) {
         chrome.test.assertEq(0, tabB.index);
         chrome.tabs.move(moveTabIds['e'], {"index": 2},
                          pass(function(tabE) {
           chrome.test.assertEq(2, tabE.index);
-          chrome.tabs.move(moveTabIds['d'], {"windowId": moveWindow2,
+          chrome.tabs.move(moveTabIds['d'], {"windowId": secondWindowId,
                            "index": 2}, pass(function(tabD) {
             chrome.test.assertEq(2, tabD.index);
+            checkMoveResults();
         }));
-      }));
-    }));
-  },
-
-  // Check that the tab/window state is what we expect after doing moves.
-  function moveTabsCheck() {
-    chrome.tabs.getAllInWindow(moveWindow1, pass(function(tabs) {
-      assertEq(4, tabs.length);
-      assertEq("chrome://newtab/", tabs[0].url);
-      assertEq(pageUrl("a"), tabs[1].url);
-      assertEq(pageUrl("e"), tabs[2].url);
-      assertEq(pageUrl("c"), tabs[3].url);
-
-      chrome.tabs.getAllInWindow(moveWindow2, pass(function(tabs) {
-        assertEq(3, tabs.length);
-        assertEq(pageUrl("b"), tabs[0].url);
-        assertEq("chrome://newtab/", tabs[1].url);
-        assertEq(pageUrl("d"), tabs[2].url);
       }));
     }));
   },
 
   function remove() {
     chrome.tabs.remove(moveTabIds["d"], pass(function() {
-      chrome.tabs.getAllInWindow(moveWindow2,
+      chrome.tabs.getAllInWindow(secondWindowId,
                                  pass(function(tabs) {
         assertEq(2, tabs.length);
         assertEq(pageUrl("b"), tabs[0].url);
@@ -234,7 +242,7 @@ chrome.test.runTests([
   },
 
   function detectLanguage() {
-    chrome.tabs.getAllInWindow(moveWindow1, pass(function(tabs) {
+    chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
       chrome.tabs.detectLanguage(tabs[0].id, pass(function(lang) {
         assertEq("en", lang);
       }));
@@ -242,20 +250,20 @@ chrome.test.runTests([
   },
 
   /* TODO(rafaelw): Ideally, this test would include a page with known content,
-     it'd take a capture and compair it to some expected output.
+     it'd take a capture and compare it to some expected output.
      TODO(rafaelw): This test fails in at least three distinct ways. One where
      the function actually fails to get anything and logs a "Internal error
      while trying to capture visible region of the current tab" error from the
      browser process.
   function captureVisibleTab() {
     // Take First Capture
-    chrome.tabs.captureVisibleTab(moveWindow1,
+    chrome.tabs.captureVisibleTab(firstWindowId,
                                   pass(function(window1Url) {
       assertEq("string", typeof(window1Url));
       assertTrue(window1Url.length > 0);
 
       // Take Second Capture
-      chrome.tabs.captureVisibleTab(moveWindow2,
+      chrome.tabs.captureVisibleTab(secondWindowId,
                                     pass(function(window2Url) {
         assertEq("string", typeof(window2Url));
         assertTrue(window2Url.length > 0);
@@ -279,7 +287,7 @@ chrome.test.runTests([
       assertEq(pageUrl("f"), tab.url);
     });
 
-    chrome.tabs.create({"windowId": moveWindow1, "url": pageUrl("f"),
+    chrome.tabs.create({"windowId": firstWindowId, "url": pageUrl("f"),
                         "selected": true}, pass(function(tab) {}));
   },
 
@@ -347,22 +355,70 @@ chrome.test.runTests([
     chrome.tabs.remove(moveTabIds['c'], pass());
   },
 
-  function setupRelativeUrlTests() {
-    chrome.windows.create({}, pass(function(win) {
-      assertTrue(win.id > 0);
-      firstWindowId = win.id;
-
-      chrome.windows.getAll({}, pass(function(windows) {
-        for (var i = 0; i < windows.length; i++) {
-          if (windows[i].id != firstWindowId) {
-            chrome.windows.remove(windows[i].id, pass());
-          }
-        }
+  function setupTabsOnAttachDetach()
+  {
+    setupWindow(["", ""], pass(function(winId, tabIds) {
+      firstWindowId = winId;
+      testTabId = tabIds[1];
+      createWindow([""], pass(function(winId, tabIds) {
+        secondWindowId = winId;
       }));
     }));
   },
 
-  function relativeUrlTabsCreate() {
+  function tabsOnAttached() {
+    function moveAndListen(tabId, properties, callback) {
+      chrome.test.listenOnce(chrome.tabs.onAttached,
+                             function(testTabId, info) {
+        // Ensure notification is correct.
+        assertEq(testTabId, tabId);
+        assertEq(properties.windowId, info.newWindowId);
+        assertEq(properties.index, info.newPosition);
+        if (callback)
+          callback();
+      });
+      chrome.tabs.move(tabId, properties);
+    };
+
+    // Move tab to second window, then back to first.
+    // The original tab/window configuration should be restored.
+    // tabsOnDetached() depends on it.
+    moveAndListen(testTabId, {"windowId": secondWindowId, "index": 0},
+                  pass(function() {
+      moveAndListen(testTabId, {"windowId": firstWindowId, "index": 1});
+    }));
+  },
+
+  function tabsOnDetached() {
+    function moveAndListen(tabId, oldWindowId, oldIndex, properties,
+                                 callback) {
+      chrome.test.listenOnce(chrome.tabs.onDetached,
+                             function(detachedTabId, info) {
+        // Ensure notification is correct.
+        assertEq(detachedTabId, tabId);
+        assertEq(oldWindowId, info.oldWindowId);
+        assertEq(oldIndex, info.oldPosition);
+        if (callback)
+          callback();
+      });
+      chrome.tabs.move(tabId, properties);
+    };
+
+    // Move tab to second window, then back to first.
+    moveAndListen(testTabId, firstWindowId, 1,
+                  {"windowId": secondWindowId, "index": 0}, pass(function() {
+      moveAndListen(testTabId, secondWindowId, 0,
+                    {"windowId": firstWindowId, "index": 1});
+    }));
+  },
+
+  function setupRelativeUrlTests() {
+    setupWindow(["about:blank"], pass(function(winId, tabIds) {
+      firstWindowId = winId;
+    }));
+  },
+
+  function relativeUrlTestsTabsCreate() {
     // Will be called from relative.html
     window.relativePageLoaded = chrome.test.callbackAdded();
     var createCompleted = chrome.test.callbackAdded();
@@ -375,7 +431,7 @@ chrome.test.runTests([
     );
   },
 
-  function relativeUrlTabsUpdate() {
+  function relativeUrlTestsTabsUpdate() {
     // Will be called from relative.html
     window.relativePageLoaded = chrome.test.callbackAdded();
 
@@ -386,7 +442,7 @@ chrome.test.runTests([
     });
   },
 
-  function relativeUrlWindowsCreate() {
+  function relativeUrlTestsWindowCreate() {
     // Will be called from relative.html
     window.relativePageLoaded = chrome.test.callbackAdded();
 
@@ -406,21 +462,115 @@ chrome.test.runTests([
     chrome.windows.create({"url": pageUrl("a")}, pass(function(tab) {}));
   },
 
+  /* TODO: Enable this test when crbug.com/28055 is fixed. This bug causes a
+     newly created window not to be set as the current window, if
+     Chrome was not the foreground window when the create call was made.
+  function windowsOnFocusChanged() {
+    chrome.windows.create({}, pass(function(window) {
+      chrome.test.listenOnce(chrome.windows.onFocusChanged,
+                             function(windowId) {
+        assertEq(windowEventsWindow.id, windowId);
+      });
+      chrome.windows.remove(window.id);
+    }));
+  }, */
+
   function windowsOnRemoved() {
     chrome.test.listenOnce(chrome.windows.onRemoved, function(windowId) {
       assertEq(windowEventsWindow.id, windowId);
     });
 
     chrome.windows.remove(windowEventsWindow.id, pass());
-  }
+  },
 
-  // TODO(asargent) We still need to add tests for the following:
-  //  Methods:
-  //   -chrome.tabs.connect
-  //  Events:
-  //   -chrome.tabs.onAttached
-  //   -chrome.tabs.onDetched
-  //
-  // Also, it would be an improvement to check the captureVisibleTab results
+  function setupConnect() {
+    // The web page that our content script will be injected into.
+    var relativePath = '/files/extensions/api_test/tabs/relative.html';
+    var testUrl = 'http://localhost:1337' + relativePath;
+
+    setupWindow([testUrl], pass(function(winId, tabIds) {
+      testTabId = tabIds[0];
+      waitForAllTabs(pass());
+    }));
+  },
+
+  function connectMultipleConnects() {
+    var connectCount = 0;
+    function connect10() {
+      var port = chrome.tabs.connect(testTabId);
+      chrome.test.listenOnce(port.onMessage, function(msg) {
+        assertEq(++connectCount, msg.connections);
+        if (connectCount < 10)
+          connect10();
+      });
+      port.postMessage("GET");
+    }
+    connect10();
+  },
+
+  function connectName() {
+    var name = "akln3901n12la";
+    var port = chrome.tabs.connect(testTabId, {"name": name});
+    chrome.test.listenOnce(port.onMessage, function(msg) {
+      assertEq(name, msg.name);
+
+      var port = chrome.tabs.connect(testTabId);
+      chrome.test.listenOnce(port.onMessage, function(msg) {
+        assertEq('', msg.name);
+      });
+      port.postMessage("GET");
+    });
+    port.postMessage("GET");
+  },
+
+  function connectPostMessageTypes() {
+    var port = chrome.tabs.connect(testTabId);
+    // Test the content script echoes the message back.
+    var echoMsg = {"num": 10, "string": "hi", "array": [1,2,3,4,5],
+                   "obj":{"dec": 1.0}};
+    chrome.test.listenOnce(port.onMessage, function(msg) {
+      assertEq(echoMsg.num, msg.num);
+      assertEq(echoMsg.string, msg.string);
+      assertEq(echoMsg.array[4], msg.array[4]);
+      assertEq(echoMsg.obj.dec, msg.obj.dec);
+    });
+    port.postMessage(echoMsg);
+  },
+
+  function connectPostManyMessages() {
+    var port = chrome.tabs.connect(testTabId);
+    var count = 0;
+    var done = chrome.test.listenForever(port.onMessage, function(msg) {
+      assertEq(count++, msg);
+      if (count == 999) {
+        done();
+      }
+    });
+    for (var i = 0; i < 1000; i++) {
+      port.postMessage(i);
+    }
+  },
+
+  /* TODO: Enable this test once we do checking on the tab id for
+     chrome.tabs.connect (crbug.com/27565).
+  function connectNoTab() {
+    chrome.tabs.create({}, pass(function(tab) {
+      chrome.tabs.remove(tab.id, pass(function() {
+        var port = chrome.tabs.connect(tab.id);
+        assertEq(null, port);
+      }));
+    }));
+  }, */
+
+  function sendRequest() {
+    var request = "test";
+    chrome.tabs.sendRequest(testTabId, request, pass(function(response) {
+      assertEq(request, response);
+    }));
+  },
+
+  // TODO(asargent)
+  // It would be an improvement to check the captureVisibleTab results
   // against a known-good result.
 ]);
+

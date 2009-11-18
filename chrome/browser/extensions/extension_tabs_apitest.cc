@@ -5,5 +5,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Tabs) {
+  StartHTTPServer();
   ASSERT_TRUE(RunExtensionTest("tabs")) << message_;
 }
