@@ -58,9 +58,13 @@ class BubbleWidget : public views::WidgetWin {
 
     if (action == WA_INACTIVE && !closed_) {
       delegate->BubbleLostFocus(bubble_);
-    } else if (action == WA_ACTIVE) {
-      delegate->BubbleGotFocus(bubble_);
     }
+  }
+
+  virtual void OnSetFocus(HWND focused_window) {
+    BrowserBubble::Delegate* delegate = bubble_->delegate();
+    if (delegate)
+      delegate->BubbleGotFocus(bubble_);
   }
 
  private:

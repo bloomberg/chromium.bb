@@ -22,6 +22,11 @@ ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)
       container_(NULL),
       is_clipped_(false) {
   host_->set_view(this);
+
+  // This view needs to be focusable so it can act as the focused view for the
+  // focus manager. This is required to have SkipDefaultKeyEventProcessing
+  // called so the tab key events are forwarded to the renderer.
+  SetFocusable(true);
 }
 
 ExtensionView::~ExtensionView() {
@@ -168,6 +173,12 @@ void ExtensionView::PreferredSizeChanged() {
   if (container_) {
     container_->OnExtensionPreferredSizeChanged(this);
   }
+}
+
+bool ExtensionView::SkipDefaultKeyEventProcessing(const views::KeyEvent& e) {
+  // Let the tab key event be processed by the renderer (instead of moving the
+  // focus to the next focusable view).
+  return (e.GetKeyCode() == base::VKEY_TAB);
 }
 
 void ExtensionView::HandleMouseEvent() {

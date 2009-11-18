@@ -66,6 +66,7 @@ class ExtensionView : public views::NativeViewHost {
  protected:
   // Overridden from views::View.
   virtual void PreferredSizeChanged();
+  virtual bool SkipDefaultKeyEventProcessing(const views::KeyEvent& e);
 
  private:
   friend class ExtensionHost;

@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
@@ -483,6 +484,14 @@ void ExtensionHost::UpdateDragCursor(WebDragOperation operation) {
 }
 
 void ExtensionHost::GotFocus() {
+#if defined(TOOLKIT_VIEWS)
+  // Request focus so that the FocusManager has a focused view and can perform
+  // normally its key event processing (so that it lets tab key events go to the
+  // renderer).
+  view()->RequestFocus();
+#else
+  // TODO(port)
+#endif
 }
 
 void ExtensionHost::TakeFocus(bool reverse) {
@@ -493,6 +502,14 @@ bool ExtensionHost::IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
 }
 
 bool ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP &&
+      event.windowsKeyCode == base::VKEY_ESCAPE) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+        Source<Profile>(profile_),
+        Details<ExtensionHost>(this));
+    return true;
+  }
   return false;
 }
 

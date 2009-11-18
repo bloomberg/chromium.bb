@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
@@ -451,6 +452,11 @@ void BrowserActionsContainer::BubbleBrowserWindowClosing(
 }
 
 void BrowserActionsContainer::BubbleGotFocus(BrowserBubble* bubble) {
+  if (!popup_)
+    return;
+
+  // Forward the focus to the renderer.
+  popup_->host()->render_view_host()->view()->Focus();
 }
 
 void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble) {
