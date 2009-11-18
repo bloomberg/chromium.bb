@@ -120,7 +120,7 @@ void CocoaTest::TearDown() {
     if ([start_date timeIntervalSinceNow] < -1.0) {
       // Took us over a second to shut down, and windows still exist.
       // Log a failure and continue.
-      EXPECT_EQ(windows_left.size(), 0U);
+      EXPECT_EQ(0U, windows_left.size());
       for (size_t i = 0; i < windows_left.size(); ++i) {
         const char* desc = [[windows_left[i] description] UTF8String];
         LOG(WARNING) << "Didn't close window " << desc;
