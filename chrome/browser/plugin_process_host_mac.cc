@@ -32,10 +32,14 @@ void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
     { window_rect.width(), window_rect.height() }
   };
   CGRect main_display_bounds = CGDisplayBounds(CGMainDisplayID());
-  if (CGRectEqualToRect(window_bounds, main_display_bounds)) {
+  if (CGRectEqualToRect(window_bounds, main_display_bounds) &&
+      (plugin_fullscreen_windows_set_.find(window_id) ==
+       plugin_fullscreen_windows_set_.end())) {
     plugin_fullscreen_windows_set_.insert(window_id);
     // If the plugin has just shown a window that's the same dimensions as
     // the main display, hide the menubar so that it has the whole screen.
+    // (but only if we haven't already seen this fullscreen window, since
+    // otherwise our refcounting can get skewed).
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(mac_util::RequestFullScreen));
