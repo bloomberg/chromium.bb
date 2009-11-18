@@ -1373,12 +1373,12 @@ BUG15797 LINUX : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
 BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = FAIL CRASH
 
 // Depends on plugin support.
-BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
+BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = PASS FAIL
 
 BUG10351 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug8499.html = FAIL
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10351 SKIP MAC : LayoutTests/http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/embed-attributes-setting.html = FAIL
+BUG10351 MAC : LayoutTests/plugins/embed-attributes-setting.html = PASS FAIL
 BUG10351 MAC : LayoutTests/plugins/inner-html-display-none.html = FAIL
 BUG10351 MAC DEBUG : LayoutTests/plugins/invoke.html = PASS FAIL
 BUG10351 MAC : LayoutTests/plugins/mouse-events.html = FAIL
@@ -2393,8 +2393,7 @@ BUG20570 : LayoutTests/http/tests/navigation/onload-navigation-iframe-2.html = P
 
 // This test isn't just slow -- sometimes it times out indefinitely.
 BUG27569 MAC WIN DEBUG : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
-BUG27569 LINUX MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
-BUG27569 WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT
+BUG27569 LINUX MAC WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html = TIMEOUT PASS
 
 SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PASS
 
@@ -3075,13 +3074,13 @@ BUGYUTAK WIN LINUX : LayoutTests/http/tests/navigation/onload-navigation-iframe.
 BUGYUTAK WIN LINUX : LayoutTests/http/tests/navigation/onload-navigation-iframe-timeout.html = FAIL
 BUG28034 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny.html = PASS FAIL
 
-BUG28040 LINUX : LayoutTests/fast/body-propagation/overflow/004.html = PASS FAIL
+BUG28040 WIN LINUX : LayoutTests/fast/body-propagation/overflow/004.html = PASS FAIL
 BUG28041 MAC : LayoutTests/storage/domstorage/clear.html = PASS FAIL
 BUG28044 WIN LINUX : LayoutTests/websocket/tests/frame-length-skip.html = PASS FAIL
 BUG28057 WIN : LayoutTests/dom/html/level2/html/HTMLElement95.html = PASS CRASH
-BUG28074 MAC : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = TIMEOUT
-BUG28077 MAC : LayoutTests/plugins/netscape-invoke-default.html = FAIL
-BUG28079 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = TIMEOUT
-BUG28080 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = TIMEOUT
+BUG28074 MAC : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = PASS TIMEOUT
+BUG28077 MAC : LayoutTests/plugins/netscape-invoke-default.html = PASS FAIL
+BUG28079 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = PASS TIMEOUT
+BUG28080 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG28092 WIN : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = PASS FAIL
 BUG28095 MAC : LayoutTests/http/tests/cookies/simple-cookies-expired.html = PASS TIMEOUT
