@@ -13,33 +13,23 @@
 
 namespace {
 
-class DelayedMenuButtonTest : public PlatformTest {
+class DelayedMenuButtonTest : public CocoaTest {
  public:
   DelayedMenuButtonTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    button_.reset([[DelayedMenuButton alloc] initWithFrame:frame]);
+    scoped_nsobject<DelayedMenuButton>button([[DelayedMenuButton alloc]
+                                              initWithFrame:frame]);
+    button_ = button.get();
     scoped_nsobject<ClickHoldButtonCell> cell(
         [[ClickHoldButtonCell alloc] initTextCell:@"Testing"]);
     [button_ setCell:cell.get()];
-    [cocoa_helper_.contentView() addSubview:button_.get()];
+    [[test_window() contentView] addSubview:button_];
   }
 
-  scoped_nsobject<DelayedMenuButton> button_;
-  CocoaTestHelper cocoa_helper_;            // Inits Cocoa, creates window, etc.
+  DelayedMenuButton* button_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing leaks
-// or crashes.
-TEST_F(DelayedMenuButtonTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [button_ superview]);
-  [button_.get() removeFromSuperview];
-  EXPECT_FALSE([button_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(DelayedMenuButtonTest, Display) {
-  [button_ display];
-}
+TEST_VIEW(DelayedMenuButtonTest, button_)
 
 // Test assigning and enabling a menu, again mostly to ensure nothing leaks or
 // crashes.
@@ -51,7 +41,7 @@ TEST_F(DelayedMenuButtonTest, MenuAssign) {
   [menu insertItemWithTitle:@"foo" action:nil keyEquivalent:@"" atIndex:1];
   [menu insertItemWithTitle:@"bar" action:nil keyEquivalent:@"" atIndex:2];
   [menu insertItemWithTitle:@"baz" action:nil keyEquivalent:@"" atIndex:3];
-  
+
   [button_ setAttachedMenu:menu];
   EXPECT_TRUE([button_ attachedMenu]);
 
