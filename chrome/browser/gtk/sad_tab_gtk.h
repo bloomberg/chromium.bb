@@ -16,34 +16,37 @@ class SadTabGtk {
   SadTabGtk();
   ~SadTabGtk();
 
-  GtkWidget* widget() { return widget_.get(); }
+  GtkWidget* widget() { return event_box_.get(); }
 
  private:
-  // expose-event handler that redraws the SadTabGtk.
-  static gboolean OnExposeThunk(GtkWidget* widget,
-                                GdkEventExpose* event,
-                                const SadTabGtk* sad_tab);
+  // expose-event handler that draws the gradient background of the SadTabGtk.
+  static gboolean OnBackgroundExposeThunk(GtkWidget* widget,
+                                          GdkEventExpose* event,
+                                          SadTabGtk* sad_tab) {
+    return sad_tab->OnBackgroundExpose(widget, event);
+  }
 
-  gboolean OnExpose(GtkWidget* widget, GdkEventExpose* event) const;
+  gboolean OnBackgroundExpose(GtkWidget* widget, GdkEventExpose* event);
 
-  // configure-event handler that gets the new bounds of the SadTabGtk.
-  static gboolean OnConfigureThunk(GtkWidget* widget,
-                                   GdkEventConfigure* event,
-                                   SadTabGtk* sad_tab);
+  // size-allocate handler to adjust dimensions for children widgets.
+  static void OnSizeAllocateThunk(GtkWidget* widget,
+                                      GtkAllocation* allocation,
+                                      SadTabGtk* sad_tab) {
+    sad_tab->OnSizeAllocate(widget, allocation);
+  }
 
-  gboolean OnConfigure(GtkWidget* widget, GdkEventConfigure* event);
+  void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 
-  // Track the view's width and height from configure-event signals.
+  // click-event handler that opens the url of the clicked link.
+  static void OnLinkButtonClick(GtkWidget* button, const char* url);
+
+  // Track the view's width and height from size-allocate signals.
   int width_;
   int height_;
 
-  // Regions within the display for different components, set on a
-  // configure-event.  These are relative to the bounds of the widget.
-  gfx::Rect icon_bounds_;
-  int title_y_;
-  int message_y_;
-
-  OwnedWidgetGtk widget_;
+  OwnedWidgetGtk event_box_;
+  GtkWidget* top_padding_;
+  GtkWidget* message_;
 
   DISALLOW_COPY_AND_ASSIGN(SadTabGtk);
 };
