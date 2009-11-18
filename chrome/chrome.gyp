@@ -5913,16 +5913,6 @@
                     '${BUILT_PRODUCTS_DIR}/${WRAPPER_NAME}/Libraries'
                   ],
                 },
-                {
-                  # TODO(mark): Remove after November 19, 2009, allowing two
-                  # weeks for the transition.
-                  'postbuild_name': 'Remove obsolete FFmpeg dylibs',
-                  'variables': {
-                    'remove_ffmpeg_dylibs_path':
-                        'tools/build/mac/remove_ffmpeg_dylibs',
-                  },
-                  'action': ['<(remove_ffmpeg_dylibs_path)'],
-                },
               ],
               'copies': [
                 {
