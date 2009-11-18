@@ -210,13 +210,14 @@
       {
         "name": "getPopupView",
         "type": "function",
-        "description": "Returns a reference to the window object of the popup view.",
+        "description": "Returns a reference to the window object of the popup view.  Returns undefined if no popup presently shown.",
         "parameters": [],
         "returns": {
           "type": "object",
           "isInstanceOf": "DOMWindow",
           "properties": {},
-          "additionalProperties": { "type": "any" }
+          "additionalProperties": { "type": "any" },
+          "optional": true
         }
       }
     ],
@@ -1678,13 +1679,14 @@
       {
         "name": "getParentWindow",
         "type": "function",
-        "description": "Returns a reference to the window object of the extension view that launched the popup.",
+        "description": "Returns a reference to the window object of the extension view that launched the popup.  Returns undefined if called outside of a popup window.",
         "parameters": [],
         "returns": {
           "type": "object",
           "isInstanceOf": "DOMWindow",
           "properties": {},
-          "additionalProperties": { "type": "any" }
+          "additionalProperties": { "type": "any" },
+          "optional": true
         }
       }
     ],

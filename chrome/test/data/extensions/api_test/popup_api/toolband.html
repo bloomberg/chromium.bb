@@ -5,6 +5,18 @@ var globalValue = "I am not 42.";
 
 window.onload = function() {
   chrome.test.runTests([
+    function noPopup() {
+      chrome.test.assertTrue(
+          undefined === chrome.experimental.extension.getPopupView(),
+          "Popup view is defined when no popup shown.");
+      chrome.test.succeed();
+    },
+    function noParentWindow() {
+      chrome.test.assertTrue(
+          undefined === chrome.experimental.popup.getParentWindow(),
+          "Parent );
+      chrome.test.succeed();
+    },
     function show() {
       var showDetails = {
         "relativeTo": document.getElementById("anchorHere")
