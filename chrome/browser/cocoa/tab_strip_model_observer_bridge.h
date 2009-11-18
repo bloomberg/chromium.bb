@@ -37,6 +37,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                         bool pinned_state_changed);
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
+  virtual void TabPinnedStateChanged(TabContents* contents, int index);
   virtual void TabStripEmpty();
 
  private:
@@ -61,10 +62,13 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                   userGesture:(bool)wasUserGesture;
 - (void)tabMovedWithContents:(TabContents*)contents
                     fromIndex:(NSInteger)from
-                      toIndex:(NSInteger)to;
+                      toIndex:(NSInteger)to
+           pinnedStateChanged:(BOOL)pinnedChanged;
 - (void)tabChangedWithContents:(TabContents*)contents
                        atIndex:(NSInteger)index
                    loadingOnly:(BOOL)loading;
+- (void)tabPinnedStateChangedWithContents:(TabContents*)contents
+                                  atIndex:(NSInteger)index;
 - (void)tabStripEmpty;
 @end
 

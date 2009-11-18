@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/tab_view.h"
+#include "grit/generated_resources.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
-
-@interface TabController(Private)
-- (void)updateVisibility;
-@end
 
 @implementation TabController
 
 @synthesize loadingState = loadingState_;
+@synthesize pinned = pinned_;
 @synthesize target = target_;
 @synthesize action = action_;
 
 // The min widths match the windows values and are sums of left + right
 // padding, of which we have no comparable constants (we draw using paths, not
 // images). The selected tab width includes the close button width.
-+ (float)minTabWidth { return 31; }
-+ (float)minSelectedTabWidth { return 47; }
-+ (float)maxTabWidth { return 220; }
++ (CGFloat)minTabWidth { return 31; }
++ (CGFloat)minSelectedTabWidth { return 47; }
++ (CGFloat)maxTabWidth { return 220; }
++ (CGFloat)pinnedTabWidth { return 53; }
 
 - (TabView*)tabView {
   return static_cast<TabView*>([self view]);
@@ -141,8 +141,8 @@
 // tab. We never actually do this, but it's a helpful guide for determining
 // how much space we have available.
 - (int)iconCapacity {
-  float width = NSMaxX([closeButton_ frame]) - NSMinX(originalIconFrame_);
-  float iconWidth = NSWidth(originalIconFrame_);
+  CGFloat width = NSMaxX([closeButton_ frame]) - NSMinX(originalIconFrame_);
+  CGFloat iconWidth = NSWidth(originalIconFrame_);
 
   return width / iconWidth;
 }
@@ -155,6 +155,9 @@
   if (!iconView_)
     return NO;
 
+  if ([self pinned])
+    return YES;
+
   int iconCapacity = [self iconCapacity];
   if ([self selected])
     return iconCapacity >= 2;
@@ -164,12 +167,11 @@
 // Returns YES if we should be showing the close button. The selected tab
 // always shows the close button.
 - (BOOL)shouldShowCloseButton {
-  return [self selected] || [self iconCapacity] >= 3;
+  if ([self pinned])
+    return NO;
+  return ([self selected] || [self iconCapacity] >= 3);
 }
 
-// Updates the visibility of certain subviews, such as the icon and close
-// button, based on criteria such as the tab's selected state and its current
-// width.
 - (void)updateVisibility {
   // iconView_ may have been replaced or it may be nil, so [iconView_ isHidden]
   // won't work.  Instead, the state of the icon is tracked separately in
@@ -179,6 +181,9 @@
 
   [iconView_ setHidden:newShowIcon ? NO : YES];
   isIconShowing_ = newShowIcon;
+
+  // If the tab is pinned, hide the title.
+  [titleView_ setHidden:[self pinned]];
 
   BOOL oldShowCloseButton = [closeButton_ isHidden] ? NO : YES;
   BOOL newShowCloseButton = [self shouldShowCloseButton] ? YES : NO;
@@ -252,6 +257,18 @@
         YES : NO;
   }
   return NO;
+}
+
+// Delegate method for context menu. Called before the menu is displayed to
+// update the menu. We need to display "Pin Tab" when the tab is not pinned and
+// "Unpin Tab" when it is (this is not a checkmark menu item, per Apple's HIG).
+- (void)menuNeedsUpdate:(NSMenu*)menu {
+  const int pinTabMenuItemTag = TabStripModel::CommandTogglePinned;
+  NSMenuItem* togglePinned = [menu itemWithTag:pinTabMenuItemTag];
+  NSString* menuItemText = l10n_util::GetNSStringWithFixup(
+      [self pinned] ? IDS_TAB_CXMENU_UNPIN_TAB_MAC
+                    : IDS_TAB_CXMENU_PIN_TAB_MAC);
+  [togglePinned setTitle:menuItemText];
 }
 
 @end

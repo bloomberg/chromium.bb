@@ -64,10 +64,11 @@ void TabStripModelObserverBridge::TabMoved(TabContents* contents,
                                            int to_index,
                                            bool pinned_state_changed) {
   if ([controller_ respondsToSelector:
-          @selector(tabMovedWithContents:fromIndex:toIndex:)]) {
+       @selector(tabMovedWithContents:fromIndex:toIndex:pinnedStateChanged:)]) {
     [controller_ tabMovedWithContents:contents
                             fromIndex:from_index
-                              toIndex:to_index];
+                              toIndex:to_index
+                   pinnedStateChanged:(pinned_state_changed ? YES : NO)];
   }
 }
 
@@ -84,6 +85,15 @@ void TabStripModelObserverBridge::TabChangedAt(TabContents* contents,
     [controller_ tabChangedWithContents:contents
                                 atIndex:index
                             loadingOnly:change_type == LOADING_ONLY ? YES : NO];
+  }
+}
+
+void TabStripModelObserverBridge::TabPinnedStateChanged(TabContents* contents,
+                                                        int index) {
+  if ([controller_ respondsToSelector:
+          @selector(tabPinnedStateChangedWithContents:atIndex:)]) {
+    [controller_ tabPinnedStateChangedWithContents:contents
+                                           atIndex:index];
   }
 }
 

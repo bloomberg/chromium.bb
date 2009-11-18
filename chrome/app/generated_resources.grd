@@ -3448,6 +3448,15 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Bookmark All Tabs...
         </message>
       </if>
+      <!-- Mac-only Tab Context menu strings -->
+      <if expr="os == 'darwin'">
+        <message name="IDS_TAB_CXMENU_PIN_TAB_MAC" desc="In Title Case: The label of the tab context menu item for pinning a tab (note: not a checkmark-able menu item).">
+          Pin Tab
+        </message>
+        <message name="IDS_TAB_CXMENU_UNPIN_TAB_MAC" desc="In Title Case: The label of the tab context menu item for unpinning a tab.">
+          Unpin Tab
+        </message>
+      </if>
 
       <!-- Items in the bookmarks destination mode -->
       <message name="IDS_BOOKMARKS_DEST_MODE_BOOKMARK_BAR_ON_BOOKMARK_BAR" desc="Text shown when entry is on the bookmark bar">

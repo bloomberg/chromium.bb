@@ -42,11 +42,11 @@ NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
 // A value to indicate tab layout should use the full available width of the
 // view.
-static const float kUseFullAvailableWidth = -1.0;
+static const CGFloat kUseFullAvailableWidth = -1.0;
 
 // Left-side indent for tab layout so tabs don't overlap with the window
 // controls.
-static const float kIndentLeavingSpaceForControls = 64.0;
+static const CGFloat kIndentLeavingSpaceForControls = 64.0;
 
 // Time (in seconds) in which tabs animate to their final position.
 static const NSTimeInterval kAnimationDuration = 0.2;
@@ -107,6 +107,9 @@ private:
 - (void)animationDidStopForController:(TabController*)controller
                              finished:(BOOL)finished;
 - (NSInteger)indexFromModelIndex:(NSInteger)index;
+- (NSInteger)numberOfOpenTabs;
+- (NSInteger)numberOfOpenPinnedTabs;
+- (NSInteger)numberOfOpenUnpinnedTabs;
 - (void)mouseMoved:(NSEvent*)event;
 - (void)setTabTrackingAreasEnabled:(BOOL)enabled;
 @end
@@ -404,12 +407,25 @@ private:
   return controller;
 }
 
-// Returns the number of open tabs in the tab strip. This is the number
-// of TabControllers we know about (as there's a 1-to-1 mapping from these
-// controllers to a tab) less the number of closing tabs.
-- (NSInteger)numberOfTabViews {
-  NSInteger number = [tabArray_ count] - [closingControllers_ count];
-  DCHECK(number >= 0);
+// (Private) Returns the number of open tabs in the tab strip. This is the
+// number of TabControllers we know about (as there's a 1-to-1 mapping from
+// these controllers to a tab) less the number of closing tabs.
+- (NSInteger)numberOfOpenTabs {
+  return static_cast<NSInteger>(tabModel_->count());
+}
+
+// (Private) Returns the number of open, pinned tabs.
+- (NSInteger)numberOfOpenPinnedTabs {
+  // Ask the model for the number of pinned tabs. Note that tabs which are in
+  // the process of closing (i.e., whose controllers are in
+  // |closingControllers_|) have already been removed from the model.
+  return static_cast<NSInteger>(tabModel_->IndexOfFirstNonPinnedTab());
+}
+
+// (Private) Returns the number of open, unpinned tabs.
+- (NSInteger)numberOfOpenUnpinnedTabs {
+  NSInteger number = [self numberOfOpenTabs] - [self numberOfOpenPinnedTabs];
+  DCHECK_GE(number, 0);
   return number;
 }
 
@@ -504,20 +520,20 @@ private:
   TabContents* contents = tabModel_->GetTabContentsAt(index);
   if (contents)
     UserMetrics::RecordAction("CloseTab_Mouse", contents->profile());
-  const NSInteger numberOfTabViews = [self numberOfTabViews];
-  if (numberOfTabViews > 1) {
-    bool isClosingLastTab = index == numberOfTabViews - 1;
+  const NSInteger numberOfOpenTabs = [self numberOfOpenTabs];
+  if (numberOfOpenTabs > 1) {
+    bool isClosingLastTab = index == numberOfOpenTabs - 1;
     if (!isClosingLastTab) {
       // Limit the width available for laying out tabs so that tabs are not
       // resized until a later time (when the mouse leaves the tab strip).
       // TODO(pinkerton): re-visit when handling tab overflow.
-      NSView* penultimateTab = [self viewAtIndex:numberOfTabViews - 2];
+      NSView* penultimateTab = [self viewAtIndex:numberOfOpenTabs - 2];
       availableResizeWidth_ = NSMaxX([penultimateTab frame]);
     } else {
       // If the rightmost tab is closed, change the available width so that
       // another tab's close button lands below the cursor (assuming the tabs
       // are currently below their maximum width and can grow).
-      NSView* lastTab = [self viewAtIndex:numberOfTabViews - 1];
+      NSView* lastTab = [self viewAtIndex:numberOfOpenTabs - 1];
       availableResizeWidth_ = NSMaxX([lastTab frame]);
     }
     tabModel_->CloseTabContentsAt(index);
@@ -583,11 +599,12 @@ private:
   if (![tabArray_ count])
     return;
 
-  const float kTabOverlap = 20.0;
-  const float kNewTabButtonOffset = 8.0;
-  const float kMaxTabWidth = [TabController maxTabWidth];
-  const float kMinTabWidth = [TabController minTabWidth];
-  const float kMinSelectedTabWidth = [TabController minSelectedTabWidth];
+  const CGFloat kTabOverlap = 20.0;
+  const CGFloat kNewTabButtonOffset = 8.0;
+  const CGFloat kMaxTabWidth = [TabController maxTabWidth];
+  const CGFloat kMinTabWidth = [TabController minTabWidth];
+  const CGFloat kMinSelectedTabWidth = [TabController minSelectedTabWidth];
+  const CGFloat kPinnedTabWidth = [TabController pinnedTabWidth];
 
   NSRect enclosingRect = NSZeroRect;
   ScopedNSAnimationContextGroup mainAnimationGroup(animate);
@@ -597,10 +614,11 @@ private:
   if (doUpdate)
     [self regenerateSubviewList];
 
-  // Compute the base width of tabs given how much room we're allowed. We
-  // may not be able to use the entire width if the user is quickly closing
-  // tabs.
-  float availableWidth = 0;
+  // Compute the base width of tabs given how much room we're allowed. Note that
+  // pinned tabs have a fixed width. We may not be able to use the entire width
+  // if the user is quickly closing tabs. This may be negative, but that's okay
+  // (taken care of by |MAX()| when calculating tab sizes).
+  CGFloat availableWidth = 0;
   if ([self inRapidClosureMode]) {
     availableWidth = availableResizeWidth_;
   } else {
@@ -609,21 +627,30 @@ private:
   }
   availableWidth -= kIndentLeavingSpaceForControls;
 
-  // Only count the number of tabs that are not in the process of closing.
-  const NSUInteger numberOfOpenTabs =
-    [tabContentsArray_ count] - [closingControllers_ count];
+  // This may be negative, but that's okay (taken care of by |MAX()| when
+  // calculating tab sizes).
+  CGFloat availableWidthForUnpinned = availableWidth -
+      [self numberOfOpenPinnedTabs] * (kPinnedTabWidth - kTabOverlap);
 
-  // Add back in the amount we "get back" from the tabs overlapping.
-  availableWidth += (numberOfOpenTabs - 1) * kTabOverlap;
-  const float baseTabWidth =
-      MAX(MIN(availableWidth / numberOfOpenTabs,
-              kMaxTabWidth),
-          kMinTabWidth);
+  // Initialize |unpinnedTabWidth| in case there aren't any unpinned tabs; this
+  // value shouldn't actually be used.
+  CGFloat unpinnedTabWidth = kMaxTabWidth;
+  const NSInteger numberOfOpenUnpinnedTabs = [self numberOfOpenUnpinnedTabs];
+  if (numberOfOpenUnpinnedTabs) {  // Find the width of an unpinned tab.
+    // Add in the amount we "get back" from the tabs overlapping.
+    availableWidthForUnpinned += (numberOfOpenUnpinnedTabs - 1) * kTabOverlap;
 
-  CGFloat minX = NSMinX(placeholderFrame_);
+    // Divide up the space between the unpinned tabs.
+    unpinnedTabWidth = availableWidthForUnpinned / numberOfOpenUnpinnedTabs;
+
+    // Clamp the width between the max and min.
+    unpinnedTabWidth = MAX(MIN(unpinnedTabWidth, kMaxTabWidth), kMinTabWidth);
+  }
+
+  const CGFloat minX = NSMinX(placeholderFrame_);
   BOOL visible = [[tabView_ window] isVisible];
 
-  float offset = kIndentLeavingSpaceForControls;
+  CGFloat offset = kIndentLeavingSpaceForControls;
   NSUInteger i = 0;
   bool hasPlaceholderGap = false;
   for (TabController* tab in tabArray_.get()) {
@@ -660,46 +687,46 @@ private:
       [targetFrames_ setObject:[NSValue valueWithRect:tabFrame]
                         forKey:identifier];
       continue;
-    } else {
-      // If our left edge is to the left of the placeholder's left, but our mid
-      // is to the right of it we should slide over to make space for it.
-      if (placeholderTab_ && !hasPlaceholderGap && NSMidX(tabFrame) > minX) {
-        hasPlaceholderGap = true;
-        offset += NSWidth(placeholderFrame_);
-        offset -= kTabOverlap;
-        tabFrame.origin.x = offset;
-      }
-
-      // Set the width. Selected tabs are slightly wider when things get
-      // really small and thus we enforce a different minimum width.
-      tabFrame.size.width =
-          [tab selected] ? MAX(baseTabWidth, kMinSelectedTabWidth) :
-                           baseTabWidth;
-
-      // Animate a new tab in by putting it below the horizon unless
-      // told to put it in a specific location (ie, from a drop).
-      if (newTab && visible && animate) {
-        if (NSEqualRects(droppedTabFrame_, NSZeroRect)) {
-          [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
-        } else {
-          [[tab view] setFrame:droppedTabFrame_];
-          droppedTabFrame_ = NSZeroRect;
-        }
-      }
-
-      // Check the frame by identifier to avoid redundant calls to animator.
-      id frameTarget = visible && animate ? [[tab view] animator] : [tab view];
-      NSValue* identifier = [NSValue valueWithPointer:[tab view]];
-      NSValue* oldTargetValue = [targetFrames_ objectForKey:identifier];
-      if (!oldTargetValue ||
-          !NSEqualRects([oldTargetValue rectValue], tabFrame)) {
-        [frameTarget setFrame:tabFrame];
-        [targetFrames_ setObject:[NSValue valueWithRect:tabFrame]
-                          forKey:identifier];
-      }
-
-      enclosingRect = NSUnionRect(tabFrame, enclosingRect);
     }
+
+    // If our left edge is to the left of the placeholder's left, but our mid is
+    // to the right of it we should slide over to make space for it.
+    if (placeholderTab_ && !hasPlaceholderGap && NSMidX(tabFrame) > minX) {
+      hasPlaceholderGap = true;
+      offset += NSWidth(placeholderFrame_);
+      offset -= kTabOverlap;
+      tabFrame.origin.x = offset;
+    }
+
+    // Set the width. Selected tabs are slightly wider when things get really
+    // small and thus we enforce a different minimum width.
+    tabFrame.size.width = [tab pinned] ? kPinnedTabWidth : unpinnedTabWidth;
+    if ([tab selected])
+      tabFrame.size.width = MAX(tabFrame.size.width, kMinSelectedTabWidth);
+
+    // Animate a new tab in by putting it below the horizon unless told to put
+    // it in a specific location (i.e., from a drop).
+    if (newTab && visible && animate) {
+      if (NSEqualRects(droppedTabFrame_, NSZeroRect)) {
+        [[tab view] setFrame:NSOffsetRect(tabFrame, 0, -NSHeight(tabFrame))];
+      } else {
+        [[tab view] setFrame:droppedTabFrame_];
+        droppedTabFrame_ = NSZeroRect;
+      }
+    }
+
+    // Check the frame by identifier to avoid redundant calls to animator.
+    id frameTarget = visible && animate ? [[tab view] animator] : [tab view];
+    NSValue* identifier = [NSValue valueWithPointer:[tab view]];
+    NSValue* oldTargetValue = [targetFrames_ objectForKey:identifier];
+    if (!oldTargetValue ||
+        !NSEqualRects([oldTargetValue rectValue], tabFrame)) {
+      [frameTarget setFrame:tabFrame];
+      [targetFrames_ setObject:[NSValue valueWithRect:tabFrame]
+                        forKey:identifier];
+    }
+
+    enclosingRect = NSUnionRect(tabFrame, enclosingRect);
 
     offset += NSWidth(tabFrame);
     offset -= kTabOverlap;
@@ -1027,7 +1054,8 @@ private:
   TabController* tabController = [tabArray_ objectAtIndex:index];
 
   bool oldHasIcon = [tabController iconView] != nil;
-  bool newHasIcon = contents->ShouldDisplayFavIcon();
+  bool newHasIcon = contents->ShouldDisplayFavIcon() ||
+      tabModel_->IsTabPinned(index);  // always show an icon for pinned tabs
 
   TabLoadingState oldState = [tabController loadingState];
   TabLoadingState newState = kTabDone;
@@ -1093,23 +1121,47 @@ private:
 }
 
 // Called when a tab is moved (usually by drag&drop). Keep our parallel arrays
-// in sync with the tab strip model.
+// in sync with the tab strip model. It can also be pinned/unpinned
+// simultaneously, so we need to take care of that.
 - (void)tabMovedWithContents:(TabContents*)contents
-                    fromIndex:(NSInteger)modelFrom
-                      toIndex:(NSInteger)modelTo {
+                   fromIndex:(NSInteger)modelFrom
+                     toIndex:(NSInteger)modelTo
+          pinnedStateChanged:(BOOL)pinnedChanged {
   // Take closing tabs into account.
   NSInteger from = [self indexFromModelIndex:modelFrom];
   NSInteger to = [self indexFromModelIndex:modelTo];
 
-  scoped_nsobject<TabContentsController> movedController(
+  scoped_nsobject<TabContentsController> movedTabContentsController(
       [[tabContentsArray_ objectAtIndex:from] retain]);
   [tabContentsArray_ removeObjectAtIndex:from];
-  [tabContentsArray_ insertObject:movedController.get() atIndex:to];
-  scoped_nsobject<TabView> movedView(
+  [tabContentsArray_ insertObject:movedTabContentsController.get()
+                          atIndex:to];
+  scoped_nsobject<TabController> movedTabController(
       [[tabArray_ objectAtIndex:from] retain]);
+  DCHECK([movedTabController isKindOfClass:[TabController class]]);
   [tabArray_ removeObjectAtIndex:from];
-  [tabArray_ insertObject:movedView.get() atIndex:to];
+  [tabArray_ insertObject:movedTabController.get() atIndex:to];
 
+  if (pinnedChanged) {
+    [movedTabController setPinned:(tabModel_->IsTabPinned(modelTo) ? YES : NO)];
+    [self updateFavIconForContents:contents atIndex:modelTo];
+  }
+
+  // TODO(viettrungluu): I don't think this is needed. Investigate. See also
+  // |-tabPinnedStateChangedWithContents:...|.
+  [self layoutTabs];
+}
+
+// Called when a tab is pinned or unpinned without moving.
+- (void)tabPinnedStateChangedWithContents:(TabContents*)contents
+                                  atIndex:(NSInteger)index {
+  TabController* tabController = [tabArray_ objectAtIndex:index];
+  DCHECK([tabController isKindOfClass:[TabController class]]);
+  [tabController setPinned:(tabModel_->IsTabPinned(index) ? YES : NO)];
+  [self updateFavIconForContents:contents atIndex:index];
+
+  // TODO(viettrungluu): I don't think this is needed. Investigate. See also
+  // |-tabMovedWithContents:...|.
   [self layoutTabs];
 }
 
@@ -1176,6 +1228,14 @@ private:
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
   tabModel_->InsertTabContentsAt(index, contents, true, false);
+
+  // The tab's pinned status may have changed.
+  // TODO(viettrungluu): Improve the behaviour for drops at the dividing point
+  // between pinned and unpinned tabs.
+  TabController* tabController = [tabArray_ objectAtIndex:index];
+  DCHECK([tabController isKindOfClass:[TabController class]]);
+  [tabController setPinned:(tabModel_->IsTabPinned(index) ? YES : NO)];
+  [self updateFavIconForContents:contents atIndex:index];
 }
 
 // Called when the tab strip view changes size. As we only registered for

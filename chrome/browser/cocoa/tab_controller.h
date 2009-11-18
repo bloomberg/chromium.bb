@@ -43,9 +43,10 @@ enum TabLoadingState {
   NSRect originalIconFrame_;  // frame of iconView_ as loaded from nib
   BOOL isIconShowing_;  // last state of iconView_ in updateVisibility
   BOOL selected_;
+  BOOL pinned_;
   TabLoadingState loadingState_;
-  float iconTitleXOffset_;  // between left edges of icon and title
-  float titleCloseWidthOffset_;  // between right edges of icon and close button
+  CGFloat iconTitleXOffset_;  // between left edges of icon and title
+  CGFloat titleCloseWidthOffset_;  // between right edges of icon and close btn.
   id<TabControllerTarget> target_;  // weak, where actions are sent
   SEL action_;  // selector sent when tab is selected by clicking
 }
@@ -53,15 +54,17 @@ enum TabLoadingState {
 @property(assign, nonatomic) TabLoadingState loadingState;
 
 @property(assign, nonatomic) BOOL selected;
+@property(assign, nonatomic) BOOL pinned;
 @property(assign, nonatomic) id target;
 @property(assign, nonatomic) SEL action;
 
 // Minimum and maximum allowable tab width. The minimum width does not show
 // the icon or the close button. The selected tab always has at least a close
 // button so it has a different minimum width.
-+ (float)minTabWidth;
-+ (float)maxTabWidth;
-+ (float)minSelectedTabWidth;
++ (CGFloat)minTabWidth;
++ (CGFloat)maxTabWidth;
++ (CGFloat)minSelectedTabWidth;
++ (CGFloat)pinnedTabWidth;
 
 // The view associated with this controller, pre-casted as a TabView
 - (TabView*)tabView;
@@ -82,6 +85,11 @@ enum TabLoadingState {
 // In this mode, we handle clicks slightly differently due to animation.
 // Ideally, tabs would know about their own animation and wouldn't need this.
 - (BOOL)inRapidClosureMode;
+
+// Updates the visibility of certain subviews, such as the icon and close
+// button, based on criteria such as the tab's selected state and its current
+// width.
+- (void)updateVisibility;
 
 // Update the title color to match the tabs current state.
 - (void)updateTitleColor;
