@@ -1575,6 +1575,8 @@
         'browser/gtk/gtk_floating_container.h',
         'browser/gtk/gtk_theme_provider.cc',
         'browser/gtk/gtk_theme_provider.h',
+        'browser/gtk/html_dialog_gtk.cc',
+        'browser/gtk/html_dialog_gtk.h',
         'browser/gtk/hung_renderer_dialog_gtk.cc',
         'browser/gtk/import_dialog_gtk.cc',
         'browser/gtk/import_dialog_gtk.h',

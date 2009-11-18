@@ -345,8 +345,11 @@ bool TabContentsViewGtk::HandleKeyboardEvent(
 
   BrowserWindowGtk* browser_window =
       BrowserWindowGtk::GetBrowserWindowForNativeWindow(window);
-  DCHECK(browser_window);
-  return browser_window->HandleKeyboardEvent(event.os_event);
+
+  // If this is a dialog, the top level window isn't a browser.  In this case,
+  // we just return false.
+  return browser_window ?
+      browser_window->HandleKeyboardEvent(event.os_event) : false;
 }
 
 void TabContentsViewGtk::Observe(NotificationType type,
