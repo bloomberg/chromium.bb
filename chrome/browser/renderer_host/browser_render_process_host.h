@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 
 #include <map>
-#include <queue>
 #include <string>
 
 #include "base/process.h"
@@ -18,7 +17,6 @@
 #include "base/string16.h"
 #include "base/timer.h"
 #include "chrome/common/transport_dib.h"
-#include "chrome/browser/child_process_launcher.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/notification_registrar.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
@@ -51,8 +49,7 @@ class Size;
 // are correlated with IDs. This way, the Views and the corresponding ViewHosts
 // communicate through the two process objects.
 class BrowserRenderProcessHost : public RenderProcessHost,
-                                 public NotificationObserver,
-                                 public ChildProcessLauncher::Client {
+                                 public NotificationObserver {
  public:
   explicit BrowserRenderProcessHost(Profile* profile);
   ~BrowserRenderProcessHost();
@@ -71,7 +68,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void WidgetHidden();
   virtual void ViewCreated();
   virtual void AddWord(const string16& word);
-  virtual void SendVisitedLinkTable(base::SharedMemory* table_memory);
   virtual void AddVisitedLinks(const VisitedLinkCommon::Fingerprints& links);
   virtual void ResetVisitedLinks();
   virtual bool FastShutdownIfPossible();
@@ -97,9 +93,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-  // ChildProcessLauncher::Client implementation.
-  virtual void OnProcessLaunched();
 
  private:
   friend class VisitRelayingRenderProcessHost;
@@ -129,14 +122,24 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   void SendUserScriptsUpdate(base::SharedMemory* shared_memory);
 
   // Generates a command line to be used to spawn a renderer and appends the
-  // results to |*command_line|.
-  void AppendRendererCommandLine(CommandLine* command_line) const;
+  // results to |*command_line|. |*has_cmd_prefix| will be set if the renderer
+  // command line specifies a prefix which is another program that will actually
+  // execute the renderer (like gdb).
+  void AppendRendererCommandLine(CommandLine* command_line,
+                                 bool* has_cmd_prefix) const;
 
   // Copies applicable command line switches from the given |browser_cmd| line
   // flags to the output |renderer_cmd| line flags. Not all switches will be
   // copied over.
   void PropogateBrowserCommandLineToRenderer(const CommandLine& browser_cmd,
                                              CommandLine* renderer_cmd) const;
+
+  // Spawns the renderer process, returning the new handle on success, or 0 on
+  // failure. The renderer command line is given in the first argument, and
+  // whether a command prefix was used when generating the command line is
+  // speficied in the second.
+  base::ProcessHandle ExecuteRenderer(CommandLine* cmd_line,
+                                      bool has_cmd_prefix);
 
   // Callers can reduce the RenderProcess' priority.
   // Returns true if the priority is backgrounded; false otherwise.
@@ -198,18 +201,15 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Buffer visited links and send them to to renderer.
   scoped_ptr<VisitedLinkUpdater> visited_link_updater_;
 
+  // True iff the renderer is a child of a zygote process.
+  bool zygote_child_;
+
   // True iff this process is being used as an extension process. Not valid
   // when running in single-process mode.
   bool extension_process_;
 
-  // Usedt to launch and terminate the process without blocking the UI thread.
-  scoped_ptr<ChildProcessLauncher> child_process_;
+  base::Process process_;
 
-  // Messages we queue while waiting for the process handle.  We queue them here
-  // instead of in the channel so that we ensure they're sent after init related
-  // messages that are sent once the process handle is available.  This is
-  // because the queued messages may have dependencies on the init messages.
-  std::queue<IPC::Message*> queued_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserRenderProcessHost);
 };

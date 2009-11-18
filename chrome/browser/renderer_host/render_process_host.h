@@ -17,12 +17,9 @@
 #include "ipc/ipc_sync_channel.h"
 
 class Profile;
-class URLRequestContextGetter;
 struct ViewMsg_ClosePage_Params;
 
-namespace base {
-class SharedMemory;
-}
+class URLRequestContextGetter;
 
 // Virtual interface that represents the browser side of the browser <->
 // renderer communication channel. There will generally be one
@@ -175,9 +172,6 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // Add a word in the spellchecker.
   virtual void AddWord(const string16& word) = 0;
-
-  // Informs the renderer about a new visited link table.
-  virtual void SendVisitedLinkTable(base::SharedMemory* table_memory) = 0;
 
   // Notify the renderer that a link was visited.
   virtual void AddVisitedLinks(

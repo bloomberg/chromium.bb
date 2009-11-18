@@ -24,7 +24,15 @@ void VisitedLinkEventListener::NewTable(base::SharedMemory* table_memory) {
     if (!i.GetCurrentValue()->HasConnection())
       continue;
 
-    i.GetCurrentValue()->SendVisitedLinkTable(table_memory);
+    base::SharedMemoryHandle new_table;
+    base::ProcessHandle process = i.GetCurrentValue()->GetHandle();
+    if (!process) {
+      // process can be null if it's started with the --single-process flag.
+      process = base::Process::Current().handle();
+    }
+
+    table_memory->ShareToProcess(process, &new_table);
+    i.GetCurrentValue()->Send(new ViewMsg_VisitedLink_NewTable(new_table));
   }
 }
 

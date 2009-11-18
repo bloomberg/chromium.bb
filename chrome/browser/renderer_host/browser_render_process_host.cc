@@ -20,7 +20,6 @@
 #include "base/field_trial.h"
 #include "base/logging.h"
 #include "base/process_util.h"
-#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
@@ -48,8 +47,10 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/child_process_host.h"
+#include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/process_watcher.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/renderer/render_process.h"
@@ -62,6 +63,12 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
+#include "chrome/browser/sandbox_policy.h"
+#elif defined(OS_LINUX)
+#include "base/singleton.h"
+#include "chrome/browser/crash_handler_host_linux.h"
+#include "chrome/browser/zygote_host_linux.h"
+#include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
 #endif
 
 using WebKit::WebCache;
@@ -194,6 +201,7 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
       ALLOW_THIS_IN_INITIALIZER_LIST(cached_dibs_cleaner_(
             base::TimeDelta::FromSeconds(5),
             this, &BrowserRenderProcessHost::ClearTransportDIBCache)),
+      zygote_child_(false),
       extension_process_(false) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -231,14 +239,20 @@ BrowserRenderProcessHost::~BrowserRenderProcessHost() {
 
   // We may have some unsent messages at this point, but that's OK.
   channel_.reset();
-  while (!queued_messages_.empty()) {
-    delete queued_messages_.front();
-    queued_messages_.pop();
-  }
 
   // Destroy the AudioRendererHost properly.
   if (audio_renderer_host_.get())
     audio_renderer_host_->Destroy();
+
+  if (process_.handle() && !run_renderer_in_process()) {
+    if (zygote_child_) {
+#if defined(OS_LINUX)
+      Singleton<ZygoteHost>()->EnsureProcessTerminated(process_.handle());
+#endif
+    } else {
+      ProcessWatcher::EnsureProcessTerminated(process_.handle());
+    }
+  }
 
   ClearTransportDIBCache();
 
@@ -299,6 +313,16 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
   // be doing.
   channel_->set_sync_messages_with_no_timeout_allowed(false);
 
+  // Build command line for renderer, we have to quote the executable name to
+  // deal with spaces.
+  CommandLine cmd_line(renderer_path);
+  cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
+                                 ASCIIToWide(channel_id));
+  if (is_extensions_process)
+    cmd_line.AppendSwitch(switches::kEnableDatabases);
+  bool has_cmd_prefix;
+  AppendRendererCommandLine(&cmd_line, &has_cmd_prefix);
+
   if (run_renderer_in_process()) {
     // Crank up a thread and run the initialization there.  With the way that
     // messages flow between the browser and renderer, this thread is required
@@ -318,24 +342,48 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
     options.message_loop_type = MessageLoop::TYPE_DEFAULT;
 #endif
     in_process_renderer_->StartWithOptions(options);
-
-    OnProcessLaunched();  // Fake a callback that the process is ready.
   } else {
-    // Build command line for renderer, we have to quote the executable name to
-    // deal with spaces.
-    scoped_ptr<CommandLine> cmd_line(new CommandLine(renderer_path));
-    cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
-                                    ASCIIToWide(channel_id));
-    if (is_extensions_process)
-      cmd_line->AppendSwitch(switches::kEnableDatabases);
-    AppendRendererCommandLine(cmd_line.get());
+    base::TimeTicks begin_launch_time = base::TimeTicks::Now();
 
-    // Spawn the child process asynchronously to avoid blocking the UI thread.
-    child_process_.reset(new ChildProcessLauncher(
-        cmd_line.release(), channel_.get(), this));
-
+    // Actually spawn the child process.
+    base::ProcessHandle process = ExecuteRenderer(&cmd_line, has_cmd_prefix);
+    if (!process) {
+      channel_.reset();
+      return false;
+    }
+    process_.set_handle(process);
     fast_shutdown_started_ = false;
+
+    // Log the launch time, separating out the first one (which will likely be
+    // slower due to the rest of the browser initializing at the same time).
+    static bool done_first_launch = false;
+    if (done_first_launch) {
+      UMA_HISTOGRAM_TIMES("MPArch.RendererLaunchSubsequent",
+                          base::TimeTicks::Now() - begin_launch_time);
+    } else {
+      UMA_HISTOGRAM_TIMES("MPArch.RendererLaunchFirst",
+                          base::TimeTicks::Now() - begin_launch_time);
+      done_first_launch = true;
+    }
   }
+
+  // Now that the process is created, set its backgrounding accordingly.
+  SetBackgrounded(backgrounded_);
+
+  InitVisitedLinks();
+  InitUserScripts();
+  InitExtensions();
+#if defined(SPELLCHECKER_IN_RENDERER)
+  // We don't want to initialize the spellchecker unless SpellCheckHost has been
+  // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL
+  // then the spellchecker has been turned off, but here, we don't know if
+  // it's been turned off or just not loaded yet.
+  if (profile()->GetSpellCheckHost())
+    InitSpellChecker();
+#endif
+
+  if (max_page_id_ != -1)
+    Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
 
   return true;
 }
@@ -356,16 +404,11 @@ void BrowserRenderProcessHost::CrossSiteClosePageACK(
 bool BrowserRenderProcessHost::WaitForPaintMsg(int render_widget_id,
                                                const base::TimeDelta& max_delay,
                                                IPC::Message* msg) {
-  // The post task to this thread with the process id could be in queue, and we
-  // don't want to dispatch a message before then since it will need the handle.
-  if (child_process_.get() && child_process_->IsStarting())
-    return false;
-
   return widget_helper_->WaitForPaintMsg(render_widget_id, max_delay, msg);
 }
 
 void BrowserRenderProcessHost::ReceivedBadMessage(uint16 msg_type) {
-  BadMessageTerminateProcess(msg_type, GetHandle());
+  BadMessageTerminateProcess(msg_type, process_.handle());
 }
 
 void BrowserRenderProcessHost::ViewCreated() {
@@ -403,21 +446,6 @@ void BrowserRenderProcessHost::AddWord(const string16& word) {
   }
 }
 
-void BrowserRenderProcessHost::SendVisitedLinkTable(
-    base::SharedMemory* table_memory) {
-  // Check if the process is still starting and we don't have a handle for it
-  // yet, in which case this will happen later when InitVisitedLinks is called.
-  if (!run_renderer_in_process() &&
-      (!child_process_.get() || child_process_->IsStarting())) {
-    return;
-  }
-
-  base::SharedMemoryHandle handle_for_process;
-  table_memory->ShareToProcess(GetHandle(), &handle_for_process);
-  if (base::SharedMemory::IsHandleValid(handle_for_process))
-    Send(new ViewMsg_VisitedLink_NewTable(handle_for_process));
-}
-
 void BrowserRenderProcessHost::AddVisitedLinks(
     const VisitedLinkCommon::Fingerprints& links) {
   visited_link_updater_->AddLinks(links);
@@ -436,7 +464,8 @@ void BrowserRenderProcessHost::ResetVisitedLinks() {
 }
 
 void BrowserRenderProcessHost::AppendRendererCommandLine(
-    CommandLine* command_line) const {
+    CommandLine* command_line,
+    bool* has_cmd_prefix) const {
   if (logging::DialogsAreSuppressed())
     command_line->AppendSwitch(switches::kNoErrorDialogs);
 
@@ -468,12 +497,16 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
   // A command prefix is something prepended to the command line of the spawned
   // process. It is supported only on POSIX systems.
 #if defined(OS_POSIX)
-  if (browser_command_line.HasSwitch(switches::kRendererCmdPrefix)) {
+  *has_cmd_prefix =
+      browser_command_line.HasSwitch(switches::kRendererCmdPrefix);
+  if (*has_cmd_prefix) {
     // launch the renderer child with some prefix (usually "gdb --args")
     const std::wstring prefix =
         browser_command_line.GetSwitchValue(switches::kRendererCmdPrefix);
     command_line->PrependWrapper(prefix);
   }
+#else
+  *has_cmd_prefix = false;
 #endif  // defined(OS_POSIX)
 
   ChildProcessHost::SetCrashReporterCommandLine(command_line);
@@ -565,26 +598,88 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
   }
 }
 
+#if defined(OS_WIN)
+
+base::ProcessHandle BrowserRenderProcessHost::ExecuteRenderer(
+    CommandLine* cmd_line,
+    bool has_cmd_prefix) {
+  return sandbox::StartProcess(cmd_line);
+}
+
+#elif defined(OS_POSIX)
+
+base::ProcessHandle BrowserRenderProcessHost::ExecuteRenderer(
+    CommandLine* cmd_line,
+    bool has_cmd_prefix) {
+#if defined(OS_LINUX)
+  // On Linux, normally spawn processes with zygotes. We can't do this when
+  // we're spawning child processes through an external program (i.e. there is a
+  // command prefix) like GDB so fall through to the POSIX case then.
+  if (!has_cmd_prefix) {
+    base::GlobalDescriptors::Mapping mapping;
+    const int ipcfd = channel_->GetClientFileDescriptor();
+    mapping.push_back(std::pair<uint32_t, int>(kPrimaryIPCChannel, ipcfd));
+    const int crash_signal_fd =
+        Singleton<RendererCrashHandlerHostLinux>()->GetDeathSignalSocket();
+    if (crash_signal_fd >= 0) {
+      mapping.push_back(std::pair<uint32_t, int>(kCrashDumpSignal,
+                                                 crash_signal_fd));
+    }
+    zygote_child_ = true;
+    return Singleton<ZygoteHost>()->ForkRenderer(cmd_line->argv(), mapping);
+  }
+#endif  // defined(OS_LINUX)
+
+  // NOTE: This code is duplicated with plugin_process_host.cc, but
+  // there's not a good place to de-duplicate it.
+  base::file_handle_mapping_vector fds_to_map;
+  const int ipcfd = channel_->GetClientFileDescriptor();
+  fds_to_map.push_back(std::make_pair(ipcfd, kPrimaryIPCChannel + 3));
+
+#if defined(OS_LINUX)
+  // On Linux, we need to add some extra file descriptors for crash handling and
+  // the sandbox.
+  const int crash_signal_fd =
+      Singleton<RendererCrashHandlerHostLinux>()->GetDeathSignalSocket();
+  if (crash_signal_fd >= 0) {
+    fds_to_map.push_back(std::make_pair(crash_signal_fd,
+                                        kCrashDumpSignal + 3));
+  }
+  const int sandbox_fd =
+      Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
+  fds_to_map.push_back(std::make_pair(sandbox_fd, kSandboxIPCChannel + 3));
+#endif  // defined(OS_LINUX)
+
+  // Actually launch the app.
+  zygote_child_ = false;
+  base::ProcessHandle process_handle;
+  if (!base::LaunchApp(cmd_line->argv(), fds_to_map, false, &process_handle))
+    return 0;
+  return process_handle;
+}
+
+#endif  // defined(OS_POSIX)
+
 base::ProcessHandle BrowserRenderProcessHost::GetHandle() {
-  // child_process_ is null either because we're in single process mode, we have
-  // done fast termination, or the process has crashed.
-  if (run_renderer_in_process() || !child_process_.get())
+  if (run_renderer_in_process())
     return base::Process::Current().handle();
 
-  if (child_process_->IsStarting()) {
-    NOTREACHED() << "BrowserRenderProcessHost::GetHandle() called early!";
-    return base::kNullProcessHandle;
-  }
-
-  return child_process_->GetHandle();
+  return process_.handle();
 }
 
 void BrowserRenderProcessHost::InitVisitedLinks() {
   VisitedLinkMaster* visitedlink_master = profile()->GetVisitedLinkMaster();
-  if (!visitedlink_master)
+  if (!visitedlink_master) {
     return;
+  }
 
-  SendVisitedLinkTable(visitedlink_master->shared_memory());
+  base::SharedMemoryHandle handle_for_process;
+  bool r = visitedlink_master->ShareToProcess(GetHandle(), &handle_for_process);
+  DCHECK(r);
+
+  if (base::SharedMemory::IsHandleValid(handle_for_process)) {
+    Send(new ViewMsg_VisitedLink_NewTable(handle_for_process));
+  }
 }
 
 void BrowserRenderProcessHost::InitUserScripts() {
@@ -610,11 +705,6 @@ void BrowserRenderProcessHost::InitExtensions() {
 
 void BrowserRenderProcessHost::SendUserScriptsUpdate(
     base::SharedMemory *shared_memory) {
-  // Process is being started asynchronously.  We'll end up calling
-  // InitUserScripts when it's created which will call this again.
-  if (child_process_.get() && child_process_->IsStarting())
-    return;
-
   base::SharedMemoryHandle handle_for_process;
   if (!shared_memory->ShareToProcess(GetHandle(), &handle_for_process)) {
     // This can legitimately fail if the renderer asserts at startup.
@@ -627,11 +717,10 @@ void BrowserRenderProcessHost::SendUserScriptsUpdate(
 }
 
 bool BrowserRenderProcessHost::FastShutdownIfPossible() {
+  if (!process_.handle())
+    return false;  // Render process is probably crashed.
   if (run_renderer_in_process())
     return false;  // Single process mode can't do fast shutdown.
-
-  if (!child_process_.get() || child_process_->IsStarting() || !GetHandle())
-    return false;  // Render process hasn't started or is probably crashed.
 
   // Test if there's an unload listener.
   // NOTE: It's possible that an onunload listener may be installed
@@ -659,7 +748,23 @@ bool BrowserRenderProcessHost::FastShutdownIfPossible() {
     iter.Advance();
   }
 
-  child_process_.reset();
+  // Otherwise, we're allowed to just terminate the process. Using exit code 0
+  // means that UMA won't treat this as a renderer crash.
+  process_.Terminate(ResultCodes::NORMAL_EXIT);
+  // On POSIX, we must additionally reap the child.
+#if defined(OS_POSIX)
+  if (zygote_child_) {
+#if defined(OS_LINUX)
+    // If the renderer was created via a zygote, we have to proxy the reaping
+    // through the zygote process.
+    Singleton<ZygoteHost>()->EnsureProcessTerminated(process_.handle());
+#endif  // defined(OS_LINUX)
+  } else {
+    ProcessWatcher::EnsureProcessGetsReaped(process_.handle());
+  }
+#endif  // defined(OS_POSIX)
+  process_.Close();
+
   fast_shutdown_started_ = true;
   return true;
 }
@@ -726,8 +831,11 @@ TransportDIB* BrowserRenderProcessHost::GetTransportDIB(
 }
 
 void BrowserRenderProcessHost::ClearTransportDIBCache() {
-  STLDeleteContainerPairSecondPointers(
-      cached_dibs_.begin(), cached_dibs_.end());
+  for (std::map<TransportDIB::Id, TransportDIB*>::iterator
+       i = cached_dibs_.begin(); i != cached_dibs_.end(); ++i) {
+    delete i->second;
+  }
+
   cached_dibs_.clear();
 }
 
@@ -736,12 +844,6 @@ bool BrowserRenderProcessHost::Send(IPC::Message* msg) {
     delete msg;
     return false;
   }
-
-  if (child_process_.get() && child_process_->IsStarting()) {
-    queued_messages_.push(msg);
-    return true;
-  }
-
   return channel_->Send(msg);
 }
 
@@ -793,8 +895,49 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
+  // process_ is not NULL if we created the renderer process
+  if (!process_.handle()) {
+    if (fast_shutdown_started_) {
+      // We terminated the process, but the ChannelConnected task was still
+      // in the queue. We can safely ignore it.
+      return;
+    } else if (base::GetCurrentProcId() == peer_pid) {
+      // We are in single-process mode. In theory we should have access to
+      // ourself but it may happen that we don't.
+      process_.set_handle(base::GetCurrentProcessHandle());
+    } else {
+#if defined(OS_WIN)
+      // Request MAXIMUM_ALLOWED to match the access a handle
+      // returned by CreateProcess() has to the process object.
+      process_.set_handle(OpenProcess(MAXIMUM_ALLOWED, FALSE, peer_pid));
+#else
+      NOTREACHED();
+#endif
+      DCHECK(process_.handle());
+    }
+  } else {
+    // Need to verify that the peer_pid is actually the process we know, if
+    // it is not, we need to panic now. See bug 1002150.
+    if (peer_pid != process_.pid()) {
+      // This check is invalid on Linux for two reasons:
+      //   a) If we are running the renderer in a wrapper (with
+      //      --renderer-cmd-prefix) then the we'll see the PID of the wrapper
+      //      process, not the renderer itself.
+      //   b) If we are using the SUID sandbox with CLONE_NEWPID, then the
+      //      renderer will be in a new PID namespace and will believe that
+      //      it's PID is 2 or 3.
+      // Additionally, this check isn't a security problem on Linux since we
+      // don't use the PID as reported by the renderer.
+#if !defined(OS_LINUX)
+      CHECK(peer_pid == process_.pid()) << peer_pid << " " << process_.pid();
+#endif
+    }
+    mark_child_process_activity_time();
+  }
+
 #if defined(IPC_MESSAGE_LOG_ENABLED)
-  Send(new ViewMsg_SetIPCLoggingEnabled(IPC::Logging::current()->Enabled()));
+  bool enabled = IPC::Logging::current()->Enabled();
+  Send(new ViewMsg_SetIPCLoggingEnabled(enabled));
 #endif
 }
 
@@ -802,7 +945,7 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
 void BrowserRenderProcessHost::BadMessageTerminateProcess(
     uint16 msg_type, base::ProcessHandle process) {
   LOG(ERROR) << "bad message " << msg_type << " terminating renderer.";
-  if (run_renderer_in_process()) {
+  if (BrowserRenderProcessHost::run_renderer_in_process()) {
     // In single process mode it is better if we don't suicide but just crash.
     CHECK(false);
   }
@@ -819,17 +962,42 @@ void BrowserRenderProcessHost::OnChannelError() {
   if (!channel_.get())
     return;
 
-  // NULL in single process mode or if fast termination happened.
-  bool did_crash =
-      child_process_.get() ? child_process_->DidProcessCrash() : false;
+  bool child_exited;
+  bool did_crash;
+  if (!process_.handle()) {
+    // The process has been terminated (likely FastShutdownIfPossible).
+    did_crash = false;
+    child_exited = true;
+  } else if (zygote_child_) {
+#if defined(OS_LINUX)
+    did_crash = Singleton<ZygoteHost>()->DidProcessCrash(
+        process_.handle(), &child_exited);
+#else
+    NOTREACHED();
+    did_crash = true;
+#endif
+  } else {
+    did_crash = base::DidProcessCrash(&child_exited, process_.handle());
+  }
 
   NotificationService::current()->Notify(
       NotificationType::RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),
       Details<bool>(&did_crash));
 
+  // POSIX: If the process crashed, then the kernel closed the socket for it
+  // and so the child has already died by the time we get here. Since
+  // DidProcessCrash called waitpid with WNOHANG, it'll reap the process.
+  // However, if DidProcessCrash didn't reap the child, we'll need to in
+  // ~BrowserRenderProcessHost via ProcessWatcher. So we can't close the handle
+  // here.
+  //
+  // This is moot on Windows where |child_exited| will always be true.
+  if (child_exited)
+    process_.Close();
+
   WebCacheManager::GetInstance()->Remove(id());
-  child_process_.reset();
+
   channel_.reset();
 
   IDMap<IPC::Channel::Listener>::iterator iter(&listeners_);
@@ -867,27 +1035,32 @@ void BrowserRenderProcessHost::SuddenTerminationChanged(bool enabled) {
 }
 
 void BrowserRenderProcessHost::SetBackgrounded(bool backgrounded) {
+  // If the process_ is NULL, the process hasn't been created yet.
+  if (process_.handle()) {
+    bool should_set_backgrounded = true;
+
+#if defined(OS_WIN)
+    // The cbstext.dll loads as a global GetMessage hook in the browser process
+    // and intercepts/unintercepts the kernel32 API SetPriorityClass in a
+    // background thread. If the UI thread invokes this API just when it is
+    // intercepted the stack is messed up on return from the interceptor
+    // which causes random crashes in the browser process. Our hack for now
+    // is to not invoke the SetPriorityClass API if the dll is loaded.
+    should_set_backgrounded = (GetModuleHandle(L"cbstext.dll") == NULL);
+#endif  // OS_WIN
+
+    if (should_set_backgrounded) {
+      process_.SetProcessBackgrounded(backgrounded);
+    }
+  }
+
   // Note: we always set the backgrounded_ value.  If the process is NULL
   // (and hence hasn't been created yet), we will set the process priority
   // later when we create the process.
   backgrounded_ = backgrounded;
-  if (!child_process_.get() || child_process_->IsStarting())
-    return;
-
-#if defined(OS_WIN)
-  // The cbstext.dll loads as a global GetMessage hook in the browser process
-  // and intercepts/unintercepts the kernel32 API SetPriorityClass in a
-  // background thread. If the UI thread invokes this API just when it is
-  // intercepted the stack is messed up on return from the interceptor
-  // which causes random crashes in the browser process. Our hack for now
-  // is to not invoke the SetPriorityClass API if the dll is loaded.
-  if (GetModuleHandle(L"cbstext.dll"))
-    return;
-#endif  // OS_WIN
-
-  child_process_->SetProcessBackgrounded(backgrounded);
 }
 
+// NotificationObserver implementation.
 void BrowserRenderProcessHost::Observe(NotificationType type,
                                        const NotificationSource& source,
                                        const NotificationDetails& details) {
@@ -928,35 +1101,6 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
       break;
     }
   }
-}
-
-void BrowserRenderProcessHost::OnProcessLaunched() {
-  // Now that the process is created, set its backgrounding accordingly.
-  SetBackgrounded(backgrounded_);
-
-  InitVisitedLinks();
-  InitUserScripts();
-  InitExtensions();
-#if defined(SPELLCHECKER_IN_RENDERER)
-  // We don't want to initialize the spellchecker unless SpellCheckHost has been
-  // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL
-  // then the spellchecker has been turned off, but here, we don't know if
-  // it's been turned off or just not loaded yet.
-  if (profile()->GetSpellCheckHost())
-    InitSpellChecker();
-#endif
-
-  if (max_page_id_ != -1)
-    Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
-
-  while (!queued_messages_.empty()) {
-    Send(queued_messages_.front());
-    queued_messages_.pop();
-  }
-
-  NotificationService::current()->Notify(
-      NotificationType::RENDERER_PROCESS_CREATED,
-      Source<RenderProcessHost>(this), NotificationService::NoDetails());
 }
 
 void BrowserRenderProcessHost::OnExtensionAddListener(

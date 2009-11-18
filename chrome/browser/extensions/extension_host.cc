@@ -124,11 +124,6 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
   render_view_host_->AllowBindings(BindingsPolicy::EXTENSION);
   if (enable_dom_automation_)
     render_view_host_->AllowBindings(BindingsPolicy::DOM_AUTOMATION);
-
-  // Listen for when the render process' handle is available so we can add it
-  // to the task manager then.
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
-                 Source<RenderProcessHost>(render_process_host()));
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -180,6 +175,11 @@ void ExtensionHost::CreateRenderViewNow() {
   render_view_host_->CreateRenderView(profile_->GetRequestContext());
   NavigateToURL(url_);
   DCHECK(IsRenderViewLive());
+  LOG(INFO) << "Sending EXTENSION_PROCESS_CREATED";
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_PROCESS_CREATED,
+      Source<Profile>(profile_),
+      Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::NavigateToURL(const GURL& url) {
@@ -216,12 +216,6 @@ void ExtensionHost::Observe(NotificationType type,
     NavigateToURL(url_);
   } else if (type == NotificationType::BROWSER_THEME_CHANGED) {
     InsertThemeCSS();
-  } else if (type == NotificationType::RENDERER_PROCESS_CREATED) {
-    LOG(INFO) << "Sending EXTENSION_PROCESS_CREATED";
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PROCESS_CREATED,
-        Source<Profile>(profile_),
-        Details<ExtensionHost>(this));
   } else {
     NOTREACHED();
   }

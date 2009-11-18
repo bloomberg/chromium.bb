@@ -80,7 +80,13 @@ class VisitedLinkMaster : public VisitedLinkCommon {
   // object won't work.
   bool Init();
 
-  base::SharedMemory* shared_memory() { return shared_memory_; }
+  // Duplicates the handle to the shared memory to another process.
+  // Returns true on success.
+  bool ShareToProcess(base::ProcessHandle process,
+                      base::SharedMemoryHandle *new_handle);
+
+  // Returns the handle to the shared memory
+  base::SharedMemoryHandle GetSharedMemoryHandle();
 
   // Adds a URL to the table.
   void AddURL(const GURL& url);
