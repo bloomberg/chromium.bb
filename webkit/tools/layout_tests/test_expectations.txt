@@ -726,7 +726,7 @@ BUG_DUMI SKIP : LayoutTests/fast/js/global-function-resolve.html = FAIL
 BUG_DUMI SKIP : LayoutTests/http/tests/security/cross-frame-access-call.html = FAIL
 
 // Implement HTML5 Geolocation API.
-BUG11246 : LayoutTests/fast/dom/Geolocation = FAIL
+BUG11246 DEFER SKIP : LayoutTests/fast/dom/Geolocation = FAIL
 
 // Implement HTML5 EventSource API. Skipping, because most of these time out and
 // slow down the test run.
