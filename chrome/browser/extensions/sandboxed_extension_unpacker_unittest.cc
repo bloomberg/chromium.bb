@@ -120,7 +120,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
   scoped_refptr<SandboxedExtensionUnpacker> sandboxed_unpacker_;
 };
 
-TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
+TEST_F(SandboxedExtensionUnpackerTest, DISABLED_NoCatalogsSuccess) {
   EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _));
 
   SetupUnpacker("no_l10n.crx");
@@ -138,7 +138,7 @@ TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
   EXPECT_FALSE(file_util::PathExists(install_path));
 }
 
-TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
+TEST_F(SandboxedExtensionUnpackerTest, DISABLED_WithCatalogsSuccess) {
   EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _));
 
   SetupUnpacker("good_l10n.crx");
