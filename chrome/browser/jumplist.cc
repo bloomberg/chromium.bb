@@ -34,6 +34,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -280,11 +281,12 @@ HRESULT UpdateCategory(ScopedComPtr<ICustomDestinationList> list,
                        int category_id,
                        const std::wstring& application,
                        const std::wstring& switches,
-                       const ShellLinkItemList& data) {
+                       const ShellLinkItemList& data,
+                       int max_slots) {
   // Exit this function when the given vector does not contain any items
   // because an ICustomDestinationList::AppendCategory() call fails in this
   // case.
-  if (data.empty())
+  if (data.empty() || !max_slots)
     return S_OK;
 
   std::wstring category = l10n_util::GetString(category_id);
@@ -299,7 +301,7 @@ HRESULT UpdateCategory(ScopedComPtr<ICustomDestinationList> list,
     return false;
 
   for (ShellLinkItemList::const_iterator item = data.begin();
-       item != data.end(); ++item) {
+       item != data.end() && max_slots > 0; ++item, --max_slots) {
     scoped_refptr<ShellLinkItem> link(*item);
     AddShellLink(collection, application, switches, link);
   }
@@ -393,6 +395,9 @@ bool UpdateJumpList(const ShellLinkItemList& most_visited_pages,
   if (FAILED(result))
     return false;
 
+  // Set the App ID for this JumpList.
+  destination_list->SetAppID(l10n_util::GetString(IDS_PRODUCT_NAME).c_str());
+
   // Start a transaction that updates the JumpList of this application.
   // This implementation just replaces the all items in this JumpList, so
   // we don't have to use the IObjectArray object returned from this call.
@@ -413,17 +418,33 @@ bool UpdateJumpList(const ShellLinkItemList& most_visited_pages,
   // Retrieve the command-line switches of this process.
   std::wstring chrome_switches;
 
+  // We allocate 60% of the given JumpList slots to "most-visited" items
+  // and 40% to "recently-closed" items, respectively.
+  // Nevertheless, if there are not so many items in |recently_closed_pages|,
+  // we give the remaining slots to "most-visited" items.
+  const int kMostVisited = 60;
+  const int kRecentlyClosed = 40;
+  const int kTotal = kMostVisited + kRecentlyClosed;
+  size_t most_visited_items = MulDiv(max_slots, kMostVisited, kTotal);
+  size_t recently_closed_items = max_slots - most_visited_items;
+  if (recently_closed_pages.size() < recently_closed_items) {
+    most_visited_items += recently_closed_items - recently_closed_pages.size();
+    recently_closed_items = recently_closed_pages.size();
+  }
+
   // Update the "Most Visited" category of the JumpList.
   // This update request is applied into the JumpList when we commit this
   // transaction.
   result = UpdateCategory(destination_list, IDS_NEW_TAB_MOST_VISITED,
-                          chrome_path, chrome_switches, most_visited_pages);
+                          chrome_path, chrome_switches, most_visited_pages,
+                          most_visited_items);
   if (FAILED(result))
     return false;
 
   // Update the "Recently Closed" category of the JumpList.
   result = UpdateCategory(destination_list, IDS_NEW_TAB_RECENTLY_CLOSED,
-                          chrome_path, chrome_switches, recently_closed_pages);
+                          chrome_path, chrome_switches, recently_closed_pages,
+                          recently_closed_items);
   if (FAILED(result))
     return false;
 
@@ -690,6 +711,7 @@ void JumpList::OnSegmentUsageAvailable(
   //   An empty string. This value is to be updated in OnFavIconDataAvailable().
   // This code is copied from
   // RecentlyClosedTabsHandler::TabRestoreServiceChanged() to emulate it.
+  const int kRecentlyClosedCount = 4;
   recently_closed_pages_.clear();
   TabRestoreService* tab_restore_service = profile_->GetTabRestoreService();
   const TabRestoreService::Entries& entries = tab_restore_service->entries();
@@ -698,10 +720,10 @@ void JumpList::OnSegmentUsageAvailable(
     const TabRestoreService::Entry* entry = *it;
     if (entry->type == TabRestoreService::TAB) {
       AddTab(static_cast<const TabRestoreService::Tab*>(entry),
-             &recently_closed_pages_, 3);
+             &recently_closed_pages_, kRecentlyClosedCount);
     } else if (entry->type == TabRestoreService::WINDOW) {
       AddWindow(static_cast<const TabRestoreService::Window*>(entry),
-                &recently_closed_pages_, 3);
+                &recently_closed_pages_, kRecentlyClosedCount);
     }
   }
 
