@@ -138,6 +138,15 @@ static void ChromePluginHideWindow(WindowRef window) {
   MaybeReactivateSavedProcess();
 }
 
+static void ChromePluginDisposeDialog(DialogRef dialog) {
+  WindowRef window = GetDialogWindow(dialog);
+  CGWindowID window_id = HIWindowGetCGWindowID(window);
+  CGRect window_rect = CGRectForWindow(window);
+  DisposeDialog(dialog);
+  webkit_glue::NotifyBrowserOfPluginDisposeWindow(window_id, window_rect);
+  MaybeReactivateSavedProcess();
+}
+
 #pragma mark -
 
 struct interpose_substitution {
@@ -156,4 +165,5 @@ __attribute__((used)) static const interpose_substitution substitutions[]
   INTERPOSE_FUNCTION(ShowWindow),
   INTERPOSE_FUNCTION(DisposeWindow),
   INTERPOSE_FUNCTION(HideWindow),
+  INTERPOSE_FUNCTION(DisposeDialog),
 };
