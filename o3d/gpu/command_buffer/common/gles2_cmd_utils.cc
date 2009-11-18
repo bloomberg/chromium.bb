@@ -6,7 +6,7 @@
 // includes where appropriate.
 
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "gpu/command_buffer/common/gles2_client_base.h"
+#include "gpu/command_buffer/common/gles2_cmd_format.h"
 
 namespace command_buffer {
 namespace gles2 {
