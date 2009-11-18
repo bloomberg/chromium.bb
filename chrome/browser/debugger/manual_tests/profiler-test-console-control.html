@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <title>Profiler: test console controlling of CPU profiling</title>
+    <script type="text/javascript" src="resources/fib.js"></script>
+    <script type="text/javascript">
+      function profile_fib() {
+        console.profile();
+        run_fib();
+        window.setTimeout('console.profileEnd();', 5000);
+      }
+    </script>
+  </head>
+  <body onload="profile_fib()">
+    This test runs and profiles a simple looped computation.
+    <br>
+    <br>
+    TEST
+    <ul>
+      <li>load file in the browser;
+      <li>open DevTools with console (Ctrl+Shift+I on Win/Linux, Command+Option+I on Mac);
+      <li>go to 'Profiles' page;
+      <li>observe that 'Profile 1' item has appeared under 'CPU profiles' section;
+      <li>check for presence of 'eternal_fib' entry in the profile view.
+    </ul>
+    <br>
+  </body>
+</html>

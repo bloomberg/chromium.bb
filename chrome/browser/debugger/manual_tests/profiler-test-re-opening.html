@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <title>Profiler: test profiles population on DevTools re-opening</title>
+    <script type="text/javascript" src="resources/fib.js"></script>
+    <script type="text/javascript">
+      function profile_fib() {
+        console.profile();
+        run_fib();
+        window.setTimeout('console.profileEnd();', 5000);
+      }
+    </script>
+  </head>
+  <body onload="profile_fib()">
+    This test runs and profiles a simple looped computation.
+    <br>
+    <br>
+    TEST
+    <ul>
+      <li>load file in the browser;
+      <li>open DevTools with console (Ctrl+Shift+I on Win/Linux, Command+Option+I on Mac);
+      <li>go to 'Profiles' page;
+      <li>observe that 'Profile 1' item has appeared under 'CPU profiles' section;
+      <li>reload page in browser;
+      <li>observe that after 5 seconds, 'Profile 2' item has appeared under
+        'CPU profiles' section;
+      <li>take a couple of heap snapshots by pressing 'Take heap snapshot.'
+        button (eye icon on the left of the status bar);
+      <li>close DevTools window;
+      <li>re-open DevTools window;
+      <li>go to 'Profiles' page;
+      <li>verify that CPU profiles 'Profile 1' and 'Profile 2', and heap profiles
+        taken previously are restored back (<b>Warning:</b> it may take some
+        time to re-process them).
+    </ul>
+    <br>
+  </body>
+</html>
