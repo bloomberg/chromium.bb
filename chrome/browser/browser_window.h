@@ -291,7 +291,7 @@ class BrowserWindow {
   virtual void DestroyBrowser() = 0;
 };
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 class BookmarkBarView;
 class LocationBarView;
 
@@ -304,7 +304,7 @@ class View;
 // UI used only by UI test automation.
 class BrowserWindowTesting {
  public:
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
   // Returns the BookmarkBarView.
   virtual BookmarkBarView* GetBookmarkBarView() const = 0;
 

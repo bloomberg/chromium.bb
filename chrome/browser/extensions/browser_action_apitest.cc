@@ -13,7 +13,7 @@
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/test/ui_test_utils.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
@@ -29,7 +29,7 @@ class BrowserActionTest : public ExtensionApiTest {
   int NumberOfBrowserActions() {
     int rv = -1;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
     BrowserActionsContainer* browser_actions =
         browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
         browser_actions();
@@ -52,7 +52,7 @@ class BrowserActionTest : public ExtensionApiTest {
   }
 
   bool IsIconNull(int index) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
     BrowserActionsContainer* browser_actions =
         browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
         browser_actions();
@@ -75,13 +75,13 @@ class BrowserActionTest : public ExtensionApiTest {
   }
 
   void ExecuteBrowserAction(int index) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
     BrowserActionsContainer* browser_actions =
         browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
         browser_actions();
     ASSERT_TRUE(browser_actions);
     browser_actions->TestExecuteBrowserAction(index);
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(TOOLKIT_VIEWS)
     GtkWidget* button = GetButton(index);
     ASSERT_TRUE(button);
     gtk_button_clicked(GTK_BUTTON(button));
@@ -89,7 +89,7 @@ class BrowserActionTest : public ExtensionApiTest {
   }
 
   std::string GetTooltip(int index) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
     BrowserActionsContainer* browser_actions =
         browser()->window()->GetBrowserWindowTesting()->GetToolbarView()->
         browser_actions();
@@ -113,7 +113,7 @@ class BrowserActionTest : public ExtensionApiTest {
   }
 
  private:
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   GtkWidget* GetButton(int index) {
     GtkWidget* rv = NULL;
     GtkWidget* toolbar = ViewIDUtil::GetWidget(
