@@ -187,13 +187,15 @@ void MockAppCacheStorage::ProcessStoreGroupAndNewestCache(
   }
 
   AddStoredGroup(group);
-  AddStoredCache(newest_cache);
-  group->AddCache(newest_cache);
+  if (newest_cache != group->newest_complete_cache()) {
+    AddStoredCache(newest_cache);
+    group->AddCache(newest_cache);
 
-  // Copy the collection prior to removal, on final release
-  // of a cache the group's collection will change.
-  AppCacheGroup::Caches copy = group->old_caches();
-  RemoveStoredCaches(copy);
+    // Copy the collection prior to removal, on final release
+    // of a cache the group's collection will change.
+    AppCacheGroup::Caches copy = group->old_caches();
+    RemoveStoredCaches(copy);
+  }
 
   if (delegate_ref->delegate)
     delegate_ref->delegate->OnGroupAndNewestCacheStored(group, true);

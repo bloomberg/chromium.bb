@@ -271,6 +271,48 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   EXPECT_EQ(new_cache.get(), group->newest_complete_cache());
 }
 
+TEST_F(MockAppCacheStorageTest, StoreExistingGroupExistingCache) {
+  // Store a group with updates to its existing newest complete cache.
+  MockAppCacheService service;
+  MockAppCacheStorage* storage =
+      reinterpret_cast<MockAppCacheStorage*>(service.storage());
+
+  // Setup some preconditions. Create a group and a complete cache that
+  // appear to be "stored".
+  GURL manifest_url("http://blah");
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, manifest_url);
+  int64 cache_id = storage->NewCacheId();
+  scoped_refptr<AppCache> cache = new AppCache(&service, cache_id);
+  cache->set_complete(true);
+  group->AddCache(cache);
+  storage->AddStoredGroup(group);
+  storage->AddStoredCache(cache);
+  // Hold our refs to simulate the UpdateJob holding these refs.
+
+  // Change the group's newest cache.
+  EXPECT_EQ(cache, group->newest_complete_cache());
+  GURL entry_url("http://blah/blah");
+  cache->AddEntry(entry_url, AppCacheEntry(AppCacheEntry::MASTER));
+
+  // Conduct the test.
+  MockStorageDelegate delegate;
+  EXPECT_EQ(size_t(1), storage->stored_caches_.size());
+  EXPECT_EQ(size_t(1), storage->stored_groups_.size());
+  EXPECT_TRUE(storage->IsCacheStored(cache));
+  storage->StoreGroupAndNewestCache(group, cache, &delegate);
+  EXPECT_FALSE(delegate.stored_group_success_);
+  EXPECT_EQ(size_t(1), storage->stored_caches_.size());
+  EXPECT_EQ(size_t(1), storage->stored_groups_.size());
+  MessageLoop::current()->RunAllPending();  // Do async task execution.
+  EXPECT_TRUE(delegate.stored_group_success_);
+  EXPECT_EQ(size_t(1), storage->stored_caches_.size());
+  EXPECT_EQ(size_t(1), storage->stored_groups_.size());
+  EXPECT_TRUE(storage->IsCacheStored(cache));
+  EXPECT_EQ(cache, group->newest_complete_cache());
+  EXPECT_TRUE(cache->GetEntry(entry_url));
+}
+
 TEST_F(MockAppCacheStorageTest, MakeGroupObsolete) {
   // Make a group obsolete, should complete asyncly.
   MockAppCacheService service;

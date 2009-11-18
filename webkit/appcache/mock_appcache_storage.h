@@ -163,6 +163,7 @@ class MockAppCacheStorage : public AppCacheStorage {
   FRIEND_TEST(MockAppCacheStorageTest, MakeGroupObsolete);
   FRIEND_TEST(MockAppCacheStorageTest, StoreNewGroup);
   FRIEND_TEST(MockAppCacheStorageTest, StoreExistingGroup);
+  FRIEND_TEST(MockAppCacheStorageTest, StoreExistingGroupExistingCache);
   DISALLOW_COPY_AND_ASSIGN(MockAppCacheStorage);
 };
 
