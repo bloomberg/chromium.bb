@@ -30,6 +30,7 @@ class NaClTest : public UITest {
   GURL GetTestUrl(const FilePath& filename);
  private:
   void PrepareSrpcHwTest(FilePath test_root_dir);
+  void PrepareServerTest(FilePath test_root_dir);
 };
 
 #endif  // CHROME_TEST_NACL_NACL_TEST_H_

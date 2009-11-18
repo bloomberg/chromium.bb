@@ -22,6 +22,10 @@ static const FilePath::CharType kSrpcHwHtmlFileName[] =
 static const FilePath::CharType kSrpcHwNexeFileName[] =
     FILE_PATH_LITERAL("srpc_hw.nexe");
 
+static const FilePath::CharType kServerHtmlFileName[] =
+    FILE_PATH_LITERAL("server_test.html");
+
+
 NaClTest::NaClTest()
     : UITest() {
   launch_arguments_.AppendSwitch(switches::kInternalNaCl);
@@ -81,9 +85,21 @@ void NaClTest::PrepareSrpcHwTest(FilePath test_root_dir) {
       test_root_dir.Append(kSrpcHwNexeFileName)));
 }
 
+void NaClTest::PrepareServerTest(FilePath test_root_dir) {
+  FilePath srpc_hw_dir = test_root_dir.AppendASCII("server");
+  FilePath html_file = srpc_hw_dir.Append(kServerHtmlFileName);
+  ASSERT_TRUE(file_util::PathExists(html_file));
+  // Now copy the files into the test directory
+  ASSERT_TRUE(file_util::CopyFile(
+      html_file,
+      test_root_dir.Append(kServerHtmlFileName)));
+}
+
+
 void NaClTest::SetUp() {
   FilePath nacl_test_dir = GetTestRootDir();
   PrepareSrpcHwTest(nacl_test_dir);
+  PrepareServerTest(nacl_test_dir);
 
   UITest::SetUp();
 
@@ -94,6 +110,12 @@ void NaClTest::TearDown() {
   StopHttpServer();
   UITest::TearDown();
 }
+
+TEST_F(NaClTest, ServerTest) {
+  FilePath server_test_file(kServerHtmlFileName);
+  RunTest(server_test_file, action_max_timeout_ms());
+}
+
 
 TEST_F(NaClTest, SrpcHelloWorld) {
   FilePath srpc_hw_file(kSrpcHwHtmlFileName);

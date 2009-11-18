@@ -43,7 +43,7 @@ deps = {
     "http://v8.googlecode.com/svn/trunk@3276",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@952",
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@996",
 
   "src/third_party/skia/src":
     "http://skia.googlecode.com/svn/trunk/src@428",
