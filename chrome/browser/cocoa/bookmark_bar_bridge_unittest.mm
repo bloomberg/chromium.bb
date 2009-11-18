@@ -90,9 +90,8 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 @end
 
 
-class BookmarkBarBridgeTest : public PlatformTest {
+class BookmarkBarBridgeTest : public CocoaTest {
  public:
-  CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_test_helper_;
 };
 
