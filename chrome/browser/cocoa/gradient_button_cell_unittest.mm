@@ -16,31 +16,25 @@
 
 namespace {
 
-class GradientButtonCellTest : public PlatformTest {
+class GradientButtonCellTest : public CocoaTest {
  public:
   GradientButtonCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    view_.reset([[NSButton alloc] initWithFrame:frame]);
+    scoped_nsobject<NSButton>view([[NSButton alloc] initWithFrame:frame]);
+    view_ = view.get();
     scoped_nsobject<GradientButtonCell> cell([[GradientButtonCell alloc]
                                               initTextCell:@"Testing"]);
     [view_ setCell:cell.get()];
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    [[test_window() contentView] addSubview:view_];
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
-  scoped_nsobject<NSButton> view_;
+  NSButton* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(GradientButtonCellTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
+TEST_VIEW(GradientButtonCellTest, view_)
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(GradientButtonCellTest, Display) {
+TEST_F(GradientButtonCellTest, DisplayWithHover) {
   [[view_ cell] setHoverAlpha:0.0];
   [view_ display];
   [[view_ cell] setHoverAlpha:0.5];
@@ -49,7 +43,7 @@ TEST_F(GradientButtonCellTest, Display) {
   [view_ display];
 }
 
-// Test drawing, mostly to ensure nothing leaks or crashes.
+// Test hover, mostly to ensure nothing leaks or crashes.
 TEST_F(GradientButtonCellTest, Hover) {
   GradientButtonCell* cell = [view_ cell];
   [cell setMouseInside:YES animate:NO];
