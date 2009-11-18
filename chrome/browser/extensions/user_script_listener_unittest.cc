@@ -295,7 +295,7 @@ TEST_F(UserScriptListenerTest, SingleExtension) {
   EXPECT_TRUE(resource_tester_->IsRequestComplete(0));
 }
 
-// Loads a single extension and ensures that requests to URLs with content
+// Loads two extensions and ensures that requests to URLs with content
 // scripts are delayed.
 TEST_F(UserScriptListenerTest, UnloadExtension) {
   FilePath extensions_path;

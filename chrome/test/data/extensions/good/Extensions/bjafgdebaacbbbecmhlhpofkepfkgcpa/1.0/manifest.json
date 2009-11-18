@@ -6,7 +6,7 @@
   "permissions": ["tabs"],
   "content_scripts": [
     {
-      "matches": ["file://*"],
+      "matches": ["http://localhost/*"],
       "js": ["page.js"]
     }
   ]

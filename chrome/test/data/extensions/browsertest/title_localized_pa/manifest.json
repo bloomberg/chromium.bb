@@ -2,7 +2,7 @@
    "background_page": "background.html",
    "content_scripts": [ {
       "js": [ "script.js" ],
-      "matches": [ "http://*/*", "file://*.*" ]
+      "matches": [ "http://*/*" ]
    } ],
    "description": "Hreggvi\u00F0ur: l10n page action",
    "name": "Hreggvi\u00F0ur is my name",

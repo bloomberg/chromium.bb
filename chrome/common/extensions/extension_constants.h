@@ -77,6 +77,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidGlob;
   extern const char* kInvalidJs;
   extern const char* kInvalidJsList;
+  extern const char* kInvalidJsMatches;
   extern const char* kInvalidKey;
   extern const char* kInvalidManifest;
   extern const char* kInvalidMatchCount;

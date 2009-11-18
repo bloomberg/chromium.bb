@@ -3,6 +3,6 @@
   "version": "1.0.0.0",
   "name": "1 content script",
   "content_scripts": [
-    { "matches": ["file://*"], "js": ["script.js"] }
+    { "matches": ["http://*/*"], "js": ["script.js"] }
   ]
 }

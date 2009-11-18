@@ -19,7 +19,7 @@
   "permissions": ["tabs", "http://*.google.com/*", "https://*.google.com/*"],
   "content_scripts": [
     {
-      "matches": ["file://*", "http://*.google.com/*", "https://*.google.com/*"],
+      "matches": ["http://*.google.com/*", "https://*.google.com/*", "http://localhost/*"],
       "js": ["script1.js", "script2.js"],
       "css": ["style1.css", "style2.css", "style2.css"]
     },

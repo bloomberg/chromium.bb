@@ -9,7 +9,7 @@
   "order": 2,
   "content_scripts": [
     {
-      "matches": ["file://*"],
+      "matches": ["http://localhost/*"],
       "js": ["page.js"]
     }
   ],

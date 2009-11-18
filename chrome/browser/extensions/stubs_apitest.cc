@@ -15,15 +15,15 @@
 // should be available in content scripts) or update the list of privileged APIs
 // in renderer_extension_bindings.js.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Stubs) {
+  HTTPTestServer* server = StartHTTPServer();
+
   ASSERT_TRUE(RunExtensionTest("stubs")) << message_;
 
-  // Navigate to a simple file:// page, which should get the content script
+  // Navigate to a simple http:// page, which should get the content script
   // injected and run the rest of the test.
-  FilePath test_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
-  FilePath simple_html_path = test_dir.AppendASCII("simple.html");
-  ui_test_utils::NavigateToURL(browser(),
-                               GURL(simple_html_path.value()));
+  GURL url = server->TestServerPage("file/extensions/test_file.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
   ResultCatcher catcher;
   ASSERT_TRUE(catcher.GetNextResult());
 }

@@ -70,6 +70,7 @@ extern const char kEnableExperimentalWebGL[];
 extern const char kEnableExtensionTimelineApi[];
 extern const char kEnableFastback[];
 extern const char kEnableFileCookies[];
+extern const char kEnableJsOnFileUrls[];
 extern const char kDisableLocalStorage[];
 extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];

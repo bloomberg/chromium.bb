@@ -30,6 +30,8 @@
 
 const std::wstring kSubscribePage =
     L"files/extensions/subscribe_page_action/subscribe.html";
+const std::wstring kFeedPage = L"files/feeds/feed.html";
+const std::wstring kNoFeedPage = L"files/feeds/no_feed.html";
 const std::wstring kValidFeed0 = L"files/feeds/feed_script.xml";
 const std::wstring kValidFeed1 = L"files/feeds/feed1.xml";
 const std::wstring kValidFeed2 = L"files/feeds/feed2.xml";
@@ -38,6 +40,9 @@ const std::wstring kValidFeed4 = L"files/feeds/feed4.xml";
 const std::wstring kValidFeed5 = L"files/feeds/feed5.xml";
 const std::wstring kInvalidFeed1 = L"files/feeds/feed_invalid1.xml";
 const std::wstring kInvalidFeed2 = L"files/feeds/feed_invalid2.xml";
+const std::wstring kLocalization =
+    L"file/extensions/browsertest/title_localized_pa/simple.html";
+const std::wstring kTestFile = L"file/extensions/test_file.html";
 
 // Looks for an ExtensionHost whose URL has the given path component (including
 // leading slash).  Also verifies that the expected number of hosts are loaded.
@@ -208,6 +213,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
 #if defined(OS_WIN) || defined(OS_LINUX)
 // Tests that we can load page actions in the Omnibox.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
+  HTTPTestServer* server = StartHTTPServer();
+
   // This page action will not show an icon, since it doesn't specify one but
   // is included here to test for a crash (http://crbug.com/25562).
   ASSERT_TRUE(LoadExtension(
@@ -220,36 +227,28 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 
   // Navigate to the feed page.
-  FilePath test_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
-  FilePath feed = test_dir.AppendASCII("feeds")
-                          .AppendASCII("feed.html");
-
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(feed));
-
+  GURL feed_url = server->TestServerPageW(kFeedPage);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
   // We should now have one page action ready to go in the LocationBar.
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
-  FilePath no_feed = test_dir.AppendASCII("feeds")
-                             .AppendASCII("nofeed.html");
-
+  // Navigate to a page with no feed.
+  GURL no_feed = server->TestServerPageW(kNoFeedPage);
+  ui_test_utils::NavigateToURL(browser(), no_feed);
   // Make sure the page action goes away.
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(no_feed));
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 }
 
 // Tests that the location bar forgets about unloaded page actions.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
+  HTTPTestServer* server = StartHTTPServer();
+
   FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Navigation prompts the location bar to load page actions.
-  FilePath test_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
-  FilePath feed = test_dir.AppendASCII("feeds")
-                          .AppendASCII("feed.html");
-
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(feed));
+  GURL feed_url = server->TestServerPageW(kFeedPage);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionCountChangeTo(1));
 
   UnloadExtension(last_loaded_extension_id_);
@@ -282,16 +281,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
 // Tests that tooltips of a page action icon can be specified using UTF8.
 // See http://crbug.com/25349.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
+  HTTPTestServer* server = StartHTTPServer();
+
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized_pa"));
   ASSERT_TRUE(LoadExtension(extension_path));
 
   // Any navigation prompts the location bar to load the page action.
-  FilePath test_dir;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
-  FilePath path = extension_path.AppendASCII("simple.html");
-
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(path));
+  GURL url = server->TestServerPageW(kLocalization);
+  ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
@@ -529,6 +527,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
 #if defined(OS_WIN)  // TODO(port) - enable.
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
+  HTTPTestServer* server = StartHTTPServer();
+
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("good").AppendASCII("Extensions")
                     .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
@@ -550,11 +550,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   ExtensionHost* host = FindHostWithPath(manager, "/toolstrip.html", 1);
 
   // Load the tab whose content script will communicate with our toolstrip.
-  FilePath test_file;
-  PathService::Get(chrome::DIR_TEST_DATA, &test_file);
-  test_file = test_file.AppendASCII("extensions")
-                       .AppendASCII("test_file.html");
-  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
+  GURL url = server->TestServerPageW(kTestFile);
+  ui_test_utils::NavigateToURL(browser(), url);
 
   // Test extension->tab messaging.
   bool result = false;
@@ -562,7 +559,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
       host->render_view_host(), L"", L"testPostMessage()", &result);
   EXPECT_TRUE(result);
 
-  // Test port naming
+  // Test port naming.
   result = false;
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
       host->render_view_host(), L"", L"testPortName()", &result);

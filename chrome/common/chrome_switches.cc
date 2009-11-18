@@ -187,9 +187,13 @@ const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
 // Enable the fastback page cache.
 const char kEnableFastback[]                = "enable-fastback";
 
-// By default, cookies are not allowed on file://. They are needed in for
+// By default, cookies are not allowed on file://. They are needed for
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
+
+// By default, js content scripts are not allowed on file://. They are needed
+// for page cycler tests.  See http://crbug.com/27877.
+const char kEnableJsOnFileUrls[]         = "enable-content-script-on-file-urls";
 
 // Disable LocalStorage.
 const char kDisableLocalStorage[]            = "disable-local-storage";
@@ -203,7 +207,7 @@ const char kEnableLogging[]                 = "enable-logging";
 // assumed to be sRGB.
 const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 
-// Enable Native Web Worker support
+// Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
 // Enable AutoFill++.
