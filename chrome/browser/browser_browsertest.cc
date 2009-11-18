@@ -163,9 +163,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
       ExecuteJavascriptInWebFrame(L"", L"onbeforeunload=null;");
 }
 
-// Disable this test for Linux.
-// TODO(port) BUG=crbug.com/27893
-#if !defined(OS_LINUX)
 // Test for crbug.com/11647.  A page closed with window.close() should not have
 // two beforeunload dialogs shown.
 IN_PROC_BROWSER_TEST_F(BrowserTest, FLAKY_SingleBeforeUnloadAfterWindowClose) {
@@ -184,7 +181,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FLAKY_SingleBeforeUnloadAfterWindowClose) {
   EXPECT_FALSE(alert->is_before_unload_dialog());
   alert->AcceptWindow();
 }
-#endif
 
 // Test that get_process_idle_time() returns reasonable values when compared
 // with time deltas measured locally.
