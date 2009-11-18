@@ -114,29 +114,35 @@ END_MSG_MAP()
     if (NULL == Create(NULL, NULL, NULL, WS_POPUP))
       return AtlHresultFromLastError();
 
-    static const int hotkey_id = 0x0000baba;
+    static const int kHotKeyId = 0x0000baba;
+    static const int kHotKeyWaitTimeout = 2000;
 
     SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<ULONG_PTR>(window));
-    RegisterHotKey(m_hWnd, hotkey_id, 0, VK_F22);
+    RegisterHotKey(m_hWnd, kHotKeyId, 0, VK_F22);
 
     MSG msg = {0};
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
 
-    INPUT hotkey = {0};
-    hotkey.type = INPUT_KEYBOARD;
-    hotkey.ki.wVk =  VK_F22;
-    SendInput(1, &hotkey, sizeof(hotkey));
+    SendVirtualKey(VK_F22, false);
+    // There are scenarios where the WM_HOTKEY is not dispatched by the
+    // the corresponding foreground thread. To prevent us from indefinitely
+    // waiting for the hotkey, we set a timer and exit the loop.
+    SetTimer(kHotKeyId, kHotKeyWaitTimeout, NULL);
 
     while (GetMessage(&msg, NULL, 0, 0)) {
       TranslateMessage(&msg);
       DispatchMessage(&msg);
-      if (WM_HOTKEY == msg.message)
+      if (msg.message == WM_HOTKEY)
         break;
+      else if (msg.message == WM_TIMER) {
+        SetForegroundWindow(window);
+        break;
+      }
     }
 
-    UnregisterHotKey(m_hWnd, hotkey_id);
+    UnregisterHotKey(m_hWnd, kHotKeyId);
+    KillTimer(kHotKeyId);
     DestroyWindow();
-
     return S_OK;
   }
 
