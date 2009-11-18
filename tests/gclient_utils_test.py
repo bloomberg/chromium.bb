@@ -63,6 +63,13 @@ class SplitUrlRevisionTestCase(SuperMoxTestBase):
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
     self.assertEquals(out_rev, rev)
     self.assertEquals(out_url, url)
+    url = "ssh://example.com/git/test.git"
+    out_url, out_rev = gclient_utils.SplitUrlRevision(url)
+    self.assertEquals(out_rev, None)
+    self.assertEquals(out_url, url)
+    out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
 
   def testSVNUrl(self):
     url = "svn://example.com/test"
