@@ -14,6 +14,7 @@ AppCacheDispatcherHost::AppCacheDispatcherHost(
     URLRequestContextGetter* request_context_getter)
         : request_context_getter_(request_context_getter),
           process_handle_(0) {
+  DCHECK(request_context_getter_.get());
 }
 
 void AppCacheDispatcherHost::Initialize(IPC::Message::Sender* sender,
@@ -23,10 +24,13 @@ void AppCacheDispatcherHost::Initialize(IPC::Message::Sender* sender,
   process_handle_ = process_handle;
 
   // Get the AppCacheService (it can only be accessed from IO thread).
-  URLRequestContext* context = request_context_getter_->GetURLRequestContext();
-  appcache_service_ =
-      static_cast<ChromeURLRequestContext*>(context)->appcache_service();
-  request_context_getter_ = NULL;
+  if (request_context_getter_.get()) {
+    URLRequestContext* context =
+        request_context_getter_->GetURLRequestContext();
+    appcache_service_ =
+        static_cast<ChromeURLRequestContext*>(context)->appcache_service();
+    request_context_getter_ = NULL;
+  }
 
   frontend_proxy_.set_sender(sender);
   if (appcache_service_.get()) {
