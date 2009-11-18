@@ -134,5 +134,3 @@ REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 # 27190
 PREFIX : webcore::rendertextcontrol::calcheight___webcore::rendertextcontrolsingleline::layout
 
-# 27191
-PREFIX : sessionbackend::readlastsessioncommands
