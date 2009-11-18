@@ -32,7 +32,7 @@ class RWHVMEditCommandHelper;
 @interface RenderWidgetHostViewCocoa
     : BaseView <RenderWidgetHostViewMacOwner, NSTextInput, NSChangeSpelling> {
  @private
-  RenderWidgetHostViewMac* renderWidgetHostView_;  // Owned by us.
+  scoped_ptr<RenderWidgetHostViewMac> renderWidgetHostView_;
   BOOL canBeKeyView_;
   BOOL closeOnDeactivate_;
   scoped_ptr<RWHVMEditCommandHelper> editCommand_helper_;
@@ -41,7 +41,7 @@ class RWHVMEditCommandHelper;
   id trackingRectOwner_;              // (not retained)
   void *trackingRectUserData_;
   NSTrackingRectTag lastToolTipTag_;
-  NSString* toolTip_;
+  scoped_nsobject<NSString> toolTip_;
 
   BOOL ignoreKeyEvents_;
   scoped_nsobject<NSEvent> lastKeyPressedEvent_;
@@ -195,8 +195,13 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // invoke it from the message loop.
   void ShutdownHost();
 
-  // The associated view.
-  RenderWidgetHostViewCocoa* cocoa_view_;  // WEAK
+  // The associated view. This is weak and is inserted into the view hierarchy
+  // to own this RenderWidgetHostViewMac object unless is_popup_menu_ is true.
+  // In that case, cocoa_view_ is never inserted into the view hierarchy, so
+  // the RenderWidgetHostViewMac will treat it as a strong reference and will
+  // release it when told to destroy (for example, because a pop-up menu has
+  // closed).
+  RenderWidgetHostViewCocoa* cocoa_view_;
 
   // The cursor for the page. This is passed up from the renderer.
   WebCursor current_cursor_;
@@ -206,6 +211,10 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // true if the View is not visible.
   bool is_hidden_;
+
+  // True if the widget is a native popup menu.  The renderer code calls this
+  // an "external popup."
+  bool is_popup_menu_;
 
   // The text to be shown in the tooltip, supplied by the renderer.
   std::wstring tooltip_text_;

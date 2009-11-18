@@ -68,6 +68,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
       im_composing_(false),
       is_loading_(false),
       is_hidden_(false),
+      is_popup_menu_(false),
       shutdown_factory_(this),
       parent_view_(NULL) {
   // |cocoa_view_| owns us and we will be deleted when |cocoa_view_| goes away.
@@ -296,16 +297,30 @@ void RenderWidgetHostViewMac::Destroy() {
   // time Destroy() was called. On the Mac we have to destroy all the popups
   // ourselves.
 
-  // Depth-first destroy all popups. Use ShutdownHost() to enforce deepest-first
-  // ordering.
-  for (RenderWidgetHostViewCocoa* subview in [cocoa_view_ subviews]) {
-    [subview renderWidgetHostViewMac]->ShutdownHost();
-  }
+  if (!is_popup_menu_) {
+    // Depth-first destroy all popups. Use ShutdownHost() to enforce
+    // deepest-first ordering.
+    for (RenderWidgetHostViewCocoa* subview in [cocoa_view_ subviews]) {
+      [subview renderWidgetHostViewMac]->ShutdownHost();
+    }
 
-  // We've been told to destroy.
-  [cocoa_view_ retain];
-  [cocoa_view_ removeFromSuperview];
-  [cocoa_view_ autorelease];
+    // We've been told to destroy.
+    [cocoa_view_ retain];
+    [cocoa_view_ removeFromSuperview];
+    [cocoa_view_ autorelease];
+  } else {
+    // From the renderer's perspective, the pop-up menu is represented by a
+    // RenderWidget. The actual Mac implementation uses a native pop-up menu
+    // and doesn't actually make use of the RenderWidgetHostViewCocoa that
+    // was allocated to own it in its constructor.  When the pop-up menu goes
+    // away, free the RenderWidgetHostViewCocoa. Its deallocation will result
+    // in this object's destruction.
+
+    DCHECK([[cocoa_view_ subviews] count] == 0);
+    DCHECK([cocoa_view_ superview] == nil);
+
+    [cocoa_view_ autorelease];
+  }
 
   // We get this call just before |render_widget_host_| deletes
   // itself.  But we are owned by |cocoa_view_|, which may be retained
@@ -346,6 +361,8 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
     int item_height,
     int selected_item,
     const std::vector<WebMenuItem>& items) {
+  is_popup_menu_ = true;
+
   NSRect view_rect = [cocoa_view_ bounds];
   NSRect parent_rect = [parent_view_ bounds];
   int y_offset = bounds.y() + bounds.height();
@@ -377,19 +394,6 @@ void RenderWidgetHostViewMac::ShowPopupWithItems(
     NativeWebKeyboardEvent keyboard_event(event);
     render_widget_host_->ForwardKeyboardEvent(keyboard_event);
   }
-
-  // From the renderer's perspective, the pop-up menu is represented by a
-  // RenderWidget.  The actual Mac implementation uses a native pop-up menu
-  // and doesn't actually make use of the RenderWidgetHostViewCocoa that
-  // was allocated to own it in its constructor.  When the pop-up menu goes
-  // away, shut down the RenderWidgetHost (and RenderWidget), and then free
-  // the RenderWidgetHostViewCocoa, which will result in the destruction of
-  // this object.
-  //
-  // TODO(mark): This is a little bit dirty.  Figure out a more proper
-  // ownership model.  http://crbug.com/26876
-  ShutdownHost();
-  [cocoa_view_ release];
 }
 
 void RenderWidgetHostViewMac::KillSelf() {
@@ -527,18 +531,11 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
     editCommand_helper_.reset(new RWHVMEditCommandHelper);
     editCommand_helper_->AddEditingSelectorsToClass([self class]);
 
-    renderWidgetHostView_ = r;
+    renderWidgetHostView_.reset(r);
     canBeKeyView_ = YES;
     closeOnDeactivate_ = NO;
   }
   return self;
-}
-
-- (void)dealloc {
-  delete renderWidgetHostView_;
-  [toolTip_ release];
-
-  [super dealloc];
 }
 
 - (void)setCanBeKeyView:(BOOL)can {
@@ -884,7 +881,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 }
 
 - (RenderWidgetHostViewMac*)renderWidgetHostViewMac {
-  return renderWidgetHostView_;
+  return renderWidgetHostView_.get();
 }
 
 // Determine whether we should autohide the cursor (i.e., hide it until mouse
@@ -1103,16 +1100,17 @@ static const NSTrackingRectTag kTrackingRectTag = 0xBADFACE;
 // appears after a delay.) Pass null to remove the tooltip.
 - (void)setToolTipAtMousePoint:(NSString *)string {
   NSString *toolTip = [string length] == 0 ? nil : string;
-  NSString *oldToolTip = toolTip_;
-  if ((toolTip == nil || oldToolTip == nil) ? toolTip == oldToolTip
-                                    : [toolTip isEqualToString:oldToolTip]) {
+  if ((toolTip && toolTip_ && [toolTip isEqualToString:toolTip_]) ||
+      (!toolTip && !toolTip_)) {
     return;
   }
-  if (oldToolTip) {
+
+  if (toolTip_) {
     [self _sendToolTipMouseExited];
-    [oldToolTip release];
   }
-  toolTip_ = [toolTip copy];
+
+  toolTip_.reset([toolTip copy]);
+
   if (toolTip) {
     // See radar 3500217 for why we remove all tooltips
     // rather than just the single one we created.
