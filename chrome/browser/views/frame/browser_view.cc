@@ -1290,19 +1290,12 @@ void BrowserView::TabSelectedAt(TabContents* old_contents,
   // Update various elements that are interested in knowing the current
   // TabContents.
 
-  // When we toggle the NTP floating bookmarks bar,
+  // When we toggle the NTP floating bookmarks bar and/or the info bar,
   // we don't want any TabContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a TabContents.
   contents_container_->ChangeTabContents(NULL);
-
   infobar_container_->ChangeTabContents(new_contents);
-
-  // Update all the UI bits.
-  UpdateTitleBar();
-  toolbar_->SetProfile(new_contents->profile());
-  UpdateToolbar(new_contents, true);
   UpdateUIForContents(new_contents);
-
   contents_container_->ChangeTabContents(new_contents);
 
   UpdateDevToolsForContents(new_contents);
@@ -1317,6 +1310,12 @@ void BrowserView::TabSelectedAt(TabContents* old_contents,
     // handlers when we are eventually shown.
     new_contents->view()->RestoreFocus();
   }
+
+  // Update all the UI bits.
+  UpdateTitleBar();
+  toolbar_->SetProfile(new_contents->profile());
+  UpdateToolbar(new_contents, true);
+  UpdateUIForContents(new_contents);
 }
 
 void BrowserView::TabStripEmpty() {
