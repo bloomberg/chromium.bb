@@ -13,14 +13,13 @@
 
 namespace {
 
-class HungRendererControllerTest : public PlatformTest {
+class HungRendererControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
-    PlatformTest::SetUp();
+    CocoaTest::SetUp();
     hung_renderer_controller_ = [[HungRendererController alloc]
                                   initWithWindowNibName:@"HungRendererDialog"];
   }
-
   HungRendererController* hung_renderer_controller_;  // owned by its window
 };
 
