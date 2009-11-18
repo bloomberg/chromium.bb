@@ -67,6 +67,8 @@ class WebWidgetHost {
     canvas()->drawARGB(167, 0, 0, 0);
   }
 
+  void PaintRect(const gfx::Rect& rect);
+
  protected:
   WebWidgetHost();
   ~WebWidgetHost();
@@ -114,7 +116,6 @@ class WebWidgetHost {
 #endif
 
   void ResetScrollRect();
-  void PaintRect(const gfx::Rect& rect);
 
   void set_painting(bool value) {
 #ifndef NDEBUG

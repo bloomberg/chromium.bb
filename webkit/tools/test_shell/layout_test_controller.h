@@ -239,6 +239,9 @@ class LayoutTestController : public CppBoundClass {
   bool ShouldAddFileToPasteboard() { return should_add_file_to_pasteboard_; }
   bool StopProvisionalFrameLoads() { return stop_provisional_frame_loads_; }
 
+  bool test_repaint() const { return test_repaint_; }
+  bool sweep_horizontally() const { return sweep_horizontally_; }
+
   // Called by the webview delegate when the toplevel frame load is done.
   void LocationChangeDone();
 
@@ -353,6 +356,13 @@ class LayoutTestController : public CppBoundClass {
   // window.  By default, set to true but toggled to false using
   // setCloseRemainingWindowsWhenComplete().
   static bool close_remaining_windows_;
+
+  // If true, pixel dump will be produced as a series of 1px-tall, view-wide
+  // individual paints over the height of the view.
+  static bool test_repaint_;
+  // If true and test_repaint_ is true as well, pixel dump will be produced as
+  // a series of 1px-wide, view-tall paints across the width of the view.
+  static bool sweep_horizontally_;
 
   // If true and a drag starts, adds a file to the drag&drop clipboard.
   static bool should_add_file_to_pasteboard_;

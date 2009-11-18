@@ -594,6 +594,11 @@ BUG21510 WIN LINUX : LayoutTests/fast/repaint/shadow-multiple-vertical.html = FA
 BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow-horizontal.html = FAIL
 BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
 
+// To be rebaselined. These were accidentally wall-papered over.
+BUG21510 : LayoutTests/fast/repaint/box-shadow-v.html = IMAGE
+BUG21510 LINUX : LayoutTests/fast/repaint/flexible-box-overflow-horizontal.html = IMAGE
+BUG21510 WIN LINUX : LayoutTests/fast/repaint/list-marker.html = IMAGE
+
 // Implement layoutTestController.display()
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
 BUG8630 WIN LINUX DEBUG SLOW : LayoutTests/fast/repaint/line-flow-with-floats-1.html = PASS
@@ -2148,7 +2153,6 @@ BUG23475 MAC : LayoutTests/svg/custom/junk-data.svg = IMAGE
 
 // 116/136 of the repaint tests fail due to invalidation that doesn't match; further triage necessary
 BUG23473 MAC : LayoutTests/fast/repaint = IMAGE
-BUG23473 MAC : LayoutTests/fast/repaint/box-shadow-v.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/flexible-box-overflow.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/focus-layers.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/focus-ring.html = PASS

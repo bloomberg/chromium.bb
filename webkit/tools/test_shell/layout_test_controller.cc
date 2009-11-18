@@ -53,6 +53,8 @@ bool LayoutTestController::accepts_editing_ = true;
 bool LayoutTestController::wait_until_done_ = false;
 bool LayoutTestController::can_open_windows_ = false;
 bool LayoutTestController::close_remaining_windows_ = true;
+bool LayoutTestController::test_repaint_ = false;
+bool LayoutTestController::sweep_horizontally_ = false;
 bool LayoutTestController::should_add_file_to_pasteboard_ = false;
 bool LayoutTestController::stop_provisional_frame_loads_ = false;
 LayoutTestController::WorkQueue LayoutTestController::work_queue_;
@@ -438,6 +440,8 @@ void LayoutTestController::Reset() {
   accepts_editing_ = true;
   wait_until_done_ = false;
   can_open_windows_ = false;
+  test_repaint_ = false;
+  sweep_horizontally_ = false;
   should_add_file_to_pasteboard_ = false;
   stop_provisional_frame_loads_ = false;
   globalFlag_.Set(false);
@@ -777,11 +781,13 @@ void LayoutTestController::display(
 
 void LayoutTestController::testRepaint(
     const CppArgumentList& args, CppVariant* result) {
+  test_repaint_ = true;
   result->SetNull();
 }
 
 void LayoutTestController::repaintSweepHorizontally(
     const CppArgumentList& args, CppVariant* result) {
+  sweep_horizontally_ = true;
   result->SetNull();
 }
 

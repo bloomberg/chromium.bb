@@ -247,7 +247,24 @@ void TestShell::Dump(TestShell* shell) {
       dumped_anything = true;
       WebViewHost* view_host = shell->webViewHost();
       view_host->webview()->layout();
-      view_host->Paint();
+      if (shell->layout_test_controller()->test_repaint()) {
+        WebSize view_size = view_host->webview()->size();
+        int width = view_size.width;
+        int height = view_size.height;
+        if (shell->layout_test_controller()->sweep_horizontally()) {
+          for (gfx::Rect column(0, 0, 1, height); column.x() < width;
+              column.Offset(1, 0)) {
+            view_host->PaintRect(column);
+          }
+        } else {
+          for (gfx::Rect line(0, 0, width, 1); line.y() < height;
+              line.Offset(0, 1)) {
+            view_host->PaintRect(line);
+          }
+        }
+      } else {
+        view_host->Paint();
+      }
       std::string md5sum = DumpImage(view_host->canvas(),
           params->pixel_file_name, params->pixel_hash);
       printf("#MD5:%s\n", md5sum.c_str());
