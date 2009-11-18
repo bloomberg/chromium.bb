@@ -193,12 +193,12 @@ GtkWindow* DockInfo::GetLocalProcessWindowAtPoint(
   if (factory_)
     return factory_->GetLocalProcessWindowAtPoint(screen_point, ignore);
 
-#if !defined(TOOLKIT_VIEWS)
+#if defined(OS_CHROMEOS) || defined(TOOLKIT_VIEWS)
+  return NULL;
+#else
   XID xid =
       LocalProcessWindowFinder::GetProcessWindowAtPoint(screen_point, ignore);
   return BrowserWindowGtk::GetBrowserWindowForXID(xid);
-#else
-  return NULL;
 #endif
 }
 

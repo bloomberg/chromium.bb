@@ -248,7 +248,12 @@ void DraggedTabControllerGtk::ContinueDragging() {
   // Determine whether or not we have dragged over a compatible TabStrip in
   // another browser window. If we have, we should attach to it and start
   // dragging within it.
+#if defined(OS_CHROMEOS)
+  // We don't allow detaching on chrome os.
+  TabStripGtk* target_tabstrip = source_tabstrip_;
+#else
   TabStripGtk* target_tabstrip = GetTabStripForPoint(screen_point);
+#endif
   if (target_tabstrip != attached_tabstrip_) {
     // Make sure we're fully detached from whatever TabStrip we're attached to
     // (if any).
@@ -669,6 +674,12 @@ gfx::Point DraggedTabControllerGtk::GetDraggedTabPoint(
         (tabstrip_bounds.bottom() + vertical_drag_magnetism)) {
       y = max_y;
     }
+#if defined(OS_CHROMEOS)
+    // We don't allow detaching on chromeos. This restricts dragging to the
+    // source window.
+    x = std::min(std::max(x, tabstrip_bounds.x()), max_x);
+    y = tabstrip_bounds.y();
+#endif
   }
   return gfx::Point(x, y);
 }
