@@ -44,21 +44,26 @@
 
 namespace {
 
-class EditSearchEngineControllerTest : public PlatformTest {
+class EditSearchEngineControllerTest : public CocoaTest {
  public:
-   void SetUp() {
+   virtual void SetUp() {
+     CocoaTest::SetUp();
      TestingProfile* profile =
         static_cast<TestingProfile*>(browser_helper_.profile());
      profile->CreateTemplateURLModel();
-     controller_.reset([[FakeEditSearchEngineController alloc]
-        initWithProfile:profile
-               delegate:nil
-            templateURL:nil]);
+     controller_ = [[FakeEditSearchEngineController alloc]
+                    initWithProfile:profile
+                    delegate:nil
+                    templateURL:nil];
    }
 
-   CocoaTestHelper cocoa_helper_;
-   BrowserTestHelper browser_helper_;
-   scoped_nsobject<FakeEditSearchEngineController> controller_;
+  virtual void TearDown() {
+    [controller_ close];
+    CocoaTest::TearDown();
+  }
+
+  BrowserTestHelper browser_helper_;
+  FakeEditSearchEngineController* controller_;
 };
 
 TEST_F(EditSearchEngineControllerTest, ValidImageOriginals) {
@@ -199,21 +204,23 @@ TEST_F(EditSearchEngineControllerTest, EditTemplateURL) {
   std::wstring urlString = TemplateURLRef::DisplayURLToURLRef(
       L"http://foo-bar.com");
   url.SetURL(urlString, 0, 1);
-  controller_.reset([[FakeEditSearchEngineController alloc]
-      initWithProfile:browser_helper_.profile()
-             delegate:nil
-          templateURL:&url]);
-  EXPECT_TRUE([controller_ window]);
+  TestingProfile* profile = browser_helper_.profile();
+  FakeEditSearchEngineController *controller =
+      [[FakeEditSearchEngineController alloc] initWithProfile:profile
+                                                     delegate:nil
+                                                  templateURL:&url];
+  EXPECT_TRUE([controller window]);
   NSString* title = l10n_util::GetNSString(
       IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE);
-  EXPECT_TRUE([title isEqualToString:[[controller_ window] title]]);
-  NSString* nameString = [[controller_ nameField] stringValue];
+  EXPECT_TRUE([title isEqualToString:[[controller window] title]]);
+  NSString* nameString = [[controller nameField] stringValue];
   EXPECT_TRUE([@"Foobar" isEqualToString:nameString]);
-  NSString* keywordString = [[controller_ keywordField] stringValue];
+  NSString* keywordString = [[controller keywordField] stringValue];
   EXPECT_TRUE([@"keyword" isEqualToString:keywordString]);
-  NSString* urlValueString = [[controller_ urlField] stringValue];
+  NSString* urlValueString = [[controller urlField] stringValue];
   EXPECT_TRUE([@"http://foo-bar.com" isEqualToString:urlValueString]);
-  EXPECT_TRUE([controller_ validateFields]);
+  EXPECT_TRUE([controller validateFields]);
+  [controller close];
 }
 
 }  // namespace

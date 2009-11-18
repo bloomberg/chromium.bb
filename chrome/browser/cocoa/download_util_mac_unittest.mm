@@ -14,7 +14,7 @@
 
 namespace {
 
-class DownloadUtilTest : public PlatformTest {
+class DownloadUtilTest : public CocoaTest {
  public:
   DownloadUtilTest() {
     pasteboard_ = [NSPasteboard pasteboardWithUniqueName];
@@ -27,7 +27,6 @@ class DownloadUtilTest : public PlatformTest {
   const NSPasteboard* const pasteboard() { return pasteboard_; }
 
  private:
-  CocoaTestHelper cocoa_helper_;
   NSPasteboard* pasteboard_;
 };
 
