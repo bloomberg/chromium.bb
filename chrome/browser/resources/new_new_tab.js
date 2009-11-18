@@ -1593,10 +1593,9 @@ function fixLinkUnderline(el) {
 
 updateAttribution();
 
-/* Close the promo notices when close button on the promo-line is clicked. */
+// Closes the promo line when close button is clicked.
 $('promo-close').onclick = function (e) {
-  $('promo-line').style.display = 'none';
-  $('bottom-right-promo').style.display = 'none';
-  chrome.send('stopPromoMessages');
+  $('footer').className = 'hide-footer';
+  chrome.send('stopPromoLineMessage');
   e.preventDefault();
 };

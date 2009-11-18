@@ -219,14 +219,15 @@ class PromotionalMessageHandler : public DOMMessageHandler {
 };
 
 void PromotionalMessageHandler::RegisterMessages() {
-  dom_ui_->RegisterMessageCallback("stopPromoMessages",
+  dom_ui_->RegisterMessageCallback("stopPromoLineMessage",
       NewCallback(this,
                   &PromotionalMessageHandler::HandleClosePromotionalMessage));
 }
 
 void PromotionalMessageHandler::HandleClosePromotionalMessage(
     const Value* content) {
-  dom_ui_->GetProfile()->GetPrefs()->SetInteger(prefs::kNTPPromoRemaining, 0);
+  dom_ui_->GetProfile()->GetPrefs()->SetInteger(
+      prefs::kNTPPromoLineRemaining, 0);
 }
 
 
@@ -568,12 +569,6 @@ NewTabUI::NewTabUI(TabContents* contents)
   // highly. Note this means we're including clicks on not only most visited
   // thumbnails, but also clicks on recently bookmarked.
   link_transition_type_ = PageTransition::AUTO_BOOKMARK;
-
-  if (NewTabHTMLSource::first_view() &&
-      (GetProfile()->GetPrefs()->GetInteger(prefs::kRestoreOnStartup) != 0 ||
-       !GetProfile()->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))) {
-    NewTabHTMLSource::set_first_view(false);
-  }
 
   if (NewTabUI::FirstRunDisabled())
     NewTabHTMLSource::set_first_run(false);
@@ -941,12 +936,12 @@ void NewTabUI::NewTabHTMLSource::InitFullHTML(Profile* profile) {
 
   // Let the tab know whether it's the first tab being viewed.
   if (first_view_) {
-    localized_strings.SetString(L"firstview", L"true");
-
-    // Decrement ntp promo counter; the default value is specified in
+    // Decrement ntp promo counters; the default values are specified in
     // Browser::RegisterUserPrefs.
-    profile->GetPrefs()->SetInteger(prefs::kNTPPromoRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPPromoRemaining) - 1);
+    profile->GetPrefs()->SetInteger(prefs::kNTPPromoLineRemaining,
+        profile->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) - 1);
+    profile->GetPrefs()->SetInteger(prefs::kNTPPromoImageRemaining,
+        profile->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) - 1);
     first_view_ = false;
   }
 
