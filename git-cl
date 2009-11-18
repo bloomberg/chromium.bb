@@ -4,9 +4,15 @@
 # found in the LICENSE file.
 
 base_dir=$(dirname "$0")
+url="http://src.chromium.org/git/git-cl.git"
+cur_url=$(git config -f "$base_dir/git-cl-repo/.git/config" remote.origin.url)
+
+if [ "$cur_url" != "$url" ]; then
+  rm -rf $base_dir/git-cl-repo
+fi
 
 if [ ! -f "$base_dir/git-cl-repo/git-cl" ]; then
-  git clone git://neugierig.org/git-cl.git $base_dir/git-cl-repo -q
+  git clone $url $base_dir/git-cl-repo -q
 fi
 
 $base_dir/git-cl-repo/git-cl "$@"
