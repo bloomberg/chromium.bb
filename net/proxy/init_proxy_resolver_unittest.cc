@@ -238,6 +238,20 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
   EXPECT_EQ("", resolver.pac_bytes());
 }
 
+// Fail downloading the custom PAC script, because the fetcher was NULL.
+TEST(InitProxyResolverTest, HasNullProxyScriptFetcher) {
+  Rules rules;
+  RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
+
+  ProxyConfig config;
+  config.pac_url = GURL("http://custom/proxy.pac");
+
+  TestCompletionCallback callback;
+  InitProxyResolver init(&resolver, NULL);
+  EXPECT_EQ(ERR_UNEXPECTED, init.Init(config, &callback, NULL));
+  EXPECT_EQ("", resolver.pac_bytes());
+}
+
 // Succeeds in choosing autodetect (wpad).
 TEST(InitProxyResolverTest, AutodetectSuccess) {
   Rules rules;

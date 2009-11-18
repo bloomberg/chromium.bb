@@ -25,6 +25,7 @@
 #include "net/http/http_network_layer.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_config_service_fixed.h"
+#include "net/proxy/proxy_script_fetcher.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/webkit_glue.h"
@@ -261,11 +262,6 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
       original_context_getter_->GetIOContext();
 
   // Share the same proxy service and host resolver as the original profile.
-  // TODO(eroman): although ProxyService is reference counted, this sharing
-  // still has a subtle dependency on the lifespan of the original profile --
-  // ProxyService holds a (non referencing) pointer to the URLRequestContext
-  // it uses to download PAC scripts, which in this case is the original
-  // profile...
   context->set_host_resolver(original_context->host_resolver());
   context->set_proxy_service(original_context->proxy_service());
 
@@ -645,6 +641,13 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
   CheckCurrentlyOnIOThread();
   if (appcache_service_.get() && appcache_service_->request_context() == this)
     appcache_service_->set_request_context(NULL);
+
+  if (proxy_service_ &&
+      proxy_service_->GetProxyScriptFetcher() &&
+      proxy_service_->GetProxyScriptFetcher()->GetRequestContext() == this) {
+    // Remove the ProxyScriptFetcher's weak reference to this context.
+    proxy_service_->SetProxyScriptFetcher(NULL);
+  }
 
 #if defined(OS_LINUX)
   if (this == net::GetURLRequestContextForOCSP()) {

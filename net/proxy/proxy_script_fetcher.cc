@@ -86,6 +86,7 @@ class ProxyScriptFetcherImpl : public ProxyScriptFetcher,
   virtual int Fetch(const GURL& url, std::string* bytes,
                     CompletionCallback* callback);
   virtual void Cancel();
+  virtual URLRequestContext* GetRequestContext();
 
   // URLRequest::Delegate methods:
 
@@ -204,6 +205,10 @@ void ProxyScriptFetcherImpl::Cancel() {
   // ResetCurRequestState will free the URLRequest, which will cause
   // cancellation.
   ResetCurRequestState();
+}
+
+URLRequestContext* ProxyScriptFetcherImpl::GetRequestContext() {
+  return url_request_context_;
 }
 
 void ProxyScriptFetcherImpl::OnAuthRequired(URLRequest* request,

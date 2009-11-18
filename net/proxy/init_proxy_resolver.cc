@@ -129,6 +129,11 @@ int InitProxyResolver::DoFetchPacScript() {
 
   LOG(INFO) << "Starting fetch of PAC script " << pac_url;
 
+  if (!proxy_script_fetcher_) {
+    LOG(ERROR) << "Can't download PAC script, because no fetcher specified";
+    return ERR_UNEXPECTED;
+  }
+
   return proxy_script_fetcher_->Fetch(pac_url, &pac_bytes_, &io_callback_);
 }
 
