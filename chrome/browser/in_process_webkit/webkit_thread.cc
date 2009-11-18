@@ -9,9 +9,17 @@
 #include "chrome/common/chrome_switches.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 
-// This happens on the UI thread before the IO thread has been shut down.
+// This happens on the UI thread.
 WebKitThread::WebKitThread() {
-  // The thread is started lazily by InitializeThread() on the IO thread.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
+    // TODO(jorlow): This thread should be used (and started) in single process
+    //               mode rather than following different code paths.
+    return;
+  }
+
+  webkit_thread_.reset(new InternalWebKitThread);
+  bool started = webkit_thread_->Start();
+  DCHECK(started);
 }
 
 // This happens on the UI thread after the IO thread has been shut down.
@@ -21,13 +29,6 @@ WebKitThread::~WebKitThread() {
   // no ChromeThread object.  Can't check that CurrentlyOn is not IO since
   // some unit tests set that ChromeThread for other checks.
   DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-}
-
-void WebKitThread::EnsureInitialized() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  if (webkit_thread_.get())
-    return;
-  InitializeThread();
 }
 
 WebKitThread::InternalWebKitThread::InternalWebKitThread()
@@ -43,21 +44,10 @@ void WebKitThread::InternalWebKitThread::Init() {
   webkit_client_.reset(new BrowserWebKitClientImpl);
   WebKit::initialize(webkit_client_.get());
   // If possible, post initialization tasks to this thread (rather than doing
-  // them now) so we don't block the IO thread any longer than we have to.
+  // them now) so we don't block the UI thread any longer than we have to.
 }
 
 void WebKitThread::InternalWebKitThread::CleanUp() {
   DCHECK(webkit_client_.get());
   WebKit::shutdown();
-}
-
-MessageLoop* WebKitThread::InitializeThread() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
-    return NULL;
-
-  DCHECK(!webkit_thread_.get());
-  webkit_thread_.reset(new InternalWebKitThread);
-  bool started = webkit_thread_->Start();
-  DCHECK(started);
-  return webkit_thread_->message_loop();
 }
