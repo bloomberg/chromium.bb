@@ -74,27 +74,10 @@ EXTERN_C_BEGIN
 #define NACL_SERVICE_PORT_DESCRIPTOR    3
 #define NACL_SERVICE_ADDRESS_DESCRIPTOR 4
 
-extern int using_debug_configuration;
-
-#define NACL_SELF_CHECK         1
-
-/* wp: NACL_MAX_ADDR_BITS < 32, see NaClAppLoadFile */
-#define NACL_DEFAULT_ENTRY_PT   "NaClMain"
-
 #define NACL_DEFAULT_ALLOC_MAX  (32 << 20)  /* total brk and mmap allocs */
 #define NACL_DEFAULT_STACK_MAX  (16 << 20)  /* main thread stack */
 
-#define NACL_DATA_SANDBOXING    0
 #define NACL_SANDBOX_CHROOT_FD  "SBX_D"
-/*
- * If 0, address space is allocated to permit text sandboxing or
- * control flow integrity enforcement via masking.  LDT is used to
- * enforce data access restrictions.
- *
- * If 1, address space is allocated to permit both text and data
- * sandboxing.  Code for this is not as yet written/tested and should
- * be needed only for 64-bit x86 windows.
- */
 
 /*
  * Finds the lowest 1 bit in PF_MASKOS.  Assumes that at least one
