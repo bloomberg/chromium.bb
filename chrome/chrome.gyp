@@ -157,9 +157,6 @@
       },],
       ['OS=="mac"', {
         'tweak_info_plist_path': 'tools/build/mac/tweak_info_plist',
-        # TODO(mark): Remove after November 17, 2009, allowing two weeks for
-        # the transition.
-        'transition_lprojs_path': 'tools/build/mac/transition_lprojs',
         'nacl_defines': [
           'NACL_WINDOWS=0',
           'NACL_LINUX=0',
@@ -3749,18 +3746,6 @@
           ],
           'actions': [
             {
-              # Clean up the old .lproj structure, where English was in
-              # en_US.lproj, and en.lproj was a symbolic link.  This must run
-              # before the "Generating InfoPlist.strings files" action.
-              #
-              # TODO(mark): Remove after November 17, 2009, allowing two weeks
-              # for the transition.
-              'action_name': 'Temporary .lproj transition',
-              'action': ['<(transition_lprojs_path)'],
-              'inputs': [],  # Always run.
-              'outputs': [],
-            },
-            {
               # Generate the InfoPlist.strings file
               'action_name': 'Generating InfoPlist.strings files',
               'variables': {
@@ -5843,18 +5828,6 @@
                 'repack_path': '../tools/data_pack/repack.py',
               },
               'actions': [
-                {
-                  # Clean up the old .lproj structure, where English was in
-                  # en_US.lproj, and en.lproj was a symbolic link.  This must
-                  # run before the "repack_locales" action.
-                  #
-                  # TODO(mark): Remove after November 17, 2009, allowing two
-                  # weeks for the transition.
-                  'action_name': 'Temporary .lproj transition',
-                  'action': ['<(transition_lprojs_path)'],
-                  'inputs': [],  # Always run.
-                  'outputs': [],
-                },
                 # TODO(mark): These actions are duplicated for Linux and
                 # FreeBSD in the chrome target.  Can they be unified?
                 {
@@ -6072,18 +6045,6 @@
             },
           ],
           'actions': [
-            {
-              # Clean up the old .lproj structure, where English was in
-              # en_US.lproj, and en.lproj was a symbolic link.  This must run
-              # before the "Generating InfoPlist.strings files" action.
-              #
-              # TODO(mark): Remove after November 17, 2009, allowing two weeks
-              # for the transition.
-              'action_name': 'Temporary .lproj transition',
-              'action': ['<(transition_lprojs_path)'],
-              'inputs': [],  # Always run.
-              'outputs': [],
-            },
             {
               # Generate the InfoPlist.strings file
               'action_name': 'Generating InfoPlist.strings files',
