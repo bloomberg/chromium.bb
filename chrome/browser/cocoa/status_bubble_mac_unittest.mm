@@ -44,15 +44,16 @@
 }
 @end
 
-class StatusBubbleMacTest : public PlatformTest {
+class StatusBubbleMacTest : public CocoaTest {
  public:
-  StatusBubbleMacTest() {
-    NSWindow* window = cocoa_helper_.window();
+  virtual void SetUp() {
+    CocoaTest::SetUp();
+    NSWindow* window = test_window();
     EXPECT_TRUE(window);
     delegate_.reset([[StatusBubbleMacTestDelegate alloc] init]);
     EXPECT_TRUE(delegate_.get());
-    bubble_.reset(new StatusBubbleMac(window, delegate_));
-    EXPECT_TRUE(bubble_.get());
+    bubble_ = new StatusBubbleMac(window, delegate_);
+    EXPECT_TRUE(bubble_);
 
     // Turn off delays and transitions for test mode.  This doesn't just speed
     // things along, it's actually required to get StatusBubbleMac to behave
@@ -62,6 +63,13 @@ class StatusBubbleMacTest : public PlatformTest {
     bubble_->immediate_ = true;
 
     EXPECT_FALSE(bubble_->window_);  // lazily creates window
+  }
+
+  virtual void TearDown() {
+    // Not using a scoped_ptr because bubble must be deleted before calling
+    // TearDown to get rid of bubble's window.
+    delete bubble_;
+    CocoaTest::TearDown();
   }
 
   bool IsVisible() {
@@ -97,10 +105,9 @@ class StatusBubbleMacTest : public PlatformTest {
   StatusBubbleMac::StatusBubbleState StateAt(int index) {
     return (*States())[index];
   }
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper browser_helper_;
   scoped_nsobject<StatusBubbleMacTestDelegate> delegate_;
-  scoped_ptr<StatusBubbleMac> bubble_;
+  StatusBubbleMac* bubble_;  // Strong.
 };
 
 TEST_F(StatusBubbleMacTest, Theme) {
@@ -408,7 +415,7 @@ TEST_F(StatusBubbleMacTest, MouseMove) {
 }
 
 TEST_F(StatusBubbleMacTest, Delete) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
   // Create and delete immediately.
   StatusBubbleMac* bubble = new StatusBubbleMac(window, nil);
   delete bubble;
@@ -436,7 +443,7 @@ TEST_F(StatusBubbleMacTest, UpdateSizeAndPosition) {
   EXPECT_TRUE(NSEqualRects(rect_before, rect_after));
 
   // Move the window and call resize; only the origin should change.
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
   ASSERT_TRUE(window);
   NSRect frame = [window frame];
   rect_before = [GetWindow() frame];
