@@ -45,15 +45,15 @@
 
 namespace {
 
-class DownloadShelfMacTest : public PlatformTest {
+class DownloadShelfMacTest : public CocoaTest {
 
   virtual void SetUp() {
+    CocoaTest::SetUp();
     shelf_controller_.reset([[FakeDownloadShelfController alloc] init]);
   }
 
  protected:
   scoped_nsobject<FakeDownloadShelfController> shelf_controller_;
-  CocoaTestHelper helper_;
   BrowserTestHelper browser_helper_;
 };
 
