@@ -263,8 +263,8 @@
 // update the menu. We need to display "Pin Tab" when the tab is not pinned and
 // "Unpin Tab" when it is (this is not a checkmark menu item, per Apple's HIG).
 - (void)menuNeedsUpdate:(NSMenu*)menu {
-  const int pinTabMenuItemTag = TabStripModel::CommandTogglePinned;
-  NSMenuItem* togglePinned = [menu itemWithTag:pinTabMenuItemTag];
+  NSMenuItem* togglePinned =
+      [menu itemWithTag:TabStripModel::CommandTogglePinned];
   NSString* menuItemText = l10n_util::GetNSStringWithFixup(
       [self pinned] ? IDS_TAB_CXMENU_UNPIN_TAB_MAC
                     : IDS_TAB_CXMENU_PIN_TAB_MAC);
