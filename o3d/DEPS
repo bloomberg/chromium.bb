@@ -1,9 +1,9 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "61",
-  "chromium_rev": "32206",
+  "chromium_rev": "28829",
   "o3d_code_rev": "166",
-  "skia_rev": "428",
+  "skia_rev": "376",
   "gyp_rev": "749",
   "gtest_rev": "329",
   "gflags_rev": "30",
@@ -89,11 +89,8 @@ deps = {
   "third_party/zlib":
     Var("chromium_trunk") + "/src/third_party/zlib@" + Var("chromium_rev"),
 
-  "third_party/skia/src":
-    "http://skia.googlecode.com/svn/trunk/src@" + Var("skia_rev"),
-
-  "third_party/skia/include":
-    "http://skia.googlecode.com/svn/trunk/include@" + Var("skia_rev"),
+  "third_party/skia":
+    "http://skia.googlecode.com/svn/trunk@" + Var("skia_rev"),
 
   "v8":
     "http://v8.googlecode.com/svn/trunk@" + Var("v8_rev"),
