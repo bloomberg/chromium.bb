@@ -26,11 +26,13 @@ namespace views {
 TreeView::TreeView()
     : tree_view_(NULL),
       model_(NULL),
+      auto_expand_children_(false),
       editable_(true),
       next_id_(0),
       controller_(NULL),
       editing_node_(NULL),
       root_shown_(true),
+      lines_at_root_(false),
       process_enter_(false),
       show_context_menu_only_when_node_selected_(true),
       select_on_right_mouse_down_(true),
@@ -351,6 +353,8 @@ HWND TreeView::CreateNativeControl(HWND parent_container) {
     style |= TVS_DISABLEDRAGDROP;
   if (editable_)
     style |= TVS_EDITLABELS;
+  if (lines_at_root_)
+    style |= TVS_LINESATROOT;
   tree_view_ = ::CreateWindowEx(WS_EX_CLIENTEDGE | GetAdditionalExStyle(),
                                 WC_TREEVIEW,
                                 L"",
@@ -415,9 +419,12 @@ LRESULT TreeView::OnNotify(int w_param, LPNMHDR l_param) {
           GetNodeDetailsByID(static_cast<int>(info->itemNew.lParam));
       if (!details->loaded_children) {
         details->loaded_children = true;
-        for (int i = 0; i < model_->GetChildCount(details->node); ++i)
+        for (int i = 0; i < model_->GetChildCount(details->node); ++i) {
           CreateItem(details->tree_item, TVI_LAST,
                        model_->GetChild(details->node, i));
+          if (auto_expand_children_)
+            Expand(model_->GetChild(details->node, i));
+        }
       }
       // Return FALSE to allow the item to be expanded.
       return FALSE;

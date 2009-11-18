@@ -57,9 +57,26 @@ class TreeView : public NativeControl, TreeModelObserver {
   void SetModel(TreeModel* model);
   TreeModel* model() const { return model_; }
 
+  // Sets whether to automatically expand children when a parent node is
+  // expanded. The default is false. If true, when a node in the tree is
+  // expanded for the first time, its children are also automatically expanded.
+  // If a node is subsequently collapsed and expanded again, the children
+  // will not be automatically expanded.
+  void set_auto_expand_children(bool auto_expand_children) {
+    auto_expand_children_ = auto_expand_children;
+  }
+
   // Sets whether the user can edit the nodes. The default is true. If true,
   // the Controller is queried to determine if a particular node can be edited.
   void SetEditable(bool editable);
+
+  // Sets whether lines are drawn from the root node to child nodes (and
+  // whether plus boxes show up next to the root node.) The default is false.
+  // If root_shown_ is false, the children of the root act as the roots in the
+  // native control, and so this setting takes effect for them.
+  void set_lines_at_root(bool lines_at_root) {
+    lines_at_root_ = lines_at_root;
+  }
 
   // Edits the specified node. This cancels the current edit and expands
   // all parents of node.
@@ -257,10 +274,13 @@ class TreeView : public NativeControl, TreeModelObserver {
   TreeModel* model_;
 
   // Maps from id to NodeDetails.
-  std::map<int,NodeDetails*> id_to_details_map_;
+  std::map<int, NodeDetails*> id_to_details_map_;
 
   // Maps from model entry to NodeDetails.
-  std::map<TreeModelNode*,NodeDetails*> node_to_details_map_;
+  std::map<TreeModelNode*, NodeDetails*> node_to_details_map_;
+
+  // Whether to automatically expand children when a parent node is expanded.
+  bool auto_expand_children_;
 
   // Whether the user can edit the items.
   bool editable_;
@@ -276,6 +296,9 @@ class TreeView : public NativeControl, TreeModelObserver {
 
   // Whether or not the root is shown in the tree.
   bool root_shown_;
+
+  // Whether lines are drawn from the root to the children.
+  bool lines_at_root_;
 
   // Whether enter should be processed by the tree when not editing.
   bool process_enter_;

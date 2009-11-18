@@ -415,8 +415,9 @@ void CookiesView::Init() {
 
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(1, single_column_layout_id);
+  cookies_tree_->set_lines_at_root(true);
+  cookies_tree_->set_auto_expand_children(true);
   layout->AddView(cookies_tree_);
-  cookies_tree_->ExpandAll();
 
   cookies_tree_->SetController(this);
 
