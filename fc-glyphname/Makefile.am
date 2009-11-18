@@ -41,7 +41,8 @@ EXTRA_DIST=$(TMPL) $(GLYPHNAME)
 
 $(TARG): $(STMPL) fc-glyphname$(EXEEXT) $(SGLYPHNAME)
 	$(AM_V_GEN) $(RM) $(TARG); \
-	./fc-glyphname$(EXEEXT) $(SGLYPHNAME) < $(STMPL) > $(TARG).tmp && mv $(TARG).tmp $(TARG)
+	./fc-glyphname$(EXEEXT) $(SGLYPHNAME) < $(STMPL) > $(TARG).tmp && \
+	mv $(TARG).tmp $(TARG)
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 

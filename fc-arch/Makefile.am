@@ -37,12 +37,10 @@ ARCHITECTURE=@ARCHITECTURE@
 
 noinst_PROGRAMS=fc-arch
 
-noinst_MANS=fc-arch.man
-
 EXTRA_DIST=$(TMPL)
 
 $(TARG):fc-arch${EXEEXT} $(STMPL) ${top_srcdir}/src/fcint.h ../config.h
-	rm -f $(TARG)
+	$(AM_V_GEN) $(RM) $(TARG); \
 	./fc-arch${EXEEXT} $(ARCHITECTURE) < $(STMPL) > $(TARG).tmp && \
 	mv $(TARG).tmp $(TARG)
 

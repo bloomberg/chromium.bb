@@ -39,7 +39,7 @@ noinst_MANS=fc-lang.man
 EXTRA_DIST=$(TMPL) $(ORTH)
 
 $(TARG):$(ORTH) fc-lang${EXEEXT} $(STMPL)
-	rm -f $(TARG)
+	$(AM_V_GEN) $(RM) $(TARG); \
 	./fc-lang${EXEEXT} -d ${srcdir} $(ORTH) < $(STMPL) > $(TARG).tmp && \
 	mv $(TARG).tmp $(TARG)
 

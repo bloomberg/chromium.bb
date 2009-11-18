@@ -34,8 +34,6 @@ TARG=fccase.h
 
 noinst_PROGRAMS=fc-case
 
-noinst_MANS=fc-case.man
-
 noinst_HEADERS=$(TARG)
 
 fc_case_SRCS= \
@@ -49,8 +47,9 @@ SCASEFOLDING=${top_srcdir}/fc-case/CaseFolding.txt
 EXTRA_DIST=$(TMPL) $(CASEFOLDING)
 
 $(TARG): $(STMPL) fc-case$(EXEEXT) $(SCASEFOLDING)
-	rm -f $(TARG)
-	./fc-case$(EXEEXT) $(SCASEFOLDING) < $(STMPL) > $(TARG)
+	$(AM_V_GEN) $(RM) $(TARG); \
+	./fc-case$(EXEEXT) $(SCASEFOLDING) < $(STMPL) > $(TARG).tmp && \
+	mv $(TARG).tmp $(TARG)
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
