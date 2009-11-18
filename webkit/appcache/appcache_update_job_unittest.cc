@@ -917,6 +917,37 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
+  void EmptyFileTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    MakeService();
+    group_ = new AppCacheGroup(service_.get(),
+        http_server_->TestServerPage("files/empty-file-manifest"));
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    AppCache* cache = MakeCacheForGroup(service_->storage()->NewCacheId(), 22);
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    host->AssociateCache(cache);
+
+    update->StartUpdate(host, GURL::EmptyGURL());
+    EXPECT_TRUE(update->manifest_url_request_ != NULL);
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    tested_manifest_ = EMPTY_FILE_MANIFEST;
+    MockFrontend::HostIds ids1(1, host->host_id());
+    frontend->AddExpectedEvent(ids1, CHECKING_EVENT);
+    frontend->AddExpectedEvent(ids1, DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids1, UPDATE_READY_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
   void RetryRequestTest() {
     ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
 
@@ -1355,6 +1386,9 @@ class AppCacheUpdateJobTest : public testing::Test,
       case EMPTY_MANIFEST:
         VerifyEmptyManifest(group_->newest_complete_cache());
         break;
+      case EMPTY_FILE_MANIFEST:
+        VerifyEmptyFileManifest(group_->newest_complete_cache());
+        break;
       case NONE:
       default:
         break;
@@ -1440,7 +1474,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   }
 
   void VerifyEmptyManifest(AppCache* cache) {
-    ASSERT_TRUE(cache!= NULL);
+    ASSERT_TRUE(cache != NULL);
     EXPECT_EQ(group_, cache->owning_group());
     EXPECT_TRUE(cache->is_complete());
 
@@ -1458,6 +1492,30 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(cache->update_time_ > base::TimeTicks());
   }
 
+  void VerifyEmptyFileManifest(AppCache* cache) {
+    ASSERT_TRUE(cache != NULL);
+    EXPECT_EQ(group_, cache->owning_group());
+    EXPECT_TRUE(cache->is_complete());
+
+    EXPECT_EQ(size_t(2), cache->entries().size());
+    AppCacheEntry* entry = cache->GetEntry(
+        http_server_->TestServerPage("files/empty-file-manifest"));
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(AppCacheEntry::MANIFEST, entry->types());
+
+    entry = cache->GetEntry(
+        http_server_->TestServerPage("files/empty1"));
+    ASSERT_TRUE(entry);
+    EXPECT_EQ(AppCacheEntry::EXPLICIT, entry->types());
+    EXPECT_TRUE(entry->has_response_id());
+
+    EXPECT_TRUE(cache->fallback_namespaces_.empty());
+    EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
+    EXPECT_FALSE(cache->online_whitelist_all_);
+
+    EXPECT_TRUE(cache->update_time_ > base::TimeTicks());
+  }
+
  private:
   // Various manifest files used in this test.
   enum TestedManifest {
@@ -1465,6 +1523,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     MANIFEST1,
     MANIFEST_MERGED_TYPES,
     EMPTY_MANIFEST,
+    EMPTY_FILE_MANIFEST,
   };
 
   static scoped_ptr<base::Thread> io_thread_;
@@ -1633,6 +1692,10 @@ TEST_F(AppCacheUpdateJobTest, UpgradeFailMasterUrlFetch) {
 
 TEST_F(AppCacheUpdateJobTest, EmptyManifest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::EmptyManifestTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, EmptyFile) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::EmptyFileTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, RetryRequest) {

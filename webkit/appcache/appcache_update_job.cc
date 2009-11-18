@@ -34,7 +34,6 @@ class UpdateJobInfo :  public URLRequest::UserData {
         retry_503_attempts_(0),
         update_job_(NULL),
         request_(NULL),
-        wrote_response_info_(false),
         ALLOW_THIS_IN_INITIALIZER_LIST(write_callback_(
             this, &UpdateJobInfo::OnWriteComplete)) {
   }
@@ -61,7 +60,6 @@ class UpdateJobInfo :  public URLRequest::UserData {
   scoped_ptr<AppCacheResponseWriter> response_writer_;
   AppCacheUpdateJob* update_job_;
   URLRequest* request_;
-  bool wrote_response_info_;
   net::CompletionCallbackImpl<UpdateJobInfo> write_callback_;
 };
 
@@ -183,10 +181,26 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
 }
 
 void AppCacheUpdateJob::OnResponseStarted(URLRequest *request) {
-  if (request->status().is_success())
-    ReadResponseData(request);
-  else
+  if (request->status().is_success() &&
+      (request->GetResponseCode() / 100) == 2) {
+    // Write response info to storage for URL fetches. Wait for async write
+    // completion before reading any response data.
+    UpdateJobInfo* info =
+        static_cast<UpdateJobInfo*>(request->GetUserData(this));
+    if (info->type_ == UpdateJobInfo::URL_FETCH) {
+      info->SetUpResponseWriter(
+          service_->storage()->CreateResponseWriter(manifest_url_),
+          this, request);
+      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+          new HttpResponseInfoIOBuffer(
+              new net::HttpResponseInfo(request->response_info()));
+      info->response_writer_->WriteInfo(io_buffer, &info->write_callback_);
+    } else {
+      ReadResponseData(request);
+    }
+  } else {
     OnResponseCompleted(request);
+  }
 }
 
 void AppCacheUpdateJob::ReadResponseData(URLRequest* request) {
@@ -236,11 +250,7 @@ bool AppCacheUpdateJob::ConsumeResponseData(URLRequest* request,
       manifest_data_.append(info->buffer_->data(), bytes_read);
       break;
     case UpdateJobInfo::URL_FETCH:
-      if (!info->response_writer_.get()) {
-        info->SetUpResponseWriter(
-            service_->storage()->CreateResponseWriter(manifest_url_),
-            this, request);
-      }
+      DCHECK(info->response_writer_.get());
       info->response_writer_->WriteData(info->buffer_, bytes_read,
                                         &info->write_callback_);
       return false;  // wait for async write completion to continue reading
@@ -261,15 +271,6 @@ void AppCacheUpdateJob::OnWriteResponseComplete(int result,
   if (result < 0) {
     request->Cancel();
     OnResponseCompleted(request);
-    return;
-  }
-
-  if (!info->wrote_response_info_) {
-    info->wrote_response_info_ = true;
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
-        new HttpResponseInfoIOBuffer(
-            new net::HttpResponseInfo(request->response_info()));
-    info->response_writer_->WriteInfo(io_buffer, &info->write_callback_);
     return;
   }
 
@@ -426,11 +427,10 @@ void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
   // Associate all pending master hosts with the newly created cache.
   for (PendingMasters::iterator it = pending_master_entries_.begin();
        it != pending_master_entries_.end(); ++it) {
-    PendingHosts hosts = it->second;
+    PendingHosts& hosts = it->second;
     for (PendingHosts::iterator host_it = hosts.begin();
          host_it != hosts.end(); ++host_it) {
-      AppCacheHost* host = *host_it;
-      host->AssociateCache(inprogress_cache_);
+      (*host_it)->AssociateCache(inprogress_cache_);
     }
   }
 
@@ -447,7 +447,8 @@ void AppCacheUpdateJob::HandleUrlFetchCompleted(URLRequest* request) {
   pending_url_fetches_.erase(url);
   ++url_fetches_completed_;
 
-  int response_code = request->GetResponseCode();
+  int response_code = request->status().is_success()
+      ? request->GetResponseCode() : -1;
   AppCacheEntry& entry = url_file_list_.find(url)->second;
 
   UpdateJobInfo* info =
@@ -508,7 +509,8 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLRequest* request) {
   DCHECK(internal_state_ == REFETCH_MANIFEST);
   manifest_url_request_ = NULL;
 
-  int response_code = request->GetResponseCode();
+  int response_code = request->status().is_success()
+      ? request->GetResponseCode() : -1;
   if (response_code == 304 || manifest_data_ == manifest_refetch_data_) {
     // Only need to store response in storage if manifest is not already an
     // an entry in the cache.
@@ -601,11 +603,10 @@ void AppCacheUpdateJob::NotifyAllPendingMasterHosts(EventID event_id) {
   HostNotifier host_notifier;
   for (PendingMasters::iterator it = pending_master_entries_.begin();
        it != pending_master_entries_.end(); ++it) {
-    PendingHosts hosts = it->second;
+    PendingHosts& hosts = it->second;
     for (PendingHosts::iterator host_it = hosts.begin();
          host_it != hosts.end(); ++host_it) {
-      AppCacheHost* host = *host_it;
-      host_notifier.AddHost(host);
+      host_notifier.AddHost(*host_it);
     }
   }
 
