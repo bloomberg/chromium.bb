@@ -62,8 +62,8 @@
 // Creates the NSDictionary of attributes for the attributed string.
 - (NSDictionary*)linkAttributes {
   NSUInteger underlineMask = NSUnderlinePatternSolid | NSUnderlineStyleSingle;
-  NSMutableParagraphStyle* paragraphStyle =
-    [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
+  scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+    [[NSParagraphStyle defaultParagraphStyle] mutableCopy]);
   [paragraphStyle setAlignment:[self alignment]];
 
   return [NSDictionary dictionaryWithObjectsAndKeys:
@@ -71,7 +71,7 @@
       [NSNumber numberWithInt:underlineMask], NSUnderlineStyleAttributeName,
       [self font], NSFontAttributeName,
       [NSCursor pointingHandCursor], NSCursorAttributeName,
-      paragraphStyle, NSParagraphStyleAttributeName,
+      paragraphStyle.get(), NSParagraphStyleAttributeName,
       nil
   ];
 }
@@ -81,11 +81,10 @@
 - (NSRect)drawTitle:(NSAttributedString*)title
           withFrame:(NSRect)frame
              inView:(NSView*)controlView {
-  NSAttributedString* attrString =
+  scoped_nsobject<NSAttributedString> attrString(
       [[NSAttributedString alloc] initWithString:[title string]
-                                      attributes:[self linkAttributes]];
-  [attrString autorelease];
-  return [super drawTitle:attrString withFrame:frame inView:controlView];
+                                      attributes:[self linkAttributes]]);
+  return [super drawTitle:attrString.get() withFrame:frame inView:controlView];
 }
 
 // Override the default behavior to draw the border. Instead, change the cursor.
