@@ -73,7 +73,6 @@ class NPObjectStub : public IPC::Channel::Listener,
                    IPC::Message* reply_msg);
   void OnEvaluate(const std::string& script, bool popups_allowed,
                   IPC::Message* reply_msg);
-  void OnSetException(const std::string& message);
 
  private:
   NPObject* npobject_;

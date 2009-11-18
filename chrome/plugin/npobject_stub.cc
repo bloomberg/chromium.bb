@@ -81,7 +81,6 @@ void NPObjectStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(NPObjectMsg_Enumeration, OnEnumeration);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NPObjectMsg_Construct, OnConstruct);
     IPC_MESSAGE_HANDLER_DELAY_REPLY(NPObjectMsg_Evaluate, OnEvaluate);
-    IPC_MESSAGE_HANDLER(NPObjectMsg_SetException, OnSetException);
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -371,13 +370,4 @@ void NPObjectStub::OnEvaluate(const std::string& script,
       page_url_);
   NPObjectMsg_Evaluate::WriteReplyParams(reply_msg, result_param, return_value);
   local_channel->Send(reply_msg);
-}
-
-void NPObjectStub::OnSetException(const std::string& message) {
-  if (IsPluginProcess()) {
-    NOTREACHED() << "Should only be called on NPObjects in the renderer";
-    return;
-  }
-
-  WebBindings::setException(npobject_, message.c_str());
 }

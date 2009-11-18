@@ -393,3 +393,15 @@ TEST_F(NPAPITester, NPObjectReleasedOnDestruction) {
   scoped_refptr<TabProxy> tab_proxy(window_proxy->GetTab(0));
   tab_proxy->Close(true);
 }
+
+// Test that a dialog is properly created when a plugin throws an
+// exception.  Should be run for in and out of process plugins, but
+// the more interesting case is out of process, where we must route
+// the exception to the correct renderer.
+TEST_F(NPAPITester, NPObjectSetException) {
+  GURL url = GetTestUrl(L"npapi", L"npobject_set_exception.html");
+  NavigateToURL(url);
+  WaitForFinish("npobject_set_exception", "1", url,
+                kTestCompleteCookie, kTestCompleteSuccess,
+                kShortWaitTimeout);
+}

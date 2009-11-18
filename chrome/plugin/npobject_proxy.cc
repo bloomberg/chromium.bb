@@ -484,18 +484,3 @@ bool NPObjectProxy::NPNEvaluate(NPP npp,
       result_param, channel.get(), result_var, containing_window, page_url);
   return true;
 }
-
-void NPObjectProxy::NPNSetException(NPObject *obj,
-                                    const NPUTF8 *message) {
-  NPObjectProxy* proxy = GetProxy(obj);
-  if (!proxy) {
-    return;
-  }
-
-  NPVariant_Param result_param;
-  std::string message_str(message);
-
-  proxy->Send(new NPObjectMsg_SetException(proxy->route_id(), message_str));
-  // Send may delete proxy.
-  proxy = NULL;
-}

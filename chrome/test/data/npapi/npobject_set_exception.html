@@ -1,0 +1,24 @@
+<html>
+<head>
+<title>Set Exception Test</title>
+<script src="npapi.js"></script>
+</head>
+
+<body>
+
+<h2>Test that if NPN_SetException is called by an out of process plugin, the
+ exception is sent to the proper renderer.</h2>
+
+<div id="PluginDiv">
+<embed name="plg" type="application/x-webkit-test-netscape"></embed>
+</div>
+<script>
+  var plg = window.document["plg"];
+  try {
+    plg.testThrowException();
+  } catch (e) {
+    onSuccess("npobject_set_exception", 1);
+  }
+</script>
+</body>
+</html>

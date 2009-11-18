@@ -49,6 +49,10 @@ class PluginChannelBase : public IPC::Channel::Listener,
     return channel_valid_;
   }
 
+  // Returns the most recent PluginChannelBase to have received a message
+  // in this process.
+  static PluginChannelBase* GetCurrentChannel();
+
   static void CleanupChannels();
 
  protected:

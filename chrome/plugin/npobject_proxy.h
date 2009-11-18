@@ -81,9 +81,6 @@ class NPObjectProxy : public IPC::Channel::Listener,
                           NPString *script,
                           NPVariant *result);
 
-  static void NPNSetException(NPObject *obj,
-                              const NPUTF8 *message);
-
   static bool NPInvokePrivate(NPP npp,
                               NPObject *obj,
                               bool is_default,

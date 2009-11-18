@@ -42,6 +42,9 @@ class PluginChannelHost : public PluginChannelBase {
 
   static PluginChannelBase* ClassFactory() { return new PluginChannelHost(); }
 
+  void OnControlMessageReceived(const IPC::Message& message);
+  void OnSetException(const std::string& message);
+
   // Keep track of all the registered WebPluginDelegeProxies to
   // inform about OnChannelError
   typedef base::hash_map<int, IPC::Channel::Listener*> ProxyMap;

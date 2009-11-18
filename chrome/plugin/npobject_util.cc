@@ -84,9 +84,16 @@ static bool NPN_EvaluatePatch(NPP npp,
 }
 
 
-static void NPN_SetExceptionPatch(NPObject *obj,
-                                  const NPUTF8 *message) {
-  return NPObjectProxy::NPNSetException(obj, message);
+static void NPN_SetExceptionPatch(NPObject *obj, const NPUTF8 *message) {
+  std::string message_str(message);
+  if (IsPluginProcess()) {
+    PluginChannelBase* renderer_channel =
+        PluginChannelBase::GetCurrentChannel();
+    if (renderer_channel)
+      renderer_channel->Send(new PluginHostMsg_SetException(message_str));
+  } else {
+    WebBindings::setException(obj, message_str.c_str());
+  }
 }
 
 static bool NPN_EnumeratePatch(NPP npp, NPObject *obj,

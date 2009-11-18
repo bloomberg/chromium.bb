@@ -4,7 +4,10 @@
 
 #include "chrome/plugin/plugin_channel_base.h"
 
+#include <stack>
+
 #include "base/hash_tables.h"
+#include "base/lazy_instance.h"
 #include "chrome/common/child_process.h"
 #include "ipc/ipc_sync_message.h"
 
@@ -17,6 +20,8 @@ typedef base::hash_map<std::string, scoped_refptr<PluginChannelBase> >
 
 static PluginChannelMap g_plugin_channels_;
 
+static base::LazyInstance<std::stack<scoped_refptr<PluginChannelBase> > >
+    lazy_plugin_channel_stack_(base::LINKER_INITIALIZED);
 
 PluginChannelBase* PluginChannelBase::GetChannel(
     const std::string& channel_name, IPC::Channel::Mode mode,
@@ -67,6 +72,10 @@ PluginChannelBase::PluginChannelBase()
 PluginChannelBase::~PluginChannelBase() {
 }
 
+PluginChannelBase* PluginChannelBase::GetCurrentChannel() {
+  return lazy_plugin_channel_stack_.Pointer()->top();
+}
+
 void PluginChannelBase::CleanupChannels() {
   // Make a copy of the references as we can't iterate the map since items will
   // be removed from it as we clean them up.
@@ -115,7 +124,8 @@ int PluginChannelBase::Count() {
 void PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
   // This call might cause us to be deleted, so keep an extra reference to
   // ourself so that we can send the reply and decrement back in_dispatch_.
-  scoped_refptr<PluginChannelBase> me(this);
+  lazy_plugin_channel_stack_.Pointer()->push(
+      scoped_refptr<PluginChannelBase>(this));
 
   if (message.is_sync())
     in_sync_dispatch_++;
@@ -133,6 +143,8 @@ void PluginChannelBase::OnMessageReceived(const IPC::Message& message) {
   }
   if (message.is_sync())
     in_sync_dispatch_--;
+
+  lazy_plugin_channel_stack_.Pointer()->pop();
 }
 
 void PluginChannelBase::OnChannelConnected(int32 peer_pid) {

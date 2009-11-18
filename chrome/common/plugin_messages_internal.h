@@ -355,6 +355,9 @@ IPC_BEGIN_MESSAGES(PluginHost)
                       int  /* resource_id */,
                       bool /* defer */)
 
+  IPC_SYNC_MESSAGE_CONTROL1_0(PluginHostMsg_SetException,
+                              std::string /* message */)
+
 IPC_END_MESSAGES(PluginHost)
 
 //-----------------------------------------------------------------------------
@@ -409,8 +412,5 @@ IPC_BEGIN_MESSAGES(NPObject)
                              bool /* popups_allowed */,
                              NPVariant_Param /* result_param */,
                              bool /* result */)
-
-  IPC_SYNC_MESSAGE_ROUTED1_0(NPObjectMsg_SetException,
-                             std::string /* message */)
 
 IPC_END_MESSAGES(NPObject)

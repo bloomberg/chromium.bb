@@ -6,6 +6,8 @@
 
 #include "chrome/common/plugin_messages.h"
 
+#include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+
 // A simple MessageFilter that will ignore all messages and respond to sync
 // messages with an error when is_listening_ is false.
 class IsListeningFilter : public IPC::ChannelProxy::MessageFilter {
@@ -105,6 +107,17 @@ void PluginChannelHost::AddRoute(int route_id,
 void PluginChannelHost::RemoveRoute(int route_id) {
   proxies_.erase(route_id);
   PluginChannelBase::RemoveRoute(route_id);
+}
+
+void PluginChannelHost::OnControlMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(PluginChannelHost, message)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_SetException, OnSetException)
+    IPC_MESSAGE_UNHANDLED_ERROR()
+  IPC_END_MESSAGE_MAP()
+}
+
+void PluginChannelHost::OnSetException(const std::string& message) {
+  WebKit::WebBindings::setException(NULL, message.c_str());
 }
 
 void PluginChannelHost::OnChannelError() {
