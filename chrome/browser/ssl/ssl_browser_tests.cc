@@ -249,11 +249,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->selected_index());
 
+  // TODO(jcampan|oshima): Following code waits forever on linux/views
+  // because LOAD_STOP notification is issued before WaitLorLoadStop
+  // is called. See http://crbug/28098.
+#if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
   // Since the navigation was initiated by the renderer (when we clicked on the
   // link) and since the main page network request failed, we won't get a
   // navigation entry committed.  So we'll just wait for the load to stop.
   ui_test_utils::WaitForLoadStop(
       &(browser()->GetSelectedTabContents()->controller()));
+#endif
 
   // We should have an interstitial page showing.
   ASSERT_TRUE(browser()->GetSelectedTabContents()->interstitial_page());
