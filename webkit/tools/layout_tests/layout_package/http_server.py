@@ -211,7 +211,7 @@ class Lighttpd:
           'setup_mount.bat')
       subprocess.Popen(setup_mount).wait()
 
-    logging.info('Starting http server')
+    logging.debug('Starting http server')
     self._process = subprocess.Popen(start_cmd, env=env)
 
     # Wait for server to start.
@@ -236,7 +236,7 @@ class Lighttpd:
     if not force and not self.IsRunning():
       return
 
-    logging.info('Shutting down http server')
+    logging.debug('Shutting down http server')
     path_utils.ShutDownHTTPServer(self._process)
 
     if self._process:

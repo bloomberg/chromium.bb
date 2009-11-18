@@ -121,7 +121,7 @@ class PyWebSocket(http_server.Lighttpd):
     env['PYTHONPATH'] = (pywebsocket_base + os.path.pathsep +
                          env.get('PYTHONPATH', ''))
 
-    logging.info('Starting %s server.' % self._server_name)
+    logging.debug('Starting %s server.' % self._server_name)
     self._process = subprocess.Popen(start_cmd, env=env)
 
     # Wait a bit before checking the liveness of the server.
@@ -146,7 +146,7 @@ class PyWebSocket(http_server.Lighttpd):
     if not force and not self.IsRunning():
       return
 
-    logging.info('Shutting down %s server.' % self._server_name)
+    logging.debug('Shutting down %s server.' % self._server_name)
     platform_utils.KillProcess(self._process.pid)
     self._process = None
 
