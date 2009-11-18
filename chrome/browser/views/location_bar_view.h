@@ -11,11 +11,13 @@
 
 #include "app/gfx/font.h"
 #include "base/gfx/rect.h"
+#include "base/task.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
+#include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
@@ -31,6 +33,7 @@
 class BubblePositioner;
 class CommandUpdater;
 class ExtensionAction;
+class ExtensionPopup;
 class GURL;
 class Profile;
 
@@ -359,7 +362,8 @@ class LocationBarView : public LocationBar,
   // PageActionImageView is used to display the icon for a given PageAction
   // and notify the extension when the icon is clicked.
   class PageActionImageView : public LocationBarImageView,
-                              public ImageLoadingTracker::Observer {
+                              public ImageLoadingTracker::Observer,
+                              public BrowserBubble::Delegate {
    public:
     PageActionImageView(LocationBarView* owner,
                         Profile* profile,
@@ -385,6 +389,10 @@ class LocationBarView : public LocationBar,
     // Overridden from ImageLoadingTracker.
     virtual void OnImageLoaded(SkBitmap* image, size_t index);
 
+    // Overridden from BrowserBubble::Delegate
+    virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
+    virtual void BubbleLostFocus(BrowserBubble* bubble);
+
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
     // is the current page URL.
@@ -394,6 +402,9 @@ class LocationBarView : public LocationBar,
     void ExecuteAction(int button);
 
    private:
+    // Hides the active popup, if there is one.
+    void HidePopup();
+
     // The location bar view that owns us.
     LocationBarView* owner_;
 
@@ -424,6 +435,11 @@ class LocationBarView : public LocationBar,
     // This is used for post-install visual feedback. The page_action icon
     // is briefly shown even if it hasn't been enabled by it's extension.
     bool preview_enabled_;
+
+    // The current popup and the button it came from.  NULL if no popup.
+    ExtensionPopup* popup_;
+
+    ScopedRunnableMethodFactory<PageActionImageView> method_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
   };

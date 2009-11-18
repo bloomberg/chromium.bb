@@ -1294,7 +1294,9 @@ LocationBarView::PageActionImageView::PageActionImageView(
       profile_(profile),
       page_action_(page_action),
       current_tab_id_(-1),
-      preview_enabled_(false) {
+      preview_enabled_(false),
+      popup_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
       page_action->extension_id(), false);
   DCHECK(extension);
@@ -1318,16 +1320,13 @@ LocationBarView::PageActionImageView::PageActionImageView(
 LocationBarView::PageActionImageView::~PageActionImageView() {
   if (tracker_)
     tracker_->StopTrackingImageLoad();
+
+  if (popup_)
+    HidePopup();
 }
 
 void LocationBarView::PageActionImageView::ExecuteAction(int button) {
   if (page_action_->has_popup()) {
-    gfx::Point origin;
-    View::ConvertPointToScreen(this, &origin);
-    gfx::Rect rect = bounds();
-    rect.set_x(origin.x());
-    rect.set_y(origin.y());
-
     // In tests, GetLastActive could return NULL, so we need to have
     // a fallback.
     // TODO(erikkay): Find a better way to get the Browser that this
@@ -1335,8 +1334,18 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (!browser)
       browser = BrowserList::FindBrowserWithProfile(profile_);
-    ExtensionPopup::Show(page_action_->popup_url(), browser, rect,
-                         BubbleBorder::TOP_RIGHT);
+
+    // Always hide the current popup. Only one popup at a time.
+    HidePopup();
+
+    gfx::Point origin;
+    View::ConvertPointToScreen(this, &origin);
+    gfx::Rect rect = bounds();
+    rect.set_x(origin.x());
+    rect.set_y(origin.y());
+    popup_ = ExtensionPopup::Show(page_action_->popup_url(), browser, rect,
+                                  BubbleBorder::TOP_RIGHT);
+    popup_->set_delegate(this);
   } else {
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
         profile_, page_action_->extension_id(), page_action_->id(),
@@ -1438,6 +1447,38 @@ void LocationBarView::PageActionImageView::UpdateVisibility(
       ImageView::SetImage(&icon);
   }
   SetVisible(visible);
+}
+
+void LocationBarView::PageActionImageView::BubbleBrowserWindowClosing(
+    BrowserBubble* bubble) {
+  HidePopup();
+}
+
+void LocationBarView::PageActionImageView::BubbleLostFocus(
+    BrowserBubble* bubble) {
+  if (!popup_)
+    return;
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &LocationBarView::PageActionImageView::HidePopup));
+}
+
+void LocationBarView::PageActionImageView::HidePopup() {
+  if (!popup_)
+    return;
+
+  // This sometimes gets called via a timer (See BubbleLostFocus), so clear
+  // the method factory. in case one is pending.
+  method_factory_.RevokeAll();
+
+  // Save the popup in a local since destroying it calls BubbleLostFocus,
+  // which will try to call HidePopup() again.
+  ExtensionPopup* closing_popup = popup_;
+  popup_ = NULL;
+
+  closing_popup->DetachFromBrowser();
+  delete closing_popup;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

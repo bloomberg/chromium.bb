@@ -19,11 +19,11 @@ class BrowserBubble {
   class Delegate {
    public:
     // Called when the Browser Window that this bubble is attached to moves.
-    virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble) = 0;
+    virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble) {}
 
     // Called with the Browser Window that this bubble is attached to is
     // about to close.
-    virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble) = 0;
+    virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble) {}
 
     // Called when the bubble became active / got focus.
     virtual void BubbleGotFocus(BrowserBubble* bubble) {}
