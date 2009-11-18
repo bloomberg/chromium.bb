@@ -1610,9 +1610,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
-   fun:*
-   fun:_ZN10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
-   fun:*
+   ...
    fun:_ZN7testing4Test3RunEv
 }
-
