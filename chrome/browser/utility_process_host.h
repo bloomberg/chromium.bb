@@ -35,9 +35,11 @@ class UtilityProcessHost : public ChildProcessHost {
     virtual void OnProcessCrashed() {}
 
     // Called when the extension has unpacked successfully.  |manifest| is the
-    // parsed manifest.json file.  |images| contains a list of decoded images
-    // and the associated paths where those images live on disk.
-    virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest) {}
+    // parsed manifest.json file.  |catalogs| contains list of all parsed
+    // message catalogs.  |images| contains a list of decoded images and the
+    // associated paths where those images live on disk.
+    virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest,
+                                            const DictionaryValue& catalogs) {}
 
     // Called when an error occurred while unpacking the extension.
     // |error_message| contains a description of the problem.
@@ -51,8 +53,7 @@ class UtilityProcessHost : public ChildProcessHost {
 
     // Called when an error occurred while parsing the resource data.
     // |error_message| contains a description of the problem.
-    virtual void OnUnpackWebResourceFailed(
-        const std::string& error_message) {}
+    virtual void OnUnpackWebResourceFailed(const std::string& error_message) {}
 
     // Called when an update manifest xml file was successfully parsed.
     virtual void OnParseUpdateManifestSucceeded(

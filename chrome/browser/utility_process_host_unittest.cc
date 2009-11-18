@@ -43,7 +43,8 @@ class TestUtilityProcessHostClient : public UtilityProcessHost::Client {
     NOTREACHED();
   }
 
-  virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest) {
+  virtual void OnUnpackExtensionSucceeded(const DictionaryValue& manifest,
+                                          const DictionaryValue& catalogs) {
     success_ = true;
   }
 

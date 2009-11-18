@@ -23,6 +23,9 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/image_decoder.h"
 
+namespace errors = extension_manifest_errors;
+namespace keys = extension_manifest_keys;
+
 namespace {
 // The name of a temporary directory to install an extension into for
 // validation before finalizing install.
@@ -87,7 +90,7 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
   FilePath manifest_path =
       temp_install_dir_.AppendASCII(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
-    SetError(extension_manifest_errors::kInvalidManifest);
+    SetError(errors::kInvalidManifest);
     return NULL;
   }
 
@@ -100,11 +103,44 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
   }
 
   if (!root->IsType(Value::TYPE_DICTIONARY)) {
-    SetError(extension_manifest_errors::kInvalidManifest);
+    SetError(errors::kInvalidManifest);
     return NULL;
   }
 
   return static_cast<DictionaryValue*>(root.release());
+}
+
+bool ExtensionUnpacker::ReadAllMessageCatalogs(
+    const std::string& default_locale) {
+  FilePath locales_path =
+    temp_install_dir_.AppendASCII(Extension::kLocaleFolder);
+
+  // Treat all folders under _locales as valid locales.
+  file_util::FileEnumerator locales(locales_path,
+                                    false,
+                                    file_util::FileEnumerator::DIRECTORIES);
+
+  FilePath locale_path = locales.Next();
+  do {
+    // Since we use this string as a key in a DictionaryValue, be paranoid about
+    // skipping any strings with '.'. This happens sometimes, for example with
+    // '.svn' directories.
+    FilePath relative_path;
+    // message_path was created from temp_install_dir. This should never fail.
+    if (!temp_install_dir_.AppendRelativePath(locale_path, &relative_path))
+      NOTREACHED();
+    std::wstring subdir(relative_path.ToWStringHack());
+    if (std::find(subdir.begin(), subdir.end(), L'.') != subdir.end())
+      continue;
+
+    FilePath messages_path =
+      locale_path.AppendASCII(Extension::kMessagesFilename);
+
+    if (!ReadMessageCatalog(messages_path))
+      return false;
+  } while (!(locale_path = locales.Next()).empty());
+
+  return true;
 }
 
 bool ExtensionUnpacker::Run() {
@@ -154,6 +190,13 @@ bool ExtensionUnpacker::Run() {
       return false;  // Error was already reported.
   }
 
+  // Parse all message catalogs (if any).
+  parsed_catalogs_.reset(new DictionaryValue);
+  if (!extension.default_locale().empty()) {
+    if (!ReadAllMessageCatalogs(extension.default_locale()))
+      return false;  // Error was already reported.
+  }
+
   return true;
 }
 
@@ -198,6 +241,33 @@ bool ExtensionUnpacker::AddDecodedImage(const FilePath& path) {
   }
 
   decoded_images_.push_back(MakeTuple(image_bitmap, path));
+  return true;
+}
+
+bool ExtensionUnpacker::ReadMessageCatalog(const FilePath& message_path) {
+  std::string error;
+  JSONFileValueSerializer serializer(message_path);
+  DictionaryValue* root =
+    static_cast<DictionaryValue*>(serializer.Deserialize(&error));
+  if (!root) {
+    std::string messages_file = WideToASCII(message_path.ToWStringHack());
+    if (error.empty()) {
+      // If file is missing, Deserialize will fail with empty error.
+      SetError(StringPrintf("%s %s", errors::kLocalesMessagesFileMissing,
+                            messages_file.c_str()));
+    } else {
+      SetError(StringPrintf("%s: %s", messages_file.c_str(), error.c_str()));
+    }
+    return false;
+  }
+
+  FilePath relative_path;
+  // message_path was created from temp_install_dir. This should never fail.
+  if (!temp_install_dir_.AppendRelativePath(message_path, &relative_path))
+    NOTREACHED();
+
+  parsed_catalogs_->Set(relative_path.DirName().ToWStringHack(), root);
+
   return true;
 }
 

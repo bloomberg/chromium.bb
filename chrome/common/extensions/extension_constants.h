@@ -124,7 +124,10 @@ namespace extension_manifest_errors {
   extern const char* kInvalidUpdateURL;
   extern const char* kInvalidDefaultLocale;
   extern const char* kLocalesNoDefaultLocaleSpecified;
+  extern const char* kLocalesNoDefaultMessages;
   extern const char* kLocalesNoValidLocaleNamesListed;
+  extern const char* kLocalesTreeMissing;
+  extern const char* kLocalesMessagesFileMissing;
   extern const char* kInvalidOptionsPage;
 }  // namespace extension_manifest_errors
 

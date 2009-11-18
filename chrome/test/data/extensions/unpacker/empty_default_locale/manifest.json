@@ -1,0 +1,6 @@
+{
+  "description": "Default locale can't be empty",
+  "name": "empty_default_locale",
+  "default_locale": "",
+  "version": "1.0"
+}

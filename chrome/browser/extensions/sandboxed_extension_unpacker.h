@@ -20,7 +20,7 @@ class ResourceDispatcherHost;
 class SandboxedExtensionUnpackerClient
     : public base::RefCountedThreadSafe<SandboxedExtensionUnpackerClient> {
  public:
-  // temp_dir - A temporary directoy containing the results of the extension
+  // temp_dir - A temporary directory containing the results of the extension
   // unpacking. The client is responsible for deleting this directory.
   //
   // extension_root - The path to the extension root inside of temp_dir.
@@ -44,9 +44,9 @@ class SandboxedExtensionUnpackerClient
 // sources.
 //
 // Unpacking an extension using this class makes minor changes to its source,
-// such as transcoding all images to PNG and rewriting the manifest JSON. As
-// such, it should not be used when the output is not intended to be given back
-// to the author.
+// such as transcoding all images to PNG, parsing all message catalogs
+// and rewriting the manifest JSON. As such, it should not be used when the
+// output is not intended to be given back to the author.
 //
 //
 // Lifetime management:
@@ -102,6 +102,7 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
  private:
   class ProcessHostClient;
   friend class ProcessHostClient;
+  friend class SandboxedExtensionUnpackerTest;
 
   ~SandboxedExtensionUnpacker() {}
 
@@ -120,12 +121,22 @@ class SandboxedExtensionUnpacker : public UtilityProcessHost::Client {
   void StartProcessOnIOThread(const FilePath& temp_crx_path);
 
   // SandboxedExtensionUnpacker
-  void OnUnpackExtensionSucceeded(const DictionaryValue& manifest);
+  void OnUnpackExtensionSucceeded(const DictionaryValue& manifest,
+                                  const DictionaryValue& catalogs);
   void OnUnpackExtensionFailed(const std::string& error_message);
   void OnProcessCrashed();
 
   void ReportFailure(const std::string& message);
   void ReportSuccess();
+
+  // Overwrites original manifest with safe result from utility process.
+  // Returns NULL on error. Caller owns the returned object.
+  DictionaryValue* RewriteManifestFile(const DictionaryValue& manifest);
+
+  // Overwrites original files with safe results from utility process.
+  // Reports error and returns false if it fails.
+  bool RewriteImageFiles();
+  bool RewriteCatalogFiles(const DictionaryValue& parsed_catalogs);
 
   FilePath crx_path_;
   ChromeThread::ID thread_identifier_;

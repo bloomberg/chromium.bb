@@ -1113,6 +1113,14 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
   }
 
+  if (source.HasKey(keys::kDefaultLocale)) {
+    if (!source.GetString(keys::kDefaultLocale, &default_locale_) ||
+        default_locale_.empty()) {
+      *error = errors::kInvalidDefaultLocale;
+      return false;
+    }
+  }
+
   // Chrome URL overrides (optional)
   if (source.HasKey(keys::kChromeURLOverrides)) {
     DictionaryValue* overrides;

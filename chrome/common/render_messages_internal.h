@@ -1913,11 +1913,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // because we ran out of spare message types.
 
   // Reply when the utility process is done unpacking an extension.  |manifest|
-  // is the parsed manifest.json file.  The unpacker should also have written
-  // out a file containing decoded images from the extension.  See
-  // ExtensionUnpacker for details.
-  IPC_MESSAGE_CONTROL1(UtilityHostMsg_UnpackExtension_Succeeded,
-                       DictionaryValue /* manifest */)
+  // is the parsed manifest.json file.  |catalogs| is the list of all parsed
+  // message catalogs and relative paths to them.
+  // The unpacker should also have written out a file containing decoded images
+  // from the extension.  See ExtensionUnpacker for details.
+  IPC_MESSAGE_CONTROL2(UtilityHostMsg_UnpackExtension_Succeeded,
+                       DictionaryValue /* manifest */,
+                       DictionaryValue /* catalogs */)
 
   // Reply when the utility process has failed while unpacking an extension.
   // |error_message| is a user-displayable explanation of what went wrong.

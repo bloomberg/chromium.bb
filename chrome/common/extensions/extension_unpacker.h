@@ -46,15 +46,23 @@ class ExtensionUnpacker {
     return parsed_manifest_.get();
   }
   const DecodedImages& decoded_images() { return decoded_images_; }
+  DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
 
  private:
   // Parse the manifest.json file inside the extension (not in the header).
   // Caller takes ownership of return value.
   DictionaryValue* ReadManifest();
 
+  // Parse all _locales/*/messages.json files inside the extension.
+  bool ReadAllMessageCatalogs(const std::string& default_locale);
+
   // Decodes the image at the given path and puts it in our list of decoded
   // images.
   bool AddDecodedImage(const FilePath& path);
+
+  // Parses the catalog at the given path and puts it in our list of parsed
+  // catalogs.
+  bool ReadMessageCatalog(const FilePath& message_path);
 
   // Set the error message.
   void SetError(const std::string& error);
@@ -71,6 +79,10 @@ class ExtensionUnpacker {
   // A list of decoded images and the paths where those images came from.  Paths
   // are relative to the manifest file.
   DecodedImages decoded_images_;
+
+  // Dictionary of relative paths and catalogs per path. Paths are in the form
+  // of _locales/locale, without messages.json base part.
+  scoped_ptr<DictionaryValue> parsed_catalogs_;
 
   // The last error message that was set.  Empty if there were no errors.
   std::string error_message_;

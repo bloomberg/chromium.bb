@@ -31,7 +31,7 @@ void UtilityThread::OnUnpackExtension(const FilePath& extension_path) {
   ExtensionUnpacker unpacker(extension_path);
   if (unpacker.Run() && unpacker.DumpImagesToFile()) {
     Send(new UtilityHostMsg_UnpackExtension_Succeeded(
-         *unpacker.parsed_manifest()));
+      *unpacker.parsed_manifest(), *unpacker.parsed_catalogs()));
   } else {
     Send(new UtilityHostMsg_UnpackExtension_Failed(unpacker.error_message()));
   }

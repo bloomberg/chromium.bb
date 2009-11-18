@@ -186,8 +186,14 @@ const char* kThemesCannotContainExtensions =
     "A theme cannot contain extensions code.";
 const char* kLocalesNoDefaultLocaleSpecified =
     "Localization used, but default_locale wasn't specified in the manifest.";
+const char* kLocalesNoDefaultMessages =
+    "Default locale is defined but default data couldn't be loaded.";
 const char* kLocalesNoValidLocaleNamesListed =
     "No valid locale name could be found in _locales directory.";
+const char* kLocalesTreeMissing =
+    "Default locale was specified, but _locales subtree is missing.";
+const char* kLocalesMessagesFileMissing =
+    "Messages file is missing for locale.";
 const char* kInvalidOptionsPage =
     "Invalid value for 'options_page'.";
 }  // namespace extension_manifest_errors

@@ -274,6 +274,8 @@ class Extension {
     message_bundle_.reset(message_bundle);
   }
 
+  const std::string default_locale() const { return default_locale_; }
+
   // Chrome URL overrides (see ExtensionOverrideUI).
   const URLOverrideMap& GetChromeURLOverrides() const {
     return chrome_url_overrides_;
@@ -405,6 +407,9 @@ class Extension {
 
   // Handles the l10n messages replacement and parsing.
   scoped_ptr<ExtensionMessageBundle> message_bundle_;
+
+  // Default locale for fall back. Can be empty if extension is not localized.
+  std::string default_locale_;
 
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
   // which override the handling of those URLs.

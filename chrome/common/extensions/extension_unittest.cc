@@ -49,6 +49,7 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
   ASSERT_TRUE(valid_value.get());
   ASSERT_TRUE(extension.InitFromValue(*valid_value, true, &error));
   ASSERT_EQ("", error);
+  EXPECT_EQ("en_US", extension.default_locale());
 
   scoped_ptr<DictionaryValue> input_value;
 
@@ -238,6 +239,16 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
   input_value->Set(keys::kOptionsPage, Value::CreateNullValue());
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
   EXPECT_TRUE(MatchPattern(error, errors::kInvalidOptionsPage));
+
+  // Test invalid/empty default locale.
+  input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
+  input_value->Set(keys::kDefaultLocale, Value::CreateIntegerValue(5));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
+
+  input_value->Set(keys::kDefaultLocale, Value::CreateStringValue(""));
+  EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
+  EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
 }
 
 TEST(ExtensionTest, InitFromValueValid) {

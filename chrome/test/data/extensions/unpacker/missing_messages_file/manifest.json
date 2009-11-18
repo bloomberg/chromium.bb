@@ -1,0 +1,6 @@
+{
+  "description": "Each locale has to have messages.json file",
+  "name": "missing_messages_file",
+  "default_locale": "en_US",
+  "version": "1.0"
+}

@@ -16,7 +16,12 @@
 #include "chrome/common/json_value_serializer.h"
 #include "net/base/file_stream.h"
 
+namespace errors = extension_manifest_errors;
+
 namespace extension_file_util {
+
+// Validates locale info. Doesn't check if messages.json files are valid.
+static bool ValidateLocaleInfo(const Extension& extension, std::string* error);
 
 const char kInstallDirectoryName[] = "Extensions";
 // TODO(mpcomplete): obsolete. remove after migration period.
@@ -270,6 +275,10 @@ bool ValidateExtension(Extension* extension, std::string* error) {
     }
   }
 
+  // Validate locale info.
+  if (!ValidateLocaleInfo(*extension, error))
+    return false;
+
   // Check children of extension root to see if any of them start with _ and is
   // not on the reserved list.
   if (!CheckForIllegalFilenames(extension->path(), error)) {
@@ -380,6 +389,69 @@ ExtensionMessageBundle* LoadLocaleInfo(const FilePath& extension_path,
                                              locales,
                                              error);
   return message_bundle;
+}
+
+static bool ValidateLocaleInfo(const Extension& extension, std::string* error) {
+  // default_locale and _locales have to be both present or both missing.
+  const FilePath path = extension.path().AppendASCII(Extension::kLocaleFolder);
+  bool path_exists = file_util::PathExists(path);
+  std::string default_locale = extension.default_locale();
+
+  // If both default locale and _locales folder are empty, skip verification.
+  if (!default_locale.empty() || path_exists) {
+    if (default_locale.empty() && path_exists) {
+      *error = errors::kLocalesNoDefaultLocaleSpecified;
+      return false;
+    } else if (!default_locale.empty() && !path_exists) {
+      *error = errors::kLocalesTreeMissing;
+      return false;
+    }
+
+    // Treat all folders under _locales as valid locales.
+    file_util::FileEnumerator locales(path,
+                                      false,
+                                      file_util::FileEnumerator::DIRECTORIES);
+
+    FilePath locale_path = locales.Next();
+    if (locale_path.empty()) {
+      *error = errors::kLocalesTreeMissing;
+      return false;
+    }
+
+    const FilePath default_locale_path = path.AppendASCII(default_locale);
+    bool has_default_locale_message_file = false;
+    do {
+      // Skip any strings with '.'. This happens sometimes, for example with
+      // '.svn' directories.
+      FilePath relative_path;
+      if (!extension.path().AppendRelativePath(locale_path, &relative_path))
+        NOTREACHED();
+      std::wstring subdir(relative_path.ToWStringHack());
+      if (std::find(subdir.begin(), subdir.end(), L'.') != subdir.end())
+        continue;
+
+      FilePath messages_path =
+        locale_path.AppendASCII(Extension::kMessagesFilename);
+
+      if (!file_util::PathExists(messages_path)) {
+        *error = StringPrintf(
+            "%s %s", errors::kLocalesMessagesFileMissing,
+            WideToUTF8(messages_path.ToWStringHack()).c_str());
+        return false;
+      }
+
+      if (locale_path == default_locale_path)
+        has_default_locale_message_file = true;
+    } while (!(locale_path = locales.Next()).empty());
+
+    // Only message file for default locale has to exist.
+    if (!has_default_locale_message_file) {
+      *error = errors::kLocalesNoDefaultMessages;
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool CheckForIllegalFilenames(const FilePath& extension_path,
