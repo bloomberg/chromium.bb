@@ -557,14 +557,16 @@ NPObject* WebPluginImpl::GetPluginElement() {
 }
 
 void WebPluginImpl::SetCookie(const GURL& url,
-                              const GURL& policy_url,
+                              const GURL& first_party_for_cookies,
                               const std::string& cookie) {
   WebKit::webKitClient()->setCookies(
-      url, policy_url, WebString::fromUTF8(cookie));
+      url, first_party_for_cookies, WebString::fromUTF8(cookie));
 }
 
-std::string WebPluginImpl::GetCookies(const GURL& url, const GURL& policy_url) {
-  return UTF16ToUTF8(WebKit::webKitClient()->cookies(url, policy_url));
+std::string WebPluginImpl::GetCookies(const GURL& url,
+                                      const GURL& first_party_for_cookies) {
+  return UTF16ToUTF8(WebKit::webKitClient()->cookies(url,
+                                                     first_party_for_cookies));
 }
 
 void WebPluginImpl::ShowModalHTMLDialog(const GURL& url, int width, int height,

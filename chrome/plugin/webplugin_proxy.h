@@ -53,9 +53,9 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   NPObject* GetWindowScriptNPObject();
   NPObject* GetPluginElement();
   void SetCookie(const GURL& url,
-                 const GURL& policy_url,
+                 const GURL& first_party_for_cookies,
                  const std::string& cookie);
-  std::string GetCookies(const GURL& url, const GURL& policy_url);
+  std::string GetCookies(const GURL& url, const GURL& first_party_for_cookies);
 
   void ShowModalHTMLDialog(const GURL& url, int width, int height,
                            const std::string& json_arguments,

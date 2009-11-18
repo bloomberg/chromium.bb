@@ -118,7 +118,7 @@ WebThemeEngine* WebKitClientImpl::themeEngine() {
 }
 
 bool WebKitClientImpl::rawCookies(const WebURL& url,
-                                  const WebURL& policy_url,
+                                  const WebURL& first_party_for_cookies,
                                   WebVector<WebCookie>* raw_cookies) {
   NOTREACHED();
   return false;

@@ -79,10 +79,10 @@ class WebPlugin {
 
   // Cookies
   virtual void SetCookie(const GURL& url,
-                         const GURL& policy_url,
+                         const GURL& first_party_for_cookies,
                          const std::string& cookie) = 0;
   virtual std::string GetCookies(const GURL& url,
-                                 const GURL& policy_url) = 0;
+                                 const GURL& first_party_for_cookies) = 0;
 
   // Shows a modal HTML dialog containing the given URL.  json_arguments are
   // passed to the dialog via the DOM 'window.chrome.dialogArguments', and the

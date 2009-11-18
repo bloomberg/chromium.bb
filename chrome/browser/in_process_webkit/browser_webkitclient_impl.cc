@@ -47,14 +47,16 @@ BrowserWebKitClientImpl::createMessagePortChannel() {
   return NULL;
 }
 
-void BrowserWebKitClientImpl::setCookies(const WebKit::WebURL& url,
-                                         const WebKit::WebURL& policy_url,
-                                         const WebKit::WebString& value) {
+void BrowserWebKitClientImpl::setCookies(
+    const WebKit::WebURL& url,
+    const WebKit::WebURL& first_party_for_cookies,
+    const WebKit::WebString& value) {
   NOTREACHED();
 }
 
 WebKit::WebString BrowserWebKitClientImpl::cookies(
-    const WebKit::WebURL& url, const WebKit::WebURL& policy_url) {
+    const WebKit::WebURL& url,
+    const WebKit::WebURL& first_party_for_cookies) {
   NOTREACHED();
   return WebKit::WebString();
 }

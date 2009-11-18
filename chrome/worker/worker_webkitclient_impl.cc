@@ -57,13 +57,13 @@ WorkerWebKitClientImpl::createMessagePortChannel() {
 }
 
 void WorkerWebKitClientImpl::setCookies(const WebURL& url,
-                                        const WebURL& policy_url,
+                                        const WebURL& first_party_for_cookies,
                                         const WebString& value) {
   NOTREACHED();
 }
 
 WebString WorkerWebKitClientImpl::cookies(
-    const WebURL& url, const WebURL& policy_url) {
+    const WebURL& url, const WebURL& first_party_for_cookies) {
   NOTREACHED();
   return WebString();
 }

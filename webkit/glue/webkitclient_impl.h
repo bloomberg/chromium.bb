@@ -51,7 +51,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
       const WebKit::WebURL& url);
   virtual size_t memoryUsageMB();
   virtual bool rawCookies(const WebKit::WebURL& url,
-                          const WebKit::WebURL& policy_url,
+                          const WebKit::WebURL& first_party_for_cookies,
                           WebKit::WebVector<WebKit::WebCookie>*);
   virtual void deleteCookie(const WebKit::WebURL& url,
                             const WebKit::WebString& cookie_name);

@@ -21,10 +21,11 @@ class WorkerWebKitClientImpl : public webkit_glue::WebKitClientImpl,
   virtual bool isLinkVisited(unsigned long long linkHash);
   virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
   virtual void setCookies(const WebKit::WebURL& url,
-                          const WebKit::WebURL& policy_url,
+                          const WebKit::WebURL& first_party_for_cookies,
                           const WebKit::WebString& value);
-  virtual WebKit::WebString cookies(const WebKit::WebURL& url,
-                                    const WebKit::WebURL& policy_url);
+  virtual WebKit::WebString cookies(
+      const WebKit::WebURL& url,
+      const WebKit::WebURL& first_party_for_cookies);
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual WebKit::WebString defaultLocale();

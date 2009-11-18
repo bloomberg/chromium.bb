@@ -182,15 +182,17 @@ NPObject* WebPluginProxy::GetPluginElement() {
 }
 
 void WebPluginProxy::SetCookie(const GURL& url,
-                               const GURL& policy_url,
+                               const GURL& first_party_for_cookies,
                                const std::string& cookie) {
-  Send(new PluginHostMsg_SetCookie(route_id_, url, policy_url, cookie));
+  Send(new PluginHostMsg_SetCookie(route_id_, url,
+                                   first_party_for_cookies, cookie));
 }
 
 std::string WebPluginProxy::GetCookies(const GURL& url,
-                                       const GURL& policy_url) {
+                                       const GURL& first_party_for_cookies) {
   std::string cookies;
-  Send(new PluginHostMsg_GetCookies(route_id_, url, policy_url, &cookies));
+  Send(new PluginHostMsg_GetCookies(route_id_, url,
+                                    first_party_for_cookies, &cookies));
 
   return cookies;
 }

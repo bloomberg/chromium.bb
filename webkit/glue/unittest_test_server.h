@@ -38,7 +38,7 @@ class UnittestTestServer : public HTTPTestServer {
     scoped_ptr<ResourceLoaderBridge> loader(
       ResourceLoaderBridge::Create("GET",
                                    url,
-                                   url,            // policy_url
+                                   url,            // first_party_for_cookies
                                    GURL(),         // no referrer
                                    std::string(),  // no extra headers
                                    "null",         // frame_origin

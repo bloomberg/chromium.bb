@@ -1040,7 +1040,8 @@ NPError NPN_GetValueForURL(NPP id,
       if (!webplugin)
         return NPERR_GENERIC_ERROR;
 
-      // Bypass third-party cookie blocking by using the url as the policy_url.
+      // Bypass third-party cookie blocking by using the url as the
+      // first_party_for_cookies.
       GURL cookies_url((std::string(url)));
       result = webplugin->GetCookies(cookies_url, cookies_url);
       break;
