@@ -2,17 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include "base/compiler_specific.h"
-
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/cpp_variant.h"
-#include "testing/gtest/include/gtest/gtest.h"
-
-MSVC_PUSH_WARNING_LEVEL(0);
-#include "npruntime_priv.h"  // for NPN_InitializeVariantWithStringCopy
-MSVC_POP_WARNING();
 
 using WebKit::WebBindings;
 
@@ -252,7 +245,7 @@ TEST(CppVariantTest, SetsTypeAndValueFromNPVariant) {
 
   NPString np_ascii_str = { "1st test value",
                             static_cast<uint32_t>(strlen("1st test value")) };
-  _NPN_InitializeVariantWithStringCopy(&np, &np_ascii_str);
+  WebBindings::initializeVariantWithStringCopy(&np, &np_ascii_str);
   cpp.Set(np);
   CheckString("1st test value", cpp);
   WebBindings::releaseVariantValue(&np);
@@ -263,7 +256,7 @@ TEST(CppVariantTest, SetsTypeAndValueFromNPVariant) {
   NPString np_intl_str = { "\xce\xb1\xe4\xb8\x80\xf0\x90\x90\x84",
                            static_cast<uint32_t>(strlen(
                                "\xce\xb1\xe4\xb8\x80\xf0\x90\x90\x84")) };
-  _NPN_InitializeVariantWithStringCopy(&np, &np_intl_str);
+  WebBindings::initializeVariantWithStringCopy(&np, &np_intl_str);
   cpp.Set(np);
   CheckString("\xce\xb1\xe4\xb8\x80\xf0\x90\x90\x84", cpp);
   WebBindings::releaseVariantValue(&np);

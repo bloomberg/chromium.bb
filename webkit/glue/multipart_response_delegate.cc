@@ -12,7 +12,6 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLLoaderClient.h"
-#include "webkit/glue/glue_util.h"
 
 using WebKit::WebHTTPHeaderVisitor;
 using WebKit::WebString;
@@ -41,7 +40,7 @@ class HeaderCopier : public WebHTTPHeaderVisitor {
       : response_(response) {
   }
   virtual void visitHeader(const WebString& name, const WebString& value) {
-    const std::string& name_utf8 = WebStringToStdString(name);
+    const std::string& name_utf8 = name.utf8();
     for (size_t i = 0; i < arraysize(kReplaceHeaders); ++i) {
       if (LowerCaseEqualsASCII(name_utf8, kReplaceHeaders[i]))
         return;
@@ -214,8 +213,8 @@ bool MultipartResponseDelegate::ParseHeaders() {
   net::HttpUtil::ParseContentType(content_type, &mime_type, &charset,
                                   &has_charset);
   WebURLResponse response(original_response_.url());
-  response.setMIMEType(StdStringToWebString(mime_type));
-  response.setTextEncodingName(StdStringToWebString(charset));
+  response.setMIMEType(WebString::fromUTF8(mime_type));
+  response.setTextEncodingName(WebString::fromUTF8(charset));
 
   HeaderCopier copier(&response);
   original_response_.visitHTTPHeaderFields(&copier);
@@ -224,8 +223,8 @@ bool MultipartResponseDelegate::ParseHeaders() {
     std::string name(kReplaceHeaders[i]);
     std::string value = net::GetSpecificHeader(headers, name);
     if (!value.empty()) {
-      response.setHTTPHeaderField(StdStringToWebString(name),
-                                  StdStringToWebString(value));
+      response.setHTTPHeaderField(WebString::fromUTF8(name),
+                                  WebString::fromUTF8(value));
     }
   }
   // Send the response!
@@ -255,8 +254,8 @@ size_t MultipartResponseDelegate::FindBoundary() {
 bool MultipartResponseDelegate::ReadMultipartBoundary(
     const WebURLResponse& response,
     std::string* multipart_boundary) {
-  std::string content_type = WebStringToStdString(
-      response.httpHeaderField(WebString::fromUTF8("Content-Type")));
+  std::string content_type =
+      response.httpHeaderField(WebString::fromUTF8("Content-Type")).utf8();
 
   size_t boundary_start_offset = content_type.find("boundary=");
   if (boundary_start_offset == std::wstring::npos) {
@@ -286,8 +285,8 @@ bool MultipartResponseDelegate::ReadContentRanges(
     int* content_range_lower_bound,
     int* content_range_upper_bound) {
 
-  std::string content_range = WebStringToStdString(
-      response.httpHeaderField(WebString::fromUTF8("Content-Range")));
+  std::string content_range =
+      response.httpHeaderField(WebString::fromUTF8("Content-Range")).utf8();
 
   size_t byte_range_lower_bound_start_offset = content_range.find(" ");
   if (byte_range_lower_bound_start_offset == std::string::npos) {

@@ -5,14 +5,13 @@
 // This file provides the implementaiton of the password manager's autocomplete
 // component.
 
-#include "base/string_util.h"
+#include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
+#include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
-#include "webkit/glue/glue_util.h"
-#include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
 using namespace WebKit;
 
@@ -20,7 +19,7 @@ namespace webkit_glue {
 
 WebInputElementDelegate::WebInputElementDelegate() {
 }
-    
+
 WebInputElementDelegate::WebInputElementDelegate(WebInputElement& element)
     : element_(element) {
 }
@@ -49,7 +48,7 @@ void WebInputElementDelegate::RefreshAutofillPopup(
     int default_suggestion_index) {
   WebView* webview = element_.frame()->view();
   if (webview)
-    webview->applyAutofillSuggestions(element_, suggestions, 0);  
+    webview->applyAutofillSuggestions(element_, suggestions, 0);
 }
 
 

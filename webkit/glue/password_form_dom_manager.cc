@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/glue/password_form_dom_manager.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPasswordFormData.h"
-#include "webkit/glue/glue_util.h"
-#include "webkit/glue/password_form_dom_manager.h"
 
 using WebKit::WebFormElement;
 using WebKit::WebPasswordFormData;

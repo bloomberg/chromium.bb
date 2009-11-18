@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
 #include <string>
-
-#undef LOG
 
 #include "base/string_util.h"
 #include "net/url_request/url_request_unittest.h"

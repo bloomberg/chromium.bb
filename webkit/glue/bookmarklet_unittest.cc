@@ -2,16 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
-#undef LOG
-
-#include "testing/gtest/include/gtest/gtest.h"
-
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
 
 namespace {
