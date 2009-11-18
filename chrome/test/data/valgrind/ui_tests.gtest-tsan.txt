@@ -1,0 +1,3 @@
+# These tests hang under ThreadSanitizer on x64 bot,
+# see http://crbug.com/28115
+TabRestoreUITest.*
