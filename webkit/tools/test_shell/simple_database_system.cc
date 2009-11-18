@@ -44,8 +44,7 @@ base::PlatformFile SimpleDatabaseSystem::OpenFile(
       const string16& vfs_file_name, int desired_flags,
       base::PlatformFile* dir_handle) {
   base::PlatformFile file_handle = base::kInvalidPlatformFileValue;
-  FilePath file_name =
-      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
+  FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
   if (file_name.empty()) {
     VfsBackend::OpenTempFileInDirectory(
         db_tracker_->DatabaseDirectory(), desired_flags,
@@ -67,8 +66,7 @@ int SimpleDatabaseSystem::DeleteFile(
   const int kNumDeleteRetries = 3;
   int num_retries = 0;
   int error_code = SQLITE_OK;
-  FilePath file_name =
-      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
+  FilePath file_name = GetFullFilePathForVfsFile(vfs_file_name);
   do {
     error_code = VfsBackend::DeleteFile(file_name, sync_dir);
   } while ((++num_retries < kNumDeleteRetries) &&
@@ -80,12 +78,11 @@ int SimpleDatabaseSystem::DeleteFile(
 
 long SimpleDatabaseSystem::GetFileAttributes(const string16& vfs_file_name) {
   return VfsBackend::GetFileAttributes(
-      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name));
+      GetFullFilePathForVfsFile(vfs_file_name));
 }
 
 long long SimpleDatabaseSystem::GetFileSize(const string16& vfs_file_name) {
-  return VfsBackend::GetFileSize(
-      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name));
+  return VfsBackend::GetFileSize(GetFullFilePathForVfsFile(vfs_file_name));
 }
 
 void SimpleDatabaseSystem::DatabaseOpened(const string16& origin_identifier,
@@ -96,6 +93,8 @@ void SimpleDatabaseSystem::DatabaseOpened(const string16& origin_identifier,
   int64 space_available = 0;
   db_tracker_->DatabaseOpened(origin_identifier, database_name, description,
                               estimated_size, &database_size, &space_available);
+  SetFullFilePathsForVfsFile(origin_identifier, database_name);
+
   OnDatabaseSizeChanged(origin_identifier, database_name,
                         database_size, space_available);
 }
@@ -139,4 +138,27 @@ void SimpleDatabaseSystem::databaseClosed(const WebKit::WebDatabase& database) {
 void SimpleDatabaseSystem::ClearAllDatabases() {
   db_tracker_->CloseTrackerDatabaseAndClearCaches();
   file_util::Delete(db_tracker_->DatabaseDirectory(), true);
+  file_names_.clear();
+}
+
+void SimpleDatabaseSystem::SetFullFilePathsForVfsFile(
+    const string16& origin_identifier,
+    const string16& database_name) {
+  string16 vfs_file_name = origin_identifier + ASCIIToUTF16("/") +
+      database_name + ASCIIToUTF16("#");
+  FilePath file_name =
+      DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
+
+  AutoLock file_names_auto_lock(file_names_lock_);
+  file_names_[vfs_file_name] = file_name;
+  file_names_[vfs_file_name + ASCIIToUTF16("-journal")] =
+      FilePath::FromWStringHack(file_name.ToWStringHack() +
+                                ASCIIToWide("-journal"));
+}
+
+FilePath SimpleDatabaseSystem::GetFullFilePathForVfsFile(
+    const string16& vfs_file_name) {
+  AutoLock file_names_auto_lock(file_names_lock_);
+  DCHECK(file_names_.find(vfs_file_name) != file_names_.end());
+  return file_names_[vfs_file_name];
 }

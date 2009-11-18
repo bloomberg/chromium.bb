@@ -5,6 +5,9 @@
 #ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
 
+#include "base/file_path.h"
+#include "base/hash_tables.h"
+#include "base/lock.h"
 #include "base/platform_file.h"
 #include "base/ref_counted.h"
 #include "base/scoped_temp_dir.h"
@@ -51,11 +54,25 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
   void ClearAllDatabases();
 
  private:
+  // The calls that come from the database tracker run on the main thread.
+  // Therefore, we can only call DatabaseUtil::GetFullFilePathForVfsFile()
+  // on the main thread. However, the VFS calls run on the DB thread and
+  // they need to crack VFS file paths. To resolve this problem, we store
+  // a map of vfs_file_names to file_paths. The map is updated on the main
+  // thread on each DatabaseOpened() call that comes from the database
+  // tracker, and is read on the DB thread by each VFS call.
+  void SetFullFilePathsForVfsFile(const string16& origin_identifier,
+                                  const string16& database_name);
+  FilePath GetFullFilePathForVfsFile(const string16& vfs_file_name);
+
   static SimpleDatabaseSystem* instance_;
 
   ScopedTempDir temp_dir_;
 
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
+
+  Lock file_names_lock_;
+  base::hash_map<string16, FilePath> file_names_;
 };
 
 #endif  // WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
