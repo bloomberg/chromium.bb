@@ -63,7 +63,7 @@
         '<(DEPTH)/chrome/test/interactive_ui/view_event_test_base.h',
       ],
     }],  # OS=="linux"
-    ['target_arch!="x64"', {
+    ['target_arch!="x64" and target_arch!="arm"', {
       'dependencies': [
         # run time dependency
         '<(DEPTH)/webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',

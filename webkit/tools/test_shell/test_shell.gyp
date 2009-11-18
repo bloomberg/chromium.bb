@@ -123,7 +123,7 @@
       ],
       'conditions': [
         # http://code.google.com/p/chromium/issues/detail?id=18337
-        ['target_arch!="x64"', {
+        ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
             'npapi_test_plugin',
           ],
@@ -545,7 +545,7 @@
     },
   ],
   'conditions': [
-    ['target_arch!="x64"', {
+    ['target_arch!="x64" and target_arch!="arm"', {
       'targets': [
         {
           'target_name': 'npapi_test_plugin',
@@ -634,7 +634,7 @@
                 ],
               },
             }],
-            ['OS=="linux" and target_arch=="x64"', {
+            ['OS=="linux" and (target_arch=="x64" or target_arch=="arm")', {
               # Shared libraries need -fPIC on x86-64
               'cflags': ['-fPIC']
             }],
