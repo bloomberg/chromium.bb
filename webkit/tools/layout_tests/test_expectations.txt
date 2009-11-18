@@ -2765,7 +2765,7 @@ BUG18584 LINUX WIN : LayoutTests/animations/change-one-anim.html = FAIL PASS
 BUG18584 WIN DEBUG : LayoutTests/animations/play-state.html = FAIL PASS
 BUG18584 LINUX WIN : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 BUG18584 WIN DEBUG : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
-BUG18584 LINUX RELEASE : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
+BUG18584 LINUX : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
 
 // Flaky crashes
 BUG18656 MAC RELEASE : LayoutTests/fast/dom/Window/window-lookup-precedence.html = FAIL
@@ -3078,9 +3078,10 @@ BUG28034 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-den
 BUG28040 LINUX : LayoutTests/fast/body-propagation/overflow/004.html = PASS FAIL
 BUG28041 MAC : LayoutTests/storage/domstorage/clear.html = PASS FAIL
 BUG28044 WIN LINUX : LayoutTests/websocket/tests/frame-length-skip.html = PASS FAIL
-BUG28057 WIN : LayoutTests/dom/html/level2/html/HTMLElement95.html = CRASH
+BUG28057 WIN : LayoutTests/dom/html/level2/html/HTMLElement95.html = PASS CRASH
 BUG28074 MAC : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = TIMEOUT
-BUG28075 LINUX : LayoutTests/animations/combo-transform-translate+scale.html = FAIL
 BUG28077 MAC : LayoutTests/plugins/netscape-invoke-default.html = FAIL
 BUG28079 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = TIMEOUT
 BUG28080 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = TIMEOUT
+BUG28092 WIN : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = PASS FAIL
+BUG28095 MAC : LayoutTests/http/tests/cookies/simple-cookies-expired.html = PASS TIMEOUT
