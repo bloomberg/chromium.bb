@@ -48,3 +48,9 @@ env.ComponentProgram('mandel_nav.nexe', 'mandel_nav.c',
                      EXTRA_LIBS=['av', 'srpc', 'google_nacl_imc_c', 'pthread'])
 
 env.Publish('mandel_nav.nexe', 'run', mandel_nav_files)
+
+node = env.CommandValidatorTestNacl(
+    'mandel_nav_test_val.out',
+    image=[env.File('mandel_nav.nexe')],
+    )
+env.AddNodeToTestSuite(node, ['validator_tests', 'simple_tests'])

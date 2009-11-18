@@ -39,3 +39,9 @@ node = env.DemoSelLdrNacl('demo_earth', nexe, args=['-m8', '-f5000'])
 # Note: Make this available from top level
 Alias('demo_earth', node)
 
+
+node = env.CommandValidatorTestNacl(
+    'earth_test_val.out',
+    image=[env.File('earth.nexe')],
+    )
+env.AddNodeToTestSuite(node, ['validator_tests', 'simple_tests'])

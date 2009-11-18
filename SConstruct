@@ -241,6 +241,34 @@ else:
 pre_base_env.Replace(TARGET_ROOT = TARGET_ROOT)
 
 # ----------------------------------------------------------
+def CommandValidatorTestNacl(env, name, image,
+                             validator_flags=None,
+                             size='medium',
+                             **extra):
+  # TODO(robertm): fix this soon
+  if env['BUILD_SUBARCH'] == '64': return []
+
+  # TODO(robertm): fix this soon
+  if env['BUILD_ARCHITECTURE'] == 'arm': return []
+
+  # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
+  if 'TRUSTED_ENV' not in env:
+    print 'WARNING: no trusted env specified skipping test %s' % name
+    return []
+
+  if validator_flags is None:
+    validator_flags = []
+
+  t_env = env['TRUSTED_ENV']
+  # TODO(robertm): this may need more magic when we support arm
+  validator = t_env.File('${STAGING_DIR}/${PROGPREFIX}ncval${PROGSUFFIX}')
+
+  command = [validator] + validator_flags + [image]
+  return CommandTestAgainstGoldenOutput(env, name, command, size, **extra)
+
+pre_base_env.AddMethod(CommandValidatorTestNacl)
+
+# ----------------------------------------------------------
 EXTRA_ENV = [('XAUTHORITY', None),
              ('HOME', None),
              ('DISPLAY', None),
@@ -482,7 +510,7 @@ base_env.Append(
     'src/trusted/platform_qualify/build.scons',
     'src/trusted/sandbox/build.scons',
     # TODO: This file has an early out in case we are building for ARM
-    #       Needs to be cleaned up
+    #       but provides nchelper lib. Needs to be cleaned up
     'src/trusted/validator_x86/build.scons',
     'tests/python_version/build.scons',
     'tests/tools/build.scons',

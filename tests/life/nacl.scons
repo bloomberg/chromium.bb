@@ -35,7 +35,12 @@ nexe = env.ComponentProgram('life.nexe', 'life.cc',
 
 env.Publish('life.nexe', 'run', ['life.html'])
 
-
 node = env.DemoSelLdrNacl('demo_life', nexe)
 # Note: Make this available from top level
 Alias('demo_life', node)
+
+node = env.CommandValidatorTestNacl(
+    'life_test_val.out',
+    image=[env.File('life.nexe')],
+    )
+env.AddNodeToTestSuite(node, ['validator_tests', 'simple_tests'])
