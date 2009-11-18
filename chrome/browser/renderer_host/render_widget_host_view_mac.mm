@@ -575,26 +575,26 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   // http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/EventOverview/HandlingKeyEvents/HandlingKeyEvents.html
   // ). We only want to handle key equivalents if we're first responder.
   if ([[self window] firstResponder] != self)
-    return NO;	
+    return NO;
 
-  // If we return |NO| from this function, cocoa will send the key event to	
-  // the menu and only if the menu does not process the event to |keyDown:|. We	
-  // want to send the event to a renderer _before_ sending it to the menu, so	
-  // we need to return |YES| for all events that might be swallowed by the menu.	
-  // We do not return |YES| for every keypress because we don't get |keyDown:|	
-  // events for keys that we handle this way.	
-  NSUInteger modifierFlags = [theEvent modifierFlags];	
-  if ((modifierFlags & NSCommandKeyMask) == 0) {	
-    // Make sure the menu does not contain key equivalents that don't	
-    // contain cmd.	
-    DCHECK(![[NSApp mainMenu] performKeyEquivalent:theEvent]);	
-    return NO;	
+  // If we return |NO| from this function, cocoa will send the key event to
+  // the menu and only if the menu does not process the event to |keyDown:|. We
+  // want to send the event to a renderer _before_ sending it to the menu, so
+  // we need to return |YES| for all events that might be swallowed by the menu.
+  // We do not return |YES| for every keypress because we don't get |keyDown:|
+  // events for keys that we handle this way.
+  NSUInteger modifierFlags = [theEvent modifierFlags];
+  if ((modifierFlags & NSCommandKeyMask) == 0) {
+    // Make sure the menu does not contain key equivalents that don't
+    // contain cmd.
+    DCHECK(![[NSApp mainMenu] performKeyEquivalent:theEvent]);
+    return NO;
   }
 
-  // Command key combinations are sent via performKeyEquivalent rather than	
-  // keyDown:. We just forward this on and if WebCore doesn't want to handle	
-  // it, we let the TabContentsView figure out how to reinject it.	
-  [self keyEvent:theEvent wasKeyEquivalent:YES];	
+  // Command key combinations are sent via performKeyEquivalent rather than
+  // keyDown:. We just forward this on and if WebCore doesn't want to handle
+  // it, we let the TabContentsView figure out how to reinject it.
+  [self keyEvent:theEvent wasKeyEquivalent:YES];
   return YES;
 }
 
@@ -611,14 +611,14 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 }
 
 - (void)keyEvent:(NSEvent*)theEvent {
-  [self keyEvent:theEvent wasKeyEquivalent:NO];	
-}	
+  [self keyEvent:theEvent wasKeyEquivalent:NO];
+}
 
-- (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv {	
+- (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv {
   if (ignoreKeyEvents_)
     return;
 
-  DCHECK([theEvent type] != NSKeyDown ||	
+  DCHECK([theEvent type] != NSKeyDown ||
          !equiv == !([theEvent modifierFlags] & NSCommandKeyMask));
 
   scoped_nsobject<RenderWidgetHostViewCocoa> keepSelfAlive([self retain]);
