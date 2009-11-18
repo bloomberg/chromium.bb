@@ -1,11 +1,39 @@
                               Fontconfig
              Font configuration and customization library
-                             Version 2.7.3
-                              2009-09-08
+                              Version 2.8
+                              2009-11-18
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.8
+
+Behdad Esfahbod (24):
+      Clarify default confdir and cachedir better.
+      Move FcAlign to fcint.h
+      [fc-arch] Add FcAlign to arch signature
+      [int] Define MIN/MAX/ABS macros
+      Bump cache version up from 2 to 3 and fix FcLangSet caching/crash
+      Remove unused macros
+      [int] Remove fc_storage_type() in favor of direct access to v->type
+      [int] Remove fc_value_* macros that did nothing other than renaming
+      Enable automake silent rules
+      [int] Remove more unused macros
+      [xml] Remove unused code
+      [arch] Try to ensure proper FcLangSet alignment in arch
+      [lang] Fix serializing LangSet from older versions
+      Make sure fclang.h and fcarch.h are built
+      Remove bogus comment
+      [fc-glyphname] Cleanup Makefile.am
+      [src] Create fcglyphname.h automatically
+      [fc-glyphname] Rename internal arrays to prefix with _fc_
+      Clean up Makefile's a bit
+      [fc-glyphname] Remove Adobe glyphlist
+      [fc-case] Update CaseFolding.txt to Unicode 5.2.0
+      [fc-arch] Beautify the arch template
+      [fc-arch] Rename architecture names to better reflect what they are
+      Bump libtool revision in preparation for release
 
 2.7.3
 
