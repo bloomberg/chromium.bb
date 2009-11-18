@@ -13,3 +13,7 @@ ObserverListThreadSafeTest.CrossThreadNotifications
 
 # Hangs sometimes on linux, see http://crbug.com/22138
 ClipboardTest.*
+
+# These tests trigger a CHECK so they will leak memory.  They don't test
+# anything else, so just disable them on valgrind. Bug 28179.
+OutOfMemoryTest.*
