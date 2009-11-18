@@ -78,6 +78,7 @@
       'browser/extensions/page_action_apitest.cc',
       'browser/extensions/stubs_apitest.cc',
       'browser/gtk/bookmark_manager_browsertest.cc',
+      'browser/net/cookie_policy_browsertest.cc',
       'browser/net/ftp_browsertest.cc',
       'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
