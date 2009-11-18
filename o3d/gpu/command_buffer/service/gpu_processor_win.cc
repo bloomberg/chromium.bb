@@ -15,21 +15,18 @@ GPUProcessor::GPUProcessor(NPP npp, CommandBuffer* command_buffer)
       command_buffer_(command_buffer),
       commands_per_update_(100) {
   DCHECK(command_buffer);
-  gapi_.reset(new GPUGAPIInterface);
-  decoder_.reset(new command_buffer::o3d::GAPIDecoder(gapi_.get()));
+  decoder_.reset(gles2::GLES2Decoder::Create());
   decoder_->set_engine(this);
 }
 
 GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
-                           GPUGAPIInterface* gapi,
-                           command_buffer::o3d::GAPIDecoder* decoder,
-                           command_buffer::CommandParser* parser,
+                           gles2::GLES2Decoder* decoder,
+                           CommandParser* parser,
                            int commands_per_update)
     : npp_(NULL),
       command_buffer_(command_buffer),
       commands_per_update_(commands_per_update) {
   DCHECK(command_buffer);
-  gapi_.reset(gapi);
   decoder_.reset(decoder);
   parser_.reset(parser);
 }
@@ -38,7 +35,7 @@ bool GPUProcessor::Initialize(HWND handle) {
   DCHECK(handle);
 
   // Cannot reinitialize.
-  if (gapi_->hwnd() != NULL)
+  if (decoder_->hwnd() != NULL)
     return false;
 
   // Map the ring buffer and create the parser.
@@ -58,15 +55,15 @@ bool GPUProcessor::Initialize(HWND handle) {
   }
 
   // Initialize GAPI immediately if the window handle is valid.
-  gapi_->set_hwnd(handle);
-  return gapi_->Initialize();
+  decoder_->set_hwnd(handle);
+  return decoder_->Initialize();
 }
 
 void GPUProcessor::Destroy() {
   // Destroy GAPI if window handle has not already become invalid.
-  if (gapi_->hwnd()) {
-    gapi_->Destroy();
-    gapi_->set_hwnd(NULL);
+  if (decoder_->hwnd()) {
+    decoder_->Destroy();
+    decoder_->set_hwnd(NULL);
   }
 }
 

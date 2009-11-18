@@ -31,6 +31,9 @@
         'command_buffer/common/cmd_buffer_common.cc',
         'command_buffer/common/command_buffer.h',
         'command_buffer/common/command_buffer_mock.h',
+        'command_buffer/common/gles2_cmd_ids_autogen.h',
+        'command_buffer/common/gles2_cmd_ids.h',
+        'command_buffer/common/gles2_cmd_format_autogen.h',
         'command_buffer/common/gles2_cmd_format.cc',
         'command_buffer/common/gles2_cmd_format.h',
         'command_buffer/common/gles2_cmd_utils.cc',
@@ -75,7 +78,7 @@
     },
     {
       # Stub to expose gles2_implementation as a namespace rather than a class
-      # so GLES2 programs can work with no changes.
+      # so GLES2 C++ programs can work with no changes.
       'target_name': 'gles2_lib',
       'type': 'static_library',
       'dependencies': [
@@ -85,6 +88,20 @@
         'command_buffer/client/gles2_lib.cc',
         'command_buffer/client/gles2_lib.h',
         'command_buffer/client/gles2_lib_autogen.h',
+      ],
+    },
+    {
+      # Stub to expose gles2_implemenation in C instead of C++.
+      # so GLES2 programs can work with no changes.
+      'target_name': 'gles2_c_lib',
+      'type': 'static_library',
+      'dependencies': [
+        'gles2_implementation',
+      ],
+      'sources': [
+        'command_buffer/client/gles2_c_lib.h',
+        'command_buffer/client/gles2_c_lib.cc',
+        'command_buffer/client/gles2_c_lib_autogen.h',
       ],
     },
     {
@@ -141,9 +158,6 @@
     {
       'target_name': 'command_buffer_service',
       'type': 'static_library',
-      'defines': [
-        'GPU_SERVICE=1',
-      ],
       'include_dirs': [
         '..',
         '../..',
@@ -396,7 +410,7 @@
     {
       'target_name': 'gpu_all_unittests',
       'type': 'executable',
-        'dependencies': [
+      'dependencies': [
         '../../testing/gmock.gyp:gmock',
         '../../testing/gmock.gyp:gmockmain',
         '../../testing/gtest.gyp:gtest',

@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/np_utils/np_browser_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -46,13 +47,9 @@ class GPUProcessorTest : public testing::Test {
     ON_CALL(*command_buffer_.get(), GetSize())
       .WillByDefault(Return(kRingBufferEntries));
 
-#if defined(OS_WIN)
-    gapi_ = new GPUProcessor::GPUGAPIInterface;
-#endif
-
     async_api_.reset(new StrictMock<command_buffer::AsyncAPIMock>);
 
-    decoder_ = new command_buffer::o3d::GAPIDecoder(gapi_);
+    decoder_ = gles2::GLES2Decoder::Create();
 
     parser_ = new command_buffer::CommandParser(buffer_,
                                                 kRingBufferEntries,
@@ -62,7 +59,6 @@ class GPUProcessorTest : public testing::Test {
                                                 async_api_.get());
 
     processor_ = new GPUProcessor(command_buffer_.get(),
-                                  gapi_,
                                   decoder_,
                                   parser_,
                                   2);
@@ -80,14 +76,10 @@ class GPUProcessorTest : public testing::Test {
   scoped_ptr<MockCommandBuffer> command_buffer_;
   scoped_ptr<::base::SharedMemory> shared_memory_;
   int32* buffer_;
-  command_buffer::o3d::GAPIDecoder* decoder_;
+  command_buffer::gles2::GLES2Decoder* decoder_;
   command_buffer::CommandParser* parser_;
   scoped_ptr<command_buffer::AsyncAPIMock> async_api_;
   scoped_refptr<GPUProcessor> processor_;
-
-#if defined(OS_WIN)
-  GPUProcessor::GPUGAPIInterface* gapi_;
-#endif
 };
 
 TEST_F(GPUProcessorTest, ProcessorDoesNothingIfRingBufferIsEmpty) {

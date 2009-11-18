@@ -87,7 +87,7 @@ class BaseFencedAllocatorTest : public testing::Test {
                                                 api_mock_.get());
 
     scoped_refptr<GPUProcessor> gpu_processor(new GPUProcessor(
-        command_buffer_.get(), NULL, NULL, parser_, INT_MAX));
+        command_buffer_.get(), NULL, parser_, INT_MAX));
     command_buffer_->SetPutOffsetChangeCallback(NewCallback(
         gpu_processor.get(), &GPUProcessor::ProcessCommands));
 

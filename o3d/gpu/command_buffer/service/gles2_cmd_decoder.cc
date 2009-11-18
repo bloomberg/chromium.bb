@@ -4,51 +4,18 @@
 
 #include <vector>
 #include <string>
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include <map>
+#include <build/build_config.h>
+#include "base/scoped_ptr.h"
+#define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
+#include "gpu/command_buffer/service/gl_utils.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 namespace command_buffer {
 namespace gles2 {
-
-bool IdMap::AddMapping(GLuint client_id, GLuint service_id) {
-  std::pair<MapType::iterator, bool> result = id_map_.insert(
-      std::make_pair(client_id, service_id));
-  return result.second;
-}
-
-bool IdMap::RemoveMapping(GLuint client_id, GLuint service_id) {
-  MapType::iterator iter = id_map_.find(client_id);
-  if (iter != id_map_.end() && iter->second == service_id) {
-    id_map_.erase(iter);
-    return true;
-  }
-  return false;
-}
-
-bool IdMap::GetServiceId(GLuint client_id, GLuint* service_id) {
-  DCHECK(service_id);
-  MapType::iterator iter = id_map_.find(client_id);
-  if (iter != id_map_.end()) {
-    *service_id = iter->second;
-    return true;
-  }
-  return false;
-}
-
-bool IdMap::GetClientId(GLuint service_id, GLuint* client_id) {
-  DCHECK(client_id);
-  MapType::iterator end(id_map_.end());
-  for (MapType::iterator iter(id_map_.begin());
-       iter != end;
-       ++iter) {
-    if (iter->second == service_id) {
-      *client_id = iter->first;
-      return true;
-    }
-  }
-  return false;
-}
 
 namespace {
 
@@ -102,15 +69,15 @@ const CommandInfo g_command_info[] = {
 
 // These commands convert from c calls to local os calls.
 void GLGenBuffersHelper(GLsizei n, GLuint* ids) {
-  glGenBuffers(n, ids);
+  glGenBuffersARB(n, ids);
 }
 
 void GLGenFramebuffersHelper(GLsizei n, GLuint* ids) {
-  glGenFramebuffers(n, ids);
+  glGenFramebuffersEXT(n, ids);
 }
 
 void GLGenRenderbuffersHelper(GLsizei n, GLuint* ids) {
-  glGenRenderbuffers(n, ids);
+  glGenRenderbuffersEXT(n, ids);
 }
 
 void GLGenTexturesHelper(GLsizei n, GLuint* ids) {
@@ -118,15 +85,15 @@ void GLGenTexturesHelper(GLsizei n, GLuint* ids) {
 }
 
 void GLDeleteBuffersHelper(GLsizei n, GLuint* ids) {
-  glDeleteBuffers(n, ids);
+  glDeleteBuffersARB(n, ids);
 }
 
 void GLDeleteFramebuffersHelper(GLsizei n, GLuint* ids) {
-  glDeleteFramebuffers(n, ids);
+  glDeleteFramebuffersEXT(n, ids);
 }
 
 void GLDeleteRenderbuffersHelper(GLsizei n, GLuint* ids) {
-  glDeleteRenderbuffers(n, ids);
+  glDeleteRenderbuffersEXT(n, ids);
 }
 
 void GLDeleteTexturesHelper(GLsizei n, GLuint* ids) {
@@ -136,19 +103,507 @@ void GLDeleteTexturesHelper(GLsizei n, GLuint* ids) {
 }  // anonymous namespace.
 
 GLES2Decoder::GLES2Decoder()
-    : util_(0),  // TODO(gman): Set to actual num compress texture formats.
+#ifdef OS_LINUX
+    : window_(NULL) {
+#endif
+#ifdef OS_WIN
+    : hwnd_(NULL) {
+#endif
+}
+
+// This class maps one set of ids to another.
+class IdMap {
+ public:
+  // Maps a client_id to a service_id. Return false if the client_id or
+  // service_id are already mapped to something else.
+  bool AddMapping(GLuint client_id, GLuint service_id);
+
+  // Unmaps a pair of ids. Returns false if the pair were not previously mapped.
+  bool RemoveMapping(GLuint client_id, GLuint service_id);
+
+  // Gets the corresponding service_id for the given client_id.
+  // Returns false if there is no corresponding service_id.
+  bool GetServiceId(GLuint client_id, GLuint* service_id);
+
+  // Gets the corresponding client_id for the given service_id.
+  // Returns false if there is no corresponding client_id.
+  bool GetClientId(GLuint service_id, GLuint* client_id);
+
+ private:
+  // TODO(gman): Replace with faster implementation.
+  typedef std::map<GLuint, GLuint> MapType;
+  MapType id_map_;
+};
+
+bool IdMap::AddMapping(GLuint client_id, GLuint service_id) {
+  std::pair<MapType::iterator, bool> result = id_map_.insert(
+      std::make_pair(client_id, service_id));
+  return result.second;
+}
+
+bool IdMap::RemoveMapping(GLuint client_id, GLuint service_id) {
+  MapType::iterator iter = id_map_.find(client_id);
+  if (iter != id_map_.end() && iter->second == service_id) {
+    id_map_.erase(iter);
+    return true;
+  }
+  return false;
+}
+
+bool IdMap::GetServiceId(GLuint client_id, GLuint* service_id) {
+  DCHECK(service_id);
+  MapType::iterator iter = id_map_.find(client_id);
+  if (iter != id_map_.end()) {
+    *service_id = iter->second;
+    return true;
+  }
+  return false;
+}
+
+bool IdMap::GetClientId(GLuint service_id, GLuint* client_id) {
+  DCHECK(client_id);
+  MapType::iterator end(id_map_.end());
+  for (MapType::iterator iter(id_map_.begin());
+       iter != end;
+       ++iter) {
+    if (iter->second == service_id) {
+      *client_id = iter->first;
+      return true;
+    }
+  }
+  return false;
+}
+
+// This class implements GLES2Decoder so we don't have to expose all the GLES2
+// cmd stuff to outside this class.
+class GLES2DecoderImpl : public GLES2Decoder {
+ public:
+  GLES2DecoderImpl();
+
+  // Overridden from AsyncAPIInterface.
+  virtual ParseError DoCommand(unsigned int command,
+                               unsigned int arg_count,
+                               const void* args);
+
+  // Overridden from AsyncAPIInterface.
+  virtual const char* GetCommandName(unsigned int command_id) const;
+
+  // Overridden from GLES2Decoder.
+  virtual bool Initialize();
+
+  // Overridden from GLES2Decoder.
+  virtual void Destroy();
+
+ private:
+  bool InitPlatformSpecific();
+  bool InitGlew();
+
+  // Typed version of GetAddressAndCheckSize.
+  template <typename T>
+  T GetSharedMemoryAs(unsigned int shm_id, unsigned int offset,
+                      unsigned int size) {
+    return static_cast<T>(GetAddressAndCheckSize(shm_id, offset, size));
+  }
+
+  // Template to help call glGenXXX functions.
+  template <void gl_gen_function(GLsizei, GLuint*)>
+  bool GenGLObjects(GLsizei n, const GLuint* client_ids) {
+    // TODO(gman): Verify client ids are unused.
+    scoped_array<GLuint>temp(new GLuint[n]);
+    gl_gen_function(n, temp.get());
+    // TODO(gman): check for success before copying results.
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      if (!id_map_.AddMapping(client_ids[ii], temp[ii])) {
+        // TODO(gman): fail.
+      }
+    }
+    return true;
+  }
+
+  // Template to help call glDeleteXXX functions.
+  template <void gl_delete_function(GLsizei, GLuint*)>
+  bool DeleteGLObjects(GLsizei n, const GLuint* client_ids) {
+    scoped_array<GLuint>temp(new GLuint[n]);
+    // TODO(gman): check for success before copying results.
+    for (GLsizei ii = 0; ii < n; ++ii) {
+      if (id_map_.GetServiceId(client_ids[ii], &temp[ii])) {
+        id_map_.RemoveMapping(client_ids[ii], temp[ii]);
+      } else {
+        temp[ii] = 0;
+      }
+    }
+    gl_delete_function(n, temp.get());
+    return true;
+  }
+
+  // Wrapper for glCreateProgram
+  void CreateProgramHelper(GLuint client_id);
+
+  // Wrapper for glCreateShader
+  void CreateShaderHelper(GLenum type, GLuint client_id);
+
+  // Wrapper for glBindBuffer since we need to track the current targets.
+  void DoBindBuffer(GLenum target, GLuint buffer);
+
+  // Wrapper for glDeleteProgram.
+  void DoDeleteProgram(GLuint program);
+
+  // Wrapper for glDeleteShader.
+  void DoDeleteShader(GLuint shader);
+
+  // Generate a member function prototype for each command in an automated and
+  // typesafe way.
+  #define GLES2_CMD_OP(name) \
+     ParseError Handle ## name(             \
+       unsigned int arg_count,              \
+       const gles2::name& args);            \
+
+  GLES2_COMMAND_LIST(GLES2_CMD_OP)
+
+  #undef GLES2_CMD_OP
+
+  // Map of client ids to GL ids.
+  IdMap id_map_;
+  GLES2Util util_;
+
+  // pack alignment as last set by glPixelStorei
+  GLint pack_alignment_;
+
+  // unpack alignment as last set by glPixelStorei
+  GLint unpack_alignment_;
+
+  // The currently bound array buffer. If this is 0 it is illegal to call
+  // glVertexAttribPointer.
+  GLuint bound_array_buffer_;
+
+  // The currently bound element array buffer. If this is 0 it is illegal
+  // to call glDrawElements.
+  GLuint bound_element_array_buffer_;
+
+#if defined(OS_WIN)
+  HDC device_context_;
+  HGLRC gl_context_;
+#endif
+
+  bool anti_aliased_;
+
+  DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
+};
+
+GLES2Decoder* GLES2Decoder::Create() {
+  return new GLES2DecoderImpl();
+}
+
+GLES2DecoderImpl::GLES2DecoderImpl()
+    : GLES2Decoder(),
+      util_(0),  // TODO(gman): Set to actual num compress texture formats.
       pack_alignment_(4),
       unpack_alignment_(4),
       bound_array_buffer_(0),
-      bound_element_array_buffer_(0) {
+      bound_element_array_buffer_(0),
+#ifdef OS_WIN
+      device_context_(NULL),
+      gl_context_(NULL),
+#endif
+      anti_aliased_(false) {
 }
 
-// Decode command with its arguments, and call the corresponding GAPIInterface
-// method.
+bool GLES2DecoderImpl::Initialize() {
+  if (!InitPlatformSpecific())
+    return false;
+  if (!InitGlew())
+    return false;
+  CHECK_GL_ERROR();
+
+  //glBindFramebuffer(0, 0);
+  return true;
+}
+
+#if defined(OS_WIN)
+namespace {
+
+const PIXELFORMATDESCRIPTOR kPixelFormatDescriptor = {
+  sizeof(kPixelFormatDescriptor),    // Size of structure.
+  1,                       // Default version.
+  PFD_DRAW_TO_WINDOW |     // Window drawing support.
+  PFD_SUPPORT_OPENGL |     // OpenGL support.
+  PFD_DOUBLEBUFFER,        // Double buffering support (not stereo).
+  PFD_TYPE_RGBA,           // RGBA color mode (not indexed).
+  24,                      // 24 bit color mode.
+  0, 0, 0, 0, 0, 0,        // Don't set RGB bits & shifts.
+  8, 0,                    // 8 bit alpha
+  0,                       // No accumulation buffer.
+  0, 0, 0, 0,              // Ignore accumulation bits.
+  24,                      // 24 bit z-buffer size.
+  8,                       // 8-bit stencil buffer.
+  0,                       // No aux buffer.
+  PFD_MAIN_PLANE,          // Main drawing plane (not overlay).
+  0,                       // Reserved.
+  0, 0, 0,                 // Layer masks ignored.
+};
+
+LRESULT CALLBACK IntermediateWindowProc(HWND window,
+                                        UINT message,
+                                        WPARAM w_param,
+                                        LPARAM l_param) {
+  return ::DefWindowProc(window, message, w_param, l_param);
+}
+
+// Helper routine that returns the highest quality pixel format supported on
+// the current platform.  Returns true upon success.
+bool GetWindowsPixelFormat(HWND window,
+                           bool anti_aliased,
+                           int* pixel_format) {
+  // We must initialize a GL context before we can determine the multi-sampling
+  // supported on the current hardware, so we create an intermediate window
+  // and context here.
+  HINSTANCE module_handle;
+  if (!::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT |
+                           GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS,
+                           reinterpret_cast<wchar_t*>(IntermediateWindowProc),
+                           &module_handle)) {
+    return false;
+  }
+
+  WNDCLASS intermediate_class;
+  intermediate_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+  intermediate_class.lpfnWndProc = IntermediateWindowProc;
+  intermediate_class.cbClsExtra = 0;
+  intermediate_class.cbWndExtra = 0;
+  intermediate_class.hInstance = module_handle;
+  intermediate_class.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+  intermediate_class.hCursor = LoadCursor(NULL, IDC_ARROW);
+  intermediate_class.hbrBackground = NULL;
+  intermediate_class.lpszMenuName = NULL;
+  intermediate_class.lpszClassName = L"Intermediate GL Window";
+
+  ATOM class_registration = ::RegisterClass(&intermediate_class);
+  if (!class_registration) {
+    return false;
+  }
+
+  HWND intermediate_window = ::CreateWindow(
+      reinterpret_cast<wchar_t*>(class_registration),
+      L"",
+      WS_OVERLAPPEDWINDOW,
+      0, 0,
+      CW_USEDEFAULT, CW_USEDEFAULT,
+      NULL,
+      NULL,
+      NULL,
+      NULL);
+
+  if (!intermediate_window) {
+    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                      module_handle);
+    return false;
+  }
+
+  HDC intermediate_dc = ::GetDC(intermediate_window);
+  int format_index = ::ChoosePixelFormat(intermediate_dc,
+                                         &kPixelFormatDescriptor);
+  if (format_index == 0) {
+    DLOG(ERROR) << "Unable to get the pixel format for GL context.";
+    ::ReleaseDC(intermediate_window, intermediate_dc);
+    ::DestroyWindow(intermediate_window);
+    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                      module_handle);
+    return false;
+  }
+  if (!::SetPixelFormat(intermediate_dc, format_index,
+                        &kPixelFormatDescriptor)) {
+    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+    ::ReleaseDC(intermediate_window, intermediate_dc);
+    ::DestroyWindow(intermediate_window);
+    ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                      module_handle);
+    return false;
+  }
+
+  // Store the pixel format without multisampling.
+  *pixel_format = format_index;
+  HGLRC gl_context = ::wglCreateContext(intermediate_dc);
+  if (::wglMakeCurrent(intermediate_dc, gl_context)) {
+    // GL context was successfully created and applied to the window's DC.
+    // Startup GLEW, the GL extensions wrangler.
+    GLenum glew_error = ::glewInit();
+    if (glew_error == GLEW_OK) {
+      DLOG(INFO) << "Initialized GLEW " << ::glewGetString(GLEW_VERSION);
+    } else {
+      DLOG(ERROR) << "Unable to initialise GLEW : "
+                  << ::glewGetErrorString(glew_error);
+      ::wglMakeCurrent(intermediate_dc, NULL);
+      ::wglDeleteContext(gl_context);
+      ::ReleaseDC(intermediate_window, intermediate_dc);
+      ::DestroyWindow(intermediate_window);
+      ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                        module_handle);
+      return false;
+    }
+
+    // If the multi-sample extensions are present, query the api to determine
+    // the pixel format.
+    if (anti_aliased && WGLEW_ARB_pixel_format && WGLEW_ARB_multisample) {
+      int pixel_attributes[] = {
+        WGL_SAMPLES_ARB, 4,
+        WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
+        WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
+        WGL_ACCELERATION_ARB, WGL_FULL_ACCELERATION_ARB,
+        WGL_COLOR_BITS_ARB, 24,
+        WGL_ALPHA_BITS_ARB, 8,
+        WGL_DEPTH_BITS_ARB, 24,
+        WGL_STENCIL_BITS_ARB, 8,
+        WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
+        WGL_SAMPLE_BUFFERS_ARB, GL_TRUE,
+        0, 0};
+
+      float pixel_attributes_f[] = {0, 0};
+      int msaa_pixel_format;
+      unsigned int num_formats;
+
+      // Query for the highest sampling rate supported, starting at 4x.
+      static const int kSampleCount[] = {4, 2};
+      static const int kNumSamples = 2;
+      for (int sample = 0; sample < kNumSamples; ++sample) {
+        pixel_attributes[1] = kSampleCount[sample];
+        if (GL_TRUE == ::wglChoosePixelFormatARB(intermediate_dc,
+                                                 pixel_attributes,
+                                                 pixel_attributes_f,
+                                                 1,
+                                                 &msaa_pixel_format,
+                                                 &num_formats)) {
+          *pixel_format = msaa_pixel_format;
+          break;
+        }
+      }
+    }
+  }
+
+  ::wglMakeCurrent(intermediate_dc, NULL);
+  ::wglDeleteContext(gl_context);
+  ::ReleaseDC(intermediate_window, intermediate_dc);
+  ::DestroyWindow(intermediate_window);
+  ::UnregisterClass(reinterpret_cast<wchar_t*>(class_registration),
+                    module_handle);
+  return true;
+}
+
+}  // anonymous namespace
+#endif
+
+bool GLES2DecoderImpl::InitPlatformSpecific() {
+#if defined(OS_WIN)
+  device_context_ = ::GetDC(hwnd());
+
+  int pixel_format;
+
+  if (!GetWindowsPixelFormat(hwnd(),
+                             anti_aliased_,
+                             &pixel_format)) {
+      DLOG(ERROR) << "Unable to determine optimal pixel format for GL context.";
+      return false;
+  }
+
+  if (!::SetPixelFormat(device_context_, pixel_format,
+                        &kPixelFormatDescriptor)) {
+    DLOG(ERROR) << "Unable to set the pixel format for GL context.";
+    return false;
+  }
+
+  gl_context_ = ::wglCreateContext(device_context_);
+  if (!gl_context_) {
+    DLOG(ERROR) << "Failed to create GL context.";
+    return false;
+  }
+
+  if (!::wglMakeCurrent(device_context_, gl_context_)) {
+    DLOG(ERROR) << "Unable to make gl context current.";
+    return false;
+  }
+#elif defined(OS_LINUX)
+  DCHECK(window());
+  if (!window()->Initialize())
+    return false;
+  if (!window()->MakeCurrent())
+    return false;
+#endif
+
+  return true;
+}
+
+bool GLES2DecoderImpl::InitGlew() {
+  DLOG(INFO) << "Initializing GL and GLEW for GLES2Decoder.";
+
+  GLenum glew_error = glewInit();
+  if (glew_error != GLEW_OK) {
+    DLOG(ERROR) << "Unable to initialise GLEW : "
+                << ::glewGetErrorString(glew_error);
+    return false;
+  }
+
+  // Check to see that we can use the OpenGL vertex attribute APIs
+  // TODO(petersont):  Return false if this check fails, but because some
+  // Intel hardware does not support OpenGL 2.0, yet does support all of the
+  // extensions we require, we only log an error.  A future CL should change
+  // this check to ensure that all of the extension strings we require are
+  // present.
+  if (!GLEW_VERSION_2_0) {
+    DLOG(ERROR) << "GL drivers do not have OpenGL 2.0 functionality.";
+  }
+
+  bool extensions_found = true;
+  if (!GLEW_ARB_vertex_buffer_object) {
+    // NOTE: Linux NVidia drivers claim to support OpenGL 2.0 when using
+    // indirect rendering (e.g. remote X), but it is actually lying. The
+    // ARB_vertex_buffer_object functions silently no-op (!) when using
+    // indirect rendering, leading to crashes. Fortunately, in that case, the
+    // driver claims to not support ARB_vertex_buffer_object, so fail in that
+    // case.
+    DLOG(ERROR) << "GL drivers do not support vertex buffer objects.";
+    extensions_found = false;
+  }
+  if (!GLEW_EXT_framebuffer_object) {
+    DLOG(ERROR) << "GL drivers do not support framebuffer objects.";
+    extensions_found = false;
+  }
+  // Check for necessary extensions
+  if (!GLEW_VERSION_2_0 && !GLEW_EXT_stencil_two_side) {
+    DLOG(ERROR) << "Two sided stencil extension missing.";
+    extensions_found = false;
+  }
+  if (!GLEW_VERSION_1_4 && !GLEW_EXT_blend_func_separate) {
+    DLOG(ERROR) <<"Separate blend func extension missing.";
+    extensions_found = false;
+  }
+  if (!GLEW_VERSION_2_0 && !GLEW_EXT_blend_equation_separate) {
+    DLOG(ERROR) << "Separate blend function extension missing.";
+    extensions_found = false;
+  }
+  if (!extensions_found)
+    return false;
+
+  return true;
+}
+
+void GLES2DecoderImpl::Destroy() {
+#ifdef OS_LINUX
+  DCHECK(window());
+  window()->Destroy();
+#endif
+}
+
+const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
+  if (command_id > kStartPoint && command_id < kNumCommands) {
+    return gles2::GetCommandName(static_cast<CommandId>(command_id));
+  }
+  return GetCommonCommandName(static_cast<cmd::CommandId>(command_id));
+}
+
+// Decode command with its arguments, and call the corresponding GL function.
 // Note: args is a pointer to the command buffer. As such, it could be changed
 // by a (malicious) client at any time, so if validation has to happen, it
 // should operate on a copy of them.
-parse_error::ParseError GLES2Decoder::DoCommand(
+parse_error::ParseError GLES2DecoderImpl::DoCommand(
     unsigned int command,
     unsigned int arg_count,
     const void* cmd_data) {
@@ -185,7 +640,7 @@ parse_error::ParseError GLES2Decoder::DoCommand(
 namespace command_buffer {
 namespace gles2 {
 
-void GLES2Decoder::CreateProgramHelper(GLuint client_id) {
+void GLES2DecoderImpl::CreateProgramHelper(GLuint client_id) {
   // TODO(gman): verify client_id is unused.
   GLuint service_id = glCreateProgram();
   if (service_id) {
@@ -193,7 +648,7 @@ void GLES2Decoder::CreateProgramHelper(GLuint client_id) {
   }
 }
 
-void GLES2Decoder::CreateShaderHelper(GLenum type, GLuint client_id) {
+void GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
   // TODO(gman): verify client_id is unused.
   GLuint service_id = glCreateShader(type);
   if (service_id) {
@@ -201,7 +656,7 @@ void GLES2Decoder::CreateShaderHelper(GLenum type, GLuint client_id) {
   }
 }
 
-void GLES2Decoder::DoBindBuffer(GLenum target, GLuint buffer) {
+void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint buffer) {
   switch (target) {
     case GL_ARRAY_BUFFER:
       bound_array_buffer_ = buffer;
@@ -215,7 +670,7 @@ void GLES2Decoder::DoBindBuffer(GLenum target, GLuint buffer) {
   glBindBuffer(target, buffer);
 }
 
-void GLES2Decoder::DoDeleteProgram(GLuint program) {
+void GLES2DecoderImpl::DoDeleteProgram(GLuint program) {
   GLuint service_id;
   if (id_map_.GetServiceId(program, &service_id)) {
     glDeleteProgram(service_id);
@@ -223,7 +678,7 @@ void GLES2Decoder::DoDeleteProgram(GLuint program) {
   }
 }
 
-void GLES2Decoder::DoDeleteShader(GLuint shader) {
+void GLES2DecoderImpl::DoDeleteShader(GLuint shader) {
   GLuint service_id;
   if (id_map_.GetServiceId(shader, &service_id)) {
     glDeleteProgram(service_id);
@@ -231,7 +686,7 @@ void GLES2Decoder::DoDeleteShader(GLuint shader) {
   }
 }
 
-parse_error::ParseError GLES2Decoder::HandleDrawElements(
+parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
     unsigned int arg_count, const gles2::DrawElements& c) {
   if (bound_element_array_buffer_ != 0) {
     GLenum mode = c.mode;
@@ -277,7 +732,7 @@ parse_error::ParseError ShaderSourceHelper(
 
 }  // anonymous namespace.
 
-parse_error::ParseError GLES2Decoder::HandleShaderSource(
+parse_error::ParseError GLES2DecoderImpl::HandleShaderSource(
     unsigned int arg_count, const gles2::ShaderSource& c) {
   GLuint shader = c.shader;
   GLsizei count = c.count;
@@ -293,7 +748,7 @@ parse_error::ParseError GLES2Decoder::HandleShaderSource(
       shader, count, reinterpret_cast<const char*>(data), data_size);
 }
 
-parse_error::ParseError GLES2Decoder::HandleShaderSourceImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleShaderSourceImmediate(
   unsigned int arg_count, const gles2::ShaderSourceImmediate& c) {
   GLuint shader = c.shader;
   GLsizei count = c.count;
@@ -310,7 +765,7 @@ parse_error::ParseError GLES2Decoder::HandleShaderSourceImmediate(
       shader, count, reinterpret_cast<const char*>(data), data_size);
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttribPointer(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     unsigned int arg_count, const gles2::VertexAttribPointer& c) {
   if (bound_array_buffer_ != 0) {
     GLuint indx = c.indx;
@@ -331,6 +786,60 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttribPointer(
     // TODO(gman): set our wrapped glGetError value to GL_INVALID_VALUE
     DCHECK(false);
   }
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleReadPixels(
+    unsigned int arg_count, const gles2::ReadPixels& c) {
+  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandlePixelStorei(
+    unsigned int arg_count, const gles2::PixelStorei& c) {
+  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetVertexAttribPointerv(
+    unsigned int arg_count, const gles2::GetVertexAttribPointerv& c) {
+  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetUniformiv(
+    unsigned int arg_count, const gles2::GetUniformiv& c) {
+  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetUniformfv(
+    unsigned int arg_count, const gles2::GetUniformfv& c) {
+  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
+    unsigned int arg_count, const gles2::GetShaderPrecisionFormat& c) {
+  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetAttachedShaders(
+    unsigned int arg_count, const gles2::GetAttachedShaders& c) {
+  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetActiveUniform(
+    unsigned int arg_count, const gles2::GetActiveUniform& c) {
+  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetActiveAttrib(
+    unsigned int arg_count, const gles2::GetActiveAttrib& c) {
+  // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }
 

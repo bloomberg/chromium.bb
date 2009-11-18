@@ -2,7 +2,7 @@
 
 // It is included by gles2_cmd_decoder.cc
 
-parse_error::ParseError GLES2Decoder::HandleActiveTexture(
+parse_error::ParseError GLES2DecoderImpl::HandleActiveTexture(
     unsigned int arg_count, const gles2::ActiveTexture& c) {
   GLenum texture = static_cast<GLenum>(c.texture);
   parse_error::ParseError result =
@@ -14,7 +14,7 @@ parse_error::ParseError GLES2Decoder::HandleActiveTexture(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleAttachShader(
+parse_error::ParseError GLES2DecoderImpl::HandleAttachShader(
     unsigned int arg_count, const gles2::AttachShader& c) {
   GLuint program = static_cast<GLuint>(c.program);
   GLuint shader = static_cast<GLuint>(c.shader);
@@ -27,7 +27,7 @@ parse_error::ParseError GLES2Decoder::HandleAttachShader(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBindAttribLocation(
+parse_error::ParseError GLES2DecoderImpl::HandleBindAttribLocation(
     unsigned int arg_count, const gles2::BindAttribLocation& c) {
   GLuint program = static_cast<GLuint>(c.program);
   GLuint index = static_cast<GLuint>(c.index);
@@ -44,7 +44,7 @@ parse_error::ParseError GLES2Decoder::HandleBindAttribLocation(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBindAttribLocationImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleBindAttribLocationImmediate(
     unsigned int arg_count, const gles2::BindAttribLocationImmediate& c) {
   GLuint program = static_cast<GLuint>(c.program);
   GLuint index = static_cast<GLuint>(c.index);
@@ -63,7 +63,7 @@ parse_error::ParseError GLES2Decoder::HandleBindAttribLocationImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBindBuffer(
+parse_error::ParseError GLES2DecoderImpl::HandleBindBuffer(
     unsigned int arg_count, const gles2::BindBuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLuint buffer = static_cast<GLuint>(c.buffer);
@@ -76,7 +76,7 @@ parse_error::ParseError GLES2Decoder::HandleBindBuffer(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBindFramebuffer(
+parse_error::ParseError GLES2DecoderImpl::HandleBindFramebuffer(
     unsigned int arg_count, const gles2::BindFramebuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLuint framebuffer = static_cast<GLuint>(c.framebuffer);
@@ -85,11 +85,11 @@ parse_error::ParseError GLES2Decoder::HandleBindFramebuffer(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glBindFramebuffer(target, framebuffer);
+  glBindFramebufferEXT(target, framebuffer);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBindRenderbuffer(
+parse_error::ParseError GLES2DecoderImpl::HandleBindRenderbuffer(
     unsigned int arg_count, const gles2::BindRenderbuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLuint renderbuffer = static_cast<GLuint>(c.renderbuffer);
@@ -98,11 +98,11 @@ parse_error::ParseError GLES2Decoder::HandleBindRenderbuffer(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glBindRenderbuffer(target, renderbuffer);
+  glBindRenderbufferEXT(target, renderbuffer);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBindTexture(
+parse_error::ParseError GLES2DecoderImpl::HandleBindTexture(
     unsigned int arg_count, const gles2::BindTexture& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLuint texture = static_cast<GLuint>(c.texture);
@@ -115,7 +115,7 @@ parse_error::ParseError GLES2Decoder::HandleBindTexture(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBlendColor(
+parse_error::ParseError GLES2DecoderImpl::HandleBlendColor(
     unsigned int arg_count, const gles2::BlendColor& c) {
   GLclampf red = static_cast<GLclampf>(c.red);
   GLclampf green = static_cast<GLclampf>(c.green);
@@ -130,7 +130,7 @@ parse_error::ParseError GLES2Decoder::HandleBlendColor(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBlendEquation(
+parse_error::ParseError GLES2DecoderImpl::HandleBlendEquation(
     unsigned int arg_count, const gles2::BlendEquation& c) {
   GLenum mode = static_cast<GLenum>(c.mode);
   parse_error::ParseError result =
@@ -142,7 +142,7 @@ parse_error::ParseError GLES2Decoder::HandleBlendEquation(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBlendEquationSeparate(
+parse_error::ParseError GLES2DecoderImpl::HandleBlendEquationSeparate(
     unsigned int arg_count, const gles2::BlendEquationSeparate& c) {
   GLenum modeRGB = static_cast<GLenum>(c.modeRGB);
   GLenum modeAlpha = static_cast<GLenum>(c.modeAlpha);
@@ -155,7 +155,7 @@ parse_error::ParseError GLES2Decoder::HandleBlendEquationSeparate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBlendFunc(
+parse_error::ParseError GLES2DecoderImpl::HandleBlendFunc(
     unsigned int arg_count, const gles2::BlendFunc& c) {
   GLenum sfactor = static_cast<GLenum>(c.sfactor);
   GLenum dfactor = static_cast<GLenum>(c.dfactor);
@@ -168,7 +168,7 @@ parse_error::ParseError GLES2Decoder::HandleBlendFunc(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBlendFuncSeparate(
+parse_error::ParseError GLES2DecoderImpl::HandleBlendFuncSeparate(
     unsigned int arg_count, const gles2::BlendFuncSeparate& c) {
   GLenum srcRGB = static_cast<GLenum>(c.srcRGB);
   GLenum dstRGB = static_cast<GLenum>(c.dstRGB);
@@ -184,7 +184,7 @@ parse_error::ParseError GLES2Decoder::HandleBlendFuncSeparate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBufferData(
+parse_error::ParseError GLES2DecoderImpl::HandleBufferData(
     unsigned int arg_count, const gles2::BufferData& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
@@ -203,7 +203,7 @@ parse_error::ParseError GLES2Decoder::HandleBufferData(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBufferDataImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleBufferDataImmediate(
     unsigned int arg_count, const gles2::BufferDataImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
@@ -219,7 +219,7 @@ parse_error::ParseError GLES2Decoder::HandleBufferDataImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBufferSubData(
+parse_error::ParseError GLES2DecoderImpl::HandleBufferSubData(
     unsigned int arg_count, const gles2::BufferSubData& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLintptr offset = static_cast<GLintptr>(c.offset);
@@ -238,7 +238,7 @@ parse_error::ParseError GLES2Decoder::HandleBufferSubData(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleBufferSubDataImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleBufferSubDataImmediate(
     unsigned int arg_count, const gles2::BufferSubDataImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLintptr offset = static_cast<GLintptr>(c.offset);
@@ -255,7 +255,7 @@ parse_error::ParseError GLES2Decoder::HandleBufferSubDataImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCheckFramebufferStatus(
+parse_error::ParseError GLES2DecoderImpl::HandleCheckFramebufferStatus(
     unsigned int arg_count, const gles2::CheckFramebufferStatus& c) {
   GLenum target = static_cast<GLenum>(c.target);
   parse_error::ParseError result =
@@ -263,11 +263,11 @@ parse_error::ParseError GLES2Decoder::HandleCheckFramebufferStatus(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glCheckFramebufferStatus(target);
+  glCheckFramebufferStatusEXT(target);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleClear(
+parse_error::ParseError GLES2DecoderImpl::HandleClear(
     unsigned int arg_count, const gles2::Clear& c) {
   GLbitfield mask = static_cast<GLbitfield>(c.mask);
   parse_error::ParseError result =
@@ -279,7 +279,7 @@ parse_error::ParseError GLES2Decoder::HandleClear(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleClearColor(
+parse_error::ParseError GLES2DecoderImpl::HandleClearColor(
     unsigned int arg_count, const gles2::ClearColor& c) {
   GLclampf red = static_cast<GLclampf>(c.red);
   GLclampf green = static_cast<GLclampf>(c.green);
@@ -294,7 +294,7 @@ parse_error::ParseError GLES2Decoder::HandleClearColor(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleClearDepthf(
+parse_error::ParseError GLES2DecoderImpl::HandleClearDepthf(
     unsigned int arg_count, const gles2::ClearDepthf& c) {
   GLclampf depth = static_cast<GLclampf>(c.depth);
   parse_error::ParseError result =
@@ -306,7 +306,7 @@ parse_error::ParseError GLES2Decoder::HandleClearDepthf(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleClearStencil(
+parse_error::ParseError GLES2DecoderImpl::HandleClearStencil(
     unsigned int arg_count, const gles2::ClearStencil& c) {
   GLint s = static_cast<GLint>(c.s);
   parse_error::ParseError result =
@@ -318,7 +318,7 @@ parse_error::ParseError GLES2Decoder::HandleClearStencil(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleColorMask(
+parse_error::ParseError GLES2DecoderImpl::HandleColorMask(
     unsigned int arg_count, const gles2::ColorMask& c) {
   GLboolean red = static_cast<GLboolean>(c.red);
   GLboolean green = static_cast<GLboolean>(c.green);
@@ -333,7 +333,7 @@ parse_error::ParseError GLES2Decoder::HandleColorMask(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCompileShader(
+parse_error::ParseError GLES2DecoderImpl::HandleCompileShader(
     unsigned int arg_count, const gles2::CompileShader& c) {
   GLuint shader = static_cast<GLuint>(c.shader);
   parse_error::ParseError result =
@@ -345,7 +345,7 @@ parse_error::ParseError GLES2Decoder::HandleCompileShader(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCompressedTexImage2D(
+parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2D(
     unsigned int arg_count, const gles2::CompressedTexImage2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -371,7 +371,7 @@ parse_error::ParseError GLES2Decoder::HandleCompressedTexImage2D(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCompressedTexImage2DImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
     unsigned int arg_count, const gles2::CompressedTexImage2DImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -394,7 +394,7 @@ parse_error::ParseError GLES2Decoder::HandleCompressedTexImage2DImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCompressedTexSubImage2D(
+parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexSubImage2D(
     unsigned int arg_count, const gles2::CompressedTexSubImage2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -421,7 +421,8 @@ parse_error::ParseError GLES2Decoder::HandleCompressedTexSubImage2D(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCompressedTexSubImage2DImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexSubImage2DImmediate(
+    
     unsigned int arg_count, const gles2::CompressedTexSubImage2DImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -445,7 +446,7 @@ parse_error::ParseError GLES2Decoder::HandleCompressedTexSubImage2DImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCopyTexImage2D(
+parse_error::ParseError GLES2DecoderImpl::HandleCopyTexImage2D(
     unsigned int arg_count, const gles2::CopyTexImage2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -466,7 +467,7 @@ parse_error::ParseError GLES2Decoder::HandleCopyTexImage2D(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCopyTexSubImage2D(
+parse_error::ParseError GLES2DecoderImpl::HandleCopyTexSubImage2D(
     unsigned int arg_count, const gles2::CopyTexSubImage2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -487,7 +488,7 @@ parse_error::ParseError GLES2Decoder::HandleCopyTexSubImage2D(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCreateProgram(
+parse_error::ParseError GLES2DecoderImpl::HandleCreateProgram(
     unsigned int arg_count, const gles2::CreateProgram& c) {
   uint32 client_id = c.client_id;
   parse_error::ParseError result =
@@ -499,7 +500,7 @@ parse_error::ParseError GLES2Decoder::HandleCreateProgram(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCreateShader(
+parse_error::ParseError GLES2DecoderImpl::HandleCreateShader(
     unsigned int arg_count, const gles2::CreateShader& c) {
   GLenum type = static_cast<GLenum>(c.type);
   uint32 client_id = c.client_id;
@@ -512,7 +513,7 @@ parse_error::ParseError GLES2Decoder::HandleCreateShader(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleCullFace(
+parse_error::ParseError GLES2DecoderImpl::HandleCullFace(
     unsigned int arg_count, const gles2::CullFace& c) {
   GLenum mode = static_cast<GLenum>(c.mode);
   parse_error::ParseError result =
@@ -524,7 +525,7 @@ parse_error::ParseError GLES2Decoder::HandleCullFace(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteBuffers(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteBuffers(
     unsigned int arg_count, const gles2::DeleteBuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   const GLuint* buffers = GetSharedMemoryAs<const GLuint*>(
@@ -538,7 +539,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteBuffers(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteBuffersImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteBuffersImmediate(
     unsigned int arg_count, const gles2::DeleteBuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   const GLuint* buffers = GetImmediateDataAs<const GLuint*>(c);
@@ -551,7 +552,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteBuffersImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteFramebuffers(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteFramebuffers(
     unsigned int arg_count, const gles2::DeleteFramebuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   const GLuint* framebuffers = GetSharedMemoryAs<const GLuint*>(
@@ -566,7 +567,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteFramebuffers(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteFramebuffersImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
     unsigned int arg_count, const gles2::DeleteFramebuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   const GLuint* framebuffers = GetImmediateDataAs<const GLuint*>(c);
@@ -579,7 +580,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteFramebuffersImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteProgram(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteProgram(
     unsigned int arg_count, const gles2::DeleteProgram& c) {
   GLuint program = static_cast<GLuint>(c.program);
   parse_error::ParseError result =
@@ -591,7 +592,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteProgram(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteRenderbuffers(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteRenderbuffers(
     unsigned int arg_count, const gles2::DeleteRenderbuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   const GLuint* renderbuffers = GetSharedMemoryAs<const GLuint*>(
@@ -606,7 +607,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteRenderbuffers(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteRenderbuffersImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
     unsigned int arg_count, const gles2::DeleteRenderbuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   const GLuint* renderbuffers = GetImmediateDataAs<const GLuint*>(c);
@@ -619,7 +620,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteRenderbuffersImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteShader(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteShader(
     unsigned int arg_count, const gles2::DeleteShader& c) {
   GLuint shader = static_cast<GLuint>(c.shader);
   parse_error::ParseError result =
@@ -631,7 +632,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteShader(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteTextures(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteTextures(
     unsigned int arg_count, const gles2::DeleteTextures& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   const GLuint* textures = GetSharedMemoryAs<const GLuint*>(
@@ -645,7 +646,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteTextures(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDeleteTexturesImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleDeleteTexturesImmediate(
     unsigned int arg_count, const gles2::DeleteTexturesImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   const GLuint* textures = GetImmediateDataAs<const GLuint*>(c);
@@ -658,7 +659,7 @@ parse_error::ParseError GLES2Decoder::HandleDeleteTexturesImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDepthFunc(
+parse_error::ParseError GLES2DecoderImpl::HandleDepthFunc(
     unsigned int arg_count, const gles2::DepthFunc& c) {
   GLenum func = static_cast<GLenum>(c.func);
   parse_error::ParseError result =
@@ -670,7 +671,7 @@ parse_error::ParseError GLES2Decoder::HandleDepthFunc(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDepthMask(
+parse_error::ParseError GLES2DecoderImpl::HandleDepthMask(
     unsigned int arg_count, const gles2::DepthMask& c) {
   GLboolean flag = static_cast<GLboolean>(c.flag);
   parse_error::ParseError result =
@@ -682,7 +683,7 @@ parse_error::ParseError GLES2Decoder::HandleDepthMask(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDepthRangef(
+parse_error::ParseError GLES2DecoderImpl::HandleDepthRangef(
     unsigned int arg_count, const gles2::DepthRangef& c) {
   GLclampf zNear = static_cast<GLclampf>(c.zNear);
   GLclampf zFar = static_cast<GLclampf>(c.zFar);
@@ -695,7 +696,7 @@ parse_error::ParseError GLES2Decoder::HandleDepthRangef(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDetachShader(
+parse_error::ParseError GLES2DecoderImpl::HandleDetachShader(
     unsigned int arg_count, const gles2::DetachShader& c) {
   GLuint program = static_cast<GLuint>(c.program);
   GLuint shader = static_cast<GLuint>(c.shader);
@@ -708,7 +709,7 @@ parse_error::ParseError GLES2Decoder::HandleDetachShader(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDisable(
+parse_error::ParseError GLES2DecoderImpl::HandleDisable(
     unsigned int arg_count, const gles2::Disable& c) {
   GLenum cap = static_cast<GLenum>(c.cap);
   parse_error::ParseError result =
@@ -720,7 +721,7 @@ parse_error::ParseError GLES2Decoder::HandleDisable(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDisableVertexAttribArray(
+parse_error::ParseError GLES2DecoderImpl::HandleDisableVertexAttribArray(
     unsigned int arg_count, const gles2::DisableVertexAttribArray& c) {
   GLuint index = static_cast<GLuint>(c.index);
   parse_error::ParseError result =
@@ -732,7 +733,7 @@ parse_error::ParseError GLES2Decoder::HandleDisableVertexAttribArray(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleDrawArrays(
+parse_error::ParseError GLES2DecoderImpl::HandleDrawArrays(
     unsigned int arg_count, const gles2::DrawArrays& c) {
   GLenum mode = static_cast<GLenum>(c.mode);
   GLint first = static_cast<GLint>(c.first);
@@ -746,7 +747,7 @@ parse_error::ParseError GLES2Decoder::HandleDrawArrays(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleEnable(
+parse_error::ParseError GLES2DecoderImpl::HandleEnable(
     unsigned int arg_count, const gles2::Enable& c) {
   GLenum cap = static_cast<GLenum>(c.cap);
   parse_error::ParseError result =
@@ -758,7 +759,7 @@ parse_error::ParseError GLES2Decoder::HandleEnable(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleEnableVertexAttribArray(
+parse_error::ParseError GLES2DecoderImpl::HandleEnableVertexAttribArray(
     unsigned int arg_count, const gles2::EnableVertexAttribArray& c) {
   GLuint index = static_cast<GLuint>(c.index);
   parse_error::ParseError result =
@@ -770,7 +771,7 @@ parse_error::ParseError GLES2Decoder::HandleEnableVertexAttribArray(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleFinish(
+parse_error::ParseError GLES2DecoderImpl::HandleFinish(
     unsigned int arg_count, const gles2::Finish& c) {
   parse_error::ParseError result =
       ValidateFinish(this, arg_count);
@@ -781,7 +782,7 @@ parse_error::ParseError GLES2Decoder::HandleFinish(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleFlush(
+parse_error::ParseError GLES2DecoderImpl::HandleFlush(
     unsigned int arg_count, const gles2::Flush& c) {
   parse_error::ParseError result =
       ValidateFlush(this, arg_count);
@@ -792,7 +793,7 @@ parse_error::ParseError GLES2Decoder::HandleFlush(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleFramebufferRenderbuffer(
+parse_error::ParseError GLES2DecoderImpl::HandleFramebufferRenderbuffer(
     unsigned int arg_count, const gles2::FramebufferRenderbuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum attachment = static_cast<GLenum>(c.attachment);
@@ -805,12 +806,12 @@ parse_error::ParseError GLES2Decoder::HandleFramebufferRenderbuffer(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glFramebufferRenderbuffer(
+  glFramebufferRenderbufferEXT(
       target, attachment, renderbuffertarget, renderbuffer);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleFramebufferTexture2D(
+parse_error::ParseError GLES2DecoderImpl::HandleFramebufferTexture2D(
     unsigned int arg_count, const gles2::FramebufferTexture2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum attachment = static_cast<GLenum>(c.attachment);
@@ -823,11 +824,11 @@ parse_error::ParseError GLES2Decoder::HandleFramebufferTexture2D(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glFramebufferTexture2D(target, attachment, textarget, texture, level);
+  glFramebufferTexture2DEXT(target, attachment, textarget, texture, level);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleFrontFace(
+parse_error::ParseError GLES2DecoderImpl::HandleFrontFace(
     unsigned int arg_count, const gles2::FrontFace& c) {
   GLenum mode = static_cast<GLenum>(c.mode);
   parse_error::ParseError result =
@@ -839,7 +840,7 @@ parse_error::ParseError GLES2Decoder::HandleFrontFace(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenBuffers(
+parse_error::ParseError GLES2DecoderImpl::HandleGenBuffers(
     unsigned int arg_count, const gles2::GenBuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   GLuint* buffers = GetSharedMemoryAs<GLuint*>(
@@ -853,7 +854,7 @@ parse_error::ParseError GLES2Decoder::HandleGenBuffers(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenBuffersImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleGenBuffersImmediate(
     unsigned int arg_count, const gles2::GenBuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   GLuint* buffers = GetImmediateDataAs<GLuint*>(c);
@@ -866,7 +867,7 @@ parse_error::ParseError GLES2Decoder::HandleGenBuffersImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenerateMipmap(
+parse_error::ParseError GLES2DecoderImpl::HandleGenerateMipmap(
     unsigned int arg_count, const gles2::GenerateMipmap& c) {
   GLenum target = static_cast<GLenum>(c.target);
   parse_error::ParseError result =
@@ -874,11 +875,11 @@ parse_error::ParseError GLES2Decoder::HandleGenerateMipmap(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glGenerateMipmap(target);
+  glGenerateMipmapEXT(target);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenFramebuffers(
+parse_error::ParseError GLES2DecoderImpl::HandleGenFramebuffers(
     unsigned int arg_count, const gles2::GenFramebuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   GLuint* framebuffers = GetSharedMemoryAs<GLuint*>(
@@ -893,7 +894,7 @@ parse_error::ParseError GLES2Decoder::HandleGenFramebuffers(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenFramebuffersImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleGenFramebuffersImmediate(
     unsigned int arg_count, const gles2::GenFramebuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   GLuint* framebuffers = GetImmediateDataAs<GLuint*>(c);
@@ -906,7 +907,7 @@ parse_error::ParseError GLES2Decoder::HandleGenFramebuffersImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenRenderbuffers(
+parse_error::ParseError GLES2DecoderImpl::HandleGenRenderbuffers(
     unsigned int arg_count, const gles2::GenRenderbuffers& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   GLuint* renderbuffers = GetSharedMemoryAs<GLuint*>(
@@ -921,7 +922,7 @@ parse_error::ParseError GLES2Decoder::HandleGenRenderbuffers(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenRenderbuffersImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
     unsigned int arg_count, const gles2::GenRenderbuffersImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   GLuint* renderbuffers = GetImmediateDataAs<GLuint*>(c);
@@ -934,7 +935,7 @@ parse_error::ParseError GLES2Decoder::HandleGenRenderbuffersImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenTextures(
+parse_error::ParseError GLES2DecoderImpl::HandleGenTextures(
     unsigned int arg_count, const gles2::GenTextures& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   GLuint* textures = GetSharedMemoryAs<GLuint*>(
@@ -948,7 +949,7 @@ parse_error::ParseError GLES2Decoder::HandleGenTextures(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGenTexturesImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleGenTexturesImmediate(
     unsigned int arg_count, const gles2::GenTexturesImmediate& c) {
   GLsizei n = static_cast<GLsizei>(c.n);
   GLuint* textures = GetImmediateDataAs<GLuint*>(c);
@@ -961,7 +962,7 @@ parse_error::ParseError GLES2Decoder::HandleGenTexturesImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetAttribLocation(
+parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocation(
     unsigned int arg_count, const gles2::GetAttribLocation& c) {
   GLuint program = static_cast<GLuint>(c.program);
   uint32 name_size = c.data_size;
@@ -977,7 +978,7 @@ parse_error::ParseError GLES2Decoder::HandleGetAttribLocation(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetAttribLocationImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocationImmediate(
     unsigned int arg_count, const gles2::GetAttribLocationImmediate& c) {
   GLuint program = static_cast<GLuint>(c.program);
   uint32 name_size = c.data_size;
@@ -994,7 +995,7 @@ parse_error::ParseError GLES2Decoder::HandleGetAttribLocationImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetBooleanv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetBooleanv(
     unsigned int arg_count, const gles2::GetBooleanv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   GLboolean* params;
@@ -1011,7 +1012,7 @@ parse_error::ParseError GLES2Decoder::HandleGetBooleanv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetBufferParameteriv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetBufferParameteriv(
     unsigned int arg_count, const gles2::GetBufferParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1029,7 +1030,7 @@ parse_error::ParseError GLES2Decoder::HandleGetBufferParameteriv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetError(
+parse_error::ParseError GLES2DecoderImpl::HandleGetError(
     unsigned int arg_count, const gles2::GetError& c) {
   GLenum* result_dst = GetSharedMemoryAs<GLenum*>(
       c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
@@ -1042,7 +1043,7 @@ parse_error::ParseError GLES2Decoder::HandleGetError(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetFloatv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetFloatv(
     unsigned int arg_count, const gles2::GetFloatv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   GLfloat* params;
@@ -1059,7 +1060,7 @@ parse_error::ParseError GLES2Decoder::HandleGetFloatv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetFramebufferAttachmentParameteriv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
     
     unsigned int arg_count,
     const gles2::GetFramebufferAttachmentParameteriv& c) {
@@ -1077,11 +1078,11 @@ parse_error::ParseError GLES2Decoder::HandleGetFramebufferAttachmentParameteriv(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glGetFramebufferAttachmentParameteriv(target, attachment, pname, params);
+  glGetFramebufferAttachmentParameterivEXT(target, attachment, pname, params);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetIntegerv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetIntegerv(
     unsigned int arg_count, const gles2::GetIntegerv& c) {
   GLenum pname = static_cast<GLenum>(c.pname);
   GLint* params;
@@ -1098,7 +1099,7 @@ parse_error::ParseError GLES2Decoder::HandleGetIntegerv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetProgramiv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetProgramiv(
     unsigned int arg_count, const gles2::GetProgramiv& c) {
   GLuint program = static_cast<GLuint>(c.program);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1116,7 +1117,7 @@ parse_error::ParseError GLES2Decoder::HandleGetProgramiv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetProgramInfoLog(
+parse_error::ParseError GLES2DecoderImpl::HandleGetProgramInfoLog(
     unsigned int arg_count, const gles2::GetProgramInfoLog& c) {
   GLuint program = static_cast<GLuint>(c.program);
   GLsizei bufsize = static_cast<GLsizei>(c.bufsize);
@@ -1134,7 +1135,7 @@ parse_error::ParseError GLES2Decoder::HandleGetProgramInfoLog(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetRenderbufferParameteriv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
     unsigned int arg_count, const gles2::GetRenderbufferParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1149,11 +1150,11 @@ parse_error::ParseError GLES2Decoder::HandleGetRenderbufferParameteriv(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glGetRenderbufferParameteriv(target, pname, params);
+  glGetRenderbufferParameterivEXT(target, pname, params);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetShaderiv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetShaderiv(
     unsigned int arg_count, const gles2::GetShaderiv& c) {
   GLuint shader = static_cast<GLuint>(c.shader);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1171,7 +1172,7 @@ parse_error::ParseError GLES2Decoder::HandleGetShaderiv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetShaderInfoLog(
+parse_error::ParseError GLES2DecoderImpl::HandleGetShaderInfoLog(
     unsigned int arg_count, const gles2::GetShaderInfoLog& c) {
   GLuint shader = static_cast<GLuint>(c.shader);
   GLsizei bufsize = static_cast<GLsizei>(c.bufsize);
@@ -1189,7 +1190,7 @@ parse_error::ParseError GLES2Decoder::HandleGetShaderInfoLog(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetShaderSource(
+parse_error::ParseError GLES2DecoderImpl::HandleGetShaderSource(
     unsigned int arg_count, const gles2::GetShaderSource& c) {
   GLuint shader = static_cast<GLuint>(c.shader);
   GLsizei bufsize = static_cast<GLsizei>(c.bufsize);
@@ -1207,7 +1208,7 @@ parse_error::ParseError GLES2Decoder::HandleGetShaderSource(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetString(
+parse_error::ParseError GLES2DecoderImpl::HandleGetString(
     unsigned int arg_count, const gles2::GetString& c) {
   GLenum name = static_cast<GLenum>(c.name);
   parse_error::ParseError result =
@@ -1219,7 +1220,7 @@ parse_error::ParseError GLES2Decoder::HandleGetString(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetTexParameterfv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetTexParameterfv(
     unsigned int arg_count, const gles2::GetTexParameterfv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1237,7 +1238,7 @@ parse_error::ParseError GLES2Decoder::HandleGetTexParameterfv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetTexParameteriv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetTexParameteriv(
     unsigned int arg_count, const gles2::GetTexParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1255,7 +1256,7 @@ parse_error::ParseError GLES2Decoder::HandleGetTexParameteriv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetUniformLocation(
+parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocation(
     unsigned int arg_count, const gles2::GetUniformLocation& c) {
   GLuint program = static_cast<GLuint>(c.program);
   uint32 name_size = c.data_size;
@@ -1271,7 +1272,7 @@ parse_error::ParseError GLES2Decoder::HandleGetUniformLocation(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetUniformLocationImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocationImmediate(
     unsigned int arg_count, const gles2::GetUniformLocationImmediate& c) {
   GLuint program = static_cast<GLuint>(c.program);
   uint32 name_size = c.data_size;
@@ -1288,7 +1289,7 @@ parse_error::ParseError GLES2Decoder::HandleGetUniformLocationImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetVertexAttribfv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetVertexAttribfv(
     unsigned int arg_count, const gles2::GetVertexAttribfv& c) {
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1306,7 +1307,7 @@ parse_error::ParseError GLES2Decoder::HandleGetVertexAttribfv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleGetVertexAttribiv(
+parse_error::ParseError GLES2DecoderImpl::HandleGetVertexAttribiv(
     unsigned int arg_count, const gles2::GetVertexAttribiv& c) {
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1324,7 +1325,7 @@ parse_error::ParseError GLES2Decoder::HandleGetVertexAttribiv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleHint(
+parse_error::ParseError GLES2DecoderImpl::HandleHint(
     unsigned int arg_count, const gles2::Hint& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum mode = static_cast<GLenum>(c.mode);
@@ -1337,7 +1338,7 @@ parse_error::ParseError GLES2Decoder::HandleHint(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleIsBuffer(
+parse_error::ParseError GLES2DecoderImpl::HandleIsBuffer(
     unsigned int arg_count, const gles2::IsBuffer& c) {
   GLuint buffer = static_cast<GLuint>(c.buffer);
   GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
@@ -1351,7 +1352,7 @@ parse_error::ParseError GLES2Decoder::HandleIsBuffer(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleIsEnabled(
+parse_error::ParseError GLES2DecoderImpl::HandleIsEnabled(
     unsigned int arg_count, const gles2::IsEnabled& c) {
   GLenum cap = static_cast<GLenum>(c.cap);
   GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
@@ -1365,7 +1366,7 @@ parse_error::ParseError GLES2Decoder::HandleIsEnabled(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleIsFramebuffer(
+parse_error::ParseError GLES2DecoderImpl::HandleIsFramebuffer(
     unsigned int arg_count, const gles2::IsFramebuffer& c) {
   GLuint framebuffer = static_cast<GLuint>(c.framebuffer);
   GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
@@ -1375,11 +1376,11 @@ parse_error::ParseError GLES2Decoder::HandleIsFramebuffer(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  *result_dst = glIsFramebuffer(framebuffer);
+  *result_dst = glIsFramebufferEXT(framebuffer);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleIsProgram(
+parse_error::ParseError GLES2DecoderImpl::HandleIsProgram(
     unsigned int arg_count, const gles2::IsProgram& c) {
   GLuint program = static_cast<GLuint>(c.program);
   GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
@@ -1393,7 +1394,7 @@ parse_error::ParseError GLES2Decoder::HandleIsProgram(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleIsRenderbuffer(
+parse_error::ParseError GLES2DecoderImpl::HandleIsRenderbuffer(
     unsigned int arg_count, const gles2::IsRenderbuffer& c) {
   GLuint renderbuffer = static_cast<GLuint>(c.renderbuffer);
   GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
@@ -1403,11 +1404,11 @@ parse_error::ParseError GLES2Decoder::HandleIsRenderbuffer(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  *result_dst = glIsRenderbuffer(renderbuffer);
+  *result_dst = glIsRenderbufferEXT(renderbuffer);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleIsShader(
+parse_error::ParseError GLES2DecoderImpl::HandleIsShader(
     unsigned int arg_count, const gles2::IsShader& c) {
   GLuint shader = static_cast<GLuint>(c.shader);
   GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
@@ -1421,7 +1422,7 @@ parse_error::ParseError GLES2Decoder::HandleIsShader(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleIsTexture(
+parse_error::ParseError GLES2DecoderImpl::HandleIsTexture(
     unsigned int arg_count, const gles2::IsTexture& c) {
   GLuint texture = static_cast<GLuint>(c.texture);
   GLboolean* result_dst = GetSharedMemoryAs<GLboolean*>(
@@ -1435,7 +1436,7 @@ parse_error::ParseError GLES2Decoder::HandleIsTexture(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleLineWidth(
+parse_error::ParseError GLES2DecoderImpl::HandleLineWidth(
     unsigned int arg_count, const gles2::LineWidth& c) {
   GLfloat width = static_cast<GLfloat>(c.width);
   parse_error::ParseError result =
@@ -1447,7 +1448,7 @@ parse_error::ParseError GLES2Decoder::HandleLineWidth(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleLinkProgram(
+parse_error::ParseError GLES2DecoderImpl::HandleLinkProgram(
     unsigned int arg_count, const gles2::LinkProgram& c) {
   GLuint program = static_cast<GLuint>(c.program);
   parse_error::ParseError result =
@@ -1459,7 +1460,7 @@ parse_error::ParseError GLES2Decoder::HandleLinkProgram(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandlePolygonOffset(
+parse_error::ParseError GLES2DecoderImpl::HandlePolygonOffset(
     unsigned int arg_count, const gles2::PolygonOffset& c) {
   GLfloat factor = static_cast<GLfloat>(c.factor);
   GLfloat units = static_cast<GLfloat>(c.units);
@@ -1472,7 +1473,7 @@ parse_error::ParseError GLES2Decoder::HandlePolygonOffset(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleRenderbufferStorage(
+parse_error::ParseError GLES2DecoderImpl::HandleRenderbufferStorage(
     unsigned int arg_count, const gles2::RenderbufferStorage& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum internalformat = static_cast<GLenum>(c.internalformat);
@@ -1484,11 +1485,11 @@ parse_error::ParseError GLES2Decoder::HandleRenderbufferStorage(
   if (result != parse_error::kParseNoError) {
     return result;
   }
-  glRenderbufferStorage(target, internalformat, width, height);
+  glRenderbufferStorageEXT(target, internalformat, width, height);
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleSampleCoverage(
+parse_error::ParseError GLES2DecoderImpl::HandleSampleCoverage(
     unsigned int arg_count, const gles2::SampleCoverage& c) {
   GLclampf value = static_cast<GLclampf>(c.value);
   GLboolean invert = static_cast<GLboolean>(c.invert);
@@ -1501,7 +1502,7 @@ parse_error::ParseError GLES2Decoder::HandleSampleCoverage(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleScissor(
+parse_error::ParseError GLES2DecoderImpl::HandleScissor(
     unsigned int arg_count, const gles2::Scissor& c) {
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);
@@ -1516,7 +1517,7 @@ parse_error::ParseError GLES2Decoder::HandleScissor(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleStencilFunc(
+parse_error::ParseError GLES2DecoderImpl::HandleStencilFunc(
     unsigned int arg_count, const gles2::StencilFunc& c) {
   GLenum func = static_cast<GLenum>(c.func);
   GLint ref = static_cast<GLint>(c.ref);
@@ -1530,7 +1531,7 @@ parse_error::ParseError GLES2Decoder::HandleStencilFunc(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleStencilFuncSeparate(
+parse_error::ParseError GLES2DecoderImpl::HandleStencilFuncSeparate(
     unsigned int arg_count, const gles2::StencilFuncSeparate& c) {
   GLenum face = static_cast<GLenum>(c.face);
   GLenum func = static_cast<GLenum>(c.func);
@@ -1545,7 +1546,7 @@ parse_error::ParseError GLES2Decoder::HandleStencilFuncSeparate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleStencilMask(
+parse_error::ParseError GLES2DecoderImpl::HandleStencilMask(
     unsigned int arg_count, const gles2::StencilMask& c) {
   GLuint mask = static_cast<GLuint>(c.mask);
   parse_error::ParseError result =
@@ -1557,7 +1558,7 @@ parse_error::ParseError GLES2Decoder::HandleStencilMask(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleStencilMaskSeparate(
+parse_error::ParseError GLES2DecoderImpl::HandleStencilMaskSeparate(
     unsigned int arg_count, const gles2::StencilMaskSeparate& c) {
   GLenum face = static_cast<GLenum>(c.face);
   GLuint mask = static_cast<GLuint>(c.mask);
@@ -1570,7 +1571,7 @@ parse_error::ParseError GLES2Decoder::HandleStencilMaskSeparate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleStencilOp(
+parse_error::ParseError GLES2DecoderImpl::HandleStencilOp(
     unsigned int arg_count, const gles2::StencilOp& c) {
   GLenum fail = static_cast<GLenum>(c.fail);
   GLenum zfail = static_cast<GLenum>(c.zfail);
@@ -1584,7 +1585,7 @@ parse_error::ParseError GLES2Decoder::HandleStencilOp(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleStencilOpSeparate(
+parse_error::ParseError GLES2DecoderImpl::HandleStencilOpSeparate(
     unsigned int arg_count, const gles2::StencilOpSeparate& c) {
   GLenum face = static_cast<GLenum>(c.face);
   GLenum fail = static_cast<GLenum>(c.fail);
@@ -1599,7 +1600,7 @@ parse_error::ParseError GLES2Decoder::HandleStencilOpSeparate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexImage2D(
+parse_error::ParseError GLES2DecoderImpl::HandleTexImage2D(
     unsigned int arg_count, const gles2::TexImage2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -1628,7 +1629,7 @@ parse_error::ParseError GLES2Decoder::HandleTexImage2D(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexImage2DImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleTexImage2DImmediate(
     unsigned int arg_count, const gles2::TexImage2DImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -1653,7 +1654,7 @@ parse_error::ParseError GLES2Decoder::HandleTexImage2DImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexParameterf(
+parse_error::ParseError GLES2DecoderImpl::HandleTexParameterf(
     unsigned int arg_count, const gles2::TexParameterf& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1667,7 +1668,7 @@ parse_error::ParseError GLES2Decoder::HandleTexParameterf(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexParameterfv(
+parse_error::ParseError GLES2DecoderImpl::HandleTexParameterfv(
     unsigned int arg_count, const gles2::TexParameterfv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1682,7 +1683,7 @@ parse_error::ParseError GLES2Decoder::HandleTexParameterfv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexParameterfvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleTexParameterfvImmediate(
     unsigned int arg_count, const gles2::TexParameterfvImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1697,7 +1698,7 @@ parse_error::ParseError GLES2Decoder::HandleTexParameterfvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexParameteri(
+parse_error::ParseError GLES2DecoderImpl::HandleTexParameteri(
     unsigned int arg_count, const gles2::TexParameteri& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1711,7 +1712,7 @@ parse_error::ParseError GLES2Decoder::HandleTexParameteri(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexParameteriv(
+parse_error::ParseError GLES2DecoderImpl::HandleTexParameteriv(
     unsigned int arg_count, const gles2::TexParameteriv& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1726,7 +1727,7 @@ parse_error::ParseError GLES2Decoder::HandleTexParameteriv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexParameterivImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleTexParameterivImmediate(
     unsigned int arg_count, const gles2::TexParameterivImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLenum pname = static_cast<GLenum>(c.pname);
@@ -1741,7 +1742,7 @@ parse_error::ParseError GLES2Decoder::HandleTexParameterivImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexSubImage2D(
+parse_error::ParseError GLES2DecoderImpl::HandleTexSubImage2D(
     unsigned int arg_count, const gles2::TexSubImage2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -1769,7 +1770,7 @@ parse_error::ParseError GLES2Decoder::HandleTexSubImage2D(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleTexSubImage2DImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleTexSubImage2DImmediate(
     unsigned int arg_count, const gles2::TexSubImage2DImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -1793,7 +1794,7 @@ parse_error::ParseError GLES2Decoder::HandleTexSubImage2DImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform1f(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform1f(
     unsigned int arg_count, const gles2::Uniform1f& c) {
   GLint location = static_cast<GLint>(c.location);
   GLfloat x = static_cast<GLfloat>(c.x);
@@ -1806,7 +1807,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform1f(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform1fv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform1fv(
     unsigned int arg_count, const gles2::Uniform1fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1821,7 +1822,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform1fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform1fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform1fvImmediate(
     unsigned int arg_count, const gles2::Uniform1fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1836,7 +1837,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform1fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform1i(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform1i(
     unsigned int arg_count, const gles2::Uniform1i& c) {
   GLint location = static_cast<GLint>(c.location);
   GLint x = static_cast<GLint>(c.x);
@@ -1849,7 +1850,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform1i(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform1iv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform1iv(
     unsigned int arg_count, const gles2::Uniform1iv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1864,7 +1865,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform1iv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform1ivImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform1ivImmediate(
     unsigned int arg_count, const gles2::Uniform1ivImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1879,7 +1880,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform1ivImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform2f(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform2f(
     unsigned int arg_count, const gles2::Uniform2f& c) {
   GLint location = static_cast<GLint>(c.location);
   GLfloat x = static_cast<GLfloat>(c.x);
@@ -1893,7 +1894,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform2f(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform2fv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform2fv(
     unsigned int arg_count, const gles2::Uniform2fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1908,7 +1909,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform2fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform2fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform2fvImmediate(
     unsigned int arg_count, const gles2::Uniform2fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1923,7 +1924,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform2fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform2i(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform2i(
     unsigned int arg_count, const gles2::Uniform2i& c) {
   GLint location = static_cast<GLint>(c.location);
   GLint x = static_cast<GLint>(c.x);
@@ -1937,7 +1938,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform2i(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform2iv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform2iv(
     unsigned int arg_count, const gles2::Uniform2iv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1952,7 +1953,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform2iv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform2ivImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform2ivImmediate(
     unsigned int arg_count, const gles2::Uniform2ivImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1967,7 +1968,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform2ivImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform3f(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform3f(
     unsigned int arg_count, const gles2::Uniform3f& c) {
   GLint location = static_cast<GLint>(c.location);
   GLfloat x = static_cast<GLfloat>(c.x);
@@ -1982,7 +1983,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform3f(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform3fv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform3fv(
     unsigned int arg_count, const gles2::Uniform3fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -1997,7 +1998,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform3fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform3fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform3fvImmediate(
     unsigned int arg_count, const gles2::Uniform3fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2012,7 +2013,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform3fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform3i(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform3i(
     unsigned int arg_count, const gles2::Uniform3i& c) {
   GLint location = static_cast<GLint>(c.location);
   GLint x = static_cast<GLint>(c.x);
@@ -2027,7 +2028,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform3i(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform3iv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform3iv(
     unsigned int arg_count, const gles2::Uniform3iv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2042,7 +2043,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform3iv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform3ivImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform3ivImmediate(
     unsigned int arg_count, const gles2::Uniform3ivImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2057,7 +2058,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform3ivImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform4f(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform4f(
     unsigned int arg_count, const gles2::Uniform4f& c) {
   GLint location = static_cast<GLint>(c.location);
   GLfloat x = static_cast<GLfloat>(c.x);
@@ -2073,7 +2074,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform4f(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform4fv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform4fv(
     unsigned int arg_count, const gles2::Uniform4fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2088,7 +2089,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform4fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform4fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform4fvImmediate(
     unsigned int arg_count, const gles2::Uniform4fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2103,7 +2104,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform4fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform4i(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform4i(
     unsigned int arg_count, const gles2::Uniform4i& c) {
   GLint location = static_cast<GLint>(c.location);
   GLint x = static_cast<GLint>(c.x);
@@ -2119,7 +2120,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform4i(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform4iv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform4iv(
     unsigned int arg_count, const gles2::Uniform4iv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2134,7 +2135,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform4iv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniform4ivImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniform4ivImmediate(
     unsigned int arg_count, const gles2::Uniform4ivImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2149,7 +2150,7 @@ parse_error::ParseError GLES2Decoder::HandleUniform4ivImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniformMatrix2fv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix2fv(
     unsigned int arg_count, const gles2::UniformMatrix2fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2166,7 +2167,7 @@ parse_error::ParseError GLES2Decoder::HandleUniformMatrix2fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniformMatrix2fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
     unsigned int arg_count, const gles2::UniformMatrix2fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2183,7 +2184,7 @@ parse_error::ParseError GLES2Decoder::HandleUniformMatrix2fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniformMatrix3fv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix3fv(
     unsigned int arg_count, const gles2::UniformMatrix3fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2200,7 +2201,7 @@ parse_error::ParseError GLES2Decoder::HandleUniformMatrix3fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniformMatrix3fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
     unsigned int arg_count, const gles2::UniformMatrix3fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2217,7 +2218,7 @@ parse_error::ParseError GLES2Decoder::HandleUniformMatrix3fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniformMatrix4fv(
+parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix4fv(
     unsigned int arg_count, const gles2::UniformMatrix4fv& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2234,7 +2235,7 @@ parse_error::ParseError GLES2Decoder::HandleUniformMatrix4fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUniformMatrix4fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
     unsigned int arg_count, const gles2::UniformMatrix4fvImmediate& c) {
   GLint location = static_cast<GLint>(c.location);
   GLsizei count = static_cast<GLsizei>(c.count);
@@ -2251,7 +2252,7 @@ parse_error::ParseError GLES2Decoder::HandleUniformMatrix4fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleUseProgram(
+parse_error::ParseError GLES2DecoderImpl::HandleUseProgram(
     unsigned int arg_count, const gles2::UseProgram& c) {
   GLuint program = static_cast<GLuint>(c.program);
   parse_error::ParseError result =
@@ -2263,7 +2264,7 @@ parse_error::ParseError GLES2Decoder::HandleUseProgram(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleValidateProgram(
+parse_error::ParseError GLES2DecoderImpl::HandleValidateProgram(
     unsigned int arg_count, const gles2::ValidateProgram& c) {
   GLuint program = static_cast<GLuint>(c.program);
   parse_error::ParseError result =
@@ -2275,7 +2276,7 @@ parse_error::ParseError GLES2Decoder::HandleValidateProgram(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib1f(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib1f(
     unsigned int arg_count, const gles2::VertexAttrib1f& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   GLfloat x = static_cast<GLfloat>(c.x);
@@ -2288,7 +2289,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib1f(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib1fv(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib1fv(
     unsigned int arg_count, const gles2::VertexAttrib1fv& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   const GLfloat* values = GetSharedMemoryAs<const GLfloat*>(
@@ -2302,7 +2303,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib1fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib1fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib1fvImmediate(
     unsigned int arg_count, const gles2::VertexAttrib1fvImmediate& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   const GLfloat* values = GetImmediateDataAs<const GLfloat*>(c);
@@ -2316,7 +2317,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib1fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib2f(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib2f(
     unsigned int arg_count, const gles2::VertexAttrib2f& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   GLfloat x = static_cast<GLfloat>(c.x);
@@ -2330,7 +2331,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib2f(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib2fv(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib2fv(
     unsigned int arg_count, const gles2::VertexAttrib2fv& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   const GLfloat* values = GetSharedMemoryAs<const GLfloat*>(
@@ -2344,7 +2345,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib2fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib2fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib2fvImmediate(
     unsigned int arg_count, const gles2::VertexAttrib2fvImmediate& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   const GLfloat* values = GetImmediateDataAs<const GLfloat*>(c);
@@ -2358,7 +2359,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib2fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib3f(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib3f(
     unsigned int arg_count, const gles2::VertexAttrib3f& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   GLfloat x = static_cast<GLfloat>(c.x);
@@ -2373,7 +2374,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib3f(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib3fv(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib3fv(
     unsigned int arg_count, const gles2::VertexAttrib3fv& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   const GLfloat* values = GetSharedMemoryAs<const GLfloat*>(
@@ -2387,7 +2388,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib3fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib3fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib3fvImmediate(
     unsigned int arg_count, const gles2::VertexAttrib3fvImmediate& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   const GLfloat* values = GetImmediateDataAs<const GLfloat*>(c);
@@ -2401,7 +2402,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib3fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib4f(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib4f(
     unsigned int arg_count, const gles2::VertexAttrib4f& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   GLfloat x = static_cast<GLfloat>(c.x);
@@ -2417,7 +2418,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib4f(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib4fv(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib4fv(
     unsigned int arg_count, const gles2::VertexAttrib4fv& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   const GLfloat* values = GetSharedMemoryAs<const GLfloat*>(
@@ -2431,7 +2432,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib4fv(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleVertexAttrib4fvImmediate(
+parse_error::ParseError GLES2DecoderImpl::HandleVertexAttrib4fvImmediate(
     unsigned int arg_count, const gles2::VertexAttrib4fvImmediate& c) {
   GLuint indx = static_cast<GLuint>(c.indx);
   const GLfloat* values = GetImmediateDataAs<const GLfloat*>(c);
@@ -2445,7 +2446,7 @@ parse_error::ParseError GLES2Decoder::HandleVertexAttrib4fvImmediate(
   return parse_error::kParseNoError;
 }
 
-parse_error::ParseError GLES2Decoder::HandleViewport(
+parse_error::ParseError GLES2DecoderImpl::HandleViewport(
     unsigned int arg_count, const gles2::Viewport& c) {
   GLint x = static_cast<GLint>(c.x);
   GLint y = static_cast<GLint>(c.y);

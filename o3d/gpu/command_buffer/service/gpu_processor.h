@@ -11,16 +11,8 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
-#include "gpu/command_buffer/service/gapi_decoder.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/np_utils/np_object_pointer.h"
-
-#if defined(CB_SERVICE_D3D9)
-#include "gpu/command_buffer/service/gapi_d3d9.h"
-#elif defined(CB_SERVICE_GL)
-#include "gpu/command_buffer/service/gapi_gl.h"
-#else
-#error command buffer service not defined
-#endif
 
 namespace command_buffer {
 
@@ -29,21 +21,12 @@ namespace command_buffer {
 class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
                      public command_buffer::CommandBufferEngine {
  public:
-#if defined(CB_SERVICE_D3D9)
-  typedef command_buffer::o3d::GAPID3D9 GPUGAPIInterface;
-#elif defined(CB_SERVICE_GL)
-  typedef command_buffer::o3d::GAPIGL GPUGAPIInterface;
-#else
-#error command buffer service not defined
-#endif
-
   GPUProcessor(NPP npp, CommandBuffer* command_buffer);
 
   // This constructor is for unit tests.
   GPUProcessor(CommandBuffer* command_buffer,
-               GPUGAPIInterface* gapi,
-               command_buffer::o3d::GAPIDecoder* decoder,
-               command_buffer::CommandParser* parser,
+               gles2::GLES2Decoder* decoder,
+               CommandParser* parser,
                int commands_per_update);
 
   virtual bool Initialize(HWND hwnd);
@@ -84,9 +67,8 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
   scoped_ptr< ::base::SharedMemory> mapped_ring_buffer_;
   int commands_per_update_;
 
-  scoped_ptr<GPUGAPIInterface> gapi_;
-  scoped_ptr<command_buffer::o3d::GAPIDecoder> decoder_;
-  scoped_ptr<command_buffer::CommandParser> parser_;
+  scoped_ptr<gles2::GLES2Decoder> decoder_;
+  scoped_ptr<CommandParser> parser_;
 };
 
 }  // namespace command_buffer

@@ -6,7 +6,6 @@
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_H
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
-#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 
 namespace command_buffer {

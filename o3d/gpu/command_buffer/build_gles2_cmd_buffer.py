@@ -42,8 +42,11 @@ _LICENSE = "\n".join([
 _FUNCTION_INFO = {
   'BindAttribLocation': {'type': 'GLchar'},
   'BindBuffer': {'DecoderFunc': 'DoBindBuffer'},
+  'BindFramebuffer': {'DecoderFunc': 'glBindFramebufferEXT'},
+  'BindRenderbuffer': {'DecoderFunc': 'glBindRenderbufferEXT'},
   'BufferData': {'type': 'Data'},
   'BufferSubData': {'type': 'Data'},
+  'CheckFramebufferStatus': {'DecoderFunc': 'glCheckFramebufferStatusEXT'},
   'ClearDepthf': {'DecoderFunc': 'glClearDepth'},
   'CompressedTexImage2D': {'type': 'Data'},
   'CompressedTexSubImage2D': {'type': 'Data'},
@@ -60,6 +63,9 @@ _FUNCTION_INFO = {
     'type': 'Manual',
     'cmd_args': 'GLenum mode, GLsizei count, GLenum type, GLuint index_offset',
   },
+  'FramebufferRenderbuffer': {'DecoderFunc': 'glFramebufferRenderbufferEXT'},
+  'FramebufferTexture2D': {'DecoderFunc': 'glFramebufferTexture2DEXT'},
+  'GenerateMipmap': {'DecoderFunc': 'glGenerateMipmapEXT'},
   'GenBuffers': {'type': 'GENn'},
   'GenFramebuffers': {'type': 'GENn'},
   'GenRenderbuffers': {'type': 'GENn'},
@@ -72,11 +78,17 @@ _FUNCTION_INFO = {
   'GetBufferParameteriv': {'type': 'GETn'},
   'GetError': {'type': 'Is'},
   'GetFloatv': {'type': 'GETn'},
-  'GetFramebufferAttachmentParameteriv': {'type': 'GETn'},
+  'GetFramebufferAttachmentParameteriv': {
+    'type': 'GETn',
+    'DecoderFunc': 'glGetFramebufferAttachmentParameterivEXT',
+  },
   'GetIntegerv': {'type': 'GETn'},
   'GetProgramiv': {'type': 'GETn'},
   'GetProgramInfoLog': {'type': 'STRn'},
-  'GetRenderbufferParameteriv': {'type': 'GETn'},
+  'GetRenderbufferParameteriv': {
+    'type': 'GETn',
+    'DecoderFunc': 'glGetRenderbufferParameterivEXT',
+  },
   'GetShaderiv': {'type': 'GETn'},
   'GetShaderInfoLog': {'type': 'STRn'},
   'GetShaderPrecisionFormat': {'type': 'Custom'},
@@ -91,12 +103,13 @@ _FUNCTION_INFO = {
   'GetVertexAttribPointerv': {'type': 'Custom', 'immediate': False},
   'IsBuffer': {'type': 'Is'},
   'IsEnabled': {'type': 'Is'},
-  'IsFramebuffer': {'type': 'Is'},
+  'IsFramebuffer': {'type': 'Is', 'DecoderFunc': 'glIsFramebufferEXT'},
   'IsProgram': {'type': 'Is'},
-  'IsRenderbuffer': {'type': 'Is'},
+  'IsRenderbuffer': {'type': 'Is', 'DecoderFunc': 'glIsRenderbufferEXT'},
   'IsShader': {'type': 'Is'},
   'IsTexture': {'type': 'Is'},
   'PixelStorei': {'type': 'Custom'},
+  'RenderbufferStorage': {'DecoderFunc': 'glRenderbufferStorageEXT'},
   'ReadPixels': {'type': 'Custom', 'immediate': False},
   'ReleaseShaderCompiler': {'type': 'Noop'},
   'ShaderBinary': {'type': 'Noop'},
@@ -297,7 +310,7 @@ class TypeHandler(object):
   def WriteServiceImplementation(self, func, file):
     """Writes the service implementation for a command."""
     file.Write(
-        "parse_error::ParseError GLES2Decoder::Handle%s(\n" % func.name)
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
     for arg in func.GetOriginalArgs():
@@ -310,7 +323,7 @@ class TypeHandler(object):
   def WriteImmediateServiceImplementation(self, func, file):
     """Writes the service implementation for an immediate version of command."""
     file.Write(
-        "parse_error::ParseError GLES2Decoder::Handle%s(\n" % func.name)
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
     for arg in func.GetOriginalArgs():
@@ -496,7 +509,7 @@ class DataHandler(CustomHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2Decoder::Handle%s(\n" % func.name)
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
     for arg in func.GetCmdArgs():
@@ -904,7 +917,7 @@ class GETnHandler(TypeHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2Decoder::Handle%s(\n" % func.name)
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -1217,7 +1230,7 @@ class GLcharHandler(TypeHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2Decoder::Handle%s(\n" % func.name)
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -1248,7 +1261,7 @@ class GLcharHandler(TypeHandler):
   def WriteImmediateServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2Decoder::Handle%s(\n" % func.name)
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -1394,7 +1407,7 @@ class IsHandler(TypeHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2Decoder::Handle%s(\n" % func.name)
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
     args = func.GetOriginalArgs()
@@ -1992,23 +2005,10 @@ class GLGenerator(object):
     for f in funcs:
       self.Log("  %-10s %-20s gl%s" % (f.info.type, f.return_type, f.name))
 
-  def WriteFormat(self, filename):
+  def WriteCommandIds(self, filename):
     """Writes the command buffer format"""
-    guard = self.MakeGuard(filename)
     file = CWriter(filename)
     self.WriteHeader(file)
-    file.Write("\n")
-    file.Write("#ifndef %s\n" % guard)
-    file.Write("#define %s\n" % guard)
-    file.Write("\n")
-    file.Write(
-        "#include \"gpu/command_buffer/common/gles2_cmd_utils.h\"\n")
-    file.Write(
-        "#include \"gpu/command_buffer/common/cmd_buffer_common.h\"\n")
-    file.Write("\n")
-
-    self.WriteNamespaceOpen(file)
-
     file.Write("#define GLES2_COMMAND_LIST(OP) \\\n")
     command_id = _FIRST_SPECIFIC_COMMAND_ID
     for func in self.functions:
@@ -2025,17 +2025,20 @@ class GLGenerator(object):
     file.Write("  kNumCommands\n")
     file.Write("};\n")
     file.Write("\n")
+    file.Close()
+
+  def WriteFormat(self, filename):
+    """Writes the command buffer format"""
+    file = CWriter(filename)
+    self.WriteHeader(file)
     file.Write("#pragma pack(push, 1)\n")
     file.Write("\n")
 
     for func in self.functions:
       func.WriteStruct(file)
 
-    self.WriteNamespaceClose(file)
-
     file.Write("#pragma pack(pop)\n")
     file.Write("\n")
-    file.Write("#endif  // %s\n" % guard)
     file.Close()
 
   def WriteFormatTest(self, filename):
@@ -2145,6 +2148,31 @@ class GLGenerator(object):
 
     file.Close()
 
+  def WriteGLES2CLibImplementation(self, filename):
+    """Writes the GLES2 c lib implementation."""
+    file = CWriter(filename)
+    self.WriteHeader(file)
+    file.Write("\n")
+    file.Write("// These functions emluate GLES2 over command buffers.\n")
+    file.Write("\n")
+    file.Write("\n")
+
+    for func in self.original_functions:
+      file.Write("%s gl%s(%s) {\n" %
+                 (func.return_type, func.name,
+                  func.MakeTypedOriginalArgString("")))
+      return_string = "return "
+      if func.return_type == "void":
+        return_string = ""
+      file.Write("  %sg_gl_impl->%s(%s);\n" %
+                 (return_string, func.original_name,
+                  func.MakeOriginalArgString("")))
+      file.Write("}\n")
+
+    file.Write("\n")
+
+    file.Close()
+
   def WriteGLES2ImplementationHeader(self, filename):
     """Writes the GLES2 helper header."""
     file = CWriter(filename)
@@ -2192,10 +2220,12 @@ def main(argv):
 
   gen = GLGenerator(options.verbose)
   gen.ParseGLH("common/GLES2/gl2.h")
-  gen.WriteFormat("common/gles2_cmd_format.h")
+  gen.WriteCommandIds("common/gles2_cmd_ids_autogen.h")
+  gen.WriteFormat("common/gles2_cmd_format_autogen.h")
   gen.WriteFormatTest("common/gles2_cmd_format_test_autogen.h")
   gen.WriteGLES2ImplementationHeader("client/gles2_implementation_autogen.h")
   gen.WriteGLES2LibHeader("client/gles2_lib_autogen.h")
+  gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")
   gen.WriteCmdHelperHeader("client/gles2_cmd_helper_autogen.h")
   gen.WriteServiceImplementation("service/gles2_cmd_decoder_autogen.h")
 

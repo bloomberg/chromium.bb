@@ -6,11 +6,12 @@
 // includes where appropriate.
 
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/common/gles2_client_base.h"
 
 namespace command_buffer {
 namespace gles2 {
 
-GLsizei GLES2Util::GLGetNumValuesReturned(GLenum id) const {
+int GLES2Util::GLGetNumValuesReturned(int id) const {
   switch (id) {
     // -- glGetBooleanv, glGetFloatv, glGetIntergerv
     case GL_ACTIVE_TEXTURE:
@@ -284,7 +285,7 @@ GLsizei GLES2Util::GLGetNumValuesReturned(GLenum id) const {
 namespace {
 
 // Return the number of elements per group of a specified format.
-GLint ElementsPerGroup(GLenum format, GLenum type) {
+int ElementsPerGroup(int format, int type) {
   switch (type) {
     case GL_UNSIGNED_SHORT_5_6_5:
     case GL_UNSIGNED_SHORT_4_4_4_4:
@@ -310,7 +311,7 @@ GLint ElementsPerGroup(GLenum format, GLenum type) {
 }
 
 // Return the number of bytes per element, based on the element type.
-GLint BytesPerElement(GLenum type) {
+int BytesPerElement(int type) {
   switch (type) {
     case GL_UNSIGNED_SHORT:
     case GL_SHORT:
@@ -330,8 +331,7 @@ GLint BytesPerElement(GLenum type) {
 
 // Returns the amount of data glTexImage2D or glTexSubImage2D will access.
 uint32 GLES2Util::ComputeImageDataSize(
-    GLsizei width, GLsizei height, GLenum format, GLenum type,
-    GLint unpack_alignment) {
+    int width, int height, int format, int type, int unpack_alignment) {
   uint32 bytes_per_group = BytesPerElement(ElementsPerGroup(format, type));
   uint32 row_size = width * bytes_per_group;
   if (height > 1) {

@@ -5,10 +5,14 @@
 // This file contains the binary format definition of the command buffer and
 // command buffer commands.
 
-#include "gpu/command_buffer/common/gles2_cmd_format.h"
+// We explicitly do NOT include gles2_cmd_format.h here because client side
+// and service side have different requirements.
+#include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 namespace command_buffer {
 namespace gles2 {
+
+#include "gpu/command_buffer/common/gles2_cmd_ids_autogen.h"
 
 const char* GetCommandName(CommandId id) {
   static const char* const names[] = {

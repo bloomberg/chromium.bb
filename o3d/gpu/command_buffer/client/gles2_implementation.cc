@@ -5,6 +5,7 @@
 // A class to emluate GLES2 over command buffers.
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
+// TODO(gman): remove when all functions have been implemented.
 #include "gpu/command_buffer/client/gles2_implementation_gen.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 

@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_HELPER_H
-#define GPU_COMMAND_BUFFER_CLIENT_GLES2_HELPER_H
+#ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H
+#define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H
 
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/id_allocator.h"
 
@@ -89,5 +90,5 @@ class GLES2Implementation {
 }  // namespace gles2
 }  // namespace command_buffer
 
-#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_HELPER_H
+#endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H
 

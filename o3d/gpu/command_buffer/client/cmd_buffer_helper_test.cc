@@ -86,7 +86,7 @@ class CommandBufferHelperTest : public testing::Test {
                                                 api_mock_.get());
 
     scoped_refptr<GPUProcessor> gpu_processor(new GPUProcessor(
-        command_buffer_.get(), NULL, NULL, parser_, 1));
+        command_buffer_.get(), NULL, parser_, 1));
     command_buffer_->SetPutOffsetChangeCallback(NewCallback(
         gpu_processor.get(), &GPUProcessor::ProcessCommands));
 
