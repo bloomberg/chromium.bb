@@ -597,14 +597,10 @@ BUG21510 WIN LINUX : LayoutTests/fast/repaint/text-shadow.html = FAIL
 // Implement layoutTestController.display()
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/body-background-image.html = FAIL
 BUG8630 WIN LINUX DEBUG SLOW : LayoutTests/fast/repaint/line-flow-with-floats-1.html = PASS
+// Relies on text metrics to pass. Rework to be meaningful for ports other than platform/mac.
 BUG8630 WIN LINUX : LayoutTests/fast/repaint/overflow-outline-repaint.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/repaint/selected-replaced.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/backgrounds/solid-color-context-restore.html = FAIL
 BUG8630 WIN LINUX : LayoutTests/fast/dynamic/containing-block-change.html = FAIL
-BUG8630 WIN LINUX : LayoutTests/fast/forms/hidden-listbox.html = IMAGE+TEXT
-BUG8630 WIN : LayoutTests/fast/forms/listbox-clip.html = IMAGE
 BUG8630 LINUX : LayoutTests/fast/forms/listbox-clip.html = IMAGE+TEXT
 BUG8630 WIN LINUX RELEASE : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
 BUG8630 LINUX WIN DEBUG : LayoutTests/fast/overflow/hidden-scrollbar-resize.html = FAIL
@@ -629,7 +625,6 @@ BUG21113 : LayoutTests/userscripts/script-run-at-end.html = FAIL
 // the message is dumped after the #EOF, which causes an additional
 // error in the header of the following test.
 BUG24197 SKIP : LayoutTests/fast/css/disabled-author-styles.html = FAIL
-
 
 // -----------------------------------------------------------------
 // Other
@@ -879,6 +874,10 @@ BUG24199 : LayoutTests/http/tests/security/local-user-CSS-from-remote.html = FAI
 
 // Implement CSS -webkit-font-smoothing property support.
 BUG23270 WIN LINUX : LayoutTests/fast/css/font-smoothing.html = FAIL
+
+// Make canvas shadow work with drawImage.
+BUG11153 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint-2.html = FAIL
+BUG11153 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = FAIL
 
 // Extra space at end of test results.  Since this is a crash test, a
 // FAIL here is just as good as running the test normally.
