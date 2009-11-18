@@ -34,22 +34,20 @@ TARG=fcglyphname.h
 
 noinst_PROGRAMS=fc-glyphname
 
-noinst_MANS=fc-glyphname.man
-
 GLYPHNAME=zapfdingbats.txt
 SGLYPHNAME=${top_srcdir}/fc-glyphname/zapfdingbats.txt
 
 EXTRA_DIST=$(TMPL) $(GLYPHNAME)
 
 $(TARG): $(STMPL) fc-glyphname$(EXEEXT) $(SGLYPHNAME)
-	rm -f $(TARG)
-	./fc-glyphname$(EXEEXT) $(SGLYPHNAME) < $(STMPL) > $(TARG)
+	$(AM_V_GEN) $(RM) $(TARG); \
+	./fc-glyphname$(EXEEXT) $(SGLYPHNAME) < $(STMPL) > $(TARG).tmp && mv $(TARG).tmp $(TARG)
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
 BUILT_SOURCES = $(ALIAS_FILES) $(TARG)
 
-$(ALIAS_FILES): 
+$(ALIAS_FILES):
 	touch $(ALIAS_FILES)
 
 CLEANFILES=$(TARG) $(ALIAS_FILES)
