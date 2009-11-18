@@ -15,7 +15,7 @@
         '../..',
       ],
       'defines': [
-        ['NO_TCMALLOC_SAMPLES', '']
+        'NO_TCMALLOC_SAMPLES',
       ],
       'direct_dependent_settings': {
         'configurations': {
