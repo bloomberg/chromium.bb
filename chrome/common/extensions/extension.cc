@@ -253,8 +253,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       // was provided.
       if (!CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableJsOnFileUrls)) {
-        *error = errors::kInvalidJsMatches;
-        return false;
+        continue;
       }
     }
 

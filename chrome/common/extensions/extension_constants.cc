@@ -91,8 +91,6 @@ const char* kInvalidJs =
     "Invalid value for 'content_scripts[*].js[*]'.";
 const char* kInvalidJsList =
     "Required value 'content_scripts[*].js is invalid.";
-const char* kInvalidJsMatches =
-    "Content scripts can not be executed on file:// urls.";
 const char* kInvalidKey =
     "Value 'key' is missing or invalid.";
 const char* kInvalidManifest =
