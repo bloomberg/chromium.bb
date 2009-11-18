@@ -16,12 +16,6 @@ namespace chrome_browser_net_websocket_experiment {
 static const char *kExperimentHost = "websocket-experiment.chromium.org";
 static const int kAlternativePort = 61985;
 
-static const char kLastStateName[] = "LastState";
-static const char kUrlFetchName[] = "UrlFetch";
-static const char kWebSocketConnectName[] = "WebSocketConnect";
-static const char kWebSocketEchoName[] = "WebSocketEcho";
-static const char kWebSocketIdleName[] = "WebSocketIdle";
-static const char kWebSocketTotalName[] = "WebSocketTotal";
 static const int kUrlFetchDeadlineSec = 10;
 static const int kWebSocketConnectDeadlineSec = 10;
 static const int kWebSocketEchoDeadlineSec = 5;
@@ -30,6 +24,74 @@ static const int kWebSocketPushDeadlineSec = 1;
 static const int kWebSocketByeDeadlineSec = 10;
 static const int kWebSocketCloseDeadlineSec = 5;
 static const int kWebSocketTimeSec = 10;
+static const int kTimeBucketCount = 50;
+
+// TODO(ukai): Use new thread-safe-reference-counted Histograms.
+#define UPDATE_HISTOGRAM(name, sample, min, max, bucket_count) do { \
+    switch (task_state_) {                                          \
+      case STATE_RUN_WS:                                            \
+        {                                                           \
+          static LinearHistogram counter(                               \
+              "WebSocketExperiment.Basic." name, min, max, bucket_count); \
+          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
+          counter.Add(sample);                                          \
+        }                                                               \
+        break;                                                          \
+      case STATE_RUN_WSS:                                               \
+        {                                                               \
+          static LinearHistogram counter(                               \
+              "WebSocketExperiment.Secure." name, min, max, bucket_count); \
+          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
+          counter.Add(sample);                                          \
+        }                                                               \
+        break;                                                          \
+      case STATE_RUN_WS_NODEFAULT_PORT:                                 \
+        {                                                               \
+          static LinearHistogram counter(                               \
+              "WebSocketExperiment.NoDefaultPort." name,                \
+              min, max, bucket_count);                                  \
+          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
+          counter.Add(sample);                                          \
+        }                                                               \
+        break;                                                          \
+      default:                                                          \
+        NOTREACHED();                                                   \
+        break;                                                          \
+    }                                                                   \
+  } while (0)
+
+#define UPDATE_HISTOGRAM_TIMES(name, sample, min, max, bucket_count) do {    \
+    switch (task_state_) {                                              \
+      case STATE_RUN_WS:                                                \
+        {                                                               \
+          static Histogram counter(                                     \
+              "WebSocketExperiment.Basic." name, min, max, bucket_count); \
+          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
+          counter.AddTime(sample);                                      \
+        }                                                               \
+        break;                                                          \
+      case STATE_RUN_WSS:                                               \
+        {                                                               \
+          static Histogram counter(                                     \
+              "WebSocketExperiment.Secure." name, min, max, bucket_count); \
+          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
+          counter.AddTime(sample);                                      \
+        }                                                               \
+        break;                                                          \
+      case STATE_RUN_WS_NODEFAULT_PORT:                                 \
+        {                                                               \
+          static Histogram counter(                                     \
+              "WebSocketExperiment.NoDefaultPort." name,                \
+              min, max, bucket_count);                                  \
+          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
+          counter.AddTime(sample);                                      \
+        }                                                               \
+        break;                                                          \
+      default:                                                          \
+        NOTREACHED();                                                   \
+        break;                                                          \
+    }                                                                   \
+  } while (0);
 
 // Hold reference while experiment is running.
 static scoped_refptr<WebSocketExperimentRunner> runner;
@@ -54,7 +116,6 @@ WebSocketExperimentRunner::WebSocketExperimentRunner()
       ALLOW_THIS_IN_INITIALIZER_LIST(
           task_callback_(this, &WebSocketExperimentRunner::OnTaskCompleted)) {
   InitConfig();
-  InitHistograms();
 }
 
 WebSocketExperimentRunner::~WebSocketExperimentRunner() {
@@ -129,33 +190,6 @@ void WebSocketExperimentRunner::InitConfig() {
   config_.ws_nondefault_config.http_url =
       GURL(StringPrintf("http://%s:%d/",
                         kExperimentHost, kAlternativePort));
-}
-
-void WebSocketExperimentRunner::InitHistograms() {
-  InitHistogram<LinearHistogram, Histogram::Sample>(
-      kLastStateName, 1, WebSocketExperimentTask::NUM_STATES,
-      WebSocketExperimentTask::NUM_STATES + 1);
-
-  InitHistogram<Histogram, base::TimeDelta>(
-      kUrlFetchName, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(kUrlFetchDeadlineSec), 50);
-
-  InitHistogram<Histogram, base::TimeDelta>(
-      kWebSocketConnectName, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(kWebSocketConnectDeadlineSec), 50);
-
-  InitHistogram<Histogram, base::TimeDelta>(
-      kWebSocketEchoName, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(kWebSocketEchoDeadlineSec), 50);
-
-  InitHistogram<Histogram, base::TimeDelta>(
-      kWebSocketIdleName, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(
-          kWebSocketIdleSec + kWebSocketPushDeadlineSec), 50);
-
-  InitHistogram<Histogram, base::TimeDelta>(
-      kWebSocketTotalName, base::TimeDelta::FromMilliseconds(1),
-      base::TimeDelta::FromSeconds(kWebSocketTimeSec), 50);
 }
 
 void WebSocketExperimentRunner::DoLoop() {
@@ -242,91 +276,53 @@ void WebSocketExperimentRunner::UpdateTaskResultHistogram(
              << " websocket_total="
              << task_result.websocket_total.InSecondsF();
 
+  UPDATE_HISTOGRAM("LastState", task_result.last_state,
+                   1, WebSocketExperimentTask::NUM_STATES,
+                   WebSocketExperimentTask::NUM_STATES + 1);
 
-  Histogram* last_state = GetHistogram(kLastStateName);
-  DCHECK(last_state);
-  last_state->Add(task_result.last_state);
-
-  Histogram* url_fetch = GetHistogram(kUrlFetchName);
-  DCHECK(url_fetch);
-  url_fetch->AddTime(task_result.url_fetch);
+  UPDATE_HISTOGRAM_TIMES("UrlFetch", task_result.url_fetch,
+                         base::TimeDelta::FromMilliseconds(1),
+                         base::TimeDelta::FromSeconds(kUrlFetchDeadlineSec),
+                         kTimeBucketCount);
 
   if (task_result.last_state <
       WebSocketExperimentTask::STATE_WEBSOCKET_CONNECT_COMPLETE)
     return;
 
-  Histogram* websocket_connect = GetHistogram(kWebSocketConnectName);
-  DCHECK(websocket_connect);
-  websocket_connect->AddTime(task_result.websocket_connect);
+  UPDATE_HISTOGRAM_TIMES("WebSocketConnect", task_result.websocket_connect,
+                         base::TimeDelta::FromMilliseconds(1),
+                         base::TimeDelta::FromSeconds(
+                             kWebSocketConnectDeadlineSec),
+                         kTimeBucketCount);
 
   if (task_result.last_state <
       WebSocketExperimentTask::STATE_WEBSOCKET_RECV_HELLO)
     return;
 
-  Histogram* websocket_echo = GetHistogram(kWebSocketEchoName);
-  DCHECK(websocket_echo);
-  websocket_echo->AddTime(task_result.websocket_echo);
+  UPDATE_HISTOGRAM_TIMES("WebSocketEcho", task_result.websocket_echo,
+                         base::TimeDelta::FromMilliseconds(1),
+                         base::TimeDelta::FromSeconds(
+                             kWebSocketEchoDeadlineSec),
+                         kTimeBucketCount);
 
   if (task_result.last_state <
       WebSocketExperimentTask::STATE_WEBSOCKET_KEEP_IDLE)
     return;
 
-  Histogram* websocket_idle = GetHistogram(kWebSocketIdleName);
-  DCHECK(websocket_idle);
-  websocket_idle->AddTime(task_result.websocket_idle);
+  UPDATE_HISTOGRAM_TIMES("WebSocketIdle", task_result.websocket_idle,
+                         base::TimeDelta::FromMilliseconds(1),
+                         base::TimeDelta::FromSeconds(
+                             kWebSocketIdleSec + kWebSocketPushDeadlineSec),
+                         kTimeBucketCount);
 
   if (task_result.last_state <
       WebSocketExperimentTask::STATE_WEBSOCKET_CLOSE_COMPLETE)
     return;
 
-  Histogram* websocket_total = GetHistogram(kWebSocketTotalName);
-  DCHECK(websocket_total);
-  websocket_total->AddTime(task_result.websocket_total);
-}
-
-template<class HistogramType, typename HistogramSample>
-void WebSocketExperimentRunner::InitHistogram(
-    const char* type_name,
-    HistogramSample min, HistogramSample max, size_t bucket_count) {
-  static std::string name = StringPrintf(
-      "WebSocketExperiment.Basic.%s", type_name);
-  HistogramType* counter = new HistogramType(name.c_str(),
-                                             min, max, bucket_count);
-  counter->SetFlags(kUmaTargetedHistogramFlag);
-  ws_histograms_[type_name] = linked_ptr<Histogram>(counter);
-
-  name = StringPrintf("WebSocketExperiment.Secure.%s", type_name);
-  counter = new HistogramType(name.c_str(), min, max, bucket_count);
-  counter->SetFlags(kUmaTargetedHistogramFlag);
-  wss_histograms_[type_name] = linked_ptr<Histogram>(counter);
-
-  name = StringPrintf("WebSocketExperiment.NoDefaultPort.%s", type_name);
-  counter = new HistogramType(name.c_str(), min, max, bucket_count);
-  counter->SetFlags(kUmaTargetedHistogramFlag);
-  ws_nondefault_histograms_[type_name] = linked_ptr<Histogram>(counter);
-}
-
-Histogram* WebSocketExperimentRunner::GetHistogram(
-    const std::string& type_name) const {
-  const HistogramMap* histogram_map = NULL;
-  switch (task_state_) {
-    case STATE_RUN_WS:
-      histogram_map = &ws_histograms_;
-      break;
-    case STATE_RUN_WSS:
-      histogram_map = &wss_histograms_;
-      break;
-    case STATE_RUN_WS_NODEFAULT_PORT:
-      histogram_map = &ws_nondefault_histograms_;
-      break;
-    default:
-      NOTREACHED();
-      return NULL;
-  }
-  DCHECK(histogram_map);
-  HistogramMap::const_iterator found = histogram_map->find(type_name);
-  DCHECK(found != histogram_map->end());
-  return found->second.get();
+  UPDATE_HISTOGRAM_TIMES("WebSocketTotal", task_result.websocket_total,
+                         base::TimeDelta::FromMilliseconds(1),
+                         base::TimeDelta::FromSeconds(kWebSocketTimeSec),
+                         kTimeBucketCount);
 }
 
 }  // namespace chrome_browser_net_websocket_experiment

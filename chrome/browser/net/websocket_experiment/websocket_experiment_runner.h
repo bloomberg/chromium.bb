@@ -37,8 +37,6 @@ class WebSocketExperimentRunner
   void Cancel();
 
  private:
-  typedef std::map<std::string, linked_ptr<Histogram> > HistogramMap;
-
   enum State {
     STATE_NONE,
     STATE_IDLE,
@@ -51,27 +49,15 @@ class WebSocketExperimentRunner
   friend class base::RefCountedThreadSafe<WebSocketExperimentRunner>;
 
   void InitConfig();
-  void InitHistograms();
   void DoLoop();
   void OnTaskCompleted(int result);
   void UpdateTaskResultHistogram(const WebSocketExperimentTask* task);
-
-  template<class HistogramType, typename HistogramSample>
-  void InitHistogram(const char* type_name,
-                     HistogramSample min, HistogramSample max,
-                     size_t bucket_count);
-
-  Histogram* GetHistogram(const std::string& type_name) const;
 
   Config config_;
   State next_state_;
   State task_state_;
   scoped_ptr<WebSocketExperimentTask> task_;
   net::CompletionCallbackImpl<WebSocketExperimentRunner> task_callback_;
-
-  HistogramMap ws_histograms_;
-  HistogramMap wss_histograms_;
-  HistogramMap ws_nondefault_histograms_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketExperimentRunner);
 };
