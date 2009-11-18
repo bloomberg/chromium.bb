@@ -1605,4 +1605,14 @@
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_28179
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   fun:*
+   fun:_ZN10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
+   fun:*
+   fun:_ZN7testing4Test3RunEv
+}
 
