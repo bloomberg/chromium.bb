@@ -190,7 +190,7 @@ int main(int ac, char **av) {
 #endif
   na.phdrs = &ep;
 
-  na.xlate_base = 0;
+  na.mem_start = 0;
 
   /* generate trampoline thunk */
   NaClLoadTrampoline(&na);

@@ -82,7 +82,7 @@ static INLINE uintptr_t NaClUserToSysAddrNullOkay(struct NaClApp  *nap,
   if (uaddr >= (1U << nap->addr_bits)) {
     return kNaClBadAddress;
   }
-  return uaddr + nap->xlate_base;
+  return uaddr + nap->mem_start;
 }
 
 static INLINE uintptr_t NaClUserToSysAddr(struct NaClApp  *nap,
@@ -90,7 +90,7 @@ static INLINE uintptr_t NaClUserToSysAddr(struct NaClApp  *nap,
   if (0 == uaddr || uaddr >= (1U << nap->addr_bits)) {
     return kNaClBadAddress;
   }
-  return uaddr + nap->xlate_base;
+  return uaddr + nap->mem_start;
 }
 
 static INLINE uintptr_t NaClSysToUserAddr(struct NaClApp  *nap,
@@ -99,7 +99,7 @@ static INLINE uintptr_t NaClSysToUserAddr(struct NaClApp  *nap,
       sysaddr >= nap->mem_start + (1U << nap->addr_bits)) {
     return kNaClBadAddress;
   }
-  return sysaddr - nap->xlate_base;
+  return sysaddr - nap->mem_start;
 }
 
 static INLINE uintptr_t NaClUserToSysAddrRange(struct NaClApp  *nap,
@@ -118,7 +118,7 @@ static INLINE uintptr_t NaClUserToSysAddrRange(struct NaClApp  *nap,
   if (end_addr >= (1U << nap->addr_bits)) {
     return kNaClBadAddress;
   }
-  return uaddr + nap->xlate_base;
+  return uaddr + nap->mem_start;
 }
 
 static INLINE uintptr_t NaClUserToSys(struct NaClApp  *nap,
@@ -128,7 +128,7 @@ static INLINE uintptr_t NaClUserToSys(struct NaClApp  *nap,
             "NaClUserToSys: uaddr 0x%08"PRIxPTR", addr space %u bits\n",
             uaddr, nap->addr_bits);
   }
-  return uaddr + nap->xlate_base;
+  return uaddr + nap->mem_start;
 }
 
 static INLINE uintptr_t NaClSysToUser(struct NaClApp  *nap,
@@ -140,5 +140,5 @@ static INLINE uintptr_t NaClSysToUser(struct NaClApp  *nap,
             " addr space %d bits\n",
             sysaddr, nap->mem_start, nap->addr_bits);
   }
-  return sysaddr - nap->xlate_base;
+  return sysaddr - nap->mem_start;
 }

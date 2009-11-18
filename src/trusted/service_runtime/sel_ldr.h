@@ -157,7 +157,6 @@ struct NaClApp {
   /* determined at load time; OS-determined */
   /* read-only */
   uintptr_t                 mem_start;
-  uintptr_t                 xlate_base;
 
   /* only used for ET_EXEC:  for CS restriction */
   uint32_t                  text_region_bytes;  /* ro. memsz */
