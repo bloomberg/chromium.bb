@@ -5,7 +5,6 @@
 #include <gtk/gtk.h>
 
 #include "views/focus/accelerator_handler.h"
-
 #include "views/focus/focus_manager.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_gtk.h"
@@ -26,6 +25,11 @@ bool AcceleratorHandler::Dispatch(GdkEvent* event) {
   GdkWindow* window = gdk_window_get_toplevel(key_event->window);
   gpointer ptr;
   gdk_window_get_user_data(window, &ptr);
+  if (!ptr && !gdk_window_is_visible(window)) {
+    // The window is destroyed while we're handling key events.
+    gtk_main_do_event(event);
+    return true;
+  }
   DCHECK(ptr);  // The top-level window is expected to always be associated
                 // with the top-level gtk widget.
   WindowGtk* widget =

@@ -7,6 +7,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/bookmark_manager_gtk.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -80,4 +81,13 @@ IN_PROC_BROWSER_TEST_F(BookmarkManagerTest, Crash) {
   manager_->SelectInTree(model_->GetBookmarkBarNode(), true);
 
   CleanUp();
+#if defined(TOOLKIT_VIEWS)
+  // The test fails on toolkit_views build without the following
+  // cleanup code.  This is because the bookmark bar view refuses to
+  // be destroyed by a bookmark model when the BrowserProcessImpl
+  // destroys the bookmark bar model.
+  // TODO(oshima): http://crbug/28046.
+  browser()->window()->Close();
+  MessageLoopForUI::current()->RunAllPending();
+#endif
 }
