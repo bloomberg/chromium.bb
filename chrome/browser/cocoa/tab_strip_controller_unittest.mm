@@ -4,10 +4,12 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/browser_window.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/renderer_host/site_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -62,77 +64,78 @@ class TestTabStripDelegate : public TabStripModelDelegate {
   virtual void BookmarkAllTabs() {}
 };
 
-class TabStripControllerTest : public PlatformTest {
+class TabStripControllerTest : public CocoaTest {
  public:
   TabStripControllerTest() {
-    NSView* parent = cocoa_helper_.contentView();
+    Browser* browser = browser_helper_.browser();
+    BrowserWindow* browser_window = browser_helper_.CreateBrowserWindow();
+    NSWindow* window = browser_window->GetNativeHandle();
+    NSView* parent = [window contentView];
     NSRect content_frame = [parent frame];
 
     // Create the "switch view" (view that gets changed out when a tab
     // switches).
     NSRect switch_frame = NSMakeRect(0, 0, content_frame.size.width, 500);
-    scoped_nsobject<NSView> switch_view([[NSView alloc]
-                                          initWithFrame:switch_frame]);
+    scoped_nsobject<NSView> switch_view(
+        [[NSView alloc] initWithFrame:switch_frame]);
     [parent addSubview:switch_view.get()];
 
     // Create the tab strip view. It's expected to have a child button in it
     // already as the "new tab" button so create that too.
     NSRect strip_frame = NSMakeRect(0, NSMaxY(switch_frame),
                                     content_frame.size.width, 30);
-    tab_strip_.reset([[NSView alloc] initWithFrame:strip_frame]);
-    [parent addSubview:tab_strip_.get()];
+    scoped_nsobject<NSView> tab_strip(
+        [[NSView alloc] initWithFrame:strip_frame]);
+    [parent addSubview:tab_strip.get()];
     NSRect button_frame = NSMakeRect(0, 0, 15, 15);
-    scoped_nsobject<NSButton> close_button([[NSButton alloc]
-                                             initWithFrame:button_frame]);
-    [tab_strip_ addSubview:close_button.get()];
+    scoped_nsobject<NSButton> close_button(
+        [[NSButton alloc] initWithFrame:button_frame]);
+    [tab_strip addSubview:close_button.get()];
 
     delegate_.reset(new TestTabStripDelegate());
-    model_ = browser_helper_.browser()->tabstrip_model();
+    model_ = browser->tabstrip_model();
     controller_.reset([[TabStripController alloc]
-                        initWithView:(TabStripView*)tab_strip_.get()
+                        initWithView:static_cast<TabStripView*>(tab_strip.get())
                           switchView:switch_view.get()
-                             browser:browser_helper_.browser()]);
+                             browser:browser]);
   }
 
-  CocoaTestHelper cocoa_helper_;
+  virtual void TearDown() {
+    browser_helper_.CloseBrowserWindow();
+    CocoaTest::TearDown();
+  }
+
   BrowserTestHelper browser_helper_;
   scoped_ptr<TestTabStripDelegate> delegate_;
   TabStripModel* model_;
   scoped_nsobject<TabStripController> controller_;
-  scoped_nsobject<NSView> tab_strip_;
 };
 
 // Test adding and removing tabs and making sure that views get added to
 // the tab strip.
 TEST_F(TabStripControllerTest, AddRemoveTabs) {
   EXPECT_TRUE(model_->empty());
-#if 0
-  // TODO(pinkerton): Creating a TabContents crashes an unrelated test, even
-  // if you don't do anything with it. http://crbug.com/10899
   SiteInstance* instance =
       SiteInstance::CreateSiteInstance(browser_helper_.profile());
   TabContents* tab_contents =
-      new TabContents(browser_helper_.profile(), instance);
+      new TabContents(browser_helper_.profile(), instance, MSG_ROUTING_NONE,
+                      NULL);
   model_->AppendTabContents(tab_contents, true);
   EXPECT_EQ(model_->count(), 1);
-#endif
 }
 
 TEST_F(TabStripControllerTest, SelectTab) {
-  // TODO(pinkerton): Creating a TabContents crashes an unrelated test, even
-  // if you don't do anything with it. http://crbug.com/10899
+  // TODO(pinkerton): Implement
 }
 
 TEST_F(TabStripControllerTest, RearrangeTabs) {
-  // TODO(pinkerton): Creating a TabContents crashes an unrelated test, even
-  // if you don't do anything with it. http://crbug.com/10899
+  // TODO(pinkerton): Implement
 }
 
 // Test that changing the number of tabs broadcasts a
 // kTabStripNumberOfTabsChanged notifiction.
 TEST_F(TabStripControllerTest, Notifications) {
-  // TODO(pinkerton): Creating a TabContents crashes an unrelated test, even
-  // if you don't do anything with it. http://crbug.com/10899
+  // TODO(pinkerton): Implement
 }
 
 }  // namespace
