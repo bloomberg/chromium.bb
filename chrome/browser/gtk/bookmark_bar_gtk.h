@@ -207,6 +207,9 @@ class BookmarkBarGtk : public AnimationDelegate,
   static gboolean OnButtonPressed(GtkWidget* sender,
                                   GdkEventButton* event,
                                   BookmarkBarGtk* bar);
+  static gboolean OnSyncErrorButtonPressed(GtkWidget* sender,
+                                           GdkEventButton* event,
+                                           BookmarkBarGtk* bar);
   static void OnClicked(GtkWidget* sender,
                         BookmarkBarGtk* bar);
   static void OnButtonDragBegin(GtkWidget* widget,
@@ -315,6 +318,9 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // The other bookmarks button.
   GtkWidget* other_bookmarks_button_;
+
+  // The sync error button.
+  GtkWidget* sync_error_button_;
 
   // A pointer to the ProfileSyncService instance if one exists.
   ProfileSyncService* sync_service_;

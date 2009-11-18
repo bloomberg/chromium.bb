@@ -33,6 +33,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/ntp_background_util.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/gtk_util.h"
@@ -273,6 +274,16 @@ void BookmarkBarGtk::Init(Profile* profile) {
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), other_bookmarks_button_,
                      FALSE, FALSE, 0);
 
+  sync_error_button_ = theme_provider_->BuildChromeButton();
+  gtk_button_set_image(
+      GTK_BUTTON(sync_error_button_),
+      gtk_image_new_from_pixbuf(
+          ResourceBundle::GetSharedInstance().GetPixbufNamed(IDR_WARNING)));
+  g_signal_connect(G_OBJECT(sync_error_button_), "button-press-event",
+                   G_CALLBACK(OnSyncErrorButtonPressed), this);
+  gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_ ,
+                     FALSE, FALSE, 0);
+
   gtk_widget_set_size_request(event_box_.get(), -1, kBookmarkBarMinimumHeight);
 
   slide_animation_.reset(new SlideAnimation(this));
@@ -302,6 +313,12 @@ void BookmarkBarGtk::Show(bool animate) {
       gdk_window_lower(event_box_->window);
   }
 
+  if (ShouldShowSyncErrorButton()) {
+    gtk_widget_show(sync_error_button_);
+  } else {
+    gtk_widget_hide(sync_error_button_);
+  }
+
   // Maybe show the instructions
   if (show_instructions_) {
     gtk_widget_show(instructions_);
@@ -328,7 +345,11 @@ void BookmarkBarGtk::Hide(bool animate) {
 }
 
 void BookmarkBarGtk::OnStateChanged() {
-  // TODO(zork): TODO
+  if (ShouldShowSyncErrorButton()) {
+    gtk_widget_show(sync_error_button_);
+  } else {
+    gtk_widget_hide(sync_error_button_);
+  }
 }
 
 void BookmarkBarGtk::EnterFullscreen() {
@@ -866,6 +887,18 @@ gboolean BookmarkBarGtk::OnButtonPressed(GtkWidget* sender,
 }
 
 // static
+gboolean BookmarkBarGtk::OnSyncErrorButtonPressed(GtkWidget* sender,
+                                                  GdkEventButton* event,
+                                                  BookmarkBarGtk* bar) {
+  if (sender == bar->sync_error_button_) {
+    DCHECK(bar->sync_service_);
+    bar->sync_service_->ShowLoginDialog();
+  }
+
+  return FALSE;
+}
+
+// static
 void BookmarkBarGtk::OnClicked(GtkWidget* sender,
                                BookmarkBarGtk* bar) {
   const BookmarkNode* node = bar->GetNodeForToolButton(sender);
@@ -1279,4 +1312,21 @@ void BookmarkBarGtk::PopupForButtonNextTo(GtkWidget* button,
   int shift = dir == GTK_MENU_DIR_PARENT ? -1 : 1;
   button_idx = (button_idx + shift + folder_list.size()) % folder_list.size();
   PopupForButton(folder_list[button_idx]);
+}
+
+// The sync state reported by the profile sync service determines whether or
+// not the re-login indicator button should be visible.
+bool BookmarkBarGtk::ShouldShowSyncErrorButton() {
+  bool show_sync_error_button(false);
+  if (sync_service_ && sync_service_->HasSyncSetupCompleted()) {
+    string16 status_text;
+    string16 link_text;
+    SyncStatusUIHelper::MessageType sync_status;
+    sync_status = SyncStatusUIHelper::GetLabels(
+        sync_service_, &status_text, &link_text);
+    if (sync_status == SyncStatusUIHelper::SYNC_ERROR) {
+      show_sync_error_button = true;
+    }
+  }
+  return show_sync_error_button;
 }
