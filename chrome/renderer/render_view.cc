@@ -2546,14 +2546,13 @@ void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
     // cache the width and height and only send the IPC message when we're sure
     // they're different.
     int width = webview()->mainFrame()->contentsPreferredWidth();
+    int height = webview()->mainFrame()->documentElementScrollHeight();
+    
     if (width != preferred_size_.width() ||
-        size.height != preferred_size_.height()) {
+        height != preferred_size_.height()) {
       preferred_size_.set_width(width);
+      preferred_size_.set_height(height);
 
-      // TODO(erikkay) the contents size is not really the same as the
-      // preferred size.  It's just the current size.  This means that for
-      // height, it will only ever grow, it will never shrink.
-      preferred_size_.set_height(size.height);
       Send(new ViewHostMsg_DidContentsPreferredSizeChange(routing_id_,
                                                           preferred_size_));
     }
