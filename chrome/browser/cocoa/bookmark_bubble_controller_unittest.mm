@@ -13,58 +13,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-@interface BBDelegate : NSObject<BookmarkBubbleControllerDelegate> {
- @private
-  InfoBubbleWindow* window_;
-  int edits_;
-}
-
-@property (readonly) int edits;
-@property (readonly, getter=isWindowClosing) BOOL windowClosing;
-
-@end
-
-@implementation BBDelegate
-
-@synthesize edits = edits_;
-
-- (NSPoint)topLeftForBubble {
-  return NSMakePoint(10, 300);
-}
-
-- (void)editBookmarkNode:(const BookmarkNode*)node {
-  edits_++;
-}
-
-// Tell us (a delegate) which controller it will "own".  This sets up
-// the test classes (e.g. simulates what Chromium would do after
-// creating a BookmarkBubbleController).
-- (void)setWindowController:(NSWindowController *)controller {
-  window_ = static_cast<InfoBubbleWindow*>([controller window]);
-  [controller showWindow:self];
-}
-
-// The bubble tells the delegate when it will go away.
-- (void)bubbleWindowWillClose:(NSWindow*)window {
-  // empty
- }
-
-- (BOOL)isWindowClosing {
-  return [window_ isClosing];
-}
-
-@end
-
 namespace {
 
 class BookmarkBubbleControllerTest : public CocoaTest {
  public:
+  static int edits_;
   BrowserTestHelper helper_;
-  scoped_nsobject<BBDelegate> delegate_;
   BookmarkBubbleController* controller_;
 
   BookmarkBubbleControllerTest() : controller_(nil) {
-    delegate_.reset([[BBDelegate alloc] init]);
+    edits_ = 0;
   }
 
   virtual void TearDown() {
@@ -78,19 +36,26 @@ class BookmarkBubbleControllerTest : public CocoaTest {
     if (controller_)
       [controller_ close];
     controller_ = [[BookmarkBubbleController alloc]
-                       initWithDelegate:delegate_.get()
-                       parentWindow:test_window()
-                       topLeftForBubble:[delegate_ topLeftForBubble]
-                       model:helper_.profile()->GetBookmarkModel()
-                       node:node
-                       alreadyBookmarked:YES];
+                      initWithParentWindow:test_window()
+                          topLeftForBubble:TopLeftForBubble()
+                                     model:helper_.profile()->GetBookmarkModel()
+                                      node:node
+                         alreadyBookmarked:YES];
     EXPECT_TRUE([controller_ window]);
-    [delegate_ setWindowController:controller_];
+    [controller_ showWindow:nil];
     return controller_;
   }
 
   BookmarkModel* GetBookmarkModel() {
     return helper_.profile()->GetBookmarkModel();
+  }
+
+  bool IsWindowClosing() {
+    return [static_cast<InfoBubbleWindow*>([controller_ window]) isClosing];
+  }
+
+  NSPoint TopLeftForBubble() {
+    return NSMakePoint(10, 300);
   }
 };
 
@@ -109,6 +74,22 @@ TEST_F(BookmarkBubbleControllerTest, TestBubbleWindow) {
   EXPECT_TRUE(NSContainsRect([test_window() frame],
                              [window frame]));
 }
+
+// Test that we can handle closing the parent window
+TEST_F(BookmarkBubbleControllerTest, TestClosingParentWindow) {
+  BookmarkModel* model = GetBookmarkModel();
+  const BookmarkNode* node = model->AddURL(model->GetBookmarkBarNode(),
+                                           0,
+                                           L"Bookie markie title",
+                                           GURL("http://www.google.com"));
+  BookmarkBubbleController* controller = ControllerForNode(node);
+  EXPECT_TRUE(controller);
+  NSWindow* window = [controller window];
+  EXPECT_TRUE(window);
+  base::ScopedNSAutoreleasePool pool;
+  [test_window() performClose:NSApp];
+}
+
 
 // Confirm population of folder list
 TEST_F(BookmarkBubbleControllerTest, TestFillInFolder) {
@@ -158,11 +139,11 @@ TEST_F(BookmarkBubbleControllerTest, TestEdit) {
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
 
-  EXPECT_EQ([delegate_ edits], 0);
-  EXPECT_FALSE([delegate_ isWindowClosing]);
+  EXPECT_EQ(edits_, 0);
+  EXPECT_FALSE(IsWindowClosing());
   [controller edit:controller];
-  EXPECT_EQ([delegate_ edits], 1);
-  EXPECT_TRUE([delegate_ isWindowClosing]);
+  EXPECT_EQ(edits_, 1);
+  EXPECT_TRUE(IsWindowClosing());
 }
 
 // CallClose; bubble gets closed.
@@ -172,14 +153,14 @@ TEST_F(BookmarkBubbleControllerTest, TestClose) {
                                              0,
                                              L"Bookie markie title",
                                              GURL("http://www.google.com"));
-  EXPECT_EQ([delegate_ edits], 0);
+  EXPECT_EQ(edits_, 0);
 
   BookmarkBubbleController* controller = ControllerForNode(node);
   EXPECT_TRUE(controller);
-  EXPECT_FALSE([delegate_ isWindowClosing]);
+  EXPECT_FALSE(IsWindowClosing());
   [controller ok:controller];
-  EXPECT_EQ([delegate_ edits], 0);
-  EXPECT_TRUE([delegate_ isWindowClosing]);
+  EXPECT_EQ(edits_, 0);
+  EXPECT_TRUE(IsWindowClosing());
 }
 
 // User changes title and parent folder in the UI
@@ -277,7 +258,7 @@ TEST_F(BookmarkBubbleControllerTest, TestRemove) {
 
   [controller remove:controller];
   EXPECT_FALSE(model->IsBookmarked(gurl));
-  EXPECT_TRUE([delegate_ isWindowClosing]);
+  EXPECT_TRUE(IsWindowClosing());
 }
 
 // Confirm picking "choose another folder" caused edit: to be called.
@@ -292,9 +273,9 @@ TEST_F(BookmarkBubbleControllerTest, PopUpSelectionChanged) {
 
   NSPopUpButton* button = [controller folderPopUpButton];
   [button selectItemWithTitle:[[controller class] chooseAnotherFolderString]];
-  EXPECT_EQ([delegate_ edits], 0);
+  EXPECT_EQ(edits_, 0);
   [button sendAction:[button action] to:[button target]];
-  EXPECT_EQ([delegate_ edits], 1);
+  EXPECT_EQ(edits_, 1);
 }
 
 // Create a controller that simulates the bookmark just now being created by
@@ -309,12 +290,11 @@ TEST_F(BookmarkBubbleControllerTest, EscapeRemovesNewBookmark) {
                                            gurl);
   BookmarkBubbleController* controller =
       [[BookmarkBubbleController alloc]
-          initWithDelegate:delegate_.get()
-              parentWindow:test_window()
-          topLeftForBubble:[delegate_ topLeftForBubble]
-                     model:helper_.profile()->GetBookmarkModel()
-                      node:node
-         alreadyBookmarked:NO];  // The last param is the key difference.
+          initWithParentWindow:test_window()
+              topLeftForBubble:TopLeftForBubble()
+                         model:helper_.profile()->GetBookmarkModel()
+                          node:node
+             alreadyBookmarked:NO];  // The last param is the key difference.
   EXPECT_TRUE([controller window]);
   // Calls release on controller.
   [controller cancel:nil];
@@ -339,3 +319,16 @@ TEST_F(BookmarkBubbleControllerTest, EscapeDoesntTouchExistingBookmark) {
 }
 
 }  // namespace
+
+@implementation NSApplication (BookmarkBubbleUnitTest)
+// Add handler for the editBookmarkNode: action to NSApp for testing purposes.
+// Normally this would be sent up the responder tree correctly, but since
+// tests run in the background, key window and main window are never set on
+// NSApplication. Adding it to NSApplication directly removes the need for
+// worrying about what the current window with focus is.
+- (void)editBookmarkNode:(id)sender {
+  EXPECT_TRUE([sender respondsToSelector:@selector(node)]);
+  BookmarkBubbleControllerTest::edits_++;
+}
+
+@end

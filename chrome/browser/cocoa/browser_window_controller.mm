@@ -231,6 +231,8 @@ willPositionSheet:(NSWindow*)sheet
   if (ownsBrowser_ == NO)
     browser_.release();
 
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+
   [super dealloc];
 }
 
@@ -245,8 +247,8 @@ willPositionSheet:(NSWindow*)sheet
   // We need the window to go away now.
   // We can't actually use |-autorelease| here because there's an embedded
   // run loop in the |-performClose:| which contains its own autorelease pool.
-  // Instead we use call it after a zero-length delay, which gets us back
-  // to the main event loop.
+  // Instead call it after a zero-length delay, which gets us back to the main
+  // event loop.
   [self performSelector:@selector(autorelease)
              withObject:nil
              afterDelay:0];
@@ -260,15 +262,14 @@ willPositionSheet:(NSWindow*)sheet
   DCHECK_EQ([notification object], [self window]);
   DCHECK(!browser_->tabstrip_model()->count());
   [savedRegularWindow_ close];
-  [bookmarkBubbleController_ close];
   // We delete statusBubble here because we need to kill off the dependency
   // that its window has on our window before our window goes away.
   delete statusBubble_;
   statusBubble_ = NULL;
   // We can't actually use |-autorelease| here because there's an embedded
   // run loop in the |-performClose:| which contains its own autorelease pool.
-  // Instead we call it after a zero-length delay, which gets us back
-  // to the main event loop.
+  // Instead call it after a zero-length delay, which gets us back to the main
+  // event loop.
   [self performSelector:@selector(autorelease)
              withObject:nil
              afterDelay:0];
@@ -1160,40 +1161,55 @@ willPositionSheet:(NSWindow*)sheet
 
 // Show the bookmark bubble (e.g. user just clicked on the STAR).
 - (void)showBookmarkBubbleForURL:(const GURL&)url
-               alreadyBookmarked:(BOOL)alreadyBookmarked {
+               alreadyBookmarked:(BOOL)alreadyMarked {
   if (!bookmarkBubbleController_) {
     BookmarkModel* model = browser_->profile()->GetBookmarkModel();
     const BookmarkNode* node = model->GetMostRecentlyAddedNodeForURL(url);
     NSPoint topLeft = [self topLeftForBubble];
     bookmarkBubbleController_ =
-        [[BookmarkBubbleController alloc] initWithDelegate:self
-                                              parentWindow:[self window]
-                                          topLeftForBubble:topLeft
-                                                     model:model
-                                                      node:node
-                                         alreadyBookmarked:alreadyBookmarked];
+        [[BookmarkBubbleController alloc] initWithParentWindow:[self window]
+                                              topLeftForBubble:topLeft
+                                                         model:model
+                                                          node:node
+                                             alreadyBookmarked:alreadyMarked];
     [bookmarkBubbleController_ showWindow:self];
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(bubbleWindowWillClose:)
+                   name:NSWindowWillCloseNotification
+                 object:[bookmarkBubbleController_ window]];
   }
 }
 
-// Implement BookmarkBubbleControllerDelegate.
-- (void)bubbleWindowWillClose:(NSWindow*)window {
-  if (window == [bookmarkBubbleController_ window])
-    bookmarkBubbleController_ = nil;
+// Nil out the weak bookmark bubble controller reference.
+- (void)bubbleWindowWillClose:(NSNotification*)notification {
+  DCHECK([notification object] == [bookmarkBubbleController_ window]);
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center removeObserver:self
+                 name:NSWindowWillCloseNotification
+               object:[bookmarkBubbleController_ window]];
+  bookmarkBubbleController_ = nil;
 }
 
-// Implement BookmarkBubbleControllerDelegate.
-- (void)editBookmarkNode:(const BookmarkNode*)node {
-  // A BookmarkEditorController is a sheet that owns itself, and
-  // deallocates itself when closed.
-  [[[BookmarkEditorController alloc]
-     initWithParentWindow:[self window]
-                  profile:browser_->profile()
-                   parent:node->GetParent()
-                     node:node
-            configuration:BookmarkEditor::SHOW_TREE
-                  handler:NULL]
-    runAsModalSheet];
+// Handle the editBookmarkNode: action sent from bookmark bubble controllers.
+- (void)editBookmarkNode:(id)sender {
+  BOOL responds = [sender respondsToSelector:@selector(node)];
+  DCHECK(responds);
+  if (responds) {
+    const BookmarkNode* node = [sender node];
+    if (node) {
+      // A BookmarkEditorController is a sheet that owns itself, and
+      // deallocates itself when closed.
+      [[[BookmarkEditorController alloc]
+         initWithParentWindow:[self window]
+                      profile:browser_->profile()
+                       parent:node->GetParent()
+                         node:node
+                configuration:BookmarkEditor::SHOW_TREE
+                      handler:NULL]
+        runAsModalSheet];
+    }
+  }
 }
 
 

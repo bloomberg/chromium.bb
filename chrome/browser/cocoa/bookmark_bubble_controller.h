@@ -10,24 +10,12 @@ class BookmarkModel;
 class BookmarkNode;
 @class BookmarkBubbleController;
 
-// Protocol for a BookmarkBubbleController's (BBC's) delegate.
-@protocol BookmarkBubbleControllerDelegate
-
-// The bubble asks the delegate to perform an edit when needed.
-- (void)editBookmarkNode:(const BookmarkNode*)node;
-
-// The bubble tells the delegate when it will go away.
-- (void)bubbleWindowWillClose:(NSWindow*)window;
-
-@end
-
 // Controller for the bookmark bubble.  The bookmark bubble is a
 // bubble that pops up when clicking on the STAR next to the URL to
 // add or remove it as a bookmark.  This bubble allows for editing of
 // the bookmark in various ways (name, folder, etc.)
 @interface BookmarkBubbleController : NSWindowController<NSWindowDelegate> {
  @private
-  id<BookmarkBubbleControllerDelegate> delegate_;  // weak like other delegates
   NSWindow* parentWindow_;  // weak
   NSPoint topLeftForBubble_;
 
@@ -42,24 +30,27 @@ class BookmarkNode;
   IBOutlet NSPopUpButton* folderPopUpButton_;
 }
 
+@property (readonly, nonatomic) const BookmarkNode* node;
+
 // |node| is the bookmark node we edit in this bubble.
 // |alreadyBookmarked| tells us if the node was bookmarked before the
 //   user clicked on the star.  (if NO, this is a brand new bookmark).
 // The owner of this object is responsible for showing the bubble if
 // it desires it to be visible on the screen.  It is not shown by the
 // init routine.  Closing of the window happens implicitly on dealloc.
-- (id)initWithDelegate:(id<BookmarkBubbleControllerDelegate>)delegate
-          parentWindow:(NSWindow*)parentWindow
-      topLeftForBubble:(NSPoint)topLeftForBubble
-                 model:(BookmarkModel*)model
-                  node:(const BookmarkNode*)node
+- (id)initWithParentWindow:(NSWindow*)parentWindow
+          topLeftForBubble:(NSPoint)topLeftForBubble
+                     model:(BookmarkModel*)model
+                      node:(const BookmarkNode*)node
      alreadyBookmarked:(BOOL)alreadyBookmarked;
 
 // Actions for buttons in the dialog.
-- (IBAction)edit:(id)sender;
 - (IBAction)ok:(id)sender;
 - (IBAction)remove:(id)sender;
 - (IBAction)cancel:(id)sender;
+
+// These actions send a -editBookmarkNode: action up the responder chain.
+- (IBAction)edit:(id)sender;
 - (IBAction)folderChanged:(id)sender;
 
 @end

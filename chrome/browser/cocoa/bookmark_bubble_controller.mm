@@ -24,6 +24,8 @@
 
 @implementation BookmarkBubbleController
 
+@synthesize node = node_;
+
 + (id)chooseAnotherFolderObject {
   // Singleton object to act as a representedObject for the "choose another
   // folder" item in the pop up.
@@ -34,30 +36,39 @@
   return object;
 }
 
-- (id)initWithDelegate:(id<BookmarkBubbleControllerDelegate>)delegate
-          parentWindow:(NSWindow*)parentWindow
-      topLeftForBubble:(NSPoint)topLeftForBubble
-                 model:(BookmarkModel*)model
-                  node:(const BookmarkNode*)node
+- (id)initWithParentWindow:(NSWindow*)parentWindow
+          topLeftForBubble:(NSPoint)topLeftForBubble
+                     model:(BookmarkModel*)model
+                      node:(const BookmarkNode*)node
      alreadyBookmarked:(BOOL)alreadyBookmarked {
   NSString* nibPath =
       [mac_util::MainAppBundle() pathForResource:@"BookmarkBubble"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
-    delegate_ = delegate;
     parentWindow_ = parentWindow;
     topLeftForBubble_ = topLeftForBubble;
     model_ = model;
     node_ = node;
     alreadyBookmarked_ = alreadyBookmarked;
+
+    // Watch to see if the parent window closes, and if so, close this one.
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(windowWillClose:)
+                   name:NSWindowWillCloseNotification
+                 object:parentWindow_];
   }
   return self;
+}
+
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
   [self autorelease];
 }
-
 
 // We want this to be a child of a browser window.  addChildWindow:
 // (called from this function) will bring the window on-screen;
@@ -81,19 +92,19 @@
 
   [self fillInFolderList];
 
-  [[self window] makeKeyAndOrderFront:self];
+  [window makeKeyAndOrderFront:self];
 }
 
 - (void)close {
   [parentWindow_ removeChildWindow:[self window]];
-  [delegate_ bubbleWindowWillClose:[self window]];
   [super close];
 }
 
 // Shows the bookmark editor sheet for more advanced editing.
 - (void)showEditor {
-  [self ok:nil];
-  [delegate_ editBookmarkNode:node_];
+  [self ok:self];
+  // Send the action up through the responder chain.
+  [NSApp sendAction:@selector(editBookmarkNode:) to:nil from:self];
 }
 
 - (IBAction)edit:(id)sender {
@@ -142,17 +153,13 @@
 // notifications. When key is resigned mirror Windows behavior and close the
 // window.
 - (void)windowDidResignKey:(NSNotification*)notification {
-  DCHECK_EQ([notification object], [self window]);
-
-  // We must tell our delegate our window is gone RIGHT NOW.  The
-  // performSelector: call below triggers a close but it might get
-  // processed after a request to show a new bubble (e.g. in another
-  // window).
-  [delegate_ bubbleWindowWillClose:[self window]];
-
-  // Can't call close from within a window delegate method. Call close for the
-  // next time through the event loop.
-  [self performSelector:@selector(ok:) withObject:self afterDelay:0];
+  NSWindow* window = [self window];
+  DCHECK_EQ([notification object], window);
+  if ([window isVisible]) {
+    // If the window isn't visible, it is already closed, and this notification
+    // has been sent as part of the closing operation, so no need to close.
+    [self ok:self];
+  }
 }
 
 // Look at the dialog; if the user has changed anything, update the

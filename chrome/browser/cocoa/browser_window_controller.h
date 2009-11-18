@@ -45,7 +45,6 @@ class TabStripModelObserverBridge;
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkBarControllerDelegate,
-                      BookmarkBubbleControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
                       GTMThemeDelegate> {
@@ -73,9 +72,7 @@ class TabStripModelObserverBridge;
   // be shut down before our destructors are called.
   StatusBubbleMac* statusBubble_;
 
-  // Strong. We don't wrap it in scoped_nsobject because we must close
-  // it appropriately in [windowWillClose:].
-  BookmarkBubbleController* bookmarkBubbleController_;
+  BookmarkBubbleController* bookmarkBubbleController_;  // Weak.
   scoped_nsobject<GTMTheme> theme_;
   BOOL ownsBrowser_;  // Only ever NO when testing
   CGFloat verticalOffsetForStatusBubble_;
