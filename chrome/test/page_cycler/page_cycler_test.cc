@@ -378,6 +378,12 @@ class PageCyclerTest : public UITest {
 #endif  // !defined(OS_MACOSX)
   }
 
+  void PrintSystemCommitCharge(const char* test_name, size_t charge) {
+    std::string trace_name(test_name);
+    PrintResult("commit_charge", "", "cc" + trace_name, charge, "kb",
+                true /* important */);
+  }
+
   // When use_http is true, the test name passed here will be used directly in
   // the path to the test data, so it must be safe for use in a URL without
   // escaping. (No pound (#), question mark (?), semicolon (;), non-ASCII, or
@@ -385,12 +391,16 @@ class PageCyclerTest : public UITest {
   void RunTestWithSuffix(const char* name, bool use_http, const char* suffix) {
     std::wstring pages;
     std::string timings;
+    size_t start_size = base::GetSystemCommitCharge();
     RunPageCycler(name, &pages, &timings, use_http);
     if (timings.empty())
       return;
+    size_t stop_size = base::GetSystemCommitCharge();
 
     PrintMemoryUsageInfo(suffix);
     PrintIOPerfInfo(suffix);
+    PrintSystemCommitCharge(suffix, stop_size - start_size);
+
     std::string trace_name = "t" + std::string(suffix);
     wprintf(L"\nPages: [%ls]\n", pages.c_str());
     PrintResultList("times", "", trace_name, timings, "ms",
@@ -428,12 +438,15 @@ class PageCyclerReferenceTest : public PageCyclerTest {
   void RunTest(const char* name, bool use_http) {
     std::wstring pages;
     std::string timings;
+    size_t start_size = base::GetSystemCommitCharge();
     RunPageCycler(name, &pages, &timings, use_http);
     if (timings.empty())
       return;
+    size_t stop_size = base::GetSystemCommitCharge();
 
     PrintMemoryUsageInfo("_ref");
     PrintIOPerfInfo("_ref");
+    PrintSystemCommitCharge("_ref", stop_size - start_size);
 
     PrintResultList("times", "", "t_ref", timings, "ms",
                     true /* important */);
