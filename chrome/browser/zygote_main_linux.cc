@@ -30,6 +30,7 @@
 #include "base/scoped_ptr.h"
 #include "base/sys_info.h"
 #include "base/unix_domain_socket_posix.h"
+#include "build/build_config.h"
 
 #include "chrome/browser/zygote_host_linux.h"
 #include "chrome/common/chrome_descriptors.h"
@@ -237,6 +238,7 @@ class Zygote {
     child = fork();
 
     if (!child) {
+#if defined(ARCH_CPU_X86_FAMILY)
       // Try to open /proc/self/maps as the seccomp sandbox needs access to it
       if (g_proc_fd >= 0) {
         int proc_self_maps = openat(g_proc_fd, "self/maps", O_RDONLY);
@@ -246,6 +248,7 @@ class Zygote {
         close(g_proc_fd);
         g_proc_fd = -1;
       }
+#endif
 
       close(kBrowserDescriptor);  // our socket from the browser
       close(kZygoteIdDescriptor);  // another socket from the browser
@@ -596,6 +599,7 @@ bool ZygoteMain(const MainFunctionParams& params) {
   g_am_zygote_or_renderer = true;
 #endif
 
+#if defined(ARCH_CPU_X86_FAMILY)
   // The seccomp sandbox needs access to files in /proc, which might be denied
   // after one of the other sandboxes have been started. So, obtain a suitable
   // file handle in advance.
@@ -607,6 +611,7 @@ bool ZygoteMain(const MainFunctionParams& params) {
                     "sandboxing.";
     }
   }
+#endif  // ARCH_CPU_X86_FAMILY
 
   // Turn on the SELinux or SUID sandbox
   if (!EnterSandbox()) {
@@ -615,6 +620,7 @@ bool ZygoteMain(const MainFunctionParams& params) {
     return false;
   }
 
+#if defined(ARCH_CPU_X86_FAMILY)
   // The seccomp sandbox will be turned on when the renderers start. But we can
   // already check if sufficient support is available so that we only need to
   // print one error message for the entire browser session.
@@ -633,6 +639,7 @@ bool ZygoteMain(const MainFunctionParams& params) {
       LOG(INFO) << "Enabling experimental Seccomp sandbox.";
     }
   }
+#endif  // ARCH_CPU_X86_FAMILY
 
   Zygote zygote;
   return zygote.ProcessRequests();
