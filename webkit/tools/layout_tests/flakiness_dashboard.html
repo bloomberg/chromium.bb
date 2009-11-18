@@ -278,7 +278,7 @@
   };
   var BUILD_TYPES = {'DEBUG': 'DBG', 'RELEASE': 'RELEASE'};
   var BASE_TABLE_HEADERS = ['bugs', 'modifiers', 'expectations', 'missing',
-      'extra', 'slowest run', 'flakiness (numbers are runtimes in seconds)'];
+      'extra', 'slowest run', '% fail', 'flakiness (numbers are runtimes in seconds)'];
   var MIN_SECONDS_FOR_SLOW_TEST = 4;
   var MIN_SECONDS_FOR_SLOW_TEST_DEBUG = 2 * MIN_SECONDS_FOR_SLOW_TEST;
   var FAIL_RESULTS = ['IMAGE', 'IMAGE+TEXT', 'TEXT', 'SIMPLIFIED', 'OTHER'];
@@ -436,7 +436,8 @@
       expectationsHTML: '',
       // HTML for modifiers for this test for all platforms
       modifiersHTML: '',
-      rawResults: ''
+      rawResults: '',
+      percentFailed: 0
     };
   }
 
@@ -924,7 +925,7 @@
       resultsForTest.rawResults = rawResults;
       resultsForTest.flips = rawResults.length - 1;
 
-      var times = resultsByBuilder[builderName].tests[test].times;
+      var times = resultsForTest.rawTimes;
       var numTimesSeen = 0;
       var numResultsSeen = 0;
       var resultsIndex = 0;
@@ -943,7 +944,7 @@
         if (rawResults && rawResults[resultsIndex])
           currentResult = rawResults[resultsIndex][1];
 
-        time = times[i][1]
+        var time = times[i][1]
 
         // Ignore times for crashing/timeout runs for the sake of seeing if
         // a test should be marked slow.
@@ -995,6 +996,7 @@
     var numResultsSeen = 0;
     var haveSeenNonFlakeResult = false;
     var numRealResults = 0;
+    var failedCount = 0;
 
     var seenResults = {};
     for (var i = 0;
@@ -1003,25 +1005,32 @@
       var numResults = rawResults[i][0];
       numResultsSeen += numResults;
 
+      var result = rawResults[i][1];
+      if (isFailingResult(result)) {
+        failedCount += numResults;
+      }
+
       var hasMinRuns = numResults >= MIN_RUNS_FOR_FLAKE;
       if (haveSeenNonFlakeResult && hasMinRuns) {
         continue;
       } else if (hasMinRuns) {
         haveSeenNonFlakeResult = true;
-      } else if (!seenResults[rawResults[i][1]]) {
+      } else if (!seenResults[result]) {
         // Only consider a short-lived result if we've seen it more than once.
         // Otherwise, we include lots of false-positives due to tests that fail
         // for a couple runs and then start passing.
-        seenResults[rawResults[i][1]] = true;
+        seenResults[result] = true;
         continue;
       }
 
-      var expectation = getExpectationsFileStringForResult(rawResults[i][1]);
+      var expectation = getExpectationsFileStringForResult(result);
       resultsMap[expectation] = true;
       numRealResults++;
     }
 
     resultsForTest.isFlaky = numRealResults > 1;
+    // Calculate the % of times the test failed - how flaky is it?
+    resultsForTest.percentFailed = Math.round(failedCount / numResultsSeen * 100);
 
     var expectationsArray = resultsForTest.expectations ?
         resultsForTest.expectations.split(' ') : [];
@@ -1333,6 +1342,7 @@
       '</td><td>' + test.missing +
       '</td><td>' + test.extra +
       '</td><td>' + (test.slowestTime ? test.slowestTime + 's' : '') +
+      '</td><td>' + test.percentFailed +
       '</td>' + getHtmlForTestResults(test) + '</tr>';
   }
 
@@ -1428,7 +1438,10 @@
     } else if (column == 'slowest') {
       sortFunctionGetter = getNumericSort;
       resultsProperty = 'slowestTime';
-    } else {
+    } else if (column == '%') {
+      sortFunctionGetter = getNumericSort;
+      resultsProperty = 'percentFailed';
+    }    else {
       sortFunctionGetter = getAlphanumericCompare;
       resultsProperty = column;
     }

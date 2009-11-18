@@ -60,6 +60,14 @@ var CHROME_REVISIONS_KEY = 'chromeRevision';
 var WEBKIT_REVISIONS_KEY = 'webkitRevision';
 
 /**
+ * @return {boolean} Whether the value represents a failing result.
+ */
+function isFailingResult(value) {
+  return 'FSTOCIZ'.indexOf(value) != -1;
+}
+
+
+/**
  * Takes a key and a value and sets the currentState[key] = value iff key is
  * a valid hash parameter and the value is a valid value for that key. Handles
  * cross-dashboard parameters then falls back to calling
