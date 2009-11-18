@@ -46,9 +46,12 @@ void BookmarkMenuBridge::Loaded(BookmarkModel* model) {
 
   ClearBookmarkMenu(bookmark_menu);
 
-  // Add bookmark bar items
-  [bookmark_menu addItem:[NSMenuItem separatorItem]];
-  AddNodeToMenu(model->GetBookmarkBarNode(), bookmark_menu);
+  // Add bookmark bar items, if any.
+  const BookmarkNode* barNode = model->GetBookmarkBarNode();
+  if (barNode->GetChildCount()) {
+    [bookmark_menu addItem:[NSMenuItem separatorItem]];
+    AddNodeToMenu(model->GetBookmarkBarNode(), bookmark_menu);
+  }
 
   // Create a submenu for "other bookmarks", and fill it in.
   NSString* other_items_title = base::SysWideToNSString(

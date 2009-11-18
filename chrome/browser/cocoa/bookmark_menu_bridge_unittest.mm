@@ -68,6 +68,27 @@ class BookmarkMenuBridgeTest : public PlatformTest {
   scoped_ptr<TestBookmarkMenuBridge> bridge_;
 };
 
+TEST_F(BookmarkMenuBridgeTest, TestBookmarkMenuAutoSeparator) {
+  BookmarkModel* model = bridge_->GetBookmarkModel();
+  bridge_->Loaded(model);
+  NSMenu* menu = bridge_->menu_.get();
+  // The bare menu after loading has a separator and an "Other Bookmarks"
+  // submenu.
+  EXPECT_EQ(2, [menu numberOfItems]);
+  // Add a bookmark and reload and there should be 4 items: the previous
+  // menu contents plus a new separator and the new bookmark.
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const char* url = "http://www.zim-bop-a-dee.com/";
+  std::wstring title(L"Bookmark");
+  model->AddURL(parent, 0,  title, GURL(url));
+  bridge_->Loaded(model);
+  EXPECT_EQ(4, [menu numberOfItems]);
+  // Remove the new bookmark and reload and we should have 2 items again
+  // because the separator should have been removed as well.
+  model->Remove(parent, 0);
+  bridge_->Loaded(model);
+  EXPECT_EQ(2, [menu numberOfItems]);
+}
 
 // Test that ClearBookmarkMenu() removes all bookmark menus.
 TEST_F(BookmarkMenuBridgeTest, TestClearBookmarkMenu) {
