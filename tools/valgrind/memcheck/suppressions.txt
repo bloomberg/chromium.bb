@@ -1560,4 +1560,74 @@
    fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
    fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
 }
+{
+   bug_28073
+   Memcheck:Addr4
+   fun:_ZN10CLVContextC2EPKvm
+   fun:_Z26getAllCarbonLazyValues2000v
+   fun:CLVVisitValuesForKey
+   fun:aeInstallLazyEventHandlers
+   fun:AEGetEventHandler
+   fun:AEGetSpecialHandler
+   fun:_Z35_findSysPreHIToolboxDispatchHandlermmPl
+   fun:_Z20aeDispatchAppleEventPK6AEDescPS_mPh
+   fun:_Z25dispatchEventAndSendReplyPK6AEDescPS_
+   fun:aeProcessAppleEvent
+   fun:AEProcessAppleEvent
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:-[NSApplication run]
+   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
+   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_28071
+   Memcheck:Addr4
+   fun:_ZN10CLVContextC2EPKvm
+   fun:_Z26getAllCarbonLazyValues2000v
+   fun:CLVVisitValuesForKey
+   fun:aeInstallLazyEventHandlers
+   fun:AEGetEventHandler
+   fun:AEGetSpecialHandler
+   fun:_Z35_findSysPreHIToolboxDispatchHandlermmPl
+   fun:_Z20aeDispatchAppleEventPK6AEDescPS_mPh
+   fun:_Z25dispatchEventAndSendReplyPK6AEDescPS_
+   fun:aeProcessAppleEvent
+   fun:AEProcessAppleEvent
+   fun:_DPSNextEvent
+   fun:-[NSApplication nextEventMatchingMask:untilDate:inMode:dequeue:]
+   fun:-[NSApplication run]
+   fun:_ZN4base24MessagePumpNSApplication5DoRunEPNS_11MessagePump8DelegateE
+   fun:_ZN4base24MessagePumpCFRunLoopBase3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
+{
+   bug_28072
+   Memcheck:Leak
+   fun:malloc_zone_malloc
+   fun:_CFRuntimeCreateInstance
+   fun:__CFStringCreateImmutableFunnel3
+   fun:CFStringCreateWithBytes
+   fun:__CFBinaryPlistCreateObject2
+   fun:__CFBinaryPlistCreateObject2
+   fun:__CFBinaryPlistCreateObject2
+   fun:__CFTryParseBinaryPlist
+   fun:_CFPropertyListCreateFromXMLData
+   fun:CFPropertyListCreateFromStream
+   fun:+[CFXPreferencesPropertyListSource createPlistFromFile:statInfo:]
+   fun:-[CFXPreferencesPropertyListSource synchronize]
+   fun:CFPreferencesSynchronize
+   fun:_CSBackupSettingsExcludePath
+   fun:CSBackupSetItemExcluded
+   fun:_ZN8mac_util22SetFileBackupExclusionERK8FilePathb
+   fun:_ZN7history15HistoryDatabase4InitERK8FilePathS3_
+   fun:_ZN7history14HistoryBackend8InitImplEv
+   fun:_ZN7history14HistoryBackend4InitEb
+   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvbEbEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+}
 
