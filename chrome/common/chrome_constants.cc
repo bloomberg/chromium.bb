@@ -29,7 +29,9 @@ const wchar_t kBrowserProcessExecutableName[] = L"chrome.exe";
 const wchar_t kHelperProcessExecutableName[] = L"chrome.exe";
 #elif defined(OS_LINUX)
 const wchar_t kBrowserProcessExecutableName[] = L"chrome";
-const wchar_t kHelperProcessExecutableName[] = L"chrome";
+// Helper processes end up with a name of "exe" due to execing via
+// /proc/self/exe.  See bug 22703.
+const wchar_t kHelperProcessExecutableName[] = L"exe";
 #elif defined(OS_MACOSX)
 const wchar_t kBrowserProcessExecutableName[] = PRODUCT_STRING_W;
 const wchar_t kHelperProcessExecutableName[] = PRODUCT_STRING_W L" Helper";
