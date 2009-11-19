@@ -322,6 +322,14 @@ void MenuGtk::PointMenuPositionFunc(GtkMenu* menu,
   gfx::Point* point = reinterpret_cast<gfx::Point*>(userdata);
   *x = point->x();
   *y = point->y();
+
+  GtkRequisition menu_req;
+  gtk_widget_size_request(GTK_WIDGET(menu), &menu_req);
+  GdkScreen* screen = gdk_screen_get_default();
+  gint screen_height = gdk_screen_get_height(screen);
+
+  if (*y + menu_req.height >= screen_height)
+    *y -= menu_req.height;
 }
 
 void MenuGtk::UpdateMenu() {
