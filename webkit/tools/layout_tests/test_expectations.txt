@@ -2201,9 +2201,6 @@ BUG21386 LINUX : LayoutTests/fast/repaint/table-row.html = FAIL
 BUG21386 LINUX : LayoutTests/fast/repaint/table-section-overflow.html = FAIL
 BUG21386 LINUX : LayoutTests/fast/layers/layer-content-visibility-change.html = FAIL
 
-// Linux pixeltest failure: Failing to rotate the form control
-BUG10390 LINUX : LayoutTests/fast/transforms/transformed-focused-text-input.html = FAIL
-
 // TODO(tc): flaky.
 BUG10391 LINUX : LayoutTests/fast/events/5056619.html = FAIL
 
