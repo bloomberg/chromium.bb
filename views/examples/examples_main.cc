@@ -23,6 +23,7 @@
 #include "views/examples/table2_example.h"
 #endif
 #include "views/examples/textfield_example.h"
+#include "views/examples/widget_example.h"
 #include "views/focus/accelerator_handler.h"
 #include "views/grid_layout.h"
 #include "views/window/window.h"
@@ -78,7 +79,7 @@ void ExamplesMain::Run() {
   layout->AddView(status_label_);
 
   views::Window* window =
-      views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 600, 300), this);
+      views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 700, 300), this);
 
   examples::TextfieldExample textfield_example(this);
   tabbed_pane->AddTab(textfield_example.GetExampleTitle(),
@@ -118,6 +119,10 @@ void ExamplesMain::Run() {
   tabbed_pane->AddTab(table2_example.GetExampleTitle(),
                       table2_example.GetExampleView());
 #endif
+
+  examples::WidgetExample widget_example(this);
+  tabbed_pane->AddTab(widget_example.GetExampleTitle(),
+                      widget_example.GetExampleView());
 
   window->Show();
   views::AcceleratorHandler accelerator_handler;
