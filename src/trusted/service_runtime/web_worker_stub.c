@@ -166,7 +166,7 @@ int NaClStartNativeWebWorker(char *buffer,
    */
   if (LOAD_OK != NaClAppLoadFile((struct Gio *) &gf,
                                  *nap,
-                                 NACL_ABI_MISMATCH_OPTION_ABORT)) {
+                                 NACL_ABI_CHECK_OPTION_CHECK)) {
     goto done;
   }
   /*

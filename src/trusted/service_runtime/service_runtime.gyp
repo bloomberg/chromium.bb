@@ -73,7 +73,7 @@
         'sel_ldr.c',
         'sel_ldr-inl.c',
         'sel_ldr_standard.c',
-        'sel_load_image.c',
+        'elf_util.c',
         'sel_mem.c',
         'sel_util.c',
         'sel_util-inl.c',

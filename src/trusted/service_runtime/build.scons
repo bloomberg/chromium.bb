@@ -122,11 +122,11 @@ ldr_inputs = [
     'sel_ldr.c',
     'sel_ldr-inl.c',
     'sel_ldr_standard.c',
-    'sel_load_image.c',
     'sel_mem.c',
     'sel_util.c',
     'sel_util-inl.c',
     'web_worker_stub.c',
+    'elf_util.c',
 ]
 
 if env['BUILD_ARCHITECTURE'] == 'x86':

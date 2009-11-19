@@ -76,7 +76,6 @@ int NaClAppCtor(struct NaClApp  *nap) {
     goto cleanup_desc_tbl;
   }
 
-  nap->phdrs = NULL;
   nap->service_port = NULL;
   nap->service_address = NULL;
   nap->secure_channel = NULL;
@@ -812,7 +811,7 @@ static NaClSrpcError NaClLoadModuleRpc(struct NaClSrpcChannel  *chan,
 
   errcode = NaClAppLoadFile((struct Gio *) &gf,
                             nap,
-                            NACL_ABI_MISMATCH_OPTION_ABORT);
+                            NACL_ABI_CHECK_OPTION_CHECK);
   if (LOAD_OK != errcode) {
     nap->module_load_status = errcode;
     return NACL_SRPC_RESULT_APP_ERROR;

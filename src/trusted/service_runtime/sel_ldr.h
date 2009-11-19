@@ -79,27 +79,6 @@ EXTERN_C_BEGIN
 
 #define NACL_SANDBOX_CHROOT_FD  "SBX_D"
 
-/*
- * Finds the lowest 1 bit in PF_MASKOS.  Assumes that at least one
- * bit is set, and that this bit is not the highest-order bit.
- *
- * Let us denote PF_MASKOS by n.  Assume n \ne 2^{31}.  Let the k^{th}
- * bit be the lowest order bit that is set, i.e.,
- *   n = m \cdot 2^{k+1} + 2^k, with k,m integers, m \ge 0, and 0 \le k < 31.
- * then (here lhs is C notation, rhs is LaTeX notation):
- *   n ^ (n-1) = (m \cdot 2^{k+1} + 2^k)
- *                 \oplus (m \dot 2^{k+1} + 2^{k-1} + \ldots + 1)
- *             = 2^k + 2^{k-1} + \ldots + 1
- *             = (2^{k+1}-1)
- * so
- *   ((n ^ (n-1)) + 1U) = 2^{k+1}, (since k < 31, no overflow occurs) and
- *   ((n ^ (n-1)) + 1U) >> 1 = 2^k.  QED.
- */
-#define PF_OS_WILL_LOAD (((PF_MASKOS ^ (PF_MASKOS-1)) + 1U) >> 1)
-#if PF_MASKOS == (1 << 31)
-# error "PF_MASKOS too large, invariant needed for PF_OS_WILL_LOAD violated"
-#endif
-
 #if NACL_WINDOWS
 #define WINDOWS_EXCEPTION_TRY do { __try {
 #define WINDOWS_EXCEPTION_CATCH } __except(EXCEPTION_EXECUTE_HANDLER) { \
@@ -120,7 +99,8 @@ struct NaClApp {
    * public, user settable.
    */
   uint32_t                  addr_bits;
-  uint32_t                  max_data_alloc, stack_size;
+  uint32_t                  max_data_alloc;
+  uint32_t                  stack_size;
   /*
    * max_data_alloc controls how much total data memory can be
    * allocated to the NaCl process; this is initialized data,
@@ -147,31 +127,12 @@ struct NaClApp {
   uintptr_t                 data_end;
   /* see break_addr below */
 
-  Elf32_Addr                entry_pt;
+  uint32_t                  entry_pt;
 
   /*
    * Alignment boundary for validation (16 or 32).
    */
   int                       align_boundary;
-
-  /* private */
-  Elf32_Ehdr                elf_hdr;
-
-  /*
-   * phdrs and sections are mutually exclusive.
-   *
-   * phdrs non-NULL means that an ELF executable -- with starting text
-   * address of NACL_TRAMPOLINE_END -- is used.  sections headers are
-   * still loaded, for things like bss size. ???? TODO(bsy)
-   *
-   * when phdrs is NULL, a relocatable object was used and sections
-   * will be non-NULL, with the loader performing relocation as part
-   * of the image load.  This is insufficient for C++ since preinit
-   * and init code is not executed, so global constructors aren't run,
-   * and multiple section groups for template instantiation are not
-   * handled properly, among other issues.
-   */
-  Elf32_Phdr                *phdrs;     /* elf_hdr.e_phnum entries */
 
   /* common to both ELF executables and relocatable load images */
 
@@ -247,21 +208,6 @@ struct NaClApp {
   struct DynArray           desc_tbl;  /* NaClDesc pointers */
 };
 
-#define NACL_MAX_PROGRAM_HEADERS  128
-
-enum NaClPhdrCheckAction {
-  PCA_NONE,
-  PCA_TEXT_CHECK,
-  PCA_IGNORE  /* ignore this segment.  currently used only for PT_PHDR. */
-};
-
-struct NaClPhdrChecks {
-  Elf32_Word                p_type;
-  Elf32_Word                p_flags;  /* rwx */
-  enum NaClPhdrCheckAction  action;
-  int                       required;  /* only for text for now */
-  Elf32_Word                p_vaddr;  /* if non-zero, vaddr must be this */
-};
 
 
 void  NaClAppIncrVerbosity(void);
@@ -295,16 +241,14 @@ void  NaClAppFreeAllMemory(struct NaClApp *nap);
  * self-modifying code / data writes and automatically invalidate the
  * cache lines.
  */
-
-
-enum NaClAbiMismatchOption {
-  NACL_ABI_MISMATCH_OPTION_ABORT,
-  NACL_ABI_MISMATCH_OPTION_IGNORE
+enum NaClAbiCheckOption {
+  NACL_ABI_CHECK_OPTION_SKIP,
+  NACL_ABI_CHECK_OPTION_CHECK
 };
 
 NaClErrorCode NaClAppLoadFile(struct Gio      *gp,
                               struct NaClApp  *nap,
-                              enum NaClAbiMismatchOption abi_mismatch_option)
+                              enum NaClAbiCheckOption check_abi)
   NACL_WUR;
 
 size_t  NaClAlignPad(size_t val,
@@ -520,4 +464,4 @@ static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
 
 EXTERN_C_END
 
-#endif
+#endif  /* NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_SEL_LDR_H__ */

@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
   ASSERT_NE(errcode, 0);
   errcode = NaClAppLoadFile((struct Gio *) &gf,
                             &state,
-                            NACL_ABI_MISMATCH_OPTION_ABORT);
+                            NACL_ABI_CHECK_OPTION_CHECK);
   ASSERT_EQ(errcode, 0);
 
   InitThread(&state, natp);

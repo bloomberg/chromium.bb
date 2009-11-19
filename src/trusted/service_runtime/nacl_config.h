@@ -37,6 +37,9 @@
 
 #include "native_client/src/include/nacl_base.h"
 
+/* maximum number of elf program headers allowed. */
+#define NACL_MAX_PROGRAM_HEADERS  128
+
 /*
  * this value must be consistent with NaCl compiler flags
  * -falign-functions -falign-labels -and nacl-align.

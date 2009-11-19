@@ -225,8 +225,7 @@ int main(int  ac,
   int                           main_thread_only = 1;
   int                           export_addr_to = -2;
   int                           dump_sock_addr_to = -1;
-  enum NaClAbiMismatchOption    abi_mismatch_option =
-                                    NACL_ABI_MISMATCH_OPTION_ABORT;
+  enum NaClAbiCheckOption       check_abi = NACL_ABI_CHECK_OPTION_CHECK;
 
   struct NaClApp                *nap;
 
@@ -335,7 +334,7 @@ int main(int  ac,
         redir_qend = &entry->next;
         break;
       case 'I':
-        abi_mismatch_option = NACL_ABI_MISMATCH_OPTION_IGNORE;
+        check_abi = NACL_ABI_CHECK_OPTION_SKIP;
         break;
      case 'l':
         log_file = optarg;
@@ -450,7 +449,7 @@ int main(int  ac,
   }
 
   if (LOAD_OK == errcode) {
-    errcode = NaClAppLoadFile((struct Gio *) &gf, nap, abi_mismatch_option);
+    errcode = NaClAppLoadFile((struct Gio *) &gf, nap, check_abi);
     if (LOAD_OK != errcode) {
       nap->module_load_status = errcode;
       fprintf(stderr, "Error while loading \"%s\": %s\n",
