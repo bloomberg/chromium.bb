@@ -12,6 +12,8 @@
 #include "chrome_frame/utils.h"
 
 const wchar_t kQuotes[] = L"\"'";
+const char kXFrameOptionsHeader[] = "X-Frame-Options";
+const char kXFrameOptionsValueAllowAll[] = "allowall";
 
 HTMLScanner::StringRange::StringRange() {
 }
@@ -350,6 +352,24 @@ std::string GetDefaultUserAgent() {
   }
 
   return ret;
+}
+
+bool HasFrameBustingHeader(const std::string& http_headers) {
+  net::HttpUtil::HeadersIterator it(
+      http_headers.begin(), http_headers.end(), "\r\n");
+  while (it.GetNext()) {
+    if (it.name() == kXFrameOptionsHeader) {
+      std::string allow_all(kXFrameOptionsValueAllowAll);
+      if (it.values_end() - it.values_begin() != allow_all.length() ||
+          !std::equal(it.values_begin(), it.values_end(),
+              allow_all.begin(),
+              CaseInsensitiveCompareASCII<const char>())) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 }  // namespace http_utils

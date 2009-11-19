@@ -139,6 +139,10 @@ std::string GetDefaultUserAgent();
 // table not being present in the unit test executable.
 const char* GetChromeFrameUserAgent();
 
+// Returns true if there is a frame busting header (other than the do-nothing
+// "X-Frame-Options: ALLOWALL") in the provided header block.
+bool HasFrameBustingHeader(const std::string& http_headers);
+
 }  // namespace http_utils
 
 #endif  // CHROME_FRAME_HTML_UTILS_H_

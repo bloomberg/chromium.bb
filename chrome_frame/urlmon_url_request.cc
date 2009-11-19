@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
+#include "chrome_frame/html_utils.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
 #include "chrome_frame/utils.h"
 #include "net/http/http_util.h"
@@ -19,7 +20,6 @@
 static const LARGE_INTEGER kZero = {0};
 static const ULARGE_INTEGER kUnsignedZero = {0};
 int UrlmonUrlRequest::instance_count_ = 0;
-const char kXFrameOptionsHeader[] = "X-Frame-Options";
 
 UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
@@ -400,23 +400,28 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
 
   // Security check for frame busting headers. We don't honor the headers
   // as-such, but instead simply kill requests which we've been asked to
-  // look for. This puts the onus on the user of the UrlRequest to specify
-  // whether or not requests should be inspected. For ActiveDocuments, the
-  // answer is "no", since WebKit's detection/handling is sufficient and since
-  // ActiveDocuments cannot be hosted as iframes. For NPAPI and ActiveX
-  // documents, the Initialize() function of the PluginUrlRequest object
-  // allows them to specify how they'd like requests handled. Both should
-  // set enable_frame_busting_ to true to avoid CSRF attacks.
-  // Should WebKit's handling of this ever change, we will need to re-visit
-  // how and when frames are killed to better mirror a policy which may
-  // do something other than kill the sub-document outright.
+  // look for if they specify a value for "X-Frame-Options" other than
+  // "ALLOWALL" (the others are "deny" and "sameorigin"). This puts the onus
+  // on the user of the UrlRequest to specify whether or not requests should
+  // be inspected. For ActiveDocuments, the answer is "no", since WebKit's
+  // detection/handling is sufficient and since ActiveDocuments cannot be
+  // hosted as iframes. For NPAPI and ActiveX documents, the Initialize()
+  // function of the PluginUrlRequest object allows them to specify how they'd
+  // like requests handled. Both should set enable_frame_busting_ to true to
+  // avoid CSRF attacks. Should WebKit's handling of this ever change, we will
+  // need to re-visit how and when frames are killed to better mirror a policy
+  // which may do something other than kill the sub-document outright.
 
   // NOTE(slightlyoff): We don't use net::HttpResponseHeaders here because
   //    of lingering ICU/base_noicu issues.
-  if (frame_busting_enabled_ &&
-      net::HttpUtil::HasHeader(raw_headers, kXFrameOptionsHeader)) {
-    DLOG(ERROR) << "X-Frame-Options header detected, navigation canceled";
-    return E_FAIL;
+  if (frame_busting_enabled_) {
+    std::string http_headers = net::HttpUtil::AssembleRawHeaders(
+        raw_headers.c_str(), raw_headers.length());
+    if (http_utils::HasFrameBustingHeader(http_headers)) {
+      DLOG(ERROR) << "X-Frame-Options header other than ALLOWALL " <<
+          "detected, navigation canceled";
+      return E_FAIL;
+    }
   }
 
   std::wstring url_for_persistent_cookies =

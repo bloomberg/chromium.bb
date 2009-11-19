@@ -233,6 +233,7 @@
         'chrome_frame_npapi_unittest.cc',
         'chrome_frame_unittest_main.cc',
         'chrome_launcher_unittest.cc',
+        'html_utils_unittest.cc',
         'unittest_precompile.h',
         'unittest_precompile.cc',
         'urlmon_upload_data_stream.cc',
