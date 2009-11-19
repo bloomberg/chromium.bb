@@ -10,11 +10,6 @@
 
 namespace {
 
-class ShadowingAtExitManager : public base::AtExitManager {
- public:
-  ShadowingAtExitManager() : AtExitManager(true) { }
-};
-
 COMPILE_ASSERT(DefaultSingletonTraits<int>::kRegisterAtExit == true, a);
 
 template<typename Type>
@@ -134,7 +129,7 @@ TEST_F(SingletonTest, Basic) {
   CallbackFunc* leaky_singleton;
 
   {
-    ShadowingAtExitManager sem;
+    base::ShadowingAtExitManager sem;
     {
       singleton_int_1 = SingletonInt1();
     }
@@ -193,7 +188,7 @@ TEST_F(SingletonTest, Basic) {
   DefaultSingletonTraits<CallbackFunc>::Delete(leaky_singleton);
 
   {
-    ShadowingAtExitManager sem;
+    base::ShadowingAtExitManager sem;
     // Verifiy that the variables were reset.
     {
       singleton_int_1 = SingletonInt1();
