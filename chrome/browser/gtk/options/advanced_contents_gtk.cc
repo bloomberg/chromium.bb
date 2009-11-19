@@ -46,6 +46,15 @@ const char* kGNOMEProxyConfigCommand[] = {"gnome-network-properties", NULL};
 const char* kKDE3ProxyConfigCommand[] = {"kcmshell", "proxy", NULL};
 const char* kKDE4ProxyConfigCommand[] = {"kcmshell4", "proxy", NULL};
 
+// The URL for Linux ssl certificate configuration help.
+const char* const kLinuxCertificatesConfigUrl =
+    "http://code.google.com/p/chromium/wiki/LinuxCertManagement";
+
+// The URL for Linux proxy configuration help when not running under a
+// supported desktop environment.
+const char* const kLinuxProxyConfigUrl =
+    "http://code.google.com/p/chromium/wiki/LinuxProxyConfig";
+
 // The pixel width we wrap labels at.
 // TODO(evanm): make the labels wrap at the appropriate width.
 const int kWrapWidth = 475;
@@ -402,7 +411,7 @@ void NetworkSection::OnChangeProxiesButtonClicked(GtkButton *button,
     if (name)
       LOG(ERROR) << "Could not find " << name << " network settings in $PATH";
     BrowserList::GetLastActive()->
-        OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
+        OpenURL(GURL(kLinuxCertificatesConfigUrl),
                 GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   }
 }
@@ -442,8 +451,8 @@ void NetworkSection::StartProxyConfigUtil(const ProxyConfigCommand& command) {
   if (!base::LaunchApp(argv, no_files, false, &handle)) {
     LOG(ERROR) << "StartProxyConfigUtil failed to start " << command.binary;
     BrowserList::GetLastActive()->
-        OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_PROXY_CONFIG_URL)),
-                GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+        OpenURL(GURL(kLinuxProxyConfigUrl), GURL(), NEW_FOREGROUND_TAB,
+                PageTransition::LINK);
     return;
   }
   ProcessWatcher::EnsureProcessGetsReaped(handle);
@@ -939,8 +948,8 @@ void SecuritySection::NotifyPrefChanged(const std::wstring* pref_name) {
 void SecuritySection::OnManageCertificatesClicked(GtkButton* button,
                                                   SecuritySection* section) {
   BrowserList::GetLastActive()->
-      OpenURL(GURL(l10n_util::GetStringUTF8(IDS_LINUX_CERTIFICATES_CONFIG_URL)),
-              GURL(), NEW_WINDOW, PageTransition::LINK);
+      OpenURL(GURL(kLinuxCertificatesConfigUrl), GURL(), NEW_WINDOW,
+              PageTransition::LINK);
 }
 
 // static

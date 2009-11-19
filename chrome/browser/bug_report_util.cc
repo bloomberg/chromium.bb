@@ -17,11 +17,16 @@
 
 namespace {
 
-static const int kBugReportVersion = 1;
+const int kBugReportVersion = 1;
 
-static const char kReportPhishingUrl[] =
+const char kReportPhishingUrl[] =
     "http://www.google.com/safebrowsing/report_phish/";
-}
+
+// URL to post bug reports to.
+const char* const kBugReportPostUrl =
+    "http://web-bug.appspot.com/bugreport";
+
+}  // namespace
 
 // Simple URLFetcher::Delegate to clean up URLFetcher on completion.
 class BugReportUtil::PostCleanup : public URLFetcher::Delegate {
@@ -97,7 +102,7 @@ void BugReportUtil::SendReport(Profile* profile,
     std::string description,
     const char* png_data,
     int png_data_length) {
-  GURL post_url(WideToUTF8(l10n_util::GetString(IDS_BUGREPORT_POST_URL)));
+  GURL post_url(kBugReportPostUrl);
   std::string mime_boundary;
   CreateMimeBoundary(&mime_boundary);
 

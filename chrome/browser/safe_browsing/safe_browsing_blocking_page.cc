@@ -40,6 +40,15 @@ static const char* const kSbDiagnosticUrl =
 static const char* const kSbReportPhishingUrl =
     "http://www.google.com/safebrowsing/report_error/";
 
+// URL for the "Learn more" link on the malware blocking page.
+static const char* const kLearnMoreMalwareUrl =
+    "http://www.google.com/support/bin/answer.py?answer=45449&topic=360"
+    "&sa=X&oi=malwarewarninglink&resnum=1&ct=help";
+
+// URL for the "Learn more" link on the phishing blocking page.
+static const char* const kLearnMorePhishingUrl =
+    "http://www.google.com/support/bin/answer.py?answer=106318";
+
 static const wchar_t* const kSbDiagnosticHtml =
     L"<a href=\"\" onClick=\"sendCommand('showDiagnostic'); return false;\" "
     L"onMouseDown=\"return false;\">%ls</a>";
@@ -309,10 +318,10 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     // User pressed "Learn more".
     GURL url;
     if (unsafe_resources_[0].threat_type == SafeBrowsingService::URL_MALWARE) {
-      url = GURL(WideToUTF8(l10n_util::GetString(IDS_LEARN_MORE_MALWARE_URL)));
+      url = google_util::AppendGoogleLocaleParam(GURL(kLearnMoreMalwareUrl));
     } else if (unsafe_resources_[0].threat_type ==
                SafeBrowsingService::URL_PHISHING) {
-      url = GURL(WideToUTF8(l10n_util::GetString(IDS_LEARN_MORE_PHISHING_URL)));
+      url = google_util::AppendGoogleLocaleParam(GURL(kLearnMorePhishingUrl));
     } else {
       NOTREACHED();
     }

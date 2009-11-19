@@ -365,16 +365,6 @@
         en-US
       </message>
 
-      <!-- URL for the "Learn more" link on the malware blocking page. -->
-      <message name="IDS_LEARN_MORE_MALWARE_URL" translateable="false">
-        http://www.google.com/support/bin/answer.py?answer=45449&amp;topic=360&amp;hl=[GRITLANGCODE]&amp;sa=X&amp;oi=malwarewarninglink&amp;resnum=1&amp;ct=help
-      </message>
-
-      <!-- URL for the "Learn more" link on the phishing blocking page. -->
-      <message name="IDS_LEARN_MORE_PHISHING_URL" translateable="false">
-        http://www.google.com/support/bin/answer.py?answer=106318&amp;hl=[GRITLANGCODE]
-      </message>
-
       <!-- The width of the Options dialog box, in characters (character width = -->
       <!-- average character width for default dialog box font) -->
       <message name="IDS_OPTIONS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
@@ -566,16 +556,6 @@
         3
       </message>
 
-      <!-- The URL to be loaded to display Help -->
-      <message name="IDS_HELP_CONTENT_URL" translateable="false">
-        http://www.google.com/support/chrome/?hl=[GRITLANGCODE]
-      </message>
-
-      <!-- URL to post bug reports to -->
-      <message name="IDS_BUGREPORT_POST_URL" translateable="false">
-        http://web-bug.appspot.com/bugreport
-      </message>
-
       <!-- Locale-dependent static encodings string -->
       <message name="IDS_STATIC_ENCODING_LIST" use_name_for_id="true">
         ISO-8859-1,windows-1252
@@ -584,11 +564,6 @@
       <!-- The URL for the the Welcome to Chrome page shown on first run. -->
       <message name="IDS_WELCOME_PAGE_URL" translateable="false">
         http://tools.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
-      </message>
-
-      <!-- The URL for the the Learn More page shown on incognito new tab. -->
-      <message name="IDS_LEARN_MORE_INCOGNITO_URL" translateable="false">
-        http://www.google.com/support/chrome/bin/answer.py?answer=95464&amp;hl=[GRITLANGCODE]
       </message>
 
       <!-- The URL for the "Learn more" page for the Privacy section under Options. -->
@@ -634,17 +609,6 @@
         http://code.google.com/chromium/?hl=[GRITLANGCODE]
       </message>
 
-      <!-- The URL for Linux ssl certificate configuration help. -->
-      <message name="IDS_LINUX_CERTIFICATES_CONFIG_URL" translateable="false">
-        http://code.google.com/p/chromium/wiki/LinuxCertManagement
-      </message>
-
-      <!-- The URL for Linux proxy configuration help when not running under -->
-      <!-- a supported desktop environment. -->
-      <message name="IDS_LINUX_PROXY_CONFIG_URL" translateable="false">
-        http://code.google.com/p/chromium/wiki/LinuxProxyConfig
-      </message>
-
       <!-- The URL for the themes gallery. -->
       <message name="IDS_THEMES_GALLERY_URL" translateable="false">
         https://tools.google.com/chrome/intl/[GRITLANGCODE]/themes/index.html
@@ -654,11 +618,6 @@
       <!-- populated thumbnails. -->
       <message name="IDS_CHROME_WELCOME_URL" translateable="false">
         http://www.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
-      </message>
-      
-      <!-- Help for the bookmark sync service. -->
-      <message name="IDS_SYNC_SERVICE_HELP_URL" translateable="false">
-        http://www.google.com/support/chrome/bin/answer.py?hl=[GRITLANGCODE]&amp;answer=165139
       </message>
       
       <!-- The width of the sync setup wizard / login dialog in characters. -->

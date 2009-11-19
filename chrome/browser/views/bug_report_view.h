@@ -105,8 +105,6 @@ class BugReportView : public views::View,
   std::wstring version_;
   scoped_ptr< std::vector<unsigned char> > png_data_;
 
-  GURL post_url_;
-
   TabContents* tab_;
 
   // Used to distinguish the report type: Phishing or other.

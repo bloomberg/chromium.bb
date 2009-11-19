@@ -33,6 +33,7 @@
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/google_url_tracker.h"
+#include "chrome/browser/google_util.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/browser_url_util.h"
@@ -102,6 +103,10 @@ using base::TimeDelta;
 
 // How long we wait before updating the browser chrome while loading a page.
 static const int kUIUpdateCoalescingTimeMS = 200;
+
+// The URL to be loaded to display Help.
+static const char* const kHelpContentUrl =
+    "http://www.google.com/support/chrome/";
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1298,7 +1303,7 @@ void Browser::OpenAboutChromeDialog() {
 }
 
 void Browser::OpenHelpTab() {
-  GURL help_url(WideToASCII(l10n_util::GetString(IDS_HELP_CONTENT_URL)));
+  GURL help_url = google_util::AppendGoogleLocaleParam(GURL(kHelpContentUrl));
   AddTabWithURL(help_url, GURL(), PageTransition::AUTO_BOOKMARK, true, -1,
                 false, NULL);
 }

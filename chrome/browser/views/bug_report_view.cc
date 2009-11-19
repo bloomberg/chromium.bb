@@ -122,7 +122,6 @@ BugReportView::BugReportView(Profile* profile, TabContents* tab)
     : include_page_source_checkbox_(NULL),
       include_page_image_checkbox_(NULL),
       profile_(profile),
-      post_url_(l10n_util::GetString(IDS_BUGREPORT_POST_URL)),
       tab_(tab),
       problem_type_(0) {
   DCHECK(profile);

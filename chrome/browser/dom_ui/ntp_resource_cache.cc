@@ -13,6 +13,7 @@
 #include "base/ref_counted_memory.h"
 #include "base/values.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
+#include "chrome/browser/google_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -30,6 +31,18 @@
 #include "grit/theme_resources.h"
 
 namespace {
+
+// The URL for the the Learn More page shown on incognito new tab.
+const char* const kLearnMoreIncognitoUrl =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=95464";
+
+// The URL for bookmark sync service help.
+const char* const kSyncServiceHelpUrl =
+    "http://www.google.com/support/chrome/bin/answer.py?answer=165139";
+
+std::wstring GetUrlWithLang(const char* const url) {
+  return ASCIIToWide(google_util::AppendGoogleLocaleParam(GURL(url)).spec());
+}
 
 // In case a file path to the new tab page was provided this tries to load
 // the file and returns the file content if successful. This returns an
@@ -97,7 +110,7 @@ void NTPResourceCache::CreateNewTabIncognitoHtml() {
       l10n_util::GetString(IDS_NEW_TAB_TITLE));
   localized_strings.SetString(L"content",
       l10n_util::GetStringF(IDS_NEW_TAB_OTR_MESSAGE,
-          l10n_util::GetString(IDS_LEARN_MORE_INCOGNITO_URL)));
+                            GetUrlWithLang(kLearnMoreIncognitoUrl)));
   bool bookmark_bar_attached = profile_->GetPrefs()->GetBoolean(
       prefs::kShowBookmarkBar);
   localized_strings.SetString(L"bookmarkbarattached",
@@ -228,7 +241,7 @@ void NTPResourceCache::CreateNewTabHtml() {
       l10n_util::GetStringF(IDS_NTP_PROMOTION_MESSAGE,
           l10n_util::GetString(IDS_PRODUCT_NAME),
           ASCIIToWide(Extension::kGalleryBrowseUrl),
-          l10n_util::GetString(IDS_SYNC_SERVICE_HELP_URL)));
+          GetUrlWithLang(kSyncServiceHelpUrl)));
   localized_strings.SetString(L"extensionslink",
       ASCIIToWide(Extension::kGalleryBrowseUrl));
 
