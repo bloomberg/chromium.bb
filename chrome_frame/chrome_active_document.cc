@@ -7,6 +7,7 @@
 
 #include <hlink.h>
 #include <htiface.h>
+#include <initguid.h>
 #include <mshtmcid.h>
 #include <shdeprecated.h>
 #include <shlguid.h>
@@ -42,6 +43,10 @@ static const wchar_t kUseChromeNetworking[] = L"UseChromeNetworking";
 static const wchar_t kHandleTopLevelRequests[] =
     L"HandleTopLevelRequests";
 
+DEFINE_GUID(CGID_DocHostCmdPriv, 0x000214D4L, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0,
+            0x46);
+
+
 base::ThreadLocalPointer<ChromeActiveDocument> g_active_doc_cache;
 
 bool g_first_launch_by_process_ = true;
@@ -49,6 +54,7 @@ bool g_first_launch_by_process_ = true;
 ChromeActiveDocument::ChromeActiveDocument()
     : first_navigation_(true),
       is_automation_client_reused_(false) {
+  memset(&navigation_info_, 0, sizeof(navigation_info_));
 }
 
 HRESULT ChromeActiveDocument::FinalConstruct() {
@@ -179,6 +185,20 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   if (NULL == moniker_name) {
     return E_INVALIDARG;
   }
+
+  ScopedComPtr<IOleClientSite> client_site;
+  if (bind_context) {
+    ScopedComPtr<IUnknown> site;
+    bind_context->GetObjectParam(SZ_HTML_CLIENTSITE_OBJECTPARAM,
+                                 site.Receive());
+    if (site)
+      client_site.QueryFrom(site);
+  }
+
+  if (client_site) {
+    SetClientSite(client_site);
+  }
+
   CComHeapPtr<WCHAR> display_name;
   moniker_name->GetDisplayName(bind_context, NULL, &display_name);
   std::wstring url = display_name;
@@ -273,12 +293,82 @@ STDMETHODIMP ChromeActiveDocument::Exec(const GUID* cmd_group_guid,
   return OLECMDERR_E_NOTSUPPORTED;
 }
 
+STDMETHODIMP ChromeActiveDocument::LoadHistory(IStream* stream,
+                                               IBindCtx* bind_context) {
+  // Read notes in ChromeActiveDocument::SaveHistory
+  DCHECK(stream);
+  LARGE_INTEGER offset = {0};
+  ULARGE_INTEGER cur_pos = {0};
+  STATSTG statstg = {0};
+
+  stream->Seek(offset, STREAM_SEEK_CUR, &cur_pos);
+  stream->Stat(&statstg, STATFLAG_NONAME);
+
+  DWORD url_size = statstg.cbSize.LowPart - cur_pos.LowPart;
+  ScopedBstr url_bstr;
+  DWORD bytes_read = 0;
+  stream->Read(url_bstr.AllocateBytes(url_size), url_size, &bytes_read);
+  std::wstring url(url_bstr);
+
+  bool is_new_navigation = true;
+  bool is_chrome_protocol = false;
+
+  if (!ParseUrl(url, &is_new_navigation, &is_chrome_protocol, &url)) {
+    DLOG(WARNING) << __FUNCTION__ << " Failed to parse url:" << url;
+    return E_INVALIDARG;
+  }
+
+  if (!LaunchUrl(url, is_new_navigation)) {
+    NOTREACHED() << __FUNCTION__ << " Failed to launch url:" << url;
+    return E_INVALIDARG;
+  }
+  return S_OK;
+}
+
+STDMETHODIMP ChromeActiveDocument::SaveHistory(IStream* stream) {
+  // TODO(sanjeevr): We need to fetch the entire list of navigation entries
+  // from Chrome and persist it in the stream. And in LoadHistory we need to
+  // pass this list back to Chrome which will recreate the list. This will allow
+  // Back-Forward navigation to anchors to work correctly when we navigate to a
+  // page outside of ChromeFrame and then come back.
+  if (!stream) {
+    NOTREACHED();
+    return E_INVALIDARG;
+  }
+
+  LARGE_INTEGER offset = {0};
+  ULARGE_INTEGER new_pos = {0};
+  DWORD written = 0;
+  std::wstring url = UTF8ToWide(navigation_info_.url.spec());
+  return stream->Write(url.c_str(), (url.length() + 1) * sizeof(wchar_t),
+                       &written);
+}
+
+STDMETHODIMP ChromeActiveDocument::SetPositionCookie(DWORD position_cookie) {
+  int index = static_cast<int>(position_cookie);
+  navigation_info_.navigation_index = index;
+  automation_client_->NavigateToIndex(index);
+  return S_OK;
+}
+
+STDMETHODIMP ChromeActiveDocument::GetPositionCookie(DWORD* position_cookie) {
+  if (!position_cookie)
+    return E_INVALIDARG;
+
+  *position_cookie = navigation_info_.navigation_index;
+  return S_OK;
+}
+
 STDMETHODIMP ChromeActiveDocument::GetUrlForEvents(BSTR* url) {
   if (NULL == url) {
     return E_POINTER;
   }
   *url = ::SysAllocString(url_);
   return S_OK;
+}
+
+STDMETHODIMP ChromeActiveDocument::GetAddressBarUrl(BSTR* url) {
+  return GetUrlForEvents(url);
 }
 
 HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
@@ -301,7 +391,11 @@ HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
     doc_site_.Release();
     in_place_frame_.Release();
   }
-  return Base::IOleObject_SetClientSite(client_site);
+
+  if (client_site != m_spClientSite)
+    return Base::IOleObject_SetClientSite(client_site);
+
+  return S_OK;
 }
 
 
@@ -363,9 +457,6 @@ HRESULT ChromeActiveDocument::ActiveXDocActivate(LONG verb) {
     }
   }
   m_spClientSite->ShowObject();
-  // Inform IE about the zone for this URL. We do this here as we need to the
-  // IOleInPlaceSite interface to be setup.
-  IEExec(&CGID_Explorer, SBCMDID_MIXEDZONE, 0, NULL, NULL);
   return S_OK;
 }
 
@@ -442,30 +533,21 @@ void ChromeActiveDocument::OnDidNavigate(int tab_handle,
 
 void ChromeActiveDocument::UpdateNavigationState(
     const IPC::NavigationInfo& new_navigation_info) {
+  HRESULT hr = S_OK;
   bool is_title_changed = (navigation_info_.title != new_navigation_info.title);
-  bool is_url_changed = (navigation_info_.url.is_valid() &&
-      (navigation_info_.url != new_navigation_info.url));
   bool is_ssl_state_changed =
       (navigation_info_.security_style != new_navigation_info.security_style) ||
       (navigation_info_.has_mixed_content !=
           new_navigation_info.has_mixed_content);
 
-  navigation_info_ = new_navigation_info;
-
-  if (is_title_changed) {
-    ScopedVariant title(navigation_info_.title.c_str());
-    IEExec(NULL, OLECMDID_SETTITLE, OLECMDEXECOPT_DONTPROMPTUSER,
-           title.AsInput(), NULL);
-  }
-
   if (is_ssl_state_changed) {
     int lock_status = SECURELOCK_SET_UNSECURE;
-    switch (navigation_info_.security_style) {
+    switch (new_navigation_info.security_style) {
       case SECURITY_STYLE_AUTHENTICATION_BROKEN:
         lock_status = SECURELOCK_SET_SECUREUNKNOWNBIT;
         break;
       case SECURITY_STYLE_AUTHENTICATED:
-        lock_status = navigation_info_.has_mixed_content ?
+        lock_status = new_navigation_info.has_mixed_content ?
             SECURELOCK_SET_MIXED : SECURELOCK_SET_SECUREUNKNOWNBIT;
         break;
       default:
@@ -477,32 +559,78 @@ void ChromeActiveDocument::UpdateNavigationState(
            OLECMDEXECOPT_DODEFAULT, secure_lock_status.AsInput(), NULL);
   }
 
-  if (navigation_info_.url.is_valid() &&
-      (is_url_changed || url_.Length() == 0)) {
-    url_.Allocate(UTF8ToWide(navigation_info_.url.spec()).c_str());
-    // Now call the FireNavigateCompleteEvent which makes IE update the text
-    // in the address-bar. We call the FireBeforeNavigateComplete2Event and
-    // FireDocumentComplete event just for completeness sake. If some BHO
-    // chooses to cancel the navigation in the OnBeforeNavigate2 handler
-    // we will ignore the cancellation request.
+  // Ideally all navigations should come to Chrome Frame so that we can call
+  // BeforeNavigate2 on installed BHOs and give them a chance to cancel the
+  // navigation. However, in practice what happens is as below:
+  // The very first navigation that happens in CF happens via a Load or a
+  // LoadHistory call. In this case, IE already has the correct information for
+  // its travel log as well address bar. For other internal navigations (navs
+  // that only happen within Chrome such as anchor navigations) we need to
+  // update IE's internal state after the fact. In the case of internal
+  // navigations, we notify the BHOs but ignore the should_cancel flag.
+  bool is_internal_navigation = (new_navigation_info.navigation_index > 0) &&
+      (new_navigation_info.navigation_index !=
+       navigation_info_.navigation_index);
 
-    // Todo(joshia): investigate if there's a better way to set URL in the
-    // address bar
+  if (new_navigation_info.url.is_valid()) {
+    url_.Allocate(UTF8ToWide(new_navigation_info.url.spec()).c_str());
+  }
+
+  if (is_internal_navigation) {
+    ScopedComPtr<IDocObjectService> doc_object_svc;
     ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
     DoQueryService(__uuidof(web_browser_events_svc), m_spClientSite,
                    web_browser_events_svc.Receive());
+    DCHECK(web_browser_events_svc);
     if (web_browser_events_svc) {
-      // TODO(joshia): maybe we should call FireBeforeNavigate2Event in
-      // ChromeActiveDocument::Load and abort if cancelled.
       VARIANT_BOOL should_cancel = VARIANT_FALSE;
       web_browser_events_svc->FireBeforeNavigate2Event(&should_cancel);
+    }
+
+    // We need to tell IE that we support navigation so that IE will query us
+    // for IPersistHistory and call GetPositionCookie to save our navigation
+    // index.
+    ScopedVariant html_window(static_cast<IUnknown*>(
+        static_cast<IHTMLWindow2*>(this)));
+    IEExec(&CGID_DocHostCmdPriv, DOCHOST_DOCCANNAVIGATE, 0,
+           html_window.AsInput(), NULL);
+
+    // We pass the HLNF_INTERNALJUMP flag to INTERNAL_CMDID_FINALIZE_TRAVEL_LOG
+    // since we want to make IE treat all internal navigations within this page
+    // (including anchor navigations and subframe navigations) as anchor
+    // navigations. This will ensure that IE calls GetPositionCookie
+    // to save the current position cookie in the travel log and then call
+    // SetPositionCookie when the user hits Back/Forward to come back here.
+    ScopedVariant internal_navigation(HLNF_INTERNALJUMP);
+    IEExec(&CGID_Explorer, INTERNAL_CMDID_FINALIZE_TRAVEL_LOG, 0,
+           internal_navigation.AsInput(), NULL);
+
+    // We no longer need to lie to IE. If we lie persistently to IE, then
+    // IE reuses us for new navigations.
+    IEExec(&CGID_DocHostCmdPriv, DOCHOST_DOCCANNAVIGATE, 0, NULL, NULL);
+
+    if (doc_object_svc) {
+      // Now call the FireNavigateCompleteEvent which makes IE update the text
+      // in the address-bar.
+      doc_object_svc->FireNavigateComplete2(this, 0);
+      doc_object_svc->FireDocumentComplete(this, 0);
+    } else if (web_browser_events_svc) {
       web_browser_events_svc->FireNavigateComplete2Event();
-      if (VARIANT_TRUE != should_cancel) {
-        web_browser_events_svc->FireDocumentCompleteEvent();
-      }
+      web_browser_events_svc->FireDocumentCompleteEvent();
     }
   }
 
+  if (is_title_changed) {
+    ScopedVariant title(new_navigation_info.title.c_str());
+    IEExec(NULL, OLECMDID_SETTITLE, OLECMDEXECOPT_DONTPROMPTUSER,
+           title.AsInput(), NULL);
+  }
+
+  // It is important that we only update the navigation_info_ after we have
+  // finalized the travel log. This is because IE will ask for information
+  // such as navigation index when the travel log is finalized and we need
+  // supply the old index and not the new one.
+  navigation_info_ = new_navigation_info;
   // Update the IE zone here. Ideally we would like to do it when the active
   // document is activated. However that does not work at times as the frame we
   // get there is not the actual frame which handles the command.
@@ -556,23 +684,12 @@ void ChromeActiveDocument::OnOpenURL(int tab_handle,
   Base::OnOpenURL(tab_handle, url_to_open, referrer, open_disposition);
 }
 
-void ChromeActiveDocument::OnLoad(int tab_handle, const GURL& url) {
-  if (ready_state_ < READYSTATE_COMPLETE) {
-    ready_state_ = READYSTATE_COMPLETE;
-    FireOnChanged(DISPID_READYSTATE);
-  }
-}
-
 bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
   ScopedComPtr<IBrowserService> browser_service;
   ScopedComPtr<ITravelLog> travel_log;
-
-  DoQueryService(SID_SShellBrowser, m_spClientSite, browser_service.Receive());
-  if (!browser_service)
-    return true;
-
-  browser_service->GetTravelLog(travel_log.Receive());
-  if (!travel_log)
+  GetBrowserServiceAndTravelLog(browser_service.Receive(),
+                                travel_log.Receive());
+  if (!browser_service || !travel_log)
     return true;
 
   if (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_BACK, NULL))) {
@@ -580,7 +697,6 @@ bool ChromeActiveDocument::PreProcessContextMenu(HMENU menu) {
   } else {
     EnableMenuItem(menu, IDS_CONTENT_CONTEXT_BACK, MF_BYCOMMAND | MFS_DISABLED);
   }
-
 
   if (SUCCEEDED(travel_log->GetTravelEntry(browser_service, TLOG_FORE, NULL))) {
     EnableMenuItem(menu, IDS_CONTENT_CONTEXT_FORWARD,
@@ -731,10 +847,9 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
 
         std::string referrer;
         Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
-        DCHECK(chrome_frame_bho != NULL);
-        if (chrome_frame_bho) {
+        if (chrome_frame_bho)
           referrer = chrome_frame_bho->referrer();
-        }
+
         if (!automation_client_->InitiateNavigation(utf8_url,
                                                     referrer,
                                                     is_privileged_)) {
@@ -806,14 +921,36 @@ HRESULT ChromeActiveDocument::SetPageFontSize(const GUID* cmd_group_guid,
 
 void ChromeActiveDocument::OnGoToHistoryEntryOffset(int tab_handle,
                                                     int offset) {
-  DLOG(INFO) << "GoToHistoryEntryOffset " << offset;
+  DLOG(INFO) <<  __FUNCTION__ << " - offset:" << offset;
+
   ScopedComPtr<IBrowserService> browser_service;
-  DoQueryService(SID_SShellBrowser, m_spClientSite, browser_service.Receive());
-  if (browser_service) {
-    ScopedComPtr<ITravelLog> travel_log;
-    browser_service->GetTravelLog(travel_log.Receive());
-    if (travel_log) {
-      travel_log->Travel(browser_service, offset);
-    }
+  ScopedComPtr<ITravelLog> travel_log;
+  GetBrowserServiceAndTravelLog(browser_service.Receive(),
+                                travel_log.Receive());
+
+  if (browser_service && travel_log)
+    travel_log->Travel(browser_service, offset);
+}
+
+HRESULT ChromeActiveDocument::GetBrowserServiceAndTravelLog(
+    IBrowserService** browser_service, ITravelLog** travel_log) {
+  DCHECK(browser_service || travel_log);
+  ScopedComPtr<IBrowserService> browser_service_local;
+  HRESULT hr = DoQueryService(SID_SShellBrowser, m_spClientSite,
+                              browser_service_local.Receive());
+  if (!browser_service_local) {
+    NOTREACHED() << "DoQueryService for IBrowserService failed: " << hr;
+    return hr;
   }
+
+  if (travel_log) {
+    hr = browser_service_local->GetTravelLog(travel_log);
+    DLOG_IF(INFO, !travel_log) << "browser_service->GetTravelLog failed: "
+        << hr;
+  }
+
+  if (browser_service)
+    *browser_service = browser_service_local.Detach();
+
+  return hr;
 }

@@ -17,6 +17,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
+#include "base/scoped_variant_win.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
@@ -36,41 +37,6 @@ const wchar_t kFlashControlKey[] =
 
 using base::TimeDelta;
 using base::TimeTicks;
-
-// Callback description for onload, onloaderror, onmessage
-static _ATL_FUNC_INFO g_single_param = {CC_STDCALL, VT_EMPTY, 1, {VT_VARIANT}};
-// Simple class that forwards the callbacks.
-template <typename T>
-class DispCallback
-    : public IDispEventSimpleImpl<1, DispCallback<T>, &IID_IDispatch> {
- public:
-  typedef HRESULT (T::*Method)(VARIANT* param);
-
-  DispCallback(T* owner, Method method) : owner_(owner), method_(method) {
-  }
-
-  BEGIN_SINK_MAP(DispCallback)
-    SINK_ENTRY_INFO(1, IID_IDispatch, DISPID_VALUE, OnCallback, &g_single_param)
-  END_SINK_MAP()
-
-  virtual ULONG STDMETHODCALLTYPE AddRef() {
-    return owner_->AddRef();
-  }
-  virtual ULONG STDMETHODCALLTYPE Release() {
-    return owner_->Release();
-  }
-
-  STDMETHOD(OnCallback)(VARIANT param) {
-    return (owner_->*method_)(&param);
-  }
-
-  IDispatch* ToDispatch() {
-    return reinterpret_cast<IDispatch*>(this);
-  }
-
-  T* owner_;
-  Method method_;
-};
 
 // This class implements an ActiveX container which hosts the ChromeFrame
 // ActiveX control. It provides hooks which can be implemented by derived
@@ -98,19 +64,19 @@ class ChromeFrameActiveXContainer
     MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
   END_MSG_MAP()
 
-  HRESULT OnMessageCallback(VARIANT* param) {
+  HRESULT OnMessageCallback(const VARIANT* param) {
     DLOG(INFO) << __FUNCTION__;
     OnMessageCallbackImpl(param);
     return S_OK;
   }
 
-  HRESULT OnLoadErrorCallback(VARIANT* param) {
+  HRESULT OnLoadErrorCallback(const VARIANT* param) {
     DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
     OnLoadErrorCallbackImpl(param);
     return S_OK;
   }
 
-  HRESULT OnLoadCallback(VARIANT* param) {
+  HRESULT OnLoadCallback(const VARIANT* param) {
     DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
     OnLoadCallbackImpl(param);
     return S_OK;
@@ -210,9 +176,9 @@ class ChromeFrameActiveXContainer
                            &prop_notify_cookie_);
     DCHECK(hr == S_OK) << "AtlAdvice for IPropertyNotifySink failed " << hr;
 
-    CComVariant onmessage(onmsg_.ToDispatch());
-    CComVariant onloaderror(onloaderror_.ToDispatch());
-    CComVariant onload(onload_.ToDispatch());
+    ScopedVariant onmessage(onmsg_.ToDispatch());
+    ScopedVariant onloaderror(onloaderror_.ToDispatch());
+    ScopedVariant onload(onload_.ToDispatch());
     EXPECT_HRESULT_SUCCEEDED(tab_->put_onmessage(onmessage));
     EXPECT_HRESULT_SUCCEEDED(tab_->put_onloaderror(onloaderror));
     EXPECT_HRESULT_SUCCEEDED(tab_->put_onload(onload));
@@ -224,13 +190,13 @@ class ChromeFrameActiveXContainer
   virtual void OnReadyStateChanged(long ready_state) {}
   virtual void OnRequestEditImpl(DISPID disp_id) {}
 
-  virtual void OnMessageCallbackImpl(VARIANT* param) {}
+  virtual void OnMessageCallbackImpl(const VARIANT* param) {}
 
-  virtual void OnLoadCallbackImpl(VARIANT* param) {
+  virtual void OnLoadCallbackImpl(const VARIANT* param) {
     PostMessage(WM_CLOSE);
   }
 
-  virtual void OnLoadErrorCallbackImpl(VARIANT* param) {
+  virtual void OnLoadErrorCallbackImpl(const VARIANT* param) {
     PostMessage(WM_CLOSE);
   }
   virtual void BeforeNavigateImpl(const char* url) {}
@@ -281,12 +247,12 @@ class ChromeFrameActiveXContainerPerf : public ChromeFrameActiveXContainer {
     }
   }
 
-  virtual void OnLoadCallbackImpl(VARIANT* param) {
+  virtual void OnLoadCallbackImpl(const VARIANT* param) {
     PostMessage(WM_CLOSE);
     perf_navigate_->Done();
   }
 
-  virtual void OnLoadErrorCallbackImpl(VARIANT* param) {
+  virtual void OnLoadErrorCallbackImpl(const VARIANT* param) {
     PostMessage(WM_CLOSE);
     perf_navigate_->Done();
   }
@@ -591,7 +557,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     StartTest(url, test_name);
   }
 
-  void OnNavigationSuccess(VARIANT* param) {
+  void OnNavigationSuccess(const VARIANT* param) {
     ASSERT_TRUE(param != NULL);
     ASSERT_EQ(VT_BSTR, param->vt);
 
@@ -599,7 +565,7 @@ class ChromeFrameMemoryTest : public ChromeFramePerfTestBase {
     InitiateNextNavigation();
   }
 
-  void OnNavigationFailure(VARIANT* param) {
+  void OnNavigationFailure(const VARIANT* param) {
     ASSERT_TRUE(param != NULL);
     ASSERT_EQ(VT_BSTR, param->vt);
 
@@ -809,11 +775,11 @@ class ChromeFrameActiveXContainerMemory : public ChromeFrameActiveXContainer {
   }
 
  protected:
-  virtual void OnLoadCallbackImpl(VARIANT* param) {
+  virtual void OnLoadCallbackImpl(const VARIANT* param) {
     delegate_->OnNavigationSuccess(param);
   }
 
-  virtual void OnLoadErrorCallbackImpl(VARIANT* param) {
+  virtual void OnLoadErrorCallbackImpl(const VARIANT* param) {
     delegate_->OnNavigationFailure(param);
   }
 

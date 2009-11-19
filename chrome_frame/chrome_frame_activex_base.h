@@ -37,6 +37,7 @@
 #include "grit/chrome_frame_resources.h"
 #include "grit/chrome_frame_strings.h"
 #include "chrome_frame/chrome_frame_plugin.h"
+#include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"
 #include "chrome_frame/urlmon_url_request.h"
 
@@ -318,6 +319,31 @@ END_MSG_MAP()
   }
 
  protected:
+  void OnLoad(int tab_handle, const GURL& url) {
+    if (ready_state_ < READYSTATE_COMPLETE) {
+      ready_state_ = READYSTATE_COMPLETE;
+      FireOnChanged(DISPID_READYSTATE);
+    }
+
+    HRESULT hr = InvokeScriptFunction(onload_handler_, url.spec());
+  }
+
+  void OnLoadFailed(int error_code, const std::string& url) {
+    HRESULT hr = InvokeScriptFunction(onerror_handler_, url);
+  }
+
+  void OnMessageFromChromeFrame(int tab_handle, const std::string& message,
+                                const std::string& origin,
+                                const std::string& target) {
+    ScopedComPtr<IDispatch> message_event;
+    if (SUCCEEDED(CreateDomEvent("message", message, origin,
+                                 message_event.Receive()))) {
+      ScopedVariant event_var;
+      event_var.Set(static_cast<IDispatch*>(message_event));
+      InvokeScriptFunction(onmessage_handler_, event_var.AsInput());
+    }
+  }
+
   virtual void OnTabbedOut(int tab_handle, bool reverse) {
     DCHECK(m_bInPlaceActive);
 
@@ -880,6 +906,63 @@ END_MSG_MAP()
       hr = E_INVALIDARG;
     }
 
+    return hr;
+  }
+
+  // Creates a new event object that supports the |data| property.
+  // Note: you should supply an empty string for |origin| unless you're
+  // creating a "message" event.
+  HRESULT CreateDomEvent(const std::string& event_type, const std::string& data,
+                         const std::string& origin, IDispatch** event) {
+    DCHECK(event_type.length() > 0);
+    DCHECK(event != NULL);
+
+    CComObject<ComMessageEvent>* ev = NULL;
+    HRESULT hr = CComObject<ComMessageEvent>::CreateInstance(&ev);
+    if (SUCCEEDED(hr)) {
+      ev->AddRef();
+
+      ScopedComPtr<IOleContainer> container;
+      m_spClientSite->GetContainer(container.Receive());
+      if (ev->Initialize(container, data, origin, event_type)) {
+        *event = ev;
+      } else {
+        NOTREACHED() << "event->Initialize";
+        ev->Release();
+        hr = E_UNEXPECTED;
+      }
+    }
+
+    return hr;
+  }
+
+  // Helper function to execute a function on a script IDispatch interface.
+  HRESULT InvokeScriptFunction(const VARIANT& script_object,
+                               const std::string& param) {
+    ScopedVariant script_arg(UTF8ToWide(param.c_str()).c_str());
+    return InvokeScriptFunction(script_object, script_arg.AsInput());
+  }
+
+  HRESULT InvokeScriptFunction(const VARIANT& script_object, VARIANT* param) {
+    return InvokeScriptFunction(script_object, param, 1);
+  }
+
+  HRESULT InvokeScriptFunction(const VARIANT& script_object, VARIANT* params,
+                               int param_count) {
+    DCHECK(param_count >= 0);
+    DCHECK(params);
+
+    if (V_VT(&script_object) != VT_DISPATCH) {
+      return S_FALSE;
+    }
+
+    CComPtr<IDispatch> script(script_object.pdispVal);
+    HRESULT hr = script.InvokeN(static_cast<DISPID>(DISPID_VALUE),
+                                params,
+                                param_count);
+    // 0x80020101 == SCRIPT_E_REPORTED.
+    // When the script we're invoking has an error, we get this error back.
+    DLOG_IF(ERROR, FAILED(hr) && hr != 0x80020101) << "Failed to invoke script";
     return hr;
   }
 

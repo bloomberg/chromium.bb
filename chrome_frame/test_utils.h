@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include <atlbase.h>
+#include <atlcom.h>
+
 #include "base/file_path.h"
 
 // Helper class used to register different chrome frame DLLs while running
@@ -37,5 +40,41 @@ class ScopedChromeFrameRegistrar {
   // Contains the path of the npchrome_tab.dll to be registered at destruction.
   std::wstring original_dll_path_;
 };
+
+// Callback description for onload, onloaderror, onmessage
+static _ATL_FUNC_INFO g_single_param = {CC_STDCALL, VT_EMPTY, 1, {VT_VARIANT}};
+// Simple class that forwards the callbacks.
+template <typename T>
+class DispCallback
+    : public IDispEventSimpleImpl<1, DispCallback<T>, &IID_IDispatch> {
+ public:
+  typedef HRESULT (T::*Method)(const VARIANT* param);
+
+  DispCallback(T* owner, Method method) : owner_(owner), method_(method) {
+  }
+
+  BEGIN_SINK_MAP(DispCallback)
+    SINK_ENTRY_INFO(1, IID_IDispatch, DISPID_VALUE, OnCallback, &g_single_param)
+  END_SINK_MAP()
+
+  virtual ULONG STDMETHODCALLTYPE AddRef() {
+    return owner_->AddRef();
+  }
+  virtual ULONG STDMETHODCALLTYPE Release() {
+    return owner_->Release();
+  }
+
+  STDMETHOD(OnCallback)(VARIANT param) {
+    return (owner_->*method_)(&param);
+  }
+
+  IDispatch* ToDispatch() {
+    return reinterpret_cast<IDispatch*>(this);
+  }
+
+  T* owner_;
+  Method method_;
+};
+
 
 #endif  // CHROME_FRAME_TEST_UTILS_H_

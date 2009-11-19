@@ -421,7 +421,7 @@ int CloseAllIEWindows() {
   return ret;
 }
 
-void ShowChromeFrameContextMenuTask() {
+void ShowChromeFrameContextMenu() {
   static const int kChromeFrameContextMenuTimeout = 500;
   HWND renderer_window = GetChromeRendererWindow();
   EXPECT_TRUE(IsWindow(renderer_window));
@@ -436,15 +436,6 @@ void ShowChromeFrameContextMenuTask() {
       FROM_HERE,
       NewRunnableFunction(SelectAboutChromeFrame),
       kChromeFrameContextMenuTimeout);
-}
-
-void ShowChromeFrameContextMenu() {
-  static const int kContextMenuDelay = 5000;
-
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableFunction(ShowChromeFrameContextMenuTask),
-      kContextMenuDelay);
 }
 
 void SetKeyboardFocusToWindow(HWND window, int x, int y) {

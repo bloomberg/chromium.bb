@@ -75,6 +75,7 @@ class ChromeFrameAutomationProxyImpl::CFMsgDispatcher
       case AutomationMsg_ConnectExternalTab::ID:
         InvokeCallback<Tuple3<HWND, HWND, int> >(msg, origin);
         break;
+      case AutomationMsg_NavigateExternalTabAtIndex::ID:
       case AutomationMsg_NavigateInExternalTab::ID:
         InvokeCallback<Tuple1<AutomationMsg_NavigationResponseValues> >(msg,
               origin);
@@ -143,7 +144,6 @@ struct LaunchTimeStats {
   void Dump() {}
 #endif
 };
-
 
 ProxyFactory::ProxyCacheEntry::ProxyCacheEntry(const std::wstring& profile)
     : proxy(NULL), profile_name(profile), ref_count(1),
@@ -885,7 +885,6 @@ void ChromeFrameAutomationClient::SetParentWindow(HWND parent_window) {
       }
 
       if (!SetParent(parent_window)) {
-        NOTREACHED();
         DLOG(WARNING) << "Failed to set parent window for automation window. "
                       << "Error = "
                       << GetLastError();

@@ -80,30 +80,22 @@ END_MSG_MAP()
   STDMETHOD(put_src)(BSTR src);
 
  protected:
+  // ChromeFrameDelegate overrides
   virtual void OnLoad(int tab_handle, const GURL& url);
   virtual void OnMessageFromChromeFrame(int tab_handle,
                                         const std::string& message,
                                         const std::string& origin,
                                         const std::string& target);
-
- private:
-
-  LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
-                   BOOL& handled);  // NO_LINT
-
-  // ChromeFrameDelegate overrides
-  virtual void ChromeFrameActivex::OnAutomationServerLaunchFailed(
-      AutomationLaunchResult reason, const std::string& server_version);
   virtual void OnLoadFailed(int error_code, const std::string& url);
+  virtual void OnAutomationServerLaunchFailed(
+      AutomationLaunchResult reason, const std::string& server_version);
   virtual void OnExtensionInstalled(const FilePath& path,
       void* user_data, AutomationMsg_ExtensionResponseValues response);
 
-  // Helper function to execute a function on a script IDispatch interface.
-  HRESULT InvokeScriptFunction(const VARIANT& script, const std::string& param);
-  HRESULT InvokeScriptFunction(const VARIANT& script, VARIANT* param);
-  HRESULT InvokeScriptFunction(const VARIANT& script,
-                               VARIANT* param,
-                               int param_count);
+ private:
+  LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
+                   BOOL& handled);  // NO_LINT
+
   HRESULT GetContainingDocument(IHTMLDocument2** doc);
   HRESULT GetDocumentWindow(IHTMLWindow2** window);
 
@@ -118,12 +110,6 @@ END_MSG_MAP()
   HRESULT CreateScriptBlockForEvent(IHTMLElement2* insert_after,
                                     BSTR instance_id, BSTR script,
                                     BSTR event_name);
-
-  // Creates a new event object that supports the |data| property.
-  // Note: you should supply an empty string for |origin| unless you're
-  // creating a "message" event.
-  HRESULT CreateDomEvent(const std::string& event_type, const std::string& data,
-                         const std::string& origin, IDispatch** event);
 
   // Utility function that checks the size of the vector and if > 0 creates
   // a variant for the string argument and forwards the call to the other

@@ -9,13 +9,23 @@
 #include <string>
 #include <exdisp.h>
 #include <exdispid.h>
+#include <mshtml.h>
+#include <shlguid.h>
+#include <shobjidl.h>
 
+#include "base/compiler_specific.h"
 #include "base/ref_counted.h"
 #include "base/scoped_comptr_win.h"
+#include "base/scoped_variant_win.h"
 #include "base/scoped_handle_win.h"
 #include "googleurl/src/gurl.h"
 #include "chrome_frame/test/http_server.h"
+#include "chrome_frame/test_utils.h"
+#include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// Include without path to make GYP build see it.
+#include "chrome_tab.h"  // NOLINT
 
 // Class that:
 // 1) Starts the local webserver,
@@ -105,35 +115,50 @@ class WebBrowserEventSink
  public:
   typedef IDispEventSimpleImpl<0, WebBrowserEventSink,
                                &DIID_DWebBrowserEvents2> DispEventsImpl;
-  WebBrowserEventSink() {}
+  WebBrowserEventSink()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(
+          onmessage_(this, &WebBrowserEventSink::OnMessageInternal)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          onloaderror_(this, &WebBrowserEventSink::OnLoadErrorInternal)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          onload_(this, &WebBrowserEventSink::OnLoadInternal)) {
+  }
+
   ~WebBrowserEventSink() {
     Uninitialize();
   }
 
   void Uninitialize() {
+    chrome_frame_ = NULL;
     if (web_browser2_.get()) {
       DispEventUnadvise(web_browser2_);
+      web_browser2_->Quit();
       web_browser2_.Release();
+      // Give IE some time to quit and release our references
+      Sleep(1000);
     }
   }
 
   // Helper function to launch IE and navigate to a URL.
   // Returns S_OK on success, S_FALSE if the test was not run, other
   // errors on failure.
-  HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url,
-                              _IDispEvent* sink);
+  HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url);
+
+  HRESULT Navigate(const std::wstring& navigate_url);
 
 BEGIN_COM_MAP(WebBrowserEventSink)
 END_COM_MAP()
 
 BEGIN_SINK_MAP(WebBrowserEventSink)
- SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2,
-                 OnBeforeNavigate2, &kBeforeNavigate2Info)
- SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2,
-                 OnNavigateComplete2, &kNavigateComplete2Info)
- SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATEERROR,
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2,
+                 OnBeforeNavigate2Internal, &kBeforeNavigate2Info)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_DOWNLOADBEGIN,
+                  OnDownloadBegin, &kVoidMethodInfo)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2,
+                 OnNavigateComplete2Internal, &kNavigateComplete2Info)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATEERROR,
                  OnNavigateError, &kNavigateErrorInfo)
- SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NEWWINDOW3,
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NEWWINDOW3,
                  OnNewWindow3, &kNewWindow3Info)
 END_SINK_MAP()
 
@@ -147,18 +172,20 @@ END_SINK_MAP()
                                flags, VARIANT* target_frame_name,
                                VARIANT* post_data, VARIANT* headers,
                                VARIANT_BOOL* cancel) {
-    DLOG(INFO) << __FUNCTION__;
     return S_OK;
   }
 
-  STDMETHOD_(void, OnNavigateComplete2)(IDispatch* dispatch, VARIANT* url) {
-    DLOG(INFO) << __FUNCTION__;
-  }
-
+  STDMETHOD(OnBeforeNavigate2Internal)(IDispatch* dispatch, VARIANT* url,
+                                       VARIANT* flags,
+                                       VARIANT* target_frame_name,
+                                       VARIANT* post_data, VARIANT* headers,
+                                       VARIANT_BOOL* cancel);
+  STDMETHOD_(void, OnDownloadBegin)() {}
+  STDMETHOD_(void, OnNavigateComplete2Internal)(IDispatch* dispatch,
+                                                VARIANT* url);
+  STDMETHOD_(void, OnNavigateComplete2)(IDispatch* dispatch, VARIANT* url) {}
   STDMETHOD_(void, OnNewWindow3)(IDispatch** dispatch, VARIANT_BOOL* Cancel,
-      DWORD flags, BSTR url_context, BSTR url) {
-    DLOG(INFO) << __FUNCTION__;
-  }
+                                 DWORD flags, BSTR url_context, BSTR url) {}
 
 #ifdef _DEBUG
   STDMETHOD(Invoke)(DISPID dispid, REFIID riid,
@@ -170,16 +197,36 @@ END_SINK_MAP()
   }
 #endif  // _DEBUG
 
+  // Chrome frame callbacks
+  virtual void OnLoad(const wchar_t* url) {}
+  virtual void OnLoadError(const wchar_t* url) {}
+  virtual void OnMessage(const wchar_t* message) {}
+
   IWebBrowser2* web_browser2() {
     return web_browser2_.get();
   }
+
+ protected:
+  // IChromeFrame callbacks
+  HRESULT OnLoadInternal(const VARIANT* param);
+  HRESULT OnLoadErrorInternal(const VARIANT* param);
+  HRESULT OnMessageInternal(const VARIANT* param);
+
+   void ConnectToChromeFrame();
+
+ public:
+  ScopedComPtr<IWebBrowser2> web_browser2_;
+  ScopedComPtr<IChromeFrame> chrome_frame_;
+  DispCallback<WebBrowserEventSink> onmessage_;
+  DispCallback<WebBrowserEventSink> onloaderror_;
+  DispCallback<WebBrowserEventSink> onload_;
 
  protected:
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
   static _ATL_FUNC_INFO kNavigateComplete2Info;
   static _ATL_FUNC_INFO kNavigateErrorInfo;
   static _ATL_FUNC_INFO kNewWindow3Info;
-  ScopedComPtr<IWebBrowser2> web_browser2_;
+  static _ATL_FUNC_INFO kVoidMethodInfo;
 };
 
 #endif  // CHROME_FRAME_TEST_CHROME_FRAME_UNITTESTS_H_

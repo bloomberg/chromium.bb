@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "googleurl/src/gurl.h"
-#include "chrome_frame/com_message_event.h"
 #include "chrome_frame/utils.h"
 
 ChromeFrameActivex::ChromeFrameActivex() {
@@ -75,13 +74,7 @@ void ChromeFrameActivex::OnLoad(int tab_handle, const GURL& gurl) {
     Fire_onload(event);
 
   FireEvent(onload_, url);
-
-  HRESULT hr = InvokeScriptFunction(onload_handler_, url);
-
-  if (ready_state_ < READYSTATE_COMPLETE) {
-    ready_state_ = READYSTATE_COMPLETE;
-    FireOnChanged(DISPID_READYSTATE);
-  }
+  Base::OnLoad(tab_handle, gurl);
 }
 
 void ChromeFrameActivex::OnLoadFailed(int error_code, const std::string& url) {
@@ -90,8 +83,7 @@ void ChromeFrameActivex::OnLoadFailed(int error_code, const std::string& url) {
     Fire_onloaderror(event);
 
   FireEvent(onloaderror_, url);
-
-  HRESULT hr = InvokeScriptFunction(onerror_handler_, url);
+  Base::OnLoadFailed(error_code, url);
 }
 
 void ChromeFrameActivex::OnMessageFromChromeFrame(int tab_handle,
@@ -154,38 +146,6 @@ void ChromeFrameActivex::OnExtensionInstalled(
     AutomationMsg_ExtensionResponseValues response) {
   ScopedBstr path_str(path.value().c_str());
   Fire_onextensionready(path_str, response);
-}
-
-HRESULT ChromeFrameActivex::InvokeScriptFunction(const VARIANT& script_object,
-                                                 const std::string& param) {
-  ScopedVariant script_arg(UTF8ToWide(param.c_str()).c_str());
-  return InvokeScriptFunction(script_object, script_arg.AsInput());
-}
-
-HRESULT ChromeFrameActivex::InvokeScriptFunction(const VARIANT& script_object,
-                                                 VARIANT* param) {
-  return InvokeScriptFunction(script_object, param, 1);
-}
-
-HRESULT ChromeFrameActivex::InvokeScriptFunction(const VARIANT& script_object,
-                                                 VARIANT* params,
-                                                 int param_count) {
-  DCHECK(param_count >= 0);
-  DCHECK(params);
-
-  if (V_VT(&script_object) != VT_DISPATCH) {
-    return S_FALSE;
-  }
-
-  CComPtr<IDispatch> script(script_object.pdispVal);
-  HRESULT hr = script.InvokeN(static_cast<DISPID>(DISPID_VALUE),
-                              params,
-                              param_count);
-  // 0x80020101 == SCRIPT_E_REPORTED.
-  // When the script we're invoking has an error, we get this error back.
-  DLOG_IF(ERROR, FAILED(hr) && hr != 0x80020101) << "Failed to invoke script";
-
-  return hr;
 }
 
 HRESULT ChromeFrameActivex::OnDraw(ATL_DRAWINFO& draw_info) {  // NO_LINT
@@ -431,32 +391,6 @@ HRESULT ChromeFrameActivex::CreateScriptBlockForEvent(
                                                  element,
                                                  new_element.Receive());
       }
-    }
-  }
-
-  return hr;
-}
-
-HRESULT ChromeFrameActivex::CreateDomEvent(const std::string& event_type,
-                                           const std::string& data,
-                                           const std::string& origin,
-                                           IDispatch** event) {
-  DCHECK(event_type.length() > 0);
-  DCHECK(event != NULL);
-
-  CComObject<ComMessageEvent>* ev = NULL;
-  HRESULT hr = CComObject<ComMessageEvent>::CreateInstance(&ev);
-  if (SUCCEEDED(hr)) {
-    ev->AddRef();
-
-    ScopedComPtr<IOleContainer> container;
-    m_spClientSite->GetContainer(container.Receive());
-    if (ev->Initialize(container, data, origin, event_type)) {
-      *event = ev;
-    } else {
-      NOTREACHED() << "event->Initialize";
-      ev->Release();
-      hr = E_UNEXPECTED;
     }
   }
 
