@@ -12,33 +12,6 @@ import path_utils
 import test_failures
 import test_expectations
 
-
-def PrintFilesFromSet(filenames, header_text, output, opt_expectations=None,
-    opt_relativizeFilenames=True):
-  """A helper method to print a list of files to output.
-
-  Args:
-  filenames: a list of absolute filenames
-  header_text: a string to display before the list of filenames
-  output: file descriptor to write the results to.
-  opt_expectations: expectations that failed for this test
-  """
-  if not len(filenames):
-    return
-
-  filenames = list(filenames)
-  filenames.sort()
-  output.write("\n")
-  output.write("%s (%d):\n" % (header_text, len(filenames)))
-  output_string = "  %s"
-  if opt_expectations:
-    output_string += " = %s" % opt_expectations
-  output_string += "\n"
-  for filename in filenames:
-    if opt_relativizeFilenames:
-      filename = path_utils.RelativeTestFilename(filename)
-    output.write(output_string % filename)
-
 class CompareFailures:
   # A list of which TestFailure classes count as a failure vs a crash.
   FAILURE_TYPES = (test_failures.FailureTextMismatch,
@@ -52,7 +25,7 @@ class CompareFailures:
                    test_failures.FailureMissingImageHash)
 
 
-  def __init__(self, test_files, test_failures, expectations):
+  def __init__(self, test_files, test_failures, expectations, is_flaky):
     """Calculate the regressions in this test run.
 
     Args:
@@ -61,66 +34,103 @@ class CompareFailures:
           TestFailure objects if the test failed
       expectations is a TestExpectations object representing the
           current test status
+      is_flaky is whether this set of failures represents tests that failed
+          the first time around, but passed on a subsequent run
     """
     self._test_files = test_files
     self._test_failures = test_failures
     self._expectations = expectations
+    self._is_flaky = is_flaky
     self._CalculateRegressions()
 
+
+  def PrintFilesFromSet(self, filenames, header_text, output,
+      opt_expectations=None):
+    """A helper method to print a list of files to output.
+
+    Args:
+    filenames: a list of absolute filenames
+    header_text: a string to display before the list of filenames
+    output: file descriptor to write the results to.
+    opt_expectations: expectations that failed for this test
+    """
+    if not len(filenames):
+      return
+
+    filenames = list(filenames)
+    filenames.sort()
+
+    # Print real regressions.
+    if opt_expectations:
+      if self._is_flaky:
+        header_text = "Unexpected flakiness: " + header_text
+      else:
+        header_text = "Regressions: Unexpected " + header_text
+
+    output.write("\n%s (%d):\n" % (header_text, len(filenames)))
+    for filename in filenames:
+      output_string = "  %s" % path_utils.RelativeTestFilename(filename)
+      if opt_expectations:
+        if self._is_flaky:
+          opt_expectations += (" " +
+              self._expectations.GetExpectationsString(filename))
+        output_string += " = %s" % opt_expectations
+
+      output.write(output_string + "\n")
 
   def PrintRegressions(self, output):
     """Write the regressions computed by _CalculateRegressions() to output. """
 
     # Print unexpected passes by category.
     passes = self._regressed_passes
-    PrintFilesFromSet(passes & self._expectations.GetFixableFailures(),
-                      "Expected to fail, but passed",
-                      output)
-    PrintFilesFromSet(passes & self._expectations.GetFixableTimeouts(),
-                      "Expected to timeout, but passed",
-                      output)
-    PrintFilesFromSet(passes & self._expectations.GetFixableCrashes(),
-                      "Expected to crash, but passed",
-                      output)
+    self.PrintFilesFromSet(passes & self._expectations.GetFixableFailures(),
+                           "Expected to fail, but passed",
+                           output)
+    self.PrintFilesFromSet(passes & self._expectations.GetFixableTimeouts(),
+                           "Expected to timeout, but passed",
+                           output)
+    self.PrintFilesFromSet(passes & self._expectations.GetFixableCrashes(),
+                           "Expected to crash, but passed",
+                           output)
 
-    PrintFilesFromSet(passes & self._expectations.GetWontFixFailures(),
-                      "Expected to fail (ignored), but passed",
-                      output)
-    PrintFilesFromSet(passes & self._expectations.GetWontFixTimeouts(),
-                      "Expected to timeout (ignored), but passed",
-                      output)
+    self.PrintFilesFromSet(passes & self._expectations.GetWontFixFailures(),
+                           "Expected to fail (ignored), but passed",
+                           output)
+    self.PrintFilesFromSet(passes & self._expectations.GetWontFixTimeouts(),
+                           "Expected to timeout (ignored), but passed",
+                           output)
     # Crashes should never be deferred.
-    PrintFilesFromSet(passes & self._expectations.GetDeferredFailures(),
-                      "Expected to fail (deferred), but passed",
-                      output)
-    PrintFilesFromSet(passes & self._expectations.GetDeferredTimeouts(),
-                      "Expected to timeout (deferred), but passed",
-                      output)
-    # Print real regressions.
-    PrintFilesFromSet(self._regressed_text_failures,
-                      "Regressions: Unexpected text failures",
-                      output,
-                      'TEXT')
-    PrintFilesFromSet(self._regressed_image_failures,
-                      "Regressions: Unexpected image failures",
-                      output,
-                      'IMAGE')
-    PrintFilesFromSet(self._regressed_image_plus_text_failures,
-                      "Regressions: Unexpected image + text failures",
-                      output,
-                      'IMAGE+TEXT')
-    PrintFilesFromSet(self._regressed_hangs,
-                      "Regressions: Unexpected timeouts",
-                      output,
-                      'TIMEOUT')
-    PrintFilesFromSet(self._regressed_crashes,
-                      "Regressions: Unexpected crashes",
-                      output,
-                      'CRASH')
-    PrintFilesFromSet(self._missing,
-                      "Missing expected results",
-                      output,
-                      'MISSING')
+    self.PrintFilesFromSet(passes & self._expectations.GetDeferredFailures(),
+                           "Expected to fail (deferred), but passed",
+                           output)
+    self.PrintFilesFromSet(passes & self._expectations.GetDeferredTimeouts(),
+                           "Expected to timeout (deferred), but passed",
+                           output)
+
+    self.PrintFilesFromSet(self._regressed_text_failures,
+                           "text failures",
+                           output,
+                           'TEXT')
+    self.PrintFilesFromSet(self._regressed_image_failures,
+                           "image failures",
+                           output,
+                           'IMAGE')
+    self.PrintFilesFromSet(self._regressed_image_plus_text_failures,
+                           "image + text failures",
+                           output,
+                           'IMAGE+TEXT')
+    self.PrintFilesFromSet(self._regressed_hangs,
+                           "timeouts",
+                           output,
+                           'TIMEOUT')
+    self.PrintFilesFromSet(self._regressed_crashes,
+                           "crashes",
+                           output,
+                           'CRASH')
+    self.PrintFilesFromSet(self._missing,
+                           "missing expected results",
+                           output,
+                           'MISSING')
 
   def _CalculateRegressions(self):
     """Calculate regressions from this run through the layout tests."""
@@ -178,10 +188,14 @@ class CompareFailures:
         raise ValueError('unexpected failure type:' + f)
       worklist.remove(test)
 
-    for test in worklist:
-      # Check that all passing tests are expected to pass.
-      expectations = self._expectations.GetExpectations(test)
-      if not test_expectations.PASS in expectations: passes.add(test)
+    # When processing flaky failures, the list of actual failures is excluded,
+    # so don't look for unexpected passes.
+    if not self._is_flaky:
+      for test in worklist:
+        # Check that all passing tests are expected to pass.
+        expectations = self._expectations.GetExpectations(test)
+        if not test_expectations.PASS in expectations:
+          passes.add(test)
 
     self._regressed_passes = passes
     self._regressed_crashes = crashes

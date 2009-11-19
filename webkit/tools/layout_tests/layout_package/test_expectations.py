@@ -134,6 +134,20 @@ class TestExpectations:
     # we expect it to pass (and nothing else).
     return set([PASS])
 
+  def GetExpectationsString(self, test):
+    """Returns the expectatons for the given test as an uppercase string.
+    If there are no expectations for the test, then "PASS" is returned."""
+    expectations = self.GetExpectations(test)
+    retval = []
+
+    for expectation in expectations:
+      for item in TestExpectationsFile.EXPECTATIONS.items():
+        if item[1] == expectation:
+          retval.append(item[0])
+          break
+
+    return " ".join(retval).upper()
+
   def GetModifiers(self, test):
     if self._expected_failures.Contains(test):
       return self._expected_failures.GetModifiers(test)

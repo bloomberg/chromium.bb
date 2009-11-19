@@ -312,7 +312,6 @@ class TestShellThread(threading.Thread):
               self._filename_list_queue.get_nowait()
         except Queue.Empty:
           self._KillTestShell()
-          logging.debug("queue empty, quitting test shell thread")
           tests_run_file.close()
           return
 

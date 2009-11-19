@@ -120,6 +120,8 @@ class TestRunner:
   # test_shell.exe.
   DEFAULT_TEST_TIMEOUT_MS = 6 * 1000
 
+  NUM_RETRY_ON_UNEXPECTED_FAILURE = 3
+
   def __init__(self, options):
     """Initialize test runner data structures.
 
@@ -439,7 +441,7 @@ class TestRunner:
         return True
     return False
 
-  def _InstantiateTestShellThreads(self, test_shell_binary):
+  def _InstantiateTestShellThreads(self, test_shell_binary, test_files):
     """Instantitates and starts the TestShellThread(s).
 
     Return:
@@ -454,13 +456,7 @@ class TestRunner:
       # about it anyway.
       test_shell_command = self._options.wrapper.split() + test_shell_command
 
-    test_files = self._test_files_list
     filename_queue = self._GetTestFileQueue(test_files)
-
-    # If we have http tests, the first one will be an http test.
-    if ((test_files and test_files[0].find(self.HTTP_SUBDIR) >= 0)
-        or self._options.randomize_order):
-      self._http_server.Start()
 
     # Start Web Socket server.
     if (self._ContainWebSocketTest(test_files)):
@@ -495,6 +491,56 @@ class TestRunner:
       proc.stdin.write("x\n")
       proc.stdin.close()
       proc.wait()
+
+  def _RunTests(self, test_shell_binary, file_list):
+    """Runs the tests in the file_list.
+
+    Return: A tuple (failures, thread_timings, test_timings,
+        individual_test_timings)
+        failures is a map from test to list of failure types
+        thread_timings is a list of dicts with the total runtime of each thread
+          with 'name', 'num_tests', 'total_time' properties
+        test_timings is a list of timings for each sharded subdirectory of the
+          form [time, directory_name, num_tests]
+        individual_test_timings is a list of run times for each test in the form
+          {filename:filename, test_run_time:test_run_time}
+    """
+    threads = self._InstantiateTestShellThreads(test_shell_binary, file_list)
+
+    # Wait for the threads to finish and collect test failures.
+    failures = {}
+    test_timings = {}
+    individual_test_timings = []
+    thread_timings = []
+    try:
+      for thread in threads:
+        while thread.isAlive():
+          # Let it timeout occasionally so it can notice a KeyboardInterrupt
+          # Actually, the timeout doesn't really matter: apparently it
+          # suffices to not use an indefinite blocking join for it to
+          # be interruptible by KeyboardInterrupt.
+          thread.join(1.0)
+        failures.update(thread.GetFailures())
+        thread_timings.append({ 'name': thread.getName(),
+                                'num_tests': thread.GetNumTests(),
+                                'total_time': thread.GetTotalTime()});
+        test_timings.update(thread.GetDirectoryTimingStats())
+        individual_test_timings.extend(thread.GetIndividualTestStats())
+    except KeyboardInterrupt:
+      for thread in threads:
+        thread.Cancel()
+      self._StopLayoutTestHelper(layout_test_helper_proc)
+      raise
+    for thread in threads:
+      # Check whether a TestShellThread died before normal completion.
+      exception_info = thread.GetExceptionInfo()
+      if exception_info is not None:
+        # Re-raise the thread's exception here to make it clear that
+        # testing was aborted. Otherwise, the tests that did not run
+        # would be assumed to have passed.
+        raise exception_info[0], exception_info[1], exception_info[2]
+
+    return (failures, thread_timings, test_timings, individual_test_timings)
 
   def Run(self):
     """Run all our tests on all our test files.
@@ -533,43 +579,27 @@ class TestRunner:
                      "To override, invoke with --nocheck-sys-deps")
         sys.exit(1)
 
-    logging.info("Starting tests")
+    # If we have http tests, the first one will be an http test.
+    if ((self._test_files_list and
+         self._test_files_list[0].find(self.HTTP_SUBDIR) >= 0)
+        or self._options.randomize_order):
+      self._http_server.Start()
 
-    threads = self._InstantiateTestShellThreads(test_shell_binary)
+    original_failures, thread_timings, test_timings, individual_test_timings = (
+        self._RunTests(test_shell_binary, self._test_files_list))
 
-    # Wait for the threads to finish and collect test failures.
-    failures = {}
-    test_timings = {}
-    individual_test_timings = []
-    thread_timings = []
-    try:
-      for thread in threads:
-        while thread.isAlive():
-          # Let it timeout occasionally so it can notice a KeyboardInterrupt
-          # Actually, the timeout doesn't really matter: apparently it
-          # suffices to not use an indefinite blocking join for it to
-          # be interruptible by KeyboardInterrupt.
-          thread.join(1.0)
-        failures.update(thread.GetFailures())
-        thread_timings.append({ 'name': thread.getName(),
-                                'num_tests': thread.GetNumTests(),
-                                'total_time': thread.GetTotalTime()});
-        test_timings.update(thread.GetDirectoryTimingStats())
-        individual_test_timings.extend(thread.GetIndividualTestStats())
-    except KeyboardInterrupt:
-      for thread in threads:
-        thread.Cancel()
-      self._StopLayoutTestHelper(layout_test_helper_proc)
-      raise
+    retries = 0
+    final_failures = original_failures
+    original_regressions = self._CompareFailures(final_failures)
+    regressions = original_regressions
+
+    while retries < self.NUM_RETRY_ON_UNEXPECTED_FAILURE and len(regressions):
+      logging.info("Retrying %d unexpected failure(s)" % len(regressions))
+      retries += 1
+      final_failures = self._RunTests(test_shell_binary, list(regressions))[0]
+      regressions = self._CompareFailures(final_failures)
+
     self._StopLayoutTestHelper(layout_test_helper_proc)
-    for thread in threads:
-      # Check whether a TestShellThread died before normal completion.
-      exception_info = thread.GetExceptionInfo()
-      if exception_info is not None:
-        # Re-raise the thread's exception here to make it clear that
-        # testing was aborted. Otherwise, the tests that did not run
-        # would be assumed to have passed.
-        raise exception_info[0], exception_info[1], exception_info[2]
 
     print
     end_time = time.time()
@@ -587,21 +617,21 @@ class TestRunner:
                   (cuml_time, cuml_time / int(self._options.num_test_shells)))
 
     print
-    self._PrintTimingStatistics(test_timings, individual_test_timings, failures)
+    self._PrintTimingStatistics(test_timings, individual_test_timings,
+        original_failures)
 
-    print "-" * 78
-
-    # Tests are done running. Compare failures with expected failures.
-    regressions = self._CompareFailures(failures)
-
-    print "-" * 78
+    self._PrintRegressions(original_failures, original_regressions,
+        final_failures)
 
     # Write summaries to stdout.
-    result_summary = self._GetResultSummary(failures)
+    # The summary should include flaky tests, so use original_failures, not
+    # final_failures.
+    result_summary = self._GetResultSummary(original_failures)
     self._PrintResultSummary(result_summary, sys.stdout)
 
     if self._options.verbose:
-      self._WriteJSONFiles(failures, individual_test_timings, result_summary);
+      self._WriteJSONFiles(original_failures, individual_test_timings,
+          result_summary);
 
     # Write the same data to a log file.
     out_filename = os.path.join(self._options.results_directory, "score.txt")
@@ -611,13 +641,38 @@ class TestRunner:
 
     # Write the summary to disk (results.html) and maybe open the test_shell
     # to this file.
-    wrote_results = self._WriteResultsHtmlFile(failures, regressions)
+    wrote_results = self._WriteResultsHtmlFile(original_failures,
+        original_regressions)
     if not self._options.noshow_results and wrote_results:
       self._ShowResultsHtmlFile()
 
     sys.stdout.flush()
     sys.stderr.flush()
+    # Ignore flaky failures so we don't turn the bot red for those.
     return len(regressions)
+
+  def _PrintRegressions(self, original_failures, original_regressions,
+      final_failures):
+    """Prints the regressions from the test run.
+    Args:
+      original_failures: Failures from the first test run.
+      original_regressions: Regressions from the first test run.
+      final_failures: Failures after retrying the failures from the first run.
+    """
+    print "-" * 78
+
+    flaky_failures = {}
+    non_flaky_failures = {}
+    for failure in original_failures:
+      if failure not in original_regressions or failure in final_failures:
+        non_flaky_failures[failure] = original_failures[failure]
+      else:
+        flaky_failures[failure] = original_failures[failure]
+
+    self._CompareFailures(non_flaky_failures, print_regressions=True)
+    self._CompareFailures(flaky_failures, print_regressions=True, is_flaky=True)
+
+    print "-" * 78
 
   def _WriteJSONFiles(self, failures, individual_test_timings, result_summary):
     logging.debug("Writing JSON files in %s." % self._options.results_directory)
@@ -905,29 +960,25 @@ class TestRunner:
               'percent' : float(count) * 100 / total,
               'message' : message }))
 
-  def _CompareFailures(self, failures):
-    """Determine how the test failures from this test run differ from the
-    previous test run and print results to stdout and a file.
+  def _CompareFailures(self, failures, print_regressions=False, is_flaky=False):
+    """Determine if the failures in this test run are unexpected.
 
     Args:
-      failures is a dictionary mapping the test filename to a list of
-      TestFailure objects if the test failed
+      failures: a dictionary mapping the test filename to a list of
+          TestFailure objects if the test failed
+      print_regressions: whether to print the regressions to stdout
+      is_flaky: whether this set of failures represents tests that failed
+          the first time around, but passed on a subsequent run
 
     Return:
       A set of regressions (unexpected failures, hangs, or crashes)
     """
     cf = compare_failures.CompareFailures(self._test_files,
                                           failures,
-                                          self._expectations)
-
-    if not self._options.nocompare_failures:
+                                          self._expectations,
+                                          is_flaky)
+    if print_regressions:
       cf.PrintRegressions(sys.stdout)
-
-      out_filename = os.path.join(self._options.results_directory,
-                                  "regressions.txt")
-      output_file = open(out_filename, "w")
-      cf.PrintRegressions(output_file)
-      output_file.close()
 
     return cf.GetRegressions()
 
@@ -1194,11 +1245,6 @@ if '__main__' == __name__:
                            default=False,
                            help="Run all tests, even those marked SKIP in the "
                                 "test list")
-  option_parser.add_option("", "--nocompare-failures", action="store_true",
-                           default=False,
-                           help="Disable comparison to the last test run. "
-                                "When enabled, show stats on how many tests "
-                                "newly pass or fail.")
   option_parser.add_option("", "--num-test-shells",
                            help="Number of testshells to run in parallel.")
   option_parser.add_option("", "--time-out-ms", default=None,
