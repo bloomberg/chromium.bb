@@ -318,8 +318,8 @@ void BrowserWindowCocoa::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
     parent_window = GetNativeHandle();
   }
   [HtmlDialogWindowController showHtmlDialog:delegate
-                                parentWindow:parent_window
-                                     browser:browser_];
+                                     profile:browser_->profile()
+                                parentWindow:parent_window];
 }
 
 void BrowserWindowCocoa::UserChangedTheme() {

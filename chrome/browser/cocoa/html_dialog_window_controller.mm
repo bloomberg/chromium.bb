@@ -15,14 +15,21 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "googleurl/src/gurl.h"
 
+// ChromeEventProcessingWindow expects its controller to implement the
+// BrowserCommandExecutor protocol.
+@interface HtmlDialogWindowController (InternalAPI) <BrowserCommandExecutor>
+
+// BrowserCommandExecutor methods.
+- (void)executeCommand:(int)command;
+
+@end
+
 HtmlDialogWindowDelegateBridge::HtmlDialogWindowDelegateBridge(
-    HtmlDialogUIDelegate* delegate, NSWindowController* controller,
-    NSWindow* window, Browser* browser)
-    : delegate_(delegate), controller_(controller), window_(window),
-      browser_(browser) {
-  DCHECK(delegate_);
+    NSWindowController* controller, HtmlDialogUIDelegate* delegate,
+    Browser* browser)
+    : controller_(controller), delegate_(delegate), browser_(browser) {
   DCHECK(controller_);
-  DCHECK(window_);
+  DCHECK(delegate_);
   DCHECK(browser_);
 }
 
@@ -30,6 +37,8 @@ HtmlDialogWindowDelegateBridge::~HtmlDialogWindowDelegateBridge() {}
 
 void HtmlDialogWindowDelegateBridge::WindowControllerClosed() {
   DelegateOnDialogClosed("");
+  controller_ = nil;
+  browser_ = NULL;
 }
 
 bool HtmlDialogWindowDelegateBridge::DelegateOnDialogClosed(
@@ -94,6 +103,8 @@ void HtmlDialogWindowDelegateBridge::OnDialogClosed(
   if (DelegateOnDialogClosed(json_retval)) {
     [controller_ close];
   }
+  controller_ = nil;
+  browser_ = NULL;
 }
 
 // TabContentsDelegate definitions.  Most of this logic is copied from
@@ -103,9 +114,11 @@ void HtmlDialogWindowDelegateBridge::OnDialogClosed(
 void HtmlDialogWindowDelegateBridge::OpenURLFromTab(
     TabContents* source, const GURL& url, const GURL& referrer,
     WindowOpenDisposition disposition, PageTransition::Type transition) {
-  // Force all links to open in a new window.
-  static_cast<TabContentsDelegate*>(browser_)->
-    OpenURLFromTab(source, url, referrer, NEW_WINDOW, transition);
+  if (browser_) {
+    // Force all links to open in a new window.
+    static_cast<TabContentsDelegate*>(browser_)->
+      OpenURLFromTab(source, url, referrer, NEW_WINDOW, transition);
+  }
 }
 
 void HtmlDialogWindowDelegateBridge::NavigationStateChanged(
@@ -116,10 +129,12 @@ void HtmlDialogWindowDelegateBridge::AddNewContents(
     TabContents* source, TabContents* new_contents,
     WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
     bool user_gesture) {
-  // Force this to open in a new window, too.
-  static_cast<TabContentsDelegate*>(browser_)->
-    AddNewContents(source, new_contents, NEW_WINDOW,
-                   initial_pos, user_gesture);
+  if (browser_) {
+    // Force this to open in a new window, too.
+    static_cast<TabContentsDelegate*>(browser_)->
+      AddNewContents(source, new_contents, NEW_WINDOW,
+                     initial_pos, user_gesture);
+  }
 }
 
 void HtmlDialogWindowDelegateBridge::ActivateContents(TabContents* contents) {}
@@ -153,44 +168,33 @@ void HtmlDialogWindowDelegateBridge::URLStarredChanged(
 void HtmlDialogWindowDelegateBridge::UpdateTargetURL(
     TabContents* source, const GURL& url) {}
 
-// ChromeEventProcessingWindow expect its controller to implement this
-// protocol.
-
-@interface HtmlDialogWindowController (InternalAPI) <BrowserCommandExecutor>
-
-- (void)executeCommand:(int)command;
-
-@end
-
 @implementation HtmlDialogWindowController (InternalAPI)
 
-- (void)executeCommand:(int)command {
-  if (browser_->command_updater()->IsCommandEnabled(command)) {
-    browser_->ExecuteCommand(command);
-  }
-}
+// This gets called whenever a chrome-specific keyboard shortcut is performed
+// in the HTML dialog window.  We simply swallow all those events.
+- (void)executeCommand:(int)command {}
 
 @end
 
 @implementation HtmlDialogWindowController
 
 + (void)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-          parentWindow:(gfx::NativeWindow)parent_window
-               browser:(Browser*)browser {
-  HtmlDialogWindowController* html_dialog_window_controller =
+               profile:(Profile*)profile
+          parentWindow:(gfx::NativeWindow)parentWindow {
+  HtmlDialogWindowController* htmlDialogWindowController =
     [[HtmlDialogWindowController alloc] initWithDelegate:delegate
-                                            parentWindow:parent_window
-                                                 browser:browser];
-  [html_dialog_window_controller loadDialogContents];
-  [html_dialog_window_controller showWindow:nil];
+                                                 profile:profile
+                                            parentWindow:parentWindow];
+  [htmlDialogWindowController loadDialogContents];
+  [htmlDialogWindowController showWindow:nil];
 }
 
 - (id)initWithDelegate:(HtmlDialogUIDelegate*)delegate
-          parentWindow:(gfx::NativeWindow)parent_window
-               browser:(Browser*)browser {
+               profile:(Profile*)profile
+          parentWindow:(gfx::NativeWindow)parentWindow {
   DCHECK(delegate);
-  DCHECK(parent_window);
-  DCHECK(browser);
+  DCHECK(profile);
+  DCHECK(parentWindow);
 
   // Put the dialog box in the center of the window.
   //
@@ -199,25 +203,25 @@ void HtmlDialogWindowDelegateBridge::UpdateTargetURL(
   // TODO(akalin): Perhaps use [window center] instead, which centers
   // the dialog to the screen, although it doesn't match the Windows
   // behavior.
-  NSRect parent_window_frame = [parent_window frame];
-  NSPoint parent_window_origin = parent_window_frame.origin;
-  NSSize parent_window_size = parent_window_frame.size;
-  gfx::Size dialog_size;
-  delegate->GetDialogSize(&dialog_size);
-  NSRect dialog_rect =
-    NSMakeRect(parent_window_origin.x +
-               (parent_window_size.width - dialog_size.width()) / 2,
-               parent_window_origin.y +
-               (parent_window_size.height - dialog_size.height()) / 2,
-               dialog_size.width(),
-               dialog_size.height());
+  NSRect parentWindowFrame = [parentWindow frame];
+  NSPoint parentWindowOrigin = parentWindowFrame.origin;
+  NSSize parentWindowSize = parentWindowFrame.size;
+  gfx::Size dialogSize;
+  delegate->GetDialogSize(&dialogSize);
+  NSRect dialogRect =
+    NSMakeRect(parentWindowOrigin.x +
+               (parentWindowSize.width - dialogSize.width()) / 2,
+               parentWindowOrigin.y +
+               (parentWindowSize.height - dialogSize.height()) / 2,
+               dialogSize.width(),
+               dialogSize.height());
   // TODO(akalin): Make the window resizable (but with the minimum size being
   // dialog_size and always on top (but not modal) to match the Windows
   // behavior.
   NSUInteger style = NSTitledWindowMask | NSClosableWindowMask;
   scoped_nsobject<ChromeEventProcessingWindow> window(
       [[ChromeEventProcessingWindow alloc]
-           initWithContentRect:dialog_rect
+           initWithContentRect:dialogRect
                      styleMask:style
                        backing:NSBackingStoreBuffered
                          defer:YES]);
@@ -231,25 +235,24 @@ void HtmlDialogWindowDelegateBridge::UpdateTargetURL(
   [window setWindowController:self];
   [window setDelegate:self];
   [window setTitle:base::SysWideToNSString(delegate->GetDialogTitle())];
-  browser_ = browser;
+  browser_.reset(new Browser(Browser::TYPE_NORMAL, profile));
   delegate_.reset(
-      new HtmlDialogWindowDelegateBridge(delegate, self, window, browser));
+      new HtmlDialogWindowDelegateBridge(self, delegate, browser_.get()));
   return self;
 }
 
 - (void)loadDialogContents {
-  // TODO(akalin): Figure out if this can be an incognito profile.
   Profile* profile = browser_->profile();
-  tab_contents_.reset(new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL));
-  [[self window] setContentView:tab_contents_->GetNativeView()];
-  tab_contents_->set_delegate(delegate_.get());
+  tabContents_.reset(new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL));
+  [[self window] setContentView:tabContents_->GetNativeView()];
+  tabContents_->set_delegate(delegate_.get());
 
   // This must be done before loading the page; see the comments in
   // HtmlDialogUI.
-  HtmlDialogUI::GetPropertyAccessor().SetProperty(tab_contents_->property_bag(),
+  HtmlDialogUI::GetPropertyAccessor().SetProperty(tabContents_->property_bag(),
                                                   delegate_.get());
 
-  tab_contents_->controller().LoadURL(delegate_->GetDialogContentURL(),
+  tabContents_->controller().LoadURL(delegate_->GetDialogContentURL(),
                                       GURL(), PageTransition::START_PAGE);
 
   // TODO(akalin): add accelerator for ESC to close the dialog box.

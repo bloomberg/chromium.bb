@@ -79,11 +79,11 @@ TEST_F(HtmlDialogWindowControllerTest, showDialog) {
   EXPECT_CALL(delegate_, OnDialogClosed(_))
     .Times(1);
 
-  NSWindow* parent_window = cocoa_helper_.window();
+  NSWindow* parentWindow = cocoa_helper_.window();
   HtmlDialogWindowController* html_dialog_window_controller =
     [[HtmlDialogWindowController alloc] initWithDelegate:&delegate_
-                                            parentWindow:parent_window
-                                                 browser:browser()];
+                                                 profile:profile()
+                                            parentWindow:parentWindow];
 
   [html_dialog_window_controller loadDialogContents];
   [html_dialog_window_controller showWindow:nil];

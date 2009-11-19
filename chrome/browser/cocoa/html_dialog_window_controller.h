@@ -21,13 +21,15 @@ class Browser;
 
 // Thin bridge that routes notifications to
 // HtmlDialogWindowController's member variables.
+//
+// TODO(akalin): This doesn't need to be in the .h file; move it to the
+// .mm file.
 class HtmlDialogWindowDelegateBridge : public HtmlDialogUIDelegate,
                                        public TabContentsDelegate {
  public:
   // All parameters must be non-NULL/non-nil.
-  HtmlDialogWindowDelegateBridge(HtmlDialogUIDelegate* delegate,
-                                 NSWindowController* controller,
-                                 NSWindow* window,
+  HtmlDialogWindowDelegateBridge(NSWindowController* controller,
+                                 HtmlDialogUIDelegate* delegate,
                                  Browser* browser);
 
   virtual ~HtmlDialogWindowDelegateBridge();
@@ -68,10 +70,9 @@ class HtmlDialogWindowDelegateBridge : public HtmlDialogUIDelegate,
   virtual void UpdateTargetURL(TabContents* source, const GURL& url);
 
  private:
-  HtmlDialogUIDelegate* delegate_;  // weak
   NSWindowController* controller_;  // weak
-  NSWindow* window_;  // weak
-  Browser* browser_;  // weak
+  HtmlDialogUIDelegate* delegate_;  // weak, owned by controller_
+  Browser* browser_;  // weak, owned by controller_
 
   // Calls delegate_'s OnDialogClosed() exactly once, nulling it out
   // afterwards so that no other HtmlDialogUIDelegate calls are sent
@@ -86,19 +87,24 @@ class HtmlDialogWindowDelegateBridge : public HtmlDialogUIDelegate,
 // from a HTMLDialogUIDelegate object.
 @interface HtmlDialogWindowController : NSWindowController {
  @private
-  Browser* browser_;  // weak
+  // An HTML dialog can exist separately from a window in OS X, so this
+  // controller needs its own browser.
+  scoped_ptr<Browser> browser_;
   // Order here is important, as tab_contents_ may send messages to
   // delegate_ when it gets destroyed.
   scoped_ptr<HtmlDialogWindowDelegateBridge> delegate_;
-  scoped_ptr<TabContents> tab_contents_;
+  scoped_ptr<TabContents> tabContents_;
 }
 
 // Creates and shows an HtmlDialogWindowController with the given
-// delegate, parent window, and browser, none of which may be NULL.
+// delegate, parent window, and profile, none of which may be NULL.
 // The window is automatically destroyed when it is closed.
+//
+// TODO(akalin): Handle a NULL parentWindow as HTML dialogs may be launched
+// without any browser windows being present (on OS X).
 + (void)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-          parentWindow:(gfx::NativeWindow)parent_window
-               browser:(Browser*)browser;
+               profile:(Profile*)profile
+          parentWindow:(gfx::NativeWindow)parent_window;
 
 @end
 
@@ -107,8 +113,8 @@ class HtmlDialogWindowDelegateBridge : public HtmlDialogUIDelegate,
 // This is the designated initializer.  However, this is exposed only
 // for testing; use showHtmlDialog instead.
 - (id)initWithDelegate:(HtmlDialogUIDelegate*)delegate
-          parentWindow:(gfx::NativeWindow)parent_window
-               browser:(Browser*)browser;
+               profile:(Profile*)profile
+          parentWindow:(gfx::NativeWindow)parentWindow;
 
 // Loads the HTML content from the delegate; this is not a lightweight
 // process which is why it is not part of the constructor.  Must be
