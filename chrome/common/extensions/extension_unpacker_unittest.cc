@@ -29,10 +29,8 @@ public:
     // a temp folder to play in.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &install_dir_));
     install_dir_ = install_dir_.AppendASCII("extension_unpacker_test");
-    ASSERT_TRUE(file_util::Delete(install_dir_, true)) <<
-        install_dir_.value();
-    ASSERT_TRUE(file_util::CreateDirectory(install_dir_)) <<
-        install_dir_.value();
+    file_util::Delete(install_dir_, true);
+    file_util::CreateDirectory(install_dir_);
 
     FilePath crx_path = install_dir_.AppendASCII(crx_name);
     ASSERT_TRUE(file_util::CopyFile(original_path, crx_path)) <<
@@ -52,25 +50,25 @@ public:
   scoped_ptr<ExtensionUnpacker> unpacker_;
 };
 
-TEST_F(ExtensionUnpackerTest, DISABLED_EmptyDefaultLocale) {
+TEST_F(ExtensionUnpackerTest, EmptyDefaultLocale) {
   SetupUnpacker("empty_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(errors::kInvalidDefaultLocale, unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_HasDefaultLocaleMissingLocalesFolder) {
+TEST_F(ExtensionUnpackerTest, HasDefaultLocaleMissingLocalesFolder) {
   SetupUnpacker("has_default_missing_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(errors::kLocalesTreeMissing, unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_InvalidDefaultLocale) {
+TEST_F(ExtensionUnpackerTest, InvalidDefaultLocale) {
   SetupUnpacker("invalid_default_locale.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(errors::kInvalidDefaultLocale, unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_InvalidMessagesFile) {
+TEST_F(ExtensionUnpackerTest, InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
@@ -78,20 +76,20 @@ TEST_F(ExtensionUnpackerTest, DISABLED_InvalidMessagesFile) {
                 " Dictionary keys must be quoted.")));
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_MissingDefaultData) {
+TEST_F(ExtensionUnpackerTest, MissingDefaultData) {
   SetupUnpacker("missing_default_data.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(errors::kLocalesNoDefaultMessages, unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_MissingDefaultLocaleHasLocalesFolder) {
+TEST_F(ExtensionUnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
   SetupUnpacker("missing_default_has_locales.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(errors::kLocalesNoDefaultLocaleSpecified,
             unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_MissingMessagesFile) {
+TEST_F(ExtensionUnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
@@ -99,20 +97,20 @@ TEST_F(ExtensionUnpackerTest, DISABLED_MissingMessagesFile) {
     std::string("*_locales?en_US?messages.json")));
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_NoLocaleData) {
+TEST_F(ExtensionUnpackerTest, NoLocaleData) {
   SetupUnpacker("no_locale_data.crx");
   EXPECT_FALSE(unpacker_->Run());
   EXPECT_EQ(errors::kLocalesTreeMissing, unpacker_->error_message());
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_GoodL10n) {
+TEST_F(ExtensionUnpackerTest, GoodL10n) {
   SetupUnpacker("good_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
   ASSERT_EQ(2U, unpacker_->parsed_catalogs()->GetSize());
 }
 
-TEST_F(ExtensionUnpackerTest, DISABLED_NoL10n) {
+TEST_F(ExtensionUnpackerTest, NoL10n) {
   SetupUnpacker("no_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());

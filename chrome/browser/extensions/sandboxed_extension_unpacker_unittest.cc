@@ -76,10 +76,8 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &install_dir_));
     install_dir_ =
       install_dir_.AppendASCII("sandboxed_extension_unpacker_test");
-    ASSERT_TRUE(file_util::Delete(install_dir_, true)) <<
-        install_dir_.value();
-    ASSERT_TRUE(file_util::CreateDirectory(install_dir_)) <<
-        install_dir_.value();
+    file_util::Delete(install_dir_, true);
+    file_util::CreateDirectory(install_dir_);
 
     FilePath crx_path = install_dir_.AppendASCII(crx_name);
     ASSERT_TRUE(file_util::CopyFile(original_path, crx_path)) <<
@@ -120,7 +118,7 @@ class SandboxedExtensionUnpackerTest : public testing::Test {
   scoped_refptr<SandboxedExtensionUnpacker> sandboxed_unpacker_;
 };
 
-TEST_F(SandboxedExtensionUnpackerTest, DISABLED_NoCatalogsSuccess) {
+TEST_F(SandboxedExtensionUnpackerTest, NoCatalogsSuccess) {
   EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _));
 
   SetupUnpacker("no_l10n.crx");
@@ -138,7 +136,7 @@ TEST_F(SandboxedExtensionUnpackerTest, DISABLED_NoCatalogsSuccess) {
   EXPECT_FALSE(file_util::PathExists(install_path));
 }
 
-TEST_F(SandboxedExtensionUnpackerTest, DISABLED_WithCatalogsSuccess) {
+TEST_F(SandboxedExtensionUnpackerTest, WithCatalogsSuccess) {
   EXPECT_CALL(*client_, OnUnpackSuccess(_, _, _));
 
   SetupUnpacker("good_l10n.crx");
