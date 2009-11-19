@@ -10,7 +10,7 @@
 
 // NSAnimation subclass that animates the height of an AnimatableView.  Allows
 // the caller to start and cancel the animation as desired.
-@interface NSHeightAnimation : NSAnimation {
+@interface HeightAnimation : NSAnimation {
  @private
   AnimatableView* view_;  // weak, owns us.
   CGFloat startHeight_;
@@ -24,7 +24,7 @@
           duration:(NSTimeInterval)duration;
 @end
 
-@implementation NSHeightAnimation
+@implementation HeightAnimation
 - (id)initWithView:(AnimatableView*)view
        finalHeight:(CGFloat)height
           duration:(NSTimeInterval)duration {
@@ -73,9 +73,9 @@
                   duration:(NSTimeInterval)duration {
   [currentAnimation_ stopAnimation];
 
-  currentAnimation_.reset([[NSHeightAnimation alloc] initWithView:self
-                                                      finalHeight:newHeight
-                                                         duration:duration]);
+  currentAnimation_.reset([[HeightAnimation alloc] initWithView:self
+                                                    finalHeight:newHeight
+                                                       duration:duration]);
   if ([resizeDelegate_ respondsToSelector:@selector(setAnimationInProgress:)])
     [resizeDelegate_ setAnimationInProgress:YES];
   [currentAnimation_ startAnimation];
