@@ -63,7 +63,7 @@ Uninstall() {
   # Remove O3D plugin, dirs and symlinks.
   O3D_DIR="/opt/google/o3d"
   APPS="mozilla firefox iceape iceweasel xulrunner midbrowser xulrunner-addons"
-  LIBS="libCg.so libCgGL.so libGLEW.so.1.5"
+  LIBS="libCg.so libCgGL.so"
   LIB3D="libnpo3dautoplugin.so"
   LIB3D_WRAPPED="npwrapper.libnpo3dautoplugin.so"
 

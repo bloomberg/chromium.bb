@@ -30,7 +30,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PATH=$PATH:/usr/bin/:/usr/local/bin
+PATH=$PATH:/sbin:/usr/bin/:/usr/local/bin
 
 CheckArch() {
   # Look for 32 or 64 bit arch from the kernel. If we can not get a read
@@ -71,7 +71,7 @@ UninstallO3d() {
 SetupO3d() {
   # Create npapi plugin directories, copy and symlink libs.
   O3D_DIR="/opt/google/o3d"
-  LIB_DIR=$O3D_DIR/lib
+  LIB_DIR=${O3D_DIR}/lib
 
   PLUGIN_DIRS="/usr/lib/firefox/plugins
                /usr/lib/iceape/plugins
@@ -82,10 +82,24 @@ SetupO3d() {
                /usr/lib/xulrunner-addons/plugins"
 
   LIBS="libCg.so
-        libCgGL.so
-        libGLEW.so.1.5"
+        libCgGL.so"
+
+  LIBGLEW="libGLEW.so.1.5"
 
   LIB3D="libnpo3dautoplugin.so"
+
+  # Check for libGLEW on local system.
+  echo -n "Checking for libGLEW..."
+  ldconfig -p | grep $LIBGLEW
+  if [ $? -ne 0 ]; then
+    echo "
+    ERROR: The OpenGL Extension Wrangler ($LIBGLEW) was not found on your
+    system. This tool is required for O3D. Please install libGLEW using your
+    system's package manager."
+    exit 1
+  else
+    echo "ok"
+  fi
 
   echo -n "Creating plugin directories..."
   mkdir -p $PLUGIN_DIRS $O3D_DIR $LIB_DIR
