@@ -839,11 +839,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       if (enabled)
         metrics->Start();
     }
-    // TODO(ukai): Bug 28096: Implement ExperimentRunner so that it does not
-    // tear down histograms early, and cause a crash.
-    /*
     chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
-    */
   }
 
   InstallJankometer(parsed_command_line);
