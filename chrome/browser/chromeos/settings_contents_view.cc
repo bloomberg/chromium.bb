@@ -597,9 +597,10 @@ void SettingsContentsView::InitControlLayout() {
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new DateTimeSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(new NetworkSection(profile()));
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  // TODO(chocobo): Add NetworkSection back once we have the UI finalized.
+//  layout->StartRow(0, single_column_view_set_id);
+//  layout->AddView(new NetworkSection(profile()));
+//  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new TouchpadSection(profile()));
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
