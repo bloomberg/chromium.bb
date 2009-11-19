@@ -578,7 +578,7 @@ int FlipNetworkTransaction::DoReadBodyComplete(int result) {
   user_buffer_len_ = 0;
 
   if (result <= 0)
-    flip_stream_parser_.release();
+    flip_stream_parser_ = NULL;
 
   return result;
 }
