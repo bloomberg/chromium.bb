@@ -45,17 +45,17 @@ TEST_F(FirefoxProfileLockTest, LockTest) {
 // Tests basic functionality and verifies that the lock file is deleted after
 // use.
 TEST_F(FirefoxProfileLockTest, ProfileLock) {
-  std::wstring test_path;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(L"firefox_profile",
-                                                &test_path));
-  FilePath lock_file_path = FilePath::FromWStringHack(test_path);
+  FilePath test_path;
+  ASSERT_TRUE(file_util::CreateNewTempDirectory(
+      FILE_PATH_LITERAL("firefox_profile"), &test_path));
+  FilePath lock_file_path = test_path;
   FileAutoDeleter deleter(lock_file_path);
   lock_file_path = lock_file_path.Append(FirefoxProfileLock::kLockFileName);
 
   scoped_ptr<FirefoxProfileLock> lock;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock.get());
   EXPECT_FALSE(file_util::PathExists(lock_file_path));
-  lock.reset(new FirefoxProfileLock(test_path));
+  lock.reset(new FirefoxProfileLock(test_path.ToWStringHack()));
   EXPECT_TRUE(lock->HasAcquired());
   EXPECT_TRUE(file_util::PathExists(lock_file_path));
   lock->Unlock();
@@ -107,19 +107,19 @@ TEST_F(FirefoxProfileLockTest, ProfileLockOrphaned) {
 #if !defined(OS_POSIX)
 // Tests two locks contending for the same lock file.
 TEST_F(FirefoxProfileLockTest, ProfileLockContention) {
-  std::wstring test_path;
-  ASSERT_TRUE(file_util::CreateNewTempDirectory(L"firefox_profile",
-                                                &test_path));
-  FileAutoDeleter deleter(FilePath::FromWStringHack(test_path));
+  FilePath test_path;
+  ASSERT_TRUE(file_util::CreateNewTempDirectory(
+      FILE_PATH_LITERAL("firefox_profile"), &test_path));
+  FileAutoDeleter deleter(test_path);
 
   scoped_ptr<FirefoxProfileLock> lock1;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock1.get());
-  lock1.reset(new FirefoxProfileLock(test_path));
+  lock1.reset(new FirefoxProfileLock(test_path.ToWStringHack()));
   EXPECT_TRUE(lock1->HasAcquired());
 
   scoped_ptr<FirefoxProfileLock> lock2;
   EXPECT_EQ(static_cast<FirefoxProfileLock*>(NULL), lock2.get());
-  lock2.reset(new FirefoxProfileLock(test_path));
+  lock2.reset(new FirefoxProfileLock(test_path.ToWStringHack()));
   EXPECT_FALSE(lock2->HasAcquired());
 
   lock1->Unlock();

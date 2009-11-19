@@ -110,15 +110,14 @@ installer_util::InstallStatus RenameChromeExecutables(bool system_install) {
 
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   install_list->AddDeleteTreeWorkItem(chrome_old_exe, std::wstring());
-  std::wstring temp_path;
-  if (!file_util::CreateNewTempDirectory(std::wstring(L"chrome_"),
-                                         &temp_path)) {
-    LOG(ERROR) << "Failed to create Temp directory " << temp_path;
+  FilePath temp_path;
+  if (!file_util::CreateNewTempDirectory(L"chrome_", &temp_path)) {
+    LOG(ERROR) << "Failed to create Temp directory " << temp_path.value();
     return installer_util::RENAME_FAILED;
   }
   install_list->AddCopyTreeWorkItem(chrome_new_exe,
                                     chrome_exe,
-                                    temp_path,
+                                    temp_path.ToWStringHack(),
                                     WorkItem::IF_DIFFERENT,
                                     std::wstring());
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
@@ -203,9 +202,8 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
 
   // Create a temp folder where we will unpack Chrome archive. If it fails,
   // then we are doomed, so return immediately and no cleanup is required.
-  std::wstring temp_path;
-  if (!file_util::CreateNewTempDirectory(std::wstring(L"chrome_"),
-                                         &temp_path)) {
+  FilePath temp_path;
+  if (!file_util::CreateNewTempDirectory(L"chrome_", &temp_path)) {
     LOG(ERROR) << "Could not create temporary path.";
     InstallUtil::WriteInstallerResult(system_level,
                                       installer_util::TEMP_DIR_FAILED,
@@ -213,15 +211,16 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
                                       NULL);
     return installer_util::TEMP_DIR_FAILED;
   }
-  LOG(INFO) << "created path " << temp_path;
+  LOG(INFO) << "created path " << temp_path.value();
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  std::wstring unpack_path(temp_path);
+  std::wstring unpack_path(temp_path.ToWStringHack());
   file_util::AppendToPath(&unpack_path,
                           std::wstring(installer::kInstallSourceDir));
   bool incremental_install = false;
   if (UnPackArchive(archive, system_level, installed_version,
-                    temp_path, unpack_path, incremental_install)) {
+                    temp_path.ToWStringHack(), unpack_path,
+                    incremental_install)) {
     install_status = installer_util::UNCOMPRESSION_FAILED;
     InstallUtil::WriteInstallerResult(system_level, install_status,
                                       IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
@@ -250,14 +249,14 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
       } else {
         // We want to keep uncompressed archive (chrome.7z) that we get after
         // uncompressing and binary patching. Get the location for this file.
-        std::wstring archive_to_copy(temp_path);
+        std::wstring archive_to_copy(temp_path.ToWStringHack());
         file_util::AppendToPath(&archive_to_copy,
                                 std::wstring(installer::kChromeArchive));
         std::wstring prefs_source_path = cmd_line.GetSwitchValue(
             installer_util::switches::kInstallerData);
         install_status = installer::InstallOrUpdateChrome(
-            cmd_line.program(), archive_to_copy, temp_path, prefs_source_path,
-            prefs, *installer_version, installed_version);
+            cmd_line.program(), archive_to_copy, temp_path.ToWStringHack(),
+            prefs_source_path, prefs, *installer_version, installed_version);
 
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
         std::wstring chrome_exe;
@@ -309,8 +308,9 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   // Delete temporary files. These include install temporary directory
   // and master profile file if present.
   scoped_ptr<WorkItemList> cleanup_list(WorkItem::CreateWorkItemList());
-  LOG(INFO) << "Deleting temporary directory " << temp_path;
-  cleanup_list->AddDeleteTreeWorkItem(temp_path, std::wstring());
+  LOG(INFO) << "Deleting temporary directory " << temp_path.value();
+  cleanup_list->AddDeleteTreeWorkItem(temp_path.ToWStringHack(),
+                                      std::wstring());
   if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
     std::wstring prefs_path = cmd_line.GetSwitchValue(
         installer_util::switches::kInstallerData);
@@ -386,16 +386,15 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     // patch to current exe, and store the resulting binary in the path
     // specified by --new-setup-exe. But we need to first unpack the file
     // given in --update-setup-exe.
-    std::wstring temp_path;
-    if (!file_util::CreateNewTempDirectory(std::wstring(L"chrome_"),
-                                           &temp_path)) {
+    FilePath temp_path;
+    if (!file_util::CreateNewTempDirectory(L"chrome_", &temp_path)) {
       LOG(ERROR) << "Could not create temporary path.";
     } else {
       std::wstring setup_patch = cmd_line.GetSwitchValue(
           installer_util::switches::kUpdateSetupExe);
       LOG(INFO) << "Opening archive " << setup_patch;
       std::wstring uncompressed_patch;
-      if (LzmaUtil::UnPackArchive(setup_patch, temp_path,
+      if (LzmaUtil::UnPackArchive(setup_patch, temp_path.ToWStringHack(),
                                   &uncompressed_patch) == NO_ERROR) {
         std::wstring old_setup_exe = cmd_line.program();
         std::wstring new_setup_exe = cmd_line.GetSwitchValue(
