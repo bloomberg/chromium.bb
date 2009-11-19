@@ -12,6 +12,8 @@
 
 // TODO(port): trim this include list once first run has been refactored fully.
 #include "app/app_switches.h"
+#include "app/l10n_util.h"
+#include "app/l10n_util_win.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -46,6 +48,8 @@
 #include "chrome/installer/util/util_constants.h"
 #include "google_update_idl.h"
 #include "grit/app_resources.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "views/background.h"
@@ -666,51 +670,8 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
 
 namespace {
 
-// These strings are used by TryChromeDialog. They will need to be localized
-// if we use it for other locales.
-const wchar_t* kHeading[] = {
-  L"You stopped using Google Chrome. Would you like to ...",
-  L"Google Chrome misses you.",
-  L"There is a new version of Google Chrome available.",
-  L"Google Chrome has been updated, but you haven't tried it yet"
-};
-
-const wchar_t* kGiveChromeATry[] = {
-  L"Give the new version a try (already installed)",
-  L"Give it a second chance",
-  L"Try it out (already installed)"
-};
-
-const wchar_t* kNahUninstallIt[] = {
-  L"Uninstall Google Chrome",
-  L"Uninstall Google Chrome, it had its chance"
-};
-
-const wchar_t* kOKButn[] = {
-  L"OK",
-  L"Try it"
-};
-
-const wchar_t kDontBugMe[] = L"Don't bug me";
-const wchar_t kWhyThis[] = L"Why am I seeing this?";
 const wchar_t kHelpCenterUrl[] =
-    L"http://www.google.com/support/chrome/bin/answer.py?hl=en&answer=150752";
-
-// This structure and the following constant defines how the dialog looks with
-// respect of buttons and text, but does not fundamentally change the behavior.
-struct VersionConfig {
-  int heading_index;
-  int try_index;
-  int uninstall_index;
-  int ok_button_index;
-};
-
-const VersionConfig kDialogVersion[] = {
-  {0, 0, 0, 0},     // 0 is classic.
-  {1, 1, 1, 0},     // 1 is humorous.
-  {2, 2, 0, 0},     // 2 is update-focused.
-  {3, -1, -1, 1}    // 3 is simpler (no radio buttons).
-};
+    L"http://www.google.com/support/chrome/bin/answer.py?answer=150752";
 
 // This class displays a modal dialog using the views system. The dialog asks
 // the user to give chrome another try. This class only handles the UI so the
@@ -727,15 +688,11 @@ const VersionConfig kDialogVersion[] = {
 class TryChromeDialog : public views::ButtonListener,
                         public views::LinkController {
  public:
-  explicit TryChromeDialog(size_t version)
-      : version_(version),
-        popup_(NULL),
+  TryChromeDialog()
+      : popup_(NULL),
         try_chrome_(NULL),
         kill_chrome_(NULL),
         result_(Upgrade::TD_LAST_ENUM) {
-    // In case of doubt, use the first version of the dialog.
-    if (version_ >= arraysize(kHeading))
-      version_ = 0;
   }
 
   virtual ~TryChromeDialog() {
@@ -817,8 +774,9 @@ class TryChromeDialog : public views::ButtonListener,
     // First row views.
     layout->StartRow(0, 0);
     layout->AddView(icon);
+    const std::wstring heading = l10n_util::GetString(IDS_TRY_TOAST_HEADING);
     views::Label* label =
-        new views::Label(kHeading[kDialogVersion[version_].heading_index]);
+        new views::Label(heading);
     label->SetFont(rb.GetFont(ResourceBundle::MediumBoldFont));
     label->SetMultiLine(true);
     label->SizeToFit(200);
@@ -833,33 +791,35 @@ class TryChromeDialog : public views::ButtonListener,
                           rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
     close_button->set_tag(BT_CLOSE_BUTTON);
     layout->AddView(close_button);
+
     // Second row views.
-    if (kDialogVersion[version_].try_index >= 0) {
-      layout->StartRowWithPadding(0, 1, 0, 10);
-      try_chrome_ = new views::RadioButton(
-          kGiveChromeATry[kDialogVersion[version_].try_index], 1);
-      layout->AddView(try_chrome_);
-      try_chrome_->SetChecked(true);
-    }
+    const std::wstring try_it(l10n_util::GetString(IDS_TRY_TOAST_TRY_OPT));
+    layout->StartRowWithPadding(0, 1, 0, 10);
+    try_chrome_ = new views::RadioButton(try_it, 1);
+    layout->AddView(try_chrome_);
+    try_chrome_->SetChecked(true);
+
     // Third row views.
-    if (kDialogVersion[version_].try_index >= 0) {
-      layout->StartRow(0, 2);
-      kill_chrome_ = new views::RadioButton(
-          kNahUninstallIt[kDialogVersion[version_].uninstall_index], 1);
-      layout->AddView(kill_chrome_);
-    }
+    const std::wstring
+        kill_it(l10n_util::GetString(IDS_UNINSTALL_CHROME));
+    layout->StartRow(0, 2);
+    kill_chrome_ = new views::RadioButton(kill_it, 1);
+    layout->AddView(kill_chrome_);
+
     // Fourth row views.
+    const std::wstring ok_it(l10n_util::GetString(IDS_OK));
+    const std::wstring cancel_it(l10n_util::GetString(IDS_TRY_TOAST_CANCEL));
+    const std::wstring why_this(l10n_util::GetString(IDS_TRY_TOAST_WHY));
     layout->StartRowWithPadding(0, 3, 0, 10);
-    views::Button* accept_button = new views::NativeButton(this,
-        kOKButn[kDialogVersion[version_].ok_button_index]);
+    views::Button* accept_button = new views::NativeButton(this, ok_it);
     accept_button->set_tag(BT_OK_BUTTON);
     layout->AddView(accept_button);
-    views::Button* cancel_button = new views::NativeButton(this, kDontBugMe);
+    views::Button* cancel_button = new views::NativeButton(this, cancel_it);
     cancel_button->set_tag(BT_CLOSE_BUTTON);
     layout->AddView(cancel_button);
     // Fifth row views.
     layout->StartRowWithPadding(0, 4, 0, 10);
-    views::Link* link = new views::Link(kWhyThis);
+    views::Link* link = new views::Link(why_this);
     link->SetController(this);
     layout->AddView(link);
 
@@ -964,6 +924,6 @@ class TryChromeDialog : public views::ButtonListener,
 }  // namespace
 
 Upgrade::TryResult Upgrade::ShowTryChromeDialog(size_t version) {
-  TryChromeDialog td(version);
+  TryChromeDialog td;
   return td.ShowModal();
 }
