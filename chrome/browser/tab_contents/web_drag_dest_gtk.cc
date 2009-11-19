@@ -13,6 +13,7 @@
 
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationCopy;
+using WebKit::WebDragOperationMove;
 using WebKit::WebDragOperationNone;
 
 WebDragDestGtk::WebDragDestGtk(TabContents* tab_contents, GtkWidget* widget)
@@ -48,7 +49,6 @@ void WebDragDestGtk::UpdateDragStatus(WebDragOperation operation) {
     // but that would increase the cost of getting our drag success guess
     // wrong.
     is_drop_target_ = operation != WebDragOperationNone;
-    // TODO(snej): Pass appropriate GDK action instead of hardcoding COPY
     gdk_drag_status(context_, is_drop_target_ ? GDK_ACTION_COPY :
                     static_cast<GdkDragAction>(0),
                     drag_over_time_);
@@ -83,7 +83,8 @@ gboolean WebDragDestGtk::OnDragMotion(GdkDragContext* context, gint x, gint y,
     tab_contents_->render_view_host()->
         DragTargetDragOver(gtk_util::ClientPoint(widget_),
                            gtk_util::ScreenPoint(widget_),
-                           WebDragOperationCopy);
+                           static_cast<WebDragOperation>(
+                               WebDragOperationCopy | WebDragOperationMove));
     // TODO(snej): Pass appropriate DragOperation instead of hardcoding
     drag_over_time_ = time;
   }
@@ -148,7 +149,8 @@ void WebDragDestGtk::OnDragDataReceived(
         DragTargetDragEnter(*drop_data_.get(),
                             gtk_util::ClientPoint(widget_),
                             gtk_util::ScreenPoint(widget_),
-                            WebDragOperationCopy);
+                            static_cast<WebDragOperation>(
+                                WebDragOperationCopy | WebDragOperationMove));
     // TODO(snej): Pass appropriate DragOperation instead of hardcoding
     drag_over_time_ = time;
   }
