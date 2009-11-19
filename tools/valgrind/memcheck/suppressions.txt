@@ -67,6 +67,14 @@
    fun:FcPatternObjectAddWithBinding
 }
 {
+   # Another permutation of previous leak.
+   fontconfig_bug_8428_2
+   Memcheck:Leak
+   fun:realloc
+   fun:FcPatternObjectInsertElt
+   fun:FcPatternObjectAdd
+}
+{
    bug_18590
    Memcheck:Leak
    fun:malloc
@@ -558,8 +566,6 @@
    fun:FcConfigPatternAdd
    fun:FcConfigSubstituteWithPat
    fun:FcFontRenderPrepare
-   fun:FcFontSetMatch
-   fun:FcFontMatch
 }
 {
    bug_16128
@@ -1142,7 +1148,13 @@
    fun:_ZN16ChildProcessHost12ListenerHook14OnChannelErrorEv
    fun:_ZN3IPC7Channel11ChannelImpl28OnFileCanReadWithoutBlockingEi
 }
-
+{
+   # See comment in main_menu.cc
+   main_menu_leak
+   Memcheck:Leak
+   ...
+   fun:_ZN8chromeos8MainMenuC1Ev
+}
 # The following three suppressions are related to the workers code.
 {
    bug_27837
