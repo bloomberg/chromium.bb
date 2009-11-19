@@ -35,6 +35,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#include <vector>
+
 #include "xp.h"
 #include "logger.h"
 
@@ -101,80 +103,88 @@ XP_HLIB LoadRealPlugin(char * mimetype)
   }
 
   strcpy(szFileName, szPath);
-  strcat(szFileName, "\\*");
 
-  HANDLE handle = FindFirstFile(szFileName, &ffdataStruct);
-  if(handle == INVALID_HANDLE_VALUE) 
-  {
-    FindClose(handle);
-    return NULL;
-  }
+  std::vector<std::string> directories;
 
-  DWORD versize = 0L;
-  DWORD zero = 0L;
-  char * verbuf = NULL;
+  directories.push_back(szFileName);
+  directories.push_back("C:\\Windows\\System32\\Macromed\\Flash");
 
-  do
-  {
-    strcpy(szFileName, szPath);
-    strcat(szFileName, "\\");
-    strcat(szFileName, ffdataStruct.cFileName);
-    if(!(ffdataStruct. dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-       strstr(szFileName, "npspy.dll") == NULL)
+  for (size_t i = 0; i < directories.size(); ++i) {
+    std::string search_path = directories[i];
+    search_path = search_path.append("\\np*.dll");
+    HANDLE handle = FindFirstFile(search_path.c_str(), &ffdataStruct);
+    if(handle == INVALID_HANDLE_VALUE) 
     {
-      versize = GetFileVersionInfoSize(szFileName, &zero);
-	    if (versize > 0)
-		    verbuf = new char[versize];
-      else 
-        continue;
-
-      if(!verbuf)
-		    continue;
-
-      GetFileVersionInfo(szFileName, NULL, versize, verbuf);
-
-      char *mimetypes = NULL;
-      UINT len = 0;
-
-      if(!VerQueryValue(verbuf, "\\StringFileInfo\\040904E4\\MIMEType", (void **)&mimetypes, &len)
-         || !mimetypes || !len)
-      {
-        delete [] verbuf;
-        continue;
-      }
-
-      // browse through a string of mimetypes
-      mimetypes[len] = '\0';
-      char * type = mimetypes;
-
-      BOOL more = TRUE;
-      while(more)
-      {
-        char * p = strchr(type, '|');
-        if(p)
-          *p = '\0';
-        else
-          more = FALSE;
-
-        if(0 == _stricmp(mimetype, type))
-        {
-          // this is it!
-          delete [] verbuf;
-          FindClose(handle);
-          HINSTANCE hLib = LoadLibrary(szFileName);
-          return hLib;
-        }
-
-        type = p;
-        type++;
-      }
-
-      delete [] verbuf;
+      FindClose(handle);
+      return NULL;
     }
 
-  } while(FindNextFile(handle, &ffdataStruct));
+    DWORD versize = 0L;
+    DWORD zero = 0L;
+    char * verbuf = NULL;
 
-  FindClose(handle);
+    do
+    {
+      std::string cur_file = directories[i];
+      cur_file = cur_file.append("\\");
+      cur_file = cur_file.append(ffdataStruct.cFileName);
+      if(!(ffdataStruct. dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
+         strstr(cur_file.c_str(), "npspy.dll") == NULL)
+      {
+        versize = GetFileVersionInfoSize(cur_file.c_str(), &zero);
+	      if (versize > 0)
+		      verbuf = new char[versize];
+        else 
+          continue;
+
+        if(!verbuf)
+		      continue;
+
+        GetFileVersionInfo(cur_file.c_str(), NULL, versize, verbuf);
+
+        char *mimetypes = NULL;
+        UINT len = 0;
+
+        if(!VerQueryValue(verbuf, "\\StringFileInfo\\040904E4\\MIMEType", (void **)&mimetypes, &len)
+           || !mimetypes || !len)
+        {
+          delete [] verbuf;
+          continue;
+        }
+
+        // browse through a string of mimetypes
+        mimetypes[len] = '\0';
+        char * type = mimetypes;
+
+        BOOL more = TRUE;
+        while(more)
+        {
+          char * p = strchr(type, '|');
+          if(p)
+            *p = '\0';
+          else
+            more = FALSE;
+
+          if(0 == _stricmp(mimetype, type))
+          {
+            // this is it!
+            delete [] verbuf;
+            FindClose(handle);
+            HINSTANCE hLib = LoadLibrary(cur_file.c_str());
+            return hLib;
+          }
+
+          type = p;
+          type++;
+        }
+
+        delete [] verbuf;
+      }
+
+    } while(FindNextFile(handle, &ffdataStruct));
+
+    FindClose(handle);
+  }
 
 #endif
 
