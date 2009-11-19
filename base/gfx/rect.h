@@ -65,6 +65,7 @@ class Rect {
   void set_origin(const gfx::Point& origin) { origin_ = origin; }
 
   const gfx::Size& size() const { return size_; }
+  void set_size(const gfx::Size& size) { size_ = size; }
 
   int right() const { return x() + width(); }
   int bottom() const { return y() + height(); }

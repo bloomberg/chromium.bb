@@ -215,17 +215,15 @@ void RenderWidget::OnResize(const gfx::Size& new_size,
   // We should not be sent a Resize message if we have not ACK'd the previous
   DCHECK(!next_paint_is_resize_ack());
 
+  paint_aggregator_.ClearPendingUpdate();
+
   // When resizing, we want to wait to paint before ACK'ing the resize.  This
   // ensures that we only resize as fast as we can paint.  We only need to send
   // an ACK if we are resized to a non-empty rect.
   webwidget_->resize(new_size);
   if (!new_size.IsEmpty()) {
-    DCHECK(!paint_rect_.IsEmpty());
-
-    // This should have caused an invalidation of the entire view.  The damaged
-    // rect could be larger than new_size if we are being made smaller.
-    DCHECK_GE(paint_rect_.width(), new_size.width());
-    DCHECK_GE(paint_rect_.height(), new_size.height());
+    // Resize should have caused an invalidation of the entire view.
+    DCHECK(paint_aggregator_.HasPendingUpdate());
 
     // We will send the Resize_ACK flag once we paint again.
     set_next_paint_is_resize_ack();
@@ -271,7 +269,7 @@ void RenderWidget::OnPaintRectAck() {
   DidPaint();
 
   // Continue painting if necessary...
-  CallDoDeferredPaint();
+  CallDoDeferredUpdate();
 }
 
 void RenderWidget::OnRequestMoveAck() {
@@ -288,16 +286,7 @@ void RenderWidget::OnScrollRectAck() {
   }
 
   // Continue scrolling if necessary...
-  CallDoDeferredScroll();
-}
-
-void RenderWidget::CallDoDeferredScroll() {
-  DoDeferredScroll();
-
-  if (pending_input_event_ack_.get()) {
-    Send(pending_input_event_ack_.get());
-    pending_input_event_ack_.release();
-  }
+  CallDoDeferredUpdate();
 }
 
 void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
@@ -322,7 +311,7 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
   response->WriteBool(processed);
 
   if (input_event->type == WebInputEvent::MouseMove &&
-      (!paint_rect_.IsEmpty() || !scroll_rect_.IsEmpty())) {
+      paint_aggregator_.HasPendingUpdate()) {
     // We want to rate limit the input events in this case, so we'll wait for
     // painting to finish before ACKing this message.
     pending_input_event_ack_.reset(response);
@@ -387,8 +376,8 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   canvas->getTopPlatformDevice().accessBitmap(false);
 }
 
-void RenderWidget::CallDoDeferredPaint() {
-  DoDeferredPaint();
+void RenderWidget::CallDoDeferredUpdate() {
+  DoDeferredUpdate();
 
   if (pending_input_event_ack_.get()) {
     Send(pending_input_event_ack_.get());
@@ -396,140 +385,96 @@ void RenderWidget::CallDoDeferredPaint() {
   }
 }
 
-void RenderWidget::DoDeferredPaint() {
-  if (!webwidget_ || paint_reply_pending() || paint_rect_.IsEmpty())
+void RenderWidget::DoDeferredUpdate() {
+  if (!webwidget_ || !paint_aggregator_.HasPendingUpdate() ||
+      paint_reply_pending() || scroll_reply_pending())
     return;
 
-  // When we are hidden, we want to suppress painting, but we still need to
-  // mark this DoDeferredPaint as complete.
+  // Suppress updating when we are hidden.
   if (is_hidden_ || size_.IsEmpty()) {
-    paint_rect_ = gfx::Rect();
+    paint_aggregator_.ClearPendingUpdate();
     needs_repainting_on_restore_ = true;
     return;
   }
 
-  // Layout may generate more invalidation...
+  // Layout may generate more invalidation.
   webwidget_->layout();
 
-  // OK, save the current paint_rect to a local since painting may cause more
+  // OK, save the pending update to a local since painting may cause more
   // invalidation.  Some WebCore rendering objects only layout when painted.
-  gfx::Rect damaged_rect = paint_rect_;
-  paint_rect_ = gfx::Rect();
+  PaintAggregator::PendingUpdate update = paint_aggregator_.GetPendingUpdate();
+  paint_aggregator_.ClearPendingUpdate();
 
-  // Compute a buffer for painting and cache it.
-  skia::PlatformCanvas* canvas =
-      RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
-                                                 damaged_rect);
-  if (!canvas) {
-    NOTREACHED();
-    return;
-  }
+  if (!update.scroll_rect.IsEmpty()) {
+    // Optmized scrolling
 
-  // We may get back a smaller canvas than we asked for.
-  damaged_rect.set_width(canvas->getDevice()->width());
-  damaged_rect.set_height(canvas->getDevice()->height());
+    // Compute the region we will expose by scrolling, and paint that into a
+    // shared memory section.
+    gfx::Rect damaged_rect = update.GetScrollDamage();
 
-  PaintRect(damaged_rect, canvas);
-
-  ViewHostMsg_PaintRect_Params params;
-  params.bitmap_rect = damaged_rect;
-  params.view_size = size_;
-  params.plugin_window_moves = plugin_window_moves_;
-  params.flags = next_paint_flags_;
-  params.bitmap = current_paint_buf_->id();
-
-  delete canvas;
-
-  plugin_window_moves_.clear();
-
-  paint_reply_pending_ = true;
-  Send(new ViewHostMsg_PaintRect(routing_id_, params));
-  next_paint_flags_ = 0;
-
-  UpdateIME();
-}
-
-void RenderWidget::DoDeferredScroll() {
-  if (!webwidget_ || scroll_reply_pending() || scroll_rect_.IsEmpty())
-    return;
-
-  // When we are hidden, we want to suppress scrolling, but we still need to
-  // mark this DoDeferredScroll as complete.
-  if (is_hidden_ || size_.IsEmpty()) {
-    scroll_rect_ = gfx::Rect();
-    needs_repainting_on_restore_ = true;
-    return;
-  }
-
-  // Layout may generate more invalidation, so we might have to bail on
-  // optimized scrolling...
-  webwidget_->layout();
-
-  if (scroll_rect_.IsEmpty())
-    return;
-
-  gfx::Rect damaged_rect;
-
-  // Compute the region we will expose by scrolling, and paint that into a
-  // shared memory section.
-  if (scroll_delta_.x()) {
-    int dx = scroll_delta_.x();
-    damaged_rect.set_y(scroll_rect_.y());
-    damaged_rect.set_height(scroll_rect_.height());
-    if (dx > 0) {
-      damaged_rect.set_x(scroll_rect_.x());
-      damaged_rect.set_width(dx);
-    } else {
-      damaged_rect.set_x(scroll_rect_.right() + dx);
-      damaged_rect.set_width(-dx);
+    scoped_ptr<skia::PlatformCanvas> canvas(
+        RenderProcess::current()->GetDrawingCanvas(&current_scroll_buf_,
+                                                   damaged_rect));
+    if (!canvas.get()) {
+      NOTREACHED();
+      return;
     }
-  } else {
-    int dy = scroll_delta_.y();
-    damaged_rect.set_x(scroll_rect_.x());
-    damaged_rect.set_width(scroll_rect_.width());
-    if (dy > 0) {
-      damaged_rect.set_y(scroll_rect_.y());
-      damaged_rect.set_height(dy);
-    } else {
-      damaged_rect.set_y(scroll_rect_.bottom() + dy);
-      damaged_rect.set_height(-dy);
+
+    // We may get back a smaller canvas than we asked for.
+    damaged_rect.set_width(canvas->getDevice()->width());
+    damaged_rect.set_height(canvas->getDevice()->height());
+
+    // Set these parameters before calling Paint, since that could result in
+    // further invalidates (uncommon).
+    ViewHostMsg_ScrollRect_Params params;
+    params.bitmap_rect = damaged_rect;
+    params.dx = update.scroll_delta.x();
+    params.dy = update.scroll_delta.y();
+    params.clip_rect = update.scroll_rect;
+    params.view_size = size_;
+    params.plugin_window_moves = plugin_window_moves_;
+    params.bitmap = current_scroll_buf_->id();
+
+    plugin_window_moves_.clear();
+
+    PaintRect(damaged_rect, canvas.get());
+    Send(new ViewHostMsg_ScrollRect(routing_id_, params));
+  }
+
+  if (!update.paint_rect.IsEmpty()) {
+    // Normal painting
+
+    gfx::Rect damaged_rect = update.paint_rect;
+
+    // Compute a buffer for painting and cache it.
+    scoped_ptr<skia::PlatformCanvas> canvas(
+        RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
+                                                   damaged_rect));
+    if (!canvas.get()) {
+      NOTREACHED();
+      return;
     }
+
+    // We may get back a smaller canvas than we asked for.
+    damaged_rect.set_width(canvas->getDevice()->width());
+    damaged_rect.set_height(canvas->getDevice()->height());
+
+    PaintRect(damaged_rect, canvas.get());
+
+    ViewHostMsg_PaintRect_Params params;
+    params.bitmap_rect = damaged_rect;
+    params.view_size = size_;
+    params.plugin_window_moves = plugin_window_moves_;
+    params.flags = next_paint_flags_;
+    params.bitmap = current_paint_buf_->id();
+
+    plugin_window_moves_.clear();
+
+    paint_reply_pending_ = true;
+    Send(new ViewHostMsg_PaintRect(routing_id_, params));
+    next_paint_flags_ = 0;
   }
 
-  // In case the scroll offset exceeds the width/height of the scroll rect
-  damaged_rect = scroll_rect_.Intersect(damaged_rect);
-
-  skia::PlatformCanvas* canvas =
-      RenderProcess::current()->GetDrawingCanvas(&current_scroll_buf_,
-                                                 damaged_rect);
-  if (!canvas) {
-    NOTREACHED();
-    return;
-  }
-
-  // We may get back a smaller canvas than we asked for.
-  damaged_rect.set_width(canvas->getDevice()->width());
-  damaged_rect.set_height(canvas->getDevice()->height());
-
-  // Set these parameters before calling Paint, since that could result in
-  // further invalidates (uncommon).
-  ViewHostMsg_ScrollRect_Params params;
-  params.bitmap_rect = damaged_rect;
-  params.dx = scroll_delta_.x();
-  params.dy = scroll_delta_.y();
-  params.clip_rect = scroll_rect_;
-  params.view_size = size_;
-  params.plugin_window_moves = plugin_window_moves_;
-  params.bitmap = current_scroll_buf_->id();
-
-  plugin_window_moves_.clear();
-
-  // Mark the scroll operation as no longer pending.
-  scroll_rect_ = gfx::Rect();
-
-  PaintRect(damaged_rect, canvas);
-  Send(new ViewHostMsg_ScrollRect(routing_id_, params));
-  delete canvas;
   UpdateIME();
 }
 
@@ -537,77 +482,61 @@ void RenderWidget::DoDeferredScroll() {
 // WebWidgetDelegate
 
 void RenderWidget::didInvalidateRect(const WebRect& rect) {
-  // We only want one pending DoDeferredPaint call at any time...
-  bool paint_pending = !paint_rect_.IsEmpty();
+  // We only want one pending DoDeferredUpdate call at any time...
+  bool update_pending = paint_aggregator_.HasPendingUpdate();
 
-  // If this invalidate overlaps with a pending scroll, then we have to
-  // downgrade to invalidating the scroll rect.
-  if (gfx::Rect(rect).Intersects(scroll_rect_)) {
-    paint_rect_ = paint_rect_.Union(scroll_rect_);
-    scroll_rect_ = gfx::Rect();
-  }
-
+  // The invalidated rect might be outside the bounds of the view.
   gfx::Rect view_rect(0, 0, size_.width(), size_.height());
-  // TODO(iyengar) Investigate why we have painting issues when
-  // we ignore invalid regions outside the view.
-  // Ignore invalidates that occur outside the bounds of the view
-  // TODO(darin): maybe this should move into the paint code?
-  // paint_rect_ = view_rect.Intersect(paint_rect_.Union(rect));
-  paint_rect_ = paint_rect_.Union(view_rect.Intersect(rect));
-
-  if (paint_rect_.IsEmpty() || paint_reply_pending() || paint_pending)
+  gfx::Rect damaged_rect = view_rect.Intersect(rect);
+  if (damaged_rect.IsEmpty())
     return;
 
-  // Perform painting asynchronously.  This serves two purposes:
+  paint_aggregator_.InvalidateRect(damaged_rect);
+
+  // We may not need to schedule another call to DoDeferredUpdate.
+  if (update_pending)
+    return;
+  if (!paint_aggregator_.HasPendingUpdate())
+    return;
+  if (paint_reply_pending() || scroll_reply_pending())
+    return;
+
+  // Perform updating asynchronously.  This serves two purposes:
   // 1) Ensures that we call WebView::Paint without a bunch of other junk
   //    on the call stack.
   // 2) Allows us to collect more damage rects before painting to help coalesce
   //    the work that we will need to do.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidget::CallDoDeferredPaint));
+      this, &RenderWidget::CallDoDeferredUpdate));
 }
 
 void RenderWidget::didScrollRect(int dx, int dy, const WebRect& clip_rect) {
-  if (dx != 0 && dy != 0) {
-    // We only support scrolling along one axis at a time.
-    didScrollRect(0, dy, clip_rect);
-    dy = 0;
-  }
+  // We only want one pending DoDeferredUpdate call at any time...
+  bool update_pending = paint_aggregator_.HasPendingUpdate();
 
-  bool intersects_with_painting = paint_rect_.Intersects(clip_rect);
-
-  // If we already have a pending scroll operation or if this scroll operation
-  // intersects the existing paint region, then just failover to invalidating.
-  if (!scroll_rect_.IsEmpty() || intersects_with_painting) {
-    if (!intersects_with_painting && scroll_rect_ == gfx::Rect(clip_rect)) {
-      // OK, we can just update the scroll delta (requires same scrolling axis)
-      if (!dx && !scroll_delta_.x()) {
-        scroll_delta_.set_y(scroll_delta_.y() + dy);
-        return;
-      }
-      if (!dy && !scroll_delta_.y()) {
-        scroll_delta_.set_x(scroll_delta_.x() + dx);
-        return;
-      }
-    }
-    didInvalidateRect(scroll_rect_);
-    DCHECK(scroll_rect_.IsEmpty());
-    didInvalidateRect(clip_rect);
-    return;
-  }
-
-  // We only want one pending DoDeferredScroll call at any time...
-  bool scroll_pending = !scroll_rect_.IsEmpty();
-
-  scroll_rect_ = clip_rect;
-  scroll_delta_.SetPoint(dx, dy);
-
-  if (scroll_pending)
+  // The scrolled rect might be outside the bounds of the view.
+  gfx::Rect view_rect(0, 0, size_.width(), size_.height());
+  gfx::Rect damaged_rect = view_rect.Intersect(clip_rect);
+  if (damaged_rect.IsEmpty())
     return;
 
-  // Perform scrolling asynchronously since we need to call WebView::Paint
+  paint_aggregator_.ScrollRect(dx, dy, damaged_rect);
+
+  // We may not need to schedule another call to DoDeferredUpdate.
+  if (update_pending)
+    return;
+  if (!paint_aggregator_.HasPendingUpdate())
+    return;
+  if (paint_reply_pending() || scroll_reply_pending())
+    return;
+
+  // Perform updating asynchronously.  This serves two purposes:
+  // 1) Ensures that we call WebView::Paint without a bunch of other junk
+  //    on the call stack.
+  // 2) Allows us to collect more damage rects before painting to help coalesce
+  //    the work that we will need to do.
   MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &RenderWidget::CallDoDeferredScroll));
+      this, &RenderWidget::CallDoDeferredUpdate));
 }
 
 void RenderWidget::didChangeCursor(const WebCursorInfo& cursor_info) {

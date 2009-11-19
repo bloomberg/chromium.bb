@@ -14,6 +14,7 @@
 #include "base/gfx/size.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
+#include "chrome/renderer/paint_aggregator.h"
 #include "chrome/renderer/render_process.h"
 #include "ipc/ipc_channel.h"
 #include "skia/ext/platform_canvas.h"
@@ -120,10 +121,8 @@ class RenderWidget : public IPC::Channel::Listener,
   // must ensure that the given rect fits within the bounds of the WebWidget.
   void PaintRect(const gfx::Rect& rect, skia::PlatformCanvas* canvas);
 
-  void CallDoDeferredPaint();
-  void DoDeferredPaint();
-  void CallDoDeferredScroll();
-  void DoDeferredScroll();
+  void CallDoDeferredUpdate();
+  void DoDeferredUpdate();
   void DoDeferredClose();
   void DoDeferredSetWindowRect(const WebKit::WebRect& pos);
 
@@ -240,19 +239,10 @@ class RenderWidget : public IPC::Channel::Listener,
   TransportDIB* current_paint_buf_;
   TransportDIB* current_scroll_buf_;
 
-  // The smallest bounding rectangle that needs to be re-painted.  This is non-
-  // empty if a paint event is pending.
-  gfx::Rect paint_rect_;
-
-  // The clip rect for the pending scroll event.  This is non-empty if a
-  // scroll event is pending.
-  gfx::Rect scroll_rect_;
+  PaintAggregator paint_aggregator_;
 
   // The area that must be reserved for drawing the resize corner.
   gfx::Rect resizer_rect_;
-
-  // The scroll delta for a pending scroll event.
-  gfx::Point scroll_delta_;
 
   // Flags for the next ViewHostMsg_PaintRect message.
   int next_paint_flags_;

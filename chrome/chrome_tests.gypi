@@ -772,6 +772,7 @@
         'renderer/extensions/json_schema_unittest.cc',
         'renderer/net/render_dns_master_unittest.cc',
         'renderer/net/render_dns_queue_unittest.cc',
+        'renderer/paint_aggregator_unittest.cc',
         'renderer/render_process_unittest.cc',
         'renderer/render_thread_unittest.cc',
         'renderer/render_view_unittest.cc',
