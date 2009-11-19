@@ -3009,7 +3009,7 @@ BUG27553 WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
 
 // WebKit merge 50840:50929
 BUG27555 : LayoutTests/accessibility/document-attributes.html = TEXT
-BUG27555 : LayoutTests/fast/forms/input-file-re-render.html = MISSING TEXT
+BUG27555 : LayoutTests/fast/forms/input-file-re-render.html = FAIL
 
 BUG27555 : LayoutTests/media/media-fullscreen-inline.html = TIMEOUT
 BUG27555 : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
