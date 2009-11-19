@@ -25,6 +25,9 @@ void CreateShortcut(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     CreateShortcutCallback* callback);
 
+// Returns true if given url is a valid web app url.
+bool IsValidUrl(const GURL& url);
+
 };  // namespace web_app
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_

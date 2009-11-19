@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
+#include "chrome/common/url_constants.h"
 
 #if defined(OS_WIN)
 #include "app/gfx/icon_util.h"
@@ -296,6 +297,22 @@ void CreateShortcut(
     CreateShortcutCallback* callback) {
   g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
       new CreateShortcutTask(data_dir, shortcut_info, callback));
+}
+
+bool IsValidUrl(const GURL& url) {
+  static const char* const kValidUrlSchemes[] = {
+      chrome::kFileScheme,
+      chrome::kFtpScheme,
+      chrome::kHttpScheme,
+      chrome::kHttpsScheme,
+  };
+
+  for (size_t i = 0; i < arraysize(kValidUrlSchemes); ++i) {
+    if (url.SchemeIs(kValidUrlSchemes[i]))
+      return true;
+  }
+
+  return false;
 }
 
 };  // namespace web_app

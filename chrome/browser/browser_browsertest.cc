@@ -6,11 +6,13 @@
 
 #include "app/l10n_util.h"
 #include "base/sys_info.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
@@ -195,4 +197,59 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
     base::TimeDelta browser_td = base::TimeTicks::Now() - start;
     EXPECT_TRUE(browser_td >= renderer_td);
   }
+}
+
+// Test IDC_CREATE_SHORTCUTS command is enabled for url scheme file, ftp, http
+// and https and disabled for chrome://, about:// etc.
+IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
+  static const wchar_t kDocRoot[] = L"chrome/test/data";
+
+  CommandUpdater* command_updater = browser()->command_updater();
+
+  // Urls that are okay to have shortcuts.
+  GURL file_url(ui_test_utils::GetTestUrl(L".", L"empty.html"));
+  ASSERT_TRUE(file_url.SchemeIs(chrome::kFileScheme));
+  ui_test_utils::NavigateToURL(browser(), file_url);
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+
+  scoped_refptr<FTPTestServer> ftp_server(
+        FTPTestServer::CreateServer(kDocRoot));
+  ASSERT_TRUE(NULL != ftp_server.get());
+  GURL ftp_url(ftp_server->TestServerPage(""));
+  ASSERT_TRUE(ftp_url.SchemeIs(chrome::kFtpScheme));
+  ui_test_utils::NavigateToURL(browser(), ftp_url);
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+
+  scoped_refptr<HTTPTestServer> http_server(
+        HTTPTestServer::CreateServer(kDocRoot, NULL));
+  ASSERT_TRUE(NULL != http_server.get());
+  GURL http_url(http_server->TestServerPage(""));
+  ASSERT_TRUE(http_url.SchemeIs(chrome::kHttpScheme));
+  ui_test_utils::NavigateToURL(browser(), http_url);
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+
+  scoped_refptr<HTTPSTestServer> https_server(
+        HTTPSTestServer::CreateGoodServer(kDocRoot));
+  ASSERT_TRUE(NULL != https_server.get());
+  GURL https_url(https_server->TestServerPage("/"));
+  ASSERT_TRUE(https_url.SchemeIs(chrome::kHttpsScheme));
+  ui_test_utils::NavigateToURL(browser(), https_url);
+  EXPECT_TRUE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+
+  // Urls that should not have shortcuts.
+  GURL new_tab_url(chrome::kChromeUINewTabURL);
+  ui_test_utils::NavigateToURL(browser(), new_tab_url);
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+
+  GURL history_url(chrome::kChromeUIHistoryURL);
+  ui_test_utils::NavigateToURL(browser(), history_url);
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+
+  GURL downloads_url(chrome::kChromeUIDownloadsURL);
+  ui_test_utils::NavigateToURL(browser(), downloads_url);
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
+
+  GURL blank_url(chrome::kAboutBlankURL);
+  ui_test_utils::NavigateToURL(browser(), blank_url);
+  EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }

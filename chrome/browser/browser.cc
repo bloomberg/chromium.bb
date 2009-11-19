@@ -51,6 +51,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/window_sizer.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -1156,7 +1157,7 @@ void Browser::OpenCreateShortcutsDialog() {
   UserMetrics::RecordAction("CreateShortcut", profile_);
 #if defined(OS_WIN) || defined(OS_LINUX)
   TabContents* current_tab = GetSelectedTabContents();
-  DCHECK(current_tab && current_tab->FavIconIsValid()) <<
+  DCHECK(current_tab && web_app::IsValidUrl(current_tab->GetURL())) <<
       "Menu item should be disabled.";
 
   NavigationEntry* entry = current_tab->controller().GetLastCommittedEntry();
@@ -2544,7 +2545,7 @@ void Browser::UpdateCommandsForTabState() {
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
-      !current_tab->GetFavIcon().isNull());
+      web_app::IsValidUrl(current_tab->GetURL()));
 }
 
 void Browser::UpdateStopGoState(bool is_loading, bool force) {
@@ -2658,7 +2659,7 @@ void Browser::ProcessPendingUIUpdates() {
       if (flags & (TabContents::INVALIDATE_TAB |
                    TabContents::INVALIDATE_TITLE)) {
         command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
-            !contents->GetFavIcon().isNull());
+            web_app::IsValidUrl(contents->GetURL()));
         window_->UpdateTitleBar();
       }
     }
