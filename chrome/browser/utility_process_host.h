@@ -101,9 +101,6 @@ class UtilityProcessHost : public ChildProcessHost {
  protected:
   // Allow these methods to be overridden for tests.
   virtual FilePath GetUtilityProcessCmd();
-  virtual bool UseSandbox() {
-    return true;
-  }
 
  private:
   // Starts a process.  Returns true iff it succeeded.

@@ -104,10 +104,7 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
 
   base::ProcessHandle process;
 #if defined(OS_WIN)
-  if (!UseSandbox()) {
-    // Don't use the sandbox during unit tests.
-    base::LaunchApp(cmd_line, false, false, &process);
-  } else if (exposed_dir.empty()) {
+  if (exposed_dir.empty()) {
     process = sandbox::StartProcess(&cmd_line);
   } else {
     process = sandbox::StartProcessWithAccess(&cmd_line, exposed_dir);
