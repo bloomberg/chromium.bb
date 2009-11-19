@@ -2455,6 +2455,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SHOW_EXTENSION_SHELF, true);
   command_updater_.UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
+  command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
 
   ExtensionsService* extensions_service = profile()->GetExtensionsService();
   bool enable_extensions =

@@ -1628,6 +1628,7 @@
                 'app/nibs/FirstRunDialog.xib',
                 'app/nibs/HungRendererDialog.xib',
                 'app/nibs/HttpAuthLoginSheet.xib',
+                'app/nibs/ImportSettingsDialog.xib',
                 'app/nibs/InfoBar.xib',
                 'app/nibs/InfoBarContainer.xib',
                 'app/nibs/ImportProgressDialog.xib',

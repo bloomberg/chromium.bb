@@ -13,6 +13,7 @@
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
+#import "chrome/browser/cocoa/import_settings_dialog.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/nsmenuitem_additions.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
@@ -274,7 +275,10 @@ void BrowserWindowCocoa::ShowClearBrowsingDataDialog() {
 }
 
 void BrowserWindowCocoa::ShowImportDialog() {
-  NOTIMPLEMENTED();
+  // Note that the dialog controller takes care of cleaning itself up
+  // upon dismissal so auto-scoping here is not necessary.
+  [[[ImportSettingsDialogController alloc]
+      initWithProfile:browser_->profile() parentWindow:window_] runModalDialog];
 }
 
 void BrowserWindowCocoa::ShowSearchEnginesDialog() {
