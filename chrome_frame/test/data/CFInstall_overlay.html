@@ -39,16 +39,16 @@
             return;
           }
 
-          var lc = document.body.lastChild;
+          var fc = document.body.firstChild;
 
-          if (lc.nodeType != 1 || !lc.firstChild &&
-              lc.firstChild != byId('chromeFrameOverlayUnderlay')) {
+          if (fc.nodeType != 1 || !fc.firstChild &&
+              fc.firstChild != byId('chromeFrameOverlayUnderlay')) {
             onFailure(testName, 1, 'underlay placed incorrectly');
             return;
           }
 
-          if (lc.nodeType != 1 || !lc.firstChild &&
-              lc.firstChild.nextSibling != byId('chromeFrameOverlayContent')) {
+          if (fc.nodeType != 1 || !fc.firstChild &&
+              fc.nextSibling != byId('chromeFrameOverlayContent')) {
             onFailure(testName, 1, 'prompt placed incorrectly');
             return;
           }
