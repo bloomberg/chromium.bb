@@ -292,11 +292,4 @@ TEST_F(ToolbarControllerTest, PopulateEncodingMenu) {
   EXPECT_NE(0, [encodings numberOfItems]);
 }
 
-TEST_F(ToolbarControllerTest, HeightCompression) {
-  for (int i = 0; i <= 10; i++) {
-    [bar_ setHeightCompression:static_cast<CGFloat>(i)];
-    EXPECT_EQ(static_cast<CGFloat>(36 - i), [resizeDelegate_ height]);
-  }
-}
-
 }  // namespace

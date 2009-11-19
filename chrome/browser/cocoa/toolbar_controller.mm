@@ -517,10 +517,8 @@ class PrefObserverBridge : public NotificationObserver {
                                                 fromView:starButton_];
 }
 
-- (void)setHeightCompression:(CGFloat)compressByHeight {
-  // Resize.
-  CGFloat newToolbarHeight = kBaseToolbarHeight - compressByHeight;
-  [resizeDelegate_ resizeView:[self view] newHeight:newToolbarHeight];
+- (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
+  return  kBaseToolbarHeight - compressByHeight;
 }
 
 - (void)setDividerOpacity:(CGFloat)opacity {

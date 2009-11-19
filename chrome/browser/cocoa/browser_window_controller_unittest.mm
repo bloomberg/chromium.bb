@@ -194,6 +194,63 @@ void CheckViewPositions(BrowserWindowController* controller) {
 }
 }  // end namespace
 
+TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
+  NSWindow* window = [controller_ window];
+  NSRect workarea = [[window screen] visibleFrame];
+
+  // Place the window well above the bottom of the screen and try to adjust its
+  // height.
+  NSRect initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y + 100,
+                                   200, 200);
+  [window setFrame:initialFrame display:YES];
+  [controller_ adjustWindowHeightBy:40];
+  NSRect finalFrame = [window frame];
+  EXPECT_FALSE(NSEqualRects(finalFrame, initialFrame));
+  EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame) + 40);
+
+  // Place the window at the bottom of the screen and try again.  Its height
+  // should still change, but it should not grow down below the work area.
+  initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y, 200, 200);
+  [window setFrame:initialFrame display:YES];
+  [controller_ adjustWindowHeightBy:40];
+  EXPECT_FALSE(NSEqualRects(finalFrame, initialFrame));
+  EXPECT_GE(NSMinY(finalFrame), NSMinY(initialFrame));
+  EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame) + 40);
+
+  // Move the window slightly offscreen and try again.  The height should not
+  // change this time.
+  initialFrame = NSMakeRect(workarea.origin.x - 10, 0, 200, 200);
+  [window setFrame:initialFrame display:YES];
+  [controller_ adjustWindowHeightBy:40];
+  EXPECT_TRUE(NSEqualRects([window frame], initialFrame));
+
+  // Make the window the same size as the workarea.  Resizing both larger and
+  // smaller should have no effect.
+  [window setFrame:workarea display:YES];
+  [controller_ adjustWindowHeightBy:40];
+  EXPECT_TRUE(NSEqualRects([window frame], workarea));
+  [controller_ adjustWindowHeightBy:-40];
+  EXPECT_TRUE(NSEqualRects([window frame], workarea));
+
+  // Make the window smaller than the workarea and place it near the bottom of
+  // the workarea.  The window should grow down until it hits the bottom and
+  // then continue to grow up.
+  initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y + 5,
+                            200, 200);
+  [window setFrame:initialFrame display:YES];
+  [controller_ adjustWindowHeightBy:40];
+  finalFrame = [window frame];
+  EXPECT_EQ(NSMinY(workarea), NSMinY(finalFrame));
+  EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame) + 40);
+
+  // Inset the window slightly from the workarea.  It should not grow to be
+  // larger than the workarea.
+  initialFrame = NSInsetRect(workarea, 0, 5);
+  [window setFrame:initialFrame display:YES];
+  [controller_ adjustWindowHeightBy:40];
+  EXPECT_EQ(NSHeight(workarea), NSHeight([window frame]));
+}
+
 // Test to make sure resizing and relaying-out subviews works correctly.
 TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   TabStripView* tabstrip = [controller_ tabStripView];
@@ -205,9 +262,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   // We need to muck with the views a bit to put us in a consistent state before
   // we start resizing.  In particular, we need to move the tab strip to be
   // immediately above the content area, since we layout views to be directly
-  // under the tab strip.  We also explicitly set the contentView's frame to be
-  // 800x600.
-  [contentView setFrame:NSMakeRect(0, 0, 800, 600)];
+  // under the tab strip.
   NSRect tabstripFrame = [tabstrip frame];
   tabstripFrame.origin.y = NSMaxY([contentView frame]);
   [tabstrip setFrame:tabstripFrame];
@@ -215,7 +270,9 @@ TEST_F(BrowserWindowControllerTest, TestResizeViews) {
   // The download shelf is created lazily.  Force-create it and set its initial
   // height to 0.
   NSView* download = [[controller_ downloadShelf] view];
-  [controller_ resizeView:download newHeight:0];
+  NSRect downloadFrame = [download frame];
+  downloadFrame.size.height = 0;
+  [download setFrame:downloadFrame];
 
   // Force a layout and check each view's frame.
   [controller_ layoutSubviews];
@@ -259,9 +316,7 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   // We need to muck with the views a bit to put us in a consistent state before
   // we start resizing.  In particular, we need to move the tab strip to be
   // immediately above the content area, since we layout views to be directly
-  // under the tab strip.  We also explicitly set the contentView's frame to be
-  // 800x600.
-  [contentView setFrame:NSMakeRect(0, 0, 800, 600)];
+  // under the tab strip.
   NSRect tabstripFrame = [tabstrip frame];
   tabstripFrame.origin.y = NSMaxY([contentView frame]);
   [tabstrip setFrame:tabstripFrame];
@@ -269,7 +324,9 @@ TEST_F(BrowserWindowControllerTest, TestResizeViewsWithBookmarkBar) {
   // The download shelf is created lazily.  Force-create it and set its initial
   // height to 0.
   NSView* download = [[controller_ downloadShelf] view];
-  [controller_ resizeView:download newHeight:0];
+  NSRect downloadFrame = [download frame];
+  downloadFrame.size.height = 0;
+  [download setFrame:downloadFrame];
 
   // Force a layout and check each view's frame.
   [controller_ layoutSubviews];

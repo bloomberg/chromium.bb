@@ -134,9 +134,8 @@ class ToolbarModel;
 // Somewhere near the star button seems like a good start.
 - (NSRect)starButtonInWindowCoordinates;
 
-// Chop off the bottom of the toolbar by |compressByHeight|; needed when the
-// bookmark bar is attached.
-- (void)setHeightCompression:(CGFloat)compressByHeight;
+// Returns the desired toolbar height for the given compression factor.
+- (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;
 
 // Set the opacity of the divider (the line at the bottom) *if* we have a
 // |ToolbarView| (0 means don't show it); no-op otherwise.

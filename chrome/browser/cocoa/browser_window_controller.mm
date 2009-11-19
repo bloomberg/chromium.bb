@@ -92,6 +92,11 @@ willPositionSheet:(NSWindow*)sheet
 // the normal bookmark bar is not shown?
 - (BOOL)shouldShowDetachedBookmarkBar;
 
+// Sets the toolbar's height to a value appropriate for the given compression.
+// Also adjusts the bookmark bar's height by the opposite amount in order to
+// keep the total height of the two views constant.
+- (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression;
+
 @end
 
 
@@ -113,6 +118,7 @@ willPositionSheet:(NSWindow*)sheet
                                  ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibpath owner:self])) {
     DCHECK(browser);
+    initializing_ = YES;
     browser_.reset(browser);
     ownsBrowser_ = ownIt;
     tabObserver_.reset(
@@ -219,6 +225,9 @@ willPositionSheet:(NSWindow*)sheet
 
     // Create the bridge for the status bubble.
     statusBubble_ = new StatusBubbleMac([self window], self);
+
+    // We are done initializing now.
+    initializing_ = NO;
   }
   return self;
 }
@@ -468,6 +477,53 @@ willPositionSheet:(NSWindow*)sheet
   return NO;
 }
 
+// Adjusts the window height by the given amount.
+- (void)adjustWindowHeightBy:(CGFloat)deltaH {
+  // By not adjusting the window height when initializing, we can ensure that
+  // the window opens with the same size that was saved on close.
+  if (initializing_ || [self isFullscreen] || deltaH == 0)
+    return;
+
+  NSWindow* window = [self window];
+  NSRect windowFrame = [window frame];
+  NSRect workarea = [[window screen] visibleFrame];
+
+  // If the window is not already fully in the workarea, do not adjust its frame
+  // at all.
+  if (!NSContainsRect(workarea, windowFrame))
+    return;
+
+  // If the window spans the full height of the current workspace, do not adjust
+  // its frame at all.
+  if (windowFrame.origin.y == workarea.origin.y &&
+      windowFrame.size.height == workarea.size.height)
+    return;
+
+  // Resize the window down until it hits the bottom of the workarea, then if
+  // needed continue resizing upwards.  Do not resize the window to be taller
+  // than the current workarea.
+  // Resize the window as requested, keeping the top left corner fixed.
+  windowFrame.origin.y -= deltaH;
+  windowFrame.size.height += deltaH;
+
+  // If the bottom left corner is now outside the visible frame, move the window
+  // up to make it fit, but make sure not to move the top left corner out of the
+  // visible frame.
+  if (windowFrame.origin.y < workarea.origin.y) {
+    windowFrame.origin.y = workarea.origin.y;
+    windowFrame.size.height =
+        std::min(windowFrame.size.height, workarea.size.height);
+  }
+
+  // Disable subview resizing while resizing the window, or else we will get
+  // unwanted renderer resizes.  The calling code must call layoutSubviews to
+  // make things right again.
+  NSView* contentView = [window contentView];
+  [contentView setAutoresizesSubviews:NO];
+  [window setFrame:windowFrame display:NO];
+  [contentView setAutoresizesSubviews:YES];
+}
+
 // Main method to resize browser window subviews.  This method should be called
 // when resizing any child of the content view, rather than resizing the views
 // directly.  If the view is already the correct height, does not force a
@@ -490,6 +546,23 @@ willPositionSheet:(NSWindow*)sheet
   NSRect frame = [view frame];
   if (frame.size.height == height)
     return;
+
+  // Grow or shrink the window by the amount of the height change.  We adjust
+  // the window height only in two cases:
+  // 1) We are adjusting the height of the bookmark bar and it is currently
+  // animating either open or closed.
+  // 2) We are adjusting the height of the download shelf.
+  //
+  // We do not adjust the window height for bookmark bar changes on the NTP.
+  BOOL shouldAdjustBookmarkHeight =
+      [bookmarkBarController_ isAnimatingBetweenState:bookmarks::kHiddenState
+                                             andState:bookmarks::kShowingState];
+  if ((shouldAdjustBookmarkHeight && view == [bookmarkBarController_ view]) ||
+      view == [downloadShelfController_ view]) {
+    [[self window] disableScreenUpdatesUntilFlush];
+    CGFloat deltaH = height - frame.size.height;
+    [self adjustWindowHeightBy:deltaH];
+  }
 
   frame.size.height = height;
   // TODO(rohitrao): Determine if calling setFrame: twice is bad.
@@ -1227,9 +1300,9 @@ willPositionSheet:(NSWindow*)sheet
  didChangeFromState:(bookmarks::VisualState)oldState
             toState:(bookmarks::VisualState)newState {
   [toolbarController_
-      setHeightCompression:[controller getDesiredToolbarHeightCompression]];
-  [toolbarController_
       setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
+  [self adjustToolbarAndBookmarkBarForCompression:
+          [controller getDesiredToolbarHeightCompression]];
 }
 
 // (Needed for |BookmarkBarControllerDelegate| protocol.)
@@ -1237,9 +1310,9 @@ willPositionSheet:(NSWindow*)sheet
 willAnimateFromState:(bookmarks::VisualState)oldState
             toState:(bookmarks::VisualState)newState {
   [toolbarController_
-      setHeightCompression:[controller getDesiredToolbarHeightCompression]];
-  [toolbarController_
       setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
+  [self adjustToolbarAndBookmarkBarForCompression:
+          [controller getDesiredToolbarHeightCompression]];
 }
 
 @end
@@ -1524,6 +1597,23 @@ willPositionSheet:(NSWindow*)sheet
   DCHECK(browser_.get());
   TabContents* contents = browser_->GetSelectedTabContents();
   return (contents && contents->ShouldShowBookmarkBar()) ? YES : NO;
+}
+
+- (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression {
+  CGFloat newHeight =
+      [toolbarController_ desiredHeightForCompression:compression];
+  NSRect toolbarFrame = [[toolbarController_ view] frame];
+  CGFloat deltaH = newHeight - toolbarFrame.size.height;
+
+  if (deltaH == 0)
+    return;
+
+  toolbarFrame.size.height = newHeight;
+  NSRect bookmarkFrame = [[bookmarkBarController_ view] frame];
+  bookmarkFrame.size.height = bookmarkFrame.size.height - deltaH;
+  [[toolbarController_ view] setFrame:toolbarFrame];
+  [[bookmarkBarController_ view] setFrame:bookmarkFrame];
+  [self layoutSubviews];
 }
 
 @end

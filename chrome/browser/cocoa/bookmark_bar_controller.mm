@@ -360,15 +360,6 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
                     duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:bookmarks::kShowingState
                                 toState:bookmarks::kHiddenState]) {
-    // The toolbar uncompresses immediately at the beginning (otherwise the
-    // slide looks wrong, since we slide into the bottom of stuff in the
-    // toolbar). Do this only if we're at the beginning height since we may
-    // enter this mid-animation.
-    if (NSHeight([[self view] frame]) == bookmarks::kBookmarkBarHeight) {
-      [resizeDelegate_ resizeView:[self view]
-                        newHeight:(bookmarks::kBookmarkBarHeight -
-                                      kBookmarkBarOverlap)];
-    }
     [[self backgroundGradientView] setShowsDivider:YES];
     [[self view] setHidden:NO];
     AnimatableView* view = [self animatableView];
@@ -376,15 +367,6 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
                     duration:kBookmarkBarAnimationDuration];
   } else if ([self isAnimatingFromState:bookmarks::kShowingState
                                 toState:bookmarks::kDetachedState]) {
-    // The toolbar uncompresses immediately at the beginning (otherwise the
-    // slide looks wrong, since we slide into the bottom of stuff in the
-    // toolbar). Do this only if we're at the beginning height since we may
-    // enter this mid-animation.
-    if (NSHeight([[self view] frame]) == bookmarks::kBookmarkBarHeight) {
-      [resizeDelegate_ resizeView:[self view]
-                        newHeight:(bookmarks::kBookmarkBarHeight -
-                                      kBookmarkBarOverlap)];
-    }
     [[self backgroundGradientView] setShowsDivider:YES];
     [[self view] setHidden:NO];
     AnimatableView* view = [self animatableView];

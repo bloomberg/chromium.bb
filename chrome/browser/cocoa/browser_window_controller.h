@@ -74,6 +74,7 @@ class TabStripModelObserverBridge;
 
   BookmarkBubbleController* bookmarkBubbleController_;  // Weak.
   scoped_nsobject<GTMTheme> theme_;
+  BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
   CGFloat verticalOffsetForStatusBubble_;
 }
@@ -184,6 +185,16 @@ class TabStripModelObserverBridge;
 
 // Allows us to initWithBrowser withOUT taking ownership of the browser.
 - (id)initWithBrowser:(Browser*)browser takeOwnership:(BOOL)ownIt;
+
+// Adjusts the window height by the given amount.  If the window spans from the
+// top of the current workspace to the bottom of the current workspace, the
+// height is not adjusted.  If growing the window by the requested amount would
+// size the window to be taller than the current workspace, the window height is
+// capped to be equal to the height of the current workspace.  If the window is
+// partially offscreen, its height is not adjusted at all.  This function
+// prefers to grow the window down, but will grow up if needed.  Calls to this
+// function should be followed by a call to |layoutSubviews|.
+- (void)adjustWindowHeightBy:(CGFloat)deltaH;
 
 // Return an autoreleased NSWindow suitable for fullscreen use.
 - (NSWindow*)fullscreenWindow;
