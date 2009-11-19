@@ -110,6 +110,20 @@ TEST_F(ZipTest, UnzipEvil) {
   ASSERT_FALSE(file_util::PathExists(evil_file));
 }
 
+TEST_F(ZipTest, UnzipEvil2) {
+  ScopedTempDir dest_dir;
+  ASSERT_TRUE(dest_dir.CreateUniqueTempDir());
+
+  FilePath test_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_dir));
+  test_dir = test_dir.AppendASCII("zip");
+  TestUnzipFile(FILE_PATH_LITERAL("evil_via_invalid_utf8.zip"), true, false);
+
+  FilePath evil_file = dest_dir.path();
+  evil_file = evil_file.AppendASCII("../evil.txt");
+  ASSERT_FALSE(file_util::PathExists(evil_file));
+}
+
 TEST_F(ZipTest, Zip) {
   FilePath src_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &src_dir));
