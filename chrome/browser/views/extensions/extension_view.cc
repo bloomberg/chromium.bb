@@ -108,7 +108,7 @@ void ExtensionView::CreateWidgetHostView() {
   NOTIMPLEMENTED();
 #endif
 
-  host_->CreateRenderViewSoon(view);
+  host_->CreateRenderView(view);
   SetVisible(false);
 }
 

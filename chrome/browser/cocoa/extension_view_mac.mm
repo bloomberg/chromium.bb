@@ -75,5 +75,5 @@ void ExtensionViewMac::CreateWidgetHostView() {
   // disappear.
   [render_widget_host_view_->native_view() retain];
 
-  extension_host_->CreateRenderViewSoon(render_widget_host_view_);
+  extension_host_->CreateRenderView(render_widget_host_view_);
 }

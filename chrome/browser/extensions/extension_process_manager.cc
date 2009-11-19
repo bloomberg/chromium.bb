@@ -106,7 +106,7 @@ ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
   ExtensionHost* host =
       new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
                         ViewType::EXTENSION_BACKGROUND_PAGE);
-  host->CreateRenderViewSoon(NULL);  // create a RenderViewHost with no view
+  host->CreateRenderView(NULL);  // create a RenderViewHost with no view
   OnExtensionHostCreated(host, true);
   return host;
 }

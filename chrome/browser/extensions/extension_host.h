@@ -44,8 +44,6 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
                       public NotificationObserver,
                       public JavaScriptMessageBoxClient {
  public:
-  class ProcessCreationQueue;
-
   // Enable DOM automation in created render view hosts.
   static void EnableDOMAutomation() { enable_dom_automation_ = true; }
 
@@ -84,10 +82,10 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   // Returns true if the render view is initialized and didn't crash.
   bool IsRenderViewLive() const;
 
-  // Prepares to initializes our RenderViewHost by creating its RenderView and
-  // navigating to this host's url. Uses host_view for the RenderViewHost's view
-  // (can be NULL). This happens delayed to avoid locking the UI.
-  void CreateRenderViewSoon(RenderWidgetHostView* host_view);
+  // Initializes our RenderViewHost by creating its RenderView and navigating
+  // to this host's url.  Uses host_view for the RenderViewHost's view (can be
+  // NULL).
+  void CreateRenderView(RenderWidgetHostView* host_view);
 
   // Sets |url_| and navigates |render_view_host_|.
   void NavigateToURL(const GURL& url);
@@ -158,14 +156,9 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   virtual TabContents* AsTabContents() { return NULL; }
 
  private:
-  friend class ProcessCreationQueue;
-
   // Whether to allow DOM automation for created RenderViewHosts. This is used
   // for testing.
   static bool enable_dom_automation_;
-
-  // Actually create the RenderView for this host. See CreateRenderViewSoon.
-  void CreateRenderViewNow();
 
   // ExtensionFunctionDispatcher::Delegate
   // If this ExtensionHost has a view, this returns the Browser that view is a
