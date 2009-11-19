@@ -2425,7 +2425,6 @@ BUG9798 MAC DEBUG : chrome/fast/dom/extensions/interval.html = FAIL
 BUG9798 WIN : chrome/fast/dom/extensions/interval.html = FAIL PASS
 BUG9798 LINUX WIN : LayoutTests/editing/pasteboard/subframe-dragndrop-1.html = FAIL
 BUG9798 SLOW WIN DEBUG : LayoutTests/fast/dom/Window/slow_unload_handler.html = PASS
-BUG9798 WIN DEBUG : LayoutTests/fast/encoding/char-encoding.html = FAIL PASS
 BUG9798 LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-round.html = CRASH PASS
 BUG9798 RELEASE : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
 BUG9798 SLOW LINUX WIN DEBUG : LayoutTests/fast/frames/frame-limit.html = CRASH PASS
