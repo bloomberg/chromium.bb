@@ -498,6 +498,7 @@
         'browser/debugger/devtools_remote_message_unittest.cc',
         'browser/debugger/devtools_remote_listen_socket_unittest.cc',
         'browser/debugger/devtools_remote_listen_socket_unittest.h',
+        'browser/diagnostics/diagnostics_model_unittest.cc',
         'browser/child_process_security_policy_unittest.cc',
         'browser/chrome_thread_unittest.cc',
         'browser/chromeos/external_cookie_handler_unittest.cc',
