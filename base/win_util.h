@@ -7,6 +7,7 @@
 
 #include <windows.h>
 #include <aclapi.h>
+#include <shlobj.h>
 
 #include <string>
 
@@ -109,6 +110,12 @@ std::wstring FormatLastWin32Error();
 // Methods to convert base::KeyboardCode/Windows virtual key type methods.
 WORD KeyboardCodeToWin(base::KeyboardCode keycode);
 base::KeyboardCode WinToKeyboardCode(WORD keycode);
+
+// Sets the application id in given IPropertyStore. The function is intended
+// for tagging application/chromium shortcut, browser window and jump list for
+// Win7.
+bool SetAppIdForPropertyStore(IPropertyStore* property_store,
+                              const wchar_t* app_id);
 
 }  // namespace win_util
 

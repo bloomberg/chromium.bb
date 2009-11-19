@@ -4,6 +4,7 @@
 
 #include "base/win_util.h"
 
+#include <propvarutil.h>
 #include <sddl.h>
 
 #include "base/logging.h"
@@ -382,6 +383,32 @@ WORD KeyboardCodeToWin(base::KeyboardCode keycode) {
 
 base::KeyboardCode WinToKeyboardCode(WORD keycode) {
   return static_cast<base::KeyboardCode>(keycode);
+}
+
+bool SetAppIdForPropertyStore(IPropertyStore* property_store,
+                              const wchar_t* app_id) {
+  DCHECK(property_store);
+
+  // App id should be less than 128 chars and contain no space. And recommended
+  // format is CompanyName.ProductName[.SubProduct.ProductNumber].
+  // See http://msdn.microsoft.com/en-us/library/dd378459%28VS.85%29.aspx
+  DCHECK(lstrlen(app_id) < 128 && wcschr(app_id, L' ') == NULL);
+
+  static const PROPERTYKEY kPKEYAppUserModelID =
+      { { 0x9F4C2855, 0x9F79, 0x4B39,
+      { 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3, } }, 5 };
+
+  PROPVARIANT property_value;
+  if (FAILED(InitPropVariantFromString(app_id, &property_value)))
+    return false;
+
+  HRESULT result = property_store->SetValue(kPKEYAppUserModelID,
+                                            property_value);
+  if (S_OK == result)
+    result = property_store->Commit();
+
+  PropVariantClear(&property_value);
+  return SUCCEEDED(result);
 }
 
 }  // namespace win_util

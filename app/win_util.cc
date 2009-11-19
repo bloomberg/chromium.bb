@@ -6,7 +6,6 @@
 
 #include <commdlg.h>
 #include <dwmapi.h>
-#include <propvarutil.h>
 #include <shellapi.h>
 #include <shlobj.h>
 
@@ -46,10 +45,6 @@ const char kSHGetPropertyStoreForWindow[] = "SHGetPropertyStoreForWindow";
 typedef DECLSPEC_IMPORT HRESULT (STDAPICALLTYPE *SHGPSFW)(HWND hwnd,
                                                           REFIID riid,
                                                           void** ppv);
-
-EXTERN_C const PROPERTYKEY DECLSPEC_SELECTANY PKEY_AppUserModel_ID =
-    { { 0x9F4C2855, 0x9F79, 0x4B39,
-    { 0xA8, 0xD0, 0xE1, 0xD4, 0x2D, 0xE1, 0xD5, 0xF3, } }, 5 };
 
 // Enforce visible dialog box.
 UINT_PTR CALLBACK SaveAsDialogHook(HWND dialog, UINT message,
@@ -854,7 +849,7 @@ gfx::Font GetWindowTitleFont() {
 }
 
 void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd) {
-  // This funcationality is only available on Win7+.
+  // This functionality is only available on Win7+.
   if (win_util::GetWinVersion() != win_util::WINVERSION_WIN7)
     return;
 
@@ -879,20 +874,15 @@ void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd) {
   }
 
   // Set the application's name.
-  PROPVARIANT pv;
-  InitPropVariantFromString(app_id.c_str(), &pv);
-
   ScopedComPtr<IPropertyStore> pps;
   SHGPSFW SHGetPropertyStoreForWindow = static_cast<SHGPSFW>(function);
   HRESULT result = SHGetPropertyStoreForWindow(
       hwnd, __uuidof(*pps), reinterpret_cast<void**>(pps.Receive()));
   if (S_OK == result) {
-    if (S_OK == pps->SetValue(PKEY_AppUserModel_ID, pv))
-      pps->Commit();
+    SetAppIdForPropertyStore(pps, app_id.c_str());
   }
 
   // Cleanup.
-  PropVariantClear(&pv);
   base::UnloadNativeLibrary(shell32_library);
 }
 

@@ -704,10 +704,6 @@ class Browser : public TabStripModelDelegate,
   //             after a return to the message loop.
   void CloseFrame();
 
-  // Compute a deterministic name based on the URL. We use this pseudo name
-  // as a key to store window location per application URLs.
-  static std::wstring ComputeApplicationNameFromURL(const GURL& url);
-
   FRIEND_TEST(BrowserTest, NoTabsInPopups);
 
   // Create a preference dictionary for the provided application name. This is

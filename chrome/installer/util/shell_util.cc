@@ -774,7 +774,8 @@ bool ShellUtil::UpdateChromeShortcut(const std::wstring& chrome_exe,
                                          NULL,                    // arguments
                                          description.c_str(),     // description
                                          chrome_exe.c_str(),      // icon file
-                                         icon_index);             // icon index
+                                         icon_index,              // icon index
+                                         chrome::kBrowserAppID);  // app id
   } else {
     return file_util::UpdateShortcutLink(chrome_exe.c_str(),      // target
                                          shortcut.c_str(),        // shortcut
@@ -782,6 +783,7 @@ bool ShellUtil::UpdateChromeShortcut(const std::wstring& chrome_exe,
                                          NULL,                    // arguments
                                          description.c_str(),     // description
                                          chrome_exe.c_str(),      // icon file
-                                         0);                      // icon index
+                                         0,                       // icon index
+                                         chrome::kBrowserAppID);  // app id
   }
 }

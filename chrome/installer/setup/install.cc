@@ -279,7 +279,8 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
                                                uninstall_link.value().c_str(),
                                                NULL,
                                                arguments.c_str(),
-                                               NULL, setup_exe.c_str(), 0);
+                                               NULL, setup_exe.c_str(), 0,
+                                               NULL);
   }
 
   // Update Desktop and Quick Launch shortcuts. If --create-new-shortcuts

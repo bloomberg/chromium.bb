@@ -59,6 +59,15 @@ const char    kStatsFilename[] = "ChromeStats2";
 const wchar_t kBrowserAppName[] = L"Chromium";
 const char    kStatsFilename[] = "ChromiumStats2";
 #endif
+
+#if defined(OS_WIN)
+#if defined(GOOGLE_CHROME_BUILD)
+const wchar_t kBrowserAppID[] = L"Chrome";
+#else
+const wchar_t kBrowserAppID[] = L"Chromium";
+#endif
+#endif  // defined(OS_WIN)
+
 const wchar_t kMessageWindowClass[] = L"Chrome_MessageWindow";
 const wchar_t kCrashReportLog[] = L"Reported Crashes.txt";
 const wchar_t kTestingInterfaceDLL[] = L"testing_interface.dll";

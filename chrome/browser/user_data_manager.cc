@@ -257,7 +257,8 @@ bool UserDataManager::CreateDesktopShortcutForProfile(
                                        args.c_str(),
                                        NULL,
                                        exe_path.c_str(),
-                                       0);
+                                       0,
+                                       chrome::kBrowserAppID);
 #else
   // TODO(port): should probably use freedesktop.org standard for desktop files.
   NOTIMPLEMENTED();

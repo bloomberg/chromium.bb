@@ -21,6 +21,9 @@ extern const FilePath::CharType kHelperProcessExecutablePath[];
 extern const FilePath::CharType kFrameworkName[];
 #endif
 extern const wchar_t kBrowserAppName[];
+#if defined(OS_WIN)
+extern const wchar_t kBrowserAppID[];
+#endif  // defined(OS_WIN)
 extern const wchar_t kMessageWindowClass[];
 extern const wchar_t kCrashReportLog[];
 extern const wchar_t kTestingInterfaceDLL[];

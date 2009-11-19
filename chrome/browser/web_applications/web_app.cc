@@ -270,7 +270,8 @@ bool CreateShortcutTask::CreateShortcut() {
         wide_switchs.c_str(),
         shortcut_info_.description.c_str(),
         icon_file.value().c_str(),
-        0);
+        0,
+        web_app::GenerateApplicationNameFromURL(shortcut_info_.url).c_str());
   }
 
   if (success && pin_to_taskbar) {
@@ -290,6 +291,14 @@ bool CreateShortcutTask::CreateShortcut() {
 };  // namespace
 
 namespace web_app {
+
+std::wstring GenerateApplicationNameFromURL(const GURL& url) {
+  std::string t;
+  t.append(url.host());
+  t.append("_");
+  t.append(url.path());
+  return UTF8ToWide(t);
+}
 
 void CreateShortcut(
     const FilePath& data_dir,

@@ -11,6 +11,11 @@
 
 namespace web_app {
 
+// Compute a deterministic name based on the URL. We use this pseudo name
+// as a key to store window location per application URLs in Browser and
+// as app id for BrowserWindow, shortcut and jump list.
+std::wstring GenerateApplicationNameFromURL(const GURL& url);
+
 // Callback after user dismisses CreateShortcutView. "true" indicates
 // shortcut is created successfully. Otherwise, it is false.
 typedef Callback1<bool>::Type CreateShortcutCallback;

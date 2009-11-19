@@ -50,6 +50,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/window_sizer.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -234,7 +235,7 @@ void Browser::CreateBrowserWindow() {
   // Set the app user model id for this application to that of the application
   // name.  See http://crbug.com/7028.
   win_util::SetAppIdForWindow(type_ & TYPE_APP ? app_name_ :
-                              l10n_util::GetString(IDS_PRODUCT_NAME),
+                              std::wstring(chrome::kBrowserAppID),
                               window()->GetNativeHandle());
 #endif
 
@@ -318,7 +319,7 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 
 // static
 void Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
-  std::wstring app_name = ComputeApplicationNameFromURL(url);
+  std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
   Browser* browser = Browser::CreateForApp(app_name, profile, false);
@@ -2094,7 +2095,7 @@ bool Browser::IsApplication() const {
 
 void Browser::ConvertContentsToApplication(TabContents* contents) {
   const GURL& url = contents->controller().GetActiveEntry()->url();
-  std::wstring app_name = ComputeApplicationNameFromURL(url);
+  std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
   DetachContents(contents);
@@ -3024,15 +3025,6 @@ void Browser::FindInPage(bool find_next, bool forward_direction) {
 
 void Browser::CloseFrame() {
   window_->Close();
-}
-
-// static
-std::wstring Browser::ComputeApplicationNameFromURL(const GURL& url) {
-  std::string t;
-  t.append(url.host());
-  t.append("_");
-  t.append(url.path());
-  return UTF8ToWide(t);
 }
 
 // static
