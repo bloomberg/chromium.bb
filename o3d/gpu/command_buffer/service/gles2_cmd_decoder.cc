@@ -100,6 +100,53 @@ void GLDeleteTexturesHelper(GLsizei n, GLuint* ids) {
   glDeleteTextures(n, ids);
 }
 
+namespace GLErrorBit {
+enum GLErrorBit {
+  kNoError = 0,
+  kInvalidEnum,
+  kInvalidValue,
+  kInvalidOperation,
+  kOutOfMemory,
+  kInvalidFrameBufferOperation,
+};
+}
+
+uint32 GLErrorToErrorBit(GLenum error) {
+  switch(error) {
+    case GL_INVALID_ENUM:
+      return GLErrorBit::kInvalidEnum;
+    case GL_INVALID_VALUE:
+      return GLErrorBit::kInvalidValue;
+    case GL_INVALID_OPERATION:
+      return GLErrorBit::kInvalidOperation;
+    case GL_OUT_OF_MEMORY:
+      return GLErrorBit::kOutOfMemory;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      return GLErrorBit::kInvalidFrameBufferOperation;
+    default:
+      DCHECK(false);
+      return GLErrorBit::kNoError;
+  }
+}
+
+GLenum GLErrorBitToGLError(uint32 error_bit) {
+  switch(error_bit) {
+    case GLErrorBit::kInvalidEnum:
+      return GL_INVALID_ENUM;
+    case GLErrorBit::kInvalidValue:
+      return GL_INVALID_VALUE;
+    case GLErrorBit::kInvalidOperation:
+      return GL_INVALID_OPERATION;
+    case GLErrorBit::kOutOfMemory:
+      return GL_OUT_OF_MEMORY;
+    case GLErrorBit::kInvalidFrameBufferOperation:
+      return GL_INVALID_FRAMEBUFFER_OPERATION;
+    default:
+      DCHECK(false);
+      return GL_NO_ERROR;
+  }
+}
+
 }  // anonymous namespace.
 
 GLES2Decoder::GLES2Decoder()
@@ -251,6 +298,15 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrapper for glDeleteShader.
   void DoDeleteShader(GLuint shader);
 
+  // Swaps the buffers (copies/renders to the current window).
+  void DoSwapBuffers();
+
+  // Gets the GLError through our wrapper.
+  GLenum GetGLError();
+
+  // Sets our wrapper for the GLError.
+  void SetGLError(GLenum error);
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define GLES2_CMD_OP(name) \
@@ -262,8 +318,13 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   #undef GLES2_CMD_OP
 
+  // Current GL error bits.
+  uint32 error_bits_;
+
   // Map of client ids to GL ids.
   IdMap id_map_;
+
+  // Util to help with GL.
   GLES2Util util_;
 
   // pack alignment as last set by glPixelStorei
@@ -296,6 +357,7 @@ GLES2Decoder* GLES2Decoder::Create() {
 
 GLES2DecoderImpl::GLES2DecoderImpl()
     : GLES2Decoder(),
+      error_bits_(0),
       util_(0),  // TODO(gman): Set to actual num compress texture formats.
       pack_alignment_(4),
       unpack_alignment_(4),
@@ -686,6 +748,43 @@ void GLES2DecoderImpl::DoDeleteShader(GLuint shader) {
   }
 }
 
+// NOTE: If you need to know the results of SwapBuffers (like losing
+//    the context) then add a new command. Do NOT make SwapBuffers synchronous.
+void GLES2DecoderImpl::DoSwapBuffers() {
+#ifdef OS_WIN
+  ::SwapBuffers(device_context_);
+#endif
+
+#ifdef OS_LINUX
+  DCHECK(window());
+  window()->SwapBuffers();
+#endif
+}
+
+GLenum GLES2DecoderImpl::GetGLError() {
+  // Check the GL error first, then our wrapped error.
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR && error_bits_ != 0) {
+    uint32 mask = 1;
+    while (mask) {
+      if ((error_bits_ & mask) != 0) {
+        error = GLErrorBitToGLError(mask);
+        break;
+      }
+    }
+  }
+
+  if (error != GL_NO_ERROR) {
+    // There was an error, clear the corresponding wrapped error.
+    error_bits_ &= ~GLErrorToErrorBit(error);
+  }
+  return error;
+}
+
+void GLES2DecoderImpl::SetGLError(GLenum error) {
+  error_bits_ |= GLErrorToErrorBit(error);
+}
+
 parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
     unsigned int arg_count, const gles2::DrawElements& c) {
   if (bound_element_array_buffer_ != 0) {
@@ -695,8 +794,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
     const GLvoid* indices = reinterpret_cast<const GLvoid*>(c.index_offset);
     glDrawElements(mode, count, type, indices);
   } else {
-    // TODO(gman): set our wrapped glGetError value to GL_INVALID_VALUE
-    DCHECK(false);
+    SetGLError(GL_INVALID_VALUE);
   }
   return parse_error::kParseNoError;
 }
@@ -783,8 +881,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     }
     glVertexAttribPointer(indx, size, type, normalized, stride, ptr);
   } else {
-    // TODO(gman): set our wrapped glGetError value to GL_INVALID_VALUE
-    DCHECK(false);
+    SetGLError(GL_INVALID_VALUE);
   }
   return parse_error::kParseNoError;
 }

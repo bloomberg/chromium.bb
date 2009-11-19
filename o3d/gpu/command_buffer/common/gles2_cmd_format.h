@@ -15,7 +15,7 @@
 #include <GL/wglew.h>
 #endif
 #else
-#include <GLES2/gl2.h>
+#include <GLES2/gl2types.h>
 #endif
 
 #include "base/basictypes.h"

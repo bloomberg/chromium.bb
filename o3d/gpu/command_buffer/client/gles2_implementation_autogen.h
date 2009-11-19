@@ -254,7 +254,12 @@ void GetAttachedShaders(
 
 int GetAttribLocation(GLuint program, const char* name) {
   // TODO(gman): This needs to change to use SendString.
+  GLint* result = shared_memory_.GetAddressAs<GLint*>(0);
+  DCHECK(false);  // pass in shared memory
   helper_->GetAttribLocationImmediate(program, name);
+  int32 token = helper_->InsertToken();
+  helper_->WaitForToken(token);
+  return *result;
 }
 
 void GetBooleanv(GLenum pname, GLboolean* params) {
@@ -380,7 +385,12 @@ void GetUniformiv(GLuint program, GLint location, GLint* params);
 
 int GetUniformLocation(GLuint program, const char* name) {
   // TODO(gman): This needs to change to use SendString.
+  GLint* result = shared_memory_.GetAddressAs<GLint*>(0);
+  DCHECK(false);  // pass in shared memory
   helper_->GetUniformLocationImmediate(program, name);
+  int32 token = helper_->InsertToken();
+  helper_->WaitForToken(token);
+  return *result;
 }
 
 void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
@@ -666,5 +676,9 @@ void VertexAttribPointer(
 
 void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   helper_->Viewport(x, y, width, height);
+}
+
+void SwapBuffers() {
+  helper_->SwapBuffers();
 }
 

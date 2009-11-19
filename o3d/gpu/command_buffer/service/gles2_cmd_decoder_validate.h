@@ -1,6 +1,8 @@
+
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 
 namespace command_buffer {
 namespace gles2 {
@@ -1241,6 +1243,10 @@ parse_error::ParseError ValidateVertexAttribPointer(
 parse_error::ParseError ValidateViewport(
     GLES2Decoder* decoder, unsigned int arg_count, GLint x, GLint y,
     GLsizei width, GLsizei height) {
+  return parse_error::kParseNoError;
+}
+parse_error::ParseError ValidateSwapBuffers(
+    GLES2Decoder* decoder, unsigned int arg_count) {
   return parse_error::kParseNoError;
 }
 }  // anonymous namespace

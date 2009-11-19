@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H
 
+#include "base/shared_memory.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/id_allocator.h"
@@ -15,11 +16,9 @@ namespace gles2 {
 // A class to help with shared memory.
 class SharedMemoryHelper {
  public:
-  SharedMemoryHelper(
-      unsigned int id,
-      void* address)
-      : id_(id),
-        address_(address) {
+  SharedMemoryHelper(void* address, int id)
+      : address_(address),
+        id_(id) {
   }
 
   unsigned int GetOffset(void* address) const {
@@ -41,8 +40,8 @@ class SharedMemoryHelper {
   }
 
  private:
-  ResourceId id_;
   void* address_;
+  int id_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryHelper);
 };
@@ -57,8 +56,8 @@ class GLES2Implementation {
  public:
   GLES2Implementation(
       GLES2CmdHelper* helper,
-      ResourceId shared_memory_id,
-      void* shared_memory);
+      void* transfer_buffer,
+      int transfer_buffer_id);  // TODO: add size.
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -75,7 +74,7 @@ class GLES2Implementation {
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   IdAllocator id_allocator_;
-  SharedMemoryHelper shared_memory_;
+  SharedMemoryHelper shared_memory_;  // TODO(gman): rename transfer_buffer_.
 
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;

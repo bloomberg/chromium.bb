@@ -176,6 +176,7 @@
   OP(VertexAttrib4fvImmediate)                                 /* 1196 */ \
   OP(VertexAttribPointer)                                      /* 1197 */ \
   OP(Viewport)                                                 /* 1198 */ \
+  OP(SwapBuffers)                                              /* 1199 */ \
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

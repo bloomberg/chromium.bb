@@ -8244,5 +8244,35 @@ COMPILE_ASSERT(offsetof(Viewport, width) == 12,
 COMPILE_ASSERT(offsetof(Viewport, height) == 16,
                OffsetOf_Viewport_height_not_16);
 
+struct SwapBuffers {
+  typedef SwapBuffers ValueType;
+  static const CommandId kCmdId = kSwapBuffers;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  command_buffer::CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(SwapBuffers) == 4,
+               Sizeof_SwapBuffers_is_not_4);
+COMPILE_ASSERT(offsetof(SwapBuffers, header) == 0,
+               OffsetOf_SwapBuffers_header_not_0);
+
 #pragma pack(pop)
 

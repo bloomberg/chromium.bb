@@ -54,6 +54,13 @@
             ],
           },
         ],
+        ['renderer=="cb" and cb_service=="gl"',
+          {
+            'dependencies': [
+              '../gpu/gpu.gyp:gles2_demo',
+            ],
+          },
+        ],
       ],
     },
   ],

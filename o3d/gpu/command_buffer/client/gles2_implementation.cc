@@ -14,11 +14,11 @@ namespace gles2 {
 
 GLES2Implementation::GLES2Implementation(
       GLES2CmdHelper* helper,
-      ResourceId shared_memory_id,
-      void* shared_memory_address)
+      void* transfer_buffer,
+      int transfer_buffer_id)
     : util_(0),  // TODO(gman): Get real number of compressed texture formats.
       helper_(helper),
-      shared_memory_(shared_memory_id, shared_memory_address),
+      shared_memory_(transfer_buffer, transfer_buffer_id),
       pack_alignment_(4),
       unpack_alignment_(4) {
 }
@@ -33,6 +33,18 @@ void GLES2Implementation::FreeIds(GLsizei n, const GLuint* ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
     id_allocator_.FreeID(ids[ii]);
   }
+}
+
+void GLES2Implementation::DrawElements(
+    GLenum mode, GLsizei count, GLenum type, const void* indices) {
+  helper_->DrawElements(mode, count, type, reinterpret_cast<GLuint>(indices));
+}
+
+void GLES2Implementation::VertexAttribPointer(
+    GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
+    const void* ptr) {
+  helper_->VertexAttribPointer(index, size, type, normalized, stride,
+                               reinterpret_cast<GLuint>(ptr));
 }
 
 void GLES2Implementation::ShaderSource(

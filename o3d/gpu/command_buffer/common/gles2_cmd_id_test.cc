@@ -1,6 +1,8 @@
+
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 // This file contains unit tests for gles2 commmand ids
 
 #include "tests/common/win/testing_common.h"
@@ -362,6 +364,8 @@ TEST(GLES2CommandIdTest, CommandIdsMatch) {
                  GLES2_VertexAttribPointer_kCmdId_mismatch);
   COMPILE_ASSERT(Viewport::kCmdId == 1198,
                  GLES2_Viewport_kCmdId_mismatch);
+  COMPILE_ASSERT(SwapBuffers::kCmdId == 1199,
+                 GLES2_SwapBuffers_kCmdId_mismatch);
 }
 }  // namespace gles2
 }  // namespace command_buffer

@@ -87,16 +87,15 @@
       'sources': [
         'command_buffer/client/gles2_lib.cc',
         'command_buffer/client/gles2_lib.h',
-        'command_buffer/client/gles2_lib_autogen.h',
       ],
     },
     {
       # Stub to expose gles2_implemenation in C instead of C++.
-      # so GLES2 programs can work with no changes.
+      # so GLES2 C programs can work with no changes.
       'target_name': 'gles2_c_lib',
       'type': 'static_library',
       'dependencies': [
-        'gles2_implementation',
+        'gles2_lib',
       ],
       'sources': [
         'command_buffer/client/gles2_c_lib.h',
@@ -424,6 +423,25 @@
         'gpu_plugin_unittests',
         'np_utils',
         'np_utils_unittests',
+      ],
+    },
+    {
+      'target_name': 'gles2_demo',
+      'type': 'executable',
+      'dependencies': [
+        'command_buffer_client',
+        'command_buffer_service',
+        'gles2_lib',
+        'gles2_c_lib',
+        'gpu_plugin',
+        'np_utils',
+      ],
+      'sources': [
+        'command_buffer/client/gles2_demo.cc',
+        'command_buffer/client/gles2_demo_c.h',
+        'command_buffer/client/gles2_demo_c.c',
+        'command_buffer/client/gles2_demo_cc.h',
+        'command_buffer/client/gles2_demo_cc.cc',
       ],
     },
   ]

@@ -1136,3 +1136,8 @@
     c.Init(x, y, width, height);
   }
 
+  void SwapBuffers() {
+    gles2::SwapBuffers& c = GetCmdSpace<gles2::SwapBuffers>();
+    c.Init();
+  }
+

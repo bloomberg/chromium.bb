@@ -2748,3 +2748,11 @@ TEST(GLES2FormatTest, Viewport) {
   EXPECT_EQ(static_cast<GLsizei>(14), cmd.height);
 }
 
+TEST(GLES2FormatTest, SwapBuffers) {
+  SwapBuffers cmd = { 0, };
+  void* next_cmd = cmd.Set(
+      &cmd);
+  EXPECT_EQ(SwapBuffers::kCmdId, cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4);  // NOLINT
+}
+

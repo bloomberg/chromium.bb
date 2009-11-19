@@ -4,482 +4,501 @@
 // These functions emluate GLES2 over command buffers.
 
 
-void glActiveTexture(GLenum texture) {
-  g_gl_impl->ActiveTexture(texture);
+void GLES2ActiveTexture(GLenum texture) {
+  gles2::GetGLContext()->ActiveTexture(texture);
 }
-void glAttachShader(GLuint program, GLuint shader) {
-  g_gl_impl->AttachShader(program, shader);
+void GLES2AttachShader(GLuint program, GLuint shader) {
+  gles2::GetGLContext()->AttachShader(program, shader);
 }
-void glBindAttribLocation(GLuint program, GLuint index, const char* name) {
-  g_gl_impl->BindAttribLocation(program, index, name);
+void GLES2BindAttribLocation(GLuint program, GLuint index, const char* name) {
+  gles2::GetGLContext()->BindAttribLocation(program, index, name);
 }
-void glBindBuffer(GLenum target, GLuint buffer) {
-  g_gl_impl->BindBuffer(target, buffer);
+void GLES2BindBuffer(GLenum target, GLuint buffer) {
+  gles2::GetGLContext()->BindBuffer(target, buffer);
 }
-void glBindFramebuffer(GLenum target, GLuint framebuffer) {
-  g_gl_impl->BindFramebuffer(target, framebuffer);
+void GLES2BindFramebuffer(GLenum target, GLuint framebuffer) {
+  gles2::GetGLContext()->BindFramebuffer(target, framebuffer);
 }
-void glBindRenderbuffer(GLenum target, GLuint renderbuffer) {
-  g_gl_impl->BindRenderbuffer(target, renderbuffer);
+void GLES2BindRenderbuffer(GLenum target, GLuint renderbuffer) {
+  gles2::GetGLContext()->BindRenderbuffer(target, renderbuffer);
 }
-void glBindTexture(GLenum target, GLuint texture) {
-  g_gl_impl->BindTexture(target, texture);
+void GLES2BindTexture(GLenum target, GLuint texture) {
+  gles2::GetGLContext()->BindTexture(target, texture);
 }
-void glBlendColor(
+void GLES2BlendColor(
     GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
-  g_gl_impl->BlendColor(red, green, blue, alpha);
+  gles2::GetGLContext()->BlendColor(red, green, blue, alpha);
 }
-void glBlendEquation(GLenum mode) {
-  g_gl_impl->BlendEquation(mode);
+void GLES2BlendEquation(GLenum mode) {
+  gles2::GetGLContext()->BlendEquation(mode);
 }
-void glBlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha) {
-  g_gl_impl->BlendEquationSeparate(modeRGB, modeAlpha);
+void GLES2BlendEquationSeparate(GLenum modeRGB, GLenum modeAlpha) {
+  gles2::GetGLContext()->BlendEquationSeparate(modeRGB, modeAlpha);
 }
-void glBlendFunc(GLenum sfactor, GLenum dfactor) {
-  g_gl_impl->BlendFunc(sfactor, dfactor);
+void GLES2BlendFunc(GLenum sfactor, GLenum dfactor) {
+  gles2::GetGLContext()->BlendFunc(sfactor, dfactor);
 }
-void glBlendFuncSeparate(
+void GLES2BlendFuncSeparate(
     GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha) {
-  g_gl_impl->BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+  gles2::GetGLContext()->BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
-void glBufferData(
+void GLES2BufferData(
     GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
-  g_gl_impl->BufferData(target, size, data, usage);
+  gles2::GetGLContext()->BufferData(target, size, data, usage);
 }
-void glBufferSubData(
+void GLES2BufferSubData(
     GLenum target, GLintptr offset, GLsizeiptr size, const void* data) {
-  g_gl_impl->BufferSubData(target, offset, size, data);
+  gles2::GetGLContext()->BufferSubData(target, offset, size, data);
 }
-GLenum glCheckFramebufferStatus(GLenum target) {
-  return g_gl_impl->CheckFramebufferStatus(target);
+GLenum GLES2CheckFramebufferStatus(GLenum target) {
+  return gles2::GetGLContext()->CheckFramebufferStatus(target);
 }
-void glClear(GLbitfield mask) {
-  g_gl_impl->Clear(mask);
+void GLES2Clear(GLbitfield mask) {
+  gles2::GetGLContext()->Clear(mask);
 }
-void glClearColor(
+void GLES2ClearColor(
     GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) {
-  g_gl_impl->ClearColor(red, green, blue, alpha);
+  gles2::GetGLContext()->ClearColor(red, green, blue, alpha);
 }
-void glClearDepthf(GLclampf depth) {
-  g_gl_impl->ClearDepthf(depth);
+void GLES2ClearDepthf(GLclampf depth) {
+  gles2::GetGLContext()->ClearDepthf(depth);
 }
-void glClearStencil(GLint s) {
-  g_gl_impl->ClearStencil(s);
+void GLES2ClearStencil(GLint s) {
+  gles2::GetGLContext()->ClearStencil(s);
 }
-void glColorMask(
+void GLES2ColorMask(
     GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha) {
-  g_gl_impl->ColorMask(red, green, blue, alpha);
+  gles2::GetGLContext()->ColorMask(red, green, blue, alpha);
 }
-void glCompileShader(GLuint shader) {
-  g_gl_impl->CompileShader(shader);
+void GLES2CompileShader(GLuint shader) {
+  gles2::GetGLContext()->CompileShader(shader);
 }
-void glCompressedTexImage2D(
+void GLES2CompressedTexImage2D(
     GLenum target, GLint level, GLenum internalformat, GLsizei width,
     GLsizei height, GLint border, GLsizei imageSize, const void* data) {
-  g_gl_impl->CompressedTexImage2D(
-      target, level, internalformat, width, height, border, imageSize, data);
+  gles2::GetGLContext(
+      )->CompressedTexImage2D(
+          target, level, internalformat, width, height, border, imageSize,
+          data);
 }
-void glCompressedTexSubImage2D(
+void GLES2CompressedTexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLsizei imageSize, const void* data) {
-  g_gl_impl->CompressedTexSubImage2D(
-      target, level, xoffset, yoffset, width, height, format, imageSize, data);
+  gles2::GetGLContext(
+      )->CompressedTexSubImage2D(
+          target, level, xoffset, yoffset, width, height, format, imageSize,
+          data);
 }
-void glCopyTexImage2D(
+void GLES2CopyTexImage2D(
     GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
     GLsizei width, GLsizei height, GLint border) {
-  g_gl_impl->CopyTexImage2D(
-      target, level, internalformat, x, y, width, height, border);
+  gles2::GetGLContext(
+      )->CopyTexImage2D(
+          target, level, internalformat, x, y, width, height, border);
 }
-void glCopyTexSubImage2D(
+void GLES2CopyTexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
     GLsizei width, GLsizei height) {
-  g_gl_impl->CopyTexSubImage2D(
-      target, level, xoffset, yoffset, x, y, width, height);
+  gles2::GetGLContext(
+      )->CopyTexSubImage2D(
+          target, level, xoffset, yoffset, x, y, width, height);
 }
-GLuint glCreateProgram() {
-  return g_gl_impl->CreateProgram();
+GLuint GLES2CreateProgram() {
+  return gles2::GetGLContext()->CreateProgram();
 }
-GLuint glCreateShader(GLenum type) {
-  return g_gl_impl->CreateShader(type);
+GLuint GLES2CreateShader(GLenum type) {
+  return gles2::GetGLContext()->CreateShader(type);
 }
-void glCullFace(GLenum mode) {
-  g_gl_impl->CullFace(mode);
+void GLES2CullFace(GLenum mode) {
+  gles2::GetGLContext()->CullFace(mode);
 }
-void glDeleteBuffers(GLsizei n, const GLuint* buffers) {
-  g_gl_impl->DeleteBuffers(n, buffers);
+void GLES2DeleteBuffers(GLsizei n, const GLuint* buffers) {
+  gles2::GetGLContext()->DeleteBuffers(n, buffers);
 }
-void glDeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
-  g_gl_impl->DeleteFramebuffers(n, framebuffers);
+void GLES2DeleteFramebuffers(GLsizei n, const GLuint* framebuffers) {
+  gles2::GetGLContext()->DeleteFramebuffers(n, framebuffers);
 }
-void glDeleteProgram(GLuint program) {
-  g_gl_impl->DeleteProgram(program);
+void GLES2DeleteProgram(GLuint program) {
+  gles2::GetGLContext()->DeleteProgram(program);
 }
-void glDeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
-  g_gl_impl->DeleteRenderbuffers(n, renderbuffers);
+void GLES2DeleteRenderbuffers(GLsizei n, const GLuint* renderbuffers) {
+  gles2::GetGLContext()->DeleteRenderbuffers(n, renderbuffers);
 }
-void glDeleteShader(GLuint shader) {
-  g_gl_impl->DeleteShader(shader);
+void GLES2DeleteShader(GLuint shader) {
+  gles2::GetGLContext()->DeleteShader(shader);
 }
-void glDeleteTextures(GLsizei n, const GLuint* textures) {
-  g_gl_impl->DeleteTextures(n, textures);
+void GLES2DeleteTextures(GLsizei n, const GLuint* textures) {
+  gles2::GetGLContext()->DeleteTextures(n, textures);
 }
-void glDepthFunc(GLenum func) {
-  g_gl_impl->DepthFunc(func);
+void GLES2DepthFunc(GLenum func) {
+  gles2::GetGLContext()->DepthFunc(func);
 }
-void glDepthMask(GLboolean flag) {
-  g_gl_impl->DepthMask(flag);
+void GLES2DepthMask(GLboolean flag) {
+  gles2::GetGLContext()->DepthMask(flag);
 }
-void glDepthRangef(GLclampf zNear, GLclampf zFar) {
-  g_gl_impl->DepthRangef(zNear, zFar);
+void GLES2DepthRangef(GLclampf zNear, GLclampf zFar) {
+  gles2::GetGLContext()->DepthRangef(zNear, zFar);
 }
-void glDetachShader(GLuint program, GLuint shader) {
-  g_gl_impl->DetachShader(program, shader);
+void GLES2DetachShader(GLuint program, GLuint shader) {
+  gles2::GetGLContext()->DetachShader(program, shader);
 }
-void glDisable(GLenum cap) {
-  g_gl_impl->Disable(cap);
+void GLES2Disable(GLenum cap) {
+  gles2::GetGLContext()->Disable(cap);
 }
-void glDisableVertexAttribArray(GLuint index) {
-  g_gl_impl->DisableVertexAttribArray(index);
+void GLES2DisableVertexAttribArray(GLuint index) {
+  gles2::GetGLContext()->DisableVertexAttribArray(index);
 }
-void glDrawArrays(GLenum mode, GLint first, GLsizei count) {
-  g_gl_impl->DrawArrays(mode, first, count);
+void GLES2DrawArrays(GLenum mode, GLint first, GLsizei count) {
+  gles2::GetGLContext()->DrawArrays(mode, first, count);
 }
-void glDrawElements(
+void GLES2DrawElements(
     GLenum mode, GLsizei count, GLenum type, const void* indices) {
-  g_gl_impl->DrawElements(mode, count, type, indices);
+  gles2::GetGLContext()->DrawElements(mode, count, type, indices);
 }
-void glEnable(GLenum cap) {
-  g_gl_impl->Enable(cap);
+void GLES2Enable(GLenum cap) {
+  gles2::GetGLContext()->Enable(cap);
 }
-void glEnableVertexAttribArray(GLuint index) {
-  g_gl_impl->EnableVertexAttribArray(index);
+void GLES2EnableVertexAttribArray(GLuint index) {
+  gles2::GetGLContext()->EnableVertexAttribArray(index);
 }
-void glFinish() {
-  g_gl_impl->Finish();
+void GLES2Finish() {
+  gles2::GetGLContext()->Finish();
 }
-void glFlush() {
-  g_gl_impl->Flush();
+void GLES2Flush() {
+  gles2::GetGLContext()->Flush();
 }
-void glFramebufferRenderbuffer(
+void GLES2FramebufferRenderbuffer(
     GLenum target, GLenum attachment, GLenum renderbuffertarget,
     GLuint renderbuffer) {
-  g_gl_impl->FramebufferRenderbuffer(
-      target, attachment, renderbuffertarget, renderbuffer);
+  gles2::GetGLContext(
+      )->FramebufferRenderbuffer(
+          target, attachment, renderbuffertarget, renderbuffer);
 }
-void glFramebufferTexture2D(
+void GLES2FramebufferTexture2D(
     GLenum target, GLenum attachment, GLenum textarget, GLuint texture,
     GLint level) {
-  g_gl_impl->FramebufferTexture2D(
-      target, attachment, textarget, texture, level);
+  gles2::GetGLContext(
+      )->FramebufferTexture2D(target, attachment, textarget, texture, level);
 }
-void glFrontFace(GLenum mode) {
-  g_gl_impl->FrontFace(mode);
+void GLES2FrontFace(GLenum mode) {
+  gles2::GetGLContext()->FrontFace(mode);
 }
-void glGenBuffers(GLsizei n, GLuint* buffers) {
-  g_gl_impl->GenBuffers(n, buffers);
+void GLES2GenBuffers(GLsizei n, GLuint* buffers) {
+  gles2::GetGLContext()->GenBuffers(n, buffers);
 }
-void glGenerateMipmap(GLenum target) {
-  g_gl_impl->GenerateMipmap(target);
+void GLES2GenerateMipmap(GLenum target) {
+  gles2::GetGLContext()->GenerateMipmap(target);
 }
-void glGenFramebuffers(GLsizei n, GLuint* framebuffers) {
-  g_gl_impl->GenFramebuffers(n, framebuffers);
+void GLES2GenFramebuffers(GLsizei n, GLuint* framebuffers) {
+  gles2::GetGLContext()->GenFramebuffers(n, framebuffers);
 }
-void glGenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
-  g_gl_impl->GenRenderbuffers(n, renderbuffers);
+void GLES2GenRenderbuffers(GLsizei n, GLuint* renderbuffers) {
+  gles2::GetGLContext()->GenRenderbuffers(n, renderbuffers);
 }
-void glGenTextures(GLsizei n, GLuint* textures) {
-  g_gl_impl->GenTextures(n, textures);
+void GLES2GenTextures(GLsizei n, GLuint* textures) {
+  gles2::GetGLContext()->GenTextures(n, textures);
 }
-void glGetActiveAttrib(
+void GLES2GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  g_gl_impl->GetActiveAttrib(
-      program, index, bufsize, length, size, type, name);
+  gles2::GetGLContext(
+      )->GetActiveAttrib(program, index, bufsize, length, size, type, name);
 }
-void glGetActiveUniform(
+void GLES2GetActiveUniform(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  g_gl_impl->GetActiveUniform(
-      program, index, bufsize, length, size, type, name);
+  gles2::GetGLContext(
+      )->GetActiveUniform(program, index, bufsize, length, size, type, name);
 }
-void glGetAttachedShaders(
+void GLES2GetAttachedShaders(
     GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
-  g_gl_impl->GetAttachedShaders(program, maxcount, count, shaders);
+  gles2::GetGLContext()->GetAttachedShaders(program, maxcount, count, shaders);
 }
-int glGetAttribLocation(GLuint program, const char* name) {
-  return g_gl_impl->GetAttribLocation(program, name);
+int GLES2GetAttribLocation(GLuint program, const char* name) {
+  return gles2::GetGLContext()->GetAttribLocation(program, name);
 }
-void glGetBooleanv(GLenum pname, GLboolean* params) {
-  g_gl_impl->GetBooleanv(pname, params);
+void GLES2GetBooleanv(GLenum pname, GLboolean* params) {
+  gles2::GetGLContext()->GetBooleanv(pname, params);
 }
-void glGetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
-  g_gl_impl->GetBufferParameteriv(target, pname, params);
+void GLES2GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetBufferParameteriv(target, pname, params);
 }
-GLenum glGetError() {
-  return g_gl_impl->GetError();
+GLenum GLES2GetError() {
+  return gles2::GetGLContext()->GetError();
 }
-void glGetFloatv(GLenum pname, GLfloat* params) {
-  g_gl_impl->GetFloatv(pname, params);
+void GLES2GetFloatv(GLenum pname, GLfloat* params) {
+  gles2::GetGLContext()->GetFloatv(pname, params);
 }
-void glGetFramebufferAttachmentParameteriv(
+void GLES2GetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
-  g_gl_impl->GetFramebufferAttachmentParameteriv(
-      target, attachment, pname, params);
+  gles2::GetGLContext(
+      )->GetFramebufferAttachmentParameteriv(
+          target, attachment, pname, params);
 }
-void glGetIntegerv(GLenum pname, GLint* params) {
-  g_gl_impl->GetIntegerv(pname, params);
+void GLES2GetIntegerv(GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetIntegerv(pname, params);
 }
-void glGetProgramiv(GLuint program, GLenum pname, GLint* params) {
-  g_gl_impl->GetProgramiv(program, pname, params);
+void GLES2GetProgramiv(GLuint program, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetProgramiv(program, pname, params);
 }
-void glGetProgramInfoLog(
+void GLES2GetProgramInfoLog(
     GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
-  g_gl_impl->GetProgramInfoLog(program, bufsize, length, infolog);
+  gles2::GetGLContext()->GetProgramInfoLog(program, bufsize, length, infolog);
 }
-void glGetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
-  g_gl_impl->GetRenderbufferParameteriv(target, pname, params);
+void GLES2GetRenderbufferParameteriv(
+    GLenum target, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetRenderbufferParameteriv(target, pname, params);
 }
-void glGetShaderiv(GLuint shader, GLenum pname, GLint* params) {
-  g_gl_impl->GetShaderiv(shader, pname, params);
+void GLES2GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetShaderiv(shader, pname, params);
 }
-void glGetShaderInfoLog(
+void GLES2GetShaderInfoLog(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
-  g_gl_impl->GetShaderInfoLog(shader, bufsize, length, infolog);
+  gles2::GetGLContext()->GetShaderInfoLog(shader, bufsize, length, infolog);
 }
-void glGetShaderPrecisionFormat(
+void GLES2GetShaderPrecisionFormat(
     GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision) {
-  g_gl_impl->GetShaderPrecisionFormat(
-      shadertype, precisiontype, range, precision);
+  gles2::GetGLContext(
+      )->GetShaderPrecisionFormat(shadertype, precisiontype, range, precision);
 }
-void glGetShaderSource(
+void GLES2GetShaderSource(
     GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
-  g_gl_impl->GetShaderSource(shader, bufsize, length, source);
+  gles2::GetGLContext()->GetShaderSource(shader, bufsize, length, source);
 }
-const GLubyte* glGetString(GLenum name) {
-  return g_gl_impl->GetString(name);
+const GLubyte* GLES2GetString(GLenum name) {
+  return gles2::GetGLContext()->GetString(name);
 }
-void glGetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
-  g_gl_impl->GetTexParameterfv(target, pname, params);
+void GLES2GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
+  gles2::GetGLContext()->GetTexParameterfv(target, pname, params);
 }
-void glGetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
-  g_gl_impl->GetTexParameteriv(target, pname, params);
+void GLES2GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetTexParameteriv(target, pname, params);
 }
-void glGetUniformfv(GLuint program, GLint location, GLfloat* params) {
-  g_gl_impl->GetUniformfv(program, location, params);
+void GLES2GetUniformfv(GLuint program, GLint location, GLfloat* params) {
+  gles2::GetGLContext()->GetUniformfv(program, location, params);
 }
-void glGetUniformiv(GLuint program, GLint location, GLint* params) {
-  g_gl_impl->GetUniformiv(program, location, params);
+void GLES2GetUniformiv(GLuint program, GLint location, GLint* params) {
+  gles2::GetGLContext()->GetUniformiv(program, location, params);
 }
-int glGetUniformLocation(GLuint program, const char* name) {
-  return g_gl_impl->GetUniformLocation(program, name);
+int GLES2GetUniformLocation(GLuint program, const char* name) {
+  return gles2::GetGLContext()->GetUniformLocation(program, name);
 }
-void glGetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
-  g_gl_impl->GetVertexAttribfv(index, pname, params);
+void GLES2GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
+  gles2::GetGLContext()->GetVertexAttribfv(index, pname, params);
 }
-void glGetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
-  g_gl_impl->GetVertexAttribiv(index, pname, params);
+void GLES2GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
+  gles2::GetGLContext()->GetVertexAttribiv(index, pname, params);
 }
-void glGetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer) {
-  g_gl_impl->GetVertexAttribPointerv(index, pname, pointer);
+void GLES2GetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer) {
+  gles2::GetGLContext()->GetVertexAttribPointerv(index, pname, pointer);
 }
-void glHint(GLenum target, GLenum mode) {
-  g_gl_impl->Hint(target, mode);
+void GLES2Hint(GLenum target, GLenum mode) {
+  gles2::GetGLContext()->Hint(target, mode);
 }
-GLboolean glIsBuffer(GLuint buffer) {
-  return g_gl_impl->IsBuffer(buffer);
+GLboolean GLES2IsBuffer(GLuint buffer) {
+  return gles2::GetGLContext()->IsBuffer(buffer);
 }
-GLboolean glIsEnabled(GLenum cap) {
-  return g_gl_impl->IsEnabled(cap);
+GLboolean GLES2IsEnabled(GLenum cap) {
+  return gles2::GetGLContext()->IsEnabled(cap);
 }
-GLboolean glIsFramebuffer(GLuint framebuffer) {
-  return g_gl_impl->IsFramebuffer(framebuffer);
+GLboolean GLES2IsFramebuffer(GLuint framebuffer) {
+  return gles2::GetGLContext()->IsFramebuffer(framebuffer);
 }
-GLboolean glIsProgram(GLuint program) {
-  return g_gl_impl->IsProgram(program);
+GLboolean GLES2IsProgram(GLuint program) {
+  return gles2::GetGLContext()->IsProgram(program);
 }
-GLboolean glIsRenderbuffer(GLuint renderbuffer) {
-  return g_gl_impl->IsRenderbuffer(renderbuffer);
+GLboolean GLES2IsRenderbuffer(GLuint renderbuffer) {
+  return gles2::GetGLContext()->IsRenderbuffer(renderbuffer);
 }
-GLboolean glIsShader(GLuint shader) {
-  return g_gl_impl->IsShader(shader);
+GLboolean GLES2IsShader(GLuint shader) {
+  return gles2::GetGLContext()->IsShader(shader);
 }
-GLboolean glIsTexture(GLuint texture) {
-  return g_gl_impl->IsTexture(texture);
+GLboolean GLES2IsTexture(GLuint texture) {
+  return gles2::GetGLContext()->IsTexture(texture);
 }
-void glLineWidth(GLfloat width) {
-  g_gl_impl->LineWidth(width);
+void GLES2LineWidth(GLfloat width) {
+  gles2::GetGLContext()->LineWidth(width);
 }
-void glLinkProgram(GLuint program) {
-  g_gl_impl->LinkProgram(program);
+void GLES2LinkProgram(GLuint program) {
+  gles2::GetGLContext()->LinkProgram(program);
 }
-void glPixelStorei(GLenum pname, GLint param) {
-  g_gl_impl->PixelStorei(pname, param);
+void GLES2PixelStorei(GLenum pname, GLint param) {
+  gles2::GetGLContext()->PixelStorei(pname, param);
 }
-void glPolygonOffset(GLfloat factor, GLfloat units) {
-  g_gl_impl->PolygonOffset(factor, units);
+void GLES2PolygonOffset(GLfloat factor, GLfloat units) {
+  gles2::GetGLContext()->PolygonOffset(factor, units);
 }
-void glReadPixels(
+void GLES2ReadPixels(
     GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
     void* pixels) {
-  g_gl_impl->ReadPixels(x, y, width, height, format, type, pixels);
+  gles2::GetGLContext()->ReadPixels(x, y, width, height, format, type, pixels);
 }
-void glRenderbufferStorage(
+void GLES2RenderbufferStorage(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
-  g_gl_impl->RenderbufferStorage(target, internalformat, width, height);
+  gles2::GetGLContext(
+      )->RenderbufferStorage(target, internalformat, width, height);
 }
-void glSampleCoverage(GLclampf value, GLboolean invert) {
-  g_gl_impl->SampleCoverage(value, invert);
+void GLES2SampleCoverage(GLclampf value, GLboolean invert) {
+  gles2::GetGLContext()->SampleCoverage(value, invert);
 }
-void glScissor(GLint x, GLint y, GLsizei width, GLsizei height) {
-  g_gl_impl->Scissor(x, y, width, height);
+void GLES2Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
+  gles2::GetGLContext()->Scissor(x, y, width, height);
 }
-void glShaderSource(
+void GLES2ShaderSource(
     GLuint shader, GLsizei count, const char** string, const GLint* length) {
-  g_gl_impl->ShaderSource(shader, count, string, length);
+  gles2::GetGLContext()->ShaderSource(shader, count, string, length);
 }
-void glStencilFunc(GLenum func, GLint ref, GLuint mask) {
-  g_gl_impl->StencilFunc(func, ref, mask);
+void GLES2StencilFunc(GLenum func, GLint ref, GLuint mask) {
+  gles2::GetGLContext()->StencilFunc(func, ref, mask);
 }
-void glStencilFuncSeparate(GLenum face, GLenum func, GLint ref, GLuint mask) {
-  g_gl_impl->StencilFuncSeparate(face, func, ref, mask);
+void GLES2StencilFuncSeparate(
+    GLenum face, GLenum func, GLint ref, GLuint mask) {
+  gles2::GetGLContext()->StencilFuncSeparate(face, func, ref, mask);
 }
-void glStencilMask(GLuint mask) {
-  g_gl_impl->StencilMask(mask);
+void GLES2StencilMask(GLuint mask) {
+  gles2::GetGLContext()->StencilMask(mask);
 }
-void glStencilMaskSeparate(GLenum face, GLuint mask) {
-  g_gl_impl->StencilMaskSeparate(face, mask);
+void GLES2StencilMaskSeparate(GLenum face, GLuint mask) {
+  gles2::GetGLContext()->StencilMaskSeparate(face, mask);
 }
-void glStencilOp(GLenum fail, GLenum zfail, GLenum zpass) {
-  g_gl_impl->StencilOp(fail, zfail, zpass);
+void GLES2StencilOp(GLenum fail, GLenum zfail, GLenum zpass) {
+  gles2::GetGLContext()->StencilOp(fail, zfail, zpass);
 }
-void glStencilOpSeparate(
+void GLES2StencilOpSeparate(
     GLenum face, GLenum fail, GLenum zfail, GLenum zpass) {
-  g_gl_impl->StencilOpSeparate(face, fail, zfail, zpass);
+  gles2::GetGLContext()->StencilOpSeparate(face, fail, zfail, zpass);
 }
-void glTexImage2D(
+void GLES2TexImage2D(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
     GLsizei height, GLint border, GLenum format, GLenum type,
     const void* pixels) {
-  g_gl_impl->TexImage2D(
-      target, level, internalformat, width, height, border, format, type,
-      pixels);
+  gles2::GetGLContext(
+      )->TexImage2D(
+          target, level, internalformat, width, height, border, format, type,
+          pixels);
 }
-void glTexParameterf(GLenum target, GLenum pname, GLfloat param) {
-  g_gl_impl->TexParameterf(target, pname, param);
+void GLES2TexParameterf(GLenum target, GLenum pname, GLfloat param) {
+  gles2::GetGLContext()->TexParameterf(target, pname, param);
 }
-void glTexParameterfv(GLenum target, GLenum pname, const GLfloat* params) {
-  g_gl_impl->TexParameterfv(target, pname, params);
+void GLES2TexParameterfv(GLenum target, GLenum pname, const GLfloat* params) {
+  gles2::GetGLContext()->TexParameterfv(target, pname, params);
 }
-void glTexParameteri(GLenum target, GLenum pname, GLint param) {
-  g_gl_impl->TexParameteri(target, pname, param);
+void GLES2TexParameteri(GLenum target, GLenum pname, GLint param) {
+  gles2::GetGLContext()->TexParameteri(target, pname, param);
 }
-void glTexParameteriv(GLenum target, GLenum pname, const GLint* params) {
-  g_gl_impl->TexParameteriv(target, pname, params);
+void GLES2TexParameteriv(GLenum target, GLenum pname, const GLint* params) {
+  gles2::GetGLContext()->TexParameteriv(target, pname, params);
 }
-void glTexSubImage2D(
+void GLES2TexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLenum type, const void* pixels) {
-  g_gl_impl->TexSubImage2D(
-      target, level, xoffset, yoffset, width, height, format, type, pixels);
+  gles2::GetGLContext(
+      )->TexSubImage2D(
+          target, level, xoffset, yoffset, width, height, format, type,
+          pixels);
 }
-void glUniform1f(GLint location, GLfloat x) {
-  g_gl_impl->Uniform1f(location, x);
+void GLES2Uniform1f(GLint location, GLfloat x) {
+  gles2::GetGLContext()->Uniform1f(location, x);
 }
-void glUniform1fv(GLint location, GLsizei count, const GLfloat* v) {
-  g_gl_impl->Uniform1fv(location, count, v);
+void GLES2Uniform1fv(GLint location, GLsizei count, const GLfloat* v) {
+  gles2::GetGLContext()->Uniform1fv(location, count, v);
 }
-void glUniform1i(GLint location, GLint x) {
-  g_gl_impl->Uniform1i(location, x);
+void GLES2Uniform1i(GLint location, GLint x) {
+  gles2::GetGLContext()->Uniform1i(location, x);
 }
-void glUniform1iv(GLint location, GLsizei count, const GLint* v) {
-  g_gl_impl->Uniform1iv(location, count, v);
+void GLES2Uniform1iv(GLint location, GLsizei count, const GLint* v) {
+  gles2::GetGLContext()->Uniform1iv(location, count, v);
 }
-void glUniform2f(GLint location, GLfloat x, GLfloat y) {
-  g_gl_impl->Uniform2f(location, x, y);
+void GLES2Uniform2f(GLint location, GLfloat x, GLfloat y) {
+  gles2::GetGLContext()->Uniform2f(location, x, y);
 }
-void glUniform2fv(GLint location, GLsizei count, const GLfloat* v) {
-  g_gl_impl->Uniform2fv(location, count, v);
+void GLES2Uniform2fv(GLint location, GLsizei count, const GLfloat* v) {
+  gles2::GetGLContext()->Uniform2fv(location, count, v);
 }
-void glUniform2i(GLint location, GLint x, GLint y) {
-  g_gl_impl->Uniform2i(location, x, y);
+void GLES2Uniform2i(GLint location, GLint x, GLint y) {
+  gles2::GetGLContext()->Uniform2i(location, x, y);
 }
-void glUniform2iv(GLint location, GLsizei count, const GLint* v) {
-  g_gl_impl->Uniform2iv(location, count, v);
+void GLES2Uniform2iv(GLint location, GLsizei count, const GLint* v) {
+  gles2::GetGLContext()->Uniform2iv(location, count, v);
 }
-void glUniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) {
-  g_gl_impl->Uniform3f(location, x, y, z);
+void GLES2Uniform3f(GLint location, GLfloat x, GLfloat y, GLfloat z) {
+  gles2::GetGLContext()->Uniform3f(location, x, y, z);
 }
-void glUniform3fv(GLint location, GLsizei count, const GLfloat* v) {
-  g_gl_impl->Uniform3fv(location, count, v);
+void GLES2Uniform3fv(GLint location, GLsizei count, const GLfloat* v) {
+  gles2::GetGLContext()->Uniform3fv(location, count, v);
 }
-void glUniform3i(GLint location, GLint x, GLint y, GLint z) {
-  g_gl_impl->Uniform3i(location, x, y, z);
+void GLES2Uniform3i(GLint location, GLint x, GLint y, GLint z) {
+  gles2::GetGLContext()->Uniform3i(location, x, y, z);
 }
-void glUniform3iv(GLint location, GLsizei count, const GLint* v) {
-  g_gl_impl->Uniform3iv(location, count, v);
+void GLES2Uniform3iv(GLint location, GLsizei count, const GLint* v) {
+  gles2::GetGLContext()->Uniform3iv(location, count, v);
 }
-void glUniform4f(GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
-  g_gl_impl->Uniform4f(location, x, y, z, w);
+void GLES2Uniform4f(
+    GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
+  gles2::GetGLContext()->Uniform4f(location, x, y, z, w);
 }
-void glUniform4fv(GLint location, GLsizei count, const GLfloat* v) {
-  g_gl_impl->Uniform4fv(location, count, v);
+void GLES2Uniform4fv(GLint location, GLsizei count, const GLfloat* v) {
+  gles2::GetGLContext()->Uniform4fv(location, count, v);
 }
-void glUniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) {
-  g_gl_impl->Uniform4i(location, x, y, z, w);
+void GLES2Uniform4i(GLint location, GLint x, GLint y, GLint z, GLint w) {
+  gles2::GetGLContext()->Uniform4i(location, x, y, z, w);
 }
-void glUniform4iv(GLint location, GLsizei count, const GLint* v) {
-  g_gl_impl->Uniform4iv(location, count, v);
+void GLES2Uniform4iv(GLint location, GLsizei count, const GLint* v) {
+  gles2::GetGLContext()->Uniform4iv(location, count, v);
 }
-void glUniformMatrix2fv(
+void GLES2UniformMatrix2fv(
     GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
-  g_gl_impl->UniformMatrix2fv(location, count, transpose, value);
+  gles2::GetGLContext()->UniformMatrix2fv(location, count, transpose, value);
 }
-void glUniformMatrix3fv(
+void GLES2UniformMatrix3fv(
     GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
-  g_gl_impl->UniformMatrix3fv(location, count, transpose, value);
+  gles2::GetGLContext()->UniformMatrix3fv(location, count, transpose, value);
 }
-void glUniformMatrix4fv(
+void GLES2UniformMatrix4fv(
     GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) {
-  g_gl_impl->UniformMatrix4fv(location, count, transpose, value);
+  gles2::GetGLContext()->UniformMatrix4fv(location, count, transpose, value);
 }
-void glUseProgram(GLuint program) {
-  g_gl_impl->UseProgram(program);
+void GLES2UseProgram(GLuint program) {
+  gles2::GetGLContext()->UseProgram(program);
 }
-void glValidateProgram(GLuint program) {
-  g_gl_impl->ValidateProgram(program);
+void GLES2ValidateProgram(GLuint program) {
+  gles2::GetGLContext()->ValidateProgram(program);
 }
-void glVertexAttrib1f(GLuint indx, GLfloat x) {
-  g_gl_impl->VertexAttrib1f(indx, x);
+void GLES2VertexAttrib1f(GLuint indx, GLfloat x) {
+  gles2::GetGLContext()->VertexAttrib1f(indx, x);
 }
-void glVertexAttrib1fv(GLuint indx, const GLfloat* values) {
-  g_gl_impl->VertexAttrib1fv(indx, values);
+void GLES2VertexAttrib1fv(GLuint indx, const GLfloat* values) {
+  gles2::GetGLContext()->VertexAttrib1fv(indx, values);
 }
-void glVertexAttrib2f(GLuint indx, GLfloat x, GLfloat y) {
-  g_gl_impl->VertexAttrib2f(indx, x, y);
+void GLES2VertexAttrib2f(GLuint indx, GLfloat x, GLfloat y) {
+  gles2::GetGLContext()->VertexAttrib2f(indx, x, y);
 }
-void glVertexAttrib2fv(GLuint indx, const GLfloat* values) {
-  g_gl_impl->VertexAttrib2fv(indx, values);
+void GLES2VertexAttrib2fv(GLuint indx, const GLfloat* values) {
+  gles2::GetGLContext()->VertexAttrib2fv(indx, values);
 }
-void glVertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z) {
-  g_gl_impl->VertexAttrib3f(indx, x, y, z);
+void GLES2VertexAttrib3f(GLuint indx, GLfloat x, GLfloat y, GLfloat z) {
+  gles2::GetGLContext()->VertexAttrib3f(indx, x, y, z);
 }
-void glVertexAttrib3fv(GLuint indx, const GLfloat* values) {
-  g_gl_impl->VertexAttrib3fv(indx, values);
+void GLES2VertexAttrib3fv(GLuint indx, const GLfloat* values) {
+  gles2::GetGLContext()->VertexAttrib3fv(indx, values);
 }
-void glVertexAttrib4f(
+void GLES2VertexAttrib4f(
     GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w) {
-  g_gl_impl->VertexAttrib4f(indx, x, y, z, w);
+  gles2::GetGLContext()->VertexAttrib4f(indx, x, y, z, w);
 }
-void glVertexAttrib4fv(GLuint indx, const GLfloat* values) {
-  g_gl_impl->VertexAttrib4fv(indx, values);
+void GLES2VertexAttrib4fv(GLuint indx, const GLfloat* values) {
+  gles2::GetGLContext()->VertexAttrib4fv(indx, values);
 }
-void glVertexAttribPointer(
+void GLES2VertexAttribPointer(
     GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr) {
-  g_gl_impl->VertexAttribPointer(indx, size, type, normalized, stride, ptr);
+  gles2::GetGLContext(
+      )->VertexAttribPointer(indx, size, type, normalized, stride, ptr);
 }
-void glViewport(GLint x, GLint y, GLsizei width, GLsizei height) {
-  g_gl_impl->Viewport(x, y, width, height);
+void GLES2Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
+  gles2::GetGLContext()->Viewport(x, y, width, height);
+}
+void GLES2SwapBuffers() {
+  gles2::GetGLContext()->SwapBuffers();
 }
 

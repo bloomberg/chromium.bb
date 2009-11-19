@@ -16,12 +16,173 @@ _SIZE_OF_UINT32 = 4
 _SIZE_OF_COMMAND_HEADER = 4
 _FIRST_SPECIFIC_COMMAND_ID = 1024
 
-_LICENSE = "\n".join([
-  "// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.",
-  "// Use of this source code is governed by a BSD-style license that can be",
-  "// found in the LICENSE file.",
-  "",
-])
+_LICENSE = """
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+"""
+
+# This string is copied directly out of the gl2.h file from GLES2.0
+# the reasons it is copied out instead of parsed directly are
+#
+# 1) Because order is important. The command IDs need to stay constant forever
+#    so if you add a new command it needs to be added to the bottom of the list.
+#
+# 2) So we can add more commands easily that are unrelated to GLES2.0 but still
+#    needed for GLES2.0 command buffers.
+#
+# Edits:
+#
+# *) Any argument that is a resourceID has been changed to GLresourceID.
+#    (not pointer arguments)
+#
+_GL_FUNCTIONS = """
+GL_APICALL void         GL_APIENTRY glActiveTexture (GLenum texture);
+GL_APICALL void         GL_APIENTRY glAttachShader (GLResourceId program, GLResourceId shader);
+GL_APICALL void         GL_APIENTRY glBindAttribLocation (GLResourceId program, GLuint index, const char* name);
+GL_APICALL void         GL_APIENTRY glBindBuffer (GLenum target, GLResourceId buffer);
+GL_APICALL void         GL_APIENTRY glBindFramebuffer (GLenum target, GLResourceId framebuffer);
+GL_APICALL void         GL_APIENTRY glBindRenderbuffer (GLenum target, GLResourceId renderbuffer);
+GL_APICALL void         GL_APIENTRY glBindTexture (GLenum target, GLResourceId texture);
+GL_APICALL void         GL_APIENTRY glBlendColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+GL_APICALL void         GL_APIENTRY glBlendEquation ( GLenum mode );
+GL_APICALL void         GL_APIENTRY glBlendEquationSeparate (GLenum modeRGB, GLenum modeAlpha);
+GL_APICALL void         GL_APIENTRY glBlendFunc (GLenum sfactor, GLenum dfactor);
+GL_APICALL void         GL_APIENTRY glBlendFuncSeparate (GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
+GL_APICALL void         GL_APIENTRY glBufferData (GLenum target, GLsizeiptr size, const void* data, GLenum usage);
+GL_APICALL void         GL_APIENTRY glBufferSubData (GLenum target, GLintptr offset, GLsizeiptr size, const void* data);
+GL_APICALL GLenum       GL_APIENTRY glCheckFramebufferStatus (GLenum target);
+GL_APICALL void         GL_APIENTRY glClear (GLbitfield mask);
+GL_APICALL void         GL_APIENTRY glClearColor (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+GL_APICALL void         GL_APIENTRY glClearDepthf (GLclampf depth);
+GL_APICALL void         GL_APIENTRY glClearStencil (GLint s);
+GL_APICALL void         GL_APIENTRY glColorMask (GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha);
+GL_APICALL void         GL_APIENTRY glCompileShader (GLResourceId shader);
+GL_APICALL void         GL_APIENTRY glCompressedTexImage2D (GLenum target, GLint level, GLenum internalformat, GLsizei width, GLsizei height, GLint border, GLsizei imageSize, const void* data);
+GL_APICALL void         GL_APIENTRY glCompressedTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLsizei imageSize, const void* data);
+GL_APICALL void         GL_APIENTRY glCopyTexImage2D (GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border);
+GL_APICALL void         GL_APIENTRY glCopyTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height);
+GL_APICALL GLuint       GL_APIENTRY glCreateProgram (void);
+GL_APICALL GLuint       GL_APIENTRY glCreateShader (GLenum type);
+GL_APICALL void         GL_APIENTRY glCullFace (GLenum mode);
+GL_APICALL void         GL_APIENTRY glDeleteBuffers (GLsizei n, const GLuint* buffers);
+GL_APICALL void         GL_APIENTRY glDeleteFramebuffers (GLsizei n, const GLuint* framebuffers);
+GL_APICALL void         GL_APIENTRY glDeleteProgram (GLResourceId program);
+GL_APICALL void         GL_APIENTRY glDeleteRenderbuffers (GLsizei n, const GLuint* renderbuffers);
+GL_APICALL void         GL_APIENTRY glDeleteShader (GLResourceId shader);
+GL_APICALL void         GL_APIENTRY glDeleteTextures (GLsizei n, const GLuint* textures);
+GL_APICALL void         GL_APIENTRY glDepthFunc (GLenum func);
+GL_APICALL void         GL_APIENTRY glDepthMask (GLboolean flag);
+GL_APICALL void         GL_APIENTRY glDepthRangef (GLclampf zNear, GLclampf zFar);
+GL_APICALL void         GL_APIENTRY glDetachShader (GLResourceId program, GLResourceId shader);
+GL_APICALL void         GL_APIENTRY glDisable (GLenum cap);
+GL_APICALL void         GL_APIENTRY glDisableVertexAttribArray (GLuint index);
+GL_APICALL void         GL_APIENTRY glDrawArrays (GLenum mode, GLint first, GLsizei count);
+GL_APICALL void         GL_APIENTRY glDrawElements (GLenum mode, GLsizei count, GLenum type, const void* indices);
+GL_APICALL void         GL_APIENTRY glEnable (GLenum cap);
+GL_APICALL void         GL_APIENTRY glEnableVertexAttribArray (GLuint index);
+GL_APICALL void         GL_APIENTRY glFinish (void);
+GL_APICALL void         GL_APIENTRY glFlush (void);
+GL_APICALL void         GL_APIENTRY glFramebufferRenderbuffer (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLResourceId renderbuffer);
+GL_APICALL void         GL_APIENTRY glFramebufferTexture2D (GLenum target, GLenum attachment, GLenum textarget, GLResourceId texture, GLint level);
+GL_APICALL void         GL_APIENTRY glFrontFace (GLenum mode);
+GL_APICALL void         GL_APIENTRY glGenBuffers (GLsizei n, GLuint* buffers);
+GL_APICALL void         GL_APIENTRY glGenerateMipmap (GLenum target);
+GL_APICALL void         GL_APIENTRY glGenFramebuffers (GLsizei n, GLuint* framebuffers);
+GL_APICALL void         GL_APIENTRY glGenRenderbuffers (GLsizei n, GLuint* renderbuffers);
+GL_APICALL void         GL_APIENTRY glGenTextures (GLsizei n, GLuint* textures);
+GL_APICALL void         GL_APIENTRY glGetActiveAttrib (GLResourceId program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
+GL_APICALL void         GL_APIENTRY glGetActiveUniform (GLResourceId program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size, GLenum* type, char* name);
+GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLResourceId program, GLsizei maxcount, GLsizei* count, GLuint* shaders);
+GL_APICALL int          GL_APIENTRY glGetAttribLocation (GLResourceId program, const char* name);
+GL_APICALL void         GL_APIENTRY glGetBooleanv (GLenum pname, GLboolean* params);
+GL_APICALL void         GL_APIENTRY glGetBufferParameteriv (GLenum target, GLenum pname, GLint* params);
+GL_APICALL GLenum       GL_APIENTRY glGetError (void);
+GL_APICALL void         GL_APIENTRY glGetFloatv (GLenum pname, GLfloat* params);
+GL_APICALL void         GL_APIENTRY glGetFramebufferAttachmentParameteriv (GLenum target, GLenum attachment, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetIntegerv (GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetProgramiv (GLResourceId program, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLResourceId program, GLsizei bufsize, GLsizei* length, char* infolog);
+GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenum target, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetShaderiv (GLResourceId shader, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetShaderInfoLog (GLResourceId shader, GLsizei bufsize, GLsizei* length, char* infolog);
+GL_APICALL void         GL_APIENTRY glGetShaderPrecisionFormat (GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision);
+GL_APICALL void         GL_APIENTRY glGetShaderSource (GLResourceId shader, GLsizei bufsize, GLsizei* length, char* source);
+GL_APICALL const GLubyte* GL_APIENTRY glGetString (GLenum name);
+GL_APICALL void         GL_APIENTRY glGetTexParameterfv (GLenum target, GLenum pname, GLfloat* params);
+GL_APICALL void         GL_APIENTRY glGetTexParameteriv (GLenum target, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetUniformfv (GLResourceId program, GLint location, GLfloat* params);
+GL_APICALL void         GL_APIENTRY glGetUniformiv (GLResourceId program, GLint location, GLint* params);
+GL_APICALL int          GL_APIENTRY glGetUniformLocation (GLResourceId program, const char* name);
+GL_APICALL void         GL_APIENTRY glGetVertexAttribfv (GLuint index, GLenum pname, GLfloat* params);
+GL_APICALL void         GL_APIENTRY glGetVertexAttribiv (GLuint index, GLenum pname, GLint* params);
+GL_APICALL void         GL_APIENTRY glGetVertexAttribPointerv (GLuint index, GLenum pname, void** pointer);
+GL_APICALL void         GL_APIENTRY glHint (GLenum target, GLenum mode);
+GL_APICALL GLboolean    GL_APIENTRY glIsBuffer (GLResourceId buffer);
+GL_APICALL GLboolean    GL_APIENTRY glIsEnabled (GLenum cap);
+GL_APICALL GLboolean    GL_APIENTRY glIsFramebuffer (GLResourceId framebuffer);
+GL_APICALL GLboolean    GL_APIENTRY glIsProgram (GLResourceId program);
+GL_APICALL GLboolean    GL_APIENTRY glIsRenderbuffer (GLResourceId renderbuffer);
+GL_APICALL GLboolean    GL_APIENTRY glIsShader (GLResourceId shader);
+GL_APICALL GLboolean    GL_APIENTRY glIsTexture (GLResourceId texture);
+GL_APICALL void         GL_APIENTRY glLineWidth (GLfloat width);
+GL_APICALL void         GL_APIENTRY glLinkProgram (GLResourceId program);
+GL_APICALL void         GL_APIENTRY glPixelStorei (GLenum pname, GLint param);
+GL_APICALL void         GL_APIENTRY glPolygonOffset (GLfloat factor, GLfloat units);
+GL_APICALL void         GL_APIENTRY glReadPixels (GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type, void* pixels);
+GL_APICALL void         GL_APIENTRY glReleaseShaderCompiler (void);
+GL_APICALL void         GL_APIENTRY glRenderbufferStorage (GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glSampleCoverage (GLclampf value, GLboolean invert);
+GL_APICALL void         GL_APIENTRY glScissor (GLint x, GLint y, GLsizei width, GLsizei height);
+GL_APICALL void         GL_APIENTRY glShaderBinary (GLsizei n, const GLResourceId* shaders, GLenum binaryformat, const void* binary, GLsizei length);
+GL_APICALL void         GL_APIENTRY glShaderSource (GLResourceId shader, GLsizei count, const char** string, const GLint* length);
+GL_APICALL void         GL_APIENTRY glStencilFunc (GLenum func, GLint ref, GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilFuncSeparate (GLenum face, GLenum func, GLint ref, GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilMask (GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilMaskSeparate (GLenum face, GLuint mask);
+GL_APICALL void         GL_APIENTRY glStencilOp (GLenum fail, GLenum zfail, GLenum zpass);
+GL_APICALL void         GL_APIENTRY glStencilOpSeparate (GLenum face, GLenum fail, GLenum zfail, GLenum zpass);
+GL_APICALL void         GL_APIENTRY glTexImage2D (GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glTexParameterf (GLenum target, GLenum pname, GLfloat param);
+GL_APICALL void         GL_APIENTRY glTexParameterfv (GLenum target, GLenum pname, const GLfloat* params);
+GL_APICALL void         GL_APIENTRY glTexParameteri (GLenum target, GLenum pname, GLint param);
+GL_APICALL void         GL_APIENTRY glTexParameteriv (GLenum target, GLenum pname, const GLint* params);
+GL_APICALL void         GL_APIENTRY glTexSubImage2D (GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels);
+GL_APICALL void         GL_APIENTRY glUniform1f (GLint location, GLfloat x);
+GL_APICALL void         GL_APIENTRY glUniform1fv (GLint location, GLsizei count, const GLfloat* v);
+GL_APICALL void         GL_APIENTRY glUniform1i (GLint location, GLint x);
+GL_APICALL void         GL_APIENTRY glUniform1iv (GLint location, GLsizei count, const GLint* v);
+GL_APICALL void         GL_APIENTRY glUniform2f (GLint location, GLfloat x, GLfloat y);
+GL_APICALL void         GL_APIENTRY glUniform2fv (GLint location, GLsizei count, const GLfloat* v);
+GL_APICALL void         GL_APIENTRY glUniform2i (GLint location, GLint x, GLint y);
+GL_APICALL void         GL_APIENTRY glUniform2iv (GLint location, GLsizei count, const GLint* v);
+GL_APICALL void         GL_APIENTRY glUniform3f (GLint location, GLfloat x, GLfloat y, GLfloat z);
+GL_APICALL void         GL_APIENTRY glUniform3fv (GLint location, GLsizei count, const GLfloat* v);
+GL_APICALL void         GL_APIENTRY glUniform3i (GLint location, GLint x, GLint y, GLint z);
+GL_APICALL void         GL_APIENTRY glUniform3iv (GLint location, GLsizei count, const GLint* v);
+GL_APICALL void         GL_APIENTRY glUniform4f (GLint location, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+GL_APICALL void         GL_APIENTRY glUniform4fv (GLint location, GLsizei count, const GLfloat* v);
+GL_APICALL void         GL_APIENTRY glUniform4i (GLint location, GLint x, GLint y, GLint z, GLint w);
+GL_APICALL void         GL_APIENTRY glUniform4iv (GLint location, GLsizei count, const GLint* v);
+GL_APICALL void         GL_APIENTRY glUniformMatrix2fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+GL_APICALL void         GL_APIENTRY glUniformMatrix3fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+GL_APICALL void         GL_APIENTRY glUniformMatrix4fv (GLint location, GLsizei count, GLboolean transpose, const GLfloat* value);
+GL_APICALL void         GL_APIENTRY glUseProgram (GLResourceId program);
+GL_APICALL void         GL_APIENTRY glValidateProgram (GLResourceId program);
+GL_APICALL void         GL_APIENTRY glVertexAttrib1f (GLuint indx, GLfloat x);
+GL_APICALL void         GL_APIENTRY glVertexAttrib1fv (GLuint indx, const GLfloat* values);
+GL_APICALL void         GL_APIENTRY glVertexAttrib2f (GLuint indx, GLfloat x, GLfloat y);
+GL_APICALL void         GL_APIENTRY glVertexAttrib2fv (GLuint indx, const GLfloat* values);
+GL_APICALL void         GL_APIENTRY glVertexAttrib3f (GLuint indx, GLfloat x, GLfloat y, GLfloat z);
+GL_APICALL void         GL_APIENTRY glVertexAttrib3fv (GLuint indx, const GLfloat* values);
+GL_APICALL void         GL_APIENTRY glVertexAttrib4f (GLuint indx, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+GL_APICALL void         GL_APIENTRY glVertexAttrib4fv (GLuint indx, const GLfloat* values);
+GL_APICALL void         GL_APIENTRY glVertexAttribPointer (GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* ptr);
+GL_APICALL void         GL_APIENTRY glViewport (GLint x, GLint y, GLsizei width, GLsizei height);
+// Non-GL commands.
+GL_APICALL void         GL_APIENTRY glSwapBuffers (void);
+"""
 
 # This table specifies types and other special data for the commands that
 # will be generated.
@@ -73,7 +234,7 @@ _FUNCTION_INFO = {
   'GetActiveAttrib': {'type': 'Custom'},
   'GetActiveUniform': {'type': 'Custom'},
   'GetAttachedShaders': {'type': 'Custom'},
-  'GetAttribLocation': {'type': 'GLchar'},
+  'GetAttribLocation': {'type': 'GetGLchar'},
   'GetBooleanv': {'type': 'GETn'},
   'GetBufferParameteriv': {'type': 'GETn'},
   'GetError': {'type': 'Is'},
@@ -97,7 +258,7 @@ _FUNCTION_INFO = {
   'GetTexParameteriv': {'type': 'GETn'},
   'GetUniformfv': {'type': 'Custom', 'immediate': False},
   'GetUniformiv': {'type': 'Custom', 'immediate': False},
-  'GetUniformLocation': {'type': 'GLchar'},
+  'GetUniformLocation': {'type': 'GetGLchar'},
   'GetVertexAttribfv': {'type': 'GETn'},
   'GetVertexAttribiv': {'type': 'GETn'},
   'GetVertexAttribPointerv': {'type': 'Custom', 'immediate': False},
@@ -144,6 +305,7 @@ _FUNCTION_INFO = {
       'cmd_args': 'GLuint indx, GLint size, GLenum type, GLboolean normalized, '
                   'GLsizei stride, GLuint offset',
   },
+  'SwapBuffers': {'DecoderFunc': 'DoSwapBuffers'},
 }
 
 
@@ -1218,7 +1380,7 @@ class PUTnHandler(TypeHandler):
 
 
 class GLcharHandler(TypeHandler):
-  """Handler for glBindAttrLoc, glGetAttibLoc, glGetUniformLoc."""
+  """Handler for functions that pass a single string ."""
 
   def __init__(self):
     TypeHandler.__init__(self)
@@ -1297,6 +1459,184 @@ class GLcharHandler(TypeHandler):
     file.Write("  // TODO(gman): This needs to change to use SendString.\n")
     file.Write("  helper_->%sImmediate(%s);\n" %
                (func.name, func.MakeOriginalArgString("")))
+    file.Write("}\n")
+    file.Write("\n")
+
+  def WriteGLES2ImplementationImpl(self, func, file):
+    """Overrriden from TypeHandler."""
+    pass
+
+  def WriteImmediateCmdComputeSize(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("  static uint32 ComputeDataSize(const char* s) {\n")
+    file.Write("    return strlen(s);\n")
+    file.Write("  }\n")
+    file.Write("\n")
+    file.Write("  static uint32 ComputeSize(const char* s) {\n")
+    file.Write("    return static_cast<uint32>(\n")
+    file.Write("        sizeof(ValueType) + ComputeDataSize(s));  // NOLINT\n")
+    file.Write("  }\n")
+    file.Write("\n")
+
+  def WriteImmediateCmdSetHeader(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("  void SetHeader(const char* s) {\n")
+    file.Write("    header.SetCmdByTotalSize<ValueType>(ComputeSize(s));\n")
+    file.Write("  }\n")
+    file.Write("\n")
+
+  def WriteImmediateCmdInit(self, func, file):
+    """Overrriden from TypeHandler."""
+    last_arg = func.GetLastOriginalArg()
+    file.Write("  void Init(%s) {\n" % func.MakeTypedOriginalArgString("_"))
+    file.Write("    SetHeader(_%s);\n" % last_arg.name)
+    args = func.GetCmdArgs()[:-1]
+    for arg in args:
+      file.Write("    %s = _%s;\n" % (arg.name, arg.name))
+    file.Write("    data_size = strlen(_%s);\n" % last_arg.name)
+    file.Write("    memcpy(ImmediateDataAddress(this), _%s, data_size);\n" %
+               last_arg.name)
+    file.Write("  }\n")
+    file.Write("\n")
+
+  def WriteImmediateCmdSet(self, func, file):
+    """Overrriden from TypeHandler."""
+    last_arg = func.GetLastOriginalArg()
+    file.Write("  void* Set(void* cmd%s) {\n" %
+               func.MakeTypedOriginalArgString("_", True))
+    file.Write("    static_cast<ValueType*>(cmd)->Init(%s);\n" %
+               func.MakeOriginalArgString("_"))
+    file.Write("    const uint32 size = ComputeSize(_%s);\n" % last_arg.name)
+    file.Write("    return NextImmediateCmdAddressTotalSize<ValueType>("
+               "cmd, size);\n")
+    file.Write("  }\n")
+    file.Write("\n")
+
+  def WriteImmediateCmdHelper(self, func, file):
+    """Overrriden from TypeHandler."""
+    args = func.MakeOriginalArgString("")
+    last_arg = func.GetLastOriginalArg()
+    file.Write("  void %s(%s) {\n" %
+               (func.name, func.MakeTypedOriginalArgString("")))
+    file.Write("    const uint32 size = gles2::%s::ComputeSize(%s);\n" %
+               (func.name, last_arg.name))
+    file.Write("    gles2::%s& c = GetImmediateCmdSpaceTotalSize<gles2::%s>("
+               "size);\n" %
+               (func.name, func.name))
+    file.Write("    c.Init(%s);\n" % args)
+    file.Write("  }\n\n")
+
+  def WriteImmediateFormatTest(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("TEST(GLES2FormatTest, %s) {\n" % func.name)
+    file.Write("  int8 buf[256] = { 0, };\n")
+    file.Write("  %s& cmd = *static_cast<%s*>(static_cast<void*>(&buf));\n" %
+               (func.name, func.name))
+    file.Write("  static const char* const test_str = \"test string\";\n")
+    file.Write("  void* next_cmd = cmd.Set(\n")
+    file.Write("      &cmd")
+    all_but_last_arg = func.GetCmdArgs()[:-1]
+    value = 11
+    for arg in all_but_last_arg:
+      file.Write(",\n      static_cast<%s>(%d)" % (arg.type, value))
+      value += 1
+    file.Write(",\n      test_str);\n")
+    value = 11
+    file.Write("  EXPECT_EQ(%s::kCmdId, cmd.header.command);\n" % func.name)
+    file.Write("  EXPECT_EQ(sizeof(cmd) +  // NOLINT\n")
+    file.Write("            RoundSizeToMultipleOfEntries(strlen(test_str)),\n")
+    file.Write("            cmd.header.size * 4);\n")
+    for arg in all_but_last_arg:
+      file.Write("  EXPECT_EQ(static_cast<%s>(%d), cmd.%s);\n" %
+                 (arg.type, value, arg.name))
+      value += 1
+    file.Write("  // TODO(gman): check that string got copied.\n")
+    file.Write("}\n")
+    file.Write("\n")
+
+class GetGLcharHandler(GLcharHandler):
+  """Handler for glGetAttibLoc, glGetUniformLoc."""
+
+  def __init__(self):
+    GLcharHandler.__init__(self)
+
+  def WriteServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write(
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+    file.Write(
+        "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
+    last_arg = func.GetLastOriginalArg()
+
+    all_but_last_arg = func.GetOriginalArgs()[:-1]
+    for arg in all_but_last_arg:
+      arg.WriteGetCode(file)
+
+    file.Write("  uint32 name_size = c.data_size;\n")
+    file.Write("  const char* name = GetSharedMemoryAs<%s>(\n" %
+               last_arg.type)
+    file.Write("      c.%s_shm_id, c.%s_shm_offset, name_size);\n" %
+               (last_arg.name, last_arg.name))
+    file.Write("  parse_error::ParseError result =\n")
+    file.Write("      Validate%s(this, arg_count%s);\n" %
+               (func.name, func.MakeOriginalArgString("", True)))
+    file.Write("  if (result != parse_error::kParseNoError) {\n")
+    file.Write("    return result;\n")
+    file.Write("  }\n")
+    arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
+    file.Write("  String name_str(name, name_size);\n")
+    file.Write("  GLint location = %s(%s, name_str.c_str());\n" %
+               (func.GetGLFunctionName(), arg_string))
+    file.Write("  DCHECK(false);  // TODO: return result.\n")
+    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("}\n")
+    file.Write("\n")
+
+  def WriteImmediateServiceImplementation(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write(
+        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+    file.Write(
+        "    unsigned int arg_count, const gles2::%s& c) {\n" % func.name)
+    last_arg = func.GetLastOriginalArg()
+
+    all_but_last_arg = func.GetOriginalArgs()[:-1]
+    for arg in all_but_last_arg:
+      arg.WriteGetCode(file)
+
+    file.Write("  uint32 name_size = c.data_size;\n")
+    file.Write(
+        "  const char* name = GetImmediateDataAs<const char*>(c);\n")
+    file.Write("  // TODO(gman): Make sure validate checks arg_count\n")
+    file.Write("  //     covers data_size.\n")
+    file.Write("  parse_error::ParseError result =\n")
+    file.Write("      Validate%s(this, arg_count%s);\n" %
+               (func.name, func.MakeOriginalArgString("", True)))
+    file.Write("  if (result != parse_error::kParseNoError) {\n")
+    file.Write("    return result;\n")
+    file.Write("  }\n")
+    arg_string = ", ".join(["%s" % arg.name for arg in all_but_last_arg])
+    file.Write("  String name_str(name, name_size);\n")
+    file.Write("  GLint location = %s(%s, name_str.c_str());\n" %
+              (func.GetGLFunctionName(), arg_string))
+    file.Write("  DCHECK(false);  // TODO: return result.\n")
+    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("}\n")
+    file.Write("\n")
+
+  def WriteGLES2ImplementationHeader(self, func, file):
+    """Overrriden from TypeHandler."""
+    file.Write("%s %s(%s) {\n" %
+               (func.return_type, func.original_name,
+                func.MakeTypedOriginalArgString("")))
+    file.Write("  // TODO(gman): This needs to change to use SendString.\n")
+    file.Write("  GLint* result = shared_memory_.GetAddressAs<GLint*>(0);\n")
+    file.Write("  DCHECK(false);  // pass in shared memory\n")
+    file.Write("  helper_->%sImmediate(%s);\n" %
+               (func.name, func.MakeOriginalArgString("")))
+    file.Write("  int32 token = helper_->InsertToken();\n")
+    file.Write("  helper_->WaitForToken(token);\n")
+    file.Write("  return *result;\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -1596,6 +1936,23 @@ class PointerArgument(Argument):
     return ImmediatePointerArgument(self.name, self.type)
 
 
+class ResourceIdArgument(Argument):
+  """A class that represents a resource id argument to a function."""
+
+  def __init__(self, name, type):
+    type = type.replace("GLResourceId", "GLuint")
+    Argument.__init__(self, name, type)
+
+  def WriteGetCode(self, file):
+    """Overridden from Argument."""
+    file.Write("  %s %s;\n" % (self.type, self.name))
+    file.Write("  if (!id_map_.GetServiceId(c.%s, &%s)) {\n" %
+               (self.name, self.name))
+    file.Write("    SetGLError(GL_INVALID_VALUE);\n")
+    file.Write("    return parse_error::kParseNoError;\n")
+    file.Write("  }\n")
+
+
 class Function(object):
   """A class that represents a function."""
 
@@ -1879,6 +2236,7 @@ class GLGenerator(object):
       'DELn': DELnHandler(),
       'GENn': GENnHandler(),
       'GETn': GETnHandler(),
+      'GetGLchar': GetGLcharHandler(),
       'GLchar': GLcharHandler(),
       'Is': IsHandler(),
       'Manual': ManualHandler(),
@@ -1961,6 +2319,11 @@ class GLGenerator(object):
         args.append(PointerArgument(
             arg_parts[-1],
             " ".join(arg_parts[0:-1])))
+      # Is this a resource argument? Must come after pointer check.
+      elif arg_parts[0] == 'GLResourceId':
+        args.append(ResourceIdArgument(
+            arg_parts[-1],
+            " ".join(arg_parts[0:-1])))
       else:
         args.append(Argument(
             arg_parts[-1],
@@ -1969,8 +2332,7 @@ class GLGenerator(object):
 
   def ParseGLH(self, filename):
     """Parses the GL2.h file and extracts the functions"""
-    file = open(filename, "r")
-    for line in file.readlines():
+    for line in _GL_FUNCTIONS.splitlines():
       match = self._function_re.match(line)
       if match:
         func_name = match.group(2)[2:]
@@ -1991,7 +2353,6 @@ class GLGenerator(object):
           self.original_functions.append(f)
           self.AddFunction(f)
           f.type_handler.AddImmediateFunction(self, f)
-    file.close()
 
     self.Log("Auto Generated Functions    : %d" %
              len([f for f in self.functions if f.can_auto_generate or
@@ -2123,31 +2484,6 @@ class GLGenerator(object):
     self.WriteNamespaceClose(file)
     file.Close()
 
-  def WriteGLES2LibHeader(self, filename):
-    """Writes the GLES2 lib header."""
-    file = CWriter(filename)
-    self.WriteHeader(file)
-    file.Write("\n")
-    file.Write("// These functions emluate GLES2 over command buffers.\n")
-    file.Write("\n")
-    file.Write("\n")
-
-    for func in self.original_functions:
-      file.Write("inline %s gl%s(%s) {\n" %
-                 (func.return_type, func.name,
-                  func.MakeTypedOriginalArgString("")))
-      return_string = "return "
-      if func.return_type == "void":
-        return_string = ""
-      file.Write("  %sg_gl_impl->%s(%s);\n" %
-                 (return_string, func.original_name,
-                  func.MakeOriginalArgString("")))
-      file.Write("}\n")
-
-    file.Write("\n")
-
-    file.Close()
-
   def WriteGLES2CLibImplementation(self, filename):
     """Writes the GLES2 c lib implementation."""
     file = CWriter(filename)
@@ -2158,13 +2494,13 @@ class GLGenerator(object):
     file.Write("\n")
 
     for func in self.original_functions:
-      file.Write("%s gl%s(%s) {\n" %
+      file.Write("%s GLES2%s(%s) {\n" %
                  (func.return_type, func.name,
                   func.MakeTypedOriginalArgString("")))
       return_string = "return "
       if func.return_type == "void":
         return_string = ""
-      file.Write("  %sg_gl_impl->%s(%s);\n" %
+      file.Write("  %sgles2::GetGLContext()->%s(%s);\n" %
                  (return_string, func.original_name,
                   func.MakeOriginalArgString("")))
       file.Write("}\n")
@@ -2224,7 +2560,6 @@ def main(argv):
   gen.WriteFormat("common/gles2_cmd_format_autogen.h")
   gen.WriteFormatTest("common/gles2_cmd_format_test_autogen.h")
   gen.WriteGLES2ImplementationHeader("client/gles2_implementation_autogen.h")
-  gen.WriteGLES2LibHeader("client/gles2_lib_autogen.h")
   gen.WriteGLES2CLibImplementation("client/gles2_c_lib_autogen.h")
   gen.WriteCmdHelperHeader("client/gles2_cmd_helper_autogen.h")
   gen.WriteServiceImplementation("service/gles2_cmd_decoder_autogen.h")
