@@ -98,7 +98,8 @@ const CGFloat kBorderRadius = 3.0;
     toolbarColor = nil;
   if (!toolbarColor)
     toolbarColor = [NSColor colorWithCalibratedWhite:0.9 alpha:1.0];
-  [[toolbarColor colorWithAlphaComponent:morph] set];  // Set with opacity.
+  CGFloat alpha = morph * [toolbarColor alphaComponent];
+  [[toolbarColor colorWithAlphaComponent:alpha] set];  // Set with opacity.
   [border fill];
 
   // Fade in/out the background.
@@ -116,13 +117,16 @@ const CGFloat kBorderRadius = 3.0;
   NSColor* borderColor =
       [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBarButton
                                       state:GTMThemeStateActiveWindow];
-  [[borderColor colorWithAlphaComponent:morph] set];  // Set with opacity.
+  alpha = morph * [borderColor alphaComponent];
+  [[borderColor colorWithAlphaComponent:alpha] set];  // Set with opacity.
   [border stroke];
 
   // Fade in/out the divider.
   // TODO(viettrungluu): It's not obvious that this divider lines up exactly
   // with |BackgroundGradientView|'s (in fact, it probably doesn't).
-  [[[self strokeColor] colorWithAlphaComponent:(1 - morph)] set];
+  NSColor* strokeColor = [self strokeColor];
+  alpha = (1 - morph) * [strokeColor alphaComponent];
+  [[strokeColor colorWithAlphaComponent:alpha] set];
   NSBezierPath* divider = [NSBezierPath bezierPath];
   NSPoint dividerStart =
       NSMakePoint(morph * bookmarks::kNTPBookmarkBarPadding + morph * 0.5,
