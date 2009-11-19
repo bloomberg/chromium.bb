@@ -30,9 +30,8 @@
 }
 
 - (void)awakeFromNib {
-  [self
-   setInitialName:
-       l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME)];
+  [self setInitialName:
+      l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME)];
   [super awakeFromNib];
 }
 
@@ -52,10 +51,10 @@
   }
 }
 
-// The the name for the folder into which the tabs will be recorded as
-// bookmarks is assumed to be non-empty.  The folder is then created
-// and a bookmark for each open tab added therein.
-- (IBAction)ok:(id)sender {
+// Called by -[BookmarkEditorBaseController ok:].  Creates the container
+// folder for the tabs and then the bookmarks in that new folder.
+// Returns a BOOL as an NSNumber indicating that the commit may proceed.
+- (NSNumber*)didCommit {
   NSString* name = [[self displayName] stringByTrimmingCharactersInSet:
                     [NSCharacterSet newlineCharacterSet]];
   std::wstring newTitle = base::SysNSStringToWide(name);
@@ -67,7 +66,7 @@
   BookmarkModel* model = [self bookmarkModel];
   const BookmarkNode* newFolder = model->AddGroup(newParentNode, newIndex,
                                                   newFolderString);
-  [self NotifyHandlerCreatedNode:newFolder];
+  [self notifyHandlerCreatedNode:newFolder];
   // Get a list of all open tabs, create nodes for them, and add
   // to the new folder node.
   [self UpdateActiveTabPairs];
@@ -77,9 +76,9 @@
        it != activeTabPairsVector_.end(); ++it, ++i) {
     const BookmarkNode* node = model->AddURL(newFolder, i,
                                              it->first, it->second);
-    [self NotifyHandlerCreatedNode:node];
+    [self notifyHandlerCreatedNode:node];
   }
-  [super ok:sender];
+  return [NSNumber numberWithBool:YES];
 }
 
 - (ActiveTabsNameURLPairVector*)activeTabPairsVector {

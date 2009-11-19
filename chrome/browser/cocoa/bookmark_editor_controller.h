@@ -7,8 +7,9 @@
 
 #import "chrome/browser/cocoa/bookmark_editor_base_controller.h"
 
-// A controller for the bookmark editor, opened with Edit... from the
-// context menu of a bookmark button.
+// A controller for the bookmark editor, opened by 1) Edit... from the
+// context menu of a bookmark button, and 2) Bookmark this Page...'s Edit
+// button.
 @interface BookmarkEditorController : BookmarkEditorBaseController {
  @private
   const BookmarkNode* node_;  // weak; owned by the model

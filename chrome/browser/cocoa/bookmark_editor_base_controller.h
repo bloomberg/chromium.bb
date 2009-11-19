@@ -12,23 +12,23 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 
-@class BookmarkTreeBrowserCell;
 class BookmarkModel;
+@class BookmarkTreeBrowserCell;
 
 // A base controller class for bookmark creation and editing dialogs which
 // present the current bookmark folder structure in a tree view.  Do not
 // instantiate this controller directly -- use one of its derived classes.
-// NOTE: If your derived classes is intended to be dispatched via the
+// NOTE: If a derived class is intended to be dispatched via the
 // BookmarkEditor::Show static function found in the accompanying
-// implementation will need to update that function.
-@interface BookmarkEditorBaseController :
-    NSWindowController<NSMatrixDelegate, NSTextFieldDelegate> {
+// implementation, that function will need to be update.
+@interface BookmarkEditorBaseController : NSWindowController {
  @private
-  IBOutlet NSBrowser* folderBrowser_;
   IBOutlet NSButton* newFolderButton_;
   IBOutlet NSButton* okButton_;  // Used for unit testing only.
+  IBOutlet NSTreeController* folderTreeController_;
+  IBOutlet NSOutlineView* folderTreeView_;
 
-  NSWindow* parentWindow_;
+  NSWindow* parentWindow_;  // weak
   Profile* profile_;  // weak
   const BookmarkNode* parentNode_;  // weak; owned by the model
   BookmarkEditor::Configuration configuration_;
@@ -36,11 +36,19 @@ class BookmarkModel;
   NSString* initialName_;
   NSString* displayName_;  // Bound to a text field in the dialog.
   BOOL okEnabled_;  // Bound to the OK button.
+  // An array of BookmarkFolderInfo where each item describes a folder in the
+  // BookmarkNode structure.
+  scoped_nsobject<NSArray> folderTreeArray_;
+  // Bound to the table view giving a path to the current selections, of which
+  // there should only ever be one.
+  scoped_nsobject<NSArray> tableSelectionPaths_;
 }
 
 @property (copy) NSString* initialName;
 @property (copy) NSString* displayName;
 @property (assign) BOOL okEnabled;
+@property (retain, readonly) NSArray* folderTreeArray;
+@property (copy) NSArray* tableSelectionPaths;
 
 // Designated initializer.  Derived classes should call through to this init.
 - (id)initWithParentWindow:(NSWindow*)parentWindow
@@ -57,11 +65,22 @@ class BookmarkModel;
 // an untitled name, and put it into editing mode.
 - (IBAction)newFolder:(id)sender;
 
-// Actions for the buttons at the bottom of the window.
+// The cancel action will dismiss the dialog.  Derived classes which
+// override cancel:, must call this after accessing any dialog-related
+// data.
 - (IBAction)cancel:(id)sender;
 
-// The OK action will record the edited bookmark.  The default dismisses
-// the dialog and should be called by the derived class if overridden.
+// The OK action will dismiss the dialog.  This action is bound
+// to the OK button of a dialog which presents a tree view of a profile's
+// folder hierarchy and allows the creation of new folders within that tree.
+// When the OK button is pressed, this function will: 1) call the derived
+// class's -[willCommit] function, 2) create any new folders created by
+// the user while the dialog is presented, 3) call the derived class's
+// -[didCommit] function, and then 4) dismiss the dialog.  At least one
+// of -[willCommit] and -[didCommit] must be provided by the derived class
+// and should return a NSNumber containing a BOOL or nil ('nil' means YES)
+// indicating if the operation should be allowed to continue.
+// Note: A derived class should not override the ok: action.
 - (IBAction)ok:(id)sender;
 
 // Methods for use by derived classes only.
@@ -69,8 +88,7 @@ class BookmarkModel;
 // Determine and returns the rightmost selected/highlighted element (node)
 // in the bookmark tree view if the tree view is showing, otherwise returns
 // the original |parentNode_|.  If the tree view is showing but nothing is
-// selected then return the root node.  This assumes that leaf nodes (pure
-// bookmarks) are not being presented.
+// selected then the root node is returned.
 - (const BookmarkNode*)selectedNode;
 
 // Select/highlight the given node within the browser tree view.  If the
@@ -78,7 +96,7 @@ class BookmarkModel;
 - (void)selectNodeInBrowser:(const BookmarkNode*)node;
 
 // Notify the handler, if any, of a node creation.
-- (void)NotifyHandlerCreatedNode:(const BookmarkNode*)node;
+- (void)notifyHandlerCreatedNode:(const BookmarkNode*)node;
 
 // Accessors
 - (BookmarkModel*)bookmarkModel;
@@ -86,12 +104,64 @@ class BookmarkModel;
 
 @end
 
+// Describes the profile's bookmark folder structure: the folder name, the
+// original BookmarkNode pointer (if the folder already exists), a BOOL
+// indicating if the folder is new (meaning: created during this session
+// but not yet committed to the bookmark structure), and an NSArray of
+// child folder BookmarkFolderInfo's following this same structure.
+@interface BookmarkFolderInfo : NSObject {
+ @private
+  NSString* folderName_;
+  const BookmarkNode* folderNode_;  // weak
+  NSMutableArray* children_;
+  BOOL newFolder_;
+}
+
+@property (copy, readwrite) NSString* folderName;
+@property (assign, readwrite) const BookmarkNode* folderNode;
+@property (retain, readwrite) NSMutableArray* children;
+@property (assign, readwrite) BOOL newFolder;
+
+// Convenience creator for adding a new folder to the editor's bookmark
+// structure.  This folder will be added to the bookmark model when the
+// user accepts the dialog. |folderName| must be provided.
++ (id)bookmarkFolderInfoWithFolderName:(NSString*)folderName;
+
+// Designated initializer.  |folderName| must be provided.  For folders which
+// already exist in the bookmark model, |folderNode| and |children| (if any
+// children are already attached to this folder) must be provided and
+// |newFolder| should be NO.  For folders which the user has added during
+// this session and which have not been committed yet, |newFolder| should be
+// YES and |folderNode| and |children| should be NULL/nil.
+- (id)initWithFolderName:(NSString*)folderName
+              folderNode:(const BookmarkNode*)folderNode
+                children:(NSMutableArray*)children
+               newFolder:(BOOL)newFolder;
+
+// Convenience creator used during construction of the editor's bookmark
+// structure.  |folderName| and |folderNode| must be provided. |children|
+// is optional.  Private: exposed here for unit testing purposes.
++ (id)bookmarkFolderInfoWithFolderName:(NSString*)folderName
+                            folderNode:(const BookmarkNode*)folderNode
+                              children:(NSMutableArray*)children;
+
+@end
+
 @interface BookmarkEditorBaseController(TestingAPI)
+
 @property (readonly) BOOL okButtonEnabled;
+
+// Create any newly added folders.  New folders are nodes in folderTreeArray
+// which are marked as being new (i.e. their kFolderTreeNewFolderKey
+// dictionary item is YES).  This is called by -[ok:].
+- (void)createNewFolders;
+
+// Select the given bookmark node within the tree view.
 - (void)selectTestNodeInBrowser:(const BookmarkNode*)node;
-+ (const BookmarkNode*)folderChildForParent:(const BookmarkNode*)parent
-                                  withFolderIndex:(NSInteger)index;
-+ (int)indexOfFolderChild:(const BookmarkNode*)child;
+
+// Return the dictionary for the folder selected in the tree.
+- (BookmarkFolderInfo*)selectedFolder;
+
 @end
 
 #endif  /* CHROME_BROWSER_COCOA_BOOKMARK_EDITOR_BASE_CONTROLLER_H_ */

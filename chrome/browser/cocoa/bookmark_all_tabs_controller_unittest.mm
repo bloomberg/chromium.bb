@@ -59,11 +59,11 @@ class BookmarkAllTabsControllerTest : public CocoaTest {
   virtual void SetUp() {
     CocoaTest::SetUp();
     controller_ = CreateController();
-    EXPECT_TRUE([controller_ window]);
+    [controller_ runAsModalSheet];
   }
 
   virtual void TearDown() {
-    [controller_ close];
+    controller_ = NULL;
     CocoaTest::TearDown();
   }
 };
@@ -71,6 +71,7 @@ class BookmarkAllTabsControllerTest : public CocoaTest {
 TEST_F(BookmarkAllTabsControllerTest, BookmarkAllTabs) {
   // OK button should always be enabled.
   EXPECT_TRUE([controller_ okButtonEnabled]);
+  [controller_ selectTestNodeInBrowser:group_a_];
   [controller_ setDisplayName:@"ALL MY TABS"];
   [controller_ ok:nil];
   EXPECT_EQ(4, group_a_->GetChildCount());

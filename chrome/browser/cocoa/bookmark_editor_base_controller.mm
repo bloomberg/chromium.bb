@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <stack>
+
 #import "chrome/browser/cocoa/bookmark_editor_base_controller.h"
 #include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
@@ -16,25 +19,27 @@
 
 @interface BookmarkEditorBaseController (Private)
 
-// Given a cell in the folder browser, make that cell editable so that the
-// bookmark folder name can be modified by the user.
-- (void)editFolderNameInCell:(BookmarkTreeBrowserCell*)cell;
+@property (retain, readwrite) NSArray* folderTreeArray;
 
-// The action called by the bookmark folder name cell being edited by
-// the user when editing has been completed (such as by pressing <return>).
-- (void)cellEditingCompleted:(id)sender;
+// Return the folder tree object for the given path.
+- (BookmarkFolderInfo*)folderForIndexPath:(NSIndexPath*)path;
 
-// Update the folder name from the current edit in the given cell
-// and return the focus to the folder tree browser.
-- (void)saveFolderNameForCell:(BookmarkTreeBrowserCell*)cell;
+// Given a folder node, collect an array containing BookmarkFolderInfos
+// describing its subchildren which are also folders.
+- (NSMutableArray*)addChildFoldersFromNode:(const BookmarkNode*)node;
 
-// A custom action handler called by the bookmark folder browser when the
-// user has double-clicked on a folder name.
-- (void)browserDoubleClicked:(id)sender;
+// Scan the folder tree stemming from the given tree folder and create
+// any newly added folders.
+- (void)createNewFoldersForFolder:(BookmarkFolderInfo*)treeFolder;
+
+// Scan the folder tree looking for the given bookmark node and return
+// the selection path thereto.
+- (NSIndexPath*)selectionPathForNode:(const BookmarkNode*)node;
 
 @end
 
-// static; implemented for each platform.
+// static; implemented for each platform.  Update this function for new
+// classes derived from BookmarkEditorBaseController.
 void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
                           Profile* profile,
                           const BookmarkNode* parent,
@@ -60,40 +65,6 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   }
   [controller runAsModalSheet];
 }
-
-#pragma mark Bookmark TreeNode Helpers
-
-namespace {
-
-// Find the index'th folder child of a parent, ignoring bookmarks (leafs).
-const BookmarkNode* GetFolderChildForParent(const BookmarkNode* parent_node,
-                                            NSInteger folder_index) {
-  const BookmarkNode* child_node = nil;
-  int i = 0;
-  int child_count = parent_node->GetChildCount();
-  do {
-    child_node = parent_node->GetChild(i);
-    if (child_node->type() != BookmarkNode::URL)
-      --folder_index;
-    ++i;
-  } while (folder_index >= 0 && i < child_count);
-  return child_node;
-}
-
-// Determine the index of a child within its parent ignoring
-// bookmarks (leafs).
-int IndexOfFolderChild(const BookmarkNode* child_node) {
-  const BookmarkNode* node_parent = child_node->GetParent();
-  int child_index = node_parent->IndexOfChild(child_node);
-  for (int i = child_index - 1; i >= 0; --i) {
-    const BookmarkNode* sibling = node_parent->GetChild(i);
-    if (sibling->type() == BookmarkNode::URL)
-      --child_index;
-  }
-  return child_index;
-}
-
-} // namespace
 
 @implementation BookmarkEditorBaseController
 
@@ -131,34 +102,30 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
   [self setDisplayName:[self initialName]];
 
   if (configuration_ != BookmarkEditor::SHOW_TREE) {
-    // Remember the NSBrowser's height; we will shrink our frame by that
-    // much.
+    // Remember the tree view's height; we will shrink our frame by that much.
     NSRect frame = [[self window] frame];
-    CGFloat browserHeight = [folderBrowser_ frame].size.height;
+    CGFloat browserHeight = [folderTreeView_ frame].size.height;
     frame.size.height -= browserHeight;
     frame.origin.y += browserHeight;
-    // Remove the NSBrowser and "new folder" button.
-    [folderBrowser_ removeFromSuperview];
+    // Remove the folder tree and "new folder" button.
+    [folderTreeView_ removeFromSuperview];
     [newFolderButton_ removeFromSuperview];
     // Finally, commit the size change.
     [[self window] setFrame:frame display:YES];
   }
 
-  [folderBrowser_ setCellClass:[BookmarkTreeBrowserCell class]];
-  [folderBrowser_ setDoubleAction:@selector(browserDoubleClicked:)];
+  // Build up a tree of the current folder configuration.
+  BookmarkModel* model = profile_->GetBookmarkModel();
+  const BookmarkNode* rootNode = model->root_node();
+  NSMutableArray* baseArray = [self addChildFoldersFromNode:rootNode];
+  DCHECK(baseArray);
+  [self setFolderTreeArray:baseArray];
 }
 
 - (void)windowDidLoad {
   if (configuration_ == BookmarkEditor::SHOW_TREE) {
     [self selectNodeInBrowser:parentNode_];
   }
-}
-
-- (void)windowWillClose:(NSNotification *)notification {
-  // If a folder name cell is being edited then force it to end editing
-  // so that any changes are recorded.
-  [[self window] makeFirstResponder:nil];
-  [self autorelease];
 }
 
 /* TODO(jrg):
@@ -181,127 +148,30 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
         contextInfo:nil];
 }
 
-- (void)selectNodeInBrowser:(const BookmarkNode*)node {
-  DCHECK(configuration_ == BookmarkEditor::SHOW_TREE);
-  std::deque<NSInteger> rowsToSelect;
-  const BookmarkNode* nodeParent = nil;
-  if (node) {
-    nodeParent = node->GetParent();
-    // There should always be a parent node.
-    DCHECK(nodeParent);
-    while (nodeParent) {
-      int nodeRow = IndexOfFolderChild(node);
-      rowsToSelect.push_front(nodeRow);
-      node = nodeParent;
-      nodeParent = nodeParent->GetParent();
-    }
-  } else {
-    BookmarkModel* model = profile_->GetBookmarkModel();
-    nodeParent = model->GetBookmarkBarNode();
-    rowsToSelect.push_front(0);
-  }
-  for (std::deque<NSInteger>::size_type column = 0;
-       column < rowsToSelect.size();
-       ++column) {
-    [folderBrowser_ selectRow:rowsToSelect[column] inColumn:column];
-  }
-
-  // Force the OK button state to be re-evaluated.
-  [self willChangeValueForKey:@"okEnabled"];
-  [self didChangeValueForKey:@"okEnabled"];
-}
-
-- (const BookmarkNode*)selectedNode {
-  BookmarkModel* model = profile_->GetBookmarkModel();
-  const BookmarkNode* selectedNode = NULL;
-  // Determine a new parent node only if the browser is showing.
-  if (configuration_ == BookmarkEditor::SHOW_TREE) {
-    selectedNode = model->root_node();
-    NSInteger column = 0;
-    NSInteger selectedRow = [folderBrowser_ selectedRowInColumn:column];
-    while (selectedRow >= 0) {
-      selectedNode = GetFolderChildForParent(selectedNode,
-                                             selectedRow);
-      ++column;
-      selectedRow = [folderBrowser_ selectedRowInColumn:column];
-    }
-  } else {
-    // If the tree is not showing then we use the original parent.
-    selectedNode = parentNode_;
-  }
-  return selectedNode;
-}
-
-- (void)NotifyHandlerCreatedNode:(const BookmarkNode*)node {
-  if (handler_.get())
-    handler_->NodeCreated(node);
-}
-
-#pragma mark New Folder Handler & Folder Cell Editing
-
-- (void)editFolderNameInCell:(BookmarkTreeBrowserCell*)cell {
-  DCHECK([cell isKindOfClass:[BookmarkTreeBrowserCell class]]);
-  [cell setEditable:YES];
-  [cell setTarget:self];
-  [cell setAction:@selector(cellEditingCompleted:)];
-  [cell setSendsActionOnEndEditing:YES];
-  NSMatrix* matrix = [cell matrix];
-  // Set the delegate so that we get called when editing completes.
-  [matrix setDelegate:self];
-  [matrix selectText:self];
-}
-
-- (void)cellEditingCompleted:(id)sender {
-  DCHECK([sender isKindOfClass:[NSMatrix class]]);
-  BookmarkTreeBrowserCell* cell = [sender selectedCell];
-  DCHECK([cell isKindOfClass:[BookmarkTreeBrowserCell class]]);
-  [self saveFolderNameForCell:cell];
-}
-
-- (void)saveFolderNameForCell:(BookmarkTreeBrowserCell*)cell {
-  DCHECK([cell isKindOfClass:[BookmarkTreeBrowserCell class]]);
-  // It's possible that the cell can get reused so clean things up
-  // to prevent inadvertant notifications.
-  [cell setTarget:nil];
-  [cell setAction:nil];
-  [cell setEditable:NO];
-  [cell setSendsActionOnEndEditing:NO];
-  // Force a responder change here to force the editing of the cell's text
-  // to complete otherwise the call to -[cell title] could return stale text.
-  // The focus does not automatically get reset to the browser when the
-  // cell gives up focus.
-  [[folderBrowser_ window] makeFirstResponder:folderBrowser_];
-  const BookmarkNode* bookmarkNode = [cell bookmarkNode];
-  BookmarkModel* model = profile_->GetBookmarkModel();
-  NSString* newTitle = [cell title];
-  model->SetTitle(bookmarkNode, base::SysNSStringToWide(newTitle));
-}
-
-- (void)browserDoubleClicked:(id)sender {
-  BookmarkTreeBrowserCell* cell = [folderBrowser_ selectedCell];
-  DCHECK([cell isKindOfClass:[BookmarkTreeBrowserCell class]]);
-  [self editFolderNameInCell:cell];
-}
-
-- (IBAction)newFolder:(id)sender {
-  BookmarkModel* model = profile_->GetBookmarkModel();
-  const BookmarkNode* newParentNode = [self selectedNode];
-  int newIndex = newParentNode->GetChildCount();
-  std::wstring newFolderString =
-      l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
-  const BookmarkNode* newFolder = model->AddGroup(newParentNode, newIndex,
-                                                  newFolderString);
-  [self selectNodeInBrowser:newFolder];
-  BookmarkTreeBrowserCell* cell = [folderBrowser_ selectedCell];
-  [self editFolderNameInCell:cell];
-}
-
 - (BOOL)okEnabled {
   return YES;
 }
 
 - (IBAction)ok:(id)sender {
-  [NSApp endSheet:[self window]];
+  // At least one of these two functions should be provided by derived classes.
+  BOOL hasWillCommit = [self respondsToSelector:@selector(willCommit)];
+  BOOL hasDidCommit = [self respondsToSelector:@selector(didCommit)];
+  DCHECK(hasWillCommit || hasDidCommit);
+  BOOL shouldContinue = YES;
+  if (hasWillCommit) {
+    NSNumber* hasWillContinue = [self performSelector:@selector(willCommit)];
+    if (hasWillContinue && [hasWillContinue isKindOfClass:[NSNumber class]])
+      shouldContinue = [hasWillContinue boolValue];
+  }
+  if (shouldContinue)
+    [self createNewFolders];
+  if (hasDidCommit) {
+    NSNumber* hasDidContinue = [self performSelector:@selector(didCommit)];
+    if (hasDidContinue && [hasDidContinue isKindOfClass:[NSNumber class]])
+      shouldContinue = [hasDidContinue boolValue];
+  }
+  if (shouldContinue)
+    [NSApp endSheet:[self window]];
 }
 
 - (IBAction)cancel:(id)sender {
@@ -314,12 +184,214 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
   [sheet close];
 }
 
+- (void)windowWillClose:(NSNotification*)notification {
+  [self autorelease];
+}
+
+#pragma mark Folder Tree Management
+
 - (BookmarkModel*)bookmarkModel {
   return profile_->GetBookmarkModel();
 }
 
 - (const BookmarkNode*)parentNode {
   return parentNode_;
+}
+
+- (BookmarkFolderInfo*)folderForIndexPath:(NSIndexPath*)indexPath {
+  NSUInteger pathCount = [indexPath length];
+  BookmarkFolderInfo* item = nil;
+  NSArray* treeNode = [self folderTreeArray];
+  for (NSUInteger i = 0; i < pathCount; ++i) {
+    item = [treeNode objectAtIndex:[indexPath indexAtPosition:i]];
+    treeNode = [item children];
+  }
+  return item;
+}
+
+- (NSIndexPath*)selectedIndexPath {
+  NSIndexPath* selectedIndexPath = nil;
+  NSArray* selections = [self tableSelectionPaths];
+  if ([selections count]) {
+    DCHECK([selections count] == 1);  // Should be exactly one selection.
+    selectedIndexPath = [selections objectAtIndex:0];
+  }
+  return selectedIndexPath;
+}
+
+- (BookmarkFolderInfo*)selectedFolder {
+  BookmarkFolderInfo* item = nil;
+  NSIndexPath* selectedIndexPath = [self selectedIndexPath];
+  if (selectedIndexPath) {
+    item = [self folderForIndexPath:selectedIndexPath];
+  }
+  return item;
+}
+
+- (const BookmarkNode*)selectedNode {
+  const BookmarkNode* selectedNode = NULL;
+  // Determine a new parent node only if the browser is showing.
+  if (configuration_ == BookmarkEditor::SHOW_TREE) {
+    BookmarkFolderInfo* folderInfo = [self selectedFolder];
+    if (folderInfo)
+      selectedNode = [folderInfo folderNode];
+  } else {
+    // If the tree is not showing then we use the original parent.
+    selectedNode = parentNode_;
+  }
+  return selectedNode;
+}
+
+- (void)notifyHandlerCreatedNode:(const BookmarkNode*)node {
+  if (handler_.get())
+    handler_->NodeCreated(node);
+}
+
+- (NSArray*)folderTreeArray {
+  return folderTreeArray_.get();
+}
+
+- (void)setFolderTreeArray:(NSArray*)folderTreeArray {
+  folderTreeArray_.reset([folderTreeArray retain]);
+}
+
+- (NSArray*)tableSelectionPaths {
+  return tableSelectionPaths_.get();
+}
+
+- (void)setTableSelectionPath:(NSIndexPath*)tableSelectionPath {
+  [self setTableSelectionPaths:[NSArray arrayWithObject:tableSelectionPath]];
+}
+
+- (void)setTableSelectionPaths:(NSArray*)tableSelectionPaths {
+  tableSelectionPaths_.reset([tableSelectionPaths retain]);
+}
+
+- (void)selectNodeInBrowser:(const BookmarkNode*)node {
+  DCHECK(configuration_ == BookmarkEditor::SHOW_TREE);
+  NSIndexPath* selectionPath = [self selectionPathForNode:node];
+  [self willChangeValueForKey:@"okEnabled"];
+  [self setTableSelectionPath:selectionPath];
+  [self didChangeValueForKey:@"okEnabled"];
+}
+
+- (NSIndexPath*)selectionPathForNode:(const BookmarkNode*)desiredNode {
+  // Back up the parent chaing for desiredNode, building up a stack
+  // of ancestor nodes.  Then crawl down the folderTreeArray looking
+  // for each ancestor in order while building up the selectionPath.
+  std::stack<const BookmarkNode*> nodeStack;
+  BookmarkModel* model = profile_->GetBookmarkModel();
+  const BookmarkNode* rootNode = model->root_node();
+  const BookmarkNode* node = desiredNode;
+  while (node != rootNode) {
+    nodeStack.push(node);
+    node = node->GetParent();
+  }
+  NSUInteger stackSize = nodeStack.size();
+
+  NSIndexPath* path = nil;
+  NSArray* folders = [self folderTreeArray];
+  while (!nodeStack.empty()) {
+    node = nodeStack.top();
+    nodeStack.pop();
+    // Find node in the current folders array.
+    NSUInteger i = 0;
+    for (BookmarkFolderInfo *folderInfo in folders) {
+      const BookmarkNode* testNode = [folderInfo folderNode];
+      if (testNode == node) {
+        path = path ? [path indexPathByAddingIndex:i] :
+        [NSIndexPath indexPathWithIndex:i];
+        folders = [folderInfo children];
+        break;
+      }
+      ++i;
+    }
+  }
+  DCHECK([path length] == stackSize);
+  return path;
+}
+
+- (NSMutableArray*)addChildFoldersFromNode:(const BookmarkNode*)node {
+  NSMutableArray* childFolders = nil;
+  int childCount = node->GetChildCount();
+  for (int i = 0; i < childCount; ++i) {
+    const BookmarkNode* childNode = node->GetChild(i);
+    if (childNode->type() != BookmarkNode::URL) {
+      NSString* childName = base::SysWideToNSString(childNode->GetTitle());
+      NSMutableArray* children = [self addChildFoldersFromNode:childNode];
+      BookmarkFolderInfo* folderInfo =
+          [BookmarkFolderInfo bookmarkFolderInfoWithFolderName:childName
+                                                    folderNode:childNode
+                                                      children:children];
+      if (!childFolders)
+        childFolders = [NSMutableArray arrayWithObject:folderInfo];
+      else
+        [childFolders addObject:folderInfo];
+    }
+  }
+  return childFolders;
+}
+
+#pragma mark New Folder Handler
+
+- (void)createNewFoldersForFolder:(BookmarkFolderInfo*)folderInfo {
+  NSArray* subfolders = [folderInfo children];
+  const BookmarkNode* parentNode = [folderInfo folderNode];
+  DCHECK(parentNode);
+  NSUInteger i = 0;
+  for (BookmarkFolderInfo *subFolderInfo in subfolders) {
+    if ([subFolderInfo newFolder]) {
+      BookmarkModel* model = [self bookmarkModel];
+      const BookmarkNode* newFolder =
+      model->AddGroup(parentNode, i,
+                      base::SysNSStringToWide([subFolderInfo folderName]));
+      [self notifyHandlerCreatedNode:newFolder];
+      // Update our dictionary with the actual folder node just created.
+      [subFolderInfo setFolderNode:newFolder];
+      [subFolderInfo setNewFolder:NO];
+    }
+    [self createNewFoldersForFolder:subFolderInfo];
+    ++i;
+  }
+}
+
+- (IBAction)newFolder:(id)sender {
+  // Create a new folder off of the selected folder node.
+  BookmarkFolderInfo* parentInfo = [self selectedFolder];
+  if (parentInfo) {
+    NSIndexPath* selection = [self selectedIndexPath];
+    NSString* newFolderName =
+        l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
+    BookmarkFolderInfo* folderInfo =
+        [BookmarkFolderInfo bookmarkFolderInfoWithFolderName:newFolderName];
+    [self willChangeValueForKey:@"folderTreeArray"];
+    NSMutableArray* children = [parentInfo children];
+    if (children) {
+      [children addObject:folderInfo];
+    } else {
+      children = [NSMutableArray arrayWithObject:folderInfo];
+      [parentInfo setChildren:children];
+    }
+    [self didChangeValueForKey:@"folderTreeArray"];
+
+    // Expose the parent folder children.
+    [folderTreeView_ expandItem:parentInfo];
+
+    // Select the new folder node and put the folder name into edit mode.
+    selection = [selection indexPathByAddingIndex:[children count] - 1];
+    [self setTableSelectionPath:selection];
+    NSInteger row = [folderTreeView_ selectedRow];
+    DCHECK(row >= 0);
+    [folderTreeView_ editColumn:0 row:row withEvent:nil select:YES];
+  }
+}
+
+- (void)createNewFolders {
+  // Scan the tree looking for nodes marked 'newFolder' and create those nodes.
+  NSArray* folderTreeArray = [self folderTreeArray];
+  for (BookmarkFolderInfo *folderInfo in folderTreeArray) {
+    [self createNewFoldersForFolder:folderInfo];
+  }
 }
 
 #pragma mark For Unit Test Use Only
@@ -332,67 +404,64 @@ int IndexOfFolderChild(const BookmarkNode* child_node) {
   [self selectNodeInBrowser:node];
 }
 
-+ (const BookmarkNode*)folderChildForParent:(const BookmarkNode*)parent
-                            withFolderIndex:(NSInteger)index {
-  return GetFolderChildForParent(parent, index);
-}
-
-+ (int)indexOfFolderChild:(const BookmarkNode*)child {
-  return IndexOfFolderChild(child);
-}
-
-
-#pragma mark NSBrowser delegate methods
-
-// Given a column number, determine the parent bookmark folder node for the
-// bookmarks being shown in that column.  This is done by scanning forward
-// from column zero and following the selected row for each column up
-// to the parent of the desired column.
-- (const BookmarkNode*)parentNodeForColumn:(NSInteger)column {
-  DCHECK(column >= 0);
-  BookmarkModel* model = profile_->GetBookmarkModel();
-  const BookmarkNode* node = model->root_node();
-  for (NSInteger i = 0; i < column; ++i) {
-    NSInteger selectedRowInColumn = [folderBrowser_ selectedRowInColumn:i];
-    node = GetFolderChildForParent(node, selectedRowInColumn);
-  }
-  return node;
-}
-
-// This implementation returns the number of folders contained in the parent
-// folder node for this column.
-// TOTO(mrossetti): Decide if bookmark (i.e. non-folder) nodes should be
-// shown, perhaps in gray.
-- (NSInteger)browser:(NSBrowser*)sender numberOfRowsInColumn:(NSInteger)col {
-  NSInteger rowCount = 0;
-  const BookmarkNode* parentNode = [self parentNodeForColumn:col];
-  if (parentNode) {
-    int childCount = parentNode->GetChildCount();
-    for (int i = 0; i < childCount; ++i) {
-      const BookmarkNode* childNode = parentNode->GetChild(i);
-      if (childNode->type() != BookmarkNode::URL)
-        ++rowCount;
-    }
-  }
-  return rowCount;
-}
-
-- (void)browser:(NSBrowser*)sender
-    willDisplayCell:(NSBrowserCell*)cell
-              atRow:(NSInteger)row
-             column:(NSInteger)column {
-  DCHECK(row >= 0);  // Trust AppKit, but verify.
-  DCHECK(column >= 0);
-  DCHECK([cell isKindOfClass:[BookmarkTreeBrowserCell class]]);
-  const BookmarkNode* parentNode = [self parentNodeForColumn:column];
-  const BookmarkNode* childNode = GetFolderChildForParent(parentNode, row);
-  DCHECK(childNode);
-  BookmarkTreeBrowserCell* browserCell =
-      static_cast<BookmarkTreeBrowserCell*>(cell);
-  [browserCell setTitle:base::SysWideToNSString(childNode->GetTitle())];
-  [browserCell setBookmarkNode:childNode];
-  [browserCell setMatrix:[folderBrowser_ matrixInColumn:column]];
-}
-
 @end  // BookmarkEditorBaseController
 
+@implementation BookmarkFolderInfo
+
+@synthesize folderName = folderName_;
+@synthesize folderNode = folderNode_;
+@synthesize children = children_;
+@synthesize newFolder = newFolder_;
+
++ (id)bookmarkFolderInfoWithFolderName:(NSString*)folderName
+                            folderNode:(const BookmarkNode*)folderNode
+                              children:(NSMutableArray*)children {
+  return [[[BookmarkFolderInfo alloc] initWithFolderName:folderName
+                                              folderNode:folderNode
+                                                children:children
+                                               newFolder:NO]
+          autorelease];
+}
+
++ (id)bookmarkFolderInfoWithFolderName:(NSString*)folderName {
+  return [[[BookmarkFolderInfo alloc] initWithFolderName:folderName
+                                              folderNode:NULL
+                                                children:nil
+                                               newFolder:YES]
+          autorelease];
+}
+
+- (id)initWithFolderName:(NSString*)folderName
+              folderNode:(const BookmarkNode*)folderNode
+                children:(NSMutableArray*)children
+               newFolder:(BOOL)newFolder {
+  if ((self = [super init])) {
+    // A folderName is always required, and if newFolder is NO then there
+    // should be a folderNode.  Children is optional.
+    DCHECK(folderName && (newFolder || folderNode));
+    if (folderName && (newFolder || folderNode)) {
+      folderName_ = [folderName copy];
+      folderNode_ = folderNode;
+      children_ = [children retain];
+      newFolder_ = newFolder;
+    } else {
+      NOTREACHED();  // Invalid init.
+      [self release];
+      self = nil;
+    }
+  }
+  return self;
+}
+
+- (id)init {
+  NOTREACHED();  // Should never be called.
+  return [self initWithFolderName:nil folderNode:nil children:nil newFolder:NO];
+}
+
+- (void)dealloc {
+  [folderName_ release];
+  [children_ release];
+  [super dealloc];
+}
+
+@end

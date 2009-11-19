@@ -15,8 +15,9 @@
 typedef std::pair<std::wstring, GURL> ActiveTabNameURLPair;
 typedef std::vector<ActiveTabNameURLPair> ActiveTabsNameURLPairVector;
 
-// A controller for the bookmark editor, opened with Edit... from the
-// context menu of a bookmark button.
+// A controller for the Bookmark All Tabs sheet which is presented upon
+// selecting the Bookmark All Tabs... menu item shown by the contextual
+// menu in the bookmarks bar.
 @interface BookmarkAllTabsController : BookmarkEditorBaseController {
  @private
   ActiveTabsNameURLPairVector activeTabPairsVector_;

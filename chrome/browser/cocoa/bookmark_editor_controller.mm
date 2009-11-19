@@ -87,8 +87,9 @@
 // should not be enabled).  If the bookmark previously existed then it is
 // removed from its old folder.  The bookmark is then added to its new
 // folder.  If the folder has not changed then the bookmark stays in its
-// original position (index) otherwise it is added to the end of the new folder.
-- (IBAction)ok:(id)sender {
+// original position (index) otherwise it is added to the end of the new
+// folder.  Called by -[BookmarkEditorBaseController ok:].
+- (NSNumber*)didCommit {
   NSString* name = [[self displayName] stringByTrimmingCharactersInSet:
                     [NSCharacterSet newlineCharacterSet]];
   std::wstring newTitle = base::SysNSStringToWide(name);
@@ -97,9 +98,9 @@
   int newIndex = newParentNode->GetChildCount();
   GURL newURL = [self GURLFromUrlField];
   if (!newURL.is_valid()) {
-    // Shouldn't be reached -- OK button disabled if not valid!
+    // Shouldn't be reached -- OK button should be disabled if not valid!
     NOTREACHED();
-    return;
+    return [NSNumber numberWithBool:NO];
   }
 
   // Determine where the new/replacement bookmark is to go.
@@ -116,8 +117,8 @@
   const BookmarkNode* node = model->AddURL(newParentNode, newIndex,
                                            newTitle, newURL);
   // Honor handler semantics: callback on node creation.
-  [self NotifyHandlerCreatedNode:node];
-  [super ok:sender];
+  [self notifyHandlerCreatedNode:node];
+  return [NSNumber numberWithBool:YES];
 }
 
 @end  // BookmarkEditorController

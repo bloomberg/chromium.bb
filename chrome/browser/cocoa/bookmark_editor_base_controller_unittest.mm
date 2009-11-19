@@ -4,18 +4,20 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/l10n_util_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 class BookmarkEditorBaseControllerTest : public CocoaTest {
  public:
-  BrowserTestHelper helper_;
-  BookmarkEditorBaseController* controller_;
+  BrowserTestHelper browser_helper_;
+  BookmarkEditorBaseController* controller_;  // weak
   const BookmarkNode* group_a_;
   const BookmarkNode* group_b_;
   const BookmarkNode* group_b_0_;
@@ -33,7 +35,7 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
     //             b-30
     //             b-31
     //            b-4
-    BookmarkModel& model(*(helper_.profile()->GetBookmarkModel()));
+    BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
     const BookmarkNode* root = model.GetBookmarkBarNode();
     group_a_ = model.AddGroup(root, 0, L"a");
     model.AddURL(group_a_, 0, L"a-0", GURL("http://a-0.com"));
@@ -63,7 +65,7 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
     return [[BookmarkEditorBaseController alloc]
             initWithParentWindow:test_window()
                          nibName:@"BookmarkAllTabs"
-                         profile:helper_.profile()
+                         profile:browser_helper_.profile()
                           parent:group_b_0_
                    configuration:BookmarkEditor::SHOW_TREE
                          handler:nil];
@@ -73,16 +75,17 @@ class BookmarkEditorBaseControllerTest : public CocoaTest {
     CocoaTest::SetUp();
     controller_ = CreateController();
     EXPECT_TRUE([controller_ window]);
+    [controller_ runAsModalSheet];
   }
 
   virtual void TearDown() {
-    [controller_ close];
+    controller_ = NULL;
     CocoaTest::TearDown();
   }
 };
 
 TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
-  BookmarkModel& model(*(helper_.profile()->GetBookmarkModel()));
+  BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
   const BookmarkNode& root(*model.GetBookmarkBarNode());
   EXPECT_EQ(4, root.GetChildCount());
   // a
@@ -127,22 +130,52 @@ TEST_F(BookmarkEditorBaseControllerTest, VerifyBookmarkTestModel) {
   // d
   child = root.GetChild(3);
   EXPECT_EQ(0, child->GetChildCount());
-}
-
-TEST_F(BookmarkEditorBaseControllerTest, FolderChildForParent) {
-  const BookmarkNode* child =
-    [BookmarkEditorBaseController folderChildForParent:group_b_
-                                       withFolderIndex:1];
-  EXPECT_EQ(child, group_b_3_);
-}
-
-TEST_F(BookmarkEditorBaseControllerTest, IndexOfFolderChild) {
-  int index = [BookmarkEditorBaseController indexOfFolderChild:group_b_3_];
-  EXPECT_EQ(index, 1);
+  [controller_ cancel:nil];
 }
 
 TEST_F(BookmarkEditorBaseControllerTest, NodeSelection) {
-  [controller_ selectNodeInBrowser:group_b_3_];
+  EXPECT_TRUE([controller_ folderTreeArray]);
+  [controller_ selectTestNodeInBrowser:group_b_3_];
   const BookmarkNode* node = [controller_ selectedNode];
   EXPECT_EQ(node, group_b_3_);
+  [controller_ cancel:nil];
+}
+
+TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
+  EXPECT_EQ(2, group_b_3_->GetChildCount());
+  [controller_ selectTestNodeInBrowser:group_b_3_];
+  NSString* expectedName =
+      l10n_util::GetNSStringWithFixup(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME);
+  [controller_ setDisplayName:expectedName];
+  [controller_ newFolder:nil];
+  NSArray* selectionPaths = [controller_ tableSelectionPaths];
+  EXPECT_EQ(1U, [selectionPaths count]);
+  NSIndexPath* selectionPath = [selectionPaths objectAtIndex:0];
+  EXPECT_EQ(4U, [selectionPath length]);
+  BookmarkFolderInfo* newFolderInfo = [controller_ selectedFolder];
+  EXPECT_TRUE(newFolderInfo);
+  NSString* newFolderName = [newFolderInfo folderName];
+  EXPECT_TRUE([newFolderName isEqualToString:expectedName]);
+  [controller_ createNewFolders];
+  // Verify that the tab folder was added to the new folder.
+  EXPECT_EQ(3, group_b_3_->GetChildCount());
+  [controller_ cancel:nil];
+}
+
+
+class BookmarkFolderInfoTest : public CocoaTest { };
+
+TEST_F(BookmarkFolderInfoTest, Construction) {
+  NSMutableArray* children = [NSMutableArray arrayWithObject:@"child"];
+  // We just need a pointer, and any pointer will do.
+  const BookmarkNode* fakeNode =
+      reinterpret_cast<const BookmarkNode*>(&children);
+  BookmarkFolderInfo* info =
+    [BookmarkFolderInfo bookmarkFolderInfoWithFolderName:@"name"
+                                              folderNode:fakeNode
+                                                children:children];
+  EXPECT_TRUE(info);
+  EXPECT_EQ([info folderName], @"name");
+  EXPECT_EQ([info children], children);
+  EXPECT_EQ([info folderNode], fakeNode);
 }
