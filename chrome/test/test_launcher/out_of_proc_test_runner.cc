@@ -16,7 +16,13 @@
 namespace {
 
 const char kGTestListTestsFlag[] = "gtest_list_tests";
+const char kGTestHelpFlag[]   = "gtest_help";
+const char kSingleProcessFlag[]   = "single-process";
+const char kSingleProcessAltFlag[]   = "single_process";
+// The following is kept for historical reasons (so people that are used to
+// using it don't get surprised).
 const char kChildProcessFlag[]   = "child";
+const char kHelpFlag[]   = "help";
 
 class OutOfProcTestRunner : public tests::TestRunner {
  public:
@@ -39,6 +45,7 @@ class OutOfProcTestRunner : public tests::TestRunner {
 #else
     CommandLine new_cmd_line(cmd_line->argv());
 #endif
+
     // Always enable disabled tests.  This method is not called with disabled
     // tests unless this flag was specified to the browser test executable.
     new_cmd_line.AppendSwitch("gtest_also_run_disabled_tests");
@@ -74,18 +81,38 @@ class OutOfProcTestRunnerFactory : public tests::TestRunnerFactory {
   DISALLOW_COPY_AND_ASSIGN(OutOfProcTestRunnerFactory);
 };
 
+void PrintUsage() {
+  fprintf(stdout, "Runs tests using the gtest framework, each test being run in"
+      " its own process.\nAny gtest flags can be specified.\n"
+      "  --single-process\n    Runs the tests and the launcher in the same "
+      "process. Useful for debugging a\n    specific test in a debugger\n  "
+      "--help\n    Shows this message.\n  --gtest_help\n    Shows the gtest "
+      "help message\n");
+}
+
 }  // namespace
 
 int main(int argc, char** argv) {
   CommandLine::Init(argc, argv);
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  if (command_line->HasSwitch(kChildProcessFlag))
-    return ChromeTestSuite(argc, argv).Run();
+  if (command_line->HasSwitch(kHelpFlag)) {
+    PrintUsage();
+    return 0;
+  }
 
-  if (command_line->HasSwitch(kGTestListTestsFlag))
+  if (command_line->HasSwitch(kChildProcessFlag) ||
+      command_line->HasSwitch(kSingleProcessFlag) ||
+      command_line->HasSwitch(kSingleProcessAltFlag) ||
+      command_line->HasSwitch(kGTestListTestsFlag) ||
+      command_line->HasSwitch(kGTestHelpFlag)) {
     return ChromeTestSuite(argc, argv).Run();
+  }
 
+  fprintf(stdout,
+          "Starting tests...\nIMPORTANT DEBUGGING NOTE: each test is run inside"
+          " its own process.\nFor debugging a test inside a debugger, use the "
+          "--single-process and\n--gtest_filter=<your_test_name> flags.\n");
   OutOfProcTestRunnerFactory test_runner_factory;
   return tests::RunTests(test_runner_factory) ? 0 : 1;
 }

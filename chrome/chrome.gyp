@@ -4989,6 +4989,119 @@
       ],
     },
     {
+      # Executable that runs each browser test in a new process.
+      'target_name': 'browser_tests',
+      'type': 'executable',
+      'msvs_guid': 'D7589D0D-304E-4589-85A4-153B7D84B07F',
+      'dependencies': [
+        'browser',
+        'chrome',
+        'chrome_resources',
+        'chrome_strings',
+        'debugger',
+        'syncapi',
+        'renderer',
+        'test_support_common',
+        '../app/app.gyp:app_base',
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../base/base.gyp:test_support_base',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/icu/icu.gyp:icui18n',
+        '../third_party/icu/icu.gyp:icuuc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
+      'sources': [
+        'test/in_process_browser_test.cc',
+        'test/in_process_browser_test.h',
+        'test/test_launcher/out_of_proc_test_runner.cc',
+        'test/test_launcher/test_runner.cc',
+        'test/test_launcher/test_runner.h',
+        'test/test_launcher/run_all_unittests.cc',
+        'test/unit/chrome_test_suite.h',
+        # browser_tests_sources is defined in 'variables' at the top of the
+        # file.
+        '<@(browser_tests_sources)',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'sources': [
+            'app/chrome_dll.rc',
+            'app/chrome_dll_resource.h',
+            'app/chrome_dll_version.rc.version',
+            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
+            '<@(browser_tests_sources_win_specific)',
+            '<@(browser_tests_sources_views_specific)'
+          ],
+          'include_dirs': [
+            'third_party/wtl/include',
+          ],
+          'dependencies': [
+            'chrome_dll_version',
+            'installer/installer.gyp:installer_util_strings',
+            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+          ],
+          'configurations': {
+            'Debug': {
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                },
+              },
+            },
+          }
+        }],
+        ['OS=="linux"', {
+          'dependencies': [
+            '../build/linux/system.gyp:gtk',
+            '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+          ],
+        }],
+        ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
+          'dependencies': [
+            '../views/views.gyp:views',
+          ],
+        }],
+        ['OS=="linux" and toolkit_views==1', {
+          'sources': [
+            '<@(browser_tests_sources_views_specific)',
+          ],
+        }],
+        ['OS=="linux" and toolkit_views==0', {
+          'sources': [
+            '<@(browser_tests_sources_gtk_specific)',
+          ],
+        }],
+        ['OS=="mac"', {
+          'sources': [
+            'app/breakpad_mac_stubs.mm',
+            'app/keystone_glue.h',
+            'app/keystone_glue.mm',
+          ],
+          'sources!': [
+            '<@(browser_tests_sources_exclude_on_mac)',
+          ],
+          # TODO(mark): We really want this for all non-static library
+          # targets, but when we tried to pull it up to the common.gypi
+          # level, it broke other things like the ui, startup, and
+          # page_cycler tests. *shrug*
+          'xcode_settings': {
+            'OTHER_LDFLAGS': [
+              '-Wl,-ObjC',
+            ],
+          },
+        }],
+      ],  # conditions
+    },  # target browser_tests
+    {
       'target_name': 'startup_tests',
       'type': 'executable',
       'msvs_guid': 'D3E6C0FD-54C7-4FF2-9AE1-72F2DAFD820C',
@@ -6400,86 +6513,6 @@
     },],  # OS=="linux"
     ['OS!="win"',
       { 'targets': [
-        {
-          # Executable that runs each browser test in a new process.
-          'target_name': 'browser_tests',
-          'type': 'executable',
-          'dependencies': [
-            'browser',
-            'chrome',
-            'chrome_resources',
-            'chrome_strings',
-            'debugger',
-            'syncapi',
-            'test_support_common',
-            '../app/app.gyp:app_base',
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../base/base.gyp:test_support_base',
-            '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
-            '../third_party/icu/icu.gyp:icui18n',
-            '../third_party/icu/icu.gyp:icuuc',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
-          'sources': [
-            'test/in_process_browser_test.cc',
-            'test/in_process_browser_test.h',
-            'test/test_launcher/out_of_proc_test_runner.cc',
-            'test/test_launcher/test_runner.cc',
-            'test/test_launcher/test_runner.h',
-            'test/test_launcher/run_all_unittests.cc',
-            'test/unit/chrome_test_suite.h',
-            # browser_tests_sources is defined in 'variables' at the top of the
-            # file.
-            '<@(browser_tests_sources)',
-          ],
-          'conditions': [
-            ['OS=="linux"', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-                '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
-              ],
-            }],
-            ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
-              'dependencies': [
-                '../views/views.gyp:views',
-              ],
-            }],
-            ['OS=="linux" and toolkit_views==1', {
-              'sources': [
-                '<@(browser_tests_sources_views_specific)',
-              ],
-            }],
-            ['OS=="linux" and toolkit_views==0', {
-              'sources': [
-                '<@(browser_tests_sources_gtk_specific)',
-              ],
-            }],
-            ['OS=="mac"', {
-              'sources': [
-                'app/breakpad_mac_stubs.mm',
-                'app/keystone_glue.h',
-                'app/keystone_glue.mm',
-              ],
-              'sources!': [
-                '<@(browser_tests_sources_exclude_on_mac)',
-              ],
-              # TODO(mark): We really want this for all non-static library
-              # targets, but when we tried to pull it up to the common.gypi
-              # level, it broke other things like the ui, startup, and
-              # page_cycler tests. *shrug*
-              'xcode_settings': {
-                'OTHER_LDFLAGS': [
-                  '-Wl,-ObjC',
-                ],
-              },
-            }],
-          ],  # conditions
-        },  # target browser_tests
       ],  # targets
     }],  # OS!="win"
     ['OS=="win"',
@@ -6721,113 +6754,6 @@
                 },
               }],
             ],
-        },
-        {
-          # Shared library used by the in-proc browser tests.
-          'target_name': 'browser_tests_dll',
-          'type': 'shared_library',
-          'product_name': 'browser_tests',
-          'msvs_guid': 'D7589D0D-304E-4589-85A4-153B7D84B07F',
-          'dependencies': [
-            'chrome',
-            'browser',
-            'chrome_dll_version',
-            'chrome_resources',
-            'installer/installer.gyp:installer_util_strings',
-            'debugger',
-            'renderer',
-            'syncapi',
-            '../base/base.gyp:test_support_base',
-            '../skia/skia.gyp:skia',
-            '../testing/gtest.gyp:gtest',
-            '../third_party/icu/icu.gyp:icui18n',
-            '../third_party/icu/icu.gyp:icuuc',
-          ],
-          'include_dirs': [
-            '..',
-            'third_party/wtl/include',
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
-                },
-              },
-            },
-          },
-          'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
-          'sources': [
-            'test/in_process_browser_test.cc',
-            'test/in_process_browser_test.h',
-            'test/test_launcher/run_all_unittests.cc',
-            'test/unit/chrome_test_suite.h',
-            'test/ui_test_utils.cc',
-            'test/ui_test_utils_linux.cc',
-            'test/ui_test_utils_mac.cc',
-            'test/ui_test_utils_win.cc',
-            'app/chrome_dll.rc',
-            'app/chrome_dll_resource.h',
-            'app/chrome_dll_version.rc.version',
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
-            '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
-            # browser_tests_sources and browser_tests_source_win_specific are
-            # defined in 'variables' at the top of the file.
-            '<@(browser_tests_sources)',
-            '<@(browser_tests_sources_win_specific)',
-            '<@(browser_tests_sources_views_specific)',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'dependencies': [
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
-              ],
-            },],
-          ],
-        },
-        {
-          # Executable that runs the browser tests in-process.
-          'target_name': 'browser_tests',
-          'type': 'executable',
-          'msvs_guid': '9B87804D-2502-480B-95AE-5A572CE91809',
-          'dependencies': [
-            'browser_tests_dll',
-            '../base/base.gyp:base',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'test/test_launcher/in_proc_test_runner.cc',
-            'test/test_launcher/test_runner.cc',
-            'test/test_launcher/test_runner.h',
-          ],
-          'msvs_settings': {
-            'VCLinkerTool': {
-              # Use a PDB name different than the one for the DLL.
-              'ProgramDatabaseFile': '$(OutDir)\\browser_tests_exe.pdb',
-            },
-          },
-        },
-        {
-          # Executable that runs the tests in-process (tests are bundled in a DLL).
-          'target_name': 'test_launcher',
-          'type': 'executable',
-          'msvs_guid': 'FA94F5AA-BC73-4926-A189-71FAA986C905',
-          'dependencies': [
-            '../base/base.gyp:base',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'sources': [
-            'test/test_launcher/in_proc_test_runner.cc',
-            'test/test_launcher/test_runner.cc',
-            'test/test_launcher/test_runner.h',
-          ],
         },
         {
           'target_name': 'crash_service',
