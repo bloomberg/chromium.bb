@@ -654,13 +654,6 @@ BUG24208 LINUX MAC : LayoutTests/http/tests/navigation/post-goback1.html = FAIL
 // controls are rare on the web, defer this fix.
 BUG21118 WIN LINUX : LayoutTests/fast/forms/box-shadow-override.html = FAIL
 
-// These tests are not valid: the so-called expected results are not known to
-// be correct.
-// TODO(ojan): They are *our* tests.
-// It seems silly to skip our own tests when we can change/delete them.
-// I'm marking them as deferred for now, but we should do something with them.
-BUG24192 SKIP : chrome/http/mime = PASS
-
 // These tests all depend on SessionStorage events which are not yet supported.
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/iframe-events.html = TIMEOUT
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/simple-events.html = FAIL
