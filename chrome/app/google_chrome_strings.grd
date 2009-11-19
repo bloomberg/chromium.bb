@@ -432,12 +432,6 @@ Chrome supports. -->
       <message name="IDS_TRY_TOAST_TRY_OPT" desc="First option radio button on the dialog to try chrome">
         Try it out (already installed)
       </message>
-      <message name="IDS_TRY_TOAST_UNINSTALL_OPT" desc="Second option radio button on the dialog to try chrome">
-        Uninstall Google Chrome
-      </message>
-      <message name="IDS_TRY_TOAST_DOIT" desc="Try chrome again dialog standard OK button">
-        OK
-      </message>
       <message name="IDS_TRY_TOAST_CANCEL" desc="Try chrome again dialog Cancel button">
         Don't bug me
       </message>
