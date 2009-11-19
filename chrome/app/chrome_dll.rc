@@ -120,7 +120,6 @@ BEGIN
     VK_NUMPAD8,     IDC_SELECT_TAB_7,           VIRTKEY, CONTROL
     "B",            IDC_SHOW_BOOKMARK_BAR,      VIRTKEY, CONTROL
     "B",            IDC_SHOW_BOOKMARK_MANAGER,  VIRTKEY, CONTROL, SHIFT
-    "B",            IDC_SHOW_EXTENSION_SHELF,   VIRTKEY, CONTROL, ALT
     "J",            IDC_SHOW_DOWNLOADS,         VIRTKEY, CONTROL
     "H",            IDC_SHOW_HISTORY,           VIRTKEY, CONTROL
     "F",            IDC_SHOW_APP_MENU,          VIRTKEY, ALT
