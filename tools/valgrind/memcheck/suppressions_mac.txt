@@ -413,3 +413,13 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+{
+   bug_28279
+   Memcheck:Cond
+   fun:_ZN21MessagePortDispatcher7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN21ResourceMessageFilterD0Ev
+   fun:_ZN12ChromeThread14DeleteOnThreadILNS_2IDE4EE8DestructI21ResourceMessageFilterEEvPT_
+   fun:_ZN21ResourceMessageFilter10OnDestructEv
+   fun:_ZN3IPC12ChannelProxy19MessageFilterTraits8DestructEPNS0_13MessageFilterE
+}
