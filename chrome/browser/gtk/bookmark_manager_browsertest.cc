@@ -81,13 +81,4 @@ IN_PROC_BROWSER_TEST_F(BookmarkManagerTest, Crash) {
   manager_->SelectInTree(model_->GetBookmarkBarNode(), true);
 
   CleanUp();
-#if defined(TOOLKIT_VIEWS)
-  // The test fails on toolkit_views build without the following
-  // cleanup code.  This is because the bookmark bar view refuses to
-  // be destroyed by a bookmark model when the BrowserProcessImpl
-  // destroys the bookmark bar model.
-  // TODO(oshima): http://crbug/28046.
-  browser()->window()->Close();
-  MessageLoopForUI::current()->RunAllPending();
-#endif
 }
