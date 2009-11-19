@@ -242,6 +242,9 @@ END_EXEC_COMMAND_MAP()
   // responses served with the X-Frame-Options header?
   bool is_frame_busting_enabled();
 
+  // ChromeFramePlugin overrides.
+  virtual void OnAutomationServerReady();
+
  protected:
   // ChromeFrameActivexBase overrides
   virtual void OnOpenURL(int tab_handle, const GURL& url_to_open,

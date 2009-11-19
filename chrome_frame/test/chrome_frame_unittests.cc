@@ -101,7 +101,10 @@ void ChromeFrameTestWithWebServer::TearDown() {
 
 bool ChromeFrameTestWithWebServer::LaunchBrowser(BrowserKind browser,
                                                const wchar_t* page) {
-  std::wstring url = UTF8ToWide(server_.Resolve(page).spec());
+  std::wstring url = page;
+  if (url.find(L"files/") != std::wstring::npos)
+    url = UTF8ToWide(server_.Resolve(page).spec());
+
   browser_ = browser;
   if (browser == IE) {
     browser_handle_.Set(chrome_frame_test::LaunchIE(url));
@@ -1738,6 +1741,32 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
   mock.Uninitialize();
+  chrome_frame_test::CloseAllIEWindows();
+}
+
+const wchar_t kChromeFrameAboutBlankUrl[] = L"cf:about:blank";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ChromeFrameFocusTest) {
+  TimedMsgLoop loop;
+
+  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameAboutBlankUrl));
+
+  // Allow some time for chrome to be launched.
+  loop.RunFor(kChromeFrameLaunchDelay);
+
+  HWND renderer_window = chrome_frame_test::GetChromeRendererWindow();
+  EXPECT_TRUE(IsWindow(renderer_window));
+
+  DWORD renderer_thread_id = 0;
+  DWORD renderer_process_id = 0;
+  renderer_thread_id = GetWindowThreadProcessId(renderer_window,
+                                                &renderer_process_id);
+
+  AttachThreadInput(GetCurrentThreadId(), renderer_thread_id, TRUE);
+  HWND focus_window = GetFocus();
+  EXPECT_TRUE(focus_window == renderer_window);
+  AttachThreadInput(GetCurrentThreadId(), renderer_thread_id, FALSE);
+
   chrome_frame_test::CloseAllIEWindows();
 }
 

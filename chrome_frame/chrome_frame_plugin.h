@@ -122,14 +122,8 @@ END_MSG_MAP()
   LRESULT OnSetFocus(UINT message, WPARAM wparam, LPARAM lparam,
                      BOOL& handled) {  // NO_LINT
     if (!ignore_setfocus_ && automation_client_ != NULL) {
-      TabProxy* tab = automation_client_->tab();
-      HWND chrome_window = automation_client_->tab_window();
-      if (tab && ::IsWindow(chrome_window)) {
-        DLOG(INFO) << "Setting initial focus";
-        tab->SetInitialFocus(win_util::IsShiftPressed());
-      }
+      GiveFocusToChrome();
     }
-
     return 0;
   }
 
@@ -188,6 +182,15 @@ END_MSG_MAP()
   // Allow overriding the type of automation client used, for unit tests.
   virtual ChromeFrameAutomationClient* CreateAutomationClient() {
     return new ChromeFrameAutomationClient;
+  }
+
+  void GiveFocusToChrome() {
+    TabProxy* tab = automation_client_->tab();
+    HWND chrome_window = automation_client_->tab_window();
+    if (tab && ::IsWindow(chrome_window)) {
+      DLOG(INFO) << "Setting initial focus";
+      tab->SetInitialFocus(win_util::IsShiftPressed());
+    }
   }
 
  protected:

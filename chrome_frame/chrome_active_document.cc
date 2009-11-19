@@ -178,6 +178,11 @@ bool ChromeActiveDocument::is_frame_busting_enabled() {
   return false;
 }
 
+void ChromeActiveDocument::OnAutomationServerReady() {
+  Base::OnAutomationServerReady();
+  Base::GiveFocusToChrome();
+}
+
 STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
                                         IMoniker* moniker_name,
                                         LPBC bind_context,
