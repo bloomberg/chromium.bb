@@ -1178,12 +1178,12 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
     if (!bar->GetTabContentsSize(&tab_contents_size))
       return FALSE;
     gfx::CanvasPaint canvas(event, true);
+
+    gfx::Rect area = GTK_WIDGET_NO_WINDOW(widget) ?
+        gfx::Rect(widget->allocation) :
+        gfx::Rect(0, 0, widget->allocation.width, widget->allocation.height);
     NtpBackgroundUtil::PaintBackgroundDetachedMode(theme_provider, &canvas,
-        // We can't just use gfx::Rect(widget->allocation) because the x,y for
-        // the allocation is relative to the parent widget rather than the
-        // GdkWindow.
-        gfx::Rect(0, 0, widget->allocation.width, widget->allocation.height),
-        tab_contents_size.height());
+        area, tab_contents_size.height());
   }
 
   return FALSE;  // Propagate expose to children.
