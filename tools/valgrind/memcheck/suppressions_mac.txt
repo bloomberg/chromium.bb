@@ -363,32 +363,6 @@
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
 }
 {
-   bug_26964
-   Memcheck:Addr4
-   fun:findElementGivenHash
-   fun:sqlite3HashFind
-   fun:sqlite3FindTable
-   fun:sqlite3LocateTable
-   fun:selectExpander
-   fun:sqlite3WalkSelect
-   fun:sqlite3SelectExpand
-   fun:sqlite3SelectPrep
-   fun:sqlite3Select
-   fun:yy_reduce
-   fun:sqlite3Parser
-   fun:sqlite3RunParser
-   fun:sqlite3Prepare
-   fun:sqlite3LockAndPrepare
-   fun:sqlite3_prepare_v2
-   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
-   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
-   fun:_ZN7history13VisitDatabase12GetStartDateEPN4base4TimeE
-   fun:_ZN7history14HistoryBackend8InitImplEv
-   fun:_ZN7history14HistoryBackend4InitEb
-   fun:_Z16DispatchToMethodIN7history14HistoryBackendEMS1_FvbEbEvPT_T0_RK6Tuple1IT1_E
-   fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
-}
-{
    bug_27315
    Memcheck:Leak
    fun:_Znw*
