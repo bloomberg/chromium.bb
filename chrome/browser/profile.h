@@ -47,6 +47,7 @@ class ExtensionsService;
 class FaviconService;
 class HistoryService;
 class NavigationController;
+class NTPResourceCache;
 class PasswordStore;
 class PersonalDataManager;
 class PrefService;
@@ -382,6 +383,9 @@ class Profile {
   // Start up service that gathers data from web resource feeds.
   virtual void InitWebResources() = 0;
 
+  // Returns the new tab page resource cache.
+  virtual NTPResourceCache* GetNTPResourceCache() = 0;
+
 #ifdef UNIT_TEST
   // Use with caution.  GetDefaultRequestContext may be called on any thread!
   static void set_default_request_context(URLRequestContextGetter* c) {
@@ -481,6 +485,7 @@ class ProfileImpl : public Profile,
   virtual void MarkAsCleanShutdown();
   virtual void InitExtensions();
   virtual void InitWebResources();
+  virtual NTPResourceCache* GetNTPResourceCache();
   virtual ProfileSyncService* GetProfileSyncService();
   void InitSyncService();
 
@@ -539,6 +544,7 @@ class ProfileImpl : public Profile,
   scoped_ptr<TemplateURLModel> template_url_model_;
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
   scoped_refptr<WebResourceService> web_resource_service_;
+  scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 
   scoped_ptr<ProfileSyncService> sync_service_;
 

@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -515,6 +516,11 @@ class OffTheRecordProfileImpl : public Profile,
     NOTREACHED();
   }
 
+  virtual NTPResourceCache* GetNTPResourceCache() {
+    // Just return the real profile resource cache.
+    return profile_->GetNTPResourceCache();
+  }
+
   virtual void ExitedOffTheRecordMode() {
     // Drop our download manager so we forget about all the downloads made
     // in off-the-record mode.
@@ -721,6 +727,12 @@ void ProfileImpl::InitWebResources() {
   web_resource_service_->StartAfterDelay();
 }
 
+NTPResourceCache* ProfileImpl::GetNTPResourceCache() {
+  if (!ntp_resource_cache_.get())
+    ntp_resource_cache_.reset(new NTPResourceCache(this));
+  return ntp_resource_cache_.get();
+}
+
 ProfileImpl::~ProfileImpl() {
   tab_restore_service_ = NULL;
 
@@ -748,6 +760,9 @@ ProfileImpl::~ProfileImpl() {
   prefs->RemovePrefObserver(prefs::kSpellCheckDictionary, this);
   prefs->RemovePrefObserver(prefs::kEnableSpellCheck, this);
   prefs->RemovePrefObserver(prefs::kEnableAutoSpellCorrect, this);
+
+  // Delete the NTP resource cache so we can unregister pref observers.
+  ntp_resource_cache_.reset();
 
   sync_service_.reset();
 

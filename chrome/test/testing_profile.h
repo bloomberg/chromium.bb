@@ -187,6 +187,7 @@ class TestingProfile : public Profile {
   virtual void MarkAsCleanShutdown() {}
   virtual void InitExtensions() {}
   virtual void InitWebResources() {}
+  virtual NTPResourceCache* GetNTPResourceCache() { return NULL; }
   virtual DesktopNotificationService* GetDesktopNotificationService() {
     return NULL;
   }

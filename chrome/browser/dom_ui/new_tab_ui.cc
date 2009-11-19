@@ -8,21 +8,17 @@
 
 #include <set>
 
-#include "app/animation.h"
 #include "app/l10n_util.h"
-#include "app/resource_bundle.h"
-#include "app/theme_provider.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/singleton.h"
-#include "base/string_piece.h"
 #include "base/thread.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/dom_ui/most_visited_handler.h"
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
+#include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/dom_ui/shown_sections_handler.h"
 #include "chrome/browser/dom_ui/tips_handler.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -32,18 +28,12 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
-#include "grit/browser_resources.h"
-#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
-#include "grit/locale_settings.h"
-#include "grit/theme_resources.h"
 
 namespace {
 
@@ -118,87 +108,6 @@ class PaintTimer : public RenderWidgetHost::PaintObserver {
 
   DISALLOW_COPY_AND_ASSIGN(PaintTimer);
 };
-
-
-///////////////////////////////////////////////////////////////////////////////
-// IncognitoTabHTMLSource
-
-class IncognitoTabHTMLSource : public ChromeURLDataManager::DataSource {
- public:
-  // Creates our datasource and registers initial state of the bookmark bar.
-  explicit IncognitoTabHTMLSource(bool bookmark_bar_attached);
-
-  // Called when the network layer has requested a resource underneath
-  // the path we registered.
-  virtual void StartDataRequest(const std::string& path,
-                                bool is_off_the_record,
-                                int request_id);
-
-  virtual std::string GetMimeType(const std::string&) const {
-    return "text/html";
-  }
-
-  virtual MessageLoop* MessageLoopForRequestPath(const std::string& path)
-      const {
-    // IncognitoTabHTMLSource does all of the operations that need to be on
-    // the UI thread from InitFullHTML, called by the constructor.  It is safe
-    // to call StartDataRequest from any thread, so return NULL.
-    return NULL;
-  }
-
- private:
-  ~IncognitoTabHTMLSource() {}
-
-  // Populate full_html_.  This must be called from the UI thread because it
-  // involves profile access.
-  //
-  // A new IncognitoTabHTMLSource object is used for each incognito tab page
-  // instance and each reload of an existing incognito tab page, so there is
-  // no concern about cached data becoming stale.
-  void InitFullHTML();
-
-  // The content to be served by StartDataRequest, stored by InitFullHTML.
-  std::string full_html_;
-
-  bool bookmark_bar_attached_;
-
-  DISALLOW_COPY_AND_ASSIGN(IncognitoTabHTMLSource);
-};
-
-IncognitoTabHTMLSource::IncognitoTabHTMLSource(bool bookmark_bar_attached)
-    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
-      bookmark_bar_attached_(bookmark_bar_attached) {
-  InitFullHTML();
-}
-
-void IncognitoTabHTMLSource::StartDataRequest(const std::string& path,
-    bool is_off_the_record, int request_id) {
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html_.size());
-  std::copy(full_html_.begin(), full_html_.end(), html_bytes->data.begin());
-
-  SendResponse(request_id, html_bytes);
-}
-
-void IncognitoTabHTMLSource::InitFullHTML() {
-  DictionaryValue localized_strings;
-  localized_strings.SetString(L"title",
-      l10n_util::GetString(IDS_NEW_TAB_TITLE));
-  localized_strings.SetString(L"content",
-      l10n_util::GetStringF(IDS_NEW_TAB_OTR_MESSAGE,
-          l10n_util::GetString(IDS_LEARN_MORE_INCOGNITO_URL)));
-  localized_strings.SetString(L"bookmarkbarattached",
-      bookmark_bar_attached_ ? "true" : "false");
-
-  SetFontAndTextDirection(&localized_strings);
-
-  static const base::StringPiece incognito_tab_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_INCOGNITO_TAB_HTML));
-
-  full_html_ = jstemplate_builder::GetI18nTemplateHtml(incognito_tab_html,
-                                                       &localized_strings);
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // PromotionalMessageHandler
@@ -554,9 +463,7 @@ void NewTabPageSetHomePageHandler::HandleSetHomePage(
 // NewTabUI
 
 NewTabUI::NewTabUI(TabContents* contents)
-    : DOMUI(contents),
-      motd_message_id_(0),
-      incognito_(false) {
+    : DOMUI(contents) {
   // Override some options on the DOM UI.
   hide_favicon_ = true;
   force_bookmark_bar_visible_ = true;
@@ -574,18 +481,20 @@ NewTabUI::NewTabUI(TabContents* contents)
     NewTabHTMLSource::set_first_run(false);
 
   InitializeCSSCaches();
-  if (GetProfile()->IsOffTheRecord()) {
-    incognito_ = true;
+  NewTabHTMLSource* html_source =
+      new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
+  bool posted = ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          html_source));
+  if (!posted) {
+    html_source->AddRef();
+    html_source->Release();  // Keep Valgrind happy in tests.
+  }
 
-    IncognitoTabHTMLSource* html_source = new IncognitoTabHTMLSource(
-        GetProfile()->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar));
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            Singleton<ChromeURLDataManager>::get(),
-            &ChromeURLDataManager::AddDataSource,
-            html_source));
-  } else {
+  if (!GetProfile()->IsOffTheRecord()) {
     AddMessageHandler((new ShownSectionsHandler())->Attach(this));
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
     AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
@@ -598,18 +507,6 @@ NewTabUI::NewTabUI(TabContents* contents)
 
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
     AddMessageHandler((new PromotionalMessageHandler())->Attach(this));
-
-    NewTabHTMLSource* html_source = new NewTabHTMLSource(GetProfile());
-    bool posted = ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableMethod(
-            Singleton<ChromeURLDataManager>::get(),
-            &ChromeURLDataManager::AddDataSource,
-            html_source));
-    if (!posted) {
-      html_source->AddRef();
-      html_source->Release();  // Keep Valgrind happy in tests.
-    }
   }
 
   // Listen for theme installation.
@@ -757,18 +654,26 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
 ///////////////////////////////////////////////////////////////////////////////
 // NewTabHTMLSource
 
-bool NewTabUI::NewTabHTMLSource::first_view_ = true;
-
 bool NewTabUI::NewTabHTMLSource::first_run_ = true;
 
 NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
-    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()) {
-  InitFullHTML(profile);
+    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
+      profile_(profile) {
+  static bool first_view = true;
+  if (first_view) {
+    // Decrement ntp promo counters; the default values are specified in
+    // Browser::RegisterUserPrefs.
+    profile->GetPrefs()->SetInteger(prefs::kNTPPromoLineRemaining,
+        profile->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) - 1);
+    profile->GetPrefs()->SetInteger(prefs::kNTPPromoImageRemaining,
+        profile->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) - 1);
+    first_view = false;
+  }
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
     bool is_off_the_record, int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!path.empty()) {
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
@@ -776,219 +681,8 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
     return;
   }
 
-  scoped_refptr<RefCountedBytes> html_bytes(new RefCountedBytes);
-  html_bytes->data.resize(full_html_.size());
-  std::copy(full_html_.begin(), full_html_.end(), html_bytes->data.begin());
+  scoped_refptr<RefCountedBytes> html_bytes =
+      profile_->GetNTPResourceCache()->GetNewTabHTML(is_off_the_record);
 
   SendResponse(request_id, html_bytes);
-}
-
-// static
-std::string NewTabUI::NewTabHTMLSource::GetCustomNewTabPageFromCommandLine() {
-  const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  const std::wstring file_path_wstring = command_line->GetSwitchValue(
-      switches::kNewTabPage);
-
-#if defined(OS_WIN)
-  const FilePath::StringType file_path = file_path_wstring;
-#else
-  const FilePath::StringType file_path = WideToASCII(file_path_wstring);
-#endif
-
-  if (!file_path.empty()) {
-    // Read the file contents in, blocking the UI thread of the browser.
-    // This is for testing purposes only! It is used to test new versions of
-    // the new tab page using a special command line option. Never use this
-    // in a way that will be used by default in product.
-    std::string file_contents;
-    if (file_util::ReadFileToString(FilePath(file_path), &file_contents))
-      return file_contents;
-  }
-
-  return std::string();
-}
-
-void NewTabUI::NewTabHTMLSource::InitFullHTML(Profile* profile) {
-  // Show the profile name in the title and most visited labels if the current
-  // profile is not the default.
-  std::wstring title;
-  std::wstring most_visited;
-  if (UserDataManager::Get()->is_current_profile_default()) {
-    title = l10n_util::GetString(IDS_NEW_TAB_TITLE);
-    most_visited = l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED);
-  } else {
-    // Get the current profile name.
-    std::wstring profile_name =
-      UserDataManager::Get()->current_profile_name();
-    title = l10n_util::GetStringF(IDS_NEW_TAB_TITLE_WITH_PROFILE_NAME,
-                                  profile_name);
-    most_visited = l10n_util::GetStringF(
-        IDS_NEW_TAB_MOST_VISITED_WITH_PROFILE_NAME,
-        profile_name);
-  }
-  DictionaryValue localized_strings;
-  localized_strings.SetString(L"bookmarkbarattached",
-      profile->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar) ?
-      "true" : "false");
-  localized_strings.SetString(L"hasattribution",
-      profile->GetThemeProvider()->HasCustomImage(IDR_THEME_NTP_ATTRIBUTION) ?
-      "true" : "false");
-  localized_strings.SetString(L"title", title);
-  localized_strings.SetString(L"mostvisited", most_visited);
-  localized_strings.SetString(L"searches",
-      l10n_util::GetString(IDS_NEW_TAB_SEARCHES));
-  localized_strings.SetString(L"bookmarks",
-      l10n_util::GetString(IDS_NEW_TAB_BOOKMARKS));
-  localized_strings.SetString(L"recent",
-      l10n_util::GetString(IDS_NEW_TAB_RECENT));
-  localized_strings.SetString(L"showhistory",
-      l10n_util::GetString(IDS_NEW_TAB_HISTORY_SHOW));
-  localized_strings.SetString(L"showhistoryurl",
-      chrome::kChromeUIHistoryURL);
-  localized_strings.SetString(L"editthumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAILS));
-  localized_strings.SetString(L"restorethumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_RESTORE_THUMBNAILS_LINK));
-  localized_strings.SetString(L"editmodeheading",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_EDIT_MODE_HEADING));
-  localized_strings.SetString(L"doneediting",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_DONE_REMOVING_BUTTON));
-  localized_strings.SetString(L"cancelediting",
-      l10n_util::GetString(IDS_NEW_TAB_MOST_VISITED_CANCEL_REMOVING_BUTTON));
-  localized_strings.SetString(L"searchhistory",
-      l10n_util::GetString(IDS_NEW_TAB_HISTORY_SEARCH));
-  localized_strings.SetString(L"recentlyclosed",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED));
-  localized_strings.SetString(L"mostvisitedintro",
-      l10n_util::GetStringF(IDS_NEW_TAB_MOST_VISITED_INTRO,
-          l10n_util::GetString(IDS_WELCOME_PAGE_URL)));
-  localized_strings.SetString(L"closedwindowsingle",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE));
-  localized_strings.SetString(L"closedwindowmultiple",
-      l10n_util::GetString(IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE));
-  localized_strings.SetString(L"attributionintro",
-      l10n_util::GetString(IDS_NEW_TAB_ATTRIBUTION_INTRO));
-  localized_strings.SetString(L"viewfullhistory",
-      l10n_util::GetString(IDS_NEW_TAB_VIEW_FULL_HISTORY));
-  localized_strings.SetString(L"showthumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_THUMBNAILS));
-  localized_strings.SetString(L"hidethumbnails",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_THUMBNAILS));
-  localized_strings.SetString(L"showlist",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_LIST));
-  localized_strings.SetString(L"hidelist",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_LIST));
-  localized_strings.SetString(L"showrecentlyclosedtabs",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_RECENTLY_CLOSED_TABS));
-  localized_strings.SetString(L"hiderecentlyclosedtabs",
-      l10n_util::GetString(IDS_NEW_TAB_HIDE_RECENTLY_CLOSED_TABS));
-  localized_strings.SetString(L"thumbnailremovednotification",
-      l10n_util::GetString(IDS_NEW_TAB_THUMBNAIL_REMOVED_NOTIFICATION));
-  localized_strings.SetString(L"undothumbnailremove",
-      l10n_util::GetString(IDS_NEW_TAB_UNDO_THUMBNAIL_REMOVE));
-  localized_strings.SetString(L"otrmessage",
-      l10n_util::GetString(IDS_NEW_TAB_OTR_MESSAGE));
-  localized_strings.SetString(L"removethumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_REMOVE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"pinthumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_PIN_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"unpinthumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_UNPIN_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"showhidethumbnailtooltip",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_THUMBNAIL_TOOLTIP));
-  localized_strings.SetString(L"showhidelisttooltip",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_LIST_TOOLTIP));
-  localized_strings.SetString(L"pagedisplaytooltip",
-      l10n_util::GetString(IDS_NEW_TAB_PAGE_DISPLAY_TOOLTIP));
-  localized_strings.SetString(L"firstrunnotification",
-      l10n_util::GetString(IDS_NEW_TAB_FIRST_RUN_NOTIFICATION));
-  localized_strings.SetString(L"closefirstrunnotification",
-      l10n_util::GetString(IDS_NEW_TAB_CLOSE_FIRST_RUN_NOTIFICATION));
-  localized_strings.SetString(L"makethishomepage",
-      l10n_util::GetString(IDS_NEW_TAB_MAKE_THIS_HOMEPAGE));
-  localized_strings.SetString(L"themelink",
-      l10n_util::GetString(IDS_THEMES_GALLERY_URL));
-  localized_strings.SetString(L"tips",
-      l10n_util::GetString(IDS_NEW_TAB_TIPS));
-  localized_strings.SetString(L"sync",
-      l10n_util::GetString(IDS_NEW_TAB_SHOW_HIDE_BOOKMARK_SYNC));
-  localized_strings.SetString(L"promonew",
-      l10n_util::GetString(IDS_NTP_PROMOTION_NEW));
-  localized_strings.SetString(L"promomessage",
-      l10n_util::GetStringF(IDS_NTP_PROMOTION_MESSAGE,
-          l10n_util::GetString(IDS_PRODUCT_NAME),
-          ASCIIToWide(Extension::kGalleryBrowseUrl),
-          l10n_util::GetString(IDS_SYNC_SERVICE_HELP_URL)));
-  localized_strings.SetString(L"extensionslink",
-      ASCIIToWide(Extension::kGalleryBrowseUrl));
-
-  // Don't initiate the sync related message passing with the page if the sync
-  // code is not present.
-  if (profile->GetProfileSyncService())
-    localized_strings.SetString(L"syncispresent", "true");
-  else
-    localized_strings.SetString(L"syncispresent", "false");
-
-  if (!profile->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
-    localized_strings.SetString(L"showsetashomepage", "true");
-
-  SetFontAndTextDirection(&localized_strings);
-
-  // Let the tab know whether it's the first tab being viewed.
-  if (first_view_) {
-    // Decrement ntp promo counters; the default values are specified in
-    // Browser::RegisterUserPrefs.
-    profile->GetPrefs()->SetInteger(prefs::kNTPPromoLineRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) - 1);
-    profile->GetPrefs()->SetInteger(prefs::kNTPPromoImageRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) - 1);
-    first_view_ = false;
-  }
-
-  // Control fade and resize animations.
-  std::wstring anim =
-      Animation::ShouldRenderRichAnimation() ? L"true" : L"false";
-  localized_strings.SetString(L"anim", anim);
-
-  // Pass the shown_sections pref early so that we can prevent flicker.
-  const int shown_sections = profile->GetPrefs()->GetInteger(
-      prefs::kNTPShownSections);
-  localized_strings.SetInteger(L"shown_sections", shown_sections);
-
-  // In case we have the new new tab page enabled we first try to read the file
-  // provided on the command line. If that fails we just get the resource from
-  // the resource bundle.
-  base::StringPiece new_tab_html;
-  std::string new_tab_html_str;
-  new_tab_html_str = GetCustomNewTabPageFromCommandLine();
-
-  if (!new_tab_html_str.empty()) {
-    new_tab_html = base::StringPiece(new_tab_html_str);
-  }
-
-  if (new_tab_html.empty()) {
-    new_tab_html = ResourceBundle::GetSharedInstance().GetRawDataResource(
-        IDR_NEW_NEW_TAB_HTML);
-  }
-
-  // Inject the template data into the HTML so that it is available before any
-  // layout is needed.
-  std::string json_html;
-  jstemplate_builder::AppendJsonHtml(&localized_strings, &json_html);
-
-  static const base::StringPiece template_data_placeholder(
-      "<!-- template data placeholder -->");
-  size_t pos = new_tab_html.find(template_data_placeholder);
-
-  if (pos != base::StringPiece::npos) {
-    full_html_.assign(new_tab_html.data(), pos);
-    full_html_.append(json_html);
-    size_t after_offset = pos + template_data_placeholder.size();
-    full_html_.append(new_tab_html.data() + after_offset,
-                      new_tab_html.size() - after_offset);
-  } else {
-    NOTREACHED();
-    full_html_.assign(new_tab_html.data(), new_tab_html.size());
-  }
-  jstemplate_builder::AppendI18nTemplateProcessHtml(&full_html_);
 }
