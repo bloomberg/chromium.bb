@@ -333,7 +333,7 @@ void ExtensionPortsRemoteService::ConnectCommand(
               << ">, channel_name <" << channel_name << ">";
     DCHECK(service_);
     port_id = service_->OpenSpecialChannelToExtension(
-        extension_id, channel_name, this);
+        extension_id, channel_name, "null", this);
   }
   if (port_id == -1) {
     // Failure: probably the extension ID doesn't exist.

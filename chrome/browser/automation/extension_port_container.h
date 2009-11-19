@@ -56,7 +56,8 @@ class ExtensionPortContainer : public IPC::Message::Sender {
                int process_id,
                int routing_id,
                int connection_id,
-               const std::string& channel_name);
+               const std::string& channel_name,
+               const std::string& tab_json);
 
   // Sends a connect response to the external port.
   void SendConnectionResponse(int connection_id, int port_id);

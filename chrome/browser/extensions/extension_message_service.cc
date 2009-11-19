@@ -257,7 +257,16 @@ void ExtensionMessageService::OpenChannelToExtensionOnUIThread(
   receiver.debug_info = 1;
   TabContents* source_contents = tab_util::GetTabContentsByID(
       source_process_id, source_routing_id);
-  OpenChannelOnUIThreadImpl(source, source_contents,
+
+  // Include info about the opener's tab (if it was a tab).
+  std::string tab_json = "null";
+  if (source_contents) {
+    scoped_ptr<DictionaryValue> tab_value(
+        ExtensionTabUtil::CreateTabValue(source_contents));
+    base::JSONWriter::Write(tab_value.get(), false, &tab_json);
+  }
+
+  OpenChannelOnUIThreadImpl(source, tab_json,
                             receiver, receiver_port_id,
                             source_extension_id, target_extension_id,
                             channel_name);
@@ -282,13 +291,23 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
   }
   TabContents* source_contents = tab_util::GetTabContentsByID(
       source_process_id, source_routing_id);
-  OpenChannelOnUIThreadImpl(source, source_contents,
+
+  // Include info about the opener's tab (if it was a tab).
+  std::string tab_json = "null";
+  if (source_contents) {
+    scoped_ptr<DictionaryValue> tab_value(
+        ExtensionTabUtil::CreateTabValue(source_contents));
+    base::JSONWriter::Write(tab_value.get(), false, &tab_json);
+  }
+
+  OpenChannelOnUIThreadImpl(source, tab_json,
                             receiver, receiver_port_id,
                             extension_id, extension_id, channel_name);
 }
 
 bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
-    IPC::Message::Sender* source, TabContents* source_contents,
+    IPC::Message::Sender* source,
+    const std::string& tab_json,
     const MessagePort& receiver, int receiver_port_id,
     const std::string& source_extension_id,
     const std::string& target_extension_id,
@@ -321,16 +340,6 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
 
   CHECK(receiver.sender);
 
-  // Include info about the opener's tab (if it was a tab).
-  std::string tab_json = "null";
-  if (source_contents) {
-    scoped_ptr<DictionaryValue> tab_value(
-        ExtensionTabUtil::CreateTabValue(source_contents));
-    base::JSONWriter::Write(tab_value.get(), false, &tab_json);
-  }
-
-  CHECK(receiver.sender);
-
   // Send the connect event to the receiver.  Give it the opener's port ID (the
   // opener has the opposite port ID).
   DispatchOnConnect(receiver, receiver_port_id, channel_name, tab_json,
@@ -341,7 +350,7 @@ bool ExtensionMessageService::OpenChannelOnUIThreadImpl(
 
 int ExtensionMessageService::OpenSpecialChannelToExtension(
     const std::string& extension_id, const std::string& channel_name,
-    IPC::Message::Sender* source) {
+    const std::string& tab_json, IPC::Message::Sender* source) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
   DCHECK(profile_);
 
@@ -356,7 +365,7 @@ int ExtensionMessageService::OpenSpecialChannelToExtension(
       MSG_ROUTING_CONTROL);
   receiver.debug_info = 4;
   if (!OpenChannelOnUIThreadImpl(
-      source, NULL, receiver, port2_id, extension_id, extension_id,
+      source, tab_json, receiver, port2_id, extension_id, extension_id,
       channel_name))
     return -1;
 
@@ -378,7 +387,7 @@ int ExtensionMessageService::OpenSpecialChannelToTab(
       target_tab_contents->render_view_host(),
       target_tab_contents->render_view_host()->routing_id());
   receiver.debug_info = 5;
-  if (!OpenChannelOnUIThreadImpl(source, NULL,
+  if (!OpenChannelOnUIThreadImpl(source, "null",
                                  receiver, port2_id,
                                  extension_id, extension_id, channel_name))
     return -1;

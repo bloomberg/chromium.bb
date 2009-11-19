@@ -91,7 +91,7 @@ class ExtensionMessageService
   // processes, or -1 if the extension doesn't exist.
   int OpenSpecialChannelToExtension(
       const std::string& extension_id, const std::string& channel_name,
-      IPC::Message::Sender* source);
+      const std::string& tab_json, IPC::Message::Sender* source);
 
   // Given an extension ID, opens a channel between the given DevTools
   // service and the content script for that extension running in the
@@ -158,7 +158,8 @@ class ExtensionMessageService
 
   // Common between OpenChannelOnUIThread and OpenSpecialChannelToExtension.
   bool OpenChannelOnUIThreadImpl(
-      IPC::Message::Sender* source, TabContents* source_contents,
+      IPC::Message::Sender* source,
+      const std::string& tab_json,
       const MessagePort& receiver, int receiver_port_id,
       const std::string& source_extension_id,
       const std::string& target_extension_id,
