@@ -87,7 +87,7 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   // We start with validating parameters.
   ICONINFO icon_info;
   if (!icon || !(::GetIconInfo(icon, &icon_info)) ||
-      !icon_info.fIcon || (s.width() <= 0) || (s.height() <= 0)) {
+      !icon_info.fIcon || s.IsEmpty()) {
     return NULL;
   }
 
@@ -132,39 +132,28 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   // whether there are non-zero alpha bytes.
   //
   // We start by drawing the AND mask into our DIB.
-  memset(bits, 0, s.width() * s.height() * 4);
+  size_t num_pixels = s.GetArea();
+  memset(bits, 0, num_pixels * 4);
   ::DrawIconEx(dib_dc, 0, 0, icon, s.width(), s.height(), 0, NULL, DI_MASK);
 
   // Capture boolean opacity. We may not use it if we find out the bitmap has
   // an alpha channel.
-  bool* opaque = new bool[s.width() * s.height()];
+  bool* opaque = new bool[num_pixels];
   DCHECK(opaque);
-  int x, y;
-  for (y = 0; y < s.height(); ++y) {
-    for (x = 0; x < s.width(); ++x)
-      opaque[(y * s.width()) + x] = !bits[(y * s.width()) + x];
-  }
+  for (size_t i = 0; i < num_pixels; ++i)
+    opaque[i] = !bits[i];
 
   // Then draw the image itself which is really the XOR mask.
-  memset(bits, 0, s.width() * s.height() * 4);
+  memset(bits, 0, num_pixels * 4);
   ::DrawIconEx(dib_dc, 0, 0, icon, s.width(), s.height(), 0, NULL, DI_NORMAL);
-  memcpy(bitmap->getPixels(),
-         static_cast<void*>(bits),
-         s.width() * s.height() * 4);
+  memcpy(bitmap->getPixels(), static_cast<void*>(bits), num_pixels * 4);
 
   // Finding out whether the bitmap has an alpha channel.
   bool bitmap_has_alpha_channel = false;
   unsigned int* p = static_cast<unsigned int*>(bitmap->getPixels());
-  for (y = 0; y < s.height(); ++y) {
-    for (x = 0; x < s.width(); ++x) {
-      if ((*p & 0xff000000) != 0) {
-        bitmap_has_alpha_channel = true;
-        break;
-      }
-      p++;
-    }
-
-    if (bitmap_has_alpha_channel) {
+  for (unsigned int* end = p + num_pixels; p != end; ++p) {
+    if ((*p & 0xff000000) != 0) {
+      bitmap_has_alpha_channel = true;
       break;
     }
   }
@@ -173,16 +162,12 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   // the previously captured AND mask. Otherwise, we are done.
   if (!bitmap_has_alpha_channel) {
     p = static_cast<unsigned int*>(bitmap->getPixels());
-    for (y = 0; y < s.height(); ++y) {
-      for (x = 0; x < s.width(); ++x) {
-        DCHECK_EQ((*p & 0xff000000), 0);
-        if (opaque[(y * s.width()) + x]) {
-          *p |= 0xff000000;
-        } else {
-          *p &= 0x00ffffff;
-        }
-        p++;
-      }
+    for (size_t i = 0; i < num_pixels; ++p, ++i) {
+      DCHECK_EQ((*p & 0xff000000), 0);
+      if (opaque[i])
+        *p |= 0xff000000;
+      else
+        *p &= 0x00ffffff;
     }
   }
 
