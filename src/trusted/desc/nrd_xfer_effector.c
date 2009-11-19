@@ -126,7 +126,7 @@ static int NaClNrdXferEffectorUnmapMemory(struct NaClDescEffector *vself,
   return 0;
 }
 
-static int NaClNrdXferEffectorMapAnonymousMemory(
+static uintptr_t NaClNrdXferEffectorMapAnonymousMemory(
     struct NaClDescEffector *vself,
     uintptr_t               sysaddr,
     size_t                  nbytes,

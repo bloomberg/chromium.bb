@@ -87,10 +87,10 @@ static int NaClDescEffCleanUnmapMemory(struct NaClDescEffector  *vself,
   return 0;
 }
 
-static int NaClDescEffCleanMapAnonMem(struct NaClDescEffector *vself,
-                                      uintptr_t               sysaddr,
-                                      size_t                  nbytes,
-                                      int                     prot) {
+static uintptr_t NaClDescEffCleanMapAnonMem(struct NaClDescEffector *vself,
+                                            uintptr_t               sysaddr,
+                                            size_t                  nbytes,
+                                            int                     prot) {
   UNREFERENCED_PARAMETER(vself);
   UNREFERENCED_PARAMETER(sysaddr);
   UNREFERENCED_PARAMETER(nbytes);

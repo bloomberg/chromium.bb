@@ -70,8 +70,8 @@
  * 16-bytes-per-cycle memory copies for in-cache data.
  */
 
-static INLINE size_t min_size(size_t  a,
-                              size_t  b) {
+static INLINE nacl_abi_size_t min_size(nacl_abi_size_t  a,
+                                       nacl_abi_size_t  b) {
   if (a < b) return a;
   return b;
 }
@@ -93,10 +93,10 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
   struct NaClImcMsgIoVec    kern_iov[NACL_ABI_IMC_IOVEC_MAX + 1];
   struct NaClDesc           **kern_desc;
   NaClHandle                kern_handle[NACL_ABI_IMC_DESC_MAX];
-  size_t                    user_bytes;
-  size_t                    tmp_sum;
-  size_t                    sys_bytes;
-  size_t                    sys_handles;
+  nacl_abi_size_t           user_bytes;
+  nacl_abi_size_t           tmp_sum;
+  nacl_abi_size_t           sys_bytes;
+  nacl_abi_size_t           sys_handles;
   size_t                    desc_bytes;
   size_t                    desc_handles;
   struct NaClInternalHeader *hdr;
@@ -207,12 +207,19 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
        * No integer overflow should be possible given the max-handles
        * limits and actual resource use per handle involved.
        */
-      sys_bytes += 1 + desc_bytes;
-      sys_handles += desc_handles;
+      if (desc_bytes > NACL_ABI_SIZE_T_MAX - 1
+          || (desc_bytes + 1) > NACL_ABI_SIZE_T_MAX - sys_bytes
+          || desc_handles > NACL_ABI_SIZE_T_MAX - sys_handles) {
+        retval = -NACL_ABI_EOVERFLOW;
+        goto cleanup;
+      }
+      sys_bytes += (nacl_abi_size_t) (1 + desc_bytes);
+      sys_handles += (nacl_abi_size_t) desc_handles;
     }
     if (sys_handles > NACL_ABI_IMC_DESC_MAX) {
-      NaClLog(LOG_FATAL, ("User had %"PRIdS" descriptors,"
-                          " which expanded into %"PRIdS" handles, more than"
+      NaClLog(LOG_FATAL, ("User had %"PRIdNACL_SIZE" descriptors,"
+                          " which expanded into %"PRIdNACL_SIZE
+                          "handles, more than"
                           " the max of %d.\n"),
               nitmhp->ndesc_length, sys_handles,
               NACL_ABI_IMC_DESC_MAX);
@@ -230,7 +237,7 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
 
     hdr = (struct NaClInternalHeader *) hdr_buf;
     hdr->h.xfer_protocol_version = NACL_HANDLE_TRANSFER_PROTOCOL;
-    hdr->h.descriptor_data_bytes = sys_bytes;
+    hdr->h.descriptor_data_bytes = nacl_abi_size_t_saturate(sys_bytes);
 
     xfer_state.next_byte = (char *) (hdr + 1);
     xfer_state.byte_buffer_end = xfer_state.next_byte + sys_bytes;
@@ -316,23 +323,23 @@ int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
   int                       supported_flags;
   int                       retval;
   char                      *recv_buf;
-  size_t                    user_bytes;
-  size_t                    tmp_sum;
+  nacl_abi_size_t           user_bytes;
+  nacl_abi_size_t           tmp_sum;
   NaClHandle                kern_handle[NACL_ABI_IMC_DESC_MAX];
   struct NaClIOVec          recv_iov;
   struct NaClMessageHeader  recv_hdr;
   int                       total_recv_bytes;
   struct NaClInternalHeader intern_hdr;
-  size_t                    recv_user_bytes_avail;
-  size_t                    tmp;
+  nacl_abi_size_t           recv_user_bytes_avail;
+  nacl_abi_size_t           tmp;
   char                      *user_data;
-  size_t                    iov_copy_size;
+  nacl_abi_size_t           iov_copy_size;
   struct NaClDescXferState  xfer;
-  int                       type_tag;
+  nacl_abi_size_t           type_tag;
   struct NaClDesc           *new_desc[NACL_ABI_IMC_DESC_MAX];
   int                       xfer_status;
-  size_t                    i;
-  size_t                    num_user_desc;
+  nacl_abi_size_t           i;
+  nacl_abi_size_t           num_user_desc;
 
   NaClLog(4,
           "Entered NaClImcRecvTypedMsg(0x%08"PRIxPTR", 0x%08"PRIxPTR", %d)\n",

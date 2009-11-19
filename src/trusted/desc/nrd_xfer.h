@@ -71,10 +71,10 @@ struct NaClDescEffector;
 
 struct NaClImcTypedMsgHdr {
   struct NaClImcMsgIoVec  *iov;
-  size_t                  iov_length;
+  nacl_abi_size_t         iov_length;
   struct NaClDesc         **ndescv;     /* ptr to array of ptrs */
-  size_t                  ndesc_length;
-  int                     flags;
+  nacl_abi_size_t         ndesc_length;
+  int32_t                 flags;
 };
 
 
@@ -86,7 +86,7 @@ struct NaClImcTypedMsgHdr {
 int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
                                 struct NaClDescEffector         *effp,
                                 const struct NaClImcTypedMsgHdr *nitmhp,
-                                int                             flags);
+                                int32_t                         flags);
 
 /**
  * Receive a high-level IMC message (containing typed descriptors)
@@ -97,7 +97,7 @@ int32_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
 int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
                                 struct NaClDescEffector   *effp,
                                 struct NaClImcTypedMsgHdr *nitmhp,
-                                int                       flags);
+                                int32_t                   flags);
 
 /**
  * Create a bound socket and corresponding socket address as a pair.

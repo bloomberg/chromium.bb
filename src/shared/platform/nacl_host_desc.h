@@ -80,14 +80,18 @@ typedef struct _stati64 nacl_host_stat_t;
 # error "what OS?"
 #endif
 
-static INLINE int NaClIsNegErrno(int val) {
+static INLINE int NaClIsNegErrno(int64_t val) {
   /*
    * On 64-bit Linux, the app has the entire 32-bit address space
    * (kernel no longer occupies the top 1G), so what is an errno and
    * what is an address is trickier: we require that our NACL_ABI_
    * errno values be at most 64K.
+   *
+   * NB: The runtime assumes that valid errno values can ALWAYS be
+   * represented using no more than 16 bits. If this assumption
+   * changes, all code dealing with error number should be reviewed.
    */
-  return ((unsigned) val >= 0xffff0000u);
+  return ((uint64_t) val) >= ~((uint64_t) 0xffff);
 }
 
 extern int NaClXlateErrno(int errnum);

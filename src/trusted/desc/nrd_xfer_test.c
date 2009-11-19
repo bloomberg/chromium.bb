@@ -176,7 +176,7 @@ int main(int ac, char **av) {
 
     if (rv >= 0) {
       printf("Data bytes: %.*s\n", rv, data_buffer);
-      printf("Got %"PRIuS" NaCl descriptors\n", msg_hdr.ndesc_length);
+      printf("Got %"PRIdNACL_SIZE" NaCl descriptors\n", msg_hdr.ndesc_length);
 
       for (i = 0; i < msg_hdr.ndesc_length; ++i) {
         struct NaClDesc *ndp;

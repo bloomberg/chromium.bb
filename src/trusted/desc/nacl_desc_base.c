@@ -570,18 +570,32 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
       continue;
     }
 #endif
-    rval = (*desc->vtbl->Map)(desc,
-                              effector,
-                              map_addr,
-                              rounded_size,
-                              NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
-                              NACL_ABI_MAP_SHARED,
-                              0);
-    if (!NaClIsNegErrno(rval)) {
-      rval_ptr = (uintptr_t) rval;
-      map_addr = (void*)(rval_ptr);
+    rval_ptr = (*desc->vtbl->Map)(desc,
+                                        effector,
+                                        map_addr,
+                                        rounded_size,
+                                        NACL_ABI_PROT_READ
+                                        | NACL_ABI_PROT_WRITE,
+                                        NACL_ABI_MAP_SHARED,
+                                        0);
+    if (NaClIsNegErrno(rval_ptr)) {
+      /*
+       * A nonzero return from NaClIsNegErrno
+       * indicates that the value is within the range
+       * reserved for errors, which is representable
+       * with 32 bits.
+       */
+      rval = (int) rval_ptr;
+    } else {
+      /*
+       * Map() did not return an error, so set our
+       * return code to 0 (success)
+       */
+      rval = 0;
+      map_addr = (void*) rval_ptr;
       break;
     }
+
   } while (NULL == map_addr && tries < kMaxTries);
 
   if (NULL == map_addr) {

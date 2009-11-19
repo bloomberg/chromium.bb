@@ -163,10 +163,10 @@ struct NaClDescEffectorVtbl {
    * at requested sysaddr of nbytes in length.  prot may be
    * NACL_ABI_PROT_NONE for address space squatting purposes.
    */
-  int (*MapAnonymousMemory)(struct NaClDescEffector *vself,
-                            uintptr_t               sysaddr,
-                            size_t                  nbytes,
-                            int                     prot);
+  uintptr_t (*MapAnonymousMemory)(struct NaClDescEffector *vself,
+                                  uintptr_t               sysaddr,
+                                  size_t                  nbytes,
+                                  int                     prot);
 
   /*
    * The bound IMC socket to use as the sender when making a

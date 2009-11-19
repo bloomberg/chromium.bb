@@ -159,10 +159,10 @@ static int NaClDescEffLdrUnmapMemory(struct NaClDescEffector  *vself,
 }
 #endif  /* NACL_WINDOWS */
 
-static int NaClDescEffLdrMapAnonMem(struct NaClDescEffector *vself,
-                                    uintptr_t               sysaddr,
-                                    size_t                  nbytes,
-                                    int                     prot) {
+static uintptr_t NaClDescEffLdrMapAnonMem(struct NaClDescEffector *vself,
+                                          uintptr_t               sysaddr,
+                                          size_t                  nbytes,
+                                          int                     prot) {
   UNREFERENCED_PARAMETER(vself);
   return NaClHostDescMap((struct NaClHostDesc *) NULL,
                          (void *) sysaddr,
