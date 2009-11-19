@@ -452,6 +452,15 @@ class UITest : public testing::Test {
                                const std::wstring& port);
   void StopHttpServer();
 
+  // Prints IO performance data for use by perf graphs.
+  void PrintIOPerfInfo(const char* test_name, FilePath data_dir);
+
+  // Prints memory usage data for use by perf graphs.
+  void PrintMemoryUsageInfo(const char* test_name, FilePath data_dir);
+
+  // Prints memory commit charge stats for use by perf graphs.
+  void PrintSystemCommitCharge(const char* test_name, size_t charge);
+
  private:
   // Check that no processes related to Chrome exist, displaying
   // the given message if any do.

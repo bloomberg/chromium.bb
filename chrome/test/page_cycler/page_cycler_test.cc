@@ -226,164 +226,6 @@ class PageCyclerTest : public UITest {
     ASSERT_FALSE(timings->empty());
   }
 
-  void PrintIOPerfInfo(const char* test_name) {
-    FilePath data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &data_dir);
-    int browser_process_pid = ChromeBrowserProcessId(data_dir);
-    ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
-
-    ChromeProcessList::const_iterator it;
-    for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-      base::ProcessHandle process_handle;
-      if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
-        NOTREACHED();
-      }
-
-      scoped_ptr<base::ProcessMetrics> process_metrics;
-      process_metrics.reset(
-          base::ProcessMetrics::CreateProcessMetrics(process_handle));
-      IoCounters io_counters;
-      memset(&io_counters, 0, sizeof(io_counters));
-
-      if (process_metrics.get()->GetIOCounters(&io_counters)) {
-        // Print out IO performance.  We assume that the values can be
-        // converted to size_t (they're reported as ULONGLONG, 64-bit numbers).
-        std::string chrome_name = (*it == browser_process_pid) ? "_b" : "_r";
-
-        PrintResult("read_op", chrome_name,
-                    "r_op" + chrome_name + test_name,
-                    static_cast<size_t>(io_counters.ReadOperationCount), "",
-                    false /* not important */);
-        PrintResult("write_op", chrome_name,
-                    "w_op" + chrome_name + test_name,
-                    static_cast<size_t>(io_counters.WriteOperationCount), "",
-                    false /* not important */);
-        PrintResult("other_op", chrome_name,
-                    "o_op" + chrome_name + test_name,
-                    static_cast<size_t>(io_counters.OtherOperationCount), "",
-                    false /* not important */);
-
-        size_t total = static_cast<size_t>(io_counters.ReadOperationCount +
-                                           io_counters.WriteOperationCount +
-                                           io_counters.OtherOperationCount);
-        PrintResult("total_op", chrome_name,
-                    "IO_op" + chrome_name + test_name,
-                    total, "", true /* important */);
-
-        PrintResult("read_byte", chrome_name,
-                    "r_b" + chrome_name + test_name,
-                    static_cast<size_t>(io_counters.ReadTransferCount / 1024),
-                    "kb", false /* not important */);
-        PrintResult("write_byte", chrome_name,
-                    "w_b" + chrome_name + test_name,
-                    static_cast<size_t>(io_counters.WriteTransferCount / 1024),
-                    "kb", false /* not important */);
-        PrintResult("other_byte", chrome_name,
-                    "o_b" + chrome_name + test_name,
-                    static_cast<size_t>(io_counters.OtherTransferCount / 1024),
-                    "kb", false /* not important */);
-
-        total = static_cast<size_t>((io_counters.ReadTransferCount +
-                                     io_counters.WriteTransferCount +
-                                     io_counters.OtherTransferCount) / 1024);
-        PrintResult("total_byte", chrome_name,
-                    "IO_b" + chrome_name + test_name,
-                    total, "kb", true /* important */);
-      }
-
-      base::CloseProcessHandle(process_handle);
-    }
-  }
-
-  void PrintMemoryUsageInfo(const char* test_name) {
-    FilePath data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &data_dir);
-    int browser_process_pid = ChromeBrowserProcessId(data_dir);
-    ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
-
-#if !defined(OS_MACOSX)
-    ChromeProcessList::const_iterator it;
-    for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-      base::ProcessHandle process_handle;
-      if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
-        NOTREACHED();
-      }
-
-      scoped_ptr<base::ProcessMetrics> process_metrics;
-      process_metrics.reset(
-          base::ProcessMetrics::CreateProcessMetrics(process_handle));
-
-      std::string chrome_name = (*it == browser_process_pid) ? "_b" : "_r";
-
-      std::string trace_name(test_name);
-#if defined(OS_WIN)
-      PrintResult("vm_peak", chrome_name,
-                  "vm_pk" + chrome_name + trace_name,
-                  process_metrics->GetPeakPagefileUsage(), "bytes",
-                  true /* important */);
-      PrintResult("vm_final", chrome_name,
-                  "vm_f" + chrome_name + trace_name,
-                  process_metrics->GetPagefileUsage(), "bytes",
-                  false /* not important */);
-      PrintResult("ws_peak", chrome_name,
-                  "ws_pk" + chrome_name + trace_name,
-                  process_metrics->GetPeakWorkingSetSize(), "bytes",
-                  true /* important */);
-      PrintResult("ws_final", chrome_name,
-                  "ws_f" + chrome_name + trace_name,
-                  process_metrics->GetWorkingSetSize(), "bytes",
-                  false /* not important */);
-#elif defined(OS_LINUX)
-      PrintResult("vm_size_final", chrome_name,
-                  "vm_size_f" + chrome_name + trace_name,
-                  process_metrics->GetPagefileUsage(), "bytes",
-                  true /* important */);
-      PrintResult("vm_rss_final", chrome_name,
-                  "vm_rss_f" + chrome_name + trace_name,
-                  process_metrics->GetWorkingSetSize(), "bytes",
-                  true /* important */);
-#else
-      NOTIMPLEMENTED();
-#endif
-      base::CloseProcessHandle(process_handle);
-    }
-
-#else  // !defined(OS_MACOSX)
-
-    // There is no way to get memory info from one process on another process
-    // without privileges, this means the base methods for doing this can't be
-    // made to work.  Instead we use a helper that invokes ps to collect the
-    // data so we have it for the unittest.
-
-    MacChromeProcessInfoList process_infos(
-                                  GetRunningMacProcessInfo(chrome_processes));
-    MacChromeProcessInfoList::const_iterator it;
-    for (it = process_infos.begin(); it != process_infos.end(); ++it) {
-      const MacChromeProcessInfo &process_info = *it;
-
-      std::string chrome_name =
-          (process_info.pid == browser_process_pid) ? "_b" : "_r";
-      std::string trace_name(test_name);
-
-      PrintResult("vm_size_final", chrome_name,
-                  "vm_size_f" + chrome_name + trace_name,
-                  static_cast<size_t>(process_info.vsz_in_kb) * 1024, "bytes",
-                  true /* important */);
-      PrintResult("vm_rss_final", chrome_name,
-                  "vm_rss_f" + chrome_name + trace_name,
-                  static_cast<size_t>(process_info.rsz_in_kb) * 1024, "bytes",
-                  true /* important */);
-    }
-
-#endif  // !defined(OS_MACOSX)
-  }
-
-  void PrintSystemCommitCharge(const char* test_name, size_t charge) {
-    std::string trace_name(test_name);
-    PrintResult("commit_charge", "", "cc" + trace_name, charge, "kb",
-                true /* important */);
-  }
-
   // When use_http is true, the test name passed here will be used directly in
   // the path to the test data, so it must be safe for use in a URL without
   // escaping. (No pound (#), question mark (?), semicolon (;), non-ASCII, or
@@ -397,8 +239,11 @@ class PageCyclerTest : public UITest {
       return;
     size_t stop_size = base::GetSystemCommitCharge();
 
-    PrintMemoryUsageInfo(suffix);
-    PrintIOPerfInfo(suffix);
+    FilePath data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &data_dir);
+
+    PrintMemoryUsageInfo(suffix, data_dir);
+    PrintIOPerfInfo(suffix, data_dir);
     PrintSystemCommitCharge(suffix, stop_size - start_size);
 
     std::string trace_name = "t" + std::string(suffix);
@@ -444,8 +289,11 @@ class PageCyclerReferenceTest : public PageCyclerTest {
       return;
     size_t stop_size = base::GetSystemCommitCharge();
 
-    PrintMemoryUsageInfo("_ref");
-    PrintIOPerfInfo("_ref");
+    FilePath data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &data_dir);
+
+    PrintMemoryUsageInfo("_ref", data_dir);
+    PrintIOPerfInfo("_ref", data_dir);
     PrintSystemCommitCharge("_ref", stop_size - start_size);
 
     PrintResultList("times", "", "t_ref", timings, "ms",
