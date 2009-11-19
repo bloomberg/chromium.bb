@@ -12,7 +12,7 @@
   ],
   "browser_action": {
       "name": "Display Map",
-      "icons": ["marker.png"],
-      "popup": { "path": "popup.html", "height": 512 }
+      "default_icon": "marker.png",
+      "popup": { "path": "popup.html" }
   }
 }
