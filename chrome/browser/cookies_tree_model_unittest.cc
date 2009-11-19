@@ -154,7 +154,7 @@ TEST_F(CookiesTreeModelTest, Remove) {
     // foo2 -> cookies -> b, foo3 -> cookies -> c
     EXPECT_EQ(10, cookies_model.GetRoot()->GetTotalNodeCount());
   }
-    DeleteCookie(cookies_model.GetRoot()->GetChild(0));
+  DeleteCookie(cookies_model.GetRoot()->GetChild(0));
   {
     SCOPED_TRACE("First origin removed");
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
@@ -176,7 +176,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
     // foo2 -> cookies -> b, foo3 -> cookies -> c
     EXPECT_EQ(10, cookies_model.GetRoot()->GetTotalNodeCount());
   }
-    DeleteCookie(cookies_model.GetRoot()->GetChild(0)->GetChild(0));
+  DeleteCookie(cookies_model.GetRoot()->GetChild(0)->GetChild(0));
   {
     SCOPED_TRACE("First origin removed");
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
@@ -201,7 +201,7 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
     // foo2 -> cookies -> b, foo3 -> cookies -> c
     EXPECT_EQ(10, cookies_model.GetRoot()->GetTotalNodeCount());
   }
-    DeleteCookie(cookies_model.GetRoot()->GetChild(1)->GetChild(0));
+  DeleteCookie(cookies_model.GetRoot()->GetChild(1)->GetChild(0));
   {
     SCOPED_TRACE("Second origin COOKIES node removed");
     EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
@@ -229,7 +229,7 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
     EXPECT_STREQ("A,B,C,D", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D", GetDisplayedCookies(&cookies_model).c_str());
   }
-    DeleteCookie(cookies_model.GetRoot()->GetChild(2));
+  DeleteCookie(cookies_model.GetRoot()->GetChild(2));
   {
     SCOPED_TRACE("Third origin removed");
     EXPECT_STREQ("A,B", GetMonsterCookies(monster).c_str());
@@ -255,8 +255,8 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
     EXPECT_STREQ("A,B,C,D,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D,E", GetDisplayedCookies(&cookies_model).c_str());
   }
-    DeleteCookie(cookies_model.GetRoot()->GetChild(2)->GetChild(0)->
-        GetChild(1));
+  DeleteCookie(cookies_model.GetRoot()->GetChild(2)->GetChild(0)->
+      GetChild(1));
   {
     SCOPED_TRACE("Middle cookie in third origin removed");
     EXPECT_STREQ("A,B,C,E", GetMonsterCookies(monster).c_str());
@@ -282,7 +282,7 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
     EXPECT_STREQ("A,B,C,D,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D,E", GetDisplayedCookies(&cookies_model).c_str());
   }
-    DeleteCookie(cookies_model.GetRoot()->GetChild(1));
+  DeleteCookie(cookies_model.GetRoot()->GetChild(1));
   {
     SCOPED_TRACE("Second origin removed");
     EXPECT_STREQ("A,C,D,E", GetMonsterCookies(monster).c_str());
@@ -291,5 +291,36 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
     EXPECT_EQ(9, cookies_model.GetRoot()->GetTotalNodeCount());
   }
 }
+
+TEST_F(CookiesTreeModelTest, OriginOrdering) {
+  net::CookieMonster* monster = profile_->GetCookieMonster();
+  monster->SetCookie(GURL("http://a.foo2.com"), "A=1");
+  monster->SetCookie(GURL("http://foo2.com"), "B=1");
+  monster->SetCookie(GURL("http://b.foo1.com"), "C=1");
+  monster->SetCookie(GURL("http://foo4.com"), "D=1; domain=.foo4.com;"
+      " path=/;");  // Leading dot on the foo4
+  monster->SetCookie(GURL("http://a.foo1.com"), "E=1");
+  monster->SetCookie(GURL("http://foo1.com"), "F=1");
+  monster->SetCookie(GURL("http://foo3.com"), "G=1");
+  monster->SetCookie(GURL("http://foo4.com"), "H=1");
+
+  CookiesTreeModel cookies_model(profile_.get());
+
+  {
+    SCOPED_TRACE("Initial State 8 cookies");
+    // D starts with a ., CookieMonster orders that lexicographically first
+    EXPECT_STREQ("D,E,A,C,F,B,G,H", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("F,E,C,B,A,G,D,H",
+        GetDisplayedCookies(&cookies_model).c_str());
+  }
+  DeleteCookie(cookies_model.GetRoot()->GetChild(1));  // Delete "E"
+  {
+    SCOPED_TRACE("Second origin removed");
+    EXPECT_STREQ("D,A,C,F,B,G,H", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("F,C,B,A,G,D,H", GetDisplayedCookies(&cookies_model).c_str());
+  }
+}
+
+
 
 }  // namespace

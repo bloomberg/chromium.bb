@@ -20,6 +20,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/registry_controlled_domain.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -59,7 +60,54 @@ class OriginNodeComparator {
  public:
   bool operator() (const CookieTreeNode* lhs,
                    const CookieTreeNode* rhs) {
-    return (lhs->GetTitle() < rhs->GetTitle());
+    // We want to order by registry controlled domain, so we would get
+    // google.com, ad.google.com, www.google.com,
+    // microsoft.com, ad.microsoft.com. CanonicalizeHost transforms the origins
+    // into a form like google.com.www so that string comparisons work.
+    return (CanonicalizeHost(lhs->GetTitle()) <
+            CanonicalizeHost(rhs->GetTitle()));
+  }
+
+ private:
+  std::string CanonicalizeHost(const std::wstring& host_w) {
+    // The canonicalized representation makes the registry controlled domain
+    // come first, and then adds subdomains in reverse order, e.g.
+    // 1.mail.google.com would become google.com.mail.1, and then a standard
+    // string comparison works to order hosts by registry controlled domain
+    // first. Leading dots are ignored, ".google.com" is the same as
+    // "google.com".
+
+    std::string host = WideToUTF8(host_w);
+    std::string retval = net::RegistryControlledDomainService::
+        GetDomainAndRegistry(host);
+    if (!retval.length())  // Is an IP address or other special origin.
+      return host;
+
+    std::string::size_type position = host.rfind(retval);
+
+    // The host may be the registry controlled domain, in which case fail fast.
+    if (position == 0 || position == std::string::npos)
+      return host;
+
+    // If host is www.google.com, retval will contain google.com at this point.
+    // Start operating to the left of the registry controlled domain, e.g. in
+    // the www.google.com example, start at index 3.
+    --position;
+
+    // If position == 0, that means it's a dot; this will be ignored to treat
+    // ".google.com" the same as "google.com".
+    while (position > 0) {
+      retval += std::string(".");
+      // Copy up to the next dot. host[position] is a dot so start after it.
+      std::string::size_type next_dot = host.rfind(".", position - 1);
+      if (next_dot == std::string::npos) {
+        retval += host.substr(0, position);
+        break;
+      }
+      retval += host.substr(next_dot + 1, position - (next_dot + 1));
+      position = next_dot;
+    }
+    return retval;
   }
 };
 
