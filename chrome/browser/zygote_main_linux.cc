@@ -53,7 +53,10 @@ static const int kBrowserDescriptor = 3;
 static const int kMagicSandboxIPCDescriptor = 5;
 static const int kZygoteIdDescriptor = 7;
 static bool g_suid_sandbox_active = false;
+#if defined(ARCH_CPU_X86_FAMILY)
+// |g_proc_fd| is used only by the seccomp sandbox.
 static int g_proc_fd = -1;
+#endif
 
 // This is the object which implements the zygote. The ZygoteMain function,
 // which is called from ChromeMain, at the the bottom and simple constructs one
