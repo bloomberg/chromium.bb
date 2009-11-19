@@ -11,6 +11,7 @@
 #include "base/pickle.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/renderer/extension_groups.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
@@ -123,8 +124,14 @@ void UserScriptSlave::InsertInitExtensionCode(
 
 bool UserScriptSlave::InjectScripts(WebFrame* frame,
                                     UserScript::RunLocation location) {
+  GURL frame_url = GURL(frame->url());
   // Don't bother if this is not a URL we inject script into.
-  if (!URLPattern::IsValidScheme(GURL(frame->url()).scheme()))
+  if (!URLPattern::IsValidScheme(frame_url.scheme()))
+    return true;
+
+  // Don't inject user scripts into the gallery itself.  This prevents
+  // a user script from removing the "report abuse" link, for example.
+  if (frame_url.host() == GURL(Extension::kGalleryBrowseUrl).host())
     return true;
 
   PerfTimer timer;
