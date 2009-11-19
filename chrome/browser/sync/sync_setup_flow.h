@@ -98,15 +98,7 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   SyncSetupFlow(SyncSetupWizard::State start_state,
                 SyncSetupWizard::State end_state,
                 const std::string& args, SyncSetupFlowContainer* container,
-                FlowHandler* handler, ProfileSyncService* service)
-      : container_(container),
-        dialog_start_args_(args),
-        current_state_(start_state),
-        end_state_(end_state),
-        login_start_time_(base::TimeTicks::Now()),
-        flow_handler_(handler),
-        service_(service) {
-  }
+                ProfileSyncService* service);
 
   // Returns true if |this| should transition its state machine to |state|
   // based on |current_state_|, or false if that would be nonsense or is
@@ -122,8 +114,9 @@ class SyncSetupFlow : public HtmlDialogUIDelegate {
   // Time that the GAIA_LOGIN step was received.
   base::TimeTicks login_start_time_;
 
-  // The handler needed for the entire flow.  We don't own this.
+  // The handler needed for the entire flow.
   FlowHandler* flow_handler_;
+  mutable bool owns_flow_handler_;
 
   // We need this to write the sentinel "setup completed" pref.
   ProfileSyncService* service_;

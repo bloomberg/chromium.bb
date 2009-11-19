@@ -146,8 +146,28 @@ void FlowHandler::ExecuteJavascriptInIFrame(const std::wstring& iframe_xpath,
   }
 }
 
+// Use static Run method to get an instance.
+SyncSetupFlow::SyncSetupFlow(SyncSetupWizard::State start_state,
+                             SyncSetupWizard::State end_state,
+                             const std::string& args,
+                             SyncSetupFlowContainer* container,
+                             ProfileSyncService* service)
+    : container_(container),
+      dialog_start_args_(args),
+      current_state_(start_state),
+      end_state_(end_state),
+      login_start_time_(base::TimeTicks::Now()),
+      flow_handler_(new FlowHandler()),
+      owns_flow_handler_(true),
+      service_(service) {
+  flow_handler_->set_flow(this);
+}
+
 SyncSetupFlow::~SyncSetupFlow() {
   flow_handler_->set_flow(NULL);
+  if (owns_flow_handler_) {
+    delete flow_handler_;
+  }
 }
 
 void SyncSetupFlow::GetDialogSize(gfx::Size* size) const {
@@ -231,6 +251,9 @@ void SyncSetupFlow::GetArgsForGaiaLogin(const ProfileSyncService* service,
 void SyncSetupFlow::GetDOMMessageHandlers(
     std::vector<DOMMessageHandler*>* handlers) const {
   handlers->push_back(flow_handler_);
+  // We don't own flow_handler_ anymore, but it sticks around until at least
+  // right after OnDialogClosed() is called (and this object is destroyed).
+  owns_flow_handler_ = false;
 }
 
 bool SyncSetupFlow::ShouldAdvance(SyncSetupWizard::State state) {
@@ -305,10 +328,8 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   if (!b)
     return NULL;
 
-  FlowHandler* handler = new FlowHandler();
   SyncSetupFlow* flow = new SyncSetupFlow(start, end, json_args,
-      container, handler, service);
-  handler->set_flow(flow);
+      container, service);
   b->BrowserShowHtmlDialog(flow, NULL);
   return flow;
 }
