@@ -15,11 +15,17 @@ namespace download_util {
 
 void AddFileToPasteboard(NSPasteboard* pasteboard, const FilePath& path) {
   // Write information about the file being dragged to the pasteboard.
-  NSString* file = base::SysWideToNSString(path.ToWStringHack());
+  NSString* file = base::SysUTF8ToNSString(path.value());
   NSArray* fileList = [NSArray arrayWithObject:file];
   [pasteboard declareTypes:[NSArray arrayWithObject:NSFilenamesPboardType]
                      owner:nil];
   [pasteboard setPropertyList:fileList forType:NSFilenamesPboardType];
+}
+
+void NotifySystemOfDownloadComplete(const FilePath& path) {
+  [[NSDistributedNotificationCenter defaultCenter]
+      postNotificationName:@"com.apple.DownloadFileFinished"
+                    object:base::SysUTF8ToNSString(path.value())];
 }
 
 void DragDownload(const DownloadItem* download,
