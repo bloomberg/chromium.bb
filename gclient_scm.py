@@ -24,14 +24,16 @@ def CreateSCM(url=None, root_dir=None, relpath=None, scm_name='svn'):
     'git' : GitWrapper,
   }
 
-  if url and (url.startswith('git:') or
-              url.startswith('ssh:') or
-              url.endswith('.git')):
-    scm_name = 'git'
+  orig_url = url
+
+  if url:
+    url, _ = gclient_utils.SplitUrlRevision(url)
+    if url.startswith('git:') or url.startswith('ssh:') or url.endswith('.git'):
+      scm_name = 'git'
 
   if not scm_name in scm_map:
     raise gclient_utils.Error('Unsupported scm %s' % scm_name)
-  return scm_map[scm_name](url, root_dir, relpath, scm_name)
+  return scm_map[scm_name](orig_url, root_dir, relpath, scm_name)
 
 
 # SCMWrapper base class
