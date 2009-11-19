@@ -15,6 +15,8 @@
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 
+class Profile;
+
 class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
                            ChromeThread::DeleteOnFileThread>,
                        public URLFetcher::Delegate {
@@ -37,6 +39,14 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // update.
   void AddWord(const std::string& word);
 
+  // This function computes a vector of strings which are to be displayed in
+  // the context menu over a text area for changing spell check languages. It
+  // returns the index of the current spell check language in the vector.
+  // TODO(port): this should take a vector of string16, but the implementation
+  // has some dependencies in l10n util that need porting first.
+  static int GetSpellCheckLanguages(Profile* profile,
+                                    std::vector<std::string>* languages);
+
   const base::PlatformFile& bdict_file() const { return file_; }
 
   const std::vector<std::string>& custom_words() const { return custom_words_; }
@@ -44,6 +54,8 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   const std::string& last_added_word() const { return custom_words_.back(); }
 
   const std::string& language() const { return language_; }
+
+  bool use_platform_spellchecker() const { return use_platform_spellchecker_; }
 
  private:
   // These two classes can destruct us.
@@ -108,6 +120,9 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   // We don't want to attempt to download a missing dictionary file more than
   // once.
   bool tried_to_download_;
+
+  // Whether we should use the platform spellchecker instead of Hunspell.
+  bool use_platform_spellchecker_;
 
   // Data received from the dictionary download.
   std::string data_;

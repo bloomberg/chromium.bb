@@ -1,6 +1,7 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include <windows.h>
 #include <shlobj.h>
 #include <vsstyle.h>
@@ -21,11 +22,11 @@
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/language_order_table_model.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "chrome/browser/spellchecker.h"
 #include "chrome/browser/views/restart_message_box.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/spellcheck_common.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -350,7 +351,7 @@ void LanguagesPageView::InitControlLayout() {
 
   // Determine Locale Codes.
   std::vector<std::string> spell_check_languages;
-  SpellChecker::SpellCheckLanguages(&spell_check_languages);
+  SpellCheckCommon::SpellCheckLanguages(&spell_check_languages);
   dictionary_language_model_.reset(new LanguageComboboxModel(profile(),
       spell_check_languages));
   change_dictionary_language_combobox_ =
@@ -432,7 +433,7 @@ void LanguagesPageView::NotifyPrefChanged(const std::wstring* pref_name) {
       const std::string& lang_region = WideToASCII(
           dictionary_language_.GetValue());
       dictionary_language_.SetValue(ASCIIToWide(
-          SpellChecker::GetLanguageFromLanguageRegion(lang_region)));
+          SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region)));
       index = dictionary_language_model_->GetSelectedLanguageIndex(
           prefs::kSpellCheckDictionary);
     }

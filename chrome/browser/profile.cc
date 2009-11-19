@@ -39,7 +39,6 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
-#include "chrome/browser/spellchecker.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/thumbnail_store.h"
@@ -472,19 +471,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void ResetTabRestoreService() {
   }
 
-  virtual void ReinitializeSpellChecker() {
-    profile_->ReinitializeSpellChecker();
-  }
-
-  virtual SpellChecker* GetSpellChecker() {
-    return profile_->GetSpellChecker();
-  }
-
-  virtual void DeleteSpellChecker() {
-    profile_->DeleteSpellChecker();
-  }
-
-#if defined(SPELLCHECKER_IN_RENDERER)
   virtual SpellCheckHost* GetSpellCheckHost() {
     return profile_->GetSpellCheckHost();
   }
@@ -492,14 +478,13 @@ class OffTheRecordProfileImpl : public Profile,
   virtual void ReinitializeSpellCheckHost(bool force) {
     profile_->ReinitializeSpellCheckHost(force);
   }
-#endif
 
   virtual WebKitContext* GetWebKitContext() {
-  if (!webkit_context_.get())
-    webkit_context_ = new WebKitContext(GetPath(), true);
-  DCHECK(webkit_context_.get());
-  return webkit_context_.get();
-}
+    if (!webkit_context_.get())
+      webkit_context_ = new WebKitContext(GetPath(), true);
+    DCHECK(webkit_context_.get());
+    return webkit_context_.get();
+  }
 
   virtual ThumbnailStore* GetThumbnailStore() {
     return NULL;
@@ -593,7 +578,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       created_download_manager_(false),
       created_theme_provider_(false),
       start_time_(Time::Now()),
-      spellchecker_(NULL),
 #if defined(OS_LINUX)
       spellcheck_host_(NULL),
       spellcheck_host_ready_(false),
@@ -778,11 +762,8 @@ ProfileImpl::~ProfileImpl() {
   if (history_service_.get())
     history_service_->Cleanup();
 
-#if defined(SPELLCHECKER_IN_RENDERER)
   if (spellcheck_host_.get())
     spellcheck_host_->UnsetObserver();
-#endif
-  DeleteSpellCheckerImpl(false);
 
   if (default_request_context_ == request_context_)
     default_request_context_ = NULL;
@@ -1258,57 +1239,6 @@ void ProfileImpl::ResetTabRestoreService() {
   tab_restore_service_ = NULL;
 }
 
-// To be run in the IO thread to notify all resource message filters that the
-// spellchecker has changed.
-class NotifySpellcheckerChangeTask : public Task {
- public:
-  NotifySpellcheckerChangeTask(
-      Profile* profile,
-      const SpellcheckerReinitializedDetails& spellchecker)
-      : profile_(profile),
-        spellchecker_(spellchecker) {
-  }
-
- private:
-  void Run(void) {
-    NotificationService::current()->Notify(
-        NotificationType::SPELLCHECKER_REINITIALIZED,
-        Source<Profile>(profile_),
-        Details<SpellcheckerReinitializedDetails>(&spellchecker_));
-  }
-
-  Profile* profile_;
-  SpellcheckerReinitializedDetails spellchecker_;
-};
-
-void ProfileImpl::ReinitializeSpellChecker() {
-  PrefService* prefs = GetPrefs();
-  if (prefs->GetBoolean(prefs::kEnableSpellCheck)) {
-    DeleteSpellCheckerImpl(false);
-
-    // Retrieve the (perhaps updated recently) dictionary name from preferences.
-    FilePath dict_dir;
-    PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
-    // Note that, as the object pointed to by previously by spellchecker_
-    // is being deleted in the io thread, the spellchecker_ can be made to point
-    // to a new object (RE-initialized) in parallel in this UI thread.
-    spellchecker_ = new SpellChecker(dict_dir,
-        WideToASCII(prefs->GetString(prefs::kSpellCheckDictionary)),
-        GetRequestContext(),
-        FilePath());
-    spellchecker_->AddRef();  // Manual refcounting.
-
-    // Set auto spell correct status for spellchecker.
-    spellchecker_->EnableAutoSpellCorrect(
-        prefs->GetBoolean(prefs::kEnableAutoSpellCorrect));
-
-    NotifySpellCheckerChanged();
-  } else {
-    DeleteSpellCheckerImpl(true);
-  }
-}
-
-#if defined(SPELLCHECKER_IN_RENDERER)
 SpellCheckHost* ProfileImpl::GetSpellCheckHost() {
   return spellcheck_host_ready_ ? spellcheck_host_.get() : NULL;
 }
@@ -1343,44 +1273,11 @@ void ProfileImpl::ReinitializeSpellCheckHost(bool force) {
 
 void ProfileImpl::SpellCheckHostInitialized() {
   spellcheck_host_ready_ = spellcheck_host_ &&
-      spellcheck_host_->bdict_file() != base::kInvalidPlatformFileValue;
+      (spellcheck_host_->bdict_file() != base::kInvalidPlatformFileValue ||
+       spellcheck_host_->use_platform_spellchecker());
   NotificationService::current()->Notify(
       NotificationType::SPELLCHECK_HOST_REINITIALIZED,
           Source<Profile>(this), NotificationService::NoDetails());
-}
-#endif
-
-void ProfileImpl::NotifySpellCheckerChanged() {
-  SpellcheckerReinitializedDetails scoped_spellchecker;
-  scoped_spellchecker.spellchecker = spellchecker_;
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      new NotifySpellcheckerChangeTask(this, scoped_spellchecker));
-}
-
-void ProfileImpl::DeleteSpellCheckerImpl(bool notify) {
-  if (!spellchecker_)
-    return;
-
-  // The spellchecker must be deleted on the I/O thread.
-  ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, spellchecker_);
-  spellchecker_ = NULL;
-
-  if (notify)
-    NotifySpellCheckerChanged();
-}
-
-SpellChecker* ProfileImpl::GetSpellChecker() {
-  if (!spellchecker_) {
-    // This is where spellchecker gets initialized. Note that this is being
-    // initialized in the ui_thread. However, this is not a problem as long as
-    // it is *used* in the io thread.
-    // TODO(sidchat): One day, change everything so that spellchecker gets
-    // initialized in the IO thread itself.
-    ReinitializeSpellChecker();
-  }
-
-  return spellchecker_;
 }
 
 WebKitContext* ProfileImpl::GetWebKitContext() {
@@ -1418,14 +1315,12 @@ void ProfileImpl::Observe(NotificationType type,
     PrefService* prefs = Source<PrefService>(source).ptr();
     DCHECK(pref_name_in && prefs);
     if (*pref_name_in == prefs::kSpellCheckDictionary ||
-#if !defined(SPELLCHECKER_IN_RENDERER)
-        *pref_name_in == prefs::kEnableAutoSpellCorrect ||
-#endif
         *pref_name_in == prefs::kEnableSpellCheck) {
-      ReinitializeSpellChecker();
-#if defined(SPELLCHECKER_IN_RENDERER)
       ReinitializeSpellCheckHost(true);
-#endif
+    } else if (*pref_name_in == prefs::kEnableAutoSpellCorrect) {
+      NotificationService::current()->Notify(
+          NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED,
+              Source<Profile>(this), NotificationService::NoDetails());
     }
   } else if (NotificationType::THEME_INSTALLED == type) {
     Extension* extension = Details<Extension>(details).ptr();

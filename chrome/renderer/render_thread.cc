@@ -53,9 +53,7 @@
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/renderer_web_database_observer.h"
 #include "chrome/renderer/socket_stream_dispatcher.h"
-#if defined(SPELLCHECKER_IN_RENDERER)
 #include "chrome/renderer/spellchecker/spellcheck.h"
-#endif
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
@@ -158,9 +156,7 @@ void RenderThread::Init() {
   AddFilter(devtools_agent_filter_.get());
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
-#if defined(SPELLCHECKER_IN_RENDERER)
   spellchecker_.reset(new SpellCheck());
-#endif
 
 #if defined(OS_POSIX)
   suicide_on_channel_error_filter_ = new SuicideOnChannelErrorFilter;
@@ -341,14 +337,12 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetIPCLoggingEnabled,
                         OnSetIPCLoggingEnabled)
 #endif
-#if defined(SPELLCHECKER_IN_RENDERER)
     IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_Init,
                         OnInitSpellChecker)
     IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_WordAdded,
                         OnSpellCheckWordAdded)
     IPC_MESSAGE_HANDLER(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
                         OnSpellCheckEnableAutoSpellCorrect)
-#endif
   IPC_END_MESSAGE_MAP()
 }
 
@@ -454,12 +448,6 @@ void RenderThread::CloseIdleConnections() {
 void RenderThread::SetCacheMode(bool enabled) {
   Send(new ViewHostMsg_SetCacheMode(enabled));
 }
-
-#if defined(SPELLCHECKER_IN_RENDERER)
-void RenderThread::RequestSpellCheckDictionary() {
-  Send(new ViewHostMsg_SpellChecker_RequestDictionary);
-}
-#endif
 
 static void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
@@ -614,9 +602,7 @@ void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
 }
 
 void RenderThread::OnPurgeMemory() {
-#if defined(SPELLCHECKER_IN_RENDERER)
   spellchecker_.reset(new SpellCheck());
-#endif
 
   EnsureWebKitInitialized();
 
@@ -659,7 +645,6 @@ void RenderThread::OnPurgePluginListCache(bool reload_pages) {
   plugin_refresh_allowed_ = true;
 }
 
-#if defined(SPELLCHECKER_IN_RENDERER)
 void RenderThread::OnInitSpellChecker(
     IPC::PlatformFileForTransit bdict_file,
     const std::vector<std::string>& custom_words,
@@ -677,4 +662,3 @@ void RenderThread::OnSpellCheckWordAdded(const std::string& word) {
 void RenderThread::OnSpellCheckEnableAutoSpellCorrect(bool enable) {
   spellchecker_->EnableAutoSpellCorrect(enable);
 }
-#endif

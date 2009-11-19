@@ -5,14 +5,15 @@
 // This file implements the interface defined in spellchecker_platform_engine.h
 // for the OS X platform.
 
+#include "chrome/browser/spellchecker_platform_engine.h"
+
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
 #include "base/time.h"
 #include "base/histogram.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/spellchecker_common.h"
-#include "chrome/browser/spellchecker_platform_engine.h"
+#include "chrome/common/spellcheck_common.h"
 
 using base::TimeTicks;
 namespace {
@@ -175,7 +176,7 @@ void FillSuggestionList(const string16& wrong_word,
                    TimeTicks::Now() - begin_time);
 
   for (int i = 0; i < static_cast<int>([guesses count]); i++) {
-    if (i < kMaxSuggestions) {
+    if (i < SpellCheckCommon::kMaxSuggestions) {
       optional_suggestions->push_back(base::SysNSStringToUTF16(
                                       [guesses objectAtIndex:i]));
     }

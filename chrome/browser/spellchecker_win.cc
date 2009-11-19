@@ -7,8 +7,6 @@
 
 #include "chrome/browser/spellchecker_platform_engine.h"
 
-#include "chrome/browser/spellchecker_common.h"
-
 namespace SpellCheckerPlatform {
 
 bool SpellCheckerAvailable() {

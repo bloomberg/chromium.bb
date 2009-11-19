@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/string16.h"
-#include "chrome/browser/spellchecker_common.h"
 
 namespace SpellCheckerPlatform {
 

@@ -173,9 +173,6 @@ class RenderProcessHost : public IPC::Channel::Sender,
   // Called when RenderView is created by a listener.
   virtual void ViewCreated() = 0;
 
-  // Add a word in the spellchecker.
-  virtual void AddWord(const string16& word) = 0;
-
   // Informs the renderer about a new visited link table.
   virtual void SendVisitedLinkTable(base::SharedMemory* table_memory) = 0;
 

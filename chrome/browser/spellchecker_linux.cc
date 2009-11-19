@@ -5,14 +5,13 @@
 // If linux ever gains a platform specific spellchecker, it will be
 // implemented here.
 
-#include "base/string16.h"
-#include "chrome/browser/spellchecker_common.h"
+#include "spellchecker_platform_engine.h"
 
 namespace SpellCheckerPlatform {
 
 bool SpellCheckerAvailable() {
   // As of Summer 2009, there is no commonly accepted platform spellchecker
-  // for linux, so we'll return false here.
+  // for Linux, so we'll return false here.
   return false;
 }
 
@@ -54,7 +53,7 @@ void RemoveWord(const string16& word) {}
 
 int GetDocumentTag() { return 0; }
 
-void IgnoreWord(const std::string& word) {}
+void IgnoreWord(const string16& word) {}
 
 void CloseDocumentWithTag(int tag) {}
 

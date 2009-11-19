@@ -40,16 +40,15 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
-#if defined(SPELLCHECKER_IN_RENDERER)
 #include "chrome/browser/spellcheck_host.h"
-#endif
-#include "chrome/browser/spellchecker.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/process_watcher.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/renderer/render_process.h"
@@ -199,15 +198,12 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 
   registrar_.Add(this, NotificationType::USER_SCRIPTS_UPDATED,
                  NotificationService::AllSources());
-#if defined(SPELLCHECKER_IN_RENDERER)
   registrar_.Add(this, NotificationType::SPELLCHECK_HOST_REINITIALIZED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::SPELLCHECK_WORD_ADDED,
                  NotificationService::AllSources());
-
-  PrefService* prefs = profile->GetPrefs();
-  prefs->AddPrefObserver(prefs::kEnableAutoSpellCorrect, this);
-#endif
+  registrar_.Add(this, NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED,
+                 NotificationService::AllSources());
 
   visited_link_updater_.reset(new VisitedLinkUpdater());
 
@@ -221,11 +217,6 @@ BrowserRenderProcessHost::BrowserRenderProcessHost(Profile* profile)
 }
 
 BrowserRenderProcessHost::~BrowserRenderProcessHost() {
-#if defined(SPELLCHECKER_IN_RENDERER)
-  PrefService* prefs = profile()->GetPrefs();
-  prefs->RemovePrefObserver(prefs::kEnableAutoSpellCorrect, this);
-#endif
-
   WebCacheManager::GetInstance()->Remove(id());
   ChildProcessSecurityPolicy::GetInstance()->Remove(id());
 
@@ -277,7 +268,6 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
                                 g_browser_process->print_job_manager(),
                                 profile(),
                                 widget_helper_,
-                                profile()->GetSpellChecker(),
                                 request_context);
 
   // Find the renderer before creating the channel so if this fails early we
@@ -391,15 +381,6 @@ void BrowserRenderProcessHost::WidgetHidden() {
   if (visible_widgets_ == 0) {
     DCHECK(!backgrounded_);
     SetBackgrounded(true);
-  }
-}
-
-void BrowserRenderProcessHost::AddWord(const string16& word) {
-  SpellChecker* spellchecker = profile()->GetSpellChecker();
-  if (spellchecker) {
-    ChromeThread::PostTask(
-        ChromeThread::IO, FROM_HERE,
-        NewRunnableMethod(spellchecker, &SpellChecker::AddWord, word));
   }
 }
 
@@ -762,10 +743,8 @@ void BrowserRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
                           OnExtensionRemoveListener)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ExtensionCloseChannel,
                           OnExtensionCloseChannel)
-#if defined(SPELLCHECKER_IN_RENDERER)
       IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_RequestDictionary,
                           OnSpellCheckerRequestDictionary)
-#endif
       IPC_MESSAGE_UNHANDLED_ERROR()
     IPC_END_MESSAGE_MAP_EX()
 
@@ -900,7 +879,6 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
       }
       break;
     }
-#if defined(SPELLCHECKER_IN_RENDERER)
     case NotificationType::SPELLCHECK_HOST_REINITIALIZED: {
       InitSpellChecker();
       break;
@@ -911,18 +889,12 @@ void BrowserRenderProcessHost::Observe(NotificationType type,
           ptr()->last_added_word());
       break;
     }
-    case NotificationType::PREF_CHANGED: {
-      std::wstring* pref_name_in = Details<std::wstring>(details).ptr();
-      PrefService* prefs = Source<PrefService>(source).ptr();
-      DCHECK(pref_name_in && prefs);
-      if (*pref_name_in == prefs::kEnableAutoSpellCorrect) {
-        EnableAutoSpellCorrect(
-            prefs->GetBoolean(prefs::kEnableAutoSpellCorrect));
-        break;
-      }
-      // Fall through.
+    case NotificationType::SPELLCHECK_AUTOSPELL_TOGGLED: {
+      PrefService* prefs = profile()->GetPrefs();
+      EnableAutoSpellCorrect(
+          prefs->GetBoolean(prefs::kEnableAutoSpellCorrect));
+      break;
     }
-#endif
     default: {
       NOTREACHED();
       break;
@@ -937,14 +909,12 @@ void BrowserRenderProcessHost::OnProcessLaunched() {
   InitVisitedLinks();
   InitUserScripts();
   InitExtensions();
-#if defined(SPELLCHECKER_IN_RENDERER)
   // We don't want to initialize the spellchecker unless SpellCheckHost has been
   // created. In InitSpellChecker(), we know if GetSpellCheckHost() is NULL
   // then the spellchecker has been turned off, but here, we don't know if
   // it's been turned off or just not loaded yet.
   if (profile()->GetSpellCheckHost())
     InitSpellChecker();
-#endif
 
   if (max_page_id_ != -1)
     Send(new ViewMsg_SetNextPageID(max_page_id_ + 1));
@@ -981,7 +951,6 @@ void BrowserRenderProcessHost::OnExtensionCloseChannel(int port_id) {
   }
 }
 
-#if defined(SPELLCHECKER_IN_RENDERER)
 void BrowserRenderProcessHost::OnSpellCheckerRequestDictionary() {
   // We may have gotten multiple requests from different renderers. We don't
   // want to initialize multiple times in this case, so we set |force| to false.
@@ -997,12 +966,16 @@ void BrowserRenderProcessHost::InitSpellChecker() {
   if (spellcheck_host) {
     PrefService* prefs = profile()->GetPrefs();
     IPC::PlatformFileForTransit file;
+
+    if (spellcheck_host->bdict_file() != base::kInvalidPlatformFileValue) {
 #if defined(OS_POSIX)
-    file = base::FileDescriptor(spellcheck_host->bdict_file(), false);
+      file = base::FileDescriptor(spellcheck_host->bdict_file(), false);
 #elif defined(OS_WIN)
-    ::DuplicateHandle(::GetCurrentProcess(), spellcheck_host->bdict_file(),
-                      GetHandle(), &file, 0, false, DUPLICATE_SAME_ACCESS);
+      ::DuplicateHandle(::GetCurrentProcess(), spellcheck_host->bdict_file(),
+                        GetHandle(), &file, 0, false, DUPLICATE_SAME_ACCESS);
 #endif
+    }
+
     Send(new ViewMsg_SpellChecker_Init(
         file,
         spellcheck_host->custom_words(),
@@ -1020,4 +993,3 @@ void BrowserRenderProcessHost::InitSpellChecker() {
 void BrowserRenderProcessHost::EnableAutoSpellCorrect(bool enable) {
   Send(new ViewMsg_SpellChecker_EnableAutoSpellCorrect(enable));
 }
-#endif

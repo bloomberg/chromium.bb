@@ -52,6 +52,9 @@ class SpellCheck {
   // Find a possible correctly spelled word for a misspelled word. Computes an
   // empty string if input misspelled word is too long, there is ambiguity, or
   // the correct spelling cannot be determined.
+  // NOTE: If using the platform spellchecker, this will send a *lot* of sync
+  // IPCs. We should probably refactor this if we ever plan to take it out from
+  // behind its command line flag.
   string16 GetAutoCorrectionWord(const string16& word, int tag);
 
   // Turn auto spell correct support ON or OFF.

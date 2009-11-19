@@ -833,7 +833,6 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_SocketStream_Closed,
                        int /* socket_id */)
 
-#if defined(SPELLCHECKER_IN_RENDERER)
   // SpellChecker messages.
 
   // Passes some initialization params to the renderer's spellchecker. This can
@@ -853,7 +852,6 @@ IPC_BEGIN_MESSAGES(View)
   // Toggle the auto spell correct functionality.
   IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
                        bool /* enable */)
-#endif
 
 IPC_END_MESSAGES(View)
 
@@ -1129,11 +1127,6 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Tells the browser to update the spelling panel with the given word.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
                       string16 /* the word to update the panel with */)
-
-  IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetAutoCorrectWord,
-                             string16 /* word to check */,
-                             int /* tag for the document containg the word */,
-                             string16 /* autocorrected word */)
 
   // Initiate a download based on user actions like 'ALT+click'.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DownloadUrl,
@@ -2037,11 +2030,19 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               GURL /* URL of requestor */,
                               std::string /* signed public key and challenge */)
 
-#if defined(SPELLCHECKER_IN_RENDERER)
   // The renderer has tried to spell check a word, but couldn't because no
   // dictionary was available to load. Request that the browser find an
   // appropriate dictionary and return it.
   IPC_MESSAGE_CONTROL0(ViewHostMsg_SpellChecker_RequestDictionary)
-#endif
+
+  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
+                              string16 /* word */,
+                              int /* document tag */,
+                              bool /* correct */)
+
+  IPC_SYNC_MESSAGE_CONTROL1_1(
+      ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
+      string16 /* word */,
+      std::vector<string16> /* suggestions */)
 
 IPC_END_MESSAGES(ViewHost)

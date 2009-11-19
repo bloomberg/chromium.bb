@@ -87,7 +87,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                         printing::PrintJobManager* print_job_manager,
                         Profile* profile,
                         RenderWidgetHelper* render_widget_helper,
-                        SpellChecker* spellchecker,
                         URLRequestContextGetter* request_context);
 
   // IPC::ChannelProxy::MessageFilter methods:
@@ -104,7 +103,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
       uint32 request_id,
       const ViewHostMsg_Resource_Request& request_data);
 
-  SpellChecker* spellchecker() { return spellchecker_.get(); }
   ResourceDispatcherHost* resource_dispatcher_host() {
     return resource_dispatcher_host_;
   }
@@ -185,11 +183,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnDownloadUrl(const IPC::Message& message,
                      const GURL& url,
                      const GURL& referrer);
-  void OnSpellCheck(const string16& word, int tag, IPC::Message* reply_msg);
+  void OnPlatformCheckSpelling(const string16& word, int tag, bool* correct);
+  void OnPlatformFillSuggestionList(const string16& word,
+                                    std::vector<string16>* suggestions);
   void OnGetDocumentTag(IPC::Message* reply_msg);
   void OnDocumentWithTagClosed(int tag);
-  void OnGetAutoCorrectWord(const string16& word, int tag,
-                            IPC::Message* reply_msg);
   void OnShowSpellingPanel(bool show);
   void OnUpdateSpellingPanelWithMisspelledWord(const string16& word);
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
@@ -348,9 +346,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // originated URLRequest.  Since the RenderProcessHost can be destroyed
   // before this object, we only hold an ID for lookup.
   int child_id_;
-
-  // Our spellchecker object.
-  scoped_refptr<SpellChecker> spellchecker_;
 
   // Helper class for handling PluginProcessHost_ResolveProxy messages (manages
   // the requests to the proxy service).

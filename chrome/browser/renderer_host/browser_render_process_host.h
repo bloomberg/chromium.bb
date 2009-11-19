@@ -70,7 +70,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   virtual void WidgetRestored();
   virtual void WidgetHidden();
   virtual void ViewCreated();
-  virtual void AddWord(const string16& word);
   virtual void SendVisitedLinkTable(base::SharedMemory* table_memory);
   virtual void AddVisitedLinks(const VisitedLinkCommon::Fingerprints& links);
   virtual void ResetVisitedLinks();
@@ -142,7 +141,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Returns true if the priority is backgrounded; false otherwise.
   void SetBackgrounded(bool boost);
 
-#if defined(SPELLCHECKER_IN_RENDERER)
   // The renderer has requested that we initialize its spellchecker. This should
   // generally only be called once per session, as after the first call, all
   // future renderers will be passed the initialization information on startup
@@ -159,7 +157,6 @@ class BrowserRenderProcessHost : public RenderProcessHost,
 
   // Tell the renderer that auto spell correction has been enabled/disabled.
   void EnableAutoSpellCorrect(bool enable);
-#endif
 
   NotificationRegistrar registrar_;
 

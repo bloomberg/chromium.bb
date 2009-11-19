@@ -11,120 +11,22 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_member.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_common.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
 
-static const struct {
-  // The language.
-  const char* language;
-
-  // The corresponding language and region, used by the dictionaries.
-  const char* language_region;
-} g_supported_spellchecker_languages[] = {
-  // Several languages are not to be included in the spellchecker list:
-  //   th-TH, hu-HU, bg-BG, uk-UA
-  {"ca", "ca-ES"},
-  {"cs", "cs-CZ"},
-  {"da", "da-DK"},
-  {"de", "de-DE"},
-  {"el", "el-GR"},
-  {"en-AU", "en-AU"},
-  {"en-GB", "en-GB"},
-  {"en-US", "en-US"},
-  {"es", "es-ES"},
-  {"et", "et-EE"},
-  {"fr", "fr-FR"},
-  {"he", "he-IL"},
-  {"hi", "hi-IN"},
-  {"hr", "hr-HR"},
-  {"id", "id-ID"},
-  {"it", "it-IT"},
-  {"lt", "lt-LT"},
-  {"lv", "lv-LV"},
-  {"nb", "nb-NO"},
-  {"nl", "nl-NL"},
-  {"pl", "pl-PL"},
-  {"pt-BR", "pt-BR"},
-  {"pt-PT", "pt-PT"},
-  {"ro", "ro-RO"},
-  {"ru", "ru-RU"},
-  {"sk", "sk-SK"},
-  {"sl", "sl-SI"},
-  {"sv", "sv-SE"},
-  {"tr", "tr-TR"},
-  {"vi", "vi-VN"},
-};
-
-// This function returns the language-region version of language name.
-// e.g. returns hi-IN for hi.
-std::string GetSpellCheckLanguageRegion(const std::string& input_language) {
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(g_supported_spellchecker_languages);
-       ++i) {
-    if (g_supported_spellchecker_languages[i].language == input_language) {
-      return std::string(
-          g_supported_spellchecker_languages[i].language_region);
-    }
-  }
-
-  return input_language;
-}
-
-FilePath GetVersionedFileName(const std::string& input_language,
-                              const FilePath& dict_dir) {
-  // The default dictionary version is 1-2. These versions have been augmented
-  // with additional words found by the translation team.
-  static const char kDefaultVersionString[] = "-1-2";
-
-  // The following dictionaries have either not been augmented with additional
-  // words (version 1-1) or have new words, as well as an upgraded dictionary
-  // as of Feb 2009 (version 1-3).
-  static const struct {
-    // The language input.
-    const char* language;
-
-    // The corresponding version.
-    const char* version;
-  } special_version_string[] = {
-    {"en-AU", "-1-1"},
-    {"en-GB", "-1-1"},
-    {"es-ES", "-1-1"},
-    {"nl-NL", "-1-1"},
-    {"ru-RU", "-1-1"},
-    {"sv-SE", "-1-1"},
-    {"he-IL", "-1-1"},
-    {"el-GR", "-1-1"},
-    {"hi-IN", "-1-1"},
-    {"tr-TR", "-1-1"},
-    {"et-EE", "-1-1"},
-    {"fr-FR", "-1-4"},  // To fix a crash, fr dictionary was updated to 1.4.
-    {"lt-LT", "-1-3"},
-    {"pl-PL", "-1-3"}
-  };
-
-  // Generate the bdict file name using default version string or special
-  // version string, depending on the language.
-  std::string language = GetSpellCheckLanguageRegion(input_language);
-  std::string versioned_bdict_file_name(language + kDefaultVersionString +
-                                        ".bdic");
-  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(special_version_string); ++i) {
-    if (language == special_version_string[i].language) {
-      versioned_bdict_file_name =
-          language + special_version_string[i].version + ".bdic";
-      break;
-    }
-  }
-
-  return dict_dir.AppendASCII(versioned_bdict_file_name);
-}
-
 FilePath GetFirstChoiceFilePath(const std::string& language) {
   FilePath dict_dir;
   PathService::Get(chrome::DIR_APP_DICTIONARIES, &dict_dir);
-  return GetVersionedFileName(language, dict_dir);
+  return SpellCheckCommon::GetVersionedFileName(language, dict_dir);
 }
 
 FilePath GetFallbackFilePath(const FilePath& first_choice) {
@@ -143,6 +45,7 @@ SpellCheckHost::SpellCheckHost(Observer* observer,
       language_(language),
       file_(base::kInvalidPlatformFileValue),
       tried_to_download_(false),
+      use_platform_spellchecker_(false),
       request_context_getter_(request_context_getter) {
   DCHECK(observer_);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
@@ -161,6 +64,16 @@ SpellCheckHost::~SpellCheckHost() {
 }
 
 void SpellCheckHost::Initialize() {
+  if (SpellCheckerPlatform::SpellCheckerAvailable() &&
+      SpellCheckerPlatform::PlatformSupportsLanguage(language_)) {
+    use_platform_spellchecker_ = true;
+    SpellCheckerPlatform::SetLanguage(language_);
+    MessageLoop::current()->PostTask(FROM_HERE,
+        NewRunnableMethod(this,
+            &SpellCheckHost::InformObserverOfInitialization));
+    return;
+  }
+
   ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &SpellCheckHost::InitializeDictionaryLocation));
 }
@@ -183,6 +96,50 @@ void SpellCheckHost::AddWord(const std::string& word) {
   NotificationService::current()->Notify(
       NotificationType::SPELLCHECK_WORD_ADDED,
       Source<SpellCheckHost>(this), NotificationService::NoDetails());
+}
+
+// static
+int SpellCheckHost::GetSpellCheckLanguages(
+    Profile* profile,
+    std::vector<std::string>* languages) {
+  StringPrefMember accept_languages_pref;
+  StringPrefMember dictionary_language_pref;
+  accept_languages_pref.Init(prefs::kAcceptLanguages, profile->GetPrefs(),
+                             NULL);
+  dictionary_language_pref.Init(prefs::kSpellCheckDictionary,
+                                profile->GetPrefs(), NULL);
+  std::string dictionary_language =
+      WideToASCII(dictionary_language_pref.GetValue());
+
+  // The current dictionary language should be there.
+  languages->push_back(dictionary_language);
+
+  // Now scan through the list of accept languages, and find possible mappings
+  // from this list to the existing list of spell check languages.
+  std::vector<std::string> accept_languages;
+
+  if (SpellCheckerPlatform::SpellCheckerAvailable()) {
+    SpellCheckerPlatform::GetAvailableLanguages(&accept_languages);
+  } else {
+    SplitString(WideToASCII(accept_languages_pref.GetValue()), ',',
+                &accept_languages);
+  }
+  for (std::vector<std::string>::const_iterator i = accept_languages.begin();
+       i != accept_languages.end(); ++i) {
+    std::string language =
+        SpellCheckCommon::GetCorrespondingSpellCheckLanguage(*i);
+    if (!language.empty() &&
+        std::find(languages->begin(), languages->end(), language) ==
+        languages->end()) {
+      languages->push_back(language);
+    }
+  }
+
+  for (size_t i = 0; i < languages->size(); ++i) {
+    if ((*languages)[i] == dictionary_language)
+      return i;
+  }
+  return -1;
 }
 
 void SpellCheckHost::InitializeDictionaryLocation() {

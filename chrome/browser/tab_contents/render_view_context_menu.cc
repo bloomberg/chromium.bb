@@ -20,15 +20,13 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_versus_navigate_classifier.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#if defined(SPELLCHECKER_IN_RENDERER)
 #include "chrome/browser/spellcheck_host.h"
-#endif
-#include "chrome/browser/spellchecker.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/platform_util.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
@@ -273,7 +271,7 @@ void RenderViewContextMenu::AppendEditableItems() {
 
   // Add Spell Check languages to sub menu.
   std::vector<std::string> spellcheck_languages;
-  SpellChecker::GetSpellCheckLanguages(profile_,
+  SpellCheckHost::GetSpellCheckLanguages(profile_,
       &spellcheck_languages);
   DCHECK(spellcheck_languages.size() <
          IDC_SPELLCHECK_LANGUAGES_LAST - IDC_SPELLCHECK_LANGUAGES_FIRST);
@@ -490,7 +488,7 @@ bool RenderViewContextMenu::ItemIsChecked(int id) const {
     return false;
 
   std::vector<std::string> languages;
-  return SpellChecker::GetSpellCheckLanguages(profile_, &languages) ==
+  return SpellCheckHost::GetSpellCheckLanguages(profile_, &languages) ==
       (id - IDC_SPELLCHECK_LANGUAGES_FIRST);
 }
 
@@ -500,7 +498,7 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       id < IDC_SPELLCHECK_LANGUAGES_LAST) {
     const size_t language_number = id - IDC_SPELLCHECK_LANGUAGES_FIRST;
     std::vector<std::string> languages;
-    SpellChecker::GetSpellCheckLanguages(profile_, &languages);
+    SpellCheckHost::GetSpellCheckLanguages(profile_, &languages);
     if (language_number < languages.size()) {
       StringPrefMember dictionary_language;
       dictionary_language.Init(prefs::kSpellCheckDictionary,
@@ -724,17 +722,13 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       source_tab_contents_->render_view_host()->ToggleSpellCheck();
       break;
     case IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY: {
-#if defined(SPELLCHECKER_IN_RENDERER)
       SpellCheckHost* spellcheck_host = profile_->GetSpellCheckHost();
       if (!spellcheck_host) {
         NOTREACHED();
         break;
       }
       spellcheck_host->AddWord(UTF16ToUTF8(params_.misspelled_word));
-#else
-      source_tab_contents_->render_view_host()->AddToDictionary(
-          params_.misspelled_word);
-#endif
+      SpellCheckerPlatform::AddWord(params_.misspelled_word);
       break;
     }
 

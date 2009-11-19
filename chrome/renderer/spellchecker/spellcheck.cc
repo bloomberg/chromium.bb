@@ -7,18 +7,16 @@
 #include "base/file_util.h"
 #include "base/histogram.h"
 #include "base/time.h"
+#include "chrome/common/render_messages.h"
+#include "chrome/common/spellcheck_common.h"
 #include "chrome/renderer/render_thread.h"
 #include "third_party/hunspell/src/hunspell/hunspell.hxx"
-
-static const int kMaxAutoCorrectWordSize = 8;
-static const int kMaxSuggestions = 5;
 
 using base::TimeTicks;
 
 SpellCheck::SpellCheck()
     : file_(base::kInvalidPlatformFileValue),
       auto_spell_correct_turned_on_(false),
-      // TODO(estade): initialize this properly.
       is_using_platform_spelling_engine_(false),
       initialized_(false) {
   // Wait till we check the first word before doing any initializing.
@@ -34,6 +32,9 @@ void SpellCheck::Init(base::PlatformFile file,
   hunspell_.reset();
   bdict_file_.reset();
   file_ = file;
+  is_using_platform_spelling_engine_ =
+      file == base::kInvalidPlatformFileValue && !language.empty();
+
   character_attributes_.SetDefaultLanguage(language);
 
   custom_words_.insert(custom_words_.end(),
@@ -58,8 +59,10 @@ bool SpellCheck::SpellCheckWord(
     return true;
 
   // Do nothing if spell checking is disabled.
-  if (initialized_ && file_ == base::kInvalidPlatformFileValue)
+  if (initialized_ && file_ == base::kInvalidPlatformFileValue &&
+      !is_using_platform_spelling_engine_) {
     return true;
+  }
 
   *misspelling_start = 0;
   *misspelling_len = 0;
@@ -100,15 +103,15 @@ string16 SpellCheck::GetAutoCorrectionWord(const string16& word, int tag) {
     return autocorrect_word;  // Return the empty string.
 
   int word_length = static_cast<int>(word.size());
-  if (word_length < 2 || word_length > kMaxAutoCorrectWordSize)
+  if (word_length < 2 || word_length > SpellCheckCommon::kMaxAutoCorrectWordSize)
     return autocorrect_word;
 
   if (InitializeIfNeeded())
     return autocorrect_word;
 
-  char16 misspelled_word[kMaxAutoCorrectWordSize + 1];
+  char16 misspelled_word[SpellCheckCommon::kMaxAutoCorrectWordSize + 1];
   const char16* word_char = word.c_str();
-  for (int i = 0; i <= kMaxAutoCorrectWordSize; i++) {
+  for (int i = 0; i <= SpellCheckCommon::kMaxAutoCorrectWordSize; i++) {
     if (i >= word_length)
       misspelled_word[i] = NULL;
     else
@@ -188,15 +191,18 @@ void SpellCheck::AddWordToHunspell(const std::string& word) {
 }
 
 bool SpellCheck::InitializeIfNeeded() {
+  if (is_using_platform_spelling_engine_)
+    return false;
+
   if (!initialized_) {
-    RenderThread::current()->RequestSpellCheckDictionary();
+    RenderThread::current()->Send(
+        new ViewHostMsg_SpellChecker_RequestDictionary);
     initialized_ = true;
     return true;
   }
 
   // Check if the platform spellchecker is being used.
-  if (!is_using_platform_spelling_engine_ &&
-      file_ != base::kInvalidPlatformFileValue) {
+  if (file_ != base::kInvalidPlatformFileValue) {
     // If it isn't, init hunspell.
     InitializeHunspell();
   }
@@ -210,8 +216,9 @@ bool SpellCheck::CheckSpelling(const string16& word_to_check, int tag) {
   bool word_correct = false;
 
   if (is_using_platform_spelling_engine_) {
-    // TODO(estade): sync IPC to browser.
-    word_correct = true;
+    RenderThread::current()->Send(
+        new ViewHostMsg_SpellChecker_PlatformCheckSpelling(word_to_check, tag,
+                                                           &word_correct));
   } else {
     std::string word_to_check_utf8(UTF16ToUTF8(word_to_check));
     // Hunspell shouldn't let us exceed its max, but check just in case
@@ -229,7 +236,9 @@ void SpellCheck::FillSuggestionList(
     const string16& wrong_word,
     std::vector<string16>* optional_suggestions) {
   if (is_using_platform_spelling_engine_) {
-    // TODO(estade): sync IPC to browser.
+    RenderThread::current()->Send(
+        new ViewHostMsg_SpellChecker_PlatformFillSuggestionList(
+            wrong_word, optional_suggestions));
     return;
   }
   char** suggestions;
@@ -238,7 +247,7 @@ void SpellCheck::FillSuggestionList(
 
   // Populate the vector of WideStrings.
   for (int i = 0; i < number_of_suggestions; i++) {
-    if (i < kMaxSuggestions)
+    if (i < SpellCheckCommon::kMaxSuggestions)
       optional_suggestions->push_back(UTF8ToUTF16(suggestions[i]));
     free(suggestions[i]);
   }

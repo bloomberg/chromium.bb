@@ -542,10 +542,6 @@ void RenderViewHost::ToggleSpellCheck() {
   Send(new ViewMsg_ToggleSpellCheck(routing_id()));
 }
 
-void RenderViewHost::AddToDictionary(const string16& word) {
-  process()->AddWord(word);
-}
-
 void RenderViewHost::Delete() {
   Send(new ViewMsg_Delete(routing_id()));
 }

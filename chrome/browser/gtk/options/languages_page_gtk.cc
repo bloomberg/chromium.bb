@@ -13,10 +13,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/language_combobox_model.h"
 #include "chrome/browser/language_order_table_model.h"
-#include "chrome/browser/spellchecker.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/spellcheck_common.h"
 #include "grit/generated_resources.h"
 
 namespace {
@@ -246,7 +246,7 @@ void LanguagesPageGtk::Init() {
   }
 
   std::vector<std::string> spell_check_languages;
-  SpellChecker::SpellCheckLanguages(&spell_check_languages);
+  SpellCheckCommon::SpellCheckLanguages(&spell_check_languages);
   dictionary_language_model_.reset(new LanguageComboboxModel(profile(),
       spell_check_languages));
   dictionary_language_combobox_ = NewComboboxFromModel(
@@ -330,7 +330,7 @@ void LanguagesPageGtk::NotifyPrefChanged(const std::wstring* pref_name) {
       const std::string& lang_region = WideToASCII(
           dictionary_language_.GetValue());
       dictionary_language_.SetValue(ASCIIToWide(
-          SpellChecker::GetLanguageFromLanguageRegion(lang_region)));
+          SpellCheckCommon::GetLanguageFromLanguageRegion(lang_region)));
       index = dictionary_language_model_->GetSelectedLanguageIndex(
           prefs::kSpellCheckDictionary);
     }

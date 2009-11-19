@@ -14,9 +14,7 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#if defined(SPELLCHECKER_IN_RENDERER)
 #include "chrome/browser/spellcheck_host.h"
-#endif
 #include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -54,7 +52,6 @@ class PrefService;
 class ProfileSyncService;
 class SearchVersusNavigateClassifier;
 class SessionService;
-class SpellChecker;
 class SSLConfigServiceManager;
 class SSLHostState;
 class StrictTransportSecurityPersister;
@@ -342,21 +339,6 @@ class Profile {
 
   virtual void ResetTabRestoreService() = 0;
 
-  // This reinitializes the spellchecker according to the current dictionary
-  // language, and enable spell check option, in the prefs.  Then a
-  // SPELLCHECKER_REINITIALIZED notification is sent on the IO thread.
-  virtual void ReinitializeSpellChecker() = 0;
-
-  // Returns the spell checker object for this profile. THIS OBJECT MUST ONLY
-  // BE USED ON THE I/O THREAD! This pointer is retrieved from the profile and
-  // sent to the I/O thread where it is actually used.
-  virtual SpellChecker* GetSpellChecker() = 0;
-
-  // Deletes the spellchecker.  This is only really useful when we need to purge
-  // memory.
-  virtual void DeleteSpellChecker() = 0;
-
-#if defined(SPELLCHECKER_IN_RENDERER)
   // May return NULL.
   virtual SpellCheckHost* GetSpellCheckHost() = 0;
 
@@ -364,7 +346,6 @@ class Profile {
   // the process of initializing), then do nothing. Otherwise clobber the
   // current spellchecker and replace it with a new one.
   virtual void ReinitializeSpellCheckHost(bool force) = 0;
-#endif
 
   // Returns the WebKitContext assigned to this profile.
   virtual WebKitContext* GetWebKitContext() = 0;
@@ -412,9 +393,7 @@ class OffTheRecordProfileImpl;
 
 // The default profile implementation.
 class ProfileImpl : public Profile,
-#if defined(SPELLCHECKER_IN_RENDERER)
                     public SpellCheckHost::Observer,
-#endif
                     public NotificationObserver {
  public:
   virtual ~ProfileImpl();
@@ -473,13 +452,8 @@ class ProfileImpl : public Profile,
   virtual base::Time GetStartTime() const;
   virtual TabRestoreService* GetTabRestoreService();
   virtual void ResetTabRestoreService();
-  virtual void ReinitializeSpellChecker();
-  virtual SpellChecker* GetSpellChecker();
-  virtual void DeleteSpellChecker() { DeleteSpellCheckerImpl(true); }
-#if defined(SPELLCHECKER_IN_RENDERER)
   virtual SpellCheckHost* GetSpellCheckHost();
   virtual void ReinitializeSpellCheckHost(bool force);
-#endif
   virtual WebKitContext* GetWebKitContext();
   virtual DesktopNotificationService* GetDesktopNotificationService();
   virtual void MarkAsCleanShutdown();
@@ -494,10 +468,8 @@ class ProfileImpl : public Profile,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-#if defined(SPELLCHECKER_IN_RENDERER)
   // SpellCheckHost::Observer implementation.
   virtual void SpellCheckHostInitialized();
-#endif
 
  private:
   friend class Profile;
@@ -518,9 +490,6 @@ class ProfileImpl : public Profile,
   void EnsureSessionServiceCreated() {
     GetSessionService();
   }
-
-  void NotifySpellCheckerChanged();
-  void DeleteSpellCheckerImpl(bool notify);
 
   NotificationRegistrar registrar_;
 
@@ -587,17 +556,11 @@ class ProfileImpl : public Profile,
 
   scoped_refptr<TabRestoreService> tab_restore_service_;
 
-  // This can not be a scoped_refptr because we must release it on the I/O
-  // thread.
-  SpellChecker* spellchecker_;
-
-#if defined(SPELLCHECKER_IN_RENDERER)
   scoped_refptr<SpellCheckHost> spellcheck_host_;
 
   // Indicates whether |spellcheck_host_| has told us initialization is
   // finished.
   bool spellcheck_host_ready_;
-#endif
 
   // Set to true when ShutdownSessionService is invoked. If true
   // GetSessionService won't recreate the SessionService.
@@ -612,13 +575,6 @@ class ProfileImpl : public Profile,
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ProfileImpl);
-};
-
-// This struct is used to pass the spellchecker object through the notification
-// SPELLCHECKER_REINITIALIZED. This is used as the details for the notification
-// service.
-struct SpellcheckerReinitializedDetails {
-  scoped_refptr<SpellChecker> spellchecker;
 };
 
 #endif  // CHROME_BROWSER_PROFILE_H_

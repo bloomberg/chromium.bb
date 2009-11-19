@@ -196,6 +196,8 @@ class BrowserActionButton : public NotificationObserver,
   GdkPixbuf* default_icon_;
 
   NotificationRegistrar registrar_;
+
+  friend class BrowserActionsToolbarGtk;
 };
 
 BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)

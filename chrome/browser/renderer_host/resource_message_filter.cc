@@ -31,7 +31,6 @@
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
-#include "chrome/browser/spellchecker.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
@@ -150,14 +149,12 @@ ResourceMessageFilter::ResourceMessageFilter(
     printing::PrintJobManager* print_job_manager,
     Profile* profile,
     RenderWidgetHelper* render_widget_helper,
-    SpellChecker* spellchecker,
     URLRequestContextGetter* request_context)
     : Receiver(RENDER_PROCESS, child_id),
       channel_(NULL),
       resource_dispatcher_host_(resource_dispatcher_host),
       plugin_service_(plugin_service),
       print_job_manager_(print_job_manager),
-      spellchecker_(spellchecker),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
       request_context_(request_context),
       media_request_context_(profile->GetRequestContextForMedia()),
@@ -214,8 +211,6 @@ void ResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
 
   // Add the observers to intercept.
-  registrar_.Add(this, NotificationType::SPELLCHECKER_REINITIALIZED,
-                 Source<Profile>(static_cast<Profile*>(profile_)));
   registrar_.Add(this, NotificationType::BLACKLIST_BLOCKED_RESOURCE,
                  NotificationService::AllSources());
 }
@@ -317,13 +312,14 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                           OnCancelCreateDedicatedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ForwardToWorker,
                           OnForwardToWorker)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_SpellCheck, OnSpellCheck)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformCheckSpelling,
+                          OnPlatformCheckSpelling)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_SpellChecker_PlatformFillSuggestionList,
+                          OnPlatformFillSuggestionList)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDocumentTag,
                                       OnGetDocumentTag)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentWithTagClosed,
                           OnDocumentWithTagClosed)
-      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetAutoCorrectWord,
-                                      OnGetAutoCorrectWord)
       IPC_MESSAGE_HANDLER(ViewHostMsg_ShowSpellingPanel, OnShowSpellingPanel)
       IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
                           OnUpdateSpellingPanelWithMisspelledWord)
@@ -419,21 +415,6 @@ void ResourceMessageFilter::OnReceiveContextMenuMsg(const IPC::Message& msg) {
   ContextMenuParams params;
   if (!IPC::ParamTraits<ContextMenuParams>::Read(&msg, &iter, &params))
     return;
-
-  // Fill in the dictionary suggestions if required.
-  if (!params.misspelled_word.empty() &&
-      spellchecker_ != NULL && params.spellcheck_enabled) {
-    int misspell_location, misspell_length;
-    bool is_misspelled = !spellchecker_->SpellCheckWord(
-        params.misspelled_word.c_str(),
-        static_cast<int>(params.misspelled_word.length()), 0,
-        &misspell_location, &misspell_length,
-        &params.dictionary_suggestions);
-
-    // If not misspelled, make the misspelled_word param empty.
-    if (!is_misspelled)
-      params.misspelled_word.clear();
-  }
 
   // Create a new ViewHostMsg_ContextMenu message.
   const ViewHostMsg_ContextMenu context_menu_message(msg.routing_id(), params);
@@ -1010,33 +991,16 @@ ResourceMessageFilter::GetRequestContextForURL(
       context_getter->GetURLRequestContext());
 }
 
-// Notes about SpellCheck.
-//
-// Spellchecking generally uses a fair amount of RAM.  For this reason, we load
-// the spellcheck dictionaries into the browser process, and all renderers ask
-// the browsers to do SpellChecking.
-//
-// This filter should not try to initialize the spellchecker. It is up to the
-// profile to initialize it when required, and send it here. If |spellchecker_|
-// is made NULL, it corresponds to spellchecker turned off - i.e., all
-// spellings are correct.
-//
-// Note: This is called in the IO thread.
-void ResourceMessageFilter::OnSpellCheck(const string16& word, int tag,
-                                         IPC::Message* reply_msg) {
-  int misspell_location = 0;
-  int misspell_length = 0;
+void ResourceMessageFilter::OnPlatformCheckSpelling(const string16& word,
+                                                    int tag,
+                                                    bool* correct) {
+  *correct = SpellCheckerPlatform::CheckSpelling(word, tag);
+}
 
-  if (spellchecker_ != NULL) {
-    spellchecker_->SpellCheckWord(word.c_str(),
-                                  static_cast<int>(word.length()), tag,
-                                  &misspell_location, &misspell_length, NULL);
-  }
-
-  ViewHostMsg_SpellCheck::WriteReplyParams(reply_msg, misspell_location,
-                                           misspell_length);
-  Send(reply_msg);
-  return;
+void ResourceMessageFilter::OnPlatformFillSuggestionList(
+    const string16& word,
+    std::vector<string16>* suggestions) {
+  SpellCheckerPlatform::FillSuggestionList(word, suggestions);
 }
 
 void ResourceMessageFilter::OnGetDocumentTag(IPC::Message* reply_msg) {
@@ -1048,19 +1012,6 @@ void ResourceMessageFilter::OnGetDocumentTag(IPC::Message* reply_msg) {
 
 void ResourceMessageFilter::OnDocumentWithTagClosed(int tag) {
   SpellCheckerPlatform::CloseDocumentWithTag(tag);
-}
-
-void ResourceMessageFilter::OnGetAutoCorrectWord(const string16& word,
-                                                 int tag,
-                                                 IPC::Message* reply_msg) {
-  string16 autocorrect_word;
-  if (spellchecker_ != NULL)
-    autocorrect_word = spellchecker_->GetAutoCorrectionWord(word, tag);
-
-  ViewHostMsg_GetAutoCorrectWord::WriteReplyParams(reply_msg,
-                                                   autocorrect_word);
-  Send(reply_msg);
-  return;
 }
 
 void ResourceMessageFilter::OnShowSpellingPanel(bool show) {
@@ -1075,10 +1026,7 @@ void ResourceMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
 void ResourceMessageFilter::Observe(NotificationType type,
                                     const NotificationSource &source,
                                     const NotificationDetails &details) {
-  if (type == NotificationType::SPELLCHECKER_REINITIALIZED) {
-    spellchecker_ = Details<SpellcheckerReinitializedDetails>
-        (details).ptr()->spellchecker;
-  } else if (type == NotificationType::BLACKLIST_BLOCKED_RESOURCE) {
+  if (type == NotificationType::BLACKLIST_BLOCKED_RESOURCE) {
     BlacklistObserver::ContentBlocked(Details<const URLRequest>(details).ptr());
   }
 }
