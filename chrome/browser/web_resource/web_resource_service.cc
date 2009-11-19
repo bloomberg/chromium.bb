@@ -211,19 +211,19 @@ void WebResourceService::Init() {
   resource_dispatcher_host_ = g_browser_process->resource_dispatcher_host();
   web_resource_fetcher_ = new WebResourceFetcher(this);
   prefs_->RegisterStringPref(prefs::kNTPTipsCacheUpdate, L"0");
-  std::wstring language = WebResourceService::GetWebResourceLanguage(prefs_);
+  std::wstring locale = ASCIIToWide(g_browser_process->GetApplicationLocale());
 
   if (prefs_->HasPrefPath(prefs::kNTPTipsServer)) {
      web_resource_server_ = prefs_->GetString(prefs::kNTPTipsServer);
      // If we are in the correct locale, initialization is done.
-     if (EndsWith(web_resource_server_, language, false))
+     if (EndsWith(web_resource_server_, locale, false))
        return;
   }
 
   // If we have not yet set a server, or if the tips server is set to the wrong
   // locale, reset the server and force an immediate update of tips.
   web_resource_server_ = kDefaultResourceServer;
-  web_resource_server_.append(language);
+  web_resource_server_.append(locale);
   prefs_->SetString(prefs::kNTPTipsCacheUpdate, L"");
 }
 
@@ -302,18 +302,3 @@ void WebResourceService::UpdateResourceCache(const std::string& json_data) {
       DoubleToWString(base::Time::Now().ToDoubleT()));
   prefs_->SetString(prefs::kNTPTipsServer, web_resource_server_);
 }
-
-// static
-std::wstring WebResourceService::GetWebResourceLanguage(PrefService* prefs) {
-#if defined OS_MACOSX
-  // OS X derives the language for the Chrome UI from the list of accepted
-  // languages, which can be different from the locale.
-  std::wstring languageList = prefs->GetString(prefs::kAcceptLanguages);
-  int pos = languageList.find(L",");
-  pos = pos >= 0 ? pos : languageList.length();
-  return languageList.substr(0, pos);
-#else
-  return ASCIIToWide(g_browser_process->GetApplicationLocale());
-#endif
-}
-

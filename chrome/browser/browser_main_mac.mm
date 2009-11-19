@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/app_switches.h"
+#include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/debug_util.h"
@@ -38,6 +40,10 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
   }
   // Now load the nib.
   [NSBundle loadNibNamed:@"MainMenu" owner:NSApp];
+
+  // The browser process only wants to support the language Cocoa will use, so
+  // force the app locale to be overriden with that value.
+  l10n_util::OverrideLocaleWithCocoaLocale();
 
   // This is a no-op if the KeystoneRegistration framework is not present.
   // The framework is only distributed with branded Google Chrome builds.

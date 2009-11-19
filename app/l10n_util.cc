@@ -25,6 +25,10 @@
 #include <gtk/gtk.h>
 #endif
 
+#if defined(OS_MACOSX)
+#include "app/l10n_util_mac.h"
+#endif
+
 // TODO(playmobil): remove this undef once SkPostConfig.h is fixed.
 // skia/include/corecg/SkPostConfig.h #defines strcasecmp() so we can't use
 // base::strcasecmp() without #undefing it here.
@@ -422,19 +426,16 @@ namespace l10n_util {
 // Represents the locale-specific text direction.
 static TextDirection g_text_direction = UNKNOWN_DIRECTION;
 
-// On the Mac, we don't want to test preferences or ICU for the language,
-// we want to use whatever Cocoa is using when it loaded the main nib file.
-// It handles all the mapping and fallbacks for us, we just need to ask.
-// See l10n_util_mac for that implementation.
-#if !defined(OS_MACOSX)
 std::string GetApplicationLocale(const std::wstring& pref_locale) {
+#if !defined(OS_MACOSX)
+
   FilePath locale_path;
   PathService::Get(app::DIR_LOCALES, &locale_path);
   std::string resolved_locale;
   std::vector<std::string> candidates;
   const std::string system_locale = GetSystemLocale();
 
-  // We only use --lang and the app pref on Windows.  On Linux/Mac, we only
+  // We only use --lang and the app pref on Windows.  On Linux, we only
   // look at the LC_*/LANG environment variables.  We do, however, pass --lang
   // to renderer and plugin processes so they know what language the parent
   // process decided to use.
@@ -482,8 +483,32 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   NOTREACHED();
 
   return std::string();
-}
+
+#else  // !defined(OS_MACOSX)
+
+  // Use any override (Cocoa for the browser), otherwise use the command line
+  // argument.
+  std::string app_locale = l10n_util::GetLocaleOverride();
+  if (app_locale.empty()) {
+    const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
+    app_locale = parsed_command_line.GetSwitchValueASCII(switches::kLang);
+  }
+
+  // The above should handle all of the cases Chrome normally hits, but for some
+  // unit tests, we need something to fall back too.
+  if (app_locale.empty())
+    app_locale = "en-US";
+
+  // Windows/Linux call CheckAndResolveLocale which calls IsLocaleAvailable
+  // which calls SetICUDefaultLocale to let ICU use the same locale.  Mac
+  // doesn't use a locale directory tree of resources (it uses Mac style
+  // resources), so mirror that ICU behavior by calling SetICUDefaultLocale
+  // directly.
+  UBool icu_set = SetICUDefaultLocale(app_locale);
+  DCHECK(icu_set);
+  return app_locale;
 #endif  // !defined(OS_MACOSX)
+}
 
 string16 GetDisplayNameForLocale(const std::string& locale_code,
                                  const std::string& display_locale,

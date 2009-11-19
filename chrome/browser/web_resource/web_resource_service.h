@@ -26,9 +26,6 @@ class WebResourceService
   // the process that will parse the JSON, and then update the cache.
   void UpdateResourceCache(const std::string& json_data);
 
-  // Get the language appropriate for delivery of the web resources.
-  static std::wstring GetWebResourceLanguage(PrefService* prefs);
-
   static const wchar_t* kTipDictionaryPrefName;
   static const wchar_t* kCurrentTipPrefName;
   static const wchar_t* kTipCachePrefName;

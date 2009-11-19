@@ -63,6 +63,10 @@ NSString* GetNSStringFWithFixup(int message_id,
                                 const string16& c,
                                 const string16& d);
 
+// Support the override of the locale with the value from Cocoa.
+void OverrideLocaleWithCocoaLocale();
+const std::string& GetLocaleOverride();
+
 }  // namespace l10n_util
 
 #endif  // APP_L10N_UTIL_MAC_H_
