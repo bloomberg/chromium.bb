@@ -434,7 +434,7 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->shrinks_standalone_images_to_fit = false;
         web_prefs_->uses_universal_detector = false;
         web_prefs_->text_areas_are_resizable = false;
-        web_prefs_->java_enabled = true;
+        web_prefs_->java_enabled = false;
         web_prefs_->allow_scripts_to_close_windows = false;
         web_prefs_->xss_auditor_enabled = false;
         // It's off by default for Chrome, but we don't want to
