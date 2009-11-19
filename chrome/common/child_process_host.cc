@@ -93,20 +93,16 @@ FilePath ChildProcessHost::GetChildPath() {
   if (!child_path.empty())
     return child_path;
 
-#if defined(OS_LINUX)
-  // Use /proc/self/exe rather than our known binary path so updates
-  // can't swap out the binary from underneath us.
-  child_path = FilePath("/proc/self/exe");
-#elif defined(OS_MACOSX)
+#if !defined(OS_MACOSX)
+  // On most platforms, the child executable is the same as the current
+  // executable.
+  PathService::Get(base::FILE_EXE, &child_path);
+#else
   // On the Mac, the child executable lives at a predefined location within
   // the app bundle's versioned directory.
   child_path = chrome::GetVersionedDirectory().
       Append(chrome::kHelperProcessExecutablePath);
-#else
-  // On most platforms, the child executable is the same as the current
-  // executable.
-  PathService::Get(base::FILE_EXE, &child_path);
-#endif
+#endif  // OS_MACOSX
 
   return child_path;
 }

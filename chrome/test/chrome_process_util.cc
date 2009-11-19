@@ -100,10 +100,9 @@ ChromeProcessList GetRunningChromeProcesses(const FilePath& data_dir) {
   }
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // On Mac OS X we run the subprocesses with a different bundle, and
-  // on Linux via /proc/self/exe, so they end up with a different
-  // name.  We must collect them in a second pass.
+#if defined(OS_MACOSX)
+  // On Mac OS X we run the subprocesses with a different bundle, so they end
+  // up with a different name, so we have to collect them in a second pass.
   {
     ChildProcessFilter filter(browser_pid);
     base::NamedProcessIterator it(chrome::kHelperProcessExecutableName,
