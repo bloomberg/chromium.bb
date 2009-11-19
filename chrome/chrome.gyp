@@ -5726,6 +5726,7 @@
               'mac_bundle': 1,
               'xcode_settings': {
                 'CHROMIUM_BUNDLE_ID': '<(mac_bundle_id)',
+
                 # The dylib versions are of the form a[.b[.c]], where a is a
                 # 16-bit unsigned integer, and b and c are 8-bit unsigned
                 # integers.  Any missing component is taken to be 0.  The
@@ -5733,18 +5734,26 @@
                 # is to just use the build and patch numbers.  There is no
                 # ambiguity in this scheme because the build number is
                 # guaranteed unique even across distinct major and minor
-                # version numbers.
+                # version numbers.  These settings correspond to
+                # -compatibility_version and -current_version.
                 'DYLIB_COMPATIBILITY_VERSION': '<(version_build_patch)',
                 'DYLIB_CURRENT_VERSION': '<(version_build_patch)',
+
                 # The framework is placed within the .app's versioned
-                # directory.
+                # directory.  DYLIB_INSTALL_NAME_BASE and
+                # LD_DYLIB_INSTALL_NAME affect -install_name.
                 'DYLIB_INSTALL_NAME_BASE':
                     '@executable_path/../Versions/<(version_full)',
                 # See tools/build/mac/copy_framework_unversioned for
                 # information on LD_DYLIB_INSTALL_NAME.
                 'LD_DYLIB_INSTALL_NAME':
                     '$(DYLIB_INSTALL_NAME_BASE:standardizepath)/$(WRAPPER_NAME)/$(PRODUCT_NAME)',
+
                 'INFOPLIST_FILE': 'app/framework-Info.plist',
+
+                # Define the order of symbols within the framework.  This
+                # sets -order_file.
+                'ORDER_FILE': 'app/framework.order',
               },
               'sources': [
                 'app/chrome_dll_main.cc',
@@ -5901,6 +5910,20 @@
                 },
               ],
               'postbuilds': [
+                {
+                  # This step causes an error to be raised if the .order file
+                  # does not account for all global text symbols.  It
+                  # validates the completeness of the .order file.
+                  'postbuild_name': 'Verify global text symbol order',
+                  'variables': {
+                    'verify_order_path': 'tools/build/mac/verify_order',
+                  },
+                  'action': [
+                    '<(verify_order_path)',
+                    '_ChromeMain',
+                    '${BUILT_PRODUCTS_DIR}/${EXECUTABLE_PATH}',
+                  ],
+                },
                 {
                   # Modify the Info.plist as needed.  The script explains why
                   # this is needed.  This is also done in the chrome target.
