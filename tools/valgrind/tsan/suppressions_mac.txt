@@ -46,12 +46,12 @@
   fun:-[NSObject retain]
 }
 
+# A related OpenRadar bug is at http://openradar.appspot.com/7396501.
 {
-   A benign race releasing the object returned by NSTemporaryDirectory
+   A benign race on a debug counter in __NSAutoreleaseObject
    ThreadSanitizer:Race
    fun:__NSAutoreleaseObject
    fun:-[NSObject(NSObject) autorelease]
-   fun:NSTemporaryDirectory
 }
 
 # media_unittests depend on the Darwin libraries which have many reports in
