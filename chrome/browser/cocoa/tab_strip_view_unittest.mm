@@ -12,29 +12,19 @@
 
 namespace {
 
-class TabStripViewTest : public PlatformTest {
+class TabStripViewTest : public CocoaTest {
  public:
   TabStripViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);
-    view_.reset([[TabStripView alloc] initWithFrame:frame]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    scoped_nsobject<TabStripView> view(
+        [[TabStripView alloc] initWithFrame:frame]);
+    view_ = view.get();
+    [[test_window() contentView] addSubview:view_];
   }
 
-  scoped_nsobject<TabStripView> view_;
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  TabStripView* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(TabStripViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(TabStripViewTest, Display) {
-  [view_ display];
-}
+TEST_VIEW(TabStripViewTest, view_)
 
 }  // namespace

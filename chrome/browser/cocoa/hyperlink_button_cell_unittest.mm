@@ -12,54 +12,44 @@
 
 namespace {
 
-class HyperlinkButtonCellTest : public PlatformTest {
+class HyperlinkButtonCellTest : public CocoaTest {
  public:
   HyperlinkButtonCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    view_.reset([[NSButton alloc] initWithFrame:frame]);
-    cell_.reset([[HyperlinkButtonCell alloc] initTextCell:@"Testing"]);
-    [view_ setCell:cell_.get()];
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    scoped_nsobject<NSButton> view([[NSButton alloc] initWithFrame:frame]);
+    view_ = view.get();
+    scoped_nsobject<HyperlinkButtonCell> cell(
+        [[HyperlinkButtonCell alloc] initTextCell:@"Testing"]);
+    cell_ = cell.get();
+    [view_ setCell:cell_];
+    [[test_window() contentView] addSubview:view_];
   }
 
-  void TestCellCustomization() {
-    EXPECT_FALSE([cell_ isBordered]);
+  void TestCellCustomization(HyperlinkButtonCell* cell) {
+    EXPECT_FALSE([cell isBordered]);
     EXPECT_EQ(NSNoCellMask, [cell_ highlightsBy]);
-    EXPECT_TRUE([cell_ showsBorderOnlyWhileMouseInside]);
-    EXPECT_TRUE([cell_ textColor]);
+    EXPECT_TRUE([cell showsBorderOnlyWhileMouseInside]);
+    EXPECT_TRUE([cell textColor]);
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
-  scoped_nsobject<NSButton> view_;
-  scoped_nsobject<HyperlinkButtonCell> cell_;
+  NSButton* view_;
+  HyperlinkButtonCell* cell_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(HyperlinkButtonCellTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(HyperlinkButtonCellTest, Display) {
-  [view_ display];
-}
+TEST_VIEW(HyperlinkButtonCellTest, view_)
 
 // Tests the three designated intializers.
 TEST_F(HyperlinkButtonCellTest, Initializers) {
-  TestCellCustomization();  // |-initTextFrame:|
-
-  cell_.reset([[HyperlinkButtonCell alloc] init]);
-  TestCellCustomization();
+  TestCellCustomization(cell_);  // |-initTextFrame:|
+  scoped_nsobject<HyperlinkButtonCell> cell([[HyperlinkButtonCell alloc] init]);
+  TestCellCustomization(cell.get());
 
   // Need to create a dummy archiver to test |-initWithCoder:|.
   NSData* emptyData = [NSKeyedArchiver archivedDataWithRootObject:@""];
   NSCoder* coder =
     [[[NSKeyedUnarchiver alloc] initForReadingWithData:emptyData] autorelease];
-  cell_.reset([[HyperlinkButtonCell alloc] initWithCoder:coder]);
-  TestCellCustomization();
+  cell.reset([[HyperlinkButtonCell alloc] initWithCoder:coder]);
+  TestCellCustomization(cell);
 }
 
 // Test set color.

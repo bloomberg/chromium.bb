@@ -63,17 +63,15 @@
 namespace {
 
 // The dragging code in TabView makes heavy use of autorelease pools so
-// inherit from Platform test to have one created for us.
-class TabControllerTest : public PlatformTest {
+// inherit from CocoaTest to have one created for us.
+class TabControllerTest : public CocoaTest {
  public:
   TabControllerTest() { }
-
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
 };
 
 // Tests creating the controller, sticking it in a window, and removing it.
 TEST_F(TabControllerTest, Creation) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
   scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
   EXPECT_TRUE([controller tabView]);
@@ -85,7 +83,7 @@ TEST_F(TabControllerTest, Creation) {
 // Tests sending it a close message and ensuring that the target/action get
 // called. Mimics the user clicking on the close button in the tab.
 TEST_F(TabControllerTest, Close) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
   scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
@@ -103,7 +101,7 @@ TEST_F(TabControllerTest, Close) {
 
 // Tests setting the |selected| property via code.
 TEST_F(TabControllerTest, APISelection) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
   scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
@@ -116,7 +114,7 @@ TEST_F(TabControllerTest, APISelection) {
 
 // Tests that setting the title of a tab sets the tooltip as well.
 TEST_F(TabControllerTest, ToolTip) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
 
   scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
@@ -129,7 +127,7 @@ TEST_F(TabControllerTest, ToolTip) {
 
 // Tests setting the |loading| property via code.
 TEST_F(TabControllerTest, Loading) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
   scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
 
@@ -152,7 +150,7 @@ TEST_F(TabControllerTest, Loading) {
 // we can dependency-inject/mock so it has very simple click behavior for unit
 // testing.
 TEST_F(TabControllerTest, UserSelection) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
 
   // Create a tab at a known location in the window that we can click on
   // to activate selection.
@@ -201,7 +199,7 @@ TEST_F(TabControllerTest, UserSelection) {
 }
 
 TEST_F(TabControllerTest, IconCapacity) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
   scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
   int cap = [controller iconCapacity];
@@ -215,7 +213,7 @@ TEST_F(TabControllerTest, IconCapacity) {
 }
 
 TEST_F(TabControllerTest, ShouldShowIcon) {
-  NSWindow* window = cocoa_helper_.window();
+  NSWindow* window = test_window();
   scoped_nsobject<TabController> controller([[TabController alloc] init]);
   [[window contentView] addSubview:[controller view]];
   int cap = [controller iconCapacity];

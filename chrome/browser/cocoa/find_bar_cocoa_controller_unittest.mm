@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import <Cocoa/Cocoa.h>
-
-#include "base/scoped_ptr.h"
-#include "base/scoped_nsobject.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_window.h"
@@ -40,21 +36,19 @@
 
 namespace {
 
-class FindBarCocoaControllerTest : public PlatformTest {
+class FindBarCocoaControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
-    PlatformTest::SetUp();
-
-    // TODO(rohitrao): We don't really need to do this once per test.
-    // Consider moving it to SetUpTestCase().
+    CocoaTest::SetUp();
     controller_.reset([[FindBarCocoaController alloc] init]);
-    [helper_.contentView() addSubview:[controller_ view]];
+    [[test_window() contentView] addSubview:[controller_ view]];
   }
 
  protected:
-  CocoaTestHelper helper_;
   scoped_nsobject<FindBarCocoaController> controller_;
 };
+
+TEST_VIEW(FindBarCocoaControllerTest, [controller_ view])
 
 TEST_F(FindBarCocoaControllerTest, ShowAndHide) {
   NSView* findBarView = [controller_ findBarView];
@@ -105,7 +99,7 @@ TEST_F(FindBarCocoaControllerTest, ResultLabelUpdatesCorrectly) {
 TEST_F(FindBarCocoaControllerTest, FindTextIsGlobal) {
   scoped_nsobject<FindBarCocoaController> otherController(
       [[FindBarCocoaController alloc] init]);
-  [helper_.contentView() addSubview:[otherController view]];
+  [[test_window() contentView] addSubview:[otherController view]];
 
   // Setting the text in one controller should update the other controller's
   // text as well.

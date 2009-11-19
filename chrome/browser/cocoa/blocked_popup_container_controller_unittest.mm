@@ -28,6 +28,7 @@ class BlockedPopupContainerControllerTest : public RenderViewHostTestHarness {
     // separately and inject the bridge with a test-only Create() call.
     // Unfortunate, but no way around it.
     RenderViewHostTestHarness::SetUp();
+    CocoaTest::BootstrapCocoa();
     cocoa_controller_ = [[BlockedPopupContainerController alloc]
                           initWithContainer:nil];
     EXPECT_TRUE([cocoa_controller_ bridge]);
@@ -62,7 +63,6 @@ class BlockedPopupContainerControllerTest : public RenderViewHostTestHarness {
   }
 
   base::ScopedNSAutoreleasePool pool;
-  CocoaTestHelper cocoa_helper_;
   BlockedPopupContainer* container_;
   BlockedPopupContainerController* cocoa_controller_;
 };

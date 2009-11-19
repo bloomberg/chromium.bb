@@ -84,7 +84,7 @@ namespace {
 static const int kContentAreaHeight = 500;
 static const int kInfoBarViewHeight = 30;
 
-class BookmarkBarControllerTest : public PlatformTest {
+class BookmarkBarControllerTest : public CocoaTest {
  public:
   BookmarkBarControllerTest() {
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
@@ -139,9 +139,8 @@ class BookmarkBarControllerTest : public PlatformTest {
     return menu_item_;
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
-  scoped_nsobject<NSView> parent_view_;
   BrowserTestHelper helper_;
+  scoped_nsobject<NSView> parent_view_;
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
   scoped_nsobject<BookmarkBarControllerNoOpen> bar_;
   scoped_nsobject<BookmarkMenu> menu_;

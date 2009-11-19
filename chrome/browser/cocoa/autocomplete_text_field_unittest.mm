@@ -68,29 +68,22 @@ NSEvent* Event(NSView* view, const NSPoint point, const NSEventType type) {
 // the time.
 static const CGFloat kWidth(300.0);
 
-class AutocompleteTextFieldTest : public PlatformTest {
+class AutocompleteTextFieldTest : public CocoaTest {
  public:
   AutocompleteTextFieldTest() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     NSRect frame = NSMakeRect(0, 0, kWidth, 30);
-    field_.reset([[AutocompleteTextField alloc] initWithFrame:frame]);
+    scoped_nsobject<AutocompleteTextField> field(
+        [[AutocompleteTextField alloc] initWithFrame:frame]);
+    field_ = field.get();
     [field_ setStringValue:@"Test test"];
     [field_ setObserver:&field_observer_];
-    [cocoa_helper_.contentView() addSubview:field_.get()];
+    [[test_window() contentView] addSubview:field_];
 
     window_delegate_.reset(
         [[AutocompleteTextFieldWindowTestDelegate alloc] init]);
-    [cocoa_helper_.window() setDelegate:window_delegate_.get()];
-  }
-
-  // The removeFromSuperview call is needed to prevent crashes in
-  // later tests.
-  // TODO(shess): -removeromSuperview should not be necessary.  Fix
-  // it.  Also in autocomplete_text_field_editor_unittest.mm.
-  ~AutocompleteTextFieldTest() {
-    [cocoa_helper_.window() setDelegate:nil];
-    [field_ removeFromSuperview];
+    [test_window() setDelegate:window_delegate_.get()];
   }
 
   NSEvent* KeyDownEventWithFlags(NSUInteger flags) {
@@ -98,7 +91,7 @@ class AutocompleteTextFieldTest : public PlatformTest {
                             location:NSZeroPoint
                        modifierFlags:flags
                            timestamp:0.0
-                        windowNumber:[cocoa_helper_.window() windowNumber]
+                        windowNumber:[test_window() windowNumber]
                              context:nil
                           characters:@"a"
          charactersIgnoringModifiers:@"a"
@@ -108,10 +101,10 @@ class AutocompleteTextFieldTest : public PlatformTest {
 
   // Helper to return the field-editor frame being used w/in |field_|.
   NSRect EditorFrame() {
-    EXPECT_TRUE([field_.get() currentEditor]);
-    EXPECT_EQ([[field_.get() subviews] count], 1U);
-    if ([[field_.get() subviews] count] > 0) {
-      return [[[field_.get() subviews] objectAtIndex:0] frame];
+    EXPECT_TRUE([field_ currentEditor]);
+    EXPECT_EQ([[field_ subviews] count], 1U);
+    if ([[field_ subviews] count] > 0) {
+      return [[[field_ subviews] objectAtIndex:0] frame];
     } else {
       // Return something which won't work so the caller can soldier
       // on.
@@ -119,23 +112,16 @@ class AutocompleteTextFieldTest : public PlatformTest {
     }
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
-  scoped_nsobject<AutocompleteTextField> field_;
+  AutocompleteTextField* field_;
   MockAutocompleteTextFieldObserver field_observer_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 };
 
+TEST_VIEW(AutocompleteTextFieldTest, field_);
+
 // Test that we have the right cell class.
 TEST_F(AutocompleteTextFieldTest, CellClass) {
   EXPECT_TRUE([[field_ cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
-}
-
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(AutocompleteTextFieldTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [field_ superview]);
-  [field_.get() removeFromSuperview];
-  EXPECT_FALSE([field_ superview]);
 }
 
 // Test that we get the same cell from -cell and
@@ -150,10 +136,10 @@ TEST_F(AutocompleteTextFieldTest, Cell) {
 TEST_F(AutocompleteTextFieldTest, FirstResponder) {
   EXPECT_EQ(nil, [field_ currentEditor]);
   EXPECT_EQ([[field_ subviews] count], 0U);
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   EXPECT_FALSE(nil == [field_ currentEditor]);
   EXPECT_EQ([[field_ subviews] count], 1U);
-  EXPECT_TRUE([[field_ currentEditor] isDescendantOf:field_.get()]);
+  EXPECT_TRUE([[field_ currentEditor] isDescendantOf:field_]);
 
   // Check that the window delegate is providing the right editor.
   Class c = [AutocompleteTextFieldEditor class];
@@ -199,9 +185,9 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
 
   // Test focussed drawing.
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   [field_ display];
-  cocoa_helper_.clearFirstResponder();
+  [test_window() clearPretendKeyWindowAndFirstResponder];
 
   // Test display of various cell configurations.
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
@@ -239,7 +225,7 @@ TEST_F(AutocompleteTextFieldTest, FlagsChanged) {
 // field catches -flagsChanged: because it's on the responder chain,
 // the field editor doesn't implement it.
 TEST_F(AutocompleteTextFieldTest, FieldEditorFlagsChanged) {
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   NSResponder* firstResponder = [[field_ window] firstResponder];
   EXPECT_EQ(firstResponder, [field_ currentEditor]);
 
@@ -270,7 +256,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBase) {
 
   // Capture the editor frame resulting from the standard focus
   // machinery.
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   const NSRect baseEditorFrame(EditorFrame());
 
   // Setting a hint should result in a strictly smaller editor frame.
@@ -301,7 +287,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorSearchHint) {
   // machinery.
   [cell setSearchHintString:kHintString availableWidth:kWidth];
   EXPECT_TRUE([cell hintString]);
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   const NSRect baseEditorFrame(EditorFrame());
 
   // Clearing the hint should result in a strictly larger editor
@@ -336,7 +322,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
            partialString:kPartialString
           availableWidth:kWidth];
   EXPECT_TRUE([cell keywordString]);
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   const NSRect baseEditorFrame(EditorFrame());
 
   // Clearing the hint should result in a strictly larger editor
@@ -371,7 +357,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
     [field_ setDelegate:mockDelegate];
 
     // Becoming first responder doesn't begin editing.
-    cocoa_helper_.makeFirstResponder(field_);
+    [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
     NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
     EXPECT_TRUE(nil != editor);
     [mockDelegate verify];
@@ -385,7 +371,7 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
     BOOL yes = YES;
     [[[mockDelegate expect] andReturnValue:OCMOCK_VALUE(yes)]
       control:OCMOCK_ANY textShouldEndEditing:OCMOCK_ANY];
-    cocoa_helper_.makeFirstResponder(field_);
+    [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
     [mockDelegate verify];
 
     [field_ setDelegate:nil];
@@ -425,7 +411,7 @@ TEST_F(AutocompleteTextFieldTest, ClickSearchHintPutsCaretRightmost) {
 
   // Can't rely on the window machinery to make us first responder,
   // here.
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   EXPECT_TRUE([field_ currentEditor]);
 
   const NSPoint point(NSMakePoint(300.0 - 20.0, 5.0));
@@ -450,7 +436,7 @@ TEST_F(AutocompleteTextFieldTest, ClickKeywordPutsCaretLeftmost) {
 
   // Can't rely on the window machinery to make us first responder,
   // here.
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   EXPECT_TRUE([field_ currentEditor]);
 
   const NSPoint point(NSMakePoint(20.0, 5.0));
@@ -468,7 +454,7 @@ TEST_F(AutocompleteTextFieldTest, ClickKeywordPutsCaretLeftmost) {
 TEST_F(AutocompleteTextFieldTest, ClickBorderSelectsAll) {
   // Can't rely on the window machinery to make us first responder,
   // here.
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   EXPECT_TRUE([field_ currentEditor]);
 
   const NSPoint point(NSMakePoint(20.0, 1.0));
@@ -621,7 +607,8 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringBaseline) {
   EXPECT_TRUE([[field_ stringValue] isEqualToString:kString]);
 
   // Try that again with focus.
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
+
   EXPECT_TRUE([field_ currentEditor]);
 
   // Check that what we get back looks like what we put in.
@@ -644,8 +631,7 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringUndo) {
   scoped_nsobject<NSAttributedString> attributedString(
       [[NSAttributedString alloc] initWithString:kString
                                       attributes:attributes]);
-
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   EXPECT_TRUE([field_ currentEditor]);
   NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
   NSUndoManager* undoManager = [editor undoManager];
@@ -678,7 +664,7 @@ TEST_F(AutocompleteTextFieldTest, SetAttributedStringUndo) {
 }
 
 TEST_F(AutocompleteTextFieldTest, EditorGetsCorrectUndoManager) {
-  cocoa_helper_.makeFirstResponder(field_);
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
 
   NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
   EXPECT_TRUE(editor);

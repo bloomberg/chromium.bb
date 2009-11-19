@@ -89,10 +89,6 @@ class ToolbarControllerTest : public CocoaTest {
 
 TEST_VIEW(ToolbarControllerTest, [bar_ view])
 
-/////////////////////////////////////////////////////////////////////
-// TODO(dmaclach) All tests disabled due to crashing: crbug.com/27920
-/////////////////////////////////////////////////////////////////////
-
 // Test the initial state that everything is sync'd up
 TEST_F(ToolbarControllerTest, InitialState) {
   CommandUpdater* updater = helper_.browser()->command_updater();

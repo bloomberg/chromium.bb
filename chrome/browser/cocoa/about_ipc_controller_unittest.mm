@@ -15,21 +15,19 @@
 
 namespace {
 
-class AboutIPCControllerTest : public PlatformTest {
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+class AboutIPCControllerTest : public CocoaTest {
 };
 
 TEST_F(AboutIPCControllerTest, TestFilter) {
-  scoped_nsobject<AboutIPCController> controller(
-    [[AboutIPCController alloc] init]);
-  [controller window];  // force nib load.
+  AboutIPCController* controller = [[AboutIPCController alloc] init];
+  EXPECT_TRUE([controller window]);  // force nib load.
   IPC::LogData data;
 
   // Make sure generic names do NOT get filtered.
   std::wstring names[] = { L"PluginProcessingIsMyLife",
                            L"ViewMsgFoo",
                            L"NPObjectHell" };
-  for (unsigned int i = 0; i < arraysize(names); i++) {
+  for (size_t i = 0; i < arraysize(names); i++) {
     data.message_name = names[i];
     scoped_nsobject<CocoaLogData> cdata([[CocoaLogData alloc]
                                           initWithLogData:data]);
@@ -44,6 +42,7 @@ TEST_F(AboutIPCControllerTest, TestFilter) {
   EXPECT_TRUE([controller filterOut:cdata.get()]);
   [controller setDisplayViewMessages:YES];
   EXPECT_FALSE([controller filterOut:cdata.get()]);
+  [controller close];
 }
 
 }  // namespace

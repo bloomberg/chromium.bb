@@ -168,6 +168,10 @@ static bool g_is_opening_new_window = false;
   // dealloc'd, it will stop the RunLoop and fall back into main().
   g_browser_process->ReleaseModule();
 
+  // Close these off if they have open windows.
+  [prefsController_ close];
+  [aboutController_ close];
+
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -693,12 +697,16 @@ static bool g_is_opening_new_window = false;
 
 // Called when the preferences window is closed. We use this to release the
 // window controller.
-- (void)prefsWindowClosed:(NSNotification*)notify {
-  [[NSNotificationCenter defaultCenter]
-    removeObserver:self
-              name:kUserDoneEditingPrefsNotification
-            object:prefsController_.get()];
-  prefsController_.reset(NULL);
+- (void)prefsWindowClosed:(NSNotification*)notification {
+  NSWindow* window = [prefsController_ window];
+  DCHECK([notification object] == window);
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter removeObserver:self
+                           name:NSWindowWillCloseNotification
+                         object:window];
+  // PreferencesWindowControllers are autoreleased in
+  // -[PreferencesWindowController windowWillClose:].
+  prefsController_ = nil;
 }
 
 // Show the preferences window, or bring it to the front if it's already
@@ -712,45 +720,49 @@ static bool g_is_opening_new_window = false;
 - (void)showPreferencesWindow:(id)sender
                          page:(OptionsPage)page
                       profile:(Profile*)profile {
-  if (prefsController_.get()) {
+  if (prefsController_) {
     [prefsController_ switchToPage:page animate:YES];
   } else {
-    prefsController_.reset([[PreferencesWindowController alloc]
-                              initWithProfile:profile
-                                  initialPage:page]);
+    prefsController_ =
+        [[PreferencesWindowController alloc] initWithProfile:profile
+                                                 initialPage:page];
     // Watch for a notification of when it goes away so that we can destroy
     // the controller.
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(prefsWindowClosed:)
-               name:kUserDoneEditingPrefsNotification
-             object:prefsController_.get()];
+               name:NSWindowWillCloseNotification
+             object:[prefsController_ window]];
   }
   [prefsController_ showPreferences:sender];
 }
 
 // Called when the about window is closed. We use this to release the
 // window controller.
-- (void)aboutWindowClosed:(NSNotification*)notify {
+- (void)aboutWindowClosed:(NSNotification*)notification {
+  NSWindow* window = [aboutController_ window];
+  DCHECK(window == [notification object]);
   [[NSNotificationCenter defaultCenter]
       removeObserver:self
-                name:kUserClosedAboutNotification
-              object:aboutController_.get()];
-  aboutController_.reset(nil);
+                name:NSWindowWillCloseNotification
+              object:window];
+  // AboutWindowControllers are autoreleased in
+  // -[AboutWindowController windowWillClose:].
+  aboutController_ = nil;
 }
 
 - (IBAction)orderFrontStandardAboutPanel:(id)sender {
   if (!aboutController_) {
-    aboutController_.reset([[AboutWindowController alloc]
-                            initWithProfile:[self defaultProfile]]);
+    aboutController_ =
+        [[AboutWindowController alloc] initWithProfile:[self defaultProfile]];
 
     // Watch for a notification of when it goes away so that we can destroy
     // the controller.
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(aboutWindowClosed:)
-               name:kUserClosedAboutNotification
-             object:aboutController_.get()];
+               name:NSWindowWillCloseNotification
+             object:[aboutController_ window]];
   }
 
   if (![[aboutController_ window] isVisible])

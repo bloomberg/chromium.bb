@@ -38,7 +38,6 @@ class StyledTextFieldCellTest : public CocoaTest {
     [[test_window() contentView] addSubview:view_];
   }
 
-  //CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   NSTextField* view_;
   StyledTextFieldTestCell* cell_;
 };

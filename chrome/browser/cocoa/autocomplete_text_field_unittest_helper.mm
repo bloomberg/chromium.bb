@@ -11,17 +11,19 @@
 @implementation AutocompleteTextFieldWindowTestDelegate
 
 - (id)windowWillReturnFieldEditor:(NSWindow *)sender toObject:(id)anObject {
-  EXPECT_TRUE([anObject isKindOfClass:[AutocompleteTextField class]]);
+  id editor = nil;
+  if ([anObject isKindOfClass:[AutocompleteTextField class]]) {
+    if (editor_ == nil) {
+      editor_.reset([[AutocompleteTextFieldEditor alloc] init]);
+    }
+    EXPECT_TRUE(editor_ != nil);
 
-  if (editor_ == nil) {
-    editor_.reset([[AutocompleteTextFieldEditor alloc] init]);
+    // This needs to be called every time, otherwise notifications
+    // aren't sent correctly.
+    [editor_ setFieldEditor:YES];
+    editor = editor_.get();
   }
-  EXPECT_TRUE(editor_ != nil);
-
-  // This needs to be called every time, otherwise notifications
-  // aren't sent correctly.
-  [editor_ setFieldEditor:YES];
-  return editor_;
+  return editor;
 }
 
 @end

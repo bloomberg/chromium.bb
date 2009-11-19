@@ -135,9 +135,6 @@ class ProfileSyncService;
 // Usable from cocoa bindings to hook up the custom home pages table.
 @property(readonly) CustomHomePagesModel* customPagesSource;
 
-// NSNotification sent when the prefs window is closed.
-extern NSString* const kUserDoneEditingPrefsNotification;
-
 @end
 
 @interface PreferencesWindowController(Testing)

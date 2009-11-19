@@ -36,20 +36,23 @@ namespace {
 ///////////////////////////////////////////////////////////////////////////
 // Test fixtures
 
-class InfoBarTextFieldTest : public PlatformTest {
- protected:
-  CocoaTestHelper helper_;
+class InfoBarTextFieldTest : public CocoaTest {
+ public:
+  InfoBarTextFieldTest() {
+    NSRect frame = NSMakeRect(0, 0, 200, 200);
+    scoped_nsobject<InfoBarTextField> field(
+        [[InfoBarTextField alloc] initWithFrame:frame]);
+    field_ = field.get();
+    [[test_window() contentView] addSubview:field_];
+  }
+
+  InfoBarTextField* field_;
 };
 
 ////////////////////////////////////////////////////////////////////////////
 // Tests
 
-TEST_F(InfoBarTextFieldTest, Show) {
-  // Test basic drawing.
-  scoped_nsobject<InfoBarTextField> field(
-      [[InfoBarTextField alloc] initWithFrame:NSMakeRect(0, 0, 200, 200)]);
-  [helper_.contentView() addSubview:field];
-}
+TEST_VIEW(InfoBarTextFieldTest, field_)
 
 TEST_F(InfoBarTextFieldTest, LinkClicked) {
   scoped_nsobject<InfoBarTextField> field(

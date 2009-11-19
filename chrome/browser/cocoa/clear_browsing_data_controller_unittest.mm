@@ -17,9 +17,10 @@
 
 namespace {
 
-class ClearBrowsingDataControllerTest : public PlatformTest {
+class ClearBrowsingDataControllerTest : public CocoaTest {
  public:
-  ClearBrowsingDataControllerTest() {
+  virtual void SetUp() {
+    CocoaTest::SetUp();
     // Set up some interesting prefs:
     PrefService* prefs = helper_.profile()->GetPrefs();
     prefs->SetBoolean(prefs::kDeleteBrowsingHistory, true);
@@ -31,13 +32,17 @@ class ClearBrowsingDataControllerTest : public PlatformTest {
     prefs->SetInteger(prefs::kDeleteTimePeriod,
                       BrowsingDataRemover::FOUR_WEEKS);
 
-    controller_.reset(
-      [[ClearBrowsingDataController alloc] initWithProfile:helper_.profile()]);
+    controller_ =
+        [[ClearBrowsingDataController alloc] initWithProfile:helper_.profile()];
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  virtual void TearDown() {
+    [controller_ close];
+    CocoaTest::TearDown();
+  }
+
   BrowserTestHelper helper_;
-  scoped_nsobject<ClearBrowsingDataController> controller_;
+  ClearBrowsingDataController* controller_;
 };
 
 TEST_F(ClearBrowsingDataControllerTest, InitialState) {

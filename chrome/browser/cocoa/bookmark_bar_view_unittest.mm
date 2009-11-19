@@ -66,18 +66,21 @@ namespace {
 
 class BookmarkBarViewTest : public CocoaTest {
  public:
+  virtual void SetUp() {
+    CocoaTest::SetUp();
+    view_.reset([[BookmarkBarView alloc] init]);
+  }
+
   scoped_nsobject<BookmarkBarView> view_;
 };
 
 TEST_F(BookmarkBarViewTest, CanDragWindow) {
-  view_.reset([[BookmarkBarView alloc] init]);
-  EXPECT_FALSE([view_.get() mouseDownCanMoveWindow]);
+  EXPECT_FALSE([view_ mouseDownCanMoveWindow]);
 }
 
 TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
-  view_.reset([[BookmarkBarView alloc] init]);
   scoped_nsobject<FakeBookmarkDraggingInfo>
-    info([[FakeBookmarkDraggingInfo alloc] init]);
+      info([[FakeBookmarkDraggingInfo alloc] init]);
 
   [view_ setController:info.get()];
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);

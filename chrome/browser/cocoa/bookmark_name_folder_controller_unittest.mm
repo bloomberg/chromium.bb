@@ -11,9 +11,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-class BookmarkNameFolderControllerTest : public PlatformTest {
+class BookmarkNameFolderControllerTest : public CocoaTest {
  public:
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
 };
 
@@ -26,7 +25,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNew) {
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
-                 initWithParentWindow:cocoa_helper_.window()
+                 initWithParentWindow:test_window()
                               profile:helper_.profile()
                                  node:node]);
   [controller window];  // force nib load
@@ -56,7 +55,7 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
-                 initWithParentWindow:cocoa_helper_.window()
+                 initWithParentWindow:test_window()
                               profile:helper_.profile()
                                  node:NULL]);
   [controller window];  // force nib load
@@ -79,7 +78,7 @@ TEST_F(BookmarkNameFolderControllerTest, Rename) {
   // the node.
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
-                 initWithParentWindow:cocoa_helper_.window()
+                 initWithParentWindow:test_window()
                               profile:helper_.profile()
                                  node:folder]);
   [controller window];  // force nib load
@@ -100,7 +99,7 @@ TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {
 
   scoped_nsobject<BookmarkNameFolderController>
     controller([[BookmarkNameFolderController alloc]
-                 initWithParentWindow:cocoa_helper_.window()
+                 initWithParentWindow:test_window()
                               profile:helper_.profile()
                                  node:node]);
   [controller window];  // force nib load

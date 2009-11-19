@@ -12,25 +12,19 @@
 
 namespace {
 
-class TabViewTest : public PlatformTest {
+class TabViewTest : public CocoaTest {
  public:
   TabViewTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    view_.reset([[TabView alloc] initWithFrame:frame]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    scoped_nsobject<TabView> view([[TabView alloc] initWithFrame:frame]);
+    view_ = view.get();
+    [[test_window() contentView] addSubview:view_];
   }
 
-  scoped_nsobject<TabView> view_;
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  TabView* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(TabViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
+TEST_VIEW(TabViewTest, view_)
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(TabViewTest, Display) {

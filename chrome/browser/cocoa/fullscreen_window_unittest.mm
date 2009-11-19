@@ -8,9 +8,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-class FullscreenWindowTest : public PlatformTest {
- public:
-  CocoaTestHelper cocoa_helper_;
+class FullscreenWindowTest : public CocoaTest {
 };
 
 TEST_F(FullscreenWindowTest, Basics) {
@@ -21,8 +19,8 @@ TEST_F(FullscreenWindowTest, Basics) {
   EXPECT_TRUE([window_ canBecomeKeyWindow]);
   EXPECT_TRUE([window_ canBecomeMainWindow]);
   EXPECT_EQ(NSBorderlessWindowMask, [window_ styleMask]);
-  EXPECT_FALSE([window_ isReleasedWhenClosed]);
   EXPECT_TRUE(NSEqualRects([[NSScreen mainScreen] frame], [window_ frame]));
+  EXPECT_FALSE([window_ isReleasedWhenClosed]);
 }
 
 

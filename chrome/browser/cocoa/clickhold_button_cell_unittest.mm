@@ -12,33 +12,22 @@
 
 namespace {
 
-class ClickHoldButtonCellTest : public PlatformTest {
+class ClickHoldButtonCellTest : public CocoaTest {
  public:
   ClickHoldButtonCellTest() {
     NSRect frame = NSMakeRect(0, 0, 50, 30);
-    view_.reset([[NSButton alloc] initWithFrame:frame]);
+    scoped_nsobject<NSButton> view([[NSButton alloc] initWithFrame:frame]);
+    view_ = view.get();
     scoped_nsobject<ClickHoldButtonCell> cell(
         [[ClickHoldButtonCell alloc] initTextCell:@"Testing"]);
     [view_ setCell:cell.get()];
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    [[test_window() contentView] addSubview:view_];
   }
 
-  CocoaTestHelper cocoa_helper_;            // Inits Cocoa, creates window, etc.
-  scoped_nsobject<NSButton> view_;
+  NSButton* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing leaks
-// or crashes.
-TEST_F(ClickHoldButtonCellTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(ClickHoldButtonCellTest, Display) {
-  [view_ display];
-}
+TEST_VIEW(ClickHoldButtonCellTest, view_)
 
 // Test default values; make sure they are what they should be.
 TEST_F(ClickHoldButtonCellTest, Defaults) {

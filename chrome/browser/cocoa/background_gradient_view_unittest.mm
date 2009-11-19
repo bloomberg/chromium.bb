@@ -23,29 +23,23 @@
 
 namespace {
 
-class BackgroundGradientViewTest : public PlatformTest {
+class BackgroundGradientViewTest : public CocoaTest {
  public:
   BackgroundGradientViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);
-    view_.reset([[BackgroundGradientSubClassTest alloc] initWithFrame:frame]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    scoped_nsobject<BackgroundGradientSubClassTest> view;
+    view.reset([[BackgroundGradientSubClassTest alloc] initWithFrame:frame]);
+    view_ = view.get();
+    [[test_window() contentView] addSubview:view_];
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
-  scoped_nsobject<BackgroundGradientSubClassTest> view_;
+  BackgroundGradientSubClassTest* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(BackgroundGradientViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
+TEST_VIEW(BackgroundGradientViewTest, view_)
 
 // Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(BackgroundGradientViewTest, Display) {
-  [view_ display];
+TEST_F(BackgroundGradientViewTest, DisplayWithDivider) {
   [view_ setShowsDivider:YES];
   [view_ display];
 }

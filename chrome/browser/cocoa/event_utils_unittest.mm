@@ -21,9 +21,7 @@
 
 namespace {
 
-class EventUtilsTest : public PlatformTest {
- private:
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+class EventUtilsTest : public CocoaTest {
 };
 
 TEST_F(EventUtilsTest, TestWindowOpenDispositionFromNSEvent) {

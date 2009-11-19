@@ -10,17 +10,14 @@
 
 namespace {
 
-class ToolbarViewTest : public PlatformTest {
- public:
-  CocoaTestHelper cocoa_helper_;
-  scoped_nsobject<ToolbarView> view_;
+class ToolbarViewTest : public CocoaTest {
 };
 
 // This class only needs to do one thing: prevent mouse down events from moving
 // the parent window around.
 TEST_F(ToolbarViewTest, CanDragWindow) {
-  view_.reset([[ToolbarView alloc] init]);
-  EXPECT_FALSE([view_.get() mouseDownCanMoveWindow]);
+  scoped_nsobject<ToolbarView> view([[ToolbarView alloc] init]);
+  EXPECT_FALSE([view mouseDownCanMoveWindow]);
 }
 
 }  // namespace

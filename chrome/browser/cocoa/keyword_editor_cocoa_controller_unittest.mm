@@ -14,32 +14,47 @@
 
 @interface FakeKeywordEditorController : KeywordEditorCocoaController {
  @public
-  BOOL changed_;
+  BOOL modelChanged_;
 }
+- (void)modelChanged;
+- (BOOL)hasModelChanged;
 - (KeywordEditorModelObserver*)observer;
 @end
 
 @implementation FakeKeywordEditorController
+
 - (void)modelChanged {
-  changed_ = YES;
+  modelChanged_ = YES;
 }
+
+- (BOOL)hasModelChanged {
+  return modelChanged_;
+}
+
 - (KeywordEditorModelObserver*)observer {
   return observer_.get();
 }
+
 @end
 
 // TODO(rsesek): Figure out a good way to test this class (crbug.com/21640).
 
 namespace {
 
-class KeywordEditorCocoaControllerTest : public PlatformTest {
+class KeywordEditorCocoaControllerTest : public CocoaTest {
  public:
-  void SetUp() {
+  virtual void SetUp() {
+    CocoaTest::SetUp();
     TestingProfile* profile =
         static_cast<TestingProfile*>(browser_helper_.profile());
     profile->CreateTemplateURLModel();
-    controller_.reset(
-        [[FakeKeywordEditorController alloc] initWithProfile:profile]);
+
+    controller_ = [[FakeKeywordEditorController alloc] initWithProfile:profile];
+  }
+
+  virtual void TearDown() {
+    [controller_ close];
+    CocoaTest::TearDown();
   }
 
   // Helper to count the keyword editors.
@@ -55,56 +70,15 @@ class KeywordEditorCocoaControllerTest : public PlatformTest {
     return count;
   }
 
-  CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_helper_;
-  scoped_nsobject<FakeKeywordEditorController> controller_;
+  FakeKeywordEditorController* controller_;
 };
 
 TEST_F(KeywordEditorCocoaControllerTest, TestModelChanged) {
-  EXPECT_FALSE(controller_.get()->changed_);
+  EXPECT_FALSE([controller_ hasModelChanged]);
   KeywordEditorModelObserver* observer = [controller_ observer];
   observer->OnTemplateURLModelChanged();
-  EXPECT_TRUE(controller_.get()->changed_);
-}
-
-// Test that the window shows correctly, and the controller is
-// released correctly.
-TEST_F(KeywordEditorCocoaControllerTest, ShowAndCloseWindow) {
-  // |controller_| is the only reference.
-  EXPECT_EQ([controller_.get() retainCount], 1U);
-
-  // TODO(shess): This test verifies that it leaks no windows.  Work
-  // to push this expectation up into the unit testing framework.
-
-  const NSUInteger initial_window_count([[NSApp windows] count]);
-
-  // Explicit autorelease pool here because [NSApp windows] returns an
-  // autorelease immutable NSArray, which otherwise pins the window.
-  {
-    base::ScopedNSAutoreleasePool pool;
-
-    // -showWindow: brings up the window (which retains
-    // |controller_|).
-    [controller_.get() showWindow:nil];
-    EXPECT_EQ([[NSApp windows] count], initial_window_count+1);
-
-    // In regular usage, our scoped reference would not exist and
-    // |controller_| would manage itself once -showWindow: is called.
-    // This means that we need another reference to balance things
-    // out.
-    [controller_.get() retain];
-
-    // Closing the window should leave us with the single reference.
-    [controller_.get() close];
-  }
-
-  // |controller_| still has a handle on the window, drop the last
-  // reference so we can check that we didn't leak a window.
-  EXPECT_EQ([controller_.get() retainCount], 1U);
-  controller_.reset();
-
-  // All created windows should be gone.
-  EXPECT_EQ([[NSApp windows] count], initial_window_count);
+  EXPECT_TRUE([controller_ hasModelChanged]);
 }
 
 // Test that +showKeywordEditor brings up the existing editor and

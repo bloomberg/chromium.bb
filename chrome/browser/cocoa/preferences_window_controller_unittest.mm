@@ -41,19 +41,19 @@ class PrefsControllerTest : public CocoaTest {
     PrefService* prefs = browser_helper_.profile()->GetPrefs();
     prefs->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
 
-    pref_controller_.reset([[PreferencesWindowController alloc]
-                              initWithProfile:browser_helper_.profile()
-                                  initialPage:OPTIONS_PAGE_DEFAULT]);
-    EXPECT_TRUE(pref_controller_.get());
+    pref_controller_ = [[PreferencesWindowController alloc]
+                         initWithProfile:browser_helper_.profile()
+                             initialPage:OPTIONS_PAGE_DEFAULT];
+    EXPECT_TRUE(pref_controller_);
   }
 
   virtual void TearDown() {
-    pref_controller_.reset(NULL);
+    [pref_controller_ close];
     CocoaTest::TearDown();
   }
 
   BrowserTestHelper browser_helper_;
-  scoped_nsobject<PreferencesWindowController> pref_controller_;
+  PreferencesWindowController* pref_controller_;
 };
 
 // Test showing the preferences window and making sure it's visible, then
@@ -64,14 +64,17 @@ TEST_F(PrefsControllerTest, ShowAndClose) {
 
   scoped_nsobject<PrefsClosedObserver> observer(
       [[PrefsClosedObserver alloc] init]);
-  [[NSNotificationCenter defaultCenter]
-      addObserver:observer.get()
-         selector:@selector(prefsWindowClosed:)
-             name:kUserDoneEditingPrefsNotification
-           object:pref_controller_.get()];
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter addObserver:observer.get()
+                    selector:@selector(prefsWindowClosed:)
+                        name:NSWindowWillCloseNotification
+                      object:[pref_controller_ window]];
   [[pref_controller_ window] performClose:observer];
   EXPECT_TRUE(observer.get()->gotNotification_);
-  [[NSNotificationCenter defaultCenter] removeObserver:observer.get()];
+  [defaultCenter removeObserver:observer.get()];
+
+  // Prevent pref_controller_ from being closed again in TearDown()
+  pref_controller_ = nil;
 }
 
 TEST_F(PrefsControllerTest, ValidateCustomHomePagesTable) {

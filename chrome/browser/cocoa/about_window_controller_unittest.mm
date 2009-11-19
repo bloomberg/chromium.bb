@@ -31,17 +31,21 @@ void PostAutoupdateStatusNotification(AutoupdateStatus status,
                       userInfo:dictionary];
 }
 
-class AboutWindowControllerTest : public PlatformTest {
+class AboutWindowControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
-    PlatformTest::SetUp();
-    about_window_controller_.reset([[AboutWindowController alloc]
-                                    initWithProfile:nil]);
-    // make sure the nib is loaded
-    [about_window_controller_ window];
+    CocoaTest::SetUp();
+    about_window_controller_ =
+        [[AboutWindowController alloc] initWithProfile:nil];
+    EXPECT_TRUE([about_window_controller_ window]);
   }
 
-  scoped_nsobject<AboutWindowController> about_window_controller_;
+  virtual void TearDown() {
+    [about_window_controller_ close];
+    CocoaTest::TearDown();
+  }
+
+  AboutWindowController* about_window_controller_;
 };
 
 TEST_F(AboutWindowControllerTest, TestCopyright) {
@@ -82,7 +86,7 @@ TEST_F(AboutWindowControllerTest, TestButton) {
   ASSERT_TRUE([button isEnabled]);
 
   // Make sure the button is hooked up
-  ASSERT_EQ([button target], about_window_controller_.get());
+  ASSERT_EQ([button target], about_window_controller_);
   ASSERT_EQ([button action], @selector(updateNow:));
 }
 

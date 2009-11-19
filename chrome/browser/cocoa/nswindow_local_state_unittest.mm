@@ -12,21 +12,26 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-class NSWindowLocalStateTest : public PlatformTest {
+class NSWindowLocalStateTest : public CocoaTest {
   virtual void SetUp() {
+    CocoaTest::SetUp();
     path_ = L"NSWindowLocalStateTest";
-    window_.reset(
+    window_ =
         [[NSWindow alloc] initWithContentRect:NSMakeRect(100, 100, 20, 20)
                                     styleMask:NSTitledWindowMask
                                       backing:NSBackingStoreBuffered
-                                        defer:NO]);
+                                        defer:NO];
     browser_helper_.profile()->GetPrefs()->RegisterDictionaryPref(path_);
   }
 
+  virtual void TearDown() {
+    [window_ close];
+    CocoaTest::TearDown();
+  }
+
  public:
-  CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_helper_;
-  scoped_nsobject<NSWindow> window_;
+  NSWindow* window_;
   const wchar_t* path_;
 };
 

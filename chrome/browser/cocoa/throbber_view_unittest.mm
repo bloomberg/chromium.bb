@@ -14,32 +14,19 @@
 
 namespace {
 
-class ThrobberViewTest : public PlatformTest {
+class ThrobberViewTest : public CocoaTest {
  public:
   ThrobberViewTest() {
     NSRect frame = NSMakeRect(10, 10, 16, 16);
     NSImage* image =
         ResourceBundle::GetSharedInstance().GetNSImageNamed(IDR_THROBBER);
-    view_.reset([[ThrobberView filmstripThrobberViewWithFrame:frame
-                                                        image:image] retain]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    view_ = [ThrobberView filmstripThrobberViewWithFrame:frame image:image];
+    [[test_window() contentView] addSubview:view_];
   }
 
-  scoped_nsobject<ThrobberView> view_;
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  ThrobberView* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(ThrobberViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(ThrobberViewTest, Display) {
-  [view_ display];
-}
+TEST_VIEW(ThrobberViewTest, view_)
 
 }  // namespace

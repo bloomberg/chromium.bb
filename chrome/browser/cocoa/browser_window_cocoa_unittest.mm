@@ -20,9 +20,8 @@
 class BrowserWindowCocoaPong : public BrowserWindowCocoa {
  public:
   BrowserWindowCocoaPong(Browser* browser,
-                         BrowserWindowController* controller,
-                         NSWindow* window) :
-  BrowserWindowCocoa(browser, controller, window) {
+                         BrowserWindowController* controller) :
+  BrowserWindowCocoa(browser, controller, [controller window]) {
     pong_ = false;
   }
   virtual ~BrowserWindowCocoaPong() { }
@@ -39,36 +38,33 @@ class BrowserWindowCocoaPong : public BrowserWindowCocoa {
 };
 
 // Main test class.
-class BrowserWindowCocoaTest : public testing::Test {
-
+class BrowserWindowCocoaTest : public CocoaTest {
   virtual void SetUp() {
-    controller_.reset([[BrowserWindowController alloc]
-                        initWithBrowser:browser_helper_.browser()
-                          takeOwnership:NO]);
+    CocoaTest::SetUp();
+    Browser* browser = browser_helper_.browser();
+    controller_ = [[BrowserWindowController alloc] initWithBrowser:browser
+                                                     takeOwnership:NO];
+  }
+
+  virtual void TearDown() {
+    [controller_ close];
+    CocoaTest::TearDown();
   }
 
  public:
-  // Order is very important here.  We want the controller deleted
-  // before the pool, and want the pool deleted before
-  // BrowserTestHelper.
-  CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_helper_;
-  base::ScopedNSAutoreleasePool pool_;
-  scoped_nsobject<BrowserWindowController> controller_;
+  BrowserWindowController* controller_;
 };
 
 
 TEST_F(BrowserWindowCocoaTest, TestNotification) {
-  BrowserWindowCocoaPong *bwc = new BrowserWindowCocoaPong(
-    browser_helper_.browser(),
-    controller_.get(),
-    cocoa_helper_.window());
+  BrowserWindowCocoaPong *bwc =
+      new BrowserWindowCocoaPong(browser_helper_.browser(), controller_);
 
   EXPECT_FALSE(bwc->pong_);
   bookmark_utils::ToggleWhenVisible(browser_helper_.profile());
   // Confirm we are listening
   EXPECT_TRUE(bwc->pong_);
-
   delete bwc;
   // If this does NOT crash it confirms we stopped listening in the destructor.
   bookmark_utils::ToggleWhenVisible(browser_helper_.profile());
@@ -78,8 +74,7 @@ TEST_F(BrowserWindowCocoaTest, TestNotification) {
 TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
   BrowserWindowCocoaPong *bwc = new BrowserWindowCocoaPong(
     browser_helper_.browser(),
-    controller_.get(),
-    cocoa_helper_.window());
+    controller_);
   scoped_ptr<BrowserWindowCocoaPong> scoped_bwc(bwc);
 
   bool before = bwc->IsBookmarkBarVisible();
@@ -105,12 +100,10 @@ TEST_F(BrowserWindowCocoaTest, TestBookmarkBarVisible) {
 @end
 
 TEST_F(BrowserWindowCocoaTest, TestFullscreen) {
-  scoped_nsobject<FakeController> fake_controller_([[FakeController alloc]
-                                                     init]);
+  FakeController* fake_controller = [[FakeController alloc] init];
   BrowserWindowCocoaPong *bwc = new BrowserWindowCocoaPong(
     browser_helper_.browser(),
-    (BrowserWindowController*)fake_controller_.get(),
-    cocoa_helper_.window());
+    (BrowserWindowController*)fake_controller);
   scoped_ptr<BrowserWindowCocoaPong> scoped_bwc(bwc);
 
   EXPECT_FALSE(bwc->IsFullscreen());
@@ -118,6 +111,7 @@ TEST_F(BrowserWindowCocoaTest, TestFullscreen) {
   EXPECT_TRUE(bwc->IsFullscreen());
   bwc->SetFullscreen(false);
   EXPECT_FALSE(bwc->IsFullscreen());
+  [fake_controller close];
 }
 
-/* TODO(???): test other methods of BrowserWindowCocoa */
+// TODO(???): test other methods of BrowserWindowCocoa

@@ -27,30 +27,20 @@
 
 namespace {
 
-class FindBarViewTest : public PlatformTest {
+class FindBarViewTest : public CocoaTest {
  public:
   FindBarViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 30);
-    view_.reset([[FindBarView alloc] initWithFrame:frame]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    scoped_nsobject<FindBarView> view(
+        [[FindBarView alloc] initWithFrame:frame]);
+    view_ = view.get();
+    [[test_window() contentView] addSubview:view_];
   }
 
-  scoped_nsobject<FindBarView> view_;
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  FindBarView* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(FindBarViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(FindBarViewTest, Display) {
-  [view_ display];
-}
+TEST_VIEW(FindBarViewTest, view_)
 
 TEST_F(FindBarViewTest, FindBarEatsMouseClicksInBackgroundArea) {
   MouseDownViewPong* pongView =
@@ -63,15 +53,15 @@ TEST_F(FindBarViewTest, FindBarEatsMouseClicksInBackgroundArea) {
   [view_ setFrame:NSMakeRect(0, 0, 200, 200)];
 
   // Add the pong view as a sibling of the findbar.
-  [cocoa_helper_.contentView() addSubview:pongView
+  [[test_window() contentView] addSubview:pongView
                                positioned:NSWindowBelow
-                               relativeTo:view_.get()];
+                               relativeTo:view_];
 
   // Synthesize a mousedown event and send it to the window.  The event is
   // placed in the center of the find bar.
   NSPoint pointInCenterOfFindBar = NSMakePoint(100, 100);
   [pongView setPong:NO];
-  [cocoa_helper_.window()
+  [test_window()
       sendEvent:test_event_utils::LeftMouseDownAtPoint(pointInCenterOfFindBar)];
   // Click gets eaten by findbar, not passed through to underlying view.
   EXPECT_FALSE([pongView pong]);
@@ -83,16 +73,16 @@ TEST_F(FindBarViewTest, FindBarPassesThroughClicksInTransparentArea) {
   [view_ setFrame:NSMakeRect(0, 0, 200, 200)];
 
   // Add the pong view as a sibling of the findbar.
-  [cocoa_helper_.contentView() addSubview:pongView
+  [[test_window() contentView] addSubview:pongView
                                positioned:NSWindowBelow
-                               relativeTo:view_.get()];
+                               relativeTo:view_];
 
   // Synthesize a mousedown event and send it to the window.  The event is inset
   // a few pixels from the lower left corner of the window, which places it in
   // the transparent area surrounding the findbar.
   NSPoint pointInTransparentArea = NSMakePoint(2, 2);
   [pongView setPong:NO];
-  [cocoa_helper_.window()
+  [test_window()
       sendEvent:test_event_utils::LeftMouseDownAtPoint(pointInTransparentArea)];
   // Click is ignored by findbar, passed through to underlying view.
   EXPECT_TRUE([pongView pong]);

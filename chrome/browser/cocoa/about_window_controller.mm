@@ -72,9 +72,6 @@ void AttributedStringAppendHyperlink(NSMutableAttributedString* attr_str,
 
 @end  // @interface AboutWindowController(Private)
 
-const NSString* const kUserClosedAboutNotification =
-    @"UserClosedAboutNotification";
-
 @implementation AboutWindowController
 
 - (id)initWithProfile:(Profile*)profile {
@@ -194,8 +191,7 @@ static BOOL recentShownInstallFailedStatus = NO;
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
-  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-  [center postNotificationName:kUserClosedAboutNotification object:self];
+  [self autorelease];
 }
 
 - (void)setUpdateThrobberMessage:(NSString*)message {

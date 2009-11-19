@@ -10,17 +10,14 @@
 
 namespace {
 
-class DownloadShelfViewTest : public PlatformTest {
- public:
-  CocoaTestHelper cocoa_helper_;
-  scoped_nsobject<DownloadShelfView> view_;
+class DownloadShelfViewTest : public CocoaTest {
 };
 
 // This class only needs to do one thing: prevent mouse down events from moving
 // the parent window around.
 TEST_F(DownloadShelfViewTest, CanDragWindow) {
-  view_.reset([[DownloadShelfView alloc] init]);
-  EXPECT_FALSE([view_.get() mouseDownCanMoveWindow]);
+  scoped_nsobject<DownloadShelfView> view([[DownloadShelfView alloc] init]);
+  EXPECT_FALSE([view mouseDownCanMoveWindow]);
 }
 
 }  // namespace

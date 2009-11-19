@@ -11,20 +11,17 @@
 
 namespace {
 
-class BookmarkButtonCellTest : public PlatformTest {
- public:
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
-  scoped_nsobject<NSButton> view_;
+class BookmarkButtonCellTest : public CocoaTest {
 };
 
 // Make sure it's not totally bogus
 TEST_F(BookmarkButtonCellTest, SizeForBounds) {
   NSRect frame = NSMakeRect(0, 0, 50, 30);
-  view_.reset([[NSButton alloc] initWithFrame:frame]);
-  scoped_nsobject<BookmarkButtonCell> cell([[BookmarkButtonCell alloc]
-                                               initTextCell:@"Testing"]);
-  [view_ setCell:cell.get()];
-  [cocoa_helper_.contentView() addSubview:view_.get()];
+  scoped_nsobject<NSButton> view([[NSButton alloc] initWithFrame:frame]);
+  scoped_nsobject<BookmarkButtonCell> cell(
+      [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
+  [view setCell:cell.get()];
+  [[test_window() contentView] addSubview:view];
 
   NSRect r = NSMakeRect(0, 0, 100, 100);
   NSSize size = [cell.get() cellSizeForBounds:r];
@@ -34,8 +31,8 @@ TEST_F(BookmarkButtonCellTest, SizeForBounds) {
 
 // Make sure the default from the base class is overridden
 TEST_F(BookmarkButtonCellTest, MouseEnterStuff) {
-  scoped_nsobject<BookmarkButtonCell> cell([[BookmarkButtonCell alloc]
-                                               initTextCell:@"Testing"]);
+  scoped_nsobject<BookmarkButtonCell> cell(
+      [[BookmarkButtonCell alloc] initTextCell:@"Testing"]);
   EXPECT_TRUE([cell.get() showsBorderOnlyWhileMouseInside]);
 }
 

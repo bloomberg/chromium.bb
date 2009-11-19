@@ -10,10 +10,6 @@
 @class BackgroundTileView;
 class Profile;
 
-// kUserClosedAboutNotification is the name of the notification posted when
-// the About window is closed.
-extern const NSString* const kUserClosedAboutNotification;
-
 // A window controller that handles the About box.
 @interface AboutWindowController : NSWindowController {
  @private

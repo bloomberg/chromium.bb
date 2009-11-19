@@ -12,79 +12,77 @@
 
 namespace {
 
-class FocusTrackerTest : public PlatformTest {
+class FocusTrackerTest : public CocoaTest {
  public:
   virtual void SetUp() {
-    PlatformTest::SetUp();
+    CocoaTest::SetUp();
+    scoped_nsobject<NSView> view([[NSView alloc] initWithFrame:NSZeroRect]);
+    viewA_ = view.get();
+    [[test_window() contentView] addSubview:viewA_];
 
-    viewA_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
-    viewB_.reset([[NSView alloc] initWithFrame:NSZeroRect]);
-    [helper_.contentView() addSubview:viewA_.get()];
-    [helper_.contentView() addSubview:viewB_.get()];
+    view.reset([[NSView alloc] initWithFrame:NSZeroRect]);
+    viewB_ = view.get();
+    [[test_window() contentView] addSubview:viewB_];
   }
 
  protected:
-  CocoaTestHelper helper_;
-  scoped_nsobject<NSView> viewA_;
-  scoped_nsobject<NSView> viewB_;
+  NSView* viewA_;
+  NSView* viewB_;
 };
 
 TEST_F(FocusTrackerTest, SaveRestore) {
-  NSWindow* window = helper_.window();
-  ASSERT_TRUE([window makeFirstResponder:viewA_.get()]);
-  FocusTracker* tracker =
-    [[[FocusTracker alloc] initWithWindow:window] autorelease];
-
+  NSWindow* window = test_window();
+  ASSERT_TRUE([window makeFirstResponder:viewA_]);
+  scoped_nsobject<FocusTracker> tracker(
+      [[FocusTracker alloc] initWithWindow:window]);
   // Give focus to |viewB_|, then try and restore it to view1.
-  ASSERT_TRUE([window makeFirstResponder:viewB_.get()]);
+  ASSERT_TRUE([window makeFirstResponder:viewB_]);
   EXPECT_TRUE([tracker restoreFocusInWindow:window]);
-  EXPECT_EQ(viewA_.get(), [window firstResponder]);
+  EXPECT_EQ(viewA_, [window firstResponder]);
 }
 
 TEST_F(FocusTrackerTest, SaveRestoreWithTextView) {
   // Valgrind will complain if the text field has zero size.
   NSRect frame = NSMakeRect(0, 0, 100, 20);
-  NSWindow* window = helper_.window();
-  NSTextField* text =
-    [[[NSTextField alloc] initWithFrame:frame] autorelease];
-  [helper_.contentView() addSubview:text];
+  NSWindow* window = test_window();
+  scoped_nsobject<NSTextField> text([[NSTextField alloc] initWithFrame:frame]);
+  [[window contentView] addSubview:text];
 
   ASSERT_TRUE([window makeFirstResponder:text]);
-  FocusTracker* tracker =
-    [[[FocusTracker alloc] initWithWindow:window] autorelease];
-
+  scoped_nsobject<FocusTracker> tracker([[FocusTracker alloc]
+                                         initWithWindow:window]);
   // Give focus to |viewB_|, then try and restore it to the text field.
-  ASSERT_TRUE([window makeFirstResponder:viewB_.get()]);
+  ASSERT_TRUE([window makeFirstResponder:viewB_]);
   EXPECT_TRUE([tracker restoreFocusInWindow:window]);
   EXPECT_TRUE([[window firstResponder] isKindOfClass:[NSTextView class]]);
 }
 
 TEST_F(FocusTrackerTest, DontRestoreToViewNotInWindow) {
-  NSWindow* window = helper_.window();
-  NSView* view3 = [[[NSView alloc] initWithFrame:NSZeroRect] autorelease];
-  [helper_.contentView() addSubview:view3];
+  NSWindow* window = test_window();
+  scoped_nsobject<NSView> viewC([[NSView alloc] initWithFrame:NSZeroRect]);
+  [[window contentView] addSubview:viewC];
 
-  ASSERT_TRUE([window makeFirstResponder:view3]);
-  FocusTracker* tracker =
-    [[[FocusTracker alloc] initWithWindow:window] autorelease];
+  ASSERT_TRUE([window makeFirstResponder:viewC]);
+  scoped_nsobject<FocusTracker> tracker(
+      [[FocusTracker alloc] initWithWindow:window]);
 
-  // Give focus to |viewB_|, then remove view3 from the hierarchy and try
+  // Give focus to |viewB_|, then remove viewC from the hierarchy and try
   // to restore focus.  The restore should fail.
-  ASSERT_TRUE([window makeFirstResponder:viewB_.get()]);
-  [view3 removeFromSuperview];
+  ASSERT_TRUE([window makeFirstResponder:viewB_]);
+  [viewC removeFromSuperview];
   EXPECT_FALSE([tracker restoreFocusInWindow:window]);
 }
 
 TEST_F(FocusTrackerTest, DontRestoreFocusToViewInDifferentWindow) {
-  NSWindow* window = helper_.window();
-  ASSERT_TRUE([window makeFirstResponder:viewA_.get()]);
-  FocusTracker* tracker =
-    [[[FocusTracker alloc] initWithWindow:window] autorelease];
+  NSWindow* window = test_window();
+  ASSERT_TRUE([window makeFirstResponder:viewA_]);
+  scoped_nsobject<FocusTracker> tracker(
+      [[FocusTracker alloc] initWithWindow:window]);
 
   // Give focus to |viewB_|, then try and restore focus in a different
   // window.  It is ok to pass a nil NSWindow here because we only use
   // it for direct comparison.
-  ASSERT_TRUE([window makeFirstResponder:viewB_.get()]);
+  ASSERT_TRUE([window makeFirstResponder:viewB_]);
   EXPECT_FALSE([tracker restoreFocusInWindow:nil]);
 }
 

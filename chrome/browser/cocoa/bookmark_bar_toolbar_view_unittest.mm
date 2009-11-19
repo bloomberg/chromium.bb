@@ -101,28 +101,23 @@ class MockThemeProvider : public ThemeProvider {
 - (CGFloat)detachedMorphProgress { return 1; }
 @end
 
-class BookmarkBarToolbarViewTest : public PlatformTest {
+class BookmarkBarToolbarViewTest : public CocoaTest {
  public:
   BookmarkBarToolbarViewTest() {
     controller_.reset([[DrawDetachedBarFakeController alloc] init]);
     NSRect frame = NSMakeRect(0, 0, 400, 40);
-    view_.reset([[BookmarkBarToolbarView alloc] initWithFrame:frame]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
-    [view_.get() setController:controller_.get()];
+    scoped_nsobject<BookmarkBarToolbarView> view(
+        [[BookmarkBarToolbarView alloc] initWithFrame:frame]);
+    view_ = view.get();
+    [[test_window() contentView] addSubview:view_];
+    [view_ setController:controller_.get()];
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   scoped_nsobject<DrawDetachedBarFakeController> controller_;
-  scoped_nsobject<BookmarkBarToolbarView> view_;
+  BookmarkBarToolbarView* view_;
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(BookmarkBarToolbarViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
+TEST_VIEW(BookmarkBarToolbarViewTest, view_)
 
 // Test drawing (part 1), mostly to ensure nothing leaks or crashes.
 TEST_F(BookmarkBarToolbarViewTest, DisplayAsNormalBar) {

@@ -12,30 +12,19 @@
 
 namespace {
 
-class BaseViewTest : public PlatformTest {
+class BaseViewTest : public CocoaTest {
  public:
   BaseViewTest() {
     NSRect frame = NSMakeRect(0, 0, 100, 100);
-    view_.reset([[BaseView alloc] initWithFrame:frame]);
-    [cocoa_helper_.contentView() addSubview:view_.get()];
+    scoped_nsobject<BaseView> view([[BaseView alloc] initWithFrame:frame]);
+    view_ = view.get();
+    [[test_window() contentView] addSubview:view_];
   }
 
-  scoped_nsobject<BaseView> view_;
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
+  BaseView* view_;  // weak
 };
 
-// Test adding/removing from the view hierarchy, mostly to ensure nothing
-// leaks or crashes.
-TEST_F(BaseViewTest, AddRemove) {
-  EXPECT_EQ(cocoa_helper_.contentView(), [view_ superview]);
-  [view_.get() removeFromSuperview];
-  EXPECT_FALSE([view_ superview]);
-}
-
-// Test drawing, mostly to ensure nothing leaks or crashes.
-TEST_F(BaseViewTest, Display) {
-  [view_ display];
-}
+TEST_VIEW(BaseViewTest, view_)
 
 // Convert a rect in |view_|'s Cocoa coordinate system to gfx::Rect's top-left
 // coordinate system. Repeat the process in reverse and make sure we come out

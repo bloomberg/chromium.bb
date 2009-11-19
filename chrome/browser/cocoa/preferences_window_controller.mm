@@ -46,9 +46,6 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
-NSString* const kUserDoneEditingPrefsNotification =
-    @"kUserDoneEditingPrefsNotification";
-
 namespace {
 
 std::wstring GetNewTabUIURLString() {
@@ -1621,10 +1618,7 @@ const int kDisabledIndex = 1;
     // We've hit a recalcitrant field editor, force it to go away.
     [[self window] endEditingFor:nil];
   }
-
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kUserDoneEditingPrefsNotification
-                    object:self];
+  [self autorelease];
 }
 
 - (void)controlTextDidEndEditing:(NSNotification*)notification {

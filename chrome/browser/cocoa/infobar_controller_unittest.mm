@@ -61,61 +61,58 @@ namespace {
 ///////////////////////////////////////////////////////////////////////////
 // Test fixtures
 
-class AlertInfoBarControllerTest : public PlatformTest {
+class AlertInfoBarControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
-    PlatformTest::SetUp();
+    CocoaTest::SetUp();
 
     controller_.reset(
         [[AlertInfoBarController alloc] initWithDelegate:&delegate_]);
     container_.reset(
         [[InfoBarContainerTest alloc] initWithController:controller_]);
     [controller_ setContainerController:container_];
-    [helper_.contentView() addSubview:[controller_ view]];
+    [[test_window() contentView] addSubview:[controller_ view]];
   }
 
  protected:
-  CocoaTestHelper helper_;
   MockAlertInfoBarDelegate delegate_;
   scoped_nsobject<id> container_;
   scoped_nsobject<AlertInfoBarController> controller_;
 };
 
-class LinkInfoBarControllerTest : public PlatformTest {
+class LinkInfoBarControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
-    PlatformTest::SetUp();
+    CocoaTest::SetUp();
 
     controller_.reset(
         [[LinkInfoBarController alloc] initWithDelegate:&delegate_]);
     container_.reset(
         [[InfoBarContainerTest alloc] initWithController:controller_]);
     [controller_ setContainerController:container_];
-    [helper_.contentView() addSubview:[controller_ view]];
+    [[test_window() contentView] addSubview:[controller_ view]];
   }
 
  protected:
-  CocoaTestHelper helper_;
   MockLinkInfoBarDelegate delegate_;
   scoped_nsobject<id> container_;
   scoped_nsobject<LinkInfoBarController> controller_;
 };
 
-class ConfirmInfoBarControllerTest : public PlatformTest {
+class ConfirmInfoBarControllerTest : public CocoaTest {
  public:
   virtual void SetUp() {
-    PlatformTest::SetUp();
+    CocoaTest::SetUp();
 
     controller_.reset(
         [[ConfirmInfoBarController alloc] initWithDelegate:&delegate_]);
     container_.reset(
         [[InfoBarContainerTest alloc] initWithController:controller_]);
     [controller_ setContainerController:container_];
-    [helper_.contentView() addSubview:[controller_ view]];
+    [[test_window() contentView] addSubview:[controller_ view]];
   }
 
  protected:
-  CocoaTestHelper helper_;
   MockConfirmInfoBarDelegate delegate_;
   scoped_nsobject<id> container_;
   scoped_nsobject<ConfirmInfoBarController> controller_;
@@ -124,6 +121,8 @@ class ConfirmInfoBarControllerTest : public PlatformTest {
 
 ////////////////////////////////////////////////////////////////////////////
 // Tests
+
+TEST_VIEW(AlertInfoBarControllerTest, [controller_ view]);
 
 TEST_F(AlertInfoBarControllerTest, ShowAndDismiss) {
   // Make sure someone looked at the message and icon.
@@ -145,6 +144,8 @@ TEST_F(AlertInfoBarControllerTest, DeallocController) {
   controller_.reset(nil);
   EXPECT_FALSE(delegate_.closed);
 }
+
+TEST_VIEW(LinkInfoBarControllerTest, [controller_ view]);
 
 TEST_F(LinkInfoBarControllerTest, ShowAndDismiss) {
   // Make sure someone looked at the message, link, and icon.
@@ -175,6 +176,8 @@ TEST_F(LinkInfoBarControllerTest, ShowAndClickLinkWithoutClosing) {
   EXPECT_TRUE(delegate_.link_clicked);
   EXPECT_FALSE(delegate_.closed);
 }
+
+TEST_VIEW(ConfirmInfoBarControllerTest, [controller_ view]);
 
 TEST_F(ConfirmInfoBarControllerTest, ShowAndDismiss) {
   // Make sure someone looked at the message and icon.

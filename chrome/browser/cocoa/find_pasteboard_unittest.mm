@@ -62,13 +62,12 @@
 
 namespace {
 
-class FindPasteboardTest : public PlatformTest {
+class FindPasteboardTest : public CocoaTest {
  public:
   FindPasteboardTest() {
     pboard_.reset([[FindPasteboardTesting alloc] init]);
   }
  protected:
-  CocoaTestHelper helper_;
   scoped_nsobject<FindPasteboardTesting> pboard_;
 };
 

@@ -59,20 +59,21 @@ TEST_F(LocationBarViewMacTest, GetInputString) {
 
 namespace {
 
-class LocationBarViewMacTest : public PlatformTest {
+class LocationBarViewMacTest : public CocoaTest {
  public:
   LocationBarViewMacTest() {
     // Make sure this is wide enough to play games with the cell
     // decorations.
     NSRect frame = NSMakeRect(0, 0, 400.0, 30);
-    field_.reset([[AutocompleteTextField alloc] initWithFrame:frame]);
+    scoped_nsobject<AutocompleteTextField> field(
+        [[AutocompleteTextField alloc] initWithFrame:frame]);
+    field_ = field.get();
     [field_ setStringValue:@"Testing"];
-    [cocoa_helper_.contentView() addSubview:field_.get()];
+    [[test_window() contentView] addSubview:field_];
   }
 
-  CocoaTestHelper cocoa_helper_;  // Inits Cocoa, creates window, etc...
   BrowserTestHelper helper_;
-  scoped_nsobject<AutocompleteTextField> field_;
+  AutocompleteTextField* field_;
 };
 
 TEST_F(LocationBarViewMacTest, OnChangedImpl) {
@@ -90,25 +91,25 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
 
   // With no special hints requested, none set.
   LocationBarViewMac::OnChangedImpl(
-      field_.get(), std::wstring(), std::wstring(), false, false, image);
+      field_, std::wstring(), std::wstring(), false, false, image);
   EXPECT_FALSE([cell keywordString]);
   EXPECT_FALSE([cell hintString]);
 
   // Request only a search hint.
   LocationBarViewMac::OnChangedImpl(
-      field_.get(), std::wstring(), std::wstring(), false, true, image);
+      field_, std::wstring(), std::wstring(), false, true, image);
   EXPECT_FALSE([cell keywordString]);
   EXPECT_TRUE([[[cell hintString] string] isEqualToString:kSearchHint]);
 
   // Request a keyword hint, same results whether |search_hint|
   // parameter is true or false.
   LocationBarViewMac::OnChangedImpl(
-      field_.get(), kKeyword, kKeyword, true, true, image);
+      field_, kKeyword, kKeyword, true, true, image);
   EXPECT_FALSE([cell keywordString]);
   EXPECT_TRUE([[[cell hintString] string] hasPrefix:kKeywordPrefix]);
   EXPECT_TRUE([[[cell hintString] string] hasSuffix:kKeywordSuffix]);
   LocationBarViewMac::OnChangedImpl(
-      field_.get(), kKeyword, kKeyword, true, false, image);
+      field_, kKeyword, kKeyword, true, false, image);
   EXPECT_FALSE([cell keywordString]);
   EXPECT_TRUE([[[cell hintString] string] hasPrefix:kKeywordPrefix]);
   EXPECT_TRUE([[[cell hintString] string] hasSuffix:kKeywordSuffix]);
@@ -116,11 +117,11 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
   // Request keyword-search mode, same results whether |search_hint|
   // parameter is true or false.
   LocationBarViewMac::OnChangedImpl(
-      field_.get(), kKeyword, kKeyword, false, true, image);
+      field_, kKeyword, kKeyword, false, true, image);
   EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kKeywordString]);
   EXPECT_FALSE([cell hintString]);
   LocationBarViewMac::OnChangedImpl(
-      field_.get(), kKeyword, kKeyword, false, false, image);
+      field_, kKeyword, kKeyword, false, false, image);
   EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kKeywordString]);
   EXPECT_FALSE([cell hintString]);
 
@@ -132,13 +133,13 @@ TEST_F(LocationBarViewMacTest, OnChangedImpl) {
   frame.size.width = 10.0;
   [field_ setFrame:frame];
   LocationBarViewMac::OnChangedImpl(
-      field_.get(), kKeyword, kKeyword, false, true, image);
+      field_, kKeyword, kKeyword, false, true, image);
   EXPECT_TRUE([[[cell keywordString] string] isEqualToString:kPartialString]);
   EXPECT_FALSE([cell hintString]);
 
   // Transition back to baseline.
   LocationBarViewMac::OnChangedImpl(
-      field_.get(), std::wstring(), std::wstring(), false, false, image);
+      field_, std::wstring(), std::wstring(), false, false, image);
   EXPECT_FALSE([cell keywordString]);
   EXPECT_FALSE([cell hintString]);
 }

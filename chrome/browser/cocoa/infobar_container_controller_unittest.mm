@@ -16,33 +16,32 @@
 
 namespace {
 
-class InfoBarContainerControllerTest : public PlatformTest {
+class InfoBarContainerControllerTest : public CocoaTest {
   virtual void SetUp() {
+    CocoaTest::SetUp();
     resizeDelegate_.reset([[ViewResizerPong alloc] init]);
     TabStripModel* model = browser_helper_.browser()->tabstrip_model();
-    controller_.reset([[InfoBarContainerController alloc]
-                        initWithTabStripModel:model
-                               resizeDelegate:resizeDelegate_.get()]);
+    ViewResizerPong *viewResizer = resizeDelegate_.get();
+    controller_ =
+        [[InfoBarContainerController alloc] initWithTabStripModel:model
+                                                   resizeDelegate:viewResizer];
+    NSView* view = [controller_ view];
+    [[test_window() contentView] addSubview:view];
+  }
+
+  virtual void TearDown() {
+    [[controller_ view] removeFromSuperviewWithoutNeedingDisplay];
+    [controller_ release];
+    CocoaTest::TearDown();
   }
 
  public:
-  // Order is very important here.  We want the controller deleted
-  // before the pool, and want the pool deleted before
-  // BrowserTestHelper.
-  CocoaTestHelper cocoa_helper_;
   BrowserTestHelper browser_helper_;
-  base::ScopedNSAutoreleasePool pool_;
   scoped_nsobject<ViewResizerPong> resizeDelegate_;
-  scoped_nsobject<InfoBarContainerController> controller_;
+  InfoBarContainerController* controller_;
 };
 
-TEST_F(InfoBarContainerControllerTest, Show) {
-  // Make sure the container's view is non-nil and draws without crashing.
-  NSView* view = [controller_ view];
-  EXPECT_TRUE(view != nil);
-
-  [cocoa_helper_.contentView() addSubview:view];
-}
+TEST_VIEW(InfoBarContainerControllerTest, [controller_ view])
 
 TEST_F(InfoBarContainerControllerTest, BWCPong) {
   // Call positionInfoBarsAndResize and check that |resizeDelegate_| got a
@@ -54,7 +53,6 @@ TEST_F(InfoBarContainerControllerTest, BWCPong) {
 
 TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
   NSView* view = [controller_ view];
-  [cocoa_helper_.contentView() addSubview:view];
 
   // Add three infobars, one of each type, and then remove them.
   // After each step check to make sure we have the correct number of
@@ -85,7 +83,6 @@ TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
 
 TEST_F(InfoBarContainerControllerTest, RemoveAllInfoBars) {
   NSView* view = [controller_ view];
-  [cocoa_helper_.contentView() addSubview:view];
 
   // Add three infobars and then remove them all.
   MockAlertInfoBarDelegate alertDelegate;

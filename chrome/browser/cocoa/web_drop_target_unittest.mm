@@ -13,13 +13,10 @@
 
 class WebDropTargetTest : public RenderViewHostTestHarness {
  public:
-  WebDropTargetTest() {
-   drop_target_.reset([[WebDropTarget alloc] initWithTabContents:contents()]);
-  }
-
-  virtual ~WebDropTargetTest() {
-   RenderViewHostTestHarness::TearDown();
-
+  virtual void SetUp() {
+    RenderViewHostTestHarness::SetUp();
+    CocoaTest::BootstrapCocoa();
+    drop_target_.reset([[WebDropTarget alloc] initWithTabContents:contents()]);
   }
 
   void PutURLOnPasteboard(NSString* urlString, NSPasteboard* pboard) {
@@ -31,7 +28,6 @@ class WebDropTargetTest : public RenderViewHostTestHarness {
   }
 
   base::ScopedNSAutoreleasePool pool_;
-  CocoaTestHelper cocoa_helper_;
   scoped_nsobject<WebDropTarget> drop_target_;
 };
 
@@ -43,12 +39,13 @@ TEST_F(WebDropTargetTest, Init) {
 // Test flipping of coordinates given a point in window coordinates.
 TEST_F(WebDropTargetTest, Flip) {
   NSPoint windowPoint = NSZeroPoint;
+  scoped_nsobject<NSWindow> window([[CocoaTestHelperWindow alloc] init]);
   NSPoint viewPoint =
       [drop_target_ flipWindowPointToView:windowPoint
-                                     view:cocoa_helper_.contentView()];
+                                     view:[window contentView]];
   NSPoint screenPoint =
       [drop_target_ flipWindowPointToScreen:windowPoint
-                               view:cocoa_helper_.contentView()];
+                               view:[window contentView]];
   EXPECT_EQ(viewPoint.x, 0);
   EXPECT_EQ(viewPoint.y, 600);
   EXPECT_EQ(screenPoint.x, 0);

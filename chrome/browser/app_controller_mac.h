@@ -30,8 +30,8 @@ class Profile;
   // (and Browser*s).
   scoped_ptr<BookmarkMenuBridge> bookmarkMenuBridge_;
   scoped_ptr<HistoryMenuBridge> historyMenuBridge_;
-  scoped_nsobject<PreferencesWindowController> prefsController_;
-  scoped_nsobject<AboutWindowController> aboutController_;
+  PreferencesWindowController* prefsController_;  // Weak.
+  AboutWindowController* aboutController_;  // Weak.
 
   // URLs that need to be opened when the app is fully initialized. Because it's
   // only needed during early startup, it points to a valid vector during early
