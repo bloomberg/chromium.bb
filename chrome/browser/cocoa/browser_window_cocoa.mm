@@ -318,12 +318,8 @@ void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
 
 void BrowserWindowCocoa::ShowHTMLDialog(HtmlDialogUIDelegate* delegate,
                                         gfx::NativeWindow parent_window) {
-  if (!parent_window) {
-    parent_window = GetNativeHandle();
-  }
   [HtmlDialogWindowController showHtmlDialog:delegate
-                                     profile:browser_->profile()
-                                parentWindow:parent_window];
+                                     profile:browser_->profile()];
 }
 
 void BrowserWindowCocoa::UserChangedTheme() {

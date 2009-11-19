@@ -10,7 +10,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
@@ -34,14 +33,10 @@ class TabContents;
 }
 
 // Creates and shows an HtmlDialogWindowController with the given
-// delegate, parent window, and profile, none of which may be NULL.
-// The window is automatically destroyed when it is closed.
-//
-// TODO(akalin): Handle a NULL parentWindow as HTML dialogs may be launched
-// without any browser windows being present (on OS X).
+// delegate and profile. The window is automatically destroyed when it is
+// closed.
 + (void)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-               profile:(Profile*)profile
-          parentWindow:(gfx::NativeWindow)parent_window;
+               profile:(Profile*)profile;
 
 @end
 
@@ -50,8 +45,7 @@ class TabContents;
 // This is the designated initializer.  However, this is exposed only
 // for testing; use showHtmlDialog instead.
 - (id)initWithDelegate:(HtmlDialogUIDelegate*)delegate
-               profile:(Profile*)profile
-          parentWindow:(gfx::NativeWindow)parentWindow;
+               profile:(Profile*)profile;
 
 // Loads the HTML content from the delegate; this is not a lightweight
 // process which is why it is not part of the constructor.  Must be

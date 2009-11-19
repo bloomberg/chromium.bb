@@ -120,7 +120,9 @@ bool HtmlDialogWindowDelegateBridge::DelegateOnDialogClosed(
 // to NULL when the window is closed.
 
 bool HtmlDialogWindowDelegateBridge::IsDialogModal() const {
-  // TODO(akalin): Support modal dialog boxes.
+  // TODO(akalin): Support modal dialog boxes.  Or remove support for modal
+  // dialog boxes entirely, since both users of HTML dialogs don't require
+  // modal dialogs.
   if (delegate_ && delegate_->IsDialogModal()) {
     LOG(WARNING) << "Modal HTML dialogs are not supported yet";
   }
@@ -241,45 +243,26 @@ void HtmlDialogWindowDelegateBridge::UpdateTargetURL(
 @implementation HtmlDialogWindowController
 
 + (void)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
-               profile:(Profile*)profile
-          parentWindow:(gfx::NativeWindow)parentWindow {
+               profile:(Profile*)profile {
   HtmlDialogWindowController* htmlDialogWindowController =
     [[HtmlDialogWindowController alloc] initWithDelegate:delegate
-                                                 profile:profile
-                                            parentWindow:parentWindow];
+                                                 profile:profile];
   [htmlDialogWindowController loadDialogContents];
   [htmlDialogWindowController showWindow:nil];
 }
 
 - (id)initWithDelegate:(HtmlDialogUIDelegate*)delegate
-               profile:(Profile*)profile
-          parentWindow:(gfx::NativeWindow)parentWindow {
+               profile:(Profile*)profile {
   DCHECK(delegate);
   DCHECK(profile);
-  DCHECK(parentWindow);
 
-  // Put the dialog box in the center of the window.
-  //
-  // TODO(akalin): Surely there must be a cleaner way to do this.
-  //
-  // TODO(akalin): Perhaps use [window center] instead, which centers
-  // the dialog to the screen, although it doesn't match the Windows
-  // behavior.
-  NSRect parentWindowFrame = [parentWindow frame];
-  NSPoint parentWindowOrigin = parentWindowFrame.origin;
-  NSSize parentWindowSize = parentWindowFrame.size;
   gfx::Size dialogSize;
   delegate->GetDialogSize(&dialogSize);
-  NSRect dialogRect =
-    NSMakeRect(parentWindowOrigin.x +
-               (parentWindowSize.width - dialogSize.width()) / 2,
-               parentWindowOrigin.y +
-               (parentWindowSize.height - dialogSize.height()) / 2,
-               dialogSize.width(),
-               dialogSize.height());
+  NSRect dialogRect = NSMakeRect(0, 0, dialogSize.width(), dialogSize.height());
   // TODO(akalin): Make the window resizable (but with the minimum size being
   // dialog_size and always on top (but not modal) to match the Windows
-  // behavior.
+  // behavior.  On the other hand, the fact that HTML dialogs on Windows
+  // are resizable could just be an accident.  Investigate futher...
   NSUInteger style = NSTitledWindowMask | NSClosableWindowMask;
   scoped_nsobject<ChromeEventProcessingWindow> window(
       [[ChromeEventProcessingWindow alloc]
@@ -297,6 +280,7 @@ void HtmlDialogWindowDelegateBridge::UpdateTargetURL(
   [window setWindowController:self];
   [window setDelegate:self];
   [window setTitle:base::SysWideToNSString(delegate->GetDialogTitle())];
+  [window center];
   browser_.reset(new Browser(Browser::TYPE_NORMAL, profile));
   delegate_.reset(
       new HtmlDialogWindowDelegateBridge(self, delegate, browser_.get()));
