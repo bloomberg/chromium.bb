@@ -201,6 +201,10 @@
               'linux/config.cc',
               'linux/envvars.cc',
             ],
+            'ldflags': [
+              '-z',
+              'nodelete',
+            ],
             'link_settings': {
               'libraries': [
                 '-lGL',
