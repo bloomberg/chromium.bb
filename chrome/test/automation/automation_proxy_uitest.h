@@ -25,6 +25,10 @@ class ExternalTabUITest : public UITest {
   // This function is called from within UITest::LaunchBrowserAndServer.
   virtual AutomationProxy* CreateAutomationProxy(int execution_timeout);
  protected:
+  // Filtered Inet will override automation callbacks for network resources.
+  virtual bool ShouldFilterInet() {
+    return false;
+  }
   ExternalTabUITestMockClient* mock_;
 };
 

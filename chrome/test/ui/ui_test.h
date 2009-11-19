@@ -473,6 +473,10 @@ class UITest : public testing::Test {
     return server_.get();
   }
 
+  virtual bool ShouldFilterInet() {
+    return true;
+  }
+
   // Wait a certain amount of time for all the app processes to exit,
   // forcibly killing them if they haven't exited by then.
   // It has the side-effect of killing every browser window opened in your

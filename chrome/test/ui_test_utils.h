@@ -144,7 +144,7 @@ class TimedMessageLoopRunner {
 
   // Attach to an existing message loop.
   explicit TimedMessageLoopRunner(MessageLoop* loop)
-      : loop_(loop), owned_(false) {}
+      : loop_(loop), owned_(false), quit_loop_invoked_(false) {}
 
   ~TimedMessageLoopRunner();
 
@@ -157,9 +157,14 @@ class TimedMessageLoopRunner {
   // Post delayed Quit task to the message loop.
   void QuitAfter(int ms);
 
+  bool WasTimedOut() const {
+    return !quit_loop_invoked_;
+  }
+
  private:
   MessageLoop* loop_;
   bool owned_;
+  bool quit_loop_invoked_;
 
   DISALLOW_COPY_AND_ASSIGN(TimedMessageLoopRunner);
 };

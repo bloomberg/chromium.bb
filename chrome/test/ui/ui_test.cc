@@ -166,7 +166,7 @@ void UITest::TearDown() {
   PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_path);
   // Each crash creates two dump files, so we divide by two here.
   int actual_crashes =
-    file_util::CountFilesCreatedAfter(crash_dump_path, test_start_time_) / 2;
+      file_util::CountFilesCreatedAfter(crash_dump_path, test_start_time_) / 2;
   std::wstring error_msg =
       L"Encountered an unexpected crash in the program during this test.";
   if (expected_crashes_ > 0 && actual_crashes == 0) {
@@ -230,7 +230,7 @@ void UITest::LaunchBrowserAndServer() {
   else
     PlatformThread::Sleep(sleep_timeout_ms());
 
-  automation()->SetFilteredInet(true);
+  automation()->SetFilteredInet(ShouldFilterInet());
 }
 
 void UITest::CloseBrowserAndServer() {

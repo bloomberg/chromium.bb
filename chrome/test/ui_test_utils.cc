@@ -505,7 +505,8 @@ void RegisterAndWait(NotificationType::Type type,
 
 TimedMessageLoopRunner::TimedMessageLoopRunner()
     : loop_(new MessageLoopForUI()),
-      owned_(true) {
+      owned_(true),
+      quit_loop_invoked_(false) {
 }
 
 TimedMessageLoopRunner::~TimedMessageLoopRunner() {
@@ -515,14 +516,17 @@ TimedMessageLoopRunner::~TimedMessageLoopRunner() {
 
 void TimedMessageLoopRunner::RunFor(int ms) {
   QuitAfter(ms);
+  quit_loop_invoked_ = false;
   loop_->Run();
 }
 
 void TimedMessageLoopRunner::Quit() {
+  quit_loop_invoked_ = true;
   loop_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
 }
 
 void TimedMessageLoopRunner::QuitAfter(int ms) {
+  quit_loop_invoked_ = true;
   loop_->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, ms);
 }
 
