@@ -74,7 +74,7 @@ class FlipStream {
  private:
   flip::FlipStreamId stream_id_;
   std::string path_;
-  FlipDelegate* delegate_;
+  scoped_refptr<FlipDelegate> delegate_;
   scoped_ptr<HttpResponseInfo> response_;
   std::list<scoped_refptr<IOBufferWithSize> > response_body_;
   bool download_finished_;

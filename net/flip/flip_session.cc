@@ -150,7 +150,7 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
 
   // Check if we have a pending push stream for this url.
   std::string url_path = delegate->request()->url.PathForRequest();
-  std::map<std::string, FlipDelegate*>::iterator it;
+  PendingStreamMap::iterator it;
   it = pending_streams_.find(url_path);
   if (it != pending_streams_.end()) {
     DCHECK(it->second == NULL);
@@ -233,6 +233,9 @@ int FlipSession::WriteStreamData(flip::FlipStreamId stream_id,
   if (!stream)
     return ERR_INVALID_FLIP_STREAM;
 
+  // TODO(mbelshe):  Setting of the FIN is assuming that the caller will pass
+  //                 all data to write in a single chunk.  Is this always true?
+
   // Set the flags on the upload.
   flip::FlipDataFlags flags = flip::DATA_FLAG_FIN;
   if (len > kMaxFlipFrameChunkSize) {
@@ -248,6 +251,11 @@ int FlipSession::WriteStreamData(flip::FlipStreamId stream_id,
   memcpy(buffer->data(), frame->data(), length);
   queue_.push(FlipIOBuffer(buffer, stream->delegate()->request()->priority,
               stream));
+
+  // Whenever we queue onto the socket we need to ensure that we will write to
+  // it later.
+  WriteSocketLater();
+
   return ERR_IO_PENDING;
 }
 
@@ -458,20 +466,27 @@ void FlipSession::WriteSocket() {
     queue_.pop();
 
     // We've deferred compression until just before we write it to the socket,
-    // which is now.
+    // which is now.  At this time, we don't compress our data frames.
     flip::FlipFrame uncompressed_frame(next_buffer.buffer()->data(), false);
-    scoped_ptr<flip::FlipFrame> compressed_frame(
-        flip_framer_.CompressFrame(&uncompressed_frame));
-    size_t size = compressed_frame.get()->length() + flip::FlipFrame::size();
+    size_t size;
+    if (uncompressed_frame.is_control_frame()) {
+      scoped_ptr<flip::FlipFrame> compressed_frame(
+          flip_framer_.CompressFrame(&uncompressed_frame));
+      size = compressed_frame->length() + flip::FlipFrame::size();
 
-    DCHECK(size > 0);
+      DCHECK(size > 0);
 
-    // TODO(mbelshe): We have too much copying of data here.
-    IOBufferWithSize* buffer = new IOBufferWithSize(size);
-    memcpy(buffer->data(), compressed_frame->data(), size);
+      // TODO(mbelshe): We have too much copying of data here.
+      IOBufferWithSize* buffer = new IOBufferWithSize(size);
+      memcpy(buffer->data(), compressed_frame->data(), size);
 
-    // Attempt to send the frame.
-    in_flight_write_ = FlipIOBuffer(buffer, 0, next_buffer.stream());
+      // Attempt to send the frame.
+      in_flight_write_ = FlipIOBuffer(buffer, 0, next_buffer.stream());
+    } else {
+      size = uncompressed_frame.length() + flip::FlipFrame::size();
+      in_flight_write_ = next_buffer;
+    }
+
     write_pending_ = true;
     int rv = connection_.socket()->Write(in_flight_write_.buffer(),
                                          size, &write_callback_);
@@ -578,7 +593,7 @@ FlipStream* FlipSession::GetPushStream(const std::string& path) {
 }
 
 void FlipSession::OnError(flip::FlipFramer* framer) {
-  LOG(ERROR) << "FlipSession error!";
+  LOG(ERROR) << "FlipSession error: " << framer->error_code();
   CloseAllStreams(net::ERR_UNEXPECTED);
   Release();
 }
@@ -631,7 +646,7 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
   }
 
   // Check if we already have a delegate awaiting this stream.
-  std::map<std::string,  FlipDelegate*>::iterator it;
+  PendingStreamMap::iterator it;
   it = pending_streams_.find(stream->path());
   if (it != pending_streams_.end()) {
     FlipDelegate* delegate = it->second;

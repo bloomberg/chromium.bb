@@ -52,6 +52,10 @@ class FlipStreamParser : public FlipDelegate {
 
   const HttpResponseInfo* GetResponseInfo() const;
 
+  // Cancels the stream.
+  // Once cancelled, no callbacks will be made on this stream.
+  void Cancel();
+
   // FlipDelegate methods:
   virtual const HttpRequestInfo* request() const;
   virtual const UploadDataStream* data() const;
@@ -115,6 +119,8 @@ class FlipStreamParser : public FlipDelegate {
   // User provided buffer for the ReadResponseBody() response.
   scoped_refptr<IOBuffer> user_buffer_;
   int user_buffer_len_;
+
+  bool cancelled_;
 
   DISALLOW_COPY_AND_ASSIGN(FlipStreamParser);
 };
@@ -201,7 +207,7 @@ class FlipNetworkTransaction : public HttpTransaction {
   // The next state in the state machine.
   State next_state_;
 
-  scoped_ptr<FlipStreamParser> flip_stream_parser_;
+  scoped_refptr<FlipStreamParser> flip_stream_parser_;
 
   DISALLOW_COPY_AND_ASSIGN(FlipNetworkTransaction);
 };

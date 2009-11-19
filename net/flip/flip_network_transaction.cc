@@ -33,7 +33,8 @@ FlipStreamParser::FlipStreamParser()
       response_status_(OK),
       user_callback_(NULL),
       user_buffer_(NULL),
-      user_buffer_len_(0) {
+      user_buffer_len_(0),
+      cancelled_(false) {
 }
 
 FlipStreamParser::~FlipStreamParser() {
@@ -50,6 +51,7 @@ int FlipStreamParser::SendRequest(FlipSession* flip,
   CHECK(flip);
   CHECK(request);
   CHECK(callback);
+  DCHECK(!cancelled_);
 
   request_ = request;
   flip_ = flip;
@@ -68,6 +70,7 @@ int FlipStreamParser::ReadResponseHeaders(CompletionCallback* callback) {
   // Note: The FlipStream may have already received the response headers, so
   //       this call may complete synchronously.
   DCHECK_GT(io_state_, STATE_HEADERS_SENT);
+  DCHECK(!cancelled_);
   CHECK(callback);
 
   // The SYN_REPLY has already been received.
@@ -85,6 +88,7 @@ int FlipStreamParser::ReadResponseBody(
   DCHECK(io_state_ == STATE_BODY_PENDING ||
          io_state_ == STATE_READ_BODY ||
          io_state_ == STATE_DONE);
+  DCHECK(!cancelled_);
   CHECK(buf);
   CHECK(buf_len);
   CHECK(callback);
@@ -135,6 +139,11 @@ uint64 FlipStreamParser::GetUploadProgress() const {
 
 const HttpResponseInfo* FlipStreamParser::GetResponseInfo() const {
   return response_.get();
+}
+
+void FlipStreamParser::Cancel() {
+  cancelled_ = true;
+  user_callback_ = NULL;
 }
 
 const HttpRequestInfo* FlipStreamParser::request() const {
@@ -283,6 +292,9 @@ int FlipStreamParser::DoReadBodyComplete(int result) {
 
 int FlipStreamParser::DoLoop(int result) {
   bool can_do_more = true;
+  if (cancelled_)
+    return ERR_ABORTED;
+
   do {
     switch (io_state_) {
       case STATE_SENDING_HEADERS:
@@ -344,6 +356,8 @@ FlipNetworkTransaction::FlipNetworkTransaction(HttpNetworkSession* session)
 
 FlipNetworkTransaction::~FlipNetworkTransaction() {
   LOG(INFO) << "FlipNetworkTransaction dead. " << this;
+  if (flip_stream_parser_.get())
+    flip_stream_parser_->Cancel();
 }
 
 int FlipNetworkTransaction::Start(const HttpRequestInfo* request_info,
@@ -530,7 +544,7 @@ int FlipNetworkTransaction::DoInitConnectionComplete(int result) {
 int FlipNetworkTransaction::DoSendRequest() {
   next_state_ = STATE_SEND_REQUEST_COMPLETE;
   CHECK(!flip_stream_parser_.get());
-  flip_stream_parser_.reset(new FlipStreamParser);
+  flip_stream_parser_ = new FlipStreamParser;
   return flip_stream_parser_->SendRequest(flip_, request_, &io_callback_);
 }
 
@@ -564,7 +578,7 @@ int FlipNetworkTransaction::DoReadBodyComplete(int result) {
   user_buffer_len_ = 0;
 
   if (result <= 0)
-    flip_stream_parser_.reset();
+    flip_stream_parser_.release();
 
   return result;
 }

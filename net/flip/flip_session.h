@@ -34,10 +34,8 @@ class HttpResponseInfo;
 
 // The FlipDelegate interface is an interface so that the FlipSession
 // can interact with the provider of a given Flip stream.
-class FlipDelegate {
+class FlipDelegate : public base::RefCounted<FlipDelegate> {
  public:
-  virtual ~FlipDelegate() {}
-
   // Accessors from the delegate.
 
   // The delegate provides access to the HttpRequestInfo for use by the flip
@@ -77,6 +75,10 @@ class FlipDelegate {
   // delegate will be made after this call.
   // |status| is an error code or OK.
   virtual void OnClose(int status) = 0;
+
+ protected:
+  friend class base::RefCounted<FlipDelegate>;
+  virtual ~FlipDelegate() {}
 };
 
 class FlipSession : public base::RefCounted<FlipSession>,
@@ -208,7 +210,8 @@ class FlipSession : public base::RefCounted<FlipSession>,
   ActiveStreamList pushed_streams_;
   // List of streams declared in X-Associated-Content headers.
   // The key is a string representing the path of the URI being pushed.
-  std::map<std::string, FlipDelegate*> pending_streams_;
+  typedef std::map<std::string, scoped_refptr<FlipDelegate> > PendingStreamMap;
+  PendingStreamMap pending_streams_;
 
   // As we gather data to be sent, we put it into the output queue.
   typedef std::priority_queue<FlipIOBuffer> OutputQueue;
