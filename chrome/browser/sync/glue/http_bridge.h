@@ -146,7 +146,7 @@ class HttpBridge : public base::RefCountedThreadSafe<HttpBridge>,
 
   // Gets a customized URLRequestContext for bridged requests. See
   // RequestContext definition for details.
-  RequestContextGetter* context_getter_for_request_;
+  scoped_refptr<RequestContextGetter> context_getter_for_request_;
 
   // Our hook into the network layer is a URLFetcher. USED ONLY ON THE IO LOOP,
   // so we can block created_on_loop_ while the fetch is in progress.
@@ -196,8 +196,7 @@ class HttpBridgeFactory
   // This request context is built on top of the baseline context and shares
   // common components.
   HttpBridge::RequestContextGetter* GetRequestContextGetter();
-  // We must Release() this from the IO thread.
-  HttpBridge::RequestContextGetter* request_context_getter_;
+  scoped_refptr<HttpBridge::RequestContextGetter> request_context_getter_;
   DISALLOW_COPY_AND_ASSIGN(HttpBridgeFactory);
 };
 

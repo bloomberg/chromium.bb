@@ -129,12 +129,8 @@ bool HasACacheSubdir(const FilePath &dir) {
 URLRequestContextGetter* Profile::default_request_context_;
 
 static void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
-  if (context) {
+  if (context)
     context->CleanupOnUIThread();
-
-    // Clean up request context on IO thread.
-    ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, context);
-  }
 }
 
 // static
@@ -200,7 +196,6 @@ class OffTheRecordProfileImpl : public Profile,
         extensions_request_context_(NULL),
         start_time_(Time::Now()) {
     request_context_ = ChromeURLRequestContextGetter::CreateOffTheRecord(this);
-    request_context_->AddRef();
 
     // Register for browser close notifications so we can detect when the last
     // off-the-record window is closed, in which case we can clean our states
@@ -400,7 +395,6 @@ class OffTheRecordProfileImpl : public Profile,
     if (!extensions_request_context_) {
       extensions_request_context_ =
           ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(this);
-      extensions_request_context_->AddRef();
     }
 
     return extensions_request_context_;
@@ -549,9 +543,9 @@ class OffTheRecordProfileImpl : public Profile,
   Profile* profile_;
 
   // The context to use for requests made from this OTR session.
-  ChromeURLRequestContextGetter* request_context_;
+  scoped_refptr<ChromeURLRequestContextGetter> request_context_;
 
-  ChromeURLRequestContextGetter* extensions_request_context_;
+  scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
@@ -938,7 +932,6 @@ URLRequestContextGetter* ProfileImpl::GetRequestContext() {
     cache_path = GetCachePath(cache_path);
     request_context_ = ChromeURLRequestContextGetter::CreateOriginal(
         this, cookie_path, cache_path, max_size);
-    request_context_->AddRef();
 
     // The first request context is always a normal (non-OTR) request context.
     // Even when Chromium is started in OTR mode, a normal profile is always
@@ -966,7 +959,6 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForMedia() {
     media_request_context_ =
         ChromeURLRequestContextGetter::CreateOriginalForMedia(
             this, cache_path, max_size);
-    media_request_context_->AddRef();
   }
 
   return media_request_context_;
@@ -989,7 +981,6 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
     extensions_request_context_ =
         ChromeURLRequestContextGetter::CreateOriginalForExtensions(
             this, cookie_path);
-    extensions_request_context_->AddRef();
   }
 
   return extensions_request_context_;

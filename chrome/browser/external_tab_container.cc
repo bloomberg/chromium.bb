@@ -172,10 +172,7 @@ void ExternalTabContainer::Uninitialize() {
     tab_contents_ = NULL;
   }
 
-  if (request_context_.get()) {
-    AutomationRequestContext::CleanupRequestContext(
-        request_context_.release());
-  }
+  request_context_ = NULL;
 }
 
 bool ExternalTabContainer::Reinitialize(
@@ -699,11 +696,6 @@ bool ExternalTabContainer::OnGoToEntryOffset(int offset) {
 
 void ExternalTabContainer::InitializeAutomationRequestContext(
     int tab_handle) {
-  if (request_context_.get()) {
-    AutomationRequestContext::CleanupRequestContext(
-        request_context_.release());
-  }
-
   request_context_ =
       AutomationRequestContext::CreateAutomationURLRequestContextForTab(
           tab_handle, tab_contents_->profile(),

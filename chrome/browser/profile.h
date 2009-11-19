@@ -116,9 +116,6 @@ class Profile {
   // from any thread.  This CAN return NULL if a first request context has not
   // yet been created.  If necessary, listen on the UI thread for
   // NOTIFY_DEFAULT_REQUEST_CONTEXT_AVAILABLE.
-  //
-  // The returned object is ref'd by the profile.  Callers who AddRef() it (to
-  // keep it alive longer than the profile) must Release() it on the I/O thread.
   static URLRequestContextGetter* GetDefaultRequestContext();
 
   // Returns a unique Id that can be used to identify this profile at runtime.
@@ -278,9 +275,6 @@ class Profile {
   // Returns the request context information associated with this profile.  Call
   // this only on the UI thread, since it can send notifications that should
   // happen on the UI thread.
-  //
-  // The returned object is ref'd by the profile.  Callers who AddRef() it (to
-  // keep it alive longer than the profile) must Release() it on the I/O thread.
   virtual URLRequestContextGetter* GetRequestContext() = 0;
 
   // Returns the request context for media resources asociated with this
@@ -548,11 +542,11 @@ class ProfileImpl : public Profile,
 
   scoped_ptr<ProfileSyncService> sync_service_;
 
-  ChromeURLRequestContextGetter* request_context_;
+  scoped_refptr<ChromeURLRequestContextGetter> request_context_;
 
-  ChromeURLRequestContextGetter* media_request_context_;
+  scoped_refptr<ChromeURLRequestContextGetter> media_request_context_;
 
-  ChromeURLRequestContextGetter* extensions_request_context_;
+  scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 

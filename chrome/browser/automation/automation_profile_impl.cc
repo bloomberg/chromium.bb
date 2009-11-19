@@ -158,14 +158,6 @@ class Factory : public ChromeURLRequestContextFactory {
   int tab_handle_;
 };
 
-// TODO(eroman): This duplicates CleanupRequestContext() from profile.cc.
-void CleanupRequestContext(ChromeURLRequestContextGetter* context) {
-  context->CleanupOnUIThread();
-
-  // Clean up request context on IO thread.
-  ChromeThread::ReleaseSoon(ChromeThread::IO, FROM_HERE, context);
-}
-
 ChromeURLRequestContextGetter* CreateAutomationURLRequestContextForTab(
     int tab_handle,
     Profile* profile,

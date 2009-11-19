@@ -19,9 +19,6 @@ ChromeURLRequestContextGetter* CreateAutomationURLRequestContextForTab(
     Profile* profile,
     IPC::Message::Sender* automation_client);
 
-// Cleans up the request context on the IO thread.
-void CleanupRequestContext(ChromeURLRequestContextGetter* context);
-
-};
+}
 
 #endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROFILE_IMPL_H_

@@ -46,17 +46,9 @@ HttpBridgeFactory::HttpBridgeFactory(
   DCHECK(baseline_context_getter != NULL);
   request_context_getter_ =
       new HttpBridge::RequestContextGetter(baseline_context_getter);
-  request_context_getter_->AddRef();
 }
 
 HttpBridgeFactory::~HttpBridgeFactory() {
-  if (request_context_getter_) {
-    // Clean up request context getter on IO thread.
-    bool posted = ChromeThread::ReleaseSoon(
-        ChromeThread::IO, FROM_HERE, request_context_getter_);
-    DCHECK(posted);
-    request_context_getter_ = NULL;
-  }
 }
 
 sync_api::HttpPostProviderInterface* HttpBridgeFactory::Create() {
@@ -116,13 +108,9 @@ HttpBridge::HttpBridge(HttpBridge::RequestContextGetter* context_getter)
       request_succeeded_(false),
       http_response_code_(-1),
       http_post_completed_(false, false) {
-  context_getter_for_request_->AddRef();
 }
 
 HttpBridge::~HttpBridge() {
-  bool posted = ChromeThread::ReleaseSoon(
-      ChromeThread::IO, FROM_HERE, context_getter_for_request_);
-  DCHECK(posted);
 }
 
 void HttpBridge::SetUserAgent(const char* user_agent) {
