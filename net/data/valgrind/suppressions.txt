@@ -38,13 +38,6 @@
    fun:_ZN3net22FlipNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
    fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_8MockReadES5_
    fun:_ZN3net35FlipNetworkTransactionTest_Get_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    Bug
@@ -54,13 +47,6 @@
    fun:_ZN3net12_GLOBAL__N_119SessionDependenciesC1Ev
    fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_8MockReadES5_
    fun:_ZN3net36FlipNetworkTransactionTest_Post_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    Bug
@@ -70,13 +56,6 @@
    fun:_ZN3net12_GLOBAL__N_119SessionDependenciesC1Ev
    fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_8MockReadES5_
    fun:_ZN3net35FlipNetworkTransactionTest_Get_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    Bug
@@ -87,13 +66,6 @@
    fun:_ZN3net22FlipNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
    fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_8MockReadES5_
    fun:_ZN3net36FlipNetworkTransactionTest_Post_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    Bug
@@ -104,13 +76,6 @@
    fun:_ZN3net22FlipNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
    fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_8MockReadES5_
    fun:_ZN3net47FlipNetworkTransactionTest_SynReplyHeaders_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    Bug
@@ -120,11 +85,4 @@
    fun:_ZN3net12_GLOBAL__N_119SessionDependenciesC1Ev
    fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_8MockReadES5_
    fun:_ZN3net47FlipNetworkTransactionTest_SynReplyHeaders_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
