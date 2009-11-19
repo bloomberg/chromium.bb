@@ -1605,3 +1605,14 @@
    fun:_ZN14RunnableMethodIN7history14HistoryBackendEMS1_FvbE6Tuple1IbEE3RunEv
    fun:_ZN11MessageLoop7RunTaskEP4Task
 }
+{
+   bug_28200
+   Memcheck:Leak
+   fun:malloc
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEj
+   fun:_ZN3WTF13FastAllocBasenwEj
+   fun:_ZN7WebCore18MessagePortChannel6createEN3WTF10PassRefPtrINS_26PlatformMessagePortChannelEEE
+   fun:_ZN6WebKit19WebSharedWorkerImpl7connectEPNS_21WebMessagePortChannelEPNS_15WebSharedWorker15ConnectListenerE
+   fun:_ZN19WebSharedWorkerStub9OnConnectEii
+}
