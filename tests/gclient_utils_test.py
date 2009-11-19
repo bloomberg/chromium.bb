@@ -70,6 +70,10 @@ class SplitUrlRevisionTestCase(SuperMoxTestBase):
     out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
     self.assertEquals(out_rev, rev)
     self.assertEquals(out_url, url)
+    rev = "test-stable"
+    out_url, out_rev = gclient_utils.SplitUrlRevision("%s@%s" % (url, rev))
+    self.assertEquals(out_rev, rev)
+    self.assertEquals(out_url, url)
 
   def testSVNUrl(self):
     url = "svn://example.com/test"
