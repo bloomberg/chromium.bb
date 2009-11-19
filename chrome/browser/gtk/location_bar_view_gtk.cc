@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
+#include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/rounded_window.h"
@@ -742,8 +743,9 @@ void LocationBarViewGtk::PageActionViewGtk::UpdateVisibility(
   bool visible = page_action_->GetIsVisible(current_tab_id_);
   if (visible) {
     // Set the tooltip.
-    gtk_widget_set_tooltip_text(event_box_.get(),
-                                page_action_->GetTitle(current_tab_id_).c_str());
+    gtk_widget_set_tooltip_text(
+        event_box_.get(),
+        page_action_->GetTitle(current_tab_id_).c_str());
 
     // Set the image.
     // It can come from three places. In descending order of priority:
@@ -828,13 +830,22 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
     GtkWidget* sender,
     GdkEventButton* event,
     LocationBarViewGtk::PageActionViewGtk* page_action_view) {
-  ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
-      page_action_view->profile_,
-      page_action_view->page_action_->extension_id(),
-      page_action_view->page_action_->id(),
-      page_action_view->current_tab_id_,
-      page_action_view->current_url_.spec(),
-      event->button);
+  ExtensionAction* page_action = page_action_view->page_action_;
+  if (page_action->has_popup()) {
+    ExtensionPopupGtk::Show(
+        page_action->popup_url(),
+        page_action_view->owner_->browser_,
+        gtk_util::GetWidgetRectRelativeToToplevel(
+            page_action_view->event_box_.get()));
+  } else {
+    ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
+        page_action_view->profile_,
+        page_action->extension_id(),
+        page_action->id(),
+        page_action_view->current_tab_id_,
+        page_action_view->current_url_.spec(),
+        event->button);
+  }
   return true;
 }
 
