@@ -168,7 +168,11 @@ bool UtilChangePersistentNPAPIMarker(bool set) {
     if (set) {
       success = cf_state_key.WriteValue(kChromeFramePersistNPAPIReg, 1);
     } else {
-      success = cf_state_key.DeleteValue(kChromeFramePersistNPAPIReg);
+      // Unfortunately, DeleteValue returns true only if the value
+      // previously existed, so we do a separate existence check to
+      // validate success.
+      cf_state_key.DeleteValue(kChromeFramePersistNPAPIReg);
+      success = !cf_state_key.ValueExists(kChromeFramePersistNPAPIReg);
     }
   }
   return success;
