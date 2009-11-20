@@ -2289,9 +2289,6 @@ BUG10434 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-intro-01-f.svg = FAIL
 // See above comment about this test on linux/win.
 BUG10435 MAC : LayoutTests/editing/selection/designmode-no-caret.html = FAIL
 
-// New tests added in the 41420:41447 merge that fail (just needs a new baseline):
-BUG10437 LINUX : LayoutTests/fast/css-generated-content/hit-test-generated-content.html = FAIL
-
 // Flakey. Not clear when it started, but it was before 3/9/09.
 // This test also started failing with the merge of March 25th 2009
 BUG10441 LINUX : LayoutTests/fast/clip/outline-overflowClip.html = FAIL
@@ -3043,3 +3040,15 @@ BUG28079 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = 
 BUG28080 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG28092 WIN : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = PASS FAIL
 BUG28095 MAC : LayoutTests/http/tests/cookies/simple-cookies-expired.html = PASS TIMEOUT
+
+// This test should simply be dumpAsText()
+BUG_DIMICH WIN LINUX : LayoutTests/fast/table/row-height-recalc2.html = FAIL
+
+// Need to add Chromium localized strings for the feature. Upstream r51172
+BUG28264 : LayoutTests/fast/forms/validationMessage.html = FAIL
+
+// New feature, but the failure seems to be real (not rebaseline). Upstream r51159.
+BUG28266 : LayoutTests/fast/forms/input-step.html = FAIL
+
+// Video Captions are added upsteram (r51191), need to implement.
+BUG28301 : LayoutTests/media/media-captions.html = TIMEOUT
