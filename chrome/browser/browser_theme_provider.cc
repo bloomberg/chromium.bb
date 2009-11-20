@@ -386,7 +386,7 @@ SkColor BrowserThemeProvider::GetColor(int id) const {
     return SkColorSetA(color_link, SkColorGetA(color_link) / 3);
   }
 
-  // TODO(glen): Figure out if we need to tint these. http://crbug.com/11578
+  // TODO(glen): Figure out if we need to tint these.  http://crbug.com/11578
   ColorMap::const_iterator color_iter = colors_.find(GetColorKey(id));
   return (color_iter == colors_.end()) ?
       GetDefaultColor(id) : color_iter->second;
@@ -1106,9 +1106,10 @@ void BrowserThemeProvider::SetColorData(DictionaryValue* colors_value) {
         if (color_list->GetReal(3, &alpha)) {
           colors_[WideToUTF8(*iter)] =
               SkColorSetARGB(static_cast<int>(alpha * 255), r, g, b);
-        } else if (color_list->GetInteger(3, &alpha_int)) {
+        } else if (color_list->GetInteger(3, &alpha_int) &&
+                   (alpha_int >= 0 && alpha_int <= 255)) {
           colors_[WideToUTF8(*iter)] =
-              SkColorSetARGB(alpha_int * 255, r, g, b);
+              SkColorSetARGB(alpha_int, r, g, b);
         }
       } else {
         colors_[WideToUTF8(*iter)] = SkColorSetRGB(r, g, b);

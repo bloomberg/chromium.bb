@@ -21,6 +21,7 @@ class Extension;
 class Profile;
 class DictionaryValue;
 class PrefService;
+class BrowserThemeProviderTest;
 
 class BrowserThemeProvider : public NonThreadSafe,
                              public ThemeProvider {
@@ -273,6 +274,8 @@ class BrowserThemeProvider : public NonThreadSafe,
   void force_process_images() { process_images_ = true; }
 
  private:
+  friend class BrowserThemeProviderTest;
+
   typedef std::map<const int, std::string> ImageMap;
   typedef std::map<const std::string, SkColor> ColorMap;
   typedef std::map<const std::string, color_utils::HSL> TintMap;
