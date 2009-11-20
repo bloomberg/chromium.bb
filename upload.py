@@ -226,6 +226,35 @@ class AbstractRpcServer(object):
       return response_dict["Auth"]
     except urllib2.HTTPError, e:
       if e.code == 403:
+        # Try a temporary workaround.
+        if self.host.endswith(".google.com"):
+          account_type = "HOSTED"
+          req = self._CreateRequest(
+                  url="https://www.google.com/accounts/ClientLogin",
+                  data=urllib.urlencode({
+                      "Email": email,
+                      "Passwd": password,
+                      "service": "ah",
+                      "source": "rietveld-codereview-upload",
+                      "accountType": account_type,
+                  }),
+              )
+          try:
+            response = self.opener.open(req)
+            response_body = response.read()
+            response_dict = dict(x.split("=")
+                                 for x in response_body.split("\n") if x)
+            return response_dict["Auth"]
+          except urllib2.HTTPError, e:
+            if e.code == 403:
+              body = e.read()
+              response_dict = dict(x.split("=", 1) for x in body.split("\n")
+                                   if x)
+              raise ClientLoginError(req.get_full_url(), e.code, e.msg,
+                                     e.headers, response_dict)
+            else:
+              raise
+
         body = e.read()
         response_dict = dict(x.split("=", 1) for x in body.split("\n") if x)
         raise ClientLoginError(req.get_full_url(), e.code, e.msg,
