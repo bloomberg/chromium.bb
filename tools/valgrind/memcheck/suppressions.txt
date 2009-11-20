@@ -1575,3 +1575,75 @@
    fun:_ZN6WebKit19WebSharedWorkerImpl7connectEPNS_21WebMessagePortChannelEPNS_15WebSharedWorker15ConnectListenerE
    fun:_ZN19WebSharedWorkerStub9OnConnectEii
 }
+{
+   # GTK tooltip doesn't always initialize variables.
+   # https://bugzilla.gnome.org/show_bug.cgi?id=554686
+   tooltip_554686
+   Memcheck:Cond
+   fun:child_location_foreach
+   fun:gtk_fixed_forall
+   fun:gtk_container_forall
+   fun:find_widget_under_pointer
+   fun:gtk_tooltip_show_tooltip
+   fun:tooltip_popup_timeout
+   fun:gdk_threads_dispatch
+   fun:g_timeout_dispatch
+   fun:g_main_context_dispatch
+   fun:g_main_context_iterate
+   fun:g_main_context_iteration
+   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
+   fun:_ZN59_GLOBAL__N_chrome_browser_browser_main.cc_00000000_A2DDE14216RunUIMessageLoopEP14BrowserProcess
+   fun:_Z11BrowserMainRK18MainFunctionParams
+   fun:ChromeMain
+   fun:main
+}
+{
+   # This looks like a bug in how the arguments passed to signals are bundled
+   # in closure, or a bug in how valgrind detects the error. I modified gtk to
+   # always set the variables passed to the signal and still saw the error.
+   # https://bugzilla.gnome.org/show_bug.cgi?id=554686
+   tooltip_554686_2
+   Memcheck:Cond
+   fun:_ZNK5views4View7HitTestERKN3gfx5PointE
+   fun:_ZN5views4View15GetViewForPointERKN3gfx5PointE
+   fun:_ZN5views17TooltipManagerGtk11ShowTooltipEiibP11_GtkTooltip
+   fun:_ZN5views9WidgetGtk14OnQueryTooltipEiiiP11_GtkTooltip
+   fun:_ZN5views9WidgetGtk16CallQueryTooltipEP10_GtkWidgetiiiP11_GtkTooltipPS0_
+   fun:_gtk_marshal_BOOLEAN__INT_INT_BOOLEAN_OBJECT
+   fun:g_closure_invoke
+   fun:signal_emit_unlocked_R
+   fun:g_signal_emit_valist
+   fun:g_signal_emit_by_name
+   fun:gtk_tooltip_run_requery
+   fun:gtk_tooltip_show_tooltip
+   fun:tooltip_popup_timeout
+   fun:gdk_threads_dispatch
+   fun:g_timeout_dispatch
+   fun:g_main_context_dispatch
+   fun:g_main_context_iterate
+   fun:g_main_context_iteration
+   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
+}
+# This task is created quite frequently and may leak on shutdown depending on
+# ordering.
+{
+   chromeos_network_task
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodIN8chromeos14NetworkLibraryEMS1_FviEiEP14CancelableTaskPT_T0_RKT1_
+   fun:_ZN8chromeos14NetworkLibrary24NetworkTrafficTimerFiredEv
+   fun:_Z16DispatchToMethodIN8chromeos14NetworkLibraryEMS1_FvvEEvPT_T0_RK6Tuple0
+   fun:_ZN4base9BaseTimerIN8chromeos14NetworkLibraryELb0EE9TimerTask3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop13DoDelayedWorkEPN4base4TimeE
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
