@@ -120,9 +120,7 @@ bool HtmlDialogWindowDelegateBridge::DelegateOnDialogClosed(
 // to NULL when the window is closed.
 
 bool HtmlDialogWindowDelegateBridge::IsDialogModal() const {
-  // TODO(akalin): Support modal dialog boxes.  Or remove support for modal
-  // dialog boxes entirely, since both users of HTML dialogs don't require
-  // modal dialogs.
+  // TODO(akalin): Support modal dialog boxes.
   if (delegate_ && delegate_->IsDialogModal()) {
     LOG(WARNING) << "Modal HTML dialogs are not supported yet";
   }
@@ -241,6 +239,9 @@ void HtmlDialogWindowDelegateBridge::UpdateTargetURL(
 @end
 
 @implementation HtmlDialogWindowController
+
+// NOTE(akalin): We'll probably have to add the parentWindow parameter back
+// in once we implement modal dialogs.
 
 + (void)showHtmlDialog:(HtmlDialogUIDelegate*)delegate
                profile:(Profile*)profile {
