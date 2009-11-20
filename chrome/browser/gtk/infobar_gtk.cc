@@ -116,12 +116,14 @@ GtkWidget* InfoBar::widget() {
 
 void InfoBar::AnimateOpen() {
   slide_widget_->Open();
-  gdk_window_lower(border_bin_->window);
+  if (border_bin_->window)
+    gdk_window_lower(border_bin_->window);
 }
 
 void InfoBar::Open() {
   slide_widget_->OpenWithoutAnimation();
-  gdk_window_lower(border_bin_->window);
+  if (border_bin_->window)
+    gdk_window_lower(border_bin_->window);
 }
 
 void InfoBar::AnimateClose() {
