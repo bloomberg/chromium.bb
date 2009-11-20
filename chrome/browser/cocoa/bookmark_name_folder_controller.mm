@@ -35,13 +35,6 @@
 
 - (void)awakeFromNib {
   [nameField_ setStringValue:initialName_.get()];
-  [self controlTextDidChange:nil];
-}
-
-// Called as a side-effect of being the delegate of the text field. Ensure the
-// OK button is only enabled when there is a valid name.
-- (void)controlTextDidChange:(NSNotification*)ignore {
-  [okButton_ setEnabled:[[nameField_ stringValue] length]];
 }
 
 // TODO(jrg): consider NSModalSession.
@@ -88,7 +81,6 @@
 
 - (void)setFolderName:(NSString*)name {
   [nameField_ setStringValue:name];
-  [self controlTextDidChange:nil];
 }
 
 - (NSButton*)okButton {

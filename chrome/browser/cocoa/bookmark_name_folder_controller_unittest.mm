@@ -66,6 +66,25 @@ TEST_F(BookmarkNameFolderControllerTest, AddNewDefaultName) {
   EXPECT_TRUE(parent->GetChild(0)->is_folder());
 }
 
+// Make sure we are allowed to create a folder with an empty name.
+TEST_F(BookmarkNameFolderControllerTest, AddNewBlankName) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  EXPECT_EQ(0, parent->GetChildCount());
+
+  scoped_nsobject<BookmarkNameFolderController>
+  controller([[BookmarkNameFolderController alloc]
+              initWithParentWindow:test_window()
+                           profile:helper_.profile()
+                              node:NULL]);
+  [controller window];  // force nib load
+
+  // Change the name to blank, click OK.
+  [controller setFolderName:@""];
+  [controller ok:nil];
+  EXPECT_EQ(1, parent->GetChildCount());
+  EXPECT_TRUE(parent->GetChild(0)->is_folder());
+}
 
 TEST_F(BookmarkNameFolderControllerTest, Rename) {
   BookmarkModel* model = helper_.profile()->GetBookmarkModel();
@@ -113,5 +132,5 @@ TEST_F(BookmarkNameFolderControllerTest, EditAndConfirmOKButton) {
   EXPECT_TRUE([[controller okButton] isEnabled]);
 
   [controller setFolderName:@""];
-  EXPECT_FALSE([[controller okButton] isEnabled]);
+  EXPECT_TRUE([[controller okButton] isEnabled]);
 }
