@@ -637,7 +637,7 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
   iov[0].iov_base = const_cast<void*>(crash_context);
   iov[0].iov_len = crash_context_size;
   iov[1].iov_base = guid;
-  iov[1].iov_len = guid_len + 1;
+  iov[1].iov_len = kGuidSize + 1;
   iov[2].iov_base = crash_url;
   iov[2].iov_len = kMaxActiveURLSize + 1;
   iov[3].iov_base = distro;
