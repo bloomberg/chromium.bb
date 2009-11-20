@@ -36,6 +36,8 @@
         ['OS=="win"',
           {
             'dependencies': [
+              '../gpu/gpu.gyp:gles2_demo',
+              '../gpu/gpu.gyp:gpu_all_unittests',
               '../plugin/plugin.gyp:o3d_host',
             ],
           },
@@ -44,20 +46,6 @@
           {
             'dependencies': [
               '../../breakpad/breakpad.gyp:breakpad',
-            ],
-          },
-        ],
-        ['renderer=="cb"',
-          {
-            'dependencies': [
-              '../gpu/gpu.gyp:gpu_all_unittests',
-            ],
-          },
-        ],
-        ['renderer=="cb" and cb_service=="gl"',
-          {
-            'dependencies': [
-              '../gpu/gpu.gyp:gles2_demo',
             ],
           },
         ],

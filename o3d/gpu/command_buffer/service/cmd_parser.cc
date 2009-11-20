@@ -34,8 +34,6 @@
 
 #include "gpu/command_buffer/service/precompile.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
-// TODO(gman): remove this so we can use this code for different formats.
-#include "gpu/command_buffer/common/o3d_cmd_format.h"
 
 namespace command_buffer {
 

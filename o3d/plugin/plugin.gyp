@@ -50,7 +50,6 @@
       '../../v8/tools/gyp/v8.gyp:v8',
       '../core/core.gyp:o3dCore',
       '../core/core.gyp:o3dCorePlatform',
-      '../gpu/gpu.gyp:np_utils',
       '../import/archive.gyp:o3dArchive',
       '../utils/utils.gyp:o3dUtils',
       '../../native_client/src/shared/imc/imc.gyp:google_nacl_imc',
@@ -95,7 +94,7 @@
             ],
           },
         ],
-        ['renderer == "gl" or cb_service == "gl"',
+        ['renderer == "gl"',
           {
             'dependencies': [
               '../build/libs.gyp:gl_libs',
@@ -124,6 +123,7 @@
               'mac/plugin_mac.h',
               'mac/plugin_mac.mm',
               'mac/graphics_utils_mac.mm',
+              'mac/main_mac.mm',
             ],
             'mac_framework_dirs': [
               '../../<(cgdir)',
@@ -188,18 +188,12 @@
             ],
           },
         ],
-        ['OS == "mac" and cb_service != "remote"',
-          {
-            'sources': [
-              'mac/main_mac.mm',
-            ],
-          },
-        ],
         ['OS == "linux"',
           {
             'sources': [
               'linux/config.cc',
               'linux/envvars.cc',
+              'linux/main_linux.cc',
             ],
             'ldflags': [
               '-z',
@@ -215,10 +209,9 @@
             ],
           },
         ],
-        ['OS == "linux" and cb_service != "remote"',
+        ['OS == "linux"',
           {
             'sources': [
-              'linux/main_linux.cc',
             ],
           },
         ],
@@ -230,6 +223,7 @@
             'sources': [
               'win/config.cc',
               'win/logger_main.cc',
+              'win/main_win.cc',
               'win/o3dPlugin.def',
               'win/o3dPlugin.rc',
               'win/plugin_logging-win32.cc',
@@ -244,37 +238,15 @@
             },
           },
         ],
-        ['OS == "win" and cb_service != "remote"',
-          {
-            'sources': [
-              'win/main_win.cc',
-            ],
-          },
-        ],
         ['OS == "win" and renderer == "d3d9"',
           {
             'link_settings': {
               'libraries': [
                 '"$(DXSDK_DIR)/Lib/x86/d3dx9.lib"',
                 '-ld3d9.lib',
-              ],
-            },
-          },
-        ],
-        ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9" or cb_service == "remote")',
-          {
-            'link_settings': {
-              'libraries': [
                 '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
               ],
             },
-          },
-        ],
-        ['cb_service == "remote"',
-          {
-            'sources': [
-              'cross/main_remote_cb.cc',
-            ],
           },
         ],
       ],
@@ -424,7 +396,7 @@
                   },
                 },
               ],
-              ['OS == "win" and (renderer == "d3d9" or cb_service == "d3d9")',
+              ['OS == "win" and renderer == "d3d9"',
                 {
                   'link_settings': {
                     'libraries': [

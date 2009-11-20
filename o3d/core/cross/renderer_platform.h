@@ -64,8 +64,6 @@
 #include "core/win/d3d9/renderer_d3d9.h"
 #elif defined(RENDERER_GL)
 #include "core/cross/gl/renderer_gl.h"
-#elif defined(RENDERER_CB)
-#include "core/cross/command_buffer/renderer_cb.h"
 #else
 #error Renderer not recognized.
 #endif

@@ -30,7 +30,7 @@
  */
 
 
-// This file includes all the necessary GL/Cg headers and implements some useful
+// This file includes all the necessary GL headers and implements some useful
 // utilities.
 
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
@@ -40,8 +40,6 @@
 #if defined(OS_WIN)
 #include <GL/wglew.h>
 #endif
-#include <Cg/cg.h>
-#include <Cg/cgGL.h>
 #include <build/build_config.h>
 
 #define GL_GLEXT_PROTOTYPES

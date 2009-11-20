@@ -51,31 +51,14 @@
 #include "v8/include/v8.h"
 #include "breakpad/win/bluescreen_detector.h"
 
-#if defined(RENDERER_CB)
-#include "core/cross/command_buffer/renderer_cb.h"
-#include "core/cross/command_buffer/display_window_cb.h"
-#include "gpu/command_buffer/common/command_buffer.h"
-#endif
-
 using glue::_o3d::PluginObject;
 using glue::StreamManager;
 using o3d::DisplayWindowWindows;
 using o3d::Event;
 
-#if defined(RENDERER_CB)
-using command_buffer::CommandBuffer;
-#endif
-
 namespace {
 // The instance handle of the O3D DLL.
 HINSTANCE g_module_instance;
-
-// TODO(apatrick): We can have an NPBrowser in the other configurations when we
-//    move over to gyp. This is just to avoid having to write scons files for
-//    np_utils.
-#if defined(RENDERER_CB)
-np_utils::NPBrowser* g_browser;
-#endif
 }  // namespace anonymous
 
 #if !defined(O3D_INTERNAL_PLUGIN)
@@ -736,10 +719,6 @@ extern "C" {
 NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs) {
   HANDLE_CRASHES;
 
-#if defined(RENDERER_CB)
-  g_browser = new np_utils::NPBrowser(browserFuncs);
-#endif
-
   NPError retval = InitializeNPNApi(browserFuncs);
   if (retval != NPERR_NO_ERROR) return retval;
   return InitializePlugin();
@@ -777,11 +756,6 @@ NPError OSCALL NP_Shutdown(void) {
     delete g_bluescreen_detector;
     g_bluescreen_detector = NULL;
   }
-
-#if defined(RENDERER_CB)
-  delete g_browser;
-  g_browser = NULL;
-#endif
 
 #endif  // O3D_INTERNAL_PLUGIN
 
@@ -915,27 +889,10 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
   ::ShowWindow(content_window, SW_SHOW);
 
   // create and assign the graphics context
-#if defined(RENDERER_CB)
-  const unsigned int kDefaultCommandBufferSize = 256 << 10;
-
-  // RendererCB takes ownership of CommandBuffer.
-  CommandBuffer* command_buffer =
-      RendererCBLocal::CreateCommandBuffer(instance,
-                                           obj->GetHWnd(),
-                                           kDefaultCommandBufferSize);
-
-  DisplayWindowCB default_display;
-  default_display.set_command_buffer(command_buffer);
-
-  obj->CreateRenderer(default_display);
-  obj->renderer()->Resize(window->width, window->height);
-  obj->client()->Init();
-#else
   DisplayWindowWindows default_display;
   default_display.set_hwnd(obj->GetHWnd());
   obj->CreateRenderer(default_display);
   obj->client()->Init();
-#endif
 
   // we set the timer to 10ms or 100fps. At the time of this comment
   // the renderer does a vsync the max fps it will run will be the refresh

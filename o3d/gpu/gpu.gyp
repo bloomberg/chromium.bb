@@ -38,9 +38,6 @@
         'command_buffer/common/gles2_cmd_format.h',
         'command_buffer/common/gles2_cmd_utils.cc',
         'command_buffer/common/gles2_cmd_utils.h',
-        'command_buffer/common/o3d_cmd_format.h',
-        'command_buffer/common/o3d_cmd_format.cc',
-        'command_buffer/common/gapi_interface.h',
         'command_buffer/common/logging.h',
         'command_buffer/common/mocks.h',
         'command_buffer/common/resource.cc',
@@ -133,14 +130,10 @@
       'sources': [
         'command_buffer/client/cmd_buffer_helper.cc',
         'command_buffer/client/cmd_buffer_helper.h',
-        'command_buffer/client/effect_helper.cc',
-        'command_buffer/client/effect_helper.h',
         'command_buffer/client/fenced_allocator.cc',
         'command_buffer/client/fenced_allocator.h',
         'command_buffer/client/id_allocator.cc',
         'command_buffer/client/id_allocator.h',
-        'command_buffer/client/o3d_cmd_helper.cc',
-        'command_buffer/client/o3d_cmd_helper.h',
       ],
     },
     {
@@ -166,23 +159,10 @@
           '..',
           '../..',
         ],
-        'conditions': [
-          ['OS == "win" and (renderer == "gl" or cb_service == "gl")',
-            {
-              'include_dirs': [
-                '../../<(glewdir)/include',
-                '../../<(cgdir)/include',
-              ],
-            },
-          ],
-        ],
       },  # 'all_dependent_settings'
       'dependencies': [
         'command_buffer_common',
-
-        # TODO(apatrick): Remove this dependency when the synchronous messages
-        #    are via IPC.
-        'np_utils',
+        '../build/libs.gyp:gl_libs',
       ],
       'sources': [
         'command_buffer/service/common_decoder.cc',
@@ -192,10 +172,11 @@
         'command_buffer/service/command_buffer_service.h',
         'command_buffer/service/cmd_parser.cc',
         'command_buffer/service/cmd_parser.h',
-        'command_buffer/service/effect_utils.cc',
-        'command_buffer/service/effect_utils.h',
-        'command_buffer/service/gapi_decoder.cc',
-        'command_buffer/service/gapi_decoder.h',
+        'command_buffer/service/gles2_cmd_decoder.h',
+        'command_buffer/service/gles2_cmd_decoder_validate.h',
+        'command_buffer/service/gles2_cmd_decoder_autogen.h',
+        'command_buffer/service/gles2_cmd_decoder.cc',
+        'command_buffer/service/gl_utils.h',
         'command_buffer/service/gpu_processor.h',
         'command_buffer/service/gpu_processor.cc',
         'command_buffer/service/gpu_processor_mock.h',
@@ -204,71 +185,8 @@
         'command_buffer/service/precompile.h',
         'command_buffer/service/resource.cc',
         'command_buffer/service/resource.h',
-        'command_buffer/service/texture_utils.cc',
-        'command_buffer/service/texture_utils.h',
       ],
       'conditions': [
-        ['cb_service == "d3d9"',
-          {
-            'include_dirs': [
-              '$(DXSDK_DIR)/Include',
-            ],
-            'all_dependent_settings': {
-              'include_dirs': [
-                '$(DXSDK_DIR)/Include',
-              ],
-              'link_settings': {
-                'libraries': [
-                  '"$(DXSDK_DIR)/Lib/x86/DxErr.lib"',
-                ],
-              },
-            },  # 'all_dependent_settings'
-            'sources': [
-              'command_buffer/service/d3d9_utils.h',
-              'command_buffer/service/effect_d3d9.cc',
-              'command_buffer/service/effect_d3d9.h',
-              'command_buffer/service/gapi_d3d9.cc',
-              'command_buffer/service/gapi_d3d9.h',
-              'command_buffer/service/geometry_d3d9.cc',
-              'command_buffer/service/geometry_d3d9.h',
-              'command_buffer/service/render_surface_d3d9.cc',
-              'command_buffer/service/render_surface_d3d9.h',
-              'command_buffer/service/sampler_d3d9.cc',
-              'command_buffer/service/sampler_d3d9.h',
-              'command_buffer/service/states_d3d9.cc',
-              'command_buffer/service/texture_d3d9.cc',
-              'command_buffer/service/texture_d3d9.h',
-            ],  # 'sources'
-          },
-        ],
-        ['cb_service == "gl"',
-          {
-            'dependencies': [
-              '../build/libs.gyp:gl_libs',
-              '../build/libs.gyp:cg_libs',
-            ],
-            'sources': [
-              'command_buffer/service/effect_gl.cc',
-              'command_buffer/service/effect_gl.h',
-              'command_buffer/service/gapi_gl.cc',
-              'command_buffer/service/gapi_gl.h',
-              'command_buffer/service/geometry_gl.cc',
-              'command_buffer/service/geometry_gl.h',
-              'command_buffer/service/gles2_cmd_decoder.h',
-              'command_buffer/service/gles2_cmd_decoder_validate.h',
-              'command_buffer/service/gles2_cmd_decoder_autogen.h',
-              'command_buffer/service/gles2_cmd_decoder.cc',
-              'command_buffer/service/gl_utils.h',
-              'command_buffer/service/render_surface_gl.cc',
-              'command_buffer/service/render_surface_gl.h',
-              'command_buffer/service/sampler_gl.cc',
-              'command_buffer/service/sampler_gl.h',
-              'command_buffer/service/states_gl.cc',
-              'command_buffer/service/texture_gl.cc',
-              'command_buffer/service/texture_gl.h',
-            ],  # 'sources'
-          },
-        ],
         ['OS == "linux"',
           {
             'sources': [
@@ -284,7 +202,7 @@
             ],
           },
         ],
-      ],  # 'conditions'
+      ],
     },
     {
       'target_name': 'command_buffer_service_unittests',
@@ -343,9 +261,6 @@
         'np_utils/webkit_browser.h',
       ],
     },
-
-    # This is a standalone executable until O3D is fully moved over to using
-    # gyp. At that point these can become part of the regular O3D unit tests.
     {
       'target_name': 'np_utils_unittests',
       'type': 'none',
