@@ -16,7 +16,7 @@
 }
 
 {
-  bug_23245, bug_25385
+  bug_23245, bug_25385 (1)
   ThreadSanitizer:Race
   fun:*base*Thread*ThreadMain*
 }
@@ -40,11 +40,19 @@
 }
 
 {
-  bug_25385
+  bug_25385 (2)
   ThreadSanitizer:Race
   ...
   fun:*base*ThreadD*E*
 }
+
+{
+  bug_25385 (3)
+  ThreadSanitizer:Race
+  ...
+  fun:*WebKitThread*InternalWebKitThreadD*E*
+}
+
 
 {
   bug_25915
