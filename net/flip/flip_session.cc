@@ -694,9 +694,13 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
         break;
       url = url.substr(pos + 2);
       GURL gurl(url);
-      pending_streams_[gurl.PathForRequest()] = NULL;
+      std::string path = gurl.PathForRequest();
+      if (path.length())
+        pending_streams_[path] = NULL;
+      else
+        LOG(INFO) << "Invalid X-Associated-Content path: " << url;
       start = end + 2;
-    } while (end < content.length());
+    } while (start < content.length());
   }
 
   FlipStream* stream = active_streams_[stream_id];
@@ -709,6 +713,7 @@ void FlipSession::OnControl(const flip::FlipControlFrame* frame) {
   if (type == flip::SYN_STREAM || type == flip::SYN_REPLY) {
     if (!flip_framer_.ParseHeaderBlock(frame, &headers)) {
       LOG(WARNING) << "Could not parse Flip Control Frame Header";
+      // TODO(mbelshe):  Error the session?
       return;
     }
   }
