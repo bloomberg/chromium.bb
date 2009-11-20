@@ -301,6 +301,14 @@ std::wstring ElideText(const std::wstring& text,
     return text;
 
   int current_text_pixel_width = font.GetStringWidth(text);
+
+  // Pango will return 0 width for absurdly long strings. Cut the string in
+  // half and try again.
+  if (current_text_pixel_width <= 0 && !text.empty()) {
+    return ElideText(text.substr(0, text.length() / 2), font,
+                     available_pixel_width);
+  }
+
   if (current_text_pixel_width <= available_pixel_width)
     return text;
 

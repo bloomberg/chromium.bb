@@ -186,9 +186,7 @@ TEST(TextEliderTest, TestFilenameEliding) {
   }
 }
 
-// This test is disabled.
-// See bug 15435.
-TEST(TextEliderTest, DISABLED_ElideTextLongStrings) {
+TEST(TextEliderTest, ElideTextLongStrings) {
   const std::wstring kEllipsisStr(kEllipsis);
   std::wstring data_scheme(L"data:text/plain,");
 
