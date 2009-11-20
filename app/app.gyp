@@ -7,6 +7,13 @@
     # TODO: remove this helper when we have loops in GYP
     'apply_locales_cmd': ['python', '../chrome/tools/build/apply_locales.py',],
     'chromium_code': 1,
+    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',],
+    'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
+    'grit_cmd': ['python', '../tools/grit/grit.py'],
+    'localizable_resources': [
+      'resources/app_locale_settings.grd',
+      'resources/app_strings.grd',
+    ],
   },
   'target_defaults': {
     'sources/': [
@@ -300,18 +307,15 @@
           'rule_name': 'grit',
           'extension': 'grd',
           'inputs': [
-            '../tools/grit/grit.py',
+            '<!@(<(grit_info_cmd) --inputs <(localizable_resources))',
           ],
-          'variables': {
-            'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
-          },
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/app/grit/<(RULE_INPUT_ROOT).h',
+            '<(grit_out_dir)/<(RULE_INPUT_ROOT)/grit/<(RULE_INPUT_ROOT).h',
             # TODO: remove this helper when we have loops in GYP
-            '>!@(<(apply_locales_cmd) \'<(SHARED_INTERMEDIATE_DIR)/app/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
+            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/<(RULE_INPUT_ROOT)/<(RULE_INPUT_ROOT)_ZZLOCALE.pak\' <(locales))',
           ],
-          'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)',
-            'build', '-o', '<(grit_out_dir)'],
+          'action': ['<@(grit_cmd)', '-i', '<(RULE_INPUT_PATH)',
+            'build', '-o', '<(grit_out_dir)/<(RULE_INPUT_ROOT)'],
           'message': 'Generating resources from <(RULE_INPUT_PATH)',
           'conditions': [
             ['use_titlecase_in_grd_files==1', {
@@ -321,13 +325,12 @@
         },
       ],
       'sources': [
-        # Localizable resources.
-        'resources/app_locale_settings.grd',
-        'resources/app_strings.grd',
+        '<@(localizable_resources)',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/app',
+          '<(grit_out_dir)/app_locale_settings',
+          '<(grit_out_dir)/app_strings',
         ],
       },
       'conditions': [
@@ -340,10 +343,6 @@
       'target_name': 'app_resources',
       'type': 'none',
       'msvs_guid': '3FBC4235-3FBD-46DF-AEDC-BADBBA13A095',
-      'variables': {
-        'grit_path': '../tools/grit/grit.py',
-        'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/app',
-      },
       'actions': [
         {
           'action_name': 'app_resources',
@@ -351,20 +350,20 @@
             'input_path': 'resources/app_resources.grd',
           },
           'inputs': [
-            '<(input_path)',
+            '<!@(<(grit_info_cmd) --inputs <(input_path))',
           ],
           'outputs': [
-            '<(grit_out_dir)/grit/app_resources.h',
-            '<(grit_out_dir)/app_resources.pak',
-            '<(grit_out_dir)/app_resources.rc',
+            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)/app_resources\' <(input_path))',
           ],
-          'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
+          'action': ['<@(grit_cmd)',
+                     '-i', '<(input_path)', 'build',
+                     '-o', '<(grit_out_dir)/app_resources'],
           'message': 'Generating resources from <(input_path)',
         },
       ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/app',
+          '<(grit_out_dir)/app_resources',
         ],
       },
       'conditions': [
@@ -378,8 +377,13 @@
       'type': 'none',
       'msvs_guid': '83100055-172B-49EA-B422-B1A92B627D37',
       'conditions': [
-        ['OS=="win"', 
+        ['OS=="win"',
           {
+            'direct_dependent_settings': {
+              'include_dirs': [
+                '<(SHARED_INTERMEDIATE_DIR)/chrome/app_id',
+              ],
+            },
             'actions': [
               {
                 'action_name': 'appid',
@@ -391,7 +395,7 @@
                     'variables': {
                       'appid_value': '<(google_update_appid)',
                     },
-                  }, { # else 
+                  }, { # else
                     'variables': {
                       'appid_value': '',
                     },
@@ -401,14 +405,14 @@
                   '<(appid_py)',
                 ],
                 'outputs': [
-                  '<(SHARED_INTERMEDIATE_DIR)/chrome/appid.h',
+                  '<(SHARED_INTERMEDIATE_DIR)/chrome/app_id/appid.h',
                   'tools/build/_always_run_appid_py.marker',
                 ],
                 'action': [
                   'python',
                   '<(appid_py)',
                   '-a', '<(appid_value)',
-                  '-o', '<(SHARED_INTERMEDIATE_DIR)/chrome/appid.h',
+                  '-o', '<(SHARED_INTERMEDIATE_DIR)/chrome/app_id/appid.h',
                 ],
                 'process_outputs_as_sources': 1,
                 'message': 'Generating appid information in <(SHARED_INTERMEDIATE_DIR)/chrome/appid.h'

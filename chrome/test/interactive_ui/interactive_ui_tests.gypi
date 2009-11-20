@@ -95,6 +95,7 @@
         '<(DEPTH)/chrome/third_party/wtl/include',
       ],
       'dependencies': [
+        '<(DEPTH)/app/app.gyp:app_resources',
         '<(DEPTH)/chrome/chrome.gyp:chrome_dll_version',
         '<(DEPTH)/chrome/chrome.gyp:crash_service',  # run time dependency
         '<(DEPTH)/chrome/installer/installer.gyp:installer_util_strings',
@@ -119,7 +120,7 @@
         # their various targets (net.gyp:net_resources, etc.),
         # but that causes errors in other targets when
         # resulting .res files get referenced multiple times.
-        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',

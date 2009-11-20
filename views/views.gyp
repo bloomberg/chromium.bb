@@ -368,7 +368,7 @@
         'examples/textfield_example.h',
         'examples/widget_example.h',
 
-        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
+        '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
       ],
       'conditions': [
         ['OS=="linux"', {

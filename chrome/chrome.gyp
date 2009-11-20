@@ -3973,7 +3973,7 @@
                   '<(grit_out_dir)/common_resources.pak',
                   '<(grit_out_dir)/renderer_resources.pak',
                   '<(grit_out_dir)/theme_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.pak',
+                  '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                   '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                 ],
@@ -4938,7 +4938,7 @@
             # their various targets (net.gyp:net_resources, etc.),
             # but that causes errors in other targets when
             # resulting .res files get referenced multiple times.
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -5036,7 +5036,7 @@
             'app/chrome_dll.rc',
             'app/chrome_dll_resource.h',
             'app/chrome_dll_version.rc.version',
-            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
@@ -5775,7 +5775,7 @@
                 # their various targets (net.gyp:net_resources, etc.),
                 # but that causes errors in other targets when
                 # resulting .res files get referenced multiple times.
-                '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
                 '<(SHARED_INTERMEDIATE_DIR)/chrome/renderer_resources.rc',
@@ -5967,7 +5967,7 @@
                       '<(grit_out_dir)/common_resources.pak',
                       '<(grit_out_dir)/renderer_resources.pak',
                       '<(grit_out_dir)/theme_resources.pak',
-                      '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.pak',
+                      '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
                       '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
                     ],
@@ -6715,7 +6715,7 @@
               'test/ui_test_utils_win.cc',
               'test/data/resource.h',
               'test/data/resource.rc',
-              '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
+              '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.rc',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
               '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',
               '<(SHARED_INTERMEDIATE_DIR)/chrome/common_resources.rc',
