@@ -120,7 +120,7 @@ class TestRunner:
   # test_shell.exe.
   DEFAULT_TEST_TIMEOUT_MS = 6 * 1000
 
-  NUM_RETRY_ON_UNEXPECTED_FAILURE = 3
+  NUM_RETRY_ON_UNEXPECTED_FAILURE = 1
 
   def __init__(self, options):
     """Initialize test runner data structures.
