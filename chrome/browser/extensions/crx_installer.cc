@@ -202,9 +202,7 @@ void CrxInstaller::ConfirmInstall() {
   if (frontend_->extension_prefs()->IsExtensionBlacklisted(extension_->id())) {
     LOG(INFO) << "This extension: " << extension_->id()
       << " is blacklisted. Install failed.";
-    if (client_.get()) {
-      client_->OnInstallFailure("This extension is blacklisted.");
-    }
+    ReportFailureFromUIThread("This extension is blacklisted.");
     return;
   }
 
