@@ -230,8 +230,12 @@ function renderMostVisited(data) {
 
     // No need to continue if this is a filler.
     if (newClassName == 'thumbnail-container filler') {
+      // Make sure the user cannot tab to the filler.
+      t.tabIndex = -1;
       continue;
     }
+    // Allow focus.
+    t.tabIndex = 1;
 
     t.href = d.url;
     t.querySelector('.pin').title = localStrings.getString(d.pinned ?
@@ -470,6 +474,11 @@ var mostVisited = {
       var removeText = localStrings.getString('thumbnailremovednotification');
       var notifySpan = document.querySelector('#notification > span');
       notifySpan.textContent = removeText;
+
+      // Focus the undo link.
+      var undoLink = document.querySelector(
+          '#notification > .link > [tabindex]');
+      undoLink.focus();
     });
   },
 
@@ -1034,6 +1043,15 @@ $('most-visited').addEventListener('click', function(e) {
   } else if (hasClass(target, 'remove')) {
     mostVisited.blacklist(mostVisited.getItem(target));
     e.preventDefault();
+  }
+});
+
+// Allow blacklisting most visited site using the keyboard.
+$('most-visited').addEventListener('keydown', function(e) {
+  var isMac = /$Mac/.test(navigator.platform);
+  if (!isMac && e.keyCode == 46 || // Del
+      isMac && e.metaKey && e.keyCode == 8) { // Cmd + Backspace
+    mostVisited.blacklist(e.target);
   }
 });
 
