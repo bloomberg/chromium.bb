@@ -67,33 +67,6 @@ const float kContentWidthPercentage = 0.7;
 // UTF-8 Left-to-right embedding.
 const char* kLRE = "\xe2\x80\xaa";
 
-// TODO(deanm): We should put this on gfx::Font so it can be shared.
-// Returns a new pango font, free with pango_font_description_free().
-PangoFontDescription* PangoFontFromGfxFont(const gfx::Font& chrome_font) {
-  gfx::Font font = chrome_font;  // Copy so we can call non-const methods.
-  PangoFontDescription* pfd = pango_font_description_new();
-  pango_font_description_set_family(pfd, WideToUTF8(font.FontName()).c_str());
-  pango_font_description_set_size(pfd, font.FontSize() * PANGO_SCALE);
-
-  switch (font.style()) {
-    case gfx::Font::NORMAL:
-      // Nothing to do, should already be PANGO_STYLE_NORMAL.
-      break;
-    case gfx::Font::BOLD:
-      pango_font_description_set_weight(pfd, PANGO_WEIGHT_BOLD);
-      break;
-    case gfx::Font::ITALIC:
-      pango_font_description_set_style(pfd, PANGO_STYLE_ITALIC);
-      break;
-    case gfx::Font::UNDERLINED:
-      // TODO(deanm): How to do underlined?  Where do we use it?  Probably have
-      // to paint it ourselves, see pango_font_metrics_get_underline_position.
-      break;
-  }
-
-  return pfd;
-}
-
 // Return a Rect covering the whole area of |window|.
 gfx::Rect GetWindowRect(GdkWindow* window) {
   gint width, height;
@@ -271,7 +244,7 @@ AutocompletePopupViewGtk::AutocompletePopupViewGtk(
   // For now, force the font size.
   gfx::Font font = gfx::Font::CreateFont(
       gfx::Font().FontName(), browser_defaults::kAutocompletePopupFontSize);
-  PangoFontDescription* pfd = PangoFontFromGfxFont(font);
+  PangoFontDescription* pfd = gfx::Font::PangoFontFromGfxFont(font);
   pango_layout_set_font_description(layout_, pfd);
   pango_font_description_free(pfd);
 

@@ -121,8 +121,10 @@ void NativeTextfieldGtk::UpdateReadOnly() {
 void NativeTextfieldGtk::UpdateFont() {
   if (!native_view())
     return;
-  gtk_widget_modify_font(native_view(),
-                         gfx::Font::PangoFontFromGfxFont(textfield_->font()));
+  PangoFontDescription* pfd =
+      gfx::Font::PangoFontFromGfxFont(textfield_->font());
+  gtk_widget_modify_font(native_view(), pfd);
+  pango_font_description_free(pfd);
 }
 
 void NativeTextfieldGtk::UpdateEnabled() {

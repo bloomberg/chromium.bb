@@ -40,9 +40,10 @@ void NativeButtonGtk::UpdateFont() {
   if (!native_view())
     return;
 
-  gtk_widget_modify_font(
-      native_view(),
-      gfx::Font::PangoFontFromGfxFont(native_button_->font()));
+  PangoFontDescription* pfd =
+      gfx::Font::PangoFontFromGfxFont(native_button_->font());
+  gtk_widget_modify_font(native_view(), pfd);
+  pango_font_description_free(pfd);
   preferred_size_ = gfx::Size();
 }
 

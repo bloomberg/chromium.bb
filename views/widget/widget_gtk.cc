@@ -25,7 +25,11 @@ namespace views {
 // drag-leave that GTK generates.
 class WidgetGtk::DropObserver : public MessageLoopForUI::Observer {
  public:
-  DropObserver() { }
+  DropObserver() {}
+
+  static DropObserver* Get() {
+    return Singleton<DropObserver>::get();
+  }
 
   virtual void WillProcessEvent(GdkEvent* event) {
     if (event->type == GDK_DROP_START) {
@@ -98,7 +102,7 @@ WidgetGtk::WidgetGtk(Type type)
     installed_message_loop_observer = true;
     MessageLoopForUI* loop = MessageLoopForUI::current();
     if (loop)
-      loop->AddObserver(new DropObserver());
+      loop->AddObserver(DropObserver::Get());
   }
 
   if (type_ != TYPE_CHILD)
@@ -1082,7 +1086,8 @@ gboolean WidgetGtk::CallQueryTooltip(GtkWidget* widget,
                                      gboolean keyboard_mode,
                                      GtkTooltip* tooltip,
                                      WidgetGtk* host) {
-  return host->OnQueryTooltip(x, y, keyboard_mode, tooltip);
+  return host->OnQueryTooltip(static_cast<int>(x), static_cast<int>(y),
+                              keyboard_mode, tooltip);
 }
 
 gboolean WidgetGtk::CallScroll(GtkWidget* widget, GdkEventScroll* event) {
