@@ -20,7 +20,8 @@ class MessageLoop;
 class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
                                  public NotificationObserver {
  public:
-  ExecuteCodeInTabFunction() : execute_tab_id_(-1) {}
+  ExecuteCodeInTabFunction() : execute_tab_id_(-1),
+                               all_frames_(false) {}
 
  private:
   virtual bool RunImpl();
@@ -44,6 +45,10 @@ class ExecuteCodeInTabFunction : public AsyncExtensionFunction,
   // Contains extension resource built from path of file which is
   // specified in JSON arguments.
   ExtensionResource resource_;
+
+  // If all_frames_ is true, script or CSS text would be injected
+  // to all frames; Otherwise only injected to top main frame.
+  bool all_frames_;
 };
 
 class TabsExecuteScriptFunction : public ExecuteCodeInTabFunction {

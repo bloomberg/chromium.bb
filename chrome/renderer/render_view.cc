@@ -2351,7 +2351,7 @@ void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
       scoped_refptr<CodeExecutionInfo> info =
           pending_code_execution_queue_.front();
       ExecuteCodeImpl(main_frame, info->request_id, info->extension_id,
-                      info->is_js_code, info->code_string);
+                      info->is_js_code, info->code_string, info->all_frames);
       pending_code_execution_queue_.pop();
     }
   }
@@ -2987,6 +2987,19 @@ void RenderView::OnSetPageEncoding(const std::string& encoding_name) {
 void RenderView::OnResetPageEncodingToDefault() {
   WebString no_encoding;
   webview()->setPageEncoding(no_encoding);
+}
+
+bool RenderView::GetAllChildFrames(
+    WebFrame* parent_frame,
+    std::vector<WebFrame*>* frames_vector) const {
+  if (!parent_frame)
+    return false;
+  for (WebFrame* child_frame = parent_frame->firstChild(); child_frame;
+       child_frame = child_frame->nextSibling()) {
+    frames_vector->push_back(child_frame);
+    GetAllChildFrames(child_frame, frames_vector);
+  }
+  return true;
 }
 
 WebFrame* RenderView::GetChildFrame(const std::wstring& xpath) const {
@@ -3770,7 +3783,8 @@ void RenderView::OnSetEditCommandsForNextKeyEvent(
 
 void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
                                bool is_js_code,
-                               const std::string& code_string) {
+                               const std::string& code_string,
+                               bool all_frames) {
   WebFrame* main_frame = webview() ? webview()->mainFrame() : NULL;
   if (!main_frame) {
     Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, false));
@@ -3781,30 +3795,40 @@ void RenderView::OnExecuteCode(int request_id, const std::string& extension_id,
   NavigationState* navigation_state = NavigationState::FromDataSource(ds);
   if (!navigation_state->user_script_idle_scheduler()->has_run()) {
     scoped_refptr<CodeExecutionInfo> info = new CodeExecutionInfo(
-        request_id, extension_id, is_js_code, code_string);
+        request_id, extension_id, is_js_code, code_string, all_frames);
     pending_code_execution_queue_.push(info);
     return;
   }
 
   ExecuteCodeImpl(main_frame, request_id, extension_id, is_js_code,
-                  code_string);
+                  code_string, all_frames);
 }
 
 void RenderView::ExecuteCodeImpl(WebFrame* frame,
                                  int request_id,
                                  const std::string& extension_id,
                                  bool is_js_code,
-                                 const std::string& code_string) {
-  if (is_js_code) {
-    std::vector<WebScriptSource> sources;
-    sources.push_back(
-        WebScriptSource(WebString::fromUTF8(code_string)));
-    UserScriptSlave::InsertInitExtensionCode(&sources, extension_id);
-    frame->executeScriptInIsolatedWorld(
-        UserScriptSlave::GetIsolatedWorldId(extension_id),
-        &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
-  } else {
-    frame->insertStyleText(WebString::fromUTF8(code_string), WebString());
+                                 const std::string& code_string,
+                                 bool all_frames) {
+  std::vector<WebFrame*> frame_vector;
+  frame_vector.push_back(frame);
+  if (all_frames)
+    GetAllChildFrames(frame, &frame_vector);
+
+  for (std::vector<WebFrame*>::iterator frame_it = frame_vector.begin();
+       frame_it != frame_vector.end(); ++frame_it) {
+    WebFrame* frame = *frame_it;
+    if (is_js_code) {
+      std::vector<WebScriptSource> sources;
+      sources.push_back(
+          WebScriptSource(WebString::fromUTF8(code_string)));
+      UserScriptSlave::InsertInitExtensionCode(&sources, extension_id);
+      frame->executeScriptInIsolatedWorld(
+          UserScriptSlave::GetIsolatedWorldId(extension_id),
+          &sources.front(), sources.size(), EXTENSION_GROUP_CONTENT_SCRIPTS);
+    } else {
+      frame->insertStyleText(WebString::fromUTF8(code_string), WebString());
+    }
   }
 
   Send(new ViewMsg_ExecuteCodeFinished(routing_id_, request_id, true));

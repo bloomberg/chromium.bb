@@ -1,0 +1,7 @@
+{
+  "version": "1.0.0.0",
+  "name": "executeScript and insertCSS test",
+  "description": "Test extension API: executeScript and insertCSS",
+  "background_page": "test.html",
+  "permissions": ["tabs", "http://a.com/"]
+}

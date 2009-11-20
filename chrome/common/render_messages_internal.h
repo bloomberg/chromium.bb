@@ -736,12 +736,15 @@ IPC_BEGIN_MESSAGES(View)
                       ViewType::Type /* view_type */)
 
   // Notification that renderer should run some JavaScript code.
-  IPC_MESSAGE_ROUTED4(ViewMsg_ExecuteCode,
+  IPC_MESSAGE_ROUTED5(ViewMsg_ExecuteCode,
                       int, /* request id */
                       std::string, /* id of extension which runs the scripts */
                       bool, /* It's true if the code is JavaScript; Otherwise
                                the code is CSS text. */
-                      std::string /* code would be executed */)
+                      std::string, /* code would be executed */
+                      bool  /* It's true if the code would be injected into all
+                               frames; Otherwise the code is only injected into
+                               top main frame */)
 
   // Returns a file handle
   IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseOpenFileResponse,

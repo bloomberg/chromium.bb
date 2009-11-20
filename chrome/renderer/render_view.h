@@ -610,12 +610,14 @@ class RenderView : public RenderWidget,
   void OnExecuteCode(int request_id,
                      const std::string& extension_id,
                      bool is_js_code,
-                     const std::string& code_string);
+                     const std::string& code_string,
+                     bool all_frames);
   void ExecuteCodeImpl(WebKit::WebFrame* frame,
                        int request_id,
                        const std::string& extension_id,
                        bool is_js_code,
-                       const std::string& code_string);
+                       const std::string& code_string,
+                       bool all_frames);
   void OnUpdateBackForwardListCount(int back_list_count,
                                     int forward_list_count);
   void OnGetAccessibilityInfo(
@@ -678,6 +680,10 @@ class RenderView : public RenderWidget,
 
   // Locates a sub frame with given xpath
   WebKit::WebFrame* GetChildFrame(const std::wstring& frame_xpath) const;
+
+  // Get all child frames of parent_frame, returned by frames_vector.
+  bool GetAllChildFrames(WebKit::WebFrame* parent_frame,
+                         std::vector<WebKit::WebFrame* >* frames_vector) const;
 
   // Requests to download an image. When done, the RenderView is
   // notified by way of DidDownloadImage. Returns true if the request was
@@ -953,11 +959,13 @@ class RenderView : public RenderWidget,
   // page is loaded.
   struct CodeExecutionInfo : public base::RefCounted<CodeExecutionInfo> {
     CodeExecutionInfo(int id_of_request, const std::string& id_of_extension,
-                      bool is_js, const std::string& code)
+                      bool is_js, const std::string& code,
+                      bool inject_to_all_frames)
         : request_id(id_of_request),
           extension_id(id_of_extension),
           code_string(code),
-          is_js_code(is_js) {}
+          is_js_code(is_js),
+          all_frames(inject_to_all_frames) {}
     int request_id;
 
     // The id of extension who issues the pending executeScript API call.
@@ -969,6 +977,8 @@ class RenderView : public RenderWidget,
     // It's true if |code_string| is JavaScript; otherwise |code_string| is
     // CSS text.
     bool is_js_code;
+    // It's true if the code_string would be injected into all frames.
+    bool all_frames;
   };
 
   std::queue<scoped_refptr<CodeExecutionInfo> > pending_code_execution_queue_;

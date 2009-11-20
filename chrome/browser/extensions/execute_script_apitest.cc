@@ -10,4 +10,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExecuteScript) {
   StartHTTPServer();
 
   ASSERT_TRUE(RunExtensionTest("executescript")) << message_;
+  ASSERT_TRUE(RunExtensionTest("executescript_in_frame")) << message_;
 }

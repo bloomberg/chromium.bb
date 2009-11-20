@@ -47,8 +47,8 @@ const char kCannotAccessPageError[] = "Cannot access contents of url \"*\". "
 const char kSupportedInWindowsOnlyError[] = "Supported in Windows only";
 
 const char kNoCodeOrFileToExecuteError[] = "No source code or file specified.";
-const char kMoreThanOneValuesError[] = "There should be only one value (either"
-                                       "code or file) in the second argument.";
+const char kMoreThanOneValuesError[] = "Code and file should not be specified "
+    "at the same time in the second argument.";
 const char kLoadFileError[] = "Failed to load file: \"*\". ";
 
 }  // namespace extension_tabs_module_constants

@@ -17,6 +17,7 @@ namespace keys = extension_tabs_module_constants;
 
 const wchar_t* kCodeKey = L"code";
 const wchar_t* kFileKey = L"file";
+const wchar_t* kAllFramesKey = L"allFrames";
 
 bool ExecuteCodeInTabFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
@@ -28,9 +29,16 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   if (number_of_value == 0) {
     error_ = keys::kNoCodeOrFileToExecuteError;
     return false;
-  } else if (number_of_value > 1) {
-    error_ = keys::kMoreThanOneValuesError;
-    return false;
+  } else {
+    bool has_code = script_info->HasKey(kCodeKey);
+    bool has_file = script_info->HasKey(kFileKey);
+    if (has_code && has_file) {
+      error_ = keys::kMoreThanOneValuesError;
+      return false;
+    } else if (!has_code && !has_file) {
+      error_ = keys::kNoCodeOrFileToExecuteError;
+      return false;
+    }
   }
 
   execute_tab_id_ = -1;
@@ -64,6 +72,11 @@ bool ExecuteCodeInTabFunction::RunImpl() {
     error_ = ExtensionErrorUtils::FormatErrorMessage(
         keys::kCannotAccessPageError, contents->GetURL().spec());
     return false;
+  }
+
+  if (script_info->HasKey(kAllFramesKey)) {
+    if (!script_info->GetBoolean(kAllFramesKey, &all_frames_))
+      return false;
   }
 
   std::string code_string;
@@ -133,7 +146,7 @@ void ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
                  NotificationService::AllSources());
   AddRef();  // balanced in Observe()
   contents->ExecuteCode(request_id(), extension_id(), is_js_code,
-                        code_string);
+                        code_string, all_frames_);
 }
 
 void ExecuteCodeInTabFunction::Observe(NotificationType type,
