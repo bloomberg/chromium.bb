@@ -49,6 +49,10 @@
 // override the incorrect base URL and make sure we alway load correct local
 // saved resource files.
 
+// We must include format_macros up here, before any WebKit headers
+// include inttypes.h.
+#include "base/format_macros.h"
+
 #include "config.h"
 
 #include "base/compiler_specific.h"
@@ -87,7 +91,7 @@ namespace {
 
 // Default "mark of the web" declaration
 static const char* const kDefaultMarkOfTheWeb =
-    "\n<!-- saved from url=(%04d)%s -->\n";
+    "\n<!-- saved from url=(%04" PRIuS ")%s -->\n";
 
 // Default meat content for writing correct charset declaration.
 static const wchar_t* const kDefaultMetaContent =

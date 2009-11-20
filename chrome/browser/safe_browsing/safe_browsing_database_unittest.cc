@@ -5,6 +5,7 @@
 // Unit tests for the SafeBrowsing storage system.
 
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -1058,8 +1059,6 @@ struct ChunksInfo {
 void PeformUpdate(const std::wstring& initial_db,
                   const std::vector<ChunksInfo>& chunks,
                   std::vector<SBChunkDelete>* deletes) {
-// TODO(pinkerton): I don't think posix has any concept of IO counters, but
-// we can uncomment this when we implement ProcessMetrics::GetIOCounters
   IoCounters before, after;
 
   FilePath path;
@@ -1096,15 +1095,15 @@ void PeformUpdate(const std::wstring& initial_db,
 
   CHECK(metric->GetIOCounters(&after));
 
-  LOG(INFO) << StringPrintf("I/O Read Bytes: %d",
+  LOG(INFO) << StringPrintf("I/O Read Bytes: %" PRIu64,
       after.ReadTransferCount - before.ReadTransferCount);
-  LOG(INFO) << StringPrintf("I/O Write Bytes: %d",
+  LOG(INFO) << StringPrintf("I/O Write Bytes: %" PRIu64,
       after.WriteTransferCount - before.WriteTransferCount);
-  LOG(INFO) << StringPrintf("I/O Reads: %d",
+  LOG(INFO) << StringPrintf("I/O Reads: %" PRIu64,
       after.ReadOperationCount - before.ReadOperationCount);
-  LOG(INFO) << StringPrintf("I/O Writes: %d",
+  LOG(INFO) << StringPrintf("I/O Writes: %" PRIu64,
       after.WriteOperationCount - before.WriteOperationCount);
-  LOG(INFO) << StringPrintf("Finished in %d ms",
+  LOG(INFO) << StringPrintf("Finished in %" PRId64 " ms",
       (Time::Now() - before_time).InMilliseconds());
 
   PrintStat("c:SB.HostSelect");

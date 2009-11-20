@@ -460,8 +460,9 @@ int ChromeMain(int argc, char** argv) {
   // leaking shared memory regions on posix platforms.
   if (parsed_command_line.HasSwitch(switches::kEnableStatsTable) ||
       parsed_command_line.HasSwitch(switches::kEnableBenchmarking)) {
-    std::string statsfile = StringPrintf("%s-%lld", chrome::kStatsFilename,
-                                         static_cast<int64>(browser_pid));
+    std::string statsfile =
+        StringPrintf("%s-%u", chrome::kStatsFilename,
+                     static_cast<unsigned int>(browser_pid));
     StatsTable *stats_table = new StatsTable(statsfile,
         chrome::kStatsMaxThreads, chrome::kStatsMaxCounters);
     StatsTable::set_current(stats_table);

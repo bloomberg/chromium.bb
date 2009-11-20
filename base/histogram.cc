@@ -124,7 +124,10 @@ void Histogram::WriteAscii(bool graph_it, const std::string& newline,
     if (!current && !PrintEmptyBucket(i))
       continue;
     remaining -= current;
-    StringAppendF(output, "%#*s ", print_width, GetAsciiBucketRange(i).c_str());
+    std::string range = GetAsciiBucketRange(i);
+    output->append(range);
+    for (size_t j = 0; range.size() + j < print_width + 1; ++j)
+      output->push_back(' ');
     if (0 == current && i < bucket_count() - 1 && 0 == snapshot.counts(i + 1)) {
       while (i < bucket_count() - 1 && 0 == snapshot.counts(i + 1))
         ++i;
@@ -287,7 +290,7 @@ void Histogram::WriteAsciiHeader(const SampleSet& snapshot,
                                  Count sample_count,
                                  std::string* output) const {
   StringAppendF(output,
-                "Histogram: %s recorded %ld samples",
+                "Histogram: %s recorded %d samples",
                 histogram_name().c_str(),
                 sample_count);
   if (0 == sample_count) {

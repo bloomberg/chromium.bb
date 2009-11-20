@@ -5,6 +5,7 @@
 #include "net/url_request/request_tracker.h"
 
 #include "base/compiler_specific.h"
+#include "base/format_macros.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -91,7 +92,7 @@ TEST(RequestTrackerTest, GraveyardBounded) {
   for (size_t i = 0;
        i < RequestTracker<TestRequest>::kMaxGraveyardSize * 2;
        ++i) {
-    TestRequest req(GURL(StringPrintf("http://req%d", i).c_str()));
+    TestRequest req(GURL(StringPrintf("http://req%" PRIuS, i).c_str()));
     tracker.Add(&req);
     tracker.Remove(&req);
   }
@@ -105,7 +106,7 @@ TEST(RequestTrackerTest, GraveyardBounded) {
 
   for (size_t i = 0; i < RequestTracker<TestRequest>::kMaxGraveyardSize; ++i) {
     size_t req_number = i + RequestTracker<TestRequest>::kMaxGraveyardSize;
-    GURL url(StringPrintf("http://req%d", req_number).c_str());
+    GURL url(StringPrintf("http://req%" PRIuS, req_number).c_str());
     EXPECT_EQ(url, recent_reqs[i].original_url);
   }
 }

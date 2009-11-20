@@ -193,7 +193,7 @@ void BugReportUtil::SendReport(Profile* profile,
     post_body.append("Content-Disposition: form-data; name=\"screenshot\"; "
                       "filename=\"screenshot.png\"\r\n");
     post_body.append("Content-Type: application/octet-stream\r\n");
-    post_body.append(StringPrintf("Content-Length: %lu\r\n\r\n",
+    post_body.append(StringPrintf("Content-Length: %d\r\n\r\n",
                      png_data_length));
     post_body.append(png_data, png_data_length);
     post_body.append("\r\n");

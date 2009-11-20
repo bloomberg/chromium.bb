@@ -5,6 +5,7 @@
 #include "net/ftp/ftp_directory_listing_buffer.h"
 
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/path_service.h"
 #include "base/string_tokenizer.h"
 #include "base/string_util.h"
@@ -36,7 +37,7 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
   test_dir = test_dir.AppendASCII("ftp");
 
   for (size_t i = 0; i < arraysize(test_files); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, test_files[i]));
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, test_files[i]));
 
     net::FtpDirectoryListingBuffer buffer;
 

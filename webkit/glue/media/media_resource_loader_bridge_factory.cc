@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/string_util.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
+
+#include "base/format_macros.h"
+#include "base/string_util.h"
 
 namespace {
 
@@ -57,12 +59,12 @@ const std::string MediaResourceLoaderBridgeFactory::GenerateHeaders (
   if (first_byte_position > kPositionNotSpecified &&
       last_byte_position > kPositionNotSpecified) {
     if (first_byte_position <= last_byte_position) {
-      header = StringPrintf("Range: bytes=%lld-%lld",
+      header = StringPrintf("Range: bytes=%" PRId64 "-%" PRId64,
                             first_byte_position,
                             last_byte_position);
     }
   } else if (first_byte_position > kPositionNotSpecified) {
-    header = StringPrintf("Range: bytes=%lld-", first_byte_position);
+    header = StringPrintf("Range: bytes=%" PRId64 "-", first_byte_position);
   } else if (last_byte_position > kPositionNotSpecified) {
     NOTIMPLEMENTED() << "Suffix range not implemented";
   }

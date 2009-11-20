@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/common/extensions/extension.h"
+
+#include "base/format_macros.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/json_value_serializer.h"
@@ -472,9 +474,11 @@ TEST(ExtensionTest, UpdateUrls) {
 
     DictionaryValue input_value;
 #if defined(OS_WIN)
-    FilePath path(StringPrintf(L"c:\\extension%i", i));
+    // (Why %Iu below?  This is the single file in the whole code base that
+    // might make use of a WidePRIuS; let's not encourage any more.)
+    FilePath path(StringPrintf(L"c:\\extension%Iu", i));
 #else
-    FilePath path(StringPrintf("/extension%i", i));
+    FilePath path(StringPrintf("/extension%" PRIuS, i));
 #endif
     Extension extension(path);
     std::string error;
@@ -494,9 +498,11 @@ TEST(ExtensionTest, UpdateUrls) {
   for (size_t i = 0; i < invalid.size(); i++) {
     DictionaryValue input_value;
 #if defined(OS_WIN)
-    FilePath path(StringPrintf(L"c:\\extension%i", i));
+    // (Why %Iu below?  This is the single file in the whole code base that
+    // might make use of a WidePRIuS; let's not encourage any more.)
+    FilePath path(StringPrintf(L"c:\\extension%Iu", i));
 #else
-    FilePath path(StringPrintf("/extension%i", i));
+    FilePath path(StringPrintf("/extension%" PRIuS, i));
 #endif
     Extension extension(path);
     std::string error;

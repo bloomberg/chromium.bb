@@ -4,6 +4,7 @@
 
 #include "net/ftp/ftp_directory_listing_parsers.h"
 
+#include "base/format_macros.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -69,7 +70,7 @@ TEST_F(FtpDirectoryListingParsersTest, Ls) {
       now_exploded.year, 10, 12, 13, 37 },
   };
   for (size_t i = 0; i < arraysize(good_cases); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, good_cases[i].input));
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, good_cases[i].input));
 
     net::FtpLsDirectoryListingParser parser;
     RunSingleLineTestCase(&parser, good_cases[i]);
@@ -128,7 +129,7 @@ TEST_F(FtpDirectoryListingParsersTest, Windows) {
       1979, 1, 6, 2, 42 },
   };
   for (size_t i = 0; i < arraysize(good_cases); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, good_cases[i].input));
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, good_cases[i].input));
 
     net::FtpWindowsDirectoryListingParser parser;
     RunSingleLineTestCase(&parser, good_cases[i]);
@@ -180,7 +181,7 @@ TEST_F(FtpDirectoryListingParsersTest, Vms) {
       2005, 3, 12, 8, 44 },
   };
   for (size_t i = 0; i < arraysize(good_cases); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, good_cases[i].input));
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, good_cases[i].input));
 
     net::FtpVmsDirectoryListingParser parser;
     ASSERT_TRUE(
@@ -234,7 +235,7 @@ TEST_F(FtpDirectoryListingParsersTest, Vms) {
     "Directory ROOT|X.TXT;2 1 12-MAR-2005 08:44:57 [X] (RWED,RRWWEEDD,RE,RE)",
   };
   for (size_t i = 0; i < arraysize(bad_cases); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%d]: %s", i, bad_cases[i]));
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, bad_cases[i]));
 
     std::vector<std::string> lines;
     SplitString(bad_cases[i], '|', &lines);

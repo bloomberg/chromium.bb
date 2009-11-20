@@ -777,11 +777,11 @@ std::string MetricsService::GenerateClientID() {
 // TODO(cmasone): Once we're comfortable this works, migrate Windows code to
 // use this as well.
 std::string MetricsService::RandomBytesToGUIDString(const uint64 bytes[2]) {
-  return StringPrintf("%08llX-%04llX-%04llX-%04llX-%012llX",
-                      bytes[0] >> 32,
-                      (bytes[0] >> 16) & 0x0000ffff,
-                      bytes[0] & 0x0000ffff,
-                      bytes[1] >> 48,
+  return StringPrintf("%08X-%04X-%04X-%04X-%012llX",
+                      static_cast<unsigned int>(bytes[0] >> 32),
+                      static_cast<unsigned int>((bytes[0] >> 16) & 0x0000ffff),
+                      static_cast<unsigned int>(bytes[0] & 0x0000ffff),
+                      static_cast<unsigned int>(bytes[1] >> 48),
                       bytes[1] & 0x0000ffffffffffffULL);
 }
 #endif

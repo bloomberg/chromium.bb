@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+
+#include "base/command_line.h"
+#include "base/format_macros.h"
 #include "chrome/common/chrome_switches.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_config_service_common_unittest.h"
-
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Builds an identifier for each test in an array.
@@ -163,7 +164,8 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); i++) {
-    SCOPED_TRACE(StringPrintf("Test[%d] %s", i, tests[i].description.c_str()));
+    SCOPED_TRACE(StringPrintf("Test[%" PRIuS "] %s", i,
+                              tests[i].description.c_str()));
     scoped_ptr<net::ProxyConfig> config(CreateProxyConfig(
         CommandLine(tests[i].command_line)));
 

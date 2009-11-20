@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/base/video_frame_impl.h"
+
+#include "base/format_macros.h"
 #include "base/string_util.h"
 #include "media/base/buffers.h"
 #include "media/base/mock_filters.h"
-#include "media/base/video_frame_impl.h"
 #include "media/base/yuv_convert.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,7 +86,7 @@ void ExpectFrameColor(media::VideoFrame* yv12_frame, uint32 expect_rgb_color) {
         rgb_surface.data[VideoSurface::kRGBPlane] +
         (rgb_surface.strides[VideoSurface::kRGBPlane] * row));
     for (size_t col = 0; col < rgb_surface.width; ++col) {
-      SCOPED_TRACE(StringPrintf("Checking (%u, %u)", row, col));
+      SCOPED_TRACE(StringPrintf("Checking (%" PRIuS ", %" PRIuS ")", row, col));
       EXPECT_EQ(expect_rgb_color, rgb_row_data[col]);
     }
   }

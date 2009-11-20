@@ -67,8 +67,7 @@ class WorkerThread : public PlatformThread::Delegate {
 
 void WorkerThread::ThreadMain() {
   const std::string name =
-      StringPrintf("%s/%d", name_prefix_.c_str(),
-                   IntToString(PlatformThread::CurrentId()).c_str());
+      StringPrintf("%s/%d", name_prefix_.c_str(), PlatformThread::CurrentId());
   PlatformThread::SetName(name.c_str());
 
   for (;;) {

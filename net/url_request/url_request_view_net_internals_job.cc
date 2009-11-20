@@ -12,6 +12,7 @@
 
 #include <sstream>
 
+#include "base/format_macros.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
@@ -216,9 +217,9 @@ class HostResolverCacheSubSection : public SubSection {
       return;
     }
 
-    out->append(StringPrintf("<ul><li>Size: %u</li>"
-                             "<li>Capacity: %u</li>"
-                             "<li>Time to live (ms): %u</li></ul>",
+    out->append(StringPrintf("<ul><li>Size: %" PRIuS "</li>"
+                             "<li>Capacity: %" PRIuS "</li>"
+                             "<li>Time to live (ms): %" PRIuS "</li></ul>",
                              host_cache->size(),
                              host_cache->max_entries(),
                              host_cache->cache_duration_ms()));

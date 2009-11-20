@@ -1172,9 +1172,9 @@ bool CookieMonster::CanonicalCookie::IsOnPath(
 }
 
 std::string CookieMonster::CanonicalCookie::DebugString() const {
-  return StringPrintf("name: %s value: %s path: %s creation: %llu",
+  return StringPrintf("name: %s value: %s path: %s creation: %" PRId64,
                       name_.c_str(), value_.c_str(), path_.c_str(),
-                      creation_date_.ToTimeT());
+                      static_cast<int64>(creation_date_.ToTimeT()));
 }
 
 }  // namespace

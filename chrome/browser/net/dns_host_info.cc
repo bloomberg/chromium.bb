@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// See header file for description of class
-
 #include "chrome/browser/net/dns_host_info.h"
 
 #include <math.h>
@@ -11,6 +9,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/format_macros.h"
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/string_util.h"
@@ -326,7 +325,7 @@ void DnsHostInfo::GetHtmlTable(const DnsInfoTable host_infos,
   if (0 == host_infos.size())
     return;
   output->append(description);
-  StringAppendF(output, "%d %s", host_infos.size(),
+  StringAppendF(output, "%" PRIuS " %s", host_infos.size(),
                 (1 == host_infos.size()) ? "hostname" : "hostnames");
 
   if (brief) {

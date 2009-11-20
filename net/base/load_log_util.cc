@@ -4,6 +4,7 @@
 
 #include "net/base/load_log_util.h"
 
+#include "base/format_macros.h"
 #include "base/string_util.h"
 
 namespace net {
@@ -31,7 +32,7 @@ class FormatHelper {
 
     for (size_t i = 0; i < entries_.size(); ++i) {
       if (log->num_entries_truncated() > 0 && i + 1 == entries_.size()) {
-        result += StringPrintf(" ... Truncated %d entries ...\n",
+        result += StringPrintf(" ... Truncated %" PRIuS " entries ...\n",
                                log->num_entries_truncated());
       }
 

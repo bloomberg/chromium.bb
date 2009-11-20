@@ -133,10 +133,10 @@ void TraceLog::Trace(const std::string& name,
   int64 usec = delta.InMicroseconds();
   std::string msg =
     StringPrintf("{'pid':'0x%lx', 'tid':'0x%lx', 'type':'%s', "
-                 "'name':'%s', 'id':'0x%lx', 'extra':'%s', 'file':'%s', "
+                 "'name':'%s', 'id':'%p', 'extra':'%s', 'file':'%s', "
                  "'line_number':'%d', 'usec_begin': %" PRId64 "},\n",
-                 base::GetCurrentProcId(),
-                 PlatformThread::CurrentId(),
+                 static_cast<unsigned long>(base::GetCurrentProcId()),
+                 static_cast<unsigned long>(PlatformThread::CurrentId()),
                  kEventTypeNames[type],
                  name.c_str(),
                  id,
