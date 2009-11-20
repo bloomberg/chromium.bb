@@ -64,14 +64,21 @@ class ProcessInfoSnapshot;
 //
 //    class MyMemoryDetailConsumer : public MemoryDetails {
 //
-//      MyMemoryDetailConsumer() : MemoryDetails(true) {
-//        StartFetch();  // Starts fetching details.
+//      MyMemoryDetailConsumer() {
+//        // Anything but |StartFetch()|.
 //      }
 //
-//      // Your class stuff here
+//      // (Or just call |StartFetch()| explicitly if there's nothing else to
+//      // do.)
+//      void StartDoingStuff() {
+//        StartFetch();  // Starts fetching details.
+//        // Etc.
+//      }
+//
+//      // Your other class stuff here
 //
 //      virtual void OnDetailsAvailable() {
-//           // do work with memory info here
+//        // do work with memory info here
 //      }
 //    }
 class MemoryDetails : public base::RefCountedThreadSafe<MemoryDetails> {

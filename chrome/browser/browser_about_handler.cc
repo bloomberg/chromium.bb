@@ -136,11 +136,14 @@ class AboutSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(AboutSource);
 };
 
-// Handling about:memory is complicated enough to encapsulate it's
-// related methods into a single class.
+// Handling about:memory is complicated enough to encapsulate its related
+// methods into a single class. The user should create it (on the heap) and call
+// its |StartFetch()| method.
 class AboutMemoryHandler : public MemoryDetails {
  public:
-  AboutMemoryHandler(AboutSource* source, int request_id);
+  AboutMemoryHandler(AboutSource* source, int request_id)
+    : source_(source), request_id_(request_id) {}
+
 
   virtual void OnDetailsAvailable();
 
@@ -270,8 +273,11 @@ std::string AboutHistograms(const std::string& query) {
 }
 
 void AboutMemory(AboutSource* source, int request_id) {
-  // The AboutMemoryHandler cleans itself up.
-  new AboutMemoryHandler(source, request_id);
+  // The AboutMemoryHandler cleans itself up, but |StartFetch()| will want the
+  // refcount to be greater than 0.
+  scoped_refptr<AboutMemoryHandler>
+      handler(new AboutMemoryHandler(source, request_id));
+  handler->StartFetch();
 }
 
 std::string AboutObjects(const std::string& query) {
@@ -662,12 +668,6 @@ void AboutSource::FinishDataRequest(const std::string& response,
 }
 
 // AboutMemoryHandler ----------------------------------------------------------
-
-AboutMemoryHandler::AboutMemoryHandler(AboutSource* source, int request_id)
-  : source_(source),
-    request_id_(request_id) {
-  StartFetch();
-}
 
 // Helper for AboutMemory to bind results from a ProcessMetrics object
 // to a DictionaryValue. Fills ws_usage and comm_usage so that the objects
