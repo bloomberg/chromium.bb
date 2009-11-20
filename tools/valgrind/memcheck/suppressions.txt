@@ -1576,6 +1576,58 @@
    fun:_ZN19WebSharedWorkerStub9OnConnectEii
 }
 {
+   bug_28386
+   Memcheck:Addr4
+   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_ocsp_nss_ocsp.cc_00000000_C916E41F18OCSPRequestSession15OnReadCompletedEP10URLRequesti
+   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_ocsp_nss_ocsp.cc_00000000_C916E41F18OCSPRequestSession17OnResponseStartedEP10URLRequest
+   fun:_ZN10URLRequest15ResponseStartedEv
+   fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
+   fun:_ZN17URLRequestHttpJob21NotifyHeadersCompleteEv
+   fun:_ZN17URLRequestHttpJob16OnStartCompletedEi
+   fun:_Z16DispatchToMethodI17URLRequestHttpJobMS0_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplI17URLRequestHttpJobMS0_FviE6Tuple1IiEE13RunWithParamsERKS4_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net9HttpCache11Transaction10DoCallbackEi
+   fun:_ZN3net9HttpCache11Transaction12HandleResultEi
+   fun:_ZN3net9HttpCache11Transaction22OnNetworkInfoAvailableEi
+   fun:_Z16DispatchToMethodIN3net9HttpCache11TransactionEMS2_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplIN3net9HttpCache11TransactionEMS2_FviE6Tuple1IiEE13RunWithParamsERKS6_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net22HttpNetworkTransaction10DoCallbackEi
+   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
+   fun:_Z16DispatchToMethodIN3net22HttpNetworkTransactionEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplIN3net22HttpNetworkTransactionEMS1_FviE6Tuple1IiEE13RunWithParamsERKS5_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net16HttpStreamParser12OnIOCompleteEi
+   fun:_Z16DispatchToMethodIN3net16HttpStreamParserEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
+}
+{
+   bug_28386
+   Memcheck:Addr4
+   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_ocsp_nss_ocsp.cc_00000000_C916E41F18OCSPRequestSession15OnReadCompletedEP10URLRequesti
+   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_ocsp_nss_ocsp.cc_00000000_C916E41F18OCSPRequestSession17OnResponseStartedEP10URLRequest
+   fun:_ZN10URLRequest15ResponseStartedEv
+   fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
+   fun:_ZN17URLRequestHttpJob21NotifyHeadersCompleteEv
+   fun:_ZN17URLRequestHttpJob16OnStartCompletedEi
+   fun:_Z16DispatchToMethodI17URLRequestHttpJobMS0_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplI17URLRequestHttpJobMS0_FviE6Tuple1IiEE13RunWithParamsERKS4_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net9HttpCache11Transaction10DoCallbackEi
+   fun:_ZN3net9HttpCache11Transaction12HandleResultEi
+   fun:_ZN3net9HttpCache11Transaction22OnNetworkInfoAvailableEi
+   fun:_Z16DispatchToMethodIN3net9HttpCache11TransactionEMS2_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplIN3net9HttpCache11TransactionEMS2_FviE6Tuple1IiEE13RunWithParamsERKS6_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net22HttpNetworkTransaction10DoCallbackEi
+   fun:_ZN3net22HttpNetworkTransaction12OnIOCompleteEi
+   fun:_Z16DispatchToMethodIN3net22HttpNetworkTransactionEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
+   fun:_ZN12CallbackImplIN3net22HttpNetworkTransactionEMS1_FviE6Tuple1IiEE13RunWithParamsERKS5_
+   fun:_ZN14CallbackRunnerI6Tuple1IiEE3RunIiEEvRKT_
+   fun:_ZN3net16HttpStreamParser12OnIOCompleteEi
+   fun:_Z16DispatchToMethodIN3net16HttpStreamParserEMS1_FviEiEvPT_T0_RK6Tuple1IT1_E
+}
+{
    # GTK tooltip doesn't always initialize variables.
    # https://bugzilla.gnome.org/show_bug.cgi?id=554686
    tooltip_554686
