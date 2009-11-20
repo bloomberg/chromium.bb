@@ -67,6 +67,16 @@ class MessagePortDispatcher : public NotificationObserver {
                const NotificationSource& source,
                const NotificationDetails& details);
 
+  // Handles the details of removing a message port id. Before calling this,
+  // verify that the message port id exists.
+  void Erase(int message_port_id);
+
+#ifdef NDEBUG
+  bool CheckMessagePortMap(bool check_entanglements) { }
+#else
+  bool CheckMessagePortMap(bool check_entanglements);
+#endif
+
   struct MessagePort {
     // sender and route_id are what we need to send messages to the port.
     IPC::Message::Sender* sender;

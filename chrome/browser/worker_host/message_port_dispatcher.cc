@@ -5,6 +5,7 @@
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 
 #include "base/singleton.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/worker_host/worker_process_host.h"
 #include "chrome/common/notification_service.h"
@@ -63,6 +64,7 @@ void MessagePortDispatcher::UpdateMessagePort(
     IPC::Message::Sender* sender,
     int routing_id,
     CallbackWithReturnValue<int>::Type* next_routing_id) {
+  DCHECK(CheckMessagePortMap(true));
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -72,14 +74,17 @@ void MessagePortDispatcher::UpdateMessagePort(
   port.sender = sender;
   port.route_id = routing_id;
   port.next_routing_id = next_routing_id;
+  DCHECK(CheckMessagePortMap(true));
 }
 
 bool MessagePortDispatcher::Send(IPC::Message* message) {
+  DCHECK(CheckMessagePortMap(true));
   return sender_->Send(message);
 }
 
 void MessagePortDispatcher::OnCreate(int *route_id,
                                      int* message_port_id) {
+  DCHECK(CheckMessagePortMap(true));
   *message_port_id = ++next_message_port_id_;
   *route_id = next_routing_id_->Run();
 
@@ -91,20 +96,24 @@ void MessagePortDispatcher::OnCreate(int *route_id,
   port.entangled_message_port_id = MSG_ROUTING_NONE;
   port.queue_messages = false;
   message_ports_[*message_port_id] = port;
+  DCHECK(CheckMessagePortMap(true));
 }
 
 void MessagePortDispatcher::OnDestroy(int message_port_id) {
+  DCHECK(CheckMessagePortMap(true));
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
   }
 
   DCHECK(message_ports_[message_port_id].queued_messages.empty());
-  message_ports_.erase(message_port_id);
+  Erase(message_port_id);
+  DCHECK(CheckMessagePortMap(true));
 }
 
 void MessagePortDispatcher::OnEntangle(int local_message_port_id,
                                        int remote_message_port_id) {
+  DCHECK(CheckMessagePortMap(false));
   if (!message_ports_.count(local_message_port_id) ||
       !message_ports_.count(remote_message_port_id)) {
     NOTREACHED();
@@ -115,12 +124,14 @@ void MessagePortDispatcher::OnEntangle(int local_message_port_id,
       MSG_ROUTING_NONE);
   message_ports_[remote_message_port_id].entangled_message_port_id =
       local_message_port_id;
+  DCHECK(CheckMessagePortMap(false));
 }
 
 void MessagePortDispatcher::OnPostMessage(
     int sender_message_port_id,
     const string16& message,
     const std::vector<int>& sent_message_port_ids) {
+  DCHECK(CheckMessagePortMap(true));
   if (!message_ports_.count(sender_message_port_id)) {
     NOTREACHED();
     return;
@@ -137,12 +148,14 @@ void MessagePortDispatcher::OnPostMessage(
   }
 
   PostMessageTo(entangled_message_port_id, message, sent_message_port_ids);
+  DCHECK(CheckMessagePortMap(true));
 }
 
 void MessagePortDispatcher::PostMessageTo(
     int message_port_id,
     const string16& message,
     const std::vector<int>& sent_message_port_ids) {
+  DCHECK(CheckMessagePortMap(true));
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -184,9 +197,11 @@ void MessagePortDispatcher::PostMessageTo(
         new_routing_ids);
     entangled_port.sender->Send(ipc_msg);
   }
+  DCHECK(CheckMessagePortMap(true));
 }
 
 void MessagePortDispatcher::OnQueueMessages(int message_port_id) {
+  DCHECK(CheckMessagePortMap(true));
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -196,11 +211,13 @@ void MessagePortDispatcher::OnQueueMessages(int message_port_id) {
   port.sender->Send(new WorkerProcessMsg_MessagesQueued(port.route_id));
   port.queue_messages = true;
   port.sender = NULL;
+  DCHECK(CheckMessagePortMap(true));
 }
 
 void MessagePortDispatcher::OnSendQueuedMessages(
     int message_port_id,
     const QueuedMessages& queued_messages) {
+  DCHECK(CheckMessagePortMap(true));
   if (!message_ports_.count(message_port_id)) {
     NOTREACHED();
     return;
@@ -214,9 +231,11 @@ void MessagePortDispatcher::OnSendQueuedMessages(
                               queued_messages.begin(),
                               queued_messages.end());
   SendQueuedMessagesIfPossible(message_port_id);
+  DCHECK(CheckMessagePortMap(true));
 }
 
 void MessagePortDispatcher::SendQueuedMessagesIfPossible(int message_port_id) {
+  DCHECK(CheckMessagePortMap(true));
   MessagePort& port = message_ports_[message_port_id];
   if (port.queue_messages || !port.sender)
     return;
@@ -226,11 +245,14 @@ void MessagePortDispatcher::SendQueuedMessagesIfPossible(int message_port_id) {
     PostMessageTo(message_port_id, iter->first, iter->second);
   }
   port.queued_messages.clear();
+  DCHECK(CheckMessagePortMap(true));
 }
 
 void MessagePortDispatcher::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
+  DCHECK(CheckMessagePortMap(true));
+
   IPC::Message::Sender* sender = NULL;
   if (type.value == NotificationType::RESOURCE_MESSAGE_FILTER_SHUTDOWN) {
     sender = Source<ResourceMessageFilter>(source).ptr();
@@ -245,11 +267,44 @@ void MessagePortDispatcher::Observe(NotificationType type,
        iter != message_ports_.end();) {
     MessagePorts::iterator cur_item = iter++;
     if (cur_item->second.sender == sender) {
-      if (cur_item->second.entangled_message_port_id != MSG_ROUTING_NONE) {
-        message_ports_[cur_item->second.entangled_message_port_id].
-            entangled_message_port_id = MSG_ROUTING_NONE;
-      }
-      message_ports_.erase(cur_item);
+      Erase(cur_item->first);
     }
   }
+
+  DCHECK(CheckMessagePortMap(true));
 }
+
+void MessagePortDispatcher::Erase(int message_port_id) {
+  MessagePorts::iterator erase_item = message_ports_.find(message_port_id);
+  DCHECK(erase_item != message_ports_.end());
+
+  int entangled_id = erase_item->second.entangled_message_port_id;
+  if (entangled_id != MSG_ROUTING_NONE) {
+    // Do the disentanglement (and be paranoid about the other side existing
+    // just in case something unusual happened during entanglement).
+    if (message_ports_.count(entangled_id)) {
+      message_ports_[entangled_id].entangled_message_port_id = MSG_ROUTING_NONE;
+    }
+  }
+  message_ports_.erase(erase_item);
+}
+
+#ifndef NDEBUG
+bool MessagePortDispatcher::CheckMessagePortMap(bool check_entanglements) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  for (MessagePorts::iterator iter = message_ports_.begin();
+       iter != message_ports_.end(); iter++) {
+    DCHECK(iter->first <= next_message_port_id_);
+    DCHECK(iter->first == iter->second.message_port_id);
+
+    int entangled_id = iter->second.entangled_message_port_id;
+    if (check_entanglements && entangled_id != MSG_ROUTING_NONE) {
+      MessagePorts::iterator entangled_item = message_ports_.find(entangled_id);
+      DCHECK(entangled_item != message_ports_.end());
+      DCHECK(entangled_item->second.entangled_message_port_id == iter->first);
+    }
+  }
+  return true;
+}
+#endif  // NDEBUG
