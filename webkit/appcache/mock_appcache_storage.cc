@@ -50,7 +50,7 @@ void MockAppCacheStorage::LoadCache(int64 id, Delegate* delegate) {
   if (ShouldCacheLoadAppearAsync(cache)) {
     ScheduleTask(method_factory_.NewRunnableMethod(
         &MockAppCacheStorage::ProcessLoadCache,
-        id, GetOrCreateDelegateReference(delegate)));
+        id, make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
     return;
   }
   ProcessLoadCache(id, GetOrCreateDelegateReference(delegate));
@@ -63,7 +63,8 @@ void MockAppCacheStorage::LoadOrCreateGroup(
   if (ShouldGroupLoadAppearAsync(group)) {
     ScheduleTask(method_factory_.NewRunnableMethod(
         &MockAppCacheStorage::ProcessLoadOrCreateGroup,
-        manifest_url, GetOrCreateDelegateReference(delegate)));
+        manifest_url,
+        make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
     return;
   }
   ProcessLoadOrCreateGroup(
@@ -78,7 +79,9 @@ void MockAppCacheStorage::StoreGroupAndNewestCache(
   // Always make this operation look async.
   ScheduleTask(method_factory_.NewRunnableMethod(
       &MockAppCacheStorage::ProcessStoreGroupAndNewestCache,
-      group, newest_cache, GetOrCreateDelegateReference(delegate)));
+      make_scoped_refptr(group),
+      make_scoped_refptr(newest_cache),
+      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
 void MockAppCacheStorage::FindResponseForMainRequest(
@@ -88,7 +91,8 @@ void MockAppCacheStorage::FindResponseForMainRequest(
   // Always make this operation look async.
   ScheduleTask(method_factory_.NewRunnableMethod(
       &MockAppCacheStorage::ProcessFindResponseForMainRequest,
-      url, GetOrCreateDelegateReference(delegate)));
+      url,
+      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
 void MockAppCacheStorage::FindResponseForSubRequest(
@@ -132,7 +136,8 @@ void MockAppCacheStorage::MakeGroupObsolete(
   // Always make this method look async.
   ScheduleTask(method_factory_.NewRunnableMethod(
       &MockAppCacheStorage::ProcessMakeGroupObsolete,
-      group, GetOrCreateDelegateReference(delegate)));
+      make_scoped_refptr(group),
+      make_scoped_refptr(GetOrCreateDelegateReference(delegate))));
 }
 
 AppCacheResponseReader* MockAppCacheStorage::CreateResponseReader(

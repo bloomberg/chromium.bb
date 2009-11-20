@@ -483,16 +483,12 @@ NewTabUI::NewTabUI(TabContents* contents)
   InitializeCSSCaches();
   NewTabHTMLSource* html_source =
       new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
-  bool posted = ChromeThread::PostTask(
+  ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
-          html_source));
-  if (!posted) {
-    html_source->AddRef();
-    html_source->Release();  // Keep Valgrind happy in tests.
-  }
+          make_scoped_refptr(html_source)));
 
   if (!GetProfile()->IsOffTheRecord()) {
     AddMessageHandler((new ShownSectionsHandler())->Attach(this));
@@ -544,16 +540,12 @@ void NewTabUI::Observe(NotificationType type,
 
 void NewTabUI::InitializeCSSCaches() {
   DOMUIThemeSource* theme = new DOMUIThemeSource(GetProfile());
-  bool posted = ChromeThread::PostTask(
+  ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
-          theme));
-  if (!posted) {
-    theme->AddRef();
-    theme->Release();  // Keep Valgrind happy in tests.
-  }
+          make_scoped_refptr(theme)));
 }
 
 // static

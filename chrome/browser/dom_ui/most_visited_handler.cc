@@ -59,24 +59,18 @@ DOMMessageHandler* MostVisitedHandler::Attach(DOMUI* dom_ui) {
   // Set up our sources for thumbnail and favicon data.
   DOMUIThumbnailSource* thumbnail_src =
       new DOMUIThumbnailSource(dom_ui->GetProfile());
-  bool posted = ChromeThread::PostTask(
+  ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
-                        &ChromeURLDataManager::AddDataSource, thumbnail_src));
-  if (!posted) {
-    thumbnail_src->AddRef();
-    thumbnail_src->Release();  // Keep Valgrind happy in unit tests.
-  }
+                        &ChromeURLDataManager::AddDataSource,
+                        make_scoped_refptr(thumbnail_src)));
 
   DOMUIFavIconSource* favicon_src = new DOMUIFavIconSource(dom_ui->GetProfile());
-  posted = ChromeThread::PostTask(
+  ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
-                        &ChromeURLDataManager::AddDataSource, favicon_src));
-  if (!posted) {
-    favicon_src->AddRef();
-    favicon_src->Release();  // Keep Valgrind happy in unit tests.
-  }
+                        &ChromeURLDataManager::AddDataSource,
+                        make_scoped_refptr(favicon_src)));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,

@@ -116,7 +116,7 @@ DOMMessageHandler* BrowsingHistoryHandler::Attach(DOMUI* dom_ui) {
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
-          new DOMUIFavIconSource(dom_ui->GetProfile())));
+          make_scoped_refptr(new DOMUIFavIconSource(dom_ui->GetProfile()))));
 
   // Get notifications when history is cleared.
   registrar_.Add(this, NotificationType::HISTORY_URLS_DELETED,
@@ -371,7 +371,7 @@ HistoryUI::HistoryUI(TabContents* contents) : DOMUI(contents) {
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
-          html_source));
+          make_scoped_refptr(html_source)));
 }
 
 // static

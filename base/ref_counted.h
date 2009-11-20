@@ -227,6 +227,12 @@ class scoped_refptr {
       ptr_->AddRef();
   }
 
+  template <typename U>
+  scoped_refptr(const scoped_refptr<U>& r) : ptr_(r.get()) {
+    if (ptr_)
+      ptr_->AddRef();
+  }
+
   ~scoped_refptr() {
     if (ptr_)
       ptr_->Release();
@@ -261,6 +267,11 @@ class scoped_refptr {
     return *this = r.ptr_;
   }
 
+  template <typename U>
+  scoped_refptr<T>& operator=(const scoped_refptr<U>& r) {
+    return *this = r.get();
+  }
+
   void swap(T** pp) {
     T* p = ptr_;
     ptr_ = *pp;
@@ -274,5 +285,12 @@ class scoped_refptr {
  protected:
   T* ptr_;
 };
+
+// Handy utility for creating a scoped_refptr<T> out of a T* explicitly without
+// having to retype all the template arguments
+template <typename T>
+scoped_refptr<T> make_scoped_refptr(T* t) {
+  return scoped_refptr<T>(t);
+}
 
 #endif  // BASE_REF_COUNTED_H_

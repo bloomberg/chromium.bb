@@ -49,9 +49,10 @@ DownloadsDOMHandler::DownloadsDOMHandler(DownloadManager* dlm)
   // Create our fileicon data source.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
-                        &ChromeURLDataManager::AddDataSource,
-                        new FileIconSource()));
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(new FileIconSource())));
 }
 
 DownloadsDOMHandler::~DownloadsDOMHandler() {

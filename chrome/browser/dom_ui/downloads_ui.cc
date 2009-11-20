@@ -133,7 +133,7 @@ DownloadsUI::DownloadsUI(TabContents* contents) : DOMUI(contents) {
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
-          html_source));
+          make_scoped_refptr(html_source)));
 }
 
 // static

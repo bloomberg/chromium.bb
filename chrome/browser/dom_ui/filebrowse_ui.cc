@@ -157,7 +157,7 @@ DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
-          new DOMUIFavIconSource(dom_ui->GetProfile())));
+          make_scoped_refptr(new DOMUIFavIconSource(dom_ui->GetProfile()))));
   profile_ = dom_ui->GetProfile();
   return DOMMessageHandler::Attach(dom_ui);
 }
@@ -323,5 +323,5 @@ FileBrowseUI::FileBrowseUI(TabContents* contents) : DOMUI(contents) {
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
-          html_source));
+          make_scoped_refptr(html_source)));
 }

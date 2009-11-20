@@ -363,7 +363,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
           ChromeThread::FILE, FROM_HERE,
           NewRunnableMethod(
               file_handler_.get(), &ExtensionUpdaterFileHandler::WriteTempFile,
-              current_extension_fetch_.id, data, this));
+              current_extension_fetch_.id, data, make_scoped_refptr(this)));
     }
   } else {
     // TODO(asargent) do things like exponential backoff, handling

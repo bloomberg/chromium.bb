@@ -598,7 +598,8 @@ AboutSource::AboutSource()
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
           Singleton<ChromeURLDataManager>::get(),
-          &ChromeURLDataManager::AddDataSource, this));
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(this)));
 }
 
 AboutSource::~AboutSource() {

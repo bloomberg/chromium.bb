@@ -180,15 +180,11 @@ SyncSetupWizard::SyncSetupWizard(ProfileSyncService* service)
       flow_container_(new SyncSetupFlowContainer()) {
   // Add our network layer data source for 'cloudy' URLs.
   SyncResourcesSource* sync_source = new SyncResourcesSource();
-  bool posted = ChromeThread::PostTask(
+  ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(Singleton<ChromeURLDataManager>::get(),
                         &ChromeURLDataManager::AddDataSource,
-                        sync_source));
-  if (!posted) {
-    sync_source->AddRef();
-    sync_source->Release();  // Keep Valgrind happy in unit tests.
-  }
+                        make_scoped_refptr(sync_source)));
 }
 
 SyncSetupWizard::~SyncSetupWizard() {
