@@ -241,8 +241,17 @@ function buildPreview(doc) {
   }
 }
 
+// Show |url| in a new tab.
+function showUrl(url) {
+  // Only allow http and https URLs.
+  if (url.indexOf("http:") != 0 && url.indexOf("https:") != 0) {
+    return;
+  }
+  chrome.tabs.create({url: url});
+}
+
 function moreStories(event) {
-  chrome.tabs.create({url: moreStoriesUrl});
+  showUrl(moreStoriesUrl);
 }
 
 function showDesc(event) {
@@ -283,7 +292,7 @@ function iframeMessageHandler(e) {
                 url = url.substring(0, index);
             }
           }
-          chrome.tabs.create({url:url});
+          showUrl(url);
         }
       }
       return;
