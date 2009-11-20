@@ -4,9 +4,13 @@
 
 #include "chrome/browser/extensions/extension_host.h"
 
+#include <list>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
+#include "base/message_loop.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -49,6 +53,66 @@ bool ExtensionHost::enable_dom_automation_ = false;
 
 static const char* kToolstripTextColorSubstitution = "$TEXT_COLOR$";
 
+// Helper class that rate-limits the creation of renderer processes for
+// ExtensionHosts, to avoid blocking the UI.
+class ExtensionHost::ProcessCreationQueue {
+ public:
+  static ProcessCreationQueue* get() {
+    return Singleton<ProcessCreationQueue>::get();
+  }
+
+  // Add a host to the queue for RenderView creation.
+  void CreateSoon(ExtensionHost* host) {
+    queue_.push_back(host);
+    PostTask();
+  }
+
+  // Remove a host from the queue (in case it's being deleted).
+  void Remove(ExtensionHost* host) {
+    Queue::iterator it = std::find(queue_.begin(), queue_.end(), host);
+    if (it != queue_.end())
+      queue_.erase(it);
+  }
+
+ private:
+  friend class Singleton<ProcessCreationQueue>;
+  friend struct DefaultSingletonTraits<ProcessCreationQueue>;
+  ProcessCreationQueue()
+      : pending_create_(false),
+        ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) { }
+
+  // Queue up a delayed task to process the next ExtensionHost in the queue.
+  void PostTask() {
+    if (!pending_create_) {
+      MessageLoop::current()->PostTask(FROM_HERE,
+          method_factory_.NewRunnableMethod(
+             &ProcessCreationQueue::ProcessOneHost));
+      pending_create_ = true;
+    }
+  }
+
+  // Create the RenderView for the next host in the queue.
+  void ProcessOneHost() {
+    pending_create_ = false;
+    if (queue_.empty())
+      return;  // can happen on shutdown
+
+    queue_.front()->CreateRenderViewNow();
+    queue_.pop_front();
+
+    if (!queue_.empty())
+      PostTask();
+  }
+
+  typedef std::list<ExtensionHost*> Queue;
+  Queue queue_;
+  bool pending_create_;
+  ScopedRunnableMethodFactory<ProcessCreationQueue> method_factory_;
+};
+
+////////////////
+// ExtensionHost
+
 ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
                              const GURL& url, ViewType::Type host_type)
     : extension_(extension),
@@ -73,6 +137,7 @@ ExtensionHost::~ExtensionHost() {
       NotificationType::EXTENSION_HOST_DESTROYED,
       Source<Profile>(profile_),
       Details<ExtensionHost>(this));
+  ProcessCreationQueue::get()->Remove(this);
   render_view_host_->Shutdown();  // deletes render_view_host
 }
 
@@ -106,9 +171,20 @@ bool ExtensionHost::IsRenderViewLive() const {
   return render_view_host_->IsRenderViewLive();
 }
 
-void ExtensionHost::CreateRenderView(RenderWidgetHostView* host_view) {
+void ExtensionHost::CreateRenderViewSoon(RenderWidgetHostView* host_view) {
   LOG(INFO) << "Creating RenderView for " + extension_->name();
   render_view_host_->set_view(host_view);
+  if (render_view_host_->process()->HasConnection()) {
+    // If the process is already started, go ahead and initialize the RenderView
+    // synchronously. The process creation is the real meaty part that we want
+    // to defer.
+    CreateRenderViewNow();
+  } else {
+    ProcessCreationQueue::get()->CreateSoon(this);
+  }
+}
+
+void ExtensionHost::CreateRenderViewNow() {
   render_view_host_->CreateRenderView(profile_->GetRequestContext());
   NavigateToURL(url_);
   DCHECK(IsRenderViewLive());
