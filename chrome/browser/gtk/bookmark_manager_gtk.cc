@@ -1158,9 +1158,9 @@ void BookmarkManagerGtk::OnRightTreeViewFocusIn(
 
 // We do a couple things in this handler.
 //
-// 1. Ignore left clicks that occur below the lowest row so we don't try to
-// start an empty drag, or allow the user to start a drag on the selected
-// row by dragging on whitespace. This is the path == NULL return.
+// 1. On left clicks that occur below the lowest row, unselect all selected
+// rows. This is not a native GtkTreeView behavior, but it is added by libegg
+// and is thus present in Nautilus. This is the path == NULL path.
 // 2. Cache left clicks that occur on an already active selection. If the user
 // begins a drag, then we will throw away this event and initiate a drag on the
 // tree view manually. If the user doesn't begin a drag (e.g. just releases the
@@ -1197,8 +1197,12 @@ gboolean BookmarkManagerGtk::OnRightTreeViewButtonPress(
                                 static_cast<gint>(event->y),
                                 &path, NULL, NULL, NULL);
 
-  if (path == NULL)
-    return TRUE;
+  if (path == NULL) {
+    // Checking that the widget already has focus matches libegg behavior.
+    if (GTK_WIDGET_HAS_FOCUS(tree_view))
+      gtk_tree_selection_unselect_all(bm->right_selection());
+    return FALSE;
+  }
 
   if (gtk_tree_selection_path_is_selected(bm->right_selection(), path)) {
     bm->mousedown_event_ = *event;
@@ -1214,7 +1218,12 @@ gboolean BookmarkManagerGtk::OnRightTreeViewButtonPress(
 // static
 gboolean BookmarkManagerGtk::OnRightTreeViewMotion(
     GtkWidget* tree_view, GdkEventMotion* event, BookmarkManagerGtk* bm) {
-  // This handler is only used for the multi-drag workaround.
+  // Swallow motion events when no row is selected. This prevents the initiation
+  // of empty drags.
+  if (gtk_tree_selection_count_selected_rows(bm->right_selection()) == 0)
+    return TRUE;
+
+  // Otherwise this handler is only used for the multi-drag workaround.
   if (!bm->delaying_mousedown_)
     return FALSE;
 
