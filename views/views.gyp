@@ -366,6 +366,7 @@
         'examples/scroll_view_example.h',
         'examples/tabbed_pane_example.h',
         'examples/textfield_example.h',
+        'examples/widget_example.h',
 
         '<(SHARED_INTERMEDIATE_DIR)/app/app_resources.rc',
       ],
