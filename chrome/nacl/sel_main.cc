@@ -72,14 +72,6 @@ int SelMain(const int desc, const NaClHandle handle) {
   envp = environ;
 #endif
 
-
-  if (NaClHasExpired()) {
-    // TODO(gregoryd): report error to browser?
-    fprintf(stderr, "This version of Native Client has expired.\n");
-    fprintf(stderr, "Please visit: http://code.google.com/p/nativeclient/\n");
-    exit(-1);
-  }
-
   NaClAllModulesInit();
 
   /* used to be -P */
