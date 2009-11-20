@@ -779,6 +779,9 @@ void WebPluginDelegateImpl::OnNullEvent() {
     delete this;
     return;
   }
+  // Avoid a race condition between IO and UI threads during plugin shutdown
+  if (!instance_)
+    return;
 #ifndef NP_NO_CARBON
   if (!webkit_glue::IsPluginRunningInRendererProcess()) {
     switch (instance_->event_model()) {
