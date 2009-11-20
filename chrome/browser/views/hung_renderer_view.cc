@@ -438,8 +438,9 @@ static HungRendererDialogView* CreateHungRendererDialogView() {
   return cv;
 }
 
-// static
-void HungRendererDialog::ShowForTabContents(TabContents* contents) {
+namespace hung_renderer_dialog {
+
+void ShowForTabContents(TabContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = CreateHungRendererDialogView();
@@ -448,7 +449,10 @@ void HungRendererDialog::ShowForTabContents(TabContents* contents) {
 }
 
 // static
-void HungRendererDialog::HideForTabContents(TabContents* contents) {
+void HideForTabContents(TabContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     g_instance->EndForTabContents(contents);
 }
+
+}  // namespace hung_renderer_dialog
+

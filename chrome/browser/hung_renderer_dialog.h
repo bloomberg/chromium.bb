@@ -5,17 +5,11 @@
 #ifndef CHROME_BROWSER_HUNG_RENDERER_DIALOG_H_
 #define CHROME_BROWSER_HUNG_RENDERER_DIALOG_H_
 
-#include "base/basictypes.h"
-
 class TabContents;
 
-class HungRendererDialog {
- public:
-  static void ShowForTabContents(TabContents* contents);
-  static void HideForTabContents(TabContents* contents);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(HungRendererDialog);
-};
+namespace hung_renderer_dialog {
+  void ShowForTabContents(TabContents* contents);
+  void HideForTabContents(TabContents* contents);
+}  // namespace hung_renderer_dialog
 
 #endif  // CHROME_BROWSER_HUNG_RENDERER_DIALOG_H_

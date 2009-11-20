@@ -108,7 +108,7 @@ HungRendererController* g_instance = NULL;
 - (void)windowWillClose:(NSNotification*)notification {
   // We have to reset g_instance before autoreleasing the window,
   // because we want to avoid reusing the same dialog if someone calls
-  // HungRendererDialog::ShowForTabContents() between the autorelease
+  // hung_renderer_dialog::ShowForTabContents() between the autorelease
   // call and the actual dealloc.
   g_instance = nil;
 
@@ -150,8 +150,9 @@ HungRendererController* g_instance = NULL;
 }
 @end
 
-// static
-void HungRendererDialog::ShowForTabContents(TabContents* contents) {
+namespace hung_renderer_dialog {
+
+void ShowForTabContents(TabContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = [[HungRendererController alloc]
@@ -161,7 +162,10 @@ void HungRendererDialog::ShowForTabContents(TabContents* contents) {
 }
 
 // static
-void HungRendererDialog::HideForTabContents(TabContents* contents) {
+void HideForTabContents(TabContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     [g_instance endForTabContents:contents];
 }
+
+}  // namespace hung_renderer_dialog
+

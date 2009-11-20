@@ -319,7 +319,7 @@ TabContents::~TabContents() {
   }
 
   NotifyDisconnected();
-  HungRendererDialog::HideForTabContents(this);
+  hung_renderer_dialog::HideForTabContents(this);
 
   // First cleanly close all child windows.
   // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
@@ -1954,7 +1954,7 @@ void TabContents::RenderViewGone(RenderViewHost* rvh) {
   view_->OnTabCrashed();
 
   // Hide any visible hung renderer warning for this web contents' process.
-  HungRendererDialog::HideForTabContents(this);
+  hung_renderer_dialog::HideForTabContents(this);
 }
 
 void TabContents::RenderViewDeleted(RenderViewHost* rvh) {
@@ -2423,11 +2423,11 @@ void TabContents::RendererUnresponsive(RenderViewHost* rvh,
   }
 
   if (render_view_host() && render_view_host()->IsRenderViewLive())
-    HungRendererDialog::ShowForTabContents(this);
+    hung_renderer_dialog::ShowForTabContents(this);
 }
 
 void TabContents::RendererResponsive(RenderViewHost* render_view_host) {
-  HungRendererDialog::HideForTabContents(this);
+  hung_renderer_dialog::HideForTabContents(this);
 }
 
 void TabContents::LoadStateChanged(const GURL& url,

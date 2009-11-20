@@ -204,9 +204,9 @@ void HungRendererDialogGtk::OnDialogResponse(gint response_id) {
 
 }  // namespace
 
+namespace hung_renderer_dialog {
 
-// static
-void HungRendererDialog::ShowForTabContents(TabContents* contents) {
+void ShowForTabContents(TabContents* contents) {
   if (!logging::DialogsAreSuppressed()) {
     if (!g_instance)
       g_instance = new HungRendererDialogGtk();
@@ -215,7 +215,10 @@ void HungRendererDialog::ShowForTabContents(TabContents* contents) {
 }
 
 // static
-void HungRendererDialog::HideForTabContents(TabContents* contents) {
+void HideForTabContents(TabContents* contents) {
   if (!logging::DialogsAreSuppressed() && g_instance)
     g_instance->EndForTabContents(contents);
 }
+
+}  // namespace hung_renderer_dialog
+
