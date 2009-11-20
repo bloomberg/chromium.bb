@@ -9,6 +9,7 @@
 #include "app/gfx/canvas_paint.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/cocoa/toolbar_button_cell.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -278,8 +279,8 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
         break;
       }
       case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-        //if (Details<ExtensionHost>(popup_->host()) != details)
-        //  return;
+        if (Details<ExtensionHost>([[owner_ popup] host]) != details)
+          return;
         [owner_ hidePopup];
         break;
       default:
@@ -318,7 +319,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
 }
 
 - (void)hidePopup {
-  NOTIMPLEMENTED();
+  [popupController_ close];
+  popupController_ = nil;
+}
+
+- (ExtensionPopupController*)popup {
+  return popupController_;
 }
 
 - (void)browserActionVisibilityHasChanged {
@@ -402,8 +408,28 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
 - (void)browserActionClicked:(BrowserActionButton*)sender {
   ExtensionAction* action = [sender extension]->browser_action();
   if (action->has_popup()) {
-    // Popups are not implemented for Mac yet.
-    NOTIMPLEMENTED();
+    NSString* extensionId = base::SysUTF8ToNSString([sender extension]->id());
+    // If the extension ID is not valid UTF-8, then the NSString will be nil
+    // and an exception will be thrown when calling objectForKey below, hosing
+    // the browser. Check it.
+    DCHECK(extensionId);
+    if (!extensionId)
+      return;
+    BrowserActionButton* actionButton = [buttons_ objectForKey:extensionId];
+    NSRect relativeButtonBounds = [[[actionButton window] contentView]
+        convertRect:[actionButton bounds]
+           fromView:actionButton];
+    NSPoint arrowPoint = [[actionButton window] convertBaseToScreen:NSMakePoint(
+        NSMinX(relativeButtonBounds),
+        NSMinY(relativeButtonBounds))];
+    // Adjust the anchor point to be at the center of the browser action button.
+    arrowPoint.x += kBrowserActionWidth / 2;
+
+    popupController_ =
+        [[ExtensionPopupController showURL:action->popup_url()
+                                 inBrowser:browser_
+                                anchoredAt:arrowPoint
+                             arrowLocation:kTopRight] retain];
   } else {
     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
        profile_, action->extension_id(), browser_);

@@ -53,6 +53,7 @@ void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
   NSView* view = native_view();
   NSRect frame = [view frame];
   frame.size.width = new_size.width();
+  frame.size.height = new_size.height();
 
   // RenderWidgetHostViewCocoa overrides setFrame but not setFrameSize.
   [view setFrame:frame];
