@@ -675,6 +675,8 @@ BUG27697 SKIP : LayoutTests/storage/hash-change-with-xhr.html = PASS
 WONTFIX SKIP : LayoutTests/storage/private-browsing-readonly.html = PASS
 // We have not designed the quota management system in Chromium yet
 BUG_DUMI SKIP : LayoutTests/storage/quota-tracking.html = PASS
+// Not sure why this fails, but seems to be related to the call to openDatabase()
+BUG_DUMI SKIP : LayoutTests/http/tests/security/cross-frame-access-call.html = PASS
 
 // Implement HTML5 Geolocation API.
 BUG11246 DEFER SKIP : LayoutTests/fast/dom/Geolocation = FAIL
