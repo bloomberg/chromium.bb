@@ -168,8 +168,10 @@ void SadTabGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   // Only readjust width for message if width of widget has changed.
   if (allocation->width != 0 && allocation->width != width_) {
     width_ = allocation->width;
-    // Set width for wrappable message.
-    gtk_widget_set_size_request(message_, width_ - (kTabHorzMargin * 2), -1);
+    // If necessary, set width for wrappable message.
+    int message_width = width_ - (kTabHorzMargin * 2);
+    if (message_width > -1)
+      gtk_widget_set_size_request(message_, message_width, -1);
   }
 }
 
