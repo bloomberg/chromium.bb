@@ -66,3 +66,23 @@ follow these steps to get your extension using it.
      you can even use a content script to programmatically
      insert your plugin into a web page.
      </p>
+   </li>
+</ol>
+
+<h2 id="security-considerations">Security considerations</h2>
+
+<p>
+Including an NPAPI plugin in your extension is dangerous because plugins
+have unrestricted access to the local machine.  If your plugin contains
+a vulnerability, an attacker might be able to exploit that vulnerability
+to install malicious software on the user's machine.  Instead, avoid
+including an NPAPI plugin whenever possible.
+</p>
+
+<p>
+Marking your NPAPI plugin "public" increase the attack surface of your
+extension because the plugin is exposed directly to web content, making
+it easier for a malicious web site to manipulate your plugin.  Instead,
+avoid making your NPAPI plugin public whenever possible.
+</p>
+

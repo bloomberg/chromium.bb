@@ -21,7 +21,7 @@ and make a copy of /template/page_shell.html and copy it to /<page>.html.
 *I want to edit or add a purely static page:
 =>Follow the same steps for editing static content for an API page.
 
-IN ALL CASES. When you have finshed, run build/build.bat (on windows) or
+IN ALL CASES. When you have finished, run build/build.bat (on windows) or
 build/build.py (on mac/linux). This may generate new files or changes to the
 /*.html pages. Include any new or changed files in the changelist you create.
 

@@ -221,6 +221,13 @@
                 </li>
               </ol>
             </li><li>
+              <a href="#security-considerations">Security considerations</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
               <a href="#extension-files">Referring to extension files</a>
               <ol>
                 <li style="display: none; ">
@@ -410,7 +417,7 @@ learn about the
 </p><p>For example, consider this simple page:
 
 </p><pre>hello.html
-===========
+==========
 &lt;html&gt;
   &lt;button id="button"&gt;click me&lt;/button&gt;
   &lt;script&gt;
@@ -425,7 +432,7 @@ learn about the
 <p>Now, suppose this content script was injected into hello.html:
 
 </p><pre>contentscript.js
-==================
+================
 console.log(greeting);  // undefined
 console.log(sayGreeting);  // undefined
 console.log(document.getElementById("button").onclick);  // still undefined
@@ -447,26 +454,71 @@ document.getElementById("button").onclick = function() {
 <p>An example can be accomplished using custom DOM events and storing data in a known location. Consider: </p>
 
 <pre>http://foo.com/example.html
-================================
+===========================
 var customEvent = document.createEvent('Event');
 customEvent.initEvent('myCustomEvent', true, true);
 
 function fireCustomEvent(data) {
   hiddenDiv = document.getElementById('myCustomEventDiv');
-  hiddenDiv.innerHTML = data
+  hiddenDiv.innerText = data
   hiddenDiv.dispatchEvent(customEvent);
 }</pre>
 
 <pre>contentscript.js
-=====================
+================
 var port = chrome.extension.connect();
 
 document.getElementById('myCustomEventDiv').addEventListener('myCustomEvent', function() {
-  var eventData = document.getElementById('myCustomEventDiv').innerHTML;
+  var eventData = document.getElementById('myCustomEventDiv').innerText;
   port.postMessage({message: "myCustomEvent", values: eventData});
 });</pre>
 
 <p>In the above example, example.html (which is not a part of the extension) creates a custom event and then can decide to fire the event by setting the event data to a known location in the DOM and then dispatching the custom event. The content script listens for the name of the custom event on the known element and handles the event by inspecting the data of the element, and turning around to post the message to the extension process. In this way the page establishes a line of communication to the extension. The reverse is possible through similar means.</p>
+
+<h2 id="security-considerations">Security considerations</h2>
+
+When writing a content script, you should be aware of two security issues.
+First, be careful not to introduce security vulnerabilities into the web site
+your content script is injected into.  For example, if your content script
+receives content from another web site (e.g., by <a href="messaging.html">asking your background page to make an
+XMLHttpRequest</a>), be careful to filter that content for <a href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
+scripting</a> attacks before injecting the content into the current page.
+For example, prefer to inject content via innerText rather than innerHTML.
+Be especially careful when retrieving HTTP content on an HTTPS page because
+the HTTP content might have been corrupted by a network <a href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">"man-in-the-middle"</a>
+if the user is on a hostile network.<p></p>
+
+<p>Second, although running your content script in an isolated world provides
+some protection from the web page, a malicious web page might still be able
+to attack your content script if you use content from the web page
+indiscriminately.  For example, the following patterns are dangerous:
+</p><pre>contentscript.js
+================
+var data = document.getElementById("json-data")
+// WARNING! Might be evaluating an evil script!
+var parsed = eval("(" + data + ")")
+
+contentscript.js
+================
+var elmt_id = ...
+// WARNING! elmt_id might be "); ... evil script ... //"!
+window.setTimeout("animate(" + elmt_id + ")", 200);
+</pre>
+<p>Instead, prefer safer APIs that do not run scripts:</p>
+<pre>contentscript.js
+================
+var data = document.getElementById("json-data")
+// JSON.parse does not evaluate the attacker's scripts.
+var parsed = JSON.parse(data)
+
+contentscript.js
+================
+var elmt_id = ...
+// The closure form of setTimeout does not evaluate scripts.
+window.setTimeout(function() {
+  animate(elmt_id);
+}, 200);
+</pre>
 
 <h2 id="extension-files">Referring to extension files</h2>
 

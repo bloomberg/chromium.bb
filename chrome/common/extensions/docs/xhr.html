@@ -328,6 +328,72 @@ of hosts, it must declare the permissions separately:</p>
 ],
 </pre>
 
+<h2 id="security-considerations">Security considerations</h2>
+
+<p>
+When using resources retrieved via XMLHttpRequest, your background page should
+be careful not to fall victim to <a href="http://en.wikipedia.org/wiki/Cross-site_scripting">cross-site
+scripting</a>.  Specifically, avoid using dangerous APIs such as the below:
+</p>
+<pre>background.html
+===============
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.send();
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    // WARNING! Might be evaluating an evil script!
+    var resp = eval("(" + xhr.responseText + ")");
+    ...
+  }
+}
+
+background.html
+===============
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.send();
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    // WARNING! Might be injecting a malicious script!
+    document.getElementById("resp").innerHTML = xhr.responseText;
+    ...
+  }
+}
+</pre>
+<p>
+Instead, prefer safer APIs that do not run scripts:
+</p>
+<pre>background.html
+===============
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.send();
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    // JSON.parse does not evaluate the attacker's scripts.
+    var resp = JSON.parse(xhr.responseText);
+  }
+}
+
+background.html
+===============
+var xhr = new XMLHttpRequest();
+xhr.open("GET", "http://api.example.com/data.json", true);
+xhr.send();
+xhr.onreadystatechange = function() {
+  if (xhr.readyState == 4) {
+    // innerText does not let the attacker inject HTML elements.
+    document.getElementById("resp").innerText = xhr.responseText;
+  }
+}
+</pre>
+<p>
+Additionally, be especially careful of resource retrieved via HTTP.  If your
+extension is used on a hostile network, an network attacker (aka a <a href="http://en.wikipedia.org/wiki/Man-in-the-middle_attack">"man-in-the-middle"</a>)
+could modify the response and, potentially, attack your extension.  Instead,
+prefer HTTPS whenever possible.
+</p>
 
 <!-- END AUTHORED CONTENT -->
 </div>
