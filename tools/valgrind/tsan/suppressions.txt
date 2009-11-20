@@ -84,6 +84,13 @@
 }
 
 {
+  bug_28396 (libevent)
+  ThreadSanitizer:Race
+  fun:detect_monotonic
+  fun:event_base_new
+}
+
+{
   bug_25913 (libjingle) (1)
   ThreadSanitizer:Race
   fun:*talk_base*MessageQueue*Stop*
