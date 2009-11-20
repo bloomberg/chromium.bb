@@ -182,7 +182,7 @@ class TestingProfile : public Profile {
   virtual void MarkAsCleanShutdown() {}
   virtual void InitExtensions() {}
   virtual void InitWebResources() {}
-  virtual NTPResourceCache* GetNTPResourceCache() { return NULL; }
+  virtual NTPResourceCache* GetNTPResourceCache();
   virtual DesktopNotificationService* GetDesktopNotificationService() {
     return NULL;
   }
@@ -219,6 +219,8 @@ class TestingProfile : public Profile {
 
   // The TemplateURLFetcher. Only created if CreateTemplateURLModel is invoked.
   scoped_ptr<TemplateURLModel> template_url_model_;
+
+  scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 
   // The SessionService. Defaults to NULL, but can be set using the setter.
   scoped_refptr<SessionService> session_service_;

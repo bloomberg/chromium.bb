@@ -59,7 +59,7 @@ class ChromeURLDataManager {
     // Report that a request has resulted in the data |bytes|.
     // If the request can't be satisfied, pass NULL for |bytes| to indicate
     // the request is over.
-    void SendResponse(int request_id, RefCountedMemory* bytes);
+    virtual void SendResponse(int request_id, RefCountedMemory* bytes);
 
     // Returns the MessageLoop on which the DataSource wishes to have
     // StartDataRequest called to handle the request for |path|.  If the

@@ -58,6 +58,8 @@ TEST_F(DOMUISourcesTest, ThemeSourceMimeTypes) {
 }
 
 TEST_F(DOMUISourcesTest, ThemeSourceImages) {
+  MessageLoop loop;
+  ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   // We used to PNGEncode the images ourselves, but encoder differences
   // invalidated that. We now just check that the image exists.
   theme_source()->StartDataRequest("theme_frame_incognito", true, 1);
@@ -71,6 +73,9 @@ TEST_F(DOMUISourcesTest, ThemeSourceImages) {
 }
 
 TEST_F(DOMUISourcesTest, ThemeSourceCSS) {
+  MessageLoop loop;
+  ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
+
   // Generating the test data for the NTP CSS would just involve copying the
   // method, or being super brittle and hard-coding the result (requiring
   // an update to the unittest every time the CSS template changes), so we
