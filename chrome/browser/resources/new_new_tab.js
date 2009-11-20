@@ -1261,6 +1261,9 @@ document.addEventListener('DOMContentLoaded',
 // page itself (without going to Options dialog box).
 document.addEventListener('DOMContentLoaded', showSetAsHomePageLink);
 
+// Set up links and text-decoration for promotional message.
+document.addEventListener('DOMContentLoaded', setUpPromoMessage);
+
 /**
  * The sync code is not yet built by default on all platforms so we have to
  * make sure we don't send the initial sync message to the backend unless the
@@ -1613,7 +1616,23 @@ updateAttribution();
 
 // Closes the promo line when close button is clicked.
 $('promo-close').onclick = function (e) {
-  $('footer').className = 'hide-footer';
+  $('promo-line').className = 'hide-promo-line';
   chrome.send('stopPromoLineMessage');
   e.preventDefault();
 };
+
+// Set bookmark sync button to start bookmark sync process on click; also set
+// link underline colors correctly.
+function setUpPromoMessage() {
+  var syncButton = document.querySelector('#promo-message button');
+  syncButton.className = 'sync-button link';
+  syncButton.onclick = syncSectionLinkClicked;
+  fixLinkUnderlines($('promo-message'));
+}
+
+// A Windows-specific Webkit bug adds padding to buttons and will push the
+// bookmark sync button in the promo message too far to the right unless we
+// use this fix.  See https://bugs.webkit.org/show_bug.cgi?id=31703
+if (navigator.platform == 'Win32') {
+  addClass(document.body, 'win-button-padding-bug');
+}

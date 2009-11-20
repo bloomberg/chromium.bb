@@ -239,10 +239,9 @@ void NTPResourceCache::CreateNewTabHtml() {
   localized_strings.SetString(L"promonew",
       l10n_util::GetString(IDS_NTP_PROMOTION_NEW));
   localized_strings.SetString(L"promomessage",
-      l10n_util::GetStringF(IDS_NTP_PROMOTION_MESSAGE,
+      l10n_util::GetStringF(IDS_NTP_PROMO_MESSAGE,
           l10n_util::GetString(IDS_PRODUCT_NAME),
-          ASCIIToWide(extension_urls::kGalleryBrowsePrefix),
-          GetUrlWithLang(kSyncServiceHelpUrl)));
+          ASCIIToWide(extension_urls::kGalleryBrowsePrefix)));
   localized_strings.SetString(L"extensionslink",
       ASCIIToWide(extension_urls::kGalleryBrowsePrefix));
 

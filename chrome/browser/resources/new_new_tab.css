@@ -5,6 +5,17 @@ html {
 
 body {
   margin: 0;
+  height: 100%;
+  overflow: auto;
+}
+
+#container {
+  position: relative;
+  min-height: 100%;
+}
+
+#promo-spacer {
+  height: 50px;
 }
 
 #main {
@@ -14,6 +25,7 @@ body {
   width: 920px;
   min-height: 50px;
   -webkit-transition: width .15s;
+  padding-bottom: 110px;
 }
 
 html[dir='rtl'] #main {
@@ -185,7 +197,7 @@ html[anim='false'] *,
 .link {
   cursor: pointer;
   text-decoration: underline;
-  color: hsl(213, 90%, 24%, 0.33333);
+  color: hsla(213, 90%, 24%, 0.33333);
   -webkit-appearance: none;
   border: 0;
   background: none;
@@ -317,6 +329,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
 #notification {
   position: relative;
   background-color: hsl(52, 100%, 80%);
+  border: 1px solid rgb(211, 211, 211);
   -webkit-border-radius: 6px;
   padding: 7px 15px;
   white-space: nowrap;
@@ -687,49 +700,65 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
   margin: 10px 0;
 }
 
-/* promotions line */
+/* promotions line and image */
 #bottom-right-promo {
   position: absolute;
-  width: 180px;
+  bottom: 0;
+  right: 0;
+  display: block;
   height: 131px;
   border: 0;
-  bottom: 0px;
-  right: 0px;
-  z-index: -1;
+}
+
+#promo-image {
+  display: block;
+}
+
+.sync-button {
+  padding: 0;
+  margin: 0;
+  -webkit-appearance: none;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-decoration: underline;
+  color: rgb(6, 45, 117);
+  font-family: inherit;
+}
+
+.win-button-padding-bug .sync-button {
+  margin: 0 -3px;
 }
 
 #footer {
-  position: fixed;
+  position: absolute;
   bottom: 0;
-  left: 0px;
-  text-align: center;
   width: 100%;
-  -webkit-transition: bottom .15s;
+  text-align: center;
+  min-width: 692px;
 }
 
-#footer.hide-footer {
-  bottom: -40px;
+.hide-promo-line {
+  opacity: 0;
 }
 
 #promo-line {
+  display: inline-block;
+  margin-bottom: 20px;
   background-color: hsl(52, 100%, 80%);
   border: 1px solid rgb(211, 211, 211);
   -webkit-border-radius: 6px;
   padding: 7px 10px;
   white-space: nowrap;
-  display: inline-block;
+  text-align: center;
+  vertical-align: middle;
   color: black;
+  -webkit-transition: opacity .15s;
 }
 
-#promo-line > * {
-  display: inline-block;
+#promo-line * {
   font-weight: bold;
   text-overflow: ellipsis;
-}
-
-#promo-line a {
-  color: rgb(6, 45, 117);
-  text-decoration: underline;
 }
 
 #promo-new {
