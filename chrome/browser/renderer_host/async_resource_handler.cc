@@ -31,12 +31,17 @@ class SharedIOBuffer : public net::IOBuffer {
   explicit SharedIOBuffer(int buffer_size)
       : net::IOBuffer(),
         ok_(false),
-        buffer_size_(buffer_size) {
-    if (shared_memory_.Create(std::wstring(), false, false, buffer_size) &&
-        shared_memory_.Map(buffer_size)) {
-      ok_ = true;
+        buffer_size_(buffer_size) {}
+
+  bool Init() {
+    if (shared_memory_.Create(std::wstring(), false, false, buffer_size_) &&
+        shared_memory_.Map(buffer_size_)) {
       data_ = reinterpret_cast<char*>(shared_memory_.memory());
+      // TODO(hawk): Remove after debugging bug 16371.
+      CHECK(data_);
+      ok_ = true;
     }
+    return ok_;
   }
 
   base::SharedMemory* shared_memory() { return &shared_memory_; }
@@ -111,8 +116,9 @@ bool AsyncResourceHandler::OnWillRead(int request_id, net::IOBuffer** buf,
     *buf_size = read_buffer_->buffer_size();
   } else {
     read_buffer_ = new SharedIOBuffer(next_buffer_size_);
-    if (!read_buffer_->ok()) {
+    if (!read_buffer_->Init()) {
       DLOG(ERROR) << "Couldn't allocate shared io buffer";
+      read_buffer_ = NULL;
       return false;
     }
     // TODO(willchan): Remove after debugging bug 16371.
