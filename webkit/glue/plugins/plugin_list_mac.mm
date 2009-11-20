@@ -85,6 +85,8 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   const char* blacklisted_plugin_mimes[] = {
     "application/x-director",             // Crashes during initialization.
     "application/x-googlegears",          // Safari-specific.
+    "application/x-id-quakelive",         // Crashes on load.
+    "application/x-vnd.movenetworks.qm",  // Crashes on Snow Leopard.
     "application/vnd.o3d.auto",           // Doesn't render, and having it
                                           // detected can prevent fallbacks.
   };
@@ -103,6 +105,7 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
     "application/x-shockwave-flash",
     "application/x-silverlight",
     "application/x-webkit-test-netscape",
+    "video/quicktime",
   };
 
   // Start with names.
