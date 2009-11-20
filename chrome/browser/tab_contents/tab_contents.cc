@@ -1012,16 +1012,16 @@ void TabContents::DidMoveOrResize(ConstrainedWindow* window) {
 #endif
 }
 
-void TabContents::StartFinding(string16 find_text,
+void TabContents::StartFinding(string16 search_string,
                                bool forward_direction,
                                bool case_sensitive) {
-  // If find_text is empty, it means FindNext was pressed with a keyboard
+  // If search_string is empty, it means FindNext was pressed with a keyboard
   // shortcut so unless we have something to search for we return early.
-  if (find_text.empty() && find_text_.empty()) {
+  if (search_string.empty() && find_text_.empty()) {
     if (last_search_prepopulate_text_->empty())
       return;
     // Try whatever we searched for last in any tab.
-    find_text = *last_search_prepopulate_text_;
+    search_string = *last_search_prepopulate_text_;
   }
 
   // Keep track of the previous search.
@@ -1033,21 +1033,20 @@ void TabContents::StartFinding(string16 find_text,
   // because the highlighting has been cleared and we need it to reappear). We
   // therefore treat FindNext after an aborted Find operation as a full fledged
   // Find.
-  bool find_next = (find_text_ == find_text || find_text.empty()) &&
+  bool find_next = (find_text_ == search_string || search_string.empty()) &&
                    (last_search_case_sensitive_ == case_sensitive) &&
                    !find_op_aborted_;
   if (!find_next)
     current_find_request_id_ = find_request_id_counter_++;
 
-  if (!find_text.empty())
-    find_text_ = find_text;
+  if (!search_string.empty())
+    find_text_ = search_string;
   last_search_case_sensitive_ = case_sensitive;
 
   find_op_aborted_ = false;
 
   // Keep track of what the last search was across the tabs.
-  *last_search_prepopulate_text_ = find_text;
-
+  *last_search_prepopulate_text_ = find_text_;
   render_view_host()->StartFinding(current_find_request_id_,
                                    find_text_,
                                    forward_direction,

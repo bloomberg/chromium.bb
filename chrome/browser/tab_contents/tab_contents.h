@@ -488,7 +488,7 @@ class TabContents : public PageNavigator,
   // function does not block while a search is in progress. The controller will
   // receive the results through the notification mechanism. See Observe(...)
   // for details.
-  void StartFinding(string16 find_text,
+  void StartFinding(string16 search_string,
                     bool forward_direction,
                     bool case_sensitive);
 

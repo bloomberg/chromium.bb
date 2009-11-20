@@ -29,6 +29,7 @@ const std::wstring kMoveIfOver = L"files/find_in_page/move_if_obscuring.html";
 const std::wstring kBitstackCrash = L"files/find_in_page/crash_14491.html";
 const std::wstring kSelectChangesOrdinal =
     L"files/find_in_page/select_changes_ordinal.html";
+const std::wstring kSimple = L"files/find_in_page/simple.html";
 
 const bool kBack = false;
 const bool kFwd = true;
@@ -729,4 +730,33 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   // Make sure the Find UI flag hasn't been cleared, it must be so that the UI
   // still responds to browser window resizing.
   ASSERT_TRUE(tab_contents->find_ui_active());
+}
+
+// Make sure F3 works after you FindNext a couple of times and end the Find
+// session. See issue http://crbug.com/28306.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
+  HTTPTestServer* server = StartHTTPServer();
+
+  // First we navigate to a simple page.
+  GURL url = server->TestServerPageW(kSimple);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Search for 'page'. Should have 1 match.
+  int ordinal = 0;
+  TabContents* tab = browser()->GetSelectedTabContents();
+  EXPECT_EQ(1, FindInPageWchar(tab, L"page", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, ordinal);
+
+  // Simulate what happens when you press F3 for FindNext. Still should show
+  // one match. This cleared the pre-populate string at one point (see bug).
+  EXPECT_EQ(1, ui_test_utils::FindInPage(tab, string16(),
+                                         kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, ordinal);
+
+  // End the Find session, thereby making the next F3 start afresh.
+  browser()->GetFindBarController()->EndFindSession();
+
+  // Simulate F3 while Find box is closed. Should have 1 match.
+  EXPECT_EQ(1, FindInPageWchar(tab, L"", kFwd, kIgnoreCase, &ordinal));
+  EXPECT_EQ(1, ordinal);
 }
