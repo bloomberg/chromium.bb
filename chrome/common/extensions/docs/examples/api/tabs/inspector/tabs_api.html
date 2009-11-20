@@ -131,12 +131,13 @@ function removeTab(tabId) {
 }
 
 function appendToLog(logLine) {
-  var log = document.getElementById('log');
-  log.innerHTML = '<div> &gt;&nbsp;' + logLine + '</div>' + log.innerHTML;
+  document.getElementById('log')
+      .appendChild(document.createElement('div'))
+      .innerText = "> " + logLine;
 }
 
 function clearLog() {
-  document.getElementById('log').innerHTML = '';
+  document.getElementById('log').innerText = '';
 }
 
 chrome.windows.onCreated.addListener(function(createInfo) {

@@ -3,5 +3,9 @@
   "description": "Returns accept languages of the browser",
   "version": "0.1",
   "default_locale": "en_US",
-  "toolstrips": ["toolstrip.html"]
+  "browser_action": {
+      "default_title": "Click Me",
+      "default_icon": "icon.png",
+      "popup": "popup.html"
+  }
 }

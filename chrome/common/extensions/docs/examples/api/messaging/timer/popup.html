@@ -6,13 +6,17 @@ tr {
 .results {
   text-align: right;
   min-width: 6em;
+  color: black;
 }
 </style>
 <script>
-// Tests the roundtrip time of sendRquest().
+function setChildTextNode(elementId, text) {
+  document.getElementById(elementId).innerText = text;
+}
+
+// Tests the roundtrip time of sendRequest().
 function testRequest() {
-  var results = document.getElementById("resultsRequest");
-  results.innerHTML = "running...";
+  setChildTextNode("resultsRequest", "running...");
 
   chrome.tabs.getSelected(null, function(tab) {
     var timer = new chromium.Interval();
@@ -24,7 +28,7 @@ function testRequest() {
       } else {
         timer.stop();
         var usec = Math.round(timer.microseconds() / response.counter);
-        results.innerHTML = usec + "usec";
+        setChildTextNode("resultsRequest", usec + "usec");
       }
     });
   });
@@ -32,8 +36,7 @@ function testRequest() {
 
 // Tests the roundtrip time of Port.postMessage() after opening a channel.
 function testConnect() {
-  var results = document.getElementById("resultsConnect");
-  results.innerHTML = "running...";
+  setChildTextNode("resultsConnect", "running...");
 
   chrome.tabs.getSelected(null, function(tab) {
     var timer = new chromium.Interval();
@@ -47,7 +50,7 @@ function testConnect() {
       } else {
         timer.stop();
         var usec = Math.round(timer.microseconds() / response.counter);
-        results.innerHTML = usec + "usec";
+        setChildTextNode("resultsConnect", usec + "usec");
       }
     });
   });
