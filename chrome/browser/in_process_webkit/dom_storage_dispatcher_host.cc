@@ -150,9 +150,9 @@ void DOMStorageDispatcherHost::Send(IPC::Message* message) {
 void DOMStorageDispatcherHost::OnNamespaceId(DOMStorageType storage_type,
                                              IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnNamespaceId, storage_type,
-        reply_msg));
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnNamespaceId,
+        storage_type, reply_msg));
     return;
   }
 
@@ -170,9 +170,9 @@ void DOMStorageDispatcherHost::OnNamespaceId(DOMStorageType storage_type,
 void DOMStorageDispatcherHost::OnCloneNamespaceId(int64 namespace_id,
                                                   IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnCloneNamespaceId, namespace_id,
-        reply_msg));
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnCloneNamespaceId,
+        namespace_id, reply_msg));
     return;
   }
 
@@ -195,9 +195,9 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
                                                const string16& origin,
                                                IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnStorageAreaId, namespace_id, origin,
-        reply_msg));
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnStorageAreaId,
+        namespace_id, origin, reply_msg));
     return;
   }
 
@@ -219,8 +219,8 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
 void DOMStorageDispatcherHost::OnLength(int64 storage_area_id,
                                         IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnLength, storage_area_id, reply_msg));
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnLength, storage_area_id, reply_msg));
     return;
   }
 
@@ -240,9 +240,8 @@ void DOMStorageDispatcherHost::OnLength(int64 storage_area_id,
 void DOMStorageDispatcherHost::OnKey(int64 storage_area_id, unsigned index,
                                      IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnKey, storage_area_id, index,
-        reply_msg));
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnKey, storage_area_id, index, reply_msg));
     return;
   }
 
@@ -263,9 +262,9 @@ void DOMStorageDispatcherHost::OnGetItem(int64 storage_area_id,
                                          const string16& key,
                                          IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnGetItem, storage_area_id, key,
-        reply_msg));
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnGetItem,
+        storage_area_id, key, reply_msg));
     return;
   }
 
@@ -286,8 +285,8 @@ void DOMStorageDispatcherHost::OnSetItem(
     int64 storage_area_id, const string16& key, const string16& value,
     const GURL& url, IPC::Message* reply_msg) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnSetItem, storage_area_id, key, value,
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnSetItem, storage_area_id, key, value,
         url, reply_msg));
     return;
   }
@@ -310,9 +309,8 @@ void DOMStorageDispatcherHost::OnSetItem(
 void DOMStorageDispatcherHost::OnRemoveItem(
     int64 storage_area_id, const string16& key, const GURL& url) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnRemoveItem, storage_area_id, key,
-        url));
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnRemoveItem, storage_area_id, key, url));
     return;
   }
 
@@ -330,8 +328,8 @@ void DOMStorageDispatcherHost::OnRemoveItem(
 
 void DOMStorageDispatcherHost::OnClear(int64 storage_area_id, const GURL& url) {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnClear, storage_area_id, url));
+    PostTaskToWebKitThread(FROM_HERE, NewRunnableMethod(this,
+        &DOMStorageDispatcherHost::OnClear, storage_area_id, url));
     return;
   }
 
@@ -357,4 +355,10 @@ void DOMStorageDispatcherHost::OnStorageEvent(
     (*cur)->Send(new ViewMsg_DOMStorageEvent(params));
     ++cur;
   }
+}
+
+void DOMStorageDispatcherHost::PostTaskToWebKitThread(
+    const tracked_objects::Location& from_here, Task* task) {
+  webkit_thread_->EnsureInitialized();
+  ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, task);
 }

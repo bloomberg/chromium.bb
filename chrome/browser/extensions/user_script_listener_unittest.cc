@@ -249,8 +249,8 @@ class UserScriptListenerTest : public testing::Test {
     profile_.ShutdownExtensionsService();
     io_thread_.reset();
     file_thread_.reset();
-    resource_tester_ = NULL;
     ui_thread_.reset();
+    resource_tester_ = NULL;
   }
 
  protected:

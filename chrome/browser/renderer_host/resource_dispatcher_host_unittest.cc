@@ -148,16 +148,10 @@ class ResourceDispatcherHostTest : public testing::Test,
  public:
   ResourceDispatcherHostTest()
       : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
-        io_thread_(new ChromeThread(ChromeThread::IO, &message_loop_)),
+        io_thread_(ChromeThread::IO, &message_loop_),
         old_factory_(NULL) {
     set_handle(base::GetCurrentProcessHandle());
   }
-
-  ~ResourceDispatcherHostTest() {
-    // The IO thread must get destroyed before the resource dispatcher host.
-    io_thread_.reset();
-  }
-
   // ResourceDispatcherHost::Receiver implementation
   virtual bool Send(IPC::Message* msg) {
     accum_.AddMessage(*msg);
@@ -251,7 +245,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   MessageLoopForIO message_loop_;
-  scoped_ptr<ChromeThread> io_thread_;
+  ChromeThread io_thread_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;
   std::string response_headers_;
