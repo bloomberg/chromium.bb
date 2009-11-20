@@ -88,9 +88,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   // Assuming that the user qualifies, this function performs the inactive user
   // toast experiment. It will use chrome to show the UI and it will record the
-  // outcome in the registry. |flavor| is an extra parameter that controls the
-  // specific wording on the experiment.
-  virtual void InactiveUserToastExperiment(int flavor);
+  // outcome in the registry.
+  virtual void InactiveUserToastExperiment();
 
  private:
   friend class BrowserDistribution;

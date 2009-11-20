@@ -37,20 +37,12 @@ const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 // The following strings are the possible outcomes of the toast experiment
 // as recorded in the  |client| field. Previously the groups used "TSxx" but
 // the data captured is not valid.
-const wchar_t kToastExpQualifyGroup[] =      L"T%lc01";
-const wchar_t kToastExpCancelGroup[] =       L"T%lc02";
-const wchar_t kToastExpUninstallGroup[] =    L"T%lc04";
-const wchar_t kToastExpTriesOkGroup[] =      L"T%lc18";
-const wchar_t kToastExpTriesErrorGroup[] =   L"T%lc28";
-const wchar_t kToastExpBaseGroup[] =         L"T%lc80";
-
-// Generates the actual group that gets written in the registry.
-// |group| is a printf style string with a single %c replacement and |value|
-// is a number between 0 and 19.
-std::wstring GetExperimentGroup(const wchar_t* group, int flavor) {
-  wchar_t c = flavor < 20 ? L'A' + flavor : L'X';
-  return StringPrintf(group, c);
-}
+const wchar_t kToastExpQualifyGroup[] =      L"TF01";
+const wchar_t kToastExpCancelGroup[] =       L"TF02";
+const wchar_t kToastExpUninstallGroup[] =    L"TF04";
+const wchar_t kToastExpTriesOkGroup[] =      L"TF18";
+const wchar_t kToastExpTriesErrorGroup[] =   L"TF28";
+const wchar_t kToastExpBaseGroup[] =         L"TF80";
 
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
@@ -104,12 +96,12 @@ int GetDirectoryWriteAgeInHours(const wchar_t* path) {
   return (now_time - dir_time);
 }
 
-// Launches again this same process with a single switch --|flag|=|value|.
+// Launches again this same process with a single switch --|flag|.
 // Does not wait for the process to terminate.
-bool RelaunchSetup(const std::wstring& flag, int value) {
+bool RelaunchSetup(const std::wstring& flag) {
   CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
   // TODO: make switches into ASCII.
-  cmd_line.AppendSwitchWithValue(WideToASCII(flag), IntToWString(value));
+  cmd_line.AppendSwitch(WideToASCII(flag));
   return base::LaunchApp(cmd_line, false, false, NULL);
 }
 
@@ -437,8 +429,6 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     return;
 
   std::wstring brand;
-  int flavor = base::RandInt(0, 3);
-
   if (GoogleUpdateSettings::GetBrand(&brand) && (brand == L"CHXX")) {
     // The user automatically qualifies for the experiment.
     LOG(INFO) << "Experiment qualification bypass";
@@ -466,27 +456,24 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     // tag a control group, which is at random 50% of the population.
     if (base::RandDouble() > 0.5) {
       // We tag the user, but it wont participate in the experiment.
-      GoogleUpdateSettings::SetClient(
-          GetExperimentGroup(kToastExpQualifyGroup, flavor));
+      GoogleUpdateSettings::SetClient(kToastExpQualifyGroup);
       LOG(INFO) << "User is toast experiment control group";
       return;
     }
   }
   LOG(INFO) << "User drafted for toast experiment";
-  if (!GoogleUpdateSettings::SetClient(
-      GetExperimentGroup(kToastExpBaseGroup, flavor)))
+  if (!GoogleUpdateSettings::SetClient(kToastExpBaseGroup))
     return;
   // The experiment needs to be performed in a different process because
   // google_update expects the upgrade process to be quick and nimble.
-  RelaunchSetup(installer_util::switches::kInactiveUserToast, flavor);
+  RelaunchSetup(installer_util::switches::kInactiveUserToast);
 }
 
-void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
-  // User qualifies for the experiment. Launch chrome with --try-chrome. Before
-  // that we need to change the client so we can track the progress.
+void GoogleChromeDistribution::InactiveUserToastExperiment() {
+  // User qualifies for the experiment. Launch chrome with --try-chrome=0.
   int32 exit_code = 0;
   std::wstring option(
-      StringPrintf(L"--%ls=%d", switches::kTryChromeAgain, flavor));
+      StringPrintf(L"--%ls=%d", switches::kTryChromeAgain, 0));
   if (!installer::LaunchChromeAndWaitForResult(false, option, &exit_code))
     return;
   // The chrome process has exited, figure out what happened.
@@ -504,7 +491,7 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
     default:
       outcome = kToastExpTriesErrorGroup;
   };
-  GoogleUpdateSettings::SetClient(GetExperimentGroup(outcome, flavor));
+  GoogleUpdateSettings::SetClient(outcome);
   if (outcome != kToastExpUninstallGroup)
     return;
   // The user wants to uninstall. This is a best effort operation. Note that
