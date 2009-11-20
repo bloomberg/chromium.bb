@@ -76,10 +76,6 @@ class DOMStorageDispatcherHost
     return webkit_context_->dom_storage_context();
   }
 
-  // Posts a task to the WebKit thread, initializing it if necessary.
-  void PostTaskToWebKitThread(
-      const tracked_objects::Location& from_here, Task* task);
-
   // Use whenever there's a chance OnStorageEvent will be called.
   class ScopedStorageEventContext {
    public:
