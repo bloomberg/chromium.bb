@@ -1578,8 +1578,8 @@
 {
    bug_28386
    Memcheck:Addr4
-   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_ocsp_nss_ocsp.cc_00000000_C916E41F18OCSPRequestSession15OnReadCompletedEP10URLRequesti
-   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_ocsp_nss_ocsp.cc_00000000_C916E41F18OCSPRequestSession17OnResponseStartedEP10URLRequest
+   fun:*OCSPRequestSession*ReadCompleted*URLRequest
+   fun:*OCSPRequestSession*ResponseStarted*URLRequest
    fun:_ZN10URLRequest15ResponseStartedEv
    fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
    fun:_ZN17URLRequestHttpJob21NotifyHeadersCompleteEv
@@ -1604,8 +1604,8 @@
 {
    bug_28386
    Memcheck:Addr4
-   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_ocsp_nss_ocsp.cc_00000000_C916E41F18OCSPRequestSession15OnReadCompletedEP10URLRequesti
-   fun:_ZN104_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_ocsp_nss_ocsp.cc_00000000_C916E41F18OCSPRequestSession17OnResponseStartedEP10URLRequest
+   fun:*OCSPRequestSession*ReadCompleted*URLRequest*
+   fun:*OCSPRequestSession*OnResponseStarted*URLRequest
    fun:_ZN10URLRequest15ResponseStartedEv
    fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
    fun:_ZN17URLRequestHttpJob21NotifyHeadersCompleteEv
