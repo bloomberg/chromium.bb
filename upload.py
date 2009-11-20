@@ -45,13 +45,11 @@ import urllib
 import urllib2
 import urlparse
 
-# Work-around for md5 module deprecation warning in python 2.5+:
-try: 
-  # Try to load hashlib (python 2.5+)
+# The md5 module was deprecated in Python 2.5.
+try:
   from hashlib import md5
 except ImportError:
-  # If hashlib cannot be imported, load md5.new instead.
-  from md5 import new as md5
+  from md5 import md5
 
 try:
   import readline
@@ -68,8 +66,27 @@ verbosity = 1
 # Max size of patch or base file.
 MAX_UPLOAD_SIZE = 900 * 1024
 
+# Constants for version control names.  Used by GuessVCSName.
+VCS_GIT = "Git"
+VCS_MERCURIAL = "Mercurial"
+VCS_SUBVERSION = "Subversion"
+VCS_UNKNOWN = "Unknown"
 
-def GetEmail():
+# whitelist for non-binary filetypes which do not start with "text/"
+# .mm (Objective-C) shows up as application/x-freemind on my Linux box.
+TEXT_MIMETYPES = ['application/javascript', 'application/x-javascript',
+                  'application/x-freemind']
+
+VCS_ABBREVIATIONS = {
+  VCS_MERCURIAL.lower(): VCS_MERCURIAL,
+  "hg": VCS_MERCURIAL,
+  VCS_SUBVERSION.lower(): VCS_SUBVERSION,
+  "svn": VCS_SUBVERSION,
+  VCS_GIT.lower(): VCS_GIT,
+}
+
+
+def GetEmail(prompt):
   """Prompts the user for their email address and returns it.
 
   The last used email address is saved to a file and offered up as a suggestion
@@ -78,19 +95,17 @@ def GetEmail():
   for next time we prompt.
 
   """
-  last_email_file_name = os.path.expanduser(
-      os.path.join("~", ".last_codereview_email_address"))
+  last_email_file_name = os.path.expanduser("~/.last_codereview_email_address")
   last_email = ""
-  prompt = "Email: "
   if os.path.exists(last_email_file_name):
     try:
       last_email_file = open(last_email_file_name, "r")
       last_email = last_email_file.readline().strip("\n")
       last_email_file.close()
-      prompt = "Email [%s]: " % last_email
+      prompt += " [%s]" % last_email
     except IOError, e:
       pass
-  email = raw_input(prompt).strip()
+  email = raw_input(prompt + ": ").strip()
   if email:
     try:
       last_email_file = open(last_email_file_name, "w")
@@ -193,9 +208,6 @@ class AbstractRpcServer(object):
       The authentication token returned by ClientLogin.
     """
     account_type = "GOOGLE"
-    if self.host.endswith(".google.com"):
-      # Needed for use inside Google.
-      account_type = "HOSTED"
     req = self._CreateRequest(
         url="https://www.google.com/accounts/ClientLogin",
         data=urllib.urlencode({
@@ -257,8 +269,8 @@ class AbstractRpcServer(object):
         us to the URL we provided.
 
     If we attempt to access the upload API without first obtaining an
-    authentication cookie, it returns a 401 response and directs us to
-    authenticate ourselves with ClientLogin.
+    authentication cookie, it returns a 401 response (or a 302) and
+    directs us to authenticate ourselves with ClientLogin.
     """
     for i in range(3):
       credentials = self.auth_function()
@@ -339,7 +351,7 @@ class AbstractRpcServer(object):
         except urllib2.HTTPError, e:
           if tries > 3:
             raise
-          elif e.code == 401:
+          elif e.code == 401 or e.code == 302:
             self._Authenticate()
 ##           elif e.code >= 500 and e.code < 600:
 ##             # Server Error - try again.
@@ -374,8 +386,7 @@ class HttpRpcServer(AbstractRpcServer):
     opener.add_handler(urllib2.HTTPSHandler())
     opener.add_handler(urllib2.HTTPErrorProcessor())
     if self.save_cookies:
-      self.cookie_file = os.path.expanduser(
-          os.path.join("~", ".codereview_upload_cookies"))
+      self.cookie_file = os.path.expanduser("~/.codereview_upload_cookies")
       self.cookie_jar = cookielib.MozillaCookieJar(self.cookie_file)
       if os.path.exists(self.cookie_file):
         try:
@@ -418,7 +429,7 @@ group.add_option("-s", "--server", action="store", dest="server",
                  default="codereview.appspot.com",
                  metavar="SERVER",
                  help=("The server to upload to. The format is host[:port]. "
-                       "Defaults to 'codereview.appspot.com'."))
+                       "Defaults to '%default'."))
 group.add_option("-e", "--email", action="store", dest="email",
                  metavar="EMAIL", default=None,
                  help="The username to use. Will prompt if omitted.")
@@ -444,6 +455,9 @@ group.add_option("-r", "--reviewers", action="store", dest="reviewers",
 group.add_option("--cc", action="store", dest="cc",
                  metavar="CC", default=None,
                  help="Add CC (comma separated email addresses).")
+group.add_option("--private", action="store_true", dest="private",
+                 default=False,
+                 help="Make the issue restricted to reviewers and those CCed")
 # Upload options
 group = parser.add_option_group("Patch options")
 group.add_option("-m", "--message", action="store", dest="message",
@@ -463,6 +477,10 @@ group.add_option("--rev", action="store", dest="revision",
 group.add_option("--send_mail", action="store_true",
                  dest="send_mail", default=False,
                  help="Send notification email to reviewers.")
+group.add_option("--vcs", action="store", dest="vcs",
+                 metavar="VCS", default=None,
+                 help=("Version control system (optional, usually upload.py "
+                       "already guesses the right VCS)."))
 
 
 def GetRpcServer(options):
@@ -478,7 +496,7 @@ def GetRpcServer(options):
     """Prompts the user for a username and password."""
     email = options.email
     if email is None:
-      email = GetEmail()
+      email = GetEmail("Email (login for uploading to %s)" % options.server)
     password = getpass.getpass("Password for %s: " % email)
     return (email, password)
 
@@ -549,7 +567,8 @@ def GetContentType(filename):
 use_shell = sys.platform.startswith("win")
 
 def RunShellWithReturnCode(command, print_output=False,
-                           universal_newlines=True):
+                           universal_newlines=True,
+                           env=os.environ):
   """Executes a command and returns the output from stdout and the return code.
 
   Args:
@@ -563,7 +582,8 @@ def RunShellWithReturnCode(command, print_output=False,
   """
   logging.info("Running %s", command)
   p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                       shell=use_shell, universal_newlines=universal_newlines)
+                       shell=use_shell, universal_newlines=universal_newlines,
+                       env=env)
   if print_output:
     output_array = []
     while True:
@@ -585,9 +605,9 @@ def RunShellWithReturnCode(command, print_output=False,
 
 
 def RunShell(command, silent_ok=False, universal_newlines=True,
-             print_output=False):
+             print_output=False, env=os.environ):
   data, retcode = RunShellWithReturnCode(command, print_output,
-                                         universal_newlines)
+                                         universal_newlines, env)
   if retcode:
     ErrorExit("Got error status from %s:\n%s" % (command, data))
   if not silent_ok and not data:
@@ -726,6 +746,16 @@ class VersionControlSystem(object):
     if not mimetype:
       return False
     return mimetype.startswith("image/")
+
+  def IsBinary(self, filename):
+    """Returns true if the guessed mimetyped isnt't in text group."""
+    mimetype = mimetypes.guess_type(filename)[0]
+    if not mimetype:
+      return False  # e.g. README, "real" binaries usually have an extension
+    # special case for text files which don't start with text/
+    if mimetype in TEXT_MIMETYPES:
+      return False
+    return not mimetype.startswith("text/")
 
 
 class SubversionVCS(VersionControlSystem):
@@ -920,7 +950,7 @@ class SubversionVCS(VersionControlSystem):
       mimetype = RunShell(["svn", "propget", "svn:mime-type", filename],
                           silent_ok=True)
       base_content = ""
-      is_binary = mimetype and not mimetype.startswith("text/")
+      is_binary = bool(mimetype) and not mimetype.startswith("text/")
       if is_binary and self.IsImage(filename):
         new_content = self.ReadFile(filename)
     elif (status[0] in ("M", "D", "R") or
@@ -940,7 +970,7 @@ class SubversionVCS(VersionControlSystem):
         # Reset mimetype, it contains an error message.
         mimetype = ""
       get_base = False
-      is_binary = mimetype and not mimetype.startswith("text/")
+      is_binary = bool(mimetype) and not mimetype.startswith("text/")
       if status[0] == " ":
         # Empty base content just to force an upload.
         base_content = ""
@@ -997,33 +1027,55 @@ class GitVCS(VersionControlSystem):
 
   def __init__(self, options):
     super(GitVCS, self).__init__(options)
-    # Map of filename -> hash of base file.
-    self.base_hashes = {}
+    # Map of filename -> (hash before, hash after) of base file.
+    # Hashes for "no such file" are represented as None.
+    self.hashes = {}
+    # Map of new filename -> old filename for renames.
+    self.renames = {}
 
   def GenerateDiff(self, extra_args):
     # This is more complicated than svn's GenerateDiff because we must convert
     # the diff output to include an svn-style "Index:" line as well as record
-    # the hashes of the base files, so we can upload them along with our diff.
+    # the hashes of the files, so we can upload them along with our diff.
+
+    # Special used by git to indicate "no such content".
+    NULL_HASH = "0"*40
+
+    extra_args = extra_args[:]
     if self.options.revision:
       extra_args = [self.options.revision] + extra_args
-    gitdiff = RunShell(["git", "diff", "--no-ext-diff", "--full-index"] +
-                       extra_args)
+
+    # --no-ext-diff is broken in some versions of Git, so try to work around
+    # this by overriding the environment (but there is still a problem if the
+    # git config key "diff.external" is used).
+    env = os.environ.copy()
+    if 'GIT_EXTERNAL_DIFF' in env: del env['GIT_EXTERNAL_DIFF']
+    gitdiff = RunShell(["git", "diff", "--no-ext-diff", "--full-index", "-M"]
+                       + extra_args, env=env)
     svndiff = []
     filecount = 0
     filename = None
     for line in gitdiff.splitlines():
-      match = re.match(r"diff --git a/(.*) b/.*$", line)
+      match = re.match(r"diff --git a/(.*) b/(.*)$", line)
       if match:
         filecount += 1
-        filename = match.group(1)
+        # Intentionally use the "after" filename so we can show renames.
+        filename = match.group(2)
         svndiff.append("Index: %s\n" % filename)
+        if match.group(1) != match.group(2):
+          self.renames[match.group(2)] = match.group(1)
       else:
         # The "index" line in a git diff looks like this (long hashes elided):
         #   index 82c0d44..b2cee3f 100755
         # We want to save the left hash, as that identifies the base file.
-        match = re.match(r"index (\w+)\.\.", line)
+        match = re.match(r"index (\w+)\.\.(\w+)", line)
         if match:
-          self.base_hashes[filename] = match.group(1)
+          before, after = (match.group(1), match.group(2))
+          if before == NULL_HASH:
+            before = None
+          if after == NULL_HASH:
+            after = None
+          self.hashes[filename] = (before, after)
       svndiff.append(line + "\n")
     if not filecount:
       ErrorExit("No valid patches found in output from git diff")
@@ -1034,17 +1086,47 @@ class GitVCS(VersionControlSystem):
                       silent_ok=True)
     return status.splitlines()
 
+  def GetFileContent(self, file_hash, is_binary):
+    """Returns the content of a file identified by its git hash."""
+    data, retcode = RunShellWithReturnCode(["git", "show", file_hash],
+                                            universal_newlines=not is_binary)
+    if retcode:
+      ErrorExit("Got error status from 'git show %s'" % file_hash)
+    return data
+
   def GetBaseFile(self, filename):
-    hash = self.base_hashes[filename]
+    hash_before, hash_after = self.hashes.get(filename, (None,None))
     base_content = None
     new_content = None
-    is_binary = False
-    if hash == "0" * 40:  # All-zero hash indicates no base file.
+    is_binary = self.IsBinary(filename)
+    status = None
+
+    if filename in self.renames:
+      status = "A +"  # Match svn attribute name for renames.
+      if filename not in self.hashes:
+        # If a rename doesn't change the content, we never get a hash.
+        base_content = RunShell(["git", "show", filename])
+    elif not hash_before:
       status = "A"
       base_content = ""
+    elif not hash_after:
+      status = "D"
     else:
       status = "M"
-      base_content = RunShell(["git", "show", hash])
+
+    is_image = self.IsImage(filename)
+
+    # Grab the before/after content if we need it.
+    # We should include file contents if it's text or it's an image.
+    if not is_binary or is_image:
+      # Grab the base content if we don't have it already.
+      if base_content is None and hash_before:
+        base_content = self.GetFileContent(hash_before, is_binary)
+      # Only include the "after" file if it's an image; otherwise it
+      # it is reconstructed from the diff.
+      if is_image and hash_after:
+        new_content = self.GetFileContent(hash_after, is_binary)
+
     return (base_content, new_content, is_binary, status)
 
 
@@ -1067,7 +1149,7 @@ class MercurialVCS(VersionControlSystem):
   def _GetRelPath(self, filename):
     """Get relative path of a file according to the current directory,
     given its logical path in the repo."""
-    assert filename.startswith(self.subdir), filename
+    assert filename.startswith(self.subdir), (filename, self.subdir)
     return filename[len(self.subdir):].lstrip(r"\/")
 
   def GenerateDiff(self, extra_args):
@@ -1130,8 +1212,12 @@ class MercurialVCS(VersionControlSystem):
       status = "M"
     else:
       status, _ = out[0].split(' ', 1)
+    if ":" in self.base_rev:
+      base_rev = self.base_rev.split(":", 1)[0]
+    else:
+      base_rev = self.base_rev
     if status != "A":
-      base_content = RunShell(["hg", "cat", "-r", self.base_rev, oldrelpath],
+      base_content = RunShell(["hg", "cat", "-r", base_rev, oldrelpath],
         silent_ok=True)
       is_binary = "\0" in base_content  # Mercurial's heuristic
     if status != "R":
@@ -1139,7 +1225,7 @@ class MercurialVCS(VersionControlSystem):
       is_binary = is_binary or "\0" in new_content
     if is_binary and base_content:
       # Fetch again without converting newlines
-      base_content = RunShell(["hg", "cat", "-r", self.base_rev, oldrelpath],
+      base_content = RunShell(["hg", "cat", "-r", base_rev, oldrelpath],
         silent_ok=True, universal_newlines=False)
     if not is_binary or not self.IsImage(relpath):
       new_content = None
@@ -1215,15 +1301,17 @@ def UploadSeparatePatches(issue, rpc_server, patchset, data, options):
   return rv
 
 
-def GuessVCS(options):
+def GuessVCSName():
   """Helper to guess the version control system.
 
   This examines the current directory, guesses which VersionControlSystem
-  we're using, and returns an instance of the appropriate class.  Exit with an
-  error if we can't figure it out.
+  we're using, and returns an string indicating which VCS is detected.
 
   Returns:
-    A VersionControlSystem instance. Exits if the VCS can't be guessed.
+    A pair (vcs, output).  vcs is a string indicating which VCS was detected
+    and is one of VCS_GIT, VCS_MERCURIAL, VCS_SUBVERSION, or VCS_UNKNOWN.
+    output is a string containing any interesting output from the vcs
+    detection routine, or None if there is nothing interesting.
   """
   # Mercurial has a command to get the base directory of a repository
   # Try running it, but don't die if we don't have hg installed.
@@ -1231,7 +1319,7 @@ def GuessVCS(options):
   try:
     out, returncode = RunShellWithReturnCode(["hg", "root"])
     if returncode == 0:
-      return MercurialVCS(options, out.strip())
+      return (VCS_MERCURIAL, out.strip())
   except OSError, (errno, message):
     if errno != 2:  # ENOENT -- they don't have hg installed.
       raise
@@ -1239,7 +1327,7 @@ def GuessVCS(options):
   # Subversion has a .svn in all working directories.
   if os.path.isdir('.svn'):
     logging.info("Guessed VCS = Subversion")
-    return SubversionVCS(options)
+    return (VCS_SUBVERSION, None)
 
   # Git has a command to test if you're in a git tree.
   # Try running it, but don't die if we don't have git installed.
@@ -1247,16 +1335,81 @@ def GuessVCS(options):
     out, returncode = RunShellWithReturnCode(["git", "rev-parse",
                                               "--is-inside-work-tree"])
     if returncode == 0:
-      return GitVCS(options)
+      return (VCS_GIT, None)
   except OSError, (errno, message):
     if errno != 2:  # ENOENT -- they don't have git installed.
       raise
+
+  return (VCS_UNKNOWN, None)
+
+
+def GuessVCS(options):
+  """Helper to guess the version control system.
+
+  This verifies any user-specified VersionControlSystem (by command line
+  or environment variable).  If the user didn't specify one, this examines
+  the current directory, guesses which VersionControlSystem we're using,
+  and returns an instance of the appropriate class.  Exit with an error
+  if we can't figure it out.
+
+  Returns:
+    A VersionControlSystem instance. Exits if the VCS can't be guessed.
+  """
+  vcs = options.vcs
+  if not vcs:
+    vcs = os.environ.get("CODEREVIEW_VCS")
+  if vcs:
+    v = VCS_ABBREVIATIONS.get(vcs.lower())
+    if v is None:
+      ErrorExit("Unknown version control system %r specified." % vcs)
+    (vcs, extra_output) = (v, None)
+  else:
+    (vcs, extra_output) = GuessVCSName()
+
+  if vcs == VCS_MERCURIAL:
+    if extra_output is None:
+      extra_output = RunShell(["hg", "root"]).strip()
+    return MercurialVCS(options, extra_output)
+  elif vcs == VCS_SUBVERSION:
+    return SubversionVCS(options)
+  elif vcs == VCS_GIT:
+    return GitVCS(options)
 
   ErrorExit(("Could not guess version control system. "
              "Are you in a working copy directory?"))
 
 
+def CheckReviewer(reviewer):
+  """Validate a reviewer -- either a nickname or an email addres.
+
+  Args:
+    reviewer: A nickname or an email address.
+
+  Calls ErrorExit() if it is an invalid email address.
+  """
+  if "@" not in reviewer:
+    return  # Assume nickname
+  parts = reviewer.split("@")
+  if len(parts) > 2:
+    ErrorExit("Invalid email address: %r" % reviewer)
+  assert len(parts) == 2
+  if "." not in parts[1]:
+    ErrorExit("Invalid email address: %r" % reviewer)
+
+
 def RealMain(argv, data=None):
+  """The real main function.
+
+  Args:
+    argv: Command line arguments.
+    data: Diff contents. If None (default) the diff is generated by
+      the VersionControlSystem implementation returned by GuessVCS().
+
+  Returns:
+    A 2-tuple (issue id, patchset id).
+    The patchset id is None if the base files are not uploaded by this
+    script (applies only to SVN checkouts).
+  """
   logging.basicConfig(format=("%(asctime).19s %(levelname)s %(filename)s:"
                               "%(lineno)s %(message)s "))
   os.environ['LC_ALL'] = 'C'
@@ -1301,13 +1454,11 @@ def RealMain(argv, data=None):
     form_fields.append(("user", options.email))
   if options.reviewers:
     for reviewer in options.reviewers.split(','):
-      if "@" in reviewer and not reviewer.split("@")[1].count(".") == 1:
-        ErrorExit("Invalid email address: %s" % reviewer)
+      CheckReviewer(reviewer)
     form_fields.append(("reviewers", options.reviewers))
   if options.cc:
     for cc in options.cc.split(','):
-      if "@" in cc and not cc.split("@")[1].count(".") == 1:
-        ErrorExit("Invalid email address: %s" % cc)
+      CheckReviewer(cc)
     form_fields.append(("cc", options.cc))
   description = options.description
   if options.description_file:
@@ -1328,6 +1479,11 @@ def RealMain(argv, data=None):
         base_hashes += "|"
       base_hashes += checksum + ":" + file
   form_fields.append(("base_hashes", base_hashes))
+  if options.private:
+    if options.issue:
+      print "Warning: Private flag ignored when updating an existing issue."
+    else:
+      form_fields.append(("private", "1"))
   # If we're uploading base files, don't send the email before the uploads, so
   # that it contains the file status.
   if options.send_mail and options.download_base:
@@ -1342,18 +1498,13 @@ def RealMain(argv, data=None):
     uploaded_diff_file = [("data", "data.diff", data)]
   ctype, body = EncodeMultipartFormData(form_fields, uploaded_diff_file)
   response_body = rpc_server.Send("/upload", body, content_type=ctype)
+  patchset = None
   if not options.download_base or not uploaded_diff_file:
     lines = response_body.splitlines()
     if len(lines) >= 2:
       msg = lines[0]
       patchset = lines[1].strip()
       patches = [x.split(" ", 1) for x in lines[2:]]
-      for patch_pair in patches:
-        # On Windows if a file has property changes its filename uses '\'
-        # instead of '/'.  Perhaps this change should be made (also) on the
-        # server when it is decoding the patch file sent by the client, but
-        # we do it here as well to be safe.
-        patch_pair[1] = patch_pair[1].replace('\\', '/')
     else:
       msg = response_body
   else:
