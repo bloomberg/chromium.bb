@@ -27,6 +27,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -72,13 +73,13 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_NONE_INSTALLED));
   localized_strings.SetString(L"suggestGallery",
       l10n_util::GetStringF(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
-          std::wstring(L"<a href='") + 
-              ASCIIToWide(Extension::kGalleryBrowseUrl) +
+          std::wstring(L"<a href='") +
+              ASCIIToWide(extension_urls::kGalleryBrowsePrefix) +
               L"'>",
           L"</a>"));
   localized_strings.SetString(L"getMoreExtensions",
       std::wstring(L"<a href='") +
-          ASCIIToWide(Extension::kGalleryBrowseUrl) +
+          ASCIIToWide(extension_urls::kGalleryBrowsePrefix) +
           L"'>" +
           l10n_util::GetString(IDS_GET_MORE_EXTENSIONS) +
           L"</a>");

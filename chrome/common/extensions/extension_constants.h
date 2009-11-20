@@ -130,4 +130,16 @@ namespace extension_manifest_errors {
   extern const char* kInvalidOptionsPage;
 }  // namespace extension_manifest_errors
 
+namespace extension_urls {
+  // The greatest common prefixes of the main extensions gallery's browse and
+  // download URLs.
+  extern const char* kGalleryBrowsePrefix;
+  extern const char* kGalleryDownloadPrefix;
+
+  // Same thing for the "minigallery". The minigallery is the temporary static
+  // themes gallery that we put up when we launched themes.
+  extern const char* kMiniGalleryBrowsePrefix;
+  extern const char* kMiniGalleryDownloadPrefix;
+}  // namespace extension_urls
+
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

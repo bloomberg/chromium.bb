@@ -195,3 +195,11 @@ const char* kLocalesMessagesFileMissing =
 const char* kInvalidOptionsPage =
     "Invalid value for 'options_page'.";
 }  // namespace extension_manifest_errors
+
+namespace extension_urls {
+const char* kGalleryBrowsePrefix = "https://chrome.google.com/extensions";
+const char* kGalleryDownloadPrefix =
+    "https://clients2.googleusercontent.com/crx/download";
+const char* kMiniGalleryBrowsePrefix = "https://tools.google.com/chrome/";
+const char* kMiniGalleryDownloadPrefix = "https://dl-ssl.google.com/chrome/";
+}

@@ -18,6 +18,7 @@
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -240,10 +241,10 @@ void NTPResourceCache::CreateNewTabHtml() {
   localized_strings.SetString(L"promomessage",
       l10n_util::GetStringF(IDS_NTP_PROMOTION_MESSAGE,
           l10n_util::GetString(IDS_PRODUCT_NAME),
-          ASCIIToWide(Extension::kGalleryBrowseUrl),
+          ASCIIToWide(extension_urls::kGalleryBrowsePrefix),
           GetUrlWithLang(kSyncServiceHelpUrl)));
   localized_strings.SetString(L"extensionslink",
-      ASCIIToWide(Extension::kGalleryBrowseUrl));
+      ASCIIToWide(extension_urls::kGalleryBrowsePrefix));
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.

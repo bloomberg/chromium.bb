@@ -71,13 +71,6 @@ class ExtensionsService
   // The name of the file that the current active version number is stored in.
   static const char* kCurrentVersionFileName;
 
-  // Hack:
-  // Extensions downloaded from kGalleryDownloadURLPrefix initiated from pages
-  // with kGalleryURLPrefix will not require --enable-extensions and will be
-  // prompt-free.
-  static const char* kGalleryDownloadURLPrefix;
-  static const char* kGalleryURLPrefix;
-
   // Determine if a given extension download should be treated as if it came
   // from the gallery.
   static bool IsDownloadFromGallery(const GURL& download_url,
