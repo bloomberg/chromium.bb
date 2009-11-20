@@ -140,7 +140,7 @@
         'abstract': 1,
         'msvs_configuration_attributes': {
           'OutputDirectory':
-            '$(SolutionDir)$(ConfigurationName)-$(PlatformName)',
+            '$(SolutionDir)$(ConfigurationName)',
           'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
           'CharacterSet': '1',
         },
