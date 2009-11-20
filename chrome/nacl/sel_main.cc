@@ -8,6 +8,8 @@
 #include <crt_externs.h>
 #endif
 
+#define NACL_NO_INLINE
+
 EXTERN_C_BEGIN
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
@@ -50,6 +52,8 @@ static void StopForDebuggerInit(const struct NaClApp *state) {
 }
 
 int SelMain(const int desc, const NaClHandle handle) {
+  return 0;
+#if 0  // TODO(gregoryd): enable when the service runtime is ready
   char *av[1];
   int ac = 1;
 
@@ -71,14 +75,6 @@ int SelMain(const int desc, const NaClHandle handle) {
   extern char                   **environ;
   envp = environ;
 #endif
-
-
-  if (NaClHasExpired()) {
-    // TODO(gregoryd): report error to browser?
-    fprintf(stderr, "This version of Native Client has expired.\n");
-    fprintf(stderr, "Please visit: http://code.google.com/p/nativeclient/\n");
-    exit(-1);
-  }
 
   NaClAllModulesInit();
 
@@ -204,5 +200,6 @@ int SelMain(const int desc, const NaClHandle handle) {
   NaClAllModulesFini();
 
   return ret_code;
+#endif
 }
 
