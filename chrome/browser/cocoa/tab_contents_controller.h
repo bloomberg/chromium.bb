@@ -31,6 +31,10 @@ class TabStripModel;
 - (id)initWithNibName:(NSString*)name
              contents:(TabContents*)contents;
 
+// Called when the tab contents is the currently selected tab and is about to be
+// removed from the view hierarchy.
+- (void)willBecomeUnselectedTab;
+
 // Called when the tab contents is about to be put into the view hierarchy as
 // the selected tab. Handles things such as ensuring the toolbar is correctly
 // enabled.

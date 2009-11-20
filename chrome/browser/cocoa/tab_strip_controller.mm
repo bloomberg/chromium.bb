@@ -896,8 +896,14 @@ private:
   [self layoutTabs];
 
   if (oldContents) {
-    oldContents->view()->StoreFocus();
-    oldContents->WasHidden();
+    int index = browser_->GetIndexOfController(&(oldContents->controller()));
+    if (index != -1) {  // When closing a tab, the old tab may be gone.
+      TabContentsController* oldController =
+          [tabContentsArray_ objectAtIndex:index];
+      [oldController willBecomeUnselectedTab];
+      oldContents->view()->StoreFocus();
+      oldContents->WasHidden();
+    }
   }
 
   // Swap in the contents for the new tab.

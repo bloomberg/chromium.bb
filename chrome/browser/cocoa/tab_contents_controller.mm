@@ -39,7 +39,16 @@
   return [[self view] superview] ? YES : NO;
 }
 
+- (void)willBecomeUnselectedTab {
+  RenderViewHost* rvh = contents_->render_view_host();
+  if (rvh)
+    rvh->Blur();
+}
+
 - (void)willBecomeSelectedTab {
+  RenderViewHost* rvh = contents_->render_view_host();
+  if (rvh)
+    rvh->Focus();
 }
 
 - (void)tabDidChange:(TabContents*)updatedContents {
