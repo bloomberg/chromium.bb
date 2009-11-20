@@ -100,8 +100,6 @@ class ExtensionBookmarks {
 };
 
 void BookmarksFunction::Run() {
-  // TODO(erikkay) temporary hack until adding an event listener can notify the
-  // browser.
   BookmarkModel* model = profile()->GetBookmarkModel();
   if (!model->IsLoaded()) {
     // Bookmarks are not ready yet.  We'll wait.
@@ -111,9 +109,6 @@ void BookmarksFunction::Run() {
     return;
   }
 
-  ExtensionBookmarkEventRouter* event_router =
-      ExtensionBookmarkEventRouter::GetSingleton();
-  event_router->Observe(model);
   bool success = RunImpl();
   if (success) {
     NotificationService::current()->Notify(

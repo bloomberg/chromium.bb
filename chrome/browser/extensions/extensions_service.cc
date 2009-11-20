@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/extensions/crx_installer.h"
+#include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_file_util.h"
@@ -587,6 +588,10 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         // extension that needs it is loaded.
         if (extension->HasApiPermission(Extension::kTabPermission)) {
           ExtensionBrowserEventRouter::GetInstance()->Init();
+        }
+        if (extension->HasApiPermission(Extension::kBookmarkPermission)) {
+          ExtensionBookmarkEventRouter::GetSingleton()->Observe(
+              profile_->GetBookmarkModel());
         }
 
         if (extension->location() != Extension::LOAD)
