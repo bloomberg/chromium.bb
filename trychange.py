@@ -52,9 +52,7 @@ Examples:
   Running only on a 'mac' slave with revision 123 and clobber first; specify
   manually the 3 source files to use for the try job:
     %prog --bot mac --revision 123 --clobber -f src/a.cc -f src/a.h
-            -f include/b.h
-
-"""
+            -f include/b.h"""
 
 class InvalidScript(Exception):
   def __str__(self):
@@ -507,6 +505,8 @@ def TryChange(argv,
       options.send_patch = _SendChangeHTTP
     elif options.svn_repo:
       options.send_patch = _SendChangeSVN
+    else:
+      parser.error('Please specify an access method.')
 
   if len(args) == 1 and args[0] == 'help':
     parser.print_help()
@@ -514,8 +514,7 @@ def TryChange(argv,
       not options.diff and not options.url):
     # TODO(maruel): It should just try the modified files showing up in a
     # svn status.
-    print "Nothing to try, changelist is empty."
-    return 1
+    parser.error('Nothing to try, changelist is empty.')
 
   try:
     # Convert options.diff into the content of the diff.
@@ -536,8 +535,7 @@ def TryChange(argv,
     # Get try slaves from PRESUBMIT.py files if not specified.
     if not options.bot:
       if options.url:
-        print('You need to specify which bots to use.')
-        return 1
+        parser.error('You need to specify which bots to use.')
       root_presubmit = gcl.GetCachedFile('PRESUBMIT.py', use_root=True)
       options.bot = presubmit_support.DoGetTrySlaves(options.scm.GetFileNames(),
                                                      options.scm.GetLocalRoot(),
