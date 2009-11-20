@@ -77,6 +77,19 @@ void SendInputToWindow(HWND window, const std::string& input_string);
 // window.
 void SetKeyboardFocusToWindow(HWND window, int x, int y);
 
+// Temporarily impersonate the current thread to low integrity for the lifetime
+// of the object. Destructor will automatically revert integrity level.
+class LowIntegrityToken {
+ public:
+  LowIntegrityToken();
+  ~LowIntegrityToken();
+  BOOL Impersonate();
+  BOOL RevertToSelf();
+ protected:
+  static bool IsImpersonated();
+  bool impersonated_;
+};
+
 }  // namespace chrome_frame_test
 
-#endif  // CHROME_FRAME_CHROMETAB_UNITTESTS_CF_TEST_UTILS_H_
+#endif  // CHROME_FRAME_TEST_CHROME_FRAME_TEST_UTILS_H_

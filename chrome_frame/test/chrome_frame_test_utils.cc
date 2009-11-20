@@ -7,6 +7,7 @@
 #include <atlbase.h>
 #include <atlwin.h>
 #include <iepmapi.h>
+#include <sddl.h>
 
 #include "base/message_loop.h"
 #include "base/registry.h"   // to find IE and firefox
@@ -531,6 +532,93 @@ HWND GetChromeRendererWindow() {
   EnumWindows(EnumHostBrowserWindowProc,
               reinterpret_cast<LPARAM>(&chrome_window));
   return chrome_window;
+}
+
+
+LowIntegrityToken::LowIntegrityToken() : impersonated_(false) {
+}
+
+LowIntegrityToken::~LowIntegrityToken() {
+  RevertToSelf();
+}
+
+BOOL LowIntegrityToken::RevertToSelf() {
+  BOOL ok = TRUE;
+  if (impersonated_) {
+    DCHECK(IsImpersonated());
+    ok = ::RevertToSelf();
+    if (ok)
+      impersonated_ = false;
+  }
+
+  return ok;
+}
+
+BOOL LowIntegrityToken::Impersonate() {
+  DCHECK(!impersonated_);
+  DCHECK(!IsImpersonated());
+  HANDLE process_token_handle = NULL;
+  BOOL ok = ::OpenProcessToken(GetCurrentProcess(), TOKEN_DUPLICATE,
+                               &process_token_handle);
+  if (!ok) {
+    DLOG(ERROR) << "::OpenProcessToken failed: " << GetLastError();
+    return ok;
+  }
+
+  ScopedHandle process_token(process_token_handle);
+  // Create impersonation low integrity token.
+  HANDLE impersonation_token_handle = NULL;
+  ok = ::DuplicateTokenEx(process_token,
+      TOKEN_QUERY | TOKEN_IMPERSONATE | TOKEN_ADJUST_DEFAULT, NULL,
+      SecurityImpersonation, TokenImpersonation, &impersonation_token_handle);
+  if (!ok) {
+    DLOG(ERROR) << "::DuplicateTokenEx failed: " << GetLastError();
+    return ok;
+  }
+
+  // TODO: sandbox/src/restricted_token_utils.cc has SetTokenIntegrityLevel
+  // function already.
+  ScopedHandle impersonation_token(impersonation_token_handle);
+  PSID integrity_sid = NULL;
+  TOKEN_MANDATORY_LABEL tml = {0};
+  ok = ::ConvertStringSidToSid(SDDL_ML_LOW, &integrity_sid);
+  if (!ok) {
+    DLOG(ERROR) << "::ConvertStringSidToSid failed: " << GetLastError();
+    return ok;
+  }
+
+  tml.Label.Attributes = SE_GROUP_INTEGRITY | SE_GROUP_INTEGRITY_ENABLED;
+  tml.Label.Sid = integrity_sid;
+  ok = ::SetTokenInformation(impersonation_token, TokenIntegrityLevel,
+      &tml, sizeof(tml) + ::GetLengthSid(integrity_sid));
+  ::LocalFree(integrity_sid);
+  if (!ok) {
+    DLOG(ERROR) << "::SetTokenInformation failed: " << GetLastError();
+    return ok;
+  }
+
+  // Switch current thread to low integrity.
+  ok = ::ImpersonateLoggedOnUser(impersonation_token);
+  if (ok) {
+    impersonated_ = true;
+  } else {
+    DLOG(ERROR) << "::ImpersonateLoggedOnUser failed: " << GetLastError();
+  }
+
+  return ok;
+}
+
+bool LowIntegrityToken::IsImpersonated() {
+  HANDLE token = NULL;
+  if (!::OpenThreadToken(::GetCurrentThread(), 0, false, &token) &&
+      ::GetLastError() != ERROR_NO_TOKEN) {
+    return true;
+  }
+
+  if (token)
+    ::CloseHandle(token);
+
+  return false;
 }
 
 }  // namespace chrome_frame_test

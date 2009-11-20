@@ -15,7 +15,7 @@
 #include "base/file_util.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_variant_win.h"
-#include "base/sys_info.h"
+#include "base/win_util.h"
 #include "gmock/gmock.h"
 #include "net/url_request/url_request_unittest.h"
 #include "chrome_frame/test/chrome_frame_unittests.h"
@@ -1193,15 +1193,27 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   if (!web_browser)
     return E_INVALIDARG;
 
-  ScopedComPtr<IWebBrowser2> web_browser2;
-  HRESULT hr = CoCreateInstance(
-      CLSID_InternetExplorer, NULL, CLSCTX_LOCAL_SERVER, IID_IWebBrowser2,
-      reinterpret_cast<void**>(web_browser2.Receive()));
-
-  if (SUCCEEDED(hr)) {
-    *web_browser = web_browser2.Detach();
+  HRESULT hr = S_OK;
+  chrome_frame_test::LowIntegrityToken token;
+  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+    // Create medium integrity browser that will launch IE broker.
+    ScopedComPtr<IWebBrowser2> medium_integrity_browser;
+    hr = medium_integrity_browser.CreateInstance(CLSID_InternetExplorer, NULL,
+                                                 CLSCTX_LOCAL_SERVER);
+    if (FAILED(hr))
+      return hr;
+    medium_integrity_browser->Quit();
+    // Broker remains alive.
+    if (!token.Impersonate()) {
+      hr = HRESULT_FROM_WIN32(GetLastError());
+      return hr;
+    }
   }
 
+  hr = ::CoCreateInstance(CLSID_InternetExplorer, NULL,
+      CLSCTX_LOCAL_SERVER | CLSCTX_ENABLE_CLOAKING, IID_IWebBrowser2,
+      reinterpret_cast<void**>(web_browser));
+  // ~LowIntegrityToken() will switch integrity back to medium.
   return hr;
 }
 
@@ -1245,24 +1257,15 @@ HRESULT WebBrowserEventSink::OnMessageInternal(const VARIANT* param) {
 
 HRESULT WebBrowserEventSink::LaunchIEAndNavigate(
     const std::wstring& navigate_url) {
-  int major_version = 0;
-  int minor_version = 0;
-  int bugfix_version = 0;
-
-  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                               &bugfix_version);
-  if (major_version > 5) {
-    DLOG(INFO) << __FUNCTION__ << " Not running test on Windows version: "
-               << major_version;
-    return S_FALSE;
+  HRESULT hr = LaunchIEAsComServer(web_browser2_.Receive());
+  EXPECT_EQ(S_OK, hr);
+  if (hr == S_OK) {
+    web_browser2_->put_Visible(VARIANT_TRUE);
+    hr = DispEventAdvise(web_browser2_, &DIID_DWebBrowserEvents2);
+    EXPECT_TRUE(hr == S_OK);
+    hr = Navigate(navigate_url);
   }
-
-  EXPECT_TRUE(S_OK == LaunchIEAsComServer(web_browser2_.Receive()));
-  web_browser2_->put_Visible(VARIANT_TRUE);
-
-  HRESULT hr = DispEventAdvise(web_browser2_, &DIID_DWebBrowserEvents2);
-  EXPECT_TRUE(hr == S_OK);
-  return Navigate(navigate_url);
+  return hr;
 }
 
 HRESULT WebBrowserEventSink::Navigate(const std::wstring& navigate_url) {
