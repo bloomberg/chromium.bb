@@ -14,9 +14,6 @@
     'valgrind': {
       'filepath': 'valgrind',
     },
-    'purify': {
-      'filepath': 'purify',
-    },
     'mac': {
       'filepath': 'cocoa|\.mm$|(_mac|_posix)\.(cc|h)$',
     },
@@ -134,7 +131,6 @@
     'extension': ['aa@chromium.org',
                   'erikkay@chromium.org',
                   'pam+watch@chromium.org'],
-    'purify': ['erikkay@chromium.org'],
     'net': ['darin@chromium.org'],
     'ftp': ['phajdan.jr@chromium.org'],
     'installer': ['kuchhal@chromium.org'],

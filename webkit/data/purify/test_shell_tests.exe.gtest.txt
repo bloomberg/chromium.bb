@@ -1,5 +1,0 @@
-# Way too slow under Purify at the moment; http://crbug.com/9177
-BMPImageDecoderTest.ChunkedDecodingSlow
-BMPImageDecoderTest.DecodingSlow
-# Started timing out (again) at r22659 (prev r22420); Bug 18598
-PluginTest.*

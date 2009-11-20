@@ -74,9 +74,6 @@ def CheckChangeOnCommit(input_api, output_api):
   # These builders are just too slow.
   IGNORED_BUILDERS = [
     'Chromium XP',
-    'XP Unit (purify)',
-    'Modules XP (purify)',
-    'Webkit (purify)',
     'Chromium Mac',
     'Chromium Mac (valgrind)',
     'Chromium Mac UI (valgrind)(1)',
