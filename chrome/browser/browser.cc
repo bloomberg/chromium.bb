@@ -144,6 +144,8 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
+                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -2296,8 +2298,9 @@ void Browser::Observe(NotificationType type,
       break;
     }
 
-    case NotificationType::EXTENSION_UNLOADED: {
-      window()->GetLocationBar()->InvalidatePageActions();
+    case NotificationType::EXTENSION_UNLOADED:
+    case NotificationType::EXTENSION_UNLOADED_DISABLED: {
+      window()->GetLocationBar()->UpdatePageActions();
 
       // Close any tabs from the unloaded extension.
       Extension* extension = Details<Extension>(details).ptr();

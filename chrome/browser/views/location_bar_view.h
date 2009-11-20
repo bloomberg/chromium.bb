@@ -19,6 +19,8 @@
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/native/native_view_host.h"
@@ -363,6 +365,7 @@ class LocationBarView : public LocationBar,
   // and notify the extension when the icon is clicked.
   class PageActionImageView : public LocationBarImageView,
                               public ImageLoadingTracker::Observer,
+                              public NotificationObserver,
                               public BrowserBubble::Delegate {
    public:
     PageActionImageView(LocationBarView* owner,
@@ -405,6 +408,11 @@ class LocationBarView : public LocationBar,
     // Hides the active popup, if there is one.
     void HidePopup();
 
+    // Overridden from NotificationObserver:
+    virtual void Observe(NotificationType type,
+                         const NotificationSource& source,
+                         const NotificationDetails& details);
+
     // The location bar view that owns us.
     LocationBarView* owner_;
 
@@ -440,6 +448,8 @@ class LocationBarView : public LocationBar,
     ExtensionPopup* popup_;
 
     ScopedRunnableMethodFactory<PageActionImageView> method_factory_;
+
+    NotificationRegistrar registrar_;
 
     DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
   };

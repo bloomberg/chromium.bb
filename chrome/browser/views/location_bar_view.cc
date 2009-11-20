@@ -1315,6 +1315,9 @@ LocationBarView::PageActionImageView::PageActionImageView(
         gfx::Size(Extension::kPageActionIconMaxSize,
                   Extension::kPageActionIconMaxSize));
   }
+
+  registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+                 Source<Profile>(profile_));
 }
 
 LocationBarView::PageActionImageView::~PageActionImageView() {
@@ -1335,12 +1338,19 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
     if (!browser)
       browser = BrowserList::FindBrowserWithProfile(profile_);
 
+    bool popup_showing = popup_ != NULL;
+
     // Always hide the current popup. Only one popup at a time.
     HidePopup();
 
+    // If we were already showing, then treat this click as a dismiss.
+    if (popup_showing)
+      return;
+
+    View* parent = GetParent();
     gfx::Point origin;
-    View::ConvertPointToScreen(this, &origin);
-    gfx::Rect rect = bounds();
+    View::ConvertPointToScreen(parent, &origin);
+    gfx::Rect rect = parent->bounds();
     rect.set_x(origin.x());
     rect.set_y(origin.y());
     popup_ = ExtensionPopup::Show(page_action_->popup_url(), browser, rect,
@@ -1479,6 +1489,24 @@ void LocationBarView::PageActionImageView::HidePopup() {
 
   closing_popup->DetachFromBrowser();
   delete closing_popup;
+}
+
+void LocationBarView::PageActionImageView::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  switch (type.value) {
+    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
+      // If we aren't the host of the popup, then disregard the notification.
+      if (!popup_ || Details<ExtensionHost>(popup_->host()) != details)
+        return;
+
+      HidePopup();
+      break;
+    default:
+      NOTREACHED() << "Unexpected notification";
+      break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -3,6 +3,7 @@
   "version": "0.6",
   "description": "Finds addresses in the web page you're on and pops up a map window.",
   "icons": { "128": "icon.png" },
+  "background_page": "background.html",
   "content_scripts": [
     { "matches": ["http://*/*"], "js": ["mappy_content_script.js"] }
   ],
@@ -10,9 +11,9 @@
     "tabs",
     "http://maps.google.com/*"
   ],
-  "browser_action": {
-      "name": "Display Map",
+  "page_action": {
+      "default_name": "Display Map",
       "default_icon": "marker.png",
-      "popup": { "path": "popup.html" }
+      "popup": "popup.html"
   }
 }

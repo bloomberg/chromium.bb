@@ -31,18 +31,9 @@ function gclient_geocode(address) {
 }
 
 function map() {
-  chrome.tabs.getSelected(null, function(tab) {
-    var port = chrome.tabs.connect(tab.id);
-    if (!port) {
-      console.log("no port");
-    } else {
-      port.onMessage.addListener(function(data) {
-        var address = data.values[0];
-        gclient_geocode(address);
-      });
-      port.postMessage({message: "hello tab: " + tab.id});
-    }
-  });
+  var address = chrome.extension.getBackgroundPage().selectedAddress;
+  if (address)
+    gclient_geocode(address);
 };
 </script>
 </head>
