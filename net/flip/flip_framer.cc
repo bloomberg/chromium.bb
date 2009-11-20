@@ -229,6 +229,7 @@ size_t FlipFramer::ProcessCommonHeader(const char* data, size_t len) {
       break;
     }
     remaining_payload_ = current_frame.length();
+    DCHECK_LE(remaining_payload_, 1000000u);  // Sanity!
     // if we're here, then we have the common header all received.
     if (!current_frame.is_control_frame())
       CHANGE_STATE(FLIP_FORWARD_STREAM_FRAME);
