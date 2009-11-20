@@ -129,6 +129,42 @@ TEST_F(BookmarkBubbleControllerTest, TestFillInFolder) {
   EXPECT_FALSE([titles containsObject:@"title2"]);
 }
 
+// Confirm ability to handle folders with blank name.
+TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
+  // Create some folders, including a nested folder
+  BookmarkModel* model = GetBookmarkModel();
+  EXPECT_TRUE(model);
+  const BookmarkNode* bookmarkBarNode = model->GetBookmarkBarNode();
+  EXPECT_TRUE(bookmarkBarNode);
+  const BookmarkNode* node1 = model->AddGroup(bookmarkBarNode, 0, L"one");
+  EXPECT_TRUE(node1);
+  const BookmarkNode* node2 = model->AddGroup(bookmarkBarNode, 1, L"");
+  EXPECT_TRUE(node2);
+  const BookmarkNode* node3 = model->AddGroup(bookmarkBarNode, 2, L"three");
+  EXPECT_TRUE(node3);
+  const BookmarkNode* node2_1 =
+      model->AddURL(node2, 0, L"title1", GURL("http://www.google.com"));
+  EXPECT_TRUE(node2_1);
+
+  BookmarkBubbleController* controller = ControllerForNode(node1);
+  EXPECT_TRUE(controller);
+
+  // One of the items should be blank and its node should be node2.
+  NSArray* items = [[controller folderPopUpButton] itemArray];
+  EXPECT_EQ(6U, [items count]);
+  BOOL blankFolderFound = NO;
+  for (NSMenuItem* item in [[controller folderPopUpButton] itemArray]) {
+    if ([[item title] length] == 0 &&
+        static_cast<const BookmarkNode*>([[item representedObject]
+                                          pointerValue]) == node2) {
+      blankFolderFound = YES;
+      break;
+    }
+  }
+  EXPECT_TRUE(blankFolderFound);
+}
+
+
 // Click on edit; bubble gets closed.
 TEST_F(BookmarkBubbleControllerTest, TestEdit) {
   BookmarkModel* model = GetBookmarkModel();

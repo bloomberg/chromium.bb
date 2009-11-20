@@ -226,8 +226,8 @@
 // the given pop up button.
 - (void)addFolderNodes:(const BookmarkNode*)parent
          toPopUpButton:(NSPopUpButton*)button {
-  NSString* title = base::SysWideToNSString(parent->GetTitle());
-  if ([title length])  {  // no title if root
+  if (!model_->is_root(parent))  {
+    NSString* title = base::SysWideToNSString(parent->GetTitle());
     NSMenu* menu = [button menu];
     NSMenuItem* item = [menu addItemWithTitle:title
                                        action:NULL
