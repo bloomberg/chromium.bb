@@ -1640,17 +1640,6 @@
    fun:tooltip_popup_timeout
    fun:gdk_threads_dispatch
    fun:g_timeout_dispatch
-   fun:g_main_context_dispatch
-   fun:g_main_context_iterate
-   fun:g_main_context_iteration
-   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
-   fun:_ZN59_GLOBAL__N_chrome_browser_browser_main.cc_00000000_A2DDE14216RunUIMessageLoopEP14BrowserProcess
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
 }
 {
    # This looks like a bug in how the arguments passed to signals are bundled
@@ -1674,13 +1663,6 @@
    fun:tooltip_popup_timeout
    fun:gdk_threads_dispatch
    fun:g_timeout_dispatch
-   fun:g_main_context_dispatch
-   fun:g_main_context_iterate
-   fun:g_main_context_iteration
-   fun:_ZN4base16MessagePumpForUI17RunWithDispatcherEPNS_11MessagePump8DelegateEPNS0_10DispatcherE
-   fun:_ZN11MessageLoop11RunInternalEv
-   fun:_ZN11MessageLoop10RunHandlerEv
-   fun:_ZN16MessageLoopForUI3RunEPN4base16MessagePumpForUI10DispatcherE
 }
 # This task is created quite frequently and may leak on shutdown depending on
 # ordering.
