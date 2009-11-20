@@ -23,7 +23,7 @@ class View;
 //
 // The border class is used to display a border around a view.
 // To set a border on a view, just call SetBorder on the view, for example:
-// view->SetBorder(Border::CreateSolidBorder(1, SkColorSetRGB(25, 25, 112));
+// view->set_border(Border::CreateSolidBorder(1, SkColorSetRGB(25, 25, 112));
 // Once set on a view, the border is owned by the view.
 //
 // IMPORTANT NOTE: not all views support borders at this point. In order to
