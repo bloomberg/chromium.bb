@@ -182,7 +182,7 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
     web_prefs.local_storage_enabled =
       !command_line.HasSwitch(switches::kDisableLocalStorage);
     web_prefs.databases_enabled =
-      command_line.HasSwitch(switches::kEnableDatabases);
+      !command_line.HasSwitch(switches::kDisableDatabases);
     web_prefs.experimental_webgl_enabled =
       command_line.HasSwitch(switches::kEnableExperimentalWebGL);
   }
