@@ -105,8 +105,6 @@ static gboolean gtk_chrome_link_button_expose(GtkWidget* widget,
   GtkChromeLinkButton* button = GTK_CHROME_LINK_BUTTON(widget);
   GtkWidget* label = button->label;
 
-  gtk_chrome_link_button_set_text(button);
-
   if (GTK_WIDGET_STATE(widget) == GTK_STATE_ACTIVE && button->is_normal) {
     gtk_label_set_markup(GTK_LABEL(label), button->pressed_markup);
     button->is_normal = FALSE;
@@ -195,6 +193,9 @@ GtkWidget* gtk_chrome_link_button_new(const char* text) {
   GtkWidget* lb = GTK_WIDGET(g_object_new(GTK_TYPE_CHROME_LINK_BUTTON, NULL));
   GTK_CHROME_LINK_BUTTON(lb)->text = g_strdup(text);
   GTK_CHROME_LINK_BUTTON(lb)->uses_markup = FALSE;
+
+  gtk_chrome_link_button_set_text(GTK_CHROME_LINK_BUTTON(lb));
+
   return lb;
 }
 
@@ -202,6 +203,9 @@ GtkWidget* gtk_chrome_link_button_new_with_markup(const char* markup) {
   GtkWidget* lb = GTK_WIDGET(g_object_new(GTK_TYPE_CHROME_LINK_BUTTON, NULL));
   GTK_CHROME_LINK_BUTTON(lb)->text = g_strdup(markup);
   GTK_CHROME_LINK_BUTTON(lb)->uses_markup = TRUE;
+
+  gtk_chrome_link_button_set_text(GTK_CHROME_LINK_BUTTON(lb));
+
   return lb;
 }
 
@@ -220,14 +224,20 @@ void gtk_chrome_link_button_set_label(GtkChromeLinkButton* button,
   gtk_chrome_link_button_destroy_text_resources(button);
   button->text = g_strdup(text);
 
+  gtk_chrome_link_button_set_text(button);
+
   if (GTK_WIDGET_VISIBLE(button))
     gtk_widget_queue_draw(GTK_WIDGET(button));
 }
 
 void gtk_chrome_link_button_set_normal_color(GtkChromeLinkButton* button,
                                              const GdkColor* color) {
+  g_free(button->native_markup);
+  button->native_markup = NULL;
   g_free(button->normal_markup);
   button->normal_markup = NULL;
+  g_free(button->pressed_markup);
+  button->pressed_markup = NULL;
 
   if (color) {
     snprintf(button->normal_color, 9, "#%02X%02X%02X", color->red / 257,
@@ -235,6 +245,8 @@ void gtk_chrome_link_button_set_normal_color(GtkChromeLinkButton* button,
   } else {
     strncpy(button->normal_color, "blue", 9);
   }
+
+  gtk_chrome_link_button_set_text(button);
 
   if (GTK_WIDGET_VISIBLE(button))
     gtk_widget_queue_draw(GTK_WIDGET(button));
