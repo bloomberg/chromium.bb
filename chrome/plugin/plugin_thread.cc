@@ -21,6 +21,7 @@
 #include "net/base/net_errors.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
 static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls(
     base::LINKER_INITIALIZED);
@@ -102,6 +103,10 @@ void PluginThread::OnControlMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PluginThread, msg)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_CreateChannel, OnCreateChannel)
     IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginMessage, OnPluginMessage)
+#if defined(OS_MACOSX)
+  IPC_MESSAGE_HANDLER(PluginProcessMsg_PluginFocusNotify,
+                      OnPluginFocusNotify)
+#endif
   IPC_END_MESSAGE_MAP()
 }
 
@@ -137,6 +142,20 @@ void PluginThread::OnPluginMessage(const std::vector<unsigned char> &data) {
   }
   ChildProcess::current()->ReleaseProcess();
 }
+
+#if defined(OS_MACOSX)
+void PluginThread::OnPluginFocusNotify(uint32 instance_id) {
+  WebPluginDelegateImpl* instance =
+      reinterpret_cast<WebPluginDelegateImpl*>(instance_id);
+  std::set<WebPluginDelegateImpl*> active_delegates =
+      WebPluginDelegateImpl::GetActiveDelegates();
+  for (std::set<WebPluginDelegateImpl*>::iterator iter =
+           active_delegates.begin();
+       iter != active_delegates.end(); iter++) {
+    (*iter)->FocusNotify(instance);
+  }
+}
+#endif
 
 namespace webkit_glue {
 

@@ -46,6 +46,22 @@ class FinishDestructionTask : public Task {
   WebPlugin* webplugin_;
 };
 
+#if defined(OS_MACOSX)
+namespace {
+
+void FocusNotifier(WebPluginDelegateImpl *instance) {
+  uint32 process_id = getpid();
+  uint32 instance_id = reinterpret_cast<uint32>(instance);
+  PluginThread* plugin_thread = PluginThread::current();
+  if (plugin_thread) {
+    plugin_thread->Send(
+        new PluginProcessHostMsg_PluginReceivedFocus(process_id, instance_id));
+  }
+}
+
+}
+#endif
+
 WebPluginDelegateStub::WebPluginDelegateStub(
     const std::string& mime_type, int instance_id, PluginChannel* channel) :
     mime_type_(mime_type),
@@ -164,6 +180,9 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                     params.arg_values,
                                     webplugin_,
                                     params.load_manually);
+#if defined(OS_MACOSX)
+    delegate_->SetFocusNotifier(FocusNotifier);
+#endif
   }
 }
 

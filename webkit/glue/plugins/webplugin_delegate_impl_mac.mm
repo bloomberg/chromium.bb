@@ -7,6 +7,7 @@
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 #include "base/file_util.h"
@@ -72,6 +73,9 @@ const int kPluginIdleThrottleDelayMs = 20;  // 20ms (50Hz)
 int g_current_x_offset = 0;
 int g_current_y_offset = 0;
 
+base::LazyInstance<std::set<WebPluginDelegateImpl*> > g_active_delegates(
+    base::LINKER_INITIALIZED);
+
 }  // namespace
 
 WebPluginDelegateImpl::WebPluginDelegateImpl(
@@ -89,6 +93,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       waiting_to_die_(false),
       last_mouse_x_(0),
       last_mouse_y_(0),
+      have_focus_(false),
       handle_event_depth_(0),
       user_gesture_message_posted_(this),
       user_gesture_msg_factory_(this) {
@@ -105,9 +110,13 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
     // CoreAnimation, just ignore what QuickTime asks for.
     quirks_ |= PLUGIN_QUIRK_IGNORE_NEGOTIATED_DRAWING_MODEL;
   }
+  std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
+  delegates->insert(this);
 }
 
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
+  std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
+  delegates->erase(this);
 #ifndef NP_NO_QUICKDRAW
   if (qd_port_.port) {
     DisposeGWorld(qd_port_.port);
@@ -402,11 +411,24 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   DCHECK(err == NPERR_NO_ERROR);
 }
 
-void WebPluginDelegateImpl::SetFocus() {
+std::set<WebPluginDelegateImpl*> WebPluginDelegateImpl::GetActiveDelegates() {
+  std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
+  return *delegates;
+}
+
+void WebPluginDelegateImpl::FocusNotify(WebPluginDelegateImpl* delegate) {
+  if (waiting_to_die_)
+    return;
+
+  have_focus_ = (delegate == this);
+
   switch (instance()->event_model()) {
     case NPEventModelCarbon: {
       NPEvent focus_event = { 0 };
-      focus_event.what = NPEventType_GetFocusEvent;
+      if (have_focus_)
+        focus_event.what = NPEventType_GetFocusEvent;
+      else
+        focus_event.what = NPEventType_LoseFocusEvent;
       focus_event.when = TickCount();
       instance()->NPP_HandleEvent(&focus_event);
       break;
@@ -415,11 +437,18 @@ void WebPluginDelegateImpl::SetFocus() {
       NPCocoaEvent focus_event;
       memset(&focus_event, 0, sizeof(focus_event));
       focus_event.type = NPCocoaEventFocusChanged;
-      focus_event.data.focus.hasFocus = true;
+      focus_event.data.focus.hasFocus = have_focus_;
       instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&focus_event));
       break;
     }
   }
+}
+
+void WebPluginDelegateImpl::SetFocus() {
+  if (focus_notifier_)
+    focus_notifier_(this);
+  else
+    FocusNotify(this);
 }
 
 int WebPluginDelegateImpl::PluginDrawingModel() {
@@ -699,6 +728,12 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
       UpdateWindowLocation(reinterpret_cast<WindowRef>(cg_context_.window),
                            *mouse_event);
     }
+    // if we do not currently have focus and this is a mouseDown, trigger a
+    // notification that we are taking the keyboard focus.  We can't just key
+    // off of incoming calls to SetFocus, since WebKit may already think we
+    // have it if we were the most recently focused element on our parent tab.
+    if (np_event.what == mouseDown && !have_focus_)
+      SetFocus();
   }
 #endif
 

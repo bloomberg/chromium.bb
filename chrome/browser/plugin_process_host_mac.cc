@@ -12,6 +12,8 @@
 #include "base/mac_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/plugin_process_host.h"
+#include "chrome/common/plugin_messages.h"
+
 
 void PluginProcessHost::OnPluginSelectWindow(uint32 window_id,
                                              gfx::Rect window_rect,
@@ -73,5 +75,18 @@ void PluginProcessHost::OnAppActivation() {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableFunction(mac_util::ActivateProcess, handle()));
+  }
+}
+
+void PluginProcessHost::OnPluginReceivedFocus(int process_id, int instance_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  // A plugin has received keyboard focus, so tell all other plugin processes
+  // that they no longer have it (simulating the OS-level focus notifications
+  // that Gtk and Windows provide).
+  for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+       !iter.Done(); ++iter) {
+    PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
+    int instance = (plugin->handle() == process_id) ? instance_id : 0;
+    plugin->Send(new PluginProcessMsg_PluginFocusNotify(instance));
   }
 }

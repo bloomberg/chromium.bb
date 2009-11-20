@@ -10,12 +10,14 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_trial.h"
 #import "chrome/browser/cocoa/rwhvm_editcommand_helper.h"
+#include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/edit_command.h"
+#include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
@@ -47,6 +49,26 @@ namespace {
 
 // Maximum number of characters we allow in a tooltip.
 const size_t kMaxTooltipLength = 1024;
+
+class NotifyPluginProcessHostTask : public Task {
+ public:
+  NotifyPluginProcessHostTask(uint32 process_id, uint32 instance_id)
+      : process_id_(process_id), instance_id_(instance_id) { }
+
+ private:
+  void Run() {
+    for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
+         !iter.Done(); ++iter) {
+      PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
+      uint32 plugin_pid = plugin->handle();
+      uint32 instance = (plugin_pid == process_id_) ? instance_id_ : 0;
+      plugin->Send(new PluginProcessMsg_PluginFocusNotify(instance));
+    }
+  }
+
+  uint32 process_id_;
+  uint32 instance_id_;
+};
 
 }
 
@@ -133,6 +155,10 @@ void RenderWidgetHostViewMac::WasHidden() {
   // ignore them so we don't re-allocate the backing store.  We will paint
   // everything again when we become selected again.
   is_hidden_ = true;
+
+  // tell any plugins that thought they had the focus that they do not now.
+  ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+                         new NotifyPluginProcessHostTask(0, 0));
 
   // If we have a renderer, then inform it that we are being hidden so it can
   // reduce its resource utilization.
@@ -453,6 +479,10 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
 void RenderWidgetHostViewMac::SetActive(bool active) {
   if (render_widget_host_)
     render_widget_host_->SetActive(active);
+  if (!active)
+    // tell any plugins that thought they had the focus that they do not now.
+    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+                           new NotifyPluginProcessHostTask(0, 0));
 }
 
 void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {

@@ -47,6 +47,15 @@ IPC_BEGIN_MESSAGES(PluginProcess)
                        bool /* on or off */)
 #endif
 
+#if defined(OS_MACOSX)
+  // Notifies a plugin process that keyboard focus has changed.  If another
+  // plugin instance has received focus, the process and instance IDs are
+  // passed as parameters; if focus has been taken away from a plugin, 0 is
+  // passed for both parameters.
+  IPC_MESSAGE_CONTROL1(PluginProcessMsg_PluginFocusNotify,
+                       uint32 /* instance ID */)
+#endif
+
 IPC_END_MESSAGES(PluginProcess)
 
 
@@ -151,6 +160,11 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
   IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginDisposeWindow,
                        uint32 /* window ID */,
                        gfx::Rect /* window rect */)
+
+  // Notifies the browser that a plugin instance has received keyboard focus
+  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginReceivedFocus,
+                       uint32 /* process ID */,
+                       uint32 /* instance ID */)
 #endif
 
 IPC_END_MESSAGES(PluginProcessHost)

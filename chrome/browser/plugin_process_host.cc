@@ -512,6 +512,8 @@ void PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
                         OnPluginHideWindow)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginDisposeWindow,
                         OnPluginDisposeWindow)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginReceivedFocus,
+                        OnPluginReceivedFocus)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()

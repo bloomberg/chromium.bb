@@ -37,6 +37,7 @@ class PluginThread : public ChildThread {
   void OnPluginMessage(const std::vector<uint8> &data);
 #if defined(OS_MACOSX)
   void OnAppActivated();
+  void OnPluginFocusNotify(uint32 instance_id);
 #endif
 
   // The plugin module which is preloaded in Init

@@ -130,6 +130,7 @@ class PluginProcessHost : public ChildProcessHost,
                           bool modal);
   void OnPluginHideWindow(uint32 window_id, gfx::Rect window_rect);
   void OnPluginDisposeWindow(uint32 window_id, gfx::Rect window_rect);
+  void OnPluginReceivedFocus(int process_id, int instance_id);
 #endif
 
   virtual bool CanShutdown() { return sent_requests_.empty(); }

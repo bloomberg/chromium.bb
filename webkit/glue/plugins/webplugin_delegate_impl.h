@@ -9,6 +9,7 @@
 
 #include <string>
 #include <list>
+#include <set>
 
 #include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
@@ -113,6 +114,20 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Informs the delegate that the context used for painting windowless plugins
   // has changed.
   void UpdateContext(gfx::NativeDrawingContext context);
+  // returns a vector of currently active delegates in this process.
+  static std::set<WebPluginDelegateImpl*> GetActiveDelegates();
+  // Informs the delegate which plugin instance has just received keyboard focus
+  // so that it can notify the plugin as appropriate.  If |process_id| and
+  // |instance_id| are both 0, this signifies that no plugin has keyboard
+  // focus.
+  void FocusNotify(WebPluginDelegateImpl* focused_delegate);
+  // Set a notifier function that gets called when the delegate is accepting
+  // the focus.  If no notifier function has been set, the delegate will just
+  // call FocusNotify(this).  This is used in a multiprocess environment to
+  // propagate focus notifications to all running plugin processes.
+  void SetFocusNotifier(void (*notifier)(WebPluginDelegateImpl*)) {
+    focus_notifier_ = notifier;
+  }
 #endif
 
  private:
@@ -305,6 +320,10 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Last mouse position within the plugin's rect (used for null events).
   int last_mouse_x_;
   int last_mouse_y_;
+  // True if the plugin thinks it has keyboard focus
+  bool have_focus_;
+  // A function to call when we want to accept keyboard focus
+  void (*focus_notifier_)(WebPluginDelegateImpl* notifier);
 #endif
 
   // Called by the message filter hook when the plugin enters a modal loop.
