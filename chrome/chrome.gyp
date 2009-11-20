@@ -3567,7 +3567,7 @@
                 'app/resources/manpage.1.in',
               ],
               'outputs': [
-                '<(PRODUCT_DIR)/<(filename).1',
+                '<(PRODUCT_DIR)/chrome.1',
               ],
               'action': [
                 'tools/build/linux/sed.sh',
