@@ -40,9 +40,12 @@
   [self registerForDraggedTypes:types];
 }
 
-- (void)viewDidMoveToWindow {
-  if ([self window])
-    [self updateTheme:[self gtm_theme]];
+// We need the theme to color the bookmark buttons properly.  But our
+// controller desn't have access to it until it's placed in the view
+// hierarchy.  This is the spot where we close the loop.
+- (void)viewWillMoveToWindow:(NSWindow*)window {
+  [self updateTheme:[window gtm_theme]];
+  [controller_ updateTheme:[window gtm_theme]];
 }
 
 // Called after the current theme has changed.

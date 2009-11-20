@@ -232,6 +232,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (NSButton*)offTheSideButton;
 - (NSButton*)otherBookmarksButton;
 - (BookmarkNode*)nodeFromMenuItem:(id)sender;
+- (void)updateTheme:(GTMTheme*)theme;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

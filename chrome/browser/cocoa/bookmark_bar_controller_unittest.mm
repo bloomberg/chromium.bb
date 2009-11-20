@@ -79,6 +79,27 @@
 
 @end
 
+@interface FakeTheme : GTMTheme {
+  scoped_nsobject<NSColor> color_;
+}
+@end
+
+@implementation FakeTheme
+- (id)initWithColor:(NSColor*)color {
+  if ((self = [super init])) {
+    color_.reset([color retain]);
+  }
+  return self;
+}
+
+- (NSColor*)textColorForStyle:(GTMThemeStyle)style
+                        state:(GTMThemeState)state {
+  return color_.get();
+}
+@end
+
+
+
 namespace {
 
 static const int kContentAreaHeight = 500;
@@ -845,6 +866,31 @@ TEST_F(BookmarkBarControllerTest, TestDragButton) {
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:0] title] isEqual:@"b"]);
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:1] title] isEqual:@"c"]);
   EXPECT_TRUE([[[[bar_ buttons] objectAtIndex:2] title] isEqual:@"a"]);
+}
+
+// Fake a theme with colored text.  Apply it and make sure bookmark
+// buttons have the same colored text.  Repeat more than once.
+TEST_F(BookmarkBarControllerTest, TestThemedButton) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  model->SetURLStarred(GURL("http://www.foo.com"), L"small", true);
+  BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];
+  EXPECT_TRUE(button);
+
+  NSArray* colors = [NSArray arrayWithObjects:[NSColor redColor],
+                                              [NSColor blueColor],
+                                              nil];
+  for (NSColor* color in colors) {
+    scoped_nsobject<FakeTheme> theme([[FakeTheme alloc] initWithColor:color]);
+    [bar_ updateTheme:theme.get()];
+    NSAttributedString* astr = [button attributedTitle];
+    EXPECT_TRUE(astr);
+    EXPECT_TRUE([[astr string] isEqual:@"small"]);
+    // Pick a char in the middle to test (index 3)
+    NSDictionary* attributes = [astr attributesAtIndex:3 effectiveRange:NULL];
+    NSColor* newColor =
+        [attributes objectForKey:NSForegroundColorAttributeName];
+    EXPECT_TRUE([newColor isEqual:color]);
+  }
 }
 
 // TODO(viettrungluu): figure out how to test animations.

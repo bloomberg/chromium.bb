@@ -182,6 +182,13 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
     defaultImage_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
 
+  // Register for theme changes.
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter addObserver:self
+                    selector:@selector(themeDidChangeNotification:)
+                        name:kGTMThemeDidChangeNotification
+                      object:nil];
+
     // This call triggers an awakeFromNib, which builds the bar, which
     // might uses folderImage_.  So make sure it happens after
     // folderImage_ is loaded.
@@ -202,6 +209,30 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
+}
+
+// Adapt appearance of buttons to the current theme. Called after
+// theme changes, or when our view is added to the view hierarchy.
+// Oddly, the view pings us instead of us pinging our view.  This is
+// because our trigger is an [NSView viewWillMoveToWindow:], which the
+// controller doesn't normally know about.  Otherwise we don't have
+// access to the theme before we know what window we will be on.
+- (void)updateTheme:(GTMTheme*)theme {
+  if (!theme)
+    return;
+  NSColor* color = [theme textColorForStyle:GTMThemeStyleBookmarksBarButton
+                                      state:GTMThemeStateActiveWindow];
+  for (BookmarkButton* button in buttons_.get()) {
+    BookmarkButtonCell* cell = [button cell];
+    [cell setTextColor:color];
+  }
+  [[otherBookmarksButton_ cell] setTextColor:color];
+}
+
+// Called after the current theme has changed.
+- (void)themeDidChangeNotification:(NSNotification*)aNotification {
+  GTMTheme* theme = [aNotification object];
+  [self updateTheme:theme];
 }
 
 - (void)awakeFromNib {
@@ -866,7 +897,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node {
   NSString* title = base::SysWideToNSString(node->GetTitle());
   BookmarkButtonCell* cell =
-      [[[BookmarkButtonCell alloc] initTextCell:nil] autorelease];
+    [[[BookmarkButtonCell alloc] initTextCell:nil]
+      autorelease];
   DCHECK(cell);
   [cell setRepresentedObject:[NSValue valueWithPointer:node]];
 
@@ -1088,6 +1120,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [self clearBookmarkBar];
   [self addNodesToButtonList:node];
   [self createOtherBookmarksButton];
+  [self updateTheme:[[self view] gtm_theme]];
   [self resizeButtons];
   [self positionOffTheSideButton];
   [self addNonBookmarkButtonsToView];
@@ -1148,7 +1181,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     void* pointer = [[cell representedObject] pointerValue];
     const BookmarkNode* cellnode = static_cast<const BookmarkNode*>(pointer);
     if (cellnode == node) {
-      [cell setBookmarkCellText:[cell title]
+      [cell setBookmarkCellText:nil
                           image:[self getFavIconForNode:node]];
       // Adding an image means we might need more room for the
       // bookmark.  Test for it by growing the button (if needed)

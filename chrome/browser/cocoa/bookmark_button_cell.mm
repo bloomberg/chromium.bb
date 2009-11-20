@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 @implementation BookmarkButtonCell
 
-- (id)initTextCell:(NSString *)string {
+- (id)initTextCell:(NSString*)string {
   if ((self = [super initTextCell:string])) {
     [self setButtonType:NSMomentaryPushInButton];
     [self setBezelStyle:NSShadowlessSquareBezelStyle];
@@ -41,15 +42,21 @@
                                            withString:@" "];
   title = [title stringByReplacingOccurrencesOfString:@"\r"
                                            withString:@" "];
+  // Center the image if we have a title, or if there already was a
+  // title set.
+  BOOL hasTitle = (([title length] > 0) ||
+                   ([[self title] length] > 0));
   if (image) {
     [self setImage:image];
-    if ([title length] < 1) {
-      [self setImagePosition:NSImageOnly];
-    } else {
+    if (hasTitle) {
       [self setImagePosition:NSImageLeft];
+    } else {
+      [self setImagePosition:NSImageOnly];
     }
   }
-  [self setTitle:title];
+
+  if (title)
+    [self setTitle:title];
 }
 
 // We share the context menu among all bookmark buttons.  To allow us
@@ -59,6 +66,27 @@
   BookmarkMenu* menu = (BookmarkMenu*)[super menu];
   [menu setRepresentedObject:[self representedObject]];
   return menu;
+}
+
+// Unfortunately, NSCell doesn't already have something like this.
+// TODO(jrg): consider placing in GTM.
+- (void)setTextColor:(NSColor*)color {
+  scoped_nsobject<NSMutableParagraphStyle> style([NSMutableParagraphStyle new]);
+  [style setAlignment:NSCenterTextAlignment];
+  NSDictionary* dict = [NSDictionary
+                         dictionaryWithObjectsAndKeys:color,
+                         NSForegroundColorAttributeName,
+                         [self font], NSFontAttributeName,
+                         style.get(), NSParagraphStyleAttributeName,
+                         nil];
+  scoped_nsobject<NSAttributedString> ats([[NSAttributedString alloc]
+                                            initWithString:[self title]
+                                                attributes:dict]);
+  NSButton* button = static_cast<NSButton*>([self controlView]);
+  if (button) {
+    DCHECK([button isKindOfClass:[NSButton class]]);
+    [button setAttributedTitle:ats.get()];
+  }
 }
 
 @end
