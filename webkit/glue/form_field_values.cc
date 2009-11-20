@@ -2,88 +2,63 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "config.h"
-
-#include "Document.h"
-#include "Frame.h"
-#include "HTMLFormElement.h"
-#include "HTMLInputElement.h"
-#include "HTMLNames.h"
-#undef LOG
-
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_field_values.h"
-// Can include from api/src because this file will eventually be there too.
-#include "third_party/WebKit/WebKit/chromium/src/DOMUtilitiesPrivate.h"
-#include "webkit/glue/glue_util.h"
 
-using WebKit::WebFormElement;
-
+using namespace WebKit;
 namespace webkit_glue {
 
-FormFieldValues* FormFieldValues::Create(const WebFormElement& webform) {
-  RefPtr<WebCore::HTMLFormElement> form = WebFormElementToHTMLFormElement(webform);
-  DCHECK(form);
+FormFieldValues* FormFieldValues::Create(const WebFormElement& form) {
+  DCHECK(!form.isNull());
 
-  WebCore::Document* document = form->document();
-  WebCore::Frame* frame = document->frame();
+  WebFrame* frame = form.frame();
   if (!frame)
-    return NULL;
-
-  WebCore::FrameLoader* loader = frame->loader();
-  if (!loader)
     return NULL;
 
   // Construct a new FormFieldValues.
   FormFieldValues* result = new FormFieldValues();
 
-  result->form_name = StringToString16(form->name());
-  result->method = StringToString16(form->method());
-  result->source_url = KURLToGURL(document->url());
-  result->target_url = KURLToGURL(document->completeURL(form->action()));
-  result->ExtractFormFieldValues(webform);
+  result->form_name = form.name();
+  result->method = form.method();
+  result->source_url = frame->url();
+  result->target_url = frame->completeURL(form.action());
+  result->ExtractFormFieldValues(form);
 
   return result;
 }
 
 void FormFieldValues::ExtractFormFieldValues(
-    const WebKit::WebFormElement& webform) {
-  RefPtr<WebCore::HTMLFormElement> form = WebFormElementToHTMLFormElement(webform);
+    const WebKit::WebFormElement& form) {
 
-  const WTF::Vector<WebCore::HTMLFormControlElement*>& form_elements =
-      form->formElements;
+  WebVector<WebInputElement> input_elements;
+  form.getInputElements(input_elements);
 
-  size_t form_element_count = form_elements.size();
-  for (size_t i = 0; i < form_element_count; i++) {
-    WebCore::HTMLFormControlElement* form_element = form_elements[i];
-
-    if (!form_element->hasLocalName(WebCore::HTMLNames::inputTag))
-      continue;
-
-    WebCore::HTMLInputElement* input_element =
-        static_cast<WebCore::HTMLInputElement*>(form_element);
-    if (!input_element->isEnabledFormControl())
+  for (size_t i = 0; i < input_elements.size(); i++) {
+    const WebInputElement& input_element = input_elements[i];
+    if (!input_element.isEnabledFormControl())
       continue;
 
     // Ignore all input types except TEXT.
-    if (input_element->inputType() != WebCore::HTMLInputElement::TEXT)
+    if (input_element.inputType() != WebInputElement::Text)
       continue;
 
     // For each TEXT input field, store the name and value
-    string16 value = StringToString16(input_element->value());
+    string16 value = input_element.value();
     TrimWhitespace(value, TRIM_LEADING, &value);
     if (value.empty())
       continue;
 
-    string16 name = StringToString16(WebKit::nameOfInputElement(input_element));
+    string16 name = input_element.nameForAutofill();
     if (name.empty())
       continue;  // If we have no name, there is nothing to store.
 
-    string16 type = StringToString16(input_element->formControlType());
+    string16 type = input_element.formControlType();
     if (type.empty())
       continue;
 

@@ -13,6 +13,7 @@
 
 namespace WebKit {
 class WebFormElement;
+class WebInputElement;
 }
 
 namespace webkit_glue {
