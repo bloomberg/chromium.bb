@@ -41,7 +41,8 @@ TEST_F(NPAPITester, Arguments) {
 }
 
 // Test invoking many plugins within a single page.
-TEST_F(NPAPITester, ManyPlugins) {
+// Flaky, http://crbug.com/28372
+TEST_F(NPAPITester, FLAKY_ManyPlugins) {
   std::wstring test_case = L"many_plugins.html";
   GURL url(GetTestUrl(L"npapi", test_case));
   NavigateToURL(url);
