@@ -244,8 +244,8 @@ bool BaseNode::GetIsFolder() const {
 }
 
 const std::wstring& BaseNode::GetTitle() const {
-  ServerNameToSyncAPIName(GetEntry()->GetName().non_unique_value(),
-                         &data_->title);
+  ServerNameToSyncAPIName(GetEntry()->Get(syncable::NON_UNIQUE_NAME),
+                          &data_->title);
   return data_->title;
 }
 
@@ -316,22 +316,12 @@ void WriteNode::SetTitle(const std::wstring& title) {
   std::string server_legal_name;
   SyncAPINameToServerName(title, &server_legal_name);
 
-  syncable::Name old_name = entry_->GetName();
+  PathString old_name = entry_->Get(syncable::NON_UNIQUE_NAME);
 
-  if (server_legal_name == old_name.non_unique_value())
+  if (server_legal_name == old_name)
     return;  // Skip redundant changes.
 
-  // Otherwise, derive a new unique name so we have a valid value
-  // to use as the DBName.
-  syncable::SyncName sync_name(server_legal_name);
-  syncable::DBName db_name(sync_name.value());
-  db_name.MakeOSLegal();
-  db_name.MakeNoncollidingForEntry(transaction_->GetWrappedTrans(),
-                                   entry_->Get(syncable::PARENT_ID), entry_);
-
-  syncable::Name new_name = syncable::Name::FromDBNameAndSyncName(db_name,
-                                                                  sync_name);
-  entry_->PutName(new_name);
+  entry_->Put(syncable::NON_UNIQUE_NAME, server_legal_name);
   MarkForSyncing();
 }
 
@@ -381,12 +371,9 @@ bool WriteNode::InitByCreation(const BaseNode& parent,
 
   syncable::Id parent_id = parent.GetEntry()->Get(syncable::ID);
 
-  // Start out with a dummy name, but make it unique.  We expect
+  // Start out with a dummy name.  We expect
   // the caller to set a meaningful name after creation.
-  syncable::DBName dummy(kDefaultNameForNewNodes);
-  dummy.MakeOSLegal();
-  dummy.MakeNoncollidingForEntry(transaction_->GetWrappedTrans(), parent_id,
-                                 NULL);
+  PathString dummy(kDefaultNameForNewNodes);
 
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::CREATE, parent_id, dummy);
@@ -425,16 +412,9 @@ bool WriteNode::SetPosition(const BaseNode& new_parent,
     }
   }
 
-  // Discard the old database name, derive a new database name from the sync
-  // name, and make it legal and unique.
-  syncable::Name name = syncable::Name::FromSyncName(GetEntry()->GetName());
-  name.db_value().MakeOSLegal();
-  name.db_value().MakeNoncollidingForEntry(GetTransaction()->GetWrappedTrans(),
-                                           new_parent_id, entry_);
-
-  // Atomically change the parent and name. This will fail if it would
+  // Atomically change the parent. This will fail if it would
   // introduce a cycle in the hierarchy.
-  if (!entry_->PutParentIdAndName(new_parent_id, name))
+  if (!entry_->Put(syncable::PARENT_ID, new_parent_id))
     return false;
 
   // Now set the predecessor, which sets IS_UNSYNCED as necessary.
@@ -813,9 +793,7 @@ class SyncManager::SyncInternal {
   // value of false means that it should be OK to ignore this change.
   static bool BookmarkPropertiesDiffer(const syncable::EntryKernel& a,
                                        const syncable::Entry& b) {
-    if (a.ref(syncable::NAME) != b.Get(syncable::NAME))
-      return true;
-    if (a.ref(syncable::UNSANITIZED_NAME) != b.Get(syncable::UNSANITIZED_NAME))
+    if (a.ref(syncable::NON_UNIQUE_NAME) != b.Get(syncable::NON_UNIQUE_NAME))
       return true;
     if (a.ref(syncable::IS_DIR) != b.Get(syncable::IS_DIR))
       return true;

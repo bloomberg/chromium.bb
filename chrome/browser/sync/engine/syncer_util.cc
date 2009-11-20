@@ -32,7 +32,6 @@ using syncable::Entry;
 using syncable::ExtendedAttributeKey;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
-using syncable::GET_BY_PARENTID_AND_DBNAME;
 using syncable::ID;
 using syncable::IS_BOOKMARK_OBJECT;
 using syncable::IS_DEL;
@@ -45,7 +44,7 @@ using syncable::MTIME;
 using syncable::MutableEntry;
 using syncable::MutableExtendedAttribute;
 using syncable::NEXT_ID;
-using syncable::Name;
+using syncable::NON_UNIQUE_NAME;
 using syncable::PARENT_ID;
 using syncable::PREV_ID;
 using syncable::ReadTransaction;
@@ -56,46 +55,18 @@ using syncable::SERVER_IS_BOOKMARK_OBJECT;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_IS_DIR;
 using syncable::SERVER_MTIME;
-using syncable::SERVER_NAME;
+using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_VERSION;
 using syncable::SINGLETON_TAG;
 using syncable::SYNCER;
-using syncable::SyncName;
-using syncable::UNSANITIZED_NAME;
 using syncable::WriteTransaction;
 
 namespace browser_sync {
 
 using std::string;
 using std::vector;
-
-// TODO(ncarter): Remove unique-in-parent title support and name conflicts.
-// static
-syncable::Id SyncerUtil::GetNameConflictingItemId(
-    syncable::BaseTransaction* trans,
-    const syncable::Id& parent_id,
-    const PathString& server_name) {
-
-  Entry same_path(trans, GET_BY_PARENTID_AND_DBNAME, parent_id, server_name);
-  if (same_path.good() && !same_path.GetName().HasBeenSanitized())
-    return same_path.Get(ID);
-  Name doctored_name(server_name);
-  doctored_name.db_value().MakeOSLegal();
-  if (!doctored_name.HasBeenSanitized())
-    return syncable::kNullId;
-  Directory::ChildHandles children;
-  trans->directory()->GetChildHandles(trans, parent_id, &children);
-  Directory::ChildHandles::iterator i = children.begin();
-  while (i != children.end()) {
-    Entry child_entry(trans, GET_BY_HANDLE, *i++);
-    CHECK(child_entry.good());
-    if (0 == ComparePathNames(child_entry.Get(UNSANITIZED_NAME), server_name))
-      return child_entry.Get(ID);
-  }
-  return syncable::kNullId;
-}
 
 // Returns the number of unsynced entries.
 // static
@@ -220,30 +191,6 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
     syncable::MutableEntry* const entry,
     ConflictResolver* resolver) {
 
-  syncable::Id conflicting_id;
-  UpdateAttemptResponse result =
-     AttemptToUpdateEntryWithoutMerge(trans, entry, &conflicting_id);
-  if (result != NAME_CONFLICT) {
-    return result;
-  }
-  syncable::MutableEntry same_path(trans, syncable::GET_BY_ID, conflicting_id);
-  CHECK(same_path.good());
-
-  if (resolver &&
-      resolver->AttemptItemMerge(trans, &same_path, entry)) {
-    return SUCCESS;
-  }
-  LOG(INFO) << "Not updating item, path collision. Update:\n" << *entry
-            << "\nSame Path:\n" << same_path;
-  return CONFLICT;
-}
-
-// static
-UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntryWithoutMerge(
-    syncable::WriteTransaction* const trans,
-    syncable::MutableEntry* const entry,
-    syncable::Id* const conflicting_id) {
-
   CHECK(entry->good());
   if (!entry->Get(IS_UNAPPLIED_UPDATE))
     return SUCCESS;  // No work to do.
@@ -273,16 +220,6 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntryWithoutMerge(
         return CONFLICT;
       }
     }
-    PathString server_name = entry->Get(SERVER_NAME);
-    syncable::Id conflict_id =
-        SyncerUtil::GetNameConflictingItemId(trans,
-                                 entry->Get(SERVER_PARENT_ID),
-                                 server_name);
-    if (conflict_id != syncable::kNullId && conflict_id != id) {
-      if (conflicting_id)
-        *conflicting_id = conflict_id;
-      return NAME_CONFLICT;
-    }
   } else if (entry->Get(IS_DIR)) {
     Directory::ChildHandles handles;
     trans->directory()->GetChildHandles(trans, id, &handles);
@@ -304,7 +241,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntryWithoutMerge(
 void SyncerUtil::UpdateServerFieldsFromUpdate(
     MutableEntry* local_entry,
     const SyncEntity& server_entry,
-    const SyncName& name) {
+    const PathString& name) {
   if (server_entry.deleted()) {
     // The server returns very lightweight replies for deletions, so we don't
     // clobber a bunch of fields on delete.
@@ -319,7 +256,7 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   CHECK(local_entry->Get(ID) == server_entry.id())
       << "ID Changing not supported here";
   local_entry->Put(SERVER_PARENT_ID, server_entry.parent_id());
-  local_entry->PutServerName(name);
+  local_entry->Put(SERVER_NON_UNIQUE_NAME, name);
   local_entry->Put(SERVER_VERSION, server_entry.version());
   local_entry->Put(SERVER_CTIME,
       ServerTimeToClientTime(server_entry.ctime()));
@@ -421,7 +358,7 @@ bool SyncerUtil::ServerAndLocalEntriesMatch(syncable::Entry* entry) {
   if (entry->Get(IS_DEL) && entry->Get(SERVER_IS_DEL))
     return true;
   // Name should exactly match here.
-  if (!entry->SyncNameMatchesServerName()) {
+  if (!(entry->Get(NON_UNIQUE_NAME) == entry->Get(SERVER_NON_UNIQUE_NAME))) {
     LOG(WARNING) << "Unsanitized name mismatch";
     return false;
   }
@@ -486,31 +423,12 @@ void SyncerUtil::UpdateLocalDataFromServerData(
   entry->Put(IS_BOOKMARK_OBJECT, entry->Get(SERVER_IS_BOOKMARK_OBJECT));
   // This strange dance around the IS_DEL flag avoids problems when setting
   // the name.
+  // TODO(chron): Is this still an issue? Unit test this codepath.
   if (entry->Get(SERVER_IS_DEL)) {
     entry->Put(IS_DEL, true);
   } else {
-    Name name = Name::FromSyncName(entry->GetServerName());
-    name.db_value().MakeOSLegal();
-    bool was_doctored_before_made_noncolliding = name.HasBeenSanitized();
-    name.db_value().MakeNoncollidingForEntry(trans,
-                                             entry->Get(SERVER_PARENT_ID),
-                                             entry);
-    bool was_doctored = name.HasBeenSanitized();
-    if (was_doctored) {
-      // If we're changing the name of entry, either its name should be
-      // illegal, or some other entry should have an unsanitized name.
-      // There's should be a CHECK in every code path.
-      Entry blocking_entry(trans, GET_BY_PARENTID_AND_DBNAME,
-                           entry->Get(SERVER_PARENT_ID),
-                           name.value());
-      if (blocking_entry.good())
-        CHECK(blocking_entry.GetName().HasBeenSanitized());
-      else
-        CHECK(was_doctored_before_made_noncolliding);
-    }
-    CHECK(entry->PutParentIdAndName(entry->Get(SERVER_PARENT_ID), name))
-      << "Name Clash in UpdateLocalDataFromServerData: "
-      << *entry;
+    entry->Put(NON_UNIQUE_NAME, entry->Get(SERVER_NON_UNIQUE_NAME));
+    entry->Put(PARENT_ID, entry->Get(SERVER_PARENT_ID));
     CHECK(entry->Put(IS_DEL, false));
     Id new_predecessor = ComputePrevIdFromServerPosition(trans, entry,
         entry->Get(SERVER_PARENT_ID));

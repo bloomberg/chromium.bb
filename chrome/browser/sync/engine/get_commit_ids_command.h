@@ -96,8 +96,7 @@ class GetCommitIdsCommand : public SyncerCommand {
 
   // TODO(chron): Remove writes from this iterator. As a warning, this
   // iterator causes writes to entries and so isn't a pure iterator.
-  // It will do Put(IS_UNSYNCED) as well as add things to the blocked
-  // session list. Refactor this out later.
+  // It will do Put(IS_UNSYNCED). Refactor this out later.
   class CommitMetahandleIterator {
    public:
     // TODO(chron): Cache ValidateCommitEntry responses across iterators to save

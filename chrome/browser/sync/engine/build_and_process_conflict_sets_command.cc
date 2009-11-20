@@ -92,28 +92,6 @@ void StoreLocalDataForUpdateRollback(syncable::Entry* entry,
   *backup = entry->GetKernelCopy();
 }
 
-class UniqueNameGenerator {
- public:
-  void Initialize() {
-    // To avoid name collisions we prefix the names with hex data derived from
-    // 64 bits of randomness.
-    int64 name_prefix = static_cast<int64>(base::RandUint64());
-    name_stem_ = StringPrintf("%0" PRId64 "x.", name_prefix);
-  }
-  string StringNameForEntry(const syncable::Entry& entry) {
-    CHECK(!name_stem_.empty());
-    std::stringstream rv;
-    rv << name_stem_ << entry.Get(syncable::ID);
-    return rv.str();
-  }
-  PathString PathStringNameForEntry(const syncable::Entry& entry) {
-    string name = StringNameForEntry(entry);
-    return PathString(name.begin(), name.end());
-  }
-
- private:
-  string name_stem_;
-};
 
 bool RollbackEntry(syncable::WriteTransaction* trans,
                    syncable::EntryKernel* backup) {
@@ -123,9 +101,9 @@ bool RollbackEntry(syncable::WriteTransaction* trans,
 
   if (!entry.Put(syncable::IS_DEL, backup->ref(syncable::IS_DEL)))
     return false;
-  syncable::Name name = syncable::Name::FromEntryKernel(backup);
-  if (!entry.PutParentIdAndName(backup->ref(syncable::PARENT_ID), name))
-    return false;
+
+  entry.Put(syncable::NON_UNIQUE_NAME, backup->ref(syncable::NON_UNIQUE_NAME));
+  entry.Put(syncable::PARENT_ID, backup->ref(syncable::PARENT_ID));
 
   if (!backup->ref(syncable::IS_DEL)) {
     if (!entry.PutPredecessor(backup->ref(syncable::PREV_ID)))
@@ -146,26 +124,14 @@ bool RollbackEntry(syncable::WriteTransaction* trans,
   return true;
 }
 
-class TransactionalUpdateEntryPreparer {
- public:
-  TransactionalUpdateEntryPreparer() {
-    namegen_.Initialize();
+void PlaceEntriesAtRoot(syncable::WriteTransaction* trans,
+                        const vector<syncable::Id>* ids) {
+  vector<syncable::Id>::const_iterator it;
+  for (it = ids->begin(); it != ids->end(); ++it) {
+    syncable::MutableEntry entry(trans, syncable::GET_BY_ID, *it);
+    entry.Put(syncable::PARENT_ID, trans->root_id());
   }
-
-  void PrepareEntries(syncable::WriteTransaction* trans,
-                      const vector<syncable::Id>* ids) {
-    vector<syncable::Id>::const_iterator it;
-    for (it = ids->begin(); it != ids->end(); ++it) {
-      syncable::MutableEntry entry(trans, syncable::GET_BY_ID, *it);
-      syncable::Name random_name(namegen_.PathStringNameForEntry(entry));
-      CHECK(entry.PutParentIdAndName(trans->root_id(), random_name));
-    }
-  }
-
- private:
-  UniqueNameGenerator namegen_;
-  DISALLOW_COPY_AND_ASSIGN(TransactionalUpdateEntryPreparer);
-};
+}
 
 }  // namespace
 
@@ -208,13 +174,12 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
     StoreLocalDataForUpdateRollback(&entry, &rollback_data[i]);
   }
 
-  // 4. Use the preparer to move things to an initial starting state where no
-  // names collide, and nothing in the set is a child of anything else.  If
+  // 4. Use the preparer to move things to an initial starting state where
+  // nothing in the set is a child of anything else.  If
   // we've correctly calculated the set, the server tree is valid and no
   // changes have occurred locally we should be able to apply updates from this
   // state.
-  TransactionalUpdateEntryPreparer preparer;
-  preparer.PrepareEntries(trans, update_set);
+  PlaceEntriesAtRoot(trans, update_set);
 
   // 5. Use the usual apply updates from the special start state we've just
   // prepared.
@@ -229,7 +194,7 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
     // set with other failing updates, the swap may have gone through, meaning
     // the roll back needs to be transactional. But as we're going to a known
     // good state we should always succeed.
-    preparer.PrepareEntries(trans, update_set);
+    PlaceEntriesAtRoot(trans, update_set);
 
     // Rollback all entries.
     for (size_t i = 0; i < rollback_data.size(); ++i) {
@@ -257,7 +222,7 @@ void BuildAndProcessConflictSetsCommand::BuildConflictSets(
       view->EraseCommitConflict(i++);
       continue;
     }
-    if (entry.ExistsOnClientBecauseDatabaseNameIsNonEmpty() &&
+    if (entry.ExistsOnClientBecauseNameIsNonEmpty() &&
        (entry.Get(syncable::IS_DEL) || entry.Get(syncable::SERVER_IS_DEL))) {
        // If we're deleted on client or server we can't be in a complex set.
       ++i;
@@ -265,30 +230,11 @@ void BuildAndProcessConflictSetsCommand::BuildConflictSets(
     }
     bool new_parent =
         entry.Get(syncable::PARENT_ID) != entry.Get(syncable::SERVER_PARENT_ID);
-    bool new_name = 0 != syncable::ComparePathNames(entry.GetSyncNameValue(),
-                                          entry.Get(syncable::SERVER_NAME));
-    if (new_parent || new_name)
-      MergeSetsForNameClash(trans, &entry, view);
     if (new_parent)
       MergeSetsForIntroducedLoops(trans, &entry, view);
     MergeSetsForNonEmptyDirectories(trans, &entry, view);
     ++i;
   }
-}
-
-void BuildAndProcessConflictSetsCommand::MergeSetsForNameClash(
-    syncable::BaseTransaction* trans, syncable::Entry* entry,
-    ConflictResolutionView* view) {
-  PathString server_name = entry->Get(syncable::SERVER_NAME);
-  // Uncommitted entries have no server name. We trap this because the root
-  // item has a null name and 0 parentid.
-  if (server_name.empty())
-    return;
-  syncable::Id conflicting_id =
-      SyncerUtil::GetNameConflictingItemId(
-          trans, entry->Get(syncable::SERVER_PARENT_ID), server_name);
-  if (syncable::kNullId != conflicting_id)
-    view->MergeSets(entry->Get(syncable::ID), conflicting_id);
 }
 
 void BuildAndProcessConflictSetsCommand::MergeSetsForIntroducedLoops(

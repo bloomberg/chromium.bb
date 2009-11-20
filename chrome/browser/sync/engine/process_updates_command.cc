@@ -134,7 +134,8 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
   const SyncEntity& entry = *static_cast<const SyncEntity*>(&pb_entry);
   using namespace syncable;
   syncable::Id id = entry.id();
-  SyncName name = SyncerProtoUtil::NameFromSyncEntity(entry);
+  const std::string name =
+      SyncerProtoUtil::NameFromSyncEntity(entry);
 
   WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
 
@@ -153,8 +154,10 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
 
   if (update_entry.Get(SERVER_VERSION) == update_entry.Get(BASE_VERSION) &&
       !update_entry.Get(IS_UNSYNCED)) {
-      CHECK(SyncerUtil::ServerAndLocalEntriesMatch(
-          &update_entry)) << update_entry;
+      // Previously this was a big issue but at this point we don't really care
+      // that much if things don't match up exactly.
+      LOG_IF(ERROR, !SyncerUtil::ServerAndLocalEntriesMatch(&update_entry))
+          << update_entry;
   }
   return SUCCESS_PROCESSED;
 }

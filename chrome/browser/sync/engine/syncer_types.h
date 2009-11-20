@@ -31,11 +31,6 @@ enum UpdateAttemptResponse {
   // Conflicts with the local data representation. This can also mean that the
   // entry doesn't currently make sense if we applied it.
   CONFLICT,
-
-  // This return value is only returned by AttemptToUpdateEntryWithoutMerge
-  // if we have a name conflict. Users of AttemptToUpdateEntry should never
-  // see this return value, we'll return CONFLICT.
-  NAME_CONFLICT,
 };
 
 enum ServerUpdateProcessingResult {

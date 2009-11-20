@@ -56,11 +56,12 @@ class SyncerProtoUtil {
   static void CopyBlobIntoProtoBytes(const syncable::Blob& blob,
                                      std::string* proto_bytes);
 
-  // Extract the name fields from a sync entity.
-  static syncable::SyncName NameFromSyncEntity(const SyncEntity& entry);
+  // Extract the name field from a sync entity.
+  static std::string NameFromSyncEntity(const SyncEntity& entry);
 
-  // Extract the name fields from a commit entry response.
-  static syncable::SyncName NameFromCommitEntryResponse(
+
+  // Extract the name field from a commit entry response.
+  static std::string NameFromCommitEntryResponse(
       const CommitResponse_EntryResponse& entry);
 
  private:

@@ -68,9 +68,8 @@ VerifyResult VerifyUpdatesCommand::VerifyUpdate(
     return VERIFY_FAIL;
   }
   {
-    SyncName name = SyncerProtoUtil::NameFromSyncEntity(entry);
-    if ((name.value().empty() || name.non_unique_value().empty()) &&
-        !deleted) {
+    const std::string name = SyncerProtoUtil::NameFromSyncEntity(entry);
+    if (name.empty() && !deleted) {
       LOG(ERROR) << "Zero length name in non-deleted update";
       return VERIFY_FAIL;
     }

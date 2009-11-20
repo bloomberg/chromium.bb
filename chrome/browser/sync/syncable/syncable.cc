@@ -22,6 +22,7 @@
 #include <functional>
 #include <iomanip>
 #include <iterator>
+#include <limits>
 #include <set>
 #include <string>
 
@@ -88,6 +89,7 @@ int64 Now() {
 // Compare functions and hashes for the indices.
 
 // Callback for sqlite3
+// TODO(chron): This should be somewhere else
 int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
                        const void* b) {
   int result = base::strncasecmp(reinterpret_cast<const char *>(a),
@@ -118,33 +120,30 @@ class HashField {
   base::hash_set<int64> hasher_;
 };
 
-// TODO(ncarter): Rename!
+// TODO(chron): Remove this function.
 int ComparePathNames(const PathString& a, const PathString& b) {
   const size_t val_size = sizeof(PathString::value_type);
   return ComparePathNames16(NULL, a.size() * val_size, a.data(),
                                   b.size() * val_size, b.data());
 }
 
-class LessParentIdAndNames {
+class LessParentIdAndHandle {
  public:
   bool operator() (const syncable::EntryKernel* a,
                    const syncable::EntryKernel* b) const {
-    if (a->ref(PARENT_ID) != b->ref(PARENT_ID))
+    if (a->ref(PARENT_ID) != b->ref(PARENT_ID)) {
       return a->ref(PARENT_ID) < b->ref(PARENT_ID);
-    return ComparePathNames(a->ref(NAME), b->ref(NAME)) < 0;
+    }
+
+    // Meta handles are immutable per entry so this is ideal.
+    return a->ref(META_HANDLE) < b->ref(META_HANDLE);
   }
 };
 
+// TODO(chron): Remove this function.
 bool LessPathNames::operator() (const PathString& a,
                                 const PathString& b) const {
   return ComparePathNames(a, b) < 0;
-}
-
-// static
-Name Name::FromEntryKernel(EntryKernel* kernel) {
-  PathString& sync_name_ref = kernel->ref(UNSANITIZED_NAME).empty() ?
-      kernel->ref(NAME) : kernel->ref(UNSANITIZED_NAME);
-  return Name(kernel->ref(NAME), sync_name_ref, kernel->ref(NON_UNIQUE_NAME));
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -161,7 +160,7 @@ Directory::Kernel::Kernel(const FilePath& db_path,
   name_(name),
   metahandles_index(new Directory::MetahandlesIndex),
   ids_index(new Directory::IdsIndex),
-  parent_id_and_names_index(new Directory::ParentIdAndNamesIndex),
+  parent_id_child_index(new Directory::ParentIdChildIndex),
   extended_attributes(new ExtendedAttributes),
   unapplied_update_metahandles(new MetahandleSet),
   unsynced_metahandles(new MetahandleSet),
@@ -196,7 +195,7 @@ Directory::Kernel::~Kernel() {
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
   delete extended_attributes;
-  delete parent_id_and_names_index;
+  delete parent_id_child_index;
   delete ids_index;
   for_each(metahandles_index->begin(), metahandles_index->end(), DeleteEntry);
   delete metahandles_index;
@@ -207,58 +206,6 @@ Directory::Directory() : kernel_(NULL), store_(NULL) {
 
 Directory::~Directory() {
   Close();
-}
-
-BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec) {
-#if defined(OS_WIN)
-  // Note that if we go Vista only this is easier:
-  // http://msdn2.microsoft.com/en-us/library/ms628611.aspx
-
-  // PathMatchSpec strips spaces from the start of pathspec, so we compare those
-  // ourselves.
-  const PathChar* pathname_ptr = pathname.c_str();
-  const PathChar* pathspec_ptr = pathspec.c_str();
-
-  while (*pathname_ptr == ' ' && *pathspec_ptr == ' ')
-     ++pathname_ptr, ++pathspec_ptr;
-
-  // If we have more inital spaces in the pathspec than in the pathname then the
-  // result from PathMatchSpec will be erroneous.
-  if (*pathspec_ptr == ' ')
-    return FALSE;
-
-  // PathMatchSpec also gets "confused" when there are ';' characters in name or
-  // in spec. So, if we match (f.i.) ";" with ";" PathMatchSpec will return
-  // FALSE (which is wrong). Luckily for us, we can easily fix this by
-  // substituting ';' with ':' which is illegal character in file name and
-  // we're not going to see it there. With ':' in path name and spec
-  // PathMatchSpec works fine.
-  if ((NULL == strchr(pathname_ptr, ';')) &&
-      (NULL == strchr(pathspec_ptr, ';'))) {
-    // No ';' in file name and in spec. Just pass it as it is.
-    return ::PathMatchSpecA(pathname_ptr, pathspec_ptr);
-  }
-
-  // We need to subst ';' with ':' in both, name and spec.
-  PathString name_subst(pathname_ptr);
-  PathString spec_subst(pathspec_ptr);
-
-  PathString::size_type index = name_subst.find(L';');
-  while (PathString::npos != index) {
-    name_subst[index] = ':';
-    index = name_subst.find(';', index + 1);
-  }
-
-  index = spec_subst.find(L';');
-  while (PathString::npos != index) {
-    spec_subst[index] = ':';
-    index = spec_subst.find(';', index + 1);
-  }
-
-  return ::PathMatchSpecA(name_subst.c_str(), spec_subst.c_str());
-#else
-  return 0 == ComparePathNames(pathname, pathspec);
-#endif
 }
 
 DirOpenResult Directory::Open(const FilePath& file_path,
@@ -274,7 +221,7 @@ void Directory::InitializeIndices() {
   for (; it != kernel_->metahandles_index->end(); ++it) {
     EntryKernel* entry = *it;
     if (!entry->ref(IS_DEL))
-      kernel_->parent_id_and_names_index->insert(entry);
+      kernel_->parent_id_child_index->insert(entry);
     kernel_->ids_index->insert(entry);
     if (entry->ref(IS_UNSYNCED))
       kernel_->unsynced_metahandles->insert(entry->ref(META_HANDLE));
@@ -377,61 +324,14 @@ EntryKernel* Directory::GetEntryByHandle(const int64 metahandle,
   return NULL;
 }
 
-EntryKernel* Directory::GetChildWithName(const Id& parent_id,
-                                         const PathString& name) {
-  ScopedKernelLock lock(this);
-  return GetChildWithName(parent_id, name, &lock);
-}
-
-// Will return child entry if the folder is opened,
-// otherwise it will return NULL.
-EntryKernel* Directory::GetChildWithName(const Id& parent_id,
-                                         const PathString& name,
-                                         ScopedKernelLock* const lock) {
-  PathString dbname = name;
-  EntryKernel* parent = GetEntryById(parent_id, lock);
-  if (parent == NULL)
-    return NULL;
-  return GetChildWithNameImpl(parent_id, dbname, lock);
-}
-
-// Will return child entry even when the folder is not opened. This is used by
-// syncer to apply update when folder is closed.
-EntryKernel* Directory::GetChildWithDBName(const Id& parent_id,
-                                           const PathString& name) {
-  ScopedKernelLock lock(this);
-  return GetChildWithNameImpl(parent_id, name, &lock);
-}
-
-EntryKernel* Directory::GetChildWithNameImpl(const Id& parent_id,
-                                             const PathString& name,
-                                             ScopedKernelLock* const lock) {
-  // First look up in memory:
-  kernel_->needle.ref(NAME) = name;
-  kernel_->needle.ref(PARENT_ID) = parent_id;
-  ParentIdAndNamesIndex::iterator found =
-    kernel_->parent_id_and_names_index->find(&kernel_->needle);
-  if (found != kernel_->parent_id_and_names_index->end()) {
-    // Found it in memory.  Easy.
-    return *found;
-  }
-  return NULL;
-}
-
 // An interface to specify the details of which children
 // GetChildHandles() is looking for.
+// TODO(chron): Clean this up into one function to get child handles
 struct PathMatcher {
   explicit PathMatcher(const Id& parent_id) : parent_id_(parent_id) { }
   virtual ~PathMatcher() { }
-  enum MatchType {
-    NO_MATCH,
-    MATCH,
-    // Means we found the only entry we're looking for in
-    // memory so we don't need to check the DB.
-    EXACT_MATCH
-  };
-  virtual MatchType PathMatches(const PathString& path) = 0;
-  typedef Directory::ParentIdAndNamesIndex Index;
+
+  typedef Directory::ParentIdChildIndex Index;
   virtual Index::iterator lower_bound(Index* index) = 0;
   virtual Index::iterator upper_bound(Index* index) = 0;
   const Id parent_id_;
@@ -439,48 +339,22 @@ struct PathMatcher {
 };
 
 // Matches all children.
+// TODO(chron): Unit test this by itself
 struct AllPathsMatcher : public PathMatcher {
   explicit AllPathsMatcher(const Id& parent_id) : PathMatcher(parent_id) {
   }
-  virtual MatchType PathMatches(const PathString& path) {
-    return MATCH;
-  }
+
   virtual Index::iterator lower_bound(Index* index) {
     needle_.ref(PARENT_ID) = parent_id_;
-    needle_.ref(NAME).clear();
+    needle_.ref(META_HANDLE) = std::numeric_limits<int64>::min();
     return index->lower_bound(&needle_);
   }
 
   virtual Index::iterator upper_bound(Index* index) {
     needle_.ref(PARENT_ID) = parent_id_;
-    needle_.ref(NAME).clear();
-    Index::iterator i = index->upper_bound(&needle_),
-      end = index->end();
-    while (i != end  && (*i)->ref(PARENT_ID) == parent_id_)
-      ++i;
-    return i;
-  }
-};
-
-// Matches an exact filename only; no wildcards.
-struct ExactPathMatcher : public PathMatcher {
-  ExactPathMatcher(const PathString& pathspec, const Id& parent_id)
-    : PathMatcher(parent_id), pathspec_(pathspec) {
-  }
-  virtual MatchType PathMatches(const PathString& path) {
-    return 0 == ComparePathNames(path, pathspec_) ? EXACT_MATCH : NO_MATCH;
-  }
-  virtual Index::iterator lower_bound(Index* index) {
-    needle_.ref(PARENT_ID) = parent_id_;
-    needle_.ref(NAME) = pathspec_;
-    return index->lower_bound(&needle_);
-  }
-  virtual Index::iterator upper_bound(Index* index) {
-    needle_.ref(PARENT_ID) = parent_id_;
-    needle_.ref(NAME) = pathspec_;
+    needle_.ref(META_HANDLE) = std::numeric_limits<int64>::max();
     return index->upper_bound(&needle_);
   }
-  const PathString pathspec_;
 };
 
 void Directory::GetChildHandles(BaseTransaction* trans, const Id& parent_id,
@@ -496,38 +370,23 @@ void Directory::GetChildHandlesImpl(BaseTransaction* trans, const Id& parent_id,
   result->clear();
   {
     ScopedKernelLock lock(this);
-    ParentIdAndNamesIndex* const index =
-      kernel_->parent_id_and_names_index;
-    typedef ParentIdAndNamesIndex::iterator iterator;
+
+    // This index is sorted by parent id and metahandle.
+    ParentIdChildIndex* const index = kernel_->parent_id_child_index;
+    typedef ParentIdChildIndex::iterator iterator;
     for (iterator i = matcher->lower_bound(index),
            end = matcher->upper_bound(index); i != end; ++i) {
       // root's parent_id is NULL in the db but 0 in memory, so
       // have avoid listing the root as its own child.
       if ((*i)->ref(ID) == (*i)->ref(PARENT_ID))
         continue;
-      PathMatcher::MatchType match = matcher->PathMatches((*i)->ref(NAME));
-      if (PathMatcher::NO_MATCH == match)
-        continue;
       result->push_back((*i)->ref(META_HANDLE));
-      if (PathMatcher::EXACT_MATCH == match)
-        return;
     }
   }
 }
 
 EntryKernel* Directory::GetRootEntry() {
   return GetEntryById(Id());
-}
-
-EntryKernel* Directory::GetEntryByPath(const PathString& path) {
-  CHECK(kernel_);
-  EntryKernel* result = GetRootEntry();
-  CHECK(result) << "There should always be a root node.";
-  for (PathSegmentIterator<PathString> i(path), end;
-       i != end && NULL != result; ++i) {
-    result = GetChildWithName(result->ref(ID), *i);
-  }
-  return result;
 }
 
 void ZeroFields(EntryKernel* entry, int first_field) {
@@ -554,29 +413,27 @@ void Directory::InsertEntry(EntryKernel* entry, ScopedKernelLock* lock) {
   CHECK(NULL != entry);
   static const char error[] = "Entry already in memory index.";
   CHECK(kernel_->metahandles_index->insert(entry).second) << error;
-  if (!entry->ref(IS_DEL))
-    CHECK(kernel_->parent_id_and_names_index->insert(entry).second) << error;
+
+  if (!entry->ref(IS_DEL)) {
+    CHECK(kernel_->parent_id_child_index->insert(entry).second) << error;
+  }
   CHECK(kernel_->ids_index->insert(entry).second) << error;
 }
 
-bool Directory::Undelete(EntryKernel* const entry) {
+void Directory::Undelete(EntryKernel* const entry) {
   DCHECK(entry->ref(IS_DEL));
   ScopedKernelLock lock(this);
-  if (NULL != GetChildWithName(entry->ref(PARENT_ID), entry->ref(NAME), &lock))
-    return false;  // Would have duplicated existing entry.
   entry->ref(IS_DEL) = false;
   entry->dirty[IS_DEL] = true;
-  CHECK(kernel_->parent_id_and_names_index->insert(entry).second);
-  return true;
+  CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
-bool Directory::Delete(EntryKernel* const entry) {
+void Directory::Delete(EntryKernel* const entry) {
   DCHECK(!entry->ref(IS_DEL));
   entry->ref(IS_DEL) = true;
   entry->dirty[IS_DEL] = true;
   ScopedKernelLock lock(this);
-  CHECK(1 == kernel_->parent_id_and_names_index->erase(entry));
-  return true;
+  CHECK(1 == kernel_->parent_id_child_index->erase(entry));
 }
 
 bool Directory::ReindexId(EntryKernel* const entry, const Id& new_id) {
@@ -589,30 +446,22 @@ bool Directory::ReindexId(EntryKernel* const entry, const Id& new_id) {
   return true;
 }
 
-bool Directory::ReindexParentIdAndName(EntryKernel* const entry,
-                                       const Id& new_parent_id,
-                                       const PathString& new_name) {
+void Directory::ReindexParentId(EntryKernel* const entry,
+                                const Id& new_parent_id) {
+
   ScopedKernelLock lock(this);
-  PathString new_indexed_name = new_name;
   if (entry->ref(IS_DEL)) {
     entry->ref(PARENT_ID) = new_parent_id;
-    entry->ref(NAME) = new_indexed_name;
-    return true;
+    return;
   }
 
-  // check for a case changing rename
-  if (entry->ref(PARENT_ID) == new_parent_id &&
-    0 == ComparePathNames(entry->ref(NAME), new_indexed_name)) {
-    entry->ref(NAME) = new_indexed_name;
-  } else {
-    if (NULL != GetChildWithName(new_parent_id, new_indexed_name, &lock))
-      return false;
-    CHECK(1 == kernel_->parent_id_and_names_index->erase(entry));
-    entry->ref(PARENT_ID) = new_parent_id;
-    entry->ref(NAME) = new_indexed_name;
-    CHECK(kernel_->parent_id_and_names_index->insert(entry).second);
+  if (entry->ref(PARENT_ID) == new_parent_id) {
+    return;
   }
-  return true;
+
+  CHECK(1 == kernel_->parent_id_child_index->erase(entry));
+  entry->ref(PARENT_ID) = new_parent_id;
+  CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
 // static
@@ -971,7 +820,7 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
     }
     if (!e.Get(IS_DEL)) {
       CHECK(id != parentid) << e;
-      CHECK(!e.Get(NAME).empty()) << e;
+      CHECK(!e.Get(NON_UNIQUE_NAME).empty()) << e;
       int safety_count = handles.size() + 1;
       while (!parentid.IsRoot()) {
         if (!idfilter.ShouldConsider(parentid))
@@ -1148,24 +997,6 @@ Entry::Entry(BaseTransaction* trans, GetByHandle, int64 metahandle)
   kernel_ = trans->directory()->GetEntryByHandle(metahandle);
 }
 
-Entry::Entry(BaseTransaction* trans, GetByPath, const PathString& path)
-    : basetrans_(trans) {
-  kernel_ = trans->directory()->GetEntryByPath(path);
-}
-
-Entry::Entry(BaseTransaction* trans, GetByParentIdAndName, const Id& parentid,
-             const PathString& name)
-    : basetrans_(trans) {
-  kernel_ = trans->directory()->GetChildWithName(parentid, name);
-}
-
-Entry::Entry(BaseTransaction* trans, GetByParentIdAndDBName, const Id& parentid,
-             const PathString& name)
-    : basetrans_(trans) {
-  kernel_ = trans->directory()->GetChildWithDBName(parentid, name);
-}
-
-
 Directory* Entry::dir() const {
   return basetrans_->directory();
 }
@@ -1194,11 +1025,8 @@ void Entry::DeleteAllExtendedAttributes(WriteTransaction *trans) {
 
 MutableEntry::MutableEntry(WriteTransaction* trans, Create,
                            const Id& parent_id, const PathString& name)
-  : Entry(trans), write_transaction_(trans) {
-  if (NULL != trans->directory()->GetChildWithName(parent_id, name)) {
-    kernel_ = NULL;  // would have duplicated an existing entry.
-    return;
-  }
+    : Entry(trans),
+      write_transaction_(trans) {
   Init(trans, parent_id, name);
 }
 
@@ -1213,8 +1041,6 @@ void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
   kernel_->dirty[META_HANDLE] = true;
   kernel_->ref(PARENT_ID) = parent_id;
   kernel_->dirty[PARENT_ID] = true;
-  kernel_->ref(NAME) = name;
-  kernel_->dirty[NAME] = true;
   kernel_->ref(NON_UNIQUE_NAME) = name;
   kernel_->dirty[NON_UNIQUE_NAME] = true;
   kernel_->ref(IS_NEW) = true;
@@ -1266,38 +1092,17 @@ MutableEntry::MutableEntry(WriteTransaction* trans, GetByHandle,
   trans->SaveOriginal(kernel_);
 }
 
-MutableEntry::MutableEntry(WriteTransaction* trans, GetByPath,
-                           const PathString& path)
-  : Entry(trans, GET_BY_PATH, path), write_transaction_(trans) {
-  trans->SaveOriginal(kernel_);
-}
-
-MutableEntry::MutableEntry(WriteTransaction* trans, GetByParentIdAndName,
-                           const Id& parentid, const PathString& name)
-  : Entry(trans, GET_BY_PARENTID_AND_NAME, parentid, name),
-    write_transaction_(trans) {
-  trans->SaveOriginal(kernel_);
-}
-
-MutableEntry::MutableEntry(WriteTransaction* trans, GetByParentIdAndDBName,
-                           const Id& parentid, const PathString& name)
-  : Entry(trans, GET_BY_PARENTID_AND_DBNAME, parentid, name),
-    write_transaction_(trans) {
-  trans->SaveOriginal(kernel_);
-}
-
 bool MutableEntry::PutIsDel(bool is_del) {
   DCHECK(kernel_);
-  if (is_del == kernel_->ref(IS_DEL))
+  if (is_del == kernel_->ref(IS_DEL)) {
     return true;
+  }
   if (is_del) {
     UnlinkFromOrder();
-    if (!dir()->Delete(kernel_))
-      return false;
+    dir()->Delete(kernel_);
     return true;
   } else {
-    if (!dir()->Undelete(kernel_))
-      return false;
+    dir()->Undelete(kernel_);
     PutPredecessor(Id());  // Restores position to the 0th index.
     return true;
   }
@@ -1319,8 +1124,8 @@ bool MutableEntry::Put(IdField field, const Id& value) {
       if (!dir()->ReindexId(kernel_, value))
         return false;
     } else if (PARENT_ID == field) {
-      if (!dir()->ReindexParentIdAndName(kernel_, value, kernel_->ref(NAME)))
-        return false;
+      dir()->ReindexParentId(kernel_, value);
+      PutPredecessor(Id());
     } else {
       kernel_->ref(field) = value;
     }
@@ -1345,13 +1150,7 @@ bool MutableEntry::Put(StringField field, const PathString& value) {
 bool MutableEntry::PutImpl(StringField field, const PathString& value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
-    if (NAME == field) {
-      if (!dir()->ReindexParentIdAndName(kernel_, kernel_->ref(PARENT_ID),
-          value))
-        return false;
-    } else {
-      kernel_->ref(field) = value;
-    }
+    kernel_->ref(field) = value;
     kernel_->dirty[static_cast<int>(field)] = true;
   }
   return true;
@@ -1373,29 +1172,6 @@ bool MutableEntry::Put(IndexedBitField field, bool value) {
       CHECK(1 == index->erase(kernel_->ref(META_HANDLE)));
     kernel_->ref(field) = value;
     kernel_->dirty[static_cast<int>(field)] = true;
-  }
-  return true;
-}
-
-// Avoids temporary collision in index when renaming a bookmark to another
-// folder.
-bool MutableEntry::PutParentIdAndName(const Id& parent_id,
-                                      const Name& name) {
-  DCHECK(kernel_);
-  const bool parent_id_changes = parent_id != kernel_->ref(PARENT_ID);
-  bool db_name_changes = name.db_value() != kernel_->ref(NAME);
-  if (parent_id_changes || db_name_changes) {
-    if (!dir()->ReindexParentIdAndName(kernel_, parent_id,
-                                       name.db_value()))
-      return false;
-  }
-  Put(UNSANITIZED_NAME, name.GetUnsanitizedName());
-  Put(NON_UNIQUE_NAME, name.non_unique_value());
-  if (db_name_changes)
-    kernel_->dirty[NAME] = true;
-  if (parent_id_changes) {
-    kernel_->dirty[PARENT_ID] = true;
-    PutPredecessor(Id());  // Put in the 0th position.
   }
   return true;
 }
@@ -1570,61 +1346,6 @@ bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
     ancestor_id = new_parent.Get(PARENT_ID);
   }
   return true;
-}
-
-// returns -1 if s contains any non [0-9] characters
-static int PathStringToInteger(PathString s) {
-  PathString::const_iterator i = s.begin();
-  for (; i != s.end(); ++i) {
-    if (PathString::npos == PathString(PSTR("0123456789")).find(*i))
-      return -1;
-  }
-  return atoi(s.c_str());
-}
-
-// appends ~1 to the end of 's' unless there is already ~#, in which case
-// it just increments the number
-static PathString FixBasenameInCollision(const PathString s) {
-  PathString::size_type last_tilde = s.find_last_of(PSTR('~'));
-  if (PathString::npos == last_tilde) return s + PSTR("~1");
-  if (s.size() == (last_tilde + 1)) return s + PSTR("1");
-  // we have ~, but not necessarily ~# (for some number >= 0). check for that
-  int n;
-  if ((n = PathStringToInteger(s.substr(last_tilde + 1))) != -1) {
-    n++;
-    PathString pre_number = s.substr(0, last_tilde + 1);
-    return pre_number + IntToString(n);
-  } else {
-    // we have a ~, but not a number following it, so we'll add another
-    // ~ and this time, a number
-    return s + PSTR("~1");
-  }
-}
-
-void DBName::MakeNoncollidingForEntry(BaseTransaction* trans,
-                                      const Id& parent_id,
-                                      Entry* e) {
-  const PathString& desired_name = *this;
-  CHECK(!desired_name.empty());
-  PathString::size_type first_dot = desired_name.find_first_of(PSTR('.'));
-  if (PathString::npos == first_dot)
-    first_dot = desired_name.size();
-  PathString basename = desired_name.substr(0, first_dot);
-  PathString dotextension = desired_name.substr(first_dot);
-  CHECK(basename + dotextension == desired_name);
-  for (;;) {
-    // Check for collision.
-    PathString testname = basename + dotextension;
-    Entry same_path_entry(trans, GET_BY_PARENTID_AND_DBNAME,
-                          parent_id, testname);
-    if (!same_path_entry.good() || (e && same_path_entry.Get(ID) == e->Get(ID)))
-      break;
-    // There was a collision, so fix the name.
-    basename = FixBasenameInCollision(basename);
-  }
-  // Set our value to the new value.  This invalidates desired_name.
-  PathString new_value = basename + dotextension;
-  swap(new_value);
 }
 
 const Blob* GetExtendedAttributeValue(const Entry& e,

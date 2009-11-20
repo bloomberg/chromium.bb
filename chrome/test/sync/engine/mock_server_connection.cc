@@ -41,7 +41,7 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       fail_next_postbuffer_(false),
       directory_manager_(dirmgr),
       directory_name_(name),
-      mid_commit_callback_function_(NULL),
+      mid_commit_callback_(NULL),
       mid_commit_observer_(NULL),
       throttling_(false),
       fail_non_periodic_get_updates_(false),
@@ -59,9 +59,8 @@ void MockConnectionManager::SetCommitTimeRename(string prepend) {
   commit_time_rename_prepended_string_ = prepend;
 }
 
-void MockConnectionManager::SetMidCommitCallbackFunction(
-    MockConnectionManager::TestCallbackFunction callback) {
-  mid_commit_callback_function_ = callback;
+void MockConnectionManager::SetMidCommitCallback(Closure* callback) {
+  mid_commit_callback_ = callback;
 }
 
 void MockConnectionManager::SetMidCommitObserver(
@@ -131,9 +130,8 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   }
 
   response.SerializeToString(params->buffer_out);
-  if (mid_commit_callback_function_) {
-    if (mid_commit_callback_function_(directory))
-      mid_commit_callback_function_ = 0;
+  if (mid_commit_callback_) {
+    mid_commit_callback_->Run();
   }
   if (mid_commit_observer_) {
     mid_commit_observer_->Observe();

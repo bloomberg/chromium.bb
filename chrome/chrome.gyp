@@ -5509,6 +5509,8 @@
         'test/sync/engine/test_directory_setter_upper.cc',
         'test/sync/engine/test_directory_setter_upper.h',
         'test/sync/engine/test_id_factory.h',
+        'test/sync/engine/test_syncable_utils.cc',
+        'test/sync/engine/test_syncable_utils.h',
       ],
       'include_dirs': [
         '..',

@@ -47,7 +47,7 @@ class ApplyUpdatesCommandTest : public testing::Test {
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::SERVER_VERSION, next_revision_++);
     entry.Put(syncable::IS_UNAPPLIED_UPDATE, true);
-    entry.Put(syncable::SERVER_NAME, item_id);
+
     entry.Put(syncable::SERVER_NON_UNIQUE_NAME, item_id);
     entry.Put(syncable::SERVER_PARENT_ID, Id::CreateFromServerId(parent_id));
     entry.Put(syncable::SERVER_IS_DIR, true);

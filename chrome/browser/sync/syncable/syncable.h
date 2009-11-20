@@ -131,20 +131,9 @@ enum {
 };
 
 enum StringField {
-  // The name, transformed so as to be suitable for use as a path-element.  It
-  // is unique, and legal for this client.
-  NAME = STRING_FIELDS_BEGIN,
-  // The local name, pre-sanitization.  It is not necessarily unique.  If this
-  // is empty, it means |NAME| did not require sanitization.
-  UNSANITIZED_NAME,
-  // If NAME/UNSANITIZED_NAME are "Foo (2)", then NON_UNIQUE_NAME may be "Foo".
-  NON_UNIQUE_NAME,
-  // The server version of |NAME|.  It is uniquified, but not necessarily
-  // OS-legal.
-  SERVER_NAME,
-  // The server version of |NON_UNIQUE_NAME|.  Again, if SERVER_NAME is
-  // like "Foo (2)" due to a commit-time name aside, SERVER_NON_UNIQUE_NAME
-  // may hold the value "Foo".
+  // Name, will be truncated by server. Can be duplicated in a folder.
+  NON_UNIQUE_NAME = STRING_FIELDS_BEGIN,
+  // The server version of |NON_UNIQUE_NAME|.
   SERVER_NON_UNIQUE_NAME,
   // For bookmark entries, the URL of the bookmark.
   BOOKMARK_URL,
@@ -186,9 +175,6 @@ enum {
 enum BitTemp {
   SYNCING = BIT_TEMPS_BEGIN,
   IS_NEW,  // Means use INSERT instead of UPDATE to save to db.
-  DEPRECATED_DELETE_ON_CLOSE,  // Set by redirector, IS_OPEN must also be set.
-  DEPRECATED_CHANGED_SINCE_LAST_OPEN,  // Have we been written to since we've
-                                       // been opened.
   BIT_TEMPS_END,
 };
 
@@ -223,19 +209,6 @@ enum GetByHandle {
   GET_BY_HANDLE
 };
 
-enum GetByPath {
-  GET_BY_PATH
-};
-
-enum GetByParentIdAndName {
-  GET_BY_PARENTID_AND_NAME
-};
-
-// DBName is the name stored in the database.
-enum GetByParentIdAndDBName {
-  GET_BY_PARENTID_AND_DBNAME
-};
-
 enum Create {
   CREATE
 };
@@ -245,182 +218,6 @@ enum CreateNewUpdateItem {
 };
 
 typedef std::set<PathString> AttributeKeySet;
-
-// DBName is a PathString with additional transformation methods that are
-// useful when trying to derive a unique and legal database name from an
-// unsanitized sync name.
-class DBName : public PathString {
- public:
-  explicit DBName(const PathString& database_name)
-      : PathString(database_name) { }
-
-  // TODO(ncarter): Remove these codepaths to maintain alternate titles which
-  // are OS legal filenames, Chrome doesn't depend on this like some other
-  // browsers do.
-  void MakeOSLegal() {
-    PathString new_value = MakePathComponentOSLegal(*this);
-    if (!new_value.empty())
-      swap(new_value);
-  }
-
-  // Modify the value of this DBName so that it is not in use by any entry
-  // inside |parent_id|, except maybe |e|.  |e| may be NULL if you are trying
-  // to compute a name for an entry which has yet to be created.
-  void MakeNoncollidingForEntry(BaseTransaction* trans,
-                                const Id& parent_id,
-                                Entry* e);
-};
-
-// SyncName encapsulates a canonical server name.  In general, when we need to
-// muck around with a name that the server sends us (e.g. to make it OS legal),
-// we try to preserve the original value in a SyncName,
-// and distill the new local value into a DBName.
-// At other times, we need to apply transforms in the
-// other direction -- that is, to create a server-appropriate SyncName from a
-// user-updated DBName (which is an OS legal name, but not necessarily in the
-// format that the server wants it to be).  For that sort of thing, you should
-// initialize a SyncName from the DB name value, and use the methods of
-// SyncName to canonicalize it.  At other times, you have a pair of canonical
-// server values -- one (the "value") which is unique in the parent, and another
-// (the "non unique value") which is not unique in the parent -- and you
-// simply want to create a SyncName to hold them as a pair.
-class SyncName {
- public:
-  // Create a SyncName with the initially specified value.
-  explicit SyncName(const PathString& sync_name)
-      : value_(sync_name), non_unique_value_(sync_name) { }
-
-  // Create a SyncName by specifying a value and a non-unique value.  If
-  // you use this constructor, the values you provide should already be
-  // acceptable server names.  Don't use the mutation/sanitization methods
-  // on the resulting instance -- mutation won't work if you have distinct
-  // values for the unique and non-unique fields.
-  SyncName(const PathString& unique_sync_name,
-           const PathString& non_unique_sync_name)
-      : value_(unique_sync_name), non_unique_value_(non_unique_sync_name) { }
-
-  // Transform |value_| so that it's a legal server name.
-  void MakeServerLegal() {
-    DCHECK_EQ(value_, non_unique_value_)
-        << "Deriving value_ will overwrite non_unique_value_.";
-    // Append a trailing space if the value is one of the server's three
-    // forbidden special cases.
-    if (value_.empty() ||
-        value_ == PSTR(".") ||
-        value_ == PSTR("..")) {
-      value_.append(PSTR(" "));
-      non_unique_value_ = value_;
-    }
-    // TODO(ncarter): Handle server's other requirement: truncation to 256
-    // bytes in Unicode NFC.
-  }
-
-  const PathString& value() const { return value_; }
-  PathString& value() { return value_; }
-  const PathString& non_unique_value() const { return non_unique_value_; }
-  PathString& non_unique_value() { return non_unique_value_; }
-  void set_non_unique_value(const PathString& value) {
-    non_unique_value_ = value;
-  }
-
-  inline bool operator==(const SyncName& right_hand_side) const {
-    return value_ == right_hand_side.value_ &&
-        non_unique_value_ == right_hand_side.non_unique_value_;
-  }
-  inline bool operator!=(const SyncName& right_hand_side) const {
-    return !(*this == right_hand_side);
-  }
- private:
-  PathString value_;
-  PathString non_unique_value_;
-};
-
-// Name is a SyncName which has an additional DBName that provides a way to
-// interpolate the "unsanitized name" according to the syncable convention.
-//
-// A method might accept a Name as an parameter when the sync and database
-// names need to be set simultaneously:
-//
-//    void PutName(const Name& new_name) {
-//       Put(NAME, new_name.db_value());
-//       Put(UNSANITIZED_NAME, new_name.GetUnsanitizedName());
-//    }
-//
-// A code point that is trying to convert between local database names and
-// server sync names can use Name to help with the conversion:
-//
-//    SyncName server_name = entry->GetServerName();
-//    Name name = Name::FromSyncName(server_name);  // Initially, name.value()
-//                                                  // and name.db_value() are
-//                                                  // equal to
-//                                                  // server_name.value().
-//    name.db_value().MakeOSLegal();  // Updates name.db_value in-place,
-//                                    // leaving name.value() unchanged.
-//    foo->PutName(name);
-//
-class Name : public SyncName {
- public:
-  // Create a Name with an initially specified db_value and value.
-  Name(const PathString& db_name, const PathString& sync_name)
-      : SyncName(sync_name), db_value_(db_name) { }
-
-  // Create a Name by specifying the db name, sync name, and non-unique
-  // sync name values.
-  Name(const PathString& db_name, const PathString& sync_name,
-       const PathString& non_unique_sync_name)
-      : SyncName(sync_name, non_unique_sync_name), db_value_(db_name) { }
-
-  // Create a Name with all name values initially equal to the the single
-  // specified argument.
-  explicit Name(const PathString& sync_and_db_name)
-      : SyncName(sync_and_db_name), db_value_(sync_and_db_name) { }
-
-  // Create a Name using the local (non-SERVER) fields of an EntryKernel.
-  static Name FromEntryKernel(struct EntryKernel*);
-
-  // Create a Name from a SyncName.  db_value is initially sync_name.value().
-  // non_unique_value() and value() are copied from |sync_name|.
-  static Name FromSyncName(const SyncName& sync_name) {
-    return Name(sync_name.value(), sync_name.value(),
-                sync_name.non_unique_value());
-  }
-
-  static Name FromDBNameAndSyncName(const PathString& db_name,
-                                    const SyncName& sync_name) {
-    return Name(db_name, sync_name.value(), sync_name.non_unique_value());
-  }
-
-  // Get the database name.  The non-const version is useful for in-place
-  // mutation.
-  const DBName& db_value() const { return db_value_; }
-  DBName& db_value() { return db_value_; }
-
-  // Do the sync names and database names differ?  This indicates that
-  // the sync name has been sanitized, and that GetUnsanitizedName() will
-  // be non-empty.
-  bool HasBeenSanitized() const { return db_value_ != value(); }
-
-  // Compute the value of the unsanitized name from the current sync and db
-  // name values.  The unsanitized name is the sync name value, unless the sync
-  // name is the same as the db name value, in which case the unsanitized name
-  // is empty.
-  PathString GetUnsanitizedName() const {
-    return HasBeenSanitized() ? value() : PathString();
-  }
-
-  inline bool operator==(const Name& right_hand_side) const {
-    return this->SyncName::operator==(right_hand_side) &&
-        db_value_ == right_hand_side.db_value_;
-  }
-  inline bool operator!=(const Name& right_hand_side) const {
-    return !(*this == right_hand_side);
-  }
-
- private:
-  // The database name, which is maintained to be a legal and unique-in-parent
-  // name.
-  DBName db_value_;
-};
 
 // Why the singular enums?  So the code compile-time dispatches instead of
 // runtime dispatches as it would with a single enum and an if() statement.
@@ -515,11 +312,6 @@ class Entry {
   Entry(BaseTransaction* trans, GetByHandle, int64 handle);
   Entry(BaseTransaction* trans, GetById, const Id& id);
   Entry(BaseTransaction* trans, GetByTag, const PathString& tag);
-  Entry(BaseTransaction* trans, GetByPath, const PathString& path);
-  Entry(BaseTransaction* trans, GetByParentIdAndName, const Id& id,
-      const PathString& name);
-  Entry(BaseTransaction* trans, GetByParentIdAndDBName, const Id& id,
-      const PathString& name);
 
   bool good() const { return 0 != kernel_; }
 
@@ -563,31 +355,12 @@ class Entry {
     DCHECK(kernel_);
     return kernel_->ref(field);
   }
-  inline Name GetName() const {
+
+  inline bool ExistsOnClientBecauseNameIsNonEmpty() const {
     DCHECK(kernel_);
-    return Name::FromEntryKernel(kernel_);
+    return !kernel_->ref(NON_UNIQUE_NAME).empty();
   }
-  inline SyncName GetServerName() const {
-    DCHECK(kernel_);
-    return SyncName(kernel_->ref(SERVER_NAME),
-                    kernel_->ref(SERVER_NON_UNIQUE_NAME));
-  }
-  inline bool SyncNameMatchesServerName() const {
-    DCHECK(kernel_);
-    SyncName sync_name(GetName());
-    return sync_name == GetServerName();
-  }
-  inline PathString GetSyncNameValue() const {
-    DCHECK(kernel_);
-    // This should always be equal to GetName().sync_name().value(), but may be
-    // faster.
-    return kernel_->ref(UNSANITIZED_NAME).empty() ? kernel_->ref(NAME) :
-        kernel_->ref(UNSANITIZED_NAME);
-  }
-  inline bool ExistsOnClientBecauseDatabaseNameIsNonEmpty() const {
-    DCHECK(kernel_);
-    return !kernel_->ref(NAME).empty();
-  }
+
   inline bool IsRoot() const {
     DCHECK(kernel_);
     return kernel_->ref(ID).IsRoot();
@@ -635,11 +408,6 @@ class MutableEntry : public Entry {
   MutableEntry(WriteTransaction* trans, CreateNewUpdateItem, const Id& id);
   MutableEntry(WriteTransaction* trans, GetByHandle, int64);
   MutableEntry(WriteTransaction* trans, GetById, const Id&);
-  MutableEntry(WriteTransaction* trans, GetByPath, const PathString& path);
-  MutableEntry(WriteTransaction* trans, GetByParentIdAndName, const Id&,
-    const PathString& name);
-  MutableEntry(WriteTransaction* trans, GetByParentIdAndDBName,
-    const Id& parentid, const PathString& name);
 
   inline WriteTransaction* write_transaction() const {
     return write_transaction_;
@@ -648,19 +416,12 @@ class MutableEntry : public Entry {
   // Field Accessors.  Some of them trigger the re-indexing of the entry.
   // Return true on success, return false on failure, which means
   // that putting the value would have caused a duplicate in the index.
+  // TODO(chron): Remove some of these unecessary return values.
   bool Put(Int64Field field, const int64& value);
   bool Put(IdField field, const Id& value);
   bool Put(StringField field, const PathString& value);
   bool Put(BaseVersion field, int64 value);
-  inline bool PutName(const Name& name) {
-    return (Put(NAME, name.db_value()) &&
-            Put(UNSANITIZED_NAME, name.GetUnsanitizedName()) &&
-            Put(NON_UNIQUE_NAME, name.non_unique_value()));
-  }
-  inline bool PutServerName(const SyncName& server_name) {
-    return (Put(SERVER_NAME, server_name.value()) &&
-            Put(SERVER_NON_UNIQUE_NAME, server_name.non_unique_value()));
-  }
+
   inline bool Put(BlobField field, const Blob& value) {
     return PutField(field, value);
   }
@@ -671,10 +432,6 @@ class MutableEntry : public Entry {
     return PutIsDel(value);
   }
   bool Put(IndexedBitField field, bool value);
-
-  // Avoids temporary collision in index when renaming a bookmark into another
-  // folder.
-  bool PutParentIdAndName(const Id& parent_id, const Name& name);
 
   // Sets the position of this item, and updates the entry kernels of the
   // adjacent siblings so that list invariants are maintained.  Returns false
@@ -732,7 +489,7 @@ template <Int64Field field_index>
 class SameField;
 template <Int64Field field_index>
 class HashField;
-class LessParentIdAndNames;
+class LessParentIdAndHandle;
 class LessMultiIncusionTargetAndMetahandle;
 template <typename FieldType, FieldType field_index>
 class LessField;
@@ -922,21 +679,18 @@ class Directory {
   std::string cache_guid() const;
 
  protected:  // for friends, mainly used by Entry constructors
-  EntryKernel* GetChildWithName(const Id& parent_id, const PathString& name);
-  EntryKernel* GetChildWithDBName(const Id& parent_id, const PathString& name);
   EntryKernel* GetEntryByHandle(const int64 handle);
   EntryKernel* GetEntryByHandle(const int64 metahandle, ScopedKernelLock* lock);
   EntryKernel* GetEntryById(const Id& id);
   EntryKernel* GetEntryByTag(const PathString& tag);
   EntryKernel* GetRootEntry();
-  EntryKernel* GetEntryByPath(const PathString& path);
   bool ReindexId(EntryKernel* const entry, const Id& new_id);
-  bool ReindexParentIdAndName(EntryKernel* const entry, const Id& new_parent_id,
-                              const PathString& new_name);
-  // These don't do the semantic checking that the redirector needs.
+  void ReindexParentId(EntryKernel* const entry, const Id& new_parent_id);
+
+  // These don't do semantic checking.
   // The semantic checking is implemented higher up.
-  bool Undelete(EntryKernel* const entry);
-  bool Delete(EntryKernel* const entry);
+  void Undelete(EntryKernel* const entry);
+  void Delete(EntryKernel* const entry);
 
   // Overridden by tests.
   virtual DirectoryBackingStore* CreateBackingStore(
@@ -947,12 +701,6 @@ class Directory {
   // These private versions expect the kernel lock to already be held
   // before calling.
   EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
-  EntryKernel* GetChildWithName(const Id& parent_id,
-                                const PathString& name,
-                                ScopedKernelLock* const lock);
-  EntryKernel* GetChildWithNameImpl(const Id& parent_id,
-                                    const PathString& name,
-                                    ScopedKernelLock* const lock);
 
   DirOpenResult OpenImpl(const FilePath& file_path, const PathString& name);
 
@@ -1081,9 +829,10 @@ class Directory {
   typedef std::set<EntryKernel*, LessField<IdField, ID> > IdsIndex;
   // All entries in memory must be in both the MetahandlesIndex and
   // the IdsIndex, but only non-deleted entries will be the
-  // ParentIdAndNamesIndex, because there can be multiple deleted
-  // entries with the same parent id and name.
-  typedef std::set<EntryKernel*, LessParentIdAndNames> ParentIdAndNamesIndex;
+  // ParentIdChildIndex.
+  // This index contains EntryKernels ordered by parent ID and metahandle.
+  // It allows efficient lookup of the children of a given parent.
+  typedef std::set<EntryKernel*, LessParentIdAndHandle> ParentIdChildIndex;
   typedef std::vector<int64> MetahandlesToPurge;
 
  private:
@@ -1116,7 +865,7 @@ class Directory {
     Lock mutex;
     MetahandlesIndex* metahandles_index;  // Entries indexed by metahandle
     IdsIndex* ids_index;  // Entries indexed by id
-    ParentIdAndNamesIndex* parent_id_and_names_index;
+    ParentIdChildIndex* parent_id_child_index;
     // So we don't have to create an EntryKernel every time we want to
     // look something up in an index.  Needle in haystack metaphore.
     EntryKernel needle;
@@ -1179,7 +928,7 @@ class ScopedKernelLock {
   DISALLOW_COPY_AND_ASSIGN(ScopedKernelLock);
 };
 
-// Transactions are now processed FIFO (+overlapping reads).
+// Transactions are now processed FIFO with a straight lock
 class BaseTransaction {
   friend class Entry;
  public:
@@ -1253,9 +1002,6 @@ int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
                        const void* b);
 
 int64 Now();
-
-// Does wildcard processing.
-BOOL PathNameMatch(const PathString& pathname, const PathString& pathspec);
 
 class ExtendedAttribute {
  public:

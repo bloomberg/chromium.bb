@@ -50,11 +50,8 @@ static const ColumnSpec g_metas_columns[] = {
   {"server_is_bookmark_object", "bit default 0"},
   //////////////////////////////////////
   // Strings
-  {"name", "varchar(255) COLLATE PATHNAME"},
-  {"unsanitized_name", "varchar(255) COLLATE PATHNAME"},
   {"non_unique_name", "varchar"},
-  {"server_name", "varchar(255) COLLATE PATHNAME"},
-  {"server_non_unique_name", "varchar"},
+  {"server_non_unique_name", "varchar(255) COLLATE PATHNAME"},
   {"bookmark_url", "varchar"},
   {"server_bookmark_url", "varchar"},
   {"singleton_tag", "varchar"},

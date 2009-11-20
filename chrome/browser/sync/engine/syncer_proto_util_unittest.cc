@@ -75,43 +75,62 @@ TEST(SyncerProtoUtil, NameExtractionOneName) {
   SyncEntity one_name_entity;
   CommitResponse_EntryResponse one_name_response;
 
-  PathString one_name_string(PSTR("Eggheadednesses"));
-  one_name_entity.set_name("Eggheadednesses");
-  one_name_response.set_name("Eggheadednesses");
+  const std::string one_name_string("Eggheadednesses");
+  one_name_entity.set_name(one_name_string);
+  one_name_response.set_name(one_name_string);
 
-  SyncName name_a = SyncerProtoUtil::NameFromSyncEntity(one_name_entity);
-  EXPECT_EQ(one_name_string, name_a.value());
-  EXPECT_EQ(one_name_string, name_a.non_unique_value());
+  const std::string name_a =
+      SyncerProtoUtil::NameFromSyncEntity(one_name_entity);
+  EXPECT_EQ(one_name_string, name_a);
 
-  SyncName name_b =
+  const std::string name_b =
       SyncerProtoUtil::NameFromCommitEntryResponse(one_name_response);
-  EXPECT_EQ(one_name_string, name_b.value());
-  EXPECT_EQ(one_name_string, name_b.non_unique_value());
+  EXPECT_EQ(one_name_string, name_b);
+  EXPECT_TRUE(name_a == name_b);
+}
 
+TEST(SyncerProtoUtil, NameExtractionOneUniqueName) {
+  SyncEntity one_name_entity;
+  CommitResponse_EntryResponse one_name_response;
+
+  const std::string one_name_string("Eggheadednesses");
+
+  one_name_entity.set_non_unique_name(one_name_string);
+  one_name_response.set_non_unique_name(one_name_string);
+
+  const std::string name_a =
+      SyncerProtoUtil::NameFromSyncEntity(one_name_entity);
+  EXPECT_EQ(one_name_string, name_a);
+
+  const std::string name_b =
+      SyncerProtoUtil::NameFromCommitEntryResponse(one_name_response);
+  EXPECT_EQ(one_name_string, name_b);
   EXPECT_TRUE(name_a == name_b);
 }
 
 // Tests NameFromSyncEntity and NameFromCommitEntryResponse when both the name
 // field and the non_unique_name fields are provided.
+// Should prioritize non_unique_name.
 TEST(SyncerProtoUtil, NameExtractionTwoNames) {
   SyncEntity two_name_entity;
   CommitResponse_EntryResponse two_name_response;
 
-  PathString two_name_string_unique(PSTR("Oxyphenbutazone"));
-  two_name_entity.set_name("Oxyphenbutazone");
-  two_name_response.set_name("Oxyphenbutazone");
-  PathString two_name_string(PSTR("Neuroanatomists"));
-  two_name_entity.set_non_unique_name("Neuroanatomists");
-  two_name_response.set_non_unique_name("Neuroanatomists");
+  const std::string neuro("Neuroanatomists");
+  const std::string oxyphen("Oxyphenbutazone");
 
-  SyncName name_a = SyncerProtoUtil::NameFromSyncEntity(two_name_entity);
-  EXPECT_EQ(two_name_string_unique, name_a.value());
-  EXPECT_EQ(two_name_string, name_a.non_unique_value());
+  two_name_entity.set_name(oxyphen);
+  two_name_entity.set_non_unique_name(neuro);
 
-  SyncName name_b =
+  two_name_response.set_name(oxyphen);
+  two_name_response.set_non_unique_name(neuro);
+
+  const std::string name_a =
+      SyncerProtoUtil::NameFromSyncEntity(two_name_entity);
+  EXPECT_EQ(neuro, name_a);
+
+  const std::string name_b =
       SyncerProtoUtil::NameFromCommitEntryResponse(two_name_response);
-  EXPECT_EQ(two_name_string_unique, name_b.value());
-  EXPECT_EQ(two_name_string, name_b.non_unique_value());
+  EXPECT_EQ(neuro, name_b);
 
   EXPECT_TRUE(name_a == name_b);
 }

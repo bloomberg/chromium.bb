@@ -23,9 +23,7 @@ using syncable::Directory;
 using syncable::Entry;
 using syncable::Id;
 using syncable::MutableEntry;
-using syncable::Name;
 using syncable::ScopedDirLookup;
-using syncable::SyncName;
 using syncable::WriteTransaction;
 
 namespace browser_sync {
@@ -37,88 +35,6 @@ ConflictResolver::ConflictResolver() {
 
 ConflictResolver::~ConflictResolver() {
 }
-
-namespace {
-// TODO(ncarter): Remove title/path conflicts and the code to resolve them.
-// This is historical cruft that seems to be actually reached by some users.
-inline PathString GetConflictPathnameBase(PathString base) {
-  time_t time_since = time(NULL);
-  struct tm* now = localtime(&time_since);
-  // Use a fixed format as the locale's format may include '/' characters or
-  // other illegal characters.
-  PathString date = IntToPathString(now->tm_year + 1900);
-  date.append(PSTR("-"));
-  ++now->tm_mon;  // tm_mon is 0-based.
-  if (now->tm_mon < 10)
-    date.append(PSTR("0"));
-  date.append(IntToPathString(now->tm_mon));
-  date.append(PSTR("-"));
-  if (now->tm_mday < 10)
-    date.append(PSTR("0"));
-  date.append(IntToPathString(now->tm_mday));
-  return base + PSTR(" (Edited on ") + date + PSTR(")");
-}
-
-// TODO(ncarter): Remove title/path conflicts and the code to resolve them.
-Name FindNewName(BaseTransaction* trans,
-                 Id parent_id,
-                 const SyncName& original_name) {
-  const PathString name = original_name.value();
-  // 255 is defined in our spec.
-  const size_t allowed_length = kSyncProtocolMaxNameLengthBytes;
-  // TODO(sync): How do we get length on other platforms? The limit is
-  // checked in java on the server, so it's not the number of glyphs its the
-  // number of 16 bit characters in the UTF-16 representation.
-
-  // 10 characters for 32 bit numbers + 2 characters for brackets means 12
-  // characters should be more than enough for the name. Doubling this ensures
-  // that we will have enough space.
-  COMPILE_ASSERT(kSyncProtocolMaxNameLengthBytes >= 24,
-                 maximum_name_too_short);
-  CHECK(name.length() <= allowed_length);
-
-  if (!Entry(trans,
-             syncable::GET_BY_PARENTID_AND_DBNAME,
-             parent_id,
-             name).good())
-    return Name::FromSyncName(original_name);
-  PathString base = name;
-  PathString ext;
-  PathString::size_type ext_index = name.rfind('.');
-  if (PathString::npos != ext_index && 0 != ext_index &&
-      name.length() - ext_index < allowed_length / 2) {
-    base = name.substr(0, ext_index);
-    ext = name.substr(ext_index);
-  }
-
-  PathString name_base = GetConflictPathnameBase(base);
-  if (name_base.length() + ext.length() > allowed_length) {
-    name_base.resize(allowed_length - ext.length());
-    TrimPathStringToValidCharacter(&name_base);
-  }
-  PathString new_name = name_base + ext;
-  int n = 2;
-  while (Entry(trans,
-               syncable::GET_BY_PARENTID_AND_DBNAME,
-               parent_id,
-               new_name).good()) {
-    PathString local_ext = PSTR("(");
-    local_ext.append(IntToPathString(n));
-    local_ext.append(PSTR(")"));
-    local_ext.append(ext);
-    if (name_base.length() + local_ext.length() > allowed_length) {
-      name_base.resize(allowed_length - local_ext.length());
-      TrimPathStringToValidCharacter(&name_base);
-    }
-    new_name = name_base + local_ext;
-    n++;
-  }
-
-  CHECK(new_name.length() <= kSyncProtocolMaxNameLengthBytes);
-  return Name(new_name);
-}
-
-}  // namespace
 
 void ConflictResolver::IgnoreLocalChanges(MutableEntry* entry) {
   // An update matches local actions, merge the changes.
@@ -151,8 +67,10 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
   CHECK(entry.good());
   // If an update fails, locally we have to be in a set or unsynced. We're not
   // in a set here, so we must be unsynced.
-  if (!entry.Get(syncable::IS_UNSYNCED))
+  if (!entry.Get(syncable::IS_UNSYNCED)) {
     return NO_SYNC_PROGRESS;
+  }
+
   if (!entry.Get(syncable::IS_UNAPPLIED_UPDATE)) {
     if (!entry.Get(syncable::PARENT_ID).ServerKnows()) {
       LOG(INFO) << "Item conflicting because its parent not yet committed. "
@@ -164,6 +82,7 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     }
     return NO_SYNC_PROGRESS;
   }
+
   if (entry.Get(syncable::IS_DEL) && entry.Get(syncable::SERVER_IS_DEL)) {
     // we've both deleted it, so lets just drop the need to commit/update this
     // entry.
@@ -180,7 +99,8 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
     // Check if there's no changes.
 
     // Verbose but easier to debug.
-    bool name_matches = entry.SyncNameMatchesServerName();
+    bool name_matches = entry.Get(syncable::NON_UNIQUE_NAME) ==
+                        entry.Get(syncable::SERVER_NON_UNIQUE_NAME);
     bool parent_matches = entry.Get(syncable::PARENT_ID) ==
                                     entry.Get(syncable::SERVER_PARENT_ID);
     bool entry_deleted = entry.Get(syncable::IS_DEL);
@@ -208,7 +128,6 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
         return NO_SYNC_PROGRESS;
       }
     }
-    // METRIC conflict resolved by entry split;
 
     // If the entry's deleted on the server, we can have a directory here.
     entry.Put(syncable::IS_UNSYNCED, true);
@@ -223,162 +142,6 @@ ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
 
     return SYNC_PROGRESS;
   }
-}
-
-namespace {
-
-bool NamesCollideWithChildrenOfFolder(BaseTransaction* trans,
-                                      const Directory::ChildHandles& children,
-                                      Id folder_id) {
-  Directory::ChildHandles::const_iterator i = children.begin();
-  while (i != children.end()) {
-    Entry child(trans, syncable::GET_BY_HANDLE, *i);
-    CHECK(child.good());
-    if (Entry(trans,
-              syncable::GET_BY_PARENTID_AND_DBNAME,
-              folder_id,
-              child.GetName().db_value()).good())
-      return true;
-    ++i;
-  }
-  return false;
-}
-
-void GiveEntryNewName(WriteTransaction* trans, MutableEntry* entry) {
-  using namespace syncable;
-  Name new_name =
-      FindNewName(trans, entry->Get(syncable::PARENT_ID), entry->GetName());
-  LOG(INFO) << "Resolving name clash, renaming " << *entry << " to "
-      << new_name.db_value();
-  entry->PutName(new_name);
-  CHECK(entry->Get(syncable::IS_UNSYNCED));
-}
-
-}  // namespace
-
-bool ConflictResolver::AttemptItemMerge(WriteTransaction* trans,
-                                        MutableEntry* locally_named,
-                                        MutableEntry* server_named) {
-  // To avoid complications we only merge new entries with server entries.
-  if (locally_named->Get(syncable::IS_DIR) !=
-          server_named->Get(syncable::SERVER_IS_DIR) ||
-      locally_named->Get(syncable::ID).ServerKnows() ||
-      locally_named->Get(syncable::IS_UNAPPLIED_UPDATE) ||
-      server_named->Get(syncable::IS_UNSYNCED))
-    return false;
-  Id local_id = locally_named->Get(syncable::ID);
-  Id desired_id = server_named->Get(syncable::ID);
-  if (locally_named->Get(syncable::IS_DIR)) {
-    // Extra work for directory name clash. We have to make sure we don't have
-    // clashing child items, and update the parent id the children of the new
-    // entry.
-    Directory::ChildHandles children;
-    trans->directory()->GetChildHandles(trans, local_id, &children);
-    if (NamesCollideWithChildrenOfFolder(trans, children, desired_id))
-      return false;
-
-    LOG(INFO) << "Merging local changes to: " << desired_id << ". "
-        << *locally_named;
-
-    server_named->Put(syncable::ID, trans->directory()->NextId());
-    Directory::ChildHandles::iterator i;
-    for (i = children.begin() ; i != children.end() ; ++i) {
-      MutableEntry child_entry(trans, syncable::GET_BY_HANDLE, *i);
-      CHECK(child_entry.good());
-      CHECK(child_entry.Put(syncable::PARENT_ID, desired_id));
-      CHECK(child_entry.Put(syncable::IS_UNSYNCED, true));
-      Id id = child_entry.Get(syncable::ID);
-      // We only note new entries for quicker merging next round.
-      if (!id.ServerKnows())
-        children_of_merged_dirs_.insert(id);
-    }
-  } else {
-    if (!server_named->Get(syncable::IS_DEL))
-      return false;
-  }
-
-  LOG(INFO) << "Identical client and server items merging server changes. " <<
-      *locally_named << " server: " << *server_named;
-
-  // Clear server_named's server data and mark it deleted so it goes away
-  // quietly because it's now identical to a deleted local entry.
-  // locally_named takes on the ID of the server entry.
-  server_named->Put(syncable::ID, trans->directory()->NextId());
-  locally_named->Put(syncable::ID, desired_id);
-  locally_named->Put(syncable::IS_UNSYNCED, false);
-  CopyServerFields(server_named, locally_named);
-  ClearServerData(server_named);
-  server_named->Put(syncable::IS_DEL, true);
-  server_named->Put(syncable::BASE_VERSION, 0);
-  CHECK(SUCCESS ==
-        SyncerUtil::AttemptToUpdateEntryWithoutMerge(
-            trans, locally_named, NULL));
-  return true;
-}
-
-ConflictResolver::ServerClientNameClashReturn
-ConflictResolver::ProcessServerClientNameClash(WriteTransaction* trans,
-                                               MutableEntry* locally_named,
-                                               MutableEntry* server_named,
-                                               SyncerSession* session) {
-  if (!locally_named->ExistsOnClientBecauseDatabaseNameIsNonEmpty())
-    return NO_CLASH;  // Locally_named is a server update.
-  if (locally_named->Get(syncable::IS_DEL) ||
-      server_named->Get(syncable::SERVER_IS_DEL)) {
-    return NO_CLASH;
-  }
-  if (locally_named->Get(syncable::PARENT_ID) !=
-      server_named->Get(syncable::SERVER_PARENT_ID)) {
-    return NO_CLASH;  // Different parents.
-  }
-
-  PathString name = locally_named->GetSyncNameValue();
-  if (0 != syncable::ComparePathNames(name,
-      server_named->Get(syncable::SERVER_NAME))) {
-    return NO_CLASH;  // Different names.
-  }
-
-  // First try to merge.
-  if (AttemptItemMerge(trans, locally_named, server_named)) {
-    // METRIC conflict resolved by merge
-    return SOLVED;
-  }
-  // We need to rename.
-  if (!locally_named->Get(syncable::IS_UNSYNCED)) {
-    LOG(ERROR) << "Locally named part of a name conflict not unsynced?";
-    locally_named->Put(syncable::IS_UNSYNCED, true);
-  }
-  if (!server_named->Get(syncable::IS_UNAPPLIED_UPDATE)) {
-    LOG(ERROR) << "Server named part of a name conflict not an update?";
-  }
-  GiveEntryNewName(trans, locally_named);
-
-  // METRIC conflict resolved by rename
-  return SOLVED;
-}
-
-ConflictResolver::ServerClientNameClashReturn
-ConflictResolver::ProcessNameClashesInSet(WriteTransaction* trans,
-                                          ConflictSet* conflict_set,
-                                          SyncerSession* session) {
-  ConflictSet::const_iterator i,j;
-  for (i = conflict_set->begin() ; i != conflict_set->end() ; ++i) {
-    MutableEntry entryi(trans, syncable::GET_BY_ID, *i);
-    if (!entryi.Get(syncable::IS_UNSYNCED) &&
-        !entryi.Get(syncable::IS_UNAPPLIED_UPDATE))
-      // This set is broken / doesn't make sense, this may be transient.
-      return BOGUS_SET;
-    for (j = conflict_set->begin() ; *i != *j ; ++j) {
-      MutableEntry entryj(trans, syncable::GET_BY_ID, *j);
-      ServerClientNameClashReturn rv =
-        ProcessServerClientNameClash(trans, &entryi, &entryj, session);
-      if (NO_CLASH == rv)
-        rv = ProcessServerClientNameClash(trans, &entryj, &entryi, session);
-      if (NO_CLASH != rv)
-        return rv;
-    }
-  }
-  return NO_CLASH;
 }
 
 ConflictResolver::ConflictSetCountMapKey ConflictResolver::GetSetKey(
@@ -481,6 +244,8 @@ bool AttemptToFixUnsyncedEntryInDeletedServerTree(WriteTransaction* trans,
   return true;
 }
 
+
+// TODO(chron): needs unit test badly
 bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,
                                                ConflictSet* conflict_set,
                                                const Entry& entry) {
@@ -540,18 +305,19 @@ bool AttemptToFixUpdateEntryInDeletedLocalTree(WriteTransaction* trans,
   // Now we fix things up by undeleting all the folders in the item's path.
   id = parent_id;
   while (!id.IsRoot() && id != reroot_id) {
-    if (!binary_search(conflict_set->begin(), conflict_set->end(), id))
+    if (!binary_search(conflict_set->begin(), conflict_set->end(), id)) {
       break;
+    }
     MutableEntry entry(trans, syncable::GET_BY_ID, id);
+
+    LOG(INFO) << "Undoing our deletion of " << entry
+        << ", will have name " << entry.Get(syncable::NON_UNIQUE_NAME);
+
     Id parent_id = entry.Get(syncable::PARENT_ID);
-    if (parent_id == reroot_id)
+    if (parent_id == reroot_id) {
       parent_id = trans->root_id();
-    Name old_name = entry.GetName();
-    Name new_name = FindNewName(trans, parent_id, old_name);
-    LOG(INFO) << "Undoing our deletion of " << entry <<
-        ", will have name " << new_name.db_value();
-    if (new_name != old_name || parent_id != entry.Get(syncable::PARENT_ID))
-      CHECK(entry.PutParentIdAndName(parent_id, new_name));
+    }
+    entry.Put(syncable::PARENT_ID, parent_id);
     entry.Put(syncable::IS_DEL, false);
     id = entry.Get(syncable::PARENT_ID);
     // METRIC conflict resolved by recreating dir tree.
@@ -576,6 +342,7 @@ bool AttemptToFixRemovedDirectoriesWithContent(WriteTransaction* trans,
 
 }  // namespace
 
+// TODO(sync): Eliminate conflict sets. They're not necessary.
 bool ConflictResolver::ProcessConflictSet(WriteTransaction* trans,
                                           ConflictSet* conflict_set,
                                           int conflict_count,
@@ -596,13 +363,6 @@ bool ConflictResolver::ProcessConflictSet(WriteTransaction* trans,
   }
 
   LOG(INFO) << "Fixing a set containing " << set_size << " items";
-
-  ServerClientNameClashReturn rv = ProcessNameClashesInSet(trans, conflict_set,
-                                                           session);
-  if (SOLVED == rv)
-    return true;
-  if (NO_CLASH != rv)
-    return false;
 
   // Fix circular conflicts.
   if (AttemptToFixCircularConflict(trans, conflict_set))

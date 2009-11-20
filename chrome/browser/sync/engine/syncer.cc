@@ -26,6 +26,7 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/closure.h"
 
 using sync_pb::ClientCommand;
 using syncable::Blob;
@@ -37,7 +38,6 @@ using syncable::SERVER_IS_BOOKMARK_OBJECT;
 using syncable::SERVER_IS_DEL;
 using syncable::SERVER_IS_DIR;
 using syncable::SERVER_MTIME;
-using syncable::SERVER_NAME;
 using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
@@ -62,7 +62,7 @@ Syncer::Syncer(
       model_safe_worker_(model_safe_worker),
       updates_source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN),
       notifications_enabled_(false),
-      pre_conflict_resolution_function_(NULL) {
+      pre_conflict_resolution_closure_(NULL) {
   SyncerEvent shutdown = { SyncerEvent::SHUTDOWN_USE_WITH_CARE };
   syncer_event_channel_.reset(new SyncerEventChannel(shutdown));
   shutdown_channel_.reset(new ShutdownChannel(this));
@@ -245,15 +245,10 @@ void Syncer::SyncShare(SyncerSession* session,
       case RESOLVE_CONFLICTS: {
         LOG(INFO) << "Resolving Conflicts";
 
-        // Trigger the pre_conflict_resolution_function_, which is a testing
+        // Trigger the pre_conflict_resolution_closure_, which is a testing
         // hook for the unit tests, if it is non-NULL.
-        if (pre_conflict_resolution_function_) {
-          ScopedDirLookup dir(dirman_, account_name_);
-          if (!dir.good()) {
-            LOG(ERROR) << "Bad dir lookup in syncer loop";
-            return;
-          }
-          pre_conflict_resolution_function_(dir);
+        if (pre_conflict_resolution_closure_) {
+          pre_conflict_resolution_closure_->Run();
         }
 
         ResolveConflictsCommand resolve_conflicts_command;
@@ -312,7 +307,6 @@ void Syncer::ProcessClientCommand(SyncerSession* session) {
 }
 
 void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {
-  dest->Put(SERVER_NAME, src->Get(SERVER_NAME));
   dest->Put(SERVER_NON_UNIQUE_NAME, src->Get(SERVER_NON_UNIQUE_NAME));
   dest->Put(SERVER_PARENT_ID, src->Get(SERVER_PARENT_ID));
   dest->Put(SERVER_MTIME, src->Get(SERVER_MTIME));
@@ -328,7 +322,6 @@ void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {
 }
 
 void ClearServerData(syncable::MutableEntry* entry) {
-  entry->Put(SERVER_NAME, PSTR(""));
   entry->Put(SERVER_NON_UNIQUE_NAME, PSTR(""));
   entry->Put(SERVER_PARENT_ID, syncable::kNullId);
   entry->Put(SERVER_MTIME, 0);

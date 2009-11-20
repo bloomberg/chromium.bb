@@ -20,9 +20,6 @@ using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 using syncable::MutableEntry;
 using syncable::Entry;
-using syncable::Name;
-using syncable::SyncName;
-using syncable::DBName;
 
 using std::set;
 using std::vector;
@@ -124,6 +121,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
           break;
         case CommitResponse::CONFLICT:
           ++conflicting_commits;
+          // This is important to activate conflict resolution.
           session->AddCommitConflict(commit_ids[i]);
           break;
         case CommitResponse::SUCCESS:
@@ -339,33 +337,15 @@ void ProcessCommitResponseCommand::PerformCommitTimeNameAside(
     syncable::WriteTransaction* trans,
     const CommitResponse_EntryResponse& server_entry,
     syncable::MutableEntry* local_entry) {
-  Name old_name(local_entry->GetName());
-
-  // Ensure that we don't collide with an existing entry.
-  SyncName server_name =
+  PathString old_name = local_entry->Get(syncable::NON_UNIQUE_NAME);
+  const string server_name =
       SyncerProtoUtil::NameFromCommitEntryResponse(server_entry);
 
-  LOG(INFO) << "Server provided committed name:" << server_name.value();
-  if (!server_name.value().empty() &&
-      static_cast<SyncName&>(old_name) != server_name) {
-    LOG(INFO) << "Server name differs from local name, attempting"
-              << " commit time name aside.";
-
-    DBName db_name(server_name.value());
-    db_name.MakeOSLegal();
-
-    // This is going to produce ~1 names instead of (Edited) names.
-    // Since this should be EXTREMELY rare, we do this for now.
-    db_name.MakeNoncollidingForEntry(trans, local_entry->Get(SERVER_PARENT_ID),
-                                     local_entry);
-
-    CHECK(!db_name.empty());
-
-    LOG(INFO) << "Server commit moved aside entry: " << old_name.db_value()
-              << " to new name " << db_name;
-
+  if (!server_name.empty() && old_name != server_name) {
+    LOG(INFO) << "Server commit moved aside entry: " << old_name
+              << " to new name " << server_name;
     // Should be safe since we're in a "commit lock."
-    local_entry->PutName(Name::FromDBNameAndSyncName(db_name, server_name));
+    local_entry->Put(syncable::NON_UNIQUE_NAME, server_name);
   }
 }
 

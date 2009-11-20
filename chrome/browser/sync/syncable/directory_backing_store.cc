@@ -37,60 +37,12 @@ namespace syncable {
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
-static const int32 kCurrentDBVersion = 67;
-
-#if OS_WIN
-// TODO(sync): remove
-static void PathNameMatch16(sqlite3_context* context, int argc,
-                            sqlite3_value** argv) {
-  const PathString pathspec(reinterpret_cast<const PathChar*>
-      (sqlite3_value_text16(argv[0])), sqlite3_value_bytes16(argv[0]) / 2);
-
-  const void* name_text = sqlite3_value_text16(argv[1]);
-  int name_bytes = sqlite3_value_bytes16(argv[1]);
-  // If the text is null, we need to avoid the PathString constructor.
-  if (name_text != NULL) {
-    // Have to copy to append a terminating 0 anyway.
-    const PathString name(reinterpret_cast<const PathChar*>
-        (sqlite3_value_text16(argv[1])),
-        sqlite3_value_bytes16(argv[1]) / 2);
-    sqlite3_result_int(context, PathNameMatch(name, pathspec));
-  } else {
-    sqlite3_result_int(context, PathNameMatch(PathString(), pathspec));
-  }
-}
-
-// Sqlite allows setting of the escape character in an ESCAPE clause and
-// this character is passed in as a third character to the like function.
-// See: http://www.sqlite.org/lang_expr.html
-static void PathNameMatch16WithEscape(sqlite3_context* context,
-                                      int argc, sqlite3_value** argv) {
-  // Never seen this called, but just in case.
-  LOG(FATAL) << "PathNameMatch16WithEscape() not implemented";
-}
-#endif
+static const int32 kCurrentDBVersion = 68;
 
 static void RegisterPathNameCollate(sqlite3* dbhandle) {
   const int collate = SQLITE_UTF8;
   CHECK(SQLITE_OK == sqlite3_create_collation(dbhandle, "PATHNAME", collate,
       NULL, &ComparePathNames16));
-}
-
-// Replace the LIKE operator with our own implementation that does file spec
-// matching like "*.txt".
-static void RegisterPathNameMatch(sqlite3* dbhandle) {
-  // We only register this on Windows. We use the normal sqlite
-  // matching function on mac/linux.
-  // note that the function PathNameMatch() does a simple ==
-  // comparison on mac, so that would have to be fixed if
-  // we really wanted to use PathNameMatch on mac/linux w/ the
-  // same pattern strings as we do on windows.
-#if defined(OS_WIN)
-  CHECK(SQLITE_OK == sqlite3_create_function(dbhandle, "like",
-      2, SQLITE_ANY, NULL, &PathNameMatch16, NULL, NULL));
-  CHECK(SQLITE_OK == sqlite3_create_function(dbhandle, "like",
-      3, SQLITE_ANY, NULL, &PathNameMatch16WithEscape, NULL, NULL));
-#endif  // OS_WIN
 }
 
 static inline bool IsSqliteErrorOurFault(int result) {
@@ -265,7 +217,7 @@ bool DirectoryBackingStore::OpenAndConfigureHandleHelper(
   if (SQLITE_OK == SqliteOpen(backing_filepath_, handle)) {
     sqlite3_busy_timeout(*handle, kDirectoryBackingStoreBusyTimeoutMs);
     RegisterPathNameCollate(*handle);
-    RegisterPathNameMatch(*handle);
+
     return true;
   }
   return false;

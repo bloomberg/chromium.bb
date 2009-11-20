@@ -13,6 +13,7 @@
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/util/closure.h"
 
 using std::string;
 using std::vector;
@@ -27,10 +28,6 @@ struct HttpResponse;
 
 class MockConnectionManager : public browser_sync::ServerConnectionManager {
  public:
-  // A callback function type. These can be set to be called when server
-  // activity would normally take place. This aids simulation of race
-  // conditions.
-  typedef bool (*TestCallbackFunction)(syncable::Directory* dir);
   class MidCommitObserver {
    public:
     virtual void Observe() = 0;
@@ -49,7 +46,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   virtual bool IsUserAuthenticated();
 
   // Control of commit response.
-  void SetMidCommitCallbackFunction(TestCallbackFunction callback);
+  void SetMidCommitCallback(Closure* callback);
   void SetMidCommitObserver(MidCommitObserver* observer);
 
   // Set this if you want commit to perform commit time rename. Will request
@@ -209,7 +206,7 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // The updates we'll return to the next request.
   sync_pb::GetUpdatesResponse updates_;
-  TestCallbackFunction mid_commit_callback_function_;
+  Closure* mid_commit_callback_;
   MidCommitObserver* mid_commit_observer_;
 
   // The AUTHENTICATE response we'll return for auth requests.

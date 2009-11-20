@@ -167,7 +167,7 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
 // static
 bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
                               const SyncEntity& server_entry) {
-  SyncName name = NameFromSyncEntity(server_entry);
+  const std::string name = NameFromSyncEntity(server_entry);
 
   CHECK(local_entry.Get(ID) == server_entry.id()) <<
     " SyncerProtoUtil::Compare precondition not met.";
@@ -185,7 +185,7 @@ bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
 
   // These checks are somewhat prolix, but they're easier to debug than a big
   // boolean statement.
-  SyncName client_name = local_entry.GetName();
+  PathString client_name = local_entry.Get(syncable::NON_UNIQUE_NAME);
   if (client_name != name) {
     LOG(WARNING) << "Client name mismatch";
     return false;
@@ -235,23 +235,25 @@ void SyncerProtoUtil::CopyBlobIntoProtoBytes(const syncable::Blob& blob,
 }
 
 // static
-syncable::SyncName SyncerProtoUtil::NameFromSyncEntity(
+std::string SyncerProtoUtil::NameFromSyncEntity(
     const SyncEntity& entry) {
-  SyncName result(entry.name());
+
   if (entry.has_non_unique_name()) {
-    result.set_non_unique_value(entry.non_unique_name());
+      return entry.non_unique_name();
   }
-  return result;
+
+  return entry.name();
 }
 
 // static
-syncable::SyncName SyncerProtoUtil::NameFromCommitEntryResponse(
+std::string SyncerProtoUtil::NameFromCommitEntryResponse(
     const CommitResponse_EntryResponse& entry) {
-  SyncName result(entry.name());
+
   if (entry.has_non_unique_name()) {
-    result.set_non_unique_value(entry.non_unique_name());
+      return entry.non_unique_name();
   }
-  return result;
+
+  return entry.name();
 }
 
 }  // namespace browser_sync

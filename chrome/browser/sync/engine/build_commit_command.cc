@@ -22,7 +22,6 @@ using std::vector;
 using syncable::ExtendedAttribute;
 using syncable::Id;
 using syncable::MutableEntry;
-using syncable::Name;
 
 namespace browser_sync {
 
@@ -66,17 +65,16 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
     // This is the only change we make to the entry in this function.
     meta_entry.Put(syncable::SYNCING, true);
 
-    Name name = meta_entry.GetName();
-    CHECK(!name.value().empty());  // Make sure this isn't an update.
-    sync_entry->set_name(name.value());
-    // Set the non_unique_name if we have one.  If we do, the server ignores
+    PathString name = meta_entry.Get(syncable::NON_UNIQUE_NAME);
+    CHECK(!name.empty());  // Make sure this isn't an update.
+    sync_entry->set_name(name);
+
+    // Set the non_unique_name.  If we do, the server ignores
     // the |name| value (using |non_unique_name| instead), and will return
-    // in the CommitResponse a unique name if one is generated.  Even though
-    // we could get away with only sending |name|, we send both because it
-    // may aid in logging.
-    if (name.value() != name.non_unique_value()) {
-      sync_entry->set_non_unique_name(name.non_unique_value());
-    }
+    // in the CommitResponse a unique name if one is generated.
+    // We send both because it may aid in logging.
+    sync_entry->set_non_unique_name(name);
+
     // Deleted items with negative parent ids can be a problem so we set the
     // parent to 0. (TODO(sync): Still true in protocol?).
     Id new_parent_id;

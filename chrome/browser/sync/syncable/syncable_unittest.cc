@@ -42,6 +42,7 @@
 #include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/query_helpers.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
+#include "chrome/test/sync/engine/test_syncable_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 
@@ -52,6 +53,7 @@ using std::string;
 
 namespace syncable {
 
+namespace {
 // A lot of these tests were written expecting to be able to read and write
 // object data on entries.  However, the design has changed.
 void PutDataAsExtendedAttribute(WriteTransaction* wtrans,
@@ -68,106 +70,96 @@ void ExpectDataFromExtendedAttributeEquals(BaseTransaction* trans,
                                            Entry* e,
                                            const char* bytes,
                                            size_t bytes_length) {
+  ASSERT_TRUE(e->good());
   Blob expected_value(bytes, bytes + bytes_length);
   ExtendedAttributeKey key(e->Get(META_HANDLE), PSTR("DATA"));
   ExtendedAttribute attr(trans, GET_BY_HANDLE, key);
   EXPECT_FALSE(attr.is_deleted());
   EXPECT_EQ(expected_value, attr.value());
 }
-
+}  // namespace
 
 TEST(Syncable, General) {
   remove("SimpleTest.sqlite3");
   Directory dir;
   FilePath test_db(FILE_PATH_LITERAL("SimpleTest.sqlite3"));
   dir.Open(test_db, PSTR("SimpleTest"));
-  bool entry_exists = false;
-  int64 metahandle;
+
+  int64 written_metahandle;
   const Id id = TestIdFactory::FromNumber(99);
-  // Test simple read operations.
+  PathString name = PSTR("Jeff");
+  // Test simple read operations on an empty DB.
   {
     ReadTransaction rtrans(&dir, __FILE__, __LINE__);
     Entry e(&rtrans, GET_BY_ID, id);
-    if (e.good()) {
-      entry_exists = true;
-      metahandle = e.Get(META_HANDLE);
-    }
+    ASSERT_FALSE(e.good());  // Hasn't been written yet.
+
     Directory::ChildHandles child_handles;
     dir.GetChildHandles(&rtrans, rtrans.root_id(), &child_handles);
-    for (Directory::ChildHandles::iterator i = child_handles.begin();
-         i != child_handles.end(); ++i)
-      cout << *i << endl;
-
-    Entry e2(&rtrans, GET_BY_PATH, PSTR("/Hello\\World/"));
+    EXPECT_TRUE(child_handles.empty());
   }
 
   // Test creating a new meta entry.
   {
     WriteTransaction wtrans(&dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry me(&wtrans, CREATE, wtrans.root_id(), PSTR("Jeff"));
-    ASSERT_TRUE(entry_exists ? !me.good() : me.good());
-    if (me.good()) {
-      me.Put(ID, id);
-      me.Put(BASE_VERSION, 1);
-      metahandle = me.Get(META_HANDLE);
+    MutableEntry me(&wtrans, CREATE, wtrans.root_id(), name);
+    ASSERT_TRUE(me.good());
+    me.Put(ID, id);
+    me.Put(BASE_VERSION, 1);
+    written_metahandle = me.Get(META_HANDLE);
+  }
+
+  // Test GetChildHandles after something is now in the DB.
+  // Also check that GET_BY_ID works.
+  {
+    ReadTransaction rtrans(&dir, __FILE__, __LINE__);
+    Entry e(&rtrans, GET_BY_ID, id);
+    ASSERT_TRUE(e.good());
+
+    Directory::ChildHandles child_handles;
+    dir.GetChildHandles(&rtrans, rtrans.root_id(), &child_handles);
+    EXPECT_EQ(1u, child_handles.size());
+
+    for (Directory::ChildHandles::iterator i = child_handles.begin();
+         i != child_handles.end(); ++i) {
+      EXPECT_EQ(*i, written_metahandle);
     }
   }
 
-  // Test writing data to an entity.
+  // Test writing data to an entity. Also check that GET_BY_HANDLE works.
   static const char s[] = "Hello World.";
   {
     WriteTransaction trans(&dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry e(&trans, GET_BY_PATH,
-                   PathString(kPathSeparator) + PSTR("Jeff"));
+    MutableEntry e(&trans, GET_BY_HANDLE, written_metahandle);
     ASSERT_TRUE(e.good());
     PutDataAsExtendedAttribute(&trans, &e, s, sizeof(s));
   }
 
-  // Test reading back the name contents that we just wrote.
+  // Test reading back the contents that we just wrote.
   {
     WriteTransaction trans(&dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry e(&trans, GET_BY_PATH,
-                   PathString(kPathSeparator) + PSTR("Jeff"));
+    MutableEntry e(&trans, GET_BY_HANDLE, written_metahandle);
     ASSERT_TRUE(e.good());
     ExpectDataFromExtendedAttributeEquals(&trans, &e, s, sizeof(s));
+  }
+
+  // Verify it exists in the folder.
+  {
+    ReadTransaction rtrans(&dir, __FILE__, __LINE__);
+    EXPECT_EQ(1, CountEntriesWithName(&rtrans, rtrans.root_id(), name));
   }
 
   // Now delete it.
   {
     WriteTransaction trans(&dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry e(&trans, CREATE, trans.root_id(), PSTR("New File"));
+    MutableEntry e(&trans, GET_BY_HANDLE, written_metahandle);
     e.Put(IS_DEL, true);
+
+    EXPECT_EQ(0, CountEntriesWithName(&trans, trans.root_id(), name));
   }
 
   dir.SaveChanges();
-}
-
-TEST(Syncable, NameClassTest) {
-  const PathString foo(PSTR("foo"));
-  const PathString bar(PSTR("bar"));
-
-  Name name1(foo);
-  EXPECT_EQ(name1.value(), foo);
-  EXPECT_EQ(name1.db_value(), foo);
-  EXPECT_FALSE(name1.HasBeenSanitized());
-  EXPECT_TRUE(name1.GetUnsanitizedName().empty());
-
-  Name name2(foo, foo);
-  EXPECT_EQ(name2.value(), foo);
-  EXPECT_EQ(name2.db_value(), foo);
-  EXPECT_FALSE(name2.HasBeenSanitized());
-  EXPECT_TRUE(name2.GetUnsanitizedName().empty());
-
-  Name name3(foo, bar);
-  EXPECT_EQ(name3.value(), bar);
-  EXPECT_EQ(name3.db_value(), foo);
-  EXPECT_TRUE(name3.HasBeenSanitized());
-  EXPECT_EQ(name3.GetUnsanitizedName(), bar);
-
-  EXPECT_TRUE(name1 == name2);
-  EXPECT_FALSE(name1 != name2);
-  EXPECT_FALSE(name2 == name3);
-  EXPECT_TRUE(name2 != name3);
+  remove("SimpleTest.sqlite3");
 }
 
 namespace {
@@ -260,16 +252,6 @@ TEST_F(SyncableDirectoryTest, TestBasicLookupValidID) {
   ASSERT_TRUE(e.good());
 }
 
-TEST_F(SyncableDirectoryTest, TestBasicCaseSensitivity) {
-  PathString name = PSTR("RYAN");
-  PathString conflicting_name = PSTR("ryan");
-  CreateEntry(name);
-
-  WriteTransaction wtrans(dir_.get(), UNITTEST, __FILE__, __LINE__);
-  MutableEntry me(&wtrans, CREATE, wtrans.root_id(), conflicting_name);
-  ASSERT_FALSE(me.good());
-}
-
 TEST_F(SyncableDirectoryTest, TestDelete) {
   PathString name = PSTR("peanut butter jelly time");
   WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
@@ -283,15 +265,13 @@ TEST_F(SyncableDirectoryTest, TestDelete) {
   ASSERT_TRUE(e3.good());
   ASSERT_TRUE(e3.Put(IS_DEL, true));
 
-  ASSERT_TRUE(e3.Put(IS_DEL, false));
-  ASSERT_FALSE(e1.Put(IS_DEL, false));
-  ASSERT_FALSE(e2.Put(IS_DEL, false));
-  ASSERT_TRUE(e3.Put(IS_DEL, true));
-
   ASSERT_TRUE(e1.Put(IS_DEL, false));
-  ASSERT_FALSE(e2.Put(IS_DEL, false));
-  ASSERT_FALSE(e3.Put(IS_DEL, false));
+  ASSERT_TRUE(e2.Put(IS_DEL, false));
+  ASSERT_TRUE(e3.Put(IS_DEL, false));
+
   ASSERT_TRUE(e1.Put(IS_DEL, true));
+  ASSERT_TRUE(e2.Put(IS_DEL, true));
+  ASSERT_TRUE(e3.Put(IS_DEL, true));
 }
 
 TEST_F(SyncableDirectoryTest, TestGetUnsynced) {
@@ -462,7 +442,7 @@ TEST_F(SyncableDirectoryTest, DeleteBug_531383) {
     ASSERT_TRUE(twin.good());
     ASSERT_TRUE(twin.Put(IS_DEL, true));
     ASSERT_TRUE(grandchild.Put(IS_DEL, false));
-    ASSERT_FALSE(twin.Put(IS_DEL, false));
+
     grandchild_handle = grandchild.Get(META_HANDLE);
     twin_handle = twin.Get(META_HANDLE);
   }
@@ -531,86 +511,98 @@ TEST_F(SyncableDirectoryTest, TestIsLegalNewParent) {
   ASSERT_FALSE(IsLegalNewParent(parent, grandchild));
 }
 
-TEST_F(SyncableDirectoryTest, TestFindEntryInFolder) {
+TEST_F(SyncableDirectoryTest, TestEntryIsInFolder) {
   // Create a subdir and an entry.
   int64 entry_handle;
+  syncable::Id folder_id;
+  syncable::Id entry_id;
+  PathString entry_name = PSTR("entry");
+
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
     MutableEntry folder(&trans, CREATE, trans.root_id(), PSTR("folder"));
     ASSERT_TRUE(folder.good());
     EXPECT_TRUE(folder.Put(IS_DIR, true));
     EXPECT_TRUE(folder.Put(IS_UNSYNCED, true));
-    MutableEntry entry(&trans, CREATE, folder.Get(ID), PSTR("entry"));
+    folder_id = folder.Get(ID);
+
+    MutableEntry entry(&trans, CREATE, folder.Get(ID), entry_name);
     ASSERT_TRUE(entry.good());
     entry_handle = entry.Get(META_HANDLE);
     entry.Put(IS_UNSYNCED, true);
+    entry_id = entry.Get(ID);
   }
 
   // Make sure we can find the entry in the folder.
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    Entry entry(&trans, GET_BY_PATH, PathString(kPathSeparator) +
-                                    PSTR("folder") +
-                                    kPathSeparator + PSTR("entry"));
+    EXPECT_EQ(0, CountEntriesWithName(&trans, trans.root_id(), entry_name));
+    EXPECT_EQ(1, CountEntriesWithName(&trans, folder_id, entry_name));
+
+    Entry entry(&trans, GET_BY_ID, entry_id);
     ASSERT_TRUE(entry.good());
-    ASSERT_TRUE(entry.Get(META_HANDLE) == entry_handle);
+    EXPECT_EQ(entry_handle, entry.Get(META_HANDLE));
+    EXPECT_TRUE(entry.Get(NON_UNIQUE_NAME) == entry_name);
+    EXPECT_TRUE(entry.Get(PARENT_ID) == folder_id);
   }
 }
 
-TEST_F(SyncableDirectoryTest, TestGetByParentIdAndName) {
-  PathString name = PSTR("Bob");
-  Id id = TestIdFactory::MakeServer("ID for Bob");
-  {
-    WriteTransaction wtrans(dir_.get(), UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&wtrans, CREATE, wtrans.root_id() /*entry id*/, name);
-    ASSERT_TRUE(entry.good());
-    entry.Put(IS_DIR, true);
-    entry.Put(ID, id);
-    entry.Put(BASE_VERSION, 1);
-    entry.Put(IS_UNSYNCED, true);
-  }
-  {
-    WriteTransaction wtrans(dir_.get(), UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&wtrans, GET_BY_PARENTID_AND_NAME, wtrans.root_id(),
-                       name);
-    ASSERT_TRUE(entry.good());
-    ASSERT_TRUE(id == entry.Get(ID));
-  }
-  {
-    ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    Entry entry(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), name);
-    ASSERT_TRUE(entry.good());
-    ASSERT_TRUE(id == entry.Get(ID));
-  }
-}
+TEST_F(SyncableDirectoryTest, TestParentIdIndexUpdate) {
+  PathString child_name = PSTR("child");
 
-TEST_F(SyncableDirectoryTest, TestParentIDIndexUpdate) {
   WriteTransaction wt(dir_.get(), UNITTEST, __FILE__, __LINE__);
-  MutableEntry folder(&wt, CREATE, wt.root_id(), PSTR("oldname"));
-  folder.Put(NAME, PSTR("newname"));
-  folder.Put(IS_UNSYNCED, true);
-  Entry entry(&wt, GET_BY_PATH, PSTR("newname"));
-  ASSERT_TRUE(entry.good());
+  MutableEntry parent_folder(&wt, CREATE, wt.root_id(), PSTR("folder1"));
+  parent_folder.Put(IS_UNSYNCED, true);
+  EXPECT_TRUE(parent_folder.Put(IS_DIR, true));
+
+  MutableEntry parent_folder2(&wt, CREATE, wt.root_id(), PSTR("folder2"));
+  parent_folder2.Put(IS_UNSYNCED, true);
+  EXPECT_TRUE(parent_folder2.Put(IS_DIR, true));
+
+  MutableEntry child(&wt, CREATE, parent_folder.Get(ID), child_name);
+  EXPECT_TRUE(child.Put(IS_DIR, true));
+  child.Put(IS_UNSYNCED, true);
+
+  ASSERT_TRUE(child.good());
+
+  EXPECT_EQ(0, CountEntriesWithName(&wt, wt.root_id(), child_name));
+  EXPECT_EQ(parent_folder.Get(ID), child.Get(PARENT_ID));
+  EXPECT_EQ(1, CountEntriesWithName(&wt, parent_folder.Get(ID), child_name));
+  EXPECT_EQ(0, CountEntriesWithName(&wt, parent_folder2.Get(ID), child_name));
+  child.Put(PARENT_ID, parent_folder2.Get(ID));
+  EXPECT_EQ(parent_folder2.Get(ID), child.Get(PARENT_ID));
+  EXPECT_EQ(0, CountEntriesWithName(&wt, parent_folder.Get(ID), child_name));
+  EXPECT_EQ(1, CountEntriesWithName(&wt, parent_folder2.Get(ID), child_name));
+
 }
 
 TEST_F(SyncableDirectoryTest, TestNoReindexDeletedItems) {
+  PathString folder_name = PSTR("folder");
+  PathString new_name = PSTR("new_name");
+
   WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
-  MutableEntry folder(&trans, CREATE, trans.root_id(), PSTR("folder"));
+  MutableEntry folder(&trans, CREATE, trans.root_id(), folder_name);
   ASSERT_TRUE(folder.good());
   ASSERT_TRUE(folder.Put(IS_DIR, true));
   ASSERT_TRUE(folder.Put(IS_DEL, true));
-  Entry gone(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), PSTR("folder"));
-  ASSERT_FALSE(gone.good());
-  ASSERT_TRUE(folder.PutParentIdAndName(trans.root_id(),
-                                        Name(PSTR("new_name"))));
+
+  EXPECT_EQ(0, CountEntriesWithName(&trans, trans.root_id(), folder_name));
+
+  MutableEntry deleted(&trans, GET_BY_ID, folder.Get(ID));
+  ASSERT_TRUE(deleted.good());
+  ASSERT_TRUE(deleted.Put(PARENT_ID, trans.root_id()));
+  ASSERT_TRUE(deleted.Put(NON_UNIQUE_NAME, new_name));
+
+  EXPECT_EQ(0, CountEntriesWithName(&trans, trans.root_id(), folder_name));
+  EXPECT_EQ(0, CountEntriesWithName(&trans, trans.root_id(), new_name));
 }
 
 TEST_F(SyncableDirectoryTest, TestCaseChangeRename) {
   WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
   MutableEntry folder(&trans, CREATE, trans.root_id(), PSTR("CaseChange"));
   ASSERT_TRUE(folder.good());
-  EXPECT_TRUE(folder.PutParentIdAndName(trans.root_id(),
-                                        Name(PSTR("CASECHANGE"))));
+  EXPECT_TRUE(folder.Put(PARENT_ID, trans.root_id()));
+  EXPECT_TRUE(folder.Put(NON_UNIQUE_NAME, PSTR("CASECHANGE")));
   EXPECT_TRUE(folder.Put(IS_DEL, true));
 }
 
@@ -633,24 +625,29 @@ TEST_F(SyncableDirectoryTest, TestShareInfo) {
 }
 
 TEST_F(SyncableDirectoryTest, TestSimpleFieldsPreservedDuringSaveChanges) {
-  Id id = TestIdFactory::FromNumber(1);
+  Id update_id = TestIdFactory::FromNumber(1);
+  Id create_id;
   EntryKernel create_pre_save, update_pre_save;
   EntryKernel create_post_save, update_post_save;
+  PathString create_name =  PSTR("Create");
+
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
-    MutableEntry create(&trans, CREATE, trans.root_id(), PSTR("Create"));
-    MutableEntry update(&trans, CREATE_NEW_UPDATE_ITEM, id);
+    MutableEntry create(&trans, CREATE, trans.root_id(), create_name);
+    MutableEntry update(&trans, CREATE_NEW_UPDATE_ITEM, update_id);
     create.Put(IS_UNSYNCED, true);
     update.Put(IS_UNAPPLIED_UPDATE, true);
     create_pre_save = create.GetKernelCopy();
     update_pre_save = update.GetKernelCopy();
+    create_id = create.Get(ID);
   }
   dir_->SaveChanges();
+
   {
     ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
-    Entry create(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(),
-                 PSTR("Create"));
-    Entry update(&trans, GET_BY_ID, id);
+    Entry create(&trans, GET_BY_ID, create_id);
+    EXPECT_EQ(1, CountEntriesWithName(&trans, trans.root_id(), create_name));
+    Entry update(&trans, GET_BY_ID, update_id);
     create_post_save = create.GetKernelCopy();
     update_post_save = update.GetKernelCopy();
   }
@@ -713,8 +710,8 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
 
     MutableEntry aguilera(&trans, GET_BY_HANDLE, handle1);
     ASSERT_TRUE(aguilera.good());
-    aguilera.Put(NAME, PSTR("christina"));
-    ASSERT_TRUE(aguilera.GetKernelCopy().dirty[NAME]);
+    aguilera.Put(NON_UNIQUE_NAME, PSTR("christina"));
+    ASSERT_TRUE(aguilera.GetKernelCopy().dirty[NON_UNIQUE_NAME]);
 
     MutableEntry kids_on_block(&trans, CREATE, trans.root_id(), PSTR("kids"));
     ASSERT_TRUE(kids_on_block.good());
@@ -738,7 +735,7 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
      Entry kids_on_block(&trans, GET_BY_HANDLE, handle2);
      ASSERT_TRUE(kids_on_block.good());
 
-     EXPECT_TRUE(aguilera.dirty[NAME]);
+     EXPECT_TRUE(aguilera.dirty[NON_UNIQUE_NAME]);
      EXPECT_TRUE(kids_on_block.Get(IS_NEW));
   }
 }
@@ -749,8 +746,9 @@ void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans, int64 id,
     bool is_del) {
   Entry e(trans, GET_BY_ID, TestIdFactory::FromNumber(id));
   ASSERT_TRUE(e.good());
-  if (check_name)
-    ASSERT_TRUE(name == e.Get(NAME));
+  if (check_name) {
+    ASSERT_TRUE(name == e.Get(NON_UNIQUE_NAME));
+  }
   ASSERT_TRUE(base_version == e.Get(BASE_VERSION));
   ASSERT_TRUE(server_version == e.Get(SERVER_VERSION));
   ASSERT_TRUE(is_del == e.Get(IS_DEL));
@@ -891,6 +889,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
     const char test_bytes[] = "test data";
     const PathString dirname = PSTR("DirectoryKernelStalenessBug");
     AutoLock scoped_lock(step_->mutex);
+    const Id jeff_id = TestIdFactory::FromNumber(100);
 
     while (step_->number < 4) {
       while (step_->number % 2 != role_) {
@@ -909,7 +908,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
           WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
           MutableEntry me(&trans, CREATE, trans.root_id(), PSTR("Jeff"));
           me.Put(BASE_VERSION, 1);
-          me.Put(ID, TestIdFactory::FromNumber(100));
+          me.Put(ID, jeff_id);
           PutDataAsExtendedAttribute(&trans, &me, test_bytes,
                                      sizeof(test_bytes));
         }
@@ -938,7 +937,7 @@ class DirectoryKernelStalenessBugDelegate : public ThreadBugDelegate {
           ScopedDirLookup dir(directory_manager_, dirname);
           CHECK(dir.good());
           ReadTransaction trans(dir, __FILE__, __LINE__);
-          Entry e(&trans, GET_BY_PATH, PSTR("Jeff"));
+          Entry e(&trans, GET_BY_ID, jeff_id);
           ExpectDataFromExtendedAttributeEquals(&trans, &e, test_bytes,
                                                 sizeof(test_bytes));
         }
@@ -994,9 +993,8 @@ class StressTransactionsDelegate : public PlatformThread::Delegate {
        const int rand_action = rand() % 10;
        if (rand_action < 4 && !path_name.empty()) {
          ReadTransaction trans(dir, __FILE__, __LINE__);
-         Entry e(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), path_name);
+         CHECK(1 == CountEntriesWithName(&trans, trans.root_id(), path_name));
          PlatformThread::Sleep(rand() % 10);
-         CHECK(e.good());
        } else {
          string unique_name = StringPrintf("%d.%d", thread_number_,
            entry_count++);
@@ -1071,31 +1069,6 @@ TEST(Syncable, ComparePathNames) {
   }
 }
 
-#if defined(OS_WIN)
-TEST(Syncable, PathNameMatch) {
-  // basic stuff, not too many otherwise we're testing the os.
-  EXPECT_TRUE(PathNameMatch(PSTR("bob"), PSTR("bob")));
-  EXPECT_FALSE(PathNameMatch(PSTR("bob"), PSTR("fred")));
-  // Test our ; extension.
-  EXPECT_TRUE(PathNameMatch(PSTR("bo;b"), PSTR("bo;b")));
-  EXPECT_TRUE(PathNameMatch(PSTR("bo;b"), PSTR("bo*")));
-  EXPECT_FALSE(PathNameMatch(PSTR("bo;b"), PSTR("co;b")));
-  EXPECT_FALSE(PathNameMatch(PSTR("bo;b"), PSTR("co*")));
-  // Test our fixes for prepended spaces.
-  EXPECT_TRUE(PathNameMatch(PSTR("  bob"), PSTR("  bo*")));
-  EXPECT_TRUE(PathNameMatch(PSTR("  bob"), PSTR("  bob")));
-  EXPECT_FALSE(PathNameMatch(PSTR("bob"), PSTR("  bob")));
-  EXPECT_FALSE(PathNameMatch(PSTR("  bob"), PSTR("bob")));
-  // Combo test.
-  EXPECT_TRUE(PathNameMatch(PSTR("  b;ob"), PSTR("  b;o*")));
-  EXPECT_TRUE(PathNameMatch(PSTR("  b;ob"), PSTR("  b;ob")));
-  EXPECT_FALSE(PathNameMatch(PSTR("b;ob"), PSTR("  b;ob")));
-  EXPECT_FALSE(PathNameMatch(PSTR("  b;ob"), PSTR("b;ob")));
-  // other whitespace should give no matches.
-  EXPECT_FALSE(PathNameMatch(PSTR("bob"), PSTR("\tbob")));
-}
-#endif  // defined(OS_WIN)
-
 void FakeSync(MutableEntry* e, const char* fake_id) {
   e->Put(IS_UNSYNCED, false);
   e->Put(BASE_VERSION, 2);
@@ -1104,11 +1077,11 @@ void FakeSync(MutableEntry* e, const char* fake_id) {
 
 TEST_F(SyncableDirectoryTest, Bug1509232) {
   const PathString a = PSTR("alpha");
-
-  CreateEntry(a, dir_.get()->NextId());
+  const Id entry_id = dir_.get()->NextId();
+  CreateEntry(a, entry_id);
   {
     WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
-    MutableEntry e(&trans, GET_BY_PATH, a);
+    MutableEntry e(&trans, GET_BY_ID, entry_id);
     ASSERT_TRUE(e.good());
     ExtendedAttributeKey key(e.Get(META_HANDLE), PSTR("resourcefork"));
     MutableExtendedAttribute ext(&trans, CREATE, key);

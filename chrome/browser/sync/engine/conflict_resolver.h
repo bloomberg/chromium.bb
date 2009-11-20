@@ -41,13 +41,6 @@ class ConflictResolver {
                         ConflictResolutionView* view,
                         SyncerSession* session);
 
-  // Called by ProcessServerClientNameClash. Returns true if it's merged the
-  // items, false otherwise. Does not re-check preconditions covered in
-  // ProcessServerClientNameClash (i.e. it assumes a name clash).
-  bool AttemptItemMerge(syncable::WriteTransaction* trans,
-                        syncable::MutableEntry* local_entry,
-                        syncable::MutableEntry* server_entry);
-
  private:
   // We keep a map to record how often we've seen each conflict set. We use this
   // to screen out false positives caused by transient server or client states,
@@ -60,13 +53,6 @@ class ConflictResolver {
   enum ProcessSimpleConflictResult {
     NO_SYNC_PROGRESS,  // No changes to advance syncing made.
     SYNC_PROGRESS,     // Progress made.
-  };
-
-  enum ServerClientNameClashReturn {
-    NO_CLASH,
-    SOLUTION_DEFERRED,
-    SOLVED,
-    BOGUS_SET,
   };
 
   // Get a key for the given set. NOTE: May reorder set contents. The key is
@@ -90,20 +76,6 @@ class ConflictResolver {
                           ConflictSet* conflict_set,
                           int conflict_count,
                           SyncerSession* session);
-
-  // Gives any unsynced entries in the given set new names if possible.
-  bool RenameUnsyncedEntries(syncable::WriteTransaction* trans,
-                             ConflictSet* conflict_set);
-
-  ServerClientNameClashReturn ProcessServerClientNameClash(
-      syncable::WriteTransaction* trans,
-      syncable::MutableEntry* locally_named,
-      syncable::MutableEntry* server_named,
-      SyncerSession* session);
-  ServerClientNameClashReturn ProcessNameClashesInSet(
-      syncable::WriteTransaction* trans,
-      ConflictSet* conflict_set,
-      SyncerSession* session);
 
   // Returns true if we're stuck.
   template <typename InputIt>

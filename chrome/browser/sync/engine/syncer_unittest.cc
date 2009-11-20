@@ -27,10 +27,12 @@
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/test/sync/engine/mock_server_connection.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
+#include "chrome/test/sync/engine/test_syncable_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::map;
@@ -42,10 +44,13 @@ namespace browser_sync {
 
 using syncable::BaseTransaction;
 using syncable::Blob;
+using syncable::CountEntriesWithName;
 using syncable::Directory;
 using syncable::Entry;
 using syncable::ExtendedAttribute;
 using syncable::ExtendedAttributeKey;
+using syncable::GetFirstEntryWithName;
+using syncable::GetOnlyEntryWithName;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::MutableExtendedAttribute;
@@ -58,8 +63,6 @@ using syncable::CREATE;
 using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
-using syncable::GET_BY_PARENTID_AND_NAME;
-using syncable::GET_BY_PATH;
 using syncable::GET_BY_TAG;
 using syncable::ID;
 using syncable::IS_BOOKMARK_OBJECT;
@@ -69,18 +72,17 @@ using syncable::IS_UNAPPLIED_UPDATE;
 using syncable::IS_UNSYNCED;
 using syncable::META_HANDLE;
 using syncable::MTIME;
-using syncable::NAME;
 using syncable::NEXT_ID;
+using syncable::NON_UNIQUE_NAME;
 using syncable::PARENT_ID;
 using syncable::PREV_ID;
 using syncable::SERVER_IS_DEL;
-using syncable::SERVER_NAME;
+using syncable::SERVER_NON_UNIQUE_NAME;
 using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_VERSION;
 using syncable::SINGLETON_TAG;
 using syncable::UNITTEST;
-using syncable::UNSANITIZED_NAME;
 
 namespace {
 const char* kTestData = "Hello World!";
@@ -165,7 +167,7 @@ class SyncerTest : public testing::Test {
     dir->GetChildHandles(&trans, trans.root_id(), &children);
     ASSERT_TRUE(0 == children.size());
     syncer_events_.clear();
-    root_id_ = ids_.root();
+    root_id_ = TestIdFactory::root();
     parent_id_ = ids_.MakeServer("parent id");
     child_id_ = ids_.MakeServer("child id");
   }
@@ -341,6 +343,8 @@ class SyncerTest : public testing::Test {
 
   // Some ids to aid tests. Only the root one's value is specific. The rest
   // are named for test clarity.
+  // TODO(chron): Get rid of these inbuilt IDs. They only make it
+  // more confusing.
   syncable::Id root_id_;
   syncable::Id parent_id_;
   syncable::Id child_id_;
@@ -815,9 +819,14 @@ TEST_F(SyncerTest, TestCommitListOrderingCounterexample) {
 TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
+
+  PathString parent1_name = PSTR("1");
+  PathString parent2_name = PSTR("A");
+  PathString child_name = PSTR("B");
+
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(), PSTR("1"));
+    MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(), parent1_name);
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
@@ -826,19 +835,20 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
   }
 
   syncable::Id parent2_id = ids_.NewLocalId();
-  syncable::Id child2_id = ids_.NewServerId();
+  syncable::Id child_id = ids_.NewServerId();
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry parent(&wtrans, syncable::CREATE, parent_id_, PSTR("A"));
-    ASSERT_TRUE(parent.good());
-    parent.Put(syncable::IS_UNSYNCED, true);
-    parent.Put(syncable::IS_DIR, true);
-    parent.Put(syncable::ID, parent2_id);
-    MutableEntry child(&wtrans, syncable::CREATE, parent2_id, PSTR("B"));
+    MutableEntry parent2(&wtrans, syncable::CREATE, parent_id_, parent2_name);
+    ASSERT_TRUE(parent2.good());
+    parent2.Put(syncable::IS_UNSYNCED, true);
+    parent2.Put(syncable::IS_DIR, true);
+    parent2.Put(syncable::ID, parent2_id);
+
+    MutableEntry child(&wtrans, syncable::CREATE, parent2_id, child_name);
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
-    child.Put(syncable::ID, child2_id);
+    child.Put(syncable::ID, child_id);
     child.Put(syncable::BASE_VERSION, 1);
   }
 
@@ -851,47 +861,69 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
   // If this test starts failing, be aware other sort orders could be valid.
   EXPECT_TRUE(parent_id_ == mock_server_->committed_ids()[0]);
   EXPECT_TRUE(parent2_id == mock_server_->committed_ids()[1]);
-  EXPECT_TRUE(child2_id == mock_server_->committed_ids()[2]);
+  EXPECT_TRUE(child_id == mock_server_->committed_ids()[2]);
   {
     ReadTransaction rtrans(dir, __FILE__, __LINE__);
-    PathChar path[] = { '1', *kPathSeparator, 'A', 0};
-    Entry entry_1A(&rtrans, syncable::GET_BY_PATH, path);
-    ASSERT_TRUE(entry_1A.good());
-    Entry item_parent2(&rtrans, syncable::GET_BY_ID, parent2_id);
-    ASSERT_FALSE(item_parent2.good());
-    Entry item_child2(&rtrans, syncable::GET_BY_ID, child2_id);
-    EXPECT_EQ(entry_1A.Get(syncable::ID), item_child2.Get(syncable::PARENT_ID));
-    EXPECT_TRUE(entry_1A.Get(syncable::ID).ServerKnows());
+    // Check that things committed correctly.
+    Entry entry_1(&rtrans, syncable::GET_BY_ID, parent_id_);
+    EXPECT_EQ(entry_1.Get(NON_UNIQUE_NAME), parent1_name);
+    // Check that parent2 is a subfolder of parent1.
+    EXPECT_EQ(1, CountEntriesWithName(&rtrans,
+                                      parent_id_,
+                                      parent2_name));
+
+    // Parent2 was a local ID and thus should have changed on commit!
+    Entry pre_commit_entry_parent2(&rtrans, syncable::GET_BY_ID, parent2_id);
+    ASSERT_FALSE(pre_commit_entry_parent2.good());
+
+    // Look up the new ID.
+    Id parent2_committed_id =
+        GetOnlyEntryWithName(&rtrans, parent_id_, parent2_name);
+    EXPECT_TRUE(parent2_committed_id.ServerKnows());
+
+    Entry child(&rtrans, syncable::GET_BY_ID, child_id);
+    EXPECT_EQ(parent2_committed_id, child.Get(syncable::PARENT_ID));
   }
 }
 
 TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
+
+  PathString parent_name = PSTR("1");
+  PathString parent2_name = PSTR("A");
+  PathString child_name = PSTR("B");
+
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(), PSTR("1"));
+    MutableEntry parent(&wtrans,
+                        syncable::CREATE,
+                        wtrans.root_id(),
+                        parent_name);
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
     parent.Put(syncable::ID, parent_id_);
     parent.Put(syncable::BASE_VERSION, 1);
   }
+
   int64 meta_handle_a, meta_handle_b;
+  const Id parent2_local_id = ids_.NewLocalId();
+  const Id child_local_id = ids_.NewLocalId();
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry parent(&wtrans, syncable::CREATE, parent_id_, PSTR("A"));
-    ASSERT_TRUE(parent.good());
-    parent.Put(syncable::IS_UNSYNCED, true);
-    parent.Put(syncable::IS_DIR, true);
-    parent.Put(syncable::ID, ids_.FromNumber(-101));
-    meta_handle_a = parent.Get(syncable::META_HANDLE);
-    MutableEntry child(&wtrans, syncable::CREATE, ids_.FromNumber(-101),
-        PSTR("B"));
+    MutableEntry parent2(&wtrans, syncable::CREATE, parent_id_, parent2_name);
+    ASSERT_TRUE(parent2.good());
+    parent2.Put(syncable::IS_UNSYNCED, true);
+    parent2.Put(syncable::IS_DIR, true);
+
+    parent2.Put(syncable::ID, parent2_local_id);
+    meta_handle_a = parent2.Get(syncable::META_HANDLE);
+    MutableEntry child(&wtrans, syncable::CREATE, parent2_local_id, child_name);
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
-    child.Put(syncable::ID, ids_.FromNumber(-102));
+    child.Put(syncable::ID, child_local_id);
     meta_handle_b = child.Get(syncable::META_HANDLE);
   }
 
@@ -903,19 +935,30 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParentAndChild) {
   ASSERT_TRUE(3 == mock_server_->committed_ids().size());
   // If this test starts failing, be aware other sort orders could be valid.
   EXPECT_TRUE(parent_id_ == mock_server_->committed_ids()[0]);
-  EXPECT_TRUE(ids_.FromNumber(-101) == mock_server_->committed_ids()[1]);
-  EXPECT_TRUE(ids_.FromNumber(-102) == mock_server_->committed_ids()[2]);
+  EXPECT_TRUE(parent2_local_id == mock_server_->committed_ids()[1]);
+  EXPECT_TRUE(child_local_id == mock_server_->committed_ids()[2]);
   {
     ReadTransaction rtrans(dir, __FILE__, __LINE__);
-    PathChar path[] = { '1', *kPathSeparator, 'A', 0};
-    Entry entry_1A(&rtrans, syncable::GET_BY_PATH, path);
-    ASSERT_TRUE(entry_1A.good());
-    Entry entry_id_minus_101(&rtrans, syncable::GET_BY_ID,
-                            ids_.FromNumber(-101));
-    ASSERT_FALSE(entry_id_minus_101.good());
+
+    Entry parent(&rtrans, syncable::GET_BY_ID,
+                 GetOnlyEntryWithName(&rtrans, rtrans.root_id(), parent_name));
+    ASSERT_TRUE(parent.good());
+    EXPECT_TRUE(parent.Get(syncable::ID).ServerKnows());
+
+    Entry parent2(&rtrans, syncable::GET_BY_ID,
+                  GetOnlyEntryWithName(&rtrans, parent.Get(ID), parent2_name));
+    ASSERT_TRUE(parent2.good());
+    EXPECT_TRUE(parent2.Get(syncable::ID).ServerKnows());
+
+    // Id changed on commit, so this should fail.
+    Entry local_parent2_id_entry(&rtrans,
+                                 syncable::GET_BY_ID,
+                                 parent2_local_id);
+    ASSERT_FALSE(local_parent2_id_entry.good());
+
     Entry entry_b(&rtrans, syncable::GET_BY_HANDLE, meta_handle_b);
-    EXPECT_TRUE(entry_1A.Get(syncable::ID) == entry_b.Get(syncable::PARENT_ID));
-    EXPECT_TRUE(entry_1A.Get(syncable::ID).ServerKnows());
+    EXPECT_TRUE(entry_b.Get(syncable::ID).ServerKnows());
+    EXPECT_TRUE(parent2.Get(syncable::ID) == entry_b.Get(syncable::PARENT_ID));
   }
 }
 
@@ -933,202 +976,18 @@ TEST_F(SyncerTest, UpdateWithZeroLengthName) {
   syncer_->SyncShare();
 }
 
-#if defined(OS_WIN)
-TEST_F(SyncerTest, NameSanitizationWithClientRename) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  ASSERT_TRUE(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "okay", 1, 10);
-  syncer_->SyncShare();
-  {
-    ReadTransaction tr(dir, __FILE__, __LINE__);
-    Entry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
-            PSTR("okay"));
-    ASSERT_TRUE(e.good());
-  }
-  mock_server_->AddUpdateDirectory(2, 0, "prn", 1, 20);
-  syncer_->SyncShare();
-  {
-    WriteTransaction tr(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
-                   PSTR("prn~1"));
-    ASSERT_TRUE(e.good());
-    e.PutName(syncable::Name(PSTR("printer")));
-    e.Put(syncable::IS_UNSYNCED, true);
-  }
-  syncer_->SyncShare();
-  {
-    vector<CommitMessage*>::const_reverse_iterator it =
-        mock_server_->commit_messages().rbegin();
-    ASSERT_TRUE(mock_server_->commit_messages().rend() != it);
-    const sync_pb::SyncEntity *const *s = (*it)->entries().data();
-    int s_len = (*it)->entries_size();
-    ASSERT_TRUE(1 == s_len);
-    ASSERT_TRUE("printer" == (*s)[0].name());
-  }
-}
-
-TEST_F(SyncerTest, NameSanitizationWithCascade) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  ASSERT_TRUE(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "prn~1", 1, 10);
-  syncer_->SyncShare();
-  {
-    ReadTransaction tr(dir, __FILE__, __LINE__);
-    Entry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
-            PSTR("prn~1"));
-    ASSERT_TRUE(e.good());
-  }
-  mock_server_->AddUpdateDirectory(2, 0, "prn", 1, 20);
-  syncer_->SyncShare();
-  {
-    ReadTransaction tr(dir, __FILE__, __LINE__);
-    Entry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
-            PSTR("prn~2"));
-    ASSERT_TRUE(e.good());
-  }
-  mock_server_->AddUpdateDirectory(3, 0, "prn~2", 1, 30);
-  syncer_->SyncShare();
-  {
-    ReadTransaction tr(dir, __FILE__, __LINE__);
-    Entry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
-            PSTR("prn~3"));
-    ASSERT_TRUE(e.good());
-  }
-}
-
-TEST_F(SyncerTest, GetStuckWithConflictingSanitizedNames) {
-  // We should get stuck here because we get two server updates with exactly the
-  // same name.
+TEST_F(SyncerTest, DontGetStuckWithTwoSameNames) {
+  // We should not get stuck here because we get
+  // two server updates with exactly the same name.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
   mock_server_->AddUpdateDirectory(1, 0, "foo:", 1, 10);
   syncer_->SyncShare();
   mock_server_->AddUpdateDirectory(2, 0, "foo:", 1, 20);
   SyncRepeatedlyToTriggerStuckSignal(state_.get());
-  EXPECT_TRUE(SyncerStuck(state_.get()));
+  EXPECT_FALSE(SyncerStuck(state_.get()));
   syncer_events_.clear();
 }
-
-TEST_F(SyncerTest, MergeFolderWithSanitizedNameMatches) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  {
-    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry parent(&wtrans, CREATE, wtrans.root_id(), PSTR("Folder"));
-    ASSERT_TRUE(parent.good());
-    parent.Put(IS_DIR, true);
-    parent.Put(IS_UNSYNCED, true);
-    parent.Put(UNSANITIZED_NAME, PSTR("Folder:"));
-  }
-  mock_server_->AddUpdateDirectory(100, 0, "Folder:", 10, 10);
-  syncer_->SyncShare();
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Directory::ChildHandles children;
-    dir->GetChildHandles(&trans, trans.root_id(), &children);
-    EXPECT_TRUE(1 == children.size());
-    Directory::UnappliedUpdateMetaHandles unapplied;
-    dir->GetUnappliedUpdateMetaHandles(&trans, &unapplied);
-    EXPECT_TRUE(0 == unapplied.size());
-    syncable::Directory::UnsyncedMetaHandles unsynced;
-    dir->GetUnsyncedMetaHandles(&trans, &unsynced);
-    EXPECT_TRUE(0 == unsynced.size());
-    syncer_events_.clear();
-  }
-}
-
-// These two tests are the same as the two above, but they introduce case
-// changes.
-TEST_F(SyncerTest, GetStuckWithSanitizedNamesThatDifferOnlyByCase) {
-  // We should get stuck here because we get two server updates with exactly the
-  // same name.
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  ASSERT_TRUE(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "FOO:", 1, 10);
-  syncer_->SyncShare();
-  mock_server_->AddUpdateDirectory(2, 0, "foo:", 1, 20);
-  SyncRepeatedlyToTriggerStuckSignal(state_.get());
-  EXPECT_TRUE(SyncerStuck(state_.get()));
-  syncer_events_.clear();
-}
-
-TEST_F(SyncerTest, MergeFolderWithSanitizedNameThatDiffersOnlyByCase) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  {
-    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry parent(&wtrans, CREATE, wtrans.root_id(), PSTR("FOLDER"));
-    ASSERT_TRUE(parent.good());
-    parent.Put(IS_DIR, true);
-    parent.Put(IS_UNSYNCED, true);
-    parent.Put(UNSANITIZED_NAME, PSTR("FOLDER:"));
-  }
-  mock_server_->AddUpdateDirectory(100, 0, "Folder:", 10, 10);
-  mock_server_->set_conflict_all_commits(true);
-  syncer_->SyncShare();
-  syncer_->SyncShare();
-  syncer_->SyncShare();  // Good gracious, these tests are not so good.
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Directory::ChildHandles children;
-    dir->GetChildHandles(&trans, trans.root_id(), &children);
-    EXPECT_TRUE(1 == children.size());
-    Directory::UnappliedUpdateMetaHandles unapplied;
-    dir->GetUnappliedUpdateMetaHandles(&trans, &unapplied);
-    EXPECT_TRUE(0 == unapplied.size());
-    syncable::Directory::UnsyncedMetaHandles unsynced;
-    dir->GetUnsyncedMetaHandles(&trans, &unsynced);
-    EXPECT_TRUE(0 == unsynced.size());
-    syncer_events_.clear();
-  }
-}
-#else  // Mac / Linux ...
-
-TEST_F(SyncerTest, NameSanitizationWithClientRename) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  ASSERT_TRUE(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "okay", 1, 10);
-  syncer_->SyncShare();
-  {
-    ReadTransaction tr(dir, __FILE__, __LINE__);
-    Entry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
-            PSTR("okay"));
-    ASSERT_TRUE(e.good());
-  }
-  mock_server_->AddUpdateDirectory(2, 0, "a/b", 1, 20);
-  syncer_->SyncShare();
-  {
-    WriteTransaction tr(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
-                   PSTR("a:b"));
-    ASSERT_TRUE(e.good());
-    e.PutName(syncable::Name(PSTR("ab")));
-    e.Put(syncable::IS_UNSYNCED, true);
-  }
-  syncer_->SyncShare();
-  {
-    vector<CommitMessage*>::const_reverse_iterator it =
-        mock_server_->commit_messages().rbegin();
-    ASSERT_TRUE(mock_server_->commit_messages().rend() != it);
-    const sync_pb::SyncEntity *const *s = (*it)->entries().data();
-    int s_len = (*it)->entries_size();
-    ASSERT_TRUE(1 == s_len);
-    ASSERT_TRUE("ab" == (*s)[0].name());
-  }
-}
-#endif
-
-namespace {
-void VerifyExistsWithNameInRoot(syncable::Directory* dir,
-                                const PathString& name,
-                                const string& entry,
-                                int line) {
-  ReadTransaction tr(dir, __FILE__, __LINE__);
-  Entry e(&tr, syncable::GET_BY_PARENTID_AND_NAME, tr.root_id(),
-          name);
-  EXPECT_TRUE(e.good()) << "failed on call from " << entry << ":" << line;
-}
-}  // namespace
 
 TEST_F(SyncerTest, ExtendedAttributeWithNullCharacter) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
@@ -1203,13 +1062,13 @@ TEST_F(SyncerTest, TestBasicUpdate) {
 }
 
 TEST_F(SyncerTest, IllegalAndLegalUpdates) {
-  Id root = ids_.root();
+  Id root = TestIdFactory::root();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
   // Should apply just fine.
   mock_server_->AddUpdateDirectory(1, 0, "in_root", 10, 10);
 
-  // Name clash: this is a conflict.
+  // Same name. But this SHOULD work.
   mock_server_->AddUpdateDirectory(2, 0, "in_root", 10, 10);
 
   // Unknown parent: should never be applied. "-80" is a legal server ID,
@@ -1223,8 +1082,8 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
 
   ConflictResolutionView conflict_view(state_.get());
   SyncerStatus status(NULL, state_.get());
-  // Ids 2 and 3 are expected to be in conflict now.
-  EXPECT_TRUE(2 == conflict_view.conflicting_updates());
+  // Id 3 should be in conflict now.
+  EXPECT_TRUE(1 == conflict_view.conflicting_updates());
 
   // These entries will be used in the second set of updates.
   mock_server_->AddUpdateDirectory(4, 0, "newer_version", 20, 10);
@@ -1236,17 +1095,18 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
 
   syncer_->SyncShare(state_.get());
   // The three items with an unresolved parent should be unapplied (3, 9, 100).
-  // The name clash should also still be in conflict.
-  EXPECT_TRUE(4 == conflict_view.conflicting_updates());
+  EXPECT_TRUE(3 == conflict_view.conflicting_updates());
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    // Even though it has the same name, it should work.
     Entry name_clash(&trans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(name_clash.good());
-    EXPECT_TRUE(name_clash.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(name_clash.Get(IS_UNAPPLIED_UPDATE))
+        << "Duplicate name SHOULD be OK.";
 
     Entry bad_parent(&trans, GET_BY_ID, ids_.FromNumber(3));
     ASSERT_TRUE(bad_parent.good());
-    EXPECT_TRUE(name_clash.Get(IS_UNAPPLIED_UPDATE))
+    EXPECT_TRUE(bad_parent.Get(IS_UNAPPLIED_UPDATE))
         << "child of unknown parent should be in conflict";
 
     Entry bad_parent_child(&trans, GET_BY_ID, ids_.FromNumber(9));
@@ -1260,7 +1120,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
         << "great-grandchild of unknown parent should be in conflict";
   }
 
-  // Updating 1 should unblock the clashing item 2.
+  // Updating 1 should not affect item 2 of the same name.
   mock_server_->AddUpdateDirectory(1, 0, "new_name", 20, 20);
 
   // Moving 5 under 6 will create a cycle: a conflict.
@@ -1275,6 +1135,7 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   syncer_->SyncShare(state_.get());
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
+
     Entry still_a_dir(&trans, GET_BY_ID, ids_.FromNumber(10));
     ASSERT_TRUE(still_a_dir.good());
     EXPECT_FALSE(still_a_dir.Get(IS_UNAPPLIED_UPDATE));
@@ -1282,21 +1143,25 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
     EXPECT_TRUE(10 == still_a_dir.Get(SERVER_VERSION));
     EXPECT_TRUE(still_a_dir.Get(IS_DIR));
 
-    Entry rename(&trans, GET_BY_PARENTID_AND_NAME, root, PSTR("new_name"));
+    Entry rename(&trans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(rename.good());
+    EXPECT_EQ(root, rename.Get(PARENT_ID));
+    EXPECT_EQ(PSTR("new_name"), rename.Get(NON_UNIQUE_NAME));
     EXPECT_FALSE(rename.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_TRUE(ids_.FromNumber(1) == rename.Get(ID));
     EXPECT_TRUE(20 == rename.Get(BASE_VERSION));
 
-    Entry unblocked(&trans, GET_BY_PARENTID_AND_NAME, root, PSTR("in_root"));
-    ASSERT_TRUE(unblocked.good());
-    EXPECT_FALSE(unblocked.Get(IS_UNAPPLIED_UPDATE));
-    EXPECT_TRUE(ids_.FromNumber(2) == unblocked.Get(ID));
-    EXPECT_TRUE(10 == unblocked.Get(BASE_VERSION));
+    Entry name_clash(&trans, GET_BY_ID, ids_.FromNumber(2));
+    ASSERT_TRUE(name_clash.good());
+    EXPECT_EQ(root, name_clash.Get(PARENT_ID));
+    EXPECT_TRUE(ids_.FromNumber(2) == name_clash.Get(ID));
+    EXPECT_TRUE(10 == name_clash.Get(BASE_VERSION));
+    EXPECT_EQ(PSTR("in_root"), name_clash.Get(NON_UNIQUE_NAME));
 
     Entry ignored_old_version(&trans, GET_BY_ID, ids_.FromNumber(4));
     ASSERT_TRUE(ignored_old_version.good());
-    EXPECT_TRUE(ignored_old_version.Get(NAME) == PSTR("newer_version"));
+    EXPECT_TRUE(
+        ignored_old_version.Get(NON_UNIQUE_NAME) == PSTR("newer_version"));
     EXPECT_FALSE(ignored_old_version.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_TRUE(20 == ignored_old_version.Get(BASE_VERSION));
 
@@ -1324,6 +1189,9 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
 TEST_F(SyncerTest, CommitTimeRename) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
+  int64 metahandle_folder;
+  int64 metahandle_new_entry;
+
   // Create a folder and an entry.
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
@@ -1331,8 +1199,11 @@ TEST_F(SyncerTest, CommitTimeRename) {
     ASSERT_TRUE(parent.good());
     parent.Put(IS_DIR, true);
     parent.Put(IS_UNSYNCED, true);
+    metahandle_folder = parent.Get(META_HANDLE);
+
     MutableEntry entry(&trans, CREATE, parent.Get(ID), PSTR("new_entry"));
     ASSERT_TRUE(entry.good());
+    metahandle_new_entry = entry.Get(META_HANDLE);
     WriteTestDataToEntry(&trans, &entry);
   }
 
@@ -1344,17 +1215,19 @@ TEST_F(SyncerTest, CommitTimeRename) {
   // Verify it was correctly renamed.
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry_folder(&trans, GET_BY_PATH, PSTR("renamed_Folder"));
+    Entry entry_folder(&trans, GET_BY_HANDLE, metahandle_folder);
     ASSERT_TRUE(entry_folder.good());
+    EXPECT_EQ(PSTR("renamed_Folder"), entry_folder.Get(NON_UNIQUE_NAME));
 
-    Entry entry_new(&trans, GET_BY_PATH,
-        PSTR("renamed_Folder") + PathString(kPathSeparator)
-            + PSTR("renamed_new_entry"));
+    Entry entry_new(&trans, GET_BY_HANDLE, metahandle_new_entry);
     ASSERT_TRUE(entry_new.good());
+    EXPECT_EQ(entry_folder.Get(ID), entry_new.Get(PARENT_ID));
+    EXPECT_EQ(PSTR("renamed_new_entry"), entry_new.Get(NON_UNIQUE_NAME));
 
     // And that the unrelated directory creation worked without a rename.
-    Entry new_dir(&trans, GET_BY_PATH, PSTR("dir_in_root"));
+    Entry new_dir(&trans, GET_BY_ID, ids_.FromNumber(2));
     EXPECT_TRUE(new_dir.good());
+    EXPECT_EQ(PSTR("dir_in_root"), new_dir.Get(NON_UNIQUE_NAME));
   }
 }
 
@@ -1367,109 +1240,56 @@ TEST_F(SyncerTest, CommitTimeRenameI18N) {
 
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
-  // Create a folder and entry.
+  int64 metahandle;
+  // Create a folder, expect a commit time rename.
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry parent(&trans, CREATE, root_id_, PSTR("Folder"));
     ASSERT_TRUE(parent.good());
     parent.Put(IS_DIR, true);
     parent.Put(IS_UNSYNCED, true);
-    MutableEntry entry(&trans, CREATE, parent.Get(ID), PSTR("new_entry"));
-    ASSERT_TRUE(entry.good());
-    WriteTestDataToEntry(&trans, &entry);
+    metahandle = parent.Get(META_HANDLE);
   }
 
-  // Mix in a directory creation too for later.
-  mock_server_->AddUpdateDirectory(2, 0, "dir_in_root", 10, 10);
   mock_server_->SetCommitTimeRename(i18nString);
   syncer_->SyncShare();
 
   // Verify it was correctly renamed.
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    PathString expectedFolder(i18nString);
-    expectedFolder.append("Folder");
-    Entry entry_folder(&trans, GET_BY_PATH, expectedFolder);
+    PathString expected_folder_name(i18nString);
+    expected_folder_name.append("Folder");
+
+
+    Entry entry_folder(&trans, GET_BY_HANDLE, metahandle);
     ASSERT_TRUE(entry_folder.good());
-    PathString expected = expectedFolder + PathString(kPathSeparator);
-    expected.append(i18nString);
-    expected.append("new_entry");
-
-    Entry entry_new(&trans, GET_BY_PATH, expected);
-    ASSERT_TRUE(entry_new.good());
-
-    // And that the unrelated directory creation worked without a rename.
-    Entry new_dir(&trans, GET_BY_PATH, PSTR("dir_in_root"));
-    EXPECT_TRUE(new_dir.good());
+    EXPECT_EQ(expected_folder_name, entry_folder.Get(NON_UNIQUE_NAME));
   }
 }
-
-TEST_F(SyncerTest, CommitTimeRenameCollision) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  ASSERT_TRUE(dir.good());
-  // Create a folder to collide with.
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry collider(&trans, CREATE, root_id_, PSTR("renamed_Folder"));
-    ASSERT_TRUE(collider.good());
-    collider.Put(IS_DIR, true);
-    collider.Put(IS_UNSYNCED, true);
-  }
-  syncer_->SyncShare();  // Now we have a folder.
-
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry folder(&trans, CREATE, root_id_, PSTR("Folder"));
-    ASSERT_TRUE(folder.good());
-    folder.Put(IS_DIR, true);
-    folder.Put(IS_UNSYNCED, true);
-  }
-
-  mock_server_->set_next_new_id(30000);
-  mock_server_->SetCommitTimeRename("renamed_");
-  syncer_->SyncShare();  // Should collide and rename aside.
-  // This case will only occur if we got a commit time rename aside
-  // and the server attempts to rename to an entry that we know about, but it
-  // does not.
-
-  // Verify it was correctly renamed; one of them should have a sanitized name.
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry collider_folder(&trans, GET_BY_PARENTID_AND_NAME, root_id_,
-        PSTR("renamed_Folder"));
-    EXPECT_TRUE(collider_folder.Get(UNSANITIZED_NAME) == PSTR(""));
-    ASSERT_TRUE(collider_folder.good());
-
-    // ID is generated by next_new_id_ and server mock prepending of strings.
-    Entry entry_folder(&trans, GET_BY_ID,
-        syncable::Id::CreateFromServerId("mock_server:30000"));
-    ASSERT_TRUE(entry_folder.good());
-    // A little arbitrary but nothing we can do about that.
-    EXPECT_TRUE(entry_folder.Get(NAME) == PSTR("renamed_Folder~1"));
-    EXPECT_TRUE(entry_folder.Get(UNSANITIZED_NAME) == PSTR("renamed_Folder"));
-  }
-}
-
 
 // A commit with a lost response produces an update that has to be reunited with
 // its parent.
 TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
+
   // Create a folder in the root.
+  int64 metahandle_folder;
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, CREATE, trans.root_id(), PSTR("new_folder"));
     ASSERT_TRUE(entry.good());
     entry.Put(IS_DIR, true);
     entry.Put(IS_UNSYNCED, true);
+    metahandle_folder = entry.Get(META_HANDLE);
   }
 
   // Verify it and pull the ID out of the folder.
   syncable::Id folder_id;
+  int64 metahandle_entry;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry(&trans, GET_BY_PATH, PSTR("new_folder"));
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_folder);
     ASSERT_TRUE(entry.good());
     folder_id = entry.Get(ID);
     ASSERT_TRUE(!folder_id.ServerKnows());
@@ -1480,6 +1300,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, CREATE, folder_id, PSTR("new_entry"));
     ASSERT_TRUE(entry.good());
+    metahandle_entry = entry.Get(META_HANDLE);
     WriteTestDataToEntry(&trans, &entry);
   }
 
@@ -1487,9 +1308,10 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
   syncable::Id entry_id;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry(&trans, syncable::GET_BY_PARENTID_AND_NAME, folder_id,
-                PSTR("new_entry"));
+    Entry entry(&trans, syncable::GET_BY_HANDLE, metahandle_entry);
     ASSERT_TRUE(entry.good());
+    EXPECT_EQ(folder_id, entry.Get(PARENT_ID));
+    EXPECT_EQ(PSTR("new_entry"), entry.Get(NON_UNIQUE_NAME));
     entry_id = entry.Get(ID);
     EXPECT_TRUE(!entry_id.ServerKnows());
     VerifyTestDataInEntry(&trans, &entry);
@@ -1501,7 +1323,7 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
   syncable::Id new_folder_id =
       syncable::Id::CreateFromServerId("folder_server_id");
 
-  // the following update should cause the folder to both apply the update, as
+  // The following update should cause the folder to both apply the update, as
   // well as reassociate the id.
   mock_server_->AddUpdateDirectory(new_folder_id, root_id_,
       "new_folder", new_version, timestamp);
@@ -1516,21 +1338,23 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
   {
     // The folder's ID should have been updated.
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry folder(&trans, GET_BY_PATH, PSTR("new_folder"));
+    Entry folder(&trans, GET_BY_HANDLE, metahandle_folder);
     ASSERT_TRUE(folder.good());
+    EXPECT_EQ(PSTR("new_folder"), folder.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(new_version == folder.Get(BASE_VERSION));
     EXPECT_TRUE(new_folder_id == folder.Get(ID));
     EXPECT_TRUE(folder.Get(ID).ServerKnows());
+    EXPECT_EQ(trans.root_id(), folder.Get(PARENT_ID));
 
-    // We changed the id of the parent, old lookups should fail.
-    Entry bad_entry(&trans, syncable::GET_BY_PARENTID_AND_NAME, folder_id,
-                   PSTR("new_entry"));
-    EXPECT_FALSE(bad_entry.good());
+    // Since it was updated, the old folder should not exist.
+    Entry old_dead_folder(&trans, GET_BY_ID, folder_id);
+    EXPECT_FALSE(old_dead_folder.good());
 
-    // The child's parent should have changed as well.
-    Entry entry(&trans, syncable::GET_BY_PARENTID_AND_NAME, new_folder_id,
-               PSTR("new_entry"));
+    // The child's parent should have changed.
+    Entry entry(&trans, syncable::GET_BY_HANDLE, metahandle_entry);
     ASSERT_TRUE(entry.good());
+    EXPECT_EQ(PSTR("new_entry"), entry.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(new_folder_id, entry.Get(PARENT_ID));
     EXPECT_TRUE(!entry.Get(ID).ServerKnows());
     VerifyTestDataInEntry(&trans, &entry);
   }
@@ -1541,18 +1365,23 @@ TEST_F(SyncerTest, CommitReuniteUpdateAdjustsChildren) {
 TEST_F(SyncerTest, CommitReuniteUpdate) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
+
   // Create an entry in the root.
+  int64 entry_metahandle;
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, CREATE, trans.root_id(), PSTR("new_entry"));
     ASSERT_TRUE(entry.good());
+    entry_metahandle = entry.Get(META_HANDLE);
     WriteTestDataToEntry(&trans, &entry);
   }
+
   // Verify it and pull the ID out.
   syncable::Id entry_id;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry(&trans, GET_BY_PATH, PSTR("new_entry"));
+
+    Entry entry(&trans, GET_BY_HANDLE, entry_metahandle);
     ASSERT_TRUE(entry.good());
     entry_id = entry.Get(ID);
     EXPECT_TRUE(!entry_id.ServerKnows());
@@ -1577,10 +1406,11 @@ TEST_F(SyncerTest, CommitReuniteUpdate) {
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry(&trans, GET_BY_PATH, PSTR("new_entry"));
+    Entry entry(&trans, GET_BY_HANDLE, entry_metahandle);
     ASSERT_TRUE(entry.good());
     EXPECT_TRUE(new_version == entry.Get(BASE_VERSION));
     EXPECT_TRUE(new_entry_id == entry.Get(ID));
+    EXPECT_EQ(PSTR("new_entry"), entry.Get(NON_UNIQUE_NAME));
   }
 }
 
@@ -1592,18 +1422,21 @@ TEST_F(SyncerTest, CommitReuniteUpdate) {
 TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   ASSERT_TRUE(dir.good());
+
   // Create a entry in the root.
+  int64 entry_metahandle;
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, CREATE, trans.root_id(), PSTR("new_entry"));
     ASSERT_TRUE(entry.good());
+    entry_metahandle = entry.Get(META_HANDLE);
     WriteTestDataToEntry(&trans, &entry);
   }
   // Verify it and pull the ID out.
   syncable::Id entry_id;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry(&trans, GET_BY_PATH, PSTR("new_entry"));
+    Entry entry(&trans, GET_BY_HANDLE, entry_metahandle);
     ASSERT_TRUE(entry.good());
     entry_id = entry.Get(ID);
     EXPECT_TRUE(!entry_id.ServerKnows());
@@ -1628,7 +1461,9 @@ TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
   // Purposefully delete the entry now before the update application finishes.
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_PATH, PSTR("new_entry"));
+    Id new_entry_id = GetOnlyEntryWithName(
+        &trans, trans.root_id(), PSTR("new_entry"));
+    MutableEntry entry(&trans, GET_BY_ID, new_entry_id);
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::IS_DEL, true);
   }
@@ -1637,7 +1472,9 @@ TEST_F(SyncerTest, CommitReuniteUpdateDoesNotChokeOnDeletedLocalEntry) {
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry(&trans, GET_BY_PATH, PSTR("new_entry"));
+    Id new_entry_id = GetOnlyEntryWithName(
+        &trans, trans.root_id(), PSTR("new_entry"));
+    Entry entry(&trans, GET_BY_ID, new_entry_id);
     ASSERT_TRUE(entry.good());
     EXPECT_FALSE(entry.Get(IS_DEL));
 
@@ -1742,62 +1579,64 @@ TEST_F(SyncerTest, ReverseFolderOrderingTest) {
   mock_server_->AddUpdateDirectory(1, 0, "parent", 10, 10);
   LoopSyncShare(syncer_);
   ReadTransaction trans(dir, __FILE__, __LINE__);
-  Entry child(&trans, syncable::GET_BY_PARENTID_AND_NAME, ids_.FromNumber(4),
-              PSTR("gggchild"));
+
+  Id child_id = GetOnlyEntryWithName(
+        &trans, ids_.FromNumber(4), PSTR("gggchild"));
+  Entry child(&trans, GET_BY_ID, child_id);
   ASSERT_TRUE(child.good());
 }
 
-bool CreateFolderInBob(Directory* dir) {
-  WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-  MutableEntry bob(&trans, syncable::GET_BY_PARENTID_AND_NAME, trans.root_id(),
-                   PSTR("bob"));
-  MutableEntry entry2(&trans, syncable::CREATE, bob.Get(syncable::ID),
-                      PSTR("bob"));
-  CHECK(entry2.good());
-  entry2.Put(syncable::IS_DIR, true);
-  entry2.Put(syncable::IS_UNSYNCED, true);
-  return true;
-}
+class EntryCreatedInNewFolderTest : public SyncerTest {
+ public:
+  void CreateFolderInBob() {
+    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    CHECK(dir.good());
 
-TEST_F(SyncerTest, EntryCreatedInNewFolderMidSync) {
+    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry bob(&trans,
+                     syncable::GET_BY_ID,
+                     GetOnlyEntryWithName(&trans,
+                                          TestIdFactory::root(),
+                                          PSTR("bob")));
+    CHECK(bob.good());
+
+    MutableEntry entry2(&trans, syncable::CREATE, bob.Get(syncable::ID),
+                        PSTR("bob"));
+    CHECK(entry2.good());
+    entry2.Put(syncable::IS_DIR, true);
+    entry2.Put(syncable::IS_UNSYNCED, true);
+  }
+};
+
+TEST_F(EntryCreatedInNewFolderTest, EntryCreatedInNewFolderMidSync) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, syncable::CREATE, trans.root_id(), PSTR("bob"));
+    MutableEntry entry(&trans, syncable::CREATE, trans.root_id(),
+                       PSTR("bob"));
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::IS_DIR, true);
     entry.Put(syncable::IS_UNSYNCED, true);
   }
-  mock_server_->SetMidCommitCallbackFunction(CreateFolderInBob);
+
+  mock_server_->SetMidCommitCallback(
+      NewCallback<EntryCreatedInNewFolderTest>(this,
+          &EntryCreatedInNewFolderTest::CreateFolderInBob));
   syncer_->SyncShare(BUILD_COMMIT_REQUEST, SYNCER_END);
   EXPECT_TRUE(1 == mock_server_->committed_ids().size());
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    PathChar path[] = {*kPathSeparator, 'b', 'o', 'b', 0};
-    Entry entry(&trans, syncable::GET_BY_PATH, path);
-    ASSERT_TRUE(entry.good());
-    PathChar path2[] = {*kPathSeparator, 'b', 'o', 'b',
-                        *kPathSeparator, 'b', 'o', 'b', 0};
-    Entry entry2(&trans, syncable::GET_BY_PATH, path2);
-    ASSERT_TRUE(entry2.good());
-  }
-}
+    Entry parent_entry(&trans, syncable::GET_BY_ID,
+        GetOnlyEntryWithName(&trans, TestIdFactory::root(), PSTR("bob")));
+    ASSERT_TRUE(parent_entry.good());
 
-bool TouchFredAndGingerInRoot(Directory* dir) {
-  WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-  MutableEntry fred(&trans, syncable::GET_BY_PARENTID_AND_NAME, trans.root_id(),
-                    PSTR("fred"));
-  CHECK(fred.good());
-  // Equivalent to touching the entry.
-  fred.Put(syncable::IS_UNSYNCED, true);
-  fred.Put(syncable::SYNCING, false);
-  MutableEntry ginger(&trans, syncable::GET_BY_PARENTID_AND_NAME,
-                      trans.root_id(), PSTR("ginger"));
-  CHECK(ginger.good());
-  ginger.Put(syncable::IS_UNSYNCED, true);
-  ginger.Put(syncable::SYNCING, false);
-  return true;
+    Id child_id =
+        GetOnlyEntryWithName(&trans, parent_entry.Get(ID), PSTR("bob"));
+    Entry child(&trans, syncable::GET_BY_ID, child_id);
+    ASSERT_TRUE(child.good());
+    EXPECT_EQ(parent_entry.Get(ID), child.Get(PARENT_ID));
+  }
 }
 
 TEST_F(SyncerTest, NegativeIDInUpdate) {
@@ -1811,12 +1650,15 @@ TEST_F(SyncerTest, NegativeIDInUpdate) {
 TEST_F(SyncerTest, UnappliedUpdateOnCreatedItemItemDoesNotCrash) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
+
+  int64 metahandle_fred;
   {
     // Create an item.
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry fred_match(&trans, CREATE, trans.root_id(),
                             PSTR("fred_match"));
     ASSERT_TRUE(fred_match.good());
+    metahandle_fred = fred_match.Get(META_HANDLE);
     WriteTestDataToEntry(&trans, &fred_match);
   }
   // Commit it.
@@ -1827,7 +1669,7 @@ TEST_F(SyncerTest, UnappliedUpdateOnCreatedItemItemDoesNotCrash) {
   {
     // Now receive a change from outside.
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry fred_match(&trans, GET_BY_PATH, PSTR("fred_match"));
+    MutableEntry fred_match(&trans, GET_BY_HANDLE, metahandle_fred);
     ASSERT_TRUE(fred_match.good());
     EXPECT_TRUE(fred_match.Get(ID).ServerKnows());
     fred_match_id = fred_match.Get(ID);
@@ -1837,233 +1679,6 @@ TEST_F(SyncerTest, UnappliedUpdateOnCreatedItemItemDoesNotCrash) {
   // Run the syncer.
   for (int i = 0 ; i < 30 ; ++i) {
     syncer_->SyncShare();
-  }
-}
-
-TEST_F(SyncerTest, NameClashWithResolverInconsistentUpdates) {
-  // I'm unsure what the client should really do when the scenario in this old
-  // test occurs. The set of updates we've received are not consistent.
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  const char* base_name = "name_clash_with_resolver";
-  const char* full_name = "name_clash_with_resolver.htm";
-  const PathChar* base_name_p = PSTR("name_clash_with_resolver");
-  mock_server_->AddUpdateBookmark(1, 0, full_name, 10, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(entry.good());
-    WriteTestDataToEntry(&trans, &entry);
-  }
-  mock_server_->AddUpdateBookmark(2, 0, full_name, 10, 10);
-  mock_server_->set_conflict_n_commits(1);
-  syncer_->SyncShare();
-  mock_server_->set_conflict_n_commits(1);
-  syncer_->SyncShare();
-  EXPECT_TRUE(0 == syncer_events_.size());
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    PathString id1name = id1.Get(NAME);
-
-    EXPECT_TRUE(base_name_p == id1name.substr(0, strlen(base_name)));
-    EXPECT_TRUE(PSTR(".htm") == id1name.substr(id1name.length() - 4));
-    EXPECT_LE(id1name.length(), 200ul);
-    EXPECT_TRUE(PSTR("name_clash_with_resolver.htm") == id2.Get(NAME));
-  }
-}
-
-TEST_F(SyncerTest, NameClashWithResolver) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  const char* base_name = "name_clash_with_resolver";
-  const char* full_name = "name_clash_with_resolver.htm";
-  const PathChar* base_name_p = PSTR("name_clash_with_resolver");
-  const PathChar* full_name_p = PSTR("name_clash_with_resolver.htm");
-  mock_server_->AddUpdateBookmark(1, 0, "fred", 10, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(entry.good());
-    entry.Put(NAME, full_name_p);
-    WriteTestDataToEntry(&trans, &entry);
-  }
-  mock_server_->AddUpdateBookmark(2, 0, full_name, 10, 10);
-  // We do NOT use LoopSyncShare here because of the way that
-  // mock_server_->conflict_n_commits works.
-  // It will only conflict the first n commits, so if we let the syncer loop,
-  // the second commit of the update will succeed even though it shouldn't.
-  mock_server_->set_conflict_n_commits(1);
-  syncer_->SyncShare(state_.get());
-  mock_server_->set_conflict_n_commits(1);
-  syncer_->SyncShare(state_.get());
-  EXPECT_TRUE(0 == syncer_events_.size());
-  syncer_events_.clear();
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    PathString id1name = id1.Get(NAME);
-
-    EXPECT_TRUE(base_name_p == id1name.substr(0, strlen(base_name)));
-    EXPECT_TRUE(PSTR(".htm") == id1name.substr(id1name.length() - 4));
-    EXPECT_LE(id1name.length(), 200ul);
-    EXPECT_TRUE(full_name_p == id2.Get(NAME));
-  }
-}
-
-TEST_F(SyncerTest, VeryLongNameClashWithResolver) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  string name;
-  PathString name_w;
-  name.resize(250, 'X');
-  name_w.resize(250, 'X');
-  name.append(".htm");
-  name_w.append(PSTR(".htm"));
-  mock_server_->AddUpdateBookmark(1, 0, "fred", 10, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(entry.good());
-    entry.Put(NAME, name_w);
-    WriteTestDataToEntry(&trans, &entry);
-  }
-  mock_server_->AddUpdateBookmark(2, 0, name, 10, 10);
-  mock_server_->set_conflict_n_commits(1);
-  // We do NOT use LoopSyncShare here because of the way that
-  // mock_server_->conflict_n_commits works.
-  // It will only conflict the first n commits, so if we let the syncer loop,
-  // the second commit of the update will succeed even though it shouldn't.
-  syncer_->SyncShare(state_.get());
-  mock_server_->set_conflict_n_commits(1);
-  syncer_->SyncShare(state_.get());
-  EXPECT_TRUE(0 == syncer_events_.size());
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    PathString id1name = id1.Get(NAME);
-    EXPECT_TRUE(PSTR(".htm") == id1name.substr(id1name.length() - 4));
-    EXPECT_TRUE(name_w == id2.Get(NAME));
-  }
-}
-
-TEST_F(SyncerTest, NameClashWithResolverAndDotStartedName) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  mock_server_->AddUpdateBookmark(1, 0, ".bob.htm", 10, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(entry.good());
-    entry.Put(IS_UNSYNCED, true);
-    entry.Put(NAME, PSTR(".htm"));
-    WriteTestDataToEntry(&trans, &entry);
-  }
-  mock_server_->set_conflict_all_commits(true);
-  mock_server_->AddUpdateBookmark(2, 0, ".htm", 10, 10);
-  syncer_->SyncShare();
-  syncer_->SyncShare();
-  EXPECT_TRUE(0 == syncer_events_.size());
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    PathString id1name = id1.Get(NAME);
-    EXPECT_TRUE(PSTR(".htm") == id1name.substr(0, 4));
-    EXPECT_TRUE(PSTR(".htm") == id2.Get(NAME));
-  }
-}
-
-TEST_F(SyncerTest, ThreeNamesClashWithResolver) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  mock_server_->set_conflict_all_commits(true);
-  mock_server_->AddUpdateBookmark(1, 0, "in_root.htm", 10, 10);
-  LoopSyncShare(syncer_);
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(entry.good());
-    ASSERT_FALSE(entry.Get(IS_DEL));
-    entry.Put(IS_UNSYNCED, true);
-  }
-  mock_server_->AddUpdateBookmark(2, 0, "in_root.htm", 10, 10);
-  LoopSyncShare(syncer_);
-  LoopSyncShare(syncer_);
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(entry.good());
-    ASSERT_FALSE(entry.Get(IS_DEL));
-    entry.Put(IS_UNSYNCED, true);
-  }
-  mock_server_->AddUpdateBookmark(3, 0, "in_root.htm", 10, 10);
-  LoopSyncShare(syncer_);
-  LoopSyncShare(syncer_);
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(3));
-    ASSERT_TRUE(entry.good());
-    ASSERT_FALSE(entry.Get(IS_DEL));
-    entry.Put(IS_UNSYNCED, true);
-  }
-  mock_server_->AddUpdateBookmark(4, 0, "in_root.htm", 10, 10);
-  LoopSyncShare(syncer_);
-  LoopSyncShare(syncer_);
-  EXPECT_TRUE(0 == syncer_events_.size());
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    Entry id3(&trans, GET_BY_ID, ids_.FromNumber(3));
-    Entry id4(&trans, GET_BY_ID, ids_.FromNumber(4));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    ASSERT_TRUE(id3.good());
-    ASSERT_TRUE(id4.good());
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    EXPECT_TRUE(root_id_ == id3.Get(PARENT_ID));
-    EXPECT_TRUE(root_id_ == id4.Get(PARENT_ID));
-    PathString id1name = id1.Get(NAME);
-    ASSERT_GE(id1name.length(), 4ul);
-    EXPECT_TRUE(PSTR("in_root") == id1name.substr(0, 7));
-    EXPECT_TRUE(PSTR(".htm") == id1name.substr(id1name.length() - 4));
-    EXPECT_NE(PSTR("in_root.htm"), id1.Get(NAME));
-    PathString id2name = id2.Get(NAME);
-    ASSERT_GE(id2name.length(), 4ul);
-    EXPECT_TRUE(PSTR("in_root") == id2name.substr(0, 7));
-    EXPECT_TRUE(PSTR(".htm") == id2name.substr(id2name.length() - 4));
-    EXPECT_NE(PSTR("in_root.htm"), id2.Get(NAME));
-    PathString id3name = id3.Get(NAME);
-    ASSERT_GE(id3name.length(), 4ul);
-    EXPECT_TRUE(PSTR("in_root") == id3name.substr(0, 7));
-    EXPECT_TRUE(PSTR(".htm") == id3name.substr(id3name.length() - 4));
-    EXPECT_NE(PSTR("in_root.htm"), id3.Get(NAME));
-    EXPECT_TRUE(PSTR("in_root.htm") == id4.Get(NAME));
   }
 }
 
@@ -2107,12 +1722,13 @@ TEST_F(SyncerTest, DoublyChangedWithResolver) {
   syncer_events_.clear();
 }
 
-// We got this repro case when someone was editing entries while sync was
+// We got this repro case when someone was editing bookmarks while sync was
 // occuring. The entry had changed out underneath the user.
 TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   int64 test_time = 123456;
+  int64 entry_metahandle;
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&wtrans, syncable::CREATE, root_id_, PSTR("Pete"));
@@ -2121,6 +1737,7 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
     entry.Put(syncable::IS_DIR, true);
     entry.Put(syncable::IS_UNSYNCED, true);
     entry.Put(syncable::MTIME, test_time);
+    entry_metahandle = entry.Get(META_HANDLE);
   }
   syncer_->SyncShare();
   syncable::Id id;
@@ -2128,8 +1745,7 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
   int64 server_position_in_parent;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry(&trans, syncable::GET_BY_PARENTID_AND_NAME, trans.root_id(),
-                PSTR("Pete"));
+    Entry entry(&trans, syncable::GET_BY_HANDLE, entry_metahandle);
     ASSERT_TRUE(entry.good());
     id = entry.Get(ID);
     EXPECT_TRUE(id.ServerKnows());
@@ -2150,18 +1766,28 @@ TEST_F(SyncerTest, CommitsUpdateDoesntAlterEntry) {
 TEST_F(SyncerTest, ParentAndChildBothMatch) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
+  syncable::Id parent_id = ids_.NewServerId();
+  syncable::Id child_id = ids_.NewServerId();
+
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry parent(&wtrans, CREATE, root_id_, PSTR("Folder"));
     ASSERT_TRUE(parent.good());
     parent.Put(IS_DIR, true);
     parent.Put(IS_UNSYNCED, true);
+    parent.Put(ID, parent_id);
+    parent.Put(BASE_VERSION, 1);
+    parent.Put(IS_BOOKMARK_OBJECT, true);
+
     MutableEntry child(&wtrans, CREATE, parent.Get(ID), PSTR("test.htm"));
     ASSERT_TRUE(child.good());
+    child.Put(ID, child_id);
+    child.Put(BASE_VERSION, 1);
+    child.Put(IS_BOOKMARK_OBJECT, true);
     WriteTestDataToEntry(&wtrans, &child);
   }
-  mock_server_->AddUpdateDirectory(parent_id_, root_id_, "Folder", 10, 10);
-  mock_server_->AddUpdateBookmark(child_id_, parent_id_, "test.htm", 10, 10);
+  mock_server_->AddUpdateDirectory(parent_id, root_id_, "Folder", 10, 10);
+  mock_server_->AddUpdateBookmark(child_id, parent_id, "test.htm", 10, 10);
   mock_server_->set_conflict_all_commits(true);
   syncer_->SyncShare();
   syncer_->SyncShare();
@@ -2171,7 +1797,7 @@ TEST_F(SyncerTest, ParentAndChildBothMatch) {
     Directory::ChildHandles children;
     dir->GetChildHandles(&trans, root_id_, &children);
     EXPECT_TRUE(1 == children.size());
-    dir->GetChildHandles(&trans, parent_id_, &children);
+    dir->GetChildHandles(&trans, parent_id, &children);
     EXPECT_TRUE(1 == children.size());
     Directory::UnappliedUpdateMetaHandles unapplied;
     dir->GetUnappliedUpdateMetaHandles(&trans, &unapplied);
@@ -2241,12 +1867,15 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
   // This test is a little fake.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
+
+  int64 existing_metahandle;
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, CREATE, trans.root_id(), PSTR("existing"));
     ASSERT_TRUE(entry.good());
     entry.Put(IS_DIR, true);
     entry.Put(IS_UNSYNCED, true);
+    existing_metahandle = entry.Get(META_HANDLE);
   }
   syncer_->SyncShare(state_.get());
   {
@@ -2256,7 +1885,7 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
     newfolder.Put(IS_DIR, true);
     newfolder.Put(IS_UNSYNCED, true);
 
-    MutableEntry existing(&trans, GET_BY_PATH, PSTR("existing"));
+    MutableEntry existing(&trans, GET_BY_HANDLE, existing_metahandle);
     ASSERT_TRUE(existing.good());
     existing.Put(PARENT_ID, newfolder.Get(ID));
     existing.Put(IS_UNSYNCED, true);
@@ -2270,10 +1899,11 @@ TEST_F(SyncerTest, DeletingEntryInFolder) {
   EXPECT_TRUE(0 == status.conflicting_commits());
 }
 
-// TODO(sync): Is this test useful anymore?
 TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
+  int64 newfolder_metahandle;
+
   mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
   syncer_->SyncShare();
   {
@@ -2281,15 +1911,15 @@ TEST_F(SyncerTest, DeletingEntryWithLocalEdits) {
     MutableEntry newfolder(&trans, CREATE, ids_.FromNumber(1), PSTR("local"));
     ASSERT_TRUE(newfolder.good());
     newfolder.Put(IS_UNSYNCED, true);
+    newfolder_metahandle = newfolder.Get(META_HANDLE);
   }
   mock_server_->AddUpdateDirectory(1, 0, "bob", 2, 20);
   mock_server_->SetLastUpdateDeleted();
   syncer_->SyncShare(SYNCER_BEGIN, APPLY_UPDATES);
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry_by_path(&trans, syncable::GET_BY_PATH,
-        PathString(PSTR("bob")) + kPathSeparator + PSTR("local"));
-    ASSERT_TRUE(entry_by_path.good());
+    Entry entry(&trans, syncable::GET_BY_HANDLE, newfolder_metahandle);
+    ASSERT_TRUE(entry.good());
   }
 }
 
@@ -2306,17 +1936,17 @@ TEST_F(SyncerTest, FolderSwapUpdate) {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     Entry id1(&trans, GET_BY_ID, ids_.FromNumber(7801));
     ASSERT_TRUE(id1.good());
-    EXPECT_TRUE(PSTR("fred") == id1.Get(NAME));
+    EXPECT_TRUE(PSTR("fred") == id1.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
     Entry id2(&trans, GET_BY_ID, ids_.FromNumber(1024));
     ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(PSTR("bob") == id2.Get(NAME));
+    EXPECT_TRUE(PSTR("bob") == id2.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
   }
   syncer_events_.clear();
 }
 
-TEST_F(SyncerTest, CorruptUpdateBadFolderSwapUpdate) {
+TEST_F(SyncerTest, NameCollidingFolderSwapWorksFine) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   mock_server_->AddUpdateDirectory(7801, 0, "bob", 1, 10);
@@ -2327,15 +1957,15 @@ TEST_F(SyncerTest, CorruptUpdateBadFolderSwapUpdate) {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     Entry id1(&trans, GET_BY_ID, ids_.FromNumber(7801));
     ASSERT_TRUE(id1.good());
-    EXPECT_TRUE(PSTR("bob") == id1.Get(NAME));
+    EXPECT_TRUE(PSTR("bob") == id1.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
     Entry id2(&trans, GET_BY_ID, ids_.FromNumber(1024));
     ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(PSTR("fred") == id2.Get(NAME));
+    EXPECT_TRUE(PSTR("fred") == id2.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
     Entry id3(&trans, GET_BY_ID, ids_.FromNumber(4096));
     ASSERT_TRUE(id3.good());
-    EXPECT_TRUE(PSTR("alice") == id3.Get(NAME));
+    EXPECT_TRUE(PSTR("alice") == id3.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(root_id_ == id3.Get(PARENT_ID));
   }
   mock_server_->AddUpdateDirectory(1024, 0, "bob", 2, 20);
@@ -2346,222 +1976,16 @@ TEST_F(SyncerTest, CorruptUpdateBadFolderSwapUpdate) {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     Entry id1(&trans, GET_BY_ID, ids_.FromNumber(7801));
     ASSERT_TRUE(id1.good());
-    EXPECT_TRUE(PSTR("bob") == id1.Get(NAME));
+    EXPECT_TRUE(PSTR("fred") == id1.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
     Entry id2(&trans, GET_BY_ID, ids_.FromNumber(1024));
     ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(PSTR("fred") == id2.Get(NAME));
+    EXPECT_TRUE(PSTR("bob") == id2.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
     Entry id3(&trans, GET_BY_ID, ids_.FromNumber(4096));
     ASSERT_TRUE(id3.good());
-    EXPECT_TRUE(PSTR("alice") == id3.Get(NAME));
+    EXPECT_TRUE(PSTR("bob") == id3.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(root_id_ == id3.Get(PARENT_ID));
-  }
-  syncer_events_.clear();
-}
-
-// TODO(chron): New set of folder swap commit tests that don't rely on
-// transactional commits.
-TEST_F(SyncerTest, DISABLED_FolderSwapCommit) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(7801, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(1024, 0, "fred", 1, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry id1(&trans, GET_BY_ID, ids_.FromNumber(7801));
-    MutableEntry id2(&trans, GET_BY_ID, ids_.FromNumber(1024));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    EXPECT_FALSE(id1.Put(NAME, PSTR("fred")));
-    EXPECT_TRUE(id1.Put(NAME, PSTR("temp")));
-    EXPECT_TRUE(id2.Put(NAME, PSTR("bob")));
-    EXPECT_TRUE(id1.Put(NAME, PSTR("fred")));
-    id1.Put(IS_UNSYNCED, true);
-    id2.Put(IS_UNSYNCED, true);
-  }
-  mock_server_->set_conflict_all_commits(true);
-  syncer_->SyncShare();
-  ASSERT_TRUE(2 == mock_server_->commit_messages().size());
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(7801));
-    ASSERT_TRUE(id1.good());
-    EXPECT_TRUE(PSTR("fred") == id1.Get(NAME));
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_FALSE(id1.Get(IS_UNSYNCED));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(1024));
-    ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(PSTR("bob") == id2.Get(NAME));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    EXPECT_FALSE(id2.Get(IS_UNSYNCED));
-  }
-  syncer_events_.clear();
-}
-
-// TODO(chron): New set of folder swap commit tests that don't rely on
-// transactional commits.
-TEST_F(SyncerTest, DISABLED_DualFolderSwapCommit) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 1, 10);
-  mock_server_->AddUpdateDirectory(3, 0, "sue", 1, 10);
-  mock_server_->AddUpdateDirectory(4, 0, "greg", 1, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    MutableEntry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    MutableEntry id3(&trans, GET_BY_ID, ids_.FromNumber(3));
-    MutableEntry id4(&trans, GET_BY_ID, ids_.FromNumber(4));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    ASSERT_TRUE(id3.good());
-    ASSERT_TRUE(id4.good());
-    EXPECT_FALSE(id1.Put(NAME, PSTR("fred")));
-    EXPECT_TRUE(id1.Put(NAME, PSTR("temp")));
-    EXPECT_TRUE(id2.Put(NAME, PSTR("bob")));
-    EXPECT_TRUE(id1.Put(NAME, PSTR("fred")));
-    EXPECT_FALSE(id3.Put(NAME, PSTR("greg")));
-    EXPECT_TRUE(id3.Put(NAME, PSTR("temp")));
-    EXPECT_TRUE(id4.Put(NAME, PSTR("sue")));
-    EXPECT_TRUE(id3.Put(NAME, PSTR("greg")));
-    id1.Put(IS_UNSYNCED, true);
-    id2.Put(IS_UNSYNCED, true);
-    id3.Put(IS_UNSYNCED, true);
-    id4.Put(IS_UNSYNCED, true);
-  }
-  mock_server_->set_conflict_all_commits(true);
-  syncer_->SyncShare();
-  ASSERT_TRUE(4 == mock_server_->commit_messages().size());
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(id1.good());
-    EXPECT_TRUE(PSTR("fred") == id1.Get(NAME));
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_FALSE(id1.Get(IS_UNSYNCED));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(PSTR("bob") == id2.Get(NAME));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    EXPECT_FALSE(id2.Get(IS_UNSYNCED));
-    Entry id3(&trans, GET_BY_ID, ids_.FromNumber(3));
-    ASSERT_TRUE(id3.good());
-    EXPECT_TRUE(PSTR("greg") == id3.Get(NAME));
-    EXPECT_TRUE(root_id_ == id3.Get(PARENT_ID));
-    EXPECT_FALSE(id3.Get(IS_UNSYNCED));
-    Entry id4(&trans, GET_BY_ID, ids_.FromNumber(4));
-    ASSERT_TRUE(id4.good());
-    EXPECT_TRUE(PSTR("sue") == id4.Get(NAME));
-    EXPECT_TRUE(root_id_ == id4.Get(PARENT_ID));
-    EXPECT_FALSE(id4.Get(IS_UNSYNCED));
-  }
-  syncer_events_.clear();
-}
-
-// TODO(chron): New set of folder swap commit tests that don't rely on
-// transactional commits.
-TEST_F(SyncerTest, DISABLED_TripleFolderRotateCommit) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 1, 10);
-  mock_server_->AddUpdateDirectory(3, 0, "sue", 1, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    MutableEntry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    MutableEntry id3(&trans, GET_BY_ID, ids_.FromNumber(3));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    ASSERT_TRUE(id3.good());
-    EXPECT_FALSE(id1.Put(NAME, PSTR("sue")));
-    EXPECT_TRUE(id1.Put(NAME, PSTR("temp")));
-    EXPECT_TRUE(id2.Put(NAME, PSTR("bob")));
-    EXPECT_TRUE(id3.Put(NAME, PSTR("fred")));
-    EXPECT_TRUE(id1.Put(NAME, PSTR("sue")));
-    id1.Put(IS_UNSYNCED, true);
-    id2.Put(IS_UNSYNCED, true);
-    id3.Put(IS_UNSYNCED, true);
-  }
-  mock_server_->set_conflict_all_commits(true);
-  syncer_->SyncShare();
-  ASSERT_TRUE(2 == mock_server_->commit_messages().size());
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(id1.good());
-    EXPECT_TRUE(PSTR("sue") == id1.Get(NAME));
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_FALSE(id1.Get(IS_UNSYNCED));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(PSTR("bob") == id2.Get(NAME));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    EXPECT_FALSE(id2.Get(IS_UNSYNCED));
-    Entry id3(&trans, GET_BY_ID, ids_.FromNumber(3));
-    ASSERT_TRUE(id3.good());
-    EXPECT_TRUE(PSTR("fred") == id3.Get(NAME));
-    EXPECT_TRUE(root_id_ == id3.Get(PARENT_ID));
-    EXPECT_FALSE(id3.Get(IS_UNSYNCED));
-  }
-  syncer_events_.clear();
-}
-
-// TODO(chron): New set of folder swap commit tests that don't rely on
-// transactional commits.
-TEST_F(SyncerTest, DISABLED_ServerAndClientSwap) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 1, 10);
-  mock_server_->AddUpdateDirectory(3, 0, "sue", 1, 10);
-  mock_server_->AddUpdateDirectory(4, 0, "greg", 1, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    MutableEntry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(id1.good());
-    ASSERT_TRUE(id2.good());
-    EXPECT_FALSE(id1.Put(NAME, PSTR("fred")));
-    EXPECT_TRUE(id1.Put(NAME, PSTR("temp")));
-    EXPECT_TRUE(id2.Put(NAME, PSTR("bob")));
-    EXPECT_TRUE(id1.Put(NAME, PSTR("fred")));
-    id1.Put(IS_UNSYNCED, true);
-    id2.Put(IS_UNSYNCED, true);
-  }
-  mock_server_->set_conflict_all_commits(true);
-  mock_server_->AddUpdateDirectory(3, 0, "greg", 2, 20);
-  mock_server_->AddUpdateDirectory(4, 0, "sue", 2, 20);
-  syncer_->SyncShare();
-  ASSERT_TRUE(2 == mock_server_->commit_messages().size());
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry id1(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(id1.good());
-    EXPECT_TRUE(PSTR("fred") == id1.Get(NAME));
-    EXPECT_TRUE(root_id_ == id1.Get(PARENT_ID));
-    EXPECT_FALSE(id1.Get(IS_UNSYNCED));
-    Entry id2(&trans, GET_BY_ID, ids_.FromNumber(2));
-    ASSERT_TRUE(id2.good());
-    EXPECT_TRUE(PSTR("bob") == id2.Get(NAME));
-    EXPECT_TRUE(root_id_ == id2.Get(PARENT_ID));
-    EXPECT_FALSE(id2.Get(IS_UNSYNCED));
-    Entry id3(&trans, GET_BY_ID, ids_.FromNumber(3));
-    ASSERT_TRUE(id3.good());
-    EXPECT_TRUE(PSTR("greg") == id3.Get(NAME));
-    EXPECT_TRUE(root_id_ == id3.Get(PARENT_ID));
-    EXPECT_FALSE(id3.Get(IS_UNSYNCED));
-    Entry id4(&trans, GET_BY_ID, ids_.FromNumber(4));
-    ASSERT_TRUE(id4.good());
-    EXPECT_TRUE(PSTR("sue") == id4.Get(NAME));
-    EXPECT_TRUE(root_id_ == id4.Get(PARENT_ID));
-    EXPECT_FALSE(id4.Get(IS_UNSYNCED));
   }
   syncer_events_.clear();
 }
@@ -2591,44 +2015,57 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo) {
 
 TEST_F(SyncerTest, HugeConflict) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  PathString name = PSTR("f");
-  int item_count = 30;  // We should be able to do 300 or 3000 w/o issue.
+  int item_count = 300;  // We should be able to do 300 or 3000 w/o issue.
   CHECK(dir.good());
+
+  syncable::Id parent_id = ids_.NewServerId();
+  syncable::Id last_id = parent_id;
+  vector<syncable::Id> tree_ids;
+
+  // Create a lot of updates for which the parent does not exist yet.
+  // Generate a huge deep tree which should all fail to apply at first.
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    syncable::Id last_id = trans.root_id();
-    for (int i = 0; i < item_count ; i++) {
-      MutableEntry e(&trans, CREATE, last_id, name);
-      e.Put(IS_UNSYNCED, true);
-      e.Put(IS_DIR, true);
-      last_id = e.Get(ID);
+    for (int i = 0; i < item_count; i++) {
+      syncable::Id next_id = ids_.NewServerId();
+      tree_ids.push_back(next_id);
+      mock_server_->AddUpdateDirectory(next_id, last_id, "BOB", 2, 20);
+      last_id = next_id;
     }
   }
+
   syncer_->SyncShare();
-  CHECK(dir.good());
+
+  // Check they're in the expected conflict state.
   {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry e(&trans, GET_BY_PARENTID_AND_NAME, root_id_, name);
-    syncable::Id in_root = e.Get(ID);
-    syncable::Id last_id = e.Get(ID);
-    for (int i = 0; i < item_count - 1 ; i++) {
-      MutableEntry e(&trans, GET_BY_PARENTID_AND_NAME, last_id, name);
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+    for (int i = 0; i < item_count; i++) {
+      Entry e(&trans, GET_BY_ID, tree_ids[i]);
+      // They should all exist but none should be applied.
       ASSERT_TRUE(e.good());
-      mock_server_->AddUpdateDirectory(in_root, root_id_, "BOB", 2, 20);
-      mock_server_->SetLastUpdateDeleted();
-      if (0 == i)
-        e.Put(IS_UNSYNCED, true);
-      last_id = e.Get(ID);
+      EXPECT_TRUE(e.Get(IS_DEL));
+      EXPECT_TRUE(e.Get(IS_UNAPPLIED_UPDATE));
     }
   }
-  mock_server_->set_conflict_all_commits(true);
+
+  // Add the missing parent directory.
+  mock_server_->AddUpdateDirectory(parent_id, TestIdFactory::root(),
+      "BOB", 2, 20);
   syncer_->SyncShare();
-  syncer_->SyncShare();
-  syncer_->SyncShare();
-  CHECK(dir.good());
+
+  // Now they should all be OK.
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+    for (int i = 0; i < item_count; i++) {
+      Entry e(&trans, GET_BY_ID, tree_ids[i]);
+      ASSERT_TRUE(e.good());
+      EXPECT_FALSE(e.Get(IS_DEL));
+      EXPECT_FALSE(e.Get(IS_UNAPPLIED_UPDATE));
+    }
+  }
 }
 
-TEST_F(SyncerTest, CaseChangeNameClashConflict) {
+TEST_F(SyncerTest, DontCrashOnCaseChange) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
@@ -2653,66 +2090,6 @@ TEST_F(SyncerTest, UnsyncedItemAndUpdate) {
   mock_server_->set_conflict_all_commits(true);
   mock_server_->AddUpdateDirectory(2, 0, "bob", 2, 20);
   syncer_->SyncShare();  // USED TO CAUSE AN ASSERT
-  syncer_events_.clear();
-}
-
-TEST_F(SyncerTest, FolderMergeWithChildNameClash) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  syncable::Id local_folder_id, root_id;
-  mock_server_->AddUpdateDirectory(parent_id_, root_id_, "Folder2", 10, 10);
-  mock_server_->AddUpdateBookmark(child_id_, parent_id_, "Bookmark", 10, 10);
-  syncer_->SyncShare();
-  int64 local_folder_handle;
-  {
-    WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry parent(&wtrans, CREATE, root_id_, PSTR("Folder"));
-    ASSERT_TRUE(parent.good());
-    local_folder_id = parent.Get(ID);
-    local_folder_handle = parent.Get(META_HANDLE);
-    parent.Put(IS_DIR, true);
-    parent.Put(IS_UNSYNCED, true);
-    MutableEntry child(&wtrans, CREATE, parent.Get(ID), PSTR("Bookmark"));
-    ASSERT_TRUE(child.good());
-    WriteTestDataToEntry(&wtrans, &child);
-  }
-  mock_server_->AddUpdateDirectory(parent_id_, root_id_, "Folder", 20, 20);
-  mock_server_->set_conflict_all_commits(true);
-  LoopSyncShare(syncer_);
-  LoopSyncShare(syncer_);
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Directory::ChildHandles children;
-    dir->GetChildHandles(&trans, root_id_, &children);
-    ASSERT_TRUE(2 == children.size());
-    Entry parent(&trans, GET_BY_ID, parent_id_);
-    ASSERT_TRUE(parent.good());
-    EXPECT_TRUE(parent.Get(NAME) == PSTR("Folder"));
-    if (local_folder_handle == children[0]) {
-      EXPECT_TRUE(children[1] == parent.Get(META_HANDLE));
-    } else {
-      EXPECT_TRUE(children[0] == parent.Get(META_HANDLE));
-      EXPECT_TRUE(children[1] == local_folder_handle);
-    }
-    dir->GetChildHandles(&trans, local_folder_id, &children);
-    EXPECT_TRUE(1 == children.size());
-    dir->GetChildHandles(&trans, parent_id_, &children);
-    EXPECT_TRUE(1 == children.size());
-    Directory::UnappliedUpdateMetaHandles unapplied;
-    dir->GetUnappliedUpdateMetaHandles(&trans, &unapplied);
-    EXPECT_TRUE(0 == unapplied.size());
-    syncable::Directory::UnsyncedMetaHandles unsynced;
-    dir->GetUnsyncedMetaHandles(&trans, &unsynced);
-    EXPECT_TRUE(2 == unsynced.size());
-  }
-  mock_server_->set_conflict_all_commits(false);
-  syncer_->SyncShare();
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    syncable::Directory::UnsyncedMetaHandles unsynced;
-    dir->GetUnsyncedMetaHandles(&trans, &unsynced);
-    EXPECT_TRUE(0 == unsynced.size());
-  }
   syncer_events_.clear();
 }
 
@@ -2754,7 +2131,7 @@ TEST_F(SyncerTest, SiblingDirectoriesBecomeCircular) {
     ASSERT_TRUE(A.good());
     A.Put(IS_UNSYNCED, true);
     ASSERT_TRUE(A.Put(PARENT_ID, ids_.FromNumber(2)));
-    ASSERT_TRUE(A.Put(NAME, PSTR("B")));
+    ASSERT_TRUE(A.Put(NON_UNIQUE_NAME, PSTR("B")));
   }
   mock_server_->AddUpdateDirectory(2, 1, "A", 20, 20);
   mock_server_->set_conflict_all_commits(true);
@@ -2766,8 +2143,8 @@ TEST_F(SyncerTest, SiblingDirectoriesBecomeCircular) {
     ASSERT_TRUE(A.good());
     MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(B.good());
-    EXPECT_TRUE(A.Get(NAME) == PSTR("B"));
-    EXPECT_TRUE(B.Get(NAME) == PSTR("B"));
+    EXPECT_TRUE(A.Get(NON_UNIQUE_NAME) == PSTR("B"));
+    EXPECT_TRUE(B.Get(NON_UNIQUE_NAME) == PSTR("B"));
   }
 }
 
@@ -2786,11 +2163,11 @@ TEST_F(SyncerTest, ConflictSetClassificationError) {
     ASSERT_TRUE(A.good());
     A.Put(IS_UNSYNCED, true);
     A.Put(IS_UNAPPLIED_UPDATE, true);
-    A.Put(SERVER_NAME, PSTR("B"));
+    A.Put(SERVER_NON_UNIQUE_NAME, PSTR("B"));
     MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(B.good());
     B.Put(IS_UNAPPLIED_UPDATE, true);
-    B.Put(SERVER_NAME, PSTR("A"));
+    B.Put(SERVER_NON_UNIQUE_NAME, PSTR("A"));
   }
   syncer_->SyncShare();
   syncer_events_.clear();
@@ -2812,9 +2189,9 @@ TEST_F(SyncerTest, SwapEntryNames) {
     MutableEntry B(&wtrans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(B.good());
     B.Put(IS_UNSYNCED, true);
-    ASSERT_TRUE(A.Put(NAME, PSTR("C")));
-    ASSERT_TRUE(B.Put(NAME, PSTR("A")));
-    ASSERT_TRUE(A.Put(NAME, PSTR("B")));
+    ASSERT_TRUE(A.Put(NON_UNIQUE_NAME, PSTR("C")));
+    ASSERT_TRUE(B.Put(NON_UNIQUE_NAME, PSTR("A")));
+    ASSERT_TRUE(A.Put(NON_UNIQUE_NAME, PSTR("B")));
   }
   syncer_->SyncShare();
   syncer_events_.clear();
@@ -2881,12 +2258,16 @@ TEST_F(SyncerTest, FixDirectoryLoopConflict) {
 TEST_F(SyncerTest, ResolveWeWroteTheyDeleted) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
+
+  int64 bob_metahandle;
+
   mock_server_->AddUpdateBookmark(1, 0, "bob", 1, 10);
   syncer_->SyncShare();
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(bob.good());
+    bob_metahandle = bob.Get(META_HANDLE);
     WriteTestDataToEntry(&trans, &bob);
   }
   mock_server_->AddUpdateBookmark(1, 0, "bob", 2, 10);
@@ -2896,7 +2277,7 @@ TEST_F(SyncerTest, ResolveWeWroteTheyDeleted) {
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), PSTR("bob"));
+    Entry bob(&trans, GET_BY_HANDLE, bob_metahandle);
     ASSERT_TRUE(bob.good());
     EXPECT_TRUE(bob.Get(IS_UNSYNCED));
     EXPECT_FALSE(bob.Get(ID).ServerKnows());
@@ -2906,71 +2287,60 @@ TEST_F(SyncerTest, ResolveWeWroteTheyDeleted) {
   syncer_events_.clear();
 }
 
-// This test is disabled because we actually enforce the opposite behavior in:
-// ConflictResolverMergesLocalDeleteAndServerUpdate for bookmarks.
-TEST_F(SyncerTest, DISABLED_ResolveWeDeletedTheyWrote) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  mock_server_->AddUpdateBookmark(1, 0, "bob", 1, 10);
-  syncer_->SyncShare();
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
-    ASSERT_TRUE(bob.good());
-    bob.Put(IS_UNSYNCED, true);
-    bob.Put(IS_DEL, true);
-  }
-  mock_server_->AddUpdateBookmark(1, 0, "bob", 2, 10);
-  mock_server_->set_conflict_all_commits(true);
-  syncer_->SyncShare();
-  syncer_->SyncShare();
-  {
-    ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), PSTR("bob"));
-    ASSERT_TRUE(bob.good());
-    EXPECT_TRUE(bob.Get(ID) == ids_.FromNumber(1));
-    EXPECT_FALSE(bob.Get(IS_UNSYNCED));
-    EXPECT_FALSE(bob.Get(IS_UNAPPLIED_UPDATE));
-    EXPECT_FALSE(bob.Get(IS_DEL));
-  }
-  syncer_events_.clear();
-}
-
 TEST_F(SyncerTest, ServerDeletingFolderWeHaveMovedSomethingInto) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 1, 10);
+
+  syncable::Id bob_id = ids_.NewServerId();
+  syncable::Id fred_id = ids_.NewServerId();
+
+  mock_server_->AddUpdateDirectory(bob_id, TestIdFactory::root(),
+      "bob", 1, 10);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 1, 10);
   syncer_->SyncShare();
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
     bob.Put(IS_UNSYNCED, true);
-    bob.Put(PARENT_ID, ids_.FromNumber(2));
+    bob.Put(PARENT_ID, fred_id);
   }
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 2, 20);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 2, 20);
   mock_server_->SetLastUpdateDeleted();
   mock_server_->set_conflict_all_commits(true);
   syncer_->SyncShare();
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+
+    Entry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
-    Entry fred(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), PSTR("fred"));
-    ASSERT_TRUE(fred.good());
-    EXPECT_TRUE(fred.Get(IS_UNSYNCED));
     EXPECT_TRUE(bob.Get(IS_UNSYNCED));
-    EXPECT_TRUE(bob.Get(PARENT_ID) == fred.Get(ID));
-    EXPECT_FALSE(fred.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(bob.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(bob.Get(NON_UNIQUE_NAME) == PSTR("bob"));
+    EXPECT_NE(bob.Get(PARENT_ID), fred_id);
+
+    // Entry was deleted and reborn.
+    Entry dead_fred(&trans, GET_BY_ID, fred_id);
+    EXPECT_FALSE(dead_fred.good());
+
+    // Reborn fred
+    Entry fred(&trans, GET_BY_ID, bob.Get(PARENT_ID));
+    ASSERT_TRUE(fred.good());
+    EXPECT_TRUE(fred.Get(PARENT_ID) == trans.root_id());
+    EXPECT_EQ(PSTR("fred"), fred.Get(NON_UNIQUE_NAME));
+    EXPECT_TRUE(fred.Get(IS_UNSYNCED));
+    EXPECT_FALSE(fred.Get(IS_UNAPPLIED_UPDATE));
   }
   syncer_events_.clear();
 }
 
 // TODO(ncarter): This test is bogus, but it actually seems to hit an
 // interesting case the 4th time SyncShare is called.
+// TODO(chron): The fourth time that SyncShare is called it crashes.
+// This seems to be due to a bug in the conflict set building logic.
 TEST_F(SyncerTest, DISABLED_ServerDeletingFolderWeHaveAnOpenEntryIn) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
@@ -3011,7 +2381,9 @@ TEST_F(SyncerTest, DISABLED_ServerDeletingFolderWeHaveAnOpenEntryIn) {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
     ASSERT_TRUE(bob.good());
-    Entry fred(&trans, GET_BY_PARENTID_AND_NAME, trans.root_id(), PSTR("fred"));
+    Id fred_id =
+        GetOnlyEntryWithName(&trans, TestIdFactory::root(), PSTR("fred"));
+    Entry fred(&trans, GET_BY_ID, fred_id);
     ASSERT_TRUE(fred.good());
     EXPECT_FALSE(fred.Get(IS_UNSYNCED));
     EXPECT_TRUE(fred.Get(IS_UNAPPLIED_UPDATE));
@@ -3021,32 +2393,52 @@ TEST_F(SyncerTest, DISABLED_ServerDeletingFolderWeHaveAnOpenEntryIn) {
   syncer_events_.clear();
 }
 
+
 TEST_F(SyncerTest, WeMovedSomethingIntoAFolderServerHasDeleted) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 1, 10);
+
+  syncable::Id bob_id = ids_.NewServerId();
+  syncable::Id fred_id = ids_.NewServerId();
+
+  mock_server_->AddUpdateDirectory(bob_id, TestIdFactory::root(),
+      "bob", 1, 10);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 1, 10);
   syncer_->SyncShare();
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    Entry fred(&trans, GET_BY_ID, fred_id);
+    ASSERT_TRUE(fred.good());
+
+    MutableEntry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
     bob.Put(IS_UNSYNCED, true);
-    bob.Put(PARENT_ID, ids_.FromNumber(2));
+    bob.Put(PARENT_ID, fred_id);
   }
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 2, 20);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 2, 20);
   mock_server_->SetLastUpdateDeleted();
   mock_server_->set_conflict_all_commits(true);
   syncer_->SyncShare();
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    Entry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
-    Entry fred(&trans, GET_BY_PATH, PSTR("fred"));
-    ASSERT_TRUE(fred.good());
+
+    // Entry was deleted by server. We'll make a new one though with a new ID.
+    Entry dead_fred(&trans, GET_BY_ID, fred_id);
+    EXPECT_FALSE(dead_fred.good());
+
+    // Fred is reborn with a local ID.
+    Entry fred(&trans, GET_BY_ID, bob.Get(PARENT_ID));
+    EXPECT_EQ(PSTR("fred"), fred.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(TestIdFactory::root(), fred.Get(PARENT_ID));
     EXPECT_TRUE(fred.Get(IS_UNSYNCED));
     EXPECT_FALSE(fred.Get(ID).ServerKnows());
+
+    // Bob needs to update his parent.
     EXPECT_TRUE(bob.Get(IS_UNSYNCED));
     EXPECT_TRUE(bob.Get(PARENT_ID) == fred.Get(ID));
     EXPECT_TRUE(fred.Get(PARENT_ID) == root_id_);
@@ -3056,60 +2448,97 @@ TEST_F(SyncerTest, WeMovedSomethingIntoAFolderServerHasDeleted) {
   syncer_events_.clear();
 }
 
-namespace {
+class FolderMoveDeleteRenameTest : public SyncerTest {
+ public:
+  FolderMoveDeleteRenameTest() : move_bob_count_(0), done_(false) {}
 
-int move_bob_count;
+  static const int64 bob_id_number = 1;
+  static const int64 fred_id_number = 2;
 
-bool MoveBobIntoID2(Directory* dir) {
-  if (--move_bob_count > 0)
-    return false;
-  if (move_bob_count == 0) {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    Entry alice(&trans, GET_BY_ID, TestIdFactory::FromNumber(2));
-    CHECK(alice.good());
-    CHECK(!alice.Get(IS_DEL));
-    MutableEntry bob(&trans, GET_BY_ID, TestIdFactory::FromNumber(1));
-    CHECK(bob.good());
-    bob.Put(IS_UNSYNCED, true);
-    bob.Put(PARENT_ID, alice.Get(ID));
-    return true;
+  void MoveBobIntoID2Runner() {
+    if (!done_) {
+      done_ = MoveBobIntoID2();
+    }
   }
-  return false;
-}
 
-}  // namespace
+ protected:
+  int move_bob_count_;
+  bool done_;
 
-TEST_F(SyncerTest,
+  bool MoveBobIntoID2() {
+    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    CHECK(dir.good());
+
+    if (--move_bob_count_ > 0) {
+      return false;
+    }
+
+    if (move_bob_count_ == 0) {
+      WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+      Entry alice(&trans, GET_BY_ID,
+                  TestIdFactory::FromNumber(fred_id_number));
+      CHECK(alice.good());
+      CHECK(!alice.Get(IS_DEL));
+      MutableEntry bob(&trans, GET_BY_ID,
+                       TestIdFactory::FromNumber(bob_id_number));
+      CHECK(bob.good());
+      bob.Put(IS_UNSYNCED, true);
+      bob.Put(PARENT_ID, alice.Get(ID));
+      return true;
+    }
+    return false;
+  }
+};
+
+TEST_F(FolderMoveDeleteRenameTest,
        WeMovedSomethingIntoAFolderServerHasDeletedAndWeRenamed) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 1, 10);
+
+  const syncable::Id bob_id = TestIdFactory::FromNumber(
+      FolderMoveDeleteRenameTest::bob_id_number);
+  const syncable::Id fred_id = TestIdFactory::FromNumber(
+      FolderMoveDeleteRenameTest::fred_id_number);
+
+  mock_server_->AddUpdateDirectory(bob_id, TestIdFactory::root(),
+      "bob", 1, 10);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 1, 10);
   syncer_->SyncShare();
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry fred(&trans, GET_BY_ID, ids_.FromNumber(2));
+    MutableEntry fred(&trans, GET_BY_ID, fred_id);
     ASSERT_TRUE(fred.good());
     fred.Put(IS_UNSYNCED, true);
-    fred.Put(NAME, PSTR("Alice"));
+    fred.Put(NON_UNIQUE_NAME, PSTR("Alice"));
   }
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 2, 20);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 2, 20);
   mock_server_->SetLastUpdateDeleted();
   mock_server_->set_conflict_all_commits(true);
   // This test is a little brittle. We want to move the item into the folder
   // such that we think we're dealing with a simple conflict, but in reality
   // it's actually a conflict set.
-  move_bob_count = 2;
-  mock_server_->SetMidCommitCallbackFunction(MoveBobIntoID2);
+  move_bob_count_ = 2;
+  mock_server_->SetMidCommitCallback(
+      NewCallback<FolderMoveDeleteRenameTest>(this,
+          &FolderMoveDeleteRenameTest::MoveBobIntoID2Runner));
   syncer_->SyncShare();
   syncer_->SyncShare();
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    Entry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
-    Entry alice(&trans, GET_BY_PATH, PSTR("Alice"));
+
+    // Old entry is dead
+    Entry dead_fred(&trans, GET_BY_ID, fred_id);
+    EXPECT_FALSE(dead_fred.good());
+
+    // New ID is created to fill parent folder, named correctly
+    Entry alice(&trans, GET_BY_ID, bob.Get(PARENT_ID));
     ASSERT_TRUE(alice.good());
+    EXPECT_EQ(PSTR("Alice"), alice.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(alice.Get(IS_UNSYNCED));
     EXPECT_FALSE(alice.Get(ID).ServerKnows());
     EXPECT_TRUE(bob.Get(IS_UNSYNCED));
@@ -3126,42 +2555,56 @@ TEST_F(SyncerTest,
        WeMovedADirIntoAndCreatedAnEntryInAFolderServerHasDeleted) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 1, 10);
+
+  syncable::Id bob_id = ids_.NewServerId();
+  syncable::Id fred_id = ids_.NewServerId();
+
+  mock_server_->AddUpdateDirectory(bob_id, TestIdFactory::root(),
+      "bob", 1, 10);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 1, 10);
   syncer_->SyncShare();
   syncable::Id new_item_id;
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
     bob.Put(IS_UNSYNCED, true);
-    bob.Put(PARENT_ID, ids_.FromNumber(2));
-    MutableEntry new_item(&trans, CREATE, ids_.FromNumber(2), PSTR("new_item"));
+    bob.Put(PARENT_ID, fred_id);
+    MutableEntry new_item(&trans, CREATE, fred_id, PSTR("new_item"));
     WriteTestDataToEntry(&trans, &new_item);
     new_item_id = new_item.Get(ID);
   }
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 2, 20);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 2, 20);
   mock_server_->SetLastUpdateDeleted();
   mock_server_->set_conflict_all_commits(true);
   syncer_->SyncShare();
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+
+    Entry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
-    Entry fred(&trans, GET_BY_PATH, PSTR("fred"));
+    EXPECT_TRUE(bob.Get(IS_UNSYNCED));
+    EXPECT_FALSE(bob.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_NE(bob.Get(PARENT_ID), fred_id);
+
+    // Was recreated. Old one shouldn't exist.
+    Entry dead_fred(&trans, GET_BY_ID, fred_id);
+    EXPECT_FALSE(dead_fred.good());
+
+    Entry fred(&trans, GET_BY_ID, bob.Get(PARENT_ID));
     ASSERT_TRUE(fred.good());
-    PathChar path[] = {'f', 'r', 'e', 'd', *kPathSeparator,
-                       'n', 'e', 'w', '_', 'i', 't', 'e', 'm', 0};
-    Entry new_item(&trans, GET_BY_PATH, path);
-    EXPECT_TRUE(new_item.good());
     EXPECT_TRUE(fred.Get(IS_UNSYNCED));
     EXPECT_FALSE(fred.Get(ID).ServerKnows());
-    EXPECT_TRUE(bob.Get(IS_UNSYNCED));
-    EXPECT_TRUE(bob.Get(PARENT_ID) == fred.Get(ID));
-    EXPECT_TRUE(fred.Get(PARENT_ID) == root_id_);
+    EXPECT_EQ(PSTR("fred"), fred.Get(NON_UNIQUE_NAME));
     EXPECT_FALSE(fred.Get(IS_UNAPPLIED_UPDATE));
-    EXPECT_FALSE(bob.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(fred.Get(PARENT_ID) == root_id_);
+
+    Entry new_item(&trans, GET_BY_ID, new_item_id);
+    ASSERT_TRUE(new_item.good());
+    EXPECT_EQ(new_item.Get(PARENT_ID), fred.Get(ID));
   }
   syncer_events_.clear();
 }
@@ -3359,60 +2802,80 @@ TEST_F(SyncerTest, NewServerItemInAFolderHierarchyWeHaveDeleted2) {
   syncer_events_.clear();
 }
 
-namespace {
 
-int countown_till_delete = 0;
+class SusanDeletingTest : public SyncerTest {
+ public:
+  SusanDeletingTest() : countdown_till_delete_(0) {}
 
-void DeleteSusanInRoot(Directory* dir) {
-  ASSERT_GT(countown_till_delete, 0);
-  if (0 != --countown_till_delete)
-    return;
-  WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-  MutableEntry susan(&trans, GET_BY_PATH, PSTR("susan"));
-  Directory::ChildHandles children;
-  dir->GetChildHandles(&trans, susan.Get(ID), &children);
-  ASSERT_TRUE(0 == children.size());
-  susan.Put(IS_DEL, true);
-  susan.Put(IS_UNSYNCED, true);
-}
+  static const int64 susan_int_id_ = 4;
 
-}  // namespace
+  void DeleteSusanInRoot() {
+    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    ASSERT_TRUE(dir.good());
 
-TEST_F(SyncerTest, NewServerItemInAFolderHierarchyWeHaveDeleted3) {
+    const syncable::Id susan_id = TestIdFactory::FromNumber(susan_int_id_);
+    ASSERT_GT(countdown_till_delete_, 0);
+    if (0 != --countdown_till_delete_)
+      return;
+    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry susan(&trans, GET_BY_ID, susan_id);
+    Directory::ChildHandles children;
+    dir->GetChildHandles(&trans, susan.Get(ID), &children);
+    ASSERT_TRUE(0 == children.size());
+    susan.Put(IS_DEL, true);
+    susan.Put(IS_UNSYNCED, true);
+  }
+
+ protected:
+  int countdown_till_delete_;
+};
+
+TEST_F(SusanDeletingTest,
+       NewServerItemInAFolderHierarchyWeHaveDeleted3) {
   // Same as 2, except we deleted the folder the set is in between set building
   // and conflict resolution.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(4, 0, "susan", 1, 10);
-  mock_server_->AddUpdateDirectory(1, 4, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 1, "joe", 1, 10);
+
+  const syncable::Id bob_id = TestIdFactory::FromNumber(1);
+  const syncable::Id joe_id = TestIdFactory::FromNumber(2);
+  const syncable::Id fred_id = TestIdFactory::FromNumber(3);
+  const syncable::Id susan_id = TestIdFactory::FromNumber(susan_int_id_);
+
+  mock_server_->AddUpdateDirectory(susan_id, TestIdFactory::root(),
+      "susan", 1, 10);
+  mock_server_->AddUpdateDirectory(bob_id, susan_id, "bob", 1, 10);
+  mock_server_->AddUpdateDirectory(joe_id, bob_id, "joe", 1, 10);
   LoopSyncShare(syncer_);
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
     bob.Put(IS_UNSYNCED, true);
     bob.Put(IS_DEL, true);
-    MutableEntry joe(&trans, GET_BY_ID, ids_.FromNumber(2));
+
+    MutableEntry joe(&trans, GET_BY_ID, joe_id);
     ASSERT_TRUE(joe.good());
     joe.Put(IS_UNSYNCED, true);
     joe.Put(IS_DEL, true);
   }
-  mock_server_->AddUpdateDirectory(3, 2, "fred", 2, 20);
+  mock_server_->AddUpdateDirectory(fred_id, joe_id, "fred", 2, 20);
   mock_server_->set_conflict_all_commits(true);
-  countown_till_delete = 2;
-  syncer_->pre_conflict_resolution_function_ = DeleteSusanInRoot;
+  countdown_till_delete_ = 2;
+  syncer_->pre_conflict_resolution_closure_ =
+      NewCallback<SusanDeletingTest>(this,
+          &SusanDeletingTest::DeleteSusanInRoot);
   syncer_->SyncShare();
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    Entry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
-    Entry joe(&trans, GET_BY_ID, ids_.FromNumber(2));
+    Entry joe(&trans, GET_BY_ID, joe_id);
     ASSERT_TRUE(joe.good());
-    Entry fred(&trans, GET_BY_ID, ids_.FromNumber(3));
+    Entry fred(&trans, GET_BY_ID, fred_id);
     ASSERT_TRUE(fred.good());
-    Entry susan(&trans, GET_BY_ID, ids_.FromNumber(4));
+    Entry susan(&trans, GET_BY_ID, susan_id);
     ASSERT_TRUE(susan.good());
     EXPECT_FALSE(susan.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_TRUE(fred.Get(IS_UNAPPLIED_UPDATE));
@@ -3423,19 +2886,19 @@ TEST_F(SyncerTest, NewServerItemInAFolderHierarchyWeHaveDeleted3) {
     EXPECT_TRUE(bob.Get(IS_UNSYNCED));
     EXPECT_TRUE(joe.Get(IS_UNSYNCED));
   }
-  EXPECT_TRUE(0 == countown_till_delete);
-  syncer_->pre_conflict_resolution_function_ = 0;
+  EXPECT_TRUE(0 == countdown_till_delete_);
+  syncer_->pre_conflict_resolution_closure_ = NULL;
   LoopSyncShare(syncer_);
   LoopSyncShare(syncer_);
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    Entry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
-    Entry joe(&trans, GET_BY_ID, ids_.FromNumber(2));
+    Entry joe(&trans, GET_BY_ID, joe_id);
     ASSERT_TRUE(joe.good());
-    Entry fred(&trans, GET_BY_ID, ids_.FromNumber(3));
+    Entry fred(&trans, GET_BY_ID, fred_id);
     ASSERT_TRUE(fred.good());
-    Entry susan(&trans, GET_BY_ID, ids_.FromNumber(4));
+    Entry susan(&trans, GET_BY_ID, susan_id);
     ASSERT_TRUE(susan.good());
     EXPECT_TRUE(susan.Get(IS_UNSYNCED));
     EXPECT_FALSE(fred.Get(IS_UNSYNCED));
@@ -3456,103 +2919,146 @@ TEST_F(SyncerTest, NewServerItemInAFolderHierarchyWeHaveDeleted3) {
 TEST_F(SyncerTest, WeMovedSomethingIntoAFolderHierarchyServerHasDeleted) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 1, 10);
-  mock_server_->AddUpdateDirectory(3, 2, "alice", 1, 10);
+
+  const syncable::Id bob_id = ids_.NewServerId();
+  const syncable::Id fred_id = ids_.NewServerId();
+  const syncable::Id alice_id = ids_.NewServerId();
+
+  mock_server_->AddUpdateDirectory(bob_id, TestIdFactory::root(),
+      "bob", 1, 10);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 1, 10);
+  mock_server_->AddUpdateDirectory(alice_id, fred_id, "alice", 1, 10);
   syncer_->SyncShare();
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
     bob.Put(IS_UNSYNCED, true);
-    bob.Put(PARENT_ID, ids_.FromNumber(3));  // Move into alice.
+    bob.Put(PARENT_ID, alice_id);  // Move into alice.
   }
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 2, 20);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 2, 20);
   mock_server_->SetLastUpdateDeleted();
-  mock_server_->AddUpdateDirectory(3, 0, "alice", 2, 20);
+  mock_server_->AddUpdateDirectory(alice_id, TestIdFactory::root(),
+      "alice", 2, 20);
   mock_server_->SetLastUpdateDeleted();
   mock_server_->set_conflict_all_commits(true);
   syncer_->SyncShare();
   syncer_->SyncShare();
   {
+    // Bob is the entry at the bottom of the tree.
+    // The tree should be regenerated and old IDs removed.
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    Entry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
-    Entry fred(&trans, GET_BY_PATH, PSTR("fred"));
-    ASSERT_TRUE(fred.good());
-    PathChar path[] = {'f', 'r', 'e', 'd', *kPathSeparator,
-                       'a', 'l', 'i', 'c', 'e', 0};
-    Entry alice(&trans, GET_BY_PATH, path);
-    ASSERT_TRUE(alice.good());
-    EXPECT_TRUE(fred.Get(IS_UNSYNCED));
-    EXPECT_TRUE(alice.Get(IS_UNSYNCED));
-    EXPECT_TRUE(bob.Get(IS_UNSYNCED));
-    EXPECT_FALSE(fred.Get(ID).ServerKnows());
-    EXPECT_FALSE(alice.Get(ID).ServerKnows());
-    EXPECT_TRUE(alice.Get(PARENT_ID) == fred.Get(ID));
-    EXPECT_TRUE(bob.Get(PARENT_ID) == alice.Get(ID));
-    EXPECT_TRUE(fred.Get(PARENT_ID) == root_id_);
-    EXPECT_FALSE(fred.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(bob.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(bob.Get(IS_UNSYNCED));
+
+    // Old one should be deleted, but new one should have been made.
+    Entry dead_alice(&trans, GET_BY_ID, alice_id);
+    EXPECT_FALSE(dead_alice.good());
+    EXPECT_NE(bob.Get(PARENT_ID), alice_id);
+
+    // Newly born alice
+    Entry alice(&trans, GET_BY_ID, bob.Get(PARENT_ID));
+    ASSERT_TRUE(alice.good());
     EXPECT_FALSE(alice.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(alice.Get(IS_UNSYNCED));
+    EXPECT_FALSE(alice.Get(ID).ServerKnows());
+    EXPECT_TRUE(alice.Get(NON_UNIQUE_NAME) == PSTR("alice"));
+
+    // Alice needs a parent as well. Old parent should have been erased.
+    Entry dead_fred(&trans, GET_BY_ID, fred_id);
+    EXPECT_FALSE(dead_fred.good());
+    EXPECT_NE(alice.Get(PARENT_ID), fred_id);
+
+    Entry fred(&trans, GET_BY_ID, alice.Get(PARENT_ID));
+    ASSERT_TRUE(fred.good());
+    EXPECT_EQ(fred.Get(PARENT_ID), TestIdFactory::root());
+    EXPECT_TRUE(fred.Get(IS_UNSYNCED));
+    EXPECT_FALSE(fred.Get(ID).ServerKnows());
+    EXPECT_FALSE(fred.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(fred.Get(NON_UNIQUE_NAME) == PSTR("fred"));
   }
   syncer_events_.clear();
 }
 
 TEST_F(SyncerTest, WeMovedSomethingIntoAFolderHierarchyServerHasDeleted2) {
-  // The difference here is that the hierarchy's not in the root. We have
+  // The difference here is that the hierarchy is not in the root. We have
   // another entry that shouldn't be touched.
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "bob", 1, 10);
-  mock_server_->AddUpdateDirectory(4, 0, "susan", 1, 10);
-  mock_server_->AddUpdateDirectory(2, 4, "fred", 1, 10);
-  mock_server_->AddUpdateDirectory(3, 2, "alice", 1, 10);
+
+  const syncable::Id bob_id = ids_.NewServerId();
+  const syncable::Id fred_id = ids_.NewServerId();
+  const syncable::Id alice_id = ids_.NewServerId();
+  const syncable::Id susan_id = ids_.NewServerId();
+
+  mock_server_->AddUpdateDirectory(bob_id, TestIdFactory::root(),
+      "bob", 1, 10);
+  mock_server_->AddUpdateDirectory(susan_id, TestIdFactory::root(),
+      "susan", 1, 10);
+  mock_server_->AddUpdateDirectory(fred_id, susan_id, "fred", 1, 10);
+  mock_server_->AddUpdateDirectory(alice_id, fred_id, "alice", 1, 10);
   syncer_->SyncShare();
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    MutableEntry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
     bob.Put(IS_UNSYNCED, true);
-    bob.Put(PARENT_ID, ids_.FromNumber(3));  // Move into alice.
+    bob.Put(PARENT_ID, alice_id);  // Move into alice.
   }
-  mock_server_->AddUpdateDirectory(2, 0, "fred", 2, 20);
+  mock_server_->AddUpdateDirectory(fred_id, TestIdFactory::root(),
+      "fred", 2, 20);
   mock_server_->SetLastUpdateDeleted();
-  mock_server_->AddUpdateDirectory(3, 0, "alice", 2, 20);
+  mock_server_->AddUpdateDirectory(alice_id, TestIdFactory::root(),
+      "alice", 2, 20);
   mock_server_->SetLastUpdateDeleted();
   mock_server_->set_conflict_all_commits(true);
   syncer_->SyncShare();
   syncer_->SyncShare();
   {
+    // Root
+    //   |- Susan
+    //        |- Fred
+    //            |- Alice
+    //                 |- Bob
+
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry bob(&trans, GET_BY_ID, ids_.FromNumber(1));
+    Entry bob(&trans, GET_BY_ID, bob_id);
     ASSERT_TRUE(bob.good());
-    PathChar path[] = {'s', 'u', 's', 'a', 'n', *kPathSeparator,
-                       'f', 'r', 'e', 'd', 0};
-    Entry fred(&trans, GET_BY_PATH, path);
-    ASSERT_TRUE(fred.good());
-    PathChar path2[] = {'s', 'u', 's', 'a', 'n', *kPathSeparator,
-                        'f', 'r', 'e', 'd', *kPathSeparator,
-                        'a', 'l', 'i', 'c', 'e', 0};
-    Entry alice(&trans, GET_BY_PATH, path2);
-    ASSERT_TRUE(alice.good());
-    Entry susan(&trans, GET_BY_ID, ids_.FromNumber(4));
-    ASSERT_TRUE(susan.good());
-    Entry susan_by_path(&trans, GET_BY_PATH, PSTR("susan"));
+    EXPECT_FALSE(bob.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(bob.Get(IS_UNSYNCED));  // Parent changed
+    EXPECT_NE(bob.Get(PARENT_ID), alice_id);
+
+    // New one was born, this is the old one
+    Entry dead_alice(&trans, GET_BY_ID, alice_id);
+    EXPECT_FALSE(dead_alice.good());
+
+    // Newly born
+    Entry alice(&trans, GET_BY_ID, bob.Get(PARENT_ID));
+    EXPECT_TRUE(alice.Get(IS_UNSYNCED));
+    EXPECT_FALSE(alice.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(alice.Get(ID).ServerKnows());
+    EXPECT_NE(alice.Get(PARENT_ID), fred_id);  // This fred was deleted
+
+    // New one was born, this is the old one
+    Entry dead_fred(&trans, GET_BY_ID, fred_id);
+    EXPECT_FALSE(dead_fred.good());
+
+    // Newly born
+    Entry fred(&trans, GET_BY_ID, alice.Get(PARENT_ID));
+    EXPECT_TRUE(fred.Get(IS_UNSYNCED));
+    EXPECT_FALSE(fred.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(fred.Get(ID).ServerKnows());
+    EXPECT_TRUE(fred.Get(PARENT_ID) == susan_id);
+
+    // Unchanged
+    Entry susan(&trans, GET_BY_ID, susan_id);
     ASSERT_TRUE(susan.good());
     EXPECT_FALSE(susan.Get(IS_UNSYNCED));
-    EXPECT_TRUE(fred.Get(IS_UNSYNCED));
-    EXPECT_TRUE(alice.Get(IS_UNSYNCED));
-    EXPECT_TRUE(bob.Get(IS_UNSYNCED));
-    EXPECT_FALSE(fred.Get(ID).ServerKnows());
-    EXPECT_FALSE(alice.Get(ID).ServerKnows());
-    EXPECT_TRUE(alice.Get(PARENT_ID) == fred.Get(ID));
-    EXPECT_TRUE(bob.Get(PARENT_ID) == alice.Get(ID));
-    EXPECT_TRUE(fred.Get(PARENT_ID) == susan.Get(ID));
     EXPECT_TRUE(susan.Get(PARENT_ID) == root_id_);
-    EXPECT_FALSE(fred.Get(IS_UNAPPLIED_UPDATE));
-    EXPECT_FALSE(bob.Get(IS_UNAPPLIED_UPDATE));
-    EXPECT_FALSE(alice.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_FALSE(susan.Get(IS_UNAPPLIED_UPDATE));
   }
   syncer_events_.clear();
@@ -3582,34 +3088,6 @@ TEST_F(SyncerTest, DuplicateIDReturn) {
   EXPECT_TRUE(1 == dir->unsynced_entity_count());
   syncer_->SyncShare();  // another bad id in here.
   EXPECT_TRUE(0 == dir->unsynced_entity_count());
-  syncer_events_.clear();
-}
-
-// This test is not very useful anymore. It used to trigger a more interesting
-// condition.
-TEST_F(SyncerTest, SimpleConflictOnAnEntry) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, CREATE, trans.root_id(), PSTR("bob"));
-    ASSERT_TRUE(bob.good());
-    bob.Put(IS_UNSYNCED, true);
-    WriteTestDataToEntry(&trans, &bob);
-  }
-  syncer_->SyncShare();
-  syncable::Id bobid;
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry bob(&trans, GET_BY_PATH, PSTR("bob"));
-    ASSERT_TRUE(bob.good());
-    EXPECT_FALSE(bob.Get(IS_UNSYNCED));
-    bob.Put(IS_UNSYNCED, true);
-    bobid = bob.Get(ID);
-  }
-  mock_server_->AddUpdateBookmark(1, 0, "jim", 2, 20);
-  mock_server_->set_conflict_all_commits(true);
-  SyncRepeatedlyToTriggerConflictResolution(state_.get());
   syncer_events_.clear();
 }
 
@@ -3654,7 +3132,7 @@ TEST_F(SyncerTest, ConflictResolverMergeOverwritesLocalEntry) {
 
     MutableEntry update(&trans, CREATE_NEW_UPDATE_ITEM, ids_.FromNumber(3));
     update.Put(BASE_VERSION, 1);
-    update.Put(SERVER_NAME, PSTR("name"));
+    update.Put(SERVER_NON_UNIQUE_NAME, PSTR("name"));
     update.Put(PARENT_ID, ids_.FromNumber(0));
     update.Put(IS_UNAPPLIED_UPDATE, true);
 
@@ -3792,13 +3270,17 @@ TEST_F(SyncerTest, MergingExistingItems) {
 // In this test a long changelog contains a child at the start of the changelog
 // and a parent at the end. While these updates are in progress the client would
 // appear stuck.
-TEST_F(SyncerTest, LongChangelistCreatesFakeOrphanedEntries) {
+TEST_F(SyncerTest, LongChangelistWithApplicationConflict) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
   const int DEPTH = 400;
+  syncable::Id folder_id = ids_.FromNumber(1);
+
   // First we an item in a folder in the root. However the folder won't come
   // till much later.
-  mock_server_->AddUpdateDirectory(99999, 1, "stuck", 1, 1);
+  syncable::Id stuck_entry_id = TestIdFactory::FromNumber(99999);
+  mock_server_->AddUpdateDirectory(stuck_entry_id,
+      folder_id, "stuck", 1, 1);
   mock_server_->SetChangesRemaining(DEPTH - 1);
   syncer_->SyncShare(state_.get());
 
@@ -3808,18 +3290,30 @@ TEST_F(SyncerTest, LongChangelistCreatesFakeOrphanedEntries) {
     mock_server_->SetChangesRemaining(DEPTH - i);
     syncer_->SyncShare(state_.get());
     EXPECT_FALSE(SyncerStuck(state_.get()));
+
+    // Ensure our folder hasn't somehow applied.
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+    Entry child(&trans, GET_BY_ID, stuck_entry_id);
+    EXPECT_TRUE(child.good());
+    EXPECT_TRUE(child.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_TRUE(child.Get(IS_DEL));
+    EXPECT_FALSE(child.Get(IS_UNSYNCED));
   }
+
   // And finally the folder.
-  mock_server_->AddUpdateDirectory(1, 0, "folder", 1, 1);
+  mock_server_->AddUpdateDirectory(folder_id,
+      TestIdFactory::root(), "folder", 1, 1);
   mock_server_->SetChangesRemaining(0);
   LoopSyncShare(syncer_);
   LoopSyncShare(syncer_);
-  // Check that everything's as expected after the commit.
+  // Check that everything is as expected after the commit.
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry entry(&trans, GET_BY_PATH, PSTR("folder"));
+    Entry entry(&trans, GET_BY_ID, folder_id);
     ASSERT_TRUE(entry.good());
-    Entry child(&trans, GET_BY_PARENTID_AND_NAME, entry.Get(ID), PSTR("stuck"));
+    Entry child(&trans, GET_BY_ID, stuck_entry_id);
+    EXPECT_EQ(entry.Get(ID), child.Get(PARENT_ID));
+    EXPECT_EQ(PSTR("stuck"), child.Get(NON_UNIQUE_NAME));
     EXPECT_TRUE(child.good());
   }
 }
@@ -3835,7 +3329,7 @@ TEST_F(SyncerTest, DontMergeTwoExistingItems) {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(entry.good());
-    EXPECT_TRUE(entry.Put(NAME, PSTR("Copy of base")));
+    EXPECT_TRUE(entry.Put(NON_UNIQUE_NAME, PSTR("Copy of base")));
     entry.Put(IS_UNSYNCED, true);
   }
   mock_server_->AddUpdateBookmark(1, 0, "Copy of base", 50, 50);
@@ -3850,7 +3344,7 @@ TEST_F(SyncerTest, DontMergeTwoExistingItems) {
     EXPECT_FALSE(entry2.Get(IS_UNAPPLIED_UPDATE));
     EXPECT_TRUE(entry2.Get(IS_UNSYNCED));
     EXPECT_FALSE(entry2.Get(IS_DEL));
-    EXPECT_NE(entry1.Get(NAME), entry2.Get(NAME));
+    EXPECT_EQ(entry1.Get(NON_UNIQUE_NAME), entry2.Get(NON_UNIQUE_NAME));
   }
 }
 
@@ -3906,31 +3400,6 @@ TEST_F(SyncerTest, TestMoveSanitizedNamedFolder) {
   syncer_->SyncShare();
 }
 
-TEST_F(SyncerTest, QuicklyMergeDualCreatedHierarchy) {
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  EXPECT_TRUE(dir.good());
-  mock_server_->set_conflict_all_commits(true);
-  int depth = 10;
-  {
-    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    syncable::Id parent = root_id_;
-    for (int i = 0 ; i < depth ; ++i) {
-      MutableEntry entry(&trans, CREATE, parent, PSTR("folder"));
-      entry.Put(IS_DIR, true);
-      entry.Put(IS_UNSYNCED, true);
-      parent = entry.Get(ID);
-    }
-  }
-  for (int i = 0 ; i < depth ; ++i) {
-    mock_server_->AddUpdateDirectory(i + 1, i, "folder", 1, 1);
-  }
-  syncer_->SyncShare(state_.get());
-  syncer_->SyncShare(state_.get());
-  SyncerStatus status(NULL, state_.get());
-  EXPECT_LT(status.consecutive_problem_commits(), 5);
-  EXPECT_TRUE(0 == dir->unsynced_entity_count());
-}
-
 TEST(SortedCollectionsIntersect, SortedCollectionsIntersectTest) {
   int negative[] = {-3, -2, -1};
   int straddle[] = {-1, 0, 1};
@@ -3973,77 +3442,86 @@ const char kRootId[] = "0";
 TEST_F(SyncerTest, DirectoryUpdateTest) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory("in_root_id", kRootId,
+
+  Id in_root_id = ids_.NewServerId();
+  Id in_in_root_id = ids_.NewServerId();
+
+  mock_server_->AddUpdateDirectory(in_root_id, TestIdFactory::root(),
                                    "in_root_name", 2, 2);
-  mock_server_->AddUpdateDirectory("in_in_root_id", "in_root_id",
+  mock_server_->AddUpdateDirectory(in_in_root_id, in_root_id,
                                    "in_in_root_name", 3, 3);
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    // Entry will have been dropped.
-    Entry by_path(&trans, GET_BY_PATH, PSTR("in_root_name"));
-    EXPECT_TRUE(by_path.good());
-    Entry by_path2(&trans, GET_BY_PATH, PSTR("in_root_name") +
-                                        PathString(kPathSeparator) +
-                                        PSTR("in_in_root_name"));
-    EXPECT_TRUE(by_path2.good());
+    Entry in_root(&trans, GET_BY_ID, in_root_id);
+    ASSERT_TRUE(in_root.good());
+    EXPECT_EQ(PSTR("in_root_name"), in_root.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(TestIdFactory::root(), in_root.Get(PARENT_ID));
+
+    Entry in_in_root(&trans, GET_BY_ID, in_in_root_id);
+    ASSERT_TRUE(in_in_root.good());
+    EXPECT_EQ(PSTR("in_in_root_name"), in_in_root.Get(NON_UNIQUE_NAME));
+    EXPECT_EQ(in_root_id, in_in_root.Get(PARENT_ID));
   }
 }
 
 TEST_F(SyncerTest, DirectoryCommitTest) {
-  syncable::Id in_root, in_dir;
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
+
+  syncable::Id in_root_id, in_dir_id;
+  int64 foo_metahandle;
+  int64 bar_metahandle;
+
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry parent(&wtrans, syncable::CREATE, root_id_, PSTR("foo"));
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);
-    in_root = parent.Get(syncable::ID);
+    in_root_id = parent.Get(syncable::ID);
+    foo_metahandle = parent.Get(META_HANDLE);
+
     MutableEntry child(&wtrans, syncable::CREATE, parent.Get(ID), PSTR("bar"));
     ASSERT_TRUE(child.good());
     child.Put(syncable::IS_UNSYNCED, true);
     child.Put(syncable::IS_DIR, true);
-    in_dir = parent.Get(syncable::ID);
+    bar_metahandle = child.Get(META_HANDLE);
+    in_dir_id = parent.Get(syncable::ID);
   }
   syncer_->SyncShare();
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
-    Entry by_path(&trans, GET_BY_PATH, PSTR("foo"));
-    ASSERT_TRUE(by_path.good());
-    EXPECT_NE(by_path.Get(syncable::ID), in_root);
-    Entry by_path2(&trans, GET_BY_PATH, PSTR("foo") +
-                                        PathString(kPathSeparator) +
-                                        PSTR("bar"));
-    ASSERT_TRUE(by_path2.good());
-    EXPECT_NE(by_path2.Get(syncable::ID), in_dir);
+    Entry fail_by_old_id_entry(&trans, GET_BY_ID, in_root_id);
+    ASSERT_FALSE(fail_by_old_id_entry.good());
+
+    Entry foo_entry(&trans, GET_BY_HANDLE, foo_metahandle);
+    ASSERT_TRUE(foo_entry.good());
+    EXPECT_EQ(PSTR("foo"), foo_entry.Get(NON_UNIQUE_NAME));
+    EXPECT_NE(foo_entry.Get(syncable::ID), in_root_id);
+
+    Entry bar_entry(&trans, GET_BY_HANDLE, bar_metahandle);
+    ASSERT_TRUE(bar_entry.good());
+    EXPECT_EQ(PSTR("bar"), bar_entry.Get(NON_UNIQUE_NAME));
+    EXPECT_NE(bar_entry.Get(syncable::ID), in_dir_id);
+    EXPECT_EQ(foo_entry.Get(syncable::ID), bar_entry.Get(PARENT_ID));
   }
 }
-
-namespace {
-
-void CheckEntryVersion(syncable::DirectoryManager* dirmgr, PathString name) {
-  ScopedDirLookup dir(dirmgr, name);
-  ASSERT_TRUE(dir.good());
-  ReadTransaction trans(dir, __FILE__, __LINE__);
-  Entry entry(&trans, GET_BY_PATH, PSTR("foo"));
-  ASSERT_TRUE(entry.good());
-  EXPECT_TRUE(entry.Get(BASE_VERSION) == 1);
-}
-
-}  // namespace
 
 TEST_F(SyncerTest, ConflictSetSizeReducedToOne) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateBookmark(2, 0, "in_root", 1, 1);
+
+  syncable::Id in_root_id = ids_.NewServerId();
+
+  mock_server_->AddUpdateBookmark(in_root_id, TestIdFactory::root(),
+      "in_root", 1, 1);
   syncer_->SyncShare();
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry oentry(&trans, GET_BY_PATH, PSTR("in_root"));
+    MutableEntry oentry(&trans, GET_BY_ID, in_root_id);
     ASSERT_TRUE(oentry.good());
-    oentry.Put(NAME, PSTR("old_in_root"));
+    oentry.Put(NON_UNIQUE_NAME, PSTR("old_in_root"));
     WriteTestDataToEntry(&trans, &oentry);
     MutableEntry entry(&trans, CREATE, trans.root_id(), PSTR("in_root"));
     ASSERT_TRUE(entry.good());
@@ -4086,15 +3564,21 @@ TEST_F(SyncerTest, TestClientCommand) {
 TEST_F(SyncerTest, EnsureWeSendUpOldParent) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   CHECK(dir.good());
-  mock_server_->AddUpdateDirectory(1, 0, "folder_one", 1, 1);
-  mock_server_->AddUpdateDirectory(2, 0, "folder_two", 1, 1);
+
+  syncable::Id folder_one_id = ids_.FromNumber(1);
+  syncable::Id folder_two_id = ids_.FromNumber(2);
+
+  mock_server_->AddUpdateDirectory(folder_one_id, TestIdFactory::root(),
+      "folder_one", 1, 1);
+  mock_server_->AddUpdateDirectory(folder_two_id, TestIdFactory::root(),
+      "folder_two", 1, 1);
   syncer_->SyncShare();
   {
     // A moved entry should send an old parent.
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry entry(&trans, GET_BY_PATH, PSTR("folder_one"));
+    MutableEntry entry(&trans, GET_BY_ID, folder_one_id);
     ASSERT_TRUE(entry.good());
-    entry.Put(PARENT_ID, ids_.FromNumber(2));
+    entry.Put(PARENT_ID, folder_two_id);
     entry.Put(IS_UNSYNCED, true);
     // A new entry should send no parent.
     MutableEntry create(&trans, CREATE, trans.root_id(), PSTR("new_folder"));
@@ -4113,6 +3597,7 @@ TEST_F(SyncerTest, Test64BitVersionSupport) {
   CHECK(dir.good());
   int64 really_big_int = std::numeric_limits<int64>::max() - 12;
   const PathString name(PSTR("ringo's dang orang ran rings around my o-ring"));
+  int64 item_metahandle;
 
   // Try writing max int64 to the version fields of a meta entry.
   {
@@ -4121,29 +3606,18 @@ TEST_F(SyncerTest, Test64BitVersionSupport) {
     ASSERT_TRUE(entry.good());
     entry.Put(syncable::BASE_VERSION, really_big_int);
     entry.Put(syncable::SERVER_VERSION, really_big_int);
-    entry.Put(syncable::ID, syncable::Id::CreateFromServerId("ID"));
+    entry.Put(syncable::ID, ids_.NewServerId());
+    item_metahandle = entry.Get(META_HANDLE);
   }
   // Now read it back out and make sure the value is max int64.
   ReadTransaction rtrans(dir, __FILE__, __LINE__);
-  Entry entry(&rtrans, syncable::GET_BY_PATH, name);
+  Entry entry(&rtrans, syncable::GET_BY_HANDLE, item_metahandle);
   ASSERT_TRUE(entry.good());
   EXPECT_TRUE(really_big_int == entry.Get(syncable::BASE_VERSION));
 }
 
-TEST_F(SyncerTest, TestDSStoreDirectorySyncsNormally) {
-  syncable::Id item_id = parent_id_;
-  mock_server_->AddUpdateDirectory(item_id,
-      root_id_, ".DS_Store", 1, 1);
-  syncer_->SyncShare();
-  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
-  CHECK(dir.good());
-  ReadTransaction trans(dir, __FILE__, __LINE__);
-  Entry ds_dir(&trans, GET_BY_PATH, PSTR(".DS_Store"));
-  ASSERT_TRUE(ds_dir.good());
-}
-
 TEST_F(SyncerTest, TestSimpleUndelete) {
-  Id id = ids_.MakeServer("undeletion item"), root = ids_.root();
+  Id id = ids_.MakeServer("undeletion item"), root = TestIdFactory::root();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
   mock_server_->set_conflict_all_commits(true);
@@ -4203,7 +3677,7 @@ TEST_F(SyncerTest, TestSimpleUndelete) {
 }
 
 TEST_F(SyncerTest, TestUndeleteWithMissingDeleteUpdate) {
-  Id id = ids_.MakeServer("undeletion item"), root = ids_.root();
+  Id id = ids_.MakeServer("undeletion item"), root = TestIdFactory::root();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
   // Let there be a entry, from the server.
@@ -4251,7 +3725,7 @@ TEST_F(SyncerTest, TestUndeleteWithMissingDeleteUpdate) {
 
 TEST_F(SyncerTest, TestUndeleteIgnoreCorrectlyUnappliedUpdate) {
   Id id1 = ids_.MakeServer("first"), id2 = ids_.MakeServer("second");
-  Id root = ids_.root();
+  Id root = TestIdFactory::root();
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
   // Duplicate! expect path clashing!
@@ -4296,7 +3770,7 @@ TEST_F(SyncerTest, SingletonTagUpdates) {
     ASSERT_TRUE(hurdle.good());
     ASSERT_TRUE(!hurdle.Get(IS_DEL));
     ASSERT_TRUE(hurdle.Get(SINGLETON_TAG).empty());
-    ASSERT_TRUE(hurdle.GetName().value() == PSTR("bob"));
+    ASSERT_TRUE(hurdle.Get(NON_UNIQUE_NAME) == PSTR("bob"));
 
     // Try to lookup by the tagname.  These should fail.
     Entry tag_alpha(&trans, GET_BY_TAG, PSTR("alpha"));
@@ -4321,18 +3795,18 @@ TEST_F(SyncerTest, SingletonTagUpdates) {
     ASSERT_TRUE(tag_alpha.good());
     ASSERT_TRUE(!tag_alpha.Get(IS_DEL));
     ASSERT_TRUE(tag_alpha.Get(SINGLETON_TAG) == PSTR("alpha"));
-    ASSERT_TRUE(tag_alpha.GetName().value() == PSTR("update1"));
+    ASSERT_TRUE(tag_alpha.Get(NON_UNIQUE_NAME) == PSTR("update1"));
     Entry tag_bob(&trans, GET_BY_TAG, PSTR("bob"));
     ASSERT_TRUE(tag_bob.good());
     ASSERT_TRUE(!tag_bob.Get(IS_DEL));
     ASSERT_TRUE(tag_bob.Get(SINGLETON_TAG) == PSTR("bob"));
-    ASSERT_TRUE(tag_bob.GetName().value() == PSTR("update2"));
+    ASSERT_TRUE(tag_bob.Get(NON_UNIQUE_NAME) == PSTR("update2"));
     // The old item should be unchanged.
     Entry hurdle(&trans, GET_BY_HANDLE, hurdle_handle);
     ASSERT_TRUE(hurdle.good());
     ASSERT_TRUE(!hurdle.Get(IS_DEL));
     ASSERT_TRUE(hurdle.Get(SINGLETON_TAG).empty());
-    ASSERT_TRUE(hurdle.GetName().value() == PSTR("bob"));
+    ASSERT_TRUE(hurdle.Get(NON_UNIQUE_NAME) == PSTR("bob"));
   }
 }
 

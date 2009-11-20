@@ -26,12 +26,6 @@ class SyncEntity;
 
 class SyncerUtil {
  public:
-  // TODO(ncarter): Remove unique-in-parent title support and name conflicts.
-  static syncable::Id GetNameConflictingItemId(
-      syncable::BaseTransaction* trans,
-      const syncable::Id& parent_id,
-      const PathString& server_name);
-
   static void ChangeEntryIDAndUpdateChildren(
       syncable::WriteTransaction* trans,
       syncable::MutableEntry* entry,
@@ -56,16 +50,12 @@ class SyncerUtil {
       syncable::MutableEntry* const entry,
       ConflictResolver* resolver);
 
-  static UpdateAttemptResponse AttemptToUpdateEntryWithoutMerge(
-      syncable::WriteTransaction* const trans,
-      syncable::MutableEntry* const entry,
-      syncable::Id* const conflicting_id);
 
   // Pass in name to avoid redundant UTF8 conversion.
   static void UpdateServerFieldsFromUpdate(
       syncable::MutableEntry* local_entry,
       const SyncEntity& server_entry,
-      const syncable::SyncName& name);
+      const PathString& name);
 
   static void ApplyExtendedAttributes(
       syncable::MutableEntry* local_entry,
@@ -186,6 +176,7 @@ inline bool ClientAndServerTimeMatch(int64 client_time, int64 server_time) {
 // The sync server uses Java Times (ms since 1970)
 // and the client uses FILETIMEs (ns since 1601) so we need to convert
 // between the timescales.
+// TODO(sync): Fix this. No need to use two timescales.
 inline int64 ServerTimeToClientTime(int64 server_time) {
   return server_time * GG_LONGLONG(10000) + GG_LONGLONG(116444736000000000);
 }

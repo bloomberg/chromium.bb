@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/directory_event.h"
+#include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
@@ -71,7 +72,6 @@ enum SyncerStep {
 class Syncer {
  public:
   typedef std::vector<int64> UnsyncedMetaHandles;
-  typedef void (*TestCallbackFunction)(syncable::Directory* dir);
 
   // The constructor may be called from a thread that is not the Syncer's
   // dedicated thread, to allow some flexibility in the setup.
@@ -193,9 +193,10 @@ class Syncer {
 
   // A callback hook used in unittests to simulate changes between conflict set
   // building and conflict resolution.
-  TestCallbackFunction pre_conflict_resolution_function_;
+  Closure* pre_conflict_resolution_closure_;
 
-  FRIEND_TEST(SyncerTest, NewServerItemInAFolderHierarchyWeHaveDeleted3);
+  FRIEND_TEST(SusanDeletingTest,
+              NewServerItemInAFolderHierarchyWeHaveDeleted3);
   FRIEND_TEST(SyncerTest, TestCommitListOrderingAndNewParent);
   FRIEND_TEST(SyncerTest, TestCommitListOrderingAndNewParentAndChild);
   FRIEND_TEST(SyncerTest, TestCommitListOrderingCounterexample);
