@@ -10,6 +10,11 @@
 @class BackgroundTileView;
 class Profile;
 
+// This simple subclass of |NSTextView| just doesn't show the (text) cursor
+// (|NSTextView| displays the cursor with full keyboard accessibility enabled).
+@interface AboutLegalTextView : NSTextView
+@end
+
 // A window controller that handles the About box.
 @interface AboutWindowController : NSWindowController {
  @private
@@ -17,7 +22,7 @@ class Profile;
   IBOutlet BackgroundTileView* backgroundView_;
   IBOutlet NSImageView* logoView_;
   IBOutlet NSView* legalBlock_;
-  IBOutlet NSTextView* legalText_;
+  IBOutlet AboutLegalTextView* legalText_;
   IBOutlet NSView* updateBlock_;  // Holds everything related to updates
   IBOutlet NSProgressIndicator* spinner_;
   IBOutlet NSImageView* updateStatusIndicator_;
