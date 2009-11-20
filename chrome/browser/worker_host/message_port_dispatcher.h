@@ -72,7 +72,7 @@ class MessagePortDispatcher : public NotificationObserver {
   void Erase(int message_port_id);
 
 #ifdef NDEBUG
-  bool CheckMessagePortMap(bool check_entanglements) { }
+  bool CheckMessagePortMap(bool check_entanglements) { return true; }
 #else
   bool CheckMessagePortMap(bool check_entanglements);
 #endif
