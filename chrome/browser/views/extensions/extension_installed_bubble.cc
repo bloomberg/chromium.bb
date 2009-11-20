@@ -30,13 +30,20 @@ const int kRightColumnWidth = 285;
 
 // The InfoBubble uses a BubbleBorder which adds about 6 pixels of whitespace
 // around the content view. We compensate by reducing our outer borders by this
-// amount.
-const int kBubbleBorderInsert = 6;
-const int kHorizOuterMargin = kPanelHorizMargin - kBubbleBorderInsert;
-const int kVertOuterMargin = kPanelVertMargin - kBubbleBorderInsert;
+// amount + 4px.
+const int kOuterMarginInset = 10;
+const int kHorizOuterMargin = kPanelHorizMargin - kOuterMarginInset;
+const int kVertOuterMargin = kPanelVertMargin - kOuterMarginInset;
+
+// Interior vertical margin is 8px smaller than standard
+const int kVertInnerMargin = kPanelVertMargin - 8;
 
 // The image we use for the close button has three pixels of whitespace padding.
 const int kCloseButtonPadding = 3;
+
+// We want to shift the right column (which contains the header and text) up
+// 4px to align with icon.
+const int kRightcolumnVerticalShift = -4;
 
 // InstalledBubbleContent is the content view which is placed in the
 // ExtensionInstalledBubble. It displays the install icon and explanatory
@@ -103,23 +110,23 @@ class InstalledBubbleContent : public views::View,
 
  private:
   virtual gfx::Size GetPreferredSize() {
-    int width = kRightColumnWidth + kHorizOuterMargin + kHorizOuterMargin;
+    int width = kHorizOuterMargin;
     width += kIconSize;
     width += kPanelHorizMargin;
-    width += close_button_->GetPreferredSize().width();
-    width -= 2 * kCloseButtonPadding;
-    width += kPanelHorizMargin;
+    width += kRightColumnWidth;
+    width += 2*kPanelHorizMargin;    
+    width += kHorizOuterMargin;
 
-    int height = kVertOuterMargin * 2;
+    int height = kVertOuterMargin;
     height += heading_->GetHeightForWidth(kRightColumnWidth);
-    height += kPanelVertMargin;
+    height += kVertInnerMargin;
     if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
       height += info_->GetHeightForWidth(kRightColumnWidth);
-      height += kPanelVertMargin;
+      height += kVertInnerMargin;
     }
     height += manage_->GetHeightForWidth(kRightColumnWidth);
-
-    return gfx::Size(width, std::max(height, kIconSize + kVertOuterMargin * 2));
+    height += kVertOuterMargin;
+    return gfx::Size(width, std::max(height, kIconSize + 2 * kVertOuterMargin));
   }
 
   virtual void Layout() {
@@ -130,31 +137,32 @@ class InstalledBubbleContent : public views::View,
     x += kIconSize;
     x += kPanelHorizMargin;
 
+    y += kRightcolumnVerticalShift;
     heading_->SizeToFit(kRightColumnWidth);
     heading_->SetX(x);
     heading_->SetY(y);
     y += heading_->height();
-    y += kPanelVertMargin;
+    y += kVertInnerMargin;
 
     if (type_ == ExtensionInstalledBubble::PAGE_ACTION) {
       info_->SizeToFit(kRightColumnWidth);
       info_->SetX(x);
       info_->SetY(y);
       y += info_->height();
-      y += kPanelVertMargin;
+      y += kVertInnerMargin;
     }
 
     manage_->SizeToFit(kRightColumnWidth);
     manage_->SetX(x);
     manage_->SetY(y);
 
-    x += kRightColumnWidth + kPanelHorizMargin;
+    x += kRightColumnWidth + 2*kPanelHorizMargin + kHorizOuterMargin -
+        close_button_->GetPreferredSize().width();
     y = kVertOuterMargin;
     gfx::Size sz = close_button_->GetPreferredSize();
-    close_button_->SetBounds(x - kCloseButtonPadding,
-                             y - kCloseButtonPadding,
-                             sz.width(),
-                             sz.height());
+    // x-1 & y-1 is just slop to get the close button visually aligned with the
+    // title text and bubble arrow.
+    close_button_->SetBounds(x - 1, y - 1, sz.width(), sz.height());
 }
 
   ExtensionInstalledBubble::BubbleType type_;
