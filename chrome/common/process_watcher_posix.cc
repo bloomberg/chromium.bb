@@ -17,6 +17,7 @@
 static bool IsChildDead(pid_t child) {
   const pid_t result = HANDLE_EINTR(waitpid(child, NULL, WNOHANG));
   if (result == -1) {
+    PLOG(ERROR) << "waitpid(" << child << ")";
     NOTREACHED();
   } else if (result > 0) {
     // The child has died.
