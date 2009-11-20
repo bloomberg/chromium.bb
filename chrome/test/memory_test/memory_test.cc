@@ -159,6 +159,7 @@ class MemoryTest : public UITest {
           expected_tab_count++;
           WaitUntilTabCount(expected_tab_count);
           tab = window->GetActiveTab();
+          EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
           continue;
         }
 
@@ -172,6 +173,7 @@ class MemoryTest : public UITest {
         window->GetTabCount(&tab_count);
         tab_index = (tab_index + 1) % tab_count;
         tab = window->GetTab(tab_index);
+        EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
         continue;
       }
 
@@ -195,6 +197,7 @@ class MemoryTest : public UITest {
         active_window = window_count - 1;
         window = automation()->GetBrowserWindow(active_window);
         tab = window->GetActiveTab();
+        EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
         continue;
       }
 
@@ -204,6 +207,7 @@ class MemoryTest : public UITest {
         active_window = (active_window + 1) % window_count;
         window = automation()->GetBrowserWindow(active_window);
         tab = window->GetActiveTab();
+        EXPECT_NE(tab, static_cast<TabProxy*>(NULL));
         continue;
       }
 
@@ -221,132 +225,9 @@ class MemoryTest : public UITest {
     }
 
     size_t stop_size = base::GetSystemCommitCharge();
-    PrintResults(test_name, (stop_size - start_size) * 1024);
-  }
-
-  void PrintResults(const char* test_name, size_t commit_size) {
-    PrintMemoryUsageInfo(test_name);
-    std::string trace_name(test_name);
-    trace_name.append("_cc");
-
-    PrintResult("commit_charge", "", trace_name,
-                commit_size / 1024, "kb", true /* important */);
-  }
-
-  void PrintIOPerfInfo(const char* test_name) {
-    printf("\n");
-
-    int browser_process_pid = ChromeBrowserProcessId(user_data_dir_);
-    ASSERT_NE(browser_process_pid, -1);
-
-    ChromeProcessList chrome_processes(
-                          GetRunningChromeProcesses(user_data_dir_));
-
-    ChromeProcessList::const_iterator it;
-    for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-      IoCounters io_counters;
-      base::ProcessHandle process_handle;
-      if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
-        NOTREACHED();
-      }
-
-      // TODO(sgk):  if/when base::ProcessMetrics can return real memory
-      // stats on mac, convert to:
-      //
-      // scoped_ptr<base::ProcessMetrics> process_metrics;
-      // process_metrics.reset(
-      //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
-      scoped_ptr<ChromeTestProcessMetrics> process_metrics;
-      process_metrics.reset(
-          ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
-
-      bzero(&io_counters, sizeof(io_counters));
-      if (process_metrics.get()->GetIOCounters(&io_counters)) {
-        std::string chrome_name = (*it == browser_process_pid) ? "_b" : "_r";
-
-        // Print out IO performance.  We assume that the values can be
-        // converted to size_t (they're reported as ULONGLONG, 64-bit numbers).
-        PrintResult("read_op", chrome_name, test_name + chrome_name,
-                    static_cast<size_t>(io_counters.ReadOperationCount), "",
-                    false /* not important */);
-        PrintResult("write_op", chrome_name, test_name + chrome_name,
-                    static_cast<size_t>(io_counters.WriteOperationCount), "",
-                    false /* not important */);
-        PrintResult("other_op", chrome_name, test_name + chrome_name,
-                    static_cast<size_t>(io_counters.OtherOperationCount), "",
-                    false /* not important */);
-        PrintResult("read_byte", chrome_name, test_name + chrome_name,
-                    static_cast<size_t>(io_counters.ReadTransferCount / 1024),
-                    "kb", false /* not important */);
-        PrintResult("write_byte", chrome_name, test_name + chrome_name,
-                    static_cast<size_t>(io_counters.WriteTransferCount / 1024),
-                    "kb", false /* not important */);
-        PrintResult("other_byte", chrome_name, test_name + chrome_name,
-                    static_cast<size_t>(io_counters.OtherTransferCount / 1024),
-                    "kb", false /* not important */);
-      }
-
-      base::CloseProcessHandle(process_handle);
-    }
-  }
-
-  void PrintMemoryUsageInfo(const char* test_name) {
-    printf("\n");
-
-    int browser_process_pid = ChromeBrowserProcessId(user_data_dir_);
-    ASSERT_NE(browser_process_pid, -1);
-
-    ChromeProcessList chrome_processes(
-                          GetRunningChromeProcesses(user_data_dir_));
-
-    size_t browser_virtual_size = 0;
-    size_t browser_working_set_size = 0;
-    size_t virtual_size = 0;
-    size_t working_set_size = 0;
-    ChromeProcessList::const_iterator it;
-    for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
-      base::ProcessHandle process_handle;
-      if (!base::OpenPrivilegedProcessHandle(*it, &process_handle)) {
-        NOTREACHED();
-      }
-
-      // TODO(sgk):  if/when base::ProcessMetrics can return real memory
-      // stats on mac, convert to:
-      //
-      // scoped_ptr<base::ProcessMetrics> process_metrics;
-      // process_metrics.reset(
-      //     base::ProcessMetrics::CreateProcessMetrics(process_handle));
-      scoped_ptr<ChromeTestProcessMetrics> process_metrics;
-      process_metrics.reset(
-          ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
-
-      size_t current_virtual_size = process_metrics->GetPagefileUsage();
-      size_t current_working_set_size = process_metrics->GetWorkingSetSize();
-
-      if (*it == browser_process_pid) {
-        browser_virtual_size = current_virtual_size;
-        browser_working_set_size = current_working_set_size;
-      }
-      virtual_size += current_virtual_size;
-      working_set_size += current_working_set_size;
-    }
-
-    std::string trace_name(test_name);
-    PrintResult("vm_final_browser", "", trace_name + "_vm_b",
-                browser_virtual_size / 1024, "kb",
-                false /* not important */);
-    PrintResult("ws_final_browser", "", trace_name + "_ws_b",
-                browser_working_set_size / 1024, "kb",
-                false /* not important */);
-    PrintResult("vm_final_total", "", trace_name + "_vm",
-                virtual_size / 1024, "kb",
-                false /* not important */);
-    PrintResult("ws_final_total", "", trace_name + "_ws",
-                working_set_size / 1024, "kb",
-                true /* important */);
-    PrintResult("processes", "", trace_name + "_proc",
-                chrome_processes.size(), "",
-                false /* not important */);
+    PrintIOPerfInfo(test_name, user_data_dir_);
+    PrintMemoryUsageInfo(test_name, user_data_dir_);
+    PrintSystemCommitCharge(test_name, stop_size - start_size);
   }
 
  private:
@@ -634,15 +515,15 @@ size_t MembusterMemoryTest::urls_length_ =
     arraysize(MembusterMemoryTest::source_urls_);
 
 TEST_F(GeneralMixMemoryTest, SingleTabTest) {
-  RunTest("1t", 1);
+  RunTest("_1t", 1);
 }
 
 TEST_F(GeneralMixMemoryTest, FiveTabTest) {
-  RunTest("5t", 5);
+  RunTest("_5t", 5);
 }
 
 TEST_F(GeneralMixMemoryTest, TwelveTabTest) {
-  RunTest("12t", 12);
+  RunTest("_12t", 12);
 }
 
 // Commented out until the recorded cache data is added.

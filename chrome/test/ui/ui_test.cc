@@ -1183,6 +1183,24 @@ void UITest::PrintIOPerfInfo(const char* test_name, FilePath data_dir) {
   int browser_process_pid = ChromeBrowserProcessId(data_dir);
   ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
 
+  size_t read_op_b = 0;
+  size_t read_op_r = 0;
+  size_t write_op_b = 0;
+  size_t write_op_r = 0;
+  size_t other_op_b = 0;
+  size_t other_op_r = 0;
+  size_t total_op_b = 0;
+  size_t total_op_r = 0;
+
+  size_t read_byte_b = 0;
+  size_t read_byte_r = 0;
+  size_t write_byte_b = 0;
+  size_t write_byte_r = 0;
+  size_t other_byte_b = 0;
+  size_t other_byte_r = 0;
+  size_t total_byte_b = 0;
+  size_t total_byte_r = 0;
+
   ChromeProcessList::const_iterator it;
   for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
     base::ProcessHandle process_handle;
@@ -1191,8 +1209,11 @@ void UITest::PrintIOPerfInfo(const char* test_name, FilePath data_dir) {
       return;
     }
 
-    scoped_ptr<base::ProcessMetrics> process_metrics(
-        base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    // TODO(sgk):  if/when base::ProcessMetrics returns real stats on mac:
+    //scoped_ptr<base::ProcessMetrics> process_metrics(
+    //    base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    scoped_ptr<ChromeTestProcessMetrics> process_metrics(
+        ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
     IoCounters io_counters;
     memset(&io_counters, 0, sizeof(io_counters));
 
@@ -1201,56 +1222,89 @@ void UITest::PrintIOPerfInfo(const char* test_name, FilePath data_dir) {
       // converted to size_t (they're reported as ULONGLONG, 64-bit numbers).
       std::string chrome_name = (*it == browser_process_pid) ? "_b" : "_r";
 
-      PrintResult("read_op", chrome_name,
-                  "r_op" + chrome_name + test_name,
-                  static_cast<size_t>(io_counters.ReadOperationCount), "",
-                  false /* not important */);
-      PrintResult("write_op", chrome_name,
-                  "w_op" + chrome_name + test_name,
-                  static_cast<size_t>(io_counters.WriteOperationCount), "",
-                  false /* not important */);
-      PrintResult("other_op", chrome_name,
-                  "o_op" + chrome_name + test_name,
-                  static_cast<size_t>(io_counters.OtherOperationCount), "",
-                  false /* not important */);
+      size_t read_op = static_cast<size_t>(io_counters.ReadOperationCount);
+      size_t write_op = static_cast<size_t>(io_counters.WriteOperationCount);
+      size_t other_op = static_cast<size_t>(io_counters.OtherOperationCount);
+      size_t total_op = static_cast<size_t>(io_counters.ReadOperationCount +
+                                            io_counters.WriteOperationCount +
+                                            io_counters.OtherOperationCount);
 
-      size_t total = static_cast<size_t>(io_counters.ReadOperationCount +
-                                         io_counters.WriteOperationCount +
-                                         io_counters.OtherOperationCount);
-      PrintResult("total_op", chrome_name,
-                  "IO_op" + chrome_name + test_name,
-                  total, "", true /* important */);
+      size_t read_byte = static_cast<size_t>(io_counters.ReadTransferCount
+                                             / 1024);
+      size_t write_byte = static_cast<size_t>(io_counters.WriteTransferCount
+                                              / 1024);
+      size_t other_byte = static_cast<size_t>(io_counters.OtherTransferCount
+                                              / 1024);
+      size_t total_byte = static_cast<size_t>((io_counters.ReadTransferCount +
+                                               io_counters.WriteTransferCount +
+                                               io_counters.OtherTransferCount)
+                                              / 1024);
 
-      PrintResult("read_byte", chrome_name,
-                  "r_b" + chrome_name + test_name,
-                  static_cast<size_t>(io_counters.ReadTransferCount / 1024),
-                  "kb", false /* not important */);
-      PrintResult("write_byte", chrome_name,
-                  "w_b" + chrome_name + test_name,
-                  static_cast<size_t>(io_counters.WriteTransferCount / 1024),
-                  "kb", false /* not important */);
-      PrintResult("other_byte", chrome_name,
-                  "o_b" + chrome_name + test_name,
-                  static_cast<size_t>(io_counters.OtherTransferCount / 1024),
-                  "kb", false /* not important */);
-
-      total = static_cast<size_t>((io_counters.ReadTransferCount +
-                                   io_counters.WriteTransferCount +
-                                   io_counters.OtherTransferCount) / 1024);
-      PrintResult("total_byte", chrome_name,
-                  "IO_b" + chrome_name + test_name,
-                  total, "kb", true /* important */);
+      if (*it == browser_process_pid) {
+        read_op_b = read_op;
+        write_op_b = write_op;
+        other_op_b = other_op;
+        total_op_b = total_op;
+        read_byte_b = read_byte;
+        write_byte_b = write_byte;
+        other_byte_b = other_byte;
+        total_byte_b = total_byte;
+      } else {
+        read_op_r += read_op;
+        write_op_r += write_op;
+        other_op_r += other_op;
+        total_op_r += total_op;
+        read_byte_r += read_byte;
+        write_byte_r += write_byte;
+        other_byte_r += other_byte;
+        total_byte_r += total_byte;
+      }
     }
 
     base::CloseProcessHandle(process_handle);
   }
+
+  std::string t_name(test_name);
+  PrintResult("read_op_b", "", "r_op_b" + t_name, read_op_b, "", false);
+  PrintResult("write_op_b", "", "w_op_b" + t_name, write_op_b, "", false);
+  PrintResult("other_op_b", "", "o_op_b" + t_name, other_op_b, "", false);
+  PrintResult("total_op_b", "", "IO_op_b" + t_name, total_op_b, "", true);
+
+  PrintResult("read_byte_b", "", "r_b" + t_name, read_byte_b, "kb", false);
+  PrintResult("write_byte_b", "", "w_b" + t_name, write_byte_b, "kb", false);
+  PrintResult("other_byte_b", "", "o_b" + t_name, other_byte_b, "kb", false);
+  PrintResult("total_byte_b", "", "IO_b" + t_name, total_byte_b, "kb", true);
+
+  PrintResult("read_op_r", "", "r_op_r" + t_name, read_op_r, "", false);
+  PrintResult("write_op_r", "", "w_op_r" + t_name, write_op_r, "", false);
+  PrintResult("other_op_r", "", "o_op_r" + t_name, other_op_r, "", false);
+  PrintResult("total_op_r", "", "IO_op_r" + t_name, total_op_r, "", true);
+
+  PrintResult("read_byte_r", "", "r_r" + t_name, read_byte_r, "kb", false);
+  PrintResult("write_byte_r", "", "w_r" + t_name, write_byte_r, "kb", false);
+  PrintResult("other_byte_r", "", "o_r" + t_name, other_byte_r, "kb", false);
+  PrintResult("total_byte_r", "", "IO_r" + t_name, total_byte_r, "kb", true);
 }
 
 void UITest::PrintMemoryUsageInfo(const char* test_name, FilePath data_dir) {
   int browser_process_pid = ChromeBrowserProcessId(data_dir);
   ChromeProcessList chrome_processes(GetRunningChromeProcesses(data_dir));
 
-#if !defined(OS_MACOSX)
+  size_t browser_virtual_size = 0;
+  size_t browser_working_set_size = 0;
+  size_t renderer_virtual_size = 0;
+  size_t renderer_working_set_size = 0;
+  size_t total_virtual_size = 0;
+  size_t total_working_set_size = 0;
+#if defined(OS_WIN)
+  size_t browser_peak_virtual_size = 0;
+  size_t browser_peak_working_set_size = 0;
+  size_t renderer_total_peak_virtual_size = 0;
+  size_t renderer_total_peak_working_set_size = 0;
+  size_t renderer_single_peak_virtual_size = 0;
+  size_t renderer_single_peak_working_set_size = 0;
+#endif
+
   ChromeProcessList::const_iterator it;
   for (it = chrome_processes.begin(); it != chrome_processes.end(); ++it) {
     base::ProcessHandle process_handle;
@@ -1259,76 +1313,114 @@ void UITest::PrintMemoryUsageInfo(const char* test_name, FilePath data_dir) {
       return;
     }
 
-    scoped_ptr<base::ProcessMetrics> process_metrics(
-        base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    // TODO(sgk):  if/when base::ProcessMetrics returns real stats on mac:
+    //scoped_ptr<base::ProcessMetrics> process_metrics(
+    //    base::ProcessMetrics::CreateProcessMetrics(process_handle));
+    scoped_ptr<ChromeTestProcessMetrics> process_metrics(
+        ChromeTestProcessMetrics::CreateProcessMetrics(process_handle));
 
-    std::string chrome_name = (*it == browser_process_pid) ? "_b" : "_r";
+    size_t current_virtual_size = process_metrics->GetPagefileUsage();
+    size_t current_working_set_size = process_metrics->GetWorkingSetSize();
 
-    std::string trace_name(test_name);
+    if (*it == browser_process_pid) {
+      browser_virtual_size = current_virtual_size;
+      browser_working_set_size = current_working_set_size;
+    } else {
+      renderer_virtual_size += current_virtual_size;
+      renderer_working_set_size += current_working_set_size;
+    }
+    total_virtual_size += current_virtual_size;
+    total_working_set_size += current_working_set_size;
+
 #if defined(OS_WIN)
-    PrintResult("vm_peak", chrome_name,
-                "vm_pk" + chrome_name + trace_name,
-                process_metrics->GetPeakPagefileUsage(), "bytes",
-                true /* important */);
-    PrintResult("vm_final", chrome_name,
-                "vm_f" + chrome_name + trace_name,
-                process_metrics->GetPagefileUsage(), "bytes",
-                false /* not important */);
-    PrintResult("ws_peak", chrome_name,
-                "ws_pk" + chrome_name + trace_name,
-                process_metrics->GetPeakWorkingSetSize(), "bytes",
-                true /* important */);
-    PrintResult("ws_final", chrome_name,
-                "ws_f" + chrome_name + trace_name,
-                process_metrics->GetWorkingSetSize(), "bytes",
-                false /* not important */);
-#elif defined(OS_LINUX)
-    PrintResult("vm_size_final", chrome_name,
-                "vm_size_f" + chrome_name + trace_name,
-                process_metrics->GetPagefileUsage(), "bytes",
-                true /* important */);
-    PrintResult("vm_rss_final", chrome_name,
-                "vm_rss_f" + chrome_name + trace_name,
-                process_metrics->GetWorkingSetSize(), "bytes",
-                true /* important */);
-#else
-    NOTIMPLEMENTED();
+    size_t peak_virtual_size = process_metrics->GetPeakPagefileUsage();
+    size_t peak_working_set_size = process_metrics->GetPeakWorkingSetSize();
+    if (*it == browser_process_pid) {
+      browser_peak_virtual_size = peak_virtual_size;
+      browser_peak_working_set_size = peak_working_set_size;
+    } else {
+      if (peak_virtual_size > renderer_single_peak_virtual_size) {
+        renderer_single_peak_virtual_size = peak_virtual_size;
+      }
+      if (peak_working_set_size > renderer_single_peak_working_set_size) {
+        renderer_single_peak_working_set_size = peak_working_set_size;
+      }
+      renderer_total_peak_virtual_size += peak_virtual_size;
+      renderer_total_peak_working_set_size += peak_working_set_size;
+    }
 #endif
+
     base::CloseProcessHandle(process_handle);
   }
 
-#else  // !defined(OS_MACOSX)
+  std::string trace_name(test_name);
+#if defined(OS_WIN)
+  PrintResult("vm_peak_b", "", "vm_pk_b" + trace_name,
+              browser_peak_virtual_size, "bytes",
+              true /* important */);
+  PrintResult("ws_peak_b", "", "ws_pk_b" + trace_name,
+              browser_peak_working_set_size, "bytes",
+              true /* important */);
+  PrintResult("vm_peak_r", "", "vm_pk_r" + trace_name,
+              renderer_total_peak_virtual_size, "bytes",
+              true /* important */);
+  PrintResult("ws_peak_r", "", "ws_pk_r" + trace_name,
+              renderer_total_peak_working_set_size, "bytes",
+              true /* important */);
+  PrintResult("vm_single_peak_r", "", "vm_spk_r" + trace_name,
+              renderer_single_peak_virtual_size, "bytes",
+              true /* important */);
+  PrintResult("ws_single_peak_r", "", "ws_spk_r" + trace_name,
+              renderer_single_peak_working_set_size, "bytes",
+              true /* important */);
 
-  // There is no way to get memory info from one process on another process
-  // without privileges, this means the base methods for doing this can't be
-  // made to work.  Instead we use a helper that invokes ps to collect the
-  // data so we have it for the unittest.
-
-  MacChromeProcessInfoList process_infos(
-                                GetRunningMacProcessInfo(chrome_processes));
-  MacChromeProcessInfoList::const_iterator it;
-  for (it = process_infos.begin(); it != process_infos.end(); ++it) {
-    const MacChromeProcessInfo &process_info = *it;
-
-    std::string chrome_name =
-        (process_info.pid == browser_process_pid) ? "_b" : "_r";
-    std::string trace_name(test_name);
-
-    PrintResult("vm_size_final", chrome_name,
-                "vm_size_f" + chrome_name + trace_name,
-                static_cast<size_t>(process_info.vsz_in_kb) * 1024, "bytes",
-                true /* important */);
-    PrintResult("vm_rss_final", chrome_name,
-                "vm_rss_f" + chrome_name + trace_name,
-                static_cast<size_t>(process_info.rsz_in_kb) * 1024, "bytes",
-                true /* important */);
-  }
-
-#endif  // !defined(OS_MACOSX)
+  PrintResult("vm_final_b", "", "vm_f_b" + trace_name,
+              browser_virtual_size, "bytes",
+              false /* not important */);
+  PrintResult("ws_final_b", "", "ws_f_b" + trace_name,
+              browser_working_set_size, "bytes",
+              false /* not important */);
+  PrintResult("vm_final_r", "", "vm_f_r" + trace_name,
+              renderer_virtual_size, "bytes",
+              false /* not important */);
+  PrintResult("ws_final_r", "", "ws_f_r" + trace_name,
+              renderer_working_set_size, "bytes",
+              false /* not important */);
+  PrintResult("vm_final_t", "", "vm_f_t" + trace_name,
+              total_virtual_size, "bytes",
+              false /* not important */);
+  PrintResult("ws_final_t", "", "ws_f_t" + trace_name,
+              total_working_set_size, "bytes",
+              false /* not important */);
+#elif defined(OS_LINUX) || defined(OS_MACOSX)
+  PrintResult("vm_size_final_b", "", "vm_size_f_b" + trace_name,
+              browser_virtual_size, "bytes",
+              true /* important */);
+  PrintResult("vm_rss_final_b", "", "vm_rss_f_b" + trace_name,
+              browser_working_set_size, "bytes",
+              true /* important */);
+  PrintResult("vm_size_final_r", "", "vm_size_f_r" + trace_name,
+              renderer_virtual_size, "bytes",
+              true /* important */);
+  PrintResult("vm_rss_final_r", "", "vm_rss_f_r" + trace_name,
+              renderer_working_set_size, "bytes",
+              true /* important */);
+  PrintResult("vm_size_final_t", "", "vm_size_f_t" + trace_name,
+              total_virtual_size, "bytes",
+              true /* important */);
+  PrintResult("vm_rss_final_t", "", "vm_rss_f_t" + trace_name,
+              total_working_set_size, "bytes",
+              true /* important */);
+#else
+  NOTIMPLEMENTED();
+#endif
+  PrintResult("processes", "", "proc_" + trace_name,
+              chrome_processes.size(), "",
+              false /* not important */);
 }
 
 void UITest::PrintSystemCommitCharge(const char* test_name, size_t charge) {
   std::string trace_name(test_name);
   PrintResult("commit_charge", "", "cc" + trace_name, charge, "kb",
-              true /* important */);
+              false /* important */);
 }
