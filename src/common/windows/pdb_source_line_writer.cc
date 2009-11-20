@@ -136,17 +136,18 @@ bool PDBSourceLineWriter::PrintLines(IDiaEnumLineNumbers *lines) {
   return true;
 }
 
-bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function) {
+bool PDBSourceLineWriter::PrintFunction(IDiaSymbol *function,
+                                        IDiaSymbol *block) {
   // The function format is:
   // FUNC <address> <length> <param_stack_size> <function>
   DWORD rva;
-  if (FAILED(function->get_relativeVirtualAddress(&rva))) {
+  if (FAILED(block->get_relativeVirtualAddress(&rva))) {
     fprintf(stderr, "couldn't get rva\n");
     return false;
   }
 
   ULONGLONG length;
-  if (FAILED(function->get_length(&length))) {
+  if (FAILED(block->get_length(&length))) {
     fprintf(stderr, "failed to get function length\n");
     return false;
   }
@@ -255,7 +256,7 @@ bool PDBSourceLineWriter::PrintFunctions() {
     // that PDBSourceLineWriter will output either a FUNC or PUBLIC line,
     // but not both.
     if (tag == SymTagFunction) {
-      if (!PrintFunction(symbol)) {
+      if (!PrintFunction(symbol, symbol)) {
         return false;
       }
     } else if (tag == SymTagPublicSymbol) {
@@ -265,6 +266,64 @@ bool PDBSourceLineWriter::PrintFunctions() {
     }
     symbol.Release();
   } while (SUCCEEDED(symbols->Next(1, &symbol, &count)) && count == 1);
+
+  // When building with PGO, the compiler can split functions into
+  // "hot" and "cold" blocks, and move the "cold" blocks out to separate
+  // pages, so the function can be noncontiguous. To find these blocks,
+  // we have to iterate over all the compilands, and then find blocks
+  // that are children of them. We can then find the lexical parents
+  // of those blocks and print out an extra FUNC line for blocks
+  // that are not contained in their parent functions.
+  CComPtr<IDiaSymbol> global;
+  if (FAILED(session_->get_globalScope(&global))) {
+    fprintf(stderr, "get_globalScope failed\n");
+    return false;
+  }
+
+  CComPtr<IDiaEnumSymbols> compilands;
+  if (FAILED(global->findChildren(SymTagCompiland, NULL,
+                                  nsNone, &compilands))) {
+    fprintf(stderr, "findChildren failed on the global\n");
+    return false;
+  }
+
+  CComPtr<IDiaSymbol> compiland;
+  while (SUCCEEDED(compilands->Next(1, &compiland, &count)) && count == 1) {
+    CComPtr<IDiaEnumSymbols> blocks;
+    if (FAILED(compiland->findChildren(SymTagBlock, NULL,
+                                       nsNone, &blocks))) {
+      fprintf(stderr, "findChildren failed on a compiland\n");
+      return false;
+    }
+
+    CComPtr<IDiaSymbol> block;
+    while (SUCCEEDED(blocks->Next(1, &block, &count)) && count == 1) {
+      // find this block's lexical parent function
+      CComPtr<IDiaSymbol> parent;
+      DWORD tag;
+      if (SUCCEEDED(block->get_lexicalParent(&parent)) &&
+          SUCCEEDED(parent->get_symTag(&tag)) &&
+          tag == SymTagFunction) {
+        // now get the block's offset and the function's offset and size,
+        // and determine if the block is outside of the function
+        DWORD func_rva, block_rva;
+        ULONGLONG func_length;
+        if (SUCCEEDED(block->get_relativeVirtualAddress(&block_rva)) &&
+            SUCCEEDED(parent->get_relativeVirtualAddress(&func_rva)) &&
+            SUCCEEDED(parent->get_length(&func_length))) {
+          if (block_rva < func_rva || block_rva > (func_rva + func_length)) {
+            if (!PrintFunction(parent, block)) {
+              return false;
+            }
+          }
+        }
+      }
+      parent.Release();
+      block.Release();
+    }
+    blocks.Release();
+    compiland.Release();
+  }
 
   return true;
 }

@@ -111,8 +111,11 @@ class PDBSourceLineWriter {
   bool PrintLines(IDiaEnumLineNumbers *lines);
 
   // Outputs a function address and name, followed by its source line list.
+  // block can be the same object as function, or it can be a reference
+  // to a code block that is lexically part of this function, but
+  // resides at a separate address.
   // Returns true on success.
-  bool PrintFunction(IDiaSymbol *function);
+  bool PrintFunction(IDiaSymbol *function, IDiaSymbol *block);
 
   // Outputs all functions as described above.  Returns true on success.
   bool PrintFunctions();
