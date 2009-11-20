@@ -11,7 +11,7 @@ using WebKit::WebView;
 class WebViewTest : public TestShellTest {
 };
 
-TEST_F(WebViewTest, GetContentAsPlainText) {
+TEST_F(WebViewTest, ActiveState) {
   WebView* view = test_shell_->webView();
   ASSERT_TRUE(view != 0);
 
