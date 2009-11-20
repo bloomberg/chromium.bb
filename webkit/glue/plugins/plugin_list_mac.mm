@@ -79,7 +79,6 @@ static bool ArrayContainsString(const char** array, unsigned int array_size,
   return false;
 }
 
-#define OS_MACOSX_BLACKLIST_PLUGINS_BY_DEFAULT 1
 bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
                                   std::vector<WebPluginInfo>* plugins) {
   // Plugins that we know don't work at all.
