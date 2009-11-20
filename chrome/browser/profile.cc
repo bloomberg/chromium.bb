@@ -578,10 +578,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       created_download_manager_(false),
       created_theme_provider_(false),
       start_time_(Time::Now()),
-#if defined(OS_LINUX)
       spellcheck_host_(NULL),
       spellcheck_host_ready_(false),
-#endif
       shutdown_session_service_(false) {
   DCHECK(!path.empty()) << "Using an empty path will attempt to write " <<
                             "profile files to the root directory!";
