@@ -1,0 +1,282 @@
+<!--
+Copyright 2009, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<!--
+Translate2 manipulator
+
+This sample shows how to use the o3djs.manipulators.Translate2 class
+to interactively drag objects around the scene.
+-->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>
+Translate2 Manipulator
+</title>
+<script type="text/javascript" src="../o3djs/base.js"></script>
+<script type="text/javascript" id="o3dscript">
+o3djs.require('o3djs.util');
+o3djs.require('o3djs.math');
+o3djs.require('o3djs.quaternions');
+o3djs.require('o3djs.rendergraph');
+o3djs.require('o3djs.primitives');
+o3djs.require('o3djs.manipulators');
+o3djs.require('o3djs.effect');
+
+// global variables
+var g_o3dElement;
+var g_client;
+var g_o3d;
+var g_math;
+var g_pack;
+var g_viewInfo;
+
+var g_lightPosition = [5, 5, 7];
+var g_eyePosition = [1, 5, 23];
+
+var g_primitives = [];
+var g_manager;
+
+/**
+ * Creates the client area.
+ */
+function initClient() {
+  window.g_finished = false;  // for selenium testing.
+
+  // Runs the sample in V8. Comment out this line to run it in the browser
+  // JavaScript engine, for example if you want to debug it.
+  // TODO(kbr): we need to investigate why turning this on is
+  //     significantly slower than leaving it disabled.
+  // o3djs.util.setMainEngine(o3djs.util.Engine.V8);
+
+  o3djs.util.makeClients(main);
+}
+
+/**
+ * Initializes global variables, positions camera, draws shapes.
+ * @param {Array} clientElements Array of o3d object elements.
+ */
+function main(clientElements) {
+  var o3dElement = clientElements[0];
+
+  // Init global variables.
+  initGlobals(clientElements);
+
+  // Set up the view and projection transformations.
+  initContext();
+
+  // Add the shapes to the transform heirarchy.
+  createShapes();
+
+  // Add the manipulators to the transform hierarchy.
+  createManipulators();
+
+  // Start picking; it won't do anything until the scene finishes loading.
+  o3djs.event.addEventListener(o3dElement, 'mousedown', onMouseDown);
+  o3djs.event.addEventListener(o3dElement, 'mousemove', onMouseMove);
+  o3djs.event.addEventListener(o3dElement, 'mouseup', onMouseUp);
+
+  window.g_finished = true;  // for selenium testing.
+}
+
+function onMouseDown(e) {
+  g_manager.mousedown(e.x, e.y,
+                      g_viewInfo.drawContext.view,
+                      g_viewInfo.drawContext.projection,
+                      g_client.width,
+                      g_client.height);
+}
+
+function onMouseMove(e) {
+  g_manager.mousemove(e.x, e.y,
+                      g_viewInfo.drawContext.view,
+                      g_viewInfo.drawContext.projection,
+                      g_client.width,
+                      g_client.height);
+  g_manager.updateInactiveManipulators();
+}
+
+function onMouseUp(e) {
+  g_manager.mouseup();
+  g_manager.updateInactiveManipulators();
+}
+
+/**
+ * Initializes global variables and libraries.
+ */
+function initGlobals(clientElements) {
+  g_o3dElement = clientElements[0];
+  window.g_client = g_client = g_o3dElement.client;
+  g_o3d = g_o3dElement.o3d;
+  g_math = o3djs.math;
+
+  // Create a pack to manage the objects created.
+  g_pack = g_client.createPack();
+
+  // Create the render graph for a view.
+  g_viewInfo = o3djs.rendergraph.createBasicView(
+      g_pack,
+      g_client.root,
+      g_client.renderGraphRoot);
+}
+
+/**
+ * Sets up reasonable view and projection matrices.
+ */
+function initContext() {
+  // Set up a perspective transformation for the projection.
+  g_viewInfo.drawContext.projection = g_math.matrix4.perspective(
+      g_math.degToRad(30), // 30 degree frustum.
+      g_o3dElement.clientWidth / g_o3dElement.clientHeight, // Aspect ratio.
+      1,                  // Near plane.
+      5000);              // Far plane.
+
+  // Set up our view transformation to look towards the world origin where the
+  // primitives are located.
+  g_viewInfo.drawContext.view = g_math.matrix4.lookAt(
+      g_eyePosition,   // eye
+      [0, 2, 0],    // target
+      [0, 1, 0]);  // up
+}
+
+/**
+ * Creates shapes using the primitives utility library, and adds them to the
+ * transform graph at the root node.
+ */
+function createShapes() {
+  // Create a little tree-like hierarchy of cubes
+  createCubeTree(2, 1.5, [0, 0, 0], g_client.root);
+}
+
+/**
+ * Creates a small tree of cubes to demonstrate interaction with a
+ * hierarchy of shapes.
+ */
+function createCubeTree(depth, edgeLength, translation, parent) {
+  var cur = createCube(edgeLength, translation, parent);
+  if (depth > 0) {
+    createCubeTree(depth - 1,
+                   edgeLength / 1.5,
+                   o3djs.math.addVector(translation,
+                                        [-1.2 * edgeLength,
+                                          1.0 * edgeLength,
+                                          0]),
+                   cur);
+    createCubeTree(depth - 1,
+                   edgeLength / 1.5,
+                   o3djs.math.addVector(translation,
+                                        [1.2 * edgeLength,
+                                         1.0 * edgeLength,
+                                         0]),
+                   cur);
+  }
+  return cur;
+}
+
+/**
+ * Creates a cube shape using the primitives utility library, with an
+ * optional translation and parent. Returns the newly-created
+ * transform for the cube.
+ */
+function createCube(edgeLength, opt_translation, opt_parent) {
+  var cube = o3djs.primitives.createCube(
+      g_pack,
+      // A green phong-shaded material.
+      o3djs.material.createBasicMaterial(g_pack,
+                                         g_viewInfo,
+                                         [0, 1, 0, 1]),
+      edgeLength);
+  var transform = g_pack.createObject('Transform');
+  transform.addShape(cube);
+  if (opt_translation) {
+    transform.translate(opt_translation);
+  }
+  if (opt_parent) {
+    transform.parent = opt_parent;
+  } else {
+    transform.parent = g_client.root;
+  }
+  g_primitives.push(transform);
+  return transform;
+}
+
+/**
+ * Creates manipulators attached to the objects we've just created.
+ */
+function createManipulators() {
+  g_manager = o3djs.manipulators.createManager(g_pack,
+                                               g_viewInfo.performanceDrawList,
+                                               g_client.root,
+                                               null,
+                                               0);
+  var jj = 2;
+  for (var ii = 0; ii < g_primitives.length; ii++) {
+    var manip1 = g_manager.createRotate1();
+    var manip2 = g_manager.createRotate1();
+    var manip3 = g_manager.createRotate1();
+    manip1.attachTo(g_primitives[ii]);
+    manip2.attachTo(g_primitives[ii]);
+    manip3.attachTo(g_primitives[ii]);
+    manip1.setOffsetTranslation([0, -1.5, 0]);
+    manip2.setOffsetTranslation([0, -1.5, 0]);
+    manip3.setOffsetTranslation([0, -1.5, 0]);
+    manip2.setOffsetRotation(o3djs.quaternions.rotationY(Math.PI / 2));
+    manip3.setOffsetRotation(o3djs.quaternions.rotationZ(Math.PI / 2));
+    // Demonstrate that we can drag along arbitrary directions.
+    if ((++jj % 4) == 0) {
+      manip1.setOffsetRotation(o3djs.quaternions.rotationY(Math.PI / 4));
+      manip2.setOffsetRotation(o3djs.quaternions.rotationY(Math.PI * 3.0 / 4));
+    }
+  }
+}
+
+/**
+ * Removes any callbacks so they don't get called after the page has unloaded.
+ */
+function unload() {
+  if (g_client) {
+    g_client.cleanup();
+  }
+}
+</script>
+</head>
+<body onload="initClient()" onunload="unload()">
+<h1>Translate2 Manipulator Sample</h1>
+This example shows how to move objects around the scene using the
+Translate2 manipulator.
+<br/>
+<!-- Start of O3D plugin -->
+<div id="o3d" style="width: 600px; height: 600px;"></div>
+<!-- End of O3D plugin -->
+</body>
+</html>

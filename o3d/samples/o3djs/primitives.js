@@ -1281,8 +1281,8 @@ o3djs.primitives.createTruncatedConeVertices = function(bottomRadius,
                                                         radialSubdivisions,
                                                         verticalSubdivisions,
                                                         opt_matrix) {
-  if (radialSubdivisions < 1) {
-    throw Error('radialSubdivisions must be 1 or greater');
+  if (radialSubdivisions < 3) {
+    throw Error('radialSubdivisions must be 3 or greater');
   }
 
   if (verticalSubdivisions < 1) {
@@ -1297,8 +1297,6 @@ o3djs.primitives.createTruncatedConeVertices = function(bottomRadius,
   var texCoordStream = vertexInfo.addStream(
       2, o3djs.base.o3d.Stream.TEXCOORD, 0);
 
-  var indices = [];
-  var vertices = [];
   var vertsAroundEdge = radialSubdivisions + 1;
 
   // The slant of the cone is constant across its surface
@@ -1317,7 +1315,7 @@ o3djs.primitives.createTruncatedConeVertices = function(bottomRadius,
     } else if (yy > verticalSubdivisions) {
       y = height;
       v = 1;
-      ringRadius = topRadius;      
+      ringRadius = topRadius;
     } else {
       ringRadius = bottomRadius +
         (topRadius - bottomRadius) * (yy / verticalSubdivisions);
@@ -1339,7 +1337,6 @@ o3djs.primitives.createTruncatedConeVertices = function(bottomRadius,
     }
   }
 
-  var trisAround = radialSubdivisions * 2;
   for (var yy = 0; yy < verticalSubdivisions + 4; ++yy) {
     for (var ii = 0; ii < radialSubdivisions; ++ii) {
       vertexInfo.addTriangle(vertsAroundEdge * (yy + 0) + 0 + ii,
@@ -1362,8 +1359,8 @@ o3djs.primitives.createTruncatedConeVertices = function(bottomRadius,
  * that it has different top and bottom radii. A truncated cone can
  * also be used to create cylinders, by setting the bottom and top
  * radii equal, and cones, by setting either the top or bottom radius
- * to 0. The truncated cone will be created with the bottom face in
- * the xz plane, and the y axis in the center. The created cone has
+ * to 0. The truncated cone will be created centered about the origin,
+ * with the y axis as its vertical axis. The created cone has
  * position, normal and uv streams.
  *
  * @param {!o3d.Pack} pack Pack in which to create the truncated cone.
@@ -1398,6 +1395,117 @@ o3djs.primitives.createTruncatedCone = function(pack,
 };
 
 /**
+ * Creates vertices for a torus. The torus will be created centered about the
+ * origin, with the y axis as its vertical axis. The created torus has
+ * position, normal and uv streams.
+ *
+ * @param {number} torusRadius Distance from the center of the tube to
+ *     the center of the torus.
+ * @param {number} tubeRadius Radius of the tube.
+ * @param {number} tubeLengthSubdivisions The number of subdivisions around the
+ *     vertical axis of the torus, i.e. along the length of the tube.
+ * @param {number} circleSubdivisions The number of subdivisions in the circle
+ *     that is rotated about the vertical axis to create the torus.
+ * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
+ *     all the vertices.
+ * @return {!o3djs.primitives.VertexInfo} The created torus vertices.
+ */
+o3djs.primitives.createTorusVertices = function(torusRadius,
+                                                tubeRadius,
+                                                tubeLengthSubdivisions,
+                                                circleSubdivisions,
+                                                opt_matrix) {
+  if (tubeLengthSubdivisions < 3) {
+    throw Error('tubeLengthSubdivisions must be 3 or greater');
+  }
+
+  if (circleSubdivisions < 3) {
+    throw Error('circleSubdivisions must be 3 or greater');
+  }
+
+  var vertexInfo = o3djs.primitives.createVertexInfo();
+  var positionStream = vertexInfo.addStream(
+      3, o3djs.base.o3d.Stream.POSITION);
+  var normalStream = vertexInfo.addStream(
+      3, o3djs.base.o3d.Stream.NORMAL);
+  var texCoordStream = vertexInfo.addStream(
+      2, o3djs.base.o3d.Stream.TEXCOORD, 0);
+
+  for (var uu = 0; uu < tubeLengthSubdivisions; ++uu) {
+    var u = (uu / tubeLengthSubdivisions) * 2 * Math.PI;
+    for (var vv = 0; vv < circleSubdivisions; ++vv) {
+      var v = (vv / circleSubdivisions) * 2 * Math.PI;
+      var sinu = Math.sin(u);
+      var cosu = Math.cos(u);
+      var sinv = Math.sin(v);
+      var cosv = Math.cos(v);
+      positionStream.addElement((torusRadius + tubeRadius * cosv) * cosu,
+                                tubeRadius * sinv,
+                                (torusRadius + tubeRadius * cosv) * sinu);
+      normalStream.addElement(cosv * cosu,
+                              sinv,
+                              cosv * sinu);
+      texCoordStream.addElement(uu / tubeLengthSubdivisions,
+                                vv / circleSubdivisions);
+    }
+  }
+
+  for (var uu = 0; uu < tubeLengthSubdivisions; ++uu) {
+    for (var vv = 0; vv < circleSubdivisions; ++vv) {
+      // We want to wrap the indices around at the seams.
+      var uuPlusOne = (uu + 1) % tubeLengthSubdivisions;
+      var vvPlusOne = (vv + 1) % circleSubdivisions;
+      // The indices of four points forming a quad.
+      var a = circleSubdivisions * uu        + vv;
+      var b = circleSubdivisions * uuPlusOne + vv;
+      var c = circleSubdivisions * uu        + vvPlusOne;
+      var d = circleSubdivisions * uuPlusOne + vvPlusOne;
+      vertexInfo.addTriangle(a, d, b);
+      vertexInfo.addTriangle(a, c, d);
+    }
+  }
+
+  if (opt_matrix) {
+    vertexInfo.reorient(opt_matrix);
+  }
+  return vertexInfo;
+};
+
+/**
+ * Creates a torus shape. The torus will be created centered about the
+ * origin, with the y axis as its vertical axis. The created torus has
+ * position, normal and uv streams.
+ *
+ * @param {!o3d.Pack} pack Pack in which to create the torus.
+ * @param {!o3d.Material} material to use.
+ * @param {number} torusRadius Distance from the center of the tube to
+ *     the center of the torus.
+ * @param {number} tubeRadius Radius of the tube.
+ * @param {number} tubeLengthSubdivisions The number of subdivisions around the
+ *     vertical axis of the torus, i.e. along the length of the tube.
+ * @param {number} circleSubdivisions The number of subdivisions in the circle
+ *     that is rotated about the vertical axis to create the torus.
+ * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
+ *     all the vertices.
+ * @return {!o3d.Shape} The created torus.
+ */
+o3djs.primitives.createTorus = function(pack,
+                                        material,
+                                        torusRadius,
+                                        tubeRadius,
+                                        tubeLengthSubdivisions,
+                                        circleSubdivisions,
+                                        opt_matrix) {
+  var vertexInfo = o3djs.primitives.createTorusVertices(
+      torusRadius,
+      tubeRadius,
+      tubeLengthSubdivisions,
+      circleSubdivisions,
+      opt_matrix);
+  return vertexInfo.createShape(pack, material);
+};
+
+/**
  * Creates wedge vertices, wedge being an extruded triangle. The wedge will be
  * created around the 3 2d points passed in and extruded along the z axis. The
  * created wedge has position, normal and uv streams.
@@ -1407,7 +1515,7 @@ o3djs.primitives.createTruncatedCone = function(pack,
  * @param {number} depth The depth to extrude the triangle.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
  *     all the vertices.
- * @return {!o3djs.primitives.VertexInfo} The created cylinder vertices.
+ * @return {!o3djs.primitives.VertexInfo} The created wedge vertices.
  */
 o3djs.primitives.createWedgeVertices = function(inPoints, depth,
                                                 opt_matrix) {
@@ -1424,7 +1532,6 @@ o3djs.primitives.createWedgeVertices = function(inPoints, depth,
   var z1 = -depth * 0.5;
   var z2 = depth * 0.5;
   var face = [];
-  var indices = [];
   var points = [[inPoints[0][0], inPoints[0][1]],
                 [inPoints[1][0], inPoints[1][1]],
                 [inPoints[2][0], inPoints[2][1]]];
@@ -1506,14 +1613,14 @@ o3djs.primitives.createWedgeVertices = function(inPoints, depth,
   normalStream.addElement(face[2][0], face[2][1], face[2][2]);
   texCoordStream.addElement(1, 1);
 
-  var indices = [0, 2, 1,
-                 3, 4, 5,
-                 6, 7, 8,
-                 6, 8, 9,
-                 10, 11, 12,
-                 10, 12, 13,
-                 14, 15, 16,
-                 14, 16, 17];
+  vertexInfo.addTriangle(0, 2, 1);
+  vertexInfo.addTriangle(3, 4, 5);
+  vertexInfo.addTriangle(6, 7, 8);
+  vertexInfo.addTriangle(6, 8, 9);
+  vertexInfo.addTriangle(10, 11, 12);
+  vertexInfo.addTriangle(10, 12, 13);
+  vertexInfo.addTriangle(14, 15, 16);
+  vertexInfo.addTriangle(14, 16, 17);
 
   if (opt_matrix) {
     vertexInfo.reorient(opt_matrix);
@@ -1559,10 +1666,10 @@ o3djs.primitives.createWedge = function(pack,
  *
  * @param {!Array.<!Array.<number>>} points Array of 2d points in the format
  *     [[x1, y1], [x2, y2], [x3, y3],...] that describe a 2d polygon.
- * @param {number} depth The depth to extrude the triangle.
+ * @param {number} depth The depth to extrude the polygon.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
  *     all the vertices.
- * @return {!o3djs.primitives.VertexInfo} The created cylinder vertices.
+ * @return {!o3djs.primitives.VertexInfo} The created prism vertices.
  */
 o3djs.primitives.createPrismVertices = function(points,
                                                 depth,
@@ -1690,10 +1797,10 @@ o3djs.primitives.createPrismVertices = function(points,
  * @param {!o3d.Material} material to use.
  * @param {!Array.<!Array.<number>>} points Array of 2d points in the format:
  *     [[x1, y1], [x2, y2], [x3, y3],...] that describe a 2d polygon.
- * @param {number} depth The depth to extrude the triangle.
+ * @param {number} depth The depth to extrude the polygon.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply
  *     all the vertices.
- * @return {!o3d.Shape} The created wedge.
+ * @return {!o3d.Shape} The created prism.
  */
 o3djs.primitives.createPrism = function(pack,
                                         material,

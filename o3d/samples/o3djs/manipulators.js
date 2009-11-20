@@ -582,6 +582,17 @@ o3djs.manipulators.Manager.prototype.createTranslate2 = function() {
 }
 
 /**
+ * Creates a new Rotate1 manipulator. A Rotate1 rotates about the
+ * X axis in its local coordinate system.
+ * @return {!o3djs.manipulators.Rotate1} A new Rotate1 manipulator.
+ */
+o3djs.manipulators.Manager.prototype.createRotate1 = function() {
+  var manip = new o3djs.manipulators.Rotate1(this);
+  this.add_(manip);
+  return manip;
+}
+
+/**
  * Adds a manipulator to this manager's set.
  * @private
  * @param {!o3djs.manipulators.Manip} manip The manipulator to add.
@@ -1026,17 +1037,16 @@ o3djs.manipulators.Manip.prototype.updateAttachedTransformFromLocalTransform_ =
   if (this.attachedTransform_ != null) {
     // Compute the composition of the base and local transforms.
     // The offset transform is skipped except for transforming the
-    // local matrix's translation by the rotation component of the
-    // offset transform.
+    // effect of the local matrix through the offset transform.
     var base = this.baseTransform_.worldMatrix;
+    var offset = this.offsetTransform_.localMatrix;
     var local = this.localTransform_.localMatrix;
-    var xlate = o3djs.math.matrix4.getTranslation(local);
-    var transformedXlate =
-      o3djs.math.matrix4.transformDirection(
-          this.offsetTransform_.localMatrix,
-          o3djs.math.matrix4.getTranslation(local));
-    o3djs.math.matrix4.setTranslation(local, transformedXlate);
-    var totalMat = o3djs.math.matrix4.mul(base, local);
+    var offsetInv = o3djs.math.matrix4.inverse(offset);
+    // We want totalMat = offsetInv * local * offset * base.
+    var totalMat = o3djs.math.matrix4.mul(offsetInv, local);
+    totalMat = o3djs.math.matrix4.mul(totalMat, offset);
+    totalMat = o3djs.math.matrix4.mul(totalMat, base);
+
 
     // Set this into the attached transform, taking into account its
     // parent's transform, if any.
@@ -1045,11 +1055,11 @@ o3djs.manipulators.Manip.prototype.updateAttachedTransformFromLocalTransform_ =
     var attWorld = this.attachedTransform_.worldMatrix;
     var attLocal = this.attachedTransform_.localMatrix;
     var attParentMat =
-      o3djs.math.matrix4.mul(attWorld,
-                             o3djs.math.matrix4.inverse(attLocal));
+      o3djs.math.matrix4.mul(o3djs.math.matrix4.inverse(attLocal),
+                             attWorld);
     // Now we can take the inverse of this matrix
     var attParentMatInv = o3djs.math.matrix4.inverse(attParentMat);
-    totalMat = o3djs.math.matrix4.mul(attParentMatInv, totalMat);
+    totalMat = o3djs.math.matrix4.mul(totalMat, attParentMatInv);
     this.attachedTransform_.localMatrix = totalMat;
   }
 }
@@ -1125,6 +1135,7 @@ o3djs.manipulators.createArrowVertices_ = function(matrix) {
 
 /**
  * A manipulator allowing an object to be dragged along a line.
+ * A Translate1 moves along the X axis in its local coordinate system.
  * @constructor
  * @extends {o3djs.manipulators.Manip}
  * @param {!o3djs.manipulators.Manager} manager The manager for the
@@ -1226,6 +1237,7 @@ o3djs.manipulators.Translate1.prototype.drag = function(startPoint,
 
 /**
  * A manipulator allowing an object to be dragged around a plane.
+ * A Translate2 moves around the XY plane in its local coordinate system.
  * @constructor
  * @extends {o3djs.manipulators.Manip}
  * @param {!o3djs.manipulators.Manager} manager The manager for the
@@ -1325,5 +1337,126 @@ o3djs.manipulators.Translate2.prototype.drag = function(startPoint,
           this.getTransform().localMatrix,
           o3djs.math.matrix4.transformDirection(worldToLocal,
                                                 diffVector));
+  this.updateAttachedTransformFromLocalTransform_();
+}
+
+
+/**
+ * A manipulator allowing an object to be rotated about a single axis.
+ * A Rotate1 rotates about the X axis in its local coordinate system.
+ * @constructor
+ * @extends {o3djs.manipulators.Manip}
+ * @param {!o3djs.manipulators.Manager} manager The manager for the
+ *     new Rotate1 manipulator.
+ */
+o3djs.manipulators.Rotate1 = function(manager) {
+  o3djs.manipulators.Manip.call(this, manager);
+
+  var pack = manager.pack;
+  var material = manager.defaultMaterial;
+
+  var shape = manager.Rotate1Shape_;
+  if (!shape) {
+    // Create the geometry for the manipulator, which looks like
+    // a torus centered at the origin, with the X axis as its vertical axis.
+    var verts = o3djs.primitives.createTorusVertices(
+        1.0,
+        0.1,
+        32,
+        8,
+        o3djs.math.matrix4.rotationZ(Math.PI / 2));
+    shape = verts.createShape(pack, material);
+    manager.Rotate1Shape_ = shape;
+  }
+
+  this.addShapes_([ shape ]);
+
+  this.transformInfo = o3djs.picking.createTransformInfo(this.getTransform(),
+                                                         manager.transformInfo);
+
+  /**
+   * A parameter added to our transform to be able to change the
+   * material's color for highlighting.
+   * @private
+   * @type {!o3d.ParamFloat4}
+   */
+  this.colorParam_ = this.getTransform().createParam('diffuse', 'ParamFloat4');
+  this.clearHighlight();
+
+  /**
+   * Plane around which we are dragging.
+   * @private
+   * @type {!o3djs.manipulators.Plane_}
+   */
+  this.dragPlane_ = new o3djs.manipulators.Plane_();
+}
+
+o3djs.base.inherit(o3djs.manipulators.Rotate1, o3djs.manipulators.Manip);
+
+o3djs.manipulators.Rotate1.prototype.highlight = function(pickResult) {
+  // We can use instanced geometry for the entire Rotate1 since its
+  // entire color changes during highlighting.
+  // TODO(kbr): support custom user geometry and associated callbacks.
+  this.colorParam_.value = o3djs.manipulators.HIGHLIGHTED_COLOR;
+}
+
+o3djs.manipulators.Rotate1.prototype.clearHighlight = function() {
+  this.colorParam_.value = o3djs.manipulators.DEFAULT_COLOR;
+}
+
+o3djs.manipulators.Rotate1.prototype.makeActive = function(pickResult) {
+  o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
+  this.highlight(pickResult);
+  var worldMatrix = this.getTransform().worldMatrix;
+  this.dragPlane_.setNormal(
+    o3djs.math.matrix4.transformDirection(worldMatrix,
+                                          o3djs.manipulators.X_AXIS));
+  this.dragPlane_.setPoint(pickResult.worldIntersectionPosition);
+}
+
+o3djs.manipulators.Rotate1.prototype.makeInactive = function() {
+  o3djs.manipulators.Manip.prototype.makeInactive.call(this);
+  this.clearHighlight();
+  this.updateAttachedTransformFromLocalTransform_();
+  this.updateBaseTransformFromAttachedTransform_();
+}
+
+o3djs.manipulators.Rotate1.prototype.drag = function(startPoint,
+                                                     endPoint) {
+  // Algorithm: Find intersection of ray with dragPlane_. Transform
+  // everything from world to local coordinates. Find angle of the
+  // initial and final plane intersection points about the rotation
+  // axis. Subtract these to find the rotation angle.
+  var worldIntersectPoint = this.dragPlane_.intersectRay(startPoint,
+      o3djs.math.subVector(endPoint, startPoint));
+  if (worldIntersectPoint == null) {
+    // Drag plane is parallel to ray. Punt.
+    return;
+  }
+
+  // We don't want the current drag state to affect our world-to-local
+  // transform, since we are calculating the drag from scratch.
+  this.getTransform().localMatrix = o3djs.math.matrix4.identity();
+
+  // Need to do a world-to-local transformation on all the points.
+  var worldToLocal =
+      o3djs.math.matrix4.inverse(this.getTransform().worldMatrix);
+
+  // All of these are in local space.
+  var dragStart = o3djs.math.matrix4.transformPoint(worldToLocal,
+                                                    this.dragPlane_.getPoint());
+  var dragEnd = o3djs.math.matrix4.transformPoint(worldToLocal,
+                                                  worldIntersectPoint);
+  // Since this should all be happening in a YZ plane, we can discard
+  // the X components.
+  dragStart[0] = 0;
+  dragEnd[0] = 0;
+
+  // The point that we are rotating around is the origin (in local space).
+
+  var diffAngle = Math.atan2(dragEnd[1], dragEnd[2]) -
+      Math.atan2(dragStart[1], dragStart[2]);
+
+  this.getTransform().localMatrix = o3djs.math.matrix4.rotationX(-diffAngle);
   this.updateAttachedTransformFromLocalTransform_();
 }
