@@ -117,6 +117,12 @@ class GtkKeyBindingsHandler {
   // Handler of "toggle-overwrite" signal.
   static void ToggleOverwrite(GtkTextView* text_view);
 
+  // Handler of "show-help" signal.
+  static gboolean ShowHelp(GtkWidget* widget, GtkWidgetHelpType arg1);
+
+  // Handler of "move-focus" signal.
+  static void MoveFocus(GtkWidget* widget, GtkDirectionType arg1);
+
   OwnedWidgetGtk handler_;
 
   // Buffer to store the match results.
