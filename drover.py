@@ -337,7 +337,7 @@ def prompt(question):
   answer = None
 
   while not answer:
-    print question + " [y|n]:"
+    print question + " [y|n]:",
     answer = sys.stdin.readline()
     if answer.lower().startswith('n'):
       return False
