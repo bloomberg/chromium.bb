@@ -58,3 +58,53 @@ CHROME_ALLOCATOR to:
 Local modifications
 -------------------
 jemalloc has been modified slightly to work within the Chromium build.
+
+============
+
+svn export -r 77 http://google-perftools/googlecode.com/svn/trunk vendor
+
+xcopy /E /O /Y /I vendor\src chromium\src
+
+copy config*.h \
+        allocator_shim.cc \
+        generic_allocators.cc \
+        page_heap.* \
+        port.cc \
+        system-alloc.h \
+        tcmalloc.cc \
+        win_allocator.cc \
+        tcmalloc_unittests.cc \
+        unittest_utils.cc \
+        heap-checker.h \
+        system-alloc.h \
+        chromium\src
+
+missing from our list:
+        malloc_hook.cc (zero-length)
+        system-alloc.cc
+
+
+
+Chromium, original
+	allocator_shim.cc
+	generic_allocators.cc
+	tcmalloc_unittests.cc
+	unittest_utils.cc
+	win_allocator.cc
+
+Chromium, generated from tcmalloc
+	config.h
+	config_linux.h
+	config_win.h
+
+tcmalloc forked:
+	heap-checker.h          src\google\heap-checker.h
+	page_heap.cc            src\page_heap.cc
+	page_heap.              src\page_heap.h
+	port.cc                 src\windows\port.cc
+	system-alloc.cc         src\system-alloc.cc
+	system-alloc.h          src\system-alloc.h
+	tcmalloc.cc             src\tcmalloc.cc
+
+Zero-length, remove
+        malloc_hook.cc
