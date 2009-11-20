@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/auto_reset.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_instance.h"
@@ -362,9 +363,8 @@ void DevToolsManager::ToggleDevToolsWindow(RenderViewHost* inspected_rvh,
   // If window is docked and visible, we hide it on toggle. If window is
   // undocked, we show (activate) it.
   if (!window->is_docked() || do_open) {
-    in_initial_show_ = true;
+    AutoReset auto_reset_in_initial_show(&in_initial_show_, true);
     window->Show(open_console);
-    in_initial_show_ = false;
   } else {
     CloseWindow(host);
   }

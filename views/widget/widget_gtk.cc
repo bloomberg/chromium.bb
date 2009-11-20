@@ -8,6 +8,7 @@
 #include "app/gfx/path.h"
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_gtk.h"
+#include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -464,9 +465,8 @@ void WidgetGtk::PaintNow(const gfx::Rect& update_rect) {
     gtk_widget_queue_draw_area(widget_, update_rect.x(), update_rect.y(),
                                update_rect.width(), update_rect.height());
     // Force the paint to occur now.
-    in_paint_now_ = true;
+    AutoReset auto_reset_in_paint_now(&in_paint_now_, true);
     gdk_window_process_updates(widget_->window, true);
-    in_paint_now_ = false;
   }
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include <stack>
 
+#include "base/auto_reset.h"
 #include "base/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "chrome/common/child_process.h"
@@ -186,17 +187,15 @@ void PluginChannelBase::RemoveRoute(int route_id) {
   DCHECK(plugin_count_ >= 0);
 
   if (!plugin_count_) {
-    ListenerMap::iterator npobj_iter = npobject_listeners_.begin();
-    in_remove_route_ = true;
-    while (npobj_iter != npobject_listeners_.end()) {
+    AutoReset auto_reset_in_remove_route(&in_remove_route_, true);
+    for (ListenerMap::iterator npobj_iter = npobject_listeners_.begin();
+         npobj_iter != npobject_listeners_.end(); ++npobj_iter) {
       if (npobj_iter->second)
         npobj_iter->second->OnChannelError();
-      npobj_iter++;
     }
-    in_remove_route_ = false;
 
-    PluginChannelMap::iterator iter = g_plugin_channels_.begin();
-    while (iter != g_plugin_channels_.end()) {
+    for (PluginChannelMap::iterator iter = g_plugin_channels_.begin();
+         iter != g_plugin_channels_.end(); ++iter) {
       if (iter->second == this) {
 #if defined(OS_POSIX)
         if (channel_valid()) {
@@ -206,8 +205,6 @@ void PluginChannelBase::RemoveRoute(int route_id) {
         g_plugin_channels_.erase(iter);
         return;
       }
-
-      iter++;
     }
 
     NOTREACHED();

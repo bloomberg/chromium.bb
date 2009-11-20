@@ -14,6 +14,7 @@
 #include "app/os_exchange_data.h"
 #include "app/os_exchange_data_provider_win.h"
 #include "app/win_util.h"
+#include "base/auto_reset.h"
 #include "base/base_drag_source.h"
 #include "base/base_drop_target.h"
 #include "base/basictypes.h"
@@ -2335,7 +2336,7 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
 
   scoped_refptr<BaseDragSource> drag_source(new BaseDragSource);
   DWORD dropped_mode;
-  in_drag_ = true;
+  AutoReset auto_reset_in_drag(&in_drag_, true);
   if (DoDragDrop(OSExchangeDataProviderWin::GetIDataObject(data), drag_source,
                  supported_modes, &dropped_mode) == DRAGDROP_S_DROP) {
     if ((dropped_mode == DROPEFFECT_MOVE) && (start_text == GetText())) {
@@ -2373,7 +2374,6 @@ void AutocompleteEditViewWin::StartDragIfNecessary(const CPoint& point) {
                        (GetKeyState(VK_RBUTTON) != 0)));
   }
 
-  in_drag_ = false;
   initiated_drag_ = true;
   tracking_click_ = false;
 }

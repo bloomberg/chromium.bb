@@ -4,9 +4,10 @@
 
 #include "chrome/browser/renderer_host/render_widget_host.h"
 
+#include "base/auto_reset.h"
 #include "base/histogram.h"
-#include "base/message_loop.h"
 #include "base/keyboard_codes.h"
+#include "base/message_loop.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -281,15 +282,13 @@ BackingStore* RenderWidgetHost::GetBackingStore(bool force_create) {
   // We should never be called recursively; this can theoretically lead to
   // infinite recursion and almost certainly leads to lower performance.
   DCHECK(!in_get_backing_store_) << "GetBackingStore called recursively!";
-  in_get_backing_store_ = true;
+  AutoReset auto_reset_in_get_backing_store(&in_get_backing_store_, true);
 
   // We might have a cached backing store that we can reuse!
   BackingStore* backing_store =
       BackingStoreManager::GetBackingStore(this, current_size_);
-  if (!force_create) {
-    in_get_backing_store_ = false;
+  if (!force_create)
     return backing_store;
-  }
 
   // If we fail to find a backing store in the cache, send out a request
   // to the renderer to paint the view if required.
@@ -313,7 +312,6 @@ BackingStore* RenderWidgetHost::GetBackingStore(bool force_create) {
     }
   }
 
-  in_get_backing_store_ = false;
   return backing_store;
 }
 

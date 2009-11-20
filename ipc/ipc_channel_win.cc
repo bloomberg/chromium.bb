@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <sstream>
 
+#include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/non_thread_safe.h"
@@ -391,9 +392,8 @@ void Channel::ChannelImpl::OnIOCompleted(MessageLoopForIO::IOContext* context,
     }
     // we don't support recursion through OnMessageReceived yet!
     DCHECK(!processing_incoming_);
-    processing_incoming_ = true;
+    AutoReset auto_reset_processing_incoming(&processing_incoming_, true);
     ok = ProcessIncomingMessages(context, bytes_transfered);
-    processing_incoming_ = false;
   } else {
     DCHECK(context == &output_state_.context);
     ok = ProcessOutgoingMessages(context, bytes_transfered);

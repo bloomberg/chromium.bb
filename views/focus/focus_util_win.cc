@@ -6,6 +6,7 @@
 
 #include <windowsx.h>
 
+#include "base/auto_reset.h"
 #include "base/win_util.h"
 
 namespace views {
@@ -102,9 +103,8 @@ bool RerouteMouseWheel(HWND window, WPARAM w_param, LPARAM l_param) {
 
     // window_under_wheel is a Chrome window.  If allowed, redirect.
     if (IsCompatibleWithMouseWheelRedirection(window_under_wheel)) {
-      recursion_break = true;
+      AutoReset auto_reset_recursion_break(&recursion_break, true);
       SendMessage(window_under_wheel, WM_MOUSEWHEEL, w_param, l_param);
-      recursion_break = false;
       return true;
     }
     // If redirection is disallowed, try the parent.

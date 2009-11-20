@@ -260,7 +260,6 @@ Channel::ChannelImpl::ChannelImpl(const std::string& channel_id, Mode mode,
 #endif
       listener_(listener),
       waiting_connect_(true),
-      processing_incoming_(false),
       factory_(this) {
   if (!CreatePipe(channel_id, mode)) {
     // The pipe may have been closed already.

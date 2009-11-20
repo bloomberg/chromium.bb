@@ -15,6 +15,7 @@
 #include <map>
 #include <queue>
 
+#include "base/auto_reset.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -108,10 +109,11 @@ void SyncerThreadTimedStop::ThreadMain() {
 
   // The only thing that could be waiting on this value is Stop, and we don't
   // release the lock until we're far enough along to Stop safely.
-  in_thread_main_loop_ = true;
-  vault_field_changed_.Broadcast();
-  ThreadMainLoop();
-  in_thread_main_loop_ = false;
+  {
+    AutoReset auto_reset_in_thread_main_loop(&in_thread_main_loop_, true);
+    vault_field_changed_.Broadcast();
+    ThreadMainLoop();
+  }
   vault_field_changed_.Broadcast();
   LOG(INFO) << "Syncer thread ThreadMain is done.";
 }

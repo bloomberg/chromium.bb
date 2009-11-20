@@ -4,13 +4,13 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_database_bloom.h"
 
+#include "base/auto_reset.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/platform_thread.h"
 #include "base/process_util.h"
-#include "base/scoped_bool.h"
 #include "base/sha2.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
@@ -195,7 +195,7 @@ bool SafeBrowsingDatabaseBloom::ResetDatabase() {
   if (performing_reset_)
     return false;  // Don't recurse.
 
-  ScopedBool preforming_reset_scope_(&performing_reset_);
+  AutoReset auto_reset_performing_reset(&performing_reset_, true);
 
   // Delete files on disk.
   bool rv = Close();

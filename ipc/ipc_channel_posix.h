@@ -126,11 +126,6 @@ class Channel::ChannelImpl : public MessageLoopForIO::Watcher {
   // the connect operation in overlapped mode.
   bool waiting_connect_;
 
-  // This flag is set when processing incoming messages.  It is used to
-  // avoid recursing through ProcessIncomingMessages, which could cause
-  // problems.  TODO(darin): make this unnecessary
-  bool processing_incoming_;
-
   ScopedRunnableMethodFactory<ChannelImpl> factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelImpl);
