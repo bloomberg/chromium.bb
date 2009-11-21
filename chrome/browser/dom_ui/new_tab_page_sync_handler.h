@@ -36,7 +36,6 @@ class NewTabPageSyncHandler : public DOMMessageHandler,
  private:
   enum MessageType {
     HIDE,
-    PROMOTION,
     SYNC_ERROR,
   };
   // Helper to invoke the |syncMessageChanged| JS function on the new tab page.
