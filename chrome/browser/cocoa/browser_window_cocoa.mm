@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/l10n_util_mac.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
@@ -29,6 +31,8 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/common/temp_scaffolding_stubs.h"
 #include "chrome/browser/profile.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 
 BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller,
@@ -45,6 +49,14 @@ BrowserWindowCocoa::~BrowserWindowCocoa() {
 }
 
 void BrowserWindowCocoa::Show() {
+  // The Browser associated with this browser window must become the active
+  // browser at the time |Show()| is called. This is the natural behaviour under
+  // Windows, but |-makeKeyAndOrderFront:| won't send |-windowDidBecomeMain:|
+  // until we return to the runloop. Therefore any calls to
+  // |BrowserList::GetLastActive()| (for example, in bookmark_util), will return
+  // the previous browser instead if we don't explicitly set it here.
+  BrowserList::SetLastActive(browser_);
+
   [window_ makeKeyAndOrderFront:controller_];
 }
 
@@ -303,7 +315,12 @@ void BrowserWindowCocoa::ShowRepostFormWarningDialog(
 }
 
 void BrowserWindowCocoa::ShowProfileErrorDialog(int message_id) {
-  NOTIMPLEMENTED();
+  scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+  [alert addButtonWithTitle:l10n_util::GetNSStringWithFixup(IDS_OK)];
+  [alert setMessageText:l10n_util::GetNSStringWithFixup(IDS_PRODUCT_NAME)];
+  [alert setInformativeText:l10n_util::GetNSStringWithFixup(message_id)];
+  [alert setAlertStyle:NSWarningAlertStyle];
+  [alert runModal];
 }
 
 void BrowserWindowCocoa::ShowThemeInstallBubble() {
