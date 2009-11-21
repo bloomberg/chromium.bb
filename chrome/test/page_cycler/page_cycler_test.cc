@@ -244,7 +244,8 @@ class PageCyclerTest : public UITest {
 
     PrintMemoryUsageInfo(suffix, data_dir);
     PrintIOPerfInfo(suffix, data_dir);
-    PrintSystemCommitCharge(suffix, stop_size - start_size);
+    PrintSystemCommitCharge(suffix, stop_size - start_size,
+                            false /* not important */);
 
     std::string trace_name = "t" + std::string(suffix);
     wprintf(L"\nPages: [%ls]\n", pages.c_str());
@@ -294,7 +295,8 @@ class PageCyclerReferenceTest : public PageCyclerTest {
 
     PrintMemoryUsageInfo("_ref", data_dir);
     PrintIOPerfInfo("_ref", data_dir);
-    PrintSystemCommitCharge("_ref", stop_size - start_size);
+    PrintSystemCommitCharge("_ref", stop_size - start_size,
+                            false /* not important */);
 
     PrintResultList("times", "", "t_ref", timings, "ms",
                     true /* important */);

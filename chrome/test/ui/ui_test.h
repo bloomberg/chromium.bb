@@ -459,7 +459,9 @@ class UITest : public testing::Test {
   void PrintMemoryUsageInfo(const char* test_name, FilePath data_dir);
 
   // Prints memory commit charge stats for use by perf graphs.
-  void PrintSystemCommitCharge(const char* test_name, size_t charge);
+  void PrintSystemCommitCharge(const char* test_name,
+                               size_t charge,
+                               bool important);
 
  private:
   // Check that no processes related to Chrome exist, displaying

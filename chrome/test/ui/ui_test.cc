@@ -1419,8 +1419,9 @@ void UITest::PrintMemoryUsageInfo(const char* test_name, FilePath data_dir) {
               false /* not important */);
 }
 
-void UITest::PrintSystemCommitCharge(const char* test_name, size_t charge) {
+void UITest::PrintSystemCommitCharge(const char* test_name,
+                                     size_t charge,
+                                     bool important) {
   std::string trace_name(test_name);
-  PrintResult("commit_charge", "", "cc" + trace_name, charge, "kb",
-              false /* important */);
+  PrintResult("commit_charge", "", "cc" + trace_name, charge, "kb", important);
 }
