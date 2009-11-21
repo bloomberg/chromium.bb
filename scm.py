@@ -441,7 +441,8 @@ class SVN(object):
     if sys.platform.startswith('win'):
       if not 'APPDATA' in os.environ:
         return None
-      auth_dir = os.path.join(os.environ['APPDATA'], 'auth', 'svn.simple')
+      auth_dir = os.path.join(os.environ['APPDATA'], 'Subversion', 'auth',
+                              'svn.simple')
     else:
       if not 'HOME' in os.environ:
         return None
