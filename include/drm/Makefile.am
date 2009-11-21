@@ -34,4 +34,5 @@ klibdrminclude_HEADERS = \
 	radeon_drm.h \
 	savage_drm.h \
 	sis_drm.h \
-	via_drm.h
+	via_drm.h \
+	mach64_drm.h
