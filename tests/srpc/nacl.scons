@@ -90,6 +90,17 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
       )
   env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_basic_test')
 
+  trusted = env.get('TRUSTED_ENV', None)
+  if trusted and trusted.Bit('linux'):
+    node = env.CommandSelLdrTestNacl(
+        'srpc_sysv_shm_test.out',
+        loader='sel_universal',
+        command=[env.File('srpc_shm.nexe')],
+        stdin=env.File('srpc_sysv_shm_test.stdin'),
+        stdout_golden=env.File('srpc_sysv_shm_test.stdout'),
+        )
+    env.AddNodeToTestSuite(node, ['small_tests'], 'run_srpc_sysv_shm_test')
+
   node = env.CommandSelLdrTestNacl(
       'srpc_bad_service.out',
       loader='sel_universal',

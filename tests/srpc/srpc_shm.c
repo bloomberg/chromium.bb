@@ -81,3 +81,33 @@ NaClSrpcError GetInvalidHandle(NaClSrpcChannel *channel,
 }
 
 NACL_SRPC_METHOD("get_invalid_handle::h", GetInvalidHandle);
+
+/*
+ * MapSysvHandle maps a SysV shared memory handle and prints its contents.
+ */
+NaClSrpcError MapSysvHandle(NaClSrpcChannel *channel,
+                            NaClSrpcArg **in_args,
+                            NaClSrpcArg **out_args) {
+  int desc = in_args[0]->u.hval;
+  char* map_addr;
+  struct stat st;
+  size_t size;
+
+  /* Get the region's size. */
+  if (0 != fstat(desc, &st)) {
+    printf("MapSysvHandle: fstat failed\n");
+  }
+  size = (size_t) st.st_size;
+  /* Map it into the module's address space. */
+  map_addr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, desc, 0);
+  if (MAP_FAILED == map_addr) {
+    printf("MapSysvHandle: mmap failed\n");
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  /* Print the region's contents. */
+  printf("string '%s'\n", map_addr);
+  /* Unmap the region. */
+  return NACL_SRPC_RESULT_OK;
+}
+
+NACL_SRPC_METHOD("map_sysv_handle:h:", MapSysvHandle);

@@ -112,6 +112,8 @@
       'conditions': [
         ['OS=="linux"', { 'sources': [
             'linux/nacl_desc.c',
+            'linux/nacl_desc_sysv_shm.c',
+            'linux/nacl_desc_sysv_shm.h',
         ]}],
         ['OS=="mac"', { 'sources': [
             'linux/nacl_desc.c',

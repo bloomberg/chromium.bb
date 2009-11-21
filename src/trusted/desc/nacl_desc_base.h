@@ -101,6 +101,7 @@ enum NaClDescTypeTag {
   NACL_DESC_BOUND_SOCKET,
   NACL_DESC_CONNECTED_SOCKET,
   NACL_DESC_SHM,
+  NACL_DESC_SYSV_SHM,
   NACL_DESC_MUTEX,
   NACL_DESC_CONDVAR,
   NACL_DESC_SEMAPHORE,
@@ -450,6 +451,19 @@ struct NaClDescImcShm {
 
 extern int NaClDescImcShmInternalize(struct NaClDesc          **baseptr,
                                      struct NaClDescXferState *xfer) NACL_WUR;
+
+#if NACL_LINUX
+extern struct NaClDescVtbl const kNaClDescSysvShmVtbl;
+
+struct NaClDescSysvShm {
+  struct NaClDesc           base;
+  int                       id;
+  size_t                    size;
+};
+
+extern int NaClDescSysvShmInternalize(struct NaClDesc          **baseptr,
+                                      struct NaClDescXferState *xfer) NACL_WUR;
+#endif  /* NACL_LINUX */
 
 extern struct NaClDescVtbl const kNaClDescMutexVtbl;
 

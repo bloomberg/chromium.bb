@@ -144,6 +144,11 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
   NaClDescImcBoundDescInternalize,
   NaClDescInternalizeNotImplemented,  /* connected abstract base class */
   NaClDescImcShmInternalize,
+#if NACL_LINUX
+  NaClDescSysvShmInternalize,
+#else
+  NULL,
+#endif  /* NACL_LINUX */
   NaClDescMutexInternalize,
   NaClDescCondVarInternalize,
   NaClDescInternalizeNotImplemented,  /* semaphore */
@@ -161,6 +166,7 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_BOUND_SOCKET);
     MAP(NACL_DESC_CONNECTED_SOCKET);
     MAP(NACL_DESC_SHM);
+    MAP(NACL_DESC_SYSV_SHM);
     MAP(NACL_DESC_MUTEX);
     MAP(NACL_DESC_CONDVAR);
     MAP(NACL_DESC_SEMAPHORE);
