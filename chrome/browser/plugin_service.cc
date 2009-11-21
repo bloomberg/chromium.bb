@@ -42,8 +42,16 @@ static void NotifyPluginsOfActivation() {
 #endif
 
 // static
+bool PluginService::enable_chrome_plugins_ = true;
+
+// static
 PluginService* PluginService::GetInstance() {
   return Singleton<PluginService>::get();
+}
+
+// static
+void PluginService::EnableChromePlugins(bool enable) {
+  enable_chrome_plugins_ = enable;
 }
 
 PluginService::PluginService()
@@ -103,6 +111,9 @@ PluginService::~PluginService() {
 
 void PluginService::LoadChromePlugins(
     ResourceDispatcherHost* resource_dispatcher_host) {
+  if (!enable_chrome_plugins_)
+    return;
+
   resource_dispatcher_host_ = resource_dispatcher_host;
   ChromePluginLib::LoadChromePlugins(GetCPBrowserFuncsForBrowser());
 }

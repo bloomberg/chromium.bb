@@ -19,6 +19,7 @@
 #include "base/scoped_variant_win.h"
 
 #include "chrome/browser/browser_prefs.h"
+#include "chrome/browser/plugin_service.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -28,7 +29,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test/net/dialog_watchdog.h"
@@ -386,6 +386,7 @@ int main(int argc, char** argv) {
   watchdog.AddObserver(&credentials);
   testing::InitGoogleTest(&argc, argv);
   FilterDisabledTests();
+  PluginService::EnableChromePlugins(false);
   CFUrlRequestUnittestRunner test_suite(argc, argv);
   test_suite.RunMainUIThread();
   return 0;

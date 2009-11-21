@@ -91,6 +91,8 @@ class PluginService
     return resource_dispatcher_host_;
   }
 
+  static void EnableChromePlugins(bool enable);
+
  private:
   friend struct DefaultSingletonTraits<PluginService>;
 
@@ -142,6 +144,9 @@ class PluginService
   base::WaitableEventWatcher hkcu_watcher_;
   base::WaitableEventWatcher hklm_watcher_;
 #endif
+
+  // Set to true if chrome plugins are enabled. Defaults to true.
+  static bool enable_chrome_plugins_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginService);
 };

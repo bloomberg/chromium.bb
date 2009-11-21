@@ -19,22 +19,23 @@ class TestAutomationProviderDelegate {
 // (see TestAutomationResourceMessageFilter) and know when the initial
 // ExternalTab has been loaded.
 // In order to intercept UrlRequests and make the URLRequestAutomationJob class
-// handle requests from unit tests, we also implement URLRequest::Interceptor.
+// handle requests from unit tests, we register a protocol factory for
+// http/https.
 class TestAutomationProvider
-    : public AutomationProvider,
-      public URLRequest::Interceptor {
+    : public AutomationProvider {
  public:
   explicit TestAutomationProvider(Profile* profile,
       TestAutomationProviderDelegate* delegate);
 
   virtual ~TestAutomationProvider();
-  
+
   // AutomationProvider overrides.
   virtual void OnMessageReceived(const IPC::Message& msg);
   virtual bool Send(IPC::Message* msg);
 
-  // URLRequest::Interceptor.
-  virtual URLRequestJob* MaybeIntercept(URLRequest* request);
+  // Protocol factory for handling http/https requests over automation.
+  static URLRequestJob* Factory(URLRequest* request,
+                                const std::string& scheme);
 
   // Call to instantiate and initialize a new instance of
   // TestAutomationProvider.
@@ -47,6 +48,8 @@ class TestAutomationProvider
   scoped_refptr<TestAutomationResourceMessageFilter> filter_;
   int tab_handle_;
   TestAutomationProviderDelegate* delegate_;
+
+  static TestAutomationProvider* g_provider_instance_;
 };
 
-#endif CHROME_FRAME_TEST_NET_TEST_AUTOMATION_PROVIDER_H_
+#endif  // CHROME_FRAME_TEST_NET_TEST_AUTOMATION_PROVIDER_H_
