@@ -426,7 +426,7 @@ void ProfileSyncService::SyncEvent(SyncEventCodes code) {
 
 bool ProfileSyncService::IsSyncEnabled() {
 #if defined(OS_POSIX)
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync);
+  return false;
 #else
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync);
 #endif
