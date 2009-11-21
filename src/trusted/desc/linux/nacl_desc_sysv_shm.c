@@ -99,7 +99,7 @@ int NaClDescSysvShmCtor(struct NaClDescSysvShm  *self,
   int retval;
 
   /* We only allow multiples of 64K for NaCl-created region sizes. */
-  if (size != NaClRoundAllocPage(size)) {
+  if ((uintptr_t) size != NaClRoundAllocPage((uintptr_t) size)) {
     return 0;
   }
   /* Create the region. */

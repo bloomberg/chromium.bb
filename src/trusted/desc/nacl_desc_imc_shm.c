@@ -390,7 +390,10 @@ int NaClDescImcShmInternalize(struct NaClDesc           **baseptr,
   memcpy(&hsize, xfer->next_byte, sizeof hsize);
   xfer->next_byte += sizeof hsize;
 
-  NaClDescImcShmCtor(ndisp, h, hsize);
+  if (0 == NaClDescImcShmCtor(ndisp, h, hsize)) {
+    rv = -NACL_ABI_EIO;
+    goto cleanup;
+  }
 
   *baseptr = (struct NaClDesc *) ndisp;
   rv = 0;
