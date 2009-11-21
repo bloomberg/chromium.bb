@@ -61,6 +61,8 @@ TEST_F(WorkerTest, MultipleWorkers) {
 
 #if defined(OS_LINUX)
 #define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
+#elif defined(OS_MACOSX)
+#define WorkerFastLayoutTests FLAKY_WorkerFastLayoutTests
 #endif
 
 TEST_F(WorkerTest, WorkerFastLayoutTests) {
@@ -113,6 +115,8 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
 // http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
 // generated on the windows try bots.
 #define SharedWorkerFastLayoutTests DISABLED_SharedWorkerFastLayoutTests
+#elif defined(OS_MACOSX)
+#define SharedWorkerFastLayoutTests FLAKY_SharedWorkerFastLayoutTests
 #endif
 
 TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
