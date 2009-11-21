@@ -94,9 +94,8 @@ BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
 // --- collecting results for supported-xml-content-types.html ---
-BUG24182 SLOW WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS
 // was slow, started to timeout
-BUG18702 MAC : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
+BUG18702 MAC WIN : LayoutTests/http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 
 // -----------------------------------------------------------------
 // SKIPPED TESTS
