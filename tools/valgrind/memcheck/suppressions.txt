@@ -1578,8 +1578,8 @@
 {
    bug_28386
    Memcheck:Addr4
-   fun:*OCSPRequestSession*ReadCompleted*URLRequest
-   fun:*OCSPRequestSession*ResponseStarted*URLRequest
+   fun:*OCSPRequestSession15OnReadCompletedEP10URLRequesti
+   fun:*OCSPRequestSession17OnResponseStartedEP10URLRequest
    fun:_ZN10URLRequest15ResponseStartedEv
    fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
    fun:_ZN17URLRequestHttpJob21NotifyHeadersCompleteEv
@@ -1604,8 +1604,8 @@
 {
    bug_28386
    Memcheck:Addr4
-   fun:*OCSPRequestSession*ReadCompleted*URLRequest*
-   fun:*OCSPRequestSession*OnResponseStarted*URLRequest
+   fun:*OCSPRequestSession15OnReadCompletedEP10URLRequesti
+   fun:*OCSPRequestSession17OnResponseStartedEP10URLRequest
    fun:_ZN10URLRequest15ResponseStartedEv
    fun:_ZN13URLRequestJob21NotifyHeadersCompleteEv
    fun:_ZN17URLRequestHttpJob21NotifyHeadersCompleteEv
