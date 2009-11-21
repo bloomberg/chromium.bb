@@ -243,6 +243,12 @@ TEST_F(ErrorPageTest, Page404) {
   EXPECT_TRUE(WaitForTitleMatching(L"Mock Link Doctor"));
 }
 
+#if defined(OS_LINUX)
+// Below explains this is flaky on XP, but it also flakes out on Linux.
+// http://crbug.com/19361
+#define Page404_GoBack FLAKY_Page404_GoBack
+#endif
+
 TEST_F(ErrorPageTest, Page404_GoBack) {
 #if defined(OS_WIN)
   // Flaky on XP, http://crbug.com/19361.
