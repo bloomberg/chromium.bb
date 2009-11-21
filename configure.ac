@@ -206,4 +206,6 @@ AC_OUTPUT([
 	tests/Makefile
 	tests/modeprint/Makefile
 	tests/modetest/Makefile
+	include/Makefile
+	include/drm/Makefile
 	libdrm.pc])

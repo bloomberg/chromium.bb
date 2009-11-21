@@ -18,48 +18,20 @@
 #  IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-AUTOMAKE_OPTIONS = foreign
+# XXX airlied says, nothing besides *_drm.h and drm*.h should be necessary.
+# however, r300 and via need their reg headers installed in order to build.
+# better solutions are welcome.
 
-pkgconfigdir = @pkgconfigdir@
-pkgconfig_DATA = libdrm.pc
-
-if HAVE_INTEL
-INTEL_SUBDIR = intel
-endif
-
-if HAVE_NOUVEAU
-NOUVEAU_SUBDIR = nouveau
-endif
-
-if HAVE_RADEON
-RADEON_SUBDIR = radeon
-endif
-
-SUBDIRS = . $(INTEL_SUBDIR) $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR) tests include
-
-libdrm_la_LTLIBRARIES = libdrm.la
-libdrm_ladir = $(libdir)
-libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
-libdrm_la_LIBADD = @CLOCK_LIB@
-
-libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
-
-libdrm_la_SOURCES =				\
-	xf86drm.c				\
-	xf86drmHash.c				\
-	xf86drmRandom.c				\
-	xf86drmSL.c				\
-	xf86drmMode.c				\
-	libdrm_lists.h
-
-libdrmincludedir = ${includedir}
-libdrminclude_HEADERS = xf86drm.h xf86drmMode.h
-
-EXTRA_DIST = libdrm.pc.in include/drm/*
-
-copy-headers :
-	cp -r $(kernel_source)/usr/include/drm $(top_srcdir)/include
-
-commit-headers : copy-headers
-	git add include
-	git commit -am "Copy headers from kernel $$(GIT_DIR=$(kernel_source)/.git git describe)"
+klibdrmincludedir = ${includedir}/drm
+klibdrminclude_HEADERS = \
+	drm.h \
+	drm_mode.h \
+	drm_sarea.h \
+	i915_drm.h \
+	mga_drm.h \
+	nouveau_drm.h \
+	r128_drm.h \
+	radeon_drm.h \
+	savage_drm.h \
+	sis_drm.h \
+	via_drm.h
