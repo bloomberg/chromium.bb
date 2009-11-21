@@ -855,6 +855,8 @@
         'browser/autofill/autofill_infobar_delegate.h',
         'browser/autofill/autofill_manager.cc',
         'browser/autofill/autofill_manager.h',
+        'browser/autofill/autofill_type.cc',
+        'browser/autofill/autofill_type.h',
         'browser/autofill/field_types.h',
         'browser/autofill/form_structure.cc',
         'browser/autofill/form_structure.h',
