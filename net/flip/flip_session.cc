@@ -189,7 +189,7 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
   CreateFlipHeadersFromHttpRequest(delegate->request(), &headers);
 
   flip::FlipControlFlags flags = flip::CONTROL_FLAG_NONE;
-  if (!delegate->data())
+  if (!delegate->data() || !delegate->data()->size())
     flags = flip::CONTROL_FLAG_FIN;
 
   // Create a SYN_STREAM packet and add to the output queue.
