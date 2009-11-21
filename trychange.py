@@ -173,6 +173,8 @@ class SVN(SCM):
       self.options.diff = self.GenerateDiff(adjusted_paths, root=source_root)
       self.change_info = gcl.LoadChangelistInfoForMultiple(self.options.name,
           gcl.GetRepositoryRoot(), True, True)
+    if not self.options.email:
+      self.options.email = scm.SVN.GetEmail(gcl.GetRepositoryRoot())
 
 
 class GIT(SCM):
@@ -188,10 +190,6 @@ class GIT(SCM):
       if diff[i].startswith('--- /dev/null'):
         diff[i] = '--- %s' % diff[i+1][4:]
     return ''.join(diff)
-
-  def GetEmail(self):
-    # TODO: check for errors here?
-    return upload.RunShell(['git', 'config', 'user.email']).strip()
 
   def GetFileNames(self):
     """Return the list of files in the diff."""
@@ -220,7 +218,7 @@ class GIT(SCM):
     if not self.options.name:
       self.options.name = self.GetPatchName()
     if not self.options.email:
-      self.options.email = self.GetEmail()
+      self.options.email = scm.GIT.GetEmail('.')
 
 
 def _ParseSendChangeOptions(options):

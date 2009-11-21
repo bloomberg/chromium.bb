@@ -70,6 +70,13 @@ class GIT(object):
         results.append(('%s      ' % m.group(1), m.group(2)))
     return results
 
+  @staticmethod
+  def GetEmail(repo_root):
+    """Retrieves the user email address if known."""
+    # We could want to look at the svn cred when it has a svn remote but it
+    # should be fine for now, users should simply configure their git settings.
+    return GIT.Capture(['config', 'user.email'], repo_root).strip()
+
 
 class SVN(object):
   COMMAND = "svn"
@@ -413,3 +420,57 @@ class SVN(object):
       data += "@@ -0,0 +1,%d @@\n" % nb_lines
       data += ''.join(file_content)
     return data
+
+  @staticmethod
+  def GetEmail(repo_root):
+    """Retrieves the svn account which we assume is an email address."""
+    infos = SVN.CaptureInfo(repo_root)
+    uuid = infos.get('UUID')
+    root = infos.get('Repository Root')
+    if not root:
+      return None
+
+    # Should check for uuid but it is incorrectly saved for https creds.
+    realm = root.rsplit('/', 1)[0]
+    if root.startswith('https') or not uuid:
+      regexp = re.compile(r'<%s:\d+>.*' % realm)
+    else:
+      regexp = re.compile(r'<%s:\d+> %s' % (realm, uuid))
+    if regexp is None:
+      return None
+    if sys.platform.startswith('win'):
+      if not 'APPDATA' in os.environ:
+        return None
+      auth_dir = os.path.join(os.environ['APPDATA'], 'auth', 'svn.simple')
+    else:
+      if not 'HOME' in os.environ:
+        return None
+      auth_dir = os.path.join(os.environ['HOME'], '.subversion', 'auth',
+                              'svn.simple')
+    for credfile in os.listdir(auth_dir):
+      cred_info = SVN.ReadSimpleAuth(os.path.join(auth_dir, credfile))
+      if regexp.match(cred_info.get('svn:realmstring')):
+        return cred_info.get('username')
+
+  @staticmethod
+  def ReadSimpleAuth(filename):
+    f = open(filename, 'r')
+    values = {}
+    def ReadOneItem(type):
+      m = re.match(r'%s (\d+)' % type, f.readline())
+      if not m:
+        return None
+      data = f.read(int(m.group(1)))
+      if f.read(1) != '\n':
+        return None
+      return data
+
+    while True:
+      key = ReadOneItem('K')
+      if not key:
+        break
+      value = ReadOneItem('V')
+      if not value:
+        break
+      values[key] = value
+    return values

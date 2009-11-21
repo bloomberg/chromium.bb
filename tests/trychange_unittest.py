@@ -76,7 +76,7 @@ class GITUnittest(TryChangeTestsBase):
 
   def testMembersChanged(self):
     members = [
-      'GenerateDiff', 'GetEmail', 'GetFileNames', 'GetLocalRoot',
+      'GenerateDiff', 'GetFileNames', 'GetLocalRoot',
       'GetPatchName', 'ProcessOptions', 'options'
     ]
     # If this test fails, you should add the relevant test.

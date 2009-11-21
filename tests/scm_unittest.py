@@ -106,6 +106,7 @@ from :3
     self.relpath = '.'
     self.base_path = scm.os.path.join(self.root_dir, self.relpath)
     self.enabled = self.CreateGitRepo(self.sample_git_import, self.base_path)
+    self.fake_root = self.Dir()
 
   def tearDown(self):
     shutil.rmtree(self.root_dir)
@@ -114,10 +115,16 @@ from :3
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'COMMAND', 'Capture', 'CaptureStatus',
+        'COMMAND', 'Capture', 'CaptureStatus', 'GetEmail',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.GIT, members)
+
+  def testGetEmail(self):
+    self.mox.StubOutWithMock(scm.GIT, 'Capture')
+    scm.GIT.Capture(['config', 'user.email'], self.fake_root).AndReturn('mini@me.com')
+    self.mox.ReplayAll()
+    self.assertEqual(scm.GIT.GetEmail(self.fake_root), 'mini@me.com')
 
 
 class SVNTestCase(BaseSCMTestCase):
@@ -132,8 +139,9 @@ class SVNTestCase(BaseSCMTestCase):
     self.mox.ReplayAll()
     members = [
         'COMMAND', 'Capture', 'CaptureHeadRevision', 'CaptureInfo',
-        'CaptureStatus', 'DiffItem', 'GetFileProperty', 'IsMoved', 'Run',
-        'RunAndFilterOutput', 'RunAndGetFileList',
+        'CaptureStatus', 'DiffItem', 'GetEmail', 'GetFileProperty', 'IsMoved',
+        'ReadEntries', 'ReadSimpleAuth', 'Run', 'RunAndFilterOutput',
+        'RunAndGetFileList',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(scm.SVN, members)
