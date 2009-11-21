@@ -165,17 +165,32 @@ static bool GetNewTextDirection(WebTextDirection* direction) {
 class NotifyPluginProcessHostTask : public Task {
  public:
   NotifyPluginProcessHostTask(HWND window, HWND parent)
-    : window_(window), parent_(parent) { }
+    : window_(window), parent_(parent), tries_(kMaxTries) { }
 
  private:
   void Run() {
     DWORD plugin_process_id;
+    bool found_starting_plugin_process = false;
     GetWindowThreadProcessId(window_, &plugin_process_id);
     for (ChildProcessHost::Iterator iter(ChildProcessInfo::PLUGIN_PROCESS);
          !iter.Done(); ++iter) {
       PluginProcessHost* plugin = static_cast<PluginProcessHost*>(*iter);
+      if (!plugin->handle()) {
+        found_starting_plugin_process = true;
+        continue;
+      }
       if (base::GetProcId(plugin->handle()) == plugin_process_id) {
         plugin->AddWindow(parent_);
+        return;
+      }
+    }
+
+    if (found_starting_plugin_process) {
+      // A plugin process has started but we don't have its handle yet.  Since
+      // it's most likely the one for this plugin, try a few more times after a
+      // delay.
+      if (tries_--) {
+        MessageLoop::current()->PostDelayedTask(FROM_HERE, this, kTryDelayMs);
         return;
       }
     }
@@ -187,6 +202,14 @@ class NotifyPluginProcessHostTask : public Task {
 
   HWND window_;  // Plugin HWND, created and destroyed in the plugin process.
   HWND parent_;  // Parent HWND, created and destroyed on the browser UI thread.
+
+  int tries_;
+
+  // How many times we try to find a PluginProcessHost whose process matches
+  // the HWND.
+  static const int kMaxTries = 5;
+  // How long to wait between each try.
+  static const int kTryDelayMs = 200;
 };
 
 // Windows callback for OnDestroy to detach the plugin windows.

@@ -99,6 +99,9 @@ class PluginProcessHost : public ChildProcessHost,
   void RequestPluginChannel(ResourceMessageFilter* renderer_message_filter,
                             const std::string& mime_type,
                             IPC::Message* reply_msg);
+
+  virtual void OnProcessLaunched();
+
   // Message handlers.
   void OnChannelCreated(const IPC::ChannelHandle& channel_handle);
   void OnGetPluginFinderUrl(std::string* plugin_finder_url);
@@ -113,10 +116,6 @@ class PluginProcessHost : public ChildProcessHost,
   void OnPluginWindowDestroyed(HWND window, HWND parent);
   void OnDownloadUrl(const std::string& url, int source_child_unique_id,
                      gfx::NativeWindow caller_window);
-#endif
-
-#if defined(OS_POSIX)
-  base::ProcessHandle InitHelperPosix(const CommandLine& cmd_line);
 #endif
 
 #if defined(OS_LINUX)

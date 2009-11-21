@@ -275,8 +275,7 @@ TEST_F(WorkerTest, LimitPerPage) {
   ASSERT_TRUE(tab.get());
   ASSERT_TRUE(tab->NavigateToURL(url));
 
-  EXPECT_EQ(max_workers_per_tab + 1 + (UITest::in_process_renderer() ? 0 : 1),
-            UITest::GetBrowserProcessCount());
+  ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
 #endif
 

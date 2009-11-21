@@ -164,9 +164,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                              IPC::Message* reply_msg);
   void OnLaunchNaCl(const std::wstring& url,
                     int channel_descriptor,
-                    nacl::FileDescriptor* handle,
-                    base::ProcessHandle* nacl_process_handle,
-                    base::ProcessId* nacl_process_id);
+                    IPC::Message* reply_msg);
   void OnCreateWorker(const GURL& url,
                       bool is_shared,
                       const string16& name,

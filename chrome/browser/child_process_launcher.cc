@@ -14,7 +14,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/process_watcher.h"
 #include "chrome/common/result_codes.h"
-#include "ipc/ipc_sync_channel.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/sandbox_policy.h"
@@ -23,6 +22,10 @@
 #include "chrome/browser/crash_handler_host_linux.h"
 #include "chrome/browser/zygote_host_linux.h"
 #include "chrome/browser/renderer_host/render_sandbox_host_linux.h"
+#endif
+
+#if defined(OS_POSIX)
+#include "base/global_descriptors_posix.h"
 #endif
 
 namespace {
@@ -41,9 +44,23 @@ static base::LazyInstance<LauncherThread> launcher(base::LINKER_INITIALIZED);
 class ChildProcessLauncher::Context
     : public base::RefCountedThreadSafe<ChildProcessLauncher::Context> {
  public:
-  Context() : starting_(true), zygote_(false) {}
+  Context()
+      : starting_(true)
+#if defined(OS_LINUX)
+        , zygote_(false)
+#endif
+        {
+  }
 
-  void Launch(CommandLine* cmd_line, int ipcfd, Client* client) {
+  void Launch(
+#if defined(OS_WIN)
+      const FilePath& exposed_dir,
+#elif defined(OS_POSIX)
+      const base::environment_vector& environ,
+      int ipcfd,
+#endif
+      CommandLine* cmd_line,
+      Client* client) {
     client_ = client;
 
     CHECK(ChromeThread::GetCurrentThreadIdentifier(&client_thread_id_));
@@ -53,7 +70,14 @@ class ChildProcessLauncher::Context
     launcher.Get().message_loop()->PostTask(
         FROM_HERE,
         NewRunnableMethod(
-            this, &Context::LaunchInternal, ipcfd, cmd_line));
+            this,
+            &Context::LaunchInternal,
+#if defined(OS_WIN)
+            exposed_dir,
+#elif defined(POSIX)
+            ipcfd,
+#endif
+            cmd_line));
   }
 
   void ResetClient() {
@@ -71,19 +95,31 @@ class ChildProcessLauncher::Context
     Terminate();
   }
 
-  void LaunchInternal(int ipcfd, CommandLine* cmd_line) {
+  void LaunchInternal(
+#if defined(OS_WIN)
+      const FilePath& exposed_dir,
+#elif defined(OS_POSIX)
+      int ipcfd,
+#endif
+      CommandLine* cmd_line) {
     scoped_ptr<CommandLine> cmd_line_deleter(cmd_line);
     base::ProcessHandle handle = base::kNullProcessHandle;
-    bool zygote = false;
 #if defined(OS_WIN)
-    handle = sandbox::StartProcess(cmd_line);
+    handle = sandbox::StartProcessWithAccess(cmd_line, exposed_dir);
 #elif defined(OS_POSIX)
 
 #if defined(OS_LINUX)
-    // On Linux, normally spawn processes with zygotes. We can't do this when
-    // we're spawning child processes through an external program (i.e. there is
-    // a command prefix) like GDB so fall through to the POSIX case then.
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
+    bool zygote = false;
+    // On Linux, normally spawn renderer processes with zygotes. We can't do
+    // this when we're spawning child processes through an external program
+    // (i.e. there is a command prefix) like GDB so fall through to the POSIX
+    // case then.
+    bool is_renderer = cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
+        switches::kRendererProcess;
+    bool is_plugin = cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
+        switches::kPluginProcess;
+    if (is_renderer &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kRendererCmdPrefix)) {
       zygote = true;
 
@@ -97,24 +133,40 @@ class ChildProcessLauncher::Context
       }
       handle = Singleton<ZygoteHost>()->ForkRenderer(cmd_line->argv(), mapping);
     }
-#endif
 
-    if (!zygote) {
+    if (!zygote)
+#endif
+    {
       base::file_handle_mapping_vector fds_to_map;
-      fds_to_map.push_back(std::make_pair(ipcfd, kPrimaryIPCChannel + 3));
+      fds_to_map.push_back(std::make_pair(
+          ipcfd,
+          kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
 
 #if defined(OS_LINUX)
       // On Linux, we need to add some extra file descriptors for crash handling
       // and the sandbox.
-      const int crash_signal_fd =
-          Singleton<RendererCrashHandlerHostLinux>()->GetDeathSignalSocket();
-      if (crash_signal_fd >= 0) {
-        fds_to_map.push_back(std::make_pair(crash_signal_fd,
-                                            kCrashDumpSignal + 3));
+      if (is_renderer || is_plugin) {
+        int crash_signal_fd;
+        if (is_renderer) {
+          crash_signal_fd = Singleton<RendererCrashHandlerHostLinux>()->
+              GetDeathSignalSocket();
+        } else {
+          crash_signal_fd = Singleton<PluginCrashHandlerHostLinux>()->
+              GetDeathSignalSocket();
+        }
+        if (crash_signal_fd >= 0) {
+          fds_to_map.push_back(std::make_pair(
+              crash_signal_fd,
+              kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor));
+        }
       }
-      const int sandbox_fd =
-          Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
-      fds_to_map.push_back(std::make_pair(sandbox_fd, kSandboxIPCChannel + 3));
+      if (is_renderer) {
+        const int sandbox_fd =
+            Singleton<RenderSandboxHostLinux>()->GetRendererSocket();
+        fds_to_map.push_back(std::make_pair(
+            sandbox_fd,
+            kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
+      }
 #endif  // defined(OS_LINUX)
 
       // Actually launch the app.
@@ -126,13 +178,24 @@ class ChildProcessLauncher::Context
     ChromeThread::PostTask(
         client_thread_id_, FROM_HERE,
         NewRunnableMethod(
-            this, &ChildProcessLauncher::Context::Notify, handle, zygote));
+            this,
+            &ChildProcessLauncher::Context::Notify,
+#if defined(OS_LINUX)
+            zygote,
+#endif
+            handle));
   }
 
-  void Notify(base::ProcessHandle handle, bool zygote) {
+  void Notify(
+#if defined(OS_LINUX)
+      bool zygote,
+#endif
+      base::ProcessHandle handle) {
     starting_ = false;
     process_.set_handle(handle);
+#if defined(OS_LINUX)
     zygote_ = zygote;
+#endif
     if (client_) {
       client_->OnProcessLaunched();
     } else {
@@ -150,24 +213,32 @@ class ChildProcessLauncher::Context
         FROM_HERE,
         NewRunnableFunction(
             &ChildProcessLauncher::Context::TerminateInternal,
-            process_.handle(), zygote_));
+#if defined(OS_LINUX)
+            zygote_,
+#endif
+            process_.handle()));
     process_.set_handle(base::kNullProcessHandle);
   }
 
-  static void TerminateInternal(base::ProcessHandle handle, bool zygote) {
+  static void TerminateInternal(
+#if defined(OS_LINUX)
+      bool zygote,
+#endif
+      base::ProcessHandle handle) {
     base::Process process(handle);
      // Client has gone away, so just kill the process.  Using exit code 0
     // means that UMA won't treat this as a crash.
     process.Terminate(ResultCodes::NORMAL_EXIT);
     // On POSIX, we must additionally reap the child.
 #if defined(OS_POSIX)
-    if (zygote) {
 #if defined(OS_LINUX)
+    if (zygote) {
       // If the renderer was created via a zygote, we have to proxy the reaping
       // through the zygote process.
       Singleton<ZygoteHost>()->EnsureProcessTerminated(handle);
+    } else
 #endif  // defined(OS_LINUX)
-    } else {
+    {
       ProcessWatcher::EnsureProcessTerminated(handle);
     }
 #endif
@@ -178,20 +249,32 @@ class ChildProcessLauncher::Context
   ChromeThread::ID client_thread_id_;
   base::Process process_;
   bool starting_;
+
+#if defined(OS_LINUX)
   bool zygote_;
+#endif
 };
 
 
-ChildProcessLauncher::ChildProcessLauncher(CommandLine* cmd_line,
-                                           IPC::SyncChannel* channel,
-                                           Client* client) {
-  context_ = new Context();
-
-  int ipcfd = 0;
-#if defined(OS_POSIX)
-  ipcfd = channel->GetClientFileDescriptor();
+ChildProcessLauncher::ChildProcessLauncher(
+#if defined(OS_WIN)
+    const FilePath& exposed_dir,
+#elif defined(OS_POSIX)
+    const base::environment_vector& environ,
+    int ipcfd,
 #endif
-  context_->Launch(cmd_line, ipcfd, client);
+    CommandLine* cmd_line,
+    Client* client) {
+  context_ = new Context();
+  context_->Launch(
+#if defined(OS_WIN)
+      exposed_dir,
+#elif defined(OS_POSIX)
+      environ,
+      ipcfd,
+#endif
+      cmd_line,
+      client);
 }
 
 ChildProcessLauncher::~ChildProcessLauncher() {

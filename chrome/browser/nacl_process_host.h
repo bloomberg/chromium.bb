@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_NACL_PROCESS_HOST_H_
 
 #include "build/build_config.h"
+
+#include "base/ref_counted.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/nacl_types.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -22,25 +24,21 @@ class NaClProcessHost : public ChildProcessHost {
  public:
   NaClProcessHost(ResourceDispatcherHost *resource_dispatcher_host,
                   const std::wstring& url);
-  ~NaClProcessHost() {}
+  ~NaClProcessHost();
 
   // Initialize the new NaCl process, returning true on success.
-  bool Launch(ResourceMessageFilter* renderer_msg_filter,
+  bool Launch(ResourceMessageFilter* resource_message_filter,
               const int descriptor,
-              nacl::FileDescriptor* handle,
-              base::ProcessHandle* nacl_process_handle,
-              base::ProcessId* nacl_process_id);
+              IPC::Message* reply_msg);
 
   virtual void OnMessageReceived(const IPC::Message& msg);
 
  private:
-  bool LaunchSelLdr(ResourceMessageFilter* renderer_msg_filter,
-                    const int descriptor,
-                    const nacl::Handle handle);
+  bool LaunchSelLdr();
 
-  bool SendStartMessage(base::ProcessHandle process,
-                        int descriptor,
-                        nacl::Handle handle);
+  void SendStartMessage();
+
+  virtual void OnProcessLaunched();
 
   // ResourceDispatcherHost::Receiver implementation:
   virtual URLRequestContext* GetRequestContext(
@@ -51,6 +49,19 @@ class NaClProcessHost : public ChildProcessHost {
 
  private:
   ResourceDispatcherHost* resource_dispatcher_host_;
+
+  // The ResourceMessageFilter that requested this NaCl process.  We use this
+  // for sending the reply once the process has started.
+  scoped_refptr<ResourceMessageFilter> resource_message_filter_;
+
+  // The reply message to send.
+  IPC::Message* reply_msg_;
+
+  // The socket pair for the NaCl process.
+  nacl::Handle pair_[2];
+
+  // The NaCl specific descriptor for this process.
+  int descriptor_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };

@@ -6,14 +6,10 @@
 #define CHROME_BROWSER_CHILD_PROCESS_LAUNCHER_H_
 
 #include "base/basictypes.h"
-#include "base/process.h"
+#include "base/process_util.h"
 #include "base/ref_counted.h"
 
 class CommandLine;
-
-namespace IPC {
-class SyncChannel;
-}
 
 // Launches a process asynchronously and notifies the client of the process
 // handle when it's available.  It's used to avoid blocking the calling thread
@@ -32,9 +28,15 @@ class ChildProcessLauncher {
   // the callback won't be called.  If the process is still running by the time
   // this object destructs, it will be terminated.
   // Takes ownership of cmd_line.
-  ChildProcessLauncher(CommandLine* cmd_line,
-                       IPC::SyncChannel* channel,
-                       Client* client);
+  ChildProcessLauncher(
+#if defined(OS_WIN)
+      const FilePath& exposed_dir,
+#elif defined(OS_POSIX)
+      const base::environment_vector& environ,
+      int ipcfd,
+#endif
+      CommandLine* cmd_line,
+      Client* client);
   ~ChildProcessLauncher();
 
   // True if the process is being launched and so the handle isn't available.

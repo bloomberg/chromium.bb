@@ -376,13 +376,13 @@ void TaskManagerChildProcessResourceProvider::StartUpdating() {
   DCHECK(!updating_);
   updating_ = true;
 
-  // Register for notifications to get new plugin processes.
+  // Register for notifications to get new child processes.
   registrar_.Add(this, NotificationType::CHILD_PROCESS_HOST_CONNECTED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::CHILD_PROCESS_HOST_DISCONNECTED,
                  NotificationService::AllSources());
 
-  // Get the existing plugins
+  // Get the existing child processes.
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
@@ -482,7 +482,9 @@ void TaskManagerChildProcessResourceProvider::AddToTaskManager(
 // The ChildProcessInfo::Iterator has to be used from the IO thread.
 void TaskManagerChildProcessResourceProvider::RetrieveChildProcessInfo() {
   for (ChildProcessHost::Iterator iter; !iter.Done(); ++iter) {
-    existing_child_process_info_.push_back(**iter);
+    // Only add processes which are already started, since we need their handle.
+    if ((*iter)->handle() != base::kNullProcessHandle)
+      existing_child_process_info_.push_back(**iter);
   }
   // Now notify the UI thread that we have retrieved information about child
   // processes.

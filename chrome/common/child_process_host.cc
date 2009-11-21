@@ -79,9 +79,6 @@ ChildProcessHost::~ChildProcessHost() {
   Singleton<ChildProcessList>::get()->remove(this);
 
   resource_dispatcher_host_->CancelRequestsForProcess(id());
-
-  if (handle())
-    ProcessWatcher::EnsureProcessTerminated(handle());
 }
 
 // static
@@ -132,6 +129,24 @@ void ChildProcessHost::SetCrashReporterCommandLine(CommandLine* command_line) {
 #endif  // OS_MACOSX
 }
 
+void ChildProcessHost::Launch(
+#if defined(OS_WIN)
+    const FilePath& exposed_dir,
+#elif defined(OS_POSIX)
+    const base::environment_vector& environ,
+#endif
+    CommandLine* cmd_line) {
+  child_process_.reset(new ChildProcessLauncher(
+#if defined(OS_WIN)
+      exposed_dir,
+#elif defined(OS_POSIX)
+      environ,
+      channel_->GetClientFileDescriptor(),
+#endif
+      cmd_line,
+      &listener_));
+}
+
 bool ChildProcessHost::CreateChannel() {
   channel_id_ = GenerateRandomChannelID(this);
   channel_.reset(new IPC::Channel(
@@ -142,11 +157,6 @@ bool ChildProcessHost::CreateChannel() {
   opening_channel_ = true;
 
   return true;
-}
-
-void ChildProcessHost::SetHandle(base::ProcessHandle process) {
-  DCHECK(!handle());
-  set_handle(process);
 }
 
 void ChildProcessHost::InstanceCreated() {
@@ -167,19 +177,16 @@ void ChildProcessHost::Notify(NotificationType type) {
 }
 
 void ChildProcessHost::OnChildDied() {
-  DCHECK(handle());
-
-  bool did_crash = base::DidProcessCrash(NULL, handle());
-  if (did_crash) {
-    // Report that this child process crashed.
-    Notify(NotificationType::CHILD_PROCESS_CRASHED);
+  if (child_process_->GetHandle()) {
+    bool did_crash = child_process_->DidProcessCrash();
+    if (did_crash) {
+      OnProcessCrashed();
+      // Report that this child process crashed.
+      Notify(NotificationType::CHILD_PROCESS_CRASHED);
+    }
+    // Notify in the main loop of the disconnection.
+    Notify(NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);
   }
-  // Notify in the main loop of the disconnection.
-  Notify(NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);
-
-  // On POSIX, once we've called DidProcessCrash, handle() is no longer
-  // valid.  Ensure the destructor doesn't try to use it.
-  set_handle(base::kNullProcessHandle);
 
   delete this;
 }
@@ -247,6 +254,16 @@ void ChildProcessHost::ListenerHook::OnChannelError() {
 
   // This will delete host_, which will also destroy this!
   host_->OnChildDied();
+}
+
+void ChildProcessHost::ListenerHook::OnProcessLaunched() {
+  if (!host_->child_process_->GetHandle()) {
+    delete this;
+    return;
+  }
+
+  host_->set_handle(host_->child_process_->GetHandle());
+  host_->OnProcessLaunched();
 }
 
 

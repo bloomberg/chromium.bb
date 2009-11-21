@@ -19,7 +19,6 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
@@ -29,14 +28,12 @@
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "chrome/common/chrome_descriptors.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_lib.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
-#include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -45,19 +42,11 @@
 
 #if defined(OS_WIN)
 #include "app/win_util.h"
-#include "chrome/browser/sandbox_policy.h"
-#include "sandbox/src/sandbox.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
-#endif
-
-#if defined(OS_POSIX)
-#include "base/global_descriptors_posix.h"
-#include "ipc/ipc_channel_posix.h"
 #endif
 
 #if defined(OS_LINUX)
 #include "app/gfx/gtk_native_view_id_manager.h"
-#include "chrome/browser/crash_handler_host_linux.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -353,16 +342,16 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   if (exe_path.empty())
     return false;
 
-  CommandLine cmd_line(exe_path);
+  CommandLine* cmd_line = new CommandLine(exe_path);
   // Put the process type and plugin path first so they're easier to see
   // in process listings using native process management tools.
-  cmd_line.AppendSwitchWithValue(switches::kProcessType,
-                                 switches::kPluginProcess);
-  cmd_line.AppendSwitchWithValue(switches::kPluginPath,
-                                 info.path.ToWStringHack());
+  cmd_line->AppendSwitchWithValue(switches::kProcessType,
+                                  switches::kPluginProcess);
+  cmd_line->AppendSwitchWithValue(switches::kPluginPath,
+                                  info.path.ToWStringHack());
 
   if (logging::DialogsAreSuppressed())
-    cmd_line.AppendSwitch(switches::kNoErrorDialogs);
+    cmd_line->AppendSwitch(switches::kNoErrorDialogs);
 
   // Propagate the following switches to the plugin command line (along with
   // any associated values) if present in the browser command line
@@ -390,7 +379,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 
   for (size_t i = 0; i < arraysize(switch_names); ++i) {
     if (browser_command_line.HasSwitch(switch_names[i])) {
-      cmd_line.AppendSwitchWithValue(
+      cmd_line->AppendSwitchWithValue(
           switch_names[i],
           browser_command_line.GetSwitchValueASCII(switch_names[i]));
     }
@@ -400,62 +389,26 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
   std::wstring plugin_launcher =
       browser_command_line.GetSwitchValue(switches::kPluginLauncher);
   if (!plugin_launcher.empty())
-    cmd_line.PrependWrapper(plugin_launcher);
+    cmd_line->PrependWrapper(plugin_launcher);
 
   if (!locale.empty()) {
     // Pass on the locale so the null plugin will use the right language in the
     // prompt to install the desired plugin.
-    cmd_line.AppendSwitchWithValue(switches::kLang, locale);
+    cmd_line->AppendSwitchWithValue(switches::kLang, locale);
   }
 
   // Gears requires the data dir to be available on startup.
   std::wstring data_dir =
     PluginService::GetInstance()->GetChromePluginDataDir().ToWStringHack();
   DCHECK(!data_dir.empty());
-  cmd_line.AppendSwitchWithValue(switches::kPluginDataDir, data_dir);
+  cmd_line->AppendSwitchWithValue(switches::kPluginDataDir, data_dir);
 
-  cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
-                                 ASCIIToWide(channel_id()));
+  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
+                                  ASCIIToWide(channel_id()));
 
-  SetCrashReporterCommandLine(&cmd_line);
-
-  base::ProcessHandle process = 0;
-#if defined(OS_WIN)
-  process = sandbox::StartProcess(&cmd_line);
-#else
-  process = InitHelperPosix(cmd_line);
-#endif  // OS_WIN
-
-  if (!process)
-    return false;
-  SetHandle(process);
-
-  FilePath gears_path;
-  if (PathService::Get(chrome::FILE_GEARS_PLUGIN, &gears_path)) {
-    FilePath::StringType gears_path_lc = StringToLowerASCII(gears_path.value());
-    FilePath::StringType plugin_path_lc =
-        StringToLowerASCII(info.path.value());
-    if (plugin_path_lc == gears_path_lc) {
-      // Give Gears plugins "background" priority.  See
-      // http://b/issue?id=1280317.
-      SetProcessBackgrounded();
-    }
-  }
-
-  return true;
-}
+  SetCrashReporterCommandLine(cmd_line);
 
 #if defined(OS_POSIX)
-base::ProcessHandle PluginProcessHost::InitHelperPosix(
-    const CommandLine& cmd_line) {
-  base::ProcessHandle process = 0;
-  // This code is duplicated with browser_render_process_host.cc, but
-  // there's not a good place to de-duplicate it.
-  base::file_handle_mapping_vector fds_to_map;
-  const int ipcfd = channel().GetClientFileDescriptor();
-  if (ipcfd > -1)
-    fds_to_map.push_back(std::pair<int, int>(
-        ipcfd, kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
   base::environment_vector env;
 #if defined(OS_MACOSX)
   // Add our interposing library for Carbon. This is stripped back out in
@@ -470,19 +423,32 @@ base::ProcessHandle PluginProcessHost::InitHelperPosix(
   env.push_back(std::pair<const char*, const char*>(
       plugin_interpose_strings::kDYLDInsertLibrariesKey,
       interpose_list.c_str()));
-#elif defined(OS_LINUX)
-  const int crash_signal_fd =
-      Singleton<PluginCrashHandlerHostLinux>()->GetDeathSignalSocket();
-  if (crash_signal_fd >= 0) {
-    fds_to_map.push_back(std::pair<int, uint32_t>(crash_signal_fd,
-                                                  kCrashDumpSignal + 3));
-  }
-#endif  // OS_MACOSX
-  if (!base::LaunchApp(cmd_line.argv(), env, fds_to_map, false, &process))
-    process = 0;
-  return process;
+#endif
+#endif
+
+  Launch(
+#if defined(OS_WIN)
+      FilePath(),
+#elif defined(OS_POSIX)
+      env,
+#endif
+      cmd_line);
+
+  return true;
 }
-#endif  // OS_POSIX
+
+void PluginProcessHost::OnProcessLaunched() {
+  FilePath gears_path;
+  if (PathService::Get(chrome::FILE_GEARS_PLUGIN, &gears_path)) {
+    FilePath::StringType gears_path_lc = StringToLowerASCII(gears_path.value());
+    FilePath::StringType plugin_path_lc =
+        StringToLowerASCII(info_.path.value());
+    if (plugin_path_lc == gears_path_lc) {
+      // Give Gears plugins "background" priority.  See http://b/1280317.
+      SetProcessBackgrounded();
+    }
+  }
+}
 
 void PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PluginProcessHost, msg)

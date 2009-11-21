@@ -9,12 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/debug_util.h"
-#if defined(OS_POSIX)
-#include "base/global_descriptors_posix.h"
-#endif
 #include "base/message_loop.h"
-#include "base/path_service.h"
-#include "base/process_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/child_process_security_policy.h"
@@ -26,17 +21,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/debug_flags.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/process_watcher.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/worker_messages.h"
-#include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "net/base/registry_controlled_domain.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/sandbox_policy.h"
-#endif
 
 // Notifies RenderViewHost that one or more worker objects crashed.
 class WorkerCrashTask : public Task {
@@ -94,45 +83,35 @@ bool WorkerProcessHost::Init() {
   if (exe_path.empty())
     return false;
 
-  CommandLine cmd_line(exe_path);
-  cmd_line.AppendSwitchWithValue(switches::kProcessType,
-                                 switches::kWorkerProcess);
-  cmd_line.AppendSwitchWithValue(switches::kProcessChannelID,
-                                 ASCIIToWide(channel_id()));
-  SetCrashReporterCommandLine(&cmd_line);
+  CommandLine* cmd_line = new CommandLine(exe_path);
+  cmd_line->AppendSwitchWithValue(switches::kProcessType,
+                                  switches::kWorkerProcess);
+  cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
+                                  ASCIIToWide(channel_id()));
+  SetCrashReporterCommandLine(cmd_line);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNativeWebWorkers)) {
-    cmd_line.AppendSwitch(switches::kEnableNativeWebWorkers);
+    cmd_line->AppendSwitch(switches::kEnableNativeWebWorkers);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebWorkerShareProcesses)) {
-    cmd_line.AppendSwitch(switches::kWebWorkerShareProcesses);
+    cmd_line->AppendSwitch(switches::kWebWorkerShareProcesses);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWorkerStartupDialog)) {
-    cmd_line.AppendSwitch(switches::kWorkerStartupDialog);
+    cmd_line->AppendSwitch(switches::kWorkerStartupDialog);
   }
 
-  base::ProcessHandle process;
+  Launch(
 #if defined(OS_WIN)
-  process = sandbox::StartProcess(&cmd_line);
-#else
-  // This code is duplicated with browser_render_process_host.cc, but
-  // there's not a good place to de-duplicate it.
-  base::file_handle_mapping_vector fds_to_map;
-  const int ipcfd = channel().GetClientFileDescriptor();
-  if (ipcfd > -1) {
-    fds_to_map.push_back(std::pair<int, int>(
-        ipcfd, kPrimaryIPCChannel + base::GlobalDescriptors::kBaseDescriptor));
-  }
-  base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
+      FilePath(),
+#elif defined(OS_POSIX)
+      base::environment_vector(),
 #endif
-  if (!process)
-    return false;
-  SetHandle(process);
+      cmd_line);
 
   ChildProcessSecurityPolicy::GetInstance()->Add(id());
 

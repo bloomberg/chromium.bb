@@ -19,7 +19,6 @@
 #include "base/command_line.h"
 #include "base/field_trial.h"
 #include "base/logging.h"
-#include "base/process_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -313,14 +312,21 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
   } else {
     // Build command line for renderer, we have to quote the executable name to
     // deal with spaces.
-    scoped_ptr<CommandLine> cmd_line(new CommandLine(renderer_path));
+    CommandLine* cmd_line = new CommandLine(renderer_path);
     cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
                                     ASCIIToWide(channel_id));
-    AppendRendererCommandLine(cmd_line.get());
+    AppendRendererCommandLine(cmd_line);
 
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     child_process_.reset(new ChildProcessLauncher(
-        cmd_line.release(), channel_.get(), this));
+#if defined(OS_WIN)
+        FilePath(),
+#elif defined(POSIX)
+        base::environment_vector(),
+        channel_->GetClientFileDescriptor(),
+#endif
+        cmd_line,
+        this));
 
     fast_shutdown_started_ = false;
   }

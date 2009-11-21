@@ -304,7 +304,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
                                   OnReceiveContextMenuMsg(msg))
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_OpenChannelToPlugin,
                                       OnOpenChannelToPlugin)
-      IPC_MESSAGE_HANDLER(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
+      IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_LaunchNaCl, OnLaunchNaCl)
       IPC_MESSAGE_HANDLER(ViewHostMsg_CreateWorker, OnCreateWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_LookupSharedWorker, OnLookupSharedWorker)
       IPC_MESSAGE_HANDLER(ViewHostMsg_DocumentDetached, OnDocumentDetached)
@@ -617,18 +617,10 @@ void ResourceMessageFilter::OnOpenChannelToPlugin(const GURL& url,
       this, url, mime_type, locale, reply_msg);
 }
 
-void ResourceMessageFilter::OnLaunchNaCl(const std::wstring& url,
-    int channel_descriptor,
-    nacl::FileDescriptor* imc_handle,
-    base::ProcessHandle* nacl_process_handle,
-    base::ProcessId* nacl_process_id) {
-  NaClProcessHost* nacl_host = new NaClProcessHost(resource_dispatcher_host_,
-                                                   url);
-  nacl_host->Launch(this,
-                    channel_descriptor,
-                    imc_handle,
-                    nacl_process_handle,
-                    nacl_process_id);
+void ResourceMessageFilter::OnLaunchNaCl(
+    const std::wstring& url, int channel_descriptor, IPC::Message* reply_msg) {
+  NaClProcessHost* host = new NaClProcessHost(resource_dispatcher_host_, url);
+  host->Launch(this, channel_descriptor, reply_msg);
 }
 
 void ResourceMessageFilter::OnCreateWorker(const GURL& url,
