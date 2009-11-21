@@ -125,8 +125,15 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
     return;
   }
 
-  // Don't show sync status if setup is not complete.
+  // We show the sync promotion if sync has not been enabled and the user is
+  // logged in to Google Accounts. If the user is not signed in to GA, we
+  // should hide the sync status section entirely.
   if (!sync_service_->HasSyncSetupCompleted()) {
+    if (!sync_service_->SetupInProgress() && IsGoogleGAIACookieInstalled()) {
+      SendSyncMessageToPage(PROMOTION,
+          WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_PROMOTION_MESSAGE)),
+          WideToUTF8(l10n_util::GetString(IDS_SYNC_NTP_START_NOW_LINK_LABEL)));
+    }
     return;
   }
 
@@ -175,6 +182,7 @@ void NewTabPageSyncHandler::SendSyncMessageToPage(
   std::string linkurl;
   switch (type) {
     case HIDE:
+    case PROMOTION:
       msgtype = "presynced";
       break;
     case SYNC_ERROR:

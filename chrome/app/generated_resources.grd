@@ -5604,6 +5604,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_NTP_SYNC_SECTION_ERROR_TITLE" desc="The title to display in the New Tab Page sync status section in case of an error.">
         Bookmark Sync Error!
       </message>
+      <message name="IDS_SYNC_NTP_PROMOTION_MESSAGE" desc="The New Tab Page sync promotion message to display in the sync status section.">
+        You can sync your bookmarks across computers using your Google account
+      </message>
+      <message name="IDS_SYNC_NTP_START_NOW_LINK_LABEL" desc="The label to display for the New Tab Page promotion link.">
+        Start now
+      </message>
       <message name="IDS_SYNC_NTP_SETUP_IN_PROGRESS" desc="The message to display in the New Tab Page sync section when the sync setup is underway.">
         Setup in progress...
       </message>
