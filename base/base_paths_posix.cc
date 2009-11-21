@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base_paths_linux.h"
+#include "base/base_paths.h"
 
 #include <unistd.h>
 
@@ -21,7 +21,7 @@ const char kSelfExe[] = "/proc/self/exe";
 const char kSelfExe[] = "/proc/curproc/file";
 #endif
 
-bool PathProviderLinux(int key, FilePath* result) {
+bool PathProviderPosix(int key, FilePath* result) {
   FilePath path;
   switch (key) {
     case base::FILE_EXE:
@@ -37,11 +37,11 @@ bool PathProviderLinux(int key, FilePath* result) {
       return true;
     }
     case base::DIR_SOURCE_ROOT:
-      // On linux, unit tests execute two levels deep from the source root.
+      // On POSIX, unit tests execute two levels deep from the source root.
       // For example:  sconsbuild/{Debug|Release}/net_unittest
       if (PathService::Get(base::DIR_EXE, &path)) {
         path = path.DirName().DirName();
-        if (file_util::PathExists(path.Append("base/base_paths_linux.cc"))) {
+        if (file_util::PathExists(path.Append("base/base_paths_posix.cc"))) {
           *result = path;
           return true;
         }
@@ -49,7 +49,7 @@ bool PathProviderLinux(int key, FilePath* result) {
       // If that failed (maybe the build output is symlinked to a different
       // drive) try assuming the current directory is the source root.
       if (file_util::GetCurrentDirectory(&path) &&
-          file_util::PathExists(path.Append("base/base_paths_linux.cc"))) {
+          file_util::PathExists(path.Append("base/base_paths_posix.cc"))) {
         *result = path;
         return true;
       }
