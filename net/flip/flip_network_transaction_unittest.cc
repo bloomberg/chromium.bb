@@ -4,6 +4,7 @@
 
 #include "net/flip/flip_network_transaction.h"
 
+#include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "net/base/completion_callback.h"
 #include "net/base/mock_host_resolver.h"
@@ -634,6 +635,185 @@ TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
       lines.append("\n");
     }
     EXPECT_EQ(std::string(test_cases[i].expected_headers), lines);
+  }
+}
+
+// TODO(mbelshe):  This test is broken right now and we need to fix it!
+TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
+  // Basic request
+  static const unsigned char syn[] = {
+    0x80, 0x01, 0x00, 0x01,
+    0x01, 0x00, 0x00, 0x45,
+    0x00, 0x00, 0x00, 0x01,
+    0xc0, 0x00, 0x00, 0x03,
+    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
+    0x00, 0x03, 'G', 'E', 'T',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+                'm', '/',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  // Reply with the X-Associated-Content header.
+  static const unsigned char syn_reply[] = {
+    0x80, 0x01, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x71,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,
+    0x00, 0x14, 'X', '-', 'A', 's', 's', 'o', 'c', 'i', 'a', 't',
+                'e', 'd', '-', 'C', 'o', 'n', 't', 'e', 'n', 't',
+    0x00, 0x20, '1', '?', '?', 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w',
+                'w', '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o', 'm',
+                '/', 'f', 'o', 'o', '.', 'd', 'a', 't',
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',
+    0x00, 0x03, '2', '0', '0',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  // Body for stream 1
+  static const unsigned char body_frame[] = {
+    0x00, 0x00, 0x00, 0x01,
+    0x01, 0x00, 0x00, 0x06,
+    'h', 'e', 'l', 'l', 'o', '!',
+  };
+
+  // Syn for the X-Associated-Content (foo.dat)
+  static const unsigned char syn_push[] = {
+    0x80, 0x01, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x47,
+    0x00, 0x00, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x04,
+    0x00, 0x04, 'p', 'a', 't', 'h',
+    0x00, 0x08, '/', 'f', 'o', 'o', '.', 'd', 'a', 't',
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',
+    0x00, 0x03, '2', '0', '0',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x08, '/', 'f', 'o', 'o', '.', 'd', 'a', 't',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  // Body for stream 2
+  static const unsigned char body_frame_2[] = {
+    0x00, 0x00, 0x00, 0x02,
+    0x01, 0x00, 0x00, 0x07,
+    'g', 'o', 'o', 'd', 'b', 'y', 'e',
+  };
+
+  MockWrite writes[] = {
+    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockWrite(true, 0, 0)  // EOF
+  };
+
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(syn_reply), arraysize(syn_reply)),
+    MockRead(true, reinterpret_cast<const char*>(body_frame),
+             arraysize(body_frame)),
+    MockRead(true, ERR_IO_PENDING),  // Force a pause
+    MockRead(true, reinterpret_cast<const char*>(syn_push),
+             arraysize(syn_push)),
+    MockRead(true, reinterpret_cast<const char*>(body_frame_2),
+             arraysize(body_frame_2)),
+    MockRead(true, ERR_IO_PENDING),  // Force a pause
+    MockRead(true, 0, 0)  // EOF
+  };
+
+  // We disable SSL for this test.
+  FlipSession::SetSSLMode(false);
+
+  enum TestTypes {
+    // Simulate that the server sends the first request, notifying the client
+    // that it *will* push the second stream.  But the client issues the
+    // request for the second stream before the push data arrives.
+    PUSH_AFTER_REQUEST,
+    // Simulate that the server is sending the pushed stream data before the
+    // client requests it.  The FlipSession will buffer the response and then
+    // deliver the data when the client does make the request.
+    PUSH_BEFORE_REQUEST,
+    DONE
+  };
+
+  for (int test_type = PUSH_AFTER_REQUEST; test_type != DONE; ++test_type) {
+    // Setup a mock session.
+    SessionDependencies session_deps;
+    scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
+    scoped_refptr<DelayedSocketData> data(
+        new DelayedSocketData(reads, writes));
+    session_deps.socket_factory.AddSocketDataProvider(data.get());
+
+    // Issue the first request
+    {
+      FlipNetworkTransaction trans(session.get());
+
+      // Issue the first request.
+      HttpRequestInfo request;
+      request.method = "GET";
+      request.url = GURL("http://www.google.com/");
+      request.load_flags = 0;
+      TestCompletionCallback callback;
+      int rv = trans.Start(&request, &callback, NULL);
+      EXPECT_EQ(ERR_IO_PENDING, rv);
+
+      rv = callback.WaitForResult();
+      EXPECT_EQ(rv, OK);
+
+      // Verify the SYN_REPLY.
+      const HttpResponseInfo* response = trans.GetResponseInfo();
+      EXPECT_TRUE(response->headers != NULL);
+      EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+      if (test_type == PUSH_BEFORE_REQUEST)
+        data->CompleteRead();
+
+      // Verify the body.
+      std::string response_data;
+      rv = ReadTransaction(&trans, &response_data);
+      EXPECT_EQ(OK, rv);
+      EXPECT_EQ("hello!", response_data);
+    }
+
+    // Issue a second request for the X-Associated-Content.
+    {
+      FlipNetworkTransaction trans(session.get());
+
+      HttpRequestInfo request;
+      request.method = "GET";
+      request.url = GURL("http://www.google.com/foo.dat");
+      request.load_flags = 0;
+      TestCompletionCallback callback;
+      int rv = trans.Start(&request, &callback, NULL);
+      EXPECT_EQ(ERR_IO_PENDING, rv);
+
+      // In the case where we are Complete the next read now.
+      if (test_type == PUSH_AFTER_REQUEST)
+        data->CompleteRead();
+
+      rv = callback.WaitForResult();
+      EXPECT_EQ(rv, OK);
+
+      // Verify the SYN_REPLY.
+      const HttpResponseInfo* response = trans.GetResponseInfo();
+      EXPECT_TRUE(response->headers != NULL);
+      EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+
+      // Verify the body.
+      std::string response_data;
+      rv = ReadTransaction(&trans, &response_data);
+      EXPECT_EQ(OK, rv);
+      EXPECT_EQ("goodbye", response_data);
+    }
+
+    // Complete the next read now and teardown.
+    data->CompleteRead();
+
+    // Verify that we consumed all test data.
+    EXPECT_TRUE(data->at_read_eof());
+    EXPECT_TRUE(data->at_write_eof());
   }
 }
 
