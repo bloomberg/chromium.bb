@@ -23,6 +23,29 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
 
+namespace {
+
+// Diagnostics function to dump the headers of a request.
+// TODO(mbelshe): Remove this function.
+void DumpFlipHeaders(const flip::FlipHeaderBlock& headers) {
+  // Because this function gets called on every request,
+  // take extra care to optimize it away if logging is turned off.
+  if (logging::LOG_INFO < logging::GetMinLogLevel())
+    return;
+
+  flip::FlipHeaderBlock::const_iterator it = headers.begin();
+  while (it != headers.end()) {
+    std::string val = (*it).second;
+    std::string::size_type pos = 0;
+    while ((pos = val.find('\0', pos)) != val.npos)
+      val[pos] = '\n';
+    LOG(INFO) << (*it).first << "==" << val;
+    ++it;
+  }
+}
+
+}  // namespace
+
 namespace net {
 
 // static
@@ -206,6 +229,8 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
 
   LOG(INFO) << "FETCHING: " << delegate->request()->url.spec();
 
+  LOG(INFO) << "FLIP SYN_STREAM HEADERS ----------------------------------";
+  DumpFlipHeaders(headers);
 
   // Schedule to write to the socket after we've made it back
   // to the message loop so that we can aggregate multiple
@@ -220,6 +245,8 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
 
 int FlipSession::WriteStreamData(flip::FlipStreamId stream_id,
                                  net::IOBuffer* data, int len) {
+  LOG(INFO) << "Writing Stream Data for stream " << stream_id << " (" << len
+            << " bytes)";
   const int kMss = 1430;  // This is somewhat arbitrary and not really fixed,
                           // but it will always work reasonably with ethernet.
   // Chop the world into 2-packet chunks.  This is somewhat arbitrary, but
@@ -629,6 +656,9 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
     LOG(ERROR) << "Received OnSyn for active stream " << stream_id;
     return;
   }
+
+  LOG(INFO) << "FLIP SYN_REPLY RESPONSE HEADERS -----------------------";
+  DumpFlipHeaders(*headers);
 
   // Activate a stream and parse the headers.
   FlipStream* stream = ActivateStream(stream_id, NULL);
