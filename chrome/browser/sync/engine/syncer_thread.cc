@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
-#include "chrome/browser/sync/engine/syncer_thread_timed_stop.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -113,23 +112,6 @@ const int SyncerThread::kDefaultShortPollIntervalSeconds = 60;
 const int SyncerThread::kDefaultLongPollIntervalSeconds = 3600;
 const int SyncerThread::kDefaultMaxPollIntervalMs = 30 * 60 * 1000;
 
-SyncerThread* SyncerThreadFactory::Create(
-    ClientCommandChannel* command_channel,
-    syncable::DirectoryManager* mgr,
-    ServerConnectionManager* connection_manager, AllStatus* all_status,
-    ModelSafeWorker* model_safe_worker) {
-  const CommandLine* cmd = CommandLine::ForCurrentProcess();
-  if (cmd->HasSwitch(switches::kSyncerThreadTimedStop)) {
-    return new SyncerThreadTimedStop(command_channel, mgr, connection_manager,
-        all_status, model_safe_worker);
-  } else {
-    // The default SyncerThread implementation, which does not time-out when
-    // Stop is called.
-    return new SyncerThread(command_channel, mgr, connection_manager,
-        all_status, model_safe_worker);
-  }
-}
-
 void SyncerThread::NudgeSyncer(int milliseconds_from_now, NudgeSource source) {
   AutoLock lock(lock_);
   if (vault_.syncer_ == NULL) {
@@ -139,77 +121,42 @@ void SyncerThread::NudgeSyncer(int milliseconds_from_now, NudgeSource source) {
   NudgeSyncImpl(milliseconds_from_now, source);
 }
 
-SyncerThread::SyncerThread()
+SyncerThread::SyncerThread(sessions::SyncSessionContext* context,
+    AllStatus* all_status)
     : thread_main_started_(false, false),
       thread_("SyncEngine_SyncerThread"),
       vault_field_changed_(&lock_),
       p2p_authenticated_(false),
       p2p_subscribed_(false),
-      client_command_hookup_(NULL),
-      conn_mgr_hookup_(NULL),
-      allstatus_(NULL),
-      dirman_(NULL),
-      scm_(NULL),
-      syncer_short_poll_interval_seconds_(kDefaultShortPollIntervalSeconds),
-      syncer_long_poll_interval_seconds_(kDefaultLongPollIntervalSeconds),
-      syncer_polling_interval_(kDefaultShortPollIntervalSeconds),
-      syncer_max_interval_(kDefaultMaxPollIntervalMs),
-      talk_mediator_hookup_(NULL),
-      command_channel_(NULL),
-      directory_manager_hookup_(NULL),
-      syncer_events_(NULL),
-      model_safe_worker_(NULL),
-      disable_idle_detection_(false) {
-}
-
-SyncerThread::SyncerThread(
-    ClientCommandChannel* command_channel,
-    syncable::DirectoryManager* mgr,
-    ServerConnectionManager* connection_manager,
-    AllStatus* all_status,
-    ModelSafeWorker* model_safe_worker)
-    : thread_main_started_(false, false),
-      thread_("SyncEngine_SyncerThread"),
-      vault_field_changed_(&lock_),
-      p2p_authenticated_(false),
-      p2p_subscribed_(false),
-      client_command_hookup_(NULL),
       conn_mgr_hookup_(NULL),
       allstatus_(all_status),
-      dirman_(mgr),
-      scm_(connection_manager),
       syncer_short_poll_interval_seconds_(kDefaultShortPollIntervalSeconds),
       syncer_long_poll_interval_seconds_(kDefaultLongPollIntervalSeconds),
       syncer_polling_interval_(kDefaultShortPollIntervalSeconds),
       syncer_max_interval_(kDefaultMaxPollIntervalMs),
       talk_mediator_hookup_(NULL),
-      command_channel_(command_channel),
       directory_manager_hookup_(NULL),
       syncer_events_(NULL),
-      model_safe_worker_(model_safe_worker),
+      session_context_(context),
       disable_idle_detection_(false) {
+  DCHECK(context);
+  syncer_event_relay_channel_.reset(new SyncerEventChannel(SyncerEvent(
+      SyncerEvent::SHUTDOWN_USE_WITH_CARE)));
 
-  SyncerEvent shutdown = { SyncerEvent::SHUTDOWN_USE_WITH_CARE };
-  syncer_event_channel_.reset(new SyncerEventChannel(shutdown));
-
-  if (dirman_) {
+  if (context->directory_manager()) {
     directory_manager_hookup_.reset(NewEventListenerHookup(
-        dirman_->channel(), this, &SyncerThread::HandleDirectoryManagerEvent));
+        context->directory_manager()->channel(), this,
+            &SyncerThread::HandleDirectoryManagerEvent));
   }
 
-  if (scm_) {
-    WatchConnectionManager(scm_);
-  }
+  if (context->connection_manager())
+    WatchConnectionManager(context->connection_manager());
 
-  if (command_channel_) {
-    WatchClientCommands(command_channel_);
-  }
 }
 
 SyncerThread::~SyncerThread() {
-  client_command_hookup_.reset();
   conn_mgr_hookup_.reset();
-  syncer_event_channel_.reset();
+  syncer_event_relay_channel_.reset();
   directory_manager_hookup_.reset();
   syncer_events_.reset();
   delete vault_.syncer_;
@@ -280,25 +227,24 @@ bool SyncerThread::Stop(int max_wait) {
   return true;
 }
 
-void SyncerThread::WatchClientCommands(ClientCommandChannel* channel) {
-  AutoLock lock(lock_);
-  client_command_hookup_.reset(NewEventListenerHookup(channel, this,
-      &SyncerThread::HandleClientCommand));
+void SyncerThread::OnReceivedLongPollIntervalUpdate(
+    const base::TimeDelta& new_interval) {
+  syncer_long_poll_interval_seconds_ = static_cast<int>(
+      new_interval.InSeconds());
 }
 
-void SyncerThread::HandleClientCommand(ClientCommandChannel::EventType event) {
-  if (!event) {
-    return;
-  }
+void SyncerThread::OnReceivedShortPollIntervalUpdate(
+    const base::TimeDelta& new_interval) {
+  syncer_short_poll_interval_seconds_ = static_cast<int>(
+      new_interval.InSeconds());
+}
 
-  // Mutex not really necessary for these.
-  if (event->has_set_sync_poll_interval()) {
-    syncer_short_poll_interval_seconds_ = event->set_sync_poll_interval();
-  }
+void SyncerThread::OnSilencedUntil(const base::TimeTicks& silenced_until) {
+  silenced_until_ = silenced_until;
+}
 
-  if (event->has_set_sync_long_poll_interval()) {
-    syncer_long_poll_interval_seconds_ = event->set_sync_long_poll_interval();
-  }
+bool SyncerThread::IsSyncingCurrentlySilenced() {
+  return (silenced_until_ - TimeTicks::Now()) >= TimeDelta::FromSeconds(0);
 }
 
 void SyncerThread::ThreadMainLoop() {
@@ -398,11 +344,10 @@ SyncerThread::WaitInterval SyncerThread::CalculatePollingWaitTime(
   WaitInterval return_interval;
 
   // Server initiated throttling trumps everything.
-  if (vault_.syncer_ && vault_.syncer_->is_silenced()) {
+  if (!silenced_until_.is_null()) {
     // We don't need to reset other state, it can continue where it left off.
     return_interval.mode = WaitInterval::THROTTLED;
-    return_interval.poll_delta = vault_.syncer_->silenced_until() -
-        TimeTicks::Now();
+    return_interval.poll_delta = silenced_until_ - TimeTicks::Now();
     return return_interval;
   }
 
@@ -480,8 +425,14 @@ void SyncerThread::ThreadMain() {
 
 void SyncerThread::SyncMain(Syncer* syncer) {
   CHECK(syncer);
+
+  // Since we are initiating a new session for which we are the delegate, we
+  // are not currently silenced so reset this state for the next session which
+  // may need to use it.
+  silenced_until_ = base::TimeTicks();
+
   AutoUnlock unlock(lock_);
-  while (syncer->SyncShare() && !syncer->is_silenced()) {
+  while (syncer->SyncShare(this) && silenced_until_.is_null()) {
     LOG(INFO) << "Looping in sync share";
   }
   LOG(INFO) << "Done looping in sync share";
@@ -541,7 +492,7 @@ void SyncerThread::SetUpdatesSource(bool nudged, NudgeSource nudge_source,
 
 void SyncerThread::HandleSyncerEvent(const SyncerEvent& event) {
   AutoLock lock(lock_);
-  channel()->NotifyListeners(event);
+  relay_channel()->NotifyListeners(event);
   if (SyncerEvent::REQUEST_SYNC_NUDGE != event.what_happened) {
     return;
   }
@@ -557,12 +508,12 @@ void SyncerThread::HandleDirectoryManagerEvent(
     // The underlying database structure is ready, and we should create
     // the syncer.
     CHECK(vault_.syncer_ == NULL);
-    vault_.syncer_ =
-        new Syncer(dirman_, event.dirname, scm_, model_safe_worker_.get());
+    session_context_->set_account_name(event.dirname);
+    vault_.syncer_ = new Syncer(session_context_.get());
 
-    vault_.syncer_->set_command_channel(command_channel_);
     syncer_events_.reset(NewEventListenerHookup(
-        vault_.syncer_->channel(), this, &SyncerThread::HandleSyncerEvent));
+        session_context_->syncer_event_channel(), this,
+        &SyncerThread::HandleSyncerEvent));
     vault_field_changed_.Broadcast();
   }
 }
@@ -599,8 +550,8 @@ void SyncerThread::HandleServerConnectionEvent(
   }
 }
 
-SyncerEventChannel* SyncerThread::channel() {
-  return syncer_event_channel_.get();
+SyncerEventChannel* SyncerThread::relay_channel() {
+  return syncer_event_relay_channel_.get();
 }
 
 // Inputs and return value in milliseconds.
@@ -682,10 +633,8 @@ void SyncerThread::HandleTalkMediatorEvent(const TalkMediatorEvent& event) {
       break;
   }
 
-  if (NULL != vault_.syncer_) {
-    vault_.syncer_->set_notifications_enabled(
-        p2p_authenticated_ && p2p_subscribed_);
-  }
+  session_context_->set_notifications_enabled(p2p_authenticated_ &&
+                                              p2p_subscribed_);
 }
 
 }  // namespace browser_sync

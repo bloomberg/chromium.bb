@@ -7,8 +7,8 @@
 #include <vector>
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -19,32 +19,33 @@ namespace browser_sync {
 PostCommitMessageCommand::PostCommitMessageCommand() {}
 PostCommitMessageCommand::~PostCommitMessageCommand() {}
 
-void PostCommitMessageCommand::ExecuteImpl(SyncerSession* session) {
-  if (session->commit_ids_empty())
+void PostCommitMessageCommand::ExecuteImpl(sessions::SyncSession* session) {
+  if (session->status_controller()->commit_ids().empty())
     return;  // Nothing to commit.
   ClientToServerResponse response;
-  syncable::ScopedDirLookup dir(session->dirman(), session->account_name());
+  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
+                                session->context()->account_name());
   if (!dir.good())
     return;
-  if (!SyncerProtoUtil::PostClientToServerMessage(session->commit_message(),
-                                                  &response, session)) {
+  sessions::StatusController* status = session->status_controller();
+  if (!SyncerProtoUtil::PostClientToServerMessage(
+      status->mutable_commit_message(), &response, session)) {
     // None of our changes got through, let's clear sync flags and wait for
     // another list update.
-    SyncerStatus status(session);
-    status.increment_consecutive_problem_commits();
-    status.increment_consecutive_errors();
+    status->increment_num_consecutive_problem_commits();
+    status->increment_num_consecutive_errors();
     syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
     // TODO(sync): why set this flag, it seems like a bad side-effect?
-    const vector<syncable::Id>& commit_ids = session->commit_ids();
+    const vector<syncable::Id>& commit_ids = status->commit_ids();
     for (size_t i = 0; i < commit_ids.size(); i++) {
       syncable::MutableEntry entry(&trans, syncable::GET_BY_ID, commit_ids[i]);
       entry.Put(syncable::SYNCING, false);
     }
     return;
   } else {
-    session->set_item_committed();
+    status->set_items_committed(true);
   }
-  session->set_commit_response(response);
+  status->mutable_commit_response()->CopyFrom(response);
 }
 
 }  // namespace browser_sync

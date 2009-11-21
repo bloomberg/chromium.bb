@@ -9,9 +9,10 @@
 #include "base/command_line.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "base/waitable_event.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_thread.h"
-#include "chrome/browser/sync/engine/syncer_thread_timed_stop.h"
+#include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/test/sync/engine/mock_server_connection.h"
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,22 +21,25 @@ using base::TimeTicks;
 using base::TimeDelta;
 
 namespace browser_sync {
+using sessions::SyncSessionContext;
 
 typedef testing::Test SyncerThreadTest;
 typedef SyncerThread::WaitInterval WaitInterval;
 
 class SyncerThreadWithSyncerTest : public testing::Test {
  public:
-  SyncerThreadWithSyncerTest() {}
+  SyncerThreadWithSyncerTest() : sync_cycle_ended_event_(false, false) {}
   virtual void SetUp() {
     metadb_.SetUp();
     connection_.reset(new MockConnectionManager(metadb_.manager(),
                                                 metadb_.name()));
     allstatus_.reset(new AllStatus());
-
-    syncer_thread_ = SyncerThreadFactory::Create(NULL, metadb_.manager(),
-        connection_.get(), allstatus_.get(), new ModelSafeWorker());
-
+    SyncSessionContext* context = new SyncSessionContext(connection_.get(),
+        metadb_.manager(), new ModelSafeWorker());
+    syncer_thread_ = new SyncerThread(context, allstatus_.get());
+    syncer_event_hookup_.reset(
+        NewEventListenerHookup(syncer_thread_->relay_channel(), this,
+            &SyncerThreadWithSyncerTest::HandleSyncerEvent));
     allstatus_->WatchSyncerThread(syncer_thread_);
     syncer_thread_->SetConnected(true);
   }
@@ -49,11 +53,27 @@ class SyncerThreadWithSyncerTest : public testing::Test {
   ManuallyOpenedTestDirectorySetterUpper* metadb() { return &metadb_; }
   MockConnectionManager* connection() { return connection_.get(); }
   SyncerThread* syncer_thread() { return syncer_thread_; }
+
+  // Waits an indefinite amount of sync cycles for the syncer thread to become
+  // throttled.  Only call this if a throttle is supposed to occur!
+  void WaitForThrottle() {
+    while (!syncer_thread()->IsSyncingCurrentlySilenced())
+      sync_cycle_ended_event_.Wait();
+  }
+
  private:
+
+  void HandleSyncerEvent(const SyncerEvent& event) {
+    if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED)
+      sync_cycle_ended_event_.Signal();
+  }
+
   ManuallyOpenedTestDirectorySetterUpper metadb_;
   scoped_ptr<MockConnectionManager> connection_;
   scoped_ptr<AllStatus> allstatus_;
   scoped_refptr<SyncerThread> syncer_thread_;
+  scoped_ptr<EventListenerHookup> syncer_event_hookup_;
+  base::WaitableEvent sync_cycle_ended_event_;
   DISALLOW_COPY_AND_ASSIGN(SyncerThreadWithSyncerTest);
 };
 
@@ -92,13 +112,13 @@ class SyncShareIntercept : public MockConnectionManager::ThrottleRequestVisitor,
 };
 
 TEST_F(SyncerThreadTest, Construction) {
-  scoped_refptr<SyncerThread> syncer_thread(
-      SyncerThreadFactory::Create(NULL, NULL, NULL, NULL, NULL));
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
 }
 
 TEST_F(SyncerThreadTest, StartStop) {
-  scoped_refptr<SyncerThread> syncer_thread(
-      SyncerThreadFactory::Create(NULL, NULL, NULL, NULL, NULL));
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
   EXPECT_TRUE(syncer_thread->Start());
   EXPECT_TRUE(syncer_thread->Stop(2000));
 
@@ -109,8 +129,8 @@ TEST_F(SyncerThreadTest, StartStop) {
 }
 
 TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
-  scoped_refptr<SyncerThread> syncer_thread(
-      SyncerThreadFactory::Create(NULL, NULL, NULL, NULL, NULL));
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
   syncer_thread->DisableIdleDetection();
 
   // Syncer_polling_interval_ is less than max poll interval.
@@ -169,8 +189,8 @@ TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
 TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // Set up the environment.
   int user_idle_milliseconds_param = 0;
-  scoped_refptr<SyncerThread> syncer_thread(
-      SyncerThreadFactory::Create(NULL, NULL, NULL, NULL, NULL));
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
   syncer_thread->DisableIdleDetection();
   // Hold the lock to appease asserts in code.
   AutoLock lock(syncer_thread->lock_);
@@ -596,9 +616,11 @@ TEST_F(SyncerThreadWithSyncerTest, Throttling) {
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
   syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
 
-  // Stick around for several poll intervals for good measure. Any sync is
-  // a failure.
-  interceptor.WaitForSyncShare(1, poll_interval * 10);
+  // Wait until the syncer thread reports that it is throttled.  Any further
+  // sync share interceptions will result in failure.  If things are broken,
+  // we may never halt.
+  WaitForThrottle();
+  EXPECT_TRUE(syncer_thread()->IsSyncingCurrentlySilenced());
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }

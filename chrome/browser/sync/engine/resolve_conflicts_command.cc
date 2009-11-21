@@ -5,7 +5,7 @@
 #include "chrome/browser/sync/engine/resolve_conflicts_command.h"
 
 #include "chrome/browser/sync/engine/conflict_resolver.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 
 namespace browser_sync {
@@ -14,15 +14,18 @@ ResolveConflictsCommand::ResolveConflictsCommand() {}
 ResolveConflictsCommand::~ResolveConflictsCommand() {}
 
 void ResolveConflictsCommand::ModelChangingExecuteImpl(
-    SyncerSession* session) {
-  if (!session->resolver())
+    sessions::SyncSession* session) {
+  ConflictResolver* resolver = session->context()->resolver();
+  DCHECK(resolver);
+  if (!resolver)
     return;
-  syncable::ScopedDirLookup dir(session->dirman(), session->account_name());
+
+  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
+                                session->context()->account_name());
   if (!dir.good())
     return;
-  ConflictResolutionView conflict_view(session);
-  session->set_conflicts_resolved(
-      session->resolver()->ResolveConflicts(dir, &conflict_view, session));
+  sessions::StatusController* status = session->status_controller();
+  status->set_conflicts_resolved(resolver->ResolveConflicts(dir, status));
 }
 
 }  // namespace browser_sync

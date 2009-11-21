@@ -19,9 +19,9 @@ class Id;
 // in a single place without having dependencies between other files.
 namespace browser_sync {
 
-class SyncProcessState;
-class SyncCycleState;
-class SyncerSession;
+namespace sessions {
+struct SyncSessionSnapshot;
+}
 class Syncer;
 
 enum UpdateAttemptResponse {
@@ -93,6 +93,11 @@ struct SyncerEvent {
     SYNC_CYCLE_ENDED,
   };
 
+  explicit SyncerEvent(EventCause cause) : what_happened(cause),
+                                           snapshot(NULL),
+                                           successful_commit_count(0),
+                                           nudge_delay_milliseconds(0) {}
+
   static bool IsChannelShutdownEvent(const SyncerEvent& e) {
     return SHUTDOWN_USE_WITH_CARE == e.what_happened;
   }
@@ -105,7 +110,7 @@ struct SyncerEvent {
   EventCause what_happened;
 
   // The last session used for syncing.
-  SyncerSession* last_session;
+  const sessions::SyncSessionSnapshot* snapshot;
 
   int successful_commit_count;
 

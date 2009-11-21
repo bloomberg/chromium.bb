@@ -20,8 +20,12 @@
 
 namespace browser_sync {
 
+namespace sessions {
+class ConflictProgress;
+class UpdateProgress;
+}
+
 class ConflictResolver;
-class SyncerSession;
 
 class UpdateApplicator {
  public:
@@ -38,10 +42,12 @@ class UpdateApplicator {
   bool AllUpdatesApplied() const;
 
   // This class does not automatically save its progress into the
-  // SyncerSession -- to get that to happen, call this method after update
+  // SyncSession -- to get that to happen, call this method after update
   // application is finished (i.e., when AttemptOneAllocation stops returning
   // true).
-  void SaveProgressIntoSessionState(SyncerSession* session);
+  void SaveProgressIntoSessionState(
+      sessions::ConflictProgress* conflict_progress,
+      sessions::UpdateProgress* update_progress);
 
  private:
   // Used to resolve conflicts when trying to apply updates.

@@ -9,10 +9,9 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
-#include "chrome/browser/sync/engine/syncer_status.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
@@ -39,40 +38,44 @@ using syncable::SYNCING;
 
 namespace browser_sync {
 
-void IncrementErrorCounters(SyncerStatus status) {
-  status.increment_consecutive_problem_commits();
-  status.increment_consecutive_errors();
+using sessions::StatusController;
+using sessions::SyncSession;
+using sessions::ConflictProgress;
+
+void IncrementErrorCounters(StatusController* status) {
+  status->increment_num_consecutive_problem_commits();
+  status->increment_num_consecutive_errors();
 }
-void ResetErrorCounters(SyncerStatus status) {
-  status.zero_consecutive_problem_commits();
-  status.zero_consecutive_errors();
+void ResetErrorCounters(StatusController* status) {
+  status->set_num_consecutive_problem_commits(0);
+  status->set_num_consecutive_errors(0);
 }
 
-ProcessCommitResponseCommand::ProcessCommitResponseCommand(
-    ExtensionsActivityMonitor* monitor) : extensions_monitor_(monitor) {}
+ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
 void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
-    SyncerSession* session) {
+    SyncSession* session) {
   ProcessCommitResponse(session);
-  if (!session->HadSuccessfulCommits())
-    extensions_monitor_->PutRecords(session->extensions_activity());
+  ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
+  if (session->status_controller()->syncer_status().num_successful_commits == 0)
+    monitor->PutRecords(session->extensions_activity());
 }
 
 void ProcessCommitResponseCommand::ProcessCommitResponse(
-    SyncerSession* session) {
+    SyncSession* session) {
   // TODO(sync): This function returns if it sees problems. We probably want
   // to flag the need for an update or similar.
-  ScopedDirLookup dir(session->dirman(), session->account_name());
+  ScopedDirLookup dir(session->context()->directory_manager(),
+                      session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
-  const ClientToServerResponse& response = session->commit_response();
-  const vector<syncable::Id>& commit_ids = session->commit_ids();
 
-  // TODO(sync): move counters out of here.
-  SyncerStatus status(session);
+  StatusController* status = session->status_controller();
+  const ClientToServerResponse& response(status->commit_response());
+  const vector<syncable::Id>& commit_ids(status->commit_ids());
 
   if (!response.has_commit()) {
     // TODO(sync): What if we didn't try to commit anything?
@@ -107,6 +110,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   bool over_quota = false;
   set<syncable::Id> conflicting_new_folder_ids;
   set<syncable::Id> deleted_folders;
+  ConflictProgress* conflict_progress = status->mutable_conflict_progress();
   { // Scope for WriteTransaction.
     WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
     for (int i = 0; i < cr.entryresponse_size(); i++) {
@@ -114,7 +118,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
           ProcessSingleCommitResponse(&trans, cr.entryresponse(i),
                                       commit_ids[i],
                                       &conflicting_new_folder_ids,
-                                      &deleted_folders, session);
+                                      &deleted_folders);
       switch (response_type) {
         case CommitResponse::INVALID_MESSAGE:
           ++error_commits;
@@ -122,18 +126,22 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
         case CommitResponse::CONFLICT:
           ++conflicting_commits;
           // This is important to activate conflict resolution.
-          session->AddCommitConflict(commit_ids[i]);
+          conflict_progress->AddConflictingItemById(commit_ids[i]);
           break;
         case CommitResponse::SUCCESS:
           // TODO(sync): worry about sync_rate_ rate calc?
           ++successes;
-          status.increment_successful_commits();
+          status->increment_num_successful_commits();
           break;
         case CommitResponse::OVER_QUOTA:
           over_quota = true;
           // We handle over quota like a retry, which is same as transient.
         case CommitResponse::RETRY:
         case CommitResponse::TRANSIENT_ERROR:
+          // TODO(tim): Now that we have SyncSession::Delegate, we
+          // should plumb this directly for exponential backoff purposes rather
+          // than trying to infer from HasMoreToSync(). See
+          // SyncerThread::CalculatePollingWaitTime.
           ++transient_error_commits;
           break;
         default:
@@ -143,21 +151,21 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   }
 
   // TODO(sync): move status reporting elsewhere.
-  status.set_conflicting_commits(conflicting_commits);
+  status->set_num_conflicting_commits(conflicting_commits);
   if (0 == successes) {
-    status.increment_consecutive_transient_error_commits_by(
+    status->increment_num_consecutive_transient_error_commits_by(
         transient_error_commits);
-    status.increment_consecutive_errors_by(transient_error_commits);
+    status->increment_num_consecutive_errors_by(transient_error_commits);
   } else {
-    status.zero_consecutive_transient_error_commits();
-    status.zero_consecutive_errors();
+    status->set_num_consecutive_transient_error_commits(0);
+    status->set_num_consecutive_errors(0);
   }
   if (commit_count != (conflicting_commits + error_commits +
                        transient_error_commits)) {
     ResetErrorCounters(status);
   }
   SyncerUtil::MarkDeletedChildrenSynced(dir, &deleted_folders);
-  session->set_over_quota(over_quota);
+  status->set_over_quota(over_quota);
 
   return;
 }
@@ -175,8 +183,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
     const sync_pb::CommitResponse_EntryResponse& pb_server_entry,
     const syncable::Id& pre_commit_id,
     std::set<syncable::Id>* conflicting_new_folder_ids,
-    set<syncable::Id>* deleted_folders,
-    SyncerSession* const session) {
+    set<syncable::Id>* deleted_folders) {
 
   const CommitResponse_EntryResponse& server_entry =
       *static_cast<const CommitResponse_EntryResponse*>(&pb_server_entry);
@@ -241,7 +248,7 @@ ProcessCommitResponseCommand::ProcessSingleCommitResponse(
 
   ProcessSuccessfulCommitResponse(trans, server_entry, pre_commit_id,
                                   &local_entry, syncing_was_set,
-                                  deleted_folders, session);
+                                  deleted_folders);
   return response;
 }
 
@@ -249,8 +256,7 @@ void ProcessCommitResponseCommand::ProcessSuccessfulCommitResponse(
     syncable::WriteTransaction* trans,
     const CommitResponse_EntryResponse& server_entry,
     const syncable::Id& pre_commit_id, syncable::MutableEntry* local_entry,
-    bool syncing_was_set, set<syncable::Id>* deleted_folders,
-    SyncerSession* const session) {
+    bool syncing_was_set, set<syncable::Id>* deleted_folders) {
   int64 old_version = local_entry->Get(BASE_VERSION);
   int64 new_version = server_entry.version();
   bool bad_commit_version = false;

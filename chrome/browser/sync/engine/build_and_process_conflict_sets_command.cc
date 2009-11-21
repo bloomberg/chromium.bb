@@ -11,13 +11,17 @@
 #include "base/basictypes.h"
 #include "base/format_macros.h"
 #include "base/rand_util.h"
-#include "chrome/browser/sync/engine/conflict_resolution_view.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/update_applicator.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 
 namespace browser_sync {
 
+using sessions::ConflictProgress;
+using sessions::StatusController;
+using sessions::SyncSession;
+using sessions::UpdateProgress;
 using std::set;
 using std::string;
 using std::vector;
@@ -26,22 +30,24 @@ BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSetsCommand() {}
 BuildAndProcessConflictSetsCommand::~BuildAndProcessConflictSetsCommand() {}
 
 void BuildAndProcessConflictSetsCommand::ModelChangingExecuteImpl(
-    SyncerSession* session) {
-  session->set_conflict_sets_built(BuildAndProcessConflictSets(session));
+    SyncSession* session) {
+  session->status_controller()->set_conflict_sets_built(
+      BuildAndProcessConflictSets(session));
 }
 
 bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
-    SyncerSession* session) {
-  syncable::ScopedDirLookup dir(session->dirman(), session->account_name());
+    SyncSession* session) {
+  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
+                                session->context()->account_name());
   if (!dir.good())
     return false;
   bool had_single_direction_sets = false;
   {  // Scope for transaction.
     syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
-    ConflictResolutionView conflict_view(session);
-    BuildConflictSets(&trans, &conflict_view);
-    had_single_direction_sets =
-        ProcessSingleDirectionConflictSets(&trans, session);
+    BuildConflictSets(&trans,
+        session->status_controller()->mutable_conflict_progress());
+    had_single_direction_sets = ProcessSingleDirectionConflictSets(&trans,
+        session->context()->resolver(), session->status_controller());
     // We applied some updates transactionally, lets try syncing again.
     if (had_single_direction_sets)
       return true;
@@ -50,12 +56,12 @@ bool BuildAndProcessConflictSetsCommand::BuildAndProcessConflictSets(
 }
 
 bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
-    syncable::WriteTransaction* trans, SyncerSession* const session) {
+    syncable::WriteTransaction* trans, ConflictResolver* resolver,
+    StatusController* status) {
   bool rv = false;
-  ConflictResolutionView conflict_view(session);
   set<ConflictSet*>::const_iterator all_sets_iterator;
-  for (all_sets_iterator = conflict_view.ConflictSetsBegin();
-       all_sets_iterator != conflict_view.ConflictSetsEnd(); ) {
+  for (all_sets_iterator = status->conflict_progress()->ConflictSetsBegin();
+       all_sets_iterator != status->conflict_progress()->ConflictSetsEnd();) {
     const ConflictSet* conflict_set = *all_sets_iterator;
     CHECK(conflict_set->size() >= 2);
     // We scan the set to see if it consists of changes of only one type.
@@ -71,9 +77,8 @@ bool BuildAndProcessConflictSetsCommand::ProcessSingleDirectionConflictSets(
     }
     if (conflict_set->size() == unsynced_count && 0 == unapplied_count) {
       LOG(INFO) << "Skipped transactional commit attempt.";
-    } else if (conflict_set->size() == unapplied_count &&
-               0 == unsynced_count &&
-               ApplyUpdatesTransactionally(trans, conflict_set, session)) {
+    } else if (conflict_set->size() == unapplied_count && 0 == unsynced_count &&
+          ApplyUpdatesTransactionally(trans, conflict_set, resolver, status)) {
       rv = true;
     }
     ++all_sets_iterator;
@@ -125,20 +130,20 @@ bool RollbackEntry(syncable::WriteTransaction* trans,
 }
 
 void PlaceEntriesAtRoot(syncable::WriteTransaction* trans,
-                        const vector<syncable::Id>* ids) {
-  vector<syncable::Id>::const_iterator it;
-  for (it = ids->begin(); it != ids->end(); ++it) {
-    syncable::MutableEntry entry(trans, syncable::GET_BY_ID, *it);
+                      const vector<syncable::Id>* ids) {
+    vector<syncable::Id>::const_iterator it;
+    for (it = ids->begin(); it != ids->end(); ++it) {
+      syncable::MutableEntry entry(trans, syncable::GET_BY_ID, *it);
     entry.Put(syncable::PARENT_ID, trans->root_id());
+    }
   }
-}
 
 }  // namespace
 
 bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
     syncable::WriteTransaction* trans,
     const vector<syncable::Id>* const update_set,
-    SyncerSession* const session) {
+    ConflictResolver* resolver, StatusController* status) {
   // The handles in the |update_set| order.
   vector<int64> handles;
 
@@ -183,8 +188,7 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
 
   // 5. Use the usual apply updates from the special start state we've just
   // prepared.
-  UpdateApplicator applicator(session->resolver(), handles.begin(),
-                              handles.end());
+  UpdateApplicator applicator(resolver, handles.begin(), handles.end());
   while (applicator.AttemptOneApplication(trans)) {
     // Keep going till all updates are applied.
   }
@@ -202,16 +206,17 @@ bool BuildAndProcessConflictSetsCommand::ApplyUpdatesTransactionally(
     }
     return false;  // Don't save progress -- we just undid it.
   }
-  applicator.SaveProgressIntoSessionState(session);
+  applicator.SaveProgressIntoSessionState(status->mutable_conflict_progress(),
+                                          status->mutable_update_progress());
   return true;
 }
 
 void BuildAndProcessConflictSetsCommand::BuildConflictSets(
     syncable::BaseTransaction* trans,
-    ConflictResolutionView* view) {
-  view->CleanupSets();
-  set<syncable::Id>::iterator i = view->CommitConflictsBegin();
-  while (i != view->CommitConflictsEnd()) {
+    ConflictProgress* conflict_progress) {
+  conflict_progress->CleanupSets();
+  set<syncable::Id>::iterator i = conflict_progress->ConflictingItemsBegin();
+  while (i != conflict_progress->ConflictingItemsEnd()) {
     syncable::Entry entry(trans, syncable::GET_BY_ID, *i);
     CHECK(entry.good());
     if (!entry.Get(syncable::IS_UNSYNCED) &&
@@ -219,7 +224,7 @@ void BuildAndProcessConflictSetsCommand::BuildConflictSets(
       // This can happen very rarely. It means we had a simply conflicting item
       // that randomly committed. We drop the entry as it's no longer
       // conflicting.
-      view->EraseCommitConflict(i++);
+      conflict_progress->EraseConflictingItemById(*(i++));
       continue;
     }
     if (entry.ExistsOnClientBecauseNameIsNonEmpty() &&
@@ -231,15 +236,15 @@ void BuildAndProcessConflictSetsCommand::BuildConflictSets(
     bool new_parent =
         entry.Get(syncable::PARENT_ID) != entry.Get(syncable::SERVER_PARENT_ID);
     if (new_parent)
-      MergeSetsForIntroducedLoops(trans, &entry, view);
-    MergeSetsForNonEmptyDirectories(trans, &entry, view);
+      MergeSetsForIntroducedLoops(trans, &entry, conflict_progress);
+    MergeSetsForNonEmptyDirectories(trans, &entry, conflict_progress);
     ++i;
   }
 }
 
 void BuildAndProcessConflictSetsCommand::MergeSetsForIntroducedLoops(
     syncable::BaseTransaction* trans, syncable::Entry* entry,
-    ConflictResolutionView* view) {
+    ConflictProgress* conflict_progress) {
   // This code crawls up from the item in question until it gets to the root
   // or itself. If it gets to the root it does nothing. If it finds a loop all
   // moved unsynced entries in the list of crawled entries have their sets
@@ -273,7 +278,8 @@ void BuildAndProcessConflictSetsCommand::MergeSetsForIntroducedLoops(
   if (parent_id.IsRoot())
     return;
   for (size_t i = 0; i < conflicting_entries.size(); i++) {
-    view->MergeSets(entry->Get(syncable::ID), conflicting_entries[i]);
+    conflict_progress->MergeSets(entry->Get(syncable::ID),
+                                 conflicting_entries[i]);
   }
 }
 
@@ -336,7 +342,7 @@ class LocallyDeletedPathChecker {
 template <typename Checker>
 void CrawlDeletedTreeMergingSets(syncable::BaseTransaction* trans,
                                  const syncable::Entry& entry,
-                                 ConflictResolutionView* view,
+                                 ConflictProgress* conflict_progress,
                                  Checker checker) {
   syncable::Id parent_id = entry.Get(syncable::PARENT_ID);
   syncable::Id double_step_parent_id = parent_id;
@@ -355,10 +361,12 @@ void CrawlDeletedTreeMergingSets(syncable::BaseTransaction* trans,
           trans, double_step_parent_id, parent_id, entry);
     }
     syncable::Entry parent(trans, syncable::GET_BY_ID, parent_id);
-    if (checker.CausingConflict(parent, entry))
-      view->MergeSets(entry.Get(syncable::ID), parent.Get(syncable::ID));
-    else
+    if (checker.CausingConflict(parent, entry)) {
+      conflict_progress->MergeSets(entry.Get(syncable::ID),
+                                   parent.Get(syncable::ID));
+    } else {
       break;
+    }
     parent_id = parent.Get(syncable::PARENT_ID);
   }
 }
@@ -367,10 +375,10 @@ void CrawlDeletedTreeMergingSets(syncable::BaseTransaction* trans,
 
 void BuildAndProcessConflictSetsCommand::MergeSetsForNonEmptyDirectories(
     syncable::BaseTransaction* trans, syncable::Entry* entry,
-    ConflictResolutionView* view) {
+    ConflictProgress* conflict_progress) {
   if (entry->Get(syncable::IS_UNSYNCED) && !entry->Get(syncable::IS_DEL)) {
     ServerDeletedPathChecker checker;
-    CrawlDeletedTreeMergingSets(trans, *entry, view, checker);
+    CrawlDeletedTreeMergingSets(trans, *entry, conflict_progress, checker);
   }
   if (entry->Get(syncable::IS_UNAPPLIED_UPDATE) &&
       !entry->Get(syncable::SERVER_IS_DEL)) {
@@ -382,8 +390,9 @@ void BuildAndProcessConflictSetsCommand::MergeSetsForNonEmptyDirectories(
     LocallyDeletedPathChecker checker;
     if (!checker.CausingConflict(parent, *entry))
       return;
-    view->MergeSets(entry->Get(syncable::ID), parent.Get(syncable::ID));
-    CrawlDeletedTreeMergingSets(trans, parent, view, checker);
+    conflict_progress->MergeSets(entry->Get(syncable::ID),
+                                 parent.Get(syncable::ID));
+    CrawlDeletedTreeMergingSets(trans, parent, conflict_progress, checker);
   }
 }
 

@@ -11,11 +11,10 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "base/time.h"
-#include "chrome/browser/sync/engine/client_command_channel.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_event.h"
 #include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
@@ -37,7 +36,6 @@ namespace browser_sync {
 class ModelSafeWorker;
 class ServerConnectionManager;
 class SyncProcessState;
-class SyncerSession;
 class URLFactory;
 struct HttpResponse;
 
@@ -75,10 +73,8 @@ class Syncer {
 
   // The constructor may be called from a thread that is not the Syncer's
   // dedicated thread, to allow some flexibility in the setup.
-  Syncer(syncable::DirectoryManager* dirman, const PathString& account_name,
-      ServerConnectionManager* connection_manager,
-      ModelSafeWorker* model_safe_worker);
-  ~Syncer();
+  explicit Syncer(sessions::SyncSessionContext* context);
+  ~Syncer() {}
 
   // Called by other threads to tell the syncer to stop what it's doing
   // and return early from SyncShare, if possible.
@@ -96,31 +92,19 @@ class Syncer {
   // for the sync cycle.  It is treated as an input/output parameter.
   // When |first_step| and |last_step| are provided, this means to perform
   // a partial sync cycle, stopping after |last_step| is performed.
-  bool SyncShare();
-  bool SyncShare(SyncProcessState* sync_process_state);
-  bool SyncShare(SyncerStep first_step, SyncerStep last_step);
+  bool SyncShare(sessions::SyncSession::Delegate* delegate);
+  bool SyncShare(SyncerStep first_step, SyncerStep last_step,
+                 sessions::SyncSession::Delegate* delegate);
 
   // Limit the batch size of commit operations to a specified number of items.
   void set_max_commit_batch_size(int x) { max_commit_batch_size_ = x; }
 
-  ConflictResolver* conflict_resolver() { return &resolver_; }
-
-  PathString account_name() { return account_name_; }
-
-  SyncerEventChannel* channel() const { return syncer_event_channel_.get(); }
-
   ShutdownChannel* shutdown_channel() const { return shutdown_channel_.get(); }
-
-  ModelSafeWorker* model_safe_worker() { return model_safe_worker_; }
 
   // Syncer will take ownership of this channel and it will be destroyed along
   // with the Syncer instance.
   void set_shutdown_channel(ShutdownChannel* channel) {
     shutdown_channel_.reset(channel);
-  }
-
-  void set_command_channel(ClientCommandChannel* channel) {
-    command_channel_ = channel;
   }
 
   // Volatile reader for the source member of the syncer session object.  The
@@ -138,63 +122,43 @@ class Syncer {
     updates_source_ = source;
   }
 
-  bool notifications_enabled() const {
-    return notifications_enabled_;
-  }
-
-  void set_notifications_enabled(bool state) {
-    notifications_enabled_ = state;
-  }
-
-  base::TimeTicks silenced_until() const { return silenced_until_; }
-  bool is_silenced() const { return !silenced_until_.is_null(); }
  private:
   void RequestNudge(int milliseconds);
 
   // Implements the PROCESS_CLIENT_COMMAND syncer step.
-  void ProcessClientCommand(SyncerSession *session);
+  void ProcessClientCommand(sessions::SyncSession *session);
 
-  void SyncShare(SyncerSession* session);
-  void SyncShare(SyncerSession* session,
+  // Resets transient state and runs from SYNCER_BEGIN to SYNCER_END.
+  bool SyncShare(sessions::SyncSession* session);
+
+  // This is the bottom-most SyncShare variant, and does not cause transient
+  // state to be reset in session.
+  void SyncShare(sessions::SyncSession* session,
                  SyncerStep first_step,
                  SyncerStep last_step);
 
-  PathString account_name_;
   bool early_exit_requested_;
 
   int32 max_commit_batch_size_;
 
-  ServerConnectionManager* connection_manager_;
-
   ConflictResolver resolver_;
-  syncable::DirectoryManager* const dirman_;
-
-  // When we're over bandwidth quota, we don't update until past this time.
-  base::TimeTicks silenced_until_;
-
   scoped_ptr<SyncerEventChannel> syncer_event_channel_;
+  sessions::ScopedSessionContextConflictResolver resolver_scoper_;
+  sessions::ScopedSessionContextSyncerEventChannel event_channel_scoper_;
+  sessions::SyncSessionContext* context_;
+
   scoped_ptr<ShutdownChannel> shutdown_channel_;
-  ClientCommandChannel* command_channel_;
-
-  // A worker capable of processing work closures on a thread that is
-  // guaranteed to be safe for model modifications. This is created and owned
-  // by the SyncerThread that created us.
-  ModelSafeWorker* model_safe_worker_;
-
-  // We use this to stuff extensions activity into CommitMessages so the server
-  // can correlate commit traffic with extension-related bookmark mutations.
-  ExtensionsActivityMonitor* extensions_monitor_;
 
   // The source of the last nudge.
   sync_pb::GetUpdatesCallerInfo::GET_UPDATES_SOURCE updates_source_;
-
-  // True only if the notification channel is authorized and open.
-  bool notifications_enabled_;
 
   // A callback hook used in unittests to simulate changes between conflict set
   // building and conflict resolution.
   Closure* pre_conflict_resolution_closure_;
 
+  friend class SyncerTest;
+  FRIEND_TEST(SyncerTest, NameClashWithResolver);
+  FRIEND_TEST(SyncerTest, IllegalAndLegalUpdates);
   FRIEND_TEST(SusanDeletingTest,
               NewServerItemInAFolderHierarchyWeHaveDeleted3);
   FRIEND_TEST(SyncerTest, TestCommitListOrderingAndNewParent);
@@ -203,6 +167,11 @@ class Syncer {
   FRIEND_TEST(SyncerTest, TestCommitListOrderingWithNesting);
   FRIEND_TEST(SyncerTest, TestCommitListOrderingWithNewItems);
   FRIEND_TEST(SyncerTest, TestGetUnsyncedAndSimpleCommit);
+  FRIEND_TEST(SyncerTest, UnappliedUpdateDuringCommit);
+  FRIEND_TEST(SyncerTest, DeletingEntryInFolder);
+  FRIEND_TEST(SyncerTest, LongChangelistCreatesFakeOrphanedEntries);
+  FRIEND_TEST(SyncerTest, QuicklyMergeDualCreatedHierarchy);
+  FRIEND_TEST(SyncerTest, LongChangelistWithApplicationConflict);
 
   DISALLOW_COPY_AND_ASSIGN(Syncer);
 };

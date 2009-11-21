@@ -9,7 +9,9 @@
 
 namespace browser_sync {
 
-class SyncerSession;
+namespace sessions {
+class SyncSession;
+}
 
 // Implementation of a simple command pattern intended to be driven by the
 // Syncer. SyncerCommand is abstract and all subclasses must implement
@@ -18,7 +20,7 @@ class SyncerSession;
 //
 // Example Usage:
 //
-//   SyncerSession session = ...;
+//   SyncSession session = ...;
 //   SyncerCommand *cmd = SomeCommandFactory.createCommand(...);
 //   cmd->Execute(session);
 //   delete cmd;
@@ -29,12 +31,12 @@ class SyncerCommand {
   virtual ~SyncerCommand();
 
   // Execute dispatches to a derived class's ExecuteImpl.
-  void Execute(SyncerSession* session);
+  void Execute(sessions::SyncSession* session);
 
   // ExecuteImpl is where derived classes actually do work.
-  virtual void ExecuteImpl(SyncerSession* session) = 0;
+  virtual void ExecuteImpl(sessions::SyncSession* session) = 0;
  private:
-  void SendNotifications(SyncerSession* session);
+  void SendNotifications(sessions::SyncSession* session);
   DISALLOW_COPY_AND_ASSIGN(SyncerCommand);
 };
 

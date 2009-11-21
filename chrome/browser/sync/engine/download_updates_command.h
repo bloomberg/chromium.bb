@@ -7,16 +7,17 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 
 namespace browser_sync {
 
-// Downloads updates from the server and places them in the SyncerSession.
+// Downloads updates from the server and places them in the SyncSession.
 class DownloadUpdatesCommand : public SyncerCommand {
  public:
   DownloadUpdatesCommand();
   virtual ~DownloadUpdatesCommand();
-  virtual void ExecuteImpl(SyncerSession* session);
+
+  // SyncerCommand implementation.
+  virtual void ExecuteImpl(sessions::SyncSession* session);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommand);

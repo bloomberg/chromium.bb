@@ -4,10 +4,8 @@
 
 #include "chrome/browser/sync/engine/syncer_end_command.h"
 
-#include "chrome/browser/sync/engine/conflict_resolution_view.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
-#include "chrome/browser/sync/engine/syncer_status.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 
@@ -16,15 +14,16 @@ namespace browser_sync {
 SyncerEndCommand::SyncerEndCommand() {}
 SyncerEndCommand::~SyncerEndCommand() {}
 
-void SyncerEndCommand::ExecuteImpl(SyncerSession* session) {
-  SyncerStatus status(session);
-  status.set_syncing(false);
+void SyncerEndCommand::ExecuteImpl(sessions::SyncSession* session) {
+  sessions::StatusController* status(session->status_controller());
+  status->set_syncing(false);
 
   if (!session->HasMoreToSync()) {
     // This might be the first time we've fully completed a sync cycle.
-    DCHECK(session->got_zero_updates());
+    DCHECK(status->got_zero_updates());
 
-    syncable::ScopedDirLookup dir(session->dirman(), session->account_name());
+    syncable::ScopedDirLookup dir(session->context()->directory_manager(),
+                                  session->context()->account_name());
     if (!dir.good()) {
       LOG(ERROR) << "Scoped dir lookup failed!";
       return;
@@ -34,9 +33,10 @@ void SyncerEndCommand::ExecuteImpl(SyncerSession* session) {
     dir->set_initial_sync_ended(true);
   }
 
-  SyncerEvent event = { SyncerEvent::SYNC_CYCLE_ENDED };
-  event.last_session = session;
-  session->syncer_event_channel()->NotifyListeners(event);
+  SyncerEvent event(SyncerEvent::SYNC_CYCLE_ENDED);
+  sessions::SyncSessionSnapshot snapshot(session->TakeSnapshot());
+  event.snapshot = &snapshot;
+  session->context()->syncer_event_channel()->NotifyListeners(event);
 }
 
 }  // namespace browser_sync

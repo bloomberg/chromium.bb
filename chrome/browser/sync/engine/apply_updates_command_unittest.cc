@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/engine/apply_updates_command.h"
-#include "chrome/browser/sync/engine/sync_cycle_state.h"
-#include "chrome/browser/sync/engine/sync_process_state.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
@@ -22,20 +20,44 @@ using syncable::Id;
 using syncable::UNITTEST;
 
 namespace browser_sync {
+using sessions::SyncSessionContext;
+using sessions::SyncSession;
 
 // A test fixture for tests exercising ApplyUpdatesCommand.
-class ApplyUpdatesCommandTest : public testing::Test {
+class ApplyUpdatesCommandTest : public testing::Test,
+                                public SyncSession::Delegate {
+ public:
+  // SyncSession::Delegate implementation.
+  virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) {
+   FAIL() << "Should not get silenced.";
+  }
+  virtual bool IsSyncingCurrentlySilenced() {
+   ADD_FAILURE() << "No requests for silenced state should be made.";
+   return false;
+  }
+  virtual void OnReceivedLongPollIntervalUpdate(
+     const base::TimeDelta& new_interval) {
+   FAIL() << "Should not get poll interval update.";
+  }
+  virtual void OnReceivedShortPollIntervalUpdate(
+     const base::TimeDelta& new_interval) {
+   FAIL() << "Should not get poll interval update.";
+  }
+
  protected:
   ApplyUpdatesCommandTest() : next_revision_(1) {}
   virtual ~ApplyUpdatesCommandTest() {}
   virtual void SetUp() {
     syncdb_.SetUp();
+    context_.reset(new SyncSessionContext(NULL, syncdb_.manager(), NULL));
+    context_->set_account_name(syncdb_.name());
   }
   virtual void TearDown() {
     syncdb_.TearDown();
   }
 
  protected:
+
   // Create a new unapplied update.
   void CreateUnappliedNewItemWithParent(const string& item_id,
                                         const string& parent_id) {
@@ -55,7 +77,7 @@ class ApplyUpdatesCommandTest : public testing::Test {
 
   TestDirectorySetterUpper syncdb_;
   ApplyUpdatesCommand apply_updates_command_;
-
+  scoped_ptr<SyncSessionContext> context_;
  private:
   int64 next_revision_;
   DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommandTest);
@@ -66,18 +88,15 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
   CreateUnappliedNewItemWithParent("parent", root_server_id);
   CreateUnappliedNewItemWithParent("child", "parent");
 
-  SyncCycleState cycle_state;
-  SyncProcessState process_state(syncdb_.manager(), syncdb_.name(),
-                                 NULL, NULL, NULL, NULL);
-  SyncerSession session(&cycle_state, &process_state);
-
+  SyncSession session(context_.get(), this);
   apply_updates_command_.ModelChangingExecuteImpl(&session);
 
-  EXPECT_EQ(2, cycle_state.AppliedUpdatesSize())
+  sessions::StatusController* status = session.status_controller();
+  EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(0, process_state.ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
       << "Simple update shouldn't result in conflicts";
-  EXPECT_EQ(2, cycle_state.SuccessfullyAppliedUpdateCount())
+  EXPECT_EQ(2, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "All items should have been successfully applied";
 }
 
@@ -91,18 +110,15 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
   CreateUnappliedNewItemWithParent("a_child_created_second", "parent");
   CreateUnappliedNewItemWithParent("x_child_created_second", "parent");
 
-  SyncCycleState cycle_state;
-  SyncProcessState process_state(syncdb_.manager(), syncdb_.name(),
-                                 NULL, NULL, NULL, NULL);
-  SyncerSession session(&cycle_state, &process_state);
-
+  SyncSession session(context_.get(), this);
   apply_updates_command_.ModelChangingExecuteImpl(&session);
 
-  EXPECT_EQ(5, cycle_state.AppliedUpdatesSize())
+  sessions::StatusController* status = session.status_controller();
+  EXPECT_EQ(5, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(0, process_state.ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
       << "Simple update shouldn't result in conflicts, even if out-of-order";
-  EXPECT_EQ(5, cycle_state.SuccessfullyAppliedUpdateCount())
+  EXPECT_EQ(5, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "All updates should have been successfully applied";
 }
 
@@ -111,18 +127,15 @@ TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
   CreateUnappliedNewItemWithParent("some_item", "unknown_parent");
   CreateUnappliedNewItemWithParent("some_other_item", "some_item");
 
-  SyncCycleState cycle_state;
-  SyncProcessState process_state(syncdb_.manager(), syncdb_.name(),
-                                 NULL, NULL, NULL, NULL);
-  SyncerSession session(&cycle_state, &process_state);
-
+  SyncSession session(context_.get(), this);
   apply_updates_command_.ModelChangingExecuteImpl(&session);
 
-  EXPECT_EQ(2, cycle_state.AppliedUpdatesSize())
+  sessions::StatusController* status = session.status_controller();
+  EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(2, process_state.ConflictingItemsSize())
+  EXPECT_EQ(2, status->conflict_progress()->ConflictingItemsSize())
       << "All updates with an unknown ancestors should be in conflict";
-  EXPECT_EQ(0, cycle_state.SuccessfullyAppliedUpdateCount())
+  EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "No item with an unknown ancestor should be applied";
 }
 
@@ -136,18 +149,15 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
   CreateUnappliedNewItemWithParent("third_known_item", "fourth_known_item");
   CreateUnappliedNewItemWithParent("fourth_known_item", root_server_id);
 
-  SyncCycleState cycle_state;
-  SyncProcessState process_state(syncdb_.manager(), syncdb_.name(),
-                                 NULL, NULL, NULL, NULL);
-  SyncerSession session(&cycle_state, &process_state);
-
+  SyncSession session(context_.get(), this);
   apply_updates_command_.ModelChangingExecuteImpl(&session);
 
-  EXPECT_EQ(6, cycle_state.AppliedUpdatesSize())
+  sessions::StatusController* status = session.status_controller();
+  EXPECT_EQ(6, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(2, process_state.ConflictingItemsSize())
+  EXPECT_EQ(2, status->conflict_progress()->ConflictingItemsSize())
       << "The updates with unknown ancestors should be in conflict";
-  EXPECT_EQ(4, cycle_state.SuccessfullyAppliedUpdateCount())
+  EXPECT_EQ(4, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "The updates with known ancestors should be successfully applied";
 }
 

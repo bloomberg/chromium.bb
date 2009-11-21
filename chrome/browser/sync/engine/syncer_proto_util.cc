@@ -8,6 +8,7 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -26,6 +27,7 @@ using syncable::ScopedDirLookup;
 using syncable::SyncName;
 
 namespace browser_sync {
+using sessions::SyncSession;
 
 namespace {
 
@@ -93,12 +95,13 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
 
 // static
 bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
-    ClientToServerResponse* response, SyncerSession* session) {
+    ClientToServerResponse* response, SyncSession* session) {
   bool rv = false;
   string tx, rx;
   CHECK(response);
 
-  ScopedDirLookup dir(session->dirman(), session->account_name());
+  ScopedDirLookup dir(session->context()->directory_manager(),
+      session->context()->account_name());
   if (!dir.good())
     return false;
   string birthday = dir->store_birthday();
@@ -114,17 +117,17 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
     tx, &rx, &http_response
   };
 
-  if (!session->connection_manager()->PostBufferWithCachedAuth(&params)) {
+  ServerConnectionManager* scm = session->context()->connection_manager();
+  if (!scm->PostBufferWithCachedAuth(&params)) {
     LOG(WARNING) << "Error posting from syncer:" << http_response;
   } else {
     rv = response->ParseFromString(rx);
   }
-  SyncerStatus status(session);
   if (rv) {
     if (!VerifyResponseBirthday(dir, response)) {
       // TODO(ncarter): Add a unit test for the case where the syncer becomes
       // stuck due to a bad birthday.
-      status.set_syncer_stuck(true);
+      session->status_controller()->set_syncer_stuck(true);
       return false;
     }
 
@@ -142,7 +145,7 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
       case ClientToServerResponse::ACCESS_DENIED:
         LOG(INFO) << "Authentication expired, re-requesting";
         LOG(INFO) << "Not implemented in syncer yet!!!";
-        status.AuthFailed();
+        session->set_auth_failure_occurred();
         rv = false;
         break;
       case ClientToServerResponse::NOT_MY_BIRTHDAY:
@@ -151,7 +154,7 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
         break;
       case ClientToServerResponse::THROTTLED:
         LOG(WARNING) << "Client silenced by server.";
-        session->set_silenced_until(base::TimeTicks::Now() +
+        session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
             base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled));
         rv = false;
         break;

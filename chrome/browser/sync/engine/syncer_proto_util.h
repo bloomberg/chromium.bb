@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -23,8 +22,11 @@ class ClientToServerResponse;
 
 namespace browser_sync {
 
+namespace sessions {
+class SyncSession;
+}
+
 class ClientToServerMessage;
-class SyncerSession;
 class SyncEntity;
 class CommitResponse_EntryResponse;
 
@@ -35,7 +37,8 @@ class SyncerProtoUtil {
   // session->status()->syncer_stuck_ is set true if the birthday is
   // incorrect.  A false value will always be returned if birthday is bad.
   static bool PostClientToServerMessage(ClientToServerMessage* msg,
-      sync_pb::ClientToServerResponse* response, SyncerSession* session);
+      sync_pb::ClientToServerResponse* response,
+      sessions::SyncSession* session);
 
   // Compares a syncable Entry to SyncEntity, returns true iff the data is
   // identical.

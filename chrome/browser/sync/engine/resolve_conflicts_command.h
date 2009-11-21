@@ -16,14 +16,13 @@ class Id;
 
 namespace browser_sync {
 
-class SyncerSession;
-
 class ResolveConflictsCommand : public ModelChangingSyncerCommand {
  public:
   ResolveConflictsCommand();
   virtual ~ResolveConflictsCommand();
 
-  virtual void ModelChangingExecuteImpl(SyncerSession* session);
+  // ModelChangingSyncerCommand implementation.
+  virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ResolveConflictsCommand);

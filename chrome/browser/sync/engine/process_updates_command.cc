@@ -9,9 +9,9 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
@@ -19,27 +19,32 @@ using std::vector;
 
 namespace browser_sync {
 
+using sessions::SyncSession;
+using sessions::StatusController;
+
 ProcessUpdatesCommand::ProcessUpdatesCommand() {}
 ProcessUpdatesCommand::~ProcessUpdatesCommand() {}
 
-void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
-  syncable::ScopedDirLookup dir(session->dirman(), session->account_name());
+void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
+  syncable::ScopedDirLookup dir(session->context()->directory_manager(),
+                                session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
-  SyncerStatus status(session);
 
-  const GetUpdatesResponse updates = session->update_response().get_updates();
+  const GetUpdatesResponse& updates =
+      session->status_controller()->updates_response().get_updates();
   const int update_count = updates.entries_size();
 
   LOG(INFO) << "Get updates from ts " << dir->last_sync_timestamp() <<
     " returned " << update_count << " updates.";
 
+  StatusController* status = session->status_controller();
   if (updates.has_changes_remaining()) {
     int64 changes_left = updates.changes_remaining();
     LOG(INFO) << "Changes remaining:" << changes_left;
-    status.set_num_server_changes_remaining(changes_left);
+    status->set_num_server_changes_remaining(changes_left);
   }
 
   int64 new_timestamp = 0;
@@ -49,7 +54,7 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
     if (0 == update_count) {
       if (new_timestamp > dir->last_sync_timestamp()) {
         dir->set_last_sync_timestamp(new_timestamp);
-        session->set_timestamp_dirty();
+        status->set_timestamp_dirty(true);
       }
       return;
     }
@@ -60,11 +65,12 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
   // be skipped and we DON'T step past them, we will sync forever.
   int64 latest_skip_timestamp = 0;
   bool any_non_skip_results = false;
-  vector<VerifiedUpdate>::iterator it;
-  for (it = session->VerifiedUpdatesBegin();
-       it < session->VerifiedUpdatesEnd();
+  const sessions::UpdateProgress& progress(status->update_progress());
+  vector<sessions::VerifiedUpdate>::const_iterator it;
+  for (it = progress.VerifiedUpdatesBegin();
+       it != progress.VerifiedUpdatesEnd();
        ++it) {
-    const sync_pb::SyncEntity update = it->second;
+    const sync_pb::SyncEntity& update = it->second;
 
     any_non_skip_results = (it->first != VERIFY_SKIP);
     if (!any_non_skip_results) {
@@ -98,13 +104,13 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncerSession* session) {
 
   if (new_timestamp > dir->last_sync_timestamp()) {
     dir->set_last_sync_timestamp(new_timestamp);
-    session->set_timestamp_dirty();
+    status->set_timestamp_dirty(true);
   }
 
-  status.zero_consecutive_problem_get_updates();
-  status.zero_consecutive_errors();
-  status.set_current_sync_timestamp(dir->last_sync_timestamp());
-  status.set_syncing(true);
+  status->set_num_consecutive_problem_get_updates(0);
+  status->set_num_consecutive_errors(0);
+  status->set_current_sync_timestamp(dir->last_sync_timestamp());
+  status->set_syncing(true);
   return;
 }
 

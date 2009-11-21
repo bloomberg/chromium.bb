@@ -9,9 +9,8 @@
 #include <vector>
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
-#include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_changes_version.h"
 #include "chrome/browser/sync/util/sync_types.h"
@@ -25,11 +24,13 @@ using syncable::MutableEntry;
 
 namespace browser_sync {
 
+using sessions::SyncSession;
+
 BuildCommitCommand::BuildCommitCommand() {}
 BuildCommitCommand::~BuildCommitCommand() {}
 
 void BuildCommitCommand::AddExtensionsActivityToMessage(
-    SyncerSession* session, CommitMessage* message) {
+    SyncSession* session, CommitMessage* message) {
   const ExtensionsActivityMonitor::Records& records =
       session->extensions_activity();
   for (ExtensionsActivityMonitor::Records::const_iterator it = records.begin();
@@ -42,9 +43,9 @@ void BuildCommitCommand::AddExtensionsActivityToMessage(
   }
 }
 
-void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
+void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
   ClientToServerMessage message;
-  message.set_share(session->account_name());
+  message.set_share(session->context()->account_name());
   message.set_message_contents(ClientToServerMessage::COMMIT);
 
   CommitMessage* commit_message = message.mutable_commit();
@@ -52,7 +53,7 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
       session->write_transaction()->directory()->cache_guid());
   AddExtensionsActivityToMessage(session, commit_message);
 
-  const vector<Id>& commit_ids = session->commit_ids();
+  const vector<Id>& commit_ids = session->status_controller()->commit_ids();
   for (size_t i = 0; i < commit_ids.size(); i++) {
     Id id = commit_ids[i];
     SyncEntity* sync_entry =
@@ -147,7 +148,7 @@ void BuildCommitCommand::ExecuteImpl(SyncerSession* session) {
       }
     }
   }
-  session->set_commit_message(message);
+  session->status_controller()->mutable_commit_message()->CopyFrom(message);
 }
 
 }  // namespace browser_sync

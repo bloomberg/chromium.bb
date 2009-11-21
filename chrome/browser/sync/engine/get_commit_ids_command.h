@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 using std::pair;
@@ -25,10 +25,12 @@ class GetCommitIdsCommand : public SyncerCommand {
   explicit GetCommitIdsCommand(int commit_batch_size);
   virtual ~GetCommitIdsCommand();
 
-  virtual void ExecuteImpl(SyncerSession* session);
+  // SyncerCommand implementation.
+  virtual void ExecuteImpl(sessions::SyncSession* session);
 
-  // Returns a vector of IDs that should be committed.
-  void BuildCommitIds(SyncerSession *session);
+  // Builds a vector of IDs that should be committed.
+  void BuildCommitIds(const vector<int64>& unsynced_handles,
+                      syncable::WriteTransaction* write_transaction);
 
   // These classes are public for testing.
   // TODO(ncarter): This code is more generic than just Commit and can
@@ -101,14 +103,16 @@ class GetCommitIdsCommand : public SyncerCommand {
    public:
     // TODO(chron): Cache ValidateCommitEntry responses across iterators to save
     // UTF8 conversion and filename checking
-    CommitMetahandleIterator(SyncerSession* session,
+    CommitMetahandleIterator(const vector<int64>& unsynced_handles,
+                             syncable::WriteTransaction* write_transaction,
                              OrderedCommitSet* commit_set)
-        : session_(session),
+        : write_transaction_(write_transaction),
+          handle_iterator_(unsynced_handles.begin()),
+          unsynced_handles_end_(unsynced_handles.end()),
           commit_set_(commit_set) {
-      handle_iterator_ = session->unsynced_handles().begin();
 
       // TODO(chron): Remove writes from this iterator.
-      DCHECK(session->has_open_write_transaction());
+      DCHECK(write_transaction_);
 
       if (Valid() && !ValidateMetahandleForCommit(*handle_iterator_))
         Increment();
@@ -125,7 +129,7 @@ class GetCommitIdsCommand : public SyncerCommand {
         return false;
 
       for (++handle_iterator_;
-           handle_iterator_ != session_->unsynced_handles().end();
+           handle_iterator_ != unsynced_handles_end_;
            ++handle_iterator_) {
         if (ValidateMetahandleForCommit(*handle_iterator_))
           return true;
@@ -135,7 +139,7 @@ class GetCommitIdsCommand : public SyncerCommand {
     }
 
     bool Valid() const {
-      return !(handle_iterator_ == session_->unsynced_handles().end());
+      return !(handle_iterator_ == unsynced_handles_end_);
     }
 
     private:
@@ -144,9 +148,8 @@ class GetCommitIdsCommand : public SyncerCommand {
           return false;
 
        // We should really not WRITE in this iterator, but we can fix that
-       // later. ValidateCommitEntry writes to the DB, and we add the blocked
-       // items. We should move that somewhere else later.
-       syncable::MutableEntry entry(session_->write_transaction(),
+       // later. We should move that somewhere else later.
+       syncable::MutableEntry entry(write_transaction_,
            syncable::GET_BY_HANDLE, metahandle);
        VerifyCommitResult verify_result =
            SyncerUtil::ValidateCommitEntry(&entry);
@@ -157,8 +160,9 @@ class GetCommitIdsCommand : public SyncerCommand {
        return verify_result == VERIFY_OK;
      }
 
-     SyncerSession* session_;
+     syncable::WriteTransaction* const write_transaction_;
      vector<int64>::const_iterator handle_iterator_;
+     vector<int64>::const_iterator unsynced_handles_end_;
      OrderedCommitSet* commit_set_;
 
      DISALLOW_COPY_AND_ASSIGN(CommitMetahandleIterator);
@@ -183,9 +187,11 @@ class GetCommitIdsCommand : public SyncerCommand {
 
   bool IsCommitBatchFull();
 
-  void AddCreatesAndMoves(SyncerSession* session);
+  void AddCreatesAndMoves(const vector<int64>& unsynced_handles,
+                          syncable::WriteTransaction* write_transaction);
 
-  void AddDeletes(SyncerSession* session);
+  void AddDeletes(const vector<int64>& unsynced_handles,
+                  syncable::WriteTransaction* write_transaction);
 
   OrderedCommitSet ordered_commit_set_;
 

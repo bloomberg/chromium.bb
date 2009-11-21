@@ -10,8 +10,6 @@
 
 namespace browser_sync {
 
-class SyncerSession;
-
 // A syncer command for wrapping up a sync cycle.
 //
 // Preconditions - syncing is complete.
@@ -23,7 +21,8 @@ class SyncerEndCommand : public SyncerCommand {
   SyncerEndCommand();
   virtual ~SyncerEndCommand();
 
-  virtual void ExecuteImpl(SyncerSession* session);
+  // SyncerCommand implementation.
+  virtual void ExecuteImpl(sessions::SyncSession* session);
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncerEndCommand);
 };

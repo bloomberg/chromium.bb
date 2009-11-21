@@ -26,7 +26,6 @@
 #include "chrome/browser/sync/engine/all_status.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/change_reorder_buffer.h"
-#include "chrome/browser/sync/engine/client_command_channel.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/gaia_authenticator.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
@@ -36,6 +35,7 @@
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/character_set_converters.h"
@@ -53,15 +53,13 @@ using browser_sync::AllStatus;
 using browser_sync::AllStatusEvent;
 using browser_sync::AuthWatcher;
 using browser_sync::AuthWatcherEvent;
-using browser_sync::ClientCommandChannel;
 using browser_sync::Syncer;
 using browser_sync::SyncerEvent;
-using browser_sync::SyncerStatus;
 using browser_sync::SyncerThread;
-using browser_sync::SyncerThreadFactory;
 using browser_sync::UserSettings;
 using browser_sync::TalkMediator;
 using browser_sync::TalkMediatorImpl;
+using browser_sync::sessions::SyncSessionContext;
 using std::list;
 using std::hex;
 using std::string;
@@ -648,7 +646,6 @@ class SyncManager::SyncInternal {
  public:
   explicit SyncInternal(SyncManager* sync_manager)
       : observer_(NULL),
-        command_channel_(0),
         auth_problem_(AuthError::NONE),
         sync_manager_(sync_manager),
         address_watch_thread_("SyncEngine_AddressWatcher"),
@@ -818,9 +815,6 @@ class SyncManager::SyncInternal {
   // Observer registered via SetObserver/RemoveObserver.
   // WARNING: This can be NULL!
   Observer* observer_;
-
-  // A sink for client commands from the syncer needed to create a SyncerThread.
-  ClientCommandChannel command_channel_;
 
   // The ServerConnectionManager used to abstract communication between the
   // client (the Syncer) and the sync server.
@@ -997,16 +991,15 @@ bool SyncManager::SyncInternal::Init(
   authwatcher_hookup_.reset(NewEventListenerHookup(auth_watcher_->channel(),
       this, &SyncInternal::HandleAuthWatcherEvent));
 
-  // Tell the SyncerThread to use the ModelSafeWorker for bookmark model work.
+  // Build a SyncSessionContext and store the worker in it.
   // We set up both sides of the "bridge" here, with the ModelSafeWorkerBridge
   // on the Syncer side, and |model_safe_worker| on the API client side.
   ModelSafeWorkerBridge* worker = new ModelSafeWorkerBridge(model_safe_worker);
+  SyncSessionContext* context = new SyncSessionContext(
+      connection_manager_.get(), dir_manager(), worker);
 
-  syncer_thread_ = SyncerThreadFactory::Create(&command_channel_,
-                                               dir_manager(),
-                                               connection_manager(),
-                                               &allstatus_,
-                                               worker);
+  // The SyncerThread takes ownership of |context|.
+  syncer_thread_ = new SyncerThread(context, &allstatus_);
   syncer_thread()->WatchTalkMediator(talk_mediator());
   allstatus()->WatchSyncerThread(syncer_thread());
 
@@ -1315,7 +1308,7 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
     // (because we attach HandleSyncerEvent only once we receive notification
     // of successful authentication [locally or otherwise]), but B) the initial
     // sync had not completed at that time.
-    if (SyncerStatus(event.last_session).IsShareUsable())
+    if (event.snapshot->is_share_usable)
       MarkAndNotifyInitializationComplete();
     return;
   }
@@ -1331,13 +1324,13 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
   // Notifications are sent at the end of every sync cycle, regardless of
   // whether we should sync again.
   if (event.what_happened == SyncerEvent::SYNC_CYCLE_ENDED) {
-    if (!event.last_session->HasMoreToSync()) {
+    if (!event.snapshot->has_more_to_sync) {
       observer_->OnSyncCycleCompleted();
     }
 
-    // TODO(chron): Consider changing this back to track HasMoreToSync
-    // Only notify peers if a successful commit has occurred.
-    if (event.last_session && event.last_session->HadSuccessfulCommits()) {
+    // TODO(chron): Consider changing this back to track has_more_to_sync
+    // only notify peers if a successful commit has occurred.
+    if (event.snapshot->syncer_status.num_successful_commits > 0) {
       // We use a member variable here because talk may not have connected yet.
       // The notification must be stored until it can be sent.
       notification_pending_ = true;
@@ -1357,9 +1350,8 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
         }
     } else {
       LOG(INFO) << "Didn't send XMPP notification!"
-                   << " event.last_session: " << event.last_session
-                   << " event.last_session->items_committed(): "
-                   << event.last_session->items_committed()
+                   << " event.snapshot.did_commit_items: "
+                   << event.snapshot->did_commit_items
                    << " talk_mediator(): " << talk_mediator();
     }
   }
@@ -1410,8 +1402,9 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
       {
         // Start watching the syncer channel directly here.
         DCHECK(syncer_thread() != NULL);
-        syncer_event_.reset(NewEventListenerHookup(syncer_thread()->channel(),
-            this, &SyncInternal::HandleSyncerEvent));
+        syncer_event_.reset(
+            NewEventListenerHookup(syncer_thread()->relay_channel(), this,
+                &SyncInternal::HandleSyncerEvent));
       }
       return;
     // Authentication failures translate to GoogleServiceAuthError events.

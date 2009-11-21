@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_SYNC_ENGINE_POST_COMMIT_MESSAGE_COMMAND_H_
 
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 namespace browser_sync {
@@ -16,7 +15,8 @@ class PostCommitMessageCommand : public SyncerCommand {
   PostCommitMessageCommand();
   virtual ~PostCommitMessageCommand();
 
-  virtual void ExecuteImpl(SyncerSession* session);
+  // SyncerCommand implementation.
+  virtual void ExecuteImpl(sessions::SyncSession* session);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PostCommitMessageCommand);

@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
 
@@ -73,18 +74,20 @@ bool UpdateApplicator::AllUpdatesApplied() const {
   return conflicting_ids_.empty() && begin_ == end_;
 }
 
-void UpdateApplicator::SaveProgressIntoSessionState(SyncerSession* session) {
+void UpdateApplicator::SaveProgressIntoSessionState(
+    sessions::ConflictProgress* conflict_progress,
+    sessions::UpdateProgress* update_progress) {
   DCHECK(begin_ == end_ || ((pointer_ == end_) && !progress_))
       << "SaveProgress called before updates exhausted.";
 
   vector<syncable::Id>::const_iterator i;
   for (i = conflicting_ids_.begin(); i != conflicting_ids_.end(); ++i) {
-    session->AddCommitConflict(*i);
-    session->AddAppliedUpdate(CONFLICT, *i);
+    conflict_progress->AddConflictingItemById(*i);
+    update_progress->AddAppliedUpdate(CONFLICT, *i);
   }
   for (i = successful_ids_.begin(); i != successful_ids_.end(); ++i) {
-    session->EraseCommitConflict(*i);
-    session->AddAppliedUpdate(SUCCESS, *i);
+    conflict_progress->EraseConflictingItemById(*i);
+    update_progress->AddAppliedUpdate(SUCCESS, *i);
   }
 }
 

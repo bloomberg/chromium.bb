@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
+#include "chrome/browser/sync/engine/syncproto.h"
 
 namespace browser_sync {
 
@@ -16,10 +16,11 @@ class BuildCommitCommand : public SyncerCommand {
   BuildCommitCommand();
   virtual ~BuildCommitCommand();
 
-  virtual void ExecuteImpl(SyncerSession *session);
+  // SyncerCommand implementation.
+  virtual void ExecuteImpl(sessions::SyncSession* session);
 
  private:
-  void AddExtensionsActivityToMessage(SyncerSession* session,
+  void AddExtensionsActivityToMessage(sessions::SyncSession* session,
                                       CommitMessage* message);
   DISALLOW_COPY_AND_ASSIGN(BuildCommitCommand);
 };

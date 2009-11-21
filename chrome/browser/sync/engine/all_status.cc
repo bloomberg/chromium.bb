@@ -17,6 +17,7 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 
@@ -72,7 +73,7 @@ void AllStatus::WatchAuthWatcher(AuthWatcher* auth_watcher) {
 
 void AllStatus::WatchSyncerThread(SyncerThread* syncer_thread) {
   syncer_thread_hookup_.reset(
-      NewEventListenerHookup(syncer_thread->channel(), this,
+      NewEventListenerHookup(syncer_thread->relay_channel(), this,
                              &AllStatus::HandleSyncerEvent));
 }
 
@@ -92,28 +93,29 @@ AllStatus::Status AllStatus::CreateBlankStatus() const {
 
 AllStatus::Status AllStatus::CalcSyncing(const SyncerEvent &event) const {
   Status status = CreateBlankStatus();
-  SyncerStatus syncerStatus(event.last_session);
-  status.unsynced_count += static_cast<int>(syncerStatus.unsynced_count());
-  status.conflicting_count += syncerStatus.conflicting_commits();
+  const sessions::SyncSessionSnapshot* snapshot = event.snapshot;
+  status.unsynced_count += static_cast<int>(snapshot->unsynced_count);
+  status.conflicting_count += snapshot->errors.num_conflicting_commits;
   // The syncer may not be done yet, which could cause conflicting updates.
   // But this is only used for status, so it is better to have visibility.
-  status.conflicting_count += syncerStatus.conflicting_updates();
+  status.conflicting_count += snapshot->num_conflicting_updates;
 
-  status.syncing |= syncerStatus.syncing();
-  // Show a syncer as syncing if it's got stalled updates.
-  status.syncing = event.last_session->HasMoreToSync() &&
-      event.last_session->silenced_until().is_null();
-  status.initial_sync_ended |= syncerStatus.IsShareUsable();
-  status.syncer_stuck |= syncerStatus.syncer_stuck();
-  if (syncerStatus.consecutive_errors() > status.max_consecutive_errors)
-    status.max_consecutive_errors = syncerStatus.consecutive_errors();
+  status.syncing |= snapshot->syncer_status.syncing;
+  status.syncing = snapshot->has_more_to_sync && snapshot->is_silenced;
+  status.initial_sync_ended |= snapshot->is_share_usable;
+  status.syncer_stuck |= snapshot->syncer_status.syncer_stuck;
+
+  const sessions::ErrorCounters& errors(snapshot->errors);
+  if (errors.consecutive_errors > status.max_consecutive_errors)
+    status.max_consecutive_errors = errors.consecutive_errors;
 
   // 100 is an arbitrary limit.
-  if (syncerStatus.consecutive_transient_error_commits() > 100)
+  if (errors.consecutive_transient_error_commits > 100)
     status.server_broken = true;
 
-  status.updates_available += syncerStatus.num_server_changes_remaining();
-  status.updates_received += syncerStatus.current_sync_timestamp();
+  const sessions::ChangelogProgress& progress(snapshot->changelog_progress);
+  status.updates_available += progress.num_server_changes_remaining;
+  status.updates_received += progress.current_sync_timestamp;
   return status;
 }
 

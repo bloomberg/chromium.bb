@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/basictypes.h"  // For uint8.
+
 namespace syncable {
 
 typedef std::vector<uint8> Blob;

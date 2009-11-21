@@ -5,14 +5,14 @@
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
 
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
+#include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/util/closure.h"
 
 namespace browser_sync {
 
-void ModelChangingSyncerCommand::ExecuteImpl(SyncerSession* session) {
+void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
   work_session_ = session;
-  session->model_safe_worker()->DoWorkAndWaitUntilDone(
+  session->context()->model_safe_worker()->DoWorkAndWaitUntilDone(
       NewCallback(this, &ModelChangingSyncerCommand::StartChangingModel));
 }
 

@@ -10,6 +10,7 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
+#include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/character_set_converters.h"
@@ -27,6 +28,9 @@ using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 
 namespace browser_sync {
+
+using sessions::ConflictProgress;
+using sessions::StatusController;
 
 const int SYNC_CYCLES_BEFORE_ADMITTING_DEFEAT = 8;
 
@@ -60,8 +64,7 @@ void ConflictResolver::OverwriteServerChanges(WriteTransaction* trans,
 
 ConflictResolver::ProcessSimpleConflictResult
 ConflictResolver::ProcessSimpleConflict(WriteTransaction* trans,
-                                        Id id,
-                                        SyncerSession* session) {
+                                        const Id& id) {
   MutableEntry entry(trans, syncable::GET_BY_ID, id);
   // Must be good as the entry won't have been cleaned up.
   CHECK(entry.good());
@@ -345,8 +348,7 @@ bool AttemptToFixRemovedDirectoriesWithContent(WriteTransaction* trans,
 // TODO(sync): Eliminate conflict sets. They're not necessary.
 bool ConflictResolver::ProcessConflictSet(WriteTransaction* trans,
                                           ConflictSet* conflict_set,
-                                          int conflict_count,
-                                          SyncerSession* session) {
+                                          int conflict_count) {
   int set_size = conflict_set->size();
   if (set_size < 2) {
     LOG(WARNING) << "Skipping conflict set because it has size " << set_size;
@@ -379,13 +381,13 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
     int attempt_count,
     InputIt begin,
     InputIt end,
-    ConflictResolutionView* view) {
+    StatusController* status) {
   if (attempt_count < SYNC_CYCLES_BEFORE_ADMITTING_DEFEAT) {
     return false;
   }
 
   // Don't signal stuck if we're not up to date.
-  if (view->num_server_changes_remaining() > 0) {
+  if (status->change_progress().num_server_changes_remaining > 0) {
     return false;
   }
 
@@ -399,7 +401,7 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
       LOG(ERROR) << "  Bad ID:" << *i;
   }
 
-  view->set_syncer_stuck(true);
+  status->set_syncer_stuck(true);
 
   return true;
   // TODO(sync): If we're stuck for a while we need to alert the user, clear
@@ -408,27 +410,27 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
 }
 
 bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
-                                              ConflictResolutionView* view,
-                                              SyncerSession* session) {
+                                              StatusController* status) {
   WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
   bool forward_progress = false;
+  ConflictProgress const* progress = status->conflict_progress();
   // First iterate over simple conflict items (those that belong to no set).
   set<Id>::const_iterator conflicting_item_it;
-  for (conflicting_item_it = view->CommitConflictsBegin();
-       conflicting_item_it != view->CommitConflictsEnd();
+  for (conflicting_item_it = progress->ConflictingItemsBeginConst();
+       conflicting_item_it != progress->ConflictingItemsEnd();
        ++conflicting_item_it) {
     Id id = *conflicting_item_it;
     map<Id, ConflictSet*>::const_iterator item_set_it =
-        view->IdToConflictSetFind(id);
-    if (item_set_it == view->IdToConflictSetEnd() ||
+        progress->IdToConflictSetFind(id);
+    if (item_set_it == progress->IdToConflictSetEnd() ||
         0 == item_set_it->second) {
       // We have a simple conflict.
-      switch (ProcessSimpleConflict(&trans, id, session)) {
+      switch (ProcessSimpleConflict(&trans, id)) {
         case NO_SYNC_PROGRESS:
           {
             int conflict_count = (simple_conflict_count_map_[id] += 2);
             LogAndSignalIfConflictStuck(&trans, conflict_count,
-                                        &id, &id + 1, view);
+                                        &id, &id + 1, status);
             break;
           }
         case SYNC_PROGRESS:
@@ -449,17 +451,17 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
 }
 
 bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
-                                        ConflictResolutionView* view,
-                                        SyncerSession* session) {
+                                        StatusController* status) {
+  ConflictProgress const* progress = status->conflict_progress();
   bool rv = false;
-  if (ResolveSimpleConflicts(dir, view, session))
+  if (ResolveSimpleConflicts(dir, status))
     rv = true;
   WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
   set<Id> children_of_dirs_merged_last_round;
   std::swap(children_of_merged_dirs_, children_of_dirs_merged_last_round);
   set<ConflictSet*>::const_iterator set_it;
-  for (set_it = view->ConflictSetsBegin();
-       set_it != view->ConflictSetsEnd();
+  for (set_it = progress->ConflictSetsBegin();
+       set_it != progress->ConflictSetsEnd();
        set_it++) {
     ConflictSet* conflict_set = *set_it;
     ConflictSetCountMapKey key = GetSetKey(conflict_set);
@@ -478,12 +480,12 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
       conflict_count += 2;
     }
     // See if we should process this set.
-    if (ProcessConflictSet(&trans, conflict_set, conflict_count, session)) {
+    if (ProcessConflictSet(&trans, conflict_set, conflict_count)) {
       rv = true;
     }
     LogAndSignalIfConflictStuck(&trans, conflict_count,
                                 conflict_set->begin(),
-                                conflict_set->end(), view);
+                                conflict_set->end(), status);
   }
   if (rv) {
     // This code means we don't signal that syncing is stuck when any conflict

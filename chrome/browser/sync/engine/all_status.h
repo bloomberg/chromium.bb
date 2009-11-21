@@ -13,7 +13,6 @@
 #include "base/atomicops.h"
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/sync/engine/syncer_status.h"
 #include "chrome/browser/sync/util/event_sys.h"
 
 namespace browser_sync {

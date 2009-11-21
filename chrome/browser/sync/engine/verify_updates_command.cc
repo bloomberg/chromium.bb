@@ -12,7 +12,6 @@
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
-#include "chrome/browser/sync/util/sync_types.h"
 
 namespace browser_sync {
 
@@ -26,15 +25,17 @@ using syncable::SYNCER;
 VerifyUpdatesCommand::VerifyUpdatesCommand() {}
 VerifyUpdatesCommand::~VerifyUpdatesCommand() {}
 
-void VerifyUpdatesCommand::ExecuteImpl(SyncerSession* session) {
+void VerifyUpdatesCommand::ExecuteImpl(sessions::SyncSession* session) {
   LOG(INFO) << "Beginning Update Verification";
-  ScopedDirLookup dir(session->dirman(), session->account_name());
+  ScopedDirLookup dir(session->context()->directory_manager(),
+                      session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
     return;
   }
   WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
-  GetUpdatesResponse updates = session->update_response().get_updates();
+  sessions::StatusController* status = session->status_controller();
+  const GetUpdatesResponse& updates = status->updates_response().get_updates();
   int update_count = updates.entries().size();
 
   LOG(INFO) << update_count << " entries to verify";
@@ -47,7 +48,7 @@ void VerifyUpdatesCommand::ExecuteImpl(SyncerSession* session) {
     SyncerUtil::AttemptReuniteLostCommitResponses(&trans, entry,
         trans.directory()->cache_guid());
     VerifyResult result = VerifyUpdate(&trans, entry);
-    session->AddVerifyResult(result, entry);
+    status->mutable_update_progress()->AddVerifyResult(result, entry);
   }
 }
 

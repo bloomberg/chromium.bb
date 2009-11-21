@@ -8,9 +8,8 @@
 #include "base/basictypes.h"
 
 #include "chrome/browser/sync/engine/syncer_command.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
 #include "chrome/browser/sync/engine/syncproto.h"
-#include "chrome/browser/sync/util/sync_types.h"
+#include "chrome/browser/sync/engine/syncer_types.h"
 
 namespace syncable {
 class WriteTransaction;
@@ -19,12 +18,14 @@ class WriteTransaction;
 namespace browser_sync {
 
 // Verifies the response from a GetUpdates request. All invalid updates will be
-// noted in the SyncerSession after this command is executed.
+// noted in the SyncSession after this command is executed.
 class VerifyUpdatesCommand : public SyncerCommand {
  public:
   VerifyUpdatesCommand();
   virtual ~VerifyUpdatesCommand();
-  virtual void ExecuteImpl(SyncerSession* session);
+
+  // SyncerCommand implementation.
+  virtual void ExecuteImpl(sessions::SyncSession* session);
 
   VerifyResult VerifyUpdate(syncable::WriteTransaction* trans,
                             const SyncEntity& entry);

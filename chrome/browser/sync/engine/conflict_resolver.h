@@ -8,13 +8,9 @@
 #ifndef CHROME_BROWSER_SYNC_ENGINE_CONFLICT_RESOLVER_H_
 #define CHROME_BROWSER_SYNC_ENGINE_CONFLICT_RESOLVER_H_
 
-#include <list>
-#include <vector>
+#include <set>
 
 #include "base/basictypes.h"
-#include "chrome/browser/sync/engine/conflict_resolution_view.h"
-#include "chrome/browser/sync/engine/syncer_session.h"
-#include "chrome/browser/sync/engine/syncer_status.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/util/event_sys.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
@@ -28,6 +24,9 @@ class WriteTransaction;
 }  // namespace syncable
 
 namespace browser_sync {
+namespace sessions {
+class StatusController;
+}
 
 class ConflictResolver {
   friend class SyncerTest;
@@ -38,8 +37,7 @@ class ConflictResolver {
   // Called by the syncer at the end of a update/commit cycle.
   // Returns true if the syncer should try to apply its updates again.
   bool ResolveConflicts(const syncable::ScopedDirLookup& dir,
-                        ConflictResolutionView* view,
-                        SyncerSession* session);
+                        sessions::StatusController* status);
 
  private:
   // We keep a map to record how often we've seen each conflict set. We use this
@@ -65,24 +63,21 @@ class ConflictResolver {
 
   ProcessSimpleConflictResult ProcessSimpleConflict(
       syncable::WriteTransaction* trans,
-      syncable::Id id,
-      SyncerSession* session);
+      const syncable::Id& id);
 
   bool ResolveSimpleConflicts(const syncable::ScopedDirLookup& dir,
-                              ConflictResolutionView* view,
-                              SyncerSession* session);
+                              sessions::StatusController* status);
 
   bool ProcessConflictSet(syncable::WriteTransaction* trans,
                           ConflictSet* conflict_set,
-                          int conflict_count,
-                          SyncerSession* session);
+                          int conflict_count);
 
   // Returns true if we're stuck.
   template <typename InputIt>
   bool LogAndSignalIfConflictStuck(syncable::BaseTransaction* trans,
                                    int attempt_count,
                                    InputIt start, InputIt end,
-                                   ConflictResolutionView* view);
+                                   sessions::StatusController* status);
 
   ConflictSetCountMap conflict_set_count_map_;
   SimpleConflictCountMap simple_conflict_count_map_;
