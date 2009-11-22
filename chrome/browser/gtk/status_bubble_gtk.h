@@ -119,6 +119,12 @@ class StatusBubbleGtk : public StatusBubble,
 
   // If the download shelf is visible, do not obscure it.
   bool download_shelf_is_visible_;
+
+  // 'location' and 'left_content' values from the last invocation of
+  // MouseMoved().  We hang onto these so we can move the bubble if necessary
+  // when its text changes, triggering a size change.
+  gfx::Point last_mouse_location_;
+  bool last_mouse_left_content_;
 };
 
 #endif  // CHROME_BROWSER_GTK_STATUS_BUBBLE_GTK_H_

@@ -43,7 +43,9 @@ StatusBubbleGtk::StatusBubbleGtk(Profile* profile)
       timer_factory_(this),
       flip_horizontally_(false),
       y_offset_(0),
-      download_shelf_is_visible_(false) {
+      download_shelf_is_visible_(false),
+      last_mouse_location_(0, 0),
+      last_mouse_left_content_(false) {
   InitWidgets();
 
   theme_provider_->InitThemesFor(this);
@@ -96,7 +98,6 @@ void StatusBubbleGtk::Show() {
   timer_factory_.RevokeAll();
 
   gtk_widget_show_all(container_.get());
-
   if (container_->window)
     gdk_window_raise(container_->window);
 }
@@ -110,6 +111,14 @@ void StatusBubbleGtk::SetStatusTextTo(const std::string& status_utf8) {
     HideInASecond();
   } else {
     gtk_label_set_text(GTK_LABEL(label_), status_utf8.c_str());
+    if (!last_mouse_left_content_) {
+      // Show the padding and label to update our requisition and then
+      // re-process the last mouse event -- if the label was empty before or the
+      // text changed, our size will have changed and we may need to move
+      // ourselves away from the pointer now.
+      gtk_widget_show_all(padding_);
+      MouseMoved(last_mouse_location_, false);
+    }
     Show();
   }
 }
@@ -125,6 +134,9 @@ void StatusBubbleGtk::HideInASecond() {
 
 void StatusBubbleGtk::MouseMoved(
     const gfx::Point& location, bool left_content) {
+  last_mouse_location_ = location;
+  last_mouse_left_content_ = left_content;
+
   if (!GTK_WIDGET_REALIZED(container_.get()))
     return;
 
