@@ -9,6 +9,7 @@
 #define CHROME_BROWSER_SYNC_ENGINE_CONFLICT_RESOLVER_H_
 
 #include <set>
+#include <string>
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
