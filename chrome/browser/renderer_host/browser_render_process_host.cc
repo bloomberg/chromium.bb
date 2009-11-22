@@ -310,12 +310,12 @@ bool BrowserRenderProcessHost::Init(bool is_extensions_process,
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
   } else {
-    // Build command line for renderer, we have to quote the executable name to
-    // deal with spaces.
+    // Build command line for renderer.  We call AppendRendererCommandLine()
+    // first so the process type argument will appear first.
     CommandLine* cmd_line = new CommandLine(renderer_path);
+    AppendRendererCommandLine(cmd_line);
     cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
                                     ASCIIToWide(channel_id));
-    AppendRendererCommandLine(cmd_line);
 
     // Spawn the child process asynchronously to avoid blocking the UI thread.
     child_process_.reset(new ChildProcessLauncher(
@@ -422,15 +422,15 @@ void BrowserRenderProcessHost::ResetVisitedLinks() {
 
 void BrowserRenderProcessHost::AppendRendererCommandLine(
     CommandLine* command_line) const {
-  if (logging::DialogsAreSuppressed())
-    command_line->AppendSwitch(switches::kNoErrorDialogs);
-
   // Pass the process type first, so it shows first in process listings.
   // Extensions use a special pseudo-process type to make them distinguishable,
   // even though they're just renderers.
   command_line->AppendSwitchWithValue(switches::kProcessType,
       extension_process_ ? switches::kExtensionProcess :
                            switches::kRendererProcess);
+
+  if (logging::DialogsAreSuppressed())
+    command_line->AppendSwitch(switches::kNoErrorDialogs);
 
   // Now send any options from our own command line we want to propogate.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
