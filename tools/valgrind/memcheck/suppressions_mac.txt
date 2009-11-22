@@ -476,3 +476,20 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_28493
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net12_GLOBAL__N_119SessionDependenciesC2Ev
+   fun:_ZN3net12_GLOBAL__N_119SessionDependenciesC1Ev
+   fun:_ZN3net12_GLOBAL__N_114FlipStreamTestC2Ev
+   fun:_ZN3net12_GLOBAL__N_131FlipStreamTest_SendRequest_TestC2Ev
+   fun:_ZN3net12_GLOBAL__N_131FlipStreamTest_SendRequest_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplIN3net12_GLOBAL__N_131FlipStreamTest_SendRequest_TestEE10CreateTestEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
