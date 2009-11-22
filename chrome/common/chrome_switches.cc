@@ -191,10 +191,6 @@ const char kEnableFastback[]                = "enable-fastback";
 // testing, for example page cycler and layout tests.  See bug 1157243.
 const char kEnableFileCookies[]             = "enable-file-cookies";
 
-// By default, js content scripts are not allowed on file://. They are needed
-// for page cycler tests.  See http://crbug.com/27877.
-const char kEnableJsOnFileUrls[]         = "enable-content-script-on-file-urls";
-
 // Disable LocalStorage.
 const char kDisableLocalStorage[]            = "disable-local-storage";
 

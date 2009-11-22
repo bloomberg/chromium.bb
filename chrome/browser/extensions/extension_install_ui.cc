@@ -21,6 +21,7 @@
 #endif  // TOOLKIT_VIEWS
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -38,6 +39,25 @@ static std::wstring GetInstallWarning(Extension* extension) {
   // warning.
   if (!extension->plugins().empty())
     return l10n_util::GetString(IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS);
+
+  // We also show the severe warning if the extension has access to any file://
+  // URLs. They aren't *quite* as dangerous as full access to the system via
+  // NPAPI, but pretty dang close. Content scripts are currently the only way
+  // that extension can get access to file:// URLs.
+  for (UserScriptList::const_iterator script =
+           extension->content_scripts().begin();
+       script != extension->content_scripts().end();
+       ++script) {
+    for (UserScript::PatternList::const_iterator pattern =
+             script->url_patterns().begin();
+         pattern != script->url_patterns().end();
+         ++pattern) {
+      if (pattern->scheme() == chrome::kFileScheme) {
+        return l10n_util::GetString(
+            IDS_EXTENSION_PROMPT_WARNING_NEW_FULL_ACCESS);
+      }
+    }
+  }
 
   // Otherwise, we go in descending order of severity: all hosts, several hosts,
   // a single host, no hosts. For each of these, we also have a variation of the

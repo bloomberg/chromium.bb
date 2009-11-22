@@ -131,9 +131,12 @@ class ExtensionStartupTestBase
 
   void TestInjection(bool expect_css, bool expect_script) {
     // Load a page affected by the content script and test to see the effect.
-    HTTPTestServer* server = StartHTTPServer();
-    GURL url = server->TestServerPage("file/extensions/test_file.html");
-    ui_test_utils::NavigateToURL(browser(), url);
+    FilePath test_file;
+    PathService::Get(chrome::DIR_TEST_DATA, &test_file);
+    test_file = test_file.AppendASCII("extensions")
+                         .AppendASCII("test_file.html");
+
+    ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(test_file));
 
     bool result = false;
     ui_test_utils::ExecuteJavaScriptAndExtractBool(

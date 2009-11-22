@@ -26,7 +26,7 @@
               "permissions": ["tabs", "http://*.google.com/*", "https://*.google.com/*"],
               "content_scripts": [
                 {
-                  "matches": ["http://*.google.com/*", "https://*.google.com/*", "http://localhost/*"],
+                  "matches": ["file://*", "http://*.google.com/*", "https://*.google.com/*"],
                   "js": ["script1.js", "script2.js"],
                   "css": ["style1.css", "style2.css", "style2.css"]
                 },
@@ -50,7 +50,7 @@
               "permissions": ["tabs"],
               "content_scripts": [
                 {
-                  "matches": ["http://localhost/*"],
+                  "matches": ["file://*"],
                   "js": ["page.js"]
                 }
               ]

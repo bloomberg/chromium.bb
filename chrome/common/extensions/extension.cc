@@ -244,20 +244,11 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
           IntToString(definition_index), IntToString(j));
       return false;
     }
-    std::string scheme = pattern.scheme();
-    if (scheme == "file") {
-      // No content scripts are allowed unless the command line override switch
-      // was provided.
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableJsOnFileUrls)) {
-        continue;
-      }
-    }
 
     result->add_url_pattern(pattern);
   }
 
-  // Include/exclude globs (mostly for Greasemonkey compatibility).
+  // include/exclude globs (mostly for Greasemonkey compat)
   if (!LoadGlobsHelper(content_script, definition_index, keys::kIncludeGlobs,
                        error, &UserScript::add_glob, result)) {
       return false;
@@ -268,7 +259,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       return false;
   }
 
-  // js and css keys.
+  // js and css keys
   ListValue* js = NULL;
   if (content_script->HasKey(keys::kJs) &&
       !content_script->GetList(keys::kJs, &js)) {

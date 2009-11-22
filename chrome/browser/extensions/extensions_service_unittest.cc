@@ -539,11 +539,11 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectorySuccess) {
       extension->toolstrips();
   ASSERT_EQ(2u, scripts.size());
   EXPECT_EQ(3u, scripts[0].url_patterns().size());
-  EXPECT_EQ("http://*.google.com/*",
+  EXPECT_EQ("file://*",
             scripts[0].url_patterns()[0].GetAsString());
-  EXPECT_EQ("https://*.google.com/*",
+  EXPECT_EQ("http://*.google.com/*",
             scripts[0].url_patterns()[1].GetAsString());
-  EXPECT_EQ("http://localhost/*",
+  EXPECT_EQ("https://*.google.com/*",
             scripts[0].url_patterns()[2].GetAsString());
   EXPECT_EQ(2u, scripts[0].js_scripts().size());
   ExtensionResource resource00(scripts[0].js_scripts()[0].extension_root(),
