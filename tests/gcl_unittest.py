@@ -160,9 +160,9 @@ class ChangeInfoUnittest(GclTestsBase):
     self.mox.ReplayAll()
     members = [
       'CloseIssue', 'Delete', 'GetFiles', 'GetFileNames', 'GetLocalRoot',
-      'Exists', 'Load', 'MissingTests', 'Save', 'UpdateRietveldDescription',
-      'description', 'issue', 'name',
-      'patch', 'patchset',
+      'Exists', 'Load', 'MissingTests', 'NeedsUpload', 'Save',
+      'UpdateRietveldDescription', 'description', 'issue', 'name',
+      'needs_upload', 'patch', 'patchset',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir),
@@ -187,7 +187,7 @@ class ChangeInfoUnittest(GclTestsBase):
     gcl.GetChangelistInfoFile('bleh').AndReturn('bleeeh')
     gcl.os.path.exists('bleeeh').AndReturn(True)
     gcl.ReadFile('bleeeh').AndReturn(
-      gcl.ChangeInfo._SEPARATOR.join(["42,53", "G      b.cc"] + description))
+      gcl.ChangeInfo._SEPARATOR.join(["42, 53", "G      b.cc"] + description))
     self.mox.ReplayAll()
 
     change_info = gcl.ChangeInfo.Load('bleh', self.fake_root_dir, True, False)
@@ -214,10 +214,21 @@ class ChangeInfoUnittest(GclTestsBase):
 
   def testSaveEmpty(self):
     gcl.GetChangelistInfoFile('').AndReturn('foo')
-    gcl.WriteFile('foo', gcl.ChangeInfo._SEPARATOR.join(['0, 0', '', '']))
+    gcl.WriteFile('foo', gcl.ChangeInfo._SEPARATOR.join(['0, 0, clean', '',
+                                                         '']))
     self.mox.ReplayAll()
 
     change_info = gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir)
+    change_info.Save()
+
+  def testSaveDirty(self):
+    gcl.GetChangelistInfoFile('').AndReturn('foo')
+    gcl.WriteFile('foo', gcl.ChangeInfo._SEPARATOR.join(['0, 0, dirty', '',
+                                                         '']))
+    self.mox.ReplayAll()
+
+    change_info = gcl.ChangeInfo('', 0, 0, '', None, self.fake_root_dir,
+                                 needs_upload=True)
     change_info.Save()
 
 

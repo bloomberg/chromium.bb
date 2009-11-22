@@ -270,7 +270,8 @@ class ChangeInfo(object):
   # _SEPARATOR\n
   # description
 
-  def __init__(self, name, issue, patchset, description, files, local_root):
+  def __init__(self, name, issue, patchset, description, files, local_root,
+               needs_upload=False):
     self.name = name
     self.issue = int(issue)
     self.patchset = int(patchset)
@@ -280,6 +281,10 @@ class ChangeInfo(object):
     self._files = files
     self.patch = None
     self._local_root = local_root
+    self.needs_upload = needs_upload
+
+  def NeedsUpload(self):
+    return self.needs_upload
 
   def GetFileNames(self):
     """Returns the list of file names included in this change."""
@@ -308,8 +313,12 @@ class ChangeInfo(object):
 
   def Save(self):
     """Writes the changelist information to disk."""
+    if self.NeedsUpload():
+      needs_upload = "dirty"
+    else:
+      needs_upload = "clean"
     data = ChangeInfo._SEPARATOR.join([
-        "%d, %d" % (self.issue, self.patchset),
+        "%d, %d, %s" % (self.issue, self.patchset, needs_upload),
         "\n".join([f[0] + f[1] for f in self.GetFiles()]),
         self.description])
     WriteFile(GetChangelistInfoFile(self.name), data)
@@ -427,17 +436,21 @@ class ChangeInfo(object):
     if not os.path.exists(info_file):
       if fail_on_not_found:
         ErrorExit("Changelist " + changename + " not found.")
-      return ChangeInfo(changename, 0, 0, '', None, local_root)
+      return ChangeInfo(changename, 0, 0, '', None, local_root,
+                        needs_upload=False)
     split_data = ReadFile(info_file).split(ChangeInfo._SEPARATOR, 2)
     if len(split_data) != 3:
       ErrorExit("Changelist file %s is corrupt" % info_file)
-    items = split_data[0].split(',')
+    items = split_data[0].split(', ')
     issue = 0
     patchset = 0
+    needs_upload = False
     if items[0]:
       issue = int(items[0])
     if len(items) > 1:
       patchset = int(items[1])
+    if len(items) > 2:
+      needs_upload = (items[2] == "dirty")
     files = []
     for line in split_data[1].splitlines():
       status = line[:7]
@@ -459,7 +472,7 @@ class ChangeInfo(object):
           save = True
           files[files.index(item)] = (status, item[1])
     change_info = ChangeInfo(changename, issue, patchset, description, files,
-                             local_root)
+                             local_root, needs_upload)
     if save:
       change_info.Save()
     return change_info
@@ -479,7 +492,8 @@ def LoadChangelistInfoForMultiple(changenames, local_root, fail_on_not_found,
   This is mainly usefull to concatenate many changes into one for a 'gcl try'.
   """
   changes = changenames.split(',')
-  aggregate_change_info = ChangeInfo(changenames, 0, 0, '', None, local_root)
+  aggregate_change_info = ChangeInfo(changenames, 0, 0, '', None, local_root,
+                                     needs_upload=False)
   for change in changes:
     aggregate_change_info._files += ChangeInfo.Load(change,
                                                     local_root,
@@ -979,7 +993,7 @@ def Change(change_info, args):
   else:
     override_description = None
 
-  if change_info.issue:
+  if change_info.issue and not change_info.NeedsUpload():
     try:
       description = GetIssueDescription(change_info.issue)
     except urllib2.HTTPError, err:
@@ -1036,13 +1050,12 @@ def Change(change_info, args):
   if len(split_result) != 2:
     ErrorExit("Don't modify the text starting with ---!\n\n" + result)
 
+  # Update the CL description if it has changed.
   new_description = split_result[0]
   cl_files_text = split_result[1]
   if new_description != description or override_description:
     change_info.description = new_description
-    if change_info.issue:
-      # Update the Rietveld issue with the new description.
-      change_info.UpdateRietveldDescription()
+    change_info.needs_upload = True
 
   new_cl_files = []
   for line in cl_files_text.splitlines():
@@ -1067,6 +1080,13 @@ def Change(change_info, args):
   print change_info.name + " changelist saved."
   if change_info.MissingTests():
     Warn("WARNING: " + MISSING_TEST_MSG)
+
+  # Update the Rietveld issue.
+  if change_info.issue and change_info.NeedsUpload():
+    change_info.UpdateRietveldDescription()
+    change_info.needs_upload = False
+    change_info.Save()
+
 
 # Valid extensions for files we want to lint.
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
