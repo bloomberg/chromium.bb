@@ -32,20 +32,24 @@
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 
+namespace {
+
 // Names of images in the bundle for buttons.
-static NSString* const kBackButtonImageName = @"back_Template.pdf";
-static NSString* const kForwardButtonImageName = @"forward_Template.pdf";
-static NSString* const kReloadButtonImageName = @"reload_Template.pdf";
-static NSString* const kHomeButtonImageName = @"home_Template.pdf";
-static NSString* const kStarButtonImageName = @"star_Template.pdf";
-static NSString* const kStarButtonFillingImageName = @"starred.pdf";
-static NSString* const kGoButtonGoImageName = @"go_Template.pdf";
-static NSString* const kGoButtonStopImageName = @"stop_Template.pdf";
-static NSString* const kPageButtonImageName = @"menu_page_Template.pdf";
-static NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
+NSString* const kBackButtonImageName = @"back_Template.pdf";
+NSString* const kForwardButtonImageName = @"forward_Template.pdf";
+NSString* const kReloadButtonImageName = @"reload_Template.pdf";
+NSString* const kHomeButtonImageName = @"home_Template.pdf";
+NSString* const kStarButtonImageName = @"star_Template.pdf";
+NSString* const kStarButtonFillingImageName = @"starred.pdf";
+NSString* const kGoButtonGoImageName = @"go_Template.pdf";
+NSString* const kGoButtonStopImageName = @"stop_Template.pdf";
+NSString* const kPageButtonImageName = @"menu_page_Template.pdf";
+NSString* const kWrenchButtonImageName = @"menu_chrome_Template.pdf";
 
 // Height of the toolbar in pixels when the bookmark bar is closed.
-static const float kBaseToolbarHeight = 36.0;
+const CGFloat kBaseToolbarHeight = 36.0;
+
+}  // namespace
 
 @interface ToolbarController(Private)
 - (void)initCommandStatus:(CommandUpdater*)commands;
@@ -518,7 +522,7 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight {
-  return  kBaseToolbarHeight - compressByHeight;
+  return kBaseToolbarHeight - compressByHeight;
 }
 
 - (void)setDividerOpacity:(CGFloat)opacity {
