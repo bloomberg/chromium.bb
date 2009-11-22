@@ -371,9 +371,16 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
 }
 
 - (void)removeActionButtonForExtension:(Extension*)extension {
+  if (!extension->browser_action())
+    return;
+
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());
 
   BrowserActionButton* button = [buttons_ objectForKey:buttonKey];
+  if (!button) {
+    NOTREACHED();
+    return;
+  }
   [button removeFromSuperview];
   [buttons_ removeObjectForKey:buttonKey];
   [buttonOrder_ removeObject:button];
