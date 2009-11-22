@@ -5,6 +5,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/flip/flip_io_buffer.h"
 #include "net/flip/flip_session.h"
+#include "net/flip/flip_stream.h"
 #include "net/socket/socket_test_util.h"
 #include "testing/platform_test.h"
 
@@ -52,4 +53,3 @@ TEST_F(FlipSessionTest, FlipIOBuffer) {
 }
 
 }  // namespace net
-

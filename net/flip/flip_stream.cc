@@ -4,99 +4,177 @@
 
 #include "net/flip/flip_stream.h"
 
+#include "base/logging.h"
 #include "net/flip/flip_session.h"
+#include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
 
 namespace net {
 
-bool FlipStream::AttachDelegate(FlipDelegate* delegate) {
-  DCHECK(delegate_ == NULL);  // Don't attach if already attached.
-  DCHECK(path_.length() > 0);  // Path needs to be set for push streams.
-  delegate_ = delegate;
+FlipStream::FlipStream(FlipSession* session,
+                       flip::FlipStreamId stream_id,
+                       bool pushed)
+    : stream_id_(stream_id),
+      priority_(0),
+      pushed_(pushed),
+      download_finished_(false),
+      metrics_(Singleton<BandwidthMetrics>::get()),
+      session_(session),
+      response_(NULL),
+      request_body_stream_(NULL),
+      response_complete_(false),
+      io_state_(STATE_NONE),
+      response_status_(OK),
+      user_callback_(NULL),
+      user_buffer_(NULL),
+      user_buffer_len_(0),
+      cancelled_(false) {}
 
-  // If there is pending data, send it up here.
+FlipStream::~FlipStream() {
+  DLOG(INFO) << "Deleting FlipStream for stream " << stream_id_;
 
-  // Check for the OnReply, and pass it up.
-  if (response_.get())
-    delegate_->OnResponseReceived(response_.get());
-
-  // Pass data up
-  while (response_body_.size()) {
-    scoped_refptr<IOBufferWithSize> buffer = response_body_.front();
-    response_body_.pop_front();
-    delegate_->OnDataReceived(buffer->data(), buffer->size());
+  // TODO(willchan): We're still calling CancelStream() too many times, because
+  // inactive pending/pushed streams will still have stream_id_ set.
+  if (stream_id_) {
+    session_->CancelStream(stream_id_);
+  } else if (!response_complete_) {
+    NOTREACHED();
   }
-
-  // Finally send up the end-of-stream.
-  if (download_finished_) {
-    delegate_->OnClose(net::OK);
-    return true;  // tell the caller to shut us down
-  }
-  return false;
 }
 
-void FlipStream::OnReply(const flip::FlipHeaderBlock* headers) {
-  DCHECK(headers);
-  DCHECK(headers->find("version") != headers->end());
-  DCHECK(headers->find("status") != headers->end());
+uint64 FlipStream::GetUploadProgress() const {
+  if (!request_body_stream_.get())
+    return 0;
 
-  // TODO(mbelshe): if no version or status is found, we need to error
-  // out the stream.
+  return request_body_stream_->position();
+}
 
+const HttpResponseInfo* FlipStream::GetResponseInfo() const {
+  return response_.get();
+}
+
+int FlipStream::ReadResponseHeaders(CompletionCallback* callback) {
+  // Note: The FlipStream may have already received the response headers, so
+  //       this call may complete synchronously.
+  CHECK(callback);
+  CHECK(io_state_ == STATE_NONE);
+  CHECK(!cancelled_);
+
+  // The SYN_REPLY has already been received.
+  if (response_.get())
+    return OK;
+
+  io_state_ = STATE_READ_HEADERS;
+  CHECK(!user_callback_);
+  user_callback_ = callback;
+  return ERR_IO_PENDING;
+}
+
+int FlipStream::ReadResponseBody(
+    IOBuffer* buf, int buf_len, CompletionCallback* callback) {
+  DCHECK_EQ(io_state_, STATE_NONE);
+  CHECK(buf);
+  CHECK(buf_len);
+  CHECK(callback);
+  CHECK(!cancelled_);
+
+  // If we have data buffered, complete the IO immediately.
+  if (response_body_.size()) {
+    int bytes_read = 0;
+    while (response_body_.size() && buf_len > 0) {
+      scoped_refptr<IOBufferWithSize> data = response_body_.front();
+      const int bytes_to_copy = std::min(buf_len, data->size());
+      memcpy(&(buf->data()[bytes_read]), data->data(), bytes_to_copy);
+      buf_len -= bytes_to_copy;
+      if (bytes_to_copy == data->size()) {
+        response_body_.pop_front();
+      } else {
+        const int bytes_remaining = data->size() - bytes_to_copy;
+        IOBufferWithSize* new_buffer = new IOBufferWithSize(bytes_remaining);
+        memcpy(new_buffer->data(), &(data->data()[bytes_to_copy]),
+               bytes_remaining);
+        response_body_.pop_front();
+        response_body_.push_front(new_buffer);
+      }
+      bytes_read += bytes_to_copy;
+    }
+    return bytes_read;
+  } else if (response_complete_) {
+    return response_status_;
+  }
+
+  CHECK(!user_callback_);
+  CHECK(!user_buffer_);
+  CHECK(user_buffer_len_ == 0);
+
+  user_callback_ = callback;
+  user_buffer_ = buf;
+  user_buffer_len_ = buf_len;
+  return ERR_IO_PENDING;
+}
+
+int FlipStream::SendRequest(UploadDataStream* upload_data,
+                            CompletionCallback* callback) {
+  CHECK(callback);
+  CHECK(!cancelled_);
+
+  // TODO(mbelshe): rethink this UploadDataStream wrapper.
+  if (upload_data)
+    request_body_stream_.reset(upload_data);
+
+  DCHECK_EQ(io_state_, STATE_NONE);
+  if (!pushed_)
+    io_state_ = STATE_SEND_HEADERS;
+  else
+    io_state_ = STATE_READ_HEADERS;
+  int result = DoLoop(OK);
+  if (result == ERR_IO_PENDING) {
+    CHECK(!user_callback_);
+    user_callback_ = callback;
+  }
+  return result;
+}
+
+void FlipStream::Cancel() {
+  cancelled_ = true;
+  user_callback_ = NULL;
+
+  // TODO(willchan): Should we also call FlipSession::CancelStream()?  What
+  // makes more sense?  If we cancel the stream, perhaps we should send the
+  // server a control packet to tell it to stop sending to the dead stream.  But
+  // then does FlipSession deactivate the stream?  It would log warnings for
+  // data packets for an invalid stream then, unless we maintained some data
+  // structure to keep track of cancelled stream ids.  Ugh.  Currently
+  // FlipStream does not call CancelStream().  We should free up all the memory
+  // associated with the stream though (ditch all the IOBuffers) and at all
+  // FlipSession's entrypoints into FlipStream check |cancelled_| and not copy
+  // the data.
+}
+
+void FlipStream::OnResponseReceived(const HttpResponseInfo& response) {
   metrics_.StartStream();
 
-  // Server initiated streams must send a URL to us in the headers.
-  if (headers->find("path") != headers->end())
-    path_ = headers->find("path")->second;
+  CHECK(!response_.get());
 
-  // TODO(mbelshe): For now we convert from our nice hash map back
-  // to a string of headers; this is because the HttpResponseInfo
-  // is a bit rigid for its http (non-flip) design.
-  std::string raw_headers(headers->find("version")->second);
-  raw_headers.append(" ", 1);
-  raw_headers.append(headers->find("status")->second);
-  raw_headers.append("\0", 1);
-  flip::FlipHeaderBlock::const_iterator it;
-  for (it = headers->begin(); it != headers->end(); ++it) {
-    // For each value, if the server sends a NUL-separated
-    // list of values, we separate that back out into
-    // individual headers for each value in the list.
-    // e.g.
-    //    Set-Cookie "foo\0bar"
-    // becomes
-    //    Set-Cookie: foo\0
-    //    Set-Cookie: bar\0
-    std::string value = it->second;
-    size_t start = 0;
-    size_t end = 0;
-    do {
-      end = value.find('\0', start);
-      std::string tval;
-      if (end != value.npos)
-        tval = value.substr(start, (end - start));
-      else
-        tval = value.substr(start);
-      raw_headers.append(it->first);
-      raw_headers.append(":", 1);
-      raw_headers.append(tval);
-      raw_headers.append("\0", 1);
-      start = end + 1;
-    } while (end != value.npos);
+  response_.reset(new HttpResponseInfo);
+  *response_ = response;  // TODO(mbelshe): avoid copy.
+
+  if (io_state_ == STATE_NONE) {
+    CHECK(pushed_);
+  } else if (io_state_ == STATE_READ_HEADERS_COMPLETE) {
+    CHECK(!pushed_);
+  } else {
+    NOTREACHED();
   }
 
-  LOG(INFO) << "FlipStream: SynReply received for " << stream_id_;
+  int rv = DoLoop(OK);
 
-  DCHECK(response_ == NULL);
-  response_.reset(new HttpResponseInfo());
-  response_->headers = new HttpResponseHeaders(raw_headers);
-  // When pushing content from the server, we may not yet have a delegate_
-  // to notify.  When the delegate is attached, it will notify then.
-  if (delegate_)
-    delegate_->OnResponseReceived(response_.get());
+  if (user_callback_)
+    DoCallback(rv);
 }
 
-bool FlipStream::OnData(const char* data, int length) {
-  DCHECK(length >= 0);
+bool FlipStream::OnDataReceived(const char* data, int length) {
+  DCHECK_GE(length, 0);
   LOG(INFO) << "FlipStream: Data (" << length << " bytes) received for "
             << stream_id_;
 
@@ -104,55 +182,197 @@ bool FlipStream::OnData(const char* data, int length) {
   // We cannot pass data up to the caller unless the reply headers have been
   // received.
   if (!response_.get()) {
-    if (delegate_)
-      delegate_->OnClose(ERR_SYN_REPLY_NOT_RECEIVED);
-    return true;
+    OnClose(ERR_SYN_REPLY_NOT_RECEIVED);
+    return false;
   }
 
   // A zero-length read means that the stream is being closed.
   if (!length) {
     metrics_.StopStream();
     download_finished_ = true;
-    if (delegate_) {
-      delegate_->OnClose(net::OK);
-      return true;  // Tell the caller to clean us up.
-    }
+    OnClose(net::OK);
+    return true;
   }
 
   // Track our bandwidth.
   metrics_.RecordBytes(length);
 
-  // We've received data.  We try to pass it up to the caller.
-  // In the case of server-push streams, we may not have a delegate yet assigned
-  // to this stream.  In that case we just queue the data for later.
-  if (delegate_) {
-    delegate_->OnDataReceived(data, length);
-  } else {
-    // Save the data for use later.
+  if (length > 0) {
+    // TODO(mbelshe): If read is pending, we should copy the data straight into
+    // the read buffer here.  For now, we'll queue it always.
     // TODO(mbelshe): We need to have some throttling on this.  We shouldn't
     //                buffer an infinite amount of data.
+
     IOBufferWithSize* io_buffer = new IOBufferWithSize(length);
     memcpy(io_buffer->data(), data, length);
+
     response_body_.push_back(io_buffer);
   }
-  return false;
+
+  // Note that data may be received for a FlipStream prior to the user calling
+  // ReadResponseBody(), therefore user_callback_ may be NULL.  This may often
+  // happen for server initiated streams.
+  if (user_callback_) {
+    int rv = ReadResponseBody(user_buffer_, user_buffer_len_, user_callback_);
+    CHECK(rv != ERR_IO_PENDING);
+    user_buffer_ = NULL;
+    user_buffer_len_ = 0;
+    DoCallback(rv);
+  }
+
+  return true;
 }
 
-void FlipStream::OnError(int err) {
-  if (delegate_)
-    delegate_->OnClose(err);
+void FlipStream::OnWriteComplete(int status) {
+  DoLoop(status);
 }
 
-int FlipStream::OnWriteComplete(int result) {
-  // We only write to the socket when there is a delegate.
-  DCHECK(delegate_);
+void FlipStream::OnClose(int status) {
+  response_complete_ = true;
+  response_status_ = status;
+  stream_id_ = 0;
 
-  delegate_->OnWriteComplete(result);
+  if (user_callback_)
+    DoCallback(status);
+}
 
-  // TODO(mbelshe): we might want to remove the status code
-  //                since we're not doing anything useful with it.
+int FlipStream::DoLoop(int result) {
+  do {
+    State state = io_state_;
+    io_state_ = STATE_NONE;
+    switch (state) {
+      // State machine 1: Send headers and wait for response headers.
+      case STATE_SEND_HEADERS:
+        CHECK(result == OK);
+        result = DoSendHeaders();
+        break;
+      case STATE_SEND_HEADERS_COMPLETE:
+        result = DoSendHeadersComplete(result);
+        break;
+      case STATE_SEND_BODY:
+        CHECK(result == OK);
+        result = DoSendBody();
+        break;
+      case STATE_SEND_BODY_COMPLETE:
+        result = DoSendBodyComplete(result);
+        break;
+      case STATE_READ_HEADERS:
+        CHECK(result == OK);
+        result = DoReadHeaders();
+        break;
+      case STATE_READ_HEADERS_COMPLETE:
+        result = DoReadHeadersComplete(result);
+        break;
+
+      // State machine 2: Read body.
+      // NOTE(willchan): Currently unused.  Currently we handle this stuff in
+      // the OnDataReceived()/OnClose()/ReadResponseHeaders()/etc.  Only reason
+      // to do this is for consistency with the Http code.
+      case STATE_READ_BODY:
+        result = DoReadBody();
+        break;
+      case STATE_READ_BODY_COMPLETE:
+        result = DoReadBodyComplete(result);
+        break;
+      case STATE_DONE:
+        DCHECK(result != ERR_IO_PENDING);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  } while (result != ERR_IO_PENDING && io_state_ != STATE_NONE);
+
+  return result;
+}
+
+void FlipStream::DoCallback(int rv) {
+  CHECK(rv != ERR_IO_PENDING);
+  CHECK(user_callback_);
+
+  // Since Run may result in being called back, clear user_callback_ in advance.
+  CompletionCallback* c = user_callback_;
+  user_callback_ = NULL;
+  c->Run(rv);
+}
+
+int FlipStream::DoSendHeaders() {
+  // The FlipSession will always call us back when the send is complete.
+  // TODO(willchan): This code makes the assumption that for the non-push stream
+  // case, the client code calls SendRequest() after creating the stream and
+  // before yielding back to the MessageLoop.  This is true in the current code,
+  // but is not obvious from the headers.  We should make the code handle
+  // SendRequest() being called after the SYN_REPLY has been received.
+  io_state_ = STATE_SEND_HEADERS_COMPLETE;
+  return ERR_IO_PENDING;
+}
+
+int FlipStream::DoSendHeadersComplete(int result) {
+  if (result < 0)
+    return result;
+
+  CHECK(result > 0);
+
+  // There is no body, skip that state.
+  if (!request_body_stream_.get()) {
+    io_state_ = STATE_READ_HEADERS;
+    return OK;
+  }
+
+  io_state_ = STATE_SEND_BODY;
   return OK;
 }
 
-}  // namespace net
+// DoSendBody is called to send the optional body for the request.  This call
+// will also be called as each write of a chunk of the body completes.
+int FlipStream::DoSendBody() {
+  // If we're already in the STATE_SENDING_BODY state, then we've already
+  // sent a portion of the body.  In that case, we need to first consume
+  // the bytes written in the body stream.  Note that the bytes written is
+  // the number of bytes in the frame that were written, only consume the
+  // data portion, of course.
+  io_state_ = STATE_SEND_BODY_COMPLETE;
+  int buf_len = static_cast<int>(request_body_stream_->buf_len());
+  return session_->WriteStreamData(stream_id_,
+                                   request_body_stream_->buf(),
+                                   buf_len);
+}
 
+int FlipStream::DoSendBodyComplete(int result) {
+  if (result < 0)
+    return result;
+
+  CHECK(result != 0);
+
+  request_body_stream_->DidConsume(result);
+
+  if (request_body_stream_->position() < request_body_stream_->size())
+    io_state_ = STATE_SEND_BODY;
+  else
+    io_state_ = STATE_READ_HEADERS;
+
+  return OK;
+}
+
+int FlipStream::DoReadHeaders() {
+  io_state_ = STATE_READ_HEADERS_COMPLETE;
+  return response_.get() ? OK : ERR_IO_PENDING;
+}
+
+int FlipStream::DoReadHeadersComplete(int result) {
+  return result;
+}
+
+int FlipStream::DoReadBody() {
+  // TODO(mbelshe): merge FlipStreamParser with FlipStream and then this
+  // makes sense.
+  return ERR_IO_PENDING;
+}
+
+int FlipStream::DoReadBodyComplete(int result) {
+  // TODO(mbelshe): merge FlipStreamParser with FlipStream and then this
+  // makes sense.
+  return ERR_IO_PENDING;
+}
+
+}  // namespace net

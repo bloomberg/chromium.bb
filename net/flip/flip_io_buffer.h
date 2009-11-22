@@ -23,20 +23,19 @@ class FlipIOBuffer {
   // |priority| is the priority of this buffer.  Lower numbers are higher
   //            priority.
   // |stream| is a pointer to the stream which is managing this buffer.
-  FlipIOBuffer(IOBufferWithSize* buffer, int priority, FlipStream* stream)
-      : buffer_(buffer),
-        priority_(priority),
-        position_(++order_),
-        stream_(stream) {
-  }
-  FlipIOBuffer() : priority_(0), position_(0), stream_(NULL) {}
+  FlipIOBuffer(IOBufferWithSize* buffer, int priority, FlipStream* stream);
+  FlipIOBuffer();
+  ~FlipIOBuffer();
 
   // Accessors.
   IOBuffer* buffer() const { return buffer_; }
   size_t size() const { return buffer_->size(); }
-  void release() { buffer_ = NULL; }
+  void release() {
+    buffer_.release();
+    stream_.release();
+  }
   int priority() const { return priority_; }
-  FlipStream* stream() const { return stream_; }
+  const scoped_refptr<FlipStream>& stream() const { return stream_; }
 
   // Comparison operator to support sorting.
   bool operator<(const FlipIOBuffer& other) const {
@@ -49,11 +48,10 @@ class FlipIOBuffer {
   scoped_refptr<IOBufferWithSize> buffer_;
   int priority_;
   uint64 position_;
-  FlipStream* stream_;
+  scoped_refptr<FlipStream> stream_;
   static uint64 order_;  // Maintains a FIFO order for equal priorities.
 };
 
 }  // namespace net
 
 #endif  // NET_FLIP_FLIP_IO_BUFFER_H_
-

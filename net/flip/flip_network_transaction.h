@@ -12,118 +12,19 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
-#include "net/base/io_buffer.h"
+#include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/flip/flip_session.h"
-#include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
 
 namespace net {
 
 class FlipSession;
+class FlipStream;
 class HttpNetworkSession;
+class HttpResponseInfo;
+class IOBuffer;
 class UploadDataStream;
-
-// FlipStreamParser is a class to encapsulate the IO of a FLIP
-// stream on top of a FlipSession.  All read/writes go through
-// the FlipStreamParser.
-class FlipStreamParser : public FlipDelegate {
- public:
-  FlipStreamParser();
-  ~FlipStreamParser();
-
-  // Creates a FLIP stream from |flip| and send the HTTP request over it.
-  // |request|'s lifetime must persist longer than |this|.  This always
-  // completes asynchronously, so |callback| must be non-NULL.  Returns a net
-  // error code.
-  int SendRequest(FlipSession* flip, const HttpRequestInfo* request,
-                  CompletionCallback* callback);
-
-  // Reads the response headers.  Returns a net error code.
-  int ReadResponseHeaders(CompletionCallback* callback);
-
-  // Reads the response body.  Returns a net error code or the number of bytes
-  // read.
-  int ReadResponseBody(
-      IOBuffer* buf, int buf_len, CompletionCallback* callback);
-
-  // Returns the number of bytes uploaded.
-  uint64 GetUploadProgress() const;
-
-  const HttpResponseInfo* GetResponseInfo() const;
-
-  // Cancels the stream.
-  // Once cancelled, no callbacks will be made on this stream.
-  void Cancel();
-
-  // FlipDelegate methods:
-  virtual const HttpRequestInfo* request() const;
-  virtual const UploadDataStream* data() const;
-  virtual void OnResponseReceived(HttpResponseInfo* response);
-  virtual void OnDataReceived(const char* buffer, int bytes);
-  virtual void OnWriteComplete(int status);
-  virtual void OnClose(int status);
-
- private:
-  friend class FlipStreamParserPeer;
-
-  enum State {
-    STATE_NONE,
-    STATE_SENDING_HEADERS,
-    STATE_HEADERS_SENT,
-    STATE_SENDING_BODY,
-    STATE_REQUEST_SENT,
-    STATE_READ_HEADERS,
-    STATE_READ_HEADERS_COMPLETE,
-    STATE_BODY_PENDING,
-    STATE_READ_BODY,
-    STATE_READ_BODY_COMPLETE,
-    STATE_DONE
-  };
-
-  // Try to make progress sending/receiving the request/response.
-  int DoLoop(int result);
-
-  // The implementations of each state of the state machine.
-  int DoSendHeaders(int result);
-  int DoHeadersSent(int result);
-  int DoSendBody(int result);
-  int DoReadHeaders();
-  int DoReadHeadersComplete(int result);
-  int DoReadBody();
-  int DoReadBodyComplete(int result);
-
-  void DoCallback(int rv);
-
-  // The Flip request id for this request.
-  scoped_refptr<FlipSession> flip_;
-  flip::FlipStreamId flip_stream_id_;
-
-  const HttpRequestInfo* request_;
-  scoped_ptr<HttpResponseInfo> response_;
-  scoped_ptr<UploadDataStream> request_body_stream_;
-
-  bool response_complete_;  // TODO(mbelshe): fold this into the io_state.
-  State io_state_;
-
-  // We buffer the response body as it arrives asynchronously from the stream.
-  // TODO(mbelshe):  is this infinite buffering?
-  std::deque<scoped_refptr<IOBufferWithSize> > response_body_;
-
-  // Since we buffer the response, we also buffer the response status.
-  // Not valid until response_complete_ is true.
-  int response_status_;
-
-  CompletionCallback* user_callback_;
-
-  // User provided buffer for the ReadResponseBody() response.
-  scoped_refptr<IOBuffer> user_buffer_;
-  int user_buffer_len_;
-
-  bool cancelled_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlipStreamParser);
-};
 
 // A FlipNetworkTransaction can be used to fetch HTTP conent.
 // The FlipDelegate is the consumer of events from the FlipSession.
@@ -193,7 +94,7 @@ class FlipNetworkTransaction : public HttpTransaction {
   CompletionCallbackImpl<FlipNetworkTransaction> io_callback_;
   CompletionCallback* user_callback_;
 
-  // Used to pass onto the FlipStreamParser.
+  // Used to pass onto the FlipStream
   scoped_refptr<IOBuffer> user_buffer_;
   int user_buffer_len_;
 
@@ -207,7 +108,7 @@ class FlipNetworkTransaction : public HttpTransaction {
   // The next state in the state machine.
   State next_state_;
 
-  scoped_refptr<FlipStreamParser> flip_stream_parser_;
+  scoped_refptr<FlipStream> stream_;
 
   DISALLOW_COPY_AND_ASSIGN(FlipNetworkTransaction);
 };

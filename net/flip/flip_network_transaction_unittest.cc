@@ -22,19 +22,6 @@
 
 namespace net {
 
-class FlipStreamParserPeer {
- public:
-  explicit FlipStreamParserPeer(FlipStreamParser* flip_stream_parser)
-      : flip_stream_parser_(flip_stream_parser) {}
-
-  int flip_stream_id() const { return flip_stream_parser_->flip_stream_id_; }
-
- private:
-  FlipStreamParser* const flip_stream_parser_;
-
-  DISALLOW_COPY_AND_ASSIGN(FlipStreamParserPeer);
-};
-
 namespace {
 
 // Create a proxy service which fails on all requests (falls back to direct).
@@ -81,47 +68,6 @@ HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
                                 session_deps->ssl_config_service,
                                 session_deps->flip_session_pool);
 }
-
-class FlipStreamParserTest : public PlatformTest {
- protected:
-  FlipStreamParserTest()
-      : session_(CreateSession(&session_deps_)),
-        parser_peer_(&parser_) {}
-
-  FlipSession* CreateFlipSession() {
-    HostResolver::RequestInfo resolve_info("www.google.com", 80);
-    FlipSession* session = session_->flip_session_pool()->Get(
-        resolve_info, session_);
-    return session;
-  }
-
-  virtual void TearDown() {
-    MessageLoop::current()->RunAllPending();
-    PlatformTest::TearDown();
-  }
-
-  SessionDependencies session_deps_;
-  scoped_refptr<HttpNetworkSession> session_;
-  FlipStreamParser parser_;
-  FlipStreamParserPeer parser_peer_;
-};
-
-// TODO(willchan): Look into why TCPConnectJobs are still alive when this test
-// goes away.  They're calling into the ClientSocketFactory which doesn't exist
-// anymore, so it crashes.
-TEST_F(FlipStreamParserTest, DISABLED_SendRequest) {
-  scoped_refptr<FlipSession> flip(CreateFlipSession());
-  HttpRequestInfo request;
-  request.method = "GET";
-  request.url = GURL("http://www.google.com/");
-  TestCompletionCallback callback;
-
-  EXPECT_EQ(ERR_IO_PENDING, parser_.SendRequest(flip, &request, &callback));
-  EXPECT_TRUE(flip->IsStreamActive(parser_peer_.flip_stream_id()));
-}
-
-// TODO(willchan): Write a longer test for FlipStreamParser that exercises all
-// methods.
 
 }  // namespace
 
@@ -350,7 +296,8 @@ TEST_F(FlipNetworkTransactionTest, Post) {
     0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
     0x00, 0x03, '2', '0', '0',                                     // "200"
     0x00, 0x03, 'u', 'r', 'l',                                     // "url"
-    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',  // "HTTP/1.1"
+    // "/index.php"
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
     0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
     0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
   };

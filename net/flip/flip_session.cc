@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/rand_util.h"
 #include "base/stats_counters.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
@@ -47,6 +48,89 @@ void DumpFlipHeaders(const flip::FlipHeaderBlock& headers) {
 }  // namespace
 
 namespace net {
+
+namespace {
+
+const int kReadBufferSize = 4 * 1024;
+
+HttpResponseInfo FlipHeadersToHttpResponse(
+    const flip::FlipHeaderBlock& headers) {
+  std::string raw_headers(headers.find("version")->second);
+  raw_headers.push_back(' ');
+  raw_headers.append(headers.find("status")->second);
+  raw_headers.push_back('\0');
+  flip::FlipHeaderBlock::const_iterator it;
+  for (it = headers.begin(); it != headers.end(); ++it) {
+    // For each value, if the server sends a NUL-separated
+    // list of values, we separate that back out into
+    // individual headers for each value in the list.
+    // e.g.
+    //    Set-Cookie "foo\0bar"
+    // becomes
+    //    Set-Cookie: foo\0
+    //    Set-Cookie: bar\0
+    std::string value = it->second;
+    size_t start = 0;
+    size_t end = 0;
+    do {
+      end = value.find('\0', start);
+      std::string tval;
+      if (end != value.npos)
+        tval = value.substr(start, (end - start));
+      else
+        tval = value.substr(start);
+      raw_headers.append(it->first);
+      raw_headers.push_back(':');
+      raw_headers.append(tval);
+      raw_headers.push_back('\0');
+      start = end + 1;
+    } while (end != value.npos);
+  }
+
+  HttpResponseInfo response;
+  response.headers = new HttpResponseHeaders(raw_headers);
+  return response;
+}
+
+// Create a FlipHeaderBlock for a Flip SYN_STREAM Frame from
+// a HttpRequestInfo block.
+void CreateFlipHeadersFromHttpRequest(
+    const HttpRequestInfo& info, flip::FlipHeaderBlock* headers) {
+  static const char kHttpProtocolVersion[] = "HTTP/1.1";
+
+  HttpUtil::HeadersIterator it(info.extra_headers.begin(),
+                               info.extra_headers.end(),
+                               "\r\n");
+  while (it.GetNext()) {
+    std::string name = StringToLowerASCII(it.name());
+    if (headers->find(name) == headers->end()) {
+      (*headers)[name] = it.values();
+    } else {
+      std::string new_value = (*headers)[name];
+      new_value += "\0";
+      new_value += it.values();
+      (*headers)[name] = new_value;
+    }
+  }
+
+  (*headers)["method"] = info.method;
+  (*headers)["url"] = info.url.spec();
+  (*headers)["version"] = kHttpProtocolVersion;
+  if (info.user_agent.length())
+    (*headers)["user-agent"] = info.user_agent;
+  if (!info.referrer.is_empty())
+    (*headers)["referer"] = info.referrer.spec();
+
+  // Honor load flags that impact proxy caches.
+  if (info.load_flags & LOAD_BYPASS_CACHE) {
+    (*headers)["pragma"] = "no-cache";
+    (*headers)["cache-control"] = "no-cache";
+  } else if (info.load_flags & LOAD_VALIDATE_CACHE) {
+    (*headers)["cache-control"] = "max-age=0";
+  }
+}
+
+}  // namespace
 
 // static
 bool FlipSession::use_ssl_ = true;
@@ -112,85 +196,46 @@ net::Error FlipSession::Connect(const std::string& group_name,
   return static_cast<net::Error>(rv);
 }
 
-// Create a FlipHeaderBlock for a Flip SYN_STREAM Frame from
-// a HttpRequestInfo block.
-void CreateFlipHeadersFromHttpRequest(
-    const HttpRequestInfo* info, flip::FlipHeaderBlock* headers) {
-  static const std::string kHttpProtocolVersion("HTTP/1.1");
+scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
+    const HttpRequestInfo& request,
+    const UploadDataStream* upload_data) {
+  const GURL& url = request.url;
+  const std::string& path = url.PathForRequest();
 
-  HttpUtil::HeadersIterator it(info->extra_headers.begin(),
-                               info->extra_headers.end(),
-                               "\r\n");
-  while (it.GetNext()) {
-    std::string name = StringToLowerASCII(it.name());
-    if (headers->find(name) == headers->end()) {
-      (*headers)[name] = it.values();
-    } else {
-      std::string new_value = (*headers)[name];
-      new_value += "\0";
-      new_value += it.values();
-      (*headers)[name] = new_value;
-    }
-  }
-
-  (*headers)["method"] = info->method;
-  (*headers)["url"] = info->url.spec();
-  (*headers)["version"] = kHttpProtocolVersion;
-  if (info->user_agent.length())
-    (*headers)["user-agent"] = info->user_agent;
-  if (!info->referrer.is_empty())
-    (*headers)["referer"] = info->referrer.spec();
-
-  // Honor load flags that impact proxy caches.
-  if (info->load_flags & LOAD_BYPASS_CACHE) {
-    (*headers)["pragma"] = "no-cache";
-    (*headers)["cache-control"] = "no-cache";
-  } else if (info->load_flags & LOAD_VALIDATE_CACHE) {
-    (*headers)["cache-control"] = "max-age=0";
-  }
-}
-
-int FlipSession::CreateStream(FlipDelegate* delegate) {
-  flip::FlipStreamId stream_id = GetNewStreamId();
-
-  GURL url = delegate->request()->url;
-  std::string path = url.PathForRequest();
-
-  FlipStream* stream = NULL;
+  scoped_refptr<FlipStream> stream;
 
   // Check if we have a push stream for this path.
-  if (delegate->request()->method == "GET") {
+  if (request.method == "GET") {
     stream = GetPushStream(path);
-    if (stream) {
-      if (stream->AttachDelegate(delegate)) {
-        DeactivateStream(stream->stream_id());
-        delete stream;
-        return 0;
-      }
-      return stream->stream_id();
-    }
+    if (stream)
+      return stream;
   }
 
   // Check if we have a pending push stream for this url.
-  std::string url_path = delegate->request()->url.PathForRequest();
   PendingStreamMap::iterator it;
-  it = pending_streams_.find(url_path);
+  it = pending_streams_.find(path);
   if (it != pending_streams_.end()) {
-    DCHECK(it->second == NULL);
-    it->second = delegate;
-    return 0;  // TODO(mbelshe): this is overloaded with the fail case.
+    DCHECK(!it->second);
+    // Server will assign a stream id when the push stream arrives.  Use 0 for
+    // now.
+    FlipStream* stream = new FlipStream(this, 0, true);
+    stream->set_path(path);
+    it->second = stream;
+    return it->second;
   }
 
-  // If we still don't have a stream, activate one now.
-  stream = ActivateStream(stream_id, delegate);
-  if (!stream)
-    return net::ERR_FAILED;
+  const flip::FlipStreamId stream_id = GetNewStreamId();
 
-  LOG(INFO) << "FlipStream: Creating stream " << stream_id << " for "
-            << delegate->request()->url;
+  // If we still don't have a stream, activate one now.
+  stream = new FlipStream(this, stream_id, false);
+  stream->set_priority(request.priority);
+  stream->set_path(path);
+  ActivateStream(stream);
+
+  LOG(INFO) << "FlipStream: Creating stream " << stream_id << " for " << url;
 
   // TODO(mbelshe): Optimize memory allocations
-  int priority = delegate->request()->priority;
+  int priority = request.priority;
 
   // Hack for the priorities
   // TODO(mbelshe): These need to be plumbed through the Http Network Stack.
@@ -209,10 +254,10 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
 
   // Convert from HttpRequestHeaders to Flip Headers.
   flip::FlipHeaderBlock headers;
-  CreateFlipHeadersFromHttpRequest(delegate->request(), &headers);
+  CreateFlipHeadersFromHttpRequest(request, &headers);
 
   flip::FlipControlFlags flags = flip::CONTROL_FLAG_NONE;
-  if (!delegate->data() || !delegate->data()->size())
+  if (!request.upload_data || !upload_data->size())
     flags = flip::CONTROL_FLAG_FIN;
 
   // Create a SYN_STREAM packet and add to the output queue.
@@ -227,7 +272,7 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
   static StatsCounter flip_requests("flip.requests");
   flip_requests.Increment();
 
-  LOG(INFO) << "FETCHING: " << delegate->request()->url.spec();
+  LOG(INFO) << "FETCHING: " << request.url.spec();
 
   LOG(INFO) << "FLIP SYN_STREAM HEADERS ----------------------------------";
   DumpFlipHeaders(headers);
@@ -240,7 +285,7 @@ int FlipSession::CreateStream(FlipDelegate* delegate) {
   //                requests.
   WriteSocketLater();
 
-  return stream_id;
+  return stream;
 }
 
 int FlipSession::WriteStreamData(flip::FlipStreamId stream_id,
@@ -256,7 +301,8 @@ int FlipSession::WriteStreamData(flip::FlipStreamId stream_id,
 
   // Find our stream
   DCHECK(IsStreamActive(stream_id));
-  FlipStream* stream = active_streams_[stream_id];
+  scoped_refptr<FlipStream> stream = active_streams_[stream_id];
+  CHECK(stream->stream_id() == stream_id);
   if (!stream)
     return ERR_INVALID_FLIP_STREAM;
 
@@ -276,8 +322,7 @@ int FlipSession::WriteStreamData(flip::FlipStreamId stream_id,
   int length = flip::FlipFrame::size() + frame->length();
   IOBufferWithSize* buffer = new IOBufferWithSize(length);
   memcpy(buffer->data(), frame->data(), length);
-  queue_.push(FlipIOBuffer(buffer, stream->delegate()->request()->priority,
-              stream));
+  queue_.push(FlipIOBuffer(buffer, stream->priority(), stream));
 
   // Whenever we queue onto the socket we need to ensure that we will write to
   // it later.
@@ -294,14 +339,13 @@ bool FlipSession::CancelStream(flip::FlipStreamId stream_id) {
   // TODO(mbelshe): Write a method for tearing down a stream
   //                that cleans it out of the active list, the pending list,
   //                etc.
-  FlipStream* stream = active_streams_[stream_id];
+  scoped_refptr<FlipStream> stream = active_streams_[stream_id];
   DeactivateStream(stream_id);
-  delete stream;
   return true;
 }
 
 bool FlipSession::IsStreamActive(flip::FlipStreamId stream_id) const {
-  return active_streams_.find(stream_id) != active_streams_.end();
+  return ContainsKey(active_streams_, stream_id);
 }
 
 LoadState FlipSession::GetLoadState() const {
@@ -414,16 +458,18 @@ void FlipSession::OnWriteComplete(int result) {
 
     // We only notify the stream when we've fully written the pending flip
     // frame.
-    FlipStream* stream = in_flight_write_.stream();
-    DCHECK(stream);
+    scoped_refptr<FlipStream> stream = in_flight_write_.stream();
+    DCHECK(stream.get());
 
-    // Report the number of bytes written to the caller, but exclude the
-    // frame size overhead.
-    if (result > 0) {
-      DCHECK(result > static_cast<int>(flip::FlipFrame::size()));
-      result -= static_cast<int>(flip::FlipFrame::size());
+    if (!stream->cancelled()) {
+      // Report the number of bytes written to the caller, but exclude the
+      // frame size overhead.
+      if (result > 0) {
+        DCHECK(result > static_cast<int>(flip::FlipFrame::size()));
+        result -= static_cast<int>(flip::FlipFrame::size());
+      }
+      stream->OnWriteComplete(result);
     }
-    stream->OnWriteComplete(result);
 
     // Cleanup the write which just completed.
     in_flight_write_.release();
@@ -551,8 +597,7 @@ void FlipSession::CloseAllStreams(net::Error code) {
     for (--index; index >= 0; index--) {
       LOG(ERROR) << "ABANDONED (stream_id=" << list[index]->stream_id()
                  << "): " << list[index]->path();
-      list[index]->OnError(ERR_ABORTED);
-      delete list[index];
+      list[index]->OnClose(ERR_ABORTED);
     }
 
     // Clear out anything pending.
@@ -575,13 +620,11 @@ int FlipSession::GetNewStreamId() {
   return id;
 }
 
-FlipStream* FlipSession::ActivateStream(flip::FlipStreamId id,
-                                            FlipDelegate* delegate) {
+void FlipSession::ActivateStream(FlipStream* stream) {
+  const flip::FlipStreamId id = stream->stream_id();
   DCHECK(!IsStreamActive(id));
 
-  FlipStream* stream = new FlipStream(id, delegate);
   active_streams_[id] = stream;
-  return stream;
 }
 
 void FlipSession::DeactivateStream(flip::FlipStreamId id) {
@@ -590,8 +633,8 @@ void FlipSession::DeactivateStream(flip::FlipStreamId id) {
   // Verify it is not on the pushed_streams_ list.
   ActiveStreamList::iterator it;
   for (it = pushed_streams_.begin(); it != pushed_streams_.end(); ++it) {
-    FlipStream* impl = *it;
-    if (id == impl->stream_id()) {
+    scoped_refptr<FlipStream> curr = *it;
+    if (id == curr->stream_id()) {
       pushed_streams_.erase(it);
       break;
     }
@@ -600,23 +643,27 @@ void FlipSession::DeactivateStream(flip::FlipStreamId id) {
   active_streams_.erase(id);
 }
 
-FlipStream* FlipSession::GetPushStream(const std::string& path) {
+scoped_refptr<FlipStream> FlipSession::GetPushStream(const std::string& path) {
   static StatsCounter used_push_streams("flip.claimed_push_streams");
 
   LOG(INFO) << "Looking for push stream: " << path;
 
+  scoped_refptr<FlipStream> stream;
+
   // We just walk a linear list here.
   ActiveStreamList::iterator it;
   for (it = pushed_streams_.begin(); it != pushed_streams_.end(); ++it) {
-    FlipStream* impl = *it;
-    if (path == impl->path()) {
+    stream = *it;
+    if (path == stream->path()) {
+      CHECK(stream->pushed());
       pushed_streams_.erase(it);
       used_push_streams.Increment();
       LOG(INFO) << "Push Stream Claim for: " << path;
-      return impl;
+      break;
     }
   }
-  return NULL;
+
+  return stream;
 }
 
 void FlipSession::OnError(flip::FlipFramer* framer) {
@@ -635,11 +682,11 @@ void FlipSession::OnStreamFrameData(flip::FlipStreamId stream_id,
     return;
   }
 
-  FlipStream* stream = active_streams_[stream_id];
-  if (stream->OnData(data, len)) {
-    DeactivateStream(stream->stream_id());
-    delete stream;
-  }
+  scoped_refptr<FlipStream> stream = active_streams_[stream_id];
+  bool success = stream->OnDataReceived(data, len);
+  // |len| == 0 implies a closed stream.
+  if (!success || !len)
+    DeactivateStream(stream_id);
 }
 
 void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
@@ -657,37 +704,57 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
     return;
   }
 
+  LOG(INFO) << "FlipSession: SynReply received for stream: " << stream_id;
+
+  DCHECK(ContainsKey(*headers, "version"));
+  DCHECK(ContainsKey(*headers, "status"));
   LOG(INFO) << "FLIP SYN_REPLY RESPONSE HEADERS -----------------------";
   DumpFlipHeaders(*headers);
 
-  // Activate a stream and parse the headers.
-  FlipStream* stream = ActivateStream(stream_id, NULL);
-  stream->OnReply(headers);
-
   // TODO(mbelshe): DCHECK that this is a GET method?
 
+  const std::string& path = ContainsKey(*headers, "path") ?
+      headers->find("path")->second : "";
+
   // Verify that the response had a URL for us.
-  DCHECK(stream->path().length() != 0);
-  if (stream->path().length() == 0) {
+  DCHECK(!path.empty());
+  if (path.empty()) {
     LOG(WARNING) << "Pushed stream did not contain a path.";
-    DeactivateStream(stream_id);
-    delete stream;
     return;
   }
 
+  scoped_refptr<FlipStream> stream;
+
   // Check if we already have a delegate awaiting this stream.
   PendingStreamMap::iterator it;
-  it = pending_streams_.find(stream->path());
+  it = pending_streams_.find(path);
   if (it != pending_streams_.end()) {
-    FlipDelegate* delegate = it->second;
+    stream = it->second;
     pending_streams_.erase(it);
-    if (delegate)
-      stream->AttachDelegate(delegate);
-    else
+    if (stream)
       pushed_streams_.push_back(stream);
   } else {
     pushed_streams_.push_back(stream);
   }
+
+  if (stream) {
+    CHECK(stream->pushed());
+    CHECK(stream->stream_id() == 0);
+    stream->set_stream_id(stream_id);
+  } else {
+    stream = new FlipStream(this, stream_id, true);
+  }
+
+  // Activate a stream and parse the headers.
+  ActivateStream(stream);
+
+  stream->set_path(path);
+
+  // TODO(mbelshe): For now we convert from our nice hash map back
+  // to a string of headers; this is because the HttpResponseInfo
+  // is a bit rigid for its http (non-flip) design.
+  const HttpResponseInfo response = FlipHeadersToHttpResponse(*headers);
+  stream->OnResponseReceived(response);
 
   LOG(INFO) << "Got pushed stream for " << stream->path();
 
@@ -733,8 +800,10 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
     } while (start < content.length());
   }
 
-  FlipStream* stream = active_streams_[stream_id];
-  stream->OnReply(headers);
+  scoped_refptr<FlipStream> stream = active_streams_[stream_id];
+  CHECK(stream->stream_id() == stream_id);
+  const HttpResponseInfo response = FlipHeadersToHttpResponse(*headers);
+  stream->OnResponseReceived(response);
 }
 
 void FlipSession::OnControl(const flip::FlipControlFrame* frame) {
@@ -776,22 +845,18 @@ void FlipSession::OnFin(const flip::FlipFinStreamControlFrame* frame) {
     LOG(WARNING) << "Received FIN for invalid stream" << stream_id;
     return;
   }
-  FlipStream* stream = active_streams_[stream_id];
-  bool cleanup_stream = false;
+  scoped_refptr<FlipStream> stream = active_streams_[stream_id];
+  CHECK(stream->stream_id() == stream_id);
   if (frame->status() == 0) {
-    cleanup_stream = stream->OnData(NULL, 0);
+    stream->OnDataReceived(NULL, 0);
   } else {
     LOG(ERROR) << "Flip stream closed: " << frame->status();
     // TODO(mbelshe): Map from Flip-protocol errors to something sensical.
     //                For now, it doesn't matter much - it is a protocol error.
-    stream->OnError(ERR_FAILED);
-    cleanup_stream = true;
+    stream->OnClose(ERR_FAILED);
   }
 
-  if (cleanup_stream) {
-    DeactivateStream(stream_id);
-    delete stream;
-  }
+  DeactivateStream(stream_id);
 }
 
 }  // namespace net
