@@ -1681,3 +1681,56 @@
    fun:_ZN11MessageLoop11RunInternalEv
    fun:_ZN11MessageLoop10RunHandlerEv
 }
+# new flip leaks TODO(willchan): fix these
+{
+   bug_28493a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net11FlipSession17GetOrCreateStreamERKNS_15HttpRequestInfoEPKNS_16UploadDataStreamE
+   ...
+}
+{
+   bug_28493b
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_8MockReadES5_
+   ...
+}
+{
+   bug_28493c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net116_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_flip_flip_stream_unittest.cc_00000000_46E4189919SessionDependenciesC1Ev
+   fun:_ZN3net116_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_flip_flip_stream_unittest.cc_00000000_46E4189914FlipStreamTestC2Ev
+   fun:_ZN3net116_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_flip_flip_stream_unittest.cc_00000000_46E4189931FlipStreamTest_SendRequest_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplIN3net116_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_flip_flip_stream_unittest.cc_00000000_46E4189931FlipStreamTest_SendRequest_TestEE10CreateTestEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
+{
+   bug_28493d
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net11FlipSession11WriteSocketEv
+   ...
+}
+{
+   bug_28493
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net129_GLOBAL__N__b_slave_chromium_rel_linux_valgrind_builder_build_src_net_flip_flip_network_transaction_unittest.cc_00000000_9BF5CC6519SessionDependenciesC1Ev
+   fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_8MockReadES5_
+   fun:_ZN3net47FlipNetworkTransactionTest_SynReplyHeaders_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
