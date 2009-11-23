@@ -52,8 +52,12 @@ class WorkerTest : public UILayoutTest {
 };
 
 
+#if defined(OS_LINUX)
 // Fails running under valgrind, http://crbug.com/28445
-TEST_F(WorkerTest, DISABLED_SingleWorker) {
+#define SingleWorker DISABLED_SingleWorker
+#endif
+
+TEST_F(WorkerTest, SingleWorker) {
   RunTest(L"single_worker.html");
 }
 
@@ -186,9 +190,12 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-
+#if defined(OS_LINUX)
 // Fails running under valgrind http://crbug.com/28445
-TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
+#define WorkerXhrHttpLayoutTests DISABLED_WorkerXhrHttpLayoutTests
+#endif
+
+TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
 #if defined(OS_WIN)
@@ -280,8 +287,12 @@ TEST_F(WorkerTest, LimitPerPage) {
 }
 #endif
 
+#if defined(OS_LINUX)
 // Fails (crashes) on Linux Tests: http://crbug.com/28445
-TEST_F(WorkerTest, DISABLED_LimitTotal) {
+#define LimitTotal DISABLED_LimitTotal
+#endif
+
+TEST_F(WorkerTest, LimitTotal) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
 
