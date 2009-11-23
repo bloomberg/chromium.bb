@@ -664,9 +664,14 @@ class XCObject(object):
     else:
       flatten_list = False
 
-    printable += self._XCPrintableValue(tabs, key, flatten_list) + ' = ' + \
-                 self._XCPrintableValue(tabs, value_to_print, flatten_list) + \
-                 ';' + after_kv
+    try:
+      printable += self._XCPrintableValue(tabs, key, flatten_list) + ' = ' + \
+                   self._XCPrintableValue(tabs, value_to_print, flatten_list) + \
+                   ';' + after_kv
+    except TypeError, e:
+      gyp.common.ExceptionAppend(e,
+                                 'while printing key "%s"' % key)
+      raise
 
     self._XCPrint(file, 0, printable)
 
