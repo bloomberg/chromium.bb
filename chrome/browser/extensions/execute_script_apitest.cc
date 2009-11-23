@@ -4,7 +4,9 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ExecuteScript) {
+// This test failed at times on the Vista dbg builder and has been marked as
+// flaky for now. Bug http://code.google.com/p/chromium/issues/detail?id=28630
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_ExecuteScript) {
   host_resolver()->AddRule("a.com", "127.0.0.1");
   host_resolver()->AddRule("b.com", "127.0.0.1");
   StartHTTPServer();
