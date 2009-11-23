@@ -472,7 +472,7 @@ void SetKeyboardFocusToWindow(HWND window, int x, int y) {
 }
 
 void SendInputToWindow(HWND window, const std::string& input_string) {
-  SetKeyboardFocusToWindow(window, 100, 100);
+  const unsigned long kIntervalBetweenInput = 100;
 
   for (size_t index = 0; index < input_string.length(); index++) {
     bool is_upper_case = isupper(input_string[index]);
@@ -481,18 +481,20 @@ void SendInputToWindow(HWND window, const std::string& input_string) {
       input.ki.wVk = VK_SHIFT;
       input.ki.dwFlags = 0;
       SendInput(1, &input, sizeof(input));
-      Sleep(200);
+      Sleep(kIntervalBetweenInput);
     }
 
     // The WM_KEYDOWN and WM_KEYUP messages for characters always contain
     // the uppercase character codes.
     SendVirtualKey(toupper(input_string[index]), false);
+    Sleep(kIntervalBetweenInput);
 
     if (is_upper_case) {
       INPUT input = { INPUT_KEYBOARD };
       input.ki.wVk = VK_SHIFT;
       input.ki.dwFlags = KEYEVENTF_KEYUP;
       SendInput(1, &input, sizeof(input));
+      Sleep(kIntervalBetweenInput);
     }
   }
 }

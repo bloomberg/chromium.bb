@@ -128,16 +128,7 @@ class WebBrowserEventSink
     Uninitialize();
   }
 
-  void Uninitialize() {
-    chrome_frame_ = NULL;
-    if (web_browser2_.get()) {
-      DispEventUnadvise(web_browser2_);
-      web_browser2_->Quit();
-      web_browser2_.Release();
-      // Give IE some time to quit and release our references
-      Sleep(1000);
-    }
-  }
+  void Uninitialize();
 
   // Helper function to launch IE and navigate to a URL.
   // Returns S_OK on success, S_FALSE if the test was not run, other
@@ -145,6 +136,13 @@ class WebBrowserEventSink
   HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url);
 
   HRESULT Navigate(const std::wstring& navigate_url);
+
+  // Set input focus to chrome frame window.
+  void SetFocusToChrome();
+
+  // Send keyboard input to the renderer window hosted in chrome using
+  // SendInput API
+  void SendInputToChrome(const std::string& input_string);
 
 BEGIN_COM_MAP(WebBrowserEventSink)
 END_COM_MAP()
@@ -212,7 +210,8 @@ END_SINK_MAP()
   HRESULT OnLoadErrorInternal(const VARIANT* param);
   HRESULT OnMessageInternal(const VARIANT* param);
 
-   void ConnectToChromeFrame();
+  void ConnectToChromeFrame();
+  HWND GetChromeRendererWindow();
 
  public:
   ScopedComPtr<IWebBrowser2> web_browser2_;
