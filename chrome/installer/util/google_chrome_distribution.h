@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"  // for FRIEND_TEST
 
 class DictionaryValue;
+class FilePath;
 
 class GoogleChromeDistribution : public BrowserDistribution {
  public:
@@ -27,7 +28,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   //   concatenated to the survey url if the file in local_data_path indicates
   //   the user has opted in to providing anonymous usage data.
   virtual void DoPostUninstallOperations(const installer::Version& version,
-                                         const std::wstring& local_data_path,
+                                         const FilePath& local_data_path,
                                          const std::wstring& distribution_data);
 
   virtual std::wstring GetAppGuid();
@@ -51,7 +52,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // install_status: if 0, means installation was successful.
   // value: current value of Google Update "ap" key.
   std::wstring GetNewGoogleUpdateApKey(bool diff_install,
-      installer_util::InstallStatus status, const std::wstring& value);
+                                       installer_util::InstallStatus status,
+                                       const std::wstring& value);
 
   virtual std::wstring GetPublisherName();
 
@@ -100,12 +102,12 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // has GET parameters, i.e. &metric1=foo&metric2=bar.
   // Returns true if uninstall_metrics has been successfully populated with
   // the uninstall metrics, false otherwise.
-  virtual bool ExtractUninstallMetricsFromFile(
-      const std::wstring& file_path, std::wstring* uninstall_metrics);
+  virtual bool ExtractUninstallMetricsFromFile(const FilePath& file_path,
+                                               std::wstring* uninstall_metrics);
 
   // Extracts uninstall metrics from the given JSON value.
   virtual bool ExtractUninstallMetrics(const DictionaryValue& root,
-      std::wstring* uninstall_metrics);
+                                       std::wstring* uninstall_metrics);
 
   // Given a DictionaryValue containing a set of uninstall metrics,
   // this builds a URL parameter list of all the contained metrics.

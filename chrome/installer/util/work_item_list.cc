@@ -63,11 +63,11 @@ bool WorkItemList::AddWorkItem(WorkItem* work_item) {
   return true;
 }
 
-bool WorkItemList::AddCopyTreeWorkItem(const std::wstring& source_path,
-                                       const std::wstring& dest_path,
-                                       const std::wstring& temp_dir,
+bool WorkItemList::AddCopyTreeWorkItem(const FilePath& source_path,
+                                       const FilePath& dest_path,
+                                       const FilePath& temp_dir,
                                        CopyOverWriteOption overwrite_option,
-                                       const std::wstring& alternative_path) {
+                                       const FilePath& alternative_path) {
   WorkItem* item = reinterpret_cast<WorkItem*>(
       WorkItem::CreateCopyTreeWorkItem(source_path, dest_path, temp_dir,
                                        overwrite_option, alternative_path));
@@ -97,16 +97,16 @@ bool WorkItemList::AddDeleteRegValueWorkItem(HKEY predefined_root,
   return AddWorkItem(item);
 }
 
-bool WorkItemList::AddDeleteTreeWorkItem(const std::wstring& root_path,
-                                         const std::wstring& key_path) {
+bool WorkItemList::AddDeleteTreeWorkItem(const FilePath& root_path,
+                                         const FilePath& key_path) {
   WorkItem* item = reinterpret_cast<WorkItem*>(
       WorkItem::CreateDeleteTreeWorkItem(root_path, key_path));
   return AddWorkItem(item);
 }
 
-bool WorkItemList::AddMoveTreeWorkItem(const std::wstring& source_path,
-                                       const std::wstring& dest_path,
-                                       const std::wstring& temp_dir) {
+bool WorkItemList::AddMoveTreeWorkItem(const FilePath& source_path,
+                                       const FilePath& dest_path,
+                                       const FilePath& temp_dir) {
   WorkItem* item = reinterpret_cast<WorkItem*>(
       WorkItem::CreateMoveTreeWorkItem(source_path, dest_path, temp_dir));
   return AddWorkItem(item);

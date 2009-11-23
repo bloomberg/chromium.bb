@@ -243,10 +243,10 @@ void ChromeFrameTestWithWebServer::VersionTest(BrowserKind browser,
     ASSERT_TRUE(ver_system || ver_user);
 
     bool system_install = ver_system ? true : false;
-    std::wstring npchrome_path(installer::GetChromeInstallPath(system_install));
-    file_util::AppendToPath(&npchrome_path,
+    FilePath npchrome_path(installer::GetChromeInstallPath(system_install));
+    npchrome_path = npchrome_path.Append(
         ver_system ? ver_system->GetString() : ver_user->GetString());
-    file_util::AppendToPath(&npchrome_path, L"npchrome_tab.dll");
+    npchrome_path = npchrome_path.Append(L"npchrome_tab.dll");
     version_info = FileVersionInfo::CreateFileVersionInfo(npchrome_path);
     if (version_info)
       version = version_info->product_version();

@@ -9,6 +9,8 @@
 
 #include <string>
 
+class FilePath;
+
 namespace installer {
 
 // This function returns the install path for Chrome depending on whether its
@@ -16,13 +18,13 @@ namespace installer {
 // system_install: if true, the function returns system wide location
 //                 (ProgramFiles\Google). Otherwise it returns user specific
 //                 location (Document And Settings\<user>\Local Settings...)
-std::wstring GetChromeInstallPath(bool system_install);
+FilePath GetChromeInstallPath(bool system_install);
 
 // This function returns the path to the directory that holds the user data,
 // this is always inside "Document And Settings\<user>\Local Settings.". Note
 // that this is the default user data directory and does not take into account
 // that it can be overriden with a command line parameter.
-std::wstring GetChromeUserDataPath();
+FilePath GetChromeUserDataPath();
 
 // Launches Chrome without waiting for its exit.
 bool LaunchChrome(bool system_install);
@@ -42,7 +44,7 @@ bool LaunchChromeAndWaitForResult(bool system_install,
 //
 // chrome_path: the root path of Chrome installation.
 // latest_version_str: the latest version of Chrome installed.
-void RemoveOldVersionDirs(const std::wstring& chrome_path,
+void RemoveOldVersionDirs(const FilePath& chrome_path,
                           const std::wstring& latest_version_str);
 
 }  // namespace installer

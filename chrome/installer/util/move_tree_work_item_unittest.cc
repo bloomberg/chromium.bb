@@ -27,11 +27,11 @@ namespace {
 
       // Create a fresh, empty copy of this test directory.
       file_util::Delete(test_dir_, true);
-      file_util::CreateDirectoryW(test_dir_);
+      file_util::CreateDirectory(test_dir_);
 
       // Create a tempory directory under the test directory.
       temp_dir_ = test_dir_.AppendASCII("temp");
-      file_util::CreateDirectoryW(temp_dir_);
+      file_util::CreateDirectory(temp_dir_);
 
       ASSERT_TRUE(file_util::PathExists(test_dir_));
       ASSERT_TRUE(file_util::PathExists(temp_dir_));
@@ -104,8 +104,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectory) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_dir1.ToWStringHack(), to_dir.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+      from_dir1, to_dir, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_FALSE(file_util::PathExists(from_dir1));
@@ -157,8 +156,7 @@ TEST_F(MoveTreeWorkItemTest, MoveDirectoryDestExists) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_dir1.ToWStringHack(), to_dir.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+      from_dir1, to_dir, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_FALSE(file_util::PathExists(from_dir1));
@@ -199,8 +197,7 @@ TEST_F(MoveTreeWorkItemTest, MoveAFile) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_file.ToWStringHack(), to_file.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+      from_file, to_file, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
@@ -244,8 +241,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestExists) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_file.ToWStringHack(), to_dir.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+      from_file, to_dir, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
@@ -302,8 +298,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileDestInUse) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_file.ToWStringHack(), to_file.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+      from_file, to_file, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));
@@ -363,8 +358,7 @@ TEST_F(MoveTreeWorkItemTest, MoveFileInUse) {
 
   // test Do()
   scoped_ptr<MoveTreeWorkItem> work_item(WorkItem::CreateMoveTreeWorkItem(
-      from_file.ToWStringHack(), to_file.ToWStringHack(),
-          temp_dir_.ToWStringHack()));
+      from_file, to_file, temp_dir_));
   EXPECT_TRUE(work_item->Do());
 
   EXPECT_TRUE(file_util::PathExists(from_dir));

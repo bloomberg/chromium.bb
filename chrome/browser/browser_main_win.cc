@@ -173,12 +173,9 @@ int HandleIconsCommands(const CommandLine &parsed_command_line) {
 bool CheckMachineLevelInstall() {
   scoped_ptr<installer::Version> version(InstallUtil::GetChromeVersion(true));
   if (version.get()) {
-    std::wstring exe;
+    FilePath exe;
     PathService::Get(base::DIR_EXE, &exe);
-    std::transform(exe.begin(), exe.end(), exe.begin(), tolower);
-    std::wstring user_exe_path = installer::GetChromeInstallPath(false);
-    std::transform(user_exe_path.begin(), user_exe_path.end(),
-                   user_exe_path.begin(), tolower);
+    FilePath user_exe_path(installer::GetChromeInstallPath(false));
     if (exe == user_exe_path) {
       const std::wstring text =
           l10n_util::GetString(IDS_MACHINE_LEVEL_INSTALL_CONFLICT);

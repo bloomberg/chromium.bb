@@ -50,8 +50,7 @@ void EndInstallerLogging() {
 }
 
 std::wstring GetLogFilePath(const CommandLine& command_line) {
-  if (command_line.HasSwitch(
-          WideToASCII(installer_util::switches::kLogFile))) {
+  if (command_line.HasSwitch(WideToASCII(installer_util::switches::kLogFile))) {
     return command_line.GetSwitchValue(
         WideToASCII(installer_util::switches::kLogFile));
   }
@@ -64,10 +63,9 @@ std::wstring GetLogFilePath(const CommandLine& command_line) {
   }
 
   FilePath log_path;
-
   if (PathService::Get(base::DIR_TEMP, &log_path)) {
     log_path = log_path.Append(log_filename);
-    return log_path.ToWStringHack();
+    return log_path.value();
   } else {
     return log_filename;
   }

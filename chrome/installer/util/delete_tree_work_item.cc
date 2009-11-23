@@ -21,8 +21,8 @@ DeleteTreeWorkItem::~DeleteTreeWorkItem() {
   }
 }
 
-DeleteTreeWorkItem::DeleteTreeWorkItem(const std::wstring& root_path,
-                                       const std::wstring& key_path)
+DeleteTreeWorkItem::DeleteTreeWorkItem(const FilePath& root_path,
+                                       const FilePath& key_path)
     : root_path_(root_path),
       key_path_(key_path) {
 }

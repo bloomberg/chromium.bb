@@ -70,12 +70,11 @@ bool CurrentUserHasDefaultBrowser(bool system_uninstall) {
   RegKey key(HKEY_LOCAL_MACHINE, reg_key.c_str());
   std::wstring reg_exe;
   if (key.ReadValue(L"", &reg_exe) && reg_exe.length() > 2) {
-    std::wstring chrome_exe = installer::GetChromeInstallPath(system_uninstall);
-    file_util::AppendToPath(&chrome_exe, installer_util::kChromeExe);
+    FilePath chrome_exe(installer::GetChromeInstallPath(system_uninstall));
+    chrome_exe = chrome_exe.Append(installer_util::kChromeExe);
     reg_exe = reg_exe.substr(1, reg_exe.length() - 2);
-    if ((reg_exe.size() == chrome_exe.size()) &&
-        (std::equal(chrome_exe.begin(), chrome_exe.end(),
-                    reg_exe.begin(), CaseInsensitiveCompare<wchar_t>())))
+    FilePath reg_path(reg_exe);
+    if (chrome_exe == reg_path)
       return true;
   }
 
@@ -169,27 +168,29 @@ enum DeleteResult {
 // Returns DELETE_FAILED if it could not get the path to the install dir.
 // Returns DELETE_REQUIRES_REBOOT if the files were in use and so were
 // scheduled for deletion on next reboot.
-DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
-    bool system_uninstall, const installer::Version& installed_version,
-    std::wstring* local_state_path, bool delete_profile) {
-  std::wstring install_path(installer::GetChromeInstallPath(system_uninstall));
+DeleteResult DeleteFilesAndFolders(const FilePath& exe_path,
+                                   bool system_uninstall,
+                                   const installer::Version& installed_version,
+                                   FilePath* local_state_path,
+                                   bool delete_profile) {
+  FilePath install_path(installer::GetChromeInstallPath(system_uninstall));
   if (install_path.empty()) {
     LOG(ERROR) << "Could not get installation destination path.";
     return DELETE_FAILED;  // Nothing else we can do to uninstall, so we return.
   } else {
-    LOG(INFO) << "install destination path: " << install_path;
+    LOG(INFO) << "install destination path: " << install_path.value();
   }
 
   // Move setup.exe to the temp path.
-  std::wstring setup_exe(installer::GetInstallerPathUnderChrome(
+  FilePath setup_exe(installer::GetInstallerPathUnderChrome(
       install_path, installed_version.GetString()));
-  file_util::AppendToPath(&setup_exe, file_util::GetFilenameFromPath(exe_path));
+  setup_exe = setup_exe.Append(exe_path.BaseName());
 
   FilePath temp_file;
   if (!file_util::CreateTemporaryFile(&temp_file)) {
     LOG(ERROR) << "Failed to create temporary file for setup.exe.";
   } else {
-    FilePath setup_exe_path = FilePath::FromWStringHack(setup_exe);
+    FilePath setup_exe_path(setup_exe);
     file_util::Move(setup_exe_path, temp_file);
   }
 
@@ -208,7 +209,7 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
   if (got_local_state) {
     FilePath user_local_file(
         user_local_state.Append(chrome::kLocalStateFilename));
-    FilePath path = FilePath::FromWStringHack(*local_state_path);
+    FilePath path = *local_state_path;
     if (!file_util::CreateTemporaryFile(&path))
       LOG(ERROR) << "Failed to create temporary file for Local State.";
     else
@@ -219,20 +220,21 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
 
   DeleteResult result = DELETE_SUCCEEDED;
 
-  LOG(INFO) << "Deleting install path " << install_path;
+  LOG(INFO) << "Deleting install path " << install_path.value();
   if (!file_util::Delete(install_path, true)) {
-    LOG(ERROR) << "Failed to delete folder (1st try): " << install_path;
+    LOG(ERROR) << "Failed to delete folder (1st try): " << install_path.value();
     if (InstallUtil::IsChromeFrameProcess()) {
       // We don't try killing Chrome processes for Chrome Frame builds since
       // that is unlikely to help. Instead, schedule files for deletion and
       // return a value that will trigger a reboot prompt.
-      ScheduleDirectoryForDeletion(install_path.c_str());
+      ScheduleDirectoryForDeletion(install_path.value().c_str());
       result = DELETE_REQUIRES_REBOOT;
     } else {
       // Try closing any running chrome processes and deleting files once again.
       CloseAllChromeProcesses();
       if (!file_util::Delete(install_path, true)) {
-        LOG(ERROR) << "Failed to delete folder (2nd try): " << install_path;
+        LOG(ERROR) << "Failed to delete folder (2nd try): " <<
+            install_path.value();
         result = DELETE_FAILED;
       }
     }
@@ -265,7 +267,7 @@ DeleteResult DeleteFilesAndFolders(const std::wstring& exe_path,
   } else {
     // Now check and delete if the parent directories are empty
     // For example Google\Chrome or Chromium
-    DeleteEmptyParentDir(install_path);
+    DeleteEmptyParentDir(install_path.value());
   }
   return result;
 }
@@ -425,9 +427,12 @@ const wchar_t kChromeExtProgId[] = L"ChromiumExt";
 }
 
 installer_util::InstallStatus installer_setup::UninstallChrome(
-    const std::wstring& exe_path, bool system_uninstall,
-    bool remove_all, bool force_uninstall,
-    const CommandLine& cmd_line, const wchar_t* cmd_params) {
+    const FilePath& exe_path,
+    bool system_uninstall,
+    bool remove_all,
+    bool force_uninstall,
+    const CommandLine& cmd_line,
+    const wchar_t* cmd_params) {
   installer_util::InstallStatus status = installer_util::UNINSTALL_CONFIRMED;
   std::wstring suffix;
   if (!ShellUtil::GetUserSpecificDefaultBrowserSuffix(&suffix))
@@ -517,12 +522,14 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
 
     if (installed_version.get()) {
       // Unregister any dll servers that we may have registered.
-      std::wstring dll_path(installer::GetChromeInstallPath(system_uninstall));
-      file_util::AppendToPath(&dll_path, installed_version->GetString());
+      FilePath dll_path(installer::GetChromeInstallPath(system_uninstall));
+      dll_path = dll_path.Append(installed_version->GetString());
 
       scoped_ptr<WorkItemList> dll_list(WorkItem::CreateWorkItemList());
-      if (InstallUtil::BuildDLLRegistrationList(dll_path, kDllsToRegister,
-                                                kNumDllsToRegister, false,
+      if (InstallUtil::BuildDLLRegistrationList(dll_path.value(),
+                                                kDllsToRegister,
+                                                kNumDllsToRegister,
+                                                false,
                                                 dll_list.get())) {
         dll_list->Do();
       }
@@ -536,11 +543,11 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
   // and the user's Local State to a temp location.
   bool delete_profile = (status == installer_util::UNINSTALL_DELETE_PROFILE) ||
       (cmd_line.HasSwitch(installer_util::switches::kDeleteProfile));
-  std::wstring local_state_path;
+  FilePath local_state_path;
   ret = installer_util::UNINSTALL_SUCCESSFUL;
 
-  DeleteResult delete_result = DeleteFilesAndFolders(exe_path,
-      system_uninstall, *installed_version, &local_state_path, delete_profile);
+  DeleteResult delete_result = DeleteFilesAndFolders(exe_path, system_uninstall,
+      *installed_version, &local_state_path, delete_profile);
   if (delete_result == DELETE_FAILED) {
     ret = installer_util::UNINSTALL_FAILED;
   } else if (delete_result == DELETE_REQUIRES_REBOOT) {
