@@ -48,7 +48,8 @@ void WebInputElementDelegate::RefreshAutofillPopup(
     int default_suggestion_index) {
   WebView* webview = element_.frame()->view();
   if (webview)
-    webview->applyAutofillSuggestions(element_, suggestions, 0);
+    webview->applyAutofillSuggestions(element_, suggestions,
+                                      default_suggestion_index);
 }
 
 
@@ -97,7 +98,7 @@ void WebPasswordAutocompleteListenerImpl::performInlineAutocomplete(
   if (show_suggestions) {
     std::vector<string16> suggestions;
     GetSuggestions(user_input16, &suggestions);
-    username_delegate_->RefreshAutofillPopup(suggestions, 0);
+    username_delegate_->RefreshAutofillPopup(suggestions, -1);
   }
 
   if (backspace_or_delete_pressed)
