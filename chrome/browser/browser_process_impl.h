@@ -73,6 +73,13 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return db_thread_.get();
   }
 
+  virtual base::Thread* process_launcher_thread() {
+    DCHECK(CalledOnValidThread());
+    if (!created_process_launcher_thread_)
+      CreateProcessLauncherThread();
+    return process_launcher_thread_.get();
+  }
+
 #if defined(OS_LINUX)
   virtual base::Thread* background_x11_thread() {
     DCHECK(CalledOnValidThread());
@@ -105,6 +112,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
       return NULL;
     return broker_services_;
   }
+  void InitBrokerServices(sandbox::BrokerServices* broker_services);
 #endif  // defined(OS_WIN)
 
   virtual DebuggerWrapper* debugger_wrapper() {
@@ -215,6 +223,7 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   void CreateFileThread();
   void CreateDBThread();
+  void CreateProcessLauncherThread();
   void CreateTemplateURLModel();
   void CreateProfileManager();
   void CreateWebDataService();
@@ -225,10 +234,6 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
   void CreateDevToolsManager();
   void CreateGoogleURLTracker();
   void CreateNotificationUIManager();
-
-#if defined(OS_WIN)
-  void InitBrokerServices(sandbox::BrokerServices* broker_services);
-#endif  // defined(OS_WIN)
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)
   void SetIPCLoggingEnabledForChildProcesses(bool enabled);
@@ -252,6 +257,9 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
 
   bool created_db_thread_;
   scoped_ptr<base::Thread> db_thread_;
+
+  bool created_process_launcher_thread_;
+  scoped_ptr<base::Thread> process_launcher_thread_;
 
   bool created_profile_manager_;
   scoped_ptr<ProfileManager> profile_manager_;

@@ -356,7 +356,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   bool is_first_run = FirstRun::IsChromeFirstRun() ||
       parsed_command_line.HasSwitch(switches::kFirstRun);
 
-  scoped_ptr<BrowserProcess> browser_process;
+  scoped_ptr<BrowserProcessImpl> browser_process;
   if (parsed_command_line.HasSwitch(switches::kImport)) {
     // We use different BrowserProcess when importing so no GoogleURLTracker is
     // instantiated (as it makes a URLRequest and we don't have an IO thread,
@@ -633,6 +633,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Note: must be done before FirstRun code is started.
   browser_process->db_thread();
   browser_process->file_thread();
+  browser_process->process_launcher_thread();
   browser_process->io_thread();
 
   // Importing other browser settings is done in a browser-like process

@@ -5,7 +5,6 @@
 #include "chrome/browser/child_process_launcher.h"
 
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
@@ -27,16 +26,6 @@
 #if defined(OS_POSIX)
 #include "base/global_descriptors_posix.h"
 #endif
-
-namespace {
-
-class LauncherThread : public base::Thread {
- public:
-  LauncherThread() : base::Thread("LauncherThread") { }
-};
-
-static base::LazyInstance<LauncherThread> launcher(base::LINKER_INITIALIZED);
-}
 
 // Having the functionality of ChildProcessLauncher be in an internal
 // ref counted object allows us to automatically terminate the process when the
@@ -64,11 +53,9 @@ class ChildProcessLauncher::Context
     client_ = client;
 
     CHECK(ChromeThread::GetCurrentThreadIdentifier(&client_thread_id_));
-    if (!launcher.Get().message_loop())
-      launcher.Get().Start();
 
-    launcher.Get().message_loop()->PostTask(
-        FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::PROCESS_LAUNCHER, FROM_HERE,
         NewRunnableMethod(
             this,
             &Context::LaunchInternal,
@@ -209,8 +196,8 @@ class ChildProcessLauncher::Context
 
     // On Posix, EnsureProcessTerminated can lead to 2 seconds of sleep!  So
     // don't this on the UI/IO threads.
-    launcher.Get().message_loop()->PostTask(
-        FROM_HERE,
+    ChromeThread::PostTask(
+        ChromeThread::PROCESS_LAUNCHER, FROM_HERE,
         NewRunnableFunction(
             &ChildProcessLauncher::Context::TerminateInternal,
 #if defined(OS_LINUX)

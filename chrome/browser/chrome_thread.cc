@@ -10,6 +10,7 @@ static const char* chrome_thread_names[ChromeThread::ID_COUNT] = {
   "Chrome_DBThread",  // DB
   "Chrome_WebKitThread",  // WEBKIT
   "Chrome_FileThread",  // FILE
+  "Chrome_ProcessLauncherThread",  // PROCESS_LAUNCHER
   "Chrome_IOThread",  // IO
 #if defined(OS_LINUX)
   "Chrome_Background_X11Thread",  // BACKGROUND_X11

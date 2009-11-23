@@ -48,6 +48,9 @@ class ChromeThread : public base::Thread {
     // This is the thread that interacts with the file system.
     FILE,
 
+    // Used to launch and terminate processes.
+    PROCESS_LAUNCHER,
+
     // This is the thread that processes IPC and network messages.
     IO,
 
