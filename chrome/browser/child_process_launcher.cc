@@ -62,6 +62,7 @@ class ChildProcessLauncher::Context
 #if defined(OS_WIN)
             exposed_dir,
 #elif defined(POSIX)
+            environ,
             ipcfd,
 #endif
             cmd_line));
@@ -86,6 +87,7 @@ class ChildProcessLauncher::Context
 #if defined(OS_WIN)
       const FilePath& exposed_dir,
 #elif defined(OS_POSIX)
+      const base::environment_vector& env,
       int ipcfd,
 #endif
       CommandLine* cmd_line) {
@@ -157,7 +159,7 @@ class ChildProcessLauncher::Context
 #endif  // defined(OS_LINUX)
 
       // Actually launch the app.
-      if (!base::LaunchApp(cmd_line->argv(), fds_to_map, false, &handle))
+      if (!base::LaunchApp(cmd_line->argv(), env, fds_to_map, false, &handle))
         handle = base::kNullProcessHandle;
     }
 #endif

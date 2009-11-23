@@ -41,9 +41,9 @@ bool LaunchNSSDecrypterChildProcess(const std::wstring& nss_path,
   // See "chrome/browser/importer/nss_decryptor_mac.mm" for an explanation of
   // why we need this.
   base::environment_vector env;
-  std::pair<const char*,const char*> dyld_override;
+  std::pair<std::string, std::string> dyld_override;
   dyld_override.first = "DYLD_FALLBACK_LIBRARY_PATH";
-  dyld_override.second = ff_dylib_dir.value().c_str();
+  dyld_override.second = ff_dylib_dir.value();
   env.push_back(dyld_override);
 
   base::file_handle_mapping_vector fds_to_map;
@@ -56,8 +56,7 @@ bool LaunchNSSDecrypterChildProcess(const std::wstring& nss_path,
 
   bool debug_on_start = CommandLine::ForCurrentProcess()->HasSwitch(
                             switches::kDebugChildren);
-  return base::LaunchApp(cl.argv(), env, fds_to_map, debug_on_start,
-      handle);
+  return base::LaunchApp(cl.argv(), env, fds_to_map, debug_on_start, handle);
 }
 
 }  // namespace

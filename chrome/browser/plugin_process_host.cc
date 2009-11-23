@@ -420,9 +420,9 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
     interpose_list.insert(0, ":");
     interpose_list.insert(0, existing_list);
   }
-  env.push_back(std::pair<const char*, const char*>(
+  env.push_back(std::pair<std::string, std::string>(
       plugin_interpose_strings::kDYLDInsertLibrariesKey,
-      interpose_list.c_str()));
+      interpose_list));
 #endif
 #endif
 
