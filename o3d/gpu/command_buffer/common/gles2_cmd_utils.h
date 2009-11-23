@@ -27,7 +27,7 @@ class GLES2Util {
   int GLGetNumValuesReturned(int id) const;
 
   // Computes the size of image data for TexImage2D and TexSubImage2D.
-  static uint32 GLES2Util::ComputeImageDataSize(
+  static uint32 ComputeImageDataSize(
     int width, int height, int format, int type, int unpack_alignment);
 
  private:
