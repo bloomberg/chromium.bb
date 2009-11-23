@@ -39,7 +39,7 @@ typedef std::map<std::string, DnsHostInfo> Results;
 
 class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
  public:
-  // |max_concurrent| specifies how many concurrent (paralell) prefetches will
+  // |max_concurrent| specifies how many concurrent (parallel) prefetches will
   // be performed. Host lookups will be issued on the IO thread, using the
   // |host_resolver| instance.
   DnsMaster(net::HostResolver* host_resolver,
