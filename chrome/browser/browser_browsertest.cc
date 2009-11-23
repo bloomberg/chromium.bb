@@ -149,7 +149,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
 
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ReloadThenCancelBeforeUnload) {
+#else
 IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
+#endif
   GURL url("data:text/html," + BEFORE_UNLOAD_HTML);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -167,7 +171,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
 
 // Test for crbug.com/11647.  A page closed with window.close() should not have
 // two beforeunload dialogs shown.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(BrowserTest,
+                       DISABLED_SingleBeforeUnloadAfterWindowClose) {
+#else
 IN_PROC_BROWSER_TEST_F(BrowserTest, FLAKY_SingleBeforeUnloadAfterWindowClose) {
+#endif
   browser()->GetSelectedTabContents()->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", OPEN_NEW_BEFOREUNLOAD_PAGE);
 
@@ -201,7 +210,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
 
 // Test IDC_CREATE_SHORTCUTS command is enabled for url scheme file, ftp, http
 // and https and disabled for chrome://, about:// etc.
+#if defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(BrowserTest,
+                       DISABLED_CommandCreateAppShortcut) {
+#else
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
+#endif
   static const wchar_t kDocRoot[] = L"chrome/test/data";
 
   CommandUpdater* command_updater = browser()->command_updater();
