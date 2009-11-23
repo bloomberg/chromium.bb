@@ -325,7 +325,7 @@ NaClSrpcError NPObjectStub::SetException(NaClSrpcChannel* channel,
   DebugPrintf("SetException\n");
   RpcArg arg0(NULL, inputs[0]);
   NPObjectStub* stub = Lookup(channel, &arg0);
-  const NPUTF8* message = inputs[1]->u.sval;
+  const NPUTF8* message = reinterpret_cast<NPUTF8*>(inputs[1]->u.sval);
   stub->SetExceptionImpl(message);
   return NACL_SRPC_RESULT_OK;
 }

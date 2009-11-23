@@ -31,6 +31,7 @@
 
 
 #include <string>
+#include <limits>
 
 #include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/include/portability_io.h"
@@ -38,6 +39,37 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+
+//
+// STRINGZ_TO_NPVARIANT considered harmful
+//
+// The STRINGZ_TO_NPVARIANT macro assigns the return value from strlen()
+// to a uint32_t. On 64 bit systems this represents a possible integer
+// overflow. Do not use this macro.
+//
+// TODO: make this fix in npruntime.h (requires changes to Chrome tree)
+//
+#undef STRINGZ_TO_NPVARIANT
+
+//
+// Instead, use this.
+//
+const size_t kNPRuntimeStringMax = std::numeric_limits<uint32_t>::max() - 1;
+static uint32_t NPStringLenSaturate(const char* str) {
+  size_t len = strlen(str);
+  if (len > kNPRuntimeStringMax) {
+    len = kNPRuntimeStringMax;
+  }
+  return static_cast<uint32>(len);
+}
+#define STRINGZ_TO_NPVARIANT(_val, _v) NP_BEGIN_MACRO \
+  (_v).type = NPVariantType_String;                   \
+  NPString str = {                                    \
+    _val,                                             \
+    NPStringLenSaturate(_val)                         \
+  };                                                  \
+  (_v).value.stringValue = str;                       \
+  NP_END_MACRO
 
 namespace nacl {
 
@@ -74,13 +106,13 @@ const NPVariant* RpcArg::GetVariant(bool copy_strings) {
       // Odd, we were passed a NULL string (length == 0 or characters == NULL).
       STRINGN_TO_NPVARIANT(NULL, 0, *variant);
     } else {
-      size_t length = NPVARIANT_TO_STRING(*variant).UTF8Length;
+      uint32_t length = NPVARIANT_TO_STRING(*variant).UTF8Length;
       char* string = reinterpret_cast<char*>(optional_.Request(length));
       if (NULL == string) {
         // Not enough bytes to read string.
         return &null;
       }
-      STRINGZ_TO_NPVARIANT(reinterpret_cast<NPUTF8*>(string), *variant);
+      STRINGZ_TO_NPVARIANT(string, *variant);
       optional_.Consume(length);
       if (copy_strings) {
         // Note we cannot use strdup() here since NPN_ReleaseVariantValue() is
