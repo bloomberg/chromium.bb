@@ -39,6 +39,28 @@
 #include <stdint.h>
 #include <drm.h>
 
+#if defined(__linux__)
+
+#define DRM_IOCTL_NR(n)		_IOC_NR(n)
+#define DRM_IOC_VOID		_IOC_NONE
+#define DRM_IOC_READ		_IOC_READ
+#define DRM_IOC_WRITE		_IOC_WRITE
+#define DRM_IOC_READWRITE	_IOC_READ|_IOC_WRITE
+#define DRM_IOC(dir, group, nr, size) _IOC(dir, group, nr, size)
+#define DRM_MAJOR       226
+
+#else /* One of the *BSDs */
+
+#include <sys/ioccom.h>
+#define DRM_IOCTL_NR(n)         ((n) & 0xff)
+#define DRM_IOC_VOID            IOC_VOID
+#define DRM_IOC_READ            IOC_OUT
+#define DRM_IOC_WRITE           IOC_IN
+#define DRM_IOC_READWRITE       IOC_INOUT
+#define DRM_IOC(dir, group, nr, size) _IOC(dir, group, nr, size)
+
+#endif
+
 				/* Defaults, if nothing set in xf86config */
 #define DRM_DEV_UID	 0
 #define DRM_DEV_GID	 0
