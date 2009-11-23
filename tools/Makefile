@@ -94,7 +94,7 @@ DEFAULT_ALIGN_POW2=5
 ##################################################################
 #  The version numbers for the tools we will be building.
 ##################################################################
-BINUTILS_VERSION=2.20
+BINUTILS_VERSION=2.18
 NEWLIB_VERSION=1.17.0
 GCC_VERSION=4.2.2
 GDB_VERSION=6.8
