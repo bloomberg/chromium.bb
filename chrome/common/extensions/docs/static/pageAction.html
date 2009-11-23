@@ -38,23 +38,10 @@ like this:
 </p>
 
 <pre>"page_action": {
+  "default_icon": "icons/foo.png", <em>// <b>required</b></em>
   "default_title": "Do action",    <em>// optional; shown in tooltip</em>
-  "default_icon": "icons/foo.png", <em>// optional</em>
   "popup": "popup.html"            <em>// optional</em>
 }</pre>
-
-<p><b>Note:</b> Even if you don't include
-  any of the values,
-  you must include an empty <b>page_action</b> entry
-  in your manifest so that the system
-  reserves a slot for your page action
-  in the address bar.</p>
-
-<p>
-Set "default_icon" if at all possible.
-Users see the default icon when they install your extension,
-which helps them know what to look for when your page action
-is active for a given page.</p>
 
 <h2 id="ui">Parts of the UI</h2>
 

@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Tutorial: Getting Started (Hello, World!)</title></head><body>  <div id="gc-container" class="labs">
+  <title>Tutorial: Getting Started (Hello, World!) - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -74,33 +74,28 @@
       <a href="#gc-toc">Skip to main navigation</a>
     </div>
     <!-- API HEADER -->
-    <div id="gc-header">
-      <div id="logo">
+    <table id="header" width="100%" cellspacing="0" border="0">
+      <tbody><tr>
+        <td valign="middle"><img src="images/code_labs_logo.gif" height="43" width="161" alt="Google Code Labs" style="border:0; margin:0;"></td>
+        <td valign="middle" width="100%" style="padding-left:0.6em;">
+          <form action="http://www.google.com/cse" id="cse" style="margin-top:0.5em">
+            <div id="gsc-search-box">
+              <input type="hidden" name="cx" value="002967670403910741006:61_cvzfqtno">
+              <input type="hidden" name="ie" value="UTF-8">
+              <input type="text" name="q" size="55">
+              <input class="gsc-search-button" type="submit" name="sa" value="Search">
+              <br>
+              <span class="greytext">e.g. "ajax apis" or "open source"</span>
+            </div>
+          </form>
 
-
-         <img src="images/code_labs_logo.gif" height="43" width="161" alt="Google Code Labs" style="border:0;">
-
-
-      </div>
-      <div id="search">
-        <div id="searchForm" class="searchForm">
-        <form action="http://www.google.com/cse" id="cse">
-          <div id="gsc-search-box">
-            <input type="hidden" name="cx" value="002967670403910741006:61_cvzfqtno">
-            <input type="hidden" name="ie" value="UTF-8">
-            <input type="text" name="q" size="31">
-            <input class="gsc-search-button" type="submit" name="sa" value="Search">
-          </div>
-        </form>
-        <p>&nbsp;</p>
-        </div> <!-- end searchForm -->
-
-        <script type="text/javascript" src="http://www.google.com/jsapi"></script>
-        <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
-        <script type="text/javascript" src="http://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
-        <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse&amp;lang=en"></script>
-      </div> <!-- end search -->
-    </div> <!-- end gc-header -->
+          <script type="text/javascript" src="http://www.google.com/jsapi"></script>
+          <script type="text/javascript">google.load("elements", "1", {packages: "transliteration"});</script>
+          <script type="text/javascript" src="http://www.google.com/coop/cse/t13n?form=cse&amp;t13n_langs=en"></script>
+          <script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse&amp;lang=en"></script>
+        </td>
+      </tr>
+    </tbody></table>
 
     <div id="codesiteContent">
 
@@ -111,18 +106,17 @@
           <li id="home_link">
             <a href="index.html" class="selected" title="Google Chrome Extensions documentation home page">Home</a>
           </li>
-          <li id="blog_link">
-            <a href="http://blog.chromium.org/" title="Chromium blog">Blog</a>
-          </li>
-          <li id="faq_link">
-            <a href="faq.html" title="Google Chrome Extensions FAQ">FAQ</a>
-          </li>
           <li id="group_link">
-            <a href="http://groups.google.com/group/chromium-extensions" title="Chromium-Extensions group">Group</a>
+            <a href="http://groups.google.com/group/chromium-extensions" title="Google Chrome Extensions mailing list">Group</a>
           </li>
+          <li id="samples_link">
+            <a href="samples.html" title="Google Chrome Extensions samples">Samples</a>
+          </li>
+          <!--
           <li id="terms_link">
             Terms
           </li>
+          -->
         </ul>
       </div> <!-- end gc-topnav -->
 
@@ -289,14 +283,7 @@ The icon and page will look something like this:
 
 <p>To develop extensions for Google Chrome,
 you need to <a href="http://dev.chromium.org/getting-involved/dev-channel">subscribe
-to the Dev or Beta channel</a> of Google Chrome for Windows. Extensions aren't yet available in the stable channel.
-</p>
-
-<p>
-<b>Note:</b> This tutorial requires Windows.
-You can try it on Linux and OS X, and it might work,
-but the extensions support is less stable on those platforms.
-We're working hard to bring them up to speed.
+to the Dev Channel</a> of Google Chrome. Extensions aren't yet available in the beta or stable channels (but we're working hard on that!).
 </p>
 
 <h2 id="load">Create and load an extension</h2>
@@ -309,9 +296,6 @@ to the toolbar of Google Chrome.
 <ol>
   <li>
     Create a folder somewhere on your computer to contain your extension's code.
-    We'll assume the folder is located at
-    <strong><code>c:\myext</code></strong>,
-    but it can be anywhere.
   </li>
   <li>
     Inside your extension's folder,
@@ -362,7 +346,6 @@ to the toolbar of Google Chrome.
       <li>
       In the file dialog,
       navigate to your extension's folder
-      (<code>c:\myext</code>, for example)
       and click <b>OK</b>.
       </li>
     </ol> </li>

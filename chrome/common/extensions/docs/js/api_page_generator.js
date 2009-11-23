@@ -189,7 +189,7 @@ function renderTemplate() {
 
   selectCurrentPageOnLeftNav();
 
-  document.title = getPageTitle();
+  document.title = getPageTitle() + " - Google Chrome Extensions - Google Code";
   // Show
   if (window.postRender)
     window.postRender();

@@ -11,6 +11,15 @@
   display: none;
 }
 
+#header {
+  margin:1em 0;
+}
+
+#header td {
+  border:none;
+  padding:0;
+}
+
 /* This is the start of the styles imported from Codesite. */
 
 .g-section:after {
@@ -84,11 +93,6 @@ pre {
   padding:.99em;
   overflow:auto;
   word-wrap:break-word
-}
-
-form {
-  margin:1em 0 0 0;
-  padding:0
 }
 
 blockquote {
@@ -650,37 +654,12 @@ p.backtotop {
 
 #gc-pagecontent {
   padding-left:24px;
-  border-left:3px solid #e5ecf9
+  border-left:3px solid #def7de;
 }
 
 .moreright {
   margin:2px 0 2px 0;
   text-align:right
-}
-
-#gc-header {
-  padding:7px 0 0 0;
-  margin:9px 0 12px
-}
-
-#gc-header #logo {
-  margin:0;
-  padding-top:5px;
-  position:absolute
-}
-
-#gc-header a img {
-  border:none;
-  padding:0;
-  margin:0
-}
-
-#gc-header #gc-logo-img {
-  background-image:url(/images/sprites08132008.png);
-  background-position:-28px -36px;
-  width:153px;
-  height:55px;
-  cursor:pointer
 }
 
 #gc-topnav {

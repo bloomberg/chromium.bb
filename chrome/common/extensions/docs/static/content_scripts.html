@@ -136,13 +136,14 @@ learn about the
 <pre>hello.html
 ==========
 &lt;html&gt;
-  &lt;button id="button"&gt;click me&lt;/button&gt;
+  &lt;button id="mybutton"&gt;click me&lt;/button&gt;
   &lt;script&gt;
-    var greeting = "hello!";
-    function sayGreeting() {
-      alert(greeting);
-    }
-    document.getElementById("button").onclick = sayGreeting;
+    var greeting = "hello, ";
+    var button = document.getElementById("mybutton");
+    button.person_name = "Bob";
+    button.addEventListener("click", function() {
+      alert(greeting + button.person_name + ".");
+    }, false);
   &lt;/script&gt;
 &lt;/html&gt;</pre>
 
@@ -150,12 +151,13 @@ learn about the
 
 <pre>contentscript.js
 ================
-console.log(greeting);  // undefined
-console.log(sayGreeting);  // undefined
-console.log(document.getElementById("button").onclick);  // still undefined
-document.getElementById("button").onclick = function() {
-  alert("hola!");
-}</pre>
+var greeting = "hola, ";
+var button = document.getElementById("mybutton");
+button.person_name = "Roberto";
+button.addEventListener("click", function() {
+  alert(greeting + button.person_name + ".");
+}, false);
+</pre>
 
 <p>Now, if the button is pressed, you will see both greetings.
 
@@ -194,7 +196,7 @@ document.getElementById('myCustomEventDiv').addEventListener('myCustomEvent', fu
 
 <h2 id="security-considerations">Security considerations</h2>
 
-When writing a content script, you should be aware of two security issues.
+<p>When writing a content script, you should be aware of two security issues.
 First, be careful not to introduce security vulnerabilities into the web site
 your content script is injected into.  For example, if your content script
 receives content from another web site (e.g., by <a
