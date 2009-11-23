@@ -39,7 +39,6 @@ PageInfoModel::PageInfoModel(Profile* profile,
   bool state = true;
   string16 head_line;
   string16 description;
-  string16 connection_msg;
   scoped_refptr<net::X509Certificate> cert;
 
   // Identity section.
@@ -140,7 +139,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
       description.assign(
           l10n_util::GetStringFUTF16(
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
-              connection_msg,
+              description,
               l10n_util::GetStringUTF16(
                   IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_MIXED_CONTENT_WARNING)));
     } else if (ssl.has_unsafe_content()) {
@@ -148,7 +147,7 @@ PageInfoModel::PageInfoModel(Profile* profile,
       description.assign(
           l10n_util::GetStringFUTF16(
               IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_SENTENCE_LINK,
-              connection_msg,
+              description,
               l10n_util::GetStringUTF16(
                   IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_BAD_HTTPS_WARNING)));
     }

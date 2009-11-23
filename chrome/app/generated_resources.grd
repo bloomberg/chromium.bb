@@ -3797,7 +3797,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 
       <!-- Page Information Window -->
       <message name="IDS_PAGEINFO_WINDOW_TITLE" desc="Title of the page info window.">
-        Security information
+        Security Information
       </message>
       <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="Text of button in the page info that shows the SSL certificate.">
         Certificate information...

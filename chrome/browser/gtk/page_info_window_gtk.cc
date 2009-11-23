@@ -81,7 +81,6 @@ PageInfoWindowGtk::PageInfoWindowGtk(gfx::NativeWindow parent,
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
-  gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponse), NULL);
@@ -122,15 +121,16 @@ GtkWidget* PageInfoWindowGtk::CreateSection(
   if (!section.head_line.empty()) {
     label = gtk_label_new(UTF16ToUTF8(section.head_line).c_str());
     gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
-    gtk_box_pack_start(GTK_BOX(text_box), label , FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(text_box), label, FALSE, FALSE, 0);
   }
   label = gtk_label_new(UTF16ToUTF8(section.description).c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
   gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-  gtk_box_pack_start(GTK_BOX(text_box), label , FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(text_box), label, FALSE, FALSE, 0);
+  gtk_widget_set_size_request(label, 400, -1);
 
-  gtk_box_pack_start(GTK_BOX(section_box), text_box , TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), section_box , TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(section_box), text_box, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), section_box, TRUE, TRUE, 0);
 
   return vbox;
 }
