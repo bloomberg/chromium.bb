@@ -107,9 +107,8 @@ class BitmapScrollBarThumb : public View {
     // Make sure the thumb is never sized smaller than its minimum possible
     // display size.
     gfx::Size prefsize = GetPreferredSize();
-    size = std::max(size,
-                    static_cast<int>(scroll_bar_->IsHorizontal() ?
-                        prefsize.width() : prefsize.height()));
+    size = std::max(size, scroll_bar_->IsHorizontal() ? prefsize.width() :
+                                                        prefsize.height());
     gfx::Rect thumb_bounds = bounds();
     if (scroll_bar_->IsHorizontal()) {
       thumb_bounds.set_width(size);
@@ -305,7 +304,7 @@ gfx::Rect BitmapScrollBar::GetTrackBounds() const {
     if (!show_scroll_buttons_)
       prefsize.set_width(0);
     int new_width =
-        std::max(0, static_cast<int>(width() - (prefsize.width() * 2)));
+        std::max(0, width() - (prefsize.width() * 2));
     gfx::Rect track_bounds(prefsize.width(), 0, new_width, prefsize.height());
     return track_bounds;
   }

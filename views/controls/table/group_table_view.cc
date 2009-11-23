@@ -174,13 +174,13 @@ void GroupTableView::PostPaint(int model_row, int column, bool selected,
   // We always paint a vertical line at the end of the last cell.
   HPEN hPen = CreatePen(PS_SOLID, kSeparatorLineThickness, kSeparatorLineColor);
   HPEN hPenOld = (HPEN) SelectObject(hdc, hPen);
-  int x = static_cast<int>(bounds.right() - kSeparatorLineThickness);
+  int x = bounds.right() - kSeparatorLineThickness;
   MoveToEx(hdc, x, bounds.y(), NULL);
   LineTo(hdc, x, bounds.bottom());
 
   // We paint a separator line after the last item of a group.
   if (model_row == (group_range.start + group_range.length - 1)) {
-    int y = static_cast<int>(bounds.bottom() - kSeparatorLineThickness);
+    int y = bounds.bottom() - kSeparatorLineThickness;
     MoveToEx(hdc, 0, y, NULL);
     LineTo(hdc, bounds.width(), y);
   }
