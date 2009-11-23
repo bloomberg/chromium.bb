@@ -23,9 +23,16 @@ void AddFileToPasteboard(NSPasteboard* pasteboard, const FilePath& path) {
 }
 
 void NotifySystemOfDownloadComplete(const FilePath& path) {
+  NSString* filePath = base::SysUTF8ToNSString(path.value());
   [[NSDistributedNotificationCenter defaultCenter]
       postNotificationName:@"com.apple.DownloadFileFinished"
-                    object:base::SysUTF8ToNSString(path.value())];
+                    object:filePath];
+
+  NSString* parentPath = [filePath stringByDeletingLastPathComponent];
+  FNNotifyByPath(
+      reinterpret_cast<const UInt8*>([parentPath fileSystemRepresentation]),
+      kFNDirectoryModifiedMessage,
+      kNilOptions);
 }
 
 void DragDownload(const DownloadItem* download,
