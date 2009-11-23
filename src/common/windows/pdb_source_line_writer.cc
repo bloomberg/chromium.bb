@@ -118,11 +118,13 @@ bool PDBSourceLineWriter::PrintLines(IDiaEnumLineNumbers *lines) {
       return false;
     }
 
-    DWORD source_id;
-    if (FAILED(line->get_sourceFileId(&source_id))) {
+    DWORD dia_source_id;
+    if (FAILED(line->get_sourceFileId(&dia_source_id))) {
       fprintf(stderr, "failed to get line source file id\n");
       return false;
     }
+    // duplicate file names are coalesced to share one ID
+    DWORD source_id = GetRealFileID(dia_source_id);
 
     DWORD line_num;
     if (FAILED(line->get_lineNumber(&line_num))) {
@@ -216,7 +218,16 @@ bool PDBSourceLineWriter::PrintSourceFiles() {
         return false;
       }
 
-      fwprintf(output_, L"FILE %d %s\n", file_id, file_name);
+      wstring file_name_string(file_name);
+      if (!FileIDIsCached(file_name_string)) {
+        // this is a new file name, cache it and output a FILE line.
+        CacheFileID(file_name_string, file_id);
+        fwprintf(output_, L"FILE %d %s\n", file_id, file_name);
+      } else {
+        // this file name has already been seen, just save this
+        // ID for later lookup.
+        StoreDuplicateFileID(file_name_string, file_id);
+      }
       file.Release();
     }
     compiland.Release();
