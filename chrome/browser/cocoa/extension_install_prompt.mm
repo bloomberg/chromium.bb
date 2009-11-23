@@ -41,13 +41,3 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     delegate->InstallUIAbort();
   }
 }
-
-void ExtensionInstallUI::ShowExtensionInstallError(const std::string& error) {
-  NSAlert* alert = [[[NSAlert alloc] init] autorelease];
-  [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
-  [alert setMessageText:l10n_util::GetNSString(
-      IDS_EXTENSION_INSTALL_FAILURE_TITLE)];
-  [alert setInformativeText:base::SysUTF8ToNSString(error)];
-  [alert setAlertStyle:NSWarningAlertStyle];
-  [alert runModal];
-}

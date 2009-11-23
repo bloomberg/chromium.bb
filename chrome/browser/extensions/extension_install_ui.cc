@@ -21,6 +21,7 @@
 #endif  // TOOLKIT_VIEWS
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/platform_util.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -201,7 +202,11 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
 void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
   DCHECK(ui_loop_ == MessageLoop::current());
 
-  ShowExtensionInstallError(error);
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  platform_util::SimpleErrorBox(
+      browser ? browser->window()->GetNativeHandle() : NULL,
+      l10n_util::GetStringUTF16(IDS_EXTENSION_INSTALL_FAILURE_TITLE),
+      UTF8ToUTF16(error));
 }
 
 void ExtensionInstallUI::OnOverinstallAttempted(Extension* extension) {

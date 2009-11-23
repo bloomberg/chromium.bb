@@ -75,4 +75,14 @@ bool IsVisible(gfx::NativeView view) {
   return GTK_WIDGET_VISIBLE(view);
 }
 
+void SimpleErrorBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message) {
+  GtkWidget* dialog = gtk_message_dialog_new(parent, GTK_DIALOG_MODAL,
+      GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", UTF16ToUTF8(message).c_str());
+  gtk_window_set_title(GTK_WINDOW(dialog), UTF16ToUTF8(title).c_str());
+  g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+  gtk_widget_show_all(dialog);
+}
+
 }  // namespace platform_util

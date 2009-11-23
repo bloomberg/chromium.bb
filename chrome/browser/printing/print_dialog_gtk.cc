@@ -27,7 +27,7 @@ class PdfUnsupportedInfoBarDelegate : public LinkInfoBarDelegate {
        browser_(browser) {
   }
 
-  ~PdfUnsupportedInfoBarDelegate() {}
+  virtual ~PdfUnsupportedInfoBarDelegate() {}
 
   virtual std::wstring GetMessageTextWithOffset(size_t* link_offset) const {
     std::wstring message(L"Oops! Your printer does not support PDF. Please "

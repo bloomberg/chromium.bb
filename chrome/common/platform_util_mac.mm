@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
@@ -67,6 +68,17 @@ bool IsVisible(gfx::NativeView view) {
           ![view isHiddenOrHasHiddenAncestor] &&
           [view window] &&
           [[view window] isVisible]);
+}
+
+void SimpleErrorBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message) {
+  NSAlert* alert = [[[NSAlert alloc] init] autorelease];
+  [alert addButtonWithTitle:l10n_util::GetNSString(IDS_OK)];
+  [alert setMessageText:base::SysUTF16ToNSString(title)];
+  [alert setInformativeText:base::SysUTF16ToNSString(message)];
+  [alert setAlertStyle:NSWarningAlertStyle];
+  [alert runModal];
 }
 
 }  // namespace platform_util

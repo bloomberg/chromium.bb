@@ -46,9 +46,6 @@ class ExtensionInstallUI {
                                            SkBitmap* install_icon,
                                            const std::wstring& warning_text);
 
-  // NOTE: The implementations of this function is platform-specific.
-  static void ShowExtensionInstallError(const std::string& error);
-
   explicit ExtensionInstallUI(Profile* profile);
 
   // This is called by the installer to verify whether the installation should

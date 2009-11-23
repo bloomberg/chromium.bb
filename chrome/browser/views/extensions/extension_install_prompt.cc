@@ -174,14 +174,3 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
       new InstallDialogContent(delegate, extension, icon,
                                warning_text, is_uninstall))->Show();
 }
-
-void ExtensionInstallUI::ShowExtensionInstallError(const std::string& error) {
-#if defined(OS_WIN)
-  win_util::MessageBox(NULL, UTF8ToWide(error),
-      l10n_util::GetString(IDS_EXTENSION_INSTALL_FAILURE_TITLE),
-      MB_OK | MB_SETFOREGROUND);
-#else
-  // TODO(port): Port this over to OS_*
-  NOTREACHED();
-#endif
-}

@@ -37,6 +37,13 @@ bool IsWindowActive(gfx::NativeWindow window);
 // whether the view has the visible attribute set.
 bool IsVisible(gfx::NativeView view);
 
+// Pops up an error box with an OK button. If |parent| is non-null, the box
+// will be modal on it. (On Mac, it is always app-modal.) Generally speaking,
+// this class should not be used for much. Infobars are preferred.
+void SimpleErrorBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message);
+
 }
 
 #endif  // CHROME_COMMON_PLATFORM_UTIL_H_

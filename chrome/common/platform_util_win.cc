@@ -151,4 +151,10 @@ bool IsVisible(gfx::NativeView view) {
   return ::IsWindowVisible(view) != 0;
 }
 
+void SimpleErrorBox(gfx::NativeWindow parent,
+                    const string16& title,
+                    const string16& message) {
+  win_util::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
+}
+
 }  // namespace platform_util
