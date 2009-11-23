@@ -461,15 +461,15 @@ void FlipSession::OnWriteComplete(int result) {
     scoped_refptr<FlipStream> stream = in_flight_write_.stream();
     DCHECK(stream.get());
 
-    if (!stream->cancelled()) {
-      // Report the number of bytes written to the caller, but exclude the
-      // frame size overhead.
-      if (result > 0) {
-        DCHECK(result > static_cast<int>(flip::FlipFrame::size()));
-        result -= static_cast<int>(flip::FlipFrame::size());
-      }
-      stream->OnWriteComplete(result);
+    // Report the number of bytes written to the caller, but exclude the
+    // frame size overhead.
+    if (result > 0) {
+      // TODO(willchan): This is an unsafe DCHECK.  I'm hitting this.  We should
+      // handle small writes appropriately.
+      DCHECK(result > static_cast<int>(flip::FlipFrame::size()));
+      result -= static_cast<int>(flip::FlipFrame::size());
     }
+    stream->OnWriteComplete(result);
 
     // Cleanup the write which just completed.
     in_flight_write_.release();
