@@ -80,15 +80,17 @@ class NewTabUIStartupTest : public UITest {
       ASSERT_EQ(1, tab_count);
 
       // Hit ctl-t and wait for the tab to load.
-      window->ApplyAccelerator(IDC_NEW_TAB);
-      ASSERT_TRUE(window->WaitForTabCountToBecome(2, 5000));
+      window->RunCommand(IDC_NEW_TAB);
+      ASSERT_TRUE(window->GetTabCount(&tab_count));
+      ASSERT_EQ(2, tab_count);
       int load_time;
       ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
       if (want_warm) {
         // Bring up a second tab, now that we've already shown one tab.
-        window->ApplyAccelerator(IDC_NEW_TAB);
-        ASSERT_TRUE(window->WaitForTabCountToBecome(3, 5000));
+        window->RunCommand(IDC_NEW_TAB);
+        ASSERT_TRUE(window->GetTabCount(&tab_count));
+        ASSERT_EQ(3, tab_count);
         ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
       }
       timings[i] = TimeDelta::FromMilliseconds(load_time);
