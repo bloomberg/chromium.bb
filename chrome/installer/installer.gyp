@@ -379,9 +379,11 @@
       ],
     }],
     ['OS=="linux" and branding=="Chrome"', {
-      # Always google_chrome since this only applies to branding==Chrome.
       'variables': {
+        # Always google_chrome since this only applies to branding==Chrome.
         'branding_dir': '../app/theme/google_chrome',
+        'version' : '<!(python <(version_py) -f ../../chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
+        'revision' : '<!(python ../../build/util/lastchange.py | cut -d "=" -f 2)',
         'packaging_files_common': [
           'linux/internal/common/apt.include',
           'linux/internal/common/default-app.template',
@@ -411,10 +413,37 @@
           'linux/internal/rpm/build.sh',
           'linux/internal/rpm/chrome.spec.template',
         ],
+        'packaging_files_binaries': [
+          # TODO(mmoss) Any convenient way to get all the relevant build
+          # files? (e.g. all locales, resources, etc.)
+          '<(PRODUCT_DIR)/chrome',
+          '<(PRODUCT_DIR)/chrome.pak',
+          '<(PRODUCT_DIR)/chrome_sandbox',
+          '<(PRODUCT_DIR)/libffmpegsumo.so',
+          '<(PRODUCT_DIR)/xdg-settings',
+          '<(PRODUCT_DIR)/locales/en-US.pak',
+        ],
+        'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
+        'deb_build': '<(PRODUCT_DIR)/installer/debian/build.sh',
+        'rpm_build': '<(PRODUCT_DIR)/installer/rpm/build.sh',
+        'deb_cmd': ['<@(flock_bash)', '<(deb_build)', '-o' '<(PRODUCT_DIR)',
+                    '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
+        'rpm_cmd': ['<@(flock_bash)', '<(rpm_build)', '-o' '<(PRODUCT_DIR)',
+                    '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
+        'conditions': [
+          ['target_arch=="ia32"', {
+            'deb_arch': 'i386',
+            'rpm_arch': 'i386',
+          }],
+          ['target_arch=="x64"', {
+            'deb_arch': 'amd64',
+            'rpm_arch': 'x86_64',
+          }],
+        ],
       },
       'targets': [
         {
-          'target_name': 'installer_util',
+          'target_name': 'linux_installer_configs',
           'type': 'none',
           # Add these files to the build output so the build archives will be
           # "hermetic" for packaging. This is only for branding="Chrome" since
@@ -481,47 +510,120 @@
           ],
         },
         {
-          'target_name': 'linux_packages',
+          'target_name': 'linux_packages_all',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            'linux_packages_unstable',
+            'linux_packages_beta',
+            'linux_packages_stable',
+          ],
+        },
+        {
+          # 'trunk' is a developer, testing-only package, so it shouldn't be
+          # included in the 'linux_packages_all' collection.
+          'target_name': 'linux_packages_trunk',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            'linux_packages_trunk_deb',
+          ],
+          # ChromeOS doesn't care about RPM packages.
+          'conditions': [
+            ['chromeos==0 and toolkit_views==0', {
+              'dependencies': [
+                'linux_packages_trunk_rpm',
+              ],
+            }],
+          ],
+        },
+        {
+          'target_name': 'linux_packages_unstable',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            'linux_packages_unstable_deb',
+          ],
+          # ChromeOS doesn't care about RPM packages.
+          'conditions': [
+            ['chromeos==0 and toolkit_views==0', {
+              'dependencies': [
+                'linux_packages_unstable_rpm',
+              ],
+            }],
+          ],
+        },
+        {
+          'target_name': 'linux_packages_beta',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            'linux_packages_beta_deb',
+          ],
+          # ChromeOS doesn't care about RPM packages.
+          'conditions': [
+            ['chromeos==0 and toolkit_views==0', {
+              'dependencies': [
+                'linux_packages_beta_rpm',
+              ],
+            }],
+          ],
+        },
+        {
+          'target_name': 'linux_packages_stable',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            'linux_packages_stable_deb',
+          ],
+          # ChromeOS doesn't care about RPM packages.
+          'conditions': [
+            ['chromeos==0 and toolkit_views==0', {
+              'dependencies': [
+                'linux_packages_stable_rpm',
+              ],
+            }],
+          ],
+        },
+        # TODO(mmoss) gyp looping construct would be handy here ...
+        # These package actions are the same except for the 'channel' variable.
+        {
+          'target_name': 'linux_packages_trunk_deb',
           'suppress_wildcard': 1,
           'type': 'none',
           'dependencies': [
             '../chrome.gyp:chrome',
+            'linux_installer_configs',
           ],
-          'variables': {
-            'version' : '<!(python <(version_py) -f ../../chrome/VERSION -t "@MAJOR@.@MINOR@.@BUILD@.@PATCH@")',
-            'revision' : '<!(python ../../build/util/lastchange.py | cut -d "=" -f 2)',
-            'input_files': [
-              # TODO(mmoss) Any convenient way to get all the relevant build
-              # files? (e.g. all locales, resources, etc.)
-              '<(PRODUCT_DIR)/chrome',
-              '<(PRODUCT_DIR)/chrome.pak',
-              '<(PRODUCT_DIR)/chrome_sandbox',
-              '<(PRODUCT_DIR)/libffmpegsumo.so',
-              '<(PRODUCT_DIR)/xdg-settings',
-              '<(PRODUCT_DIR)/locales/en-US.pak',
-            ],
-            'flock_bash': ['flock', '--', '/tmp/linux_package_lock', 'bash'],
-            'deb_build': '<(PRODUCT_DIR)/installer/debian/build.sh',
-            'rpm_build': '<(PRODUCT_DIR)/installer/rpm/build.sh',
-            'deb_cmd': ['<@(flock_bash)', '<(deb_build)', '-o' '<(PRODUCT_DIR)',
-                        '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
-            'rpm_cmd': ['<@(flock_bash)', '<(rpm_build)', '-o' '<(PRODUCT_DIR)',
-                        '-b', '<(PRODUCT_DIR)', '-a', '<(target_arch)'],
-            'conditions': [
-              ['target_arch=="ia32"', {
-                'deb_arch': 'i386',
-                'rpm_arch': 'i386',
-              }],
-              ['target_arch=="x64"', {
-                'deb_arch': 'amd64',
-                'rpm_arch': 'x86_64',
-              }],
-            ],
-          },
           'actions': [
-            # TODO(mmoss) gyp looping construct would be handy here ...
-            # These deb_packages* and rpm_packages* actions are the same except
-            # for the 'channel' variable.
+            {
+              'variables': {
+                'channel': 'trunk',
+              },
+              'action_name': 'deb_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(deb_build)',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_deb)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
+              ],
+              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
+            },
+          ],
+        },
+        {
+          'target_name': 'linux_packages_unstable_deb',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            '../chrome.gyp:chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
             {
               'variables': {
                 'channel': 'unstable',
@@ -530,41 +632,7 @@
               'process_outputs_as_sources': 1,
               'inputs': [
                 '<(deb_build)',
-                '<@(input_files)',
-                '<@(packaging_files_common)',
-                '<@(packaging_files_deb)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
-              ],
-              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
-            },
-            {
-              'variables': {
-                'channel': 'beta',
-              },
-              'action_name': 'deb_packages_<(channel)',
-              'process_outputs_as_sources': 1,
-              'inputs': [
-                '<(deb_build)',
-                '<@(input_files)',
-                '<@(packaging_files_common)',
-                '<@(packaging_files_deb)',
-              ],
-              'outputs': [
-                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
-              ],
-              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
-            },
-            {
-              'variables': {
-                'channel': 'stable',
-              },
-              'action_name': 'deb_packages_<(channel)',
-              'process_outputs_as_sources': 1,
-              'inputs': [
-                '<(deb_build)',
-                '<@(input_files)',
+                '<@(packaging_files_binaries)',
                 '<@(packaging_files_common)',
                 '<@(packaging_files_deb)',
               ],
@@ -574,68 +642,177 @@
               'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
             },
           ],
-          'conditions': [
-            ['chromeos==0 and toolkit_views==0', {
-              'actions': [
-                {
-                  'variables': {
-                    'channel': 'unstable',
-                  },
-                  'action_name': 'rpm_packages_<(channel)',
-                  'process_outputs_as_sources': 1,
-                  'inputs': [
-                    '<(rpm_build)',
-                    '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
-                    '<@(input_files)',
-                    '<@(packaging_files_common)',
-                    '<@(packaging_files_rpm)',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
-                  ],
-                  'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
-                },
-                {
-                  'variables': {
-                    'channel': 'beta',
-                  },
-                  'action_name': 'rpm_packages_<(channel)',
-                  'process_outputs_as_sources': 1,
-                  'inputs': [
-                    '<(rpm_build)',
-                    '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
-                    '<@(input_files)',
-                    '<@(packaging_files_common)',
-                    '<@(packaging_files_rpm)',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
-                  ],
-                  'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
-                },
-                {
-                  'variables': {
-                    'channel': 'stable',
-                  },
-                  'action_name': 'rpm_packages_<(channel)',
-                  'process_outputs_as_sources': 1,
-                  'inputs': [
-                    '<(rpm_build)',
-                    '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
-                    '<@(input_files)',
-                    '<@(packaging_files_common)',
-                    '<@(packaging_files_rpm)',
-                  ],
-                  'outputs': [
-                    '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
-                  ],
-                  'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
-                },
+        },
+        {
+          'target_name': 'linux_packages_beta_deb',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            '../chrome.gyp:chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
+            {
+              'variables': {
+                'channel': 'beta',
+              },
+              'action_name': 'deb_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(deb_build)',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_deb)',
               ],
-            }],
-            ['target_arch=="x64"', {
-              # TODO(mmoss) 64-bit RPMs not ready yet.
-            }],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
+              ],
+              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
+            },
+          ],
+        },
+        {
+          'target_name': 'linux_packages_stable_deb',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            '../chrome.gyp:chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
+            {
+              'variables': {
+                'channel': 'stable',
+              },
+              'action_name': 'deb_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(deb_build)',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_deb)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)_<(version)-r<(revision)_<(deb_arch).deb',
+              ],
+              'action': [ '<@(deb_cmd)', '-c', '<(channel)', ],
+            },
+          ],
+        },
+        {
+          'target_name': 'linux_packages_trunk_rpm',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            '../chrome.gyp:chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
+            {
+              'variables': {
+                'channel': 'trunk',
+              },
+              'action_name': 'rpm_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(rpm_build)',
+                '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_rpm)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
+              ],
+              'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
+            },
+          ],
+        },
+        {
+          'target_name': 'linux_packages_unstable_rpm',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            '../chrome.gyp:chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
+            {
+              'variables': {
+                'channel': 'unstable',
+              },
+              'action_name': 'rpm_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(rpm_build)',
+                '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_rpm)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
+              ],
+              'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
+            },
+          ],
+        },
+        {
+          'target_name': 'linux_packages_beta_rpm',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            '../chrome.gyp:chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
+            {
+              'variables': {
+                'channel': 'beta',
+              },
+              'action_name': 'rpm_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(rpm_build)',
+                '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_rpm)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
+              ],
+              'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
+            },
+          ],
+        },
+        {
+          'target_name': 'linux_packages_stable_rpm',
+          'suppress_wildcard': 1,
+          'type': 'none',
+          'dependencies': [
+            '../chrome.gyp:chrome',
+            'linux_installer_configs',
+          ],
+          'actions': [
+            {
+              'variables': {
+                'channel': 'stable',
+              },
+              'action_name': 'rpm_packages_<(channel)',
+              'process_outputs_as_sources': 1,
+              'inputs': [
+                '<(rpm_build)',
+                '<(PRODUCT_DIR)/installer/rpm/chrome.spec.template',
+                '<@(packaging_files_binaries)',
+                '<@(packaging_files_common)',
+                '<@(packaging_files_rpm)',
+              ],
+              'outputs': [
+                '<(PRODUCT_DIR)/google-chrome-<(channel)-<(version)-<(revision).<(rpm_arch).rpm',
+              ],
+              'action': [ '<@(rpm_cmd)', '-c', '<(channel)', ],
+            },
           ],
         },
       ],

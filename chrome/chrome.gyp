@@ -3849,7 +3849,7 @@
           'conditions': [
             ['branding=="Chrome"', {
               'dependencies': [
-                'installer/installer.gyp:installer_util',
+                'installer/installer.gyp:linux_installer_configs',
               ],
             }],
             ['selinux==0', {
