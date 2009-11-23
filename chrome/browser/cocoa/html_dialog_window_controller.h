@@ -14,7 +14,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 
-class Browser;
 class HtmlDialogWindowDelegateBridge;
 class Profile;
 class TabContents;
@@ -23,9 +22,7 @@ class TabContents;
 // from a HTMLDialogUIDelegate object.
 @interface HtmlDialogWindowController : NSWindowController {
  @private
-  // An HTML dialog can exist separately from a window in OS X, so this
-  // controller needs its own browser.
-  scoped_ptr<Browser> browser_;
+  Profile* profile_;  // weak.  Always a non-incognito profile.
   // Order here is important, as tab_contents_ may send messages to
   // delegate_ when it gets destroyed.
   scoped_ptr<HtmlDialogWindowDelegateBridge> delegate_;
