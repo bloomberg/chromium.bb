@@ -5,14 +5,10 @@
 #ifndef CHROME_COMMON_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 #define CHROME_COMMON_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 
-#include "base/file_path.h"
-#include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "base/task.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_thread.h"
-#include "chrome/common/chrome_constants.h"
 #include "webkit/appcache/appcache_service.h"
+
+class FilePath;
 
 // An AppCacheService subclass used by the chrome. There is an instance
 // associated with each Profile. This derivation adds refcounting semantics
@@ -20,23 +16,17 @@
 // object, and those URLRequestContexts are refcounted independently of the
 // owning profile.
 //
-// All methods, including the dtor, are expected to be called on the IO thread.
+// All methods, including the ctor and dtor, are expected to be called on
+// the IO thread.
 class ChromeAppCacheService
     : public base::RefCounted<ChromeAppCacheService>,
       public appcache::AppCacheService {
  public:
-
   ChromeAppCacheService(const FilePath& data_directory,
-                        bool is_incognito) {
-    Initialize(is_incognito ? FilePath()
-                            : data_directory.Append(chrome::kAppCacheDirname));
-  }
+                        bool is_incognito);
  private:
   friend class base::RefCounted<ChromeAppCacheService>;
-
-  virtual ~ChromeAppCacheService() {
-    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  }
+  virtual ~ChromeAppCacheService();
 };
 
 #endif  // CHROME_COMMON_APPCACHE_CHROME_APPCACHE_SERVICE_H_

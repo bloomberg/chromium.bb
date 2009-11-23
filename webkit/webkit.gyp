@@ -166,6 +166,8 @@
         'appcache/appcache_storage.h',
         'appcache/appcache_storage_impl.cc',
         'appcache/appcache_storage_impl.h',
+        'appcache/appcache_thread.cc',
+        'appcache/appcache_thread.h',
         'appcache/appcache_working_set.cc',
         'appcache/appcache_working_set.h',
         'appcache/appcache_update_job.cc',

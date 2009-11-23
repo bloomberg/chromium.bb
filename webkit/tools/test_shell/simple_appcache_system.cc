@@ -16,7 +16,28 @@ using WebKit::WebApplicationCacheHostClient;
 using appcache::WebApplicationCacheHostImpl;
 using appcache::AppCacheBackendImpl;
 using appcache::AppCacheInterceptor;
+using appcache::AppCacheThread;
 
+namespace appcache {
+
+// An impl of AppCacheThread we need to provide to the appcache lib.
+
+bool AppCacheThread::PostTask(
+    int id,
+    const tracked_objects::Location& from_here,
+    Task* task) {
+  scoped_ptr<Task> task_ptr(task);
+  MessageLoop* loop = SimpleAppCacheSystem::GetMessageLoop(id);
+  if (loop)
+    loop->PostTask(from_here, task_ptr.release());
+  return loop ? true : false;
+}
+
+bool AppCacheThread::CurrentlyOn(int id) {
+  return MessageLoop::current() == SimpleAppCacheSystem::GetMessageLoop(id);
+}
+
+}  // namespace appcache
 
 // SimpleFrontendProxy --------------------------------------------------------
 // Proxies method calls from the backend IO thread to the frontend UI thread.
@@ -247,7 +268,7 @@ SimpleAppCacheSystem::SimpleAppCacheSystem()
           backend_proxy_(new SimpleBackendProxy(this))),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           frontend_proxy_(new SimpleFrontendProxy(this))),
-      backend_impl_(NULL), service_(NULL) {
+      backend_impl_(NULL), service_(NULL), db_thread_("AppCacheDBThread") {
   DCHECK(!instance_);
   instance_ = this;
 }
@@ -262,6 +283,7 @@ void SimpleAppCacheSystem::InitOnUIThread(
     const FilePath& cache_directory) {
   DCHECK(!ui_message_loop_);
   DCHECK(!cache_directory.empty());
+  AppCacheThread::InitIDs(DB_THREAD_ID, IO_THREAD_ID);
   ui_message_loop_ = MessageLoop::current();
   cache_directory_ = cache_directory;
 }
@@ -273,6 +295,9 @@ void SimpleAppCacheSystem::InitOnIOThread(URLRequestContext* request_context) {
   DCHECK(!io_message_loop_);
   io_message_loop_ = MessageLoop::current();
   io_message_loop_->AddDestructionObserver(this);
+
+  if (!db_thread_.IsRunning())
+    db_thread_.Start();
 
   // Recreate and initialize per each IO thread.
   service_ = new appcache::AppCacheService();
