@@ -42,17 +42,9 @@ namespace nacl {
 
 // The maximum number of NPVariant parameters passed by NPN_Invoke or
 // NPN_InvokeDefault.
-//
-// NOTE (x64): kParamMax * kNPVariantSizeMax must not exceed UINT32_MAX!!
-//    (Currently this is not a problem, since NACL_ABI_IMC_USER_BYTES_MAX
-//    is far less than UINT32_MAX)
 const size_t kParamMax = 256;
 
-// The maximum size of the NPVariant structure in bytes on various platforms.
-//
-// NOTE (x64): kParamMax * kNPVariantSizeMax must not exceed UINT32_MAX!!
-//    (Currently this is not a problem, since NACL_ABI_IMC_USER_BYTES_MAX
-//    is far less than UINT32_MAX)
+// The maximum size of the NPVariant structure in bytes among various platforms.
 const size_t kNPVariantSizeMax = 16;
 
 class RpcArgBuffer {

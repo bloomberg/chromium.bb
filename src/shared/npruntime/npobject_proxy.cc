@@ -335,10 +335,10 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
   if (NULL == bridge) {
     return false;
   }
-  char      fixed[kNPVariantSizeMax * kParamMax];
-  uint32_t  fixed_size = static_cast<uint32_t>(sizeof(fixed));
-  char      optional[kNPVariantSizeMax * kParamMax];
-  uint32_t  optional_size = static_cast<uint32_t>(sizeof(optional));
+  char fixed[kNPVariantSizeMax * kParamMax];
+  size_t fixed_size = sizeof(fixed);
+  char optional[kNPVariantSizeMax * kParamMax];
+  size_t optional_size = sizeof(optional);
   RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
   if (!vars.PutVariantArray(args, arg_count)) {
     return false;
@@ -353,9 +353,9 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
                            "NPN_InvokeDefault",
                            sizeof capability_,
                            &capability_,
-                           fixed_size,
+                           static_cast<uint32_t>(fixed_size),
                            fixed,
-                           optional_size,
+                           static_cast<uint32_t>(optional_size),
                            optional,
                            &error_code,
                            ret_fixed_size,  // Need size set by return
@@ -453,11 +453,11 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
   if (NULL == bridge) {
     return false;
   }
-  char      fixed[kNPVariantSizeMax];
-  uint32_t  fixed_size = static_cast<uint32_t>(sizeof(fixed));
-  char      optional[kNPVariantSizeMax];
-  uint32_t  optional_size = static_cast<uint32_t>(sizeof(optional));
-  RpcArg    vars(npp_, fixed, fixed_size, optional, optional_size);
+  char fixed[kNPVariantSizeMax];
+  size_t fixed_size = sizeof(fixed);
+  char optional[kNPVariantSizeMax];
+  size_t optional_size = sizeof(optional);
+  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
   if (!vars.PutVariant(value)) {
     return false;
   }
@@ -468,9 +468,9 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
                            sizeof capability_,
                            &capability_,
                            NPBridge::NpidentifierToInt(name),
-                           fixed_size,
+                           static_cast<uint32_t>(fixed_size),
                            fixed,
-                           optional_size,
+                           static_cast<uint32_t>(optional_size),
                            optional,
                            &error_code)) {
     return false;
@@ -537,19 +537,19 @@ bool NPObjectProxy::Construct(const NPVariant* args,
   if (NULL == bridge) {
     return false;
   }
-  char      fixed[kNPVariantSizeMax * kParamMax];
-  uint32_t  fixed_size = static_cast<uint32_t>(sizeof(fixed));
-  char      optional[kNPVariantSizeMax * kParamMax];
-  uint32_t  optional_size = static_cast<uint32_t>(sizeof(optional));
-  RpcArg    vars(npp_, fixed, fixed_size, optional, optional_size);
+  char fixed[kNPVariantSizeMax * kParamMax];
+  size_t fixed_size = sizeof(fixed);
+  char optional[kNPVariantSizeMax * kParamMax];
+  size_t optional_size = sizeof(optional);
+  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
   if (!vars.PutVariantArray(args, arg_count)) {
     return false;
   }
-  int       error_code;
-  char      ret_fixed[kNPVariantSizeMax];
-  uint32_t  ret_fixed_size = static_cast<uint32_t>(sizeof(optional));
-  char      ret_optional[kNPVariantSizeMax];
-  uint32_t  ret_optional_size = static_cast<uint32_t>(sizeof(optional));
+  int error_code;
+  char ret_fixed[kNPVariantSizeMax];
+  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(optional));
+  char ret_optional[kNPVariantSizeMax];
+  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(optional));
   if (NACL_SRPC_RESULT_OK !=
       NaClSrpcInvokeByName(bridge->channel(),
                            "NPN_Construct",

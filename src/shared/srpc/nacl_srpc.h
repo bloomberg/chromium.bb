@@ -92,7 +92,6 @@ typedef struct NaClDesc* NaClSrpcImcDescType;
 
 EXTERN_C_BEGIN
 
-
 /**
  * Result codes to be returned from Simple RPC services.
  */
@@ -169,9 +168,9 @@ struct NaClSrpcVariantArray {
  */
 struct NaClSrpcCharArray {
   /** The number of characters in the array */
-  nacl_abi_size_t  count;
+  uint32_t  count;
   /** A chunk of memory containing <code>count</code> characters */
-  char             *carr;
+  char      *carr;
 };
 
 /**
@@ -180,9 +179,9 @@ struct NaClSrpcCharArray {
  */
 struct NaClSrpcIntArray {
   /** The number of integers in the array */
-  nacl_abi_size_t  count;
+  uint32_t  count;
   /** A chunk of memory containing <code>count</code> integers */
-  int32_t          *iarr;
+  int       *iarr;
 };
 
 /**
@@ -191,9 +190,9 @@ struct NaClSrpcIntArray {
  */
 struct NaClSrpcDoubleArray {
   /** The number of doubles in the array */
-  nacl_abi_size_t   count;
+  uint32_t  count;
   /** A chunk of memory containing <code>count</code> doubles */
-  double            *darr;
+  double    *darr;
 };
 
 #ifdef __cplusplus
@@ -233,9 +232,9 @@ struct NaClSrpcArg {
    */
   union {
     /** A boolean value */
-    int32_t                     bval;
+    int                         bval;
     /** An integer value */
-    int32_t                     ival;
+    int                         ival;
     /** A double-precision floating point value */
     double                      dval;
     /** An array of character values */
@@ -347,11 +346,11 @@ struct NaClSrpcImcBuffer {
   /**
    * index into <code>bytes</code> of the next data byte to be read or written
    */
-  nacl_abi_size_t           next_byte;
+  size_t                    next_byte;
   /**
    * index into <code>bytes</code> of the last data byte to be read or written
    */
-  nacl_abi_size_t           last_byte;
+  size_t                    last_byte;
 #ifdef __native_client__
   struct NaClImcMsgHdr      header;  /**< IMC message header */
   /**
@@ -402,7 +401,7 @@ struct NaClSrpcService {
    */
   const char*                 service_string;
   /** The length of <code>service_string</code> in bytes */
-  nacl_abi_size_t             service_string_length;
+  size_t                      service_string_length;
 };
 #ifndef __cplusplus
 /**

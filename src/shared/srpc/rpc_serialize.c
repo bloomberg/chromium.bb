@@ -365,13 +365,15 @@ static int name##ArrGet(NaClSrpcImcBuffer* buffer,                             \
                         int allocate_memory,                                   \
                         int read_value,                                        \
                         NaClSrpcArg* arg) {                                    \
-  nacl_abi_size_t dim;                                                         \
+  uint32_t dimdim;                                                             \
+  size_t dim;                                                                  \
                                                                                \
-  if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dim)) {                  \
+  if (1 != __NaClSrpcImcRead(buffer, sizeof(dimdim), 1, &dimdim)) {            \
     return 0;                                                                  \
   }                                                                            \
+  dim = (size_t) dimdim;                                                       \
   if (allocate_memory) {                                                       \
-    if (dim >= NACL_ABI_SIZE_T_MAX / sizeof(*arg->u.field.array)) {            \
+    if (dim >= SIZE_T_MAX / sizeof(*arg->u.field.array)) {                     \
       return 0;                                                                \
     }                                                                          \
     arg->u.field.array =                                                       \
@@ -503,19 +505,21 @@ static int StringGet(NaClSrpcImcBuffer* buffer,
                      int allocate_memory,
                      int read_value,
                      NaClSrpcArg* arg) {
-  nacl_abi_size_t dim;
+  uint32_t dimdim;
+  size_t dim;
 
   UNREFERENCED_PARAMETER(allocate_memory);
   UNREFERENCED_PARAMETER(arg);
   if (read_value) {
-    if (1 != __NaClSrpcImcRead(buffer, sizeof(dim), 1, &dim)) {
+    if (1 != __NaClSrpcImcRead(buffer, sizeof(dimdim), 1, &dimdim)) {
       return 0;
     }
     /*
      * check if dim + 1 (in the malloc below) will result in an
      * integer overflow
      */
-    if (dim >= NACL_ABI_SIZE_T_MAX) {
+    dim = (size_t) dimdim;
+    if (dim >= SIZE_T_MAX) {
       return 0;
     }
     arg->u.sval = (char*) malloc(dim + 1);
@@ -553,9 +557,7 @@ static uint32_t StringLength(const NaClSrpcArg* arg,
                              int* handles) {
   *handles = 0;
   if (write_value) {
-    uint32_t size = nacl_abi_size_t_saturate(sizeof(uint32_t)
-        + strlen(arg->u.sval));
-    return size;
+    return sizeof(uint32_t) + strlen(arg->u.sval);
   } else {
     return 0;
   }
@@ -732,7 +734,7 @@ static int ArgsLength(const ArgsIoInterface* argsdesc,
                       uint32_t* bytes,
                       uint32_t* handles) {
   int i;
-  nacl_abi_size_t tmp_bytes;
+  size_t tmp_bytes;
   int tmp_handles;
 
   /* Initialize the reported results */
