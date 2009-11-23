@@ -4,6 +4,7 @@
 
 #include "base/thread.h"
 
+#include "base/dynamic_annotations.h"
 #include "base/lazy_instance.h"
 #include "base/string_util.h"
 #include "base/thread_local.h"
@@ -139,6 +140,7 @@ void Thread::ThreadMain() {
   // Complete the initialization of our Thread object.
   thread_id_ = PlatformThread::CurrentId();
   PlatformThread::SetName(name_.c_str());
+  ANNOTATE_THREAD_NAME(name_.c_str());  // Tell the name to race detector.
   message_loop.set_thread_name(name_);
   message_loop_ = &message_loop;
 
