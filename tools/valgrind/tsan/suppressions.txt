@@ -60,6 +60,12 @@
   fun:*browser_sync*BookmarkModelWorker*
 }
 
+{
+  bug_28559
+  ThreadSanitizer:Race
+  fun:*SafeBrowsingService*GetDatabase*
+}
+
 # The race happens during enumeration of ChromeThreads.
 # For each ChromeThread we check whether its message_loop()
 # equals MessageLoop::current().
