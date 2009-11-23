@@ -263,8 +263,7 @@ class ValgrindTool(object):
     common.RunSubprocess(proc, self._timeout)
 
     # Always return true, even if running the subprocess failed. We depend on
-    # Analyze to determine if the run was valid. (This behaviour copied from
-    # the purify_test.py script.)
+    # Analyze to determine if the run was valid.
     return True
 
   def Analyze(self):

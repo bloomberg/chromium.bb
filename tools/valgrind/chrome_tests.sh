@@ -29,4 +29,4 @@ echo "Using ${CHROME_VALGRIND_BIN}/valgrind"
 PATH="${CHROME_VALGRIND_BIN}:$PATH"
 
 export THISDIR=`dirname $0`
-PYTHONPATH=$THISDIR/../../webkit/tools/layout_tests/:$THISDIR/../purify:$THISDIR/../python "$THISDIR/chrome_tests.py" "$@"
+PYTHONPATH=$THISDIR/../../webkit/tools/layout_tests/:$THISDIR/../python "$THISDIR/chrome_tests.py" "$@"

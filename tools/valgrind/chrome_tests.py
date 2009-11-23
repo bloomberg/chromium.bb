@@ -5,11 +5,7 @@
 
 # chrome_tests.py
 
-''' Runs various chrome tests through valgrind_test.py.
-
-This file is a copy of ../purify/chrome_tests.py. Eventually, it would be nice
-to merge these two files.
-'''
+''' Runs various chrome tests through valgrind_test.py.'''
 
 import glob
 import logging
@@ -30,7 +26,6 @@ import google.path_utils
 # package. http://crbug.com/6164
 import layout_package.path_utils
 
-import common
 import valgrind_test
 
 class TestNotFound(Exception): pass
@@ -70,9 +65,6 @@ def FindDirContainingNewestFile(dirs, file):
   return newest_dir
 
 class ChromeTests:
-  '''This class is derived from the chrome_tests.py file in ../purify/.
-  '''
-
   def __init__(self, options, args, test):
     # The known list of tests.
     # Recognise the original abbreviations as well as full executable names.
@@ -336,7 +328,7 @@ class ChromeTests:
     # runs a slice of the layout tests of size chunk_size that increments with
     # each run.  Since tests can be added and removed from the layout tests at
     # any time, this is not going to give exact coverage, but it will allow us
-    # to continuously run small slices of the layout tests under purify rather
+    # to continuously run small slices of the layout tests under valgrind rather
     # than having to run all of them in one shot.
     chunk_size = self._options.num_tests
     if (chunk_size == 0):
