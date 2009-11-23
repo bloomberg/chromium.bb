@@ -24,6 +24,8 @@ const FilePath::CharType kTrackerDatabaseFileName[] =
 const int kCurrentVersion = 1;
 const int kCompatibleVersion = 1;
 const int64 kDefaultQuota = 5 * 1024 * 1024;
+const int64 kDefaultExtensionQuota = 50 * 1024 * 1024;
+const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
 
 DatabaseTracker::DatabaseTracker(const FilePath& profile_path)
     : initialized_(false),
@@ -228,7 +230,12 @@ int64 DatabaseTracker::GetOriginUsage(const string16& origin_identifier) {
 }
 
 int64 DatabaseTracker::GetOriginQuota(
-    const string16& /*origin_identifier*/) const {
+    const string16& origin_identifier) const {
+  if (StartsWith(origin_identifier,
+                 ASCIIToUTF16(kExtensionOriginIdentifierPrefix), true)) {
+    return kDefaultExtensionQuota;
+  }
+
   return kDefaultQuota;
 }
 
