@@ -61,9 +61,16 @@
 }
 
 {
-  bug_28559
+  bug_28559 (1)
   ThreadSanitizer:Race
   fun:*SafeBrowsingService*GetDatabase*
+}
+
+{
+  bug_28559 (2)
+  ThreadSanitizer:Race
+  fun:*SafeBrowsingService*database_available*
+  fun:*SafeBrowsingService*MakeDatabaseAvailable*
 }
 
 # The race happens during enumeration of ChromeThreads.
