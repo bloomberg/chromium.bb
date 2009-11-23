@@ -60,7 +60,7 @@ goog.inherits(devtools.profiler.WebKitViewNode,
  * RegEx for stripping V8's prefixes of compiled functions.
  */
 devtools.profiler.WebKitViewNode.FUNC_NAME_STRIP_RE =
-    /^(?:LazyCompile|Function): (.*)$/;
+    /^(?:LazyCompile|Function|Callback): (.*)$/;
 
 
 /**
@@ -113,7 +113,7 @@ goog.inherits(devtools.profiler.JsProfile, devtools.profiler.Profile);
  * RegExp that leaves only JS functions.
  * @type {RegExp}
  */
-devtools.profiler.JsProfile.JS_FUNC_RE = /^(LazyCompile|Function|Script):/;
+devtools.profiler.JsProfile.JS_FUNC_RE = /^(LazyCompile|Function|Script|Callback):/;
 
 /**
  * RegExp that filters out native code (ending with "native src.js:xxx").
