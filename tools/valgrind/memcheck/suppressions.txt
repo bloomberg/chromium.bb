@@ -420,6 +420,17 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   # A callback object that may or may not be called on exit.
+   # See comments in ProxyConfigServiceLinux::Delegate::PostDestroyTask (proxy_config_service_linux.cc)
+   intentional_NewRunnableMethod_ProxyConfigServiceLinux_Delegate_CancelableTask_Leak
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z17NewRunnableMethodIN3net23ProxyConfigServiceLinux8DelegateEMS2_FvvEEP14CancelableTaskPT_T0_
+   fun:_ZN3net23ProxyConfigServiceLinux8Delegate15PostDestroyTaskEv
+   fun:_ZN3net23ProxyConfigServiceLinuxD0Ev
+}
+
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
