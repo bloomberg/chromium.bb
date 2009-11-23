@@ -814,6 +814,7 @@ void RenderViewContextMenu::CopyImageAt(int x, int y) {
 }
 
 void RenderViewContextMenu::Inspect(int x, int y) {
+  UserMetrics::RecordAction("DevTools_InspectElement", profile_);
   DevToolsManager::GetInstance()->InspectElement(
       source_tab_contents_->render_view_host(), x, y);
 }

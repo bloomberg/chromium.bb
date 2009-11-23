@@ -1182,9 +1182,9 @@ void Browser::OpenCreateShortcutsDialog() {
 
 void Browser::ToggleDevToolsWindow(bool open_console) {
   if (open_console)
-    UserMetrics::RecordAction("ToggleDevToolsConsole", profile_);
+    UserMetrics::RecordAction("DevTools_ToggleConsole", profile_);
   else
-    UserMetrics::RecordAction("ToggleDevTools", profile_);
+    UserMetrics::RecordAction("DevTools_ToggleWindow", profile_);
   DevToolsManager::GetInstance()->ToggleDevToolsWindow(
       GetSelectedTabContents()->render_view_host(), open_console);
 }
