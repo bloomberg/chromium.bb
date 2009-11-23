@@ -79,7 +79,8 @@ class FlipStreamTest : public testing::Test {
   scoped_refptr<HttpNetworkSession> session_;
 };
 
-TEST_F(FlipStreamTest, SendRequest) {
+// Needs fixing, see http://crbug.com/28622
+TEST_F(FlipStreamTest, DISABLED_SendRequest) {
   scoped_refptr<FlipSession> session(CreateFlipSession());
   HttpRequestInfo request;
   request.method = "GET";
