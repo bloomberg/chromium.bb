@@ -94,7 +94,7 @@ DEFAULT_ALIGN_POW2=5
 ##################################################################
 #  The version numbers for the tools we will be building.
 ##################################################################
-BINUTILS_VERSION=2.18
+BINUTILS_VERSION=2.20
 NEWLIB_VERSION=1.17.0
 GCC_VERSION=4.2.2
 GDB_VERSION=6.8
@@ -110,12 +110,7 @@ BUILD:
 BUILD/binutils-$(BINUTILS_VERSION): | BUILD
 	@echo "Unpacking binutils-$(BINUTILS_VERSION)"
 	# binutils_$(BINUTILS_VERSION).orig.tar.gz is debian-style
-	cd BUILD && \
-	if [ -e "$(SRCDIR)/binutils/binutils_$(BINUTILS_VERSION).orig.tar.gz" ] ; then \
-	  tar xf $(SRCDIR)/binutils/binutils_$(BINUTILS_VERSION).orig.tar.gz ; \
-	else \
-	  tar xf $(SRCDIR)/binutils/binutils-$(BINUTILS_VERSION).tar.bz2 ; \
-	fi
+	cd BUILD && tar xf $(SRCDIR)/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
 	cd BUILD && patch -p0 < ../patches/binutils-$(BINUTILS_VERSION).patch
 	if ( ! [ -x /usr/bin/bison ] ) || ( ! [ -x /usr/bin/flex ] ) ; then \
 	  cd BUILD && ( patch -p0 < ../patches/binutils-$(BINUTILS_VERSION).ly.patch || true ) ; \

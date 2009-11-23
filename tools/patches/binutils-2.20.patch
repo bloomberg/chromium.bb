@@ -1,6 +1,6 @@
-==== binutils-2.19.91.20091006/bfd/Makefile.am ====
---- binutils-2.19.91.20091006/bfd/Makefile.am#1	2009-10-02 01:58:55.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/Makefile.am	2009-10-02 01:31:24.000000000 +0200
+diff -uNr binutils-2.20.orig/bfd/Makefile.am binutils-2.20/bfd/Makefile.am
+--- binutils-2.20.orig/bfd/Makefile.am	2009-10-16 13:47:44.000000000 +0200
++++ binutils-2.20/bfd/Makefile.am	2009-11-23 13:58:30.000000000 +0100
 @@ -303,6 +303,7 @@
  	elf32-moxie.lo \
  	elf32-msp430.lo \
@@ -33,9 +33,9 @@
  	elf64-ppc.c \
  	elf64-s390.c \
  	elf64-sh64.c \
-==== binutils-2.19.91.20091006/bfd/Makefile.in ====
---- binutils-2.19.91.20091006/bfd/Makefile.in#1	2009-10-02 01:58:56.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/Makefile.in	2009-10-02 01:31:33.000000000 +0200
+diff -uNr binutils-2.20.orig/bfd/Makefile.in binutils-2.20/bfd/Makefile.in
+--- binutils-2.20.orig/bfd/Makefile.in	2009-10-16 13:47:48.000000000 +0200
++++ binutils-2.20/bfd/Makefile.in	2009-11-23 13:58:30.000000000 +0100
 @@ -599,6 +599,7 @@
  	elf32-moxie.lo \
  	elf32-msp430.lo \
@@ -68,9 +68,9 @@
  	elf64-ppc.c \
  	elf64-s390.c \
  	elf64-sh64.c \
-==== binutils-2.19.91.20091006/bfd/config.bfd ====
---- binutils-2.19.91.20091006/bfd/config.bfd#1	2009-10-02 01:58:56.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/config.bfd	2009-10-02 01:31:41.000000000 +0200
+diff -uNr binutils-2.20.orig/bfd/config.bfd binutils-2.20/bfd/config.bfd
+--- binutils-2.20.orig/bfd/config.bfd	2009-08-06 19:38:00.000000000 +0200
++++ binutils-2.20/bfd/config.bfd	2009-11-23 13:58:30.000000000 +0100
 @@ -603,6 +603,11 @@
      targ_selvecs="i386linux_vec i386pei_vec"
      targ64_selvecs="bfd_elf64_x86_64_vec bfd_elf64_l1om_vec"
@@ -95,9 +95,9 @@
  #endif
    i[3-7]86-*-lynxos*)
      targ_defvec=bfd_elf32_i386_vec
-==== binutils-2.19.91.20091006/bfd/configure ====
---- binutils-2.19.91.20091006/bfd/configure#1	2009-10-02 01:58:58.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/configure	2009-10-07 04:58:40.534983000 +0200
+diff -uNr binutils-2.20.orig/bfd/configure binutils-2.20/bfd/configure
+--- binutils-2.20.orig/bfd/configure	2009-10-16 13:47:47.000000000 +0200
++++ binutils-2.20/bfd/configure	2009-11-23 13:58:30.000000000 +0100
 @@ -14857,6 +14857,7 @@
      bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
      bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
@@ -114,9 +114,9 @@
      bfd_elf64_powerpc_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
      bfd_elf64_powerpcle_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf" target_size=64 ;;
      bfd_elf64_s390_vec)		tb="$tb elf64-s390.lo elf64.lo $elf"; target_size=64 ;;
-==== binutils-2.19.91.20091006/bfd/configure.in ====
---- binutils-2.19.91.20091006/bfd/configure.in#1	2009-10-02 01:58:58.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/configure.in	2009-10-02 01:31:57.000000000 +0200
+diff -uNr binutils-2.20.orig/bfd/configure.in binutils-2.20/bfd/configure.in
+--- binutils-2.20.orig/bfd/configure.in	2009-10-16 13:47:44.000000000 +0200
++++ binutils-2.20/bfd/configure.in	2009-11-23 13:58:30.000000000 +0100
 @@ -745,6 +745,7 @@
      bfd_elf32_mn10300_vec)	tb="$tb elf-m10300.lo elf32.lo $elf" ;;
      bfd_elf32_mt_vec)           tb="$tb elf32-mt.lo elf32.lo $elf" ;;
@@ -133,9 +133,9 @@
      bfd_elf64_powerpc_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf"; target_size=64 ;;
      bfd_elf64_powerpcle_vec)	tb="$tb elf64-ppc.lo elf64-gen.lo elf64.lo $elf" target_size=64 ;;
      bfd_elf64_s390_vec)		tb="$tb elf64-s390.lo elf64.lo $elf"; target_size=64 ;;
-==== binutils-2.19.91.20091006/bfd/elf32-i386.c ====
---- binutils-2.19.91.20091006/bfd/elf32-i386.c#1	2009-10-02 01:58:59.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/elf32-i386.c	2009-10-07 04:59:31.171260000 +0200
+diff -uNr binutils-2.20.orig/bfd/elf32-i386.c binutils-2.20/bfd/elf32-i386.c
+--- binutils-2.20.orig/bfd/elf32-i386.c	2009-09-10 13:47:12.000000000 +0200
++++ binutils-2.20/bfd/elf32-i386.c	2009-11-23 15:49:12.000000000 +0100
 @@ -34,6 +34,10 @@
  
  #include "elf/i386.h"
@@ -147,7 +147,7 @@
  static reloc_howto_type elf_howto_table[]=
  {
    HOWTO(R_386_NONE, 0, 0, 0, FALSE, 0, complain_overflow_bitfield,
-@@ -523,32 +527,89 @@
+@@ -523,44 +527,133 @@
  
  /* The size in bytes of an entry in the procedure linkage table.  */
  
@@ -237,7 +237,20 @@
  
  /* The first entry in a PIC procedure linkage table look like this.
     Will be padded to PLT_ENTRY_SIZE with htab->plt0_pad_byte.  */
-@@ -561,6 +622,30 @@
+ 
+ static const bfd_byte elf_i386_pic_plt0_entry[12] =
+ {
++#ifdef ELF32_NACL_C
++  0xff, 0x73, 0x04,		/* pushl 4(%ebx) */
++  0x8b, 0x4b, 0x08,		/* mov 0x8(%ebx), %ecx */
++  0x83, 0xe1, 0xe0,		/* and $NACLMASK, %ecx */
++  0xff, 0xe1,			/* jmp *%ecx */
++  0xf4				/* fill with hlt instructions. */
++#else
+   0xff, 0xb3, 4, 0, 0, 0,	/* pushl 4(%ebx) */
+   0xff, 0xa3, 8, 0, 0, 0	/* jmp *8(%ebx) */
++#endif
+ };
  
  /* Subsequent entries in a PIC procedure linkage table look like this.  */
  
@@ -248,27 +261,27 @@
 +  0, 0, 0, 0,		    /* replaced with offset of this symbol in .got.*/
 +  0x83, 0xe1, 0xe0,	    /* andl %ecx, NACLMASK */
 +  0xff, 0xe1,		    /* jmp *%ecx */
++  0xf4,                     /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
++  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
 +  0x68,			    /* pushl immediate */
 +  0, 0, 0, 0,		    /* replaced with offset into relocation table.  */
 +  0xe9,			    /* jmp relative */
 +  0, 0, 0, 0,		    /* replaced with offset to start of .plt.  */
-+  0xf4, 0xf4, 0xf4,	    /* fill with hlt instructions. */
 +  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
 +  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
 +  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
 +  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
-+  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
-+  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
-+  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
-+  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
-+  0xf4, 0xf4, 0xf4, 0xf4,   /* fill with hlt instructions. */
-+  0xf4, 0xf4, 0xf4, 0xf4    /* fill with hlt instructions. */
++  0xf4, 0xf4                /* fill with hlt instructions. */
 +};
 +#else
  static const bfd_byte elf_i386_pic_plt_entry[PLT_ENTRY_SIZE] =
  {
    0xff, 0xa3,	/* jmp *offset(%ebx) */
-@@ -570,6 +655,7 @@
+@@ -570,6 +663,7 @@
    0xe9,		/* jmp relative */
    0, 0, 0, 0	/* replaced with offset to start of .plt.  */
  };
@@ -276,7 +289,7 @@
  
  /* On VxWorks, the .rel.plt.unloaded section has absolute relocations
     for the PLTResolve stub and then for each PLT entry.  */
-@@ -822,7 +908,11 @@
+@@ -822,7 +916,11 @@
    ret->sym_cache.abfd = NULL;
    ret->is_vxworks = 0;
    ret->srelplt2 = NULL;
@@ -288,7 +301,7 @@
    ret->tls_module_base = NULL;
  
    ret->loc_hash_table = htab_try_create (1024,
-@@ -875,6 +965,11 @@
+@@ -875,6 +973,11 @@
        || (!info->shared && !htab->srelbss))
      abort ();
  
@@ -300,7 +313,7 @@
    if (htab->is_vxworks
        && !elf_vxworks_create_dynamic_sections (dynobj, info,
  					       &htab->srelplt2))
-@@ -4115,7 +4210,8 @@
+@@ -4115,7 +4218,8 @@
  		      (gotplt->output_section->vma
  		       + gotplt->output_offset
  		       + got_offset),
@@ -310,7 +323,7 @@
  
  	  if (htab->is_vxworks)
  	    {
-@@ -4158,16 +4254,20 @@
+@@ -4158,16 +4262,20 @@
  	  memcpy (plt->contents + h->plt.offset, elf_i386_pic_plt_entry,
  		  PLT_ENTRY_SIZE);
  	  bfd_put_32 (output_bfd, got_offset,
@@ -335,7 +348,7 @@
  	}
  
        /* Fill in the entry in the global offset table.  */
-@@ -4175,7 +4275,7 @@
+@@ -4175,7 +4283,7 @@
  		  (plt->output_section->vma
  		   + plt->output_offset
  		   + h->plt.offset
@@ -344,7 +357,7 @@
  		  gotplt->contents + got_offset);
  
        /* Fill in the entry in the .rel.plt section.  */
-@@ -4458,12 +4558,12 @@
+@@ -4458,12 +4566,12 @@
  			  (htab->elf.sgotplt->output_section->vma
  			   + htab->elf.sgotplt->output_offset
  			   + 4),
@@ -359,7 +372,7 @@
  
  	      if (htab->is_vxworks)
  		{
-@@ -4591,8 +4691,16 @@
+@@ -4591,11 +4699,23 @@
    return TRUE;
  }
  
@@ -375,8 +388,15 @@
 +#endif
  #define ELF_ARCH			bfd_arch_i386
  #define ELF_MACHINE_CODE		EM_386
- #define ELF_MAXPAGESIZE			0x10000
-@@ -4640,6 +4748,63 @@
++#ifdef ELF32_NACL_C
++#define ELF_MAXPAGESIZE			0x10000
++#else
+ #define ELF_MAXPAGESIZE			0x1000
++#endif
+ 
+ #define elf_backend_can_gc_sections	1
+ #define elf_backend_can_refcount	1
+@@ -4640,6 +4760,63 @@
  #undef	elf_backend_post_process_headers
  #define	elf_backend_post_process_headers	_bfd_elf_set_osabi
  
@@ -440,26 +460,26 @@
  #include "elf32-target.h"
  
  /* FreeBSD support.  */
-@@ -4729,3 +4894,4 @@
+@@ -4729,3 +4906,4 @@
  #define elf32_bed				elf32_i386_vxworks_bed
  
  #include "elf32-target.h"
 +#endif
-==== (added) binutils-2.19.91.20091006/bfd/elf32-nacl.c ====
---- /dev/null	2009-05-01 06:17:58.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/elf32-nacl.c	2009-10-02 01:32:11.000000000 +0200
+diff -uNr binutils-2.20.orig/bfd/elf32-nacl.c binutils-2.20/bfd/elf32-nacl.c
+--- binutils-2.20.orig/bfd/elf32-nacl.c	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.20/bfd/elf32-nacl.c	2009-11-23 13:58:30.000000000 +0100
 @@ -0,0 +1,2 @@
 +#define ELF32_NACL_C
 +#include "elf32-i386.c"
-==== (added) binutils-2.19.91.20091006/bfd/elf64-nacl.c ====
---- /dev/null	2009-05-01 06:17:58.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/elf64-nacl.c	2009-10-02 01:32:13.000000000 +0200
+diff -uNr binutils-2.20.orig/bfd/elf64-nacl.c binutils-2.20/bfd/elf64-nacl.c
+--- binutils-2.20.orig/bfd/elf64-nacl.c	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.20/bfd/elf64-nacl.c	2009-11-23 13:58:30.000000000 +0100
 @@ -0,0 +1,2 @@
 +#define ELF64_NACL_C
 +#include "elf64-x86-64.c"
-==== binutils-2.19.91.20091006/bfd/elf64-x86-64.c ====
---- binutils-2.19.91.20091006/bfd/elf64-x86-64.c#1	2009-10-02 01:58:59.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/elf64-x86-64.c	2009-10-02 01:32:37.000000000 +0200
+diff -uNr binutils-2.20.orig/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-x86-64.c
+--- binutils-2.20.orig/bfd/elf64-x86-64.c	2009-09-10 13:47:12.000000000 +0200
++++ binutils-2.20/bfd/elf64-x86-64.c	2009-11-23 13:58:30.000000000 +0100
 @@ -31,6 +31,10 @@
  
  #include "elf/x86-64.h"
@@ -753,9 +773,9 @@
  
  #include "elf64-target.h"
 +#endif
-==== binutils-2.19.91.20091006/bfd/targets.c ====
---- binutils-2.19.91.20091006/bfd/targets.c#1	2009-10-02 01:58:59.000000000 +0200
-+++ binutils-2.19.91.20091006/bfd/targets.c	2009-10-02 01:32:44.000000000 +0200
+diff -uNr binutils-2.20.orig/bfd/targets.c binutils-2.20/bfd/targets.c
+--- binutils-2.20.orig/bfd/targets.c	2009-09-10 13:47:13.000000000 +0200
++++ binutils-2.20/bfd/targets.c	2009-11-23 13:58:30.000000000 +0100
 @@ -630,6 +630,7 @@
  extern const bfd_target bfd_elf32_mn10300_vec;
  extern const bfd_target bfd_elf32_mt_vec;
@@ -772,9 +792,9 @@
  extern const bfd_target bfd_elf64_powerpc_vec;
  extern const bfd_target bfd_elf64_powerpcle_vec;
  extern const bfd_target bfd_elf64_s390_vec;
-==== binutils-2.19.91.20091006/binutils/readelf.c ====
---- binutils-2.19.91.20091006/binutils/readelf.c#1	2009-10-02 01:59:00.000000000 +0200
-+++ binutils-2.19.91.20091006/binutils/readelf.c	2009-10-02 01:32:49.000000000 +0200
+diff -uNr binutils-2.20.orig/binutils/readelf.c binutils-2.20/binutils/readelf.c
+--- binutils-2.20.orig/binutils/readelf.c	2009-09-22 17:40:59.000000000 +0200
++++ binutils-2.20/binutils/readelf.c	2009-11-23 13:58:30.000000000 +0100
 @@ -2462,6 +2462,7 @@
      case ELFOSABI_AROS:		return "AROS";
      case ELFOSABI_STANDALONE:	return _("Standalone App");
@@ -783,9 +803,9 @@
      default:
        snprintf (buff, sizeof (buff), _("<unknown: %x>"), osabi);
        return buff;
-==== binutils-2.19.91.20091006/config.sub ====
---- binutils-2.19.91.20091006/config.sub#1	2009-10-02 01:59:00.000000000 +0200
-+++ binutils-2.19.91.20091006/config.sub	2009-10-02 01:32:52.000000000 +0200
+diff -uNr binutils-2.20.orig/config.sub binutils-2.20/config.sub
+--- binutils-2.20.orig/config.sub	2009-08-17 06:10:29.000000000 +0200
++++ binutils-2.20/config.sub	2009-11-23 13:58:30.000000000 +0100
 @@ -314,6 +314,14 @@
  	i*86 | x86_64)
  	  basic_machine=$basic_machine-pc
@@ -811,9 +831,9 @@
  	-nto-qnx*)
  		;;
  	-nto*)
-==== binutils-2.19.91.20091006/gas/Makefile.in ====
---- binutils-2.19.91.20091006/gas/Makefile.in#1	2009-10-07 07:32:37.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/Makefile.in	2009-10-07 07:31:25.662308000 +0200
+diff -uNr binutils-2.20.orig/gas/Makefile.in binutils-2.20/gas/Makefile.in
+--- binutils-2.20.orig/gas/Makefile.in	2009-09-07 14:09:27.000000000 +0200
++++ binutils-2.20/gas/Makefile.in	2009-11-23 13:58:30.000000000 +0100
 @@ -341,6 +341,7 @@
  	mn10300 \
  	msp430 \
@@ -867,9 +887,9 @@
  tc-ns32k.o: config/tc-ns32k.c
  @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tc-ns32k.o -MD -MP -MF $(DEPDIR)/tc-ns32k.Tpo -c -o tc-ns32k.o `test -f 'config/tc-ns32k.c' || echo '$(srcdir)/'`config/tc-ns32k.c
  @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tc-ns32k.Tpo $(DEPDIR)/tc-ns32k.Po
-==== binutils-2.19.91.20091006/gas/config/tc-i386.c ====
---- binutils-2.19.91.20091006/gas/config/tc-i386.c#1	2009-10-02 01:59:01.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/config/tc-i386.c	2009-10-07 05:06:05.948496000 +0200
+diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i386.c
+--- binutils-2.20.orig/gas/config/tc-i386.c	2009-09-14 13:43:27.000000000 +0200
++++ binutils-2.20/gas/config/tc-i386.c	2009-11-23 13:58:30.000000000 +0100
 @@ -33,6 +33,9 @@
  #include "dwarf2dbg.h"
  #include "dw2gencfi.h"
@@ -1111,7 +1131,7 @@
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5624,6 +5788,25 @@
+@@ -5624,6 +5787,25 @@
  	      abort ();
  	    }
  
@@ -1137,7 +1157,7 @@
  	  /* The prefix bytes.  */
  	  for (j = ARRAY_SIZE (i.prefix), q = i.prefix; j > 0; j--, q++)
  	    if (*q)
-@@ -5700,10 +5885,18 @@
+@@ -5700,10 +5882,18 @@
  	}
  
        if (i.disp_operands)
@@ -1156,7 +1176,7 @@
      }
  
  #ifdef DEBUG386
-@@ -5712,6 +5905,74 @@
+@@ -5712,6 +5902,74 @@
        pi ("" /*line*/, &i);
      }
  #endif /* DEBUG386  */
@@ -1231,7 +1251,7 @@
  }
  
  /* Return the size of the displacement operand N.  */
-@@ -6858,8 +7119,44 @@
+@@ -6858,8 +7116,44 @@
      }
    else if (*op_string == REGISTER_PREFIX)
      {
@@ -1278,7 +1298,7 @@
      }
    else if (*op_string == IMMEDIATE_PREFIX)
      {
-@@ -7725,6 +8022,8 @@
+@@ -7725,6 +8019,8 @@
  #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
  #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
  #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
@@ -1287,7 +1307,7 @@
  
  struct option md_longopts[] =
  {
-@@ -7743,6 +8042,8 @@
+@@ -7743,6 +8039,8 @@
    {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
    {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
    {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
@@ -1296,7 +1316,7 @@
    {NULL, no_argument, NULL, 0}
  };
  size_t md_longopts_size = sizeof (md_longopts);
-@@ -7953,6 +8254,20 @@
+@@ -7953,6 +8251,20 @@
  	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
        break;
  
@@ -1317,7 +1337,7 @@
      default:
        return 0;
      }
-@@ -8597,4 +8912,19 @@
+@@ -8597,4 +8909,19 @@
        bss_section = saved_bss_section;
      }
  }
@@ -1337,9 +1357,9 @@
 +}
 +#endif
  #endif /* OBJ_ELF || OBJ_MAYBE_ELF */
-==== binutils-2.19.91.20091006/gas/config/tc-i386.h ====
---- binutils-2.19.91.20091006/gas/config/tc-i386.h#1	2009-10-02 01:59:01.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/config/tc-i386.h	2009-10-07 05:06:16.641693000 +0200
+diff -uNr binutils-2.20.orig/gas/config/tc-i386.h binutils-2.20/gas/config/tc-i386.h
+--- binutils-2.20.orig/gas/config/tc-i386.h	2009-09-02 09:24:20.000000000 +0200
++++ binutils-2.20/gas/config/tc-i386.h	2009-11-23 13:58:30.000000000 +0100
 @@ -297,4 +297,12 @@
  /* X_add_symbol:X_op_symbol (Intel mode only) */
  #define O_full_ptr O_md2
@@ -1353,15 +1373,15 @@
 +extern int nacl_library_mode;
 +
  #endif /* TC_I386 */
-==== (added) binutils-2.19.91.20091006/gas/config/tc-nacl.c ====
---- /dev/null	2009-05-01 06:17:58.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/config/tc-nacl.c	2009-10-02 01:33:56.000000000 +0200
+diff -uNr binutils-2.20.orig/gas/config/tc-nacl.c binutils-2.20/gas/config/tc-nacl.c
+--- binutils-2.20.orig/gas/config/tc-nacl.c	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.20/gas/config/tc-nacl.c	2009-11-23 13:58:30.000000000 +0100
 @@ -0,0 +1,2 @@
 +#define TC_NACL_C
 +#include "tc-i386.c"
-==== (added) binutils-2.19.91.20091006/gas/config/tc-nacl.h ====
---- /dev/null	2009-05-01 06:17:58.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/config/tc-nacl.h	2009-10-02 01:33:58.000000000 +0200
+diff -uNr binutils-2.20.orig/gas/config/tc-nacl.h binutils-2.20/gas/config/tc-nacl.h
+--- binutils-2.20.orig/gas/config/tc-nacl.h	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.20/gas/config/tc-nacl.h	2009-11-23 13:58:30.000000000 +0100
 @@ -0,0 +1,37 @@
 +/* tc-nacl.h -- Header file for tc-nacl.c
 +   Copyright 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
@@ -1400,9 +1420,9 @@
 +extern void nacl_elf_final_processing PARAMS ((void));
 +
 +#endif /* TC_NACL */
-==== binutils-2.19.91.20091006/gas/configure ====
---- binutils-2.19.91.20091006/gas/configure#1	2009-10-02 01:59:02.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/configure	2009-10-02 01:33:37.000000000 +0200
+diff -uNr binutils-2.20.orig/gas/configure binutils-2.20/gas/configure
+--- binutils-2.20.orig/gas/configure	2009-09-07 14:09:27.000000000 +0200
++++ binutils-2.20/gas/configure	2009-11-23 13:58:30.000000000 +0100
 @@ -12019,7 +12019,7 @@
          using_cgen=yes
  	;;
@@ -1412,9 +1432,9 @@
  	if test $this_target = $target ; then
  
  cat >>confdefs.h <<_ACEOF
-==== binutils-2.19.91.20091006/gas/configure.in ====
---- binutils-2.19.91.20091006/gas/configure.in#1	2009-10-02 01:59:02.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/configure.in	2009-10-02 01:33:45.000000000 +0200
+diff -uNr binutils-2.20.orig/gas/configure.in binutils-2.20/gas/configure.in
+--- binutils-2.20.orig/gas/configure.in	2009-09-07 11:16:07.000000000 +0200
++++ binutils-2.20/gas/configure.in	2009-11-23 13:58:30.000000000 +0100
 @@ -347,7 +347,7 @@
          using_cgen=yes
  	;;
@@ -1424,9 +1444,9 @@
  	if test $this_target = $target ; then
  	  AC_DEFINE_UNQUOTED(DEFAULT_ARCH, "${arch}", [Default architecture.])
  	fi
-==== binutils-2.19.91.20091006/gas/configure.tgt ====
---- binutils-2.19.91.20091006/gas/configure.tgt#1	2009-10-02 01:59:02.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/configure.tgt	2009-10-02 01:34:01.000000000 +0200
+diff -uNr binutils-2.20.orig/gas/configure.tgt binutils-2.20/gas/configure.tgt
+--- binutils-2.20.orig/gas/configure.tgt	2009-09-09 10:13:28.000000000 +0200
++++ binutils-2.20/gas/configure.tgt	2009-11-23 13:58:30.000000000 +0100
 @@ -59,6 +59,8 @@
    mips*el)		cpu_type=mips endian=little ;;
    mips*)		cpu_type=mips endian=big ;;
@@ -1444,9 +1464,9 @@
    i386-*-sysv[45]*)			fmt=elf ;;
    i386-*-solaris*)			fmt=elf em=solaris ;;
    i386-*-freebsdaout*)			fmt=aout em=386bsd ;;
-==== binutils-2.19.91.20091006/gas/frags.c ====
---- binutils-2.19.91.20091006/gas/frags.c#1	2009-10-02 01:59:02.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/frags.c	2009-10-07 05:09:07.685208000 +0200
+diff -uNr binutils-2.20.orig/gas/frags.c binutils-2.20/gas/frags.c
+--- binutils-2.20.orig/gas/frags.c	2009-09-14 13:43:26.000000000 +0200
++++ binutils-2.20/gas/frags.c	2009-11-23 13:58:30.000000000 +0100
 @@ -69,6 +69,16 @@
    (void) obstack_alloc (ob, 0);
    oalign = obstack_alignment_mask (ob);
@@ -1464,9 +1484,9 @@
    ptr = (fragS *) obstack_alloc (ob, SIZEOF_STRUCT_FRAG);
    obstack_alignment_mask (ob) = oalign;
    memset (ptr, 0, SIZEOF_STRUCT_FRAG);
-==== binutils-2.19.91.20091006/gas/frags.h ====
---- binutils-2.19.91.20091006/gas/frags.h#1	2009-10-02 01:59:03.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/frags.h	2009-10-02 01:34:06.000000000 +0200
+diff -uNr binutils-2.20.orig/gas/frags.h binutils-2.20/gas/frags.h
+--- binutils-2.20.orig/gas/frags.h	2007-07-03 13:01:03.000000000 +0200
++++ binutils-2.20/gas/frags.h	2009-11-23 13:58:30.000000000 +0100
 @@ -77,10 +77,22 @@
    unsigned int has_code:1;
    unsigned int insn_addr:6;
@@ -1490,9 +1510,9 @@
  #ifdef USING_CGEN
    /* Don't include this unless using CGEN to keep frag size down.  */
    struct {
-==== binutils-2.19.91.20091006/gas/write.c ====
---- binutils-2.19.91.20091006/gas/write.c#1	2009-10-02 01:59:03.000000000 +0200
-+++ binutils-2.19.91.20091006/gas/write.c	2009-10-02 01:34:09.000000000 +0200
+diff -uNr binutils-2.20.orig/gas/write.c binutils-2.20/gas/write.c
+--- binutils-2.20.orig/gas/write.c	2009-09-14 13:43:27.000000000 +0200
++++ binutils-2.20/gas/write.c	2009-11-23 13:58:30.000000000 +0100
 @@ -158,6 +158,8 @@
  
    fixP = (fixS *) obstack_alloc (&notes, sizeof (fixS));
@@ -1573,9 +1593,9 @@
  	as_bad_where (fixp->fx_file, fixp->fx_line,
  		      _("internal error: fixup not contained within frag"));
  
-==== binutils-2.19.91.20091006/include/elf/common.h ====
---- binutils-2.19.91.20091006/include/elf/common.h#1	2009-10-02 01:59:03.000000000 +0200
-+++ binutils-2.19.91.20091006/include/elf/common.h	2009-10-02 01:34:12.000000000 +0200
+diff -uNr binutils-2.20.orig/include/elf/common.h binutils-2.20/include/elf/common.h
+--- binutils-2.20.orig/include/elf/common.h	2009-08-09 15:42:26.000000000 +0200
++++ binutils-2.20/include/elf/common.h	2009-11-23 13:58:30.000000000 +0100
 @@ -75,6 +75,7 @@
  #define ELFOSABI_NSK	     14	/* Hewlett-Packard Non-Stop Kernel */
  #define ELFOSABI_AROS	     15	/* AROS */
@@ -1584,9 +1604,9 @@
  #define ELFOSABI_STANDALONE 255	/* Standalone (embedded) application */
  
  #define EI_ABIVERSION	8	/* ABI version */
-==== (added) binutils-2.19.91.20091006/include/elf/nacl.h ====
---- /dev/null	2009-05-01 06:17:58.000000000 +0200
-+++ binutils-2.19.91.20091006/include/elf/nacl.h	2009-10-02 01:34:13.000000000 +0200
+diff -uNr binutils-2.20.orig/include/elf/nacl.h binutils-2.20/include/elf/nacl.h
+--- binutils-2.20.orig/include/elf/nacl.h	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.20/include/elf/nacl.h	2009-11-23 14:07:39.000000000 +0100
 @@ -0,0 +1,33 @@
 +/* ix86 ELF support for BFD.
 +   Copyright 1998, 1999, 2000, 2002, 2004, 2005, 2006
@@ -1618,12 +1638,12 @@
 +#define EF_NACL_ALIGN_LIB   0x000000	/* aligned to pass either way */
 +
 +/* ABI version number -- increment when ABI changes are incompatible. */
-+#define EF_NACL_ABIVERSION  5
++#define EF_NACL_ABIVERSION  6
 +
 +#endif
-==== binutils-2.19.91.20091006/ld/Makefile.am ====
---- binutils-2.19.91.20091006/ld/Makefile.am#1	2009-10-02 01:59:04.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/Makefile.am	2009-10-02 01:34:16.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/Makefile.am binutils-2.20/ld/Makefile.am
+--- binutils-2.20.orig/ld/Makefile.am	2009-09-01 22:56:51.000000000 +0200
++++ binutils-2.20/ld/Makefile.am	2009-11-23 13:58:30.000000000 +0100
 @@ -221,6 +221,7 @@
  	eelf_i386_fbsd.o \
  	eelf_i386_ldso.o \
@@ -1654,9 +1674,9 @@
  eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_x86_64 "$(tdir_elf_x86_64)"
-==== binutils-2.19.91.20091006/ld/Makefile.in ====
---- binutils-2.19.91.20091006/ld/Makefile.in#1	2009-10-02 01:59:04.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/Makefile.in	2009-10-02 01:37:32.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/Makefile.in binutils-2.20/ld/Makefile.in
+--- binutils-2.20.orig/ld/Makefile.in	2009-09-07 14:10:24.000000000 +0200
++++ binutils-2.20/ld/Makefile.in	2009-11-23 13:58:30.000000000 +0100
 @@ -507,6 +507,7 @@
  	eelf_i386_fbsd.o \
  	eelf_i386_ldso.o \
@@ -1695,9 +1715,9 @@
  eelf_x86_64.c: $(srcdir)/emulparams/elf_x86_64.sh \
    $(ELF_DEPS) $(srcdir)/scripttempl/elf.sc ${GEN_DEPENDS}
  	${GENSCRIPTS} elf_x86_64 "$(tdir_elf_x86_64)"
-==== binutils-2.19.91.20091006/ld/configure.tgt ====
---- binutils-2.19.91.20091006/ld/configure.tgt#1	2009-10-02 01:59:04.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/configure.tgt	2009-10-02 01:34:24.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/configure.tgt binutils-2.20/ld/configure.tgt
+--- binutils-2.20.orig/ld/configure.tgt	2009-08-06 19:38:03.000000000 +0200
++++ binutils-2.20/ld/configure.tgt	2009-11-23 13:58:30.000000000 +0100
 @@ -230,6 +230,8 @@
  			targ_extra_ofiles="deffilep.o pe-dll.o" ;;
  i[3-7]86-*-netbsd*)	targ_emul=i386nbsd
@@ -1707,25 +1727,25 @@
  x86_64-*-netbsd*)	targ_emul=elf_x86_64
  			targ_extra_emuls="elf_i386 i386nbsd elf_l1om"
  			tdir_elf_i386=`echo ${targ_alias} | \
-==== (added) binutils-2.19.91.20091006/ld/emulparams/elf64_nacl.sh ====
---- /dev/null	2009-05-01 06:17:58.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/emulparams/elf64_nacl.sh	2009-10-02 01:34:25.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/emulparams/elf64_nacl.sh binutils-2.20/ld/emulparams/elf64_nacl.sh
+--- binutils-2.20.orig/ld/emulparams/elf64_nacl.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.20/ld/emulparams/elf64_nacl.sh	2009-11-23 13:58:30.000000000 +0100
 @@ -0,0 +1,4 @@
 +. ${srcdir}/emulparams/elf_x86_64.sh
 +SCRIPT_NAME=naclelf
 +OUTPUT_FORMAT="elf64-nacl"
 +TEXT_START_ADDR=0x00020000
-==== (added) binutils-2.19.91.20091006/ld/emulparams/elf_nacl.sh ====
---- /dev/null	2009-05-01 06:17:58.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/emulparams/elf_nacl.sh	2009-10-02 01:34:27.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/emulparams/elf_nacl.sh binutils-2.20/ld/emulparams/elf_nacl.sh
+--- binutils-2.20.orig/ld/emulparams/elf_nacl.sh	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.20/ld/emulparams/elf_nacl.sh	2009-11-23 13:58:30.000000000 +0100
 @@ -0,0 +1,4 @@
 +. ${srcdir}/emulparams/elf_i386.sh
 +SCRIPT_NAME=naclelf
 +OUTPUT_FORMAT="elf32-nacl"
 +TEXT_START_ADDR=0x00020000
-==== binutils-2.19.91.20091006/ld/ldexp.c ====
---- binutils-2.19.91.20091006/ld/ldexp.c#1	2009-10-02 01:59:04.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/ldexp.c	2009-10-02 01:34:28.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/ldexp.c binutils-2.20/ld/ldexp.c
+--- binutils-2.20.orig/ld/ldexp.c	2009-09-14 13:43:29.000000000 +0200
++++ binutils-2.20/ld/ldexp.c	2009-11-23 13:58:30.000000000 +0100
 @@ -46,6 +46,8 @@
  static void exp_fold_tree_1 (etree_type *);
  static void exp_fold_tree_no_dot (etree_type *);
@@ -1784,9 +1804,9 @@
 +    return value - 1;
 +  }
 +}
-==== binutils-2.19.91.20091006/ld/ldgram.y ====
---- binutils-2.19.91.20091006/ld/ldgram.y#1	2009-10-02 01:59:05.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/ldgram.y	2009-10-02 01:34:31.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/ldgram.y binutils-2.20/ld/ldgram.y
+--- binutils-2.20.orig/ld/ldgram.y	2009-09-02 09:25:35.000000000 +0200
++++ binutils-2.20/ld/ldgram.y	2009-11-23 13:58:30.000000000 +0100
 @@ -136,7 +136,7 @@
  %token NOLOAD DSECT COPY INFO OVERLAY
  %token DEFINED TARGET_K SEARCH_DIR MAP ENTRY
@@ -1807,9 +1827,9 @@
  	|	ASSERT_K '(' exp ',' NAME ')'
  			{ $$ = exp_assert ($3, $5); }
  	|	ORIGIN '(' NAME ')'
-==== binutils-2.19.91.20091006/ld/ldlex.l ====
---- binutils-2.19.91.20091006/ld/ldlex.l#1	2009-10-02 01:59:05.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/ldlex.l	2009-10-02 01:34:32.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/ldlex.l binutils-2.20/ld/ldlex.l
+--- binutils-2.20.orig/ld/ldlex.l	2009-10-14 16:51:32.000000000 +0200
++++ binutils-2.20/ld/ldlex.l	2009-11-23 13:58:30.000000000 +0100
 @@ -254,6 +254,8 @@
  <EXPRESSION,BOTH,SCRIPT>"ALIGNOF"	{ RTOKEN(ALIGNOF); }
  <EXPRESSION,BOTH>"MAX"			{ RTOKEN(MAX_K); }
@@ -1819,9 +1839,9 @@
  <EXPRESSION,BOTH,SCRIPT>"ASSERT"	{ RTOKEN(ASSERT_K); }
  <BOTH,SCRIPT>"ENTRY"			{ RTOKEN(ENTRY);}
  <BOTH,SCRIPT,MRI>"EXTERN"		{ RTOKEN(EXTERN);}
-==== (added) binutils-2.19.91.20091006/ld/scripttempl/naclelf.sc ====
---- /dev/null	2009-05-01 06:17:58.000000000 +0200
-+++ binutils-2.19.91.20091006/ld/scripttempl/naclelf.sc	2009-10-02 01:34:34.000000000 +0200
+diff -uNr binutils-2.20.orig/ld/scripttempl/naclelf.sc binutils-2.20/ld/scripttempl/naclelf.sc
+--- binutils-2.20.orig/ld/scripttempl/naclelf.sc	1970-01-01 01:00:00.000000000 +0100
++++ binutils-2.20/ld/scripttempl/naclelf.sc	2009-11-23 13:58:30.000000000 +0100
 @@ -0,0 +1,609 @@
 +#
 +# Unusual variables checked by this code:
@@ -2432,9 +2452,9 @@
 +  ${RELOCATING+${DISCARDED}}
 +}
 +EOF
-==== binutils-2.19.91.20091006/opcodes/i386-opc.tbl ====
---- binutils-2.19.91.20091006/opcodes/i386-opc.tbl#1	2009-10-02 01:59:06.000000000 +0200
-+++ binutils-2.19.91.20091006/opcodes/i386-opc.tbl	2009-10-02 01:34:38.000000000 +0200
+diff -uNr binutils-2.20.orig/opcodes/i386-opc.tbl binutils-2.20/opcodes/i386-opc.tbl
+--- binutils-2.20.orig/opcodes/i386-opc.tbl	2009-07-24 17:41:20.000000000 +0200
++++ binutils-2.20/opcodes/i386-opc.tbl	2009-11-23 13:58:30.000000000 +0100
 @@ -209,6 +209,12 @@
  or, 2, 0xc, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
  or, 2, 0x80, 0x1, 1, 0, W|Modrm|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
@@ -2448,9 +2468,9 @@
  xor, 2, 0x30, None, 1, 0, D|W|Modrm|No_sSuf|No_ldSuf, { Reg8|Reg16|Reg32|Reg64, Reg8|Reg16|Reg32|Reg64|Byte|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  xor, 2, 0x83, 0x6, 1, 0, Modrm|No_bSuf|No_sSuf|No_ldSuf, { Imm8S, Reg16|Reg32|Reg64|Word|Dword|Qword|Unspecified|BaseIndex|Disp8|Disp16|Disp32|Disp32S }
  xor, 2, 0x34, None, 1, 0, W|No_sSuf|No_ldSuf, { Imm8|Imm16|Imm32|Imm32S, Acc|Byte|Word|Dword|Qword }
-==== binutils-2.19.91.20091006/opcodes/i386-tbl.h ====
---- binutils-2.19.91.20091006/opcodes/i386-tbl.h#1	2009-10-02 01:59:06.000000000 +0200
-+++ binutils-2.19.91.20091006/opcodes/i386-tbl.h	2009-10-07 06:58:19.000000000 +0200
+diff -uNr binutils-2.20.orig/opcodes/i386-tbl.h binutils-2.20/opcodes/i386-tbl.h
+--- binutils-2.20.orig/opcodes/i386-tbl.h	2009-09-07 14:08:10.000000000 +0200
++++ binutils-2.20/opcodes/i386-tbl.h	2009-11-23 13:58:30.000000000 +0100
 @@ -1587,6 +1587,52 @@
        { { 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
  	  1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 
