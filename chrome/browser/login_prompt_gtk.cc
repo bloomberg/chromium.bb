@@ -182,8 +182,8 @@ class LoginHandlerGtk : public LoginHandler,
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(this, &LoginHandlerGtk::CloseContentsDeferred));
     ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &LoginHandlerGtk::SendNotifications));
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &LoginHandlerGtk::SendNotifications));
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(this, &LoginHandlerGtk::CancelAuthDeferred));
@@ -215,6 +215,8 @@ class LoginHandlerGtk : public LoginHandler,
           NewRunnableMethod(this, &LoginHandlerGtk::SendNotifications));
     }
 
+    // The constrained window is going to delete itself; clear our pointer.
+    dialog_ = NULL;
     SetModel(NULL);
 
     // Delete this object once all InvokeLaters have been called.
