@@ -60,6 +60,19 @@ class ExtensionUpdater
     blacklist_checks_enabled_ = enabled;
   }
 
+  // Interface for getting a uid to send for checks to the gallery.
+  class UidProvider {
+   public:
+    static const unsigned int maxUidLength = 256;
+    virtual ~UidProvider() {}
+
+    // This should return a uid string no longer than maxUidLength, or the empty
+    // string if there is no known uid (in which case nothing will be sent). It
+    // will be url-escaped by the consumer so implementers of this interface
+    // don't need to worry about it.
+    virtual std::string GetUidString() = 0;
+  };
+
  private:
   friend class base::RefCountedThreadSafe<ExtensionUpdater>;
   friend class ExtensionUpdaterTest;
@@ -88,6 +101,9 @@ class ExtensionUpdater
 
   static const char* kBlacklistUpdateUrl;
   static const char* kBlacklistAppID;
+
+  // Key used to denote Omaha uid in gallery update check urls.
+  static const char* kUidKey;
 
   // Does common work from constructors.
   void Init();
@@ -155,6 +171,12 @@ class ExtensionUpdater
   // Creates a blacklist update url.
   static GURL GetBlacklistUpdateUrl(const std::wstring& version);
 
+  // Registers a custom UidProvider, deleting the default one. Takes ownership
+  // of |provider|. Useful mainly for testing.
+  void set_uid_provider(UidProvider* provider) {
+    uid_provider_.reset(provider);
+  }
+
   // Outstanding url fetch requests for manifests and updates.
   scoped_ptr<URLFetcher> manifest_fetcher_;
   scoped_ptr<URLFetcher> extension_fetcher_;
@@ -177,6 +199,8 @@ class ExtensionUpdater
 
   scoped_refptr<ExtensionUpdaterFileHandler> file_handler_;
   bool blacklist_checks_enabled_;
+
+  scoped_ptr<UidProvider> uid_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUpdater);
 };

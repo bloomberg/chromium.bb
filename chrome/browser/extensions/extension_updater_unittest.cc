@@ -187,6 +187,18 @@ class ServiceForBlacklistTests : public MockService {
 };
 
 
+// For testing gallery updates.
+class MockUidProvider : public ExtensionUpdater::UidProvider {
+ public:
+  explicit MockUidProvider(std::string uid) : uid_(uid) {}
+  virtual ~MockUidProvider() {}
+  virtual std::string GetUidString() {
+    return uid_;
+  }
+ private:
+  std::string uid_;
+};
+
 static const int kUpdateFrequencySecs = 15;
 
 // Takes a string with KEY=VALUE parameters separated by '&' in |params| and
@@ -586,6 +598,68 @@ class ExtensionUpdaterTest : public testing::Test {
     EXPECT_TRUE(extension_data2 == file_contents);
     file_util::Delete(service.install_path(), false);
   }
+
+  static void TestGalleryRequests() {
+    TestURLFetcherFactory factory;
+    URLFetcher::set_factory(&factory);
+
+    // Set up 2 mock extensions, one with a google.com update url and one
+    // without.
+    ServiceForManifestTests service;
+    ExtensionList tmp;
+    GURL url1("http://clients2.google.com/service/update2/crx");
+    GURL url2("http://www.somewebsite.com");
+    CreateTestExtensions(1, &tmp, &url1.possibly_invalid_spec());
+    CreateTestExtensions(1, &tmp, &url2.possibly_invalid_spec());
+    EXPECT_EQ(2u, tmp.size());
+    service.set_extensions(tmp);
+
+    MessageLoop message_loop;
+    ScopedTempPrefService prefs;
+    scoped_refptr<ExtensionUpdater> updater =
+      new ExtensionUpdater(&service, prefs.get(), kUpdateFrequencySecs);
+    updater->set_blacklist_checks_enabled(false);
+
+    // Create a mock uid provider and have the updater take ownership of it.
+    MockUidProvider* uid_provider = new MockUidProvider("foobar");
+    updater->set_uid_provider(uid_provider);
+
+    // Make the updater do manifest fetching, and note the urls it tries to
+    // fetch.
+    std::vector<GURL> fetched_urls;
+    updater->CheckNow();
+    TestURLFetcher* fetcher =
+      factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
+    EXPECT_TRUE(fetcher != NULL && fetcher->delegate() != NULL);
+    fetched_urls.push_back(fetcher->original_url());
+    fetcher->delegate()->OnURLFetchComplete(
+      fetcher, fetched_urls[0], URLRequestStatus(), 500, ResponseCookies(), "");
+    fetcher =
+      factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
+    fetched_urls.push_back(fetcher->original_url());
+
+    // The urls could have been fetched in either order, so use the host to
+    // tell them apart and note the query each used.
+    std::string url1_query;
+    std::string url2_query;
+    if (fetched_urls[0].host() == url1.host()) {
+      url1_query = fetched_urls[0].query();
+      url2_query = fetched_urls[1].query();
+    } else if (fetched_urls[0].host() == url2.host()) {
+      url1_query = fetched_urls[1].query();
+      url2_query = fetched_urls[0].query();
+    } else {
+      NOTREACHED();
+    }
+
+    // Now make sure the google query had the uid but the regular one did not.
+    std::string search_string = std::string(ExtensionUpdater::kUidKey) + "=" +
+        uid_provider->GetUidString();
+    EXPECT_TRUE(url1_query.find(search_string) != std::string::npos);
+    EXPECT_TRUE(url2_query.find(search_string) == std::string::npos);
+
+    STLDeleteElements(&tmp);
+  }
 };
 
 // Because we test some private methods of ExtensionUpdater, it's easer for the
@@ -622,6 +696,9 @@ TEST(ExtensionUpdaterTest, TestMultipleExtensionDownloading) {
   ExtensionUpdaterTest::TestMultipleExtensionDownloading();
 }
 
+TEST(ExtensionUpdaterTest, TestGalleryRequests) {
+  ExtensionUpdaterTest::TestGalleryRequests();
+}
 
 // TODO(asargent) - (http://crbug.com/12780) add tests for:
 // -prodversionmin (shouldn't update if browser version too old)

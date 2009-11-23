@@ -31,6 +31,10 @@
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
+#if defined(OS_WIN)
+#include "base/registry.h"
+#endif
+
 using base::RandDouble;
 using base::RandInt;
 using base::Time;
@@ -47,6 +51,8 @@ const char* ExtensionUpdater::kBlacklistUpdateUrl =
 
 // Update AppID for extension blacklist.
 const char* ExtensionUpdater::kBlacklistAppID = "com.google.crx.blacklist";
+
+const char* ExtensionUpdater::kUidKey = "uid";
 
 // Wait at least 5 minutes after browser startup before we do any checks. If you
 // change this value, make sure to update comments where it is used.
@@ -102,13 +108,41 @@ class ExtensionUpdaterFileHandler
   ~ExtensionUpdaterFileHandler() {}
 };
 
+class DefaultUidProvider : public ExtensionUpdater::UidProvider {
+ public:
+  DefaultUidProvider() {}
+  virtual ~DefaultUidProvider() {}
+
+  virtual std::string GetUidString() {
+    std::string result;
+#if defined(OS_WIN)
+    // First try looking in HKCU, then try HKLM.
+    HKEY rootKeys[] = { HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE };
+    for (int i = 0; i < sizeof(rootKeys); i++) {
+       RegKey key(rootKeys[i], L"Software\\Google\\Update");
+       std::wstring value;
+       if (key.ReadValue(L"ui", &value)) {
+         if (IsStringASCII(value) &&
+             value.length() <= UidProvider::maxUidLength) {
+           result = WideToASCII(value);
+           break;
+         } else {
+           NOTREACHED();
+         }
+       }
+    }
+#endif
+    return result;
+  }
+};
+
 
 ExtensionUpdater::ExtensionUpdater(ExtensionUpdateService* service,
                                    PrefService* prefs,
                                    int frequency_seconds)
     : service_(service), frequency_seconds_(frequency_seconds),
       prefs_(prefs), file_handler_(new ExtensionUpdaterFileHandler()),
-      blacklist_checks_enabled_(true) {
+      blacklist_checks_enabled_(true), uid_provider_(new DefaultUidProvider()) {
   Init();
 }
 
@@ -526,6 +560,15 @@ void ExtensionUpdater::CheckNow() {
     std::string full_url_string = update_url.spec();
     full_url_string.append(update_url.has_query() ? "&" : "?");
     AppendExtensionInfo(&full_url_string, *extension);
+
+    // Send the Omaha uid when doing update checks to Omaha.
+    if (update_url.DomainIs("google.com")) {
+      std::string uid = uid_provider_->GetUidString();
+      if (uid.length() > 0 && uid.length() <= UidProvider::maxUidLength) {
+        full_url_string.append("&" + std::string(ExtensionUpdater::kUidKey) +
+                               "=" + EscapeQueryParamValue(uid));
+      }
+    }
 
     GURL full_url(full_url_string);
     if (!full_url.is_valid()) {
