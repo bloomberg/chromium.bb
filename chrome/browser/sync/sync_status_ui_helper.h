@@ -6,8 +6,9 @@
 #define CHROME_BROWSER_SYNC_SYNC_STATUS_UI_HELPER_H_
 
 #include "base/string16.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 
-class ProfileSyncService;
+class Profile;
 
 // Utility to gather current sync status information from the sync service and
 // constructs messages suitable for showing in UI.
@@ -24,6 +25,12 @@ class SyncStatusUIHelper {
   static MessageType GetLabels(ProfileSyncService* service,
                                string16* status_label,
                                string16* link_label);
+
+  // Open the appropriate sync dialog for the given profile (which can be
+  // incognito).  |code| should be one of the START_FROM_* codes.
+  static void OpenSyncMyBookmarksDialog(
+      Profile* profile, ProfileSyncService::SyncEventCodes code);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncStatusUIHelper);
 };

@@ -46,6 +46,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/status_bubble.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -1284,19 +1285,8 @@ void Browser::OpenImportSettingsDialog() {
 }
 
 void Browser::OpenSyncMyBookmarksDialog() {
-  ProfileSyncService* service =
-      profile_->GetOriginalProfile()->GetProfileSyncService();
-  // It shouldn't be possible to be in this function without a service.
-  DCHECK(service);
-  if (!service)
-    return;
-
-  if (service->HasSyncSetupCompleted()) {
-    ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile_);
-  } else {
-    service->EnableForUser();
-    ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_WRENCH);
-  }
+  SyncStatusUIHelper::OpenSyncMyBookmarksDialog(
+      profile_, ProfileSyncService::START_FROM_WRENCH);
 }
 
 void Browser::OpenAboutChromeDialog() {

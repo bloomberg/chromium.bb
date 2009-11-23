@@ -21,7 +21,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/options_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/views/bookmark_editor_view.h"
@@ -513,7 +512,8 @@ void BookmarkManagerView::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   if (sender == sync_status_button_) {
     UserMetrics::RecordAction("BookmarkManager_Sync", profile_);
-    OpenSyncMyBookmarksDialog();
+    SyncStatusUIHelper::OpenSyncMyBookmarksDialog(
+        profile_, ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
   }
 }
 
@@ -829,16 +829,4 @@ void BookmarkManagerView::UpdateSyncStatus() {
   }
   sync_status_button_->SetText(status_label);
   sync_status_button_->GetParent()->Layout();
-}
-
-void BookmarkManagerView::OpenSyncMyBookmarksDialog() {
-  if (!sync_service_)
-    return;
-  if (sync_service_->HasSyncSetupCompleted()) {
-    ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile_);
-  } else {
-    sync_service_->EnableForUser();
-    ProfileSyncService::SyncEvent(
-        ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
-  }
 }

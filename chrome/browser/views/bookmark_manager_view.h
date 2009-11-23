@@ -209,7 +209,6 @@ class BookmarkManagerView : public views::View,
   void ShowExportBookmarksFileChooser();
 
   void UpdateSyncStatus();
-  void OpenSyncMyBookmarksDialog();
 
   Profile* profile_;
   BookmarkTableView* table_view_;

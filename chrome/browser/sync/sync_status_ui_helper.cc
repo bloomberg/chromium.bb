@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/options_window.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -116,3 +117,21 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
   }
   return result_type;
 }
+
+// static
+void SyncStatusUIHelper::OpenSyncMyBookmarksDialog(
+    Profile* profile, ProfileSyncService::SyncEventCodes code) {
+  ProfileSyncService* service =
+    profile->GetOriginalProfile()->GetProfileSyncService();
+  if (!service) {
+    LOG(DFATAL) << "OpenSyncMyBookmarksDialog called with sync disabled";
+    return;
+  }
+  if (service->HasSyncSetupCompleted()) {
+    ShowOptionsWindow(OPTIONS_PAGE_CONTENT, OPTIONS_GROUP_NONE, profile);
+  } else {
+    service->EnableForUser();
+    ProfileSyncService::SyncEvent(code);
+  }
+}
+
