@@ -29,6 +29,11 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_UP, false, true, false, IDC_SELECT_PREVIOUS_TAB },
   { base::VKEY_W, false, true, false, IDC_CLOSE_TAB },
   { base::VKEY_T, true, true, false, IDC_RESTORE_TAB },
+  { base::VKEY_W, true, true, false, IDC_CLOSE_WINDOW },
+  { base::VKEY_W, true, false, true, IDC_CLOSE_POPUPS },
+
+  { base::VKEY_TAB, false, true, false, IDC_SELECT_NEXT_TAB },
+  { base::VKEY_TAB, true, true, false, IDC_SELECT_PREVIOUS_TAB },
 
   { base::VKEY_1, false, true, false, IDC_SELECT_TAB_0 },
   { base::VKEY_2, false, true, false, IDC_SELECT_TAB_1 },
@@ -101,7 +106,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
 
   // Miscellany.
   { base::VKEY_D, false, true, false, IDC_BOOKMARK_PAGE },
+  { base::VKEY_D, true, true, false, IDC_BOOKMARK_ALL_TABS },
   { base::VKEY_B, false, true, false, IDC_SHOW_BOOKMARK_BAR },
+  { base::VKEY_DELETE, true, true, false, IDC_CLEAR_BROWSING_DATA },
   { base::VKEY_H, false, true, false, IDC_SHOW_HISTORY },
   { base::VKEY_J, false, true, false, IDC_SHOW_DOWNLOADS },
   { base::VKEY_O, false, true, false, IDC_OPEN_FILE },
@@ -117,7 +124,9 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_B, true, true, false, IDC_SHOW_BOOKMARK_MANAGER },
   { base::VKEY_F1, false, false, false, IDC_HELP_PAGE },
   { base::VKEY_Q, true, true, false, IDC_EXIT },
-  { base::VKEY_0, true, true, false, IDC_COMPACT_NAVBAR},
+  { base::VKEY_0, true, true, false, IDC_COMPACT_NAVBAR },
+  { base::VKEY_F, false, false, true, IDC_SHOW_APP_MENU},
+  { base::VKEY_E, false, false, true, IDC_SHOW_PAGE_MENU},
 };
 
 const size_t kAcceleratorMapLength = arraysize(kAcceleratorMap);
