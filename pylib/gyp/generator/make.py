@@ -46,10 +46,10 @@ generator_default_variables = {
   'LIB_DIR': '$(obj).$(TOOLSET)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
   'RULE_INPUT_PATH': '$(abspath $<)',
+  'RULE_INPUT_EXT': '$(suffix $<)',
+  'RULE_INPUT_NAME': '$(notdir $<)',
 
-  # These appear unused -- ???
-  'RULE_INPUT_EXT': 'XXXEXT$(suffix $^)',
-  'RULE_INPUT_NAME': 'XXXNAME$(notdir $(basename $^)0',
+  # This appears unused --- ?
   'CONFIGURATION_NAME': '$(BUILDTYPE)',
 }
 
