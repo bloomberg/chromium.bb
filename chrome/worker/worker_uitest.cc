@@ -59,10 +59,8 @@ TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined (OS_MACOSX)
 #define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
-#elif defined(OS_MACOSX)
-#define WorkerFastLayoutTests FLAKY_WorkerFastLayoutTests
 #endif
 
 TEST_F(WorkerTest, WorkerFastLayoutTests) {
@@ -111,12 +109,11 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
 // generated on the windows try bots.
+// http://crbug.com/28445 - flakiness on mac
 #define SharedWorkerFastLayoutTests DISABLED_SharedWorkerFastLayoutTests
-#elif defined(OS_MACOSX)
-#define SharedWorkerFastLayoutTests FLAKY_SharedWorkerFastLayoutTests
 #endif
 
 TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
