@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_constants.h"
@@ -199,6 +200,12 @@ void TestingProfile::InitThemes() {
     theme_provider_->Init(this);
     created_theme_provider_ = true;
   }
+}
+
+NTPResourceCache* TestingProfile::GetNTPResourceCache() {
+  if (!ntp_resource_cache_.get())
+    ntp_resource_cache_.reset(new NTPResourceCache(this));
+  return ntp_resource_cache_.get();
 }
 
 void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {

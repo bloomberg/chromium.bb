@@ -31,6 +31,7 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
 // different SiteInstances, BrowsingInstances, and RenderProcessHosts. This is
 // a regression test for bug 9364.
 TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
+  ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   GURL ntp(chrome::kChromeUINewTabURL);
   GURL dest("http://www.google.com/");
 
@@ -78,6 +79,7 @@ TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
 // EnableViewSourceMode message is sent on every navigation regardless
 // RenderView is being newly created or reused.
 TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
+  ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   const GURL kNtpUrl(chrome::kChromeUINewTabURL);
   const GURL kUrl("view-source:http://foo");
 
@@ -228,6 +230,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 
 // Tests DOMUI creation.
 TEST_F(RenderViewHostManagerTest, DOMUI) {
+  ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
 
   TestTabContents tab_contents(profile_.get(), instance);

@@ -17,6 +17,7 @@ class BugReportWindowControllerUnittest : public RenderViewHostTestHarness {
 };
 
 TEST_F(BugReportWindowControllerUnittest, ReportBugWithNewTabPageOpen) {
+  ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   // Create a "chrome://newtab" test tab.  SiteInstance will be deleted when
   // tabContents is deleted.
   SiteInstance* instance =

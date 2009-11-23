@@ -33,6 +33,8 @@ class MockThemeSource : public DOMUIThemeSource {
 
 class DOMUISourcesTest : public testing::Test {
  public:
+  DOMUISourcesTest() : ui_thread_(ChromeThread::UI, MessageLoop::current()) {}
+
   TestingProfile* profile() const { return profile_.get(); }
   MockThemeSource* theme_source() const { return theme_source_.get(); }
  private:
@@ -46,6 +48,9 @@ class DOMUISourcesTest : public testing::Test {
     theme_source_ = NULL;
     profile_.reset(NULL);
   }
+
+  MessageLoop loop_;
+  ChromeThread ui_thread_;
 
   scoped_ptr<TestingProfile> profile_;
   scoped_refptr<MockThemeSource> theme_source_;
@@ -71,6 +76,7 @@ TEST_F(DOMUISourcesTest, ThemeSourceImages) {
 }
 
 TEST_F(DOMUISourcesTest, ThemeSourceCSS) {
+  ChromeThread io_thread(ChromeThread::IO, MessageLoop::current());
   // Generating the test data for the NTP CSS would just involve copying the
   // method, or being super brittle and hard-coding the result (requiring
   // an update to the unittest every time the CSS template changes), so we

@@ -9,7 +9,7 @@
 
 class DOMUITest : public RenderViewHostTestHarness {
  public:
-  DOMUITest() {}
+  DOMUITest() : ui_thread_(ChromeThread::UI, MessageLoop::current()) {}
 
   // Tests navigating with a DOM UI from a fresh (nothing pending or committed)
   // state, through pending, committed, then another navigation. The first page
@@ -75,6 +75,8 @@ class DOMUITest : public RenderViewHostTestHarness {
   }
 
  private:
+  ChromeThread ui_thread_;
+
   DISALLOW_COPY_AND_ASSIGN(DOMUITest);
 };
 
