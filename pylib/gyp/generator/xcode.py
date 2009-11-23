@@ -74,6 +74,17 @@ generator_extra_sources_for_rules = [
   'mac_bundle_resources',
 ]
 
+
+def CreateXCConfigurationList(configuration_names):
+  xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+  for configuration_name in configuration_names:
+    xcbc = gyp.xcodeproj_file.XCBuildConfiguration({
+        'name': configuration_name})
+    xccl.AppendProperty('buildConfigurations', xcbc)
+  xccl.SetProperty('defaultConfigurationName', configuration_names[0])
+  return xccl
+
+
 class XcodeProject(object):
   def __init__(self, gyp_path, path, build_file_dict):
     self.gyp_path = gyp_path
@@ -116,11 +127,7 @@ class XcodeProject(object):
     # a new one specifying all of the configuration names used by the various
     # targets.
     try:
-      xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
-      for configuration in configurations:
-        xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
-        xccl.AppendProperty('buildConfigurations', xcbc)
-      xccl.SetProperty('defaultConfigurationName', configurations[0])
+      xccl = CreateXCConfigurationList(configurations)
       self.project.SetProperty('buildConfigurationList', xccl)
     except:
       import sys
@@ -160,9 +167,11 @@ class XcodeProject(object):
 
     # ordinary_targets are ordinary targets that are already in the project
     # file. run_test_targets are the targets that run unittests and should be
-    # used for the Run All Tests target.
+    # used for the Run All Tests target.  support_targets are the action/rule
+    # targets used by GYP file targets, just kept for the assert check.
     ordinary_targets = []
     run_test_targets = []
+    support_targets = []
 
     # targets is full list of targets in the project.
     targets = []
@@ -186,6 +195,9 @@ class XcodeProject(object):
       assert xcode_target in self.project._properties['targets']
       targets.append(xcode_target)
       ordinary_targets.append(xcode_target)
+      if xcode_target.support_target:
+        support_targets.append(xcode_target.support_target)
+        targets.append(xcode_target.support_target)
 
       if not int(target.get('suppress_wildcard', False)):
         targets_for_all.append(xcode_target)
@@ -200,9 +212,11 @@ class XcodeProject(object):
       if target.get('run_as') or is_test:
         # Make a target to run something.  It should have one
         # dependency, the parent xcode target.
+        xccl = CreateXCConfigurationList(configurations)
         run_target = gyp.xcodeproj_file.PBXAggregateTarget({
-              'name':        'Run ' + target_name,
-              'productName': xcode_target.GetProperty('productName'),
+              'name':                   'Run ' + target_name,
+              'productName':            xcode_target.GetProperty('productName'),
+              'buildConfigurationList': xccl,
             },
             parent=self.project)
         run_target.AddDependency(xcode_target)
@@ -263,7 +277,8 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
 
     # Make sure that the list of targets being replaced is the same length as
     # the one replacing it, but allow for the added test runner targets.
-    assert len(self.project._properties['targets']) == len(ordinary_targets)
+    assert len(self.project._properties['targets']) == \
+      len(ordinary_targets) + len(support_targets)
 
     self.project._properties['targets'] = targets
 
@@ -279,12 +294,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
     # "All" target first so that people opening up the project for the first
     # time will build everything by default.
     if len(targets_for_all) > 1 and not has_custom_all:
-      xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
-      for configuration in configurations:
-        xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
-        xccl.AppendProperty('buildConfigurations', xcbc)
-      xccl.SetProperty('defaultConfigurationName', configurations[0])
-
+      xccl = CreateXCConfigurationList(configurations)
       all_target = gyp.xcodeproj_file.PBXAggregateTarget(
           {
             'buildConfigurationList': xccl,
@@ -302,11 +312,7 @@ sys.exit(subprocess.call(sys.argv[1:]))" """
 
     # The same, but for run_test_targets.
     if len(run_test_targets) > 1:
-      xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
-      for configuration in configurations:
-        xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
-        xccl.AppendProperty('buildConfigurations', xcbc)
-      xccl.SetProperty('defaultConfigurationName', configurations[0])
+      xccl = CreateXCConfigurationList(configurations)
       run_all_tests_target = gyp.xcodeproj_file.PBXAggregateTarget(
           {
             'buildConfigurationList': xccl,
@@ -581,12 +587,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     # Set up the configurations for the target according to the list of names
     # supplied.
-    xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
-    for configuration_name in configuration_names:
-      xcbc = gyp.xcodeproj_file.XCBuildConfiguration({
-          'name': configuration_name})
-      xccl.AppendProperty('buildConfigurations', xcbc)
-    xccl.SetProperty('defaultConfigurationName', configuration_names[0])
+    xccl = CreateXCConfigurationList(configuration_names)
 
     # Create an XCTarget subclass object for the target.  We use the type
     # with "+bundle" appended if the target has "mac_bundle" set.
@@ -621,8 +622,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
     else:
       xctarget_type = gyp.xcodeproj_file.PBXAggregateTarget
 
-    if 'product_name' in spec:
-      target_properties['productName'] = spec['product_name']
+    target_product_name = spec.get('product_name', None)
+    if target_product_name:
+      target_properties['productName'] = target_product_name
 
     xct = xctarget_type(target_properties, parent=pbxp,
                         force_extension=spec.get('product_extension', None))
@@ -638,10 +640,38 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if type == 'loadable_module' and not is_bundle:
       xccl.SetBuildSetting('MACH_O_TYPE', 'mh_bundle')
 
+    spec_actions = spec.get('actions', [])
+    spec_rules = spec.get('rules', [])
+
+    # Xcode has some "issues" with checking dependencies for the "Compile
+    # sources" step with any source files/headers generated by actions/rules.
+    # To work around this, if a target is building anything directly (not
+    # type "none"), then a second target as used to run the GYP actions/rules
+    # and is made a dependency of this target.  This way the work is done
+    # before the dependency checks for what should be recompiled.
+    support_xct = None
+    if type != 'none' and (spec_actions or spec_rules):
+      support_xccl = CreateXCConfigurationList(configuration_names);
+      support_target_properties = {
+        'buildConfigurationList': support_xccl,
+        'name':                   target_name + ' Support',
+      }
+      if target_product_name:
+        support_target_properties['productName'] = \
+            target_product_name + ' Support'
+      support_xct = \
+          gyp.xcodeproj_file.PBXAggregateTarget(support_target_properties,
+                                                parent=pbxp)
+      pbxp.AppendProperty('targets', support_xct)
+      xct.AddDependency(support_xct)
+    # Hang the support target off the main target so it can be tested/found
+    # by the generator during Finalize.
+    xct.support_target = support_xct
+
     prebuild_index = 0
 
     # Add custom shell script phases for "actions" sections.
-    for action in spec.get('actions', []):
+    for action in spec_actions:
       # There's no need to write anything into the script to ensure that the
       # output directories already exist, because Xcode will look at the
       # declared outputs and automatically ensure that they exist for us.
@@ -677,11 +707,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
             'showEnvVarsInLog': 0,
           })
 
-      # TODO(mark): this assumes too much knowledge of the internals of
-      # xcodeproj_file; some of these smarts should move into xcodeproj_file
-      # itself.
-      xct._properties['buildPhases'].insert(prebuild_index, ssbp)
-      prebuild_index = prebuild_index + 1
+      if support_xct:
+        support_xct.AppendProperty('buildPhases', ssbp)
+      else:
+        # TODO(mark): this assumes too much knowledge of the internals of
+        # xcodeproj_file; some of these smarts should move into xcodeproj_file
+        # itself.
+        xct._properties['buildPhases'].insert(prebuild_index, ssbp)
+        prebuild_index = prebuild_index + 1
 
       # TODO(mark): Should verify that at most one of these is specified.
       if int(action.get('process_outputs_as_sources', False)):
@@ -734,7 +767,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     #         variables.  This is a low-prioroty problem and is not a
     #         show-stopper.
     rules_by_ext = {}
-    for rule in spec.get('rules', []):
+    for rule in spec_rules:
       rules_by_ext[rule['extension']] = rule
 
       # First, some definitions:
@@ -952,11 +985,14 @@ exit 1
               'showEnvVarsInLog': 0,
             })
 
-        # TODO(mark): this assumes too much knowledge of the internals of
-        # xcodeproj_file; some of these smarts should move into xcodeproj_file
-        # itself.
-        xct._properties['buildPhases'].insert(prebuild_index, ssbp)
-        prebuild_index = prebuild_index + 1
+        if support_xct:
+          support_xct.AppendProperty('buildPhases', ssbp)
+        else:
+          # TODO(mark): this assumes too much knowledge of the internals of
+          # xcodeproj_file; some of these smarts should move into xcodeproj_file
+          # itself.
+          xct._properties['buildPhases'].insert(prebuild_index, ssbp)
+          prebuild_index = prebuild_index + 1
 
       # Extra rule inputs also go into the project file.  Concrete outputs were
       # already added when they were computed.
@@ -1042,6 +1078,10 @@ exit 1
     if 'dependencies' in spec:
       for dependency in spec['dependencies']:
         xct.AddDependency(xcode_targets[dependency])
+        # The support project also gets the dependencies (in case they are
+        # needed for the actions/rules to work).
+        if support_xct:
+          support_xct.AddDependency(xcode_targets[dependency])
 
     if 'libraries' in spec:
       for library in spec['libraries']:
