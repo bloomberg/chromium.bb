@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/tab_contents/web_drag_source.h"
+#include "chrome/browser/tab_contents/web_drag_source_win.h"
 
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -16,16 +16,11 @@ namespace {
 
 static void GetCursorPositions(gfx::NativeWindow wnd, gfx::Point* client,
                                gfx::Point* screen) {
-#if defined(OS_WIN)
   POINT cursor_pos;
   GetCursorPos(&cursor_pos);
   screen->SetPoint(cursor_pos.x, cursor_pos.y);
   ScreenToClient(wnd, &cursor_pos);
   client->SetPoint(cursor_pos.x, cursor_pos.y);
-#else
-  // TODO(port): Get the cursor positions.
-  NOTIMPLEMENTED();
-#endif
 }
 
 }  // namespace

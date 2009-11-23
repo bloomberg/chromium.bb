@@ -482,8 +482,9 @@ void RenderWidgetHostViewGtk::UpdateCursor(const WebCursor& cursor) {
   // However, we can switch between different pixmaps, so only on the
   // non-pixmap branch.
   if (current_cursor_.GetCursorType() != GDK_CURSOR_IS_PIXMAP &&
-      current_cursor_.GetCursorType() == cursor.GetCursorType())
+      current_cursor_.GetCursorType() == cursor.GetCursorType()) {
     return;
+  }
 
   current_cursor_ = cursor;
   ShowCurrentCursor();

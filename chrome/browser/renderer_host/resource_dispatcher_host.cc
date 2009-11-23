@@ -41,6 +41,7 @@
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/renderer_host/save_file_resource_handler.h"
 #include "chrome/browser/renderer_host/sync_resource_handler.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/worker_host/worker_service.h"
@@ -57,14 +58,6 @@
 #include "net/url_request/url_request_context.h"
 #include "webkit/appcache/appcache_interceptor.h"
 #include "webkit/appcache/appcache_interfaces.h"
-
-// TODO(port): Move these includes to the above section when porting is done.
-#if defined(OS_POSIX)
-#include "chrome/common/temp_scaffolding_stubs.h"
-#elif defined(OS_WIN)
-#include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#endif
-
 
 // Uncomment to enable logging of request traffic.
 // #define LOG_RESOURCE_DISPATCHER_REQUESTS

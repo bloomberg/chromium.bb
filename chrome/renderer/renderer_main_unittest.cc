@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 // TODO(port): Bring up this test this on other platforms.
-#if defined(OS_MACOSX)
+#if defined(OS_POSIX)
 
 using base::ProcessHandle;
 
@@ -59,7 +59,7 @@ ProcessHandle RendererMainTest::SpawnChild(const std::wstring &procname,
     fds_to_map.push_back(std::pair<int,int>(ipcfd, 3));
   }
 
-   return MultiProcessTest::SpawnChild(procname, fds_to_map, false);
+  return MultiProcessTest::SpawnChild(procname, fds_to_map, false);
 }
 
 // Listener class that kills the message loop when it connects.
@@ -101,5 +101,4 @@ TEST_F(RendererMainTest, CreateDestroy) {
 
   EXPECT_TRUE(base::WaitForSingleProcess(renderer_pid, 5000));
 }
-
-#endif  // defined(OS_MACOSX)
+#endif  // defined(OS_POSIX)

@@ -32,11 +32,6 @@ class Message;
 }
 
 //---------------------------------------------------------------------------
-// These stubs are for Browser_main()
-
-void InstallJankometer(const CommandLine&);
-
-//---------------------------------------------------------------------------
 // These stubs are for BrowserProcessImpl
 
 #if !defined(OS_MACOSX)

@@ -2,21 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_H_
-#define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_H_
+#ifndef CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
+#define CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_
 
 #include "app/gfx/native_widget_types.h"
+#include "base/base_drag_source.h"
 #include "base/basictypes.h"
 #include "base/gfx/point.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
-
-// TODO(port): Port this file.
-#if defined(OS_WIN)
-#include "base/base_drag_source.h"
-#else
-#include "chrome/common/temp_scaffolding_stubs.h"
-#endif
 
 class RenderViewHost;
 class TabContents;
@@ -65,4 +59,4 @@ class WebDragSource : public BaseDragSource,
   DISALLOW_COPY_AND_ASSIGN(WebDragSource);
 };
 
-#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_H_
+#endif  // CHROME_BROWSER_TAB_CONTENTS_WEB_DRAG_SOURCE_WIN_H_

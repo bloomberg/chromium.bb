@@ -109,8 +109,7 @@ RenderProcess::RenderProcess()
 }
 
 RenderProcess::~RenderProcess() {
-  // TODO(port)
-  // Try and limit what we pull in for our non-Win unit test bundle
+  // TODO(port): Try and limit what we pull in for our non-Win unit test bundle.
 #ifndef NDEBUG
   // log important leaked objects
   webkit_glue::CheckForLeaks();

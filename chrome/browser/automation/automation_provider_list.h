@@ -1,8 +1,9 @@
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_LIST_H__
-#define CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_LIST_H__
+
+#ifndef CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_LIST_H_
+#define CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_LIST_H_
 
 #include <vector>
 #include "base/basictypes.h"
@@ -41,7 +42,7 @@ class AutomationProviderList {
   list_type automation_providers_;
   static AutomationProviderList* instance_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(AutomationProviderList);
+  DISALLOW_COPY_AND_ASSIGN(AutomationProviderList);
 };
 
-#endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_LIST_H__
+#endif  // CHROME_BROWSER_AUTOMATION_AUTOMATION_PROVIDER_LIST_H_

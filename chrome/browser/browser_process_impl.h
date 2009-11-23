@@ -23,8 +23,6 @@
 
 #if defined(OS_WIN)
 #include "sandbox/src/sandbox.h"
-#else
-#include "chrome/common/temp_scaffolding_stubs.h"
 #endif
 
 class CommandLine;

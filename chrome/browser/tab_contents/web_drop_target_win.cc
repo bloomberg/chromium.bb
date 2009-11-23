@@ -5,7 +5,7 @@
 #include <windows.h>
 #include <shlobj.h>
 
-#include "chrome/browser/tab_contents/web_drop_target.h"
+#include "chrome/browser/tab_contents/web_drop_target_win.h"
 
 #include "app/clipboard/clipboard_util_win.h"
 #include "app/os_exchange_data.h"
