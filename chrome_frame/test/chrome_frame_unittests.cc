@@ -1194,6 +1194,7 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
     return E_INVALIDARG;
 
   HRESULT hr = S_OK;
+  DWORD cocreate_flags = CLSCTX_LOCAL_SERVER;
   chrome_frame_test::LowIntegrityToken token;
   if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
     // Create medium integrity browser that will launch IE broker.
@@ -1208,11 +1209,13 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
       hr = HRESULT_FROM_WIN32(GetLastError());
       return hr;
     }
+
+    cocreate_flags |= CLSCTX_ENABLE_CLOAKING;
   }
 
   hr = ::CoCreateInstance(CLSID_InternetExplorer, NULL,
-      CLSCTX_LOCAL_SERVER | CLSCTX_ENABLE_CLOAKING, IID_IWebBrowser2,
-      reinterpret_cast<void**>(web_browser));
+                          cocreate_flags, IID_IWebBrowser2,
+                          reinterpret_cast<void**>(web_browser));
   // ~LowIntegrityToken() will switch integrity back to medium.
   return hr;
 }
