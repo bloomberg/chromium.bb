@@ -383,5 +383,5 @@ const GURL HistoryUI::GetHistoryURLWithSearchText(const std::wstring& text) {
 // static
 RefCountedMemory* HistoryUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadImageResourceBytes(IDR_HISTORY_FAVICON);
+      LoadDataResourceBytes(IDR_HISTORY_FAVICON);
 }

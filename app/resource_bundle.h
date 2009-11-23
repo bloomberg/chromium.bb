@@ -84,11 +84,6 @@ class ResourceBundle {
   // is missing.
   SkBitmap* GetBitmapNamed(int resource_id);
 
-  // Loads the raw bytes of an image resource into |bytes|,
-  // without doing any processing or interpretation of
-  // the resource. Returns whether we successfully read the resource.
-  RefCountedStaticMemory* LoadImageResourceBytes(int resource_id);
-
   // Loads the raw bytes of a data resource into |bytes|,
   // without doing any processing or interpretation of
   // the resource. Returns whether we successfully read the resource.

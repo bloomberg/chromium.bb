@@ -459,7 +459,7 @@ RefCountedMemory* BrowserThemeProvider::GetRawData(int id) const {
 
   RefCountedMemory* data = ReadThemeFileData(id);
   if (!data)
-    data = rb_.LoadImageResourceBytes(id);
+    data = rb_.LoadDataResourceBytes(id);
   if (!data)
     return NULL;
 

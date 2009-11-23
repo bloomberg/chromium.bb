@@ -139,5 +139,5 @@ DownloadsUI::DownloadsUI(TabContents* contents) : DOMUI(contents) {
 // static
 RefCountedMemory* DownloadsUI::GetFaviconResourceBytes() {
   return ResourceBundle::GetSharedInstance().
-      LoadImageResourceBytes(IDR_DOWNLOADS_FAVICON);
+      LoadDataResourceBytes(IDR_DOWNLOADS_FAVICON);
 }

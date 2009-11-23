@@ -86,11 +86,6 @@ std::string ResourceBundle::GetDataResource(int resource_id) {
   return GetRawDataResource(resource_id).as_string();
 }
 
-RefCountedStaticMemory* ResourceBundle::LoadImageResourceBytes(
-    int resource_id) {
-  return LoadResourceBytes(resources_data_, resource_id);
-}
-
 RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) {
   return LoadResourceBytes(resources_data_, resource_id);

@@ -162,7 +162,7 @@ GdkPixbuf* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {
   }
 
   scoped_refptr<RefCountedStaticMemory> data(
-      LoadImageResourceBytes(resource_id));
+      LoadDataResourceBytes(resource_id));
   GdkPixbuf* pixbuf = LoadPixbuf(data.get(), rtl_enabled);
 
   // We loaded successfully.  Cache the pixbuf.
