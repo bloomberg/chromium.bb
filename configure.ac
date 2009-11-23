@@ -183,6 +183,8 @@ if test "x$INTEL" != "xno"; then
 	   else
 		    INTEL=no
 	   fi
+    else
+	   INTEL=yes
     fi
 fi
 
@@ -213,7 +215,7 @@ AC_OUTPUT([
 echo ""
 echo "$PACKAGE_STRING will be compiled with:"
 echo ""
-echo "  Intel api      yes"
-echo "  Radeon api     $RADEON"
+echo "  Intel API      $INTEL"
+echo "  Radeon API     $RADEON"
 echo "  Nouveau API    $NOUVEAU"
 echo ""
