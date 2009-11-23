@@ -13,10 +13,6 @@ if test.format == 'msvs':
   msg = 'TODO:  issue 120:  disabled on MSVS due to test execution problems.\n'
   test.skip_test(msg)
 
-if test.format == 'xcode':
-  msg = 'TODO:  issue 94:  disabled on Xcode due to rule timing issues.\n'
-  test.skip_test(msg)
-
 test.run_gyp('same_target.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
