@@ -62,7 +62,9 @@ void FormFieldValues::ExtractFormFieldValues(
     if (type.empty())
       continue;
 
-    elements.push_back(FormField(name, type, value));
+    // TODO(jhawkins): Extract the field label.  For now we just use the field
+    // name.
+    elements.push_back(FormField(name, name, type, value));
   }
 }
 

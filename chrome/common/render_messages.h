@@ -827,6 +827,7 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
     WriteParam(m, p.elements.size());
     std::vector<webkit_glue::FormField>::const_iterator itr;
     for (itr = p.elements.begin(); itr != p.elements.end(); itr++) {
+      WriteParam(m, itr->label());
       WriteParam(m, itr->name());
       WriteParam(m, itr->html_input_type());
       WriteParam(m, itr->value());
@@ -843,11 +844,12 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
       result = result && ReadParam(m, iter, &elements_size);
       p->elements.resize(elements_size);
       for (size_t i = 0; i < elements_size; i++) {
-        string16 name, type, value;
+        string16 label, name, type, value;
+        result = result && ReadParam(m, iter, &label);
         result = result && ReadParam(m, iter, &name);
         result = result && ReadParam(m, iter, &type);
         result = result && ReadParam(m, iter, &value);
-        p->elements[i] = webkit_glue::FormField(name, type, value);
+        p->elements[i] = webkit_glue::FormField(label, name, type, value);
       }
       return result;
   }

@@ -9,10 +9,12 @@ namespace webkit_glue {
 FormField::FormField() {
 }
 
-FormField::FormField(const string16& name,
+FormField::FormField(const string16& label,
+                     const string16& name,
                      const string16& html_input_type,
                      const string16& value)
-  : name_(name),
+  : label_(label),
+    name_(name),
     html_input_type_(html_input_type),
     value_(value) {
 }

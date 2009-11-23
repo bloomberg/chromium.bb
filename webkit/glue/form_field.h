@@ -13,10 +13,12 @@ namespace webkit_glue {
 class FormField {
  public:
   FormField();
-  FormField(const string16& name,
+  FormField(const string16& label,
+            const string16& name,
             const string16& html_input_type,
             const string16& value);
 
+  string16 label() const { return label_; }
   string16 name() const { return name_; }
   string16 html_input_type() const { return html_input_type_; }
   string16 value() const { return value_; }
@@ -24,6 +26,7 @@ class FormField {
   void set_value(const string16& value) { value_ = value; }
 
  private:
+  string16 label_;
   string16 name_;
   string16 html_input_type_;
   string16 value_;
