@@ -652,7 +652,6 @@ windows_env.Append(
         ['NACL_LINUX', '0'],
         ['_WIN32_WINNT', '0x0501'],
         ['__STDC_LIMIT_MACROS', '1'],
-        ['NOMINMAX', '1'],
     ],
     LIBS = ['wsock32', 'advapi32'],
     CCFLAGS = ['/EHsc', '/WX'],

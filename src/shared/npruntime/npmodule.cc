@@ -28,7 +28,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <limits>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
@@ -216,9 +215,8 @@ NaClSrpcError NPModule::CreateArray(NaClSrpcChannel* channel,
   NPObject* window;
   NPN_GetValue(npp, NPNVWindowNPObject, &window);
   NPString script;
-  const char scriptText[] = "new Array();";
-  script.UTF8Characters = scriptText;
-  script.UTF8Length = sizeof(scriptText);
+  script.UTF8Characters = "new Array();";
+  script.UTF8Length = strlen(script.UTF8Characters);
   NPVariant result;
   int success = NPN_Evaluate(npp, window, &script, &result) &&
                 NPVARIANT_IS_OBJECT(result);
@@ -301,7 +299,7 @@ NaClSrpcError NPModule::GetStringIdentifier(NaClSrpcChannel* channel,
                                             NaClSrpcArg** inputs,
                                             NaClSrpcArg** outputs) {
   UNREFERENCED_PARAMETER(channel);
-  NPUTF8* name = inputs[0]->u.sval;
+  char* name = inputs[0]->u.sval;
   NPIdentifier identifier = NPN_GetStringIdentifier(name);
   outputs[0]->u.ival = NPBridge::NpidentifierToInt(identifier);
   return NACL_SRPC_RESULT_OK;
@@ -492,32 +490,15 @@ static bool SerializeArgArray(int argc,
   size_t used = 0;
 
   for (int i = 0; i < argc; ++i) {
-    // Note that strlen() cannot ever return SIZE_T_MAX, since
-    // that would imply that there were no nulls anywhere in memory,
-    // which would lead to strlen() never terminating. So this
-    // assignment is safe.
     size_t len = strlen(array[i]) + 1;
-
-    if (len > std::numeric_limits<uint32_t>::max()) {
-      // overflow, input string is too long
-      return false;
-    }
-
-    if (used > std::numeric_limits<uint32_t>::max() - len) {
-      // overflow, output string is too long
-      return false;
-    }
-
-    if (used > *serial_size - len) {
+    if (*serial_size < used + len) {
       // Length of the serialized array was exceeded.
       return false;
     }
     strncpy(serial_array + used, array[i], len);
     used += len;
   }
-  // Note that there is a check against numeric_limits<uint32_t> in
-  // the code above, which is why this cast is safe.
-  *serial_size = static_cast<uint32_t>(used);
+  *serial_size = used;
   return true;
 }
 

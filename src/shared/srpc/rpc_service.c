@@ -202,7 +202,7 @@ static NaClSrpcMethodDesc* BuildMethods(
  */
 static char* BuildSDString(const NaClSrpcMethodDesc* methods,
                            uint32_t method_count,
-                           nacl_abi_size_t *length) {
+                           size_t *length) {
   uint32_t i;
   char* p;
   char* str;
@@ -210,10 +210,9 @@ static char* BuildSDString(const NaClSrpcMethodDesc* methods,
   /* Find the total length of the method description strings.  */
   *length = 1;
   for (i = 0; i < method_count; ++i) {
-    *length += nacl_abi_size_t_saturate(
-                 strlen(methods[i].name) + 1 +
-                 strlen(methods[i].input_types) + 1 +
-                 strlen(methods[i].output_types) + 1);
+    *length += strlen(methods[i].name) + 1 +
+               strlen(methods[i].input_types) + 1 +
+               strlen(methods[i].output_types) + 1;
   }
   /* Allocate the string. */
   str = (char*) malloc(*length + 1);
@@ -247,8 +246,8 @@ static char* BuildSDString(const NaClSrpcMethodDesc* methods,
  */
 int NaClSrpcServiceHandlerCtor(NaClSrpcService* service,
                                const NaClSrpcHandlerDesc* handler_desc) {
-  char*       service_str;
-  nacl_abi_size_t  str_length;
+  char* service_str;
+  size_t str_length;
   NaClSrpcMethodDesc* methods;
   uint32_t method_count;
 
@@ -342,7 +341,7 @@ int NaClSrpcServiceStringCtor(NaClSrpcService* service, const char* str) {
     methods[i].handler = NULL;
   }
   service->service_string = strdup(str);
-  service->service_string_length = nacl_abi_size_t_saturate(strlen(str));
+  service->service_string_length = strlen(str);
   service->rpc_descr = methods;
   service->rpc_count = rpc_count;
   return 1;
