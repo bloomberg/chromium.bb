@@ -37,6 +37,10 @@
 SkBitmap* OpaqueBrowserFrameView::distributor_logo_ = NULL;
 gfx::Font* OpaqueBrowserFrameView::title_font_ = NULL;
 
+#if defined(OS_CHROMEOS)
+const int kCustomFrameBackgroundVerticalOffset = 15;
+#endif
+
 namespace {
 // The frame border is only visible in restored mode and is hardcoded to 4 px on
 // each side regardless of the system window border size.
@@ -690,7 +694,7 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
 
   // Window frame mode and color
   SkBitmap* theme_frame;
-
+  int y = 0;
   // Never theme app and popup windows.
   if (!browser_view_->IsBrowserTypeNormal()) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -702,14 +706,24 @@ void OpaqueBrowserFrameView::PaintMaximizedFrameBorder(gfx::Canvas* canvas) {
     theme_frame = ShouldPaintAsActive() ?
         tp->GetBitmapNamed(IDR_THEME_FRAME) :
         tp->GetBitmapNamed(IDR_THEME_FRAME_INACTIVE);
+#if defined(OS_CHROMEOS)
+    // TODO:(oshima): gtk based CHROMEOS is using non custom frame
+    // mode which does this adjustment. This should be removed
+    // once it's fully migrated to views. -1 is due to the layout
+    // difference between views and gtk and will be removed.
+    // See http://crbug.com/28580.
+    y = -kCustomFrameBackgroundVerticalOffset - 1;
+#endif
   } else {
     theme_frame = ShouldPaintAsActive() ?
         tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO) :
         tp->GetBitmapNamed(IDR_THEME_FRAME_INCOGNITO_INACTIVE);
+#if defined(OS_CHROMEOS)
+    y = -kCustomFrameBackgroundVerticalOffset - 1;
+#endif
   }
-
   // Draw the theme frame.
-  canvas->TileImageInt(*theme_frame, 0, 0, width(), theme_frame->height());
+  canvas->TileImageInt(*theme_frame, 0, y, width(), theme_frame->height());
 
   // Draw the theme frame overlay
   if (tp->HasCustomImage(IDR_THEME_FRAME_OVERLAY) &&
