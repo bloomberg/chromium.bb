@@ -335,11 +335,11 @@ NaClSrpcError NaClSrpcInvokeVaList(NaClSrpcChannel  *channel,
 
   for (i = 0, p = arg_types; i < num_in; ++i, ++p) {
     ARGRET_SWITCH(ARG, in_va, inv[i]);
-    inv[i]->tag = *p;
+    inv[i]->tag = (enum NaClSrpcArgType) *p;
   }
   for (i = 0, p = ret_types; i < num_out; ++i, ++p) {
     ARGRET_SWITCH(RETINIT, in_va, outv[i]);
-    outv[i]->tag = *p;
+    outv[i]->tag = (enum NaClSrpcArgType) *p;
   }
 
   rv = NaClSrpcInvokeV(channel, rpc_num, inv, outv);
