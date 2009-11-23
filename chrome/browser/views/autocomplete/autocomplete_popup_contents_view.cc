@@ -98,7 +98,12 @@ const int kRowRightPadding = 3;
 const int kIconTextSpacing = 9;
 // The size delta between the font used for the edit and the result rows. Passed
 // to gfx::Font::DeriveFont.
+#if !defined(OS_CHROMEOS)
 const int kEditFontAdjust = -1;
+#else
+// Don't adjust font on chromeos as it becomes too small.
+const int kEditFontAdjust = 0;
+#endif
 
 }
 

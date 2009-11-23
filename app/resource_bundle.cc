@@ -145,21 +145,12 @@ void ResourceBundle::LoadFontsIfNecessary() {
   AutoLock lock_scope(lock_);
   if (!base_font_.get()) {
     base_font_.reset(new gfx::Font());
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-    // Toolkit views needs a less gigantor base font to more correctly match
-    // metrics for the bitmap-based UI.
-    *base_font_ = base_font_->DeriveFont(-1);
-#endif
 
     small_font_.reset(new gfx::Font());
     *small_font_ = base_font_->DeriveFont(-2);
 
     medium_font_.reset(new gfx::Font());
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-    *medium_font_ = base_font_->DeriveFont(2);
-#else
     *medium_font_ = base_font_->DeriveFont(3);
-#endif
 
     medium_bold_font_.reset(new gfx::Font());
     *medium_bold_font_ =
