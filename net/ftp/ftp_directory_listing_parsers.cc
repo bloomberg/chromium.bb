@@ -341,6 +341,10 @@ bool FtpLsDirectoryListingParser::ConsumeLine(const string16& line) {
   return true;
 }
 
+bool FtpLsDirectoryListingParser::OnEndOfInput() {
+  return true;
+}
+
 bool FtpLsDirectoryListingParser::EntryAvailable() const {
   return !entries_.empty();
 }
@@ -378,6 +382,10 @@ bool FtpWindowsDirectoryListingParser::ConsumeLine(const string16& line) {
     return false;
 
   entries_.push(entry);
+  return true;
+}
+
+bool FtpWindowsDirectoryListingParser::OnEndOfInput() {
   return true;
 }
 
@@ -439,6 +447,10 @@ bool FtpVmsDirectoryListingParser::ConsumeLine(const string16& line) {
       NOTREACHED();
       return false;
   }
+}
+
+bool FtpVmsDirectoryListingParser::OnEndOfInput() {
+  return (state_ == STATE_END);
 }
 
 bool FtpVmsDirectoryListingParser::EntryAvailable() const {

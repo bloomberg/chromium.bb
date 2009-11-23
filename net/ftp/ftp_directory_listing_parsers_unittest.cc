@@ -68,6 +68,9 @@ TEST_F(FtpDirectoryListingParsersTest, Ls) {
     { "lrwxrwxrwx 1 0  0 3 Oct 12 13:37 mirror -> pub",
       net::FtpDirectoryListingEntry::SYMLINK, "mirror", -1,
       now_exploded.year, 10, 12, 13, 37 },
+    { "drwxrwsr-x    4 501      501          4096 Feb 20  2007 pub",
+      net::FtpDirectoryListingEntry::DIRECTORY, "pub", -1,
+      2007, 2, 20, 0, 0 },
   };
   for (size_t i = 0; i < arraysize(good_cases); i++) {
     SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, good_cases[i].input));

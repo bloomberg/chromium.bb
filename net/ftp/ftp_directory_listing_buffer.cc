@@ -70,7 +70,16 @@ int FtpDirectoryListingBuffer::ProcessRemainingData() {
   if (!buffer_.empty())
     return ERR_INVALID_RESPONSE;
 
-  return ParseLines();
+  rv = ParseLines();
+  if (rv != OK)
+    return rv;
+
+  rv = OnEndOfInput();
+  if (rv != OK)
+    return rv;
+
+  DCHECK(current_parser_);
+  return OK;
 }
 
 bool FtpDirectoryListingBuffer::EntryAvailable() const {
@@ -143,6 +152,26 @@ int FtpDirectoryListingBuffer::ParseLines() {
     }
   }
 
+  return OK;
+}
+
+int FtpDirectoryListingBuffer::OnEndOfInput() {
+  ParserSet::iterator i = parsers_.begin();
+  while (i != parsers_.end()) {
+    if ((*i)->OnEndOfInput()) {
+      i++;
+    } else {
+      delete *i;
+      parsers_.erase(i++);
+    }
+  }
+
+  if (parsers_.size() != 1) {
+    current_parser_ = NULL;
+    return ERR_UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT;
+  }
+
+  current_parser_ = *parsers_.begin();
   return OK;
 }
 
