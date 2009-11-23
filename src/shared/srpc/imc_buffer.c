@@ -42,6 +42,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>
+
 #ifdef __native_client__
 #include <inttypes.h>
 #include <nacl/nacl_inttypes.h>
@@ -52,6 +53,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
+#include "native_client/src/trusted/service_runtime/nacl_check.h"
 
 #ifndef SIZE_T_MAX
 # define SIZE_T_MAX (~((size_t) 0))
@@ -103,14 +105,14 @@ void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer, int is_write_buf) {
  * target from buffer.  It returns the number of elements read if successful,
  * and -1 otherwise.
  */
-size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
-                         size_t elt_size,
-                         size_t n_elt,
-                         void* target) {
-  size_t request_bytes;
-  size_t avail_bytes = buffer->last_byte - buffer->next_byte;
+nacl_abi_size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
+                                  nacl_abi_size_t elt_size,
+                                  nacl_abi_size_t n_elt,
+                                  void* target) {
+  nacl_abi_size_t request_bytes;
+  nacl_abi_size_t avail_bytes = buffer->last_byte - buffer->next_byte;
 
-  if (n_elt >= SIZE_T_MAX / elt_size) {
+  if (n_elt >= NACL_ABI_SIZE_T_MAX / elt_size) {
     return -1;
   }
   request_bytes = n_elt * elt_size;
@@ -154,21 +156,25 @@ void __NaClSrpcImcRefill(NaClSrpcImcBuffer* buffer) {
 
 /*
  * __NaClSrpcImcWrite attempts to write n_elt elements of size elt_size from
- * sourc to the specified buffer.  It returns the number of elements it
+ * source to the specified buffer.  It returns the number of elements it
  * wrote if successful, and -1 otherwise.
  */
-size_t __NaClSrpcImcWrite(const void* source,
-                          size_t elt_size,
-                          size_t n_elt,
-                          NaClSrpcImcBuffer* buffer) {
-  size_t request_bytes;
+nacl_abi_size_t __NaClSrpcImcWrite(const void* source,
+                                   nacl_abi_size_t elt_size,
+                                   nacl_abi_size_t n_elt,
+                                   NaClSrpcImcBuffer* buffer) {
+  nacl_abi_size_t request_bytes;
+  nacl_abi_size_t avail_bytes;
   /*
    * What follows works on the assumption that buffer->bytes is an array,
    * rather than a pointer to a buffer.  If it were the latter, the subtraction
    * would almost invariably be negative, producing a massive size_t value
    * and allowing heap corruptions.
    */
-  size_t avail_bytes = sizeof(buffer->bytes) - buffer->next_byte;
+  CHECK(sizeof(buffer->bytes) <= NACL_ABI_SIZE_T_MAX);
+  CHECK(sizeof(buffer->bytes) >= buffer->next_byte);
+  avail_bytes =
+      nacl_abi_size_t_saturate(sizeof(buffer->bytes) - buffer->next_byte);
 
   /*
    * protect against future change of buffer->bytes to be dynamically
@@ -199,7 +205,7 @@ size_t __NaClSrpcImcWrite(const void* source,
  */
 int __NaClSrpcImcWriteDesc(NaClSrpcImcDescType desc,
                            NaClSrpcImcBuffer* buffer) {
-  int desc_index = NACL_SRPC_IMC_HEADER_DESC_LENGTH(*buffer);
+  nacl_abi_size_t desc_index = NACL_SRPC_IMC_HEADER_DESC_LENGTH(*buffer);
 
   if (SRPC_DESC_MAX <= desc_index) {
     return 0;
