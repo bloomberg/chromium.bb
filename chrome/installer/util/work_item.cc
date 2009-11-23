@@ -21,11 +21,11 @@ WorkItem::~WorkItem() {
 }
 
 CopyTreeWorkItem* WorkItem::CreateCopyTreeWorkItem(
-    const FilePath& source_path,
-    const FilePath& dest_path,
-    const FilePath& temp_dir,
+    const std::wstring& source_path,
+    const std::wstring& dest_path,
+    const std::wstring& temp_dir,
     CopyOverWriteOption overwrite_option,
-    const FilePath& alternative_path) {
+    const std::wstring& alternative_path) {
   return new CopyTreeWorkItem(source_path, dest_path, temp_dir,
                               overwrite_option, alternative_path);
 }
@@ -49,14 +49,14 @@ DeleteRegValueWorkItem* WorkItem::CreateDeleteRegValueWorkItem(
 }
 
 DeleteTreeWorkItem* WorkItem::CreateDeleteTreeWorkItem(
-    const FilePath& root_path, const FilePath& key_path) {
+    const std::wstring& root_path, const std::wstring& key_path) {
   return new DeleteTreeWorkItem(root_path, key_path);
 }
 
 MoveTreeWorkItem* WorkItem::CreateMoveTreeWorkItem(
-    const FilePath& source_path,
-    const FilePath& dest_path,
-    const FilePath& temp_dir) {
+    const std::wstring& source_path,
+    const std::wstring& dest_path,
+    const std::wstring& temp_dir) {
   return new MoveTreeWorkItem(source_path, dest_path, temp_dir);
 }
 

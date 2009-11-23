@@ -12,13 +12,11 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
 
-class FilePath;
-
 namespace installer {
 // Get path to the installer under Chrome version folder
 // (for example <path>\Google\Chrome\<Version>\installer)
-FilePath GetInstallerPathUnderChrome(const FilePath& install_path,
-                                     const std::wstring& new_version);
+std::wstring GetInstallerPathUnderChrome(const std::wstring& install_path,
+                                         const std::wstring& new_version);
 
 // This function installs or updates a new version of Chrome. It returns
 // install status (failed, new_install, updated etc).
@@ -38,12 +36,9 @@ FilePath GetInstallerPathUnderChrome(const FilePath& install_path,
 // Note: since caller unpacks Chrome to install_temp_path\source, the caller
 // is responsible for cleaning up install_temp_path.
 installer_util::InstallStatus InstallOrUpdateChrome(
-    const FilePath& exe_path,
-    const FilePath& archive_path,
-    const FilePath& install_temp_path,
-    const FilePath& prefs_path,
-    const DictionaryValue* prefs,
-    const Version& new_version,
+    const std::wstring& exe_path, const std::wstring& archive_path,
+    const std::wstring& install_temp_path, const std::wstring& prefs_path,
+    const DictionaryValue* prefs, const Version& new_version,
     const Version* installed_version);
 }
 

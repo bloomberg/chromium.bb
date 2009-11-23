@@ -11,7 +11,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/version.h"
 
-class FilePath;
 class RegKey;
 
 class BrowserDistribution {
@@ -21,7 +20,7 @@ class BrowserDistribution {
   static BrowserDistribution* GetDistribution();
 
   virtual void DoPostUninstallOperations(const installer::Version& version,
-                                         const FilePath& local_data_path,
+                                         const std::wstring& local_data_path,
                                          const std::wstring& distribution_data);
 
   virtual std::wstring GetAppGuid();

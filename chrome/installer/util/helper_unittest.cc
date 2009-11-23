@@ -105,7 +105,7 @@ TEST_F(SetupHelperTest, Delete) {
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
   std::wstring latest_version(L"1.0.4.0");
-  installer::RemoveOldVersionDirs(chrome_dir, latest_version);
+  installer::RemoveOldVersionDirs(chrome_dir.value(), latest_version);
 
   // old versions should be gone
   EXPECT_FALSE(file_util::PathExists(chrome_dir_1));
@@ -178,7 +178,7 @@ TEST_F(SetupHelperTest, DeleteInUsed) {
   ASSERT_TRUE(file_util::PathExists(chrome_dll_4));
 
   std::wstring latest_version(L"1.0.4.0");
-  installer::RemoveOldVersionDirs(chrome_dir, latest_version);
+  installer::RemoveOldVersionDirs(chrome_dir.value(), latest_version);
 
   // old versions not in used should be gone
   EXPECT_FALSE(file_util::PathExists(chrome_dir_1));

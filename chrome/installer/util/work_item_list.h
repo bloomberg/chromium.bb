@@ -36,11 +36,11 @@ class WorkItemList : public WorkItem {
   bool AddWorkItem(WorkItem* work_item);
 
   // Add a CopyTreeWorkItem to the list of work items.
-  bool AddCopyTreeWorkItem(const FilePath& source_path,
-                           const FilePath& dest_path,
-                           const FilePath& temp_dir,
+  bool AddCopyTreeWorkItem(const std::wstring& source_path,
+                           const std::wstring& dest_path,
+                           const std::wstring& temp_dir,
                            CopyOverWriteOption overwrite_option,
-                           const FilePath& alternative_path = FilePath());
+                           const std::wstring& alternative_path = L"");
 
   // Add a CreateDirWorkItem that creates a directory at the given path.
   bool AddCreateDirWorkItem(const FilePath& path);
@@ -59,13 +59,13 @@ class WorkItemList : public WorkItem {
   // Add a DeleteTreeWorkItem that recursively deletes a file system
   // hierarchy at the given root path. A key file can be optionally specified
   // by key_path.
-  bool AddDeleteTreeWorkItem(const FilePath& root_path,
-                             const FilePath& key_path);
+  bool AddDeleteTreeWorkItem(const std::wstring& root_path,
+                             const std::wstring& key_path);
 
   // Add a MoveTreeWorkItem to the list of work items.
-  bool AddMoveTreeWorkItem(const FilePath& source_path,
-                           const FilePath& dest_path,
-                           const FilePath& temp_dir);
+  bool AddMoveTreeWorkItem(const std::wstring& source_path,
+                           const std::wstring& dest_path,
+                           const std::wstring& temp_dir);
 
   // Add a SetRegValueWorkItem that sets a registry value with REG_SZ type
   // at the key with specified path.

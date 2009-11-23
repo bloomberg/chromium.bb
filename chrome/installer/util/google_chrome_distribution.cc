@@ -68,11 +68,11 @@ int FileTimeToHours(const FILETIME& time) {
 
 // Returns the directory last write time in hours since January 1, 1601.
 // Returns -1 if there was an error retrieving the directory time.
-int GetDirectoryWriteTimeInHours(const FilePath& path) {
+int GetDirectoryWriteTimeInHours(const wchar_t* path) {
   // To open a directory you need to pass FILE_FLAG_BACKUP_SEMANTICS.
   DWORD share = FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE;
-  HANDLE file = ::CreateFileW(path.value().c_str(), 0, share, NULL,
-                              OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
+  HANDLE file = ::CreateFileW(path, 0, share, NULL, OPEN_EXISTING,
+                              FILE_FLAG_BACKUP_SEMANTICS, NULL);
   if (INVALID_HANDLE_VALUE == file)
     return -1;
   FILETIME time;
@@ -84,7 +84,7 @@ int GetDirectoryWriteTimeInHours(const FilePath& path) {
 // Returns the directory last-write time age in hours, relative to current
 // time, so if it returns 14 it means that the directory was last written 14
 // hours ago. Returns -1 if there was an error retrieving the directory.
-int GetDirectoryWriteAgeInHours(const FilePath& path) {
+int GetDirectoryWriteAgeInHours(const wchar_t* path) {
   int dir_time = GetDirectoryWriteTimeInHours(path);
   if (dir_time < 0)
     return dir_time;
@@ -128,9 +128,9 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
 }
 
 bool GoogleChromeDistribution::ExtractUninstallMetricsFromFile(
-    const FilePath& file_path, std::wstring* uninstall_metrics_string) {
+    const std::wstring& file_path, std::wstring* uninstall_metrics_string) {
 
-  JSONFileValueSerializer json_serializer(file_path);
+  JSONFileValueSerializer json_serializer(FilePath::FromWStringHack(file_path));
 
   std::string json_error_string;
   scoped_ptr<Value> root(json_serializer.Deserialize(NULL));
@@ -172,7 +172,7 @@ bool GoogleChromeDistribution::ExtractUninstallMetrics(
 }
 
 void GoogleChromeDistribution::DoPostUninstallOperations(
-    const installer::Version& version, const FilePath& local_data_path,
+    const installer::Version& version, const std::wstring& local_data_path,
     const std::wstring& distribution_data) {
   // Send the Chrome version and OS version as params to the form.
   // It would be nice to send the locale, too, but I don't see an
@@ -447,9 +447,9 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     LOG(INFO) << "User in experiment locale";
     // Check browser usage inactivity by the age of the last-write time of the
     // chrome user data directory. Ninety days is our trigger.
-    FilePath user_data_dir(installer::GetChromeUserDataPath());
+    std::wstring user_data_dir = installer::GetChromeUserDataPath();
     const int kSixtyDays = 60 * 24;
-    int dir_age_hours = GetDirectoryWriteAgeInHours(user_data_dir);
+    int dir_age_hours = GetDirectoryWriteAgeInHours(user_data_dir.c_str());
     if (dir_age_hours < kSixtyDays)
       return;
     // At this point the user qualifies for the experiment, however we need to

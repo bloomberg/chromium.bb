@@ -32,14 +32,18 @@ bool CanUpdateCurrentChrome(const std::wstring& chrome_exe_path) {
 #if !defined(GOOGLE_CHROME_BUILD)
   return false;
 #else
-  FilePath user_exe_path(installer::GetChromeInstallPath(false));
-  FilePath machine_exe_path(installer::GetChromeInstallPath(true));
-  if (chrome_exe_path != user_exe_path && chrome_exe_path != machine_exe_path) {
+  std::wstring user_exe_path = installer::GetChromeInstallPath(false);
+  std::wstring machine_exe_path = installer::GetChromeInstallPath(true);
+  std::transform(user_exe_path.begin(), user_exe_path.end(),
+                 user_exe_path.begin(), tolower);
+  std::transform(machine_exe_path.begin(), machine_exe_path.end(),
+                 machine_exe_path.begin(), tolower);
+  if (chrome_exe_path != user_exe_path &&
+      chrome_exe_path != machine_exe_path ) {
     LOG(ERROR) << L"Google Update cannot update Chrome installed in a "
-               << L"non-standard location: " << chrome_exe_path.value().c_str()
-               << L". The standard location is: "
-               << user_exe_path.value().c_str()
-               << L" or " << machine_exe_path.value().c_str() << L".";
+               << L"non-standard location: " << chrome_exe_path.c_str()
+               << L". The standard location is: " << user_exe_path.c_str()
+               << L" or " << machine_exe_path.c_str() << L".";
     return false;
   }
 

@@ -30,8 +30,8 @@ class DeleteTreeWorkItem : public WorkItem {
   // Get a backup path that can keep root_path_ or key_path_
   bool GetBackupPath(const FilePath& for_path, FilePath* backup_path);
 
-  DeleteTreeWorkItem(const FilePath& root_path,
-                     const FilePath& key_path);
+  DeleteTreeWorkItem(const std::wstring& root_path,
+                     const std::wstring& key_path);
 
   // Root path to delete.
   FilePath root_path_;

@@ -51,23 +51,23 @@ namespace {
 // is unpacked in the path specified by parameter "path".
 DWORD UnPackArchive(const std::wstring& archive, bool system_install,
                     const installer::Version* installed_version,
-                    const FilePath& temp_path, const FilePath& path,
+                    const std::wstring& temp_path, const std::wstring& path,
                     bool& incremental_install) {
   // First uncompress the payload. This could be a differential
   // update (patch.7z) or full archive (chrome.7z). If this uncompress fails
   // return with error.
   std::wstring unpacked_file;
-  int32 ret = LzmaUtil::UnPackArchive(archive, temp_path.value(),
-                                      &unpacked_file);
+  int32 ret = LzmaUtil::UnPackArchive(archive, temp_path, &unpacked_file);
   if (ret != NO_ERROR)
     return ret;
 
-  FilePath uncompressed_archive(temp_path.Append(installer::kChromeArchive));
+  std::wstring uncompressed_archive(temp_path);
+  file_util::AppendToPath(&uncompressed_archive, installer::kChromeArchive);
 
   // Check if this is differential update and if it is, patch it to the
   // installer archive that should already be on the machine. We assume
   // it is a differential installer if chrome.7z is not found.
-  if (!file_util::PathExists(uncompressed_archive)) {
+  if (!file_util::PathExists(FilePath::FromWStringHack(uncompressed_archive))) {
     incremental_install = true;
     LOG(INFO) << "Differential patch found. Applying to existing archive.";
     if (!installed_version) {
@@ -75,20 +75,21 @@ DWORD UnPackArchive(const std::wstring& archive, bool system_install,
                  << "installed on the system.";
       return installer_util::CHROME_NOT_INSTALLED;
     }
-    FilePath existing_archive(installer::GetChromeInstallPath(system_install));
-    existing_archive = existing_archive.Append(installed_version->GetString());
-    existing_archive = existing_archive.Append(installer_util::kInstallerDir);
-    existing_archive = existing_archive.Append(installer::kChromeArchive);
-    if (int i = setup_util::ApplyDiffPatch(existing_archive.value(),
-        unpacked_file, uncompressed_archive.value())) {
+    std::wstring existing_archive =
+        installer::GetChromeInstallPath(system_install);
+    file_util::AppendToPath(&existing_archive,
+                            installed_version->GetString());
+    file_util::AppendToPath(&existing_archive, installer_util::kInstallerDir);
+    file_util::AppendToPath(&existing_archive, installer::kChromeArchive);
+    if (int i = setup_util::ApplyDiffPatch(existing_archive, unpacked_file,
+                                           uncompressed_archive)) {
       LOG(ERROR) << "Binary patching failed with error " << i;
       return i;
     }
   }
 
   // Unpack the uncompressed archive.
-  return LzmaUtil::UnPackArchive(uncompressed_archive.value(), path.value(),
-                                 &unpacked_file);
+  return LzmaUtil::UnPackArchive(uncompressed_archive, path, &unpacked_file);
 }
 
 
@@ -98,14 +99,17 @@ DWORD UnPackArchive(const std::wstring& archive, bool system_install,
 // system and a key called 'opv' in the registry. This function will move
 // new_chrome.exe to chrome.exe and delete 'opv' key in one atomic operation.
 installer_util::InstallStatus RenameChromeExecutables(bool system_install) {
-  FilePath chrome_path(installer::GetChromeInstallPath(system_install));
+  std::wstring chrome_path(installer::GetChromeInstallPath(system_install));
 
-  FilePath chrome_exe(chrome_path.Append(installer_util::kChromeExe));
-  FilePath chrome_old_exe(chrome_path.Append(installer_util::kChromeOldExe));
-  FilePath chrome_new_exe(chrome_path.Append(installer_util::kChromeNewExe));
+  std::wstring chrome_exe(chrome_path);
+  file_util::AppendToPath(&chrome_exe, installer_util::kChromeExe);
+  std::wstring chrome_old_exe(chrome_path);
+  file_util::AppendToPath(&chrome_old_exe, installer_util::kChromeOldExe);
+  std::wstring chrome_new_exe(chrome_path);
+  file_util::AppendToPath(&chrome_new_exe, installer_util::kChromeNewExe);
 
   scoped_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
-  install_list->AddDeleteTreeWorkItem(chrome_old_exe, FilePath());
+  install_list->AddDeleteTreeWorkItem(chrome_old_exe, std::wstring());
   FilePath temp_path;
   if (!file_util::CreateNewTempDirectory(L"chrome_", &temp_path)) {
     LOG(ERROR) << "Failed to create Temp directory " << temp_path.value();
@@ -113,16 +117,16 @@ installer_util::InstallStatus RenameChromeExecutables(bool system_install) {
   }
   install_list->AddCopyTreeWorkItem(chrome_new_exe,
                                     chrome_exe,
-                                    temp_path,
+                                    temp_path.ToWStringHack(),
                                     WorkItem::IF_DIFFERENT,
-                                    FilePath());
+                                    std::wstring());
   HKEY reg_root = system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   BrowserDistribution *dist = BrowserDistribution::GetDistribution();
   install_list->AddDeleteRegValueWorkItem(reg_root,
                                           dist->GetVersionKey(),
                                           google_update::kRegOldVersionField,
                                           true);
-  install_list->AddDeleteTreeWorkItem(chrome_new_exe, FilePath());
+  install_list->AddDeleteTreeWorkItem(chrome_new_exe, std::wstring());
   install_list->AddDeleteRegValueWorkItem(reg_root,
                                           dist->GetVersionKey(),
                                           google_update::kRegRenameCmdField,
@@ -158,7 +162,8 @@ bool CheckPreInstallConditions(const installer::Version* installed_version,
   // either does not exist or can be deleted (i.e. is not locked by some other
   // process).
   if (!installed_version) {
-    FilePath install_path(installer::GetChromeInstallPath(system_install));
+    FilePath install_path = FilePath::FromWStringHack(
+        installer::GetChromeInstallPath(system_install));
     if (file_util::PathExists(install_path) &&
         !file_util::Delete(install_path, true)) {
       LOG(ERROR) << "Installation directory " << install_path.value()
@@ -209,19 +214,24 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   LOG(INFO) << "created path " << temp_path.value();
 
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  FilePath unpack_path(temp_path.Append(installer::kInstallSourceDir));
+  std::wstring unpack_path(temp_path.ToWStringHack());
+  file_util::AppendToPath(&unpack_path,
+                          std::wstring(installer::kInstallSourceDir));
   bool incremental_install = false;
   if (UnPackArchive(archive, system_level, installed_version,
-                    temp_path, unpack_path, incremental_install)) {
+                    temp_path.ToWStringHack(), unpack_path,
+                    incremental_install)) {
     install_status = installer_util::UNCOMPRESSION_FAILED;
     InstallUtil::WriteInstallerResult(system_level, install_status,
                                       IDS_INSTALL_UNCOMPRESSION_FAILED_BASE,
                                       NULL);
   } else {
-    LOG(INFO) << "unpacked to " << unpack_path.value();
-    FilePath src_path(unpack_path.Append(installer::kInstallSourceChromeDir));
+    LOG(INFO) << "unpacked to " << unpack_path;
+    std::wstring src_path(unpack_path);
+    file_util::AppendToPath(&src_path,
+        std::wstring(installer::kInstallSourceChromeDir));
     scoped_ptr<installer::Version>
-        installer_version(setup_util::GetVersionFromDir(src_path.value()));
+        installer_version(setup_util::GetVersionFromDir(src_path));
     if (!installer_version.get()) {
       LOG(ERROR) << "Did not find any valid version in installer.";
       install_status = installer_util::INVALID_ARCHIVE;
@@ -239,17 +249,19 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
       } else {
         // We want to keep uncompressed archive (chrome.7z) that we get after
         // uncompressing and binary patching. Get the location for this file.
-        FilePath archive_to_copy(temp_path.Append(installer::kChromeArchive));
-        FilePath prefs_source_path = cmd_line.GetSwitchValuePath(
-            WideToASCII(installer_util::switches::kInstallerData));
+        std::wstring archive_to_copy(temp_path.ToWStringHack());
+        file_util::AppendToPath(&archive_to_copy,
+                                std::wstring(installer::kChromeArchive));
+        std::wstring prefs_source_path = cmd_line.GetSwitchValue(
+            installer_util::switches::kInstallerData);
         install_status = installer::InstallOrUpdateChrome(
-            cmd_line.GetProgram(), archive_to_copy, temp_path,
+            cmd_line.program(), archive_to_copy, temp_path.ToWStringHack(),
             prefs_source_path, prefs, *installer_version, installed_version);
 
         int install_msg_base = IDS_INSTALL_FAILED_BASE;
         std::wstring chrome_exe;
         if (install_status != installer_util::INSTALL_FAILED) {
-          chrome_exe = installer::GetChromeInstallPath(system_level).value();
+          chrome_exe = installer::GetChromeInstallPath(system_level);
           if (chrome_exe.empty()) {
             // If we failed to construct install path, it means the OS call to
             // get %ProgramFiles% or %AppData% failed. Report this as failure.
@@ -297,11 +309,12 @@ installer_util::InstallStatus InstallChrome(const CommandLine& cmd_line,
   // and master profile file if present.
   scoped_ptr<WorkItemList> cleanup_list(WorkItem::CreateWorkItemList());
   LOG(INFO) << "Deleting temporary directory " << temp_path.value();
-  cleanup_list->AddDeleteTreeWorkItem(temp_path, FilePath());
+  cleanup_list->AddDeleteTreeWorkItem(temp_path.ToWStringHack(),
+                                      std::wstring());
   if (cmd_line.HasSwitch(installer_util::switches::kInstallerData)) {
-    FilePath prefs_path = cmd_line.GetSwitchValuePath(
-        WideToASCII(installer_util::switches::kInstallerData));
-    cleanup_list->AddDeleteTreeWorkItem(prefs_path, FilePath());
+    std::wstring prefs_path = cmd_line.GetSwitchValue(
+        installer_util::switches::kInstallerData);
+    cleanup_list->AddDeleteTreeWorkItem(prefs_path, std::wstring());
   }
   cleanup_list->Do();
 
@@ -327,9 +340,9 @@ installer_util::InstallStatus UninstallChrome(const CommandLine& cmd_line,
   bool remove_all = !cmd_line.HasSwitch(
       installer_util::switches::kDoNotRemoveSharedItems);
 
-  return installer_setup::UninstallChrome(cmd_line.GetProgram(), system_install,
-                                          remove_all, force, cmd_line,
-                                          cmd_params);
+  return installer_setup::UninstallChrome(cmd_line.program(), system_install,
+                                          remove_all, force,
+                                          cmd_line, cmd_params);
 }
 
 installer_util::InstallStatus ShowEULADialog(const std::wstring& inner_frame) {
@@ -381,7 +394,7 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
           installer_util::switches::kUpdateSetupExe);
       LOG(INFO) << "Opening archive " << setup_patch;
       std::wstring uncompressed_patch;
-      if (LzmaUtil::UnPackArchive(setup_patch, temp_path.value(),
+      if (LzmaUtil::UnPackArchive(setup_patch, temp_path.ToWStringHack(),
                                   &uncompressed_patch) == NO_ERROR) {
         std::wstring old_setup_exe = cmd_line.program();
         std::wstring new_setup_exe = cmd_line.GetSwitchValue(

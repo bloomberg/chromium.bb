@@ -40,7 +40,7 @@ BrowserDistribution* BrowserDistribution::GetDistribution(bool chrome_frame) {
 }
 
 void BrowserDistribution::DoPostUninstallOperations(
-    const installer::Version& version, const FilePath& local_data_path,
+    const installer::Version& version, const std::wstring& local_data_path,
     const std::wstring& distribution_data) {
 }
 
