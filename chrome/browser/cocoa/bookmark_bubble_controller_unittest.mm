@@ -151,7 +151,7 @@ TEST_F(BookmarkBubbleControllerTest, TestFolderWithBlankName) {
 
   // One of the items should be blank and its node should be node2.
   NSArray* items = [[controller folderPopUpButton] itemArray];
-  EXPECT_EQ(6U, [items count]);
+  EXPECT_GT([items count], 4U);
   BOOL blankFolderFound = NO;
   for (NSMenuItem* item in [[controller folderPopUpButton] itemArray]) {
     if ([[item title] length] == 0 &&
