@@ -556,6 +556,11 @@
         3
       </message>
 
+      <!-- The minimum width of javascript alert popups. -->
+      <message name="IDS_ALERT_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+        30
+      </message>
+
       <!-- Locale-dependent static encodings string -->
       <message name="IDS_STATIC_ENCODING_LIST" use_name_for_id="true">
         ISO-8859-1,windows-1252

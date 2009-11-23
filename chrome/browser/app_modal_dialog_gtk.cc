@@ -14,7 +14,9 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 
 namespace {
 
@@ -170,6 +172,16 @@ void AppModalDialog::CreateAndShowDialog() {
 
   gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_OK);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnDialogResponse), this);
+
+  // Suggest a minimum size.
+  gtk_widget_realize(dialog_);
+  gint width;
+  GtkRequisition req;
+  gtk_widget_size_request(dialog_, &req);
+  gtk_util::GetWidgetSizeFromResources(dialog_, IDS_ALERT_DIALOG_WIDTH_CHARS, 0,
+                                       &width, NULL);
+  if (width > req.width)
+    gtk_widget_set_size_request(dialog_, width, -1);
 
   gtk_widget_show_all(GTK_WIDGET(GTK_DIALOG(dialog_)));
 }
