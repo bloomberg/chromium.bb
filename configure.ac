@@ -209,3 +209,11 @@ AC_OUTPUT([
 	include/Makefile
 	include/drm/Makefile
 	libdrm.pc])
+
+echo ""
+echo "$PACKAGE_STRING will be compiled with:"
+echo ""
+echo "  Intel api      yes"
+echo "  Radeon api     $RADEON"
+echo "  Nouveau API    $NOUVEAU"
+echo ""
