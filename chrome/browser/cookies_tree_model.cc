@@ -69,7 +69,7 @@ class OriginNodeComparator {
   }
 
  private:
-  std::string CanonicalizeHost(const std::wstring& host_w) {
+  static std::string CanonicalizeHost(const std::wstring& host_w) {
     // The canonicalized representation makes the registry controlled domain
     // come first, and then adds subdomains in reverse order, e.g.
     // 1.mail.google.com would become google.com.mail.1, and then a standard
