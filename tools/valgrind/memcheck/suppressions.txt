@@ -1745,3 +1745,11 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+
+{
+  bug_28633
+  Memcheck:Leak
+  fun:calloc
+  fun:__new_exitfn
+  fun:__cxa_atexit
+}
