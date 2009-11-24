@@ -30,10 +30,7 @@ class FlipIOBuffer {
   // Accessors.
   IOBuffer* buffer() const { return buffer_; }
   size_t size() const { return buffer_->size(); }
-  void release() {
-    buffer_.release();
-    stream_.release();
-  }
+  void release();
   int priority() const { return priority_; }
   const scoped_refptr<FlipStream>& stream() const { return stream_; }
 

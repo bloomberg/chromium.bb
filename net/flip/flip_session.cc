@@ -169,7 +169,9 @@ FlipSession::~FlipSession() {
     connection_.socket()->Disconnect();
   }
 
-  session_->flip_session_pool()->Remove(this);
+  // TODO(willchan): Don't hardcode port 80 here.
+  DCHECK(!session_->flip_session_pool()->HasSession(
+      HostResolver::RequestInfo(domain_, 80)));
 }
 
 net::Error FlipSession::Connect(const std::string& group_name,
@@ -359,7 +361,7 @@ void FlipSession::OnTCPConnect(int result) {
   if (result != net::OK) {
     net::Error err = static_cast<net::Error>(result);
     CloseAllStreams(err);
-    this->Release();
+    session_->flip_session_pool()->Remove(this);
     return;
   }
 
@@ -426,7 +428,7 @@ void FlipSession::OnReadComplete(int bytes_read) {
     // Session is tearing down.
     net::Error err = static_cast<net::Error>(bytes_read);
     CloseAllStreams(err);
-    this->Release();
+    session_->flip_session_pool()->Remove(this);
     return;
   }
 

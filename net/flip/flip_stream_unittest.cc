@@ -19,6 +19,21 @@
 
 namespace net {
 
+class FlipSessionPoolPeer {
+ public:
+  explicit FlipSessionPoolPeer(const scoped_refptr<FlipSessionPool>& pool)
+      : pool_(pool) {}
+
+  void RemoveFlipSession(const scoped_refptr<FlipSession>& session) {
+    pool_->Remove(session);
+  }
+
+ private:
+  const scoped_refptr<FlipSessionPool> pool_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlipSessionPoolPeer);
+};
+
 namespace {
 
 // Create a proxy service which fails on all requests (falls back to direct).
@@ -62,7 +77,8 @@ HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
 class FlipStreamTest : public testing::Test {
  protected:
   FlipStreamTest()
-      : session_(CreateSession(&session_deps_)) {}
+      : session_(CreateSession(&session_deps_)),
+        pool_peer_(session_->flip_session_pool()) {}
 
   scoped_refptr<FlipSession> CreateFlipSession() {
     HostResolver::RequestInfo resolve_info("www.google.com", 80);
@@ -77,10 +93,11 @@ class FlipStreamTest : public testing::Test {
 
   SessionDependencies session_deps_;
   scoped_refptr<HttpNetworkSession> session_;
+  FlipSessionPoolPeer pool_peer_;
 };
 
 // Needs fixing, see http://crbug.com/28622
-TEST_F(FlipStreamTest, DISABLED_SendRequest) {
+TEST_F(FlipStreamTest, SendRequest) {
   scoped_refptr<FlipSession> session(CreateFlipSession());
   HttpRequestInfo request;
   request.method = "GET";
@@ -89,6 +106,10 @@ TEST_F(FlipStreamTest, DISABLED_SendRequest) {
 
   scoped_refptr<FlipStream> stream(new FlipStream(session, 1, false));
   EXPECT_EQ(ERR_IO_PENDING, stream->SendRequest(NULL, &callback));
+
+  // Need to manually remove the flip session since normally it gets removed on
+  // socket close/error, but we aren't communicating over a socket here.
+  pool_peer_.RemoveFlipSession(session);
 }
 
 // TODO(willchan): Write a longer test for FlipStream that exercises all

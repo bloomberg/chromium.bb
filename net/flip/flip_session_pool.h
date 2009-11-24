@@ -27,18 +27,16 @@ class FlipSessionPool : public base::RefCounted<FlipSessionPool> {
 
   // Either returns an existing FlipSession or creates a new FlipSession for
   // use.
-  FlipSession* Get(const HostResolver::RequestInfo& info,
-                   HttpNetworkSession* session);
+  scoped_refptr<FlipSession> Get(
+      const HostResolver::RequestInfo& info, HttpNetworkSession* session);
 
   // Builds a FlipSession from an existing socket.
-  FlipSession* GetFlipSessionFromSocket(
+  // TODO(willchan): Implement this to allow a HttpNetworkTransaction to
+  // upgrade a TCP connection from HTTP to FLIP.
+  scoped_refptr<FlipSession> GetFlipSessionFromSocket(
       const HostResolver::RequestInfo& info,
       HttpNetworkSession* session,
-      ClientSocket* socket) {
-    // TODO(willchan): Implement this to allow a HttpNetworkTransaction to
-    // upgrade a TCP connection from HTTP to FLIP.
-    return NULL;
-  }
+      ClientSocket* socket);
 
   // TODO(willchan): Consider renaming to HasReusableSession, since perhaps we
   // should be creating a new session.
@@ -50,14 +48,15 @@ class FlipSessionPool : public base::RefCounted<FlipSessionPool> {
  private:
   friend class base::RefCounted<FlipSessionPool>;
   friend class FlipSession;  // Needed for Remove().
+  friend class FlipSessionPoolPeer;  // For testing.
+
+  typedef std::list<scoped_refptr<FlipSession> > FlipSessionList;
+  typedef std::map<std::string, FlipSessionList*> FlipSessionsMap;
 
   virtual ~FlipSessionPool();
 
-  typedef std::list<FlipSession*> FlipSessionList;
-  typedef std::map<std::string, FlipSessionList*> FlipSessionsMap;
-
-  // Return a FlipSession to the pool.
-  void Remove(FlipSession* session);
+  // Removes a FlipSession from the FlipSessionPool.
+  void Remove(const scoped_refptr<FlipSession>& session);
 
   // Helper functions for manipulating the lists.
   FlipSessionList* AddSessionList(const std::string& domain);

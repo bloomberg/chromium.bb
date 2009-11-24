@@ -17,10 +17,10 @@ FlipSessionPool::~FlipSessionPool() {
   CloseAllSessions();
 }
 
-FlipSession* FlipSessionPool::Get(const HostResolver::RequestInfo& info,
-                                  HttpNetworkSession* session) {
+scoped_refptr<FlipSession> FlipSessionPool::Get(
+    const HostResolver::RequestInfo& info, HttpNetworkSession* session) {
   const std::string& domain = info.hostname();
-  FlipSession* flip_session = NULL;
+  scoped_refptr<FlipSession> flip_session;
   FlipSessionList* list = GetSessionList(domain);
   if (list) {
     if (list->size() >= kMaxSessionsPerDomain) {
@@ -32,15 +32,21 @@ FlipSession* FlipSessionPool::Get(const HostResolver::RequestInfo& info,
   }
 
   DCHECK(list);
-  if (!flip_session) {
+  if (!flip_session)
     flip_session = new FlipSession(domain, session);
-    flip_session->AddRef();  // Keep it in the cache.
-  }
 
   DCHECK(flip_session);
   list->push_back(flip_session);
   DCHECK(list->size() <= kMaxSessionsPerDomain);
   return flip_session;
+}
+
+scoped_refptr<FlipSession> FlipSessionPool::GetFlipSessionFromSocket(
+    const HostResolver::RequestInfo& info,
+    HttpNetworkSession* session,
+    ClientSocket* socket) {
+  NOTIMPLEMENTED();
+  return NULL;
 }
 
 bool FlipSessionPool::HasSession(const HostResolver::RequestInfo& info) const {
@@ -50,11 +56,10 @@ bool FlipSessionPool::HasSession(const HostResolver::RequestInfo& info) const {
   return false;
 }
 
-void FlipSessionPool::Remove(FlipSession* session) {
+void FlipSessionPool::Remove(const scoped_refptr<FlipSession>& session) {
   std::string domain = session->domain();
   FlipSessionList* list = GetSessionList(domain);
-  if (list == NULL)
-    return;
+  CHECK(list);
   list->remove(session);
   if (list->empty())
     RemoveSessionList(domain);
@@ -98,10 +103,9 @@ void FlipSessionPool::CloseAllSessions() {
     DCHECK(list);
     sessions_.erase(sessions_.begin()->first);
     while (list->size()) {
-      FlipSession* session = list->front();
+      scoped_refptr<FlipSession> session = list->front();
       list->pop_front();
       session->CloseAllStreams(net::OK);
-      session->Release();
     }
     delete list;
   }

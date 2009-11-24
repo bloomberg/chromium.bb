@@ -21,4 +21,9 @@ FlipIOBuffer::FlipIOBuffer() : priority_(0), position_(0), stream_(NULL) {}
 
 FlipIOBuffer::~FlipIOBuffer() {}
 
+void FlipIOBuffer::release() {
+  buffer_ = NULL;
+  stream_ = NULL;
+}
+
 }  // namespace net
