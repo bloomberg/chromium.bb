@@ -101,6 +101,11 @@
             '../views/views.gyp:views',
           ],
         }],
+        ['OS=="win"', {
+          'sources': [
+            'sync_socket_unittest.cc',
+          ],
+        }],
       ],
     },
   ]

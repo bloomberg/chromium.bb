@@ -42,6 +42,7 @@
 const char kTestClientChannel[] = "T1";
 const char kReflectorChannel[] = "T2";
 const char kFuzzerChannel[] = "F3";
+const char kSyncSocketChannel[] = "S4";
 
 const size_t kLongMessageStringNumBytes = 50000;
 
@@ -77,6 +78,9 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
     break;
   case FUZZER_SERVER:
     return MultiProcessTest::SpawnChild(L"RunFuzzServer", debug_on_start);
+    break;
+  case SYNC_SOCKET_SERVER:
+    return MultiProcessTest::SpawnChild(L"RunSyncSocketServer", debug_on_start);
     break;
   default:
     return NULL;
@@ -120,6 +124,11 @@ base::ProcessHandle IPCChannelTest::SpawnChild(ChildType child_type,
     break;
   case FUZZER_SERVER:
     ret = MultiProcessTest::SpawnChild(L"RunFuzzServer",
+                                       fds_to_map,
+                                       debug_on_start);
+    break;
+  case SYNC_SOCKET_SERVER:
+    ret = MultiProcessTest::SpawnChild(L"RunSyncSocketServer",
                                        fds_to_map,
                                        debug_on_start);
     break;

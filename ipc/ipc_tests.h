@@ -15,13 +15,15 @@ enum ChildType {
   TEST_DESCRIPTOR_CLIENT,
   TEST_DESCRIPTOR_CLIENT_SANDBOXED,
   TEST_REFLECTOR,
-  FUZZER_SERVER
+  FUZZER_SERVER,
+  SYNC_SOCKET_SERVER
 };
 
 // The different channel names for the child processes.
 extern const char kTestClientChannel[];
 extern const char kReflectorChannel[];
 extern const char kFuzzerChannel[];
+extern const char kSyncSocketChannel[];
 
 class MessageLoopForIO;
 namespace IPC {
