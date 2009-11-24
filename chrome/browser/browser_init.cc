@@ -453,7 +453,7 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
       OpenURLsInBrowser(browser, process_startup, urls_to_open);
     }
     // Check whether we are the default browser.
-    if (process_startup &&
+    if (process_startup && browser_defaults::kOSSupportsOtherBrowsers &&
         !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck))
       CheckDefaultBrowser(profile);
   } else {

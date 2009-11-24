@@ -17,6 +17,8 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
 const int kPinnedTabWidth = 64;
 const bool kCanToggleSystemTitleBar = false;
 const bool kRestorePopups = true;
+const bool kShowExitMenuItem = false;
+const bool kOSSupportsOtherBrowsers = false;
 
 #elif defined(OS_LINUX)
 
@@ -44,6 +46,8 @@ const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::DEFAULT;
 const int kPinnedTabWidth = 56;
 const bool kRestorePopups = false;
+const bool kShowExitMenuItem = true;
+const bool kOSSupportsOtherBrowsers = true;
 
 #endif
 

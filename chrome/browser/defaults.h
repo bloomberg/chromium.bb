@@ -40,6 +40,13 @@ extern const bool kRestorePopups;
 // Can the browser be alive without any browser windows?
 extern const bool kBrowserAliveWithNoWindows;
 
+// Should the exit menu be shown?
+extern const bool kShowExitMenuItem;
+
+// Does the OS support other browsers? If not, operations such as default
+// browser check are not done.
+extern const bool kOSSupportsOtherBrowsers;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_
