@@ -24,7 +24,10 @@ class ChangeOptions:
     self.default_presubmit = None
     self.may_prompt = None
 
-    root = os.path.abspath(Backquote(['git', 'rev-parse', '--show-cdup']))
+    root = Backquote(['git', 'rev-parse', '--show-cdup'])
+    if not root:
+      root = "."
+    absroot = os.path.abspath(root)
     if not root:
       raise Exception("Could not get root directory.")
     log = Backquote(['git', 'show', '--name-only',
@@ -37,7 +40,7 @@ class ChangeOptions:
     files = scm.GIT.CaptureStatus([root], upstream_branch)
     issue = Backquote(['git', 'cl', 'status', '--field=id'])
     patchset = None
-    self.change = presubmit_support.GitChange(name, description, root, files,
+    self.change = presubmit_support.GitChange(name, description, absroot, files,
                                               issue, patchset)
 
 

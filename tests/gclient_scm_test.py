@@ -66,7 +66,7 @@ class SVNWrapperTestCase(BaseTestCase):
     members = [
         'COMMAND', 'Capture', 'CaptureHeadRevision', 'CaptureInfo',
         'CaptureStatus', 'DiffItem', 'FullUrlForRelativeUrl', 'GetEmail',
-        'GetFileProperty', 'IsMoved', 'ReadEntries', 'ReadSimpleAuth', 'Run',
+        'GetFileProperty', 'IsMoved', 'ReadSimpleAuth', 'Run',
         'RunAndFilterOutput', 'RunAndGetFileList',
         'RunCommand', 'cleanup', 'diff', 'export', 'pack', 'relpath', 'revert',
         'revinfo', 'runhooks', 'scm_name', 'status', 'update', 'url',
