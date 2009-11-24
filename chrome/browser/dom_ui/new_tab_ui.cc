@@ -482,6 +482,7 @@ NewTabUI::NewTabUI(TabContents* contents)
 
   static bool first_view = true;
   if (first_view) {
+    Profile* profile = GetProfile();
     // Decrement ntp promo counters; the default values are specified in
     // Browser::RegisterUserPrefs.
     profile->GetPrefs()->SetInteger(prefs::kNTPPromoLineRemaining,
