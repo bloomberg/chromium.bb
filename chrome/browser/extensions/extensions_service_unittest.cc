@@ -220,6 +220,9 @@ class ExtensionsServiceTest
       const FilePath& extensions_install_dir) {
     prefs_.reset(new PrefService(pref_file));
     profile_.reset(new TestingProfile());
+
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExtensionToolstrips);
     service_ = new ExtensionsService(profile_.get(),
                                      CommandLine::ForCurrentProcess(),
                                      prefs_.get(),

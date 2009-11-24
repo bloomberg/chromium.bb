@@ -41,6 +41,11 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
 
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
   test_data_dir_ = test_data_dir_.AppendASCII("extensions");
+
+  // There are a number of tests that still use toolstrips.  Rather than
+  // selectively enabling each of them, enable toolstrips for all extension
+  // tests.
+  command_line->AppendSwitch(switches::kEnableExtensionToolstrips);
 }
 
 bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {

@@ -184,6 +184,9 @@ const char kEnableExperimentalWebGL[]       = "enable-webgl";
 // Enable experimental timeline API.
 const char kEnableExtensionTimelineApi[]    = "enable-extension-timeline-api";
 
+// Enable extension toolstrips (deprecated API - will be removed).
+const char kEnableExtensionToolstrips[]     = "enable-extension-toolstrips";
+
 // Enable the fastback page cache.
 const char kEnableFastback[]                = "enable-fastback";
 

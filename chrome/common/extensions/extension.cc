@@ -918,8 +918,11 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     options_url_ = GetResourceURL(options_str);
   }
 
-  // Initialize toolstrips (optional).
-  if (source.HasKey(keys::kToolstrips)) {
+  // Initialize toolstrips (deprecated and optional).
+  // TODO(erikkay) remove this altogether.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExtensionToolstrips) &&
+      source.HasKey(keys::kToolstrips)) {
     ListValue* list_value;
     if (!source.GetList(keys::kToolstrips, &list_value)) {
       *error = errors::kInvalidToolstrips;
@@ -932,7 +935,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       std::string toolstrip_path;
       if (list_value->GetString(i, &toolstrip_path)) {
         // Support a simple URL value for backwards compatibility.
-        // TODO(erikkay) Perhaps deprecate this in the future.
         toolstrip.toolstrip = GetResourceURL(toolstrip_path);
       } else if (list_value->GetDictionary(i, &toolstrip_value)) {
         if (!toolstrip_value->GetString(keys::kToolstripPath,
@@ -950,8 +952,6 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
                 errors::kInvalidToolstrip, IntToString(i));
             return false;
           }
-          // TODO(erikkay) is there a better way to get this dynamically
-          // from the content itself?
           int height;
           if (!toolstrip_value->GetInteger(keys::kToolstripMoleHeight,
                                            &height) || (height < 0)) {
