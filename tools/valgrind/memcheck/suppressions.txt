@@ -430,7 +430,17 @@
    fun:_ZN3net23ProxyConfigServiceLinux8Delegate15PostDestroyTaskEv
    fun:_ZN3net23ProxyConfigServiceLinuxD0Ev
 }
-
+{
+   # Since this object is deleted on the file thread, and the file thread may be
+   # gone by the time we want to delete the object, it can leak on shutdown. It
+   # should be harmless though.
+   bug_28862
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN11ProfileImpl26ReinitializeSpellCheckHostEb
+   fun:_ZN24BrowserRenderProcessHost31OnSpellCheckerRequestDictionaryEv
+   fun:_ZN3IPC7Message8DispatchI24BrowserRenderProcessHostEEbPKS0_PT_MS5_FvvE
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
