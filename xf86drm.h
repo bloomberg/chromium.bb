@@ -48,6 +48,7 @@
 #define DRM_IOC_READWRITE	_IOC_READ|_IOC_WRITE
 #define DRM_IOC(dir, group, nr, size) _IOC(dir, group, nr, size)
 #define DRM_MAJOR       226
+#define DRM_MAX_MINOR   15
 
 #else /* One of the *BSDs */
 
