@@ -1743,9 +1743,26 @@ diff -uNr binutils-2.20.orig/ld/emulparams/elf_nacl.sh binutils-2.20/ld/emulpara
 +SCRIPT_NAME=naclelf
 +OUTPUT_FORMAT="elf32-nacl"
 +TEXT_START_ADDR=0x00020000
-diff -uNr binutils-2.20.orig/ld/ldexp.c binutils-2.20/ld/ldexp.c
---- binutils-2.20.orig/ld/ldexp.c	2009-09-14 13:43:29.000000000 +0200
-+++ binutils-2.20/ld/ldexp.c	2009-11-23 13:58:30.000000000 +0100
+diff -Naur ../PRISTINE/binutils-2.20/ld/genscripts.sh binutils-2.20/ld/genscripts.sh
+--- ../PRISTINE/binutils-2.20/ld/genscripts.sh	2009-09-02 00:25:35.000000000 -0700
++++ binutils-2.20/ld/genscripts.sh	2009-11-24 14:28:27.000000000 -0800
+@@ -418,9 +418,10 @@
+   ) | sed -e '/^ *$/d;s/[ 	]*$//' > ldscripts/${EMULATION_NAME}.xa
+ fi
+ 
+-case " $EMULATION_LIBPATH " in
+-    *" ${EMULATION_NAME} "*) COMPILE_IN=true;;
+-esac
++# Disable compiling-in of linker scripts.
++# case " $EMULATION_LIBPATH " in
++#     *" ${EMULATION_NAME} "*) COMPILE_IN=true;;
++# esac
+ 
+ # PR ld/5652:
+ # Determine if the shell has support for the variable BASH_LINENO.
+diff -Naur ../PRISTINE/binutils-2.20/ld/ldexp.c binutils-2.20/ld/ldexp.c
+--- ../PRISTINE/binutils-2.20/ld/ldexp.c	2009-09-14 04:43:29.000000000 -0700
++++ binutils-2.20/ld/ldexp.c	2009-11-24 13:42:11.000000000 -0800
 @@ -46,6 +46,8 @@
  static void exp_fold_tree_1 (etree_type *);
  static void exp_fold_tree_no_dot (etree_type *);
@@ -1804,6 +1821,18 @@ diff -uNr binutils-2.20.orig/ld/ldexp.c binutils-2.20/ld/ldexp.c
 +    return value - 1;
 +  }
 +}
+diff -Naur ../PRISTINE/binutils-2.20/ld/ldfile.c binutils-2.20/ld/ldfile.c
+--- ../PRISTINE/binutils-2.20/ld/ldfile.c	2009-08-29 15:11:01.000000000 -0700
++++ binutils-2.20/ld/ldfile.c	2009-11-24 14:58:07.000000000 -0800
+@@ -608,7 +608,7 @@
+ void
+ ldfile_open_default_command_file (const char *name)
+ {
+-  ldfile_open_command_file_1 (name, TRUE);
++  ldfile_open_command_file_1 (name, FALSE);
+ }
+ 
+ void
 diff -uNr binutils-2.20.orig/ld/ldgram.y binutils-2.20/ld/ldgram.y
 --- binutils-2.20.orig/ld/ldgram.y	2009-09-02 09:25:35.000000000 +0200
 +++ binutils-2.20/ld/ldgram.y	2009-11-23 13:58:30.000000000 +0100

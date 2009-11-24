@@ -155,6 +155,29 @@ int _start(void) {
     # contain any PLT entries.
     run_ncval(os.path.join(temp_dir, "library.so"))
 
+  def test_custom_linker_scripts_via_search_path(self):
+    # Check that the linker will pick up linker scripts from the
+    # "ldscripts" directory in the library search path (which is
+    # specified with -L).
+    # To test this, try to link to a symbol that is defined in our
+    # example linker script.
+    temp_dir = self.make_temp_dir()
+    os.mkdir(os.path.join(temp_dir, "ldscripts"))
+    write_file(os.path.join(temp_dir, "ldscripts", "elf_nacl.x"), """
+foo = 0x1234;
+""")
+    write_file(os.path.join(temp_dir, "prog.c"), """
+void foo();
+int _start() {
+  foo();
+  return 0;
+}
+""")
+    check_call(["nacl-gcc", "-nostartfiles", "-nostdlib",
+                "-L%s" % temp_dir,
+                os.path.join(temp_dir, "prog.c"),
+                "-o", os.path.join(temp_dir, "prog")])
+
 
 if __name__ == "__main__":
   unittest.main()
