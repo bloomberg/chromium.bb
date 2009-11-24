@@ -264,11 +264,13 @@ gboolean WindowGtk::OnButtonPress(GtkWidget* widget, GdkEventButton* event) {
     case HTCAPTION: {
       MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED, event->x, event->y,
                                WidgetGtk::GetFlagsForEventButton(*event));
-      // Start dragging only if the mouse event is *not* a right
+      // Start dragging if the mouse event is a single click and *not* a right
       // click. If it is a right click, then pass it through to
-      // WidgetGtk::OnButtonPress so that View class can show
-      // ContextMenu upon a mouse release event.
-      if (!mouse_pressed.IsOnlyRightMouseButton()) {
+      // WidgetGtk::OnButtonPress so that View class can show ContextMenu upon a
+      // mouse release event. We only start drag on single clicks as we get a
+      // crash in Gtk on double/triple clicks.
+      if (event->type == GDK_BUTTON_PRESS &&
+          !mouse_pressed.IsOnlyRightMouseButton()) {
         gfx::Point screen_point(event->x, event->y);
         View::ConvertPointToScreen(GetRootView(), &screen_point);
         gtk_window_begin_move_drag(GetNativeWindow(), event->button,
