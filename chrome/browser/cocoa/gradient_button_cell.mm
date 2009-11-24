@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/logging.h"
 #import "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/gradient_button_cell.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
@@ -11,6 +12,20 @@
 - (void)sharedInit;
 - (void)drawUnderlayImageWithFrame:(NSRect)cellFrame
                             inView:(NSView*)controlView;
+
+// Get drawing parameters for a given cell frame in a given view. The inner
+// frame is the one required by |-drawInteriorWithFrame:inView:|. The inner and
+// outer paths are the ones required by |-drawBorderAndFillForTheme:...|. The
+// outer path also gives the area in which to clip. Any of the |return...|
+// arguments may be NULL (in which case the given parameter won't be returned).
+// If |returnInnerPath| or |returnOuterPath|, |*returnInnerPath| or
+// |*returnOuterPath| should be nil, respectively.
+- (void)getDrawParamsForFrame:(NSRect)cellFrame
+                       inView:(NSView*)controlView
+                   innerFrame:(NSRect*)returnInnerFrame
+                    innerPath:(NSBezierPath**)returnInnerPath
+                    outerPath:(NSBezierPath**)returnOuterPath
+                     clipPath:(NSBezierPath**)returnClipPath;
 @end
 
 static const NSTimeInterval kAnimationShowDuration = 0.2;
@@ -258,11 +273,20 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   [innerPath stroke];
 }
 
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+// TODO(viettrungluu): clean this up.
+// (Private)
+- (void)getDrawParamsForFrame:(NSRect)cellFrame
+                       inView:(NSView*)controlView
+                   innerFrame:(NSRect*)returnInnerFrame
+                    innerPath:(NSBezierPath**)returnInnerPath
+                    outerPath:(NSBezierPath**)returnOuterPath
+                     clipPath:(NSBezierPath**)returnClipPath {
   // Constants from Cole.  Will kConstant them once the feedback loop
   // is complete.
   NSRect drawFrame = NSInsetRect(cellFrame, 1.5, 1.5);
   NSRect innerFrame = NSInsetRect(cellFrame, 2, 1);
+  const CGFloat radius = 3.5;
+
   ButtonType type = [[(NSControl*)controlView cell] tag];
   switch (type) {
     case kMiddleButtonType:
@@ -280,22 +304,51 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     default:
       break;
   }
+  if (type == kLeftButtonWithShadowType)
+    innerFrame.size.width -= 1.0;
 
-  const float radius = 3.5;
+  // Return results if |return...| not null.
+  if (returnInnerFrame)
+    *returnInnerFrame = innerFrame;
+  if (returnInnerPath) {
+    DCHECK(*returnInnerPath == nil);
+    *returnInnerPath = [NSBezierPath bezierPathWithRoundedRect:drawFrame
+                                                       xRadius:radius
+                                                       yRadius:radius];
+  }
+  if (returnOuterPath) {
+    DCHECK(*returnOuterPath == nil);
+    NSRect outerPathRect = NSInsetRect(drawFrame, -1, -1);
+    *returnOuterPath = [NSBezierPath bezierPathWithRoundedRect:outerPathRect
+                                                       xRadius:radius + 1
+                                                       yRadius:radius + 1];
+  }
+  if (returnClipPath) {
+    DCHECK(*returnClipPath == nil);
+    NSRect clipPathRect = NSInsetRect(drawFrame, -0.5, -0.5);
+    *returnClipPath = [NSBezierPath bezierPathWithRoundedRect:clipPathRect
+                                                      xRadius:radius + 0.5
+                                                      yRadius:radius + 0.5];
+  }
+}
+
+// TODO(viettrungluu): clean this up.
+- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  NSRect innerFrame;
+  NSBezierPath* innerPath = nil;
+  NSBezierPath* outerPath = nil;
+  [self getDrawParamsForFrame:cellFrame
+                       inView:controlView
+                   innerFrame:&innerFrame
+                    innerPath:&innerPath
+                    outerPath:&outerPath
+                     clipPath:NULL];
+
   BOOL pressed = [self isHighlighted];
   NSWindow* window = [controlView window];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
 
   GTMTheme* theme = [controlView gtm_theme];
-
-  NSBezierPath* innerPath =
-      [NSBezierPath bezierPathWithRoundedRect:drawFrame
-                                      xRadius:radius
-                                      yRadius:radius];
-  NSBezierPath* outerPath =
-      [NSBezierPath bezierPathWithRoundedRect:NSInsetRect(drawFrame, -1, -1)
-                                      xRadius:radius + 1
-                                      yRadius:radius + 1];
 
   // Stroke the borders and appropriate fill gradient. If we're borderless,
   // the only time we want to draw the inner gradient is if we're highlighted.
@@ -316,6 +369,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   }
 
   // If this is the left side of a segmented button, draw a slight shadow.
+  ButtonType type = [[(NSControl*)controlView cell] tag];
   if (type == kLeftButtonWithShadowType) {
     NSRect borderRect, contentRect;
     NSDivideRect(cellFrame, &borderRect, &contentRect, 1.0, NSMaxXEdge);
@@ -324,7 +378,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     [[stroke colorWithAlphaComponent:0.2] set];
     NSRectFillUsingOperation(NSInsetRect(borderRect, 0, 2),
                              NSCompositeSourceOver);
-    innerFrame.size.width -= 1.0;
   }
   [self drawInteriorWithFrame:innerFrame inView:controlView];
 }
@@ -394,6 +447,18 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
                      operation:NSCompositeSourceOver
                       fraction:[self isEnabled] ? 1.0 : 0.5];
   }
+}
+
+- (NSBezierPath*)clipPathForFrame:(NSRect)cellFrame
+                           inView:(NSView*)controlView {
+  NSBezierPath* boundingPath = nil;
+  [self getDrawParamsForFrame:cellFrame
+                       inView:controlView
+                   innerFrame:NULL
+                    innerPath:NULL
+                    outerPath:NULL
+                     clipPath:&boundingPath];
+  return boundingPath;
 }
 
 @end

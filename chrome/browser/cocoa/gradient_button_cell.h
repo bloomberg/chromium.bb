@@ -62,6 +62,12 @@ typedef NSInteger ButtonType;
 // the current hoverAlpha_ based on these events.
 - (void)setMouseInside:(BOOL)flag animate:(BOOL)animate;
 
+// Gets the path which tightly bounds the outside of the button. This is needed
+// to produce images of clear buttons which only include the area inside, since
+// the background of the button is drawn by someone else.
+- (NSBezierPath*)clipPathForFrame:(NSRect)cellFrame
+                           inView:(NSView*)controlView;
+
 @property(assign, nonatomic)CGFloat hoverAlpha;
 @end
 
