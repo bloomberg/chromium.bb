@@ -27,8 +27,7 @@ ThemeInstallBubbleView::ThemeInstallBubbleView(TabContents* tab_contents)
   if (!tab_contents)
     Close();
 
-  // Need our own copy of the "Loading..." string: http://crbug.com/24177
-  text_ = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+  text_ = l10n_util::GetStringUTF16(IDS_THEME_LOADING_TITLE);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   gfx::Font font(rb.GetFont(ResourceBundle::LargeFont));
   SetFont(font);

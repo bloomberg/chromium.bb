@@ -6039,6 +6039,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       Glen
     </message>
 
+    <!-- Theme UI -->
+    <message name="IDS_THEME_LOADING_TITLE" desc="The text to be displayed in a window while a theme is loading.">
+      Loading...
+    </message>
+
     <!-- Extra Mac UI Strings -->
     <if expr="os == 'darwin'">
       <message name="IDS_PLEASE_RESTART_BROWSER" desc="Title of the alert when Chrome needs to be restart for a change/update to take effect.">

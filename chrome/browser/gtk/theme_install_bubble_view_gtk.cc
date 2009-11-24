@@ -88,10 +88,9 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
   gtk_container_set_border_width(GTK_CONTAINER(widget_), kTextPadding);
   GtkWidget* label = gtk_label_new(NULL);
 
-  // Need our own copy of the "Loading..." string: http://crbug.com/24177
   gchar* markup = g_markup_printf_escaped(
       "<span size='xx-large'>%s</span>",
-      l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE).c_str());
+      l10n_util::GetStringUTF8(IDS_THEME_LOADING_TITLE).c_str());
   gtk_label_set_markup(GTK_LABEL(label), markup);
   g_free(markup);
 
