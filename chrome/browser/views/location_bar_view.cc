@@ -43,9 +43,6 @@ static const int kEntryPadding = 3;
 // Padding between the entry and the leading/trailing views.
 static const int kInnerPadding = 3;
 
-// The size (both dimensions) of the buttons for page actions.
-static const int kPageActionButtonSize = 19;
-
 static const SkBitmap* kBackground = NULL;
 
 static const SkBitmap* kPopupBackground = NULL;
@@ -81,7 +78,8 @@ class LocationBarView::PageActionWithBadgeView : public views::View {
   PageActionImageView* image_view() { return image_view_; }
 
   virtual gfx::Size GetPreferredSize() {
-    return gfx::Size(kPageActionButtonSize, kPageActionButtonSize);
+    return gfx::Size(Extension::kPageActionIconMaxSize,
+                     Extension::kPageActionIconMaxSize);
   }
 
   void UpdateVisibility(TabContents* contents, const GURL& url);
