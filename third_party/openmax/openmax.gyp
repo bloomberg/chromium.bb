@@ -3,46 +3,11 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'use_system_openmax%': 0,
-  },
-  'target_defaults': {
-    'conditions': [
-      ['use_system_openmax==0', {
-        'type': '<(library)',
-        'dependencies': [
-          '../../base/base.gyp:base',
-        ],
-        'sources': [
-          'omx_stub.cc',
-        ],
-        'include_dirs': [
-          'il',
-        ],
-        'defines': [
-          '__OMX_EXPORTS',
-        ],
-        'direct_dependent_settings': {
-          'defines': [
-            '__OMX_EXPORTS',
-          ],
-        },
-      },{
-        'type': 'none',
-        'direct_dependent_settings': {
-          'link_settings': {
-            'libraries': [
-              '-lOmxCore',
-            ],
-          },
-        },
-      }],
-    ],
-  },
   'targets': [
     {
       # OpenMAX IL level of API.
       'target_name': 'il',
+      'type': 'none',
       'sources': [
         'il/OMX_Audio.h',
         'il/OMX_Component.h',
@@ -59,13 +24,14 @@
         'include_dirs': [
           'il',
         ],
+        'link_settings': {
+          'libraries': [
+            '-lOmxCore',
+            # We need dl for dlopen() and friends.
+            '-ldl',
+          ],
+        },
       },
     },
-  ],
+ ],
 }
-
-# Local Variables:
-# tab-width:2
-# indent-tabs-mode:nil
-# End:
-# vim: set expandtab tabstop=2 shiftwidth=2:
