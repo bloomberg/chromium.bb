@@ -11,11 +11,6 @@ setlocal
 :: This is required with cygwin only.
 PATH=%~dp0;%PATH%
 
-:: Shall skip automatic update?
-IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :SKIP_UPDATE
-:: We can't sync if .\.svn\. doesn't exist.
-IF NOT EXIST "%~dp0.svn\." GOTO :SKIP_UPDATE
-
 :: Will download svn and python.
 :: If you don't want to install the depot_tools version of these tools, remove
 :: the 'force' option on the next command. The tools won't be installed only if
@@ -23,7 +18,12 @@ IF NOT EXIST "%~dp0.svn\." GOTO :SKIP_UPDATE
 call "%~dp0bootstrap\win\win_tools.bat" force
 if errorlevel 1 goto :EOF
 
-:: Sync the bootstrap directory *only after*.
+:: Shall skip automatic update?
+IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :SKIP_UPDATE
+:: We can't sync if .\.svn\. doesn't exist.
+IF NOT EXIST "%~dp0.svn\." GOTO :SKIP_UPDATE
+
+:: Sync the bootstrap directory.
 call svn up -q "%~dp0bootstrap"
 :: still continue even in case of error.
 goto :UPDATE
