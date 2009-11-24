@@ -118,8 +118,7 @@ int FlipStream::SendRequest(UploadDataStream* upload_data,
   CHECK(callback);
   CHECK(!cancelled_);
 
-  // TODO(mbelshe): rethink this UploadDataStream wrapper.
-  if (upload_data)
+  if (upload_data && upload_data->size())
     request_body_stream_.reset(upload_data);
 
   DCHECK_EQ(io_state_, STATE_NONE);

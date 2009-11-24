@@ -336,6 +336,81 @@ TEST_F(FlipNetworkTransactionTest, Post) {
   EXPECT_EQ("hello!", out.response_data);
 }
 
+// Test that a simple POST works.
+TEST_F(FlipNetworkTransactionTest, EmptyPost) {
+  // Setup the request
+  HttpRequestInfo request;
+  request.method = "POST";
+  request.url = GURL("http://www.google.com/");
+  // Create an empty UploadData.
+  request.upload_data = new UploadData();
+
+  // TODO(mbelshe): Hook up the write validation.
+
+  static const unsigned char syn[] = {
+    0x80, 0x01, 0x00, 0x01,                                      // header
+    0x01, 0x00, 0x00, 0x46,                                      // FIN, len
+    0x00, 0x00, 0x00, 0x01,                                      // stream id
+    0xc0, 0x00, 0x00, 0x03,                                      // 4 headers
+    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
+    0x00, 0x04, 'P', 'O', 'S', 'T',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+                'm', '/',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  // The response
+  static const unsigned char syn_reply[] = {
+    0x80, 0x01, 0x00, 0x02,                                        // header
+    0x00, 0x00, 0x00, 0x45,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,                                        // 4 headers
+    0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
+    0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
+    0x00, 0x03, '2', '0', '0',                                     // "200"
+    0x00, 0x03, 'u', 'r', 'l',                                     // "url"
+    // "/index.php"
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
+  };
+  static const unsigned char body_frame[] = {
+    0x00, 0x00, 0x00, 0x01,                                        // header
+    0x00, 0x00, 0x00, 0x06,
+    'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
+  };
+  static const unsigned char fin_frame[] = {
+    0x80, 0x01, 0x00, 0x03,                                        // header
+    0x00, 0x00, 0x00, 0x08,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x00,
+  };
+
+  MockWrite writes[] = {
+    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockWrite(true, 0, 0)  // EOF
+  };
+
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(syn_reply),
+             sizeof(syn_reply)),
+    MockRead(true, reinterpret_cast<const char*>(body_frame),
+             sizeof(body_frame)),
+    MockRead(true, reinterpret_cast<const char*>(fin_frame),
+             sizeof(fin_frame)),
+    MockRead(true, 0, 0)  // EOF
+  };
+
+  TransactionHelperResult out = TransactionHelper(request, reads, writes);
+  EXPECT_EQ(OK, out.rv);
+  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
+}
+
 // Test that the transaction doesn't crash when we don't have a reply.
 TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
   static const unsigned char body_frame[] = {
