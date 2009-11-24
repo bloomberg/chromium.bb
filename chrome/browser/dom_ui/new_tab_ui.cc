@@ -480,16 +480,6 @@ NewTabUI::NewTabUI(TabContents* contents)
   if (NewTabUI::FirstRunDisabled())
     NewTabHTMLSource::set_first_run(false);
 
-  InitializeCSSCaches();
-  NewTabHTMLSource* html_source =
-      new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          Singleton<ChromeURLDataManager>::get(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(html_source)));
-
   if (!GetProfile()->IsOffTheRecord()) {
     AddMessageHandler((new ShownSectionsHandler())->Attach(this));
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
@@ -504,6 +494,19 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
     AddMessageHandler((new PromotionalMessageHandler())->Attach(this));
   }
+
+  // Initializing the CSS and HTML can require some CPU, so do it after
+  // we've hooked up the most visited handler.  This allows the DB query
+  // for the new tab thumbs to happen earlier.
+  InitializeCSSCaches();
+  NewTabHTMLSource* html_source =
+      new NewTabHTMLSource(GetProfile());
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(html_source)));
 
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -649,8 +652,7 @@ void NewTabUI::SetURLTitleAndDirection(DictionaryValue* dictionary,
 bool NewTabUI::NewTabHTMLSource::first_run_ = true;
 
 NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
-    : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
-      profile_(profile) {
+    : DataSource(chrome::kChromeUINewTabHost, NULL) {
   static bool first_view = true;
   if (first_view) {
     // Decrement ntp promo counters; the default values are specified in
@@ -661,11 +663,14 @@ NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
         profile->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) - 1);
     first_view = false;
   }
+
+  html_bytes_ = profile->GetNTPResourceCache()->GetNewTabHTML(
+      profile->IsOffTheRecord());
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
     bool is_off_the_record, int request_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!path.empty()) {
     // A path under new-tab was requested; it's likely a bad relative
     // URL from the new tab page, but in any case it's an error.
@@ -673,8 +678,5 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,
     return;
   }
 
-  scoped_refptr<RefCountedBytes> html_bytes =
-      profile_->GetNTPResourceCache()->GetNewTabHTML(is_off_the_record);
-
-  SendResponse(request_id, html_bytes);
+  SendResponse(request_id, html_bytes_);
 }

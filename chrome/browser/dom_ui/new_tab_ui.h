@@ -73,8 +73,9 @@ class NewTabUI : public DOMUI,
     // Whether this is the first run.
     static bool first_run_;
 
-    // Pointer back to the original profile.
-    Profile* profile_;
+    // We grab the HTML eagerly so we don't have to go back to the UI thread
+    // later.
+    scoped_refptr<RefCountedBytes> html_bytes_;
 
     DISALLOW_COPY_AND_ASSIGN(NewTabHTMLSource);
   };
