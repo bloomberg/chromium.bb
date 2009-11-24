@@ -2219,7 +2219,6 @@ BUG10417 LINUX : LayoutTests/svg/W3C-SVG-1.1/text-fonts-02-t.svg = FAIL
 BUG10417 LINUX : LayoutTests/svg/text/text-fonts-02-t.svg = FAIL
 
 // New test. We should fix it, but it doesn't need to block the current release
-BUG10418 WIN LINUX : LayoutTests/transitions/zero-duration-with-non-zero-delay-end.html = FAIL PASS
 BUG10418 SLOW MAC RELEASE : LayoutTests/fast/events/click-count.html = PASS
 BUG10418 WIN LINUX : LayoutTests/animations/change-keyframes.html = FAIL PASS
 BUG10418 WIN DEBUG : LayoutTests/animations/change-keyframes-name.html = FAIL PASS
