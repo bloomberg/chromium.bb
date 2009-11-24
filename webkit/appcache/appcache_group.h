@@ -37,13 +37,15 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
     DOWNLOADING,
   };
 
-  AppCacheGroup(AppCacheService* service, const GURL& manifest_url);
+  AppCacheGroup(AppCacheService* service, const GURL& manifest_url,
+                int64 group_id);
 
   // Adds/removes an update observer, the AppCacheGroup does not take
   // ownership of the observer.
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
 
+  const int64 group_id() const { return group_id_; }
   const GURL& manifest_url() const { return manifest_url_; }
 
   bool is_obsolete() const { return is_obsolete_; }
@@ -88,7 +90,8 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
 
   const Caches& old_caches() const { return old_caches_; }
 
-  GURL manifest_url_;
+  const int64 group_id_;
+  const GURL manifest_url_;
   UpdateStatus update_status_;
   bool is_obsolete_;
 

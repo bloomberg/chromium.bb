@@ -16,8 +16,10 @@
 namespace appcache {
 
 AppCacheGroup::AppCacheGroup(AppCacheService* service,
-                             const GURL& manifest_url)
-    : manifest_url_(manifest_url),
+                             const GURL& manifest_url,
+                             int64 group_id)
+    : group_id_(group_id),
+      manifest_url_(manifest_url),
       update_status_(IDLE),
       is_obsolete_(false),
       newest_complete_cache_(NULL),

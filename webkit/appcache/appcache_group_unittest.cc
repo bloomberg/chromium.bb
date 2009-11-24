@@ -62,7 +62,7 @@ class AppCacheGroupTest : public testing::Test {
 TEST(AppCacheGroupTest, AddRemoveCache) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, GURL::EmptyGURL());
+      new AppCacheGroup(&service, GURL::EmptyGURL(), 111);
 
   base::TimeTicks ticks = base::TimeTicks::Now();
 
@@ -131,7 +131,7 @@ TEST(AppCacheGroupTest, AddRemoveCache) {
 TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   MockAppCacheService service;
   TestAppCacheFrontend frontend;
-  AppCacheGroup* group = new AppCacheGroup(&service, GURL::EmptyGURL());
+  AppCacheGroup* group = new AppCacheGroup(&service, GURL::EmptyGURL(), 111);
 
   AppCacheHost host1(1, &frontend, &service);
   AppCacheHost host2(2, &frontend, &service);
@@ -171,7 +171,7 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
 TEST(AppCacheGroupTest, StartUpdate) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, GURL("http://foo.com"));
+      new AppCacheGroup(&service, GURL("http://foo.com"), 111);
 
   // Set state to checking to prevent update job from executing fetches.
   group->update_status_ = AppCacheGroup::CHECKING;
@@ -192,7 +192,7 @@ TEST(AppCacheGroupTest, StartUpdate) {
 TEST(AppCacheGroupTest, CancelUpdate) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, GURL("http://foo.com"));
+      new AppCacheGroup(&service, GURL("http://foo.com"), 111);
 
   // Set state to checking to prevent update job from executing fetches.
   group->update_status_ = AppCacheGroup::CHECKING;

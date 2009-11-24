@@ -19,7 +19,7 @@ TEST(AppCacheTest, CleanupUnusedCache) {
   scoped_refptr<AppCache> cache(new AppCache(&service, 111));
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group(
-      new AppCacheGroup(&service, GURL("http://blah/manifest")));
+      new AppCacheGroup(&service, GURL("http://blah/manifest"), 111));
   group->AddCache(cache);
 
   AppCacheHost host1(1, &frontend, &service);

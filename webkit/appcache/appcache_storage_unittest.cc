@@ -38,7 +38,7 @@ TEST_F(AppCacheStorageTest, AddRemoveCache) {
 TEST_F(AppCacheStorageTest, AddRemoveGroup) {
   MockAppCacheService service;
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, GURL::EmptyGURL());
+      new AppCacheGroup(&service, GURL::EmptyGURL(), 111);
 
   EXPECT_EQ(group.get(),
             service.storage()->working_set()->GetGroup(GURL::EmptyGURL()));

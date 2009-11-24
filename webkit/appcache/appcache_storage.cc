@@ -10,8 +10,7 @@ namespace appcache {
 
 AppCacheStorage::AppCacheStorage(AppCacheService* service)
     : last_cache_id_(kUnitializedId), last_group_id_(kUnitializedId),
-      last_entry_id_(kUnitializedId), last_response_id_(kUnitializedId),
-      service_(service)  {
+      last_response_id_(kUnitializedId), service_(service)  {
 }
 
 AppCacheStorage::~AppCacheStorage() {

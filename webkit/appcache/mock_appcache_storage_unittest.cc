@@ -155,7 +155,7 @@ TEST_F(MockAppCacheStorageTest, LoadGroupAndCache_FarHit) {
   // appears to be "stored" and "not currently in use".
   GURL manifest_url("http://blah/");
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, manifest_url);
+      new AppCacheGroup(&service, manifest_url, 111);
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache = new AppCache(&service, cache_id);
   cache->set_complete(true);
@@ -206,7 +206,7 @@ TEST_F(MockAppCacheStorageTest, StoreNewGroup) {
   // appears to be "unstored".
   GURL manifest_url("http://blah/");
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, manifest_url);
+      new AppCacheGroup(&service, manifest_url, 111);
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache = new AppCache(&service, cache_id);
   cache->set_complete(true);
@@ -238,7 +238,7 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroup) {
   // that appear to be "stored", and a newest unstored complete cache.
   GURL manifest_url("http://blah/");
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, manifest_url);
+      new AppCacheGroup(&service, manifest_url, 111);
   int64 old_cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> old_cache = new AppCache(&service, old_cache_id);
   old_cache->set_complete(true);
@@ -281,7 +281,7 @@ TEST_F(MockAppCacheStorageTest, StoreExistingGroupExistingCache) {
   // appear to be "stored".
   GURL manifest_url("http://blah");
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, manifest_url);
+      new AppCacheGroup(&service, manifest_url, 111);
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache = new AppCache(&service, cache_id);
   cache->set_complete(true);
@@ -323,7 +323,7 @@ TEST_F(MockAppCacheStorageTest, MakeGroupObsolete) {
   // appears to be "stored" and "currently in use".
   GURL manifest_url("http://blah/");
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, manifest_url);
+      new AppCacheGroup(&service, manifest_url, 111);
   int64 cache_id = storage->NewCacheId();
   scoped_refptr<AppCache> cache = new AppCache(&service, cache_id);
   cache->set_complete(true);
@@ -416,7 +416,7 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainResponse) {
       kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, kResponseId));
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, kManifestUrl);
+      new AppCacheGroup(&service, kManifestUrl, 111);
   group->AddCache(cache);
   storage->AddStoredGroup(group);
   storage->AddStoredCache(cache);
@@ -467,7 +467,7 @@ TEST_F(MockAppCacheStorageTest, BasicFindMainFallbackResponse) {
   cache->set_complete(true);
 
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, kManifestUrl);
+      new AppCacheGroup(&service, kManifestUrl, 111);
   group->AddCache(cache);
   storage->AddStoredGroup(group);
   storage->AddStoredCache(cache);
@@ -513,7 +513,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates) {
       kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, kResponseId1));
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, kManifestUrl1);
+      new AppCacheGroup(&service, kManifestUrl1, 111);
   group->AddCache(cache);
   storage->AddStoredGroup(group);
   storage->AddStoredCache(cache);
@@ -526,7 +526,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseWithMultipleCandidates) {
   cache->AddEntry(
       kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, kResponseId2));
   cache->set_complete(true);
-  group = new AppCacheGroup(&service, kManifestUrl2);
+  group = new AppCacheGroup(&service, kManifestUrl2, 222);
   group->AddCache(cache);
   storage->AddStoredGroup(group);
   storage->AddStoredCache(cache);
@@ -572,7 +572,7 @@ TEST_F(MockAppCacheStorageTest, FindMainResponseExclusions) {
                     kResponseId));
   cache->set_complete(true);
   scoped_refptr<AppCacheGroup> group =
-      new AppCacheGroup(&service, kManifestUrl);
+      new AppCacheGroup(&service, kManifestUrl, 111);
   group->AddCache(cache);
   storage->AddStoredGroup(group);
   storage->AddStoredCache(cache);

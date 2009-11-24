@@ -235,7 +235,8 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   EXPECT_FALSE(host.swappable_cache_.get());
 
   scoped_refptr<AppCacheGroup> group1 =
-      new AppCacheGroup(&service_, GURL::EmptyGURL());
+      new AppCacheGroup(&service_, GURL::EmptyGURL(),
+                        service_.storage()->NewGroupId());
   host.SetSwappableCache(group1);
   EXPECT_FALSE(host.swappable_cache_.get());
 
@@ -261,7 +262,8 @@ TEST_F(AppCacheHostTest, SetSwappableCache) {
   EXPECT_EQ(cache2, host.swappable_cache_.get());  // updated to newest
 
   scoped_refptr<AppCacheGroup> group2 =
-      new AppCacheGroup(&service_, GURL("http://foo.com"));
+      new AppCacheGroup(&service_, GURL("http://foo.com"),
+                        service_.storage()->NewGroupId());
   AppCache* cache3 = new AppCache(&service_, 333);
   cache3->set_complete(true);
   group2->AddCache(cache3);

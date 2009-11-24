@@ -151,9 +151,6 @@ class AppCacheStorage {
   int64 NewGroupId() {
     return ++last_group_id_;
   }
-  int64 NewEntryId() {
-    return ++last_entry_id_;
-  }
 
   // The working set of object instances currently in memory.
   AppCacheWorkingSet* working_set() { return &working_set_; }
@@ -294,7 +291,6 @@ class AppCacheStorage {
   // The last storage id used for different object types.
   int64 last_cache_id_;
   int64 last_group_id_;
-  int64 last_entry_id_;
   int64 last_response_id_;
 
   AppCacheWorkingSet working_set_;

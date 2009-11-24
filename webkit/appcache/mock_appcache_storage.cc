@@ -35,7 +35,6 @@ MockAppCacheStorage::MockAppCacheStorage(AppCacheService* service)
       simulated_found_cache_id_(kNoCacheId),
       simulated_found_network_namespace_(false) {
   last_cache_id_ = 0;
-  last_entry_id_ = 0;
   last_group_id_ = 0;
   last_response_id_ = 0;
 }
@@ -175,7 +174,7 @@ void MockAppCacheStorage::ProcessLoadOrCreateGroup(
   // Newly created groups are not put in the stored_groups collection
   // until StoreGroupAndNewestCache is called.
   if (!group)
-    group = new AppCacheGroup(service_, manifest_url);
+    group = new AppCacheGroup(service_, manifest_url, NewGroupId());
 
   if (delegate_ref->delegate)
     delegate_ref->delegate->OnGroupLoaded(group, manifest_url);
