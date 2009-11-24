@@ -50,8 +50,10 @@ class CommandLineProblemSink : public nacl_arm_val::ProblemSink {
 int validate(const ncfile *ncf) {
   SfiValidator validator(
       16,  // bytes per bundle
-      2U * 1024 * 1024 * 1024,  // code region size
-      2U * 1024 * 1024 * 1024,  // data region size
+      // TODO(cbiffle): maybe check region sizes from ELF headers?
+      //                verify that instructions are in right region
+      256U * 1024 * 1024,  // code region size
+      1U * 1024 * 1024 * 1024,  // data region size
       nacl_arm_dec::Register(9),  // read only register
       nacl_arm_dec::Register(13));  // stack pointer
   CommandLineProblemSink sink;

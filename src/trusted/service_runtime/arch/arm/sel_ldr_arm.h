@@ -35,7 +35,8 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
-#define NACL_MAX_ADDR_BITS      (26) /* mmap fails for 28 bits */
+/* NOTE: we hope to unify this among archtectures */
+#define NACL_MAX_ADDR_BITS      30
 
 #define NACL_THREAD_MAX         (1 << NACL_PAGESHIFT)
 

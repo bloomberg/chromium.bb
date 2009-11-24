@@ -273,6 +273,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /* write strings and char * arrays to stack */
 
   stack_ptr = (nap->mem_start + (1 << nap->addr_bits) - size);
+  NaClLog(2, "setting stack to : %08"PRIxPTR"\n", stack_ptr);
+
   VCHECK(0 == (stack_ptr & PTR_ALIGN_MASK),
           ("stack_ptr not aligned: %08x\n", stack_ptr));
 
@@ -287,6 +289,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
 
   for (i = 0; i < argc; ++i) {
     BLAT(char *, NaClSysToUser(nap, (uintptr_t) strp));
+    NaClLog(2, "copying arg %d  %p -> %p\n",
+            i, argv[i], strp);
     strcpy(strp, argv[i]);
     strp += argv_len[i];
   }
@@ -294,6 +298,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
 
   for (i = 0; i < envc; ++i) {
     BLAT(char *, NaClSysToUser(nap, (uintptr_t) strp));
+    NaClLog(2, "copying env %d  %p -> %p\n",
+            i, envv[i], strp);
     strcpy(strp, envv[i]);
     strp += envv_len[i];
   }

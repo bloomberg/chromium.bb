@@ -41,8 +41,8 @@ EXTERN_C_BEGIN
 int NCValidateSegment(uint8_t *mbase, uint32_t vbase, size_t size) {
   SfiValidator validator(
       16,  // bytes per bundle
-      2U * 1024 * 1024 * 1024,  // bytes of data space
-      256 * 1024 * 1024,  // bytes of code space
+      256U * 1024 * 1024,  // bytes of code space
+      1U * 1024 * 1024 * 1024,  // bytes of data space
       Register(9),  // read only register(s)
       kRegisterStack);  // data addressing register(s)
 

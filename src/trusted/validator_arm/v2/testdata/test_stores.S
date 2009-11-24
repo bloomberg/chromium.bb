@@ -8,7 +8,8 @@
 @ require masking, and stores that are guaranteed sandboxed (i.e. through SP)
 @
 
-#define MASK 0xF0000000
+@ we restrict store to the lower 1GB of the address space
+#define MASK 0xc0000000
 
 .globl _start
 _start:
