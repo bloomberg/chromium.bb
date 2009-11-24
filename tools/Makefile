@@ -1,4 +1,4 @@
- # Copyright 2008, Google Inc.
+# Copyright 2008, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -71,6 +71,7 @@ ifeq ($(PLATFORM), Cygwin)
     cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
     /cygdrive/c/cygwin/bin/cygiconv*.dll \
     /cygdrive/c/cygwin/bin/cygintl*.dll \
+    /cygdrive/c/cygwin/bin/cygz*.dll \
     $(SDKROOT)/bin
 else
   BUILDPATH=$(SDKROOT)/bin:$(PATH)
@@ -94,7 +95,7 @@ DEFAULT_ALIGN_POW2=5
 ##################################################################
 #  The version numbers for the tools we will be building.
 ##################################################################
-BINUTILS_VERSION=2.18
+BINUTILS_VERSION=2.20
 NEWLIB_VERSION=1.17.0
 GCC_VERSION=4.2.2
 GDB_VERSION=6.8
@@ -109,7 +110,6 @@ BUILD:
 # copy binutils, apply patches
 BUILD/binutils-$(BINUTILS_VERSION): | BUILD
 	@echo "Unpacking binutils-$(BINUTILS_VERSION)"
-	# binutils_$(BINUTILS_VERSION).orig.tar.gz is debian-style
 	cd BUILD && tar xf $(SRCDIR)/binutils/binutils-$(BINUTILS_VERSION).tar.bz2
 	cd BUILD && patch -p0 < ../patches/binutils-$(BINUTILS_VERSION).patch
 	if ( ! [ -x /usr/bin/bison ] ) || ( ! [ -x /usr/bin/flex ] ) ; then \
