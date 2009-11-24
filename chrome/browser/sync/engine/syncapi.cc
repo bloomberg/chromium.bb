@@ -135,7 +135,7 @@ class ModelSafeWorkerBridge;
 
 static const FilePath::CharType kBookmarkSyncUserSettingsDatabase[] =
     FILE_PATH_LITERAL("BookmarkSyncSettings.sqlite3");
-static const PSTR_CHAR kDefaultNameForNewNodes[] = PSTR(" ");
+static const char kDefaultNameForNewNodes[] = " ";
 
 // The list of names which are reserved for use by the server.
 static const char* kForbiddenServerNames[] = { "", ".", ".." };
@@ -314,7 +314,7 @@ void WriteNode::SetTitle(const std::wstring& title) {
   std::string server_legal_name;
   SyncAPINameToServerName(title, &server_legal_name);
 
-  PathString old_name = entry_->Get(syncable::NON_UNIQUE_NAME);
+  string old_name = entry_->Get(syncable::NON_UNIQUE_NAME);
 
   if (server_legal_name == old_name)
     return;  // Skip redundant changes.
@@ -371,7 +371,7 @@ bool WriteNode::InitByCreation(const BaseNode& parent,
 
   // Start out with a dummy name.  We expect
   // the caller to set a meaningful name after creation.
-  PathString dummy(kDefaultNameForNewNodes);
+  string dummy(kDefaultNameForNewNodes);
 
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::CREATE, parent_id, dummy);

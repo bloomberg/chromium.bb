@@ -121,8 +121,8 @@ class HashField {
 };
 
 // TODO(chron): Remove this function.
-int ComparePathNames(const PathString& a, const PathString& b) {
-  const size_t val_size = sizeof(PathString::value_type);
+int ComparePathNames(const string& a, const string& b) {
+  const size_t val_size = sizeof(string::value_type);
   return ComparePathNames16(NULL, a.size() * val_size, a.data(),
                                   b.size() * val_size, b.data());
 }
@@ -141,8 +141,7 @@ class LessParentIdAndHandle {
 };
 
 // TODO(chron): Remove this function.
-bool LessPathNames::operator() (const PathString& a,
-                                const PathString& b) const {
+bool LessPathNames::operator() (const string& a, const string& b) const {
   return ComparePathNames(a, b) < 0;
 }
 
@@ -153,25 +152,25 @@ static const DirectoryChangeEvent kShutdownChangesEvent =
     { DirectoryChangeEvent::SHUTDOWN, 0, 0 };
 
 Directory::Kernel::Kernel(const FilePath& db_path,
-                          const PathString& name,
+                          const string& name,
                           const KernelLoadInfo& info)
-: db_path(db_path),
-  refcount(1),
-  name_(name),
-  metahandles_index(new Directory::MetahandlesIndex),
-  ids_index(new Directory::IdsIndex),
-  parent_id_child_index(new Directory::ParentIdChildIndex),
-  extended_attributes(new ExtendedAttributes),
-  unapplied_update_metahandles(new MetahandleSet),
-  unsynced_metahandles(new MetahandleSet),
-  channel(new Directory::Channel(syncable::DIRECTORY_DESTROYED)),
-  changes_channel(new Directory::ChangesChannel(kShutdownChangesEvent)),
-  last_sync_timestamp_(info.kernel_info.last_sync_timestamp),
-  initial_sync_ended_(info.kernel_info.initial_sync_ended),
-  store_birthday_(info.kernel_info.store_birthday),
-  cache_guid_(info.cache_guid),
-  next_metahandle(info.max_metahandle + 1),
-  next_id(info.kernel_info.next_id) {
+    : db_path(db_path),
+      refcount(1),
+      name_(name),
+      metahandles_index(new Directory::MetahandlesIndex),
+      ids_index(new Directory::IdsIndex),
+      parent_id_child_index(new Directory::ParentIdChildIndex),
+      extended_attributes(new ExtendedAttributes),
+      unapplied_update_metahandles(new MetahandleSet),
+      unsynced_metahandles(new MetahandleSet),
+      channel(new Directory::Channel(syncable::DIRECTORY_DESTROYED)),
+      changes_channel(new Directory::ChangesChannel(kShutdownChangesEvent)),
+      last_sync_timestamp_(info.kernel_info.last_sync_timestamp),
+      initial_sync_ended_(info.kernel_info.initial_sync_ended),
+      store_birthday_(info.kernel_info.store_birthday),
+      cache_guid_(info.cache_guid),
+      next_metahandle(info.max_metahandle + 1),
+      next_id(info.kernel_info.next_id) {
   info_status_ = Directory::KERNEL_SHARE_INFO_VALID;
 }
 
@@ -208,8 +207,7 @@ Directory::~Directory() {
   Close();
 }
 
-DirOpenResult Directory::Open(const FilePath& file_path,
-                              const PathString& name) {
+DirOpenResult Directory::Open(const FilePath& file_path, const string& name) {
   const DirOpenResult result = OpenImpl(file_path, name);
   if (OPENED != result)
     Close();
@@ -231,12 +229,12 @@ void Directory::InitializeIndices() {
 }
 
 DirectoryBackingStore* Directory::CreateBackingStore(
-    const PathString& dir_name, const FilePath& backing_filepath) {
+    const string& dir_name, const FilePath& backing_filepath) {
   return new DirectoryBackingStore(dir_name, backing_filepath);
 }
 
 DirOpenResult Directory::OpenImpl(const FilePath& file_path,
-                                  const PathString& name) {
+                                  const string& name) {
   DCHECK_EQ(static_cast<DirectoryBackingStore*>(NULL), store_);
   FilePath db_path(file_path);
   file_util::AbsolutePath(&db_path);
@@ -289,7 +287,7 @@ EntryKernel* Directory::GetEntryById(const Id& id,
   return NULL;
 }
 
-EntryKernel* Directory::GetEntryByTag(const PathString& tag) {
+EntryKernel* Directory::GetEntryByTag(const string& tag) {
   ScopedKernelLock lock(this);
   DCHECK(kernel_);
   // We don't currently keep a separate index for the tags.  Since tags
@@ -987,7 +985,7 @@ Entry::Entry(BaseTransaction* trans, GetById, const Id& id)
   kernel_ = trans->directory()->GetEntryById(id);
 }
 
-Entry::Entry(BaseTransaction* trans, GetByTag, const PathString& tag)
+Entry::Entry(BaseTransaction* trans, GetByTag, const string& tag)
     : basetrans_(trans) {
   kernel_ = trans->directory()->GetEntryByTag(tag);
 }
@@ -1001,7 +999,7 @@ Directory* Entry::dir() const {
   return basetrans_->directory();
 }
 
-PathString Entry::Get(StringField field) const {
+const string& Entry::Get(StringField field) const {
   DCHECK(kernel_);
   return kernel_->ref(field);
 }
@@ -1024,7 +1022,7 @@ void Entry::DeleteAllExtendedAttributes(WriteTransaction *trans) {
 // MutableEntry
 
 MutableEntry::MutableEntry(WriteTransaction* trans, Create,
-                           const Id& parent_id, const PathString& name)
+                           const Id& parent_id, const string& name)
     : Entry(trans),
       write_transaction_(trans) {
   Init(trans, parent_id, name);
@@ -1032,7 +1030,7 @@ MutableEntry::MutableEntry(WriteTransaction* trans, Create,
 
 
 void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
-                        const PathString& name) {
+                        const string& name) {
   kernel_ = new EntryKernel;
   ZeroFields(kernel_, BEGIN_FIELDS);
   kernel_->ref(ID) = trans->directory_->NextId();
@@ -1143,11 +1141,11 @@ bool MutableEntry::Put(BaseVersion field, int64 value) {
   return true;
 }
 
-bool MutableEntry::Put(StringField field, const PathString& value) {
+bool MutableEntry::Put(StringField field, const string& value) {
   return PutImpl(field, value);
 }
 
-bool MutableEntry::PutImpl(StringField field, const PathString& value) {
+bool MutableEntry::PutImpl(StringField field, const string& value) {
   DCHECK(kernel_);
   if (kernel_->ref(field) != value) {
     kernel_->ref(field) = value;
@@ -1349,7 +1347,7 @@ bool IsLegalNewParent(BaseTransaction* trans, const Id& entry_id,
 }
 
 const Blob* GetExtendedAttributeValue(const Entry& e,
-                                      const PathString& attribute_name) {
+                                      const string& attribute_name) {
   ExtendedAttributeKey key(e.Get(META_HANDLE), attribute_name);
   ExtendedAttribute extended_attribute(e.trans(), GET_BY_HANDLE, key);
   if (extended_attribute.good() && !extended_attribute.is_deleted())
@@ -1421,7 +1419,7 @@ std::ostream& operator<<(std::ostream& stream, const syncable::Entry& entry) {
       s << g_metas_columns[i].name << separator;
   }
   for ( ; i < STRING_FIELDS_END; ++i) {
-    const PathString& field = kernel->ref(static_cast<StringField>(i));
+    const string& field = kernel->ref(static_cast<StringField>(i));
     s << g_metas_columns[i].name << colon << field << separator;
   }
   for ( ; i < BLOB_FIELDS_END; ++i) {

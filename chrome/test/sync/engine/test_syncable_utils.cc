@@ -8,11 +8,13 @@
 
 #include "chrome/browser/sync/syncable/syncable.h"
 
+using std::string;
+
 namespace syncable {
 
 int CountEntriesWithName(BaseTransaction* rtrans,
                          const syncable::Id& parent_id,
-                         const PathString& name) {
+                         const string& name) {
   Directory::ChildHandles child_handles;
   rtrans->directory()->GetChildHandles(rtrans, parent_id, &child_handles);
   if (child_handles.size() <= 0) {
@@ -33,7 +35,7 @@ int CountEntriesWithName(BaseTransaction* rtrans,
 
 Id GetFirstEntryWithName(BaseTransaction* rtrans,
                          const syncable::Id& parent_id,
-                         const PathString& name) {
+                         const string& name) {
   Directory::ChildHandles child_handles;
   rtrans->directory()->GetChildHandles(rtrans, parent_id, &child_handles);
 
@@ -52,7 +54,7 @@ Id GetFirstEntryWithName(BaseTransaction* rtrans,
 
 Id GetOnlyEntryWithName(BaseTransaction* rtrans,
                         const syncable::Id& parent_id,
-                        const PathString& name) {
+                        const string& name) {
   CHECK(1 == CountEntriesWithName(rtrans, parent_id, name));
   return GetFirstEntryWithName(rtrans, parent_id, name);
 }

@@ -49,7 +49,7 @@ bool DoesTableExist(sqlite3* dbhandle, const std::string& tablename);
 // passed inside of the Vector.
 // Example:
 //
-// vector<PathString> v;
+// vector<std::string> v;
 // v.push_back("abc");
 // v.push_back("123");
 // PrepareQuery(dbhandle, "SELECT * FROM table", "column_name", v.begin(),

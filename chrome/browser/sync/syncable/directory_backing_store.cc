@@ -10,8 +10,6 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
-#include <string>
-
 #include "base/hash_tables.h"
 #include "base/logging.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
@@ -193,7 +191,7 @@ static string ComposeCreateTableColumnSpecs(const ColumnSpec* begin,
 ///////////////////////////////////////////////////////////////////////////////
 // DirectoryBackingStore implementation.
 
-DirectoryBackingStore::DirectoryBackingStore(const PathString& dir_name,
+DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
                                              const FilePath& backing_filepath)
     : load_dbhandle_(NULL),
       save_dbhandle_(NULL),
@@ -335,7 +333,7 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
       ScopedStatement statement(PrepareQuery(load_dbhandle_,
           "SELECT db_create_version, db_create_time FROM share_info"));
       CHECK(SQLITE_ROW == sqlite3_step(statement.get()));
-      PathString db_create_version;
+      string db_create_version;
       int db_create_time;
       GetColumn(statement.get(), 0, &db_create_version);
       GetColumn(statement.get(), 1, &db_create_time);
@@ -379,7 +377,7 @@ void DirectoryBackingStore::LoadExtendedAttributes(
   int step_result = sqlite3_step(statement.get());
   while (SQLITE_ROW == step_result) {
     int64 metahandle;
-    PathString path_string_key;
+    string path_string_key;
     ExtendedAttributeValue val;
     val.is_deleted = false;
     GetColumn(statement.get(), 0, &metahandle);

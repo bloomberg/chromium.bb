@@ -241,7 +241,7 @@ UpdateAttemptResponse SyncerUtil::AttemptToUpdateEntry(
 void SyncerUtil::UpdateServerFieldsFromUpdate(
     MutableEntry* local_entry,
     const SyncEntity& server_entry,
-    const PathString& name) {
+    const string& name) {
   if (server_entry.deleted()) {
     // The server returns very lightweight replies for deletions, so we don't
     // clobber a bunch of fields on delete.
@@ -265,13 +265,13 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   local_entry->Put(SERVER_IS_BOOKMARK_OBJECT, server_entry.has_bookmarkdata());
   local_entry->Put(SERVER_IS_DIR, server_entry.IsFolder());
   if (server_entry.has_singleton_tag()) {
-    const PathString& tag = server_entry.singleton_tag();
+    const string& tag = server_entry.singleton_tag();
     local_entry->Put(SINGLETON_TAG, tag);
   }
   if (server_entry.has_bookmarkdata() && !server_entry.deleted()) {
     const SyncEntity::BookmarkData& bookmark = server_entry.bookmarkdata();
     if (bookmark.has_bookmark_url()) {
-      const PathString& url = bookmark.bookmark_url();
+      const string& url = bookmark.bookmark_url();
       local_entry->Put(SERVER_BOOKMARK_URL, url);
     }
     if (bookmark.has_bookmark_favicon()) {
@@ -305,9 +305,9 @@ void SyncerUtil::ApplyExtendedAttributes(
     const sync_pb::ExtendedAttributes & extended_attributes =
       server_entry.extended_attributes();
     for (int i = 0; i < extended_attributes.extendedattribute_size(); i++) {
-      const PathString& pathstring_key =
+      const string& string_key =
           extended_attributes.extendedattribute(i).key();
-      ExtendedAttributeKey key(local_entry->Get(META_HANDLE), pathstring_key);
+      ExtendedAttributeKey key(local_entry->Get(META_HANDLE), string_key);
       MutableExtendedAttribute local_attribute(local_entry->write_transaction(),
           CREATE, key);
       SyncerProtoUtil::CopyProtoBytesIntoBlob(

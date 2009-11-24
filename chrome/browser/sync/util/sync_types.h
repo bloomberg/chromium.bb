@@ -12,10 +12,6 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 
-#define PSTR(s) s
-#define PSTR_CHAR char
-typedef std::string PathString;
-
 #if !defined(OS_WIN)
 // Mac OS X typedef's BOOL to signed char, so we do that on Linux too.
 typedef signed char BOOL;
@@ -33,19 +29,8 @@ const BOOL FALSE = 0;
 #endif
 #endif
 
-typedef PathString::value_type PathChar;
-
-inline size_t CountBytes(const std::wstring& s) {
-  return s.size() * sizeof(std::wstring::value_type);
-}
-
 inline size_t CountBytes(const std::string &s) {
   return s.size() * sizeof(std::string::value_type);
-}
-
-inline PathString IntToPathString(int digit) {
-  std::string tmp = StringPrintf("%d", digit);
-  return PathString(tmp.begin(), tmp.end());
 }
 
 const size_t kSyncProtocolMaxNameLengthBytes = 255;

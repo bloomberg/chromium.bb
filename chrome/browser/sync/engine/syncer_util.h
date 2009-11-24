@@ -55,7 +55,7 @@ class SyncerUtil {
   static void UpdateServerFieldsFromUpdate(
       syncable::MutableEntry* local_entry,
       const SyncEntity& server_entry,
-      const PathString& name);
+      const std::string& name);
 
   static void ApplyExtendedAttributes(
       syncable::MutableEntry* local_entry,

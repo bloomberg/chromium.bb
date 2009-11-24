@@ -23,8 +23,6 @@ std::string FilePathToUTF8(const FilePath& file_path);
 // Returns FilePath from the given UTF8 string.
 FilePath UTF8ToFilePath(const std::string& utf8);
 
-void TrimPathStringToValidCharacter(std::string* string);
-
 }  // namespace browser_sync
 
 #endif  // CHROME_BROWSER_SYNC_UTIL_CHARACTER_SET_CONVERTERS_H_

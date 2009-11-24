@@ -8,6 +8,8 @@
 #ifndef CHROME_TEST_SYNC_ENGINE_TEST_SYNCABLE_UTILS_H_
 #define CHROME_TEST_SYNC_ENGINE_TEST_SYNCABLE_UTILS_H_
 
+#include <string>
+
 #include "chrome/browser/sync/syncable/syncable.h"
 
 namespace syncable {
@@ -20,18 +22,18 @@ class Id;
 // rely on uniqueness inside of folders.
 int CountEntriesWithName(BaseTransaction* rtrans,
                          const syncable::Id& parent_id,
-                         const PathString& name);
+                         const std::string& name);
 
 // Get the first entry ID with name in a parent. The entry *must* exist.
 Id GetFirstEntryWithName(BaseTransaction* rtrans,
                          const syncable::Id& parent_id,
-                         const PathString& name);
+                         const std::string& name);
 
 // Assert that there's only one entry by this name in this parent.
 // Return the Id.
 Id GetOnlyEntryWithName(BaseTransaction* rtrans,
                         const syncable::Id& parent_id,
-                        const PathString& name);
+                        const std::string& name);
 
 }  // namespace syncable
 

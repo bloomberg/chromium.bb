@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/engine/process_commit_response_command.h"
 
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -21,6 +22,7 @@ using syncable::MutableEntry;
 using syncable::Entry;
 
 using std::set;
+using std::string;
 using std::vector;
 
 using syncable::BASE_VERSION;
@@ -343,7 +345,7 @@ void ProcessCommitResponseCommand::PerformCommitTimeNameAside(
     syncable::WriteTransaction* trans,
     const CommitResponse_EntryResponse& server_entry,
     syncable::MutableEntry* local_entry) {
-  PathString old_name = local_entry->Get(syncable::NON_UNIQUE_NAME);
+  string old_name = local_entry->Get(syncable::NON_UNIQUE_NAME);
   const string server_name =
       SyncerProtoUtil::NameFromCommitEntryResponse(server_entry);
 

@@ -217,7 +217,7 @@ enum CreateNewUpdateItem {
   CREATE_NEW_UPDATE_ITEM
 };
 
-typedef std::set<PathString> AttributeKeySet;
+typedef std::set<std::string> AttributeKeySet;
 
 // Why the singular enums?  So the code compile-time dispatches instead of
 // runtime dispatches as it would with a single enum and an if() statement.
@@ -227,7 +227,7 @@ typedef std::set<PathString> AttributeKeySet;
 // declarations would bloat the code.
 struct EntryKernel {
  protected:
-  PathString string_fields[STRING_FIELDS_COUNT];
+  std::string string_fields[STRING_FIELDS_COUNT];
   Blob blob_fields[BLOB_FIELDS_COUNT];
   int64 int64_fields[INT64_FIELDS_COUNT];
   Id id_fields[ID_FIELDS_COUNT];
@@ -259,7 +259,7 @@ struct EntryKernel {
   inline std::bitset<BIT_FIELDS_COUNT>::reference ref(BitField field) {
     return bit_fields[field - BIT_FIELDS_BEGIN];
   }
-  inline PathString& ref(StringField field) {
+  inline std::string& ref(StringField field) {
     return string_fields[field - STRING_FIELDS_BEGIN];
   }
   inline Blob& ref(BlobField field) {
@@ -290,7 +290,7 @@ struct EntryKernel {
   inline bool ref(BitField field) const {
     return bit_fields[field - BIT_FIELDS_BEGIN];
   }
-  inline PathString ref(StringField field) const {
+  inline const std::string& ref(StringField field) const {
     return string_fields[field - STRING_FIELDS_BEGIN];
   }
   inline Blob ref(BlobField field) const {
@@ -311,7 +311,7 @@ class Entry {
   // succeeded.
   Entry(BaseTransaction* trans, GetByHandle, int64 handle);
   Entry(BaseTransaction* trans, GetById, const Id& id);
-  Entry(BaseTransaction* trans, GetByTag, const PathString& tag);
+  Entry(BaseTransaction* trans, GetByTag, const std::string& tag);
 
   bool good() const { return 0 != kernel_; }
 
@@ -346,7 +346,7 @@ class Entry {
     DCHECK(kernel_);
     return kernel_->ref(field);
   }
-  PathString Get(StringField field) const;
+  const std::string& Get(StringField field) const;
   inline Blob Get(BlobField field) const {
     DCHECK(kernel_);
     return kernel_->ref(field);
@@ -401,10 +401,10 @@ class MutableEntry : public Entry {
   friend class WriteTransaction;
   friend class Directory;
   void Init(WriteTransaction* trans, const Id& parent_id,
-      const PathString& name);
+      const std::string& name);
  public:
   MutableEntry(WriteTransaction* trans, Create, const Id& parent_id,
-               const PathString& name);
+               const std::string& name);
   MutableEntry(WriteTransaction* trans, CreateNewUpdateItem, const Id& id);
   MutableEntry(WriteTransaction* trans, GetByHandle, int64);
   MutableEntry(WriteTransaction* trans, GetById, const Id&);
@@ -419,7 +419,7 @@ class MutableEntry : public Entry {
   // TODO(chron): Remove some of these unecessary return values.
   bool Put(Int64Field field, const int64& value);
   bool Put(IdField field, const Id& value);
-  bool Put(StringField field, const PathString& value);
+  bool Put(StringField field, const std::string& value);
   bool Put(BaseVersion field, int64 value);
 
   inline bool Put(BlobField field, const Blob& value) {
@@ -468,7 +468,7 @@ class MutableEntry : public Entry {
   friend class sync_api::WriteNode;
   void* operator new(size_t size) { return (::operator new)(size); }
 
-  bool PutImpl(StringField field, const PathString& value);
+  bool PutImpl(StringField field, const std::string& value);
 
   // Adjusts the successor and predecessor entries so that they no longer
   // refer to this entry.
@@ -536,14 +536,14 @@ struct DirectoryChangeEvent {
 
 struct ExtendedAttributeKey {
   int64 metahandle;
-  PathString key;
+  std::string key;
   inline bool operator < (const ExtendedAttributeKey& x) const {
     if (metahandle != x.metahandle)
       return metahandle < x.metahandle;
     return key.compare(x.key) < 0;
   }
-  ExtendedAttributeKey(int64 metahandle, PathString key) :
-      metahandle(metahandle), key(key) {  }
+  ExtendedAttributeKey(int64 metahandle, const std::string& key)
+      : metahandle(metahandle), key(key) {  }
 };
 
 struct ExtendedAttributeValue {
@@ -646,7 +646,7 @@ class Directory {
   Directory();
   virtual ~Directory();
 
-  DirOpenResult Open(const FilePath& file_path, const PathString& name);
+  DirOpenResult Open(const FilePath& file_path, const std::string& name);
 
   void Close();
 
@@ -667,7 +667,7 @@ class Directory {
   bool initial_sync_ended() const;
   void set_initial_sync_ended(bool value);
 
-  PathString name() const { return kernel_->name_; }
+  const std::string& name() const { return kernel_->name_; }
 
   // (Account) Store birthday is opaque to the client,
   // so we keep it in the format it is in the proto buffer
@@ -682,7 +682,7 @@ class Directory {
   EntryKernel* GetEntryByHandle(const int64 handle);
   EntryKernel* GetEntryByHandle(const int64 metahandle, ScopedKernelLock* lock);
   EntryKernel* GetEntryById(const Id& id);
-  EntryKernel* GetEntryByTag(const PathString& tag);
+  EntryKernel* GetEntryByTag(const std::string& tag);
   EntryKernel* GetRootEntry();
   bool ReindexId(EntryKernel* const entry, const Id& new_id);
   void ReindexParentId(EntryKernel* const entry, const Id& new_parent_id);
@@ -694,7 +694,7 @@ class Directory {
 
   // Overridden by tests.
   virtual DirectoryBackingStore* CreateBackingStore(
-      const PathString& dir_name,
+      const std::string& dir_name,
       const FilePath& backing_filepath);
 
  private:
@@ -702,7 +702,7 @@ class Directory {
   // before calling.
   EntryKernel* GetEntryById(const Id& id, ScopedKernelLock* const lock);
 
-  DirOpenResult OpenImpl(const FilePath& file_path, const PathString& name);
+  DirOpenResult OpenImpl(const FilePath& file_path, const std::string& name);
 
   struct DirectoryEventTraits {
     typedef DirectoryEvent EventType;
@@ -717,7 +717,7 @@ class Directory {
 
   // Returns the child meta handles for given parent id.
   void GetChildHandles(BaseTransaction*, const Id& parent_id,
-      const PathString& path_spec, ChildHandles* result);
+      const std::string& path_spec, ChildHandles* result);
   void GetChildHandles(BaseTransaction*, const Id& parent_id,
       ChildHandles* result);
   void GetChildHandlesImpl(BaseTransaction* trans, const Id& parent_id,
@@ -838,7 +838,7 @@ class Directory {
  private:
 
   struct Kernel {
-    Kernel(const FilePath& db_path, const PathString& name,
+    Kernel(const FilePath& db_path, const std::string& name,
            const KernelLoadInfo& info);
 
     ~Kernel();
@@ -853,7 +853,7 @@ class Directory {
     Lock transaction_mutex;
 
     // The name of this directory, used as a key into open_files_;
-    PathString const name_;
+    std::string const name_;
 
     // Protects all members below.
     // The mutex effectively protects all the indices, but not the
@@ -995,7 +995,7 @@ class WriteTransaction : public BaseTransaction {
 };
 
 bool IsLegalNewParent(BaseTransaction* trans, const Id& id, const Id& parentid);
-int ComparePathNames(const PathString& a, const PathString& b);
+int ComparePathNames(const std::string& a, const std::string& b);
 
 // Exposed in header as this is used as a sqlite3 callback.
 int ComparePathNames16(void*, int a_bytes, const void* a, int b_bytes,
@@ -1008,7 +1008,7 @@ class ExtendedAttribute {
   ExtendedAttribute(BaseTransaction* trans, GetByHandle,
                     const ExtendedAttributeKey& key);
   int64 metahandle() const { return i_->first.metahandle; }
-  const PathString& key() const { return i_->first.key; }
+  const std::string& key() const { return i_->first.key; }
   const Blob& value() const { return i_->second.value; }
   bool is_deleted() const { return i_->second.is_deleted; }
   bool good() const { return good_; }
@@ -1049,7 +1049,7 @@ class MutableExtendedAttribute : public ExtendedAttribute {
 // no attribute with the given name. The pointer is valid for the
 // duration of the Entry's transaction.
 const Blob* GetExtendedAttributeValue(const Entry& e,
-                                      const PathString& attribute_name);
+                                      const std::string& attribute_name);
 
 // This function sets only the flags needed to get this entry to sync.
 void MarkForSyncing(syncable::MutableEntry* e);

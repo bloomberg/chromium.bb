@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_SYNCABLE_DIRECTORY_BACKING_STORE_H_
 
 #include <set>
+#include <string>
 
 #include "base/file_path.h"
 #include "chrome/browser/sync/syncable/dir_open_result.h"
@@ -45,7 +46,7 @@ typedef Directory::MetahandlesIndex MetahandlesIndex;
 // thread that "uses" the DBS is the thread that destroys it.
 class DirectoryBackingStore {
  public:
-  DirectoryBackingStore(const PathString& dir_name,
+  DirectoryBackingStore(const std::string& dir_name,
                         const FilePath& backing_filepath);
 
   virtual ~DirectoryBackingStore();
@@ -113,7 +114,7 @@ class DirectoryBackingStore {
   sqlite3* load_dbhandle_;
   sqlite3* save_dbhandle_;
 
-  PathString dir_name_;
+  std::string dir_name_;
   FilePath backing_filepath_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryBackingStore);

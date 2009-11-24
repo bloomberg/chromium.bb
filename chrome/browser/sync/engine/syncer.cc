@@ -302,7 +302,7 @@ void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest) {
 }
 
 void ClearServerData(syncable::MutableEntry* entry) {
-  entry->Put(SERVER_NON_UNIQUE_NAME, PSTR(""));
+  entry->Put(SERVER_NON_UNIQUE_NAME, "");
   entry->Put(SERVER_PARENT_ID, syncable::kNullId);
   entry->Put(SERVER_MTIME, 0);
   entry->Put(SERVER_CTIME, 0);
@@ -311,7 +311,7 @@ void ClearServerData(syncable::MutableEntry* entry) {
   entry->Put(SERVER_IS_DEL, false);
   entry->Put(SERVER_IS_BOOKMARK_OBJECT, false);
   entry->Put(IS_UNAPPLIED_UPDATE, false);
-  entry->Put(SERVER_BOOKMARK_URL, PSTR(""));
+  entry->Put(SERVER_BOOKMARK_URL, "");
   entry->Put(SERVER_BOOKMARK_FAVICON, Blob());
   entry->Put(SERVER_POSITION_IN_PARENT, 0);
 }

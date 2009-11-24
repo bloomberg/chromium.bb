@@ -66,7 +66,7 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     // This is the only change we make to the entry in this function.
     meta_entry.Put(syncable::SYNCING, true);
 
-    PathString name = meta_entry.Get(syncable::NON_UNIQUE_NAME);
+    string name = meta_entry.Get(syncable::NON_UNIQUE_NAME);
     CHECK(!name.empty());  // Make sure this isn't an update.
     sync_entry->set_name(name);
 

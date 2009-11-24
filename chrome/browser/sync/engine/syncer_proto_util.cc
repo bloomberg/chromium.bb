@@ -188,7 +188,7 @@ bool SyncerProtoUtil::Compare(const syncable::Entry& local_entry,
 
   // These checks are somewhat prolix, but they're easier to debug than a big
   // boolean statement.
-  PathString client_name = local_entry.Get(syncable::NON_UNIQUE_NAME);
+  string client_name = local_entry.Get(syncable::NON_UNIQUE_NAME);
   if (client_name != name) {
     LOG(WARNING) << "Client name mismatch";
     return false;
