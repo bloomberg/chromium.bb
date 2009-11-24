@@ -43,6 +43,7 @@
 # include <sys/types.h>
 # include <sys/time.h>
 #endif  /* !NACL_WINDOWS */
+#include "native_client/src/include/nacl_base.h"
 #ifdef __native_client__
 # include <fcntl.h>
 # include <nacl/nacl_inttypes.h>
@@ -53,7 +54,9 @@
 #endif  /* __native_client__ */
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
-#if NACL_LINUX
+
+/* TODO(sehr): make this just NACL_LINUX once ARM SHM works */
+#if NACL_LINUX && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
 # include <sys/ipc.h>
 # include <sys/mman.h>
 # include <sys/shm.h>
@@ -109,7 +112,8 @@ static NaClSrpcImcDescType DescFromPlatformDesc(int fd, int mode) {
 #endif  /* __native_client__ */
 }
 
-#if NACL_LINUX
+/* TODO(sehr): make this just NACL_LINUX once ARM SHM works */
+#if NACL_LINUX && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
 static void* kSysvShmAddr = (void*) (intptr_t) -1;
 static struct NaClDescSysvShm* shm_desc = NULL;
 
@@ -769,7 +773,8 @@ void NaClSrpcCommandLoop(NaClSrpcService* service,
     } else if (0 == strcmp("descs", command)) {
       PrintDescList();
     } else if (0 == strcmp("sysv", command)) {
-#if NACL_LINUX
+      /* TODO(sehr): make this just NACL_LINUX once ARM SHM works */
+#if NACL_LINUX && NACL_ARCH(NACL_BUILD_ARCH) != NACL_arm
       AddDescToList(SysvShmDesc(), "SysV shared memory");
 #endif  /* NACL_LINUX */
     } else if (0 == strcmp("quit", command)) {
