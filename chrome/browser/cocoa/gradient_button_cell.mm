@@ -72,8 +72,8 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   return self;
 }
 
-- (NSGradient *)gradientForHoverAlpha:(CGFloat)hoverAlpha
-                             isThemed:(BOOL)themed {
+- (NSGradient*)gradientForHoverAlpha:(CGFloat)hoverAlpha
+                            isThemed:(BOOL)themed {
   CGFloat startAlpha = 0.6 + 0.3 * hoverAlpha;
   CGFloat endAlpha = 0.333 * hoverAlpha;
 
@@ -88,7 +88,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   NSColor* endColor =
       [NSColor colorWithCalibratedWhite:1.0 - 0.15 * hoverAlpha
                                   alpha:endAlpha];
-  NSGradient *gradient = [[NSGradient alloc] initWithColorsAndLocations:
+  NSGradient* gradient = [[NSGradient alloc] initWithColorsAndLocations:
                           startColor, hoverAlpha * 0.33,
                           endColor, 1.0, nil];
 
@@ -115,15 +115,16 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 }
 
 - (NSBackgroundStyle)interiorBackgroundStyle {
-  return [self isHighlighted] ?
-      NSBackgroundStyleLowered : NSBackgroundStyleRaised;
+  // Never lower the interior, since that just leads to a weird shadow which can
+  // often interact badly with the theme.
+  return NSBackgroundStyleRaised;
 }
 
-- (void)mouseEntered:(NSEvent *)theEvent {
+- (void)mouseEntered:(NSEvent*)theEvent {
   [self setMouseInside:YES animate:YES];
 }
 
-- (void)mouseExited:(NSEvent *)theEvent {
+- (void)mouseExited:(NSEvent*)theEvent {
   [self setMouseInside:NO animate:YES];
 }
 
@@ -157,6 +158,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   }
 }
 
+// TODO(viettrungluu): clean up/reorganize.
 - (void)drawBorderAndFillForTheme:(GTMTheme*)theme
                       controlView:(NSView*)controlView
                         outerPath:(NSBezierPath*)outerPath
@@ -167,12 +169,37 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
                            active:(BOOL)active
                         cellFrame:(NSRect)cellFrame
                   defaultGradient:(NSGradient*)defaultGradient {
-  NSImage* backgroundImage =
-      [theme backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES];
+  BOOL isFlatButton = [self showsBorderOnlyWhileMouseInside];
 
-  if (!defaultGradient)
-    defaultGradient = gradient_;
+  // For flat (unbordered when not hovered) buttons, never use the toolbar
+  // button background image, but the modest gradient used for themed buttons.
+  // To make things even more modest, scale the hover alpha down by 40 percent
+  // unless clicked.
+  NSImage* backgroundImage;
+  BOOL useThemeGradient;
+  if (isFlatButton) {
+    backgroundImage = nil;
+    useThemeGradient = YES;
+    if (!showClickedGradient)
+      hoverAlpha *= 0.6;
+  } else {
+    backgroundImage = [theme backgroundImageForStyle:GTMThemeStyleToolBarButton
+                                               state:YES];
+    useThemeGradient = backgroundImage ? YES : NO;
+  }
 
+  // The basic gradient shown inside; see above.
+  NSGradient* gradient;
+  if (hoverAlpha == 0 && !useThemeGradient) {
+    gradient = defaultGradient ? defaultGradient
+                               : gradient_;
+  } else {
+    gradient = [self gradientForHoverAlpha:hoverAlpha
+                                  isThemed:useThemeGradient];
+  }
+
+  // If we're drawing a background image, show that; else possibly show the
+  // clicked gradient.
   if (backgroundImage) {
     NSColor* patternColor = [NSColor colorWithPatternImage:backgroundImage];
     [patternColor set];
@@ -183,15 +210,19 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     [innerPath fill];
   } else {
     if (showClickedGradient) {
-      NSGradient* gradient =
-          [theme gradientForStyle:GTMThemeStyleToolBarButtonPressed
-                            state:active];
-      [gradient drawInBezierPath:innerPath angle:90.0];
+      NSGradient* clickedGradient;
+      if (isFlatButton) {
+        clickedGradient = gradient;
+      } else {
+        clickedGradient =
+            [theme gradientForStyle:GTMThemeStyleToolBarButtonPressed
+                              state:active];
+      }
+      [clickedGradient drawInBezierPath:innerPath angle:90.0];
     }
   }
 
-  BOOL isCustomTheme = backgroundImage != nil;
-
+  // Visually indicate unclicked, enabled buttons.
   if (!showClickedGradient && [self isEnabled]) {
     [NSGraphicsContext saveGraphicsState];
     [innerPath addClip];
@@ -211,25 +242,17 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
     [[NSColor colorWithCalibratedWhite:1.0 alpha:0.2] setStroke];
     [highlightPath stroke];
 
-    NSGradient *gradient = nil;
-    if (hoverAlpha == 0 && !isCustomTheme) {
-      gradient = defaultGradient;
-    } else {
-      gradient = [self gradientForHoverAlpha:hoverAlpha isThemed:isCustomTheme];
-    }
+    // Draw the gradient inside.
     [gradient drawInBezierPath:innerPath angle:90.0];
 
     [NSGraphicsContext restoreGraphicsState];
   }
 
-  // Draw the outer stroke
-  NSColor* stroke = [theme strokeColorForStyle:GTMThemeStyleToolBarButton
-                                         state:active];
-
-  if (showClickedGradient) {
-    stroke = [NSColor colorWithCalibratedWhite:0.0 alpha:0.3];
-  }
-  [stroke setStroke];
+  // Draw the outer stroke.
+  NSColor* strokeColor = showClickedGradient ?
+      [NSColor colorWithCalibratedWhite:0.0 alpha:0.3] :
+      [theme strokeColorForStyle:GTMThemeStyleToolBarButton state:active];
+  [strokeColor setStroke];
 
   [innerPath setLineWidth:1];
   [innerPath stroke];
@@ -263,7 +286,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
   NSWindow* window = [controlView window];
   BOOL active = [window isKeyWindow] || [window isMainWindow];
 
-  GTMTheme *theme = [controlView gtm_theme];
+  GTMTheme* theme = [controlView gtm_theme];
 
   NSBezierPath* innerPath =
       [NSBezierPath bezierPathWithRoundedRect:drawFrame
@@ -322,7 +345,7 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 
     if (isTemplate) {
       scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-      NSColor *shadowColor = [color gtm_legibleTextColor];
+      NSColor* shadowColor = [color gtm_legibleTextColor];
       shadowColor = [shadowColor colorWithAlphaComponent:0.25];
       [shadow.get() setShadowColor:shadowColor];
       [shadow.get() setShadowOffset:NSMakeSize(0, -1.0)];
