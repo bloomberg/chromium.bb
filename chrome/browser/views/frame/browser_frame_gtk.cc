@@ -11,6 +11,52 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/opaque_browser_frame_view.h"
 #include "views/widget/root_view.h"
+#include "views/window/hit_test.h"
+
+namespace {
+
+// BrowserNonClientFrameView implementation for popups. We let the window
+// manager implementation render the decorations for popups, so this draws
+// nothing.
+class PopupNonClientFrameView : public BrowserNonClientFrameView {
+ public:
+  PopupNonClientFrameView() {
+  }
+
+  // NonClientFrameView:
+  virtual gfx::Rect GetBoundsForClientView() const {
+    return gfx::Rect(0, 0, width(), height());
+  }
+  virtual bool AlwaysUseCustomFrame() const { return false; }
+  virtual bool AlwaysUseNativeFrame() const { return true; }
+  virtual gfx::Rect GetWindowBoundsForClientBounds(
+      const gfx::Rect& client_bounds) const {
+    return client_bounds;
+  }
+  virtual gfx::Point GetSystemMenuPoint() const {
+    // Never used on GTK.
+    // TODO: make this method windows specific.
+    return gfx::Point(0, 0);
+  }
+  virtual int NonClientHitTest(const gfx::Point& point) {
+    return HTNOWHERE;
+  }
+  virtual void GetWindowMask(const gfx::Size& size,
+                             gfx::Path* window_mask) {}
+  virtual void EnableClose(bool enable) {}
+  virtual void ResetWindowControls() {}
+
+  // BrowserNonClientFrameView:
+  virtual gfx::Rect GetBoundsForTabStrip(TabStrip* tabstrip) const {
+    return gfx::Rect(0, 0, width(), tabstrip->GetPreferredHeight());
+  }
+  virtual void UpdateThrobber(bool running) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PopupNonClientFrameView);
+};
+
+}
 
 // static (Factory method.)
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
@@ -27,7 +73,10 @@ BrowserFrameGtk::BrowserFrameGtk(BrowserView* browser_view, Profile* profile)
       root_view_(NULL),
       profile_(profile) {
   browser_view_->set_frame(this);
-  browser_frame_view_ = new OpaqueBrowserFrameView(this, browser_view_);
+  if (browser_view->browser()->type() == Browser::TYPE_POPUP)
+    browser_frame_view_ = new PopupNonClientFrameView();
+  else
+    browser_frame_view_ = new OpaqueBrowserFrameView(this, browser_view_);
   GetNonClientView()->SetFrameView(browser_frame_view_);
   // Don't focus anything on creation, selecting a tab will set the focus.
 }
