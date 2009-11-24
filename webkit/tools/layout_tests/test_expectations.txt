@@ -3050,3 +3050,6 @@ BUG28605 : LayoutTests/plugins/reloadplugins-and-pages.html = TIMEOUT
 BUG28605 WIN LINUX : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE
 BUG28605 : LayoutTests/svg/filters/big-sized-filter-2.svg = MISSING
 BUG28605 WIN LINUX : LayoutTests/svg/filters/filterRes.svg = IMAGE
+
+// New tests. Failures from merge 51210:51325.
+BUG28646 : LayoutTests/editing/selection/transformed-selection-rects.html = FAIL
