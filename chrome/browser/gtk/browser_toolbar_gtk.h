@@ -13,6 +13,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_member.h"
@@ -34,6 +35,7 @@ class ToolbarStarToggleGtk;
 // View class that displays the GTK version of the toolbar and routes gtk
 // events back to the Browser.
 class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
+                          public ProfileSyncServiceObserver,
                           public MenuGtk::Delegate,
                           public NotificationObserver,
                           public BubblePositioner,
@@ -155,6 +157,11 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
                                  guint info, guint time,
                                  BrowserToolbarGtk* toolbar);
 
+  // ProfileSyncServiceObserver method.
+  virtual void OnStateChanged();
+
+  static void SetSyncMenuLabel(GtkWidget* widget, gpointer userdata);
+
   // Sometimes we only want to show the location w/o the toolbar buttons (e.g.,
   // in a popup window).
   bool ShouldOnlyShowLocation() const;
@@ -203,6 +210,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   Browser* browser_;
   BrowserWindowGtk* window_;
   Profile* profile_;
+
+  // A pointer to the ProfileSyncService instance if one exists.
+  ProfileSyncService* sync_service_;
 
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;

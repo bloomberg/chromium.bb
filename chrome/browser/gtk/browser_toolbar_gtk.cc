@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/browser_toolbar_gtk.h"
 
 #include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
 #include <X11/XF86keysym.h>
 
 #include "app/gfx/gtk_util.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/sync_status_ui_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_details.h"
@@ -80,6 +82,7 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
       browser_(browser),
       window_(window),
       profile_(NULL),
+      sync_service_(NULL),
       menu_bar_helper_(this) {
   browser_->command_updater()->AddCommandObserver(IDC_BACK, this);
   browser_->command_updater()->AddCommandObserver(IDC_FORWARD, this);
@@ -93,6 +96,9 @@ BrowserToolbarGtk::BrowserToolbarGtk(Browser* browser, BrowserWindowGtk* window)
 }
 
 BrowserToolbarGtk::~BrowserToolbarGtk() {
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
+
   browser_->command_updater()->RemoveCommandObserver(IDC_BACK, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_FORWARD, this);
   browser_->command_updater()->RemoveCommandObserver(IDC_RELOAD, this);
@@ -409,6 +415,13 @@ void BrowserToolbarGtk::SetProfile(Profile* profile) {
 
   profile_ = profile;
   location_bar_->SetProfile(profile);
+
+  if (profile_->GetProfileSyncService()) {
+    // Obtain a pointer to the profile sync service and add our instance as an
+    // observer.
+    sync_service_ = profile_->GetProfileSyncService();
+    sync_service_->AddObserver(this);
+  }
 }
 
 void BrowserToolbarGtk::UpdateTabContents(TabContents* contents,
@@ -680,6 +693,42 @@ void BrowserToolbarGtk::OnDragDataReceived(GtkWidget* widget,
   if (!url_is_newtab) {
     toolbar->profile_->GetPrefs()->SetString(prefs::kHomePage,
                                              UTF8ToWide(url.spec()));
+  }
+}
+
+void BrowserToolbarGtk::OnStateChanged() {
+  DCHECK(sync_service_);
+
+  string16 label;
+  string16 link;
+  // TODO(zork): Need a ui helper method to just get the type without
+  // needing labels.
+  SyncStatusUIHelper::MessageType type = SyncStatusUIHelper::GetLabels(
+      sync_service_, &label, &link);
+
+  int menu_label = type == SyncStatusUIHelper::SYNCED ?
+      IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL :
+      type == SyncStatusUIHelper::SYNC_ERROR ?
+      IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL :
+      IDS_SYNC_START_SYNC_BUTTON_LABEL;
+
+  gtk_container_foreach(GTK_CONTAINER(app_menu_->widget()), &SetSyncMenuLabel,
+                        &menu_label);
+}
+
+// static
+void BrowserToolbarGtk::SetSyncMenuLabel(GtkWidget* widget, gpointer userdata) {
+  const MenuCreateMaterial* data =
+      reinterpret_cast<const MenuCreateMaterial*>(
+          g_object_get_data(G_OBJECT(widget), "menu-data"));
+  if (data) {
+    if (data->id == IDC_SYNC_BOOKMARKS) {
+      std::string label;
+      label = l10n_util::GetStringUTF8(*((int *)userdata));
+      label = gtk_util::ConvertAcceleratorsFromWindowsStyle(label);
+      GtkWidget *menu_label = gtk_bin_get_child(GTK_BIN(widget));
+      gtk_label_set_label(GTK_LABEL(menu_label), label.c_str());
+    }
   }
 }
 
