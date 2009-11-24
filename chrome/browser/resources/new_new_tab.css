@@ -340,6 +340,7 @@ html[dir=rtl] .thumbnail-container > .title > div {
   -webkit-transition: opacity .15s;
   pointer-events: none;
   z-index: 1;
+  color: black;
 }
 
 #notification.first-run {
@@ -364,7 +365,12 @@ html[dir=rtl] .thumbnail-container > .title > div {
 }
 
 #notification .link {
+  color: rgba(0, 102, 204, 0.3);
   -webkit-padding-start: 20px;
+}
+
+#notification .link-color {
+  color: rgb(0, 102, 204);
 }
 
 #notification > span > .blacklist-title {
@@ -722,7 +728,6 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
   background: none;
   cursor: pointer;
   text-decoration: underline;
-  color: rgb(6, 45, 117);
   font-family: inherit;
 }
 
@@ -759,6 +764,17 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
 #promo-line * {
   font-weight: bold;
   text-overflow: ellipsis;
+}
+
+#promo-message a,
+#promo-message button {
+  color: rgba(0, 102, 204, 0.3);
+  text-decoration: underline;
+}
+
+#promo-message a > .link-color,
+#promo-message button > .link-color {
+  color: rgb(0, 102, 204);
 }
 
 #promo-new {
