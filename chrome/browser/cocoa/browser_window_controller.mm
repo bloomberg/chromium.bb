@@ -100,6 +100,16 @@ willPositionSheet:(NSWindow*)sheet
 
 @end
 
+// IncognitoImageView subclasses NSImageView to allow mouse events to pass
+// through it so you can drag the window by dragging on the spy guy
+@interface IncognitoImageView : NSImageView
+@end
+
+@implementation IncognitoImageView
+- (BOOL)mouseDownCanMoveWindow {
+  return YES;
+}
+@end
 
 @implementation BrowserWindowController
 
@@ -1280,8 +1290,8 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   incognitoFrame.origin.x = NSMaxX(incognitoFrame) - imageSize.width -
                               kOffset;
   incognitoFrame.size = imageSize;
-  scoped_nsobject<NSImageView> incognitoView(
-      [[NSImageView alloc] initWithFrame:incognitoFrame]);
+  scoped_nsobject<IncognitoImageView> incognitoView(
+      [[IncognitoImageView alloc] initWithFrame:incognitoFrame]);
   [incognitoView setImage:incognitoImage.get()];
   [incognitoView setWantsLayer:YES];
   [incognitoView setAutoresizingMask:NSViewMinXMargin | NSViewMinYMargin];
@@ -1714,3 +1724,4 @@ willPositionSheet:(NSWindow*)sheet
   return theme;
 }
 @end
+
