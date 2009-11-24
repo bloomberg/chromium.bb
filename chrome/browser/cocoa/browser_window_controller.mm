@@ -41,7 +41,8 @@
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/browser_theme_provider.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/sync_status_ui_helper_mac.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
@@ -661,17 +662,8 @@ willPositionSheet:(NSWindow*)sheet
           enable &= [self supportsFullscreen];
           break;
         case IDC_SYNC_BOOKMARKS:
-          {
-            Profile* profile = browser_->profile()->GetOriginalProfile();
-            ProfileSyncService* syncService = profile->GetProfileSyncService();
-            // TODO(timsteele): Need a ui helper method to just get the type
-            // without needing labels.
-            string16 label, link;
-            SyncStatusUIHelper::MessageType status =
-                SyncStatusUIHelper::GetLabels(syncService, &label, &link);
-            enable &= (syncService != NULL);
-            [self updateSyncItem:item syncEnabled:enable status:status];
-          }
+          enable &= ProfileSyncService::IsSyncEnabled();
+          browser_sync::UpdateSyncItem(item, enable, browser_->profile());
           break;
         default:
           // Special handling for the contents of the Text Encoding submenu. On
@@ -691,59 +683,6 @@ willPositionSheet:(NSWindow*)sheet
     }
   }
   return enable;
-}
-
-// TODO(akalin): We need to add a menu item to the main Chrome menu (near
-// "Clear browsing data...").  However, this is tricky as no browsers may
-// actually be open.  Refactor the sync UI code so that it doesn't depend
-// on a browser being present.
-
-- (void)updateSyncItem:(id)syncItem
-           syncEnabled:(BOOL)syncEnabled
-                status:(SyncStatusUIHelper::MessageType)status {
-  DCHECK([syncItem isKindOfClass:[NSMenuItem class]]);
-  NSMenuItem* syncMenuItem = (NSMenuItem*)syncItem;
-  // Look for a separator immediately after the menu item.
-  NSMenuItem* followingSeparator = nil;
-  NSMenu* menu = [syncItem menu];
-  if (menu) {
-    NSInteger syncItemIndex = [menu indexOfItem:syncMenuItem];
-    DCHECK_NE(syncItemIndex, -1);
-    if ((syncItemIndex + 1) < [menu numberOfItems]) {
-      NSMenuItem* menuItem = [menu itemAtIndex:(syncItemIndex + 1)];
-      if ([menuItem isSeparatorItem]) {
-        followingSeparator = menuItem;
-      }
-    }
-  }
-
-  // TODO(akalin): consolidate this code with the equivalent Windows code in
-  // chrome/browser/views/toolbar_view.cc.
-  int titleId;
-  switch (status) {
-    case SyncStatusUIHelper::SYNCED:
-      titleId = IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL;
-      break;
-    case SyncStatusUIHelper::SYNC_ERROR:
-      titleId = IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL;
-      break;
-    case SyncStatusUIHelper::PRE_SYNCED:
-      titleId = IDS_SYNC_START_SYNC_BUTTON_LABEL;
-      break;
-    default:
-      NOTREACHED();
-      // Needed to prevent release-mode warnings.
-      titleId = IDS_SYNC_START_SYNC_BUTTON_LABEL;
-      break;
-  }
-  NSString* title = l10n_util::GetNSStringWithFixup(titleId);
-  [syncMenuItem setTitle:title];
-
-  // If we don't have a sync service, hide any sync-related menu
-  // items.  However, sync_menu_item is enabled/disabled outside of this
-  // function so we don't touch it here, and separators are always disabled.
-  [syncMenuItem setHidden:!syncEnabled];
-  [followingSeparator setHidden:!syncEnabled];
 }
 
 // Called when the user picks a menu or toolbar item when this window is key.

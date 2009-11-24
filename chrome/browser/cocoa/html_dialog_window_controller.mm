@@ -95,6 +95,14 @@ private:
 
 @end
 
+namespace html_dialog_window_controller {
+
+void ShowHtmlDialog(HtmlDialogUIDelegate* delegate, Profile* profile) {
+  [HtmlDialogWindowController showHtmlDialog:delegate profile:profile];
+}
+
+}  // namespace html_dialog_window_controller
+
 HtmlDialogWindowDelegateBridge::HtmlDialogWindowDelegateBridge(
     HtmlDialogWindowController* controller, HtmlDialogUIDelegate* delegate)
     : controller_(controller), delegate_(delegate) {

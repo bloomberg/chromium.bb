@@ -202,12 +202,6 @@ class TabStripModelObserverBridge;
 // Return a point suitable for the topLeft for a bookmark bubble.
 - (NSPoint)topLeftForBubble;
 
-// Updates a bookmark sync UI item (expected to be a menu item).  This is
-// called every time the menu containing the sync UI item is displayed.
-- (void)updateSyncItem:(id)syncItem
-           syncEnabled:(BOOL)syncEnabled
-                status:(SyncStatusUIHelper::MessageType)status;
-
 @end  // BrowserWindowController(TestingAPI)
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_WINDOW_CONTROLLER_H_

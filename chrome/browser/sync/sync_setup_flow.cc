@@ -14,6 +14,9 @@
 #include "base/values.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#if defined(OS_MACOSX)
+#include "chrome/browser/cocoa/html_dialog_window_controller_cppsafe.h"
+#endif
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -324,12 +327,23 @@ SyncSetupFlow* SyncSetupFlow::Run(ProfileSyncService* service,
   std::string json_args;
   base::JSONWriter::Write(&args, false, &json_args);
 
-  Browser* b = BrowserList::GetLastActive();
-  if (!b)
-    return NULL;
-
   SyncSetupFlow* flow = new SyncSetupFlow(start, end, json_args,
       container, service);
-  b->BrowserShowHtmlDialog(flow, NULL);
+  Browser* b = BrowserList::GetLastActive();
+  if (b) {
+    b->BrowserShowHtmlDialog(flow, NULL);
+  } else {
+    // TODO(akalin): Figure out a cleaner way to do this than to have this
+    // gross per-OS behavior, i.e. have a cross-platform ShowHtmlDialog()
+    // function that is not tied to a browser instance.  Note that if we do
+    // that, we'll have to fix sync_setup_wizard_unittest.cc as it relies on
+    // being able to intercept ShowHtmlDialog() calls.
+#if defined(OS_MACOSX)
+    html_dialog_window_controller::ShowHtmlDialog(flow, service->profile());
+#else
+    delete flow;
+    return NULL;
+#endif
+  }
   return flow;
 }
