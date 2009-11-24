@@ -104,7 +104,10 @@ class BrowserThemeProvider : public NonThreadSafe,
 
   static const char* kDefaultThemeID;
 
- public:
+  // Returns true if the image is themeable.  Safe to call on any thread.
+  static bool IsThemeableImage(int resource_id);
+
+
   BrowserThemeProvider();
   virtual ~BrowserThemeProvider();
 

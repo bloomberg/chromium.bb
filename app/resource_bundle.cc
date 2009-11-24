@@ -87,7 +87,7 @@ std::string ResourceBundle::GetDataResource(int resource_id) {
 }
 
 RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
-    int resource_id) {
+    int resource_id) const {
   return LoadResourceBytes(resources_data_, resource_id);
 }
 

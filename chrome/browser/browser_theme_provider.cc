@@ -223,7 +223,6 @@ bool HasThemeableImage(int themeable_image_id) {
 }
 
 
-
 class WriteImagesToDiskTask : public Task {
  public:
   WriteImagesToDiskTask(
@@ -270,10 +269,16 @@ class WriteImagesToDiskTask : public Task {
 
 }  // namespace
 
+bool BrowserThemeProvider::IsThemeableImage(int resource_id) {
+  return HasThemeableImage(resource_id);
+}
+
 BrowserThemeProvider::BrowserThemeProvider()
     : rb_(ResourceBundle::GetSharedInstance()),
       profile_(NULL),
       process_images_(false) {
+  // Initialize the themeable image map so we can use it on other threads.
+  HasThemeableImage(0);
   resource_names_[IDR_THEME_FRAME] = "theme_frame";
   resource_names_[IDR_THEME_FRAME_INACTIVE] = "theme_frame_inactive";
   resource_names_[IDR_THEME_FRAME_OVERLAY] = "theme_frame_overlay";

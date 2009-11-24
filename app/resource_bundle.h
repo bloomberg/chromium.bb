@@ -87,7 +87,7 @@ class ResourceBundle {
   // Loads the raw bytes of a data resource into |bytes|,
   // without doing any processing or interpretation of
   // the resource. Returns whether we successfully read the resource.
-  RefCountedStaticMemory* LoadDataResourceBytes(int resource_id);
+  RefCountedStaticMemory* LoadDataResourceBytes(int resource_id) const;
 
   // Return the contents of a file in a string given the resource id.
   // This will copy the data from the resource and return it as a string.

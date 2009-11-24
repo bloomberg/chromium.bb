@@ -79,6 +79,11 @@ MessageLoop* DOMUIThemeSource::MessageLoopForRequestPath(
     return NULL;
   }
 
+  // If it's not a themeable image, we don't need to go to the UI thread.
+  int resource_id = ThemeResourcesUtil::GetId(uncached_path);
+  if (!BrowserThemeProvider::IsThemeableImage(resource_id))
+    return NULL;
+
   return DataSource::MessageLoopForRequestPath(path);
 }
 
@@ -86,10 +91,16 @@ MessageLoop* DOMUIThemeSource::MessageLoopForRequestPath(
 // DOMUIThemeSource, private:
 
 void DOMUIThemeSource::SendThemeBitmap(int request_id, int resource_id) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ThemeProvider* tp = profile_->GetThemeProvider();
-  DCHECK(tp);
+  if (BrowserThemeProvider::IsThemeableImage(resource_id)) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    ThemeProvider* tp = profile_->GetThemeProvider();
+    DCHECK(tp);
 
-  scoped_refptr<RefCountedMemory> image_data(tp->GetRawData(resource_id));
-  SendResponse(request_id, image_data);
+    scoped_refptr<RefCountedMemory> image_data(tp->GetRawData(resource_id));
+    SendResponse(request_id, image_data);
+  } else {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    const ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    SendResponse(request_id, rb.LoadDataResourceBytes(resource_id));
+  }
 }
