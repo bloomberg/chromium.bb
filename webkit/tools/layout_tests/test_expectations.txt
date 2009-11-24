@@ -2971,8 +2971,6 @@ BUG28005 MAC : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE
 BUG28005 WIN LINUX : LayoutTests/fast/css/color-correction-on-box-shadow.html = IMAGE+TEXT
 BUG28005 MAC : LayoutTests/fast/css/color-correction-on-text-shadow.html = IMAGE
 BUG28005 WIN LINUX : LayoutTests/fast/css/color-correction-on-text-shadow.html = IMAGE+TEXT
-BUG28005 MAC : LayoutTests/fast/reflections/opacity-reflection-transform.html = IMAGE
-BUG28005 WIN LINUX : LayoutTests/fast/reflections/opacity-reflection-transform.html = IMAGE+TEXT
 
 // May also be related to r50760, but not as confident.
 BUG27551 WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
