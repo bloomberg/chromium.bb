@@ -480,15 +480,16 @@ NewTabUI::NewTabUI(TabContents* contents)
   if (NewTabUI::FirstRunDisabled())
     NewTabHTMLSource::set_first_run(false);
 
-  InitializeCSSCaches();
-  NewTabHTMLSource* html_source =
-      new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableMethod(
-          Singleton<ChromeURLDataManager>::get(),
-          &ChromeURLDataManager::AddDataSource,
-          make_scoped_refptr(html_source)));
+  static bool first_view = true;
+  if (first_view) {
+    // Decrement ntp promo counters; the default values are specified in
+    // Browser::RegisterUserPrefs.
+    profile->GetPrefs()->SetInteger(prefs::kNTPPromoLineRemaining,
+        profile->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) - 1);
+    profile->GetPrefs()->SetInteger(prefs::kNTPPromoImageRemaining,
+        profile->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) - 1);
+    first_view = false;
+  }
 
   if (!GetProfile()->IsOffTheRecord()) {
     AddMessageHandler((new ShownSectionsHandler())->Attach(this));
@@ -504,6 +505,19 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new NewTabPageSetHomePageHandler())->Attach(this));
     AddMessageHandler((new PromotionalMessageHandler())->Attach(this));
   }
+
+  // Initializing the CSS and HTML can require some CPU, so do it after
+  // we've hooked up the most visited handler.  This allows the DB query
+  // for the new tab thumbs to happen earlier.
+  InitializeCSSCaches();
+  NewTabHTMLSource* html_source =
+      new NewTabHTMLSource(GetProfile()->GetOriginalProfile());
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(
+          Singleton<ChromeURLDataManager>::get(),
+          &ChromeURLDataManager::AddDataSource,
+          make_scoped_refptr(html_source)));
 
   // Listen for theme installation.
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
@@ -651,16 +665,6 @@ bool NewTabUI::NewTabHTMLSource::first_run_ = true;
 NewTabUI::NewTabHTMLSource::NewTabHTMLSource(Profile* profile)
     : DataSource(chrome::kChromeUINewTabHost, MessageLoop::current()),
       profile_(profile) {
-  static bool first_view = true;
-  if (first_view) {
-    // Decrement ntp promo counters; the default values are specified in
-    // Browser::RegisterUserPrefs.
-    profile->GetPrefs()->SetInteger(prefs::kNTPPromoLineRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPPromoLineRemaining) - 1);
-    profile->GetPrefs()->SetInteger(prefs::kNTPPromoImageRemaining,
-        profile->GetPrefs()->GetInteger(prefs::kNTPPromoImageRemaining) - 1);
-    first_view = false;
-  }
 }
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(const std::string& path,

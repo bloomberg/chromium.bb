@@ -28,7 +28,7 @@ static std::string StripQueryParams(const std::string& path) {
 
 DOMUIThemeSource::DOMUIThemeSource(Profile* profile)
     : DataSource(chrome::kChromeUIThemePath, MessageLoop::current()),
-      profile_(profile) {
+      profile_(profile->GetOriginalProfile()) {
   css_bytes_ = profile_->GetNTPResourceCache()->GetNewTabCSS(
       profile->IsOffTheRecord());
 }
