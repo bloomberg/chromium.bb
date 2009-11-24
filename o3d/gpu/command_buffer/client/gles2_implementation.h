@@ -9,42 +9,10 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/id_allocator.h"
+#include "gpu/command_buffer/client/fenced_allocator.h"
 
 namespace command_buffer {
 namespace gles2 {
-
-// A class to help with shared memory.
-class SharedMemoryHelper {
- public:
-  SharedMemoryHelper(void* address, int id)
-      : address_(address),
-        id_(id) {
-  }
-
-  unsigned int GetOffset(void* address) const {
-    return static_cast<int8*>(address) -
-           static_cast<int8*>(address_);
-  }
-
-  void* GetAddress(unsigned int offset) const {
-    return static_cast<int8*>(address_) + offset;
-  }
-
-  template <typename T>
-  T GetAddressAs(unsigned int offset) const {
-    return static_cast<T>(GetAddress(offset));
-  }
-
-  unsigned int GetId() const {
-    return id_;
-  }
-
- private:
-  void* address_;
-  int id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedMemoryHelper);
-};
 
 // This class emulates GLES2 over command buffers. It can be used by a client
 // program so that the program does not need deal with shared memory and command
@@ -56,8 +24,9 @@ class GLES2Implementation {
  public:
   GLES2Implementation(
       GLES2CmdHelper* helper,
+      size_t transfer_buffer_size,
       void* transfer_buffer,
-      int transfer_buffer_id);  // TODO: add size.
+      int32 transfer_buffer_id);
 
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
@@ -71,10 +40,35 @@ class GLES2Implementation {
   // Frees a set of Ids for glDelete___ functions.
   void FreeIds(GLsizei n, const GLuint* ids);
 
+  // Gets the shared memory id for the result buffer.
+  uint32 result_shm_id() const {
+    return transfer_buffer_id_;
+  }
+
+  // Gets the shared memory offset for the result buffer.
+  uint32 result_shm_offset() const {
+    return result_shm_offset_;
+  }
+
+  // Gets the value of the result.
+  template <typename T>
+  T GetResultAs() const {
+    return *static_cast<T*>(result_buffer_);
+  }
+
+  // Waits for all commands to execute.
+  void WaitForCmd();
+
+  // The maxiumum result size from simple GL get commands.
+  static const size_t kMaxSizeOfSimpleResult = 4 * sizeof(uint32);  // NOLINT.
+
   GLES2Util util_;
   GLES2CmdHelper* helper_;
   IdAllocator id_allocator_;
-  SharedMemoryHelper shared_memory_;  // TODO(gman): rename transfer_buffer_.
+  FencedAllocatorWrapper transfer_buffer_;
+  int transfer_buffer_id_;
+  void* result_buffer_;
+  uint32 result_shm_offset_;
 
   // pack alignment as last set by glPixelStorei
   GLint pack_alignment_;

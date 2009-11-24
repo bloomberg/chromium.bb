@@ -255,66 +255,60 @@ void GetAttachedShaders(
 GLint GetAttribLocation(GLuint program, const char* name);
 
 void GetBooleanv(GLenum pname, GLboolean* params) {
-  helper_->GetBooleanv(pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetBooleanv(pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
-  helper_->GetBufferParameteriv(target, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetBufferParameteriv(
+      target, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 GLenum GetError() {
-  helper_->GetError(shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *shared_memory_.GetAddressAs<GLenum*>(0);
+  helper_->GetError(result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLenum>();
 }
 
 void GetFloatv(GLenum pname, GLfloat* params) {
-  helper_->GetFloatv(pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetFloatv(pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetFramebufferAttachmentParameteriv(
     GLenum target, GLenum attachment, GLenum pname, GLint* params) {
   helper_->GetFramebufferAttachmentParameteriv(
-      target, attachment, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+      target, attachment, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetIntegerv(GLenum pname, GLint* params) {
-  helper_->GetIntegerv(pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetIntegerv(pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetProgramiv(GLuint program, GLenum pname, GLint* params) {
-  helper_->GetProgramiv(program, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetProgramiv(program, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 // TODO(gman): Implement this
@@ -323,21 +317,19 @@ void GetProgramInfoLog(
 
 void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   helper_->GetRenderbufferParameteriv(
-      target, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+      target, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
-  helper_->GetShaderiv(shader, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetShaderiv(shader, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 // TODO(gman): Implement this
@@ -354,21 +346,21 @@ void GetShaderSource(
 const GLubyte* GetString(GLenum name);
 
 void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
-  helper_->GetTexParameterfv(target, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetTexParameterfv(
+      target, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetTexParameteriv(GLenum target, GLenum pname, GLint* params) {
-  helper_->GetTexParameteriv(target, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetTexParameteriv(
+      target, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetUniformfv(GLuint program, GLint location, GLfloat* params);
@@ -378,21 +370,21 @@ void GetUniformiv(GLuint program, GLint location, GLint* params);
 GLint GetUniformLocation(GLuint program, const char* name);
 
 void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
-  helper_->GetVertexAttribfv(index, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetVertexAttribfv(
+      index, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetVertexAttribiv(GLuint index, GLenum pname, GLint* params) {
-  helper_->GetVertexAttribiv(index, pname, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->GetVertexAttribiv(
+      index, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
   GLsizei num_values = util_.GLGetNumValuesReturned(pname);
-  memcpy(params, shared_memory_.GetAddress(0),
-         num_values * sizeof(*params));
+  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);
+  memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
 void GetVertexAttribPointerv(GLuint index, GLenum pname, void** pointer);
@@ -402,52 +394,45 @@ void Hint(GLenum target, GLenum mode) {
 }
 
 GLboolean IsBuffer(GLuint buffer) {
-  helper_->IsBuffer(buffer, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *shared_memory_.GetAddressAs<GLboolean*>(0);
+  helper_->IsBuffer(buffer, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsEnabled(GLenum cap) {
-  helper_->IsEnabled(cap, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *shared_memory_.GetAddressAs<GLboolean*>(0);
+  helper_->IsEnabled(cap, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsFramebuffer(GLuint framebuffer) {
-  helper_->IsFramebuffer(framebuffer, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *shared_memory_.GetAddressAs<GLboolean*>(0);
+  helper_->IsFramebuffer(framebuffer, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsProgram(GLuint program) {
-  helper_->IsProgram(program, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *shared_memory_.GetAddressAs<GLboolean*>(0);
+  helper_->IsProgram(program, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsRenderbuffer(GLuint renderbuffer) {
-  helper_->IsRenderbuffer(renderbuffer, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *shared_memory_.GetAddressAs<GLboolean*>(0);
+  helper_->IsRenderbuffer(renderbuffer, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsShader(GLuint shader) {
-  helper_->IsShader(shader, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *shared_memory_.GetAddressAs<GLboolean*>(0);
+  helper_->IsShader(shader, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsTexture(GLuint texture) {
-  helper_->IsTexture(texture, shared_memory_.GetId(), 0);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *shared_memory_.GetAddressAs<GLboolean*>(0);
+  helper_->IsTexture(texture, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLboolean>();
 }
 
 void LineWidth(GLfloat width) {

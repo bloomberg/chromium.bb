@@ -1205,13 +1205,14 @@ class GETnHandler(TypeHandler):
     all_but_last_args = func.GetOriginalArgs()[:-1]
     arg_string = (
         ", ".join(["%s" % arg.name for arg in all_but_last_args]))
-    file.Write("  helper_->%s(%s, shared_memory_.GetId(), 0);\n" %
+    file.Write("  helper_->%s(%s, result_shm_id(), result_shm_offset());\n" %
                (func.name, arg_string))
-    file.Write("  int32 token = helper_->InsertToken();\n")
-    file.Write("  helper_->WaitForToken(token);\n")
+    file.Write("  WaitForCmd();\n")
     file.Write("  GLsizei num_values = util_.GLGetNumValuesReturned(pname);\n")
-    file.Write("  memcpy(params, shared_memory_.GetAddress(0),\n")
-    file.Write("         num_values * sizeof(*params));\n")
+    file.Write(
+        "  DCHECK_LE(num_values * sizeof(*params), kMaxSizeOfSimpleResult);\n")
+    file.Write(
+        "  memcpy(params, result_buffer_, num_values * sizeof(*params));\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -1879,11 +1880,10 @@ class IsHandler(TypeHandler):
     comma = ""
     if len(arg_string) > 0:
       comma = ", "
-    file.Write("  helper_->%s(%s%sshared_memory_.GetId(), 0);\n" %
+    file.Write("  helper_->%s(%s%sresult_shm_id(), result_shm_offset());\n" %
                (func.name, arg_string, comma))
-    file.Write("  int32 token = helper_->InsertToken();\n")
-    file.Write("  helper_->WaitForToken(token);\n")
-    file.Write("  return *shared_memory_.GetAddressAs<%s*>(0);\n" %
+    file.Write("  WaitForCmd();\n")
+    file.Write("  return GetResultAs<%s>();\n" %
                func.return_type)
     file.Write("}\n")
     file.Write("\n")

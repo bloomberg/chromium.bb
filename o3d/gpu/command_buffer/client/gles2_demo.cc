@@ -84,6 +84,7 @@ bool GLES2Demo::Setup(NPP npp, void* hwnd, int32 size) {
   }
 
   gles2::g_gl_impl = new GLES2Implementation(helper,
+                                             transfer_buffer_size,
                                              transfer_buffer,
                                              transfer_buffer_id);
 
