@@ -165,19 +165,34 @@ class SVN(object):
           'status':   status_pattern,
           'update':   update_pattern,
         }[args[0]]
-
     compiled_pattern = re.compile(pattern)
-
-    def CaptureMatchingLines(line):
-      match = compiled_pattern.search(line)
-      if match:
-        file_list.append(match.group(1))
-
-    SVN.RunAndFilterOutput(args,
-                            in_directory,
-                            options.verbose,
-                            True,
-                            CaptureMatchingLines)
+    # Place an upper limit.
+    for i in range(1, 10):
+      previous_list_len = len(file_list)
+      failure = []
+      def CaptureMatchingLines(line):
+        match = compiled_pattern.search(line)
+        if match:
+          file_list.append(match.group(1))
+        if line.startswith('svn: '):
+          # We can't raise an exception. We can't alias a variable. Use a cheap
+          # way.
+          failure.append(True)
+      try:
+        SVN.RunAndFilterOutput(args,
+                               in_directory,
+                               options.verbose,
+                               True,
+                               CaptureMatchingLines)
+      except gclient_utils.Error:
+        # We enforce that some progress has been made.
+        if len(failure) and len(file_list) > previous_list_len:
+          if args[0] == 'checkout':
+            args = args[:]
+            # An aborted checkout is now an update.
+            args[0] = 'update'
+          continue
+      break
 
   @staticmethod
   def RunAndFilterOutput(args,
