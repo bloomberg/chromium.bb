@@ -203,9 +203,12 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     else if (download->state() == DownloadItem::COMPLETE)
       download_util::OpenDownload(download);
   } else {
+    // Hold a reference to ourselves in case the download completes and we
+    // represent a file that's auto-removed (e.g. a theme).
+    scoped_nsobject<DownloadItemController> ref([self retain]);
     [NSMenu popUpContextMenu:currentMenu_
-               withEvent:[NSApp currentEvent]
-                 forView:progressView_];
+                   withEvent:[NSApp currentEvent]
+                     forView:progressView_];
   }
 }
 
