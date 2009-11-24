@@ -708,4 +708,6 @@ typedef struct _drmEventContext {
 
 extern int drmHandleEvent(int fd, drmEventContextPtr evctx);
 
+extern char *drmGetDeviceNameFromFd(int fd);
+
 #endif

@@ -2510,3 +2510,29 @@ int drmDropMaster(int fd)
 	ret = ioctl(fd, DRM_IOCTL_DROP_MASTER, 0);
 	return ret;
 }
+
+char *drmGetDeviceNameFromFd(int fd)
+{
+	char name[128];
+	struct stat sbuf;
+	dev_t d;
+	int i;
+
+	/* The whole drmOpen thing is a fiasco and we need to find a way
+	 * back to just using open(2).  For now, however, lets just make
+	 * things worse with even more ad hoc directory walking code to
+	 * discover the device file name. */
+
+	fstat(fd, &sbuf);
+	d = sbuf.st_rdev;
+
+	for (i = 0; i < DRM_MAX_MINOR; i++) {
+		snprintf(name, sizeof name, DRM_DEV_NAME, DRM_DIR_NAME, i);
+		if (stat(name, &sbuf) == 0 && sbuf.st_rdev == d)
+			break;
+	}
+	if (i == DRM_MAX_MINOR)
+		return NULL;
+
+	return drmStrdup(name);
+}

@@ -40,6 +40,7 @@ TESTS =						\
 	getstats				\
 	setversion				\
 	updatedraw				\
+	name_from_fd				\
 	$(NULL)
 
 if HAVE_INTEL
