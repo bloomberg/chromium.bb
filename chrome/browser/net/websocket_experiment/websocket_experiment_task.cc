@@ -22,7 +22,6 @@ URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
   // before it has gotten lazily initialized yet.
   if (!getter)
     return NULL;
-  DLOG(INFO) << "url=" << config.http_url;
   URLFetcher* fetcher =
       new URLFetcher(config.http_url, URLFetcher::GET, delegate);
   fetcher->set_request_context(getter);
@@ -62,7 +61,6 @@ WebSocketExperimentTask::WebSocketExperimentTask(
 }
 
 WebSocketExperimentTask::~WebSocketExperimentTask() {
-  DLOG(INFO) << "WebSocketExperimentTask finished";
   DCHECK(!websocket_);
 }
 
@@ -86,7 +84,6 @@ void WebSocketExperimentTask::OnURLFetchComplete(
     const std::string& data) {
   result_.url_fetch = base::TimeTicks::Now() - url_fetch_start_time_;
   RevokeTimeoutTimer();
-  DLOG(INFO) << "OnURLFetchCompleted";
   int result = net::ERR_FAILED;
   if (next_state_ != STATE_URL_FETCH_COMPLETE) {
     DLOG(INFO) << "unexpected state=" << next_state_;
@@ -120,7 +117,6 @@ void WebSocketExperimentTask::OnMessage(
     result_.websocket_idle =
         base::TimeTicks::Now() - websocket_idle_start_time_;
   RevokeTimeoutTimer();
-  DLOG(INFO) << "OnMessage msg=" << msg;
   received_messages_.push_back(msg);
   int result = net::ERR_UNEXPECTED;
   switch (next_state_) {
@@ -173,7 +169,6 @@ void WebSocketExperimentTask::DoLoop(int result) {
   do {
     State state = next_state_;
     next_state_ = STATE_NONE;
-    DLOG(INFO) << "WebSocketExperimentTask state=" << state;
     switch (state) {
       case STATE_URL_FETCH:
         result = DoURLFetch();
@@ -221,8 +216,6 @@ void WebSocketExperimentTask::DoLoop(int result) {
     result_.last_state = state;
   } while (result != net::ERR_IO_PENDING && next_state_ != STATE_NONE);
 
-  DLOG(INFO) << "WebSocketExperiemntTask Loop done next_state=" << next_state_
-             << " result=" << net::ErrorToString(result);
   if (result != net::ERR_IO_PENDING)
     Finish(result);
 }
@@ -239,15 +232,12 @@ int WebSocketExperimentTask::DoURLFetch() {
 
   next_state_ = STATE_URL_FETCH_COMPLETE;
   SetTimeout(config_.url_fetch_deadline_ms);
-  DLOG(INFO) << "URLFetch url=" << url_fetcher_->url()
-             << " timeout=" << config_.url_fetch_deadline_ms;
   url_fetch_start_time_ = base::TimeTicks::Now();
   url_fetcher_->Start();
   return net::ERR_IO_PENDING;
 }
 
 int WebSocketExperimentTask::DoURLFetchComplete(int result) {
-  DLOG(INFO) << "DoURLFetchComplete result=" << result;
   url_fetcher_.reset();
 
   if (result < 0)
@@ -408,9 +398,6 @@ void WebSocketExperimentTask::RevokeTimeoutTimer() {
 }
 
 void WebSocketExperimentTask::Finish(int result) {
-  DLOG(INFO) << "Finish Task for " << config_.url
-             << " next_state=" << next_state_
-             << " result=" << net::ErrorToString(result);
   url_fetcher_.reset();
   scoped_refptr<net::WebSocket> websocket = websocket_;
   websocket_ = NULL;

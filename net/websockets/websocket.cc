@@ -190,7 +190,6 @@ IOBufferWithSize* WebSocket::CreateClientHandshakeMessage() const {
   }
   // TODO(ukai): Add cookie if necessary.
   msg += "\r\n";
-  DLOG(INFO) << "ClientHandshake request=" << msg;
   IOBufferWithSize* buf = new IOBufferWithSize(msg.size());
   memcpy(buf->data(), msg.data(), msg.size());
   return buf;
@@ -203,7 +202,6 @@ int WebSocket::CheckHandshake() {
   const char *start = current_read_buf_->StartOfBuffer() + read_consumed_len_;
   const char *p = start;
   size_t len = current_read_buf_->offset() - read_consumed_len_;
-  DLOG(INFO) << "ClientHandshake response=" << std::string(start, len);
   if (len < kServerHandshakeHeaderLength) {
     return -1;
   }
@@ -245,7 +243,7 @@ int WebSocket::CheckHandshake() {
     if (header_size < kConnectionHeaderLength)
       return -1;
     if (memcmp(p, kConnectionHeader, kConnectionHeaderLength)) {
-      DLOG(INFO) << "Bad Upgrade Header "
+      DLOG(INFO) << "Bad Connection Header "
                  << std::string(p, kConnectionHeaderLength);
       ready_state_ = CLOSED;
       return p - start;
@@ -258,7 +256,8 @@ int WebSocket::CheckHandshake() {
   scoped_refptr<HttpResponseHeaders> headers(
       new HttpResponseHeaders(HttpUtil::AssembleRawHeaders(start, eoh)));
   if (!ProcessHeaders(*headers)) {
-    DLOG(INFO) << "Process Headers failed";
+    DLOG(INFO) << "Process Headers failed: "
+               << std::string(start, eoh);
     ready_state_ = CLOSED;
     return eoh;
   }
@@ -274,9 +273,9 @@ int WebSocket::CheckHandshake() {
       ready_state_ = CLOSED;
       break;
   }
-  DLOG(INFO) << "CheckHandshake mode=" << mode_
-             << " ready_state=" << ready_state_
-             << " eoh=" << eoh;
+  if (ready_state_ == CLOSED)
+    DLOG(INFO) << "CheckHandshake mode=" << mode_
+               << " " << std::string(start, eoh);
   return eoh;
 }
 

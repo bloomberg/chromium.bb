@@ -119,7 +119,6 @@ WebSocketExperimentRunner::WebSocketExperimentRunner()
 }
 
 WebSocketExperimentRunner::~WebSocketExperimentRunner() {
-  DLOG(INFO) << "WebSocketExperimentRunner deleted";
   DCHECK(!task_.get());
 }
 
@@ -205,7 +204,6 @@ void WebSocketExperimentRunner::DoLoop() {
   task_state_ = STATE_NONE;
   next_state_ = STATE_NONE;
 
-  DLOG(INFO) << "WebSocketExperiment state=" << state;
   switch (state) {
     case STATE_IDLE:
       task_.reset();
@@ -243,11 +241,10 @@ void WebSocketExperimentRunner::DoLoop() {
 }
 
 void WebSocketExperimentRunner::OnTaskCompleted(int result) {
-  DLOG(INFO) << "WebSocketExperiment TaskCompleted result="
-             << net::ErrorToString(result);
   if (result == net::ERR_ABORTED) {
     task_.reset();
     // Task is Canceled.
+    DLOG(INFO) << "WebSocketExperiment Task is canceled.";
     Release();
     return;
   }
@@ -260,21 +257,7 @@ void WebSocketExperimentRunner::OnTaskCompleted(int result) {
 void WebSocketExperimentRunner::UpdateTaskResultHistogram(
     const WebSocketExperimentTask* task) {
   DCHECK(task);
-  const WebSocketExperimentTask::Config& task_config = task->config();
   const WebSocketExperimentTask::Result& task_result = task->result();
-  DLOG(INFO) << "Result for url=" << task_config.url
-             << " last_result="
-             << net::ErrorToString(task_result.last_result)
-             << " last_state=" << task_result.last_state
-             << " url_fetch=" << task_result.url_fetch.InSecondsF()
-             << " websocket_connect="
-             << task_result.websocket_connect.InSecondsF()
-             << " websocket_echo="
-             << task_result.websocket_echo.InSecondsF()
-             << " websocket_idle="
-             << task_result.websocket_idle.InSecondsF()
-             << " websocket_total="
-             << task_result.websocket_total.InSecondsF();
 
   UPDATE_HISTOGRAM("LastState", task_result.last_state,
                    1, WebSocketExperimentTask::NUM_STATES,
