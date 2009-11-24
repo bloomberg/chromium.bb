@@ -792,7 +792,7 @@ void BrowserView::SelectedTabExtensionShelfSizeChanged() {
 
 void BrowserView::UpdateTitleBar() {
   frame_->GetWindow()->UpdateWindowTitle();
-  if (ShouldShowWindowIcon())
+  if (ShouldShowWindowIcon() && !loading_animation_timer_.IsRunning())
     frame_->GetWindow()->UpdateWindowIcon();
   browser_extender_->UpdateTitleBar();
 }
