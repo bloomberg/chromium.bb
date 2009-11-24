@@ -5,6 +5,7 @@
 #include "chrome/browser/app_modal_dialog.h"
 
 #include "chrome/browser/app_modal_dialog_queue.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -20,6 +21,8 @@ AppModalDialog::AppModalDialog(JavaScriptMessageBoxClient* client,
                                IPC::Message* reply_msg)
     : dialog_(NULL),
       client_(client),
+      tab_contents_(client_->AsTabContents()),
+      extension_host_(client_->AsExtensionHost()),
       skip_this_dialog_(false),
       title_(title),
       dialog_flags_(dialog_flags),
@@ -29,6 +32,7 @@ AppModalDialog::AppModalDialog(JavaScriptMessageBoxClient* client,
       is_before_unload_dialog_(is_before_unload_dialog),
       reply_msg_(reply_msg) {
   InitNotifications();
+  DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));
 }
 
 void AppModalDialog::Observe(NotificationType type,
@@ -37,45 +41,48 @@ void AppModalDialog::Observe(NotificationType type,
   if (skip_this_dialog_)
     return;
 
-  // We only observe our NavigationController for NAV_ENTRY_COMMITTED and our
-  // TabContents for TAB_CONTENTS_DESTROYED, both of which indicate that we
-  // should ignore this dialog. Also clear the client for good measure, since
-  // it's now invalid.
+  if (NotificationType::EXTENSION_HOST_DESTROYED == type &&
+      Details<ExtensionHost>(extension_host_) != details)
+    return;
+
+  // If we reach here, we know the notification is relevant to us, either
+  // because we're only observing applicable sources or because we passed the
+  // check above. Both of those indicate that we should ignore this dialog.
+  // Also clear the client, since it's now invalid.
   skip_this_dialog_ = true;
   client_ = NULL;
   CloseModalDialog();
 }
 
-void AppModalDialog::SendCloseNotification() {
-  NotificationService::current()->Notify(
-      NotificationType::APP_MODAL_DIALOG_CLOSED,
-      Source<AppModalDialog>(this),
-      NotificationService::NoDetails());
-}
-
 void AppModalDialog::InitNotifications() {
   // Make sure we get relevant navigation notifications so we know when our
   // parent contents will disappear or navigate to a different page.
-  TabContents* tab_contents = client_->AsTabContents();
-  if (tab_contents) {
+  if (tab_contents_) {
     registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                   Source<NavigationController>(&tab_contents->controller()));
+                   Source<NavigationController>(&tab_contents_->controller()));
     registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
-                   Source<TabContents>(tab_contents));
+                   Source<TabContents>(tab_contents_));
+  } else if (extension_host_) {
+    // EXTENSION_HOST_DESTROYED uses the Profile as its source, but we care
+    // about the ExtensionHost (which is passed in the details).
+    registrar_.Add(this, NotificationType::EXTENSION_HOST_DESTROYED,
+                   NotificationService::AllSources());
+  } else {
+    NOTREACHED();
   }
 }
 
 void AppModalDialog::ShowModalDialog() {
-  // If the TabContents that created this dialog navigated away before this
-  // dialog became visible, simply show the next dialog if any.
+  // If the TabContents or ExtensionHost that created this dialog navigated
+  // away or was destroyed before this dialog became visible, simply show the
+  // next dialog if any.
   if (skip_this_dialog_) {
     Singleton<AppModalDialogQueue>()->ShowNextDialog();
     delete this;
     return;
   }
-  TabContents* tab_contents = client_->AsTabContents();
-  if (tab_contents)
-    tab_contents->Activate();
+  if (tab_contents_)
+    tab_contents_->Activate();
 
   CreateAndShowDialog();
 
@@ -98,7 +105,7 @@ void AppModalDialog::OnCancel() {
     client_->OnMessageBoxClosed(reply_msg_, false, std::wstring());
   }
 
-  SendCloseNotification();
+  Cleanup();
 }
 
 void AppModalDialog::OnAccept(const std::wstring& prompt_text,
@@ -111,9 +118,26 @@ void AppModalDialog::OnAccept(const std::wstring& prompt_text,
       client_->SetSuppressMessageBoxes(true);
   }
 
-  SendCloseNotification();
+  Cleanup();
 }
 
 void AppModalDialog::OnClose() {
-  SendCloseNotification();
+  Cleanup();
+}
+
+void AppModalDialog::Cleanup() {
+  if (skip_this_dialog_) {
+    // We can't use the client_, because we might be in the process of
+    // destroying it.
+    if (tab_contents_)
+      tab_contents_->OnMessageBoxClosed(reply_msg_, false, L"");
+    else if (extension_host_)
+      extension_host_->OnMessageBoxClosed(reply_msg_, false, L"");
+    else
+      NOTREACHED();
+  }
+  NotificationService::current()->Notify(
+    NotificationType::APP_MODAL_DIALOG_CLOSED,
+    Source<AppModalDialog>(this),
+    NotificationService::NoDetails());
 }

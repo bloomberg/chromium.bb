@@ -21,6 +21,7 @@ typedef GtkWidget* NativeDialog;
 typedef void* NativeDialog;
 #endif
 
+class ExtensionHost;
 class JavaScriptMessageBoxClient;
 class TabContents;
 namespace IPC {
@@ -96,8 +97,9 @@ class AppModalDialog : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Sends APP_MODAL_DIALOG_CLOSED notification.
-  void SendCloseNotification();
+  // Cleans up after the dialog closes for any reason: sends close
+  // notification and re-enables input events.
+  void Cleanup();
 
   NotificationRegistrar registrar_;
 
@@ -107,6 +109,13 @@ class AppModalDialog : public NotificationObserver {
   // An implementation of the client interface to provide supporting methods
   // and receive results.
   JavaScriptMessageBoxClient* client_;
+
+  // The client_ as an ExtensionHost, cached for use during notifications that
+  // may arrive after the client has entered its destructor (and is thus
+  // treated as a base JavaScriptMessageBoxClient). This will be NULL if the
+  // client is not an ExtensionHost.
+  TabContents* tab_contents_;
+  ExtensionHost* extension_host_;
 
   // True if the dialog should no longer be shown, e.g. because the underlying
   // tab navigated away while the dialog was queued.

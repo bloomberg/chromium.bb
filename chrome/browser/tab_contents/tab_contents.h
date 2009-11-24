@@ -631,6 +631,17 @@ class TabContents : public PageNavigator,
     return request_context_;
   }
 
+  // JavaScriptMessageBoxClient ------------------------------------------------
+  virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
+                                          bool is_alert);
+  virtual gfx::NativeWindow GetMessageBoxRootWindow();
+  virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
+                                  bool success,
+                                  const std::wstring& prompt);
+  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
+  virtual TabContents* AsTabContents() { return this; }
+  virtual ExtensionHost* AsExtensionHost() { return NULL; }
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -950,17 +961,6 @@ class TabContents : public PageNavigator,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
-
-
-  // JavaScriptMessageBoxClient ------------------------------------------------
-  virtual std::wstring GetMessageBoxTitle(const GURL& frame_url,
-                                          bool is_alert);
-  virtual gfx::NativeWindow GetMessageBoxRootWindow();
-  virtual void OnMessageBoxClosed(IPC::Message* reply_msg,
-                                  bool success,
-                                  const std::wstring& prompt);
-  virtual void SetSuppressMessageBoxes(bool suppress_message_boxes);
-  virtual TabContents* AsTabContents() { return this; }
 
   // Data for core operation ---------------------------------------------------
 

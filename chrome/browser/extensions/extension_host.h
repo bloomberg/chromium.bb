@@ -156,6 +156,7 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
                                   const std::wstring& prompt);
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) {}
   virtual TabContents* AsTabContents() { return NULL; }
+  virtual ExtensionHost* AsExtensionHost() { return this; }
 
  private:
   friend class ProcessCreationQueue;

@@ -15,6 +15,7 @@
 
 #include "app/gfx/native_widget_types.h"
 
+class ExtensionHost;
 class GURL;
 class Profile;
 class TabContents;
@@ -41,10 +42,12 @@ class JavaScriptMessageBoxClient {
   // Indicates whether additional message boxes should be suppressed.
   virtual void SetSuppressMessageBoxes(bool suppress_message_boxes) = 0;
 
-  // Returns the TabContents associated with this message box -- in practice,
-  // the TabContents implementing this interface -- or NULL if it has no
-  // TabContents (e.g., it's an ExtensionHost).
+  // Returns the TabContents or ExtensionHost associated with this message
+  // box -- in practice, the object implementing this interface. Exactly one of
+  // these must be non-NULL; behavior is undefined (read: it'll probably crash)
+  // if that is not the case.
   virtual TabContents* AsTabContents() = 0;
+  virtual ExtensionHost* AsExtensionHost() = 0;
 };
 
 #endif  // CHROME_BROWSER_JSMESSAGE_BOX_CLIENT_H_
