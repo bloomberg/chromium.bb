@@ -234,6 +234,8 @@ class PageCyclerTest : public UITest {
     RunPageCycler(name, &pages, &timings, use_http);
     if (timings.empty())
       return;
+    // wait 2 seconds to allow automation messages to print
+    PlatformThread::Sleep(2000);
     size_t stop_size = base::GetSystemCommitCharge();
 
     FilePath data_dir;
@@ -248,6 +250,8 @@ class PageCyclerTest : public UITest {
     wprintf(L"\nPages: [%ls]\n", pages.c_str());
     PrintResultList("times", "", trace_name, timings, "ms",
                     true /* important */);
+    // wait 2 seconds to allow automation messages to print
+    PlatformThread::Sleep(2000);
   }
 
   void RunTest(const char* name, bool use_http) {
