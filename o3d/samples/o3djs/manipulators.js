@@ -736,7 +736,8 @@ o3djs.manipulators.Manager.prototype.mousemove = function(x,
       o3djs.picking.clientPositionToWorldRayEx(x, y,
                                                view, projection,
                                                width, height);
-    this.draggedManip_.drag(worldRay.near, worldRay.far);
+    this.draggedManip_.drag(worldRay.near, worldRay.far,
+                            x, y, view, projection, width, height);
   } else {
     this.handleMouse_(x, y, view, projection, width, height,
                       o3djs.manipulators.hoverCallback_);
@@ -988,16 +989,29 @@ o3djs.manipulators.Manip.prototype.makeInactive = function() {
 
 /**
  * Drags this manipulator according to the world-space ray specified
- * by startPoint and endPoint. makeActive must already have been
+ * by startPoint and endPoint, or alternatively the screen space mouse
+ * coordinate specified by x and y. makeActive must already have been
  * called with the initial pick result causing this manipulator to
  * become active.
  * @param {!o3djs.math.Vector3} startPoint Start point of the
  *     world-space ray through the current mouse position.
  * @param {!o3djs.math.Vector3} endPoint End point of the world-space
  *     ray through the current mouse position.
+ * @param {number} x The x coordinate of the current mouse position.
+ * @param {number} y The y coordinate of the current mouse position.
+ * @param {!o3djs.math.Matrix4} view The current view matrix.
+ * @param {!o3djs.math.Matrix4} projection The current projection matrix.
+ * @param {number} width The width of the viewport.
+ * @param {number} height The height of the viewport.
  */
 o3djs.manipulators.Manip.prototype.drag = function(startPoint,
-                                                   endPoint) {
+                                                   endPoint,
+                                                   x,
+                                                   y,
+                                                   view,
+                                                   projection,
+                                                   width,
+                                                   height) {
 }
 
 /**
@@ -1195,10 +1209,10 @@ o3djs.manipulators.Translate1.prototype.clearHighlight = function() {
 o3djs.manipulators.Translate1.prototype.makeActive = function(pickResult) {
   o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
   this.highlight(pickResult);
-  var worldMatrix = this.getTransform().worldMatrix;
+  var localToWorld = this.getTransform().worldMatrix;
   this.dragLine_.setDirection(
-    o3djs.math.matrix4.transformDirection(worldMatrix,
-                                          o3djs.manipulators.X_AXIS));
+      o3djs.math.matrix4.transformDirection(localToWorld,
+                                            o3djs.manipulators.X_AXIS));
   this.dragLine_.setPoint(pickResult.worldIntersectionPosition);
 }
 
@@ -1210,7 +1224,13 @@ o3djs.manipulators.Translate1.prototype.makeInactive = function() {
 }
 
 o3djs.manipulators.Translate1.prototype.drag = function(startPoint,
-                                                        endPoint) {
+                                                        endPoint,
+                                                        x,
+                                                        y,
+                                                        view,
+                                                        projection,
+                                                        width,
+                                                        height) {
   // Algorithm: Find closest point of ray to dragLine_. Subtract this
   // point from the line's point to find difference vector; transform
   // from world to local coordinates to find new local offset of
@@ -1300,10 +1320,10 @@ o3djs.manipulators.Translate2.prototype.clearHighlight = function() {
 o3djs.manipulators.Translate2.prototype.makeActive = function(pickResult) {
   o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
   this.highlight(pickResult);
-  var worldMatrix = this.getTransform().worldMatrix;
+  var localToWorld = this.getTransform().worldMatrix;
   this.dragPlane_.setNormal(
-    o3djs.math.matrix4.transformDirection(worldMatrix,
-                                          o3djs.manipulators.Z_AXIS));
+      o3djs.math.matrix4.transformDirection(localToWorld,
+                                            o3djs.manipulators.Z_AXIS));
   this.dragPlane_.setPoint(pickResult.worldIntersectionPosition);
 }
 
@@ -1315,7 +1335,13 @@ o3djs.manipulators.Translate2.prototype.makeInactive = function() {
 }
 
 o3djs.manipulators.Translate2.prototype.drag = function(startPoint,
-                                                        endPoint) {
+                                                        endPoint,
+                                                        x,
+                                                        y,
+                                                        view,
+                                                        projection,
+                                                        width,
+                                                        height) {
   // Algorithm: Find intersection of ray with dragPlane_. Subtract this
   // point from the plane's point to find difference vector; transform
   // from world to local coordinates to find new local offset of
@@ -1384,11 +1410,12 @@ o3djs.manipulators.Rotate1 = function(manager) {
   this.clearHighlight();
 
   /**
-   * Plane around which we are dragging.
+   * Line along which we are dragging.
+   * We just use this to store the point and direction, not to do any math.
    * @private
-   * @type {!o3djs.manipulators.Plane_}
+   * @type {!o3djs.manipulators.Line_}
    */
-  this.dragPlane_ = new o3djs.manipulators.Plane_();
+  this.dragLine_ = new o3djs.manipulators.Line_();
 }
 
 o3djs.base.inherit(o3djs.manipulators.Rotate1, o3djs.manipulators.Manip);
@@ -1407,11 +1434,25 @@ o3djs.manipulators.Rotate1.prototype.clearHighlight = function() {
 o3djs.manipulators.Rotate1.prototype.makeActive = function(pickResult) {
   o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
   this.highlight(pickResult);
-  var worldMatrix = this.getTransform().worldMatrix;
-  this.dragPlane_.setNormal(
-    o3djs.math.matrix4.transformDirection(worldMatrix,
-                                          o3djs.manipulators.X_AXIS));
-  this.dragPlane_.setPoint(pickResult.worldIntersectionPosition);
+  var localToWorld = this.getTransform().worldMatrix;
+  var worldToLocal = o3djs.math.matrix4.inverse(localToWorld);
+
+  // Set up the line. The line is tangent to the circle of rotation
+  // and passes through the initial pickResult.
+  // Do the math in local space.
+  // The rotation axis is the X axis, centered at the origin.
+  var localIntersectionPosition =
+      o3djs.math.matrix4.transformPoint(worldToLocal,
+                                        pickResult.worldIntersectionPosition);
+  var localLineDirection = o3djs.math.cross(localIntersectionPosition,
+                                            o3djs.manipulators.X_AXIS);
+  this.dragLine_.setDirection(
+      o3djs.math.matrix4.transformDirection(localToWorld,
+                                            localLineDirection));
+  this.dragLine_.setPoint(pickResult.worldIntersectionPosition);
+
+  // TODO(simonrad): It would be nice to draw an arrow on the screen
+  // at the click position, indicating the direction of the line.
 }
 
 o3djs.manipulators.Rotate1.prototype.makeInactive = function() {
@@ -1421,42 +1462,60 @@ o3djs.manipulators.Rotate1.prototype.makeInactive = function() {
   this.updateBaseTransformFromAttachedTransform_();
 }
 
+/**
+ * Convert the specified frustum-space position into
+ * client coordinates (ie pixels).
+ * @private
+ * @param {!o3djs.math.Vector3} frustumPoint The point in frustum coordinates
+ *     to transform.
+ * @param {number} width The width of the viewport.
+ * @param {number} height The height of the viewport.
+ * @return {!o3djs.math.Vector2} The location of frustumPoint on the screen,
+ *     in client coordinates.
+ */
+o3djs.manipulators.frustumPositionToClientPosition_ = function(frustumPoint,
+                                                               width,
+                                                               height) {
+  return [(frustumPoint[0] + 1) * width / 2,
+          (-frustumPoint[1] + 1) * height / 2];
+}
+
 o3djs.manipulators.Rotate1.prototype.drag = function(startPoint,
-                                                     endPoint) {
-  // Algorithm: Find intersection of ray with dragPlane_. Transform
-  // everything from world to local coordinates. Find angle of the
-  // initial and final plane intersection points about the rotation
-  // axis. Subtract these to find the rotation angle.
-  var worldIntersectPoint = this.dragPlane_.intersectRay(startPoint,
-      o3djs.math.subVector(endPoint, startPoint));
-  if (worldIntersectPoint == null) {
-    // Drag plane is parallel to ray. Punt.
-    return;
-  }
+                                                     endPoint,
+                                                     x,
+                                                     y,
+                                                     view,
+                                                     projection,
+                                                     width,
+                                                     height) {
+  // Use a simple linear mouse mapping based on distance along the tangent line.
+  // Do the dragging in client (screen space) coordinates. This eliminates any
+  // degenerate cases involved with a 3D line.
 
-  // We don't want the current drag state to affect our world-to-local
-  // transform, since we are calculating the drag from scratch.
-  this.getTransform().localMatrix = o3djs.math.matrix4.identity();
+  // Compute the position and direction of the line in screen coordinates.
+  var viewProjectionMatrix = o3djs.math.matrix4.mul(view, projection);
+  var linePoint1 = o3djs.manipulators.frustumPositionToClientPosition_(
+      o3djs.math.matrix4.transformPoint(viewProjectionMatrix,
+                                        this.dragLine_.getPoint()),
+      width, height);
+  var linePoint2 = o3djs.manipulators.frustumPositionToClientPosition_(
+      o3djs.math.matrix4.transformPoint(viewProjectionMatrix,
+                                        o3djs.math.addVector(
+                                            this.dragLine_.getPoint(),
+                                            this.dragLine_.getDirection()
+                                        )),
+      width, height);
+  var lineDirection = o3djs.math.normalize(o3djs.math.subVector(linePoint2,
+                                                                linePoint1));
+  var mousePoint = [x, y];
 
-  // Need to do a world-to-local transformation on all the points.
-  var worldToLocal =
-      o3djs.math.matrix4.inverse(this.getTransform().worldMatrix);
+  // The distance *along the line* that we have dragged, in pixels.
+  var dragDistance = o3djs.math.dot(lineDirection, mousePoint) -
+                     o3djs.math.dot(lineDirection, linePoint1);
 
-  // All of these are in local space.
-  var dragStart = o3djs.math.matrix4.transformPoint(worldToLocal,
-                                                    this.dragPlane_.getPoint());
-  var dragEnd = o3djs.math.matrix4.transformPoint(worldToLocal,
-                                                  worldIntersectPoint);
-  // Since this should all be happening in a YZ plane, we can discard
-  // the X components.
-  dragStart[0] = 0;
-  dragEnd[0] = 0;
-
-  // The point that we are rotating around is the origin (in local space).
-
-  var diffAngle = Math.atan2(dragEnd[1], dragEnd[2]) -
-      Math.atan2(dragStart[1], dragStart[2]);
-
-  this.getTransform().localMatrix = o3djs.math.matrix4.rotationX(-diffAngle);
+  // Determine rotation angle based on drag distance relative to
+  // the size of the client area.
+  var angle = (dragDistance / Math.max(width, height)) * 2 * Math.PI;
+  this.getTransform().localMatrix = o3djs.math.matrix4.rotationX(-angle);
   this.updateAttachedTransformFromLocalTransform_();
 }
