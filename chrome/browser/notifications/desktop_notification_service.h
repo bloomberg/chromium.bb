@@ -9,6 +9,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 
 class NotificationUIManager;
@@ -19,16 +21,16 @@ class Task;
 
 // The DesktopNotificationService is an object, owned by the Profile,
 // which provides the creation of desktop "toasts" to web pages and workers.
-class DesktopNotificationService {
+class DesktopNotificationService : public NotificationObserver {
  public:
-  enum NotificationSource {
+  enum DesktopNotificationSource {
     PageNotification,
     WorkerNotification
   };
 
   DesktopNotificationService(Profile* profile,
                              NotificationUIManager* ui_manager);
-  ~DesktopNotificationService();
+  virtual ~DesktopNotificationService();
 
   // Requests permission (using an info-bar) for a given origin.
   // |callback_context| contains an opaque value to pass back to the
@@ -49,11 +51,11 @@ class DesktopNotificationService {
   // value to be passed back to the process when events occur on
   // this notification.
   bool ShowDesktopNotification(const GURL& origin, const GURL& url,
-      int process_id, int route_id, NotificationSource source,
+      int process_id, int route_id, DesktopNotificationSource source,
       int notification_id);
   bool ShowDesktopNotificationText(const GURL& origin, const GURL& icon,
       const string16& title, const string16& text, int process_id,
-      int route_id, NotificationSource source, int notification_id);
+      int route_id, DesktopNotificationSource source, int notification_id);
 
   // Cancels a notification.  If it has already been shown, it will be
   // removed from the screen.  If it hasn't been shown yet, it won't be
@@ -67,6 +69,11 @@ class DesktopNotificationService {
   void DenyPermission(const GURL& origin);
 
   NotificationsPrefsCache* prefs_cache() { return prefs_cache_; }
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
  private:
   void InitPrefs();
@@ -86,6 +93,9 @@ class DesktopNotificationService {
   // Non-owned pointer to the notification manager which manages the
   // UI for desktop toasts.
   NotificationUIManager* ui_manager_;
+
+  // Connection to the service providing the other kind of notifications.
+  NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNotificationService);
 };

@@ -73,6 +73,7 @@ class Extension {
   // Each permission is a module that the extension is permitted to use.
   static const char* kTabPermission;
   static const char* kBookmarkPermission;
+  static const char* kNotificationPermission;
 
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;
