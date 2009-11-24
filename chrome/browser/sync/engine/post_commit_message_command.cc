@@ -30,12 +30,13 @@ void PostCommitMessageCommand::ExecuteImpl(sessions::SyncSession* session) {
   sessions::StatusController* status = session->status_controller();
   if (!SyncerProtoUtil::PostClientToServerMessage(
       status->mutable_commit_message(), &response, session)) {
-    // None of our changes got through, let's clear sync flags and wait for
-    // another list update.
+    // None of our changes got through.  Clear the SYNCING bit which was
+    // set to true during BuildCommitCommand, and which may still be true.
+    // Not to be confused with IS_UNSYNCED.  This bit is used to detect local
+    // changes to items that happen during the server Commit operation.
     status->increment_num_consecutive_problem_commits();
     status->increment_num_consecutive_errors();
     syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
-    // TODO(sync): why set this flag, it seems like a bad side-effect?
     const vector<syncable::Id>& commit_ids = status->commit_ids();
     for (size_t i = 0; i < commit_ids.size(); i++) {
       syncable::MutableEntry entry(&trans, syncable::GET_BY_ID, commit_ids[i]);
