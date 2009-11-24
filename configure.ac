@@ -43,6 +43,11 @@ AC_ARG_ENABLE(udev,	AS_HELP_STRING([--enable-udev],
 				[Enable support for using udev instead of mknod (default: disabled)]),
 				[UDEV=$enableval], [UDEV=no])
 
+AC_ARG_ENABLE(libkms,
+	      AS_HELP_STRING([--disable-libkms],
+	      [Enable KMS mm abstraction library (default: yes)]),
+	      [LIBKMS=$enableval], [LIBKMS=yes])
+
 AC_ARG_ENABLE(intel,
 	      AS_HELP_STRING([--disable-intel],
 	      [Enable support for intel's KMS API (default: auto)]),
@@ -134,6 +139,8 @@ if test "x$UDEV" = xyes; then
 	AC_DEFINE(UDEV, 1, [Have UDEV support])
 fi
 
+AM_CONDITIONAL(HAVE_LIBKMS, [test "x$LIBKMS" = xyes])
+
 AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" = xyes])
 
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
@@ -199,6 +206,8 @@ AC_SUBST(kernel_source)
 AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([
 	Makefile
+	libkms/Makefile
+	libkms/libkms.pc
 	intel/Makefile
 	intel/libdrm_intel.pc
 	radeon/Makefile
@@ -215,6 +224,7 @@ AC_OUTPUT([
 echo ""
 echo "$PACKAGE_STRING will be compiled with:"
 echo ""
+echo "  libkms         $LIBKMS"
 echo "  Intel API      $INTEL"
 echo "  Radeon API     $RADEON"
 echo "  Nouveau API    $NOUVEAU"

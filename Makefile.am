@@ -25,6 +25,10 @@ DISTCHECK_CONFIGURE_FLAGS = --enable-nouveau-experimental-api --enable-radeon-ex
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
 
+if HAVE_LIBKMS
+LIBKMS_SUBDIR = libkms
+endif
+
 if HAVE_INTEL
 INTEL_SUBDIR = intel
 endif
@@ -37,7 +41,7 @@ if HAVE_RADEON
 RADEON_SUBDIR = radeon
 endif
 
-SUBDIRS = . $(INTEL_SUBDIR) $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR) tests include
+SUBDIRS = . $(LIBKMS_SUBDIR) $(INTEL_SUBDIR) $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR) tests include
 
 libdrm_la_LTLIBRARIES = libdrm.la
 libdrm_ladir = $(libdir)
