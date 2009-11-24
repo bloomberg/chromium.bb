@@ -9,6 +9,7 @@
 #include "app/gfx/skbitmap_operations.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/base64.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
 #include "base/thread.h"
@@ -40,7 +41,6 @@
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "net/base/base64.h"
 #include "net/base/net_util.h"
 #include "webkit/glue/image_decoder.h"
 
@@ -206,7 +206,7 @@ void ExtensionsDOMHandler::IconLoader::LoadIconsOnFileThread(
 
     // Create a data URL (all icons are converted to PNGs during unpacking).
     std::string base64_encoded;
-    net::Base64Encode(file_contents, &base64_encoded);
+    base::Base64Encode(file_contents, &base64_encoded);
     GURL icon_url("data:image/png;base64," + base64_encoded);
 
     extension->SetString(L"icon", icon_url.spec());

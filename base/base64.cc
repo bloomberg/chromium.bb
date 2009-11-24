@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/base64.h"
+#include "base/base64.h"
 
 #include "third_party/modp_b64/modp_b64.h"
 
-namespace net {
+namespace base {
 
 bool Base64Encode(const std::string& input, std::string* output) {
   std::string temp;
@@ -38,4 +38,4 @@ bool Base64Decode(const std::string& input, std::string* output) {
   return true;
 }
 
-}  // namespace net
+}  // namespace base

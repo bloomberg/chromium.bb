@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_BASE_BASE64_H__
-#define NET_BASE_BASE64_H__
+#ifndef BASE_BASE64_H__
+#define BASE_BASE64_H__
 
 #include <string>
 
-namespace net {
+namespace base {
 
 // Encodes the input string in base64.  Returns true if successful and false
 // otherwise.  The output string is only modified if successful.
@@ -17,6 +17,6 @@ bool Base64Encode(const std::string& input, std::string* output);
 // otherwise.  The output string is only modified if successful.
 bool Base64Decode(const std::string& input, std::string* output);
 
-}  // namespace net
+}  // namespace base
 
-#endif  // NET_BASE_BASE64_H__
+#endif  // BASE_BASE64_H__

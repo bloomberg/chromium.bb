@@ -7,6 +7,7 @@
 #include <set>
 
 #include "app/gfx/codec/png_codec.h"
+#include "base/base64.h"
 #include "base/crypto/signature_verifier.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
@@ -20,7 +21,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/json_value_serializer.h"
-#include "net/base/base64.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 const char SandboxedExtensionUnpacker::kExtensionHeaderMagic[] = "Cr24";
@@ -230,7 +230,7 @@ bool SandboxedExtensionUnpacker::ValidateSignature() {
     return false;
   }
 
-  net::Base64Encode(std::string(reinterpret_cast<char*>(&key.front()),
+  base::Base64Encode(std::string(reinterpret_cast<char*>(&key.front()),
       key.size()), &public_key_);
   return true;
 }

@@ -38,7 +38,6 @@
 #include "chrome/common/net/url_request_intercept_job.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
-#include "net/base/base64.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

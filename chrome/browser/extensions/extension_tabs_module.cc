@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
 #include "app/gfx/codec/jpeg_codec.h"
+#include "base/base64.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -22,7 +23,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/url_constants.h"
-#include "net/base/base64.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -804,7 +804,7 @@ bool CaptureVisibleTabFunction::RunImpl() {
       reinterpret_cast<const char*>(&jpeg_data->data[0]),
       jpeg_data->data.size());
 
-  net::Base64Encode(stream_as_string, &base64_result);
+  base::Base64Encode(stream_as_string, &base64_result);
   base64_result.insert(0, "data:image/jpg;base64,");
   result_.reset(new StringValue(base64_result));
   return true;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/metrics/metrics_log.h"
 
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/file_util.h"
 #include "base/file_version_info.h"
@@ -17,7 +18,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/base64.h"
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
 
@@ -129,7 +129,7 @@ std::string MetricsLog::CreateHash(const std::string& value) {
 
 std::string MetricsLog::CreateBase64Hash(const std::string& string) {
   std::string encoded_digest;
-  if (net::Base64Encode(CreateHash(string), &encoded_digest)) {
+  if (base::Base64Encode(CreateHash(string), &encoded_digest)) {
     DLOG(INFO) << "Metrics: Hash [" << encoded_digest << "]=[" << string << "]";
     return encoded_digest;
   }

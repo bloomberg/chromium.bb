@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/base64.h"
+#include "base/base64.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -19,11 +19,11 @@ TEST(Base64Test, Basic) {
   std::string encoded, decoded;
   bool ok;
 
-  ok = net::Base64Encode(kText, &encoded);
+  ok = base::Base64Encode(kText, &encoded);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kBase64Text, encoded);
 
-  ok = net::Base64Decode(encoded, &decoded);
+  ok = base::Base64Decode(encoded, &decoded);
   EXPECT_TRUE(ok);
   EXPECT_EQ(kText, decoded);
 }

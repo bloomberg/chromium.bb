@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/extension.h"
 
 #include "app/resource_bundle.h"
+#include "base/base64.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
@@ -23,7 +24,6 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "net/base/base64.h"
 
 #if defined(OS_WIN)
 #include "base/registry.h"
@@ -543,7 +543,7 @@ bool Extension::ParsePEMKeyBytes(const std::string& input,
       return false;
   }
 
-  return net::Base64Decode(working, output);
+  return base::Base64Decode(working, output);
 }
 
 bool Extension::ProducePEM(const std::string& input,
@@ -552,7 +552,7 @@ bool Extension::ProducePEM(const std::string& input,
   if (input.length() == 0)
     return false;
 
-  return net::Base64Encode(input, output);
+  return base::Base64Encode(input, output);
 }
 
 bool Extension::FormatPEMForFileOutput(const std::string input,

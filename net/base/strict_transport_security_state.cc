@@ -4,6 +4,7 @@
 
 #include "net/base/strict_transport_security_state.h"
 
+#include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -13,7 +14,6 @@
 #include "base/string_util.h"
 #include "base/values.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/base64.h"
 #include "net/base/dns_util.h"
 
 namespace net {
@@ -198,7 +198,7 @@ void StrictTransportSecurityState::SetDelegate(
 // |enabled_hosts_|, to a base64 string which we can include in a JSON file.
 static std::wstring HashedDomainToExternalString(const std::string& hashed) {
   std::string out;
-  CHECK(Base64Encode(hashed, &out));
+  CHECK(base::Base64Encode(hashed, &out));
   return ASCIIToWide(out);
 }
 
@@ -207,7 +207,7 @@ static std::wstring HashedDomainToExternalString(const std::string& hashed) {
 static std::string ExternalStringToHashedDomain(const std::wstring& external) {
   std::string external_ascii = WideToASCII(external);
   std::string out;
-  if (!Base64Decode(external_ascii, &out) ||
+  if (!base::Base64Decode(external_ascii, &out) ||
       out.size() != base::SHA256_LENGTH) {
     return std::string();
   }

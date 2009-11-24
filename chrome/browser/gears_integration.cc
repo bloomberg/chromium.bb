@@ -5,6 +5,7 @@
 #include "chrome/browser/gears_integration.h"
 
 #include "app/gfx/codec/png_codec.h"
+#include "base/base64.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -12,7 +13,6 @@
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/gears_api.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/base64.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/dom_operations.h"
 
@@ -122,7 +122,7 @@ static GURL ConvertSkBitmapToDataURL(const SkBitmap& icon) {
   std::string icon_data_str(reinterpret_cast<char*>(&icon_data[0]),
                             icon_data.size());
   std::string icon_base64_encoded;
-  net::Base64Encode(icon_data_str, &icon_base64_encoded);
+  base::Base64Encode(icon_data_str, &icon_base64_encoded);
   GURL icon_url("data:image/png;base64," + icon_base64_encoded);
 
   return icon_url;

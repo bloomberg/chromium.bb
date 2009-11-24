@@ -4,13 +4,13 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 
+#include "base/base64.h"
 #include "base/hmac.h"
 #include "base/logging.h"
 #include "base/sha2.h"
 #include "base/string_util.h"
 #include "chrome/browser/google_util.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/base64.h"
 #include "net/base/escape.h"
 #include "unicode/locid.h"
 
@@ -163,12 +163,12 @@ bool VerifyMAC(const std::string& key, const std::string& mac,
   std::string key_copy = key;
   DecodeWebSafe(&key_copy);
   std::string decoded_key;
-  net::Base64Decode(key_copy, &decoded_key);
+  base::Base64Decode(key_copy, &decoded_key);
 
   std::string mac_copy = mac;
   DecodeWebSafe(&mac_copy);
   std::string decoded_mac;
-  net::Base64Decode(mac_copy, &decoded_mac);
+  base::Base64Decode(mac_copy, &decoded_mac);
 
   base::HMAC hmac(base::HMAC::SHA1);
   if (!hmac.Init(decoded_key))

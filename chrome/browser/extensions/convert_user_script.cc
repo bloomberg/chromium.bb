@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base64.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
@@ -18,7 +19,6 @@
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/json_value_serializer.h"
 #include "googleurl/src/gurl.h"
-#include "net/base/base64.h"
 
 namespace keys = extension_manifest_keys;
 
@@ -62,7 +62,7 @@ Extension* ConvertUserScriptToExtension(const FilePath& user_script_path,
   char raw[base::SHA256_LENGTH] = {0};
   std::string key;
   base::SHA256HashString(script_name, raw, base::SHA256_LENGTH);
-  net::Base64Encode(std::string(raw, base::SHA256_LENGTH), &key);
+  base::Base64Encode(std::string(raw, base::SHA256_LENGTH), &key);
 
   // The script may not have a name field, but we need one for an extension. If
   // it is missing, use the filename of the original URL.

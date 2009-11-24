@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/protocol_manager.h"
 
+#include "base/base64.h"
 #include "base/file_version_info.h"
 #include "base/histogram.h"
 #include "base/logging.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/env_vars.h"
-#include "net/base/base64.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 
@@ -386,7 +386,7 @@ bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
         std::string data_str;
         data_str.assign(data, length);
         std::string encoded_chunk;
-        net::Base64Encode(data, &encoded_chunk);
+        base::Base64Encode(data, &encoded_chunk);
         SB_DLOG(INFO) << "ParseChunk error for chunk: " << chunk_url.url
                       << ", client_key: " << client_key_
                       << ", wrapped_key: " << wrapped_key_

@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/zip.h"
-#include "net/base/base64.h"
 
 namespace {
   const int kRSAKeySize = 1024;

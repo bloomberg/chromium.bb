@@ -13,8 +13,8 @@
 #include <pk11sdr.h>
 #endif  // defined(OS_LINUX)
 
+#include "base/base64.h"
 #include "base/string_util.h"
-#include "net/base/base64.h"
 #include "webkit/glue/password_form.h"
 
 using webkit_glue::PasswordForm;
@@ -69,7 +69,7 @@ string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
   std::string plain;
   if (crypt[0] != '~') {
     std::string decoded_data;
-    net::Base64Decode(crypt, &decoded_data);
+    base::Base64Decode(crypt, &decoded_data);
     PK11SlotInfo* slot = GetKeySlotForDB();
     SECStatus result = PK11_Authenticate(slot, PR_TRUE, NULL);
     if (result != SECSuccess) {
@@ -96,7 +96,7 @@ string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
     FreeSlot(slot);
   } else {
     // Deletes the leading '~' before decoding.
-    net::Base64Decode(crypt.substr(1), &plain);
+    base::Base64Decode(crypt.substr(1), &plain);
   }
 
   return UTF8ToUTF16(plain);
