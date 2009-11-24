@@ -57,6 +57,9 @@ extern NSString* const kBrowserActionsChangedNotification;
 // extensions service to the toolbar.
 - (void)createButtons;
 
+// Update the display of all buttons.
+- (void)update;
+
 // Hides the browser action's popup menu (if one is present and visible).
 - (void)hidePopup;
 

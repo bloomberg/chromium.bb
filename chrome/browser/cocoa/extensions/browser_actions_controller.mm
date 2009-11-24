@@ -214,8 +214,11 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     return;
 
   std::string tooltip = extension_->browser_action()->GetTitle(tabId);
-  if (!tooltip.empty())
+  if (tooltip.empty()) {
+    [self setToolTip:nil];
+  } else {
     [self setToolTip:base::SysUTF8ToNSString(tooltip)];
+  }
 
   SkBitmap image = extension_->browser_action()->GetIcon(tabId);
   if (!image.isNull()) {
@@ -316,6 +319,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
   }
 
   return self;
+}
+
+- (void)update {
+  for (BrowserActionButton* button in [buttons_ allValues]) {
+    [button updateState];
+  }
 }
 
 - (void)hidePopup {

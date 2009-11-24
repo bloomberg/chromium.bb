@@ -304,6 +304,10 @@ class PrefObserverBridge : public NotificationObserver {
 - (void)updateToolbarWithContents:(TabContents*)tab
                shouldRestoreState:(BOOL)shouldRestore {
   locationBarView_->Update(tab, shouldRestore ? true : false);
+
+  if (browserActionsController_.get()) {
+    [browserActionsController_ update];
+  }
 }
 
 - (void)setStarredState:(BOOL)isStarred {
