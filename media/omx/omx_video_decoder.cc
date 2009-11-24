@@ -2,12 +2,20 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
+#include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "media/omx/input_buffer.h"
 #include "media/omx/omx_video_decoder.h"
 
 namespace media {
+
+template <typename T>
+static void ResetPortHeader(const OmxVideoDecoder& dec, T* param) {
+  memset(param, 0, sizeof(T));
+  param->nVersion.nVersion = dec.current_omx_spec_version();
+  param->nSize = sizeof(T);
+}
 
 OmxVideoDecoder::OmxVideoDecoder(MessageLoop* message_loop)
     : input_buffer_count_(0),
@@ -272,7 +280,7 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
   // TODO(hclam): move this out.
   OMX_ERRORTYPE omxresult = OMX_Init();
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - Failed to Init OpenMAX core\n");
+    LOG(ERROR) << "Error - Failed to Init OpenMAX core";
     StateTransitionTask(kError);
     return;
   }
@@ -284,7 +292,7 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
   omxresult = OMX_GetHandle((OMX_HANDLETYPE*)(&decoder_handle_),
                             (OMX_STRING)component, this, &callback);
   if (omxresult != OMX_ErrorNone) {
-    printf("Failed to Load the component: %s\n", component);
+    LOG(ERROR) << "Failed to Load the component: " << component;
     StateTransitionTask(kError);
     return;
   }
@@ -292,13 +300,11 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
   // 3. Get the port information. This will obtain information about the
   //    number of ports and index of the first port.
   OMX_PORT_PARAM_TYPE port_param;
-  memset(&port_param, 0, sizeof(port_param));
-  port_param.nVersion.nVersion = current_omx_spec_version();
-  port_param.nSize = sizeof(port_param);
+  ResetPortHeader(*this, &port_param);
   omxresult = OMX_GetParameter(decoder_handle_, OMX_IndexParamVideoInit,
                                &port_param);
   if (omxresult != OMX_ErrorNone) {
-    printf("ERROR - Failed to get Port Param\n");
+    LOG(ERROR) << "ERROR - Failed to get Port Param";
     StateTransitionTask(kError);
     return;
   }
@@ -307,7 +313,7 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
 
   // 4. Device specific configurations.
   if (!DeviceSpecificConfig()) {
-    printf("Error - device specific configurations failed\n");
+    LOG(ERROR) << "Error - device specific configurations failed";
     StateTransitionTask(kError);
     return;
   }
@@ -317,20 +323,18 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
   // Note that port_param.nStartPortNumber defines the index of the
   // input port.
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
-  memset(&port_format, 0, sizeof(port_format));
-  port_format.nVersion.nVersion = current_omx_spec_version();
-  port_format.nSize = sizeof(port_format);
+  ResetPortHeader(*this, &port_format);
   port_format.nPortIndex = input_port_;
   omxresult = OMX_GetParameter(decoder_handle_,
                                OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - GetParameter failed\n");
+    LOG(ERROR) << "Error - GetParameter failed";
     StateTransitionTask(kError);
     return;
   }
   if(OMX_DirInput != port_format.eDir) {
-    printf ("Error - Expect Input Port\n");
+    LOG(ERROR) << "Error - Expect Input Port";
     StateTransitionTask(kError);
     return;
   }
@@ -343,7 +347,7 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
   else if (codec_ == kCodecVc1)
     port_format.format.video.eCompressionFormat = OMX_VIDEO_CodingWMV;
   else
-    printf("Error: Unsupported codec %d\n", codec_);
+    LOG(ERROR) << "Error: Unsupported codec " << codec_;
   // Assume QCIF.
   port_format.format.video.nFrameWidth  = 176;
   port_format.format.video.nFrameHeight = 144;
@@ -351,7 +355,7 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
                                OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SetParameter failed\n");
+    LOG(ERROR) << "Error - SetParameter failed";
     StateTransitionTask(kError);
     return;
   }
@@ -367,12 +371,12 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
                                OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - GetParameter failed\n");
+    LOG(ERROR) << "Error - GetParameter failed";
     StateTransitionTask(kError);
     return;
   }
   if (OMX_DirInput != port_format.eDir) {
-    printf("Error - Expect input port\n");
+    LOG(ERROR) << "Error - Expect input port";
     StateTransitionTask(kError);
     return;
   }
@@ -380,18 +384,18 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
   input_buffer_size_ = port_format.nBufferSize;
 
   // 8. Obtain the information about the output port.
-  memset(&port_format, 0, sizeof(port_format));
+  ResetPortHeader(*this, &port_format);
   port_format.nPortIndex = output_port_;
   omxresult = OMX_GetParameter(decoder_handle_,
                                OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - GetParameter failed\n");
+    LOG(ERROR) << "Error - GetParameter failed";
     StateTransitionTask(kError);
     return;
   }
   if (OMX_DirOutput != port_format.eDir) {
-    printf("Error - Expect Output Port\n");
+    LOG(ERROR) << "Error - Expect Output Port";
     StateTransitionTask(kError);
     return;
   }
@@ -407,7 +411,7 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
     omxresult = OMX_SetConfig(decoder_handle_,
                               OMX_IndexConfigVideoNalSize, (OMX_PTR)&naluSize);
     if (omxresult != OMX_ErrorNone) {
-      printf("Error - SetConfig failed\n");
+      LOG(ERROR) << "Error - SetConfig failed";
       StateTransitionTask(kError);
       return;
     }
@@ -431,21 +435,21 @@ void OmxVideoDecoder::Transition_LoadedToIdle() {
                                             OMX_CommandStateSet,
                                             OMX_StateIdle, 0);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SendCommand failed\n");
+    LOG(ERROR) << "Error - SendCommand failed";
     StateTransitionTask(kError);
     return;
   }
 
   // 2. Allocate buffer for the input port.
   if (!AllocateInputBuffers()) {
-    printf("Error - OMX_AllocateBuffer Input buffer error\n");
+    LOG(ERROR) << "Error - OMX_AllocateBuffer Input buffer error";
     StateTransitionTask(kError);
     return;
   }
 
   // 3. Allocate buffer for the output port.
   if (!AllocateOutputBuffers()) {
-    printf("Error - OMX_AllocateBuffer Output buffer error\n");
+    LOG(ERROR) << "Error - OMX_AllocateBuffer Output buffer error";
     StateTransitionTask(kError);
     return;
   }
@@ -463,7 +467,7 @@ void OmxVideoDecoder::Transition_IdleToExecuting() {
                                             OMX_CommandStateSet,
                                             OMX_StateExecuting, 0);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SendCommand failed\n");
+    LOG(ERROR) << "Error - SendCommand failed";
     StateTransitionTask(kError);
     return;
   }
@@ -482,7 +486,7 @@ void OmxVideoDecoder::Transition_ExecutingToDisable() {
                                             OMX_CommandPortDisable,
                                             output_port_, 0);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SendCommand failed\n");
+    LOG(ERROR) << "Error - SendCommand failed";
     StateTransitionTask(kError);
     return;
   }
@@ -505,25 +509,24 @@ void OmxVideoDecoder::Transition_DisableToEnable() {
                                             OMX_CommandPortEnable,
                                             output_port_, 0);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SendCommand failed\n");
+    LOG(ERROR) << "Error - SendCommand failed";
     StateTransitionTask(kError);
     return;
   }
 
   // AllocateBuffers.
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
-  memset(&port_format, 0, sizeof(port_format));
+  ResetPortHeader(*this, &port_format);
   port_format.nPortIndex = output_port_;
-
   omxresult = OMX_GetParameter(decoder_handle_, OMX_IndexParamPortDefinition,
                                &port_format);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - GetParameter failed\n");
+    LOG(ERROR) << "Error - GetParameter failed";
     StateTransitionTask(kError);
     return;
   }
   if (OMX_DirOutput != port_format.eDir) {
-    printf("Error - Expect Output Port\n");
+    LOG(ERROR) << "Error - Expect Output Port";
     StateTransitionTask(kError);
     return;
   }
@@ -532,7 +535,7 @@ void OmxVideoDecoder::Transition_DisableToEnable() {
   output_buffer_count_ = port_format.nBufferCountActual;
   output_buffer_size_ = port_format.nBufferSize;
   if (!AllocateOutputBuffers()) {
-    printf("Error - OMX_AllocateBuffer Output buffer error\n");
+    LOG(ERROR) << "Error - OMX_AllocateBuffer Output buffer error";
     StateTransitionTask(kError);
     return;
   }
@@ -549,7 +552,7 @@ void OmxVideoDecoder::Transition_DisableToIdle() {
                                             OMX_CommandStateSet,
                                             OMX_StateIdle, 0);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SendCommand failed\n");
+    LOG(ERROR) << "Error - SendCommand failed";
     StateTransitionTask(kError);
     return;
   }
@@ -574,7 +577,7 @@ void OmxVideoDecoder::Transition_EnableToIdle() {
                                             OMX_CommandStateSet,
                                             OMX_StateIdle, 0);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SendCommand failed\n");
+    LOG(ERROR) << "Error - SendCommand failed";
     StateTransitionTask(kError);
     return;
   }
@@ -591,7 +594,7 @@ void OmxVideoDecoder::Transition_ExecutingToIdle() {
                                             OMX_CommandStateSet,
                                             OMX_StateIdle, 0);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SendCommand failed\n");
+    LOG(ERROR) << "Error - SendCommand failed";
     StateTransitionTask(kError);
     return;
   }
@@ -610,7 +613,7 @@ void OmxVideoDecoder::Transition_IdleToLoaded() {
                                             OMX_CommandStateSet,
                                             OMX_StateLoaded, 0);
   if (omxresult != OMX_ErrorNone) {
-    printf("Error - SendCommand failed\n");
+    LOG(ERROR) << "Error - SendCommand failed";
     StateTransitionTask(kError);
     return;
   }
@@ -630,7 +633,7 @@ void OmxVideoDecoder::Transition_LoadedToEmpty() {
   // Free the decoder handle.
   OMX_ERRORTYPE result = OMX_FreeHandle(decoder_handle_);
   if (result != OMX_ErrorNone) {
-    printf("Error - Terminate: OMX_FreeHandle error. Error code: %d\n", result);
+    LOG(ERROR) << "Error - Terminate: OMX_FreeHandle error. Error code: " << result;
   }
   decoder_handle_ = NULL;
 
@@ -677,7 +680,7 @@ void OmxVideoDecoder::Transition_Error() {
   if (decoder_handle_) {
     OMX_ERRORTYPE result = OMX_FreeHandle(decoder_handle_);
     if (result != OMX_ErrorNone)
-      printf("Error - OMX_FreeHandle error. Error code: %d\n", result);
+      LOG(ERROR) << "Error - OMX_FreeHandle error. Error code: " << result;
     decoder_handle_ = NULL;
   }
 
@@ -914,7 +917,7 @@ void OmxVideoDecoder::EmptyBufferTask() {
     // Give this buffer to OMX.
     OMX_ERRORTYPE ret = OMX_EmptyThisBuffer(decoder_handle_, omx_buffer);
     if (ret != OMX_ErrorNone) {
-      printf("ERROR - OMX_EmptyThisBuffer failed with result %d\n", ret);
+      LOG(ERROR) << "ERROR - OMX_EmptyThisBuffer failed with result " << ret;
       StateTransitionTask(kError);
       return;
     }
@@ -964,7 +967,7 @@ void OmxVideoDecoder::FillBufferTask() {
     omx_buffer->nFlags &= ~OMX_BUFFERFLAG_EOS;
     OMX_ERRORTYPE ret = OMX_FillThisBuffer(decoder_handle_, omx_buffer);
     if (OMX_ErrorNone != ret) {
-      printf("Error - OMX_FillThisBuffer failed with result %d\n", ret);
+      LOG(ERROR) << "Error - OMX_FillThisBuffer failed with result " << ret;
       StateTransitionTask(kError);
       return;
     }
@@ -1003,7 +1006,7 @@ void OmxVideoDecoder::InitialFillBuffer() {
     OMX_ERRORTYPE ret = OMX_FillThisBuffer(decoder_handle_, omx_buffer);
 
     if (OMX_ErrorNone != ret) {
-      printf("Error - OMX_FillThisBuffer failed with result %d\n", ret);
+      LOG(ERROR) << "Error - OMX_FillThisBuffer failed with result " << ret;
       StateTransitionTask(kError);
       return;
     }
@@ -1028,7 +1031,7 @@ void OmxVideoDecoder::EventHandlerInternal(OMX_HANDLETYPE component,
       } else if (cmd == OMX_CommandStateSet) {
         PostDoneStateTransitionTask();
       } else {
-        printf("Unknown command completed\n");
+        LOG(ERROR) << "Unknown command completed\n";
       }
       break;
     }
@@ -1042,7 +1045,7 @@ void OmxVideoDecoder::EventHandlerInternal(OMX_HANDLETYPE component,
       PostStateTransitionTask(kPortSettingDisable);
       break;
     default:
-      printf("Warning - Unknown event received\n");
+      LOG(ERROR) << "Warning - Unknown event received\n";
       break;
   }
 }

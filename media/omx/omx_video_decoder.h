@@ -137,7 +137,7 @@ class OmxVideoDecoder : public base::RefCountedThreadSafe<OmxVideoDecoder> {
   int output_port() { return output_port_; }
 
   // Subclass can provide a different value.
-  virtual int current_omx_spec_version() { return 0x00000101; }
+  virtual int current_omx_spec_version() const { return 0x00000101; }
 
  protected:
   // Returns the component name given the codec.
