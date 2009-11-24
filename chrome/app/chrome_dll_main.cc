@@ -363,7 +363,7 @@ int ChromeMain(int argc, char** argv) {
     return 1;
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Show the man page on --help or -h.
   if (parsed_command_line.HasSwitch("help") ||
       parsed_command_line.HasSwitch("h")) {
