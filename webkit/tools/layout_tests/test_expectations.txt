@@ -3033,9 +3033,6 @@ BUG28317 : LayoutTests/fast/css/color-correction-untagged-images.html = FAIL
 // Failures in TestShell that resulted from Mac plugin/focus fixes in r32631.
 BUG28380 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = CRASH FAIL
 
-// Need rebase. Failures from merge 51253:51310.
-BUG_JIANLI : LayoutTests/animations/keyframes-rule.html = TEXT
-
 // Local storage tests. Failures from merge 51253:51310.
 BUG28603 : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = TEXT
 BUG28603 : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-markup.html = TEXT
