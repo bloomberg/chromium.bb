@@ -140,6 +140,11 @@ void WebApplicationCacheHostImpl::didReceiveResponseForMainResource(
     const WebURLResponse& response) {
   document_response_ = response;
   document_url_ = document_response_.url();
+  if (document_url_.has_ref()) {
+    GURL::Replacements replacements;
+    replacements.ClearRef();
+    document_url_ = document_url_.ReplaceComponents(replacements);
+  }
   is_scheme_supported_ =  IsSchemeSupported(document_url_);
   if ((document_response_.appCacheID() != kNoCacheId) ||
       !is_scheme_supported_ || !is_get_method_)
