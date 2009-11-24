@@ -174,8 +174,10 @@ nacl_abi_size_t __NaClSrpcImcWrite(const void* source,
    * would almost invariably be negative, producing a massive size_t value
    * and allowing heap corruptions.
    */
+#ifndef __native_client__ /* these checks are unnecessary in an ILP32 module */
   CHECK(sizeof(buffer->bytes) <= NACL_ABI_SIZE_T_MAX);
   CHECK(sizeof(buffer->bytes) >= buffer->next_byte);
+#endif /* __native_client__ */
   avail_bytes =
       nacl_abi_size_t_saturate(sizeof(buffer->bytes) - buffer->next_byte);
 
