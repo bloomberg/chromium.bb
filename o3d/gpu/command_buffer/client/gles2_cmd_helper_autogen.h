@@ -450,20 +450,6 @@
         shaders_shm_offset);
   }
 
-  void GetAttribLocation(
-      GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
-      uint32 data_size) {
-    gles2::GetAttribLocation& c = GetCmdSpace<gles2::GetAttribLocation>();
-    c.Init(program, name_shm_id, name_shm_offset, data_size);
-  }
-
-  void GetAttribLocationImmediate(GLuint program, const char* name) {
-    const uint32 size = gles2::GetAttribLocationImmediate::ComputeSize(name);
-    gles2::GetAttribLocationImmediate& c =
-        GetImmediateCmdSpaceTotalSize<gles2::GetAttribLocationImmediate>(size);
-    c.Init(program, name);
-  }
-
   void GetBooleanv(
       GLenum pname, uint32 params_shm_id, uint32 params_shm_offset) {
     gles2::GetBooleanv& c = GetCmdSpace<gles2::GetBooleanv>();
@@ -597,21 +583,6 @@
       uint32 params_shm_offset) {
     gles2::GetUniformiv& c = GetCmdSpace<gles2::GetUniformiv>();
     c.Init(program, location, params_shm_id, params_shm_offset);
-  }
-
-  void GetUniformLocation(
-      GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
-      uint32 data_size) {
-    gles2::GetUniformLocation& c = GetCmdSpace<gles2::GetUniformLocation>();
-    c.Init(program, name_shm_id, name_shm_offset, data_size);
-  }
-
-  void GetUniformLocationImmediate(GLuint program, const char* name) {
-    const uint32 size = gles2::GetUniformLocationImmediate::ComputeSize(name);
-    gles2::GetUniformLocationImmediate& c =
-        GetImmediateCmdSpaceTotalSize<gles2::GetUniformLocationImmediate>(
-            size);
-    c.Init(program, name);
   }
 
   void GetVertexAttribfv(

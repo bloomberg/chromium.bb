@@ -214,7 +214,7 @@ void GLES2GetAttachedShaders(
     GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
   gles2::GetGLContext()->GetAttachedShaders(program, maxcount, count, shaders);
 }
-int GLES2GetAttribLocation(GLuint program, const char* name) {
+GLint GLES2GetAttribLocation(GLuint program, const char* name) {
   return gles2::GetGLContext()->GetAttribLocation(program, name);
 }
 void GLES2GetBooleanv(GLenum pname, GLboolean* params) {
@@ -280,7 +280,7 @@ void GLES2GetUniformfv(GLuint program, GLint location, GLfloat* params) {
 void GLES2GetUniformiv(GLuint program, GLint location, GLint* params) {
   gles2::GetGLContext()->GetUniformiv(program, location, params);
 }
-int GLES2GetUniformLocation(GLuint program, const char* name) {
+GLint GLES2GetUniformLocation(GLuint program, const char* name) {
   return gles2::GetGLContext()->GetUniformLocation(program, name);
 }
 void GLES2GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {

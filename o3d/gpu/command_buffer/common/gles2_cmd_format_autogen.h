@@ -609,7 +609,7 @@ struct BufferDataImmediate {
   }
 
   void Init(GLenum _target, GLsizeiptr _size, GLenum _usage) {
-    uint32 total_size = ComputeSize(_size);
+    uint32 total_size = 0;  // TODO(gman): get correct size.
     SetHeader(total_size);
     target = _target;
     size = _size;
@@ -617,7 +617,7 @@ struct BufferDataImmediate {
   }
 
   void* Set(void* cmd, GLenum _target, GLsizeiptr _size, GLenum _usage) {
-    uint32 total_size = ComputeSize(_size);
+    uint32 total_size = 0;  // TODO(gman): get correct size.
     static_cast<ValueType*>(cmd)->Init(_target, _size, _usage);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
@@ -1100,7 +1100,7 @@ struct CompressedTexImage2DImmediate {
   void Init(
       GLenum _target, GLint _level, GLenum _internalformat, GLsizei _width,
       GLsizei _height, GLint _border, GLsizei _imageSize) {
-    uint32 total_size = ComputeSize(_imageSize);
+    uint32 total_size = 0;  // TODO(gman): get correct size.
     SetHeader(total_size);
     target = _target;
     level = _level;
@@ -1114,7 +1114,7 @@ struct CompressedTexImage2DImmediate {
   void* Set(
       void* cmd, GLenum _target, GLint _level, GLenum _internalformat,
       GLsizei _width, GLsizei _height, GLint _border, GLsizei _imageSize) {
-    uint32 total_size = ComputeSize(_imageSize);
+    uint32 total_size = 0;  // TODO(gman): get correct size.
     static_cast<ValueType*>(
         cmd)->Init(
             _target, _level, _internalformat, _width, _height, _border,
@@ -3157,102 +3157,6 @@ COMPILE_ASSERT(offsetof(GetAttachedShaders, shaders_shm_id) == 20,
 COMPILE_ASSERT(offsetof(GetAttachedShaders, shaders_shm_offset) == 24,
                OffsetOf_GetAttachedShaders_shaders_shm_offset_not_24);
 
-struct GetAttribLocation {
-  typedef GetAttribLocation ValueType;
-  static const CommandId kCmdId = kGetAttribLocation;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(
-      GLuint _program, uint32 _name_shm_id, uint32 _name_shm_offset,
-      uint32 _data_size) {
-    SetHeader();
-    program = _program;
-    name_shm_id = _name_shm_id;
-    name_shm_offset = _name_shm_offset;
-    data_size = _data_size;
-  }
-
-  void* Set(
-      void* cmd, GLuint _program, uint32 _name_shm_id, uint32 _name_shm_offset,
-      uint32 _data_size) {
-    static_cast<ValueType*>(
-        cmd)->Init(_program, _name_shm_id, _name_shm_offset, _data_size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  command_buffer::CommandHeader header;
-  uint32 program;
-  uint32 name_shm_id;
-  uint32 name_shm_offset;
-  uint32 data_size;
-};
-
-COMPILE_ASSERT(sizeof(GetAttribLocation) == 20,
-               Sizeof_GetAttribLocation_is_not_20);
-COMPILE_ASSERT(offsetof(GetAttribLocation, header) == 0,
-               OffsetOf_GetAttribLocation_header_not_0);
-COMPILE_ASSERT(offsetof(GetAttribLocation, program) == 4,
-               OffsetOf_GetAttribLocation_program_not_4);
-COMPILE_ASSERT(offsetof(GetAttribLocation, name_shm_id) == 8,
-               OffsetOf_GetAttribLocation_name_shm_id_not_8);
-COMPILE_ASSERT(offsetof(GetAttribLocation, name_shm_offset) == 12,
-               OffsetOf_GetAttribLocation_name_shm_offset_not_12);
-COMPILE_ASSERT(offsetof(GetAttribLocation, data_size) == 16,
-               OffsetOf_GetAttribLocation_data_size_not_16);
-
-struct GetAttribLocationImmediate {
-  typedef GetAttribLocationImmediate ValueType;
-  static const CommandId kCmdId = kGetAttribLocationImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-
-  static uint32 ComputeDataSize(const char* s) {
-    return strlen(s);
-  }
-
-  static uint32 ComputeSize(const char* s) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(s));  // NOLINT
-  }
-
-  void SetHeader(const char* s) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(s));
-  }
-
-  void Init(GLuint _program, const char* _name) {
-    SetHeader(_name);
-    program = _program;
-    data_size = strlen(_name);
-    memcpy(ImmediateDataAddress(this), _name, data_size);
-  }
-
-  void* Set(void* cmd, GLuint _program, const char* _name) {
-    static_cast<ValueType*>(cmd)->Init(_program, _name);
-    const uint32 size = ComputeSize(_name);
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
-  }
-
-  command_buffer::CommandHeader header;
-  uint32 program;
-  uint32 data_size;
-};
-
-COMPILE_ASSERT(sizeof(GetAttribLocationImmediate) == 12,
-               Sizeof_GetAttribLocationImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(GetAttribLocationImmediate, header) == 0,
-               OffsetOf_GetAttribLocationImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GetAttribLocationImmediate, program) == 4,
-               OffsetOf_GetAttribLocationImmediate_program_not_4);
-COMPILE_ASSERT(offsetof(GetAttribLocationImmediate, data_size) == 8,
-               OffsetOf_GetAttribLocationImmediate_data_size_not_8);
-
 struct GetBooleanv {
   typedef GetBooleanv ValueType;
   static const CommandId kCmdId = kGetBooleanv;
@@ -4177,102 +4081,6 @@ COMPILE_ASSERT(offsetof(GetUniformiv, params_shm_id) == 12,
                OffsetOf_GetUniformiv_params_shm_id_not_12);
 COMPILE_ASSERT(offsetof(GetUniformiv, params_shm_offset) == 16,
                OffsetOf_GetUniformiv_params_shm_offset_not_16);
-
-struct GetUniformLocation {
-  typedef GetUniformLocation ValueType;
-  static const CommandId kCmdId = kGetUniformLocation;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  static uint32 ComputeSize() {
-    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() {
-    header.SetCmd<ValueType>();
-  }
-
-  void Init(
-      GLuint _program, uint32 _name_shm_id, uint32 _name_shm_offset,
-      uint32 _data_size) {
-    SetHeader();
-    program = _program;
-    name_shm_id = _name_shm_id;
-    name_shm_offset = _name_shm_offset;
-    data_size = _data_size;
-  }
-
-  void* Set(
-      void* cmd, GLuint _program, uint32 _name_shm_id, uint32 _name_shm_offset,
-      uint32 _data_size) {
-    static_cast<ValueType*>(
-        cmd)->Init(_program, _name_shm_id, _name_shm_offset, _data_size);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  command_buffer::CommandHeader header;
-  uint32 program;
-  uint32 name_shm_id;
-  uint32 name_shm_offset;
-  uint32 data_size;
-};
-
-COMPILE_ASSERT(sizeof(GetUniformLocation) == 20,
-               Sizeof_GetUniformLocation_is_not_20);
-COMPILE_ASSERT(offsetof(GetUniformLocation, header) == 0,
-               OffsetOf_GetUniformLocation_header_not_0);
-COMPILE_ASSERT(offsetof(GetUniformLocation, program) == 4,
-               OffsetOf_GetUniformLocation_program_not_4);
-COMPILE_ASSERT(offsetof(GetUniformLocation, name_shm_id) == 8,
-               OffsetOf_GetUniformLocation_name_shm_id_not_8);
-COMPILE_ASSERT(offsetof(GetUniformLocation, name_shm_offset) == 12,
-               OffsetOf_GetUniformLocation_name_shm_offset_not_12);
-COMPILE_ASSERT(offsetof(GetUniformLocation, data_size) == 16,
-               OffsetOf_GetUniformLocation_data_size_not_16);
-
-struct GetUniformLocationImmediate {
-  typedef GetUniformLocationImmediate ValueType;
-  static const CommandId kCmdId = kGetUniformLocationImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-
-  static uint32 ComputeDataSize(const char* s) {
-    return strlen(s);
-  }
-
-  static uint32 ComputeSize(const char* s) {
-    return static_cast<uint32>(
-        sizeof(ValueType) + ComputeDataSize(s));  // NOLINT
-  }
-
-  void SetHeader(const char* s) {
-    header.SetCmdByTotalSize<ValueType>(ComputeSize(s));
-  }
-
-  void Init(GLuint _program, const char* _name) {
-    SetHeader(_name);
-    program = _program;
-    data_size = strlen(_name);
-    memcpy(ImmediateDataAddress(this), _name, data_size);
-  }
-
-  void* Set(void* cmd, GLuint _program, const char* _name) {
-    static_cast<ValueType*>(cmd)->Init(_program, _name);
-    const uint32 size = ComputeSize(_name);
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
-  }
-
-  command_buffer::CommandHeader header;
-  uint32 program;
-  uint32 data_size;
-};
-
-COMPILE_ASSERT(sizeof(GetUniformLocationImmediate) == 12,
-               Sizeof_GetUniformLocationImmediate_is_not_12);
-COMPILE_ASSERT(offsetof(GetUniformLocationImmediate, header) == 0,
-               OffsetOf_GetUniformLocationImmediate_header_not_0);
-COMPILE_ASSERT(offsetof(GetUniformLocationImmediate, program) == 4,
-               OffsetOf_GetUniformLocationImmediate_program_not_4);
-COMPILE_ASSERT(offsetof(GetUniformLocationImmediate, data_size) == 8,
-               OffsetOf_GetUniformLocationImmediate_data_size_not_8);
 
 struct GetVertexAttribfv {
   typedef GetVertexAttribfv ValueType;
@@ -5581,7 +5389,7 @@ struct TexImage2DImmediate {
   void Init(
       GLenum _target, GLint _level, GLint _internalformat, GLsizei _width,
       GLsizei _height, GLint _border, GLenum _format, GLenum _type) {
-    uint32 total_size = 0;  // TODO(gman): get correct size
+    uint32 total_size = 0;  // TODO(gman): get correct size.
     SetHeader(total_size);
     target = _target;
     level = _level;
@@ -5597,7 +5405,7 @@ struct TexImage2DImmediate {
       void* cmd, GLenum _target, GLint _level, GLint _internalformat,
       GLsizei _width, GLsizei _height, GLint _border, GLenum _format,
       GLenum _type) {
-    uint32 total_size = 0;  // TODO(gman): get correct size
+    uint32 total_size = 0;  // TODO(gman): get correct size.
     static_cast<ValueType*>(
         cmd)->Init(
             _target, _level, _internalformat, _width, _height, _border, _format,

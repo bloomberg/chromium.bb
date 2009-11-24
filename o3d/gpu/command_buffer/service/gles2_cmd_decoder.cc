@@ -43,11 +43,11 @@ unsigned int ImmediateDataSize(uint32 arg_count) {
 // Checks if there is enough immediate data.
 template<typename T>
 bool CheckImmediateDataSize(
-    unsigned int arg_count,
+    uint32 immediate_data_size,
     GLuint count,
     size_t size,
     unsigned int elements_per_unit) {
-  return ImmediateDataSize<T>(arg_count) == count * size * elements_per_unit;
+  return immediate_data_size == count * size * elements_per_unit;
 }
 
 // A struct to hold info about each command.
@@ -149,12 +149,16 @@ GLenum GLErrorBitToGLError(uint32 error_bit) {
 
 }  // anonymous namespace.
 
+#if defined(OS_LINUX)
 GLES2Decoder::GLES2Decoder()
-#ifdef OS_LINUX
-    : window_(NULL) {
-#endif
-#ifdef OS_WIN
-    : hwnd_(NULL) {
+    : debug_(false),
+      window_(NULL) {
+#elif defined(OS_WIN)
+GLES2Decoder::GLES2Decoder()
+    : debug_(false),
+      hwnd_(NULL) {
+#else
+GLES2Decoder::GLES2Decoder() {
 #endif
 }
 
@@ -311,7 +315,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // typesafe way.
   #define GLES2_CMD_OP(name) \
      ParseError Handle ## name(             \
-       unsigned int arg_count,              \
+       uint32 immediate_data_size,          \
        const gles2::name& args);            \
 
   GLES2_COMMAND_LIST(GLES2_CMD_OP)
@@ -669,28 +673,44 @@ parse_error::ParseError GLES2DecoderImpl::DoCommand(
     unsigned int command,
     unsigned int arg_count,
     const void* cmd_data) {
+  parse_error::ParseError result;
+  if (debug()) {
+    // TODO(gman): Change output to something useful for NaCl.
+    const char* f = GetCommandName(command);
+    printf("cmd: %s\n", GetCommandName(command));
+  }
   unsigned int command_index = command - kStartPoint - 1;
   if (command_index < arraysize(g_command_info)) {
     const CommandInfo& info = g_command_info[command_index];
     unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
     if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
         (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
+      uint32 immediate_data_size =
+          (arg_count - info_arg_count) * sizeof(CommandBufferEntry);  // NOLINT
       switch (command) {
         #define GLES2_CMD_OP(name)                                 \
           case name::kCmdId:                                       \
-            return Handle ## name(                                 \
-                arg_count,                                         \
+            result = Handle ## name(                               \
+                immediate_data_size,                               \
                 *static_cast<const name*>(cmd_data));              \
+            break;                                                 \
 
         GLES2_COMMAND_LIST(GLES2_CMD_OP)
-
         #undef GLES2_CMD_OP
+        if (debug()) {
+          if (glGetError() != 0) {
+            // TODO(gman): Change output to something useful for NaCl.
+            printf("GL ERROR b4: %s\n", GetCommandName(command));
+          }
+        }
       }
     } else {
-      return parse_error::kParseInvalidArguments;
+      result = parse_error::kParseInvalidArguments;
     }
+  } else {
+    result = DoCommonCommand(command, arg_count, cmd_data);
   }
-  return DoCommonCommand(command, arg_count, cmd_data);
+  return result;
 }
 
 }  // namespace gles2
@@ -786,7 +806,7 @@ void GLES2DecoderImpl::SetGLError(GLenum error) {
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
-    unsigned int arg_count, const gles2::DrawElements& c) {
+    uint32 immediate_data_size, const gles2::DrawElements& c) {
   if (bound_element_array_buffer_ != 0) {
     GLenum mode = c.mode;
     GLsizei count = c.count;
@@ -831,14 +851,21 @@ parse_error::ParseError ShaderSourceHelper(
 }  // anonymous namespace.
 
 parse_error::ParseError GLES2DecoderImpl::HandleShaderSource(
-    unsigned int arg_count, const gles2::ShaderSource& c) {
-  GLuint shader = c.shader;
+    uint32 immediate_data_size, const gles2::ShaderSource& c) {
+  GLuint shader;
+  if (!id_map_.GetServiceId(c.shader, &shader)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
   GLsizei count = c.count;
   uint32 data_size = c.data_size;
   const char** data = GetSharedMemoryAs<const char**>(
       c.data_shm_id, c.data_shm_offset, data_size);
   parse_error::ParseError result =
-      ValidateShaderSource(this, arg_count, shader, count, data, NULL);
+      // TODO(gman): Manually implement validation.
+      ValidateShaderSource(
+          this, immediate_data_size, shader, count, data,
+          reinterpret_cast<const GLint*>(1));
   if (result != parse_error::kParseNoError) {
     return result;
   }
@@ -847,15 +874,19 @@ parse_error::ParseError GLES2DecoderImpl::HandleShaderSource(
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleShaderSourceImmediate(
-  unsigned int arg_count, const gles2::ShaderSourceImmediate& c) {
-  GLuint shader = c.shader;
+  uint32 immediate_data_size, const gles2::ShaderSourceImmediate& c) {
+  GLuint shader;
+  if (!id_map_.GetServiceId(c.shader, &shader)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
   GLsizei count = c.count;
   uint32 data_size = c.data_size;
   // TODO(gman): need to check that data_size is in range for arg_count.
   const char** data = GetImmediateDataAs<const char**>(c);
   parse_error::ParseError result =
       ValidateShaderSourceImmediate(
-          this, arg_count, shader, count, data, NULL);
+          this, immediate_data_size, shader, count, data, NULL);
   if (result != parse_error::kParseNoError) {
     return result;
   }
@@ -864,7 +895,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleShaderSourceImmediate(
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
-    unsigned int arg_count, const gles2::VertexAttribPointer& c) {
+    uint32 immediate_data_size, const gles2::VertexAttribPointer& c) {
   if (bound_array_buffer_ != 0) {
     GLuint indx = c.indx;
     GLint size = c.size;
@@ -873,9 +904,11 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     GLsizei stride = c.stride;
     GLuint offset = c.offset;
     const void* ptr = reinterpret_cast<const void*>(c.offset);
+    // TODO(gman): Do manual validation.
     parse_error::ParseError result =
         ValidateVertexAttribPointer(
-            this, arg_count, indx, size, type, normalized, stride, ptr);
+            this, immediate_data_size, indx, size, type, normalized, stride,
+            reinterpret_cast<const void*>(1));
     if (result != parse_error::kParseNoError) {
       return result;
     }
@@ -887,55 +920,308 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleReadPixels(
-    unsigned int arg_count, const gles2::ReadPixels& c) {
+    uint32 immediate_data_size, const gles2::ReadPixels& c) {
   // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandlePixelStorei(
-    unsigned int arg_count, const gles2::PixelStorei& c) {
-  // TODO(gman): Implement.
+    uint32 immediate_data_size, const gles2::PixelStorei& c) {
+  GLenum pname = c.pname;
+  GLenum param = c.param;
+  parse_error::ParseError result =
+    ValidatePixelStorei(this, immediate_data_size, pname, param);
+  if (result != parse_error::kParseNoError) {
+    return result;
+  }
+  glPixelStorei(pname, param);
+  switch (pname) {
+  case GL_PACK_ALIGNMENT:
+      pack_alignment_ = param;
+      break;
+  case GL_UNPACK_ALIGNMENT:
+      unpack_alignment_ = param;
+      break;
+  default:
+      // Validation should have prevented us from getting here.
+      DCHECK(false);
+      break;
+  }
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocation(
+    uint32 immediate_data_size, const gles2::GetAttribLocation& c) {
+  GLuint program;
+  if (!id_map_.GetServiceId(c.program, &program)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
+  uint32 name_size = c.data_size;
+  const char* name = GetSharedMemoryAs<const char*>(
+      c.name_shm_id, c.name_shm_offset, name_size);
+  GLint* location = GetSharedMemoryAs<GLint*>(
+      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
+  if (!location || !name) {
+    return parse_error::kParseOutOfBounds;
+  }
+  String name_str(name, name_size);
+  *location = glGetAttribLocation(program, name_str.c_str());
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocationImmediate(
+    uint32 immediate_data_size, const gles2::GetAttribLocationImmediate& c) {
+  GLuint program;
+  if (!id_map_.GetServiceId(c.program, &program)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
+  uint32 name_size = c.data_size;
+  const char* name = GetImmediateDataAs<const char*>(c);
+  // TODO(gman): Make sure validate checks arg_count
+  //     covers data_size.
+  GLint* location = GetSharedMemoryAs<GLint*>(
+      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
+  if (!location || !name) {
+    return parse_error::kParseOutOfBounds;
+  }
+  String name_str(name, name_size);
+  *location = glGetAttribLocation(program, name_str.c_str());
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocation(
+    uint32 immediate_data_size, const gles2::GetUniformLocation& c) {
+  GLuint program;
+  if (!id_map_.GetServiceId(c.program, &program)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
+  uint32 name_size = c.data_size;
+  const char* name = GetSharedMemoryAs<const char*>(
+      c.name_shm_id, c.name_shm_offset, name_size);
+  GLint* location = GetSharedMemoryAs<GLint*>(
+      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
+  if (!location || !name) {
+    return parse_error::kParseOutOfBounds;
+  }
+  String name_str(name, name_size);
+  *location = glGetUniformLocation(program, name_str.c_str());
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocationImmediate(
+    uint32 immediate_data_size, const gles2::GetUniformLocationImmediate& c) {
+  GLuint program;
+  if (!id_map_.GetServiceId(c.program, &program)) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
+  uint32 name_size = c.data_size;
+  const char* name = GetImmediateDataAs<const char*>(c);
+  // TODO(gman): Make sure validate checks arg_count
+  //     covers data_size.
+  GLint* location = GetSharedMemoryAs<GLint*>(
+      c.location_shm_id, c.location_shm_offset, sizeof(GLint));
+  if (!location || !name) {
+    return parse_error::kParseOutOfBounds;
+  }
+  String name_str(name, name_size);
+  *location = glGetUniformLocation(program, name_str.c_str());
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleBufferData(
+    uint32 immediate_data_size, const gles2::BufferData& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
+  uint32 data_shm_id = static_cast<uint32>(c.data_shm_id);
+  uint32 data_shm_offset = static_cast<uint32>(c.data_shm_offset);
+  GLenum usage = static_cast<GLenum>(c.usage);
+  const void* data = NULL;
+  if (data_shm_id != 0 || data_shm_offset != 0) {
+    data = GetSharedMemoryAs<const void*>(data_shm_id, data_shm_offset, size);
+    parse_error::ParseError result =
+        ValidateBufferData(this, immediate_data_size, target, size, data,
+                           usage);
+    if (result != parse_error::kParseNoError) {
+      return result;
+    }
+  }
+  // TODO(gman): Validate case where data is NULL.
+  glBufferData(target, size, data, usage);
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleBufferDataImmediate(
+    uint32 immediate_data_size, const gles2::BufferDataImmediate& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
+  const void* data = GetImmediateDataAs<const void*>(c);
+  GLenum usage = static_cast<GLenum>(c.usage);
+  // Immediate version.
+  // TODO(gman): Handle case where data is NULL.
+  parse_error::ParseError result =
+      ValidateBufferDataImmediate(this, immediate_data_size, target, size, data,
+                                  usage);
+  if (result != parse_error::kParseNoError) {
+    return result;
+  }
+  glBufferData(target, size, data, usage);
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2D(
+    uint32 immediate_data_size, const gles2::CompressedTexImage2D& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLint border = static_cast<GLint>(c.border);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  uint32 data_shm_id = static_cast<uint32>(c.data_shm_id);
+  uint32 data_shm_offset = static_cast<uint32>(c.data_shm_offset);
+  const void* data = NULL;
+  if (data_shm_id != 0 || data_shm_offset != 0) {
+    data = GetSharedMemoryAs<const void*>(
+        data_shm_id, data_shm_offset, image_size);
+    parse_error::ParseError result =
+        ValidateCompressedTexImage2D(
+            this, immediate_data_size, target, level, internal_format, width,
+            height, border, image_size, data);
+    if (result != parse_error::kParseNoError) {
+      return result;
+    }
+  }
+  // TODO(gman): Validate case where data is NULL.
+  glCompressedTexImage2D(
+      target, level, internal_format, width, height, border, image_size, data);
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
+    uint32 immediate_data_size, const gles2::CompressedTexImage2DImmediate& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLenum internal_format = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLint border = static_cast<GLint>(c.border);
+  GLsizei image_size = static_cast<GLsizei>(c.imageSize);
+  const void* data = GetImmediateDataAs<const void*>(c);
+  // Immediate version.
+  // TODO(gman): Handle case where data is NULL.
+  parse_error::ParseError result =
+      ValidateCompressedTexImage2DImmediate(
+          this, immediate_data_size, target, level, internal_format, width,
+          height, border, image_size, data);
+  if (result != parse_error::kParseNoError) {
+    return result;
+  }
+  glCompressedTexImage2D(
+      target, level, internal_format, width, height, border, image_size, data);
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleTexImage2D(
+    uint32 immediate_data_size, const gles2::TexImage2D& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint internal_format = static_cast<GLint>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLint border = static_cast<GLint>(c.border);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum type = static_cast<GLenum>(c.type);
+  uint32 pixels_shm_id = static_cast<uint32>(c.pixels_shm_id);
+  uint32 pixels_shm_offset = static_cast<uint32>(c.pixels_shm_offset);
+  uint32 pixels_size = GLES2Util::ComputeImageDataSize(
+      width, height, format, type, unpack_alignment_);
+  const void* pixels = NULL;
+  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
+    pixels = GetSharedMemoryAs<const void*>(
+        pixels_shm_id, pixels_shm_offset, pixels_size);
+    parse_error::ParseError result =
+        ValidateTexImage2D(
+            this, immediate_data_size, target, level, internal_format, width,
+            height, border, format, type, pixels);
+    if (result != parse_error::kParseNoError) {
+      return result;
+    }
+  }
+  // TODO(gman): Validate case where data is NULL.
+  glTexImage2D(
+      target, level, internal_format, width, height, border, format, type,
+      pixels);
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError GLES2DecoderImpl::HandleTexImage2DImmediate(
+    uint32 immediate_data_size, const gles2::TexImage2DImmediate& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLint level = static_cast<GLint>(c.level);
+  GLint internalformat = static_cast<GLint>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  GLint border = static_cast<GLint>(c.border);
+  GLenum format = static_cast<GLenum>(c.format);
+  GLenum type = static_cast<GLenum>(c.type);
+  const void* pixels = GetImmediateDataAs<const void*>(c);
+  // Immediate version.
+  // TODO(gman): Handle case where data is NULL.
+  parse_error::ParseError result =
+      ValidateTexImage2DImmediate(
+          this, immediate_data_size, target, level, internalformat, width,
+          height, border, format, type, pixels);
+  if (result != parse_error::kParseNoError) {
+    return result;
+  }
+  glTexImage2D(
+      target, level, internalformat, width, height, border, format, type,
+      pixels);
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetVertexAttribPointerv(
-    unsigned int arg_count, const gles2::GetVertexAttribPointerv& c) {
+    uint32 immediate_data_size, const gles2::GetVertexAttribPointerv& c) {
   // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetUniformiv(
-    unsigned int arg_count, const gles2::GetUniformiv& c) {
+    uint32 immediate_data_size, const gles2::GetUniformiv& c) {
   // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetUniformfv(
-    unsigned int arg_count, const gles2::GetUniformfv& c) {
+    uint32 immediate_data_size, const gles2::GetUniformfv& c) {
   // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
-    unsigned int arg_count, const gles2::GetShaderPrecisionFormat& c) {
+    uint32 immediate_data_size, const gles2::GetShaderPrecisionFormat& c) {
   // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetAttachedShaders(
-    unsigned int arg_count, const gles2::GetAttachedShaders& c) {
+    uint32 immediate_data_size, const gles2::GetAttachedShaders& c) {
   // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetActiveUniform(
-    unsigned int arg_count, const gles2::GetActiveUniform& c) {
+    uint32 immediate_data_size, const gles2::GetActiveUniform& c) {
   // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetActiveAttrib(
-    unsigned int arg_count, const gles2::GetActiveAttrib& c) {
+    uint32 immediate_data_size, const gles2::GetActiveAttrib& c) {
   // TODO(gman): Implement.
   return parse_error::kParseNoError;
 }

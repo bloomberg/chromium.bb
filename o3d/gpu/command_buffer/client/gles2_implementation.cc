@@ -21,6 +21,9 @@ GLES2Implementation::GLES2Implementation(
       shared_memory_(transfer_buffer, transfer_buffer_id),
       pack_alignment_(4),
       unpack_alignment_(4) {
+  // Eat 1 id so we start at 1 instead of 0.
+  GLuint eat;
+  MakeIds(1, &eat);
 }
 
 void GLES2Implementation::MakeIds(GLsizei n, GLuint* ids) {
@@ -40,6 +43,38 @@ void GLES2Implementation::DrawElements(
   helper_->DrawElements(mode, count, type, reinterpret_cast<GLuint>(indices));
 }
 
+GLint GLES2Implementation::GetAttribLocation(
+    GLuint program, const char* name) {
+  helper_->GetAttribLocationImmediate(program, name, shared_memory_.GetId(), 0);
+  int32 token = helper_->InsertToken();
+  helper_->WaitForToken(token);
+  return *shared_memory_.GetAddressAs<GLint*>(0);
+}
+
+GLint GLES2Implementation::GetUniformLocation(
+    GLuint program, const char* name) {
+  helper_->GetUniformLocationImmediate(
+      program, name, shared_memory_.GetId(), 0);
+  int32 token = helper_->InsertToken();
+  helper_->WaitForToken(token);
+  return *shared_memory_.GetAddressAs<GLint*>(0);
+}
+
+void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
+  switch (pname) {
+  case GL_PACK_ALIGNMENT:
+      pack_alignment_ = param;
+      break;
+  case GL_UNPACK_ALIGNMENT:
+      unpack_alignment_ = param;
+      break;
+  default:
+      break;
+  }
+  helper_->PixelStorei(pname, param);
+}
+
+
 void GLES2Implementation::VertexAttribPointer(
     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr) {
@@ -51,7 +86,7 @@ void GLES2Implementation::ShaderSource(
     GLuint shader, GLsizei count, const char** string, const GLint* length) {
   // TODO(gman): change to use buckets and check that there is enough room.
   uint32* offsets = shared_memory_.GetAddressAs<uint32*>(0);
-  char* strings = reinterpret_cast<char*>(offsets + count);
+  char* strings = reinterpret_cast<char*>(offsets);
 
   uint32 offset = count * sizeof(*offsets);
   for (GLsizei ii = 0; ii < count; ++ii) {
@@ -74,10 +109,14 @@ void GLES2Implementation::BufferData(
     GLenum target, GLsizeiptr size, const void* data, GLenum usage) {
   // TODO(gman): Switch to use buckets alwayst or at least if no room in shared
   //    memory.
-  memcpy(shared_memory_.GetAddress(0), data, size);
-  helper_->BufferData(target, size, shared_memory_.GetId(), 0, usage);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  if (data == NULL) {
+    helper_->BufferData(target, size, 0, 0, usage);
+  } else {
+    memcpy(shared_memory_.GetAddress(0), data, size);
+    helper_->BufferData(target, size, shared_memory_.GetId(), 0, usage);
+    int32 token = helper_->InsertToken();
+    helper_->WaitForToken(token);
+  }
 }
 
 void GLES2Implementation::BufferSubData(

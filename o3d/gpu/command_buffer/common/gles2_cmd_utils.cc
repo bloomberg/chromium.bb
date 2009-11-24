@@ -332,12 +332,13 @@ int BytesPerElement(int type) {
 // Returns the amount of data glTexImage2D or glTexSubImage2D will access.
 uint32 GLES2Util::ComputeImageDataSize(
     int width, int height, int format, int type, int unpack_alignment) {
-  uint32 bytes_per_group = BytesPerElement(ElementsPerGroup(format, type));
+  uint32 bytes_per_group =
+      BytesPerElement(type) * ElementsPerGroup(format, type);
   uint32 row_size = width * bytes_per_group;
   if (height > 1) {
     uint32 padded_row_size = ((row_size + unpack_alignment - 1) /
                               unpack_alignment) * unpack_alignment;
-    return height - 1 * padded_row_size + row_size;
+    return (height - 1) * padded_row_size + row_size;
   }
   return height * row_size;
 }

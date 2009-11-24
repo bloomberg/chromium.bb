@@ -252,15 +252,7 @@ void GetActiveUniform(
 void GetAttachedShaders(
     GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders);
 
-int GetAttribLocation(GLuint program, const char* name) {
-  // TODO(gman): This needs to change to use SendString.
-  GLint* result = shared_memory_.GetAddressAs<GLint*>(0);
-  DCHECK(false);  // pass in shared memory
-  helper_->GetAttribLocationImmediate(program, name);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *result;
-}
+GLint GetAttribLocation(GLuint program, const char* name);
 
 void GetBooleanv(GLenum pname, GLboolean* params) {
   helper_->GetBooleanv(pname, shared_memory_.GetId(), 0);
@@ -383,15 +375,7 @@ void GetUniformfv(GLuint program, GLint location, GLfloat* params);
 
 void GetUniformiv(GLuint program, GLint location, GLint* params);
 
-int GetUniformLocation(GLuint program, const char* name) {
-  // TODO(gman): This needs to change to use SendString.
-  GLint* result = shared_memory_.GetAddressAs<GLint*>(0);
-  DCHECK(false);  // pass in shared memory
-  helper_->GetUniformLocationImmediate(program, name);
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
-  return *result;
-}
+GLint GetUniformLocation(GLuint program, const char* name);
 
 void GetVertexAttribfv(GLuint index, GLenum pname, GLfloat* params) {
   helper_->GetVertexAttribfv(index, pname, shared_memory_.GetId(), 0);
@@ -474,9 +458,7 @@ void LinkProgram(GLuint program) {
   helper_->LinkProgram(program);
 }
 
-void PixelStorei(GLenum pname, GLint param) {
-  helper_->PixelStorei(pname, param);
-}
+void PixelStorei(GLenum pname, GLint param);
 
 void PolygonOffset(GLfloat factor, GLfloat units) {
   helper_->PolygonOffset(factor, units);
