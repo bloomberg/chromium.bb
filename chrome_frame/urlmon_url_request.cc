@@ -27,7 +27,8 @@ UrlmonUrlRequest::UrlmonUrlRequest()
       thread_(PlatformThread::CurrentId()),
       redirect_status_(0),
       parent_window_(NULL),
-      worker_thread_(NULL) {
+      worker_thread_(NULL),
+      ignore_redirect_stop_binding_error_(false) {
   DLOG(INFO) << StringPrintf("Created request. Obj: %X", this)
       << " Count: " << ++instance_count_;
 }
@@ -177,27 +178,32 @@ STDMETHODIMP UrlmonUrlRequest::OnLowResource(DWORD reserved) {
 
 STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
     ULONG status_code, LPCWSTR status_text) {
+  static const int kDefaultHttpRedirectCode = 302;
+
   switch (status_code) {
-    case BINDSTATUS_REDIRECTING:
+    case BINDSTATUS_REDIRECTING: {
+      // Fetch the redirect status as they aren't all equal (307 in particular
+      // retains the HTTP request verb).
+      // We assume that valid redirect codes are 301, 302, 303 and 307. If we
+      // receive anything else we would abort the request which would
+      // eventually result in the request getting cancelled in Chrome.
+      int redirect_status = GetHttpResponseStatus();
       DCHECK(status_text != NULL);
       DLOG(INFO) << "URL: " << url() << " redirected to "
                  << status_text;
       redirect_url_ = status_text;
-      // Fetch the redirect status as they aren't all equal (307 in particular
-      // retains the HTTP request verb).
-      redirect_status_ = GetHttpResponseStatus();
-      // NOTE: Even though RFC 2616 says to preserve the request method when
-      // following a 302 redirect, normal browsers don't do that. Instead they
-      // all convert a POST into a GET in response to a 302 and so shall we.
-      // For 307 redirects, browsers preserve the method.  The RFC says to
-      // prompt the user to confirm the generation of a new POST request, but
-      // IE omits this prompt and so shall we.
-      if (redirect_status_ != 307 &&
-          LowerCaseEqualsASCII(method(), "post")) {
-        set_method("get");
-        ClearPostData();
-      }
-      break;
+      redirect_status_ =
+          redirect_status > 0 ? redirect_status : kDefaultHttpRedirectCode;
+      // Chrome should decide whether a redirect has to be followed. To achieve
+      // this we send over a fake response to Chrome and abort the redirect.
+      std::string headers = GetHttpHeaders();
+      OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
+      ignore_redirect_stop_binding_error_ = true;
+      DCHECK(binding_ != NULL);
+      binding_->Abort();
+      binding_ = NULL;
+      return E_ABORT;
+    }
 
     default:
       DLOG(INFO) << " Obj: " << std::hex << this << " OnProgress(" << url()
@@ -215,6 +221,7 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
       " - Request stopped, Result: " << std::hex << result <<
       " Status: " << status_.status();
+
   if (FAILED(result)) {
     status_.set_status(URLRequestStatus::FAILED);
     status_.set_os_error(HresultToNetError(result));
@@ -607,19 +614,26 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
 
 void UrlmonUrlRequest::EndRequest() {
   DLOG(INFO) << __FUNCTION__;
-  // Special case.  If the last request was a redirect and the current OS
-  // error value is E_ACCESSDENIED, that means an unsafe redirect was attempted.
-  // In that case, correct the OS error value to be the more specific
-  // ERR_UNSAFE_REDIRECT error value.
-  if (!status_.is_success() && status_.os_error() == net::ERR_ACCESS_DENIED) {
-    int status = GetHttpResponseStatus();
-    if (status >= 300 && status < 400) {
-      redirect_status_ = status;  // store the latest redirect status value.
-      status_.set_os_error(net::ERR_UNSAFE_REDIRECT);
-    }
-  }
 
-  OnResponseEnd(status_);
+  // In case of a redirect notification we prevent urlmon from following the
+  // redirect and rely on Chrome, in which case AutomationMsg_RequestEnd
+  // IPC will be sent over by Chrome to end this request.
+  if (!ignore_redirect_stop_binding_error_) {
+    // Special case.  If the last request was a redirect and the current OS
+    // error value is E_ACCESSDENIED, that means an unsafe redirect was
+    // attempted. In that case, correct the OS error value to be the more
+    // specific ERR_UNSAFE_REDIRECT error value.
+    if (!status_.is_success() && status_.os_error() == net::ERR_ACCESS_DENIED) {
+      int status = GetHttpResponseStatus();
+      if (status >= 300 && status < 400) {
+        redirect_status_ = status;  // store the latest redirect status value.
+        status_.set_os_error(net::ERR_UNSAFE_REDIRECT);
+      }
+    }
+    OnResponseEnd(status_);
+  } else {
+    ignore_redirect_stop_binding_error_ = false;
+  }
 
   // Remove the request mapping and release the outstanding reference to us in
   // the context of the UI thread.
@@ -649,8 +663,10 @@ int UrlmonUrlRequest::GetHttpResponseStatus() const {
   if (SUCCEEDED(info.QueryFrom(binding_))) {
     char status[10] = {0};
     DWORD buf_size = sizeof(status);
+    DWORD flags = 0;
+    DWORD reserved = 0;
     if (SUCCEEDED(info->QueryInfo(HTTP_QUERY_STATUS_CODE, status, &buf_size,
-                                  0, NULL))) {
+                                  &flags, &reserved))) {
       http_status = StringToInt(status);
     } else {
       NOTREACHED() << "Failed to get HTTP status";
@@ -660,6 +676,42 @@ int UrlmonUrlRequest::GetHttpResponseStatus() const {
   }
 
   return http_status;
+}
+
+std::string UrlmonUrlRequest::GetHttpHeaders() const {
+  if (binding_ == NULL) {
+    DLOG(WARNING) << "GetHttpResponseStatus - no binding_";
+    return std::string();
+  }
+
+  ScopedComPtr<IWinInetHttpInfo> info;
+  if (FAILED(info.QueryFrom(binding_))) {
+    DLOG(WARNING) << "Failed to QI for IWinInetHttpInfo";
+    return std::string();
+  }
+
+  scoped_ptr<char> buffer;
+  DWORD size = 0;
+  DWORD flags = 0;
+  DWORD reserved = 0;
+  HRESULT hr = info->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF, NULL, &size,
+                               &flags, &reserved);
+  if (!size) {
+    DLOG(WARNING) << "Failed to query HTTP headers size. Error 0x%x" << hr;
+    return std::string();
+  }
+
+  buffer.reset(new char[size]);
+  memset(buffer.get(), 0, size);
+
+  hr = info->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF, buffer.get(),
+                       &size, &flags, &reserved);
+  if (FAILED(hr)) {
+    DLOG(WARNING) << "Failed to query HTTP headers. Error 0x%x" << hr;
+    return std::string();
+  }
+
+  return buffer.get();
 }
 
 //

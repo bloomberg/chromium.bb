@@ -198,20 +198,12 @@ int URLRequestAutomationJob::GetResponseCode() const {
 
 bool URLRequestAutomationJob::IsRedirectResponse(
     GURL* location, int* http_status_code) {
-  static const int kDefaultHttpRedirectResponseCode = 301;
+  if (!net::HttpResponseHeaders::IsRedirectResponseCode(redirect_status_))
+    return false;
 
-  if (!redirect_url_.empty()) {
-    DLOG_IF(ERROR, redirect_status_ == 0) << "Missing redirect status?";
-    *http_status_code = redirect_status_ ? redirect_status_ :
-                                           kDefaultHttpRedirectResponseCode;
-    *location = GURL(redirect_url_);
-    return true;
-  } else {
-    DCHECK(redirect_status_ == 0)
-        << "Unexpectedly have redirect status but no URL";
-  }
-
-  return false;
+  *http_status_code = redirect_status_;
+  *location = GURL(redirect_url_);
+  return true;
 }
 
 bool URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message,
@@ -255,7 +247,7 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
 
   GURL url_for_cookies =
       GURL(redirect_url_.empty() ? request_->url().spec().c_str() :
-          redirect_url_.c_str());
+           redirect_url_.c_str());
 
   URLRequestContext* ctx = request_->context();
 

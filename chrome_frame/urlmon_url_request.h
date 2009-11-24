@@ -9,8 +9,8 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlwin.h>
-
 #include <algorithm>
+#include <string>
 
 #include "base/lock.h"
 #include "base/platform_thread.h"
@@ -239,6 +239,7 @@ END_MSG_MAP()
   // reference to us. It also deletes the request mapping for this instance.
   void EndRequestInternal();
   int GetHttpResponseStatus() const;
+  std::string GetHttpHeaders() const;
 
   static net::Error HresultToNetError(HRESULT hr);
 
@@ -255,6 +256,9 @@ END_MSG_MAP()
   PlatformThreadId thread_;
   static int instance_count_;
   HWND parent_window_;
+  // Set to true if a redirect notification was aborted.
+  bool ignore_redirect_stop_binding_error_;
+
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);
 };
 
