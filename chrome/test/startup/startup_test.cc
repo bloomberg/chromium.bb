@@ -10,6 +10,7 @@
 #include "base/time.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 
@@ -47,6 +48,9 @@ class StartupTest : public UITest {
     data_dir = data_dir.AppendASCII("extensions").AppendASCII("profiles").
         AppendASCII(profile);
     set_template_user_data(data_dir);
+
+    // For now, these tests still depend on toolstrips.
+    launch_arguments_.AppendSwitch(switches::kEnableExtensionToolstrips);
   }
 
   void RunStartupTest(const char* graph, const char* trace,
