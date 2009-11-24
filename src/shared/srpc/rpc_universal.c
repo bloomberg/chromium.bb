@@ -237,8 +237,8 @@ static NaClSrpcImcDescType LookupDesc(int num) {
 
 /*  simple destructive tokenizer */
 typedef struct {
-  const char* start;
-  int length;
+  const char*     start;
+  nacl_abi_size_t length;
 } TOKEN;
 
 static int HandleEscapedChar(const char** p) {
@@ -358,11 +358,11 @@ static const char* ScanEscapeString(char* to, const char* from) {
 }
 
 static int Tokenize(char* line, TOKEN *array, int n) {
-  int pos_start = 0;
+  ssize_t pos_start = 0;
   int count = 0;
 
   for( ; count < n; count++ ) {
-    int pos_end;
+    ssize_t pos_end;
 
     /* skip leading white space */
     while (line[pos_start]) {
@@ -395,7 +395,7 @@ static int Tokenize(char* line, TOKEN *array, int n) {
 
     /* save the token */
     array[count].start = &line[pos_start];
-    array[count].length = pos_end - pos_start;
+    array[count].length = nacl_abi_size_t_saturate(pos_end - pos_start);
 
     if (line[pos_end]) {
       line[pos_end] = '\0';   /* DESTRUCTION!!! */

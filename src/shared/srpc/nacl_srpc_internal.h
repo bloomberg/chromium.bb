@@ -106,17 +106,17 @@ extern void __NaClSrpcImcBufferCtor(NaClSrpcImcBuffer* buffer,
 
 extern NaClSrpcImcBuffer* __NaClSrpcImcFillbuf(NaClSrpcChannel* channel);
 
-extern size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
-                             size_t elt_size,
-                             size_t n_elt,
-                             void* target);
+extern nacl_abi_size_t __NaClSrpcImcRead(NaClSrpcImcBuffer* buffer,
+                                         nacl_abi_size_t elt_size,
+                                         nacl_abi_size_t n_elt,
+                                         void* target);
 
 extern void __NaClSrpcImcRefill(NaClSrpcImcBuffer* buffer);
 
-extern size_t __NaClSrpcImcWrite(const void* source,
-                              size_t elt_size,
-                              size_t n_elt,
-                              NaClSrpcImcBuffer* buffer);
+extern nacl_abi_size_t __NaClSrpcImcWrite(const void* source,
+                                          nacl_abi_size_t elt_size,
+                                          nacl_abi_size_t n_elt,
+                                          NaClSrpcImcBuffer* buffer);
 
 extern int __NaClSrpcImcFlush(NaClSrpcImcBuffer* buffer,
                               NaClSrpcChannel* channel);
