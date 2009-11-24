@@ -1,0 +1,38 @@
+This contains Chromium's locally patched copy of Jason Evans' jemalloc package.
+
+License terms are contained in the source files themselves.
+
+Contents:
+
+    README.chromium
+
+        This file you're looking at right now.
+
+    chromium/
+
+        The chromium patched sources, copied from the vendor/
+        subdirectory and containing our local modifications.
+
+    vendor/
+
+        Vanilla sources from Mozilla's copy at:
+
+            http://hg.mozilla.org/mozilla-central/src/memory
+
+        The current revision is:
+
+            changeset:   31465:63c44f8d16ac
+            parent:      31462:70b3b23c948a
+            user:        Robert Sayre <sayrer@gmail.com>
+            date:        Thu Aug 06 11:16:20 2009 -0700
+            summary:     Backed out changeset 70b3b23c948a
+
+HOWTOs:
+
+    Take a new version from upstream:
+
+        TODO(sgk)
+
+    Merge a new upstream version with our local patched copy:
+
+        TODO(sgk)
