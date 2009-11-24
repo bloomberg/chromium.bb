@@ -1314,3 +1314,15 @@ div.note {
   vertical-align:bottom;
 }
 
+table.noborders {
+  padding:0px;
+}
+
+table.noborders th {
+  border:none;
+  padding:12px 12px 6px 0px
+}
+table.noborders td {
+  border:none;
+  padding:6px 12px 6px 0px
+}

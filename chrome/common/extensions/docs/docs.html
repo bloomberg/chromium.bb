@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.devtools - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>Hello There! - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -189,13 +189,13 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.devtools</h1>
+        <h1 class="page_title">Hello There!</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc">
+        <div id="toc" style="display: none; ">
           <h2>Contents</h2>
           <ol>
-            <li style="display: none; ">
+            <li>
               <a>h2Name</a>
               <ol>
                 <li>
@@ -205,9 +205,9 @@
             </li>
             <div>
               <li>
-                <a href="#apiReference">API reference: chrome.devtools</a>
+                <a href="#apiReference">API reference</a>
                 <ol>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
@@ -218,12 +218,12 @@
                   <li>
                     <a href="#methods">Methods</a>
                     <ol>
-                      <li style="display: none; ">
+                      <li>
                         <a href="#method-anchor">methodName</a>
                       </li>
                     </ol>
                   </li>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#events">Events</a>
                     <ol>
                       <li>
@@ -231,7 +231,7 @@
                       </li>
                     </ol>
                   </li>
-                  <li style="display: none; ">
+                  <li>
                     <a href="#types">Types</a>
                     <ol>
                       <li>
@@ -247,15 +247,146 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"></div>
+        <div id="static"><div id="pageData-title" class="pageData">Hello There!</div>
+
+<p>
+This documentation tells you how to write <em>Google Chrome Extensions</em> —
+small software programs
+that can modify and enhance the functionality of the
+<a href="http://www.google.com/chrome">Google Chrome browser</a>.
+</p>
+
+<h2 id="readme"> Where to start </h2>
+
+<p>
+Before you write an extension,
+read these:
+</p>
+
+<ul>
+  <li>
+    <a href="getstarted.html">Getting Started (Hello, World!)</a>
+  </li>
+  <li>
+    <a href="overview.html">Overview</a>
+  </li>
+</ul>
+
+<p>
+Here are some other places to check out:
+</p>
+
+<ul>
+  <li>
+    <a href="samples.html">Samples</a>
+  </li>
+  <li>
+    <a href="http://groups.google.com/group/chromium-extensions">Group: chromium-extensions</a>
+  </li>
+  <li>
+    <a href="http://code.google.com/chrome/extensions/index.html">Home: Google Chrome Extensions</a>
+  </li>
+  <li>
+    <a href="https://chrome.google.com/extensions">Gallery</a>
+  </li>
+</ul>
+
+<h2 id="versions"> Doc versions </h2>
+<p>
+In general, you should view these pages at
+<b>http://code.google.com/chrome/extensions/<em>&lt;filename&gt;</em></b>
+(for example,
+<a href="http://code.google.com/chrome/extensions/overview.html">http://code.google.com/chrome/extensions/overview.html</a>).
+However, if you need to see the very latest doc
+or you're using a different version of Google Chrome
+than most of the world is
+(perhaps the <a href="http://dev.chromium.org/getting-involved/dev-channel">Dev channel</a>),
+you might want to use a different URL
+(for example,
+<a href="http://code.google.com/chrome/extensions/dev/overview.html">.../extensions/<b>dev/</b>overview.html</a>).
+The following table lists the doc locations and explains how they differ.
+</p>
+
+<p>
+</p><table class="noborders">
+  <tbody><tr>
+    <th> URL </th>   <th> Version </th>
+  </tr>
+  <tr>
+    <td>
+      <a href="http://code.google.com/chrome/extensions/overview.html">.../extensions/...</a>
+    </td>
+    <td>
+      The version you should probably be using.
+      This documents the most stable version of the extension API.
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="http://code.google.com/chrome/extensions/beta/overview.html">.../extensions/<b>beta/</b>...</a>
+    </td>
+    <td>
+      <p>
+      Documentation for the Beta channel version of Google Chrome.
+      </p>
+
+      <p>
+      <strong>Note:</strong>
+      APIs on the Beta channel are subject to change.
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="http://code.google.com/chrome/extensions/dev/overview.html">.../extensions/<b>dev/</b>...</a>
+    </td>
+    <td>
+      <p>
+      Documentation for the Dev channel version of Google Chrome.
+      Look here if you're using a tip-of-tree version of
+      <a href="http://dev.chromium.org/">Chromium</a>
+      or if you're curious about features to come.
+      This version might also have bug fixes and feature information
+      that are relevant to the current doc
+      but haven't been integrated into them yet.
+      </p>
+
+      <p>
+      <strong>Note:</strong>
+      APIs on the Dev channel are subject to change.
+      </p>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <a href="http://code.google.com/chrome/extensions/trunk/overview.html">.../extensions/<b>trunk/</b>...</a>
+    </td>
+    <td>
+      The very latest documentation.
+      Look here if you're using a tip-of-tree version of
+      <a href="http://dev.chromium.org">Chromium</a>
+      or if you're curious about features to come.
+      This version might also have bug fixes and feature information
+      that are relevant to the current doc
+      but haven't been integrated into them yet.
+
+      <p>
+      <strong>Note:</strong>
+      The trunk version of the doc is preliminary and might have errors.
+      </p>
+    </td>
+  </tr>
+</tbody></table>
+<p></p>
+</div>
 
         <!-- API PAGE -->
-        <div class="apiPage">
+        <div class="apiPage" style="display: none; ">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.devtools</h2>
+        <h2>API reference: chrome.apiname </h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -278,7 +409,7 @@
             <h3>Methods</h3>
 
             <!-- iterates over all functions -->
-            <div class="apiItem" style="display: none; ">
+            <div class="apiItem">
               <a></a> <!-- method-anchor -->
               <h4>method name</h4>
 
@@ -338,7 +469,7 @@
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="events"></a>
             <h3 id="events">Events</h3>
 
@@ -374,7 +505,7 @@
           </div> <!-- /apiGroup -->
 
           <!-- TYPES -->
-          <div class="apiGroup" style="display: none; ">
+          <div class="apiGroup">
             <a name="types.sort(sortByName)"></a>
             <h3 id="types">Types</h3>
 
