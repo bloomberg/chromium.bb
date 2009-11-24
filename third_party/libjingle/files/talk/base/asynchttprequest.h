@@ -20,8 +20,7 @@ class FirewallManager;
 class MemoryStream;
 
 class AsyncHttpRequest:
-  public SignalThread,
-  public sigslot::has_slots<> {
+  public SignalThread {
 public:
   AsyncHttpRequest(const std::string &user_agent);
 

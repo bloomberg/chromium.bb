@@ -131,8 +131,8 @@ void Thread::Start() {
   // Make sure Join() hasn't been called yet.
   if (stopped_)
     return;
-  pthread_create(&thread_, &attr, PreRun, this);
-  started_ = true;
+  if (pthread_create(&thread_, &attr, PreRun, this) == 0)
+      started_ = true;
 }
 
 void Thread::Join() {
@@ -141,6 +141,7 @@ void Thread::Join() {
   if (started_) {
     void *pv;
     pthread_join(thread_, &pv);
+    started_ = false;
   }
 }
 #endif
@@ -225,7 +226,7 @@ void Thread::Run() {
 }
 
 void Thread::Stop() {
-  MessageQueue::Stop();
+  MessageQueue::Quit();
   Join();
 }
 
@@ -347,7 +348,7 @@ bool Thread::ProcessMessages(int cmsLoop) {
   while (true) {
     Message msg;
     if (!Get(&msg, cmsNext))
-      return false;
+      return !IsQuitting();
     Dispatch(&msg);
     
     if (cmsLoop != kForever) {

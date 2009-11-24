@@ -13,13 +13,17 @@ namespace talk_base {
 //   Cancellation: Call Release(true), to abort the worker thread.
 //   Fire-and-forget: Call Release(false), which allows the thread to run to
 //    completion, and then self-destruct without further notification.
+//   Periodic tasks: Wait for SignalWorkDone, then eventually call Start()
+//    again to repeat the task. When the instance isn't needed anymore,
+//    call Release. DoWork, OnWorkStart and OnWorkStop are called again,
+//    on a new thread.
 //  The subclass should override DoWork() to perform the background task.  By
 //   periodically calling ContinueWork(), it can check for cancellation.
 //   OnWorkStart and OnWorkDone can be overridden to do pre- or post-work
 //   tasks in the context of the main thread.
 ///////////////////////////////////////////////////////////////////////////////
 
-class SignalThread : protected MessageHandler {
+class SignalThread : public sigslot::has_slots<>, protected MessageHandler {
 public:
   SignalThread();
 
@@ -32,8 +36,9 @@ public:
   // Context: Main Thread.  If the worker thread is not running, deletes the
   // object immediately.  Otherwise, asks the worker thread to abort processing,
   // and schedules the object to be deleted once the worker exits.
-  // SignalWorkDone will not be signalled.
-  void Destroy();
+  // SignalWorkDone will not be signalled.  If wait is true, does not return
+  // until the thread is deleted.
+  void Destroy(bool wait);
 
   // Context: Main Thread.  If the worker thread is complete, deletes the
   // object immediately.  Otherwise, schedules the object to be deleted once
@@ -50,11 +55,11 @@ protected:
 
   // Context: Main Thread.  Subclass should override to do pre-work setup.
   virtual void OnWorkStart() { }
-  
+
   // Context: Worker Thread.  Subclass should override to do work.
   virtual void DoWork() = 0;
 
-  // Context: Worker Thread.  Subclass should call periodically to
+  // Context: Worker Thread.  Subclass should call periodically to 
   // dispatch messages and determine if the thread should terminate.
   bool ContinueWork();
 
@@ -64,7 +69,7 @@ protected:
 
   // Context: Main Thread.  Subclass should override to do post-work cleanup.
   virtual void OnWorkDone() { }
-  
+ 
   // Context: Any Thread.  If subclass overrides, be sure to call the base
   // implementation.  Do not use (message_id < ST_MSG_FIRST_AVAILABLE)
   virtual void OnMessage(Message *msg);
@@ -73,26 +78,44 @@ private:
   friend class Worker;
   class Worker : public Thread {
   public:
-    virtual void Run() {
-      CritScope cs(&parent_crit_);
-      if (parent_)
-        parent_->Run();
-    }
-    void SetParent(SignalThread* parent) {
-      CritScope cs(&parent_crit_);
-      parent_ = parent;
-    }
-
-  private:
     SignalThread* parent_;
-    CriticalSection parent_crit_;
+    virtual void Run() { parent_->Run(); }
   };
 
+  class EnterExit {
+    friend class SignalThread;
+   
+    SignalThread * t_;
+   
+    EnterExit(SignalThread * t) : t_(t) {
+      t_->cs_.Enter();
+      t_->refcount_ += 1;
+    }
+    ~EnterExit() {
+      bool d = (0 == (--(t_->refcount_)));
+      t_->cs_.Leave();
+      if (d)
+        delete t_;
+    }
+  };
+
+  friend class EnterExit;
+ 
+  CriticalSection cs_;
+  int refcount_;
+
   void Run();
+  void OnMainThreadDestroyed();
 
   Thread* main_;
   Worker worker_;
-  enum State { kInit, kRunning, kComplete, kStopping, kReleasing } state_;
+  enum State {
+    kInit,            // Initialized, but not started
+    kRunning,         // Started and doing work
+    kReleasing,       // Same as running, but to be deleted when work is done
+    kComplete,        // Work is done
+    kStopping,        // Work is being interrupted
+  } state_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

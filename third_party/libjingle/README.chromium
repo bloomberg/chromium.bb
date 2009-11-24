@@ -38,3 +38,5 @@ Local Modifications:
   * Added a #define guard to libjingle's base/logging.h to prevent the
     LOG() macros from being redefined when included by users of the
     library.  The #define guard is SAFE_TO_DEFINE_TALK_BASE_LOGGING_MACROS.
+  * Updated signalthread.* and dependencies to add threadcounting and
+    improve multithread safety.

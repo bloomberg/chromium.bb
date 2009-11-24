@@ -19,7 +19,7 @@ namespace talk_base {
 
 class AsyncSocket;
 
-class AutoDetectProxy : public SignalThread, public sigslot::has_slots<> {
+class AutoDetectProxy : public SignalThread {
 public:
   AutoDetectProxy(const std::string& user_agent);
 

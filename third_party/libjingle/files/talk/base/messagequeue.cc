@@ -101,6 +101,10 @@ MessageQueue::MessageQueue(SocketServer* ss)
 }
 
 MessageQueue::~MessageQueue() {
+  // The signal is done from here to ensure
+  // that it always gets called when the queue
+  // is going away.
+  SignalQueueDestroyed();
   if (active_) {
     MessageQueueManager::Instance()->Remove(this);
     Clear(NULL);
@@ -111,12 +115,12 @@ void MessageQueue::set_socketserver(SocketServer* ss) {
   ss_ = ss;
 }
 
-void MessageQueue::Stop() {
+void MessageQueue::Quit() {
   fStop_ = true;
   ss_->WakeUp();
 }
 
-bool MessageQueue::IsStopping() {
+bool MessageQueue::IsQuitting() {
   return fStop_;
 }
 

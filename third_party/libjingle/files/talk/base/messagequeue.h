@@ -160,9 +160,8 @@ public:
   // Get (or Peek) returns false.  By guaranteeing delivery of those messages,
   // we eliminate the race condition when an MessageHandler and MessageQueue
   // may be destroyed independently of each other.
-
-  virtual void Stop();
-  virtual bool IsStopping();
+  virtual void Quit();
+  virtual bool IsQuitting();
   virtual void Restart();
 
   // Get() will process I/O until:
@@ -186,6 +185,10 @@ public:
       Post(NULL, MQID_DISPOSE, new talk_base::DisposeData<T>(doomed));
     }
   }
+
+  // When this signal is sent out, any references to this queue should
+  // no longer be used.
+  sigslot::signal0<> SignalQueueDestroyed;
 
 protected:
   void EnsureActive();

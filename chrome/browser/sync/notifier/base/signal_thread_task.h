@@ -77,7 +77,8 @@ class SignalThreadTask : public talk_base::Task,
 
   void ClearSignalThread() {
     if (signal_thread_) {
-      signal_thread_->Destroy();
+      // Don't wait on the thread destruction, or we may deadlock.
+      signal_thread_->Destroy(false);
       signal_thread_ = NULL;
     }
   }

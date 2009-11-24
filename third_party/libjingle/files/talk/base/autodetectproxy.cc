@@ -111,7 +111,7 @@ void AutoDetectProxy::Complete(talk_base::ProxyType type) {
   LOG_V(sev) << "AutoDetectProxy detected " << proxy_.address.ToString()
              << " as type " << proxy_.type;
 
-  Thread::Current()->MessageQueue::Stop();
+  Thread::Current()->Quit();
 }
 
 void AutoDetectProxy::OnConnectEvent(talk_base::AsyncSocket * socket) {

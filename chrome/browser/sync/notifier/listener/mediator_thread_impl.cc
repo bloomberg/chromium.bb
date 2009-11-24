@@ -68,7 +68,7 @@ void MediatorThreadImpl::Run() {
       pump_->WakeTasks();
     }
     MessageLoop::current()->RunAllPending();
-  } while (!IsStopping());
+  } while (!IsQuitting());
 
 #if defined(OS_WIN)
   set_socketserver(old_socket_server);
