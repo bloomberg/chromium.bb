@@ -423,6 +423,10 @@ BUG23748 WONTFIX : LayoutTests/http/tests/globalhistory = FAIL
 // DataGrid was pulled from HTML5 spec, unlikely to re-emerge in the current form.
 BUG17585 WONTFIX : LayoutTests/fast/dom/HTMLDataGridElement = FAIL
 
+// We are not going to support submitting a form to about:* pages.
+// For more details, see discussions at issue 20570.
+BUG20570 WONTFIX : LayoutTests/fast/forms/get-forms-to-about-blank.html = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -3000,7 +3004,6 @@ BUG27923: LayoutTests/accessibility/aria-labelledby-overrides-label.html = TEXT
 BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom1-exception.html = TEXT
 BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom3-exception.html = TEXT
 BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom8-exception.html = TEXT
-BUGYUTAK : LayoutTests/fast/forms/get-forms-to-about-blank.html = FAIL
 BUG28034 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny.html = PASS FAIL
 
 BUG28040 WIN LINUX DEBUG : LayoutTests/fast/body-propagation/overflow/004.html = PASS FAIL
