@@ -38,7 +38,7 @@
           '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
           '--no-sandbox',
           '--load-plugin=$(TargetPath)',
-          'test_page.html',
+          'file://$(ProjectDir)test_page.html',
         ],
       },
     }
