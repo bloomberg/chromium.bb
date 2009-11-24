@@ -205,7 +205,6 @@ extern const wchar_t kNumFoldersInOtherBookmarkFolder[];
 extern const wchar_t kNumKeywords[];
 
 extern const wchar_t kDisableExtensions[];
-extern const wchar_t kEnableUserScripts[];
 extern const wchar_t kShowExtensionShelf[];
 
 extern const wchar_t kLastExtensionsUpdateCheck[];

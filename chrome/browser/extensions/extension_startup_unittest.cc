@@ -30,8 +30,7 @@
 class ExtensionStartupTestBase
   : public InProcessBrowserTest, public NotificationObserver {
  public:
-  ExtensionStartupTestBase()
-      : enable_extensions_(false), enable_user_scripts_(false) {
+  ExtensionStartupTestBase() : enable_extensions_(false) {
   }
 
  protected:
@@ -59,21 +58,6 @@ class ExtensionStartupTestBase
                                profile_dir, true);  // recursive
     } else {
       command_line->AppendSwitch(switches::kDisableExtensions);
-    }
-
-    if (enable_user_scripts_) {
-      command_line->AppendSwitch(switches::kEnableUserScripts);
-
-      FilePath src_dir;
-      PathService::Get(chrome::DIR_TEST_DATA, &src_dir);
-      src_dir = src_dir.AppendASCII("extensions").AppendASCII("good")
-                       .AppendASCII("Extensions")
-                       .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
-                       .AppendASCII("1.0.0.0");
-
-      file_util::CreateDirectory(user_scripts_dir_);
-      file_util::CopyFile(src_dir.AppendASCII("script2.js"),
-                          user_scripts_dir_.AppendASCII("script2.user.js"));
     }
 
     if (!load_extension_.value().empty()) {
@@ -159,7 +143,6 @@ class ExtensionStartupTestBase
   FilePath extensions_dir_;
   FilePath user_scripts_dir_;
   bool enable_extensions_;
-  bool enable_user_scripts_;
   FilePath load_extension_;
   NotificationRegistrar registrar_;
 };
@@ -203,35 +186,4 @@ class ExtensionsLoadTest : public ExtensionStartupTestBase {
 IN_PROC_BROWSER_TEST_F(ExtensionsLoadTest, Test) {
   WaitForServicesToStart(1, false);
   TestInjection(true, true);
-}
-
-
-// ExtensionsStartupUserScriptTest
-// Tests that we can startup with --enable-user-scripts and run user scripts and
-// see them do basic things.
-
-class ExtensionsStartupUserScriptTest : public ExtensionStartupTestBase {
- public:
-  ExtensionsStartupUserScriptTest() {
-    enable_user_scripts_ = true;
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(ExtensionsStartupUserScriptTest, Test) {
-  WaitForServicesToStart(0, false);
-  TestInjection(false, true);
-}
-
-// Ensure we don't inject into chrome:// URLs
-IN_PROC_BROWSER_TEST_F(ExtensionsStartupUserScriptTest, NoInjectIntoChrome) {
-  WaitForServicesToStart(0, false);
-
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
-
-  bool result = false;
-  ui_test_utils::ExecuteJavaScriptAndExtractBool(
-      browser()->GetSelectedTabContents()->render_view_host(), L"",
-      L"window.domAutomationController.send(document.title == 'Modified')",
-      &result);
-  EXPECT_FALSE(result);
 }

@@ -236,9 +236,6 @@ const char kEnableSync[]                    = "enable-sync";
 // enabled or not.
 const char kEnableUserDataDirProfiles[]     = "enable-udd-profiles";
 
-// Enable user script support.
-const char kEnableUserScripts[]             = "enable-user-scripts";
-
 // Spawn threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
 // Usage:   -enable-watchdog=[ui][io]

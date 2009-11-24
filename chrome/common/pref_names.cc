@@ -536,9 +536,8 @@ const wchar_t kNumFoldersInOtherBookmarkFolder[] =
 // Number of keywords.
 const wchar_t kNumKeywords[] = L"user_experience_metrics.num_keywords";
 
-// Whether Extensions or User Scripts are enabled.
+// Whether Extensions are enabled.
 const wchar_t kDisableExtensions[] = L"extensions.disabled";
-const wchar_t kEnableUserScripts[] = L"extensions.user_scripts_enabled";
 
 // Boolean which specifies whether the Extension Shelf is visible on all tabs.
 const wchar_t kShowExtensionShelf[] = L"extensions.shelf.show_on_all_tabs";

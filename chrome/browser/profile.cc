@@ -147,7 +147,6 @@ void Profile::RegisterUserPrefs(PrefService* prefs) {
       IDS_SPELLCHECK_DICTIONARY);
   prefs->RegisterBooleanPref(prefs::kEnableSpellCheck, true);
   prefs->RegisterBooleanPref(prefs::kEnableAutoSpellCorrect, true);
-  prefs->RegisterBooleanPref(prefs::kEnableUserScripts, false);
 #if defined(OS_LINUX)
   prefs->RegisterBooleanPref(prefs::kUsesSystemTheme, false);
 #endif
@@ -661,25 +660,13 @@ void ProfileImpl::InitExtensions() {
     return;  // Already initialized.
 
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  PrefService* prefs = GetPrefs();
-  bool user_scripts_enabled =
-      command_line->HasSwitch(switches::kEnableUserScripts) ||
-      prefs->GetBoolean(prefs::kEnableUserScripts);
-
-  FilePath script_dir;
-  if (user_scripts_enabled) {
-    if (command_line->HasSwitch(switches::kUserScriptsDir)) {
-      std::wstring path_string =
-          command_line->GetSwitchValue(switches::kUserScriptsDir);
-      script_dir = FilePath::FromWStringHack(path_string);
-    } else {
-      script_dir = GetPath();
-      script_dir = script_dir.Append(chrome::kUserScriptsDirname);
-    }
-  }
-
   ExtensionErrorReporter::Init(true);  // allow noisy errors.
+
+  FilePath script_dir;  // Don't look for user scripts in any directory.
+                        // TODO(aa): We should just remove this functionality,
+                        // since it isn't used anymore.
   user_script_master_ = new UserScriptMaster(script_dir);
+
   extensions_service_ = new ExtensionsService(
       this,
       CommandLine::ForCurrentProcess(),
