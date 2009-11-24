@@ -4,6 +4,7 @@
 
 #include "views/controls/menu/native_menu_gtk.h"
 
+#include <map>
 #include <string>
 
 #include "app/gfx/gtk_util.h"
@@ -102,13 +103,26 @@ void NativeMenuGtk::CancelMenu() {
 void NativeMenuGtk::Rebuild() {
   ResetMenu();
 
-  GtkRadioMenuItem* last_radio_item = NULL;
+  std::map<int, GtkRadioMenuItem*> radio_groups_;
   for (int i = 0; i < model_->GetItemCount(); ++i) {
     Menu2Model::ItemType type = model_->GetTypeAt(i);
-    if (type == Menu2Model::TYPE_SEPARATOR)
+    if (type == Menu2Model::TYPE_SEPARATOR) {
       AddSeparatorAt(i);
-    else
-      AddMenuItemAt(i, &last_radio_item);
+    } else if (type == Menu2Model::TYPE_RADIO) {
+      const int radio_group_id = model_->GetGroupIdAt(i);
+      std::map<int, GtkRadioMenuItem*>::const_iterator iter
+          = radio_groups_.find(radio_group_id);
+      if (iter == radio_groups_.end()) {
+        GtkWidget* new_menu_item = AddMenuItemAt(i, NULL);
+        // |new_menu_item| is the first menu item for |radio_group_id| group.
+        radio_groups_.insert(
+            std::make_pair(radio_group_id, GTK_RADIO_MENU_ITEM(new_menu_item)));
+      } else {
+        AddMenuItemAt(i, iter->second);
+      }
+    } else {
+      AddMenuItemAt(i, NULL);
+    }
   }
 }
 
@@ -140,8 +154,8 @@ void NativeMenuGtk::AddSeparatorAt(int index) {
   gtk_menu_append(menu_, separator);
 }
 
-void NativeMenuGtk::AddMenuItemAt(int index,
-                                  GtkRadioMenuItem** last_radio_item) {
+GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
+                                        GtkRadioMenuItem* radio_group) {
   GtkWidget* menu_item = NULL;
   std::string label = ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(
       model_->GetLabelAt(index)));
@@ -152,10 +166,11 @@ void NativeMenuGtk::AddMenuItemAt(int index,
       menu_item = gtk_check_menu_item_new_with_mnemonic(label.c_str());
       break;
     case Menu2Model::TYPE_RADIO:
-      if (*last_radio_item) {
+      if (radio_group) {
         menu_item = gtk_radio_menu_item_new_with_mnemonic_from_widget(
-            *last_radio_item, label.c_str());
+            radio_group, label.c_str());
       } else {
+        // The item does not belong to any existing radio button groups.
         menu_item = gtk_radio_menu_item_new_with_mnemonic(NULL, label.c_str());
       }
       break;
@@ -197,6 +212,8 @@ void NativeMenuGtk::AddMenuItemAt(int index,
                    this);
   gtk_widget_show(menu_item);
   gtk_menu_append(menu_, menu_item);
+
+  return menu_item;
 }
 
 void NativeMenuGtk::ResetMenu() {
