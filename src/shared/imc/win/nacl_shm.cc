@@ -45,7 +45,7 @@ Handle CreateMemoryObject(size_t length) {
   Handle memory = CreateFileMapping(
       INVALID_HANDLE_VALUE,
       NULL,
-      PAGE_READWRITE,
+      PAGE_EXECUTE_READWRITE,
       static_cast<DWORD>(static_cast<unsigned __int64>(length) >> 32),
       static_cast<DWORD>(length & 0xFFFFFFFF), NULL);
   return (memory == NULL) ? kInvalidHandle : memory;
@@ -53,11 +53,15 @@ Handle CreateMemoryObject(size_t length) {
 
 void* Map(void* start, size_t length, int prot, int flags,
           Handle memory, off_t offset) {
-  static DWORD prot_to_access[4] = {
+  static DWORD prot_to_access[] = {
     FILE_MAP_READ,  // TBD
     FILE_MAP_READ,
     FILE_MAP_WRITE,
-    FILE_MAP_ALL_ACCESS
+    FILE_MAP_ALL_ACCESS,
+    FILE_MAP_EXECUTE,
+    FILE_MAP_READ | FILE_MAP_EXECUTE,
+    FILE_MAP_WRITE | FILE_MAP_EXECUTE,
+    FILE_MAP_ALL_ACCESS | FILE_MAP_EXECUTE
   };
 
   if (!(flags & (kMapShared | kMapPrivate))) {
@@ -66,7 +70,7 @@ void* Map(void* start, size_t length, int prot, int flags,
   }
 
   // Convert prot to the desired access type for MapViewOfFileEx().
-  DWORD desired_access = prot_to_access[prot & 0x3];
+  DWORD desired_access = prot_to_access[prot & 0x7];
   if (flags & kMapPrivate) {
     desired_access = FILE_MAP_COPY;
   }

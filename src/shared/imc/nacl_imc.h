@@ -293,6 +293,7 @@ Handle CreateMemoryObject(size_t length);
  */
 const int kProtRead = 0x1;    /**< Mapped area can be read */
 const int kProtWrite = 0x2;   /**< Mapped area can be written */
+const int kProtExec = 0x4;    /**< Mapped area can be executed */
 
 /**
  *  @nacl

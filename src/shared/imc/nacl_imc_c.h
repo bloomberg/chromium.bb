@@ -216,6 +216,7 @@ NaClHandle NaClCreateMemoryObject(size_t length);
 /* NaClMap() prot bits */
 #define NACL_PROT_READ    0x1   /* Mapped area can be read */
 #define NACL_PROT_WRITE   0x2   /* Mapped area can be written */
+#define NACL_PROT_EXEC    0x4   /* Mapped area can be executed */
 
 /* NaClMap() flags */
 #define NACL_MAP_SHARED   0x1   /* Create a sharable mapping with other */

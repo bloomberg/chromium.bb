@@ -55,9 +55,20 @@ struct NaClMessageHeader;
 struct nacl_abi_timespec;
 struct nacl_abi_stat;
 
+/*
+ * Constructor: initialize the NaClDescImcShm object based on the
+ * underlying low-level IMC handle h which has the given size.
+ */
 int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
                        NaClHandle             h,
                        nacl_off64_t           size);
+
+/*
+ * A convenience wrapper for above, where the shm object of a given
+ * size is allocated first.
+ */
+int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
+                            nacl_off64_t           size);
 
 void NaClDescImcShmDtor(struct NaClDesc *vself);
 

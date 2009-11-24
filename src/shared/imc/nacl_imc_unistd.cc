@@ -118,11 +118,15 @@ Handle CreateMemoryObject(size_t length) {
 
 void* Map(void* start, size_t length, int prot, int flags,
           Handle memory, off_t offset) {
-  static const int kPosixProt[4] = {
+  static const int kPosixProt[] = {
     PROT_NONE,
     PROT_READ,
     PROT_WRITE,
-    PROT_READ | PROT_WRITE
+    PROT_READ | PROT_WRITE,
+    PROT_EXEC,
+    PROT_READ | PROT_EXEC,
+    PROT_WRITE | PROT_EXEC,
+    PROT_READ | PROT_WRITE | PROT_EXEC
   };
 
   int adjusted = 0;
@@ -135,7 +139,7 @@ void* Map(void* start, size_t length, int prot, int flags,
   if (flags & kMapFixed) {
     adjusted |= MAP_FIXED;
   }
-  return mmap(start, length, kPosixProt[prot & 3], adjusted, memory, offset);
+  return mmap(start, length, kPosixProt[prot & 7], adjusted, memory, offset);
 }
 
 int Unmap(void* start, size_t length) {

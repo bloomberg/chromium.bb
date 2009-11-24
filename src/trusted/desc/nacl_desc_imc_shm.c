@@ -55,6 +55,9 @@
 #include "native_client/src/trusted/service_runtime/include/sys/mman.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
 
+#ifndef SIZE_T_MAX
+# define SIZE_T_MAX   (~(size_t) 0)
+#endif
 
 /*
  * This file contains the implementation of the NaClDescImcShm
@@ -86,6 +89,28 @@ int NaClDescImcShmCtor(struct NaClDescImcShm  *self,
   self->size = size;
   basep->vtbl = &kNaClDescImcShmVtbl;
   return 1;
+}
+
+int NaClDescImcShmAllocCtor(struct NaClDescImcShm  *self,
+                            nacl_off64_t           size) {
+  NaClHandle h;
+  int        rv;
+
+  if (0 > size || SIZE_T_MAX < (uint64_t) size) {
+    NaClLog(4,
+            "NaClDescImcShmAllocCtor: requested size 0x%08"PRIx64
+            " (0x%08"PRId64") too large\n",
+            size, size);
+    return 0;
+  }
+  h = NaClCreateMemoryObject((size_t) size);
+  if (NACL_INVALID_HANDLE == h) {
+    return 0;
+  }
+  if (0 == (rv = NaClDescImcShmCtor(self, h, size))) {
+    (void) NaClClose(h);
+  }
+  return rv;
 }
 
 void NaClDescImcShmDtor(struct NaClDesc *vself) {
@@ -128,9 +153,11 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
     NaClLog(LOG_INFO, "NaClDescImcShmMap: PROT_NONE not supported\n");
     return -NACL_ABI_EINVAL;
   }
-  if (0 != (~(NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE) & prot)) {
+  if (0 != (~(NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE | NACL_ABI_PROT_EXEC)
+            & prot)) {
     NaClLog(LOG_INFO,
-            "NaClDescImcShmMap: prot has other bits than PROT_{READ|WRITE}\n");
+            "NaClDescImcShmMap: prot has other bits than"
+            " PROT_{READ|WRITE|EXEC}\n");
     return -NACL_ABI_EINVAL;
   }
   /*
@@ -144,6 +171,9 @@ uintptr_t NaClDescImcShmMap(struct NaClDesc         *vself,
   }
   if (NACL_ABI_PROT_WRITE & prot) {
     nacl_prot |= NACL_PROT_WRITE;
+  }
+  if (NACL_ABI_PROT_EXEC & prot) {
+    nacl_prot |= NACL_PROT_EXEC;
   }
   nacl_flags = NACL_MAP_SHARED | NACL_MAP_FIXED;
 

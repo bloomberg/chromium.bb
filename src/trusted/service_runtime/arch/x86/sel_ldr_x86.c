@@ -97,13 +97,23 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
 
 /*
  * fill from text_region_bytes to end of that page with halt
- * instruction, which is one byte in size.
+ * instruction, which is NACL_HALT_LEN in size.
  */
 void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   size_t page_pad;
 
-  page_pad = NaClRoundPage(nap->text_region_bytes) - nap->text_region_bytes;
-  CHECK(page_pad < NACL_PAGESIZE);
+  if (!nap->use_shm_for_dynamic_text) {
+    page_pad = NaClRoundPage(nap->text_region_bytes) - nap->text_region_bytes;
+    CHECK(page_pad < NACL_PAGESIZE);
+  } else {
+    page_pad = NaClRoundPage(nap->text_region_bytes) - nap->text_region_bytes;
+    page_pad += nap->dynamic_text_end - nap->dynamic_text_start;
+  }
+
+  NaClLog(4,
+          "Filling with halts: %08"PRIxPTR", %08"PRIxS" bytes\n",
+          nap->mem_start + NACL_TRAMPOLINE_END + nap->text_region_bytes,
+          page_pad);
 
   NaClFillMemoryRegionWithHalt((void *) (nap->mem_start +
                                          NACL_TRAMPOLINE_END +
@@ -127,7 +137,7 @@ void NaClLoadSpringboard(struct NaClApp  *nap) {
   patch_info.abs16 = NULL;
   patch_info.num_abs16 = 0;
 
-  nap->springboard_addr = NACL_TRAMPOLINE_END - nap->align_boundary;
+  nap->springboard_addr = NACL_TRAMPOLINE_END - nap->bundle_size;
 
   patch_info.dst = nap->mem_start + nap->springboard_addr;
   patch_info.src = (uintptr_t) kSpringboardCode;

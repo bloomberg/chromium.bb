@@ -902,6 +902,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
           ####  ALPHABETICALLY SORTED ####
           'tests/app_lib/nacl.scons',
           'tests/autoloader/nacl.scons',
+          'tests/bundle_size/nacl.scons',
           'tests/contest_issues/nacl.scons',
           'tests/fib/nacl.scons',
           'tests/file/nacl.scons',

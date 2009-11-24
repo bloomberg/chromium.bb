@@ -1,32 +1,7 @@
 /*
- * Copyright 2008, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 /*
@@ -42,6 +17,7 @@
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 
@@ -53,6 +29,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_closure.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
+#include "native_client/src/trusted/service_runtime/nacl_text.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
@@ -69,6 +46,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   NaClErrorCode        subret;
   uintptr_t            max_vaddr;
   struct NaClElfImage  *image = NULL;
+
   /* NACL_MAX_ADDR_BITS < 32 */
   if (nap->addr_bits > NACL_MAX_ADDR_BITS) {
     ret = LOAD_ADDR_SPACE_TOO_BIG;
@@ -89,7 +67,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
       ret = subret;
       goto done;
     }
-
   }
 
   subret = NaClElfImageValidateElfHeader(image);
@@ -110,8 +87,8 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   nap->break_addr = max_vaddr;
   nap->data_end = max_vaddr;
 
-  nap->align_boundary = NaClElfImageGetAlignBoundary(image);
-  if (nap->align_boundary == 0) {
+  nap->bundle_size = NaClElfImageGetBundleSize(image);
+  if (nap->bundle_size == 0) {
     ret = LOAD_BAD_ABI;
     goto done;
   }
@@ -123,12 +100,12 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
           "break_add: %08"PRIxPTR"  "
           "data_end: %08"PRIxPTR"  "
           "entry_pt: %08x  "
-          "align_boundary: %08x\n",
+          "bundle_size: %08x\n",
           nap->text_region_bytes,
           nap->break_addr,
           nap->data_end,
           nap->entry_pt,
-          nap->align_boundary);
+          nap->bundle_size);
   if (!NaClAddrIsValidEntryPt(nap, nap->entry_pt)) {
     ret = LOAD_BAD_ENTRY;
     goto done;
@@ -136,14 +113,32 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 
   NaClLog(2, "Allocating address space\n");
   subret = NaClAllocAddrSpace(nap);
-  if (subret != LOAD_OK) {
+  if (LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
 
+  /*
+   * NB: mem_map object has been initialized, but is empty.
+   * NaClMakeDynamicTextShared does not touch it.
+   */
+  NaClLog(2, "Replacing text pad region with shareable memory\n");
+  subret = NaClMakeDynamicTextShared(nap);
+  if (LOAD_OK != subret) {
+    ret = subret;
+    goto done;
+  }
+
+  /*
+   * NaClLoadImage will fill with halt instructions the padding space
+   * after the text.  For shm-backed dynamic text space, this extends
+   * to the rodata; for non-shm-backed text space, this extend to the
+   * next page (and not allocation page).  text_region_bytes is
+   * updated to include the padding.
+   */
   NaClLog(2, "Loading into memory\n");
   subret = NaClElfImageLoad(image, gp, nap->addr_bits, nap->mem_start);
-  if (subret != LOAD_OK) {
+  if (LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
@@ -153,7 +148,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 #if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
   NaClLog(2, "Validating image\n");
   subret = NaClValidateImage(nap);
-  if (subret != LOAD_OK) {
+  if (LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
@@ -178,8 +173,12 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 
   NaClLog(2, "Applying memory protection\n");
 
+  /*
+   * NaClMemoryProtect also initializes the mem_map w/ information
+   * about the memory pages and their current protection value.
+   */
   subret = NaClMemoryProtection(nap);
-  if (subret != LOAD_OK) {
+  if (LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
@@ -192,7 +191,7 @@ done:
 
 int NaClAddrIsValidEntryPt(struct NaClApp *nap,
                            uintptr_t      addr) {
-  if (0 != (addr & (nap->align_boundary - 1))) {
+  if (0 != (addr & (nap->bundle_size - 1))) {
     return 0;
   }
 
@@ -234,7 +233,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   CHECK(argc > 0);
   CHECK(NULL != argv);
 
-  if (envv == NULL) {
+  if (NULL == envv) {
     envc = 0;
   } else {
     for (pp = envv, envc = 0; NULL != *pp; ++pp, ++envc)

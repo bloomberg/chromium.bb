@@ -1,32 +1,7 @@
 /*
- * Copyright 2008, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 /*
@@ -38,7 +13,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
-
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_cleanup.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
@@ -62,6 +37,10 @@ int NaClAppCtor(struct NaClApp  *nap) {
 
   nap->mem_start = 0;
   nap->text_region_bytes = 0;
+  nap->dynamic_text_start = 0;
+  nap->dynamic_text_end = 0;
+  nap->rodata_start = 0;
+  nap->data_start = 0;
   nap->data_end = 0;
 
   nap->entry_pt = 0;
@@ -75,6 +54,9 @@ int NaClAppCtor(struct NaClApp  *nap) {
   if (!NaClVmmapCtor(&nap->mem_map)) {
     goto cleanup_desc_tbl;
   }
+
+  nap->use_shm_for_dynamic_text = 0;
+  nap->text_mem = NULL;
 
   nap->service_port = NULL;
   nap->service_address = NULL;
@@ -188,9 +170,7 @@ void NaClAppDtor(struct NaClApp  *nap) {
 
   for (i = 0; i < nap->desc_tbl.num_entries; ++i) {
     ndp = (struct NaClDesc *) DynArrayGet(&nap->desc_tbl, i);
-    if (NULL != ndp) {
-      NaClDescUnref(ndp);
-    }
+    NaClDescSafeUnref(ndp);
   }
 
   NaClMutexDtor(&nap->desc_mu);
@@ -199,6 +179,16 @@ void NaClAppDtor(struct NaClApp  *nap) {
   NaClSyncQueueDtor(&nap->work_queue);
   free(nap->origin);
   nap->origin = (char *) NULL;
+
+  NaClDescSafeUnref(nap->text_mem);
+  nap->text_mem = NULL;
+  NaClDescSafeUnref(nap->service_port);
+  nap->service_port = NULL;
+  NaClDescSafeUnref(nap->service_address);
+  nap->service_address = NULL;
+  NaClDescSafeUnref(nap->secure_channel);
+  nap->secure_channel = NULL;
+
   NaClCondVarDtor(&nap->cv);
   NaClMutexDtor(&nap->mu);
 
@@ -332,8 +322,9 @@ void  NaClMemRegionPrinter(void                   *state,
                            struct NaClVmmapEntry  *entry) {
   struct Gio *gp = (struct Gio *) state;
 
-  gprintf(gp, "\nPage   %d (0x%x)\n", entry->page_num, entry->page_num);
-  gprintf(gp,   "npages %d (0x%x)\n", entry->npages, entry->npages);
+  gprintf(gp, "\nPage   %"PRIdPTR" (0x%"PRIxPTR")\n",
+          entry->page_num, entry->page_num);
+  gprintf(gp,   "npages %"PRIdS" (0x%"PRIxS")\n", entry->npages, entry->npages);
   gprintf(gp,   "prot   0x%08x\n", entry->prot);
   gprintf(gp,   "%sshared/backed by a file\n",
           (NULL == entry->nmop) ? "not " : "");
@@ -343,18 +334,21 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
                           struct Gio      *gp) {
   NaClXMutexLock(&nap->mu);
   gprintf(gp,
-          "NaClAppPrintDetails((struct NaClApp *) 0x%08x,"
-          "(struct Gio *) 0x%08x)\n", (uintptr_t) nap, (uintptr_t) gp);
-  gprintf(gp, "addr space size:  2**%d\n", nap->addr_bits);
-  gprintf(gp, "max data alloc:   0x%08x\n", nap->max_data_alloc);
-  gprintf(gp, "stack size:       0x%08x\n", nap->stack_size);
+          "NaClAppPrintDetails((struct NaClApp *) 0x%08"PRIxPTR","
+          "(struct Gio *) 0x%08"PRIxPTR")\n", (uintptr_t) nap, (uintptr_t) gp);
+  gprintf(gp, "addr space size:  2**%"PRId32"\n", nap->addr_bits);
+  gprintf(gp, "max data alloc:   0x%08"PRIx32"\n", nap->max_data_alloc);
+  gprintf(gp, "stack size:       0x%08"PRIx32"\n", nap->stack_size);
 
-  gprintf(gp, "mem start addr:   0x%08x\n", nap->mem_start);
+  gprintf(gp, "mem start addr:   0x%08"PRIxPTR"\n", nap->mem_start);
   /*           123456789012345678901234567890 */
 
-  gprintf(gp, "text_region_bytes: 0x%08x\n", nap->text_region_bytes);
-  gprintf(gp, "data_end:          0x%08x\n", nap->data_end);
-  gprintf(gp, "break_addr:        0x%08x\n", nap->break_addr);
+  gprintf(gp, "text_region_bytes: 0x%08"PRIxPTR"\n", nap->text_region_bytes);
+  gprintf(gp, "end-of-text:       0x%08"PRIxPTR"\n", NaClEndOfText(nap));
+  gprintf(gp, "rodata:            0x%08"PRIxPTR"\n", nap->rodata_start);
+  gprintf(gp, "data:              0x%08"PRIxPTR"\n", nap->data_start);
+  gprintf(gp, "data_end:          0x%08"PRIxPTR"\n", nap->data_end);
+  gprintf(gp, "break_addr:        0x%08"PRIxPTR"\n", nap->break_addr);
 
   gprintf(gp, "ELF entry point:  0x%08x\n", nap->entry_pt);
   gprintf(gp, "memory map:\n");
@@ -496,9 +490,8 @@ void NaClSetDescMu(struct NaClApp   *nap,
   struct NaClDesc *result;
 
   result = (struct NaClDesc *) DynArrayGet(&nap->desc_tbl, d);
-  if (NULL != result) {
-    NaClDescUnref(result);
-  }
+  NaClDescSafeUnref(result);
+
   if (!DynArraySet(&nap->desc_tbl, d, ndp)) {
     NaClLog(LOG_FATAL,
             "NaClSetDesc: could not set descriptor %d to 0x%08"PRIxPTR"\n",
@@ -705,14 +698,14 @@ void NaClCreateServiceSocket(struct NaClApp *nap) {
           (uintptr_t) pair[1]);
   NaClSetDesc(nap, NACL_SERVICE_PORT_DESCRIPTOR, pair[0]);
   NaClSetDesc(nap, NACL_SERVICE_ADDRESS_DESCRIPTOR, pair[1]);
-  if (NULL != nap->service_port) {
-    NaClDescUnref(nap->service_port);
-  }
+
+  NaClDescSafeUnref(nap->service_port);
+
   nap->service_port = pair[0];
   NaClDescRef(nap->service_port);
-  if (NULL != nap->service_address) {
-    NaClDescUnref(nap->service_address);
-  }
+
+  NaClDescSafeUnref(nap->service_address);
+
   nap->service_address = pair[1];
   NaClDescRef(nap->service_address);
   NaClLog(4, "Leaving NaClCreateServiceSocket\n");

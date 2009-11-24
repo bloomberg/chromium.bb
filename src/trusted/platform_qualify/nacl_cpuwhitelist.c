@@ -37,12 +37,10 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 #include "native_client/src/trusted/platform_qualify/nacl_cpuwhitelist.h"
 
-#if !defined(ARRAYSIZE)
-#define ARRAYSIZE(a) sizeof(a)/sizeof(a[0])
-#endif
 
 static int idcmp(const void *s1, const void *s2) {
   return strncmp((char *)s1, *(char **)s2, kCPUIDStringLength);
@@ -94,12 +92,12 @@ static bool VerifyCpuList(const char* const cpulist[], int n) {
 
 
 bool NaCl_VerifyBlacklist() {
-  return VerifyCpuList(kNaclCpuBlacklist, ARRAYSIZE(kNaclCpuBlacklist));
+  return VerifyCpuList(kNaclCpuBlacklist, NACL_ARRAY_SIZE(kNaclCpuBlacklist));
 }
 
 
 bool NaCl_VerifyWhitelist() {
-  return VerifyCpuList(kNaclCpuWhitelist, ARRAYSIZE(kNaclCpuWhitelist));
+  return VerifyCpuList(kNaclCpuWhitelist, NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
 
@@ -110,21 +108,29 @@ static bool IsCpuInList(const char *myid, const char* const cpulist[], int n) {
 
 /* for testing */
 bool NaCl_CPUIsWhitelisted(const char *myid) {
-  return IsCpuInList(myid, kNaclCpuWhitelist, ARRAYSIZE(kNaclCpuWhitelist));
+  return IsCpuInList(myid,
+                     kNaclCpuWhitelist,
+                     NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
 /* for testing */
 bool NaCl_CPUIsBlacklisted(const char *myid) {
-  return IsCpuInList(myid, kNaclCpuBlacklist, ARRAYSIZE(kNaclCpuBlacklist));
+  return IsCpuInList(myid,
+                     kNaclCpuBlacklist,
+                     NACL_ARRAY_SIZE(kNaclCpuBlacklist));
 }
 
 
 bool NaCl_ThisCPUIsWhitelisted() {
   const char* myid = GetCPUIDString();
-  return IsCpuInList(myid, kNaclCpuWhitelist, ARRAYSIZE(kNaclCpuWhitelist));
+  return IsCpuInList(myid,
+                     kNaclCpuWhitelist,
+                     NACL_ARRAY_SIZE(kNaclCpuWhitelist));
 }
 
 bool NaCl_ThisCPUIsBlacklisted() {
   const char* myid = GetCPUIDString();
-  return IsCpuInList(myid, kNaclCpuBlacklist, ARRAYSIZE(kNaclCpuBlacklist));
+  return IsCpuInList(myid,
+                     kNaclCpuBlacklist,
+                     NACL_ARRAY_SIZE(kNaclCpuBlacklist));
 }

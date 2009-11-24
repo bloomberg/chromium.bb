@@ -1816,7 +1816,6 @@ int32_t NaClCommonSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
                                         size_t                size) {
   int32_t               retval = -NACL_ABI_EINVAL;
   struct NaClDescImcShm *shmp;
-  NaClHandle            mem_obj;
   off_t                 size_as_off;
 
   if (0 != (size & (NACL_MAP_PAGESIZE - 1))) {
@@ -1832,7 +1831,6 @@ int32_t NaClCommonSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
   }
 
   shmp = NULL;
-  mem_obj = NACL_INVALID_HANDLE;
 
   NaClSysCommonThreadSyscallEnter(natp);
 
@@ -1841,27 +1839,18 @@ int32_t NaClCommonSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
     retval = -NACL_ABI_ENOMEM;
     goto cleanup;
   }
-  mem_obj = NaClCreateMemoryObject(size);
-  if (NACL_INVALID_HANDLE == mem_obj) {
-    retval = -NACL_ABI_ENOMEM;
-    goto cleanup;
-  }
 
-  if (!NaClDescImcShmCtor(shmp, mem_obj, size_as_off)) {
+  if (!NaClDescImcShmAllocCtor(shmp, size_as_off)) {
     retval = -NACL_ABI_ENOMEM;  /* is this reasonable? */
     goto cleanup;
   }
-  mem_obj = NACL_INVALID_HANDLE;
 
   retval = NaClSetAvail(natp->nap, (struct NaClDesc *) shmp);
   shmp = NULL;
+
 cleanup:
-  if (shmp) {
-    free(shmp);
-  }
-  if (NACL_INVALID_HANDLE != mem_obj) {
-    (void) NaClClose(mem_obj);
-  }
+  free(shmp);
+
   NaClSysCommonThreadSyscallLeave(natp);
 
   return retval;
@@ -2029,7 +2018,7 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
   /* TODO(robertm): there should be a function for this test */
 #if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
 
-  if (0 != ((natp->nap->align_boundary - 1) & (uintptr_t) prog_ctr)) {
+  if (0 != ((natp->nap->bundle_size - 1) & (uintptr_t) prog_ctr)) {
     NaClLog(LOG_ERROR, "bad pc alignment\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup;

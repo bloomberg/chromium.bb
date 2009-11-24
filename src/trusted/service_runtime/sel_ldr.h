@@ -1,32 +1,7 @@
 /*
- * Copyright 2009, Google Inc.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can
+ * be found in the LICENSE file.
  */
 
 /*
@@ -93,6 +68,7 @@ EXTERN_C_BEGIN
 #endif
 
 struct NaClAppThread;
+struct NaClDesc;  /* see native_client/src/trusted/desc/nacl_desc_base.h */
 
 struct NaClApp {
   /*
@@ -122,7 +98,23 @@ struct NaClApp {
   uintptr_t                 mem_start;
 
   /* only used for ET_EXEC:  for CS restriction */
-  uint32_t                  text_region_bytes;  /* ro. memsz */
+  uint32_t                  text_region_bytes;
+  /* ro after app starts. memsz from phdr */
+
+  uintptr_t                 dynamic_text_start;
+  uintptr_t                 dynamic_text_end;
+
+  uintptr_t                 rodata_start;  /* initialized data, ro */
+  uintptr_t                 data_start;    /* initialized data/bss, rw */
+  /*
+   * Various region sizes must be a multiple of NACL_MAP_PAGESIZE
+   * before the NaCl app can run.  The sizes from the ELF file
+   * (p_filesz field) might not be -- that would waste space for
+   * padding -- and while we could use p_memsz to specify padding, but
+   * we will record the virtual addresses of the start of the segments
+   * and figure out the gap between the p_vaddr + p_filesz of one
+   * segment and p_vaddr of the next to determine padding.
+   */
 
   uintptr_t                 data_end;
   /* see break_addr below */
@@ -130,9 +122,10 @@ struct NaClApp {
   uint32_t                  entry_pt;
 
   /*
-   * Alignment boundary for validation (16 or 32).
+   * bundle_size is the bundle alignment boundary for validation (16
+   * or 32), so int is okay.  This value must be a power of 2.
    */
-  int                       align_boundary;
+  int                       bundle_size;
 
   /* common to both ELF executables and relocatable load images */
 
@@ -173,6 +166,12 @@ struct NaClApp {
    * memory map is in user addresses.
    */
   struct NaClVmmap          mem_map;
+
+  /*
+   * may reject nexes that are incompatible w/ dynamic-text in the near future
+   */
+  int                       use_shm_for_dynamic_text;
+  struct NaClDesc           *text_mem;
 
   int                       running;
   int                       exit_status;
@@ -230,10 +229,10 @@ void  NaClAppFreeAllMemory(struct NaClApp *nap);
  * nap is a pointer to the NaCl object that is being filled in.  it
  * should be properly constructed via NaClAppCtor.
  *
- * return value: one of the LOAD_* values below.  TODO: add some error
- * detail string and hang that off the nap object, so that more
- * details are available w/o incrementing verbosity (and polluting
- * stdout).
+ * return value: one of the LOAD_* values defined in
+ * nacl_error_code.h.  TODO: add some error detail string and hang
+ * that off the nap object, so that more details are available w/o
+ * incrementing verbosity (and polluting stdout).
  *
  * note: it may be necessary to flush the icache if the memory
  * allocated for use had already made it into the icache from another
@@ -442,7 +441,7 @@ void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {
-  return addr & ~(uintptr_t)((1 << nap->align_boundary) - 1);
+  return addr & ~(uintptr_t)((1 << nap->bundle_size) - 1);
 }
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 static INLINE uintptr_t NaClSandboxAddr(struct NaClApp *nap, uintptr_t addr) {

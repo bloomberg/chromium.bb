@@ -136,6 +136,15 @@ void NaClDescUnref(struct NaClDesc *ndp) {
   }
 }
 
+void NaClDescSafeUnref(struct NaClDesc *ndp) {
+  NaClLog(4, "NaClDescSafeUnref(0x%08"PRIxPTR").\n",
+          (uintptr_t) ndp);
+  if (NULL == ndp) {
+    return;
+  }
+  NaClDescUnref(ndp);
+}
+
 int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
                                                struct NaClDescXferState *) = {
   NaClDescDirInternalize,

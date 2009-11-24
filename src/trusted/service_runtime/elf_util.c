@@ -449,7 +449,7 @@ uint32_t NaClElfImageGetEntryPoint(struct NaClElfImage *image) {
 /* TODO(robertm): this code should enforce that either 16 or 32 bit alignment is
                   is set - there are currently some problems with ARM, though
 */
-int NaClElfImageGetAlignBoundary(struct NaClElfImage *image) {
+int NaClElfImageGetBundleSize(struct NaClElfImage *image) {
   unsigned long eflags = image->ehdr.e_flags & EF_NACL_ALIGN_MASK;
   if (eflags) {
     if (eflags == EF_NACL_ALIGN_16) {

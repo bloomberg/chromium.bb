@@ -15,7 +15,7 @@ struct Gio;
 
 uint32_t NaClElfImageGetEntryPoint(struct NaClElfImage *image);
 
-int NaClElfImageGetAlignBoundary(struct NaClElfImage *image);
+int NaClElfImageGetBundleSize(struct NaClElfImage *image);
 
 struct NaClElfImage *NaClElfImageNew(struct Gio *gp);
 
