@@ -485,6 +485,7 @@ void ExtensionsDOMHandler::HandlePackMessage(const Value* value) {
   }
 
   pack_job_ = new PackExtensionJob(this, root_directory, key_file);
+  pack_job_->Start();
 }
 
 void ExtensionsDOMHandler::OnPackSuccess(const FilePath& crx_file,

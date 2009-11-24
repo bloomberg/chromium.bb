@@ -14,6 +14,9 @@ PackExtensionJob::PackExtensionJob(Client* client,
                                    const FilePath& key_file)
     : client_(client), root_directory_(root_directory), key_file_(key_file) {
   CHECK(ChromeThread::GetCurrentThreadIdentifier(&client_thread_id_));
+}
+
+void PackExtensionJob::Start() {
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(this, &PackExtensionJob::RunOnFileThread));

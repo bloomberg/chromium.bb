@@ -29,6 +29,10 @@ class PackExtensionJob : public base::RefCountedThreadSafe<PackExtensionJob> {
                    const FilePath& root_directory,
                    const FilePath& key_file);
 
+  // Starts the packing thread job. See http://crbug.com/27944 for more details
+  // on why this function is needed.
+  void Start();
+
   // The client should call this when it is destroyed to prevent
   // PackExtensionJob from attempting to access it.
   void ClearClient();
