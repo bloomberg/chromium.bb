@@ -12,6 +12,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "media/omx/input_buffer.h"
@@ -89,7 +90,7 @@ class TestApp {
 
   void Run() {
     // Open the input file.
-    file_ = fopen(filename_, "rb");
+    file_ = file_util::OpenFile(filename_, "rb");
     if (!file_) {
       printf("Error - can't open file %s\n", filename_);
       return;
