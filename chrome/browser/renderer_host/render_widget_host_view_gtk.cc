@@ -197,6 +197,8 @@ class RenderWidgetHostViewGtkWidget {
       RenderWidgetHostViewGtk* host_view) {
     if (!(event->button == 1 || event->button == 2 || event->button == 3))
       return FALSE;  // We do not forward any other buttons to the renderer.
+    if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS)
+      return FALSE;
 
     // We want to translate the coordinates of events that do not originate
     // from this widget to be relative to the top left of the widget.
