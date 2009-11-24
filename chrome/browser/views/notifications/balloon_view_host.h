@@ -8,6 +8,7 @@
 #include "chrome/browser/notifications/balloon.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "views/controls/native/native_view_host.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -19,7 +20,8 @@ class RenderViewHost;
 // the contents of the toast into it.  It also handles links within the toast,
 // loading them into a new tab.
 class BalloonViewHost : public views::NativeViewHost,
-                        public RenderViewHostDelegate {
+                        public RenderViewHostDelegate,
+                        public RenderViewHostDelegate::View {
  public:
   explicit BalloonViewHost(Balloon* balloon);
 
@@ -32,7 +34,6 @@ class BalloonViewHost : public views::NativeViewHost,
 
   // RenderViewHostDelegate overrides.
   virtual WebPreferences GetWebkitPrefs();
-  virtual RendererPreferences GetRendererPrefs() const;
   virtual SiteInstance* GetSiteInstance() const {
     return site_instance_.get();
   }
@@ -40,8 +41,6 @@ class BalloonViewHost : public views::NativeViewHost,
   virtual const GURL& GetURL() const {
     return balloon_->notification().content_url();
   }
-  virtual void RequestOpenURL(const GURL& url, const GURL& referrer,
-                              WindowOpenDisposition disposition);
   virtual void Close(RenderViewHost* render_view_host);
   virtual void RendererReady(RenderViewHost* render_view_host);
   virtual void RendererGone(RenderViewHost* render_view_host);
@@ -53,6 +52,36 @@ class BalloonViewHost : public views::NativeViewHost,
   virtual ViewType::Type GetRenderViewType() const {
     return ViewType::TAB_CONTENTS;
   }
+  virtual RenderViewHostDelegate::View* GetViewDelegate() {
+    return this;
+  }
+
+  // RenderViewHostDelegate::View methods. Only the ones for opening new
+  // windows are currently implemented.
+  virtual void CreateNewWindow(int route_id);
+  virtual void CreateNewWidget(int route_id, bool activatable) {}
+  virtual void ShowCreatedWindow(int route_id,
+                                 WindowOpenDisposition disposition,
+                                 const gfx::Rect& initial_pos,
+                                 bool user_gesture,
+                                 const GURL& creator_url);
+  virtual void ShowCreatedWidget(int route_id,
+                                 const gfx::Rect& initial_pos) {}
+  virtual void ShowContextMenu(const ContextMenuParams& params) {}
+  virtual void StartDragging(const WebDropData& drop_data,
+                             WebKit::WebDragOperationsMask allowed_ops) {}
+  virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
+  virtual void GotFocus() {}
+  virtual void TakeFocus(bool reverse) {}
+  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
+    return false;
+  }
+  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+    return false;
+  }
+  virtual void HandleMouseEvent() {}
+  virtual void HandleMouseLeave() {}
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
   // Accessors.
   RenderViewHost* render_view_host() const { return render_view_host_; }
@@ -86,6 +115,9 @@ class BalloonViewHost : public views::NativeViewHost,
 
   // The title of the balloon page.
   std::wstring title_;
+
+  // Common implementations of some RenderViewHostDelegate::View methods.
+  RenderViewHostDelegateViewHelper delegate_view_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(BalloonViewHost);
 };

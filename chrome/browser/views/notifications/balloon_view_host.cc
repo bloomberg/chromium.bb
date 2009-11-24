@@ -43,22 +43,6 @@ WebPreferences BalloonViewHost::GetWebkitPrefs() {
   return prefs;
 }
 
-RendererPreferences BalloonViewHost::GetRendererPrefs() const {
-  // We want links (a.k.a. top_level_requests) to be forwarded to the browser so
-  // that we can open them in a new tab rather than in the balloon.
-  RendererPreferences prefs = RendererPreferences();
-  prefs.browser_handles_top_level_requests = true;
-  return prefs;
-}
-
-void BalloonViewHost::RequestOpenURL(const GURL& url,
-                                     const GURL& referrer,
-                                     WindowOpenDisposition disposition) {
-  // Always open a link triggered within the notification balloon in a new tab.
-  BrowserList::GetLastActive()->AddTabWithURL(url, referrer,
-      PageTransition::LINK, true, 0, 0, GetSiteInstance());
-}
-
 void BalloonViewHost::Close(RenderViewHost* render_view_host) {
   balloon_->CloseByScript();
 }
@@ -78,6 +62,30 @@ void BalloonViewHost::RendererGone(RenderViewHost* /* render_view_host */) {
   NotificationService::current()->Notify(
       NotificationType::NOTIFY_BALLOON_DISCONNECTED,
       Source<Balloon>(balloon_), NotificationService::NoDetails());
+}
+
+// RenderViewHostDelegate::View methods implemented to allow links to
+// open pages in new tabs.
+void BalloonViewHost::CreateNewWindow(int route_id) {
+  delegate_view_helper_.CreateNewWindow(
+      route_id, balloon_->profile(), site_instance_.get(),
+      DOMUIFactory::GetDOMUIType(balloon_->notification().content_url()), NULL);
+}
+
+void BalloonViewHost::ShowCreatedWindow(int route_id,
+                       WindowOpenDisposition disposition,
+                       const gfx::Rect& initial_pos,
+                       bool user_gesture,
+                       const GURL& creator_url) {
+  // Don't allow pop-ups from notifications.
+  if (disposition == NEW_POPUP)
+    return;
+
+  TabContents* contents = delegate_view_helper_.GetCreatedWindow(route_id);
+  if (contents) {
+    Browser* browser = BrowserList::GetLastActive();
+    browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
+  }
 }
 
 void BalloonViewHost::Init(gfx::NativeView parent_hwnd) {
