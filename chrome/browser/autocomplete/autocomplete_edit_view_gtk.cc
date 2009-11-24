@@ -331,17 +331,10 @@ void AutocompleteEditViewGtk::Update(const TabContents* contents) {
       model_->RestoreState(state->model_state);
 
       // Move the marks for the cursor and the other end of the selection to
-      // the previously-saved offsets.
-      GtkTextIter selection_iter, insert_iter;
-      ItersFromCharRange(
-          state->view_state.selection_range, &selection_iter, &insert_iter);
-      // TODO(derat): Restore the selection range instead of just the cursor
-      // ("insert") position.  This in itself is trivial to do using
-      // gtk_text_buffer_select_range(), but then it also becomes necessary to
-      // invalidate hidden tabs' saved ranges when another tab or another app
-      // takes the selection, lest we incorrectly regrab a stale selection when
-      // a hidden tab is later shown.
-      gtk_text_buffer_place_cursor(text_buffer_, &insert_iter);
+      // the previously-saved offsets (but preserve PRIMARY).
+      StartUpdatingHighlightedText();
+      SetSelectedRange(state->view_state.selection_range);
+      FinishUpdatingHighlightedText();
     }
   } else if (visibly_changed_permanent_text) {
     RevertAll();

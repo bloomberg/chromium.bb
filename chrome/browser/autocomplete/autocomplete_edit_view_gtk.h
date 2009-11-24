@@ -189,7 +189,7 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   void HandleViewMoveCursor(GtkMovementStep step,
                             gint count,
-                            gboolean extendion_selection);
+                            gboolean extend_selection);
 
   static void HandleViewSizeRequestThunk(GtkWidget* view,
                                          GtkRequisition* req,
