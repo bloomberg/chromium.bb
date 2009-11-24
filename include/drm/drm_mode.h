@@ -222,6 +222,15 @@ struct drm_mode_fb_cmd {
 	__u32 handle;
 };
 
+struct drm_mode_fb_dirty_cmd {
+	__u32 fb_id;
+	__u32 flags;
+	__u32 num_clips;
+	__u32 reserved1;
+	__u64 reserved2;
+	__u64 clips_ptr;
+};
+
 struct drm_mode_mode_cmd {
 	__u32 connector_id;
 	struct drm_mode_modeinfo mode;

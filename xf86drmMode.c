@@ -241,6 +241,18 @@ drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 	return r;
 }
 
+int drmModeDirtyFB(int fd, uint32_t bufferId,
+		   drmModeClipPtr clips, uint32_t num_clips)
+{
+	struct drm_mode_fb_dirty_cmd dirty = { 0 };
+
+	dirty.fb_id = bufferId;
+	dirty.clips_ptr = VOID2U64(clips);
+	dirty.num_clips = num_clips;
+
+	return drmIoctl(fd, DRM_IOCTL_MODE_DIRTYFB, &dirty);
+}
+
 
 /*
  * Crtc functions
