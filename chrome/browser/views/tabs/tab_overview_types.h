@@ -58,6 +58,7 @@ class TabOverviewTypes {
     // The contents of a popup window.
     //   param[0]: X ID of associated titlebar, which must be mapped before
     //             its panel
+    //   param[1]: Initial state for panel (0 is collapsed, 1 is expanded)
     WINDOW_TYPE_CHROME_PANEL,
 
     // A small window representing a collapsed panel in the panel bar and
@@ -66,6 +67,11 @@ class TabOverviewTypes {
 
     // A small window that when clicked creates a new browser window.
     WINDOW_TYPE_CREATE_BROWSER_WINDOW,
+
+    // A Chrome info bubble (e.g. the bookmark bubble).  These are
+    // transient RGBA windows; we skip the usual transient behavior of
+    // centering them over their owner and omit drawing a drop shadow.
+    WINDOW_TYPE_CHROME_INFO_BUBBLE,
 
     kNumWindowTypes,
   };

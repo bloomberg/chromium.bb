@@ -15,6 +15,10 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
+#if defined(OS_LINUX)
+#include "chrome/browser/views/tabs/tab_overview_types.h"
+#endif
+
 // Background color of the bubble.
 #if defined(OS_WIN)
 const SkColor InfoBubble::kBackgroundColor =
@@ -236,6 +240,10 @@ void InfoBubble::Init(views::Window* parent,
   MakeTransparent();
   make_transient_to_parent();
   WidgetGtk::Init(GTK_WIDGET(parent->GetNativeWindow()), gfx::Rect());
+  TabOverviewTypes::instance()->SetWindowType(
+      GetNativeView(),
+      TabOverviewTypes::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+      NULL);
 #endif
 
   // Create a View to hold the contents of the main window.
