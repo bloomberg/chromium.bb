@@ -431,12 +431,11 @@ TestSuite.prototype.testShowScriptsTab = function() {
             test.fail('Unexpected parse event: ' + sourceURL);
           }
           parsedDebuggerTestPageHtml = true;
+          if (!WebInspector.panels.scripts.visibleView) {
+            test.fail('No visible script view: ' + sourceURL);
+          }
         } else {
           test.fail('Unexpected script URL: ' + sourceURL);
-        }
-
-        if (!WebInspector.panels.scripts.visibleView) {
-          test.fail('No visible script view: ' + sourceURL);
         }
 
         // There should be two scripts: one for the main page and another
