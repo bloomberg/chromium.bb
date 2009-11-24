@@ -127,6 +127,7 @@ void AppModalDialog::CreateAndShowDialog() {
   gfx::NativeWindow window = client_->GetMessageBoxRootWindow();
   dialog_ = gtk_message_dialog_new(window, GTK_DIALOG_MODAL,
       message_type, buttons, "%s", WideToUTF8(message_text_).c_str());
+  gtk_util::ApplyMessageDialogQuirks(dialog_);
   gtk_window_set_title(GTK_WINDOW(dialog_), WideToUTF8(title_).c_str());
 
   // Adjust content area as needed.  Set up the prompt text entry or

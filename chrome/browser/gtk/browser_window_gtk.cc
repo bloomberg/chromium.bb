@@ -1155,6 +1155,7 @@ void BrowserWindowGtk::ShowProfileErrorDialog(int message_id) {
   GtkWidget* dialog = gtk_message_dialog_new(window_,
       static_cast<GtkDialogFlags>(0), GTK_MESSAGE_WARNING, GTK_BUTTONS_OK,
       "%s", message.c_str());
+  gtk_util::ApplyMessageDialogQuirks(dialog);
   gtk_window_set_title(GTK_WINDOW(dialog), title.c_str());
   g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   gtk_widget_show_all(dialog);

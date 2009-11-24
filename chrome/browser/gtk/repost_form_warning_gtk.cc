@@ -22,6 +22,7 @@ RepostFormWarningGtk::RepostFormWarningGtk(
       GTK_BUTTONS_NONE,
       "%s",
       l10n_util::GetStringUTF8(IDS_HTTP_POST_WARNING).c_str());
+  gtk_util::ApplyMessageDialogQuirks(dialog_);
   gtk_window_set_title(GTK_WINDOW(dialog_),
       l10n_util::GetStringUTF8(IDS_HTTP_POST_WARNING_TITLE).c_str());
   gtk_util::AddButtonToDialog(dialog_,

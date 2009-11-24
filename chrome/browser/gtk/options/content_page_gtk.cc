@@ -521,6 +521,7 @@ void ContentPageGtk::OnSyncStartStopButtonClicked(GtkButton* widget,
         "%s",
         l10n_util::GetStringUTF8(
             IDS_SYNC_STOP_SYNCING_EXPLANATION_LABEL).c_str());
+    gtk_util::ApplyMessageDialogQuirks(dialog);
     gtk_window_set_title(GTK_WINDOW(dialog),
                          l10n_util::GetStringUTF8(
                              IDS_SYNC_STOP_SYNCING_BUTTON_LABEL).c_str());

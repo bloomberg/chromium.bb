@@ -200,14 +200,16 @@ void PasswordsPageGtk::OnRemoveButtonClicked(GtkButton* widget,
 void PasswordsPageGtk::OnRemoveAllButtonClicked(GtkButton* widget,
                                                 PasswordsPageGtk* page) {
   GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(page->page_));
-  GtkWidget* confirm = gtk_message_dialog_new(window,
-                                              GTK_DIALOG_DESTROY_WITH_PARENT,
-                                              GTK_MESSAGE_QUESTION,
-                                              GTK_BUTTONS_YES_NO,
-                                              "%s",
-                                              l10n_util::GetStringUTF8(
+  GtkWidget* confirm = gtk_message_dialog_new(
+      window,
+      static_cast<GtkDialogFlags>(
+          GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+      GTK_MESSAGE_QUESTION,
+      GTK_BUTTONS_YES_NO,
+      "%s",
+      l10n_util::GetStringUTF8(
           IDS_PASSWORDS_PAGE_VIEW_TEXT_DELETE_ALL_PASSWORDS).c_str());
-  gtk_window_set_modal(GTK_WINDOW(confirm), TRUE);
+  gtk_util::ApplyMessageDialogQuirks(confirm);
   gtk_window_set_title(GTK_WINDOW(confirm), l10n_util::GetStringUTF8(
           IDS_PASSWORDS_PAGE_VIEW_CAPTION_DELETE_ALL_PASSWORDS).c_str());
   g_signal_connect(confirm, "response", G_CALLBACK(OnRemoveAllConfirmResponse),

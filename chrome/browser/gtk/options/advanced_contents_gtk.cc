@@ -819,6 +819,7 @@ void PrivacySection::ShowRestartMessageBox() const {
       GTK_BUTTONS_OK,
       "%s",
       l10n_util::GetStringUTF8(IDS_OPTIONS_RESTART_REQUIRED).c_str());
+  gtk_util::ApplyMessageDialogQuirks(dialog);
   gtk_window_set_title(GTK_WINDOW(dialog),
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str());
   g_signal_connect_swapped(dialog, "response", G_CALLBACK(gtk_widget_destroy),

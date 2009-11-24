@@ -583,4 +583,14 @@ gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget) {
   return gfx::Rect(x, y, widget->allocation.width, widget->allocation.height);
 }
 
+void ApplyMessageDialogQuirks(GtkWidget* dialog) {
+  if (gtk_window_get_modal(GTK_WINDOW(dialog))) {
+    // Work around a KDE 3 window manager bug.
+    scoped_ptr<base::EnvironmentVariableGetter> env(
+        base::EnvironmentVariableGetter::Create());
+    if (base::DESKTOP_ENVIRONMENT_KDE3 == GetDesktopEnvironment(env.get()))
+      gtk_window_set_skip_taskbar_hint(GTK_WINDOW(dialog), FALSE);
+  }
+}
+
 }  // namespace gtk_util

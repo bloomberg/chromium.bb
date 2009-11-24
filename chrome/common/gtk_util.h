@@ -188,6 +188,11 @@ void StackPopupWindow(GtkWidget* popup, GtkWidget* toplevel);
 // toplevel window's origin.
 gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget);
 
+// A helper function for gtk_message_dialog_new() to work around a KDE 3 window
+// manager bugs. You should always call it after creating a dialog with
+// gtk_message_dialog_new.
+void ApplyMessageDialogQuirks(GtkWidget* dialog);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

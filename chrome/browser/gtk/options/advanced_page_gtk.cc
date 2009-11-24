@@ -56,6 +56,7 @@ void AdvancedPageGtk::OnResetToDefaultsClicked(
       GTK_BUTTONS_NONE,
       "%s",
       l10n_util::GetStringUTF8(IDS_OPTIONS_RESET_MESSAGE).c_str());
+  gtk_util::ApplyMessageDialogQuirks(dialog_);
   gtk_dialog_add_buttons(
       GTK_DIALOG(dialog_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_RESET_CANCELLABEL).c_str(),
