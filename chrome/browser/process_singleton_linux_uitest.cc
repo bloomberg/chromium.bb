@@ -81,6 +81,13 @@ TEST_F(ProcessSingletonLinuxTest, CheckSocketFile) {
   ASSERT_TRUE(S_ISSOCK(statbuf.st_mode));
 }
 
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// This test is flaky on linux/views builds.
+// See http://crbug.com/28808.
+#define NotifyOtherProcessSuccess FLAKY_NotifyOtherProcessSuccess
+#define NotifyOtherProcessHostChanged FLAKY_NotifyOtherProcessHostChanged
+#endif
+
 // TODO(james.su@gmail.com): port following tests to Windows.
 // Test success case of NotifyOtherProcess().
 TEST_F(ProcessSingletonLinuxTest, NotifyOtherProcessSuccess) {

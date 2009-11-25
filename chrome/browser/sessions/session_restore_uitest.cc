@@ -254,6 +254,12 @@ TEST_F(SessionRestoreUITest, ClosedTabStaysClosed) {
   ASSERT_TRUE(GetActiveTabURL() == url1_);
 }
 
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// This test is flaky on linux/views builds.
+// See http://crbug.com/28808.
+#define NormalAndPopup FLAKY_NormalAndPopup
+#endif
+
 // Creates a tabbed browser and popup and makes sure we restore both.
 TEST_F(SessionRestoreUITest, NormalAndPopup) {
   if (!browser_defaults::kRestorePopups)

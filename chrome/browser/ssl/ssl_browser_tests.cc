@@ -220,19 +220,19 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
   CheckUnauthenticatedState(tab);
 }
 
-// Open a page with a HTTPS error in a tab with no prior navigation (through a
-// link with a blank target).  This is to test that the lack of navigation entry
-// does not cause any problems (it was causing a crasher, see
-// http://crbug.com/19941).
-#if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
-IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
-#else
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 // TODO(jcampan|oshima): On linux/views, the WaitForLoadStop call
 // below sometimes waits forever because LOAD_STOP notification can
 // happen before WaitLorLoadStop is called. Marking this test as Fleaky.
 // See http://crbug/28098.
-IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSErrorWithNoNavEntry) {
+#define TestHTTPSErrorWithNoNavEntry FLAKY_TestHTTPSErrorWithNoNavEntry
 #endif
+
+// Open a page with a HTTPS error in a tab with no prior navigation (through a
+// link with a blank target).  This is to test that the lack of navigation entry
+// does not cause any problems (it was causing a crasher, see
+// http://crbug.com/19941).
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
@@ -257,13 +257,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSErrorWithNoNavEntry) {
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->selected_index());
 
-#if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
   // Since the navigation was initiated by the renderer (when we clicked on the
   // link) and since the main page network request failed, we won't get a
   // navigation entry committed.  So we'll just wait for the load to stop.
   ui_test_utils::WaitForLoadStop(
       &(browser()->GetSelectedTabContents()->controller()));
-#endif
 
   // We should have an interstitial page showing.
   ASSERT_TRUE(browser()->GetSelectedTabContents()->interstitial_page());

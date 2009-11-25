@@ -62,7 +62,14 @@ TEST_F(AutomatedUITestBase, Home) {
   EXPECT_EQ(L"", title);
 }
 
-TEST_F(AutomatedUITestBase, NewTab) {
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// These tests are flaky on linux/views builds.
+// See http://crbug.com/28808.
+#define OpenNewTabTest FLAKY_OpenNewTab
+#define OpenBrowserWindow FLAKY_OpenBrowserWindow
+#endif
+
+TEST_F(AutomatedUITestBase, OpenNewTab) {
   int tab_count;
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(1, tab_count);
