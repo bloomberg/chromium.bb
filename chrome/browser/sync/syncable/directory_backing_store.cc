@@ -16,7 +16,6 @@
 #include "chrome/browser/sync/syncable/syncable-inl.h"
 #include "chrome/browser/sync/syncable/syncable_columns.h"
 #include "chrome/browser/sync/util/crypto_helpers.h"
-#include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/query_helpers.h"
 #include "third_party/sqlite/preprocessed/sqlite3.h"
 

@@ -39,7 +39,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
-#include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/query_helpers.h"
 #include "chrome/test/sync/engine/test_id_factory.h"
 #include "chrome/test/sync/engine/test_syncable_utils.h"

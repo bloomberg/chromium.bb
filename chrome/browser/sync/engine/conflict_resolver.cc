@@ -15,7 +15,6 @@
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/character_set_converters.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
-#include "chrome/browser/sync/util/path_helpers.h"
 
 using std::map;
 using std::set;

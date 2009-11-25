@@ -44,7 +44,6 @@
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
 #include "chrome/browser/sync/util/fast_dump.h"
-#include "chrome/browser/sync/util/path_helpers.h"
 
 namespace {
 enum InvariantCheckLevel {

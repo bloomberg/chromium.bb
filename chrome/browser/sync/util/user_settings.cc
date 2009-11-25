@@ -22,7 +22,6 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"  // For migration.
 #include "chrome/browser/sync/util/crypto_helpers.h"
 #include "chrome/browser/sync/util/data_encryption.h"
-#include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/query_helpers.h"
 
 using std::numeric_limits;

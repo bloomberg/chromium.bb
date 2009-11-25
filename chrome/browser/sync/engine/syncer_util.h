@@ -17,7 +17,6 @@
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/browser/sync/util/path_helpers.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
 namespace browser_sync {

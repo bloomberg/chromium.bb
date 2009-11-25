@@ -13,7 +13,6 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/event_sys-inl.h"
-#include "chrome/browser/sync/util/path_helpers.h"
 
 namespace syncable {
 
