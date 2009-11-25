@@ -95,11 +95,6 @@ class URLFetcher::Core
   // specified by the protection manager, we'll give up.
   int num_retries_;
 
-  // Temporary member variable to test whether requests are being started
-  // after they have already been cancelled.
-  // TODO(eroman): Remove this after done investigating 27074.
-  bool was_cancelled_;
-
   friend class URLFetcher;
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -140,8 +135,7 @@ URLFetcher::Core::Core(URLFetcher* fetcher,
       buffer_(new net::IOBuffer(kBufferSize)),
       protect_entry_(URLFetcherProtectManager::GetInstance()->Register(
           original_url_.host())),
-      num_retries_(0),
-      was_cancelled_(false) {
+      num_retries_(0) {
 }
 
 void URLFetcher::Core::Start() {
@@ -205,9 +199,8 @@ void URLFetcher::Core::OnReadCompleted(URLRequest* request, int bytes_read) {
 
 void URLFetcher::Core::StartURLRequest() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  CHECK(!was_cancelled_);
   CHECK(request_context_getter_);
-  CHECK(!request_);
+  DCHECK(!request_);
 
   request_ = new URLRequest(original_url_, this);
   int flags = request_->load_flags() | load_flags_;
@@ -260,7 +253,6 @@ void URLFetcher::Core::CancelURLRequest() {
   // delete the object, but we cannot delay the destruction of the request
   // context.
   request_context_getter_ = NULL;
-  was_cancelled_ = true;
 }
 
 void URLFetcher::Core::OnCompletedURLRequest(const URLRequestStatus& status) {
