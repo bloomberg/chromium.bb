@@ -174,22 +174,30 @@ class NewTabUIStartupTest : public UITest {
   }
 };
 
+#if !defined(OS_MACOSX)
+// TODO(tc): Update the Mac reference build to support
+// WaitForInitialNewTabUILoad.
 TEST_F(NewTabUIStartupTest, PerfRefCold) {
   UseReferenceBuild();
   RunStartupTest("tab_cold_ref", false /* cold */, true /* important */,
                  UITest::DEFAULT_THEME);
 }
+#endif
 
 TEST_F(NewTabUIStartupTest, PerfCold) {
   RunStartupTest("tab_cold", false /* cold */, true /* important */,
                  UITest::DEFAULT_THEME);
 }
 
+#if !defined(OS_MACOSX)
+// TODO(tc): Update the Mac reference build to support
+// WaitForInitialNewTabUILoad.
 TEST_F(NewTabUIStartupTest, PerfRefWarm) {
   UseReferenceBuild();
   RunStartupTest("tab_warm_ref", true /* warm */, true /* not important */,
                  UITest::DEFAULT_THEME);
 }
+#endif
 
 TEST_F(NewTabUIStartupTest, PerfWarm) {
   RunStartupTest("tab_warm", true /* warm */, true /* not important */,
