@@ -238,7 +238,7 @@ void SyncerProtoUtil::CopyBlobIntoProtoBytes(const syncable::Blob& blob,
 }
 
 // static
-std::string SyncerProtoUtil::NameFromSyncEntity(
+const std::string& SyncerProtoUtil::NameFromSyncEntity(
     const SyncEntity& entry) {
 
   if (entry.has_non_unique_name()) {
@@ -249,7 +249,7 @@ std::string SyncerProtoUtil::NameFromSyncEntity(
 }
 
 // static
-std::string SyncerProtoUtil::NameFromCommitEntryResponse(
+const std::string& SyncerProtoUtil::NameFromCommitEntryResponse(
     const CommitResponse_EntryResponse& entry) {
 
   if (entry.has_non_unique_name()) {

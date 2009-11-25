@@ -817,7 +817,8 @@ TEST_F(SyncerTest, TestCommitListOrderingAndNewParent) {
 
   {
     WriteTransaction wtrans(dir, UNITTEST, __FILE__, __LINE__);
-    MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(), parent1_name);
+    MutableEntry parent(&wtrans, syncable::CREATE, wtrans.root_id(),
+                        parent1_name);
     ASSERT_TRUE(parent.good());
     parent.Put(syncable::IS_UNSYNCED, true);
     parent.Put(syncable::IS_DIR, true);

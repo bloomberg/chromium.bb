@@ -60,11 +60,11 @@ class SyncerProtoUtil {
                                      std::string* proto_bytes);
 
   // Extract the name field from a sync entity.
-  static std::string NameFromSyncEntity(const SyncEntity& entry);
+  static const std::string& NameFromSyncEntity(const SyncEntity& entry);
 
 
   // Extract the name field from a commit entry response.
-  static std::string NameFromCommitEntryResponse(
+  static const std::string& NameFromCommitEntryResponse(
       const CommitResponse_EntryResponse& entry);
 
  private:

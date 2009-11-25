@@ -160,8 +160,10 @@ ServerUpdateProcessingResult ProcessUpdatesCommand::ProcessUpdate(
 
   if (update_entry.Get(SERVER_VERSION) == update_entry.Get(BASE_VERSION) &&
       !update_entry.Get(IS_UNSYNCED)) {
-      // Previously this was a big issue but at this point we don't really care
-      // that much if things don't match up exactly.
+      // It's largely OK if data doesn't match exactly since a future update
+      // will just clobber the data. Conflict resolution will overwrite and
+      // take one side as the winner and does not try to merge, so strict
+      // equality isn't necessary.
       LOG_IF(ERROR, !SyncerUtil::ServerAndLocalEntriesMatch(&update_entry))
           << update_entry;
   }

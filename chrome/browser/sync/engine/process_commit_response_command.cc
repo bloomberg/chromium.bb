@@ -127,7 +127,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
           break;
         case CommitResponse::CONFLICT:
           ++conflicting_commits;
-          // This is important to activate conflict resolution.
+          // Only server CONFLICT responses will activate conflict resolution.
           conflict_progress->AddConflictingItemById(commit_ids[i]);
           break;
         case CommitResponse::SUCCESS:
