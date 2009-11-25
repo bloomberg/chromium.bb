@@ -992,7 +992,6 @@
 
     // Only consider flake if it doesn't happen twice in a row.
     var MIN_RUNS_FOR_FLAKE = 2;
-    var unexpectedExpectations = [];
     var resultsMap = {}
     var numResultsSeen = 0;
     var haveSeenNonFlakeResult = false;
@@ -1031,7 +1030,8 @@
 
     resultsForTest.isFlaky = numRealResults > 1;
     // Calculate the % of times the test failed - how flaky is it?
-    resultsForTest.percentFailed = Math.round(failedCount / numResultsSeen * 100);
+    resultsForTest.percentFailed =
+        Math.round(failedCount / numResultsSeen * 100);
 
     var expectationsArray = resultsForTest.expectations ?
         resultsForTest.expectations.split(' ') : [];
@@ -1489,8 +1489,28 @@
       }
     }
 
-    appendHTML(JSON.stringify(testsNeedingUpdate));
-    hideLoadingUI();
+    var confirmedTests = {};
+    var NUM_UPDATES_BEFORE_BREAK = 20;
+    var i = 0;
+    for (test in testsNeedingUpdate) {
+      i++
+      // To maintain sanity when doing updates, give a chance to break out of
+      // the confirm loop every once in a while.
+      if (!(i % NUM_UPDATES_BEFORE_BREAK)) {
+        if (!confirm('Processed ' + i +
+                ' updates. Continue processing updates?'))
+          break;
+      }
+
+      document.body.innerHTML = getHTMLForIndividulTestOnAllBuilders(test);
+      var confirmStr = 'Include this update?\n' +
+          JSON.stringify(testsNeedingUpdate[test], null, 4);
+      if (confirm(confirmStr)) {
+        confirmedTests[test] = testsNeedingUpdate[test];
+      }
+    }
+
+    document.body.innerHTML = JSON.stringify(confirmedTests);
   }
 
   function getHTMLForIndividulTestOnAllBuilders(test) {
