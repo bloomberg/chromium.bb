@@ -65,6 +65,12 @@ extern void* TCMalloc_SystemAlloc(size_t bytes, size_t *actual_bytes,
 // be released, partial pages will not.)
 extern void TCMalloc_SystemRelease(void* start, size_t length);
 
+// Called to ressurect memory which has been previously released
+// to the system via TCMalloc_SystemRelease.  An attempt to
+// commit a page that is already committed does not cause this
+// function to fail.
+extern void TCMalloc_SystemCommit(void* start, size_t length);
+
 // Interface to a pluggable system allocator.
 class SysAllocator {
  public:
