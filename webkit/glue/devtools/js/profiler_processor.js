@@ -67,7 +67,7 @@ devtools.profiler.WebKitViewNode.FUNC_NAME_STRIP_RE =
  * RegEx for extracting script source URL and line number.
  */
 devtools.profiler.WebKitViewNode.FUNC_NAME_PARSE_RE =
-    /^([^ ]+) (.*):(\d+)( \{\d+\})?$/;
+    /^((?:get | set )?[^ ]+) (.*):(\d+)( \{\d+\})?$/;
 
 
 /**
