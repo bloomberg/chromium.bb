@@ -52,6 +52,7 @@ extern const char kDisablePlugins[];
 extern const char kDisablePopupBlocking[];
 extern const char kDisablePromptOnRepost[];
 extern const char kDisableSharedWorkers[];
+extern const char kDisableSiteSpecificQuirks[];
 extern const char kDisableSync[];
 extern const char kDisableWebResources[];
 extern const char kDisableWebSecurity[];

@@ -129,6 +129,9 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 // Enable shared workers. Functionality not yet complete.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
+// Disable site-specific tailoring to compatibility issues in WebKit.
+const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
+
 // Disable syncing bookmarks to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 

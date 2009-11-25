@@ -431,6 +431,7 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->javascript_can_open_windows_automatically = true;
         web_prefs_->dom_paste_enabled = true;
         web_prefs_->developer_extras_enabled = !layout_test_mode_;
+        web_prefs_->site_specific_quirks_enabled = true;
         web_prefs_->shrinks_standalone_images_to_fit = false;
         web_prefs_->uses_universal_detector = false;
         web_prefs_->text_areas_are_resizable = false;

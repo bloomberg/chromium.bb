@@ -40,6 +40,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   settings->setPluginsEnabled(plugins_enabled);
   settings->setDOMPasteAllowed(dom_paste_enabled);
   settings->setDeveloperExtrasEnabled(developer_extras_enabled);
+  settings->setNeedsSiteSpecificQuirks(site_specific_quirks_enabled);
   settings->setShrinksStandaloneImagesToFit(shrinks_standalone_images_to_fit);
   settings->setUsesEncodingDetector(uses_universal_detector);
   settings->setTextAreasAreResizable(text_areas_are_resizable);
