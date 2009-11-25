@@ -69,6 +69,105 @@ HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
                                 session_deps->flip_session_pool);
 }
 
+// Chop a frame into an array of MockWrites.
+// |data| is the frame to chop.
+// |length| is the length of the frame to chop.
+// |num_chunks| is the number of chunks to create.
+MockWrite* ChopFrame(const char* data, int length, int num_chunks) {
+  MockWrite* chunks = new MockWrite[num_chunks + 1];
+  int chunk_size = length / num_chunks;
+  for (int index = 0; index < num_chunks; index++) {
+    const char* ptr = data + (index * chunk_size);
+    if (index == num_chunks - 1)
+      chunk_size += length % chunk_size;  // The last chunk takes the remainder.
+    chunks[index] = MockWrite(true, ptr, chunk_size);
+  }
+  chunks[num_chunks] = MockWrite(true, 0, 0);
+  return chunks;
+}
+
+// ----------------------------------------------------------------------------
+
+static const unsigned char kGetSyn[] = {
+  0x80, 0x01, 0x00, 0x01,                                        // header
+  0x01, 0x00, 0x00, 0x45,                                        // FIN, len
+  0x00, 0x00, 0x00, 0x01,                                        // stream id
+  0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
+  0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
+  0x00, 0x03, 'G', 'E', 'T',
+  0x00, 0x03, 'u', 'r', 'l',
+  0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+              '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+              'm', '/',
+  0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+  0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+};
+
+static const unsigned char kGetSynReply[] = {
+  0x80, 0x01, 0x00, 0x02,                                        // header
+  0x00, 0x00, 0x00, 0x45,
+  0x00, 0x00, 0x00, 0x01,
+  0x00, 0x00, 0x00, 0x04,                                        // 4 headers
+  0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
+  0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
+  0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
+  0x00, 0x03, '2', '0', '0',                                     // "200"
+  0x00, 0x03, 'u', 'r', 'l',                                     // "url"
+  0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',  // "/index...
+  0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
+  0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
+};
+
+static const unsigned char kGetBodyFrame[] = {
+  0x00, 0x00, 0x00, 0x01,                                        // header
+  0x01, 0x00, 0x00, 0x06,                                        // FIN, length
+  'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
+};
+
+static const unsigned char kPostSyn[] = {
+  0x80, 0x01, 0x00, 0x01,                                      // header
+  0x00, 0x00, 0x00, 0x46,                                      // flags, len
+  0x00, 0x00, 0x00, 0x01,                                      // stream id
+  0xc0, 0x00, 0x00, 0x03,                                      // 4 headers
+  0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
+  0x00, 0x04, 'P', 'O', 'S', 'T',
+  0x00, 0x03, 'u', 'r', 'l',
+  0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+              '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+              'm', '/',
+  0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+  0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+};
+
+static const unsigned char kPostUploadFrame[] = {
+  0x00, 0x00, 0x00, 0x01,                                        // header
+  0x01, 0x00, 0x00, 0x0c,                                        // FIN flag
+  'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\0'
+};
+
+// The response
+static const unsigned char kPostSynReply[] = {
+  0x80, 0x01, 0x00, 0x02,                                        // header
+  0x00, 0x00, 0x00, 0x45,
+  0x00, 0x00, 0x00, 0x01,
+  0x00, 0x00, 0x00, 0x04,                                        // 4 headers
+  0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
+  0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
+  0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
+  0x00, 0x03, '2', '0', '0',                                     // "200"
+  0x00, 0x03, 'u', 'r', 'l',                                     // "url"
+  // "/index.php"
+  0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+  0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
+  0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
+};
+
+static const unsigned char kPostBodyFrame[] = {
+  0x00, 0x00, 0x00, 0x01,                                        // header
+  0x01, 0x00, 0x00, 0x06,                                        // FIN, length
+  'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
+};
+
 }  // namespace
 
 // A DataProvider where the client must write a request before the reads (e.g.
@@ -76,15 +175,21 @@ HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
 class DelayedSocketData : public StaticSocketDataProvider,
                           public base::RefCounted<DelayedSocketData> {
  public:
+  // |reads| the list of MockRead completions.
+  // |write_delay| the number of MockWrites to complete before allowing
+  //               a MockRead to complete.
+  // |writes| the list of MockWrite completions.
   // Note: All MockReads and MockWrites must be async.
   // Note: The MockRead and MockWrite lists musts end with a EOF
   //       e.g. a MockRead(true, 0, 0);
-  DelayedSocketData(MockRead* r, MockWrite* w)
-    : StaticSocketDataProvider(r, w),
-      request_received_(false) {}
+  DelayedSocketData(MockRead* reads, int write_delay, MockWrite* writes)
+    : StaticSocketDataProvider(reads, writes),
+      write_delay_(write_delay) {
+    DCHECK_GE(write_delay_, 0);
+  }
 
   virtual MockRead GetNextRead() {
-    if (!request_received_)
+    if (write_delay_)
       return MockRead(true, ERR_IO_PENDING);
     return StaticSocketDataProvider::GetNextRead();
   }
@@ -92,11 +197,9 @@ class DelayedSocketData : public StaticSocketDataProvider,
   virtual MockWriteResult OnWrite(const std::string& data) {
     MockWriteResult rv = StaticSocketDataProvider::OnWrite(data);
     // Now that our write has completed, we can allow reads to continue.
-    if (!request_received_) {
-      request_received_ = true;
+    if (!--write_delay_)
       MessageLoop::current()->PostDelayedTask(FROM_HERE,
         NewRunnableMethod(this, &DelayedSocketData::CompleteRead), 100);
-    }
     return rv;
   }
 
@@ -105,7 +208,7 @@ class DelayedSocketData : public StaticSocketDataProvider,
   }
 
  private:
-  bool request_received_;
+  int write_delay_;
 };
 
 class FlipNetworkTransactionTest : public PlatformTest {
@@ -131,8 +234,7 @@ class FlipNetworkTransactionTest : public PlatformTest {
   };
 
   TransactionHelperResult TransactionHelper(const HttpRequestInfo& request,
-                                            MockRead reads[],
-                                            MockWrite writes[]) {
+                                            DelayedSocketData* data) {
     TransactionHelperResult out;
 
     // We disable SSL for this test.
@@ -142,8 +244,7 @@ class FlipNetworkTransactionTest : public PlatformTest {
     scoped_ptr<FlipNetworkTransaction> trans(
         new FlipNetworkTransaction(CreateSession(&session_deps)));
 
-    scoped_refptr<DelayedSocketData> data(new DelayedSocketData(reads, writes));
-    session_deps.socket_factory.AddSocketDataProvider(data.get());
+    session_deps.socket_factory.AddSocketDataProvider(data);
 
     TestCompletionCallback callback;
 
@@ -186,58 +287,17 @@ TEST_F(FlipNetworkTransactionTest, Constructor) {
 }
 
 TEST_F(FlipNetworkTransactionTest, Get) {
-  static const unsigned char syn[] = {
-    0x80, 0x01, 0x00, 0x01,                                        // header
-    0x01, 0x00, 0x00, 0x45,                                        // FIN, len
-    0x00, 0x00, 0x00, 0x01,                                        // stream id
-    0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
-    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
-    0x00, 0x03, 'G', 'E', 'T',
-    0x00, 0x03, 'u', 'r', 'l',
-    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
-                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
-                'm', '/',
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
-  };
-
-  static const unsigned char syn_reply[] = {
-    0x80, 0x01, 0x00, 0x02,                                        // header
-    0x00, 0x00, 0x00, 0x45,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x04,                                        // 4 headers
-    0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
-    0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
-    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
-    0x00, 0x03, '2', '0', '0',                                     // "200"
-    0x00, 0x03, 'u', 'r', 'l',                                     // "url"
-    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',  // "HTTP/1.1"
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
-  };
-  static const unsigned char body_frame[] = {
-    0x00, 0x00, 0x00, 0x01,                                        // header
-    0x00, 0x00, 0x00, 0x06,
-    'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
-  };
-  static const unsigned char fin_frame[] = {
-    0x80, 0x01, 0x00, 0x03,                                        // header
-    0x00, 0x00, 0x00, 0x08,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00,
-  };
-
   MockWrite writes[] = {
-    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
+              arraysize(kGetSyn)),
     MockWrite(true, 0, 0)  // EOF
   };
 
   MockRead reads[] = {
-    MockRead(true, reinterpret_cast<const char*>(syn_reply), sizeof(syn_reply)),
-    MockRead(true, reinterpret_cast<const char*>(body_frame),
-             sizeof(body_frame)),
-    MockRead(true, reinterpret_cast<const char*>(fin_frame),
-             sizeof(fin_frame)),
+    MockRead(true, reinterpret_cast<const char*>(kGetSynReply),
+             arraysize(kGetSynReply)),
+    MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+             arraysize(kGetBodyFrame)),
     MockRead(true, 0, 0)  // EOF
   };
 
@@ -245,7 +305,9 @@ TEST_F(FlipNetworkTransactionTest, Get) {
   request.method = "GET";
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
-  TransactionHelperResult out = TransactionHelper(request, reads, writes);
+  scoped_refptr<DelayedSocketData> data(
+      new DelayedSocketData(reads, 1, writes));
+  TransactionHelperResult out = TransactionHelper(request, data.get());
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -262,75 +324,25 @@ TEST_F(FlipNetworkTransactionTest, Post) {
   request.upload_data = new UploadData();
   request.upload_data->AppendBytes(upload, sizeof(upload));
 
-  // TODO(mbelshe): Hook up the write validation.
-
-  static const unsigned char syn[] = {
-    0x80, 0x01, 0x00, 0x01,                                      // header
-    0x00, 0x00, 0x00, 0x46,                                      // flags, len
-    0x00, 0x00, 0x00, 0x01,                                      // stream id
-    0xc0, 0x00, 0x00, 0x03,                                      // 4 headers
-    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
-    0x00, 0x04, 'P', 'O', 'S', 'T',
-    0x00, 0x03, 'u', 'r', 'l',
-    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
-                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
-                'm', '/',
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
-  };
-
-  static const unsigned char upload_frame[] = {
-    0x00, 0x00, 0x00, 0x01,                                        // header
-    0x01, 0x00, 0x00, 0x0c,                                        // FIN flag
-    'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '\0'
-  };
-
-  // The response
-  static const unsigned char syn_reply[] = {
-    0x80, 0x01, 0x00, 0x02,                                        // header
-    0x00, 0x00, 0x00, 0x45,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x04,                                        // 4 headers
-    0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
-    0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
-    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
-    0x00, 0x03, '2', '0', '0',                                     // "200"
-    0x00, 0x03, 'u', 'r', 'l',                                     // "url"
-    // "/index.php"
-    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
-  };
-  static const unsigned char body_frame[] = {
-    0x00, 0x00, 0x00, 0x01,                                        // header
-    0x00, 0x00, 0x00, 0x06,
-    'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
-  };
-  static const unsigned char fin_frame[] = {
-    0x80, 0x01, 0x00, 0x03,                                        // header
-    0x00, 0x00, 0x00, 0x08,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00,
-  };
-
   MockWrite writes[] = {
-    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
-    MockWrite(true, reinterpret_cast<const char*>(upload_frame),
-              sizeof(upload_frame)),
+    MockWrite(true, reinterpret_cast<const char*>(kPostSyn),
+              arraysize(kPostSyn)),
+    MockWrite(true, reinterpret_cast<const char*>(kPostUploadFrame),
+              arraysize(kPostUploadFrame)),
     MockWrite(true, 0, 0)  // EOF
   };
 
   MockRead reads[] = {
-    MockRead(true, reinterpret_cast<const char*>(syn_reply),
-             sizeof(syn_reply)),
-    MockRead(true, reinterpret_cast<const char*>(body_frame),
-             sizeof(body_frame)),
-    MockRead(true, reinterpret_cast<const char*>(fin_frame),
-             sizeof(fin_frame)),
+    MockRead(true, reinterpret_cast<const char*>(kPostSynReply),
+             arraysize(kPostSynReply)),
+    MockRead(true, reinterpret_cast<const char*>(kPostBodyFrame),
+             arraysize(kPostBodyFrame)),
     MockRead(true, 0, 0)  // EOF
   };
 
-  TransactionHelperResult out = TransactionHelper(request, reads, writes);
+  scoped_refptr<DelayedSocketData> data(
+      new DelayedSocketData(reads, 2, writes));
+  TransactionHelperResult out = TransactionHelper(request, data.get());
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -338,6 +350,21 @@ TEST_F(FlipNetworkTransactionTest, Post) {
 
 // Test that a simple POST works.
 TEST_F(FlipNetworkTransactionTest, EmptyPost) {
+static const unsigned char kEmptyPostSyn[] = {
+  0x80, 0x01, 0x00, 0x01,                                      // header
+  0x01, 0x00, 0x00, 0x46,                                      // flags, len
+  0x00, 0x00, 0x00, 0x01,                                      // stream id
+  0xc0, 0x00, 0x00, 0x03,                                      // 4 headers
+  0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
+  0x00, 0x04, 'P', 'O', 'S', 'T',
+  0x00, 0x03, 'u', 'r', 'l',
+  0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
+              '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
+              'm', '/',
+  0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+  0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+};
+
   // Setup the request
   HttpRequestInfo request;
   request.method = "POST";
@@ -345,67 +372,24 @@ TEST_F(FlipNetworkTransactionTest, EmptyPost) {
   // Create an empty UploadData.
   request.upload_data = new UploadData();
 
-  // TODO(mbelshe): Hook up the write validation.
-
-  static const unsigned char syn[] = {
-    0x80, 0x01, 0x00, 0x01,                                      // header
-    0x01, 0x00, 0x00, 0x46,                                      // FIN, len
-    0x00, 0x00, 0x00, 0x01,                                      // stream id
-    0xc0, 0x00, 0x00, 0x03,                                      // 4 headers
-    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
-    0x00, 0x04, 'P', 'O', 'S', 'T',
-    0x00, 0x03, 'u', 'r', 'l',
-    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
-                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
-                'm', '/',
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
-  };
-
-  // The response
-  static const unsigned char syn_reply[] = {
-    0x80, 0x01, 0x00, 0x02,                                        // header
-    0x00, 0x00, 0x00, 0x45,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x04,                                        // 4 headers
-    0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
-    0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
-    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
-    0x00, 0x03, '2', '0', '0',                                     // "200"
-    0x00, 0x03, 'u', 'r', 'l',                                     // "url"
-    // "/index.php"
-    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
-  };
-  static const unsigned char body_frame[] = {
-    0x00, 0x00, 0x00, 0x01,                                        // header
-    0x00, 0x00, 0x00, 0x06,
-    'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
-  };
-  static const unsigned char fin_frame[] = {
-    0x80, 0x01, 0x00, 0x03,                                        // header
-    0x00, 0x00, 0x00, 0x08,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00,
-  };
-
   MockWrite writes[] = {
-    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockWrite(true, reinterpret_cast<const char*>(kEmptyPostSyn),
+              arraysize(kEmptyPostSyn)),
     MockWrite(true, 0, 0)  // EOF
   };
 
   MockRead reads[] = {
-    MockRead(true, reinterpret_cast<const char*>(syn_reply),
-             sizeof(syn_reply)),
-    MockRead(true, reinterpret_cast<const char*>(body_frame),
-             sizeof(body_frame)),
-    MockRead(true, reinterpret_cast<const char*>(fin_frame),
-             sizeof(fin_frame)),
+    MockRead(true, reinterpret_cast<const char*>(kPostSynReply),
+             arraysize(kPostSynReply)),
+    MockRead(true, reinterpret_cast<const char*>(kPostBodyFrame),
+             arraysize(kGetBodyFrame)),
     MockRead(true, 0, 0)  // EOF
   };
 
-  TransactionHelperResult out = TransactionHelper(request, reads, writes);
+  scoped_refptr<DelayedSocketData> data(
+    new DelayedSocketData(reads, 1, writes));
+
+  TransactionHelperResult out = TransactionHelper(request, data);
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
@@ -413,22 +397,9 @@ TEST_F(FlipNetworkTransactionTest, EmptyPost) {
 
 // Test that the transaction doesn't crash when we don't have a reply.
 TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
-  static const unsigned char body_frame[] = {
-    0x00, 0x00, 0x00, 0x01,                                        // header
-    0x00, 0x00, 0x00, 0x06,
-    'h', 'e', 'l', 'l', 'o', '!',                                  // "hello"
-  };
-  static const unsigned char fin_frame[] = {
-    0x80, 0x01, 0x00, 0x03,                                        // header
-    0x00, 0x00, 0x00, 0x08,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00,
-  };
-
   MockRead reads[] = {
-    MockRead(true, reinterpret_cast<const char*>(body_frame),
-             sizeof(body_frame)),
-    MockRead(true, reinterpret_cast<const char*>(fin_frame), sizeof(fin_frame)),
+    MockRead(true, reinterpret_cast<const char*>(kPostBodyFrame),
+             arraysize(kPostBodyFrame)),
     MockRead(true, 0, 0)  // EOF
   };
 
@@ -436,7 +407,9 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
   request.method = "GET";
   request.url = GURL("http://www.google.com/");
   request.load_flags = 0;
-  TransactionHelperResult out = TransactionHelper(request, reads, NULL);
+  scoped_refptr<DelayedSocketData> data(
+      new DelayedSocketData(reads, 1, NULL));
+  TransactionHelperResult out = TransactionHelper(request, data.get());
   EXPECT_EQ(ERR_SYN_REPLY_NOT_RECEIVED, out.rv);
 }
 
@@ -444,43 +417,15 @@ TEST_F(FlipNetworkTransactionTest, ResponseWithoutSynReply) {
 // goes away.  They're calling into the ClientSocketFactory which doesn't exist
 // anymore, so it crashes.
 TEST_F(FlipNetworkTransactionTest, DISABLED_CancelledTransaction) {
-  static const unsigned char syn[] = {
-    0x80, 0x01, 0x00, 0x01,                                        // header
-    0x01, 0x00, 0x00, 0x45,                                        // FIN, len
-    0x00, 0x00, 0x00, 0x01,                                        // stream id
-    0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
-    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
-    0x00, 0x03, 'G', 'E', 'T',
-    0x00, 0x03, 'u', 'r', 'l',
-    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
-                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
-                'm', '/',
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
-  };
-
-  static const unsigned char syn_reply[] = {
-    0x80, 0x01, 0x00, 0x02,                                        // header
-    0x00, 0x00, 0x00, 0x45,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x04,                                        // 4 headers
-    0x00, 0x05, 'h', 'e', 'l', 'l', 'o',                           // "hello"
-    0x00, 0x03, 'b', 'y', 'e',                                     // "bye"
-    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',                      // "status"
-    0x00, 0x03, '2', '0', '0',                                     // "200"
-    0x00, 0x03, 'u', 'r', 'l',                                     // "url"
-    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',  // "HTTP/1.1"
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',                 // "version"
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',            // "HTTP/1.1"
-  };
-
   MockWrite writes[] = {
-    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
+              arraysize(kGetSyn)),
     MockRead(true, 0, 0)  // EOF
   };
 
   MockRead reads[] = {
-    MockRead(true, reinterpret_cast<const char*>(syn_reply), sizeof(syn_reply)),
+    MockRead(true, reinterpret_cast<const char*>(kGetSynReply),
+             arraysize(kGetSynReply)),
     // This following read isn't used by the test, except during the
     // RunAllPending() call at the end since the FlipSession survives the
     // FlipNetworkTransaction and still tries to continue Read()'ing.  Any
@@ -517,21 +462,6 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_CancelledTransaction) {
 // Verify that various SynReply headers parse correctly through the
 // HTTP layer.
 TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
-  static const unsigned char syn[] = {
-    0x80, 0x01, 0x00, 0x01,                                        // header
-    0x01, 0x00, 0x00, 0x45,                                        // FIN, len
-    0x00, 0x00, 0x00, 0x01,                                        // stream id
-    0xc0, 0x00, 0x00, 0x03,                                        // 4 headers
-    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
-    0x00, 0x03, 'G', 'E', 'T',
-    0x00, 0x03, 'u', 'r', 'l',
-    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
-                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
-                'm', '/',
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
-  };
-
   // This uses a multi-valued cookie header.
   static const unsigned char syn_reply1[] = {
     0x80, 0x01, 0x00, 0x02,
@@ -579,18 +509,6 @@ TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
     0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
   };
 
-  static const unsigned char body_frame[] = {
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x06,
-    'h', 'e', 'l', 'l', 'o', '!',
-  };
-  static const unsigned char fin_frame[] = {
-    0x80, 0x01, 0x00, 0x03,
-    0x00, 0x00, 0x00, 0x08,
-    0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00,
-  };
-
   struct SynReplyTests {
     const unsigned char* syn_reply;
     int syn_reply_length;
@@ -623,17 +541,16 @@ TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
     MockWrite writes[] = {
-      MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+      MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
+                arraysize(kGetSyn)),
       MockWrite(true, 0, 0)  // EOF
     };
 
     MockRead reads[] = {
       MockRead(true, reinterpret_cast<const char*>(test_cases[i].syn_reply),
                test_cases[i].syn_reply_length),
-      MockRead(true, reinterpret_cast<const char*>(body_frame),
-               sizeof(body_frame)),
-      MockRead(true, reinterpret_cast<const char*>(fin_frame),
-               sizeof(fin_frame)),
+      MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+               arraysize(kGetBodyFrame)),
       MockRead(true, 0, 0)  // EOF
     };
 
@@ -641,7 +558,9 @@ TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
     request.method = "GET";
     request.url = GURL("http://www.google.com/");
     request.load_flags = 0;
-    TransactionHelperResult out = TransactionHelper(request, reads, writes);
+    scoped_refptr<DelayedSocketData> data(
+        new DelayedSocketData(reads, 1, writes));
+    TransactionHelperResult out = TransactionHelper(request, data.get());
     EXPECT_EQ(OK, out.rv);
     EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
     EXPECT_EQ("hello!", out.response_data);
@@ -662,22 +581,6 @@ TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
 
 // TODO(mbelshe):  This test is broken right now and we need to fix it!
 TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
-  // Basic request
-  static const unsigned char syn[] = {
-    0x80, 0x01, 0x00, 0x01,
-    0x01, 0x00, 0x00, 0x45,
-    0x00, 0x00, 0x00, 0x01,
-    0xc0, 0x00, 0x00, 0x03,
-    0x00, 0x06, 'm', 'e', 't', 'h', 'o', 'd',
-    0x00, 0x03, 'G', 'E', 'T',
-    0x00, 0x03, 'u', 'r', 'l',
-    0x00, 0x16, 'h', 't', 't', 'p', ':', '/', '/', 'w', 'w', 'w',
-                '.', 'g', 'o', 'o', 'g', 'l', 'e', '.', 'c', 'o',
-                'm', '/',
-    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
-    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
-  };
-
   // Reply with the X-Associated-Content header.
   static const unsigned char syn_reply[] = {
     0x80, 0x01, 0x00, 0x02,
@@ -695,13 +598,6 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
     0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
     0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
     0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
-  };
-
-  // Body for stream 1
-  static const unsigned char body_frame[] = {
-    0x00, 0x00, 0x00, 0x01,
-    0x01, 0x00, 0x00, 0x06,
-    'h', 'e', 'l', 'l', 'o', '!',
   };
 
   // Syn for the X-Associated-Content (foo.dat)
@@ -728,14 +624,16 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
   };
 
   MockWrite writes[] = {
-    MockWrite(true, reinterpret_cast<const char*>(syn), sizeof(syn)),
+    MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
+              arraysize(kGetSyn)),
     MockWrite(true, 0, 0)  // EOF
   };
 
   MockRead reads[] = {
-    MockRead(true, reinterpret_cast<const char*>(syn_reply), arraysize(syn_reply)),
-    MockRead(true, reinterpret_cast<const char*>(body_frame),
-             arraysize(body_frame)),
+    MockRead(true, reinterpret_cast<const char*>(syn_reply),
+             arraysize(syn_reply)),
+    MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+             arraysize(kGetBodyFrame)),
     MockRead(true, ERR_IO_PENDING),  // Force a pause
     MockRead(true, reinterpret_cast<const char*>(syn_push),
              arraysize(syn_push)),
@@ -765,7 +663,7 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
     SessionDependencies session_deps;
     scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps));
     scoped_refptr<DelayedSocketData> data(
-        new DelayedSocketData(reads, writes));
+        new DelayedSocketData(reads, 1, writes));
     session_deps.socket_factory.AddSocketDataProvider(data.get());
 
     // Issue the first request
@@ -837,6 +735,61 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
     EXPECT_TRUE(data->at_read_eof());
     EXPECT_TRUE(data->at_write_eof());
   }
+}
+
+// Test that we shutdown correctly on write errors.
+TEST_F(FlipNetworkTransactionTest, WriteError) {
+  MockWrite writes[] = {
+    // We'll write 10 bytes successfully
+    MockWrite(true, reinterpret_cast<const char*>(kGetSyn), 10),
+    // Followed by ERROR!
+    MockWrite(true, ERR_FAILED),
+    MockWrite(true, 0, 0)  // EOF
+  };
+
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(kGetSynReply),
+             arraysize(kGetSynReply)),
+    MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+             arraysize(kGetBodyFrame)),
+    MockRead(true, 0, 0)  // EOF
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+  scoped_refptr<DelayedSocketData> data(
+      new DelayedSocketData(reads, 2, writes));
+  TransactionHelperResult out = TransactionHelper(request, data.get());
+  EXPECT_EQ(ERR_FAILED, out.rv);
+}
+
+// Test that partial writes work.
+TEST_F(FlipNetworkTransactionTest, PartialWrite) {
+  // Chop the SYN_STREAM frame into 5 chunks.
+  const int kChunks = 5;
+  scoped_array<MockWrite> writes(ChopFrame(
+      reinterpret_cast<const char*>(kGetSyn), arraysize(kGetSyn), kChunks));
+
+  MockRead reads[] = {
+    MockRead(true, reinterpret_cast<const char*>(kGetSynReply),
+             arraysize(kGetSynReply)),
+    MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+             arraysize(kGetBodyFrame)),
+    MockRead(true, 0, 0)  // EOF
+  };
+
+  HttpRequestInfo request;
+  request.method = "GET";
+  request.url = GURL("http://www.google.com/");
+  request.load_flags = 0;
+  scoped_refptr<DelayedSocketData> data(
+      new DelayedSocketData(reads, kChunks, writes.get()));
+  TransactionHelperResult out = TransactionHelper(request, data.get());
+  EXPECT_EQ(OK, out.rv);
+  EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
+  EXPECT_EQ("hello!", out.response_data);
 }
 
 }  // namespace net

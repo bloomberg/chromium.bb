@@ -11,8 +11,8 @@ namespace net {
 uint64 FlipIOBuffer::order_ = 0;
 
 FlipIOBuffer::FlipIOBuffer(
-    IOBufferWithSize* buffer, int priority, FlipStream* stream)
-  : buffer_(buffer),
+    IOBuffer* buffer, int size, int priority, FlipStream* stream)
+  : buffer_(new DrainableIOBuffer(buffer, size)),
     priority_(priority),
     position_(++order_),
     stream_(stream) {}
