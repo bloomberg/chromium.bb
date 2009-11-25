@@ -84,7 +84,7 @@ int main(int argc, const char** argv) {
 
   std::vector<std::wstring> filenames(cmd_line->GetLooseValues());
   if (filenames.empty()) {
-    std::cerr << "Usage: media_bench [OPTIONS] FILE [DUMPFILE]\n"
+    std::cerr << "Usage: " << argv[0] << " [OPTIONS] FILE [DUMPFILE]\n"
               << "  --stream=[audio|video]          "
               << "Benchmark either the audio or video stream\n"
               << "  --video-threads=N               "

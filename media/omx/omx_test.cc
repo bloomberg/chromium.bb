@@ -130,7 +130,8 @@ int main(int argc, char** argv) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   if (argc < 2) {
-    printf("Usage: omx_test --file=FILE --component=COMPONENT --codec=CODEC\n");
+    printf("Usage: %s --file=FILE --component=COMPONENT --codec=CODEC\n",
+           argv[0]);
     printf("    COMPONENT: OpenMAX component name\n");
     printf("    CODEC: h264/mpeg4/h263/vc1\n");
     return 1;
