@@ -39,10 +39,6 @@
 #include <algorithm>
 #include "core/cross/renderer.h"
 #include "core/cross/client_info.h"
-#include "core/cross/command_buffer/display_window_cb.h"
-#include "gpu/np_utils/np_headers.h"
-#include "gpu/np_utils/np_object_pointer.h"
-#include "gpu/np_utils/np_utils.h"
 #include "plugin/cross/o3d_glue.h"
 #include "plugin/cross/config.h"
 #include "plugin/cross/stream_manager.h"
@@ -52,11 +48,6 @@
 #ifdef OS_MACOSX
 #include "plugin_mac.h"
 #endif
-
-using o3d::DisplayWindowCB;
-using np_utils::NPObjectPointer;
-using np_utils::NPVariantToValue;
-using np_utils::ValueToNPVariant;
 
 namespace glue {
 namespace _o3d {
