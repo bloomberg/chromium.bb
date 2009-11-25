@@ -121,6 +121,7 @@
         'port.cc',
         'system-alloc.h',
         'tcmalloc.cc',
+        'tcmalloc_linux.cc',
         'win_allocator.cc',        
 
         # jemalloc files
@@ -184,6 +185,9 @@
             'tcmalloc/src/page_heap.cc',
             'tcmalloc/src/page_heap.h',
 
+            # don't use linux forked version
+            'tcmalloc_linux.cc',
+
             # heap-profiler/checker/cpuprofiler
             'tcmalloc/src/base/thread_lister.c',
             'tcmalloc/src/base/thread_lister.h',
@@ -205,6 +209,9 @@
             'port.cc',
             'system-alloc.h',
             'win_allocator.cc',        
+
+            # TODO(willchan): unfork this
+            'tcmalloc/src/tcmalloc.cc',
 
             # TODO(willchan): Support allocator shim later on.
             'allocator_shim.cc',

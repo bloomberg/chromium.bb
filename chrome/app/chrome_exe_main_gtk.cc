@@ -16,11 +16,29 @@
 
 extern "C" {
 int ChromeMain(int argc, const char** argv);
+
+#if defined(LINUX_USE_TCMALLOC)
+
+int tc_set_new_mode(int mode);
+
+#endif  // defined(LINUX_USE_TCMALLOC)
+
 }
 
 int main(int argc, const char** argv) {
   base::EnableTerminationOnHeapCorruption();
   base::EnableTerminationOnOutOfMemory();
+
+  // NOTE(willchan): One might ask why this call is done here rather than in
+  // process_util_linux.cc with the definition of
+  // EnableTerminationOnOutOfMemory().  That's because base shouldn't have a
+  // dependency on TCMalloc.  Really, we ought to have our allocator shim code
+  // implement this EnableTerminationOnOutOfMemory() function.  Whateverz.  This
+  // works for now.
+#if defined(LINUX_USE_TCMALLOC)
+  // For tcmalloc, we need to tell it to behave like new.
+  tc_set_new_mode(1);
+#endif
 
   // The exit manager is in charge of calling the dtors of singletons.
   // Win has one here, but we assert with multiples from BrowserMain() if we
