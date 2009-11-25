@@ -84,7 +84,7 @@ class CallStack {
   }
 
   static void UnlockDbgHelp() {
-    active_thread_id_ = GetCurrentThreadId();
+    active_thread_id_ = 0;
     dbghelp_lock_.Release();
   }
 
