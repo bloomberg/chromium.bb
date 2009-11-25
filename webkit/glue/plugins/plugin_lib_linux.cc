@@ -59,6 +59,12 @@ bool ELFMatchesCurrentArchitecture(const FilePath& filename) {
   return false;
 }
 
+// TODO(thestig) This is a hack to work around the crash in bug 25245. Remove
+// this once we read plugins out of process.
+bool SkipPluginUnloadHack(const WebPluginInfo& info) {
+  std::string filename = info.path.BaseName().value();
+  return (filename.find("npo3dautoplugin") != std::string::npos);  // O3D
+}
 
 }  // anonymous namespace
 namespace NPAPI {
@@ -108,7 +114,8 @@ bool PluginLib::ReadWebPluginInfo(const FilePath& filename,
       info->desc = UTF8ToWide(description);
   }
 
-  base::UnloadNativeLibrary(dl);
+  if (!SkipPluginUnloadHack(*info))
+    base::UnloadNativeLibrary(dl);
 
   return true;
 }
