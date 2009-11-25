@@ -31,6 +31,20 @@ class NewTabUIStartupTest : public UITest {
 
   static const int kNumCycles = 5;
 
+  void UseReferenceBuild() {
+    FilePath dir;
+    PathService::Get(chrome::DIR_TEST_TOOLS, &dir);
+    dir = dir.AppendASCII("reference_build");
+#if defined(OS_WIN)
+    dir = dir.AppendASCII("chrome");
+#elif defined(OS_LINUX)
+    dir = dir.AppendASCII("chrome_linux");
+#elif defined(OS_MACOSX)
+    dir = dir.AppendASCII("chrome_mac");
+#endif
+    browser_directory_ = dir;
+  }
+
   void PrintTimings(const char* label, TimeDelta timings[kNumCycles],
                     bool important) {
     std::string times;
@@ -159,14 +173,25 @@ class NewTabUIStartupTest : public UITest {
   }
 };
 
-// TODO(pamg): run these tests with a reference build?
+TEST_F(NewTabUIStartupTest, PerfRefCold) {
+  UseReferenceBuild();
+  RunStartupTest("tab_cold_ref", false /* cold */, true /* important */,
+                 UITest::DEFAULT_THEME);
+}
+
 TEST_F(NewTabUIStartupTest, PerfCold) {
   RunStartupTest("tab_cold", false /* cold */, true /* important */,
                  UITest::DEFAULT_THEME);
 }
 
+TEST_F(NewTabUIStartupTest, PerfRefWarm) {
+  UseReferenceBuild();
+  RunStartupTest("tab_warm_ref", true /* warm */, true /* not important */,
+                 UITest::DEFAULT_THEME);
+}
+
 TEST_F(NewTabUIStartupTest, PerfWarm) {
-  RunStartupTest("tab_warm", true /* warm */, false /* not important */,
+  RunStartupTest("tab_warm", true /* warm */, true /* not important */,
                  UITest::DEFAULT_THEME);
 }
 

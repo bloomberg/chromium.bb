@@ -151,7 +151,6 @@ TEST_F(StartupTest, Perf) {
                  UITest::DEFAULT_THEME);
 }
 
-// TODO(port): We need a mac reference build checked in for this.
 TEST_F(StartupReferenceTest, Perf) {
   RunStartupTest("warm", "t_ref", false /* not cold */,
                  true /* important */, UITest::DEFAULT_THEME);
