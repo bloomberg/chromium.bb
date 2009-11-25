@@ -624,6 +624,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
                           base::Time::Now().ToTimeT());
   }
 
+  // Create the child threads.  We need to do this since ChromeThread::PostTask
+  // silently deletes a posted task if the target message loop isn't created.
+  browser_process->db_thread();
+  browser_process->file_thread();
+  browser_process->process_launcher_thread();
+  browser_process->io_thread();
+
 #if defined(OS_WIN)
   // Record last shutdown time into a histogram.
   browser_shutdown::ReadLastShutdownInfo();
@@ -649,14 +656,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
       return ResultCodes::SHELL_INTEGRATION_FAILED;
     }
   }
-
-  // Create the child threads.  We need to do this since ChromeThread::PostTask
-  // silently deletes a posted task if the target message loop isn't created.
-  // Note: must be done before FirstRun code is started.
-  browser_process->db_thread();
-  browser_process->file_thread();
-  browser_process->process_launcher_thread();
-  browser_process->io_thread();
 
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.

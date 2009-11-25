@@ -168,7 +168,13 @@ void Shutdown() {
 }
 
 #if defined(OS_WIN)
-void ReadLastShutdownInfo() {
+
+void ReadLastShutdownFile(
+    ShutdownType type,
+    int num_procs,
+    int num_procs_slow) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
   FilePath shutdown_ms_file = GetShutdownMsPath();
   std::string shutdown_ms_str;
   int64 shutdown_ms = 0;
@@ -176,6 +182,39 @@ void ReadLastShutdownInfo() {
     shutdown_ms = StringToInt64(shutdown_ms_str);
   file_util::Delete(shutdown_ms_file, false);
 
+  if (type == NOT_VALID || shutdown_ms == 0 || num_procs == 0)
+    return;
+
+  const char *time_fmt = "Shutdown.%s.time";
+  const char *time_per_fmt = "Shutdown.%s.time_per_process";
+  std::string time;
+  std::string time_per;
+  if (type == WINDOW_CLOSE) {
+    time = StringPrintf(time_fmt, "window_close");
+    time_per = StringPrintf(time_per_fmt, "window_close");
+  } else if (type == BROWSER_EXIT) {
+    time = StringPrintf(time_fmt, "browser_exit");
+    time_per = StringPrintf(time_per_fmt, "browser_exit");
+  } else if (type == END_SESSION) {
+    time = StringPrintf(time_fmt, "end_session");
+    time_per = StringPrintf(time_per_fmt, "end_session");
+  } else {
+    NOTREACHED();
+  }
+
+  if (time.empty())
+    return;
+
+  // TODO(erikkay): change these to UMA histograms after a bit more testing.
+  UMA_HISTOGRAM_TIMES(time.c_str(),
+                      TimeDelta::FromMilliseconds(shutdown_ms));
+  UMA_HISTOGRAM_TIMES(time_per.c_str(),
+                      TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
+  UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.total", num_procs);
+  UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.slow", num_procs_slow);
+}
+
+void ReadLastShutdownInfo() {
   PrefService* prefs = g_browser_process->local_state();
   ShutdownType type =
       static_cast<ShutdownType>(prefs->GetInteger(prefs::kShutdownType));
@@ -186,33 +225,11 @@ void ReadLastShutdownInfo() {
   prefs->SetInteger(prefs::kShutdownNumProcesses, 0);
   prefs->SetInteger(prefs::kShutdownNumProcessesSlow, 0);
 
-  if (type > NOT_VALID && shutdown_ms > 0 && num_procs > 0) {
-    const char *time_fmt = "Shutdown.%s.time";
-    const char *time_per_fmt = "Shutdown.%s.time_per_process";
-    std::string time;
-    std::string time_per;
-    if (type == WINDOW_CLOSE) {
-      time = StringPrintf(time_fmt, "window_close");
-      time_per = StringPrintf(time_per_fmt, "window_close");
-    } else if (type == BROWSER_EXIT) {
-      time = StringPrintf(time_fmt, "browser_exit");
-      time_per = StringPrintf(time_per_fmt, "browser_exit");
-    } else if (type == END_SESSION) {
-      time = StringPrintf(time_fmt, "end_session");
-      time_per = StringPrintf(time_per_fmt, "end_session");
-    } else {
-      NOTREACHED();
-    }
-    if (time.length()) {
-      // TODO(erikkay): change these to UMA histograms after a bit more testing.
-      UMA_HISTOGRAM_TIMES(time.c_str(),
-                          TimeDelta::FromMilliseconds(shutdown_ms));
-      UMA_HISTOGRAM_TIMES(time_per.c_str(),
-                          TimeDelta::FromMilliseconds(shutdown_ms / num_procs));
-      UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.total", num_procs);
-      UMA_HISTOGRAM_COUNTS_100("Shutdown.renderers.slow", num_procs_slow);
-    }
-  }
+  // Read and delete the file on the file thread.
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableFunction(
+          &ReadLastShutdownFile, type, num_procs, num_procs_slow));
 }
 #endif
 
