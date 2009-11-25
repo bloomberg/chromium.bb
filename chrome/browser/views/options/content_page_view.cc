@@ -17,7 +17,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/views/clear_browsing_data.h"
 #include "chrome/browser/views/importer_view.h"
 #include "chrome/browser/views/options/options_group_view.h"
@@ -458,8 +458,8 @@ void ContentPageView::UpdateSyncControls() {
   std::wstring link_label;
   std::wstring button_label;
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
-  bool status_has_error = SyncStatusUIHelper::GetLabels(sync_service_,
-      &status_label, &link_label) == SyncStatusUIHelper::SYNC_ERROR;
+  bool status_has_error = sync_ui_util::GetStatusLabels(sync_service_,
+      &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
   if (sync_setup_completed) {
     button_label = l10n_util::GetString(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
   } else if (sync_service_->SetupInProgress()) {

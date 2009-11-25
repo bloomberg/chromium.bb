@@ -34,8 +34,8 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
-#include "chrome/browser/sync/sync_status_ui_helper_mac.h"
+#include "chrome/browser/sync/sync_ui_util.h"
+#include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
@@ -489,7 +489,7 @@ static bool g_is_opening_new_window = false;
           break;
         case IDC_SYNC_BOOKMARKS:
           enable = ProfileSyncService::IsSyncEnabled();
-          browser_sync::UpdateSyncItem(item, enable, [self defaultProfile]);
+          sync_ui_util::UpdateSyncItem(item, enable, [self defaultProfile]);
           break;
         default:
           enable = menuState_->IsCommandEnabled(tag) ? YES : NO;
@@ -576,7 +576,7 @@ static bool g_is_opening_new_window = false;
     case IDC_SYNC_BOOKMARKS:
       // TODO(akalin): Add a constant to denote starting sync from the
       // main menu and use that instead of START_FROM_WRENCH.
-      SyncStatusUIHelper::OpenSyncMyBookmarksDialog(
+      sync_ui_util::OpenSyncMyBookmarksDialog(
           defaultProfile, ProfileSyncService::START_FROM_WRENCH);
       break;
   };

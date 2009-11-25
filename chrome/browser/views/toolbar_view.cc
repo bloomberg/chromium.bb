@@ -28,7 +28,7 @@
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/user_data_manager.h"
@@ -1183,12 +1183,12 @@ void ToolbarView::CreateAppMenu() {
     string16 link;
     // TODO(timsteele): Need a ui helper method to just get the type without
     // needing labels.
-    SyncStatusUIHelper::MessageType type = SyncStatusUIHelper::GetLabels(
+    sync_ui_util::MessageType type = sync_ui_util::GetStatusLabels(
         browser_->profile()->GetOriginalProfile()->GetProfileSyncService(),
         &label, &link);
-    label = type == SyncStatusUIHelper::SYNCED ?
+    label = type == sync_ui_util::SYNCED ?
         l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL) :
-        type == SyncStatusUIHelper::SYNC_ERROR ?
+        type == sync_ui_util::SYNC_ERROR ?
         l10n_util::GetStringUTF16(IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL) :
         l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
     app_menu_contents_->AddItem(IDC_SYNC_BOOKMARKS, label);

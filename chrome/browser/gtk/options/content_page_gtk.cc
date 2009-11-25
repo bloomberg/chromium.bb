@@ -17,7 +17,7 @@
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_window_gtk.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -353,8 +353,8 @@ void ContentPageGtk::UpdateSyncControls() {
   string16 link_label;
   std::string button_label;
   bool sync_setup_completed = sync_service_->HasSyncSetupCompleted();
-  bool status_has_error = SyncStatusUIHelper::GetLabels(sync_service_,
-      &status_label, &link_label) == SyncStatusUIHelper::SYNC_ERROR;
+  bool status_has_error = sync_ui_util::GetStatusLabels(sync_service_,
+      &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
   if (sync_setup_completed) {
     button_label = l10n_util::GetStringUTF8(IDS_SYNC_STOP_SYNCING_BUTTON_LABEL);
   } else if (sync_service_->SetupInProgress()) {

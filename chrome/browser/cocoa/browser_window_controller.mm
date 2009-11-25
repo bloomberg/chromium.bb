@@ -42,7 +42,7 @@
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_status_ui_helper_mac.h"
+#include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
@@ -673,7 +673,7 @@ willPositionSheet:(NSWindow*)sheet
           break;
         case IDC_SYNC_BOOKMARKS:
           enable &= ProfileSyncService::IsSyncEnabled();
-          browser_sync::UpdateSyncItem(item, enable, browser_->profile());
+          sync_ui_util::UpdateSyncItem(item, enable, browser_->profile());
           break;
         default:
           // Special handling for the contents of the Text Encoding submenu. On

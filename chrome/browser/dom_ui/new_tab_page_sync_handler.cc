@@ -82,12 +82,12 @@ NewTabPageSyncHandler::~NewTabPageSyncHandler() {
 // static
 NewTabPageSyncHandler::MessageType
     NewTabPageSyncHandler::FromSyncStatusMessageType(
-        SyncStatusUIHelper::MessageType type) {
+        sync_ui_util::MessageType type) {
   switch (type) {
-    case SyncStatusUIHelper::SYNC_ERROR:
+    case sync_ui_util::SYNC_ERROR:
       return SYNC_ERROR;
-    case SyncStatusUIHelper::PRE_SYNCED:
-    case SyncStatusUIHelper::SYNCED:
+    case sync_ui_util::PRE_SYNCED:
+    case sync_ui_util::SYNCED:
     default:
       return HIDE;
   }
@@ -138,8 +138,8 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   //               message).
   string16 status_msg;
   string16 link_text;
-  SyncStatusUIHelper::MessageType type =
-      SyncStatusUIHelper::GetLabels(sync_service_, &status_msg, &link_text);
+  sync_ui_util::MessageType type =
+      sync_ui_util::GetStatusLabels(sync_service_, &status_msg, &link_text);
   SendSyncMessageToPage(FromSyncStatusMessageType(type),
                         UTF16ToUTF8(status_msg), UTF16ToUTF8(link_text));
 }

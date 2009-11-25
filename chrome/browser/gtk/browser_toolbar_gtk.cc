@@ -34,7 +34,7 @@
 #include "chrome/browser/gtk/view_id_util.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_details.h"
@@ -703,12 +703,12 @@ void BrowserToolbarGtk::OnStateChanged() {
   string16 link;
   // TODO(zork): Need a ui helper method to just get the type without
   // needing labels.
-  SyncStatusUIHelper::MessageType type = SyncStatusUIHelper::GetLabels(
+  sync_ui_util::MessageType type = sync_ui_util::GetStatusLabels(
       sync_service_, &label, &link);
 
-  int menu_label = type == SyncStatusUIHelper::SYNCED ?
+  int menu_label = type == sync_ui_util::SYNCED ?
       IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL :
-      type == SyncStatusUIHelper::SYNC_ERROR ?
+      type == sync_ui_util::SYNC_ERROR ?
       IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL :
       IDS_SYNC_START_SYNC_BUTTON_LABEL;
 

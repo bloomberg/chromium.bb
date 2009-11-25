@@ -22,7 +22,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
@@ -1687,10 +1687,10 @@ bool BookmarkBarView::ShouldShowSyncErrorButton() {
   if (sync_service_ && sync_service_->HasSyncSetupCompleted()) {
     string16 status_text;
     string16 link_text;
-    SyncStatusUIHelper::MessageType sync_status;
-    sync_status = SyncStatusUIHelper::GetLabels(
+    sync_ui_util::MessageType sync_status;
+    sync_status = sync_ui_util::GetStatusLabels(
         sync_service_, &status_text, &link_text);
-    if (sync_status == SyncStatusUIHelper::SYNC_ERROR) {
+    if (sync_status == sync_ui_util::SYNC_ERROR) {
       show_sync_error_button = true;
     }
   }

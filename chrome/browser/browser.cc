@@ -46,7 +46,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/status_bubble.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -1284,7 +1284,7 @@ void Browser::OpenImportSettingsDialog() {
 }
 
 void Browser::OpenSyncMyBookmarksDialog() {
-  SyncStatusUIHelper::OpenSyncMyBookmarksDialog(
+  sync_ui_util::OpenSyncMyBookmarksDialog(
       profile_, ProfileSyncService::START_FROM_WRENCH);
 }
 

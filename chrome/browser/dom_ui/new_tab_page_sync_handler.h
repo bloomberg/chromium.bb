@@ -9,7 +9,7 @@
 
 #include "chrome/browser/dom_ui/dom_ui.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 
 class Value;
 
@@ -52,7 +52,7 @@ class NewTabPageSyncHandler : public DOMMessageHandler,
 
   // Helper to convert from a sync status message type to an NTP specific one.
   static MessageType FromSyncStatusMessageType(
-      SyncStatusUIHelper::MessageType type);
+      sync_ui_util::MessageType type);
 
   // Cached pointer to ProfileSyncService.
   ProfileSyncService* sync_service_;

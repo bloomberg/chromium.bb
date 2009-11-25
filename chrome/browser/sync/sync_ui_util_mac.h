@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SYNC_SYNC_STATUS_UI_HELPER_MAC_H_
-#define CHROME_BROWSER_SYNC_SYNC_STATUS_UI_HELPER_MAC_H_
+#ifndef CHROME_BROWSER_SYNC_SYNC_UI_UTIL_MAC_H_
+#define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_MAC_H_
 
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 
 #import <Cocoa/Cocoa.h>
 
 class Profile;
 
-namespace browser_sync {
+namespace sync_ui_util {
 
 // Updates a bookmark sync UI item (expected to be a menu item). This is
 // called every time a menu containing a sync UI item is displayed.
@@ -20,9 +20,9 @@ void UpdateSyncItem(id syncItem, BOOL syncEnabled, Profile* profile);
 // This function (used by UpdateSyncItem) is only exposed for testing.
 // Just use UpdateSyncItem() instead.
 void UpdateSyncItemForStatus(id syncItem, BOOL syncEnabled,
-                             SyncStatusUIHelper::MessageType status);
+                             sync_ui_util::MessageType status);
 
-}  // namespace browser_sync
+}  // namespace sync_ui_util
 
-#endif  // CHROME_BROWSER_SYNC_SYNC_STATUS_UI_HELPER_H_
+#endif  // CHROME_BROWSER_SYNC_SYNC_UI_UTIL_MAC_H_
 

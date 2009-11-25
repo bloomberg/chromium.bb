@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_status_ui_helper_mac.h"
+#include "chrome/browser/sync/sync_ui_util_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
@@ -35,22 +35,22 @@ TEST_F(SyncStatusUIHelperMacTest, UpdateSyncItem) {
   [syncMenuItem setTitle:@""];
   [syncMenuItem setHidden:NO];
 
-  browser_sync::UpdateSyncItemForStatus(syncMenuItem, NO,
-                                        SyncStatusUIHelper::PRE_SYNCED);
+  sync_ui_util::UpdateSyncItemForStatus(syncMenuItem, NO,
+                                        sync_ui_util::PRE_SYNCED);
   EXPECT_TRUE([[syncMenuItem title] isEqualTo:startSync]);
   EXPECT_TRUE([syncMenuItem isHidden]);
 
   [syncMenuItem setTitle:@""];
   [syncMenuItem setHidden:YES];
-  browser_sync::UpdateSyncItemForStatus(syncMenuItem, YES,
-                                        SyncStatusUIHelper::SYNC_ERROR);
+  sync_ui_util::UpdateSyncItemForStatus(syncMenuItem, YES,
+                                        sync_ui_util::SYNC_ERROR);
   EXPECT_TRUE([[syncMenuItem title] isEqualTo:bookmarkSyncError]);
   EXPECT_FALSE([syncMenuItem isHidden]);
 
   [syncMenuItem setTitle:@""];
   [syncMenuItem setHidden:NO];
-  browser_sync::UpdateSyncItemForStatus(syncMenuItem, NO,
-                                        SyncStatusUIHelper::SYNCED);
+  sync_ui_util::UpdateSyncItemForStatus(syncMenuItem, NO,
+                                        sync_ui_util::SYNCED);
   EXPECT_TRUE([[syncMenuItem title] isEqualTo:bookmarksSynced]);
   EXPECT_TRUE([syncMenuItem isHidden]);
 }
@@ -65,19 +65,18 @@ TEST_F(SyncStatusUIHelperMacTest, UpdateSyncItemWithSeparator) {
   NSMenuItem* followingSeparator = [NSMenuItem separatorItem];
   [menu addItem:followingSeparator];
 
-  const SyncStatusUIHelper::MessageType kStatus =
-    SyncStatusUIHelper::PRE_SYNCED;
+  const sync_ui_util::MessageType kStatus = sync_ui_util::PRE_SYNCED;
 
   [syncMenuItem setHidden:NO];
   [followingSeparator setHidden:NO];
-  browser_sync::UpdateSyncItemForStatus(syncMenuItem, NO, kStatus);
+  sync_ui_util::UpdateSyncItemForStatus(syncMenuItem, NO, kStatus);
   EXPECT_FALSE([followingSeparator isEnabled]);
   EXPECT_TRUE([syncMenuItem isHidden]);
   EXPECT_TRUE([followingSeparator isHidden]);
 
   [syncMenuItem setHidden:YES];
   [followingSeparator setHidden:YES];
-  browser_sync::UpdateSyncItemForStatus(syncMenuItem, YES, kStatus);
+  sync_ui_util::UpdateSyncItemForStatus(syncMenuItem, YES, kStatus);
   EXPECT_FALSE([followingSeparator isEnabled]);
   EXPECT_FALSE([syncMenuItem isHidden]);
   EXPECT_FALSE([followingSeparator isHidden]);
@@ -95,14 +94,13 @@ TEST_F(SyncStatusUIHelperMacTest, UpdateSyncItemWithNonSeparator) {
                       action:@selector(commandDispatch)
                keyEquivalent:@""];
 
-  const SyncStatusUIHelper::MessageType kStatus =
-    SyncStatusUIHelper::PRE_SYNCED;
+  const sync_ui_util::MessageType kStatus = sync_ui_util::PRE_SYNCED;
 
-  browser_sync::UpdateSyncItemForStatus(syncMenuItem, NO, kStatus);
+  sync_ui_util::UpdateSyncItemForStatus(syncMenuItem, NO, kStatus);
   EXPECT_TRUE([followingNonSeparator isEnabled]);
   EXPECT_FALSE([followingNonSeparator isHidden]);
 
-  browser_sync::UpdateSyncItemForStatus(syncMenuItem, YES, kStatus);
+  sync_ui_util::UpdateSyncItemForStatus(syncMenuItem, YES, kStatus);
   EXPECT_TRUE([followingNonSeparator isEnabled]);
   EXPECT_FALSE([followingNonSeparator isHidden]);
 }

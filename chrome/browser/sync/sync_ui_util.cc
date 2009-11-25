@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
@@ -14,10 +14,14 @@
 
 typedef GoogleServiceAuthError AuthError;
 
+namespace sync_ui_util {
+
+namespace {
+
 // Given an authentication state, this helper function returns the appropriate
 // status message and, if necessary, the text that should appear in the
 // re-login link.
-static void GetLabelsForAuthError(const AuthError& auth_error,
+void GetStatusLabelsForAuthError(const AuthError& auth_error,
     ProfileSyncService* service, string16* status_label,
     string16* link_label) {
   if (link_label)
@@ -48,7 +52,7 @@ static void GetLabelsForAuthError(const AuthError& auth_error,
 // Returns the message that should be displayed when the user is authenticated
 // and can connect to the sync server. If the user hasn't yet authenticated, an
 // empty string is returned.
-static string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
+string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
   string16 label;
   string16 user_name(service->GetAuthenticatedUsername());
   if (user_name.empty())
@@ -60,10 +64,11 @@ static string16 GetSyncedStateStatusLabel(ProfileSyncService* service) {
       WideToUTF16(service->GetLastSyncedTimeString()));
 }
 
-// static
-SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
-    ProfileSyncService* service, string16* status_label,
-    string16* link_label) {
+}  // namespace
+
+MessageType GetStatusLabels(ProfileSyncService* service,
+                            string16* status_label,
+                            string16* link_label) {
   MessageType result_type(SYNCED);
 
   if (!service) {
@@ -85,7 +90,8 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
           l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
       result_type = PRE_SYNCED;
     } else if (auth_error.state() != AuthError::NONE) {
-      GetLabelsForAuthError(auth_error, service, status_label, link_label);
+      GetStatusLabelsForAuthError(auth_error, service,
+                                  status_label, link_label);
       result_type = SYNC_ERROR;
     }
   } else {
@@ -102,7 +108,7 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
             l10n_util::GetStringUTF16(IDS_SYNC_AUTHENTICATING_LABEL));
       } else if (auth_error.state() != AuthError::NONE) {
         status_label->clear();
-        GetLabelsForAuthError(auth_error, service, status_label, NULL);
+        GetStatusLabelsForAuthError(auth_error, service, status_label, NULL);
         result_type = SYNC_ERROR;
       } else if (!status.authenticated) {
         status_label->assign(
@@ -118,8 +124,7 @@ SyncStatusUIHelper::MessageType SyncStatusUIHelper::GetLabels(
   return result_type;
 }
 
-// static
-void SyncStatusUIHelper::OpenSyncMyBookmarksDialog(
+void OpenSyncMyBookmarksDialog(
     Profile* profile, ProfileSyncService::SyncEventCodes code) {
   ProfileSyncService* service =
     profile->GetOriginalProfile()->GetProfileSyncService();
@@ -134,4 +139,6 @@ void SyncStatusUIHelper::OpenSyncMyBookmarksDialog(
     ProfileSyncService::SyncEvent(code);
   }
 }
+
+}  // namespace sync_ui_util
 

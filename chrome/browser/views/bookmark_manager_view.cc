@@ -22,7 +22,7 @@
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/views/bookmark_editor_view.h"
 #include "chrome/browser/views/bookmark_folder_tree_view.h"
 #include "chrome/browser/views/bookmark_table_view.h"
@@ -512,7 +512,7 @@ void BookmarkManagerView::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   if (sender == sync_status_button_) {
     UserMetrics::RecordAction("BookmarkManager_Sync", profile_);
-    SyncStatusUIHelper::OpenSyncMyBookmarksDialog(
+    sync_ui_util::OpenSyncMyBookmarksDialog(
         profile_, ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
   }
 }
@@ -818,8 +818,8 @@ void BookmarkManagerView::UpdateSyncStatus() {
   DCHECK(sync_service_);
   std::wstring status_label;
   std::wstring link_label;
-  bool synced = SyncStatusUIHelper::GetLabels(sync_service_,
-      &status_label, &link_label) == SyncStatusUIHelper::SYNCED;
+  bool synced = sync_ui_util::GetStatusLabels(sync_service_,
+      &status_label, &link_label) == sync_ui_util::SYNCED;
 
   if (sync_service_->HasSyncSetupCompleted()) {
     std::wstring username = sync_service_->GetAuthenticatedUsername();

@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sync/sync_status_ui_helper_mac.h"
+#include "chrome/browser/sync/sync_ui_util_mac.h"
 
 #import <Cocoa/Cocoa.h>
 
 #include "app/l10n_util_mac.h"
 #include "base/logging.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "grit/generated_resources.h"
 
-namespace browser_sync {
+namespace sync_ui_util {
 
 void UpdateSyncItem(id syncItem, BOOL syncEnabled, Profile* profile) {
   ProfileSyncService* syncService =
@@ -20,13 +20,13 @@ void UpdateSyncItem(id syncItem, BOOL syncEnabled, Profile* profile) {
   // TODO(timsteele): Need a ui helper method to just get the type
   // without needing labels.
   string16 label, link;
-  SyncStatusUIHelper::MessageType status =
-      SyncStatusUIHelper::GetLabels(syncService, &label, &link);
+  sync_ui_util::MessageType status =
+      sync_ui_util::GetStatusLabels(syncService, &label, &link);
   UpdateSyncItemForStatus(syncItem, syncEnabled, status);
 }
 
 void UpdateSyncItemForStatus(id syncItem, BOOL syncEnabled,
-                             SyncStatusUIHelper::MessageType status) {
+                             sync_ui_util::MessageType status) {
   DCHECK([syncItem isKindOfClass:[NSMenuItem class]]);
   NSMenuItem* syncMenuItem = static_cast<NSMenuItem*>(syncItem);
   // Look for a separator immediately after the menu item.
@@ -47,13 +47,13 @@ void UpdateSyncItemForStatus(id syncItem, BOOL syncEnabled,
   // chrome/browser/views/toolbar_view.cc.
   int titleId;
   switch (status) {
-    case SyncStatusUIHelper::SYNCED:
+    case sync_ui_util::SYNCED:
       titleId = IDS_SYNC_MENU_BOOKMARKS_SYNCED_LABEL;
       break;
-    case SyncStatusUIHelper::SYNC_ERROR:
+    case sync_ui_util::SYNC_ERROR:
       titleId = IDS_SYNC_MENU_BOOKMARK_SYNC_ERROR_LABEL;
       break;
-    case SyncStatusUIHelper::PRE_SYNCED:
+    case sync_ui_util::PRE_SYNCED:
       titleId = IDS_SYNC_START_SYNC_BUTTON_LABEL;
       break;
     default:
@@ -72,4 +72,4 @@ void UpdateSyncItemForStatus(id syncItem, BOOL syncEnabled,
   [followingSeparator setHidden:!syncEnabled];
 }
 
-}  // namespace browser_sync
+}  // namespace sync_ui_util

@@ -30,7 +30,7 @@
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/sync_status_ui_helper.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_observer.h"
@@ -1592,7 +1592,7 @@ const int kDisabledIndex = 1;
   [syncButton_ setTitle:buttonLabel];
 
   string16 statusLabel, linkLabel;
-  SyncStatusUIHelper::GetLabels(syncService_, &statusLabel, &linkLabel);
+  sync_ui_util::GetStatusLabels(syncService_, &statusLabel, &linkLabel);
   [syncStatus_ setStringValue:base::SysUTF16ToNSString(statusLabel)];
 }
 
