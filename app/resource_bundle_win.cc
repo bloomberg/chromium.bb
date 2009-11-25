@@ -39,8 +39,8 @@ ResourceBundle::~ResourceBundle() {
 }
 
 void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
-  // As a convenience, set resources_data_ to the current module.
-  resources_data_ = _AtlBaseModule.GetModuleInstance();
+  // As a convenience, set resources_data_ to the current resource module.
+  resources_data_ = _AtlBaseModule.GetResourceInstance();
 
   DCHECK(NULL == locale_resources_data_) << "locale dll already loaded";
   const FilePath& locale_path = GetLocaleFilePath(pref_locale);

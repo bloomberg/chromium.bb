@@ -104,6 +104,15 @@ void FakeExternalTab::Initialize() {
   chrome::RegisterPathProvider();
   app::RegisterPathProvider();
 
+  // Load Chrome.dll as our resource dll.
+  FilePath dll;
+  PathService::Get(base::DIR_MODULE, &dll);
+  dll = dll.Append(chrome::kBrowserResourcesDll);
+  HMODULE res_mod = ::LoadLibraryExW(dll.value().c_str(),
+      NULL, LOAD_LIBRARY_AS_DATAFILE | LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+  DCHECK(res_mod);
+  _AtlBaseModule.SetResourceInstance(res_mod);
+
   ResourceBundle::InitSharedInstance(L"en-US");
 
   const CommandLine* cmd = CommandLine::ForCurrentProcess();
@@ -339,6 +348,7 @@ void FilterDisabledTests() {
   const char* disabled_tests[] = {
     // Tests disabled since they're testing the same functionality used
     // by the TestAutomationProvider.
+    "URLRequestTest.Intercept",
     "URLRequestTest.InterceptNetworkError",
     "URLRequestTest.InterceptRestartRequired",
     "URLRequestTest.InterceptRespectsCancelMain",
