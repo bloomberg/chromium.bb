@@ -20,16 +20,15 @@ class FlipIOBuffer {
  public:
   // Constructor
   // |buffer| is the actual data buffer.
-  // |size| is the size of the data buffer.
   // |priority| is the priority of this buffer.  Lower numbers are higher
   //            priority.
   // |stream| is a pointer to the stream which is managing this buffer.
-  FlipIOBuffer(IOBuffer* buffer, int size, int priority, FlipStream* stream);
+  FlipIOBuffer(IOBufferWithSize* buffer, int priority, FlipStream* stream);
   FlipIOBuffer();
   ~FlipIOBuffer();
 
   // Accessors.
-  DrainableIOBuffer* buffer() const { return buffer_; }
+  IOBuffer* buffer() const { return buffer_; }
   size_t size() const { return buffer_->size(); }
   void release();
   int priority() const { return priority_; }
@@ -43,7 +42,7 @@ class FlipIOBuffer {
   }
 
  private:
-  scoped_refptr<DrainableIOBuffer> buffer_;
+  scoped_refptr<IOBufferWithSize> buffer_;
   int priority_;
   uint64 position_;
   scoped_refptr<FlipStream> stream_;

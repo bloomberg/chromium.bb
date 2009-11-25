@@ -2,9 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/flip/flip_io_buffer.h"
-
 #include "net/base/test_completion_callback.h"
+#include "net/flip/flip_io_buffer.h"
 #include "net/flip/flip_session.h"
 #include "net/flip/flip_stream.h"
 #include "net/socket/socket_test_util.h"
@@ -23,7 +22,7 @@ TEST_F(FlipSessionTest, FlipIOBuffer) {
 
   // Insert 100 items; pri 100 to 1.
   for (size_t index = 0; index < kQueueSize; ++index) {
-    FlipIOBuffer buffer(new IOBuffer(), 0, kQueueSize - index, NULL);
+    FlipIOBuffer buffer(NULL, kQueueSize - index, NULL);
     queue_.push(buffer);
   }
 
@@ -32,7 +31,7 @@ TEST_F(FlipSessionTest, FlipIOBuffer) {
   IOBufferWithSize* buffers[kNumDuplicates];
   for (size_t index = 0; index < kNumDuplicates; ++index) {
     buffers[index] = new IOBufferWithSize(index+1);
-    queue_.push(FlipIOBuffer(buffers[index], buffers[index]->size(), 0, NULL));
+    queue_.push(FlipIOBuffer(buffers[index], 0, NULL));
   }
 
   EXPECT_EQ(kQueueSize + kNumDuplicates, queue_.size());
