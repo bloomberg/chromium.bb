@@ -191,7 +191,7 @@ void TreeView::SetRootShown(bool root_shown) {
   if (root_shown_ == root_shown)
     return;
   root_shown_ = root_shown;
-  if (!model_)
+  if (!model_ || !tree_view_)
     return;
   // Repopulate the tree.
   DeleteRootItems();
@@ -203,7 +203,8 @@ void TreeView::TreeNodesAdded(TreeModel* model,
                               int start,
                               int count) {
   DCHECK(parent && start >= 0 && count > 0);
-  if (node_to_details_map_.find(parent) == node_to_details_map_.end()) {
+  if (node_to_details_map_.find(parent) == node_to_details_map_.end() &&
+      (root_shown_ || parent != model_->GetRoot())) {
     // User hasn't navigated to this entry yet. Ignore the change.
     return;
   }
@@ -235,8 +236,8 @@ void TreeView::TreeNodesAdded(TreeModel* model,
     } else {
       TreeModelNode* previous_sibling = model_->GetChild(parent, i + start - 1);
       CreateItem(parent_tree_item,
-                   GetNodeDetails(previous_sibling)->tree_item,
-                   model_->GetChild(parent, i + start));
+                 GetNodeDetails(previous_sibling)->tree_item,
+                 model_->GetChild(parent, i + start));
     }
   }
 }
@@ -557,6 +558,7 @@ void TreeView::DeleteRootItems() {
 
 void TreeView::CreateRootItems() {
   DCHECK(model_);
+  DCHECK(tree_view_);
   TreeModelNode* root = model_->GetRoot();
   if (root_shown_) {
     CreateItem(NULL, TVI_LAST, root);
@@ -596,6 +598,9 @@ void TreeView::CreateItem(HTREEITEM parent_item,
   // Invoking TreeView_InsertItem triggers OnNotify to be called. As such,
   // we set the map entries before adding the item.
   NodeDetails* node_details = new NodeDetails(node_id, node);
+
+  DCHECK(node_to_details_map_.count(node) == 0);
+  DCHECK(id_to_details_map_.count(node_id) == 0);
 
   node_to_details_map_[node] = node_details;
   id_to_details_map_[node_id] = node_details;
