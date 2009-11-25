@@ -167,25 +167,26 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
 void SIGCHLDHandler(int signal) {
 }
 
-// See comment in BrowserMain, where sigaction is called.
-void SIGTERMHandler(int signal) {
-  DCHECK_EQ(signal, SIGTERM);
-  LOG(WARNING) << "Addressing SIGTERM on " << PlatformThread::CurrentId();
+// Common code between SIG{HUP, INT, TERM}Handler.
+void GracefulShutdownHandler(int signal, const int expected_signal) {
+  DCHECK_EQ(signal, expected_signal);
+  LOG(WARNING) << "Addressing signal " << expected_signal << " on "
+               << PlatformThread::CurrentId();
 
   bool posted = ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit));
-  if (posted) {
-    LOG(WARNING) << "Posted task to UI thread; resetting SIGTERM handler";
-  }
 
   // Reinstall the default handler.  We had one shot at graceful shutdown.
   struct sigaction term_action;
   memset(&term_action, 0, sizeof(term_action));
   term_action.sa_handler = SIG_DFL;
-  CHECK(sigaction(SIGTERM, &term_action, NULL) == 0);
+  CHECK(sigaction(expected_signal, &term_action, NULL) == 0);
 
-  if (!posted) {
+  if (posted) {
+    LOG(WARNING) << "Posted task to UI thread; resetting signal "
+                 << expected_signal << " handler";
+  } else {
     // Without a UI thread to post the exit task to, there aren't many
     // options.  Raise the signal again.  The default handler will pick it up
     // and cause an ungraceful exit.
@@ -205,6 +206,21 @@ void SIGTERMHandler(int signal) {
     LOG(WARNING) << "Still here, exiting really ungracefully";
     _exit(signal | (1 << 7));
   }
+}
+
+// See comment in BrowserMain, where sigaction is called.
+void SIGHUPHandler(int signal) {
+  GracefulShutdownHandler(signal, SIGHUP);
+}
+
+// See comment in BrowserMain, where sigaction is called.
+void SIGINTHandler(int signal) {
+  GracefulShutdownHandler(signal, SIGINT);
+}
+
+// See comment in BrowserMain, where sigaction is called.
+void SIGTERMHandler(int signal) {
+  GracefulShutdownHandler(signal, SIGTERM);
 }
 
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard
@@ -291,6 +307,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
   memset(&term_action, 0, sizeof(term_action));
   term_action.sa_handler = SIGTERMHandler;
   CHECK(sigaction(SIGTERM, &term_action, NULL) == 0);
+  // Also handle SIGINT - when the user terminates the browser via Ctrl+C.
+  // If the browser process is being debugged, GDB will catch the SIGINT first.
+  CHECK(sigaction(SIGINT, &term_action, NULL) == 0);
+  // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
+  // distros send SIGHUP, SIGTERM, and then SIGKILL.
+  CHECK(sigaction(SIGHUP, &term_action, NULL) == 0);
 
   const std::wstring fd_limit_string =
       parsed_command_line.GetSwitchValue(switches::kFileDescriptorLimit);
