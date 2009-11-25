@@ -577,13 +577,12 @@ def GetFilesNotInCL():
 def SendToRietveld(request_path, payload=None,
                    content_type="application/octet-stream", timeout=None):
   """Send a POST/GET to Rietveld.  Returns the response body."""
+  server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
   def GetUserCredentials():
     """Prompts the user for a username and password."""
-    email = upload.GetEmail()
+    email = upload.GetEmail("Email (login for uploading to %s)" % server)
     password = getpass.getpass("Password for %s: " % email)
     return email, password
-
-  server = GetCodeReviewSetting("CODE_REVIEW_SERVER")
   rpc_server = upload.HttpRpcServer(server,
                                     GetUserCredentials,
                                     host_override=server,
