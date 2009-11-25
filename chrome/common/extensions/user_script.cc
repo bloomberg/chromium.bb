@@ -84,6 +84,9 @@ void UserScript::Pickle(::Pickle* pickle) const {
   // Write Greasemonkey emulation.
   pickle->WriteBool(emulate_greasemonkey());
 
+  // Write match all frames
+  pickle->WriteBool(match_all_frames());
+
   // Write globs.
   std::vector<std::string>::const_iterator glob;
   pickle->WriteSize(globs_.size());
@@ -129,6 +132,9 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
 
   // Read Greasemonkey emulation.
   CHECK(pickle.ReadBool(iter, &emulate_greasemonkey_));
+
+  // Read match all frames
+  CHECK(pickle.ReadBool(iter, &match_all_frames_));
 
   // Read globs.
   size_t num_globs = 0;

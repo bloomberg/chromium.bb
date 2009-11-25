@@ -102,7 +102,8 @@ class UserScript {
   // Constructor. Default the run location to document end, which is like
   // Greasemonkey and probably more useful for typical scripts.
   UserScript()
-    : run_location_(DOCUMENT_IDLE), emulate_greasemonkey_(false) {
+    : run_location_(DOCUMENT_IDLE), emulate_greasemonkey_(false),
+      match_all_frames_(false) {
   }
 
   const std::string& name_space() const { return name_space_; }
@@ -125,6 +126,10 @@ class UserScript {
   // Whether to emulate greasemonkey when running this script.
   bool emulate_greasemonkey() const { return emulate_greasemonkey_; }
   void set_emulate_greasemonkey(bool val) { emulate_greasemonkey_ = val; }
+
+  // Whether to match all frames, or only the top one.
+  bool match_all_frames() const { return match_all_frames_; }
+  void set_match_all_frames(bool val) { match_all_frames_ = val; }
 
   // The globs, if any, that determine which pages this script runs against.
   // These are only used with "standalone" Greasemonkey-like user scripts.
@@ -209,6 +214,10 @@ class UserScript {
   // Whether we should try to emulate Greasemonkey's APIs when running this
   // script.
   bool emulate_greasemonkey_;
+
+  // Whether the user script should run in all frames, or only just the top one.
+  // Defaults to false.
+  bool match_all_frames_;
 };
 
 typedef std::vector<UserScript> UserScriptList;

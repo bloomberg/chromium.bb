@@ -7,6 +7,7 @@
 
 // Keys used in JSON representation of extensions.
 namespace extension_manifest_keys {
+  extern const wchar_t* kAllFrames;
   extern const wchar_t* kBackground;
   extern const wchar_t* kBrowserAction;
   extern const wchar_t* kChromeURLOverrides;
@@ -89,6 +90,7 @@ namespace extension_manifest_errors {
   extern const char* kInvalidPrivacyBlacklists;
   extern const char* kInvalidPrivacyBlacklistsPath;
 
+  extern const char* kInvalidAllFrames;
   extern const char* kInvalidBackground;
   extern const char* kInvalidRunAt;
   extern const char* kInvalidSignature;

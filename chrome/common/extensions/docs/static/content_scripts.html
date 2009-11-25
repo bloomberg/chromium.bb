@@ -124,6 +124,14 @@ learn about the
     <b>NOTE:</b> In <code>document_idle</code>, content scripts may not necessarily receive the window.onload event, because they may run after it has
     already fired. In most cases, listening for the onload event is unnecessary for content scripts running at <code>document_idle</code> because they are guaranteed to run after the DOM is complete. If your script definitely needs to run after <code>window.onload</code> you can check if it has already fired by using the <code><a href="http://www.whatwg.org/specs/web-apps/current-work/#dom-document-readystate">document.readyState</a></code> property.</td>
   </tr>
+  <tr>
+    <td>all_frames</td>
+    <td>boolean</td>
+    <td><em>Optional.</em>
+    Controls whether the content script runs in all frames of the matching page, or only the top frame.
+    <br><br>
+    Defaults to <code>false</code>, meaning that only the top frame is matched.</td>
+  </tr>
 </table>
 
 

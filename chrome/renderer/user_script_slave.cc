@@ -142,6 +142,10 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
   for (size_t i = 0; i < scripts_.size(); ++i) {
     std::vector<WebScriptSource> sources;
     UserScript* script = scripts_[i];
+
+    if (frame->parent() && !script->match_all_frames())
+      continue;  // Only match subframes if the script declared it wanted to.
+
     if (!script->MatchesUrl(frame->url()))
       continue;  // This frame doesn't match the script url pattern, skip it.
 

@@ -219,6 +219,17 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
     }
   }
 
+  // all frames
+  if (content_script->HasKey(keys::kAllFrames)) {
+    bool all_frames = false;
+    if (!content_script->GetBoolean(keys::kAllFrames, &all_frames)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidAllFrames, IntToString(definition_index));
+      return false;
+    }
+    result->set_match_all_frames(all_frames);
+  }
+
   // matches
   ListValue* matches = NULL;
   if (!content_script->GetList(keys::kMatches, &matches)) {
@@ -993,8 +1004,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       if (!LoadUserScriptHelper(content_script, i, error, &script))
         return false;  // Failed to parse script context definition
       script.set_extension_id(id());
-      if (converted_from_user_script_)
+      if (converted_from_user_script_) {
         script.set_emulate_greasemonkey(true);
+        script.set_match_all_frames(true);  // greasemonkey matches all frames
+      }
       content_scripts_.push_back(script);
     }
   }
