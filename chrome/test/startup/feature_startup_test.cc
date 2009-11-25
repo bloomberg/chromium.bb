@@ -189,10 +189,9 @@ TEST_F(NewTabUIStartupTest, PerfCold) {
                  UITest::DEFAULT_THEME);
 }
 
-#if defined(OS_WIN)
+#if !defined(OS_MACOSX)
 // TODO(tc): Update the Mac reference build to support
 // WaitForInitialNewTabUILoad.
-// TODO(tc): This is failing on Linux too.
 TEST_F(NewTabUIStartupTest, PerfRefWarm) {
   UseReferenceBuild();
   RunStartupTest("tab_warm_ref", true /* warm */, true /* not important */,
