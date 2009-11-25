@@ -57,7 +57,7 @@ class TestApp {
     // There are some conditions we don't want to enqueue, for example when
     // the last buffer is an end-of-stream buffer, when we have stopped, and
     // when we have received an error.
-    bool eos = buffer->Eos();
+    bool eos = buffer->IsEndOfStream();
     delete buffer;
     if (!eos && !stopped_ && !error_)
       FeedDecoder();

@@ -899,7 +899,7 @@ void OmxVideoDecoder::EmptyBufferTask() {
     available_input_buffers_.pop();
 
     // Read into |omx_buffer|.
-    input_eos_ = buffer->Eos();
+    input_eos_ = buffer->IsEndOfStream();
     int filled = buffer->Read(omx_buffer->pBuffer, input_buffer_size_);
     if (buffer->Used()) {
       input_queue_.pop();
