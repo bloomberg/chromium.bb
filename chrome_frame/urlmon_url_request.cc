@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome_frame/chrome_frame_activex_base.h"
+#include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
 #include "chrome_frame/utils.h"
@@ -132,6 +133,91 @@ bool UrlmonUrlRequest::Read(int bytes_to_read) {
   return true;
 }
 
+void UrlmonUrlRequest::TransferToHost(IUnknown* host) {
+  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK(host);
+
+  DCHECK(moniker_);
+  if (!moniker_)
+    return;
+
+  ScopedComPtr<IMoniker> moniker;
+  moniker.Attach(moniker_.Detach());
+
+  // Create a new bind context that's not associated with our callback.
+  // Calling RevokeBindStatusCallback doesn't disassociate the callback with
+  // the bind context in IE7.  The returned bind context has the same
+  // implementation of GetRunningObjectTable as the bind context we held which
+  // basically delegates to ole32's GetRunningObjectTable.  The object table
+  // is then used to determine if the moniker is already running and via
+  // that mechanism is associated with the same internet request as has already
+  // been issued.
+  ScopedComPtr<IBindCtx> bind_context;
+  CreateBindCtx(0, bind_context.Receive());
+  DCHECK(bind_context);
+
+  LPOLESTR url = NULL;
+  if (SUCCEEDED(moniker->GetDisplayName(bind_context, NULL, &url))) {
+    DLOG(INFO) << __FUNCTION__ << " " << url;
+
+    // TODO(tommi): See if we can get HlinkSimpleNavigateToMoniker to work
+    // instead.  Looks like we'll need to support IHTMLDocument2 (get_URL in
+    // particular), access to IWebBrowser2 etc.
+    // HlinkSimpleNavigateToMoniker(moniker, url, NULL, host, bind_context,
+    //                              NULL, 0, 0);
+
+    ScopedComPtr<IWebBrowser2> wb2;
+    HRESULT hr = DoQueryService(SID_SWebBrowserApp, host, wb2.Receive());
+    DCHECK(wb2);
+    DLOG_IF(WARNING, FAILED(hr)) << StringPrintf(L"SWebBrowserApp 0x%08X", hr);
+
+    ScopedComPtr<IWebBrowserPriv> wbp;
+    ScopedComPtr<IWebBrowserPriv2IE7> wbp2_ie7;
+    ScopedComPtr<IWebBrowserPriv2IE8> wbp2_ie8;
+    if (SUCCEEDED(hr = wbp.QueryFrom(wb2))) {
+      ScopedVariant var_url(url);
+      hr = wbp->NavigateWithBindCtx(var_url.AsInput(), NULL, NULL, NULL, NULL,
+                                    bind_context, NULL);
+      DLOG_IF(WARNING, FAILED(hr))
+          << StringPrintf(L"NavigateWithBindCtx 0x%08X", hr);
+    } else {
+      DLOG(WARNING) << StringPrintf(L"IWebBrowserPriv 0x%08X", hr);
+      IWebBrowserPriv2IE7* common_wbp2 = NULL;
+      if (SUCCEEDED(hr = wbp2_ie7.QueryFrom(wb2))) {
+        common_wbp2 = wbp2_ie7;
+      } else if (SUCCEEDED(hr = wbp2_ie8.QueryFrom(wb2))) {
+        common_wbp2 = reinterpret_cast<IWebBrowserPriv2IE7*>(wbp2_ie8.get());
+      }
+
+      if (common_wbp2) {
+        typedef HRESULT (WINAPI* CreateUriFn)(LPCWSTR uri, DWORD flags,
+            DWORD_PTR reserved, IUri** ret);
+
+        CreateUriFn create_uri = reinterpret_cast<CreateUriFn>(
+            ::GetProcAddress(::GetModuleHandleA("urlmon"), "CreateUri"));
+        DCHECK(create_uri);
+        if (create_uri) {
+          ScopedComPtr<IUri> uri_obj;
+          hr = create_uri(url, 0, 0, uri_obj.Receive());
+          DLOG_IF(WARNING, FAILED(hr))
+              << StringPrintf(L"create_uri 0x%08X", hr);
+          hr = common_wbp2->NavigateWithBindCtx2(uri_obj, NULL, NULL, NULL,
+                                                 NULL, bind_context, NULL);
+          DLOG_IF(WARNING, FAILED(hr))
+              << StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
+        }
+      } else {
+        DLOG(WARNING) << StringPrintf(L"IWebBrowserPriv2 0x%08X", hr);
+        NOTREACHED();
+      }
+    }
+
+    DCHECK(wbp || wbp2_ie7 || wbp2_ie8);
+
+    ::CoTaskMemFree(url);
+  }
+}
+
 void UrlmonUrlRequest::ReadAsync(int bytes_to_read) {
   // Send cached data if available.
   CComObjectStackEx<SendStream> send_stream;
@@ -235,8 +321,11 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
 
   // Release these variables after reporting EndRequest since we might need to
   // access their state.
-  binding_ = NULL;
-  bind_context_ = NULL;
+  binding_.Release();
+  if (bind_context_) {
+    ::RevokeBindStatusCallback(bind_context_, this);
+    bind_context_.Release();
+  }
 
   return S_OK;
 }

@@ -34,6 +34,51 @@ IWebBrowserEventsUrlService : public IUnknown {
   STDMETHOD(GetUrlForEvents)(BSTR* url) = 0;
 };
 
+// Web browser methods that are used by MSHTML when navigating or
+// initiating downloads.  IE6.
+class __declspec(uuid("{3050F804-98B5-11CF-BB82-00AA00BDCE0B}"))
+IWebBrowserPriv : public IUnknown {
+ public:
+  STDMETHOD(NavigateWithBindCtx)(VARIANT* uri, VARIANT* flags,
+                                 VARIANT* target_frame, VARIANT* post_data,
+                                 VARIANT* headers, IBindCtx* bind_ctx,
+                                 LPOLESTR url_fragment);
+  STDMETHOD(OnClose)();
+};
+
+// Web browser methods that are used by MSHTML when navigating or
+// initiating downloads.  IE7.
+class __declspec(uuid("{1AF32B6C-A3BA-48B9-B24E-8AA9C41F6ECD}"))
+IWebBrowserPriv2IE7 : public IUnknown {
+ public:
+  STDMETHOD(NavigateWithBindCtx2)(IUri* uri, VARIANT* flags,
+                                  VARIANT* target_frame, VARIANT* post_data,
+                                  VARIANT* headers, IBindCtx* bind_ctx,
+                                  LPOLESTR url_fragment);
+  STDMETHOD(SetBrowserFrameOptions)(DWORD opt1, DWORD opt2);
+  STDMETHOD(DetachConnectionPoints)();
+};
+
+// Web browser methods that are used by MSHTML when navigating or
+// initiating downloads.  IE8 uses IID {3ED72303-6FFC-4214-BA90-FAF1862DEC8A}
+// whereas the IID is {1AF32B6C-A3BA-48B9-B24E-8AA9C41F6ECD} in IE7
+class __declspec(uuid("{3ED72303-6FFC-4214-BA90-FAF1862DEC8A}"))
+IWebBrowserPriv2IE8 : public IUnknown {
+ public:
+  STDMETHOD(NavigateWithBindCtx2)(IUri* uri, VARIANT* flags,
+                                  VARIANT* target_frame, VARIANT* post_data,
+                                  VARIANT* headers, IBindCtx* bind_ctx,
+                                  LPOLESTR url_fragment);
+  STDMETHOD(SetBrowserFrameOptions)(DWORD opt1, DWORD opt2);
+  STDMETHOD(DetachConnectionPoints)();
+  STDMETHOD(GetProcessId)(DWORD* pid);
+  STDMETHOD(CompatAttachEditEvents)();
+  STDMETHOD(HandleOpenOptions)(IUnknown* obj, BSTR bstr, int options);
+  STDMETHOD(SetSearchTerm)(BSTR term);
+  STDMETHOD(GetSearchTerm)(BSTR* term);
+  STDMETHOD(GetCurrentDocument)(IDispatch** doc);
+};
+
 // This interface is used to call FireBeforeNavigate with additional
 // information like url. Available on IE7 onwards.
 //

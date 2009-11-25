@@ -14,10 +14,10 @@
 //   undo the janky "#define NOMINMAX" train wreck. See:
 // http://connect.microsoft.com/VisualStudio/feedback/ViewFeedback.aspx?FeedbackID=100703
 #ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
+#define max(a,b) (((a) > (b)) ? (a) : (b))  // NOLINT
 #endif
 #ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
+#define min(a,b) (((a) < (b)) ? (a) : (b))  // NOLINT
 #endif
 #include <atlimage.h>
 #undef max
@@ -99,7 +99,7 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
     FireMethodWithParam(CF_EVENT_DISPID_ONMESSAGE, var);
   }
 
-  void Fire_onreadystatechanged(long readystate) {
+  void Fire_onreadystatechanged(long readystate) {  // NOLINT
     VARIANT var = { VT_I4 };
     var.lVal = readystate;
     FireMethodWithParam(CF_EVENT_DISPID_ONREADYSTATECHANGED, var);
@@ -117,7 +117,7 @@ class ATL_NO_VTABLE ProxyDIChromeFrameEvents
                          arraysize(args));
   }
 
-  void Fire_onextensionready(BSTR path, long response) {
+  void Fire_onextensionready(BSTR path, long response) {  // NOLINT
     // Arguments in reverse order to the function declaration, because
     // that's what DISPPARAMS requires.
     VARIANT args[2] = { { VT_I4, }, { VT_BSTR, } };
@@ -134,7 +134,7 @@ extern bool g_first_launch_by_process_;
 
 // Common implementation for ActiveX and Active Document
 template <class T, const CLSID& class_id>
-class ATL_NO_VTABLE ChromeFrameActivexBase :
+class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
   public CComObjectRootEx<CComMultiThreadModel>,
   public IOleControlImpl<T>,
   public IOleObjectImpl<T>,
@@ -266,7 +266,7 @@ END_MSG_MAP()
   }
 
   // Called to draw our control when chrome hasn't been initialized.
-  virtual HRESULT OnDraw(ATL_DRAWINFO& draw_info) {  // NO_LINT
+  virtual HRESULT OnDraw(ATL_DRAWINFO& draw_info) {  // NOLINT
     if (NULL == draw_info.prcBounds) {
       NOTREACHED();
       return E_FAIL;
@@ -490,6 +490,10 @@ END_MSG_MAP()
 
   virtual void OnDownloadRequestInHost(int tab_handle, int request_id) {
     DLOG(INFO) << "TODO: Let the host browser handle this download";
+    PluginUrlRequest* request = automation_client_->LookupRequest(request_id);
+    if (request) {
+      static_cast<UrlmonUrlRequest*>(request)->TransferToHost(doc_site_);
+    }
     automation_client_->RemoveRequest(request_id, false);
   }
 
@@ -914,7 +918,7 @@ END_MSG_MAP()
   // creating a "message" event.
   HRESULT CreateDomEvent(const std::string& event_type, const std::string& data,
                          const std::string& origin, IDispatch** event) {
-    DCHECK(event_type.length() > 0);
+    DCHECK(event_type.length() > 0);  // NOLINT
     DCHECK(event != NULL);
 
     CComObject<ComMessageEvent>* ev = NULL;
@@ -949,7 +953,7 @@ END_MSG_MAP()
 
   HRESULT InvokeScriptFunction(const VARIANT& script_object, VARIANT* params,
                                int param_count) {
-    DCHECK(param_count >= 0);
+    DCHECK_GE(param_count, 0);
     DCHECK(params);
 
     if (V_VT(&script_object) != VT_DISPATCH) {
@@ -1062,15 +1066,15 @@ END_MSG_MAP()
   }
 
  protected:
-   // The following functions are called to initialize and uninitialize the
-   // worker thread.
-   void OnWorkerStart() {
-     CoInitialize(NULL);
-   }
+  // The following functions are called to initialize and uninitialize the
+  // worker thread.
+  void OnWorkerStart() {
+    CoInitialize(NULL);
+  }
 
-   void OnWorkerStop() {
-     CoUninitialize();
-   }
+  void OnWorkerStop() {
+    CoUninitialize();
+  }
 
   ScopedBstr url_;
   ScopedComPtr<IOleDocumentSite> doc_site_;

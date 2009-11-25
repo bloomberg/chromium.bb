@@ -397,6 +397,9 @@ bool ExternalTabContainer::TakeFocus(bool reverse) {
 bool ExternalTabContainer::CanDownload(int request_id) {
   if (load_requests_via_automation_) {
     if (automation_) {
+      // In case the host needs to show UI that needs to take the focus.
+      ::AllowSetForegroundWindow(ASFW_ANY);
+
       ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
           NewRunnableMethod(automation_resource_message_filter_,
               &AutomationResourceMessageFilter::SendDownloadRequestToHost,

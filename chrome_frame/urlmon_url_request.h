@@ -61,6 +61,8 @@ END_MSG_MAP()
   virtual void Stop();
   virtual bool Read(int bytes_to_read);
 
+  void TransferToHost(IUnknown* host);
+
   // IBindStatusCallback implementation
   STDMETHOD(OnStartBinding)(DWORD reserved, IBinding* binding);
   STDMETHOD(GetPriority)(LONG* priority);

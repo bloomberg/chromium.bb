@@ -472,7 +472,7 @@ void ChromeActiveDocument::OnNavigationStateChanged(int tab_handle, int flags,
       << "Url: " << nav_info.url <<
       ", Title: " << nav_info.title <<
       ", Type: " << nav_info.navigation_type << ", Relative Offset: " <<
-      nav_info.relative_offset << ", Index: " << nav_info.navigation_index;;
+      nav_info.relative_offset << ", Index: " << nav_info.navigation_index;
 
   UpdateNavigationState(nav_info);
 }
@@ -586,7 +586,7 @@ void ChromeActiveDocument::UpdateNavigationState(
     ScopedComPtr<IWebBrowserEventsService> web_browser_events_svc;
     DoQueryService(__uuidof(web_browser_events_svc), m_spClientSite,
                    web_browser_events_svc.Receive());
-    DCHECK(web_browser_events_svc);
+    // web_browser_events_svc can be NULL on IE6.
     if (web_browser_events_svc) {
       VARIANT_BOOL should_cancel = VARIANT_FALSE;
       web_browser_events_svc->FireBeforeNavigate2Event(&should_cancel);
@@ -844,28 +844,26 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
   } else {
     // Initiate navigation before launching chrome so that the url will be
     // cached and sent with launch settings.
-    if (is_new_navigation) {
-      url_.Reset(::SysAllocString(url.c_str()));
-      if (url_.Length()) {
-        std::string utf8_url;
-        WideToUTF8(url_, url_.Length(), &utf8_url);
+    url_.Reset(::SysAllocString(url.c_str()));
+    if (url_.Length()) {
+      std::string utf8_url;
+      WideToUTF8(url_, url_.Length(), &utf8_url);
 
-        std::string referrer;
-        Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
-        if (chrome_frame_bho)
-          referrer = chrome_frame_bho->referrer();
+      std::string referrer;
+      Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
+      if (chrome_frame_bho)
+        referrer = chrome_frame_bho->referrer();
 
-        if (!automation_client_->InitiateNavigation(utf8_url,
-                                                    referrer,
-                                                    is_privileged_)) {
-          DLOG(ERROR) << "Invalid URL: " << url;
-          Error(L"Invalid URL");
-          url_.Reset();
-          return false;
-        }
-
-        DLOG(INFO) << "Url is " << url_;
+      if (!automation_client_->InitiateNavigation(utf8_url,
+                                                  referrer,
+                                                  is_privileged_)) {
+        DLOG(ERROR) << "Invalid URL: " << url;
+        Error(L"Invalid URL");
+        url_.Reset();
+        return false;
       }
+
+      DLOG(INFO) << "Url is " << url_;
     }
   }
 
