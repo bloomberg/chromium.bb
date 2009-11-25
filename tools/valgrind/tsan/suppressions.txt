@@ -121,6 +121,13 @@
   fun:*talk_base*MessageQueue*Quit*
 }
 
+{
+  bug_28765 (tcmalloc)
+  ThreadSanitizer:Race
+  ...
+  fun:*tcmalloc*ThreadCache*DeleteCache*
+}
+
 ############################
 # Data races in tests
 
@@ -277,13 +284,4 @@
   ThreadSanitizer:Race
   ...
   fun:gethostbyname2_r*
-}
-
-############################
-# Races in TCMalloc (probably benign)
-{
-  TCMalloc1
-  ThreadSanitizer:Race
-  ...
-  tcmalloc::ThreadCache::DeleteCache
 }
