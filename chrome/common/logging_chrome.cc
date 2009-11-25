@@ -45,6 +45,10 @@
 #include "chrome/common/env_vars.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
+#if defined(OS_WIN)
+#include "base/logging_win.h"
+#include <initguid.h>
+#endif
 
 // When true, this means that error dialogs should not be shown.
 static bool dialogs_are_suppressed_ = false;
@@ -52,6 +56,12 @@ static bool dialogs_are_suppressed_ = false;
 // This should be true for exactly the period between the end of
 // InitChromeLogging() and the beginning of CleanupChromeLogging().
 static bool chrome_logging_initialized_ = false;
+
+#if defined(OS_WIN)
+// {7FE69228-633E-4f06-80C1-527FEA23E3A7}
+DEFINE_GUID(kChromeTraceProviderName,
+  0x7fe69228, 0x633e, 0x4f06, 0x80, 0xc1, 0x52, 0x7f, 0xea, 0x23, 0xe3, 0xa7);
+#endif
 
 // Assertion handler for logging errors that occur when dialogs are
 // silenced.  To record a new error, pass the log string associated
@@ -156,6 +166,12 @@ void InitChromeLogging(const CommandLine& command_line,
   } else {
     logging::SetMinLogLevel(LOG_WARNING);
   }
+
+#if defined(OS_WIN)
+  // Enable trace control and transport through event tracing for Windows.
+  if (base::SysInfo::HasEnvVar(env_vars::kEtwLogging))
+    logging::LogEventProvider::Initialize(kChromeTraceProviderName);
+#endif
 
   chrome_logging_initialized_ = true;
 }

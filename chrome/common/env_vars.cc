@@ -14,6 +14,10 @@ const wchar_t kHeadless[]        = L"CHROME_HEADLESS";
 // The name of the log file.
 const wchar_t kLogFileName[]     = L"CHROME_LOG_FILE";
 
+// If this environment variable is set, Chrome on Windows will log
+// to Event Tracing for Windows.
+const wchar_t kEtwLogging[] = L"CHROME_ETW_LOGGING";
+
 // CHROME_CRASHED exists if a previous instance of chrome has crashed. This
 // triggers the 'restart chrome' dialog. CHROME_RESTART contains the strings
 // that are needed to show the dialog.

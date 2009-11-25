@@ -11,6 +11,7 @@ namespace env_vars {
 
 extern const wchar_t kHeadless[];
 extern const wchar_t kLogFileName[];
+extern const wchar_t kEtwLogging[];
 extern const wchar_t kShowRestart[];
 extern const wchar_t kRestartInfo[];
 extern const wchar_t kRtlLocale[];
