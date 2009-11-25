@@ -7,8 +7,9 @@
 // Class for bookmark bar buttons that can be drag sources.
 @interface BookmarkButton : NSButton {
  @private
-  BOOL draggable_;
-  BOOL beingDragged_;  // are we being dragged?
+  BOOL draggable_;     // Is this a draggable type of button?
+  BOOL mayDragStart_;  // Set to YES on mouse down, NO on up or drag.
+  BOOL beingDragged_;
 
   // Initial mouse-down to prevent a hair-trigger drag.
   NSPoint initialMouseDownLocation_;

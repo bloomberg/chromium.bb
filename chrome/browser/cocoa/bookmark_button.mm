@@ -46,6 +46,9 @@ const CGFloat kDragImageOpacity = 0.8;
 }
 
 - (void)beginDrag:(NSEvent*)event {
+  // Starting drag. Never start another drag until another mouse down.
+  mayDragStart_ = NO;
+
   NSSize dragOffset = NSMakeSize(0.0, 0.0);
   NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   [pboard declareTypes:[NSArray arrayWithObject:kBookmarkButtonDragType]
@@ -82,11 +85,16 @@ const CGFloat kDragImageOpacity = 0.8;
 }
 
 - (void)mouseUp:(NSEvent*)theEvent {
+  // Make sure that we can't start a drag until we see a mouse down again.
+  mayDragStart_ = NO;
+
   // This conditional is never true (DnD loops in Cocoa eat the mouse
   // up) but I added it in case future versions of Cocoa do unexpected
   // things.
-  if (beingDragged_)
+  if (beingDragged_) {
+    NOTREACHED();
     return [super mouseUp:theEvent];
+  }
 
   // There are non-drag cases where a mouseUp: may happen
   // (e.g. mouse-down, cmd-tab to another application, move mouse,
@@ -103,6 +111,7 @@ const CGFloat kDragImageOpacity = 0.8;
 // Mimic "begin a click" operation visually.  Do NOT follow through
 // with normal button event handling.
 - (void)mouseDown:(NSEvent*)theEvent {
+  mayDragStart_ = YES;
   [[self cell] setHighlighted:YES];
   initialMouseDownLocation_ = [theEvent locationInWindow];
 }
@@ -122,12 +131,11 @@ const CGFloat kDragImageOpacity = 0.8;
 }
 
 - (void)mouseDragged:(NSEvent*)theEvent {
-  if (beingDragged_)
+  if (beingDragged_) {
     [super mouseDragged:theEvent];
-  else {
-    if (draggable_ && [self hasCrossedDragThreshold:theEvent]) {
-      [self beginDrag:theEvent];
-    }
+  } else if (draggable_ && mayDragStart_ &&
+             [self hasCrossedDragThreshold:theEvent]) {
+    [self beginDrag:theEvent];
   }
 }
 
