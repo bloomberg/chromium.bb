@@ -8,9 +8,8 @@
 #include "profile-handler.h"
 
 #include <assert.h>
-#include <pthread.h>
 #include <sys/time.h>
-#include <time.h>
+#include <pthread.h>
 #include "base/logging.h"
 #include "base/simple_mutex.h"
 
@@ -47,11 +46,11 @@ class Thread {
   bool joinable_;
 };
 
-// timespec of the sleep interval. To ensure a SIGPROF timer interrupt under
-// heavy load, this is set to a 20x of ProfileHandler timer interval (i.e 100Hz)
+// Sleep interval in usecs. To ensure a SIGPROF timer interrupt under heavy
+// load, this is set to a 20x of ProfileHandler timer interval (i.e 100Hz)
 // TODO(nabeelmian) Under very heavy loads, the worker thread may not accumulate
 // enough cpu usage to get a profile tick.
-const struct timespec sleep_interval = { 0, 200000000 };  // 200 ms
+int kSleepInterval = 200000;
 
 // Whether each thread has separate timers.
 static bool timer_separate_ = false;
@@ -214,7 +213,7 @@ class ProfileHandlerTest {
     busy_worker_->Start();
     // Wait for worker to start up and register with the ProfileHandler.
     // TODO(nabeelmian) This may not work under very heavy load.
-    nanosleep(&sleep_interval, NULL);
+    usleep(kSleepInterval);
   }
 
   // Stops the worker thread.
@@ -258,7 +257,7 @@ class ProfileHandlerTest {
     uint64 interrupts_before = GetInterruptCount();
     // Sleep for a bit and check that tick counter is making progress.
     int old_tick_count = tick_counter;
-    nanosleep(&sleep_interval, NULL);
+    usleep(kSleepInterval);
     int new_tick_count = tick_counter;
     EXPECT_GT(new_tick_count, old_tick_count);
     uint64 interrupts_after = GetInterruptCount();
@@ -269,7 +268,7 @@ class ProfileHandlerTest {
   void VerifyUnregistration(const int& tick_counter) {
     // Sleep for a bit and check that tick counter is not making progress.
     int old_tick_count = tick_counter;
-    nanosleep(&sleep_interval, NULL);
+    usleep(kSleepInterval);
     int new_tick_count = tick_counter;
     EXPECT_EQ(new_tick_count, old_tick_count);
     // If no callbacks, signal handler and shared timer should be disabled.
@@ -298,7 +297,7 @@ class ProfileHandlerTest {
     }
     // Verify that the ProfileHandler is not accumulating profile ticks.
     uint64 interrupts_before = GetInterruptCount();
-    nanosleep(&sleep_interval, NULL);
+    usleep(kSleepInterval);
     uint64 interrupts_after = GetInterruptCount();
     EXPECT_EQ(interrupts_after, interrupts_before);
   }

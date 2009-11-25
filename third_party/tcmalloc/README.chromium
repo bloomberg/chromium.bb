@@ -2,38 +2,74 @@ This contains Chromium's locally patched copy of tcmalloc.
 
 Contents:
 
-    README.chromium
+  README.chromium
 
-        This file you're looking at right now.
+    This file you're looking at right now.
 
-    chromium/
+  chromium/
 
-        The chromium patched sources, copied from the vendor/
-        subdirectory and containing our local modifications.
+    The chromium patched sources, copied from the vendor/
+    subdirectory and containing our local modifications.
 
-        We only copy over the vendor/src/ subdirectory (the only piece
-        we need) but still leave it in a chromium/src/ subdirectory to
-        keep the directory structures in parallel.
+    We only copy over the vendor/src/ subdirectory (the only piece
+    we need) but still leave it in a chromium/src/ subdirectory to
+    keep the directory structures in parallel.
 
-    vendor/
+  vendor/
 
-        Vanilla sources from upstream:
+    Vanilla sources from upstream:
 
-            http://google-perftools.googlecode.com/svn/trunk
+      http://google-perftools.googlecode.com/svn/trunk
 
-        The current revision is:
+    The current revision is:
 
-            Last Changed Rev: 78
-            Last Changed Date: 2009-11-10 08:24:57 -0800 (Tue, 10 Nov 2009)
+      Last Changed Rev: 77
+      Last Changed Date: 2009-10-27 10:30:52 -0700 (Tue, 27 Oct 2009)
 
-        
+    
 
 HOWTOs:
 
-    Take a new version from upstream:
+  Take a new version from upstream:
 
-        TODO(sgk)
+    1)  Grab the revision:
 
-    Merge a new upstream version with our local patched copy:
+        $ svn export [-r {tcmalloc-rev}] \
+          http://google-perftools.googlecode.com/svn/trunk \
+          vendor-{tcmalloc-rev}
 
-        TODO(sgk)
+    2)  Check for added or deleted files:
+
+        $ diff -q -r -x .svn vendor vendor-{tcmalloc-rev}
+
+    3)  Copy the new revision on top of the checked-in vendor branch:
+
+        $ cp -r vendor-{tcmalloc-rev}/* vendor
+
+        C:\> xcopy /e/y/i vendor-{tcmalloc-rev}\* vendor
+
+    4)  "svn add" or "svn rm" added or removed files (based on your
+        "diff -q -r" output from above)
+
+    5)  Create the CL, upload, check it in:
+    
+        $ gcl change CL
+        $ gcl upload CL
+        $ gcl commit CL
+
+        Note the revision number since you're going to want to merge
+        that to the local chromium branch.
+
+  Merge a new upstream version with our local patched copy:
+
+    1)  Merge the local revision to chromium/src
+
+        $ svn merge -c {chrome-rev} svn://chrome-svn/chrome/trunk/src/third_party/tcmalloc/vendor/src chromium/src
+
+    2)  Resolve any conflicts
+
+    3)  Create the CL, upload, check in:
+    
+        $ gcl change CL
+        $ gcl upload CL
+        $ gcl commit CL
