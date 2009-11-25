@@ -69,7 +69,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
         NULL, CLSCTX_INPROC, __uuidof(IApplicationAssociationRegistration),
         (void**)&pAAR);
     if (!SUCCEEDED(hr))
-      return UNKNOWN_DEFAULT_BROWSER;
+      return NOT_DEFAULT_BROWSER;
 
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     std::wstring app_name = dist->GetApplicationName();
@@ -84,11 +84,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       BOOL result = TRUE;
       hr = pAAR->QueryAppIsDefault(kChromeProtocols[i].c_str(), AT_URLPROTOCOL,
           AL_EFFECTIVE, app_name.c_str(), &result);
-      if (!SUCCEEDED(hr)) {
-        pAAR->Release();
-        return UNKNOWN_DEFAULT_BROWSER;
-      }
-      if (result == FALSE) {
+      if (!SUCCEEDED(hr) || result == FALSE) {
         pAAR->Release();
         return NOT_DEFAULT_BROWSER;
       }
@@ -109,7 +105,7 @@ ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
       RegKey key(root_key, key_path.c_str(), KEY_READ);
       std::wstring value;
       if (!key.Valid() || !key.ReadValue(L"", &value))
-        return UNKNOWN_DEFAULT_BROWSER;
+        return NOT_DEFAULT_BROWSER;
       // Need to normalize path in case it's been munged.
       CommandLine command_line = CommandLine::FromString(value);
       std::wstring short_path;

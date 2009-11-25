@@ -180,10 +180,8 @@ class CheckDefaultBrowserTask : public Task {
   }
 
   virtual void Run() {
-    if (ShellIntegration::IsDefaultBrowser() ==
-        ShellIntegration::IS_DEFAULT_BROWSER) {
+    if (ShellIntegration::IsDefaultBrowser())
       return;
-    }
 
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE, new NotifyNotDefaultBrowserTask());
