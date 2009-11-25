@@ -276,9 +276,6 @@ class TableView : public NativeControl,
 
   virtual LRESULT OnNotify(int w_param, LPNMHDR l_param);
 
-  // Overriden to destroy the image list.
-  virtual void OnDestroy();
-
   // Used to sort the two rows. Returns a value < 0, == 0 or > 0 indicating
   // whether the row2 comes before row1, row2 is the same as row1 or row1 comes
   // after row2. This invokes CompareValues on the model with the sorted column.

@@ -1074,16 +1074,6 @@ LRESULT TableView::OnNotify(int w_param, LPNMHDR hdr) {
   return 0;
 }
 
-void TableView::OnDestroy() {
-  if (table_type_ == ICON_AND_TEXT) {
-    HIMAGELIST image_list =
-        ListView_GetImageList(GetNativeControlHWND(), LVSIL_SMALL);
-    DCHECK(image_list);
-    if (image_list)
-      ImageList_Destroy(image_list);
-  }
-}
-
 // Returns result, unless ascending is false in which case -result is returned.
 static int SwapCompareResult(int result, bool ascending) {
   return ascending ? result : -result;
