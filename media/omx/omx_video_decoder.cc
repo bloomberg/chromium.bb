@@ -271,7 +271,6 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kEmpty, GetState());
 
-  const char* component;
   OMX_CALLBACKTYPE callback = { &EventHandler,
                                 &EmptyBufferCallback,
                                 &FillBufferCallback };
@@ -288,9 +287,10 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
   // 2. Get the handle to the component. After OMX_GetHandle(),
   //    the component is in loaded state.
   // TODO(hclam): We should have a list of componant names instead.
-  component = component_;
-  omxresult = OMX_GetHandle((OMX_HANDLETYPE*)(&decoder_handle_),
-                            (OMX_STRING)component, this, &callback);
+  OMX_STRING component = const_cast<OMX_STRING>(component_);
+  OMX_HANDLETYPE handle = reinterpret_cast<OMX_HANDLETYPE>(decoder_handle_);
+  omxresult = OMX_GetHandle(&handle, component, this, &callback);
+  decoder_handle_ = reinterpret_cast<OMX_COMPONENTTYPE*>(handle);
   if (omxresult != OMX_ErrorNone) {
     LOG(ERROR) << "Failed to Load the component: " << component;
     StateTransitionTask(kError);
