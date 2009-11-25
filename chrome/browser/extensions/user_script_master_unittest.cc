@@ -218,3 +218,18 @@ TEST_F(UserScriptMasterTest, Parse6) {
   EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       text, &script));
 }
+
+TEST_F(UserScriptMasterTest, Parse7) {
+  const std::string text(
+    "\xEF\xBB\xBF// ==UserScript==\n"
+    "// @match http://*.mail.google.com/*\n"
+    "// ==/UserScript==\n");
+
+  // Should Ignore UTF-8's BOM.
+  UserScript script;
+  EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
+      text, &script));
+  ASSERT_EQ(1U, script.url_patterns().size());
+  EXPECT_EQ("http://*.mail.google.com/*",
+            script.url_patterns()[0].GetAsString());
+}

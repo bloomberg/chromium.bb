@@ -46,7 +46,12 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
   // http://wiki.greasespot.net/Metadata_block
   base::StringPiece line;
   size_t line_start = 0;
-  size_t line_end = 0;
+
+  // Skip UTF-8's BOM.
+  if (script_text.starts_with(kUtf8ByteOrderMark))
+    line_start += strlen(kUtf8ByteOrderMark);
+
+  size_t line_end = line_start;
   bool in_metadata = false;
 
   static const base::StringPiece kUserScriptBegin("// ==UserScript==");
