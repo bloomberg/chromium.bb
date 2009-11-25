@@ -3014,9 +3014,6 @@ BUG28080 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.
 BUG28092 WIN : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = PASS FAIL
 BUG28095 MAC : LayoutTests/http/tests/cookies/simple-cookies-expired.html = PASS TIMEOUT
 
-// This test should simply be dumpAsText()
-BUG_DIMICH WIN LINUX : LayoutTests/fast/table/row-height-recalc2.html = FAIL
-
 // Need to add Chromium localized strings for the feature. Upstream r51172
 BUG28264 : LayoutTests/fast/forms/validationMessage.html = FAIL
 
@@ -3032,15 +3029,6 @@ BUG28317 : LayoutTests/fast/css/color-correction-untagged-images.html = FAIL
 
 // Failures in TestShell that resulted from Mac plugin/focus fixes in r32631.
 BUG28380 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = CRASH FAIL
-
-// Local storage tests. Failures from merge 51253:51310.
-BUG28603 : LayoutTests/storage/domstorage/localstorage/index-get-and-set.html = TEXT
-BUG28603 : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-markup.html = TEXT
-BUG28603 : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setattribute.html = TEXT
-BUG28603 : LayoutTests/storage/domstorage/localstorage/onstorage-attribute-setwindow.html = TEXT
-BUG28603 : LayoutTests/storage/domstorage/localstorage/simple-events.html = TEXT
-BUG28603 : LayoutTests/storage/domstorage/window-attributes-exist.html = TEXT
-BUG28603 : LayoutTests/storage/domstorage/localstorage/iframe-events.html = TIMEOUT
 
 // New tests. Failures from merge 51253:51310.
 BUG28605 : LayoutTests/plugins/reloadplugins-no-pages.html = TEXT
