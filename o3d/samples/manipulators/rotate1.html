@@ -58,12 +58,12 @@ var g_o3dElement;
 var g_client;
 var g_o3d;
 var g_math;
-var g_pack;
-var g_viewInfo;
-
+var g_mainPack;
+var g_mainViewInfo;
+var g_mainRoot;
 var g_lightPosition = [5, 5, 7];
 var g_eyePosition = [1, 5, 23];
-
+var g_lastCubeTransform;
 var g_primitives = [];
 var g_manager;
 
@@ -92,14 +92,14 @@ function main(clientElements) {
   // Init global variables.
   initGlobals(clientElements);
 
-  // Set up the view and projection transformations.
-  initContext();
-
   // Add the shapes to the transform heirarchy.
   createShapes();
 
   // Add the manipulators to the transform hierarchy.
   createManipulators();
+
+  // Set up the view and projection transformations.
+  initContext();
 
   // Start picking; it won't do anything until the scene finishes loading.
   o3djs.event.addEventListener(o3dElement, 'mousedown', onMouseDown);
@@ -111,16 +111,16 @@ function main(clientElements) {
 
 function onMouseDown(e) {
   g_manager.mousedown(e.x, e.y,
-                      g_viewInfo.drawContext.view,
-                      g_viewInfo.drawContext.projection,
+                      g_mainViewInfo.drawContext.view,
+                      g_mainViewInfo.drawContext.projection,
                       g_client.width,
                       g_client.height);
 }
 
 function onMouseMove(e) {
   g_manager.mousemove(e.x, e.y,
-                      g_viewInfo.drawContext.view,
-                      g_viewInfo.drawContext.projection,
+                      g_mainViewInfo.drawContext.view,
+                      g_mainViewInfo.drawContext.projection,
                       g_client.width,
                       g_client.height);
   g_manager.updateInactiveManipulators();
@@ -141,12 +141,15 @@ function initGlobals(clientElements) {
   g_math = o3djs.math;
 
   // Create a pack to manage the objects created.
-  g_pack = g_client.createPack();
+  g_mainPack = g_client.createPack();
 
-  // Create the render graph for a view.
-  g_viewInfo = o3djs.rendergraph.createBasicView(
-      g_pack,
-      g_client.root,
+  // Make a root transform for our scene.
+  g_mainRoot = g_mainPack.createObject('Transform');
+
+  // Create the render graph for the scene view.
+  g_mainViewInfo = o3djs.rendergraph.createBasicView(
+      g_mainPack,
+      g_mainRoot,
       g_client.renderGraphRoot);
 }
 
@@ -155,18 +158,18 @@ function initGlobals(clientElements) {
  */
 function initContext() {
   // Set up a perspective transformation for the projection.
-  g_viewInfo.drawContext.projection = g_math.matrix4.perspective(
-      g_math.degToRad(30), // 30 degree frustum.
+  g_mainViewInfo.drawContext.projection = g_math.matrix4.perspective(
+      g_math.degToRad(30),  // 30 degree frustum.
       g_o3dElement.clientWidth / g_o3dElement.clientHeight, // Aspect ratio.
-      1,                  // Near plane.
-      5000);              // Far plane.
+      1,                    // Near plane.
+      5000);                // Far plane.
 
   // Set up our view transformation to look towards the world origin where the
   // primitives are located.
-  g_viewInfo.drawContext.view = g_math.matrix4.lookAt(
-      g_eyePosition,   // eye
-      [0, 2, 0],    // target
-      [0, 1, 0]);  // up
+  g_mainViewInfo.drawContext.view = g_math.matrix4.lookAt(
+      g_eyePosition,  // eye
+      [0, 2, 0],      // target
+      [0, 1, 0]);     // up
 }
 
 /**
@@ -175,7 +178,8 @@ function initContext() {
  */
 function createShapes() {
   // Create a little tree-like hierarchy of cubes
-  createCubeTree(2, 1.5, [0, 0, 0], g_client.root);
+  createCubeTree(2, 1.5, [0, 0, 0], g_mainRoot);
+  g_lastCubeTransform.scale(3, 1, 1);
 }
 
 /**
@@ -210,13 +214,14 @@ function createCubeTree(depth, edgeLength, translation, parent) {
  */
 function createCube(edgeLength, opt_translation, opt_parent) {
   var cube = o3djs.primitives.createCube(
-      g_pack,
+      g_mainPack,
       // A green phong-shaded material.
-      o3djs.material.createBasicMaterial(g_pack,
-                                         g_viewInfo,
+      o3djs.material.createBasicMaterial(g_mainPack,
+                                         g_mainViewInfo,
                                          [0, 1, 0, 1]),
       edgeLength);
-  var transform = g_pack.createObject('Transform');
+  var transform = g_mainPack.createObject('Transform');
+  g_lastCubeTransform = transform;
   transform.addShape(cube);
   if (opt_translation) {
     transform.translate(opt_translation);
@@ -224,7 +229,7 @@ function createCube(edgeLength, opt_translation, opt_parent) {
   if (opt_parent) {
     transform.parent = opt_parent;
   } else {
-    transform.parent = g_client.root;
+    transform.parent = g_mainRoot;
   }
   g_primitives.push(transform);
   return transform;
@@ -234,11 +239,39 @@ function createCube(edgeLength, opt_translation, opt_parent) {
  * Creates manipulators attached to the objects we've just created.
  */
 function createManipulators() {
-  g_manager = o3djs.manipulators.createManager(g_pack,
-                                               g_viewInfo.performanceDrawList,
-                                               g_client.root,
-                                               null,
-                                               0);
+  // Create a separate pack for the manipulators so they don't get mixed in
+  // with the main scene's objects.
+  var pack = g_client.createPack();
+
+  // Create a root transform for the manipulators so they are 100% separate
+  // from the scene's transforms.
+  var manipulatorRoot = pack.createObject('Transform');
+
+  // Create the render graph for the manipulators view that uses the same
+  // DrawContext as the main view.
+  var manipulatorViewInfo = o3djs.rendergraph.createView(
+      pack,
+      manipulatorRoot,
+      g_client.renderGraphRoot,
+      undefined,  // clearColor
+      undefined,  // priority
+      undefined,  // viewport
+      undefined,  // performanceDrawList
+      undefined,  // zOrderedDrawList
+      g_mainViewInfo.drawContext);
+
+  // Make sure the manipulators gets drawn after the scene.
+  manipulatorViewInfo.root.priority = g_mainViewInfo.root.priority + 1;
+
+  // Turn off clearing the color for the manipulators.
+  manipulatorViewInfo.clearBuffer.clearColorFlag = false;
+
+  g_manager = o3djs.manipulators.createManager(
+      pack,
+      manipulatorViewInfo.performanceDrawList,
+      manipulatorRoot,
+      null,
+      0);
   var jj = 2;
   for (var ii = 0; ii < g_primitives.length; ii++) {
     var manip1 = g_manager.createRotate1();

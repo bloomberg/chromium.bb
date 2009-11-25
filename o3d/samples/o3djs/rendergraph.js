@@ -61,6 +61,8 @@ o3djs.rendergraph = o3djs.rendergraph || {};
  *     use for performanceDrawPass.
  * @param {!o3d.DrawList} opt_zOrderedDrawList Optional DrawList to
  *     use for zOrderedDrawPass.
+ * @param {!o3d.DrawContext} opt_drawContext Optional DrawContext to
+ *     use. If not passed in one is created.
  * @return {!o3djs.rendergraph.ViewInfo} A ViewInfo object with info about
  *         everything created.
  */
@@ -71,7 +73,8 @@ o3djs.rendergraph.createView = function(pack,
                                         opt_priority,
                                         opt_viewport,
                                         opt_performanceDrawList,
-                                        opt_zOrderedDrawList) {
+                                        opt_zOrderedDrawList,
+                                        opt_drawContext) {
   return new o3djs.rendergraph.ViewInfo(pack,
                                         treeRoot,
                                         opt_parent,
@@ -79,7 +82,8 @@ o3djs.rendergraph.createView = function(pack,
                                         opt_priority,
                                         opt_viewport,
                                         opt_performanceDrawList,
-                                        opt_zOrderedDrawList);
+                                        opt_zOrderedDrawList,
+                                        opt_drawContext);
 };
 
 /**
@@ -164,6 +168,8 @@ o3djs.rendergraph.createExtraView = function(viewInfo,
  *     performanceDrawPass.
  * @param {!o3d.DrawList} opt_zOrderedDrawList DrawList to use for
  *     zOrderedDrawPass.
+ * @param {!o3d.DrawContext} opt_drawContext Optional DrawContext to
+ *     use. If not passed in one is created.
  */
 o3djs.rendergraph.ViewInfo = function(pack,
                                       treeRoot,
@@ -172,7 +178,8 @@ o3djs.rendergraph.ViewInfo = function(pack,
                                       opt_priority,
                                       opt_viewport,
                                       opt_performanceDrawList,
-                                      opt_zOrderedDrawList) {
+                                      opt_zOrderedDrawList,
+                                      opt_drawContext) {
   var that = this;
   var clearColor = opt_clearColor || [0.5, 0.5, 0.5, 1.0];
   var viewPriority = opt_priority || 0;
@@ -240,7 +247,7 @@ o3djs.rendergraph.ViewInfo = function(pack,
   this.clearBuffer = clearBuffer;
 
   // Create DrawContext.
-  var drawContext = pack.createObject('DrawContext');
+  var drawContext = opt_drawContext || pack.createObject('DrawContext');
 
   /**
    * The DrawContext used by this ViewInfo.
@@ -371,6 +378,13 @@ o3djs.rendergraph.ViewInfo = function(pack,
    * @type {!o3d.DrawPass}
    */
   this.zOrderedDrawPass = zOrderedDrawPassInfo.drawPass;
+
+  /**
+   * A flag whether or not we created the DrawContext for this DrawPassInfo.
+   * @private
+   * @type {boolean}
+   */
+  this.ownDrawContext_ = opt_drawContext ? false : true;
 };
 
 /**
@@ -395,7 +409,7 @@ o3djs.rendergraph.ViewInfo.prototype.destroy = function(
   // Remove everything we created from the pack.
   this.pack.removeObject(this.viewport);
   this.pack.removeObject(this.clearBuffer);
-  if (opt_destroyDrawContext) {
+  if (opt_destroyDrawContext && this.ownDrawContext_) {
     this.pack.removeObject(this.drawContext);
   }
   this.pack.removeObject(this.treeTraversal);

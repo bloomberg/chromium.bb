@@ -495,14 +495,14 @@ o3djs.manipulators.Manager = function(pack,
    * @type {!o3d.Material}
    */
   this.defaultMaterial =
-      this.createPhongMaterial_(o3djs.manipulators.DEFAULT_COLOR);
+      this.createMaterial_(o3djs.manipulators.DEFAULT_COLOR);
   /**
    * The material used for manipulators when they are highlighted.
    * (TODO(simonrad): This is not currently used; only defaultMaterial is used. Remove this?)
    * @type {!o3d.Material}
    */
   this.highlightedMaterial =
-      this.createPhongMaterial_(o3djs.manipulators.HIGHLIGHTED_COLOR);
+      this.createMaterial_(o3djs.manipulators.HIGHLIGHTED_COLOR);
 
   /**
    * A map from the manip's parent Transform clientId to the manip.
@@ -532,31 +532,17 @@ o3djs.manipulators.Manager = function(pack,
 }
 
 /**
- * Creates a phong material based on the given single color.
+ * Creates a material based on the given single color.
  * @private
  * @param {!o3djs.math.Vector4} baseColor A vector with 4 entries, the
  *     R,G,B, and A components of a color.
  * @return {!o3d.Material} A phong material whose overall pigment is baseColor.
  */
-o3djs.manipulators.Manager.prototype.createPhongMaterial_ =
+o3djs.manipulators.Manager.prototype.createMaterial_ =
     function(baseColor) {
   // Create a new, empty Material object.
-  var material = this.pack.createObject('Material');
-
-  o3djs.effect.attachStandardShader(
-      this.pack, material, this.lightPosition, 'phong');
-
-  material.drawList = this.drawList;
-
-  // Assign parameters to the phong material.
-  material.getParam('emissive').value = [0, 0, 0, 1];
-  material.getParam('ambient').value =
-    o3djs.math.mulScalarVector(0.1, baseColor);
-  material.getParam('diffuse').value = baseColor;
-  material.getParam('specular').value = [.2, .2, .2, 1];
-  material.getParam('shininess').value = 20;
-
-  return material;
+  return o3djs.material.createConstantMaterialEx(
+     this.pack, this.drawList, baseColor);
 }
 
 /**
@@ -1182,7 +1168,7 @@ o3djs.manipulators.Translate1 = function(manager) {
    * @private
    * @type {!o3d.ParamFloat4}
    */
-  this.colorParam_ = this.getTransform().createParam('diffuse', 'ParamFloat4');
+  this.colorParam_ = this.getTransform().createParam('emissive', 'ParamFloat4');
   this.clearHighlight();
 
   /**
@@ -1293,7 +1279,7 @@ o3djs.manipulators.Translate2 = function(manager) {
    * @private
    * @type {!o3d.ParamFloat4}
    */
-  this.colorParam_ = this.getTransform().createParam('diffuse', 'ParamFloat4');
+  this.colorParam_ = this.getTransform().createParam('emissive', 'ParamFloat4');
   this.clearHighlight();
 
   /**
@@ -1406,7 +1392,7 @@ o3djs.manipulators.Rotate1 = function(manager) {
    * @private
    * @type {!o3d.ParamFloat4}
    */
-  this.colorParam_ = this.getTransform().createParam('diffuse', 'ParamFloat4');
+  this.colorParam_ = this.getTransform().createParam('emissive', 'ParamFloat4');
   this.clearHighlight();
 
   /**
