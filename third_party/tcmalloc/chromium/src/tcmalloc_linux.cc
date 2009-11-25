@@ -488,7 +488,9 @@ static void PrintStats(int level) {
   char* buffer = new char[kBufferSize];
   TCMalloc_Printer printer(buffer, kBufferSize);
   DumpStats(&printer, level);
-  write(STDERR_FILENO, buffer, strlen(buffer));
+  ssize_t size = write(STDERR_FILENO, buffer, strlen(buffer));
+  // Use size so we don't get an unused variable warning.
+  CHECK(size);
   delete[] buffer;
 }
 
