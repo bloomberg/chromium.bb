@@ -120,7 +120,7 @@ void PasswordFormManager::PermanentlyBlacklist() {
   }
 
   // Save the pending_credentials_ entry marked as blacklisted.
-  SaveAsNewLogin();
+  SaveAsNewLogin(false);
 }
 
 bool PasswordFormManager::IsNewLogin() {
@@ -161,7 +161,7 @@ void PasswordFormManager::Save() {
   DCHECK(!profile_->IsOffTheRecord());
 
   if (IsNewLogin())
-    SaveAsNewLogin();
+    SaveAsNewLogin(true);
   else
     UpdateLogin();
 }
@@ -293,7 +293,7 @@ bool PasswordFormManager::IgnoreResult(const PasswordForm& form) const {
   return false;
 }
 
-void PasswordFormManager::SaveAsNewLogin() {
+void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
   DCHECK_EQ(state_, POST_MATCHING_PHASE);
   DCHECK(IsNewLogin());
   // The new_form is being used to sign in, so it is preferred.
@@ -312,6 +312,24 @@ void PasswordFormManager::SaveAsNewLogin() {
 
   pending_credentials_.date_created = Time::Now();
   password_store->AddLogin(pending_credentials_);
+
+  if (reset_preferred_login) {
+    UpdatePreferredLoginState(password_store);
+  }
+}
+
+void PasswordFormManager::UpdatePreferredLoginState(
+    PasswordStore* password_store) {
+  DCHECK(password_store);
+  PasswordFormMap::iterator iter;
+  for (iter = best_matches_.begin(); iter != best_matches_.end(); iter++) {
+    if (iter->second->username_value != pending_credentials_.username_value &&
+        iter->second->preferred) {
+      // This wasn't the selected login but it used to be preferred.
+      iter->second->preferred = false;
+      password_store->UpdateLogin(*iter->second);
+    }
+  }
 }
 
 void PasswordFormManager::UpdateLogin() {
@@ -330,16 +348,8 @@ void PasswordFormManager::UpdateLogin() {
     return;
   }
 
-  // Update all matches to reflect new preferred status.
-  PasswordFormMap::iterator iter;
-  for (iter = best_matches_.begin(); iter != best_matches_.end(); iter++) {
-    if ((iter->second->username_value != pending_credentials_.username_value) &&
-         iter->second->preferred) {
-      // This wasn't the selected login but it used to be preferred.
-      iter->second->preferred = false;
-      password_store->UpdateLogin(*iter->second);
-    }
-  }
+  UpdatePreferredLoginState(password_store);
+
   // Update the new preferred login.
   // Note origin.spec().length > signon_realm.length implies the origin has a
   // path, since signon_realm is a prefix of origin for HTML password forms.

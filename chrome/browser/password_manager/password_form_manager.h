@@ -92,8 +92,9 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   // Helper for Save in the case that best_matches.size() == 0, meaning
   // we have no prior record of this form/username/password and the user
-  // has opted to 'Save Password'.
-  void SaveAsNewLogin();
+  // has opted to 'Save Password'. If |reset_preferred_login| is set,
+  // the previously preferred login from |best_matches_| will be reset.
+  void SaveAsNewLogin(bool reset_preferred_login);
 
   // Helper for OnWebDataServiceRequestDone to score an individual result
   // against the observed_form_.
@@ -105,6 +106,11 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // that now need to have preferred bit changed, since updated_credentials
   // is now implicitly 'preferred'.
   void UpdateLogin();
+
+  // Update all login matches to reflect new preferred state - preferred flag
+  // will be reset on all matched logins that different than the current
+  // |pending_credentials_|.
+  void UpdatePreferredLoginState(PasswordStore* password_store);
 
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
