@@ -4,7 +4,7 @@
 
 // Stand alone media player application used for testing the media library.
 
-#include "media/player/player_wtl.h"
+#include "media/tools/player_wtl/player_wtl.h"
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -14,7 +14,7 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
-#include "media/player/mainfrm.h"
+#include "media/tools/player_wtl/mainfrm.h"
 
 // See player_wtl.h to enable timing code by turning on TESTING macro.
 

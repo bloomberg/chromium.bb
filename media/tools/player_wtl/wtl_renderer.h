@@ -4,8 +4,8 @@
 
 // Video renderer for media player.
 
-#ifndef MEDIA_PLAYER_WTL_RENDERER_H_
-#define MEDIA_PLAYER_WTL_RENDERER_H_
+#ifndef MEDIA_TOOLS_PLAYER_WTL_WTL_RENDERER_H_
+#define MEDIA_TOOLS_PLAYER_WTL_WTL_RENDERER_H_
 
 #include "media/filters/video_renderer_base.h"
 
@@ -33,4 +33,4 @@ class WtlVideoRenderer : public media::VideoRendererBase {
   DISALLOW_COPY_AND_ASSIGN(WtlVideoRenderer);
 };
 
-#endif  // MEDIA_PLAYER_WTL_RENDERER_H_
+#endif  // MEDIA_TOOLS_PLAYER_WTL_WTL_RENDERER_H_

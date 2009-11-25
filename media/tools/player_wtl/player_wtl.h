@@ -4,8 +4,8 @@
 
 // Stand alone media player application used for testing the media library.
 
-#ifndef MEDIA_PLAYER_PLAYER_WTL_H_
-#define MEDIA_PLAYER_PLAYER_WTL_H_
+#ifndef MEDIA_TOOLS_PLAYER_WTL_PLAYER_WTL_H_
+#define MEDIA_TOOLS_PLAYER_WTL_PLAYER_WTL_H_
 
 // Enable timing code by turning on TESTING macro.
 //#define TESTING 1
@@ -25,4 +25,4 @@
 
 extern CAppModule g_module;
 
-#endif  // MEDIA_PLAYER_PLAYER_WTL_H_
+#endif  // MEDIA_TOOLS_PLAYER_WTL_PLAYER_WTL_H_

@@ -2,10 +2,10 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef MEDIA_PLAYER_PROPS_H_
-#define MEDIA_PLAYER_PROPS_H_
+#ifndef MEDIA_TOOLS_PLAYER_WTL_PROPS_H_
+#define MEDIA_TOOLS_PLAYER_WTL_PROPS_H_
 
-#include "media/player/movie.h"
+#include "media/tools/player_wtl/movie.h"
 
 #include "resource.h"
 
@@ -322,4 +322,4 @@ class CBmpProperties : public CPropertySheetImpl<CBmpProperties> {
   CPageThree page3_;
 };
 
-#endif  // MEDIA_PLAYER_PROPS_H_
+#endif  // MEDIA_TOOLS_PLAYER_WTL_PROPS_H_

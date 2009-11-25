@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef MEDIA_PLAYER_X11_VIDEO_RENDERER_H_
-#define MEDIA_PLAYER_X11_VIDEO_RENDERER_H_
+#ifndef MEDIA_TOOLS_PLAYER_X11_X11_VIDEO_RENDERER_H_
+#define MEDIA_TOOLS_PLAYER_X11_X11_VIDEO_RENDERER_H_
 
 #include <X11/Xlib.h>
 
@@ -67,4 +67,4 @@ class X11VideoRenderer : public media::VideoRendererBase {
   DISALLOW_COPY_AND_ASSIGN(X11VideoRenderer);
 };
 
-#endif  // MEDIA_PLAYER_X11_VIDEO_RENDERER_H_
+#endif  // MEDIA_TOOLS_PLAYER_X11_X11_VIDEO_RENDERER_H_

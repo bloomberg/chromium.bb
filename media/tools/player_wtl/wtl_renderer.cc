@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/player/wtl_renderer.h"
+#include "media/tools/player_wtl/wtl_renderer.h"
 
-#include "media/player/view.h"
+#include "media/tools/player_wtl/view.h"
 
 WtlVideoRenderer::WtlVideoRenderer(WtlVideoWindow* window)
     : window_(window) {

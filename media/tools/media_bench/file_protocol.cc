@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/bench/file_protocol.h"
+#include "media/tools/media_bench/file_protocol.h"
 
 #include "build/build_config.h"
 
@@ -82,4 +82,3 @@ URLProtocol kFFmpegFileProtocol = {
   NULL,  // url_read_seek
   &GetHandle
 };
-

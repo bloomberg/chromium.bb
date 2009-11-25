@@ -2,13 +2,13 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef MEDIA_PLAYER_MAINFRM_H_
-#define MEDIA_PLAYER_MAINFRM_H_
+#ifndef MEDIA_TOOLS_PLAYER_WTL_MAINFRM_H_
+#define MEDIA_TOOLS_PLAYER_WTL_MAINFRM_H_
 
-#include "media/player/list.h"
-#include "media/player/props.h"
-#include "media/player/seek.h"
-#include "media/player/view.h"
+#include "media/tools/player_wtl/list.h"
+#include "media/tools/player_wtl/props.h"
+#include "media/tools/player_wtl/seek.h"
+#include "media/tools/player_wtl/view.h"
 
 const int POPUP_MENU_POSITION = 0;
 const int FILE_MENU_POSITION = 0;
@@ -715,4 +715,4 @@ class CMainFrame : public CFrameWindowImpl<CMainFrame>,
   }
 };
 
-#endif  // MEDIA_PLAYER_MAINFRM_H_
+#endif  // MEDIA_TOOLS_PLAYER_WTL_MAINFRM_H_

@@ -2,7 +2,7 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "media/player/movie.h"
+#include "media/tools/player_wtl/movie.h"
 
 #include "base/string_util.h"
 #include "media/base/pipeline_impl.h"
@@ -12,7 +12,7 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
-#include "media/player/wtl_renderer.h"
+#include "media/tools/player_wtl/wtl_renderer.h"
 
 using media::AudioRendererImpl;
 using media::FFmpegAudioDecoder;

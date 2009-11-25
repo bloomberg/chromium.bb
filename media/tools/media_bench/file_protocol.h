@@ -5,10 +5,10 @@
 // Implements a basic file I/O URLProtocol for FFmpeg.  Since we don't build
 // FFmpeg binaries with protocols, we have to write our own.
 
-#ifndef MEDIA_BENCH_FILE_PROTOCOL_H_
-#define MEDIA_BENCH_FILE_PROTOCOL_H_
+#ifndef MEDIA_TOOLS_MEDIA_BENCH_FILE_PROTOCOL_H_
+#define MEDIA_TOOLS_MEDIA_BENCH_FILE_PROTOCOL_H_
 
 struct URLProtocol;
 extern URLProtocol kFFmpegFileProtocol;
 
-#endif  // MEDIA_BENCH_FILE_PROTOCOL_H_
+#endif  // MEDIA_TOOLS_MEDIA_BENCH_FILE_PROTOCOL_H_

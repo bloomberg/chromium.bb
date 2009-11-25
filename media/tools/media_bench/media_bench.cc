@@ -29,9 +29,9 @@
 #include "base/time.h"
 #include "media/base/djb2.h"
 #include "media/base/media.h"
-#include "media/bench/file_protocol.h"
 #include "media/filters/ffmpeg_common.h"
 #include "media/filters/ffmpeg_video_decoder.h"
+#include "media/tools/media_bench/file_protocol.h"
 
 namespace switches {
 const char kStream[]       = "stream";

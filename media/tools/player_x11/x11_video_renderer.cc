@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/player/x11_video_renderer.h"
+#include "media/tools/player_x11/x11_video_renderer.h"
 
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrender.h>

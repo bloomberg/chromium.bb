@@ -18,7 +18,7 @@
 #include "media/filters/ffmpeg_video_decoder.h"
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
-#include "media/player/x11_video_renderer.h"
+#include "media/tools/player_x11/x11_video_renderer.h"
 
 Display* g_display;
 Window g_window;

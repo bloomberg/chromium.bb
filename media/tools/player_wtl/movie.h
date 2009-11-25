@@ -4,10 +4,10 @@
 
 // Movie class for WTL forms to call to control the media pipeline.
 
-#ifndef MEDIA_PLAYER_MOVIE_H_
-#define MEDIA_PLAYER_MOVIE_H_
+#ifndef MEDIA_TOOLS_PLAYER_WTL_MOVIE_H_
+#define MEDIA_TOOLS_PLAYER_WTL_MOVIE_H_
 
-#include "media/player/player_wtl.h"
+#include "media/tools/player_wtl/player_wtl.h"
 
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
@@ -95,4 +95,4 @@ class Movie : public Singleton<Movie> {
 
 }  // namespace media
 
-#endif  // MEDIA_PLAYER_MOVIE_H_
+#endif  // MEDIA_TOOLS_PLAYER_WTL_MOVIE_H_

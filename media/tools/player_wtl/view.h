@@ -2,8 +2,8 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef MEDIA_PLAYER_VIEW_H_
-#define MEDIA_PLAYER_VIEW_H_
+#ifndef MEDIA_TOOLS_PLAYER_WTL_VIEW_H_
+#define MEDIA_TOOLS_PLAYER_WTL_VIEW_H_
 
 #include <stdio.h>
 #include <process.h>
@@ -11,9 +11,9 @@
 
 #include "media/base/buffers.h"
 #include "media/base/yuv_convert.h"
-#include "media/player/movie.h"
-#include "media/player/player_wtl.h"
-#include "media/player/wtl_renderer.h"
+#include "media/tools/player_wtl/movie.h"
+#include "media/tools/player_wtl/player_wtl.h"
+#include "media/tools/player_wtl/wtl_renderer.h"
 
 // Fetchs current time as milliseconds.
 // Returns as double for high duration and precision.
@@ -417,4 +417,4 @@ class WtlVideoWindow : public CScrollWindowImpl<WtlVideoWindow> {
   DISALLOW_COPY_AND_ASSIGN(WtlVideoWindow);
 };
 
-#endif  // MEDIA_PLAYER_VIEW_H_
+#endif  // MEDIA_TOOLS_PLAYER_WTL_VIEW_H_
