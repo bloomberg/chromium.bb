@@ -9,6 +9,7 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
 #include "base/thread.h"
 #include "chrome/browser/bookmarks/bookmark_folder_tree_model.h"
@@ -30,6 +31,7 @@
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "grit/theme_resources.h"
 #include "skia/ext/skia_utils.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "views/controls/button/menu_button.h"
@@ -166,6 +168,7 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
       tree_view_(NULL),
       sync_status_button_(NULL),
       sync_service_(NULL),
+      sync_relogin_required_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(search_factory_(this)) {
   search_tf_ = new views::Textfield();
   search_tf_->set_default_width_in_chars(30);
@@ -511,9 +514,14 @@ void BookmarkManagerView::OnTreeViewKeyDown(base::KeyboardCode keycode) {
 void BookmarkManagerView::ButtonPressed(views::Button* sender,
                                         const views::Event& event) {
   if (sender == sync_status_button_) {
-    UserMetrics::RecordAction("BookmarkManager_Sync", profile_);
-    sync_ui_util::OpenSyncMyBookmarksDialog(
-        profile_, ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
+    if (sync_relogin_required_) {
+      DCHECK(sync_service_);
+      sync_service_->ShowLoginDialog();
+    } else {
+      UserMetrics::RecordAction("BookmarkManager_Sync", profile_);
+      sync_ui_util::OpenSyncMyBookmarksDialog(
+          profile_, ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
+    }
   }
 }
 
@@ -816,17 +824,37 @@ void BookmarkManagerView::ShowExportBookmarksFileChooser() {
 
 void BookmarkManagerView::UpdateSyncStatus() {
   DCHECK(sync_service_);
-  std::wstring status_label;
-  std::wstring link_label;
-  bool synced = sync_ui_util::GetStatusLabels(sync_service_,
-      &status_label, &link_label) == sync_ui_util::SYNCED;
+  string16 status_label;
+  string16 link_label;
+  sync_relogin_required_ = sync_ui_util::GetStatusLabels(sync_service_,
+      &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
+
+  if (sync_relogin_required_) {
+    sync_status_button_->SetText(
+        l10n_util::GetString(IDS_SYNC_BOOKMARK_BAR_ERROR));
+    // The tooltip is the only way we have to display text explaining the error
+    // to the user.
+    sync_status_button_->SetTooltipText(
+        l10n_util::GetString(IDS_SYNC_BOOKMARK_BAR_ERROR_DESC));
+    sync_status_button_->SetAccessibleName(
+        l10n_util::GetString(IDS_ACCNAME_SYNC_ERROR_BUTTON));
+    sync_status_button_->SetIcon(
+        *ResourceBundle::GetSharedInstance().GetBitmapNamed(IDR_WARNING));
+    sync_status_button_->GetParent()->Layout();
+    return;
+  }
 
   if (sync_service_->HasSyncSetupCompleted()) {
-    std::wstring username = sync_service_->GetAuthenticatedUsername();
-    status_label = l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO, username);
-  } else if (!sync_service_->SetupInProgress() && !synced) {
+      std::wstring username = sync_service_->GetAuthenticatedUsername();
+      status_label = l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO, username);
+  } else if (sync_service_->SetupInProgress()) {
+    status_label = l10n_util::GetString(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+  } else {
     status_label = l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);
   }
   sync_status_button_->SetText(status_label);
+  sync_status_button_->SetTooltipText(L"");
+  sync_status_button_->SetAccessibleName(L"");
+  sync_status_button_->SetIcon(SkBitmap());
   sync_status_button_->GetParent()->Layout();
 }

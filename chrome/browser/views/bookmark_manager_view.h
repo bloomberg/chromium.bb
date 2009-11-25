@@ -228,6 +228,10 @@ class BookmarkManagerView : public views::View,
   // A pointer to the ProfileSyncService instance if one exists.
   ProfileSyncService* sync_service_;
 
+  // True if the cached credentials have expired and we need to prompt the
+  // user to re-enter their password.
+  bool sync_relogin_required_;
+
   // Factory used for delaying search.
   ScopedRunnableMethodFactory<BookmarkManagerView> search_factory_;
 
