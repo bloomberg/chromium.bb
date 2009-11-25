@@ -119,6 +119,7 @@
         'page_heap.cc',
         'page_heap.h',
         'port.cc',
+        'symbolize_linux.cc',
         'system-alloc.h',
         'tcmalloc.cc',
         'tcmalloc_linux.cc',
@@ -186,6 +187,7 @@
             'tcmalloc/src/page_heap.h',
 
             # don't use linux forked version
+            'symbolize_linux.cc',
             'tcmalloc_linux.cc',
 
             # heap-profiler/checker/cpuprofiler
@@ -212,6 +214,7 @@
 
             # TODO(willchan): unfork this
             'tcmalloc/src/tcmalloc.cc',
+            'tcmalloc/src/symbolize.cc',
 
             # TODO(willchan): Support allocator shim later on.
             'allocator_shim.cc',
