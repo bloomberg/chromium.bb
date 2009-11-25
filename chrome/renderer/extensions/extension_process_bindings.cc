@@ -204,11 +204,14 @@ class ExtensionImpl : public ExtensionBase {
   // be an extension URL.
   static std::string ExtensionIdForCurrentContext() {
     RenderView* renderview = bindings_utils::GetRenderViewForCurrentContext();
-    DCHECK(renderview);
+    if (!renderview)
+      return std::string();  // this can happen as a tab is closing.
+
     GURL url = renderview->webview()->mainFrame()->url();
-    if (url.SchemeIs(chrome::kExtensionScheme))
-      return url.host();
-    return std::string();
+    if (!url.SchemeIs(chrome::kExtensionScheme))
+      return std::string();
+
+    return url.host();
   }
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
@@ -272,7 +275,11 @@ class ExtensionImpl : public ExtensionBase {
     }
 
     int browser_window_id = render_view->browser_window_id();
-    ExtensionViewAccumulator  popup_matcher(ExtensionIdForCurrentContext(),
+    std::string extension_id = ExtensionIdForCurrentContext();
+    if (extension_id.empty())
+      return v8::Undefined();
+
+    ExtensionViewAccumulator  popup_matcher(extension_id,
                                             browser_window_id,
                                             viewtype_to_find);
     RenderView::ForEach(&popup_matcher);
@@ -321,8 +328,12 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
     }
 
-    ExtensionViewAccumulator accumulator(
-        ExtensionIdForCurrentContext(), browser_window_id, view_type);
+    std::string extension_id = ExtensionIdForCurrentContext();
+    if (extension_id.empty())
+      return v8::Undefined();
+
+    ExtensionViewAccumulator accumulator(extension_id, browser_window_id,
+                                         view_type);
     RenderView::ForEach(&accumulator);
     return accumulator.views();
   }
@@ -383,8 +394,11 @@ class ExtensionImpl : public ExtensionBase {
       return v8::Undefined();
     }
 
-    L10nMessagesMap* l10n_messages =
-      GetL10nMessagesMap(ExtensionIdForCurrentContext());
+    std::string extension_id = ExtensionIdForCurrentContext();
+    if (extension_id.empty())
+      return v8::Undefined();
+
+    L10nMessagesMap* l10n_messages = GetL10nMessagesMap(extension_id);
     if (!l10n_messages)
       return v8::Undefined();
 
