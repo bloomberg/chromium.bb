@@ -357,14 +357,38 @@
    fun:_ZN4base14VDSOInitHelperC1Ev
    fun:_Z41__static_initialization_and_destruction_0ii
    fun:_GLOBAL__I__ZN4base11VDSOSupport12kInvalidBaseE
-   obj:/b/slave/webkit-rel-linux-valgrind-layout/build/src/sconsbuild/Release/test_shell
-   obj:/b/slave/webkit-rel-linux-valgrind-layout/build/src/sconsbuild/Release/test_shell
+   ...
    fun:__libc_csu_init
    fun:(below main)
 }
 {
    # Valgrind issues with tcmalloc's VDSOSupport module
    bug_28149b
+   Memcheck:Addr2
+   fun:_ZN4base11VDSOSupport11ElfMemImage4InitEPKv
+   fun:_ZN4base11VDSOSupport11ElfMemImageC1EPKv
+   fun:_ZN4base11VDSOSupportC1Ev
+   fun:_ZN4base11VDSOSupport4InitEv
+   fun:_ZN4base14VDSOInitHelperC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZN4base11VDSOSupport12kInvalidBaseE
+   ...
+   fun:__libc_csu_init
+   fun:(below main)
+}
+{
+   # Valgrind issues with tcmalloc's VDSOSupport module
+   bug_28149c
+   Memcheck:Addr2
+   ...
+   fun:_ZNK4base11VDSOSupport12LookupSymbolEPKcS2_iPNS0_10SymbolInfoE
+   ...
+   fun:_Z41__static_initialization_and_destruction_0ii
+   ...
+}
+{
+   # Valgrind issues with tcmalloc's VDSOSupport module
+   bug_28149d
    Memcheck:Addr4
    ...
    fun:_ZNK4base11VDSOSupport12LookupSymbolEPKcS2_iPNS0_10SymbolInfoE
@@ -372,7 +396,6 @@
    fun:_Z41__static_initialization_and_destruction_0ii
    ...
 }
-
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
