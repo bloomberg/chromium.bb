@@ -458,11 +458,6 @@ class TestRunner:
 
     filename_queue = self._GetTestFileQueue(test_files)
 
-    # Start Web Socket server.
-    if (self._ContainWebSocketTest(test_files)):
-      self._websocket_server.Start()
-      # self._websocket_secure_server.Start()
-
     # Instantiate TestShellThreads and start them.
     threads = []
     for i in xrange(int(self._options.num_test_shells)):
@@ -584,6 +579,11 @@ class TestRunner:
          self._test_files_list[0].find(self.HTTP_SUBDIR) >= 0)
         or self._options.randomize_order):
       self._http_server.Start()
+
+    # Start Web Socket server.
+    if (self._ContainWebSocketTest(self._test_files_list)):
+      self._websocket_server.Start()
+      # self._websocket_secure_server.Start()
 
     original_failures, thread_timings, test_timings, individual_test_timings = (
         self._RunTests(test_shell_binary, self._test_files_list))
