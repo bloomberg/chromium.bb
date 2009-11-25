@@ -3417,6 +3417,11 @@
         ],
       },
       'conditions': [
+        ['enable_pepper==1', {
+          'dependencies': [
+            '../gpu/gpu.gyp:gpu_plugin',
+          ],
+        }],
         ['disable_nacl!=1', {
           'dependencies': [
             'nacl',
