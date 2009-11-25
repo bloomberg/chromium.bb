@@ -40,6 +40,8 @@ deps = {
     "http://src.chromium.org/svn/trunk/src/third_party/npapi/bindings",
   "base":
     "http://src.chromium.org/svn/trunk/src/base",
+  "chrome/common":
+    "http://src.chromium.org/svn/trunk/src/chrome/common",
 }
 
 deps_os = {

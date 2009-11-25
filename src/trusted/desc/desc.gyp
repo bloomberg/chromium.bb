@@ -88,6 +88,8 @@
         'nacl_desc_mutex.h',
         'nacl_desc_semaphore.c',
         'nacl_desc_semaphore.h',
+        'nacl_desc_wrapper.cc',
+        'nacl_desc_wrapper.h',
         'nrd_all_modules.c',
         'nrd_all_modules.h',
         # nrd_xfer_obj = env_no_strict_aliasing.ComponentObject('nrd_xfer.c')
