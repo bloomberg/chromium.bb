@@ -12,6 +12,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_devtools_manager.h"
 #include "ipc/ipc_message.h"
 
@@ -44,7 +45,8 @@ class URLRequestContext;
 // case that the port is a tab).  The Sender is usually either a
 // RenderProcessHost or a RenderViewHost.
 class ExtensionMessageService
-    : public base::RefCountedThreadSafe<ExtensionMessageService>,
+    : public base::RefCountedThreadSafe<
+          ExtensionMessageService, ChromeThread::DeleteOnUIThread>,
       public NotificationObserver {
  public:
   // Javascript function name constants.
@@ -127,7 +129,8 @@ class ExtensionMessageService
                        ResourceMessageFilter* source);
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionMessageService>;
+  friend class ChromeThread;
+  friend class DeleteTask<ExtensionMessageService>;
 
   // A map of channel ID to its channel object.
   typedef std::map<int, MessageChannel*> MessageChannelMap;
@@ -194,6 +197,9 @@ class ExtensionMessageService
   // Protects the next_port_id_ variable, since it can be
   // used on the IO thread or the UI thread.
   Lock next_port_id_lock_;
+
+  // The thread creating this object. Should be UI thread.
+  ChromeThread::ID thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageService);
 };

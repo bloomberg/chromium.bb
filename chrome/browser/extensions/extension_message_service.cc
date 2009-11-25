@@ -115,6 +115,11 @@ ExtensionMessageService::ExtensionMessageService(Profile* profile)
     : profile_(profile),
       extension_devtools_manager_(NULL),
       next_port_id_(0) {
+  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id_)) {
+    // If we get created in unit test, GetCurrentThreadIdentifier fails.
+    // Assign thread_id_ to an ID not used.
+    thread_id_ = ChromeThread::ID_COUNT;
+  }
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
@@ -132,10 +137,11 @@ ExtensionMessageService::~ExtensionMessageService() {
 
 void ExtensionMessageService::ProfileDestroyed() {
   profile_ = NULL;
-
-  // We remove notifications here because our destructor might be called on
-  // a non-UI thread.
-  registrar_.RemoveAll();
+  if (!registrar_.IsEmpty()) {
+    if (thread_id_ != ChromeThread::ID_COUNT)
+      CHECK(ChromeThread::CurrentlyOn(thread_id_));
+    registrar_.RemoveAll();
+  }
 }
 
 void ExtensionMessageService::AddEventListener(const std::string& event_name,
