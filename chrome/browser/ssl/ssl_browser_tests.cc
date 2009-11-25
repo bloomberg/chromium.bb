@@ -224,7 +224,15 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
 // link with a blank target).  This is to test that the lack of navigation entry
 // does not cause any problems (it was causing a crasher, see
 // http://crbug.com/19941).
+#if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
+#else
+// TODO(jcampan|oshima): On linux/views, the WaitForLoadStop call
+// below sometimes waits forever because LOAD_STOP notification can
+// happen before WaitLorLoadStop is called. Marking this test as Fleaky.
+// See http://crbug/28098.
+IN_PROC_BROWSER_TEST_F(SSLUITest, FLAKY_TestHTTPSErrorWithNoNavEntry) {
+#endif
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
@@ -249,9 +257,6 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->selected_index());
 
-  // TODO(jcampan|oshima): Following code waits forever on linux/views
-  // because LOAD_STOP notification is issued before WaitLorLoadStop
-  // is called. See http://crbug/28098.
 #if !defined(OS_LINUX) || !defined(TOOLKIT_VIEWS)
   // Since the navigation was initiated by the renderer (when we clicked on the
   // link) and since the main page network request failed, we won't get a

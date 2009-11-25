@@ -471,7 +471,14 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 }
 
 // Make sure Find box disappears on Navigate but not on Refresh.
+#if defined(OS_LINUX)
+// The last EXPECT_FALSE(fully_visible) is flaky (especially on
+// 64bit build.). See bug http://crbug.com/28629.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
+                       FLAKY_FindDisappearOnNavigate) {
+#else
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindDisappearOnNavigate) {
+#endif
   HTTPTestServer* server = StartHTTPServer();
 
   // First we navigate to our special focus tracking page.

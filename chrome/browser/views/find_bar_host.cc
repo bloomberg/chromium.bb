@@ -117,6 +117,8 @@ bool FindBarHost::GetFindBarWindowInfo(gfx::Point* position,
 #else
       false) {
       // TODO(sky): figure out linux side.
+      // This is tricky due to asynchronous nature of x11.
+      // See bug http://crbug.com/28629.
 #endif
     if (position)
       *position = gfx::Point();
