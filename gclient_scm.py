@@ -135,13 +135,16 @@ class GitWrapper(SCMWrapper, scm.GIT):
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
       return
 
-    self._Run(['remote', 'update'], redirect_stdout=False)
     new_base = 'origin'
     if revision:
       new_base = revision
+    cur_branch = self._Run(['symbolic-ref', 'HEAD']).split('/')[-1]
+    merge_base = self._Run(['merge-base', 'HEAD', new_base])
+    self._Run(['remote', 'update'], redirect_stdout=False)
     files = self._Run(['diff', new_base, '--name-only']).split()
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
-    self._Run(['rebase', '-v', new_base], redirect_stdout=False)
+    self._Run(['rebase', '-v', '--onto', new_base, merge_base, cur_branch],
+                redirect_stdout=False)
     print "Checked out revision %s." % self.revinfo(options, (), None)
 
   def revert(self, options, args, file_list):
