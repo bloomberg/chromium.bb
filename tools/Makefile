@@ -83,6 +83,7 @@ ifeq ($(PLATFORM), Cygwin)
       /cygdrive/c/cygwin/bin/cygintl*.dll \
       /cygdrive/c/cygwin/bin/cygz*.dll \
       $(SDKROOT)/bin
+  endif
 else
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
