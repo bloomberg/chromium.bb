@@ -350,9 +350,7 @@
    # Valgrind issues with tcmalloc's VDSOSupport module
    bug_28149a
    Memcheck:Addr1
-   fun:_ZN4base11VDSOSupport11ElfMemImage4InitEPKv
-   fun:_ZN4base11VDSOSupport11ElfMemImageC1EPKv
-   fun:_ZN4base11VDSOSupportC1Ev
+   ...
    fun:_ZN4base11VDSOSupport4InitEv
    fun:_ZN4base14VDSOInitHelperC1Ev
    fun:_Z41__static_initialization_and_destruction_0ii
@@ -365,9 +363,7 @@
    # Valgrind issues with tcmalloc's VDSOSupport module
    bug_28149b
    Memcheck:Addr2
-   fun:_ZN4base11VDSOSupport11ElfMemImage4InitEPKv
-   fun:_ZN4base11VDSOSupport11ElfMemImageC1EPKv
-   fun:_ZN4base11VDSOSupportC1Ev
+   ...
    fun:_ZN4base11VDSOSupport4InitEv
    fun:_ZN4base14VDSOInitHelperC1Ev
    fun:_Z41__static_initialization_and_destruction_0ii
@@ -379,6 +375,30 @@
 {
    # Valgrind issues with tcmalloc's VDSOSupport module
    bug_28149c
+   Memcheck:Addr4
+   ...
+   fun:_ZN4base11VDSOSupport4InitEv
+   fun:_ZN4base14VDSOInitHelperC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I__ZN4base11VDSOSupport12kInvalidBaseE
+   ...
+   fun:__libc_csu_init
+   fun:(below main)
+}
+{
+   # Valgrind issues with tcmalloc's VDSOSupport module
+   bug_28149d
+   Memcheck:Addr1
+   ...
+   fun:_ZNK4base11VDSOSupport12LookupSymbolEPKcS2_iPNS0_10SymbolInfoE
+   ...
+   fun:_Z41__static_initialization_and_destruction_0ii
+   ...
+}
+{
+{
+   # Valgrind issues with tcmalloc's VDSOSupport module
+   bug_28149e
    Memcheck:Addr2
    ...
    fun:_ZNK4base11VDSOSupport12LookupSymbolEPKcS2_iPNS0_10SymbolInfoE
@@ -388,7 +408,7 @@
 }
 {
    # Valgrind issues with tcmalloc's VDSOSupport module
-   bug_28149d
+   bug_28149f
    Memcheck:Addr4
    ...
    fun:_ZNK4base11VDSOSupport12LookupSymbolEPKcS2_iPNS0_10SymbolInfoE
