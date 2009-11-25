@@ -1,4 +1,4 @@
-# Copyright 2008, Google Inc.
+# Copyright 2008, 2009, Google Inc.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -50,6 +50,7 @@ CROSSARCH=nacl
 SDKLOC?=/usr/local
 SDKNAME=nacl-sdk
 SDKROOT=$(SDKLOC)/$(SDKNAME)
+DESTDIR?=
 BUILDNCCDIR=$(SDKROOT)/$(CROSSARCH)
 
 ifeq ($(shell uname -s), Darwin)
@@ -64,19 +65,22 @@ SRCDIR=../../../third_party
 ifeq ($(PLATFORM), Cygwin)
   # Ugh, Cygwin and spaces in paths don't work well.
   # I'm explicitly coding the path.
-  BUILDPATH=$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin:/cygdrive/c/Python25/:/usr/X11R6/bin:/cygdrive/c/WINDOWS/system32:/cygdrive/c/WINDOWS:/cygdrive/c/WINDOWS/system32/WBEM:/cygdrive/c/WINDOWS/system32/WindowsPowerShell/v1.0:/usr/lib/lapack
+  BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:/usr/local/bin:/usr/bin:/bin:/cygdrive/c/Python25/:/usr/X11R6/bin:/cygdrive/c/WINDOWS/system32:/cygdrive/c/WINDOWS:/cygdrive/c/WINDOWS/system32/WBEM:/cygdrive/c/WINDOWS/system32/WindowsPowerShell/v1.0:/usr/lib/lapack
   SCONS?=scons.bat
   SDKLOC_NATIVE=$(shell cygpath -m $(SDKLOC))
+  CYGWIN17=$(shell grep '^cygwin cygwin-1.7' /etc/setup/installed.db | wc -l)
+  ifeq ($(CYGWIN17), 1)
+    DESTDIR := $(SDKROOT)
+    SDKROOT := 
+  endif
   CYGWIN_DLL_COPY= \
-    cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
-    /cygdrive/c/cygwin/bin/cygiconv*.dll \
-    /cygdrive/c/cygwin/bin/cygintl*.dll \
-    /cygdrive/c/cygwin/bin/cygz*.dll \
-    $(SDKROOT)/bin
+    cp -f `cygpath \`cygcheck $(DESTDIR)$(SDKROOT)/bin/*.exe\` | \
+    grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
+    $(DESTDIR)$(SDKROOT)/bin
 else
-  BUILDPATH=$(SDKROOT)/bin:$(PATH)
+  BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
-  SDKLOC_NATIVE=$(SDKLOC)
+  SDKLOC_NATIVE=$(DESTDIR)$(SDKLOC)
   CYGWIN_DLL_COPY=echo "Cygwin not used on this platform"
 endif
 
@@ -163,15 +167,15 @@ BUILD/stamp-gdb-$(GDB_VERSION): #Makefile
 # Create the SDK output directories.
 ##################################################################
 SDKDIRS=\
-    $(SDKROOT)/bin \
-    $(SDKROOT)/lib \
-    $(SDKROOT)/include \
-    $(SDKROOT)/$(CROSSARCH)/include \
-    $(SDKROOT)/$(CROSSARCH)/lib \
+    $(DESTDIR)$(SDKROOT)/bin \
+    $(DESTDIR)$(SDKROOT)/lib \
+    $(DESTDIR)$(SDKROOT)/include \
+    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include \
+    $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/lib \
 
 .PHONY: sdkdirs
 sdkdirs:
-	echo "Creating the SDK tree at $(SDKROOT)"
+	echo "Creating the SDK tree at $(DESTDIR)$(SDKROOT)"
 	@for d in $(SDKDIRS); do \
 	  if [ ! -d $$d ]; then \
 	    echo install -m 755 -d $$d; \
@@ -194,7 +198,7 @@ BUILD/stamp-binutils: BUILD/stamp-binutils-$(BINUTILS_VERSION) Makefile
 	    --prefix=$(SDKROOT) \
 	    --target=${CROSSARCH}
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
-	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) install
+	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
 
 .PHONY: binutils
@@ -240,16 +244,16 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2 -g" \
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
-	    install-gcc install-target-libgcc ; \
+	    DESTDIR=$(DESTDIR) install-gcc install-target-libgcc ; \
 	else \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2 -g" \
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
-	    install-gcc ; \
+	    DESTDIR=$(DESTDIR) install-gcc ; \
 	fi
-	cp $(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
-		$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
+	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
+		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
 	touch $@
 
 .PHONY: pregcc
@@ -299,8 +303,8 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	fi
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
-	    install_root=$(SDKROOT)/$(CROSSARCH) install
-	rm $(SDKROOT)/$(CROSSARCH)/include/pthread.h
+	    DESTDIR=$(DESTDIR) install
+	rm $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/include/pthread.h
 	touch $@
 
 .PHONY: newlib
@@ -313,6 +317,13 @@ newlib: BUILD/stamp-newlib
 BUILD/stamp-gcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
+ifeq ($(PLATFORM), Cygwin)
+	mkdir BUILD/build-gcc-$(CROSSARCH)/gcc
+	cp -af $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
+	    BUILD/build-gcc-$(CROSSARCH)/gcc
+	cp -af $(DESTDIR)$(SDKROOT)/nacl \
+	    BUILD/build-gcc-$(CROSSARCH)/nacl
+endif
 	cd BUILD/build-gcc-$(CROSSARCH) && \
 	  PATH=$(BUILDPATH) CC="gcc" \
 		CFLAGS="-Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
@@ -341,7 +352,7 @@ BUILD/stamp-gcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	  $(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2 -g" \
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
-	    install
+	    DESTDIR=$(DESTDIR) install
 	touch $@
 
 .PHONY: gcc
@@ -373,7 +384,7 @@ BUILD/stamp-gdb: BUILD/stamp-gdb-$(GDB_VERSION) #Makefile
 	    $${BUILD} \
 	    --target=${CROSSARCH}
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
-	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) install
+	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
 
 .PHONY: gdb
@@ -408,11 +419,11 @@ sdk_minimal_test: ALWAYS
 
 build:
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
-	$(CYGWIN_DLL_COPY)
-	cp -f ../../third_party/gcc/COPYING $(SDKROOT)
+	cp -f ../../third_party/gcc/COPYING $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-newlib
+	$(CYGWIN_DLL_COPY)
 	$(MAKE) -f $(THISMAKEFILE) nc_threads
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gcc
 	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
