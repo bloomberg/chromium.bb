@@ -396,7 +396,6 @@
    ...
 }
 {
-{
    # Valgrind issues with tcmalloc's VDSOSupport module
    bug_28149e
    Memcheck:Addr2
