@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 <head>
 <style>
@@ -15,16 +15,16 @@ a {
 }
 
 .open_box {
-  display:block;
-  overflow:hidden;
-  margin-right:4px;
-  margin-top:2px;
-  height:12px;
-  width:12px;
+  display: block;
+  overflow: hidden;
+  margin-right: 4px;
+  margin-top: 2px;
+  height: 12px;
+  width: 12px;
   float: left;
   clear: left;
-  background-image:url(sprite_arrows.gif);
-  background-position:0px -24px;
+  background-image: url(sprite_arrows.gif);
+  background-position: 0px -24px;
   cursor: pointer;
 }
 
@@ -68,7 +68,7 @@ a {
   text-align: right;
   padding-top: 20px;
   padding-right: 10px;
-  color: #8888CC;
+  color: #88C;
 }
 
 </style>
@@ -86,6 +86,7 @@ function frameLoaded() {
       links[i].addEventListener("click", showStory);
     }
   }
+  window.addEventListener("message", messageHandler);
 }
 
 function showStory(event) {
@@ -98,7 +99,6 @@ function messageHandler(event) {
   reportHeight();
 }
 
-window.addEventListener("message", messageHandler);
 </script>
 <script>
 // Feed URL.
