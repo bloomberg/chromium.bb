@@ -26,6 +26,10 @@
                      display: none;}
       font.errormsg { color: red; font-size: smaller;
                       font-family: arial,sans-serif;}
+      div.errormsgspacer { min-height: 1em;}
+      font.errormsgspacer { font-size: smaller;
+                            font-family: arial,sans-serif;}
+      
       hr {
         border: 0;
         background-color:#DDDDDD; 
@@ -358,22 +362,19 @@
               <input type="password" name="Passwd" id="Passwd" size="18"
                      class="gaia le val"/> 
             </td> 
-          </tr>
-          <tr> 
-            <td></td> 
-            <td>
-              <div class="errormsg" id="errormsg_0_Password"
-                   i18n-content="cannotbeblank">
-              </div> 
-            </td> 
-          </tr>
+          </tr>          
           <tr> 
             <td> 
             </td> 
             <td>
-              <div class="errormsg" id="errormsg_1_Password">
-              <span i18n-content="invalidcredentials"></span>[<a i18n-values="href:invalidpasswordhelpurl" target="_blank">?</a>]
-              </div> 
+              <div class="errormsgspacer">
+                <div class="errormsg" id="errormsg_0_Password"
+                     i18n-content="cannotbeblank">
+                </div> 
+                <div class="errormsg" id="errormsg_1_Password">
+                  <span i18n-content="invalidcredentials"></span>[<a i18n-values="href:invalidpasswordhelpurl" target="_blank">?</a>]
+                </div>
+              </div>  
             </td> 
           </tr>
           <tr>
