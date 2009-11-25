@@ -443,11 +443,11 @@
   }
 
   function getMaxResults() {
-    if (currentState.maxResults)
-      return currentState.maxResults;
-
-    // In individual tests view, show all the results since it renders faster.
-    return currentState.tests || currentState.expectationsUpdate ? 750 : 200;
+    if (currentState.expectationsUpdate ||
+        currentState.tests && !currentState.maxResults) {
+      return 750;
+    }
+    return currentState.maxResults || 200;
   }
 
   function getMatchingElement(stringToMatch, elementsMap) {
@@ -694,7 +694,13 @@
     }
 
     if (platformObject) {
-      return platformObject[buildType] || platformObject[ALL];
+      if (platformObject[buildType])
+        return platformObject[buildType]
+
+      if (testObject[ALL] && testObject[ALL][buildType])
+        return testObject[ALL][buildType]
+
+      return platformObject[ALL];
     }
     return null;
   }
@@ -779,17 +785,26 @@
     for (var j = 0; j < expectations.length; j++) {
       var modifiers = expectations[j].modifiers.split(' ');
       addFallbacks(function(platformKey) {
-        // Setting the ALL key overrides any previously seen expectations.
-        if (platformKey == ALL || !allExpectations[test])
-          allExpectations[test] = {};
-
-        var testHolder = allExpectations[test];
-        if (!testHolder[platformKey])
-          testHolder[platformKey] = {}
-
         addFallbacks(function(buildTypeKey) {
           // Setting the ALL key overrides any previously seen expectations.
-          if (buildTypeKey == ALL || !testHolder[platformKey])
+          if (platformKey == ALL) {
+            for (var i = 0; i < PLATFORMS.length; i++) {
+              if (PLATFORMS[i] in allExpectations[test]) {
+                // Setting the ALL key overrides any previously seen
+                // expectations.
+                if (buildTypeKey == ALL)
+                  allExpectations[test][PLATFORMS[i]] = {};
+              }
+            }
+          } else if (buildTypeKey == ALL && allExpectations[test]) {
+            allExpectations[test][platformKey] = {}
+          }
+
+          if (!allExpectations[test])
+            allExpectations[test] = {};
+
+          var testHolder = allExpectations[test];
+          if (!testHolder[platformKey])
             testHolder[platformKey] = {}
 
           testHolder[platformKey][buildTypeKey] = expectations[j];
@@ -2055,7 +2070,8 @@
         delete currentState.tests;
       }
 
-      if (key == 'maxResults') {
+      if (key == 'maxResults' || key == 'expectationsUpdate' ||
+          key == 'tests' && !currentState.maxResults) {
         // Processing the test results JSON makes assumptions about the number
         // of results to show. This makes changing the number of maxResults slow
         // but is considerably easier than refactoring all the other code.
