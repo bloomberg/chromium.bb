@@ -23,8 +23,9 @@ const char* GetCommandName(CommandId id) {
   #undef GLES2_CMD_OP
   };
 
-  return (static_cast<int>(id) >= 0 && static_cast<int>(id) < kNumCommands) ?
-      names[id] : "*unknown-command*";
+  int index = static_cast<int>(id) - kStartPoint - 1;
+  return (index >= 0 && index < kNumCommands) ?
+      names[index] : "*unknown-command*";
 }
 
 }  // namespace gles2

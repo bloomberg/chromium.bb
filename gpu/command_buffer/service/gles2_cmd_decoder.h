@@ -28,6 +28,14 @@ class GLES2Decoder : public CommonDecoder {
   virtual ~GLES2Decoder() {
   }
 
+  bool debug() const {
+    return debug_;
+  }
+
+  void set_debug(bool debug) {
+    debug_ = debug;
+  }
+
 #if defined(OS_LINUX)
   void set_window_wrapper(XWindowWrapper *window) {
     window_ = window;
@@ -57,6 +65,8 @@ class GLES2Decoder : public CommonDecoder {
   GLES2Decoder();
 
  private:
+  bool debug_;
+
 #if defined(OS_LINUX)
   XWindowWrapper *window_;
 #elif defined(OS_WIN)

@@ -9,7 +9,7 @@
 #include "gpu/command_buffer/client/gles2_demo_c.h"
 
 void GLFromCTestFunction() {
-  glClear(GL_COLOR_BUFFER_BIT);
+  // glClear(GL_COLOR_BUFFER_BIT);
 }
 
 

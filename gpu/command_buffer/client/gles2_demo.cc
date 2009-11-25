@@ -73,10 +73,18 @@ bool GLES2Demo::Setup(NPP npp, void* hwnd, int32 size) {
   size_t transfer_buffer_size = 512 * 1024;
   int32 transfer_buffer_id =
       command_buffer->CreateTransferBuffer(transfer_buffer_size);
-  void* transfer_buffer =
+  ::base::SharedMemory* shared_memory =
       command_buffer->GetTransferBuffer(transfer_buffer_id);
+  if (!shared_memory->Map(transfer_buffer_size)) {
+    return false;
+  }
+  void* transfer_buffer = shared_memory->memory();
+  if (!transfer_buffer) {
+    return false;
+  }
 
   gles2::g_gl_impl = new GLES2Implementation(helper,
+                                             transfer_buffer_size,
                                              transfer_buffer,
                                              transfer_buffer_id);
 

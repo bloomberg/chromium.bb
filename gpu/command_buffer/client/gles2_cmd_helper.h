@@ -25,6 +25,46 @@ class GLES2CmdHelper : public CommandBufferHelper {
   // file instead of having to edit some template or the code generator.
   #include "gpu/command_buffer/client/gles2_cmd_helper_autogen.h"
 
+  // Helpers that could not be auto-generated.
+  // TODO(gman): Auto generate these.
+
+  void GetAttribLocation(
+      GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
+      uint32 location_shm_id, uint32 location_shm_offset, uint32 data_size) {
+    gles2::GetAttribLocation& c = GetCmdSpace<gles2::GetAttribLocation>();
+    c.Init(
+        program, name_shm_id, name_shm_offset, location_shm_id,
+        location_shm_offset, data_size);
+  }
+
+  void GetAttribLocationImmediate(
+      GLuint program, const char* name,
+      uint32 location_shm_id, uint32 location_shm_offset) {
+    const uint32 size = gles2::GetAttribLocationImmediate::ComputeSize(name);
+    gles2::GetAttribLocationImmediate& c =
+        GetImmediateCmdSpaceTotalSize<gles2::GetAttribLocationImmediate>(size);
+    c.Init(program, name, location_shm_id, location_shm_offset);
+  }
+
+  void GetUniformLocation(
+      GLuint program, uint32 name_shm_id, uint32 name_shm_offset,
+      uint32 location_shm_id, uint32 location_shm_offset, uint32 data_size) {
+    gles2::GetUniformLocation& c = GetCmdSpace<gles2::GetUniformLocation>();
+    c.Init(
+        program, name_shm_id, name_shm_offset, location_shm_id,
+        location_shm_offset, data_size);
+  }
+
+  void GetUniformLocationImmediate(
+      GLuint program, const char* name,
+      uint32 location_shm_id, uint32 location_shm_offset) {
+    const uint32 size = gles2::GetUniformLocationImmediate::ComputeSize(name);
+    gles2::GetUniformLocationImmediate& c =
+        GetImmediateCmdSpaceTotalSize<gles2::GetUniformLocationImmediate>(size);
+    c.Init(program, name, location_shm_id, location_shm_offset);
+  }
+
+
  private:
   DISALLOW_COPY_AND_ASSIGN(GLES2CmdHelper);
 };

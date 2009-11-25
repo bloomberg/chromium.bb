@@ -964,39 +964,8 @@ TEST(GLES2FormatTest, GetAttachedShaders) {
   EXPECT_EQ(static_cast<uint32>(16), cmd.shaders_shm_offset);
 }
 
-TEST(GLES2FormatTest, GetAttribLocation) {
-  GetAttribLocation cmd = { 0, };
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11),
-      static_cast<uint32>(12),
-      static_cast<uint32>(13),
-      static_cast<uint32>(14));
-  EXPECT_EQ(GetAttribLocation::kCmdId, cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4);  // NOLINT
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
-  EXPECT_EQ(static_cast<uint32>(12), cmd.name_shm_id);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.name_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.data_size);
-}
-
-TEST(GLES2FormatTest, GetAttribLocationImmediate) {
-  int8 buf[256] = { 0, };
-  GetAttribLocationImmediate& cmd =
-      *static_cast<GetAttribLocationImmediate*>(static_cast<void*>(&buf));
-  static const char* const test_str = "test string";
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11),
-      test_str);
-  EXPECT_EQ(GetAttribLocationImmediate::kCmdId, cmd.header.command);
-  EXPECT_EQ(sizeof(cmd) +  // NOLINT
-            RoundSizeToMultipleOfEntries(strlen(test_str)),
-            cmd.header.size * 4);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
-  // TODO(gman): check that string got copied.
-}
-
+// TODO(gman): Write test for GetAttribLocation
+// TODO(gman): Write test for GetAttribLocationImmediate
 TEST(GLES2FormatTest, GetBooleanv) {
   GetBooleanv cmd = { 0, };
   void* next_cmd = cmd.Set(
@@ -1287,39 +1256,8 @@ TEST(GLES2FormatTest, GetUniformiv) {
   EXPECT_EQ(static_cast<uint32>(14), cmd.params_shm_offset);
 }
 
-TEST(GLES2FormatTest, GetUniformLocation) {
-  GetUniformLocation cmd = { 0, };
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11),
-      static_cast<uint32>(12),
-      static_cast<uint32>(13),
-      static_cast<uint32>(14));
-  EXPECT_EQ(GetUniformLocation::kCmdId, cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4);  // NOLINT
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
-  EXPECT_EQ(static_cast<uint32>(12), cmd.name_shm_id);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.name_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.data_size);
-}
-
-TEST(GLES2FormatTest, GetUniformLocationImmediate) {
-  int8 buf[256] = { 0, };
-  GetUniformLocationImmediate& cmd =
-      *static_cast<GetUniformLocationImmediate*>(static_cast<void*>(&buf));
-  static const char* const test_str = "test string";
-  void* next_cmd = cmd.Set(
-      &cmd,
-      static_cast<GLuint>(11),
-      test_str);
-  EXPECT_EQ(GetUniformLocationImmediate::kCmdId, cmd.header.command);
-  EXPECT_EQ(sizeof(cmd) +  // NOLINT
-            RoundSizeToMultipleOfEntries(strlen(test_str)),
-            cmd.header.size * 4);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
-  // TODO(gman): check that string got copied.
-}
-
+// TODO(gman): Write test for GetUniformLocation
+// TODO(gman): Write test for GetUniformLocationImmediate
 TEST(GLES2FormatTest, GetVertexAttribfv) {
   GetVertexAttribfv cmd = { 0, };
   void* next_cmd = cmd.Set(
