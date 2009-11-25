@@ -57,8 +57,8 @@ class WebDatabaseTest : public testing::Test {
     DictionaryValue::key_iterator e(a.end_keys());
     std::wstring av, bv;
     while (i != e) {
-      if (!(a.GetString(*i, &av)) ||
-          !(b.GetString(*i, &bv)) ||
+      if (!(a.GetStringWithoutPathExpansion(*i, &av)) ||
+          !(b.GetStringWithoutPathExpansion(*i, &bv)) ||
           av != bv)
         return false;
 

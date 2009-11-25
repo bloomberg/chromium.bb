@@ -245,10 +245,10 @@ bool StrictTransportSecurityState::Deserialise(const std::string& input) {
   DictionaryValue* dict_value = reinterpret_cast<DictionaryValue*>(value.get());
   const base::Time current_time(base::Time::Now());
 
-  for (DictionaryValue::key_iterator
-       i = dict_value->begin_keys(); i != dict_value->end_keys(); ++i) {
+  for (DictionaryValue::key_iterator i = dict_value->begin_keys();
+       i != dict_value->end_keys(); ++i) {
     DictionaryValue* state;
-    if (!dict_value->GetDictionary(*i, &state))
+    if (!dict_value->GetDictionaryWithoutPathExpansion(*i, &state))
       continue;
 
     bool include_subdomains;

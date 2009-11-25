@@ -169,7 +169,7 @@ bool ValidateExtension(Extension* extension, std::string* error) {
       for (DictionaryValue::key_iterator iter = images_value->begin_keys();
            iter != images_value->end_keys(); ++iter) {
         std::string val;
-        if (images_value->GetString(*iter, &val)) {
+        if (images_value->GetStringWithoutPathExpansion(*iter, &val)) {
           FilePath image_path = extension->path().AppendASCII(val);
           if (!file_util::PathExists(image_path)) {
             *error = StringPrintf(

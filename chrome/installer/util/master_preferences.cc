@@ -11,9 +11,7 @@
 
 namespace {
 const wchar_t* kDistroDict = L"distribution";
-
-
-}  // namespace
+}
 
 namespace installer_util {
 namespace master_preferences {
@@ -116,14 +114,10 @@ bool SetDistroBooleanPreference(DictionaryValue* prefs,
                                 const std::wstring& name,
                                 bool value) {
 
-  bool ret = false;
-  if (prefs && !name.empty()) {
-    std::wstring key(kDistroDict);
-    key.append(L"." + name);
-    if (prefs->SetBoolean(key, value))
-      ret = true;
-  }
-  return ret;
+  if (!prefs || name.empty())
+    return false;
+  prefs->SetBoolean(std::wstring(kDistroDict) + L"." + name, value);
+  return true;
 }
 
 }  // installer_util

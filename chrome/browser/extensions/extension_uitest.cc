@@ -261,25 +261,19 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
       EXPECT_TRUE(has_callback);
 
       DictionaryValue response_dict;
-      EXPECT_TRUE(response_dict.SetInteger(keys::kAutomationRequestIdKey,
-                                           request_id));
+      response_dict.SetInteger(keys::kAutomationRequestIdKey, request_id);
       DictionaryValue tab_dict;
-      EXPECT_TRUE(tab_dict.SetInteger(extension_tabs_module_constants::kIdKey,
-                                      42));
-      EXPECT_TRUE(tab_dict.SetInteger(
-          extension_tabs_module_constants::kIndexKey, 1));
-      EXPECT_TRUE(tab_dict.SetInteger(
-          extension_tabs_module_constants::kWindowIdKey, 1));
-      EXPECT_TRUE(tab_dict.SetBoolean(
-          extension_tabs_module_constants::kSelectedKey, true));
-      EXPECT_TRUE(tab_dict.SetString(
-          extension_tabs_module_constants::kUrlKey, "http://www.google.com"));
+      tab_dict.SetInteger(extension_tabs_module_constants::kIdKey, 42);
+      tab_dict.SetInteger(extension_tabs_module_constants::kIndexKey, 1);
+      tab_dict.SetInteger(extension_tabs_module_constants::kWindowIdKey, 1);
+      tab_dict.SetBoolean(extension_tabs_module_constants::kSelectedKey, true);
+      tab_dict.SetString(extension_tabs_module_constants::kUrlKey,
+                         "http://www.google.com");
 
       std::string tab_json;
       base::JSONWriter::Write(&tab_dict, false, &tab_json);
 
-      EXPECT_TRUE(response_dict.SetString(keys::kAutomationResponseKey,
-          tab_json));
+      response_dict.SetString(keys::kAutomationResponseKey, tab_json);
 
       std::string response_json;
       base::JSONWriter::Write(&response_dict, false, &response_json);

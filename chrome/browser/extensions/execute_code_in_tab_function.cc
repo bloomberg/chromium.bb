@@ -25,7 +25,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
 
   DictionaryValue* script_info;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &script_info));
-  size_t number_of_value = script_info->GetSize();
+  size_t number_of_value = script_info->size();
   if (number_of_value == 0) {
     error_ = keys::kNoCodeOrFileToExecuteError;
     return false;

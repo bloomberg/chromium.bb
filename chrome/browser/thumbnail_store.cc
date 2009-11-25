@@ -218,7 +218,7 @@ void ThumbnailStore::NotifyThumbnailStoreReady() {
 void ThumbnailStore::UpdateURLData() {
   DCHECK(url_blacklist_);
 
-  int result_count = ThumbnailStore::kMaxCacheSize + url_blacklist_->GetSize();
+  int result_count = ThumbnailStore::kMaxCacheSize + url_blacklist_->size();
   hs_->QueryTopURLsAndRedirects(result_count, &consumer_,
       NewCallback(this, &ThumbnailStore::OnURLDataAvailable));
 }

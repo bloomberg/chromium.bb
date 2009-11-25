@@ -44,10 +44,9 @@ void ExternalPrefExtensionProvider::VisitRegisteredExtension(
     if (ids_to_ignore.find(WideToASCII(extension_id)) != ids_to_ignore.end())
       continue;
 
-    DictionaryValue* extension = NULL;
-    if (!prefs_->GetDictionary(extension_id, &extension)) {
+    DictionaryValue* extension;
+    if (!prefs_->GetDictionaryWithoutPathExpansion(extension_id, &extension))
       continue;
-    }
 
     FilePath::StringType external_crx;
     std::string external_version;

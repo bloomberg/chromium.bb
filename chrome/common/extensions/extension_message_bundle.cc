@@ -50,11 +50,11 @@ bool ExtensionMessageBundle::Init(const CatalogVector& locale_catalogs,
                                   std::string* error) {
   dictionary_.clear();
 
-  CatalogVector::const_reverse_iterator it = locale_catalogs.rbegin();
-  for (; it != locale_catalogs.rend(); ++it) {
+  for (CatalogVector::const_reverse_iterator it = locale_catalogs.rbegin();
+       it != locale_catalogs.rend(); ++it) {
     DictionaryValue* catalog = (*it).get();
-    DictionaryValue::key_iterator key_it = catalog->begin_keys();
-    for (; key_it != catalog->end_keys(); ++key_it) {
+    for (DictionaryValue::key_iterator key_it = catalog->begin_keys();
+         key_it != catalog->end_keys(); ++key_it) {
       std::string key(StringToLowerASCII(WideToUTF8(*key_it)));
       if (!IsValidName(*key_it))
         return BadKeyMessage(key, error);
@@ -76,7 +76,7 @@ bool ExtensionMessageBundle::GetMessageValue(const std::wstring& wkey,
   std::string key(WideToUTF8(wkey));
   // Get the top level tree for given key (name part).
   DictionaryValue* name_tree;
-  if (!catalog.GetDictionary(wkey, &name_tree)) {
+  if (!catalog.GetDictionaryWithoutPathExpansion(wkey, &name_tree)) {
     *error = StringPrintf("Not a valid tree for key %s.", key.c_str());
     return false;
   }
@@ -117,13 +117,13 @@ bool ExtensionMessageBundle::GetPlaceholders(const DictionaryValue& name_tree,
   }
 
   for (DictionaryValue::key_iterator key_it = placeholders_tree->begin_keys();
-       key_it != placeholders_tree->end_keys();
-       ++key_it) {
+       key_it != placeholders_tree->end_keys(); ++key_it) {
     DictionaryValue* placeholder;
     std::string content_key = WideToUTF8(*key_it);
     if (!IsValidName(*key_it))
       return BadKeyMessage(content_key, error);
-    if (!placeholders_tree->GetDictionary(*key_it, &placeholder)) {
+    if (!placeholders_tree->GetDictionaryWithoutPathExpansion(*key_it,
+                                                              &placeholder)) {
       *error = StringPrintf("Invalid placeholder %s for key %s",
                             content_key.c_str(),
                             name_key.c_str());

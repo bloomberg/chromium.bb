@@ -79,7 +79,7 @@ class ExtensionPrefs {
   void MakePathsAbsolute(DictionaryValue* dict);
 
   // Sets the pref |key| for extension |id| to |value|.
-  bool UpdateExtensionPref(const std::string& id,
+  void UpdateExtensionPref(const std::string& id,
                            const std::wstring& key,
                            Value* value);
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -126,7 +126,7 @@ void MostVisitedHandler::StartQueryForMostVisited() {
   // we'll be filtering-out the returned list with the blacklist URLs.
   // We do not subtract the number of pinned URLs we have because the
   // HistoryService does not know about those.
-  const int result_count = page_count + url_blacklist_->GetSize();
+  const int result_count = page_count + url_blacklist_->size();
   HistoryService* hs =
       dom_ui_->GetProfile()->GetHistoryService(Profile::EXPLICIT_ACCESS);
   // |hs| may be null during unit tests.
@@ -230,12 +230,8 @@ void MostVisitedHandler::AddPinnedURL(const MostVisitedPage& page, int index) {
   DictionaryValue* new_value = new DictionaryValue();
   SetMostVisistedPage(new_value, page);
 
-  bool r = new_value->SetInteger(L"index", index);
-  DCHECK(r) << "Failed to set the index for a pinned URL from the NTP Most "
-            << "Visited.";
-
-  r = pinned_urls_->Set(GetDictionaryKeyForURL(page.url.spec()), new_value);
-  DCHECK(r) << "Failed to add pinned URL from the NTP Most Visited.";
+  new_value->SetInteger(L"index", index);
+  pinned_urls_->Set(GetDictionaryKeyForURL(page.url.spec()), new_value);
 
   // TODO(arv): Notify observers?
 
@@ -276,7 +272,7 @@ const bool MostVisitedHandler::GetPinnedURLAtIndex(const int index,
   for (DictionaryValue::key_iterator it = pinned_urls_->begin_keys();
       it != pinned_urls_->end_keys(); ++it) {
     Value* value;
-    if (pinned_urls_->Get(*it, &value)) {
+    if (pinned_urls_->GetWithoutPathExpansion(*it, &value)) {
       if (!value->IsType(DictionaryValue::TYPE_DICTIONARY)) {
         NOTREACHED();
         return false;

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -117,7 +117,7 @@ TEST_F(PrefServiceTest, Basic) {
 
   // Now test that the transient value overrides the persistent value,
   // without actually altering the persistent store.
-  EXPECT_TRUE(prefs.transient()->SetString(prefs::kHomePage, microsoft));
+  prefs.transient()->SetString(prefs::kHomePage, microsoft);
   EXPECT_TRUE(prefs.transient()->GetString(prefs::kHomePage, &homepage));
   EXPECT_EQ(microsoft, homepage);
 

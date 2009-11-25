@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -61,12 +61,12 @@ static void WriteValue(Message* m, const Value* value, int recursion) {
     case Value::TYPE_DICTIONARY: {
       const DictionaryValue* dict = static_cast<const DictionaryValue*>(value);
 
-      WriteParam(m, static_cast<int>(dict->GetSize()));
+      WriteParam(m, static_cast<int>(dict->size()));
 
       for (DictionaryValue::key_iterator it = dict->begin_keys();
            it != dict->end_keys(); ++it) {
         Value* subval;
-        if (dict->Get(*it, &subval)) {
+        if (dict->GetWithoutPathExpansion(*it, &subval)) {
           WriteParam(m, *it);
           WriteValue(m, subval, recursion + 1);
         } else {

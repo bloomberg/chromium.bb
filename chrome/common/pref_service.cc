@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -435,8 +435,7 @@ void PrefService::SetBoolean(const wchar_t* path, bool value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  bool rv = persistent_->SetBoolean(path, value);
-  DCHECK(rv);
+  persistent_->SetBoolean(path, value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -455,8 +454,7 @@ void PrefService::SetInteger(const wchar_t* path, int value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  bool rv = persistent_->SetInteger(path, value);
-  DCHECK(rv);
+  persistent_->SetInteger(path, value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -475,8 +473,7 @@ void PrefService::SetReal(const wchar_t* path, double value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  bool rv = persistent_->SetReal(path, value);
-  DCHECK(rv);
+  persistent_->SetReal(path, value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -495,8 +492,7 @@ void PrefService::SetString(const wchar_t* path, const std::wstring& value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  bool rv = persistent_->SetString(path, value);
-  DCHECK(rv);
+  persistent_->SetString(path, value);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -519,11 +515,10 @@ void PrefService::SetFilePath(const wchar_t* path, const FilePath& value) {
   // Value::SetString only knows about UTF8 strings, so convert the path from
   // the system native value to UTF8.
   std::string path_utf8 = WideToUTF8(base::SysNativeMBToWide(value.value()));
-  bool rv = persistent_->SetString(path, path_utf8);
+  persistent_->SetString(path, path_utf8);
 #else
-  bool rv = persistent_->SetString(path, value.value());
+  persistent_->SetString(path, value.value());
 #endif
-  DCHECK(rv);
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -542,8 +537,7 @@ void PrefService::SetInt64(const wchar_t* path, int64 value) {
   }
 
   scoped_ptr<Value> old_value(GetPrefCopy(path));
-  bool rv = persistent_->SetString(path, Int64ToWString(value));
-  DCHECK(rv);
+  persistent_->SetString(path, Int64ToWString(value));
 
   FireObserversIfChanged(path, old_value.get());
 }
@@ -585,11 +579,9 @@ DictionaryValue* PrefService::GetMutableDictionary(const wchar_t* path) {
   }
 
   DictionaryValue* dict = NULL;
-  bool rv = persistent_->GetDictionary(path, &dict);
-  if (!rv) {
+  if (!persistent_->GetDictionary(path, &dict)) {
     dict = new DictionaryValue;
-    rv = persistent_->Set(path, dict);
-    DCHECK(rv);
+    persistent_->Set(path, dict);
   }
   return dict;
 }
@@ -608,11 +600,9 @@ ListValue* PrefService::GetMutableList(const wchar_t* path) {
   }
 
   ListValue* list = NULL;
-  bool rv = persistent_->GetList(path, &list);
-  if (!rv) {
+  if (!persistent_->GetList(path, &list)) {
     list = new ListValue;
-    rv = persistent_->Set(path, list);
-    DCHECK(rv);
+    persistent_->Set(path, list);
   }
   return list;
 }

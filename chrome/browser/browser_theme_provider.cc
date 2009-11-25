@@ -1075,7 +1075,7 @@ void BrowserThemeProvider::SetImageData(DictionaryValue* images_value,
   for (DictionaryValue::key_iterator iter(images_value->begin_keys());
        iter != images_value->end_keys(); ++iter) {
     std::string val;
-    if (images_value->GetString(*iter, &val)) {
+    if (images_value->GetStringWithoutPathExpansion(*iter, &val)) {
       int id = ThemeResourcesUtil::GetId(WideToUTF8(*iter));
       if (id != -1) {
         if (!images_path.empty()) {
@@ -1099,7 +1099,7 @@ void BrowserThemeProvider::SetColorData(DictionaryValue* colors_value) {
   for (DictionaryValue::key_iterator iter(colors_value->begin_keys());
        iter != colors_value->end_keys(); ++iter) {
     ListValue* color_list;
-    if (colors_value->GetList(*iter, &color_list) &&
+    if (colors_value->GetListWithoutPathExpansion(*iter, &color_list) &&
         ((color_list->GetSize() == 3) || (color_list->GetSize() == 4))) {
       int r, g, b;
       color_list->GetInteger(0, &r);
@@ -1132,7 +1132,7 @@ void BrowserThemeProvider::SetTintData(DictionaryValue* tints_value) {
   for (DictionaryValue::key_iterator iter(tints_value->begin_keys());
        iter != tints_value->end_keys(); ++iter) {
     ListValue* tint_list;
-    if (tints_value->GetList(*iter, &tint_list) &&
+    if (tints_value->GetListWithoutPathExpansion(*iter, &tint_list) &&
         (tint_list->GetSize() == 3)) {
       color_utils::HSL hsl = { -1, -1, -1 };
       int value = 0;
@@ -1162,22 +1162,21 @@ void BrowserThemeProvider::SetDisplayPropertyData(
     if (base::strcasecmp(WideToUTF8(*iter).c_str(),
                          kDisplayPropertyNTPAlignment) == 0) {
       std::string val;
-      if (display_properties_value->GetString(*iter, &val)) {
+      if (display_properties_value->GetStringWithoutPathExpansion(*iter,
+                                                                  &val)) {
         display_properties_[kDisplayPropertyNTPAlignment] =
             StringToAlignment(val);
       }
     } else if (base::strcasecmp(WideToUTF8(*iter).c_str(),
                                 kDisplayPropertyNTPTiling) == 0) {
       std::string val;
-      if (display_properties_value->GetString(*iter, &val)) {
-        display_properties_[kDisplayPropertyNTPTiling] =
-            StringToTiling(val);
-      }
+      if (display_properties_value->GetStringWithoutPathExpansion(*iter, &val))
+        display_properties_[kDisplayPropertyNTPTiling] = StringToTiling(val);
     }
     if (base::strcasecmp(WideToUTF8(*iter).c_str(),
                          kDisplayPropertyNTPInverseLogo) == 0) {
       int val = 0;
-      if (display_properties_value->GetInteger(*iter, &val))
+      if (display_properties_value->GetIntegerWithoutPathExpansion(*iter, &val))
         display_properties_[kDisplayPropertyNTPInverseLogo] = val;
     }
   }
@@ -1222,10 +1221,12 @@ void BrowserThemeProvider::SaveImageData(DictionaryValue* images_value) const {
   for (DictionaryValue::key_iterator iter(images_value->begin_keys());
        iter != images_value->end_keys(); ++iter) {
     std::string val;
-    if (images_value->GetString(*iter, &val)) {
+    if (images_value->GetStringWithoutPathExpansion(*iter, &val)) {
       int id = ThemeResourcesUtil::GetId(WideToUTF8(*iter));
-      if (id != -1)
-        pref_images->SetString(*iter, images_.find(id)->second);
+      if (id != -1) {
+        pref_images->SetWithoutPathExpansion(*iter,
+            Value::CreateStringValue(images_.find(id)->second));
+      }
     }
   }
 }

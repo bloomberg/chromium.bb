@@ -336,10 +336,10 @@ bool SandboxedExtensionUnpacker::RewriteImageFiles() {
 bool SandboxedExtensionUnpacker::RewriteCatalogFiles(
     const DictionaryValue& catalogs) {
   // Write our parsed catalogs back to disk.
-  DictionaryValue::key_iterator key_it = catalogs.begin_keys();
-  for (; key_it != catalogs.end_keys(); ++key_it) {
+  for (DictionaryValue::key_iterator key_it = catalogs.begin_keys();
+       key_it != catalogs.end_keys(); ++key_it) {
     DictionaryValue* catalog;
-    if (!catalogs.GetDictionary(*key_it, &catalog)) {
+    if (!catalogs.GetDictionaryWithoutPathExpansion(*key_it, &catalog)) {
       ReportFailure("Invalid catalog data.");
       return false;
     }

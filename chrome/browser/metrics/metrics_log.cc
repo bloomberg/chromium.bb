@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -571,7 +571,8 @@ void MetricsLog::WriteAllProfilesMetrics(
     const std::wstring& key_name = *i;
     if (key_name.compare(0, profile_prefix.size(), profile_prefix) == 0) {
       DictionaryValue* profile;
-      if (all_profiles_metrics.GetDictionary(key_name, &profile))
+      if (all_profiles_metrics.GetDictionaryWithoutPathExpansion(key_name,
+                                                                 &profile))
         WriteProfileMetrics(key_name.substr(profile_prefix.size()), *profile);
     }
   }
@@ -584,7 +585,7 @@ void MetricsLog::WriteProfileMetrics(const std::wstring& profileidhash,
   for (DictionaryValue::key_iterator i = profile_metrics.begin_keys();
        i != profile_metrics.end_keys(); ++i) {
     Value* value;
-    if (profile_metrics.Get(*i, &value)) {
+    if (profile_metrics.GetWithoutPathExpansion(*i, &value)) {
       DCHECK(*i != L"id");
       switch (value->GetType()) {
         case Value::TYPE_STRING: {

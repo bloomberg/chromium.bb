@@ -29,10 +29,10 @@ bool JsonDictionaryToMap(const std::string& json,
 
   DictionaryValue* dict = static_cast<DictionaryValue*>(root.get());
 
-  DictionaryValue::key_iterator it = dict->begin_keys();
-  for (; it != dict->end_keys(); ++it) {
+  for (DictionaryValue::key_iterator it = dict->begin_keys();
+       it != dict->end_keys(); ++it) {
     Value* value = NULL;
-    bool succeeded = dict->Get(*it, &value);
+    bool succeeded = dict->GetWithoutPathExpansion(*it, &value);
 
     EXPECT_TRUE(succeeded);
     if (!succeeded)

@@ -107,12 +107,12 @@ TEST_F(ExtensionUnpackerTest, GoodL10n) {
   SetupUnpacker("good_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
-  ASSERT_EQ(2U, unpacker_->parsed_catalogs()->GetSize());
+  ASSERT_EQ(2U, unpacker_->parsed_catalogs()->size());
 }
 
 TEST_F(ExtensionUnpackerTest, NoL10n) {
   SetupUnpacker("no_l10n.crx");
   EXPECT_TRUE(unpacker_->Run());
   EXPECT_TRUE(unpacker_->error_message().empty());
-  EXPECT_EQ(0U, unpacker_->parsed_catalogs()->GetSize());
+  EXPECT_EQ(0U, unpacker_->parsed_catalogs()->size());
 }

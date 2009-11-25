@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -202,14 +202,14 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditTest) {
   GetBookmarksBarChildValue(value.get(), 0, &child1_value);
   std::wstring title;
   ASSERT_TRUE(child1_value->GetString(BookmarkCodec::kNameKey, &title));
-  ASSERT_TRUE(child1_value->SetString(BookmarkCodec::kNameKey, title + L"1"));
+  child1_value->SetString(BookmarkCodec::kNameKey, title + L"1");
 
   std::string dec_checksum;
   scoped_ptr<BookmarkModel> decoded_model1(DecodeHelper(
       *value.get(), enc_checksum, &dec_checksum, true));
 
   // Undo the change and make sure the checksum is same as original.
-  ASSERT_TRUE(child1_value->SetString(BookmarkCodec::kNameKey, title));
+  child1_value->SetString(BookmarkCodec::kNameKey, title);
   scoped_ptr<BookmarkModel> decoded_model2(DecodeHelper(
       *value.get(), enc_checksum, &dec_checksum, false));
 }
@@ -233,7 +233,7 @@ TEST_F(BookmarkCodecTest, ChecksumManualEditIDsTest) {
     GetBookmarksBarChildValue(value.get(), i, &child_value);
     std::string id;
     ASSERT_TRUE(child_value->GetString(BookmarkCodec::kIdKey, &id));
-    ASSERT_TRUE(child_value->SetString(BookmarkCodec::kIdKey, "1"));
+    child_value->SetString(BookmarkCodec::kIdKey, "1");
   }
 
   std::string dec_checksum;

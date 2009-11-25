@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -112,15 +112,15 @@ bool GoogleChromeDistribution::BuildUninstallMetricsString(
   DCHECK(NULL != metrics);
   bool has_values = false;
 
-  DictionaryValue::key_iterator iter(uninstall_metrics_dict->begin_keys());
-  for (; iter != uninstall_metrics_dict->end_keys(); ++iter) {
+  for (DictionaryValue::key_iterator iter(uninstall_metrics_dict->begin_keys());
+       iter != uninstall_metrics_dict->end_keys(); ++iter) {
     has_values = true;
     metrics->append(L"&");
     metrics->append(*iter);
     metrics->append(L"=");
 
     std::wstring value;
-    uninstall_metrics_dict->GetString(*iter, &value);
+    uninstall_metrics_dict->GetStringWithoutPathExpansion(*iter, &value);
     metrics->append(value);
   }
 

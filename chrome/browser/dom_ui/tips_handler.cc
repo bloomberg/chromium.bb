@@ -52,7 +52,7 @@ void TipsHandler::HandleGetTips(const Value* content) {
     }
   }
 
-  if (tips_cache_ != NULL && tips_cache_->GetSize() != 0) {
+  if (tips_cache_ != NULL && !tips_cache_->empty()) {
     if (tips_cache_->GetInteger(
         WebResourceService::kCurrentTipPrefName, &current_tip_index) &&
         tips_cache_->GetList(

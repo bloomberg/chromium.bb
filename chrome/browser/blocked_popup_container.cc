@@ -391,13 +391,13 @@ BlockedPopupContainer::BlockedPopupContainer(TabContents* owner,
   const ListValue* whitelist_pref =
       prefs_->GetList(prefs::kPopupWhitelistedHosts);
   // Careful: The returned value could be NULL if the pref has never been set.
-  if (whitelist_pref != NULL) {
-    for (ListValue::const_iterator i(whitelist_pref->begin());
-         i != whitelist_pref->end(); ++i) {
-      std::string host;
-      (*i)->GetAsString(&host);
-      whitelist_.insert(host);
-    }
+  if (whitelist_pref == NULL)
+    return;
+  for (ListValue::const_iterator i(whitelist_pref->begin());
+       i != whitelist_pref->end(); ++i) {
+    std::string host;
+    (*i)->GetAsString(&host);
+    whitelist_.insert(host);
   }
 }
 
