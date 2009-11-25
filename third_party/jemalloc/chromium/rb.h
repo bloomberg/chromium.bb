@@ -980,3 +980,4 @@ a_prefix##remove(a_tree_type *tree, a_type *node) {			\
 }
 
 #endif /* RB_H_ */
+

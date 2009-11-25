@@ -97,6 +97,13 @@
  */
 
 /*
+ * NOTE(mbelshe): Added these defines to fit within chromium build system.
+ */
+#define MOZ_MEMORY_WINDOWS
+#define MOZ_MEMORY
+#define DONT_OVERRIDE_LIBC
+
+/*
  * MALLOC_PRODUCTION disables assertions and statistics gathering.  It also
  * defaults the A and J runtime options to off.  These settings are appropriate
  * for production systems.
@@ -203,8 +210,8 @@
 
 #ifdef MOZ_MEMORY_WINDOWS
 #ifndef MOZ_MEMORY_WINCE
-#include <cruntime.h>
-#include <internal.h>
+//#include <cruntime.h>
+//#include <internal.h>
 #include <io.h>
 #else
 #include <cmnintrin.h>
@@ -1415,9 +1422,12 @@ malloc_mutex_init(malloc_mutex_t *mutex)
 #if defined(MOZ_MEMORY_WINCE)
 	InitializeCriticalSection(mutex);
 #elif defined(MOZ_MEMORY_WINDOWS)
-	if (__isthreaded)
-		if (! __crtInitCritSecAndSpinCount(mutex, _CRT_SPINCOUNT))
-			return (true);
+  // XXXMB
+	//if (__isthreaded)
+	//	if (! __crtInitCritSecAndSpinCount(mutex, _CRT_SPINCOUNT))
+	//		return (true);
+  if (!InitializeCriticalSectionAndSpinCount(mutex, 4000))
+    return true;
 #elif defined(MOZ_MEMORY_DARWIN)
 	mutex->lock = OS_SPINLOCK_INIT;
 #elif defined(MOZ_MEMORY_LINUX)
@@ -1479,9 +1489,10 @@ malloc_spin_init(malloc_spinlock_t *lock)
 #if defined(MOZ_MEMORY_WINCE)
 	InitializeCriticalSection(lock);
 #elif defined(MOZ_MEMORY_WINDOWS)
-	if (__isthreaded)
-		if (! __crtInitCritSecAndSpinCount(lock, _CRT_SPINCOUNT))
-			return (true);
+  // XXXMB
+	//if (__isthreaded)
+	//	if (! __crtInitCritSecAndSpinCount(lock, _CRT_SPINCOUNT))
+	//		return (true);
 #elif defined(MOZ_MEMORY_DARWIN)
 	lock->lock = OS_SPINLOCK_INIT;
 #elif defined(MOZ_MEMORY_LINUX)
@@ -5527,7 +5538,7 @@ malloc_init(void)
 static
 #endif
 bool
-malloc_init_hard(void)
+je_malloc_init_hard(void)
 {
 	unsigned i;
 	char buf[PATH_MAX + 1];
@@ -6125,12 +6136,18 @@ malloc_shutdown()
 
 /* Mangle standard interfaces on Darwin and Windows CE, 
    in order to avoid linking problems. */
-#if defined(MOZ_MEMORY_DARWIN)
-#define	malloc(a)	moz_malloc(a)
-#define	valloc(a)	moz_valloc(a)
-#define	calloc(a, b)	moz_calloc(a, b)
-#define	realloc(a, b)	moz_realloc(a, b)
-#define	free(a)		moz_free(a)
+#ifdef MOZ_MEMORY_DARWIN
+#define DONT_OVERRIDE_LIBC
+#endif
+
+#if defined(DONT_OVERRIDE_LIBC)
+#define	malloc(a)	je_malloc(a)
+#define	valloc(a)	je_valloc(a)
+#define	calloc(a, b)	je_calloc(a, b)
+#define	realloc(a, b)	je_realloc(a, b)
+#define	free(a)		je_free(a)
+#define _msize(p) je_msize(p)
+#define _recalloc(p, n, s) je_recalloc(p, n, s)
 #endif
 
 ZONE_INLINE
@@ -7010,7 +7027,6 @@ _expand(void *ptr, size_t newsize)
 size_t
 _msize(const void *ptr)
 {
-
 	return malloc_usable_size(ptr);
 }
 #endif
@@ -7257,3 +7273,4 @@ void *(*__memalign_hook)(size_t alignment, size_t size) = memalign;
  */
 #  error "Interposing malloc is unsafe on this system without libc malloc hooks."
 #endif
+

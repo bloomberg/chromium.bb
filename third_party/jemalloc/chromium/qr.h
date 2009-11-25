@@ -96,3 +96,4 @@ struct {								\
 	    (var) != NULL;						\
 	    (var) = (((var) != (a_qr))					\
 	    ? (var)->a_field.qre_prev : NULL))
+

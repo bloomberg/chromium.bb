@@ -2,7 +2,7 @@
 /* vim:set softtabstop=8 shiftwidth=8: */
 /*-
  * Copyright (C) 2006-2008 Jason Evans <jasone@FreeBSD.org>.
- * All rights reserved.
+ * All rights reserved. 
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -219,3 +219,4 @@ jemalloc_bool	reserve_min_set(size_t min);
 #endif
 
 #endif /* _JEMALLOC_H_ */
+
