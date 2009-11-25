@@ -110,6 +110,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 }  // namespace
 
 @interface BookmarkBarController(Private)
+
 // Determines the appropriate state for the given situation.
 + (bookmarks::VisualState)visualStateToShowNormalBar:(BOOL)showNormalBar
                                      showDetachedBar:(BOOL)showDetachedBar;
@@ -142,6 +143,13 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // the animation, NO if not (and hence it should be done instantly).
 - (BOOL)doBookmarkBarAnimation;
 
+// Returns the index in the model for a drag of the given button to the given
+// location; currently, only the x-coordinate of |point| is considered. I
+// reserve the right to check for errors, in which case this would return
+// negative value; callers should check for this.
+- (int)indexForDragOfButton:(BookmarkButton*)sourceButton
+                    toPoint:(NSPoint)point;
+
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
 - (void)tagEmptyMenu:(NSMenu*)menu;
@@ -153,6 +161,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (void)centerNoItemsLabel;
 - (NSImage*)getFavIconForNode:(const BookmarkNode*)node;
 - (void)setNodeForBarMenu;
+
 @end
 
 @implementation BookmarkBarController
@@ -489,21 +498,25 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return YES;
 }
 
-- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point {
+- (int)indexForDragOfButton:(BookmarkButton*)sourceButton
+                    toPoint:(NSPoint)point {
   DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
 
   void* pointer = [[[sourceButton cell] representedObject] pointerValue];
   const BookmarkNode* sourceNode = static_cast<const BookmarkNode*>(pointer);
-  DCHECK(sourceNode);
+  if (!sourceNode) {
+    NOTREACHED();
+    return -1;
+  }
 
   // Identify which buttons we are between.  For now, assume a button
   // location is at the center point of its view, and that an exact
   // match means "place before".
   // TODO(jrg): revisit position info based on UI team feedback.
   // dropLocation is in bar local coordinates.
-  NSPoint dropLocation = [[self view] convertPoint:point
-                                          fromView:[[[self view] window]
-                                                     contentView]];
+  NSPoint dropLocation =
+      [[self view] convertPoint:point
+                       fromView:[[[self view] window] contentView]];
   NSButton* buttonToTheRightOfDraggedButton = nil;
   for (NSButton* button in buttons_.get()) {
     CGFloat midpoint = NSMidX([button frame]);
@@ -516,18 +529,69 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     pointer = [[[buttonToTheRightOfDraggedButton cell]
                  representedObject] pointerValue];
     const BookmarkNode* afterNode = static_cast<const BookmarkNode*>(pointer);
-    bookmarkModel_->Move(sourceNode, sourceNode->GetParent(),
-                         afterNode->GetParent()->IndexOfChild(afterNode));
+    return afterNode->GetParent()->IndexOfChild(afterNode);
+  }
+
+  // If nothing is to my right I am at the end!
+  return sourceNode->GetParent()->GetChildCount();
+}
+
+- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point {
+  DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
+
+  void* pointer = [[[sourceButton cell] representedObject] pointerValue];
+  const BookmarkNode* sourceNode = static_cast<const BookmarkNode*>(pointer);
+  DCHECK(sourceNode);
+
+  int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
+  if (destIndex >= 0 && sourceNode) {
+    bookmarkModel_->Move(sourceNode, sourceNode->GetParent(), destIndex);
   } else {
-    // If nothing is to my right I am at the end!
-    bookmarkModel_->Move(sourceNode, sourceNode->GetParent(),
-                         sourceNode->GetParent()->GetChildCount());
+    NOTREACHED();
   }
 
   // Movement of a node triggers observers (like us) to rebuild the
   // bar so we don't have to do so explicitly.
 
   return YES;
+}
+
+- (CGFloat)indicatorPosForDragOfButton:(BookmarkButton*)sourceButton
+                               toPoint:(NSPoint)point {
+  CGFloat x = 0;
+  int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
+  int numButtons = static_cast<int>([buttons_ count]);
+
+  // If it's a drop strictly between existing buttons ...
+  if (destIndex >= 0 && destIndex < numButtons) {
+    // ... put the indicator right between the buttons.
+    BookmarkButton* button =
+        [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex)];
+    DCHECK(button);
+    NSRect buttonFrame = [button frame];
+    x = buttonFrame.origin.x - 0.5 * bookmarks::kBookmarkHorizontalPadding;
+
+  // If it's a drop at the end (past the last button, if there are any) ...
+  } else if (destIndex == numButtons) {
+    // and if it's past the last button ...
+    if (numButtons > 0) {
+      // ... find the last button, and put the indicator to its right.
+      BookmarkButton* button =
+          [buttons_ objectAtIndex:static_cast<NSUInteger>(destIndex - 1)];
+      DCHECK(button);
+      NSRect buttonFrame = [button frame];
+      x = buttonFrame.origin.x + buttonFrame.size.width +
+          0.5 * bookmarks::kBookmarkHorizontalPadding;
+
+    // Otherwise, put it right at the beginning.
+    } else {
+      x = 0.5 * bookmarks::kBookmarkHorizontalPadding;
+    }
+  } else {
+    NOTREACHED();
+  }
+
+  return x;
 }
 
 - (int)currentTabContentsHeight {

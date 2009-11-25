@@ -18,7 +18,7 @@ const CGFloat kWebDragStartHysteresisX = 5.0;
 const CGFloat kWebDragStartHysteresisY = 5.0;
 
 // The opacity of the bookmark button drag image.
-const CGFloat kDragImageOpacity = 0.8;
+const CGFloat kDragImageOpacity = 0.7;
 
 }
 

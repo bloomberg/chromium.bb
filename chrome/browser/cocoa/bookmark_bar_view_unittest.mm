@@ -60,6 +60,11 @@
   return pong_;
 }
 
+- (CGFloat)indicatorPosForDragOfButton:(BookmarkButton*)sourceButton
+                               toPoint:(NSPoint)point {
+  return 0;
+}
+
 @end
 
 namespace {

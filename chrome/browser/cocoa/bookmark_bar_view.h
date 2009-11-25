@@ -14,6 +14,9 @@
 
 @interface BookmarkBarView : NSView {
  @private
+  BOOL dropIndicatorShown_;
+  CGFloat dropIndicatorPosition_;
+
   IBOutlet BookmarkBarController* controller_;
   IBOutlet NSTextField* noItemTextfield_;
 }

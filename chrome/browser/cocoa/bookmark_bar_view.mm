@@ -72,14 +72,73 @@
   return noItemTextfield_;
 }
 
+-(void)drawRect:(NSRect)dirtyRect {
+  [super drawRect:dirtyRect];
+
+  // Draw the bookmark-button-dragging drop indicator if necessary.
+  if (dropIndicatorShown_) {
+    const CGFloat kBarWidth = 1;
+    const CGFloat kBarHalfWidth = kBarWidth / 2.0;
+    const CGFloat kBarVertPad = 4;
+    const CGFloat kBarOpacity = 0.85;
+
+    // Prevent the indicator from being clipped on the left.
+    CGFloat xLeft = MAX(dropIndicatorPosition_ - kBarHalfWidth, 0);
+
+    NSRect uglyBlackBar =
+        NSMakeRect(xLeft, kBarVertPad,
+                   kBarWidth, NSHeight([self bounds]) - 2 * kBarVertPad);
+    NSColor* uglyBlackBarColor =
+        [[self gtm_theme] textColorForStyle:GTMThemeStyleBookmarksBarButton
+                                      state:GTMThemeStateActiveWindow];
+    [[uglyBlackBarColor colorWithAlphaComponent:kBarOpacity] setFill];
+    [[NSBezierPath bezierPathWithRect:uglyBlackBar] fill];
+  }
+}
+
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
   if ([[info draggingPasteboard] containsURLData])
     return NSDragOperationCopy;
-  if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType])
+  if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType]) {
+    NSData* data = [[info draggingPasteboard]
+                     dataForType:kBookmarkButtonDragType];
+    // [info draggingSource] is nil if not the same application.
+    if (data && [info draggingSource]) {
+      // Find the position of the drop indicator.
+      BookmarkButton* button = nil;
+      [data getBytes:&button length:sizeof(button)];
+      CGFloat x =
+          [controller_ indicatorPosForDragOfButton:button
+                                           toPoint:[info draggingLocation]];
+
+      // Need an update if the indicator wasn't previously shown or if it has
+      // moved.
+      if (!dropIndicatorShown_ || dropIndicatorPosition_ != x) {
+        dropIndicatorShown_ = YES;
+        dropIndicatorPosition_ = x;
+        [self setNeedsDisplay:YES];
+      }
+    }
+
     return NSDragOperationMove;
+  }
   return NSDragOperationNone;
+}
+
+- (void)draggingExited:(id<NSDraggingInfo>)info {
+  // Regardless of the type of dragging which ended, we need to get rid of the
+  // drop indicator if one was shown.
+  if (dropIndicatorShown_) {
+    dropIndicatorShown_ = NO;
+    [self setNeedsDisplay:YES];
+  }
+}
+
+- (void)draggingEnded:(id<NSDraggingInfo>)info {
+  // For now, we just call |-draggingExited:|.
+  [self draggingExited:info];
 }
 
 - (BOOL)wantsPeriodicDraggingUpdates {

@@ -167,10 +167,17 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // need it for animations. Try not to propagate its use.
 - (void)layoutSubviews;
 
-// Complete a drag of a bookmark button to this location on the main bar.
+// Complete a drag of a bookmark button to the given point (given in window
+// coordinates) on the main bar.
 // TODO(jrg): submenu DnD.
 // Returns YES on success.
 - (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point;
+
+// The x-coordinate of (the middle of) the indicator to draw for a drag of the
+// source button to the given point (given in window coordinates).
+// TODO(viettrungluu,jrg): instead of this, make buttons move around.
+- (CGFloat)indicatorPosForDragOfButton:(BookmarkButton*)sourceButton
+                               toPoint:(NSPoint)point;
 
 // Actions for manipulating bookmarks.
 // From a button, ...
