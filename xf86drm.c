@@ -75,10 +75,6 @@
 #define DRM_MAJOR 226		/* Linux */
 #endif
 
-#ifndef DRM_MAX_MINOR
-#define DRM_MAX_MINOR 16
-#endif
-
 /*
  * This definition needs to be changed on some systems if dev_t is a structure.
  * If there is a header file we can get it from, there would be best.
