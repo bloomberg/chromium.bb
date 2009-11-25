@@ -104,6 +104,7 @@ def ShutDownHTTPServer(server_process):
     #   killall: illegal option -- T
     # Use of the earlier -TERM placement is just fine on 10.5.
     subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'])
+    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'httpd'])
   else:
     os.kill(server_process.pid, signal.SIGTERM)
 

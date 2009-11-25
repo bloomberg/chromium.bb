@@ -506,8 +506,8 @@ BUG10270 : LayoutTests/fast/dom/frame-loading-via-document-write.html = FAIL
 BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/cache-override.html = FAIL
 // LightTPD doesn't accept unknown HTTP methods
 BUG18978 SKIP : LayoutTests/http/tests/xmlhttprequest/methods-lower-case.html = TIMEOUT CRASH
-BUG18978 DEBUG : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT
-BUG18978 LINUX MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT
+BUG18978 DEBUG : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
+BUG18978 LINUX MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
 BUG18978 WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/methods-async.html = TIMEOUT TEXT
 BUG18978 WIN SLOW : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL
 BUG18978 MAC : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html = FAIL TIMEOUT
@@ -3026,6 +3026,12 @@ BUG28301 : LayoutTests/media/media-captions.html = TIMEOUT
 // New tests, seems proper drawing method is not implemented in Skia. Upstream r51212.
 BUG28317 : LayoutTests/fast/css/color-correction-on-background-image.html = FAIL
 BUG28317 : LayoutTests/fast/css/color-correction-untagged-images.html = FAIL
+
+// Started failing with move from Lighttpd to Apache on Mac.
+// Since we have some bots on Lighttpd and some on Apache, mark it as flaky for
+// now. Once we decide on one or the other, then we can address these tests.
+BUG_OJAN MAC : LayoutTests/http/tests/loading/text-content-type-with-binary-extension.html = TEXT PASS
+BUG_OJAN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = TEXT PASS
 
 // Failures in TestShell that resulted from Mac plugin/focus fixes in r32631.
 BUG28380 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = CRASH FAIL

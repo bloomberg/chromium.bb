@@ -35,6 +35,7 @@ import sys
 import time
 import traceback
 
+from layout_package import apache_http_server
 from layout_package import compare_failures
 from layout_package import test_expectations
 from layout_package import http_server
@@ -130,7 +131,12 @@ class TestRunner:
     """
     self._options = options
 
-    self._http_server = http_server.Lighttpd(options.results_directory)
+    if options.use_apache:
+      self._http_server = apache_http_server.LayoutTestApacheHttpd(
+          options.results_directory)
+    else:
+      self._http_server = http_server.Lighttpd(options.results_directory)
+
     self._websocket_server = websocket_server.PyWebSocket(
         options.results_directory)
     # disable wss server. need to install pyOpenSSL on buildbots.
@@ -1072,6 +1078,10 @@ def main(options, args):
     else:
       options.target = "Release"
 
+  if not options.use_apache:
+    options.use_apache = (sys.platform == 'darwin' and options.builder_name and
+        options.builder_name.find("(V8-Latest)") != -1)
+
   if options.results_directory.startswith("/"):
     # Assume it's an absolute path and normalize.
     options.results_directory = path_utils.GetAbsolutePath(
@@ -1247,6 +1257,9 @@ if '__main__' == __name__:
                                 "test list")
   option_parser.add_option("", "--num-test-shells",
                            help="Number of testshells to run in parallel.")
+  option_parser.add_option("", "--use-apache", action="store_true",
+                           default=False,
+                           help="Whether to use apache instead of lighttpd.")
   option_parser.add_option("", "--time-out-ms", default=None,
                            help="Set the timeout for each test")
   option_parser.add_option("", "--run-singly", action="store_true",
