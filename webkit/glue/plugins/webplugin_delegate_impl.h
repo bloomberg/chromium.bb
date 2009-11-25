@@ -28,6 +28,10 @@ namespace NPAPI {
 class PluginInstance;
 }
 
+namespace WebKit {
+class WebMouseEvent;
+}
+
 // An implementation of WebPluginDelegate that proxies all calls to
 // the plugin process.
 class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
@@ -310,12 +314,31 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Indicates that it's time to send the plugin a null event.
   void OnNullEvent();
 
+  // Updates the internal information about where the plugin is located on
+  // the screen.
+  void UpdateWindowLocation(const WebKit::WebMouseEvent& event);
+
+  // Moves our dummy window to the given offset relative to the last known
+  // location of the real renderer window's content view.
+  // If new_width or new_height is non-zero, the window size (content region)
+  // will be updated accordingly; if they are zero, the existing size will be
+  // preserved.
+  void UpdateDummyWindowBoundsWithOffset(int x_offset, int y_offset,
+                                         int new_width, int new_height);
+
   // Runnable Method Factory used to drip null events into the plugin.
   ScopedRunnableMethodFactory<WebPluginDelegateImpl> null_event_factory_;
 
   // we've shut down the plugin, but can't delete ourselves until the last
   // idle event comes in.
   bool waiting_to_die_;
+  
+  // The most recently seen offset between global and browser-window-local
+  // coordinates. We use this to keep the placeholder Carbon WindowRef's origin
+  // in sync with the actual browser window, without having to pass that
+  // geometry over IPC.
+  int last_window_x_offset_;
+  int last_window_y_offset_;
 
   // Last mouse position within the plugin's rect (used for null events).
   int last_mouse_x_;

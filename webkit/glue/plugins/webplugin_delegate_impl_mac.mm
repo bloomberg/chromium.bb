@@ -62,17 +62,6 @@ namespace {
 // this seems to work well enough.
 const int kPluginIdleThrottleDelayMs = 20;  // 20ms (50Hz)
 
-// The most recently seen offset between global and local coordinates.  We use
-// this to keep the placeholder Carbon WindowRef's origin in sync with the
-// actual browser window, without having to pass that geometry over IPC.  If we
-// end up needing to interpose on Carbon APIs in the plugin process (in order
-// to simulate window activation, for example), this could be replaced by
-// interposing on GlobalToLocal and/or LocalToGlobal (see related TODO comments
-// below in WebPluginDelegateImpl::OnNullEvent()).
-
-int g_current_x_offset = 0;
-int g_current_y_offset = 0;
-
 base::LazyInstance<std::set<WebPluginDelegateImpl*> > g_active_delegates(
     base::LINKER_INITIALIZED);
 
@@ -91,6 +80,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       quirks_(0),
       null_event_factory_(this),
       waiting_to_die_(false),
+      last_window_x_offset_(0),
+      last_window_y_offset_(0),
       last_mouse_x_(0),
       last_mouse_y_(0),
       have_focus_(false),
@@ -361,34 +352,6 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   }
 }
 
-// Moves our dummy window to the given offset relative to the last known
-// location of the real renderer window's content view.
-// If new_width or new_height is non-zero, the window size (content region)
-// will be updated accordingly; if they are zero, the existing size will be
-// preserved.
-static void UpdateDummyWindowBoundsWithOffset(WindowRef window,
-                                              int x_offset, int y_offset,
-                                              int new_width, int new_height) {
-  int target_x = g_current_x_offset + x_offset;
-  int target_y = g_current_y_offset + y_offset;
-  Rect window_bounds;
-  GetWindowBounds(window, kWindowContentRgn, &window_bounds);
-  int old_width = window_bounds.right - window_bounds.left;
-  int old_height = window_bounds.bottom - window_bounds.top;
-  if (window_bounds.left != target_x ||
-      window_bounds.top != target_y ||
-      (new_width && new_width != old_width) ||
-      (new_height && new_height != old_height)) {
-    int height = new_height ? new_height : old_height;
-    int width = new_width ? new_width : old_width;
-    window_bounds.left = target_x;
-    window_bounds.top = target_y;
-    window_bounds.right = window_bounds.left + width;
-    window_bounds.bottom = window_bounds.top + height;
-    SetWindowBounds(window, kWindowContentRgn, &window_bounds);
-  }
-}
-
 void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   if (!instance())
     return;
@@ -402,9 +365,9 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   window_.x = 0;
   window_.y = 0;
 
-  UpdateDummyWindowBoundsWithOffset(
-      reinterpret_cast<WindowRef>(cg_context_.window), window_rect_.x(),
-      window_rect_.y(), window_rect_.width(), window_rect_.height());
+  UpdateDummyWindowBoundsWithOffset(window_rect_.x(), window_rect_.y(),
+                                    window_rect_.width(),
+                                    window_rect_.height());
 
   NPError err = instance()->NPP_SetWindow(&window_);
 
@@ -455,6 +418,40 @@ int WebPluginDelegateImpl::PluginDrawingModel() {
   if (quirks_ & PLUGIN_QUIRK_IGNORE_NEGOTIATED_DRAWING_MODEL)
     return NPDrawingModelQuickDraw;
   return instance()->drawing_model();
+}
+
+void WebPluginDelegateImpl::UpdateWindowLocation(const WebMouseEvent& event) {
+  // TODO: figure out where the vertical offset of 22 comes from (and if 22 is
+  // exactly right) and replace with an appropriate calculation. It feels like
+  // window structure or the menu bar, but neither should be involved here.
+  last_window_x_offset_ = event.globalX - event.windowX;
+  last_window_y_offset_ = event.globalY - event.windowY + 22;
+
+  UpdateDummyWindowBoundsWithOffset(event.windowX - event.x,
+                                    event.windowY - event.y, 0, 0);
+}
+
+void WebPluginDelegateImpl::UpdateDummyWindowBoundsWithOffset(
+    int x_offset, int y_offset, int new_width, int new_height) {
+  int target_x = last_window_x_offset_ + x_offset;
+  int target_y = last_window_y_offset_ + y_offset;
+  WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
+  Rect window_bounds;
+  GetWindowBounds(window, kWindowContentRgn, &window_bounds);
+  int old_width = window_bounds.right - window_bounds.left;
+  int old_height = window_bounds.bottom - window_bounds.top;
+  if (window_bounds.left != target_x ||
+      window_bounds.top != target_y ||
+      (new_width && new_width != old_width) ||
+      (new_height && new_height != old_height)) {
+    int height = new_height ? new_height : old_height;
+    int width = new_width ? new_width : old_width;
+    window_bounds.left = target_x;
+    window_bounds.top = target_y;
+    window_bounds.right = window_bounds.left + width;
+    window_bounds.bottom = window_bounds.top + height;
+    SetWindowBounds(window, kWindowContentRgn, &window_bounds);
+  }
 }
 
 static bool WebInputEventIsWebMouseEvent(const WebInputEvent& event) {
@@ -687,17 +684,6 @@ static bool NPCocoaEventFromWebInputEvent(const WebInputEvent& event,
   return false;
 }
 
-static void UpdateWindowLocation(WindowRef window, const WebMouseEvent& event) {
-  // TODO: figure out where the vertical offset of 22 comes from (and if 22 is
-  // exactly right) and replace with an appropriate calculation. It feels like
-  // window structure or the menu bar, but neither should be involved here.
-  g_current_x_offset = event.globalX - event.windowX;
-  g_current_y_offset = event.globalY - event.windowY + 22;
-
-  UpdateDummyWindowBoundsWithOffset(window, event.windowX - event.x,
-                                    event.windowY - event.y, 0, 0);
-}
-
 bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
                                              WebCursorInfo* cursor) {
   // If we somehow get an event before we've set up the plugin window, bail.
@@ -713,21 +699,20 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
     return false;
   }
   np_event.when = TickCount();
+  if (WebInputEventIsWebMouseEvent(event)) {
+    // Make sure our dummy window has the correct location before we send the
+    // event to the plugin, so that any coordinate conversion the plugin does
+    // will work out.
+    const WebMouseEvent* mouse_event =
+        static_cast<const WebMouseEvent*>(&event);
+    UpdateWindowLocation(*mouse_event);
+  }
   if (np_event.what == nullEvent) {
     last_mouse_x_ = np_event.where.h;
     last_mouse_y_ = np_event.where.v;
     if (instance()->event_model() == NPEventModelCarbon)
       return true;  // Let the recurring task actually send the event.
   } else {
-    // If this is a mouse event, we need to make sure our dummy window
-    // has the correct location before we send the event to the plugin,
-    // so that any coordinate conversion the plugin does will work out.
-    if (WebInputEventIsWebMouseEvent(event)) {
-      const WebMouseEvent* mouse_event =
-          static_cast<const WebMouseEvent*>(&event);
-      UpdateWindowLocation(reinterpret_cast<WindowRef>(cg_context_.window),
-                           *mouse_event);
-    }
     // if we do not currently have focus and this is a mouseDown, trigger a
     // notification that we are taking the keyboard focus.  We can't just key
     // off of incoming calls to SetFocus, since WebKit may already think we
