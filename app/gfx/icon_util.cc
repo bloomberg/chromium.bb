@@ -8,6 +8,7 @@
 #include "base/file_util.h"
 #include "base/gfx/size.h"
 #include "base/logging.h"
+#include "base/scoped_ptr.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -61,16 +62,33 @@ HICON IconUtil::CreateHICONFromSkBitmap(const SkBitmap& bitmap) {
 
   // Icons are generally created using an AND and XOR masks where the AND
   // specifies boolean transparency (the pixel is either opaque or
-  // transparent) and the XOR mask contains the actual image pixels. However,
-  // since our bitmap has an alpha channel, the AND monochrome bitmap won't
-  // actually be used for computing the pixel transparency. Since every icon
-  // must have an AND mask bitmap, we go ahead and create one so that we can
-  // associate it with the ICONINFO structure we'll later pass to
-  // ::CreateIconIndirect(). The monochrome bitmap is created such that all the
-  // pixels are opaque.
-  HBITMAP mono_bitmap = ::CreateBitmap(bitmap.width(), bitmap.height(),
-                                       1, 1, NULL);
+  // transparent) and the XOR mask contains the actual image pixels. If the XOR
+  // mask bitmap has an alpha channel, the AND monochrome bitmap won't
+  // actually be used for computing the pixel transparency. Even though all our
+  // bitmap has an alpha channel, Windows might not agree when all alpha values
+  // are zero. So the monochrome bitmap is created with all pixels transparent
+  // for this case. Otherwise, it is created with all pixels opaque.
+  bool bitmap_has_alpha_channel = PixelsHaveAlpha(
+      static_cast<const uint32*>(bitmap.getPixels()),
+      bitmap.width() * bitmap.height());
+
+  scoped_array<uint8> mask_bits;
+  if (!bitmap_has_alpha_channel) {
+    // Bytes per line with paddings to make it word alignment.
+    size_t bytes_per_line = (bitmap.width() + 0xF) / 16 * 2;
+    size_t mask_bits_size = bytes_per_line * bitmap.height();
+
+    mask_bits.reset(new uint8[mask_bits_size]);
+    DCHECK(mask_bits.get());
+
+    // Make all pixels transparent.
+    memset(mask_bits.get(), 0xFF, mask_bits_size);
+  }
+
+  HBITMAP mono_bitmap = ::CreateBitmap(bitmap.width(), bitmap.height(), 1, 1,
+      reinterpret_cast<LPVOID>(mask_bits.get()));
   DCHECK(mono_bitmap);
+
   ICONINFO icon_info;
   icon_info.fIcon = TRUE;
   icon_info.xHotspot = 0;
@@ -149,19 +167,13 @@ SkBitmap* IconUtil::CreateSkBitmapFromHICON(HICON icon, const gfx::Size& s) {
   memcpy(bitmap->getPixels(), static_cast<void*>(bits), num_pixels * 4);
 
   // Finding out whether the bitmap has an alpha channel.
-  bool bitmap_has_alpha_channel = false;
-  unsigned int* p = static_cast<unsigned int*>(bitmap->getPixels());
-  for (unsigned int* end = p + num_pixels; p != end; ++p) {
-    if ((*p & 0xff000000) != 0) {
-      bitmap_has_alpha_channel = true;
-      break;
-    }
-  }
+  bool bitmap_has_alpha_channel = PixelsHaveAlpha(
+      static_cast<const uint32*>(bitmap->getPixels()), num_pixels);
 
   // If the bitmap does not have an alpha channel, we need to build it using
   // the previously captured AND mask. Otherwise, we are done.
   if (!bitmap_has_alpha_channel) {
-    p = static_cast<unsigned int*>(bitmap->getPixels());
+    unsigned int* p = static_cast<unsigned int*>(bitmap->getPixels());
     for (size_t i = 0; i < num_pixels; ++p, ++i) {
       DCHECK_EQ((*p & 0xff000000), 0);
       if (opaque[i])
@@ -262,6 +274,16 @@ bool IconUtil::CreateIconFileFromSkBitmap(const SkBitmap& bitmap,
 
 int IconUtil::GetIconDimensionCount() {
   return sizeof(icon_dimensions_) / sizeof(icon_dimensions_[0]);
+}
+
+bool IconUtil::PixelsHaveAlpha(const uint32* pixels, size_t num_pixels) {
+  for (const uint32* end = pixels + num_pixels; pixels != end; ++pixels) {
+    if ((*pixels & 0xff000000) != 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void IconUtil::InitializeBitmapHeader(BITMAPV5HEADER* header, int width,

@@ -128,6 +128,9 @@ class IconUtil {
   // Returns how many icon dimensions are defined.
   static int GetIconDimensionCount();
 
+  // Returns true if any pixel in the given pixels buffer has an non-zero alpha.
+  static bool PixelsHaveAlpha(const uint32* pixels, size_t num_pixels);
+
   // A helper function that initializes a BITMAPV5HEADER structure with a set
   // of values.
   static void InitializeBitmapHeader(BITMAPV5HEADER* header, int width,
