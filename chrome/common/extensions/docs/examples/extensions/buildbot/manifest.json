@@ -1,13 +1,12 @@
 {
   "name": "Chromium Buildbot Monitor",
-  "version": "0.7.1",
-  "description": "Displays the status of the Chromium buildbot in the toolbar. On hover, expands to give more detail about each failing bot.",
+  "version": "0.7.3",
+  "description": "Displays the status of the Chromium buildbot in the toolbar.  Click to see more detailed status in a popup.",
   "icons": { "128": "icon.png" },
   "background_page": "bg.html",
   "permissions": [
     "http://build.chromium.org/",
-    "http://chromium-status.appspot.com/",
-    "http://chrome-buildbot.corp.google.com/"
+    "http://chromium-status.appspot.com/"
   ],
   "browser_action": {
     "default_title": "",
