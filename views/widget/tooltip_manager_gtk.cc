@@ -29,9 +29,7 @@ static gfx::Font* LoadDefaultFont() {
   gtk_widget_realize(window);
 
   GtkStyle* style = gtk_widget_get_style(label);
-  PangoFontDescription* pfd = style->font_desc;
-  gfx::Font* font = new gfx::Font(gfx::Font::CreateFont(pfd));
-  pango_font_description_free(pfd);
+  gfx::Font* font = new gfx::Font(gfx::Font::CreateFont(style->font_desc));
 
   gtk_widget_destroy(window);
 
@@ -103,15 +101,8 @@ static void AdjustLabel(GtkTooltip* tooltip) {
     GtkLabel* real_label = NULL;
     gtk_container_foreach(GTK_CONTAINER(parent), LabelLocatorCallback,
                           static_cast<gpointer>(&real_label));
-    if (real_label) {
-      // For some reason I'm occasionally seeing a crash in trying to get font
-      // metrics. Explicitly setting the font avoids this.
-      PangoFontDescription* pfd =
-          gfx::Font::PangoFontFromGfxFont(gfx::Font());
-      gtk_widget_modify_font(GTK_WIDGET(real_label), pfd);
-      pango_font_description_free(pfd);
+    if (real_label)
       gtk_label_set_max_width_chars(GTK_LABEL(real_label), 3000);
-    }
   }
 }
 

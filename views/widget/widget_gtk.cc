@@ -1154,11 +1154,13 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
   //    region, it wouldn't get painted.
   if (type_ == TYPE_CHILD) {
     window_contents_ = widget_ = gtk_fixed_new();
+    gtk_widget_set_name(widget_, "views-gtkwidget-child-fixed");
     GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(widget_), true);
     if (!parent && !null_parent_) {
       GtkWidget* popup = gtk_window_new(GTK_WINDOW_POPUP);
       null_parent_ = gtk_fixed_new();
+      gtk_widget_set_name(widget_, "views-gtkwidget-null-parent");
       gtk_container_add(GTK_CONTAINER(popup), null_parent_);
       gtk_widget_realize(null_parent_);
     }
@@ -1167,6 +1169,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     widget_ = gtk_window_new(
         (type_ == TYPE_WINDOW || type_ == TYPE_DECORATED_WINDOW) ?
         GTK_WINDOW_TOPLEVEL : GTK_WINDOW_POPUP);
+    gtk_widget_set_name(widget_, "views-gtkwidget-window");
     if (transient_to_parent_)
       gtk_window_set_transient_for(GTK_WINDOW(widget_), GTK_WINDOW(parent));
     GTK_WIDGET_UNSET_FLAGS(widget_, GTK_DOUBLE_BUFFERED);
@@ -1186,6 +1189,7 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     SetWindowForNative(widget_, static_cast<WindowGtk*>(this));
 
     window_contents_ = gtk_fixed_new();
+    gtk_widget_set_name(window_contents_, "views-gtkwidget-window-fixed");
     GTK_WIDGET_UNSET_FLAGS(window_contents_, GTK_DOUBLE_BUFFERED);
     gtk_fixed_set_has_window(GTK_FIXED(window_contents_), true);
     gtk_container_add(GTK_CONTAINER(widget_), window_contents_);
