@@ -136,7 +136,6 @@
 # define WIN32_DO_PATCHING 1
 #endif
 
-using std::max;
 using tcmalloc::PageHeap;
 using tcmalloc::PageHeapAllocator;
 using tcmalloc::SizeMap;
@@ -383,11 +382,12 @@ size_t InvalidGetAllocatedSize(void* ptr) {
 
 // Extract interesting stats
 struct TCMallocStats {
-  uint64_t thread_bytes;      // Bytes in thread caches
-  uint64_t central_bytes;     // Bytes in central cache
-  uint64_t transfer_bytes;    // Bytes in central transfer cache
-  uint64_t metadata_bytes;    // Bytes alloced for metadata
-  PageHeap::Stats pageheap;   // Stats from page heap
+  uint64_t system_bytes;        // Bytes alloced from system
+  uint64_t thread_bytes;        // Bytes in thread caches
+  uint64_t central_bytes;       // Bytes in central cache
+  uint64_t transfer_bytes;      // Bytes in central transfer cache
+  uint64_t pageheap_bytes;      // Bytes in page heap
+  uint64_t metadata_bytes;      // Bytes alloced for metadata
 };
 
 // Get stats into "r".  Also get per-size-class counts if class_count != NULL
@@ -409,8 +409,13 @@ static void ExtractStats(TCMallocStats* r, uint64_t* class_count) {
   { // scope
     SpinLockHolder h(Static::pageheap_lock());
     ThreadCache::GetThreadStats(&r->thread_bytes, class_count);
+  }
+
+  { //scope
+    SpinLockHolder h(Static::pageheap_lock());
+    r->system_bytes = Static::pageheap()->SystemBytes();
     r->metadata_bytes = tcmalloc::metadata_system_bytes();
-    r->pageheap = Static::pageheap()->stats();
+    r->pageheap_bytes = Static::pageheap()->FreeBytes();
   }
 }
 
@@ -448,9 +453,8 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
     DumpSystemAllocatorStats(out);
   }
 
-  const uint64_t bytes_in_use = stats.pageheap.system_bytes
-                                - stats.pageheap.free_bytes
-                                - stats.pageheap.unmapped_bytes
+  const uint64_t bytes_in_use = stats.system_bytes
+                                - stats.pageheap_bytes
                                 - stats.central_bytes
                                 - stats.transfer_bytes
                                 - stats.thread_bytes;
@@ -459,7 +463,6 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
               "MALLOC: %12" PRIu64 " (%7.1f MB) Heap size\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes in use by application\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes free in page heap\n"
-              "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes unmapped in page heap\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes free in central cache\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes free in transfer cache\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Bytes free in thread caches\n"
@@ -467,10 +470,9 @@ static void DumpStats(TCMalloc_Printer* out, int level) {
               "MALLOC: %12" PRIu64 "              Thread heaps in use\n"
               "MALLOC: %12" PRIu64 " (%7.1f MB) Metadata allocated\n"
               "------------------------------------------------\n",
-              stats.pageheap.system_bytes, stats.pageheap.system_bytes / MB,
+              stats.system_bytes, stats.system_bytes / MB,
               bytes_in_use, bytes_in_use / MB,
-              stats.pageheap.free_bytes, stats.pageheap.free_bytes / MB,
-              stats.pageheap.unmapped_bytes, stats.pageheap.unmapped_bytes / MB,
+              stats.pageheap_bytes, stats.pageheap_bytes / MB,
               stats.central_bytes, stats.central_bytes / MB,
               stats.transfer_bytes, stats.transfer_bytes / MB,
               stats.thread_bytes, stats.thread_bytes / MB,
@@ -534,50 +536,9 @@ static void** DumpHeapGrowthStackTraces() {
   return result;
 }
 
-static void IterateOverRanges(void* arg, MallocExtension::RangeFunction func) {
-  PageID page = 1;  // Some code may assume that page==0 is never used
-  bool done = false;
-  while (!done) {
-    // Accumulate a small number of ranges in a local buffer
-    static const int kNumRanges = 16;
-    static base::MallocRange ranges[kNumRanges];
-    int n = 0;
-    {
-      SpinLockHolder h(Static::pageheap_lock());
-      while (n < kNumRanges) {
-        if (!Static::pageheap()->GetNextRange(page, &ranges[n])) {
-          done = true;
-          break;
-        } else {
-          uintptr_t limit = ranges[n].address + ranges[n].length;
-          page = (limit + kPageSize - 1) >> kPageShift;
-          n++;
-        }
-      }
-    }
-
-    for (int i = 0; i < n; i++) {
-      (*func)(arg, &ranges[i]);
-    }
-  }
-}
-
 // TCMalloc's support for extra malloc interfaces
 class TCMallocImplementation : public MallocExtension {
- private:
-  // ReleaseToSystem() might release more than the requested bytes because
-  // the page heap releases at the span granularity, and spans are of wildly
-  // different sizes.  This member keeps track of the extra bytes bytes
-  // released so that the app can periodically call ReleaseToSystem() to
-  // release memory at a constant rate.
-  // NOTE: Protected by Static::pageheap_lock().
-  size_t extra_bytes_released_;
-
  public:
-  TCMallocImplementation()
-      : extra_bytes_released_(0) {
-  }
-
   virtual void GetStats(char* buffer, int buffer_length) {
     ASSERT(buffer_length > 0);
     TCMalloc_Printer printer(buffer, buffer_length);
@@ -607,51 +568,32 @@ class TCMallocImplementation : public MallocExtension {
     return DumpHeapGrowthStackTraces();
   }
 
-  virtual void Ranges(void* arg, RangeFunction func) {
-    IterateOverRanges(arg, func);
-  }
-
   virtual bool GetNumericProperty(const char* name, size_t* value) {
     ASSERT(name != NULL);
 
     if (strcmp(name, "generic.current_allocated_bytes") == 0) {
       TCMallocStats stats;
       ExtractStats(&stats, NULL);
-      *value = stats.pageheap.system_bytes
+      *value = stats.system_bytes
                - stats.thread_bytes
                - stats.central_bytes
                - stats.transfer_bytes
-               - stats.pageheap.free_bytes
-               - stats.pageheap.unmapped_bytes;
+               - stats.pageheap_bytes;
       return true;
     }
 
     if (strcmp(name, "generic.heap_size") == 0) {
       TCMallocStats stats;
       ExtractStats(&stats, NULL);
-      *value = stats.pageheap.system_bytes;
+      *value = stats.system_bytes;
       return true;
     }
 
     if (strcmp(name, "tcmalloc.slack_bytes") == 0) {
       // We assume that bytes in the page heap are not fragmented too
-      // badly, and are therefore available for allocation without
-      // growing the pageheap system byte count.
+      // badly, and are therefore available for allocation.
       SpinLockHolder l(Static::pageheap_lock());
-      PageHeap::Stats stats = Static::pageheap()->stats();
-      *value = stats.free_bytes + stats.unmapped_bytes;
-      return true;
-    }
-
-    if (strcmp(name, "tcmalloc.pageheap_free_bytes") == 0) {
-      SpinLockHolder l(Static::pageheap_lock());
-      *value = Static::pageheap()->stats().free_bytes;
-      return true;
-    }
-
-    if (strcmp(name, "tcmalloc.pageheap_unmapped_bytes") == 0) {
-      SpinLockHolder l(Static::pageheap_lock());
-      *value = Static::pageheap()->stats().unmapped_bytes;
+      *value = Static::pageheap()->FreeBytes();
       return true;
     }
 
@@ -689,32 +631,9 @@ class TCMallocImplementation : public MallocExtension {
 
   virtual void MarkThreadBusy();  // Implemented below
 
-  virtual void ReleaseToSystem(ssize_t num_bytes) {
-    if (num_bytes <= 0) {
-      return;
-    }
+  virtual void ReleaseFreeMemory() {
     SpinLockHolder h(Static::pageheap_lock());
-    if (num_bytes <= extra_bytes_released_) {
-      // We released too much on a prior call, so don't release any
-      // more this time.
-      extra_bytes_released_ = extra_bytes_released_ - num_bytes;
-      return;
-    }
-    num_bytes = num_bytes - extra_bytes_released_;
-    // num_bytes might be less than one page.  If we pass zero to
-    // ReleaseAtLeastNPages, it won't do anything, so we release a whole
-    // page now and let extra_bytes_released_ smooth it out over time.
-    Length num_pages = max<Length>(num_bytes >> kPageShift, 1);
-    size_t bytes_released = Static::pageheap()->ReleaseAtLeastNPages(
-        num_pages) << kPageShift;
-    if (bytes_released > num_bytes) {
-      extra_bytes_released_ = bytes_released - num_bytes;
-    } else {
-      // The PageHeap wasn't able to release num_bytes.  Don't try to
-      // compensate with a big release next time.  Specifically,
-      // ReleaseFreeMemory() calls ReleaseToSystem(LONG_MAX).
-      extra_bytes_released_ = 0;
-    }
+    Static::pageheap()->ReleaseFreePages();
   }
 
   virtual void SetMemoryReleaseRate(double rate) {
@@ -1144,18 +1063,16 @@ inline struct mallinfo do_mallinfo() {
 
   // Unfortunately, the struct contains "int" field, so some of the
   // size values will be truncated.
-  info.arena     = static_cast<int>(stats.pageheap.system_bytes);
+  info.arena     = static_cast<int>(stats.system_bytes);
   info.fsmblks   = static_cast<int>(stats.thread_bytes
                                     + stats.central_bytes
                                     + stats.transfer_bytes);
-  info.fordblks  = static_cast<int>(stats.pageheap.free_bytes +
-                                    stats.pageheap.unmapped_bytes);
-  info.uordblks  = static_cast<int>(stats.pageheap.system_bytes
+  info.fordblks  = static_cast<int>(stats.pageheap_bytes);
+  info.uordblks  = static_cast<int>(stats.system_bytes
                                     - stats.thread_bytes
                                     - stats.central_bytes
                                     - stats.transfer_bytes
-                                    - stats.pageheap.free_bytes
-                                    - stats.pageheap.unmapped_bytes);
+                                    - stats.pageheap_bytes);
 
   return info;
 }
