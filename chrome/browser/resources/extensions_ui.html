@@ -1,19 +1,17 @@
 <!DOCTYPE HTML>
-<html>
+<html i18n-values="dir:textdirection;">
 <head>
 <meta charset="utf-8">
 <title i18n-content="title"></title>
 <style>
 body {
-  font-size: 87%;
-  font-family: Helvetica, Arial, sans-serif;
   margin: 10px;
   min-width: 47em;
 }
 
 a {
   color: blue;
-  font-size: 100%;
+  font-size: 103%;
 }
 
 div#header {
@@ -24,6 +22,11 @@ div#header {
   padding-top: 1.5em;
   position: relative;
 }
+
+html[dir='rtl'] div#header {
+  padding-right: 0;
+}
+
 div#header h1 {
   background: url('../../app/theme/extensions_section.png') 0px 20px no-repeat;
   display: inline;
@@ -32,27 +35,37 @@ div#header h1 {
   padding-left: 75px;
   padding-top: 40px;
 }
+html[dir='rtl'] div#header h1 {
+  background: url('../../app/theme/extensions_section.png') right no-repeat;
+  padding-right: 95px;
+  padding-left: 0;
+}
 
 h1 {
-  font-size: 150%;
+  font-size: 156%;
   font-weight: bold;
   padding: 0;
   margin: 0;
 }
 
 div.content {
-  font-size: 84%;
+  font-size: 88%;
   margin-top: 5px;
 }
 
 .section-header {
   background: #ebeff9;
   border-top: 1px solid #b5c7de;
-  font-size: 95%;
+  font-size: 99%;
   padding-bottom: 2px;
   padding-left: 5px;
   padding-top: 3px;
   width: 100%;
+}
+
+html[dir='rtl'] .section-header {
+  padding-right: 5px;
+  padding-left: 0;
 }
 
 .section-header-title {
@@ -104,19 +117,26 @@ body.showDevMode .showInDevMode {
 }
 
 .developer-mode-link {
-  font-size: 100%;
   margin-right: 3px;
   white-space: nowrap;
+}
+
+.developer-mode-link a {
+  font-size: 97%;
 }
 
 .developer-mode {
   background: #f4f6fc;
   border-bottom: 1px solid #edeff5;
-  font-size: 85%;
+  font-size: 89%;
   padding-bottom: 0.8em;
   padding-left: 10px;
   padding-top: 0.8em;
   width: 100%;
+}
+html[dir='rtl'] .developer-mode {
+  padding-right: 10px;
+  padding-left: 0;
 }
 
 .extension_disabled td {
@@ -156,6 +176,10 @@ body.showDevMode .showInDevMode {
   font-weight: bold;
 }
 
+html[dir='rtl'] #get-moar-extensions {
+   text-align: left;
+}
+
 .extension-description {
   margin-top: 0.4em;
 }
@@ -168,6 +192,26 @@ body.showDevMode .showInDevMode {
   float: right;
 }
 
+html[dir='rtl'] .extension-actions {
+  float: left;
+}
+
+.extension-actions-div {
+  text-align: right;
+}
+
+html[dir='rtl'] .extension-actions-div {
+  text-align: left;
+}
+
+.extension-options-cell {
+  text-align: right;
+}
+
+html[dir='rtl'] .extension-options-cell {
+  text-align: left;
+}
+
 .extension-views {
   margin: 0 0 0;
   margin-left: 2ex;
@@ -175,8 +219,12 @@ body.showDevMode .showInDevMode {
   list-style-type: none;
 }
 
+html[dir='rtl'] .extension-views {
+  margin: 0 2ex 0 0;
+}
+
 button {
-  font-size: 100%;
+  font-size: 104%;
 }
 
 #dialogBackground, #dialogBackground div {
@@ -209,10 +257,16 @@ button {
   -webkit-user-select:none;
 }
 
+html[dir='rtl'] #dialogBackground {
+  right: 0;
+  left: auto;
+}
+
 #dialogHBackground {
   height: 100%;
   -webkit-box-orient: horizontal;
 }
+
 
 #dialog {
   background-color: #5296DE;
@@ -223,11 +277,19 @@ button {
   -webkit-box-orient: vertical;
 }
 
+html[dir='rtl'] #dialog {
+  font-size: 13px;
+}
+
 #dialogHeader {
   background-color: rgba(0,0,0,0);
   color: white;
   margin: 4px;
   width: 100%;
+}
+
+html[dir='rtl'] #dialogHeader {
+  margin-left: -20px;
 }
 
 #dialogBody {
@@ -250,6 +312,11 @@ button {
   -webkit-box-pack: end;
 }
 
+html[dir='rtl'] .dialogBrowseRow {
+  margin-right: -24px;
+  /* margin-left: 0px; */
+}
+
 .dialogBrowseRow>* {
   margin: 2px
 }
@@ -258,6 +325,11 @@ button {
   margin-bottom: 6px;
   margin-left: -12px;
   margin-top: 20px;
+}
+
+html[dir='rtl'] #dialogContentFooter {
+  margin-right: -12px;
+  margin-left: 0px;
 }
 
 </style>
@@ -579,7 +651,8 @@ function autoUpdate() {
 
 </script>
 </head>
-<body onload="requestExtensionsData();">
+<body onload="requestExtensionsData();"
+      i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <div id="dialogBackground">
     <div id="dialogHBackground">
       <div id="dialog">
@@ -729,7 +802,7 @@ function autoUpdate() {
             </div>
           </td>
           <td width="300">
-            <div align="right">
+            <div class="extension-actions-div">
               <span class="extension-actions">
                 <a
                   jsvalues=".extensionId:id"
@@ -762,7 +835,7 @@ function autoUpdate() {
               </span>
             </div>
           </td>
-          <td align="right" valign="center" width="90">
+          <td class="extension-options-cell" valign="center" width="90">
                 <button
                   jsdisplay="options_url && enabled"
                   jsvalues=".extensionId:id"

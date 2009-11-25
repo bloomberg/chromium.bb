@@ -118,6 +118,8 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(L"cancelButton",
       l10n_util::GetString(IDS_CANCEL));
 
+  SetFontAndTextDirection(&localized_strings);
+
   static const base::StringPiece extensions_html(
       ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_EXTENSIONS_UI_HTML));
