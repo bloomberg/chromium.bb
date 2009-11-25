@@ -255,10 +255,10 @@ o3djs.primitives.createVertexStreamInfo = function(numComponents,
 };
 
 /**
- * VertexInfo. Used to store vertices and indices.
+ * VertexInfoBase. Used to store vertices and indices.
  * @constructor
  */
-o3djs.primitives.VertexInfo = function() {
+o3djs.primitives.VertexInfoBase = function() {
   this.streams = [];
   this.indices = [];
 };
@@ -272,7 +272,7 @@ o3djs.primitives.VertexInfo = function() {
  *     Defaults to zero.
  * @return {!o3djs.primitives.VertexStreamInfo} The new stream.
  */
-o3djs.primitives.VertexInfo.prototype.addStream = function(
+o3djs.primitives.VertexInfoBase.prototype.addStream = function(
     numComponents,
     semantic,
     opt_semanticIndex) {
@@ -293,7 +293,7 @@ o3djs.primitives.VertexInfo.prototype.addStream = function(
  * @return {o3djs.primitives.VertexStreamInfo} The stream or null if it
  *     is not present.
  */
-o3djs.primitives.VertexInfo.prototype.findStream = function(
+o3djs.primitives.VertexInfoBase.prototype.findStream = function(
     semantic,
     opt_semanticIndex) {
   opt_semanticIndex = opt_semanticIndex || 0;
@@ -313,7 +313,7 @@ o3djs.primitives.VertexInfo.prototype.findStream = function(
  * @param {number} opt_semanticIndex The semantic index of the stream.
  *     Defaults to zero.
  */
-o3djs.primitives.VertexInfo.prototype.removeStream = function(
+o3djs.primitives.VertexInfoBase.prototype.removeStream = function(
     semantic,
     opt_semanticIndex) {
   opt_semanticIndex = opt_semanticIndex || 0;
@@ -327,62 +327,15 @@ o3djs.primitives.VertexInfo.prototype.removeStream = function(
 };
 
 /**
- * Returns the number of triangles represented by the VertexInfo.
- * @return {number} The number of triangles represented by VertexInfo.
- */
-o3djs.primitives.VertexInfo.prototype.numTriangles = function() {
-  return this.indices.length / 3;
-};
-
-/**
- * Adds a triangle.
- * @param {number} index1 The index of the first vertex of the triangle.
- * @param {number} index2 The index of the second vertex of the triangle.
- * @param {number} index3 The index of the third vertex of the triangle.
- */
-o3djs.primitives.VertexInfo.prototype.addTriangle = function(
-    index1, index2, index3) {
-  this.indices.push(index1, index2, index3);
-};
-
-/**
- * Gets the vertex indices of the triangle at the given triangle index.
- * @param {number} triangleIndex The index of the triangle.
- * @return {!Array.<number>} An array of three triangle indices.
- */
-o3djs.primitives.VertexInfo.prototype.getTriangle = function(
-    triangleIndex) {
-  var indexIndex = triangleIndex * 3;
-  return [this.indices[indexIndex + 0],
-          this.indices[indexIndex + 1],
-          this.indices[indexIndex + 2]];
-};
-
-/**
- * Sets the vertex indices of the triangle at the given triangle index.
- * @param {number} triangleIndex The index of the triangle.
- * @param {number} index1 The index of the first vertex of the triangle.
- * @param {number} index2 The index of the second vertex of the triangle.
- * @param {number} index3 The index of the third vertex of the triangle.
- */
-o3djs.primitives.VertexInfo.prototype.setTriangle = function(
-    triangleIndex, index1, index2, index3) {
-  var indexIndex = triangleIndex * 3;
-  this.indices[indexIndex + 0] = index1;
-  this.indices[indexIndex + 1] = index2;
-  this.indices[indexIndex + 2] = index3;
-};
-
-/**
  * Appends all of the information in the passed VertexInfo on to the
  * end of this one. This is useful for putting multiple primitives'
  * vertices, appropriately transformed, into a single Shape. Both
  * VertexInfo objects must contain the same number of streams, with
  * the same semantics and number of components.
- * @param {!o3djs.primitives.VertexInfo} info The VertexInfo whose
+ * @param {!o3djs.primitives.VertexInfoBase} info The VertexInfo whose
  *     information should be appended to this one.
  */
-o3djs.primitives.VertexInfo.prototype.append = function(info) {
+o3djs.primitives.VertexInfoBase.prototype.append = function(info) {
   if (this.streams.length == 0 && info.streams.length != 0) {
     // Special case
     for (var i = 0; i < info.streams.length; i++) {
@@ -445,7 +398,7 @@ o3djs.primitives.VertexInfo.prototype.append = function(info) {
  * Validates that all the streams contain the same number of elements, that
  * all the indices are within range and that a position stream is present.
  */
-o3djs.primitives.VertexInfo.prototype.validate = function() {
+o3djs.primitives.VertexInfoBase.prototype.validate = function() {
   // Check the position stream is present.
   var positionStream = this.findStream(o3djs.base.o3d.Stream.POSITION);
   if (!positionStream)
@@ -467,6 +420,108 @@ o3djs.primitives.VertexInfo.prototype.validate = function() {
         numElements + ']';
     }
   }
+};
+
+/**
+ * Reorients the vertices, positions and normals, of this vertexInfo by the
+ * given matrix. In other words, it multiplies each vertex by the given matrix
+ * and each normal by the inverse-transpose of the given matrix.
+ * @param {!o3djs.math.Matrix4} matrix Matrix by which to multiply.
+ */
+o3djs.primitives.VertexInfoBase.prototype.reorient = function(matrix) {
+  var math = o3djs.math;
+  var matrixInverse = math.inverse(math.matrix4.getUpper3x3(matrix));
+
+  for (var s = 0; s < this.streams.length; ++s) {
+    var stream = this.streams[s];
+    if (stream.numComponents == 3) {
+      var numElements = stream.numElements();
+      switch (stream.semantic) {
+        case o3djs.base.o3d.Stream.POSITION:
+          for (var i = 0; i < numElements; ++i) {
+            stream.setElementVector(i,
+                math.matrix4.transformPoint(matrix,
+                    stream.getElementVector(i)));
+          }
+          break;
+        case o3djs.base.o3d.Stream.NORMAL:
+          for (var i = 0; i < numElements; ++i) {
+            stream.setElementVector(i,
+                math.matrix4.transformNormal(matrix,
+                    stream.getElementVector(i)));
+          }
+          break;
+        case o3djs.base.o3d.Stream.TANGENT:
+        case o3djs.base.o3d.Stream.BINORMAL:
+          for (var i = 0; i < numElements; ++i) {
+            stream.setElementVector(i,
+                math.matrix4.transformDirection(matrix,
+                    stream.getElementVector(i)));
+          }
+          break;
+      }
+    }
+  }
+};
+
+/**
+ * A VertexInfo is a specialization of VertexInfoBase for triangle based
+ * geometry.
+ * @constructor
+ * @extends {o3djs.primitives.VertexInfoBase}
+ */
+o3djs.primitives.VertexInfo = function() {
+  o3djs.primitives.VertexInfoBase.call(this);
+}
+
+o3djs.base.inherit(o3djs.primitives.VertexInfo,
+                   o3djs.primitives.VertexInfoBase);
+
+/**
+ * Returns the number of triangles represented by the VertexInfo.
+ * @return {number} The number of triangles represented by VertexInfo.
+ */
+o3djs.primitives.VertexInfo.prototype.numTriangles = function() {
+  return this.indices.length / 3;
+};
+
+/**
+ * Adds a triangle.
+ * @param {number} index1 The index of the first vertex of the triangle.
+ * @param {number} index2 The index of the second vertex of the triangle.
+ * @param {number} index3 The index of the third vertex of the triangle.
+ */
+o3djs.primitives.VertexInfo.prototype.addTriangle = function(
+    index1, index2, index3) {
+  this.indices.push(index1, index2, index3);
+};
+
+/**
+ * Gets the vertex indices of the triangle at the given triangle index.
+ * @param {number} triangleIndex The index of the triangle.
+ * @return {!Array.<number>} An array of three triangle indices.
+ */
+o3djs.primitives.VertexInfo.prototype.getTriangle = function(
+    triangleIndex) {
+  var indexIndex = triangleIndex * 3;
+  return [this.indices[indexIndex + 0],
+          this.indices[indexIndex + 1],
+          this.indices[indexIndex + 2]];
+};
+
+/**
+ * Sets the vertex indices of the triangle at the given triangle index.
+ * @param {number} triangleIndex The index of the triangle.
+ * @param {number} index1 The index of the first vertex of the triangle.
+ * @param {number} index2 The index of the second vertex of the triangle.
+ * @param {number} index3 The index of the third vertex of the triangle.
+ */
+o3djs.primitives.VertexInfo.prototype.setTriangle = function(
+    triangleIndex, index1, index2, index3) {
+  var indexIndex = triangleIndex * 3;
+  this.indices[indexIndex + 0] = index1;
+  this.indices[indexIndex + 1] = index2;
+  this.indices[indexIndex + 2] = index3;
 };
 
 /**
@@ -548,48 +603,6 @@ o3djs.primitives.VertexInfo.prototype.createShape = function(
   primitive.indexBuffer = indexBuffer;
   o3djs.primitives.setCullingInfo(primitive);
   return shape;
-};
-
-/**
- * Reorients the vertices, positions and normals, of this vertexInfo by the
- * given matrix. In other words, it multiplies each vertex by the given matrix
- * and each normal by the inverse-transpose of the given matrix.
- * @param {!o3djs.math.Matrix4} matrix Matrix by which to multiply.
- */
-o3djs.primitives.VertexInfo.prototype.reorient = function(matrix) {
-  var math = o3djs.math;
-  var matrixInverse = math.inverse(math.matrix4.getUpper3x3(matrix));
-
-  for (var s = 0; s < this.streams.length; ++s) {
-    var stream = this.streams[s];
-    if (stream.numComponents == 3) {
-      var numElements = stream.numElements();
-      switch (stream.semantic) {
-        case o3djs.base.o3d.Stream.POSITION:
-          for (var i = 0; i < numElements; ++i) {
-            stream.setElementVector(i,
-                math.matrix4.transformPoint(matrix,
-                    stream.getElementVector(i)));
-          }
-          break;
-        case o3djs.base.o3d.Stream.NORMAL:
-          for (var i = 0; i < numElements; ++i) {
-            stream.setElementVector(i,
-                math.matrix4.transformNormal(matrix,
-                    stream.getElementVector(i)));
-          }
-          break;
-        case o3djs.base.o3d.Stream.TANGENT:
-        case o3djs.base.o3d.Stream.BINORMAL:
-          for (var i = 0; i < numElements; ++i) {
-            stream.setElementVector(i,
-                math.matrix4.transformDirection(matrix,
-                    stream.getElementVector(i)));
-          }
-          break;
-      }
-    }
-  }
 };
 
 /**
