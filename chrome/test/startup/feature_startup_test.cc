@@ -144,8 +144,9 @@ class NewTabUIStartupTest : public UITest {
       ASSERT_EQ(1, tab_count);
 
       // Hit ctl-t and wait for the tab to load.
-      window->ApplyAccelerator(IDC_NEW_TAB);
-      ASSERT_TRUE(window->WaitForTabCountToBecome(2, 5000));
+      window->RunCommand(IDC_NEW_TAB);
+      ASSERT_TRUE(window->GetTabCount(&tab_count));
+      ASSERT_EQ(2, tab_count);
       int duration;
       ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&duration));
 

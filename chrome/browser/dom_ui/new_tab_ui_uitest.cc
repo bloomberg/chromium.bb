@@ -38,8 +38,9 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   ASSERT_EQ(1, tab_count);
 
   // Bring up a new tab page.
-  window->ApplyAccelerator(IDC_NEW_TAB);
-  WaitUntilTabCount(2);
+  window->RunCommand(IDC_NEW_TAB);
+  ASSERT_TRUE(window->GetTabCount(&tab_count));
+  ASSERT_EQ(2, tab_count);
   int load_time;
   ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
@@ -119,8 +120,9 @@ TEST_F(NewTabUITest, HomePageLink) {
   ASSERT_EQ(1, tab_count);
 
   // Bring up a new tab page.
-  browser->ApplyAccelerator(IDC_NEW_TAB);
-  WaitUntilTabCount(2);
+  browser->RunCommand(IDC_NEW_TAB);
+  ASSERT_TRUE(browser->GetTabCount(&tab_count));
+  ASSERT_EQ(2, tab_count);
   int load_time;
   ASSERT_TRUE(automation()->WaitForInitialNewTabUILoad(&load_time));
 
