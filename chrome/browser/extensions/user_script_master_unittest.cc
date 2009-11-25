@@ -4,7 +4,7 @@
 
 #include "chrome/browser/extensions/user_script_master.h"
 
-#include <fstream>
+#include <string>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -148,7 +148,7 @@ TEST_F(UserScriptMasterTest, Parse1) {
   UserScript script;
   EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       text, &script));
-  EXPECT_EQ(3U, script.globs().size());
+  ASSERT_EQ(3U, script.globs().size());
   EXPECT_EQ("*mail.google.com*", script.globs()[0]);
   EXPECT_EQ("*mail.yahoo.com*", script.globs()[1]);
   EXPECT_EQ("*mail.msn.com*", script.globs()[2]);
@@ -160,7 +160,7 @@ TEST_F(UserScriptMasterTest, Parse2) {
   UserScript script;
   EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       text, &script));
-  EXPECT_EQ(1U, script.globs().size());
+  ASSERT_EQ(1U, script.globs().size());
   EXPECT_EQ("*", script.globs()[0]);
 }
 
@@ -172,7 +172,7 @@ TEST_F(UserScriptMasterTest, Parse3) {
 
   UserScript script;
   UserScriptMaster::ScriptReloader::ParseMetadataHeader(text, &script);
-  EXPECT_EQ(1U, script.globs().size());
+  ASSERT_EQ(1U, script.globs().size());
   EXPECT_EQ("*foo*", script.globs()[0]);
 }
 
@@ -187,7 +187,7 @@ TEST_F(UserScriptMasterTest, Parse4) {
   EXPECT_TRUE(UserScriptMaster::ScriptReloader::ParseMetadataHeader(
       text, &script));
   EXPECT_EQ(0U, script.globs().size());
-  EXPECT_EQ(2U, script.url_patterns().size());
+  ASSERT_EQ(2U, script.url_patterns().size());
   EXPECT_EQ("http://*.mail.google.com/*",
             script.url_patterns()[0].GetAsString());
   EXPECT_EQ("http://mail.yahoo.com/*",
