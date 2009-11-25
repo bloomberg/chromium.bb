@@ -1,0 +1,39 @@
+This contains Chromium's locally patched copy of tcmalloc.
+
+Contents:
+
+    README.chromium
+
+        This file you're looking at right now.
+
+    chromium/
+
+        The chromium patched sources, copied from the vendor/
+        subdirectory and containing our local modifications.
+
+        We only copy over the vendor/src/ subdirectory (the only piece
+        we need) but still leave it in a chromium/src/ subdirectory to
+        keep the directory structures in parallel.
+
+    vendor/
+
+        Vanilla sources from upstream:
+
+            http://google-perftools.googlecode.com/svn/trunk
+
+        The current revision is:
+
+            Last Changed Rev: 78
+            Last Changed Date: 2009-11-10 08:24:57 -0800 (Tue, 10 Nov 2009)
+
+        
+
+HOWTOs:
+
+    Take a new version from upstream:
+
+        TODO(sgk)
+
+    Merge a new upstream version with our local patched copy:
+
+        TODO(sgk)
