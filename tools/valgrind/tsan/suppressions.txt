@@ -278,3 +278,12 @@
   ...
   fun:gethostbyname2_r*
 }
+
+############################
+# Races in TCMalloc (probably benign)
+{
+  TCMalloc1
+  ThreadSanitizer:Race
+  ...
+  tcmalloc::ThreadCache::DeleteCache
+}
