@@ -186,6 +186,9 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   void DeleteAllCookies();
   void DeleteCookieNode(CookieTreeNode* cookie_node);
 
+  // Filter the origins to only display matched results.
+  void UpdateSearchResults(const std::wstring& filter);
+
  private:
   enum CookieIconIndex {
     ORIGIN = 0,
@@ -195,6 +198,7 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   typedef std::vector<net::CookieMonster::CookieListPair*> CookiePtrList;
 
   void LoadCookies();
+  void LoadCookiesWithFilter(const std::wstring& filter);
 
   // The profile from which this model sources cookies.
   Profile* profile_;

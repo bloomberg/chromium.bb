@@ -34,12 +34,16 @@ class Timer;
 class CookiesView : public views::View,
                     public views::DialogDelegate,
                     public views::ButtonListener,
-                    public views::TreeViewController {
+                    public views::TreeViewController,
+                    public views::Textfield::Controller {
  public:
   // Show the Cookies Window, creating one if necessary.
   static void ShowCookiesWindow(Profile* profile);
 
   virtual ~CookiesView();
+
+  // Updates the display to show only the search results.
+  void UpdateSearchResults();
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -50,11 +54,19 @@ class CookiesView : public views::View,
   // views::TreeViewController implementation.
   virtual void OnTreeViewKeyDown(base::KeyboardCode keycode);
 
+  // views::Textfield::Controller implementation.
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const std::wstring& new_contents);
+  virtual bool HandleKeystroke(views::Textfield* sender,
+                               const views::Textfield::Keystroke& key);
+
   // views::WindowDelegate implementation.
   virtual int GetDialogButtons() const {
     return MessageBoxFlags::DIALOGBUTTON_CANCEL;
   }
-  virtual views::View* GetInitiallyFocusedView();
+  virtual views::View* GetInitiallyFocusedView() {
+    return search_field_;
+  }
 
   virtual bool CanResize() const { return true; }
   virtual std::wstring GetWindowTitle() const;
@@ -78,10 +90,16 @@ class CookiesView : public views::View,
   // Initialize the dialog contents and layout.
   void Init();
 
+  // Resets the display to what it would be if there were no search query.
+  void ResetSearchQuery();
+
   // Update the UI when there are no cookies.
   void UpdateForEmptyState();
 
   // Assorted dialog controls
+  views::Label* search_label_;
+  views::Textfield* search_field_;
+  views::NativeButton* clear_search_button_;
   views::Label* description_label_;
   CookiesTreeView* cookies_tree_;
   CookieInfoView* info_view_;
@@ -93,6 +111,10 @@ class CookiesView : public views::View,
 
   // The Profile for which Cookies are displayed
   Profile* profile_;
+
+  // A factory to construct Runnable Methods so that we can be called back to
+  // re-evaluate the model after the search query string changes.
+  ScopedRunnableMethodFactory<CookiesView> search_update_factory_;
 
   // Our containing window. If this is non-NULL there is a visible Cookies
   // window somewhere.

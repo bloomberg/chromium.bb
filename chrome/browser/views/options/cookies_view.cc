@@ -29,6 +29,7 @@
 views::Window* CookiesView::instance_ = NULL;
 static const int kCookieInfoViewBorderSize = 1;
 static const int kCookieInfoViewInsetSize = 3;
+static const int kSearchFilterDelayMs = 500;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,15 +45,11 @@ class CookiesTreeView : public views::TreeView {
   void RemoveSelectedItems();
 
  private:
-  // Our model, as a CookiesTreeModel.
-  CookiesTreeModel* cookies_model_;
-
   DISALLOW_COPY_AND_ASSIGN(CookiesTreeView);
 };
 
-CookiesTreeView::CookiesTreeView(CookiesTreeModel* cookies_model)
-    : cookies_model_(cookies_model) {
-      SetModel(cookies_model_);
+CookiesTreeView::CookiesTreeView(CookiesTreeModel* cookies_model) {
+      SetModel(cookies_model);
       SetRootShown(false);
       SetEditable(false);
 }
@@ -60,8 +57,8 @@ CookiesTreeView::CookiesTreeView(CookiesTreeModel* cookies_model)
 void CookiesTreeView::RemoveSelectedItems() {
   TreeModelNode* selected_node = GetSelectedNode();
   if (selected_node) {
-    cookies_model_->DeleteCookieNode(static_cast<CookieTreeCookieNode*>(
-        GetSelectedNode()));
+    static_cast<CookiesTreeModel*>(model())->DeleteCookieNode(
+        static_cast<CookieTreeCookieNode*>(GetSelectedNode()));
   }
 }
 
@@ -286,7 +283,32 @@ void CookiesView::ButtonPressed(
   } else if (sender == remove_all_button_) {
     cookies_tree_model_->DeleteAllCookies();
     UpdateForEmptyState();
+  } else if (sender == clear_search_button_) {
+    ResetSearchQuery();
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CookiesView, views::Textfield::Controller implementation:
+
+void CookiesView::ContentsChanged(views::Textfield* sender,
+                                  const std::wstring& new_contents) {
+  clear_search_button_->SetEnabled(!search_field_->text().empty());
+  search_update_factory_.RevokeAll();
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      search_update_factory_.NewRunnableMethod(
+          &CookiesView::UpdateSearchResults), kSearchFilterDelayMs);
+}
+
+bool CookiesView::HandleKeystroke(views::Textfield* sender,
+                                  const views::Textfield::Keystroke& key) {
+  if (key.GetKeyboardCode() == base::VKEY_ESCAPE) {
+    ResetSearchQuery();
+  } else if (key.GetKeyboardCode() == base::VKEY_RETURN) {
+    search_update_factory_.RevokeAll();
+    UpdateSearchResults();
+  }
+  return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -364,19 +386,33 @@ void CookiesView::OnTreeViewKeyDown(base::KeyboardCode keycode) {
 
 CookiesView::CookiesView(Profile* profile)
     :
+      search_label_(NULL),
+      search_field_(NULL),
+      clear_search_button_(NULL),
       description_label_(NULL),
       cookies_tree_(NULL),
       info_view_(NULL),
       remove_button_(NULL),
       remove_all_button_(NULL),
-      profile_(profile) {
+      profile_(profile),
+      ALLOW_THIS_IN_INITIALIZER_LIST(search_update_factory_(this)) {
 }
 
-views::View* CookiesView::GetInitiallyFocusedView() {
-  return cookies_tree_;
+
+void CookiesView::UpdateSearchResults() {
+  cookies_tree_model_->UpdateSearchResults(search_field_->text());
+  remove_all_button_->SetEnabled(cookies_tree_model_->GetRoot()->
+      GetTotalNodeCount() > 1);
 }
 
 void CookiesView::Init() {
+  search_label_ = new views::Label(
+      l10n_util::GetString(IDS_COOKIES_SEARCH_LABEL));
+  search_field_ = new views::Textfield;
+  search_field_->SetController(this);
+  clear_search_button_ = new views::NativeButton(
+      this, l10n_util::GetString(IDS_COOKIES_CLEAR_SEARCH_LABEL));
+  clear_search_button_->SetEnabled(false);
   description_label_ = new views::Label(
       l10n_util::GetString(IDS_COOKIES_INFO_LABEL));
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -410,6 +446,12 @@ void CookiesView::Init() {
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
+  layout->StartRow(0, five_column_layout_id);
+  layout->AddView(search_label_);
+  layout->AddView(search_field_);
+  layout->AddView(clear_search_button_);
+  layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
+
   layout->StartRow(0, single_column_layout_id);
   layout->AddView(description_label_);
 
@@ -431,6 +473,12 @@ void CookiesView::Init() {
   parent->AddChildView(remove_all_button_);
   if (!cookies_tree_model_.get()->GetRoot()->GetChildCount())
     UpdateForEmptyState();
+}
+
+void CookiesView::ResetSearchQuery() {
+  search_field_->SetText(EmptyWString());
+  clear_search_button_->SetEnabled(false);
+  UpdateSearchResults();
 }
 
 void CookiesView::UpdateForEmptyState() {

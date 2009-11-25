@@ -224,6 +224,10 @@ int CookiesTreeModel::GetIconIndex(TreeModelNode* node) {
 }
 
 void CookiesTreeModel::LoadCookies() {
+  LoadCookiesWithFilter(L"");
+}
+
+void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
   // mmargh mmargh mmargh!
 
   // Since we are running on the UI thread don't call GetURLRequestContext().
@@ -236,11 +240,14 @@ void CookiesTreeModel::LoadCookies() {
        it != all_cookies_.end();
        ++it) {
     // Get the origin cookie
-    CookieTreeOriginNode* origin =
-        root->GetOrCreateOriginNode(UTF8ToWide(it->first));
-    CookieTreeCookiesNode* cookies_node = origin->GetOrCreateCookiesNode();
-    CookieTreeCookieNode* new_cookie = new CookieTreeCookieNode(&*it);
-    cookies_node->AddCookieNode(new_cookie);
+    if (!filter.size() ||
+        (UTF8ToWide(it->first).find(filter) != std::wstring::npos)) {
+      CookieTreeOriginNode* origin =
+          root->GetOrCreateOriginNode(UTF8ToWide(it->first));
+      CookieTreeCookiesNode* cookies_node = origin->GetOrCreateCookiesNode();
+      CookieTreeCookieNode* new_cookie = new CookieTreeCookieNode(&*it);
+      cookies_node->AddCookieNode(new_cookie);
+    }
   }
 }
 
@@ -263,9 +270,8 @@ void CookiesTreeModel::DeleteAllCookies() {
   CookieTreeNode* root = GetRoot();
   root->DeleteStoredObjects();
   int num_children = root->GetChildCount();
-  for (int i = num_children - 1; i >= 0; --i) {
+  for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, i);
-  }
   LoadCookies();
   NotifyObserverTreeNodeChanged(root);
 }
@@ -276,4 +282,13 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
   CookieTreeNode* parent_node = cookie_node->GetParent();
   int cookie_node_index = parent_node->IndexOfChild(cookie_node);
   delete Remove(parent_node, cookie_node_index);
+}
+
+void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
+  CookieTreeNode* root = GetRoot();
+  int num_children = root->GetChildCount();
+  for (int i = num_children - 1; i >= 0; --i)
+    delete Remove(root, i);
+  LoadCookiesWithFilter(filter);
+  NotifyObserverTreeNodeChanged(root);
 }
