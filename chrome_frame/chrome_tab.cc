@@ -14,6 +14,7 @@
 #include "base/file_util.h"
 #include "base/file_version_info.h"
 #include "base/logging.h"
+#include "base/logging_win.h"
 #include "base/path_service.h"
 #include "base/registry.h"
 #include "base/string_piece.h"
@@ -37,6 +38,12 @@ const wchar_t kInternetSettings[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings";
 
 const wchar_t kBhoNoLoadExplorerValue[] = L"NoExplorer";
+
+// {0562BFC3-2550-45b4-BD8E-A310583D3A6F}
+static const GUID kChromeFrameProvider =
+    { 0x562bfc3, 0x2550, 0x45b4,
+        { 0xbd, 0x8e, 0xa3, 0x10, 0x58, 0x3d, 0x3a, 0x6f } };
+
 
 class ChromeTabModule
     : public AtlPerUserModule<CAtlDllModuleT<ChromeTabModule> > {
@@ -131,6 +138,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
     InitializeCrashReporting();
     logging::InitLogging(NULL, logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
                         logging::LOCK_LOG_FILE, logging::DELETE_OLD_LOG_FILE);
+    // Enable ETW logging.
+    logging::LogEventProvider::Initialize(kChromeFrameProvider);
   } else if (reason == DLL_PROCESS_DETACH) {
     g_patch_helper.UnpatchIfNeeded();
     delete g_exit_manager;
