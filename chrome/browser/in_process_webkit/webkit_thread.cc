@@ -9,7 +9,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 
+// This happens on the UI thread before the IO thread has been shut down.
 WebKitThread::WebKitThread() {
+  // The thread is started lazily by InitializeThread() on the IO thread.
 }
 
 // This happens on the UI thread after the IO thread has been shut down.
@@ -21,19 +23,11 @@ WebKitThread::~WebKitThread() {
   DCHECK(!ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
 }
 
-void WebKitThread::Initialize() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  DCHECK(!webkit_thread_.get());
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess)) {
-    // TODO(jorlow): This thread should be used (and started) in single process
-    //               mode rather than following different code paths.
+void WebKitThread::EnsureInitialized() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (webkit_thread_.get())
     return;
-  }
-
-  webkit_thread_.reset(new InternalWebKitThread);
-  bool started = webkit_thread_->Start();
-  DCHECK(started);
+  InitializeThread();
 }
 
 WebKitThread::InternalWebKitThread::InternalWebKitThread()
@@ -49,10 +43,21 @@ void WebKitThread::InternalWebKitThread::Init() {
   webkit_client_.reset(new BrowserWebKitClientImpl);
   WebKit::initialize(webkit_client_.get());
   // If possible, post initialization tasks to this thread (rather than doing
-  // them now) so we don't block the UI thread any longer than we have to.
+  // them now) so we don't block the IO thread any longer than we have to.
 }
 
 void WebKitThread::InternalWebKitThread::CleanUp() {
   DCHECK(webkit_client_.get());
   WebKit::shutdown();
+}
+
+MessageLoop* WebKitThread::InitializeThread() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
+    return NULL;
+
+  DCHECK(!webkit_thread_.get());
+  webkit_thread_.reset(new InternalWebKitThread);
+  bool started = webkit_thread_->Start();
+  DCHECK(started);
+  return webkit_thread_->message_loop();
 }

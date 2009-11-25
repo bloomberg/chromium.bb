@@ -320,7 +320,8 @@ void CheckSuccessfulRequest(const std::vector<IPC::Message>& messages,
 }
 
 // Tests whether many messages get dispatched properly.
-TEST_F(ResourceDispatcherHostTest, TestMany) {
+// TODO(jorlow): Re-enable once bug 28364 is fixed.
+TEST_F(ResourceDispatcherHostTest, DISABLED_TestMany) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   MakeTestRequest(0, 1, URLRequestTestJob::test_url_1());
@@ -346,7 +347,8 @@ TEST_F(ResourceDispatcherHostTest, TestMany) {
 
 // Tests whether messages get canceled properly. We issue three requests,
 // cancel one of them, and make sure that each sent the proper notifications.
-TEST_F(ResourceDispatcherHostTest, Cancel) {
+// TODO(jorlow): Re-enable once bug 28364 is fixed.
+TEST_F(ResourceDispatcherHostTest, DISABLED_Cancel) {
   EXPECT_EQ(0, host_.GetOutstandingRequestsMemoryCost(0));
 
   MakeTestRequest(0, 1, URLRequestTestJob::test_url_1());
@@ -606,7 +608,8 @@ TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies) {
 // away.  Note that we rely on Purify for finding the leaks if any.
 // If this test turns the Purify bot red, check the ResourceDispatcherHost
 // destructor to make sure the blocked requests are deleted.
-TEST_F(ResourceDispatcherHostTest, TestBlockedRequestsDontLeak) {
+// TODO(jorlow): Re-enable once bug 28364 is fixed.
+TEST_F(ResourceDispatcherHostTest, DISABLED_TestBlockedRequestsDontLeak) {
   // This second receiver is used to emulate a second process.
   ForwardingReceiver second_receiver(this);
 

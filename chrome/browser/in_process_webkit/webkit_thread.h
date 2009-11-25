@@ -14,14 +14,20 @@
 
 class BrowserWebKitClientImpl;
 
-// This creates a WebKit main thread on instantiation (if not in
-// --single-process mode) on construction and kills it on deletion.
+// This is an object that represents WebKit's "main" thread within the browser
+// process.  It should be instantiated and destroyed on the UI thread
+// before/after the IO thread is created/destroyed.  All other usage should be
+// on the IO thread.  If the browser is being run in --single-process mode, a
+// thread will never be spun up.
 class WebKitThread {
  public:
   // Called from the UI thread.
   WebKitThread();
   ~WebKitThread();
-  void Initialize();
+
+  // Creates the WebKit thread if it hasn't been already created.  Only call
+  // from the IO thread.  Only do fast-path work here.
+  void EnsureInitialized();
 
  private:
   // Must be private so that we can carefully control its lifetime.
@@ -39,7 +45,12 @@ class WebKitThread {
     scoped_ptr<BrowserWebKitClientImpl> webkit_client_;
   };
 
-  // Pointer to the actual WebKitThread.
+  // Returns the WebKit thread's message loop or NULL if we're in
+  // --single-process mode.  Do slow-path initialization work here.
+  MessageLoop* InitializeThread();
+
+  // Pointer to the actual WebKitThread.  NULL if not yet started.  Only modify
+  // from the IO thread while the WebKit thread is not running.
   scoped_ptr<InternalWebKitThread> webkit_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(WebKitThread);
