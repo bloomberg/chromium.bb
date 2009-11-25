@@ -94,7 +94,7 @@ bool InitPipeline(MessageLoop* message_loop,
 int main(int argc, char** argv) {
   // Read arguments.
   if (argc == 1) {
-    std::cout << "Usage: media_player --file=FILE [--audio]"
+    std::cout << "Usage: player_x11 --file=FILE [--audio]"
                  " [--alsa-device=DEVICE]" << std::endl;
     return 1;
   }
