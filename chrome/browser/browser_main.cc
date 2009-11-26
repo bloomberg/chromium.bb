@@ -6,8 +6,10 @@
 
 #include <algorithm>
 
+#include "app/hi_res_timer_manager.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/field_trial.h"
 #include "base/file_util.h"
@@ -19,7 +21,6 @@
 #include "base/string_piece.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
-#include "base/system_monitor.h"
 #include "base/time.h"
 #include "base/tracked_objects.h"
 #include "base/values.h"
@@ -340,13 +341,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);
 
-  // Initialize the SystemMonitor
-  base::SystemMonitor::Start();
-#if defined(OS_WIN)
-  // We want to monitor system power state to adjust our high resolution
-  // timer settings. But it's necessary only on Windows.
-  base::Time::StartSystemMonitorObserver();
-#endif  // defined(OS_WIN)
+  SystemMonitor system_monitor;
+  HighResolutionTimerManager hi_res_timer_manager;
 
   // Initialize statistical testing infrastructure.
   FieldTrialList field_trial;

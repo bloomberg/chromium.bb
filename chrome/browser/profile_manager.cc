@@ -42,11 +42,11 @@ void ProfileManager::ShutdownSessionServices() {
 }
 
 ProfileManager::ProfileManager() {
-  base::SystemMonitor::Get()->AddObserver(this);
+  SystemMonitor::Get()->AddObserver(this);
 }
 
 ProfileManager::~ProfileManager() {
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
+  SystemMonitor* system_monitor = SystemMonitor::Get();
   if (system_monitor)
     system_monitor->RemoveObserver(this);
 

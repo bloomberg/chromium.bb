@@ -4,13 +4,14 @@
 
 #include "build/build_config.h"
 
+#include "app/hi_res_timer_manager.h"
+#include "app/system_monitor.h"
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/system_monitor.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -89,8 +90,8 @@ int PluginMain(const MainFunctionParams& parameters) {
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_PluginMain").c_str());
 
-  // Initialize the SystemMonitor
-  base::SystemMonitor::Start();
+  SystemMonitor system_monitor;
+  HighResolutionTimerManager high_resolution_timer_manager;
 
 #if defined(OS_MACOSX)
   TrimInterposeEnvironment();

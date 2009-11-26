@@ -739,6 +739,8 @@
           ],
         }, { # else: OS != "win"
           'sources!': [
+            'common/hi_res_timer_manager.cc',
+            'common/hi_res_timer_manager.h',
             'common/temp_scaffolding_stubs.h',
           ],
         }],

@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/system_monitor.h"
+#include "app/system_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PowerTest : public base::SystemMonitor::PowerObserver {
+class PowerTest : public SystemMonitor::PowerObserver {
  public:
   PowerTest()
       : battery_(false),
         power_state_changes_(0),
         suspends_(0),
-        resumes_(0) {};
+        resumes_(0) {
+  }
 
   // PowerObserver callbacks.
   void OnPowerStateChange(bool on_battery_power) {
@@ -47,40 +48,40 @@ TEST(SystemMonitor, PowerNotifications) {
   // Initialize time() since it registers as a SystemMonitor observer.
   base::Time now = base::Time::Now();
 
-  base::SystemMonitor* system_monitor = base::SystemMonitor::Get();
+  SystemMonitor system_monitor;
   PowerTest test[kObservers];
   for (int index = 0; index < kObservers; ++index)
-    system_monitor->AddObserver(&test[index]);
+    system_monitor.AddObserver(&test[index]);
 
   // Send a bunch of power changes.  Since the battery power hasn't
   // actually changed, we shouldn't get notifications.
   for (int index = 0; index < 5; index++) {
-    system_monitor->ProcessPowerMessage(base::SystemMonitor::POWER_STATE_EVENT);
+    system_monitor.ProcessPowerMessage(SystemMonitor::POWER_STATE_EVENT);
     EXPECT_EQ(test[0].power_state_changes(), 0);
   }
 
   // Sending resume when not suspended should have no effect.
-  system_monitor->ProcessPowerMessage(base::SystemMonitor::RESUME_EVENT);
+  system_monitor.ProcessPowerMessage(SystemMonitor::RESUME_EVENT);
   loop.RunAllPending();
   EXPECT_EQ(test[0].resumes(), 0);
 
   // Pretend we suspended.
-  system_monitor->ProcessPowerMessage(base::SystemMonitor::SUSPEND_EVENT);
+  system_monitor.ProcessPowerMessage(SystemMonitor::SUSPEND_EVENT);
   loop.RunAllPending();
   EXPECT_EQ(test[0].suspends(), 1);
 
   // Send a second suspend notification.  This should be suppressed.
-  system_monitor->ProcessPowerMessage(base::SystemMonitor::SUSPEND_EVENT);
+  system_monitor.ProcessPowerMessage(SystemMonitor::SUSPEND_EVENT);
   loop.RunAllPending();
   EXPECT_EQ(test[0].suspends(), 1);
 
   // Pretend we were awakened.
-  system_monitor->ProcessPowerMessage(base::SystemMonitor::RESUME_EVENT);
+  system_monitor.ProcessPowerMessage(SystemMonitor::RESUME_EVENT);
   loop.RunAllPending();
   EXPECT_EQ(test[0].resumes(), 1);
 
   // Send a duplicate resume notification.  This should be suppressed.
-  system_monitor->ProcessPowerMessage(base::SystemMonitor::RESUME_EVENT);
+  system_monitor.ProcessPowerMessage(SystemMonitor::RESUME_EVENT);
   loop.RunAllPending();
   EXPECT_EQ(test[0].resumes(), 1);
 }

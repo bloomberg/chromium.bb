@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/hi_res_timer_manager.h"
+#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/system_monitor.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -25,8 +26,8 @@ int WorkerMain(const MainFunctionParams& parameters) {
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_WorkerMain").c_str());
 
-  // Initialize the SystemMonitor
-  base::SystemMonitor::Start();
+  SystemMonitor system_monitor;
+  HighResolutionTimerManager hi_res_timer_manager;
 
   ChildProcess worker_process;
   worker_process.set_main_thread(new WorkerThread());

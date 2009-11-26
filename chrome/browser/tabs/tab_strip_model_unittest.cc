@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/system_monitor.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -151,6 +152,10 @@ class TabStripModelTest : public RenderViewHostTestHarness {
   std::wstring test_dir_;
   std::wstring profile_path_;
   std::map<TabContents*, int> foo_;
+
+  // ProfileManager requires a SystemMonitor.
+  SystemMonitor system_monitor;
+
   ProfileManager pm_;
 };
 

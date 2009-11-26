@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "app/hi_res_timer_manager.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/field_trial.h"
 #include "base/histogram.h"
@@ -14,7 +16,6 @@
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/stats_counters.h"
 #include "base/string_util.h"
-#include "base/system_monitor.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
 #include "chrome/common/chrome_switches.h"
@@ -88,8 +89,8 @@ int RendererMain(const MainFunctionParams& parameters) {
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_RendererMain").c_str());
 
-  // Initialize the SystemMonitor
-  base::SystemMonitor::Start();
+  SystemMonitor system_monitor;
+  HighResolutionTimerManager hi_res_timer_manager;
 
   platform.PlatformInitialize();
 

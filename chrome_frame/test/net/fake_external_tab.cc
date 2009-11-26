@@ -255,7 +255,7 @@ void CFUrlRequestUnittestRunner::Initialize() {
   // directly because it will attempt to initialize some things such as
   // ICU that have already been initialized for this process.
   InitializeLogging();
-  base::Time::EnableHiResClockForTests();
+  base::Time::UseHighResolutionTimer(true);
 
 #if !defined(PURIFY) && defined(OS_WIN)
   logging::SetLogAssertHandler(UnitTestAssertHandler);

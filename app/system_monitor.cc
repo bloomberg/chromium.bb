@@ -1,13 +1,14 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/system_monitor.h"
+#include "app/system_monitor.h"
+
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "base/singleton.h"
+#include "base/time.h"
 
-namespace base {
+static SystemMonitor* g_system_monitor = NULL;
 
 #if defined(ENABLE_BATTERY_MONITORING)
 // The amount of time (in ms) to wait before running the initial
@@ -16,9 +17,28 @@ static int kDelayedBatteryCheckMs = 10 * 1000;
 #endif  // defined(ENABLE_BATTERY_MONITORING)
 
 SystemMonitor::SystemMonitor()
-    : battery_in_use_(false),
+    : observer_list_(new ObserverListThreadSafe<PowerObserver>()),
+      battery_in_use_(false),
       suspended_(false) {
-  observer_list_ = new ObserverListThreadSafe<PowerObserver>();
+  DCHECK(!g_system_monitor);
+  g_system_monitor = this;
+
+  DCHECK(MessageLoop::current());
+#if defined(ENABLE_BATTERY_MONITORING)
+  delayed_battery_check_.Start(
+      base::TimeDelta::FromMilliseconds(kDelayedBatteryCheckMs), this,
+      &SystemMonitor::BatteryCheck);
+#endif  // defined(ENABLE_BATTERY_MONITORING)
+}
+
+SystemMonitor::~SystemMonitor() {
+  DCHECK_EQ(this, g_system_monitor);
+  g_system_monitor = NULL;
+}
+
+// static
+SystemMonitor* SystemMonitor::Get() {
+  return g_system_monitor;
 }
 
 void SystemMonitor::ProcessPowerMessage(PowerEvent event_id) {
@@ -73,26 +93,6 @@ void SystemMonitor::NotifyResume() {
   observer_list_->Notify(&PowerObserver::OnResume);
 }
 
-// static
-SystemMonitor* SystemMonitor::Get() {
-  // Uses the LeakySingletonTrait because cleanup is optional.
-  return
-      Singleton<SystemMonitor, LeakySingletonTraits<SystemMonitor> >::get();
-}
-
-// static
-void SystemMonitor::Start() {
-#if defined(ENABLE_BATTERY_MONITORING)
-  DCHECK(MessageLoop::current());  // Can't call start too early.
-  SystemMonitor* monitor = Get();
-  monitor->delayed_battery_check_.Start(
-      TimeDelta::FromMilliseconds(kDelayedBatteryCheckMs), monitor,
-      &SystemMonitor::BatteryCheck);
-#endif  // defined(ENABLE_BATTERY_MONITORING)
-}
-
 void SystemMonitor::BatteryCheck() {
   ProcessPowerMessage(SystemMonitor::POWER_STATE_EVENT);
 }
-
-} // namespace base

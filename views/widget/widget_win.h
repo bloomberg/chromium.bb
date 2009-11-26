@@ -13,7 +13,6 @@
 #include "app/win/window_impl.h"
 #include "base/message_loop.h"
 #include "base/scoped_comptr_win.h"
-#include "base/system_monitor.h"
 #include "views/focus/focus_manager.h"
 #include "views/layout_manager.h"
 #include "views/widget/widget.h"

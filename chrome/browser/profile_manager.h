@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "app/system_monitor.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/non_thread_safe.h"
-#include "base/system_monitor.h"
 #include "base/values.h"
 #include "chrome/browser/profile.h"
 
@@ -63,7 +63,7 @@ class AvailableProfile {
 };
 
 class ProfileManager : public NonThreadSafe,
-                       public base::SystemMonitor::PowerObserver {
+                       public SystemMonitor::PowerObserver {
  public:
   ProfileManager();
   virtual ~ProfileManager();

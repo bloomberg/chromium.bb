@@ -1,10 +1,8 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/system_monitor.h"
-
-namespace base {
+#include "app/system_monitor.h"
 
 void SystemMonitor::ProcessWmPowerBroadcastMessage(int event_id) {
   PowerEvent power_event;
@@ -46,7 +44,3 @@ bool SystemMonitor::IsBatteryPower() {
   }
   return (status.ACLineStatus == 0);
 }
-
-
-
-} // namespace base

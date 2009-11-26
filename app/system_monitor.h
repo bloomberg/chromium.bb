@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SYSTEM_MONITOR_H_
-#define BASE_SYSTEM_MONITOR_H_
+#ifndef APP_SYSTEM_MONITOR_H_
+#define APP_SYSTEM_MONITOR_H_
 
 #include "build/build_config.h"
 
@@ -20,23 +20,18 @@
 #include "base/timer.h"
 #endif  // defined(ENABLE_BATTERY_MONITORING)
 
-namespace base {
-
 // Class for monitoring various system-related subsystems
 // such as power management, network status, etc.
 // TODO(mbelshe):  Add support beyond just power management.
 class SystemMonitor {
  public:
-  // Retrieves the Singleton.
-  static SystemMonitor* Get();
+  // Create SystemMonitor. Only one SystemMonitor instance per application
+  // is allowed.
+  SystemMonitor();
+  ~SystemMonitor();
 
-  // Start the System Monitor within a process.  This method
-  // is provided so that the battery check can be deferred.
-  // The MessageLoop must be started before calling this
-  // method.
-  // This is a no-op on platforms for which ENABLE_BATTERY_MONITORING is
-  // disabled.
-  static void Start();
+  // Get the application-wide SystemMonitor (if not present, returns NULL).
+  static SystemMonitor* Get();
 
   //
   // Power-related APIs
@@ -94,10 +89,6 @@ class SystemMonitor {
   // Cross-platform handling of a power event.
   void ProcessPowerMessage(PowerEvent event_id);
 
-  // Constructor.
-  // Don't use this; access SystemMonitor via the Singleton.
-  SystemMonitor();
-
  private:
   // Platform-specific method to check whether the system is currently
   // running on battery power.  Returns true if running on batteries,
@@ -124,6 +115,4 @@ class SystemMonitor {
   DISALLOW_COPY_AND_ASSIGN(SystemMonitor);
 };
 
-}
-
-#endif  // BASE_SYSTEM_MONITOR_H_
+#endif  // APP_SYSTEM_MONITOR_H_

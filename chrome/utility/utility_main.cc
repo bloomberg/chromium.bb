@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "app/app_switches.h"
+#include "app/hi_res_timer_manager.h"
+#include "app/system_monitor.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "base/system_monitor.h"
 #include "chrome/common/child_process.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,8 +28,8 @@ int UtilityMain(const MainFunctionParams& parameters) {
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_UtilityMain").c_str());
 
-  // Initialize the SystemMonitor
-  base::SystemMonitor::Start();
+  SystemMonitor system_monitor;
+  HighResolutionTimerManager hi_res_timer_manager;
 
   ChildProcess utility_process;
   utility_process.set_main_thread(new UtilityThread());
