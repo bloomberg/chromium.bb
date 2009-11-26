@@ -849,8 +849,6 @@ BUG24206 LINUX MAC : LayoutTests/http/tests/navigation/changing-frame-hierarchy-
 
 BUG20507 : LayoutTests/http/tests/uri/resolve-encoding-relative.html = FAIL
 
-BUG10432 WIN LINUX : LayoutTests/fast/overflow/004.html = FAIL
-
 //also BUG24863
 BUG9071 WIN : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
 BUG9071 LINUX : LayoutTests/editing/selection/drag-to-contenteditable-iframe.html = FAIL
