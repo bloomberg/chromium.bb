@@ -2343,9 +2343,6 @@ SKIP BUG9613 : LayoutTests/fast/dom/clientWidthAfterDocumentIsRemoved.html = PAS
 // Merge WebKit 42133:42199 regressions
 BUG20570 LINUX : LayoutTests/fast/events/context-no-deselect.html = FAIL
 // All platforms fail because Chrome allows XHR to local directories and Safari doesn't.
-// Mac also has unimplemented test shell features.
-BUG20450 LINUX WIN : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
-BUG20458 MAC : LayoutTests/fast/xmlhttprequest/xmlhttprequest-nonexistent-file.html = FAIL
 // Flaky since rev 13111.
 BUG10478 MAC : LayoutTests/fast/events/standalone-image-drag-to-editable.html = FAIL
 
