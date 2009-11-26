@@ -215,19 +215,31 @@ class PageHeap {
   // span of exactly the specified length.  Else, returns NULL.
   Span* AllocLarge(Length n);
 
+#if defined(OS_LINUX)
+  // Coalesce span with neighboring spans if possible.  Add the
+  // resulting span to the appropriate free list.
+  void AddToFreeList(Span* span);
+#else   // ! defined(OS_LINUX)
   // Commit the span.
   void CommitSpan(Span* span);
 
   // Decommit the span.
   void DecommitSpan(Span* span);
+#endif  // ! defined(OS_LINUX)
 
   // Incrementally release some memory to the system.
   // IncrementalScavenge(n) is called whenever n pages are freed.
   void IncrementalScavenge(Length n);
 
+#if defined(OS_LINUX)
+  // Release all pages in the specified free list for reuse by the OS
+  // REQURES: list must be a "normal" list (i.e., not "returned")
+  void ReleaseFreeList(Span* list);
+#else   // ! defined(OS_LINUX)
   // Releases all memory held in the given list's 'normal' freelist and adds
   // it to the 'released' freelist.
   void ReleaseFreeList(Span* list, Span* returned);
+#endif  // ! defined(OS_LINUX)
 
   // Number of pages to deallocate before doing more scavenging
   int64_t scavenge_counter_;
