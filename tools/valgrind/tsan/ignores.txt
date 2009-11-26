@@ -1,5 +1,6 @@
 # This file lists the functions, object files and source files
 # which should be ignored (i.e. not instrumented) by ThreadSanitizer.
+# See http://code.google.com/p/data-race-test/wiki/ThreadSanitizerIgnores.
 
 # ignore these libraries
 obj:*/ld-2*
@@ -16,9 +17,9 @@ obj:*/nss/*
 fun:clone
 fun:fork
 fun:pthread_*
-fun:random_r
-fun:random
-fun:rand
+fun_r:random_r
+fun_r:random
+fun_r:rand
 fun:__lll_mutex_unlock_wake
 fun:__cxa_atexit
 fun:__new_exitfn
@@ -50,7 +51,7 @@ fun:*_M_set_sharable*
 src:*ts_valgrind_intercepts.c
 
 ##################################################################
-# Don't instrument syncronization code
+# Don't instrument synchronization code
 src:*base/waitable_event*
 src:*base/atomic*
 src:*base/condition_variable*
@@ -59,14 +60,16 @@ src:*base/stats_counters*
 src:*base/thread_local_storage_posix*
 
 # This function is heavy in net_unittests
-fun:*disk_cache*BackendImpl*CheckAllEntries*
+fun_r:*disk_cache*BackendImpl*CheckAllEntries*
 
 # V8 is a hot-spot under ThreadSanitizer.
 # Lots of tiny functions there...
-# TODO(timurrrr): Should we use coarser segment granularity for this file?
+# TODO(timurrrr):
 # Can we miss data races on V8 objects due to non thread-safe API calls
 # if we don't instrument v8::internals?
-fun:*v8*internal*
+fun_r:*v8*internal*
+# unibrow namespace contains lots of tiny unicode conversion functions.
+fun_hist:*unibrow*
 
 # TODO(timurrrr): SKIA - needs separate testing?
 # SKIA unittest is single-threaded...
