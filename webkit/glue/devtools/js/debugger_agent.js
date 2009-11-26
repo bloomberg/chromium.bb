@@ -983,7 +983,18 @@ devtools.DebuggerAgent.prototype.isScriptFromInspectedContext_ = function(
   if (this.contextId_ === null) {
     return true;
   }
-  return (scriptContextId.value == this.contextId_);
+  if (goog.isString(context.data)) {
+    // Find the id from context data. The context data has the format "type,id".
+    var comma = context.data.indexOf(',');
+    if (comma < 0) {
+      return false;
+    }
+    return (parseInt(context.data.substring(comma + 1)) == this.contextId_);
+  } else {
+    // TODO(sgjesse) remove this when patch for
+    // https://bugs.webkit.org/show_bug.cgi?id=31873 has landed in Chromium.
+    return (scriptContextId.value == this.contextId_);
+  }
 };
 
 
@@ -1075,7 +1086,20 @@ devtools.DebuggerAgent.prototype.didGetNextLogLines_ = function(log) {
  */
 devtools.DebuggerAgent.prototype.addScriptInfo_ = function(script, msg) {
   var context = msg.lookup(script.context.ref);
-  var contextType = context.data.type;
+  var contextType;
+  if (goog.isString(context.data)) {
+    // Find the type from context data. The context data has the format
+    // "type,id".
+    var comma = context.data.indexOf(',');
+    if (comma < 0) {
+      return
+    }
+    contextType = context.data.substring(0, comma);
+  } else {
+    // TODO(sgjesse) remove this when patch for
+    // https://bugs.webkit.org/show_bug.cgi?id=31873 has landed in Chromium.
+    contextType = context.data.type;
+  }
   this.parsedScripts_[script.id] = new devtools.ScriptInfo(
       script.id, script.name, script.lineOffset, contextType);
   if (this.scriptsPanelInitialized_) {

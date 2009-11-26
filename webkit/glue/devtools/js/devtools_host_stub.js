@@ -181,8 +181,7 @@ RemoteDebuggerCommandExecutorStub.prototype.DebuggerCommand = function(cmd) {
         'http://www/~test/t.js","id":59,"lineOffset":0,"columnOffset":0,' +
         '"lineCount":1,"sourceStart":"function fib(n) {","sourceLength":300,' +
         '"scriptType":2,"compilationType":0,"context":{"ref":60}}],"refs":[{' +
-        '"handle":60,"type":"context","data":{"type":"page","value":3}}],' +
-        '"running":false}';
+        '"handle":60,"type":"context","data":"page,3"}],"running":false}';
     this.sendResponse_(response1);
   } else if ('{"seq":3,"type":"request","command":"scripts","arguments":{' +
              '"ids":[59],"includeSource":true}}' == cmd) {
@@ -192,8 +191,8 @@ RemoteDebuggerCommandExecutorStub.prototype.DebuggerCommand = function(cmd) {
         '"http://www/~test/t.js","id":59,"lineOffset":0,"columnOffset":0,' +
         '"lineCount":1,"source":"function fib(n) {return n+1;}",' +
         '"sourceLength":244,"scriptType":2,"compilationType":0,"context":{' +
-        '"ref":0}}],"refs":[{"handle":0,"type":"context","data":{"type":' +
-        '"page","value":3}}],"running":false}');
+        '"ref":0}}],"refs":[{"handle":0,"type":"context","data":"page,3}],"' +
+        '"running":false}');
   } else {
     debugPrint('Unexpected command: ' + cmd);
   }
