@@ -134,3 +134,7 @@ REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 # 27190
 PREFIX : webcore::rendertextcontrol::calcheight___webcore::rendertextcontrolsingleline::layout
 
+# 28850
+SUBSTRING : silentruntimeasserthandler___logging::logmessage::~logmessage___net::httpnetworktransaction::getresponseheaders
+SUBSTRING : silentruntimeasserthandler___logging::logmessage::~logmessage___net::tcpclientsocketwin::read
+
