@@ -7,14 +7,14 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/toolbar_importer.h"
 #include "chrome/common/libxml_utils.h"
 #include "googleurl/src/gurl.h"
 
 // See http://crbug.com/11838
-TEST(Toolbar5ImporterTest, DISABLED_BookmarkParse) {
-#if 0  // Compile breaks if you remove this and leave the test disabled
+TEST(Toolbar5ImporterTest, BookmarkParse) {
 static const wchar_t* kTitle = L"MyTitle";
 static const char* kUrl = "http://www.google.com/";
 static const wchar_t* kFolder = L"Google";
@@ -310,11 +310,15 @@ static const char* kBadBookmarkNoLabels =
   std::string bookmark_xml;
   std::vector<ProfileWriter::BookmarkEntry> bookmarks;
 
-  const GURL url(toolbar_importer_unittest::kUrl);
-  const GURL other_url(toolbar_importer_unittest::kOtherUrl);
+  const GURL url(kUrl);
+  const GURL other_url(kOtherUrl);
+
+  // Test doesn't work if the importer thinks this is the first run of Chromium.
+  // Mark this as a subsequent run of the browser.
+  FirstRun::CreateSentinel();
 
   // Test case 1 is parsing a basic bookmark with a single label.
-  bookmark_xml = toolbar_importer_unittest::kGoodBookmark;
+  bookmark_xml = kGoodBookmark;
   bookmarks.clear();
   XmlReader reader1;
   EXPECT_TRUE(reader1.Load(bookmark_xml));
@@ -322,13 +326,13 @@ static const char* kBadBookmarkNoLabels =
 
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
-  EXPECT_EQ(toolbar_importer_unittest::kTitle, bookmarks[0].title);
+  EXPECT_EQ(kTitle, bookmarks[0].title);
   EXPECT_EQ(url, bookmarks[0].url);
   ASSERT_EQ(2U, bookmarks[0].path.size());
-  EXPECT_EQ(toolbar_importer_unittest::kFolder, bookmarks[0].path[1]);
+  EXPECT_EQ(kFolder, bookmarks[0].path[1]);
 
   // Test case 2 is parsing a single bookmark with no label.
-  bookmark_xml = toolbar_importer_unittest::kGoodBookmarkNoLabel;
+  bookmark_xml = kGoodBookmarkNoLabel;
   bookmarks.clear();
   XmlReader reader2;
   EXPECT_TRUE(reader2.Load(bookmark_xml));
@@ -336,12 +340,12 @@ static const char* kBadBookmarkNoLabels =
 
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
-  EXPECT_EQ(toolbar_importer_unittest::kTitle, bookmarks[0].title);
+  EXPECT_EQ(kTitle, bookmarks[0].title);
   EXPECT_EQ(url, bookmarks[0].url);
   EXPECT_EQ(1U, bookmarks[0].path.size());
 
   // Test case 3 is parsing a single bookmark with two labels.
-  bookmark_xml = toolbar_importer_unittest::kGoodBookmarkTwoLabels;
+  bookmark_xml = kGoodBookmarkTwoLabels;
   bookmarks.clear();
   XmlReader reader3;
   EXPECT_TRUE(reader3.Load(bookmark_xml));
@@ -350,18 +354,18 @@ static const char* kBadBookmarkNoLabels =
   ASSERT_EQ(2U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
   EXPECT_FALSE(bookmarks[1].in_toolbar);
-  EXPECT_EQ(toolbar_importer_unittest::kTitle, bookmarks[0].title);
-  EXPECT_EQ(toolbar_importer_unittest::kTitle, bookmarks[1].title);
+  EXPECT_EQ(kTitle, bookmarks[0].title);
+  EXPECT_EQ(kTitle, bookmarks[1].title);
   EXPECT_EQ(url, bookmarks[0].url);
   EXPECT_EQ(url, bookmarks[1].url);
   ASSERT_EQ(2U, bookmarks[0].path.size());
-  EXPECT_EQ(toolbar_importer_unittest::kFolder, bookmarks[0].path[1]);
+  EXPECT_EQ(kFolder, bookmarks[0].path[1]);
   ASSERT_EQ(2U, bookmarks[1].path.size());
-  EXPECT_EQ(toolbar_importer_unittest::kFolder2, bookmarks[1].path[1]);
+  EXPECT_EQ(kFolder2, bookmarks[1].path[1]);
 
   // Test case 4 is parsing a single bookmark which has a label with a colon,
   // this test file name translation between Toolbar and Chrome.
-  bookmark_xml = toolbar_importer_unittest::kGoodBookmarkFolderLabel;
+  bookmark_xml = kGoodBookmarkFolderLabel;
   bookmarks.clear();
   XmlReader reader4;
   EXPECT_TRUE(reader4.Load(bookmark_xml));
@@ -369,18 +373,18 @@ static const char* kBadBookmarkNoLabels =
 
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
-  EXPECT_EQ(toolbar_importer_unittest::kTitle, bookmarks[0].title);
+  EXPECT_EQ(kTitle, bookmarks[0].title);
   EXPECT_EQ(url, bookmarks[0].url);
   ASSERT_EQ(4U, bookmarks[0].path.size());
-  EXPECT_EQ(std::wstring(toolbar_importer_unittest::kFolderArray[0]),
+  EXPECT_EQ(std::wstring(kFolderArray[0]),
             bookmarks[0].path[1]);
-  EXPECT_EQ(std::wstring(toolbar_importer_unittest::kFolderArray[1]),
+  EXPECT_EQ(std::wstring(kFolderArray[1]),
             bookmarks[0].path[2]);
-  EXPECT_EQ(std::wstring(toolbar_importer_unittest::kFolderArray[2]),
+  EXPECT_EQ(std::wstring(kFolderArray[2]),
             bookmarks[0].path[3]);
 
   // Test case 5 is parsing a single bookmark without a favicon URL.
-  bookmark_xml = toolbar_importer_unittest::kGoodBookmarkNoFavicon;
+  bookmark_xml = kGoodBookmarkNoFavicon;
   bookmarks.clear();
   XmlReader reader5;
   EXPECT_TRUE(reader5.Load(bookmark_xml));
@@ -388,13 +392,13 @@ static const char* kBadBookmarkNoLabels =
 
   ASSERT_EQ(1U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
-  EXPECT_EQ(toolbar_importer_unittest::kTitle, bookmarks[0].title);
+  EXPECT_EQ(kTitle, bookmarks[0].title);
   EXPECT_EQ(url, bookmarks[0].url);
   ASSERT_EQ(2U, bookmarks[0].path.size());
-  EXPECT_EQ(toolbar_importer_unittest::kFolder, bookmarks[0].path[1]);
+  EXPECT_EQ(kFolder, bookmarks[0].path[1]);
 
   // Test case 6 is parsing two bookmarks.
-  bookmark_xml = toolbar_importer_unittest::kGoodBookmark2Items;
+  bookmark_xml = kGoodBookmark2Items;
   bookmarks.clear();
   XmlReader reader6;
   EXPECT_TRUE(reader6.Load(bookmark_xml));
@@ -403,23 +407,23 @@ static const char* kBadBookmarkNoLabels =
   ASSERT_EQ(2U, bookmarks.size());
   EXPECT_FALSE(bookmarks[0].in_toolbar);
   EXPECT_FALSE(bookmarks[1].in_toolbar);
-  EXPECT_EQ(toolbar_importer_unittest::kTitle, bookmarks[0].title);
-  EXPECT_EQ(toolbar_importer_unittest::kOtherTitle, bookmarks[1].title);
+  EXPECT_EQ(kTitle, bookmarks[0].title);
+  EXPECT_EQ(kOtherTitle, bookmarks[1].title);
   EXPECT_EQ(url, bookmarks[0].url);
   EXPECT_EQ(other_url, bookmarks[1].url);
   ASSERT_EQ(2U, bookmarks[0].path.size());
-  EXPECT_EQ(toolbar_importer_unittest::kFolder, bookmarks[0].path[1]);
+  EXPECT_EQ(kFolder, bookmarks[0].path[1]);
   ASSERT_EQ(2U, bookmarks[1].path.size());
-  EXPECT_EQ(toolbar_importer_unittest::kOtherFolder, bookmarks[1].path[1]);
+  EXPECT_EQ(kOtherFolder, bookmarks[1].path[1]);
 
   // Test case 7 is parsing an empty string for bookmarks.
-  bookmark_xml = toolbar_importer_unittest::kEmptyString;
+  bookmark_xml = kEmptyString;
   bookmarks.clear();
   XmlReader reader7;
   EXPECT_FALSE(reader7.Load(bookmark_xml));
 
   // Test case 8 is testing the error when no <bookmarks> section is present.
-  bookmark_xml = toolbar_importer_unittest::kBadBookmarkNoBookmarks;
+  bookmark_xml = kBadBookmarkNoBookmarks;
   bookmarks.clear();
   XmlReader reader8;
   EXPECT_TRUE(reader8.Load(bookmark_xml));
@@ -427,7 +431,7 @@ static const char* kBadBookmarkNoLabels =
                                                           &bookmarks));
 
   // Test case 9 tests when no <bookmark> section is present.
-  bookmark_xml = toolbar_importer_unittest::kBadBookmarkNoBookmark;
+  bookmark_xml = kBadBookmarkNoBookmark;
   bookmarks.clear();
   XmlReader reader9;
   EXPECT_TRUE(reader9.Load(bookmark_xml));
@@ -436,7 +440,7 @@ static const char* kBadBookmarkNoLabels =
 
 
   // Test case 10 tests when a bookmark has no <title> section.
-  bookmark_xml = toolbar_importer_unittest::kBadBookmarkNoTitle;
+  bookmark_xml = kBadBookmarkNoTitle;
   bookmarks.clear();
   XmlReader reader10;
   EXPECT_TRUE(reader10.Load(bookmark_xml));
@@ -444,7 +448,7 @@ static const char* kBadBookmarkNoLabels =
                                                           &bookmarks));
 
   // Test case 11 tests when a bookmark has no <url> section.
-  bookmark_xml = toolbar_importer_unittest::kBadBookmarkNoUrl;
+  bookmark_xml = kBadBookmarkNoUrl;
   bookmarks.clear();
   XmlReader reader11;
   EXPECT_TRUE(reader11.Load(bookmark_xml));
@@ -452,7 +456,7 @@ static const char* kBadBookmarkNoLabels =
                                                           &bookmarks));
 
   // Test case 12 tests when a bookmark has no <timestamp> section.
-  bookmark_xml = toolbar_importer_unittest::kBadBookmarkNoTimestamp;
+  bookmark_xml = kBadBookmarkNoTimestamp;
   bookmarks.clear();
   XmlReader reader12;
   EXPECT_TRUE(reader12.Load(bookmark_xml));
@@ -460,11 +464,10 @@ static const char* kBadBookmarkNoLabels =
                                                           &bookmarks));
 
   // Test case 13 tests when a bookmark has no <labels> section.
-  bookmark_xml = toolbar_importer_unittest::kBadBookmarkNoLabels;
+  bookmark_xml = kBadBookmarkNoLabels;
   bookmarks.clear();
   XmlReader reader13;
   EXPECT_TRUE(reader13.Load(bookmark_xml));
   EXPECT_FALSE(Toolbar5Importer::ParseBookmarksFromReader(&reader13,
                                                           &bookmarks));
-#endif
 }
