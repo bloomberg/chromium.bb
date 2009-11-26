@@ -1824,3 +1824,11 @@
    fun:_ZN14ProfileManager13CreateProfileERK8FilePathRKSbIwSt11char_traitsIwESaIwEES8_S8_
    fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
 }
+{
+   bug_28847c
+   Memcheck:Leak
+   ...
+   fun:_ZN16ChildProcessHost13CreateChannelEv
+   fun:_ZN17WorkerProcessHost4InitEv
+   fun:_ZN13WorkerService12CreateWorkerERK4GURLbbRKSbItN4base20string16_char_traitsESaItEEiiPN3IPC7Message6SenderEi
+}
