@@ -263,8 +263,8 @@ if '__main__' == __name__:
   options, args = option_parser.parse_args()
 
   if not options.server:
-    print 'Usage: %s --server {start|stop} [--root=root_dir]'
-    print ' [--port=port_number]' % sys.argv[0]
+    print ('Usage: %s --server {start|stop} [--root=root_dir]'
+           ' [--port=port_number]' % sys.argv[0])
   else:
     if (options.root is None) and (options.port is not None):
       # specifying root but not port means we want httpd on default set of
