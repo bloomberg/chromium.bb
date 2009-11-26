@@ -363,6 +363,44 @@ TestSuite.prototype.testResourceHeaders = function() {
 
 
 /**
+ * Tests the mime type of a cached (HTTP 304) resource.
+ */
+TestSuite.prototype.testCachedResourceMimeType = function() {
+  this.showPanel('resources');
+
+  var test = this;
+  var hasReloaded = false;
+
+  this.addSniffer(WebInspector, 'updateResource',
+      function(identifier, payload) {
+        var resource = this.resources[identifier];
+        if (resource.mainResource) {
+          // We are only interested in secondary resources in this test.
+          return;
+        }
+
+        if (payload.didResponseChange) {
+          // Test server uses a default mime type for JavaScript files.
+          test.assertEquals('text/html', payload.mimeType);
+          if (!hasReloaded) {
+            hasReloaded = true;
+            // Reload inspected page to update all resources.
+            test.evaluateInConsole_(
+                'window.location.reload(true);',
+                 function() {});
+          } else {
+            test.releaseControl();
+          }
+        }
+
+      }, true);
+
+  WebInspector.panels.resources._enableResourceTracking();
+  this.takeControl();
+};
+
+
+/**
  * Tests that profiler works.
  */
 TestSuite.prototype.testProfilerTab = function() {

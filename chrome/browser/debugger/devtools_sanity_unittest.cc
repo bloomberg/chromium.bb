@@ -284,6 +284,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestResourceHeaders) {
   RunTest("testResourceHeaders", kResourceTestPage);
 }
 
+// Tests cached resource mime type.
+// @see http://crbug.com/27364
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestCachedResourceMimeType) {
+  RunTest("testCachedResourceMimeType", kResourceTestPage);
+}
+
 // Tests profiler panel.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestProfilerTab) {
   RunTest("testProfilerTab", kJsPage);
