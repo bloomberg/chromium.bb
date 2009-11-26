@@ -1797,18 +1797,18 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-  bug_28633
-  Memcheck:Leak
-  fun:calloc
-  fun:__new_exitfn
-  fun:__cxa_atexit
+   bug_28633
+   Memcheck:Leak
+   fun:calloc
+   fun:__new_exitfn
+   fun:__cxa_atexit
 }
 {
-  bug_28824
-  Memcheck:Leak
-  fun:_Znw*
-  fun:_ZN11ProfileImplC1ERK8FilePath
-  fun:_ZN7Profile13CreateProfileERK8FilePath
-  fun:_ZN14ProfileManager13CreateProfileERK8FilePathRKSbIwSt11char_traitsIwESaIwEES8_S8_
-  fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
+   bug_28824
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7Profile13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager13CreateProfileERK8FilePathRKSbIwSt11char_traitsIwESaIwEES8_S8_
+   fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
 }
