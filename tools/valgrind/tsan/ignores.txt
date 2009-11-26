@@ -79,3 +79,6 @@ src:*third_party/skia*
 
 # WebKit hotspot
 fun:*png_write*
+
+# This function generates 25% of memory accesses in net_unittests
+fun:*icu_4_2*UnicodeSet*add*
