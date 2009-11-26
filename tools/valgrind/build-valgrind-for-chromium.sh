@@ -16,7 +16,7 @@ VALGRIND_SVN_REV=10880
 # And svn isn't smart enough to figure out what rev of the linked tree to get
 VEX_SVN_REV=1914
 # and TSAN may be out of sync, so you have to check that out by rev anyway
-TSAN_SVN_REV=1129
+TSAN_SVN_REV=1274
 
 # suffix for build and install dir to denote our set of patches (may be empty)
 PATCHLEVEL=-redzone
