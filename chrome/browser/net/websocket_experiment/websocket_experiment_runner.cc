@@ -5,6 +5,7 @@
 #include "chrome/browser/net/websocket_experiment/websocket_experiment_runner.h"
 
 #include "base/compiler_specific.h"
+#include "base/field_trial.h"
 #include "base/histogram.h"
 #include "base/message_loop.h"
 #include "base/task.h"
@@ -99,6 +100,13 @@ static scoped_refptr<WebSocketExperimentRunner> runner;
 /* static */
 void WebSocketExperimentRunner::Start() {
   DCHECK(!runner.get());
+
+  scoped_refptr<FieldTrial> trial = new FieldTrial("WebSocketExperiment", 1000);
+  trial->AppendGroup("_active", 5);  // 0.5% in _active group.
+
+  if (trial->group() == FieldTrial::kNotParticipating)
+    return;
+
   runner = new WebSocketExperimentRunner;
   runner->Run();
 }
