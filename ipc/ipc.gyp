@@ -89,6 +89,7 @@
         'ipc_sync_message_unittest.h',
         'ipc_tests.cc',
         'ipc_tests.h',
+        'sync_socket_unittest.cc',
       ],
       'conditions': [
         ['OS=="linux"', {
@@ -99,11 +100,6 @@
         ['OS=="linux" and toolkit_views==1', {
           'dependencies': [
             '../views/views.gyp:views',
-          ],
-        }],
-        ['OS=="win"', {
-          'sources': [
-            'sync_socket_unittest.cc',
           ],
         }],
       ],

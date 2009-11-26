@@ -8,6 +8,9 @@
 #include <sstream>
 
 #include "base/message_loop.h"
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#include "base/file_descriptor_posix.h"
+#endif  // defined(OS_LINUX) || defined(OS_MACOSX)
 #include "base/platform_thread.h"
 #include "base/process_util.h"
 #include "base/sync_socket.h"
@@ -36,7 +39,10 @@ const char kHelloString[] = "Hello, SyncSocket Client";
 const size_t kHelloStringLength = arraysize(kHelloString);
 }  // namespace
 
-// Message class to pass a HANDLE to another process.
+// Message class to pass a base::SyncSocket::Handle to another process.
+// This is not as easy as it sounds, because of the differences in transferring
+// Windows HANDLEs versus posix file descriptors.
+#if defined(OS_WIN)
 class MsgClassSetHandle
     : public IPC::MessageWithTuple< Tuple1<base::SyncSocket::Handle> > {
  public:
@@ -48,6 +54,21 @@ class MsgClassSetHandle
  private:
   DISALLOW_COPY_AND_ASSIGN(MsgClassSetHandle);
 };
+#elif defined(OS_POSIX)
+class MsgClassSetHandle
+    : public IPC::MessageWithTuple< Tuple1<base::FileDescriptor> > {
+ public:
+  enum { ID = SERVER_FIRST_IPC_TYPE };
+  explicit MsgClassSetHandle(const base::FileDescriptor& arg1)
+      : IPC::MessageWithTuple< Tuple1<base::FileDescriptor> >(
+            MSG_ROUTING_CONTROL, ID, MakeRefTuple(arg1)) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MsgClassSetHandle);
+};
+#else
+# error "What platform?"
+#endif  // defined(OS_WIN)
 
 // Message class to pass a response to the server.
 class MsgClassResponse
@@ -99,7 +120,19 @@ class SyncSocketServerListener : public IPC::Channel::Listener {
   // This sort of message is sent first, causing the transfer of
   // the handle for the SyncSocket.  This message sends a buffer
   // on the SyncSocket and then sends a response to the client.
+#if defined(OS_WIN)
   void OnMsgClassSetHandle(const base::SyncSocket::Handle handle) {
+    SetHandle(handle);
+  }
+#elif defined(OS_POSIX)
+  void OnMsgClassSetHandle(const base::FileDescriptor& fd_struct) {
+    SetHandle(fd_struct.fd);
+  }
+#else
+# error "What platform?"
+#endif  // defined(OS_WIN)
+
+  void SetHandle(base::SyncSocket::Handle handle) {
     base::SyncSocket sync_socket(handle);
     EXPECT_EQ(sync_socket.Send(static_cast<const void*>(kHelloString),
                                kHelloStringLength), kHelloStringLength);
@@ -184,20 +217,23 @@ TEST_F(SyncSocketTest, SanityTest) {
   base::SyncSocket* pair[2];
   base::SyncSocket::CreatePair(pair);
   base::SyncSocket::Handle target_handle;
+  // Connect the channel and listener.
+  ASSERT_TRUE(chan.Connect());
+  listener.Init(pair[0], &chan);
 #if defined(OS_WIN)
   // On windows we need to duplicate the handle into the server process.
   BOOL retval = DuplicateHandle(GetCurrentProcess(), pair[1]->handle(),
                                 server_process, &target_handle,
                                 0, FALSE, DUPLICATE_SAME_ACCESS);
   EXPECT_TRUE(retval);
-#else
-  target_handle = pair[1]->handle();
-#endif  // defined(OS_WIN)
-  // Connect the channel and listener.
-  ASSERT_TRUE(chan.Connect());
-  listener.Init(pair[0], &chan);
   // Set up a message to pass the handle to the server.
   IPC::Message* msg = new MsgClassSetHandle(target_handle);
+#else
+  target_handle = pair[1]->handle();
+  // Set up a message to pass the handle to the server.
+  base::FileDescriptor filedesc(target_handle, false);
+  IPC::Message* msg = new MsgClassSetHandle(filedesc);
+#endif  // defined(OS_WIN)
   EXPECT_NE(msg, reinterpret_cast<IPC::Message*>(NULL));
   EXPECT_TRUE(chan.Send(msg));
   // Use the current thread as the I/O thread.
@@ -208,4 +244,3 @@ TEST_F(SyncSocketTest, SanityTest) {
   EXPECT_TRUE(base::WaitForSingleProcess(server_process, 5000));
   base::CloseProcessHandle(server_process);
 }
-
