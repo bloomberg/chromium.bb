@@ -8,6 +8,7 @@
 #include "base/file_path.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 
 class WebKitThread;
@@ -37,6 +38,10 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
 
   // Tells the DOMStorageContext to purge any memory it does not need.
   void PurgeMemory();
+
+  // Tell all children (where applicable) to delete any objects that were
+  // last modified on or after the following time.
+  void DeleteDataModifiedSince(const base::Time& cutoff);
 
  private:
   friend class base::RefCountedThreadSafe<WebKitContext>;

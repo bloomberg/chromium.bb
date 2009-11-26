@@ -7,6 +7,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_request_context_getter.h"
@@ -111,6 +112,7 @@ void BrowsingDataRemover::Remove(int remove_mask) {
         profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
     if (cookie_monster)
       cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
+    profile_->GetWebKitContext()->DeleteDataModifiedSince(delete_begin_);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

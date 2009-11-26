@@ -145,3 +145,20 @@ void DOMStorageContext::PurgeMemory() {
   if (local_storage)
     local_storage->PurgeMemory();
 }
+
+void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
+  // Make sure that we don't delete a database that's currently being accessed
+  // by unloading all of the databases temporarily.
+  PurgeMemory();
+
+  file_util::FileEnumerator file_enumerator(
+      webkit_context_->data_path().AppendASCII(kLocalStorageDirectory), false,
+      file_util::FileEnumerator::FILES);
+  for (FilePath path = file_enumerator.Next(); !path.value().empty();
+       path = file_enumerator.Next()) {
+    file_util::FileEnumerator::FindInfo find_info;
+    file_enumerator.GetFindInfo(&find_info);
+    if (file_util::HasFileBeenModifiedSince(find_info, cutoff))
+      file_util::Delete(path, false);
+  }
+}

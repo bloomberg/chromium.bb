@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/file_path.h"
+#include "base/time.h"
 
 class DOMStorageDispatcherHost;
 class StorageArea;
@@ -59,6 +60,10 @@ class DOMStorageContext {
 
   // Tells storage namespaces to purge any memory they do not need.
   virtual void PurgeMemory();
+
+  // Delete any local storage files that have been touched since the cutoff
+  // date that's supplied.
+  void DeleteDataModifiedSince(const base::Time& cutoff);
 
   // The special ID used for local storage.
   static const int64 kLocalStorageNamespaceId = 0;

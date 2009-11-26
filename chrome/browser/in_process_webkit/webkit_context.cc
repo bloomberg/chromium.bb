@@ -42,3 +42,17 @@ void WebKitContext::PurgeMemory() {
         NewRunnableMethod(this, &WebKitContext::PurgeMemory));
   }
 }
+
+void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
+  // DOMStorageContext::DeleteDataModifiedSince() should only be called on the
+  // WebKit thread.
+  if (ChromeThread::CurrentlyOn(ChromeThread::WEBKIT)) {
+    dom_storage_context_->DeleteDataModifiedSince(cutoff);
+  } else {
+    bool result = ChromeThread::PostTask(
+        ChromeThread::WEBKIT, FROM_HERE,
+        NewRunnableMethod(this, &WebKitContext::DeleteDataModifiedSince,
+                          cutoff));
+    DCHECK(result);
+  }
+}
