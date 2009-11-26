@@ -630,7 +630,8 @@ void ResourceMessageFilter::OnCreateWorker(const GURL& url,
                                            int* route_id) {
   *route_id = render_widget_helper_->GetNextRoutingID();
   WorkerService::GetInstance()->CreateWorker(
-      url, is_shared, name, id(), render_view_route_id, this, *route_id);
+      url, is_shared, off_the_record(), name, id(), render_view_route_id, this,
+      *route_id);
 }
 
 void ResourceMessageFilter::OnLookupSharedWorker(const GURL& url,
@@ -640,7 +641,8 @@ void ResourceMessageFilter::OnLookupSharedWorker(const GURL& url,
                                                  bool* url_mismatch) {
   int new_route_id = render_widget_helper_->GetNextRoutingID();
   bool worker_found = WorkerService::GetInstance()->LookupSharedWorker(
-      url, name, document_id, this, new_route_id, url_mismatch);
+      url, name, off_the_record(), document_id, this, new_route_id,
+      url_mismatch);
   *route_id = worker_found ? new_route_id : MSG_ROUTING_NONE;
 }
 

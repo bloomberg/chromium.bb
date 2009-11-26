@@ -28,6 +28,7 @@ class WorkerService : public NotificationObserver {
   // Creates a dedicated worker.  Returns true on success.
   bool CreateWorker(const GURL &url,
                     bool is_shared,
+                    bool is_off_the_record,
                     const string16& name,
                     int renderer_pid,
                     int render_view_route_id,
@@ -40,6 +41,7 @@ class WorkerService : public NotificationObserver {
   // existing shared worker with the same name.
   bool LookupSharedWorker(const GURL &url,
                           const string16& name,
+                          bool off_the_record,
                           unsigned long long document_id,
                           IPC::Message::Sender* sender,
                           int sender_route_id,
@@ -67,7 +69,7 @@ class WorkerService : public NotificationObserver {
       int worker_process_id);
 
   WorkerProcessHost::WorkerInstance* FindSharedWorkerInstance(
-      const GURL& url, const string16& name);
+      const GURL& url, const string16& name, bool off_the_record);
 
   // Used when multiple workers can run in the same process.
   static const int kMaxWorkerProcessesWhenSharing;
@@ -112,10 +114,11 @@ class WorkerService : public NotificationObserver {
 
   // APIs for manipulating our set of pending shared worker instances.
   WorkerProcessHost::WorkerInstance* CreatePendingInstance(
-      const GURL& url, const string16& name);
+      const GURL& url, const string16& name, bool off_the_record);
   WorkerProcessHost::WorkerInstance* FindPendingInstance(
-      const GURL& url, const string16& name);
-  void RemovePendingInstance(const GURL& url, const string16& name);
+      const GURL& url, const string16& name, bool off_the_record);
+  void RemovePendingInstance(
+      const GURL& url, const string16& name, bool off_the_record);
 
   NotificationRegistrar registrar_;
   int next_worker_route_id_;

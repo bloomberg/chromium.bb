@@ -47,6 +47,7 @@ WorkerService::~WorkerService() {
 
 bool WorkerService::CreateWorker(const GURL &url,
                                  bool is_shared,
+                                 bool off_the_record,
                                  const string16& name,
                                  int renderer_id,
                                  int render_view_route_id,
@@ -58,6 +59,7 @@ bool WorkerService::CreateWorker(const GURL &url,
   // it to.
   WorkerProcessHost::WorkerInstance instance(url,
                                              is_shared,
+                                             off_the_record,
                                              name,
                                              renderer_id,
                                              render_view_route_id,
@@ -83,7 +85,7 @@ bool WorkerService::CreateWorker(const GURL &url,
   if (is_shared) {
     // See if a worker with this name already exists.
     WorkerProcessHost::WorkerInstance* existing_instance =
-        FindSharedWorkerInstance(url, name);
+        FindSharedWorkerInstance(url, name, off_the_record);
     // If this worker is already running, no need to create a new copy. Just
     // inform the caller that the worker has been created.
     if (existing_instance) {
@@ -93,7 +95,8 @@ bool WorkerService::CreateWorker(const GURL &url,
     }
 
     // Look to see if there's a pending instance.
-    WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(url, name);
+    WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(
+        url, name, off_the_record);
     // If there's no instance *and* no pending instance, then it means the
     // worker started up and exited already. Log a warning because this should
     // be a very rare occurrence and is probably a bug, but it *can* happen so
@@ -107,7 +110,7 @@ bool WorkerService::CreateWorker(const GURL &url,
     // worker to the new instance.
     DCHECK(!pending->IsDocumentSetEmpty());
     instance.CopyDocumentSet(*pending);
-    RemovePendingInstance(url, name);
+    RemovePendingInstance(url, name, off_the_record);
   }
 
   if (!worker) {
@@ -124,13 +127,14 @@ bool WorkerService::CreateWorker(const GURL &url,
 
 bool WorkerService::LookupSharedWorker(const GURL &url,
                                        const string16& name,
+                                       bool off_the_record,
                                        unsigned long long document_id,
                                        IPC::Message::Sender* sender,
                                        int sender_route_id,
                                        bool* url_mismatch) {
   bool found_instance = true;
   WorkerProcessHost::WorkerInstance* instance =
-      FindSharedWorkerInstance(url, name);
+      FindSharedWorkerInstance(url, name, off_the_record);
 
   if (!instance) {
     // If no worker instance currently exists, we need to create a pending
@@ -138,7 +142,7 @@ bool WorkerService::LookupSharedWorker(const GURL &url,
     // mismatched URL get the appropriate url_mismatch error at lookup time.
     // Having named shared workers was a Really Bad Idea due to details like
     // this.
-    instance = CreatePendingInstance(url, name);
+    instance = CreatePendingInstance(url, name, off_the_record);
     found_instance = false;
   }
 
@@ -171,7 +175,7 @@ void WorkerService::DocumentDetached(IPC::Message::Sender* sender,
   // Remove any queued shared workers for this document.
   for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
        iter != queued_workers_.end();) {
-    if (iter->is_shared()) {
+    if (iter->shared()) {
       iter->RemoveFromDocumentSet(sender, document_id);
       if (iter->IsDocumentSetEmpty()) {
         iter = queued_workers_.erase(iter);
@@ -200,7 +204,7 @@ void WorkerService::CancelCreateDedicatedWorker(IPC::Message::Sender* sender,
   for (WorkerProcessHost::Instances::iterator i = queued_workers_.begin();
        i != queued_workers_.end(); ++i) {
     if (i->HasSender(sender, sender_route_id)) {
-      DCHECK(!i->is_shared());
+      DCHECK(!i->shared());
       queued_workers_.erase(i);
       return;
     }
@@ -398,7 +402,8 @@ const WorkerProcessHost::WorkerInstance* WorkerService::FindWorkerInstance(
 }
 
 WorkerProcessHost::WorkerInstance*
-WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name) {
+WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name,
+                                        bool off_the_record) {
   for (ChildProcessHost::Iterator iter(ChildProcessInfo::WORKER_PROCESS);
        !iter.Done(); ++iter) {
     WorkerProcessHost* worker = static_cast<WorkerProcessHost*>(*iter);
@@ -406,7 +411,7 @@ WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name) {
              worker->mutable_instances().begin();
          instance_iter != worker->mutable_instances().end();
          ++instance_iter) {
-      if (instance_iter->Matches(url, name))
+      if (instance_iter->Matches(url, name, off_the_record))
         return &(*instance_iter);
     }
   }
@@ -414,13 +419,14 @@ WorkerService::FindSharedWorkerInstance(const GURL& url, const string16& name) {
 }
 
 WorkerProcessHost::WorkerInstance*
-WorkerService::FindPendingInstance(const GURL& url, const string16& name) {
+WorkerService::FindPendingInstance(const GURL& url, const string16& name,
+                                   bool off_the_record) {
   // Walk the pending instances looking for a matching pending worker.
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
        iter != pending_shared_workers_.end();
        ++iter) {
-    if (iter->Matches(url, name)) {
+    if (iter->Matches(url, name, off_the_record)) {
       return &(*iter);
     }
   }
@@ -429,13 +435,14 @@ WorkerService::FindPendingInstance(const GURL& url, const string16& name) {
 
 
 void WorkerService::RemovePendingInstance(const GURL& url,
-                                          const string16& name) {
+                                          const string16& name,
+                                          bool off_the_record) {
   // Walk the pending instances looking for a matching pending worker.
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
        iter != pending_shared_workers_.end();
        ++iter) {
-    if (iter->Matches(url, name)) {
+    if (iter->Matches(url, name, off_the_record)) {
       pending_shared_workers_.erase(iter);
       break;
     }
@@ -444,16 +451,17 @@ void WorkerService::RemovePendingInstance(const GURL& url,
 
 WorkerProcessHost::WorkerInstance*
 WorkerService::CreatePendingInstance(const GURL& url,
-                                     const string16& name) {
+                                     const string16& name,
+                                     bool off_the_record) {
   // Look for an existing pending worker.
   WorkerProcessHost::WorkerInstance* instance =
-      FindPendingInstance(url, name);
+      FindPendingInstance(url, name, off_the_record);
   if (instance)
     return instance;
 
   // No existing pending worker - create a new one.
   WorkerProcessHost::WorkerInstance pending(
-      url, true, name, 0, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
+      url, true, off_the_record, name, 0, MSG_ROUTING_NONE, MSG_ROUTING_NONE);
   pending_shared_workers_.push_back(pending);
   return &pending_shared_workers_.back();
 }

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/string_util.h"
+#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/automation/browser_proxy.h"
@@ -25,6 +26,30 @@ class WorkerTest : public UILayoutTest {
 
     std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
         kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+    ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
+  }
+
+  void RunIncognitoTest(const std::wstring& test_case) {
+    scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+    // Open an Incognito window.
+    int window_count;
+    ASSERT_TRUE(browser->RunCommand(IDC_NEW_INCOGNITO_WINDOW));
+    scoped_refptr<BrowserProxy> incognito(automation()->GetBrowserWindow(1));
+    scoped_refptr<TabProxy> tab(incognito->GetTab(0));
+    ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+    ASSERT_EQ(2, window_count);
+
+    GURL url = GetTestUrl(L"workers", test_case);
+    ASSERT_TRUE(tab->NavigateToURL(url));
+
+    std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
+        kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+
+    // Close the incognito window
+    ASSERT_TRUE(incognito->RunCommand(IDC_CLOSE_WINDOW));
+    ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+    ASSERT_EQ(1, window_count);
+
     ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
   }
 
@@ -63,6 +88,14 @@ TEST_F(WorkerTest, SingleWorker) {
 
 TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
+}
+
+// Incognito windows should not share workers with non-incognito windows
+TEST_F(WorkerTest, IncognitoSharedWorkers) {
+  // Load a non-incognito tab and have it create a shared worker
+  RunTest(L"incognito_worker.html");
+  // Incognito worker should not share with non-incognito
+  RunIncognitoTest(L"incognito_worker.html");
 }
 
 #if defined(OS_LINUX) || defined (OS_MACOSX)
@@ -165,8 +198,14 @@ TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
   resource_dir = resource_dir.AppendASCII("resources");
   AddResourceForLayoutTest(js_dir, resource_dir);
 
-  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
+  for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i) {
     RunLayoutTest(kLayoutTestFiles[i], false);
+    // Shared workers will error out if we ever have more than one tab open.
+    int window_count = 0;
+    ASSERT_TRUE(automation()->GetBrowserWindowCount(&window_count));
+    ASSERT_EQ(1, window_count);
+    EXPECT_EQ(1, GetTabCount());
+  }
 }
 
 TEST_F(WorkerTest, WorkerHttpLayoutTests) {

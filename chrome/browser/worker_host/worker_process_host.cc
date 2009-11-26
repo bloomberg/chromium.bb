@@ -124,7 +124,7 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
 
   instances_.push_back(instance);
   Send(new WorkerProcessMsg_CreateWorker(instance.url(),
-                                         instance.is_shared(),
+                                         instance.shared(),
                                          instance.name(),
                                          instance.worker_route_id()));
 
@@ -136,7 +136,7 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
 bool WorkerProcessHost::FilterMessage(const IPC::Message& message,
                                       IPC::Message::Sender* sender) {
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
-    if (!i->is_closed() && i->HasSender(sender, message.routing_id())) {
+    if (!i->closed() && i->HasSender(sender, message.routing_id())) {
       RelayMessage(
           message, this, i->worker_route_id(), next_route_id_callback_.get());
       return true;
@@ -196,7 +196,7 @@ void WorkerProcessHost::OnMessageReceived(const IPC::Message& message) {
 
   for (Instances::iterator i = instances_.begin(); i != instances_.end(); ++i) {
     if (i->worker_route_id() == message.routing_id()) {
-      if (!i->is_shared()) {
+      if (!i->shared()) {
         // Don't relay messages from shared workers (all communication is via
         // the message port).
         WorkerInstance::SenderInfo info = i->GetSender();
@@ -295,7 +295,7 @@ void WorkerProcessHost::SenderShutdown(IPC::Message::Sender* sender) {
   for (Instances::iterator i = instances_.begin(); i != instances_.end();) {
     bool shutdown = false;
     i->RemoveSenders(sender);
-    if (i->is_shared()) {
+    if (i->shared()) {
       i->RemoveAllAssociatedDocuments(sender);
       if (i->IsDocumentSetEmpty()) {
         shutdown = true;
@@ -338,26 +338,30 @@ void WorkerProcessHost::UpdateTitle() {
 }
 
 void WorkerProcessHost::OnLookupSharedWorker(const GURL& url,
-                                                 const string16& name,
-                                                 unsigned long long document_id,
-                                                 int* route_id,
-                                                 bool* url_mismatch) {
+                                             const string16& name,
+                                             unsigned long long document_id,
+                                             int* route_id,
+                                             bool* url_mismatch) {
   int new_route_id = WorkerService::GetInstance()->next_worker_route_id();
+  // TODO(atwilson): Add code to merge document sets for nested shared workers.
   bool worker_found = WorkerService::GetInstance()->LookupSharedWorker(
-      url, name, document_id, this, new_route_id, url_mismatch);
+      url, name, instances_.front().off_the_record(), document_id, this,
+      new_route_id, url_mismatch);
   *route_id = worker_found ? new_route_id : MSG_ROUTING_NONE;
 }
 
 void WorkerProcessHost::OnCreateWorker(const GURL& url,
-                                       bool is_shared,
+                                       bool shared,
                                        const string16& name,
                                        int render_view_route_id,
                                        int* route_id) {
   DCHECK(instances_.size() == 1);  // Only called when one process per worker.
   *route_id = WorkerService::GetInstance()->next_worker_route_id();
   WorkerService::GetInstance()->CreateWorker(
-      url, is_shared, name, instances_.front().renderer_id(),
+      url, shared, instances_.front().off_the_record(), name,
+      instances_.front().renderer_id(),
       instances_.front().render_view_route_id(), this, *route_id);
+  // TODO(atwilson): Add code to merge document sets for nested shared workers.
 }
 
 void WorkerProcessHost::OnCancelCreateDedicatedWorker(int route_id) {
@@ -373,7 +377,7 @@ void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,
 {
   // Walk all instances and remove the document from their document set.
   for (Instances::iterator i = instances_.begin(); i != instances_.end();) {
-    if (!i->is_shared()) {
+    if (!i->shared()) {
       ++i;
     } else {
       i->RemoveFromDocumentSet(parent, document_id);
@@ -389,13 +393,15 @@ void WorkerProcessHost::DocumentDetached(IPC::Message::Sender* parent,
 }
 
 WorkerProcessHost::WorkerInstance::WorkerInstance(const GURL& url,
-                                                  bool is_shared,
+                                                  bool shared,
+                                                  bool off_the_record,
                                                   const string16& name,
                                                   int renderer_id,
                                                   int render_view_route_id,
                                                   int worker_route_id)
     : url_(url),
-      shared_(is_shared),
+      shared_(shared),
+      off_the_record_(off_the_record),
       closed_(false),
       name_(name),
       renderer_id_(renderer_id),
@@ -409,9 +415,14 @@ WorkerProcessHost::WorkerInstance::WorkerInstance(const GURL& url,
 // -or-
 // b) the names are both empty, and the urls are equal
 bool WorkerProcessHost::WorkerInstance::Matches(
-    const GURL& match_url, const string16& match_name) const {
+    const GURL& match_url, const string16& match_name,
+    bool off_the_record) const {
   // Only match open shared workers.
   if (!shared_ || closed_)
+    return false;
+
+  // Incognito workers don't match non-incognito workers.
+  if (off_the_record_ != off_the_record)
     return false;
 
   if (url_.GetOrigin() != match_url.GetOrigin())

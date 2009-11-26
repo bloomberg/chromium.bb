@@ -20,7 +20,8 @@ class WorkerProcessHost : public ChildProcessHost {
   class WorkerInstance {
    public:
     WorkerInstance(const GURL& url,
-                   bool is_shared,
+                   bool shared,
+                   bool off_the_record,
                    const string16& name,
                    int renderer_id,
                    int render_view_route_id,
@@ -41,7 +42,8 @@ class WorkerProcessHost : public ChildProcessHost {
     // Checks if this WorkerInstance matches the passed url/name params
     // (per the comparison algorithm in the WebWorkers spec). This API only
     // applies to shared workers.
-    bool Matches(const GURL& url, const string16& name) const;
+    bool Matches(
+        const GURL& url, const string16& name, bool off_the_record) const;
 
     // Adds a document to a shared worker's document set.
     void AddToDocumentSet(IPC::Message::Sender* parent,
@@ -69,8 +71,9 @@ class WorkerProcessHost : public ChildProcessHost {
 
 
     // Accessors
-    bool is_shared() const { return shared_; }
-    bool is_closed() const { return closed_; }
+    bool shared() const { return shared_; }
+    bool off_the_record() const { return off_the_record_; }
+    bool closed() const { return closed_; }
     void set_closed(bool closed) { closed_ = closed; }
     const GURL& url() const { return url_; }
     const string16 name() const { return name_; }
@@ -86,6 +89,7 @@ class WorkerProcessHost : public ChildProcessHost {
     typedef std::list<SenderInfo> SenderList;
     GURL url_;
     bool shared_;
+    bool off_the_record_;
     bool closed_;
     string16 name_;
     int renderer_id_;
@@ -158,7 +162,7 @@ class WorkerProcessHost : public ChildProcessHost {
   void UpdateTitle();
 
   void OnCreateWorker(const GURL& url,
-                      bool is_shared,
+                      bool shared,
                       const string16& name,
                       int render_view_route_id,
                       int* route_id);
