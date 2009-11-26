@@ -424,10 +424,30 @@
    fun:_ZN3IPC12ChannelProxy19MessageFilterTraits8DestructEPNS0_13MessageFilterE
 }
 {
-   bug_28847
+   bug_28847a
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN13WorkerService12CreateWorkerERK4GURLbbRKSbItN4base20string16_char_traitsESaItEEiiPN3IPC7Message6SenderEi
    fun:_ZN21ResourceMessageFilter14OnCreateWorkerERK4GURLbRKSbItN4base20string16_char_traitsESaItEEiPi
 }
-
+{
+   bug_28847b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16ChildProcessHost6LaunchERKSt6vectorISt4pairISsSsESaIS2_EEP11CommandLine
+   fun:_ZN17WorkerProcessHost4InitEv
+   fun:_ZN13WorkerService12CreateWorkerERK4GURLbbRKSbItN4base20string16_char_traitsESaItEEiiPN3IPC7Message6SenderEi
+   fun:_ZN21ResourceMessageFilter14OnCreateWorkerERK4GURLbRKSbItN4base20string16_char_traitsESaItEEiPi
+}
+{
+   bug_28847c
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
+   fun:_ZN16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN3IPC7Channel11ChannelImpl7ConnectEv
+   fun:_ZN3IPC7Channel7ConnectEv
+   fun:_ZN16ChildProcessHost13CreateChannelEv
+   fun:_ZN17WorkerProcessHost4InitEv
+   fun:_ZN13WorkerService12CreateWorkerERK4GURLbbRKSbItN4base20string16_char_traitsESaItEEiiPN3IPC7Message6SenderEi
+}
