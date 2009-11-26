@@ -33,6 +33,7 @@
       '../printing/printing.gyp:printing',
       '../webkit/webkit.gyp:inspector_resources',
     ],
+    'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
     'protoc_out_dir': '<(SHARED_INTERMEDIATE_DIR)/protoc_out',
     'chrome_strings_grds': [
@@ -2725,9 +2726,9 @@
             '../gears/gears.gyp:gears',
             '../google_update/google_update.gyp:google_update',
             '../third_party/cld/cld.gyp:cld',
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
             '../views/views.gyp:views',
             'installer/installer.gyp:installer_util',
+            '<(allocator_target)',
           ],
           'export_dependent_settings': [
             '../views/views.gyp:views',
@@ -3412,10 +3413,10 @@
             'third_party/wtl/include',
           ],
           'dependencies': [
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
           'export_dependent_settings': [
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
         },],
       ],
@@ -3564,7 +3565,7 @@
           'conditions': [
             [ 'linux_use_tcmalloc==1', {
                 'dependencies': [
-                  '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+                  '<(allocator_target)',
                 ],
               },
             ],
@@ -4209,7 +4210,7 @@
             'third_party/wtl/include',
           ],
           'dependencies': [
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
         }],
       ],
@@ -4339,7 +4340,7 @@
             '../views/views.gyp:views',
             # run time dependency
             '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
           'link_settings': {
             'libraries': [
@@ -4410,7 +4411,7 @@
             '../views/views.gyp:views',
             # run time dependency
             '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
           'link_settings': {
             'libraries': [
@@ -4911,7 +4912,7 @@
             'installer/installer.gyp:installer_util_strings',
             '../views/views.gyp:views',
             'test_chrome_plugin',  # run time dependency
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
           'include_dirs': [
             'third_party/wtl/include',
@@ -5040,7 +5041,7 @@
           'dependencies': [
             'chrome_dll_version',
             'installer/installer.gyp:installer_util_strings',
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
           'configurations': {
             'Debug': {
@@ -5129,7 +5130,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
         },],
       ],
@@ -5164,7 +5165,7 @@
       'conditions': [
         ['OS=="win"', {
           'dependencies': [
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
         },],
         ['OS=="linux"', {
@@ -5268,7 +5269,7 @@
         }],
         ['OS=="win"', {
           'dependencies': [
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
         },],
       ],
@@ -5329,7 +5330,7 @@
             'third_party/wtl/include',
           ],
           'dependencies': [
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
         }], # OS="win"
       ], # conditions
@@ -5530,7 +5531,7 @@
             'browser/sync/util/data_encryption_unittest.cc',
           ],
           'dependencies': [
-            '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+            '<(allocator_target)',
           ],
           'link_settings': {
             'libraries': [
@@ -6447,7 +6448,7 @@
                 },
               },
               'dependencies': [
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+                '<(allocator_target)',
               ],
             }],
           ],
@@ -6510,6 +6511,7 @@
             'installer/mini_installer.gyp:*',
             'installer/installer.gyp:*',
             '../app/app.gyp:*',
+            '../base/allocator/allocator.gyp:*',
             '../base/base.gyp:*',
             '../ipc/ipc.gyp:*',
             '../media/media.gyp:*',
@@ -6534,7 +6536,6 @@
             '../third_party/modp_b64/modp_b64.gyp:*',
             '../third_party/npapi/npapi.gyp:*',
             '../third_party/sqlite/sqlite.gyp:*',
-            '../third_party/tcmalloc/tcmalloc.gyp:*',
             '../third_party/zlib/zlib.gyp:*',
             '../webkit/tools/test_shell/test_shell.gyp:*',
             '../webkit/webkit.gyp:*',
@@ -6725,7 +6726,7 @@
                   'chrome_dll_version',
                   'installer/installer.gyp:installer_util_strings',
                   '../views/views.gyp:views',
-                  '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+                  '<(allocator_target)',
                 ],
                 'configurations': {
                   'Debug': {
@@ -6785,7 +6786,7 @@
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+                '<(allocator_target)',
               ],
               'configurations': {
                 'Debug': {
@@ -6825,7 +6826,7 @@
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+                '<(allocator_target)',
               ],
             },],
           ],
@@ -6868,7 +6869,7 @@
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
-                '../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+                '<(allocator_target)',
               ],
             },],
           ],

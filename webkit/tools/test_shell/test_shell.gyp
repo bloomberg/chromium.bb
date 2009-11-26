@@ -293,7 +293,7 @@
           'conditions': [
             [ 'linux_use_tcmalloc==1', {
                 'dependencies': [
-                  '../../../third_party/tcmalloc/tcmalloc.gyp:tcmalloc',
+                  '../../../base/allocator/allocator.gyp:allocator',
                 ],
               },
             ],
