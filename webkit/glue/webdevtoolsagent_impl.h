@@ -17,6 +17,7 @@
 
 namespace WebCore {
 class Document;
+class InspectorController;
 class Node;
 class ScriptState;
 class String;
@@ -27,7 +28,10 @@ class WebDevToolsAgentClient;
 class WebFrame;
 class WebFrameImpl;
 class WebString;
+class WebURLRequest;
+class WebURLResponse;
 class WebViewImpl;
+struct WebURLError;
 }
 
 class BoundObject;
@@ -75,6 +79,20 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
   virtual void inspectElementAt(const WebKit::WebPoint& point);
   virtual void setRuntimeFeatureEnabled(const WebKit::WebString& feature,
                                         bool enabled);
+  virtual void identifierForInitialRequest(
+      unsigned long resourceId,
+      WebKit::WebFrame* frame,
+      const WebKit::WebURLRequest& request);
+  virtual void willSendRequest(unsigned long resourceId,
+                               const WebKit::WebURLRequest& request);
+  virtual void didReceiveData(unsigned long resourceId, int length);
+  virtual void didReceiveResponse(
+      unsigned long resourceId,
+      const WebKit::WebURLResponse& response);
+  virtual void didFinishLoading(unsigned long resourceId);
+  virtual void didFailLoading(
+      unsigned long resourceId,
+      const WebKit::WebURLError& error);
 
   // DevToolsRpc::Delegate implementation.
   void SendRpcMessage(const WebCore::String& class_name,
@@ -99,6 +117,8 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
   void InitDevToolsAgentHost();
   void ResetInspectorFrontendProxy();
   void setApuAgentEnabled(bool enabled);
+
+  WebCore::InspectorController* GetInspectorController();
 
   // Creates InspectorBackend v8 wrapper in the utility context so that it's
   // methods prototype is Function.protoype object from the utility context.

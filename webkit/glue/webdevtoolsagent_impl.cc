@@ -15,6 +15,9 @@
 #include "Node.h"
 #include "Page.h"
 #include "PlatformString.h"
+#include "ResourceError.h"
+#include "ResourceRequest.h"
+#include "ResourceResponse.h"
 #include "ScriptObject.h"
 #include "ScriptState.h"
 #include "ScriptValue.h"
@@ -29,7 +32,9 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLError.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLRequest.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/src/WebFrameImpl.h"
 #include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/devtools/bound_object.h"
@@ -39,12 +44,17 @@
 #include "webkit/glue/webdevtoolsagent_impl.h"
 
 using WebCore::Document;
+using WebCore::DocumentLoader;
+using WebCore::FrameLoader;
 using WebCore::InspectorBackend;
 using WebCore::InspectorController;
 using WebCore::InspectorFrontend;
 using WebCore::InspectorResource;
 using WebCore::Node;
 using WebCore::Page;
+using WebCore::ResourceError;
+using WebCore::ResourceRequest;
+using WebCore::ResourceResponse;
 using WebCore::SafeAllocation;
 using WebCore::ScriptObject;
 using WebCore::ScriptState;
@@ -60,7 +70,9 @@ using WebKit::WebFrameImpl;
 using WebKit::WebPoint;
 using WebKit::WebString;
 using WebKit::WebURL;
+using WebKit::WebURLError;
 using WebKit::WebURLRequest;
+using WebKit::WebURLResponse;
 using WebKit::WebViewImpl;
 
 namespace {
@@ -458,6 +470,44 @@ v8::Handle<v8::Value> WebDevToolsAgentImpl::JsOnRuntimeFeatureStateChanged(
       enabled);
   return v8::Undefined();
 }
+
+
+WebCore::InspectorController* WebDevToolsAgentImpl::GetInspectorController() {
+  if (Page* page = web_view_impl_->page())
+    return page->inspectorController();
+  return NULL;
+}
+
+
+//------- plugin resource load notifications ---------------
+void WebDevToolsAgentImpl::identifierForInitialRequest(
+    unsigned long resourceId,
+    WebKit::WebFrame* frame,
+    const WebURLRequest& request) {
+}
+
+void WebDevToolsAgentImpl::willSendRequest(
+    unsigned long resourceId,
+    const WebURLRequest& request) {
+}
+
+void WebDevToolsAgentImpl::didReceiveData(unsigned long resourceId,
+                                          int length) {
+}
+
+void WebDevToolsAgentImpl::didReceiveResponse(
+    unsigned long resourceId,
+    const WebURLResponse& response) {
+}
+
+void WebDevToolsAgentImpl::didFinishLoading(
+    unsigned long resourceId) {
+}
+
+void WebDevToolsAgentImpl::didFailLoading(unsigned long resourceId,
+                                          const WebURLError& error) {
+}
+
 
 namespace WebKit {
 
