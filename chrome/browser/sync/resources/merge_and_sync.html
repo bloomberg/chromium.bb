@@ -54,6 +54,10 @@ html[dir='rtl'] .textaligned {
          + "</b></font></p>";
     }
 
+    function onPageShown() {     
+     document.getElementById("acceptMerge").focus();
+    }
+
 </script>
 </head>
 <body onload="setInterval(advanceThrobber, 30);">

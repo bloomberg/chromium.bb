@@ -114,8 +114,11 @@ void FlowHandler::ShowGaiaSuccessAndSettingUp() {
 }
 
 void FlowHandler::ShowMergeAndSync() {
-  if (dom_ui_)  // NULL during testing.
+  if (dom_ui_) { // NULL during testing.
     dom_ui_->CallJavascriptFunction(L"showMergeAndSync");
+  }
+  ExecuteJavascriptInIFrame(kMergeIFrameXPath,
+                            L"onPageShown();");
 }
 
 void FlowHandler::ShowSetupDone(const std::wstring& user) {
@@ -129,6 +132,9 @@ void FlowHandler::ShowSetupDone(const std::wstring& user) {
 
   if (dom_ui_)
     dom_ui_->CallJavascriptFunction(L"showSetupDone", synced_to_string);
+
+  ExecuteJavascriptInIFrame(kDoneIframeXPath,
+                            L"onPageShown();");
 }
 
 void FlowHandler::ShowFirstTimeDone(const std::wstring& user) {

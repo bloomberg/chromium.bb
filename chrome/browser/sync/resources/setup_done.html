@@ -30,6 +30,9 @@ html[dir='rtl'] .endaligned {
   function setSyncedToUser(synced_to) {
     document.getElementById('user').innerHTML = synced_to;
   }
+  function onPageShown() {     
+    document.getElementById("close").focus();
+  }
 </script>
 <body  bgcolor="#ffffff" vlink="#666666
        i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize"
