@@ -559,6 +559,18 @@
    fun:_ZN14ProcessWatcher23EnsureProcessTerminatedEi
 }
 {
+   bug_11838
+   Memcheck:Cond
+   fun:strlen
+   ...
+   fun:__xmlRaiseError
+   ...
+   fun:_ZN16Toolbar5Importer17LocateNextOpenTagEP9XmlReader
+   fun:_ZN16Toolbar5Importer27LocateNextTagWithStopByNameEP9XmlReaderRKSsS3_
+   fun:_ZN16Toolbar5Importer24ParseBookmarksFromReaderEP9XmlReaderPSt6vectorIN13ProfileWriter13BookmarkEntryESaIS4_EE
+   fun:_ZN39Toolbar5ImporterTest_BookmarkParse_Test8TestBodyEv
+}
+{
    # See http://crbug.com/11213
    bug_11213
    Memcheck:Leak
