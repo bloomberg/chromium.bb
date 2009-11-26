@@ -15,33 +15,6 @@
       'resources/app_strings.grd',
     ],
   },
-  'target_defaults': {
-    'sources/': [
-      ['exclude', '/(cocoa|gtk|win)/'],
-      ['exclude', '_(cocoa|gtk|linux|mac|posix|skia|win|x)\\.(cc|mm?)$'],
-      ['exclude', '/(gtk|win|x11)_[^/]*\\.cc$'],
-    ],
-    'conditions': [
-      ['OS=="linux"', {'sources/': [
-        ['include', '/gtk/'],
-        ['include', '_(gtk|linux|posix|skia|x)\\.cc$'],
-        ['include', '/(gtk|x11)_[^/]*\\.cc$'],
-      ]}],
-      ['OS=="mac"', {'sources/': [
-        ['include', '/cocoa/'],
-        ['include', '_(cocoa|mac|posix)\\.(cc|mm?)$'],
-      ]}, { # else: OS != "mac"
-        'sources/': [
-          ['exclude', '\\.mm?$'],
-        ],
-      }],
-      ['OS=="win"', {'sources/': [
-        ['include', '_(win)\\.cc$'],
-        ['include', '/win/'],
-        ['include', '/win_[^/]*\\.cc$'],
-      ]}],
-    ],
-  },
   'targets': [
     {
       'target_name': 'app_base',

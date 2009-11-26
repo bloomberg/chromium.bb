@@ -190,36 +190,6 @@
       }],
     ],  # conditions
   },  # variables
-  'target_defaults': {
-    'sources/': [
-      ['exclude', '/(cocoa|gtk|win)/'],
-      ['exclude', '_(cocoa|gtk|linux|mac|posix|skia|win|views|x)(_unittest)?(_mac)?\\.(cc|mm?)$'],
-      ['exclude', '/(gtk|win|x11)_[^/]*\\.cc$'],
-    ],
-    'conditions': [
-      ['OS=="linux" or OS=="freebsd"', {'sources/': [
-        ['include', '/gtk/'],
-        ['include', '_(gtk|linux|posix|skia|x)(_unittest)?\\.cc$'],
-        ['include', '/(gtk|x11)_[^/]*\\.cc$'],
-      ]}],
-      ['OS=="mac"', {'sources/': [
-        ['include', '/cocoa/'],
-        ['include', '_(cocoa|mac|posix)(_unittest)?(_mac)?\\.(cc|mm?)$'],
-      ]}, { # else: OS != "mac"
-        'sources/': [
-          ['exclude', '\\.mm?$'],
-        ],
-      }],
-      ['OS=="win"', {'sources/': [
-        ['include', '_(views|win)(_unittest)?\\.cc$'],
-        ['include', '/win/'],
-        ['include', '/(views|win)_[^/]*\\.cc$'],
-      ]}],
-      ['OS=="linux" and toolkit_views==1', {'sources/': [
-        ['include', '_views\\.cc$'],
-      ]}],
-    ],
-  },
   'targets': [
     {
       # TODO(mark): It would be better if each static library that needed
