@@ -178,10 +178,10 @@ void GracefulShutdownHandler(int signal, const int expected_signal) {
       NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit));
 
   // Reinstall the default handler.  We had one shot at graceful shutdown.
-  struct sigaction term_action;
-  memset(&term_action, 0, sizeof(term_action));
-  term_action.sa_handler = SIG_DFL;
-  CHECK(sigaction(expected_signal, &term_action, NULL) == 0);
+  struct sigaction action;
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = SIG_DFL;
+  CHECK(sigaction(expected_signal, &action, NULL) == 0);
 
   if (posted) {
     LOG(WARNING) << "Posted task to UI thread; resetting signal "
@@ -303,16 +303,17 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // We need to handle SIGTERM, because that is how many POSIX-based distros ask
   // processes to quit gracefully at shutdown time.
-  struct sigaction term_action;
-  memset(&term_action, 0, sizeof(term_action));
-  term_action.sa_handler = SIGTERMHandler;
-  CHECK(sigaction(SIGTERM, &term_action, NULL) == 0);
+  memset(&action, 0, sizeof(action));
+  action.sa_handler = SIGTERMHandler;
+  CHECK(sigaction(SIGTERM, &action, NULL) == 0);
   // Also handle SIGINT - when the user terminates the browser via Ctrl+C.
   // If the browser process is being debugged, GDB will catch the SIGINT first.
-  CHECK(sigaction(SIGINT, &term_action, NULL) == 0);
+  action.sa_handler = SIGINTHandler;
+  CHECK(sigaction(SIGINT, &action, NULL) == 0);
   // And SIGHUP, for when the terminal disappears. On shutdown, many Linux
   // distros send SIGHUP, SIGTERM, and then SIGKILL.
-  CHECK(sigaction(SIGHUP, &term_action, NULL) == 0);
+  action.sa_handler = SIGHUPHandler;
+  CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 
   const std::wstring fd_limit_string =
       parsed_command_line.GetSwitchValue(switches::kFileDescriptorLimit);
