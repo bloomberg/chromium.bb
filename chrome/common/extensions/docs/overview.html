@@ -393,11 +393,7 @@ under the extension's top folder;
 it's the same as the relative URL.
 </p>
 
-<p class="comment">
-[PENDING: Should mention/reflect/link to
-<a href="http://dev.chromium.org/developers/design-documents/extensions/i18n">internationalization</a>
-when it's ready.]
-</p>
+<!-- [PENDING: Should mention/reflect/link to <a href="http://dev.chromium.org/developers/design-documents/extensions/i18n">internationalization</a> when it's ready.] -->
 
 
 <a name="H3-3"></a><h3>The manifest file</h3>
@@ -437,11 +433,6 @@ Most extensions have a
 <a href="background_pages.html">background page</a>,
 an invisible page
 that holds the main logic of the extension.
-<span class="comment">
-[PENDING: unnecessary?]
-No matter how many windows or tabs the user opens,
-there's only one copy of the background page.
-</span>
 </p>
 
 <img src="images/arch-1.gif">
@@ -512,17 +503,14 @@ not as part of the extension it was packaged with
 (its <em>parent extension</em>).
 </p>
 
-<p class="comment">
-[PENDING: Consider explaining that the reason content scripts
-are separated from the extension is due to chrome's multiprocess design.
-Something like:
+<!-- [PENDING: Consider explaining that the reason content scripts are separated from the extension is due to chrome's multiprocess design.  Something like:
 
 Each extension runs in its own process.
 To have rich interaction with a web page, however,
 the extension must be able to
 run some code in the web page's process.
 Extensions accomplish this with content scripts.]
-</p>
+-->
 
 <p>
 Content scripts can read details of the web pages the browser visits,
@@ -548,9 +536,7 @@ asking a content script to change the appearance of its browser page.
 
 <img src="images/arch-cs.gif">
 
-<p class="comment">
-[PENDING: Add overview of message passing.]
-</p>
+<!-- [PENDING: Add overview of message passing.] -->
 
 <p>
 For more information,
@@ -562,9 +548,7 @@ see <a href="content_scripts.html">Content Scripts</a>.
 
 <p>
 The HTML pages within an extension often need to communicate.
-<span class="comment">
-[PENDING: For example, ...]
-</span>
+<!-- [PENDING: For example, ...] -->
 Because all of an extension's pages
 execute in same process on the same thread,
 the pages can make direct function calls to each other.
@@ -581,11 +565,7 @@ the first page can invoke functions on the other pages,
 and it can manipulate their DOMs.
 </p>
 
-<p class="comment">
-[PENDING: Here's an example of
-communication between xyz and the background page.
-(code example goes here)]
-</p>
+<!-- [PENDING: Here's an example of communication between xyz and the background page.  (code example goes here)] -->
 
 
 <a name="H2-8"></a><h2> Now what? </h2>
