@@ -423,3 +423,11 @@
    fun:_ZN21ResourceMessageFilter10OnDestructEv
    fun:_ZN3IPC12ChannelProxy19MessageFilterTraits8DestructEPNS0_13MessageFilterE
 }
+{
+   bug_28847
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN13WorkerService12CreateWorkerERK4GURLbbRKSbItN4base20string16_char_traitsESaItEEiiPN3IPC7Message6SenderEi
+   fun:_ZN21ResourceMessageFilter14OnCreateWorkerERK4GURLbRKSbItN4base20string16_char_traitsESaItEEiPi
+}
+
