@@ -72,18 +72,12 @@ ifeq ($(PLATFORM), Cygwin)
   ifeq ($(CYGWIN17), 1)
     DESTDIR := $(SDKROOT)
     SDKROOT := 
-    CYGWIN_DLL_COPY= \
-      cp -f `cygpath \`cygcheck $(DESTDIR)$(SDKROOT)/bin/*.exe\` | \
-      grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
-      $(DESTDIR)$(SDKROOT)/bin
-  else
-    CYGWIN_DLL_COPY= \
-      cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
-      /cygdrive/c/cygwin/bin/cygiconv*.dll \
-      /cygdrive/c/cygwin/bin/cygintl*.dll \
-      /cygdrive/c/cygwin/bin/cygz*.dll \
-      $(SDKROOT)/bin
+    PLATFORM:= Cygwin17
   endif
+  CYGWIN_DLL_COPY= \
+    cp -f `cygpath \`cygcheck $(DESTDIR)$(SDKROOT)/bin/*.exe\` | \
+    grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
+    $(DESTDIR)$(SDKROOT)/bin
 else
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
@@ -108,7 +102,7 @@ DEFAULT_ALIGN_POW2=5
 ##################################################################
 BINUTILS_VERSION=2.20
 NEWLIB_VERSION=1.17.0
-GCC_VERSION=4.2.2
+GCC_VERSION=4.4.2
 GDB_VERSION=6.8
 
 ##################################################################
@@ -324,7 +318,7 @@ newlib: BUILD/stamp-newlib
 BUILD/stamp-gcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
-ifeq ($(PLATFORM), Cygwin)
+ifeq ($(PLATFORM), Cygwin17)
 	mkdir BUILD/build-gcc-$(CROSSARCH)/gcc
 	cp -af $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
 	    BUILD/build-gcc-$(CROSSARCH)/gcc
@@ -438,6 +432,17 @@ build:
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
+ifeq ($(PLATFORM), Cygwin17)
+	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
+	  $(DESTDIR)$(SDKROOT)/libexec
+	for exe in $(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-*.exe ; do \
+	  mv -f "$$exe" $(DESTDIR)$(SDKROOT)/libexec/"`basename $$exe`" ; \
+	  cp -af redirector.exe "$$exe" ; \
+	done && \
+	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/*.exe ; do \
+	  cp -af redirector.exe $$exe ; \
+	done
+endif
 
 ##################################################################
 # Build an updated set of patches from the current build versions.

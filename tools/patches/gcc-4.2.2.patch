@@ -1142,11 +1142,58 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/flow.c gcc-4.2.2/gcc/flow.c
  
        /* Don't eliminate loads from volatile memory or volatile asms.  */
        else if (volatile_refs_p (SET_SRC (x)))
-@@ -4777,4 +4783,3 @@
-   TODO_ggc_collect,                     /* todo_flags_finish */
-   'w'                                   /* letter */
- };
--
+diff -uNr gcc-4.2.2.orig/gcc/gcc.c gcc-4.2.2/gcc/gcc.c
+--- gcc-4.2.2.orig/gcc/gcc.c	2009-03-17 22:25:59.000000000 +0100
++++ gcc-4.2.2/gcc/gcc.c	2009-11-27 14:47:39.000000000 +0100
+@@ -6235,6 +6235,48 @@
+     --p;
+   programname = p;
+ 
++#ifdef __CYGWIN__
++  {/* We must add our own dir to PATH to make cygwin1.dll discoverable.
++    * We need this PATH trick only for programs that exec other programs,
++    * namely the GCC driver.*/
++  const char *path;
++
++  GET_ENVIRONMENT (path, "PATH");
++  if (path && (argv[0] != p))
++    {
++      const char *startp, *endp;
++      size_t dirnamelen = p - argv[0];
++
++      startp = endp = path;
++      while (1)
++	{
++	  if (*endp == PATH_SEPARATOR || *endp == 0)
++	    {
++	      if (!strncmp(startp, argv[0], dirnamelen))
++		{
++		  break;
++		}
++
++	      if (*endp == 0)
++		{
++		  char *nstore =
++			(char *) alloca (strlen (path) + dirnamelen + 7);
++                  memcpy(nstore, "PATH=", 5);
++                  memcpy(nstore + 5, argv[0], dirnamelen);
++                  nstore[dirnamelen + 5] = PATH_SEPARATOR;
++                  strcpy(nstore + dirnamelen + 6, path);
++                  putenv(nstore);
++		  break;
++		}
++	      endp = startp = endp + 1;
++	    }
++	  else
++	    endp++;
++	}
++    }
++  }
++#endif
++
+   xmalloc_set_program_name (programname);
+ 
+   expandargv (&argc, &argv);
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/gthr-nacl.h gcc-4.2.2/gcc/gthr-nacl.h
 --- ../PRISTINE/gcc-4.2.2/gcc/gthr-nacl.h	1969-12-31 16:00:00.000000000 -0800
 +++ gcc-4.2.2/gcc/gthr-nacl.h	2009-01-09 17:35:50.792149000 -0800
