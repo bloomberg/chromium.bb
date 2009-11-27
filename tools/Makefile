@@ -73,11 +73,18 @@ ifeq ($(PLATFORM), Cygwin)
     DESTDIR := $(SDKROOT)
     SDKROOT := 
     PLATFORM:= Cygwin17
-  endif
-  CYGWIN_DLL_COPY= \
-    cp -f `cygpath \`cygcheck $(DESTDIR)$(SDKROOT)/bin/*.exe\` | \
-    grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
-    $(DESTDIR)$(SDKROOT)/bin
+    CYGWIN_DLL_COPY= \
+      cp -f `cygpath \`cygcheck $(DESTDIR)$(SDKROOT)/bin/*.exe\` | \
+      grep '\(/usr/\|\)bin/.*dll' | tr -d \`printf '\r'\` | sort -u` \
+      $(DESTDIR)$(SDKROOT)/bin
+  else
+    CYGWIN_DLL_COPY= \
+      cp -f /cygdrive/c/cygwin/bin/cygwin1.dll \
+      /cygdrive/c/cygwin/bin/cygiconv*.dll \
+      /cygdrive/c/cygwin/bin/cygintl*.dll \
+      /cygdrive/c/cygwin/bin/cygz*.dll \
+      $(DESTDIR)$(SDKROOT)/bin
+ endif
 else
   BUILDPATH=$(DESTDIR)$(SDKROOT)/bin:$(PATH)
   SCONS?=scons
