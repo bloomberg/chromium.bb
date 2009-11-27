@@ -3038,3 +3038,9 @@ BUG28605 WIN LINUX : LayoutTests/svg/filters/filterRes.svg = IMAGE
 
 // New tests. Failures from merge 51210:51325.
 BUG28646 : LayoutTests/editing/selection/transformed-selection-rects.html = FAIL
+
+// New failures from merge 51406:51410.
+BUG28905 : LayoutTests/http/tests/security/isolatedWorld/world-reuse.html = FAIL
+BUG28905 : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
+
+
