@@ -2115,6 +2115,14 @@ BUG23473 MAC : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelect
 BUG23473 MAC : LayoutTests/fast/repaint/table-cell-vertical-overflow.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/text-shadow.html = PASS
 BUG23473 MAC : pending/fast/repaint/bugzilla-6473.html = IMAGE
+BUG23473 MAC : LayoutTests/fast/repaint/fixed.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/flexible-box-overflow-horizontal.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/layer-outline-horizontal.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/shadow-multiple-horizontal.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/shadow-multiple-strict-horizontal.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/shadow-multiple-strict-vertical.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/shadow-multiple-vertical.html = PASS
+BUG23473 MAC : LayoutTests/fast/repaint/text-shadow-horizontal.html = PASS
 
 // Thicker shadow than expected
 BUG23471 MAC : LayoutTests/fast/text/stroking.html = IMAGE
