@@ -102,7 +102,7 @@ DEFAULT_ALIGN_POW2=5
 ##################################################################
 BINUTILS_VERSION=2.20
 NEWLIB_VERSION=1.17.0
-GCC_VERSION=4.4.2
+GCC_VERSION=4.2.2
 GDB_VERSION=6.8
 
 ##################################################################
@@ -143,9 +143,8 @@ BUILD/stamp-newlib-$(NEWLIB_VERSION): Makefile
 BUILD/gcc-$(GCC_VERSION): | BUILD
 	@echo "Unpacking gcc-$(GCC_VERSION)"
 	# Temporrary hack to workaround troubles with third_party
-	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-core-4.4.1.tar.bz2
-	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-4.4.1.tar.bz2
-	cd BUILD && mv gcc-4.4.1 gcc-4.4.2
+	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
+	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
 	cd BUILD && patch -p0 < ../patches/gcc-$(GCC_VERSION).patch
 
 # create gcc source directory, and mark that we've done that

@@ -1871,7 +1871,7 @@ diff -uNr binutils-2.20.orig/ld/ldlex.l binutils-2.20/ld/ldlex.l
 diff -uNr binutils-2.20.orig/ld/scripttempl/naclelf.sc binutils-2.20/ld/scripttempl/naclelf.sc
 --- binutils-2.20.orig/ld/scripttempl/naclelf.sc	1970-01-01 01:00:00.000000000 +0100
 +++ binutils-2.20/ld/scripttempl/naclelf.sc	2009-11-23 13:58:30.000000000 +0100
-@@ -0,0 +1,606 @@
+@@ -0,0 +1,611 @@
 +#
 +# Unusual variables checked by this code:
 +#	NOP - four byte opcode for no-op (defaults to 0)
@@ -2318,7 +2318,8 @@ diff -uNr binutils-2.20.orig/ld/scripttempl/naclelf.sc binutils-2.20/ld/scriptte
 +  /* Thread Local Storage sections  */
 +  /* The total size of the TLS template area must be a multiple of 0x20,
 +   * but it's size calculation is hardcoded in bfd_elf_final_link function
-+   * so the only thing we can do is align segments here properly */
++   * so the only thing we can do is align segments here properly and also
++   * adjust SIZEOF(.tbss) up to proper alignment measure */
 +  .tdata	${RELOCATING+ALIGN(0x20)}${RELOCATING-0} : {
 +    ${RELOCATING+PROVIDE (__tls_template_start = .);}
 +    *(.tdata${RELOCATING+ .tdata.* .gnu.linkonce.td.*})
@@ -2326,7 +2327,11 @@ diff -uNr binutils-2.20.orig/ld/scripttempl/naclelf.sc binutils-2.20/ld/scriptte
 +  }
 +  .tbss		${RELOCATING+ALIGN(0x20)}${RELOCATING-0} : { *(.tbss${RELOCATING+ .tbss.* .gnu.linkonce.tb.*})${RELOCATING+ *(.tcommon)} }
 +  /* . does not advance for tbss because it is not loaded. */
-+  ${RELOCATING+PROVIDE (__tls_template_end = . + SIZEOF(.tbss));}
++  ${RELOCATING+PROVIDE (__tls_template_end =
++                           __tls_template_start +
++                           (((. + SIZEOF(.tbss)) - __tls_template_start + 31) &
++                            ~(31))
++                          );}
 +  .preinit_array   ${RELOCATING-0} :
 +  {
 +    ${RELOCATING+${CREATE_SHLIB-PROVIDE_HIDDEN (${USER_LABEL_PREFIX}__preinit_array_start = .);}}
