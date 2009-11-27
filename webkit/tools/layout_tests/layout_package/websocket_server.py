@@ -103,9 +103,7 @@ class PyWebSocket(http_server.Lighttpd):
         '-p', str(self._port),
         '-d', self._layout_tests,
         '-s', self._web_socket_tests,
-        # Uncomment the following log option when we start using
-        # WebKit r51406 or later.
-        # '-l', error_log,
+        '-l', error_log,
     ]
     if self._use_tls:
       start_cmd.extend(['-t', '-k', self._private_key,
