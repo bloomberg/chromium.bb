@@ -93,14 +93,19 @@ class PyWebSocket(http_server.Lighttpd):
     RemoveLogFiles(self._output_dir, log_prefix)
 
     python_interp = sys.executable
-    pywebsocket_base = path_utils.PathFromBase('third_party', 'pywebsocket')
+    pywebsocket_base = path_utils.PathFromBase(
+        'third_party', 'WebKit', 'WebKitTools', 'pywebsocket')
     pywebsocket_script = path_utils.PathFromBase(
-        'third_party', 'pywebsocket', 'mod_pywebsocket', 'standalone.py')
+        'third_party', 'WebKit', 'WebKitTools', 'pywebsocket',
+        'mod_pywebsocket', 'standalone.py')
     start_cmd = [
         python_interp, pywebsocket_script,
         '-p', str(self._port),
         '-d', self._layout_tests,
         '-s', self._web_socket_tests,
+        # Uncomment the following log option when we start using
+        # WebKit r51406 or later.
+        # '-l', error_log,
     ]
     if self._use_tls:
       start_cmd.extend(['-t', '-k', self._private_key,

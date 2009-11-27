@@ -34,9 +34,6 @@ deps = {
   "src/third_party/protobuf2/src":
     "http://protobuf.googlecode.com/svn/trunk@219",
 
-  "src/third_party/pywebsocket":
-    "http://pywebsocket.googlecode.com/svn/trunk/src@119",
-
   "src/tools/gyp":
     "http://gyp.googlecode.com/svn/trunk@762",
 
@@ -63,6 +60,9 @@ deps = {
 
   "src/third_party/WebKit/WebKit/chromium":
     Var("webkit_trunk") + "/WebKit/chromium@" + Var("webkit_revision"),
+
+  "src/third_party/WebKit/WebKitTools/pywebsocket":
+    Var("webkit_trunk") + "/WebKitTools/pywebsocket@" + Var("webkit_revision"),
 
   "src/third_party/ots":
     "http://ots.googlecode.com/svn/trunk@19",
