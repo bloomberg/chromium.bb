@@ -1984,7 +1984,6 @@ BUG23488 MAC : LayoutTests/fast/layers/layer-content-visibility-change.html = IM
 BUG23488 MAC : LayoutTests/fast/layers/remove-layer-with-nested-stacking.html = IMAGE
 BUG23488 MAC : LayoutTests/fast/lists/ol-start-parsing.html = IMAGE
 BUG23488 MAC : LayoutTests/fast/multicol/positioned-with-constrained-height.html = IMAGE
-BUG23488 MAC : LayoutTests/fast/overflow/004.html = IMAGE
 BUG23488 MAC : LayoutTests/fast/overflow/position-fixed-transform-clipping.html = IMAGE
 BUG23488 MAC : LayoutTests/fast/reflections/abs-position-in-reflection.html = IMAGE
 BUG23488 MAC : LayoutTests/fast/table/fixed-table-with-percent-inside-percent-table.html = IMAGE
@@ -2305,7 +2304,7 @@ BUG10457 DEBUG WIN SLOW : LayoutTests/fast/js/large-expressions.html = FAIL
 // instead work upstream to improve tests so that they don't fail.
 // Linux-only failures
 BUG10458 LINUX : LayoutTests/editing/inserting/6633727.html = FAIL
-BUG10458 MAC LINUX : LayoutTests/fast/dom/java-applet-calls.html = FAIL
+BUG10458 MAC : LayoutTests/fast/dom/java-applet-calls.html = FAIL
 // Just need rebaseline
 BUG10458 LINUX : LayoutTests/fast/forms/textarea-width.html = FAIL
 BUG10458 LINUX : LayoutTests/fast/parser/comment-in-textarea.html = FAIL
