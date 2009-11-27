@@ -233,7 +233,7 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	      --disable-libstdcxx-pch \
 	      --disable-shared \
 	      --target=$(CROSSARCH)
-	if [ "x$(GCC_VERSION)" = "x4.4.1" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.2" ] ; then \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2 -g" \
@@ -246,7 +246,7 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    all-gcc ; \
 	fi
-	if [ "x$(GCC_VERSION)" = "x4.4.1" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.2" ] ; then \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2 -g" \
@@ -426,7 +426,7 @@ sdk_minimal_test: ALWAYS
 
 build:
 	$(MAKE) -f $(THISMAKEFILE) sdkdirs
-	cp -f ../../third_party/gcc/COPYING $(DESTDIR)$(SDKROOT)
+	cp -f ../../third_party/gcc/COPYING* $(DESTDIR)$(SDKROOT)
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-binutils
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-pregcc
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-newlib

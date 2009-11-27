@@ -1,6 +1,6 @@
-diff -buNr gcc-4.4.1.orig/config/lib-prefix.m4 gcc-4.4.1/config/lib-prefix.m4
---- gcc-4.4.1.orig/config/lib-prefix.m4	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/config/lib-prefix.m4	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/config/lib-prefix.m4 gcc-4.4.2/config/lib-prefix.m4
+--- gcc-4.4.2.orig/config/lib-prefix.m4	2004-09-23 01:53:59.000000000 +0200
++++ gcc-4.4.2/config/lib-prefix.m4	2009-11-26 18:14:16.000000000 +0100
 @@ -71,7 +71,7 @@
          if test "X$additional_includedir" = "X/usr/local/include"; then
            if test -n "$GCC"; then
@@ -19,9 +19,9 @@ diff -buNr gcc-4.4.1.orig/config/lib-prefix.m4 gcc-4.4.1/config/lib-prefix.m4
              esac
            fi
          fi
-diff -buNr gcc-4.4.1.orig/config.sub gcc-4.4.1/config.sub
---- gcc-4.4.1.orig/config.sub	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/config.sub	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/config.sub gcc-4.4.2/config.sub
+--- gcc-4.4.2.orig/config.sub	2008-12-18 04:27:27.000000000 +0100
++++ gcc-4.4.2/config.sub	2009-11-26 18:14:16.000000000 +0100
 @@ -122,7 +122,7 @@
  case $maybe_os in
    nto-qnx* | linux-gnu* | linux-dietlibc | linux-newlib* | linux-uclibc* | \
@@ -55,9 +55,9 @@ diff -buNr gcc-4.4.1.orig/config.sub gcc-4.4.1/config.sub
  	# Remember, each alternative MUST END IN *, to match a version number.
  		;;
  	-qnx*)
-diff -buNr gcc-4.4.1.orig/configure gcc-4.4.1/configure
---- gcc-4.4.1.orig/configure	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/configure	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/configure gcc-4.4.2/configure
+--- gcc-4.4.2.orig/configure	2009-04-25 06:10:29.000000000 +0200
++++ gcc-4.4.2/configure	2009-11-26 18:14:16.000000000 +0100
 @@ -2179,6 +2179,9 @@
      *-*-freebsd*)
          # Enable libmudflap by default in FreeBSD.
@@ -86,9 +86,9 @@ diff -buNr gcc-4.4.1.orig/configure gcc-4.4.1/configure
      noconfigdirs="$noconfigdirs target-newlib target-libgloss"
      ;;
    *-*-lynxos*)
-diff -buNr gcc-4.4.1.orig/configure.ac gcc-4.4.1/configure.ac
---- gcc-4.4.1.orig/configure.ac	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/configure.ac	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/configure.ac gcc-4.4.2/configure.ac
+--- gcc-4.4.2.orig/configure.ac	2009-04-25 06:10:29.000000000 +0200
++++ gcc-4.4.2/configure.ac	2009-11-26 18:14:16.000000000 +0100
 @@ -414,6 +414,9 @@
      *-*-freebsd*)
          # Enable libmudflap by default in FreeBSD.
@@ -117,9 +117,9 @@ diff -buNr gcc-4.4.1.orig/configure.ac gcc-4.4.1/configure.ac
      noconfigdirs="$noconfigdirs target-newlib target-libgloss"
      ;;
    *-*-lynxos*)
-diff -buNr gcc-4.4.1.orig/gcc/Makefile.in gcc-4.4.1/gcc/Makefile.in
---- gcc-4.4.1.orig/gcc/Makefile.in	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/Makefile.in	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/Makefile.in gcc-4.4.2/gcc/Makefile.in
+--- gcc-4.4.2.orig/gcc/Makefile.in	2009-07-25 19:53:35.000000000 +0200
++++ gcc-4.4.2/gcc/Makefile.in	2009-11-26 18:14:16.000000000 +0100
 @@ -1076,6 +1076,7 @@
  	coverage.o \
  	cse.o \
@@ -128,22 +128,6 @@ diff -buNr gcc-4.4.1.orig/gcc/Makefile.in gcc-4.4.1/gcc/Makefile.in
  	dbxout.o \
  	dbgcnt.o \
  	dce.o \
-@@ -1767,13 +1768,13 @@
- $(T)crtbeginS.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-   gbl-ctors.h stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
- 	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS_S) \
--	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFS_O \
-+	  -c $(srcdir)/crtstuff.c -DCRT_BEGIN \
- 	  -o $(T)crtbeginS$(objext)
- 
- $(T)crtendS.o: crtstuff.c $(GCC_PASSES) $(TCONFIG_H) auto-host.h \
-   gbl-ctors.h stmp-int-hdrs tsystem.h coretypes.h $(TM_H)
- 	$(GCC_FOR_TARGET) $(CRTSTUFF_CFLAGS) $(CRTSTUFF_T_CFLAGS_S) \
--	  -c $(srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O \
-+	  -c $(srcdir)/crtstuff.c -DCRT_END \
- 	  -o $(T)crtendS$(objext)
- 
- # This is a version of crtbegin for -static links.
 @@ -2662,6 +2663,8 @@
     output.h $(FUNCTION_H) $(BASIC_BLOCK_H) $(GGC_H) $(TM_P_H) $(TIMEVAR_H) \
     except.h $(TARGET_H) $(PARAMS_H) rtlhooks-def.h tree-pass.h $(REAL_H) \
@@ -153,23 +137,32 @@ diff -buNr gcc-4.4.1.orig/gcc/Makefile.in gcc-4.4.1/gcc/Makefile.in
  dce.o : dce.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
     $(TREE_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) $(DF_H) cselib.h \
     $(DBGCNT_H) dce.h $(TIMEVAR_H) tree-pass.h $(DBGCNT_H) $(TM_P_H)
-diff -buNr gcc-4.4.1.orig/gcc/builtins.c gcc-4.4.1/gcc/builtins.c
---- gcc-4.4.1.orig/gcc/builtins.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/builtins.c	2009-10-28 17:11:13.000000000 +0100
-@@ -3131,6 +3131,10 @@
- expand_builtin_strlen (tree exp, rtx target,
- 		       enum machine_mode target_mode)
- {
-+  // TODO(pasko): fix the bug in this builtin instead of disabling the
-+  // optimization.
-+  return NULL_RTX;
-+
-   if (!validate_arglist (exp, POINTER_TYPE, VOID_TYPE))
-     return NULL_RTX;
-   else
-diff -buNr gcc-4.4.1.orig/gcc/cfgrtl.c gcc-4.4.1/gcc/cfgrtl.c
---- gcc-4.4.1.orig/gcc/cfgrtl.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/cfgrtl.c	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/builtins.c gcc-4.4.2/gcc/builtins.c
+--- gcc-4.4.2.orig/gcc/builtins.c	2009-08-24 11:52:03.000000000 +0200
++++ gcc-4.4.2/gcc/builtins.c	2009-11-26 18:14:16.000000000 +0100
+@@ -3183,8 +3183,9 @@
+       if (! (result != 0
+ 	     && REG_P (result)
+ 	     && GET_MODE (result) == insn_mode
++	     && insn_mode == Pmode
+ 	     && REGNO (result) >= FIRST_PSEUDO_REGISTER))
+-	result = gen_reg_rtx (insn_mode);
++	result = gen_reg_rtx (Pmode);
+ 
+       /* Make a place to hold the source address.  We will not expand
+ 	 the actual source until we are sure that the expansion will
+@@ -3211,7 +3212,7 @@
+       start_sequence ();
+       pat = expand_expr (src, src_reg, ptr_mode, EXPAND_NORMAL);
+       if (pat != src_reg)
+-	emit_move_insn (src_reg, pat);
++	convert_move(src_reg, pat, 0);
+       pat = get_insns ();
+       end_sequence ();
+ 
+diff -uNr gcc-4.4.2.orig/gcc/cfgrtl.c gcc-4.4.2/gcc/cfgrtl.c
+--- gcc-4.4.2.orig/gcc/cfgrtl.c	2009-05-22 01:17:37.000000000 +0200
++++ gcc-4.4.2/gcc/cfgrtl.c	2009-11-26 18:14:16.000000000 +0100
 @@ -1069,6 +1069,9 @@
      }
    else
@@ -180,9 +173,9 @@ diff -buNr gcc-4.4.1.orig/gcc/cfgrtl.c gcc-4.4.1/gcc/cfgrtl.c
        gcc_assert (e->flags & EDGE_FALLTHRU);
        if (e->src == ENTRY_BLOCK_PTR)
  	{
-diff -buNr gcc-4.4.1.orig/gcc/config/i386/crtfastmath.c gcc-4.4.1/gcc/config/i386/crtfastmath.c
---- gcc-4.4.1.orig/gcc/config/i386/crtfastmath.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/config/i386/crtfastmath.c	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/config/i386/crtfastmath.c gcc-4.4.2/gcc/config/i386/crtfastmath.c
+--- gcc-4.4.2.orig/gcc/config/i386/crtfastmath.c	2009-04-10 01:23:07.000000000 +0200
++++ gcc-4.4.2/gcc/config/i386/crtfastmath.c	2009-11-26 18:14:16.000000000 +0100
 @@ -27,8 +27,13 @@
  #ifndef __x86_64__
  /* All 64-bit targets have SSE and DAZ;
@@ -216,9 +209,9 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/crtfastmath.c gcc-4.4.1/gcc/config/i38
  #else
    unsigned int mxcsr = __builtin_ia32_stmxcsr ();
    mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
-diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386-protos.h gcc-4.4.1/gcc/config/i386/i386-protos.h
---- gcc-4.4.1.orig/gcc/config/i386/i386-protos.h	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/config/i386/i386-protos.h	2009-11-11 23:34:25.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386-protos.h gcc-4.4.2/gcc/config/i386/i386-protos.h
+--- gcc-4.4.2.orig/gcc/config/i386/i386-protos.h	2009-07-11 21:06:26.000000000 +0200
++++ gcc-4.4.2/gcc/config/i386/i386-protos.h	2009-11-26 18:14:16.000000000 +0100
 @@ -253,7 +253,7 @@
  extern char internal_label_prefix[16];
  extern int internal_label_prefix_len;
@@ -228,19 +221,20 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386-protos.h gcc-4.4.1/gcc/config/i38
  struct ix86_address
  {
    rtx base, index, disp;
-@@ -261,6 +261,8 @@
+@@ -261,6 +261,9 @@
    enum ix86_address_seg seg;
  };
  
 +extern int NACL_LEA_MATCH_ADDRESS_OPERAND;
++extern int insn_is_nacl_lea(rtx insn);
 +extern int lea_match_address_operand (rtx, enum machine_mode);
  extern int ix86_decompose_address (rtx, struct ix86_address *);
  extern int memory_address_length (rtx addr);
  extern void x86_output_aligned_bss (FILE *, tree, const char *,
-diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.c
---- gcc-4.4.1.orig/gcc/config/i386/i386.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/config/i386/i386.c	2009-11-12 09:45:12.000000000 +0100
-@@ -7451,6 +7451,8 @@
+diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
+--- gcc-4.4.2.orig/gcc/config/i386/i386.c	2009-09-21 16:22:40.000000000 +0200
++++ gcc-4.4.2/gcc/config/i386/i386.c	2009-11-26 18:14:17.000000000 +0100
+@@ -7452,6 +7452,8 @@
  	  (*targetm.asm_out.unique_section) (decl, 0);
  	  switch_to_section (get_named_section (decl, NULL, 0));
  
@@ -249,7 +243,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
  	  (*targetm.asm_out.globalize_label) (asm_out_file, name);
  	  fputs ("\t.hidden\t", asm_out_file);
  	  assemble_name (asm_out_file, name);
-@@ -7460,14 +7462,30 @@
+@@ -7461,14 +7463,30 @@
        else
  	{
  	  switch_to_section (text_section);
@@ -280,7 +274,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
  
    if (NEED_INDICATE_EXEC_STACK)
      file_end_indicate_exec_stack ();
-@@ -8684,6 +8702,8 @@
+@@ -8688,6 +8706,8 @@
    if (style == 0)
      return;
  
@@ -289,7 +283,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
    if (crtl->args.pops_args && crtl->args.size)
      {
        rtx popc = GEN_INT (crtl->args.pops_args);
-@@ -8692,22 +8712,38 @@
+@@ -8696,22 +8716,38 @@
  	 return address, do explicit add, and jump indirectly to the
  	 caller.  */
  
@@ -337,7 +331,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
  }
  
  /* Reset from the function's potential modifications.  */
-@@ -8742,6 +8778,41 @@
+@@ -8746,6 +8782,56 @@
     grossly off.  Return -1 if the address contains ASHIFT, so it is not
     strictly valid, but still used for computing length of lea instruction.  */
  
@@ -352,13 +346,28 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
 +  return retval;
 +}
 +
++int
++insn_is_nacl_lea(rtx insn)
++{
++  enum rtx_code insn_code;
++
++  if (!TARGET_64BIT)
++    return 0;
++
++  insn_code = GET_CODE (PATTERN (insn));
++  return insn_code != USE &&
++      insn_code != CLOBBER &&
++      get_attr_type (insn) == TYPE_LEA;
++}
++
 +static int
 +gen_r15(rtx reg)
 +{
 +  rtx base_reg;
 +
 +  /* In lea mode don't use R15, don't use nacl: prefix */
-+  if (NACL_LEA_MATCH_ADDRESS_OPERAND) return 0;
++  if (NACL_LEA_MATCH_ADDRESS_OPERAND
++      || !flag_control_integrity || !TARGET_64BIT) return 0;
 +  base_reg = GET_CODE (reg) == SUBREG ? SUBREG_REG (reg) : reg;
 +  switch (REGNO(base_reg))
 +    {
@@ -379,7 +388,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
  int
  ix86_decompose_address (rtx addr, struct ix86_address *out)
  {
-@@ -8753,7 +8824,18 @@
+@@ -8757,7 +8843,18 @@
    enum ix86_address_seg seg = SEG_DEFAULT;
  
    if (REG_P (addr) || GET_CODE (addr) == SUBREG)
@@ -398,7 +407,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
    else if (GET_CODE (addr) == PLUS)
      {
        rtx addends[4], op;
-@@ -8764,9 +8846,17 @@
+@@ -8768,9 +8865,17 @@
  	{
  	  if (n >= 4)
  	    return 0;
@@ -416,7 +425,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
        while (GET_CODE (op) == PLUS);
        if (n >= 4)
  	return 0;
-@@ -8781,6 +8871,11 @@
+@@ -8785,6 +8890,11 @@
  	      if (index)
  		return 0;
  	      index = XEXP (op, 0);
@@ -428,7 +437,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
  	      scale_rtx = XEXP (op, 1);
  	      break;
  
-@@ -8795,10 +8890,30 @@
+@@ -8799,10 +8909,31 @@
  
  	    case REG:
  	    case SUBREG:
@@ -453,13 +462,14 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
  	      else if (!index)
 +                {
  		index = op;
-+                  if (!NACL_LEA_MATCH_ADDRESS_OPERAND)
++		    if (!NACL_LEA_MATCH_ADDRESS_OPERAND
++		      && flag_control_integrity && TARGET_64BIT)
 +                    seg = SEG_NACL;
 +                }
  	      else
  		return 0;
  	      break;
-@@ -8820,6 +8935,11 @@
+@@ -8824,6 +8955,11 @@
    else if (GET_CODE (addr) == MULT)
      {
        index = XEXP (addr, 0);		/* index*scale */
@@ -471,7 +481,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
        scale_rtx = XEXP (addr, 1);
      }
    else if (GET_CODE (addr) == ASHIFT)
-@@ -8828,6 +8948,11 @@
+@@ -8832,6 +8968,11 @@
  
        /* We're called for lea too, which implements ashift on occasion.  */
        index = XEXP (addr, 0);
@@ -483,7 +493,212 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
        tmp = XEXP (addr, 1);
        if (!CONST_INT_P (tmp))
  	return 0;
-@@ -9882,7 +10007,11 @@
+@@ -9297,9 +9438,10 @@
+ 	  goto report_error;
+ 	}
+ 
+-      if (GET_MODE (base) != Pmode)
++      /* Allow 32bit addr in 64bit mode - usually makes no sense except in LEA */
++      if (GET_MODE (base) != SImode && (!TARGET_64BIT || GET_MODE (base) != DImode))
+ 	{
+-	  reason = "base is not in Pmode";
++	  reason = "base is not in proper mode";
+ 	  goto report_error;
+ 	}
+ 
+@@ -9333,9 +9475,16 @@
+ 	  goto report_error;
+ 	}
+ 
+-      if (GET_MODE (index) != Pmode)
++      /* Allow 32bit addr in 64bit mode - usually makes no sense except in LEA */
++      if (GET_MODE (index) != SImode && (!TARGET_64BIT || GET_MODE (index) != DImode))
+ 	{
+-	  reason = "index is not in Pmode";
++	  reason = "index is not in proper mode";
++	  goto report_error;
++	}
++
++      if (base && GET_MODE (base) != GET_MODE (index))
++	{
++	  reason = "index and base have different modes";
+ 	  goto report_error;
+ 	}
+ 
+@@ -9529,7 +9678,7 @@
+     new_rtx = addr;
+   else if (TARGET_64BIT
+ 	   && ix86_cmodel != CM_SMALL_PIC
+-	   && gotoff_operand (addr, Pmode))
++	   && gotoff_operand (addr, ptr_mode))
+     {
+       rtx tmpreg;
+       /* This symbol may be referenced via a displacement from the PIC
+@@ -9541,28 +9690,28 @@
+ 	addr = XEXP (addr, 0);
+       if (GET_CODE (addr) == PLUS)
+ 	  {
+-            new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)),
++            new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, XEXP (addr, 0)),
+ 				      UNSPEC_GOTOFF);
+-	    new_rtx = gen_rtx_PLUS (Pmode, new_rtx, XEXP (addr, 1));
++	    new_rtx = gen_rtx_PLUS (ptr_mode, new_rtx, XEXP (addr, 1));
+ 	  }
+ 	else
+-          new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
+-      new_rtx = gen_rtx_CONST (Pmode, new_rtx);
++          new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
++      new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
+       if (!reg)
+-        tmpreg = gen_reg_rtx (Pmode);
++        tmpreg = gen_reg_rtx (ptr_mode);
+       else
+ 	tmpreg = reg;
+       emit_move_insn (tmpreg, new_rtx);
+ 
+       if (reg != 0)
+ 	{
+-	  new_rtx = expand_simple_binop (Pmode, PLUS, reg, pic_offset_table_rtx,
++	  new_rtx = expand_simple_binop (ptr_mode, PLUS, reg, pic_offset_table_rtx,
+ 					 tmpreg, 1, OPTAB_DIRECT);
+ 	  new_rtx = reg;
+ 	}
+-      else new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
++      else new_rtx = gen_rtx_PLUS (ptr_mode, pic_offset_table_rtx, tmpreg);
+     }
+-  else if (!TARGET_64BIT && gotoff_operand (addr, Pmode))
++  else if (!TARGET_64BIT && gotoff_operand (addr, ptr_mode))
+     {
+       /* This symbol may be referenced via a displacement from the PIC
+ 	 base address (@GOTOFF).  */
+@@ -9573,14 +9722,14 @@
+ 	addr = XEXP (addr, 0);
+       if (GET_CODE (addr) == PLUS)
+ 	  {
+-            new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)),
++            new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, XEXP (addr, 0)),
+ 				      UNSPEC_GOTOFF);
+-	    new_rtx = gen_rtx_PLUS (Pmode, new_rtx, XEXP (addr, 1));
++	    new_rtx = gen_rtx_PLUS (ptr_mode, new_rtx, XEXP (addr, 1));
+ 	  }
+ 	else
+-          new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
+-      new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+-      new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
++          new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
++      new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
++      new_rtx = gen_rtx_PLUS (ptr_mode, pic_offset_table_rtx, new_rtx);
+ 
+       if (reg != 0)
+ 	{
+@@ -9602,19 +9751,19 @@
+               && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (addr, 0), 0)))
+             {
+               rtx t = legitimize_dllimport_symbol (XEXP (XEXP (addr, 0), 0), true);
+-              return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (addr, 0), 1));
++              return gen_rtx_PLUS (ptr_mode, t, XEXP (XEXP (addr, 0), 1));
+             }
+         }
+ 
+       if (TARGET_64BIT && ix86_cmodel != CM_LARGE_PIC)
+ 	{
+-	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
+-	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+-	  new_rtx = gen_const_mem (Pmode, new_rtx);
++	  new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
++	  new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
++	  new_rtx = gen_const_mem (ptr_mode, new_rtx);
+ 	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
+ 
+ 	  if (reg == 0)
+-	    reg = gen_reg_rtx (Pmode);
++	    reg = gen_reg_rtx (ptr_mode);
+ 	  /* Use directly gen_movsi, otherwise the address is loaded
+ 	     into register for CSE.  We don't want to CSE this addresses,
+ 	     instead we CSE addresses from the GOT table, so skip this.  */
+@@ -9628,16 +9777,16 @@
+ 
+ 	  if (reload_in_progress)
+ 	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
+-	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
+-	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
++	  new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, addr), UNSPEC_GOT);
++	  new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
+ 	  if (TARGET_64BIT)
+-	    new_rtx = force_reg (Pmode, new_rtx);
+-	  new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
+-	  new_rtx = gen_const_mem (Pmode, new_rtx);
++	    new_rtx = force_reg (ptr_mode, new_rtx);
++	  new_rtx = gen_rtx_PLUS (ptr_mode, pic_offset_table_rtx, new_rtx);
++	  new_rtx = gen_const_mem (ptr_mode, new_rtx);
+ 	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
+ 
+ 	  if (reg == 0)
+-	    reg = gen_reg_rtx (Pmode);
++	    reg = gen_reg_rtx (ptr_mode);
+ 	  emit_move_insn (reg, new_rtx);
+ 	  new_rtx = reg;
+ 	}
+@@ -9653,7 +9802,7 @@
+ 	      new_rtx = reg;
+ 	    }
+ 	  else
+-	    new_rtx = force_reg (Pmode, addr);
++	    new_rtx = force_reg (ptr_mode, addr);
+ 	}
+       else if (GET_CODE (addr) == CONST)
+ 	{
+@@ -9674,18 +9823,18 @@
+ 
+ 	  /* Check first to see if this is a constant offset from a @GOTOFF
+ 	     symbol reference.  */
+-	  if (gotoff_operand (op0, Pmode)
++	  if (gotoff_operand (op0, ptr_mode)
+ 	      && CONST_INT_P (op1))
+ 	    {
+ 	      if (!TARGET_64BIT)
+ 		{
+ 		  if (reload_in_progress)
+ 		    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
+-		  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0),
++		  new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, op0),
+ 					    UNSPEC_GOTOFF);
+-		  new_rtx = gen_rtx_PLUS (Pmode, new_rtx, op1);
+-		  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
+-		  new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
++		  new_rtx = gen_rtx_PLUS (ptr_mode, new_rtx, op1);
++		  new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
++		  new_rtx = gen_rtx_PLUS (ptr_mode, pic_offset_table_rtx, new_rtx);
+ 
+ 		  if (reg != 0)
+ 		    {
+@@ -9698,9 +9847,9 @@
+ 		  if (INTVAL (op1) < -16*1024*1024
+ 		      || INTVAL (op1) >= 16*1024*1024)
+ 		    {
+-		      if (!x86_64_immediate_operand (op1, Pmode))
+-			op1 = force_reg (Pmode, op1);
+-		      new_rtx = gen_rtx_PLUS (Pmode, force_reg (Pmode, op0), op1);
++		      if (!x86_64_immediate_operand (op1, ptr_mode))
++			op1 = force_reg (ptr_mode, op1);
++		      new_rtx = gen_rtx_PLUS (ptr_mode, force_reg (ptr_mode, op0), op1);
+ 		    }
+ 		}
+ 	    }
+@@ -9716,10 +9865,10 @@
+ 		{
+ 		  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
+ 		    {
+-		      base = gen_rtx_PLUS (Pmode, base, XEXP (new_rtx, 0));
++		      base = gen_rtx_PLUS (ptr_mode, base, XEXP (new_rtx, 0));
+ 		      new_rtx = XEXP (new_rtx, 1);
+ 		    }
+-		  new_rtx = gen_rtx_PLUS (Pmode, base, new_rtx);
++		  new_rtx = gen_rtx_PLUS (ptr_mode, base, new_rtx);
+ 		}
+ 	    }
+ 	}
+@@ -9886,7 +10035,18 @@
        if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
  	{
  	  base = get_thread_pointer (for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
@@ -492,11 +707,18 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
 +           * compiling TLS access.
 +           * TODO(pasko): generate TLS access according to NaCl ABI.
 +	   */
-+	  return gen_rtx_SUBREG(SImode, gen_rtx_PLUS (Pmode, base, off), 0);
++	  if (Pmode != ptr_mode)
++	    {
++	      return gen_rtx_SUBREG(ptr_mode, gen_rtx_PLUS (Pmode, base, off), 0);
++	    }
++	  else
++	    {
++	      return gen_rtx_PLUS (Pmode, base, off);
++          }
  	}
        else
  	{
-@@ -10162,7 +10291,21 @@
+@@ -10166,7 +10319,21 @@
  	  rtx temp = gen_reg_rtx (Pmode);
  	  rtx val  = force_operand (XEXP (x, 1), temp);
  	  if (val != temp)
@@ -518,7 +740,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
  
  	  XEXP (x, 1) = temp;
  	  return x;
-@@ -10173,7 +10316,21 @@
+@@ -10177,7 +10344,21 @@
  	  rtx temp = gen_reg_rtx (Pmode);
  	  rtx val  = force_operand (XEXP (x, 0), temp);
  	  if (val != temp)
@@ -540,7 +762,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
  
  	  XEXP (x, 0) = temp;
  	  return x;
-@@ -11433,9 +11590,23 @@
+@@ -11437,9 +11618,23 @@
        break;
      case SEG_FS:
      case SEG_GS:
@@ -565,7 +787,47 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
        break;
      default:
        gcc_unreachable ();
-@@ -19040,7 +19211,10 @@
+@@ -12372,7 +12567,7 @@
+ 	}
+     }
+ 
+-  if (flag_pic && mode == Pmode && symbolic_operand (op1, Pmode))
++  if (flag_pic && mode == ptr_mode && symbolic_operand (op1, ptr_mode))
+     {
+       if (TARGET_MACHO && !TARGET_64BIT)
+ 	{
+@@ -12381,8 +12576,8 @@
+ 	    {
+ 	      rtx temp = ((reload_in_progress
+ 			   || ((op0 && REG_P (op0))
+-			       && mode == Pmode))
+-			  ? op0 : gen_reg_rtx (Pmode));
++			       && mode == ptr_mode))
++			  ? op0 : gen_reg_rtx (ptr_mode));
+ 	      op1 = machopic_indirect_data_reference (op1, temp);
+ 	      op1 = machopic_legitimize_pic_address (op1, mode,
+ 						     temp == op1 ? 0 : temp);
+@@ -12396,8 +12591,8 @@
+       else
+ 	{
+ 	  if (MEM_P (op0))
+-	    op1 = force_reg (Pmode, op1);
+-	  else if (!TARGET_64BIT || !x86_64_movabs_operand (op1, Pmode))
++	    op1 = force_reg (ptr_mode, op1);
++	  else if (!TARGET_64BIT || !x86_64_movabs_operand (op1, ptr_mode))
+ 	    {
+ 	      rtx reg = !can_create_pseudo_p () ? op0 : NULL_RTX;
+ 	      op1 = legitimize_pic_address (op1, reg);
+@@ -19048,7 +19243,7 @@
+ {
+   int i;
+ 
+-  if (get_attr_type (insn) == TYPE_LEA)
++  if (insn_is_nacl_lea(insn))
+     {
+       rtx set = PATTERN (insn);
+ 
+@@ -19057,7 +19252,10 @@
  
        gcc_assert (GET_CODE (set) == SET);
  
@@ -577,41 +839,9 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.c gcc-4.4.1/gcc/config/i386/i386.
      }
  
    extract_insn_cached (insn);
-diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.h gcc-4.4.1/gcc/config/i386/i386.h
---- gcc-4.4.1.orig/gcc/config/i386/i386.h	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/config/i386/i386.h	2009-10-27 18:20:27.000000000 +0100
-@@ -889,7 +889,7 @@
- /* mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7*/			\
-      0,   0,   0,   0,   0,   0,   0,   0,			\
- /*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
--     2,   2,   2,   2,   2,   2,   2,   2,			\
-+     2,   2,   2,   2,   2,   2,   2,   1,			\
- /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
-      2,   2,    2,    2,    2,    2,    2,    2 }
- 
-@@ -917,7 +917,7 @@
- /* mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7*/			\
-      1,   1,   1,   1,   1,   1,   1,   1,			\
- /*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
--     1,   1,   1,   1,   2,   2,   2,   2,			\
-+     1,   1,   1,   1,   2,   2,   2,   1,			\
- /*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
-      1,   1,    1,    1,    1,    1,    1,    1 }
- 
-@@ -1934,6 +1934,10 @@
-    between pointers and any other objects of this machine mode.  */
- #define Pmode (TARGET_64BIT ? DImode : SImode)
- 
-+#define POINTER_SIZE 32
-+
-+#define POINTERS_EXTEND_UNSIGNED 1
-+
- /* A function address in a call instruction
-    is a byte address (for indexing purposes)
-    so give the MEM rtx a byte's mode.  */
-diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386.md
---- gcc-4.4.1.orig/gcc/config/i386/i386.md	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/config/i386/i386.md	2009-11-12 09:45:12.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.md
+--- gcc-4.4.2.orig/gcc/config/i386/i386.md	2009-10-12 15:40:17.000000000 +0200
++++ gcc-4.4.2/gcc/config/i386/i386.md	2009-11-26 18:14:17.000000000 +0100
 @@ -154,6 +154,11 @@
     (UNSPEC_SP_TLS_SET		102)
     (UNSPEC_SP_TLS_TEST		103)
@@ -659,7 +889,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
    "TARGET_64BIT"
    "lea{l}\t{%a1, %k0|%k0, %a1}"
    [(set_attr "type" "lea")
-@@ -5962,173 +5968,12 @@
+@@ -5962,7 +5968,7 @@
  
  (define_insn "*lea_2_rex64"
    [(set (match_operand:DI 0 "register_operand" "=r")
@@ -668,173 +898,67 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
    "TARGET_64BIT"
    "lea{q}\t{%a1, %0|%0, %a1}"
    [(set_attr "type" "lea")
-    (set_attr "mode" "DI")])
- 
--;; The lea patterns for non-Pmodes needs to be matched by several
--;; insns converted to real lea by splitters.
--
--(define_insn_and_split "*lea_general_1"
--  [(set (match_operand 0 "register_operand" "=r")
--	(plus (plus (match_operand 1 "index_register_operand" "l")
--		    (match_operand 2 "register_operand" "r"))
--	      (match_operand 3 "immediate_operand" "i")))]
--  "(GET_MODE (operands[0]) == QImode || GET_MODE (operands[0]) == HImode
--    || (TARGET_64BIT && GET_MODE (operands[0]) == SImode))
--   && (!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
--   && GET_MODE (operands[0]) == GET_MODE (operands[1])
--   && GET_MODE (operands[0]) == GET_MODE (operands[2])
--   && (GET_MODE (operands[0]) == GET_MODE (operands[3])
--       || GET_MODE (operands[3]) == VOIDmode)"
--  "#"
--  "&& reload_completed"
--  [(const_int 0)]
--{
--  rtx pat;
--  operands[0] = gen_lowpart (SImode, operands[0]);
--  operands[1] = gen_lowpart (Pmode, operands[1]);
--  operands[2] = gen_lowpart (Pmode, operands[2]);
--  operands[3] = gen_lowpart (Pmode, operands[3]);
--  pat = gen_rtx_PLUS (Pmode, gen_rtx_PLUS (Pmode, operands[1], operands[2]),
--  		      operands[3]);
--  if (Pmode != SImode)
--    pat = gen_rtx_SUBREG (SImode, pat, 0);
--  emit_insn (gen_rtx_SET (VOIDmode, operands[0], pat));
--  DONE;
--}
--  [(set_attr "type" "lea")
--   (set_attr "mode" "SI")])
--
--(define_insn_and_split "*lea_general_1_zext"
--  [(set (match_operand:DI 0 "register_operand" "=r")
--	(zero_extend:DI
--	  (plus:SI (plus:SI (match_operand:SI 1 "index_register_operand" "l")
--			    (match_operand:SI 2 "register_operand" "r"))
--		   (match_operand:SI 3 "immediate_operand" "i"))))]
--  "TARGET_64BIT"
--  "#"
--  "&& reload_completed"
--  [(set (match_dup 0)
--	(zero_extend:DI (subreg:SI (plus:DI (plus:DI (match_dup 1)
--						     (match_dup 2))
--					    (match_dup 3)) 0)))]
--{
--  operands[1] = gen_lowpart (Pmode, operands[1]);
--  operands[2] = gen_lowpart (Pmode, operands[2]);
--  operands[3] = gen_lowpart (Pmode, operands[3]);
--}
--  [(set_attr "type" "lea")
--   (set_attr "mode" "SI")])
--
--(define_insn_and_split "*lea_general_2"
--  [(set (match_operand 0 "register_operand" "=r")
--	(plus (mult (match_operand 1 "index_register_operand" "l")
--		    (match_operand 2 "const248_operand" "i"))
--	      (match_operand 3 "nonmemory_operand" "ri")))]
--  "(GET_MODE (operands[0]) == QImode || GET_MODE (operands[0]) == HImode
--    || (TARGET_64BIT && GET_MODE (operands[0]) == SImode))
--   && (!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
--   && GET_MODE (operands[0]) == GET_MODE (operands[1])
--   && (GET_MODE (operands[0]) == GET_MODE (operands[3])
--       || GET_MODE (operands[3]) == VOIDmode)"
--  "#"
--  "&& reload_completed"
--  [(const_int 0)]
--{
--  rtx pat;
--  operands[0] = gen_lowpart (SImode, operands[0]);
--  operands[1] = gen_lowpart (Pmode, operands[1]);
--  operands[3] = gen_lowpart (Pmode, operands[3]);
--  pat = gen_rtx_PLUS (Pmode, gen_rtx_MULT (Pmode, operands[1], operands[2]),
--  		      operands[3]);
--  if (Pmode != SImode)
--    pat = gen_rtx_SUBREG (SImode, pat, 0);
--  emit_insn (gen_rtx_SET (VOIDmode, operands[0], pat));
--  DONE;
--}
--  [(set_attr "type" "lea")
--   (set_attr "mode" "SI")])
--
--(define_insn_and_split "*lea_general_2_zext"
--  [(set (match_operand:DI 0 "register_operand" "=r")
--	(zero_extend:DI
--	  (plus:SI (mult:SI (match_operand:SI 1 "index_register_operand" "l")
--			    (match_operand:SI 2 "const248_operand" "n"))
--		   (match_operand:SI 3 "nonmemory_operand" "ri"))))]
--  "TARGET_64BIT"
--  "#"
--  "&& reload_completed"
--  [(set (match_dup 0)
--	(zero_extend:DI (subreg:SI (plus:DI (mult:DI (match_dup 1)
--						     (match_dup 2))
--					    (match_dup 3)) 0)))]
--{
--  operands[1] = gen_lowpart (Pmode, operands[1]);
--  operands[3] = gen_lowpart (Pmode, operands[3]);
--}
--  [(set_attr "type" "lea")
--   (set_attr "mode" "SI")])
--
--(define_insn_and_split "*lea_general_3"
--  [(set (match_operand 0 "register_operand" "=r")
--	(plus (plus (mult (match_operand 1 "index_register_operand" "l")
--			  (match_operand 2 "const248_operand" "i"))
--		    (match_operand 3 "register_operand" "r"))
--	      (match_operand 4 "immediate_operand" "i")))]
--  "(GET_MODE (operands[0]) == QImode || GET_MODE (operands[0]) == HImode
--    || (TARGET_64BIT && GET_MODE (operands[0]) == SImode))
--   && (!TARGET_PARTIAL_REG_STALL || optimize_function_for_size_p (cfun))
--   && GET_MODE (operands[0]) == GET_MODE (operands[1])
--   && GET_MODE (operands[0]) == GET_MODE (operands[3])"
--  "#"
--  "&& reload_completed"
--  [(const_int 0)]
--{
--  rtx pat;
--  operands[0] = gen_lowpart (SImode, operands[0]);
--  operands[1] = gen_lowpart (Pmode, operands[1]);
--  operands[3] = gen_lowpart (Pmode, operands[3]);
--  operands[4] = gen_lowpart (Pmode, operands[4]);
--  pat = gen_rtx_PLUS (Pmode,
--  		      gen_rtx_PLUS (Pmode, gen_rtx_MULT (Pmode, operands[1],
--		      					 operands[2]),
--				    operands[3]),
--  		      operands[4]);
--  if (Pmode != SImode)
--    pat = gen_rtx_SUBREG (SImode, pat, 0);
--  emit_insn (gen_rtx_SET (VOIDmode, operands[0], pat));
--  DONE;
--}
--  [(set_attr "type" "lea")
--   (set_attr "mode" "SI")])
--
--(define_insn_and_split "*lea_general_3_zext"
--  [(set (match_operand:DI 0 "register_operand" "=r")
--	(zero_extend:DI
--	  (plus:SI (plus:SI (mult:SI
--			      (match_operand:SI 1 "index_register_operand" "l")
--			      (match_operand:SI 2 "const248_operand" "n"))
--			    (match_operand:SI 3 "register_operand" "r"))
--		   (match_operand:SI 4 "immediate_operand" "i"))))]
--  "TARGET_64BIT"
--  "#"
--  "&& reload_completed"
--  [(set (match_dup 0)
--	(zero_extend:DI (subreg:SI (plus:DI (plus:DI (mult:DI (match_dup 1)
--							      (match_dup 2))
--						     (match_dup 3))
--					    (match_dup 4)) 0)))]
--{
--  operands[1] = gen_lowpart (Pmode, operands[1]);
--  operands[3] = gen_lowpart (Pmode, operands[3]);
--  operands[4] = gen_lowpart (Pmode, operands[4]);
--}
--  [(set_attr "type" "lea")
--   (set_attr "mode" "SI")])
--
- (define_insn "*adddi_1_rex64"
-   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,rm,r")
- 	(plus:DI (match_operand:DI 1 "nonimmediate_operand" "%0,0,r")
-@@ -6461,8 +6306,15 @@
+@@ -5991,6 +5997,9 @@
+   operands[0] = gen_lowpart (SImode, operands[0]);
+   operands[1] = gen_lowpart (Pmode, operands[1]);
+   operands[2] = gen_lowpart (Pmode, operands[2]);
++  if (GET_CODE(operands[3]) == CONST && GET_MODE(operands[3]) == SImode)
++    operands[3] = gen_lowpart (SImode, operands[3]);
++  else
+   operands[3] = gen_lowpart (Pmode, operands[3]);
+   pat = gen_rtx_PLUS (Pmode, gen_rtx_PLUS (Pmode, operands[1], operands[2]),
+   		      operands[3]);
+@@ -6018,6 +6027,9 @@
+ {
+   operands[1] = gen_lowpart (Pmode, operands[1]);
+   operands[2] = gen_lowpart (Pmode, operands[2]);
++  if (GET_CODE(operands[3]) == CONST && GET_MODE(operands[3]) == SImode)
++    operands[3] = gen_lowpart (SImode, operands[3]);
++  else
+   operands[3] = gen_lowpart (Pmode, operands[3]);
+ }
+   [(set_attr "type" "lea")
+@@ -6041,6 +6053,9 @@
+   rtx pat;
+   operands[0] = gen_lowpart (SImode, operands[0]);
+   operands[1] = gen_lowpart (Pmode, operands[1]);
++  if (GET_CODE(operands[3]) == CONST && GET_MODE(operands[3]) == SImode)
++    operands[3] = gen_lowpart (SImode, operands[3]);
++  else
+   operands[3] = gen_lowpart (Pmode, operands[3]);
+   pat = gen_rtx_PLUS (Pmode, gen_rtx_MULT (Pmode, operands[1], operands[2]),
+   		      operands[3]);
+@@ -6067,6 +6082,9 @@
+ 					    (match_dup 3)) 0)))]
+ {
+   operands[1] = gen_lowpart (Pmode, operands[1]);
++  if (GET_CODE(operands[3]) == CONST && GET_MODE(operands[3]) == SImode)
++    operands[3] = gen_lowpart (SImode, operands[3]);
++  else
+   operands[3] = gen_lowpart (Pmode, operands[3]);
+ }
+   [(set_attr "type" "lea")
+@@ -6091,6 +6109,9 @@
+   operands[0] = gen_lowpart (SImode, operands[0]);
+   operands[1] = gen_lowpart (Pmode, operands[1]);
+   operands[3] = gen_lowpart (Pmode, operands[3]);
++  if (GET_CODE(operands[4]) == CONST && GET_MODE(operands[4]) == SImode)
++    operands[4] = gen_lowpart (SImode, operands[4]);
++  else
+   operands[4] = gen_lowpart (Pmode, operands[4]);
+   pat = gen_rtx_PLUS (Pmode,
+   		      gen_rtx_PLUS (Pmode, gen_rtx_MULT (Pmode, operands[1],
+@@ -6124,6 +6145,9 @@
+ {
+   operands[1] = gen_lowpart (Pmode, operands[1]);
+   operands[3] = gen_lowpart (Pmode, operands[3]);
++  if (GET_CODE(operands[4]) == CONST && GET_MODE(operands[4]) == SImode)
++    operands[4] = gen_lowpart (SImode, operands[4]);
++  else
+   operands[4] = gen_lowpart (Pmode, operands[4]);
+ }
+   [(set_attr "type" "lea")
+@@ -6461,8 +6485,15 @@
    if (GET_MODE (operands[0]) != Pmode)
      {
        operands[1] = gen_lowpart (Pmode, operands[1]);
@@ -850,7 +974,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
    operands[0] = gen_lowpart (SImode, operands[0]);
    pat = gen_rtx_PLUS (Pmode, operands[1], operands[2]);
    if (Pmode != SImode)
-@@ -6539,7 +6391,14 @@
+@@ -6539,7 +6570,14 @@
  	(zero_extend:DI (subreg:SI (plus:DI (match_dup 1) (match_dup 2)) 0)))]
  {
    operands[1] = gen_lowpart (Pmode, operands[1]);
@@ -865,7 +989,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
  })
  
  (define_insn "*addsi_2"
-@@ -9686,6 +9545,297 @@
+@@ -9687,6 +9725,309 @@
    [(set_attr "type" "alu")
     (set_attr "mode" "SI")])
  
@@ -966,11 +1090,11 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
 +  gcc_assert (flag_control_integrity);
 +  if (SIBLING_CALL_P (insn))
 +    {
-+      return "nacljmp\t%k0";
++      return "nacljmp\t%k0,%%r15";
 +    }
 +  else
 +    {
-+      return "naclcall\t%k0";
++      return "naclcall\t%k0,%%r15";
 +    }
 +}
 +  [(set_attr "type" "call")])
@@ -1088,13 +1212,14 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
 +    UNSPEC_NACLJMP))]
 +  ""
 +{
++  gcc_assert (flag_control_integrity);
 +  if (TARGET_64BIT)
 +    {
-+      "nacljmp\t%0,%%r15";
++      return "nacljmp\t%0,%%r15";
 +    }
 +  else
 +    {
-+      "nacljmp\t%0";
++      return "nacljmp\t%0";
 +    }
 +}
 +  [(set_attr "type" "ibr")
@@ -1104,7 +1229,10 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
 +  [(set (pc) (unspec [(match_operand:DI 0 "register_operand" "r")]
 +    UNSPEC_NACLJMP))]
 +  "TARGET_64BIT"
-+  "nacljmp\t%k0,%%r15"
++{
++  gcc_assert (flag_control_integrity);
++  return "nacljmp\t%k0,%%r15";
++}
 +  [(set_attr "type" "ibr")
 +   (set_attr "length_immediate" "0")])
 +
@@ -1114,6 +1242,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
 +   (use (label_ref (match_operand 1 "" "")))]
 +  ""
 +{
++  gcc_assert (flag_control_integrity);
 +  if (TARGET_64BIT)
 +    {
 +      return "nacljmp\t%0,%%r15";
@@ -1131,7 +1260,10 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
 +    UNSPEC_NACLJMP))
 +   (use (label_ref (match_operand 1 "" "")))]
 +  "TARGET_64BIT"
-+  "nacljmp\t%k0,%%r15"
++{
++  gcc_assert (flag_control_integrity);
++  return "nacljmp\t%k0,%%r15";
++}
 +  [(set_attr "type" "ibr")
 +   (set_attr "length_immediate" "0")])
 +
@@ -1140,6 +1272,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
 +    UNSPEC_NACLRET)]
 +  ""
 +{
++  gcc_assert (flag_control_integrity);
 +  if (TARGET_64BIT)
 +    {
 +      return "nacljmp\t%0,%%r15";
@@ -1156,14 +1289,17 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
 +  [(unspec [(return) (use (match_operand:DI 0 "register_operand" "r"))]
 +    UNSPEC_NACLRET)]
 +  "TARGET_64BIT"
-+  "nacljmp\t%k0,%%r15"
++{
++  gcc_assert (flag_control_integrity);
++  return "nacljmp\t%k0,%%r15";
++}
 +  [(set_attr "type" "ibr")
 +   (set_attr "length_immediate" "0")])
 +
  (define_insn "*iorsi_3"
    [(set (reg FLAGS_REG)
  	(compare (ior:SI (match_operand:SI 1 "nonimmediate_operand" "%0")
-@@ -14841,7 +14991,16 @@
+@@ -14842,7 +15183,16 @@
  (define_insn "*indirect_jump"
    [(set (pc) (match_operand:P 0 "nonimmediate_operand" "rm"))]
    ""
@@ -1181,16 +1317,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
    [(set_attr "type" "ibr")
     (set_attr "length_immediate" "0")])
  
-@@ -14884,7 +15043,7 @@
- })
- 
- (define_insn "*tablejump_1"
--  [(set (pc) (match_operand:P 0 "nonimmediate_operand" "rm"))
-+  [(set (pc) (match_operand 0 "nonimmediate_operand" "rm"))
-    (use (label_ref (match_operand 1 "" "")))]
-   ""
-   "jmp\t%A0"
-@@ -15036,9 +15195,11 @@
+@@ -15040,9 +15390,11 @@
    [(call (mem:QI (match_operand:SI 0 "sibcall_insn_operand" "s,U"))
  	 (match_operand 1 "" ""))]
    "SIBLING_CALL_P (insn) && !TARGET_64BIT"
@@ -1205,7 +1332,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
    [(set_attr "type" "call")])
  
  (define_insn "*call_1_rex64"
-@@ -15085,12 +15246,14 @@
+@@ -15089,12 +15441,14 @@
    [(set_attr "type" "call")])
  
  (define_insn "*sibcall_1_rex64"
@@ -1224,7 +1351,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
    [(set_attr "type" "call")])
  
  ;; Call subroutine, returning value in operand 0
-@@ -15225,6 +15388,15 @@
+@@ -15229,6 +15583,15 @@
    if (crtl->args.pops_args)
      {
        rtx popc = GEN_INT (crtl->args.pops_args);
@@ -1240,7 +1367,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
        emit_jump_insn (gen_return_pop_internal (popc));
        DONE;
      }
-@@ -15233,9 +15405,17 @@
+@@ -15237,9 +15600,17 @@
  (define_insn "return_internal"
    [(return)]
    "reload_completed"
@@ -1261,7 +1388,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
     (set_attr "modrm" "0")])
  
  ;; Used by x86_machine_dependent_reorg to avoid penalty on single byte RET
-@@ -15245,9 +15425,17 @@
+@@ -15249,9 +15620,17 @@
    [(return)
     (unspec [(const_int 0)] UNSPEC_REP)]
    "reload_completed"
@@ -1282,7 +1409,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
     (set_attr "prefix_rep" "1")
     (set_attr "modrm" "0")])
  
-@@ -15255,9 +15443,17 @@
+@@ -15259,9 +15638,17 @@
    [(return)
     (use (match_operand:SI 0 "const_int_operand" ""))]
    "reload_completed"
@@ -1303,7 +1430,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
     (set_attr "modrm" "0")])
  
  (define_insn "return_indirect_internal"
-@@ -21554,9 +21750,11 @@
+@@ -21562,9 +21949,11 @@
  	(call (mem:QI (match_operand:SI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:SI 2 "" "")))]
    "SIBLING_CALL_P (insn) && !TARGET_64BIT"
@@ -1318,7 +1445,7 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
    [(set_attr "type" "callv")])
  
  (define_insn "*call_value_1_rex64"
-@@ -21610,11 +21808,14 @@
+@@ -21618,11 +22007,14 @@
  	(call (mem:QI (match_operand:DI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:DI 2 "" "")))]
    "SIBLING_CALL_P (insn) && TARGET_64BIT"
@@ -1336,10 +1463,10 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/i386.md gcc-4.4.1/gcc/config/i386/i386
  ;; We used to use "int $5", in honor of #BR which maps to interrupt vector 5.
  ;; That, however, is usually mapped by the OS to SIGSEGV, which is often
  ;; caught for use by garbage collectors and the like.  Using an insn that
-diff -buNr gcc-4.4.1.orig/gcc/config/i386/nacl.h gcc-4.4.1/gcc/config/i386/nacl.h
---- gcc-4.4.1.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-4.4.1/gcc/config/i386/nacl.h	2009-10-27 18:20:27.000000000 +0100
-@@ -0,0 +1,75 @@
+diff -uNr gcc-4.4.2.orig/gcc/config/i386/nacl.h gcc-4.4.2/gcc/config/i386/nacl.h
+--- gcc-4.4.2.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.4.2/gcc/config/i386/nacl.h	2009-11-26 18:14:17.000000000 +0100
+@@ -0,0 +1,114 @@
 +/* Target definitions for GCC for NativeClient using ELF
 +   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002
 +   Free Software Foundation, Inc.
@@ -1380,8 +1507,9 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/nacl.h gcc-4.4.1/gcc/config/i386/nacl.
 +#undef	LIB_SPEC
 +#define LIB_SPEC \
 +  "%{pthread:-lpthread} \
-+   %{shared:-lc} \
-+   %{!shared:%{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}} -lnacl -lsrpc"
++   -lc \
++   -lnacl \
++   %{mieee-fp:-lieee} %{profile:-lc_p}%{!profile:-lc}"
 +
 +/*
 + * Set the linker emulation to be elf_nacl rather than linux.h's default
@@ -1415,9 +1543,47 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/nacl.h gcc-4.4.1/gcc/config/i386/nacl.
 +	builtin_define ("__native_client__=1");		\
 +  }							\
 +  while (0)
-diff -buNr gcc-4.4.1.orig/gcc/config/i386/predicates.md gcc-4.4.1/gcc/config/i386/predicates.md
---- gcc-4.4.1.orig/gcc/config/i386/predicates.md	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/config/i386/predicates.md	2009-11-11 23:34:25.000000000 +0100
++
++/* NaCl uses are using ILP32 model even on x86-84 */
++#undef LONG_TYPE_SIZE
++#define LONG_TYPE_SIZE 32
++#define POINTER_SIZE 32
++#define POINTERS_EXTEND_UNSIGNED 1
++/* NaCl reserves R15 and makes RBP special in x86-64 mode */
++#undef FIXED_REGISTERS
++#define FIXED_REGISTERS						\
++/*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
++{  0, 0, 0, 0, 0, 0, 3, 1, 0,  0,  0,  0,  0,  0,  0,  0,	\
++/*arg,flags,fpsr,fpcr,frame*/					\
++    1,    1,   1,   1,    1,					\
++/*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
++     0,   0,   0,   0,   0,   0,   0,   0,			\
++/* mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7*/			\
++     0,   0,   0,   0,   0,   0,   0,   0,			\
++/*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
++     2,   2,   2,   2,   2,   2,   2,   1,			\
++/*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
++     2,   2,    2,    2,    2,    2,    2,    2 }
++#undef CALL_USED_REGISTERS
++#define CALL_USED_REGISTERS					\
++/*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
++{  1, 1, 1, 0, 3, 3, 3, 1, 1,  1,  1,  1,  1,  1,  1,  1,	\
++/*arg,flags,fpsr,fpcr,frame*/					\
++    1,   1,    1,   1,    1,					\
++/*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
++     1,   1,   1,   1,   1,   1,   1,   1,			\
++/* mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7*/			\
++     1,   1,   1,   1,   1,   1,   1,   1,			\
++/*  r8,  r9, r10, r11, r12, r13, r14, r15*/			\
++     1,   1,   1,   1,   2,   2,   2,   1,			\
++/*xmm8,xmm9,xmm10,xmm11,xmm12,xmm13,xmm14,xmm15*/		\
++     1,   1,    1,    1,    1,    1,    1,    1 }
++/* Leave is forbidden in NaCl mode */
++#undef TARGET_USE_LEAVE
++#define TARGET_USE_LEAVE	(ix86_tune_features[X86_TUNE_USE_LEAVE] && !flag_control_integrity)
+diff -uNr gcc-4.4.2.orig/gcc/config/i386/predicates.md gcc-4.4.2/gcc/config/i386/predicates.md
+--- gcc-4.4.2.orig/gcc/config/i386/predicates.md	2009-03-12 21:45:39.000000000 +0100
++++ gcc-4.4.2/gcc/config/i386/predicates.md	2009-11-26 18:14:17.000000000 +0100
 @@ -792,14 +792,16 @@
  
  ;; Return true if op if a valid address, and does not contain
@@ -1437,9 +1603,9 @@ diff -buNr gcc-4.4.1.orig/gcc/config/i386/predicates.md gcc-4.4.1/gcc/config/i38
    return parts.seg == SEG_DEFAULT;
  })
  
-diff -buNr gcc-4.4.1.orig/gcc/config/nacl.opt gcc-4.4.1/gcc/config/nacl.opt
---- gcc-4.4.1.orig/gcc/config/nacl.opt	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-4.4.1/gcc/config/nacl.opt	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/config/nacl.opt gcc-4.4.2/gcc/config/nacl.opt
+--- gcc-4.4.2.orig/gcc/config/nacl.opt	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.4.2/gcc/config/nacl.opt	2009-11-26 18:14:17.000000000 +0100
 @@ -0,0 +1,54 @@
 +; Processor-independent options for GNU/Linux.
 +;
@@ -1495,9 +1661,9 @@ diff -buNr gcc-4.4.1.orig/gcc/config/nacl.opt gcc-4.4.1/gcc/config/nacl.opt
 +
 +fnacl-align-32
 +Common Report Var(flag_nacl_align_pow2,5)
-diff -buNr gcc-4.4.1.orig/gcc/config.gcc gcc-4.4.1/gcc/config.gcc
---- gcc-4.4.1.orig/gcc/config.gcc	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/config.gcc	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/config.gcc gcc-4.4.2/gcc/config.gcc
+--- gcc-4.4.2.orig/gcc/config.gcc	2009-09-13 15:01:13.000000000 +0200
++++ gcc-4.4.2/gcc/config.gcc	2009-11-26 18:14:17.000000000 +0100
 @@ -482,7 +482,20 @@
    esac
    fbsd_tm_file="${fbsd_tm_file} freebsd-spec.h freebsd.h"
@@ -1554,9 +1720,9 @@ diff -buNr gcc-4.4.1.orig/gcc/config.gcc gcc-4.4.1/gcc/config.gcc
  	esac
  	tmake_file="${tmake_file} i386/t-crtstuff i386/t-crtpc i386/t-crtfm t-dfprules"
  	;;
-diff -buNr gcc-4.4.1.orig/gcc/configure gcc-4.4.1/gcc/configure
---- gcc-4.4.1.orig/gcc/configure	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/configure	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/configure gcc-4.4.2/gcc/configure
+--- gcc-4.4.2.orig/gcc/configure	2009-03-24 18:46:03.000000000 +0100
++++ gcc-4.4.2/gcc/configure	2009-11-26 18:14:17.000000000 +0100
 @@ -7835,7 +7835,7 @@
  else
  
@@ -1601,9 +1767,9 @@ diff -buNr gcc-4.4.1.orig/gcc/configure gcc-4.4.1/gcc/configure
  	    || grep 'EMUL = .*lynx' ../ld/Makefile) > /dev/null; then
  	  in_tree_ld_is_elf=yes
  	fi
-diff -buNr gcc-4.4.1.orig/gcc/configure.ac gcc-4.4.1/gcc/configure.ac
---- gcc-4.4.1.orig/gcc/configure.ac	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/configure.ac	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/configure.ac gcc-4.4.2/gcc/configure.ac
+--- gcc-4.4.2.orig/gcc/configure.ac	2009-03-24 18:46:03.000000000 +0100
++++ gcc-4.4.2/gcc/configure.ac	2009-11-26 18:14:17.000000000 +0100
 @@ -605,7 +605,7 @@
  ],
  [
@@ -1648,23 +1814,10 @@ diff -buNr gcc-4.4.1.orig/gcc/configure.ac gcc-4.4.1/gcc/configure.ac
  changequote([,])dnl
      case $target_os in
        cygwin* | pe | mingw32*)
-diff -buNr gcc-4.4.1.orig/gcc/crtstuff.c gcc-4.4.1/gcc/crtstuff.c
---- gcc-4.4.1.orig/gcc/crtstuff.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/crtstuff.c	2009-10-27 18:20:27.000000000 +0100
-@@ -97,6 +97,9 @@
- #endif
- #if defined(EH_FRAME_SECTION_NAME) && !defined(USE_PT_GNU_EH_FRAME)
- # define USE_EH_FRAME_REGISTRY
-+/* Khim: temporary hack till shared libraries support will be added */
-+#undef USE_EH_FRAME_REGISTRY
-+#undef JCR_SECTION_NAME
- #endif
- #if defined(EH_FRAME_SECTION_NAME) && EH_TABLES_CAN_BE_READ_ONLY
- # define EH_FRAME_SECTION_CONST const
-diff -buNr gcc-4.4.1.orig/gcc/ctrl-intg.c gcc-4.4.1/gcc/ctrl-intg.c
---- gcc-4.4.1.orig/gcc/ctrl-intg.c	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-4.4.1/gcc/ctrl-intg.c	2009-11-02 12:15:52.000000000 +0100
-@@ -0,0 +1,359 @@
+diff -uNr gcc-4.4.2.orig/gcc/ctrl-intg.c gcc-4.4.2/gcc/ctrl-intg.c
+--- gcc-4.4.2.orig/gcc/ctrl-intg.c	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.4.2/gcc/ctrl-intg.c	2009-11-26 18:14:17.000000000 +0100
+@@ -0,0 +1,360 @@
 +/* Patch RTL to enforce control flow integrity for GCC.
 +   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000, 2002, 2003,
 +   2004, 2005, 2007
@@ -1869,6 +2022,7 @@ diff -buNr gcc-4.4.1.orig/gcc/ctrl-intg.c gcc-4.4.1/gcc/ctrl-intg.c
 +    RTL_CONST_CALL_P (call_insn) = RTL_CONST_CALL_P (insn);
 +    RTL_PURE_CALL_P (call_insn) = RTL_PURE_CALL_P (insn);
 +    SIBLING_CALL_P (call_insn) = SIBLING_CALL_P (insn);
++    REG_NOTES (call_insn) = REG_NOTES (insn);
 +    CALL_INSN_FUNCTION_USAGE (call_insn) = CALL_INSN_FUNCTION_USAGE (insn);
 +
 +    insns_head = get_insns ();
@@ -2024,9 +2178,9 @@ diff -buNr gcc-4.4.1.orig/gcc/ctrl-intg.c gcc-4.4.1/gcc/ctrl-intg.c
 +    TODO_dump_func, /* todo_flags_finish */
 +  }
 +};
-diff -buNr gcc-4.4.1.orig/gcc/dwarf2out.c gcc-4.4.1/gcc/dwarf2out.c
---- gcc-4.4.1.orig/gcc/dwarf2out.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/dwarf2out.c	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/dwarf2out.c gcc-4.4.2/gcc/dwarf2out.c
+--- gcc-4.4.2.orig/gcc/dwarf2out.c	2009-09-23 16:58:58.000000000 +0200
++++ gcc-4.4.2/gcc/dwarf2out.c	2009-11-26 18:14:17.000000000 +0100
 @@ -1463,9 +1463,17 @@
  	    insn = XVECEXP (insn, 0, 0);
  	  if (GET_CODE (insn) == SET)
@@ -2046,9 +2200,9 @@ diff -buNr gcc-4.4.1.orig/gcc/dwarf2out.c gcc-4.4.1/gcc/dwarf2out.c
        return;
      }
  
-diff -buNr gcc-4.4.1.orig/gcc/emit-rtl.c gcc-4.4.1/gcc/emit-rtl.c
---- gcc-4.4.1.orig/gcc/emit-rtl.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/emit-rtl.c	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/emit-rtl.c gcc-4.4.2/gcc/emit-rtl.c
+--- gcc-4.4.2.orig/gcc/emit-rtl.c	2009-07-11 21:06:26.000000000 +0200
++++ gcc-4.4.2/gcc/emit-rtl.c	2009-11-26 18:14:17.000000000 +0100
 @@ -852,6 +852,10 @@
      return -subreg_lowpart_offset (inner_mode, outer_mode);
  }
@@ -2069,9 +2223,27 @@ diff -buNr gcc-4.4.1.orig/gcc/emit-rtl.c gcc-4.4.1/gcc/emit-rtl.c
  
    /* If a virtual register with bigger mode alignment is generated,
       increase stack alignment estimation because it might be spilled
-diff -buNr gcc-4.4.1.orig/gcc/final.c gcc-4.4.1/gcc/final.c
---- gcc-4.4.1.orig/gcc/final.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/final.c	2009-11-11 23:34:25.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/explow.c gcc-4.4.2/gcc/explow.c
+--- gcc-4.4.2.orig/gcc/explow.c	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.2/gcc/explow.c	2009-11-26 18:14:17.000000000 +0100
+@@ -613,7 +613,13 @@
+ rtx
+ copy_to_mode_reg (enum machine_mode mode, rtx x)
+ {
+-  rtx temp = gen_reg_rtx (mode);
++  rtx temp;
++
++  /* It's safe to move SImode register instead of DImode register in x86-64 */
++  if (mode == DImode && GET_MODE (x) == SImode && GET_CODE(x) == CONST)
++    mode = SImode;
++
++  temp = gen_reg_rtx (mode);
+ 
+   /* If not an operand, must be an address with PLUS and MULT so
+      do the computation.  */
+diff -uNr gcc-4.4.2.orig/gcc/final.c gcc-4.4.2/gcc/final.c
+--- gcc-4.4.2.orig/gcc/final.c	2008-12-10 09:46:40.000000000 +0100
++++ gcc-4.4.2/gcc/final.c	2009-11-26 18:14:17.000000000 +0100
 @@ -1755,7 +1755,8 @@
    gcc_assert (CALL_P (insn));
    x = PATTERN (insn);
@@ -2082,40 +2254,39 @@ diff -buNr gcc-4.4.1.orig/gcc/final.c gcc-4.4.1/gcc/final.c
      {
        switch (GET_CODE (x))
  	{
-@@ -2066,6 +2067,7 @@
-       {
- 	rtx body = PATTERN (insn);
- 	int insn_code_number;
-+        int lea;
- 	const char *templ;
- 
- #ifdef HAVE_conditional_execution
-@@ -2533,8 +2535,11 @@
+@@ -2533,8 +2534,12 @@
  	    print_rtx_head = "";
  	  }
  
-+	lea = get_attr_type(insn) == TYPE_LEA;
-+        if (lea) NACL_LEA_MATCH_ADDRESS_OPERAND++;
++	if (insn_is_nacl_lea(insn))
++	  NACL_LEA_MATCH_ADDRESS_OPERAND++;
  	if (! constrain_operands_cached (1))
  	  fatal_insn_not_found (insn);
-+	if (lea) NACL_LEA_MATCH_ADDRESS_OPERAND--;
++	if (insn_is_nacl_lea(insn))
++	 NACL_LEA_MATCH_ADDRESS_OPERAND--;
  
  	/* Some target machines need to prescan each insn before
  	   it is output.  */
-@@ -2635,7 +2640,10 @@
+@@ -2635,7 +2640,11 @@
  	  }
  
  	/* Output assembler code from the template.  */
-+	lea = get_attr_type(insn) == TYPE_LEA;
-+        if (lea) NACL_LEA_MATCH_ADDRESS_OPERAND++;
++        if (insn_is_nacl_lea(insn))
++          NACL_LEA_MATCH_ADDRESS_OPERAND++;
  	output_asm_insn (templ, recog_data.operand);
-+	if (lea) NACL_LEA_MATCH_ADDRESS_OPERAND--;
++	if (insn_is_nacl_lea(insn))
++          NACL_LEA_MATCH_ADDRESS_OPERAND--;
  
  	/* If necessary, report the effect that the instruction has on
  	   the unwind info.   We've already done this for delay slots
-diff -buNr gcc-4.4.1.orig/gcc/genattrtab.c gcc-4.4.1/gcc/genattrtab.c
---- gcc-4.4.1.orig/gcc/genattrtab.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/genattrtab.c	2009-11-11 23:34:25.000000000 +0100
+@@ -4346,4 +4355,3 @@
+   0                                     /* todo_flags_finish */
+  }
+ };
+-
+diff -uNr gcc-4.4.2.orig/gcc/genattrtab.c gcc-4.4.2/gcc/genattrtab.c
+--- gcc-4.4.2.orig/gcc/genattrtab.c	2008-07-09 08:45:21.000000000 +0200
++++ gcc-4.4.2/gcc/genattrtab.c	2009-11-26 18:14:17.000000000 +0100
 @@ -3650,8 +3650,11 @@
    if (attr->name[0] == '*')
      printf ("%s (rtx insn ATTRIBUTE_UNUSED)\n", &attr->name[1]);
@@ -2128,9 +2299,9 @@ diff -buNr gcc-4.4.1.orig/gcc/genattrtab.c gcc-4.4.1/gcc/genattrtab.c
      {
        printf ("get_attr_%s (void)\n", attr->name);
        printf ("{\n");
-diff -buNr gcc-4.4.1.orig/gcc/gensupport.c gcc-4.4.1/gcc/gensupport.c
---- gcc-4.4.1.orig/gcc/gensupport.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/gensupport.c	2009-11-11 23:34:25.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/gensupport.c gcc-4.4.2/gcc/gensupport.c
+--- gcc-4.4.2.orig/gcc/gensupport.c	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.2/gcc/gensupport.c	2009-11-26 18:14:17.000000000 +0100
 @@ -1355,6 +1355,7 @@
  static const struct std_pred_table std_preds[] = {
    {"general_operand", false, true, {SUBREG, REG, MEM}},
@@ -2139,10 +2310,10 @@ diff -buNr gcc-4.4.1.orig/gcc/gensupport.c gcc-4.4.1/gcc/gensupport.c
    {"register_operand", false, false, {SUBREG, REG}},
    {"pmode_register_operand", true, false, {SUBREG, REG}},
    {"scratch_operand", false, false, {SCRATCH, REG}},
-diff -buNr gcc-4.4.1.orig/gcc/gthr-nacl.h gcc-4.4.1/gcc/gthr-nacl.h
---- gcc-4.4.1.orig/gcc/gthr-nacl.h	1970-01-01 01:00:00.000000000 +0100
-+++ gcc-4.4.1/gcc/gthr-nacl.h	2009-11-03 16:02:56.000000000 +0100
-@@ -0,0 +1,558 @@
+diff -uNr gcc-4.4.2.orig/gcc/gthr-nacl.h gcc-4.4.2/gcc/gthr-nacl.h
+--- gcc-4.4.2.orig/gcc/gthr-nacl.h	1970-01-01 01:00:00.000000000 +0100
++++ gcc-4.4.2/gcc/gthr-nacl.h	2009-11-26 18:14:17.000000000 +0100
+@@ -0,0 +1,559 @@
 +/* Threads compatibility routines for libgcc2 and libobjc.  */
 +/* Compile this one with gcc.  */
 +/* Copyright (C) 1997, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007
@@ -2263,12 +2434,13 @@ diff -buNr gcc-4.4.1.orig/gcc/gthr-nacl.h gcc-4.4.1/gcc/gthr-nacl.h
 +   */
 +  // This is a dirty workaround over our inability to use locks in NaCl x86-64.
 +  // TODO(pasko): fix this by enabling correct builtins.
-+#if 0
++#ifndef __x86_64__
 +  static void *const __gthread_active_ptr
 +    = __extension__ (void *) &__gthrw_(pthread_mutex_lock);
 +  return __gthread_active_ptr != 0;
-+#endif
++#else
 +  return 0;
++#endif
 +}
 +
 +#ifdef _LIBOBJC
@@ -2701,9 +2873,9 @@ diff -buNr gcc-4.4.1.orig/gcc/gthr-nacl.h gcc-4.4.1/gcc/gthr-nacl.h
 +#endif /* _LIBOBJC */
 +
 +#endif /* ! GCC_GTHR_POSIX_H */
-diff -buNr gcc-4.4.1.orig/gcc/opts.c gcc-4.4.1/gcc/opts.c
---- gcc-4.4.1.orig/gcc/opts.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/opts.c	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/opts.c gcc-4.4.2/gcc/opts.c
+--- gcc-4.4.2.orig/gcc/opts.c	2009-03-28 18:28:45.000000000 +0100
++++ gcc-4.4.2/gcc/opts.c	2009-11-26 18:14:17.000000000 +0100
 @@ -941,9 +941,12 @@
    /* Just -O1/-O0 optimizations.  */
    opt1_max = (optimize <= 1);
@@ -2739,9 +2911,9 @@ diff -buNr gcc-4.4.1.orig/gcc/opts.c gcc-4.4.1/gcc/opts.c
    /* Save the current optimization options if this is the first call.  */
    if (first_time_p)
      {
-diff -buNr gcc-4.4.1.orig/gcc/passes.c gcc-4.4.1/gcc/passes.c
---- gcc-4.4.1.orig/gcc/passes.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/passes.c	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/passes.c gcc-4.4.2/gcc/passes.c
+--- gcc-4.4.2.orig/gcc/passes.c	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.2/gcc/passes.c	2009-11-26 18:14:17.000000000 +0100
 @@ -764,6 +764,7 @@
        NEXT_PASS (pass_stack_ptr_mod);
        NEXT_PASS (pass_mode_switching);
@@ -2750,9 +2922,9 @@ diff -buNr gcc-4.4.1.orig/gcc/passes.c gcc-4.4.1/gcc/passes.c
        NEXT_PASS (pass_match_asm_constraints);
        NEXT_PASS (pass_sms);
        NEXT_PASS (pass_sched);
-diff -buNr gcc-4.4.1.orig/gcc/postreload.c gcc-4.4.1/gcc/postreload.c
---- gcc-4.4.1.orig/gcc/postreload.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/postreload.c	2009-11-11 23:34:25.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/postreload.c gcc-4.4.2/gcc/postreload.c
+--- gcc-4.4.2.orig/gcc/postreload.c	2008-08-31 11:44:25.000000000 +0200
++++ gcc-4.4.2/gcc/postreload.c	2009-11-26 18:14:17.000000000 +0100
 @@ -30,6 +30,7 @@
  #include "tm_p.h"
  #include "obstack.h"
@@ -2765,11 +2937,11 @@ diff -buNr gcc-4.4.1.orig/gcc/postreload.c gcc-4.4.1/gcc/postreload.c
      return 0;
  
    /* Figure out which alternative currently matches.  */
-+  if (get_attr_type (insn) == TYPE_LEA)
++  if (insn_is_nacl_lea(insn))
 +    NACL_LEA_MATCH_ADDRESS_OPERAND++;
    if (! constrain_operands (1))
      fatal_insn_not_found (insn);
-+  if (get_attr_type (insn) == TYPE_LEA)
++  if (insn_is_nacl_lea(insn))
 +    NACL_LEA_MATCH_ADDRESS_OPERAND--;
  
    alternative_reject = XALLOCAVEC (int, recog_data.n_alternatives);
@@ -2779,9 +2951,9 @@ diff -buNr gcc-4.4.1.orig/gcc/postreload.c gcc-4.4.1/gcc/postreload.c
   }
  };
 -
-diff -buNr gcc-4.4.1.orig/gcc/recog.c gcc-4.4.1/gcc/recog.c
---- gcc-4.4.1.orig/gcc/recog.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/recog.c	2009-11-11 23:34:25.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/recog.c gcc-4.4.2/gcc/recog.c
+--- gcc-4.4.2.orig/gcc/recog.c	2009-03-09 14:30:19.000000000 +0100
++++ gcc-4.4.2/gcc/recog.c	2009-11-26 18:14:17.000000000 +0100
 @@ -1961,10 +1961,25 @@
  void
  extract_constrain_insn_cached (rtx insn)
@@ -2789,14 +2961,14 @@ diff -buNr gcc-4.4.1.orig/gcc/recog.c gcc-4.4.1/gcc/recog.c
 +  int lea, change_lea;
 +  /* get_attr_type can call extract_constrain_insn_cached - don't call it if in
 +     lea mode already */
-+  if (NACL_LEA_MATCH_ADDRESS_OPERAND)
++  if (!TARGET_64BIT || NACL_LEA_MATCH_ADDRESS_OPERAND)
 +    {
 +       lea = 1;
 +       change_lea = 0;
 +    }
 +  else
 +    {
-+      lea = get_attr_type(insn) == TYPE_LEA;
++      lea = insn_is_nacl_lea(insn);
 +      change_lea = 1;
 +    }
 +  if (lea && change_lea) NACL_LEA_MATCH_ADDRESS_OPERAND++;
@@ -2808,23 +2980,7 @@ diff -buNr gcc-4.4.1.orig/gcc/recog.c gcc-4.4.1/gcc/recog.c
  }
  
  /* Do cached constrain_operands and complain about failures.  */
-@@ -2044,8 +2059,14 @@
- 	 and get the constraints.  */
- 
-       icode = recog_memoized (insn);
--      if (icode < 0)
-+      if (icode < 0) {
-+        static int retest=1;
-+        if (retest) {
-+          retest = 0;
-+          return extract_insn(insn);
-+        }
- 	fatal_insn_not_found (insn);
-+        }
- 
-       recog_data.n_operands = noperands = insn_data[icode].n_operands;
-       recog_data.n_alternatives = insn_data[icode].n_alternatives;
-@@ -2087,6 +2108,17 @@
+@@ -2087,6 +2102,17 @@
    which_alternative = -1;
  }
  
@@ -2842,9 +2998,15 @@ diff -buNr gcc-4.4.1.orig/gcc/recog.c gcc-4.4.1/gcc/recog.c
  /* After calling extract_insn, you can use this function to extract some
     information from the constraint strings into a more usable form.
     The collected data is stored in recog_op_alt.  */
-diff -buNr gcc-4.4.1.orig/gcc/reg-stack.c gcc-4.4.1/gcc/reg-stack.c
---- gcc-4.4.1.orig/gcc/reg-stack.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/reg-stack.c	2009-10-27 18:20:27.000000000 +0100
+@@ -3626,5 +3652,3 @@
+   TODO_dump_func | TODO_verify_rtl_sharing /* todo_flags_finish */
+  }
+ };
+-
+-
+diff -uNr gcc-4.4.2.orig/gcc/reg-stack.c gcc-4.4.2/gcc/reg-stack.c
+--- gcc-4.4.2.orig/gcc/reg-stack.c	2009-05-22 20:59:30.000000000 +0200
++++ gcc-4.4.2/gcc/reg-stack.c	2009-11-26 18:14:17.000000000 +0100
 @@ -1866,6 +1866,25 @@
  		compare_for_stack_reg (insn, regstack, pat_src);
  		break;
@@ -2871,9 +3033,9 @@ diff -buNr gcc-4.4.1.orig/gcc/reg-stack.c gcc-4.4.1/gcc/reg-stack.c
  	      default:
  		gcc_unreachable ();
  	      }
-diff -buNr gcc-4.4.1.orig/gcc/regrename.c gcc-4.4.1/gcc/regrename.c
---- gcc-4.4.1.orig/gcc/regrename.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/regrename.c	2009-11-12 14:03:24.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/regrename.c gcc-4.4.2/gcc/regrename.c
+--- gcc-4.4.2.orig/gcc/regrename.c	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.2/gcc/regrename.c	2009-11-26 18:14:17.000000000 +0100
 @@ -25,6 +25,7 @@
  #include "rtl.h"
  #include "tm_p.h"
@@ -2882,36 +3044,24 @@ diff -buNr gcc-4.4.1.orig/gcc/regrename.c gcc-4.4.1/gcc/regrename.c
  #include "regs.h"
  #include "addresses.h"
  #include "hard-reg-set.h"
-@@ -1588,6 +1589,8 @@
-       bool is_asm, any_replacements;
-       rtx set;
-       bool replaced[MAX_RECOG_OPERANDS];
-+      int lea, is_pseudo;
-+      enum rtx_code insn_code;
- 
-       if (! INSN_P (insn))
- 	{
-@@ -1599,9 +1602,17 @@
+@@ -1599,9 +1600,14 @@
  
        set = single_set (insn);
        extract_insn (insn);
 +      
-+      insn_code = GET_CODE (PATTERN (insn));
-+      is_pseudo = insn_code == USE || insn_code == CLOBBER;
-+      lea = !is_pseudo && get_attr_type (insn) == TYPE_LEA;
-+      if (lea)
++      if (insn_is_nacl_lea(insn))
 +        NACL_LEA_MATCH_ADDRESS_OPERAND++;
        if (! constrain_operands (1))
  	fatal_insn_not_found (insn);
        preprocess_constraints ();
-+      if (lea)
++      if (insn_is_nacl_lea(insn))
 +        NACL_LEA_MATCH_ADDRESS_OPERAND--;
        alt = which_alternative;
        n_ops = recog_data.n_operands;
        is_asm = asm_noperands (PATTERN (insn)) >= 0;
-diff -buNr gcc-4.4.1.orig/gcc/reload.c gcc-4.4.1/gcc/reload.c
---- gcc-4.4.1.orig/gcc/reload.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/reload.c	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/reload.c gcc-4.4.2/gcc/reload.c
+--- gcc-4.4.2.orig/gcc/reload.c	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.2/gcc/reload.c	2009-11-26 18:14:17.000000000 +0100
 @@ -4692,6 +4692,9 @@
  	  && reg_equiv_constant[regno] != 0)
  	{
@@ -2922,9 +3072,9 @@ diff -buNr gcc-4.4.1.orig/gcc/reload.c gcc-4.4.1/gcc/reload.c
  	    simplify_gen_subreg (GET_MODE (x), reg_equiv_constant[regno],
  				 GET_MODE (SUBREG_REG (x)), SUBREG_BYTE (x));
  	  gcc_assert (tem);
-diff -buNr gcc-4.4.1.orig/gcc/rtlhooks.c gcc-4.4.1/gcc/rtlhooks.c
---- gcc-4.4.1.orig/gcc/rtlhooks.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/rtlhooks.c	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/rtlhooks.c gcc-4.4.2/gcc/rtlhooks.c
+--- gcc-4.4.2.orig/gcc/rtlhooks.c	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.2/gcc/rtlhooks.c	2009-11-26 18:14:17.000000000 +0100
 @@ -51,6 +51,11 @@
        gcc_assert (result != 0);
        return result;
@@ -2937,9 +3087,9 @@ diff -buNr gcc-4.4.1.orig/gcc/rtlhooks.c gcc-4.4.1/gcc/rtlhooks.c
    else
      {
        int offset = 0;
-diff -buNr gcc-4.4.1.orig/gcc/tree-pass.h gcc-4.4.1/gcc/tree-pass.h
---- gcc-4.4.1.orig/gcc/tree-pass.h	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/tree-pass.h	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/gcc/tree-pass.h gcc-4.4.2/gcc/tree-pass.h
+--- gcc-4.4.2.orig/gcc/tree-pass.h	2009-02-20 16:20:38.000000000 +0100
++++ gcc-4.4.2/gcc/tree-pass.h	2009-11-26 18:14:17.000000000 +0100
 @@ -389,6 +389,8 @@
  extern struct gimple_opt_pass pass_build_cgraph_edges;
  extern struct gimple_opt_pass pass_reset_cc_flags;
@@ -2949,74 +3099,9 @@ diff -buNr gcc-4.4.1.orig/gcc/tree-pass.h gcc-4.4.1/gcc/tree-pass.h
  /* IPA Passes */
  extern struct ipa_opt_pass pass_ipa_inline;
  extern struct ipa_opt_pass pass_ipa_cp;
-diff -buNr gcc-4.4.1.orig/gcc/unwind-dw2-fde-glibc.c gcc-4.4.1/gcc/unwind-dw2-fde-glibc.c
---- gcc-4.4.1.orig/gcc/unwind-dw2-fde-glibc.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/unwind-dw2-fde-glibc.c	2009-11-11 23:34:25.000000000 +0100
-@@ -429,7 +429,8 @@
- #else
- /* Prevent multiple include of header files.  */
- #define _Unwind_Find_FDE _Unwind_Find_FDE
--#include "unwind-dw2-fde.c"
-+/*#include "unwind-dw2-fde.c"
-+*/
- #endif
- 
- #if defined (USE_GAS_SYMVER) && defined (SHARED) && defined (USE_LIBUNWIND_EXCEPTIONS)
-diff -buNr gcc-4.4.1.orig/gcc/unwind-dw2.c gcc-4.4.1/gcc/unwind-dw2.c
---- gcc-4.4.1.orig/gcc/unwind-dw2.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/gcc/unwind-dw2.c	2009-11-11 23:34:25.000000000 +0100
-@@ -434,6 +434,7 @@
- execute_stack_op (const unsigned char *op_ptr, const unsigned char *op_end,
- 		  struct _Unwind_Context *context, _Unwind_Word initial)
- {
-+#if 0
-   _Unwind_Word stack[64];	/* ??? Assume this is enough.  */
-   int stack_elt;
- 
-@@ -847,6 +848,7 @@
-   gcc_assert (stack_elt);
-   stack_elt -= 1;
-   return stack[stack_elt];
-+#endif
- }
- 
- 
-@@ -860,6 +862,7 @@
- 		     struct _Unwind_Context *context,
- 		     _Unwind_FrameState *fs)
- {
-+#if 0
-   struct frame_state_reg_info *unused_rs = NULL;
- 
-   /* Don't allow remember/restore between CIE and FDE programs.  */
-@@ -1104,6 +1107,7 @@
- 	  gcc_unreachable ();
- 	}
-     }
-+#endif
- }
- 
- /* Given the _Unwind_Context CONTEXT for a stack frame, look up the FDE for
-diff -buNr gcc-4.4.1.orig/libgcc/Makefile.in gcc-4.4.1/libgcc/Makefile.in
---- gcc-4.4.1.orig/libgcc/Makefile.in	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/libgcc/Makefile.in	2009-10-27 18:20:27.000000000 +0100
-@@ -821,11 +821,11 @@
- # These are versions of crtbegin and crtend for shared libraries.
- crtbeginS$(objext): $(gcc_srcdir)/crtstuff.c
- 	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
--	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN -DCRTSTUFFS_O
-+	  -c $(gcc_srcdir)/crtstuff.c -DCRT_BEGIN
- 
- crtendS$(objext): $(gcc_srcdir)/crtstuff.c
- 	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) \
--	  -c $(gcc_srcdir)/crtstuff.c -DCRT_END -DCRTSTUFFS_O
-+	  -c $(gcc_srcdir)/crtstuff.c -DCRT_END
- 
- # This is a version of crtbegin for -static links.
- crtbeginT.o: $(gcc_srcdir)/crtstuff.c
-diff -buNr gcc-4.4.1.orig/libgcc/config.host gcc-4.4.1/libgcc/config.host
---- gcc-4.4.1.orig/libgcc/config.host	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/libgcc/config.host	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/libgcc/config.host gcc-4.4.2/libgcc/config.host
+--- gcc-4.4.2.orig/libgcc/config.host	2009-04-17 13:58:41.000000000 +0200
++++ gcc-4.4.2/libgcc/config.host	2009-11-26 18:14:17.000000000 +0100
 @@ -149,7 +149,7 @@
    # machine-specific sections may refine and add to this
    # configuration.
@@ -3040,9 +3125,9 @@ diff -buNr gcc-4.4.1.orig/libgcc/config.host gcc-4.4.1/libgcc/config.host
  	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
  	tmake_file="${tmake_file} i386/t-crtpc i386/t-crtfm"
  	;;
-diff -buNr gcc-4.4.1.orig/libgomp/configure.tgt gcc-4.4.1/libgomp/configure.tgt
---- gcc-4.4.1.orig/libgomp/configure.tgt	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/libgomp/configure.tgt	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/libgomp/configure.tgt gcc-4.4.2/libgomp/configure.tgt
+--- gcc-4.4.2.orig/libgomp/configure.tgt	2008-09-19 22:27:11.000000000 +0200
++++ gcc-4.4.2/libgomp/configure.tgt	2009-11-26 18:14:17.000000000 +0100
 @@ -48,7 +48,7 @@
  	;;
  
@@ -3052,38 +3137,9 @@ diff -buNr gcc-4.4.1.orig/libgomp/configure.tgt gcc-4.4.1/libgomp/configure.tgt
  	config_path="linux/x86 linux posix"
  	case " ${CC} ${CFLAGS} " in
  	  *" -m64 "*)
-diff -buNr gcc-4.4.1.orig/libiberty/make-relative-prefix.c gcc-4.4.1/libiberty/make-relative-prefix.c
---- gcc-4.4.1.orig/libiberty/make-relative-prefix.c	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/libiberty/make-relative-prefix.c	2009-11-03 16:02:56.000000000 +0100
-@@ -224,6 +224,12 @@
- make_relative_prefix_1 (const char *progname, const char *bin_prefix,
- 			const char *prefix, const int resolve_links)
- {
-+  // TODO(pasko): fix this really dirty workaround with correct builtins for
-+  // strlen, etc. or put correct -fno-builtin option to the right CFLAGS in
-+  // Makefile.in.
-+  return NULL;
-+
-+#if 0
-   char **prog_dirs = NULL, **bin_dirs = NULL, **prefix_dirs = NULL;
-   int prog_num, bin_num, prefix_num;
-   int i, n, common;
-@@ -382,6 +388,7 @@
-   free_split_directories (prefix_dirs);
- 
-   return ret;
-+#endif
- }
- 
- 
-@@ -409,4 +416,3 @@
- {
-   return make_relative_prefix_1 (progname, bin_prefix, prefix, 0);
- }
--
-diff -buNr gcc-4.4.1.orig/libmudflap/configure gcc-4.4.1/libmudflap/configure
---- gcc-4.4.1.orig/libmudflap/configure	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/libmudflap/configure	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/libmudflap/configure gcc-4.4.2/libmudflap/configure
+--- gcc-4.4.2.orig/libmudflap/configure	2009-03-01 18:49:31.000000000 +0100
++++ gcc-4.4.2/libmudflap/configure	2009-11-26 18:14:17.000000000 +0100
 @@ -6225,7 +6225,7 @@
    ;;
  
@@ -3093,9 +3149,9 @@ diff -buNr gcc-4.4.1.orig/libmudflap/configure gcc-4.4.1/libmudflap/configure
    lt_cv_deplibs_check_method=pass_all
    ;;
  
-diff -buNr gcc-4.4.1.orig/libssp/configure gcc-4.4.1/libssp/configure
---- gcc-4.4.1.orig/libssp/configure	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/libssp/configure	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/libssp/configure gcc-4.4.2/libssp/configure
+--- gcc-4.4.2.orig/libssp/configure	2009-03-01 18:49:31.000000000 +0100
++++ gcc-4.4.2/libssp/configure	2009-11-26 18:14:17.000000000 +0100
 @@ -5199,7 +5199,7 @@
    ;;
  
@@ -3105,9 +3161,9 @@ diff -buNr gcc-4.4.1.orig/libssp/configure gcc-4.4.1/libssp/configure
    lt_cv_deplibs_check_method=pass_all
    ;;
  
-diff -buNr gcc-4.4.1.orig/libstdc++-v3/configure gcc-4.4.1/libstdc++-v3/configure
---- gcc-4.4.1.orig/libstdc++-v3/configure	2009-10-31 02:35:16.000000000 +0100
-+++ gcc-4.4.1/libstdc++-v3/configure	2009-10-27 18:20:27.000000000 +0100
+diff -uNr gcc-4.4.2.orig/libstdc++-v3/configure gcc-4.4.2/libstdc++-v3/configure
+--- gcc-4.4.2.orig/libstdc++-v3/configure	2009-08-26 21:04:11.000000000 +0200
++++ gcc-4.4.2/libstdc++-v3/configure	2009-11-26 18:14:17.000000000 +0100
 @@ -4989,7 +4989,7 @@
    fi
    ;;
