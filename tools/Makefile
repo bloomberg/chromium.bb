@@ -142,10 +142,10 @@ BUILD/stamp-newlib-$(NEWLIB_VERSION): Makefile
 # copy gcc, apply patches
 BUILD/gcc-$(GCC_VERSION): | BUILD
 	@echo "Unpacking gcc-$(GCC_VERSION)"
-	cd BUILD && ( tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2 || \
-	  wget ftp://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VERSION)/gcc-core-$(GCC_VERSION).tar.bz2 -O - | tar xjSvpf - )
-	cd BUILD && ( tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2 || \
-	  wget ftp://ftp.gnu.org/gnu/gcc/gcc-$(GCC_VERSION)/gcc-core-$(GCC_VERSION).tar.bz2 -O - | tar xjSvpf - )
+	# Temporrary hack to workaround troubles with third_party
+	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-core-4.4.1.tar.bz2
+	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-4.4.1.tar.bz2
+	cd BUILD && mv gcc-4.4.1 gcc-4.4.2
 	cd BUILD && patch -p0 < ../patches/gcc-$(GCC_VERSION).patch
 
 # create gcc source directory, and mark that we've done that
