@@ -3041,6 +3041,4 @@ BUG28646 : LayoutTests/editing/selection/transformed-selection-rects.html = FAIL
 
 // New failures from merge 51406:51410.
 BUG28905 : LayoutTests/http/tests/security/isolatedWorld/world-reuse.html = FAIL
-BUG28905 : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
-
-
+BUG28905 WONTFIX SKIP : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
