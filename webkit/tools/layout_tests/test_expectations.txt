@@ -2986,3 +2986,9 @@ BUG28905 WONTFIX SKIP : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
 BUG28916 MAC : LayoutTests/editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
 BUG28916 WIN : LayoutTests/fast/parser/comment-in-textarea.html = TEXT
 BUG_HAMAJI WIN LINUX : LayoutTests/editing/selection/last-empty-inline.html = TEXT
+
+// Flaky test from r51224:r51237 roll.
+BUG28918 DEBUG : LayoutTests/storage/domstorage/localstorage/iframe-events.html = CRASH PASS
+
+// Flaky test added by r51350.
+BUG28918 WIN LINUX : LayoutTests/http/tests/cache/subresource-failover-to-network.html = PASS TEXT
