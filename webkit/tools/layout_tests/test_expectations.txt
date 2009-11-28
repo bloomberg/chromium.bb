@@ -1332,7 +1332,6 @@ BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = FAIL CRASH
 // Depends on plugin support.
 BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = PASS FAIL
 
-BUG10351 MAC : LayoutTests/tables/mozilla_expected_failures/bugs/bug8499.html = FAIL
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10351 SKIP MAC : LayoutTests/http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/embed-attributes-setting.html = PASS FAIL
@@ -2626,10 +2625,6 @@ BUG17015 MAC : LayoutTests/editing/pasteboard/paste-text-014.html = FAIL
 BUG17015 MAC : LayoutTests/editing/selection/4895428-1.html = FAIL
 BUG17015 MAC : LayoutTests/editing/selection/4895428-4.html = FAIL
 BUG17015 MAC : LayoutTests/editing/selection/contains-boundaries.html = FAIL
-BUG17015 MAC : LayoutTests/editing/style/5065910.html = FAIL
-BUG17015 MAC : LayoutTests/editing/style/font-family-with-space.html = FAIL
-BUG17015 MAC : LayoutTests/editing/style/non-inheritable-styles.html = FAIL
-BUG17015 MAC : LayoutTests/editing/style/smoosh-styles-003.html = FAIL
 BUG17015 MAC : LayoutTests/fast/lists/drag-into-marker.html = FAIL
 
 // New test from WebKit merge 46050:46087
