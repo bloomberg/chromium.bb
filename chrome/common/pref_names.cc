@@ -275,6 +275,14 @@ const wchar_t kExtensionsUIDeveloperMode[] = L"extensions.ui.developer_mode";
 // on start-up.
 const wchar_t kCheckDefaultBrowser[] = L"browser.check_default_browser";
 
+#if defined(OS_MACOSX)
+// Boolean that indicates whether the application should show the info bar
+// asking the user to set up automatic updates when Keystone promotion is
+// required.
+const wchar_t kShowUpdatePromotionInfoBar[] =
+    L"browser.show_update_promotion_info_bar";
+#endif
+
 // Boolean that is false if we should show window manager decorations.  If
 // true, we draw a custom chrome frame (thicker title bar and blue border).
 const wchar_t kUseCustomChromeFrame[] = L"browser.custom_chrome_frame";

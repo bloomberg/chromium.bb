@@ -1350,6 +1350,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   // to hard-code pref registration in the several unit tests that use
   // this preference.
   prefs->RegisterBooleanPref(prefs::kShowPageOptionsButtons, false);
+  prefs->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar, true);
 #endif
   prefs->RegisterStringPref(prefs::kRecentlySelectedEncoding, L"");
   prefs->RegisterBooleanPref(prefs::kDeleteBrowsingHistory, true);

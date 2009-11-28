@@ -111,6 +111,9 @@ extern const wchar_t kCurrentThemeTints[];
 extern const wchar_t kCurrentThemeDisplayProperties[];
 extern const wchar_t kExtensionsUIDeveloperMode[];
 extern const wchar_t kCheckDefaultBrowser[];
+#if defined(OS_MACOSX)
+extern const wchar_t kShowUpdatePromotionInfoBar[];
+#endif
 extern const wchar_t kUseCustomChromeFrame[];
 extern const wchar_t kShowOmniboxSearchHint[];
 extern const wchar_t kNTPPromoLineRemaining[];

@@ -2,26 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_APP_KEYSTONE_GLUE_H_
-#define CHROME_APP_KEYSTONE_GLUE_H_
+#ifndef CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_
+#define CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_
 
 #import <Foundation/Foundation.h>
 #import <base/scoped_nsobject.h>
 
-// Possible outcomes of -checkForUpdate and -installUpdate.  A version may
-// accompany some of these, but beware: a version is never required.  For
-// statuses that can be accompanied by a version, the comment indicates what
-// version is referenced.  A notification posted containing an asynchronous
-// status will always be followed by a notification with a terminal status.
+#include "chrome/browser/cocoa/scoped_authorizationref.h"
+
+// Possible outcomes of various operations.  A version may accompany some of
+// these, but beware: a version is never required.  For statuses that can be
+// accompanied by a version, the comment indicates what version is referenced.
+// A notification posted containing an asynchronous status will always be
+// followed by a notification with a terminal status.
 enum AutoupdateStatus {
-  kAutoupdateNone = 0,      // no version (initial state only)
-  kAutoupdateChecking,      // no version (asynchronous operation in progress)
-  kAutoupdateCurrent,       // version of the running application
-  kAutoupdateAvailable,     // version of the update that is available
-  kAutoupdateInstalling,    // no version (asynchronous operation in progress)
-  kAutoupdateInstalled,     // version of the update that was installed
-  kAutoupdateCheckFailed,   // no version
-  kAutoupdateInstallFailed  // no version
+  kAutoupdateNone = 0,        // no version (initial state only)
+  kAutoupdateRegistering,     // no version (asynchronous operation in progress)
+  kAutoupdateRegistered,      // no version
+  kAutoupdateChecking,        // no version (asynchronous operation in progress)
+  kAutoupdateCurrent,         // version of the running application
+  kAutoupdateAvailable,       // version of the update that is available
+  kAutoupdateInstalling,      // no version (asynchronous operation in progress)
+  kAutoupdateInstalled,       // version of the update that was installed
+  kAutoupdatePromoting,       // no version (asynchronous operation in progress)
+  kAutoupdatePromoted,        // no version
+  kAutoupdateRegisterFailed,  // no version
+  kAutoupdateCheckFailed,     // no version
+  kAutoupdateInstallFailed,   // no version
+  kAutoupdatePromoteFailed,   // no version
 };
 
 // kAutoupdateStatusNotification is the name of the notification posted when
@@ -53,8 +61,9 @@ extern const NSString* const kAutoupdateStatusVersion;
  @protected
 
   // Data for Keystone registration
-  NSString* url_;
   NSString* productID_;
+  NSString* appPath_;
+  NSString* url_;
   NSString* version_;
   NSString* channel_;  // Logically: Dev, Beta, or Stable.
 
@@ -64,6 +73,10 @@ extern const NSString* const kAutoupdateStatusVersion;
 
   // The most recent kAutoupdateStatusNotification notification posted.
   scoped_nsobject<NSNotification> recentNotification_;
+
+  // The authorization object, when it needs to persist because it's being
+  // carried across threads.
+  scoped_AuthorizationRef authorization_;
 
   // YES if an update was ever successfully installed by -installUpdate.
   BOOL updateSuccessfullyInstalled_;
@@ -94,6 +107,38 @@ extern const NSString* const kAutoupdateStatusVersion;
 // installation attempt is currently in progress.
 - (BOOL)asyncOperationPending;
 
+// Returns YES if the application is running from a read-only filesystem,
+// such as a disk image.
+- (BOOL)isOnReadOnlyFilesystem;
+
+// -needsPromotion is YES if the application needs its ticket promoted to
+// a system ticket.  This will be YES when the application is on a user
+// ticket and determines that the current user does not have sufficient
+// permission to perform the update.
+//
+// -wantsPromotion is YES if the application wants its ticket promoted to
+// a system ticket, even if it doesn't need it as determined by
+// -needsPromotion.  -wantsPromotion will always be YES if -needsPromotion is,
+// and it will additionally be YES when the application is on a user ticket
+// and appears to be installed in a system-wide location such as
+// /Applications.
+//
+// Use -needsPromotion to decide whether to show any update UI at all.  If
+// it's YES, there's no sense in asking the user to "update now" because it
+// will fail given the rights and permissions involved.  On the other hand,
+// when -needsPromotion is YES, the application can encourage the user to
+// promote the ticket so that updates will work properly.
+//
+// Use -wantsPromotion to decide whether to allow the user to promote.  The
+// user shouldn't be nagged about promotion on the basis of -wantsPromotion,
+// but if it's YES, the user should be allowed to promote the ticket.
+- (BOOL)needsPromotion;
+- (BOOL)wantsPromotion;
+
+// Requests authorization and promotes the Keystone ticket into the system
+// store.  System Keystone will be installed if necessary.
+- (void)promoteTicket;
+
 @end  // @interface KeystoneGlue
 
 @interface KeystoneGlue(ExposedForTesting)
@@ -115,4 +160,4 @@ extern const NSString* const kAutoupdateStatusVersion;
 
 @end  // @interface KeystoneGlue(ExposedForTesting)
 
-#endif  // CHROME_APP_KEYSTONE_GLUE_H_
+#endif  // CHROME_BROWSER_COCOA_KEYSTONE_GLUE_H_

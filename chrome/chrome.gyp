@@ -1030,6 +1030,8 @@
         'browser/cocoa/about_window_controller.mm',
         'browser/cocoa/animatable_view.h',
         'browser/cocoa/animatable_view.mm',
+        'browser/cocoa/authorization_util.cc',
+        'browser/cocoa/authorization_util.h',
         'browser/cocoa/autocomplete_text_field.h',
         'browser/cocoa/autocomplete_text_field.mm',
         'browser/cocoa/autocomplete_text_field_cell.h',
@@ -1194,6 +1196,10 @@
         'browser/cocoa/infobar_test_helper.h',
         'browser/cocoa/infobar_text_field.h',
         'browser/cocoa/infobar_text_field.mm',
+        'browser/cocoa/keystone_glue.h',
+        'browser/cocoa/keystone_glue.mm',
+        'browser/cocoa/keystone_infobar.h',
+        'browser/cocoa/keystone_infobar.mm',
         'browser/cocoa/keyword_editor_cocoa_controller.h',
         'browser/cocoa/keyword_editor_cocoa_controller.mm',
         'browser/cocoa/location_bar_view_mac.h',
@@ -1222,6 +1228,7 @@
         'browser/cocoa/restart_browser.mm',
         'browser/cocoa/sad_tab_view.h',
         'browser/cocoa/sad_tab_view.mm',
+        'browser/cocoa/scoped_authorizationref.h',
         'browser/cocoa/search_engine_list_model.h',
         'browser/cocoa/search_engine_list_model.mm',
         'browser/cocoa/shell_dialogs_mac.mm',
@@ -4312,8 +4319,6 @@
         }],
         ['OS=="mac"', {
           'sources': [
-            'app/keystone_glue.h',
-            'app/keystone_glue.mm',
             'app/breakpad_mac_stubs.mm',
           ],
           'sources!': [
@@ -4477,11 +4482,6 @@
       },
       'sources': [
         'app/breakpad_mac_stubs.mm',
-        # *NO* files in chrome/app have unit tests (except keystone_glue)!!!
-        # It seems a waste to have an app_unittests target, so for now
-        # I add keystone_glue.mm explicitly to this target.
-        'app/keystone_glue.mm',
-        'app/keystone_glue_unittest.mm',
         # All unittests in browser, common, and renderer.
         'browser/app_controller_mac_unittest.mm',
         'browser/autocomplete/autocomplete_edit_view_mac_unittest.mm',
@@ -4585,6 +4585,7 @@
         'browser/cocoa/infobar_controller_unittest.mm',
         'browser/cocoa/infobar_gradient_view_unittest.mm',
         'browser/cocoa/infobar_text_field_unittest.mm',
+        'browser/cocoa/keystone_glue_unittest.mm',
         'browser/cocoa/keyword_editor_cocoa_controller_unittest.mm',
         'browser/cocoa/location_bar_view_mac_unittest.mm',
         'browser/cocoa/gradient_button_cell_unittest.mm',
@@ -5079,8 +5080,6 @@
         ['OS=="mac"', {
           'sources': [
             'app/breakpad_mac_stubs.mm',
-            'app/keystone_glue.h',
-            'app/keystone_glue.mm',
           ],
           'sources!': [
             '<@(browser_tests_sources_exclude_on_mac)',
@@ -5477,7 +5476,6 @@
       'type': 'executable',
       'sources': [
         'app/breakpad_mac_stubs.mm',
-        'app/keystone_glue.mm',
         'browser/sync/engine/all_status_unittest.cc',
         'browser/sync/engine/apply_updates_command_unittest.cc',
         'browser/sync/engine/auth_watcher_unittest.cc',
@@ -5849,8 +5847,6 @@
                 'app/chrome_dll_main.cc',
                 'app/chrome_dll_resource.h',
                 'app/chrome_exe_main.mm',
-                'app/keystone_glue.h',
-                'app/keystone_glue.mm',
               ],
               # TODO(mark): Come up with a fancier way to do this.  It should
               # only be necessary to list framework-Info.plist once, not the
@@ -6085,6 +6081,27 @@
                   ],
                 }],  # mac_breakpad
                 ['mac_keystone==1', {
+                  'variables': {
+                    'conditions': [
+                      ['branding=="Chrome"', {
+                        'theme_dir_name': 'google_chrome',
+                      }, {  # else: 'branding!="Chrome"
+                        'theme_dir_name': 'chromium',
+                      }],
+                    ],
+                  },
+                  'mac_bundle_resources': [
+                    # This image is used to badge the lock icon in the
+                    # promotion authentication dialog.  It needs to exist as
+                    # a file on disk and not just something in a resource
+                    # bundle because that's the interface that Authorization
+                    # Services uses.  Also, Authorization Services can't deal
+                    # with .icns files.
+                    'app/theme/<(theme_dir_name)/product_logo_32.png',
+
+                    'browser/cocoa/keystone_promote_preflight.sh',
+                    'browser/cocoa/keystone_promote_postflight.sh',
+                  ],
                   'postbuilds': [
                     {
                       'postbuild_name': 'Copy KeystoneRegistration.framework',

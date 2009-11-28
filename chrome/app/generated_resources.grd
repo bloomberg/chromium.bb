@@ -3308,10 +3308,31 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Clearing...
       </message>
 
+      <!-- Automatic updates -->
+      <if expr="os == 'darwin'">
+        <message name="IDS_PROMOTE_INFOBAR_TEXT" desc="The text to show in the automatic update setup info bar.  Mac-only.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not be able to keep itself updated.
+        </message>
+        <message name="IDS_PROMOTE_INFOBAR_PROMOTE_BUTTON" desc="The 'Set up automatic updates' button in the automatic update setup info bar.  Mac-only.">
+          Set up automatic updates
+        </message>
+        <message name="IDS_PROMOTE_INFOBAR_DONT_ASK_BUTTON" desc="The 'Don't ask again' button in the automatic update setup info bar.  Mac-only.">
+          Don't ask again
+        </message>
+        <message name="IDS_PROMOTE_AUTHENTICATION_PROMPT" desc="The prompt displayed in the authentication dialog when setting up automatic updates for all users.  The system will add a sentence asking for an administrator's name and password.  Mac-only.">
+          <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will set up automatic updates for all users of this computer.
+        </message>
+      </if>
+
       <!-- About Chrome View -->
       <message name="IDS_ABOUT_CHROME_ACKNOWLEDGEMENTS" desc="Acknowledgements link">
         Acknowledgements
       </message>
+      <if expr="os == 'darwin'">
+        <message name="IDS_ABOUT_CHROME_PROMOTE_UPDATER" desc="The 'Set Up Automatic Updates for All Users' button in the About window.  Mac-only.">
+          Set Up Automatic Updates for All Users
+        </message>
+      </if>
       <message name="IDS_ABOUT_CHROME_UPDATE_CHECK" desc="The Check for Updates button">
         Update Now
       </message>

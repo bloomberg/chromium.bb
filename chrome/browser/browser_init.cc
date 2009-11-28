@@ -43,6 +43,10 @@
 #include "net/base/net_util.h"
 #include "webkit/glue/webkit_glue.h"
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/cocoa/keystone_infobar.h"
+#endif
+
 #if defined(OS_WIN)
 #include "app/win_util.h"
 #endif
@@ -450,10 +454,18 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
         browser = BrowserList::GetLastActive();
       OpenURLsInBrowser(browser, process_startup, urls_to_open);
     }
-    // Check whether we are the default browser.
-    if (process_startup && browser_defaults::kOSSupportsOtherBrowsers &&
-        !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck))
-      CheckDefaultBrowser(profile);
+    if (process_startup) {
+      if (browser_defaults::kOSSupportsOtherBrowsers &&
+          !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
+        // Check whether we are the default browser.
+        CheckDefaultBrowser(profile);
+      }
+#if defined(OS_MACOSX)
+      // Check whether the auto-update system needs to be promoted from user
+      // to system.
+      KeystoneInfoBar::PromotionInfoBar(profile);
+#endif
+    }
   } else {
     RecordLaunchModeHistogram(LM_AS_WEBAPP);
   }

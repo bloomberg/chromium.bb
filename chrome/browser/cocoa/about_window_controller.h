@@ -23,14 +23,25 @@ class Profile;
   IBOutlet NSImageView* logoView_;
   IBOutlet NSView* legalBlock_;
   IBOutlet AboutLegalTextView* legalText_;
-  IBOutlet NSView* updateBlock_;  // Holds everything related to updates
+
+  // updateBlock_ holds the update image or throbber, update text, and update
+  // button.
+  IBOutlet NSView* updateBlock_;
+
+  // promotionBlock_ holds the Keystone ticket promotion text and button.
+  IBOutlet NSView* promotionBlock_;
+
   IBOutlet NSProgressIndicator* spinner_;
   IBOutlet NSImageView* updateStatusIndicator_;
   IBOutlet NSTextField* updateText_;
   IBOutlet NSButton* updateNowButton_;
+  IBOutlet NSButton* promoteButton_;
 
-  BOOL updateTriggered_;  // Has an update ever been triggered?
   Profile* profile_;  // Weak, probably the default profile.
+
+  // The window frame height.  During an animation, this will contain the
+  // height being animated to.
+  CGFloat windowHeight_;
 }
 
 // Initialize the controller with the given profile, but does not show it.
@@ -39,6 +50,10 @@ class Profile;
 
 // Trigger an update right now, as initiated by a button.
 - (IBAction)updateNow:(id)sender;
+
+// Install a system Keystone if necessary and promote the ticket to a system
+// ticket.
+- (IBAction)promoteUpdater:(id)sender;
 
 @end  // @interface AboutWindowController
 
