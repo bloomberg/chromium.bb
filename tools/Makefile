@@ -155,7 +155,9 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	# Temporrary hack to workaround troubles with third_party
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
-	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2
+	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
+	  cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2 ; \
+	fi
 	if [ "x$(GCC_VERSION)" = "x4.4.2" ] ; then \
 	  cd BUILD && tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
 		      tar xf $(SRCDIR)/mpfr/mpfr-$(MPFR_VERSION).tar.bz2 && mv mpfr-$(MPFR_VERSION) gcc-$(GCC_VERSION)/mpfr ; \
@@ -497,7 +499,9 @@ build:
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 ifeq ($(BUILD_FORTRAN), yes)
-	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gfortran
+	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
+	  $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gfortran ; \
+	fi
 endif
 ifeq ($(PLATFORM), Cygwin17)
 	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
