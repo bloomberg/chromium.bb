@@ -2986,4 +2986,4 @@ BUG_HAMAJI WIN LINUX : LayoutTests/editing/selection/last-empty-inline.html = TE
 BUG28918 DEBUG : LayoutTests/storage/domstorage/localstorage/iframe-events.html = CRASH PASS
 
 // Flaky test added by r51350.
-BUG28918 WIN LINUX : LayoutTests/http/tests/cache/subresource-failover-to-network.html = PASS TEXT
+BUG28918 : LayoutTests/http/tests/cache/subresource-failover-to-network.html = PASS TEXT
