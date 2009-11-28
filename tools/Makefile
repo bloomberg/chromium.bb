@@ -110,7 +110,10 @@ DEFAULT_ALIGN_POW2=5
 BINUTILS_VERSION=2.20
 NEWLIB_VERSION=1.17.0
 GCC_VERSION=4.2.2
+GMP_VERSION=4.3.1
+MPFR_VERSION=2.4.1
 GDB_VERSION=6.8
+BUILD_FORTRAN=no
 
 ##################################################################
 # Copying the sources, applying patches, etc.
@@ -152,6 +155,11 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	# Temporrary hack to workaround troubles with third_party
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
+	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2
+	if [ "x$(GCC_VERSION)" = "x4.4.2" ] ; then \
+	  cd BUILD && tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
+		      tar xf $(SRCDIR)/mpfr/mpfr-$(MPFR_VERSION).tar.bz2 && mv mpfr-$(MPFR_VERSION) gcc-$(GCC_VERSION)/mpfr ; \
+	fi
 	cd BUILD && patch -p0 < ../patches/gcc-$(GCC_VERSION).patch
 
 # create gcc source directory, and mark that we've done that
@@ -368,6 +376,54 @@ endif
 gcc: BUILD/stamp-gcc
 
 ##################################################################
+# gfortran:
+# Builds the gfortran that will be used to build applications.
+##################################################################
+BUILD/stamp-gfortran: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
+	rm -rf BUILD/build-gfortran-$(CROSSARCH)
+	mkdir BUILD/build-gfortran-$(CROSSARCH)
+ifeq ($(PLATFORM), Cygwin17)
+	mkdir BUILD/build-gfortran-$(CROSSARCH)/gcc
+	cp -af $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
+	    BUILD/build-gfortran-$(CROSSARCH)/gcc
+	cp -af $(DESTDIR)$(SDKROOT)/nacl \
+	    BUILD/build-gfortran-$(CROSSARCH)/nacl
+endif
+	cd BUILD/build-gfortran-$(CROSSARCH) && \
+	  PATH=$(BUILDPATH) CC="gcc" \
+		CFLAGS="-Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
+		CFLAGS_FOR_TARGET="-O2 -g" \
+		CXXFLAGS_FOR_TARGET="-O2 -g" \
+	  LDFLAGS="-s" \
+	    ../gcc-$(GCC_VERSION)/configure \
+	      --prefix=$(SDKROOT) \
+				--with-newlib \
+	      --enable-threads=nacl \
+	      --enable-tls \
+	      --disable-libmudflap \
+	      --disable-decimal-float \
+	      --disable-libssp \
+	      --disable-shared \
+				--disable-libgomp \
+	      --disable-libstdcxx-pch \
+	      --enable-languages="c,c++,fortran" \
+	      --target=$(CROSSARCH)
+	PATH=$(BUILDPATH) \
+	  $(MAKE) -C BUILD/build-gfortran-$(CROSSARCH) \
+		  CFLAGS_FOR_TARGET="-O2 -g" \
+		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+	    all
+	PATH=$(BUILDPATH) \
+	  $(MAKE) -C BUILD/build-gfortran-$(CROSSARCH) \
+		  CFLAGS_FOR_TARGET="-O2 -g" \
+		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+	    DESTDIR=$(DESTDIR) install
+	touch $@
+
+.PHONY: gfortran
+gfortran: BUILD/stamp-gfortran
+
+##################################################################
 # gdb:
 # Builds gdb.
 ##################################################################
@@ -440,6 +496,9 @@ build:
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
+ifeq ($(BUILD_FORTRAN), yes)
+	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gfortran
+endif
 ifeq ($(PLATFORM), Cygwin17)
 	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
 	  $(DESTDIR)$(SDKROOT)/libexec
