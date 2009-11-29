@@ -86,11 +86,15 @@ class PyWebSocket(http_server.Lighttpd):
       log_prefix = _WSS_LOG_PREFIX
     else:
       log_prefix = _WS_LOG_PREFIX
-    log_file_name = log_prefix + time_str + '.txt'
-    error_log = os.path.join(self._output_dir, log_file_name)
+    log_file_name = log_prefix + time_str
 
     # Remove old log files. We only need to keep the last ones.
     RemoveLogFiles(self._output_dir, log_prefix)
+
+    error_log = os.path.join(self._output_dir, log_file_name + "-err.txt")
+
+    output_log = os.path.join(self._output_dir, log_file_name + "-out.txt")
+    self._wsout = open(output_log, "w")
 
     python_interp = sys.executable
     pywebsocket_base = path_utils.PathFromBase(
@@ -125,7 +129,8 @@ class PyWebSocket(http_server.Lighttpd):
                          env.get('PYTHONPATH', ''))
 
     logging.debug('Starting %s server.' % self._server_name)
-    self._process = subprocess.Popen(start_cmd, env=env)
+    self._process = subprocess.Popen(start_cmd, stdout=self._wsout,
+                                     env=env)
 
     # Wait a bit before checking the liveness of the server.
     time.sleep(0.5)
@@ -155,6 +160,9 @@ class PyWebSocket(http_server.Lighttpd):
 
     # Wait a bit to make sure the ports are free'd up
     time.sleep(2)
+    if self._wsout:
+      self._wsout.close()
+      self._wsout = None
 
 
 if '__main__' == __name__:
