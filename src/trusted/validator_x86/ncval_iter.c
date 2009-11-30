@@ -36,6 +36,7 @@
 #include <string.h>
 #include <errno.h>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/utils/flags.h"
 #include "native_client/src/trusted/validator_x86/nc_protect_base.h"
@@ -131,18 +132,43 @@ static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
   NcValidatorStateDestroy(vstate);
 }
 
+/* Generates NaclErrorMapping for error level suffix. */
+#define NaclError(s) { #s , LOG_## s}
+
 /* Recognizes flags in argv, processes them, and then removes them.
  * Returns the updated value for argc.
  */
 static int GrokFlags(int argc, const char* argv[]) {
   int i;
   int new_argc;
+  char* error_level = NULL;
   if (argc == 0) return 0;
   new_argc = 1;
   for (i = 1; i < argc; ++i) {
     const char* arg = argv[i];
     if (GrokBoolFlag("-segments", arg, &FLAGS_analyze_segments)) {
       continue;
+    } else if (GrokCstringFlag("-error_level", arg, &error_level)) {
+      int i;
+      static struct {
+        const char* name;
+        int level;
+      } map[] = {
+        NaclError(INFO),
+        NaclError(WARNING),
+        NaclError(ERROR),
+        NaclError(FATAL)
+      };
+      for (i = 0; i < NACL_ARRAY_SIZE(map); ++i) {
+        if (0 == strcmp(error_level, map[i].name)) {
+          NaClLogSetVerbosity(map[i].level);
+          break;
+        }
+      }
+      if (i == NACL_ARRAY_SIZE(map)) {
+        NcValidatorMessage(LOG_FATAL, NULL,
+                           "-error_level=%s not defined!\n", error_level);
+      }
     } else {
       argv[new_argc++] = argv[i];
     }
