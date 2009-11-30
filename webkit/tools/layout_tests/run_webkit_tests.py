@@ -1079,8 +1079,7 @@ def main(options, args):
       options.target = "Release"
 
   if not options.use_apache:
-    options.use_apache = (sys.platform == 'darwin' and options.builder_name and
-        options.builder_name.find("(V8-Latest)") != -1)
+    options.use_apache = sys.platform == 'darwin'
 
   if options.results_directory.startswith("/"):
     # Assume it's an absolute path and normalize.
