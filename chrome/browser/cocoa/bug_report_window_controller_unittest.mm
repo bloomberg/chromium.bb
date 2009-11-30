@@ -14,6 +14,12 @@
 namespace {
 
 class BugReportWindowControllerUnittest : public RenderViewHostTestHarness {
+ public:
+  virtual void SetUp() {
+    RenderViewHostTestHarness::SetUp();
+    // This is needed since the new tab page queries the sync service.
+    profile_->CreateProfileSyncService();
+  }
 };
 
 // See http://crbug.com/29019 for why it's disabled.
