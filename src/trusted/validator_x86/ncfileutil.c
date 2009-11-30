@@ -34,6 +34,7 @@
  */
 #include "native_client/src/include/portability.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -60,6 +61,22 @@ static Elf_Addr NCPageRound(Elf_Addr v) {
   return(NCPageTrunc(v + (kNCFileUtilPageSize - 1)));
 }
 
+/* Define the default print error function to use for this module. */
+void NcLoadFilePrintError(const char* format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  vfprintf(stderr, format, ap);
+  va_end(ap);
+}
+
+static nc_loadfile_error_fn nc_error_fn = NcLoadFilePrintError;
+
+nc_loadfile_error_fn NcLoadFileRegisterErrorFn(nc_loadfile_error_fn fn) {
+  nc_loadfile_error_fn return_value = nc_error_fn;
+  nc_error_fn = fn;
+  return return_value;
+}
+
 /***********************************************************************/
 /* THIS ROUTINE IS FOR DEBUGGING/TESTING ONLY, NOT FOR SECURE RUNTIME  */
 /* ALL PAGES ARE LEFT WRITEABLE BY THIS LOADER.                        */
@@ -72,7 +89,7 @@ static off_t readat(const int fd, void *buf, const off_t sz, const size_t at) {
   char *cbuf = (char *)buf;
 
   if (0 > lseek(fd, at, SEEK_SET)) {
-    fprintf(stderr, "readat: lseek failed\n");
+    nc_error_fn("readat: lseek failed\n");
     return -1;
   }
 
@@ -83,7 +100,7 @@ static off_t readat(const int fd, void *buf, const off_t sz, const size_t at) {
   do {
     nread = read(fd, &cbuf[sofar], sz - sofar);
     if (nread <= 0) {
-      fprintf(stderr, "readat: read failed\n");
+      nc_error_fn("readat: read failed\n");
       return -1;
     }
     sofar += nread;
@@ -102,22 +119,22 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   /* Read and check the ELF header */
   nread = readat(fd, &h, sizeof(h), 0);
   if (nread < 0 || (size_t) nread < sizeof(h)) {
-    fprintf(stderr, "nc_load(%s): could not read ELF header", ncf->fname);
+    nc_error_fn("nc_load(%s): could not read ELF header", ncf->fname);
     return -1;
   }
 
   /* do a bunch of sanity checks */
   if (strncmp((char *)h.e_ident, ELFMAG, strlen(ELFMAG))) {
-    fprintf(stderr, "nc_load(%s): bad magic number", ncf->fname);
+    nc_error_fn("nc_load(%s): bad magic number", ncf->fname);
     return -1;
   }
   if (h.e_ident[EI_OSABI] != ELFOSABI_NACL) {
-    fprintf(stderr, "nc_load(%s): bad OS ABI %x\n",
-            ncf->fname, h.e_ident[EI_OSABI]);
+    nc_error_fn("nc_load(%s): bad OS ABI %x\n",
+                ncf->fname, h.e_ident[EI_OSABI]);
     /* return -1; */
   }
   if (h.e_ident[EI_ABIVERSION] != EF_NACL_ABIVERSION) {
-    fprintf(stderr, "nc_load(%s): bad ABI version %d\n", ncf->fname,
+    nc_error_fn("nc_load(%s): bad ABI version %d\n", ncf->fname,
             h.e_ident[EI_ABIVERSION]);
     /* return -1; */
   }
@@ -127,23 +144,23 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   } else if ((h.e_flags & EF_NACL_ALIGN_MASK) == EF_NACL_ALIGN_32) {
     ncf->ncalign = 32;
   } else {
-    fprintf(stderr, "nc_load(%s): bad align mask %x\n", ncf->fname,
-            (uint32_t)(h.e_flags & EF_NACL_ALIGN_MASK));
+    nc_error_fn("nc_load(%s): bad align mask %x\n", ncf->fname,
+                (uint32_t)(h.e_flags & EF_NACL_ALIGN_MASK));
     ncf->ncalign = 16;
     /* return -1; */
   }
 
   /* Read the program header table */
   if (h.e_phnum <= 0 || h.e_phnum > kMaxPhnum) {
-    fprintf(stderr, "nc_load(%s): h.e_phnum %d > kMaxPhnum %d\n",
-            ncf->fname, h.e_phnum, kMaxPhnum);
+    nc_error_fn("nc_load(%s): h.e_phnum %d > kMaxPhnum %d\n",
+                ncf->fname, h.e_phnum, kMaxPhnum);
     return -1;
   }
   ncf->phnum = h.e_phnum;
   ncf->pheaders = (Elf_Phdr *)calloc(h.e_phnum, sizeof(Elf_Phdr));
   if (NULL == ncf->pheaders) {
-    fprintf(stderr, "nc_load(%s): calloc(%d, %"PRIdS") failed\n",
-            ncf->fname, h.e_phnum, sizeof(Elf_Phdr));
+    nc_error_fn("nc_load(%s): calloc(%d, %"PRIdS") failed\n",
+                ncf->fname, h.e_phnum, sizeof(Elf_Phdr));
     return -1;
   }
   phsize = h.e_phnum * sizeof(*ncf->pheaders);
@@ -168,14 +185,14 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   ncf->size = vmemhi - vmemlo;
   ncf->vbase = vmemlo;
   if (nc_rules && vmemlo != NCPageTrunc(vmemlo)) {
-    fprintf(stderr, "nc_load(%s): vmemlo is not aligned\n", ncf->fname);
+    nc_error_fn("nc_load(%s): vmemlo is not aligned\n", ncf->fname);
     return -1;
   }
   /* TODO(karl) Remove the cast to size_t, or verify size. */
   ncf->data = (uint8_t *)calloc(1, (size_t) ncf->size);
   if (NULL == ncf->data) {
-    fprintf(stderr, "nc_load(%s): calloc(1, %d) failed\n",
-            ncf->fname, (int)ncf->size);
+    nc_error_fn("nc_load(%s): calloc(1, %d) failed\n",
+                ncf->fname, (int)ncf->size);
     return -1;
   }
 
@@ -192,8 +209,7 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
     nread = readat(fd, &(ncf->data[p->p_vaddr - ncf->vbase]),
                    (off_t) p->p_filesz, (off_t) p->p_offset);
     if (nread < 0 || (size_t) nread < p->p_filesz) {
-      fprintf(
-          stderr,
+      nc_error_fn(
           "nc_load(%s): could not read segment %d (%d < %"PRIuElf_Xword")\n",
           ncf->fname, i, (int)nread, p->p_filesz);
       return -1;
@@ -204,15 +220,15 @@ static int nc_load(ncfile *ncf, int fd, int nc_rules) {
   shsize = ncf->shnum * sizeof(*ncf->sheaders);
   ncf->sheaders = (Elf_Shdr *)calloc(1, shsize);
   if (NULL == ncf->sheaders) {
-    fprintf(stderr, "nc_load(%s): calloc(1, %"PRIdS") failed\n",
-            ncf->fname, shsize);
+    nc_error_fn("nc_load(%s): calloc(1, %"PRIdS") failed\n",
+                ncf->fname, shsize);
     return -1;
   }
   /* TODO(karl) Remove the cast to size_t, or verify value in range. */
   nread = readat(fd, ncf->sheaders, shsize, (size_t) h.e_shoff);
   if (nread < 0 || (size_t) nread < shsize) {
-    fprintf(stderr, "nc_load(%s): could not read section headers\n",
-            ncf->fname);
+    nc_error_fn("nc_load(%s): could not read section headers\n",
+                ncf->fname);
     return -1;
   }
 

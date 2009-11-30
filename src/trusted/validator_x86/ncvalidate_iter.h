@@ -194,6 +194,19 @@ void NcValidatorMessage(int level,
                         const char* format,
                         ...) ATTRIBUTE_FORMAT_PRINTF(3, 4);
 
+/* Prints out a validator message for the given level using
+ * a variable argument list.
+ * Parameters:
+ *   level - The level of the message, as defined in nacl_log.h
+ *   state - The validator state that detected the error.
+ *   format - The format string of the message to print.
+ *   ap - variable argument list for the format.
+ */
+void NcValidatorVarargMessage(int level,
+                              NcValidatorState* state,
+                              const char* format,
+                              va_list ap);
+
 /* Prints out a validator message for the given address.
  * Parameters:
  *   level - The level of the message, as defined in nacl_log.h

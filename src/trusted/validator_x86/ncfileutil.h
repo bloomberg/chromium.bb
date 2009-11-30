@@ -77,6 +77,20 @@ void nc_freefile(ncfile* ncf);
 
 void GetVBaseAndLimit(ncfile* ncf, PcAddress* vbase, PcAddress* vlimit);
 
+/* Function signature for error printing. */
+typedef void (*nc_loadfile_error_fn)(const char* format,
+                                     ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
+/* Register error print function to use. Returns the old print fcn.
+ * Warning: this function is not threadsafe. Caller is responsible for
+ * locking updates if multiple threads call this function.
+ */
+nc_loadfile_error_fn NcLoadFileRegisterErrorFn(nc_loadfile_error_fn fn);
+
+/* Define the default print error function to use for this module. */
+void NcLoadFilePrintError(const char* format,
+                          ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+
 EXTERN_C_END
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCFILEUTIL_H_ */

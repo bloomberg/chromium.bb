@@ -105,6 +105,19 @@ void NcValidatorMessage(int level,
   }
 }
 
+void NcValidatorVarargMessage(int level,
+                              NcValidatorState* state,
+                              const char* format,
+                              va_list ap) {
+  RecordIfValidatorError(state, level);
+  if (level <= NaClLogGetVerbosity()) {
+    NaClLogLock();
+    NaClLog_mu(level, "%s", LogLevelLabel(level));
+    NaClLogV_mu(level, format, ap);
+    NaClLogUnlock();
+  }
+}
+
 void NcValidatorPcAddressMessage(int level,
                                  NcValidatorState* state,
                                  PcAddress addr,

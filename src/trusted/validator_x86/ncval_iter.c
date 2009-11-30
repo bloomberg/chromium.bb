@@ -184,6 +184,27 @@ typedef struct ValidateData {
   ncfile* ncf;
 } ValidateData;
 
+/* Prints out appropriate error message during call to ValidateLoad. */
+static void ValidateLoadPrintError(const char* format,
+                                   ...) ATTRIBUTE_FORMAT_PRINTF(1,2);
+
+static void ValidateLoadPrintError(const char* format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  NcValidatorVarargMessage(LOG_ERROR, NULL, format, ap);
+  va_end(ap);
+}
+
+/* Loads the elf file defined by fname. For use within ValidateLoad. */
+static ncfile* ValidateLoadFile(const char* fname) {
+  nc_loadfile_error_fn old_print_error;
+  ncfile* file;
+  old_print_error = NcLoadFileRegisterErrorFn(ValidateLoadPrintError);
+  file = nc_loadfile(fname);
+  NcLoadFileRegisterErrorFn(old_print_error);
+  return file;
+}
+
 /* Load the elf file and return the loaded elf file. */
 static ValidateData* ValidateLoad(int argc, const char* argv[]) {
   ValidateData* data;
@@ -196,7 +217,7 @@ static ValidateData* ValidateLoad(int argc, const char* argv[]) {
     NcValidatorMessage(LOG_FATAL, NULL, "Unsufficient memory to run");
   }
   data->fname = argv[1];
-  data->ncf = nc_loadfile(data->fname);
+  data->ncf = ValidateLoadFile(data->fname);
   if (NULL == data->ncf) {
     NcValidatorMessage(LOG_FATAL, NULL, "nc_loadfile(%s): %s\n",
                        data->fname, strerror(errno));
