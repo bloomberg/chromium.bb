@@ -24,10 +24,6 @@ class AccessibilityUIElement : public CppBoundClass {
   virtual AccessibilityUIElement* GetChildAtIndex(unsigned index);
   virtual bool IsRoot() const { return false; }
 
-  std::string GetTitle();
-  std::string GetDescription();
-  std::string GetRole();
-
  protected:
   const WebKit::WebAccessibilityObject& accessibility_object() const {
     return accessibility_object_;
