@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/process_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "media/base/data_buffer.h"
@@ -50,7 +51,14 @@ class AudioRendererImplTest : public ::testing::Test {
 
     // Run pending tasks and simulate responding with a created audio stream.
     message_loop_->RunAllPending();
-    renderer_->OnCreated(shared_mem_.handle(), kSize);
+
+    // Duplicate the shared memory handle so both the test and the callee can
+    // close their copy.
+    base::SharedMemoryHandle duplicated_handle;
+    EXPECT_TRUE(shared_mem_.ShareToProcess(base::GetCurrentProcessHandle(),
+                                           &duplicated_handle));
+
+    renderer_->OnCreated(duplicated_handle, kSize);
   }
 
   virtual ~AudioRendererImplTest() {

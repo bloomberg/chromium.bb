@@ -7,6 +7,7 @@
 
 #include "base/message_loop.h"
 #include "base/process.h"
+#include "base/process_util.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/filter_policy.h"
 #include "chrome/common/render_messages.h"
@@ -226,8 +227,14 @@ class DeferredResourceLoadingTest : public ResourceDispatcherTest,
 
     delete response_message;
 
+    // Duplicate the shared memory handle so both the test and the callee can
+    // close their copy.
+    base::SharedMemoryHandle duplicated_handle;
+    EXPECT_TRUE(shared_handle_.ShareToProcess(base::GetCurrentProcessHandle(),
+                                              &duplicated_handle));
+
     response_message =
-        new ViewMsg_Resource_DataReceived(0, 0, shared_handle_.handle(), 100);
+        new ViewMsg_Resource_DataReceived(0, 0, duplicated_handle, 100);
 
     dispatcher_->OnMessageReceived(*response_message);
 
