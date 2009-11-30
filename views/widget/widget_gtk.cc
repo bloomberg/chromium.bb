@@ -748,7 +748,7 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   if (last_mouse_event_was_move_ && last_mouse_move_x_ == screen_loc.x() &&
       last_mouse_move_y_ == screen_loc.y()) {
     // Don't generate a mouse event for the same location as the last.
-    return false;
+    return true;
   }
   last_mouse_move_x_ = screen_loc.x();
   last_mouse_move_y_ = screen_loc.y();
