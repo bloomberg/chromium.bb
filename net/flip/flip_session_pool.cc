@@ -105,7 +105,7 @@ void FlipSessionPool::CloseAllSessions() {
     while (list->size()) {
       scoped_refptr<FlipSession> session = list->front();
       list->pop_front();
-      session->CloseAllStreams(net::OK);
+      session->CloseAllStreams(net::ERR_ABORTED);
     }
     delete list;
   }
