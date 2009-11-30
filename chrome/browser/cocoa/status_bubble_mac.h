@@ -63,8 +63,16 @@ class StatusBubbleMac : public StatusBubble {
   // it does.)
   void Create();
 
-  // Attaches the status bubble window to its parent window.
+  // Attaches the status bubble window to its parent window. Safe to call even
+  // when already attached.
   void Attach();
+
+  // Detaches the status bubble window from its parent window.
+  void Detach();
+
+  // Is the status bubble attached to the browser window? It should be attached
+  // when shown and during any fades, but should be detached when hidden.
+  bool is_attached() { return [window_ parentWindow] != nil; }
 
   // Begins fading the status bubble window in or out depending on the value
   // of |show|.  This must be called from the appropriate fade state,

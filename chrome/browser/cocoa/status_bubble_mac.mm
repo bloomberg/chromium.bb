@@ -107,7 +107,7 @@ StatusBubbleMac::~StatusBubbleMac() {
 
   if (window_) {
     [[[window_ animationForKey:kFadeAnimationKey] delegate] invalidate];
-    [parent_ removeChildWindow:window_];
+    Detach();
     [window_ release];
     window_ = nil;
   }
@@ -333,24 +333,31 @@ void StatusBubbleMac::Create() {
   [animation_dictionary setObject:animation forKey:kFadeAnimationKey];
   [window_ setAnimations:animation_dictionary];
 
-  Attach();
+  // Don't |Attach()| since we don't know the appropriate state; let the
+  // |SetState()| call do that.
 
   [view setCornerFlags:kRoundedTopRightCorner];
   MouseMoved(gfx::Point(), false);
 }
 
 void StatusBubbleMac::Attach() {
-  // If the parent window is offscreen when the child is added, the child will
-  // never be displayed, even when the parent moves on-screen.  This method
-  // may be called several times during the process of creating or showing a
-  // status bubble to attach the bubble to its parent window.
-  if (![window_ parentWindow] && [parent_ isVisible])
+  // This method may be called several times during the process of creating or
+  // showing a status bubble to attach the bubble to its parent window.
+  if (!is_attached())
     [parent_ addChildWindow:window_ ordered:NSWindowAbove];
+}
+
+void StatusBubbleMac::Detach() {
+  // This method may be called several times in the process of hiding or
+  // destroying a status bubble.
+  if (is_attached())
+    [parent_ removeChildWindow:window_];
 }
 
 void StatusBubbleMac::AnimationDidStop(CAAnimation* animation, bool finished) {
   DCHECK([NSThread isMainThread]);
   DCHECK(state_ == kBubbleShowingFadeIn || state_ == kBubbleHidingFadeOut);
+  DCHECK(is_attached());
 
   if (finished) {
     // Because of the mechanism used to interrupt animations, this is never
@@ -368,8 +375,16 @@ void StatusBubbleMac::AnimationDidStop(CAAnimation* animation, bool finished) {
 }
 
 void StatusBubbleMac::SetState(StatusBubbleState state) {
+  // We must be hidden or attached, but not both.
+  DCHECK((state_ == kBubbleHidden) ^ is_attached());
+
   if (state == state_)
     return;
+
+  if (state == kBubbleHidden)
+    Detach();
+  else
+    Attach();
 
   if ([delegate_ respondsToSelector:@selector(statusBubbleWillEnterState:)])
     [delegate_ statusBubbleWillEnterState:state];
@@ -396,8 +411,6 @@ void StatusBubbleMac::Fade(bool show) {
 
   if (state_ == target_state)
     return;
-
-  Attach();
 
   if (immediate_) {
     [window_ setAlphaValue:opacity];
@@ -461,7 +474,7 @@ void StatusBubbleMac::TimerFired() {
 }
 
 void StatusBubbleMac::StartShowing() {
-  Attach();
+  // Note that |SetState()| will |Attach()| or |Detach()| as required.
 
   if (state_ == kBubbleHidden) {
     // Arrange to begin fading in after a delay.

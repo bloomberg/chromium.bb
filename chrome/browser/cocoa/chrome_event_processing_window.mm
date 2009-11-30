@@ -69,7 +69,7 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int);
 
 - (BOOL)redispatchEvent:(NSEvent*)event {
   DCHECK(event);
-  DCHECK([event window] == self);
+  DCHECK_EQ([event window], self);
   eventHandled_ = YES;
   redispatchingEvent_ = YES;
   [NSApp sendEvent:event];
