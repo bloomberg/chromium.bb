@@ -757,6 +757,8 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 							  reloc_target_bo[i],
 							  time);
 	}
+	bo_gem->reloc_count = 0;
+	bo_gem->used_as_reloc_target = 0;
 
 	DBG("bo_unreference final: %d (%s)\n",
 	    bo_gem->gem_handle, bo_gem->name);
@@ -772,7 +774,6 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 
 		bo_gem->name = NULL;
 		bo_gem->validate_index = -1;
-		bo_gem->reloc_count = 0;
 
 		DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
 
