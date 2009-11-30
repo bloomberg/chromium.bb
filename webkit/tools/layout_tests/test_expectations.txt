@@ -711,8 +711,8 @@ BUG13907 SKIP : LayoutTests/http/tests/media = FAIL
 BUG13907 BUG25094 LINUX DEBUG : LayoutTests/media = PASS FAIL TIMEOUT
 
 // These tests should be passing.  Remove them once confirmed they're not flaky.
-BUG9798 BUG13907 : LayoutTests/media/video-currentTime-set.html = FAIL
-BUG9798 BUG13907 : LayoutTests/media/media-load-event.html = FAIL
+BUG9798 BUG13907 : LayoutTests/media/video-currentTime-set.html = PASS FAIL
+BUG9798 BUG13907 : LayoutTests/media/media-load-event.html = PASS FAIL
 BUG9798 BUG13907 WIN DEBUG : LayoutTests/media/controls-drag-timebar.html = TEXT TIMEOUT
 BUG9798 BUG13907 RELEASE : LayoutTests/media/controls-drag-timebar.html = TEXT
 BUG9798 BUG13907 LINUX MAC DEBUG : LayoutTests/media/controls-drag-timebar.html = TEXT
