@@ -22,6 +22,7 @@ static const int kMessageBottomMargin = 20;
 static const float kMessageSize = 0.65f;
 static const SkColor kTitleColor = SK_ColorWHITE;
 static const SkColor kMessageColor = SK_ColorWHITE;
+static const SkColor kLinkColor = SK_ColorWHITE;
 static const SkColor kBackgroundColor = SkColorSetRGB(35, 48, 64);
 static const SkColor kBackgroundEndColor = SkColorSetRGB(35, 48, 64);
 
@@ -39,7 +40,7 @@ SadTabView::SadTabView()
 
   learn_more_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
   learn_more_link_->SetFont(*message_font_);
-  learn_more_link_->MakeReadableOverBackgroundColor(kBackgroundColor);
+  learn_more_link_->SetNormalColor(kLinkColor);
   learn_more_link_->SetController(this);
   AddChildView(learn_more_link_);
 }
