@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/plugin_service.h"
 #include "chrome/browser/renderer_host/download_throttling_resource_handler.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
@@ -396,10 +395,10 @@ bool BufferedResourceHandler::ShouldWaitForPlugins() {
       ResourceDispatcherHost::InfoForRequest(request_);
   host_->PauseRequest(info->child_id(), info->request_id(), true);
 
-  // Schedule plugin loading.
-  this->AddRef();  // Balanced in OnGetPluginList.
-  PluginService::GetInstance()->GetPluginList(false, this);
-
+  // Schedule plugin loading on the file thread.
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this, &BufferedResourceHandler::LoadPlugins));
   return true;
 }
 
@@ -467,18 +466,23 @@ bool BufferedResourceHandler::ShouldDownload(bool* need_plugin_list) {
       GURL(), type, allow_wildcard, &info, NULL);
 }
 
-void BufferedResourceHandler::OnGetPluginList(
-    const std::vector<WebPluginInfo>& plugins) {
+void BufferedResourceHandler::LoadPlugins() {
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &BufferedResourceHandler::OnPluginsLoaded));
+}
+
+void BufferedResourceHandler::OnPluginsLoaded() {
   wait_for_plugins_ = false;
+  if (!request_)
+    return;
 
-  if (request_) {
-    ResourceDispatcherHostRequestInfo* info =
-        ResourceDispatcherHost::InfoForRequest(request_);
-    host_->PauseRequest(info->child_id(), info->request_id(), false);
-    if (!CompleteResponseStarted(info->request_id(), false))
-      host_->CancelRequest(info->child_id(), info->request_id(), false);
-  }
-
-  // Drop the reference added before the GetPluginList call.
-  this->Release();
+  ResourceDispatcherHostRequestInfo* info =
+      ResourceDispatcherHost::InfoForRequest(request_);
+  host_->PauseRequest(info->child_id(), info->request_id(), false);
+  if (!CompleteResponseStarted(info->request_id(), false))
+    host_->CancelRequest(info->child_id(), info->request_id(), false);
 }

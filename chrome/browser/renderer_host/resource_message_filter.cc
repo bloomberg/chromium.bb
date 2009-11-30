@@ -582,32 +582,22 @@ void ResourceMessageFilter::OnLoadFont(LOGFONT font) {
 
 void ResourceMessageFilter::OnGetPlugins(bool refresh,
                                          IPC::Message* reply_msg) {
-  // Start the query to the plugin service, but only if we don't have another
-  // query already processing.
-  if (pending_getpluginlist_.empty()) {
-    PluginService::GetInstance()->GetPluginList(refresh, this);
-    this->AddRef();
-  }
-
-  // Put reply_msg into the queue of waiting responses.
-  pending_getpluginlist_.push(std::make_pair(refresh, reply_msg));
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          this, &ResourceMessageFilter::OnGetPluginsOnFileThread, refresh,
+          reply_msg));
 }
 
-void ResourceMessageFilter::OnGetPluginList(
-    const std::vector<WebPluginInfo>& plugins) {
-  IPC::Message* msg = pending_getpluginlist_.front().second;
-  ViewHostMsg_GetPlugins::WriteReplyParams(msg, plugins);
-  Send(msg);
-
-  pending_getpluginlist_.pop();
-  if (!pending_getpluginlist_.empty()) {
-    // We have more pending requests; start the next one.
-    PluginService::GetInstance()->GetPluginList(
-        pending_getpluginlist_.front().first, this);
-  } else {
-    // Drop the reference grabbed in OnGetPlugins().
-    this->Release();
-  }
+void ResourceMessageFilter::OnGetPluginsOnFileThread(
+    bool refresh, IPC::Message* reply_msg) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  std::vector<WebPluginInfo> plugins;
+  NPAPI::PluginList::Singleton()->GetPlugins(refresh, &plugins);
+  ViewHostMsg_GetPlugins::WriteReplyParams(reply_msg, plugins);
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this, &ResourceMessageFilter::Send, reply_msg));
 }
 
 void ResourceMessageFilter::OnGetPluginPath(const GURL& url,

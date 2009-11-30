@@ -126,44 +126,6 @@ const FilePath& PluginService::GetChromePluginDataDir() {
   return chrome_plugin_data_dir_;
 }
 
-// Call the GetPluginListClient back with a list of plugings.
-// |plugins| is intentionally pass-by-value so it's copied from the File thread
-// back to the IO thread.
-static void CallGetPluginListClient(PluginService::GetPluginListClient* client,
-                                    const std::vector<WebPluginInfo> plugins) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-
-  client->OnGetPluginList(plugins);
-}
-
-// Go out to disk (well, NPAPI::PluginList) to get the plugin list.
-// Called on the file thread.
-static void GetPluginListOnFileThread(
-    bool refresh,
-    PluginService::GetPluginListClient* client) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-
-  std::vector<WebPluginInfo> plugins;
-  NPAPI::PluginList::Singleton()->GetPlugins(refresh, &plugins);
-
-  // Call the client back on the IO thread.
-  ChromeThread::PostTask(
-      ChromeThread::IO, FROM_HERE,
-      NewRunnableFunction(&CallGetPluginListClient,
-                          client,
-                          plugins));
-}
-
-void PluginService::GetPluginList(bool refresh,
-                                  GetPluginListClient* client) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-
-  // Forward the request on to the file thread.
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(&GetPluginListOnFileThread, refresh, client));
-}
-
 const std::wstring& PluginService::GetUILocale() {
   return ui_locale_;
 }
