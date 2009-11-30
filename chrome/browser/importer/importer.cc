@@ -20,7 +20,6 @@
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 #include "skia/ext/image_operations.h"
 #include "webkit/glue/image_decoder.h"

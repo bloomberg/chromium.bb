@@ -21,7 +21,6 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"

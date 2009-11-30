@@ -13,7 +13,6 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/location_bar_view.h"
 #include "chrome/browser/views/toolbar_view.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
@@ -115,7 +114,7 @@ class InstalledBubbleContent : public views::View,
     width += kIconSize;
     width += kPanelHorizMargin;
     width += kRightColumnWidth;
-    width += 2*kPanelHorizMargin;
+    width += 2*kPanelHorizMargin;    
     width += kHorizOuterMargin;
 
     int height = kVertOuterMargin;

@@ -25,7 +25,6 @@
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/options_util.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/gtk_util.h"

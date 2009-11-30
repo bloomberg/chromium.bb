@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/message_loop.h"
-#include "chrome/app/scoped_ole_initializer.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/test/test_browser_window.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -96,8 +95,6 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   MockRenderProcessHostFactory rph_factory_;
   TestRenderViewHostFactory rvh_factory_;
-
-  ScopedOleInitializer ole_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserWithTestWindowTest);
 };

@@ -7,12 +7,10 @@
 #include <string>
 
 #include "app/l10n_util.h"
-#include "base/message_loop.h"
 #include "base/process_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 

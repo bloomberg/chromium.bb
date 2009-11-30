@@ -18,7 +18,6 @@
 #include "chrome/browser/gtk/repost_form_warning_gtk.h"
 #include "chrome/browser/gtk/task_manager_gtk.h"
 #include "chrome/browser/options_window.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "views/widget/widget.h"
 

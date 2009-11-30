@@ -7,7 +7,6 @@
 #include "base/histogram.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/url_constants.h"

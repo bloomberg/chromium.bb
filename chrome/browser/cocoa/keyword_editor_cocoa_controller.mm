@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac_util.h"
-#include "base/singleton.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"

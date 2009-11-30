@@ -8,7 +8,6 @@
 #include "base/values.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 
 void ShownSectionsHandler::RegisterMessages() {
   dom_ui_->RegisterMessageCallback("getShownSections",

@@ -13,7 +13,6 @@
 
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/net/url_fetcher.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class ImporterBridge;
 class XmlReader;

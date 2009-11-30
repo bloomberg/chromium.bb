@@ -17,6 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
@@ -31,10 +32,6 @@ class BookmarkIndex;
 class BookmarkModel;
 class BookmarkCodec;
 class Profile;
-
-namespace bookmark_utils {
-struct TitleMatch;
-}
 
 // BookmarkNode ---------------------------------------------------------------
 

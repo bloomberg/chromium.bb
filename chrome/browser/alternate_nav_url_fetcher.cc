@@ -13,7 +13,6 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "net/url_request/url_request.h"
 
 AlternateNavURLFetcher::AlternateNavURLFetcher(
     const GURL& alternate_nav_url)

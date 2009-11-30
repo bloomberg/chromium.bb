@@ -423,6 +423,4 @@ class Extension {
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };
 
-typedef std::vector<Extension*> ExtensionList;
-
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_H_

@@ -12,7 +12,6 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 

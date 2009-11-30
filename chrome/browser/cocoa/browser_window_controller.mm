@@ -14,7 +14,6 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/dock_info.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/profile.h"

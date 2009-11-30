@@ -33,16 +33,14 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "net/base/net_util.h"
 #include "net/http/http_network_layer.h"
-#include "net/url_request/url_request.h"
+#include "net/base/net_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_MACOSX)

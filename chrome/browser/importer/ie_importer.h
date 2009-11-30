@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_IMPORTER_IE_IMPORTER_H_
 
 #include "chrome/browser/importer/importer.h"
-#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class IEImporter : public Importer {
  public:
