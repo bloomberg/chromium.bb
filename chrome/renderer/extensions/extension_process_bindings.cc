@@ -9,11 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/singleton.h"
-#include "chrome/common/child_process_logging.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/extensions/url_pattern.h"
@@ -103,19 +100,6 @@ static L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id) {
   } else {
     return NULL;
   }
-}
-
-static std::vector<std::string> GetActiveExtensionIDs() {
-  std::vector<std::string> extension_ids;
-  ExtensionPermissionsMap& permissions =
-      Singleton<SingletonData>()->permissions_;
-
-  for (ExtensionPermissionsMap::iterator iter = permissions.begin();
-       iter != permissions.end(); ++iter) {
-    extension_ids.push_back(iter->first);
-  }
-
-  return extension_ids;
 }
 
 // A RenderViewVisitor class that iterates through the set of available
@@ -642,12 +626,6 @@ void ExtensionProcessBindings::SetAPIPermissions(
     permissions_map[Extension::kPermissionNames[i]] = false;
   for (size_t i = 0; i < permissions.size(); ++i)
     permissions_map[permissions[i]] = true;
-
-  // Ugly hack. We also update our list of active extensions here. This always
-  // gets called, even if the extension has no api permissions. In single
-  // process, this has already been done in the browser code.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess))
-    child_process_logging::SetActiveExtensions(GetActiveExtensionIDs());
 }
 
 // static

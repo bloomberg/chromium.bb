@@ -91,9 +91,4 @@ void SetClientId(const std::string& client_id) {
   std::wstring wstr = ASCIIToWide(str);
   GoogleUpdateSettings::SetMetricsId(wstr);
 }
-
-void SetActiveExtensions(const std::vector<std::string> extension_ids) {
-  // TODO(port)
-}
-
 }  // namespace child_process_logging
