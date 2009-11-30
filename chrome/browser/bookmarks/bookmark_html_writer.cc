@@ -179,7 +179,7 @@ class Writer : public Task {
         break;
 
       case CONTENT:
-        utf8_string = WideToUTF8(EscapeForHTML(text));
+        utf8_string = UTF16ToUTF8(EscapeForHTML(WideToUTF16Hack(text)));
         break;
 
       default:

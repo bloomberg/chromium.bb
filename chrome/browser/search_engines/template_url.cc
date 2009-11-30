@@ -248,13 +248,14 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
 
   // Encode the search terms so that we know the encoding.
   const std::vector<std::string>& encodings = host.input_encodings();
-  std::wstring encoded_terms;
-  std::wstring encoded_original_query;
+  string16 encoded_terms;
+  string16 encoded_original_query;
   std::wstring input_encoding;
   for (size_t i = 0; i < encodings.size(); ++i) {
-    if (EscapeQueryParamValue(terms, encodings[i].c_str(), &encoded_terms)) {
+    if (EscapeQueryParamValue(WideToUTF16Hack(terms),
+                              encodings[i].c_str(), &encoded_terms)) {
       if (!original_query_for_suggestion.empty()) {
-        EscapeQueryParamValue(original_query_for_suggestion,
+        EscapeQueryParamValue(WideToUTF16Hack(original_query_for_suggestion),
                               encodings[i].c_str(), &encoded_original_query);
       }
       input_encoding = ASCIIToWide(encodings[i]);
@@ -262,10 +263,11 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
     }
   }
   if (input_encoding.empty()) {
-    encoded_terms = EscapeQueryParamValueUTF8(terms);
+    encoded_terms = WideToUTF16Hack(EscapeQueryParamValueUTF8(terms));
     if (!original_query_for_suggestion.empty()) {
       encoded_original_query =
-          EscapeQueryParamValueUTF8(original_query_for_suggestion);
+          WideToUTF16Hack(
+              EscapeQueryParamValueUTF8(original_query_for_suggestion));
     }
     input_encoding = L"UTF-8";
   }
@@ -298,7 +300,8 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
 
       case GOOGLE_ORIGINAL_QUERY_FOR_SUGGESTION:
         if (accepted_suggestion >= 0)
-          url.insert(i->index, L"oq=" + encoded_original_query + L"&");
+          url.insert(i->index, L"oq=" +
+                     UTF16ToWideHack(encoded_original_query) + L"&");
         break;
 
       case GOOGLE_RLZ: {
@@ -333,7 +336,7 @@ std::wstring TemplateURLRef::ReplaceSearchTerms(
         break;
 
       case SEARCH_TERMS:
-        url.insert(i->index, encoded_terms);
+        url.insert(i->index, UTF16ToWideHack(encoded_terms));
         break;
 
       default:
