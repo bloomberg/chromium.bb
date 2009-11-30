@@ -485,28 +485,49 @@ void WebDevToolsAgentImpl::identifierForInitialRequest(
     unsigned long resourceId,
     WebKit::WebFrame* frame,
     const WebURLRequest& request) {
+  if (InspectorController* ic = GetInspectorController()) {
+    WebFrameImpl* web_frame_impl = static_cast<WebFrameImpl*>(frame);
+    FrameLoader* frame_loader = web_frame_impl->frame()->loader();
+    DocumentLoader* loader = frame_loader->activeDocumentLoader();
+    ic->identifierForInitialRequest(resourceId, loader,
+                                    request.toResourceRequest());
+  }
 }
 
 void WebDevToolsAgentImpl::willSendRequest(
     unsigned long resourceId,
     const WebURLRequest& request) {
+  if (InspectorController* ic = GetInspectorController()) {
+    ic->willSendRequest(resourceId, request.toResourceRequest(),
+                        ResourceResponse());
+  }
 }
 
 void WebDevToolsAgentImpl::didReceiveData(unsigned long resourceId,
                                           int length) {
+  if (InspectorController* ic = GetInspectorController())
+    ic->didReceiveContentLength(resourceId, length);
 }
 
 void WebDevToolsAgentImpl::didReceiveResponse(
     unsigned long resourceId,
     const WebURLResponse& response) {
+  if (InspectorController* ic = GetInspectorController())
+    ic->didReceiveResponse(resourceId, response.toResourceResponse());
 }
 
 void WebDevToolsAgentImpl::didFinishLoading(
     unsigned long resourceId) {
+  if (InspectorController* ic = GetInspectorController()) {
+    ic->didFinishLoading(resourceId);
+  }
 }
 
 void WebDevToolsAgentImpl::didFailLoading(unsigned long resourceId,
                                           const WebURLError& error) {
+  ResourceError resource_error;
+  if (InspectorController* ic = GetInspectorController())
+    ic->didFailLoading(resourceId, resource_error);
 }
 
 
