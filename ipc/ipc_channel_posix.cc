@@ -338,6 +338,16 @@ bool Channel::ChannelImpl::CreatePipe(const std::string& channel_id,
           return false;
         AddChannelSocket(pipe_name_, client_pipe_);
       } else {
+        // Guard against inappropriate reuse of the initial IPC channel.  If
+        // an IPC channel closes and someone attempts to reuse it by name, the
+        // initial channel must not be recycled here.  http://crbug.com/26754.
+        static bool used_initial_channel = false;
+        if (used_initial_channel) {
+          LOG(FATAL) << "Denying attempt to reuse initial IPC channel";
+          return false;
+        }
+        used_initial_channel = true;
+
         pipe_ = Singleton<base::GlobalDescriptors>()->Get(kPrimaryIPCChannel);
       }
     } else {
