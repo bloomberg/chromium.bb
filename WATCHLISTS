@@ -137,7 +137,7 @@
     'importer': ['kuchhal@chromium.org'],
     'media': ['ajwong@chromium.org', 'fbarchard@chromium.org',
               'hclam@chromium.org', 'scherkus@chromium.org'],
-    'ipc': ['jam@chromium.org'],
+    'ipc': ['jam@chromium.org', 'darin@chromium.org'],
     'linux-sandboxing': ['agl@chromium.org'],
     'sync': ['tim@chromium.org', 'nick@chromium.org',
              'idana@chromium.org'],
