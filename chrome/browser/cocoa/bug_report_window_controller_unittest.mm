@@ -16,7 +16,8 @@ namespace {
 class BugReportWindowControllerUnittest : public RenderViewHostTestHarness {
 };
 
-TEST_F(BugReportWindowControllerUnittest, ReportBugWithNewTabPageOpen) {
+// See http://crbug.com/29019 for why it's disabled.
+TEST_F(BugReportWindowControllerUnittest, DISABLED_ReportBugWithNewTabPageOpen) {
   ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   // Create a "chrome://newtab" test tab.  SiteInstance will be deleted when
   // tabContents is deleted.
@@ -50,7 +51,8 @@ TEST_F(BugReportWindowControllerUnittest, ReportBugWithNewTabPageOpen) {
   [controller release];
 }
 
-TEST_F(BugReportWindowControllerUnittest, ReportBugWithNoWindowOpen) {
+// See http://crbug.com/29019 for why it's disabled.
+TEST_F(BugReportWindowControllerUnittest, DISABLED_ReportBugWithNoWindowOpen) {
   BugReportWindowController* controller = [[BugReportWindowController alloc]
       initWithTabContents:NULL
                   profile:profile_.get()];
