@@ -184,7 +184,8 @@ class DelayedSocketData : public StaticSocketDataProvider,
   //       e.g. a MockRead(true, 0, 0);
   DelayedSocketData(MockRead* reads, int write_delay, MockWrite* writes)
     : StaticSocketDataProvider(reads, writes),
-      write_delay_(write_delay) {
+      write_delay_(write_delay),
+      ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
     DCHECK_GE(write_delay_, 0);
   }
 
@@ -199,16 +200,26 @@ class DelayedSocketData : public StaticSocketDataProvider,
     // Now that our write has completed, we can allow reads to continue.
     if (!--write_delay_)
       MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        NewRunnableMethod(this, &DelayedSocketData::CompleteRead), 100);
+        factory_.NewRunnableMethod(&DelayedSocketData::CompleteRead), 100);
     return rv;
   }
 
+  virtual void Reset() {
+    set_socket(NULL);
+    factory_.RevokeAll();
+    StaticSocketDataProvider::Reset();
+  }
+
   void CompleteRead() {
-    socket()->OnReadComplete(GetNextRead());
+    if (socket())
+      socket()->OnReadComplete(GetNextRead());
+    else
+      NOTREACHED();
   }
 
  private:
   int write_delay_;
+  ScopedRunnableMethodFactory<DelayedSocketData> factory_;
 };
 
 class FlipNetworkTransactionTest : public PlatformTest {
@@ -738,10 +749,7 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
 }
 
 // Test that we shutdown correctly on write errors.
-// TODO(mbelshe): Fix this test.
-//    The problem is that the async IO can be left hanging in the mock
-//    socket, which can cause late-arriving events to crash.
-TEST_F(FlipNetworkTransactionTest, DISABLED_WriteError) {
+TEST_F(FlipNetworkTransactionTest, WriteError) {
   MockWrite writes[] = {
     // We'll write 10 bytes successfully
     MockWrite(true, reinterpret_cast<const char*>(kGetSyn), 10),
@@ -765,7 +773,9 @@ TEST_F(FlipNetworkTransactionTest, DISABLED_WriteError) {
   scoped_refptr<DelayedSocketData> data(
       new DelayedSocketData(reads, 2, writes));
   TransactionHelperResult out = TransactionHelper(request, data.get());
+  data->set_socket((net::MockClientSocket *)0xdeadbeef);
   EXPECT_EQ(ERR_FAILED, out.rv);
+  //data->Reset();
 }
 
 // Test that partial writes work.
