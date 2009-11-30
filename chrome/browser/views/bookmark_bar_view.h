@@ -210,6 +210,11 @@ class BookmarkBarView : public DetachableToolbarView,
   // Maximum size of buttons on the bookmark bar.
   static const int kMaxButtonWidth;
 
+  // If a button is currently throbbing, it is stopped. If immediate is true
+  // the throb stops immediately, otherwise it stops after a couple more
+  // throbs.
+  void StopThrobbing(bool immediate);
+
   // If true we're running tests. This short circuits a couple of animations.
   static bool testing_;
 
@@ -399,14 +404,11 @@ class BookmarkBarView : public DetachableToolbarView,
   // visible, this returns GetBookmarkButtonCount().
   int GetFirstHiddenNodeIndex();
 
-  // If the bookmark bubble is showing this determines which view should throb
-  // and starts it throbbing. Does nothing if bookmark bubble isn't showing.
-  void StartThrobbing();
-
-  // If a button is currently throbbing, it is stopped. If immediate is true
-  // the throb stops immediately, otherwise it stops after a couple more
-  // throbs.
-  void StopThrobbing(bool immediate);
+  // This determines which view should throb and starts it
+  // throbbing (e.g when the bookmark bubble is showing).
+  // If |overflow_only| is true, start throbbing only if |node| is hidden in
+  // the overflow menu.
+  void StartThrobbing(const BookmarkNode* node, bool overflow_only);
 
   // Updates the colors for all the child objects in the bookmarks bar.
   void UpdateColors();
@@ -477,9 +479,6 @@ class BookmarkBarView : public DetachableToolbarView,
 
   // Animation controlling showing and hiding of the bar.
   scoped_ptr<SlideAnimation> size_animation_;
-
-  // If the bookmark bubble is showing, this is the URL.
-  GURL bubble_url_;
 
   // If the bookmark bubble is showing, this is the visible ancestor of the URL.
   // The visible ancestor is either the other_bookmarked_button_,

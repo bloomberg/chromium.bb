@@ -252,6 +252,25 @@ class BookmarkFolderButton : public views::MenuButton {
   DISALLOW_COPY_AND_ASSIGN(BookmarkFolderButton);
 };
 
+// OverFlowButton (chevron) --------------------------------------------------
+
+class OverFlowButton : public views::MenuButton {
+ public:
+  explicit OverFlowButton(BookmarkBarView* owner)
+      : MenuButton(NULL, std::wstring(), owner, false),
+        owner_(owner) {}
+
+  virtual bool OnMousePressed(const views::MouseEvent& e) {
+    owner_->StopThrobbing(true);
+    return views::MenuButton::OnMousePressed(e);
+  }
+
+ private:
+  BookmarkBarView* owner_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverFlowButton);
+};
+
 }  // namespace
 
 // DropInfo -------------------------------------------------------------------
@@ -919,7 +938,7 @@ MenuButton* BookmarkBarView::CreateOtherBookmarkedButton() {
 }
 
 MenuButton* BookmarkBarView::CreateOverflowButton() {
-  MenuButton* button = new MenuButton(NULL, std::wstring(), this, false);
+  MenuButton* button = new OverFlowButton(this);
   button->SetIcon(*ResourceBundle::GetSharedInstance().
                   GetBitmapNamed(IDR_BOOKMARK_BAR_CHEVRONS));
 
@@ -976,18 +995,14 @@ void BookmarkBarView::BookmarkNodeMoved(BookmarkModel* model,
                                         int old_index,
                                         const BookmarkNode* new_parent,
                                         int new_index) {
-  StopThrobbing(true);
   BookmarkNodeRemovedImpl(model, old_parent, old_index);
   BookmarkNodeAddedImpl(model, new_parent, new_index);
-  StartThrobbing();
 }
 
 void BookmarkBarView::BookmarkNodeAdded(BookmarkModel* model,
                                         const BookmarkNode* parent,
                                         int index) {
-  StopThrobbing(true);
   BookmarkNodeAddedImpl(model, parent, index);
-  StartThrobbing();
 }
 
 void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
@@ -999,7 +1014,11 @@ void BookmarkBarView::BookmarkNodeAddedImpl(BookmarkModel* model,
     return;
   }
   DCHECK(index >= 0 && index <= GetBookmarkButtonCount());
-  AddChildView(index, CreateBookmarkButton(parent->GetChild(index)));
+  const BookmarkNode* node = parent->GetChild(index);
+  if (!throbbing_view_ && sync_service_ && sync_service_->SetupInProgress()) {
+    StartThrobbing(node, true);
+  }
+  AddChildView(index, CreateBookmarkButton(node));
   UpdateColors();
   Layout();
   SchedulePaint();
@@ -1009,9 +1028,7 @@ void BookmarkBarView::BookmarkNodeRemoved(BookmarkModel* model,
                                           const BookmarkNode* parent,
                                           int old_index,
                                           const BookmarkNode* node) {
-  StopThrobbing(true);
   BookmarkNodeRemovedImpl(model, parent, old_index);
-  StartThrobbing();
 }
 
 void BookmarkBarView::BookmarkNodeRemovedImpl(BookmarkModel* model,
@@ -1291,15 +1308,17 @@ void BookmarkBarView::Observe(NotificationType type,
       }
       break;
 
-    case NotificationType::BOOKMARK_BUBBLE_SHOWN:
+    case NotificationType::BOOKMARK_BUBBLE_SHOWN: {
       StopThrobbing(true);
-      bubble_url_ = *(Details<GURL>(details).ptr());
-      StartThrobbing();
+      GURL url = *(Details<GURL>(details).ptr());
+      const BookmarkNode* node = model_->GetMostRecentlyAddedNodeForURL(url);
+      if (!node)
+        return;  // Generally shouldn't happen.
+      StartThrobbing(node, false);
       break;
-
+    }
     case NotificationType::BOOKMARK_BUBBLE_HIDDEN:
       StopThrobbing(false);
-      bubble_url_ = GURL();
       break;
 
     default:
@@ -1494,40 +1513,35 @@ int BookmarkBarView::GetFirstHiddenNodeIndex() {
   return bb_count;
 }
 
-void BookmarkBarView::StartThrobbing() {
+void BookmarkBarView::StartThrobbing(const BookmarkNode* node,
+                                     bool overflow_only) {
   DCHECK(!throbbing_view_);
 
-  if (bubble_url_.is_empty())
-    return;  // Bubble isn't showing; nothing to throb.
-
-  if (!GetWidget())
-    return;  // We're not showing, don't do anything.
-
-  const BookmarkNode* node =
-      model_->GetMostRecentlyAddedNodeForURL(bubble_url_);
-  if (!node)
-    return;  // Generally shouldn't happen.
-
-  // Determine which visible button is showing the url (or is an ancestor of
-  // the url).
-  if (node->HasAncestor(model_->GetBookmarkBarNode())) {
-    const BookmarkNode* bbn = model_->GetBookmarkBarNode();
-    const BookmarkNode* parent_on_bb = node;
-    while (parent_on_bb->GetParent() != bbn)
-      parent_on_bb = parent_on_bb->GetParent();
+  // Determine which visible button is showing the bookmark (or is an ancestor
+  // of the bookmark).
+  const BookmarkNode* bbn = model_->GetBookmarkBarNode();
+  const BookmarkNode* parent_on_bb = node;
+  while (parent_on_bb) {
+    const BookmarkNode* parent = parent_on_bb->GetParent();
+    if (parent == bbn)
+      break;
+    parent_on_bb = parent;
+  }
+  if (parent_on_bb) {
     int index = bbn->IndexOfChild(parent_on_bb);
     if (index >= GetFirstHiddenNodeIndex()) {
       // Node is hidden, animate the overflow button.
       throbbing_view_ = overflow_button_;
-    } else {
+    } else if (!overflow_only) {
       throbbing_view_ = static_cast<CustomButton*>(GetChildViewAt(index));
     }
-  } else {
+  } else if (!overflow_only) {
     throbbing_view_ = other_bookmarked_button_;
   }
 
   // Use a large number so that the button continues to throb.
-  throbbing_view_->StartThrobbing(std::numeric_limits<int>::max());
+  if (throbbing_view_)
+    throbbing_view_->StartThrobbing(std::numeric_limits<int>::max());
 }
 
 void BookmarkBarView::StopThrobbing(bool immediate) {

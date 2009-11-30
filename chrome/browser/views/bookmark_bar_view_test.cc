@@ -85,6 +85,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     profile_->CreateBookmarkModel(true);
     profile_->BlockUntilBookmarkModelLoaded();
     profile_->GetPrefs()->SetBoolean(prefs::kShowBookmarkBar, true);
+    profile_->CreateProfileSyncService();
 
     model_ = profile_->GetBookmarkModel();
     model_->ClearStore();
