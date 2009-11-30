@@ -258,6 +258,7 @@ AccessibilityUIElement::AccessibilityUIElement(
   BindProperty("selectedTextRange", &selected_text_range);
   BindProperty("isEnabled", &AccessibilityUIElement::IsEnabledGetterCallback);
   BindProperty("isRequired", &is_required_);
+  BindProperty("isSelected", &AccessibilityUIElement::IsSelectedGetterCallback);
   BindProperty("valueDescription", &value_description_);
 
   BindFallbackMethod(&AccessibilityUIElement::FallbackCallback);
@@ -279,10 +280,18 @@ std::string AccessibilityUIElement::GetDescription() {
   return description.insert(0, "AXDescription: ");
 }
 
+std::string AccessibilityUIElement::GetRole() {
+  return RoleToString(accessibility_object().roleValue());
+}
+
 void AccessibilityUIElement::AllAttributesCallback(
     const CppArgumentList& args, CppVariant* result) {
   // TODO(dglazkov): Concatenate all attributes of the AccessibilityObject.
   std::string attributes(GetTitle());
+  attributes.append(" ");
+  attributes.append(GetRole());
+  attributes.append(" ");
+  attributes.append(GetDescription());
   result->Set(attributes);
 }
 
@@ -409,7 +418,17 @@ void AccessibilityUIElement::AttributeValueCallback(
 
 void AccessibilityUIElement::IsAttributeSettableCallback(
     const CppArgumentList& args, CppVariant* result) {
-  result->SetNull();
+  if (args.size() < 1 && !args[0].isString()) {
+    result->SetNull();
+    return;
+  }
+
+  std::string attribute = args[0].ToString();
+  bool settable = false;
+  if (attribute == "AXValue") {
+    settable = accessibility_object().canSetValueAttribute();
+  }
+  result->Set(settable);
 }
 
 void AccessibilityUIElement::IsActionSupportedCallback(
@@ -455,8 +474,12 @@ void AccessibilityUIElement::IsEnabledGetterCallback(CppVariant* result) {
   result->Set(accessibility_object().isEnabled());
 }
 
+void AccessibilityUIElement::IsSelectedGetterCallback(CppVariant* result) {
+  result->SetNull();
+}
+
 void AccessibilityUIElement::RoleGetterCallback(CppVariant* result) {
-  result->Set(RoleToString(accessibility_object().roleValue()));
+  result->Set(GetRole());
 }
 
 void AccessibilityUIElement::TitleGetterCallback(CppVariant* result) {

@@ -26,6 +26,7 @@ class AccessibilityUIElement : public CppBoundClass {
 
   std::string GetTitle();
   std::string GetDescription();
+  std::string GetRole();
 
  protected:
   const WebKit::WebAccessibilityObject& accessibility_object() const {
@@ -83,6 +84,7 @@ class AccessibilityUIElement : public CppBoundClass {
   void ChildrenCountGetterCallback(CppVariant* result);
   void DescriptionGetterCallback(CppVariant* result);
   void IsEnabledGetterCallback(CppVariant* result);
+  void IsSelectedGetterCallback(CppVariant* result);
   void RoleGetterCallback(CppVariant* result);
   void TitleGetterCallback(CppVariant* result);
 
