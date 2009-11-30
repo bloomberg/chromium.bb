@@ -166,6 +166,7 @@ void WebDevToolsAgentImpl::detach() {
   devtools_agent_host_.set(NULL);
   debugger_agent_impl_.set(NULL);
   attached_ = false;
+  apu_agent_enabled_ = false;
 }
 
 void WebDevToolsAgentImpl::didNavigate() {
