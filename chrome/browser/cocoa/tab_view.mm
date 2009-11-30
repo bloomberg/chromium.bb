@@ -808,4 +808,13 @@ static const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
+- (void)setIsClosing:(BOOL)closing {
+  isClosing_ = closing;
+  // When closing, ensure clicks to the close button go nowhere.
+  if (closing) {
+    [closeButton_ setTarget:nil];
+    [closeButton_ setAction:nil];
+  }
+}
+
 @end

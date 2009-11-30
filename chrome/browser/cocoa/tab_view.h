@@ -59,7 +59,9 @@
 @property(assign, nonatomic) CGFloat hoverAlpha;
 
 // Determines if the tab is in the process of animating closed. It may still
-// be visible on-screen, but should not respond to/initiate any events.
+// be visible on-screen, but should not respond to/initiate any events. Upon
+// setting to NO, clears the target/action of the close button to prevent
+// clicks inside it from sending messages.
 @property(assign, nonatomic) BOOL isClosing;
 
 // Enables/Disables tracking regions for the tab.
