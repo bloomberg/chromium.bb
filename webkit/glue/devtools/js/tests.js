@@ -730,8 +730,14 @@ TestSuite.prototype.testPauseWhenScriptIsRunning = function() {
       function(resultText) {
         test.assertTrue(!isNaN(resultText),
                         'Failed to get timer id: ' + resultText);
-        testScriptPause();
+        testScriptPauseAfterDelay();
       });
+
+  // Wait for some time to make sure that inspected page is running the
+  // infinite loop.
+  function testScriptPauseAfterDelay() {
+    setTimeout(testScriptPause, 300);
+  }
 
   function testScriptPause() {
     // The script should be in infinite loop. Click 'Pause' button to
