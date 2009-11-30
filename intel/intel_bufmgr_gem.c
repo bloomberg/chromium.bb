@@ -742,7 +742,9 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 	/* Put the buffer into our internal cache for reuse if we can. */
 	tiling_mode = I915_TILING_NONE;
 	if (bufmgr_gem->bo_reuse && bo_gem->reusable && bucket != NULL &&
-	    drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0) {
+	    drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0 &&
+	    drm_intel_gem_bo_madvise_internal(bufmgr_gem, bo_gem,
+					      I915_MADV_DONTNEED)) {
 		bo_gem->free_time = time;
 
 		bo_gem->name = NULL;
@@ -751,8 +753,6 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 
 		DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
 
-		drm_intel_gem_bo_madvise_internal(bufmgr_gem, bo_gem,
-						  I915_MADV_DONTNEED);
 		drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time);
 	} else {
 		drm_intel_gem_bo_free(bo);
@@ -928,7 +928,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
-	return 0;
+	return ret;
 }
 
 int drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo)
