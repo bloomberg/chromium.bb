@@ -137,8 +137,10 @@ class CookiesViewTest : public testing::Test {
     if (!path)
       return false;
     gtk_tree_selection_select_path(cookies_view.selection_, path);
+    bool rv = gtk_tree_selection_path_is_selected(cookies_view.selection_,
+                                                  path);
     gtk_tree_path_free(path);
-    return true;
+    return rv;
   }
 
   std::string GetSelectedPath(const CookiesView& cookies_view) {
@@ -462,4 +464,183 @@ TEST_F(CookiesViewTest, RemoveDefaultSelection) {
 
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+}
+
+TEST_F(CookiesViewTest, Filter) {
+  net::CookieMonster* monster = profile_->GetCookieMonster();
+  monster->SetCookie(GURL("http://foo0"), "C=1");
+  monster->SetCookie(GURL("http://bar0"), "D=1");
+  monster->SetCookie(GURL("http://foo1"), "B=1");
+  monster->SetCookie(GURL("http://bar1"), "A=1");
+  CookiesView cookies_view(profile_.get());
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A,"
+               "foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
+
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+
+  gtk_entry_set_text(GTK_ENTRY(cookies_view.filter_entry_), "bar");
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+  // Entering text doesn't immediately filter the results.
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A,"
+               "foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
+
+  // Results are filtered immediately if you activate (hit enter in the entry).
+  gtk_widget_activate(cookies_view.filter_entry_);
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A",
+               GetDisplayedCookies(cookies_view).c_str());
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.filter_clear_button_));
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+  EXPECT_STREQ("", gtk_entry_get_text(GTK_ENTRY(cookies_view.filter_entry_)));
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A,"
+               "foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
+}
+
+TEST_F(CookiesViewTest, FilterRemoveAll) {
+  net::CookieMonster* monster = profile_->GetCookieMonster();
+  monster->SetCookie(GURL("http://foo0"), "C=1");
+  monster->SetCookie(GURL("http://bar0"), "D=1");
+  monster->SetCookie(GURL("http://foo1"), "B=1");
+  monster->SetCookie(GURL("http://bar1"), "A=1");
+  CookiesView cookies_view(profile_.get());
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A,"
+               "foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
+
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+
+  gtk_entry_set_text(GTK_ENTRY(cookies_view.filter_entry_), "bar");
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+  // Entering text doesn't immediately filter the results.
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A,"
+               "foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
+
+  // Results are filtered immediately if you activate (hit enter in the entry).
+  gtk_widget_activate(cookies_view.filter_entry_);
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A",
+               GetDisplayedCookies(cookies_view).c_str());
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_all_button_));
+
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+  EXPECT_STREQ("",
+               GetDisplayedCookies(cookies_view).c_str());
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.filter_clear_button_));
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+  EXPECT_STREQ("", gtk_entry_get_text(GTK_ENTRY(cookies_view.filter_entry_)));
+  EXPECT_STREQ("foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
+}
+
+TEST_F(CookiesViewTest, FilterRemove) {
+  net::CookieMonster* monster = profile_->GetCookieMonster();
+  monster->SetCookie(GURL("http://foo0"), "C=1");
+  monster->SetCookie(GURL("http://bar0"), "D=1");
+  monster->SetCookie(GURL("http://foo1"), "B=1");
+  monster->SetCookie(GURL("http://bar1"), "A=1");
+  monster->SetCookie(GURL("http://bar1"), "E=1");
+  CookiesView cookies_view(profile_.get());
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A,__E,"
+               "foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
+  EXPECT_STREQ("D,A,E,C,B", GetMonsterCookies(monster).c_str());
+
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+
+  gtk_entry_set_text(GTK_ENTRY(cookies_view.filter_entry_), "bar");
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+  // Entering text doesn't immediately filter the results.
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A,__E,"
+               "foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
+
+  // Results are filtered immediately if you activate (hit enter in the entry).
+  gtk_widget_activate(cookies_view.filter_entry_);
+  EXPECT_STREQ("bar0,_Cookies,__D,"
+               "bar1,_Cookies,__A,__E",
+               GetDisplayedCookies(cookies_view).c_str());
+
+  ASSERT_TRUE(SelectByPath(cookies_view, "1:0:0"));
+
+  {
+    SCOPED_TRACE("First selection");
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+    CheckDetailsSensitivity(TRUE, cookies_view);
+  }
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_button_));
+
+  {
+    SCOPED_TRACE("First selection removed");
+    EXPECT_STREQ("D,E,C,B", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("bar0,_Cookies,__D,"
+                 "bar1,_Cookies,__E",
+                 GetDisplayedCookies(cookies_view).c_str());
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+    EXPECT_STREQ("1:0:0", GetSelectedPath(cookies_view).c_str());
+    CheckDetailsSensitivity(TRUE, cookies_view);
+  }
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_button_));
+
+  {
+    SCOPED_TRACE("Second selection");
+    EXPECT_STREQ("D,C,B", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("bar0,_Cookies,__D,"
+                 "bar1,_Cookies",
+                 GetDisplayedCookies(cookies_view).c_str());
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+    EXPECT_STREQ("1:0", GetSelectedPath(cookies_view).c_str());
+    CheckDetailsSensitivity(FALSE, cookies_view);
+  }
+
+  ASSERT_TRUE(SelectByPath(cookies_view, "0:0:0"));
+  EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+  gtk_button_clicked(GTK_BUTTON(cookies_view.remove_button_));
+
+  {
+    SCOPED_TRACE("Second selection removed");
+    EXPECT_STREQ("C,B", GetMonsterCookies(monster).c_str());
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
+    EXPECT_EQ(TRUE, GTK_WIDGET_SENSITIVE(cookies_view.remove_button_));
+    EXPECT_STREQ("0:0", GetSelectedPath(cookies_view).c_str());
+    CheckDetailsSensitivity(FALSE, cookies_view);
+    EXPECT_STREQ("bar0,_Cookies,"
+                 "bar1,_Cookies",
+                 GetDisplayedCookies(cookies_view).c_str());
+  }
+
+  gtk_button_clicked(GTK_BUTTON(cookies_view.filter_clear_button_));
+  EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.filter_clear_button_));
+  EXPECT_STREQ("", gtk_entry_get_text(GTK_ENTRY(cookies_view.filter_entry_)));
+  EXPECT_STREQ("foo0,_Cookies,__C,"
+               "foo1,_Cookies,__B",
+               GetDisplayedCookies(cookies_view).c_str());
 }

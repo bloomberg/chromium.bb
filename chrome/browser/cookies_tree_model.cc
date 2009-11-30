@@ -272,7 +272,6 @@ void CookiesTreeModel::DeleteAllCookies() {
   int num_children = root->GetChildCount();
   for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, i);
-  LoadCookies();
   NotifyObserverTreeNodeChanged(root);
 }
 

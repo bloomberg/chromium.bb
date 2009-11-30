@@ -49,6 +49,9 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   // Helper for initializing cookie details table.
   void InitCookieDetailRow(int row, int label_id, GtkWidget** display_label);
 
+  // Set the initial selection and tree expanded state.
+  void SetInitialTreeState();
+
   // Set sensitivity of buttons based on selection and filter state.
   void EnableControls();
 
@@ -80,11 +83,22 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   static gboolean OnTreeViewKeyPress(GtkWidget* tree_view, GdkEventKey* key,
                                      CookiesView* window);
 
+  // Filter the list against the text in |filter_entry_|.
+  void UpdateFilterResults();
+
+  // Callbacks for user actions filtering the list.
+  static void OnFilterEntryActivated(GtkEntry* entry, CookiesView* window);
+  static void OnFilterEntryChanged(GtkEditable* editable, CookiesView* window);
+  static void OnFilterClearButtonClicked(GtkButton* button,
+                                         CookiesView* window);
+
   // The parent widget.
   GtkWidget* dialog_;
 
   // Widgets of the dialog.
   GtkWidget* description_label_;
+  GtkWidget* filter_entry_;
+  GtkWidget* filter_clear_button_;
   GtkWidget* remove_button_;
   GtkWidget* remove_all_button_;
 
@@ -105,6 +119,10 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   // The profile.
   Profile* profile_;
 
+  // A factory to construct Runnable Methods so that we can be called back to
+  // re-evaluate the model after the search query string changes.
+  ScopedRunnableMethodFactory<CookiesView> filter_update_factory_;
+
   // The Cookies Table model.
   scoped_ptr<CookiesTreeModel> cookies_tree_model_;
   scoped_ptr<gtk_tree::TreeAdapter> cookies_tree_adapter_;
@@ -118,6 +136,9 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   FRIEND_TEST(CookiesViewTest, RemoveCookiesByDomain);
   FRIEND_TEST(CookiesViewTest, RemoveByDomain);
   FRIEND_TEST(CookiesViewTest, RemoveDefaultSelection);
+  FRIEND_TEST(CookiesViewTest, Filter);
+  FRIEND_TEST(CookiesViewTest, FilterRemoveAll);
+  FRIEND_TEST(CookiesViewTest, FilterRemove);
 
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
 };

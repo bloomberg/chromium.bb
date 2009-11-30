@@ -23,6 +23,9 @@ namespace {
 const int kDialogDefaultWidth = 550;
 const int kDialogDefaultHeight = 550;
 
+// Delay after entering filter text before filtering occurs.
+const int kSearchFilterDelayMs = 500;
+
 // Response ids for our custom buttons.
 enum {
   RESPONSE_REMOVE = 1,
@@ -67,7 +70,8 @@ void CookiesView::Show(Profile* profile) {
 }
 
 CookiesView::CookiesView(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      filter_update_factory_(this) {
   Init();
 }
 
@@ -112,6 +116,29 @@ void CookiesView::Init() {
                       gtk_util::kContentAreaSpacing);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+
+  // Filtering controls.
+  GtkWidget* filter_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  filter_entry_ = gtk_entry_new();
+  g_signal_connect(G_OBJECT(filter_entry_), "activate",
+                   G_CALLBACK(OnFilterEntryActivated), this);
+  g_signal_connect(G_OBJECT(filter_entry_), "changed",
+                   G_CALLBACK(OnFilterEntryChanged), this);
+  gtk_box_pack_start(GTK_BOX(filter_hbox), filter_entry_,
+                     TRUE, TRUE, 0);
+  filter_clear_button_ = gtk_button_new_with_mnemonic(
+      gtk_util::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(IDS_COOKIES_CLEAR_SEARCH_LABEL)).c_str());
+  g_signal_connect(G_OBJECT(filter_clear_button_), "clicked",
+                   G_CALLBACK(OnFilterClearButtonClicked), this);
+  gtk_box_pack_start(GTK_BOX(filter_hbox), filter_clear_button_,
+                     FALSE, FALSE, 0);
+
+  GtkWidget* filter_controls = gtk_util::CreateLabeledControlsGroup(NULL,
+      l10n_util::GetStringUTF8(IDS_COOKIES_SEARCH_LABEL).c_str(), filter_hbox,
+      NULL);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), filter_controls,
+                     FALSE, FALSE, 0);
 
   // Cookie list.
   GtkWidget* cookie_list_vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
@@ -189,11 +216,8 @@ void CookiesView::Init() {
 
   // Populate the view.
   cookies_tree_adapter_->Init();
-  gtk_tree_view_expand_all(GTK_TREE_VIEW(tree_));
+  SetInitialTreeState();
   EnableControls();
-
-  if (cookies_tree_model_->GetChildCount(cookies_tree_model_->GetRoot()))
-    gtk_tree::SelectAndFocusRowNum(0, GTK_TREE_VIEW(tree_));
 }
 
 void CookiesView::InitStylesAndShow() {
@@ -230,6 +254,12 @@ void CookiesView::InitCookieDetailRow(int row, int label_id,
                             1, 2, row, row + 1);
 }
 
+void CookiesView::SetInitialTreeState() {
+  gtk_tree_view_expand_all(GTK_TREE_VIEW(tree_));
+  if (cookies_tree_model_->GetChildCount(cookies_tree_model_->GetRoot()))
+    gtk_tree::SelectAndFocusRowNum(0, GTK_TREE_VIEW(tree_));
+}
+
 void CookiesView::EnableControls() {
   GtkTreeIter iter;
   bool selected = gtk_tree_selection_get_selected(selection_, NULL, &iter);
@@ -237,6 +267,9 @@ void CookiesView::EnableControls() {
   gtk_widget_set_sensitive(
       remove_all_button_,
       cookies_tree_model_->GetChildCount(cookies_tree_model_->GetRoot()));
+
+  const gchar* filter_text = gtk_entry_get_text(GTK_ENTRY(filter_entry_));
+  gtk_widget_set_sensitive(filter_clear_button_, filter_text && *filter_text);
 
   if (selected) {
     CookieTreeNode::DetailedInfo detailed_info =
@@ -376,4 +409,36 @@ gboolean CookiesView::OnTreeViewKeyPress(
     return TRUE;
   }
   return FALSE;
+}
+
+void CookiesView::UpdateFilterResults() {
+  const gchar* text = gtk_entry_get_text(GTK_ENTRY(filter_entry_));
+  if (text) {
+    cookies_tree_model_->UpdateSearchResults(UTF8ToWide(text));
+    SetInitialTreeState();
+  }
+}
+
+// static
+void CookiesView::OnFilterEntryActivated(GtkEntry* entry, CookiesView* window) {
+  window->filter_update_factory_.RevokeAll();
+  window->UpdateFilterResults();
+}
+
+// static
+void CookiesView::OnFilterEntryChanged(GtkEditable* editable,
+                                       CookiesView* window) {
+  window->filter_update_factory_.RevokeAll();
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      window->filter_update_factory_.NewRunnableMethod(
+          &CookiesView::UpdateFilterResults), kSearchFilterDelayMs);
+  window->EnableControls();
+}
+
+// static
+void CookiesView::OnFilterClearButtonClicked(GtkButton* button,
+                                             CookiesView* window) {
+  gtk_entry_set_text(GTK_ENTRY(window->filter_entry_), "");
+  window->filter_update_factory_.RevokeAll();
+  window->UpdateFilterResults();
 }

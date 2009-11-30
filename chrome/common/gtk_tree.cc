@@ -238,13 +238,13 @@ void TreeAdapter::TreeNodesAdded(TreeModel* model,
                                  int start,
                                  int count) {
   delegate_->OnAnyModelUpdateStart();
-  GtkTreePath* path = GetTreePath(parent);
   GtkTreeIter parent_iter;
+  GtkTreeIter* parent_iter_ptr = NULL;
   GtkTreeIter iter;
-  gtk_tree_model_get_iter(GTK_TREE_MODEL(tree_store_), &parent_iter, path);
-  gtk_tree_path_free(path);
+  if (GetTreeIter(parent, &parent_iter))
+    parent_iter_ptr = &parent_iter;
   for (int i = 0; i < count; ++i) {
-    gtk_tree_store_insert(tree_store_, &iter, &parent_iter, start + i);
+    gtk_tree_store_insert(tree_store_, &iter, parent_iter_ptr, start + i);
     Fill(&iter, tree_model_->GetChild(parent, start + i));
   }
   delegate_->OnAnyModelUpdate();
