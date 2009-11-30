@@ -183,7 +183,7 @@ output is requested.</para>
       <command>fc-cat</command>(1)
       <command>fc-cache</command>(1)
       <command>fc-query</command>(1)
-      <command>fc-scal</command>(1)
+      <command>fc-scan</command>(1)
     </para>
 
     <para>The fontconfig user's guide, in HTML format:
