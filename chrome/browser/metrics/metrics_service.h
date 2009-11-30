@@ -118,7 +118,7 @@ class MetricsService : public NotificationObserver,
   void RecordBreakpadHasDebugger(bool has_debugger);
 
   // Callback to let us knew that the plugin list is warmed up.
-  void OnGetPluginListTaskComplete(const std::vector<WebPluginInfo>& plugins);
+  void OnGetPluginListComplete(const std::vector<WebPluginInfo>& plugins);
 
   // Save any unsent logs into a persistent store in a pref.  We always do this
   // at shutdown, but we can do it as we reduce the list as well.
@@ -145,9 +145,6 @@ class MetricsService : public NotificationObserver,
 
   // Maintain a map of histogram names to the sample stats we've sent.
   typedef std::map<std::string, Histogram::SampleSet> LoggedSampleMap;
-
-  class GetPluginListTask;
-  class GetPluginListTaskComplete;
 
   // When we start a new version of Chromium (different from our last run), we
   // need to discard the old crash stats so that we don't attribute crashes etc.

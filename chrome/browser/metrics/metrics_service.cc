@@ -174,6 +174,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/memory_details.h"
+#include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -284,34 +285,38 @@ class MetricsMemoryDetails : public MemoryDetails {
   DISALLOW_EVIL_CONSTRUCTORS(MetricsMemoryDetails);
 };
 
-class MetricsService::GetPluginListTaskComplete : public Task {
+// This object and its static functions manage the calls to and from
+// the plugin service.  It lives on the IO thread.  It only lives long
+// enough to handle the callback, then it deletes itself.
+class GetPluginListClient : public PluginService::GetPluginListClient {
  public:
-  explicit GetPluginListTaskComplete(
-      const std::vector<WebPluginInfo>& plugins) : plugins_(plugins) { }
-  virtual void Run() {
-    g_browser_process->metrics_service()->OnGetPluginListTaskComplete(plugins_);
+  // Call GetPluginList on a GetPluginListClient.  Used to proxy this call
+  // from the UI thread to the IO thread.
+  static void CallGetPluginList(GetPluginListClient* client) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    PluginService::GetInstance()->GetPluginList(false, client);
   }
 
- private:
-  std::vector<WebPluginInfo> plugins_;
-};
-
-class MetricsService::GetPluginListTask : public Task {
- public:
-  explicit GetPluginListTask(MessageLoop* callback_loop)
-      : callback_loop_(callback_loop) {}
-
-  virtual void Run() {
-    std::vector<WebPluginInfo> plugins;
-    NPAPI::PluginList::Singleton()->GetPlugins(false, &plugins);
-
-    callback_loop_->PostTask(
-        FROM_HERE, new GetPluginListTaskComplete(plugins));
+  // Callback from the PluginService when the plugin list has been retrieved.
+  virtual void OnGetPluginList(const std::vector<WebPluginInfo>& plugins) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+    // Forward back to the UI thread.
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(&GetPluginListClient::GetPluginListComplete,
+                            plugins));
+    delete this;
   }
 
- private:
-  MessageLoop* callback_loop_;
+  // A function to proxy the plugin list back from the IO thread to the UI
+  // thread to call the metrics service.
+  // |plugins| is intentionally pass by value.
+  static void GetPluginListComplete(const std::vector<WebPluginInfo> plugins) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    g_browser_process->metrics_service()->OnGetPluginListComplete(plugins);
+  }
 };
+
 
 // static
 void MetricsService::RegisterPrefs(PrefService* local_state) {
@@ -745,7 +750,7 @@ void MetricsService::InitializeMetricsState() {
   ScheduleNextStateSave();
 }
 
-void MetricsService::OnGetPluginListTaskComplete(
+void MetricsService::OnGetPluginListComplete(
     const std::vector<WebPluginInfo>& plugins) {
   DCHECK(state_ == PLUGIN_LIST_REQUESTED);
   plugins_ = plugins;
@@ -826,8 +831,10 @@ void MetricsService::StartRecording() {
 
     // Make sure the plugin list is loaded before the inital log is sent, so
     // that the main thread isn't blocked generating the list.
-    g_browser_process->file_thread()->message_loop()->PostDelayedTask(FROM_HERE,
-        new GetPluginListTask(MessageLoop::current()),
+    ChromeThread::PostDelayedTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableFunction(&GetPluginListClient::CallGetPluginList,
+                            new GetPluginListClient),
         kInitialInterlogDuration * 1000 / 2);
   }
 }

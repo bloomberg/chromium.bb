@@ -53,6 +53,19 @@ class PluginService
   void SetChromePluginDataDir(const FilePath& data_dir);
   const FilePath& GetChromePluginDataDir();
 
+  // An interface for GetPluginList callbacks.  Note that this is
+  // called directly by the PluginService on the IO thread, so the
+  // implementor of this interface must outlive the request.
+  class GetPluginListClient {
+   public:
+    // Called when the request completes.
+    virtual void OnGetPluginList(const std::vector<WebPluginInfo>& plugins) = 0;
+  };
+
+  // Start a query for the list of plugins.
+  // If |refresh| is true, refreshes the list.
+  void GetPluginList(bool refresh, GetPluginListClient* client);
+
   // Gets the browser's UI locale.
   const std::wstring& GetUILocale();
 

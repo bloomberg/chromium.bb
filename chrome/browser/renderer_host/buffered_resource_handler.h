@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/plugin_service.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 
 class MessageLoop;
@@ -14,7 +15,8 @@ class ResourceDispatcherHost;
 class URLRequest;
 
 // Used to buffer a request until enough data has been received.
-class BufferedResourceHandler : public ResourceHandler {
+class BufferedResourceHandler : public ResourceHandler,
+                                public PluginService::GetPluginListClient {
  public:
   BufferedResourceHandler(ResourceHandler* handler,
                           ResourceDispatcherHost* host,
@@ -63,11 +65,8 @@ class BufferedResourceHandler : public ResourceHandler {
   // loaded.
   bool ShouldDownload(bool* need_plugin_list);
 
-  // Called on the file thread to load the list of plugins.
-  void LoadPlugins();
-
   // Called on the IO thread once the list of plugins has been loaded.
-  void OnPluginsLoaded();
+  void OnGetPluginList(const std::vector<WebPluginInfo>& plugins);
 
   scoped_refptr<ResourceHandler> real_handler_;
   scoped_refptr<ResourceResponse> response_;

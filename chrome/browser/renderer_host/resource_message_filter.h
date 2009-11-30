@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/net/resolve_proxy_msg_helper.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/plugin_service.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/transport_dib.h"
@@ -73,7 +74,8 @@ struct ViewHostMsg_DidPrintPage_Params;
 class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                               public ResourceDispatcherHost::Receiver,
                               public NotificationObserver,
-                              public ResolveProxyMsgHelper::Delegate {
+                              public ResolveProxyMsgHelper::Delegate,
+                              public PluginService::GetPluginListClient {
  public:
   // Create the filter.
   // Note:  because the lifecycle of the ResourceMessageFilter is not
@@ -152,7 +154,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetScreenInfo(gfx::NativeViewId window, IPC::Message* reply);
 #endif
   void OnGetPlugins(bool refresh, IPC::Message* reply_msg);
-  void OnGetPluginsOnFileThread(bool refresh, IPC::Message* reply_msg);
+  virtual void OnGetPluginList(const std::vector<WebPluginInfo>& plugins);
   void OnGetPluginPath(const GURL& url,
                        const GURL& policy_url,
                        const std::string& mime_type,
@@ -397,6 +399,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // A callback to create a routing id for the associated renderer process.
   scoped_ptr<CallbackWithReturnValue<int>::Type> next_route_id_callback_;
+
+  // A queue of pending GetPluginList calls.  The bool is the |refresh|
+  // flag used to make the call, and the IPC::Message is the destination
+  // of the result of the call once the call completes.
+  std::queue<std::pair<bool, IPC::Message*> > pending_getpluginlist_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };
