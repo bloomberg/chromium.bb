@@ -425,9 +425,11 @@ void ProfileSyncService::SyncEvent(SyncEventCodes code) {
 }
 
 bool ProfileSyncService::IsSyncEnabled() {
-  // We have switches::kEnableSync just in case we need to change back to
-  // sync-disabled-by-default on a platform.
+#if defined(OS_POSIX)
+  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableSync);
+#else
   return !CommandLine::ForCurrentProcess()->HasSwitch(switches::kDisableSync);
+#endif
 }
 
 bool ProfileSyncService::ShouldPushChanges() {
