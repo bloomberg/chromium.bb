@@ -122,6 +122,27 @@ int avcodec_decode_video2(AVCodecContext* avctx, AVFrame* picture,
       AVCodecDecodeVideo2(avctx, picture, got_picture_ptr, avpkt);
 }
 
+AVBitStreamFilterContext* av_bitstream_filter_init(const char* name) {
+  return media::MockFFmpeg::get()->AVBitstreamFilterInit(name);
+}
+
+int av_bitstream_filter_filter(AVBitStreamFilterContext* bsfc,
+                               AVCodecContext* avctx,
+                               const char* args,
+                               uint8_t** poutbuf,
+                               int* poutbuf_size,
+                               const uint8_t* buf,
+                               int buf_size,
+                               int keyframe) {
+  return media::MockFFmpeg::get()->
+      AVBitstreamFilterFilter(bsfc, avctx, args, poutbuf, poutbuf_size, buf,
+                              buf_size, keyframe);
+}
+
+void av_bitstream_filter_close(AVBitStreamFilterContext* bsf) {
+  return media::MockFFmpeg::get()->AVBitstreamFilterClose(bsf);
+}
+
 int av_open_input_file(AVFormatContext** format, const char* filename,
                        AVInputFormat* input_format, int buffer_size,
                        AVFormatParameters* parameters) {

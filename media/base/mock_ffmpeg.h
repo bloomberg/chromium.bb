@@ -16,6 +16,8 @@ class MockFFmpeg {
   MockFFmpeg();
   virtual ~MockFFmpeg();
 
+  // TODO(ajwong): Organize this class, and make sure that all mock entrypoints
+  // are still used.
   MOCK_METHOD0(AVCodecInit, void());
   MOCK_METHOD1(AVRegisterProtocol, int(URLProtocol* protocol));
   MOCK_METHOD0(AVRegisterAll, void());
@@ -29,6 +31,13 @@ class MockFFmpeg {
   MOCK_METHOD4(AVCodecDecodeVideo2,
                int(AVCodecContext* avctx, AVFrame* picture,
                    int* got_picture_ptr, AVPacket* avpkt));
+  MOCK_METHOD1(AVBitstreamFilterInit,
+               AVBitStreamFilterContext*(const char *name));
+  MOCK_METHOD8(AVBitstreamFilterFilter,
+               int(AVBitStreamFilterContext* bsfc, AVCodecContext* avctx,
+                   const char* args, uint8_t** poutbuf, int* poutbuf_size,
+                   const uint8_t* buf, int buf_size, int keyframe));
+  MOCK_METHOD1(AVBitstreamFilterClose, void(AVBitStreamFilterContext* bsf));
 
   MOCK_METHOD5(AVOpenInputFile, int(AVFormatContext** format,
                                     const char* filename,

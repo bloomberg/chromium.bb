@@ -81,6 +81,7 @@
             'source/patched-ffmpeg-mt/libavcodec/fft.c',
             'source/patched-ffmpeg-mt/libavcodec/golomb.c',
             'source/patched-ffmpeg-mt/libavcodec/h264.c',
+            'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
             'source/patched-ffmpeg-mt/libavcodec/h264_parser.c',
             'source/patched-ffmpeg-mt/libavcodec/h264idct.c',
             'source/patched-ffmpeg-mt/libavcodec/h264pred.c',
