@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -81,7 +81,11 @@ class GridLayout : public LayoutManager {
     TRAILING,
 
     // The view is resized to fill the space.
-    FILL
+    FILL,
+
+    // The view is aligned along the baseline. This is only valid for the
+    // vertical axis.
+    BASELINE
   };
 
   // An enumeration of the possible ways the size of a column may be obtained.
@@ -244,7 +248,7 @@ class GridLayout : public LayoutManager {
   // Rows.
   std::vector<Row*> rows_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(GridLayout);
+  DISALLOW_COPY_AND_ASSIGN(GridLayout);
 };
 
 // ColumnSet is used to define a set of columns. GridLayout may have any
@@ -346,7 +350,7 @@ class ColumnSet {
   // for a description of what the master column is.
   std::vector<Column*> master_columns_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ColumnSet);
+  DISALLOW_COPY_AND_ASSIGN(ColumnSet);
 };
 
 }  // namespace views

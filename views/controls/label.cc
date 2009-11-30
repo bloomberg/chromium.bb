@@ -99,6 +99,10 @@ gfx::Size Label::GetPreferredSize() {
   return prefsize;
 }
 
+int Label::GetBaseline() {
+  return GetInsets().top() + font_.baseline();
+}
+
 int Label::ComputeMultiLineFlags() {
   int flags = gfx::Canvas::MULTI_LINE;
  #if !defined(OS_WIN)
@@ -439,7 +443,7 @@ gfx::Rect Label::GetTextBounds() {
   gfx::Insets insets = GetInsets();
   int avail_width = width() - insets.width();
   // Respect the size set by the owner view
-  text_size.set_width(std::min(avail_width, text_size.width()));
+  text_size.set_width(std::max(0, std::min(avail_width, text_size.width())));
 
   int text_y = insets.top() +
       (height() - text_size.height() - insets.height()) / 2;

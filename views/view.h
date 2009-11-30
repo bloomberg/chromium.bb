@@ -203,6 +203,10 @@ class View : public AcceleratorTarget {
   // Get the size the View would like to be, if enough space were available.
   virtual gfx::Size GetPreferredSize();
 
+  // Returns the baseline of this view, or -1 if this view has no baseline. The
+  // return value is relative to the preferred height.
+  virtual int GetBaseline();
+
   // Convenience method that sizes this view to its preferred size.
   void SizeToPreferredSize();
 

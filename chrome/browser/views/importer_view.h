@@ -30,7 +30,9 @@ class ImporterView : public views::View,
                      public views::Combobox::Listener,
                      public ImportObserver {
  public:
-  explicit ImporterView(Profile* profile);
+  // Creates a new ImporterView. |initial_state| is a bitmask of ImportItems.
+  // Each checkbox for the bits in |initial_state| is checked.
+  ImporterView(Profile* profile, int initial_state);
   virtual ~ImporterView();
 
   // Overridden from views::View.
@@ -87,6 +89,9 @@ class ImporterView : public views::View,
   // Stores the state of the checked items associated with the position of the
   // selected item in the combo-box.
   std::vector<uint16> checkbox_items_;
+
+  // Initial state of the checkbox_items_.
+  uint16 initial_state_;
 
   Profile* profile_;
 

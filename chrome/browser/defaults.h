@@ -40,6 +40,10 @@ extern const bool kRestorePopups;
 // Can the browser be alive without any browser windows?
 extern const bool kBrowserAliveWithNoWindows;
 
+// Should a link be shown on the bookmark bar allowing the user to import
+// bookmarks.
+extern const bool kShowImportOnBookmarkBar;
+
 // Should the exit menu be shown?
 extern const bool kShowExitMenuItem;
 

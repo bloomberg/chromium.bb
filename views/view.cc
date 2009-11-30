@@ -143,6 +143,10 @@ gfx::Size View::GetPreferredSize() {
   return gfx::Size();
 }
 
+int View::GetBaseline() {
+  return -1;
+}
+
 void View::SizeToPreferredSize() {
   gfx::Size prefsize = GetPreferredSize();
   if ((prefsize.width() != width()) || (prefsize.height() != height()))

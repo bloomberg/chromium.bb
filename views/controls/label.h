@@ -58,6 +58,9 @@ class Label : public View {
   // Overridden to compute the size required to display this label
   virtual gfx::Size GetPreferredSize();
 
+  // Overriden to return the baseline of the label.
+  virtual int GetBaseline();
+
   // Return the height necessary to display this label with the provided width.
   // This method is used to layout multi-line labels. It is equivalent to
   // GetPreferredSize().height() if the receiver is not multi-line

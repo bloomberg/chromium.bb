@@ -8,8 +8,8 @@
 #include "app/slide_animation.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/views/bookmark_bar_instructions_view.h"
 #include "chrome/browser/views/bookmark_menu_controller_views.h"
 #include "chrome/browser/views/detachable_toolbar_view.h"
 #include "chrome/common/notification_registrar.h"
@@ -22,7 +22,6 @@ class PrefService;
 
 namespace views {
 class CustomButton;
-class Label;
 class MenuButton;
 class MenuItemView;
 class TextButton;
@@ -44,7 +43,8 @@ class BookmarkBarView : public DetachableToolbarView,
                         public views::ContextMenuController,
                         public views::DragController,
                         public AnimationDelegate,
-                        public BookmarkMenuController::Observer {
+                        public BookmarkMenuController::Observer,
+                        public BookmarkBarInstructionsView::Delegate {
   friend class ShowFolderMenuTask;
 
  public:
@@ -203,6 +203,9 @@ class BookmarkBarView : public DetachableToolbarView,
       views::MenuButton* button,
       views::MenuItemView::AnchorPosition* anchor,
       int* start_index);
+
+  // BookmarkBarInstructionsView::Delegate.
+  virtual void ShowImportDialog();
 
   // Maximum size of buttons on the bookmark bar.
   static const int kMaxButtonWidth;
@@ -463,8 +466,9 @@ class BookmarkBarView : public DetachableToolbarView,
   // Visible if not all the bookmark buttons fit.
   views::MenuButton* overflow_button_;
 
-  // If no bookmarks are visible, we show some text explaining the bar.
-  views::Label* instructions_;
+  // BookmarkBarInstructionsView that is visible if there are no bookmarks on
+  // the bookmark bar.
+  views::View* instructions_;
 
   ButtonSeparatorView* bookmarks_separator_view_;
 

@@ -3487,7 +3487,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         /
       </message>
       <message name="IDS_BOOKMARKS_NO_ITEMS" desc="Text shown when the user has no bookmarks">
-        For quick access, place your bookmarks here in the bookmarks bar.
+        For quick access, place your bookmarks here on the bookmarks bar.
       </message>
 
       <!-- The location for special bookmark groups -->
@@ -6168,6 +6168,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Toggle Compact Navigation Bar
       </message>
     </if>
+     <message name="IDS_BOOKMARK_BAR_IMPORT_LINK" desc="text shown for importing ">
+       Import bookmarks now...
+     </message>
     </messages>
   </release>
 </grit>

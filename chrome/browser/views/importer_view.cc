@@ -25,12 +25,12 @@ namespace browser {
 void ShowImporterView(views::Widget* parent,
                       Profile* profile) {
   views::Window::CreateChromeWindow(parent->GetNativeView(), gfx::Rect(),
-                                    new ImporterView(profile))->Show();
+                                    new ImporterView(profile, ALL))->Show();
 }
 
 }  // namespace browser
 
-ImporterView::ImporterView(Profile* profile)
+ImporterView::ImporterView(Profile* profile, int initial_state)
     : import_from_label_(NULL),
       profile_combobox_(NULL),
       import_items_label_(NULL),
@@ -39,7 +39,8 @@ ImporterView::ImporterView(Profile* profile)
       passwords_checkbox_(NULL),
       search_engines_checkbox_(NULL),
       profile_(profile),
-      importer_host_(new ImporterHost()) {
+      importer_host_(new ImporterHost()),
+      initial_state_(initial_state) {
   DCHECK(profile);
   SetupControl();
 }
@@ -59,14 +60,17 @@ void ImporterView::SetupControl() {
       new views::Label(l10n_util::GetString(IDS_IMPORT_ITEMS_LABEL));
 
   history_checkbox_ =
-      InitCheckbox(l10n_util::GetString(IDS_IMPORT_HISTORY_CHKBOX), true);
+      InitCheckbox(l10n_util::GetString(IDS_IMPORT_HISTORY_CHKBOX),
+                   (initial_state_ & HISTORY) != 0);
   favorites_checkbox_ =
-      InitCheckbox(l10n_util::GetString(IDS_IMPORT_FAVORITES_CHKBOX), true);
+      InitCheckbox(l10n_util::GetString(IDS_IMPORT_FAVORITES_CHKBOX),
+                   (initial_state_ & FAVORITES) != 0);
   passwords_checkbox_ =
-      InitCheckbox(l10n_util::GetString(IDS_IMPORT_PASSWORDS_CHKBOX), true);
+      InitCheckbox(l10n_util::GetString(IDS_IMPORT_PASSWORDS_CHKBOX),
+                   (initial_state_ & PASSWORDS) != 0);
   search_engines_checkbox_ =
       InitCheckbox(l10n_util::GetString(IDS_IMPORT_SEARCH_ENGINES_CHKBOX),
-                   true);
+                   (initial_state_ & SEARCH_ENGINES) != 0);
 
   // Arranges controls by using GridLayout.
   const int column_set_id = 0;
@@ -154,7 +158,7 @@ int ImporterView::GetItemCount() {
   DCHECK(importer_host_.get());
   int item_count = importer_host_->GetAvailableProfileCount();
   if (checkbox_items_.size() < static_cast<size_t>(item_count))
-    checkbox_items_.resize(item_count, ALL);
+    checkbox_items_.resize(item_count, initial_state_);
   return item_count;
 }
 

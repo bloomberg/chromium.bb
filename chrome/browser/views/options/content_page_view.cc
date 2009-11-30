@@ -113,7 +113,7 @@ void ContentPageView::ButtonPressed(
     views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
-      new ImporterView(profile()))->Show();
+      new ImporterView(profile(), ALL))->Show();
   } else if (sender == clear_data_button_) {
     views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),

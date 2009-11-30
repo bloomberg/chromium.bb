@@ -29,6 +29,7 @@
 #include "chrome/browser/views/bookmark_context_menu.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/importer_view.h"
 #include "chrome/browser/views/location_bar_view.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
@@ -860,6 +861,13 @@ void BookmarkBarView::GetAnchorPositionAndStartIndexForButton(
     *start_index = 0;
 }
 
+void BookmarkBarView::ShowImportDialog() {
+  views::Window::CreateChromeWindow(
+      GetWindow()->GetNativeWindow(),
+      gfx::Rect(),
+      new ImporterView(profile_, FAVORITES))->Show();
+}
+
 void BookmarkBarView::Init() {
   // Note that at this point we're not in a hierarchy so GetThemeProvider() will
   // return NULL.  When we're inserted into a hierarchy, we'll call
@@ -885,10 +893,7 @@ void BookmarkBarView::Init() {
       l10n_util::GetString(IDS_ACCNAME_SEPARATOR));
   AddChildView(bookmarks_separator_view_);
 
-  instructions_ = new views::Label(
-      l10n_util::GetString(IDS_BOOKMARKS_NO_ITEMS),
-      rb.GetFont(ResourceBundle::BaseFont));
-
+  instructions_ = new BookmarkBarInstructionsView(this);
   AddChildView(instructions_);
 
   SetContextMenuController(this);
@@ -1536,7 +1541,6 @@ void BookmarkBarView::UpdateColors() {
     return;
   SkColor text_color =
       theme_provider->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-  instructions_->SetColor(text_color);
   for (int i = 0; i < GetBookmarkButtonCount(); ++i)
     GetBookmarkButton(i)->SetEnabledColor(text_color);
   other_bookmarked_button()->SetEnabledColor(text_color);

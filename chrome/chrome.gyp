@@ -2255,6 +2255,8 @@
         'browser/views/autocomplete/autocomplete_popup_gtk.h',
         'browser/views/blocked_popup_container_view_views.cc',
         'browser/views/blocked_popup_container_view_views.h',
+        'browser/views/bookmark_bar_instructions_view.cc',
+        'browser/views/bookmark_bar_instructions_view.h',
         'browser/views/bookmark_bar_view.cc',
         'browser/views/bookmark_bar_view.h',
         'browser/views/bookmark_bubble_view.cc',
