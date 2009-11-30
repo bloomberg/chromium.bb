@@ -465,6 +465,117 @@ o3djs.primitives.VertexInfoBase.prototype.reorient = function(matrix) {
 };
 
 /**
+ * Creates a shape from a VertexInfoBase
+ * @param {!o3d.Pack} pack Pack to create objects in.
+ * @param {!o3d.Material} material to use.
+ * @param {!o3d.Primitive.PrimitiveType} primitiveType The type of primitive.
+ * @return {!o3d.Shape} The created shape.
+ */
+o3djs.primitives.VertexInfoBase.prototype.createShapeByType = function(
+    pack,
+    material,
+    primitiveType) {
+  this.validate();
+
+  var numIndices = this.indices.length;
+  var numPrimitives;
+  switch (primitiveType) {
+    case o3djs.base.o3d.Primitive.POINTLIST:
+      numPrimitives = numIndices / 1;
+      break;
+    case o3djs.base.o3d.Primitive.LINELIST:
+      numPrimitives = numIndices / 2;
+      break;
+    case o3djs.base.o3d.Primitive.LINESTRIP:
+      numPrimitives = numIndices - 1;
+      break;
+    case o3djs.base.o3d.Primitive.TRIANGLELIST:
+      numPrimitives = numIndices / 3;
+      break;
+    case o3djs.base.o3d.Primitive.TRIANGLESTRIP:
+    case o3djs.base.o3d.Primitive.TRIANGLEFAN:
+      numPrimitives = numIndices - 2;
+      break;
+    default:
+      throw 'unknown primitive type';
+  }
+
+  var positionStream = this.findStream(o3djs.base.o3d.Stream.POSITION);
+  var numVertices = positionStream.numElements();
+
+  // create a shape and primitive for the vertices.
+  var shape = pack.createObject('Shape');
+  var primitive = pack.createObject('Primitive');
+  var streamBank = pack.createObject('StreamBank');
+  primitive.owner = shape;
+  primitive.streamBank = streamBank;
+  primitive.material = material;
+  primitive.numberPrimitives = numPrimitives;
+  primitive.primitiveType = primitiveType;
+  primitive.numberVertices = numVertices;
+  primitive.createDrawElement(pack, null);
+
+  // Calculate the tangent and binormal or provide defaults or fail if the
+  // effect requires either and they are not present.
+  var streamInfos = material.effect.getStreamInfo();
+  for (var s = 0; s < streamInfos.length; ++s) {
+    var semantic = streamInfos[s].semantic;
+    var semanticIndex = streamInfos[s].semanticIndex;
+
+    var requiredStream = this.findStream(semantic, semanticIndex);
+    if (!requiredStream) {
+      switch (semantic) {
+        case o3djs.base.o3d.Stream.TANGENT:
+        case o3djs.base.o3d.Stream.BINORMAL:
+          if (primitiveType == o3djs.base.o3d.Primitive.TRIANGLELIST) {
+            this.addTangentStreams(semanticIndex);
+          } else {
+            throw 'Can not create tangents and binormals for primitive type' +
+                primitiveType;
+          }
+          break;
+        case o3djs.base.o3d.Stream.COLOR:
+          requiredStream = this.addStream(4, semantic, semanticIndex);
+          for (var i = 0; i < numVertices; ++i) {
+            requiredStream.addElement(1, 1, 1, 1);
+          }
+          break;
+        default:
+          throw 'Missing stream for semantic ' + semantic +
+              ' with semantic index ' + semanticIndex;
+      }
+    }
+  }
+
+  // These next few lines take our javascript streams and load them into a
+  // 'buffer' where the 3D hardware can find them. We have to do this
+  // because the 3D hardware can't 'see' javascript data until we copy it to
+  // a buffer.
+  var vertexBuffer = pack.createObject('VertexBuffer');
+  var fields = [];
+  for (var s = 0; s < this.streams.length; ++s) {
+    var stream = this.streams[s];
+    var fieldType = (stream.semantic == o3djs.base.o3d.Stream.COLOR &&
+                     stream.numComponents == 4) ? 'UByteNField' : 'FloatField';
+    fields[s] = vertexBuffer.createField(fieldType, stream.numComponents);
+    streamBank.setVertexStream(stream.semantic,
+                               stream.semanticIndex,
+                               fields[s],
+                               0);
+  }
+  vertexBuffer.allocateElements(numVertices);
+  for (var s = 0; s < this.streams.length; ++s) {
+    fields[s].setAt(0, this.streams[s].elements);
+  }
+
+  var indexBuffer = pack.createObject('IndexBuffer');
+  indexBuffer.set(this.indices);
+  primitive.indexBuffer = indexBuffer;
+  o3djs.primitives.setCullingInfo(primitive);
+  return shape;
+};
+
+/**
  * A VertexInfo is a specialization of VertexInfoBase for triangle based
  * geometry.
  * @constructor
@@ -533,76 +644,8 @@ o3djs.primitives.VertexInfo.prototype.setTriangle = function(
 o3djs.primitives.VertexInfo.prototype.createShape = function(
     pack,
     material) {
-  this.validate();
-
-  var positionStream = this.findStream(o3djs.base.o3d.Stream.POSITION);
-  var numVertices = positionStream.numElements();
-
-  // create a shape and primitive for the vertices.
-  var shape = pack.createObject('Shape');
-  var primitive = pack.createObject('Primitive');
-  var streamBank = pack.createObject('StreamBank');
-  primitive.owner = shape;
-  primitive.streamBank = streamBank;
-  primitive.material = material;
-  primitive.numberPrimitives = this.indices.length / 3;
-  primitive.primitiveType = o3djs.base.o3d.Primitive.TRIANGLELIST;
-  primitive.numberVertices = numVertices;
-  primitive.createDrawElement(pack, null);
-
-  // Calculate the tangent and binormal or provide defaults or fail if the
-  // effect requires either and they are not present.
-  var streamInfos = material.effect.getStreamInfo();
-  for (var s = 0; s < streamInfos.length; ++s) {
-    var semantic = streamInfos[s].semantic;
-    var semanticIndex = streamInfos[s].semanticIndex;
-
-    var requiredStream = this.findStream(semantic, semanticIndex);
-    if (!requiredStream) {
-      switch (semantic) {
-        case o3djs.base.o3d.Stream.TANGENT:
-        case o3djs.base.o3d.Stream.BINORMAL:
-          this.addTangentStreams(semanticIndex);
-          break;
-        case o3djs.base.o3d.Stream.COLOR:
-          requiredStream = this.addStream(4, semantic, semanticIndex);
-          for (var i = 0; i < numVertices; ++i) {
-            requiredStream.addElement(1, 1, 1, 1);
-          }
-          break;
-        default:
-          throw 'Missing stream for semantic ' + semantic +
-              ' with semantic index ' + semanticIndex;
-      }
-    }
-  }
-
-  // These next few lines take our javascript streams and load them into a
-  // 'buffer' where the 3D hardware can find them. We have to do this
-  // because the 3D hardware can't 'see' javascript data until we copy it to
-  // a buffer.
-  var vertexBuffer = pack.createObject('VertexBuffer');
-  var fields = [];
-  for (var s = 0; s < this.streams.length; ++s) {
-    var stream = this.streams[s];
-    var fieldType = (stream.semantic == o3djs.base.o3d.Stream.COLOR &&
-                     stream.numComponents == 4) ? 'UByteNField' : 'FloatField';
-    fields[s] = vertexBuffer.createField(fieldType, stream.numComponents);
-    streamBank.setVertexStream(stream.semantic,
-                               stream.semanticIndex,
-                               fields[s],
-                               0);
-  }
-  vertexBuffer.allocateElements(numVertices);
-  for (var s = 0; s < this.streams.length; ++s) {
-    fields[s].setAt(0, this.streams[s].elements);
-  }
-
-  var indexBuffer = pack.createObject('IndexBuffer');
-  indexBuffer.set(this.indices);
-  primitive.indexBuffer = indexBuffer;
-  o3djs.primitives.setCullingInfo(primitive);
-  return shape;
+  this.createShapeByType(
+      pack, material, o3djs.base.o3d.Primitive.TRIANGLELIST);
 };
 
 /**
