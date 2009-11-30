@@ -41,7 +41,7 @@ deps = {
     "http://v8.googlecode.com/svn/trunk@3376",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@1010",
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@1039",
 
   "src/third_party/skia/src":
     "http://skia.googlecode.com/svn/trunk/src@435",
@@ -176,7 +176,7 @@ deps_os = {
   "chromeos": {
      "src/third_party/cros":
        Var("chromium_git") + "/cros.git@c4c0d4bc",
-     "src/third_party/chromeos_login_manager": 
+     "src/third_party/chromeos_login_manager":
        Var("chromium_git") + "/login_manager.git@4659678c",
      "src/third_party/chromeos_login_manager/include":
        Var("chromium_git") + "/pam-dev.git@3971bd3f",
