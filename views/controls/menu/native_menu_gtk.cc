@@ -258,14 +258,22 @@ void NativeMenuGtk::MenuPositionFunc(GtkMenu* menu,
                                      gboolean* push_in,
                                      void* data) {
   Position* position = reinterpret_cast<Position*>(data);
+
+  GtkRequisition menu_req;
+  gtk_widget_size_request(GTK_WIDGET(menu), &menu_req);
+
   // TODO(beng): RTL
   *x = position->point.x();
   *y = position->point.y();
-  if (position->alignment == Menu2::ALIGN_TOPRIGHT) {
-    GtkRequisition menu_req;
-    gtk_widget_size_request(GTK_WIDGET(menu), &menu_req);
+  if (position->alignment == Menu2::ALIGN_TOPRIGHT)
     *x -= menu_req.width;
-  }
+
+  // Make sure the popup fits on screen.
+  GdkScreen* screen = gtk_widget_get_screen(GTK_WIDGET(menu));
+  *x = std::max(0, std::min(gdk_screen_get_width(screen) - menu_req.width, *x));
+  *y = std::max(0, std::min(gdk_screen_get_height(screen) - menu_req.height,
+                            *y));
+
   *push_in = FALSE;
 }
 
