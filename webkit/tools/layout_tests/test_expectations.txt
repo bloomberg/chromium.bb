@@ -2313,7 +2313,6 @@ BUG10458 LINUX : LayoutTests/editing/inserting/6633727.html = FAIL
 BUG10458 MAC : LayoutTests/fast/dom/java-applet-calls.html = FAIL
 // Just need rebaseline
 BUG10458 LINUX : LayoutTests/fast/forms/textarea-width.html = FAIL
-BUG10458 LINUX : LayoutTests/fast/parser/comment-in-textarea.html = FAIL
 
 // Missing expected results
 BUG10461 SKIP : LayoutTests/platform/mac/fast/text/international/Geeza-Pro-vertical-metrics-adjustment.html = PASS
@@ -2979,7 +2978,6 @@ BUG28905 WONTFIX SKIP : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
 
 // New failures from merge 51412:51455.
 BUG28916 MAC : LayoutTests/editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
-BUG28916 WIN : LayoutTests/fast/parser/comment-in-textarea.html = TEXT
 BUG_HAMAJI WIN LINUX : LayoutTests/editing/selection/last-empty-inline.html = TEXT
 
 // Flaky test from r51224:r51237 roll.
