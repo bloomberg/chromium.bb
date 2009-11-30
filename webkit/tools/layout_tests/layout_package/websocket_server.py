@@ -41,20 +41,29 @@ class PyWebSocketNotStarted(Exception):
   pass
 
 
+class PyWebSocketNotFound(Exception):
+  pass
+
+
 class PyWebSocket(http_server.Lighttpd):
   def __init__(self, output_dir, port=_DEFAULT_WS_PORT,
+               root=None,
                use_tls=False,
                private_key=http_server.Lighttpd._pem_file,
                certificate=http_server.Lighttpd._pem_file,
-               register_cygwin=None):
+               register_cygwin=None,
+               pidfile=None):
     """Args:
       output_dir: the absolute path to the layout test result directory
     """
-    http_server.Lighttpd.__init__(self, output_dir, port=port,
+    http_server.Lighttpd.__init__(self, output_dir,
+                                  port=port,
+                                  root=root,
                                   register_cygwin=register_cygwin)
     self._output_dir = output_dir
     self._process = None
     self._port = port
+    self._root = root
     self._use_tls = use_tls
     self._private_key = private_key
     self._certificate = certificate
@@ -64,15 +73,21 @@ class PyWebSocket(http_server.Lighttpd):
       self._server_name = 'PyWebSocket(Secure)'
     else:
       self._server_name = 'PyWebSocket'
+    self._pidfile = pidfile
 
     # Webkit tests
-    try:
-      self._web_socket_tests = path_utils.PathFromBase(
-          'third_party', 'WebKit', 'LayoutTests', 'websocket', 'tests')
-      self._layout_tests = path_utils.PathFromBase(
-          'third_party', 'WebKit', 'LayoutTests')
-    except path_utils.PathNotFound:
-      self._web_socket_tests = None
+    if self._root:
+      self._layout_tests = os.path.abspath(self._root)
+      self._web_socket_tests = os.path.abspath(
+          os.path.join(self._root, 'websocket', 'tests'))
+    else:
+      try:
+        self._web_socket_tests = path_utils.PathFromBase(
+            'third_party', 'WebKit', 'LayoutTests', 'websocket', 'tests')
+        self._layout_tests = path_utils.PathFromBase(
+            'third_party', 'WebKit', 'LayoutTests')
+      except path_utils.PathNotFound:
+        self._web_socket_tests = None
 
   def Start(self):
     if not self._web_socket_tests:
@@ -149,14 +164,32 @@ class PyWebSocket(http_server.Lighttpd):
     if self._process.returncode != None:
       raise PyWebSocketNotStarted(
           'Failed to start %s server.' % self._server_name)
+    if self._pidfile:
+      f = open(self._pidfile, 'w')
+      f.write("%d" % self._process.pid)
+      f.close()
 
   def Stop(self, force=False):
     if not force and not self.IsRunning():
       return
 
-    logging.debug('Shutting down %s server.' % self._server_name)
-    platform_utils.KillProcess(self._process.pid)
-    self._process = None
+    if self._process:
+      pid = self._process.pid
+    elif self._pidfile:
+      f = open(self._pidfile)
+      pid = int(f.read().strip())
+      f.close()
+
+    if not pid:
+      raise PyWebSocketNotFound(
+          'Failed to find %s server pid.' % self._server_name)
+
+    logging.debug('Shutting down %s server %d.' % (self._server_name, pid))
+    platform_utils.KillProcess(pid)
+
+    if self._process:
+      self._process.wait()
+      self._process = None
 
     # Wait a bit to make sure the ports are free'd up
     time.sleep(2)
@@ -169,8 +202,14 @@ if '__main__' == __name__:
   # Provide some command line params for starting the PyWebSocket server
   # manually.
   option_parser = optparse.OptionParser()
+  option_parser.add_option('--server', type='choice',
+                           choices=['start', 'stop'], default='start',
+                           help='Server action (start|stop)')
   option_parser.add_option('-p', '--port', dest='port',
                            default=None, help='Port to listen on')
+  option_parser.add_option('-r', '--root',
+                           help='Absolute path to DocumentRoot '
+                                '(overrides layout test roots)')
   option_parser.add_option('-t', '--tls', dest='use_tls', action='store_true',
                            default=False, help='use TLS (wss://)')
   option_parser.add_option('-k', '--private_key', dest='private_key',
@@ -180,6 +219,7 @@ if '__main__' == __name__:
   option_parser.add_option('--register_cygwin', action="store_true",
                            dest="register_cygwin",
                            help='Register Cygwin paths (on Win try bots)')
+  option_parser.add_option('--pidfile', help='path to pid file.')
   options, args = option_parser.parse_args()
 
   if not options.port:
@@ -190,11 +230,19 @@ if '__main__' == __name__:
 
   kwds = {'port':options.port,
           'use_tls':options.use_tls}
+  if options.root:
+    kwds['root'] = options.root
   if options.private_key:
     kwds['private_key'] = options.private_key
   if options.certificate:
     kwds['certificate'] = options.certificate
   kwds['register_cygwin'] = options.register_cygwin
+  if options.pidfile:
+    kwds['pidfile'] = options.pidfile
 
   pywebsocket = PyWebSocket(tempfile.gettempdir(), **kwds)
-  pywebsocket.Start()
+
+  if 'start' == options.server:
+    pywebsocket.Start()
+  else:
+    pywebsocket.Stop(force=True)
