@@ -543,7 +543,6 @@ BUG20519 LINUX WIN : LayoutTests/fast/text/wide-zero-width-space.html = FAIL
 BUG20547 LINUX WIN : LayoutTests/fast/text/capitalize-boundaries.html = FAIL
 
 // Different button line-heights, our behavior looks wrong.
-BUG20551 LINUX WIN : LayoutTests/fast/forms/control-restrict-line-height.html = FAIL
 BUG20551 LINUX WIN : LayoutTests/fast/replaced/table-percent-height.html = FAIL
 BUG20551 LINUX WIN : LayoutTests/fast/replaced/table-percent-height-text-controls.html = FAIL
 
