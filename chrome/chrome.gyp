@@ -2812,6 +2812,8 @@
                 ['include', '^browser/views/autocomplete/autocomplete_popup_gtk.h'],
                 ['include', '^browser/views/blocked_popup_container_view_views.cc'],
                 ['include', '^browser/views/blocked_popup_container_view_views.h'],
+                ['include', '^browser/views/bookmark_bar_instructions_view.cc'],
+                ['include', '^browser/views/bookmark_bar_instructions_view.h'],
                 ['include', '^browser/views/bookmark_bar_view.cc'],
                 ['include', '^browser/views/bookmark_bar_view.h'],
                 ['include', '^browser/views/bookmark_bubble_view.cc'],

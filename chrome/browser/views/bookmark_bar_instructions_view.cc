@@ -22,8 +22,6 @@ BookmarkBarInstructionsView::BookmarkBarInstructionsView(Delegate* delegate)
       import_link_(NULL),
       baseline_(-1),
       updated_colors_(false) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
   instructions_ = new views::Label(
       l10n_util::GetString(IDS_BOOKMARKS_NO_ITEMS));
   AddChildView(instructions_);
@@ -102,5 +100,6 @@ void BookmarkBarInstructionsView::UpdateColors() {
   SkColor text_color =
       theme_provider->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
   instructions_->SetColor(text_color);
-  import_link_->SetColor(text_color);
+  if (import_link_)
+    import_link_->SetColor(text_color);
 }

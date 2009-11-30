@@ -29,7 +29,6 @@
 #include "chrome/browser/views/bookmark_context_menu.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/importer_view.h"
 #include "chrome/browser/views/location_bar_view.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
@@ -47,6 +46,10 @@
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/views/importer_view.h"
+#endif
 
 using views::CustomButton;
 using views::DropTargetEvent;
@@ -862,10 +865,12 @@ void BookmarkBarView::GetAnchorPositionAndStartIndexForButton(
 }
 
 void BookmarkBarView::ShowImportDialog() {
+#if defined(OS_WIN)
   views::Window::CreateChromeWindow(
       GetWindow()->GetNativeWindow(),
       gfx::Rect(),
       new ImporterView(profile_, FAVORITES))->Show();
+#endif
 }
 
 void BookmarkBarView::Init() {
