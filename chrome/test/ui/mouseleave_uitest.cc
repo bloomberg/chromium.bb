@@ -30,6 +30,10 @@
 // Test succeeds locally, flaky on trybot
 // http://code.google.com/p/chromium/issues/detail?id=26349
 #define MAYBE_TestOnMouseOut DISABLED_TestOnMouseOut
+#elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// Test is flaky on linux/views build.
+// http://crbug.com/28808.
+#define MAYBE_TestOnMouseOut FLAKY_TestOnMouseOut
 #endif
 
 namespace {
