@@ -1180,14 +1180,7 @@ BUG28998 WONTFIX : LayoutTests/accessibility/table-cell-spans.html = FAIL
 BUG28998 : LayoutTests/accessibility/table-cells.html = FAIL
 
 // AccessibilityUIElement.attributesOfChildren() support
-BUG29000 : LayoutTests/accessibility/image-map1.html = FAIL
-BUG29000 : LayoutTests/accessibility/image-map2.html = FAIL
-BUG29000 : LayoutTests/accessibility/legend.html = FAIL
-BUG29000 : LayoutTests/accessibility/lists.html = FAIL
 BUG29000 : LayoutTests/accessibility/nochildren-elements.html = FAIL
-BUG29000 BUG10351 : LayoutTests/accessibility/plugin.html = FAIL
-BUG29000 : LayoutTests/accessibility/table-detection.html = FAIL
-BUG29000 : LayoutTests/accessibility/table-with-aria-role.html = FAIL
 
 // AccessibilityUIElement.clickPointX support
 BUG29001 : LayoutTests/accessibility/editable-webarea-context-menu-point.html = FAIL
@@ -1215,9 +1208,16 @@ BUG29008 : LayoutTests/accessibility/table-attributes.html = FAIL
 BUG29008 : LayoutTests/accessibility/table-sections.html = FAIL
 
 // Complete AccessibilityUIElement.allAttributes implementation.
-BUG29009 : LayoutTests/accessibility/table-one-cell.html = FAIL
-BUG29009 : LayoutTests/accessibility/table-with-rules.html = FAIL
-BUG29009 : LayoutTests/accessibility/transformed-element.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/table-one-cell.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/table-with-rules.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/transformed-element.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/image-map1.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/image-map2.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/legend.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/lists.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/plugin.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/table-detection.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/table-with-aria-role.html = FAIL
 
 // Implement AccessibilityUIElement.insertionPointLineNumber
 BUG29010 : LayoutTests/accessibility/textarea-insertion-point-line-number.html = FAIL
