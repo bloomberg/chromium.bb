@@ -155,11 +155,8 @@ void BlockedPopupContainer::ToggleWhitelistingForHost(size_t index) {
   bool should_whitelist = !i->second;
   popup_hosts_[host] = should_whitelist;
 
-  ListValue* whitelist_pref =
-      prefs_->GetMutableList(prefs::kPopupWhitelistedHosts);
   if (should_whitelist) {
     whitelist_.insert(host);
-    whitelist_pref->Append(new StringValue(host));
 
     // Open the popups in order.
     for (size_t j = 0; j < blocked_popups_.size();) {
@@ -171,8 +168,6 @@ void BlockedPopupContainer::ToggleWhitelistingForHost(size_t index) {
   } else {
     // Remove from whitelist.
     whitelist_.erase(host);
-    StringValue host_as_string(host);
-    whitelist_pref->Remove(host_as_string);
 
     for (UnblockedPopups::iterator i(unblocked_popups_.begin());
          i != unblocked_popups_.end(); ) {
@@ -195,6 +190,21 @@ void BlockedPopupContainer::ToggleWhitelistingForHost(size_t index) {
       } else {
         ++i;
       }
+    }
+  }
+
+  // Persist whitelisting state if we're not off the record.
+  if (prefs_) {
+    ListValue* whitelist_pref =
+        prefs_->GetMutableList(prefs::kPopupWhitelistedHosts);
+    if (should_whitelist) {
+      whitelist_pref->Append(new StringValue(host));
+    } else {
+      // Stupidly, gcc complains that you're accessing the (private) StringValue
+      // copy constructor if you inline the temp creation into the Remove()
+      // call.
+      StringValue host_value(host);
+      whitelist_pref->Remove(host_value);
     }
   }
 }
@@ -391,14 +401,17 @@ BlockedPopupContainer::BlockedPopupContainer(TabContents* owner,
   const ListValue* whitelist_pref =
       prefs_->GetList(prefs::kPopupWhitelistedHosts);
   // Careful: The returned value could be NULL if the pref has never been set.
-  if (whitelist_pref == NULL)
-    return;
-  for (ListValue::const_iterator i(whitelist_pref->begin());
-       i != whitelist_pref->end(); ++i) {
-    std::string host;
-    (*i)->GetAsString(&host);
-    whitelist_.insert(host);
+  if (whitelist_pref != NULL) {
+    for (ListValue::const_iterator i(whitelist_pref->begin());
+         i != whitelist_pref->end(); ++i) {
+      std::string host;
+      (*i)->GetAsString(&host);
+      whitelist_.insert(host);
+    }
   }
+
+  if (profile->IsOffTheRecord())
+    prefs_ = NULL;  // Don't persist whitelist changes.
 }
 
 void BlockedPopupContainer::UpdateView() {

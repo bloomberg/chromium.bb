@@ -278,7 +278,8 @@ class BlockedPopupContainer : public TabContentsDelegate,
   // The TabContents that owns and constrains this BlockedPopupContainer.
   TabContents* owner_;
 
-  // The PrefService we can query to find out what's on the whitelist.
+  // The PrefService we can query to find out what's on the whitelist.  If the
+  // profile is off the record, this will be NULL.
   PrefService* prefs_;
 
   // Once the container is hidden, this is set to prevent it from reappearing.
