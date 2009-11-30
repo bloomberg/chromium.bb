@@ -115,6 +115,7 @@ class NSSInitSingleton {
 
     NSS_SetDomesticPolicy();
 
+#if defined(USE_SYSTEM_SSL)
     // Use late binding to avoid scary but benign warning
     // "Symbol `SSL_ImplementedCiphers' has different size in shared object,
     //  consider re-linking"
@@ -124,6 +125,9 @@ class NSSInitSingleton {
       NOTREACHED() << "Can't get list of supported ciphers";
       return;
     }
+#else
+#define pSSL_ImplementedCiphers SSL_ImplementedCiphers
+#endif
 
     // Explicitly enable exactly those ciphers with keys of at least 80 bits
     for (int i = 0; i < SSL_NumImplementedCiphers; i++) {

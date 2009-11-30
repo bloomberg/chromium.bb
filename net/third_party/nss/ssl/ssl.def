@@ -139,3 +139,10 @@ SSL_CanBypass;
 ;+    local:
 ;+*;
 ;+};
+;+NSS_CHROMIUM {      # Chromium experimental
+;+    global:
+SSL_GetNextProto;
+SSL_SetNextProtoNego;
+;+    local:
+;+*;
+;+};

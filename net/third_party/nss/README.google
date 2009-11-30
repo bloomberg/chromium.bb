@@ -3,7 +3,10 @@ This directory includes a copy of NSS's libssl from the CVS repo at:
 
 The snapshot was taken at Thu Nov 12 17:19:36 PST 2009.
 
-There are no local patches.
+Patches:
+
+  * Next protocol negotiation support.
+    http://codereview.chromium.org/415005
 
 The ssl/bodge directory contains files taken from the NSS repo that we required
 for building libssl outside of its usual build environment.
