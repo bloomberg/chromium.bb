@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -410,6 +411,8 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
 void ExtensionsService::NotifyExtensionUnloaded(Extension* extension) {
   LOG(INFO) << "Sending EXTENSION_UNLOADED";
 
+  UpdateActiveExtensionsInCrashReporter();
+
   NotificationService::current()->Notify(
       NotificationType::EXTENSION_UNLOADED,
       Source<Profile>(profile_),
@@ -621,6 +624,16 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         break;
     }
   }
+
+  UpdateActiveExtensionsInCrashReporter();
+}
+
+void ExtensionsService::UpdateActiveExtensionsInCrashReporter() {
+  std::vector<std::string> extension_ids;
+  for (size_t i = 0; i < extensions_.size(); ++i)
+    extension_ids.push_back(extensions_[i]->id());
+
+  child_process_logging::SetActiveExtensions(extension_ids);
 }
 
 void ExtensionsService::OnExtensionInstalled(Extension* extension,

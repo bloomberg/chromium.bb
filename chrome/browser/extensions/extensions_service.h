@@ -253,6 +253,9 @@ class ExtensionsService
   // Handles sending notification that |extension| was unloaded.
   void NotifyExtensionUnloaded(Extension* extension);
 
+  // Helper that updates the active extension list used for crash reporting.
+  void UpdateActiveExtensionsInCrashReporter();
+
   // The profile this ExtensionsService is part of.
   Profile* profile_;
 

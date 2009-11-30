@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/string_util.h"
+#include "chrome/app/breakpad_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "googleurl/src/gurl.h"
@@ -17,6 +18,10 @@ typedef void (__cdecl *MainSetActiveURL)(const wchar_t*);
 
 // exported in breakpad_win.cc: void __declspec(dllexport) __cdecl SetClientId.
 typedef void (__cdecl *MainSetClientId)(const wchar_t*);
+
+// exported in breakpad_win.cc:
+// void __declspec(dllexport) __cdecl SetExtensionID.
+typedef void (__cdecl *MainSetExtensionID)(size_t, const wchar_t*);
 
 void SetActiveURL(const GURL& url) {
   static MainSetActiveURL set_active_url = NULL;
@@ -59,6 +64,26 @@ void SetClientId(const std::string& client_id) {
       return;
   }
   (set_client_id)(wstr.c_str());
+}
+
+void SetActiveExtensions(const std::vector<std::string>& extension_ids) {
+  static MainSetExtensionID set_extension_id = NULL;
+  if (!set_extension_id) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (!exe_module)
+      return;
+    set_extension_id = reinterpret_cast<MainSetExtensionID>(
+        GetProcAddress(exe_module, "SetExtensionID"));
+    if (!set_extension_id)
+      return;
+  }
+
+  for (size_t i = 0; i < kMaxReportedActiveExtensions; ++i) {
+    if (i < extension_ids.size())
+      (set_extension_id)(i, ASCIIToWide(extension_ids[i].c_str()).c_str());
+    else
+      (set_extension_id)(i, L"");
+  }
 }
 
 }  // namespace child_process_logging

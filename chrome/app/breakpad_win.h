@@ -8,6 +8,12 @@
 #include <windows.h>
 #include <string>
 
+// The maximum number of 64-char URL chunks we will report.
+static const int kMaxUrlChunks = 8;
+
+// The maximum number of active extensions we will report.
+static const int kMaxReportedActiveExtensions = 10;
+
 // Calls InitCrashReporterThread in it's own thread for the browser process
 // or directly for the plugin and renderer process.
 void InitCrashReporterWithDllPath(const std::wstring& dll_path);
