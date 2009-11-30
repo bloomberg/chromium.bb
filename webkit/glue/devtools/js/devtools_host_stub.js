@@ -224,6 +224,7 @@ function addDummyResource() {
     requestHeaders : {},
     requestURL: 'http://google.com/simple_page.html',
     host: 'google.com',
+    documentURL: 'http://google.com/simple_page.html',
     path: 'simple_page.html',
     lastPathComponent: 'simple_page.html',
     isMainResource: true,
