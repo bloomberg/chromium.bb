@@ -237,20 +237,6 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
 };
 
-void SetOverrideHomePage(const CommandLine& command_line,
-                         PrefService* prefs) {
-  // If homepage is specified on the command line, canonify & store it.
-  if (command_line.HasSwitch(switches::kHomePage)) {
-    FilePath browser_directory;
-    PathService::Get(base::DIR_CURRENT, &browser_directory);
-    std::wstring new_homepage = URLFixerUpper::FixupRelativeFile(
-        browser_directory.ToWStringHack(),
-        command_line.GetSwitchValue(switches::kHomePage));
-    prefs->transient()->SetString(prefs::kHomePage, new_homepage);
-    prefs->transient()->SetBoolean(prefs::kHomePageIsNewTabPage, false);
-  }
-}
-
 SessionStartupPref GetSessionStartupPref(const CommandLine& command_line,
                                          Profile* profile) {
   SessionStartupPref pref = SessionStartupPref::GetStartupPref(profile);
@@ -815,9 +801,6 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
       return false;
     }
   }
-
-  // Allow the command line to override the persisted setting of home page.
-  SetOverrideHomePage(command_line, profile->GetPrefs());
 
   bool silent_launch = false;
   if (command_line.HasSwitch(switches::kAutomationClientChannelID)) {

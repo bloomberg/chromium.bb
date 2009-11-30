@@ -6,10 +6,12 @@
 
 #include "app/animation.h"
 #include "app/l10n_util.h"
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/gfx/point.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -2999,6 +3001,19 @@ void Browser::BuildPopupWindowHelper(TabContents* source,
 }
 
 GURL Browser::GetHomePage() const {
+  // --homepage overrides any preferences.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kHomePage)) {
+    FilePath browser_directory;
+    PathService::Get(base::DIR_CURRENT, &browser_directory);
+    std::string new_homepage = URLFixerUpper::FixupRelativeFile(
+        browser_directory,
+        command_line.GetSwitchValuePath(switches::kHomePage));
+    GURL home_page = GURL(new_homepage);
+    if (home_page.is_valid())
+      return home_page;
+  }
+
   if (profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
     return GURL(chrome::kChromeUINewTabURL);
   GURL home_page = GURL(URLFixerUpper::FixupURL(
