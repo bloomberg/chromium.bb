@@ -83,6 +83,9 @@ AboutChromeView::AboutChromeView(Profile* profile)
       about_dlg_background_logo_(NULL),
       about_title_label_(NULL),
       version_label_(NULL),
+#if defined(OS_CHROMEOS)
+      os_version_label_(NULL),
+#endif
       copyright_label_(NULL),
       main_text_label_(NULL),
       main_text_label_height_(0),
@@ -93,6 +96,10 @@ AboutChromeView::AboutChromeView(Profile* profile)
       chromium_url_appears_first_(true),
       text_direction_is_rtl_(false) {
   DCHECK(profile);
+#if defined(OS_CHROMEOS)
+  loader_.GetVersion(&consumer_,
+      NewCallback(this, &AboutChromeView::OnOSVersion));
+#endif
   Init();
 
 #if defined(OS_WIN)
@@ -187,6 +194,17 @@ void AboutChromeView::Init() {
   version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont));
   AddChildView(version_label_);
+
+#if defined(OS_CHROMEOS)
+  os_version_label_ = new views::Textfield();
+  os_version_label_->SetReadOnly(true);
+  os_version_label_->RemoveBorder();
+  os_version_label_->SetTextColor(SK_ColorBLACK);
+  os_version_label_->SetBackgroundColor(SK_ColorWHITE);
+  os_version_label_->SetFont(ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::BaseFont));
+  AddChildView(os_version_label_);
+#endif
 
   // The copyright URL portion of the main label.
   copyright_label_ = new views::Label(
@@ -312,6 +330,18 @@ void AboutChromeView::Layout() {
                                 kRelatedControlVerticalSpacing,
                             kVersionFieldWidth,
                             sz.height());
+
+#if defined(OS_CHROMEOS)
+  // Then we have the version number right below it.
+  sz = os_version_label_->GetPreferredSize();
+  os_version_label_->SetBounds(
+      kPanelHorizMargin,
+      version_label_->y() +
+          version_label_->height() +
+          kRelatedControlVerticalSpacing,
+      kVersionFieldWidth,
+      sz.height());
+#endif
 
   // For the width of the main text label we want to use up the whole panel
   // width and remaining height, minus a little margin on each side.
@@ -735,8 +765,20 @@ void AboutChromeView::LinkActivated(views::Link* source,
     NOTREACHED() << "Unknown link source";
 
   Browser* browser = BrowserList::GetLastActive();
+#if defined(OS_CHROMEOS)
+  browser->OpenURL(url, GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+#else
   browser->OpenURL(url, GURL(), NEW_WINDOW, PageTransition::LINK);
+#endif
 }
+
+#if defined(OS_CHROMEOS)
+void AboutChromeView::OnOSVersion(
+    chromeos::VersionLoader::Handle handle,
+    std::string version) {
+  os_version_label_->SetText(UTF8ToUTF16(version));
+}
+#endif
 
 #if defined(OS_WIN)
 ////////////////////////////////////////////////////////////////////////////////
