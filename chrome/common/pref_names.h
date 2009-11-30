@@ -14,9 +14,6 @@ namespace prefs {
 // Profile prefs
 extern const wchar_t kHomePageIsNewTabPage[];
 extern const wchar_t kHomePage[];
-extern const wchar_t kProfileName[];
-extern const wchar_t kProfileNickname[];
-extern const wchar_t kProfileID[];
 extern const wchar_t kSessionExitedCleanly[];
 extern const wchar_t kRestoreOnStartup[];
 extern const wchar_t kURLsToRestoreOnStartup[];

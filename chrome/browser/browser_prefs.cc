@@ -45,9 +45,18 @@
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/preferences.h"
+#endif
+
 namespace browser {
 
 void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
+  RegisterLocalState(local_state);
+  RegisterUserPrefs(user_prefs);
+}
+
+void RegisterLocalState(PrefService* local_state) {
   // Prefs in Local State
   Browser::RegisterPrefs(local_state);
   WebCacheManager::RegisterPrefs(local_state);
@@ -67,7 +76,9 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
 #if defined(OS_WIN) || defined(OS_LINUX)
   TaskManager::RegisterPrefs(local_state);
 #endif
+}
 
+void RegisterUserPrefs(PrefService* user_prefs) {
   // User prefs
   SessionStartupPref::RegisterUserPrefs(user_prefs);
   Browser::RegisterUserPrefs(user_prefs);
@@ -86,6 +97,9 @@ void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state) {
   DevToolsManager::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_GTK)
   BrowserWindowGtk::RegisterUserPrefs(user_prefs);
+#endif
+#if defined(OS_CHROMEOS)
+  chromeos::Preferences::RegisterUserPrefs(user_prefs);
 #endif
 }
 

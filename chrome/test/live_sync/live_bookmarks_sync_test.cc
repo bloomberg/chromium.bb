@@ -77,7 +77,7 @@ Profile* LiveBookmarksSyncTest::MakeProfile(const std::wstring& name) {
   FilePath path;
   PathService::Get(chrome::DIR_USER_DATA, &path);
   path.Append(FilePath::FromWStringHack(name));
-  return ProfileManager::CreateProfile(path, name, L"", L"");
+  return ProfileManager::CreateProfile(path);
 }
 
 void LiveBookmarksSyncTest::SetUpInProcessBrowserTestFixture() {

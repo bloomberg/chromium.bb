@@ -1894,31 +1894,6 @@ void MetricsService::RecordHistogram(const Histogram& histogram) {
   }
 }
 
-void MetricsService::AddProfileMetric(Profile* profile,
-                                      const std::wstring& key,
-                                      int value) {
-  // Restriction of types is needed for writing values. See
-  // MetricsLog::WriteProfileMetrics.
-  DCHECK(profile && !key.empty());
-  PrefService* prefs = g_browser_process->local_state();
-  DCHECK(prefs);
-
-  // Key is stored in prefs, which interpret '.'s as paths. As such, key
-  // shouldn't have any '.'s in it.
-  DCHECK(key.find(L'.') == std::wstring::npos);
-  // The id is most likely an email address. We shouldn't send it to the server.
-  const std::wstring id_hash =
-      UTF8ToWide(MetricsLog::CreateBase64Hash(WideToUTF8(profile->GetID())));
-  DCHECK(id_hash.find('.') == std::string::npos);
-
-  DictionaryValue* prof_prefs = prefs->GetMutableDictionary(
-      prefs::kProfileMetrics);
-  DCHECK(prof_prefs);
-  const std::wstring pref_key = std::wstring(prefs::kProfilePrefix) + id_hash +
-      L"." + key;
-  prof_prefs->SetInteger(pref_key.c_str(), value);
-}
-
 static bool IsSingleThreaded() {
   static PlatformThreadId thread_id = 0;
   if (!thread_id)

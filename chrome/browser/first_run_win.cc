@@ -92,7 +92,7 @@ FilePath GetDefaultPrefFilePath(bool create_profile_dir,
         return FilePath();
     }
   }
-  return ProfileManager::GetDefaultProfilePath(default_pref_dir);
+  return ProfileManager::GetProfilePrefsPath(default_pref_dir);
 }
 
 bool InvokeGoogleUpdateForRename() {

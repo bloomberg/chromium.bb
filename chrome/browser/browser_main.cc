@@ -567,49 +567,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Initialize the shared instance of user data manager.
   scoped_ptr<UserDataManager> user_data_manager(UserDataManager::Create());
 
-  // Try to create/load the profile.
-  ProfileManager* profile_manager = browser_process->profile_manager();
-  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-#if defined(OS_WIN)
-  if (!profile) {
-    // Ideally, we should be able to run w/o access to disk.  For now, we
-    // prompt the user to pick a different user-data-dir and restart chrome
-    // with the new dir.
-    // http://code.google.com/p/chromium/issues/detail?id=11510
-    user_data_dir = UserDataDirDialog::RunUserDataDirDialog(user_data_dir);
-    if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
-      // Only delete the resources if we're not running tests. If we're running
-      // tests the resources need to be reused as many places in the UI cache
-      // SkBitmaps from the ResourceBundle.
-      ResourceBundle::CleanupSharedInstance();
-    }
-
-    if (!user_data_dir.empty()) {
-      // Because of the way CommandLine parses, it's sufficient to append a new
-      // --user-data-dir switch.  The last flag of the same name wins.
-      // TODO(tc): It would be nice to remove the flag we don't want, but that
-      // sounds risky if we parse differently than CommandLineToArgvW.
-      CommandLine new_command_line = parsed_command_line;
-      new_command_line.AppendSwitchWithValue(switches::kUserDataDir,
-                                             user_data_dir.ToWStringHack());
-      base::LaunchApp(new_command_line, false, false, NULL);
-    }
-
-    return ResultCodes::NORMAL_EXIT;
-  }
-#else
-  // TODO(port): fix this.  See comments near the definition of
-  // user_data_dir.  It is better to CHECK-fail here than it is to
-  // silently exit because of missing code in the above test.
-  CHECK(profile) << "Cannot get default profile.";
-#endif
-
-  PrefService* user_prefs = profile->GetPrefs();
-  DCHECK(user_prefs);
-
-  // Now that local state and user prefs have been loaded, make the two pref
-  // services aware of all our preferences.
-  browser::RegisterAllPrefs(user_prefs, local_state);
+  // Initialize the prefs of the local state.
+  browser::RegisterLocalState(local_state);
 
   // Now that all preferences have been registered, set the install date
   // for the uninstall metrics if this is our first run. This only actually
@@ -653,6 +612,46 @@ int BrowserMain(const MainFunctionParams& parameters) {
       return ResultCodes::SHELL_INTEGRATION_FAILED;
     }
   }
+
+  // Try to create/load the profile.
+  ProfileManager* profile_manager = browser_process->profile_manager();
+  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+#if defined(OS_WIN)
+  if (!profile) {
+    // Ideally, we should be able to run w/o access to disk.  For now, we
+    // prompt the user to pick a different user-data-dir and restart chrome
+    // with the new dir.
+    // http://code.google.com/p/chromium/issues/detail?id=11510
+    user_data_dir = UserDataDirDialog::RunUserDataDirDialog(user_data_dir);
+    if (!parameters.ui_task && browser_shutdown::delete_resources_on_shutdown) {
+      // Only delete the resources if we're not running tests. If we're running
+      // tests the resources need to be reused as many places in the UI cache
+      // SkBitmaps from the ResourceBundle.
+      ResourceBundle::CleanupSharedInstance();
+    }
+
+    if (!user_data_dir.empty()) {
+      // Because of the way CommandLine parses, it's sufficient to append a new
+      // --user-data-dir switch.  The last flag of the same name wins.
+      // TODO(tc): It would be nice to remove the flag we don't want, but that
+      // sounds risky if we parse differently than CommandLineToArgvW.
+      CommandLine new_command_line = parsed_command_line;
+      new_command_line.AppendSwitchWithValue(switches::kUserDataDir,
+                                             user_data_dir.ToWStringHack());
+      base::LaunchApp(new_command_line, false, false, NULL);
+    }
+
+    return ResultCodes::NORMAL_EXIT;
+  }
+#else
+  // TODO(port): fix this.  See comments near the definition of
+  // user_data_dir.  It is better to CHECK-fail here than it is to
+  // silently exit because of missing code in the above test.
+  CHECK(profile) << "Cannot get default profile.";
+#endif
+
+  PrefService* user_prefs = profile->GetPrefs();
+  DCHECK(user_prefs);
 
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
@@ -872,12 +871,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   HandleTestParameters(parsed_command_line);
   Platform::RecordBreakpadStatusUMA(metrics);
-  // Start up the extensions service. This should happen before Start().
-  profile->InitExtensions();
-  // Start up the web resource service.  This starts loading data after a
-  // short delay so as not to interfere with startup time.
-  if (!parsed_command_line.HasSwitch(switches::kDisableWebResources))
-    profile->InitWebResources();
 
 #if defined(OS_CHROMEOS)
   chromeos::ExternalCookieHandler::GetCookies(parsed_command_line, profile);

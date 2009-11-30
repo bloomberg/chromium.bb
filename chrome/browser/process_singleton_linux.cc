@@ -507,7 +507,21 @@ void ProcessSingleton::LinuxWatcher::HandleMessage(
   FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   ProfileManager* profile_manager = g_browser_process->profile_manager();
+
+#if defined(OS_CHROMEOS)
+  Profile* profile;
+  if (parsed_command_line.HasSwitch(switches::kProfile)) {
+    std::wstring profile_dir =
+        parsed_command_line.GetSwitchValue(switches::kProfile);
+    profile = profile_manager->GetProfile(
+        user_data_dir.Append(FilePath::FromWStringHack(profile_dir)));
+  } else {
+    profile = profile_manager->GetDefaultProfile(user_data_dir);
+  }
+#else
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+#endif
+
   if (!profile) {
     // We should only be able to get here if the profile already exists and
     // has been created.

@@ -443,6 +443,11 @@ const char kProcessPerSite[]                = "process-per-site";
 // script connections to each other).
 const char kProcessPerTab[]                 = "process-per-tab";
 
+#if defined(OS_CHROMEOS)
+// Overrides the Default profile.
+const char kProfile[]                       = "profile";
+#endif
+
 // Causes the process to run as a profile import subprocess.
 const char kProfileImportProcess[]          = "profile-import";
 

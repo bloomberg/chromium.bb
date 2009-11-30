@@ -188,6 +188,7 @@ extern const char kZygoteProcess[];
 extern const char kCookiePipe[];
 extern const char kEnableGView[];
 extern const char kTestLoadLibcros[];
+extern const char kProfile[];
 #endif
 
 #if defined(OS_LINUX)

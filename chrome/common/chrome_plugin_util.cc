@@ -138,6 +138,14 @@ CPError CPB_GetCommandLineArgumentsCommon(const char* url,
     }
   }
 
+#if defined (OS_CHROMEOS)
+  std::wstring profile = cmd.GetSwitchValue(switches::kProfile);
+  if (!profile.empty()) {
+    arguments_w += std::wstring(L"--") + ASCIIToWide(switches::kProfile) +
+                   L"=\"" + profile + L"\" ";
+  }
+#endif
+
   // Use '--app=url' instead of just 'url' to launch the browser with minimal
   // chrome.
   // Note: Do not change this flag!  Old Gears shortcuts will break if you do!

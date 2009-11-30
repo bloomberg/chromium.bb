@@ -389,10 +389,6 @@ class MetricsService : public NotificationObserver,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Adds a profile metric with the specified key/value pair.
-  void AddProfileMetric(Profile* profile, const std::wstring& key,
-                        int value);
-
   // Checks whether a notification can be logged.
   bool CanLogNotification(NotificationType type,
                           const NotificationSource& source,

@@ -11,7 +11,9 @@ namespace browser {
 
 // Makes the PrefService objects aware of all the prefs.
 void RegisterAllPrefs(PrefService* user_prefs, PrefService* local_state);
+void RegisterLocalState(PrefService* local_state);
+void RegisterUserPrefs(PrefService* user_prefs);
 
-}
+} // namespace browser
 
 #endif  // CHROME_BROWSER_BROWSER_PREFS_H__

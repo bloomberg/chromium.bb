@@ -15,16 +15,6 @@ const wchar_t kHomePageIsNewTabPage[] = L"homepage_is_newtabpage";
 // This is the URL of the page to load when opening new tabs.
 const wchar_t kHomePage[] = L"homepage";
 
-// This is the human-readable name of the current profile.
-const wchar_t kProfileName[] = L"profile.name";
-
-// This is the abbreviated human-readable name of the current profile
-const wchar_t kProfileNickname[] = L"profile.nickname";
-
-// This is a short, preferably human-readable ID for the current profile.
-// Its value should be unique within the current user data directory.
-const wchar_t kProfileID[] = L"profile.id";
-
 // Used to determine if the last session exited cleanly. Set to false when
 // first opened, and to true when closing. On startup if the value is false,
 // it means the profile didn't exit cleanly.

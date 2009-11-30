@@ -373,6 +373,9 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
     switches::kMemoryProfiling,
     switches::kUseLowFragHeapCrt,
     switches::kEnableStatsTable,
+#if defined(OS_CHROMEOS)
+    switches::kProfile,
+#endif
   };
 
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();

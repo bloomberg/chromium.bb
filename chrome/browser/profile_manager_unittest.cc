@@ -35,22 +35,6 @@ class ProfileManagerTest : public testing::Test {
   FilePath test_dir_;
 };
 
-TEST_F(ProfileManagerTest, CopyProfileData) {
-  FilePath source_path;
-  PathService::Get(chrome::DIR_TEST_DATA, &source_path);
-  source_path = source_path.Append(FILE_PATH_LITERAL("profiles"));
-
-  ASSERT_FALSE(ProfileManager::IsProfile(source_path));
-  source_path = source_path.Append(FILE_PATH_LITERAL("sample"));
-  ASSERT_TRUE(ProfileManager::IsProfile(source_path));
-
-  FilePath dest_path = test_dir_;
-  dest_path = dest_path.Append(FILE_PATH_LITERAL("profile_copy"));
-  ASSERT_FALSE(ProfileManager::IsProfile(dest_path));
-  ASSERT_TRUE(ProfileManager::CopyProfileData(source_path, dest_path));
-  ASSERT_TRUE(ProfileManager::IsProfile(dest_path));
-}
-
 TEST_F(ProfileManagerTest, CreateProfile) {
   FilePath source_path;
   PathService::Get(chrome::DIR_TEST_DATA, &source_path);
@@ -63,13 +47,9 @@ TEST_F(ProfileManagerTest, CreateProfile) {
   scoped_ptr<Profile> profile;
 
   // Successfully create a profile.
-  profile.reset(ProfileManager::CreateProfile(dest_path, L"New Profile", L"",
-                                              L"new-profile"));
+  profile.reset(ProfileManager::CreateProfile(dest_path));
   ASSERT_TRUE(profile.get());
 
-  PrefService* prefs = profile->GetPrefs();
-  ASSERT_EQ(L"New Profile", prefs->GetString(prefs::kProfileName));
-  ASSERT_EQ(L"new-profile", prefs->GetString(prefs::kProfileID));
   profile.reset();
 
 #ifdef NDEBUG
@@ -77,12 +57,8 @@ TEST_F(ProfileManagerTest, CreateProfile) {
   // these cases would trigger DCHECKs.
 
   // The profile already exists when we call CreateProfile.  Just load it.
-  profile.reset(ProfileManager::CreateProfile(dest_path, L"New Profile", L"",
-                                              L"new-profile"));
+  profile.reset(ProfileManager::CreateProfile(dest_path));
   ASSERT_TRUE(profile.get());
-  prefs = profile->GetPrefs();
-  ASSERT_EQ(L"New Profile", prefs->GetString(prefs::kProfileName));
-  ASSERT_EQ(L"new-profile", prefs->GetString(prefs::kProfileID));
 #endif
 }
 
@@ -104,12 +80,10 @@ TEST_F(ProfileManagerTest, DISABLED_CreateAndUseTwoProfiles) {
   scoped_ptr<Profile> profile2;
 
   // Successfully create the profiles.
-  profile1.reset(ProfileManager::CreateProfile(dest_path1, L"New Profile 1",
-      L"", L"new-profile-1"));
+  profile1.reset(ProfileManager::CreateProfile(dest_path1));
   ASSERT_TRUE(profile1.get());
 
-  profile2.reset(ProfileManager::CreateProfile(dest_path2, L"New Profile 2",
-      L"", L"new-profile-2"));
+  profile2.reset(ProfileManager::CreateProfile(dest_path2));
   ASSERT_TRUE(profile2.get());
 
   // Force lazy-init of some profile services to simulate use.

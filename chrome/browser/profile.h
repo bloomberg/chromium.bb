@@ -307,12 +307,6 @@ class Profile {
   // Returns true if this profile has a session service.
   virtual bool HasSessionService() const = 0;
 
-  // Convenience functions to get & set the name and ID of the profile.
-  virtual std::wstring GetName() = 0;
-  virtual void SetName(const std::wstring& name) = 0;
-  virtual std::wstring GetID() = 0;
-  virtual void SetID(const std::wstring& id) = 0;
-
   // Returns true if the last time this profile was open it was exited cleanly.
   virtual bool DidLastSessionExitCleanly() = 0;
 
@@ -442,10 +436,6 @@ class ProfileImpl : public Profile,
   virtual SessionService* GetSessionService();
   virtual void ShutdownSessionService();
   virtual bool HasSessionService() const;
-  virtual std::wstring GetName();
-  virtual void SetName(const std::wstring& name);
-  virtual std::wstring GetID();
-  virtual void SetID(const std::wstring& id);
   virtual bool DidLastSessionExitCleanly();
   virtual BookmarkModel* GetBookmarkModel();
   virtual bool IsSameProfile(Profile* profile);

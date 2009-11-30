@@ -14,6 +14,7 @@
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_prefs.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chrome_thread.h"
@@ -61,10 +62,6 @@
 
 #if defined(OS_LINUX)
 #include "chrome/browser/gtk/gtk_theme_provider.h"
-#endif
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/preferences.h"
 #endif
 
 using base::Time;
@@ -421,22 +418,6 @@ class OffTheRecordProfileImpl : public Profile,
   virtual bool HasSessionService() const {
     // We never have a session service.
     return false;
-  }
-
-  virtual std::wstring GetName() {
-    return profile_->GetName();
-  }
-
-  virtual void SetName(const std::wstring& name) {
-    profile_->SetName(name);
-  }
-
-  virtual std::wstring GetID() {
-    return profile_->GetID();
-  }
-
-  virtual void SetID(const std::wstring& id) {
-    profile_->SetID(id);
   }
 
   virtual bool DidLastSessionExitCleanly() {
@@ -861,13 +842,7 @@ PrefService* ProfileImpl::GetPrefs() {
     // The Profile class and ProfileManager class may read some prefs so
     // register known prefs as soon as possible.
     Profile::RegisterUserPrefs(prefs_.get());
-    ProfileManager::RegisterUserPrefs(prefs_.get());
-#if defined(OS_CHROMEOS)
-    // Register Touchpad prefs here instead of in browser_prefs because these
-    // prefs are used in the constructor of ProfileImpl which happens before
-    // browser_prefs' RegisterAllPrefs is called.
-    chromeos::Preferences::RegisterUserPrefs(prefs_.get());
-#endif
+    browser::RegisterUserPrefs(prefs_.get());
 
     // The last session exited cleanly if there is no pref for
     // kSessionExitedCleanly or the value for kSessionExitedCleanly is true.
@@ -1158,20 +1133,6 @@ void ProfileImpl::ShutdownSessionService() {
 
 bool ProfileImpl::HasSessionService() const {
   return (session_service_.get() != NULL);
-}
-
-std::wstring ProfileImpl::GetName() {
-  return GetPrefs()->GetString(prefs::kProfileName);
-}
-void ProfileImpl::SetName(const std::wstring& name) {
-  GetPrefs()->SetString(prefs::kProfileName, name);
-}
-
-std::wstring ProfileImpl::GetID() {
-  return GetPrefs()->GetString(prefs::kProfileID);
-}
-void ProfileImpl::SetID(const std::wstring& id) {
-  GetPrefs()->SetString(prefs::kProfileID, id);
 }
 
 bool ProfileImpl::DidLastSessionExitCleanly() {
