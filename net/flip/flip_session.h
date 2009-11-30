@@ -182,11 +182,12 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // As we gather data to be sent, we put it into the output queue.
   OutputQueue queue_;
 
-  // TODO(mbelshe): this is ugly!!
   // The packet we are currently sending.
-  FlipIOBuffer in_flight_write_;
+  bool write_pending_;            // Will be true when a write is in progress.
+  FlipIOBuffer in_flight_write_;  // This is the write buffer in progress.
+
+  // Flag if we have a pending message scheduled for WriteSocket.
   bool delayed_write_pending_;
-  bool write_pending_;
 
   // Flip Frame state.
   flip::FlipFramer flip_framer_;
