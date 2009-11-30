@@ -27,6 +27,7 @@ class StandardExtender : public BrowserExtender {
   virtual void UpdateTitleBar() {}
   virtual void ActivationChanged() {}
   virtual bool ShouldForceHideToolbar() { return false; }
+  virtual bool ShouldForceMaximizedWindow() { return false; }
   virtual bool SetFocusToCompactNavigationBar() { return false; }
   virtual void ToggleCompactNavigationBar() {}
   virtual void OnMouseEnteredToTab(Tab* tab) {}

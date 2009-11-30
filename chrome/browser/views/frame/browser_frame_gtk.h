@@ -49,6 +49,7 @@ class BrowserFrameGtk : public BrowserFrame,
                                       GdkEventWindowState* event);
   virtual gboolean OnConfigureEvent(GtkWidget* widget,
                                     GdkEventConfigure* event);
+  virtual bool IsMaximized() const;
 
  private:
   // The BrowserView is our ClientView. This is a pointer to it.

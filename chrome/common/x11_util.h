@@ -133,6 +133,9 @@ bool GetWindowGeometry(int* x, int* y, unsigned* width, unsigned* height,
 // parent_is_root: (output) true iff the parent of |window| is the root window.
 bool GetWindowParent(XID* parent_window, bool* parent_is_root, XID window);
 
+// Get the window manager name.
+bool GetWindowManagerName(std::string* name);
+
 }  // namespace x11_util
 
 #endif  // CHROME_COMMON_X11_UTIL_H_

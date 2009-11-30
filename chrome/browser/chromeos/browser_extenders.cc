@@ -17,6 +17,7 @@
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
+#include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/button.h"
@@ -25,6 +26,8 @@
 #include "views/window/window.h"
 
 namespace {
+
+const char* kChromeOsWindowManagerName = "chromeos-wm";
 
 // NormalExtender adds ChromeOS specific controls and menus to a BrowserView
 // created with Browser::TYPE_NORMAL. This extender adds controls to
@@ -46,7 +49,8 @@ class NormalExtender : public BrowserExtender,
         compact_navigation_bar_(NULL),
         // CompactNavigationBar is disabled by default.
         // TODO(oshima): Get this info from preference.
-        compact_navigation_bar_enabled_(false) {
+        compact_navigation_bar_enabled_(false),
+        force_maximized_window_(false) {
   }
   virtual ~NormalExtender() {}
 
@@ -62,13 +66,14 @@ class NormalExtender : public BrowserExtender,
     main_menu_->SetImage(views::CustomButton::BS_PUSHED, image);
     browser_view()->AddChildView(main_menu_);
 
-    compact_location_bar_.reset(new chromeos::CompactLocationBar(browser_view()));
-    compact_navigation_bar_ =
-        new chromeos::CompactNavigationBar(browser_view()->browser());
+    Browser* browser = browser_view()->browser();
+    compact_location_bar_.reset(
+        new chromeos::CompactLocationBar(browser_view()));
+    compact_navigation_bar_ = new chromeos::CompactNavigationBar(browser);
     browser_view()->AddChildView(compact_navigation_bar_);
     compact_navigation_bar_->Init();
     status_area_ = new chromeos::StatusAreaView(
-        browser_view()->browser(),
+        browser,
         browser_view()->GetWindow()->GetNativeWindow());
     browser_view()->AddChildView(status_area_);
     status_area_->Init();
@@ -83,6 +88,12 @@ class NormalExtender : public BrowserExtender,
     BrowserFrameGtk* gtk_frame =
         static_cast<BrowserFrameGtk*>(browser_view()->frame());
     gtk_frame->GetNonClientView()->SetContextMenuController(this);
+
+    if (browser->type() == Browser::TYPE_NORMAL) {
+      std::string wm_name;
+      force_maximized_window_ = x11_util::GetWindowManagerName(&wm_name) &&
+          wm_name == kChromeOsWindowManagerName;
+    }
   }
 
   virtual gfx::Rect Layout(const gfx::Rect& bounds) {
@@ -196,6 +207,10 @@ class NormalExtender : public BrowserExtender,
     compact_location_bar_->StartPopupTimer();
   }
 
+  virtual bool ShouldForceMaximizedWindow() {
+    return force_maximized_window_;
+  }
+
  private:
   // Shows the compact location bar under the selected tab.
   void ShowCompactLocationBarUnderSelectedTab() {
@@ -249,6 +264,9 @@ class NormalExtender : public BrowserExtender,
 
   // CompactLocationBar view.
   scoped_ptr<chromeos::CompactLocationBar> compact_location_bar_;
+
+  // A flag to specify if the browser window should be maximized.
+  bool force_maximized_window_;
 
   DISALLOW_COPY_AND_ASSIGN(NormalExtender);
 };
@@ -328,6 +346,10 @@ class PopupExtender : public BrowserExtender {
   virtual void OnMouseMovedOnTab(Tab* tab) {}
 
   virtual void OnMouseExitedFromTab(Tab* tab) {}
+
+  virtual bool ShouldForceMaximizedWindow() {
+    return false;
+  }
 
   // Controls interactions with the window manager for popup panels.
   scoped_ptr<chromeos::PanelController> panel_controller_;

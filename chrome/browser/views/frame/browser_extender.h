@@ -56,6 +56,9 @@ class BrowserExtender {
   // to use the regular logic to decide.
   virtual bool ShouldForceHideToolbar() = 0;
 
+  // Returns true if the window should be in the maximized state.
+  virtual bool ShouldForceMaximizedWindow() = 0;
+
   // Returns true if the compact navigation bar is focusable and got
   // focus, false otherwise.
   virtual bool SetFocusToCompactNavigationBar() = 0;

@@ -548,4 +548,20 @@ bool GetWindowParent(XID* parent_window, bool* parent_is_root, XID window) {
   return true;
 }
 
+bool GetWindowManagerName(std::string* wm_name) {
+  DCHECK(wm_name);
+  int wm_window = 0;
+  if (!x11_util::GetIntProperty(x11_util::GetX11RootWindow(),
+                                "_NET_SUPPORTING_WM_CHECK",
+                                &wm_window)) {
+    return false;
+  }
+  if (!x11_util::GetStringProperty(static_cast<XID>(wm_window),
+                                   "_NET_WM_NAME",
+                                   wm_name)) {
+    return false;
+  }
+  return true;
+}
+
 }  // namespace x11_util

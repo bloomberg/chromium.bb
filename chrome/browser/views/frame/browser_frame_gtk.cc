@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/status_bubble.h"
+#include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_root_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/opaque_browser_frame_view.h"
@@ -139,6 +140,11 @@ void BrowserFrameGtk::IsActiveChanged() {
   GetRootView()->SchedulePaint();
   browser_view_->ActivationChanged(IsActive());
   views::WidgetGtk::IsActiveChanged();
+}
+
+bool BrowserFrameGtk::IsMaximized() const {
+  return browser_view_->browser_extender()->ShouldForceMaximizedWindow() ||
+      WindowGtk::IsMaximized();
 }
 
 bool BrowserFrameGtk::GetAccelerator(int cmd_id,
