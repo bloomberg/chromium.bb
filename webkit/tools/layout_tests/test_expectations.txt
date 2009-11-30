@@ -1169,46 +1169,72 @@ BUG13809 WIN LINUX : LayoutTests/fast/canvas/canvas-empty-image-pattern.html = F
 // and then baselined if necessary.
 // ----------------------------------------------------------------------------
 
+// AccessibilityUIElement.isActionSupported.
+BUG28997 WONTFIX : LayoutTests/accessibility/aria-link-supports-press.html = FAIL
+BUG28997 WONTFIX : LayoutTests/accessibility/button-press-action.html = FAIL
+BUG28997 WONTFIX : LayoutTests/accessibility/onclick-handlers.html = FAIL
+
+// AccessibilityUIElement.cellForColumnAndRow.
+BUG28998 WONTFIX : LayoutTests/accessibility/aria-tables.html = FAIL
+BUG28998 WONTFIX : LayoutTests/accessibility/table-cell-spans.html = FAIL
+BUG28998 : LayoutTests/accessibility/table-cells.html = FAIL
+
+// AccessibilityUIElement.attributesOfChildren() support
+BUG29000 : LayoutTests/accessibility/image-map1.html = FAIL
+BUG29000 : LayoutTests/accessibility/image-map2.html = FAIL
+BUG29000 : LayoutTests/accessibility/legend.html = FAIL
+BUG29000 : LayoutTests/accessibility/lists.html = FAIL
+BUG29000 : LayoutTests/accessibility/nochildren-elements.html = FAIL
+BUG29000 BUG10351 : LayoutTests/accessibility/plugin.html = FAIL
+BUG29000 : LayoutTests/accessibility/table-detection.html = FAIL
+BUG29000 : LayoutTests/accessibility/table-with-aria-role.html = FAIL
+
+// AccessibilityUIElement.clickPointX support
+BUG29001 : LayoutTests/accessibility/editable-webarea-context-menu-point.html = FAIL
+
+// AccessibilityUIElement.attributesOfLinkedUIElements() support
+BUG29002 : LayoutTests/accessibility/internal-link-anchors2.html = FAIL
+BUG29002 : LayoutTests/accessibility/radio-button-group-members.html = FAIL
+
+// AccessibilityUIElement.elementAtPoint() support
+BUG29003 : LayoutTests/accessibility/label-for-control-hittest.html = FAIL
+
+// AccessibilityUIElement.language support
+BUG29005 : LayoutTests/accessibility/language-attribute.html = FAIL
+
+// AccessibilityUIElement.width & height support
+BUG29006 : LayoutTests/accessibility/radio-button-checkbox-size.html = FAIL
+
+// AccessibilityUIElement.titleUIElement() support
+BUG29007 : LayoutTests/accessibility/non-data-table-cell-title-ui-element.html = FAIL
+BUG29007 : LayoutTests/accessibility/radio-button-title-label.html = FAIL
+BUG29007 : LayoutTests/accessibility/secure-textfield-title-ui.html = FAIL
+
+// AccessibilityUIElement.attributesOfColumnHeaders/RowHeaders/Columns/Rows/VisibleCells/Header support
+BUG29008 : LayoutTests/accessibility/table-attributes.html = FAIL
+BUG29008 : LayoutTests/accessibility/table-sections.html = FAIL
+
+// Complete AccessibilityUIElement.allAttributes implementation.
+BUG29009 : LayoutTests/accessibility/table-one-cell.html = FAIL
+BUG29009 : LayoutTests/accessibility/table-with-rules.html = FAIL
+BUG29009 : LayoutTests/accessibility/transformed-element.html = FAIL
+
+// Implement AccessibilityUIElement.insertionPointLineNumber
+BUG29010 : LayoutTests/accessibility/textarea-insertion-point-line-number.html = FAIL
+
+// Implement AccessibilityUIElement.lineForIndex()
+BUG29011 : LayoutTests/accessibility/textarea-line-for-index.html = FAIL
+
+// AccessibilityUIElement.selectedTextRange/setSelectedTextRange
+BUG29014 : LayoutTests/accessibility/textarea-selected-text-range.html = FAIL
+
+// AccessibilityUIElement.attributesOfDocumentLinks() support
+BUG29015 : LayoutTests/accessibility/visible-elements.html = FAIL
+
 // Need to finish implementing window.accessibilityController for these to work.
 BUG10322 MAC : LayoutTests/accessibility/aria-roles.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-link-supports-press.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-readonly.html = FAIL
-BUG10322 : LayoutTests/accessibility/aria-tables.html = FAIL
-BUG10322 : LayoutTests/accessibility/button-press-action.html = FAIL
-BUG10322 : LayoutTests/accessibility/canvas.html = FAIL
-BUG10322 : LayoutTests/accessibility/editable-webarea-context-menu-point.html = FAIL
 BUG10322 : LayoutTests/accessibility/iframe-bastardization.html = FAIL
-BUG10322 : LayoutTests/accessibility/image-map1.html = FAIL
-BUG10322 : LayoutTests/accessibility/image-map2.html = FAIL
-BUG10322 : LayoutTests/accessibility/img-aria-button-alt-tag.html = FAIL
-BUG10322 : LayoutTests/accessibility/input-image-alt.html = FAIL
-BUG10322 : LayoutTests/accessibility/internal-link-anchors2.html = FAIL
-BUG10322 : LayoutTests/accessibility/label-for-control-hittest.html = FAIL
-BUG10322 : LayoutTests/accessibility/language-attribute.html = FAIL
-BUG10322 : LayoutTests/accessibility/legend.html = FAIL
-BUG10322 : LayoutTests/accessibility/lists.html = FAIL
-BUG10322 : LayoutTests/accessibility/nochildren-elements.html = FAIL
-BUG10322 : LayoutTests/accessibility/non-data-table-cell-title-ui-element.html = FAIL
-BUG10322 : LayoutTests/accessibility/onclick-handlers.html = FAIL
-BUG10322 BUG10351 : LayoutTests/accessibility/plugin.html = FAIL
-BUG10322 : LayoutTests/accessibility/radio-button-checkbox-size.html = FAIL
-BUG10322 : LayoutTests/accessibility/radio-button-group-members.html = FAIL
-BUG10322 : LayoutTests/accessibility/radio-button-title-label.html = FAIL
-BUG10322 : LayoutTests/accessibility/secure-textfield-title-ui.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-attributes.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-cell-spans.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-cells.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-detection.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-one-cell.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-sections.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-with-aria-role.html = FAIL
-BUG10322 : LayoutTests/accessibility/table-with-rules.html = FAIL
-BUG10322 : LayoutTests/accessibility/textarea-insertion-point-line-number.html = FAIL
-BUG10322 : LayoutTests/accessibility/textarea-line-for-index.html = FAIL
-BUG10322 : LayoutTests/accessibility/textarea-selected-text-range.html = FAIL
 BUG10322 : LayoutTests/accessibility/th-as-title-ui.html = FAIL
-BUG10322 : LayoutTests/accessibility/transformed-element.html = FAIL
-BUG10322 : LayoutTests/accessibility/visible-elements.html = FAIL
 BUG10322 : LayoutTests/accessibility/input-slider.html = FAIL
 BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
 BUG10322 : LayoutTests/platform/mac/accessibility/aria-radiobutton-text.html = PASS
