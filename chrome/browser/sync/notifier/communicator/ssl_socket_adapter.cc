@@ -217,13 +217,11 @@ bool TransportSocket::IsConnectedAndIdle() const {
   return false;
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-int TransportSocket::GetPeerName(struct sockaddr *name, socklen_t *namelen) {
+int TransportSocket::GetPeerName(struct sockaddr* name, socklen_t* namelen) {
   talk_base::SocketAddress address = socket_->GetRemoteAddress();
   address.ToSockAddr(reinterpret_cast<sockaddr_in *>(name));
   return 0;
 }
-#endif
 
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,
                           net::CompletionCallback* callback) {

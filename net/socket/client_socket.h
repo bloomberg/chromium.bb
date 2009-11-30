@@ -7,8 +7,11 @@
 
 #include "build/build_config.h"
 
+// For struct sockaddr and socklen_t.
 #if defined(OS_LINUX) || defined(OS_MACOSX)
 #include <sys/socket.h>
+#elif defined(OS_WIN)
+#include <ws2tcpip.h>
 #endif
 
 #include "net/socket/socket.h"
@@ -53,11 +56,9 @@ class ClientSocket : public Socket {
   // have been received.
   virtual bool IsConnectedAndIdle() const = 0;
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  // Identical to posix system call getpeername().
+  // Identical to BSD socket call getpeername().
   // Needed by ssl_client_socket_nss and ssl_client_socket_mac.
   virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen);
-#endif
 };
 
 }  // namespace net
