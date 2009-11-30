@@ -45,9 +45,6 @@ const int kDangerousElementPadding = 3;
 // it will be elided.
 const int kTextWidth = 140;
 
-// Display width of the dangerous file warning, in pixels.
-const int kDangerousTextWidth = 350;
-
 // The minimum width we will ever draw the download item. Used as a lower bound
 // during animation. This number comes from the width of the images used to
 // make the download item.
@@ -567,17 +564,18 @@ void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
 
 void DownloadItemGtk::UpdateDangerWarning() {
   if (dangerous_prompt_) {
-    std::string dangerous_warning;
+    // We create |dangerous_warning| as a wide string so we can more easily
+    // calculate its length in characters.
+    std::wstring dangerous_warning;
     if (DownloadManager::IsExtensionInstall(get_download())) {
       dangerous_warning =
-          l10n_util::GetStringUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
+          l10n_util::GetString(IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
     } else {
       std::wstring elided_filename = gfx::ElideFilename(
           get_download()->original_name(), gfx::Font(), kTextWidth);
 
       dangerous_warning =
-          l10n_util::GetStringFUTF8(
-              IDS_PROMPT_DANGEROUS_DOWNLOAD, WideToUTF16(elided_filename));
+          l10n_util::GetStringF(IDS_PROMPT_DANGEROUS_DOWNLOAD, elided_filename);
     }
 
     if (theme_provider_->UseGtkTheme()) {
@@ -596,12 +594,18 @@ void DownloadItemGtk::UpdateDangerWarning() {
       gtk_util::SetLabelColor(dangerous_label_, &color);
     }
 
-    gtk_label_set_label(GTK_LABEL(dangerous_label_), dangerous_warning.c_str());
+    gtk_label_set_label(GTK_LABEL(dangerous_label_),
+                        WideToUTF8(dangerous_warning).c_str());
 
     // Until we switch to vector graphics, force the font size.
     gtk_util::ForceFontSizePixels(dangerous_label_, kTextSize);
     gtk_label_set_line_wrap(GTK_LABEL(dangerous_label_), TRUE);
-    gtk_widget_set_size_request(dangerous_label_, kDangerousTextWidth, -1);
+
+    double width_chars = 0.6 * dangerous_warning.size();
+    gint dangerous_width;
+    gtk_util::GetWidgetSizeFromCharacters(dangerous_label_, width_chars, 0,
+                                          &dangerous_width, NULL);
+    gtk_widget_set_size_request(dangerous_label_, dangerous_width, -1);
 
     // The width will depend on the text. We must do this each time we possibly
     // change the label above.

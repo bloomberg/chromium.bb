@@ -161,23 +161,35 @@ void GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,
                                 int height_lines, int* width, int* height) {
   DCHECK(GTK_WIDGET_REALIZED(widget))
       << " widget must be realized to compute font metrics correctly";
+
+  double chars = 0;
+  if (width)
+    StringToDouble(l10n_util::GetStringUTF8(width_chars), &chars);
+
+  double lines = 0;
+  if (height)
+    StringToDouble(l10n_util::GetStringUTF8(height_lines), &lines);
+
+  GetWidgetSizeFromCharacters(widget, chars, lines, width, height);
+}
+
+void GetWidgetSizeFromCharacters(GtkWidget* widget, double width_chars,
+                                 double height_lines, int* width, int* height) {
+  DCHECK(GTK_WIDGET_REALIZED(widget))
+      << " widget must be realized to compute font metrics correctly";
   PangoContext* context = gtk_widget_create_pango_context(widget);
   PangoFontMetrics* metrics = pango_context_get_metrics(context,
       widget->style->font_desc, pango_context_get_language(context));
   if (width) {
-    double chars = 0;
-    StringToDouble(l10n_util::GetStringUTF8(width_chars), &chars);
     *width = static_cast<int>(
         pango_font_metrics_get_approximate_char_width(metrics) *
-        chars / PANGO_SCALE);
+        width_chars / PANGO_SCALE);
   }
   if (height) {
-    double lines = 0;
-    StringToDouble(l10n_util::GetStringUTF8(height_lines), &lines);
     *height = static_cast<int>(
         (pango_font_metrics_get_ascent(metrics) +
         pango_font_metrics_get_descent(metrics)) *
-        lines / PANGO_SCALE);
+        height_lines / PANGO_SCALE);
   }
   pango_font_metrics_unref(metrics);
   g_object_unref(context);

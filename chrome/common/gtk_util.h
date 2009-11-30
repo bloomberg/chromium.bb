@@ -76,6 +76,11 @@ GtkWidget* CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
 void GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,
                                 int height_lines, int* width, int* height);
 
+// As above, but uses number of characters/lines directly rather than looking
+// up a resource.
+void GetWidgetSizeFromCharacters(GtkWidget* widget, double width_chars,
+                                 double height_lines, int* width, int* height);
+
 // Remove all children from this container.
 void RemoveAllChildren(GtkWidget* container);
 
