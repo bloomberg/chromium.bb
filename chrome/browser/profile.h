@@ -31,7 +31,7 @@ namespace webkit_database {
 class DatabaseTracker;
 }
 
-class Blacklist;
+class BlacklistManager;
 class BookmarkModel;
 class BrowserThemeProvider;
 class ChromeURLRequestContextGetter;
@@ -286,8 +286,8 @@ class Profile {
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
-  // Returns the Privacy Blaclist for this profile.
-  virtual Blacklist* GetBlacklist() = 0;
+  // Returns the Privacy Blacklist Manager for this profile.
+  virtual BlacklistManager* GetBlacklistManager() = 0;
 
   // Returns the session service for this profile. This may return NULL. If
   // this profile supports a session service (it isn't off the record), and
@@ -438,7 +438,7 @@ class ProfileImpl : public Profile,
   virtual URLRequestContextGetter* GetRequestContextForMedia();
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
   virtual net::SSLConfigService* GetSSLConfigService();
-  virtual Blacklist* GetBlacklist();
+  virtual BlacklistManager* GetBlacklistManager();
   virtual SessionService* GetSessionService();
   virtual void ShutdownSessionService();
   virtual bool HasSessionService() const;
@@ -525,8 +525,7 @@ class ProfileImpl : public Profile,
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
-  scoped_ptr<Blacklist> blacklist_;
-
+  scoped_refptr<BlacklistManager> blacklist_manager_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
   scoped_refptr<FaviconService> favicon_service_;
@@ -538,6 +537,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebKitContext> webkit_context_;
   scoped_ptr<DesktopNotificationService> desktop_notification_service_;
   scoped_ptr<PersonalDataManager> personal_data_manager_;
+  bool blacklist_manager_created_;
   bool history_service_created_;
   bool favicon_service_created_;
   bool created_web_data_service_;

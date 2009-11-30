@@ -1,9 +1,9 @@
 [Chromium::PrivacyBlacklist]
 |Name: AnnoyingAds
-|URL: http://www.ads.tv
+|URL: http://www.example.com
 
 # Block Ads by servers
-annoying.ads.tv/@ => kBlockAll
+example.com/@ => kBlockAll
 
 # Block Ads by name
 @/annoying/120x600.jpg => kBlockAll

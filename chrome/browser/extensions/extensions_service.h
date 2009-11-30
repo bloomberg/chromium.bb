@@ -221,6 +221,7 @@ class ExtensionsService
                                 bool be_noisy);
 
   // BlacklistPathProvider:
+  virtual bool AreBlacklistPathsReady() const;
   virtual std::vector<FilePath> GetPersistentBlacklistPaths();
   virtual std::vector<FilePath> GetTransientBlacklistPaths();
 

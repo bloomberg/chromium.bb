@@ -13,6 +13,7 @@
 #include "net/url_request/url_request_context.h"
 
 class Blacklist;
+class BlacklistManager;
 class CommandLine;
 class Profile;
 
@@ -178,7 +179,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   virtual bool AllowSendingCookies(const URLRequest* request) const;
 
   // Gets the Privacy Blacklist, if any for this context.
-  const Blacklist* blacklist() const { return blacklist_; }
+  const Blacklist* GetBlacklist() const;
 
   // Callback for when new extensions are loaded.
   void OnNewExtensions(const std::string& id, const FilePath& path);
@@ -242,9 +243,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_extension_paths(const ExtensionPaths& paths) {
     extension_paths_ = paths;
   }
-  void set_blacklist(const Blacklist* blacklist) {
-    blacklist_ = blacklist;
-  }
+  void set_blacklist_manager(BlacklistManager* blacklist_manager);
   void set_appcache_service(ChromeAppCacheService* service) {
     appcache_service_ = service;
   }
@@ -267,8 +266,8 @@ class ChromeURLRequestContext : public URLRequestContext {
   FilePath user_script_dir_path_;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
+  scoped_refptr<BlacklistManager> blacklist_manager_;
 
-  const Blacklist* blacklist_;
   bool is_media_;
   bool is_off_the_record_;
 
@@ -309,7 +308,7 @@ class ChromeURLRequestContextFactory {
   net::CookiePolicy::Type cookie_policy_type_;
   ChromeURLRequestContext::ExtensionPaths extension_paths_;
   FilePath user_script_dir_path_;
-  Blacklist* blacklist_;
+  scoped_refptr<BlacklistManager> blacklist_manager_;
   net::StrictTransportSecurityState* strict_transport_security_state_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
 

@@ -750,6 +750,10 @@ void ExtensionsService::ReportExtensionLoadError(
   ExtensionErrorReporter::GetInstance()->ReportError(message, be_noisy);
 }
 
+bool ExtensionsService::AreBlacklistPathsReady() const {
+  return ready_;
+}
+
 std::vector<FilePath> ExtensionsService::GetPersistentBlacklistPaths() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 

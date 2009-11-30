@@ -8,9 +8,11 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/thread.h"
+#include "base/values.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +35,10 @@ class MyTestingProfile : public TestingProfile {
 class TestBlacklistPathProvider : public BlacklistPathProvider {
  public:
   explicit TestBlacklistPathProvider(Profile* profile) : profile_(profile) {
+  }
+
+  virtual bool AreBlacklistPathsReady() const {
+    return true;
   }
 
   virtual std::vector<FilePath> GetPersistentBlacklistPaths() {
@@ -61,12 +67,25 @@ class TestBlacklistPathProvider : public BlacklistPathProvider {
 
  private:
   void SendUpdateNotification() {
+    ListValue* privacy_blacklists = new ListValue;
+    privacy_blacklists->Append(new StringValue("dummy.pbl"));
+
+    DictionaryValue manifest;
+    manifest.SetString(extension_manifest_keys::kVersion, "1.0");
+    manifest.SetString(extension_manifest_keys::kName, "test");
+    manifest.Set(extension_manifest_keys::kPrivacyBlacklists,
+                 privacy_blacklists);
+
 #if defined(OS_WIN)
     FilePath path(FILE_PATH_LITERAL("c:\\foo"));
 #elif defined(OS_POSIX)
     FilePath path(FILE_PATH_LITERAL("/foo"));
 #endif
     Extension extension(path);
+    std::string error;
+    ASSERT_TRUE(extension.InitFromValue(manifest, false, &error));
+    ASSERT_TRUE(error.empty());
+
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_LOADED,
         Source<Profile>(profile_),
@@ -86,7 +105,8 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
   BlacklistManagerTest()
       : path_provider_(&profile_),
         mock_ui_thread_(ChromeThread::UI, MessageLoop::current()),
-        mock_file_thread_(ChromeThread::FILE) {
+        mock_file_thread_(ChromeThread::FILE),
+        mock_io_thread_(ChromeThread::IO, MessageLoop::current()) {
   }
 
   virtual void SetUp() {
@@ -135,6 +155,7 @@ class BlacklistManagerTest : public testing::Test, public NotificationObserver {
 
   ChromeThread mock_ui_thread_;
   ChromeThread mock_file_thread_;
+  ChromeThread mock_io_thread_;
 };
 
 // Returns true if |blacklist| contains a match for |url|.
@@ -149,8 +170,9 @@ bool BlacklistHasMatch(const Blacklist* blacklist, const char* url) {
 }
 
 TEST_F(BlacklistManagerTest, Basic) {
-  scoped_refptr<BlacklistManager> manager(new BlacklistManager());
-  manager->Initialize(&profile_, &path_provider_);
+  scoped_refptr<BlacklistManager> manager(
+      new BlacklistManager(&profile_, &path_provider_));
+  manager->Initialize();
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist = manager->GetCompiledBlacklist();
@@ -161,8 +183,9 @@ TEST_F(BlacklistManagerTest, Basic) {
 }
 
 TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
-  scoped_refptr<BlacklistManager> manager(new BlacklistManager());
-  manager->Initialize(&profile_, &path_provider_);
+  scoped_refptr<BlacklistManager> manager(
+      new BlacklistManager(&profile_, &path_provider_));
+  manager->Initialize();
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist1 = manager->GetCompiledBlacklist();
@@ -196,8 +219,8 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
   path_provider_.clear();
   path_provider_.AddPersistentPath(
       test_data_dir_.AppendASCII("annoying_ads.pbl"));
-  manager = new BlacklistManager();
-  manager->Initialize(&profile_, &path_provider_);
+  manager = new BlacklistManager(&profile_, &path_provider_);
+  manager->Initialize();
   WaitForBlacklistUpdate();
 
   const Blacklist* blacklist4 = manager->GetCompiledBlacklist();
@@ -207,8 +230,9 @@ TEST_F(BlacklistManagerTest, BlacklistPathProvider) {
 }
 
 TEST_F(BlacklistManagerTest, BlacklistPathReadError) {
-  scoped_refptr<BlacklistManager> manager(new BlacklistManager());
-  manager->Initialize(&profile_, &path_provider_);
+  scoped_refptr<BlacklistManager> manager(
+      new BlacklistManager(&profile_, &path_provider_));
+  manager->Initialize();
   WaitForBlacklistUpdate();
 
   FilePath bogus_path(test_data_dir_.AppendASCII("does_not_exist_randomness"));
@@ -224,8 +248,9 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
   FilePath compiled_blacklist_path;
 
   {
-    scoped_refptr<BlacklistManager> manager(new BlacklistManager());
-    manager->Initialize(&profile_, &path_provider_);
+    scoped_refptr<BlacklistManager> manager(
+        new BlacklistManager(&profile_, &path_provider_));
+    manager->Initialize();
     WaitForBlacklistUpdate();
 
     path_provider_.AddPersistentPath(
@@ -242,8 +267,9 @@ TEST_F(BlacklistManagerTest, CompiledBlacklistReadError) {
   ASSERT_TRUE(file_util::Delete(compiled_blacklist_path, false));
 
   {
-    scoped_refptr<BlacklistManager> manager(new BlacklistManager());
-    manager->Initialize(&profile_, &path_provider_);
+    scoped_refptr<BlacklistManager> manager(
+        new BlacklistManager(&profile_, &path_provider_));
+    manager->Initialize();
     WaitForBlacklistUpdate();
 
     // The manager should recompile the blacklist.

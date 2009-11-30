@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -35,10 +36,6 @@
 #endif
 
 namespace {
-// TODO(eroman): The ChromeURLRequestContext's Blacklist* is shared with the
-//               Profile... This is a problem since the Profile dies before
-//               the IO thread, so we may end up accessing a deleted variable.
-//               http://crbug.com/26733.
 
 // ----------------------------------------------------------------------------
 // Helper methods to check current thread
@@ -687,7 +684,7 @@ bool ChromeURLRequestContext::InterceptCookie(const URLRequest* request,
     const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
     if (match->attributes() & Blacklist::kDontStoreCookies) {
       NotificationService::current()->Notify(
-          NotificationType::BLACKLIST_BLOCKED_RESOURCE,
+          NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
           Source<const ChromeURLRequestContext>(this),
           Details<const URLRequest>(request));
 
@@ -709,7 +706,7 @@ bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
     const Blacklist::Match* match = static_cast<const Blacklist::Match*>(d);
     if (match->attributes() & Blacklist::kDontSendCookies) {
       NotificationService::current()->Notify(
-          NotificationType::BLACKLIST_BLOCKED_RESOURCE,
+          NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
           Source<const ChromeURLRequestContext>(this),
           Details<const URLRequest>(request));
 
@@ -717,6 +714,13 @@ bool ChromeURLRequestContext::AllowSendingCookies(const URLRequest* request)
     }
   }
   return true;
+}
+
+const Blacklist* ChromeURLRequestContext::GetBlacklist() const {
+  // TODO(phajdan.jr): Remove the check when Privacy Blacklists become stable.
+  if (!blacklist_manager_)
+    return NULL;
+  return blacklist_manager_->GetCompiledBlacklist();
 }
 
 void ChromeURLRequestContext::OnNewExtensions(const std::string& id,
@@ -753,11 +757,16 @@ ChromeURLRequestContext::ChromeURLRequestContext(
 
   // Set ChromeURLRequestContext members
   appcache_service_ = other->appcache_service_;
+  blacklist_manager_ = other->blacklist_manager_;
   extension_paths_ = other->extension_paths_;
   user_script_dir_path_ = other->user_script_dir_path_;
-  blacklist_ = other->blacklist_;
   is_media_ = other->is_media_;
   is_off_the_record_ = other->is_off_the_record_;
+}
+
+void ChromeURLRequestContext::set_blacklist_manager(
+    BlacklistManager* blacklist_manager) {
+  blacklist_manager_ = blacklist_manager;
 }
 
 void ChromeURLRequestContext::OnAcceptLanguageChange(
@@ -820,8 +829,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   cookie_policy_type_ = net::CookiePolicy::FromInt(
       prefs->GetInteger(prefs::kCookieBehavior));
 
-  // TODO(eroman): this doesn't look safe; sharing between IO and UI threads!
-  blacklist_ = profile->GetBlacklist();
+  blacklist_manager_ = profile->GetBlacklistManager();
 
   // TODO(eroman): this doesn't look safe; sharing between IO and UI threads!
   strict_transport_security_state_ = profile->GetStrictTransportSecurityState();
@@ -860,7 +868,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_cookie_policy_type(cookie_policy_type_);
   context->set_extension_paths(extension_paths_);
   context->set_user_script_dir_path(user_script_dir_path_);
-  context->set_blacklist(blacklist_);
+  context->set_blacklist_manager(blacklist_manager_.get());
   context->set_strict_transport_security_state(
       strict_transport_security_state_);
   context->set_ssl_config_service(ssl_config_service_);

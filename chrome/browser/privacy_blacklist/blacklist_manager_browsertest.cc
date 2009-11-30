@@ -4,10 +4,12 @@
 
 #include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -16,31 +18,32 @@
 
 namespace {
 
-// Returns true if |blacklist| contains a match for |url|.
-bool BlacklistHasMatch(const Blacklist* blacklist, const char* url) {
-  Blacklist::Match* match = blacklist->findMatch(GURL(url));
-
-  if (!match)
-    return false;
-
-  delete match;
-  return true;
+void GetBlacklistHasMatchOnIOThread(const BlacklistManager* manager,
+                                    const GURL& url,
+                                    bool *has_match) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  const Blacklist* blacklist = manager->GetCompiledBlacklist();
+  scoped_ptr<Blacklist::Match> match(blacklist->findMatch(url));
+  *has_match = (match.get() != NULL);
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+                         new MessageLoop::QuitTask());
 }
 
 }  // namespace
 
 class BlacklistManagerBrowserTest : public ExtensionBrowserTest {
  public:
-  void InitializeBlacklistManager() {
-    Profile* profile = browser()->profile();
-    blacklist_manager_ = new BlacklistManager();
-    blacklist_manager_->Initialize(profile, profile->GetExtensionsService());
-    WaitForBlacklistUpdate();
+  virtual void SetUp() {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnablePrivacyBlacklists);
+    ExtensionBrowserTest::SetUp();
   }
 
-  virtual void CleanUpOnMainThread() {
-    blacklist_manager_ = NULL;
-    ExtensionBrowserTest::CleanUpOnMainThread();
+  virtual void SetUpInProcessBrowserTestFixture() {
+    ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    received_blacklist_notification_ = false;
+    host_resolver()->AddSimulatedFailure("www.example.com");
   }
 
   // NotificationObserver
@@ -52,48 +55,55 @@ class BlacklistManagerBrowserTest : public ExtensionBrowserTest {
       ExtensionBrowserTest::Observe(type, source, details);
       return;
     }
+    received_blacklist_notification_ = true;
     MessageLoop::current()->Quit();
   }
 
  protected:
-  void WaitForBlacklistUpdate() {
-    NotificationRegistrar registrar;
-    registrar.Add(this,
-                  NotificationType::BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED,
-                  Source<Profile>(browser()->profile()));
-    ui_test_utils::RunMessageLoop();
+  BlacklistManager* GetBlacklistManager() {
+    return browser()->profile()->GetBlacklistManager();
   }
 
-  scoped_refptr<BlacklistManager> blacklist_manager_;
+  bool GetAndResetReceivedBlacklistNotification() {
+    bool result = received_blacklist_notification_;
+    received_blacklist_notification_ = false;
+    return result;
+  }
+
+  bool BlacklistHasMatch(const std::string& url) {
+    bool has_match = false;
+    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+                           NewRunnableFunction(GetBlacklistHasMatchOnIOThread,
+                                               GetBlacklistManager(),
+                                               GURL(url),
+                                               &has_match));
+    ui_test_utils::RunMessageLoop();
+    return has_match;
+  }
+
+ private:
+  bool received_blacklist_notification_;
 };
 
 IN_PROC_BROWSER_TEST_F(BlacklistManagerBrowserTest, Basic) {
-  static const char kTestUrl[] = "http://host/annoying_ads/ad.jpg";
+  static const char kTestUrl[] = "http://www.example.com/annoying_ads/ad.jpg";
 
-  InitializeBlacklistManager();
-  ASSERT_TRUE(blacklist_manager_->GetCompiledBlacklist());
-  EXPECT_FALSE(BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
-                                 kTestUrl));
+  NotificationRegistrar registrar;
+  registrar.Add(this,
+                NotificationType::BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED,
+                Source<Profile>(browser()->profile()));
 
   // Test loading an extension with blacklist.
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("common").AppendASCII("privacy_blacklist")));
-  if (!BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
-                         kTestUrl)) {
-    WaitForBlacklistUpdate();
-  }
-  EXPECT_TRUE(BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
-                                kTestUrl));
 
-  // Make sure that after unloading the extension we update the blacklist.
-  ExtensionsService* extensions_service =
-      browser()->profile()->GetExtensionsService();
-  ASSERT_EQ(1U, extensions_service->extensions()->size());
-  UnloadExtension(extensions_service->extensions()->front()->id());
-  if (BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
-                        kTestUrl)) {
-    WaitForBlacklistUpdate();
-  }
-  EXPECT_FALSE(BlacklistHasMatch(blacklist_manager_->GetCompiledBlacklist(),
-                                 kTestUrl));
+  // Wait until the blacklist is loaded and ready.
+  if (!GetAndResetReceivedBlacklistNotification())
+    ui_test_utils::RunMessageLoop();
+
+  // The blacklist should block our test URL.
+  EXPECT_TRUE(BlacklistHasMatch(kTestUrl));
+
+  // TODO(phajdan.jr): Verify that we really blocked the request etc.
+  ui_test_utils::NavigateToURL(browser(), GURL(kTestUrl));
 }

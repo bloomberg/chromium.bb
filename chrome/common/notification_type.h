@@ -743,16 +743,19 @@ class NotificationType {
 
     // Privacy Blacklist -------------------------------------------------------
 
-    // Sent when the blacklist manager successfully finishes reading
-    // a blacklist. The details are a Blacklist, and the source is a Profile.
+    // Sent on the UI thread when the blacklist manager successfully finishes
+    // reading a blacklist. There are no details, and the source is a Profile.
+    // The new blacklist is available on the IO thread.
     BLACKLIST_MANAGER_BLACKLIST_READ_FINISHED,
 
-    // Sent when the blacklist manager encounters an error. The details are
-    // a string16 (error message), and the source is a Profile.
+    // Sent on the UI thread when the blacklist manager encounters an error.
+    // The details are a string16 (error message), and the source is a Profile.
     BLACKLIST_MANAGER_ERROR,
 
-    // Sent by the resource dispatcher host when a resource is blocked.
-    BLACKLIST_BLOCKED_RESOURCE,
+    // Sent on the IO thread when a non-visual resource (like a cookie)
+    // is blocked by a privacy blacklist. The details are a const URLRequest,
+    // and the source is a const ChromeURLRequestContext.
+    BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
 
     // Debugging ---------------------------------------------------------------
 

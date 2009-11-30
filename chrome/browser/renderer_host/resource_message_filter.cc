@@ -25,7 +25,7 @@
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/privacy_blacklist/blacklist_observer.h"
+#include "chrome/browser/privacy_blacklist/blacklist_ui.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
@@ -211,7 +211,7 @@ void ResourceMessageFilter::OnFilterAdded(IPC::Channel* channel) {
   channel_ = channel;
 
   // Add the observers to intercept.
-  registrar_.Add(this, NotificationType::BLACKLIST_BLOCKED_RESOURCE,
+  registrar_.Add(this, NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED,
                  NotificationService::AllSources());
 }
 
@@ -465,16 +465,16 @@ void ResourceMessageFilter::OnSetCookie(const GURL& url,
   ChromeURLRequestContext* context = GetRequestContextForURL(url);
 
   if (context->cookie_policy()->CanSetCookie(url, first_party_for_cookies)) {
-    if (context->blacklist()) {
-      Blacklist::Match* match = context->blacklist()->findMatch(url);
-      if (match) {
+    const Blacklist* blacklist = context->GetBlacklist();
+    if (blacklist) {
+      scoped_ptr<Blacklist::Match> match(blacklist->findMatch(url));
+      if (match.get()) {
         if (match->attributes() & Blacklist::kDontPersistCookies) {
           context->cookie_store()->SetCookie(url,
               Blacklist::StripCookieExpiry(cookie));
         } else if (!(match->attributes() & Blacklist::kDontStoreCookies)) {
           context->cookie_store()->SetCookie(url, cookie);
         }
-        delete match;
         return;
       }
     }
@@ -1020,8 +1020,9 @@ void ResourceMessageFilter::OnUpdateSpellingPanelWithMisspelledWord(
 void ResourceMessageFilter::Observe(NotificationType type,
                                     const NotificationSource &source,
                                     const NotificationDetails &details) {
-  if (type == NotificationType::BLACKLIST_BLOCKED_RESOURCE) {
-    BlacklistObserver::ContentBlocked(Details<const URLRequest>(details).ptr());
+  if (type == NotificationType::BLACKLIST_NONVISUAL_RESOURCE_BLOCKED) {
+    BlacklistUI::OnNonvisualContentBlocked(
+        Details<const URLRequest>(details).ptr());
   }
 }
 

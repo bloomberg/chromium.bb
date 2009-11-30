@@ -145,7 +145,7 @@ class TestingProfile : public Profile {
       return NULL;
   }
   virtual net::SSLConfigService* GetSSLConfigService() { return NULL; }
-  virtual Blacklist* GetBlacklist() { return NULL; }
+  virtual BlacklistManager* GetBlacklistManager() { return NULL; }
   void set_session_service(SessionService* session_service) {
     session_service_ = session_service;
   }

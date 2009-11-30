@@ -19,11 +19,20 @@ class Profile;
 
 class BlacklistPathProvider {
  public:
-  virtual ~BlacklistPathProvider();
+  // Returns true if the provider is ready (has loaded the blacklist paths
+  // and we can query them). Called on UI thread.
+  virtual bool AreBlacklistPathsReady() const = 0;
 
-  // The methods below will be invoked on the UI thread.
+  // Returns paths that will still be there after browser shutdown
+  // (installed extensions). Called on UI thread.
   virtual std::vector<FilePath> GetPersistentBlacklistPaths() = 0;
+
+  // Returns paths that will disappear after browser shutdown
+  // (unpacked extensions). Called on UI thread.
   virtual std::vector<FilePath> GetTransientBlacklistPaths() = 0;
+
+ protected:
+  virtual ~BlacklistPathProvider();
 };
 
 // Updates one compiled binary blacklist based on a list of plaintext
@@ -33,13 +42,15 @@ class BlacklistManager
       public base::RefCountedThreadSafe<BlacklistManager,
                                         ChromeThread::DeleteOnUIThread> {
  public:
-  BlacklistManager();
-  void Initialize(Profile* profile, BlacklistPathProvider* path_provider);
+  // Create BlacklistManager (must be done on UI thread).
+  BlacklistManager(Profile* profile, BlacklistPathProvider* path_provider);
 
-  const Blacklist* GetCompiledBlacklist() const {
-    // TODO(phajdan.jr): Determine on which thread this should be invoked (IO?).
-    return compiled_blacklist_.get();
-  }
+  // Initialize the BlacklistManager (on UI thread).
+  void Initialize();
+
+  // Returns compiled blacklist, or NULL if not ready. Only valid to call on IO
+  // thread.
+  const Blacklist* GetCompiledBlacklist() const;
 
   // NotificationObserver
   virtual void Observe(NotificationType type,
@@ -54,7 +65,7 @@ class BlacklistManager
   friend class ChromeThread;
   friend class DeleteTask<BlacklistManager>;
 
-  ~BlacklistManager() {}
+  virtual ~BlacklistManager();
 
   // Compile all persistent blacklists to one binary blacklist stored on disk.
   void CompileBlacklist();
@@ -62,11 +73,12 @@ class BlacklistManager
   void OnBlacklistCompilationFinished(bool success);
 
   // Read all blacklists from disk (the compiled one and also the transient
-  // blacklists).
+  // blacklists). In case of failure, if we haven't loaded any blacklist yet,
+  // we'll compile the blacklist and try to read it again.
   void ReadBlacklist();
   void DoReadBlacklist(const std::vector<FilePath>& transient_blacklists);
-  void ReportBlacklistReadResult(Blacklist* blacklist);
-  void OnBlacklistReadFinished(Blacklist* blacklist);
+  void UpdatePublishedCompiledBlacklist(Blacklist* blacklist);
+  void OnBlacklistReadFinished(bool success);
 
   // True after the first blacklist read has finished (regardless of success).
   // Used to avoid an infinite loop.

@@ -421,8 +421,8 @@ void ResourceDispatcherHost::BeginRequest(
   std::string url = request_data.url.spec();
 
   // Note that context can still be NULL here when running unit tests.
-  Blacklist::Match* match = context && context->blacklist() ?
-      context->blacklist()->findMatch(request_data.url) : NULL;
+  Blacklist::Match* match = context && context->GetBlacklist() ?
+      context->GetBlacklist()->findMatch(request_data.url) : NULL;
   if (match && match->IsBlocked(request_data.url)) {
     // This is a special path where calling happens without the URLRequest
     // being created, so we must delete the match ourselves. Ensures this

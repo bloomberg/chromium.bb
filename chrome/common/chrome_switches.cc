@@ -215,6 +215,9 @@ const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 // Enable AutoFill++.
 const char kEnableNewAutoFill[]             = "enable-new-autofill";
 
+// Enable Privacy Blacklists.
+const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
+
 // Enable remote web font support. SVG font should always work whether
 // this option is specified or not.
 const char kEnableRemoteFonts[]             = "enable-remote-fonts";
@@ -427,10 +430,6 @@ const char kPluginStartupDialog[]           = "plugin-startup-dialog";
 
 // Prints the pages on the screen.
 const char kPrint[] = "print";
-
-// Enables the Privacy Blacklist with the specified data file.
-// The file contains data from all imported blacklists.
-const char kPrivacyBlacklist[]              = "privacy-blacklist";
 
 // Runs a single process for each site (i.e., group of pages from the same
 // registered domain) the user visits.  We default to using a renderer process

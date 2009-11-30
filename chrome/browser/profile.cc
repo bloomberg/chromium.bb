@@ -32,7 +32,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/password_manager/password_store_default.h"
-#include "chrome/browser/privacy_blacklist/blacklist_io.h"
+#include "chrome/browser/privacy_blacklist/blacklist_manager.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/search_versus_navigate_classifier.h"
@@ -404,8 +404,8 @@ class OffTheRecordProfileImpl : public Profile,
     return GetOriginalProfile()->GetSSLConfigService();
   }
 
-  virtual Blacklist* GetBlacklist() {
-    return GetOriginalProfile()->GetBlacklist();
+  virtual BlacklistManager* GetBlacklistManager() {
+    return GetOriginalProfile()->GetBlacklistManager();
   }
 
   virtual SessionService* GetSessionService() {
@@ -570,7 +570,8 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       request_context_(NULL),
       media_request_context_(NULL),
       extensions_request_context_(NULL),
-      blacklist_(NULL),
+      blacklist_manager_(NULL),
+      blacklist_manager_created_(false),
       history_service_created_(false),
       favicon_service_created_(false),
       created_web_data_service_(false),
@@ -599,20 +600,6 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   prefs->AddPrefObserver(prefs::kSpellCheckDictionary, this);
   prefs->AddPrefObserver(prefs::kEnableSpellCheck, this);
   prefs->AddPrefObserver(prefs::kEnableAutoSpellCorrect, this);
-
-  if (CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kPrivacyBlacklist)) {
-    std::wstring option = CommandLine::ForCurrentProcess()->GetSwitchValue(
-        switches::kPrivacyBlacklist);
-#if defined(OS_POSIX)
-    FilePath path(WideToUTF8(option));
-#else
-    FilePath path(option);
-#endif
-    blacklist_.reset(new Blacklist);
-    // TODO(phajdan.jr): Handle errors when reading blacklist.
-    BlacklistIO::ReadBinary(blacklist_.get(), path);
-  }
 
 #if defined(OS_MACOSX)
   // If the profile directory doesn't already have a cache directory and it
@@ -757,9 +744,6 @@ ProfileImpl::~ProfileImpl() {
   CleanupRequestContext(request_context_);
   CleanupRequestContext(media_request_context_);
   CleanupRequestContext(extensions_request_context_);
-
-  // When the request contexts are gone, the blacklist wont be needed anymore.
-  blacklist_.reset();
 
   // HistoryService may call into the BookmarkModel, as such we need to
   // delete HistoryService before the BookmarkModel. The destructor for
@@ -972,8 +956,17 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
   return ssl_config_service_manager_->Get();
 }
 
-Blacklist* ProfileImpl::GetBlacklist() {
-  return blacklist_.get();
+BlacklistManager* ProfileImpl::GetBlacklistManager() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnablePrivacyBlacklists)) {
+    return NULL;
+  }
+  if (!blacklist_manager_created_) {
+    blacklist_manager_created_ = true;
+    blacklist_manager_ = new BlacklistManager(this, GetExtensionsService());
+    blacklist_manager_->Initialize();
+  }
+  return blacklist_manager_.get();
 }
 
 HistoryService* ProfileImpl::GetHistoryService(ServiceAccessType sat) {
