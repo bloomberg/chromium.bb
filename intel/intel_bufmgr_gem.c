@@ -364,6 +364,27 @@ drm_intel_add_validate_buffer(drm_intel_bo *bo)
 #define RELOC_BUF_SIZE(x) ((I915_RELOC_HEADER + x * I915_RELOC0_STRIDE) * \
 	sizeof(uint32_t))
 
+static void
+drm_intel_bo_gem_set_in_aperture_size(drm_intel_bufmgr_gem *bufmgr_gem,
+				      drm_intel_bo_gem *bo_gem)
+{
+	int size;
+
+	assert(!bo_gem->used_as_reloc_target);
+
+	/* The older chipsets are far-less flexible in terms of tiling,
+	 * and require tiled buffer to be size aligned in the aperture.
+	 * This means that in the worst possible case we will need a hole
+	 * twice as large as the object in order for it to fit into the
+	 * aperture. Optimal packing is for wimps.
+	 */
+	size = bo_gem->bo.size;
+	if (!IS_I965G(bufmgr_gem) && bo_gem->tiling_mode != I915_TILING_NONE)
+		size *= 2;
+
+	bo_gem->reloc_tree_size = size;
+}
+
 static int
 drm_intel_setup_reloc_list(drm_intel_bo *bo)
 {
@@ -537,12 +558,13 @@ retry:
 	bo_gem->name = name;
 	atomic_set(&bo_gem->refcount, 1);
 	bo_gem->validate_index = -1;
-	bo_gem->reloc_tree_size = bo_gem->bo.size;
 	bo_gem->reloc_tree_fences = 0;
 	bo_gem->used_as_reloc_target = 0;
 	bo_gem->tiling_mode = I915_TILING_NONE;
 	bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
 	bo_gem->reusable = 1;
+
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
 
 	DBG("bo_create: buf %d (%s) %ldb\n",
 	    bo_gem->gem_handle, bo_gem->name, size);
@@ -660,6 +682,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 		bo_gem->reloc_tree_fences = 0;
 	else
 		bo_gem->reloc_tree_fences = 1;
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
 
 	DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
 
@@ -1359,6 +1382,8 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	/* If we're going from tiling to non-tiling, drop fence count */
 	if (bo_gem->tiling_mode == I915_TILING_NONE)
 		bo_gem->reloc_tree_fences--;
+
+	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
 
 	*tiling_mode = bo_gem->tiling_mode;
 	return 0;
