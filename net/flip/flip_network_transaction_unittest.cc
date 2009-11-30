@@ -588,6 +588,67 @@ TEST_F(FlipNetworkTransactionTest, SynReplyHeaders) {
   }
 }
 
+// Verify that we don't crash on invalid SynReply responses.
+TEST_F(FlipNetworkTransactionTest, InvalidSynReply) {
+  static const unsigned char kSynReplyMissingStatus[] = {
+    0x80, 0x01, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x3f,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,
+    0x00, 0x06, 'c', 'o', 'o', 'k', 'i', 'e',
+    0x00, 0x09, 'v', 'a', 'l', '1', '\0',
+                'v', 'a', 'l', '2',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+    0x00, 0x07, 'v', 'e', 'r', 's', 'i', 'o', 'n',
+    0x00, 0x08, 'H', 'T', 'T', 'P', '/', '1', '.', '1',
+  };
+
+  static const unsigned char kSynReplyMissingVersion[] = {
+    0x80, 0x01, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x26,
+    0x00, 0x00, 0x00, 0x01,
+    0x00, 0x00, 0x00, 0x04,
+    0x00, 0x06, 's', 't', 'a', 't', 'u', 's',
+    0x00, 0x03, '2', '0', '0',
+    0x00, 0x03, 'u', 'r', 'l',
+    0x00, 0x0a, '/', 'i', 'n', 'd', 'e', 'x', '.', 'p', 'h', 'p',
+  };
+
+  struct SynReplyTests {
+    const unsigned char* syn_reply;
+    int syn_reply_length;
+  } test_cases[] = {
+    { kSynReplyMissingStatus, arraysize(kSynReplyMissingStatus) },
+    { kSynReplyMissingVersion, arraysize(kSynReplyMissingVersion) }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(test_cases); ++i) {
+    MockWrite writes[] = {
+      MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
+                arraysize(kGetSyn)),
+      MockWrite(true, 0, 0)  // EOF
+    };
+
+    MockRead reads[] = {
+      MockRead(true, reinterpret_cast<const char*>(test_cases[i].syn_reply),
+               test_cases[i].syn_reply_length),
+      MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+               arraysize(kGetBodyFrame)),
+      MockRead(true, 0, 0)  // EOF
+    };
+
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("http://www.google.com/");
+    request.load_flags = 0;
+    scoped_refptr<DelayedSocketData> data(
+        new DelayedSocketData(reads, 1, writes));
+    TransactionHelperResult out = TransactionHelper(request, data.get());
+    EXPECT_EQ(ERR_INVALID_RESPONSE, out.rv);
+  }
+}
+
 // TODO(mbelshe):  This test is broken right now and we need to fix it!
 TEST_F(FlipNetworkTransactionTest, DISABLED_ServerPush) {
   // Reply with the X-Associated-Content header.

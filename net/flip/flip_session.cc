@@ -53,13 +53,37 @@ namespace {
 
 const int kReadBufferSize = 4 * 1024;
 
-HttpResponseInfo FlipHeadersToHttpResponse(
-    const flip::FlipHeaderBlock& headers) {
-  std::string raw_headers(headers.find("version")->second);
-  raw_headers.push_back(' ');
-  raw_headers.append(headers.find("status")->second);
-  raw_headers.push_back('\0');
+// Convert a FlipHeaderBlock into an HttpResponseInfo.
+// |headers| input parameter with the FlipHeaderBlock.
+// |info| output parameter for the HttpResponseInfo.
+// Returns true if successfully converted.  False if there was a failure
+// or if the FlipHeaderBlock was invalid.
+bool FlipHeadersToHttpResponse(const flip::FlipHeaderBlock& headers,
+                               HttpResponseInfo* response) {
+  std::string version;
+  std::string status;
+
+  // The "status" and "version" headers are required.
   flip::FlipHeaderBlock::const_iterator it;
+  it = headers.find("status");
+  if (it == headers.end()) {
+    LOG(ERROR) << "FlipHeaderBlock without status header.";
+    return false;
+  }
+  status = it->second;
+
+  // Grab the version.  If not provided by the server,
+  it = headers.find("version");
+  if (it == headers.end()) {
+    LOG(ERROR) << "FlipHeaderBlock without version header.";
+    return false;
+  }
+  version = it->second;
+
+  std::string raw_headers(version);
+  raw_headers.push_back(' ');
+  raw_headers.append(status);
+  raw_headers.push_back('\0');
   for (it = headers.begin(); it != headers.end(); ++it) {
     // For each value, if the server sends a NUL-separated
     // list of values, we separate that back out into
@@ -87,9 +111,8 @@ HttpResponseInfo FlipHeadersToHttpResponse(
     } while (end != value.npos);
   }
 
-  HttpResponseInfo response;
-  response.headers = new HttpResponseHeaders(raw_headers);
-  return response;
+  response->headers = new HttpResponseHeaders(raw_headers);
+  return true;
 }
 
 // Create a FlipHeaderBlock for a Flip SYN_STREAM Frame from
@@ -151,8 +174,8 @@ FlipSession::FlipSession(const std::string& host, HttpNetworkSession* session)
       read_buffer_(new IOBuffer(kReadBufferSize)),
       read_pending_(false),
       stream_hi_water_mark_(1),  // Always start at 1 for the first stream id.
-      delayed_write_pending_(false),
-      write_pending_(false) {
+      write_pending_(false),
+      delayed_write_pending_(false) {
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 
   flip_framer_.set_visitor(this);
@@ -488,6 +511,7 @@ void FlipSession::OnWriteComplete(int result) {
     WriteSocketLater();
   } else {
     in_flight_write_.release();
+
     // The stream is now errored.  Close it down.
     CloseAllStreams(static_cast<net::Error>(result));
     // TODO(mbelshe): we need to cleanup the session here as well.
@@ -725,8 +749,6 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
 
   LOG(INFO) << "FlipSession: SynReply received for stream: " << stream_id;
 
-  DCHECK(ContainsKey(*headers, "version"));
-  DCHECK(ContainsKey(*headers, "status"));
   LOG(INFO) << "FLIP SYN_REPLY RESPONSE HEADERS -----------------------";
   DumpFlipHeaders(*headers);
 
@@ -772,8 +794,14 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
   // TODO(mbelshe): For now we convert from our nice hash map back
   // to a string of headers; this is because the HttpResponseInfo
   // is a bit rigid for its http (non-flip) design.
-  const HttpResponseInfo response = FlipHeadersToHttpResponse(*headers);
-  stream->OnResponseReceived(response);
+  HttpResponseInfo response;
+  if (FlipHeadersToHttpResponse(*headers, &response)) {
+    stream->OnResponseReceived(response);
+  } else {
+    stream->OnClose(ERR_INVALID_RESPONSE);
+    DeactivateStream(stream_id);
+    return;
+  }
 
   LOG(INFO) << "Got pushed stream for " << stream->path();
 
@@ -821,8 +849,13 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
 
   scoped_refptr<FlipStream> stream = active_streams_[stream_id];
   CHECK(stream->stream_id() == stream_id);
-  const HttpResponseInfo response = FlipHeadersToHttpResponse(*headers);
-  stream->OnResponseReceived(response);
+  HttpResponseInfo response;
+  if (FlipHeadersToHttpResponse(*headers, &response)) {
+    stream->OnResponseReceived(response);
+  } else {
+    stream->OnClose(ERR_INVALID_RESPONSE);
+    DeactivateStream(stream_id);
+  }
 }
 
 void FlipSession::OnControl(const flip::FlipControlFrame* frame) {
