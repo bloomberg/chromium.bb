@@ -1,8 +1,6 @@
-diff --git a/net/third_party/parseftp/ParseFTPList.cpp b/net/third_party/parseftp/ParseFTPList.cpp
-index b9ffbdc..be099e1 100644
---- a/net/third_party/parseftp/ParseFTPList.cpp
-+++ b/net/third_party/parseftp/ParseFTPList.cpp
-@@ -36,15 +36,18 @@
+--- ParseFTPList.cpp.orig	2009-09-23 09:32:45.000000000 +0200
++++ ParseFTPList.cpp	2009-11-28 20:34:21.000000000 +0100
+@@ -36,16 +36,19 @@
   *
   * ***** END LICENSE BLOCK ***** */
  
@@ -12,8 +10,10 @@ index b9ffbdc..be099e1 100644
 +
  #include <ctype.h>
 -#include "plstr.h"
+-#include "nsDebug.h"
  
 -#include "ParseFTPList.h"
++#include "base/logging.h"
 +#include "base/string_util.h"
 +
 +using base::Time;
@@ -22,10 +22,10 @@ index b9ffbdc..be099e1 100644
  
 +namespace net {
 +
- int ParseFTPList(const char *line, struct list_state *state,
-                  struct list_result *result )
+ static inline int ParsingFailed(struct list_state *state)
  {
-@@ -156,11 +159,9 @@ int ParseFTPList(const char *line, struct list_state *state,
+   if (state->parsed_one || state->lstyle) /* junk if we fail to parse */
+@@ -167,11 +170,10 @@
                  pos++;
                if (pos < linelen && line[pos] == ',')
                {
@@ -41,7 +41,16 @@ index b9ffbdc..be099e1 100644
                }
              }
            }
-@@ -508,12 +509,9 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -370,7 +372,7 @@
+             if (lstyle && pos < (toklen[0]-1))
+             {
+               /* ']' was found and there is at least one character after it */
+-              NS_ASSERTION(*p == ']', "unexpected state");
++              DCHECK(*p == ']') << "unexpected state";
+               pos++;
+               p++;
+               tokmarker = pos; /* length of leading "[DIR1.DIR2.etc]" */
+@@ -524,12 +526,9 @@
                 * So its rounded up to the next block, so what, its better
                 * than not showing the size at all.
                */
@@ -49,15 +58,15 @@ index b9ffbdc..be099e1 100644
 -              LL_UI2L(fsz, strtoul(tokens[1], (char **)0, 10));
 -              LL_UI2L(factor, 512);
 -              LL_MUL(fsz, fsz, factor);
--              PR_snprintf(result->fe_size, sizeof(result->fe_size),
+-              PR_snprintf(result->fe_size, sizeof(result->fe_size), 
 -                          "%lld", fsz);
 +              long long size = strtoul(tokens[1], NULL, 10) * 512;
 +              base::snprintf(result->fe_size, sizeof(result->fe_size), "%lld",
 +                             size);
-             }
+             } 
  
            } /* if (result->fe_type != 'd') */
-@@ -535,17 +533,17 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -551,17 +550,17 @@
            }
            if (month_num >= 12)
              month_num = 0;
@@ -78,10 +87,10 @@ index b9ffbdc..be099e1 100644
 +            result->fe_time.second = atoi(p+3);
 +          result->fe_time.hour = atoi(tokens[3]);
 +          result->fe_time.minute  = atoi(p);
- 
+       
            return result->fe_type;
  
-@@ -678,25 +676,25 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -694,25 +693,25 @@
          p = tokens[tokmarker+4];
          if (toklen[tokmarker+4] == 10) /* newstyle: YYYY-MM-DD format */
          {
@@ -118,7 +127,7 @@ index b9ffbdc..be099e1 100644
  
          result->fe_cinfs = 1;
          result->fe_fname = tokens[0];
-@@ -839,25 +837,25 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -855,25 +854,25 @@
            }
          }
  
@@ -157,10 +166,10 @@ index b9ffbdc..be099e1 100644
  
          /* the caller should do this (if dropping "." and ".." is desired)
          if (result->fe_type == 'd' && result->fe_fname[0] == '.' &&
-@@ -955,13 +953,13 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -971,13 +970,13 @@
            result->fe_size[pos] = '\0';
-         }
- 
+         }  
+     
 -        result->fe_time.tm_month = atoi(&p[35-18]) - 1;
 -        result->fe_time.tm_mday = atoi(&p[38-18]);
 -        result->fe_time.tm_year = atoi(&p[41-18]);
@@ -175,19 +184,19 @@ index b9ffbdc..be099e1 100644
 +          result->fe_time.year += 100;
 +        result->fe_time.hour = atoi(&p[46-18]);
 +        result->fe_time.minute = atoi(&p[49-18]);
- 
+    
          /* the caller should do this (if dropping "." and ".." is desired)
          if (result->fe_type == 'd' && result->fe_fname[0] == '.' &&
-@@ -1006,7 +1004,7 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -1022,7 +1021,7 @@
         * "drwxr-xr-x  2 0  0  512 May 28 22:17 etc"
        */
- 
+     
 -      PRBool is_old_Hellsoft = PR_FALSE;
 +      bool is_old_Hellsoft = false;
- 
+     
        if (numtoks >= 6)
        {
-@@ -1034,7 +1032,7 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -1050,7 +1049,7 @@
                /* rest is FMA[S] or AFM[S] */
                lstyle = 'U'; /* very likely one of the NetWare servers */
                if (toklen[0] == 10)
@@ -196,7 +205,7 @@ index b9ffbdc..be099e1 100644
              }
            }
          }
-@@ -1150,10 +1148,10 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -1166,10 +1165,10 @@
            result->fe_size[pos] = '\0';
          }
  
@@ -211,7 +220,7 @@ index b9ffbdc..be099e1 100644
  
          p = tokens[tokmarker+3];
          pos = (unsigned int)atoi(p);
-@@ -1161,25 +1159,26 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -1177,25 +1176,27 @@
            p--;
          if (p[2] != ':') /* year */
          {
@@ -227,7 +236,7 @@ index b9ffbdc..be099e1 100644
            if (p[5] == ':')
 -            result->fe_time.tm_sec = atoi(p+6);
 +            result->fe_time.second = atoi(p+6);
- 
+        
 -          if (!state->now_time)
 +          if (!state->now_tm_valid)
            {
@@ -247,10 +256,10 @@ index b9ffbdc..be099e1 100644
 +          if ( (( state->now_tm.month << 5) + state->now_tm.day_of_month) <
 +               ((result->fe_time.month << 5) + result->fe_time.day_of_month) )
 +            result->fe_time.year--;
- 
+        
          } /* time/year */
- 
-@@ -1197,10 +1196,10 @@ int ParseFTPList(const char *line, struct list_state *state,
+         
+@@ -1213,10 +1214,10 @@
          {
            /* First try to use result->fe_size to find " -> " sequence.
               This can give proper result for cases like "aaa -> bbb -> ccc". */
@@ -263,7 +272,7 @@ index b9ffbdc..be099e1 100644
            {
              result->fe_lname = result->fe_fname + (result->fe_fnlen - fe_size);
              result->fe_lnlen = (&(line[linelen])) - (result->fe_lname);
-@@ -1216,7 +1215,7 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -1232,7 +1233,7 @@
              p = result->fe_fname + (result->fe_fnlen - 5);
              for (pos = (result->fe_fnlen - 5); pos > 0; pos--)
              {
@@ -272,8 +281,8 @@ index b9ffbdc..be099e1 100644
                {
                  result->fe_lname = p + 4;
                  result->fe_lnlen = (&(line[linelen]))
-@@ -1371,9 +1370,9 @@ int ParseFTPList(const char *line, struct list_state *state,
-                 tbuf[1] == month_names[pos+1] &&
+@@ -1387,9 +1388,9 @@
+                 tbuf[1] == month_names[pos+1] && 
                  tbuf[2] == month_names[pos+2])
              {
 -              result->fe_time.tm_month = pos/3;
@@ -284,8 +293,8 @@ index b9ffbdc..be099e1 100644
 +              result->fe_time.year = atoi(tokens[4]) - 1900;
                break;
              }
-           }
-@@ -1381,17 +1380,17 @@ int ParseFTPList(const char *line, struct list_state *state,
+           }          
+@@ -1397,17 +1398,17 @@
          }
          else
          {
@@ -310,7 +319,7 @@ index b9ffbdc..be099e1 100644
  
          /* the caller should do this (if dropping "." and ".." is desired)
          if (result->fe_type == 'd' && result->fe_fname[0] == '.' &&
-@@ -1607,7 +1606,7 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -1623,7 +1624,7 @@
                pos = atoi(tokens[pos]);
                if (pos > 0 && pos <= 31)
                {
@@ -319,7 +328,7 @@ index b9ffbdc..be099e1 100644
                  month_num = 1;
                  for (pos = 0; pos < (12*3); pos+=3)
                  {
-@@ -1618,34 +1617,35 @@ int ParseFTPList(const char *line, struct list_state *state,
+@@ -1634,34 +1635,36 @@
                    month_num++;
                  }
                  if (month_num > 12)
@@ -347,21 +356,23 @@ index b9ffbdc..be099e1 100644
 -                result->fe_time.tm_hour = pos;
 -                result->fe_time.tm_min = atoi(p+3);
 -                if (!state->now_time)
-+                result->fe_time.hour = pos;
-+                result->fe_time.minute = atoi(p+3);
-+                if (!state->now_tm_valid)
-                 {
+-                {
 -                  state->now_time = PR_Now();
 -                  PR_ExplodeTime((state->now_time), PR_LocalTimeParameters, &(state->now_tm) );
-+                  Time t = Time::Now();
-+                  t.LocalExplode(&(state->now_tm));
-+                  state->now_tm.month--;
-+                  state->now_tm_valid = true;
-                 }
+-                }
 -                result->fe_time.tm_year = state->now_tm.tm_year;
 -                if ( (( state->now_tm.tm_month  << 4) + state->now_tm.tm_mday) <
 -                     ((result->fe_time.tm_month << 4) + result->fe_time.tm_mday) )
 -                  result->fe_time.tm_year--;
++                result->fe_time.hour = pos;
++                result->fe_time.minute = atoi(p+3);
++                if (!state->now_tm_valid)
++                {
++                  Time t = Time::Now();
++                  t.LocalExplode(&(state->now_tm));
++                  state->now_tm.month--;
++                  state->now_tm_valid = true;
++                }
 +                result->fe_time.year = state->now_tm.year;
 +                if ( (( state->now_tm.month  << 4) + state->now_tm.day_of_month) <
 +                     ((result->fe_time.month << 4) + result->fe_time.day_of_month) )
@@ -369,16 +380,14 @@ index b9ffbdc..be099e1 100644
                } /* got year or time */
              } /* got month/mday */
            } /* may have year or time */
-@@ -1893,3 +1893,5 @@ int main(int argc, char *argv[])
+@@ -1907,3 +1910,5 @@
    return 0;
  }
  #endif
 +
 +}  // namespace net
-diff --git a/net/third_party/parseftp/ParseFTPList.h b/net/third_party/parseftp/ParseFTPList.h
-index 30ef8a3..b11abdc 100644
---- a/net/third_party/parseftp/ParseFTPList.h
-+++ b/net/third_party/parseftp/ParseFTPList.h
+--- ParseFTPList.h.orig	2008-12-15 21:10:49.000000000 +0100
++++ ParseFTPList.h	2009-09-27 00:53:54.000000000 +0200
 @@ -35,7 +35,11 @@
   * the terms of any one of the MPL, the GPL or the LGPL.
   *
@@ -392,7 +401,7 @@ index 30ef8a3..b11abdc 100644
  
  /* ParseFTPList() parses lines from an FTP LIST command.
  **
-@@ -96,28 +100,30 @@
+@@ -96,28 +100,35 @@
  #define SUPPORT_OS2  /* IBM TCP/IP for OS/2 - FTP Server */
  #define SUPPORT_W16  /* win16 hosts: SuperTCP or NetManage Chameleon */
  
@@ -439,7 +448,7 @@ index 30ef8a3..b11abdc 100644
                                    /* (converting all-upcase names may be desirable) */
  };
  
-@@ -125,3 +131,6 @@ int ParseFTPList(const char *line,
+@@ -125,3 +136,6 @@
                   struct list_state *state,
                   struct list_result *result );
  
