@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
@@ -696,9 +697,9 @@ void SafeBrowsingService::DoDisplayBlockingPage(
   // Report the malware sub-resource to the SafeBrowsing servers if we have a
   // malware sub-resource on a safe page and only if the user has opted in to
   // reporting statistics.
-  PrefService* prefs = g_browser_process->local_state();
-  DCHECK(prefs);
-  if (prefs && prefs->GetBoolean(prefs::kMetricsReportingEnabled) &&
+  const MetricsService* metrics = g_browser_process->metrics_service();
+  DCHECK(metrics);
+  if (metrics && metrics->reporting_active() &&
       resource.resource_type != ResourceType::MAIN_FRAME &&
       resource.threat_type == SafeBrowsingService::URL_MALWARE) {
     GURL page_url = wc->GetURL();

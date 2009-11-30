@@ -839,10 +839,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     enabled = false;
 #endif
 
-    if (record_only) {
-      local_state->transient()->SetBoolean(prefs::kMetricsReportingEnabled,
-                                           false);
-    }
     metrics = browser_process->metrics_service();
     DCHECK(metrics);
 

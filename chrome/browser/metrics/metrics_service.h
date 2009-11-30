@@ -130,6 +130,9 @@ class MetricsService : public NotificationObserver,
   void StartExternalMetrics(Profile* profile);
 #endif
 
+  bool recording_active() const;
+  bool reporting_active() const;
+
  private:
   // The MetricsService has a lifecycle that is stored as a state.
   // See metrics_service.cc for description of this lifecycle.
@@ -158,7 +161,6 @@ class MetricsService : public NotificationObserver,
   // SetRecording(false) also forces a persistent save of logging state (if
   // anything has been recorded, or transmitted).
   void SetRecording(bool enabled);
-  bool recording_active() const;
 
   // Enable/disable transmission of accumulated logs and crash reports (dumps).
   // Return value "true" indicates setting was definitively set as requested).
@@ -169,7 +171,6 @@ class MetricsService : public NotificationObserver,
   // It is always possible to set this to at least one value, which matches the
   // current value reported by querying Google Update.
   void SetReporting(bool enabled);
-  bool reporting_active() const;
 
   // If in_idle is true, sets idle_since_last_transmission to true.
   // If in_idle is false and idle_since_last_transmission_ is true, sets
