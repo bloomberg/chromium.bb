@@ -17,6 +17,7 @@
 #include "chrome/browser/bookmarks/bookmark_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_table_model.h"
+#include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/bookmark_tree_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"

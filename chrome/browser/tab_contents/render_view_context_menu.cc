@@ -31,6 +31,7 @@
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
+#include "net/url_request/url_request.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 

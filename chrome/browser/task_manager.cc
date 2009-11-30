@@ -18,6 +18,7 @@
 #include "chrome/browser/net/url_request_tracking.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/task_manager_resource_providers.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"

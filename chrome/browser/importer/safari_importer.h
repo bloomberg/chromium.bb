@@ -11,7 +11,9 @@
 #include <set>
 #include <vector>
 
+#include "base/file_path.h"
 #include "chrome/common/sqlite_utils.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 #if __OBJC__
 @class NSDictionary;

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "chrome/browser/ssl/ssl_policy.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/ssl/ssl_policy_backend.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"

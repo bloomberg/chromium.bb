@@ -15,7 +15,6 @@
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "chrome/browser/spellcheck_host.h"
-#include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/notification_registrar.h"
 
 #if defined(OS_CHROMEOS)
@@ -67,6 +66,7 @@ class VisitedLinkMaster;
 class VisitedLinkEventListener;
 class WebDataService;
 class WebKitContext;
+class WebResourceService;
 
 typedef intptr_t ProfileId;
 

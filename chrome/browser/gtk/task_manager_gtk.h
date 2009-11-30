@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/task_manager.h"
 #include "grit/generated_resources.h"
 

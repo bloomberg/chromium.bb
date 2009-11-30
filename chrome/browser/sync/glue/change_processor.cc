@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sync/glue/change_processor.h"
 
+#include <stack>
+
 #include "app/gfx/codec/png_codec.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"

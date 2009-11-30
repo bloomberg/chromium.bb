@@ -17,6 +17,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/load_flags.h"
+#include "net/url_request/url_request.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "views/controls/button/checkbox.h"

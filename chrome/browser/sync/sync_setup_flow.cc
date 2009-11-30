@@ -22,6 +22,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "grit/locale_settings.h"
 
 // XPath expression for finding specific iframes.

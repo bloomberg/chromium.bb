@@ -23,6 +23,7 @@
 #include "chrome/common/pref_service.h"
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
 

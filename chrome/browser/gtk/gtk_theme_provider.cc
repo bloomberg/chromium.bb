@@ -13,6 +13,7 @@
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_source.h"

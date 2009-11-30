@@ -14,7 +14,6 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/command_updater.h"
-#include "chrome/browser/extensions/extension_shelf_model.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -27,6 +26,7 @@
 
 class BrowserWindow;
 class DebuggerWindow;
+class ExtensionShelfModel;
 class FindBarController;
 class GoButton;
 class LocationBar;

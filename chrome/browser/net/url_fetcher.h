@@ -13,7 +13,6 @@
 #include "base/leak_tracker.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
-#include "chrome/browser/net/url_fetcher_protect.h"
 
 class GURL;
 typedef std::vector<std::string> ResponseCookies;

@@ -7,6 +7,8 @@
 #include "chrome/browser/automation/automation_provider.h"
 
 class TestAutomationResourceMessageFilter;
+class URLRequest;
+class URLRequestJob;
 
 // Callback interface for TestAutomationProvider.
 class TestAutomationProviderDelegate {

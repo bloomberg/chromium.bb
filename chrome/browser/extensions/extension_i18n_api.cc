@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 
 namespace {
   // Errors.

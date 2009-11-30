@@ -9,6 +9,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/url_fetcher_protect.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"

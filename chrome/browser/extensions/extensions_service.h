@@ -38,8 +38,6 @@ class Profile;
 class ResourceDispatcherHost;
 class SiteInstance;
 
-typedef std::vector<Extension*> ExtensionList;
-
 // This is an interface class to encapsulate the dependencies that
 // ExtensionUpdater has on ExtensionsService. This allows easy mocking.
 class ExtensionUpdateService {

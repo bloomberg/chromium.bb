@@ -8,6 +8,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
