@@ -105,6 +105,14 @@ struct PluginMsg_UpdateGeometry_Param {
   gfx::Rect clip_rect;
   TransportDIB::Handle windowless_buffer;
   TransportDIB::Handle background_buffer;
+
+#if defined(OS_MACOSX)
+  // This field contains a key that the plug-in process is expected to return
+  // to the renderer in its ACK message, unless the value is -1, in which case
+  // no ACK message is required.  Other than the special -1 value, the values
+  // used in ack_key are opaque to the plug-in process.
+  int ack_key;
+#endif
 };
 
 
@@ -418,13 +426,21 @@ struct ParamTraits<PluginMsg_UpdateGeometry_Param> {
     WriteParam(m, p.clip_rect);
     WriteParam(m, p.windowless_buffer);
     WriteParam(m, p.background_buffer);
+#if defined(OS_MACOSX)
+    WriteParam(m, p.ack_key);
+#endif
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
     return
       ReadParam(m, iter, &r->window_rect) &&
       ReadParam(m, iter, &r->clip_rect) &&
       ReadParam(m, iter, &r->windowless_buffer) &&
-      ReadParam(m, iter, &r->background_buffer);
+      ReadParam(m, iter, &r->background_buffer)
+#if defined(OS_MACOSX)
+      &&
+      ReadParam(m, iter, &r->ack_key)
+#endif
+      ;
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -435,6 +451,10 @@ struct ParamTraits<PluginMsg_UpdateGeometry_Param> {
     LogParam(p.windowless_buffer, l);
     l->append(L", ");
     LogParam(p.background_buffer, l);
+#if defined(OS_MACOSX)
+    l->append(L", ");
+    LogParam(p.ack_key, l);
+#endif
     l->append(L")");
   }
 };

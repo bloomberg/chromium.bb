@@ -441,7 +441,12 @@ void WebPluginProxy::UpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect,
     const TransportDIB::Handle& windowless_buffer,
-    const TransportDIB::Handle& background_buffer) {
+    const TransportDIB::Handle& background_buffer
+#if defined(OS_MACOSX)
+    ,
+    int ack_key
+#endif
+    ) {
   gfx::Rect old = delegate_->GetRect();
   gfx::Rect old_clip_rect = delegate_->GetClipRect();
 
@@ -457,6 +462,13 @@ void WebPluginProxy::UpdateGeometry(
       old_clip_rect.IsEmpty() && !damaged_rect_.IsEmpty()) {
     InvalidateRect(damaged_rect_);
   }
+
+#if defined(OS_MACOSX)
+  // The renderer is expecting an ACK message if ack_key is not -1.
+  if (ack_key != -1) {
+    Send(new PluginHostMsg_UpdateGeometry_ACK(route_id_, ack_key));
+  }
+#endif
 }
 
 #if defined(OS_WIN)

@@ -372,6 +372,11 @@ IPC_BEGIN_MESSAGES(PluginHost)
   IPC_SYNC_MESSAGE_CONTROL1_0(PluginHostMsg_SetException,
                               std::string /* message */)
 
+#if defined(OS_MACOSX)
+  IPC_MESSAGE_ROUTED1(PluginHostMsg_UpdateGeometry_ACK,
+                      int /* ack_key */)
+#endif
+
 IPC_END_MESSAGES(PluginHost)
 
 //-----------------------------------------------------------------------------

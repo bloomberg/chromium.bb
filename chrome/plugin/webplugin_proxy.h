@@ -111,7 +111,12 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
                       const TransportDIB::Handle& windowless_buffer,
-                      const TransportDIB::Handle& background_buffer);
+                      const TransportDIB::Handle& background_buffer
+#if defined(OS_MACOSX)
+                      ,
+                      int ack_key
+#endif
+                      );
 
   void CancelDocumentLoad();
 

@@ -381,6 +381,12 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnInitiateHTTPRangeRequest)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DeferResourceLoading,
                         OnDeferResourceLoading)
+
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_UpdateGeometry_ACK,
+                        OnUpdateGeometry_ACK)
+#endif
+
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -403,11 +409,30 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 
   bool bitmaps_changed = false;
 
+  PluginMsg_UpdateGeometry_Param param;
+#if defined(OS_MACOSX)
+  param.ack_key = -1;
+#endif
+
   if (windowless_) {
     if (!backing_store_canvas_.get() ||
         (window_rect.width() != backing_store_canvas_->getDevice()->width() ||
-         window_rect.height() != backing_store_canvas_->getDevice()->height())) {
+         window_rect.height() != backing_store_canvas_->getDevice()->height()))
+        {
       bitmaps_changed = true;
+
+#if defined(OS_MACOSX)
+      if (backing_store_.get()) {
+        // ResetWindowlessBitmaps inserts the old TransportDIBs into
+        // old_transport_dibs_ using the backing store's file descriptor as
+        // the key.  The constraints on the keys are that -1 is reserved
+        // to mean "no ACK required," and in-flight keys must be unique.
+        // File descriptors will never be -1, and because they won't be closed
+        // until receipt of the ACK, they're unique.
+        param.ack_key = backing_store_->handle().fd;
+      }
+#endif
+
       // Create a shared memory section that the plugin paints into
       // asynchronously.
       ResetWindowlessBitmaps();
@@ -424,7 +449,6 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
     }
   }
 
-  PluginMsg_UpdateGeometry_Param param;
   param.window_rect = window_rect;
   param.clip_rect = clip_rect;
   param.windowless_buffer = TransportDIB::DefaultHandleValue();
@@ -446,7 +470,6 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
 
   IPC::Message* msg;
 #if defined (OS_WIN)
-  std::wstring filename = StringToLowerASCII(info_.path.BaseName().value());
   if (info_.name.find(L"Windows Media Player") != std::wstring::npos) {
     // Need to update geometry synchronously with WMP, otherwise if a site
     // scripts the plugin to start playing while it's in the middle of handling
@@ -474,17 +497,37 @@ static void ReleaseTransportDIB(TransportDIB *dib) {
 
 void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
 #if defined(OS_MACOSX)
-  // tell the browser to relase these TransportDIBs
-  ReleaseTransportDIB(backing_store_.get());
-  ReleaseTransportDIB(transport_store_.get());
-  ReleaseTransportDIB(background_store_.get());
-#endif
+  if (backing_store_.get()) {
+    int ack_key = backing_store_->handle().fd;
 
+    DCHECK_NE(ack_key, -1);
+
+    // DCHECK_EQ does not work with base::hash_map.
+    DCHECK(old_transport_dibs_.find(ack_key) == old_transport_dibs_.end());
+
+    // Stash the old TransportDIBs in the map.  They'll be released when an
+    // ACK message comes in.
+    RelatedTransportDIBs old_dibs;
+    old_dibs.backing_store =
+        linked_ptr<TransportDIB>(backing_store_.release());
+    old_dibs.transport_store =
+        linked_ptr<TransportDIB>(transport_store_.release());
+    old_dibs.background_store =
+        linked_ptr<TransportDIB>(background_store_.release());
+
+    old_transport_dibs_[ack_key] = old_dibs;
+  } else {
+    DCHECK(!transport_store_.get());
+    DCHECK(!background_store_.get());
+  }
+#else
   backing_store_.reset();
   transport_store_.reset();
+  background_store_.reset();
+#endif
+
   backing_store_canvas_.reset();
   transport_store_canvas_.reset();
-  background_store_.reset();
   background_store_canvas_.release();
   backing_store_painted_ = gfx::Rect();
 }
@@ -1109,3 +1152,24 @@ void WebPluginDelegateProxy::OnDeferResourceLoading(int resource_id,
                                                     bool defer) {
   plugin_->SetDeferResourceLoading(resource_id, defer);
 }
+
+#if defined(OS_MACOSX)
+void WebPluginDelegateProxy::OnUpdateGeometry_ACK(int ack_key) {
+  DCHECK_NE(ack_key, -1);
+
+  OldTransportDIBMap::iterator iterator = old_transport_dibs_.find(ack_key);
+
+  // DCHECK_NE does not work with base::hash_map.
+  DCHECK(iterator != old_transport_dibs_.end());
+
+  // Now that the ACK has been received, the TransportDIBs that were used
+  // prior to the UpdateGeometry message now being acknowledged are known to
+  // be no longer needed.  Release them, and take the stale entry out of the
+  // map.
+  ReleaseTransportDIB(iterator->second.backing_store.get());
+  ReleaseTransportDIB(iterator->second.transport_store.get());
+  ReleaseTransportDIB(iterator->second.background_store.get());
+
+  old_transport_dibs_.erase(iterator);
+}
+#endif
