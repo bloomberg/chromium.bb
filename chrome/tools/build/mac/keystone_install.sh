@@ -23,6 +23,13 @@
 
 set -e
 
+# http://b/2290916: Keystone runs the installation with a restrictive PATH
+# that only includes the directory containing ksadmin, /bin, and /usr/bin.  It
+# does not include /sbin or /usr/sbin.  This script uses lsof, which is in
+# /usr/sbin, and it's conceivable that it might want to use other tools in an
+# sbin directory.  Adjust the path accordingly.
+export PATH="${PATH}:/sbin:/usr/sbin"
+
 # Returns 0 (true) if the parameter exists, is a symbolic link, and appears
 # writable on the basis of its POSIX permissions.  This is used to determine
 # writeability like test's -w primary, but -w resolves symbolic links and this
