@@ -323,22 +323,27 @@ def main(argv):
                        os.path.splitext(os.path.basename(f))[0] + '.js')
                    for f in idl_list]
 
-  DeleteOldDocs(MakePath(docs_outpath))
-  BuildJavaScriptForDocsFromIDLs(idl_files, docs_js_outpath)
-  BuildO3DDocsFromJavaScript([o3d_extra_externs_path] + docs_js_files,
-                             o3d_docs_ezt_outpath, o3d_docs_html_outpath)
-  BuildO3DClassHierarchy(o3d_docs_html_outpath)
-  BuildJavaScriptForExternsFromIDLs(idl_files, externs_js_outpath)
-  BuildO3DExternsFile(externs_js_outpath,
-                      o3d_extra_externs_path,
-                      o3d_externs_path)
-  BuildO3DJSDocs(o3djs_files + [o3d_externs_path], o3djs_docs_ezt_outpath,
-                 o3djs_docs_html_outpath, o3djs_exports_path)
-  CopyStaticFiles(o3d_docs_ezt_outpath, o3d_docs_html_outpath)
-  BuildCompiledO3DJS(o3djs_files + [o3djs_exports_path],
-                     externs_path,
-                     o3d_externs_path,
-                     compiled_o3djs_outpath)
+  try:
+    DeleteOldDocs(MakePath(docs_outpath))
+    BuildJavaScriptForDocsFromIDLs(idl_files, docs_js_outpath)
+    BuildO3DDocsFromJavaScript([o3d_extra_externs_path] + docs_js_files,
+                               o3d_docs_ezt_outpath, o3d_docs_html_outpath)
+    BuildO3DClassHierarchy(o3d_docs_html_outpath)
+    BuildJavaScriptForExternsFromIDLs(idl_files, externs_js_outpath)
+    BuildO3DExternsFile(externs_js_outpath,
+                        o3d_extra_externs_path,
+                        o3d_externs_path)
+    BuildO3DJSDocs(o3djs_files + [o3d_externs_path], o3djs_docs_ezt_outpath,
+                   o3djs_docs_html_outpath, o3djs_exports_path)
+    CopyStaticFiles(o3d_docs_ezt_outpath, o3d_docs_html_outpath)
+    BuildCompiledO3DJS(o3djs_files + [o3djs_exports_path],
+                       externs_path,
+                       o3d_externs_path,
+                       compiled_o3djs_outpath)
+  except Exception:
+    if os.path.exists(compiled_o3djs_outpath):
+      os.unlink(compiled_o3djs_outpath)
+    raise
 
 
 if __name__ == '__main__':

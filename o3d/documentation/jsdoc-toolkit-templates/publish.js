@@ -742,19 +742,19 @@ function linkifySingleType(place, type) {
         linkifySingleType(place, type.substring(7, closingAngle)) + '>';
     }
   } else if (startsWith(type, 'Object.<')) {
-      var closingAngle = getIndexOfClosingCharacter(type, 6);
-      if (closingAngle < 0) {
-        generatePlaceError(place, 'Unmatched "<" in Object type : ' + type);
-      } else {
-        var objectSpec = type.substring(8, closingAngle);
-        var elements = objectSpec.split(/\s*,\s*/);
-        if (elements.length != 2) {
-          generatePlaceError(place, 'An Object spec must have exactly 2 types');
-        }
-        link = 'Object.&lt;' +
-            linkifySingleType(place, elements[0]) + ', ' +
-            linkifySingleType(place, elements[1]) + '>';
+    var closingAngle = getIndexOfClosingCharacter(type, 7);
+    if (closingAngle < 0) {
+      generatePlaceError(place, 'Unmatched "<" in Object type : ' + type);
+    } else {
+      var objectSpec = type.substring(8, closingAngle);
+      var elements = objectSpec.split(/\s*,\s*/);
+      if (elements.length != 2) {
+        generatePlaceError(place, 'An Object spec must have exactly 2 types');
       }
+      link = 'Object.&lt;' +
+          linkifySingleType(place, elements[0]) + ', ' +
+          linkifySingleType(place, elements[1]) + '>';
+    }
   } else if (startsWith(type, 'function(')) {
     var closingParen = getIndexOfClosingCharacter(type, 8);
     if (closingParen < 0) {
