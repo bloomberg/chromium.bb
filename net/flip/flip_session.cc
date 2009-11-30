@@ -487,6 +487,7 @@ void FlipSession::OnWriteComplete(int result) {
     // message loop).
     WriteSocketLater();
   } else {
+    in_flight_write_.release();
     // The stream is now errored.  Close it down.
     CloseAllStreams(static_cast<net::Error>(result));
     // TODO(mbelshe): we need to cleanup the session here as well.
