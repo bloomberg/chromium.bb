@@ -142,6 +142,9 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
   debugger_command_executor_obj_->AddProtoFunction(
       "DebuggerCommand",
       WebDevToolsFrontendImpl::JsDebuggerCommand);
+  debugger_command_executor_obj_->AddProtoFunction(
+      "DebuggerPauseScript",
+      WebDevToolsFrontendImpl::JsDebuggerPauseScript);
   debugger_command_executor_obj_->Build();
 
   dev_tools_host_.set(new BoundObject(frame_context, this, "DevToolsHost"));
@@ -407,5 +410,14 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerCommand(
   String command = WebCore::toWebCoreStringWithNullCheck(args[0]);
   WebString std_command = webkit_glue::StringToWebString(command);
   frontend->client_->sendDebuggerCommandToAgent(std_command);
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerPauseScript(
+    const v8::Arguments& args) {
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
+      v8::External::Cast(*args.Data())->Value());
+  frontend->client_->sendDebuggerPauseScript();
   return v8::Undefined();
 }

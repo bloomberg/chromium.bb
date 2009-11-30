@@ -36,7 +36,6 @@ class DebuggerAgentImpl : public DebuggerAgent {
   virtual ~DebuggerAgentImpl();
 
   // DebuggerAgent implementation.
-  virtual void DebugBreak();
   virtual void GetContextId();
 
   virtual void StartProfiling(int flags);

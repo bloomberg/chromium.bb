@@ -34,21 +34,23 @@ DevToolsAgentFilter::~DevToolsAgentFilter() {
 }
 
 bool DevToolsAgentFilter::OnMessageReceived(const IPC::Message& message) {
-  if (message.type() == DevToolsAgentMsg_DebuggerCommand::ID) {
-    // Dispatch command directly from IO.
-    bool handled = true;
-    current_routing_id_ = message.routing_id();
-    IPC_BEGIN_MESSAGE_MAP(DevToolsAgentFilter, message)
-      IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DebuggerCommand, OnDebuggerCommand)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  } else {
-    return false;
-  }
+  // Dispatch debugger commands directly from IO.
+  bool handled = true;
+  current_routing_id_ = message.routing_id();
+  IPC_BEGIN_MESSAGE_MAP(DevToolsAgentFilter, message)
+    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DebuggerCommand, OnDebuggerCommand)
+    IPC_MESSAGE_HANDLER(DevToolsAgentMsg_DebuggerPauseScript,
+                        OnDebuggerPauseScript)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void DevToolsAgentFilter::OnDebuggerCommand(const std::string& command) {
   WebDevToolsAgent::executeDebuggerCommand(
       WebString::fromUTF8(command), current_routing_id_);
+}
+
+void DevToolsAgentFilter::OnDebuggerPauseScript() {
+  WebDevToolsAgent::debuggerPauseScript();
 }

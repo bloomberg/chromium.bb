@@ -43,6 +43,7 @@ class DevToolsClient : public WebKit::WebDevToolsFrontendClient {
                                   const WebKit::WebString& param2,
                                   const WebKit::WebString& param3);
   virtual void sendDebuggerCommandToAgent(const WebKit::WebString& command);
+  virtual void sendDebuggerPauseScript();
 
   virtual void activateWindow();
   virtual void closeWindow();

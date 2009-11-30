@@ -526,6 +526,11 @@ void WebDevToolsAgent::executeDebuggerCommand(
 }
 
 // static
+void WebDevToolsAgent::debuggerPauseScript() {
+  DebuggerAgentManager::PauseScript();
+}
+
+// static
 void WebDevToolsAgent::setMessageLoopDispatchHandler(
     MessageLoopDispatchHandler handler) {
   DebuggerAgentManager::SetMessageLoopDispatchHandler(handler);

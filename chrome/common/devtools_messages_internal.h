@@ -86,6 +86,12 @@ IPC_BEGIN_MESSAGES(DevToolsAgent)
   IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_DebuggerCommand,
                        std::string  /* command */)
 
+  // This command is sent to debugger when user wants to pause script execution
+  // immediately. This message should be processed on the IO thread so that it
+  // can have effect even if the Renderer thread is busy with JavaScript
+  // execution.
+  IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_DebuggerPauseScript)
+
   // Inspect element with the given coordinates.
   IPC_MESSAGE_CONTROL2(DevToolsAgentMsg_InspectElement,
                        int /* x */,

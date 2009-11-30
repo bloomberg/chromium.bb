@@ -53,10 +53,6 @@ DebuggerAgentImpl::~DebuggerAgentImpl() {
   DebuggerAgentManager::DebugDetach(this);
 }
 
-void DebuggerAgentImpl::DebugBreak() {
-  DebuggerAgentManager::DebugBreak(this);
-}
-
 void DebuggerAgentImpl::GetContextId() {
   delegate_->SetContextId(webdevtools_agent_->host_id());
 }

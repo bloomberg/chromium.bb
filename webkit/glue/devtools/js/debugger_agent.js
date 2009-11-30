@@ -247,7 +247,7 @@ devtools.DebuggerAgent.prototype.resolveScriptSource = function(
  * Tells the v8 debugger to stop on as soon as possible.
  */
 devtools.DebuggerAgent.prototype.pauseExecution = function() {
-  RemoteDebuggerAgent.DebugBreak();
+  RemoteDebuggerCommandExecutor.DebuggerPauseScript();
 };
 
 

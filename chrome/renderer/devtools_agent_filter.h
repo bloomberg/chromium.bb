@@ -31,6 +31,7 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
   // OnDebuggerCommand will be executed in the IO thread so that we can
   // handle debug messages even when v8 is stopped.
   void OnDebuggerCommand(const std::string& command);
+  void OnDebuggerPauseScript();
 
   int current_routing_id_;
 

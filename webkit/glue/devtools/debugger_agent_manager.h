@@ -39,9 +39,7 @@ class DebuggerAgentManager : public Noncopyable {
  public:
   static void DebugAttach(DebuggerAgentImpl* debugger_agent);
   static void DebugDetach(DebuggerAgentImpl* debugger_agent);
-  static void DebugBreak(DebuggerAgentImpl* debugger_agent);
-  static void DebugCommand(const WebCore::String& command);
-
+  static void PauseScript();
   static void ExecuteDebuggerCommand(const WebCore::String& command,
                                      int caller_id);
   static void SetMessageLoopDispatchHandler(

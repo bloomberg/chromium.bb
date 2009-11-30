@@ -53,6 +53,8 @@ const wchar_t kPauseOnExceptionTestPage[] =
     L"files/devtools/pause_on_exception.html";
 const wchar_t kPauseWhenLoadingDevTools[] =
     L"files/devtools/pause_when_loading_devtools.html";
+const wchar_t kPauseWhenScriptIsRunning[] =
+    L"files/devtools/pause_when_script_is_running.html";
 const wchar_t kResourceContentLengthTestPage[] = L"files/devtools/image.html";
 const wchar_t kResourceTestPage[] = L"files/devtools/resource_test_page.html";
 const wchar_t kSimplePage[] = L"files/devtools/simple_page.html";
@@ -342,6 +344,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseOnException) {
 // frontend is being loaded.
 IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenLoadingDevTools) {
   RunTest("testPauseWhenLoadingDevTools", kPauseWhenLoadingDevTools);
+}
+
+// Tests that pressing 'Pause' will pause script execution if the script
+// is already running.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
+  RunTest("testPauseWhenScriptIsRunning", kPauseWhenScriptIsRunning);
 }
 
 // Tests eval on call frame.

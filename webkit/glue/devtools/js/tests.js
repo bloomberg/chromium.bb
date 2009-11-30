@@ -719,6 +719,40 @@ TestSuite.prototype.testPauseWhenLoadingDevTools = function() {
 };
 
 
+// Tests that pressing 'Pause' will pause script execution if the script
+// is already running.
+TestSuite.prototype.testPauseWhenScriptIsRunning = function() {
+  this.showPanel('scripts');
+  var test = this;
+
+  test.evaluateInConsole_(
+      'setTimeout("handleClick()" , 0)',
+      function(resultText) {
+        test.assertTrue(!isNaN(resultText),
+                        'Failed to get timer id: ' + resultText);
+        testScriptPause();
+      });
+
+  function testScriptPause() {
+    // The script should be in infinite loop. Click 'Pause' button to
+    // pause it and wait for the result.
+    WebInspector.panels.scripts.pauseButton.click();
+
+    test._waitForScriptPause(
+        {
+          functionsOnStack: ['handleClick', '(anonymous function)'],
+          lineNumber: 5,
+          lineText: '  while(true) {'
+        },
+        function() {
+          test.releaseControl();
+        });
+  }
+
+  this.takeControl();
+};
+
+
 /**
  * Serializes options collection to string.
  * @param {HTMLOptionsCollection} options

@@ -19,10 +19,6 @@ RemoteDebuggerAgentStub = function() {
 };
 
 
-RemoteDebuggerAgentStub.prototype.DebugBreak = function() {
-};
-
-
 RemoteDebuggerAgentStub.prototype.GetContextId = function() {
   RemoteDebuggerAgent.SetContextId(3);
 };
@@ -196,6 +192,10 @@ RemoteDebuggerCommandExecutorStub.prototype.DebuggerCommand = function(cmd) {
   } else {
     debugPrint('Unexpected command: ' + cmd);
   }
+};
+
+
+RemoteDebuggerCommandExecutorStub.prototype.DebuggerPauseScript = function() {
 };
 
 

@@ -8,9 +8,6 @@
 #include "webkit/glue/devtools/devtools_rpc.h"
 
 #define DEBUGGER_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
-  /* Stops v8 execution as soon as it gets control. */ \
-  METHOD0(DebugBreak) \
-  \
   /* Requests global context id of the inspected tab. */ \
   METHOD0(GetContextId) \
   \

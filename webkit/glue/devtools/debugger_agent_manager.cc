@@ -163,19 +163,6 @@ void DebuggerAgentManager::DebugDetach(DebuggerAgentImpl* debugger_agent) {
 }
 
 // static
-void DebuggerAgentManager::DebugBreak(DebuggerAgentImpl* debugger_agent) {
-#if USE(V8)
-  ASSERT(DebuggerAgentForHostId(debugger_agent->webdevtools_agent()->host_id())
-             == debugger_agent);
-  if (in_utility_context_) {
-    debug_break_delayed_ = true;
-  } else {
-    v8::Debug::DebugBreak();
-  }
-#endif
-}
-
-// static
 void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
   v8::HandleScope scope;
   v8::String::Value value(message.GetJSON());
@@ -244,6 +231,15 @@ void DebuggerAgentManager::OnV8DebugMessage(const v8::Debug::Message& message) {
     // Autocontinue execution on break and exception  events if there is no
     // handler.
     SendContinueCommandToV8();
+  }
+}
+
+// static
+void DebuggerAgentManager::PauseScript() {
+  if (in_utility_context_) {
+    debug_break_delayed_ = true;
+  } else {
+    v8::Debug::DebugBreak();
   }
 }
 
