@@ -4,6 +4,10 @@
 
 #include "chrome/test/browser_with_test_window_test.h"
 
+#if defined(OS_WIN)
+#include <ole2.h>
+#endif  // defined(OS_WIN)
+
 #include "chrome/browser/browser.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/render_messages.h"

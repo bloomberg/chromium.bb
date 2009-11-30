@@ -13,6 +13,7 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/render_messages.h"

@@ -46,6 +46,7 @@
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/browser/visitedlink_event_listener.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/web_resource/web_resource_service.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"

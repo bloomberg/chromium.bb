@@ -13,6 +13,7 @@
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/libxml_utils.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"

@@ -7,6 +7,8 @@
 
 #include "chrome/browser/importer/importer.h"
 
+#include "testing/gtest/include/gtest/gtest_prod.h"
+
 class TemplateURL;
 
 // Importer for Mozilla Firefox 2.

@@ -10,6 +10,8 @@
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/extension_view_mac.h"
 #import "chrome/browser/cocoa/info_bubble_window.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profile.h"
 
 // The minimum/maximum dimensions of the popup.
