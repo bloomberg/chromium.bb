@@ -83,6 +83,10 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   static gboolean OnTreeViewKeyPress(GtkWidget* tree_view, GdkEventKey* key,
                                      CookiesView* window);
 
+  // Callback when user expands a row in the table.
+  static void OnTreeViewRowExpanded(GtkTreeView* tree_view, GtkTreeIter* iter,
+                                    GtkTreePath* path, gpointer user_data);
+
   // Filter the list against the text in |filter_entry_|.
   void UpdateFilterResults();
 

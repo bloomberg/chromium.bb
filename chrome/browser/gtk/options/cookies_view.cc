@@ -164,7 +164,8 @@ void CookiesView::Init() {
       new gtk_tree::TreeAdapter(this, cookies_tree_model_.get()));
   tree_ = gtk_tree_view_new_with_model(
       GTK_TREE_MODEL(cookies_tree_adapter_->tree_store()));
-  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_), TRUE);
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(tree_), FALSE);
+  gtk_tree_view_set_enable_tree_lines(GTK_TREE_VIEW(tree_), TRUE);
   gtk_container_add(GTK_CONTAINER(scroll_window), tree_);
 
   GtkTreeViewColumn* title_column = gtk_tree_view_column_new();
@@ -182,6 +183,8 @@ void CookiesView::Init() {
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree_), title_column);
   g_signal_connect(G_OBJECT(tree_), "key-press-event",
                    G_CALLBACK(OnTreeViewKeyPress), this);
+  g_signal_connect(G_OBJECT(tree_), "row-expanded",
+                   G_CALLBACK(OnTreeViewRowExpanded), this);
 
   selection_ = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree_));
   gtk_tree_selection_set_mode(selection_, GTK_SELECTION_SINGLE);
@@ -255,7 +258,6 @@ void CookiesView::InitCookieDetailRow(int row, int label_id,
 }
 
 void CookiesView::SetInitialTreeState() {
-  gtk_tree_view_expand_all(GTK_TREE_VIEW(tree_));
   if (cookies_tree_model_->GetChildCount(cookies_tree_model_->GetRoot()))
     gtk_tree::SelectAndFocusRowNum(0, GTK_TREE_VIEW(tree_));
 }
@@ -409,6 +411,21 @@ gboolean CookiesView::OnTreeViewKeyPress(
     return TRUE;
   }
   return FALSE;
+}
+
+// static
+void CookiesView::OnTreeViewRowExpanded(GtkTreeView* tree_view,
+                                        GtkTreeIter* iter,
+                                        GtkTreePath* path,
+                                        gpointer user_data) {
+  // When a row in the tree is expanded, expand all the children too.
+  g_signal_handlers_block_by_func(
+      G_OBJECT(tree_view), reinterpret_cast<gpointer>(OnTreeViewRowExpanded),
+      user_data);
+  gtk_tree_view_expand_row(tree_view, path, TRUE);
+  g_signal_handlers_unblock_by_func(
+      G_OBJECT(tree_view), reinterpret_cast<gpointer>(OnTreeViewRowExpanded),
+      user_data);
 }
 
 void CookiesView::UpdateFilterResults() {
