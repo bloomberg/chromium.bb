@@ -49,7 +49,7 @@ int MapPosixError(int err) {
   }
 }
 
-}
+}  // namespace
 
 SSLSocketAdapter* SSLSocketAdapter::Create(AsyncSocket* socket) {
   return new SSLSocketAdapter(socket);
