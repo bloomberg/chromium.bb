@@ -2933,13 +2933,16 @@ BUG27555 MAC : LayoutTests/fast/forms/input-file-re-render.html = FAIL
 BUG27555 : LayoutTests/media/media-fullscreen-inline.html = TIMEOUT
 BUG27555 : LayoutTests/media/media-fullscreen-not-in-document.html = TIMEOUT
 
-BUG27555 WIN LINUX : LayoutTests/fast/canvas/canvas-shadow.html = TEXT
+BUG22700 WIN LINUX : LayoutTests/fast/canvas/canvas-shadow.html = TEXT
 
 // hbono's new test.
 BUG27679 WIN LINUX MAC : LayoutTests/fast/events/ime-composition-events-001.html = TEXT
 
 // Failures from merge 50972:51042
+// The test requires DRT/Test Shell to support error page handling.
 BUG27850 : LayoutTests/fast/history/back-forward-reset-after-error-handling.html = TEXT
+// Need to update chromium so the web frame delegate is informed when window objects
+// in isolated worlds are cleared.
 BUG27849 : LayoutTests/http/tests/security/isolatedWorld/didClearWindowObject.html = TEXT
 
 // Failures from merge 51042:51062
@@ -2985,8 +2988,10 @@ BUG_OJAN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = TEXT PA
 BUG28380 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = CRASH FAIL
 
 // New tests. Failures from merge 51253:51310.
-BUG28605 : LayoutTests/plugins/reloadplugins-no-pages.html = TEXT
-BUG28605 : LayoutTests/plugins/reloadplugins-and-pages.html = TIMEOUT
+// Needs to implement NPN_reloadPlugins and add reloadPluginNoPages & reloadPluginAndPages
+// to plugin object.
+BUG29018 : LayoutTests/plugins/reloadplugins-no-pages.html = TEXT
+BUG29018 : LayoutTests/plugins/reloadplugins-and-pages.html = TIMEOUT
 BUG28605 WIN LINUX : LayoutTests/svg/filters/big-sized-filter.svg = IMAGE
 BUG28605 : LayoutTests/svg/filters/big-sized-filter-2.svg = MISSING
 BUG28605 WIN LINUX : LayoutTests/svg/filters/filterRes.svg = IMAGE
