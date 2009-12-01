@@ -450,15 +450,19 @@ void EnsureDnsPrefetchShutdown() {
 
     // Stop observing DNS resolutions. Note that dns_master holds a reference
     // to the global host resolver, so is guaranteed to be live.
-    GetGlobalHostResolver()->RemoveObserver(&dns_resolution_observer);
-
-    // TODO(eroman): temp hack for http://crbug.com/15513
-    GetGlobalHostResolver()->Shutdown();
+    global_host_resolver->RemoveObserver(&dns_resolution_observer);
   }
 
-  // TODO(eroman): This is a hack so the in process browser tests work if
-  // BrowserMain() is to be called again.
-  global_host_resolver = NULL;
+  if (global_host_resolver) {
+    // TODO(eroman): temp hack for http://crbug.com/15513
+    global_host_resolver->Shutdown();
+
+    global_host_resolver->Release();  // Balances GetGlobalHostResolver().
+
+    // TODO(eroman): This is a hack so the in process browser tests work if
+    // BrowserMain() is to be called again.
+    global_host_resolver = NULL;
+  }
 }
 
 void FreeDnsPrefetchResources() {
@@ -486,13 +490,14 @@ net::HostResolver* GetGlobalHostResolver() {
       std::string host_and_port =
           WideToASCII(command_line.GetSwitchValue(switches::kFixedServer));
       global_host_resolver = new net::FixedHostResolver(host_and_port);
-      return global_host_resolver;
+    } else {
+      global_host_resolver = net::CreateSystemHostResolver();
+
+      if (command_line.HasSwitch(switches::kDisableIPv6))
+        global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
     }
 
-    global_host_resolver = net::CreateSystemHostResolver();
-
-    if (command_line.HasSwitch(switches::kDisableIPv6))
-      global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
+    global_host_resolver->AddRef();  // Balanced by EnsureDnsPrefetchShutdown().
   }
   return global_host_resolver;
 }
