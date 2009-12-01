@@ -169,13 +169,13 @@ FlipSession::FlipSession(const std::string& host, HttpNetworkSession* session)
           write_callback_(this, &FlipSession::OnWriteComplete)),
       domain_(host),
       session_(session),
-      connection_started_(false),
-      connection_ready_(false),
       read_buffer_(new IOBuffer(kReadBufferSize)),
       read_pending_(false),
       stream_hi_water_mark_(1),  // Always start at 1 for the first stream id.
       write_pending_(false),
-      delayed_write_pending_(false) {
+      delayed_write_pending_(false),
+      error_(OK),
+      state_(IDLE) {
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 
   flip_framer_.set_visitor(this);
@@ -214,10 +214,10 @@ net::Error FlipSession::Connect(const std::string& group_name,
   DCHECK(priority >= FLIP_PRIORITY_HIGHEST && priority < FLIP_PRIORITY_LOWEST);
 
   // If the connect process is started, let the caller continue.
-  if (connection_started_)
+  if (state_ > IDLE)
     return net::OK;
 
-  connection_started_ = true;
+  state_ = CONNECTING;
 
   static StatsCounter flip_sessions("flip.sessions");
   flip_sessions.Increment();
@@ -393,9 +393,7 @@ void FlipSession::OnTCPConnect(int result) {
   LOG(INFO) << "Flip socket connected (result=" << result << ")";
 
   if (result != net::OK) {
-    net::Error err = static_cast<net::Error>(result);
-    CloseAllStreams(err);
-    session_->flip_session_pool()->Remove(this);
+    CloseSession(static_cast<net::Error>(result));
     return;
   }
 
@@ -420,7 +418,8 @@ void FlipSession::OnTCPConnect(int result) {
     int status = connection_.socket()->Connect(&ssl_connect_callback_, NULL);
     CHECK(status == net::ERR_IO_PENDING);
   } else {
-    connection_ready_ = true;
+    DCHECK_EQ(state_, CONNECTING);
+    state_ = CONNECTED;
 
     // Make sure we get any pending data sent.
     WriteSocketLater();
@@ -437,7 +436,8 @@ void FlipSession::OnSSLConnect(int result) {
     result = OK;   // TODO(mbelshe): pretend we're happy anyway.
 
   if (result == OK) {
-    connection_ready_ = true;
+    DCHECK_EQ(state_, CONNECTING);
+    state_ = CONNECTED;
 
     // After we've connected, send any data to the server, and then issue
     // our read.
@@ -460,9 +460,7 @@ void FlipSession::OnReadComplete(int bytes_read) {
 
   if (bytes_read <= 0) {
     // Session is tearing down.
-    net::Error err = static_cast<net::Error>(bytes_read);
-    CloseAllStreams(err);
-    session_->flip_session_pool()->Remove(this);
+    CloseSession(static_cast<net::Error>(bytes_read));
     return;
   }
 
@@ -524,13 +522,7 @@ void FlipSession::OnWriteComplete(int result) {
     in_flight_write_.release();
 
     // The stream is now errored.  Close it down.
-    CloseAllStreams(static_cast<net::Error>(result));
-    // TODO(mbelshe): we need to cleanup the session here as well.
-    //   Right now, but a read and a write can fail, and each will
-    //   remove the session from the pool, which trips asserts. We
-    //   need to cleanup the close logic so that we only call it
-    //   once.
-    //session_->flip_session_pool()->Remove(this);
+    CloseSession(static_cast<net::Error>(result));
   }
 }
 
@@ -575,7 +567,7 @@ void FlipSession::WriteSocket() {
 
   // If the socket isn't connected yet, just wait; we'll get called
   // again when the socket connection completes.
-  if (!connection_ready_)
+  if (state_ < CONNECTED)
     return;
 
   if (write_pending_)   // Another write is in progress still.
@@ -674,6 +666,20 @@ int FlipSession::GetNewStreamId() {
   return id;
 }
 
+void FlipSession::CloseSession(net::Error err) {
+  LOG(INFO) << "Flip::CloseSession(" << err << ")";
+
+  // Don't close twice.  This can occur because we can have both
+  // a read and a write outstanding, and each can complete with
+  // an error.
+  if (state_ != CLOSED) {
+    state_ = CLOSED;
+    error_ = err;
+    CloseAllStreams(err);
+    session_->flip_session_pool()->Remove(this);
+  }
+}
+
 void FlipSession::ActivateStream(FlipStream* stream) {
   const flip::FlipStreamId id = stream->stream_id();
   DCHECK(!IsStreamActive(id));
@@ -722,8 +728,7 @@ scoped_refptr<FlipStream> FlipSession::GetPushStream(const std::string& path) {
 
 void FlipSession::OnError(flip::FlipFramer* framer) {
   LOG(ERROR) << "FlipSession error: " << framer->error_code();
-  CloseAllStreams(net::ERR_UNEXPECTED);
-  Release();
+  CloseSession(net::ERR_UNEXPECTED);
 }
 
 void FlipSession::OnStreamFrameData(flip::FlipStreamId stream_id,

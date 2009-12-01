@@ -75,6 +75,13 @@ class FlipSession : public base::RefCounted<FlipSession>,
  protected:
   friend class FlipSessionPool;
 
+  enum State {
+    IDLE,
+    CONNECTING,
+    CONNECTED,
+    CLOSED
+  };
+
   // Provide access to the framer for testing.
   flip::FlipFramer* GetFramer() { return &flip_framer_; }
 
@@ -125,6 +132,10 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // Get a new stream id.
   int GetNewStreamId();
 
+  // Closes this session.  This will close all active streams and mark
+  // the session as permanently closed.
+  void CloseSession(net::Error err);
+
   // Track active streams in the active stream list.
   void ActivateStream(FlipStream* stream);
   void DeactivateStream(flip::FlipStreamId id);
@@ -149,8 +160,6 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // The socket handle for this session.
   ClientSocketHandle connection_;
-  bool connection_started_;  // Is the connect process started.
-  bool connection_ready_;  // Is the connection ready for use.
 
   // The read buffer used to read data from the socket.
   scoped_refptr<IOBuffer> read_buffer_;
@@ -191,6 +200,12 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // Flip Frame state.
   flip::FlipFramer flip_framer_;
+
+  // If an error has occurred on the session, the session is effectively
+  // dead.  Record this error here.  When no error has occurred, |error_| will
+  // be OK.
+  net::Error error_;
+  State state_;
 
   static bool use_ssl_;
 };
