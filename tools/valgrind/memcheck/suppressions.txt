@@ -1832,21 +1832,6 @@
    fun:_ZN14ProfileManager13CreateProfileERK8FilePath
 }
 {
-   bug_29026
-   Memcheck:Leak
-   fun:_Znw*
-   ...
-   fun:_ZN3net26FlipNetworkTransactionTest17TransactionHelperERKNS_15HttpRequestInfoEPNS_17DelayedSocketDataE
-   fun:_ZN3net42FlipNetworkTransactionTest_WriteError_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
-{
    bug_29069
    Memcheck:Leak
    fun:_Znw*
