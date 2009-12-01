@@ -16,8 +16,7 @@ BIN=dump_syms
 
 all:$(BIN)
 
-DUMP_OBJ=dump_symbols.o guid_creator.o dump_syms.o file_id.o md5.o \
-         stabs_reader.o module.o
+DUMP_OBJ=dump_symbols.o dump_syms.o file_id.o stabs_reader.o module.o
 
 dump_syms:$(DUMP_OBJ)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^
@@ -31,14 +30,8 @@ stabs_reader.o:../../../common/linux/stabs_reader.cc
 module.o:../../../common/linux/module.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^
 
-guid_creator.o:../../../common/linux/guid_creator.cc
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^
-
 file_id.o:../../../common/linux/file_id.cc
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $^
-
-md5.o:../../../common/md5.c
-	$(CC) $(CPPFLAGS) $(CXXFLAGS) -c $^
 
 clean:
 	rm -f $(BIN) $(DUMP_OBJ)

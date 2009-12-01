@@ -316,10 +316,12 @@ bool LinuxDumper::ThreadInfoGet(pid_t tid, ThreadInfo* info) {
     return false;
   }
 
-#if defined(__i386) || defined(__x86_64)
+#if defined(__i386)
   if (sys_ptrace(PTRACE_GETFPXREGS, tid, NULL, &info->fpxregs) == -1)
     return false;
+#endif
 
+#if defined(__i386) || defined(__x86_64)
   for (unsigned i = 0; i < ThreadInfo::kNumDebugRegisters; ++i) {
     if (sys_ptrace(
         PTRACE_PEEKUSER, tid,

@@ -31,9 +31,10 @@
 #define CLIENT_LINUX_MINIDUMP_WRITER_LINUX_DUMPER_H_
 
 #include <elf.h>
-#include <stdint.h>
-#include <sys/user.h>
 #include <linux/limits.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/user.h>
 
 #include "common/linux/memory.h"
 
@@ -64,8 +65,11 @@ struct ThreadInfo {
 
   user_regs_struct regs;
   user_fpregs_struct fpregs;
-#if defined(__i386) || defined(__x86_64)
+#if defined(__i386)
   user_fpxregs_struct fpxregs;
+#endif
+
+#if defined(__i386) || defined(__x86_64)
 
   static const unsigned kNumDebugRegisters = 8;
   debugreg_t dregs[8];
