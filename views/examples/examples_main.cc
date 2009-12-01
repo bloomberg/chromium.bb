@@ -20,8 +20,8 @@
 #if defined(OS_WIN)
 // TableView and TableView2 are not yet ported to Linux.
 #include "views/examples/table_example.h"
-#include "views/examples/table2_example.h"
 #endif
+#include "views/examples/table2_example.h"
 #include "views/examples/textfield_example.h"
 #include "views/examples/widget_example.h"
 #include "views/focus/accelerator_handler.h"
@@ -110,15 +110,14 @@ void ExamplesMain::Run() {
                       scroll_view_example.GetExampleView());
 
 #if defined(OS_WIN)
-  // TableView and TableView2 are not yet ported to Linux.
   examples::TableExample table_example(this);
   tabbed_pane->AddTab(table_example.GetExampleTitle(),
                       table_example.GetExampleView());
+#endif
 
   examples::Table2Example table2_example(this);
   tabbed_pane->AddTab(table2_example.GetExampleTitle(),
                       table2_example.GetExampleView());
-#endif
 
   examples::WidgetExample widget_example(this);
   tabbed_pane->AddTab(widget_example.GetExampleTitle(),

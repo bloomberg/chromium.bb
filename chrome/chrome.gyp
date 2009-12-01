@@ -137,10 +137,10 @@
       '../views/view_unittest.cc',
       '../views/focus/focus_manager_unittest.cc',
       '../views/controls/label_unittest.cc',
+      '../views/controls/table/table_view_unittest.cc',
     ],
     'views_unit_tests_sources_win_specific': [
       # TODO(jcampan): make the following tests work on Linux.
-      '../views/controls/table/table_view_unittest.cc',
       '../views/grid_layout_unittest.cc',
     ],
     'conditions': [

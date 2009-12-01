@@ -12,7 +12,11 @@
 #include "views/controls/table/table_view.h"
 #include "views/controls/table/table_view2.h"
 #include "views/window/window_delegate.h"
+#if defined(OS_WIN)
 #include "views/window/window_win.h"
+#else
+#include "views/window/window_gtk.h"
+#endif
 
 using views::TableView;
 
@@ -59,7 +63,7 @@ class TestTableModel : public TableModel {
   TableModelObserver* observer_;
 
   // The data.
-  std::vector<std::vector<int>> rows_;
+  std::vector<std::vector<int> > rows_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTableModel);
 };
@@ -119,6 +123,8 @@ void TestTableModel::SetChecked(int row, bool is_checked) {
   CheckNotification check_notification = { row, is_checked };
   check_notifications_.push_back(check_notification);
 }
+
+#if defined(OS_WIN)
 
 // TableViewTest ---------------------------------------------------------------
 
@@ -402,6 +408,8 @@ TEST_F(NullModelTableViewTest, NullModel) {
   // to a NULL model we'll crash.
 }
 
+#endif  // OS_WIN
+
 ////////////////////////////////////////////////////////////////////////////////
 // TableView2 Tests
 
@@ -436,7 +444,9 @@ class TableView2Test : public testing::Test, views::WindowDelegate {
 };
 
 void TableView2Test::SetUp() {
+#if defined(OS_WIN)
   OleInitialize(NULL);
+#endif
   model_.reset(CreateModel());
   std::vector<TableColumn> columns;
   columns.resize(2);
@@ -454,7 +464,9 @@ void TableView2Test::TearDown() {
   window_->Close();
   // Temporary workaround to avoid leak of RootView::pending_paint_task_.
   message_loop_.RunAllPending();
+#if defined(OS_WIN)
   OleUninitialize();
+#endif
 }
 
 TestTableModel* TableView2Test::CreateModel() {
@@ -474,13 +486,24 @@ std::wstring TableView2Test::GetCellValue(int row, int column) {
   DCHECK(r);
   return std::wstring(str);
 #else
-  NOTIMPLEMENTED();
+  GtkTreeModel* gtk_model =
+      gtk_tree_view_get_model(GTK_TREE_VIEW(table_->GetTestingHandle()));
+  DCHECK(gtk_model);
+  GtkTreeIter row_iter;
+  gboolean r = gtk_tree_model_iter_nth_child(gtk_model, &row_iter, NULL, row);
+  DCHECK(r);
+  gchar* text = NULL;
+  gtk_tree_model_get(gtk_model, &row_iter, column, &text, -1);
+  DCHECK(text);
+  std::wstring str(UTF8ToWide(text));
+  g_free(text);
+  return str;
 #endif
 }
 
 // Tests that the table correctly reflects changes to the model.
 TEST_F(TableView2Test, ModelChangesTest) {
-  EXPECT_EQ(3, table_->GetRowCount());
+  ASSERT_EQ(3, table_->GetRowCount());
   EXPECT_EQ(L"0", GetCellValue(0, 0));
   EXPECT_EQ(L"1", GetCellValue(1, 0));
   EXPECT_EQ(L"2", GetCellValue(2, 1));
@@ -489,7 +512,7 @@ TEST_F(TableView2Test, ModelChangesTest) {
   model_->AddRow(3, 3, 3);
   model_->AddRow(4, 4, 4);
   table_->OnItemsAdded(3, 2);
-  EXPECT_EQ(5, table_->GetRowCount());
+  ASSERT_EQ(5, table_->GetRowCount());
   EXPECT_EQ(L"3", GetCellValue(3, 0));
   EXPECT_EQ(L"4", GetCellValue(4, 1));
 
@@ -497,7 +520,7 @@ TEST_F(TableView2Test, ModelChangesTest) {
   model_->RemoveRow(1);
   model_->RemoveRow(1);
   table_->OnItemsRemoved(1, 2);
-  EXPECT_EQ(3, table_->GetRowCount());
+  ASSERT_EQ(3, table_->GetRowCount());
   EXPECT_EQ(L"0", GetCellValue(0, 0));
   EXPECT_EQ(L"3", GetCellValue(1, 0));
   EXPECT_EQ(L"4", GetCellValue(2, 1));
@@ -515,7 +538,7 @@ TEST_F(TableView2Test, ModelChangesTest) {
   model_->AddRow(2, 5, 5);
   model_->AddRow(3, 6, 6);
   table_->OnModelChanged();
-  EXPECT_EQ(4, table_->GetRowCount());
+  ASSERT_EQ(4, table_->GetRowCount());
   EXPECT_EQ(L"0", GetCellValue(0, 0));
   EXPECT_EQ(L"1", GetCellValue(1, 0));
   EXPECT_EQ(L"5", GetCellValue(2, 1));
@@ -540,6 +563,8 @@ TEST_F(TableView2Test, SingleSelectionTest) {
   EXPECT_EQ(-1, table_->GetFirstSelectedRow());
 }
 
+// Row focusing and checkbox cell are not supported on Linux yet,
+#if defined(OS_WIN)
 // Test the row focus on a single-selection table.
 TEST_F(TableView2Test, RowFocusTest) {
   EXPECT_EQ(-1, table_->GetFirstFocusedRow());
@@ -588,3 +613,4 @@ TEST_F(CheckTableView2Test, TestCheckTable) {
   EXPECT_EQ(0, model_->check_notifications_[2].row);
   EXPECT_FALSE(model_->check_notifications_[2].state);
 }
+#endif

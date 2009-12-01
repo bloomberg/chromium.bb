@@ -518,6 +518,8 @@ void View::AddChildView(View* v) {
 }
 
 void View::AddChildView(int index, View* v) {
+  CHECK(v != this) << "You cannot add a view as its own child";
+
   // Remove the view from its current parent if any.
   if (v->GetParent())
     v->GetParent()->RemoveChildView(v);

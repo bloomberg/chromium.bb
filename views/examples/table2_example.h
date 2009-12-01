@@ -11,6 +11,7 @@
 #include "base/string_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "views/controls/button/checkbox.h"
+#include "views/controls/table/table_view_observer.h"
 #include "views/controls/table/table_view2.h"
 #include "views/examples/example_base.h"
 

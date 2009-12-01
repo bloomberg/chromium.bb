@@ -183,6 +183,8 @@
         'controls/tabbed_pane/native_tabbed_pane_win.h',
         'controls/tabbed_pane/native_tabbed_pane_wrapper.h',
         'controls/table/native_table_wrapper.h',
+        'controls/table/native_table_gtk.cc',
+        'controls/table/native_table_gtk.h',
         'controls/table/native_table_win.cc',
         'controls/table/native_table_win.h',
         'controls/table/group_table_view.cc',

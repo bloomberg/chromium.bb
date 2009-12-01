@@ -17,18 +17,18 @@ class View;
 class NativeTableWrapper {
  public:
   // Returns the number of rows in the table.
-  virtual int GetRowCount() = 0;
+  virtual int GetRowCount() const = 0;
 
   // Inserts/removes a column at the specified index.
   virtual void InsertColumn(const TableColumn& column, int index) = 0;
   virtual void RemoveColumn(int index) = 0;
 
   // Returns the number of rows that are selected.
-  virtual int GetSelectedRowCount() = 0;
+  virtual int GetSelectedRowCount() const = 0;
 
   // Returns the first row that is selected/focused in terms of the model.
-  virtual int GetFirstSelectedRow() = 0;
-  virtual int GetFirstFocusedRow() = 0;
+  virtual int GetFirstSelectedRow() const = 0;
+  virtual int GetFirstFocusedRow() const = 0;
 
   // Unselect all rows.
   virtual void ClearSelection() = 0;
@@ -40,10 +40,10 @@ class NativeTableWrapper {
   virtual void SetFocusState(int model_row, bool state) = 0;
 
   // Returns true if the row at the specified index is selected.
-  virtual bool IsRowSelected(int model_row) = 0;
+  virtual bool IsRowSelected(int model_row) const = 0;
 
   // Returns true if the row at the specified index has the focus.
-  virtual bool IsRowFocused(int model_row) = 0;
+  virtual bool IsRowFocused(int model_row) const = 0;
 
   // Retrieves the views::View that hosts the native control.
   virtual View* GetView() = 0;
@@ -55,7 +55,7 @@ class NativeTableWrapper {
   virtual gfx::NativeView GetTestingHandle() const = 0;
 
   // Gets/sets the columns width.
-  virtual int GetColumnWidth(int column_index) = 0;
+  virtual int GetColumnWidth(int column_index) const = 0;
   virtual void SetColumnWidth(int column_index, int width) = 0;
 
   // Called by the table view to indicate that some rows have changed, been
@@ -65,7 +65,7 @@ class NativeTableWrapper {
   virtual void OnRowsRemoved(int start, int length) = 0;
 
   // Returns the bounds of the native table.
-  virtual gfx::Rect GetBounds() = 0;
+  virtual gfx::Rect GetBounds() const = 0;
 
   // Creates an appropriate NativeButtonWrapper for the platform.
   static NativeTableWrapper* CreateNativeWrapper(TableView2* table);

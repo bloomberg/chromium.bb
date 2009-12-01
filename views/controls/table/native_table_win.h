@@ -24,27 +24,27 @@ class NativeTableWin : public NativeControlWin, public NativeTableWrapper {
   virtual ~NativeTableWin();
 
   // NativeTableWrapper implementation:
-  virtual int GetRowCount();
+  virtual int GetRowCount() const;
   virtual View* GetView();
   virtual void SetFocus();
   virtual gfx::NativeView GetTestingHandle() const;
   virtual void InsertColumn(const TableColumn& column, int index);
   virtual void RemoveColumn(int index);
-  virtual int GetColumnWidth(int column_index);
+  virtual int GetColumnWidth(int column_index) const;
   virtual void SetColumnWidth(int column_index, int width);
-  virtual int GetSelectedRowCount();
-  virtual int GetFirstSelectedRow();
-  virtual int GetFirstFocusedRow();
+  virtual int GetSelectedRowCount() const;
+  virtual int GetFirstSelectedRow() const;
+  virtual int GetFirstFocusedRow() const;
   virtual void ClearSelection();
   virtual void ClearRowFocus();
   virtual void SetSelectedState(int model_row, bool state);
   virtual void SetFocusState(int model_row, bool state);
-  virtual bool IsRowSelected(int model_row);
-  virtual bool IsRowFocused(int model_row);
+  virtual bool IsRowSelected(int model_row) const;
+  virtual bool IsRowFocused(int model_row) const;
   virtual void OnRowsChanged(int start, int length);
   virtual void OnRowsAdded(int start, int length);
   virtual void OnRowsRemoved(int start, int length);
-  virtual gfx::Rect GetBounds();
+  virtual gfx::Rect GetBounds() const;
 
   // Overridden from View:
   virtual gfx::Size GetPreferredSize();
