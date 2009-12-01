@@ -230,6 +230,10 @@ class WebWidgetHostGtkWidget {
   static gboolean HandleButtonPress(GtkWidget* widget,
                                     GdkEventButton* event,
                                     WebWidgetHost* host) {
+    if (!(event->button == 1 || event->button == 2 || event->button == 3))
+      return FALSE;  // We do not forward any other buttons to the renderer.
+    if (event->type == GDK_2BUTTON_PRESS || event->type == GDK_3BUTTON_PRESS)
+      return FALSE;
     host->webwidget()->handleInputEvent(
         WebInputEventFactory::mouseEvent(event));
     return FALSE;
