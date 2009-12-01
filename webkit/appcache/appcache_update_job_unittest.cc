@@ -2414,7 +2414,7 @@ TEST_F(AppCacheUpdateJobTest, MasterEntryFetchManifestFail) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntryFetchManifestFailTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, MasterEntryBadManifest) {
+TEST_F(AppCacheUpdateJobTest, FLAKY_MasterEntryBadManifest) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::MasterEntryBadManifestTest);
 }
 
