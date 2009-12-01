@@ -447,6 +447,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                               const gfx::Rect& clip_rect,
                               const gfx::Size& view_size);
 
+  // Called by OnMsgInputEventAck() to process a keyboard event ack message.
+  void ProcessKeyboardEventAck(int type, bool processed);
+
   // The View associated with the RenderViewHost. The lifetime of this object
   // is associated with the lifetime of the Render process. If the Renderer
   // crashes, its View is destroyed and this pointer becomes NULL, even though
@@ -576,6 +579,15 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
+
+  // True if the PaintRect_ACK message for the last PaintRect message is still
+  // not sent yet. This is used for optimizing the painting overhead when there
+  // are many pending key events in the queue.
+  bool paint_ack_postponed_;
+
+  // The time when a PaintRect_ACK message is postponed, so that we can send the
+  // message after a certain duration.
+  base::TimeTicks paint_ack_postponed_time_;
 
   // During the call to some methods, eg. OnMsgInputEventAck, this
   // RenderWidgetHost object may be destroyed before executing some code that
