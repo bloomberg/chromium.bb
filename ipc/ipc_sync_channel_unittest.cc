@@ -104,8 +104,8 @@ class Worker : public Channel::Listener, public Message::Sender {
     if (pump)
       msg->EnableMessagePumping();
     bool result = SendWithTimeout(msg, timeout);
-    DCHECK(result == succeed);
-    DCHECK(answer == (succeed ? 42 : 0));
+    DCHECK_EQ(result, succeed);
+    DCHECK_EQ(answer, (succeed ? 42 : 0));
     return result;
   }
   bool SendDouble(bool pump, bool succeed) {
@@ -114,12 +114,13 @@ class Worker : public Channel::Listener, public Message::Sender {
     if (pump)
       msg->EnableMessagePumping();
     bool result = Send(msg);
-    DCHECK(result == succeed);
-    DCHECK(answer == (succeed ? 10 : 0));
+    DCHECK_EQ(result, succeed);
+    DCHECK_EQ(answer, (succeed ? 10 : 0));
     return result;
   }
   Channel::Mode mode() { return mode_; }
   WaitableEvent* done_event() { return done_.get(); }
+  void ResetChannel() { channel_.reset(); }
 
  protected:
   // Derived classes need to call this when they've completed their part of
@@ -389,19 +390,34 @@ namespace {
 
 class UnblockServer : public Worker {
  public:
-  UnblockServer(bool pump_during_send)
+  UnblockServer(bool pump_during_send, bool delete_during_send)
     : Worker(Channel::MODE_SERVER, "unblock_server"),
-      pump_during_send_(pump_during_send) { }
+      pump_during_send_(pump_during_send),
+      delete_during_send_(delete_during_send) { }
   void Run() {
-    SendAnswerToLife(pump_during_send_, base::kNoTimeout, true);
+    if (delete_during_send_) {
+      // Use custom code since race conditions mean the answer may or may not be
+      // available.
+      int answer = 0;
+      SyncMessage* msg = new SyncChannelTestMsg_AnswerToLife(&answer);
+      if (pump_during_send_)
+        msg->EnableMessagePumping();
+      Send(msg);
+    } else {
+      SendAnswerToLife(pump_during_send_, base::kNoTimeout, true);
+    }
     Done();
   }
 
-  void OnDouble(int in, int* out) {
-    *out = in * 2;
+  void OnDoubleDelay(int in, Message* reply_msg) {
+    SyncChannelTestMsg_Double::WriteReplyParams(reply_msg, in * 2);
+    Send(reply_msg);
+    if (delete_during_send_)
+      ResetChannel();
   }
 
   bool pump_during_send_;
+  bool delete_during_send_;
 };
 
 class UnblockClient : public Worker {
@@ -419,9 +435,9 @@ class UnblockClient : public Worker {
   bool pump_during_send_;
 };
 
-void Unblock(bool server_pump, bool client_pump) {
+void Unblock(bool server_pump, bool client_pump, bool delete_during_send) {
   std::vector<Worker*> workers;
-  workers.push_back(new UnblockServer(server_pump));
+  workers.push_back(new UnblockServer(server_pump, delete_during_send));
   workers.push_back(new UnblockClient(client_pump));
   RunTest(workers);
 }
@@ -430,10 +446,20 @@ void Unblock(bool server_pump, bool client_pump) {
 
 // Tests that the caller unblocks to answer a sync message from the receiver.
 TEST_F(IPCSyncChannelTest, Unblock) {
-  Unblock(false, false);
-  Unblock(false, true);
-  Unblock(true, false);
-  Unblock(true, true);
+  Unblock(false, false, false);
+  Unblock(false, true, false);
+  Unblock(true, false, false);
+  Unblock(true, true, false);
+}
+
+//-----------------------------------------------------------------------------
+
+// Tests that the the IPC::SyncChannel object can be deleted during a Send.
+TEST_F(IPCSyncChannelTest, ChannelDeleteDuringSend) {
+  Unblock(false, false, true);
+  Unblock(false, true, true);
+  Unblock(true, false, true);
+  Unblock(true, true, true);
 }
 
 //-----------------------------------------------------------------------------
@@ -710,7 +736,7 @@ class QueuedReplyClient : public Worker {
       msg->EnableMessagePumping();
     bool result = Send(msg);
     DCHECK(result);
-    DCHECK(response == expected_text_);
+    DCHECK_EQ(response, expected_text_);
 
     LOG(INFO) << __FUNCTION__ << " Received reply: "
               << response.c_str();
@@ -801,7 +827,7 @@ class BadServer : public Worker {
     // Need to send another message to get the client to call Done().
     result = Send(new SyncChannelTestMsg_AnswerToLife(&answer));
     DCHECK(result);
-    DCHECK(answer == 42);
+    DCHECK_EQ(answer, 42);
 
     Done();
   }
@@ -848,7 +874,7 @@ class ChattyClient : public Worker {
 
 void ChattyServer(bool pump_during_send) {
   std::vector<Worker*> workers;
-  workers.push_back(new UnblockServer(pump_during_send));
+  workers.push_back(new UnblockServer(pump_during_send, false));
   workers.push_back(new ChattyClient());
   RunTest(workers);
 }

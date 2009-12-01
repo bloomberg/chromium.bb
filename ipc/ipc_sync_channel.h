@@ -145,11 +145,12 @@ class SyncChannel : public ChannelProxy,
 
   // Both these functions wait for a reply, timeout or process shutdown.  The
   // latter one also runs a nested message loop in the meantime.
-  void WaitForReply(base::WaitableEvent* pump_messages_event);
+  static void WaitForReply(
+      SyncContext* context, base::WaitableEvent* pump_messages_event);
 
   // Runs a nested message loop until a reply arrives, times out, or the process
   // shuts down.
-  void WaitForReplyWithNestedMessageLoop();
+  static void WaitForReplyWithNestedMessageLoop(SyncContext* context);
 
   bool sync_messages_with_no_timeout_allowed_;
 

@@ -343,10 +343,15 @@ void SyncChannel::SyncContext::CancelPendingSends() {
 }
 
 void SyncChannel::SyncContext::OnWaitableEventSignaled(WaitableEvent* event) {
-  DCHECK(event == shutdown_event_);
-  // Process shut down before we can get a reply to a synchronous message.
-  // Cancel pending Send calls, which will end up setting the send done event.
-  CancelPendingSends();
+  if (event == shutdown_event_) {
+    // Process shut down before we can get a reply to a synchronous message.
+    // Cancel pending Send calls, which will end up setting the send done event.
+    CancelPendingSends();
+  } else {
+    // We got the reply, timed out or the process shutdown.
+    DCHECK(event == GetSendDoneEvent());
+    MessageLoop::current()->Quit();
+  }
 }
 
 
@@ -408,16 +413,18 @@ bool SyncChannel::SendWithTimeout(Message* message, int timeout_ms) {
   }
 
   // Wait for reply, or for any other incoming synchronous messages.
-  WaitForReply(pump_messages_event);
+  // *this* might get deleted, so only call static functions at this point.
+  WaitForReply(context, pump_messages_event);
 
   return context->Pop();
 }
 
-void SyncChannel::WaitForReply(WaitableEvent* pump_messages_event) {
+void SyncChannel::WaitForReply(
+    SyncContext* context, WaitableEvent* pump_messages_event) {
   while (true) {
     WaitableEvent* objects[] = {
-      sync_context()->GetDispatchEvent(),
-      sync_context()->GetSendDoneEvent(),
+      context->GetDispatchEvent(),
+      context->GetSendDoneEvent(),
       pump_messages_event
     };
 
@@ -426,22 +433,22 @@ void SyncChannel::WaitForReply(WaitableEvent* pump_messages_event) {
     if (result == 0 /* dispatch event */) {
       // We're waiting for a reply, but we received a blocking synchronous
       // call.  We must process it or otherwise a deadlock might occur.
-      sync_context()->GetDispatchEvent()->Reset();
-      sync_context()->DispatchMessages();
+      context->GetDispatchEvent()->Reset();
+      context->DispatchMessages();
       continue;
     }
 
     if (result == 2 /* pump_messages_event */)
-      WaitForReplyWithNestedMessageLoop();  // Start a nested message loop.
+      WaitForReplyWithNestedMessageLoop(context);  // Run a nested message loop.
 
     break;
   }
 }
 
-void SyncChannel::WaitForReplyWithNestedMessageLoop() {
+void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
   base::WaitableEventWatcher send_done_watcher;
 
-  ReceivedSyncMsgQueue* sync_msg_queue = sync_context()->received_sync_msgs();
+  ReceivedSyncMsgQueue* sync_msg_queue = context->received_sync_msgs();
   DCHECK(sync_msg_queue != NULL);
 
   base::WaitableEventWatcher* old_send_done_event_watcher =
@@ -461,7 +468,7 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop() {
 
   sync_msg_queue->set_top_send_done_watcher(&send_done_watcher);
 
-  send_done_watcher.StartWatching(sync_context()->GetSendDoneEvent(), this);
+  send_done_watcher.StartWatching(context->GetSendDoneEvent(), context);
   bool old_state = MessageLoop::current()->NestableTasksAllowed();
 
   MessageLoop::current()->SetNestableTasksAllowed(true);
@@ -475,18 +482,12 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop() {
 }
 
 void SyncChannel::OnWaitableEventSignaled(WaitableEvent* event) {
-  WaitableEvent* dispatch_event = sync_context()->GetDispatchEvent();
-  if (event == dispatch_event) {
-    // The call to DispatchMessages might delete this object, so reregister
-    // the object watcher first.
-    dispatch_event->Reset();
-    dispatch_watcher_.StartWatching(dispatch_event, this);
-    sync_context()->DispatchMessages();
-  } else {
-    // We got the reply, timed out or the process shutdown.
-    DCHECK(event == sync_context()->GetSendDoneEvent());
-    MessageLoop::current()->Quit();
-  }
+  DCHECK(event == sync_context()->GetDispatchEvent());
+  // The call to DispatchMessages might delete this object, so reregister
+  // the object watcher first.
+  event->Reset();
+  dispatch_watcher_.StartWatching(event, this);
+  sync_context()->DispatchMessages();
 }
 
 }  // namespace IPC
