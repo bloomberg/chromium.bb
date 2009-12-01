@@ -885,11 +885,22 @@ void RenderWidgetHost::OnMsgImeUpdateStatus(int control,
 #if defined(OS_LINUX)
 
 void RenderWidgetHost::OnMsgCreatePluginContainer(gfx::PluginWindowHandle id) {
-  view_->CreatePluginContainer(id);
+  // TODO(piman): view_ can only be NULL with delayed view creation in
+  // extensions (see ExtensionHost::CreateRenderViewSoon). Figure out how to
+  // support plugins in that case.
+  if (view_) {
+    view_->CreatePluginContainer(id);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 void RenderWidgetHost::OnMsgDestroyPluginContainer(gfx::PluginWindowHandle id) {
-  view_->DestroyPluginContainer(id);
+  if (view_) {
+    view_->DestroyPluginContainer(id);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 #elif defined(OS_MACOSX)
