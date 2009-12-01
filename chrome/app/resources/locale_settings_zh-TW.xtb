@@ -1,11 +1,14 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
-<if expr="os != 'darwin'">
-  <translation id="IDS_WEB_FONT_FAMILY">Arial</translation>
+<if expr="os == 'win32'">
+  <translation id="IDS_WEB_FONT_FAMILY">Arial, Microsoft Jhenghei, PMingLiu, sans-serif</translation>
 </if>
 <if expr="os == 'darwin'">
   <translation id="IDS_WEB_FONT_FAMILY">Helvetica, LiHei Pro</translation>
+</if>
+<if expr="os == 'linux2'">
+  <translation id="IDS_WEB_FONT_FAMILY">AR PL UKai TW, sans-serif</translation>
 </if>
 <translation id="IDS_WEB_FONT_SIZE">84%</translation>
 <translation id="IDS_ACCEPT_LANGUAGES">zh-TW,zh,en-US,en</translation>
