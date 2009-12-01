@@ -7,16 +7,12 @@
 
 #include <deque>
 #include <map>
-#include <set>
-#include <string>
-#include <vector>
 
 #include "base/ref_counted.h"
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 #include "webkit/appcache/appcache.h"
-#include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/appcache/appcache_storage.h"
 
@@ -26,8 +22,7 @@ class UpdateJobInfo;
 
 // Application cache Update algorithm and state.
 class AppCacheUpdateJob : public URLRequest::Delegate,
-                          public AppCacheStorage::Delegate,
-                          public AppCacheHost::Observer {
+                          public AppCacheStorage::Delegate {
  public:
   AppCacheUpdateJob(AppCacheService* service, AppCacheGroup* group);
   ~AppCacheUpdateJob();
@@ -61,8 +56,6 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
     FETCH_MANIFEST,
     NO_UPDATE,
     DOWNLOADING,
-
-    // Every state after this comment indicates the update is terminating.
     REFETCH_MANIFEST,
     CACHE_FAILURE,
     CANCELLED,
@@ -80,10 +73,6 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   // Methods for AppCacheStorage::Delegate.
   void OnGroupAndNewestCacheStored(AppCacheGroup* group, bool success);
   void OnGroupMadeObsolete(AppCacheGroup* group, bool success);
-
-  // Methods for AppCacheHost::Observer.
-  void OnCacheSelectionComplete(AppCacheHost* host) {}  // N/A
-  void OnDestructionImminent(AppCacheHost* host);
 
   void FetchManifest(bool is_first_fetch);
 
@@ -108,7 +97,6 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void ContinueHandleManifestFetchCompleted(bool changed);
 
   void HandleUrlFetchCompleted(URLRequest* request);
-  void HandleMasterEntryFetchCompleted(URLRequest* request);
 
   void HandleManifestRefetchCompleted(URLRequest* request);
   void OnManifestInfoWriteComplete(int result);
@@ -130,21 +118,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void BuildUrlFileList(const Manifest& manifest);
   void AddUrlToFileList(const GURL& url, int type);
   void FetchUrls();
-  void CancelAllUrlFetches();
   bool ShouldSkipUrlFetch(const AppCacheEntry& entry);
-
-  // If entry already exists in the cache currently being updated, merge
-  // the entry type information with the existing entry.
-  // Returns true if entry exists in cache currently being updated.
-  bool AlreadyFetchedEntry(const GURL& url, int entry_type);
-
-  // TODO(jennb): Delete when update no longer fetches master entries directly.
-  // Creates the list of master entries that need to be fetched and initiates
-  // fetches.
-  void AddMasterEntryToFetchList(AppCacheHost* host, const GURL& url,
-                                 bool is_new);
-  void FetchMasterEntries();
-  void CancelAllMasterEntryFetches();
 
   // Asynchronously loads the entry from the newest complete cache if the
   // HTTP caching semantics allow.
@@ -170,13 +144,10 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   void ScheduleUpdateRetry(int delay_ms);
 
   void Cancel();
-  void ClearPendingMasterEntries();
   void DiscardInprogressCache();
 
   // Deletes this object after letting the stack unwind.
   void DeleteSoon();
-
-  bool IsTerminating() { return internal_state_ >= REFETCH_MANIFEST; }
 
   // This factory will be used to schedule invocations of various methods.
   ScopedRunnableMethodFactory<AppCacheUpdateJob> method_factory_;
@@ -199,14 +170,6 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
 
   PendingMasters pending_master_entries_;
   size_t master_entries_completed_;
-
-  // TODO(jennb): Delete when update no longer fetches master entries directly.
-  // Helper containers to track which pending master entries have yet to be
-  // fetched and which are currently being fetched. Master entries that
-  // are listed in the manifest may be fetched as a regular URL instead of
-  // as a separate master entry fetch to optimize against duplicate fetches.
-  std::set<GURL> master_entries_to_fetch_;
-  PendingUrlFetches master_entry_fetches_;
 
   // URLs of files to fetch along with their flags.
   AppCache::EntryMap url_file_list_;
