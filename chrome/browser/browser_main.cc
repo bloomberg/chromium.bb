@@ -334,6 +334,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif  // OS_POSIX
 
+#if defined(OS_WIN)
+  // Initialize Winsock.
+  net::EnsureWinsockInit();
+#endif  // defined(OS_WIN)
+
   // Do platform-specific things (such as finishing initializing Cocoa)
   // prior to instantiating the message loop. This could be turned into a
   // broadcast notification.
@@ -728,11 +733,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // popup asking the user to restart chrome. It is done this late to avoid
   // testing against a bunch of special cases that are taken care early on.
   PrepareRestartOnCrashEnviroment(parsed_command_line);
-
-#if defined(OS_WIN)
-  // Initialize Winsock.
-  net::EnsureWinsockInit();
-#endif  // defined(OS_WIN)
 
   // Initialize and maintain DNS prefetcher module.
   chrome_browser_net::DnsPrefetcherInit dns_prefetch(user_prefs, local_state);
