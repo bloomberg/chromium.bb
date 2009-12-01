@@ -1849,3 +1849,15 @@
    fun:_Z9SerializeRKSt6vectorI10UserScriptSaIS0_EE
    fun:_ZN16UserScriptMaster14ScriptReloader7RunScanE8FilePathSt6vectorI10UserScriptSaIS3_EE
 }
+{
+   bug_29115
+   Memcheck:Leak
+   ...
+   fun:_Z15sk_malloc_flagsjj
+   fun:_Z15sk_malloc_throwj
+   fun:_ZN7SkDeque9push_backEv
+   fun:_ZN8SkCanvas12internalSaveENS_9SaveFlagsE
+   fun:_ZN8SkCanvas4saveENS_9SaveFlagsE
+   fun:_ZN19PlatformContextSkia4saveEv
+   fun:_ZN7WebCore15GraphicsContext17savePlatformStateEv
+}
