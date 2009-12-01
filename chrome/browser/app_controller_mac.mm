@@ -46,6 +46,16 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
+// 10.6 adds a public API for the Spotlight-backed search menu item in the Help
+// menu.  Provide the declaration so it can be called below when building with
+// the 10.5 SDK.
+#if !defined(MAC_OS_X_VERSION_10_6) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_6
+@interface NSApplication (SnowLeopardSDKDeclarations)
+- (void)setHelpMenu:(NSMenu *)helpMenu;
+@end
+#endif
+
 @interface AppController(PRIVATE)
 - (void)initMenuState;
 - (void)openURLs:(const std::vector<GURL>&)urls;
@@ -340,6 +350,12 @@ static bool g_is_opening_new_window = false;
   NSMenu *encoding_menu = [encoding_menu_item submenu];
   EncodingMenuControllerDelegate::BuildEncodingMenu([self defaultProfile],
                                                     encoding_menu);
+
+  // Since Chrome is localized to more languages than the OS, tell Cocoa which
+  // menu is the Help so it can add the search item to it.
+  if (helpMenu_ && [NSApp respondsToSelector:@selector(setHelpMenu:)]) {
+    [NSApp setHelpMenu:helpMenu_];
+  }
 
   // Now that we're initialized we can open any URLs we've been holding onto.
   [self openPendingURLs];
