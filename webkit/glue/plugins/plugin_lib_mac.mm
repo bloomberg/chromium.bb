@@ -163,7 +163,7 @@ bool GetSTRResource(CFBundleRef bundle, short res_id,
     if (!str.get())
       return false;
     contents->push_back(base::SysCFStringRefToUTF8(str.get()));
-    pointer += 1+*pointer;
+    pointer += 1+*reinterpret_cast<unsigned char*>(pointer);
   }
 
   return true;
