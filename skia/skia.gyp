@@ -235,6 +235,7 @@
         '../third_party/skia/src/core/SkGlyphCache.cpp',
         '../third_party/skia/src/core/SkGlyphCache.h',
         '../third_party/skia/src/core/SkGraphics.cpp',
+        '../third_party/skia/src/core/SkLineClipper.cpp',
         '../third_party/skia/src/core/SkMMapStream.cpp',
         '../third_party/skia/src/core/SkMask.cpp',
         '../third_party/skia/src/core/SkMaskFilter.cpp',
