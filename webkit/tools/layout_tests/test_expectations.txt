@@ -3021,3 +3021,10 @@ BUG_SENORBLANCO WIN : LayoutTests/svg/transforms/text-with-pattern-with-svg-tran
 
 // New failures from webkit r51496
 BUG29056 WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
+
+// New failures from WebKit roll 51512:51524
+BUG29059 : LayoutTests/editing/selection/5825350-1.html = FAIL
+BUG29059 : LayoutTests/editing/selection/5825350-2.html = FAIL
+BUG29059 : LayoutTests/editing/selection/mixed-editability-10.html = FAIL
+BUG29059 : LayoutTests/editing/deleting/5390681-2.html = FAIL
+
