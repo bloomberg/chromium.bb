@@ -3019,6 +3019,5 @@ BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/backgrounds/svg-as-background-5.htm
 BUG_SENORBLANCO WIN : LayoutTests/fast/overflow/scrollRevealButton.html = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/svg/transforms/text-with-pattern-with-svg-transform.svg = IMAGE
 
-// New failures from merge 51480:51511
-BUG_UKAI WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
-BUG_UKAI WIN : LayoutTests/storage/domstorage/complex-keys.html = FAIL
+// New failures from webkit r51496
+BUG29056 WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
