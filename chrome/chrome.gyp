@@ -1712,6 +1712,8 @@
         'browser/history/visit_tracker.h',
         'browser/history/visitsegment_database.cc',
         'browser/history/visitsegment_database.h',
+        'browser/host_zoom_map.cc',
+        'browser/host_zoom_map.h',
         'browser/hung_renderer_dialog.h',
         'browser/icon_loader.h',
         'browser/icon_loader.cc',
@@ -6436,7 +6438,6 @@
             '../webkit/webkit.gyp:glue',
           ],
           'sources': [
-            'browser/safe_browsing/database_perftest.cc',
             'browser/safe_browsing/filter_false_positive_perftest.cc',
             'browser/visitedlink_perftest.cc',
             'common/json_value_serializer_perftest.cc',
