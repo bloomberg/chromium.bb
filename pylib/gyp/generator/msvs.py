@@ -151,6 +151,12 @@ def _SourceInFolders(sources, prefix=None, excluded=None):
 
 def _ToolAppend(tools, tool_name, setting, value, only_if_unset=False):
   if not value: return
+  # TODO(bradnelson): ugly hack, fix this more generally!!!
+  if 'Directories' in setting or 'Dependencies' in setting:
+    if type(value) == str:
+      value = value.replace('/', '\\')
+    else:
+      value = [i.replace('/', '\\') for i in value]
   if not tools.get(tool_name):
     tools[tool_name] = dict()
   tool = tools[tool_name]
@@ -223,9 +229,11 @@ def _PrepareActionRaw(spec, cmd, cygwin_shell, has_input_path, quote_cmd):
       # Support a mode for using cmd directly.
       # Convert any paths to native form (first element is used directly).
       # TODO(quote):  regularize quoting path names throughout the module
-      direct_cmd = [cmd[0]] + ['"%s"' % _FixPath(i) for i in cmd[1:]]
+      direct_cmd = ([cmd[0].replace('/', '\\')] +
+                    ['"%s"' % _FixPath(i) for i in cmd[1:]])
     else:
-      direct_cmd = [cmd[0]] + [_FixPath(i) for i in cmd[1:]]
+      direct_cmd = ([cmd[0].replace('/', '\\')] +
+                    [_FixPath(i) for i in cmd[1:]])
     # Collapse into a single command.
     return ' '.join(direct_cmd)
 
