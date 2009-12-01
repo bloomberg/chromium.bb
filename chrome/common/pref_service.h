@@ -144,6 +144,7 @@ class PrefService : public NonThreadSafe,
   void ClearPref(const wchar_t* path);
 
   // If the path is valid (i.e., registered), update the pref value.
+  void Set(const wchar_t* path, const Value& value);
   void SetBoolean(const wchar_t* path, bool value);
   void SetInteger(const wchar_t* path, int value);
   void SetReal(const wchar_t* path, double value);

@@ -421,6 +421,24 @@ void PrefService::ClearPref(const wchar_t* path) {
     FireObservers(path);
 }
 
+void PrefService::Set(const wchar_t* path, const Value& value) {
+  DCHECK(CalledOnValidThread());
+
+  const Preference* pref = FindPreference(path);
+  if (!pref) {
+    NOTREACHED() << "Trying to write an unregistered pref: " << path;
+    return;
+  }
+  if (pref->type() != value.GetType()) {
+    NOTREACHED() << "Wrong type for Set: " << path;
+  }
+
+  scoped_ptr<Value> old_value(GetPrefCopy(path));
+  persistent_->Set(path, value.DeepCopy());
+
+  FireObserversIfChanged(path, old_value.get());
+}
+
 void PrefService::SetBoolean(const wchar_t* path, bool value) {
   DCHECK(CalledOnValidThread());
 
