@@ -1,0 +1,66 @@
+<!--
+ * Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+<head>
+<script>
+  function customMailtoUrl() {
+    if (window.localStorage == null)
+      return "";
+    if (window.localStorage.customMailtoUrl == null)
+      return "";
+    return window.localStorage.customMailtoUrl;
+  }
+
+  function executeMailto(tab_id, subject, body) {
+    var action_url = "mailto:?"
+    if (subject.length > 0)
+      action_url += "subject=" + subject + "%26";  // 26 is ampersand.
+    if (body.length > 0)
+      action_url += "body=" + body;
+
+    var custom_url = customMailtoUrl();
+    if (custom_url.length > 0) {
+      // Custom URL's (such as opening mailto in Gmail tab) should have a
+      // separate tab to avoid clobbering the page you are on.
+      action_url = custom_url.replace("%s", action_url);
+      console.log('Custom url: ' + action_url);
+      chrome.tabs.create({ url: action_url });
+    } else {
+      // Plain vanilla mailto links open up in the same tab to prevent
+      // blank tabs being left behind.
+      console.log('Action url: ' + action_url);
+      chrome.tabs.update(tab_id, { url: action_url });
+    }
+  }
+
+  chrome.extension.onConnect.addListener(function(port) {
+    var tab = port.sender.tab;
+
+    // This will get called by the content script we execute in
+    // the tab as a result of the user pressing the browser action.
+    port.onMessage.addListener(function(pageTitle) {
+      executeMailto(tab.id, encodeURI(pageTitle), encodeURI(tab.url));
+    });
+  });
+
+  // Called when the user clicks on the browser action icon.
+  chrome.browserAction.onClicked.addListener(function(tab) {
+    // We can only inject scripts to find the title on pages loaded with http
+    // and https so for all other pages, we don't ask for the title.
+    if (tab.url.indexOf("http:") != 0 &&
+        tab.url.indexOf("https:") != 0) {
+      executeMailto(tab.id, "", encodeURI(tab.url));
+    } else {
+      // Execute a script that sends us the page title through postMessage.
+      var script_file = {};
+      script_file.code =
+          "chrome.extension.connect().postMessage(document.title);";
+      chrome.tabs.executeScript(tab.id, script_file);
+    }
+  });
+</script>
+</head>
+</html>
