@@ -60,6 +60,13 @@ void WebApplicationCacheHostImpl::OnStatusChanged(appcache::Status status) {
 }
 
 void WebApplicationCacheHostImpl::OnEventRaised(appcache::EventID event_id) {
+  // Most events change the status. Clear out what we know so that the latest
+  // status will be obtained from the backend.
+  if (PROGRESS_EVENT != event_id) {
+    has_status_ = false;
+    has_cached_status_ = false;
+  }
+
   client_->notifyEventListener(static_cast<EventID>(event_id));
 }
 
@@ -195,6 +202,10 @@ bool WebApplicationCacheHostImpl::startUpdate() {
 }
 
 bool WebApplicationCacheHostImpl::swapCache() {
+  // Cache status will change when cache is swapped. Clear out any saved idea
+  // of status so that backend will be queried for actual status.
+  has_status_ = false;
+  has_cached_status_ = false;
   return backend_->SwapCache(host_id_);
 }
 

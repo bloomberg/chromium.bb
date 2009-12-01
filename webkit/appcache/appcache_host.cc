@@ -208,8 +208,13 @@ AppCacheRequestHandler* AppCacheHost::CreateRequestHandler(
 Status AppCacheHost::GetStatus() {
   // 6.9.8 Application cache API
   AppCache* cache = associated_cache();
-  if (!cache || !cache->owning_group())
+  if (!cache)
     return UNCACHED;
+
+  // A cache without an owning group represents the cache being constructed
+  // during the application cache update process.
+  if (!cache->owning_group())
+    return DOWNLOADING;
 
   if (cache->owning_group()->is_obsolete())
     return OBSOLETE;
