@@ -1103,20 +1103,9 @@ willPositionSheet:(NSWindow*)sheet
 
   // Update various elements that are interested in knowing the current
   // TabContents.
-#if 0
-// TODO(pinkerton):Update as more things become window-specific
-  contents_container_->SetTabContents(newContents);
-#endif
 
   // Update all the UI bits.
   windowShim_->UpdateTitleBar();
-
-#if 0
-// TODO(pinkerton):Update as more things become window-specific
-  toolbar_->SetProfile(newContents->profile());
-  UpdateToolbar(newContents, true);
-  UpdateUIForContents(newContents);
-#endif
 
   // Update the bookmark bar.
   [self updateBookmarkBarVisibilityWithAnimation:NO];
@@ -1124,14 +1113,21 @@ willPositionSheet:(NSWindow*)sheet
 
 - (void)tabChangedWithContents:(TabContents*)contents
                        atIndex:(NSInteger)index
-                   loadingOnly:(BOOL)loading {
+                    changeType:(TabStripModelObserver::TabChangeType)change {
   if (index == browser_->tabstrip_model()->selected_index()) {
-    // Update titles if this is the currently selected tab.
-    windowShim_->UpdateTitleBar();
-  }
+    // Update titles if this is the currently selected tab and if it isn't just
+    // the loading state which changed.
+    if (change != TabStripModelObserver::LOADING_ONLY)
+      windowShim_->UpdateTitleBar();
 
-  // Update the bookmark bar.
-  [self updateBookmarkBarVisibilityWithAnimation:NO];
+    // Update the bookmark bar if this is the currently selected tab and if it
+    // isn't just the title which changed. This for transitions between the NTP
+    // (showing its floating bookmark bar) and normal web pages (showing no
+    // bookmark bar).
+    // TODO(viettrungluu): perhaps update to not terminate running animations?
+    if (change != TabStripModelObserver::TITLE_NOT_LOADING)
+      [self updateBookmarkBarVisibilityWithAnimation:NO];
+  }
 }
 
 - (void)userChangedTheme {

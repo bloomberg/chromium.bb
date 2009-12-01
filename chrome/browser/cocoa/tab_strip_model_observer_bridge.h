@@ -66,7 +66,7 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
            pinnedStateChanged:(BOOL)pinnedChanged;
 - (void)tabChangedWithContents:(TabContents*)contents
                        atIndex:(NSInteger)index
-                   loadingOnly:(BOOL)loading;
+                    changeType:(TabStripModelObserver::TabChangeType)change;
 - (void)tabPinnedStateChangedWithContents:(TabContents*)contents
                                   atIndex:(NSInteger)index;
 - (void)tabStripEmpty;

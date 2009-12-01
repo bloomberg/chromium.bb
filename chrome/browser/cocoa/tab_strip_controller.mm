@@ -1112,11 +1112,17 @@ private:
 // throbber state, not anything else about the (partially) loading tab.
 - (void)tabChangedWithContents:(TabContents*)contents
                        atIndex:(NSInteger)modelIndex
-                   loadingOnly:(BOOL)loading {
+                    changeType:(TabStripModelObserver::TabChangeType)change {
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
-  if (!loading)
+  if (change == TabStripModelObserver::TITLE_NOT_LOADING) {
+    // TODO(sky): make this work.
+    // We'll receive another notification of the change asynchronously.
+    return;
+  }
+
+  if (change != TabStripModelObserver::LOADING_ONLY)
     [self setTabTitle:[tabArray_ objectAtIndex:index] withContents:contents];
 
   [self updateFavIconForContents:contents atIndex:index];
