@@ -9,14 +9,9 @@
 #include <plarena.h>
 #include <prerror.h>
 #include <prinit.h>
-
-// Work around https://bugzilla.mozilla.org/show_bug.cgi?id=455424
-// until NSS 3.12.2 comes out and we update to it.
-#define Lock FOO_NSS_Lock
 #include <pk11pub.h>
 #include <secmod.h>
 #include <ssl.h>
-#undef Lock
 
 #include "base/file_util.h"
 #include "base/logging.h"

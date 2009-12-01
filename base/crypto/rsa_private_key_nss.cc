@@ -4,13 +4,9 @@
 
 #include "base/crypto/rsa_private_key.h"
 
-// Work around https://bugzilla.mozilla.org/show_bug.cgi?id=455424
-// until NSS 3.12.2 comes out and we update to it.
-#define Lock FOO_NSS_Lock
 #include <cryptohi.h>
 #include <keyhi.h>
 #include <pk11pub.h>
-#undef Lock
 
 #include <iostream>
 #include <list>
