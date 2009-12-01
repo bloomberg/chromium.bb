@@ -413,7 +413,9 @@ drm_intel_gem_bo_busy(drm_intel_bo *bo)
 	memset(&busy, 0, sizeof(busy));
 	busy.handle = bo_gem->gem_handle;
 
-	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
+	do {
+		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
+	} while (ret == -1 && errno == EINTR);
 
 	return (ret == 0 && busy.busy);
 }
@@ -545,7 +547,11 @@ retry:
 		memset(&create, 0, sizeof(create));
 		create.size = bo_size;
 
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CREATE, &create);
+		do {
+			ret = ioctl(bufmgr_gem->fd,
+				    DRM_IOCTL_I915_GEM_CREATE,
+				    &create);
+		} while (ret == -1 && errno == EINTR);
 		bo_gem->gem_handle = create.handle;
 		bo_gem->bo.handle = bo_gem->gem_handle;
 		if (ret != 0) {
@@ -651,7 +657,11 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 
 	memset(&open_arg, 0, sizeof(open_arg));
 	open_arg.name = handle;
-	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_OPEN, &open_arg);
+	do {
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_GEM_OPEN,
+			    &open_arg);
+	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
 		fprintf(stderr, "Couldn't reference %s handle 0x%08x: %s\n",
 			name, handle, strerror(errno));
@@ -845,7 +855,11 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 		mmap_arg.handle = bo_gem->gem_handle;
 		mmap_arg.offset = 0;
 		mmap_arg.size = bo->size;
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MMAP, &mmap_arg);
+		do {
+			ret = ioctl(bufmgr_gem->fd,
+				    DRM_IOCTL_I915_GEM_MMAP,
+				    &mmap_arg);
+		} while (ret == -1 && errno == EINTR);
 		if (ret != 0) {
 			fprintf(stderr,
 				"%s:%d: Error mapping buffer %d (%s): %s .\n",
@@ -867,7 +881,8 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	else
 		set_domain.write_domain = 0;
 	do {
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_SET_DOMAIN,
 			    &set_domain);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
@@ -903,8 +918,11 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 		mmap_arg.handle = bo_gem->gem_handle;
 
 		/* Get the fake offset back... */
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MMAP_GTT,
-			    &mmap_arg);
+		do {
+			ret = ioctl(bufmgr_gem->fd,
+				    DRM_IOCTL_I915_GEM_MMAP_GTT,
+				    &mmap_arg);
+		} while (ret == -1 && errno == EINTR);
 		if (ret != 0) {
 			fprintf(stderr,
 				"%s:%d: Error preparing buffer map %d (%s): %s .\n",
@@ -940,7 +958,8 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	set_domain.read_domains = I915_GEM_DOMAIN_GTT;
 	set_domain.write_domain = I915_GEM_DOMAIN_GTT;
 	do {
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_SET_DOMAIN,
 			    &set_domain);
 	} while (ret == -1 && errno == EINTR);
 
@@ -992,7 +1011,8 @@ static int drm_intel_gem_bo_unmap(drm_intel_bo *bo)
 	 */
 	sw_finish.handle = bo_gem->gem_handle;
 	do {
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SW_FINISH,
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_SW_FINISH,
 			    &sw_finish);
 	} while (ret == -1 && errno == EINTR);
 
@@ -1016,7 +1036,9 @@ drm_intel_gem_bo_subdata(drm_intel_bo *bo, unsigned long offset,
 	pwrite.size = size;
 	pwrite.data_ptr = (uint64_t) (uintptr_t) data;
 	do {
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PWRITE, &pwrite);
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_PWRITE,
+			    &pwrite);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
 		fprintf(stderr,
@@ -1065,7 +1087,9 @@ drm_intel_gem_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
 	pread.size = size;
 	pread.data_ptr = (uint64_t) (uintptr_t) data;
 	do {
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PREAD, &pread);
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_PREAD,
+			    &pread);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
 		fprintf(stderr,
@@ -1102,7 +1126,8 @@ drm_intel_gem_bo_start_gtt_access(drm_intel_bo *bo, int write_enable)
 	set_domain.read_domains = I915_GEM_DOMAIN_GTT;
 	set_domain.write_domain = write_enable ? I915_GEM_DOMAIN_GTT : 0;
 	do {
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_SET_DOMAIN,
 			    &set_domain);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
@@ -1274,7 +1299,8 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 	execbuf.DR4 = DR4;
 
 	do {
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_EXECBUFFER,
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_EXECBUFFER,
 			    &execbuf);
 	} while (ret != 0 && errno == EAGAIN);
 
@@ -1323,7 +1349,9 @@ drm_intel_gem_bo_pin(drm_intel_bo *bo, uint32_t alignment)
 	pin.alignment = alignment;
 
 	do {
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PIN, &pin);
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_PIN,
+			    &pin);
 	} while (ret == -1 && errno == EINTR);
 
 	if (ret != 0)
@@ -1372,7 +1400,11 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	set_tiling.tiling_mode = *tiling_mode;
 	set_tiling.stride = stride;
 
-	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_TILING, &set_tiling);
+	do {
+		ret = ioctl(bufmgr_gem->fd,
+			    DRM_IOCTL_I915_GEM_SET_TILING,
+			    &set_tiling);
+	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
 		*tiling_mode = bo_gem->tiling_mode;
 		return -errno;
