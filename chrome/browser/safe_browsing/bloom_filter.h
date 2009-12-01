@@ -19,12 +19,11 @@
 
 #include <vector>
 
-#include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "base/scoped_ptr.h"
-#include "base/basictypes.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+
+class FilePath;
 
 class BloomFilter : public base::RefCountedThreadSafe<BloomFilter> {
  public:

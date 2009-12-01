@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,24 +6,21 @@
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_DATABASE_BLOOM_H_
 
 #include <deque>
-#include <list>
-#include <queue>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/hash_tables.h"
 #include "base/lock.h"
-#include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "chrome/common/sqlite_utils.h"
 
 namespace base {
   class Time;
 }
+
+struct sqlite3;
+class SqliteCompiledStatement;
+class SqliteStatementCache;
+class SQLTransaction;
 
 // The reference implementation database using SQLite.
 class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
@@ -44,17 +41,23 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
                             std::deque<SBChunk>* chunks);
   virtual void DeleteChunks(std::vector<SBChunkDelete>* chunk_deletes);
   virtual void GetListsInfo(std::vector<SBListChunkRanges>* lists);
-  virtual void SetSynchronous();
   virtual void CacheHashResults(
       const std::vector<SBPrefix>& prefixes,
       const std::vector<SBFullHashResult>& full_hits);
   virtual bool UpdateStarted();
   virtual void UpdateFinished(bool update_succeeded);
 
-
-  virtual bool NeedToCheckUrl(const GURL& url);
-
  private:
+  struct SBPair {
+    int chunk_id;
+    SBPrefix prefix;
+  };
+
+  enum ChunkType {
+    ADD_CHUNK = 0,
+    SUB_CHUNK = 1,
+  };
+
   // Opens the database.
   bool Open();
 
@@ -75,11 +78,6 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
                 const std::vector<std::string>& paths,
                 std::vector<SBPrefix>* prefix_hits);
 
-  enum ChunkType {
-    ADD_CHUNK = 0,
-    SUB_CHUNK = 1,
-  };
-
   // Checks if a chunk is in the database.
   bool ChunkExists(int list_id, ChunkType type, int chunk_id);
 
@@ -91,11 +89,6 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
   virtual void BuildBloomFilter();
 
   // Helpers for building the bloom filter.
-  typedef struct {
-    int chunk_id;
-    SBPrefix prefix;
-  } SBPair;
-
   static int PairCompare(const void* arg1, const void* arg2);
 
   bool BuildAddPrefixList(SBPair* adds);
@@ -144,7 +137,7 @@ class SafeBrowsingDatabaseBloom : public SafeBrowsingDatabase {
                          bool use_temp_table);
 
   // Used for reading full hashes from the database.
-  void ReadFullHash(SqliteCompiledStatement& statement,
+  void ReadFullHash(SqliteCompiledStatement* statement,
                     int column,
                     SBFullHash* full_hash);
 

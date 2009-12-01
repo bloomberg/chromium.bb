@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -6,8 +6,6 @@
 
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UTIL_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_UTIL_H_
-
-#include <string.h>
 
 #include <deque>
 #include <string>
@@ -18,33 +16,29 @@
 
 class GURL;
 
-// #define SB_LOGGING_ENABLED
 #ifdef SB_LOGGING_ENABLED
 #define SB_DLOG(severity) DLOG_IF(INFO, 1)
 #else
 #define SB_DLOG(severity) DLOG_IF(INFO, 0)
 #endif
 
-// forward declaration
 class SBEntry;
-
-// Widely used typedefs -------------------------------------------------------
-
-// Container for holding a chunk URL and the MAC of the contents of the URL.
-typedef struct {
-  std::string url;
-  std::string mac;
-  std::string list_name;
-} ChunkUrl;
 
 // A truncated hash's type.
 typedef int SBPrefix;
 
+// Container for holding a chunk URL and the MAC of the contents of the URL.
+struct ChunkUrl {
+  std::string url;
+  std::string mac;
+  std::string list_name;
+};
+
 // A full hash.
-typedef union {
+union SBFullHash {
   char full_hash[32];
   SBPrefix prefix;
-} SBFullHash;
+};
 
 inline bool operator==(const SBFullHash& rhash, const SBFullHash& lhash) {
   return memcmp(rhash.full_hash, lhash.full_hash, sizeof(SBFullHash)) == 0;

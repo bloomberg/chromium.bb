@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/hmac.h"
-#include "base/logging.h"
 #include "base/sha2.h"
 #include "base/string_util.h"
 #include "chrome/browser/google_util.h"
@@ -200,10 +199,8 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
   const std::string continue_esc =
       EscapeQueryParamValue(StringPrintf(kContinueUrlFormat, lang));
   const std::string current_esc = EscapeQueryParamValue(url_to_report);
-  const std::string format = report_page + kReportParams;
-  GURL report_url(StringPrintf(format.c_str(),
-                               continue_esc.c_str(),
-                               current_esc.c_str()));
+  GURL report_url(report_page +
+      StringPrintf(kReportParams, continue_esc.c_str(), current_esc.c_str()));
   return google_util::AppendGoogleLocaleParam(report_url);
 }
 

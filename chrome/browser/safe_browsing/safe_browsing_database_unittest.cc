@@ -82,7 +82,6 @@ namespace {
     file_util::Delete(filename, false);
 
     SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
-    database->SetSynchronous();
     database->Init(filename, NULL);
 
     return database;
@@ -1074,7 +1073,6 @@ void PeformUpdate(const std::wstring& initial_db,
   }
 
   SafeBrowsingDatabase* database = SafeBrowsingDatabase::Create();
-  database->SetSynchronous();
   database->Init(path, NULL);
 
   Time before_time = Time::Now();

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,28 +11,23 @@
 #include <vector>
 
 #include "base/file_path.h"
-#include "base/hash_tables.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "base/time.h"
-#include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
+class BloomFilter;
 class GURL;
 
 // Encapsulates the database that stores information about phishing and malware
 // sites.  There is one on-disk database for all profiles, as it doesn't
 // contain user-specific data.  This object is not thread-safe, i.e. all its
-// methods should be used on the same thread that it was created on, with the
-// exception of NeedToCheckUrl.
+// methods should be used on the same thread that it was created on.
 class SafeBrowsingDatabase {
  public:
   // Factory method for obtaining a SafeBrowsingDatabase implementation.
   static SafeBrowsingDatabase* Create();
-
-  virtual ~SafeBrowsingDatabase() {}
+  virtual ~SafeBrowsingDatabase();
 
   // Initializes the database with the given filename.  The callback is
   // executed after finishing a chunk.
@@ -41,13 +36,6 @@ class SafeBrowsingDatabase {
 
   // Deletes the current database and creates a new one.
   virtual bool ResetDatabase() = 0;
-
-  // This function can be called on any thread to check if the given url may be
-  // in the database.  If this function returns false, it is definitely not in
-  // the database and ContainsUrl doesn't need to be called.  If it returns
-  // true, then the url might be in the database and ContainsUrl needs to be
-  // called.  This function can only be called after Init succeeded.
-  virtual bool NeedToCheckUrl(const GURL& url);
 
   // Returns false if the given url is not in the database.  If it returns
   // true, then either "list" is the name of the matching list, or prefix_hits
@@ -69,11 +57,6 @@ class SafeBrowsingDatabase {
   // Returns the lists and their add/sub chunks.
   virtual void GetListsInfo(std::vector<SBListChunkRanges>* lists) = 0;
 
-  // Call this to make all database operations synchronous.  While useful for
-  // testing, this should never be called in chrome.exe because it can lead
-  // to blocking user requests.
-  virtual void SetSynchronous() = 0;
-
   // Store the results of a GetHash response. In the case of empty results, we
   // cache the prefixes until the next update so that we don't have to issue
   // further GetHash requests we know will be empty.
@@ -88,6 +71,17 @@ class SafeBrowsingDatabase {
   virtual FilePath filename() const { return filename_; }
 
  protected:
+  struct HashCacheEntry {
+    SBFullHash full_hash;
+    int list_id;
+    int add_chunk_id;
+    int sub_chunk_id;
+    base::Time received;
+  };
+
+  typedef std::list<HashCacheEntry> HashList;
+  typedef base::hash_map<SBPrefix, HashList> HashCache;
+
   friend class SafeBrowsingDatabaseTest;
   FRIEND_TEST(SafeBrowsingDatabase, HashCaching);
 
@@ -104,20 +98,6 @@ class SafeBrowsingDatabase {
 
   // Implementation specific bloom filter building.
   virtual void BuildBloomFilter() = 0;
-
-  // Measuring false positive rate. Call this each time we look in the filter.
-  virtual void IncrementBloomFilterReadCount() {}
-
-  typedef struct HashCacheEntry {
-    SBFullHash full_hash;
-    int list_id;
-    int add_chunk_id;
-    int sub_chunk_id;
-    base::Time received;
-  } HashCacheEntry;
-
-  typedef std::list<HashCacheEntry> HashList;
-  typedef base::hash_map<SBPrefix, HashList> HashCache;
 
   scoped_ptr<HashCache> hash_cache_;
   HashCache* hash_cache() { return hash_cache_.get(); }

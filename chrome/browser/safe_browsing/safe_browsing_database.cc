@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,10 +6,8 @@
 
 #include "base/file_util.h"
 #include "base/histogram.h"
-#include "base/logging.h"
-#include "base/sha2.h"
+#include "chrome/browser/safe_browsing/bloom_filter.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database_bloom.h"
-#include "googleurl/src/gurl.h"
 
 using base::Time;
 
@@ -22,37 +20,7 @@ SafeBrowsingDatabase* SafeBrowsingDatabase::Create() {
   return new SafeBrowsingDatabaseBloom;
 }
 
-bool SafeBrowsingDatabase::NeedToCheckUrl(const GURL& url) {
-  // Keep a reference to the current bloom filter in case the database rebuilds
-  // it while we're accessing it.
-  scoped_refptr<BloomFilter> filter = bloom_filter_;
-  if (!filter.get())
-    return true;
-
-  IncrementBloomFilterReadCount();
-
-  std::vector<std::string> hosts;
-  safe_browsing_util::GenerateHostsToCheck(url, &hosts);
-  if (hosts.size() == 0)
-    return false;  // Could be about:blank.
-
-  SBPrefix host_key;
-  if (url.HostIsIPAddress()) {
-    base::SHA256HashString(url.host() + "/", &host_key, sizeof(SBPrefix));
-    if (filter->Exists(host_key))
-      return true;
-  } else {
-    base::SHA256HashString(hosts[0] + "/", &host_key, sizeof(SBPrefix));
-    if (filter->Exists(host_key))
-      return true;
-
-    if (hosts.size() > 1) {
-      base::SHA256HashString(hosts[1] + "/", &host_key, sizeof(SBPrefix));
-      if (filter->Exists(host_key))
-        return true;
-    }
-  }
-  return false;
+SafeBrowsingDatabase::~SafeBrowsingDatabase() {
 }
 
 // static
