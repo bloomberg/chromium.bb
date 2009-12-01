@@ -1079,10 +1079,6 @@ BUG10307 WIN : LayoutTests/svg/W3C-SVG-1.1/filters-example-01-b.svg = FAIL
 // alpha in bottom group.
 BUG10310 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-opacity-01-b.svg = FAIL
 
-// Image mismatch: some green blocks are not displayed.
-// Started to fail WebKit upstream change r49757, and probably related to it.
-BUG25175 : LayoutTests/svg/W3C-SVG-1.1/masking-mask-01-b.svg = IMAGE
-
 // Image mismatch since WebKit r49757.
 // The difference is hard to tell, but our gradation is slightly different
 // (blue is too strong on the gradation).
