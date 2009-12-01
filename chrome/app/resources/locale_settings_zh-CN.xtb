@@ -9,7 +9,7 @@
   <translation id="IDS_WEB_FONT_FAMILY">Simhei</translation>
   <translation id="IDS_FIXED_FONT_FAMILY">NSimsun</translation>
   <translation id="IDS_SERIF_FONT_FAMILY">Simsun</translation>
-  <translation id="IDS_SANS_SERIF_FONT_FAMILY">Simhei</translation>
+  <translation id="IDS_SANS_SERIF_FONT_FAMILY">Simsun</translation>
   <translation id="IDS_CURSIVE_FONT_FAMILY">Comic Sans MS</translation>
   <translation id="IDS_FANTASY_FONT_FAMILY">Impact</translation>
 </if>
