@@ -782,8 +782,6 @@ BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = IMAGE PASS
 // These tests are failing because they use position-dependent mouse clicks.
 BUG13907 BUG25375 : LayoutTests/media/video-controls-transformed.html = FAIL
 
-BUG13907 : LayoutTests/media/progress-event-at-least-one.html = FAIL
-
 // These tests are WONTFIX because they use codecs Chromium doesn't support.
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-can-play-type.html = FAIL TIMEOUT
 BUG16779 WONTFIX SKIP : LayoutTests/media/video-document-types.html = FAIL TIMEOUT
@@ -3020,3 +3018,7 @@ BUG28918 : LayoutTests/http/tests/cache/subresource-failover-to-network.html = P
 BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/backgrounds/svg-as-background-5.html = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/fast/overflow/scrollRevealButton.html = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/svg/transforms/text-with-pattern-with-svg-transform.svg = IMAGE
+
+// New failures from merge 51480:51511
+BUG_UKAI WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
+BUG_UKAI WIN : LayoutTests/storage/domstorage/complex-keys.html = FAIL
