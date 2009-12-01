@@ -103,7 +103,7 @@ class ImageView : public View {
   // The current tooltip text.
   std::wstring tooltip_text_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ImageView);
+  DISALLOW_COPY_AND_ASSIGN(ImageView);
 };
 
 }  // namespace views

@@ -144,7 +144,7 @@ class ATL_NO_VTABLE ViewAccessibility
   // Member View needed for view-specific calls.
   views::View* view_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ViewAccessibility);
+  DISALLOW_COPY_AND_ASSIGN(ViewAccessibility);
 };
 
 extern const wchar_t kViewsUninitializeAccessibilityInstance[];

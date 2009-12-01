@@ -27,7 +27,7 @@ class FillLayout : public LayoutManager {
   virtual gfx::Size GetPreferredSize(View* host);
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(FillLayout);
+  DISALLOW_COPY_AND_ASSIGN(FillLayout);
 };
 
 }  // namespace views

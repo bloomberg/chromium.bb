@@ -31,7 +31,7 @@ class Viewport : public View {
   }
 
  private:
-  DISALLOW_EVIL_CONSTRUCTORS(Viewport);
+  DISALLOW_COPY_AND_ASSIGN(Viewport);
 };
 
 
@@ -338,7 +338,7 @@ void ScrollView::UpdateScrollBarPositions() {
   }
 }
 
-// TODO(ACW). We should really use ScrollWindowEx as needed
+// TODO(ACW): We should really use ScrollWindowEx as needed
 void ScrollView::ScrollToPosition(ScrollBar* source, int position) {
   if (!contents_)
     return;
@@ -503,7 +503,7 @@ FixedRowHeightScrollHelper::FixedRowHeightScrollHelper(int top_margin,
     : VariableRowHeightScrollHelper(NULL),
       top_margin_(top_margin),
       row_height_(row_height) {
-  DCHECK(row_height > 0);
+  DCHECK_GT(row_height, 0);
 }
 
 VariableRowHeightScrollHelper::RowInfo

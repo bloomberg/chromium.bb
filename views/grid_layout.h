@@ -355,4 +355,4 @@ class ColumnSet {
 
 }  // namespace views
 
-#endif // VIEWS_GRID_LAYOUT_H_
+#endif  // VIEWS_GRID_LAYOUT_H_

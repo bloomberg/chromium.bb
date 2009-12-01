@@ -24,7 +24,7 @@ class SolidBorder : public Border {
   SkColor color_;
   gfx::Insets insets_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(SolidBorder);
+  DISALLOW_COPY_AND_ASSIGN(SolidBorder);
 };
 
 SolidBorder::SolidBorder(int thickness, SkColor color)
@@ -83,7 +83,7 @@ class EmptyBorder : public Border {
   int bottom_;
   int right_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(EmptyBorder);
+  DISALLOW_COPY_AND_ASSIGN(EmptyBorder);
 };
 }
 

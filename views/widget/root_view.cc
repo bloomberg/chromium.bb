@@ -155,7 +155,7 @@ class ScopedProcessingPaint {
  private:
   bool* is_processing_paint_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ScopedProcessingPaint);
+  DISALLOW_COPY_AND_ASSIGN(ScopedProcessingPaint);
 };
 #endif
 
@@ -559,7 +559,7 @@ View* RootView::FindNextFocusableView(View* starting_view,
   if (!starting_view) {
     // Default to the first/last child
     starting_view = reverse ? GetChildViewAt(GetChildViewCount() - 1) :
-                              GetChildViewAt(0) ;
+                              GetChildViewAt(0);
     // If there was no starting view, then the one we select is a potential
     // focus candidate.
     check_starting_view = true;

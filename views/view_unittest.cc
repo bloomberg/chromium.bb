@@ -121,7 +121,7 @@ class EmptyWindow : public CWindowImpl<EmptyWindow,
  private:
   bool empty_paint_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(EmptyWindow);
+  DISALLOW_COPY_AND_ASSIGN(EmptyWindow);
 };
 */
 
@@ -222,7 +222,7 @@ void TestView::ViewHierarchyChanged(bool is_add, View *parent, View *child) {
   child_ = child;
 }
 
-}
+}  // namespace
 
 TEST_F(ViewTest, AddRemoveNotifications) {
   TestView* v1 = new TestView();
@@ -316,7 +316,7 @@ TEST_F(ViewTest, MouseEvent) {
   v1->SetBounds(0, 0, 300, 300);
 
   TestView* v2 = new TestView();
-  v2->SetBounds (100, 100, 100, 100);
+  v2->SetBounds(100, 100, 100, 100);
 
   scoped_ptr<Widget> window(CreateWidget());
 #if defined(OS_WIN)
@@ -936,7 +936,7 @@ class TestViewWithControls : public View {
 
 class SimpleWindowDelegate : public WindowDelegate {
  public:
-  SimpleWindowDelegate(View* contents) : contents_(contents) {  }
+  explicit SimpleWindowDelegate(View* contents) : contents_(contents) {  }
 
   virtual void DeleteDelegate() { delete this; }
 

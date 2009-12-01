@@ -194,7 +194,6 @@ class RootView : public View,
   friend class PaintTask;
 
   RootView();
-  DISALLOW_EVIL_CONSTRUCTORS(RootView);
 
   // Convert a point to our current mouse handler. Returns false if the
   // mouse handler is not connected to a Widget. In that case, the
@@ -330,8 +329,10 @@ class RootView : public View,
   // True if we're currently processing paint.
   bool is_processing_paint_;
 #endif
+
+  DISALLOW_COPY_AND_ASSIGN(RootView);
 };
 
 }  // namespace views
 
-#endif // VIEWS_WIDGET_ROOT_VIEW_H_
+#endif  // VIEWS_WIDGET_ROOT_VIEW_H_

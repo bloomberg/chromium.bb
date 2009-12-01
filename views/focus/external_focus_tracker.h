@@ -68,7 +68,7 @@ class ExternalFocusTracker : public FocusChangeListener {
   // also do not track changes to parent_view_ itself.
   View* parent_view_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ExternalFocusTracker);
+  DISALLOW_COPY_AND_ASSIGN(ExternalFocusTracker);
 };
 
 }  // namespace views

@@ -184,9 +184,9 @@ class BitmapScrollBar : public ScrollBar,
   // True if the scroll buttons at each end of the scroll bar should be shown.
   bool show_scroll_buttons_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(BitmapScrollBar);
+  DISALLOW_COPY_AND_ASSIGN(BitmapScrollBar);
 };
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_CONTROLS_SCROLLBAR_BITMAP_SCROLL_BAR_H_
+#endif  // VIEWS_CONTROLS_SCROLLBAR_BITMAP_SCROLL_BAR_H_

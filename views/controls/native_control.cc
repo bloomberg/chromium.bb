@@ -159,7 +159,7 @@ class NativeControlContainer : public CWindowImpl<NativeControlContainer,
 
   NativeControl* parent_;
   HWND control_;
-  DISALLOW_EVIL_CONSTRUCTORS(NativeControlContainer);
+  DISALLOW_COPY_AND_ASSIGN(NativeControlContainer);
 };
 
 NativeControl::NativeControl() : hwnd_view_(NULL),
@@ -320,13 +320,13 @@ void NativeControl::VisibilityChanged(View* starting_from, bool is_visible) {
 }
 
 void NativeControl::SetFixedWidth(int width, Alignment alignment) {
-  DCHECK(width > 0);
+  DCHECK_GT(width, 0);
   fixed_width_ = width;
   horizontal_alignment_ = alignment;
 }
 
 void NativeControl::SetFixedHeight(int height, Alignment alignment) {
-  DCHECK(height > 0);
+  DCHECK_GT(height, 0);
   fixed_height_ = height;
   vertical_alignment_ = alignment;
 }

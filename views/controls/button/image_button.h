@@ -71,7 +71,7 @@ class ImageButton : public CustomButton {
 ////////////////////////////////////////////////////////////////////////////////
 class ToggleImageButton : public ImageButton {
  public:
-  ToggleImageButton(ButtonListener* listener);
+  explicit ToggleImageButton(ButtonListener* listener);
   virtual ~ToggleImageButton();
 
   // Change the toggled state.
@@ -104,7 +104,7 @@ class ToggleImageButton : public ImageButton {
   // this one is shown when toggled.
   std::wstring toggled_tooltip_text_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ToggleImageButton);
+  DISALLOW_COPY_AND_ASSIGN(ToggleImageButton);
 };
 
 }  // namespace views

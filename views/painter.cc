@@ -51,7 +51,7 @@ class GradientPainter : public Painter {
   bool horizontal_;
   SkColor colors_[2];
 
-  DISALLOW_EVIL_CONSTRUCTORS(GradientPainter);
+  DISALLOW_COPY_AND_ASSIGN(GradientPainter);
 };
 
 

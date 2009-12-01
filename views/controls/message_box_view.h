@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_MESSAGE_BOX_VIEW_VIEW_H_
-#define VIEWS_CONTROLS_MESSAGE_BOX_VIEW_VIEW_H_
+#ifndef VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
+#define VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_
 
 #include <string>
 
@@ -88,7 +88,7 @@ class MessageBoxView : public views::View {
 
   ScopedRunnableMethodFactory<MessageBoxView> focus_grabber_factory_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(MessageBoxView);
+  DISALLOW_COPY_AND_ASSIGN(MessageBoxView);
 };
 
-#endif  // VIEWS_CONTROLS_MESSAGE_BOX_VIEW_VIEW_H_
+#endif  // VIEWS_CONTROLS_MESSAGE_BOX_VIEW_H_

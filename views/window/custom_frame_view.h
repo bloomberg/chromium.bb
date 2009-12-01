@@ -10,7 +10,7 @@
 #include "views/window/window.h"
 #include "views/window/window_resources.h"
 
-namespace gfx{
+namespace gfx {
 class Canvas;
 class Font;
 class Size;
@@ -106,9 +106,9 @@ class CustomFrameView : public NonClientFrameView,
   static void InitClass();
   static gfx::Font* title_font_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(CustomFrameView);
+  DISALLOW_COPY_AND_ASSIGN(CustomFrameView);
 };
 
 }  // namespace views
 
-#endif  // #ifndef VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
+#endif  // VIEWS_WINDOW_CUSTOM_FRAME_VIEW_H_
