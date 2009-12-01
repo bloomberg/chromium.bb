@@ -5,10 +5,11 @@ var animationFrames = 36;
 var animationSpeed = 10; // ms
 var canvas;
 var canvasContext;
-var gmail = "http://mail.google.com/";
-var gmailAtomRef = "http://mail.google.com/mail/feed/atom";
+var gmail = "https://mail.google.com/";
+var gmailAtomRef = "https://mail.google.com/mail/feed/atom";
+var gmailRe = /https?\:\/\/mail.google.com\/(?!a\/)/;
 var loggedInImage;
-var pollInterval = 1000 * 10;  // 10 seconds
+var pollInterval = 1000 * 60;  // 1 minute
 var requestTimeout = 1000 * 2;  // 5 seconds
 var rotation = 0;
 var unreadCount = -1;
@@ -59,7 +60,7 @@ LoadingAnimation.prototype.stop = function() {
 
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
-  if (changeInfo.url && changeInfo.url.indexOf(gmail) == 0) {
+  if (changeInfo.url && gmailRe.test(changeInfo.url)) {
     console.log("saw gmail! updating...");
     getInboxCount(function(count) {
       updateUnreadCount(count);
@@ -217,7 +218,15 @@ function drawIconAtRotation() {
 }
 
 function goToInbox() {
-  chrome.tabs.create({url: gmail});
+  chrome.tabs.getAllInWindow(undefined, function(tabs) {
+    for (var i = 0, tab; tab = tabs[i]; i++) {
+      if (tab.url && gmailRe.test(tab.url)) {
+        chrome.tabs.update(tab.id, {selected: true});
+        return;
+      }
+    }
+    chrome.tabs.create({url: gmail});
+  });
 }
 
 // Called when the user clicks on the browser action.
