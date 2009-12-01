@@ -587,7 +587,7 @@
     ['OS=="win"', {
       'variables': {
         'python_exe': [
-          r'<(DEPTH)\native_client\tools\win_py.cmd'
+          '<(DEPTH)/native_client/tools/win_py.cmd'
         ],
       },
       'target_defaults': {
@@ -616,6 +616,7 @@
               # .S file
               '$(InputPath)'],
           'message': 'Building assembly language file $(InputPath)',
+          'process_outputs_as_sources': 1,
         },],
         'defines': [
           '_WIN32_WINNT=0x0600',

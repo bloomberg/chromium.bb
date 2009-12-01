@@ -58,8 +58,8 @@
         }],
       ],
       'sources': [
-        '<(DEPTH)/native_client/src/trusted/service_runtime/arch/x86_32/tramp.S',
-        '<(DEPTH)/native_client/src/trusted/service_runtime/arch/x86_32/tramp_gen.c',
+        '../x86_32/tramp.S',
+        '../x86_32/tramp_gen.c',
       ],
     },
     {
@@ -89,8 +89,8 @@
       ],
 
       'sources': [
-        '<(DEPTH)/native_client/src/trusted/service_runtime/arch/x86_32/springboard.S',
-        '<(DEPTH)/native_client/src/trusted/service_runtime/arch/x86_32/springboard_gen.c',
+        '../x86_32/springboard.S',
+        '../x86_32/springboard_gen.c',
       ],
     },
     {

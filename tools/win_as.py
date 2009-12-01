@@ -82,15 +82,19 @@ def main(argv):
       # Run the C compiler as a preprocessor and pipe the output into a string
       #
       print >>sys.stderr, 'Preprocessing...'
+      cl_env = os.environ.copy()
+      cl_env['PATH'] = os.environ['PRE_WINPY_PATH']
       p = subprocess.Popen(['cl.exe',
-                             '/DNACL_BLOCK_SHIFT=5'
-                             '/DNACL_BUILD_ARCH=' + str(nacl_build_subarch),
-                             '/DNACL_BUILD_SUBARCH=' + str(nacl_build_subarch),
-                             '/DNACL_WINDOWS=1',
-                             '/E',
-                             '/I' + nacl_path,
-                             filename],
-                          stdout=subprocess.PIPE)
+                            '/DNACL_BLOCK_SHIFT=5'
+                            '/DNACL_BUILD_ARCH=' + str(nacl_build_subarch),
+                            '/DNACL_BUILD_SUBARCH=' + str(nacl_build_subarch),
+                            '/DNACL_WINDOWS=1',
+                            '/E',
+                            '/I' + nacl_path,
+                            filename],
+                           env=cl_env,
+                           shell=True,
+                           stdout=subprocess.PIPE)
       cl_output = p.communicate()[0]
 
       if p.wait() == 0: # success
@@ -102,8 +106,8 @@ def main(argv):
                               '-defsym','@feat.00=1',
                               '--' + str(nacl_build_subarch),
                               '-o', output_filename ],
-                            stdin=subprocess.PIPE,
-                            stderr=subprocess.PIPE)
+                             stdin=subprocess.PIPE,
+                             stderr=subprocess.PIPE)
         as_output, as_error = p.communicate(cl_output)
 
         #
