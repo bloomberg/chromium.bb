@@ -102,7 +102,7 @@ REGEX : npapi::plugininstance::npp_newstream___[^_]*___ipc::syncchannel::sendwit
 # 20915
 REGEX : ^base::messagepumpforio::schedulework___ucase_props_trieindex___canonicalize_map$
 PREFIX : base::messagepumpforio::schedulework___propsvectors___propsvectorstrie_index
-PREFIX : npn_invalidaterect___webplugindelegateimpl
+SUBSTRING : npn_invalidaterect___webplugindelegateimpl
 PREFIX : runnablemethod<ipc::channelproxy::context,void (__thiscall ipc::channelproxy::context::*)(ipc::message const &),tuple1<ipc::message> >::run___base::messagepumpforui::dorunloop
 
 # 21295
