@@ -62,7 +62,6 @@ Value* CreateLocaleDefaultValue(Value::ValueType type, int message_id) {
 
 PrefService::PrefService(const FilePath& pref_filename)
     : persistent_(new DictionaryValue),
-      transient_(new DictionaryValue),
       writer_(pref_filename) {
   ReloadPersistentPrefs();
 }
@@ -211,8 +210,6 @@ bool PrefService::GetBoolean(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
 
   bool result = false;
-  if (transient_->GetBoolean(path, &result))
-    return result;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -228,8 +225,6 @@ int PrefService::GetInteger(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
 
   int result = 0;
-  if (transient_->GetInteger(path, &result))
-    return result;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -245,8 +240,6 @@ double PrefService::GetReal(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
 
   double result = 0.0;
-  if (transient_->GetReal(path, &result))
-    return result;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -262,8 +255,6 @@ std::wstring PrefService::GetString(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
 
   std::wstring result;
-  if (transient_->GetString(path, &result))
-    return result;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -279,8 +270,6 @@ FilePath PrefService::GetFilePath(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
 
   FilePath::StringType result;
-  if (transient_->GetString(path, &result))
-    return FilePath(result);
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -298,7 +287,7 @@ FilePath PrefService::GetFilePath(const wchar_t* path) const {
 
 bool PrefService::HasPrefPath(const wchar_t* path) const {
   Value* value = NULL;
-  return (transient_->Get(path, &value) || persistent_->Get(path, &value));
+  return persistent_->Get(path, &value);
 }
 
 const PrefService::Preference* PrefService::FindPreference(
@@ -311,10 +300,6 @@ const PrefService::Preference* PrefService::FindPreference(
 
 const DictionaryValue* PrefService::GetDictionary(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
-
-  DictionaryValue* result = NULL;
-  if (transient_->GetDictionary(path, &result))
-    return result;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -329,10 +314,6 @@ const DictionaryValue* PrefService::GetDictionary(const wchar_t* path) const {
 
 const ListValue* PrefService::GetList(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
-
-  ListValue* result = NULL;
-  if (transient_->GetList(path, &result))
-    return result;
 
   const Preference* pref = FindPreference(path);
   if (!pref) {
@@ -412,7 +393,6 @@ void PrefService::ClearPref(const wchar_t* path) {
     return;
   }
 
-  transient_->Remove(path, NULL);
   Value* value;
   bool has_old_value = persistent_->Get(path, &value);
   persistent_->Remove(path, NULL);
@@ -563,15 +543,12 @@ void PrefService::SetInt64(const wchar_t* path, int64 value) {
 int64 PrefService::GetInt64(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
 
-  std::wstring result;
-  if (transient_->GetString(path, &result))
-    return StringToInt64(WideToUTF16Hack(result));
-
   const Preference* pref = FindPreference(path);
   if (!pref) {
     NOTREACHED() << "Trying to read an unregistered pref: " << path;
-    return StringToInt64(WideToUTF16Hack(result));
+    return 0;
   }
+  std::wstring result(L"0");
   bool rv = pref->GetValue()->GetAsString(&result);
   DCHECK(rv);
   return StringToInt64(WideToUTF16Hack(result));

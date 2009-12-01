@@ -92,8 +92,6 @@ class PrefService : public NonThreadSafe,
   // Serializes the data and schedules save using ImportantFileWriter.
   void ScheduleSavePersistentPrefs();
 
-  DictionaryValue* transient() { return transient_.get(); }
-
   // Make the PrefService aware of a pref.
   void RegisterBooleanPref(const wchar_t* path,
                            bool default_value);
@@ -207,7 +205,6 @@ class PrefService : public NonThreadSafe,
                               const Value* old_value);
 
   scoped_ptr<DictionaryValue> persistent_;
-  scoped_ptr<DictionaryValue> transient_;
 
   // Helper for safe writing pref data.
   ImportantFileWriter writer_;
