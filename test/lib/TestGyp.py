@@ -658,7 +658,7 @@ class TestGypXcode(TestGypBase):
       name =  self.lib_ + name + self._lib
       result.append(name)
     elif type == self.SHARED_LIB:
-      name = name + self._dll
+      name = self.dll_ + name + self._dll
       result.append(name)
     else:
       result.append(name)

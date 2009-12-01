@@ -865,7 +865,7 @@ class XCObject(object):
       # objects, lists, and dicts.
       self.UpdateProperties(defaults, do_copy=True)
 
- 
+
 class XCHierarchicalElement(XCObject):
   """Abstract base for PBXGroup and PBXFileReference.  Not represented in a
   project file."""
@@ -2156,18 +2156,25 @@ class PBXNativeTarget(XCTarget):
     'productType':      [0, str,              0, 1],
   })
 
+  # Mapping from Xcode product-types to settings.  The settings are:
+  #  filetype : used for explicitFileType in the project file
+  #  prefix : the prefix for the file name
+  #  suffix : the suffix for the filen ame
+  #  set_xc_exe_prefix : bool to say if EXECUTABLE_PREFIX should be set to the
+  #                      prefix value.
   _product_filetypes = {
     'com.apple.product-type.application':     ['wrapper.application',
-                                               '', '.app'],
+                                               '', '.app', False],
     'com.apple.product-type.bundle':          ['wrapper.cfbundle',
-                                               '', '.bundle'],
+                                               '', '.bundle', False],
     'com.apple.product-type.framework':       ['wrapper.framework',
-                                               '', '.framework'],
+                                               '', '.framework', False],
     'com.apple.product-type.library.dynamic': ['compiled.mach-o.dylib',
-                                               'lib', '.dylib'],
-    'com.apple.product-type.library.static':  ['archive.ar', 'lib', '.a'],
+                                               'lib', '.dylib', True],
+    'com.apple.product-type.library.static':  ['archive.ar',
+                                               'lib', '.a', False],
     'com.apple.product-type.tool':            ['compiled.mach-o.executable',
-                                               '', ''],
+                                               '', '', False],
   }
 
   def __init__(self, properties=None, id=None, parent=None,
@@ -2185,7 +2192,7 @@ class PBXNativeTarget(XCTarget):
         products_group = pbxproject.ProductsGroup()
 
       if products_group != None:
-        (filetype, prefix, suffix) = \
+        (filetype, prefix, suffix, set_xc_exe_prefix) = \
             self._product_filetypes[self._properties['productType']]
 
         if force_extension is not None:
@@ -2196,10 +2203,32 @@ class PBXNativeTarget(XCTarget):
           if filetype.startswith('wrapper.'):
             self.SetBuildSetting('WRAPPER_EXTENSION', force_extension)
 
+        # Xcode handles most prefixes based on the target type, however there
+        # are exceptions.  If a "BSD Dynamic Library" target is added in the
+        # Xcode UI, Xcode sets EXECUTABLE_PREFIX.  This check duplicates that
+        # behavior.
+        if set_xc_exe_prefix:
+          self.SetBuildSetting('EXECUTABLE_PREFIX', prefix)
+
+        # TODO(tvl): Remove the below hack.
+        #    http://code.google.com/p/gyp/issues/detail?id=122
+
+        # Some targets include the prefix in the target_name.  These targets
+        # really should just add a product_name setting that doesn't include
+        # the prefix.  For example:
+        #  target_name = 'libevent', product_name = 'event'
+        # This check cleans up for them.
+        product_name = self._properties['productName'];
+        prefix_len = len(prefix)
+        if prefix_len and (product_name[:prefix_len] == prefix):
+          product_name = product_name[prefix_len:]
+          self.SetProperty('productName', product_name)
+          self.SetBuildSetting('PRODUCT_NAME', product_name)
+
         ref_props = {
           'explicitFileType': filetype,
           'includeInIndex':   0,
-          'path':             prefix + self._properties['productName'] + suffix,
+          'path':             prefix + product_name + suffix,
           'sourceTree':       'BUILT_PRODUCTS_DIR',
         }
         file_ref = PBXFileReference(ref_props)
@@ -2539,10 +2568,11 @@ class PBXProject(XCContainerPortal):
       self._other_pbxprojects[other_pbxproject] = ref_dict
       self.AppendProperty('projectReferences', ref_dict)
 
-      # Xcode seems to sort this list by the name of the linked project.
+      # Xcode seems to sort this list case-insensitively
       self._properties['projectReferences'] = \
           sorted(self._properties['projectReferences'], cmp=lambda x,y:
-                 cmp(x['ProjectRef'].Name(), y['ProjectRef'].Name()))
+                 cmp(x['ProjectRef'].Name().lower(),
+                     y['ProjectRef'].Name().lower()))
     else:
       # The link already exists.  Pull out the relevnt data.
       project_ref_dict = self._other_pbxprojects[other_pbxproject]

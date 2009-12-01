@@ -35,7 +35,7 @@ generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
   'STATIC_LIB_PREFIX': 'lib',
-  'SHARED_LIB_PREFIX': '',
+  'SHARED_LIB_PREFIX': 'lib',
   'STATIC_LIB_SUFFIX': '.a',
   'SHARED_LIB_SUFFIX': '.dylib',
   # INTERMEDIATE_DIR is a place for targets to build up intermediate products.
