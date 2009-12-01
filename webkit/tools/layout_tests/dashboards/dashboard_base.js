@@ -85,8 +85,9 @@ function handleValidHashParameterWrapper(key, value) {
 
       return true;
 
-    case 'useWebKitCanary':
+    case 'useTestData':
     case 'useV8Canary':
+    case 'useWebKitCanary':
       currentState[key] = value == 'true';
       return true;
 
@@ -270,6 +271,11 @@ function ADD_EXPECTATIONS(expectations) {
 
 function appendJSONScriptElements() {
   parseParameters();
+
+  if (currentState.useTestData) {
+    appendScript('dashboards/flakiness_dashboard_tests.js');
+    return;
+  }
 
   for (var builderName in builders) {
     appendScript(getPathToBuilderResultsFile(builderName) + 'results.json');

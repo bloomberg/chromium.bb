@@ -289,6 +289,9 @@
   // Methods and objects from dashboard_base.js to override.
   //////////////////////////////////////////////////////////////////////////////
   function generatePage() {
+    if (currentState.useTestData)
+      return;
+
     if (!currentState.tests && !('builder' in currentState)) {
       for (var builder in builders) {
         currentState.builder = builder;
@@ -416,9 +419,10 @@
   var testToResultsMap = {};
   var numFlakyTestsPerBuilder = {};
 
-  function createResultsObjectForTest(test) {
+  function createResultsObjectForTest(test, builder) {
     return {
       test: test,
+      builder: builder,
       // HTML for display of the results in the flakiness column
       html: '',
       flips: 0,
@@ -705,8 +709,13 @@
     return null;
   }
 
-  function populateExpectationsData(resultsObj, platform, buildType, builder) {
+  function populateExpectationsData(resultsObj) {
     var test = resultsObj.test;
+
+    var buildInfo = getPlatformAndBuildType(resultsObj.builder);
+    var platform = buildInfo.platform;
+    var buildType = buildInfo.buildType;
+
     var thisPlatformExpectations = getExpectations(test, platform, buildType);
 
     var htmlArrays = {};
@@ -714,7 +723,7 @@
     htmlArrays.modifiers = [];
     htmlArrays.bugs = [];
 
-    var tests = resultsByBuilder[builder].tests;
+    var tests = resultsByBuilder[resultsObj.builder].tests;
 
     var testObject = allExpectations[test];
     var usedExpectations = {};
@@ -930,10 +939,8 @@
     var allTestsForThisBuilder = resultsByBuilder[builderName].tests;
 
     for (var test in allTestsForThisBuilder) {
-      var resultsForTest = createResultsObjectForTest(test);
-      resultsForTest.builder = builderName;
-      populateExpectationsData(resultsForTest, platform, buildType,
-          builderName);
+      var resultsForTest = createResultsObjectForTest(test, builderName);
+      populateExpectationsData(resultsForTest);
 
       var rawTest = resultsByBuilder[builderName].tests[test];
       resultsForTest.rawTimes = rawTest.times;
@@ -2152,6 +2159,8 @@
       hidePopup();
     }
   }, false);
+
+
 
   </script>
 </head>
