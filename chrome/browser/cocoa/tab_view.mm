@@ -9,13 +9,24 @@
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
 
-// Constants for inset and control points for tab shape.
-static const CGFloat kInsetMultiplier = 2.0/3.0;
-static const CGFloat kControlPoint1Multiplier = 1.0/3.0;
-static const CGFloat kControlPoint2Multiplier = 3.0/8.0;
+namespace {
 
-static const NSTimeInterval kAnimationShowDuration = 0.2;
-static const NSTimeInterval kAnimationHideDuration = 0.4;
+// Constants for inset and control points for tab shape.
+const CGFloat kInsetMultiplier = 2.0/3.0;
+const CGFloat kControlPoint1Multiplier = 1.0/3.0;
+const CGFloat kControlPoint2Multiplier = 3.0/8.0;
+
+const NSTimeInterval kAnimationShowDuration = 0.2;
+const NSTimeInterval kAnimationHideDuration = 0.4;
+
+const CGFloat kTearDistance = 36.0;
+const NSTimeInterval kTearDuration = 0.333;
+
+// This is used to judge whether the mouse has moved during rapid closure; if it
+// has moved less than the threshold, we want to close the tab.
+const CGFloat kRapidCloseDist = 2.5;
+
+}  // namespace
 
 @implementation TabView
 
@@ -242,14 +253,6 @@ static const NSTimeInterval kAnimationHideDuration = 0.4;
 // TODO(pinkerton/alcor): This routine needs *a lot* of work to marry Cole's
 // ideas of dragging cocoa views between windows and how the Browser and
 // TabStrip models want to manage tabs.
-
-static const CGFloat kTearDistance = 36.0;
-static const NSTimeInterval kTearDuration = 0.333;
-
-// This is used to judge whether the mouse has moved during rapid closure; if it
-// has moved less than the threshold, we want to close the tab.
-static const CGFloat kRapidCloseDist = 2.5;
-
 - (void)mouseDown:(NSEvent*)theEvent {
   if ([self isClosing])
     return;
@@ -489,7 +492,8 @@ static const CGFloat kRapidCloseDist = 2.5;
   // tear "animation" (of length kTearDuration) we are and has values [0..1].
   // We use sqrt() so the animation is non-linear (slow down near the end
   // point).
-  float tearProgress = [NSDate timeIntervalSinceReferenceDate] - tearTime_;
+  NSTimeInterval tearProgress =
+      [NSDate timeIntervalSinceReferenceDate] - tearTime_;
   tearProgress /= kTearDuration;  // Normalize.
   tearProgress = sqrtf(MAX(MIN(tearProgress, 1.0), 0.0));
 
@@ -646,7 +650,7 @@ static const CGFloat kRapidCloseDist = 2.5;
   [context saveGraphicsState];
   rect = [self bounds];
   BOOL active = [[self window] isKeyWindow] || [[self window] isMainWindow];
-  BOOL selected = [(NSButton*)self state];
+  BOOL selected = [self state];
 
   // Inset by 0.5 in order to draw on pixels rather than on borders (which would
   // cause blurry pixels). Decrease height by 1 in order to move away from the
@@ -663,8 +667,8 @@ static const CGFloat kRapidCloseDist = 2.5;
       NSMakePoint(NSMinX(rect)  + kInsetMultiplier * NSHeight(rect),
                   NSMaxY(rect));
 
-  float baseControlPointOutset = NSHeight(rect) * kControlPoint1Multiplier;
-  float bottomControlPointInset = NSHeight(rect) * kControlPoint2Multiplier;
+  CGFloat baseControlPointOutset = NSHeight(rect) * kControlPoint1Multiplier;
+  CGFloat bottomControlPointInset = NSHeight(rect) * kControlPoint2Multiplier;
 
   // Outset many of these values by 1 to cause the fill to bleed outside the
   // clip area.
@@ -817,4 +821,4 @@ static const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
-@end
+@end  // @implementation TabView

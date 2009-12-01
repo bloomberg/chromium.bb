@@ -27,16 +27,17 @@
   // Tracking area for close button mouseover images.
   scoped_nsobject<NSTrackingArea> closeTrackingArea_;
 
+  BOOL isMouseInside_;  // Is the mouse hovering over?
+  CGFloat hoverAlpha_;  // How strong the mouse hover state is.
+  NSTimeInterval lastHoverUpdate_;  // Time the hover value was last updated.
+  NSPoint hoverPoint_;  // Current location of hover in view coords.
+
   // All following variables are valid for the duration of a drag.
   // These are released on mouseUp:
   BOOL moveWindowOnDrag_;  // Set if the only tab of a window is dragged.
   BOOL tabWasDragged_;  // Has the tab been dragged?
   BOOL draggingWithinTabStrip_;  // Did drag stay in the current tab strip?
   BOOL chromeIsVisible_;
-  BOOL isMouseInside_;  // Is the mouse hovering over?
-  CGFloat hoverAlpha_;  // How strong the mouse hover state is.
-  NSTimeInterval lastHoverUpdate_;  // Time the hover value was last updated.
-  NSPoint hoverPoint_;  // Current location of hover in view coords.
 
   NSTimeInterval tearTime_;  // Time since tear happened
   NSPoint tearOrigin_;  // Origin of the tear rect
@@ -55,7 +56,8 @@
   TabWindowController* targetController_;  // weak. Controller being targeted
   NSCellStateValue state_;
 }
-@property(assign) NSCellStateValue state;
+
+@property(assign, nonatomic) NSCellStateValue state;
 @property(assign, nonatomic) CGFloat hoverAlpha;
 
 // Determines if the tab is in the process of animating closed. It may still
