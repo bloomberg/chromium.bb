@@ -509,6 +509,14 @@
    fun:_ZN24BrowserRenderProcessHost31OnSpellCheckerRequestDictionaryEv
    fun:_ZN3IPC7Message8DispatchI24BrowserRenderProcessHostEEbPKS0_PT_MS5_FvvE
 }
+{
+   # AudioRendererHost is deleted in IO thread, which may or may not be called on exit.
+   intentional_BrowserRenderProcessHost_Init_Leak
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN24BrowserRenderProcessHost4InitEbP23URLRequestContextGetter
+   fun:_ZN14RenderViewHost16CreateRenderViewEP23URLRequestContextGetter
+}
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
