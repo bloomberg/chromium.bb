@@ -8,6 +8,6 @@ namespace plugin_interpose_strings {
 
 const char kDYLDInsertLibrariesKey[] = "DYLD_INSERT_LIBRARIES";
 const char kInterposeLibraryPath[] =
-    "@executable_path/plugin_carbon_interpose.dylib";
+    "@executable_path/libplugin_carbon_interpose.dylib";
 
 }  // namespace plugin_interpose_strings

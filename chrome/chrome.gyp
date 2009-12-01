@@ -6175,7 +6175,7 @@
             {
               'destination': '<(PRODUCT_DIR)/<(mac_product_name) Helper.app/Contents/MacOS',
               'files': [
-                '<(PRODUCT_DIR)/plugin_carbon_interpose.dylib',
+                '<(PRODUCT_DIR)/libplugin_carbon_interpose.dylib',
               ],
             },
           ],
