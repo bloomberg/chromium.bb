@@ -126,13 +126,12 @@ This a synonym for 'gclient %(alias)s'
 usage: gclient %(cmd)s [options] [--] [svn update options/args]
 
 Valid options:
-  --force             : force update even for unchanged modules
-  --nohooks           : don't run the hooks after the update is complete
-  --revision REV      : update/checkout all solutions with specified revision
+  --force                 : force update even for unchanged modules
+  --nohooks               : don't run the hooks after the update is complete
   --revision SOLUTION@REV : update given solution to specified revision
-  --deps PLATFORM(S)  : sync deps for the given platform(s), or 'all'
-  --verbose           : output additional diagnostics
-  --head              : update to latest revision, instead of last good revision
+  --deps PLATFORM(S)      : sync deps for the given platform(s), or 'all'
+  --verbose               : output additional diagnostics
+  --head                  : update to latest revision, instead of last good revision
 
 Examples:
   gclient %(cmd)s
@@ -141,6 +140,8 @@ Examples:
   gclient %(cmd)s --force
       update files from SVN according to current configuration, for
       all modules (useful for recovering files deleted from local copy)
+  gclient %(cmd)s --revision src@31000
+      update src directory to r31000
 """)
 
 COMMAND_USAGE_TEXT = {
