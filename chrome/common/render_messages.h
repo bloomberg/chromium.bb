@@ -413,12 +413,6 @@ struct ViewMsg_DatabaseOpenFileResponse_Params {
 #endif
 };
 
-struct ViewMsg_OpenFileForPluginResponse_Params {
-  // Note: if we end up having to add a directory handle, this should be
-  // combined with the DatabaseOpenFileResponse_Params struct.
-  IPC::PlatformFileForTransit file_handle;
-};
-
 // Parameters to describe a rendered page.
 struct ViewHostMsg_DidPrintPage_Params {
   // A shared memory handle to the EMF data. This data can be quite large so a
@@ -1865,20 +1859,6 @@ struct ParamTraits<ViewMsg_DatabaseOpenFileResponse_Params> {
     LogParam(p.dir_handle, l);
 #endif
     l->append(L")");
-  }
-};
-
-template <>
-struct ParamTraits<ViewMsg_OpenFileForPluginResponse_Params> {
-  typedef ViewMsg_OpenFileForPluginResponse_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.file_handle);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->file_handle);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    LogParam(p.file_handle, l);
   }
 };
 

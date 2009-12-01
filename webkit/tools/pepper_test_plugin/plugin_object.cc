@@ -224,10 +224,11 @@ void DrawSampleBitmap(SkCanvas& canvas, int width, int height) {
   canvas.drawPath(path, paint);
 }
 
-NPPepperExtensions* pepper = NULL;
-
-void FlushCallback(NPRenderContext* context, void* user_data) {
+void FlushCallback(NPP instance, NPDeviceContext* context,
+                   NPError err, void* user_data) {
 }
+
+NPExtensions* extensions = NULL;
 
 }  // namespace
 
@@ -236,15 +237,19 @@ void FlushCallback(NPRenderContext* context, void* user_data) {
 
 PluginObject::PluginObject(NPP npp)
     : npp_(npp),
-      test_object_(browser->createobject(npp, GetTestClass())) {
-  if (!pepper) {
+      test_object_(browser->createobject(npp, GetTestClass())),
+      device2d_(NULL) {
+  if (!extensions) {
     browser->getvalue(npp_, NPNVPepperExtensions,
-                      reinterpret_cast<void*>(&pepper));
-    CHECK(pepper);
+                      reinterpret_cast<void*>(&extensions));
+    CHECK(extensions);
   }
+  device2d_ = extensions->acquireDevice(npp, NPPepper2DDevice);
+  CHECK(device2d_);
 }
 
 PluginObject::~PluginObject() {
+  // FIXME(brettw) destroy the context.
   browser->releaseobject(test_object_);
 }
 
@@ -254,26 +259,12 @@ NPClass* PluginObject::GetPluginClass() {
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
-  // File test
-  /* TODO(brettw): remove this when the file stuff is complete. This code is for
-     testing the OpenFileInSandbox function which is not complete.
-  {
-    void* handle = (void*)112358;
-    NPError err = pepper->openFile(npp_,
-        "q:\\prj\\src2\\src\\webkit\\tools\\pepper_test_plugin\\README",
-        &handle);
-    CHECK(err == NPERR_NO_ERROR);
-
-    char buf[256];
-    sprintf(buf, "Got the handle %d", (int)handle);
-    ::MessageBoxA(NULL, buf, "pepper", 0);
-  }*/
-
   size_.set_width(window.width);
   size_.set_height(window.height);
 
-  NPRenderContext context;
-  pepper->initializeRender(npp_, NPRenderGraphicsRGBA, &context);
+  NPDeviceContext2DConfig config;
+  NPDeviceContext2D context;
+  device2d_->initializeContext(npp_, &config, &context);
 
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
@@ -284,7 +275,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
 
   // TODO(brettw) figure out why this cast is necessary, the functions seem to
   // match. Could be a calling convention mismatch?
-  NPFlushRenderContextCallbackPtr callback =
-      reinterpret_cast<NPFlushRenderContextCallbackPtr>(&FlushCallback);
-  pepper->flushRender(npp_, &context, callback, NULL);
+  NPDeviceFlushContextCallbackPtr callback =
+      reinterpret_cast<NPDeviceFlushContextCallbackPtr>(&FlushCallback);
+  device2d_->flushContext(npp_, &context, callback, NULL);
 }

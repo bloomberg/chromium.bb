@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,11 +20,11 @@
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/glue/pepper/pepper.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/plugin_stream_url.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/npapi/bindings/npruntime.h"
 
 using WebKit::WebBindings;
@@ -666,31 +666,81 @@ void NPN_ForceRedraw(NPP id) {
 }
 
 #if defined(PEPPER_APIS_ENABLED)
-static NPError InitializeRenderContext(NPP id,
-                                       NPRenderType type,
-                                       NPRenderContext* context) {
+// Pepper 2D device API --------------------------------------------------------
+
+static NPError Device2DQueryCapability(NPP id, int32 capability, int32* value) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
-    webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
-    // Set up the renderer for the specified type.
-    return delegate->InitializeRenderContext(type, context);
+    plugin->webplugin()->delegate()->Device2DQueryCapability(capability, value);
+    return NPERR_NO_ERROR;
+  } else {
+    return NPERR_GENERIC_ERROR;
+  }
+}
+
+static NPError Device2DQueryConfig(NPP id,
+                                   const NPDeviceConfig* request,
+                                   NPDeviceConfig* obtain) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device2DQueryConfig(
+        static_cast<const NPDeviceContext2DConfig*>(request),
+        static_cast<NPDeviceContext2DConfig*>(obtain));
   }
   return NPERR_GENERIC_ERROR;
 }
 
-static NPError FlushRenderContext(NPP id,
-                                  NPRenderContext* context,
-                                  NPFlushRenderContextCallbackPtr callback,
-                                  void* user_data) {
+static NPError Device2DInitializeContext(NPP id,
+                                         const NPDeviceConfig* config,
+                                         NPDeviceContext* context) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
-    webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
-    // Do the flush.
-    NPError err = delegate->FlushRenderContext(context);
+    return plugin->webplugin()->delegate()->Device2DInitializeContext(
+        static_cast<const NPDeviceContext2DConfig*>(config),
+        static_cast<NPDeviceContext2D*>(context));
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device2DSetStateContext(NPP id,
+                                       NPDeviceContext* context,
+                                       int32 state,
+                                       int32 value) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device2DSetStateContext(
+        static_cast<NPDeviceContext2D*>(context), state, value);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device2DGetStateContext(NPP id,
+                                       NPDeviceContext* context,
+                                       int32 state,
+                                       int32* value) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    return plugin->webplugin()->delegate()->Device2DGetStateContext(
+        static_cast<NPDeviceContext2D*>(context), state, value);
+  }
+  return NPERR_GENERIC_ERROR;
+}
+
+static NPError Device2DFlushContext(NPP id,
+                                    NPDeviceContext* context,
+                                    NPDeviceFlushContextCallbackPtr callback,
+                                    void* user_data) {
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  if (plugin) {
+    NPError err = plugin->webplugin()->delegate()->Device2DFlushContext(
+        static_cast<NPDeviceContext2D*>(context), callback, user_data);
 
     // Invoke the callback to inform the caller the work was done.
+    // TODO(brettw) this is probably not how we want this to work, this should
+    // happen when the frame is painted so the plugin knows when it can draw
+    // the next frame.
     if (callback != NULL)
-      (*callback)(context, err, user_data);
+      (*callback)(id, context, err, user_data);
 
     // Return any errors.
     return err;
@@ -698,23 +748,36 @@ static NPError FlushRenderContext(NPP id,
   return NPERR_GENERIC_ERROR;
 }
 
-static NPError DestroyRenderContext(NPP id,
-                                    NPRenderContext* context) {
+static NPError Device2DDestroyContext(NPP id,
+                                      NPDeviceContext* context) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
-    webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
-    return delegate->DestroyRenderContext(context);
+    return plugin->webplugin()->delegate()->Device2DDestroyContext(
+        static_cast<NPDeviceContext2D*>(context));
   }
   return NPERR_GENERIC_ERROR;
 }
 
-static NPError OpenFileInSandbox(NPP id, const char* file_name, void** handle) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (!plugin)
-    return NPERR_GENERIC_ERROR;
-  webkit_glue::WebPluginDelegate* delegate = plugin->webplugin()->delegate();
-  return delegate->OpenFileInSandbox(file_name, handle);
+// -----------------------------------------------------------------------------
+
+static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
+  static NPDevice device_2d = {
+    Device2DQueryCapability,
+    Device2DQueryConfig,
+    Device2DInitializeContext,
+    Device2DSetStateContext,
+    Device2DGetStateContext,
+    Device2DFlushContext,
+    Device2DDestroyContext,
+  };
+  switch (device_id) {
+    case NPPepper2DDevice:
+      return const_cast<NPDevice*>(&device_2d);
+    default:
+      return NULL;
+  }
 }
+
 #endif  // defined(PEPPER_APIS_ENABLED)
 
 NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
@@ -872,16 +935,12 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
 #if defined(PEPPER_APIS_ENABLED)
   case NPNVPepperExtensions:
   {
-    static const NPPepperExtensions kExtensions = {
-      InitializeRenderContext,
-      FlushRenderContext,
-      DestroyRenderContext,
-      OpenFileInSandbox,
+    static const NPExtensions kExtensions = {
+      AcquireDevice,
     };
     // Return a pointer to the canonical function table.
-    NPPepperExtensions* extensions =
-        const_cast<NPPepperExtensions*>(&kExtensions);
-    NPPepperExtensions** exts = reinterpret_cast<NPPepperExtensions**>(value);
+    NPExtensions* extensions = const_cast<NPExtensions*>(&kExtensions);
+    NPExtensions** exts = reinterpret_cast<NPExtensions**>(value);
     *exts = extensions;
     rv = NPERR_NO_ERROR;
     break;

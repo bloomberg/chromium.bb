@@ -49,6 +49,8 @@ class PluginObject {
   NPP npp_;
   NPObject* test_object_;
 
+  NPDevice* device2d_;
+
   gfx::Size size_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginObject);

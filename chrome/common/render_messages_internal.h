@@ -783,13 +783,6 @@ IPC_BEGIN_MESSAGES(View)
                        bool /* on or off */)
 #endif
 
-  // Opens the given file for the sandboxed plugin, returning a handle
-  // duplicated into the destination process. On error, or if the file is not
-  // permitted by the security policy, the response will contain a 0 handle.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewMsg_OpenFileForPlugin,
-                              FilePath, /* file_name */
-                              ViewMsg_OpenFileForPluginResponse_Params)
-
   //---------------------------------------------------------------------------
   // Utility process messages:
   // These are messages from the browser to the utility process.  They're here

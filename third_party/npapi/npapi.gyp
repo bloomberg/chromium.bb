@@ -15,6 +15,20 @@
           'bindings',
         ],
       },
+      # Even though these are just headers and aren't compiled, adding them to
+      # the project makes it possible to open them in various IDEs.
+      'sources': [
+        'bindings/npapi.h',
+        'bindings/npapi_extensions.h',
+        'bindings/npruntime.h',
+      ],
+      'conditions': [
+        ['OS=="linux"', {
+          'sources': [
+            'bindings/npapi_x11.h',
+          ],
+        }],
+      ],
     },
   ],
 }

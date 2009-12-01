@@ -12,7 +12,7 @@
 #include "base/string16.h"
 #include "build/build_config.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "webkit/glue/pepper/pepper.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCanvas.h"
 
 class FilePath;
@@ -127,22 +127,38 @@ class WebPluginDelegate {
                                                         intptr_t notify_data,
                                                         intptr_t stream) = 0;
 
-  // The following two methods are for use in implementing Pepper renderers.
+  // The following methods are for use in implementing Pepper renderers.
   // They should not be called outside of that context.
-  virtual NPError InitializeRenderContext(NPRenderType type,
-                                          NPRenderContext* context) {
+
+  // Pepper 2D device API.
+  virtual NPError Device2DQueryCapability(int32 capability, int32* value) {
     return NPERR_GENERIC_ERROR;
   }
-
-  virtual NPError DestroyRenderContext(NPRenderContext* context) {
+  virtual NPError Device2DQueryConfig(const NPDeviceContext2DConfig* request,
+                                      NPDeviceContext2DConfig* obtain) {
     return NPERR_GENERIC_ERROR;
   }
-
-  virtual NPError FlushRenderContext(NPRenderContext* context) {
+  virtual NPError Device2DInitializeContext(
+      const NPDeviceContext2DConfig* config,
+      NPDeviceContext2D* context) {
     return NPERR_GENERIC_ERROR;
   }
-
-  virtual NPError OpenFileInSandbox(const char* file_name, void** handle) {
+  virtual NPError Device2DSetStateContext(NPDeviceContext2D* context,
+                                          int32 state,
+                                          int32 value) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device2DGetStateContext(NPDeviceContext2D* context,
+                                          int32 state,
+                                          int32* value) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device2DFlushContext(NPDeviceContext2D* context,
+                                       NPDeviceFlushContextCallbackPtr callback,
+                                       void* user_data) {
+    return NPERR_GENERIC_ERROR;
+  }
+  virtual NPError Device2DDestroyContext(NPDeviceContext2D* context) {
     return NPERR_GENERIC_ERROR;
   }
 };

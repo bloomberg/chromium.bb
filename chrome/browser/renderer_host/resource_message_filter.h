@@ -59,7 +59,6 @@ struct WebScreenInfo;
 }
 
 struct ViewHostMsg_ScriptedPrint_Params;
-struct ViewMsg_OpenFileForPluginResponse_Params;
 #if defined(OS_LINUX)
 struct ViewHostMsg_DidPrintPage_Params;
 #endif
@@ -297,8 +296,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   void OnGetFileSizeOnFileThread(const FilePath& path, IPC::Message* reply_msg);
   void OnKeygen(uint32 key_size_index, const std::string& challenge_string,
                 const GURL& url, std::string* signed_public_key);
-  void OnOpenFileForPlugin(const FilePath& file_path,
-                           ViewMsg_OpenFileForPluginResponse_Params* result);
 #if defined(OS_LINUX)
   void SendDelayedReply(IPC::Message* reply_msg);
   void DoOnGetScreenInfo(gfx::NativeViewId view, IPC::Message* reply_msg);

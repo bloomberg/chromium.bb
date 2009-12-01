@@ -21,7 +21,7 @@
 #include "chrome/common/transport_dib.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/npapi/bindings/npapi.h"
-#include "webkit/glue/pepper/pepper.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webplugin_delegate.h"
 
@@ -80,6 +80,22 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       bool notify_needed,
       intptr_t notify_data,
       intptr_t stream);
+  virtual NPError Device2DQueryCapability(int32 capability, int32* value);
+  virtual NPError Device2DQueryConfig(const NPDeviceContext2DConfig* request,
+                                      NPDeviceContext2DConfig* obtain);
+  virtual NPError Device2DInitializeContext(
+      const NPDeviceContext2DConfig* config,
+      NPDeviceContext2D* context);
+  virtual NPError Device2DSetStateContext(NPDeviceContext2D* context,
+                                          int32 state,
+                                          int32 value);
+  virtual NPError Device2DGetStateContext(NPDeviceContext2D* context,
+                                          int32 state,
+                                          int32* value);
+  virtual NPError Device2DFlushContext(NPDeviceContext2D* context,
+                                       NPDeviceFlushContextCallbackPtr callback,
+                                       void* user_data);
+  virtual NPError Device2DDestroyContext(NPDeviceContext2D* context);
   // End of WebPluginDelegate implementation.
 
   bool IsWindowless() const { return true; }
@@ -93,15 +109,6 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   WebPluginDelegatePepper(gfx::PluginWindowHandle containing_view,
                           NPAPI::PluginInstance *instance);
   ~WebPluginDelegatePepper();
-
-  //----------------------------
-  // used for windowless plugins
-  virtual NPError InitializeRenderContext(NPRenderType type,
-                                          NPRenderContext* context);
-  virtual NPError DestroyRenderContext(NPRenderContext* context);
-  virtual NPError FlushRenderContext(NPRenderContext* context);
-
-  virtual NPError OpenFileInSandbox(const char* file_name, void** handle);
 
   // Tells the plugin about the current state of the window.
   // See NPAPI NPP_SetWindow for more information.

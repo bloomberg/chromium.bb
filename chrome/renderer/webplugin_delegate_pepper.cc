@@ -18,9 +18,9 @@
 #include "base/string_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/glue_util.h"
-#include "webkit/glue/pepper/pepper.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
@@ -225,6 +225,125 @@ WebPluginResourceClient* WebPluginDelegatePepper::CreateResourceClient(
   return stream;
 }
 
+NPError WebPluginDelegatePepper::Device2DQueryCapability(int32 capability,
+                                                         int32* value) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device2DQueryConfig(
+    const NPDeviceContext2DConfig* request,
+    NPDeviceContext2DConfig* obtain) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device2DInitializeContext(
+    const NPDeviceContext2DConfig* config,
+    NPDeviceContext2D* context) {
+  int width = window_rect_.width();
+  int height = window_rect_.height();
+  uint32 buffer_size = width * height * kBytesPerPixel;
+
+  // Allocate the transport DIB and the PlatformCanvas pointing to it.
+  scoped_ptr<OpenPaintContext> paint_context(new OpenPaintContext);
+  paint_context->transport_dib.reset(
+      TransportDIB::Create(buffer_size, ++next_buffer_id));
+  if (!paint_context->transport_dib.get())
+    return NPERR_OUT_OF_MEMORY_ERROR;
+  paint_context->canvas.reset(
+      paint_context->transport_dib->GetPlatformCanvas(width, height));
+  if (!paint_context->canvas.get())
+    return NPERR_OUT_OF_MEMORY_ERROR;
+
+  // Note that we need to get the address out of the bitmap rather than
+  // using plugin_buffer_->memory(). The memory() is when the bitmap data
+  // has had "Map" called on it. For Windows, this is separate than making a
+  // bitmap using the shared section.
+  const SkBitmap& plugin_bitmap =
+      paint_context->canvas->getTopPlatformDevice().accessBitmap(true);
+  SkAutoLockPixels locker(plugin_bitmap);
+
+  // TODO(brettw) this theoretically shouldn't be necessary. But the
+  // platform device on Windows will fill itself with green to help you
+  // catch areas you didn't paint.
+  plugin_bitmap.eraseARGB(0, 0, 0, 0);
+
+  // Save the canvas to the output context structure and save the
+  // OpenPaintContext for future reference.
+  context->u.graphicsRgba.region = plugin_bitmap.getAddr32(0, 0);
+  context->u.graphicsRgba.stride = width * kBytesPerPixel;
+  context->u.graphicsRgba.dirty.left = 0;
+  context->u.graphicsRgba.dirty.top = 0;
+  context->u.graphicsRgba.dirty.right = width;
+  context->u.graphicsRgba.dirty.bottom = height;
+  open_paint_contexts_[context->u.graphicsRgba.region] =
+      linked_ptr<OpenPaintContext>(paint_context.release());
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device2DSetStateContext(
+    NPDeviceContext2D* context,
+    int32 state,
+    int32 value) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device2DGetStateContext(
+    NPDeviceContext2D* context,
+    int32 state,
+    int32* value) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device2DFlushContext(
+    NPDeviceContext2D* context,
+    NPDeviceFlushContextCallbackPtr callback,
+    void* user_data) {
+  // Get the bitmap data associated with the incoming context.
+  OpenPaintContextMap::iterator found = open_paint_contexts_.find(
+      context->u.graphicsRgba.region);
+  if (found == open_paint_contexts_.end())
+    return NPERR_INVALID_PARAM;
+
+  OpenPaintContext* paint_context = found->second.get();
+
+  // Draw the bitmap to the backing store.
+  //
+  // TODO(brettw) we can optimize this in the case where the entire canvas is
+  // updated by actually taking ownership of the buffer and not telling the
+  // plugin we're done using it. This wat we can avoid the copy when the entire
+  // canvas has been updated.
+  SkIRect src_rect = { context->u.graphicsRgba.dirty.left,
+                       context->u.graphicsRgba.dirty.top,
+                       context->u.graphicsRgba.dirty.right,
+                       context->u.graphicsRgba.dirty.bottom };
+  SkRect dest_rect = { SkIntToScalar(context->u.graphicsRgba.dirty.left),
+                       SkIntToScalar(context->u.graphicsRgba.dirty.top),
+                       SkIntToScalar(context->u.graphicsRgba.dirty.right),
+                       SkIntToScalar(context->u.graphicsRgba.dirty.bottom) };
+  SkCanvas committed_canvas(committed_bitmap_);
+
+  // We want to replace the contents of the bitmap rather than blend.
+  SkPaint paint;
+  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  committed_canvas.drawBitmapRect(
+      paint_context->canvas->getTopPlatformDevice().accessBitmap(false),
+      &src_rect, dest_rect);
+
+  committed_bitmap_.setIsOpaque(false);
+  return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device2DDestroyContext(
+    NPDeviceContext2D* context) {
+  OpenPaintContextMap::iterator found = open_paint_contexts_.find(
+      context->u.graphicsRgba.region);
+  if (found == open_paint_contexts_.end())
+    return NPERR_INVALID_PARAM;
+
+  open_paint_contexts_.erase(found);
+  return NPERR_NO_ERROR;
+}
+
 bool WebPluginDelegatePepper::IsPluginDelegateWindow(
     gfx::NativeWindow window) {
   return false;
@@ -404,127 +523,4 @@ bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
       break;
   }
   return instance()->NPP_HandleEvent(&npevent) != 0;
-}
-
-NPError WebPluginDelegatePepper::InitializeRenderContext(
-    NPRenderType type, NPRenderContext* context) {
-  switch (type) {
-    case NPRenderGraphicsRGBA: {
-      int width = window_rect_.width();
-      int height = window_rect_.height();
-      uint32 buffer_size = width * height * kBytesPerPixel;
-
-      // Allocate the transport DIB and the PlatformCanvas pointing to it.
-      scoped_ptr<OpenPaintContext> paint_context(new OpenPaintContext);
-      paint_context->transport_dib.reset(
-          TransportDIB::Create(buffer_size, ++next_buffer_id));
-      if (!paint_context->transport_dib.get())
-        return NPERR_OUT_OF_MEMORY_ERROR;
-      paint_context->canvas.reset(
-          paint_context->transport_dib->GetPlatformCanvas(width, height));
-      if (!paint_context->canvas.get())
-        return NPERR_OUT_OF_MEMORY_ERROR;
-
-      // Note that we need to get the address out of the bitmap rather than
-      // using plugin_buffer_->memory(). The memory() is when the bitmap data
-      // has had "Map" called on it. For Windows, this is separate than making a
-      // bitmap using the shared section.
-      const SkBitmap& plugin_bitmap =
-          paint_context->canvas->getTopPlatformDevice().accessBitmap(true);
-      SkAutoLockPixels locker(plugin_bitmap);
-
-      // TODO(brettw) this theoretically shouldn't be necessary. But the
-      // platform device on Windows will fill itself with green to help you
-      // catch areas you didn't paint.
-      plugin_bitmap.eraseARGB(0, 0, 0, 0);
-
-      // Save the canvas to the output context structure and save the
-      // OpenPaintContext for future reference.
-      context->u.graphicsRgba.region = plugin_bitmap.getAddr32(0, 0);
-      context->u.graphicsRgba.stride = width * kBytesPerPixel;
-      context->u.graphicsRgba.dirty.left = 0;
-      context->u.graphicsRgba.dirty.top = 0;
-      context->u.graphicsRgba.dirty.right = width;
-      context->u.graphicsRgba.dirty.bottom = height;
-      open_paint_contexts_[context->u.graphicsRgba.region] =
-          linked_ptr<OpenPaintContext>(paint_context.release());
-      return NPERR_NO_ERROR;
-    }
-    default:
-      return NPERR_GENERIC_ERROR;
-  }
-}
-
-NPError WebPluginDelegatePepper::DestroyRenderContext(
-    NPRenderContext* context) {
-  OpenPaintContextMap::iterator found = open_paint_contexts_.find(
-      context->u.graphicsRgba.region);
-  if (found == open_paint_contexts_.end())
-    return NPERR_INVALID_PARAM;
-
-  open_paint_contexts_.erase(found);
-  return NPERR_NO_ERROR;
-}
-
-NPError WebPluginDelegatePepper::FlushRenderContext(NPRenderContext* context) {
-  // Get the bitmap data associated with the incoming context.
-  OpenPaintContextMap::iterator found = open_paint_contexts_.find(
-      context->u.graphicsRgba.region);
-  if (found == open_paint_contexts_.end())
-    return NPERR_INVALID_PARAM;
-
-  OpenPaintContext* paint_context = found->second.get();
-
-  // Draw the bitmap to the backing store.
-  //
-  // TODO(brettw) we can optimize this in the case where the entire canvas is
-  // updated by actually taking ownership of the buffer and not telling the
-  // plugin we're done using it. This wat we can avoid the copy when the entire
-  // canvas has been updated.
-  SkIRect src_rect = { context->u.graphicsRgba.dirty.left,
-                       context->u.graphicsRgba.dirty.top,
-                       context->u.graphicsRgba.dirty.right,
-                       context->u.graphicsRgba.dirty.bottom };
-  SkRect dest_rect = { SkIntToScalar(context->u.graphicsRgba.dirty.left),
-                       SkIntToScalar(context->u.graphicsRgba.dirty.top),
-                       SkIntToScalar(context->u.graphicsRgba.dirty.right),
-                       SkIntToScalar(context->u.graphicsRgba.dirty.bottom) };
-  SkCanvas committed_canvas(committed_bitmap_);
-
-  // We want to replace the contents of the bitmap rather than blend.
-  SkPaint paint;
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
-  committed_canvas.drawBitmapRect(
-      paint_context->canvas->getTopPlatformDevice().accessBitmap(false),
-      &src_rect, dest_rect);
-
-  committed_bitmap_.setIsOpaque(false);
-  return NPERR_NO_ERROR;
-}
-
-NPError WebPluginDelegatePepper::OpenFileInSandbox(const char* file_name,
-                                                   void** handle) {
-  *handle = NULL;
-
-#if defined(OS_WIN)
-  FilePath file_path(UTF8ToUTF16(file_name));
-#elif defined(OS_POSIX)
-  FilePath file_path(file_name);
-#endif
-
-  ViewMsg_OpenFileForPluginResponse_Params result;
-  RenderThread::current()->Send(new ViewMsg_OpenFileForPlugin(
-      file_path, &result));
-
-#if defined(OS_WIN)
-  if (!result.file_handle)
-    return NPERR_INVALID_PARAM;
-  *handle = result.file_handle;
-#elif defined(OS_POSIX)
-  if (result.file_handle.fd == -1)
-    return NPERR_INVALID_PARAM;
-  *reinterpret_cast<int*>(handle) = result.file_handle.fd;
-#endif
-
-  return NPERR_NO_ERROR;
 }

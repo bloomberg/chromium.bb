@@ -390,7 +390,6 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       IPC_MESSAGE_HANDLER(ViewHostMsg_SetCacheMode, OnSetCacheMode)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetFileSize, OnGetFileSize)
       IPC_MESSAGE_HANDLER(ViewHostMsg_Keygen, OnKeygen)
-      IPC_MESSAGE_HANDLER(ViewMsg_OpenFileForPlugin, OnOpenFileForPlugin)
 #if defined(USE_TCMALLOC)
       IPC_MESSAGE_HANDLER(ViewHostMsg_RendererTcmalloc, OnRendererTcmalloc)
 #endif
@@ -1147,24 +1146,6 @@ void ResourceMessageFilter::OnKeygen(uint32 key_size_index,
       new net::KeygenHandler(key_size_index,
                              challenge_string));
   *signed_public_key = keygen_handler->GenKeyAndSignChallenge();
-}
-
-void ResourceMessageFilter::OnOpenFileForPlugin(
-    const FilePath& file_name,
-    ViewMsg_OpenFileForPluginResponse_Params* result) {
-  // TODO(brettw) finish up this API. This will allow sandboxed plugins to open
-  // certain restricted files by opening the file from the browser and
-  // duplicating the file into the renderer.
-  //
-  // This needs to be done with care because of the security implications. Don't
-  // implement this without getting a thorough security review.
-#if defined(OS_WIN)
-  result->file_handle = NULL;
-#elif defined(OS_POSIX)
-  // TODO(brettw) this currently violates the API provided since it specifies
-  // NULL means error, and this will give -1. We need to be consistent.
-  result->file_handle = base::FileDescriptor();
-#endif
 }
 
 #if defined(USE_TCMALLOC)

@@ -741,13 +741,6 @@ enum NPEventType {
 
 #endif /* XP_MACOSX */
 
-#if !defined(PEPPER_APIS_ENABLED)
-/* Stub typedefs for interfaces requiring Pepper types. */
-typedef int NPRenderType;
-typedef struct _NPRenderContext NPRenderContext;
-typedef struct _NPPepperExtensions NPPepperExtensions;
-#endif  /* defined(PEPPER_APIS_ENABLED) */
-
 /*
  * Values for mode passed to NPP_New:
  */
