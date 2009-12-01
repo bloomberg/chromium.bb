@@ -1534,6 +1534,13 @@ var allowedAttributes = {
     // Only allow a[href] starting with http:// and https://
     return node.tagName == 'A' && (value.indexOf('http://') == 0 ||
         value.indexOf('https://') == 0);
+  },
+  'target': function(node, value) {
+    // Allow a[target] but reset the value to "".
+    if (node.tagName != 'A')
+      return false;
+    node.setAttribute('target', '');
+    return true;
   }
 }
 
