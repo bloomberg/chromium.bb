@@ -356,14 +356,22 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   if (!instance())
     return;
 
-  window_.clipRect.top = 0;
-  window_.clipRect.left = 0;
-  window_.clipRect.bottom = window_rect_.height();
-  window_.clipRect.right = window_rect_.width();
+  // Get the dummy window structure height; we're pretenting the plugin takes up
+  // the whole (dummy) window, but the clip rect and x/y are relative to the
+  // full window region, not just the content region.
+  Rect titlebar_bounds;
+  WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
+  GetWindowBounds(window, kWindowTitleBarRgn, &titlebar_bounds);
+  int window_structure_height = titlebar_bounds.bottom - titlebar_bounds.top;
+
+  window_.x = 0;
+  window_.y = window_structure_height;
   window_.height = window_rect_.height();
   window_.width = window_rect_.width();
-  window_.x = 0;
-  window_.y = 0;
+  window_.clipRect.left = window_.x;
+  window_.clipRect.top = window_.y;
+  window_.clipRect.right = window_.clipRect.left + window_.width;
+  window_.clipRect.bottom = window_.clipRect.top + window_.height;
 
   UpdateDummyWindowBoundsWithOffset(window_rect_.x(), window_rect_.y(),
                                     window_rect_.width(),
@@ -421,11 +429,8 @@ int WebPluginDelegateImpl::PluginDrawingModel() {
 }
 
 void WebPluginDelegateImpl::UpdateWindowLocation(const WebMouseEvent& event) {
-  // TODO: figure out where the vertical offset of 22 comes from (and if 22 is
-  // exactly right) and replace with an appropriate calculation. It feels like
-  // window structure or the menu bar, but neither should be involved here.
   last_window_x_offset_ = event.globalX - event.windowX;
-  last_window_y_offset_ = event.globalY - event.windowY + 22;
+  last_window_y_offset_ = event.globalY - event.windowY;
 
   UpdateDummyWindowBoundsWithOffset(event.windowX - event.x,
                                     event.windowY - event.y, 0, 0);
