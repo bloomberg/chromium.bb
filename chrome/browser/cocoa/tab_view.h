@@ -22,7 +22,7 @@
   // TODO(rohitrao): Add this button to a CoreAnimation layer so we can fade it
   // in and out on mouseovers.
   IBOutlet NSButton* closeButton_;
-  BOOL isClosing_;
+  BOOL closing_;
 
   // Tracking area for close button mouseover images.
   scoped_nsobject<NSTrackingArea> closeTrackingArea_;
@@ -64,7 +64,7 @@
 // be visible on-screen, but should not respond to/initiate any events. Upon
 // setting to NO, clears the target/action of the close button to prevent
 // clicks inside it from sending messages.
-@property(assign, nonatomic) BOOL isClosing;
+@property(assign, nonatomic, getter=isClosing) BOOL closing;
 
 // Enables/Disables tracking regions for the tab.
 - (void)setTrackingEnabled:(BOOL)enabled;

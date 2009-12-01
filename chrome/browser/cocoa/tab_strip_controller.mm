@@ -968,7 +968,7 @@ private:
 
   // Mark the tab as closing. This prevents it from generating any drags or
   // selections while it's animating closed.
-  [(TabView*)[closingTab view] setIsClosing:YES];
+  [(TabView*)[closingTab view] setClosing:YES];
 
   // Register delegate (owned by the animation system).
   NSView* tabView = [closingTab view];

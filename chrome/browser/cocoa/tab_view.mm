@@ -32,7 +32,7 @@ const CGFloat kRapidCloseDist = 2.5;
 
 @synthesize state = state_;
 @synthesize hoverAlpha = hoverAlpha_;
-@synthesize isClosing = isClosing_;
+@synthesize closing = closing_;
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
@@ -812,8 +812,8 @@ const CGFloat kRapidCloseDist = 2.5;
   }
 }
 
-- (void)setIsClosing:(BOOL)closing {
-  isClosing_ = closing;
+- (void)setClosing:(BOOL)closing {
+  closing_ = closing;  // Safe because the property is nonatomic.
   // When closing, ensure clicks to the close button go nowhere.
   if (closing) {
     [closeButton_ setTarget:nil];
