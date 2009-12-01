@@ -1839,3 +1839,21 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_29069
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16UserScriptMaster9StartScanEv
+   fun:_ZN16UserScriptMaster7ObserveE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN19NotificationService6NotifyE16NotificationTypeRK18NotificationSourceRK19NotificationDetails
+   fun:_ZN17ExtensionsService27OnLoadedInstalledExtensionsEv
+   fun:_ZN17ExtensionsService17LoadAllExtensionsEv
+   fun:_ZN17ExtensionsService4InitEv
+}
+{
+   bug_29069
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_Z9SerializeRKSt6vectorI10UserScriptSaIS0_EE
+   fun:_ZN16UserScriptMaster14ScriptReloader7RunScanE8FilePathSt6vectorI10UserScriptSaIS3_EE
+}
