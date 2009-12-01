@@ -1179,9 +1179,6 @@ BUG28998 WONTFIX : LayoutTests/accessibility/aria-tables.html = FAIL
 BUG28998 WONTFIX : LayoutTests/accessibility/table-cell-spans.html = FAIL
 BUG28998 : LayoutTests/accessibility/table-cells.html = FAIL
 
-// AccessibilityUIElement.attributesOfChildren() support
-BUG29000 : LayoutTests/accessibility/nochildren-elements.html = FAIL
-
 // AccessibilityUIElement.clickPointX support
 BUG29001 : LayoutTests/accessibility/editable-webarea-context-menu-point.html = FAIL
 
