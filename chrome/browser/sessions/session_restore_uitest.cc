@@ -383,7 +383,7 @@ TEST_F(SessionRestoreUITest, TwoWindowsCloseOneRestoreOnlyOne) {
 // Launches an app window, closes tabbed browser, launches and makes sure
 // we restore the tabbed browser url.
 TEST_F(SessionRestoreUITest,
-       RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
+       FLAKY_RestoreAfterClosingTabbedBrowserWithAppAndLaunching) {
   NavigateToURL(url1_);
 
   // Launch an app.
