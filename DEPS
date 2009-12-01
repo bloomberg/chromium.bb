@@ -67,9 +67,6 @@ deps = {
   "src/third_party/ots":
     "http://ots.googlecode.com/svn/trunk@19",
 
-  "src/third_party/tcmalloc/tcmalloc":
-    "http://google-perftools.googlecode.com/svn/trunk@77",
-
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@19546",
 
