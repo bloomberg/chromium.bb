@@ -1,6 +1,6 @@
 diff -Naur ../PRISTINE/gcc-4.2.2/config/lib-prefix.m4 gcc-4.2.2/config/lib-prefix.m4
 --- ../PRISTINE/gcc-4.2.2/config/lib-prefix.m4	2004-09-22 16:53:59.000000000 -0700
-+++ gcc-4.2.2/config/lib-prefix.m4	2009-11-27 12:34:27.409470000 -0800
++++ gcc-4.2.2/config/lib-prefix.m4	2009-01-09 17:35:50.549396000 -0800
 @@ -71,7 +71,7 @@
          if test "X$additional_includedir" = "X/usr/local/include"; then
            if test -n "$GCC"; then
@@ -21,7 +21,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/config/lib-prefix.m4 gcc-4.2.2/config/lib-prefi
          fi
 diff -Naur ../PRISTINE/gcc-4.2.2/config.sub gcc-4.2.2/config.sub
 --- ../PRISTINE/gcc-4.2.2/config.sub	2006-10-15 20:27:17.000000000 -0700
-+++ gcc-4.2.2/config.sub	2009-11-27 12:34:27.421466000 -0800
++++ gcc-4.2.2/config.sub	2009-01-09 17:35:50.582362000 -0800
 @@ -122,7 +122,7 @@
  case $maybe_os in
    nto-qnx* | linux-gnu* | linux-dietlibc | linux-newlib* | linux-uclibc* | \
@@ -53,7 +53,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/config.sub gcc-4.2.2/config.sub
  	-qnx*)
 diff -Naur ../PRISTINE/gcc-4.2.2/configure gcc-4.2.2/configure
 --- ../PRISTINE/gcc-4.2.2/configure	2007-09-14 17:42:24.000000000 -0700
-+++ gcc-4.2.2/configure	2009-11-27 12:34:27.441462000 -0800
++++ gcc-4.2.2/configure	2009-01-09 17:35:50.594353000 -0800
 @@ -1178,6 +1178,9 @@
      *-*-freebsd*)
          # Enable libmudflap by default in FreeBSD.
@@ -84,7 +84,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/configure gcc-4.2.2/configure
    *-*-lynxos*)
 diff -Naur ../PRISTINE/gcc-4.2.2/configure.in gcc-4.2.2/configure.in
 --- ../PRISTINE/gcc-4.2.2/configure.in	2007-09-14 17:42:24.000000000 -0700
-+++ gcc-4.2.2/configure.in	2009-11-27 12:34:27.446469000 -0800
++++ gcc-4.2.2/configure.in	2009-01-09 17:35:50.601341000 -0800
 @@ -338,6 +338,9 @@
      *-*-freebsd*)
          # Enable libmudflap by default in FreeBSD.
@@ -115,7 +115,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/configure.in gcc-4.2.2/configure.in
    *-*-lynxos*)
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/Makefile.in gcc-4.2.2/gcc/Makefile.in
 --- ../PRISTINE/gcc-4.2.2/gcc/Makefile.in	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/Makefile.in	2009-11-27 12:34:27.470458000 -0800
++++ gcc-4.2.2/gcc/Makefile.in	2009-01-09 17:35:50.619330000 -0800
 @@ -1018,7 +1018,7 @@
   lambda-trans.o	lambda-code.o tree-loop-linear.o tree-ssa-sink.o 	   \
   tree-vrp.o tree-stdarg.o tree-cfgcleanup.o tree-ssa-reassoc.o		   \
@@ -137,7 +137,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/Makefile.in gcc-4.2.2/gcc/Makefile.in
     output.h $(INSN_ATTR_H) $(SYSTEM_H) toplev.h $(TARGET_H) libfuncs.h \
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/cfgrtl.c gcc-4.2.2/gcc/cfgrtl.c
 --- ../PRISTINE/gcc-4.2.2/gcc/cfgrtl.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/cfgrtl.c	2009-11-27 12:34:27.479460000 -0800
++++ gcc-4.2.2/gcc/cfgrtl.c	2009-01-09 17:35:50.635321000 -0800
 @@ -1040,6 +1040,9 @@
      }
    else
@@ -150,7 +150,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/cfgrtl.c gcc-4.2.2/gcc/cfgrtl.c
  	{
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/crtfastmath.c gcc-4.2.2/gcc/config/i386/crtfastmath.c
 --- ../PRISTINE/gcc-4.2.2/gcc/config/i386/crtfastmath.c	2006-08-26 23:46:38.000000000 -0700
-+++ gcc-4.2.2/gcc/config/i386/crtfastmath.c	2009-11-27 12:34:27.503454000 -0800
++++ gcc-4.2.2/gcc/config/i386/crtfastmath.c	2009-01-09 17:35:50.642295000 -0800
 @@ -49,6 +49,10 @@
  #ifndef __x86_64__
    /* All 64-bit targets have SSE and DAZ; only check them explicitly
@@ -172,7 +172,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/crtfastmath.c gcc-4.2.2/gcc/con
    mxcsr |= MXCSR_DAZ | MXCSR_FTZ;
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.c gcc-4.2.2/gcc/config/i386/i386.c
 --- ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/config/i386/i386.c	2009-11-27 12:34:27.524454000 -0800
++++ gcc-4.2.2/gcc/config/i386/i386.c	2009-01-09 17:35:50.664273000 -0800
 @@ -4876,6 +4876,8 @@
  	  (*targetm.asm_out.unique_section) (decl, 0);
  	  switch_to_section (get_named_section (decl, NULL, 0));
@@ -256,7 +256,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.c gcc-4.2.2/gcc/config/i38
  /* Reset from the function's potential modifications.  */
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.md gcc-4.2.2/gcc/config/i386/i386.md
 --- ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.md	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/config/i386/i386.md	2009-11-27 12:34:27.559435000 -0800
++++ gcc-4.2.2/gcc/config/i386/i386.md	2009-02-19 15:08:48.418868000 -0800
 @@ -147,6 +147,11 @@
     (UNSPEC_SP_TEST		101)
     (UNSPEC_SP_TLS_SET		102)
@@ -458,7 +458,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/i386.md gcc-4.2.2/gcc/config/i3
  (define_insn "return_indirect_internal"
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/nacl.h gcc-4.2.2/gcc/config/i386/nacl.h
 --- ../PRISTINE/gcc-4.2.2/gcc/config/i386/nacl.h	1969-12-31 16:00:00.000000000 -0800
-+++ gcc-4.2.2/gcc/config/i386/nacl.h	2009-11-27 12:34:27.572424000 -0800
++++ gcc-4.2.2/gcc/config/i386/nacl.h	2009-01-09 17:35:50.705234000 -0800
 @@ -0,0 +1,76 @@
 +/* Target definitions for GCC for NativeClient using ELF
 +   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002
@@ -538,8 +538,8 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/i386/nacl.h gcc-4.2.2/gcc/config/i38
 +  while (0)
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/nacl.opt gcc-4.2.2/gcc/config/nacl.opt
 --- ../PRISTINE/gcc-4.2.2/gcc/config/nacl.opt	1969-12-31 16:00:00.000000000 -0800
-+++ gcc-4.2.2/gcc/config/nacl.opt	2009-11-27 14:37:59.900031000 -0800
-@@ -0,0 +1,40 @@
++++ gcc-4.2.2/gcc/config/nacl.opt	2009-01-09 17:35:50.717224000 -0800
+@@ -0,0 +1,54 @@
 +; Processor-independent options for GNU/Linux.
 +;
 +; Copyright (C) 2006, 2007 Free Software Foundation, Inc.
@@ -572,6 +572,20 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/nacl.opt gcc-4.2.2/gcc/config/nacl.o
 +falign-functions=
 +Common RejectNegative Joined UInteger
 +
++falign-jumps
++Common Report Var(align_jumps,NACL_ALIGN_BYTES) Init(NACL_ALIGN_BYTES)
++Align labels which are only reached by jumping
++
++falign-jumps=
++Common RejectNegative Joined UInteger
++
++falign-labels
++Common Report Var(align_labels,NACL_ALIGN_BYTES) Init(NACL_ALIGN_BYTES)
++Align all labels
++
++falign-labels=
++Common RejectNegative Joined UInteger
++
 +fnacl-library-mode
 +Common Report Var(flag_nacl_library_mode,1) Init(0)
 +
@@ -582,7 +596,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config/nacl.opt gcc-4.2.2/gcc/config/nacl.o
 +Common Report Var(flag_nacl_align_pow2,5)
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config.gcc gcc-4.2.2/gcc/config.gcc
 --- ../PRISTINE/gcc-4.2.2/gcc/config.gcc	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/config.gcc	2009-11-27 12:34:27.616393000 -0800
++++ gcc-4.2.2/gcc/config.gcc	2009-01-09 17:35:50.725224000 -0800
 @@ -456,7 +456,20 @@
  *-*-linux*libc1* | *-*-linux*aout*)
    # Avoid the generic linux case.
@@ -643,7 +657,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/config.gcc gcc-4.2.2/gcc/config.gcc
  	;;
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/configure gcc-4.2.2/gcc/configure
 --- ../PRISTINE/gcc-4.2.2/gcc/configure	2007-09-23 14:08:04.000000000 -0700
-+++ gcc-4.2.2/gcc/configure	2009-11-27 12:34:27.637369000 -0800
++++ gcc-4.2.2/gcc/configure	2009-01-09 17:35:50.748199000 -0800
 @@ -7035,7 +7035,7 @@
  
    if test x$enablevar = xyes ; then
@@ -690,7 +704,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/configure gcc-4.2.2/gcc/configure
  	fi
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/configure.ac gcc-4.2.2/gcc/configure.ac
 --- ../PRISTINE/gcc-4.2.2/gcc/configure.ac	2007-09-23 14:08:04.000000000 -0700
-+++ gcc-4.2.2/gcc/configure.ac	2009-11-27 12:34:27.645353000 -0800
++++ gcc-4.2.2/gcc/configure.ac	2009-01-09 17:35:50.755195000 -0800
 @@ -686,7 +686,7 @@
  [
    if test x$enablevar = xyes ; then
@@ -737,7 +751,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/configure.ac gcc-4.2.2/gcc/configure.ac
        cygwin* | pe | mingw32*)
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/ctrl-intg.c gcc-4.2.2/gcc/ctrl-intg.c
 --- ../PRISTINE/gcc-4.2.2/gcc/ctrl-intg.c	1969-12-31 16:00:00.000000000 -0800
-+++ gcc-4.2.2/gcc/ctrl-intg.c	2009-11-27 12:34:27.650349000 -0800
++++ gcc-4.2.2/gcc/ctrl-intg.c	2009-01-09 17:35:50.759182000 -0800
 @@ -0,0 +1,351 @@
 +/* Patch RTL to enforce control flow integrity for GCC.
 +   Copyright (C) 1987, 1988, 1992, 1997, 1998, 1999, 2000, 2002, 2003,
@@ -1092,7 +1106,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/ctrl-intg.c gcc-4.2.2/gcc/ctrl-intg.c
 +};
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/dwarf2out.c gcc-4.2.2/gcc/dwarf2out.c
 --- ../PRISTINE/gcc-4.2.2/gcc/dwarf2out.c	2007-09-24 02:17:10.000000000 -0700
-+++ gcc-4.2.2/gcc/dwarf2out.c	2009-11-27 12:34:27.674324000 -0800
++++ gcc-4.2.2/gcc/dwarf2out.c	2009-01-09 17:35:50.776173000 -0800
 @@ -1110,8 +1110,16 @@
  	    insn = XVECEXP (insn, 0, 0);
  	  if (GET_CODE (insn) == SET)
@@ -1112,31 +1126,9 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/dwarf2out.c gcc-4.2.2/gcc/dwarf2out.c
  	}
        return;
      }
-diff -Naur ../PRISTINE/gcc-4.2.2/gcc/final.c gcc-4.2.2/gcc/final.c
---- ../PRISTINE/gcc-4.2.2/gcc/final.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/final.c	2009-11-27 14:41:40.321752000 -0800
-@@ -870,6 +870,13 @@
- 	    }
- 
- 	  log = LABEL_ALIGN (insn);
-+          /* Native Client must align targets of indirect branches 0mod16
-+             or 0mod32 as set in flag_nacl_align_pow2 (4 or 5, respectively) */
-+          if (LABEL_PRESERVE_P (insn))
-+            {
-+              max_log = flag_nacl_align_pow2;
-+	      max_skip = (1 << (flag_nacl_align_pow2 + 1)) - 1;
-+            }
- 	  if (max_log < log)
- 	    {
- 	      max_log = log;
-@@ -4082,4 +4089,3 @@
-   0,                                    /* todo_flags_finish */
-   0                                     /* letter */
- };
--
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/flow.c gcc-4.2.2/gcc/flow.c
 --- ../PRISTINE/gcc-4.2.2/gcc/flow.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/flow.c	2009-11-27 12:34:27.683312000 -0800
++++ gcc-4.2.2/gcc/flow.c	2009-01-09 17:35:50.785160000 -0800
 @@ -2305,6 +2305,12 @@
  	  if (! call_ok)
  	    return 0;
@@ -1150,10 +1142,10 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/flow.c gcc-4.2.2/gcc/flow.c
  
        /* Don't eliminate loads from volatile memory or volatile asms.  */
        else if (volatile_refs_p (SET_SRC (x)))
-diff -Naur ../PRISTINE/gcc-4.2.2/gcc/gcc.c gcc-4.2.2/gcc/gcc.c
---- ../PRISTINE/gcc-4.2.2/gcc/gcc.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/gcc.c	2009-11-27 12:34:27.729278000 -0800
-@@ -6091,6 +6091,48 @@
+diff -uNr gcc-4.2.2.orig/gcc/gcc.c gcc-4.2.2/gcc/gcc.c
+--- gcc-4.2.2.orig/gcc/gcc.c	2009-03-17 22:25:59.000000000 +0100
++++ gcc-4.2.2/gcc/gcc.c	2009-11-27 14:47:39.000000000 +0100
+@@ -6235,6 +6235,48 @@
      --p;
    programname = p;
  
@@ -1204,7 +1196,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/gcc.c gcc-4.2.2/gcc/gcc.c
    expandargv (&argc, &argv);
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/gthr-nacl.h gcc-4.2.2/gcc/gthr-nacl.h
 --- ../PRISTINE/gcc-4.2.2/gcc/gthr-nacl.h	1969-12-31 16:00:00.000000000 -0800
-+++ gcc-4.2.2/gcc/gthr-nacl.h	2009-11-27 12:34:27.733263000 -0800
++++ gcc-4.2.2/gcc/gthr-nacl.h	2009-01-09 17:35:50.792149000 -0800
 @@ -0,0 +1,553 @@
 +/* Threads compatibility routines for libgcc2 and libobjc.  */
 +/* Compile this one with gcc.  */
@@ -1761,7 +1753,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/gthr-nacl.h gcc-4.2.2/gcc/gthr-nacl.h
 +#endif /* ! GCC_GTHR_POSIX_H */
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/opts.c gcc-4.2.2/gcc/opts.c
 --- ../PRISTINE/gcc-4.2.2/gcc/opts.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/opts.c	2009-11-27 12:34:27.737264000 -0800
++++ gcc-4.2.2/gcc/opts.c	2009-01-09 17:35:50.796156000 -0800
 @@ -517,9 +517,11 @@
    if (optimize < 2 || optimize_size)
      {
@@ -1801,7 +1793,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/opts.c gcc-4.2.2/gcc/opts.c
  /* Handle target- and language-independent options.  Return zero to
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/passes.c gcc-4.2.2/gcc/passes.c
 --- ../PRISTINE/gcc-4.2.2/gcc/passes.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/passes.c	2009-11-27 12:34:27.741259000 -0800
++++ gcc-4.2.2/gcc/passes.c	2009-01-09 17:35:50.802145000 -0800
 @@ -653,6 +653,7 @@
    NEXT_PASS (pass_split_all_insns);
    NEXT_PASS (pass_mode_switching);
@@ -1812,7 +1804,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/passes.c gcc-4.2.2/gcc/passes.c
    NEXT_PASS (pass_sched);
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/reg-stack.c gcc-4.2.2/gcc/reg-stack.c
 --- ../PRISTINE/gcc-4.2.2/gcc/reg-stack.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/reg-stack.c	2009-11-27 12:34:27.756239000 -0800
++++ gcc-4.2.2/gcc/reg-stack.c	2009-01-09 17:35:50.809133000 -0800
 @@ -1826,7 +1826,27 @@
  		compare_for_stack_reg (insn, regstack, pat_src);
  		break;
@@ -1843,7 +1835,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/reg-stack.c gcc-4.2.2/gcc/reg-stack.c
  	    break;
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/rtlanal.c gcc-4.2.2/gcc/rtlanal.c
 --- ../PRISTINE/gcc-4.2.2/gcc/rtlanal.c	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/rtlanal.c	2009-11-27 12:34:27.763240000 -0800
++++ gcc-4.2.2/gcc/rtlanal.c	2009-01-09 17:35:50.816141000 -0800
 @@ -4706,4 +4706,3 @@
    x = avoid_constant_pool_reference (x);
    return GET_CODE (x) == CONST_DOUBLE;
@@ -1851,7 +1843,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/rtlanal.c gcc-4.2.2/gcc/rtlanal.c
 -
 diff -Naur ../PRISTINE/gcc-4.2.2/gcc/tree-pass.h gcc-4.2.2/gcc/tree-pass.h
 --- ../PRISTINE/gcc-4.2.2/gcc/tree-pass.h	2007-09-01 08:28:30.000000000 -0700
-+++ gcc-4.2.2/gcc/tree-pass.h	2009-11-27 12:34:27.767235000 -0800
++++ gcc-4.2.2/gcc/tree-pass.h	2009-01-09 17:35:50.820127000 -0800
 @@ -305,6 +305,8 @@
  extern struct tree_opt_pass pass_rebuild_cgraph_edges;
  extern struct tree_opt_pass pass_reset_cc_flags;
@@ -1863,7 +1855,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/gcc/tree-pass.h gcc-4.2.2/gcc/tree-pass.h
  extern struct tree_opt_pass pass_ipa_inline;
 diff -Naur ../PRISTINE/gcc-4.2.2/libgomp/configure.tgt gcc-4.2.2/libgomp/configure.tgt
 --- ../PRISTINE/gcc-4.2.2/libgomp/configure.tgt	2006-12-02 12:02:00.000000000 -0800
-+++ gcc-4.2.2/libgomp/configure.tgt	2009-11-27 12:34:27.772221000 -0800
++++ gcc-4.2.2/libgomp/configure.tgt	2009-01-09 17:35:50.824117000 -0800
 @@ -47,7 +47,7 @@
  	;;
  
@@ -1875,7 +1867,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/libgomp/configure.tgt gcc-4.2.2/libgomp/configu
  	  XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
 diff -Naur ../PRISTINE/gcc-4.2.2/libmudflap/configure gcc-4.2.2/libmudflap/configure
 --- ../PRISTINE/gcc-4.2.2/libmudflap/configure	2006-12-04 03:13:07.000000000 -0800
-+++ gcc-4.2.2/libmudflap/configure	2009-11-27 12:34:27.790209000 -0800
++++ gcc-4.2.2/libmudflap/configure	2009-01-09 17:35:50.836126000 -0800
 @@ -5398,6 +5398,10 @@
    lt_cv_deplibs_check_method=pass_all
    ;;
@@ -1889,7 +1881,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/libmudflap/configure gcc-4.2.2/libmudflap/confi
      lt_cv_deplibs_check_method='match_pattern /lib[^/\.]+\.so\.[0-9]+\.[0-9]+$'
 diff -Naur ../PRISTINE/gcc-4.2.2/libssp/configure gcc-4.2.2/libssp/configure
 --- ../PRISTINE/gcc-4.2.2/libssp/configure	2006-10-15 00:42:57.000000000 -0700
-+++ gcc-4.2.2/libssp/configure	2009-11-27 12:34:27.800196000 -0800
++++ gcc-4.2.2/libssp/configure	2009-01-09 17:35:50.849089000 -0800
 @@ -4480,7 +4480,7 @@
    ;;
  
@@ -1901,7 +1893,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/libssp/configure gcc-4.2.2/libssp/configure
  
 diff -Naur ../PRISTINE/gcc-4.2.2/libstdc++-v3/configure gcc-4.2.2/libstdc++-v3/configure
 --- ../PRISTINE/gcc-4.2.2/libstdc++-v3/configure	2007-06-28 16:02:05.000000000 -0700
-+++ gcc-4.2.2/libstdc++-v3/configure	2009-11-27 12:34:27.909098000 -0800
++++ gcc-4.2.2/libstdc++-v3/configure	2009-01-09 17:35:50.964990000 -0800
 @@ -4283,7 +4283,7 @@
    ;;
  
@@ -1940,7 +1932,7 @@ diff -Naur ../PRISTINE/gcc-4.2.2/libstdc++-v3/configure gcc-4.2.2/libstdc++-v3/c
  
 diff -Naur ../PRISTINE/gcc-4.2.2/ltconfig gcc-4.2.2/ltconfig
 --- ../PRISTINE/gcc-4.2.2/ltconfig	2007-02-14 09:08:35.000000000 -0800
-+++ gcc-4.2.2/ltconfig	2009-11-27 12:34:27.916093000 -0800
++++ gcc-4.2.2/ltconfig	2009-01-09 17:35:50.975963000 -0800
 @@ -1251,7 +1251,7 @@
    ;;
  
@@ -1952,16 +1944,16 @@ diff -Naur ../PRISTINE/gcc-4.2.2/ltconfig gcc-4.2.2/ltconfig
    need_version=no
 diff -Naur ../PRISTINE/gcc-4.2.2/stage_current gcc-4.2.2/stage_current
 --- ../PRISTINE/gcc-4.2.2/stage_current	1969-12-31 16:00:00.000000000 -0800
-+++ gcc-4.2.2/stage_current	2009-11-27 12:34:27.921079000 -0800
++++ gcc-4.2.2/stage_current	2009-01-09 17:35:50.978962000 -0800
 @@ -0,0 +1 @@
 +stage1
 diff -Naur ../PRISTINE/gcc-4.2.2/stage_final gcc-4.2.2/stage_final
 --- ../PRISTINE/gcc-4.2.2/stage_final	1969-12-31 16:00:00.000000000 -0800
-+++ gcc-4.2.2/stage_final	2009-11-27 12:34:27.926067000 -0800
++++ gcc-4.2.2/stage_final	2009-01-09 17:35:50.984952000 -0800
 @@ -0,0 +1 @@
 +stage3
 diff -Naur ../PRISTINE/gcc-4.2.2/stage_last gcc-4.2.2/stage_last
 --- ../PRISTINE/gcc-4.2.2/stage_last	1969-12-31 16:00:00.000000000 -0800
-+++ gcc-4.2.2/stage_last	2009-11-27 12:34:27.928066000 -0800
++++ gcc-4.2.2/stage_last	2009-01-09 17:35:50.996948000 -0800
 @@ -0,0 +1 @@
 +stage1
