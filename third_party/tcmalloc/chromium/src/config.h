@@ -12,9 +12,9 @@
 #define TC_VERSION_STRING "google-perftools 1.4"
 
 #if defined(OS_WIN)
-#include "third_party/tcmalloc/config_win.h"
+#include "third_party/tcmalloc/chromium/src/config_win.h"
 #elif defined(OS_LINUX)
-#include "third_party/tcmalloc/config_linux.h"
+#include "third_party/tcmalloc/chromium/src/config_linux.h"
 #endif
 
 #endif // CONFIG_H_

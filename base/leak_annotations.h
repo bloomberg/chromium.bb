@@ -7,7 +7,7 @@
 
 #if defined(LINUX_USE_TCMALLOC)
 
-#include "third_party/tcmalloc/heap-checker.h"
+#include "third_party/tcmalloc/chromium/src/google/heap-checker.h"
 
 // Annotate a program scope as having memory leaks. Tcmalloc's heap leak
 // checker will ignore them. Note that these annotations may mask real bugs

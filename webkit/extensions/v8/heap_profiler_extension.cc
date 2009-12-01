@@ -7,7 +7,7 @@
 #include "base/basictypes.h"
 
 #if defined(LINUX_USE_TCMALLOC)
-#include "third_party/tcmalloc/tcmalloc/src/google/heap-profiler.h"
+#include "third_party/tcmalloc/chromium/src/google/heap-profiler.h"
 #endif
 
 namespace extensions_v8 {

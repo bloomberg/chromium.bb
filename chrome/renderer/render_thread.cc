@@ -57,7 +57,7 @@
 #include "chrome/renderer/user_script_slave.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
-#include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
+#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebColor.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"

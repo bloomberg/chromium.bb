@@ -59,7 +59,7 @@
 #endif
 
 #if defined(USE_TCMALLOC)
-#include "third_party/tcmalloc/tcmalloc/src/google/malloc_extension.h"
+#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
 #endif
 
 using sync_api::SyncManager;
