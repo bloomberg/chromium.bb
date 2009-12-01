@@ -90,9 +90,7 @@ BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/XMLHttpRequest
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/onload-vs-immediate-refresh.pl = PASS
 BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
-// SENORBLANCO:  This should be re-enabled after it has been rebaselined for
-// Skia r447.
-// BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
+BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
 // --- collecting results for supported-xml-content-types.html ---
@@ -3003,12 +3001,6 @@ BUG28918 DEBUG : LayoutTests/storage/domstorage/localstorage/iframe-events.html 
 
 // Flaky test added by r51350.
 BUG28918 : LayoutTests/http/tests/cache/subresource-failover-to-network.html = PASS TEXT
-
-// Slight breakage from Skia r447.  Needs rebaseline.
-
-BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/backgrounds/svg-as-background-5.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/fast/overflow/scrollRevealButton.html = IMAGE
-BUG_SENORBLANCO WIN : LayoutTests/svg/transforms/text-with-pattern-with-svg-transform.svg = IMAGE
 
 // New failures from webkit r51496
 BUG29056 WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
