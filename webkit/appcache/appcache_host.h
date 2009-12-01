@@ -84,6 +84,12 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   // Used to ensure that a loaded appcache survives a frame navigation.
   void LoadMainResourceCache(int64 cache_id);
 
+  // Used by the update job to keep track of which hosts are associated
+  // with which pending master entries.
+  const GURL& pending_master_entry_url() const {
+    return new_master_entry_url_;
+  }
+
   int host_id() const { return host_id_; }
   AppCacheService* service() const { return service_; }
   AppCacheFrontend* frontend() const { return frontend_; }
@@ -163,6 +169,7 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   ObserverList<Observer> observers_;
 
   friend class AppCacheRequestHandlerTest;
+  friend class AppCacheUpdateJobTest;
   FRIEND_TEST(AppCacheTest, CleanupUnusedCache);
   FRIEND_TEST(AppCacheGroupTest, CleanupUnusedGroup);
   FRIEND_TEST(AppCacheHostTest, Basic);
