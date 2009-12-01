@@ -665,7 +665,8 @@ class SyncManager::SyncInternal {
             HttpPostProviderFactory* auth_post_factory,
             ModelSafeWorkerInterface* model_safe_worker,
             bool attempt_last_user_authentication,
-            const char* user_agent);
+            const char* user_agent,
+            const std::string& lsid);
 
   // Tell sync engine to submit credentials to GAIA for verification and start
   // the syncing process on success. Successful GAIA authentication will kick
@@ -750,6 +751,9 @@ class SyncManager::SyncInternal {
     return initialized_;
   }
  private:
+  // Try to authenticate using a LSID cookie.
+  void AuthenticateWithLsid(const std::string& lsid);
+
   // Try to authenticate using persisted credentials from a previous successful
   // authentication. If no such credentials exist, calls OnAuthError on the
   // client to collect credentials. Otherwise, there exist local credentials
@@ -759,7 +763,8 @@ class SyncManager::SyncInternal {
   // authenticate directly with the sync service using a cached token,
   // authentication failure will generally occur due to expired credentials, or
   // possibly because of a password change.
-  void AuthenticateForLastKnownUser();
+  bool AuthenticateForUser(const std::string& username,
+                           const std::string& auth_token);
 
   // Helper to call OnAuthError when no authentication credentials are
   // available.
@@ -890,7 +895,8 @@ bool SyncManager::Init(const FilePath& database_location,
                        HttpPostProviderFactory* auth_post_factory,
                        ModelSafeWorkerInterface* model_safe_worker,
                        bool attempt_last_user_authentication,
-                       const char* user_agent) {
+                       const char* user_agent,
+                       const char* lsid) {
   DCHECK(post_factory);
 
   string server_string(sync_server_and_path);
@@ -904,7 +910,8 @@ bool SyncManager::Init(const FilePath& database_location,
                      auth_post_factory,
                      model_safe_worker,
                      attempt_last_user_authentication,
-                     user_agent);
+                     user_agent,
+                     lsid);
 }
 
 void SyncManager::Authenticate(const char* username, const char* password,
@@ -928,7 +935,8 @@ bool SyncManager::SyncInternal::Init(
     HttpPostProviderFactory* auth_post_factory,
     ModelSafeWorkerInterface* model_safe_worker,
     bool attempt_last_user_authentication,
-    const char* user_agent) {
+    const char* user_agent,
+    const std::string& lsid) {
 
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
@@ -1008,8 +1016,18 @@ bool SyncManager::SyncInternal::Init(
                              // DirectoryManager broadcasts the OPENED event,
                              // and a valid server connection is detected.
 
-  if (attempt_last_user_authentication)
-    AuthenticateForLastKnownUser();
+  bool attempting_auth = false;
+  std::string username, auth_token;
+  if (attempt_last_user_authentication &&
+      auth_watcher()->settings()->GetLastUserAndServiceToken(
+          SYNC_SERVICE_NAME, &username, &auth_token)) {
+    attempting_auth = AuthenticateForUser(username, auth_token);
+  } else if (!lsid.empty()) {
+    attempting_auth = true;
+    AuthenticateWithLsid(lsid);
+  }
+  if (!attempting_auth)
+    RaiseAuthNeededEvent();
   return true;
 }
 
@@ -1049,22 +1067,20 @@ void SyncManager::SyncInternal::Authenticate(const std::string& username,
                                captcha, true);
 }
 
-void SyncManager::SyncInternal::AuthenticateForLastKnownUser() {
-  std::string username;
-  std::string auth_token;
-  if (!(auth_watcher()->settings()->GetLastUserAndServiceToken(
-        SYNC_SERVICE_NAME, &username, &auth_token))) {
-    RaiseAuthNeededEvent();
-    return;
-  }
+void SyncManager::SyncInternal::AuthenticateWithLsid(const string& lsid) {
+  DCHECK(!lsid.empty());
+  auth_watcher()->AuthenticateWithLsid(lsid);
+}
 
+bool SyncManager::SyncInternal::AuthenticateForUser(
+    const std::string& username, const std::string& auth_token) {
   share_.authenticated_name = username;
 
   // We optimize by opening the directory before the "fresh" authentication
   // attempt completes so that we can immediately begin processing changes.
   if (!dir_manager()->Open(username_for_share())) {
     DCHECK(false) << "Had last known user but could not open directory";
-    return;
+    return false;
   }
 
   // Set the sync data type so that the server only sends us bookmarks
@@ -1073,7 +1089,7 @@ void SyncManager::SyncInternal::AuthenticateForLastKnownUser() {
     syncable::ScopedDirLookup lookup(dir_manager(), username_for_share());
     if (!lookup.good()) {
       DCHECK(false) << "ScopedDirLookup failed on successfully opened dir";
-      return;
+      return false;
     }
     if (lookup->initial_sync_ended())
       MarkAndNotifyInitializationComplete();
@@ -1084,6 +1100,7 @@ void SyncManager::SyncInternal::AuthenticateForLastKnownUser() {
   // will update the connection manager if necessary.
   connection_manager()->set_auth_token(auth_token);
   auth_watcher()->AuthenticateWithToken(username, auth_token);
+  return true;
 }
 
 void SyncManager::SyncInternal::RaiseAuthNeededEvent() {

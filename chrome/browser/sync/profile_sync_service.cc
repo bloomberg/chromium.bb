@@ -28,6 +28,7 @@
 #include "chrome/common/pref_service.h"
 #include "chrome/common/time_format.h"
 #include "grit/generated_resources.h"
+#include "net/base/cookie_monster.h"
 #include "views/window/window.h"
 
 using browser_sync::ChangeProcessor;
@@ -64,10 +65,15 @@ void ProfileSyncService::set_model_associator(
 void ProfileSyncService::Initialize() {
   InitSettings();
   RegisterPreferences();
-  if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted))
+
+  if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
-  else
+#if defined(CHROMEOS)
+    StartUp();  // We always start sync for Chrome OS.
+#endif
+  } else {
     StartUp();
+  }
 }
 
 void ProfileSyncService::InitSettings() {
@@ -106,8 +112,35 @@ void ProfileSyncService::ClearPreferences() {
   pref_service->ScheduleSavePersistentPrefs();
 }
 
+#if defined(CHROMEOS)
+// The domain and name of the LSID cookie which we use to bootstrap the sync
+// authentication in chromeos.
+const char kLsidCookieDomain[] = "www.google.com";
+const char kLsidCookieName[]   = "LSID";
+#endif
+
+std::string ProfileSyncService::GetLsidForAuthBootstraping() {
+#if defined(CHROMEOS)
+  // If we're running inside Chrome OS, bootstrap the sync authentication by
+  // using the LSID cookie provided by the Chrome OS login manager.
+  net::CookieMonster::CookieList cookies = profile()->GetRequestContext()->
+      GetCookieStore()->GetCookieMonster()->GetAllCookies();
+  for (net::CookieMonster::CookieList::const_iterator it = cookies.begin();
+       it != cookies.end(); ++it) {
+    if (kLsidCookieDomain == it->first) {
+      const net::CookieMonster::CanonicalCookie& cookie = it->second;
+      if (kLsidCookieName == cookie.Name()) {
+        return cookie.Value();
+      }
+    }
+  }
+#endif
+  return std::string();
+}
+
 void ProfileSyncService::InitializeBackend() {
-  backend_->Initialize(sync_service_url_, profile_->GetRequestContext());
+  backend_->Initialize(sync_service_url_, profile_->GetRequestContext(),
+                       GetLsidForAuthBootstraping());
 }
 
 void ProfileSyncService::StartUp() {

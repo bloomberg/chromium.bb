@@ -257,6 +257,10 @@ class ProfileSyncService : public NotificationObserver,
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
 
+  // When running inside Chrome OS, extract the LSID cookie from the cookie
+  // store to bootstrap the authentication process.
+  std::string GetLsidForAuthBootstraping();
+
   // Time at which we begin an attempt a GAIA authorization.
   base::TimeTicks auth_start_time_;
 

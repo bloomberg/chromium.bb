@@ -499,6 +499,8 @@ class SYNC_EXPORT SyncManager {
   // |model_safe_worker| ownership is given to the SyncManager.
   // |user_agent| is a 7-bit ASCII string suitable for use as the User-Agent
   // HTTP header. Used internally when collecting stats to classify clients.
+  // As a fallback when no cached auth information is available, try to
+  // bootstrap authentication using |lsid|, if it isn't empty.
   bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,
@@ -509,7 +511,8 @@ class SYNC_EXPORT SyncManager {
             HttpPostProviderFactory* auth_post_factory,
             ModelSafeWorkerInterface* model_safe_worker,
             bool attempt_last_user_authentication,
-            const char* user_agent);
+            const char* user_agent,
+            const char* lsid);
 
   // Returns the username last used for a successful authentication.
   // Returns empty if there is no such username.

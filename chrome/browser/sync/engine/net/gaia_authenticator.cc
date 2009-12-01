@@ -139,6 +139,19 @@ bool GaiaAuthenticator::Authenticate(const string& user_name,
   return AuthenticateImpl(params);
 }
 
+bool GaiaAuthenticator::AuthenticateWithLsid(const string& lsid,
+                                             bool long_lived) {
+  auth_results_.lsid = lsid;
+  // We need to lookup the email associated with this LSID cookie in order to
+  // update |auth_results_| with the correct values.
+  if (LookupEmail(&auth_results_)) {
+    auth_results_.email = auth_results_.primary_email;
+    return IssueAuthToken(&auth_results_, service_id_, long_lived);
+  }
+  return false;
+}
+
+
 bool GaiaAuthenticator::AuthenticateImpl(const AuthParams& params) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);
   AuthResults results;

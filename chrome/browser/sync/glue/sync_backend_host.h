@@ -83,8 +83,11 @@ class SyncBackendHost {
   ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
+  // As a fallback when no cached auth information is available, try to
+  // bootstrap authentication using |lsid|, if it isn't empty.
   void Initialize(const GURL& service_url,
-                  URLRequestContextGetter* baseline_context_getter);
+                  URLRequestContextGetter* baseline_context_getter,
+                  const std::string& lsid);
 
   // Called on |frontend_loop_| to kick off asynchronous authentication.
   void Authenticate(const std::string& username, const std::string& password,
@@ -164,7 +167,8 @@ class SyncBackendHost {
         BookmarkModelWorker* bookmark_model_worker,
         bool attempt_last_user_authentication,
         sync_api::HttpPostProviderFactory* http_bridge_factory,
-        sync_api::HttpPostProviderFactory* auth_http_bridge_factory);
+        sync_api::HttpPostProviderFactory* auth_http_bridge_factory,
+        const std::string& lsid);
 
     // Called on our SyncBackendHost's core_thread_ to perform authentication
     // on behalf of SyncBackendHost::Authenticate.
@@ -198,7 +202,7 @@ class SyncBackendHost {
                              sync_api::HttpPostProviderFactory* factory,
                              sync_api::HttpPostProviderFactory* auth_factory) {
         DoInitialize(GURL(), bookmark_model_worker, false, factory,
-                     auth_factory);
+                     auth_factory, std::string());
         syncapi_->SetupForTestMode(test_user);
     }
 #endif

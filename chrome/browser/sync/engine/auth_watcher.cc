@@ -92,6 +92,25 @@ void AuthWatcher::PersistCredentials() {
   }
 }
 
+void AuthWatcher::AuthenticateWithLsid(const std::string& lsid) {
+  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &AuthWatcher::DoAuthenticateWithLsid, lsid));
+}
+
+void AuthWatcher::DoAuthenticateWithLsid(const std::string& lsid) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+
+  AuthWatcherEvent event = { AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START };
+  NotifyListeners(&event);
+
+  if (gaia_->AuthenticateWithLsid(lsid, true)) {
+    PersistCredentials();
+    DoAuthenticateWithToken(gaia_->email(), gaia_->auth_token());
+  } else {
+    ProcessGaiaAuthFailure();
+  }
+}
+
 const char kAuthWatcher[] = "AuthWatcher";
 
 void AuthWatcher::AuthenticateWithToken(const std::string& gaia_email,
@@ -242,7 +261,7 @@ void AuthWatcher::DoAuthenticate(const AuthRequest& request) {
       ProcessGaiaAuthFailure();
     }
   } else if (!request.auth_token.empty()) {
-      DoAuthenticateWithToken(request.email, request.auth_token);
+    DoAuthenticateWithToken(request.email, request.auth_token);
   } else {
       LOG(ERROR) << "Attempt to authenticate with no credentials.";
   }

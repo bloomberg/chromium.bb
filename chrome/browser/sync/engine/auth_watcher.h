@@ -120,6 +120,10 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
   }
 
   // Use this version when you don't need the gaia authentication step because
+  // you already have a valid LSID cookie for |gaia_email|.
+  void AuthenticateWithLsid(const std::string& lsid);
+
+  // Use this version when you don't need the gaia authentication step because
   // you already have a valid token for |gaia_email|.
   void AuthenticateWithToken(const std::string& gaia_email,
                              const std::string& auth_token);
@@ -187,6 +191,7 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
   // The public interface Authenticate methods are proxies to these, which
   // can only be called from |auth_backend_thread_|.
   void DoAuthenticate(const AuthRequest& request);
+  void DoAuthenticateWithLsid(const std::string& lsid);
   void DoAuthenticateWithToken(const std::string& email,
                                const std::string& auth_token);
 

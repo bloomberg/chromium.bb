@@ -123,6 +123,11 @@ class GaiaAuthenticator {
                     SaveCredentials should_save_credentials,
                     SignIn try_first);
 
+  // Pass the LSID to authenticate with. If the authentication succeeds, you can
+  // retrieve the authetication token via the respective accessors. Returns a
+  // boolean indicating whether authentication succeeded or not.
+  bool AuthenticateWithLsid(const std::string& lsid, bool long_lived_token);
+
   // Resets all stored cookies to their default values.
   void ResetCredentials();
 

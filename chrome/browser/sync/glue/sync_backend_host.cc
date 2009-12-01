@@ -43,7 +43,8 @@ SyncBackendHost::~SyncBackendHost() {
 
 void SyncBackendHost::Initialize(
     const GURL& sync_service_url,
-    URLRequestContextGetter* baseline_context_getter) {
+    URLRequestContextGetter* baseline_context_getter,
+    const std::string& lsid) {
   if (!core_thread_.Start())
     return;
   bookmark_model_worker_ = new BookmarkModelWorker(frontend_loop_);
@@ -52,7 +53,8 @@ void SyncBackendHost::Initialize(
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
                         sync_service_url, bookmark_model_worker_, true,
                         new HttpBridgeFactory(baseline_context_getter),
-                        new HttpBridgeFactory(baseline_context_getter)));
+                        new HttpBridgeFactory(baseline_context_getter),
+                        lsid));
 }
 
 void SyncBackendHost::Authenticate(const std::string& username,
@@ -169,7 +171,8 @@ void SyncBackendHost::Core::DoInitialize(
     BookmarkModelWorker* bookmark_model_worker,
     bool attempt_last_user_authentication,
     sync_api::HttpPostProviderFactory* http_provider_factory,
-    sync_api::HttpPostProviderFactory* auth_http_provider_factory) {
+    sync_api::HttpPostProviderFactory* auth_http_provider_factory,
+    const std::string& lsid) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
 
   // Make sure that the directory exists before initializing the backend.
@@ -189,7 +192,8 @@ void SyncBackendHost::Core::DoInitialize(
       auth_http_provider_factory,
       bookmark_model_worker,
       attempt_last_user_authentication,
-      MakeUserAgentForSyncapi().c_str());
+      MakeUserAgentForSyncapi().c_str(),
+      lsid.c_str());
   DCHECK(success) << "Syncapi initialization failed!";
 }
 
