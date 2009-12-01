@@ -38,25 +38,35 @@
 
 #include "native_client/src/trusted/gio/gio.h"
 
-int gvprintf(struct Gio *gp,
+size_t gvprintf(struct Gio *gp,
              char const *fmt,
              va_list    ap) {
-  size_t  bufsz = 1024;
-  char    *buf = malloc(bufsz);
-  int     rv;
+  size_t    bufsz = 1024;
+  char      *buf = malloc(bufsz);
+  int       rv;
 
   if (!buf) return -1;
 
   while ((rv = vsnprintf(buf, bufsz, fmt, ap)) < 0 || (unsigned) rv >= bufsz) {
     free(buf);
-    bufsz *= 2;
-    buf = malloc(bufsz);
+    buf = 0;
+
+    /**
+     * Since the buffer size wasn't big enough, we want to double it.
+     * Stop doubling when we reach SIZE_MAX / 2, though, otherwise we
+     * risk wraparound.
+     */
+    if (bufsz < SIZE_MAX / 2) {
+      bufsz *= 2;
+      buf = malloc(bufsz);
+    }
+
     if (!buf) {
-      return -1;
+      return (size_t) -1;
     }
   }
   if (rv >= 0) {
-    rv = (*gp->vtbl->Write)(gp, buf, rv);
+    rv = (int) (*gp->vtbl->Write)(gp, buf, rv);
   }
   free(buf);
 
@@ -64,10 +74,10 @@ int gvprintf(struct Gio *gp,
 }
 
 
-int gprintf(struct Gio *gp,
-            char const *fmt, ...) {
+size_t gprintf(struct Gio *gp,
+               char const *fmt, ...) {
   va_list ap;
-  int     rv;
+  size_t  rv;
 
   va_start(ap, fmt);
   rv = gvprintf(gp, fmt, ap);

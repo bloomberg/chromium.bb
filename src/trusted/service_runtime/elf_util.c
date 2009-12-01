@@ -359,7 +359,7 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
 
   if ((*gp->vtbl->Seek)(gp,
                         image.ehdr.e_phoff,
-                        SEEK_SET) == -1) {
+                        SEEK_SET) == (size_t) -1) {
     NaClLog(2, "cannot seek tp prog headers\n");
     return 0;
   }
@@ -367,7 +367,7 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
   if ((*gp->vtbl->Read)(gp,
                         &image.phdrs[0],
                         image.ehdr.e_phnum * sizeof image.phdrs[0])
-      != (int32_t) (image.ehdr.e_phnum * sizeof image.phdrs[0])) {
+      != (image.ehdr.e_phnum * sizeof image.phdrs[0])) {
     NaClLog(2, "cannot load tp prog headers\n");
     return 0;
   }
@@ -420,7 +420,7 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
 
     paddr = mem_start + php->p_vaddr;
 
-    if ((*gp->vtbl->Seek)(gp, php->p_offset, SEEK_SET) == -1) {
+    if ((*gp->vtbl->Seek)(gp, php->p_offset, SEEK_SET) == (size_t) -1) {
       NaClLog(LOG_ERROR, "seek failure segment %d", segnum);
       return LOAD_SEGMENT_BAD_PARAM;
     }

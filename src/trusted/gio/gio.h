@@ -47,18 +47,18 @@ EXTERN_C_BEGIN
 struct Gio;  /* fwd */
 
 struct GioVtbl {
-  int   (*Read)(struct Gio  *vself,
-                void        *buf,
-                size_t      count);  /* returns nbytes read */
-  int   (*Write)(struct Gio *vself,
-                 void       *buf,
-                 size_t     count);  /* returns nbytes written */
-  off_t (*Seek)(struct Gio  *vself,
-                off_t       offset,
-                int         whence);  /* returns -1 on error */
-  int   (*Flush)(struct Gio *vself);  /* only used for write */
-  int   (*Close)(struct Gio *vself);  /* returns -1 on error */
-  void  (*Dtor)(struct Gio  *vself);  /* implicit close */
+  size_t  (*Read)(struct Gio  *vself,
+                  void        *buf,
+                  size_t      count);  /* returns nbytes read */
+  size_t  (*Write)(struct Gio *vself,
+                   void       *buf,
+                   size_t     count);  /* returns nbytes written */
+  size_t  (*Seek)(struct Gio  *vself,
+                  off_t       offset,
+                  int         whence);  /* returns -1 on error */
+  int     (*Flush)(struct Gio *vself);  /* only used for write */
+  int     (*Close)(struct Gio *vself);  /* returns -1 on error */
+  void    (*Dtor)(struct Gio  *vself);  /* implicit close */
 };
 
 struct Gio {
@@ -74,17 +74,17 @@ int GioFileCtor(struct GioFile  *self,
                 char const      *fname,
                 char const      *mode);
 
-int GioFileRead(struct Gio  *vself,
-                void        *buf,
-                size_t      count);
+size_t GioFileRead(struct Gio  *vself,
+                   void        *buf,
+                   size_t      count);
 
-int GioFileWrite(struct Gio *vself,
-                 void       *buf,
-                 size_t     count);
+size_t GioFileWrite(struct Gio *vself,
+                    void       *buf,
+                    size_t     count);
 
-off_t GioFileSeek(struct Gio  *vself,
-                  off_t       offset,
-                  int         whence);
+size_t GioFileSeek(struct Gio  *vself,
+                   off_t       offset,
+                   int         whence);
 
 int GioFileFlush(struct Gio *vself);
 
@@ -108,15 +108,15 @@ int GioMemoryFileCtor(struct GioMemoryFile  *self,
                       char                  *buffer,
                       size_t                len);
 
-int GioMemoryFileRead(struct Gio  *vself,
-                      void        *buf,
-                      size_t      count);
+size_t GioMemoryFileRead(struct Gio  *vself,
+                         void        *buf,
+                         size_t      count);
 
-int GioMemoryFileWrite(struct Gio *vself,
-                       void       *buf,
-                       size_t     count);
+size_t GioMemoryFileWrite(struct Gio *vself,
+                          void       *buf,
+                          size_t     count);
 
-off_t GioMemoryFileSeek(struct Gio  *vself,
+size_t GioMemoryFileSeek(struct Gio  *vself,
                         off_t       offset,
                         int         whence);
 
@@ -139,13 +139,13 @@ void  GioMemoryFileSnapshotDtor(struct Gio                    *vself);
 
 int fggetc(struct Gio   *gp);
 
-int gprintf(struct Gio  *gp,
-            char const  *fmt,
-            ...);
+size_t gprintf(struct Gio  *gp,
+               char const  *fmt,
+               ...);
 
-int gvprintf(struct Gio *gp,
-             char const *fmt,
-             va_list    ap);
+size_t gvprintf(struct Gio *gp,
+                char const *fmt,
+                va_list    ap);
 
 EXTERN_C_END
 

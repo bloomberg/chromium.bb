@@ -66,9 +66,9 @@ int GioMemoryFileCtor(struct GioMemoryFile  *self,
 }
 
 
-int GioMemoryFileRead(struct Gio  *vself,
-                      void        *buf,
-                      size_t      count) {
+size_t GioMemoryFileRead(struct Gio  *vself,
+                         void        *buf,
+                         size_t      count) {
   struct GioMemoryFile    *self = (struct GioMemoryFile *) vself;
   size_t                  remain;
   size_t                  newpos;
@@ -92,9 +92,9 @@ int GioMemoryFileRead(struct Gio  *vself,
 }
 
 
-int GioMemoryFileWrite(struct Gio *vself,
-                       void       *buf,
-                       size_t     count) {
+size_t GioMemoryFileWrite(struct Gio *vself,
+                          void       *buf,
+                          size_t     count) {
   struct GioMemoryFile  *self = (struct GioMemoryFile *) vself;
   size_t                remain;
   size_t                newpos;
@@ -119,29 +119,34 @@ int GioMemoryFileWrite(struct Gio *vself,
 }
 
 
-off_t GioMemoryFileSeek(struct Gio  *vself,
+size_t GioMemoryFileSeek(struct Gio  *vself,
                         off_t       offset,
                         int         whence) {
   struct GioMemoryFile  *self = (struct GioMemoryFile *) vself;
-  size_t                new_pos;
+  size_t                new_pos = (size_t) -1;
 
   switch (whence) {
     case SEEK_SET:
       new_pos = offset;
       break;
     case SEEK_CUR:
-      new_pos = self->curpos + offset;
+      new_pos = (size_t) (self->curpos + offset);
       break;
     case SEEK_END:
-      new_pos = self->len + offset;
+      new_pos = (size_t) (self->len + offset);
       break;
     default:
       errno = EINVAL;
-      return -1;
+      break;
   }
+  /**
+   * on error, new_pos should be SIZE_T_MAX. On overflow it will either
+   * be greater than self->len, or will have wrapped around.
+   * TODO (ilewis): Detect wraparound and return an error.
+   */
   if (new_pos > self->len) {
     errno = EINVAL;
-    return -1;
+    return (size_t) -1;
   }
   self->curpos = new_pos;
   return new_pos;

@@ -68,30 +68,30 @@ int GioFileRefCtor(struct GioFile   *self,
 }
 
 
-int GioFileRead(struct Gio  *vself,
-                void        *buf,
-                size_t      count) {
+size_t GioFileRead(struct Gio  *vself,
+                   void        *buf,
+                   size_t      count) {
   struct GioFile  *self = (struct GioFile *) vself;
   return fread(buf, 1, count, self->iop);
 }
 
 
-int GioFileWrite(struct Gio *vself,
-                 void       *buf,
-                 size_t     count) {
+size_t GioFileWrite(struct Gio *vself,
+                    void       *buf,
+                    size_t     count) {
   struct GioFile  *self = (struct GioFile *) vself;
   return fwrite(buf, 1, count, self->iop);
 }
 
 
-off_t GioFileSeek(struct Gio  *vself,
+size_t GioFileSeek(struct Gio  *vself,
                   off_t       offset,
                   int         whence) {
   struct GioFile  *self = (struct GioFile *) vself;
   int             ret;
   ret = fseek(self->iop, offset, whence);
   if (-1 == ret) return -1;
-  return ftell(self->iop);
+  return (size_t) ftell(self->iop);
 }
 
 
