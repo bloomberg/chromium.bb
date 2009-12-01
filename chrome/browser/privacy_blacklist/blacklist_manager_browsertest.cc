@@ -88,7 +88,7 @@ class BlacklistManagerBrowserTest : public ExtensionBrowserTest {
   bool received_blacklist_notification_;
 };
 
-IN_PROC_BROWSER_TEST_F(BlacklistManagerBrowserTest, Basic) {
+IN_PROC_BROWSER_TEST_F(BlacklistManagerBrowserTest, FLAKY_Basic) {
   static const char kTestUrl[] = "http://www.example.com/annoying_ads/ad.jpg";
 
   NotificationRegistrar registrar;
