@@ -49,7 +49,7 @@ devtools.ToolsAgent = function() {
  * Resets tools agent to its initial state.
  */
 devtools.ToolsAgent.prototype.reset = function() {
-  DevToolsHost.reset();
+  InspectorFrontendHost.reset();
   this.debuggerAgent_.reset();
 };
 
@@ -62,7 +62,7 @@ devtools.ToolsAgent.prototype.reset = function() {
  */
 devtools.ToolsAgent.prototype.evaluateJavaScript = function(script,
     opt_callback) {
-  InspectorController.evaluate(script, opt_callback || function() {});
+  InspectorBackend.evaluate(script, opt_callback || function() {});
 };
 
 
@@ -120,7 +120,7 @@ devtools.ToolsAgent.prototype.evaluate = function(expr) {
  * @param {boolean} enabled New panel status.
  */
 WebInspector.setResourcesPanelEnabled = function(enabled) {
-  InspectorController._resourceTrackingEnabled = enabled;
+  InspectorBackend._resourceTrackingEnabled = enabled;
   WebInspector.panels.resources.reset();
 };
 
@@ -168,11 +168,11 @@ WebInspector.loaded = function() {
 
   // Hide dock button on Mac OS.
   // TODO(pfeldman): remove once Mac OS docking is implemented.
-  if (InspectorController.platform().indexOf('mac') == 0) {
+  if (InspectorFrontendHost.platform().indexOf('mac') == 0) {
     document.getElementById('dock-status-bar-item').addStyleClass('hidden');
   }
 
-  DevToolsHost.loaded();
+  InspectorFrontendHost.loaded();
 };
 
 
@@ -251,7 +251,7 @@ WebInspector.ScriptView.prototype.setupSourceFrameIfNeeded = function() {
  * Performs source frame setup when script source is aready resolved.
  */
 WebInspector.ScriptView.prototype.didResolveScriptSource_ = function() {
-  if (!InspectorController.addSourceToFrame(
+  if (!InspectorFrontendHost.addSourceToFrame(
       "text/javascript", this.script.source, this.sourceFrame.element)) {
     return;
   }
@@ -427,13 +427,13 @@ InjectedScriptAccess.evaluateInCallFrame = function(callFrameId, code,
 
 WebInspector.resourceTrackingWasEnabled = function()
 {
-    InspectorController._resourceTrackingEnabled = true;
+    InspectorBackend._resourceTrackingEnabled = true;
     this.panels.resources.resourceTrackingWasEnabled();
 };
 
 WebInspector.resourceTrackingWasDisabled = function()
 {
-    InspectorController._resourceTrackingEnabled = false;
+    InspectorBackend._resourceTrackingEnabled = false;
     this.panels.resources.resourceTrackingWasDisabled();
 };
 
@@ -467,7 +467,19 @@ InjectedScriptAccess.getCompletions = function(expressionString,
 (function() {
 WebInspector.ElementsPanel.prototype._nodeSearchButtonClicked = function(
     event) {
-  InspectorController.toggleNodeSearch();
+  InspectorBackend.toggleNodeSearch();
   this.nodeSearchButton.toggled = !this.nodeSearchButton.toggled;
+};
+})();
+
+
+(function() {
+var originalAddToFrame = InspectorFrontendHost.addResourceSourceToFrame;
+InspectorFrontendHost.addResourceSourceToFrame = function(identifier, element) {
+  var resource = WebInspector.resources[identifier];
+  if (!resource) {
+    return;
+  }
+  originalAddToFrame.call(this, identifier, resource.mimeType, element);
 };
 })();

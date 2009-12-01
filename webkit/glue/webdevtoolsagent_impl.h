@@ -125,6 +125,7 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
   // Otherwise some useful methods  defined on Function.prototype(such as bind)
   // are missing for InspectorController native methods.
   v8::Local<v8::Object> CreateInspectorBackendV8Wrapper();
+  v8::Local<v8::Object> CreateInjectedScriptHostV8Wrapper();
 
   int host_id_;
   WebKit::WebDevToolsAgentClient* client_;

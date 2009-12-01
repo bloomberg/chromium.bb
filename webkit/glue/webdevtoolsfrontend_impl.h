@@ -68,17 +68,22 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   static v8::Handle<v8::Value> JsAddResourceSourceToFrame(
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsLoaded(const v8::Arguments& args);
-  static v8::Handle<v8::Value> JsGetPlatform(const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsPlatform(const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsPort(const v8::Arguments& args);
 
   static v8::Handle<v8::Value> JsActivateWindow(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsCloseWindow(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsDockWindow(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsUndockWindow(const v8::Arguments& args);
-  static v8::Handle<v8::Value> JsGetApplicationLocale(
+  static v8::Handle<v8::Value> JsLocalizedStringsURL(
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsHiddenPanels(
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsDebuggerCommand(
+      const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsSetting(
+      const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsSetSetting(
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsDebuggerPauseScript(
       const v8::Arguments& args);

@@ -390,7 +390,7 @@ WebInspector.HeapSnapshotView.SearchHelper = {
                         GREATER_OR_EQUAL: /^>=(\d+)/,
                         GREATER: /^>(\d+)/ },
 
-    parseOperationAndNumber: function(query) 
+    parseOperationAndNumber: function(query)
     {
         var operations = WebInspector.HeapSnapshotView.SearchHelper.operations;
         var parsers = WebInspector.HeapSnapshotView.SearchHelper.operationParsers;
@@ -859,7 +859,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
 
     buttonClicked: function()
     {
-        InspectorController.takeHeapSnapshot();
+        InspectorBackend.takeHeapSnapshot();
     },
 
     createSidebarTreeElementForProfile: function(profile)

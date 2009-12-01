@@ -11,6 +11,7 @@
 #include "Frame.h"
 #include "InspectorBackend.h"
 #include "InspectorController.h"
+#include "InspectorFrontendHost.h"
 #include "Node.h"
 #include "Page.h"
 #include "PlatformString.h"
@@ -80,9 +81,9 @@ class ToolsAgentNativeDelegateImpl : public ToolsAgentNativeDelegate {
 
     InspectorController* ic = frame_->frame()->page()->inspectorController();
     if (request.frame && request.frame->attached()) {
-      ic->inspectorBackend()->addSourceToFrame(request.mime_type,
-                                               content,
-                                               request.frame.get());
+      ic->inspectorFrontendHost()->addSourceToFrame(request.mime_type,
+                                                    content,
+                                                    request.frame.get());
     }
   }
 
@@ -147,7 +148,9 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       WebDevToolsFrontendImpl::JsDebuggerPauseScript);
   debugger_command_executor_obj_->Build();
 
-  dev_tools_host_.set(new BoundObject(frame_context, this, "DevToolsHost"));
+  dev_tools_host_.set(new BoundObject(frame_context,
+                                      this,
+                                      "InspectorFrontendHost"));
   dev_tools_host_->AddProtoFunction(
       "reset",
       WebDevToolsFrontendImpl::JsReset);
@@ -162,10 +165,13 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       WebDevToolsFrontendImpl::JsLoaded);
   dev_tools_host_->AddProtoFunction(
       "search",
-      WebCore::V8Custom::v8InspectorBackendSearchCallback);
+      WebCore::V8Custom::v8InspectorFrontendHostSearchCallback);
   dev_tools_host_->AddProtoFunction(
-      "getPlatform",
-      WebDevToolsFrontendImpl::JsGetPlatform);
+      "platform",
+      WebDevToolsFrontendImpl::JsPlatform);
+  dev_tools_host_->AddProtoFunction(
+      "port",
+      WebDevToolsFrontendImpl::JsPort);
   dev_tools_host_->AddProtoFunction(
       "activateWindow",
       WebDevToolsFrontendImpl::JsActivateWindow);
@@ -173,17 +179,23 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       "closeWindow",
       WebDevToolsFrontendImpl::JsCloseWindow);
   dev_tools_host_->AddProtoFunction(
-      "dockWindow",
+      "attach",
       WebDevToolsFrontendImpl::JsDockWindow);
   dev_tools_host_->AddProtoFunction(
-      "undockWindow",
+      "detach",
       WebDevToolsFrontendImpl::JsUndockWindow);
   dev_tools_host_->AddProtoFunction(
-      "getApplicationLocale",
-      WebDevToolsFrontendImpl::JsGetApplicationLocale);
+      "localizedStringsURL",
+      WebDevToolsFrontendImpl::JsLocalizedStringsURL);
   dev_tools_host_->AddProtoFunction(
       "hiddenPanels",
       WebDevToolsFrontendImpl::JsHiddenPanels);
+  dev_tools_host_->AddProtoFunction(
+      "setting",
+      WebDevToolsFrontendImpl::JsSetting);
+  dev_tools_host_->AddProtoFunction(
+      "setSetting",
+      WebDevToolsFrontendImpl::JsSetSetting);
   dev_tools_host_->Build();
 }
 
@@ -298,7 +310,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsAddSourceToFrame(
 
   Page* page = V8Proxy::retrieveFrameForEnteredContext()->page();
   InspectorController* inspectorController = page->inspectorController();
-  return WebCore::v8Boolean(inspectorController->inspectorBackend()->
+  return WebCore::v8Boolean(inspectorController->inspectorFrontendHost()->
       addSourceToFrame(mime_type, source_string, node));
 }
 
@@ -341,7 +353,7 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsLoaded(
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsGetPlatform(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsPlatform(
     const v8::Arguments& args) {
 #if defined OS_MACOSX
   return v8String("mac-leopard");
@@ -350,6 +362,12 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsGetPlatform(
 #else
   return v8String("windows");
 #endif
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsPort(
+    const v8::Arguments& args) {
+  return v8::Undefined();
 }
 
 // static
@@ -389,11 +407,9 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsUndockWindow(
 }
 
 // static
-v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsGetApplicationLocale(
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsLocalizedStringsURL(
     const v8::Arguments& args) {
-  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
-      v8::External::Cast(*args.Data())->Value());
-  return v8String(frontend->application_locale_);
+  return v8::Undefined();
 }
 
 // static
@@ -410,6 +426,20 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerCommand(
   String command = WebCore::toWebCoreStringWithNullCheck(args[0]);
   WebString std_command = webkit_glue::StringToWebString(command);
   frontend->client_->sendDebuggerCommandToAgent(std_command);
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsSetting(
+    const v8::Arguments& args) {
+  //TODO(pfeldman): Implement this.
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsSetSetting(
+    const v8::Arguments& args) {
+  //TODO(pfeldman): Implement this.
   return v8::Undefined();
 }
 

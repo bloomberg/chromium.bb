@@ -7,6 +7,8 @@
  * DevTools frontend to function as a standalone web app.
  */
 
+if (!window['RemoteDebuggerAgent']) {
+
 /**
  * @constructor
  */
@@ -206,87 +208,29 @@ RemoteDebuggerCommandExecutorStub.prototype.sendResponse_ = function(response) {
 };
 
 
-/**
- * @constructor
- */
 DevToolsHostStub = function() {
   this.isStub = true;
-  window.domAutomationController = {
-    send: function(text) {
-        debugPrint(text);
-    }
-  };
 };
-
-
-function addDummyResource() {
-  var payload = {
-    requestHeaders : {},
-    requestURL: 'http://google.com/simple_page.html',
-    host: 'google.com',
-    documentURL: 'http://google.com/simple_page.html',
-    path: 'simple_page.html',
-    lastPathComponent: 'simple_page.html',
-    isMainResource: true,
-    cached: false,
-    mimeType: 'text/html',
-    suggestedFilename: 'simple_page.html',
-    expectedContentLength: 10000,
-    statusCode: 200,
-    contentLength: 10000,
-    responseHeaders: {},
-    type: WebInspector.Resource.Type.Document,
-    finished: true,
-    startTime: new Date(),
-
-    didResponseChange: true,
-    didCompletionChange: true,
-    didTypeChange: true
-  };
-
-  WebInspector.addResource(1, payload);
-  WebInspector.updateResource(1, payload);
-}
-
-
-DevToolsHostStub.prototype.loaded = function() {
-  addDummyResource();
-};
+goog.inherits(DevToolsHostStub,
+    WebInspector.InspectorFrontendHostStub);
 
 
 DevToolsHostStub.prototype.reset = function() {
 };
 
 
-DevToolsHostStub.prototype.getPlatform = function() {
-  return "windows";
+DevToolsHostStub.prototype.setting = function() {
 };
 
 
-DevToolsHostStub.prototype.hiddenPanels = function() {
-  return "";
+DevToolsHostStub.prototype.setSetting = function() {
 };
 
 
-DevToolsHostStub.prototype.addResourceSourceToFrame = function(
-    identifier, mimeType, element) {
-};
+window['RemoteDebuggerAgent'] = new RemoteDebuggerAgentStub();
+window['RemoteDebuggerCommandExecutor'] =
+    new RemoteDebuggerCommandExecutorStub();
+window['RemoteToolsAgent'] = new RemoteToolsAgentStub();
+InspectorFrontendHost = new DevToolsHostStub();
 
-
-DevToolsHostStub.prototype.addSourceToFrame = function(mimeType, source,
-    element) {
-};
-
-
-DevToolsHostStub.prototype.getApplicationLocale = function() {
-  return "en-US";
-};
-
-
-if (!window['DevToolsHost']) {
-  window['RemoteDebuggerAgent'] = new RemoteDebuggerAgentStub();
-  window['RemoteDebuggerCommandExecutor'] =
-      new RemoteDebuggerCommandExecutorStub();
-  window['RemoteToolsAgent'] = new RemoteToolsAgentStub();
-  window['DevToolsHost'] = new DevToolsHostStub();
 }

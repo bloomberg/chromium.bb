@@ -6,12 +6,11 @@
  * @fileoverview DevTools' implementation of the InspectorController API.
  */
 
-goog.provide('devtools.InspectorControllerImpl');
+goog.provide('devtools.InspectorBackendImpl');
+goog.provide('devtools.InspectorFrontendHostImpl');
 
-devtools.InspectorControllerImpl = function() {
-  WebInspector.InspectorControllerStub.call(this);
-  this.frame_element_id_ = 1;
-
+devtools.InspectorBackendImpl = function() {
+  WebInspector.InspectorBackendStub.call(this);
   this.installInspectorControllerDelegate_('clearMessages');
   this.installInspectorControllerDelegate_('copyNode');
   this.installInspectorControllerDelegate_('deleteCookie');
@@ -32,70 +31,20 @@ devtools.InspectorControllerImpl = function() {
   this.installInspectorControllerDelegate_('removeNode');
   this.installInspectorControllerDelegate_('setAttribute');
   this.installInspectorControllerDelegate_('setDOMStorageItem');
-  this.installInspectorControllerDelegate_('setSetting');
   this.installInspectorControllerDelegate_('setTextNodeValue');
-  this.installInspectorControllerDelegate_('setting');
   this.installInspectorControllerDelegate_('startTimelineProfiler');
   this.installInspectorControllerDelegate_('stopTimelineProfiler');
   this.installInspectorControllerDelegate_('storeLastActivePanel');
 };
-goog.inherits(devtools.InspectorControllerImpl,
-    WebInspector.InspectorControllerStub);
+goog.inherits(devtools.InspectorBackendImpl,
+    WebInspector.InspectorBackendStub);
 
 
 /**
  * {@inheritDoc}.
  */
-devtools.InspectorControllerImpl.prototype.platform = function() {
-  return DevToolsHost.getPlatform();
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.closeWindow = function() {
-  DevToolsHost.closeWindow();
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.attach = function() {
-  DevToolsHost.dockWindow();
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.detach = function() {
-  DevToolsHost.undockWindow();
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.hiddenPanels = function() {
-  return DevToolsHost.hiddenPanels();
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.search = function(sourceRow, query) {
-  return DevToolsHost.search(sourceRow, query);
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
-  WebInspector.InspectorControllerStub.prototype.toggleNodeSearch.call(this);
+devtools.InspectorBackendImpl.prototype.toggleNodeSearch = function() {
+  WebInspector.InspectorBackendStub.prototype.toggleNodeSearch.call(this);
   this.callInspectorController_.call(this, 'toggleNodeSearch');
   if (!this.searchingForNode()) {
     // This is called from ElementsPanel treeOutline's focusNodeChanged().
@@ -105,67 +54,9 @@ devtools.InspectorControllerImpl.prototype.toggleNodeSearch = function() {
 
 
 /**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.localizedStringsURL =
-    function(opt_prefix) {
-  // l10n is turned off in test mode because delayed loading of strings
-  // causes test failures.
-  if (false) {
-    var locale = DevToolsHost.getApplicationLocale();
-    locale = locale.replace('_', '-');
-    return 'l10n/localizedStrings_' + locale + '.js';
-  } else {
-    return undefined;
-  }
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.addSourceToFrame =
-    function(mimeType, source, element) {
-  return DevToolsHost.addSourceToFrame(mimeType, source, element);
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.addResourceSourceToFrame =
-    function(identifier, element) {
-  var resource = WebInspector.resources[identifier];
-  if (!resource) {
-    return;
-  }
-
-  // Temporary fix for http://crbug/23260.
-  var mimeType = resource.mimeType;
-  if (!mimeType && resource.url) {
-    if (resource.url.search('\.js$') != -1) {
-      mimeType = 'application/x-javascript';
-    } else if (resource.url.search('\.html$') != -1) {
-      mimeType = 'text/html';
-    }
-  }
-
-  DevToolsHost.addResourceSourceToFrame(identifier, mimeType, element);
-};
-
-
-/**
- * {@inheritDoc}.
- */
-devtools.InspectorControllerImpl.prototype.inspectedWindow = function() {
-  return null;
-};
-
-
-/**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.debuggerEnabled = function() {
+devtools.InspectorBackendImpl.prototype.debuggerEnabled = function() {
   return true;
 };
 
@@ -173,51 +64,51 @@ devtools.InspectorControllerImpl.prototype.debuggerEnabled = function() {
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.profilerEnabled = function() {
+devtools.InspectorBackendImpl.prototype.profilerEnabled = function() {
   return true;
 };
 
 
-devtools.InspectorControllerImpl.prototype.addBreakpoint = function(
+devtools.InspectorBackendImpl.prototype.addBreakpoint = function(
     sourceID, line, condition) {
   devtools.tools.getDebuggerAgent().addBreakpoint(sourceID, line, condition);
 };
 
 
-devtools.InspectorControllerImpl.prototype.removeBreakpoint = function(
+devtools.InspectorBackendImpl.prototype.removeBreakpoint = function(
     sourceID, line) {
   devtools.tools.getDebuggerAgent().removeBreakpoint(sourceID, line);
 };
 
-devtools.InspectorControllerImpl.prototype.updateBreakpoint = function(
+devtools.InspectorBackendImpl.prototype.updateBreakpoint = function(
     sourceID, line, condition) {
   devtools.tools.getDebuggerAgent().updateBreakpoint(
       sourceID, line, condition);
 };
 
-devtools.InspectorControllerImpl.prototype.pauseInDebugger = function() {
+devtools.InspectorBackendImpl.prototype.pauseInDebugger = function() {
   devtools.tools.getDebuggerAgent().pauseExecution();
 };
 
 
-devtools.InspectorControllerImpl.prototype.resumeDebugger = function() {
+devtools.InspectorBackendImpl.prototype.resumeDebugger = function() {
   devtools.tools.getDebuggerAgent().resumeExecution();
 };
 
 
-devtools.InspectorControllerImpl.prototype.stepIntoStatementInDebugger =
+devtools.InspectorBackendImpl.prototype.stepIntoStatementInDebugger =
     function() {
   devtools.tools.getDebuggerAgent().stepIntoStatement();
 };
 
 
-devtools.InspectorControllerImpl.prototype.stepOutOfFunctionInDebugger =
+devtools.InspectorBackendImpl.prototype.stepOutOfFunctionInDebugger =
     function() {
   devtools.tools.getDebuggerAgent().stepOutOfFunction();
 };
 
 
-devtools.InspectorControllerImpl.prototype.stepOverStatementInDebugger =
+devtools.InspectorBackendImpl.prototype.stepOverStatementInDebugger =
     function() {
   devtools.tools.getDebuggerAgent().stepOverStatement();
 };
@@ -226,7 +117,7 @@ devtools.InspectorControllerImpl.prototype.stepOverStatementInDebugger =
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.pauseOnExceptions = function() {
+devtools.InspectorBackendImpl.prototype.pauseOnExceptions = function() {
   return devtools.tools.getDebuggerAgent().pauseOnExceptions();
 };
 
@@ -234,7 +125,7 @@ devtools.InspectorControllerImpl.prototype.pauseOnExceptions = function() {
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.setPauseOnExceptions = function(
+devtools.InspectorBackendImpl.prototype.setPauseOnExceptions = function(
     value) {
   return devtools.tools.getDebuggerAgent().setPauseOnExceptions(value);
 };
@@ -243,7 +134,7 @@ devtools.InspectorControllerImpl.prototype.setPauseOnExceptions = function(
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.startProfiling = function() {
+devtools.InspectorBackendImpl.prototype.startProfiling = function() {
   devtools.tools.getDebuggerAgent().startProfiling(
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
 };
@@ -252,7 +143,7 @@ devtools.InspectorControllerImpl.prototype.startProfiling = function() {
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
+devtools.InspectorBackendImpl.prototype.stopProfiling = function() {
   devtools.tools.getDebuggerAgent().stopProfiling(
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
 };
@@ -261,7 +152,7 @@ devtools.InspectorControllerImpl.prototype.stopProfiling = function() {
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.getProfileHeaders = function(callId) {
+devtools.InspectorBackendImpl.prototype.getProfileHeaders = function(callId) {
   WebInspector.didGetProfileHeaders(callId, []);
 };
 
@@ -270,7 +161,7 @@ devtools.InspectorControllerImpl.prototype.getProfileHeaders = function(callId) 
  * Emulate WebKit InspectorController behavior. It stores profiles on renderer side,
  * and is able to retrieve them by uid using 'getProfile'.
  */
-devtools.InspectorControllerImpl.prototype.addFullProfile = function(profile) {
+devtools.InspectorBackendImpl.prototype.addFullProfile = function(profile) {
   WebInspector.__fullProfiles = WebInspector.__fullProfiles || {};
   WebInspector.__fullProfiles[profile.uid] = profile;
 };
@@ -279,7 +170,7 @@ devtools.InspectorControllerImpl.prototype.addFullProfile = function(profile) {
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.getProfile = function(callId, uid) {
+devtools.InspectorBackendImpl.prototype.getProfile = function(callId, uid) {
   if (WebInspector.__fullProfiles && (uid in WebInspector.__fullProfiles)) {
     WebInspector.didGetProfile(callId, WebInspector.__fullProfiles[uid]);
   }
@@ -289,7 +180,7 @@ devtools.InspectorControllerImpl.prototype.getProfile = function(callId, uid) {
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.takeHeapSnapshot = function() {
+devtools.InspectorBackendImpl.prototype.takeHeapSnapshot = function() {
   devtools.tools.getDebuggerAgent().startProfiling(
       devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT
       | devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_STATS
@@ -300,7 +191,7 @@ devtools.InspectorControllerImpl.prototype.takeHeapSnapshot = function() {
 /**
  * @override
  */
-devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
+devtools.InspectorBackendImpl.prototype.dispatchOnInjectedScript = function(
     callId, methodName, argsString, async) {
   var callback = function(result, isException) {
     WebInspector.didDispatchOnInjectedScript(callId, result, isException);
@@ -316,7 +207,7 @@ devtools.InspectorControllerImpl.prototype.dispatchOnInjectedScript = function(
  * Installs delegating handler into the inspector controller.
  * @param {string} methodName Method to install delegating handler for.
  */
-devtools.InspectorControllerImpl.prototype.installInspectorControllerDelegate_
+devtools.InspectorBackendImpl.prototype.installInspectorControllerDelegate_
     = function(methodName) {
   this[methodName] = goog.bind(this.callInspectorController_, this,
       methodName);
@@ -327,7 +218,7 @@ devtools.InspectorControllerImpl.prototype.installInspectorControllerDelegate_
  * Bound function with the installInjectedScriptDelegate_ actual
  * implementation.
  */
-devtools.InspectorControllerImpl.prototype.callInspectorController_ =
+devtools.InspectorBackendImpl.prototype.callInspectorController_ =
     function(methodName, var_arg) {
   var args = Array.prototype.slice.call(arguments, 1);
   RemoteToolsAgent.DispatchOnInspectorController(
@@ -337,4 +228,4 @@ devtools.InspectorControllerImpl.prototype.callInspectorController_ =
 };
 
 
-InspectorController = new devtools.InspectorControllerImpl();
+InspectorBackend = new devtools.InspectorBackendImpl();

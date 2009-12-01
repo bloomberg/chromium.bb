@@ -191,7 +191,8 @@ TestSuite.prototype.addSniffer = function(receiver, methodName, override,
  * Tests that the real injected host is present in the context.
  */
 TestSuite.prototype.testHostIsPresent = function() {
-  this.assertTrue(typeof DevToolsHost == 'object' && !DevToolsHost.isStub);
+  this.assertTrue(typeof InspectorFrontendHost == 'object' &&
+      !InspectorFrontendHost.isStub);
 };
 
 
@@ -437,11 +438,11 @@ TestSuite.prototype.testProfilerTab = function() {
           ticksCount++;
         }
         if (ticksCount > 100) {
-          InspectorController.stopProfiling();
+          InspectorBackend.stopProfiling();
         }
       }, true);
 
-  InspectorController.startProfiling();
+  InspectorBackend.startProfiling();
   this.takeControl();
 };
 

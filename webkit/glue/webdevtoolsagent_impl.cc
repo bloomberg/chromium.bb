@@ -8,6 +8,7 @@
 
 #include "Document.h"
 #include "EventListener.h"
+#include "InjectedScriptHost.h"
 #include "InspectorBackend.h"
 #include "InspectorController.h"
 #include "InspectorFrontend.h"
@@ -46,6 +47,7 @@
 using WebCore::Document;
 using WebCore::DocumentLoader;
 using WebCore::FrameLoader;
+using WebCore::InjectedScriptHost;
 using WebCore::InspectorBackend;
 using WebCore::InspectorController;
 using WebCore::InspectorFrontend;
@@ -76,6 +78,13 @@ using WebKit::WebURLResponse;
 using WebKit::WebViewImpl;
 
 namespace {
+
+void InjectedScriptHostWeakReferenceCallback(v8::Persistent<v8::Value> object,
+                                             void* parameter) {
+  InjectedScriptHost* host = static_cast<InjectedScriptHost*>(parameter);
+  host->deref();
+  object.Dispose();
+}
 
 void InspectorBackendWeakReferenceCallback(v8::Persistent<v8::Value> object,
                                            void* parameter) {
@@ -345,13 +354,50 @@ void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
   // Call custom code to create inspector backend wrapper in the utility context
   // instead of calling V8DOMWrapper::convertToV8Object that would create the
   // wrapper in the Page main frame context.
+  v8::Handle<v8::Object> script_host_wrapper =
+      CreateInjectedScriptHostV8Wrapper();
+  if (script_host_wrapper.IsEmpty()) {
+    return;
+  }
+  utility_context_->Global()->Set(
+      v8::String::New("InjectedScriptHost"),
+      script_host_wrapper);
+
   v8::Handle<v8::Object> backend_wrapper = CreateInspectorBackendV8Wrapper();
   if (backend_wrapper.IsEmpty()) {
     return;
   }
   utility_context_->Global()->Set(
-      v8::String::New("InspectorController"),
+      v8::String::New("InspectorBackend"),
       backend_wrapper);
+}
+
+v8::Local<v8::Object>
+    WebDevToolsAgentImpl::CreateInjectedScriptHostV8Wrapper() {
+  V8ClassIndex::V8WrapperType descriptorType =
+      V8ClassIndex::INJECTEDSCRIPTHOST;
+  v8::Handle<v8::Function> function =
+      V8DOMWrapper::getTemplate(descriptorType)->GetFunction();
+  if (function.IsEmpty()) {
+    // Return if allocation failed.
+    return v8::Local<v8::Object>();
+  }
+  v8::Local<v8::Object> instance = SafeAllocation::newInstance(function);
+  if (instance.IsEmpty()) {
+    // Avoid setting the wrapper if allocation failed.
+    return v8::Local<v8::Object>();
+  }
+  InjectedScriptHost* host =
+      web_view_impl_->page()->inspectorController()->injectedScriptHost();
+  V8DOMWrapper::setDOMWrapper(instance, V8ClassIndex::ToInt(descriptorType),
+                              host);
+  // Create a weak reference to the v8 wrapper of InspectorBackend to deref
+  // InspectorBackend when the wrapper is garbage collected.
+  host->ref();
+  v8::Persistent<v8::Object> weak_handle =
+      v8::Persistent<v8::Object>::New(instance);
+  weak_handle.MakeWeak(host, &InjectedScriptHostWeakReferenceCallback);
+  return instance;
 }
 
 v8::Local<v8::Object> WebDevToolsAgentImpl::CreateInspectorBackendV8Wrapper() {

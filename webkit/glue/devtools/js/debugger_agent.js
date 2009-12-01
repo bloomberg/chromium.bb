@@ -693,7 +693,7 @@ devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
       function onProfileProcessingFinished(profile) {
         profilesSidebar.removeChild(processingIcon);
         profile.typeId = WebInspector.CPUProfileType.TypeId;
-        InspectorController.addFullProfile(profile);
+        InspectorBackend.addFullProfile(profile);
         WebInspector.addProfileHeader(profile);
         // If no profile is currently shown, show the new one.
         var profilesPanel = WebInspector.panels.profiles;
@@ -1144,7 +1144,7 @@ devtools.DebuggerAgent.prototype.doHandleBacktraceResponse_ = function(msg) {
   }
   WebInspector.pausedScript(this.callFrames_);
   this.showPendingExceptionMessage_();
-  DevToolsHost.activateWindow();
+  InspectorFrontendHost.activateWindow();
 };
 
 

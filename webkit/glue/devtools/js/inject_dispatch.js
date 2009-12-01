@@ -18,7 +18,7 @@ var InspectorControllerDispatcher = {};
  */
 InspectorControllerDispatcher.dispatch = function(functionName, json_args) {
   var params = JSON.parse(json_args);
-  InspectorController[functionName].apply(InspectorController, params);
+  InspectorBackend[functionName].apply(InspectorBackend, params);
 };
 
 /**
