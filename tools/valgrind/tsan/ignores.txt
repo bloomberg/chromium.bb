@@ -41,7 +41,7 @@ fun:fflush
 # value is already zero. I.e. the race is benign.
 # Global var is _ZNSs4_Rep20_S_empty_rep_storageE
 fun:*_M_mutateE*
-fun:*_M_set_length_and_sharable*
+fun_r:*_M_set_length_and_sharable*
 fun:*_M_is_leaked*
 fun:*_M_is_shared*
 fun:*_M_set_leaked*
