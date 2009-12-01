@@ -4,40 +4,7 @@
 
 {
   'variables': {
-    'use_system_openmax%': 0,
-  },
-  'target_defaults': {
-    'conditions': [
-      ['use_system_openmax==0', {
-        'type': '<(library)',
-        'dependencies': [
-          '../../base/base.gyp:base',
-        ],
-        'sources': [
-          'omx_stub.cc',
-        ],
-        'include_dirs': [
-          'il',
-        ],
-        'defines': [
-          '__OMX_EXPORTS',
-        ],
-        'direct_dependent_settings': {
-          'defines': [
-            '__OMX_EXPORTS',
-          ],
-        },
-      },{
-        'type': 'none',
-        'direct_dependent_settings': {
-          'link_settings': {
-            'libraries': [
-              '-lOmxCore',
-            ],
-          },
-        },
-      }],
-    ],
+    'openmax_type%': 'stub',
   },
   'targets': [
     {
@@ -60,6 +27,48 @@
           'il',
         ],
       },
+      'conditions': [
+        ['openmax_type=="stub"', {
+          'type': '<(library)',
+          'dependencies': [
+            '../../base/base.gyp:base',
+          ],
+          'sources': [
+            'omx_stub.cc',
+          ],
+          'include_dirs': [
+            'il',
+          ],
+          'defines': [
+            '__OMX_EXPORTS',
+          ],
+          'direct_dependent_settings': {
+            'defines': [
+              '__OMX_EXPORTS',
+            ],
+          },
+        }],
+        ['openmax_type=="bellagio"', {
+          'type': 'none',
+          'direct_dependent_settings': {
+            'link_settings': {
+              'libraries': [
+                '-lomxil-bellagio',
+              ],
+            },
+          },
+        }],
+        ['openmax_type=="omxcore"', {
+          'type': 'none',
+          'direct_dependent_settings': {
+            'link_settings': {
+              'libraries': [
+                '-lOmxCore',
+              ],
+            },
+          },
+        }],
+      ],
     },
   ],
 }
