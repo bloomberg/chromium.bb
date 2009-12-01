@@ -22,7 +22,7 @@ static bool HandleViewSource(GURL* url, Profile* profile) {
     // other kind of 'active' url scheme like 'javascript' or 'data'.
     static const char* const allowed_sub_schemes[] = {
       chrome::kHttpScheme, chrome::kHttpsScheme, chrome::kFtpScheme,
-      chrome::kChromeUIScheme
+      chrome::kChromeUIScheme, chrome::kFileScheme
     };
 
     bool is_sub_scheme_allowed = false;
