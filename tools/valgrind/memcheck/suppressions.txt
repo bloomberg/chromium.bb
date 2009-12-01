@@ -1822,7 +1822,6 @@
    ...
    fun:_ZN7Profile13CreateProfileERK8FilePath
    fun:_ZN14ProfileManager13CreateProfileERK8FilePath
-   fun:_ZN37ProfileManagerTest_CreateProfile_Test8TestBodyEv
 }
 {
    bug_29026
