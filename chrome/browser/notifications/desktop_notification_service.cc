@@ -205,16 +205,18 @@ DesktopNotificationService::~DesktopNotificationService() {
 // create the preferences if they don't exist yet.
 void DesktopNotificationService::InitPrefs() {
   PrefService* prefs = profile_->GetPrefs();
-  const ListValue* allowed_sites;
-  const ListValue* denied_sites;
+  const ListValue* allowed_sites = NULL;
+  const ListValue* denied_sites = NULL;
 
-  if (!prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
-    prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
-  allowed_sites = prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
+  if (!profile_->IsOffTheRecord()) {
+    if (!prefs->FindPreference(prefs::kDesktopNotificationAllowedOrigins))
+      prefs->RegisterListPref(prefs::kDesktopNotificationAllowedOrigins);
+    allowed_sites = prefs->GetList(prefs::kDesktopNotificationAllowedOrigins);
 
-  if (!prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
-    prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins);
-  denied_sites = prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
+    if (!prefs->FindPreference(prefs::kDesktopNotificationDeniedOrigins))
+      prefs->RegisterListPref(prefs::kDesktopNotificationDeniedOrigins);
+    denied_sites = prefs->GetList(prefs::kDesktopNotificationDeniedOrigins);
+  }
 
   prefs_cache_ = new NotificationsPrefsCache(allowed_sites, denied_sites);
 
@@ -246,16 +248,7 @@ void DesktopNotificationService::Observe(NotificationType type,
 
 void DesktopNotificationService::GrantPermission(const GURL& origin) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  PrefService* prefs = profile_->GetPrefs();
-  ListValue* allowed_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
-  ListValue* denied_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
-  // Remove from the black-list and add to the white-list.
-  StringValue* value = new StringValue(origin.spec());
-  denied_sites->Remove(*value);
-  allowed_sites->Append(value);
-  prefs->ScheduleSavePersistentPrefs();
+  PersistPermissionChange(origin, true);
 
   // Schedule a cache update on the IO thread.
   ChromeThread::PostTask(
@@ -267,16 +260,7 @@ void DesktopNotificationService::GrantPermission(const GURL& origin) {
 
 void DesktopNotificationService::DenyPermission(const GURL& origin) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  PrefService* prefs = profile_->GetPrefs();
-  ListValue* allowed_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
-  ListValue* denied_sites =
-      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
-  StringValue* value = new StringValue(origin.spec());
-  // Remove from the white-list and add to the black-list.
-  allowed_sites->Remove(*value);
-  denied_sites->Append(value);
-  prefs->ScheduleSavePersistentPrefs();
+  PersistPermissionChange(origin, false);
 
   // Schedule a cache update on the IO thread.
   ChromeThread::PostTask(
@@ -284,6 +268,29 @@ void DesktopNotificationService::DenyPermission(const GURL& origin) {
       NewRunnableMethod(
           prefs_cache_.get(), &NotificationsPrefsCache::CacheDeniedOrigin,
           origin));
+}
+
+void DesktopNotificationService::PersistPermissionChange(
+    const GURL& origin, bool is_allowed) {
+  // Don't persist changes when off the record.
+  if (profile_->IsOffTheRecord())
+    return;
+
+  PrefService* prefs = profile_->GetPrefs();
+  ListValue* allowed_sites =
+      prefs->GetMutableList(prefs::kDesktopNotificationAllowedOrigins);
+  ListValue* denied_sites =
+      prefs->GetMutableList(prefs::kDesktopNotificationDeniedOrigins);
+  StringValue* value = new StringValue(origin.spec());
+  // Remove from one list and add to the other.
+  if (is_allowed) {
+    allowed_sites->Append(value);
+    denied_sites->Remove(*value);
+  } else {
+    allowed_sites->Remove(*value);
+    denied_sites->Append(value);
+  }
+  prefs->ScheduleSavePersistentPrefs();
 }
 
 void DesktopNotificationService::RequestPermission(

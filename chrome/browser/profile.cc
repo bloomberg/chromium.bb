@@ -429,7 +429,11 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual DesktopNotificationService* GetDesktopNotificationService() {
-    return profile_->GetDesktopNotificationService();
+    if (!desktop_notification_service_.get()) {
+      desktop_notification_service_.reset(new DesktopNotificationService(
+          this, g_browser_process->notification_ui_manager()));
+    }
+    return desktop_notification_service_.get();
   }
 
   virtual ProfileSyncService* GetProfileSyncService() {
@@ -522,6 +526,9 @@ class OffTheRecordProfileImpl : public Profile,
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
+
+  // Use a separate desktop notification service for OTR.
+  scoped_ptr<DesktopNotificationService> desktop_notification_service_;
 
   // Use a special WebKit context for OTR browsing.
   scoped_refptr<WebKitContext> webkit_context_;
