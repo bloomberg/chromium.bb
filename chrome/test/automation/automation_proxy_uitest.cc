@@ -1036,7 +1036,7 @@ TEST_F(ExternalTabUITest, CreateExternalTab1) {
 }
 
 // Create with empty url and then navigate
-TEST_F(ExternalTabUITest, CreateExternalTab2) {
+TEST_F(ExternalTabUITest, FLAKY_CreateExternalTab2) {
   scoped_refptr<TabProxy> tab;
   TimedMessageLoopRunner loop(MessageLoop::current());
   ASSERT_THAT(mock_, testing::NotNull());
