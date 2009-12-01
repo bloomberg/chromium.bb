@@ -713,7 +713,6 @@ BUG13907 : LayoutTests/fast/layers/video-layer.html = FAIL
 BUG4363 LINUX MAC SKIP : LayoutTests/fast/media = PASS FAIL
 BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-poster-from-remote.html = FAIL TIMEOUT
 BUG4363 LINUX MAC SKIP : LayoutTests/http/tests/security/local-video-src-from-remote.html = PASS FAIL
-BUG13907 SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
 BUG13907 SKIP : LayoutTests/http/tests/security/local-video-source-from-remote.html = FAIL
 BUG13907 SKIP : LayoutTests/http/tests/media = FAIL
 
@@ -1093,9 +1092,113 @@ BUG10310 LINUX : LayoutTests/svg/W3C-SVG-1.1/masking-opacity-01-b.svg = FAIL
 // Pixel dump was updated on upstream but our rendering did not change.
 BUG25175 MAC : LayoutTests/svg/custom/grayscale-gradient-mask.svg = IMAGE
 
-//
 // -----------------------------------------------------------------
-// End of SVG tests
+// Accessibility layout tests
+//
+// In addition to WebCore, these are meant to exercise platform APIs
+// (MSAA, NSAccessibility, ATK). Since we don't have access to these in the
+// sandbox, making these tests pass involves faking interactions with these APIs
+// and doesn't seem like a good use of our time.
+// We DEFER or WONTFIX these, because we need to first identify a good
+// testing strategy for Chromium accessibilitiy. It is possible we won't use
+// these at all.
+
+// AccessibilityUIElement.isActionSupported.
+BUG28997 WONTFIX : LayoutTests/accessibility/aria-link-supports-press.html = FAIL
+BUG28997 WONTFIX : LayoutTests/accessibility/button-press-action.html = FAIL
+BUG28997 WONTFIX : LayoutTests/accessibility/onclick-handlers.html = FAIL
+
+// AccessibilityUIElement.cellForColumnAndRow.
+BUG28998 WONTFIX : LayoutTests/accessibility/aria-tables.html = FAIL
+BUG28998 WONTFIX : LayoutTests/accessibility/table-cell-spans.html = FAIL
+BUG28998 WONTFIX : LayoutTests/accessibility/table-cells.html = FAIL
+
+// AccessibilityUIElement.clickPointX support
+BUG29001 DEFER : LayoutTests/accessibility/editable-webarea-context-menu-point.html = FAIL
+
+// AccessibilityUIElement.attributesOfLinkedUIElements() support
+BUG29002 DEFER : LayoutTests/accessibility/internal-link-anchors2.html = FAIL
+BUG29002 DEFER : LayoutTests/accessibility/radio-button-group-members.html = FAIL
+
+// AccessibilityUIElement.elementAtPoint() support
+BUG29003 DEFER : LayoutTests/accessibility/label-for-control-hittest.html = FAIL
+
+// AccessibilityUIElement.language support
+BUG29005 DEFER : LayoutTests/accessibility/language-attribute.html = FAIL
+
+// AccessibilityUIElement.width & height support
+BUG29006 DEFER : LayoutTests/accessibility/radio-button-checkbox-size.html = FAIL
+
+// AccessibilityUIElement.titleUIElement() support
+BUG29007 DEFER : LayoutTests/accessibility/non-data-table-cell-title-ui-element.html = FAIL
+BUG29007 DEFER : LayoutTests/accessibility/radio-button-title-label.html = FAIL
+BUG29007 DEFER : LayoutTests/accessibility/secure-textfield-title-ui.html = FAIL
+
+// AccessibilityUIElement.attributesOfColumnHeaders/RowHeaders/Columns/Rows/VisibleCells/Header support
+BUG29008 DEFER : LayoutTests/accessibility/table-attributes.html = FAIL
+BUG29008 DEFER : LayoutTests/accessibility/table-sections.html = FAIL
+
+// Complete AccessibilityUIElement.allAttributes implementation.
+BUG29009 WONTFIX : LayoutTests/accessibility/table-one-cell.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/table-with-rules.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/transformed-element.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/image-map1.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/image-map2.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/legend.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/lists.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/plugin.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/table-detection.html = FAIL
+BUG29009 WONTFIX : LayoutTests/accessibility/table-with-aria-role.html = FAIL
+
+// Implement AccessibilityUIElement.insertionPointLineNumber
+BUG29010 DEFER : LayoutTests/accessibility/textarea-insertion-point-line-number.html = FAIL
+
+// Implement AccessibilityUIElement.lineForIndex()
+BUG29011 DEFER : LayoutTests/accessibility/textarea-line-for-index.html = FAIL
+
+// AccessibilityUIElement.selectedTextRange/setSelectedTextRange
+BUG29014 DEFER : LayoutTests/accessibility/textarea-selected-text-range.html = FAIL
+
+// AccessibilityUIElement.attributesOfDocumentLinks() support
+BUG29015 DEFER : LayoutTests/accessibility/visible-elements.html = FAIL
+
+// Need to finish implementing window.accessibilityController for these to work.
+BUG10322 DEFER MAC : LayoutTests/accessibility/aria-roles.html = FAIL
+BUG10322 DEFER : LayoutTests/accessibility/iframe-bastardization.html = FAIL
+BUG10322 DEFER : LayoutTests/accessibility/th-as-title-ui.html = FAIL
+BUG10322 DEFER : LayoutTests/accessibility/input-slider.html = FAIL
+BUG10322 DEFER : LayoutTests/platform/mac/accessibility = FAIL
+BUG10322 DEFER : LayoutTests/platform/mac/accessibility/aria-radiobutton-text.html = PASS
+BUG10322 DEFER : LayoutTests/platform/mac/accessibility/aria-radiogroup.html = PASS
+BUG10322 DEFER : LayoutTests/platform/mac/accessibility/aria-range.html = PASS
+BUG10322 DEFER : LayoutTests/platform/mac/accessibility/aria-slider.html = PASS
+BUG10322 DEFER : LayoutTests/platform/mac/accessibility/aria-spinbutton.html = PASS
+BUG10322 DEFER : LayoutTests/platform/mac/accessibility/aria-toolbar.html = PASS
+BUG10322 DEFER : LayoutTests/platform/mac/accessibility/table-updating.html = PASS
+BUG10322 DEFER : LayoutTests/platform/win/accessibility = FAIL
+// Introduced in http://trac.webkit.org/changeset/48368
+BUG10322 DEFER SKIP : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
+
+// WebKit 50407:50416
+BUG27044 DEFER : LayoutTests/accessibility/aria-controls-with-tabs.html = TEXT
+BUG27044 DEFER : LayoutTests/accessibility/aria-tab-roles.html = TEXT
+
+// WebKit 50517:50527
+BUG27044 DEFER : LayoutTests/accessibility/aria-combobox.html = TEXT
+
+// WebKit merge 50840:50929
+BUG27555 DEFER : LayoutTests/accessibility/document-attributes.html = TEXT
+
+// Failures from merge 51042:51062
+BUG27923 DEFER : LayoutTests/accessibility/aria-labelledby-overrides-label.html = TEXT
+
+// WebKit roll 50248:50258
+BUG26195 DEFER : LayoutTests/accessibility/aria-option-role.html = TEXT
+
+BUG13907 DEFER SKIP : LayoutTests/accessibility/media-element.html = TIMEOUT
+
+// -----------------------------------------------------------------
+// Other failures
 // -----------------------------------------------------------------
 
 // These fail the pixel tests in debug mode because they have
@@ -1172,82 +1275,6 @@ BUG13809 WIN LINUX : LayoutTests/fast/canvas/canvas-empty-image-pattern.html = F
 // These tests need to have their output inspected to make sure it's reasonable
 // and then baselined if necessary.
 // ----------------------------------------------------------------------------
-
-// AccessibilityUIElement.isActionSupported.
-BUG28997 WONTFIX : LayoutTests/accessibility/aria-link-supports-press.html = FAIL
-BUG28997 WONTFIX : LayoutTests/accessibility/button-press-action.html = FAIL
-BUG28997 WONTFIX : LayoutTests/accessibility/onclick-handlers.html = FAIL
-
-// AccessibilityUIElement.cellForColumnAndRow.
-BUG28998 WONTFIX : LayoutTests/accessibility/aria-tables.html = FAIL
-BUG28998 WONTFIX : LayoutTests/accessibility/table-cell-spans.html = FAIL
-BUG28998 WONTFIX : LayoutTests/accessibility/table-cells.html = FAIL
-
-// AccessibilityUIElement.clickPointX support
-BUG29001 : LayoutTests/accessibility/editable-webarea-context-menu-point.html = FAIL
-
-// AccessibilityUIElement.attributesOfLinkedUIElements() support
-BUG29002 : LayoutTests/accessibility/internal-link-anchors2.html = FAIL
-BUG29002 : LayoutTests/accessibility/radio-button-group-members.html = FAIL
-
-// AccessibilityUIElement.elementAtPoint() support
-BUG29003 : LayoutTests/accessibility/label-for-control-hittest.html = FAIL
-
-// AccessibilityUIElement.language support
-BUG29005 : LayoutTests/accessibility/language-attribute.html = FAIL
-
-// AccessibilityUIElement.width & height support
-BUG29006 : LayoutTests/accessibility/radio-button-checkbox-size.html = FAIL
-
-// AccessibilityUIElement.titleUIElement() support
-BUG29007 : LayoutTests/accessibility/non-data-table-cell-title-ui-element.html = FAIL
-BUG29007 : LayoutTests/accessibility/radio-button-title-label.html = FAIL
-BUG29007 : LayoutTests/accessibility/secure-textfield-title-ui.html = FAIL
-
-// AccessibilityUIElement.attributesOfColumnHeaders/RowHeaders/Columns/Rows/VisibleCells/Header support
-BUG29008 : LayoutTests/accessibility/table-attributes.html = FAIL
-BUG29008 : LayoutTests/accessibility/table-sections.html = FAIL
-
-// Complete AccessibilityUIElement.allAttributes implementation.
-BUG29009 WONTFIX : LayoutTests/accessibility/table-one-cell.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/table-with-rules.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/transformed-element.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/image-map1.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/image-map2.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/legend.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/lists.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/plugin.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/table-detection.html = FAIL
-BUG29009 WONTFIX : LayoutTests/accessibility/table-with-aria-role.html = FAIL
-
-// Implement AccessibilityUIElement.insertionPointLineNumber
-BUG29010 : LayoutTests/accessibility/textarea-insertion-point-line-number.html = FAIL
-
-// Implement AccessibilityUIElement.lineForIndex()
-BUG29011 : LayoutTests/accessibility/textarea-line-for-index.html = FAIL
-
-// AccessibilityUIElement.selectedTextRange/setSelectedTextRange
-BUG29014 : LayoutTests/accessibility/textarea-selected-text-range.html = FAIL
-
-// AccessibilityUIElement.attributesOfDocumentLinks() support
-BUG29015 : LayoutTests/accessibility/visible-elements.html = FAIL
-
-// Need to finish implementing window.accessibilityController for these to work.
-BUG10322 MAC : LayoutTests/accessibility/aria-roles.html = FAIL
-BUG10322 : LayoutTests/accessibility/iframe-bastardization.html = FAIL
-BUG10322 : LayoutTests/accessibility/th-as-title-ui.html = FAIL
-BUG10322 : LayoutTests/accessibility/input-slider.html = FAIL
-BUG10322 : LayoutTests/platform/mac/accessibility = FAIL
-BUG10322 : LayoutTests/platform/mac/accessibility/aria-radiobutton-text.html = PASS
-BUG10322 : LayoutTests/platform/mac/accessibility/aria-radiogroup.html = PASS
-BUG10322 : LayoutTests/platform/mac/accessibility/aria-range.html = PASS
-BUG10322 : LayoutTests/platform/mac/accessibility/aria-slider.html = PASS
-BUG10322 : LayoutTests/platform/mac/accessibility/aria-spinbutton.html = PASS
-BUG10322 : LayoutTests/platform/mac/accessibility/aria-toolbar.html = PASS
-BUG10322 : LayoutTests/platform/mac/accessibility/table-updating.html = PASS
-BUG10322 : LayoutTests/platform/win/accessibility = FAIL
-// Introduced in http://trac.webkit.org/changeset/48368
-BUG10322 SKIP : LayoutTests/platform/win/accessibility/scroll-to-anchor.html = FAIL
 
 // This test isn't hanging, it just takes 12-13 seconds to run.
 BUG10322 SLOW : LayoutTests/http/tests/misc/acid3.html = FAIL
@@ -2822,9 +2849,6 @@ BUG_JORLOW DEBUG : LayoutTests/http/tests/ssl/referer-303.html = FAIL
 BUG_JORLOW LINUX MAC RELEASE : LayoutTests/http/tests/ssl/referer-303.html = FAIL
 BUG_JORLOW SLOW WIN RELEASE : LayoutTests/http/tests/ssl/referer-303.html = FAIL
 
-// WebKit roll 50248:50258
-BUG26195 : LayoutTests/accessibility/aria-option-role.html = TEXT
-
 // randomly started to be flaky on r30451 (revision had only a check-in of text_expectations.txt)
 BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-map-data-to-src.html = PASS TEXT
 BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size.html = PASS TEXT
@@ -2846,13 +2870,6 @@ BUG9798 WIN RELEASE : LayoutTests/http/tests/navigation/no-referrer-reset.html =
 
 // WebKit 50358:50395
 BUG3273 : LayoutTests/fast/text/international/thai-cursor-position.html = TEXT
-
-// WebKit 50407:50416
-BUG27044 : LayoutTests/accessibility/aria-controls-with-tabs.html = TEXT
-BUG27044 : LayoutTests/accessibility/aria-tab-roles.html = TEXT
-
-// WebKit 50517:50527
-BUG27044 : LayoutTests/accessibility/aria-combobox.html = TEXT
 
 // WebKit 50603:50667
 BUG_LEVIN WIN DEBUG : LayoutTests/svg/custom/gradient-stop-style-change.svg = TEXT PASS
@@ -2916,7 +2933,6 @@ BUG27551 WIN : LayoutTests/fast/css/shadow-multiple.html = IMAGE
 BUG27553 WIN MAC : LayoutTests/fast/text/atsui-partial-selection.html = IMAGE
 
 // WebKit merge 50840:50929
-BUG27555 : LayoutTests/accessibility/document-attributes.html = TEXT
 BUG27555 MAC : LayoutTests/fast/forms/input-file-re-render.html = FAIL
 
 BUG27555 : LayoutTests/media/media-fullscreen-inline.html = TIMEOUT
@@ -2933,9 +2949,6 @@ BUG27850 : LayoutTests/fast/history/back-forward-reset-after-error-handling.html
 // Need to update chromium so the web frame delegate is informed when window objects
 // in isolated worlds are cleared.
 BUG27849 : LayoutTests/http/tests/security/isolatedWorld/didClearWindowObject.html = TEXT
-
-// Failures from merge 51042:51062
-BUG27923: LayoutTests/accessibility/aria-labelledby-overrides-label.html = TEXT
 
 // Failures from merge 51062:51075
 BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom1-exception.html = TEXT
