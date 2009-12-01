@@ -59,6 +59,7 @@ const char MediaFormat::kSampleBits[]       = "SampleBits";
 const char MediaFormat::kChannels[]         = "Channels";
 const char MediaFormat::kWidth[]            = "Width";
 const char MediaFormat::kHeight[]           = "Height";
+const char MediaFormat::kFFmpegCodecID[]    = "FFmpegCodecID";
 
 MediaFormat::MediaFormat() {
 }

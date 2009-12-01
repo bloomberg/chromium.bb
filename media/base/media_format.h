@@ -52,6 +52,7 @@ class MediaFormat {
   static const char kChannels[];
   static const char kWidth[];
   static const char kHeight[];
+  static const char kFFmpegCodecID[];
 
   MediaFormat();
   ~MediaFormat();
