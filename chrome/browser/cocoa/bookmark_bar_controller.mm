@@ -458,6 +458,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 - (CGFloat)getDesiredToolbarHeightCompression {
   // Some special cases....
+  if (!barIsEnabled_)
+    return 0;
+
   if ([self isAnimationRunning]) {
     // No toolbar compression when animating between hidden and showing, nor
     // between showing and detached.
@@ -1337,7 +1340,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   lastVisualState_ = visualState_;
   visualState_ = nextVisualState;
 
-  if (animate) {
+  // Animate only if told to and if bar is enabled.
+  if (animate && barIsEnabled_) {
     // Take care of any animation cases we know how to handle.
 
     // We know how to handle hidden <-> normal, normal <-> detached....
