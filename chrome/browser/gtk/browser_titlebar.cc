@@ -325,6 +325,9 @@ void BrowserTitlebar::Init() {
                          IDR_MINIMIZE_H, buttons_hbox,
                          IDS_XPFRAME_MINIMIZE_TOOLTIP));
 
+  gtk_util::SetButtonClickableByMouseButtons(maximize_button_->widget(),
+                                             true, true, true);
+
   gtk_widget_size_request(close_button_->widget(), &close_button_req_);
   gtk_widget_size_request(minimize_button_->widget(), &minimize_button_req_);
   gtk_widget_size_request(restore_button_->widget(), &restore_button_req_);
@@ -504,6 +507,34 @@ void BrowserTitlebar::ShowFaviconMenu(GdkEventButton* event) {
   favicon_menu_->Popup(app_mode_favicon_, reinterpret_cast<GdkEvent*>(event));
 }
 
+void BrowserTitlebar::MaximizeButtonClicked() {
+  GdkEventButton* event = &gtk_get_current_event()->button;
+  if (event->button == 1) {
+    gtk_window_maximize(window_);
+  } else {
+    GtkWidget* widget = GTK_WIDGET(window_);
+    GdkScreen* screen = gtk_widget_get_screen(widget);
+    gint monitor = gdk_screen_get_monitor_at_window(screen, widget->window);
+    GdkRectangle screen_rect;
+    gdk_screen_get_monitor_geometry(screen, monitor, &screen_rect);
+
+    gint x, y;
+    gtk_window_get_position(window_, &x, &y);
+    gint width = widget->allocation.width;
+    gint height = widget->allocation.height;
+
+    if (event->button == 3) {
+      x = 0;
+      width = screen_rect.width;
+    } else if (event->button == 2) {
+      y = 0;
+      height = screen_rect.height;
+    }
+
+    browser_window_->SetBounds(gfx::Rect(x, y, width, height));
+  }
+}
+
 // static
 gboolean BrowserTitlebar::OnWindowStateChanged(GtkWindow* window,
     GdkEventWindowState* event, BrowserTitlebar* titlebar) {
@@ -544,7 +575,7 @@ void BrowserTitlebar::OnButtonClicked(GtkWidget* button,
   } else if (titlebar->restore_button_->widget() == button) {
     titlebar->browser_window_->UnMaximize();
   } else if (titlebar->maximize_button_->widget() == button) {
-    gtk_window_maximize(titlebar->window_);
+    titlebar->MaximizeButtonClicked();
   } else if (titlebar->minimize_button_->widget() == button) {
     gtk_window_iconify(titlebar->window_);
   }

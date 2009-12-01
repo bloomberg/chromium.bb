@@ -98,6 +98,10 @@ class BrowserTitlebar : public MenuGtk::Delegate,
   // Show the menu that the user gets from left-clicking the favicon.
   void ShowFaviconMenu(GdkEventButton* event);
 
+  // The maximize button was clicked, take an action depending on which mouse
+  // button the user pressed.
+  void MaximizeButtonClicked();
+
   // Callback for changes to window state.  This includes
   // maximizing/restoring/minimizing the window.
   static gboolean OnWindowStateChanged(GtkWindow* window,

@@ -116,6 +116,11 @@ bool IsScreenComposited();
 // Enumerates the top-level gdk windows of the current display.
 void EnumerateTopLevelWindows(x11_util::EnumerateWindowsDelegate* delegate);
 
+// Set that clicking the button with the given mouse buttons will cause a click
+// event.
+void SetButtonClickableByMouseButtons(GtkWidget* button,
+                                      bool left, bool middle, bool right);
+
 // Set that a button causes a page navigation. In particular, it will accept
 // middle clicks. Warning: only call this *after* you have connected your
 // own handlers for button-press and button-release events, or you will not get

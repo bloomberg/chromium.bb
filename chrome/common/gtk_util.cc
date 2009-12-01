@@ -28,14 +28,15 @@ void RemoveWidget(GtkWidget* widget, gpointer container) {
 // These two functions are copped almost directly from gtk core. The only
 // difference is that they accept middle clicks.
 gboolean OnMouseButtonPressed(GtkWidget* widget, GdkEventButton* event,
-                              gpointer unused) {
+                              gpointer userdata) {
   if (event->type == GDK_BUTTON_PRESS) {
     if (gtk_button_get_focus_on_click(GTK_BUTTON(widget)) &&
         !GTK_WIDGET_HAS_FOCUS(widget)) {
       gtk_widget_grab_focus(widget);
     }
 
-    if (event->button == 1 || event->button == 2)
+    gint button_mask = GPOINTER_TO_INT(userdata);
+    if (button_mask && (1 << event->button))
       gtk_button_pressed(GTK_BUTTON(widget));
   }
 
@@ -43,8 +44,9 @@ gboolean OnMouseButtonPressed(GtkWidget* widget, GdkEventButton* event,
 }
 
 gboolean OnMouseButtonReleased(GtkWidget* widget, GdkEventButton* event,
-                               gpointer unused) {
-  if (event->button == 1 || event->button == 2)
+                               gpointer userdata) {
+  gint button_mask = GPOINTER_TO_INT(userdata);
+  if (button_mask && (1 << event->button))
     gtk_button_released(GTK_BUTTON(widget));
 
   return TRUE;
@@ -325,13 +327,25 @@ void EnumerateTopLevelWindows(x11_util::EnumerateWindowsDelegate* delegate) {
   }
 }
 
-void SetButtonTriggersNavigation(GtkWidget* button) {
-  // We handle button activation manually because we want to accept middle mouse
-  // clicks.
+void SetButtonClickableByMouseButtons(GtkWidget* button,
+                                      bool left, bool middle, bool right) {
+  gint button_mask = 0;
+  if (left)
+    button_mask |= 1 << 1;
+  if (middle)
+    button_mask |= 1 << 2;
+  if (right)
+    button_mask |= 1 << 3;
+  void* userdata = GINT_TO_POINTER(button_mask);
+
   g_signal_connect(G_OBJECT(button), "button-press-event",
-                   G_CALLBACK(OnMouseButtonPressed), NULL);
+                   G_CALLBACK(OnMouseButtonPressed), userdata);
   g_signal_connect(G_OBJECT(button), "button-release-event",
-                   G_CALLBACK(OnMouseButtonReleased), NULL);
+                   G_CALLBACK(OnMouseButtonReleased), userdata);
+}
+
+void SetButtonTriggersNavigation(GtkWidget* button) {
+  SetButtonClickableByMouseButtons(button, true, true, false);
 }
 
 int MirroredLeftPointForRect(GtkWidget* widget, const gfx::Rect& bounds) {
