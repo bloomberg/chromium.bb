@@ -8,6 +8,8 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "views/focus/focus_manager.h"
+#include "views/focus/focus_manager.h"
+#include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
@@ -60,6 +62,16 @@ const std::wstring& TooltipManager::GetLineSeparator() {
   return *line_separator;
 }
 
+// static
+int TooltipManager::GetMaxWidth(int x, int y) {
+  gfx::Rect monitor_bounds =
+      Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
+  // GtkLabel (gtk_label_ensure_layout) forces wrapping at this size. We mirror
+  // the size here otherwise tooltips wider than the size used by gtklabel end
+  // up with extraneous empty lines.
+  return monitor_bounds.width() == 0 ? 800 : (monitor_bounds.width() + 1) / 2;
+}
+
 // Callback from gtk_container_foreach. If |*label_p| is NULL and |widget| is
 // a GtkLabel, |*label_p| is set to |widget|. Used to find the first GtkLabel
 // in a container.
@@ -77,15 +89,25 @@ static void LabelLocatorCallback(GtkWidget* widget,
 // triggers continually hiding/showing the widget in that case.
 static void AdjustLabel(GtkTooltip* tooltip) {
   static const char kAdjustedLabelPropertyValue[] = "_adjusted_label_";
+  static const char kTooltipLabel[] = "_tooltip_label_";
   gpointer adjusted_value = g_object_get_data(G_OBJECT(tooltip),
                                               kAdjustedLabelPropertyValue);
-  if (adjusted_value)
+  if (adjusted_value) {
+    gpointer label_ptr = g_object_get_data(G_OBJECT(tooltip), kTooltipLabel);
+    if (label_ptr) {
+      // Setting the text in a label doesn't force recalculating wrap position.
+      // We force recalculating wrap position by resetting the max width.
+      gtk_label_set_max_width_chars(reinterpret_cast<GtkLabel*>(label_ptr),
+                                    2999);
+      gtk_label_set_max_width_chars(reinterpret_cast<GtkLabel*>(label_ptr),
+                                    3000);
+    }
     return;
+  }
 
   adjusted_value = reinterpret_cast<gpointer>(1);
   g_object_set_data(G_OBJECT(tooltip), kAdjustedLabelPropertyValue,
                     adjusted_value);
-
   GtkWidget* parent;
   {
     // Create a label so that we can get the parent. The Tooltip ends up taking
@@ -101,8 +123,11 @@ static void AdjustLabel(GtkTooltip* tooltip) {
     GtkLabel* real_label = NULL;
     gtk_container_foreach(GTK_CONTAINER(parent), LabelLocatorCallback,
                           static_cast<gpointer>(&real_label));
-    if (real_label)
+    if (real_label) {
       gtk_label_set_max_width_chars(GTK_LABEL(real_label), 3000);
+      g_object_set_data(G_OBJECT(tooltip), kTooltipLabel,
+                        reinterpret_cast<gpointer>(real_label));
+    }
   }
 }
 
@@ -156,6 +181,7 @@ bool TooltipManagerGtk::ShowTooltip(int x, int y, bool for_keyboard,
   TrimTooltipToFit(&text, &max_width, &line_count, screen_loc.x(),
                    screen_loc.y());
   gtk_tooltip_set_text(tooltip, WideToUTF8(text).c_str());
+
 
   return true;
 }

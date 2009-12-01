@@ -13,6 +13,7 @@
 #include "app/win_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "views/screen.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
@@ -55,6 +56,16 @@ const std::wstring& TooltipManager::GetLineSeparator() {
   if (!separator)
     separator = new std::wstring(L"\r\n");
   return *separator;
+}
+
+// static
+int TooltipManager::GetMaxWidth(int x, int y) {
+  gfx::Rect monitor_bounds =
+      Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
+  // Allow the tooltip to be almost as wide as the screen.
+  // Otherwise, we would truncate important text, since we're not word-wrapping
+  // the text onto multiple lines.
+  return monitor_bounds.width() == 0 ? 800 : monitor_bounds.width() - 30;
 }
 
 TooltipManagerWin::TooltipManagerWin(Widget* widget)

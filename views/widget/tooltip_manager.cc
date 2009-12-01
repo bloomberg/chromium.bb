@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "app/gfx/text_elider.h"
-#include "views/screen.h"
 
 namespace views {
 
@@ -29,16 +28,6 @@ static void SplitTooltipString(const std::wstring& text,
   }
   if (next_index != text.size() && lines->size() < kMaxLines)
     lines->push_back(text.substr(index, text.size() - index));
-}
-
-// static
-int TooltipManager::GetMaxWidth(int x, int y) {
-  gfx::Rect monitor_bounds =
-      Screen::GetMonitorAreaNearestPoint(gfx::Point(x, y));
-  // Allow the tooltip to be almost as wide as the screen.
-  // Otherwise, we would truncate important text, since we're not word-wrapping
-  // the text onto multiple lines.
-  return monitor_bounds.width() == 0 ? 800 : monitor_bounds.width() - 30;
 }
 
 // static
