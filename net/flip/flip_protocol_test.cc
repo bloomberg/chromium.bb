@@ -5,13 +5,9 @@
 #include "flip_protocol.h"
 
 #include "base/scoped_ptr.h"
-#include "flip_bitmasks.h"   // shared with server.
-#include "flip_framer.h"
-#ifdef _WIN32
+#include "net/flip/flip_bitmasks.h"
+#include "net/flip/flip_framer.h"
 #include "testing/platform_test.h"
-#else
-#include "testing/base/public/gunit.h"
-#endif
 
 using flip::FlipDataFrame;
 using flip::FlipFrame;
@@ -109,7 +105,7 @@ TEST(FlipProtocolTest, TestDataFrame) {
 
   // Set the stream ID to various values.
   frame.set_stream_id(0);
-  EXPECT_EQ(0, frame.stream_id());
+  EXPECT_EQ(0u, frame.stream_id());
   EXPECT_FALSE(frame.is_control_frame());
   frame.set_stream_id(~0 & kStreamIdMask);
   EXPECT_EQ(~0 & kStreamIdMask, frame.stream_id());
@@ -120,13 +116,13 @@ TEST(FlipProtocolTest, TestDataFrame) {
   memset(frame.data(), '1', FlipDataFrame::size());
   int8 flags = frame.flags();
   frame.set_length(0);
-  EXPECT_EQ(0, frame.length());
+  EXPECT_EQ(0u, frame.length());
   EXPECT_EQ(flags, frame.flags());
   frame.set_length(kLengthMask);
   EXPECT_EQ(kLengthMask, frame.length());
   EXPECT_EQ(flags, frame.flags());
-  frame.set_length(5);
-  EXPECT_EQ(5, frame.length());
+  frame.set_length(5u);
+  EXPECT_EQ(5u, frame.length());
   EXPECT_EQ(flags, frame.flags());
 
   // Set flags to various values.  Make sure that when you set_flags(x),
@@ -134,15 +130,15 @@ TEST(FlipProtocolTest, TestDataFrame) {
   memset(frame.data(), '1', FlipDataFrame::size());
   uint32 length = frame.length();
   frame.set_flags(0);
-  EXPECT_EQ(0, frame.flags());
+  EXPECT_EQ(0u, frame.flags());
   EXPECT_EQ(length, frame.length());
   int8 all_flags = ~0;
   frame.set_flags(all_flags);
   flags = frame.flags();
   EXPECT_EQ(all_flags, flags);
   EXPECT_EQ(length, frame.length());
-  frame.set_flags(5);
-  EXPECT_EQ(5, frame.flags());
+  frame.set_flags(5u);
+  EXPECT_EQ(5u, frame.flags());
   EXPECT_EQ(length, frame.length());
 }
 
@@ -171,7 +167,7 @@ TEST(FlipProtocolDeathTest, TestFlipControlFrame) {
 
   // Set the stream ID to various values.
   frame.set_stream_id(0);
-  EXPECT_EQ(0, frame.stream_id());
+  EXPECT_EQ(0u, frame.stream_id());
   EXPECT_FALSE(frame.is_control_frame());
   frame.set_stream_id(~0 & kStreamIdMask);
   EXPECT_EQ(~0 & kStreamIdMask, frame.stream_id());
