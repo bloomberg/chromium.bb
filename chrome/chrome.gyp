@@ -4757,6 +4757,7 @@
         'browser/views/bookmark_context_menu_test.cc',
         'browser/views/bookmark_editor_view_unittest.cc',
         'browser/visitedlink_unittest.cc',
+        'browser/webdata/web_data_service_unittest.cc',
         'browser/webdata/web_database_unittest.cc',
         'browser/window_sizer_unittest.cc',
         'common/bzip2_unittest.cc',
