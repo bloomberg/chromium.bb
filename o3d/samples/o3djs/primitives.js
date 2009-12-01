@@ -644,7 +644,7 @@ o3djs.primitives.VertexInfo.prototype.setTriangle = function(
 o3djs.primitives.VertexInfo.prototype.createShape = function(
     pack,
     material) {
-  this.createShapeByType(
+  return this.createShapeByType(
       pack, material, o3djs.base.o3d.Primitive.TRIANGLELIST);
 };
 

@@ -116,7 +116,7 @@ o3djs.lineprimitives.LineVertexInfo.prototype.setLine = function(
 o3djs.lineprimitives.LineVertexInfo.prototype.createShape = function(
     pack,
     material) {
-  this.createShapeByType(
+  return this.createShapeByType(
       pack, material, o3djs.base.o3d.Primitive.LINELIST);
 };
 
