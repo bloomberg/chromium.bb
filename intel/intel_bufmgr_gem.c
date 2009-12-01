@@ -1201,23 +1201,17 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *) target_bo;
 
-	pthread_mutex_lock(&bufmgr_gem->lock);
-	if (bo_gem->has_error) {
-		pthread_mutex_unlock(&bufmgr_gem->lock);
+	if (bo_gem->has_error)
 		return -ENOMEM;
-	}
 
 	if (target_bo_gem->has_error) {
 		bo_gem->has_error = 1;
-		pthread_mutex_unlock(&bufmgr_gem->lock);
 		return -ENOMEM;
 	}
 
 	/* Create a new relocation list if needed */
-	if (bo_gem->relocs == NULL && drm_intel_setup_reloc_list(bo)) {
-		pthread_mutex_unlock(&bufmgr_gem->lock);
+	if (bo_gem->relocs == NULL && drm_intel_setup_reloc_list(bo))
 		return -ENOMEM;
-	}
 
 	/* Check overflow */
 	assert(bo_gem->reloc_count < bufmgr_gem->max_relocs);
@@ -1248,8 +1242,6 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	drm_intel_gem_bo_reference(target_bo);
 
 	bo_gem->reloc_count++;
-
-	pthread_mutex_unlock(&bufmgr_gem->lock);
 
 	return 0;
 }
