@@ -20,6 +20,20 @@ namespace {
 // DrawStringInt().
 static cairo_font_options_t* cairo_font_options = NULL;
 
+// Returns the resolution used by pango. A negative values means the resolution
+// hasn't been set.
+static double GetPangoResolution() {
+  static double resolution;
+  static bool determined_resolution = false;
+  if (!determined_resolution) {
+    determined_resolution = true;
+    PangoContext* default_context = gdk_pango_context_get();
+    resolution = pango_cairo_context_get_resolution(default_context);
+    g_object_unref(default_context);
+  }
+  return resolution;
+}
+
 // Update |cairo_font_options| based on GtkSettings, allocating it if needed.
 static void UpdateCairoFontOptions() {
   if (!cairo_font_options)
@@ -133,6 +147,15 @@ static void SetupPangoLayout(PangoLayout* layout,
     pango_layout_set_wrap(layout,
         (flags & Canvas::CHARACTER_BREAK) ?
             PANGO_WRAP_WORD_CHAR : PANGO_WRAP_WORD);
+  }
+
+  // Set the resolution to match that used by Gtk. If we don't set the
+  // resolution and the resolution differs from the default, Gtk and Chrome end
+  // up drawing at different sizes.
+  double resolution = GetPangoResolution();
+  if (resolution > 0) {
+    pango_cairo_context_set_resolution(pango_layout_get_context(layout),
+                                       resolution);
   }
 
   PangoFontDescription* desc = gfx::Font::PangoFontFromGfxFont(font);

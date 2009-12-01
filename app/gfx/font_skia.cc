@@ -39,6 +39,7 @@ static double GetPangoScaleFactor() {
       scale_factor = 1;
     else
       scale_factor /= 72.0;
+    determined_scale = true;
   }
   return scale_factor;
 }
