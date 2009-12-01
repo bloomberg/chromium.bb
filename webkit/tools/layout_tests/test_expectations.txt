@@ -429,6 +429,16 @@ BUG17585 WONTFIX : LayoutTests/fast/dom/HTMLDataGridElement = FAIL
 // For more details, see discussions at issue 20570.
 BUG20570 WONTFIX : LayoutTests/fast/forms/get-forms-to-about-blank.html = FAIL
 
+// xhtml mp tests were added in http://trac.webkit.org/changeset/43865 and are
+// skipped on all platforms upstream.
+// We are not planning to support these.
+BUG12254 WONTFIX SKIP : LayoutTests/fast/xhtmlmp = FAIL
+
+// wap css tests were added in http://trac.webkit.org/changeset/43887 and are
+// skipped on all platforms upstream.
+// We are not planning to support these.
+BUG12310 WONTFIX SKIP : LayoutTests/fast/wcss = FAIL
+
 // -----------------------------------------------------------------
 // CHROME REWRITTEN TESTS
 // -----------------------------------------------------------------
@@ -2549,21 +2559,6 @@ BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test1.html = F
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test2.html = FAIL
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test3.html = FAIL
 BUG12053 MAC : LayoutTests/editing/execCommand/outdent-blockquote-test4.html = FAIL
-
-// xhtml mp tests were added in http://trac.webkit.org/changeset/43865 and are
-// skipped on all platforms upstream.
-BUG12254 SKIP : LayoutTests/fast/xhtmlmp/check-doctype-declaration.xhtml = FAIL
-BUG12254 SKIP : LayoutTests/fast/xhtmlmp/check-rootelement.xhtml = FAIL
-BUG12254 SKIP : LayoutTests/fast/xhtmlmp/noscript-in-multiscripts.xhtml = FAIL
-BUG12254 SKIP : LayoutTests/fast/xhtmlmp/noscript-nested.xhtml = FAIL
-BUG12254 SKIP : LayoutTests/fast/xhtmlmp/noscript.xhtml = FAIL
-
-// wap css tests were added in http://trac.webkit.org/changeset/43887 and are
-// skipped on all platforms upstream.
-BUG12310 SKIP : LayoutTests/fast/wcss/marquee-dir.xhtml = FAIL
-BUG12310 SKIP : LayoutTests/fast/wcss/marquee-loop.xhtml = FAIL
-BUG12310 SKIP : LayoutTests/fast/wcss/marquee-speed.xhtml = FAIL
-BUG12310 SKIP : LayoutTests/fast/wcss/marquee-style.xhtml = FAIL
 
 // Details for all of these are in the bugs.
 BUG12361 WIN SLOW : LayoutTests/http/tests/cookies/double-quoted-value-with-semi-colon.html = FAIL
