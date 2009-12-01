@@ -140,3 +140,6 @@ SUBSTRING : silentruntimeasserthandler___logging::logmessage::~logmessage___net:
 
 # 29041
 SUBSTRING : v8::context::global___webcore::v8custom::v8domwindoweventaccessorgetter
+
+# 29081
+REGEX : ^malloc$
