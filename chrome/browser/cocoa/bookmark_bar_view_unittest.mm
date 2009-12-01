@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/scoped_nsobject.h"
+#import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"

@@ -98,6 +98,8 @@
 //    |-bookmarkBar:willAnimateFromState:toState:| in order to inform the
 //    toolbar of required changes.
 
+NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
+
 namespace {
 
 // Overlap (in pixels) between the toolbar and the bookmark bar (when showing in
@@ -149,6 +151,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // negative value; callers should check for this.
 - (int)indexForDragOfButton:(BookmarkButton*)sourceButton
                     toPoint:(NSPoint)point;
+
+// Copies the given bookmark node to the given pasteboard, declaring appropriate
+// types (to paste a URL with a title).
+- (void)copyBookmarkNode:(const BookmarkNode*)node
+            toPasteboard:(NSPasteboard*)pboard;
 
 - (void)addNode:(const BookmarkNode*)child toMenu:(NSMenu*)menu;
 - (void)addFolderNode:(const BookmarkNode*)node toMenu:(NSMenu*)menu;
@@ -214,6 +221,13 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // it when the controller is gone.
   //TODO(dmaclach): Remove -- http://crbug.com/25845
   [[self view] removeFromSuperview];
+
+  // For safety, make sure the buttons can no longer call us.
+  for (BookmarkButton* button in buttons_.get()) {
+    [button setDelegate:nil];
+    [button setTarget:nil];
+    [button setAction:nil];
+  }
 
   bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
@@ -863,13 +877,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 - (IBAction)copyBookmark:(id)sender {
   BookmarkNode* node = [self nodeFromMenuItem:sender];
-  const std::string spec = node->GetURL().spec();
-  NSString* url = base::SysUTF8ToNSString(spec);
-  NSString* title = base::SysWideToNSString(node->GetTitle());
-  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-  [pasteboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
-                                                owner:nil];
-  [pasteboard setDataForURL:url title:title];
+  NSPasteboard* pboard = [NSPasteboard generalPasteboard];
+  [self copyBookmarkNode:node
+            toPasteboard:pboard];
 }
 
 - (IBAction)deleteBookmark:(id)sender {
@@ -1059,9 +1069,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
     NSCell* cell = [self cellForBookmarkNode:child];
     NSRect frame = [self frameForBookmarkButtonFromCell:cell xOffset:&xOffset];
-    NSButton* button = [[[BookmarkButton alloc] initWithFrame:frame]
-                         autorelease];
-    DCHECK(button);
+    scoped_nsobject<BookmarkButton>
+        button([[BookmarkButton alloc] initWithFrame:frame]);
+    DCHECK(button.get());
     [buttons_ addObject:button];
 
     // [NSButton setCell:] warns to NOT use setCell: other than in the
@@ -1070,6 +1080,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     // object.  To honor the assumed semantics, we do nothing with
     // NSButton between alloc/init and setCell:.
     [button setCell:cell];
+    [button setDelegate:self];
 
     if (child->is_folder()) {
       [button setTarget:self];
@@ -1163,6 +1174,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // Peg at right; keep same height as bar.
   [button setAutoresizingMask:(NSViewMinXMargin)];
   [button setCell:cell];
+  [button setDelegate:self];
   [button setTarget:self];
   [button setAction:@selector(openFolderMenuFromButton:)];
   [buttonView_ addSubview:button];
@@ -1379,6 +1391,31 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [[self animatableView] stopAnimation];
 }
 
+// (Private)
+- (void)copyBookmarkNode:(const BookmarkNode*)node
+            toPasteboard:(NSPasteboard*)pboard {
+  if (!node) {
+    NOTREACHED();
+    return;
+  }
+
+  if (node->is_folder()) {
+    // TODO(viettrungluu): I'm not sure what we should do, so just declare the
+    // "additional" types we're given for now. Maybe we want to add a list of
+    // URLs? Would we then have to recurse if there were subfolders?
+    // In the meanwhile, we *must* set it to a known state. (If this survives to
+    // a 10.6-only release, it can be replaced with |-clearContents|.)
+    [pboard declareTypes:[NSArray array] owner:nil];
+  } else {
+    const std::string spec = node->GetURL().spec();
+    NSString* url = base::SysUTF8ToNSString(spec);
+    NSString* title = base::SysWideToNSString(node->GetTitle());
+    [pboard declareURLPasteboardWithAdditionalTypes:[NSArray array]
+                                              owner:nil];
+    [pboard setDataForURL:url title:title];
+  }
+}
+
 // Delegate method for |AnimatableView| (a superclass of
 // |BookmarkBarToolbarView|).
 - (void)animationDidEnd:(NSAnimation*)animation {
@@ -1442,6 +1479,23 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
         1 - [[self animatableView] currentAnimationProgress]);
   }
   return 0;
+}
+
+// (BookmarkButtonDelegate protocol)
+- (void)fillPasteboard:(NSPasteboard*)pboard
+       forDragOfButton:(BookmarkButton*)button {
+  if (BookmarkNode* node = [self nodeFromButton:button]) {
+    // Put the bookmark information into the pasteboard, and then write our own
+    // data for |kBookmarkButtonDragType|.
+    [self copyBookmarkNode:node
+              toPasteboard:pboard];
+    [pboard addTypes:[NSArray arrayWithObject:kBookmarkButtonDragType]
+               owner:nil];
+    [pboard setData:[NSData dataWithBytes:&button length:sizeof(button)]
+            forType:kBookmarkButtonDragType];
+  } else {
+    NOTREACHED();
+  }
 }
 
 @end

@@ -13,6 +13,7 @@
 #include "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_state.h"
 #import "chrome/browser/cocoa/bookmark_bar_toolbar_view.h"
+#import "chrome/browser/cocoa/bookmark_button.h"
 #include "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -66,7 +67,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // A controller for the bookmark bar in the browser window. Handles showing
 // and hiding based on the preference in the given profile.
 @interface BookmarkBarController :
-    NSViewController<BookmarkBarState, BookmarkBarToolbarViewController> {
+    NSViewController<BookmarkBarState,
+                     BookmarkBarToolbarViewController,
+                     BookmarkButtonDelegate> {
  @private
   // The visual state of the bookmark bar. If an animation is running, this is
   // set to the "destination" and |lastVisualState_| is set to the "original"
@@ -241,5 +244,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (BookmarkNode*)nodeFromMenuItem:(id)sender;
 - (void)updateTheme:(GTMTheme*)theme;
 @end
+
+// The (internal) |NSPasteboard| type string for bookmark button drags, used for
+// dragging buttons around the bookmark bar. The data for this type is just a
+// pointer to the |BookmarkButton| being dragged.
+extern NSString* kBookmarkButtonDragType;
 
 #endif  // CHROME_BROWSER_COCOA_BOOKMARK_BAR_CONTROLLER_H_

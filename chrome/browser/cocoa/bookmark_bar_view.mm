@@ -99,8 +99,6 @@
 // NSDraggingDestination methods
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
-  if ([[info draggingPasteboard] containsURLData])
-    return NSDragOperationCopy;
   if ([[info draggingPasteboard] dataForType:kBookmarkButtonDragType]) {
     NSData* data = [[info draggingPasteboard]
                      dataForType:kBookmarkButtonDragType];
@@ -120,10 +118,13 @@
         dropIndicatorPosition_ = x;
         [self setNeedsDisplay:YES];
       }
-    }
 
-    return NSDragOperationMove;
+      return NSDragOperationMove;
+    }
+    // Fall through otherwise.
   }
+  if ([[info draggingPasteboard] containsURLData])
+    return NSDragOperationCopy;
   return NSDragOperationNone;
 }
 
@@ -191,14 +192,16 @@
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)info {
   NSPasteboard* pboard = [info draggingPasteboard];
-  if ([pboard containsURLData]) {
-    return [self performDragOperationForURL:info];
-  } else if ([pboard dataForType:kBookmarkButtonDragType]) {
-    return [self performDragOperationForBookmark:info];
-  } else {
-    NOTREACHED() << "Unknown drop type onto bookmark bar.";
-    return NO;
+  if ([pboard dataForType:kBookmarkButtonDragType]) {
+    if ([self performDragOperationForBookmark:info])
+      return YES;
+    // Fall through....
   }
+  if ([pboard containsURLData]) {
+    if ([self performDragOperationForURL:info])
+      return YES;
+  }
+  return NO;
 }
 
 @end  // @implementation BookmarkBarView

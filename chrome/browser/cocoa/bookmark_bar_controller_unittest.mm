@@ -10,6 +10,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
+#import "chrome/browser/cocoa/bookmark_button.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -890,6 +891,40 @@ TEST_F(BookmarkBarControllerTest, TestThemedButton) {
     NSColor* newColor =
         [attributes objectForKey:NSForegroundColorAttributeName];
     EXPECT_TRUE([newColor isEqual:color]);
+  }
+}
+
+// Test that delegates and targets of buttons are cleared on dealloc.
+TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
+  // Make some bookmark buttons.
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  GURL gurls[] = { GURL("http://www.foo.com/"),
+                   GURL("http://www.bar.com/"),
+                   GURL("http://www.baz.com/") };
+  std::wstring titles[] = { L"foo", L"bar", L"baz" };
+  for (size_t i = 0; i < arraysize(titles); i++)
+    model->SetURLStarred(gurls[i], titles[i], true);
+
+  // Get and retain the buttons so we can examine them after dealloc.
+  scoped_nsobject<NSArray> buttons([[bar_ buttons] retain]);
+  EXPECT_EQ([buttons count], arraysize(titles));
+
+  // Make sure that everything is set.
+  for (BookmarkButton* button in buttons.get()) {
+    ASSERT_TRUE([button isKindOfClass:[BookmarkButton class]]);
+    EXPECT_TRUE([button delegate]);
+    EXPECT_TRUE([button target]);
+    EXPECT_TRUE([button action]);
+  }
+
+  // This will dealloc....
+  bar_.reset();
+
+  // Make sure that everything is cleared.
+  for (BookmarkButton* button in buttons.get()) {
+    EXPECT_FALSE([button delegate]);
+    EXPECT_FALSE([button target]);
+    EXPECT_FALSE([button action]);
   }
 }
 

@@ -8,8 +8,6 @@
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
-NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
-
 namespace {
 
 // Code taken from <http://codereview.chromium.org/180036/diff/3001/3004>.
@@ -32,6 +30,7 @@ const CGFloat kDragImageOpacity = 0.7;
 @implementation BookmarkButton
 
 @synthesize draggable = draggable_;
+@synthesize delegate = delegate_;
 
 - (id)initWithFrame:(NSRect)frame {
   if ((self = [super initWithFrame:frame])) {
@@ -49,28 +48,28 @@ const CGFloat kDragImageOpacity = 0.7;
   // Starting drag. Never start another drag until another mouse down.
   mayDragStart_ = NO;
 
-  NSSize dragOffset = NSMakeSize(0.0, 0.0);
-  NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
-  [pboard declareTypes:[NSArray arrayWithObject:kBookmarkButtonDragType]
-                 owner:self];
+  if (delegate_) {
+    // Ask our delegate to fill the pasteboard for us.
+    NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 
-  // This NSData is no longer referenced once the function ends so
-  // there is no need to retain/release when placing in here as an
-  // opaque pointer.
-  [pboard setData:[NSData dataWithBytes:&self length:sizeof(self)]
-          forType:kBookmarkButtonDragType];
+    [delegate_ fillPasteboard:pboard forDragOfButton:self];
 
-  // At the moment, moving bookmarks causes their buttons (like me!)
-  // to be destroyed and rebuilt.  Make sure we don't go away while on
-  // the stack.
-  [self retain];
+    // At the moment, moving bookmarks causes their buttons (like me!)
+    // to be destroyed and rebuilt.  Make sure we don't go away while on
+    // the stack.
+    [self retain];
 
-  CGFloat yAt = [self bounds].size.height;
-  [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
-            event:event pasteboard:pboard source:self slideBack:YES];
+    CGFloat yAt = [self bounds].size.height;
+    NSSize dragOffset = NSMakeSize(0.0, 0.0);
+    [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
+              event:event pasteboard:pboard source:self slideBack:YES];
 
-  // And we're done.
-  [self autorelease];
+    // And we're done.
+    [self autorelease];
+  } else {
+    // Avoid blowing up, but we really shouldn't get here.
+    NOTREACHED();
+  }
 }
 
 - (void)draggedImage:(NSImage*)anImage
@@ -81,7 +80,8 @@ const CGFloat kDragImageOpacity = 0.7;
 }
 
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
-  return isLocal ? NSDragOperationMove : NSDragOperationNone;
+  return isLocal ? NSDragOperationCopy | NSDragOperationMove
+                 : NSDragOperationCopy;
 }
 
 - (void)mouseUp:(NSEvent*)theEvent {
