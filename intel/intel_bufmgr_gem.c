@@ -154,6 +154,11 @@ struct _drm_intel_bo_gem {
 	char used_as_reloc_target;
 
 	/**
+	 * Boolean of whether we have encountered an error whilst building the relocation tree.
+	 */
+	char has_error;
+
+	/**
 	 * Boolean of whether this buffer can be re-used
 	 */
 	char reusable;
@@ -396,6 +401,17 @@ drm_intel_setup_reloc_list(drm_intel_bo *bo)
 	bo_gem->relocs = malloc(max_relocs *
 				sizeof(struct drm_i915_gem_relocation_entry));
 	bo_gem->reloc_target_bo = malloc(max_relocs * sizeof(drm_intel_bo *));
+	if (bo_gem->relocs == NULL || bo_gem->reloc_target_bo == NULL) {
+		bo_gem->has_error = 1;
+
+		free (bo_gem->relocs);
+		bo_gem->relocs = NULL;
+
+		free (bo_gem->reloc_target_bo);
+		bo_gem->reloc_target_bo = NULL;
+
+		return 1;
+	}
 
 	return 0;
 }
@@ -564,6 +580,7 @@ retry:
 	bo_gem->validate_index = -1;
 	bo_gem->reloc_tree_fences = 0;
 	bo_gem->used_as_reloc_target = 0;
+	bo_gem->has_error = 0;
 	bo_gem->tiling_mode = I915_TILING_NONE;
 	bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
 	bo_gem->reusable = 1;
@@ -1178,10 +1195,22 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 	drm_intel_bo_gem *target_bo_gem = (drm_intel_bo_gem *) target_bo;
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
+	if (bo_gem->has_error) {
+		pthread_mutex_unlock(&bufmgr_gem->lock);
+		return -ENOMEM;
+	}
+
+	if (target_bo_gem->has_error) {
+		bo_gem->has_error = 1;
+		pthread_mutex_unlock(&bufmgr_gem->lock);
+		return -ENOMEM;
+	}
 
 	/* Create a new relocation list if needed */
-	if (bo_gem->relocs == NULL)
-		drm_intel_setup_reloc_list(bo);
+	if (bo_gem->relocs == NULL && drm_intel_setup_reloc_list(bo)) {
+		pthread_mutex_unlock(&bufmgr_gem->lock);
+		return -ENOMEM;
+	}
 
 	/* Check overflow */
 	assert(bo_gem->reloc_count < bufmgr_gem->max_relocs);
@@ -1268,8 +1297,12 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 		      drm_clip_rect_t * cliprects, int num_cliprects, int DR4)
 {
 	drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bo->bufmgr;
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
 	struct drm_i915_gem_execbuffer execbuf;
 	int ret, i;
+
+	if (bo_gem->has_error)
+		return -ENOMEM;
 
 	pthread_mutex_lock(&bufmgr_gem->lock);
 	/* Update indices and set up the validate list. */
