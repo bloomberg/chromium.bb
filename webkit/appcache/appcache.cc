@@ -82,13 +82,22 @@ void AppCache::InitializeWithManifest(Manifest* manifest) {
 bool AppCache::FindResponseForRequest(const GURL& url,
     AppCacheEntry* found_entry, AppCacheEntry* found_fallback_entry,
     GURL* found_fallback_namespace, bool* found_network_namespace) {
-  AppCacheEntry* entry = GetEntry(url);
+  // Ignore fragments when looking up URL in the cache.
+  GURL url_no_ref;
+  if (url.has_ref()) {
+    GURL::Replacements replacements;
+    replacements.ClearRef();
+    url_no_ref = url.ReplaceComponents(replacements);
+  } else {
+    url_no_ref = url;
+  }
+  AppCacheEntry* entry = GetEntry(url_no_ref);
   if (entry) {
     *found_entry = *entry;
     return true;
   }
 
-  FallbackNamespace* fallback_namespace = FindFallbackNamespace(url);
+  FallbackNamespace* fallback_namespace = FindFallbackNamespace(url_no_ref);
   if (fallback_namespace) {
     entry = GetEntry(fallback_namespace->second);
     DCHECK(entry);
@@ -97,7 +106,7 @@ bool AppCache::FindResponseForRequest(const GURL& url,
     return true;
   }
 
-  *found_network_namespace = IsInNetworkNamespace(url);
+  *found_network_namespace = IsInNetworkNamespace(url_no_ref);
   return *found_network_namespace;
 }
 
