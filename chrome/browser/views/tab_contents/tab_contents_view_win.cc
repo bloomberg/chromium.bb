@@ -513,7 +513,7 @@ void TabContentsViewWin::OnPaint(HDC junk_dc) {
   if (tab_contents()->render_view_host() &&
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
     if (sad_tab_ == NULL) {
-      sad_tab_ = new SadTabView;
+      sad_tab_ = new SadTabView(tab_contents());
       SetContentsView(sad_tab_);
     }
     CRect cr;

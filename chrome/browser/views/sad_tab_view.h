@@ -11,6 +11,7 @@
 #include "views/view.h"
 
 class SkBitmap;
+class TabContents;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -23,7 +24,7 @@ class SkBitmap;
 class SadTabView : public views::View,
                    public views::LinkController {
  public:
-  SadTabView();
+  explicit SadTabView(TabContents* tab_contents);
   virtual ~SadTabView() {}
 
   // Overridden from views::View:
@@ -44,6 +45,7 @@ class SadTabView : public views::View,
   static std::wstring message_;
   static int title_width_;
 
+  TabContents* tab_contents_;
   views::Link* learn_more_link_;
 
   // Regions within the display for different components, populated by

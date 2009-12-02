@@ -68,13 +68,10 @@ gboolean OnLeaveNotify2(GtkWidget* widget, GdkEventCrossing* event,
   return FALSE;
 }
 
-// Called when the mouse moves within the widget. We notify our delegate.
-gboolean OnMouseMove(GtkWidget* widget, GdkEventMotion* event,
-                     TabContents* tab_contents) {
-  if (tab_contents->delegate())
-    tab_contents->delegate()->ContentsMouseEvent(
-        tab_contents, views::Screen::GetCursorScreenPoint(), true);
-  return FALSE;
+// Called when the mouse moves within the widget.
+gboolean CallMouseMove(GtkWidget* widget, GdkEventMotion* event,
+                       TabContentsViewGtk* tab_contents_view) {
+  return tab_contents_view->OnMouseMove(widget, event);
 }
 
 // See tab_contents_view_win.cc for discussion of mouse scroll zooming.
@@ -104,6 +101,7 @@ TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
 TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
     : TabContentsView(tab_contents),
       views::WidgetGtk(TYPE_CHILD),
+      sad_tab_(NULL),
       ignore_next_char_event_(false) {
   drag_source_.reset(new TabContentsDragSource(this));
   last_focused_view_storage_id_ =
@@ -166,6 +164,12 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
     return render_widget_host->view();
   }
 
+  // If we were showing sad tab, remove it now.
+  if (sad_tab_ != NULL) {
+    SetContentsView(new views::View());
+    sad_tab_ = NULL;
+  }
+
   RenderWidgetHostViewGtk* view =
       new RenderWidgetHostViewGtk(render_widget_host);
   view->InitAsChild();
@@ -174,7 +178,7 @@ RenderWidgetHostView* TabContentsViewGtk::CreateViewForWidget(
   g_signal_connect(view->native_view(), "leave-notify-event",
                    G_CALLBACK(OnLeaveNotify2), tab_contents());
   g_signal_connect(view->native_view(), "motion-notify-event",
-                   G_CALLBACK(OnMouseMove), tab_contents());
+                   G_CALLBACK(CallMouseMove), this);
   g_signal_connect(view->native_view(), "scroll-event",
                    G_CALLBACK(OnMouseScroll), tab_contents());
   gtk_widget_add_events(view->native_view(), GDK_LEAVE_NOTIFY_MASK |
@@ -234,7 +238,7 @@ void TabContentsViewGtk::Focus() {
     return;
   }
 
-  if (sad_tab_.get()) {
+  if (tab_contents()->is_crashed() && sad_tab_ != NULL) {
     sad_tab_->RequestFocus();
     return;
   }
@@ -378,8 +382,10 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
 void TabContentsViewGtk::OnPaint(GtkWidget* widget, GdkEventExpose* event) {
   if (tab_contents()->render_view_host() &&
       !tab_contents()->render_view_host()->IsRenderViewLive()) {
-    if (!sad_tab_.get())
-      sad_tab_.reset(new SadTabView);
+    if (sad_tab_ == NULL) {
+      sad_tab_ = new SadTabView(tab_contents());
+      SetContentsView(sad_tab_);
+    }
     gfx::Rect bounds;
     GetBounds(&bounds, true);
     sad_tab_->SetBounds(gfx::Rect(0, 0, bounds.width(), bounds.height()));
@@ -426,3 +432,16 @@ void TabContentsViewGtk::SetFloatingPosition(const gfx::Size& size) {
     PositionChild(widget, child_x, 0, requisition.width, requisition.height);
   }
 }
+
+// Called when the mouse moves within the widget. We notify SadTabView if it's
+// not NULL, else our delegate.
+gboolean TabContentsViewGtk::OnMouseMove(GtkWidget* widget,
+                                         GdkEventMotion* event) {
+  if (sad_tab_ != NULL)
+    WidgetGtk::OnMotionNotify(widget, event);
+  else if (tab_contents()->delegate())
+    tab_contents()->delegate()->ContentsMouseEvent(
+        tab_contents(), views::Screen::GetCursorScreenPoint(), true);
+  return FALSE;
+}
+

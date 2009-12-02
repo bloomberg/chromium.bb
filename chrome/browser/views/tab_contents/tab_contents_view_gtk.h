@@ -39,6 +39,8 @@ class TabContentsViewGtk : public TabContentsView,
   void AttachConstrainedWindow(ConstrainedWindowGtk* constrained_window);
   void RemoveConstrainedWindow(ConstrainedWindowGtk* constrained_window);
 
+  gboolean OnMouseMove(GtkWidget* widget, GdkEventMotion* event);
+
   // TabContentsView implementation --------------------------------------------
 
   virtual void CreateView(const gfx::Size& initial_size);
@@ -91,7 +93,7 @@ class TabContentsViewGtk : public TabContentsView,
 
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
   // visible.
-  scoped_ptr<SadTabView> sad_tab_;
+  SadTabView* sad_tab_;
 
   // Whether to ignore the next CHAR keyboard event.
   bool ignore_next_char_event_;
