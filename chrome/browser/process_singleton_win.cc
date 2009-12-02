@@ -8,6 +8,7 @@
 #include "app/win_util.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser_init.h"

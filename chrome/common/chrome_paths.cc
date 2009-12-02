@@ -78,16 +78,6 @@ bool PathProvider(int key, FilePath* result) {
       }
       create_dir = true;
       break;
-    case chrome::DIR_USER_CACHE:
-#if defined(OS_LINUX)
-      if (!GetUserCacheDirectory(&cur))
-        return false;
-      create_dir = true;
-#else
-      // No concept of a separate cache directory on non-Linux systems.
-      return false;
-#endif
-      break;
     case chrome::DIR_USER_DOCUMENTS:
       if (!GetUserDocumentsDirectory(&cur))
         return false;

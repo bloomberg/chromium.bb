@@ -18,7 +18,6 @@ enum {
   DIR_APP = PATH_START,  // directory where dlls and data reside
   DIR_LOGS,              // directory where logs should be written
   DIR_USER_DATA,         // directory where user data can be written
-  DIR_USER_CACHE,        // directory where user cache data resides
   DIR_CRASH_DUMPS,       // directory where crash dumps are written
   DIR_USER_DESKTOP,      // directory that correspond to the desktop
   DIR_INSPECTOR,         // directory where web inspector is located

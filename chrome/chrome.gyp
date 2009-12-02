@@ -704,7 +704,6 @@
         'common/x11_util_internal.h',
         'common/zip.cc',  # Requires zlib directly.
         'common/zip.h',
-        'third_party/xdg_user_dirs/xdg_user_dir_lookup.cc',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -729,11 +728,7 @@
               '-lXext',
             ],
           },
-        }, { # else: 'OS!="linux"'
-          'sources!': [
-            'third_party/xdg_user_dirs/xdg_user_dir_lookup.cc',
-          ],
-        }],
+        },],
         ['OS=="linux" and selinux==1', {
           'dependencies': [
             '../build/linux/system.gyp:selinux',
