@@ -356,16 +356,24 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   if (!instance())
     return;
 
-  // Get the dummy window structure height; we're pretenting the plugin takes up
-  // the whole (dummy) window, but the clip rect and x/y are relative to the
-  // full window region, not just the content region.
-  Rect titlebar_bounds;
-  WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
-  GetWindowBounds(window, kWindowTitleBarRgn, &titlebar_bounds);
-  int window_structure_height = titlebar_bounds.bottom - titlebar_bounds.top;
+  int y_offset = 0;
+  if (PluginDrawingModel() == NPDrawingModelCoreGraphics) {
+    // Get the dummy window structure height; we're pretenting the plugin takes up
+    // the whole (dummy) window, but the clip rect and x/y are relative to the
+    // full window region, not just the content region.
+    Rect titlebar_bounds;
+    WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
+    GetWindowBounds(window, kWindowTitleBarRgn, &titlebar_bounds);
+    y_offset = titlebar_bounds.bottom - titlebar_bounds.top;
+  }
+  // It's not clear what we should do in the QD case; Safari always seems to use
+  // 0, whereas Firefox uses the offset in the window and passes -offset as
+  // port_y in the NP_Port structure. Since the port we are using corresponds
+  // directly to the context, not the window, we need to use 0 for now, but
+  // that may not work once we get events working.
 
   window_.x = 0;
-  window_.y = window_structure_height;
+  window_.y = y_offset;
   window_.height = window_rect_.height();
   window_.width = window_rect_.width();
   window_.clipRect.left = window_.x;
