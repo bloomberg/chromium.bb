@@ -121,6 +121,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
 
   registrar_.Add(this, NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_PROCESS_CRASHED,
+                 Source<Profile>(profile_));
 
   // Set up the ExtensionUpdater
   if (autoupdate_enabled) {
@@ -835,6 +837,16 @@ void ExtensionsService::Observe(NotificationType type,
       DevToolsManager::GetInstance()->AttachClientHost(
           iter->second, host->render_view_host());
       orphaned_dev_tools_.erase(iter);
+      break;
+    }
+
+    case NotificationType::EXTENSION_PROCESS_CRASHED: {
+      DCHECK_EQ(profile_, Source<Profile>(source).ptr());
+      ExtensionHost* host = Details<ExtensionHost>(details).ptr();
+
+      // Unload the entire extension. We want it to be in a consistent state:
+      // either fully working or not loaded at all, but never half-crashed.
+      UnloadExtension(host->extension()->id());
       break;
     }
 

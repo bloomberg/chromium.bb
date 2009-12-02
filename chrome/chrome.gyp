@@ -84,6 +84,7 @@
       'browser/net/ftp_browsertest.cc',
       'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
+      'browser/task_manager_browsertest.cc',
     ],
     'browser_tests_sources_gtk_specific': [
       'browser/gtk/view_id_util_browsertest.cc',
@@ -105,9 +106,6 @@
       'browser/child_process_security_policy_browser_test.cc',
       'browser/renderer_host/test/web_cache_manager_browsertest.cc',
       'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
-      # TODO(jcampan): once the task manager works on Mac, move this test to the
-      #                non win specific section.
-      'browser/task_manager_browsertest.cc',
       'browser/views/browser_views_accessibility_browsertest.cc',
     ],
     'browser_tests_sources_exclude_on_mac': [
@@ -131,6 +129,7 @@
       'browser/extensions/stubs_apitest.cc',
       'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
       'browser/ssl/ssl_browser_tests.cc',
+      'browser/task_manager_browsertest.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [

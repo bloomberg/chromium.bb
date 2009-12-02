@@ -119,6 +119,27 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, NoticeExtensionChanges) {
   WaitForResourceChange(4);
 }
 
+IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, KillExtension) {
+  // Show the task manager. This populates the model, and helps with debugging
+  // (you see the task manager).
+  browser()->window()->ShowTaskManager();
+
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("common").AppendASCII("background_page")));
+
+  // Wait until we see the loaded extension in the task manager (the three
+  // resources are: the browser process, New Tab Page, and the extension).
+  WaitForResourceChange(3);
+
+  EXPECT_TRUE(model()->GetResourceExtension(0) == NULL);
+  EXPECT_TRUE(model()->GetResourceExtension(1) == NULL);
+  ASSERT_TRUE(model()->GetResourceExtension(2) != NULL);
+
+  // Kill the extension process and make sure we notice it.
+  TaskManager::GetInstance()->KillProcess(2);
+  WaitForResourceChange(2);
+}
+
 // Regression test for http://crbug.com/18693.
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
   // Show the task manager. This populates the model, and helps with debugging
