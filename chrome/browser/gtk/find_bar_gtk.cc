@@ -502,6 +502,12 @@ void FindBarGtk::Observe(NotificationType type,
     gtk_widget_set_app_paintable(border_bin_, FALSE);
 
     gtk_misc_set_alignment(GTK_MISC(match_count_label_), 0.5, 1.0);
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    close_button_->SetBackground(
+        theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }
 
   UpdateMatchLabelAppearance(match_label_failure_);

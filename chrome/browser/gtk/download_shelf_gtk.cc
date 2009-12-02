@@ -207,6 +207,12 @@ void DownloadShelfGtk::Observe(NotificationType type,
     gtk_chrome_link_button_set_normal_color(
         GTK_CHROME_LINK_BUTTON(link_button_),
         use_default_color ? NULL : &bookmark_color);
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    close_button_->SetBackground(
+        theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }
 }
 

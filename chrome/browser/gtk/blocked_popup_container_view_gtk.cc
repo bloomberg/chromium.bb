@@ -117,6 +117,13 @@ void BlockedPopupContainerViewGtk::Observe(NotificationType type,
     GdkColor color = theme_provider_->GetGdkColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
     gtk_util::SetLabelColor(label, &color);
+
+
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    close_button_->SetBackground(
+        theme_provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
   }
 
   GdkColor color = theme_provider_->GetBorderColor();
