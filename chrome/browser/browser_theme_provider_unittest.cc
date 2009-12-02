@@ -141,12 +141,12 @@ TEST_F(BrowserThemeProviderTest, ColorSanityCheck) {
 TEST_F(BrowserThemeProviderTest, DeriveUnderlineLinkColor) {
   // If we specify a link color, but don't specify the underline color, the
   // theme provider should create one.
-  std::string color_json = "{ \"ntp_link\": [128, 128, 128, 126],"
-                           "  \"ntp_section_link\": [128, 128, 128, 126] }";
+  std::string color_json = "{ \"ntp_link\": [128, 128, 128, 1],"
+                           "  \"ntp_section_link\": [128, 128, 128, 1] }";
   LoadColorJSON(color_json);
 
   std::map<int, SkColor> colors = GetDefaultColorMap();
-  SkColor link_color = SkColorSetARGB(126, 128, 128, 128);
+  SkColor link_color = SkColorSetARGB(255, 128, 128, 128);
   colors[BrowserThemeProvider::COLOR_NTP_LINK] = link_color;
   colors[BrowserThemeProvider::COLOR_NTP_LINK_UNDERLINE] =
       BuildThirdOpacity(link_color);
