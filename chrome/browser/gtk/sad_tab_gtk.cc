@@ -113,6 +113,8 @@ SadTabGtk::SadTabGtk()
   // Add the learn-more link and center-align it in an alignment.
   GtkWidget* link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
+  gtk_chrome_link_button_set_normal_color(GTK_CHROME_LINK_BUTTON(link),
+                                          &gfx::kGdkWhite);
   g_signal_connect(link, "clicked", G_CALLBACK(OnLinkButtonClick),
                    const_cast<char*>(sad_tab_constants.learn_more_url.c_str()));
   GtkWidget* link_alignment = gtk_alignment_new(0.5, 0.5, 0.0, 0.0);
