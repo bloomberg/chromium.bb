@@ -84,6 +84,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"ver", version.c_str()));
   g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"prod", product.c_str()));
+  g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
   g_custom_entries->push_back(
       google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
@@ -253,7 +255,7 @@ extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
   DCHECK(id);
   DCHECK(index < kMaxReportedActiveExtensions);
 
-  wcscpy_s((*g_custom_entries)[g_extension_ids_offset + index].value, 
+  wcscpy_s((*g_custom_entries)[g_extension_ids_offset + index].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            id);
 }
