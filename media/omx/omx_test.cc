@@ -25,10 +25,13 @@ class TestApp {
  public:
   TestApp(const char* filename,
           const char* component,
-          media::OmxVideoDecoder::Codec codec)
+          media::OmxVideoDecoder::Codec codec,
+          bool simulate_copy)
       : filename_(filename),
         component_(component),
         codec_(codec),
+        simulate_copy_(simulate_copy),
+        copy_buf_size_(0),
         stopped_(false),
         error_(false) {
   }
@@ -77,6 +80,15 @@ class TestApp {
 
     // Read one more from the decoder.
     decoder_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
+
+    // Copy the output of the decoder to user memory.
+    if (simulate_copy_) {
+      if (size > copy_buf_size_) {
+        copy_buf_.reset(new uint8[size]);
+        copy_buf_size_ = size;
+      }
+      memcpy(copy_buf_.get(), buffer, size);
+    }
   }
 
   void FeedDecoder() {
@@ -118,6 +130,9 @@ class TestApp {
   const char* filename_;
   const char* component_;
   media::OmxVideoDecoder::Codec codec_;
+  bool simulate_copy_;
+  scoped_array<uint8> copy_buf_;
+  int copy_buf_size_;
   FILE* file_;
   bool stopped_;
   bool error_;
@@ -130,16 +145,20 @@ int main(int argc, char** argv) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
   if (argc < 2) {
-    printf("Usage: %s --file=FILE --component=COMPONENT --codec=CODEC\n",
-           argv[0]);
+    printf("Usage: omx_test --file=FILE --component=COMPONENT --codec=CODEC"
+           " [--copy]\n");
     printf("    COMPONENT: OpenMAX component name\n");
     printf("    CODEC: h264/mpeg4/h263/vc1\n");
+    printf("\n");
+    printf("Optional Arguments\n");
+    printf("    --copy    Simulate a memcpy from the output of decoder.\n");
     return 1;
   }
 
   std::string filename = cmd_line->GetSwitchValueASCII("file");
   std::string component = cmd_line->GetSwitchValueASCII("component");
   std::string codec = cmd_line->GetSwitchValueASCII("codec");
+  bool copy = cmd_line->HasSwitch("copy");
 
   media::OmxVideoDecoder::Codec codec_id = media::OmxVideoDecoder::kCodecNone;
   if (codec == "h264")
@@ -156,7 +175,7 @@ int main(int argc, char** argv) {
   }
 
   // Create a TestApp object and run the decoder.
-  TestApp test(filename.c_str(), component.c_str(), codec_id);
+  TestApp test(filename.c_str(), component.c_str(), codec_id, copy);
 
   // This call will run the decoder until EOS is reached or an error
   // is encountered.
