@@ -22,11 +22,18 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
     const std::wstring& warning_text, bool is_uninstall) {
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
-  [alert addButtonWithTitle:l10n_util::GetNSString(
+
+  NSButton* continueButton = [alert addButtonWithTitle:l10n_util::GetNSString(
       is_uninstall ? IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON :
                      IDS_EXTENSION_PROMPT_INSTALL_BUTTON)];
-  [alert addButtonWithTitle:l10n_util::GetNSString(
+  // Clear the key equivalent (currently 'Return') because cancel is the default
+  // button.
+  [continueButton setKeyEquivalent:@""];
+
+  NSButton* cancelButton = [alert addButtonWithTitle:l10n_util::GetNSString(
       IDS_EXTENSION_PROMPT_CANCEL_BUTTON)];
+  [cancelButton setKeyEquivalent:@"\r"];
+
   [alert setMessageText:l10n_util::GetNSStringF(
        is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING :
                       IDS_EXTENSION_INSTALL_PROMPT_HEADING,
