@@ -187,7 +187,6 @@ static int
 drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 			    uint32_t stride);
 
-static void drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo);
 static void drm_intel_gem_bo_unreference_locked_timed(drm_intel_bo *bo,
 						      time_t time);
 
@@ -357,7 +356,6 @@ drm_intel_add_validate_buffer(drm_intel_bo *bo)
 	bufmgr_gem->exec_objects[index].alignment = 0;
 	bufmgr_gem->exec_objects[index].offset = 0;
 	bufmgr_gem->exec_bos[index] = bo;
-	drm_intel_gem_bo_reference(bo);
 	bufmgr_gem->exec_count++;
 }
 
@@ -790,19 +788,6 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 		drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time);
 	} else {
 		drm_intel_gem_bo_free(bo);
-	}
-}
-
-static void drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
-{
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
-
-	assert(atomic_read(&bo_gem->refcount) > 0);
-	if (atomic_dec_and_test(&bo_gem->refcount)) {
-		struct timespec time;
-
-		clock_gettime(CLOCK_MONOTONIC, &time);
-		drm_intel_gem_bo_unreference_final(bo, time.tv_sec);
 	}
 }
 
@@ -1327,7 +1312,6 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 
 		/* Disconnect the buffer from the validate list */
 		bo_gem->validate_index = -1;
-		drm_intel_gem_bo_unreference_locked(bo);
 		bufmgr_gem->exec_bos[i] = NULL;
 	}
 	bufmgr_gem->exec_count = 0;
