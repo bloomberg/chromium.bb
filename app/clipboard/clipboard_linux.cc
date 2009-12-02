@@ -326,7 +326,16 @@ void Clipboard::ReadHTML(Clipboard::Buffer buffer, string16* markup,
   if (!data)
     return;
 
-  UTF8ToUTF16(reinterpret_cast<char*>(data->data), data->length, markup);
+  // If the data starts with 0xFEFF, i.e., Byte Order Mark, assume it is
+  // UTF-16, otherwise assume UTF-8.
+  if (data->length >= 2 &&
+      reinterpret_cast<uint16_t*>(data->data)[0] == 0xFEFF) {
+    markup->assign(reinterpret_cast<uint16_t*>(data->data) + 1,
+                   (data->length / 2) - 1);
+  } else {
+    UTF8ToUTF16(reinterpret_cast<char*>(data->data), data->length, markup);
+  }
+
   gtk_selection_data_free(data);
 }
 
