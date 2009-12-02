@@ -1260,6 +1260,12 @@ BUG3273 : LayoutTests/editing/selection/move-left-right.html = FAIL
 BUG3273 MAC : LayoutTests/platform/mac/editing/input/caret-primary-bidi.html = FAIL
 BUG3273 MAC : LayoutTests/platform/mac/editing/input/firstrectforcharacterrange-plain.html = FAIL
 BUG3273 MAC : LayoutTests/platform/mac/editing/input/range-for-empty-document.html = FAIL
+// WebKit 50358:50395
+BUG3273 : LayoutTests/fast/text/international/thai-cursor-position.html = TEXT
+// WebKit roll 51512:51524
+BUG3273 : LayoutTests/editing/selection/5825350-1.html = FAIL
+BUG3273 : LayoutTests/editing/selection/5825350-2.html = FAIL
+BUG3273 : LayoutTests/editing/selection/mixed-editability-10.html = FAIL
 
 // Regression from the 41362:41402 merge.
 BUG8402 MAC : LayoutTests/fast/forms/drag-out-of-textarea.html = FAIL
@@ -2864,9 +2870,6 @@ BUG9798 WIN DEBUG : LayoutTests/media/video-empty-source.html = IMAGE PASS
 BUG9798 RELEASE : LayoutTests/fast/dom/defaultView.html = TEXT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
 
-// WebKit 50358:50395
-BUG3273 : LayoutTests/fast/text/international/thai-cursor-position.html = TEXT
-
 // WebKit 50603:50667
 BUG_LEVIN WIN DEBUG : LayoutTests/svg/custom/gradient-stop-style-change.svg = TEXT PASS
 
@@ -3013,12 +3016,6 @@ BUG28918 : LayoutTests/http/tests/cache/subresource-failover-to-network.html = P
 
 // New failures from webkit r51496
 BUG29056 WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
-
-// New failures from WebKit roll 51512:51524
-BUG29059 : LayoutTests/editing/selection/5825350-1.html = FAIL
-BUG29059 : LayoutTests/editing/selection/5825350-2.html = FAIL
-BUG29059 : LayoutTests/editing/selection/mixed-editability-10.html = FAIL
-BUG29059 : LayoutTests/editing/deleting/5390681-2.html = FAIL
 
 // New failures from WebKit r51527
 BUG_HAMAJI WIN LINUX : LayoutTests/css2.1/t1205-c561-list-displ-00-b.html = IMAGE+TEXT
