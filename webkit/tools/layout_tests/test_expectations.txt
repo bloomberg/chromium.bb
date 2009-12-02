@@ -2973,9 +2973,6 @@ BUG28095 MAC : LayoutTests/http/tests/cookies/simple-cookies-expired.html = PASS
 // Need to add Chromium localized strings for the feature. Upstream r51172
 BUG28264 : LayoutTests/fast/forms/validationMessage.html = FAIL
 
-// New feature, but the failure seems to be real (not rebaseline). Upstream r51159.
-BUG28266 : LayoutTests/fast/forms/input-step.html = FAIL
-
 // Video Captions are added upsteram (r51191), need to implement.
 BUG28301 : LayoutTests/media/media-captions.html = TIMEOUT
 
@@ -3037,3 +3034,9 @@ BUG29157 WIN LINUX MAC :  LayoutTests/svg/animations/animVal-basics.html = TIMEO
 
 // New failures from WebKit r51577
 BUG29164 WIN LINUX MAC : LayoutTests/fast/frames/sandboxed-iframe-plugins.html = TEXT
+
+// New failures from WebKit merge 51581:51584
+BUG29167 MAC : LayoutTests/tables/mozilla/bugs/bug28341.html = IMAGE
+BUG29167 MAC : LayoutTests/plugins/window-open.html = TEXT PASS
+BUG29167 MAC : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = TEXT PASS
+BUG29167 MAC : LayoutTests/fast/dom/replaceChild.html = IMAGE PASS
