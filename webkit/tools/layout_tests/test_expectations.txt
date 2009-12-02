@@ -92,6 +92,8 @@ BUG24182 WIN RELEASE SLOW : LayoutTests/http/tests/loading/onload-vs-immediate-r
 BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
+// WebKit roll 50313:50324
+BUG24182 SLOW WIN : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
 
 // --- collecting results for supported-xml-content-types.html ---
 // was slow, started to timeout
@@ -2858,10 +2860,6 @@ BUG26195 MAC DEBUG : LayoutTests/plugins/netscape-plugin-setwindow-size-2.html =
 BUG26291 MAC : LayoutTests/fast/text/atsui-multiple-renderers.html = IMAGE
 BUG26291 MAC : LayoutTests/fast/text/drawBidiText.html = IMAGE
 BUG26291 MAC : LayoutTests/transforms/2d/hindi-rotated.html = IMAGE
-
-// WebKit roll 50313:50324
-BUG9798 SLOW WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS
-BUG9798 WIN RELEASE : LayoutTests/dom/html/level2/html/HTMLAppletElement01.html = PASS TIMEOUT
 
 // Flaky since at least WebKit 50258.
 BUG9798 WIN DEBUG : LayoutTests/media/video-empty-source.html = IMAGE PASS
