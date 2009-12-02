@@ -19,6 +19,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/ie_importer.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/importer/importer_bridge.h"
