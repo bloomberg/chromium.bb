@@ -242,6 +242,12 @@ void WriteBookmarksToSelection(const std::vector<const BookmarkNode*>& nodes,
       free(uris);
       break;
     }
+    case GtkDndUtil::TEXT_PLAIN: {
+      gtk_selection_data_set_text(selection_data,
+                                  nodes[0]->GetURL().spec().c_str(), -1);
+      break;
+
+    }
     default: {
       DLOG(ERROR) << "Unsupported drag get type!";
     }

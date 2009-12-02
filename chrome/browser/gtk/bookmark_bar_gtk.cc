@@ -763,7 +763,7 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
                       NULL, 0, GDK_ACTION_MOVE);
   int target_mask = GtkDndUtil::CHROME_BOOKMARK_ITEM;
   if (node->is_url())
-    target_mask |= GtkDndUtil::TEXT_URI_LIST;
+    target_mask |= GtkDndUtil::TEXT_URI_LIST | GtkDndUtil::TEXT_PLAIN;
   GtkDndUtil::SetSourceTargetListFromCodeMask(button, target_mask);
   g_signal_connect(G_OBJECT(button), "drag-begin",
                    G_CALLBACK(&OnButtonDragBegin), this);
