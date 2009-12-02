@@ -37,7 +37,7 @@
 static const char kUploadURL[] =
     "https://clients2.google.com/cr/report";
 
-static time_t uptime = 0;
+static uint64_t uptime = 0;
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
 // |output|.
@@ -48,6 +48,40 @@ static void write_uint64_hex(char* output, uint64_t v) {
     output[i] = hextable[v & 15];
     v >>= 4;
   }
+}
+
+// The following helper functions are for calculating uptime.
+
+// Converts a struct timeval to milliseconds.
+static uint64_t timeval_to_ms(struct timeval *tv) {
+  uint64_t ret = tv->tv_sec;  // Avoid overflow by explicitly using a uint64_t.
+  ret *= 1000;
+  ret += tv->tv_usec / 1000;
+  return ret;
+}
+
+// uint64_t version of my_int_len() from
+// breakpad/src/common/linux/linux_libc_support.h. Return the length of the
+// given, non-negative integer when expressed in base 10.
+static unsigned my_uint64_len(uint64_t i) {
+  if (!i)
+    return 1;
+
+  unsigned len = 0;
+  while (i) {
+    len++;
+    i /= 10;
+  }
+
+  return len;
+}
+
+// uint64_t version of my_itos() from
+// breakpad/src/common/linux/linux_libc_support.h. Convert a non-negative
+// integer to a string.
+static void my_uint64tos(char* output, uint64_t i, unsigned i_len) {
+  for (unsigned index = i_len; index; --index, i /= 10)
+    output[index - 1] = '0' + (i % 10);
 }
 
 pid_t HandleCrashDump(const BreakpadInfo& info) {
@@ -271,35 +305,38 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
 
   sys_writev(fd, iov, 29);
 
-  if (uptime) {
+  if (uptime >= 0) {
     struct timeval tv;
     if (!gettimeofday(&tv, NULL)) {
-      int time = tv.tv_sec - uptime;
-      char time_str[21];
-      const unsigned time_len = my_int_len(time);
-      my_itos(time_str, time, time_len);
+      uint64_t time = timeval_to_ms(&tv);
+      if (time > uptime) {
+        time -= uptime;
+        char time_str[21];
+        const unsigned time_len = my_uint64_len(time);
+        my_uint64tos(time_str, time, time_len);
 
-      iov[0].iov_base = const_cast<char*>(form_data_msg);
-      iov[0].iov_len = sizeof(form_data_msg) - 1;
-      iov[1].iov_base = const_cast<char*>(process_time_msg);
-      iov[1].iov_len = sizeof(process_time_msg) - 1;
-      iov[2].iov_base = const_cast<char*>(quote_msg);
-      iov[2].iov_len = sizeof(quote_msg);
-      iov[3].iov_base = const_cast<char*>(rn);
-      iov[3].iov_len = sizeof(rn);
-      iov[4].iov_base = const_cast<char*>(rn);
-      iov[4].iov_len = sizeof(rn);
+        iov[0].iov_base = const_cast<char*>(form_data_msg);
+        iov[0].iov_len = sizeof(form_data_msg) - 1;
+        iov[1].iov_base = const_cast<char*>(process_time_msg);
+        iov[1].iov_len = sizeof(process_time_msg) - 1;
+        iov[2].iov_base = const_cast<char*>(quote_msg);
+        iov[2].iov_len = sizeof(quote_msg);
+        iov[3].iov_base = const_cast<char*>(rn);
+        iov[3].iov_len = sizeof(rn);
+        iov[4].iov_base = const_cast<char*>(rn);
+        iov[4].iov_len = sizeof(rn);
 
-      iov[5].iov_base = const_cast<char*>(time_str);
-      iov[5].iov_len = time_len;
-      iov[6].iov_base = const_cast<char*>(rn);
-      iov[6].iov_len = sizeof(rn);
-      iov[7].iov_base = mime_boundary;
-      iov[7].iov_len = sizeof(mime_boundary) - 1;
-      iov[8].iov_base = const_cast<char*>(rn);
-      iov[8].iov_len = sizeof(rn);
+        iov[5].iov_base = const_cast<char*>(time_str);
+        iov[5].iov_len = time_len;
+        iov[6].iov_base = const_cast<char*>(rn);
+        iov[6].iov_len = sizeof(rn);
+        iov[7].iov_base = mime_boundary;
+        iov[7].iov_len = sizeof(mime_boundary) - 1;
+        iov[8].iov_base = const_cast<char*>(rn);
+        iov[8].iov_len = sizeof(rn);
 
-      sys_writev(fd, iov, 9);
+        sys_writev(fd, iov, 9);
+      }
     }
   }
 
@@ -710,7 +747,7 @@ void InitCrashReporter() {
   // Set the base process uptime value.
   struct timeval tv;
   if (!gettimeofday(&tv, NULL))
-    uptime = tv.tv_sec;
+    uptime = timeval_to_ms(&tv);
   else
     uptime = 0;
 }
