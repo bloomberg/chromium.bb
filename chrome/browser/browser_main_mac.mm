@@ -33,17 +33,19 @@ void WillInitializeMainMessageLoop(const MainFunctionParams& parameters) {
   // Initialize NSApplication using the custom subclass.
   [BrowserCrApplication sharedApplication];
 
-  // Before we load the nib, we need to start up the resource bundle so we have
-  // the strings avaiable for localization.
+  // If ui_task is not NULL, the app is actually a browser_test, so startup is
+  // handled outside of BrowserMain (which is what called this).
   if (!parameters.ui_task) {
+    // The browser process only wants to support the language Cocoa will use, so
+    // force the app locale to be overriden with that value.
+    l10n_util::OverrideLocaleWithCocoaLocale();
+
+    // Before we load the nib, we need to start up the resource bundle so we
+    // have the strings avaiable for localization.
     ResourceBundle::InitSharedInstance(std::wstring());
   }
   // Now load the nib.
   [NSBundle loadNibNamed:@"MainMenu" owner:NSApp];
-
-  // The browser process only wants to support the language Cocoa will use, so
-  // force the app locale to be overriden with that value.
-  l10n_util::OverrideLocaleWithCocoaLocale();
 
   // This is a no-op if the KeystoneRegistration framework is not present.
   // The framework is only distributed with branded Google Chrome builds.
