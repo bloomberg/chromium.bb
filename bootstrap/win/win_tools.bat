@@ -33,7 +33,7 @@ goto :PYTHON_CHECK
 :SVN_INSTALL
 echo Installing subversion ...
 :: svn is not accessible; check it out and create 'proxy' files.
-if exist "%~dp0svn.7z" del "%~dp0svn.7z"
+if exist "%~dp0svn.zip" del "%~dp0svn.zip"
 cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/svn_bin.zip "%~dp0svn.zip"
 if errorlevel 1 goto :SVN_FAIL
 :: Cleanup svn directory if it was existing.
@@ -46,6 +46,7 @@ if not exist "%WIN_TOOLS_ROOT_DIR%\svn_bin\." goto :SVN_FAIL
 del "%~dp0svn.zip"
 :: Create the batch file.
 call copy /y "%~dp0svn.new.bat" "%WIN_TOOLS_ROOT_DIR%\svn.bat" 1>nul
+call copy /y "%~dp0svnversion.new.bat" "%WIN_TOOLS_ROOT_DIR%\svnversion.bat" 1>nul
 call copy /y "%~dp0svn.new" "%WIN_TOOLS_ROOT_DIR%\svn" 1>nul
 goto :PYTHON_CHECK
 
