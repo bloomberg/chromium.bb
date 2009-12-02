@@ -1294,7 +1294,6 @@ void BrowserWindowGtk::TabSelectedAt(TabContents* old_contents,
 
   // Update all the UI bits.
   UpdateTitleBar();
-  toolbar_->SetProfile(new_contents->profile());
   UpdateToolbar(new_contents, true);
   UpdateUIForContents(new_contents);
 }
