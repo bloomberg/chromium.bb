@@ -3,6 +3,7 @@
 // LICENSE file.
 
 #include <iostream>
+#include <signal.h>
 #include <X11/Xlib.h>
 
 #include "base/at_exit.h"
@@ -20,8 +21,9 @@
 #include "media/filters/null_audio_renderer.h"
 #include "media/tools/player_x11/x11_video_renderer.h"
 
-Display* g_display;
-Window g_window;
+Display* g_display = NULL;
+Window g_window = 0;
+bool g_running = false;
 
 // Initialize X11. Returns true if successful. This method creates the X11
 // window. Further initialization is done in X11VideoRenderer.
@@ -91,6 +93,10 @@ bool InitPipeline(MessageLoop* message_loop,
   return true;
 }
 
+void TerminateHandler(int signal) {
+  g_running = false;
+}
+
 int main(int argc, char** argv) {
   // Read arguments.
   if (argc == 1) {
@@ -105,6 +111,10 @@ int main(int argc, char** argv) {
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII("file");
   bool enable_audio = CommandLine::ForCurrentProcess()->HasSwitch("audio");
 
+  // Install the signal handler.
+  signal(SIGTERM, &TerminateHandler);
+  signal(SIGINT, &TerminateHandler);
+
   // Initialize X11.
   if (!InitX11())
     return 1;
@@ -118,7 +128,8 @@ int main(int argc, char** argv) {
   if (InitPipeline(thread->message_loop(), filename.c_str(),
                    enable_audio, &pipeline)) {
     // Main loop of the application.
-    while (true) {
+    g_running = true;
+    while (g_running) {
       if (XPending(g_display)) {
         XEvent e;
         XNextEvent(g_display, &e);
@@ -128,8 +139,6 @@ int main(int argc, char** argv) {
           X11VideoRenderer::instance()->Paint();
         } else if (e.type == ButtonPress) {
           // Stop the playback.
-          std::cout << "Stopping..." << std::endl;
-          pipeline->Stop(NULL);
           break;
         }
       } else {
@@ -145,6 +154,9 @@ int main(int argc, char** argv) {
       }
     }
   }
+
+  std::cout << "Stopping..." << std::endl;
+  pipeline->Stop(NULL);
 
   // Cleanup tasks.
   thread->Stop();
