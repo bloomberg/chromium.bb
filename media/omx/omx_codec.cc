@@ -6,18 +6,18 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "media/omx/input_buffer.h"
-#include "media/omx/omx_video_decoder.h"
+#include "media/omx/omx_codec.h"
 
 namespace media {
 
 template <typename T>
-static void ResetPortHeader(const OmxVideoDecoder& dec, T* param) {
+static void ResetPortHeader(const OmxCodec& dec, T* param) {
   memset(param, 0, sizeof(T));
   param->nVersion.nVersion = dec.current_omx_spec_version();
   param->nSize = sizeof(T);
 }
 
-OmxVideoDecoder::OmxVideoDecoder(MessageLoop* message_loop)
+OmxCodec::OmxCodec(MessageLoop* message_loop)
     : input_buffer_count_(0),
       input_buffer_size_(0),
       input_port_(0),
@@ -33,7 +33,7 @@ OmxVideoDecoder::OmxVideoDecoder(MessageLoop* message_loop)
       message_loop_(message_loop) {
 }
 
-OmxVideoDecoder::~OmxVideoDecoder() {
+OmxCodec::~OmxCodec() {
   DCHECK(state_ == kError || state_ == kEmpty);
   DCHECK_EQ(0u, input_buffers_.size());
   DCHECK_EQ(0u, output_buffers_.size());
@@ -43,70 +43,70 @@ OmxVideoDecoder::~OmxVideoDecoder() {
   DCHECK(output_queue_.empty());
 }
 
-void OmxVideoDecoder::Setup(const char* component, Codec codec) {
+void OmxCodec::Setup(const char* component, Codec codec) {
   DCHECK_EQ(kEmpty, state_);
   component_ = component;
   codec_ = codec;
 }
 
-void OmxVideoDecoder::SetErrorCallback(Callback* callback) {
+void OmxCodec::SetErrorCallback(Callback* callback) {
   DCHECK_EQ(kEmpty, state_);
   error_callback_.reset(callback);
 }
 
-void OmxVideoDecoder::Start() {
+void OmxCodec::Start() {
   DCHECK_NE(kCodecNone, codec_);
 
   message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecoder::StartTask));
+      NewRunnableMethod(this, &OmxCodec::StartTask));
 }
 
-void OmxVideoDecoder::Stop(Callback* callback) {
+void OmxCodec::Stop(Callback* callback) {
   message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecoder::StopTask, callback));
+      NewRunnableMethod(this, &OmxCodec::StopTask, callback));
 }
 
-void OmxVideoDecoder::Read(ReadCallback* callback) {
+void OmxCodec::Read(ReadCallback* callback) {
   message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecoder::ReadTask, callback));
+      NewRunnableMethod(this, &OmxCodec::ReadTask, callback));
 }
 
-void OmxVideoDecoder::Feed(InputBuffer* buffer, FeedCallback* callback) {
+void OmxCodec::Feed(InputBuffer* buffer, FeedCallback* callback) {
   message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecoder::FeedTask, buffer, callback));
+      NewRunnableMethod(this, &OmxCodec::FeedTask, buffer, callback));
 }
 
-void OmxVideoDecoder::Flush(Callback* callback) {
+void OmxCodec::Flush(Callback* callback) {
   // TODO(hclam): implement.
 }
 
-OmxVideoDecoder::State OmxVideoDecoder::GetState() const {
+OmxCodec::State OmxCodec::GetState() const {
   return state_;
 }
 
-void OmxVideoDecoder::SetState(State state) {
+void OmxCodec::SetState(State state) {
   state_ = state;
 }
 
-OmxVideoDecoder::State OmxVideoDecoder::GetNextState() const {
+OmxCodec::State OmxCodec::GetNextState() const {
   return next_state_;
 }
 
-void OmxVideoDecoder::SetNextState(State state) {
+void OmxCodec::SetNextState(State state) {
   next_state_ = state;
 }
 
-void OmxVideoDecoder::StartTask() {
+void OmxCodec::StartTask() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   StateTransitionTask(kLoaded);
 }
 
-void OmxVideoDecoder::StopTask(Callback* callback) {
+void OmxCodec::StopTask(Callback* callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   stop_callback_.reset(callback);
@@ -132,7 +132,7 @@ void OmxVideoDecoder::StopTask(Callback* callback) {
     StateTransitionTask(kEmpty);
 }
 
-void OmxVideoDecoder::ReadTask(ReadCallback* callback) {
+void OmxCodec::ReadTask(ReadCallback* callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   // Don't accept read request on error state.
@@ -150,7 +150,7 @@ void OmxVideoDecoder::ReadTask(ReadCallback* callback) {
   FillBufferTask();
 }
 
-void OmxVideoDecoder::FeedTask(InputBuffer* buffer, FeedCallback* callback) {
+void OmxCodec::FeedTask(InputBuffer* buffer, FeedCallback* callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanAcceptInput()) {
@@ -170,7 +170,7 @@ void OmxVideoDecoder::FeedTask(InputBuffer* buffer, FeedCallback* callback) {
 // buffer internally. If this is not the case we need to
 // call OMX_UseBuffer() to allocate buffer manually and
 // assign to the headers.
-bool OmxVideoDecoder::AllocateInputBuffers() {
+bool OmxCodec::AllocateInputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   for(int i = 0; i < input_buffer_count_; ++i) {
@@ -190,7 +190,7 @@ bool OmxVideoDecoder::AllocateInputBuffers() {
 // buffer internally. If this is not the case we need to
 // call OMX_UseBuffer() to allocate buffer manually and
 // assign to the headers.
-bool OmxVideoDecoder::AllocateOutputBuffers() {
+bool OmxCodec::AllocateOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   for(int i = 0; i < output_buffer_count_; ++i) {
@@ -205,7 +205,7 @@ bool OmxVideoDecoder::AllocateOutputBuffers() {
   return true;
 }
 
-void OmxVideoDecoder::FreeInputBuffers() {
+void OmxCodec::FreeInputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   // Calls to OMX to free buffers.
@@ -219,7 +219,7 @@ void OmxVideoDecoder::FreeInputBuffers() {
   }
 }
 
-void OmxVideoDecoder::FreeOutputBuffers() {
+void OmxCodec::FreeOutputBuffers() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   // Calls to OMX to free buffers.
@@ -233,7 +233,7 @@ void OmxVideoDecoder::FreeOutputBuffers() {
   }
 }
 
-void OmxVideoDecoder::FreeInputQueue() {
+void OmxCodec::FreeInputQueue() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   while (!input_queue_.empty()) {
@@ -245,7 +245,7 @@ void OmxVideoDecoder::FreeInputQueue() {
   }
 }
 
-void OmxVideoDecoder::FreeOutputQueue() {
+void OmxCodec::FreeOutputQueue() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   while (!output_queue_.empty()) {
@@ -267,7 +267,7 @@ void OmxVideoDecoder::FreeOutputQueue() {
 // 7. Get Parameters about input port.
 // 8. Get Parameters about output port.
 // 9. Codec specific configurations.
-void OmxVideoDecoder::Transition_EmptyToLoaded() {
+void OmxCodec::Transition_EmptyToLoaded() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kEmpty, GetState());
 
@@ -426,7 +426,7 @@ void OmxVideoDecoder::Transition_EmptyToLoaded() {
 // 1. Send command to Idle state.
 // 2. Allocate buffers for input port.
 // 3. Allocate buffers for output port.
-void OmxVideoDecoder::Transition_LoadedToIdle() {
+void OmxCodec::Transition_LoadedToIdle() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kLoaded, GetState());
 
@@ -458,7 +458,7 @@ void OmxVideoDecoder::Transition_LoadedToIdle() {
 // Sequence of actions in this transition:
 //
 // 1. Send command to Executing state.
-void OmxVideoDecoder::Transition_IdleToExecuting() {
+void OmxCodec::Transition_IdleToExecuting() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kIdle, GetState());
 
@@ -477,7 +477,7 @@ void OmxVideoDecoder::Transition_IdleToExecuting() {
 //
 // 1. Send command to disable output port.
 // 2. Free buffers of the output port.
-void OmxVideoDecoder::Transition_ExecutingToDisable() {
+void OmxCodec::Transition_ExecutingToDisable() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kExecuting, GetState());
 
@@ -500,7 +500,7 @@ void OmxVideoDecoder::Transition_ExecutingToDisable() {
 // 1. Send command to enable output port.
 // 2. Get parameter of the output port.
 // 3. Allocate buffers for the output port.
-void OmxVideoDecoder::Transition_DisableToEnable() {
+void OmxCodec::Transition_DisableToEnable() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kPortSettingDisable, GetState());
 
@@ -544,7 +544,7 @@ void OmxVideoDecoder::Transition_DisableToEnable() {
 // Sequence of actions in this transition:
 //
 // 1. Send command to Idle state.
-void OmxVideoDecoder::Transition_DisableToIdle() {
+void OmxCodec::Transition_DisableToIdle() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kPortSettingDisable, GetState());
 
@@ -561,7 +561,7 @@ void OmxVideoDecoder::Transition_DisableToIdle() {
 // Sequence of actions in this transition:
 //
 // This transition does nothing.
-void OmxVideoDecoder::Transition_EnableToExecuting() {
+void OmxCodec::Transition_EnableToExecuting() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kPortSettingEnable, GetState());
 
@@ -569,7 +569,7 @@ void OmxVideoDecoder::Transition_EnableToExecuting() {
   DoneStateTransitionTask();
 }
 
-void OmxVideoDecoder::Transition_EnableToIdle() {
+void OmxCodec::Transition_EnableToIdle() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kPortSettingEnable, GetState());
 
@@ -586,7 +586,7 @@ void OmxVideoDecoder::Transition_EnableToIdle() {
 // Sequence of actions in this transition:
 //
 // 1. Send command to Idle state.
-void OmxVideoDecoder::Transition_ExecutingToIdle() {
+void OmxCodec::Transition_ExecutingToIdle() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kExecuting, GetState());
 
@@ -605,7 +605,7 @@ void OmxVideoDecoder::Transition_ExecutingToIdle() {
 // 1. Send command to Loaded state
 // 2. Free input buffers
 // 2. Free output buffers
-void OmxVideoDecoder::Transition_IdleToLoaded() {
+void OmxCodec::Transition_IdleToLoaded() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kIdle, GetState());
 
@@ -626,7 +626,7 @@ void OmxVideoDecoder::Transition_IdleToLoaded() {
 //
 // 1. Free decoder handle
 // 2. Uninitialize OMX (TODO(hclam): Remove this.)
-void OmxVideoDecoder::Transition_LoadedToEmpty() {
+void OmxCodec::Transition_LoadedToEmpty() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kLoaded, GetState());
 
@@ -652,7 +652,7 @@ void OmxVideoDecoder::Transition_LoadedToEmpty() {
 // 4. Free output buffer
 // 5. Free decoder handle
 // 6. Uninitialize OMX (TODO(hclam): Remove this.)
-void OmxVideoDecoder::Transition_Error() {
+void OmxCodec::Transition_Error() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_NE(kError, GetState());
 
@@ -690,14 +690,14 @@ void OmxVideoDecoder::Transition_Error() {
   DoneStateTransitionTask();
 }
 
-void OmxVideoDecoder::PostStateTransitionTask(State new_state) {
+void OmxCodec::PostStateTransitionTask(State new_state) {
   message_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
-                        &OmxVideoDecoder::StateTransitionTask, new_state));
+                        &OmxCodec::StateTransitionTask, new_state));
 }
 
-void OmxVideoDecoder::StateTransitionTask(State new_state) {
+void OmxCodec::StateTransitionTask(State new_state) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (GetState() == kError)
@@ -748,13 +748,13 @@ void OmxVideoDecoder::StateTransitionTask(State new_state) {
     Transition_Error();
 }
 
-void OmxVideoDecoder::PostDoneStateTransitionTask() {
+void OmxCodec::PostDoneStateTransitionTask() {
   message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &OmxVideoDecoder::DoneStateTransitionTask));
+      NewRunnableMethod(this, &OmxCodec::DoneStateTransitionTask));
 }
 
-void OmxVideoDecoder::DoneStateTransitionTask() {
+void OmxCodec::DoneStateTransitionTask() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (GetState() == kError) {
@@ -825,7 +825,7 @@ void OmxVideoDecoder::DoneStateTransitionTask() {
   }
 }
 
-void OmxVideoDecoder::DoneStop() {
+void OmxCodec::DoneStop() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!stop_callback_.get())
@@ -834,7 +834,7 @@ void OmxVideoDecoder::DoneStop() {
   stop_callback_.reset();
 }
 
-void OmxVideoDecoder::ReportError() {
+void OmxCodec::ReportError() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!error_callback_.get())
@@ -843,7 +843,7 @@ void OmxVideoDecoder::ReportError() {
   error_callback_.reset();
 }
 
-bool OmxVideoDecoder::CanEmptyBuffer() {
+bool OmxCodec::CanEmptyBuffer() {
   // We can call empty buffer while we are in executing or enabling / disabling
   // the output port.
   return (GetState() == kExecuting || GetState() == kPortSettingDisable ||
@@ -852,24 +852,24 @@ bool OmxVideoDecoder::CanEmptyBuffer() {
        GetNextState() == kPortSettingEnable);
 }
 
-bool OmxVideoDecoder::CanFillBuffer() {
+bool OmxCodec::CanFillBuffer() {
   // Make sure that we are staying in the executing state.
   return GetState() == kExecuting && GetState() == GetNextState();
 }
 
-bool OmxVideoDecoder::CanAcceptInput() {
+bool OmxCodec::CanAcceptInput() {
   // We can't take input buffer when in error state.
   // TODO(hclam): Reject when in stopped state.
   return GetState() != kError;
 }
 
-bool OmxVideoDecoder::CanAcceptOutput() {
+bool OmxCodec::CanAcceptOutput() {
   // Don't output request when in error state.
   // TODO(hclam): Reject when in stopped state.
   return GetState() != kError;
 }
 
-void OmxVideoDecoder::EmptyBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
+void OmxCodec::EmptyBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanEmptyBuffer())
@@ -882,7 +882,7 @@ void OmxVideoDecoder::EmptyBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
   EmptyBufferTask();
 }
 
-void OmxVideoDecoder::EmptyBufferTask() {
+void OmxCodec::EmptyBufferTask() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanEmptyBuffer())
@@ -924,7 +924,7 @@ void OmxVideoDecoder::EmptyBufferTask() {
   }
 }
 
-void OmxVideoDecoder::FillBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
+void OmxCodec::FillBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanFillBuffer())
@@ -937,7 +937,7 @@ void OmxVideoDecoder::FillBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer) {
   FillBufferTask();
 }
 
-void OmxVideoDecoder::FillBufferTask() {
+void OmxCodec::FillBufferTask() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanFillBuffer())
@@ -974,7 +974,7 @@ void OmxVideoDecoder::FillBufferTask() {
   }
 }
 
-void OmxVideoDecoder::InitialEmptyBuffer() {
+void OmxCodec::InitialEmptyBuffer() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanEmptyBuffer())
@@ -984,7 +984,7 @@ void OmxVideoDecoder::InitialEmptyBuffer() {
   EmptyBufferTask();
 }
 
-void OmxVideoDecoder::InitialFillBuffer() {
+void OmxCodec::InitialFillBuffer() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanFillBuffer())
@@ -1013,7 +1013,7 @@ void OmxVideoDecoder::InitialFillBuffer() {
   }
 }
 
-void OmxVideoDecoder::EventHandlerInternal(OMX_HANDLETYPE component,
+void OmxCodec::EventHandlerInternal(OMX_HANDLETYPE component,
                                            OMX_EVENTTYPE event,
                                            OMX_U32 data1,
                                            OMX_U32 data2,
@@ -1050,52 +1050,52 @@ void OmxVideoDecoder::EventHandlerInternal(OMX_HANDLETYPE component,
   }
 }
 
-void OmxVideoDecoder::EmptyBufferCallbackInternal(
+void OmxCodec::EmptyBufferCallbackInternal(
     OMX_HANDLETYPE component,
     OMX_BUFFERHEADERTYPE* buffer) {
   message_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
-                        &OmxVideoDecoder::EmptyBufferCompleteTask, buffer));
+                        &OmxCodec::EmptyBufferCompleteTask, buffer));
 }
 
-void OmxVideoDecoder::FillBufferCallbackInternal(
+void OmxCodec::FillBufferCallbackInternal(
     OMX_HANDLETYPE component,
     OMX_BUFFERHEADERTYPE* buffer) {
   message_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this,
-                        &OmxVideoDecoder::FillBufferCompleteTask, buffer));
+                        &OmxCodec::FillBufferCompleteTask, buffer));
 }
 
 // static
-OMX_ERRORTYPE OmxVideoDecoder::EventHandler(OMX_HANDLETYPE component,
+OMX_ERRORTYPE OmxCodec::EventHandler(OMX_HANDLETYPE component,
                                             OMX_PTR priv_data,
                                             OMX_EVENTTYPE event,
                                             OMX_U32 data1,
                                             OMX_U32 data2,
                                             OMX_PTR event_data) {
-  OmxVideoDecoder* decoder = static_cast<OmxVideoDecoder*>(priv_data);
+  OmxCodec* decoder = static_cast<OmxCodec*>(priv_data);
   decoder->EventHandlerInternal(component, event, data1, data2, event_data);
   return OMX_ErrorNone;
 }
 
 // static
-OMX_ERRORTYPE OmxVideoDecoder::EmptyBufferCallback(
+OMX_ERRORTYPE OmxCodec::EmptyBufferCallback(
     OMX_HANDLETYPE component,
     OMX_PTR priv_data,
     OMX_BUFFERHEADERTYPE* buffer) {
-  OmxVideoDecoder* decoder = static_cast<OmxVideoDecoder*>(priv_data);
+  OmxCodec* decoder = static_cast<OmxCodec*>(priv_data);
   decoder->EmptyBufferCallbackInternal(component, buffer);
   return OMX_ErrorNone;
 }
 
 // static
-OMX_ERRORTYPE OmxVideoDecoder::FillBufferCallback(
+OMX_ERRORTYPE OmxCodec::FillBufferCallback(
     OMX_HANDLETYPE component,
     OMX_PTR priv_data,
     OMX_BUFFERHEADERTYPE* buffer) {
-  OmxVideoDecoder* decoder = static_cast<OmxVideoDecoder*>(priv_data);
+  OmxCodec* decoder = static_cast<OmxCodec*>(priv_data);
   decoder->FillBufferCallbackInternal(component, buffer);
   return OMX_ErrorNone;
 }

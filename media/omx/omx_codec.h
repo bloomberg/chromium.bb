@@ -1,6 +1,10 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
+
+// TODO(ajwong): Generalize this class (fix comments, API, and extract
+// implemntation) so that it can be used for encoding & decoding of both
+// Video and Audio.
 //
 // An object that works with an OpenMAX component for video decoding.
 // Operations on this object are all asynchronous and this object
@@ -10,7 +14,7 @@
 //
 // // Initialization.
 // MessageLoop message_loop;
-// OmxVideoDecoder* decoder = new OmxVideoDecoder(&message_loop);
+// OmxCodec* decoder = new OmxCodec(&message_loop);
 // decoder->Setup(component_name, kCodecH264);
 // decoder->SetErrorCallback(NewCallback(this, &Client::ErrorCallback));
 //
@@ -74,6 +78,9 @@
 // to another. When an error is received, this object will transition to
 // the error state.
 
+#ifndef MEDIA_OMX_CODEC_H_
+#define MEDIA_OMX_CODEC_H_
+
 #include <queue>
 #include <vector>
 
@@ -87,7 +94,7 @@ class MessageLoop;
 
 namespace media {
 
-class OmxVideoDecoder : public base::RefCountedThreadSafe<OmxVideoDecoder> {
+class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
  public:
   typedef Callback1<InputBuffer*>::Type FeedCallback;
   typedef Callback2<uint8*, int>::Type ReadCallback;
@@ -101,8 +108,8 @@ class OmxVideoDecoder : public base::RefCountedThreadSafe<OmxVideoDecoder> {
     kCodecVc1,
   };
 
-  OmxVideoDecoder(MessageLoop* message_loop);
-  virtual ~OmxVideoDecoder();
+  OmxCodec(MessageLoop* message_loop);
+  virtual ~OmxCodec();
 
   // Set the component name and input codec format.
   // TODO(hclam): Add input format and output format. Also remove |component|.
@@ -308,3 +315,5 @@ class OmxVideoDecoder : public base::RefCountedThreadSafe<OmxVideoDecoder> {
 };
 
 }  // namespace media
+
+#endif  // MEDIA_OMX_CODEC_H_

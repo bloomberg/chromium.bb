@@ -16,7 +16,7 @@
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "media/omx/input_buffer.h"
-#include "media/omx/omx_video_decoder.h"
+#include "media/omx/omx_codec.h"
 
 // This is the driver object to feed the decoder with data from a file.
 // It also provides callbacks for the decoder to receive events from the
@@ -25,7 +25,7 @@ class TestApp {
  public:
   TestApp(const char* filename,
           const char* component,
-          media::OmxVideoDecoder::Codec codec,
+          media::OmxCodec::Codec codec,
           bool simulate_copy)
       : filename_(filename),
         component_(component),
@@ -110,7 +110,7 @@ class TestApp {
 
     // Setup the decoder with the message loop of the current thread. Also
     // setup component name, codec and callbacks.
-    decoder_ = new media::OmxVideoDecoder(&message_loop_);
+    decoder_ = new media::OmxCodec(&message_loop_);
     decoder_->Setup(component_, codec_);
     decoder_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
 
@@ -125,11 +125,11 @@ class TestApp {
     message_loop_.Run();
   }
 
-  scoped_refptr<media::OmxVideoDecoder> decoder_;
+  scoped_refptr<media::OmxCodec> decoder_;
   MessageLoop message_loop_;
   const char* filename_;
   const char* component_;
-  media::OmxVideoDecoder::Codec codec_;
+  media::OmxCodec::Codec codec_;
   bool simulate_copy_;
   scoped_array<uint8> copy_buf_;
   int copy_buf_size_;
@@ -160,15 +160,15 @@ int main(int argc, char** argv) {
   std::string codec = cmd_line->GetSwitchValueASCII("codec");
   bool copy = cmd_line->HasSwitch("copy");
 
-  media::OmxVideoDecoder::Codec codec_id = media::OmxVideoDecoder::kCodecNone;
+  media::OmxCodec::Codec codec_id = media::OmxCodec::kCodecNone;
   if (codec == "h264")
-    codec_id = media::OmxVideoDecoder::kCodecH264;
+    codec_id = media::OmxCodec::kCodecH264;
   else if (codec == "mpeg4")
-    codec_id = media::OmxVideoDecoder::kCodecMpeg4;
+    codec_id = media::OmxCodec::kCodecMpeg4;
   else if (codec == "h263")
-    codec_id = media::OmxVideoDecoder::kCodecH263;
+    codec_id = media::OmxCodec::kCodecH263;
   else if (codec == "vc1")
-    codec_id = media::OmxVideoDecoder::kCodecVc1;
+    codec_id = media::OmxCodec::kCodecVc1;
   else {
     printf("Unknown codec.\n");
     return 1;
