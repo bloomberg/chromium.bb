@@ -87,6 +87,8 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsDebuggerPauseScript(
       const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsWindowUnloading(
+      const v8::Arguments& args);
 
   WebKit::WebViewImpl* web_view_impl_;
   WebKit::WebDevToolsFrontendClient* client_;

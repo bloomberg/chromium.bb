@@ -196,6 +196,9 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
   dev_tools_host_->AddProtoFunction(
       "setSetting",
       WebDevToolsFrontendImpl::JsSetSetting);
+  dev_tools_host_->AddProtoFunction(
+      "windowUnloading",
+      WebDevToolsFrontendImpl::JsWindowUnloading);
   dev_tools_host_->Build();
 }
 
@@ -449,5 +452,12 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerPauseScript(
   WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
       v8::External::Cast(*args.Data())->Value());
   frontend->client_->sendDebuggerPauseScript();
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsWindowUnloading(
+    const v8::Arguments& args) {
+  //TODO(pfeldman): Implement this.
   return v8::Undefined();
 }
