@@ -2587,6 +2587,7 @@
               'include_dirs': [
                 # breakpad_linux.cc wants file_version_info_linux.h
                 '<(SHARED_INTERMEDIATE_DIR)',
+                '../breakpad/src',
               ],
             }, {  # linux_breakpad==0
               'sources': [

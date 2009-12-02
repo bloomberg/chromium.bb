@@ -1,4 +1,4 @@
-// Copyright (c) 2006, 2009, Google Inc.
+// Copyright (c) 2009, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,45 +26,11 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-// file_id.h: Return a unique identifier for a file
-//
 
-#ifndef BREAKPAD_LINUX_FILE_ID_H_
-#define BREAKPAD_LINUX_FILE_ID_H_
+#ifndef BREAKPAD_GOOGLETEST_INCLUDES_H__
+#define BREAKPAD_GOOGLETEST_INCLUDES_H__
 
-#include <limits.h>
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
-#include "common/linux/guid_creator.h"
-
-namespace google_breakpad {
-
-static const size_t kMDGUIDSize = sizeof(MDGUID);
-
-class FileID {
- public:
-  explicit FileID(const char* path);
-  ~FileID() {}
-
-  // Load the identifier for the elf file path specified in the constructor into
-  // |identifier|.  Return false if the identifier could not be created for the
-  // file.
-  // The current implementation will XOR the first page of data to generate an
-  // identifier.
-  bool ElfFileIdentifier(uint8_t identifier[kMDGUIDSize]);
-
-  // Convert the |identifier| data to a NULL terminated string.  The string will
-  // be formatted as a UUID (e.g., 22F065BB-FC9C-49F7-80FE-26A7CEBD7BCE).
-  // The |buffer| should be at least 37 bytes long to receive all of the data
-  // and termination.  Shorter buffers will contain truncated data.
-  static void ConvertIdentifierToString(const uint8_t identifier[kMDGUIDSize],
-                                        char* buffer, int buffer_length);
-
- private:
-  // Storage for the path specified
-  char path_[PATH_MAX];
-};
-
-}  // namespace google_breakpad
-
-#endif  // BREAKPAD_LINUX_FILE_ID_H_
+#endif  // BREAKPAD_GOOGLETEST_INCLUDES_H__

@@ -247,6 +247,7 @@
               'sources': [
                 'src/tools/linux/symupload/sym_upload.cc',
                 'src/common/linux/http_upload.cc',
+                'src/common/linux/http_upload.h',
               ],
               'include_dirs': [
                 'src',
@@ -262,11 +263,16 @@
               'type': 'executable',
 
               'sources': [
-                'linux/dump_syms.cc',
-                'linux/dump_symbols.cc',
-                'linux/dump_symbols.h',
-                'linux/file_id.cc',
-                'linux/file_id.h',
+                'src/common/linux/dump_symbols.cc',
+                'src/common/linux/dump_symbols.h',
+                'src/common/linux/file_id.cc',
+                'src/common/linux/file_id.h',
+                'src/common/linux/guid_creator.h',
+                'src/common/linux/module.cc',
+                'src/common/linux/module.h',
+                'src/common/linux/stabs_reader.cc',
+                'src/common/linux/stabs_reader.h',
+                'src/tools/linux/dump_syms/dump_syms.cc',
               ],
 
               'include_dirs': [
@@ -283,15 +289,25 @@
           'type': '<(library)',
 
           'sources': [
-            'linux/exception_handler.cc',
-            'linux/linux_dumper.cc',
-            'linux/minidump_writer.cc',
-            'src/common/linux/guid_creator.cc',
-            'src/common/string_conversion.cc',
+            'src/client/linux/handler/exception_handler.cc',
+            'src/client/linux/minidump_writer/directory_reader.h',
+            'src/client/linux/minidump_writer/line_reader.h',
+            'src/client/linux/minidump_writer/linux_dumper.cc',
+            'src/client/linux/minidump_writer/linux_dumper.h',
+            'src/client/linux/minidump_writer/minidump_writer.cc',
+            'src/client/linux/minidump_writer/minidump_writer.h',
+            'src/client/minidump_file_writer-inl.h',
+            'src/client/minidump_file_writer.cc',
+            'src/client/minidump_file_writer.h',
             'src/common/convert_UTF.c',
-
-            # TODO(agl): unfork this file
-            'linux/minidump_file_writer.cc',
+            'src/common/convert_UTF.h',
+            'src/common/linux/guid_creator.cc',
+            'src/common/linux/guid_creator.h',
+            'src/common/linux/linux_libc_support.h',
+            'src/common/linux/linux_syscall_support.h',
+            'src/common/linux/memory.h',
+            'src/common/string_conversion.cc',
+            'src/common/string_conversion.h',
           ],
 
           'include_dirs': [
@@ -306,20 +322,23 @@
           'dependencies': [
             '../testing/gtest.gyp:gtest',
             '../testing/gtest.gyp:gtestmain',
+            '../testing/gmock.gyp:gmock',
             'breakpad_client',
           ],
 
           'sources': [
-            'linux/directory_reader_unittest.cc',
-            'linux/exception_handler_unittest.cc',
-            'linux/line_reader_unittest.cc',
-            'linux/linux_dumper_unittest.cc',
-            'linux/linux_libc_support_unittest.cc',
-            'linux/memory_unittest.cc',
-            'linux/minidump_writer_unittest.cc',
+            'src/client/linux/minidump_writer/directory_reader_unittest.cc',
+            'src/client/linux/handler/exception_handler_unittest.cc',
+            'src/client/linux/minidump_writer/line_reader_unittest.cc',
+            'src/client/linux/minidump_writer/linux_dumper_unittest.cc',
+            'src/common/linux/linux_libc_support_unittest.cc',
+            'src/common/linux/memory_unittest.cc',
+            'src/client/linux/minidump_writer/minidump_writer_unittest.cc',
+            'linux/breakpad_googletest_includes.h',
           ],
 
           'include_dirs': [
+            'linux', # Use our copy of breakpad_googletest_includes.h
             'src',
             '..',
             '.',

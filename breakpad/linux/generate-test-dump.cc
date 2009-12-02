@@ -33,9 +33,9 @@
 
 #include <unistd.h>
 
-#include "breakpad/linux/exception_handler.h"
-#include "breakpad/linux/linux_libc_support.h"
-#include "breakpad/linux/linux_syscall_support.h"
+#include "breakpad/src/client/linux/handler/exception_handler.h"
+#include "breakpad/src/common/linux/linux_libc_support.h"
+#include "breakpad/src/common/linux/linux_syscall_support.h"
 
 static bool DumpCallback(const char* dump_path, const char* minidump_id,
                          void* context, bool success) {
