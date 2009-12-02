@@ -846,6 +846,7 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 				    &mmap_arg);
 		} while (ret == -1 && errno == EINTR);
 		if (ret != 0) {
+			ret = -errno;
 			fprintf(stderr,
 				"%s:%d: Error mapping buffer %d (%s): %s .\n",
 				__FILE__, __LINE__, bo_gem->gem_handle,
@@ -871,6 +872,7 @@ static int drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 			    &set_domain);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
+		ret = -errno;
 		fprintf(stderr, "%s:%d: Error setting to CPU domain %d: %s\n",
 			__FILE__, __LINE__, bo_gem->gem_handle,
 			strerror(errno));
@@ -909,6 +911,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 				    &mmap_arg);
 		} while (ret == -1 && errno == EINTR);
 		if (ret != 0) {
+			ret = -errno;
 			fprintf(stderr,
 				"%s:%d: Error preparing buffer map %d (%s): %s .\n",
 				__FILE__, __LINE__,
@@ -923,13 +926,14 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 					   MAP_SHARED, bufmgr_gem->fd,
 					   mmap_arg.offset);
 		if (bo_gem->gtt_virtual == MAP_FAILED) {
+			ret = -errno;
 			fprintf(stderr,
 				"%s:%d: Error mapping buffer %d (%s): %s .\n",
 				__FILE__, __LINE__,
 				bo_gem->gem_handle, bo_gem->name,
 				strerror(errno));
 			pthread_mutex_unlock(&bufmgr_gem->lock);
-			return errno;
+			return ret;
 		}
 	}
 
@@ -949,6 +953,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 	} while (ret == -1 && errno == EINTR);
 
 	if (ret != 0) {
+		ret = -errno;
 		fprintf(stderr, "%s:%d: Error setting domain %d: %s\n",
 			__FILE__, __LINE__, bo_gem->gem_handle,
 			strerror(errno));
@@ -1077,12 +1082,13 @@ drm_intel_gem_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
 			    &pread);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
+		ret = -errno;
 		fprintf(stderr,
 			"%s:%d: Error reading data from buffer %d: (%d %d) %s .\n",
 			__FILE__, __LINE__, bo_gem->gem_handle, (int)offset,
 			(int)size, strerror(errno));
 	}
-	return 0;
+	return ret;
 }
 
 /** Waits for all GPU rendering to the object to have completed. */
@@ -1289,17 +1295,20 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 			    &execbuf);
 	} while (ret != 0 && errno == EAGAIN);
 
-	if (ret != 0 && errno == ENOMEM) {
-		fprintf(stderr,
-			"Execbuffer fails to pin. "
-			"Estimate: %u. Actual: %u. Available: %u\n",
-			drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
-							   bufmgr_gem->
-							   exec_count),
-			drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
-							  bufmgr_gem->
-							  exec_count),
-			(unsigned int)bufmgr_gem->gtt_size);
+	if (ret != 0) {
+		ret = -errno;
+		if (errno == ENOSPC) {
+			fprintf(stderr,
+				"Execbuffer fails to pin. "
+				"Estimate: %u. Actual: %u. Available: %u\n",
+				drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
+								   bufmgr_gem->
+								   exec_count),
+				drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
+								  bufmgr_gem->
+								  exec_count),
+				(unsigned int)bufmgr_gem->gtt_size);
+		}
 	}
 	drm_intel_update_buffer_offsets(bufmgr_gem);
 
@@ -1317,7 +1326,7 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 	bufmgr_gem->exec_count = 0;
 	pthread_mutex_unlock(&bufmgr_gem->lock);
 
-	return 0;
+	return ret;
 }
 
 static int
@@ -1606,7 +1615,7 @@ drm_intel_gem_check_aperture_space(drm_intel_bo **bo_array, int count)
 	if (bufmgr_gem->available_fences) {
 		total_fences = drm_intel_gem_total_fences(bo_array, count);
 		if (total_fences > bufmgr_gem->available_fences)
-			return -1;
+			return -ENOSPC;
 	}
 
 	total = drm_intel_gem_estimate_batch_space(bo_array, count);
@@ -1618,7 +1627,7 @@ drm_intel_gem_check_aperture_space(drm_intel_bo **bo_array, int count)
 		DBG("check_space: overflowed available aperture, "
 		    "%dkb vs %dkb\n",
 		    total / 1024, (int)bufmgr_gem->gtt_size / 1024);
-		return -1;
+		return -ENOSPC;
 	} else {
 		DBG("drm_check_space: total %dkb vs bufgr %dkb\n", total / 1024,
 		    (int)bufmgr_gem->gtt_size / 1024);
