@@ -4,10 +4,6 @@
 
 #include "chrome/browser/sync/util/character_set_converters.h"
 
-#include <string>
-
-using std::string;
-
 namespace browser_sync {
 
 // Returns UTF8 string from the given FilePath.
