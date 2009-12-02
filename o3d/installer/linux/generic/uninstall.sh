@@ -73,17 +73,14 @@ Uninstall() {
   the O3D plugin, directories and included libs? (y/N)"
   read answer
   if [ "$answer" = "y" ]; then
-    echo -n "Removing O3D plugin, directories and libs..."
+    echo -n "Removing O3D plugin and directories..."
     rm ${O3D_DIR}/libnpo3dautoplugin.so
     rm ${O3D_DIR}/lib/libCg.so
     rm ${O3D_DIR}/lib/libCgGL.so
-    rm ${O3D_DIR}/lib/libGLEW.so.1.5
     for app in $APPS; do
-      for lib in $LIBS; do
-        if [ -L "/usr/lib/${app}/plugins/${lib}" ]; then
-          rm /usr/lib/${app}/plugins/${lib}
-        fi
-      done
+      if [ -L "/usr/lib/${app}/plugins/${LIB3D}" ]; then
+        rm /usr/lib/${app}/plugins/${LIB3D}
+      fi
     done
     rm ${O3D_DIR}/uninstall.sh
     rmdir $O3D_DIR
