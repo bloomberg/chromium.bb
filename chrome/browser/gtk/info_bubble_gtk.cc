@@ -48,15 +48,17 @@ InfoBubbleGtk* InfoBubbleGtk::Show(GtkWindow* toplevel_window,
                                    const gfx::Rect& rect,
                                    GtkWidget* content,
                                    ArrowLocationGtk arrow_location,
+                                   bool match_system_theme,
                                    GtkThemeProvider* provider,
                                    InfoBubbleGtkDelegate* delegate) {
-  InfoBubbleGtk* bubble = new InfoBubbleGtk(provider);
+  InfoBubbleGtk* bubble = new InfoBubbleGtk(provider, match_system_theme);
   bubble->Init(toplevel_window, rect, content, arrow_location);
   bubble->set_delegate(delegate);
   return bubble;
 }
 
-InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider)
+InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider,
+                             bool match_system_theme)
     : delegate_(NULL),
       window_(NULL),
       theme_provider_(provider),
@@ -64,7 +66,8 @@ InfoBubbleGtk::InfoBubbleGtk(GtkThemeProvider* provider)
       toplevel_window_(NULL),
       mask_region_(NULL),
       preferred_arrow_location_(ARROW_LOCATION_TOP_LEFT),
-      current_arrow_location_(ARROW_LOCATION_TOP_LEFT) {
+      current_arrow_location_(ARROW_LOCATION_TOP_LEFT),
+      match_system_theme_(match_system_theme) {
 }
 
 InfoBubbleGtk::~InfoBubbleGtk() {
@@ -307,7 +310,7 @@ void InfoBubbleGtk::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
   DCHECK_EQ(type.value, NotificationType::BROWSER_THEME_CHANGED);
-  if (theme_provider_->UseGtkTheme()) {
+  if (theme_provider_->UseGtkTheme() && match_system_theme_) {
     gtk_widget_modify_bg(window_, GTK_STATE_NORMAL, NULL);
   } else {
     // Set the background color, so we don't need to paint it manually.

@@ -57,6 +57,7 @@ class InfoBubbleGtk : public NotificationObserver {
                              const gfx::Rect& rect,
                              GtkWidget* content,
                              ArrowLocationGtk arrow_location,
+                             bool match_system_theme,
                              GtkThemeProvider* provider,
                              InfoBubbleGtkDelegate* delegate);
 
@@ -85,7 +86,7 @@ class InfoBubbleGtk : public NotificationObserver {
     FRAME_STROKE,
   };
 
-  explicit InfoBubbleGtk(GtkThemeProvider* provider);
+  explicit InfoBubbleGtk(GtkThemeProvider* provider, bool match_system_theme);
   virtual ~InfoBubbleGtk();
 
   // Creates the InfoBubble.
@@ -225,6 +226,11 @@ class InfoBubbleGtk : public NotificationObserver {
   // where is it currently drawn?
   ArrowLocationGtk preferred_arrow_location_;
   ArrowLocationGtk current_arrow_location_;
+
+  // Whether the background should match the system theme, when the system theme
+  // is being used. For example, the bookmark bubble does, but extension popups
+  // do not.
+  bool match_system_theme_;
 
   NotificationRegistrar registrar_;
 

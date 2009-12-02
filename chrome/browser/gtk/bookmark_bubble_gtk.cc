@@ -224,6 +224,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
                                 rect,
                                 content,
                                 arrow_location,
+                                true,
                                 theme_provider_,
                                 this);  // delegate
   if (!bubble_) {

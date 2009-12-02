@@ -150,6 +150,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
                                 rect,
                                 content_,
                                 arrow_location,
+                                true,
                                 theme_provider_,
                                 this);  // delegate
   if (!bubble_) {

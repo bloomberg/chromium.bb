@@ -72,6 +72,7 @@ void ExtensionPopupGtk::ShowPopup() {
                                 relative_to_,
                                 host_->view()->native_view(),
                                 arrow_location,
+                                false,
                                 GtkThemeProvider::GetFrom(browser_->profile()),
                                 this);
 }
