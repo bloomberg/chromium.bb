@@ -289,6 +289,8 @@ class BrowserWindow {
   friend class BrowserList;
   friend class BrowserView;
   virtual void DestroyBrowser() = 0;
+
+  ~BrowserWindow() {}
 };
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
