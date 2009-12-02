@@ -134,9 +134,6 @@ REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 # 27190
 PREFIX : webcore::rendertextcontrol::calcheight___webcore::rendertextcontrolsingleline::layout
 
-# 29041
-SUBSTRING : v8::context::global___webcore::v8custom::v8domwindoweventaccessorgetter
-
 # 29081
 REGEX : ^malloc$
 
