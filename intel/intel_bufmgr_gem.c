@@ -304,7 +304,7 @@ drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 	}
 }
 
-static void
+static inline void
 drm_intel_gem_bo_reference(drm_intel_bo *bo)
 {
 	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *) bo;
