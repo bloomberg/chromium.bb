@@ -533,11 +533,20 @@ void ResourceDispatcherHost::BeginRequest(
     // If the request is for the top level page or a frame/iframe, then we
     // should prioritize it higher than other resource types.  Currently, we
     // just use priorities 1 and 0.
-    if (request_data.resource_type == ResourceType::MAIN_FRAME ||
-        request_data.resource_type == ResourceType::SUB_FRAME) {
-      request->set_priority(1);
+    if (ResourceType::IsFrame(request_data.resource_type)) {
+      request->set_priority(net::HIGHEST);
     } else {
-      request->set_priority(0);
+      switch (request_data.resource_type) {
+        case ResourceType::STYLESHEET:
+        case ResourceType::SCRIPT:
+          request->set_priority(net::MEDIUM);
+          break;
+        case ResourceType::IMAGE:
+          request->set_priority(net::LOWEST);
+          break;
+        default:
+          request->set_priority(net::LOW);
+      }
     }
   }
 

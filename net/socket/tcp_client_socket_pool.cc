@@ -172,7 +172,7 @@ TCPClientSocketPool::~TCPClientSocketPool() {}
 int TCPClientSocketPool::RequestSocket(
     const std::string& group_name,
     const void* resolve_info,
-    int priority,
+    RequestPriority priority,
     ClientSocketHandle* handle,
     CompletionCallback* callback,
     LoadLog* load_log) {

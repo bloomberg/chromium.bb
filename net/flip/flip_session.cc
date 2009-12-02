@@ -210,8 +210,8 @@ FlipSession::~FlipSession() {
 
 net::Error FlipSession::Connect(const std::string& group_name,
                                 const HostResolver::RequestInfo& host,
-                                int priority) {
-  DCHECK(priority >= FLIP_PRIORITY_HIGHEST && priority < FLIP_PRIORITY_LOWEST);
+                                RequestPriority priority) {
+  DCHECK(priority >= FLIP_PRIORITY_HIGHEST && priority <= FLIP_PRIORITY_LOWEST);
 
   // If the connect process is started, let the caller continue.
   if (state_ > IDLE)
@@ -271,22 +271,8 @@ scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
   LOG(INFO) << "FlipStream: Creating stream " << stream_id << " for " << url;
 
   // TODO(mbelshe): Optimize memory allocations
-  int priority = request.priority;
-
-  // Hack for the priorities
-  // TODO(mbelshe): These need to be plumbed through the Http Network Stack.
-  if (path.find(".css") != path.npos) {
-    priority = 1;
-  } else if (path.find(".html") != path.npos) {
-    priority = 0;
-  } else if (path.find(".js") != path.npos) {
-    priority = 1;
-  } else {
-    priority = 3;
-  }
-
-  DCHECK(priority >= FLIP_PRIORITY_HIGHEST &&
-         priority <= FLIP_PRIORITY_LOWEST);
+  DCHECK(request.priority >= FLIP_PRIORITY_HIGHEST &&
+         request.priority <= FLIP_PRIORITY_LOWEST);
 
   // Convert from HttpRequestHeaders to Flip Headers.
   flip::FlipHeaderBlock headers;
@@ -298,12 +284,12 @@ scoped_refptr<FlipStream> FlipSession::GetOrCreateStream(
 
   // Create a SYN_STREAM packet and add to the output queue.
   scoped_ptr<flip::FlipSynStreamControlFrame> syn_frame(
-      flip_framer_.CreateSynStream(stream_id, priority, flags, false,
+      flip_framer_.CreateSynStream(stream_id, request.priority, flags, false,
                                    &headers));
   int length = flip::FlipFrame::size() + syn_frame->length();
   IOBuffer* buffer = new IOBuffer(length);
   memcpy(buffer->data(), syn_frame->data(), length);
-  queue_.push(FlipIOBuffer(buffer, length, priority, stream));
+  queue_.push(FlipIOBuffer(buffer, length, request.priority, stream));
 
   static StatsCounter flip_requests("flip.requests");
   flip_requests.Increment();

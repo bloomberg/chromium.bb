@@ -21,7 +21,7 @@ namespace {
 
 const int kMaxSockets = 32;
 const int kMaxSocketsPerGroup = 6;
-const int kDefaultPriority = 5;
+const net::RequestPriority kDefaultPriority = LOW;
 
 class MockClientSocket : public ClientSocket {
  public:
@@ -203,7 +203,7 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
                                       &client_socket_factory_)) {
   }
 
-  int StartRequest(const std::string& group_name, int priority) {
+  int StartRequest(const std::string& group_name, RequestPriority priority) {
     return StartRequestUsingPool(
         pool_.get(), group_name, priority, ignored_request_info_);
   }
@@ -218,7 +218,7 @@ TEST_F(TCPClientSocketPoolTest, Basic) {
   TestCompletionCallback callback;
   ClientSocketHandle handle;
   HostResolver::RequestInfo info("www.google.com", 80);
-  int rv = handle.Init("a", info, 0, &callback, pool_.get(), NULL);
+  int rv = handle.Init("a", info, LOW, &callback, pool_.get(), NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_FALSE(handle.is_initialized());
   EXPECT_FALSE(handle.socket());
@@ -273,16 +273,16 @@ TEST_F(TCPClientSocketPoolTest, PendingRequests) {
   EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
 
   // The rest are pending since we've used all active sockets.
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 1));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 7));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 9));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 5));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 6));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 2));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 8));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 3));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 4));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 1));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", HIGHEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOWEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOWEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", MEDIUM));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOW));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", HIGHEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOWEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", MEDIUM));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", MEDIUM));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", HIGHEST));
 
   ReleaseAllConnections(KEEP_ALIVE);
 
@@ -299,17 +299,17 @@ TEST_F(TCPClientSocketPoolTest, PendingRequests) {
   EXPECT_EQ(5, GetOrderOfRequest(5));
   EXPECT_EQ(6, GetOrderOfRequest(6));
 
-  // Make sure that rest o the requests complete in the order of priority.
-  EXPECT_EQ(15, GetOrderOfRequest(7));
-  EXPECT_EQ(9, GetOrderOfRequest(8));
-  EXPECT_EQ(7, GetOrderOfRequest(9));
-  EXPECT_EQ(11, GetOrderOfRequest(10));
-  EXPECT_EQ(10, GetOrderOfRequest(11));
-  EXPECT_EQ(14, GetOrderOfRequest(12));
-  EXPECT_EQ(8, GetOrderOfRequest(13));
-  EXPECT_EQ(13, GetOrderOfRequest(14));
+  // Make sure that rest of the requests complete in the order of priority.
+  EXPECT_EQ(7, GetOrderOfRequest(7));
+  EXPECT_EQ(14, GetOrderOfRequest(8));
+  EXPECT_EQ(15, GetOrderOfRequest(9));
+  EXPECT_EQ(10, GetOrderOfRequest(10));
+  EXPECT_EQ(13, GetOrderOfRequest(11));
+  EXPECT_EQ(8, GetOrderOfRequest(12));
+  EXPECT_EQ(16, GetOrderOfRequest(13));
+  EXPECT_EQ(11, GetOrderOfRequest(14));
   EXPECT_EQ(12, GetOrderOfRequest(15));
-  EXPECT_EQ(16, GetOrderOfRequest(16));
+  EXPECT_EQ(9, GetOrderOfRequest(16));
 
   // Make sure we test order of all requests made.
   EXPECT_EQ(kIndexOutOfBounds, GetOrderOfRequest(17));
@@ -441,16 +441,16 @@ TEST_F(TCPClientSocketPoolTest, CancelRequest) {
   EXPECT_EQ(OK, StartRequest("a", kDefaultPriority));
 
   // Reached per-group limit, queue up requests.
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 1));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 7));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 9));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 5));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 6));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 2));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 8));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 3));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 4));
-  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", 1));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOWEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", HIGHEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", HIGHEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", MEDIUM));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", MEDIUM));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOW));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", HIGHEST));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOW));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOW));
+  EXPECT_EQ(ERR_IO_PENDING, StartRequest("a", LOWEST));
 
   // Cancel a request.
   size_t index_to_cancel = kMaxSocketsPerGroup + 2;
@@ -470,14 +470,14 @@ TEST_F(TCPClientSocketPoolTest, CancelRequest) {
   EXPECT_EQ(5, GetOrderOfRequest(5));
   EXPECT_EQ(6, GetOrderOfRequest(6));
   EXPECT_EQ(14, GetOrderOfRequest(7));
-  EXPECT_EQ(8, GetOrderOfRequest(8));
+  EXPECT_EQ(7, GetOrderOfRequest(8));
   EXPECT_EQ(kRequestNotFound, GetOrderOfRequest(9));  // Canceled request.
-  EXPECT_EQ(10, GetOrderOfRequest(10));
-  EXPECT_EQ(9, GetOrderOfRequest(11));
-  EXPECT_EQ(13, GetOrderOfRequest(12));
-  EXPECT_EQ(7, GetOrderOfRequest(13));
+  EXPECT_EQ(9, GetOrderOfRequest(10));
+  EXPECT_EQ(10, GetOrderOfRequest(11));
+  EXPECT_EQ(11, GetOrderOfRequest(12));
+  EXPECT_EQ(8, GetOrderOfRequest(13));
   EXPECT_EQ(12, GetOrderOfRequest(14));
-  EXPECT_EQ(11, GetOrderOfRequest(15));
+  EXPECT_EQ(13, GetOrderOfRequest(15));
   EXPECT_EQ(15, GetOrderOfRequest(16));
 
   // Make sure we test order of all requests made.
@@ -499,7 +499,7 @@ class RequestSocketCallback : public CallbackRunner< Tuple1<int> > {
       handle_->Reset();
       within_callback_ = true;
       int rv = handle_->Init(
-          "a", HostResolver::RequestInfo("www.google.com", 80), 0,
+          "a", HostResolver::RequestInfo("www.google.com", 80), LOWEST,
           this, pool_.get(), NULL);
       EXPECT_EQ(OK, rv);
     }
@@ -520,7 +520,7 @@ TEST_F(TCPClientSocketPoolTest, RequestTwice) {
   ClientSocketHandle handle;
   RequestSocketCallback callback(&handle, pool_.get());
   int rv = handle.Init(
-      "a", HostResolver::RequestInfo("www.google.com", 80), 0,
+      "a", HostResolver::RequestInfo("www.google.com", 80), LOWEST,
       &callback, pool_.get(), NULL);
   ASSERT_EQ(ERR_IO_PENDING, rv);
 

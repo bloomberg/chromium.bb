@@ -15,6 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_states.h"
 #include "net/base/net_errors.h"
+#include "net/base/request_priority.h"
 #include "net/base/ssl_config_service.h"
 #include "net/base/upload_data_stream.h"
 #include "net/flip/flip_framer.h"
@@ -43,7 +44,8 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // Note that this call does not wait for the connect to complete. Callers can
   // immediately start using the FlipSession while it connects.
   net::Error Connect(const std::string& group_name,
-                     const HostResolver::RequestInfo& host, int priority);
+                     const HostResolver::RequestInfo& host,
+                     RequestPriority priority);
 
   // Get a stream for a given |request|.  In the typical case, this will involve
   // the creation of a new stream (and will send the SYN frame).  If the server

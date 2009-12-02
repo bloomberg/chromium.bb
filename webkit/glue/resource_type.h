@@ -12,7 +12,11 @@ class ResourceType {
   enum Type {
     MAIN_FRAME = 0,  // top level page
     SUB_FRAME,       // frame or iframe
-    SUB_RESOURCE,    // a resource like images, js, css
+    STYLESHEET,      // a CSS stylesheet
+    SCRIPT,          // an external script
+    IMAGE,           // an image (jpg/gif/png/etc)
+    FONT_RESOURCE,   // a font
+    SUB_RESOURCE,    // an "other" subresource.
     OBJECT,          // an object (or embed) tag for a plugin,
                      // or a resource that a plugin requested.
     MEDIA,           // a media resource.
@@ -30,6 +34,14 @@ class ResourceType {
 
   static bool IsFrame(ResourceType::Type type) {
     return type == MAIN_FRAME || type == SUB_FRAME;
+  }
+
+  static bool IsSubresource(ResourceType::Type type) {
+    return type == STYLESHEET ||
+           type == SCRIPT ||
+           type == IMAGE ||
+           type == FONT_RESOURCE ||
+           type == SUB_RESOURCE;
   }
 
  private:
