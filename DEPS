@@ -3,6 +3,7 @@ vars = {
     "http://svn.webkit.org/repository/webkit/trunk",
   "webkit_revision": "51589",
   "ffmpeg_revision": "30374",
+  "skia_revision": "450",
   "chromium_git": "http://src.chromium.org/git",
 }
 
@@ -44,10 +45,10 @@ deps = {
     "http://nativeclient.googlecode.com/svn/trunk/src/native_client@1052",
 
   "src/third_party/skia/src":
-    "http://skia.googlecode.com/svn/trunk/src@449",
+    "http://skia.googlecode.com/svn/trunk/src@" + Var("skia_revision"),
 
   "src/third_party/skia/include":
-    "http://skia.googlecode.com/svn/trunk/include@449",
+    "http://skia.googlecode.com/svn/trunk/include@" + Var("skia_revision"),
 
   "src/third_party/WebKit/LayoutTests":
     Var("webkit_trunk") + "/LayoutTests@" + Var("webkit_revision"),
