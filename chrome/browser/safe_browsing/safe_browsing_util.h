@@ -83,6 +83,8 @@ struct SBChunkDelete {
 };
 
 
+// SBEntry ---------------------------------------------------------------------
+
 // Holds information about the prefixes for a hostkey.  prefixes can either be
 // 4 bytes (truncated hash) or 32 bytes (full hash).
 // For adds:
@@ -215,6 +217,8 @@ class SBEntry {
 };
 
 
+// SBHostInfo ------------------------------------------------------------------
+
 // Holds the hostkey specific information in the database.  This is basically a
 // collection of SBEntry objects.
 class SBHostInfo {
@@ -265,7 +269,7 @@ class SBHostInfo {
 };
 
 
-// Helper functions -----------------------------------------------------------
+// Utility functions -----------------------------------------------------------
 
 namespace safe_browsing_util {
 
