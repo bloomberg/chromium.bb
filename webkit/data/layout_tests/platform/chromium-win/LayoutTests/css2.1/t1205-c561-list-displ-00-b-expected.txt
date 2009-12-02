@@ -8,8 +8,8 @@ layer at (0,0) size 800x220
           text run at (0,0) width 713: "There should be eight numbered lines below, all identical except for the numbering, which should match the description."
       RenderListItem {DIV} at (0,36) size 784x20 [color=#000080]
         RenderListMarker at (0,0) size 16x19: "1"
-        RenderText {#text} at (16,0) size 145x19
-          text run at (16,0) width 145: " This should be line one."
+        RenderText {#text} at (16,0) size 141x19
+          text run at (16,0) width 141: "This should be line one."
       RenderBlock {DIV} at (0,56) size 784x20 [color=#000080]
         RenderText {#text} at (0,0) size 158x19
           text run at (0,0) width 158: "2. This should be line two."

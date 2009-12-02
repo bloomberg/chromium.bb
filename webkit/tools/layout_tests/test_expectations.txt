@@ -843,7 +843,11 @@ BUG11153 WIN LINUX : LayoutTests/fast/canvas/canvas-incremental-repaint.html = F
 
 // Repaint issues are revealed by these tests.
 BUG28183 : LayoutTests/fast/repaint/box-shadow-v.html = IMAGE
-BUG28183 WIN LINUX : LayoutTests/fast/repaint/list-marker.html = IMAGE+TEXT
+// The difference of positions of texts after the list markers is NOT
+// an issue. The behavior of the expectations was wrong. The real
+// problem is the change of the 'p' in italic "properly". Note that
+// upstream expectation image has the same issue.
+BUG28183 WIN LINUX : LayoutTests/fast/repaint/list-marker.html = IMAGE
 
 // Extra space at end of test results.  Since this is a crash test, a
 // FAIL here is just as good as running the test normally.
@@ -3018,9 +3022,6 @@ BUG28918 : LayoutTests/http/tests/cache/subresource-failover-to-network.html = P
 BUG29056 WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
 
 // New failures from WebKit r51527
-BUG_HAMAJI WIN LINUX : LayoutTests/css2.1/t1205-c561-list-displ-00-b.html = IMAGE+TEXT
-BUG_HAMAJI WIN LINUX : LayoutTests/css2.1/t1205-c565-list-pos-00-b.html = IMAGE+TEXT
-BUG_HAMAJI WIN LINUX : LayoutTests/css2.1/t1205-c566-list-stl-00-e-ag.html = IMAGE+TEXT
 BUG_HAMAJI WIN LINUX : LayoutTests/fast/block/positioning/complex-percentage-height.html = IMAGE+TEXT
 BUG_HAMAJI WIN LINUX : LayoutTests/fast/lists/item-not-in-list-line-wrapping.html = IMAGE+TEXT
 
