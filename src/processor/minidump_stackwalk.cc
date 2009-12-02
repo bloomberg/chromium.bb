@@ -361,6 +361,11 @@ static void PrintProcessState(const ProcessState& process_state) {
     printf("No crash\n");
   }
 
+  string assertion = process_state.assertion();
+  if (!assertion.empty()) {
+    printf("Assertion: %s\n", assertion.c_str());
+  }
+
   // If the thread that requested the dump is known, print it first.
   int requesting_thread = process_state.requesting_thread();
   if (requesting_thread != -1) {
@@ -413,7 +418,15 @@ static void PrintProcessStateMachineReadable(const ProcessState& process_state)
            StripSeparator(process_state.crash_reason()).c_str(),
            kOutputSeparator, process_state.crash_address(), kOutputSeparator);
   } else {
-    printf("No crash%c%c", kOutputSeparator, kOutputSeparator);
+    // print assertion info, if available, in place of crash reason,
+    // instead of the unhelpful "No crash"
+    string assertion = process_state.assertion();
+    if (!assertion.empty()) {
+      printf("%s%c%c", StripSeparator(assertion).c_str(),
+             kOutputSeparator, kOutputSeparator);
+    } else {
+      printf("No crash%c%c", kOutputSeparator, kOutputSeparator);
+    }
   }
 
   if (requesting_thread != -1) {

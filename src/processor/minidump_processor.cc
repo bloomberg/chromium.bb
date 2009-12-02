@@ -86,6 +86,9 @@ ProcessResult MinidumpProcessor::Process(
         dump, &process_state->crash_address_);
   }
 
+   // This will just return an empty string if it doesn't exist.
+   process_state->assertion_ = GetAssertion(dump);
+
   MinidumpModuleList *module_list = dump->GetModuleList();
 
   // Put a copy of the module list into ProcessState object.  This is not
@@ -1004,6 +1007,59 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
   }
 
   return reason;
+}
+
+// static
+string MinidumpProcessor::GetAssertion(Minidump *dump)
+{
+  MinidumpAssertion *assertion = dump->GetAssertion();
+  if (!assertion)
+    return "";
+
+  const MDRawAssertionInfo *raw_assertion = assertion->assertion();
+  if (!raw_assertion)
+    return "";
+
+  string assertion_string;
+  switch (raw_assertion->type) {
+  case MD_ASSERTION_INFO_TYPE_INVALID_PARAMETER:
+    assertion_string = "Invalid parameter passed to library function";
+    break;
+  case MD_ASSERTION_INFO_TYPE_PURE_VIRTUAL_CALL:
+    assertion_string = "Pure virtual function called";
+    break;
+  default: {
+    char assertion_type[32];
+    sprintf(assertion_type, "0x%08x", raw_assertion->type);
+    assertion_string = "Unknown assertion type ";
+    assertion_string += assertion_type;
+    break;
+  }
+  }
+
+  string expression = assertion->expression();
+  if (!expression.empty()) {
+    assertion_string.append(" " + expression);
+  }
+
+  string function = assertion->function();
+  if (!function.empty()) {
+    assertion_string.append(" in function " + function);
+  }
+
+  string file = assertion->file();
+  if (!file.empty()) {
+    assertion_string.append(", in file " + file);
+  }
+
+  if (raw_assertion->line != 0) {
+    char assertion_line[32];
+    sprintf(assertion_line, "%u", raw_assertion->line);
+    assertion_string.append(" at line ");
+    assertion_string.append(assertion_line);
+  }
+
+  return assertion_string;
 }
 
 }  // namespace google_breakpad
