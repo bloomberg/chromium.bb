@@ -81,10 +81,10 @@ bool ValidateExtension(Extension* extension, std::string* error);
 void UninstallExtension(const std::string& id, const FilePath& extensions_dir);
 
 // Clean up directories that aren't valid extensions from the install directory.
-// TODO(aa): Also consider passing in a list of known current extensions and
-// removing others?
-void GarbageCollectExtensions(const FilePath& extensions_dir,
-                              const std::set<std::string>& installed_ids);
+void GarbageCollectExtensions(
+    const FilePath& extensions_dir,
+    const std::set<std::string>& installed_ids,
+    const std::map<std::string, std::string>& installed_versions);
 
 // Loads locale information if _locales folder is present.
 // Returns message bundle if there were no errors. If _locales folder is not

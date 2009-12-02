@@ -52,15 +52,25 @@ class InstalledExtensionSet {
   }
 
   const std::set<std::string>& extensions() { return extensions_; }
+  const std::map<std::string, std::string>& versions() { return versions_; }
 
  private:
   void ExtensionVisited(
       DictionaryValue* manifest, const std::string& id,
       const FilePath& path, Extension::Location location) {
+    std::string version;
+    if (!manifest ||
+        !manifest->GetString(extension_manifest_keys::kVersion, &version)) {
+      // Without a version, the extension is invalid. Ignoring it here will
+      // cause it to get garbage collected.
+      return;
+    }
     extensions_.insert(id);
+    versions_[id] = version;
   }
 
   std::set<std::string> extensions_;
+  std::map<std::string, std::string> versions_;
 };
 
 } // namespace
@@ -524,7 +534,7 @@ void ExtensionsService::GarbageCollectExtensions() {
       ChromeThread::FILE, FROM_HERE,
       NewRunnableFunction(
           &extension_file_util::GarbageCollectExtensions, install_directory_,
-          installed.extensions()));
+          installed.extensions(), installed.versions()));
 }
 
 void ExtensionsService::OnLoadedInstalledExtensions() {

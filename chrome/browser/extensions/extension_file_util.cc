@@ -318,8 +318,10 @@ void UninstallExtension(const std::string& id, const FilePath& extensions_dir) {
     LOG(WARNING) << "Could not delete directory for extension " << id;
 }
 
-void GarbageCollectExtensions(const FilePath& install_directory,
-                              const std::set<std::string>& installed_ids) {
+void GarbageCollectExtensions(
+    const FilePath& install_directory,
+    const std::set<std::string>& installed_ids,
+    const std::map<std::string, std::string>& installed_versions) {
   // Nothing to clean up if it doesn't exist.
   if (!file_util::DirectoryExists(install_directory))
     return;
@@ -344,7 +346,7 @@ void GarbageCollectExtensions(const FilePath& install_directory,
       continue;
     }
 
-    // Ignore directories that aren't valid IDs.
+    // Delete directories that aren't valid IDs.
     if (!Extension::IdIsValid(extension_id)) {
       LOG(WARNING) << "Invalid extension ID encountered in extensions "
                       "directory: " << extension_id;
@@ -352,6 +354,29 @@ void GarbageCollectExtensions(const FilePath& install_directory,
                 << WideToASCII(extension_path.ToWStringHack()) << ".";
       file_util::Delete(extension_path, true);  // Recursive.
       continue;
+    }
+
+    // Clean up old version directories.
+    file_util::FileEnumerator versions_enumerator(
+        extension_path,
+        false,  // Not recursive.
+        file_util::FileEnumerator::DIRECTORIES);
+    for (FilePath version_dir = versions_enumerator.Next();
+         !version_dir.value().empty();
+         version_dir = versions_enumerator.Next()) {
+      std::map<std::string, std::string>::const_iterator installed_version =
+          installed_versions.find(extension_id);
+      if (installed_version == installed_versions.end()) {
+        NOTREACHED() << "No installed version found for " << extension_id;
+        continue;
+      }
+
+      std::string version = WideToASCII(version_dir.BaseName().ToWStringHack());
+      if (version != installed_version->second) {
+        LOG(INFO) << "Deleting old version for directory "
+                  << WideToASCII(version_dir.ToWStringHack()) << ".";
+        file_util::Delete(version_dir, true);  // Recursive.
+      }
     }
   }
 }
