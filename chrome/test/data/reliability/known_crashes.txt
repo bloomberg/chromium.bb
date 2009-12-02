@@ -139,3 +139,6 @@ SUBSTRING : v8::context::global___webcore::v8custom::v8domwindoweventaccessorget
 
 # 29081
 REGEX : ^malloc$
+
+# 29149
+PREFIX: malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
