@@ -116,7 +116,7 @@ body.platform-windows.inactive #toolbar {
     -webkit-background-clip: padding;
 }
 
-body.platform-windows .section .header {
+body.platform-windows .section > .header {
     border: 1px solid rgb(92, 116, 157);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(105, 133, 180)), to(rgb(92, 116, 157)));
 }
