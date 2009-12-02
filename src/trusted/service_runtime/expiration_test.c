@@ -40,7 +40,7 @@
 #endif
 
 #include "native_client/src/trusted/service_runtime/expiration.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 
 time_t gTestTimeOutValue;
 int gTestTimeErrno;

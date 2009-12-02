@@ -31,7 +31,7 @@
 
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_syscall_asm_symbols.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/springboard.h"

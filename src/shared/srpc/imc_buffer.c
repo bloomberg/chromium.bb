@@ -44,9 +44,9 @@
 #include <sys/types.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
 
 #ifdef __native_client__
 /**

@@ -217,10 +217,10 @@ int NaClDescXferableDataDescExternalize(struct NaClDesc          *vself,
  * multi-threaded scenario, where a sender race cause receiver
  * confusion.
  */
-int NaClDescImcDescSendMsg(struct NaClDesc          *vself,
-                           struct NaClDescEffector  *effp,
-                           struct NaClMessageHeader *dgram,
-                           int                      flags) {
+int NaClDescImcDescSendMsg(struct NaClDesc                *vself,
+                           struct NaClDescEffector        *effp,
+                           struct NaClMessageHeader const *dgram,
+                           int                            flags) {
   struct NaClDescImcDesc *self = ((struct NaClDescImcDesc *)
                                   vself);
   int result;
@@ -263,10 +263,10 @@ int NaClDescImcDescSendMsg(struct NaClDesc          *vself,
  * with a transferable data-only descriptor from two threads (or two
  * modules) simultaneously.
  */
-int NaClDescXferableDataDescSendMsg(struct NaClDesc          *vself,
-                                    struct NaClDescEffector  *effp,
-                                    struct NaClMessageHeader *dgram,
-                                    int                      flags) {
+int NaClDescXferableDataDescSendMsg(struct NaClDesc                *vself,
+                                    struct NaClDescEffector        *effp,
+                                    struct NaClMessageHeader const *dgram,
+                                    int                            flags) {
   struct NaClDescXferableDataDesc *self = ((struct NaClDescXferableDataDesc *)
                                            vself);
   int result;

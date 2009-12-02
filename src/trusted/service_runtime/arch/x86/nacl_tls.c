@@ -31,9 +31,9 @@
 
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 
 

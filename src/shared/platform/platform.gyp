@@ -30,6 +30,8 @@
 {
   'variables': {
     'common_sources': [
+      'nacl_check.c',
+      'nacl_check.h',
       'nacl_global_secure_random.c',
       'nacl_global_secure_random.h',
       'nacl_host_desc.h',

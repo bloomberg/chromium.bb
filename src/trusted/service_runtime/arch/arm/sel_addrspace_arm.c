@@ -30,7 +30,7 @@
  */
 
 #include "native_client/src/include/nacl_platform.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
@@ -95,4 +95,3 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap, uintptr_t start_addr) {
   }
   return LOAD_OK;
 }
-

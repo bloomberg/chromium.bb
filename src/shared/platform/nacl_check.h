@@ -33,8 +33,8 @@
  * NaCl service runtime, check macros.
  */
 
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CHECK_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CHECK_H_
+#ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
+#define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 
 #include "native_client/src/shared/platform/nacl_log.h"
 

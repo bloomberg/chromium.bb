@@ -88,6 +88,8 @@
         'nacl_desc_mutex.h',
         'nacl_desc_semaphore.c',
         'nacl_desc_semaphore.h',
+        'nacl_desc_sync_socket.c',
+        'nacl_desc_sync_socket.h',
         'nacl_desc_wrapper.cc',
         'nacl_desc_wrapper.h',
         'nrd_all_modules.c',

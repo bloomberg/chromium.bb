@@ -161,6 +161,7 @@ int (*NaClDescInternalize[NACL_DESC_TYPE_MAX])(struct NaClDesc **,
   NaClDescMutexInternalize,
   NaClDescCondVarInternalize,
   NaClDescInternalizeNotImplemented,  /* semaphore */
+  NaClDescSyncSocketInternalize,
   NaClDescXferableDataDescInternalize,
   NaClDescInternalizeNotImplemented,  /* imc socket */
 };
@@ -179,6 +180,7 @@ char const *NaClDescTypeString(enum NaClDescTypeTag type_tag) {
     MAP(NACL_DESC_MUTEX);
     MAP(NACL_DESC_CONDVAR);
     MAP(NACL_DESC_SEMAPHORE);
+    MAP(NACL_DESC_SYNC_SOCKET);
     MAP(NACL_DESC_TRANSFERABLE_DATA_SOCKET);
     MAP(NACL_DESC_IMC_SOCKET);
   }
@@ -396,10 +398,10 @@ int NaClDescWaitNotImplemented(struct NaClDesc          *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc          *vself,
-                                       struct NaClDescEffector  *effp,
-                                       struct NaClDesc          *mutex,
-                                       struct nacl_abi_timespec *ts) {
+int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc                *vself,
+                                       struct NaClDescEffector        *effp,
+                                       struct NaClDesc                *mutex,
+                                       struct nacl_abi_timespec const *ts) {
   UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(mutex);
   UNREFERENCED_PARAMETER(ts);
@@ -430,10 +432,10 @@ int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescSendMsgNotImplemented(struct NaClDesc           *vself,
-                                  struct NaClDescEffector   *effp,
-                                  struct NaClMessageHeader  *dgram,
-                                  int                       flags) {
+int NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
+                                  struct NaClDescEffector        *effp,
+                                  struct NaClMessageHeader const *dgram,
+                                  int                            flags) {
   UNREFERENCED_PARAMETER(effp);
   UNREFERENCED_PARAMETER(dgram);
   UNREFERENCED_PARAMETER(flags);

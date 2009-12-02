@@ -34,14 +34,17 @@
  * mapping using descriptors.
  */
 
+#include <limits.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #include "native_client/src/include/portability.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
@@ -115,4 +118,21 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
   dst->nacl_abi_st_ctime = src->st_ctime;
 
   return 0;
+}
+
+/* Read/write to a NaClHandle */
+ssize_t NaClDescReadFromHandle(NaClHandle handle,
+                               void       *buf,
+                               size_t     length) {
+  CHECK(length < kMaxSyncSocketMessageLength);
+
+  return read(handle, buf, length);
+}
+
+ssize_t NaClDescWriteToHandle(NaClHandle handle,
+                              void const *buf,
+                              size_t     length) {
+  CHECK(length < kMaxSyncSocketMessageLength);
+
+  return write(handle, buf, length);
 }

@@ -37,9 +37,9 @@
 
 #include "native_client/src/include/portability.h"
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_log_intern.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
 
 void MyAbort(void) {
   exit(17);

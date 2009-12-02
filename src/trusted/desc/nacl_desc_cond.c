@@ -126,10 +126,10 @@ int NaClDescCondVarWait(struct NaClDesc         *vself,
   return -NaClXlateNaClSyncStatus(status);
 }
 
-int NaClDescCondVarTimedWaitAbs(struct NaClDesc           *vself,
-                                struct NaClDescEffector   *effp,
-                                struct NaClDesc           *mutex,
-                                struct nacl_abi_timespec  *ts) {
+int NaClDescCondVarTimedWaitAbs(struct NaClDesc                *vself,
+                                struct NaClDescEffector        *effp,
+                                struct NaClDesc                *mutex,
+                                struct nacl_abi_timespec const *ts) {
   struct NaClDescCondVar  *self = (struct NaClDescCondVar *) vself;
   struct NaClDescMutex    *mutex_desc;
   NaClSyncStatus          status;

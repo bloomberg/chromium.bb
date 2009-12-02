@@ -11,6 +11,7 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_BASE_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_BASE_H_
 
+#include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
@@ -80,6 +81,7 @@ enum NaClDescTypeTag {
   NACL_DESC_MUTEX,
   NACL_DESC_CONDVAR,
   NACL_DESC_SEMAPHORE,
+  NACL_DESC_SYNC_SOCKET,
   NACL_DESC_TRANSFERABLE_DATA_SOCKET,
   NACL_DESC_IMC_SOCKET
   /*
@@ -264,19 +266,19 @@ struct NaClDescVtbl {
   int (*Wait)(struct NaClDesc         *vself,
               struct NaClDescEffector *effp,
               struct NaClDesc         *mutex) NACL_WUR;
-  int (*TimedWaitAbs)(struct NaClDesc           *vself,
-                      struct NaClDescEffector   *effp,
-                      struct NaClDesc           *mutex,
-                      struct nacl_abi_timespec  *ts) NACL_WUR;
+  int (*TimedWaitAbs)(struct NaClDesc                *vself,
+                      struct NaClDescEffector        *effp,
+                      struct NaClDesc                *mutex,
+                      struct nacl_abi_timespec const *ts) NACL_WUR;
   int (*Signal)(struct NaClDesc         *vself,
                 struct NaClDescEffector *effp) NACL_WUR;
   int (*Broadcast)(struct NaClDesc          *vself,
                    struct NaClDescEffector  *effp) NACL_WUR;
 
-  int (*SendMsg)(struct NaClDesc          *vself,
-                 struct NaClDescEffector  *effp,
-                 struct NaClMessageHeader *dgram,
-                 int                      flags) NACL_WUR;
+  int (*SendMsg)(struct NaClDesc                *vself,
+                 struct NaClDescEffector        *effp,
+                 struct NaClMessageHeader const *dgram,
+                 int                            flags) NACL_WUR;
   int (*RecvMsg)(struct NaClDesc          *vself,
                  struct NaClDescEffector  *effp,
                  struct NaClMessageHeader *dgram,
@@ -449,6 +451,19 @@ extern int NaClDescSysvShmInternalize(struct NaClDesc          **baseptr,
                                       struct NaClDescXferState *xfer) NACL_WUR;
 #endif  /* NACL_LINUX */
 
+extern struct NaClDescVtbl const kNaClDescSyncSocketVtbl;
+
+struct NaClDescSyncSocket {
+  struct NaClDesc           base;
+  NaClHandle                h;
+};
+
+extern int NaClDescSyncSocketInternalize(struct NaClDesc          **baseptr,
+                                         struct NaClDescXferState *xfer)
+NACL_WUR;
+
+static const size_t kMaxSyncSocketMessageLength = (size_t) INT_MAX;
+
 extern struct NaClDescVtbl const kNaClDescMutexVtbl;
 
 struct NaClDescMutex {
@@ -492,6 +507,13 @@ void NaClDeallocAddrRange(uintptr_t addr,
 int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
                                          nacl_host_stat_t const  *src);
 
+/* Read/write to a NaClHandle */
+ssize_t NaClDescReadFromHandle(NaClHandle handle,
+                               void       *buf,
+                               size_t     length);
+ssize_t NaClDescWriteToHandle(NaClHandle handle,
+                              void const *buf,
+                              size_t     length);
 
 /* default functions for the vtable - return -NACL_ABI_EINVAL */
 void NaClDescDtorNotImplemented(struct NaClDesc  *vself);
@@ -555,19 +577,19 @@ int NaClDescUnlockNotImplemented(struct NaClDesc          *vself,
 int NaClDescWaitNotImplemented(struct NaClDesc          *vself,
                                struct NaClDescEffector  *effp,
                                struct NaClDesc          *mutex);
-int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc          *vself,
-                                       struct NaClDescEffector  *effp,
-                                       struct NaClDesc          *mutex,
-                                       struct nacl_abi_timespec *ts);
+int NaClDescTimedWaitAbsNotImplemented(struct NaClDesc                *vself,
+                                       struct NaClDescEffector        *effp,
+                                       struct NaClDesc                *mutex,
+                                       struct nacl_abi_timespec const *ts);
 int NaClDescSignalNotImplemented(struct NaClDesc          *vself,
                                  struct NaClDescEffector  *effp);
 int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
                                     struct NaClDescEffector *effp);
 
-int NaClDescSendMsgNotImplemented(struct NaClDesc           *vself,
-                                  struct NaClDescEffector   *effp,
-                                  struct NaClMessageHeader  *dgram,
-                                  int                       flags);
+int NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
+                                  struct NaClDescEffector        *effp,
+                                  struct NaClMessageHeader const *dgram,
+                                  int                            flags);
 int NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
                                   struct NaClDescEffector   *effp,
                                   struct NaClMessageHeader  *dgram,

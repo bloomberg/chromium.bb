@@ -33,7 +33,7 @@
  * NaCl Simple/secure ELF loader (NaCl SEL).
  */
 #include "native_client/src/include/portability.h"
-#include "native_client/src/trusted/service_runtime/nacl_check.h"
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
 
