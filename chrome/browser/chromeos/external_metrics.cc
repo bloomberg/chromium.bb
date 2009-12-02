@@ -17,6 +17,7 @@
 #include "base/eintr_wrapper.h"
 #include "base/histogram.h"
 #include "base/time.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 
