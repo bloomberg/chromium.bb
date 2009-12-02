@@ -145,6 +145,17 @@
 
 #endif /* _DRM_MODE_H */
 
+
+/*
+ * Feature defines
+ *
+ * Just because these are defined doesn't mean that the kernel
+ * can do that feature, its just for new code vs old libdrm.
+ */
+#define DRM_MODE_FEATURE_KMS		1
+#define DRM_MODE_FEATURE_DIRTYFB	1
+
+
 typedef struct _drmModeRes {
 
 	int count_fbs;
@@ -184,6 +195,8 @@ typedef struct _drmModeFB {
 	/* driver specific handle */
 	uint32_t handle;
 } drmModeFB, *drmModeFBPtr;
+
+typedef struct drm_clip_rect drmModeClip, *drmModeClipPtr;
 
 typedef struct _drmModePropertyBlob {
 	uint32_t id;
@@ -292,6 +305,13 @@ extern int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
  * Destroies the given framebuffer.
  */
 extern int drmModeRmFB(int fd, uint32_t bufferId);
+
+/**
+ * Mark a region of a framebuffer as dirty.
+ */
+extern int drmModeDirtyFB(int fd, uint32_t bufferId,
+			  drmModeClipPtr clips, uint32_t num_clips);
+
 
 /*
  * Crtc functions
