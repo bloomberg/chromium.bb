@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/automation/automation_profile_impl.h"
+#include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
@@ -49,7 +50,7 @@ class AutomationURLRequestContext : public ChromeURLRequestContext {
 class AutomationCookieStore : public net::CookieStore {
  public:
   AutomationCookieStore(net::CookieStore* original_cookie_store,
-                        IPC::Message::Sender* automation_client,
+                        AutomationResourceMessageFilter* automation_client,
                         int tab_handle)
       : original_cookie_store_(original_cookie_store),
         automation_client_(automation_client),
@@ -116,7 +117,7 @@ class AutomationCookieStore : public net::CookieStore {
   }
 
   net::CookieStore* original_cookie_store_;
-  IPC::Message::Sender* automation_client_;
+  scoped_refptr<AutomationResourceMessageFilter> automation_client_;
   int tab_handle_;
 
  private:
@@ -127,7 +128,7 @@ class Factory : public ChromeURLRequestContextFactory {
  public:
   Factory(ChromeURLRequestContextGetter* original_context_getter,
           Profile* profile,
-          IPC::Message::Sender* automation_client,
+          AutomationResourceMessageFilter* automation_client,
           int tab_handle)
       : ChromeURLRequestContextFactory(profile),
         original_context_getter_(original_context_getter),
@@ -151,14 +152,14 @@ class Factory : public ChromeURLRequestContextFactory {
 
  private:
   scoped_refptr<ChromeURLRequestContextGetter> original_context_getter_;
-  IPC::Message::Sender* automation_client_;
+  scoped_refptr<AutomationResourceMessageFilter> automation_client_;
   int tab_handle_;
 };
 
 ChromeURLRequestContextGetter* CreateAutomationURLRequestContextForTab(
     int tab_handle,
     Profile* profile,
-    IPC::Message::Sender* automation_client) {
+    AutomationResourceMessageFilter* automation_client) {
   ChromeURLRequestContextGetter* original_context =
       static_cast<ChromeURLRequestContextGetter*>(
           profile->GetRequestContext());

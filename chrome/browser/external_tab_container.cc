@@ -401,7 +401,7 @@ bool ExternalTabContainer::CanDownload(int request_id) {
       ::AllowSetForegroundWindow(ASFW_ANY);
 
       ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
-          NewRunnableMethod(automation_resource_message_filter_,
+          NewRunnableMethod(automation_resource_message_filter_.get(),
               &AutomationResourceMessageFilter::SendDownloadRequestToHost,
               0, tab_handle_, request_id));
     }

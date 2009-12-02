@@ -9,6 +9,7 @@
 
 class Profile;
 class ChromeURLRequestContextGetter;
+class AutomationResourceMessageFilter;
 
 namespace AutomationRequestContext {
 
@@ -17,7 +18,7 @@ namespace AutomationRequestContext {
 ChromeURLRequestContextGetter* CreateAutomationURLRequestContextForTab(
     int tab_handle,
     Profile* profile,
-    IPC::Message::Sender* automation_client);
+    AutomationResourceMessageFilter* automation_client);
 
 }
 

@@ -205,7 +205,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   scoped_ptr<RenderViewContextMenuExternalWin> external_context_menu_;
 
   // A message filter to load resources via automation
-  AutomationResourceMessageFilter* automation_resource_message_filter_;
+  scoped_refptr<AutomationResourceMessageFilter>
+      automation_resource_message_filter_;
 
   // If all the url requests for this tab are to be loaded via automation.
   bool load_requests_via_automation_;
