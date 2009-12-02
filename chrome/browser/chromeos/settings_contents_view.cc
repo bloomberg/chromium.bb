@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
 #include "grit/chromium_strings.h"
