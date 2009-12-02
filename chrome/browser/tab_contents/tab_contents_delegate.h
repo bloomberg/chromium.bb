@@ -118,11 +118,6 @@ class TabContentsDelegate {
   // a TabContents with a valid WebApp set.
   virtual void ConvertContentsToApplication(TabContents* source) { }
 
-  // Return whether this tab contents should have a URL bar. Only web contents
-  // opened with a minimal chrome and their popups can be displayed without a
-  // URL bar.
-  virtual bool ShouldDisplayURLField() { return true; }
-
   // Whether this tab can be blurred through a javascript obj.blur()
   // call. ConstrainedWindows shouldn't be able to be blurred.
   virtual bool CanBlur() const { return true; }
