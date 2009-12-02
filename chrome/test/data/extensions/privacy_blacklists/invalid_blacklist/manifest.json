@@ -1,0 +1,8 @@
+{
+  "description": "Extension which has an invalid privacy blacklist",
+  "name": "invalid",
+  "privacy_blacklists": [
+    "privacy_blacklist.pbl"
+  ],
+  "version": "0.1"
+}

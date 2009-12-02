@@ -6,6 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_util.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -218,6 +219,40 @@ TEST(ExtensionFileUtil, LoadExtensionGivesHelpfullErrorOnBadManifest) {
   ASSERT_FALSE(error.empty());
   ASSERT_STREQ("Manifest is not valid JSON.  "
                "Line: 2, column: 16, Syntax error.", error.c_str());
+}
+
+TEST(ExtensionFileUtil, MissingPrivacyBlacklist) {
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("privacy_blacklists")
+      .AppendASCII("missing_blacklist");
+
+  std::string error;
+  scoped_ptr<Extension> extension(
+      extension_file_util::LoadExtension(install_dir, false, &error));
+  ASSERT_TRUE(extension == NULL);
+  ASSERT_FALSE(error.empty());
+  EXPECT_TRUE(MatchPattern(error,
+      "Could not load '*privacy_blacklist.pbl' for privacy blacklist: "
+      "file does not exist.")) << error;
+}
+
+TEST(ExtensionFileUtil, InvalidPrivacyBlacklist) {
+  FilePath install_dir;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
+  install_dir = install_dir.AppendASCII("extensions")
+      .AppendASCII("privacy_blacklists")
+      .AppendASCII("invalid_blacklist");
+
+  std::string error;
+  scoped_ptr<Extension> extension(
+      extension_file_util::LoadExtension(install_dir, false, &error));
+  ASSERT_TRUE(extension == NULL);
+  ASSERT_FALSE(error.empty());
+  EXPECT_TRUE(MatchPattern(error,
+      "Could not load '*privacy_blacklist.pbl' for privacy blacklist: "
+      "Incorrect header.")) << error;
 }
 
 // TODO(aa): More tests as motivation allows. Maybe steal some from
