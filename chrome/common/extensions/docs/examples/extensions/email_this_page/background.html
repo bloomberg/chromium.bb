@@ -14,12 +14,18 @@
     return window.localStorage.customMailtoUrl;
   }
 
-  function executeMailto(tab_id, subject, body) {
+  function executeMailto(tab_id, subject, body, selection) {
     var action_url = "mailto:?"
     if (subject.length > 0)
       action_url += "subject=" + subject + "%26";  // 26 is ampersand.
-    if (body.length > 0)
+    if (body.length > 0) {
       action_url += "body=" + body;
+
+      // Append the current selection to the end of the text message.
+      var new_line = "%0D%0A";
+      if (selection.length > 0)
+        action_url += new_line + new_line + selection;
+    }
 
     var custom_url = customMailtoUrl();
     if (custom_url.length > 0) {
@@ -41,8 +47,12 @@
 
     // This will get called by the content script we execute in
     // the tab as a result of the user pressing the browser action.
-    port.onMessage.addListener(function(pageTitle) {
-      executeMailto(tab.id, encodeURI(pageTitle), encodeURI(tab.url));
+    port.onMessage.addListener(function(info) {
+      var max_length = 1024;
+      if (info.selection.length > max_length)
+        info.selection = info.selection.substring(0, max_length);
+      executeMailto(tab.id, encodeURI(info.title),
+                    encodeURI(tab.url), encodeURI(info.selection));
     });
   });
 
@@ -52,13 +62,9 @@
     // and https so for all other pages, we don't ask for the title.
     if (tab.url.indexOf("http:") != 0 &&
         tab.url.indexOf("https:") != 0) {
-      executeMailto(tab.id, "", encodeURI(tab.url));
+      executeMailto(tab.id, "", encodeURI(tab.url), "");
     } else {
-      // Execute a script that sends us the page title through postMessage.
-      var script_file = {};
-      script_file.code =
-          "chrome.extension.connect().postMessage(document.title);";
-      chrome.tabs.executeScript(tab.id, script_file);
+      chrome.tabs.executeScript(null, {file: "content_script.js"});
     }
   });
 </script>

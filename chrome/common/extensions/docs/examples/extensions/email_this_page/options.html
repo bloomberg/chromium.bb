@@ -8,12 +8,14 @@
 <head>
   <title>Options for the Send as Email extension</title>
 <style>
-body {
+#providerSelection {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 10pt;
 }
 </style>
 <script>
+  var gmail = "https://mail.google.com/mail/?extsrc=mailto&url=%s";
+
 function toggle(radioButton) {
   if (window.localStorage == null) {
     alert('Local storage is required for changing providers');
@@ -22,8 +24,7 @@ function toggle(radioButton) {
 
   var selected = radioButton.value;
   if (selected == "gmail") {
-    window.localStorage.customMailtoUrl =
-        'https://mail.google.com/mail/?extsrc=mailto&url=%s';
+    window.localStorage.customMailtoUrl = gmail;
   } else {
     window.localStorage.customMailtoUrl = "";
   }
@@ -39,22 +40,31 @@ function main() {
 
   // Default handler is checked. If we've chosen another provider, we must
   // change the checkmark.
-  if (window.localStorage.customMailtoUrl != null &&
-      window.localStorage.customMailtoUrl != "")
+  if (window.localStorage.customMailtoUrl == gmail)
     document.getElementById('gmail').checked = true;
 }
 </script>
 </head>
 <body onload="main()">
-<div id="providerSelection">
-  <br/>
-  <strong>Select provider to use when emailing a web
-          page address:</strong>
-  <br /><br />
-  <input id="default" type="radio" name="mailto" value="mailto"
-         onclick="toggle(this)" checked>Your default mail handler<br>
-  <input id="gmail" type="radio" name="mailto" value="gmail"
-         onclick="toggle(this)">Gmail<br>
-</div>
+<table border="0">
+<tr>
+  <td rowspan="2" valign="top" align="center" width="80">
+    <img src="mail_128x128.png" width="64" height="64" />
+  </td>
+  <td height="22"></td>
+</tr>
+<tr>
+  <td valign="center">
+    <div id="providerSelection">
+    <strong>Select provider to use when emailing a web page address:</strong>
+    <br /><br />
+    <input id="default" type="radio" name="mailto" value="mailto"
+           onclick="toggle(this)" checked>Your default mail handler<br>
+    <input id="gmail" type="radio" name="mailto" value="gmail"
+           onclick="toggle(this)">Gmail<br>
+    </div>
+  </td>
+</tr>
+</table>
 </body>
 </html>
