@@ -133,14 +133,6 @@
 
 # TODO(timurrrr): bug item
 {
-  Data race on bool in base/thread_unittest
-  ThreadSanitizer:Race
-  ...
-  fun:*ToggleValue*Run*
-}
-
-# TODO(timurrrr): bug item
-{
   Data race on bool in AssertReporter [test-only]
   ThreadSanitizer:Race
   ...

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/dynamic_annotations.h"
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -18,6 +19,8 @@ namespace {
 class ToggleValue : public Task {
  public:
   explicit ToggleValue(bool* value) : value_(value) {
+    ANNOTATE_BENIGN_RACE(value, "Test-only data race on boolean "
+                         "in base/thread_unittest");
   }
   virtual void Run() {
     *value_ = !*value_;
