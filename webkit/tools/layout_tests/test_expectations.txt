@@ -3023,3 +3023,11 @@ BUG_HAMAJI WIN LINUX : LayoutTests/css2.1/t1205-c565-list-pos-00-b.html = IMAGE+
 BUG_HAMAJI WIN LINUX : LayoutTests/css2.1/t1205-c566-list-stl-00-e-ag.html = IMAGE+TEXT
 BUG_HAMAJI WIN LINUX : LayoutTests/fast/block/positioning/complex-percentage-height.html = IMAGE+TEXT
 BUG_HAMAJI WIN LINUX : LayoutTests/fast/lists/item-not-in-list-line-wrapping.html = IMAGE+TEXT
+
+// New failures from WebKit r51534:r51576
+BUG29157 WIN LINUX :  LayoutTests/accessibility/aria-text-role.html = TEXT
+BUG29157 WIN LINUX :  LayoutTests/fast/forms/input-maxlength-ime-completed.html = TEXT
+BUG29157 WIN LINUX :  LayoutTests/fast/forms/input-maxlength-ime-preedit.html = TEXT
+BUG29157 WIN LINUX :  LayoutTests/fast/css/namespaces/namespaces-comments.xml = IMAGE+TEXT
+BUG29157 WIN LINUX :  LayoutTests/fast/css/namespaces/namespaces-empty.xml = IMAGE+TEXT
+BUG29157 WIN LINUX :  LayoutTests/svg/animations/animVal-basics.html = TIMEOUT
