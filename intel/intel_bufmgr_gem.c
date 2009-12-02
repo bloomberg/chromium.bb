@@ -727,9 +727,6 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 	if (bo_gem->gtt_virtual)
 		munmap(bo_gem->gtt_virtual, bo_gem->bo.size);
 
-	free(bo_gem->reloc_target_bo);
-	free(bo_gem->relocs);
-
 	/* Close this object */
 	memset(&close, 0, sizeof(close));
 	close.handle = bo_gem->gem_handle;
@@ -787,6 +784,16 @@ drm_intel_gem_bo_unreference_final(drm_intel_bo *bo, time_t time)
 
 	DBG("bo_unreference final: %d (%s)\n",
 	    bo_gem->gem_handle, bo_gem->name);
+
+	/* release memory associated with this object */
+	if (bo_gem->reloc_target_bo) {
+		free(bo_gem->reloc_target_bo);
+		bo_gem->reloc_target_bo = NULL;
+	}
+	if (bo_gem->relocs) {
+		free(bo_gem->relocs);
+		bo_gem->relocs = NULL;
+	}
 
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
 	/* Put the buffer into our internal cache for reuse if we can. */
