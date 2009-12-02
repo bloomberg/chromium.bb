@@ -26,3 +26,10 @@ NewTabUITest.HomePageLink
 # Hangs frequently under valgrind on Mac
 # See http://crbug.com/29208
 TabRestoreUITest.*
+
+# Running these tests under valgrind and produces errors about "valgrind didn't
+# finish writing 2 files" since the tests kill the browser process (which is
+# actually the valgrind wrapper) in the middle of execution.
+# See http://crbug.com/25176
+ProcessSingletonLinuxTest.NotifyOtherProcessFailure
+ProcessSingletonLinuxTest.NotifyOtherProcessDifferingHost
