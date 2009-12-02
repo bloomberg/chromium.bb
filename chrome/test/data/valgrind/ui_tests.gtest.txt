@@ -22,3 +22,7 @@ WorkerTest.LimitTotal
 # This test hangs under valgrind
 # See http://crbug.com/27764
 NewTabUITest.HomePageLink
+
+# Hangs frequently under valgrind on Mac
+# See http://crbug.com/29208
+TabRestoreUITest.*
