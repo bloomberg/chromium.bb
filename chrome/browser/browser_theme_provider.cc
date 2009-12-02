@@ -1112,9 +1112,9 @@ void BrowserThemeProvider::SetColorData(DictionaryValue* colors_value) {
           colors_[WideToUTF8(*iter)] =
               SkColorSetARGB(static_cast<int>(alpha * 255), r, g, b);
         } else if (color_list->GetInteger(3, &alpha_int) &&
-                   (alpha_int == 0 || alpha_int == 1)) {
+                   (alpha_int >= 0 && alpha_int <= 255)) {
           colors_[WideToUTF8(*iter)] =
-              SkColorSetARGB(alpha_int ? 255 : 0, r, g, b);
+              SkColorSetARGB(alpha_int, r, g, b);
         }
       } else {
         colors_[WideToUTF8(*iter)] = SkColorSetRGB(r, g, b);
