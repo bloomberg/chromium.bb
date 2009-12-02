@@ -3034,3 +3034,6 @@ BUG29157 MAC :  LayoutTests/fast/css/namespaces/namespaces-empty.xml = IMAGE
 BUG29157 WIN LINUX :  LayoutTests/fast/css/namespaces/namespaces-comments.xml = IMAGE+TEXT
 BUG29157 WIN LINUX :  LayoutTests/fast/css/namespaces/namespaces-empty.xml = IMAGE+TEXT
 BUG29157 WIN LINUX MAC :  LayoutTests/svg/animations/animVal-basics.html = TIMEOUT
+
+// New failures from WebKit r51577
+BUG29164 WIN LINUX MAC : LayoutTests/fast/frames/sandboxed-iframe-plugins.html = TEXT
