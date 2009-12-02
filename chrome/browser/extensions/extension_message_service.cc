@@ -115,6 +115,11 @@ ExtensionMessageService::ExtensionMessageService(Profile* profile)
     : profile_(profile),
       extension_devtools_manager_(NULL),
       next_port_id_(0) {
+  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id_)) {
+    // If we get created in unit test, GetCurrentThreadIdentifier fails.
+    // Assign thread_id_ to an ID not used.
+    thread_id_ = ChromeThread::ID_COUNT;
+  }
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_TERMINATED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
@@ -133,7 +138,8 @@ ExtensionMessageService::~ExtensionMessageService() {
 void ExtensionMessageService::ProfileDestroyed() {
   profile_ = NULL;
   if (!registrar_.IsEmpty()) {
-    CHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    if (thread_id_ != ChromeThread::ID_COUNT)
+      CHECK(ChromeThread::CurrentlyOn(thread_id_));
     registrar_.RemoveAll();
   }
 }

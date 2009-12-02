@@ -1824,6 +1824,14 @@
    fun:__cxa_atexit
 }
 {
+   bug_28824
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN7Profile13CreateProfileERK8FilePath
+   fun:_ZN14ProfileManager13CreateProfileERK8FilePath
+}
+{
    bug_29069
    Memcheck:Leak
    fun:_Znw*

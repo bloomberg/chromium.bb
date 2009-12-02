@@ -198,6 +198,9 @@ class ExtensionMessageService
   // used on the IO thread or the UI thread.
   Lock next_port_id_lock_;
 
+  // The thread creating this object. Should be UI thread.
+  ChromeThread::ID thread_id_;
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageService);
 };
 
