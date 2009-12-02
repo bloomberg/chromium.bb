@@ -593,6 +593,14 @@ void BrowserRenderProcessHost::InitExtensions() {
 
 void BrowserRenderProcessHost::SendUserScriptsUpdate(
     base::SharedMemory *shared_memory) {
+  // Don't send user scripts to extension processes. We currently don't allow
+  // user scripts to run in extensions, so it would be pointless. It would also
+  // mess up the crash reporting, which sends a different set of "active"
+  // extensions depending on whether the process is an extension or renderer
+  // process.
+  if (extension_process_)
+    return;
+
   // Process is being started asynchronously.  We'll end up calling
   // InitUserScripts when it's created which will call this again.
   if (child_process_.get() && child_process_->IsStarting())

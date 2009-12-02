@@ -33,11 +33,13 @@ const wchar_t kSystemPrincipalSid[] =L"S-1-5-18";
 
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 
-std::vector<wchar_t*>* g_url_chunks = NULL;
-
-// A string containing the user's unique metric services id. We send this
-// in the crash report.
-wchar_t* g_client_id = NULL;
+// A pointer to the custom entries that we send in the event of a crash. We need
+// this pointer, along with the offsets into it below, so that we can keep the
+// data updated as the state of the browser changes.
+static std::vector<google_breakpad::CustomInfoEntry>* g_custom_entries = NULL;
+static size_t g_url_chunks_offset;
+static size_t g_extension_ids_offset;
+static size_t g_client_id_offset;
 
 // Dumps the current process memory.
 extern "C" void __declspec(dllexport) __cdecl DumpProcess() {
@@ -74,70 +76,67 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& dll_path,
      version = L"0.0.0.0-devel";
   }
 
-  // Common entries.
-  google_breakpad::CustomInfoEntry ver_entry(L"ver", version.c_str());
-  google_breakpad::CustomInfoEntry prod_entry(L"prod", product.c_str());
-  google_breakpad::CustomInfoEntry plat_entry(L"plat", L"Win32");
-  google_breakpad::CustomInfoEntry type_entry(L"ptype", type.c_str());
+  // We only expect this method to be called once per process.
+  DCHECK(!g_custom_entries);
+  g_custom_entries = new std::vector<google_breakpad::CustomInfoEntry>;
+
+  // Common g_custom_entries.
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"ver", version.c_str()));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"plat", L"Win32"));
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"ptype", type.c_str()));
+
+  g_extension_ids_offset = g_custom_entries->size();
+  for (int i = 0; i < kMaxReportedActiveExtensions; ++i) {
+    g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+        StringPrintf(L"extension-%i", i + 1).c_str(), L""));
+  }
 
   // Read the id from registry. If reporting has never been enabled
   // the result will be empty string. Its OK since when user enables reporting
   // we will insert the new value at this location.
   std::wstring guid;
   GoogleUpdateSettings::GetMetricsId(&guid);
-  google_breakpad::CustomInfoEntry guid_entry(L"guid", guid.c_str());
+  g_client_id_offset = g_custom_entries->size();
+  g_custom_entries->push_back(
+      google_breakpad::CustomInfoEntry(L"guid", guid.c_str()));
 
   if (type == L"renderer" || type == L"plugin") {
     // Create entries for the URL. Currently we only allow each chunk to be 64
     // characters, which isn't enough for a URL. As a hack we create 8 entries
-    // and split the URL across the entries.
-    google_breakpad::CustomInfoEntry url1(L"url-chunk-1", L"");
-    google_breakpad::CustomInfoEntry url2(L"url-chunk-2", L"");
-    google_breakpad::CustomInfoEntry url3(L"url-chunk-3", L"");
-    google_breakpad::CustomInfoEntry url4(L"url-chunk-4", L"");
-    google_breakpad::CustomInfoEntry url5(L"url-chunk-5", L"");
-    google_breakpad::CustomInfoEntry url6(L"url-chunk-6", L"");
-    google_breakpad::CustomInfoEntry url7(L"url-chunk-7", L"");
-    google_breakpad::CustomInfoEntry url8(L"url-chunk-8", L"");
+    // and split the URL across the g_custom_entries.
+    g_url_chunks_offset = g_custom_entries->size();
+    for (int i = 0; i < kMaxUrlChunks; ++i) {
+      g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
+          StringPrintf(L"url-chunk-%i", i + 1).c_str(), L""));
+    }
+  } else {
+    // Browser-specific g_custom_entries.
+    google_breakpad::CustomInfoEntry switch1(L"switch-1", L"");
+    google_breakpad::CustomInfoEntry switch2(L"switch-2", L"");
 
-    static google_breakpad::CustomInfoEntry entries[] =
-        { ver_entry, prod_entry, plat_entry, type_entry, guid_entry,
-          url1, url2, url3, url4, url5, url6, url7, url8 };
+    // Get the first two command line switches if they exist. The CommandLine
+    // class does not allow to enumerate the switches so we do it by hand.
+    int num_args = 0;
+    wchar_t** args = ::CommandLineToArgvW(::GetCommandLineW(), &num_args);
+    if (args) {
+      if (num_args > 1)
+        switch1.set_value(TrimToBreakpadMax(args[1]).c_str());
+      if (num_args > 2)
+        switch2.set_value(TrimToBreakpadMax(args[2]).c_str());
+    }
 
-    std::vector<wchar_t*>* tmp_url_chunks = new std::vector<wchar_t*>(8);
-    for (size_t i = 0; i < 8; ++i)
-      (*tmp_url_chunks)[i] = entries[5 + i].value;
-    g_url_chunks = tmp_url_chunks;
-
-    g_client_id = entries[4].value;
-
-    static google_breakpad::CustomClientInfo custom_info_renderer
-        = {entries, arraysize(entries)};
-    return &custom_info_renderer;
+    g_custom_entries->push_back(switch1);
+    g_custom_entries->push_back(switch2);
   }
 
-  // Browser-specific entries.
-  google_breakpad::CustomInfoEntry switch1(L"switch-1", L"");
-  google_breakpad::CustomInfoEntry switch2(L"switch-2", L"");
+  static google_breakpad::CustomClientInfo custom_client_info;
+  custom_client_info.entries = &g_custom_entries->front();
+  custom_client_info.count = g_custom_entries->size();
 
-  // Get the first two command line switches if they exist. The CommandLine
-  // class does not allow to enumerate the switches so we do it by hand.
-  int num_args = 0;
-  wchar_t** args = ::CommandLineToArgvW(::GetCommandLineW(), &num_args);
-  if (args) {
-    if (num_args > 1)
-      switch1.set_value(TrimToBreakpadMax(args[1]).c_str());
-    if (num_args > 2)
-      switch2.set_value(TrimToBreakpadMax(args[2]).c_str());
-  }
-
-  static google_breakpad::CustomInfoEntry entries[] =
-      {ver_entry, prod_entry, plat_entry, type_entry, guid_entry,
-       switch1, switch2};
-  g_client_id = entries[4].value;
-  static google_breakpad::CustomClientInfo custom_info_browser =
-      {entries, arraysize(entries)};
-  return &custom_info_browser;
+  return &custom_client_info;
 }
 
 // Contains the information needed by the worker thread.
@@ -213,30 +212,30 @@ long WINAPI ChromeExceptionFilter(EXCEPTION_POINTERS* info) {
 extern "C" void __declspec(dllexport) __cdecl SetActiveURL(
     const wchar_t* url_cstring) {
   DCHECK(url_cstring);
-  if (!g_url_chunks)
-    return;
 
   std::wstring url(url_cstring);
-  size_t num_chunks = g_url_chunks->size();
   size_t chunk_index = 0;
   size_t url_size = url.size();
 
   // Split the url across all the chunks.
   for (size_t url_offset = 0;
-       chunk_index < num_chunks && url_offset < url_size; ++chunk_index) {
+       chunk_index < kMaxUrlChunks && url_offset < url_size; ++chunk_index) {
     size_t current_chunk_size = std::min(url_size - url_offset,
         static_cast<size_t>(
             google_breakpad::CustomInfoEntry::kValueMaxLength - 1));
-    url._Copy_s((*g_url_chunks)[chunk_index],
+
+    wchar_t* entry_value =
+        (*g_custom_entries)[g_url_chunks_offset + chunk_index].value;
+    url._Copy_s(entry_value,
                 google_breakpad::CustomInfoEntry::kValueMaxLength,
                 current_chunk_size, url_offset);
-    (*g_url_chunks)[chunk_index][current_chunk_size] = L'\0';
+    entry_value[current_chunk_size] = L'\0';
     url_offset += current_chunk_size;
   }
 
   // And null terminate any unneeded chunks.
-  for (; chunk_index < num_chunks; ++chunk_index)
-    (*g_url_chunks)[chunk_index][0] = L'\0';
+  for (; chunk_index < kMaxUrlChunks; ++chunk_index)
+    (*g_custom_entries)[g_url_chunks_offset + chunk_index].value[0] = L'\0';
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetClientId(
@@ -244,9 +243,19 @@ extern "C" void __declspec(dllexport) __cdecl SetClientId(
   if (client_id == NULL)
     return;
 
-  wcscpy_s(g_client_id,
+  wcscpy_s((*g_custom_entries)[g_client_id_offset].value,
            google_breakpad::CustomInfoEntry::kValueMaxLength,
            client_id);
+}
+
+extern "C" void __declspec(dllexport) __cdecl SetExtensionID(
+    int index, const wchar_t* id) {
+  DCHECK(id);
+  DCHECK(index < kMaxReportedActiveExtensions);
+
+  wcscpy_s((*g_custom_entries)[g_extension_ids_offset + index].value, 
+           google_breakpad::CustomInfoEntry::kValueMaxLength,
+           id);
 }
 
 }  // namespace
