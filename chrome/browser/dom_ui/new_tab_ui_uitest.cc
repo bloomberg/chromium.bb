@@ -130,16 +130,19 @@ TEST_F(NewTabUITest, HomePageLink) {
 
   // TODO(arv): Extract common patterns for doing js testing.
 
-  // Fire click
+  // Fire click. Because tip service is turned off for testing, we first
+  // force the "make this my home page" tip to appear.
   // TODO(arv): Find screen position of element and use a lower level click
   // emulation.
   bool result;
   ASSERT_TRUE(tab->ExecuteAndExtractBool(L"",
     L"window.domAutomationController.send("
     L"(function() {"
+    L"  tipCache = [{\"set_homepage_tip\":\"Make this the home page\"}];"
+    L"  renderTip();"
     L"  var e = document.createEvent('Event');"
     L"  e.initEvent('click', true, true);"
-    L"  var el = document.querySelector('#set-as-home-page > *');"
+    L"  var el = document.querySelector('#tip-line > button');"
     L"  el.dispatchEvent(e);"
     L"  return true;"
     L"})()"
@@ -147,17 +150,17 @@ TEST_F(NewTabUITest, HomePageLink) {
     &result));
   ASSERT_TRUE(result);
 
-  // Make sure set as home page element is hidden.
-  std::wstring style_display;
+  // Make sure text of "set as home page" tip has been removed.
+  std::wstring tip_text_content;
   ASSERT_TRUE(tab->ExecuteAndExtractString(L"",
     L"window.domAutomationController.send("
     L"(function() {"
-    L"  var el = document.querySelector('#set-as-home-page');"
-    L"  return el.style.display;"
+    L"  var el = document.querySelector('#tip-line');"
+    L"  return el.textContent;"
     L"})()"
     L")",
-    &style_display));
-  ASSERT_EQ(L"none", style_display);
+    &tip_text_content));
+  ASSERT_EQ(L"", tip_text_content);
 
   // Make sure that the notification is visible
   bool has_class;

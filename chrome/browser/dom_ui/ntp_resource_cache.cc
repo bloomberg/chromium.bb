@@ -143,7 +143,6 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
   // Watch for pref changes that cause us to need to invalidate the HTML cache.
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->AddPrefObserver(prefs::kShowBookmarkBar, this);
-  pref_service->AddPrefObserver(prefs::kHomePageIsNewTabPage, this);
   pref_service->AddPrefObserver(prefs::kNTPShownSections, this);
 
   // Watch for pref changes that cause us to need to invalidate the CSS cache.
@@ -153,7 +152,6 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {
 NTPResourceCache::~NTPResourceCache() {
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->RemovePrefObserver(prefs::kShowBookmarkBar, this);
-  pref_service->RemovePrefObserver(prefs::kHomePageIsNewTabPage, this);
   pref_service->RemovePrefObserver(prefs::kNTPShownSections, this);
 
   pref_service->RemovePrefObserver(prefs::kNTPPromoLineRemaining, this);
@@ -358,9 +356,6 @@ void NTPResourceCache::CreateNewTabHTML() {
     localized_strings.SetString(L"syncispresent", "true");
   else
     localized_strings.SetString(L"syncispresent", "false");
-
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kHomePageIsNewTabPage))
-    localized_strings.SetString(L"showsetashomepage", "true");
 
   ChromeURLDataManager::DataSource::SetFontAndTextDirection(&localized_strings);
 

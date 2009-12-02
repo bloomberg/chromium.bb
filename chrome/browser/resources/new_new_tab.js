@@ -102,20 +102,34 @@ function tips(data) {
 
 function createTip(data) {
   if (data.length) {
-    try {
-      return parseHtmlSubset(data[0].tip_html_text);
-    } catch (parseErr) {
-      console.error('Error parsing tips: ' + parseErr.message);
+    if (data[0].set_homepage_tip) {
+      var homepageButton = document.createElement('button');
+      homepageButton.className = 'link';
+      homepageButton.textContent = data[0].set_homepage_tip;
+      homepageButton.addEventListener('click', setAsHomePageLinkClicked);
+      return homepageButton;
+    } else {
+      try {
+        return parseHtmlSubset(data[0].tip_html_text);
+      } catch (parseErr) {
+        console.error('Error parsing tips: ' + parseErr.message);
+      }
     }
   }
   // Return an empty DF in case of failure.
   return document.createDocumentFragment();
 }
 
-function renderTip() {
+function clearTipLine() {
   var tipElement = $('tip-line');
   // There should always be only one tip.
   tipElement.textContent = '';
+  tipElement.removeEventListener('click', setAsHomePageLinkClicked);
+}
+
+function renderTip() {
+  clearTipLine();
+  var tipElement = $('tip-line');
   tipElement.appendChild(createTip(tipCache));
   fixLinkUnderlines(tipElement);
 }
@@ -1257,10 +1271,6 @@ document.addEventListener('DOMContentLoaded',
 document.addEventListener('DOMContentLoaded',
                           callGetSyncMessageIfSyncIsPresent);
 
-// This link allows user to make new tab page as homepage from the new tab
-// page itself (without going to Options dialog box).
-document.addEventListener('DOMContentLoaded', showSetAsHomePageLink);
-
 // Set up links and text-decoration for promotional message.
 document.addEventListener('DOMContentLoaded', setUpPromoMessage);
 
@@ -1280,22 +1290,10 @@ function setAsHomePageLinkClicked(e) {
   e.preventDefault();
 }
 
-function showSetAsHomePageLink() {
-  var setAsHomePageElement = $('set-as-home-page');
-  var style = setAsHomePageElement.style;
-  if (document.documentElement.getAttribute('showsetashomepage') != 'true') {
-    // Hide the section (if new tab page is already homepage).
-    return;
-  }
-
-  style.display = 'block';
-  var buttonElement = setAsHomePageElement.firstElementChild;
-  buttonElement.addEventListener('click', setAsHomePageLinkClicked);
-}
-
 function onHomePageSet(data) {
-  $('set-as-home-page').style.display = 'none';
   showNotification(data[0], data[1]);
+  // Removes the "make this my home page" tip.
+  clearTipLine();
 }
 
 function hideAllMenus() {
