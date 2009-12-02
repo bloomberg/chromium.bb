@@ -544,10 +544,12 @@ void GeneralPageView::InitControlLayout() {
   layout->AddView(default_search_group_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
+#if !defined(OS_CHROMEOS)
   layout->StartRow(0, single_column_view_set_id);
   InitDefaultBrowserGroup();
   layout->AddView(default_browser_group_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+#endif
 
   // Register pref observers that update the controls when a pref changes.
   profile()->GetPrefs()->AddPrefObserver(prefs::kRestoreOnStartup, this);

@@ -71,9 +71,11 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME),
       InitDefaultSearchGroup(), false);
+#if !defined(OS_CHROMEOS)
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME),
       InitDefaultBrowserGroup(), false);
+#endif
   page_ = options_builder.get_page_widget();
 
   profile->GetPrefs()->AddPrefObserver(prefs::kRestoreOnStartup, this);
