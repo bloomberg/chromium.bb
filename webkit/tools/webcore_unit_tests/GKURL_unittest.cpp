@@ -70,7 +70,8 @@ std::ostream& operator<<(std::ostream& out,
 }  // namespace
 
 // Test the cases where we should be the same as WebKit's old KURL.
-TEST(GKURL, SameGetters) {
+// Disabled for now: http://crbug.com/29212
+TEST(GKURL, DISABLED_SameGetters) {
   struct GetterCase {
     const char* url;
     const char* protocol;
@@ -125,7 +126,8 @@ TEST(GKURL, SameGetters) {
 
 // Test a few cases where we're different just to make sure we give reasonable
 // output.
-TEST(GKURL, DifferentGetters) {
+// Disabled for now: http://crbug.com/29212
+TEST(GKURL, DISABLED_DifferentGetters) {
   ComponentCase cases[] = {
      // url                                   protocol      host        port  user  pass    path                last_path query      ref
 
