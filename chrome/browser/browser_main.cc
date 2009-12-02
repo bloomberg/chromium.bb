@@ -171,8 +171,8 @@ void SIGCHLDHandler(int signal) {
 // Common code between SIG{HUP, INT, TERM}Handler.
 void GracefulShutdownHandler(int signal, const int expected_signal) {
   DCHECK_EQ(signal, expected_signal);
-  LOG(WARNING) << "Addressing signal " << expected_signal << " on "
-               << PlatformThread::CurrentId();
+  LOG(INFO) << "Addressing signal " << expected_signal << " on "
+            << PlatformThread::CurrentId();
 
   bool posted = ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
@@ -185,8 +185,8 @@ void GracefulShutdownHandler(int signal, const int expected_signal) {
   CHECK(sigaction(expected_signal, &action, NULL) == 0);
 
   if (posted) {
-    LOG(WARNING) << "Posted task to UI thread; resetting signal "
-                 << expected_signal << " handler";
+    LOG(INFO) << "Posted task to UI thread; resetting signal "
+              << expected_signal << " handler";
   } else {
     // Without a UI thread to post the exit task to, there aren't many
     // options.  Raise the signal again.  The default handler will pick it up
