@@ -51,7 +51,7 @@
 
 // |contextInfo| is the bridge back to the C++ AppModalDialog. When complete,
 // autorelease to clean ourselves up.
-- (void)alertDidEnd:(NSAlert *)alert
+- (void)alertDidEnd:(NSAlert*)alert
          returnCode:(int)returnCode
         contextInfo:(void*)contextInfo {
   AppModalDialog* bridge = reinterpret_cast<AppModalDialog*>(contextInfo);
@@ -59,14 +59,20 @@
   if (textField_)
     input = base::SysNSStringToWide([textField_ stringValue]);
   switch (returnCode) {
-    case NSAlertFirstButtonReturn:   // OK
-      bridge->OnAccept(input, false);
+    case NSAlertFirstButtonReturn:  {  // OK
+      bool shouldSuppress = false;
+      if ([alert showsSuppressionButton])
+        shouldSuppress = [[alert suppressionButton] state] == NSOnState;
+      bridge->OnAccept(input, shouldSuppress);
       break;
-    case NSAlertSecondButtonReturn:  // Cancel
+    }
+    case NSAlertSecondButtonReturn:  {  // Cancel
       bridge->OnCancel();
       break;
-    default:
+    }
+    default:  {
       NOTREACHED();
+    }
   }
   [self autorelease];
   delete bridge;  // Done with the dialog, it needs be destroyed.
@@ -122,6 +128,12 @@ void AppModalDialog::CreateAndShowDialog() {
   [alert addButtonWithTitle:default_button];
   if (!one_button)
     [alert addButtonWithTitle:other_button];
+  if (display_suppress_checkbox_) {
+    [alert setShowsSuppressionButton:YES];
+    NSString* suppression_title = l10n_util::GetNSStringWithFixup(
+        IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION);
+    [[alert suppressionButton] setTitle:suppression_title];
+  }
 
   [alert beginSheetModalForWindow:nil  // nil here makes it app-modal
                     modalDelegate:helper
