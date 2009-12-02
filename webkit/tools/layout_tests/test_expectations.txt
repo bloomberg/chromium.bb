@@ -2961,7 +2961,6 @@ BUG28034 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-den
 
 BUG28040 WIN LINUX DEBUG : LayoutTests/fast/body-propagation/overflow/004.html = PASS FAIL
 BUG28041 MAC : LayoutTests/storage/domstorage/clear.html = PASS FAIL
-BUG28044 WIN LINUX : LayoutTests/websocket/tests/frame-length-skip.html = PASS FAIL
 BUG28057 WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLElement95.html = PASS CRASH
 BUG28074 MAC : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = PASS TIMEOUT
 BUG28077 MAC : LayoutTests/plugins/netscape-invoke-default.html = PASS FAIL
