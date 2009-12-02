@@ -61,7 +61,6 @@
       'targets': [
         {
           'target_name': 'ffmpegsumo',
-          'product_name': 'libffmpegsumo',
           'type': 'shared_library',
           'sources': [
             'source/patched-ffmpeg-mt/libavcodec/aac.c',
