@@ -4,7 +4,8 @@
   bookmarkbarattached:bookmarkbarattached;
   hasattribution:hasattribution;
   anim:anim;
-  syncispresent:syncispresent">
+  syncispresent:syncispresent;
+  showsetashomepage:showsetashomepage">
 
 <meta charset="utf-8">
 <title i18n-content="title"></title>
@@ -253,6 +254,12 @@ function updateSimpleSection(id, section) {
     <span></span>
   </div>
   <script>updateSimpleSection('sync-status', Section.SYNC);</script>
+
+  <div id="set-as-home-page">
+    <button class="link">
+      <span class="link-color" i18n-content="makethishomepage"></span>
+    </button>
+  </div>
 
   <div id="tip-line"></div>
   <script>updateSimpleSection('tip-line', Section.TIPS);</script>

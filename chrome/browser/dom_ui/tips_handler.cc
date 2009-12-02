@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -15,7 +14,6 @@
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
-#include "grit/generated_resources.h"
 
 DOMMessageHandler* TipsHandler::Attach(DOMUI* dom_ui) {
   dom_ui_ = dom_ui;
@@ -30,7 +28,7 @@ void TipsHandler::RegisterMessages() {
 }
 
 void TipsHandler::HandleGetTips(const Value* content) {
-  // List containing the tips to be displayed.
+  // List containing the tips to be displayed.
   ListValue list_value;
 
   // Holds the web resource data found in the preferences cache.
@@ -60,34 +58,18 @@ void TipsHandler::HandleGetTips(const Value* content) {
         tips_cache_->GetList(
         WebResourceService::kTipCachePrefName, &wr_list) &&
         wr_list && wr_list->GetSize() > 0) {
-      if (wr_list->GetSize() <= static_cast<size_t>(current_tip_index)) {
-        // Check to see whether the home page is set to NTP; if not, add tip
-        // to set home page before resetting tip index to 0.
+      if (wr_list->GetSize() <= static_cast<size_t>(current_tip_index))
         current_tip_index = 0;
-        if (!dom_ui_->GetProfile()->GetPrefs()->GetBoolean(
-            prefs::kHomePageIsNewTabPage)) {
-          SendTip(WideToASCII(l10n_util::GetString(
-              IDS_NEW_TAB_MAKE_THIS_HOMEPAGE)), L"set_homepage_tip",
-              current_tip_index);
-          return;
-        }
-      }
       if (wr_list->GetString(current_tip_index, &current_tip)) {
-        SendTip(current_tip, L"tip_html_text", current_tip_index + 1);
+        DictionaryValue* tip_dict = new DictionaryValue();
+        tip_dict->SetString(L"tip_html_text", current_tip);
+        list_value.Append(tip_dict);
+        tips_cache_->SetInteger(WebResourceService::kCurrentTipPrefName,
+                                current_tip_index + 1);
       }
     }
   }
-}
 
-void TipsHandler::SendTip(std::string tip, std::wstring tip_type,
-                          int tip_index) {
-  // List containing the tips to be displayed.
-  ListValue list_value;
-  DictionaryValue* tip_dict = new DictionaryValue();
-  tip_dict->SetString(tip_type, tip);
-  list_value.Append(tip_dict);
-  tips_cache_->SetInteger(WebResourceService::kCurrentTipPrefName,
-                          tip_index);
   // Send list of web resource items back out to the DOM.
   dom_ui_->CallJavascriptFunction(L"tips", list_value);
 }
