@@ -119,6 +119,7 @@ END_MSG_MAP()
   void StartAsync();
   void StopAsync();
   void ReadAsync(int bytes_to_read);
+  void ReleaseBindings();
 
   static const size_t kCopyChunkSize = 32 * 1024;
   // URL requests are handled on this thread.
@@ -236,6 +237,10 @@ END_MSG_MAP()
   };
 
   HRESULT StartAsyncDownload();
+  // Sends over the response end notification to chrome, releases the bindings
+  // and releases the initial reference on the UrlmonUrlRequest object.
+  // After this function is called we should not attempt to access any members
+  // as the object could become invalid at any point.
   void EndRequest();
   // Executes in the context of the UI thread and releases the outstanding
   // reference to us. It also deletes the request mapping for this instance.

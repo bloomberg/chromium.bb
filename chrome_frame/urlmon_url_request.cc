@@ -315,16 +315,7 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   } else {
     status_.set_status(URLRequestStatus::SUCCESS);
     status_.set_os_error(0);
-  }
-
-  DLOG(INFO) << "OnStopBinding received for request id: " << id();
-
-  // Release these variables after reporting EndRequest since we might need to
-  // access their state.
-  binding_.Release();
-  if (bind_context_) {
-    ::RevokeBindStatusCallback(bind_context_, this);
-    bind_context_.Release();
+    ReleaseBindings();
   }
 
   return S_OK;
@@ -724,8 +715,11 @@ void UrlmonUrlRequest::EndRequest() {
     ignore_redirect_stop_binding_error_ = false;
   }
 
+  ReleaseBindings();
   // Remove the request mapping and release the outstanding reference to us in
   // the context of the UI thread.
+  // We should not access any members of the UrlmonUrlRequest object after this
+  // as the object would be deleted.
   PostTask(FROM_HERE,
            NewRunnableMethod(this, &UrlmonUrlRequest::EndRequestInternal));
 }
@@ -801,6 +795,14 @@ std::string UrlmonUrlRequest::GetHttpHeaders() const {
   }
 
   return buffer.get();
+}
+
+void UrlmonUrlRequest::ReleaseBindings() {
+  binding_.Release();
+  if (bind_context_) {
+    ::RevokeBindStatusCallback(bind_context_, this);
+    bind_context_.Release();
+  }
 }
 
 //
