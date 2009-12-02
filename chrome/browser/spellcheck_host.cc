@@ -12,6 +12,8 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/spellcheck_host_observer.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -38,7 +40,7 @@ FilePath GetFallbackFilePath(const FilePath& first_choice) {
 }  // namespace
 
 // Constructed on UI thread.
-SpellCheckHost::SpellCheckHost(Observer* observer,
+SpellCheckHost::SpellCheckHost(SpellCheckHostObserver* observer,
                                const std::string& language,
                                URLRequestContextGetter* request_context_getter)
     : observer_(observer),

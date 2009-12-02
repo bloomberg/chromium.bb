@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_OPTIONS_PAGE_BASE_H_
 #define CHROME_BROWSER_OPTIONS_PAGE_BASE_H_
 
+#include <string>
+
+#include "base/basictypes.h"
 #include "chrome/browser/options_window.h"
-#include "chrome/browser/profile.h"
 #include "chrome/common/notification_observer.h"
 
 class PrefService;
+class Profile;
 
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsPageBase

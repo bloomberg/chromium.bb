@@ -64,7 +64,7 @@ class BookmarkStorage::LoadTask : public Task {
  public:
   LoadTask(const FilePath& path,
            BookmarkStorage* storage,
-           LoadDetails* details)
+           BookmarkLoadDetails* details)
       : path_(path),
         storage_(storage),
         details_(details) {
@@ -120,7 +120,7 @@ class BookmarkStorage::LoadTask : public Task {
 
   const FilePath path_;
   scoped_refptr<BookmarkStorage> storage_;
-  LoadDetails* details_;
+  BookmarkLoadDetails* details_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadTask);
 };
@@ -143,7 +143,7 @@ BookmarkStorage::~BookmarkStorage() {
     writer_.DoScheduledWrite();
 }
 
-void BookmarkStorage::LoadBookmarks(LoadDetails* details) {
+void BookmarkStorage::LoadBookmarks(BookmarkLoadDetails* details) {
   DCHECK(!details_.get());
   DCHECK(details);
   details_.reset(details);

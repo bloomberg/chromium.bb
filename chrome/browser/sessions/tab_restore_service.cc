@@ -15,6 +15,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_command.h"
+#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -117,6 +118,17 @@ void RemoveEntryByID(SessionID::id_type id,
 }
 
 }  // namespace
+
+TabRestoreService::Tab::Tab()
+    : Entry(TAB),
+      current_navigation_index(-1),
+      browser_id(0),
+      tabstrip_index(-1),
+      pinned(false) {
+}
+
+TabRestoreService::Window::Window() : Entry(WINDOW), selected_tab_index(-1) {
+}
 
 TabRestoreService::TabRestoreService(Profile* profile,
     TabRestoreService::TimeFactory* time_factory)

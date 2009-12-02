@@ -19,6 +19,69 @@ class Profile;
 class Task;
 class Value;
 
+// BookmarkLoadDetails is used by BookmarkStorage when loading bookmarks.
+// BookmarkModel creates a BookmarkLoadDetails and passes it (including
+// ownership) to BookmarkStorage. BoomarkStorage loads the bookmarks (and index)
+// in the background thread, then calls back to the BookmarkModel (on the main
+// thread) when loading is done, passing ownership back to the BookmarkModel.
+// While loading BookmarkModel does not maintain references to the contents
+// of the BookmarkLoadDetails, this ensures we don't have any threading
+// problems.
+class BookmarkLoadDetails {
+ public:
+  BookmarkLoadDetails(BookmarkNode* bb_node,
+                      BookmarkNode* other_folder_node,
+                      BookmarkIndex* index,
+                      int64 max_id)
+      : bb_node_(bb_node),
+        other_folder_node_(other_folder_node),
+        index_(index),
+        max_id_(max_id),
+        ids_reassigned_(false) {
+  }
+
+  void release() {
+    bb_node_.release();
+    other_folder_node_.release();
+    index_.release();
+  }
+
+  BookmarkNode* bb_node() { return bb_node_.get(); }
+  BookmarkNode* other_folder_node() { return other_folder_node_.get(); }
+  BookmarkIndex* index() { return index_.get(); }
+
+  // Max id of the nodes.
+  void set_max_id(int64 max_id) { max_id_ = max_id; }
+  int64 max_id() const { return max_id_; }
+
+  // Computed checksum.
+  void set_computed_checksum(const std::string& value) {
+    computed_checksum_ = value;
+  }
+  const std::string& computed_checksum() const { return computed_checksum_; }
+
+  // Stored checksum.
+  void set_stored_checksum(const std::string& value) {
+    stored_checksum_ = value;
+  }
+  const std::string& stored_checksum() const { return stored_checksum_; }
+
+  // Whether ids were reassigned.
+  void set_ids_reassigned(bool value) { ids_reassigned_ = value; }
+  bool ids_reassigned() const { return ids_reassigned_; }
+
+ private:
+  scoped_ptr<BookmarkNode> bb_node_;
+  scoped_ptr<BookmarkNode> other_folder_node_;
+  scoped_ptr<BookmarkIndex> index_;
+  int64 max_id_;
+  std::string computed_checksum_;
+  std::string stored_checksum_;
+  bool ids_reassigned_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkLoadDetails);
+};
+
 // BookmarkStorage handles reading/write the bookmark bar model. The
 // BookmarkModel uses the BookmarkStorage to load bookmarks from disk, as well
 // as notifying the BookmarkStorage every time the model changes.
@@ -28,74 +91,12 @@ class BookmarkStorage : public NotificationObserver,
                         public ImportantFileWriter::DataSerializer,
                         public base::RefCountedThreadSafe<BookmarkStorage> {
  public:
-  // LoadDetails is used by BookmarkStorage when loading bookmarks.
-  // BookmarkModel creates a LoadDetails and passes it (including ownership) to
-  // BookmarkStorage. BoomarkStorage loads the bookmarks (and index) in the
-  // background thread, then calls back to the BookmarkModel (on the main
-  // thread) when loading is done, passing ownership back to the BookmarkModel.
-  // While loading BookmarkModel does not maintain references to the contents
-  // of the LoadDetails, this ensures we don't have any threading problems.
-  class LoadDetails {
-   public:
-    LoadDetails(BookmarkNode* bb_node,
-                BookmarkNode* other_folder_node,
-                BookmarkIndex* index,
-                int64 max_id)
-        : bb_node_(bb_node),
-          other_folder_node_(other_folder_node),
-          index_(index),
-          max_id_(max_id),
-          ids_reassigned_(false) {
-    }
-
-    void release() {
-      bb_node_.release();
-      other_folder_node_.release();
-      index_.release();
-    }
-
-    BookmarkNode* bb_node() { return bb_node_.get(); }
-    BookmarkNode* other_folder_node() { return other_folder_node_.get(); }
-    BookmarkIndex* index() { return index_.get(); }
-
-    // Max id of the nodes.
-    void set_max_id(int64 max_id) { max_id_ = max_id; }
-    int64 max_id() const { return max_id_; }
-
-    // Computed checksum.
-    void set_computed_checksum(const std::string& value) {
-      computed_checksum_ = value;
-    }
-    const std::string& computed_checksum() const { return computed_checksum_; }
-
-    // Stored checksum.
-    void set_stored_checksum(const std::string& value) {
-      stored_checksum_ = value;
-    }
-    const std::string& stored_checksum() const { return stored_checksum_; }
-
-    // Whether ids were reassigned.
-    void set_ids_reassigned(bool value) { ids_reassigned_ = value; }
-    bool ids_reassigned() const { return ids_reassigned_; }
-
-   private:
-    scoped_ptr<BookmarkNode> bb_node_;
-    scoped_ptr<BookmarkNode> other_folder_node_;
-    scoped_ptr<BookmarkIndex> index_;
-    int64 max_id_;
-    std::string computed_checksum_;
-    std::string stored_checksum_;
-    bool ids_reassigned_;
-
-    DISALLOW_COPY_AND_ASSIGN(LoadDetails);
-  };
-
   // Creates a BookmarkStorage for the specified model
   BookmarkStorage(Profile* profile, BookmarkModel* model);
 
   // Loads the bookmarks into the model, notifying the model when done. This
-  // takes ownership of |details|. See LoadDetails for details.
-  void LoadBookmarks(LoadDetails* details);
+  // takes ownership of |details|. See BookmarkLoadDetails for details.
+  void LoadBookmarks(BookmarkLoadDetails* details);
 
   // Schedules saving the bookmark bar model to disk.
   void ScheduleSave();
@@ -157,8 +158,8 @@ class BookmarkStorage : public NotificationObserver,
   // Path to temporary file created during migrating bookmarks from history.
   const FilePath tmp_history_path_;
 
-  // See class description of LoadDetails for details on this.
-  scoped_ptr<LoadDetails> details_;
+  // See class description of BookmarkLoadDetails for details on this.
+  scoped_ptr<BookmarkLoadDetails> details_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkStorage);
 };

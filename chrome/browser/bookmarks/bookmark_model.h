@@ -16,7 +16,6 @@
 #include "base/waitable_event.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/bookmarks/bookmark_service.h"
-#include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/history/history.h"
@@ -26,10 +25,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
+class BookmarkCodec;
 class BookmarkEditorView;
 class BookmarkIndex;
+class BookmarkLoadDetails;
 class BookmarkModel;
-class BookmarkCodec;
+class BookmarkStorage;
 class Profile;
 
 namespace bookmark_utils {
@@ -332,7 +333,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Invoked when loading is finished. Sets loaded_ and notifies observers.
   // BookmarkModel takes ownership of |details|.
-  void DoneLoading(BookmarkStorage::LoadDetails* details);
+  void DoneLoading(BookmarkLoadDetails* details);
 
   // Populates nodes_ordered_by_url_set_ from root.
   void PopulateNodesByURL(BookmarkNode* node);
@@ -400,9 +401,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // Records that the bookmarks file was changed externally.
   void SetFileChanged();
 
-  // Creates and returns a new LoadDetails. It's up to the caller to delete
-  // the returned object.
-  BookmarkStorage::LoadDetails* CreateLoadDetails();
+  // Creates and returns a new BookmarkLoadDetails. It's up to the caller to
+  // delete the returned object.
+  BookmarkLoadDetails* CreateLoadDetails();
 
   NotificationRegistrar registrar_;
 

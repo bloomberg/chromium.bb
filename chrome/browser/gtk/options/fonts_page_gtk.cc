@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"

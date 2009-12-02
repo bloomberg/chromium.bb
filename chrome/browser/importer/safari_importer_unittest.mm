@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/file_test_utils.h"
 #include "chrome/browser/importer/importer_bridge.h"

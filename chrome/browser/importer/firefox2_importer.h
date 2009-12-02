@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_IMPORTER_FIREFOX2_IMPORTER_H_
 #define CHROME_BROWSER_IMPORTER_FIREFOX2_IMPORTER_H_
 
-#include "chrome/browser/importer/importer.h"
+#include <set>
 
+#include "chrome/browser/importer/importer.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class TemplateURL;

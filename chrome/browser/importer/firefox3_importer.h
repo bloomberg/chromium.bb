@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_IMPORTER_FIREFOX3_IMPORTER_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 

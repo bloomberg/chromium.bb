@@ -26,6 +26,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
+#include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/strict_transport_security_persister.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"

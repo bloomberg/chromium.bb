@@ -7,6 +7,7 @@
 #include "app/theme_provider.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/theme_resources_util.h"

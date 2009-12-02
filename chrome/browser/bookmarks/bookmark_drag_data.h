@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/history/history.h"
 #include "googleurl/src/gurl.h"
 
 // TODO(port): Port this file.

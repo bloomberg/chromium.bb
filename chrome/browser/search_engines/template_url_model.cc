@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/rlz/rlz.h"

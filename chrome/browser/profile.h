@@ -14,7 +14,7 @@
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/browser/spellcheck_host.h"
+#include "chrome/browser/spellcheck_host_observer.h"
 #include "chrome/common/notification_registrar.h"
 
 #if defined(OS_CHROMEOS)
@@ -51,6 +51,7 @@ class PrefService;
 class ProfileSyncService;
 class SearchVersusNavigateClassifier;
 class SessionService;
+class SpellCheckHost;
 class SSLConfigServiceManager;
 class SSLHostState;
 class StrictTransportSecurityPersister;
@@ -387,7 +388,7 @@ class OffTheRecordProfileImpl;
 
 // The default profile implementation.
 class ProfileImpl : public Profile,
-                    public SpellCheckHost::Observer,
+                    public SpellCheckHostObserver,
                     public NotificationObserver {
  public:
   virtual ~ProfileImpl();
@@ -458,7 +459,7 @@ class ProfileImpl : public Profile,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // SpellCheckHost::Observer implementation.
+  // SpellCheckHostObserver implementation.
   virtual void SpellCheckHostInitialized();
 
  private:

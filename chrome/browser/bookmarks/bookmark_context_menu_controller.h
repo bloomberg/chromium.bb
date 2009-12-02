@@ -9,10 +9,11 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 class Browser;
 class PageNavigator;
+class Profile;
 
 // An interface implemented by an object that performs actions on the actual
 // menu for the controller.

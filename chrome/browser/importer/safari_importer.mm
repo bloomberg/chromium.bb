@@ -16,6 +16,7 @@
 #include "base/string16.h"
 #include "base/sys_string_conversions.h"
 #include "base/time.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_bridge.h"
 #include "chrome/common/sqlite_utils.h"
 #include "chrome/common/url_constants.h"

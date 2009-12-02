@@ -27,6 +27,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"

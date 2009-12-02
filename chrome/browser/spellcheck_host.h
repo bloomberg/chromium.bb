@@ -13,20 +13,16 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/url_fetcher.h"
-#include "chrome/browser/net/url_request_context_getter.h"
 
 class Profile;
+class SpellCheckHostObserver;
+class URLRequestContextGetter;
 
 class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
                            ChromeThread::DeleteOnFileThread>,
                        public URLFetcher::Delegate {
  public:
-  class Observer {
-   public:
-    virtual void SpellCheckHostInitialized() = 0;
-  };
-
-  SpellCheckHost(Observer* observer,
+  SpellCheckHost(SpellCheckHostObserver* observer,
                  const std::string& language,
                  URLRequestContextGetter* request_context_getter);
 
@@ -100,7 +96,7 @@ class SpellCheckHost : public base::RefCountedThreadSafe<SpellCheckHost,
   void SaveDictionaryData();
 
   // May be NULL.
-  Observer* observer_;
+  SpellCheckHostObserver* observer_;
 
   // The desired location of the dictionary file (whether or not t exists yet).
   FilePath bdict_file_path_;

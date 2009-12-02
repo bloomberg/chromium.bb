@@ -14,8 +14,8 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
@@ -26,6 +26,11 @@ class Task;
 class TemplateURL;
 
 struct IE7PasswordInfo;
+
+namespace history {
+struct ImportedFavIconUsage;
+class URLRow;
+}
 
 namespace webkit_glue {
 struct PasswordForm;

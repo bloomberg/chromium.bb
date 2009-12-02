@@ -4,6 +4,7 @@
 
 #include "base/path_service.h"
 #include "base/thread.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"

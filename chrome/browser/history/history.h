@@ -15,7 +15,6 @@
 #include "base/task.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/favicon_service.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/notification_registrar.h"
@@ -46,6 +45,7 @@ namespace history {
 class InMemoryHistoryBackend;
 class HistoryBackend;
 class HistoryDatabase;
+struct HistoryDetails;
 class HistoryQueryTest;
 class URLDatabase;
 

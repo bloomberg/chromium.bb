@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_theme_source.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/url_constants.h"

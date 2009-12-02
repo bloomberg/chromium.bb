@@ -6,17 +6,18 @@
 #define CHROME_BROWSER_SESSIONS_TAB_RESTORE_SERVICE_H_
 
 #include <list>
+#include <set>
 #include <vector>
 
 #include "base/observer_list.h"
 #include "base/time.h"
 #include "chrome/browser/sessions/base_session_service.h"
 #include "chrome/browser/sessions/session_id.h"
-#include "chrome/browser/sessions/session_types.h"
 
 class Browser;
 class NavigationController;
 class Profile;
+struct SessionWindow;
 
 // TabRestoreService is responsible for maintaining the most recently closed
 // tabs and windows. When a tab is closed
@@ -79,12 +80,7 @@ class TabRestoreService : public BaseSessionService {
 
   // Represents a previously open tab.
   struct Tab : public Entry {
-    Tab()
-        : Entry(TAB),
-          current_navigation_index(-1),
-          browser_id(0),
-          tabstrip_index(-1),
-          pinned(false) {}
+    Tab();
 
     bool has_browser() const { return browser_id > 0; }
 
@@ -107,7 +103,7 @@ class TabRestoreService : public BaseSessionService {
 
   // Represents a previously open window.
   struct Window : public Entry {
-    Window() : Entry(WINDOW), selected_tab_index(-1) {}
+    Window();
 
     // The tabs that comprised the window, in order.
     std::vector<Tab> tabs;

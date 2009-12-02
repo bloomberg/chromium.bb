@@ -12,6 +12,7 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/bookmarks/bookmark_storage.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_service.h"
@@ -449,9 +450,9 @@ void BookmarkModel::RemoveNode(BookmarkNode* node,
 }
 
 void BookmarkModel::DoneLoading(
-    BookmarkStorage::LoadDetails* details_delete_me) {
+    BookmarkLoadDetails* details_delete_me) {
   DCHECK(details_delete_me);
-  scoped_ptr<BookmarkStorage::LoadDetails> details(details_delete_me);
+  scoped_ptr<BookmarkLoadDetails> details(details_delete_me);
   if (loaded_) {
     // We should only ever be loaded once.
     NOTREACHED();
@@ -727,9 +728,9 @@ void BookmarkModel::SetFileChanged() {
   file_changed_ = true;
 }
 
-BookmarkStorage::LoadDetails* BookmarkModel::CreateLoadDetails() {
+BookmarkLoadDetails* BookmarkModel::CreateLoadDetails() {
   BookmarkNode* bb_node = CreateBookmarkNode();
   BookmarkNode* other_folder_node = CreateOtherBookmarksNode();
-  return new BookmarkStorage::LoadDetails(
+  return new BookmarkLoadDetails(
       bb_node, other_folder_node, new BookmarkIndex(profile()), next_node_id_);
 }

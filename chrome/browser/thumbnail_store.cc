@@ -17,6 +17,7 @@
 #include "base/thread.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
