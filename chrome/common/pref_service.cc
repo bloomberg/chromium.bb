@@ -642,7 +642,8 @@ bool PrefService::SerializeData(std::string* output) {
   // value?
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);
-  return serializer.Serialize(*(persistent_.get()));
+  scoped_ptr<DictionaryValue> copy(persistent_->DeepCopyWithoutEmptyChildren());
+  return serializer.Serialize(*(copy.get()));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
