@@ -23,6 +23,7 @@
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -95,6 +96,7 @@ bool FakeExternalTab::GetProfilePath(FilePath* path) {
 
 void FakeExternalTab::Initialize() {
   DCHECK(g_browser_process == NULL);
+  SystemMonitor system_monitor;
 
   // The gears plugin causes the PluginRequestInterceptor to kick in and it
   // will cause problems when it tries to intercept URL requests.
@@ -116,7 +118,10 @@ void FakeExternalTab::Initialize() {
 
   ResourceBundle::InitSharedInstance(L"en-US");
 
-  const CommandLine* cmd = CommandLine::ForCurrentProcess();
+  CommandLine* cmd = CommandLine::ForCurrentProcess();
+  cmd->AppendSwitch(switches::kDisableWebResources);
+  cmd->AppendSwitch(switches::kSingleProcess);
+
   browser_process_.reset(new BrowserProcessImpl(*cmd));
   RenderProcessHost::set_run_renderer_in_process(true);
   // BrowserProcessImpl's constructor should set g_browser_process.
@@ -125,11 +130,14 @@ void FakeExternalTab::Initialize() {
   Profile* profile = g_browser_process->profile_manager()->
       GetDefaultProfile(FilePath(user_data()));
   PrefService* prefs = profile->GetPrefs();
+  DCHECK(prefs != NULL);
+
+  WebCacheManager::RegisterPrefs(prefs);
   PrefService* local_state = browser_process_->local_state();
   local_state->RegisterStringPref(prefs::kApplicationLocale, L"");
   local_state->RegisterBooleanPref(prefs::kMetricsReportingEnabled, false);
 
-  browser::RegisterAllPrefs(prefs, local_state);
+  browser::RegisterLocalState(local_state);
 
   // Override some settings to avoid hitting some preferences that have not
   // been registered.
