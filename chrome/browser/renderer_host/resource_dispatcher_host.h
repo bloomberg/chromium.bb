@@ -278,14 +278,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
     return false;
   }
 
-  static void DisableHttpPrioritization() {
-    g_is_http_prioritization_enabled = false;
-  }
-
-  static bool IsHttpPrioritizationEnabled() {
-    return g_is_http_prioritization_enabled;
-  }
-
  private:
   FRIEND_TEST(ResourceDispatcherHostTest, TestBlockedRequestsProcessDies);
   FRIEND_TEST(ResourceDispatcherHostTest,
@@ -480,8 +472,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // Keeps track of elements blocked by the Privacy Blacklist.
   chrome::BlockedResponse blocked_;
-
-  static bool g_is_http_prioritization_enabled;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHost);
 };

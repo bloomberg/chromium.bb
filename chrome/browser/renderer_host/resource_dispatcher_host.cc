@@ -74,8 +74,6 @@ using base::TimeTicks;
 
 // ----------------------------------------------------------------------------
 
-bool ResourceDispatcherHost::g_is_http_prioritization_enabled = true;
-
 // A ShutdownTask proxies a shutdown task from the UI thread to the IO thread.
 // It should be constructed on the UI thread and run in the IO thread.
 class ResourceDispatcherHost::ShutdownTask : public Task {
@@ -529,24 +527,22 @@ void ResourceDispatcherHost::BeginRequest(
   request->set_load_flags(load_flags);
   request->set_context(context);
 
-  if (IsHttpPrioritizationEnabled()) {
-    // If the request is for the top level page or a frame/iframe, then we
-    // should prioritize it higher than other resource types.  Currently, we
-    // just use priorities 1 and 0.
-    if (ResourceType::IsFrame(request_data.resource_type)) {
-      request->set_priority(net::HIGHEST);
-    } else {
-      switch (request_data.resource_type) {
-        case ResourceType::STYLESHEET:
-        case ResourceType::SCRIPT:
-          request->set_priority(net::MEDIUM);
-          break;
-        case ResourceType::IMAGE:
-          request->set_priority(net::LOWEST);
-          break;
-        default:
-          request->set_priority(net::LOW);
-      }
+  // If the request is for the top level page or a frame/iframe, then we
+  // should prioritize it higher than other resource types.  Currently, we
+  // just use priorities 1 and 0.
+  if (ResourceType::IsFrame(request_data.resource_type)) {
+    request->set_priority(net::HIGHEST);
+  } else {
+    switch (request_data.resource_type) {
+      case ResourceType::STYLESHEET:
+      case ResourceType::SCRIPT:
+        request->set_priority(net::MEDIUM);
+        break;
+      case ResourceType::IMAGE:
+        request->set_priority(net::LOWEST);
+        break;
+      default:
+        request->set_priority(net::LOW);
     }
   }
 
