@@ -74,7 +74,8 @@ class ExtensionPopupHost :  // NOLINT
   virtual void BubbleGotFocus(BrowserBubble* bubble);
 
   // Called when the bubble became inactive / lost focus.
-  virtual void BubbleLostFocus(BrowserBubble* bubble);
+  virtual void BubbleLostFocus(BrowserBubble* bubble,
+                               gfx::NativeView focused_view);
 #endif  // defined(TOOLKIT_VIEWS)
 
   // NotificationObserver implementation.

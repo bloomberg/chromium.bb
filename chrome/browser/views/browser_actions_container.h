@@ -178,7 +178,8 @@ class BrowserActionsContainer : public views::View,
   virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
   virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
   virtual void BubbleGotFocus(BrowserBubble* bubble);
-  virtual void BubbleLostFocus(BrowserBubble* bubble);
+  virtual void BubbleLostFocus(BrowserBubble* bubble,
+                               gfx::NativeView focused_view);
 
   // Get clipped width required to precisely fit the browser action icons
   // given a tentative available width. The minimum size it returns is not

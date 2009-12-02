@@ -32,7 +32,7 @@ class BubbleWidget : public views::WidgetWin {
     if (IsActive()) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
-        delegate->BubbleLostFocus(bubble_);
+        delegate->BubbleLostFocus(bubble_, NULL);
     }
     views::WidgetWin::Close();
   }
@@ -41,7 +41,7 @@ class BubbleWidget : public views::WidgetWin {
     if (IsActive()) {
       BrowserBubble::Delegate* delegate = bubble_->delegate();
       if (delegate)
-        delegate->BubbleLostFocus(bubble_);
+        delegate->BubbleLostFocus(bubble_, NULL);
     }
     views::WidgetWin::Hide();
   }
@@ -57,7 +57,7 @@ class BubbleWidget : public views::WidgetWin {
     }
 
     if (action == WA_INACTIVE && !closed_) {
-      delegate->BubbleLostFocus(bubble_);
+      delegate->BubbleLostFocus(bubble_, window);
     }
   }
 

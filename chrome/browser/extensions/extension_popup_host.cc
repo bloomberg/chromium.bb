@@ -55,7 +55,8 @@ void ExtensionPopupHost::BubbleBrowserWindowClosing(BrowserBubble* bubble) {
 void ExtensionPopupHost::BubbleGotFocus(BrowserBubble* bubble) {
 }
 
-void ExtensionPopupHost::BubbleLostFocus(BrowserBubble* bubble) {
+void ExtensionPopupHost::BubbleLostFocus(BrowserBubble* bubble,
+                                         gfx::NativeView focused_view) {
   // TODO(twiz):  Dismiss the pop-up upon loss of focus of the bubble, but not
   // if the focus is transitioning to the host which owns the popup!
   // DismissPopup();

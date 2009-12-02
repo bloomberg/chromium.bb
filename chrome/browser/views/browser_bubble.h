@@ -29,7 +29,10 @@ class BrowserBubble {
     virtual void BubbleGotFocus(BrowserBubble* bubble) {}
 
     // Called when the bubble became inactive / lost focus.
-    virtual void BubbleLostFocus(BrowserBubble* bubble) {}
+    // |focused_view| is the NativeView getting the focus, it may be NULL if the
+    // popup was closed programatically.
+    virtual void BubbleLostFocus(BrowserBubble* bubble,
+                                 gfx::NativeView focused_view) {}
   };
 
   // Note that the bubble will size itself to the preferred size of |view|.
@@ -80,6 +83,9 @@ class BrowserBubble {
 
   // Resize the bubble to fit the view.
   void ResizeToView();
+
+  // Returns the NativeView containing that popup.
+  gfx::NativeView native_view() const { return frame_native_view_; }
 
  protected:
   // Create the popup widget.

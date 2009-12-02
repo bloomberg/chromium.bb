@@ -459,9 +459,23 @@ void BrowserActionsContainer::BubbleGotFocus(BrowserBubble* bubble) {
   popup_->host()->render_view_host()->view()->Focus();
 }
 
-void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble) {
+void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble,
+                                              gfx::NativeView focused_view) {
   if (!popup_)
     return;
+
+#if defined(OS_WIN)
+  // Don't hide when we are loosing focus to a child window.  This is the case
+  // with select popups.
+  // TODO(jcampan): http://crbugs.com/29131 make that work on toolkit views
+  //                so this #if defined can be removed.
+  gfx::NativeView popup_native_view = popup_->native_view();
+  gfx::NativeView parent = focused_view;
+  while (parent = ::GetParent(parent)) {
+    if (parent == popup_native_view)
+      return;
+  }
+#endif
 
   // This is a bit annoying.  If you click on the button that generated the
   // current popup, then we first get this lost focus message, and then

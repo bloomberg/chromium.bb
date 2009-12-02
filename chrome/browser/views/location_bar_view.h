@@ -394,7 +394,8 @@ class LocationBarView : public LocationBar,
 
     // Overridden from BrowserBubble::Delegate
     virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
-    virtual void BubbleLostFocus(BrowserBubble* bubble);
+    virtual void BubbleLostFocus(BrowserBubble* bubble,
+                                 gfx::NativeView focused_view);
 
     // Called to notify the PageAction that it should determine whether to be
     // visible or hidden. |contents| is the TabContents that is active, |url|
