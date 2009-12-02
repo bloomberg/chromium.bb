@@ -1,58 +1,69 @@
+vars = {
+  "chromium_trunk": "http://src.chromium.org/svn/trunk",
+  "native_client_trunk": "http://nativeclient.googlecode.com/svn/trunk",
+  "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
+  "gyp_rev": "760",
+  "gtest_rev": "267",
+  "tools_rev": "1054",
+  "python_rev": "22967",
+  "wix_rev": "153",
+}
+
 deps = {
   "tools/gyp":
-    "http://gyp.googlecode.com/svn/trunk@760",
+    "http://gyp.googlecode.com/svn/trunk@" + Var("gyp_rev"),
   "build":
-    "http://src.chromium.org/svn/trunk/src/build",
+    Var("chromium_trunk") + "/src/build",
   "site_scons":
-    "http://src.chromium.org/svn/trunk/src/site_scons",
+    Var("chromium_trunk") + "/src/site_scons",
   "testing/gtest":
-    "http://googletest.googlecode.com/svn/trunk@267",
+    "http://googletest.googlecode.com/svn/trunk@" + Var("gtest_rev"),
   "third_party/binutils":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/binutils@1005",
+    Var("native_client_trunk") + "/src/third_party/binutils@" + Var("tools_rev"),
   "third_party/bison":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/bison@1005",
+    Var("native_client_trunk") + "/src/third_party/bison@" + Var("tools_rev"),
   "third_party/flex":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/flex@1005",
+    Var("native_client_trunk") + "/src/third_party/flex@" + Var("tools_rev"),
   "third_party/gcc":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/gcc@1005",
+    Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
   "third_party/gdb":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/gdb@1005",
+    Var("native_client_trunk") + "/src/third_party/gdb@" + Var("tools_rev"),
   "third_party/glibc":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/glibc@1005",
+    Var("native_client_trunk") + "/src/third_party/glibc@" + Var("tools_rev"),
   "third_party/gmp":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/gmp@1005",
+    Var("native_client_trunk") + "/src/third_party/gmp@" + Var("tools_rev"),
   "third_party/llvm":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/llvm@1005",
+    Var("native_client_trunk") + "/src/third_party/llvm@" + Var("tools_rev"),
   "third_party/mpfr":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/mpfr@1005",
+    Var("native_client_trunk") + "/src/third_party/mpfr@" + Var("tools_rev"),
   "third_party/newlib":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/newlib@1005",
+    Var("native_client_trunk") + "/src/third_party/newlib@" + Var("tools_rev"),
   "third_party/scons":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/scons@1005",
+    Var("native_client_trunk") + "/src/third_party/scons@" + Var("tools_rev"),
   "third_party/sdl":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/sdl@1005",
+    Var("native_client_trunk") + "/src/third_party/sdl@" + Var("tools_rev"),
   "third_party/zlib":
-    "http://nativeclient.googlecode.com/svn/trunk/src/third_party/zlib@1005",
+    Var("native_client_trunk") + "/src/third_party/zlib@" + Var("tools_rev"),
   "native_client_sdk":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client_sdk",
+    Var("native_client_trunk") + "/src/native_client_sdk",
   # Includes needed for using Chromium NPAPI
   "third_party/npapi/bindings":
-    "http://src.chromium.org/svn/trunk/src/third_party/npapi/bindings",
+    Var("chromium_trunk") + "/src/third_party/npapi/bindings",
   "base":
-    "http://src.chromium.org/svn/trunk/src/base",
+    Var("chromium_trunk") + "/src/base",
   "chrome/common":
-    "http://src.chromium.org/svn/trunk/src/chrome/common",
+    Var("chromium_trunk") + "/src/chrome/common",
 }
 
 deps_os = {
   "win": {
     "third_party/python_24":
-      "http://src.chromium.org/svn/trunk/deps/third_party/python_24@22967",
+      Var("chromium_trunk") + "/deps/third_party/python_24@" + Var("python_rev"),
     "third_party/wix_2_0_4221":
-      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/wix_2_0_4221@153",
+      Var("o3d_trunk") + "/googleclient/third_party/wix_2_0_4221@" + Var("wix_rev"),
 # To be enabled after mingw-w64 is uploaded
 #    "third_party/mingw-w64/mingw/bin":
-#      "http://o3d.googlecode.com/svn/trunk/googleclient/third_party/mingw-w64/mingw/bin",
+#      Var("o3d_trunk") + "/googleclient/third_party/mingw-w64/mingw/bin",
   },
 }
 
