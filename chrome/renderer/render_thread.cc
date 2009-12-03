@@ -573,7 +573,7 @@ void RenderThread::IdleHandler() {
   if (!widget_count_ || hidden_widget_count_ < widget_count_)
     return;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(USE_TCMALLOC)
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
 
@@ -628,7 +628,7 @@ void RenderThread::OnPurgeMemory() {
   while (!v8::V8::IdleNotification()) {
   }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) && defined(USE_TCMALLOC)
   // Tell tcmalloc to release any free pages it's still holding.
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif

@@ -226,10 +226,6 @@ static void SetUpGLibLogHandler() {
 }
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_WIN)
-extern "C" int _set_new_mode(int);
-#endif
-
 // Register the invalid param handler and pure call handler to be able to
 // notify breakpad when it happens.
 void RegisterInvalidParamHandler() {

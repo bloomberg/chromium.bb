@@ -1069,13 +1069,17 @@
           'include_dirs': [
             'third_party/wtl/include',
           ],
-          'dependencies': [
-            '<(allocator_target)',
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '<(allocator_target)',
+              ],
+              'export_dependent_settings': [
+                '<(allocator_target)',
+              ],
+            }],
           ],
-          'export_dependent_settings': [
-            '<(allocator_target)',
-          ],
-        },],
+        }],
       ],
     },
     {
@@ -2748,7 +2752,6 @@
             'installer/mini_installer.gyp:*',
             'installer/installer.gyp:*',
             '../app/app.gyp:*',
-            '../base/allocator/allocator.gyp:*',
             '../base/base.gyp:*',
             '../ipc/ipc.gyp:*',
             '../media/media.gyp:*',
@@ -2788,6 +2791,11 @@
             '../v8/tools/gyp/v8.gyp:v8_shell',
           ],
           'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:*',
+              ],
+            }],
             ['chrome_frame_define==1', {
               'dependencies': [
                 '../chrome_frame/chrome_frame.gyp:*',
@@ -2922,8 +2930,12 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'dependencies': [
-                '<(allocator_target)',
+              'conditions': [
+                ['win_use_allocator_shim==1', {
+                  'dependencies': [
+                    '<(allocator_target)',
+                  ],
+                }],
               ],
               'configurations': {
                 'Debug': {

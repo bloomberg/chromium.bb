@@ -96,7 +96,6 @@
       ],
       'dependencies': [
         '<(DEPTH)/app/app.gyp:app_resources',
-        '<(DEPTH)/base/allocator/allocator.gyp:allocator',
         '<(DEPTH)/chrome/chrome.gyp:chrome_dll_version',
         '<(DEPTH)/chrome/chrome.gyp:crash_service',  # run time dependency
         '<(DEPTH)/chrome/installer/installer.gyp:installer_util_strings',
@@ -127,6 +126,13 @@
         '<(SHARED_INTERMEDIATE_DIR)/chrome/theme_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.rc',
+      ],
+      'conditions': [
+        ['win_use_allocator_shim==1', {
+          'dependencies': [
+             '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],
       'configurations': {
         'Debug': {
