@@ -29,7 +29,7 @@ def SendStack(stack, url='http://chromium-status.appspot.com/breakpad'):
       print('There was a failure while trying to send the stack trace. Too bad.')
 
 
-@atexit.register
+#@atexit.register
 def CheckForException():
   if 'test' in sys.modules['__main__'].__file__:
     # Probably a unit test.
