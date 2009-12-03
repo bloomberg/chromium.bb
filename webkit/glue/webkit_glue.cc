@@ -256,7 +256,7 @@ void ResetBeforeTestRun(WebView* view) {
   // Reset the main frame name since tests always expect it to be empty.  It
   // is normally not reset between page loads (even in IE and FF).
   if (frame && frame->tree())
-    frame->tree()->setName("");
+    frame->tree()->setName(WebCore::emptyAtom);
 
   // This is papering over b/850700.  But it passes a few more tests, so we'll
   // keep it for now.
