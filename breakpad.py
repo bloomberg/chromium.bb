@@ -10,30 +10,35 @@ import atexit
 import getpass
 import urllib
 import traceback
+import socket
 import sys
 
 
 def SendStack(stack, url='http://chromium-status.appspot.com/breakpad'):
   print 'Do you want to send a crash report [y/N]? ',
-  if sys.stdin.read(1).lower() == 'y':
-    try:
-      params = {
-          'args': sys.argv,
-          'stack': stack,
-          'user': getpass.getuser(),
-      }
-      request = urllib.urlopen(url, urllib.urlencode(params))
-      print request.read()
-      request.close()
-    except IOError:
-      print('There was a failure while trying to send the stack trace. Too bad.')
-
-
-#@atexit.register
-def CheckForException():
-  if 'test' in sys.modules['__main__'].__file__:
-    # Probably a unit test.
+  if sys.stdin.read(1).lower() != 'y':
     return
+  print 'Sending crash report ...'
+  try:
+    params = {
+        'args': sys.argv,
+        'stack': stack,
+        'user': getpass.getuser(),
+    }
+    request = urllib.urlopen(url, urllib.urlencode(params))
+    print request.read()
+    request.close()
+  except IOError:
+    print('There was a failure while trying to send the stack trace. Too bad.')
+
+
+def CheckForException():
   last_tb = getattr(sys, 'last_traceback', None)
   if last_tb:
     SendStack(''.join(traceback.format_tb(last_tb)))
+
+
+if (not 'test' in sys.modules['__main__'].__file__ and
+    socket.gethostname().endswith('.google.com')):
+  # Skip unit tests and we don't want anything from non-googler.
+  atexit.register(CheckForException)
