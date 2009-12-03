@@ -131,7 +131,7 @@ deps_os = {
     "src/third_party/pdfsqueeze":
       "http://pdfsqueeze.googlecode.com/svn/trunk@2",
     "src/third_party/lighttpd":
-      "/trunk/deps/third_party/lighttpd@33727",
+      "/trunk/deps/third_party/lighttpd@33737",
 
     "src/third_party/WebKit/WebKit/mac":
       Var("webkit_trunk") + "/WebKit/mac@" + Var("webkit_revision"),
