@@ -44,20 +44,9 @@ class BugReportComboBoxModel : public ComboboxModel {
  public:
   BugReportComboBoxModel() {}
 
-  enum BugType {
-    PAGE_WONT_LOAD = 0,
-    PAGE_LOOKS_ODD,
-    PHISHING_PAGE,
-    CANT_SIGN_IN,
-    CHROME_MISBEHAVES,
-    SOMETHING_MISSING,
-    BROWSER_CRASH,
-    OTHER_PROBLEM
-  };
-
   // ComboboxModel interface.
   virtual int GetItemCount() {
-    return OTHER_PROBLEM + 1;
+    return BugReportUtil::OTHER_PROBLEM + 1;
   }
 
   virtual std::wstring GetItemAt(int index) {
@@ -66,21 +55,21 @@ class BugReportComboBoxModel : public ComboboxModel {
 
   static std::wstring GetItemAtIndex(int index) {
     switch (index) {
-      case PAGE_WONT_LOAD:
+      case BugReportUtil::PAGE_WONT_LOAD:
         return l10n_util::GetString(IDS_BUGREPORT_PAGE_WONT_LOAD);
-      case PAGE_LOOKS_ODD:
+      case BugReportUtil::PAGE_LOOKS_ODD:
         return l10n_util::GetString(IDS_BUGREPORT_PAGE_LOOKS_ODD);
-      case PHISHING_PAGE:
+      case BugReportUtil::PHISHING_PAGE:
         return l10n_util::GetString(IDS_BUGREPORT_PHISHING_PAGE);
-      case CANT_SIGN_IN:
+      case BugReportUtil::CANT_SIGN_IN:
         return l10n_util::GetString(IDS_BUGREPORT_CANT_SIGN_IN);
-      case CHROME_MISBEHAVES:
+      case BugReportUtil::CHROME_MISBEHAVES:
         return l10n_util::GetString(IDS_BUGREPORT_CHROME_MISBEHAVES);
-      case SOMETHING_MISSING:
+      case BugReportUtil::SOMETHING_MISSING:
         return l10n_util::GetString(IDS_BUGREPORT_SOMETHING_MISSING);
-      case BROWSER_CRASH:
+      case BugReportUtil::BROWSER_CRASH:
         return l10n_util::GetString(IDS_BUGREPORT_BROWSER_CRASH);
-      case OTHER_PROBLEM:
+      case BugReportUtil::OTHER_PROBLEM:
         return l10n_util::GetString(IDS_BUGREPORT_OTHER_PROBLEM);
       default:
         NOTREACHED();
@@ -241,7 +230,7 @@ void BugReportView::ItemChanged(views::Combobox* combobox,
     return;
 
   problem_type_ = new_index;
-  bool is_phishing_report = new_index == BugReportComboBoxModel::PHISHING_PAGE;
+  bool is_phishing_report = new_index == BugReportUtil::PHISHING_PAGE;
 
   description_text_->SetEnabled(!is_phishing_report);
   description_text_->SetReadOnly(is_phishing_report);
@@ -272,7 +261,7 @@ bool BugReportView::HandleKeystroke(views::Textfield* sender,
 std::wstring BugReportView::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    if (problem_type_ == BugReportComboBoxModel::PHISHING_PAGE)
+    if (problem_type_ == BugReportUtil::PHISHING_PAGE)
       return l10n_util::GetString(IDS_BUGREPORT_SEND_PHISHING_REPORT);
     else
       return l10n_util::GetString(IDS_BUGREPORT_SEND_REPORT);
@@ -311,7 +300,7 @@ std::wstring BugReportView::GetWindowTitle() const {
 
 bool BugReportView::Accept() {
   if (IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK)) {
-    if (problem_type_ == BugReportComboBoxModel::PHISHING_PAGE)
+    if (problem_type_ == BugReportUtil::PHISHING_PAGE)
       BugReportUtil::ReportPhishing(tab_,
                                     WideToUTF8(page_url_text_->text()));
     else
