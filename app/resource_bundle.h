@@ -163,6 +163,11 @@ class ResourceBundle {
   // Free skia_images_.
   void FreeImages();
 
+#if defined(USE_X11)
+  // Free gdkPixbufs_.
+  void FreeGdkPixBufs();
+#endif
+
   // Try to load the main resources and the locale specific strings from an
   // external data module.
   void LoadResources(const std::wstring& pref_locale);
@@ -170,9 +175,15 @@ class ResourceBundle {
   // Initialize all the gfx::Font members if they haven't yet been initialized.
   void LoadFontsIfNecessary();
 
+#if defined(USE_BASE_DATA_PACK)
+  // Returns the full pathname of the main resources file to load.  May return
+  // an empty string if no main resources data files are found.
+  static FilePath GetResourcesFilePath();
+#endif
+
   // Returns the full pathname of the locale file to load.  May return an empty
   // string if no locale data files are found.
-  FilePath GetLocaleFilePath(const std::wstring& pref_locale);
+  static FilePath GetLocaleFilePath(const std::wstring& pref_locale);
 
   // Returns a handle to bytes from the resource |module|, without doing any
   // processing or interpretation of the resource. Returns whether we

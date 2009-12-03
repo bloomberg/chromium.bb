@@ -56,97 +56,36 @@ GdkPixbuf* LoadPixbuf(RefCountedStaticMemory* data, bool rtl_enabled) {
 
 }  // namespace
 
-ResourceBundle::~ResourceBundle() {
-  FreeImages();
-  // Free GdkPixbufs.
+void ResourceBundle::FreeGdkPixBufs() {
   for (GdkPixbufMap::iterator i = gdk_pixbufs_.begin();
        i != gdk_pixbufs_.end(); i++) {
     g_object_unref(i->second);
   }
   gdk_pixbufs_.clear();
-
-  delete locale_resources_data_;
-  locale_resources_data_ = NULL;
-  delete resources_data_;
-  resources_data_ = NULL;
-}
-
-void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
-  FilePath resources_data_path;
-  PathService::Get(base::DIR_EXE, &resources_data_path);
-  resources_data_path = resources_data_path.Append(
-      FILE_PATH_LITERAL("chrome.pak"));
-  DCHECK(resources_data_ == NULL) << "resource data already loaded!";
-  resources_data_ = new base::DataPack;
-  bool success = resources_data_->Load(resources_data_path);
-  DCHECK(success) << "failed to load chrome.pak";
-
-  DCHECK(locale_resources_data_ == NULL) << "locale data already loaded!";
-  const FilePath& locale_path = GetLocaleFilePath(pref_locale);
-  if (locale_path.value().empty()) {
-    // It's possible that there are no locale dlls found, in which case we just
-    // return.
-    NOTREACHED();
-    return;
-  }
-
-  locale_resources_data_ = new base::DataPack;
-  success = locale_resources_data_->Load(locale_path);
-  DCHECK(success) << "failed to load locale pak file";
-}
-
-FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
-  FilePath locale_path;
-  PathService::Get(app::DIR_LOCALES, &locale_path);
-
-  const std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
-  if (app_locale.empty())
-    return FilePath();
-
-  return locale_path.AppendASCII(app_locale + ".pak");
 }
 
 // static
-RefCountedStaticMemory* ResourceBundle::LoadResourceBytes(
-    DataHandle module, int resource_id) {
-  DCHECK(module);
-  return module->GetStaticMemory(resource_id);
+FilePath ResourceBundle::GetResourcesFilePath() {
+  FilePath resources_file_path;
+  PathService::Get(base::DIR_EXE, &resources_file_path);
+  if (resources_file_path.empty())
+    return resources_file_path;
+  return resources_file_path.Append(FILE_PATH_LITERAL("chrome.pak"));
 }
 
-base::StringPiece ResourceBundle::GetRawDataResource(int resource_id) {
-  DCHECK(resources_data_);
-  base::StringPiece data;
-  if (!resources_data_->GetStringPiece(resource_id, &data)) {
-    if (!locale_resources_data_->GetStringPiece(resource_id, &data)) {
-      return base::StringPiece();
-    }
-  }
-  return data;
-}
-
-string16 ResourceBundle::GetLocalizedString(int message_id) {
-  // If for some reason we were unable to load a resource dll, return an empty
-  // string (better than crashing).
-  if (!locale_resources_data_) {
-    LOG(WARNING) << "locale resources are not loaded";
-    return string16();
-  }
-
-  base::StringPiece data;
-  if (!locale_resources_data_->GetStringPiece(message_id, &data)) {
-    // Fall back on the main data pack (shouldn't be any strings here except in
-    // unittests).
-    data = GetRawDataResource(message_id);
-    if (data.empty()) {
-      NOTREACHED() << "unable to find resource: " << message_id;
-      return string16();
-    }
-  }
-
-  // Data pack encodes strings as UTF16.
-  string16 msg(reinterpret_cast<const char16*>(data.data()),
-               data.length() / 2);
-  return msg;
+// static
+FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
+  FilePath locale_file_path;
+  PathService::Get(app::DIR_LOCALES, &locale_file_path);
+  if (locale_file_path.empty())
+    return locale_file_path;
+  const std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+  if (app_locale.empty())
+    return FilePath();
+  locale_file_path = locale_file_path.AppendASCII(app_locale + ".pak");
+  if (!file_util::PathExists(locale_file_path))
+    return FilePath();
+  return locale_file_path;
 }
 
 GdkPixbuf* ResourceBundle::GetPixbufImpl(int resource_id, bool rtl_enabled) {

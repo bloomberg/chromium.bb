@@ -58,6 +58,7 @@ void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
       "unable to load generated resources";
 }
 
+// static
 FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
   FilePath locale_path;
   PathService::Get(app::DIR_LOCALES, &locale_path);
