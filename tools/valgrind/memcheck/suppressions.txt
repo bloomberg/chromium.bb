@@ -912,6 +912,7 @@
 {
    bug_20113
    Memcheck:Leak
+   ...
    fun:malloc
    fun:_ZN3WTF10fastMallocE*
    ...
