@@ -4,6 +4,8 @@
 
 #include "net/ftp/ftp_directory_listing_parsers.h"
 
+#include <ctype.h>
+
 #include "base/string_util.h"
 
 namespace {
@@ -12,10 +14,16 @@ bool LooksLikeUnixPermission(const string16& text) {
   if (text.length() != 3)
     return false;
 
+  // Meaning of the flags:
+  // r - file is readable
+  // w - file is writable
+  // x - file is executable
+  // s or S - setuid/setgid bit set
+  // t or T - "sticky" bit set
   return ((text[0] == 'r' || text[0] == '-') &&
           (text[1] == 'w' || text[1] == '-') &&
           (text[2] == 'x' || text[2] == 's' || text[2] == 'S' ||
-           text[2] == '-'));
+           text[2] == 't' || text[2] == 'T' || text[2] == '-'));
 }
 
 bool LooksLikeUnixPermissionsListing(const string16& text) {
@@ -40,6 +48,22 @@ bool IsStringNonNegativeInteger(const string16& text) {
   return number >= 0;
 }
 
+string16 GetStringPartAfterColumns(const string16& text, int columns) {
+  DCHECK_LE(1, columns);
+  int columns_so_far = 0;
+  size_t last = 0;
+  for (size_t i = 1; i < text.length(); ++i) {
+    if (!isspace(text[i - 1]) && isspace(text[i])) {
+      last = i;
+      if (++columns_so_far == columns)
+        break;
+    }
+  }
+  string16 result(text.substr(last));
+  TrimWhitespace(result, TRIM_ALL, &result);
+  return result;
+}
+
 bool ThreeLetterMonthToNumber(const string16& text, int* number) {
   const static char* months[] = { "jan", "feb", "mar", "apr", "may", "jun",
                                   "jul", "aug", "sep", "oct", "nov", "dec" };
@@ -51,12 +75,36 @@ bool ThreeLetterMonthToNumber(const string16& text, int* number) {
     }
   }
 
+  // Special cases for listings in German (other three-letter month
+  // abbreviations are the same as in English). Note that we don't need to do
+  // a case-insensitive compare here. Only "ls -l" style listings may use
+  // localized month names, and they will always start capitalized. Also,
+  // converting non-ASCII characters to lowercase would be more complicated.
+  if (text == UTF8ToUTF16("M\xc3\xa4r")) {
+    // The full month name is M-(a-umlaut)-rz (March), which is M-(a-umlaut)r
+    // when abbreviated.
+    *number = 3;
+    return true;
+  }
+  if (text == ASCIIToUTF16("Mai")) {
+    *number = 5;
+    return true;
+  }
+  if (text == ASCIIToUTF16("Okt")) {
+    *number = 10;
+    return true;
+  }
+  if (text == ASCIIToUTF16("Dez")) {
+    *number = 12;
+    return true;
+  }
+
   return false;
 }
 
 bool UnixDateListingToTime(const std::vector<string16>& columns,
                            base::Time* time) {
-  DCHECK_EQ(9U, columns.size());
+  DCHECK_LE(9U, columns.size());
 
   base::Time::Exploded time_exploded = { 0 };
 
@@ -289,25 +337,38 @@ FtpLsDirectoryListingParser::FtpLsDirectoryListingParser()
 }
 
 bool FtpLsDirectoryListingParser::ConsumeLine(const string16& line) {
-  // Allow empty lines only at the beginning of the listing. For example VMS
-  // systems in Unix emulation mode add an empty line before the first listing
-  // entry.
-  if (line.empty() && !received_nonempty_line_)
+  if (StartsWith(line, ASCIIToUTF16("total "), true) ||
+      StartsWith(line, ASCIIToUTF16("Gesamt "), true)) {
+    // Some FTP servers put a "total n" line at the beginning of the listing
+    // (n is an integer). Allow such a line, but only once, and only if it's
+    // the first non-empty line.
+    //
+    // Note: "Gesamt" is a German word for "total". The case is important here:
+    // for "ls -l" style listings, "total" will be lowercase, and Gesamt will be
+    // capitalized. This helps us distinguish that from a VMS-style listing,
+    // which would use "Total" (note the uppercase first letter).
+
+    if (received_nonempty_line_)
+      return false;
+
+    received_nonempty_line_ = true;
     return true;
+  }
+  if (line.empty() && !received_nonempty_line_) {
+    // Allow empty lines only at the beginning of the listing. For example VMS
+    // systems in Unix emulation mode add an empty line before the first listing
+    // entry.
+    return true;
+  }
   received_nonempty_line_ = true;
 
   std::vector<string16> columns;
   SplitString(CollapseWhitespace(line, false), ' ', &columns);
-  if (columns.size() == 11) {
-    // Check if it is a symlink.
-    if (!EqualsASCII(columns[9], "->"))
-      return false;
 
-    // Drop the symlink target from columns, we don't use it.
-    columns.resize(9);
-  }
-
-  if (columns.size() != 9)
+  // We may receive file names containing spaces, which can make the number of
+  // columns arbitrarily large. We will handle that later. For now just make
+  // sure we have all the columns that should normally be there.
+  if (columns.size() < 9)
     return false;
 
   if (!LooksLikeUnixPermissionsListing(columns[0]))
@@ -335,7 +396,13 @@ bool FtpLsDirectoryListingParser::ConsumeLine(const string16& line) {
   if (!UnixDateListingToTime(columns, &entry.last_modified))
     return false;
 
-  entry.name = columns[8];
+  entry.name = GetStringPartAfterColumns(line, 8);
+  if (entry.type == FtpDirectoryListingEntry::SYMLINK) {
+    string16::size_type pos = entry.name.rfind(ASCIIToUTF16(" -> "));
+    if (pos == string16::npos)
+      return false;
+    entry.name = entry.name.substr(0, pos);
+  }
 
   entries_.push(entry);
   return true;

@@ -71,6 +71,15 @@ TEST_F(FtpDirectoryListingParsersTest, Ls) {
     { "drwxrwsr-x    4 501      501          4096 Feb 20  2007 pub",
       net::FtpDirectoryListingEntry::DIRECTORY, "pub", -1,
       2007, 2, 20, 0, 0 },
+    { "drwxr-xr-x   4 (?)      (?)          4096 Apr  8  2007 jigdo",
+      net::FtpDirectoryListingEntry::DIRECTORY, "jigdo", -1,
+      2007, 4, 8, 0, 0 },
+    { "drwx-wx-wt  2 root  wheel  512 Jul  1 02:15 incoming",
+      net::FtpDirectoryListingEntry::DIRECTORY, "incoming", -1,
+      now_exploded.year, 7, 1, 2, 15 },
+    { "-rw-r--r-- 1 2 3 3447432 May 18  2009 Foo - Manual.pdf",
+      net::FtpDirectoryListingEntry::FILE, "Foo - Manual.pdf", 3447432,
+      2009, 5, 18, 0, 0 },
   };
   for (size_t i = 0; i < arraysize(good_cases); i++) {
     SCOPED_TRACE(StringPrintf("Test[%" PRIuS "]: %s", i, good_cases[i].input));

@@ -23,12 +23,18 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
     "dir-listing-ls-3",
     "dir-listing-ls-4",
     "dir-listing-ls-5",
+    "dir-listing-ls-6",
+    "dir-listing-ls-7",
+    "dir-listing-ls-8",
+    "dir-listing-ls-9",
+    "dir-listing-ls-10",
     "dir-listing-windows-1",
     "dir-listing-windows-2",
     "dir-listing-vms-1",
     "dir-listing-vms-2",
     "dir-listing-vms-3",
     "dir-listing-vms-4",
+    "dir-listing-vms-5",
   };
 
   FilePath test_dir;
