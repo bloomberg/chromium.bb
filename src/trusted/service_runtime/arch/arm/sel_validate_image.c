@@ -48,9 +48,8 @@ NaClErrorCode NaClValidateImage(struct NaClApp  *nap) {
   size_t                  regionsize;
 
   memp = nap->mem_start + NACL_TRAMPOLINE_END;
-  regionsize = nap->text_region_bytes;
-
-  endp = memp + regionsize;
+  endp = nap->mem_start + nap->static_text_end;
+  regionsize = endp - memp;
   if (endp < memp) {
     return LOAD_NO_MEMORY;
   }

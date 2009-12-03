@@ -77,7 +77,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 
   subret = NaClElfImageValidateProgramHeaders(image,
                                               nap->addr_bits,
-                                              &nap->text_region_bytes,
+                                              &nap->static_text_end,
                                               &max_vaddr);
   if (subret != LOAD_OK) {
     ret = subret;
@@ -96,12 +96,12 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   nap->entry_pt = NaClElfImageGetEntryPoint(image);
 
   NaClLog(2,
-          "text_region_bytes: %08x  "
+          "static_text_end: %08x  "
           "break_add: %08"PRIxPTR"  "
           "data_end: %08"PRIxPTR"  "
           "entry_pt: %08x  "
           "bundle_size: %08x\n",
-          nap->text_region_bytes,
+          nap->static_text_end,
           nap->break_addr,
           nap->data_end,
           nap->entry_pt,
@@ -133,7 +133,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
    * NaClLoadImage will fill with halt instructions the padding space
    * after the text.  For shm-backed dynamic text space, this extends
    * to the rodata; for non-shm-backed text space, this extend to the
-   * next page (and not allocation page).  text_region_bytes is
+   * next page (and not allocation page).  static_text_end is
    * updated to include the padding.
    */
   NaClLog(2, "Loading into memory\n");
@@ -195,7 +195,7 @@ int NaClAddrIsValidEntryPt(struct NaClApp *nap,
     return 0;
   }
 
-  return addr < NACL_TRAMPOLINE_END + nap->text_region_bytes;
+  return addr < nap->static_text_end;
 }
 
 /*

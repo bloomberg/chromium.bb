@@ -98,7 +98,7 @@ struct NaClApp {
   uintptr_t                 mem_start;
 
   /* only used for ET_EXEC:  for CS restriction */
-  uint32_t                  text_region_bytes;
+  uint32_t                  static_text_end;  /* relative to mem_start */
   /* ro after app starts. memsz from phdr */
 
   uintptr_t                 dynamic_text_start;

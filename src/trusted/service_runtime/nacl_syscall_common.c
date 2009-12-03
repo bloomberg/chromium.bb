@@ -940,17 +940,16 @@ int NaClSysCommonAddrRangeContainsExecutablePages_mu(struct NaClApp *nap,
    * as executable; but if so, we will have to revisit how this check
    * is implemented.
    *
-   * The sum NACL_TRAMPOLINE_END + nap->text_region_size is a
-   * multiple of 4K, the memory protection granularity.  Since this
-   * routine is used for checking whether memory map adjustments /
-   * allocations -- which has 64K granularity -- is okay, usraddr must
-   * be an allocation granularity value.  Our callers (as of this
-   * writing) does this, but we truncate it down to an allocation
-   * boundary to be sure.
+   * nap->static_text_end is a multiple of 4K, the memory protection
+   * granularity.  Since this routine is used for checking whether
+   * memory map adjustments / allocations -- which has 64K granularity
+   * -- is okay, usraddr must be an allocation granularity value.  Our
+   * callers (as of this writing) does this, but we truncate it down
+   * to an allocation boundary to be sure.
    */
   UNREFERENCED_PARAMETER(length);
   usraddr = NaClTruncAllocPage(usraddr);
-  return usraddr < NACL_TRAMPOLINE_END + nap->text_region_bytes;
+  return usraddr < nap->static_text_end;
 }
 
 
@@ -2008,8 +2007,7 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
   NaClSysCommonThreadSyscallEnter(natp);
 
   /* make sure that the thread start function is in the text region */
-  if ((uintptr_t) prog_ctr >= NACL_TRAMPOLINE_END +
-                              natp->nap->text_region_bytes) {
+  if ((uintptr_t) prog_ctr >= natp->nap->static_text_end) {
     NaClLog(LOG_ERROR, "bad pc start\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;

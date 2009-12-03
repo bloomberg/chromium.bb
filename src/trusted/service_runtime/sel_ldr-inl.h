@@ -119,5 +119,5 @@ static INLINE uintptr_t NaClSysToUser(struct NaClApp  *nap,
 }
 
 static INLINE uintptr_t NaClEndOfText(struct NaClApp *nap) {
-  return NACL_TRAMPOLINE_END + nap->text_region_bytes;
+  return nap->static_text_end;
 }

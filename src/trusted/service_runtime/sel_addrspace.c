@@ -106,8 +106,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
    * Immediately following that is the loaded text section.
    * These are collectively marked as PROT_READ | PROT_EXEC.
    */
-  region_size = NaClRoundPage(NACL_TRAMPOLINE_END - NACL_SYSCALL_START_ADDR
-                              + nap->text_region_bytes);
+  region_size = NaClRoundPage(nap->static_text_end - NACL_SYSCALL_START_ADDR);
   NaClLog(3,
           ("Trampoline/text region start 0x%08"PRIxPTR","
            " size 0x%08"PRIx32", end 0x%08"PRIxPTR"\n"),

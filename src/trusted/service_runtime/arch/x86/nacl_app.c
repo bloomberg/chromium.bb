@@ -45,7 +45,7 @@
 
 static uint16_t NaClAllocateSegmentForCodeRegion(struct NaClApp *nap) {
   uintptr_t code_start = nap->mem_start;
-  size_t    code_bytes = NACL_TRAMPOLINE_END + nap->text_region_bytes;
+  size_t    code_bytes = nap->static_text_end;
   size_t    code_pages = code_bytes >> NACL_PAGESHIFT;
 
   VCHECK((code_bytes & ((1 << NACL_PAGESHIFT) - 1)) == 0,

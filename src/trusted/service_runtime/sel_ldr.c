@@ -36,7 +36,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->stack_size = NACL_DEFAULT_STACK_MAX;
 
   nap->mem_start = 0;
-  nap->text_region_bytes = 0;
+  nap->static_text_end = 0;
   nap->dynamic_text_start = 0;
   nap->dynamic_text_end = 0;
   nap->rodata_start = 0;
@@ -343,7 +343,7 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
   gprintf(gp, "mem start addr:   0x%08"PRIxPTR"\n", nap->mem_start);
   /*           123456789012345678901234567890 */
 
-  gprintf(gp, "text_region_bytes: 0x%08"PRIxPTR"\n", nap->text_region_bytes);
+  gprintf(gp, "static_text_end:   0x%08"PRIxPTR"\n", nap->static_text_end);
   gprintf(gp, "end-of-text:       0x%08"PRIxPTR"\n", NaClEndOfText(nap));
   gprintf(gp, "rodata:            0x%08"PRIxPTR"\n", nap->rodata_start);
   gprintf(gp, "data:              0x%08"PRIxPTR"\n", nap->data_start);

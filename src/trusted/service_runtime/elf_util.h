@@ -24,7 +24,7 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image);
 NaClErrorCode NaClElfImageValidateProgramHeaders(
   struct NaClElfImage *image,
   uint32_t            addr_bits,
-  uint32_t            *text_region_bytes,
+  uint32_t            *static_text_end,
   uintptr_t           *max_vaddr);
 
 NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,

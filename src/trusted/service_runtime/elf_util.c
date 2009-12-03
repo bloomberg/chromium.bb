@@ -173,11 +173,11 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image) {
 }
 
 /* TODO(robertm): decouple validation from computation of
-                   text_region_bytes and max_vaddr */
+                   static_text_end and max_vaddr */
 NaClErrorCode NaClElfImageValidateProgramHeaders(
   struct NaClElfImage *image,
   uint32_t            addr_bits,
-  uint32_t            *text_region_bytes,
+  uint32_t            *static_text_end,
   uintptr_t           *max_vaddr) {
     /*
      * Scan phdrs and do sanity checks in-line.  Verify that the load
@@ -288,7 +288,7 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
             if (0 == php->p_memsz) {
               return LOAD_BAD_ELF_TEXT;
             }
-            *text_region_bytes = php->p_filesz;
+            *static_text_end = NACL_TRAMPOLINE_END + php->p_filesz;
             break;
           case PCA_IGNORE:
             break;
