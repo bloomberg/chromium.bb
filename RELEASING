@@ -1,0 +1,66 @@
+The release criteria for libdrm is essentially "if you need a release,
+make one".  There is no designated release engineer or maintainer.
+Anybody is free to make a release if there's a certain feature or bug
+fix they need in a released version of libdrm.
+
+When new ioctl definitions are merged into drm-next, we will add
+support to libdrm, at which point we typically create a new release.
+However, this is up to whoever is driving the feature in question.
+
+Follow these steps to release a new version of libdrm:
+
+  1) Ensure that there are no local, uncommitted/unpushed
+     modifications. You're probably in a good state if both "git diff
+     HEAD" and "git log master..origin/master" give no output.
+
+  3) Bump the version number in configure.ac. We seem to have settled
+     for 2.4.x as the versioning scheme for libdrm, so just bump the
+     micro version.
+
+  4) Run autoconf and then re-run ./configure so the build system
+     picks up the new version number.
+
+  5) Verify that the code passes "make distcheck".  libdrm is tricky
+     to distcheck since the test suite will need to become drm master.
+     This means that you need to run it outside X, that is, in text
+     mode (KMS or no KMS doesn't matter).
+
+     Running "make distcheck" should result in no warnings or errors
+     and end with a message of the form:
+
+	=============================================
+	libdrm-X.Y.Z archives ready for distribution:
+	libdrm-X.Y.Z.tar.gz
+	libdrm-X.Y.Z.tar.bz2
+	=============================================
+
+     Make sure that the version number reported by distcheck and in
+     the tarball names matches the number you bumped to in configure.ac.
+
+  6) Commit the configure.ac change and make an annotated tag for that
+     commit with the version number of the release as the name and a
+     message of "libdrm X.Y.Z".  For example, for the 2.4.16 release
+     the command is:
+
+	git tag -a 2.4.16 -m "libdrm 2.4.16"
+
+  7) Push the commit and tag by saying
+
+	git push --tags origin master
+
+     assuming the remote for the upstream libdrm repo is called origin.
+
+  6) Use the release.sh script from the xorg/util/modular repo to
+     upload the tarballs to the freedesktop.org download area and
+     create an annouce email template.  The script takes three
+     arguments: a "section", the previous tag and the new tag we just
+     created.  For 2.4.16 again, the command is:
+
+	../modular/release.sh libdrm 2.4.15 2.4.16
+
+     This copies the two tarballs to freedesktop.org and creates
+     libdrm-2.4.16.announce which has a detailed summary of the
+     changes, links to the tarballs, MD5 and SHA1 sums and pre-filled
+     out email headers.  Fill out the blank between the email headers
+     and the list of changes with a brief message of what changed or
+     what prompted this release.  Send out the email and you're done!
