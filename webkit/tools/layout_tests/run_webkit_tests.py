@@ -148,6 +148,7 @@ class TestRunner:
     self._test_files = set()
     self._test_files_list = None
     self._file_dir = path_utils.GetAbsolutePath(os.path.dirname(sys.argv[0]))
+    self._result_queue = Queue.Queue()
 
   def __del__(self):
     logging.info("flushing stdout")
@@ -464,6 +465,7 @@ class TestRunner:
 
       test_args, shell_args = self._GetTestShellArgs(i)
       thread = test_shell_thread.TestShellThread(filename_queue,
+                                                 self._result_queue,
                                                  test_shell_command,
                                                  test_types,
                                                  test_args,
@@ -511,7 +513,7 @@ class TestRunner:
           # suffices to not use an indefinite blocking join for it to
           # be interruptible by KeyboardInterrupt.
           thread.join(1.0)
-        failures.update(thread.GetFailures())
+          self._UpdateSummary(result_summary)
         thread_timings.append({ 'name': thread.getName(),
                                 'num_tests': thread.GetNumTests(),
                                 'total_time': thread.GetTotalTime()});
@@ -531,8 +533,9 @@ class TestRunner:
         # would be assumed to have passed.
         raise exception_info[0], exception_info[1], exception_info[2]
 
-    self._PopulateResultSummary(result_summary, failures)
-    return (failures, thread_timings, test_timings, individual_test_timings)
+    # Make sure we pick up any remaining tests.
+    self._UpdateSummary(result_summary)
+    return (thread_timings, test_timings, individual_test_timings)
 
   def Run(self, result_summary):
     """Run all our tests on all our test files.
@@ -585,7 +588,7 @@ class TestRunner:
       self._websocket_server.Start()
       # self._websocket_secure_server.Start()
 
-    original_failures, thread_timings, test_timings, individual_test_timings = (
+    thread_timings, test_timings, individual_test_timings = (
         self._RunTests(test_shell_binary, self._test_files_list,
                        result_summary))
     original_results_by_test, original_results_by_type = self._CompareResults(
@@ -604,10 +607,8 @@ class TestRunner:
       retries += 1
       retry_summary = ResultSummary(self._expectations,
                                     failed_results_by_test.keys())
-      final_failures = self._RunTests(test_shell_binary,
-                                      failed_results_by_test.keys(),
-                                      retry_summary)[0]
-      self._PopulateResultSummary(retry_summary, final_failures)
+      self._RunTests(test_shell_binary, failed_results_by_test.keys(),
+                     retry_summary)
       final_results_by_test, final_results_by_type = self._CompareResults(
           retry_summary)
       failed_results_by_test, failed_results_by_type = self._OnlyFailures(
@@ -664,20 +665,15 @@ class TestRunner:
     # bot red for those.
     return len(failed_results_by_test)
 
-  def _PopulateResultSummary(self, result_summary, failures):
-    """Populate ResultSummary object with test results.
-
-    Args:
-      result_summary: summary object to populate.
-      failures: dictionary mapping the test filename to a list of
-          TestFailure objects if the test failed.
-    """
-    for test, fail_list in failures.iteritems():
-      result = test_failures.DetermineResultType(fail_list)
-      result_summary.Add(test, fail_list, result)
-    for test in self._test_files:
-      if not test in failures:
-        result_summary.Add(test, [], test_expectations.PASS)
+  def _UpdateSummary(self, result_summary):
+    """Update the summary while running tests."""
+    while True:
+      try:
+        (test, fail_list) = self._result_queue.get_nowait()
+        result = test_failures.DetermineResultType(fail_list)
+        result_summary.Add(test, fail_list, result)
+      except Queue.Empty:
+        return
 
   def _CompareResults(self, result_summary):
     """Determine if the results in this test run are unexpected.
