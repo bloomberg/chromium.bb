@@ -7,7 +7,7 @@
 
 @implementation NSWindow (LocalStateAdditions)
 
-- (void)saveWindowPositionToPrefs:(PrefService*)prefs 
+- (void)saveWindowPositionToPrefs:(PrefService*)prefs
                          withPath:(const wchar_t*)path {
   DCHECK(prefs);
   // Save the origin of the window.

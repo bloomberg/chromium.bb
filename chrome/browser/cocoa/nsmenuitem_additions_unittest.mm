@@ -267,7 +267,7 @@ TEST(NSMenuItemAdditionsTest, TestFiresForKeyEvent) {
 
   // cmd-s with a serbian layout (just "s" produces something that looks a lot
   // like "c" in some fonts, but is actually \u0441. cmd-s activates a menu item
-  // with key equivalent "s", not "c")  
+  // with key equivalent "s", not "c")
   key = KeyEvent(0x100108, @"s", @"\u0441", 1);
   ExpectKeyFiresItem(key, MenuItem(@"s", 0x100000), false);
   ExpectKeyDoesntFireItem(key, MenuItem(@"c", 0x100000));
@@ -295,7 +295,7 @@ NSString* keyCodeToCharacter(NSUInteger keyCode,
       &actualStringLength,
       unicodeString);
   assert(err == noErr);
- 
+
   CFStringRef temp = CFStringCreateWithCharacters(
       kCFAllocatorDefault, unicodeString, 1);
   return [(NSString*)temp autorelease];

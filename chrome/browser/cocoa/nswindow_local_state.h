@@ -12,7 +12,7 @@ class PrefService;
 
 // Saves the window's origin into the given PrefService. Caller is responsible
 // for making sure |prefs| is not NULL.
-- (void)saveWindowPositionToPrefs:(PrefService*)prefs 
+- (void)saveWindowPositionToPrefs:(PrefService*)prefs
                          withPath:(const wchar_t*)path;
 
 - (void)restoreWindowPositionFromPrefs:(PrefService*)prefs

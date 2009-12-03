@@ -79,7 +79,7 @@
     return;
   }
 
-  // FIXME(viettrungluu): Silly fudge factors (same as in
+  // TODO(viettrungluu): Remove silly fudge factors (same ones as in
   // delayedmenu_button.mm).
   NSRect frame = [self convertRect:[self frame]
                           fromView:[self superview]];

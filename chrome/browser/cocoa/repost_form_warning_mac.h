@@ -44,7 +44,7 @@ class RepostFormWarningMac : public NotificationObserver {
   NavigationController* navigation_controller_;
 
   scoped_nsobject<NSAlert> alert_;
-  
+
   scoped_nsobject<RepostDelegate> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(RepostFormWarningMac);

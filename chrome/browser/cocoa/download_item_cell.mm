@@ -328,7 +328,7 @@ const int kCompleteAnimationDuration = 2.5;
     theme_.reset([[GTMTheme alloc] init]);
     NSColor* bgColor = [NSColor colorWithCalibratedRed:241/255.0
                                                  green:245/255.0
-                                                  blue:250/255.0 
+                                                  blue:250/255.0
                                                  alpha:77/255.0];
     NSColor* clickedColor = [NSColor colorWithCalibratedRed:239/255.0
                                                       green:245/255.0
@@ -340,7 +340,7 @@ const int kCompleteAnimationDuration = 2.5;
         initWithColors:[NSArray arrayWithObject:bgColor]]);
     scoped_nsobject<NSGradient> clickedGradient([[NSGradient alloc]
         initWithColors:[NSArray arrayWithObject:clickedColor]]);
- 
+
     GTMThemeState states[] = {
         GTMThemeStateActiveWindow, GTMThemeStateInactiveWindow
     };

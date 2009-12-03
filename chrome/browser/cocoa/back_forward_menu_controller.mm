@@ -43,7 +43,7 @@ using gfx::SkBitmapToNSImage;
 // Methods as delegate:
 
 // Called by backForwardMenu_ just before tracking begins.
-//TODO(viettrungluu@gmail.com): do anything for chapter stops (see model)?
+//TODO(viettrungluu): should we do anything for chapter stops (see model)?
 - (void)menuNeedsUpdate:(NSMenu*)menu {
   DCHECK(menu == backForwardMenu_);
 

@@ -102,10 +102,10 @@
     return;
   }
 
-  // FIXME(viettrungluu): We have some fudge factors below to make things line
-  // up (approximately). I wish I knew how to get rid of them. (Note that our
-  // view is flipped, and that frame should be in our coordinates.) The y/height
-  // is very odd, since it doesn't seem to respond to changes the way that it
+  // TODO(viettrungluu): We have some fudge factors below to make things line up
+  // (approximately). I wish I knew how to get rid of them. (Note that our view
+  // is flipped, and that frame should be in our coordinates.) The y/height is
+  // very odd, since it doesn't seem to respond to changes the way that it
   // should. I don't understand it.
   NSRect frame = [self convertRect:[self frame]
                           fromView:[self superview]];
