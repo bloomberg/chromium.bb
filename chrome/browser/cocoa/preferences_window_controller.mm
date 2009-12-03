@@ -48,9 +48,8 @@
 
 namespace {
 
-std::wstring GetNewTabUIURLString() {
-  std::wstring temp = UTF8ToWide(chrome::kChromeUINewTabURL);
-  return URLFixerUpper::FixupURL(temp, std::wstring());
+std::string GetNewTabUIURLString() {
+  return URLFixerUpper::FixupURL(chrome::kChromeUINewTabURL, std::string());
 }
 
 // Helper to remove all but the last view from the view heirarchy.
@@ -785,12 +784,12 @@ class PrefObserverBridge : public NotificationObserver,
 // observers not to fire, which is actually a good thing as we could end up in a
 // state where setting the homepage to an empty url would automatically reset
 // the prefs back to using the NTP, so we'd be never be able to change it.
-- (void)setHomepage:(const std::wstring&)homepage {
+- (void)setHomepage:(const std::string&)homepage {
   if (homepage.empty() || homepage == GetNewTabUIURLString()) {
     newTabPageIsHomePage_.SetValue(true);
   } else {
     newTabPageIsHomePage_.SetValue(false);
-    homepage_.SetValue(homepage);
+    homepage_.SetValue(UTF8ToWide(homepage));
   }
 }
 
@@ -993,9 +992,9 @@ enum { kHomepageNewTabPage, kHomepageURL };
   // to something valid ("http://google.com").
   if (!urlString)
     urlString = [NSString stringWithFormat:@"%s", chrome::kChromeUINewTabURL];
-  std::wstring temp = base::SysNSStringToWide(urlString);
-  std::wstring fixedString = URLFixerUpper::FixupURL(temp, std::wstring());
-  if (GURL(WideToUTF8(fixedString)).is_valid())
+  std::string temp = base::SysNSStringToUTF8(urlString);
+  std::string fixedString = URLFixerUpper::FixupURL(temp, std::string());
+  if (GURL(fixedString).is_valid())
     [self setHomepage:fixedString];
 }
 

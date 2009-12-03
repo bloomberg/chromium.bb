@@ -413,8 +413,7 @@ void BookmarkEditorView::Reset() {
   }
 }
 GURL BookmarkEditorView::GetInputURL() const {
-  std::wstring input = URLFixerUpper::FixupURL(url_tf_.text(), L"");
-  return GURL(input);
+  return GURL(URLFixerUpper::FixupURL(UTF16ToUTF8(url_tf_.text()), ""));
 }
 
 std::wstring BookmarkEditorView::GetInputTitle() const {

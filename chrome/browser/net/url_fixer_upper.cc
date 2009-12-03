@@ -578,10 +578,6 @@ wstring URLFixerUpper::SegmentURL(const wstring& text,
   UTF8PartsToWideParts(text_utf8, parts_utf8, parts);
   return UTF8ToWide(scheme_utf8);
 }
-wstring URLFixerUpper::FixupURL(const wstring& text,
-                                const wstring& desired_tld) {
-  return UTF8ToWide(FixupURL(WideToUTF8(text), WideToUTF8(desired_tld)));
-}
 wstring URLFixerUpper::FixupRelativeFile(const wstring& base_dir,
                                          const wstring& text) {
   return UTF8ToWide(FixupRelativeFile(FilePath::FromWStringHack(base_dir),

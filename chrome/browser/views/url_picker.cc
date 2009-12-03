@@ -313,5 +313,5 @@ void UrlPicker::OnDoubleClick() {
 }
 
 GURL UrlPicker::GetInputURL() const {
-  return GURL(URLFixerUpper::FixupURL(url_field_->text(), L""));
+  return GURL(URLFixerUpper::FixupURL(UTF16ToUTF8(url_field_->text()), ""));
 }

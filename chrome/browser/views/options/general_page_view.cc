@@ -502,10 +502,10 @@ void GeneralPageView::ContentsChanged(views::Textfield* sender,
     // If the text field contains a valid URL, sync it to prefs. We run it
     // through the fixer upper to allow input like "google.com" to be converted
     // to something valid ("http://google.com").
-    std::wstring url_string = URLFixerUpper::FixupURL(
-        homepage_use_url_textfield_->text(), std::wstring());
+    std::string url_string = URLFixerUpper::FixupURL(
+        UTF16ToUTF8(homepage_use_url_textfield_->text()), std::string());
     if (GURL(url_string).is_valid())
-      SetHomepage(url_string);
+      SetHomepage(UTF8ToWide(url_string));
   }
 }
 

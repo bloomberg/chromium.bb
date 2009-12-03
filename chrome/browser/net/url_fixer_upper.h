@@ -42,9 +42,6 @@ namespace URLFixerUpper {
   // instead of ".com").
   std::string FixupURL(const std::string& text,
                        const std::string& desired_tld);
-  // Deprecated temporary compatibility function.
-  std::wstring FixupURL(const std::wstring& text,
-                        const std::wstring& desired_tld);
 
   // Converts |text| to a fixed-up URL, allowing it to be a relative path on
   // the local filesystem.  Begin searching in |base_dir|; if empty, use the
