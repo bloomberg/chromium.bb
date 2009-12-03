@@ -440,13 +440,8 @@ void GoogleChromeDistribution::LaunchUserExperiment(
       // users eligible for this experiment are that have no client info.
       return;
     }
-    // User must be in the Great Britain as defined by googe_update language.
-    std::wstring lang;
-    if (!GoogleUpdateSettings::GetLanguage(&lang) || (lang != L"en-GB"))
-      return;
-    LOG(INFO) << "User in experiment locale";
     // Check browser usage inactivity by the age of the last-write time of the
-    // chrome user data directory. Ninety days is our trigger.
+    // chrome user data directory.
     std::wstring user_data_dir = installer::GetChromeUserDataPath();
     const int kSixtyDays = 60 * 24;
     int dir_age_hours = GetDirectoryWriteAgeInHours(user_data_dir.c_str());
