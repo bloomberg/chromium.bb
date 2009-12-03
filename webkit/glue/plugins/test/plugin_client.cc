@@ -117,7 +117,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
     new_test = new NPAPIClient::PluginArgumentsTest(instance,
       NPAPIClient::PluginClient::HostFunctions());
   } else if (test_name == "geturl" || test_name == "geturl_404_response" ||
-             test_name == "geturl_fail_write") {
+             test_name == "geturl_fail_write" ||
+             test_name == "plugin_referrer_test") {
     new_test = new NPAPIClient::PluginGetURLTest(instance,
       NPAPIClient::PluginClient::HostFunctions());
   } else if (test_name == "npobject_proxy") {

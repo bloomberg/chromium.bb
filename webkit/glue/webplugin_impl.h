@@ -29,6 +29,7 @@ class WebFrame;
 class WebPluginContainer;
 class WebURLResponse;
 class WebURLLoader;
+class WebURLRequest;
 }
 
 namespace webkit_glue {
@@ -109,6 +110,14 @@ class WebPluginImpl : public WebPlugin,
     GENERAL_FAILURE
   };
 
+  // Determines the referrer value sent along with outgoing HTTP requests
+  // issued by plugins.
+  enum Referrer {
+    PLUGIN_SRC,
+    DOCUMENT_URL,
+    NO_REFERRER
+  };
+
   // Given a download request, check if we need to route the output to a frame.
   // Returns ROUTED if the load is done and routed to a frame, NOT_ROUTED or
   // corresponding error codes otherwise.
@@ -116,7 +125,7 @@ class WebPluginImpl : public WebPlugin,
                              const char* target, unsigned int len,
                              const char* buf, bool is_file_data,
                              bool notify_needed, intptr_t notify_data,
-                             const char* url);
+                             const char* url, Referrer referrer_flag);
 
   // Cancels a pending request.
   void CancelResource(unsigned long id);
@@ -131,7 +140,7 @@ class WebPluginImpl : public WebPlugin,
                            WebPluginResourceClient* client,
                            const char* method, const char* buf, int buf_len,
                            const GURL& url, const char* range_info,
-                           bool use_plugin_src_as_referer);
+                           Referrer referrer_flag);
 
   gfx::Rect GetWindowClipRect(const gfx::Rect& rect);
 
@@ -211,7 +220,7 @@ class WebPluginImpl : public WebPlugin,
                                 const char* buf, bool is_file_data,
                                 bool notify, const char* url,
                                 intptr_t notify_data, bool popups_allowed,
-                                bool use_plugin_src_as_referrer);
+                                Referrer referrer_flag);
 
   // Tears down the existing plugin instance and creates a new plugin instance
   // to handle the response identified by the loader parameter.
@@ -231,6 +240,9 @@ class WebPluginImpl : public WebPlugin,
   // Helper functions
   WebPluginResourceClient* GetClientFromLoader(WebKit::WebURLLoader* loader);
   ClientInfo* GetClientInfoFromLoader(WebKit::WebURLLoader* loader);
+
+  // Helper function to set the referrer on the request passed in.
+  void SetReferrer(WebKit::WebURLRequest* request, Referrer referrer_flag);
 
   std::vector<ClientInfo> clients_;
 

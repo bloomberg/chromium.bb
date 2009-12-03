@@ -407,3 +407,18 @@ TEST_F(NPAPITester, NPObjectSetException) {
                 kTestCompleteCookie, kTestCompleteSuccess,
                 kShortWaitTimeout);
 }
+
+TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
+  if (UITest::in_process_renderer())
+    return;
+
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+               FilePath(FILE_PATH_LITERAL(
+                            "npapi/plugin_url_request_referrer_test.html"))));
+
+  NavigateToURL(url);
+
+  WaitForFinish("plugin_referrer_test", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, kShortWaitTimeout);
+}
+

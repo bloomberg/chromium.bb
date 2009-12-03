@@ -1,0 +1,26 @@
+<html>
+
+<head>
+<script src="npapi.js"></script>
+</head>
+
+
+<body>
+<div id="statusPanel" style="border: 1px solid red; width: 100%">
+Test running....
+</div>
+
+
+Plugin URL request referrer test<p>
+This test verifies that the HTTP referrer value is set correctly in HTTP<br>
+requests issued by plugins.
+
+<embed type="application/vnd.npapi-test"
+    ref_target="http://mock.http/npapi/plugin_ref_target_page.html"
+    name="plugin_referrer_test"
+    id="1"
+    mode="np_embed"
+    src="http://mock.http/dummy_plugin_referrer"
+>
+</body>
+</html>
