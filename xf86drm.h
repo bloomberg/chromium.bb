@@ -693,7 +693,7 @@ extern void drmMsg(const char *format, ...);
 extern int drmSetMaster(int fd);
 extern int drmDropMaster(int fd);
 
-#define DRM_EVENT_CONTEXT_VERSION 1
+#define DRM_EVENT_CONTEXT_VERSION 2
 
 typedef struct _drmEventContext {
 

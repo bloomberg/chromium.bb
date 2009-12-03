@@ -701,7 +701,7 @@ int drmHandleEvent(int fd, drmEventContextPtr evctx)
 					      U642VOID (vblank->user_data));
 			break;
 		case DRM_EVENT_FLIP_COMPLETE:
-			if (evctx->version < 1 ||
+			if (evctx->version < 2 ||
 			    evctx->page_flip_handler == NULL)
 				break;
 			vblank = (struct drm_event_vblank *) e;
