@@ -191,8 +191,6 @@ class PyWebSocket(http_server.Lighttpd):
       self._process.wait()
       self._process = None
 
-    # Wait a bit to make sure the ports are free'd up
-    time.sleep(2)
     if self._wsout:
       self._wsout.close()
       self._wsout = None
