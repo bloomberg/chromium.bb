@@ -7,7 +7,9 @@
 #include <shlguid.h>
 #include <shobjidl.h>
 
+#include "base/file_path.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/registry.h"
 #include "base/scoped_bstr_win.h"
 #include "base/scoped_comptr_win.h"
@@ -247,12 +249,32 @@ Bho* Bho::GetCurrentThreadBhoInstance() {
   return bho_current_thread_instance_.Pointer()->Get();
 }
 
+namespace {
+// Utility function that prevents the current module from ever being unloaded.
+void PinModule() {
+  FilePath module_path;
+  if (PathService::Get(base::FILE_MODULE, &module_path)) {
+    HMODULE unused;
+    if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN,
+                           module_path.value().c_str(), &unused)) {
+      NOTREACHED() << "Failed to pin module " << module_path.value().c_str();
+    }
+  } else {
+    NOTREACHED() << "Could not get module path.";
+  }
+}
+}  // namespace
+
 bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
   bool ret = false;
 
   _pAtlModule->m_csStaticDataInitAndTypeInfo.Lock();
 
   if (state_ == UNKNOWN) {
+    // If we're going to start patching things, we'd better make sure that we
+    // stick around for ever more:
+    PinModule();
+
     HttpNegotiatePatch::Initialize();
 
     bool patch_protocol = GetConfigBool(true, kPatchProtocols);

@@ -773,28 +773,7 @@ std::string UrlmonUrlRequest::GetHttpHeaders() const {
     return std::string();
   }
 
-  scoped_ptr<char> buffer;
-  DWORD size = 0;
-  DWORD flags = 0;
-  DWORD reserved = 0;
-  HRESULT hr = info->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF, NULL, &size,
-                               &flags, &reserved);
-  if (!size) {
-    DLOG(WARNING) << "Failed to query HTTP headers size. Error 0x%x" << hr;
-    return std::string();
-  }
-
-  buffer.reset(new char[size]);
-  memset(buffer.get(), 0, size);
-
-  hr = info->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF, buffer.get(),
-                       &size, &flags, &reserved);
-  if (FAILED(hr)) {
-    DLOG(WARNING) << "Failed to query HTTP headers. Error 0x%x" << hr;
-    return std::string();
-  }
-
-  return buffer.get();
+  return GetRawHttpHeaders(info);
 }
 
 void UrlmonUrlRequest::ReleaseBindings() {

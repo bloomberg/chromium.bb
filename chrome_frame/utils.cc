@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <shlobj.h>
+#include <wininet.h>
 
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/utils.h"
@@ -609,4 +610,28 @@ bool IsValidUrlScheme(const std::wstring& url, bool is_privileged) {
     return true;
 
   return false;
+}
+
+std::string GetRawHttpHeaders(IWinInetHttpInfo* info) {
+  DCHECK(info);
+
+  std::string buffer;
+
+  DWORD size = 0;
+  DWORD flags = 0;
+  DWORD reserved = 0;
+  HRESULT hr = info->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF, NULL, &size,
+                               &flags, &reserved);
+  if (!size) {
+    DLOG(WARNING) << "Failed to query HTTP headers size. Error: " << hr;
+  } else {
+    buffer.resize(size + 1);
+    hr = info->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF, &buffer[0],
+                         &size, &flags, &reserved);
+    if (FAILED(hr)) {
+      DLOG(WARNING) << "Failed to query HTTP headers. Error: " << hr;
+    }
+  }
+
+  return buffer;
 }

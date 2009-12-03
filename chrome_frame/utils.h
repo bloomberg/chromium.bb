@@ -7,6 +7,7 @@
 
 #include <atlbase.h>
 #include <string>
+#include <UrlMon.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -205,6 +206,10 @@ HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
 // Chrome. If this function returns false then we should fail the navigation.
 // When is_privileged is true, chrome extension URLs will be considered valid.
 bool IsValidUrlScheme(const std::wstring& url, bool is_privileged);
+
+// Returns the raw http headers for the current request given an
+// IWinInetHttpInfo pointer.
+std::string GetRawHttpHeaders(IWinInetHttpInfo* info);
 
 // See COM_INTERFACE_BLIND_DELEGATE below for details.
 template <class T>
