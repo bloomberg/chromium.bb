@@ -2127,9 +2127,9 @@ struct kernel_statfs {
                        size_t,         c)
   LSS_INLINE _syscall4(int, rt_sigprocmask,      int,         h,
                        const struct kernel_sigset_t*,  s,
-                       struct kernel_sigset_t*,        o, size_t, c);
+                       struct kernel_sigset_t*,        o, size_t, c)
   LSS_INLINE _syscall2(int, rt_sigsuspend,
-                       const struct kernel_sigset_t*, s,  size_t, c);
+                       const struct kernel_sigset_t*, s,  size_t, c)
   LSS_INLINE _syscall3(int,     sched_getaffinity,pid_t,      p,
                        unsigned int,   l, unsigned long *, m)
   LSS_INLINE _syscall3(int,     sched_setaffinity,pid_t,      p,
@@ -2769,7 +2769,7 @@ struct kernel_statfs {
                          const void *,   b, size_t, c, unsigned, o1,
                          long, o2)
     LSS_INLINE _syscall4(int, _readahead,          int,         f,
-                         unsigned,       o1, unsigned, o2, size_t, c);
+                         unsigned,       o1, unsigned, o2, size_t, c)
     /* We force 64bit-wide parameters onto the stack, then access each
      * 32-bit component individually. This guarantees that we build the
      * correct parameters independent of the native byte-order of the
