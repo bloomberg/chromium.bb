@@ -56,6 +56,7 @@ DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL),
       GTK_MESSAGE_QUESTION,
       GTK_BUTTONS_NONE,
+      "%s",
       warning_text.c_str());
   gtk_util::AddButtonToDialog(dialog,
       cancel_button_text.c_str(),
@@ -65,6 +66,7 @@ DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(Browser* browser)
       GTK_STOCK_OK, GTK_RESPONSE_ACCEPT);
 
   gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog),
+                                           "%s",
                                            explanation_text.c_str());
 
   g_signal_connect(dialog, "response", G_CALLBACK(OnResponse), this);
