@@ -33,6 +33,8 @@
 
 #if defined(OS_WIN)
 #include "base/registry.h"
+#elif defined(OS_MACOSX)
+#include "base/sys_string_conversions.h"
 #endif
 
 using base::RandDouble;
@@ -130,6 +132,20 @@ class DefaultUidProvider : public ExtensionUpdater::UidProvider {
            NOTREACHED();
          }
        }
+    }
+#elif defined(OS_MACOSX)
+    CFStringRef guid = (CFStringRef)
+        CFPreferencesCopyAppValue(CFSTR("GUID"),
+                                  CFSTR("com.google.Keystone.Agent"));
+    if (guid) {
+      std::string value = base::SysCFStringRefToUTF8(guid);
+      if (IsStringASCII(value) &&
+          value.length() <= UidProvider::maxUidLength) {
+        result = value;
+      } else {
+        NOTREACHED();
+      }
+      CFRelease(guid);
     }
 #endif
     return result;
