@@ -93,9 +93,12 @@ BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
+BUG24182 SLOW : LayoutTests/http/tests/appcache/cyrillic-uri.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/appcache/fail-on-update.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/appcache/fallback.html = PASS
+BUG24182 SLOW : LayoutTests/http/tests/appcache/offline-access.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/appcache/remove-cache.html = PASS
+BUG24182 SLOW : LayoutTests/http/tests/appcache/update-cache.html = PASS
 
 // --- collecting results for supported-xml-content-types.html ---
 // was slow, started to timeout
