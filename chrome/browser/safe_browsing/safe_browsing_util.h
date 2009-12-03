@@ -101,9 +101,6 @@ class SBEntry {
     SUB_FULL_HASH,  // 32 byte sub entry.
   };
 
-  // The minimum size of an SBEntry.
-  static const int kMinSize;
-
   // Creates a SBEntry with the necessary size for the given number of prefixes.
   // Caller ownes the object and needs to free it by calling Destroy.
   static SBEntry* Create(Type type, int prefix_count);
@@ -137,11 +134,14 @@ class SBEntry {
   // Returns true if the prefix/hash at the given index is equal to a
   // prefix/hash at another entry's index.  Works with all combinations of
   // add/subs as long as they're the same size.  Also checks chunk_ids.
-  bool PrefixesMatch(int index, const SBEntry* that, int that_index) const;
+  bool PrefixesMatch(int index, const SBEntry* other, int other_index) const;
 
   // Returns true if the add prefix/hash at the given index is equal to the
   // given full hash.
   bool AddPrefixMatches(int index, const SBFullHash& full_hash) const;
+
+  // Returns true if this is a prefix as opposed to a full hash.
+  bool IsPrefix() const;
 
   // Returns true if this is an add entry.
   bool IsAdd() const;
@@ -174,12 +174,6 @@ class SBEntry {
   void SetFullHashAt(int index, const SBFullHash& full_hash);
 
  private:
-  SBEntry();
-  ~SBEntry();
-
-  void set_prefix_count(int count) { data_.prefix_count = count; }
-  void set_type(Type type) { data_.type = type; }
-
   // Container for a sub prefix.
   struct SBSubPrefix {
     int add_chunk;
@@ -204,6 +198,12 @@ class SBEntry {
     Type type;
     int prefix_count;
   };
+
+  SBEntry();
+  ~SBEntry();
+
+  void set_prefix_count(int count) { data_.prefix_count = count; }
+  void set_type(Type type) { data_.type = type; }
 
   // The prefixes union must follow the fixed data so that they're contiguous
   // in memory.
@@ -280,6 +280,7 @@ extern const char kPhishingList[];
 // Converts between the SafeBrowsing list names and their enumerated value.
 // If the list names change, both of these methods must be updated.
 enum ListType {
+  INVALID = -1,
   MALWARE = 0,
   PHISH = 1,
 };

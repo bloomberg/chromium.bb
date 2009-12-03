@@ -433,7 +433,7 @@ bool SafeBrowsingProtocolParser::ReadPrefixes(
         return false;
     }
 
-    if (hash_len == sizeof(SBPrefix)) {
+    if (entry->IsPrefix()) {
       entry->SetPrefixAt(index_start + i,
                          *reinterpret_cast<const SBPrefix*>(*data));
     } else {
