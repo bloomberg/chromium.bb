@@ -78,6 +78,8 @@ import sys
 import urlparse
 import urllib
 
+import breakpad
+
 import gclient_scm
 import gclient_utils
 

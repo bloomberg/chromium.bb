@@ -9,6 +9,8 @@ import subprocess
 import sys
 import webbrowser
 
+import breakpad
+
 USAGE = """
 WARNING: Please use this tool in an empty directory
 (or at least one that you don't mind clobbering.)

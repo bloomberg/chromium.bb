@@ -7,6 +7,8 @@ import re
 import subprocess
 import sys
 
+import breakpad
+
 import presubmit_support
 import scm
 

@@ -18,6 +18,8 @@ import tempfile
 import upload
 import urllib2
 
+import breakpad
+
 # gcl now depends on gclient.
 from scm import SVN
 import gclient_utils
