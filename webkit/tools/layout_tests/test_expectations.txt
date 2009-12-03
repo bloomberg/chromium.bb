@@ -1226,12 +1226,11 @@ BUG10313 : LayoutTests/plugins/bindings-test.html = FAIL
 // question mark) in them
 BUG10315 WIN LINUX : LayoutTests/fast/encoding/invalid-UTF-8.html = FAIL
 
-// These fail because chromium's appcache is async but webkit's is not.
-BUG2844 SKIP : LayoutTests/http/tests/appcache/idempotent-update.html = FAIL
-BUG2844 SKIP : LayoutTests/http/tests/appcache/top-frame-2.html = FAIL
-
-// This test fails because there is no setAppCacheMaximumSize API yet.
-BUG2844 SKIP : LayoutTests/http/tests/appcache/max-size.html = FAIL
+// These require application cache to be enabled.  Skip the tests because
+// they're all timing out.  TODO(tc): Upstream changes to the test so they
+// fail quickly if window.applicationCache is undefined (then we don't have to
+// skip them).
+BUG2844 SKIP : LayoutTests/http/tests/appcache = TIMEOUT FAIL
 
 // V8 failures as a result of the WebKit merge.
 // http://code.google.com/p/v8/issues/detail?id=92
