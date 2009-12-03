@@ -145,12 +145,14 @@ class Coverage(object):
   def TrimTests(self):
     """Trim specific tests for each platform."""
     if self.IsWindows():
-      # special case for now to be fast
+      return
+      # Special case to be fast, as needed...
+      # TODO(jrg): remove
       inclusion = ['base_unittests']
       keep = []
       for test in self.tests:
         for i in inclusion:
-          if test.endswith(i):
+          if i in test:
             keep.append(test)
       self.tests = keep
       return
