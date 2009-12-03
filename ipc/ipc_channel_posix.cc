@@ -825,7 +825,16 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
         Close();
         return false;
       }
-      PLOG(ERROR) << "pipe error on " << fd_written;
+      PLOG(ERROR) << "pipe error on "
+                  << fd_written
+                  << " Currently writing message of size:"
+                  << msg->size()
+                  << " msgh.msg_iovlen:"
+                  << msgh.msg_iovlen
+                  << " amt_to_write: "
+                  << amt_to_write
+                  << " num FDs to send:"
+                  << msg->file_descriptor_set()->size();
       return false;
     }
 
