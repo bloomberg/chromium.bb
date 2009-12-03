@@ -113,7 +113,6 @@ GCC_VERSION=4.2.2
 GMP_VERSION=4.3.1
 MPFR_VERSION=2.4.1
 GDB_VERSION=6.8
-BUILD_FORTRAN=no
 
 ##################################################################
 # Copying the sources, applying patches, etc.
@@ -343,6 +342,27 @@ ifeq ($(PLATFORM), Cygwin17)
 	cp -af $(DESTDIR)$(SDKROOT)/nacl \
 	    BUILD/build-gcc-$(CROSSARCH)/nacl
 endif
+	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
+	cd BUILD/build-gcc-$(CROSSARCH) && \
+	  PATH=$(BUILDPATH) CC="gcc" \
+		CFLAGS="-Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
+		CFLAGS_FOR_TARGET="-O2 -g" \
+		CXXFLAGS_FOR_TARGET="-O2 -g" \
+	  LDFLAGS="-s" \
+	    ../gcc-$(GCC_VERSION)/configure \
+	      --prefix=$(SDKROOT) \
+				--with-newlib \
+	      --enable-threads=nacl \
+	      --enable-tls \
+	      --disable-libmudflap \
+	      --disable-decimal-float \
+	      --disable-libssp \
+	      --disable-shared \
+				--disable-libgomp \
+	      --disable-libstdcxx-pch \
+	      --enable-languages="c,c++,fortran" \
+	      --target=$(CROSSARCH) ; \
+	else \
 	cd BUILD/build-gcc-$(CROSSARCH) && \
 	  PATH=$(BUILDPATH) CC="gcc" \
 		CFLAGS="-Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
@@ -361,7 +381,8 @@ endif
 				--disable-libgomp \
 	      --disable-libstdcxx-pch \
 	      --enable-languages="c,c++" \
-	      --target=$(CROSSARCH)
+	      --target=$(CROSSARCH) ; \
+	fi
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-gcc-$(CROSSARCH) \
 		  CFLAGS_FOR_TARGET="-O2 -g" \
@@ -376,54 +397,6 @@ endif
 
 .PHONY: gcc
 gcc: BUILD/stamp-gcc
-
-##################################################################
-# gfortran:
-# Builds the gfortran that will be used to build applications.
-##################################################################
-BUILD/stamp-gfortran: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
-	rm -rf BUILD/build-gfortran-$(CROSSARCH)
-	mkdir BUILD/build-gfortran-$(CROSSARCH)
-ifeq ($(PLATFORM), Cygwin17)
-	mkdir BUILD/build-gfortran-$(CROSSARCH)/gcc
-	cp -af $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
-	    BUILD/build-gfortran-$(CROSSARCH)/gcc
-	cp -af $(DESTDIR)$(SDKROOT)/nacl \
-	    BUILD/build-gfortran-$(CROSSARCH)/nacl
-endif
-	cd BUILD/build-gfortran-$(CROSSARCH) && \
-	  PATH=$(BUILDPATH) CC="gcc" \
-		CFLAGS="-Dinhibit_libc -DNACL_ALIGN_BYTES=$(DEFAULT_ALIGN_BYTES) -DNACL_ALIGN_POW2=$(DEFAULT_ALIGN_POW2)" \
-		CFLAGS_FOR_TARGET="-O2 -g" \
-		CXXFLAGS_FOR_TARGET="-O2 -g" \
-	  LDFLAGS="-s" \
-	    ../gcc-$(GCC_VERSION)/configure \
-	      --prefix=$(SDKROOT) \
-				--with-newlib \
-	      --enable-threads=nacl \
-	      --enable-tls \
-	      --disable-libmudflap \
-	      --disable-decimal-float \
-	      --disable-libssp \
-	      --disable-shared \
-				--disable-libgomp \
-	      --disable-libstdcxx-pch \
-	      --enable-languages="c,c++,fortran" \
-	      --target=$(CROSSARCH)
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-gfortran-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
-	    all
-	PATH=$(BUILDPATH) \
-	  $(MAKE) -C BUILD/build-gfortran-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
-	    DESTDIR=$(DESTDIR) install
-	touch $@
-
-.PHONY: gfortran
-gfortran: BUILD/stamp-gfortran
 
 ##################################################################
 # gdb:
@@ -467,6 +440,13 @@ nc_threads: ALWAYS
 
 # The copy of the header files first is a hack.
 # TODO(sehr): fix the missing dependencies in the SDK library build.
+nacl_libraries_nocpp: ALWAYS
+	cd .. && \
+	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 MODE=nacl_extra_sdk extra_sdk_update_header nocpp=yes --verbose \
+	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 MODE=nacl_extra_sdk extra_sdk_update nocpp=yes --verbose
+
 nacl_libraries: ALWAYS
 	cd .. && \
 	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
@@ -492,17 +472,14 @@ build:
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-newlib
 	$(CYGWIN_DLL_COPY)
 	$(MAKE) -f $(THISMAKEFILE) nc_threads
+	# We need libnacl.a for gfortran, but we don't have a c++ yet
+	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gcc
 	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
 	esac
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
-ifeq ($(BUILD_FORTRAN), yes)
-	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
-	  $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gfortran ; \
-	fi
-endif
 ifeq ($(PLATFORM), Cygwin17)
 	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
 	  $(DESTDIR)$(SDKROOT)/libexec

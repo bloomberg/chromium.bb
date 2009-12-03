@@ -1063,13 +1063,20 @@ if nacl_extra_sdk_env.Bit('host_windows'):
 else:
   nacl_extra_sdk_env.Replace(ASFLAGS = '$CCFLAGS',)
 
+if not ARGUMENTS.get('nocpp'):
+  nacl_extra_sdk_env.Append(
+      BUILD_SCONSCRIPTS = [
+        ####  ALPHABETICALLY SORTED ####
+        'src/shared/imc/nacl.scons',
+        'src/shared/npruntime/nacl.scons',
+        ####  ALPHABETICALLY SORTED ####
+      ],
+  )
 
 nacl_extra_sdk_env.Append(
     BUILD_SCONSCRIPTS = [
       ####  ALPHABETICALLY SORTED ####
       'src/include/nacl/nacl.scons',
-      'src/shared/imc/nacl.scons',
-      'src/shared/npruntime/nacl.scons',
       'src/shared/srpc/nacl.scons',
       'src/untrusted/nacl/nacl.scons',
       'src/untrusted/pthread/nacl.scons',
