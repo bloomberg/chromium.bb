@@ -597,9 +597,10 @@ class TestExpectationsFile:
     expectations = set([PASS])
     options = []
     modifiers = []
-    for test in self._full_test_list:
-      if not test in self._test_list_paths:
-        self._AddTest(test, modifiers, expectations, options)
+    if self._full_test_list:
+      for test in self._full_test_list:
+        if not test in self._test_list_paths:
+          self._AddTest(test, modifiers, expectations, options)
 
   def _GetOptionsList(self, listString):
     return [part.strip().lower() for part in listString.strip().split(' ')]
