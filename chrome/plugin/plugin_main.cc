@@ -25,8 +25,6 @@
 #elif defined(OS_LINUX)
 #include "base/global_descriptors_posix.h"
 #include "ipc/ipc_descriptors.h"
-#elif defined(OS_MACOSX)
-#include "chrome/common/plugin_carbon_interpose_constants_mac.h"
 #endif
 
 #if defined(USE_LINUX_BREAKPAD)
@@ -36,36 +34,10 @@
 #if defined(OS_MACOSX)
 // Removes our Carbon library interposing from the environment so that it
 // doesn't carry into any processes that plugins might start.
-static void TrimInterposeEnvironment() {
-  const char* interpose_list =
-      getenv(plugin_interpose_strings::kDYLDInsertLibrariesKey);
-  if (!interpose_list) {
-    NOTREACHED() << "No interposing libraries set";
-    return;
-  }
+void TrimInterposeEnvironment();
 
-  // The list is a :-separated list of paths. Because we append our interpose
-  // library just before forking in plugin_process_host.cc, the only cases we
-  // need to handle are:
-  // 1) The whole string is "<kInterposeLibraryPath>", so just clear it, or
-  // 2) ":<kInterposeLibraryPath>" is the end of the string, so trim and re-set.
-  int suffix_offset = strlen(interpose_list) -
-      strlen(plugin_interpose_strings::kInterposeLibraryPath);
-  if (suffix_offset == 0 &&
-      strcmp(interpose_list,
-             plugin_interpose_strings::kInterposeLibraryPath) == 0) {
-    unsetenv(plugin_interpose_strings::kDYLDInsertLibrariesKey);
-  } else if (suffix_offset > 0 && interpose_list[suffix_offset - 1] == ':' &&
-             strcmp(interpose_list + suffix_offset,
-                    plugin_interpose_strings::kInterposeLibraryPath) == 0) {
-    std::string trimmed_list =
-        std::string(interpose_list).substr(0, suffix_offset - 1);
-    setenv(plugin_interpose_strings::kDYLDInsertLibrariesKey,
-           trimmed_list.c_str(), 1);
-  } else {
-    NOTREACHED() << "Missing Carbon interposing library";
-  }
-}
+// Initializes the global Cocoa application object.
+void InitializeChromeApplication();
 #endif  // OS_MACOSX
 
 // main() routine for running as the plugin process.
@@ -77,25 +49,15 @@ int PluginMain(const MainFunctionParams& parameters) {
 
   // The main thread of the plugin services UI.
 #if defined(OS_MACOSX)
-  // For Mac NPAPI plugins, we don't want a MessageLoop::TYPE_UI because
-  // that will cause events to be dispatched via the Cocoa responder chain.
-  // If the plugin creates its own windows with Carbon APIs (for example,
-  // full screen mode in Flash), those windows would not receive events.
-  // Instead, WebPluginDelegateImpl::OnNullEvent will dispatch any pending
-  // system events directly to the plugin.
-  MessageLoop main_message_loop(MessageLoop::TYPE_DEFAULT);
-#else
-  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
+  TrimInterposeEnvironment();
+  InitializeChromeApplication();
 #endif
+  MessageLoop main_message_loop(MessageLoop::TYPE_UI);
   std::wstring app_name = chrome::kBrowserAppName;
   PlatformThread::SetName(WideToASCII(app_name + L"_PluginMain").c_str());
 
   SystemMonitor system_monitor;
   HighResolutionTimerManager high_resolution_timer_manager;
-
-#if defined(OS_MACOSX)
-  TrimInterposeEnvironment();
-#endif
 
   const CommandLine& parsed_command_line = parameters.command_line_;
 
