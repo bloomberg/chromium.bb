@@ -114,8 +114,6 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
       return None
     if (not os.path.exists(cached_file) or
         os.stat(cached_file).st_mtime > max_age):
-      local_dir = os.path.dirname(os.path.abspath(filename))
-      local_base = os.path.basename(filename)
       dir_info = SVN.CaptureInfo(".")
       repo_root = dir_info["Repository Root"]
       if use_root:
@@ -124,23 +122,9 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
         url_path = dir_info["URL"]
       content = ""
       while True:
-        # First, look for a locally modified version of the file if we can.
-        r = ""
-        if not use_root:
-          local_path = os.path.join(local_dir, local_base)
-          r = SVN.CaptureStatus((local_path,))
-        rc = -1
-        if r:
-          status = r[0][0]
-          rc = 0
-        if not rc and status[0] in ('A','M'):
-          content = ReadFile(local_path)
-          rc = 0
-        else:
-          # Look in the repository if we didn't find something local.
-          svn_path = url_path + "/" + filename
-          content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
-
+        # Look in the repository at the current level for the file.
+        svn_path = url_path + "/" + filename
+        content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
         if not rc:
           # Exit the loop if the file was found. Override content.
           break
@@ -151,7 +135,6 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
           break
         # Go up one level to try again.
         url_path = os.path.dirname(url_path)
-        local_dir = os.path.dirname(local_dir)
       # Write a cached version even if there isn't a file, so we don't try to
       # fetch it each time.
       WriteFile(cached_file, content)
