@@ -600,11 +600,10 @@ ProfileImpl::ProfileImpl(const FilePath& path)
   // ~/Library/Caches/Google/Chrome/MyProfileName.
   //
   // TODO(akalin): Come up with unit tests for this.
-  // TODO(akalin): Use for Linux, too?
   if (!HasACacheSubdir(path_)) {
     FilePath app_data_path, user_cache_path;
     if (PathService::Get(base::DIR_APP_DATA, &app_data_path) &&
-        PathService::Get(base::DIR_CACHE, &user_cache_path) &&
+        PathService::Get(base::DIR_USER_CACHE, &user_cache_path) &&
         app_data_path.AppendRelativePath(path_, &user_cache_path)) {
       base_cache_path_ = user_cache_path;
     }
