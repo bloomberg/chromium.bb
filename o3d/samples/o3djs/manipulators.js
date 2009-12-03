@@ -511,11 +511,11 @@ o3djs.manipulators.Manager = function(pack,
   this.manipsByClientId = [];
 
   /**
-   * Presumably we need a TransformInfo for the parentTransform.
+   * A PickManager to manage picking for the manipulators.
    * @type {!o3djs.picking.TransformInfo}
    */
-  this.transformInfo =
-      o3djs.picking.createTransformInfo(this.parentTransform, null);
+  this.pickManager =
+      o3djs.picking.createPickManager(this.parentTransform);
 
   /**
    * The currently-highlighted manipulator.
@@ -614,7 +614,7 @@ o3djs.manipulators.Manager.prototype.handleMouse_ = function(x,
                                                              width,
                                                              height,
                                                              func) {
-  this.transformInfo.update();
+  this.pickManager.update();
 
   // Create the world ray
   var worldRay =
@@ -623,7 +623,7 @@ o3djs.manipulators.Manager.prototype.handleMouse_ = function(x,
                                              width, height);
 
   // Pick against all of the manipulators' geometry
-  var pickResult = this.transformInfo.pick(worldRay);
+  var pickResult = this.pickManager.pick(worldRay);
   if (pickResult != null) {
     // Find which manipulator we picked.
     // NOTE this assumes some things about the transform graph
@@ -1159,8 +1159,9 @@ o3djs.manipulators.Translate1 = function(manager) {
 
   this.addShapes_([ shape ]);
 
-  this.transformInfo = o3djs.picking.createTransformInfo(this.getTransform(),
-                                                         manager.transformInfo);
+  this.transformInfo = manager.pickManager.createTransformInfo(
+      this.getTransform(),
+      manager.transformInfo);
 
   /**
    * A parameter added to our transform to be able to change the
@@ -1270,8 +1271,9 @@ o3djs.manipulators.Translate2 = function(manager) {
 
   this.addShapes_([ shape ]);
 
-  this.transformInfo = o3djs.picking.createTransformInfo(this.getTransform(),
-                                                         manager.transformInfo);
+  this.transformInfo = manager.pickManager.createTransformInfo(
+      this.getTransform(),
+      manager.transformInfo);
 
   /**
    * A parameter added to our transform to be able to change the
@@ -1383,8 +1385,9 @@ o3djs.manipulators.Rotate1 = function(manager) {
 
   this.addShapes_([ shape ]);
 
-  this.transformInfo = o3djs.picking.createTransformInfo(this.getTransform(),
-                                                         manager.transformInfo);
+  this.transformInfo = manager.pickManager.createTransformInfo(
+      this.getTransform(),
+      manager.transformInfo);
 
   /**
    * A parameter added to our transform to be able to change the

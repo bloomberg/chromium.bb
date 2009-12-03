@@ -81,7 +81,7 @@ var g_math;
 var g_client;
 var g_pack;
 var g_viewInfo;
-var g_treeInfo;  // information about the transform graph.
+var g_pickManager;  // information about the transform graph.
 var g_pickInfoElem;
 var g_debugHelper;
 var g_debugLineGroup;
@@ -93,11 +93,10 @@ var g_highlightShape;
 var g_finished = false;  // for selenium testing.
 
 function updateInfo() {
-  if (!g_treeInfo) {
-    g_treeInfo = o3djs.picking.createTransformInfo(g_client.root,
-                                                        null);
+  if (!g_pickManager) {
+    g_pickManager = o3djs.picking.createPickManager(g_client.root);
   }
-  g_treeInfo.update();
+  g_pickManager.update();
 }
 
 function unSelectAll() {
@@ -108,6 +107,8 @@ function unSelectAll() {
     o3djs.shape.deleteDuplicateShape(g_highlightShape, g_pack);
     g_highlightShape = null;
     g_selectedInfo = null;
+    // Turn off the debug line.
+    g_debugLine.setVisible(false);
   }
 }
 
@@ -152,9 +153,9 @@ function pick(e) {
   // transform graph and only pick against that subgraph.
   // Even better, make a separate transform graph with only cubes on it to
   // represent the animals and use that instead of the actual animals.
-  g_treeInfo.update();
+  g_pickManager.update();
 
-  var pickInfo = g_treeInfo.pick(worldRay);
+  var pickInfo = g_pickManager.pick(worldRay);
   if (pickInfo) {
     select(pickInfo);
     g_pickInfoElem.innerHTML = pickInfo.shapeInfo.shape.name;
@@ -188,7 +189,6 @@ function pick(e) {
     g_debugLine.setVisible(true);
     g_debugLine.setEndPoints(worldPosition, normalSpot);
   } else {
-    g_debugLine.setVisible(false);
     g_pickInfoElem.innerHTML = '--nothing--';
   }
 }
@@ -198,9 +198,9 @@ function onrender(renderEvent) {
   g_flashTimer = g_flashTimer % 0.5;
   if (g_selectedInfo) {
     if (g_flashTimer < 0.25) {
-      g_highlightMaterial.getParam('color').value = [1, 1, 1, 1];
+      g_highlightMaterial.getParam('emissive').value = [1, 1, 1, 1];
     } else {
-      g_highlightMaterial.getParam('color').value = [0, 0, 0, 1];
+      g_highlightMaterial.getParam('emissive').value = [0, 0, 0, 1];
     }
   }
 }
@@ -249,7 +249,7 @@ function loadScene(pack, fileName, parent) {
     // Update our info
     updateInfo();
 
-    g_treeInfo.dump('');
+    g_pickManager.dump('');
 
     g_finished = true;  // for selenium testing.
   }
@@ -292,6 +292,7 @@ function initStep2(clientElements) {
   g_debugLineGroup = g_debugHelper.createDebugLineGroup(g_client.root);
   g_debugLine = g_debugLineGroup.addLine();
   g_debugLine.setColor([0,1,0,1]);
+  g_debugLine.setVisible(false);
 
   // Create a material for highlighting.
   g_highlightMaterial = o3djs.material.createConstantMaterial(

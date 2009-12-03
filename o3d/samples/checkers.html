@@ -74,7 +74,7 @@ var g_thisRot;
 var g_lastRot;
 var g_zoomFactor;
 var g_dragging = false;
-var g_treeInfo;  // information about the transform graph.
+var g_pickManager;  // information about the transform graph.
 var g_statusInfoElem;
 
 // Animation globals.
@@ -354,7 +354,7 @@ function createCheckersBoard() {
   }
 
   // Update our tree info.
-  updateTreeInfo();
+  updateg_pickManager();
 
   // update status.
   updateStatus('Game starting... RED moves first.', true);
@@ -391,11 +391,11 @@ function checkAndUpdateKing(x, y) {
 /**
  * Updates the transform tree info.
  */
-function updateTreeInfo() {
-  if (!g_treeInfo) {
-    g_treeInfo = o3djs.picking.createTransformInfo(g_client.root, null);
+function updateg_pickManager() {
+  if (!g_pickManager) {
+    g_pickManager = o3djs.picking.createPickManager(g_client.root);
   }
-  g_treeInfo.update();
+  g_pickManager.update();
 }
 
 /**
@@ -577,7 +577,7 @@ function detectSelection(e) {
                                                         g_client.height);
 
   // check if we picked any objects.
-  var pickInfo = g_treeInfo.pick(worldRay);
+  var pickInfo = g_pickManager.pick(worldRay);
   if (pickInfo) {
     // get the parent transform of this object.
     var pickTrans = pickInfo.shapeInfo.parent.transform;
@@ -774,7 +774,7 @@ function moveSelectedPiece(elapsedTime) {
     g_moveTimer = 0;
 
     // update the tree info.
-    updateTreeInfo();
+    updateg_pickManager();
 
     // check if current player can jump again.
     if (wasJump && pieceCanJump(g_board[x1][y1])) {

@@ -40,7 +40,7 @@ function MoveTool(context, root) {
   this.lastMove = null;
   this.context = context;
   this.root = root;
-  this.transformInfo = o3djs.picking.createTransformInfo(root, null);
+  this.pickManager = g_pickManager;
   this.movePlane = [0.0, 0.0, 1.0];
   this.downPoint = null;
   this.selectedObject = null;
@@ -51,7 +51,7 @@ function MoveTool(context, root) {
  *                  (the same node as would be found by our picking code)
  */
 MoveTool.prototype.initializeWithShape = function(transform_node) {
-  this.transformInfo.update();
+  this.pickManager.update();
   translation = g_math.matrix4.getTranslation(
       transform_node.getUpdatedWorldMatrix());
   this.downPoint = translation;
@@ -65,9 +65,9 @@ MoveTool.prototype.handleMouseDown = function(e) {
                                                         this.context,
                                                         g_client.width,
                                                         g_client.height);
-  this.transformInfo.update();
+  this.pickManager.update();
   this.selectedObject = null;
-  var pickInfo = this.transformInfo.pick(worldRay);
+  var pickInfo = this.pickManager.pick(worldRay);
   if (pickInfo) {
     pickedObject = pickInfo.shapeInfo.parent;
     while (pickedObject.parent != null &&

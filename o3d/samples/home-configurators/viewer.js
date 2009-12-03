@@ -54,6 +54,7 @@ var g_lastRot;
 var g_pack = null;
 var g_mainPack;
 var g_viewInfo;
+var g_pickManager;
 var g_lightPosParam;
 var g_currentTool = null;
 var g_floorplanRoot = null;
@@ -427,6 +428,8 @@ function loadFile(context, path) {
 
     // Put the object we're loading on the floorplan.
     new_object_root = g_floorplanRoot;
+
+    g_pickManager = o3djs.picking.createPickManager(g_placedModelsRoot);
 
     // Create our set of tools that can be activated.
     // Note: Currently only the Delete, Move, Rotate, Orbit, Pan and Zoom

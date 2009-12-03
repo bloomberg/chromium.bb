@@ -38,7 +38,7 @@
 function DeleteTool(context, root) {
   this.context = context;
   this.root = root;
-  this.transformInfo = o3djs.picking.createTransformInfo(root, null);
+  this.pickManager = g_pickManager;
   this.selectedObject = null;
 }
 
@@ -48,8 +48,8 @@ DeleteTool.prototype.getPickedObject = function(e) {
                                                         this.context,
                                                         g_client.width,
                                                         g_client.height);
-  this.transformInfo.update();
-  var pickInfo = this.transformInfo.pick(worldRay);
+  this.pickManager.update();
+  var pickInfo = this.pickManager.pick(worldRay);
   var picked_object_root = null;
   if (pickInfo) {
     pickedObject = pickInfo.shapeInfo.parent;

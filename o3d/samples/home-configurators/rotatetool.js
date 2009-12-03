@@ -42,7 +42,7 @@ function RotateTool(context, root) {
   this.context = context;
   this.selectedObject = null;
   this.root = root;
-  this.transformInfo = o3djs.picking.createTransformInfo(root, null);
+  this.pickManager = g_pickManager;
   this.rotateAxis = [0.0, 0.0, 1.0];
   this.rotateCenter = null;
 }
@@ -56,8 +56,8 @@ RotateTool.prototype.handleMouseDown = function(e) {
                                                         this.context,
                                                         window_width,
                                                         window_height);
-  this.transformInfo.update();
-  var pickInfo = this.transformInfo.pick(worldRay);
+  this.pickManager.update();
+  var pickInfo = this.pickManager.pick(worldRay);
   if (pickInfo) {
     pickedObject = pickInfo.shapeInfo.parent;
     while (pickedObject.parent != null &&
