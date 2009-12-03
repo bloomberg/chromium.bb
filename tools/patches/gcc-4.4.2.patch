@@ -232,8 +232,8 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386-protos.h gcc-4.4.2/gcc/config/i386
  extern int memory_address_length (rtx addr);
  extern void x86_output_aligned_bss (FILE *, tree, const char *,
 diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
---- gcc-4.4.2.orig/gcc/config/i386/i386.c	2009-09-21 16:22:40.000000000 +0200
-+++ gcc-4.4.2/gcc/config/i386/i386.c	2009-11-26 18:14:17.000000000 +0100
+--- gcc-4.4.2.orig/gcc/config/i386/i386.c	2009-09-21 15:22:40.000000000 +0100
++++ gcc-4.4.2/gcc/config/i386/i386.c	2009-12-03 13:08:51.000000000 +0000
 @@ -7452,6 +7452,8 @@
  	  (*targetm.asm_out.unique_section) (decl, 0);
  	  switch_to_section (get_named_section (decl, NULL, 0));
@@ -513,90 +513,63 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
 -      if (GET_MODE (index) != Pmode)
 +      /* Allow 32bit addr in 64bit mode - usually makes no sense except in LEA */
 +      if (GET_MODE (index) != SImode && (!TARGET_64BIT || GET_MODE (index) != DImode))
- 	{
--	  reason = "index is not in Pmode";
++	{
 +	  reason = "index is not in proper mode";
 +	  goto report_error;
 +	}
 +
 +      if (base && GET_MODE (base) != GET_MODE (index))
-+	{
+ 	{
+-	  reason = "index is not in Pmode";
 +	  reason = "index and base have different modes";
  	  goto report_error;
  	}
  
-@@ -9529,7 +9678,7 @@
-     new_rtx = addr;
-   else if (TARGET_64BIT
- 	   && ix86_cmodel != CM_SMALL_PIC
--	   && gotoff_operand (addr, Pmode))
-+	   && gotoff_operand (addr, ptr_mode))
-     {
-       rtx tmpreg;
-       /* This symbol may be referenced via a displacement from the PIC
-@@ -9541,28 +9690,28 @@
- 	addr = XEXP (addr, 0);
-       if (GET_CODE (addr) == PLUS)
- 	  {
--            new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)),
-+            new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, XEXP (addr, 0)),
- 				      UNSPEC_GOTOFF);
--	    new_rtx = gen_rtx_PLUS (Pmode, new_rtx, XEXP (addr, 1));
-+	    new_rtx = gen_rtx_PLUS (ptr_mode, new_rtx, XEXP (addr, 1));
- 	  }
- 	else
--          new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
--      new_rtx = gen_rtx_CONST (Pmode, new_rtx);
-+          new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
-+      new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
-       if (!reg)
--        tmpreg = gen_reg_rtx (Pmode);
-+        tmpreg = gen_reg_rtx (ptr_mode);
-       else
- 	tmpreg = reg;
-       emit_move_insn (tmpreg, new_rtx);
+@@ -9514,7 +9663,9 @@
+   rtx addr = orig;
+   rtx new_rtx = orig;
+   rtx base;
++  enum machine_mode orig_mode;
  
-       if (reg != 0)
- 	{
--	  new_rtx = expand_simple_binop (Pmode, PLUS, reg, pic_offset_table_rtx,
-+	  new_rtx = expand_simple_binop (ptr_mode, PLUS, reg, pic_offset_table_rtx,
- 					 tmpreg, 1, OPTAB_DIRECT);
- 	  new_rtx = reg;
++  orig_mode = GET_MODE(orig);
+ #if TARGET_MACHO
+   if (TARGET_MACHO && !TARGET_64BIT)
+     {
+@@ -9562,7 +9713,7 @@
  	}
--      else new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
-+      else new_rtx = gen_rtx_PLUS (ptr_mode, pic_offset_table_rtx, tmpreg);
+       else new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, tmpreg);
      }
 -  else if (!TARGET_64BIT && gotoff_operand (addr, Pmode))
-+  else if (!TARGET_64BIT && gotoff_operand (addr, ptr_mode))
++  else if (!TARGET_64BIT && gotoff_operand (addr, orig_mode))
      {
        /* This symbol may be referenced via a displacement from the PIC
  	 base address (@GOTOFF).  */
-@@ -9573,14 +9722,14 @@
+@@ -9573,14 +9724,14 @@
  	addr = XEXP (addr, 0);
        if (GET_CODE (addr) == PLUS)
  	  {
 -            new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, XEXP (addr, 0)),
-+            new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, XEXP (addr, 0)),
++            new_rtx = gen_rtx_UNSPEC (orig_mode, gen_rtvec (1, XEXP (addr, 0)),
  				      UNSPEC_GOTOFF);
 -	    new_rtx = gen_rtx_PLUS (Pmode, new_rtx, XEXP (addr, 1));
-+	    new_rtx = gen_rtx_PLUS (ptr_mode, new_rtx, XEXP (addr, 1));
++	    new_rtx = gen_rtx_PLUS (orig_mode, new_rtx, XEXP (addr, 1));
  	  }
  	else
 -          new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
 -      new_rtx = gen_rtx_CONST (Pmode, new_rtx);
 -      new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
-+          new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
-+      new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
-+      new_rtx = gen_rtx_PLUS (ptr_mode, pic_offset_table_rtx, new_rtx);
++          new_rtx = gen_rtx_UNSPEC (orig_mode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
++      new_rtx = gen_rtx_CONST (orig_mode, new_rtx);
++      new_rtx = gen_rtx_PLUS (orig_mode, pic_offset_table_rtx, new_rtx);
  
        if (reg != 0)
  	{
-@@ -9602,19 +9751,19 @@
+@@ -9602,19 +9753,19 @@
                && SYMBOL_REF_DLLIMPORT_P (XEXP (XEXP (addr, 0), 0)))
              {
                rtx t = legitimize_dllimport_symbol (XEXP (XEXP (addr, 0), 0), true);
 -              return gen_rtx_PLUS (Pmode, t, XEXP (XEXP (addr, 0), 1));
-+              return gen_rtx_PLUS (ptr_mode, t, XEXP (XEXP (addr, 0), 1));
++              return gen_rtx_PLUS (orig_mode, t, XEXP (XEXP (addr, 0), 1));
              }
          }
  
@@ -605,55 +578,55 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
 -	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
 -	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
 -	  new_rtx = gen_const_mem (Pmode, new_rtx);
-+	  new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
-+	  new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
-+	  new_rtx = gen_const_mem (ptr_mode, new_rtx);
++	  new_rtx = gen_rtx_UNSPEC (orig_mode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
++	  new_rtx = gen_rtx_CONST (orig_mode, new_rtx);
++	  new_rtx = gen_const_mem (orig_mode, new_rtx);
  	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
  
  	  if (reg == 0)
 -	    reg = gen_reg_rtx (Pmode);
-+	    reg = gen_reg_rtx (ptr_mode);
++	    reg = gen_reg_rtx (orig_mode);
  	  /* Use directly gen_movsi, otherwise the address is loaded
  	     into register for CSE.  We don't want to CSE this addresses,
  	     instead we CSE addresses from the GOT table, so skip this.  */
-@@ -9628,16 +9777,16 @@
+@@ -9628,16 +9779,16 @@
  
  	  if (reload_in_progress)
  	    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 -	  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
 -	  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
-+	  new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, addr), UNSPEC_GOT);
-+	  new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
++	  new_rtx = gen_rtx_UNSPEC (orig_mode, gen_rtvec (1, addr), UNSPEC_GOT);
++	  new_rtx = gen_rtx_CONST (orig_mode, new_rtx);
  	  if (TARGET_64BIT)
 -	    new_rtx = force_reg (Pmode, new_rtx);
 -	  new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
 -	  new_rtx = gen_const_mem (Pmode, new_rtx);
-+	    new_rtx = force_reg (ptr_mode, new_rtx);
-+	  new_rtx = gen_rtx_PLUS (ptr_mode, pic_offset_table_rtx, new_rtx);
-+	  new_rtx = gen_const_mem (ptr_mode, new_rtx);
++	    new_rtx = force_reg (orig_mode, new_rtx);
++	  new_rtx = gen_rtx_PLUS (orig_mode, pic_offset_table_rtx, new_rtx);
++	  new_rtx = gen_const_mem (orig_mode, new_rtx);
  	  set_mem_alias_set (new_rtx, ix86_GOT_alias_set ());
  
  	  if (reg == 0)
 -	    reg = gen_reg_rtx (Pmode);
-+	    reg = gen_reg_rtx (ptr_mode);
++	    reg = gen_reg_rtx (orig_mode);
  	  emit_move_insn (reg, new_rtx);
  	  new_rtx = reg;
  	}
-@@ -9653,7 +9802,7 @@
+@@ -9653,7 +9804,7 @@
  	      new_rtx = reg;
  	    }
  	  else
 -	    new_rtx = force_reg (Pmode, addr);
-+	    new_rtx = force_reg (ptr_mode, addr);
++	    new_rtx = force_reg (orig_mode, addr);
  	}
        else if (GET_CODE (addr) == CONST)
  	{
-@@ -9674,18 +9823,18 @@
+@@ -9674,18 +9825,18 @@
  
  	  /* Check first to see if this is a constant offset from a @GOTOFF
  	     symbol reference.  */
 -	  if (gotoff_operand (op0, Pmode)
-+	  if (gotoff_operand (op0, ptr_mode)
++	  if (gotoff_operand (op0, orig_mode)
  	      && CONST_INT_P (op1))
  	    {
  	      if (!TARGET_64BIT)
@@ -661,64 +634,44 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  		  if (reload_in_progress)
  		    df_set_regs_ever_live (PIC_OFFSET_TABLE_REGNUM, true);
 -		  new_rtx = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0),
-+		  new_rtx = gen_rtx_UNSPEC (ptr_mode, gen_rtvec (1, op0),
++		  new_rtx = gen_rtx_UNSPEC (orig_mode, gen_rtvec (1, op0),
  					    UNSPEC_GOTOFF);
 -		  new_rtx = gen_rtx_PLUS (Pmode, new_rtx, op1);
 -		  new_rtx = gen_rtx_CONST (Pmode, new_rtx);
 -		  new_rtx = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new_rtx);
-+		  new_rtx = gen_rtx_PLUS (ptr_mode, new_rtx, op1);
-+		  new_rtx = gen_rtx_CONST (ptr_mode, new_rtx);
-+		  new_rtx = gen_rtx_PLUS (ptr_mode, pic_offset_table_rtx, new_rtx);
++		  new_rtx = gen_rtx_PLUS (orig_mode, new_rtx, op1);
++		  new_rtx = gen_rtx_CONST (orig_mode, new_rtx);
++		  new_rtx = gen_rtx_PLUS (orig_mode, pic_offset_table_rtx, new_rtx);
  
  		  if (reg != 0)
  		    {
-@@ -9698,9 +9847,9 @@
+@@ -9698,9 +9849,9 @@
  		  if (INTVAL (op1) < -16*1024*1024
  		      || INTVAL (op1) >= 16*1024*1024)
  		    {
 -		      if (!x86_64_immediate_operand (op1, Pmode))
 -			op1 = force_reg (Pmode, op1);
 -		      new_rtx = gen_rtx_PLUS (Pmode, force_reg (Pmode, op0), op1);
-+		      if (!x86_64_immediate_operand (op1, ptr_mode))
-+			op1 = force_reg (ptr_mode, op1);
-+		      new_rtx = gen_rtx_PLUS (ptr_mode, force_reg (ptr_mode, op0), op1);
++		      if (!x86_64_immediate_operand (op1, orig_mode))
++			op1 = force_reg (orig_mode, op1);
++		      new_rtx = gen_rtx_PLUS (orig_mode, force_reg (orig_mode, op0), op1);
  		    }
  		}
  	    }
-@@ -9716,10 +9865,10 @@
+@@ -9716,10 +9867,10 @@
  		{
  		  if (GET_CODE (new_rtx) == PLUS && CONSTANT_P (XEXP (new_rtx, 1)))
  		    {
 -		      base = gen_rtx_PLUS (Pmode, base, XEXP (new_rtx, 0));
-+		      base = gen_rtx_PLUS (ptr_mode, base, XEXP (new_rtx, 0));
++		      base = gen_rtx_PLUS (orig_mode, base, XEXP (new_rtx, 0));
  		      new_rtx = XEXP (new_rtx, 1);
  		    }
 -		  new_rtx = gen_rtx_PLUS (Pmode, base, new_rtx);
-+		  new_rtx = gen_rtx_PLUS (ptr_mode, base, new_rtx);
++		  new_rtx = gen_rtx_PLUS (orig_mode, base, new_rtx);
  		}
  	    }
  	}
-@@ -9886,7 +10035,18 @@
-       if (TARGET_64BIT || TARGET_ANY_GNU_TLS)
- 	{
- 	  base = get_thread_pointer (for_mov || !TARGET_TLS_DIRECT_SEG_REFS);
--	  return gen_rtx_PLUS (Pmode, base, off);
-+          /* The following line of code prevents GCC from crashes while
-+           * compiling TLS access.
-+           * TODO(pasko): generate TLS access according to NaCl ABI.
-+	   */
-+	  if (Pmode != ptr_mode)
-+	    {
-+	      return gen_rtx_SUBREG(ptr_mode, gen_rtx_PLUS (Pmode, base, off), 0);
-+	    }
-+	  else
-+	    {
-+	      return gen_rtx_PLUS (Pmode, base, off);
-+          }
- 	}
-       else
- 	{
-@@ -10166,7 +10319,21 @@
+@@ -10166,7 +10317,21 @@
  	  rtx temp = gen_reg_rtx (Pmode);
  	  rtx val  = force_operand (XEXP (x, 1), temp);
  	  if (val != temp)
@@ -740,7 +693,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
  	  XEXP (x, 1) = temp;
  	  return x;
-@@ -10177,7 +10344,21 @@
+@@ -10177,7 +10342,21 @@
  	  rtx temp = gen_reg_rtx (Pmode);
  	  rtx val  = force_operand (XEXP (x, 0), temp);
  	  if (val != temp)
@@ -762,7 +715,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
  
  	  XEXP (x, 0) = temp;
  	  return x;
-@@ -11437,9 +11618,23 @@
+@@ -11437,9 +11616,23 @@
        break;
      case SEG_FS:
      case SEG_GS:
@@ -787,38 +740,84 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
        break;
      default:
        gcc_unreachable ();
-@@ -12372,7 +12567,7 @@
+@@ -12329,6 +12522,7 @@
+ {
+   rtx op0, op1;
+   enum tls_model model;
++  enum machine_mode op_mode;
+ 
+   op0 = operands[0];
+   op1 = operands[1];
+@@ -12365,14 +12559,28 @@
+       if (tmp)
+ 	{
+ 	  tmp = force_operand (tmp, NULL);
+-	  tmp = expand_simple_binop (Pmode, PLUS, tmp, addend,
+-				     op0, 1, OPTAB_DIRECT);
+-	  if (tmp == op0)
+-	    return;
++	  if (Pmode == ptr_mode)
++	    {
++	      tmp = expand_simple_binop (ptr_mode, PLUS, tmp, addend,
++				         op0, 1, OPTAB_DIRECT);
++	      if (tmp == op0)
++		return;
++	    }
++	   else
++	     {
++	       /* Lower the size of the constant ref operand in non-Pmode */
++	       tmp = gen_rtx_UNSPEC(ptr_mode, gen_rtvec(1, symbol), UNSPEC_TPOFF);
++	       tmp = gen_rtx_CONST(ptr_mode, tmp);
++	       tmp = gen_reg_rtx(ptr_mode);
++	       tmp = expand_simple_binop (ptr_mode, PLUS, tmp, addend,
++					  op0, 1, OPTAB_DIRECT);
++	       op1 = tmp;
++	     }
  	}
      }
  
 -  if (flag_pic && mode == Pmode && symbolic_operand (op1, Pmode))
-+  if (flag_pic && mode == ptr_mode && symbolic_operand (op1, ptr_mode))
++  op_mode = GET_MODE(op0);
++  if (flag_pic && mode == op_mode && symbolic_operand (op1, op_mode))
      {
        if (TARGET_MACHO && !TARGET_64BIT)
  	{
-@@ -12381,8 +12576,8 @@
+@@ -12381,8 +12589,8 @@
  	    {
  	      rtx temp = ((reload_in_progress
  			   || ((op0 && REG_P (op0))
 -			       && mode == Pmode))
 -			  ? op0 : gen_reg_rtx (Pmode));
-+			       && mode == ptr_mode))
-+			  ? op0 : gen_reg_rtx (ptr_mode));
++			       && mode == op_mode))
++			  ? op0 : gen_reg_rtx (op_mode));
  	      op1 = machopic_indirect_data_reference (op1, temp);
  	      op1 = machopic_legitimize_pic_address (op1, mode,
  						     temp == op1 ? 0 : temp);
-@@ -12396,8 +12591,8 @@
+@@ -12396,8 +12604,8 @@
        else
  	{
  	  if (MEM_P (op0))
 -	    op1 = force_reg (Pmode, op1);
 -	  else if (!TARGET_64BIT || !x86_64_movabs_operand (op1, Pmode))
-+	    op1 = force_reg (ptr_mode, op1);
-+	  else if (!TARGET_64BIT || !x86_64_movabs_operand (op1, ptr_mode))
++	    op1 = force_reg (op_mode, op1);
++	  else if (!TARGET_64BIT || !x86_64_movabs_operand (op1, op_mode))
  	    {
  	      rtx reg = !can_create_pseudo_p () ? op0 : NULL_RTX;
  	      op1 = legitimize_pic_address (op1, reg);
-@@ -19048,7 +19243,7 @@
+@@ -12447,6 +12655,12 @@
+ 	}
+     }
+ 
++  /* NaCl uses mixed 32bit/64bit mode and sometimes we need to move
++     32bit register to 64bit register at this point. x86-64 ABI
++     clears top half of 64bit register in all mov instructions thus
++     we can just use subregister move here. */
++  if (TARGET_64BIT && GET_MODE (op0) == SImode && GET_MODE(op1) == DImode)
++    op1 = simplify_gen_subreg (SImode, op1, DImode, 0);
+   emit_insn (gen_rtx_SET (VOIDmode, op0, op1));
+ }
+ 
+@@ -19048,7 +19262,7 @@
  {
    int i;
  
@@ -827,7 +826,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
      {
        rtx set = PATTERN (insn);
  
-@@ -19057,7 +19252,10 @@
+@@ -19057,7 +19271,10 @@
  
        gcc_assert (GET_CODE (set) == SET);
  
