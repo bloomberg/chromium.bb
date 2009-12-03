@@ -135,14 +135,8 @@ class TestRunner:
     else:
       self._http_server = http_server.Lighttpd(options.results_directory)
 
-    self._shardable_directories = ['chrome', 'LayoutTests', 'pending']
-
-    # Experiment with more sharding on the V8-Lastest builders. Turn this on
-    # for all builders if the increased flakiness is sufficiently manageable.
-    if options.builder_name and options.builder_name.find("(V8-Latest)") != -1:
-      self._shardable_directories.append('fast')
-      self._shardable_directories.append('http')
-      self._shardable_directories.append('tests')
+    self._shardable_directories = ['chrome', 'LayoutTests', 'pending', 'fast',
+        'http', 'tests']
 
     self._websocket_server = websocket_server.PyWebSocket(
         options.results_directory)
