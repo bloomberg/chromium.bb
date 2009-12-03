@@ -93,12 +93,7 @@ BUG24182 SLOW DEBUG : LayoutTests/editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
-BUG24182 SLOW : LayoutTests/http/tests/appcache/cyrillic-uri.html = PASS
-BUG24182 SLOW : LayoutTests/http/tests/appcache/fail-on-update.html = PASS
 BUG24182 SLOW : LayoutTests/http/tests/appcache/fallback.html = PASS
-BUG24182 SLOW : LayoutTests/http/tests/appcache/offline-access.html = PASS
-BUG24182 SLOW : LayoutTests/http/tests/appcache/remove-cache.html = PASS
-BUG24182 SLOW : LayoutTests/http/tests/appcache/update-cache.html = PASS
 
 // --- collecting results for supported-xml-content-types.html ---
 // was slow, started to timeout
@@ -2977,6 +2972,14 @@ BUG28317 : LayoutTests/fast/css/color-correction-untagged-images.html = FAIL
 // now. Once we decide on one or the other, then we can address these tests.
 BUG_OJAN MAC : LayoutTests/http/tests/loading/text-content-type-with-binary-extension.html = TEXT PASS
 BUG_OJAN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = TEXT PASS
+
+// These tests time out *and* are slow. The test should be fixed to not timeout,
+// then should be marked as SLOW/PASS.
+BUG2844 : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
+BUG2844 : LayoutTests/http/tests/appcache/update-cache.html = TIMEOUT PASS
+BUG2844 : LayoutTests/http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
+BUG2844 : LayoutTests/http/tests/appcache/fail-on-update.html = TIMEOUT PASS
+BUG2844 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS
 
 // Failures in TestShell that resulted from Mac plugin/focus fixes in r32631.
 BUG28380 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = CRASH FAIL
