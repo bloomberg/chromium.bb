@@ -9,20 +9,17 @@
 #endif
 
 #include "app/gfx/insets.h"
-#if defined(OS_WIN)
-#include "app/win_util.h"
-#include "base/win_util.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "base/keyboard_code_conversion_gtk.h"
-#endif
 #include "base/keyboard_codes.h"
 #include "base/string_util.h"
+#include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 #include "views/widget/widget.h"
 
-#if defined(OS_WIN)
+#if defined(OS_LINUX)
+#include "base/keyboard_code_conversion_gtk.h"
+#elif defined(OS_WIN)
+#include "app/win_util.h"
+#include "base/win_util.h"
 // TODO(beng): this should be removed when the OS_WIN hack from
 // ViewHierarchyChanged is removed.
 #include "views/controls/textfield/native_textfield_win.h"
@@ -223,6 +220,11 @@ bool Textfield::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
     return true;
 #endif
   return false;
+}
+
+void Textfield::PaintFocusBorder(gfx::Canvas* canvas) {
+  if (NativeViewHost::kRenderNativeControlFocus)
+    View::PaintFocusBorder(canvas);
 }
 
 void Textfield::SetEnabled(bool enabled) {

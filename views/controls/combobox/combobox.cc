@@ -8,6 +8,7 @@
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "views/controls/combobox/native_combobox_wrapper.h"
+#include "views/controls/native/native_view_host.h"
 
 namespace views {
 
@@ -77,6 +78,11 @@ bool Combobox::SkipDefaultKeyEventProcessing(const KeyEvent& e) {
     return false;
   }
   return native_wrapper_ && native_wrapper_->IsDropdownOpen();
+}
+
+void Combobox::PaintFocusBorder(gfx::Canvas* canvas) {
+  if (NativeViewHost::kRenderNativeControlFocus)
+    View::PaintFocusBorder(canvas);
 }
 
 void Combobox::Focus() {

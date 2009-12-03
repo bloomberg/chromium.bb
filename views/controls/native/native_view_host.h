@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef VIEWS_CONTROLS_NATIVE_VIEW_HOST_H_
-#define VIEWS_CONTROLS_NATIVE_VIEW_HOST_H_
+#ifndef VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_H_
+#define VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_H_
 
 #include <string>
 
@@ -22,6 +22,9 @@ class NativeViewHost : public View {
  public:
   // The NativeViewHost's class name.
   static const char kViewClassName[];
+
+  // Should views render the focus when on native controls?
+  static const bool kRenderNativeControlFocus;
 
   NativeViewHost();
   virtual ~NativeViewHost();
@@ -100,4 +103,4 @@ class NativeViewHost : public View {
 
 }  // namespace views
 
-#endif  // VIEWS_CONTROLS_NATIVE_VIEW_HOST_H_
+#endif  // VIEWS_CONTROLS_NATIVE_NATIVE_VIEW_HOST_H_

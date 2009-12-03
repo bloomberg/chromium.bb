@@ -172,6 +172,8 @@ class TableView2 : public View, public TableModelObserver {
                                const gfx::Rect& current);
   virtual void Layout();
 
+  virtual void PaintFocusBorder(gfx::Canvas* canvas);
+
   // Used by tests.
   virtual gfx::NativeView GetTestingHandle();
 

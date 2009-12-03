@@ -71,6 +71,7 @@ class Slider : public View {
   virtual gfx::Size GetPreferredSize();
   virtual bool IsFocusable() const;
   virtual void SetEnabled(bool enabled);
+  virtual void PaintFocusBorder(gfx::Canvas* canvas);
 
  protected:
   virtual void Focus();

@@ -6,6 +6,7 @@
 #include "views/controls/table/table_view2.h"
 
 #include "app/table_model.h"
+#include "views/controls/native/native_view_host.h"
 #include "views/controls/table/table_view_observer.h"
 
 namespace views {
@@ -301,6 +302,11 @@ void TableView2::Layout() {
     native_wrapper_->GetView()->SetBounds(0, 0, width(), height());
     native_wrapper_->GetView()->Layout();
   }
+}
+
+void TableView2::PaintFocusBorder(gfx::Canvas* canvas) {
+  if (NativeViewHost::kRenderNativeControlFocus)
+    View::PaintFocusBorder(canvas);
 }
 
 size_t TableView2::GetVisibleColumnCount() {

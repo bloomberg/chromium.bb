@@ -6,6 +6,7 @@
 
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
+#include "views/controls/native/native_view_host.h"
 #include "views/controls/tabbed_pane/native_tabbed_pane_wrapper.h"
 
 namespace views {
@@ -113,6 +114,11 @@ void TabbedPane::Focus() {
   else
     View::Focus();  // Will focus the RootView window (so we still get keyboard
                     // messages).
+}
+
+void TabbedPane::PaintFocusBorder(gfx::Canvas* canvas) {
+  if (NativeViewHost::kRenderNativeControlFocus)
+    View::PaintFocusBorder(canvas);
 }
 
 }  // namespace views

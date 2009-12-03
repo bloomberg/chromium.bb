@@ -7,6 +7,7 @@
 #include <string>
 
 #include "views/controls/slider/native_slider_wrapper.h"
+#include "views/controls/native/native_view_host.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -86,6 +87,11 @@ void Slider::Focus() {
     // get keyboard messages.
     View::Focus();
   }
+}
+
+void Slider::PaintFocusBorder(gfx::Canvas* canvas) {
+  if (NativeViewHost::kRenderNativeControlFocus)
+    View::PaintFocusBorder(canvas);
 }
 
 void Slider::ViewHierarchyChanged(bool is_add, View* parent, View* child) {

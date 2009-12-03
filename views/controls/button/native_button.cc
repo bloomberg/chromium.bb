@@ -12,6 +12,7 @@
 #include "app/l10n_util.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
+#include "views/controls/native/native_view_host.h"
 
 namespace views {
 
@@ -189,6 +190,11 @@ void NativeButton::Focus() {
   else
     Button::Focus();  // Will focus the RootView window (so we still get
                       // keyboard messages).
+}
+
+void NativeButton::PaintFocusBorder(gfx::Canvas* canvas) {
+  if (NativeViewHost::kRenderNativeControlFocus)
+    View::PaintFocusBorder(canvas);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

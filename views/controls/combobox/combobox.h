@@ -54,6 +54,7 @@ class Combobox : public View {
   virtual void Layout();
   virtual void SetEnabled(bool enabled);
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
+  virtual void PaintFocusBorder(gfx::Canvas* canvas);
 
  protected:
   virtual void Focus();

@@ -70,6 +70,7 @@ class TabbedPane : public View {
   virtual std::string GetClassName() const;
   virtual void Layout();
   virtual void Focus();
+  virtual void PaintFocusBorder(gfx::Canvas* canvas);
 
  protected:
   // The object that actually implements the tabbed-pane.

@@ -54,6 +54,7 @@ class NativeButton : public Button {
   virtual void Layout();
   virtual void SetEnabled(bool flag);
   virtual void Focus();
+  virtual void PaintFocusBorder(gfx::Canvas* canvas);
 
  protected:
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);

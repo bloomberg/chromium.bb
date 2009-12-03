@@ -200,6 +200,7 @@ class Textfield : public View {
   virtual void AboutToRequestFocusFromTabTraversal(bool reverse);
   virtual bool SkipDefaultKeyEventProcessing(const KeyEvent& e);
   virtual void SetEnabled(bool enabled);
+  virtual void PaintFocusBorder(gfx::Canvas* canvas);
 
  protected:
   virtual void Focus();
