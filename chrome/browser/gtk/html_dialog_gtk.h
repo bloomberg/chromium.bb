@@ -8,25 +8,29 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/browser.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 
 typedef struct _GtkWidget GtkWidget;
 
+class Browser;
+class Profile;
 class TabContents;
 class TabContentsContainerGtk;
 
-class HtmlDialogGtk : public TabContentsDelegate,
+class HtmlDialogGtk : public HtmlDialogTabContentsDelegate,
                       public HtmlDialogUIDelegate {
  public:
-  HtmlDialogGtk(Browser* parent_browser, HtmlDialogUIDelegate* delegate);
+  HtmlDialogGtk(Profile* profile, HtmlDialogUIDelegate* delegate,
+                gfx::NativeWindow parent_window);
   virtual ~HtmlDialogGtk();
 
   static void ShowHtmlDialogGtk(Browser* browser,
-                                HtmlDialogUIDelegate* delegate);
+                                HtmlDialogUIDelegate* delegate,
+                                gfx::NativeWindow parent_window);
   // Initializes the contents of the dialog (the DOMView and the callbacks).
   void InitDialog();
 
@@ -41,42 +45,20 @@ class HtmlDialogGtk : public TabContentsDelegate,
   virtual void OnDialogClosed(const std::string& json_retval);
 
   // Overridden from TabContentsDelegate:
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags);
-  virtual void ReplaceContents(TabContents* source,
-                               TabContents* new_contents);
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual void ActivateContents(TabContents* contents);
-  virtual void LoadingStateChanged(TabContents* source);
-  virtual void CloseContents(TabContents* source);
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual bool IsPopup(TabContents* source);
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
-  virtual void URLStarredChanged(TabContents* source, bool starred);
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
 
  private:
   static void OnResponse(GtkWidget* widget, int response,
                          HtmlDialogGtk* dialog);
-
-  // The Browser object which created this html dialog; we send all
-  // window opening/navigations to this object.
-  Browser* parent_browser_;
 
   // This view is a delegate to the HTML content since it needs to get notified
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
   // using this variable.
   HtmlDialogUIDelegate* delegate_;
+
+  gfx::NativeWindow parent_window_;
 
   GtkWidget* dialog_;
 

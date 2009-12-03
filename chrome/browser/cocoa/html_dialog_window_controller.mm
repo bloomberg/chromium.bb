@@ -8,23 +8,21 @@
 #include "base/logging.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/browser.h"
-#include "chrome/browser/browser_window.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
 #import "chrome/browser/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
+#include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "googleurl/src/gurl.h"
 
 // Thin bridge that routes notifications to
 // HtmlDialogWindowController's member variables.
 class HtmlDialogWindowDelegateBridge : public HtmlDialogUIDelegate,
-                                       public TabContentsDelegate {
+                                       public HtmlDialogTabContentsDelegate {
 public:
   // All parameters must be non-NULL/non-nil.
   HtmlDialogWindowDelegateBridge(HtmlDialogWindowController* controller,
+                                 Profile* profile,
                                  HtmlDialogUIDelegate* delegate);
 
   virtual ~HtmlDialogWindowDelegateBridge();
@@ -43,33 +41,9 @@ public:
   virtual std::string GetDialogArgs() const;
   virtual void OnDialogClosed(const std::string& json_retval);
 
-  // TabContentsDelegate declarations.
-  //
-  // TODO(akalin): decomp this out into a separate platform-independent class
-  // so they don't diverge in behavior.  In particular,
-  // ShouldAddNavigationToHistory() should return false on all platforms but
-  // currently does so only on OS X.  This is tracked in
-  // http://code.google.com/p/chromium/issues/detail?id=28609 .
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url, const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags);
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual void ActivateContents(TabContents* contents);
-  virtual void LoadingStateChanged(TabContents* source);
-  virtual void CloseContents(TabContents* source);
+  // HtmlDialogTabContentsDelegate declarations.
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual bool IsPopup(TabContents* source);
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
-  virtual void URLStarredChanged(TabContents* source, bool starred);
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
-  virtual bool ShouldAddNavigationToHistory() const;
 
 private:
   HtmlDialogWindowController* controller_;  // weak
@@ -88,8 +62,6 @@ private:
 // BrowserCommandExecutor protocol.
 @interface HtmlDialogWindowController (InternalAPI) <BrowserCommandExecutor>
 
-- (Profile*)profile;
-
 // BrowserCommandExecutor methods.
 - (void)executeCommand:(int)command;
 
@@ -104,8 +76,10 @@ void ShowHtmlDialog(HtmlDialogUIDelegate* delegate, Profile* profile) {
 }  // namespace html_dialog_window_controller
 
 HtmlDialogWindowDelegateBridge::HtmlDialogWindowDelegateBridge(
-    HtmlDialogWindowController* controller, HtmlDialogUIDelegate* delegate)
-    : controller_(controller), delegate_(delegate) {
+    HtmlDialogWindowController* controller, Profile* profile,
+    HtmlDialogUIDelegate* delegate)
+    : HtmlDialogTabContentsDelegate(profile),
+      controller_(controller), delegate_(delegate) {
   DCHECK(controller_);
   DCHECK(delegate_);
 }
@@ -113,8 +87,9 @@ HtmlDialogWindowDelegateBridge::HtmlDialogWindowDelegateBridge(
 HtmlDialogWindowDelegateBridge::~HtmlDialogWindowDelegateBridge() {}
 
 void HtmlDialogWindowDelegateBridge::WindowControllerClosed() {
-  DelegateOnDialogClosed("");
+  Detach();
   controller_ = nil;
+  DelegateOnDialogClosed("");
 }
 
 bool HtmlDialogWindowDelegateBridge::DelegateOnDialogClosed(
@@ -175,6 +150,7 @@ std::string HtmlDialogWindowDelegateBridge::GetDialogArgs() const {
 
 void HtmlDialogWindowDelegateBridge::OnDialogClosed(
     const std::string& json_retval) {
+  Detach();
   // [controller_ close] should be called at most once, too.
   if (DelegateOnDialogClosed(json_retval)) {
     [controller_ close];
@@ -182,57 +158,9 @@ void HtmlDialogWindowDelegateBridge::OnDialogClosed(
   controller_ = nil;
 }
 
-// TabContentsDelegate definitions.  Most of this logic is copied from
-// chrome/browser/views/html_dialog_view.cc .  All functions with empty
-// bodies are notifications we don't care about.
-
-void HtmlDialogWindowDelegateBridge::OpenURLFromTab(
-    TabContents* source, const GURL& url, const GURL& referrer,
-    WindowOpenDisposition disposition, PageTransition::Type transition) {
-  if (controller_) {
-    // Force all links to open in a new window.  Code adapted from
-    // Browser::OpenURLFromTab() with disposition == NEW_WINDOW.
-    Browser* browser = Browser::Create([controller_ profile]);
-    TabContents* new_contents =
-      browser->AddTabWithURL(url, referrer, transition, true, -1, false, NULL);
-    new_contents->Focus();
-  }
-}
-
-void HtmlDialogWindowDelegateBridge::NavigationStateChanged(
-  const TabContents* source, unsigned changed_flags) {
-}
-
-void HtmlDialogWindowDelegateBridge::AddNewContents(
-    TabContents* source, TabContents* new_contents,
-    WindowOpenDisposition disposition, const gfx::Rect& initial_pos,
-    bool user_gesture) {
-  if (controller_) {
-    // Force this to open in a new window, too.  Code adapted from
-    // Browser::AddNewContents() with disposition == NEW_WINDOW.
-    Browser* browser = Browser::Create([controller_ profile]);
-    static_cast<TabContentsDelegate*>(browser)->
-      AddNewContents(source, new_contents, NEW_FOREGROUND_TAB,
-                     initial_pos, user_gesture);
-    browser->window()->Show();
-  }
-}
-
-void HtmlDialogWindowDelegateBridge::ActivateContents(TabContents* contents) {}
-
-void HtmlDialogWindowDelegateBridge::LoadingStateChanged(TabContents* source) {}
-
-void HtmlDialogWindowDelegateBridge::CloseContents(TabContents* source) {}
-
 void HtmlDialogWindowDelegateBridge::MoveContents(TabContents* source,
                                                   const gfx::Rect& pos) {
   // TODO(akalin): Actually set the window bounds.
-}
-
-bool HtmlDialogWindowDelegateBridge::IsPopup(TabContents* source) {
-  // This needs to return true so that we are allowed to be resized by
-  // our contents.
-  return true;
 }
 
 void HtmlDialogWindowDelegateBridge::ToolbarSizeChanged(
@@ -240,24 +168,7 @@ void HtmlDialogWindowDelegateBridge::ToolbarSizeChanged(
   // TODO(akalin): Figure out what to do here.
 }
 
-void HtmlDialogWindowDelegateBridge::URLStarredChanged(
-    TabContents* source, bool starred) {
-  // We don't have a visible star to click in the window.
-  NOTREACHED();
-}
-
-void HtmlDialogWindowDelegateBridge::UpdateTargetURL(
-    TabContents* source, const GURL& url) {}
-
-bool HtmlDialogWindowDelegateBridge::ShouldAddNavigationToHistory() const {
-  return false;
-}
-
 @implementation HtmlDialogWindowController (InternalAPI)
-
-- (Profile*)profile {
-  return profile_;
-}
 
 // This gets called whenever a chrome-specific keyboard shortcut is performed
 // in the HTML dialog window.  We simply swallow all those events.
@@ -309,19 +220,13 @@ bool HtmlDialogWindowDelegateBridge::ShouldAddNavigationToHistory() const {
   [window setDelegate:self];
   [window setTitle:base::SysWideToNSString(delegate->GetDialogTitle())];
   [window center];
-  delegate_.reset(new HtmlDialogWindowDelegateBridge(self, delegate));
-  // Incognito profiles are not long-lived, so we always want to store a
-  // non-incognito profile.
-  //
-  // TODO(akalin): Should we make it so that we have a default incognito
-  // profile that's long-lived?  Of course, we'd still have to clear it out
-  // when all incognito browsers close.
-  profile_ = profile->GetOriginalProfile();
+  delegate_.reset(new HtmlDialogWindowDelegateBridge(self, profile, delegate));
   return self;
 }
 
 - (void)loadDialogContents {
-  tabContents_.reset(new TabContents(profile_, NULL, MSG_ROUTING_NONE, NULL));
+  tabContents_.reset(
+      new TabContents(delegate_->profile(), NULL, MSG_ROUTING_NONE, NULL));
   [[self window] setContentView:tabContents_->GetNativeView()];
   tabContents_->set_delegate(delegate_.get());
 

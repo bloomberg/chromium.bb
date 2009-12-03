@@ -6,6 +6,7 @@
 
 #include <gtk/gtk.h>
 
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
@@ -14,18 +15,22 @@
 
 // static
 void HtmlDialogGtk::ShowHtmlDialogGtk(Browser* browser,
-                                      HtmlDialogUIDelegate* delegate) {
-  HtmlDialogGtk* html_dialog = new HtmlDialogGtk(browser, delegate);
+                                      HtmlDialogUIDelegate* delegate,
+                                      gfx::NativeWindow parent_window) {
+  HtmlDialogGtk* html_dialog =
+      new HtmlDialogGtk(browser->profile(), delegate, parent_window);
   html_dialog->InitDialog();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogGtk, public:
 
-HtmlDialogGtk::HtmlDialogGtk(Browser* parent_browser,
-                             HtmlDialogUIDelegate* delegate)
-    : parent_browser_(parent_browser),
+HtmlDialogGtk::HtmlDialogGtk(Profile* profile,
+                             HtmlDialogUIDelegate* delegate,
+                             gfx::NativeWindow parent_window)
+    : HtmlDialogTabContentsDelegate(profile),
       delegate_(delegate),
+      parent_window_(parent_window),
       dialog_(NULL) {
 }
 
@@ -78,6 +83,7 @@ void HtmlDialogGtk::OnDialogClosed(const std::string& json_retval) {
 
   HtmlDialogUIDelegate* dialog_delegate = delegate_;
   delegate_ = NULL;  // We will not communicate further with the delegate.
+  Detach();
   dialog_delegate->OnDialogClosed(json_retval);
   gtk_widget_destroy(dialog_);
   delete this;
@@ -86,60 +92,9 @@ void HtmlDialogGtk::OnDialogClosed(const std::string& json_retval) {
 ////////////////////////////////////////////////////////////////////////////////
 // TabContentsDelegate implementation:
 
-void HtmlDialogGtk::OpenURLFromTab(TabContents* source,
-                                   const GURL& url,
-                                   const GURL& referrer,
-                                   WindowOpenDisposition disposition,
-                                   PageTransition::Type transition) {
-  // Force all links to open in a new window, ignoring the incoming
-  // disposition. This is a tabless, modal dialog so we can't just
-  // open it in the current frame.
-  static_cast<TabContentsDelegate*>(parent_browser_)->OpenURLFromTab(
-      source, url, referrer, NEW_WINDOW, transition);
-}
-
-void HtmlDialogGtk::NavigationStateChanged(const TabContents* source,
-                                           unsigned changed_flags) {
-  // We shouldn't receive any NavigationStateChanged except the first
-  // one, which we ignore because we're a dialog box.
-}
-
-void HtmlDialogGtk::ReplaceContents(TabContents* source,
-                                    TabContents* new_contents) {
-}
-
-void HtmlDialogGtk::AddNewContents(TabContents* source,
-                                   TabContents* new_contents,
-                                   WindowOpenDisposition disposition,
-                                   const gfx::Rect& initial_pos,
-                                   bool user_gesture) {
-  static_cast<TabContentsDelegate*>(parent_browser_)->AddNewContents(
-      source, new_contents, NEW_WINDOW, initial_pos, user_gesture);
-}
-
-void HtmlDialogGtk::ActivateContents(TabContents* contents) {
-  // We don't do anything here because there's only one TabContents in
-  // this frame and we don't have a TabStripModel.
-}
-
-void HtmlDialogGtk::LoadingStateChanged(TabContents* source) {
-  // We don't care about this notification.
-}
-
-void HtmlDialogGtk::CloseContents(TabContents* source) {
-  // We receive this message but don't handle it because we really do the
-  // cleanup in OnDialogClosed().
-}
-
 void HtmlDialogGtk::MoveContents(TabContents* source, const gfx::Rect& pos) {
   // The contained web page wishes to resize itself. We let it do this because
   // if it's a dialog we know about, we trust it not to be mean to the user.
-}
-
-bool HtmlDialogGtk::IsPopup(TabContents* source) {
-  // This needs to return true so that we are allowed to be resized by our
-  // contents.
-  return true;
 }
 
 void HtmlDialogGtk::ToolbarSizeChanged(TabContents* source,
@@ -147,21 +102,12 @@ void HtmlDialogGtk::ToolbarSizeChanged(TabContents* source,
   // Ignored.
 }
 
-void HtmlDialogGtk::URLStarredChanged(TabContents* source, bool starred) {
-  // We don't have a visible star to click in the window.
-  NOTREACHED();
-}
-
-void HtmlDialogGtk::UpdateTargetURL(TabContents* source, const GURL& url) {
-  // Ignored.
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // HtmlDialogGtk:
 
 void HtmlDialogGtk::InitDialog() {
-  Profile* profile = parent_browser_->profile();
-  tab_contents_.reset(new TabContents(profile, NULL, MSG_ROUTING_NONE, NULL));
+  tab_contents_.reset(
+      new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL));
   tab_contents_->set_delegate(this);
 
   // This must be done before loading the page; see the comments in
@@ -177,7 +123,7 @@ void HtmlDialogGtk::InitDialog() {
 
   dialog_ = gtk_dialog_new_with_buttons(
       WideToUTF8(delegate_->GetDialogTitle()).c_str(),
-      parent_browser_->window()->GetNativeHandle(),
+      parent_window_,
       flags,
       NULL);
 

@@ -22,7 +22,6 @@ class TabContents;
 // from a HTMLDialogUIDelegate object.
 @interface HtmlDialogWindowController : NSWindowController {
  @private
-  Profile* profile_;  // weak.  Always a non-incognito profile.
   // Order here is important, as tab_contents_ may send messages to
   // delegate_ when it gets destroyed.
   scoped_ptr<HtmlDialogWindowDelegateBridge> delegate_;

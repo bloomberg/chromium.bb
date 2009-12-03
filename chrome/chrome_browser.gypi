@@ -568,6 +568,8 @@
         'browser/dom_ui/filebrowse_ui.h',
         'browser/dom_ui/history_ui.cc',
         'browser/dom_ui/history_ui.h',
+        'browser/dom_ui/html_dialog_tab_contents_delegate.cc',
+        'browser/dom_ui/html_dialog_tab_contents_delegate.h',
         'browser/dom_ui/html_dialog_ui.cc',
         'browser/dom_ui/html_dialog_ui.h',
         'browser/dom_ui/most_visited_handler.cc',

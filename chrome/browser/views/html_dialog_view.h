@@ -9,7 +9,7 @@
 
 #include "base/gfx/size.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
-#include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/views/dom_view.h"
 #include "views/window/window_delegate.h"
 
@@ -27,13 +27,17 @@ class Window;
 // expected to send back a JSON file as a return value.
 //
 ////////////////////////////////////////////////////////////////////////////////
+//
+// TODO(akalin): Make HtmlDialogView contain an HtmlDialogTabContentsDelegate
+// instead of inheriting from it to avoid violating the "no multiple
+// inheritance" rule.
 class HtmlDialogView
     : public DOMView,
-      public TabContentsDelegate,
+      public HtmlDialogTabContentsDelegate,
       public HtmlDialogUIDelegate,
       public views::WindowDelegate {
  public:
-  HtmlDialogView(Browser* parent_browser, HtmlDialogUIDelegate* delegate);
+  HtmlDialogView(Profile* profile, HtmlDialogUIDelegate* delegate);
   virtual ~HtmlDialogView();
 
   // Initializes the contents of the dialog (the DOMView and the callbacks).
@@ -62,36 +66,10 @@ class HtmlDialogView
   virtual void OnDialogClosed(const std::string& json_retval);
 
   // Overridden from TabContentsDelegate:
-  virtual void OpenURLFromTab(TabContents* source,
-                              const GURL& url,
-                              const GURL& referrer,
-                              WindowOpenDisposition disposition,
-                              PageTransition::Type transition);
-  virtual void NavigationStateChanged(const TabContents* source,
-                                      unsigned changed_flags);
-  virtual void ReplaceContents(TabContents* source,
-                               TabContents* new_contents);
-  virtual void AddNewContents(TabContents* source,
-                              TabContents* new_contents,
-                              WindowOpenDisposition disposition,
-                              const gfx::Rect& initial_pos,
-                              bool user_gesture);
-  virtual void ActivateContents(TabContents* contents);
-  virtual void LoadingStateChanged(TabContents* source);
-  virtual void CloseContents(TabContents* source);
   virtual void MoveContents(TabContents* source, const gfx::Rect& pos);
-  virtual bool IsPopup(TabContents* source);
   virtual void ToolbarSizeChanged(TabContents* source, bool is_animating);
-  virtual void URLStarredChanged(TabContents* source, bool starred);
-  virtual void UpdateTargetURL(TabContents* source, const GURL& url);
 
  private:
-  // The Browser object which created this html dialog; we send all
-  // window opening/navigations to this object.
-  Browser* parent_browser_;
-
-  Profile* profile_;
-
   // This view is a delegate to the HTML content since it needs to get notified
   // about when the dialog is closing. For all other actions (besides dialog
   // closing) we delegate to the creator of this view, which we keep track of
