@@ -36,7 +36,6 @@ import time
 import traceback
 
 from layout_package import apache_http_server
-from layout_package import compare_failures
 from layout_package import test_expectations
 from layout_package import http_server
 from layout_package import json_results_generator
@@ -49,6 +48,8 @@ from test_types import fuzzy_image_diff
 from test_types import image_diff
 from test_types import test_type_base
 from test_types import text_diff
+
+TestExpectationsFile = test_expectations.TestExpectationsFile
 
 class TestInfo:
   """Groups information about a test for easy passing of data."""
@@ -70,43 +71,40 @@ class TestInfo:
       self.image_hash = None
 
 
-class ResultSummaryEntry:
-  def __init__(self, all, failed, failure_counts, skipped):
-    """Resolves result counts.
+class ResultSummary(object):
+  """A class for partitioning the test results we get into buckets.
+
+  This class is basically a glorified struct and it's private to this file
+  so we don't bother with any information hiding."""
+  def __init__(self, expectations, test_files):
+    self.total = len(test_files)
+    self.expectations = expectations
+    self.tests_by_expectation = {}
+    self.tests_by_timeline = {}
+    self.results = {}
+    self.unexpected_results = {}
+    self.failures = {}
+    self.tests_by_expectation[test_expectations.SKIP] = set()
+    for expectation in TestExpectationsFile.EXPECTATIONS.values():
+      self.tests_by_expectation[expectation] = set()
+    for timeline in TestExpectationsFile.TIMELINES.values():
+      self.tests_by_timeline[timeline] = expectations.GetTestsWithTimeline(
+          timeline)
+
+  def Add(self, test, failures, result):
+    """Add a result into the appropriate bin.
 
     Args:
-      all: list of all tests in this category
-      failed: list of failing tests in this category
-      skipped: list of skipped tests
-      failure_counts: dictionary of (TestFailure -> frequency)
-    """
-    self.skip_count = len(skipped)
-    self.total_count = len(all | skipped)
-    self.pass_count = self.total_count - self.skip_count - len(failed)
-    self.failure_counts = failure_counts;
+      test: test file name
+      failures: list of failure objects from test execution
+      result: result of test (PASS, IMAGE, etc.)."""
 
-
-class ResultSummary:
-  """Container for all result summaries for this test run.
-
-  Args:
-    deferred: ResultSummary object for deferred tests.
-    wontfix: ResultSummary object for wontfix tests.
-    fixable: ResultSummary object for tests marked in test_expectations.txt as
-        needing fixing but are not deferred/wontfix (i.e. should be fixed
-        for the next release).
-    fixable_count: Count of all fixable and skipped tests. This is essentially
-        a deduped sum of all the failures that are not deferred/wontfix.
-    all_fixable_count: Count of all the tests that are not deferred/wontfix.
-        This includes passing tests.
-  """
-  def __init__(self, deferred, wontfix, fixable, fixable_count,
-      all_fixable_count):
-    self.deferred = deferred
-    self.wontfix = wontfix
-    self.fixable = fixable
-    self.fixable_count = fixable_count
-    self.all_fixable_count = all_fixable_count
+    self.tests_by_expectation[result].add(test)
+    self.results[test] = result
+    if len(failures):
+      self.failures[test] = failures
+    if not self.expectations.MatchesAnExpectedResult(test, result):
+      self.unexpected_results[test] = result
 
 
 class TestRunner:
@@ -166,7 +164,7 @@ class TestRunner:
   def GatherFilePaths(self, paths):
     """Find all the files to test.
 
-    args:
+    Args:
       paths: a list of globs to use instead of the defaults."""
     self._test_files = test_files.GatherTestFiles(paths)
     logging.info('Found: %d tests' % len(self._test_files))
@@ -193,21 +191,19 @@ class TestRunner:
         raise err
 
   def PrepareListsAndPrintOutput(self):
-    """Create appropriate subsets of test lists and print test counts.
+    """Create appropriate subsets of test lists and returns a ResultSummary
+    object. Also prints expected test counts."""
 
-    Create appropriate subsets of self._tests_files in
-    self._ignored_failures, self._fixable_failures, and self._fixable_crashes.
-    Also remove skipped files from self._test_files, extract a subset of tests
-    if desired, and create the sorted self._test_files_list.
-    """
+    result_summary = ResultSummary(self._expectations, self._test_files)
+
     # Remove skipped - both fixable and ignored - files from the
     # top-level list of files to test.
     skipped = set()
-    # If there was only one test file, we'll run it even if it was skipped.
     if len(self._test_files) > 1 and not self._options.force:
-      skipped = (self._expectations.GetFixableSkipped() |
-                 self._expectations.GetDeferredSkipped() |
-                 self._expectations.GetWontFixSkipped())
+      skipped = self._expectations.GetTestsWithResultType(
+          test_expectations.SKIP)
+      for test in skipped:
+        result_summary.Add(test, [], test_expectations.SKIP)
       self._test_files -= skipped
 
     if self._options.force:
@@ -299,23 +295,15 @@ class TestRunner:
     else:
       logging.info('Run: %d tests' % len(self._test_files))
 
-    logging.info('Deferred: %d tests' % len(self._expectations.GetDeferred()))
-    logging.info('Expected passes: %d tests' %
-                 len(self._test_files -
-                     self._expectations.GetFixable() -
-                     self._expectations.GetWontFix()))
-    logging.info(('Expected failures: %d fixable, %d ignored '
-                  'and %d deferred tests') %
-                 (len(self._expectations.GetFixableFailures()),
-                  len(self._expectations.GetWontFixFailures()),
-                  len(self._expectations.GetDeferredFailures())))
-    logging.info(('Expected timeouts: %d fixable, %d ignored '
-                  'and %d deferred tests') %
-                 (len(self._expectations.GetFixableTimeouts()),
-                  len(self._expectations.GetWontFixTimeouts()),
-                  len(self._expectations.GetDeferredTimeouts())))
-    logging.info('Expected crashes: %d fixable tests' %
-                 len(self._expectations.GetFixableCrashes()))
+    self._PrintExpectedResultsOfType(result_summary, test_expectations.PASS,
+        "passes")
+    self._PrintExpectedResultsOfType(result_summary, test_expectations.FAIL,
+        "failures")
+    self._PrintExpectedResultsOfType(result_summary, test_expectations.FLAKY,
+        "flaky")
+    self._PrintExpectedResultsOfType(result_summary, test_expectations.SKIP,
+        "skipped")
+    return result_summary
 
   def AddTestType(self, test_type):
     """Add a TestType to the TestRunner."""
@@ -375,6 +363,7 @@ class TestRunner:
     Return:
       The Queue of lists of TestInfo objects.
     """
+
     if self._options.experimental_fully_parallel:
       filename_queue = Queue.Queue()
       for test_file in test_files:
@@ -493,7 +482,7 @@ class TestRunner:
       proc.stdin.close()
       proc.wait()
 
-  def _RunTests(self, test_shell_binary, file_list):
+  def _RunTests(self, test_shell_binary, file_list, result_summary):
     """Runs the tests in the file_list.
 
     Return: A tuple (failures, thread_timings, test_timings,
@@ -505,6 +494,7 @@ class TestRunner:
           form [time, directory_name, num_tests]
         individual_test_timings is a list of run times for each test in the form
           {filename:filename, test_run_time:test_run_time}
+        result_summary: summary object to populate with the results
     """
     threads = self._InstantiateTestShellThreads(test_shell_binary, file_list)
 
@@ -541,13 +531,17 @@ class TestRunner:
         # would be assumed to have passed.
         raise exception_info[0], exception_info[1], exception_info[2]
 
+    self._PopulateResultSummary(result_summary, failures)
     return (failures, thread_timings, test_timings, individual_test_timings)
 
-  def Run(self):
+  def Run(self, result_summary):
     """Run all our tests on all our test files.
 
     For each test file, we run each test type.  If there are any failures, we
     collect them for reporting.
+
+    Args:
+      result_summary: a summary object tracking the test results.
 
     Return:
       We return nonzero if there are regressions compared to the last run.
@@ -592,24 +586,37 @@ class TestRunner:
       # self._websocket_secure_server.Start()
 
     original_failures, thread_timings, test_timings, individual_test_timings = (
-        self._RunTests(test_shell_binary, self._test_files_list))
+        self._RunTests(test_shell_binary, self._test_files_list,
+                       result_summary))
+    original_results_by_test, original_results_by_type = self._CompareResults(
+        result_summary)
+    final_results_by_test = original_results_by_test
+    final_results_by_type = original_results_by_type
+    failed_results_by_test, failed_results_by_type = self._OnlyFailures(
+        original_results_by_test)
+    num_passes = len(original_results_by_test) - len(failed_results_by_test)
 
     retries = 0
-    final_failures = original_failures
-    original_regressions = self._CompareFailures(final_failures)
-    regressions = original_regressions
-
-    while retries < self.NUM_RETRY_ON_UNEXPECTED_FAILURE and len(regressions):
-      logging.info("Retrying %d unexpected failure(s)" % len(regressions))
+    while (retries < self.NUM_RETRY_ON_UNEXPECTED_FAILURE and
+        len(failed_results_by_test)):
+      logging.info("Retrying %d unexpected failure(s)" %
+                   len(failed_results_by_test))
       retries += 1
-      final_failures = self._RunTests(test_shell_binary, list(regressions))[0]
-      regressions = self._CompareFailures(final_failures)
+      retry_summary = ResultSummary(self._expectations,
+                                    failed_results_by_test.keys())
+      final_failures = self._RunTests(test_shell_binary,
+                                      failed_results_by_test.keys(),
+                                      retry_summary)[0]
+      self._PopulateResultSummary(retry_summary, final_failures)
+      final_results_by_test, final_results_by_type = self._CompareResults(
+          retry_summary)
+      failed_results_by_test, failed_results_by_type = self._OnlyFailures(
+          final_results_by_test)
 
     self._StopLayoutTestHelper(layout_test_helper_proc)
 
     print
     end_time = time.time()
-
     logging.info("%6.2f total testing time" % (end_time - start_time))
     cuml_time = 0
     logging.debug("Thread timing:")
@@ -624,20 +631,20 @@ class TestRunner:
 
     print
     self._PrintTimingStatistics(test_timings, individual_test_timings,
-        original_failures)
+                                result_summary)
 
-    self._PrintRegressions(original_failures, original_regressions,
-        final_failures)
+    self._PrintUnexpectedResults(original_results_by_test,
+                                 original_results_by_type,
+                                 final_results_by_test,
+                                 final_results_by_type)
 
     # Write summaries to stdout.
-    # The summary should include flaky tests, so use original_failures, not
-    # final_failures.
-    result_summary = self._GetResultSummary(original_failures)
+    # The summaries should include flaky tests, so use the original summary,
+    # not the final one.
     self._PrintResultSummary(result_summary, sys.stdout)
 
     if self._options.verbose:
-      self._WriteJSONFiles(original_failures, individual_test_timings,
-          result_summary);
+      self._WriteJSONFiles(result_summary, individual_test_timings);
 
     # Write the same data to a log file.
     out_filename = os.path.join(self._options.results_directory, "score.txt")
@@ -647,40 +654,67 @@ class TestRunner:
 
     # Write the summary to disk (results.html) and maybe open the test_shell
     # to this file.
-    wrote_results = self._WriteResultsHtmlFile(original_failures,
-        original_regressions)
+    wrote_results = self._WriteResultsHtmlFile(result_summary)
     if not self._options.noshow_results and wrote_results:
       self._ShowResultsHtmlFile()
 
     sys.stdout.flush()
     sys.stderr.flush()
-    # Ignore flaky failures so we don't turn the bot red for those.
-    return len(regressions)
+    # Ignore flaky failures and unexpected passes so we don't turn the
+    # bot red for those.
+    return len(failed_results_by_test)
 
-  def _PrintRegressions(self, original_failures, original_regressions,
-      final_failures):
-    """Prints the regressions from the test run.
+  def _PopulateResultSummary(self, result_summary, failures):
+    """Populate ResultSummary object with test results.
+
     Args:
-      original_failures: Failures from the first test run.
-      original_regressions: Regressions from the first test run.
-      final_failures: Failures after retrying the failures from the first run.
+      result_summary: summary object to populate.
+      failures: dictionary mapping the test filename to a list of
+          TestFailure objects if the test failed.
     """
-    print "-" * 78
+    for test, fail_list in failures.iteritems():
+      result = test_failures.DetermineResultType(fail_list)
+      result_summary.Add(test, fail_list, result)
+    for test in self._test_files:
+      if not test in failures:
+        result_summary.Add(test, [], test_expectations.PASS)
 
-    flaky_failures = {}
-    non_flaky_failures = {}
-    for failure in original_failures:
-      if failure not in original_regressions or failure in final_failures:
-        non_flaky_failures[failure] = original_failures[failure]
-      else:
-        flaky_failures[failure] = original_failures[failure]
+  def _CompareResults(self, result_summary):
+    """Determine if the results in this test run are unexpected.
 
-    self._CompareFailures(non_flaky_failures, print_regressions=True)
-    self._CompareFailures(flaky_failures, print_regressions=True, is_flaky=True)
+    Returns:
+      A dict of files -> results and a dict of results -> sets of files
+    """
+    results_by_test = {}
+    results_by_type = {}
+    for result in TestExpectationsFile.EXPECTATIONS.values():
+      results_by_type[result] = set()
+    for test, result in result_summary.unexpected_results.iteritems():
+      results_by_test[test] = result
+      results_by_type[result].add(test)
+    return results_by_test, results_by_type
 
-    print "-" * 78
+  def _OnlyFailures(self, results_by_test):
+    """Filters a dict of results and returns only the failures.
 
-  def _WriteJSONFiles(self, failures, individual_test_timings, result_summary):
+    Args:
+      results_by_test: a dict of files -> results
+
+    Returns:
+      a dict of files -> results and results -> sets of files.
+    """
+    failed_results_by_test = {}
+    failed_results_by_type = {}
+    for test, result in results_by_test.iteritems():
+      if result != test_expectations.PASS:
+        failed_results_by_test[test] = result
+        if result in failed_results_by_type:
+          failed_results_by_type.add(test)
+        else:
+          failed_results_by_type = set([test])
+    return failed_results_by_test, failed_results_by_type
+
+  def _WriteJSONFiles(self, result_summary, individual_test_timings):
     logging.debug("Writing JSON files in %s." % self._options.results_directory)
     # Write a json file of the test_expectations.txt file for the layout tests
     # dashboard.
@@ -690,16 +724,47 @@ class TestRunner:
     expectations_file.write(("ADD_EXPECTATIONS(" + expectations_json + ");"))
     expectations_file.close()
 
-    json_results_generator.JSONResultsGenerator(self._options, failures,
-        individual_test_timings, self._options.results_directory,
-        self._test_files_list, result_summary)
+    json_results_generator.JSONResultsGenerator(self._options,
+        result_summary, individual_test_timings,
+        self._options.results_directory, self._test_files_list)
 
     logging.debug("Finished writing JSON files.")
 
+  def _PrintExpectedResultsOfType(self, result_summary, result_type,
+      result_type_str):
+    """Print the number of the tests in a given result class.
+
+    Args:
+      result_summary - the object containg all the results to report on
+      result_type - the particular result type to report in the summary.
+      result_type_str - a string description of the result_type.
+    """
+    tests = self._expectations.GetTestsWithResultType(result_type)
+    now = result_summary.tests_by_timeline[test_expectations.NOW]
+    wontfix = result_summary.tests_by_timeline[test_expectations.WONTFIX]
+    defer = result_summary.tests_by_timeline[test_expectations.DEFER]
+
+    # We use a fancy format string in order to print the data out in a
+    # nicely-aligned table.
+    fmtstr = ("Expect: %%5d %%-8s (%%%dd now, %%%dd defer, %%%dd wontfix)" %
+              (self._NumDigits(now), self._NumDigits(defer),
+               self._NumDigits(wontfix)))
+    logging.info(fmtstr %
+        (len(tests), result_type_str, len(tests & now), len(tests & defer),
+         len(tests & wontfix)))
+
+  def _NumDigits(self, num):
+    """Returns the number of digits needed to represent the length of a
+    sequence."""
+    ndigits = 1
+    if len(num):
+      ndigits = int(math.log10(len(num))) + 1
+    return ndigits
+
   def _PrintTimingStatistics(self, directory_test_timings,
-      individual_test_timings, failures):
+      individual_test_timings, result_summary):
     self._PrintAggregateTestStatistics(individual_test_timings)
-    self._PrintIndividualTestTimes(individual_test_timings, failures)
+    self._PrintIndividualTestTimes(individual_test_timings, result_summary)
     self._PrintDirectoryTimings(directory_test_timings)
 
   def _PrintAggregateTestStatistics(self, individual_test_timings):
@@ -733,12 +798,12 @@ class TestRunner:
           "PER TEST TIMES BY TEST TYPE: %s" % test_type,
           times_per_test_type[test_type])
 
-  def _PrintIndividualTestTimes(self, individual_test_timings, failures):
+  def _PrintIndividualTestTimes(self, individual_test_timings, result_summary):
     """Prints the run times for slow, timeout and crash tests.
     Args:
       individual_test_timings: List of test_shell_thread.TestStats for all
           tests.
-      failures: Dictionary mapping test filenames to list of test_failures.
+      result_summary: Object containing the results of all the tests.
     """
     # Reverse-sort by the time spent in test_shell.
     individual_test_timings.sort(lambda a, b:
@@ -755,13 +820,10 @@ class TestRunner:
         is_timeout_crash_or_slow = True
         slow_tests.append(test_tuple)
 
-      if filename in failures:
-        for failure in failures[filename]:
-          if (failure.__class__ == test_failures.FailureTimeout or
-              failure.__class__ == test_failures.FailureCrash):
-            is_timeout_crash_or_slow = True
-            timeout_or_crash_tests.append(test_tuple)
-            break
+      if (result_summary.results[filename] == test_expectations.TIMEOUT or
+          result_summary.results[filename] == test_expectations.CRASH):
+        is_timeout_crash_or_slow = True
+        timeout_or_crash_tests.append(test_tuple)
 
       if (not is_timeout_crash_or_slow and
           num_printed < self._options.num_slow_tests_to_log):
@@ -829,181 +891,225 @@ class TestRunner:
         "99th percentile: %s, Standard deviation: %s\n" % (
         median, mean, percentile90, percentile99, std_deviation)))
 
-  def _GetResultSummary(self, failures):
-    """Returns a ResultSummary object with failure counts.
-
-    Args:
-      failures: dictionary mapping the test filename to a list of
-          TestFailure objects if the test failed
-    """
-    fixable_counts = {}
-    deferred_counts = {}
-    wontfix_counts = {}
-
-    fixable_failures = set()
-    deferred_failures = set()
-    wontfix_failures = set()
-
-    # Aggregate failures in a dictionary (TestFailure -> frequency),
-    # with known (fixable and wontfix) failures separated out.
-    def AddFailure(dictionary, key):
-      if key in dictionary:
-        dictionary[key] += 1
-      else:
-        dictionary[key] = 1
-
-    for test, failure_types in failures.iteritems():
-      for failure_type in failure_types:
-        # TODO(ojan): Now that we have IMAGE+TEXT, IMAGE and TEXT,
-        # we can avoid adding multiple failures per test since there should
-        # be a unique type of failure for each test. This would make the
-        # statistics printed at the end easier to grok.
-        if self._expectations.IsDeferred(test):
-          count_group = deferred_counts
-          failure_group = deferred_failures
-        elif self._expectations.IsIgnored(test):
-          count_group = wontfix_counts
-          failure_group = wontfix_failures
-        else:
-          count_group = fixable_counts
-          failure_group = fixable_failures
-
-        AddFailure(count_group, failure_type.__class__)
-        failure_group.add(test)
-
-    # Here and below, use the prechuncked expectations object for numbers of
-    # skipped tests. Chunking removes the skipped tests before creating the
-    # expectations file.
-    #
-    # This is a bit inaccurate, since the number of skipped tests will be
-    # duplicated across all shard, but it's the best we can reasonably do.
-
-    deduped_fixable_count = len(fixable_failures |
-        self.prechunk_expectations.GetFixableSkipped())
-    all_fixable_count = len(self._test_files -
-        self._expectations.GetWontFix() - self._expectations.GetDeferred())
-
-    # Breakdown of tests we need to fix and want to pass.
-    # Include skipped fixable tests in the statistics.
-    fixable_result_summary = ResultSummaryEntry(
-        self._expectations.GetFixable() | fixable_failures,
-        fixable_failures,
-        fixable_counts,
-        self.prechunk_expectations.GetFixableSkipped())
-
-    deferred_result_summary = ResultSummaryEntry(
-        self._expectations.GetDeferred(),
-        deferred_failures,
-        deferred_counts,
-        self.prechunk_expectations.GetDeferredSkipped())
-
-    wontfix_result_summary = ResultSummaryEntry(
-        self._expectations.GetWontFix(),
-        wontfix_failures,
-        wontfix_counts,
-        self.prechunk_expectations.GetWontFixSkipped())
-
-    return ResultSummary(deferred_result_summary, wontfix_result_summary,
-        fixable_result_summary, deduped_fixable_count, all_fixable_count)
-
   def _PrintResultSummary(self, result_summary, output):
-    """Print a short summary to stdout about how many tests passed.
+    """Print a short summary to the output file about how many tests passed.
 
     Args:
-      result_summary: ResultSummary object with failure counts.
-      output: file descriptor to write the results to. For example, sys.stdout.
+      output: a file or stream to write to
     """
-    failed = result_summary.fixable_count
-    total = result_summary.all_fixable_count
-    passed = 0
+    failed = len(result_summary.failures)
+    skipped = len(result_summary.tests_by_expectation[test_expectations.SKIP])
+    total = result_summary.total
+    passed = total - failed - skipped
+    pct_passed = 0.0
     if total > 0:
-      passed = float(total - failed) * 100 / total
-    output.write(
-        "\nTest summary: %.1f%% Passed | %s Failures | %s Tests to pass for "
-        "this release\n" % (
-        passed, failed, total))
+      pct_passed = float(passed) * 100 / total
 
-    self._PrintResultSummaryEntry(
-        "Tests to be fixed for the current release",
-        result_summary.fixable,
-        output)
-    self._PrintResultSummaryEntry(
-        "Tests to be fixed for a future release (DEFER)",
-        result_summary.deferred,
-        output)
-    self._PrintResultSummaryEntry("Tests never to be fixed (WONTFIX)",
-        result_summary.wontfix,
-        output)
+    output.write("\n");
+    output.write("=> Total: %d/%d tests passed (%.1f%%)\n" %
+                 (passed, total, pct_passed))
+
+    output.write("\n");
+    self._PrintResultSummaryEntry(result_summary, test_expectations.NOW,
+       "Tests to be fixed for the current release", output)
+
+    output.write("\n");
+    self._PrintResultSummaryEntry(result_summary, test_expectations.DEFER,
+       "Tests we'll fix in the future if they fail (DEFER)", output)
+
+    output.write("\n");
+    self._PrintResultSummaryEntry(result_summary, test_expectations.WONTFIX,
+       "Tests that won't be fixed if they fail (WONTFIX)", output)
+
+  def _PrintResultSummaryEntry(self, result_summary, timeline, heading, output):
+    """Print a summary block of results for a particular timeline of test.
+
+    Args:
+      result_summary: summary to print results for
+      timeline: the timeline to print results for (NOT, WONTFIX, etc.)
+      heading: a textual description of the timeline
+      output: a stream to write to
+    """
+    total = len(result_summary.tests_by_timeline[timeline])
+    not_passing = (total -
+       len(result_summary.tests_by_expectation[test_expectations.PASS] &
+           result_summary.tests_by_timeline[timeline]))
+    output.write("=> %s (%d):\n" % (heading, not_passing))
+    for result in TestExpectationsFile.EXPECTATION_ORDER:
+      if result == test_expectations.PASS:
+        continue
+      results = (result_summary.tests_by_expectation[result] &
+                 result_summary.tests_by_timeline[timeline])
+      desc = TestExpectationsFile.EXPECTATION_DESCRIPTIONS[result]
+      plural = ["", "s"]
+      if not_passing and len(results):
+        pct = len(results) * 100.0 / not_passing
+        output.write("%d test case%s (%4.1f%%) %s\n" %
+                     (len(results), plural[len(results) != 1], pct,
+                      desc[len(results) != 1]))
+
+  def _PrintUnexpectedResults(self, original_results_by_test,
+                              original_results_by_type,
+                              final_results_by_test,
+                              final_results_by_type):
+    """Print unexpected results (regressions) to stdout and a file.
+
+    Args:
+      original_results_by_test: dict mapping tests -> results for the first
+        (original) test run
+      original_results_by_type: dict mapping results -> sets of tests for the
+        first test run
+      final_results_by_test: dict of tests->results after the retries
+        eliminated any flakiness
+      final_results_by_type: dict of results->tests after the retries
+        eliminated any flakiness
+    """
+    print "-" * 78
     print
+    flaky_results_by_type = {}
+    non_flaky_results_by_type = {}
 
-  def _PrintResultSummaryEntry(self, heading, result_summary, output):
-    """Print a summary block of results for a particular category of test.
+    for test, result in original_results_by_test.iteritems():
+      if (result == test_expectations.PASS or
+          (test in final_results_by_test and
+           result == final_results_by_test[test])):
+        if result in non_flaky_results_by_type:
+          non_flaky_results_by_type[result].add(test)
+        else:
+          non_flaky_results_by_type[result] = set([test])
+      else:
+        if result in flaky_results_by_type:
+          flaky_results_by_type[result].add(test)
+        else:
+          flaky_results_by_type[result] = set([test])
+
+    self._PrintUnexpectedResultsByType(non_flaky_results_by_type, False,
+                                       sys.stdout)
+    self._PrintUnexpectedResultsByType(flaky_results_by_type, True, sys.stdout)
+
+    out_filename = os.path.join(self._options.results_directory,
+                                "regressions.txt")
+    output_file = open(out_filename, "w")
+    self._PrintUnexpectedResultsByType(non_flaky_results_by_type, False,
+                                       output_file)
+    output_file.close()
+
+    print "-" * 78
+
+  def _PrintUnexpectedResultsByType(self, results_by_type, is_flaky, output):
+    """Helper method to print a set of unexpected results to an output stream
+    sorted by the result type.
 
     Args:
-      heading: text to print before the block, followed by the total count
-      result_summary: ResultSummaryEntry object with the result counts
-      output: file descriptor to write the results to
+      results_by_type: dict(result_type -> list of files)
+      is_flaky: where these results flaky or not (changes the output)
+      output: stream to write output to
     """
-    output.write("\n=> %s (%d):\n" % (heading, result_summary.total_count))
-    self._PrintResultLine(result_summary.pass_count, result_summary.total_count,
-        "Passed", output)
-    self._PrintResultLine(result_summary.skip_count, result_summary.total_count,
-        "Skipped", output)
-    sorted_keys = sorted(result_summary.failure_counts.keys(),
-                         key=test_failures.FailureSort.SortOrder)
-    for failure in sorted_keys:
-      self._PrintResultLine(result_summary.failure_counts[failure],
-                            result_summary.total_count,
-                            failure.Message(),
-                            output)
+    descriptions = TestExpectationsFile.EXPECTATION_DESCRIPTIONS
+    keywords = {}
+    for k, v in TestExpectationsFile.EXPECTATIONS.iteritems():
+      keywords[v] = k.upper()
 
-  def _PrintResultLine(self, count, total, message, output):
-    if count == 0: return
-    output.write(
-        ("%(count)d test case%(plural)s (%(percent).1f%%) %(message)s\n" %
-            { 'count'   : count,
-              'plural'  : ('s', '')[count == 1],
-              'percent' : float(count) * 100 / total,
-              'message' : message }))
+    for result in TestExpectationsFile.EXPECTATION_ORDER:
+      if result in results_by_type:
+        self._PrintUnexpectedResultSet(output, results_by_type[result],
+                                       is_flaky, descriptions[result][1],
+                                       keywords[result])
 
-  def _CompareFailures(self, failures, print_regressions=False, is_flaky=False):
-    """Determine if the failures in this test run are unexpected.
+  def _PrintUnexpectedResultSet(self, output, filenames, is_flaky,
+                                header_text, keyword):
+    """A helper method to print one set of results (all of the same type)
+    to a stream.
 
     Args:
-      failures: a dictionary mapping the test filename to a list of
-          TestFailure objects if the test failed
-      print_regressions: whether to print the regressions to stdout
-      is_flaky: whether this set of failures represents tests that failed
-          the first time around, but passed on a subsequent run
-
-    Return:
-      A set of regressions (unexpected failures, hangs, or crashes)
+      output: a stream or file object to write() to
+      filenames: a list of absolute filenames
+      header_text: a string to display before the list of filenames
+      keyword: expectation keyword
     """
-    cf = compare_failures.CompareFailures(self._test_files,
-                                          failures,
-                                          self._expectations,
-                                          is_flaky)
-    if print_regressions:
-      cf.PrintRegressions(sys.stdout)
+    filenames = list(filenames)
+    filenames.sort()
+    if not is_flaky and keyword == 'PASS':
+      self._PrintUnexpectedPasses(output, filenames)
+      return
 
-    return cf.GetRegressions()
+    if is_flaky:
+      prefix = "Unexpected flakiness:"
+    else:
+      prefix = "Regressions: Unexpected"
+    output.write("%s %s (%d):\n" % (prefix, header_text, len(filenames)))
+    for filename in filenames:
+      flaky_text = ""
+      if is_flaky:
+        flaky_text = " " + self._expectations.GetExpectationsString(filename)
 
-  def _WriteResultsHtmlFile(self, failures, regressions):
+      filename = path_utils.RelativeTestFilename(filename)
+      output.write("  %s = %s%s\n" % (filename, keyword, flaky_text))
+    output.write("\n")
+
+  def _PrintUnexpectedPasses(self, output, filenames):
+    """Prints the list of files that passed unexpectedly.
+
+    TODO(dpranke): This routine is a bit of a hack, since it's not clear
+    what the best way to output this is. Each unexpected pass might have
+    multiple expected results, and printing all the combinations would
+    be pretty clunky. For now we sort them into three buckets, crashes,
+    timeouts, and everything else.
+
+    Args:
+      output: a stream to write to
+      filenames: list of files that passed
+    """
+    crashes = []
+    timeouts = []
+    failures = []
+    for filename in filenames:
+      expectations = self._expectations.GetExpectations(filename)
+      if test_expectations.CRASH in expectations:
+        crashes.append(filename)
+      elif test_expectations.TIMEOUT in expectations:
+        timeouts.append(filename)
+      else:
+        failures.append(filename)
+
+    self._PrintPassSet(output, "crash", crashes)
+    self._PrintPassSet(output, "timeout", timeouts)
+    self._PrintPassSet(output, "fail", failures)
+
+  def _PrintPassSet(self, output, expected_str, filenames):
+    """Print a set of unexpected passes.
+
+    Args:
+      output: stream to write to
+      expected_str: worst expectation for the given file
+      filenames: list of files in that set
+    """
+    if len(filenames):
+      filenames.sort()
+      output.write("Expected to %s, but passed: (%d)\n" %
+                   (expected_str, len(filenames)))
+      for filename in filenames:
+        filename = path_utils.RelativeTestFilename(filename)
+        output.write("  %s\n" % filename)
+      output.write("\n")
+
+  def _WriteResultsHtmlFile(self, result_summary):
     """Write results.html which is a summary of tests that failed.
 
     Args:
-      failures: a dictionary mapping the test filename to a list of
-          TestFailure objects if the test failed
-      regressions: a set of test filenames that regressed
+      result_summary: a summary of the results :)
 
     Returns:
       True if any results were written (since expected failures may be omitted)
     """
     # test failures
+    failures = result_summary.failures
+    failed_results_by_test, failed_results_by_type = self._OnlyFailures(
+        result_summary.unexpected_results)
     if self._options.full_results_html:
       test_files = failures.keys()
     else:
-      test_files = list(regressions)
+      test_files = failed_results_by_test.keys()
     if not len(test_files):
       return False
 
@@ -1153,15 +1259,15 @@ def main(options, args):
   if options.lint_test_files:
     # Creating the expecations for each platform/target pair does all the
     # test list parsing and ensures it's correct syntax (e.g. no dupes).
-    for platform in test_expectations.TestExpectationsFile.PLATFORMS:
+    for platform in TestExpectationsFile.PLATFORMS:
       test_runner.ParseExpectations(platform, is_debug_mode=True)
       test_runner.ParseExpectations(platform, is_debug_mode=False)
     print ("If there are no fail messages, errors or exceptions, then the "
         "lint succeeded.")
-    return
+    sys.exit(0)
   else:
     test_runner.ParseExpectations(options.platform, options.target == 'Debug')
-    test_runner.PrepareListsAndPrintOutput()
+    result_summary = test_runner.PrepareListsAndPrintOutput()
 
   if options.find_baselines:
     # Record where we found each baseline, then exit.
@@ -1215,7 +1321,7 @@ def main(options, args):
     test_runner.AddTestType(image_diff.ImageDiff)
     if options.fuzzy_pixel_tests:
       test_runner.AddTestType(fuzzy_image_diff.FuzzyImageDiff)
-  has_new_failures = test_runner.Run()
+  has_new_failures = test_runner.Run(result_summary)
   logging.info("Exit status: %d" % has_new_failures)
   sys.exit(has_new_failures)
 
