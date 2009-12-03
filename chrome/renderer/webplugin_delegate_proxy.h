@@ -91,7 +91,7 @@ class WebPluginDelegateProxy
   virtual void DidManualLoadFail();
   virtual void InstallMissingPlugin();
   virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
-      int resource_id,
+      unsigned long resource_id,
       const GURL& url,
       bool notify_needed,
       intptr_t notify_data,
@@ -136,7 +136,7 @@ class WebPluginDelegateProxy
                                   intptr_t existing_stream,
                                   bool notify_needed,
                                   intptr_t notify_data);
-  void OnDeferResourceLoading(int resource_id, bool defer);
+  void OnDeferResourceLoading(unsigned long resource_id, bool defer);
 
 #if defined(OS_MACOSX)
   void OnUpdateGeometry_ACK(int ack_key);

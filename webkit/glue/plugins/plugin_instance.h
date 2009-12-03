@@ -115,7 +115,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // Set object_url to true if the load is for the object tag's
   // url, or false if it's for a url that the plugin
   // fetched through NPN_GetUrl[Notify].
-  PluginStreamUrl* CreateStream(int resource_id,
+  PluginStreamUrl* CreateStream(unsigned long resource_id,
                                 const GURL& url,
                                 const std::string& mime_type,
                                 bool notify_needed,

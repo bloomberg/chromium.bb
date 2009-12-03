@@ -54,7 +54,7 @@ struct PluginHostMsg_URLRequest_Params {
 };
 
 struct PluginMsg_URLRequestReply_Params {
-  int resource_id;
+  unsigned long resource_id;
   GURL url;
   bool notify_needed;
   intptr_t notify_data;
@@ -62,7 +62,7 @@ struct PluginMsg_URLRequestReply_Params {
 };
 
 struct PluginMsg_DidReceiveResponseParams {
-  int id;
+  unsigned long id;
   std::string mime_type;
   std::string headers;
   uint32 expected_length;

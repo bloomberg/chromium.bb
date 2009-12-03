@@ -97,7 +97,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   virtual void DidManualLoadFail();
   virtual void InstallMissingPlugin();
   virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
-      int resource_id,
+      unsigned long resource_id,
       const GURL& url,
       bool notify_needed,
       intptr_t notify_data,
@@ -332,7 +332,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // we've shut down the plugin, but can't delete ourselves until the last
   // idle event comes in.
   bool waiting_to_die_;
-  
+
   // The most recently seen offset between global and browser-window-local
   // coordinates. We use this to keep the placeholder Carbon WindowRef's origin
   // in sync with the actual browser window, without having to pass that

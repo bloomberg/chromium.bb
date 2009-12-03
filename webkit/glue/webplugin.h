@@ -67,7 +67,7 @@ class WebPlugin {
   // Cancels a pending request.
   virtual void SetWindowlessPumpEvent(HANDLE pump_messages_event) = 0;
 #endif
-  virtual void CancelResource(int id) = 0;
+  virtual void CancelResource(unsigned long id) = 0;
   virtual void Invalidate() = 0;
   virtual void InvalidateRect(const gfx::Rect& rect) = 0;
 
@@ -125,7 +125,8 @@ class WebPlugin {
 
   // Defers the loading of the resource identified by resource_id. This is
   // controlled by the defer parameter.
-  virtual void SetDeferResourceLoading(int resource_id, bool defer) = 0;
+  virtual void SetDeferResourceLoading(unsigned long resource_id,
+                                       bool defer) = 0;
 
   // Gets the WebPluginDelegate that implements the interface.
   // This API is only for use with Pepper, and hence only with

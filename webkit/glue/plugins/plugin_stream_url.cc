@@ -12,7 +12,7 @@
 namespace NPAPI {
 
 PluginStreamUrl::PluginStreamUrl(
-    int resource_id,
+    unsigned long resource_id,
     const GURL &url,
     PluginInstance *instance,
     bool notify_needed,

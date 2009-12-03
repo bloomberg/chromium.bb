@@ -60,7 +60,7 @@ PluginInstance::~PluginInstance() {
     plugin_->CloseInstance();
 }
 
-PluginStreamUrl* PluginInstance::CreateStream(int resource_id,
+PluginStreamUrl* PluginInstance::CreateStream(unsigned long resource_id,
                                               const GURL& url,
                                               const std::string& mime_type,
                                               bool notify_needed,

@@ -47,7 +47,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   void SetWindowlessPumpEvent(HANDLE pump_messages_event);
 #endif
 
-  void CancelResource(int id);
+  void CancelResource(unsigned long id);
   void Invalidate();
   void InvalidateRect(const gfx::Rect& rect);
   NPObject* GetWindowScriptNPObject();
@@ -126,7 +126,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
                                 bool notify_needed,
                                 intptr_t notify_data);
 
-  void SetDeferResourceLoading(int resource_id, bool defer);
+  void SetDeferResourceLoading(unsigned long resource_id, bool defer);
 
   bool IsOffTheRecord();
 

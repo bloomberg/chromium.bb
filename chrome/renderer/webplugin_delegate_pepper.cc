@@ -207,7 +207,7 @@ FilePath WebPluginDelegatePepper::GetPluginPath() {
 }
 
 WebPluginResourceClient* WebPluginDelegatePepper::CreateResourceClient(
-    int resource_id, const GURL& url, bool notify_needed,
+    unsigned long resource_id, const GURL& url, bool notify_needed,
     intptr_t notify_data, intptr_t existing_stream) {
   // Stream already exists. This typically happens for range requests
   // initiated via NPN_RequestRead.

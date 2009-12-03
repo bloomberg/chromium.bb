@@ -119,14 +119,16 @@ class WebPluginImpl : public WebPlugin,
                              const char* url);
 
   // Cancels a pending request.
-  void CancelResource(int id);
+  void CancelResource(unsigned long id);
 
-  // Returns the next avaiable resource id.
-  int GetNextResourceId();
+  // Returns the next avaiable resource id. Returns 0 if the operation fails.
+  // It may fail if the page has already been closed.
+  unsigned long GetNextResourceId();
 
   // Initiates HTTP GET/POST requests.
   // Returns true on success.
-  bool InitiateHTTPRequest(int resource_id, WebPluginResourceClient* client,
+  bool InitiateHTTPRequest(unsigned long resource_id,
+                           WebPluginResourceClient* client,
                            const char* method, const char* buf, int buf_len,
                            const GURL& url, const char* range_info,
                            bool use_plugin_src_as_referer);
@@ -194,7 +196,7 @@ class WebPluginImpl : public WebPlugin,
                                 intptr_t existing_stream, bool notify_needed,
                                 intptr_t notify_data);
 
-  void SetDeferResourceLoading(int resource_id, bool defer);
+  void SetDeferResourceLoading(unsigned long resource_id, bool defer);
 
   // Ignore in-process plugins mode for this flag.
   bool IsOffTheRecord() { return false; }
@@ -219,7 +221,7 @@ class WebPluginImpl : public WebPlugin,
   void OnDownloadPluginSrcUrl();
 
   struct ClientInfo {
-    int id;
+    unsigned long id;
     WebPluginResourceClient* client;
     WebKit::WebURLRequest request;
     bool pending_failure_notification;

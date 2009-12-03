@@ -75,7 +75,7 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   virtual void DidManualLoadFail();
   virtual void InstallMissingPlugin();
   virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
-      int resource_id,
+      unsigned long resource_id,
       const GURL& url,
       bool notify_needed,
       intptr_t notify_data,

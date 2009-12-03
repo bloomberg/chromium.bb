@@ -96,7 +96,7 @@ void WebPluginProxy::SetWindowlessPumpEvent(HANDLE pump_messages_event) {
 }
 #endif
 
-void WebPluginProxy::CancelResource(int id) {
+void WebPluginProxy::CancelResource(unsigned long id) {
   Send(new PluginHostMsg_CancelResource(route_id_, id));
   resource_clients_.erase(id);
 }
@@ -582,7 +582,8 @@ void WebPluginProxy::InitiateHTTPRangeRequest(const char* url,
                                                   notify_needed, notify_data));
 }
 
-void WebPluginProxy::SetDeferResourceLoading(int resource_id, bool defer) {
+void WebPluginProxy::SetDeferResourceLoading(unsigned long resource_id,
+                                             bool defer) {
   Send(new PluginHostMsg_DeferResourceLoading(route_id_, resource_id, defer));
 }
 

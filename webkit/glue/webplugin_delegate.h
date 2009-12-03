@@ -121,11 +121,12 @@ class WebPluginDelegate {
   virtual void InstallMissingPlugin() = 0;
 
   // Creates a WebPluginResourceClient instance and returns the same.
-  virtual WebPluginResourceClient* CreateResourceClient(int resource_id,
-                                                        const GURL& url,
-                                                        bool notify_needed,
-                                                        intptr_t notify_data,
-                                                        intptr_t stream) = 0;
+  virtual WebPluginResourceClient* CreateResourceClient(
+      unsigned long resource_id,
+      const GURL& url,
+      bool notify_needed,
+      intptr_t notify_data,
+      intptr_t stream) = 0;
 
   // The following methods are for use in implementing Pepper renderers.
   // They should not be called outside of that context.
