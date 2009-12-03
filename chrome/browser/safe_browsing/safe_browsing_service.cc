@@ -290,8 +290,8 @@ void SafeBrowsingService::CloseDatabase() {
   //    would lead to an infinite loop in DatabaseLoadComplete(), and even if it
   //    didn't, it would be pointless since we'd just want to recreate.
   //
-  // The first two cases above are handled by checking database_available().
-  if (!database_available() || !queued_checks_.empty())
+  // The first two cases above are handled by checking DatabaseAvailable().
+  if (!DatabaseAvailable() || !queued_checks_.empty())
     return;
 
   closing_database_ = true;
@@ -400,15 +400,19 @@ void SafeBrowsingService::OnIOShutdown() {
   gethash_requests_.clear();
 }
 
+bool SafeBrowsingService::DatabaseAvailable() const {
+  AutoLock lock(database_lock_);
+  return !closing_database_ && (database_ != NULL);
+}
+
 bool SafeBrowsingService::MakeDatabaseAvailable() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(enabled_);
-  if (!database_) {
-    DCHECK(!closing_database_);
-    safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &SafeBrowsingService::GetDatabase));
-  }
-  return database_available();
+  if (DatabaseAvailable())
+    return true;
+  safe_browsing_thread_->message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &SafeBrowsingService::GetDatabase));
+  return false;
 }
 
 SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
@@ -426,7 +430,12 @@ SafeBrowsingDatabase* SafeBrowsingService::GetDatabase() {
   Callback0::Type* chunk_callback =
       NewCallback(this, &SafeBrowsingService::ChunkInserted);
   database->Init(path, chunk_callback);
-  database_ = database;
+  {
+    // Acquiring the lock here guarantees correct ordering between the writes to
+    // the new database object above, and the setting of |databse_| below.
+    AutoLock lock(database_lock_);
+    database_ = database;
+  }
 
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
@@ -528,7 +537,7 @@ void SafeBrowsingService::DatabaseLoadComplete() {
 
   // If the database isn't already available, calling CheckUrl() in the loop
   // below will add the check back to the queue, and we'll infinite-loop.
-  DCHECK(database_available());
+  DCHECK(DatabaseAvailable());
   while (!queued_checks_.empty()) {
     QueuedCheck check = queued_checks_.front();
     HISTOGRAM_TIMES("SB.QueueDelay", Time::Now() - check.start);
@@ -614,6 +623,12 @@ void SafeBrowsingService::OnCloseDatabase() {
   // accessing the database, so it's safe to delete and then NULL the pointer.
   delete database_;
   database_ = NULL;
+
+  // Acquiring the lock here guarantees correct ordering between the resetting
+  // of |database_| above and of |closing_database_| below, which ensures there
+  // won't be a window during which the IO thread falsely believes the database
+  // is available.
+  AutoLock lock(database_lock_);
   closing_database_ = false;
 }
 
@@ -727,7 +742,7 @@ void SafeBrowsingService::ReportMalware(const GURL& malware_url,
   if (!enabled_)
     return;
 
-  if (database_) {
+  if (DatabaseAvailable()) {
     // Check if 'page_url' is already blacklisted (exists in our cache). Only
     // report if it's not there.
     std::string list;

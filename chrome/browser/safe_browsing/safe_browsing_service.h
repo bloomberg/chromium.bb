@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/hash_tables.h"
+#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -189,9 +190,7 @@ class SafeBrowsingService
   void OnIOShutdown();
 
   // Returns whether |database_| exists and is accessible.
-  bool database_available() const {
-    return !closing_database_ && (database_ != NULL);
-  }
+  bool DatabaseAvailable() const;
 
   // Called on the IO thread.  If the database does not exist, queues up a call
   // on the db thread to create it.  Returns whether the database is available.
@@ -278,6 +277,9 @@ class SafeBrowsingService
   // The sqlite database.  We don't use a scoped_ptr because it needs to be
   // destructed on a different thread than this object.
   SafeBrowsingDatabase* database_;
+
+  // Lock used to prevent possible data races due to compiler optimizations.
+  mutable Lock database_lock_;
 
   // Handles interaction with SafeBrowsing servers.
   SafeBrowsingProtocolManager* protocol_manager_;
