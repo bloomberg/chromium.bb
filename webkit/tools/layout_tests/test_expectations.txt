@@ -2946,9 +2946,6 @@ BUG27850 : LayoutTests/fast/history/back-forward-reset-after-error-handling.html
 BUG27849 : LayoutTests/http/tests/security/isolatedWorld/didClearWindowObject.html = TEXT
 
 // Failures from merge 51062:51075
-BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom1-exception.html = TEXT
-BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom3-exception.html = TEXT
-BUG27996 : LayoutTests/fast/inspector-support/uncaught-dom8-exception.html = TEXT
 BUG28034 MAC : LayoutTests/http/tests/security/XFrameOptions/x-frame-options-deny.html = PASS FAIL
 
 BUG28040 WIN LINUX DEBUG : LayoutTests/fast/body-propagation/overflow/004.html = PASS FAIL
