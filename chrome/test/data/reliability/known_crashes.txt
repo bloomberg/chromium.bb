@@ -50,6 +50,8 @@ REGEX : ^webplugindelegateimpl::nativewndproc$
 
 PREFIX : webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::dorunloop
 
+PREFIX : base::subtle::refcountedthreadsafebase::release___messageloop::posttask_helper____tls_end
+
 # End mysterious crash section.
 
 # 9615
