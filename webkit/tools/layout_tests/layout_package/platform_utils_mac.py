@@ -103,8 +103,12 @@ def ShutDownHTTPServer(server_process):
     #   $ killall -u $USER -TERM lighttpd
     #   killall: illegal option -- T
     # Use of the earlier -TERM placement is just fine on 10.5.
-    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'])
-    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'httpd'])
+    null = open("/dev/null");
+    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'],
+                    stderr=null)
+    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'httpd'],
+                    stderr=null)
+    null.close()
   else:
     os.kill(server_process.pid, signal.SIGTERM)
 
