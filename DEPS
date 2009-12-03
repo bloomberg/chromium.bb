@@ -109,6 +109,9 @@ deps_os = {
     "src/third_party/python_24":
       "/trunk/deps/third_party/python_24@22967",
 
+    "src/third_party/lighttpd":
+      "/trunk/deps/third_party/lighttpd@33727",
+
     "src/third_party/ffmpeg/binaries/chromium/win/ia32":
       "/trunk/deps/third_party/ffmpeg/binaries/win@" + Var("ffmpeg_revision"),
 
@@ -127,6 +130,9 @@ deps_os = {
       "http://google-toolbox-for-mac.googlecode.com/svn/trunk@259",
     "src/third_party/pdfsqueeze":
       "http://pdfsqueeze.googlecode.com/svn/trunk@2",
+    "src/third_party/lighttpd":
+      "/trunk/deps/third_party/lighttpd@33727",
+
     "src/third_party/WebKit/WebKit/mac":
       Var("webkit_trunk") + "/WebKit/mac@" + Var("webkit_revision"),
     "src/third_party/WebKit/WebKitLibraries":
