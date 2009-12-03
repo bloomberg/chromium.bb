@@ -20,6 +20,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+DISTCHECK_CONFIGURE_FLAGS = --enable-nouveau-experimental-api --enable-radeon-experimental-api
+
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = libdrm.pc
 
