@@ -11,15 +11,17 @@
 #include "base/gfx/rect.h"
 #include "chrome/common/owned_widget_gtk.h"
 
+class TabContents;
+
 class SadTabGtk {
  public:
-  SadTabGtk();
+  explicit SadTabGtk(TabContents* tab_contents);
   ~SadTabGtk();
 
   GtkWidget* widget() { return event_box_.get(); }
 
  private:
-  // expose-event handler that draws the gradient background of the SadTabGtk.
+  // Expose-event handler that draws the gradient background of the SadTabGtk.
   static gboolean OnBackgroundExposeThunk(GtkWidget* widget,
                                           GdkEventExpose* event,
                                           SadTabGtk* sad_tab) {
@@ -28,22 +30,28 @@ class SadTabGtk {
 
   gboolean OnBackgroundExpose(GtkWidget* widget, GdkEventExpose* event);
 
-  // size-allocate handler to adjust dimensions for children widgets.
+  // Size-allocate handler to adjust dimensions for children widgets.
   static void OnSizeAllocateThunk(GtkWidget* widget,
-                                      GtkAllocation* allocation,
-                                      SadTabGtk* sad_tab) {
+                                  GtkAllocation* allocation,
+                                  SadTabGtk* sad_tab) {
     sad_tab->OnSizeAllocate(widget, allocation);
   }
 
   void OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation);
 
-  // click-event handler that opens the url of the clicked link.
-  static void OnLinkButtonClick(GtkWidget* button, const char* url);
+  // Clicked-event handler for link to launch associated url.
+  static void OnLinkButtonClickThunk(GtkWidget* widget,
+                                     SadTabGtk* sad_tab) {
+    sad_tab->OnLinkButtonClick();
+  }
+
+  void OnLinkButtonClick();
 
   // Track the view's width and height from size-allocate signals.
   int width_;
   int height_;
 
+  TabContents* tab_contents_;
   OwnedWidgetGtk event_box_;
   GtkWidget* top_padding_;
   GtkWidget* message_;

@@ -10,8 +10,8 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/lazy_instance.h"
-#include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
@@ -67,9 +67,12 @@ GtkWidget* MakeWhiteMarkupLabel(const char* format, const std::string& str) {
 
 }  // namespace
 
-SadTabGtk::SadTabGtk()
+SadTabGtk::SadTabGtk(TabContents* tab_contents)
   : width_(0),
-    height_(0) {
+    height_(0),
+    tab_contents_(tab_contents) {
+  DCHECK(tab_contents_);
+
   // Use an event box to get the background painting correctly.
   event_box_.Own(gtk_event_box_new());
   gtk_widget_set_app_paintable(event_box_.get(), TRUE);
@@ -110,16 +113,17 @@ SadTabGtk::SadTabGtk()
   gtk_box_pack_start(GTK_BOX(vbox), message_, FALSE, FALSE,
                      kMessageLinkSpacing);
 
-  // Add the learn-more link and center-align it in an alignment.
-  GtkWidget* link = gtk_chrome_link_button_new(
-      l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
-  gtk_chrome_link_button_set_normal_color(GTK_CHROME_LINK_BUTTON(link),
-                                          &gfx::kGdkWhite);
-  g_signal_connect(link, "clicked", G_CALLBACK(OnLinkButtonClick),
-                   const_cast<char*>(sad_tab_constants.learn_more_url.c_str()));
-  GtkWidget* link_alignment = gtk_alignment_new(0.5, 0.5, 0.0, 0.0);
-  gtk_container_add(GTK_CONTAINER(link_alignment), link);
-  gtk_box_pack_start(GTK_BOX(vbox), link_alignment, FALSE, FALSE, 0);
+  if (tab_contents_ != NULL) {
+    // Add the learn-more link and center-align it in an alignment.
+    GtkWidget* link = gtk_chrome_link_button_new(
+        l10n_util::GetStringUTF8(IDS_LEARN_MORE).c_str());
+    gtk_chrome_link_button_set_normal_color(GTK_CHROME_LINK_BUTTON(link),
+                                            &gfx::kGdkWhite);
+    g_signal_connect(link, "clicked", G_CALLBACK(OnLinkButtonClickThunk), this);
+    GtkWidget* link_alignment = gtk_alignment_new(0.5, 0.5, 0.0, 0.0);
+    gtk_container_add(GTK_CONTAINER(link_alignment), link);
+    gtk_box_pack_start(GTK_BOX(vbox), link_alignment, FALSE, FALSE, 0);
+  }
 
   gtk_widget_show_all(event_box_.get());
 }
@@ -177,8 +181,10 @@ void SadTabGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   }
 }
 
-// static
-void SadTabGtk::OnLinkButtonClick(GtkWidget* button, const char* url) {
-  BrowserList::GetLastActive()->OpenURL(GURL(url), GURL(), CURRENT_TAB,
-                                        PageTransition::LINK);
+void SadTabGtk::OnLinkButtonClick() {
+  if (tab_contents_ != NULL) {
+    const SadTabGtkConstants& sad_tab_constants = g_sad_tab_constants.Get();
+    tab_contents_->OpenURL(GURL(sad_tab_constants.learn_more_url.c_str()),
+        GURL(), CURRENT_TAB, PageTransition::LINK);
+  }
 }

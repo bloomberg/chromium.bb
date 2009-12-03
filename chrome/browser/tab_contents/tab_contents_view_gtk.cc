@@ -260,8 +260,8 @@ void TabContentsViewGtk::SetPageTitle(const std::wstring& title) {
 }
 
 void TabContentsViewGtk::OnTabCrashed() {
-  if (!sad_tab_.get()) {
-    sad_tab_.reset(new SadTabGtk);
+  if (tab_contents() != NULL && !sad_tab_.get()) {
+    sad_tab_.reset(new SadTabGtk(tab_contents()));
     InsertIntoContentArea(sad_tab_->widget());
     gtk_widget_show(sad_tab_->widget());
   }
