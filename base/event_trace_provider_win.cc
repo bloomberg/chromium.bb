@@ -99,7 +99,7 @@ ULONG EtwTraceProvider::Log(const EtwEventClass& event_class,
 
   event.fields[0].DataPtr = reinterpret_cast<ULONG64>(message);
   event.fields[0].Length = message ?
-      sizeof(message[0]) * (1 + strlen(message)) : 0;
+      static_cast<ULONG>(sizeof(message[0]) * (1 + strlen(message))) : 0;
 
   return ::TraceEvent(session_handle_, &event.header);
 }
@@ -113,7 +113,7 @@ ULONG EtwTraceProvider::Log(const EtwEventClass& event_class,
 
   event.fields[0].DataPtr = reinterpret_cast<ULONG64>(message);
   event.fields[0].Length = message ?
-      sizeof(message[0]) * (1 + wcslen(message)) : 0;
+      static_cast<ULONG>(sizeof(message[0]) * (1 + wcslen(message))) : 0;
 
   return ::TraceEvent(session_handle_, &event.header);
 }
