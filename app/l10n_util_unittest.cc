@@ -477,12 +477,14 @@ TEST_F(L10nUtilTest, GetTextDirection) {
   EXPECT_EQ(l10n_util::RIGHT_TO_LEFT, GetTextDirection("he_IL"));
   // iw is an obsolete code for Hebrew.
   EXPECT_EQ(l10n_util::RIGHT_TO_LEFT, GetTextDirection("iw"));
-#if 0
-  // Enable these when we localize to Farsi, Urdu, Azerbaijani
-  // written in Arabic and Dhivehi. At the moment, our copy of
-  // ICU data does not have entry for them.
+  // Although we're not yet localized to Farsi and Urdu, we
+  // do have the text layout direction information for them.
   EXPECT_EQ(l10n_util::RIGHT_TO_LEFT, GetTextDirection("fa"));
   EXPECT_EQ(l10n_util::RIGHT_TO_LEFT, GetTextDirection("ur"));
+#if 0
+  // Enable these when we include the minimal locale data for Azerbaijani
+  // written in Arabic and Dhivehi. At the moment, our copy of
+  // ICU data does not have entries for them.
   EXPECT_EQ(l10n_util::RIGHT_TO_LEFT, GetTextDirection("az_Arab"));
   // Dhivehi that uses Thaana script.
   EXPECT_EQ(l10n_util::RIGHT_TO_LEFT, GetTextDirection("dv"));

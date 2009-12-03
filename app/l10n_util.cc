@@ -188,7 +188,8 @@ void GetLanguageAndRegionFromOS(std::string* lang, std::string* region) {
   // Later we may have to change this to be OS-dependent so that
   // it's not affected by ICU's default locale. It's all right
   // to do this way because SetICUDefaultLocale is internal
-  // to this file and we know where/when it's called.
+  // to this file and we know that it's not yet called when this function
+  // is called.
   icu::Locale locale = icu::Locale::getDefault();
   const char* language = locale.getLanguage();
   const char* country = locale.getCountry();
@@ -225,14 +226,13 @@ std::string ICULocaleName(const std::string& locale_string) {
 }
 
 // Sets the default locale of ICU.
-// When the application locale (UI locale) of Chrome is specified with
-// '--lang' command line flag or 'intl.app_locale' entry in the "Preferences",
+// Once the application locale of Chrome in GetApplicationLocale is determined,
 // the default locale of ICU need to be changed to match the application locale
 // so that ICU functions work correctly in a locale-dependent manner.
 // This is handy in that we don't have to call GetApplicationLocale()
 // everytime we call locale-dependent ICU APIs as long as we make sure
 // that this is called before any locale-dependent API is called.
-UBool SetICUDefaultLocale(const std::string& locale_string) {
+void SetICUDefaultLocale(const std::string& locale_string) {
   icu::Locale locale(ICULocaleName(locale_string).c_str());
   UErrorCode error_code = U_ZERO_ERROR;
   icu::Locale::setDefault(locale, error_code);
@@ -240,7 +240,7 @@ UBool SetICUDefaultLocale(const std::string& locale_string) {
   // an ID and setDefault seems to always succeed (regardless of the
   // presence of actual locale data). However,
   // it does not hurt to have it as a sanity check.
-  return U_SUCCESS(error_code);
+  DCHECK(U_SUCCESS(error_code));
 }
 
 // Returns true if |locale_name| has an alias in the ICU data file.
@@ -297,13 +297,18 @@ bool IsLocaleAvailable(const std::string& locale,
   if (!file_util::IsFilenameLegal(ASCIIToUTF16(locale)))
     return false;
 
+  // IsLocalePartiallyPopulated() can be called here for an early return w/o
+  // checking the resource availability below. It'd help when Chrome is run
+  // under a system locale Chrome is not localized to (e.g.Farsi on Linux),
+  // but it'd slow down the start up time a little bit for locales Chrome is
+  // localized to. So, we don't call it here.
   if (!l10n_util::IsLocaleSupportedByOS(locale))
     return false;
 
   FilePath test_path = locale_path;
   test_path =
     test_path.AppendASCII(locale).ReplaceExtension(kLocaleFileExtension);
-  return file_util::PathExists(test_path) && SetICUDefaultLocale(locale);
+  return file_util::PathExists(test_path);
 }
 
 bool CheckAndResolveLocale(const std::string& locale,
@@ -318,7 +323,7 @@ bool CheckAndResolveLocale(const std::string& locale,
   // does not support but available on Windows. We fall
   // back to en-US in GetApplicationLocale so that it's a not critical,
   // but we can do better.
-  std::string::size_type hyphen_pos = locale.find(L'-');
+  std::string::size_type hyphen_pos = locale.find('-');
   if (hyphen_pos != std::string::npos && hyphen_pos > 0) {
     std::string lang(locale, 0, hyphen_pos);
     std::string region(locale, hyphen_pos + 1);
@@ -463,21 +468,25 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   // Only fallback to the system locale if LANGUAGE is not specified.
   // We emulate gettext's behavior here, which ignores LANG/LC_MESSAGES/LC_ALL
   // when LANGUAGE is specified. If no language specified in LANGUAGE is valid,
-  // then just fallback to the default language, which is en-US for us.
+  // then just fallback to the locale based on LC_ALL/LANG.
   if (candidates.empty())
     candidates.push_back(system_locale);
 #endif
 
   std::vector<std::string>::const_iterator i = candidates.begin();
   for (; i != candidates.end(); ++i) {
-    if (CheckAndResolveLocale(*i, locale_path, &resolved_locale))
+    if (CheckAndResolveLocale(*i, locale_path, &resolved_locale)) {
+      SetICUDefaultLocale(resolved_locale);
       return resolved_locale;
+    }
   }
 
   // Fallback on en-US.
   const std::string fallback_locale("en-US");
-  if (IsLocaleAvailable(fallback_locale, locale_path))
+  if (IsLocaleAvailable(fallback_locale, locale_path)) {
+    SetICUDefaultLocale(fallback_locale);
     return fallback_locale;
+  }
 
   // No locale data file was found; we shouldn't get here.
   NOTREACHED();
@@ -499,13 +508,12 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
   if (app_locale.empty())
     app_locale = "en-US";
 
-  // Windows/Linux call CheckAndResolveLocale which calls IsLocaleAvailable
-  // which calls SetICUDefaultLocale to let ICU use the same locale.  Mac
-  // doesn't use a locale directory tree of resources (it uses Mac style
-  // resources), so mirror that ICU behavior by calling SetICUDefaultLocale
-  // directly.
-  UBool icu_set = SetICUDefaultLocale(app_locale);
-  DCHECK(icu_set);
+  // Windows/Linux call SetICUDefaultLocale after determining the actual locale
+  // with CheckAndResolveLocal to make ICU APIs work in that locale.
+  // Mac doesn't use a locale directory tree of resources (it uses Mac style
+  // resources), so mirror the Windows/Linux behavior of calling
+  // SetICUDefaultLocale.
+  SetICUDefaultLocale(app_locale);
   return app_locale;
 #endif  // !defined(OS_MACOSX)
 }
@@ -784,21 +792,11 @@ TextDirection GetTextDirection() {
 }
 
 TextDirection GetTextDirectionForLocale(const char* locale_name) {
-  UScriptCode scripts[10];  // 10 scripts should be enough for any locale.
-  UErrorCode error = U_ZERO_ERROR;
-  int n = uscript_getCode(locale_name, scripts, 10, &error);
-  DCHECK(U_SUCCESS(error) && n > 0);
-
-  // Checking Arabic and Hebrew scripts cover Arabic, Hebrew, Farsi,
-  // Urdu and Azerbaijani written in Arabic. Syriac script
-  // (another RTL) is not a living script and we didn't yet localize
-  // to locales using other living RTL scripts such as Thaana and N'ko.
-  // TODO(jungshik): Use a new ICU API, uloc_getCharacterOrientation to avoid
-  // 'hardcoded-comparision' with Arabic and Hebrew scripts once we
-  // upgrade ICU to 4.0 or later or port it to our copy of ICU.
-  if (scripts[0] == USCRIPT_ARABIC || scripts[0] == USCRIPT_HEBREW)
-    return RIGHT_TO_LEFT;
-  return LEFT_TO_RIGHT;
+  UErrorCode status = U_ZERO_ERROR;
+  ULayoutType layout_dir = uloc_getCharacterOrientation(locale_name, &status);
+  DCHECK(U_SUCCESS(status));
+  // Treat anything other than RTL as LTR.
+  return (layout_dir != ULOC_LAYOUT_RTL) ? LEFT_TO_RIGHT : RIGHT_TO_LEFT;
 }
 
 TextDirection GetFirstStrongCharacterDirection(const std::wstring& text) {
