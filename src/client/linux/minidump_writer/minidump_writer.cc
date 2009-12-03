@@ -73,7 +73,7 @@ enum {
   MD_LINUX_LSB_RELEASE           = 0x47670005,    /* /etc/lsb-release */
   MD_LINUX_CMD_LINE              = 0x47670006,    /* /proc/$x/cmdline */
   MD_LINUX_ENVIRON               = 0x47670007,    /* /proc/$x/environ */
-  MD_LINUX_AUXV                  = 0x47670008,    /* /proc/$x/auxv    */
+  MD_LINUX_AUXV                  = 0x47670008     /* /proc/$x/auxv    */
 };
 
 // Minidump defines register structures which are different from the raw
