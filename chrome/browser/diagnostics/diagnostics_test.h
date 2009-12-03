@@ -32,7 +32,9 @@ class DiagnosticTest : public DiagnosticsModel::TestInfo {
   bool Execute(DiagnosticsModel::Observer* observer, DiagnosticsModel* model) {
     result_ = DiagnosticsModel::TEST_RUNNING;
     observer->OnProgress(GetId(), 0, model);
-    return ExecuteImpl(observer);
+    bool keep_going = ExecuteImpl(observer);
+    observer->OnFinished(GetId(), model);
+    return keep_going;
   }
 
   virtual string16 GetTitle() {

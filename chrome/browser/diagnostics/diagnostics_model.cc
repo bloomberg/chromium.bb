@@ -77,23 +77,27 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
 // TODO(cpu): Localize strings.
 class UserPathsTest : public DiagnosticTest {
  public:
-  UserPathsTest() : DiagnosticTest(ASCIIToUTF16("User Directory")) {}
+  UserPathsTest() : DiagnosticTest(ASCIIToUTF16("User data Directory")) {}
 
   // Not used at the moment but it allows one test to query the status
   // of another test so we can build test dependencies.
   virtual int GetId() { return 0; }
 
   virtual bool ExecuteImpl(DiagnosticsModel::Observer* observer) {
-    FilePath data_dir;
-    if (!PathService::Get(chrome::DIR_USER_DATA, &data_dir)) {
+    FilePath dir;
+    if (!PathService::Get(chrome::DIR_USER_DATA, &dir)) {
       RecordStopFailure(ASCIIToUTF16("Path provider failure"));
       return false;
     }
-    if (!file_util::PathExists(data_dir)) {
+    if (!file_util::PathExists(dir)) {
       RecordFailure(ASCIIToUTF16("No user data dir found"));
       return true;
     }
-    RecordSuccess(ASCIIToUTF16("Directory found"));
+    if (!file_util::PathIsWritable(dir)) {
+      RecordFailure(ASCIIToUTF16("User data dir is not writable"));
+      return true;
+    }
+    RecordSuccess(ASCIIToUTF16("Directory exists and is writable"));
     return true;
   }
 

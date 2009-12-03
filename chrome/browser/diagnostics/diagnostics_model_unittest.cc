@@ -27,7 +27,7 @@ class DiagnosticsModelTest : public testing::Test {
 // The test observer is used to know if the callbacks are being called.
 class UTObserver: public DiagnosticsModel::Observer {
  public:
-  UTObserver() : done_(false), progress_called_(0) {}
+  UTObserver() : done_(false), progress_called_(0), finished_(0) {}
 
   virtual void OnProgress(int id, int percent, DiagnosticsModel* model) {
     EXPECT_TRUE(model != NULL);
@@ -40,6 +40,7 @@ class UTObserver: public DiagnosticsModel::Observer {
 
   virtual void OnFinished(int id, DiagnosticsModel* model) {
     EXPECT_TRUE(model != NULL);
+    ++finished_;
   }
 
   virtual void OnDoneAll(DiagnosticsModel* model) {
@@ -51,9 +52,12 @@ class UTObserver: public DiagnosticsModel::Observer {
 
   int progress_called() const { return progress_called_; }
 
+  int finished() const { return finished_;}
+
  private:
   bool done_;
   int progress_called_;
+  int finished_;
 };
 
 // Test that the initial state is correct. We only have one test
@@ -73,4 +77,5 @@ TEST_F(DiagnosticsModelTest, RunAll) {
   EXPECT_TRUE(observer.done());
   EXPECT_GT(observer.progress_called(), 0);
   EXPECT_EQ(1, model_->GetTestRunCount());
+  EXPECT_EQ(1, observer.finished());
 }

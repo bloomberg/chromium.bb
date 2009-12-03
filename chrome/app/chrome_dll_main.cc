@@ -45,6 +45,7 @@
 #include "base/stats_table.h"
 #include "base/string_util.h"
 #include "chrome/app/scoped_ole_initializer.h"
+#include "chrome/browser/diagnostics/diagnostics_main.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_counters.h"
@@ -352,6 +353,12 @@ int ChromeMain(int argc, char** argv) {
   const CommandLine& parsed_command_line = *CommandLine::ForCurrentProcess();
   std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
+
+  // If we are in diagnostics mode this is the end of the line. After the
+  // diagnostics are run the process will invariably exit.
+  if (parsed_command_line.HasSwitch(switches::kDiagnostics)) {
+    return DiagnosticsMain(parsed_command_line);
+  }
 
 #if defined(OS_MACOSX)
   mac_util::SetOverrideAppBundlePath(chrome::GetFrameworkBundlePath());
