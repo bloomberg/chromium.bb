@@ -5,29 +5,39 @@
 """Classes for failures that occur during tests."""
 
 import os
+import test_expectations
 
-class FailureSort(object):
-  """A repository for failure sort orders and tool to facilitate sorting."""
+def DetermineResultType(failure_list):
+  """Takes a set of test_failures and returns which result type best fits
+  the list of failures. "Best fits" means we use the worst type of failure.
 
-  # Each failure class should have an entry in this dictionary. Sort order 1
-  # will be sorted first in the list. Failures with the same numeric sort
-  # order will be sorted alphabetically by Message().
-  SORT_ORDERS = {
-    'FailureTextMismatch': 1,
-    'FailureImageHashMismatch': 2,
-    'FailureTimeout': 3,
-    'FailureCrash': 4,
-    'FailureMissingImageHash': 5,
-    'FailureMissingImage': 6,
-    'FailureMissingResult': 7,
-    'FailureImageHashIncorrect': 8,
-  }
+  Returns:
+    one of the test_expectations result types - PASS, TEXT, CRASH, etc."""
 
-  @staticmethod
-  def SortOrder(failure_type):
-    """Returns a tuple of the class's numeric sort order and its message."""
-    order = FailureSort.SORT_ORDERS.get(failure_type.__name__, -1)
-    return (order, failure_type.Message())
+  if not failure_list or len(failure_list) == 0:
+    return test_expectations.PASS
+
+  failure_types = [type(f) for f in failure_list]
+  if FailureCrash in failure_types:
+    return test_expectations.CRASH
+  elif FailureTimeout in failure_types:
+    return test_expectations.TIMEOUT
+  elif (FailureMissingResult in failure_types or
+        FailureMissingImage in failure_types or
+        FailureMissingImageHash in failure_types):
+    return test_expectations.MISSING
+  else:
+    is_text_failure = FailureTextMismatch in failure_types
+    is_image_failure = (FailureImageHashIncorrect in failure_types or
+                        FailureImageHashMismatch in failure_types)
+    if is_text_failure and is_image_failure:
+      return test_expectations.IMAGE_PLUS_TEXT
+    elif is_text_failure:
+      return test_expectations.TEXT
+    elif is_image_failure:
+      return test_expectations.IMAGE
+    else:
+      raise ValueError("unclassifiable set of failures: " + str(failure_types))
 
 
 class TestFailure(object):

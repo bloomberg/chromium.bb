@@ -185,13 +185,15 @@ class SingleTestThread(threading.Thread):
 
 class TestShellThread(threading.Thread):
 
-  def __init__(self, filename_list_queue, test_shell_command, test_types,
-               test_args, shell_args, options):
+  def __init__(self, filename_list_queue, result_queue, test_shell_command,
+               test_types, test_args, shell_args, options):
     """Initialize all the local state for this test shell thread.
 
     Args:
       filename_list_queue: A thread safe Queue class that contains lists of
           tuples of (filename, uri) pairs.
+      result_queue: A thread safe Queue class that will contain tuples of
+        (test, failure lists) for the test results.
       test_shell_command: A list specifying the command+args for test_shell
       test_types: A list of TestType objects to run the test output against.
       test_args: A TestArguments object to pass to each TestType.
@@ -202,6 +204,7 @@ class TestShellThread(threading.Thread):
     """
     threading.Thread.__init__(self)
     self._filename_list_queue = filename_list_queue
+    self._result_queue = result_queue
     self._filename_list = []
     self._test_shell_command = test_shell_command
     self._test_types = test_types
@@ -209,7 +212,6 @@ class TestShellThread(threading.Thread):
     self._test_shell_proc = None
     self._shell_args = shell_args
     self._options = options
-    self._failures = {}
     self._canceled = False
     self._exception_info = None
     self._directory_timing_stats = {}
@@ -224,11 +226,6 @@ class TestShellThread(threading.Thread):
     self._num_tests_in_current_dir = None
     # Time at which we started running tests from self._current_dir.
     self._current_dir_start_time = None
-
-  def GetFailures(self):
-    """Returns a dictionary mapping test filename to a list of
-    TestFailures."""
-    return self._failures
 
   def GetDirectoryTimingStats(self):
     """Returns a dictionary mapping test directory to a tuple of
@@ -340,10 +337,9 @@ class TestShellThread(threading.Thread):
         error_str = '\n'.join(['  ' + f.Message() for f in failures])
         logging.error("%s failed:\n%s" %
                       (path_utils.RelativeTestFilename(filename), error_str))
-        # Group the errors for reporting.
-        self._failures[filename] = failures
       else:
         logging.debug(path_utils.RelativeTestFilename(filename) + " passed")
+      self._result_queue.put((filename, failures))
 
       if batch_size > 0 and batch_count > batch_size:
         # Bounce the shell and reset count.
