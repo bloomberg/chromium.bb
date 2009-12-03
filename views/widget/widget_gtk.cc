@@ -918,12 +918,122 @@ void WidgetGtk::SetRootViewForWidget(GtkWidget* widget, RootView* root_view) {
 }
 
 // static
-void WidgetGtk::CallSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
+gboolean WidgetGtk::CallButtonPress(GtkWidget* widget, GdkEventButton* event) {
   WidgetGtk* widget_gtk = GetViewForNative(widget);
   if (!widget_gtk)
-    return;
+    return false;
 
-  widget_gtk->OnSizeAllocate(widget, allocation);
+  return widget_gtk->OnButtonPress(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallButtonRelease(GtkWidget* widget, GdkEventButton* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnButtonRelease(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallDragDrop(GtkWidget* widget,
+                                 GdkDragContext* context,
+                                 gint x,
+                                 gint y,
+                                 guint time,
+                                 WidgetGtk* host) {
+  return host->OnDragDrop(context, x, y, time);
+}
+
+// static
+gboolean WidgetGtk::CallDragFailed(GtkWidget* widget,
+                                   GdkDragContext* context,
+                                   GtkDragResult result,
+                                   WidgetGtk* host) {
+  return host->OnDragFailed(context, result);
+}
+
+// static
+gboolean WidgetGtk::CallDragMotion(GtkWidget* widget,
+                                   GdkDragContext* context,
+                                   gint x,
+                                   gint y,
+                                   guint time,
+                                   WidgetGtk* host) {
+  return host->OnDragMotion(context, x, y, time);
+}
+
+// static
+gboolean WidgetGtk::CallEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnEnterNotify(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallFocusIn(GtkWidget* widget, GdkEventFocus* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnFocusIn(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallFocusOut(GtkWidget* widget, GdkEventFocus* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnFocusOut(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnGrabBrokeEvent(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallKeyPress(GtkWidget* widget, GdkEventKey* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnKeyPress(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallKeyRelease(GtkWidget* widget, GdkEventKey* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnKeyRelease(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallLeaveNotify(GtkWidget* widget, GdkEventCrossing* event)
+{
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnLeaveNotify(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnMotionNotify(widget, event);
 }
 
 // static
@@ -935,11 +1045,48 @@ gboolean WidgetGtk::CallPaint(GtkWidget* widget, GdkEventExpose* event) {
 }
 
 // static
+gboolean WidgetGtk::CallQueryTooltip(GtkWidget* widget,
+                                     gint x,
+                                     gint y,
+                                     gboolean keyboard_mode,
+                                     GtkTooltip* tooltip,
+                                     WidgetGtk* host) {
+  return host->OnQueryTooltip(static_cast<int>(x), static_cast<int>(y),
+                              keyboard_mode, tooltip);
+}
+
+// static
+gboolean WidgetGtk::CallScroll(GtkWidget* widget, GdkEventScroll* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnScroll(widget, event);
+}
+
+// static
+gboolean WidgetGtk::CallVisibilityNotify(GtkWidget* widget,
+                                         GdkEventVisibility* event) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return false;
+
+  return widget_gtk->OnVisibilityNotify(widget, event);
+}
+
+// static
 gboolean WidgetGtk::CallWindowPaint(GtkWidget* widget,
                                     GdkEventExpose* event,
                                     WidgetGtk* widget_gtk) {
   widget_gtk->OnWindowPaint(widget, event);
   return false;  // False indicates other widgets should get the event as well.
+}
+
+// static
+void WidgetGtk::CallDestroy(GtkObject* object) {
+  WidgetGtk* widget_gtk = GetViewForNative(GTK_WIDGET(object));
+  if (widget_gtk)
+    widget_gtk->OnDestroy();
 }
 
 // static
@@ -965,28 +1112,10 @@ void WidgetGtk::CallDragDataReceived(GtkWidget* widget,
 }
 
 // static
-gboolean WidgetGtk::CallDragDrop(GtkWidget* widget,
-                                 GdkDragContext* context,
-                                 gint x,
-                                 gint y,
-                                 guint time,
-                                 WidgetGtk* host) {
-  return host->OnDragDrop(context, x, y, time);
-}
-
-// static
 void WidgetGtk::CallDragEnd(GtkWidget* widget,
                             GdkDragContext* context,
                             WidgetGtk* host) {
   host->OnDragEnd(context);
-}
-
-// static
-gboolean WidgetGtk::CallDragFailed(GtkWidget* widget,
-                                   GdkDragContext* context,
-                                   GtkDragResult result,
-                                   WidgetGtk* host) {
-  return host->OnDragFailed(context, result);
 }
 
 // static
@@ -995,125 +1124,6 @@ void WidgetGtk::CallDragLeave(GtkWidget* widget,
                               guint time,
                               WidgetGtk* host) {
   host->OnDragLeave(context, time);
-}
-
-// static
-gboolean WidgetGtk::CallDragMotion(GtkWidget* widget,
-                                   GdkDragContext* context,
-                                   gint x,
-                                   gint y,
-                                   guint time,
-                                   WidgetGtk* host) {
-  return host->OnDragMotion(context, x, y, time);
-}
-
-gboolean WidgetGtk::CallEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnEnterNotify(widget, event);
-}
-
-gboolean WidgetGtk::CallLeaveNotify(GtkWidget* widget, GdkEventCrossing* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnLeaveNotify(widget, event);
-}
-
-gboolean WidgetGtk::CallMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnMotionNotify(widget, event);
-}
-
-gboolean WidgetGtk::CallButtonPress(GtkWidget* widget, GdkEventButton* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnButtonPress(widget, event);
-}
-
-gboolean WidgetGtk::CallButtonRelease(GtkWidget* widget, GdkEventButton* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnButtonRelease(widget, event);
-}
-
-gboolean WidgetGtk::CallFocusIn(GtkWidget* widget, GdkEventFocus* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnFocusIn(widget, event);
-}
-
-gboolean WidgetGtk::CallFocusOut(GtkWidget* widget, GdkEventFocus* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnFocusOut(widget, event);
-}
-
-gboolean WidgetGtk::CallKeyPress(GtkWidget* widget, GdkEventKey* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnKeyPress(widget, event);
-}
-
-gboolean WidgetGtk::CallKeyRelease(GtkWidget* widget, GdkEventKey* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnKeyRelease(widget, event);
-}
-
-// static
-gboolean WidgetGtk::CallQueryTooltip(GtkWidget* widget,
-                                     gint x,
-                                     gint y,
-                                     gboolean keyboard_mode,
-                                     GtkTooltip* tooltip,
-                                     WidgetGtk* host) {
-  return host->OnQueryTooltip(static_cast<int>(x), static_cast<int>(y),
-                              keyboard_mode, tooltip);
-}
-
-gboolean WidgetGtk::CallScroll(GtkWidget* widget, GdkEventScroll* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnScroll(widget, event);
-}
-
-gboolean WidgetGtk::CallVisibilityNotify(GtkWidget* widget,
-                                         GdkEventVisibility* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnVisibilityNotify(widget, event);
-}
-
-// static
-gboolean WidgetGtk::CallGrabBrokeEvent(GtkWidget* widget, GdkEvent* event) {
-  WidgetGtk* widget_gtk = GetViewForNative(widget);
-  if (!widget_gtk)
-    return false;
-
-  return widget_gtk->OnGrabBrokeEvent(widget, event);
 }
 
 // static
@@ -1126,10 +1136,12 @@ void WidgetGtk::CallGrabNotify(GtkWidget* widget, gboolean was_grabbed) {
 }
 
 // static
-void WidgetGtk::CallDestroy(GtkObject* object) {
-  WidgetGtk* widget_gtk = GetViewForNative(GTK_WIDGET(object));
-  if (widget_gtk)
-    widget_gtk->OnDestroy();
+void WidgetGtk::CallSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
+  WidgetGtk* widget_gtk = GetViewForNative(widget);
+  if (!widget_gtk)
+    return;
+
+  widget_gtk->OnSizeAllocate(widget, allocation);
 }
 
 // static
