@@ -189,7 +189,7 @@ function renderTemplate() {
 
   selectCurrentPageOnLeftNav();
 
-  document.title = getPageTitle() + " - Google Chrome Extensions - Google Code";
+  document.title = getPageTitle();
   // Show
   if (window.postRender)
     window.postRender();
@@ -283,6 +283,10 @@ function showPageTOC() {
   return module || getDataFromPageHTML('pageData-showTOC');
 }
 
+function showSideNav() {
+  return getDataFromPageHTML("pageData-showSideNav") != "false";
+}
+
 function getStaticTOC() {
   var staticHNodes = evalXPathFromId(".//h2|h3", "static");
   var retval = [];
@@ -314,9 +318,15 @@ function getTypeRefPage(type) {
 }
 
 function getPageTitle() {
-  return getDataFromPageHTML("pageData-title") ||
-         apiModuleTitle ||
-         pageName;
+  var pageTitleSuffix = "Google Chrome Extensions - Google Code";
+  var pageDataTitle = getDataFromPageHTML("pageData-title");
+  // Allows an emptry string to be set as the title from pageData.
+  if (pageDataTitle == "") {
+    return pageTitleSuffix;
+  }
+
+  return (pageDataTitle || apiModuleTitle || pageName) +
+      " - " + pageTitleSuffix;
 }
 
 function getModuleName() {

@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Developer Documentation - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -97,7 +97,7 @@
       </tr>
     </tbody></table>
 
-    <div id="codesiteContent">
+    <div id="codesiteContent" class="hideSideNav">
 
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
@@ -125,7 +125,7 @@
 
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
-      <div class="g-unit g-first" id="gc-toc">
+      <div class="g-unit g-first" id="gc-toc" style="display: none; ">
         <ul>
           <li><a href="getstarted.html">Getting Started</a></li>
           <li><a href="overview.html">Overview</a></li>
@@ -189,7 +189,7 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Developer Documentation</h1>
+        <h1 class="page_title">Google Chrome Extensions - Google Code</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc" style="display: none; ">
@@ -247,7 +247,10 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><style>
+        <div id="static"><div id="pageData-title" class="pageData"></div>
+<div id="pageData-showSideNav" class="pageData">false</div>
+
+<style>
 #pics {
   margin:1em;
   border:none;
@@ -409,8 +412,12 @@ Also check out the discussion group:
                   <div>
                   <h4>Callback function</h4>
                   <p>
-                    If you specify the <em>callback</em> parameter,
-                    it should specify a function that looks like this:
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->

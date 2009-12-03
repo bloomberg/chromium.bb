@@ -84,7 +84,7 @@
       </tr>
     </table>
 
-    <div id="codesiteContent">
+    <div id="codesiteContent" jsvalues=".className: showSideNav() ? '' : 'hideSideNav'">
 
       <a id="gc-topnav-anchor"></a>
       <div id="gc-topnav">
@@ -112,7 +112,7 @@
 
     <div class="g-section g-tpl-170">
       <!-- SIDENAV -->
-      <div class="g-unit g-first" id="gc-toc">
+      <div class="g-unit g-first" id="gc-toc" jsdisplay="showSideNav()">
         <ul>
           <li><a href="getstarted.html">Getting Started</a></li>
           <li><a href="overview.html">Overview</a></li>
@@ -315,9 +315,13 @@
                 <div jsdisplay="hasCallback(parameters)">
                   <div jsselect="getCallbackParameters(parameters)">
                   <h4>Callback function</h4>
-                  <p>
-                    If you specify the <em>callback</em> parameter,
-                    it should specify a function that looks like this:
+                  <p jsdisplay="!$this.optional">
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p jsdisplay="$this.optional">
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->

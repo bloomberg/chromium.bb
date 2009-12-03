@@ -1326,3 +1326,16 @@ table.noborders td {
   border:none;
   padding:6px 12px 6px 0px
 }
+
+#codesiteContent.hideSideNav #gc-pagecontent {
+  padding-left:24px;
+  border-left:0px;
+}
+
+#codesiteContent.hideSideNav .g-tpl-170 .g-unit {
+  display:block;
+  margin:0 0 0 0px;
+  width:auto;
+  float:none
+}
+
