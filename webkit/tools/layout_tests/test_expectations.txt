@@ -94,6 +94,8 @@ BUG24182 SLOW WIN : LayoutTests/fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : LayoutTests/svg/css/getComputedStyle-basic.xhtml = PASS
 
 BUG24182 SLOW : LayoutTests/http/tests/appcache/fallback.html = PASS
+BUG24182 SLOW : LayoutTests/http/tests/appcache/auth.html = PASS
+
 
 // --- collecting results for supported-xml-content-types.html ---
 // was slow, started to timeout
@@ -1220,12 +1222,6 @@ BUG10313 : LayoutTests/plugins/bindings-test.html = FAIL
 // No glyph for U+FFFD (Replacement Character : black diamond with
 // question mark) in them
 BUG10315 WIN LINUX : LayoutTests/fast/encoding/invalid-UTF-8.html = FAIL
-
-// These require application cache to be enabled.  Skip the tests because
-// they're all timing out.  TODO(tc): Upstream changes to the test so they
-// fail quickly if window.applicationCache is undefined (then we don't have to
-// skip them).
-BUG2844 SKIP : LayoutTests/http/tests/appcache = TIMEOUT FAIL
 
 // V8 failures as a result of the WebKit merge.
 // http://code.google.com/p/v8/issues/detail?id=92
@@ -2975,11 +2971,23 @@ BUG_OJAN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = TEXT PA
 
 // These tests time out *and* are slow. The test should be fixed to not timeout,
 // then should be marked as SLOW/PASS.
-BUG2844 : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
-BUG2844 : LayoutTests/http/tests/appcache/update-cache.html = TIMEOUT PASS
 BUG2844 : LayoutTests/http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
 BUG2844 : LayoutTests/http/tests/appcache/fail-on-update.html = TIMEOUT PASS
 BUG2844 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS
+BUG2844 : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
+BUG2844 : LayoutTests/http/tests/appcache/update-cache.html = TIMEOUT PASS
+
+// These tests sometimes pass and sometimes have a text difference due
+// to chromium's appcache being async.
+BUG2844 : LayoutTests/http/tests/appcache/top-frame-3.html = TEXT PASS
+BUG2844 : LayoutTests/http/tests/appcache/top-frame-4.html = TEXT PASS
+
+// These fail because chromium's appcache is async but webkit's is not.
+BUG2844 SKIP : LayoutTests/http/tests/appcache/idempotent-update.html = FAIL
+BUG2844 SKIP : LayoutTests/http/tests/appcache/top-frame-2.html = FAIL
+
+// This test fails because there is no setAppCacheMaximumSize API yet.
+BUG2844 SKIP : LayoutTests/http/tests/appcache/max-size.html = FAIL
 
 // Failures in TestShell that resulted from Mac plugin/focus fixes in r32631.
 BUG28380 MAC : LayoutTests/fast/events/tabindex-focus-blur-all.html = CRASH FAIL
