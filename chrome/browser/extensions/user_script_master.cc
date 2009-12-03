@@ -84,7 +84,7 @@ bool UserScriptMaster::ScriptReloader::ParseMetadataHeader(
 
       std::string value;
       if (GetDeclarationValue(line, kIncludeDeclaration, &value)) {
-        // We escape some characters that MatchPattern() considers special.
+        // We escape some characters that MatchPatternASCII() considers special.
         ReplaceSubstringsAfterOffset(&value, 0, "\\", "\\\\");
         ReplaceSubstringsAfterOffset(&value, 0, "?", "\\?");
         script->add_glob(value);

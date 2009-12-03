@@ -23,7 +23,7 @@ static bool UrlMatchesGlobs(const std::vector<std::string>* globs,
                             const GURL& url) {
   for (std::vector<std::string>::const_iterator glob = globs->begin();
        glob != globs->end(); ++glob) {
-    if (MatchPattern(url.spec(), *glob))
+    if (MatchPatternASCII(url.spec(), *glob))
       return true;
   }
 

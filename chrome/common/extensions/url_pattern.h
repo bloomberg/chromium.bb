@@ -125,8 +125,8 @@ class URLPattern {
   std::string path_;
 
   // The path with "?" and "\" characters escaped for use with the
-  // MatchPattern() function. This is populated lazily, the first time it is
-  // needed.
+  // MatchPatternASCII() function. This is populated lazily, the first time it
+  // is needed.
   mutable std::string path_escaped_;
 };
 

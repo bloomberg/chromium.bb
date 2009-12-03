@@ -233,7 +233,7 @@ TEST(ExtensionFileUtil, MissingPrivacyBlacklist) {
       extension_file_util::LoadExtension(install_dir, false, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_FALSE(error.empty());
-  EXPECT_TRUE(MatchPattern(error,
+  EXPECT_TRUE(MatchPatternASCII(error,
       "Could not load '*privacy_blacklist.pbl' for privacy blacklist: "
       "file does not exist.")) << error;
 }
@@ -250,7 +250,7 @@ TEST(ExtensionFileUtil, InvalidPrivacyBlacklist) {
       extension_file_util::LoadExtension(install_dir, false, &error));
   ASSERT_TRUE(extension == NULL);
   ASSERT_FALSE(error.empty());
-  EXPECT_TRUE(MatchPattern(error,
+  EXPECT_TRUE(MatchPatternASCII(error,
       "Could not load '*privacy_blacklist.pbl' for privacy blacklist: "
       "Incorrect header.")) << error;
 }

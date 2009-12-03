@@ -112,11 +112,7 @@ void ImageDecoderTest::SetUp() {
 }
 
 std::vector<FilePath> ImageDecoderTest::GetImageFiles() const {
-#if defined(OS_WIN)
-  std::wstring pattern = ASCIIToWide("*." + format_);
-#else
   std::string pattern = "*." + format_;
-#endif
 
   file_util::FileEnumerator enumerator(data_dir_,
                                        false,
@@ -125,9 +121,14 @@ std::vector<FilePath> ImageDecoderTest::GetImageFiles() const {
   std::vector<FilePath> image_files;
   FilePath next_file_name;
   while (!(next_file_name = enumerator.Next()).empty()) {
-    if (!MatchPattern(next_file_name.value(), pattern)) {
+    FilePath base_name = next_file_name.BaseName();
+#if defined(OS_WIN)
+    std::string base_name_ascii = WideToASCII(base_name.value());
+#else
+    std::string base_name_ascii = base_name.value();
+#endif
+    if (!MatchPatternASCII(base_name_ascii, pattern))
       continue;
-    }
     image_files.push_back(next_file_name);
   }
 

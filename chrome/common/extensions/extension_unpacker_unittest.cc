@@ -71,7 +71,7 @@ TEST_F(ExtensionUnpackerTest, InvalidDefaultLocale) {
 TEST_F(ExtensionUnpackerTest, InvalidMessagesFile) {
   SetupUnpacker("invalid_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
+  EXPECT_TRUE(MatchPatternASCII(unpacker_->error_message(),
     std::string("*_locales?en_US?messages.json: Line: 2, column: 3,"
                 " Dictionary keys must be quoted.")));
 }
@@ -92,7 +92,7 @@ TEST_F(ExtensionUnpackerTest, MissingDefaultLocaleHasLocalesFolder) {
 TEST_F(ExtensionUnpackerTest, MissingMessagesFile) {
   SetupUnpacker("missing_messages_file.crx");
   EXPECT_FALSE(unpacker_->Run());
-  EXPECT_TRUE(MatchPattern(unpacker_->error_message(),
+  EXPECT_TRUE(MatchPatternASCII(unpacker_->error_message(),
     errors::kLocalesMessagesFileMissing +
     std::string("*_locales?en_US?messages.json")));
 }

@@ -94,7 +94,7 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
   ASSERT_FALSE(NULL == icons);
   icons->SetInteger(ASCIIToWide(IntToString(128)), 42);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidIconPath));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidIconPath));
 
   // Test invalid user scripts list
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
@@ -109,7 +109,7 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
   ASSERT_FALSE(NULL == content_scripts);
   content_scripts->Set(0, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidContentScript));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidContentScript));
 
   // Test missing and invalid matches array
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
@@ -118,21 +118,21 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
   content_scripts->GetDictionary(0, &user_script);
   user_script->Remove(keys::kMatches, NULL);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatches));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidMatches));
 
   user_script->Set(keys::kMatches, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatches));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidMatches));
 
   ListValue* matches = new ListValue;
   user_script->Set(keys::kMatches, matches);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatchCount));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidMatchCount));
 
   // Test invalid match element
   matches->Set(0, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidMatch));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidMatch));
 
   // Test missing and invalid files array
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
@@ -141,40 +141,40 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
   user_script->Remove(keys::kJs, NULL);
   user_script->Remove(keys::kCss, NULL);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kMissingFile));
 
   user_script->Set(keys::kJs, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidJsList));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidJsList));
 
   user_script->Set(keys::kCss, new ListValue);
   user_script->Set(keys::kJs, new ListValue);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kMissingFile));
   user_script->Remove(keys::kCss, NULL);
 
   ListValue* files = new ListValue;
   user_script->Set(keys::kJs, files);
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kMissingFile));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kMissingFile));
 
   // Test invalid file element
   files->Set(0, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidJs));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidJs));
 
   user_script->Remove(keys::kJs, NULL);
   // Test the css element
   user_script->Set(keys::kCss, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidCssList));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidCssList));
 
   // Test invalid file element
   ListValue* css_files = new ListValue;
   user_script->Set(keys::kCss, css_files);
   css_files->Set(0, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidCss));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidCss));
 
   // Test missing and invalid permissions array
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
@@ -190,24 +190,24 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
 
   input_value->Set(keys::kPermissions, Value::CreateIntegerValue(9));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermissions));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPermissions));
 
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   input_value->GetList(keys::kPermissions, &permissions);
   permissions->Set(0, Value::CreateIntegerValue(24));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermission));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPermission));
 
   permissions->Set(0, Value::CreateStringValue("www.google.com"));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermission));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPermission));
 
   // Test permissions scheme.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   input_value->GetList(keys::kPermissions, &permissions);
   permissions->Set(0, Value::CreateStringValue("file:///C:/foo.txt"));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPermissionScheme));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPermissionScheme));
 
   // Test invalid privacy blacklists list.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
@@ -222,7 +222,7 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
   ASSERT_FALSE(NULL == privacy_blacklists);
   privacy_blacklists->Set(0, Value::CreateIntegerValue(42));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidPrivacyBlacklistsPath));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidPrivacyBlacklistsPath));
 
   // Test invalid UI surface count (both page action and browser action).
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
@@ -240,17 +240,17 @@ TEST(ExtensionTest, DISABLED_InitFromValueInvalid) {
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   input_value->Set(keys::kOptionsPage, Value::CreateNullValue());
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidOptionsPage));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidOptionsPage));
 
   // Test invalid/empty default locale.
   input_value.reset(static_cast<DictionaryValue*>(valid_value->DeepCopy()));
   input_value->Set(keys::kDefaultLocale, Value::CreateIntegerValue(5));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidDefaultLocale));
 
   input_value->Set(keys::kDefaultLocale, Value::CreateStringValue(""));
   EXPECT_FALSE(extension.InitFromValue(*input_value, true, &error));
-  EXPECT_TRUE(MatchPattern(error, errors::kInvalidDefaultLocale));
+  EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidDefaultLocale));
 }
 
 TEST(ExtensionTest, InitFromValueValid) {
@@ -511,7 +511,7 @@ TEST(ExtensionTest, UpdateUrls) {
     input_value.SetString(keys::kUpdateURL, invalid[i]);
 
     EXPECT_FALSE(extension.InitFromValue(input_value, false, &error));
-    EXPECT_TRUE(MatchPattern(error, errors::kInvalidUpdateURL));
+    EXPECT_TRUE(MatchPatternASCII(error, errors::kInvalidUpdateURL));
   }
 }
 

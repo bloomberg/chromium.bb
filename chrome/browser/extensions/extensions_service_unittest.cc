@@ -624,19 +624,19 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
   ASSERT_EQ(4u, GetErrors().size());
   ASSERT_EQ(0u, loaded_.size());
 
-  EXPECT_TRUE(MatchPattern(GetErrors()[0],
+  EXPECT_TRUE(MatchPatternASCII(GetErrors()[0],
       std::string("Could not load extension from '*'. ") +
       extension_manifest_errors::kManifestUnreadable)) << GetErrors()[0];
 
-  EXPECT_TRUE(MatchPattern(GetErrors()[1],
+  EXPECT_TRUE(MatchPatternASCII(GetErrors()[1],
       std::string("Could not load extension from '*'. ") +
       extension_manifest_errors::kManifestUnreadable)) << GetErrors()[1];
 
-  EXPECT_TRUE(MatchPattern(GetErrors()[2],
+  EXPECT_TRUE(MatchPatternASCII(GetErrors()[2],
       std::string("Could not load extension from '*'. ") +
       extension_manifest_errors::kMissingFile)) << GetErrors()[2];
 
-  EXPECT_TRUE(MatchPattern(GetErrors()[3],
+  EXPECT_TRUE(MatchPatternASCII(GetErrors()[3],
       std::string("Could not load extension from '*'. ") +
       extension_manifest_errors::kManifestUnreadable)) << GetErrors()[3];
 };

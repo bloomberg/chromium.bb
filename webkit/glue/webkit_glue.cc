@@ -489,7 +489,7 @@ const std::string& GetUserAgent(const GURL& url) {
   g_user_agent->user_agent_requested = true;
   if (!g_user_agent->user_agent_is_overridden) {
     // Workarounds for sites that use misguided UA sniffing.
-    if (MatchPattern(url.host(), "*.pointroll.com")) {
+    if (MatchPatternASCII(url.host(), "*.pointroll.com")) {
       // For cnn.com, which uses pointroll.com to serve their front door promo,
       // we must spoof Chrome 1.0 in order to avoid a blank page.
       // http://crbug.com/25934
@@ -500,7 +500,7 @@ const std::string& GetUserAgent(const GURL& url) {
       return g_user_agent->mimic_chrome1_user_agent;
     }
 #if defined(OS_LINUX)
-    else if (MatchPattern(url.host(), "*.mail.yahoo.com")) {
+    else if (MatchPatternASCII(url.host(), "*.mail.yahoo.com")) {
       // mail.yahoo.com is ok with Windows Chrome but not Linux Chrome.
       // http://bugs.chromium.org/11136
       // TODO(evanm): remove this if Yahoo fixes their sniffing.

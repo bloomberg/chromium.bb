@@ -552,7 +552,7 @@ bool IsOptInUrl(const wchar_t* url) {
   RegistryValueIterator optin_urls_list(config_key.Handle(),
                                         kChromeFrameOptinUrlsKey);
   while (optin_urls_list.Valid()) {
-    if (MatchPattern(url, optin_urls_list.Name()))
+    if (MatchPatternWide(url, optin_urls_list.Name()))
       return true;
     ++optin_urls_list;
   }
