@@ -12,7 +12,6 @@ import urllib2
 import xml.dom.minidom
 
 from layout_package import path_utils
-from layout_package import test_expectations
 from layout_package import test_failures
 
 sys.path.append(path_utils.PathFromBase('third_party'))
@@ -42,44 +41,41 @@ class JSONResultsGenerator:
   WONTFIX = "wontfixCounts"
   DEFERRED = "deferredCounts"
   FIXABLE = "fixableCounts"
+  ALL_FIXABLE_COUNT = "allFixableCount"
   FIXABLE_COUNT = "fixableCount"
-
-  # Note that we omit test_expectations.FAIL from this list because
-  # it should never show up (it's a legacy input expectation, never
-  # an output expectation).
-  FAILURE_TO_CHAR = {
-    test_expectations.CRASH : "C",
-    test_expectations.TIMEOUT : "T",
-    test_expectations.IMAGE : "I",
-    test_expectations.TEXT : "F",
-    test_expectations.MISSING : "O",
-    test_expectations.IMAGE_PLUS_TEXT : "Z"
-  }
-  FAILURE_CHARS = FAILURE_TO_CHAR.values()
-
+  """
+    C = CRASH
+    T = TIMEOUT
+    I = IMAGE
+    F = TEXT
+    O = OTHER
+    Z = TEXT+IMAGE
+  """
+  FAILURE_CHARS = ("C", "T", "I", "F", "O", "Z")
   BUILDER_BASE_URL = "http://build.chromium.org/buildbot/layout_test_results/"
   RESULTS_FILENAME = "results.json"
 
-  def __init__(self, options, result_summary, individual_test_timings,
-      results_file_base_path, all_tests):
+  def __init__(self, options, failures, individual_test_timings,
+      results_file_base_path, all_tests, result_summary):
     """Modifies the results.json file. Grabs it off the archive directory if it
     is not found locally.
 
     Args
       options: a dictionary of command line options
-      result_summary: ResultsSummary object containing failure counts for
-          different groups of tests.
+      failures: Map of test name to list of failures.
       individual_test_times: Map of test name to a tuple containing the
           test_run-time.
       results_file_base_path: Absolute path to the directory containing the
           results json file.
       all_tests: List of all the tests that were run.
+      result_summary: ResultsSummary object containing failure counts for
+          different groups of tests.
     """
     # Make sure all test paths are relative to the layout test root directory.
     self._failures = {}
-    for test in result_summary.failures:
+    for test in failures:
       test_path = self._GetPathRelativeToLayoutTestRoot(test)
-      self._failures[test_path] = result_summary.failures[test]
+      self._failures[test_path] = failures[test]
 
     self._all_tests = [self._GetPathRelativeToLayoutTestRoot(test)
         for test in all_tests]
@@ -265,45 +261,42 @@ class JSONResultsGenerator:
           builder.
     """
     self._InsertItemIntoRawList(results_for_builder,
-        len(set(self._result_summary.failures.keys()) &
-            self._result_summary.tests_by_timeline[test_expectations.NOW]),
+        self._result_summary.fixable_count,
         self.FIXABLE_COUNT)
     self._InsertItemIntoRawList(results_for_builder,
-        self._GetFailureSummaryEntry(test_expectations.DEFER),
+        self._result_summary.all_fixable_count,
+        self.ALL_FIXABLE_COUNT)
+
+    self._InsertItemIntoRawList(results_for_builder,
+        self._GetFailureSummaryEntry(self._result_summary.deferred),
         self.DEFERRED)
     self._InsertItemIntoRawList(results_for_builder,
-        self._GetFailureSummaryEntry(test_expectations.WONTFIX),
+        self._GetFailureSummaryEntry(self._result_summary.wontfix),
         self.WONTFIX)
     self._InsertItemIntoRawList(results_for_builder,
-        self._GetFailureSummaryEntry(test_expectations.NOW),
+        self._GetFailureSummaryEntry(self._result_summary.fixable),
         self.FIXABLE)
 
-  def _GetFailureSummaryEntry(self, timeline):
+  def _GetFailureSummaryEntry(self, result_summary_entry):
     """Creates a summary object to insert into the JSON.
 
     Args:
-      summary   ResultSummary object with test results
-      timeline  current test_expectations timeline to build entry for (e.g.,
-                test_expectations.NOW, etc.)
+      result_summary_entry: ResultSummaryEntry for a group of tests
+          (e.g. deferred tests).
     """
     entry = {}
-    summary = self._result_summary
-    timeline_tests = summary.tests_by_timeline[timeline]
-    entry[self.SKIP_RESULT] = len(
-        summary.tests_by_expectation[test_expectations.SKIP] & timeline_tests)
-    entry[self.SKIP_RESULT] = len(
-        summary.tests_by_expectation[test_expectations.PASS] & timeline_tests)
-    for failure_type in summary.tests_by_expectation.keys():
-      if failure_type not in self.FAILURE_TO_CHAR:
-        continue
-      count = len(summary.tests_by_expectation[failure_type] & timeline_tests)
-      entry[self.FAILURE_TO_CHAR[failure_type]] = count
-    return entry
+    entry[self.SKIP_RESULT] = result_summary_entry.skip_count
+    entry[self.PASS_RESULT] = result_summary_entry.pass_count
+    for char in self.FAILURE_CHARS:
+      # There can be multiple failures that map to "O", so keep existing entry
+      # values if they already exist.
+      count = entry.get(char, 0)
 
-  def _GetResultsCharForTest(self, test):
-    """Returns a single character description of the test result."""
-    result = test_failures.DetermineResultType(self._failures[test])
-    return self.FAILURE_TO_CHAR[result]
+      for failure in result_summary_entry.failure_counts:
+        if char == self._GetResultsCharForFailure([failure]):
+          count = result_summary_entry.failure_counts[failure]
+      entry[char] = count
+    return entry
 
   def _InsertItemIntoRawList(self, results_for_builder, item, key):
     """Inserts the item into the list with the given key in the results for
@@ -361,6 +354,32 @@ class JSONResultsGenerator:
     results_for_builder = {}
     results_for_builder[self.TESTS] = {}
     return results_for_builder
+
+  def _GetResultsCharForTest(self, test):
+    """Returns the worst failure from the list of failures for this test
+    since we can only show one failure per run for each test on the dashboard.
+    """
+    failures = [failure.__class__ for failure in self._failures[test]]
+    return self._GetResultsCharForFailure(failures)
+
+  def _GetResultsCharForFailure(self, failures):
+    """Returns the worst failure from the list of failures
+    since we can only show one failure per run for each test on the dashboard.
+    """
+    has_text_failure = test_failures.FailureTextMismatch in failures
+
+    if test_failures.FailureCrash in failures:
+      return "C"
+    elif test_failures.FailureTimeout in failures:
+      return "T"
+    elif test_failures.FailureImageHashMismatch in failures:
+      if has_text_failure:
+        return "Z"
+      return "I"
+    elif has_text_failure:
+      return "F"
+    else:
+      return "O"
 
   def _RemoveItemsOverMaxNumberOfBuilds(self, encoded_list):
     """Removes items from the run-length encoded list after the final item that

@@ -368,7 +368,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
       if not has_non_pass_expectation:
         expectations = ["pass"]
 
-      missing_build_types = list(self.BUILD_TYPES)
+      missing_build_types = self.BUILD_TYPES[:]
       sentinal = None
       for build_type in update.build_info:
         if not sentinal:
@@ -406,7 +406,7 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
       platforms: List of lower-case platform names.
     """
     platforms.sort()
-    if platforms == list(self.BASE_PLATFORMS):
+    if platforms == self.BASE_PLATFORMS:
       return ""
     else:
       return " ".join(platforms)

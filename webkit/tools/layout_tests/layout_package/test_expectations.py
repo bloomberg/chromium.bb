@@ -12,13 +12,14 @@ import re
 import sys
 import time
 import path_utils
+import compare_failures
 
 sys.path.append(path_utils.PathFromBase('third_party'))
 import simplejson
 
 # Test expectation and modifier constants.
 (PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, TIMEOUT, CRASH, SKIP, WONTFIX,
- DEFER, SLOW, REBASELINE, MISSING, FLAKY, NOW, NONE) = range(16)
+ DEFER, SLOW, REBASELINE, MISSING, NONE) = range(14)
 
 # Test expectation file update action constants
 (NO_CHANGE, REMOVE_TEST, REMOVE_PLATFORM, ADD_PLATFORMS_EXCEPT_THIS) = range(4)
@@ -40,6 +41,85 @@ class TestExpectations:
   def GetExpectationsJsonForAllPlatforms(self):
     return self._expected_failures.GetExpectationsJsonForAllPlatforms()
 
+  def GetFixable(self):
+    return self._expected_failures.GetTestSet(NONE)
+
+  def GetFixableFailures(self):
+    # Avoid including TIMEOUT CRASH FAIL tests in the fail numbers since
+    # crashes and timeouts are higher priority.
+    return ((self._expected_failures.GetTestSet(NONE, FAIL) |
+             self._expected_failures.GetTestSet(NONE, IMAGE) |
+             self._expected_failures.GetTestSet(NONE, TEXT) |
+             self._expected_failures.GetTestSet(NONE, IMAGE_PLUS_TEXT)) -
+            self._expected_failures.GetTestSet(NONE, TIMEOUT) -
+            self._expected_failures.GetTestSet(NONE, CRASH))
+
+  def GetFixableTimeouts(self):
+    # Avoid including TIMEOUT CRASH tests in the timeout numbers since crashes
+    # are higher priority.
+    return (self._expected_failures.GetTestSet(NONE, TIMEOUT) -
+            self._expected_failures.GetTestSet(NONE, CRASH))
+
+  def GetFixableCrashes(self):
+    return self._expected_failures.GetTestSet(NONE, CRASH)
+
+  def GetFixableSkipped(self):
+    return (self._expected_failures.GetTestSet(SKIP) -
+            self._expected_failures.GetTestSet(WONTFIX) -
+            self._expected_failures.GetTestSet(DEFER))
+
+  def GetDeferred(self):
+    return self._expected_failures.GetTestSet(DEFER, include_skips=False)
+
+  def GetDeferredSkipped(self):
+    return (self._expected_failures.GetTestSet(SKIP) &
+            self._expected_failures.GetTestSet(DEFER))
+
+  def GetDeferredFailures(self):
+    return (
+        self._expected_failures.GetTestSet(DEFER, FAIL, include_skips=False) |
+        self._expected_failures.GetTestSet(DEFER, IMAGE, include_skips=False) |
+        self._expected_failures.GetTestSet(DEFER, TEXT, include_skips=False) |
+        self._expected_failures.GetTestSet(DEFER, IMAGE_PLUS_TEXT,
+                                           include_skips=False))
+
+
+  def GetDeferredTimeouts(self):
+    return self._expected_failures.GetTestSet(DEFER, TIMEOUT,
+        include_skips=False)
+
+  def GetWontFix(self):
+    return self._expected_failures.GetTestSet(WONTFIX, include_skips=False)
+
+  def GetWontFixSkipped(self):
+    return (self._expected_failures.GetTestSet(WONTFIX) &
+            self._expected_failures.GetTestSet(SKIP))
+
+  def GetWontFixFailures(self):
+    # Avoid including TIMEOUT CRASH FAIL tests in the fail numbers since
+    # crashes and timeouts are higher priority.
+    return (
+        (self._expected_failures.GetTestSet(WONTFIX, FAIL,
+                                            include_skips=False) |
+         self._expected_failures.GetTestSet(WONTFIX, IMAGE,
+                                            include_skips=False) |
+         self._expected_failures.GetTestSet(WONTFIX, TEXT,
+                                            include_skips=False) |
+         self._expected_failures.GetTestSet(WONTFIX, IMAGE_PLUS_TEXT,
+                                            include_skips=False)) -
+        self._expected_failures.GetTestSet(WONTFIX, TIMEOUT,
+                                           include_skips=False) -
+        self._expected_failures.GetTestSet(WONTFIX, CRASH,
+                                           include_skips=False))
+
+  def GetWontFixTimeouts(self):
+    # Avoid including TIMEOUT CRASH tests in the timeout numbers since crashes
+    # are higher priority.
+    return (self._expected_failures.GetTestSet(WONTFIX, TIMEOUT,
+                include_skips=False) -
+            self._expected_failures.GetTestSet(WONTFIX, CRASH,
+                include_skips=False))
+
   def GetRebaseliningFailures(self):
     return (self._expected_failures.GetTestSet(REBASELINE, FAIL) |
             self._expected_failures.GetTestSet(REBASELINE, IMAGE) |
@@ -47,7 +127,12 @@ class TestExpectations:
             self._expected_failures.GetTestSet(REBASELINE, IMAGE_PLUS_TEXT))
 
   def GetExpectations(self, test):
-    return self._expected_failures.GetExpectations(test)
+    if self._expected_failures.Contains(test):
+      return self._expected_failures.GetExpectations(test)
+
+    # If the test file is not listed in any of the expectations lists
+    # we expect it to pass (and nothing else).
+    return set([PASS])
 
   def GetExpectationsString(self, test):
     """Returns the expectatons for the given test as an uppercase string.
@@ -63,22 +148,19 @@ class TestExpectations:
 
     return " ".join(retval).upper()
 
-  def GetTimelineForTest(self, test):
-    return self._expected_failures.GetTimelineForTest(test)
+  def GetModifiers(self, test):
+    if self._expected_failures.Contains(test):
+      return self._expected_failures.GetModifiers(test)
+    return []
 
-  def GetTestsWithResultType(self, result_type):
-    return self._expected_failures.GetTestsWithResultType(result_type)
+  def IsDeferred(self, test):
+    return self._expected_failures.HasModifier(test, DEFER)
 
-  def GetTestsWithTimeline(self, timeline):
-    return self._expected_failures.GetTestsWithTimeline(timeline)
+  def IsFixable(self, test):
+    return self._expected_failures.HasModifier(test, NONE)
 
-  def MatchesAnExpectedResult(self, test, result):
-    """Returns whether we got one of the expected results for this test."""
-    return (result in self._expected_failures.GetExpectations(test) or
-            (result in (IMAGE, TEXT, IMAGE_PLUS_TEXT) and
-            FAIL in self._expected_failures.GetExpectations(test)) or
-            result == MISSING and self.IsRebaselining(test) or
-            result == SKIP and self._expected_failures.HasModifier(test, SKIP))
+  def IsIgnored(self, test):
+    return self._expected_failures.HasModifier(test, WONTFIX)
 
   def IsRebaselining(self, test):
     return self._expected_failures.HasModifier(test, REBASELINE)
@@ -169,27 +251,10 @@ class TestExpectationsFile:
                    'crash': CRASH,
                    'missing': MISSING }
 
-  EXPECTATION_DESCRIPTIONS = { SKIP : ('Skipped', 'Skipped'),
-                               PASS : ('passes', 'passes'),
-                               FAIL : ('failure', 'failures'),
-                               TEXT : ('text diff mismatch',
-                                       'text diff mismatch'),
-                               IMAGE : ('image mismatch', 'image mismatch'),
-                               IMAGE_PLUS_TEXT : ('image and text mismatch',
-                                                  'image and text mismatch'),
-                               CRASH : ('test shell crash',
-                                        'test shell crashes'),
-                               TIMEOUT : ('test timed out', 'tests timed out'),
-                               MISSING : ('No expected result found',
-                                          'No expected results found') }
+  BASE_PLATFORMS = [ 'linux', 'mac', 'win' ]
+  PLATFORMS = BASE_PLATFORMS + [ 'win-xp', 'win-vista', 'win-7' ]
 
-  EXPECTATION_ORDER = ( PASS, CRASH, TIMEOUT, MISSING, IMAGE_PLUS_TEXT,
-     TEXT, IMAGE, FAIL, SKIP )
-
-  BASE_PLATFORMS = ( 'linux', 'mac', 'win' )
-  PLATFORMS = BASE_PLATFORMS + ( 'win-xp', 'win-vista', 'win-7' )
-
-  BUILD_TYPES = ( 'debug', 'release' )
+  BUILD_TYPES = [ 'debug', 'release' ]
 
   MODIFIERS = { 'skip': SKIP,
                 'wontfix': WONTFIX,
@@ -197,16 +262,6 @@ class TestExpectationsFile:
                 'slow': SLOW,
                 'rebaseline': REBASELINE,
                 'none': NONE }
-
-  TIMELINES = { 'wontfix': WONTFIX,
-                'now': NOW,
-                'defer': DEFER }
-
-  RESULT_TYPES = { 'skip': SKIP,
-                   'pass': PASS,
-                   'fail': FAIL,
-                   'flaky': FLAKY }
-
 
   def __init__(self, path, full_test_list, platform, is_debug_mode,
       is_lint_mode, expectations_as_str=None, suppress_errors=False):
@@ -243,30 +298,23 @@ class TestExpectationsFile:
     # Maps a test to its list of expectations.
     self._test_to_expectations = {}
 
-    # Maps a test to its list of options (string values)
-    self._test_to_options = {}
-
-    # Maps a test to its list of modifiers: the constants associated with
-    # the options minus any bug or platform strings
+    # Maps a test to its list of modifiers.
     self._test_to_modifiers = {}
 
     # Maps a test to the base path that it was listed with in the test list.
     self._test_list_paths = {}
 
-    self._modifier_to_tests = self._DictOfSets(self.MODIFIERS)
-    self._expectation_to_tests = self._DictOfSets(self.EXPECTATIONS)
-    self._timeline_to_tests = self._DictOfSets(self.TIMELINES)
-    self._result_type_to_tests = self._DictOfSets(self.RESULT_TYPES)
+    # Maps a modifier to a set of tests.
+    self._modifier_to_tests = {}
+    for modifier in self.MODIFIERS.itervalues():
+      self._modifier_to_tests[modifier] = set()
+
+    # Maps an expectation to a set of tests.
+    self._expectation_to_tests = {}
+    for expectation in self.EXPECTATIONS.itervalues():
+      self._expectation_to_tests[expectation] = set()
 
     self._Read(self._GetIterableExpectations())
-
-  def _DictOfSets(self, strings_to_constants):
-    """Takes a dict of strings->constants and returns a dict mapping
-    each constant to an empty set."""
-    d = {}
-    for c in strings_to_constants.values():
-      d[c] = set()
-    return d
 
   def _GetIterableExpectations(self):
     """Returns an object that can be iterated over. Allows for not caring about
@@ -304,14 +352,11 @@ class TestExpectationsFile:
 
     return tests
 
-  def GetTestsWithResultType(self, result_type):
-    return self._result_type_to_tests[result_type]
-
-  def GetTestsWithTimeline(self, timeline):
-    return self._timeline_to_tests[timeline]
-
   def HasModifier(self, test, modifier):
     return test in self._modifier_to_tests[modifier]
+
+  def GetModifiers(self, test):
+    return self._test_to_modifiers[test]
 
   def GetExpectations(self, test):
     return self._test_to_expectations[test]
@@ -405,7 +450,9 @@ class TestExpectationsFile:
 
   def ParseExpectationsLine(self, line):
     """Parses a line from test_expectations.txt and returns a tuple with the
-    test path, options as a list, expectations as a list."""
+    test path, options as a list, expectations as a list, options as a string
+    and expectations as a string.
+    """
     line = StripComments(line)
     if not line:
       return (None, None, None)
@@ -577,7 +624,7 @@ class TestExpectationsFile:
         tests = self._ExpandTests(test_list_path)
 
       self._AddTests(tests, expectations, test_list_path, lineno,
-                     modifiers, options)
+          modifiers, options)
 
     if not self._suppress_errors and (
         len(self._errors) or len(self._non_fatal_errors)):
@@ -592,14 +639,6 @@ class TestExpectationsFile:
         logging.error(error)
       if len(self._errors):
         raise SyntaxError('\n'.join(map(str, self._errors)))
-
-    # Now add in the tests that weren't present in the expectations file
-    expectations = set([PASS])
-    options = []
-    modifiers = []
-    for test in self._full_test_list:
-      if not test in self._test_list_paths:
-        self._AddTest(test, modifiers, expectations, options)
 
   def _GetOptionsList(self, listString):
     return [part.strip().lower() for part in listString.strip().split(' ')]
@@ -632,76 +671,41 @@ class TestExpectationsFile:
     return result
 
   def _AddTests(self, tests, expectations, test_list_path, lineno, modifiers,
-                options):
+      options):
     for test in tests:
       if self._AlreadySeenTest(test, test_list_path, lineno):
         continue
 
       self._ClearExpectationsForTest(test, test_list_path)
-      self._AddTest(test, modifiers, expectations, options)
+      self._test_to_expectations[test] = expectations
+      self._test_to_modifiers[test] = options
 
-  def _AddTest(self, test, modifiers, expectations, options):
-    """Sets the expected state for a given test.
+      if len(modifiers) is 0:
+        self._AddTest(test, NONE, expectations)
+      else:
+        for modifier in modifiers:
+          self._AddTest(test, self.MODIFIERS[modifier], expectations)
 
-    This routine assumes the test has not been added before. If it has,
-    use _ClearExpectationsForTest() to reset the state prior to calling this.
-
-    Args:
-      test: test to add
-      modifiers: sequence of modifier keywords ('wontfix', 'slow', etc.)
-      expectations: sequence of expectations (PASS, IMAGE, etc.)
-      options: sequence of keywords and bug identifiers."""
-    self._test_to_expectations[test] = expectations
+  def _AddTest(self, test, modifier, expectations):
+    self._modifier_to_tests[modifier].add(test)
     for expectation in expectations:
       self._expectation_to_tests[expectation].add(test)
 
-    self._test_to_options[test] = options
-    self._test_to_modifiers[test] = set()
-    for modifier in modifiers:
-      mod_value = self.MODIFIERS[modifier]
-      self._modifier_to_tests[mod_value].add(test)
-      self._test_to_modifiers[test].add(mod_value)
-
-    if 'wontfix' in modifiers:
-      self._timeline_to_tests[WONTFIX].add(test)
-    elif 'defer' in modifiers:
-      self._timeline_to_tests[DEFER].add(test)
-    else:
-      self._timeline_to_tests[NOW].add(test)
-
-    if 'skip' in modifiers:
-      self._result_type_to_tests[SKIP].add(test)
-    elif expectations == set([PASS]):
-      self._result_type_to_tests[PASS].add(test)
-    elif len(expectations) > 1:
-      self._result_type_to_tests[FLAKY].add(test)
-    else:
-      self._result_type_to_tests[FAIL].add(test)
-
-
   def _ClearExpectationsForTest(self, test, test_list_path):
-    """Remove prexisting expectations for this test.
+    """Remove prexisiting expectations for this test.
     This happens if we are seeing a more precise path
     than a previous listing.
     """
     if test in self._test_list_paths:
       self._test_to_expectations.pop(test, '')
-      self._RemoveFromSets(test, self._expectation_to_tests)
-      self._RemoveFromSets(test, self._modifier_to_tests)
-      self._RemoveFromSets(test, self._timeline_to_tests)
-      self._RemoveFromSets(test, self._result_type_to_tests)
+      for expectation in self.EXPECTATIONS.itervalues():
+        if test in self._expectation_to_tests[expectation]:
+          self._expectation_to_tests[expectation].remove(test)
+      for modifier in self.MODIFIERS.itervalues():
+        if test in self._modifier_to_tests[modifier]:
+          self._modifier_to_tests[modifier].remove(test)
 
     self._test_list_paths[test] = os.path.normpath(test_list_path)
-
-  def _RemoveFromSets(self, test, dict):
-    """Removes the given test from the sets in the dictionary.
-
-    Args:
-      test: test to look for
-      dict: dict of sets of files"""
-    for set_of_tests in dict.itervalues():
-      if test in set_of_tests:
-        set_of_tests.remove(test)
 
   def _AlreadySeenTest(self, test, test_list_path, lineno):
     """Returns true if we've already seen a more precise path for this test
