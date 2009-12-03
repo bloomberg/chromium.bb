@@ -65,9 +65,8 @@ void SandboxedExtensionUnpacker::Start() {
   bool use_utility_process = rdh_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
 
-#if defined(OS_POSIX)
-    // TODO(port): Don't use a utility process on linux (crbug.com/22703) or
-    // MacOS (crbug.com/8102) until problems related to autoupdate are fixed.
+#if defined(OS_LINUX)
+    // TODO(port): Don't use a utility process on linux (crbug.com/22703).
     use_utility_process = false;
 #endif
 

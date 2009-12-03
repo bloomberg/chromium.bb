@@ -36,5 +36,5 @@
 ; Needed for IPC on 10.6
 ;10.6_ONLY (allow ipc-posix-shm)
 
-; Enable full access to given directory.
-(allow file-read* file-write* (regex #"^DIR_TO_ALLOW_ACCESS"))
+; Enable full access to given directory if needed.
+;ENABLE_DIRECTORY_ACCESS (allow file-read* file-write* (regex #"DIR_TO_ALLOW_ACCESS"))

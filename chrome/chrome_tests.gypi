@@ -759,6 +759,7 @@
         'common/pref_service_unittest.cc',
         'common/property_bag_unittest.cc',
         'common/resource_dispatcher_unittest.cc',
+        'common/sandbox_mac_unittest.mm',
         'common/thumbnail_score_unittest.cc',
         'common/time_format_unittest.cc',
         'common/worker_thread_ticker_unittest.cc',

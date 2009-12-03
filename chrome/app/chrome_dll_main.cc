@@ -554,8 +554,13 @@ int ChromeMain(int argc, char** argv) {
   // On OS X the renderer sandbox needs to be initialized later in the startup
   // sequence in RendererMainPlatformDelegate::PlatformInitialize().
   if (process_type != switches::kRendererProcess &&
-      process_type != switches::kExtensionProcess)
-    sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
+      process_type != switches::kExtensionProcess) {
+    bool sandbox_initialized_ok =
+        sandbox_wrapper.InitializeSandbox(parsed_command_line, process_type);
+    // Die if the sandbox can't be enabled.
+    CHECK(sandbox_initialized_ok) << "Error initializing sandbox for "
+                                  << process_type;
+  }
 #endif  // OS_MACOSX
 
   startup_timer.Stop();  // End of Startup Time Measurement.

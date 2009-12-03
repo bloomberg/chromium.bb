@@ -55,9 +55,9 @@ FilePath UtilityProcessHost::GetUtilityProcessCmd() {
 }
 
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
-#if defined(OS_POSIX)
+#if defined(OS_LINUX)
   // TODO(port): We should not reach here on Linux (crbug.com/22703).
-  // (crbug.com/23837) covers enabling this on Linux/OS X.
+  // (crbug.com/23837) covers enabling this on Linux.
   NOTREACHED();
   return false;
 #endif
