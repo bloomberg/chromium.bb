@@ -58,6 +58,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
@@ -1098,6 +1099,14 @@ bool TabContents::SavePage(const FilePath& main_file, const FilePath& dir_path,
 
   save_package_ = new SavePackage(this, save_type, main_file, dir_path);
   return save_package_->Init();
+}
+
+void TabContents::EmailPageLocation() {
+  std::string title = EscapeQueryParamValue(UTF16ToUTF8(GetTitle()), false);
+  std::string page_url = EscapeQueryParamValue(GetURL().spec(), false);
+  std::string mailto = std::string("mailto:?subject=Fwd:%20") +
+      title + "&body=%0A%0A" + page_url;
+  platform_util::OpenExternal(GURL(mailto));
 }
 
 void TabContents::PrintPreview() {

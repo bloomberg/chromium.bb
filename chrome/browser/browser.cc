@@ -1039,6 +1039,11 @@ void Browser::ClosePopups() {
 }
 #endif
 
+void Browser::EmailPageLocation() {
+  UserMetrics::RecordAction("EmailPageLocation", profile_);
+  GetSelectedTabContents()->EmailPageLocation();
+}
+
 void Browser::Print() {
   UserMetrics::RecordAction("PrintPreview", profile_);
   GetSelectedTabContents()->PrintPreview();
@@ -1464,6 +1469,7 @@ void Browser::ExecuteCommandWithDisposition(
 #if defined(OS_WIN)
     case IDC_CLOSE_POPUPS:          ClosePopups();                 break;
 #endif
+    case IDC_EMAIL_PAGE_LOCATION:   EmailPageLocation();           break;
     case IDC_PRINT:                 Print();                       break;
     case IDC_ENCODING_AUTO_DETECT:  ToggleEncodingAutoDetect();    break;
     case IDC_ENCODING_UTF8:
@@ -2385,6 +2391,7 @@ void Browser::InitCommandState() {
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_POPUPS, true);
+  command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);
   command_updater_.UpdateCommandEnabled(IDC_PRINT, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_AUTO_DETECT, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_UTF8, true);
@@ -2549,6 +2556,8 @@ void Browser::UpdateCommandsForTabState() {
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_CREATE_SHORTCUTS,
       web_app::IsValidUrl(current_tab->GetURL()));
+  command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION,
+      current_tab->ShouldDisplayURL() && current_tab->GetURL().is_valid());
 }
 
 void Browser::UpdateStopGoState(bool is_loading, bool force) {

@@ -20,21 +20,24 @@ namespace platform_util {
 void ShowItemInFolder(const FilePath& full_path) {
   DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
-  [[NSWorkspace sharedWorkspace] selectFile:path_string
-                   inFileViewerRootedAtPath:nil];
+  if (!path_string || ![[NSWorkspace sharedWorkspace] selectFile:path_string
+                                        inFileViewerRootedAtPath:nil])
+    LOG(WARNING) << "NSWorkspace failed to select file " << full_path.value();
 }
 
 void OpenItem(const FilePath& full_path) {
   DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   NSString* path_string = base::SysUTF8ToNSString(full_path.value());
-  [[NSWorkspace sharedWorkspace] openFile:path_string];
+  if (!path_string || ![[NSWorkspace sharedWorkspace] openFile:path_string])
+    LOG(WARNING) << "NSWorkspace failed to open file " << full_path.value();
 }
 
 void OpenExternal(const GURL& url) {
   DCHECK_EQ([NSThread currentThread], [NSThread mainThread]);
   NSString* url_string = base::SysUTF8ToNSString(url.spec());
   NSURL* ns_url = [NSURL URLWithString:url_string];
-  [[NSWorkspace sharedWorkspace] openURL:ns_url];
+  if (!ns_url || ![[NSWorkspace sharedWorkspace] openURL:ns_url])
+    LOG(WARNING) << "NSWorkspace failed to open URL " << url;
 }
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {

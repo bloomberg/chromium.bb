@@ -373,6 +373,7 @@ class Browser : public TabStripModelDelegate,
   void ClosePopups();
 #endif
   void Print();
+  void EmailPageLocation();
   void ToggleEncodingAutoDetect();
   void OverrideEncoding(int encoding_id);
 
