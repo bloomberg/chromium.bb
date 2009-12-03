@@ -165,6 +165,7 @@
             'util/move_tree_work_item_unittest.cc',
             'util/run_all_unittests.cc',
             'util/set_reg_value_work_item_unittest.cc',
+            'util/shell_util_unittest.cc',
             'util/work_item_list_unittest.cc',
             'util/version_unittest.cc',
           ],
