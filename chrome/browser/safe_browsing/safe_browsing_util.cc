@@ -13,6 +13,10 @@
 #include "net/base/escape.h"
 #include "unicode/locid.h"
 
+#if defined(OS_WIN)
+#include "chrome/installer/util/browser_distribution.h"
+#endif
+
 static const int kSafeBrowsingMacDigestSize = 20;
 
 // Continue to this URL after submitting the phishing report form.
@@ -20,7 +24,7 @@ static const int kSafeBrowsingMacDigestSize = 20;
 static const char kContinueUrlFormat[] =
   "http://www.google.com/tools/firefox/toolbar/FT2/intl/%s/submit_success.html";
 
-static const char kReportParams[] = "?tpl=chrome&continue=%s&url=%s";
+static const char kReportParams[] = "?tpl=%s&continue=%s&url=%s";
 
 
 // SBEntry ---------------------------------------------------------------------
@@ -594,8 +598,17 @@ GURL GeneratePhishingReportUrl(const std::string& report_page,
   const std::string continue_esc =
       EscapeQueryParamValue(StringPrintf(kContinueUrlFormat, lang));
   const std::string current_esc = EscapeQueryParamValue(url_to_report);
+
+#if defined(OS_WIN)
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  std::string client_name(dist->GetSafeBrowsingName());
+#else
+  std::string client_name("googlechrome");
+#endif
+
   GURL report_url(report_page +
-      StringPrintf(kReportParams, continue_esc.c_str(), current_esc.c_str()));
+      StringPrintf(kReportParams, client_name.c_str(), continue_esc.c_str(),
+                   current_esc.c_str()));
   return google_util::AppendGoogleLocaleParam(report_url);
 }
 
