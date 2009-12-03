@@ -135,6 +135,15 @@ class TestRunner:
     else:
       self._http_server = http_server.Lighttpd(options.results_directory)
 
+    self._shardable_directories = ['chrome', 'LayoutTests', 'pending']
+
+    # Experiment with more sharding on the V8-Lastest builders. Turn this on
+    # for all builders if the increased flakiness is sufficiently manageable.
+    if options.builder_name and options.builder_name.find("(V8-Latest)") != -1:
+      self._shardable_directories.append('fast')
+      self._shardable_directories.append('http')
+      self._shardable_directories.append('tests')
+
     self._websocket_server = websocket_server.PyWebSocket(
         options.results_directory)
     # disable wss server. need to install pyOpenSSL on buildbots.
@@ -337,7 +346,7 @@ class TestRunner:
     test_file = test_file_parts[1]
 
     return_value = directory
-    while directory in test_files.SHARDABLE_DIRECTORIES:
+    while directory in self._shardable_directories:
       test_file_parts = test_file.split(os.sep, 1)
       directory = test_file_parts[0]
       return_value = os.path.join(return_value, directory)

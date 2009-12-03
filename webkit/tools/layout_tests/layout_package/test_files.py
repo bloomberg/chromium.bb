@@ -21,7 +21,7 @@ _supported_file_extensions = set(['.html', '.shtml', '.xml', '.xhtml', '.pl',
 _skipped_directories = set(['.svn', '_svn', 'resources', 'script-tests'])
 
 # Top-level directories to shard when running tests.
-SHARDABLE_DIRECTORIES = set(['chrome', 'LayoutTests', 'pending'])
+ROOT_DIRECTORIES = set(['chrome', 'LayoutTests', 'pending'])
 
 def GatherTestFiles(paths):
   """Generate a set of test files and return them.
@@ -33,7 +33,7 @@ def GatherTestFiles(paths):
   paths_to_walk = set()
   # if paths is empty, provide a pre-defined list.
   if not paths:
-    paths = SHARDABLE_DIRECTORIES
+    paths = ROOT_DIRECTORIES
   for path in paths:
     # If there's an * in the name, assume it's a glob pattern.
     path = os.path.join(path_utils.LayoutTestsDir(path), path)
