@@ -66,7 +66,7 @@ void TipsHandler::HandleGetTips(const Value* content) {
         current_tip_index = 0;
         if (!dom_ui_->GetProfile()->GetPrefs()->GetBoolean(
             prefs::kHomePageIsNewTabPage)) {
-          SendTip(WideToASCII(l10n_util::GetString(
+          SendTip(WideToUTF8(l10n_util::GetString(
               IDS_NEW_TAB_MAKE_THIS_HOMEPAGE)), L"set_homepage_tip",
               current_tip_index);
           return;
