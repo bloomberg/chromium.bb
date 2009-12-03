@@ -49,6 +49,7 @@ class ExtensionUpdateService {
                                       bool include_disabled) = 0;
   virtual void UpdateExtensionBlacklist(
     const std::vector<std::string>& blacklist) = 0;
+  virtual bool HasInstalledExtensions() = 0;
 };
 
 // Manages installed and running Chromium extensions.
@@ -84,6 +85,11 @@ class ExtensionsService
   virtual const ExtensionList* extensions() const { return &extensions_; }
   virtual const ExtensionList* disabled_extensions() const {
     return &disabled_extensions_;
+  }
+
+  // Returns true if any extensions are installed.
+  virtual bool HasInstalledExtensions() {
+    return !(extensions_.empty() && disabled_extensions_.empty());
   }
 
   const FilePath& install_directory() const { return install_directory_; }

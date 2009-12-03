@@ -520,7 +520,7 @@ void ExtensionUpdater::CheckNow() {
   // Generate a set of update urls for loaded extensions.
   std::set<GURL> urls;
 
-  if (blacklist_checks_enabled_) {
+  if (blacklist_checks_enabled_ && service_->HasInstalledExtensions()) {
     urls.insert(GetBlacklistUpdateUrl(
         prefs_->GetString(kExtensionBlacklistUpdateVersion)));
   }

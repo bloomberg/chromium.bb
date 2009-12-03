@@ -61,6 +61,11 @@ class MockService : public ExtensionUpdateService {
     const std::vector<std::string>& blacklist) {
     EXPECT_TRUE(false);
   }
+
+  virtual bool HasInstalledExtensions() {
+    EXPECT_TRUE(false);
+    return false;
+  }
  private:
   DISALLOW_COPY_AND_ASSIGN(MockService);
 };
@@ -116,7 +121,7 @@ void CreateTestExtensions(int count, ExtensionList *list,
 
 class ServiceForManifestTests : public MockService {
  public:
-  ServiceForManifestTests() {}
+  ServiceForManifestTests() : has_installed_extensions_(false) {}
 
   virtual ~ServiceForManifestTests() {}
 
@@ -136,8 +141,17 @@ class ServiceForManifestTests : public MockService {
     extensions_ = extensions;
   }
 
+  virtual bool HasInstalledExtensions() {
+    return has_installed_extensions_;
+  }
+
+  void set_has_installed_extensions(bool value) {
+    has_installed_extensions_ = value;
+  }
+
  private:
   ExtensionList extensions_;
+  bool has_installed_extensions_;
 };
 
 class ServiceForDownloadTests : public MockService {
@@ -316,9 +330,18 @@ class ExtensionUpdaterTest : public testing::Test {
     // Tell the updater that it's time to do update checks.
     SimulateTimerFired(updater.get());
 
-    // Get the url our mock fetcher was asked to fetch.
+    // No extensions installed, so nothing should have been fetched.
     TestURLFetcher* fetcher =
         factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
+    EXPECT_TRUE(fetcher == NULL);
+
+    // Try again with an extension installed.
+    service.set_has_installed_extensions(true);
+    SimulateTimerFired(updater.get());
+
+    // Get the url our mock fetcher was asked to fetch.
+    fetcher = factory.GetFetcherByID(ExtensionUpdater::kManifestFetcherId);
+    ASSERT_FALSE(fetcher == NULL);
     const GURL& url = fetcher->original_url();
 
     EXPECT_FALSE(url.is_empty());
