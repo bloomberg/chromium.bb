@@ -119,4 +119,74 @@ parse_error::ParseError CommonDecoder::HandleSetToken(
   return parse_error::kParseNoError;
 }
 
+parse_error::ParseError CommonDecoder::HandleJump(
+    uint32 arg_count,
+    const cmd::Jump& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleJumpRelative(
+    uint32 arg_count,
+    const cmd::JumpRelative& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleCall(
+    uint32 arg_count,
+    const cmd::Call& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleCallRelative(
+    uint32 arg_count,
+    const cmd::CallRelative& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleReturn(
+    uint32 arg_count,
+    const cmd::Return& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleSetBucketSize(
+    uint32 arg_count,
+    const cmd::SetBucketSize& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleSetBucketData(
+    uint32 arg_count,
+    const cmd::SetBucketData& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleSetBucketDataImmediate(
+    uint32 arg_count,
+    const cmd::SetBucketDataImmediate& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleGetResultSize(
+    uint32 arg_count,
+    const cmd::GetResultSize& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
+parse_error::ParseError CommonDecoder::HandleGetResultData(
+    uint32 arg_count,
+    const cmd::GetResultData& args) {
+  DCHECK(false);  // TODO(gman): Implement.
+  return parse_error::kParseNoError;
+}
+
 }  // namespace command_buffer

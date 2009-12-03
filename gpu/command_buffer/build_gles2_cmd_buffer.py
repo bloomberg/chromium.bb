@@ -14,7 +14,7 @@ from optparse import OptionParser
 
 _SIZE_OF_UINT32 = 4
 _SIZE_OF_COMMAND_HEADER = 4
-_FIRST_SPECIFIC_COMMAND_ID = 1024
+_FIRST_SPECIFIC_COMMAND_ID = 256
 
 _LICENSE = """
 // Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
@@ -2553,7 +2553,7 @@ class GLGenerator(object):
     file.Write("// *** These IDs MUST NOT CHANGE!!! ***\n")
     file.Write("// Changing them will break all client programs.\n")
     file.Write("TEST(GLES2CommandIdTest, CommandIdsMatch) {\n")
-    command_id = 1024
+    command_id = _FIRST_SPECIFIC_COMMAND_ID
     for func in self.functions:
       file.Write("  COMPILE_ASSERT(%s::kCmdId == %d,\n" %
                  (func.name, command_id))

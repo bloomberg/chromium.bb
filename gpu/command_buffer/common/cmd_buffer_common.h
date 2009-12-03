@@ -63,11 +63,11 @@ inline size_t RoundSizeToMultipleOfEntries(size_t size_in_bytes) {
 
 // Struct that defines the command header in the command buffer.
 struct CommandHeader {
-  Uint32 size:8;
-  Uint32 command:24;
+  Uint32 size:21;
+  Uint32 command:11;
 
   void Init(uint32 _command, uint32 _size) {
-    DCHECK_LT(_size, 256u);
+    DCHECK_LE(_size, 1u << 22);
     command = _command;
     size = _size;
   }
@@ -161,22 +161,6 @@ void* NextImmediateCmdAddressTotalSize(void* cmd, uint32 total_size_in_bytes) {
       RoundSizeToMultipleOfEntries(total_size_in_bytes);
 }
 
-struct SharedMemory {
-  void Init(uint32 _id, uint32 _offset) {
-    id = _id;
-    offset = _offset;
-  }
-
-  uint32 id;
-  uint32 offset;
-};
-
-COMPILE_ASSERT(offsetof(SharedMemory, id) == 0,
-               Offsetof_SharedMemory_id_not_0);
-COMPILE_ASSERT(offsetof(SharedMemory, offset) == 4,
-               Offsetof_SharedMemory_offset_not_4);
-
-
 namespace cmd {
 
 // This macro is used to safely and convienently expand the list of commnad
@@ -189,6 +173,16 @@ namespace cmd {
 #define COMMON_COMMAND_BUFFER_CMDS(OP) \
   OP(Noop)                          /*  0 */ \
   OP(SetToken)                      /*  1 */ \
+  OP(Jump)                          /*  2 */ \
+  OP(JumpRelative)                  /*  3 */ \
+  OP(Call)                          /*  4 */ \
+  OP(CallRelative)                  /*  5 */ \
+  OP(Return)                        /*  6 */ \
+  OP(SetBucketSize)                 /*  7 */ \
+  OP(SetBucketData)                 /*  8 */ \
+  OP(SetBucketDataImmediate)        /*  9 */ \
+  OP(GetResultSize)                 /* 10 */ \
+  OP(GetResultData)                 /* 11 */ \
 
 // Common commands.
 enum CommandId {
@@ -199,13 +193,14 @@ enum CommandId {
   #undef COMMON_COMMAND_BUFFER_CMD_OP
 
   kNumCommands,
-  kLastCommonId = 1023,  // reserve 1024 spaces for common commands.
+  kLastCommonId = 255,  // reserve 256 spaces for common commands.
 };
 
 COMPILE_ASSERT(kNumCommands - 1 <= kLastCommonId, Too_many_common_commands);
 
 const char* GetCommandName(CommandId id);
 
+// A Noop command.
 struct Noop {
   typedef Noop ValueType;
   static const CommandId kCmdId = kNoop;
@@ -231,6 +226,8 @@ struct Noop {
 COMPILE_ASSERT(sizeof(Noop) == 4, Sizeof_Noop_is_not_4);
 COMPILE_ASSERT(offsetof(Noop, header) == 0, Offsetof_Noop_header_not_0);
 
+// The SetToken command puts a token in the command stream that you can
+// use to check if that token has been passed in the command stream.
 struct SetToken {
   typedef SetToken ValueType;
   static const CommandId kCmdId = kSetToken;
@@ -258,6 +255,412 @@ COMPILE_ASSERT(offsetof(SetToken, header) == 0,
                Offsetof_SetToken_header_not_0);
 COMPILE_ASSERT(offsetof(SetToken, token) == 4,
                Offsetof_SetToken_token_not_4);
+
+// The Jump command jumps to another place in the command buffer.
+struct Jump {
+  typedef Jump ValueType;
+  static const CommandId kCmdId = kJump;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _shared_memory_id, uint32 _shared_memory_offset) {
+    SetHeader();
+    shared_memory_id = _shared_memory_id;
+    shared_memory_offset = _shared_memory_offset;
+  }
+  static void* Set(
+      void* cmd, uint32 _shared_memory_id, uint32 _shared_memory_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _shared_memory_id, _shared_memory_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  uint32 shared_memory_id;
+  uint32 shared_memory_offset;
+};
+
+COMPILE_ASSERT(sizeof(Jump) == 12, Sizeof_Jump_is_not_12);
+COMPILE_ASSERT(offsetof(Jump, header) == 0,
+               Offsetof_Jump_header_not_0);
+COMPILE_ASSERT(offsetof(Jump, shared_memory_id) == 4,
+               Offsetof_Jump_shared_memory_id_not_4);
+COMPILE_ASSERT(offsetof(Jump, shared_memory_offset) == 8,
+               Offsetof_Jump_shared_memory_offset_not_8);
+
+// The JumpRelative command jumps to another place in the command buffer
+// relative to the end of this command. In other words. JumpRelative with an
+// offset of zero is effectively a noop.
+struct JumpRelative {
+  typedef JumpRelative ValueType;
+  static const CommandId kCmdId = kJumpRelative;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(int32 _offset) {
+    SetHeader();
+    offset = _offset;
+  }
+  static void* Set(void* cmd, int32 _offset) {
+    static_cast<ValueType*>(cmd)->Init(_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  int32 offset;
+};
+
+COMPILE_ASSERT(sizeof(JumpRelative) == 8, Sizeof_JumpRelative_is_not_8);
+COMPILE_ASSERT(offsetof(JumpRelative, header) == 0,
+               Offsetof_JumpRelative_header_not_0);
+COMPILE_ASSERT(offsetof(JumpRelative, offset) == 4,
+               Offsetof_JumpRelative_offset_4);
+
+// The Call command jumps to a subroutine which can be returned from with the
+// Return command.
+struct Call {
+  typedef Call ValueType;
+  static const CommandId kCmdId = kCall;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _shared_memory_id, uint32 _shared_memory_offset) {
+    SetHeader();
+    shared_memory_id = _shared_memory_id;
+    shared_memory_offset = _shared_memory_offset;
+  }
+  static void* Set(
+      void* cmd, uint32 _shared_memory_id, uint32 _shared_memory_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _shared_memory_id, _shared_memory_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  uint32 shared_memory_id;
+  uint32 shared_memory_offset;
+};
+
+COMPILE_ASSERT(sizeof(Call) == 12, Sizeof_Call_is_not_12);
+COMPILE_ASSERT(offsetof(Call, header) == 0,
+               Offsetof_Call_header_not_0);
+COMPILE_ASSERT(offsetof(Call, shared_memory_id) == 4,
+               Offsetof_Call_shared_memory_id_not_4);
+COMPILE_ASSERT(offsetof(Call, shared_memory_offset) == 8,
+               Offsetof_Call_shared_memory_offset_not_8);
+
+// The CallRelative command jumps to a subroutine using a relative offset. The
+// offset is relative to the end of this command..
+struct CallRelative {
+  typedef CallRelative ValueType;
+  static const CommandId kCmdId = kCallRelative;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(int32 _offset) {
+    SetHeader();
+    offset = _offset;
+  }
+  static void* Set(void* cmd, int32 _offset) {
+    static_cast<ValueType*>(cmd)->Init(_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  int32 offset;
+};
+
+COMPILE_ASSERT(sizeof(CallRelative) == 8, Sizeof_CallRelative_is_not_8);
+COMPILE_ASSERT(offsetof(CallRelative, header) == 0,
+               Offsetof_CallRelative_header_not_0);
+COMPILE_ASSERT(offsetof(CallRelative, offset) == 4,
+               Offsetof_CallRelative_offset_4);
+
+// Returns from a subroutine called by the Call or CallRelative commands.
+struct Return {
+  typedef Return ValueType;
+  static const CommandId kCmdId = kReturn;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init() {
+    SetHeader();
+  }
+  static void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+};
+
+COMPILE_ASSERT(sizeof(Return) == 4, Sizeof_Return_is_not_4);
+COMPILE_ASSERT(offsetof(Return, header) == 0,
+               Offsetof_Return_header_not_0);
+
+// Sets the size of a bucket for collecting data on the service side.
+// This is a utility for gathering data on the service side so it can be used
+// all at once when some service side API is called. It removes the need to add
+// special commands just to support a particular API. For example, any API
+// command that needs a string needs a way to send that string to the API over
+// the command buffers. While you can require that the command buffer or
+// transfer buffer be large enough to hold the largest string you can send,
+// using this command removes that restriction by letting you send smaller
+// pieces over and build up the data on the service side.
+//
+// You can clear a bucket on the service side and thereby free memory by sending
+// a size of 0.
+struct SetBucketSize {
+  typedef SetBucketSize ValueType;
+  static const CommandId kCmdId = kSetBucketSize;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _bucket_id, uint32 _size) {
+    SetHeader();
+    bucket_id = _bucket_id;
+    size = _size;
+  }
+  static void* Set(void* cmd, uint32 _bucket_id, uint32 _size) {
+    static_cast<ValueType*>(cmd)->Init(_bucket_id, _size);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  utin32 bucket_id;
+  uint32 size;
+};
+
+COMPILE_ASSERT(sizeof(SetBucketSize) == 12, Sizeof_SetBucketSize_is_not_8);
+COMPILE_ASSERT(offsetof(SetBucketSize, header) == 0,
+               Offsetof_SetBucketSize_header_not_0);
+COMPILE_ASSERT(offsetof(SetBucketSize, bucket_id) == 4,
+               Offsetof_SetBucketSize_bucket_id_4);
+COMPILE_ASSERT(offsetof(SetBucketSize, size) == 8,
+               Offsetof_SetBucketSize_size_8);
+
+// Sets the contents of a portion of a bucket on the service side from data in
+// shared memory.
+// See SetBucketSize.
+struct SetBucketData {
+  typedef SetBucketData ValueType;
+  static const CommandId kCmdId = kSetBucketData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _bucket_id,
+            uint32 _offset,
+            uint32 _size,
+            uint32 _shared_memory_id,
+            uint32 _shared_memory_offset) {
+    SetHeader();
+    bucket_id = _bucket_id;
+    offset = _offset;
+    size = _size;
+    shared_memory_id = _shared_memory_id;
+    shared_memory_offset = _shared_memory_offset;
+  }
+  static void* Set(void* cmd,
+                   uint32 _bucket_id,
+                   uint32 _offset,
+                   uint32 _size,
+                   uint32 _shared_memory_id,
+                   uint32 _shared_memory_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _bucket_id,
+        _offset,
+        _size,
+        _shared_memory_id,
+        _shared_memory_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  uint32 bucket_id;
+  uint32 offset;
+  uint32 size;
+  uint32 shared_memory_id;
+  uint32 shared_memory_offset;
+};
+
+COMPILE_ASSERT(sizeof(SetBucketData) == 24, Sizeof_SetBucketData_is_not_24);
+COMPILE_ASSERT(offsetof(SetBucketData, header) == 0,
+               Offsetof_SetBucketData_header_not_0);
+COMPILE_ASSERT(offsetof(SetBucketData, bucket_id) == 4,
+               Offsetof_SetBucketData_bucket_id_not_4);
+COMPILE_ASSERT(offsetof(SetBucketData, offset) == 8,
+               Offsetof_SetBucketData_offset_not_8);
+COMPILE_ASSERT(offsetof(SetBucketData, size) == 12,
+               Offsetof_SetBucketData_size_not_12);
+COMPILE_ASSERT(offsetof(SetBucketData, shared_memory_id) == 16,
+               Offsetof_SetBucketData_shared_memory_id_not_16);
+COMPILE_ASSERT(offsetof(SetBucketData, shared_memory_offset) == 20,
+               Offsetof_SetBucketData_shared_memory_offset_not_20);
+
+// Sets the contents of a portion of a bucket on the service side from data in
+// the command buffer.
+// See SetBucketSize.
+struct SetBucketDataImmediate {
+  typedef SetBucketDataImmediate ValueType;
+  static const CommandId kCmdId = kSetBucketDataImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+
+  void SetHeader(uint32 size) {
+    header.SetCmdBySize<ValueType>(size);
+  }
+
+  void Init(uint32 _bucket_id,
+            uint32 _offset,
+            uint32 _size) {
+    SetHeader(_size);
+    bucket_id = _bucket_id;
+    offset = _offset;
+    size = _size;
+  }
+  static void* Set(void* cmd,
+                   uint32 _bucket_id,
+                   uint32 _offset,
+                   uint32 _size) {
+    static_cast<ValueType*>(cmd)->Init(
+        _bucket_id,
+        _offset,
+        _size);
+    return NextImmediateCmdAddress<ValueType>(cmd, _size);
+  }
+
+  CommandHeader header;
+  uint32 bucket_id;
+  uint32 offset;
+  uint32 size;
+};
+
+COMPILE_ASSERT(sizeof(SetBucketDataImmediate) == 16,
+               Sizeof_SetBucketDataImmediate_is_not_24);
+COMPILE_ASSERT(offsetof(SetBucketDataImmediate, header) == 0,
+               Offsetof_SetBucketDataImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(SetBucketDataImmediate, bucket_id) == 4,
+               Offsetof_SetBucketDataImmediate_bucket_id_not_4);
+COMPILE_ASSERT(offsetof(SetBucketDataImmediate, offset) == 8,
+               Offsetof_SetBucketDataImmediate_offset_not_8);
+COMPILE_ASSERT(offsetof(SetBucketDataImmediate, size) == 12,
+               Offsetof_SetBucketDataImmediate_size_not_12);
+
+// Gets the size of a result the service has available.
+// Sending a variable size result back to the client, for example any API that
+// returns a string, is problematic since the largest thing you can send back is
+// the size of your shared memory. This command along with GetResultData
+// implement a way to get a result a piece at a time to help solve that problem
+// in a generic way.
+struct GetResultSize {
+  typedef GetResultSize ValueType;
+  static const CommandId kCmdId = kGetResultSize;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _shared_memory_id,
+            uint32 _shared_memory_offset) {
+    SetHeader();
+    shared_memory_id = _shared_memory_id;
+    shared_memory_offset = _shared_memory_offset;
+  }
+  static void* Set(void* cmd,
+                   uint32 _shared_memory_id,
+                   uint32 _shared_memory_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _shared_memory_id,
+        _shared_memory_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  uint32 shared_memory_id;
+  uint32 shared_memory_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetResultSize) == 12, Sizeof_GetResultSize_is_not_12);
+COMPILE_ASSERT(offsetof(GetResultSize, header) == 0,
+               Offsetof_GetResultSize_header_not_0);
+COMPILE_ASSERT(offsetof(GetResultSize, shared_memory_id) == 4,
+               Offsetof_GetResultSize_shared_memory_id_not_4);
+COMPILE_ASSERT(offsetof(GetResultSize, shared_memory_offset) == 8,
+               Offsetof_GetResultSize_shared_memory_offset_not_8);
+
+// Gets a piece of a result the service as available.
+// See GetResultSize.
+struct GetResultData {
+  typedef GetResultData ValueType;
+  static const CommandId kCmdId = kGetResultData;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(uint32 _offset,
+            uint32 _size,
+            uint32 _shared_memory_id,
+            uint32 _shared_memory_offset) {
+    SetHeader();
+    offset = _offset;
+    size = _size;
+    shared_memory_id = _shared_memory_id;
+    shared_memory_offset = _shared_memory_offset;
+  }
+  static void* Set(void* cmd,
+                   uint32 _offset,
+                   uint32 _size,
+                   uint32 _shared_memory_id,
+                   uint32 _shared_memory_offset) {
+    static_cast<ValueType*>(cmd)->Init(
+        _offset,
+        _size,
+        _shared_memory_id,
+        _shared_memory_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  CommandHeader header;
+  uint32 offset;
+  uint32 size;
+  uint32 shared_memory_id;
+  uint32 shared_memory_offset;
+};
+
+COMPILE_ASSERT(sizeof(GetResultData) == 20, Sizeof_GetResultData_is_not_20);
+COMPILE_ASSERT(offsetof(GetResultData, header) == 0,
+               Offsetof_GetResultData_header_not_0);
+COMPILE_ASSERT(offsetof(GetResultData, offset) == 4,
+               Offsetof_GetResultData_offset_not_4);
+COMPILE_ASSERT(offsetof(GetResultData, size) == 8,
+               Offsetof_GetResultData_size_not_8);
+COMPILE_ASSERT(offsetof(GetResultData, shared_memory_id) == 12,
+               Offsetof_GetResultData_shared_memory_id_not_12);
+COMPILE_ASSERT(offsetof(GetResultData, shared_memory_offset) == 16,
+               Offsetof_GetResultData_shared_memory_offset_not_16);
 
 }  // namespace cmd
 
