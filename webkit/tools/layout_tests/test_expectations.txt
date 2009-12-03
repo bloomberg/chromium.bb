@@ -3043,3 +3043,5 @@ BUG29259 LINUX : LayoutTests/fast/layers/self-painting-outline.html = IMAGE
 BUG29259 LINUX : LayoutTests/fast/repaint/inline-relative-positioned.html = IMAGE
 BUG29259 LINUX : LayoutTests/svg/W3C-SVG-1.1/filters-image-01-b.svg = IMAGE
 
+// Failure from WebKit merge 51613:51615 (51615 is the cause)
+BUG29251: LayoutTests/websocket/tests/simple.html = PASS FAIL
