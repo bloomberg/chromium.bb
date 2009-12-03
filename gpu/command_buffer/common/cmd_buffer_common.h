@@ -445,7 +445,7 @@ struct SetBucketSize {
   }
 
   CommandHeader header;
-  utin32 bucket_id;
+  uint32 bucket_id;
   uint32 size;
 };
 
