@@ -44,6 +44,19 @@
 }
 @end
 
+// This class implements, for testing purposes, a subclass of |StatusBubbleMac|
+// whose |MouseMoved()| method does nothing. (Ideally, we'd have a way of
+// controlling the "mouse" location, but the current implementation of
+// |StatusBubbleMac| uses |[NSEvent mouseLocation]| directly.) Without this,
+// tests can be flaky since results may depend on the mouse location.
+class StatusBubbleMacIgnoreMouseMoved : public StatusBubbleMac {
+ public:
+  StatusBubbleMacIgnoreMouseMoved(NSWindow* parent, id delegate)
+      : StatusBubbleMac(parent, delegate) {}
+
+  virtual void MouseMoved(const gfx::Point& location, bool left_content) {}
+};
+
 class StatusBubbleMacTest : public CocoaTest {
  public:
   virtual void SetUp() {
@@ -52,7 +65,7 @@ class StatusBubbleMacTest : public CocoaTest {
     EXPECT_TRUE(window);
     delegate_.reset([[StatusBubbleMacTestDelegate alloc] init]);
     EXPECT_TRUE(delegate_.get());
-    bubble_ = new StatusBubbleMac(window, delegate_);
+    bubble_ = new StatusBubbleMacIgnoreMouseMoved(window, delegate_);
     EXPECT_TRUE(bubble_);
 
     // Turn off delays and transitions for test mode.  This doesn't just speed
