@@ -353,8 +353,8 @@ function createCheckersBoard() {
     }
   }
 
-  // Update our tree info.
-  updateg_pickManager();
+  // Update our PickManager.
+  updatePickManager();
 
   // update status.
   updateStatus('Game starting... RED moves first.', true);
@@ -391,7 +391,7 @@ function checkAndUpdateKing(x, y) {
 /**
  * Updates the transform tree info.
  */
-function updateg_pickManager() {
+function updatePickManager() {
   if (!g_pickManager) {
     g_pickManager = o3djs.picking.createPickManager(g_client.root);
   }
@@ -773,8 +773,8 @@ function moveSelectedPiece(elapsedTime) {
     g_selectedSquare = null;
     g_moveTimer = 0;
 
-    // update the tree info.
-    updateg_pickManager();
+    // update the picking info.
+    updatePickManager();
 
     // check if current player can jump again.
     if (wasJump && pieceCanJump(g_board[x1][y1])) {
