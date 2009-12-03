@@ -257,7 +257,8 @@ void PinModule() {
     HMODULE unused;
     if (!GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_PIN,
                            module_path.value().c_str(), &unused)) {
-      NOTREACHED() << "Failed to pin module " << module_path.value().c_str();
+      NOTREACHED() << "Failed to pin module " << module_path.value().c_str()
+                   << " , last error: " << GetLastError();
     }
   } else {
     NOTREACHED() << "Could not get module path.";

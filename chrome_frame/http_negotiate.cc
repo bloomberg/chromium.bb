@@ -22,9 +22,11 @@
 const wchar_t kChromeMimeType[] = L"application/chromepage";
 const char kUACompatibleHttpHeader[] = "x-ua-compatible";
 
-// From the latest urlmon.h. TODO(robertshield): Remove this once we update
-// our SDK version.
-static const int BINDSTATUS_SERVER_MIMETYPEAVAILABLE = 54;
+// From the latest urlmon.h. Symbol name prepended with LOCAL_ to
+// avoid conflict (and therefore build errors) for those building with
+// a newer Windows SDK.
+// TODO(robertshield): Remove this once we update our SDK version.
+static const int LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE = 54;
 
 static const int kHttpNegotiateBeginningTransactionIndex = 3;
 static const int kHttpNegotiateOnResponseTransactionIndex = 4;
@@ -209,7 +211,8 @@ HRESULT HttpNegotiatePatch::StartBinding(
 
   HRESULT hr = protocol_sink.QueryFrom(local_binding);
   if (FAILED(hr) || !protocol_sink) {
-    DLOG(WARNING) << "Failed to get IInternetProtocolSink from IBinding.";
+    DLOG(WARNING) << "Failed to get IInternetProtocolSink from IBinding: "
+                  << hr;
   } else {
     if (!IS_PATCHED(IInternetProtocolSink)) {
       hr = vtable_patch::PatchInterfaceMethods(protocol_sink,
@@ -217,7 +220,7 @@ HRESULT HttpNegotiatePatch::StartBinding(
     }
 
     DLOG_IF(WARNING, FAILED(hr))
-        << "Failed to patch IInternetProtocolSink from IBinding.";
+        << "Failed to patch IInternetProtocolSink from IBinding: " << hr;
   }
 
   hr = original(me, reserved, binding);
@@ -230,16 +233,22 @@ HRESULT HttpNegotiatePatch::ReportProgress(
     ULONG status_code, LPCWSTR status_text) {
   if (status_code == BINDSTATUS_MIMETYPEAVAILABLE ||
       status_code == BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE ||
-      status_code == BINDSTATUS_SERVER_MIMETYPEAVAILABLE) {
+      status_code == LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE) {
     // Check to see if we need to alter the mime type that gets reported
     // by inspecting the raw header information:
     ScopedComPtr<IWinInetHttpInfo> win_inet_http_info;
     HRESULT hr = win_inet_http_info.QueryFrom(me);
 
-    if (FAILED(hr) || !win_inet_http_info) {
-      NOTREACHED() << "Could not get at an IWinInetHttpInfo in "
-                   << "IInternetProtocolSink::ReportProgress.";
-    } else {
+    // Try slightly harder if we couldn't QI directly.
+    if (!win_inet_http_info || FAILED(hr)) {
+      hr = DoQueryService(IID_IWinInetHttpInfo, me,
+                          win_inet_http_info.Receive());
+    }
+
+    // Note that it has been observed that getting an IWinInetHttpInfo will
+    // fail if we are loading a page like about:blank that isn't loaded via
+    // wininet.
+    if (win_inet_http_info) {
       // We have headers: check to see if the server is requesting CF via
       // the X-UA-Compatible: chrome=1 HTTP header.
       std::string headers(GetRawHttpHeaders(win_inet_http_info));
