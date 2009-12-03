@@ -42,7 +42,7 @@
  */
 int NaClHasExpiredMockable(time_t (*timefn)(time_t *),
                            time_t (*mktimefn)(struct tm *)) {
-#if defined(EXPIRATION_CHECK)
+#if defined(EXPIRATION_CHECK) && defined(NACL_STANDALONE)
 
   struct tm expiration_tm;
   time_t expiration;
@@ -63,7 +63,7 @@ int NaClHasExpiredMockable(time_t (*timefn)(time_t *),
   }
 
   return now >= expiration;
-#else   /* !defined(EXPIRATION_CHECK) */
+#else   /* !defined(EXPIRATION_CHECK) || !defined(NACL_STANDALONE) */
   return 0;
 #endif  /* EXPIRATION_CHECK */
 }

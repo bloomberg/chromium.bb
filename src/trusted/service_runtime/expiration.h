@@ -45,10 +45,12 @@
  * last day on which the function NaClHasExpired will return false
  * (0).
  */
+#ifdef NACL_STANDALONE  /* NaCl in Chrome does not expire */
 #define EXPIRATION_CHECK 1
 #define EXPIRATION_YEAR 2010
 #define EXPIRATION_MONTH 1
 #define EXPIRATION_DAY 14
+#endif
 
 EXTERN_C_BEGIN
 
