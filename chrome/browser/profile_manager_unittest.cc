@@ -5,6 +5,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
@@ -14,6 +15,9 @@
 
 class ProfileManagerTest : public testing::Test {
  protected:
+  ProfileManagerTest() : ui_thread_(ChromeThread::UI, &message_loop_) {
+  }
+
   virtual void SetUp() {
     // Name a subdirectory of the temp directory.
     ASSERT_TRUE(PathService::Get(base::DIR_TEMP, &test_dir_));
@@ -30,6 +34,7 @@ class ProfileManagerTest : public testing::Test {
   }
 
   MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
 
   // the path to temporary directory used to contain the test operations
   FilePath test_dir_;
