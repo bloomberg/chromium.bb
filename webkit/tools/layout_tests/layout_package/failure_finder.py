@@ -82,7 +82,7 @@ LAST_BUILD_REGEX = ("<h2>Recent Builds:</h2>"
                     "[\s\S]*?<a href=\"../builders/.*?/builds/(\d+)\">")
 # Sometimes the lines of hyphens gets interrupted with multiple processes
 # outputting to stdio, so don't rely on them being contiguous.
-SUMMARY_REGEX = "-{78}(.*?)Test summary" # -{78} --> 78 dashes in a row.
+SUMMARY_REGEX = "-{78}(.*?)-{78}" # -{78} --> 78 dashes in a row.
 SUMMARY_REGRESSIONS = "Regressions:.*?\n((?:  [^\s]+(?: = .*?)?\n)+)"
 TEST_EXPECTATIONS_PLATFORM_REGEX = "((WONTFIX |BUG.* )+.* %s.* : %s = [^\n]*)"
 TEST_EXPECTATIONS_NO_PLATFORM_REGEX = ("((WONTFIX |BUG.* )+.*"
