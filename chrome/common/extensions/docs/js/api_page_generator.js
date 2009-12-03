@@ -38,8 +38,8 @@ var typeModule = {};
 // Auto-created page name as default
 var pageName;
 
-// If this page is an apiModule, the title of the api module
-var apiModuleTitle;
+// If this page is an apiModule, the name of the api module
+var apiModuleName;
 
 Array.prototype.each = function(f) {
   for (var i = 0; i < this.length; i++) {
@@ -171,7 +171,7 @@ function renderTemplate() {
     if (mod.namespace == pageBase) {
       // This page is an api page. Setup types and apiDefinition.
       module = mod;
-      apiModuleTitle = "chrome." + module.namespace;
+      apiModuleName = "chrome." + module.namespace;
       pageData.apiDefinition = module;
     }
 
@@ -317,16 +317,24 @@ function getTypeRefPage(type) {
   return typeModule[type.$ref].namespace + ".html";
 }
 
+function getPageName() {
+  var pageDataName = getDataFromPageHTML("pageData-name");
+  // Allow empty string to be explitly set via pageData.
+  if (pageDataName == "") {
+    return pageDataName;
+  }
+
+  return pageDataName || apiModuleName || pageName;
+}
+
 function getPageTitle() {
+  var pageName = getPageName();
   var pageTitleSuffix = "Google Chrome Extensions - Google Code";
-  var pageDataTitle = getDataFromPageHTML("pageData-title");
-  // Allows an emptry string to be set as the title from pageData.
-  if (pageDataTitle == "") {
+  if (pageName == "") {
     return pageTitleSuffix;
   }
 
-  return (pageDataTitle || apiModuleTitle || pageName) +
-      " - " + pageTitleSuffix;
+  return pageName + " - " + pageTitleSuffix;
 }
 
 function getModuleName() {
