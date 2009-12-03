@@ -37,6 +37,8 @@
 
 o3djs.provide('o3djs.manipulators');
 
+o3djs.require('o3djs.lineprimitives');
+
 o3djs.require('o3djs.material');
 
 o3djs.require('o3djs.math');
@@ -491,18 +493,17 @@ o3djs.manipulators.Manager = function(pack,
   this.lightPosition = [10, 10, 10];
 
   /**
-   * The default material for manipulators (used when not highlighted).
+   * A constant-shaded material, useful for line geometry in some manipulators.
+   *
+   * TODO(simonrad): This is currently used for Translate1+2 polygon geometry.
+   * We should change polygon geometry back to using phong shader. We should
+   * use this constant shader for Translate1+2 line geometry, if we add it.
+   * Rotate1 line geometry uses a different, special shader.
+   *
    * @type {!o3d.Material}
    */
-  this.defaultMaterial =
-      this.createMaterial_(o3djs.manipulators.DEFAULT_COLOR);
-  /**
-   * The material used for manipulators when they are highlighted.
-   * (TODO(simonrad): This is not currently used; only defaultMaterial is used. Remove this?)
-   * @type {!o3d.Material}
-   */
-  this.highlightedMaterial =
-      this.createMaterial_(o3djs.manipulators.HIGHLIGHTED_COLOR);
+  this.constantMaterial =
+      this.createConstantMaterial_(o3djs.manipulators.DEFAULT_COLOR);
 
   /**
    * A map from the manip's parent Transform clientId to the manip.
@@ -512,10 +513,9 @@ o3djs.manipulators.Manager = function(pack,
 
   /**
    * A PickManager to manage picking for the manipulators.
-   * @type {!o3djs.picking.TransformInfo}
+   * @type {!o3djs.picking.PickManager}
    */
-  this.pickManager =
-      o3djs.picking.createPickManager(this.parentTransform);
+  this.pickManager = o3djs.picking.createPickManager(this.parentTransform);
 
   /**
    * The currently-highlighted manipulator.
@@ -532,18 +532,23 @@ o3djs.manipulators.Manager = function(pack,
 }
 
 /**
- * Creates a material based on the given single color.
+ * Creates a constant-shaded material based on the given single color.
  * @private
  * @param {!o3djs.math.Vector4} baseColor A vector with 4 entries, the
  *     R,G,B, and A components of a color.
- * @return {!o3d.Material} A phong material whose overall pigment is baseColor.
+ * @return {!o3d.Material} A constant material whose overall pigment is baseColor.
  */
-o3djs.manipulators.Manager.prototype.createMaterial_ =
+o3djs.manipulators.Manager.prototype.createConstantMaterial_ =
     function(baseColor) {
-  // Create a new, empty Material object.
   return o3djs.material.createConstantMaterialEx(
      this.pack, this.drawList, baseColor);
 }
+
+// TODO(simonrad): Add phong shader back in. We need it for the solid cones
+// of the Translate1+2 manipulators. Note that for highlighting, the phong
+// shader uses diffuse param and the constant shader uses emissive param, so
+// we'll need to either change that or split them onto separate transforms.
+// Probably the former would be better.
 
 /**
  * Creates a new Translate1 manipulator. A Translate1 moves along the
@@ -586,8 +591,6 @@ o3djs.manipulators.Manager.prototype.createRotate1 = function() {
 o3djs.manipulators.Manager.prototype.add_ = function(manip) {
   // Generate draw elements for the manipulator's transform
   manip.getTransform().createDrawElements(this.pack, null);
-  // Add the manipulator's transform to the parent transform
-  manip.getBaseTransform_().parent = this.parentTransform;
   // Add the manipulator into our managed list
   this.manipsByClientId[manip.getTransform().clientId] = manip;
 }
@@ -628,8 +631,13 @@ o3djs.manipulators.Manager.prototype.handleMouse_ = function(x,
     // Find which manipulator we picked.
     // NOTE this assumes some things about the transform graph
     // structure of the manipulators.
+    // We may need to index by the parent-parent transform instead, since the
+    // shape could be attached to the manip's invisibleTransform_, which is a
+    // child of the localTransform_.
     var manip =
-      this.manipsByClientId[pickResult.shapeInfo.parent.transform.clientId];
+      this.manipsByClientId[pickResult.shapeInfo.parent.transform.clientId] ||
+      this.manipsByClientId[
+          pickResult.shapeInfo.parent.parent.transform.clientId];
     func(this, pickResult, manip);
   } else {
     func(this, null, null);
@@ -808,9 +816,28 @@ o3djs.manipulators.Manip = function(manager) {
    */
   this.baseTransform_ = pack.createObject('Transform');
 
+  /**
+   * This child transform is used only to hold any invisible shapes
+   * we may want. Invisible shapes can be useful for picking. Visibility is
+   * controlled by the transform, which is why we need this transform.
+   * The local matrix of this transform should only be the identity matrix.
+   * @private
+   * @type {!o3d.Transform}
+   */
+  this.invisibleTransform_ = pack.createObject('Transform');
+  this.invisibleTransform_.visible = false;
+
   // Hook up these transforms
+  this.invisibleTransform_.parent = this.localTransform_;
   this.localTransform_.parent = this.offsetTransform_;
   this.offsetTransform_.parent = this.baseTransform_;
+  this.baseTransform_.parent = manager.parentTransform;
+
+  // Make the invisible transform pickable even though it's invisible
+  manager.pickManager.update();
+  var invisibleTransformInfo = manager.pickManager.getTransformInfo(
+      this.invisibleTransform_);
+  invisibleTransformInfo.pickableEvenIfInvisible = true;
 
   /**
    * This is the transform in the scene graph to which this
@@ -833,10 +860,19 @@ o3djs.manipulators.Manip = function(manager) {
  * Adds shapes to the internal transform of this manipulator.
  * @private
  * @param {!Array.<!o3d.Shape>} shapes Array of shapes to add.
+ * @param {boolean} opt_visible Whether the added shapes should be visible.
+ *     Default = true. Invisible geometry can be useful for picking.
  */
-o3djs.manipulators.Manip.prototype.addShapes_ = function(shapes) {
+o3djs.manipulators.Manip.prototype.addShapes_ = function(shapes, opt_visible) {
+  if (opt_visible == undefined) {
+    opt_visible = true;
+  }
   for (var ii = 0; ii < shapes.length; ii++) {
-    this.localTransform_.addShape(shapes[ii]);
+    if(opt_visible) {
+      this.localTransform_.addShape(shapes[ii]);
+    } else {
+      this.invisibleTransform_.addShape(shapes[ii]);
+    }
   }
 }
 
@@ -1145,7 +1181,7 @@ o3djs.manipulators.Translate1 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.defaultMaterial;
+  var material = manager.constantMaterial;
 
   var shape = manager.translate1Shape_;
   if (!shape) {
@@ -1158,10 +1194,6 @@ o3djs.manipulators.Translate1 = function(manager) {
   }
 
   this.addShapes_([ shape ]);
-
-  this.transformInfo = manager.pickManager.createTransformInfo(
-      this.getTransform(),
-      manager.transformInfo);
 
   /**
    * A parameter added to our transform to be able to change the
@@ -1254,7 +1286,7 @@ o3djs.manipulators.Translate2 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.defaultMaterial;
+  var material = manager.constantMaterial;
 
   var shape = manager.Translate2Shape_;
   if (!shape) {
@@ -1270,10 +1302,6 @@ o3djs.manipulators.Translate2 = function(manager) {
   }
 
   this.addShapes_([ shape ]);
-
-  this.transformInfo = manager.pickManager.createTransformInfo(
-      this.getTransform(),
-      manager.transformInfo);
 
   /**
    * A parameter added to our transform to be able to change the
@@ -1367,27 +1395,40 @@ o3djs.manipulators.Rotate1 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.defaultMaterial;
 
-  var shape = manager.Rotate1Shape_;
-  if (!shape) {
-    // Create the geometry for the manipulator, which looks like
+  if (!manager.lineRingMaterial) {
+    manager.lineRingMaterial = o3djs.manipulators.createLineRingMaterial(
+        pack, manager.drawList, [1, 1, 1, 1], [1, 1, 1, 0.4]);
+  }
+
+  var pickShape = manager.Rotate1PickShape_;
+  if (!pickShape) {
+    // Create the polygon geometry for picking the manipulator, which looks like
     // a torus centered at the origin, with the X axis as its vertical axis.
     var verts = o3djs.primitives.createTorusVertices(
         1.0,
         0.1,
-        32,
-        8,
+        16,
+        6,
         o3djs.math.matrix4.rotationZ(Math.PI / 2));
-    shape = verts.createShape(pack, material);
-    manager.Rotate1Shape_ = shape;
+    pickShape = verts.createShape(pack, manager.constantMaterial);
+    manager.Rotate1PickShape_ = pickShape;
   }
 
-  this.addShapes_([ shape ]);
+  var visibleShape = manager.Rotate1VisibleShape_;
+  if (!visibleShape) {
+    // Create the line geometry for displaying the manipulator, which looks like
+    // a ring centered at the origin, with the X axis as its vertical axis.
+    var verts = o3djs.lineprimitives.createLineRingVertices(
+        1.0,
+        32,
+        o3djs.math.matrix4.rotationZ(Math.PI / 2));
+    visibleShape = verts.createShape(pack, manager.lineRingMaterial);
+    manager.Rotate1VisibleShape_ = visibleShape;
+  }
 
-  this.transformInfo = manager.pickManager.createTransformInfo(
-      this.getTransform(),
-      manager.transformInfo);
+  this.addShapes_([ pickShape ], false); // Invisible
+  this.addShapes_([ visibleShape ]);
 
   /**
    * A parameter added to our transform to be able to change the
@@ -1508,3 +1549,93 @@ o3djs.manipulators.Rotate1.prototype.drag = function(startPoint,
   this.getTransform().localMatrix = o3djs.math.matrix4.rotationX(-angle);
   this.updateAttachedTransformFromLocalTransform_();
 }
+
+
+// The shader and material for the Rotate1 manipulator's line ring.
+// TODO(simonrad): Find a better place for these?
+
+/**
+ * The name of the Rotate1 manipulator's line ring effect.
+ * @type {string}
+ */
+o3djs.manipulators.LINE_RING_EFFECT_NAME =
+    'o3djs.manipulators.lineRingEffect';
+
+/**
+ * An effect string for the Rotate1 manipulator's line ring.
+ * @type {string}
+ */
+o3djs.manipulators.LINE_RING_FXSTRING = '' +
+    'float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
+    'float4x4 worldViewProjectionInverseTranspose :\n' +
+    '    WORLDVIEWPROJECTIONINVERSETRANSPOSE;\n' +
+    'float4 color1;\n' +
+    'float4 color2;\n' +
+    'float4 emissive; // Used for highlighting.\n' +
+    '\n' +
+    'struct VertexShaderInput {\n' +
+    '  float4 position : POSITION;\n' +
+    '  float4 normal : NORMAL;\n' +
+    '};\n' +
+    '\n' +
+    'struct PixelShaderInput {\n' +
+    '  float4 position : POSITION;\n' +
+    '  float3 normal : TEXCOORD0;\n' +
+    '};\n' +
+    '\n' +
+    'PixelShaderInput vertexShaderFunction(VertexShaderInput input) {\n' +
+    '  PixelShaderInput output;\n' +
+    '\n' +
+    '  output.position = mul(input.position, worldViewProjection);\n' +
+    '  output.normal = mul(input.normal,\n' +
+    '                      worldViewProjectionInverseTranspose).xyz;\n' +
+    '  return output;\n' +
+    '}\n' +
+    '\n' +
+    'float4 pixelShaderFunction(PixelShaderInput input): COLOR {\n' +
+    '  if (input.normal.z < 0) {\n' +
+    '    return color1 * emissive;\n' +
+    '  } else {\n' +
+    '    return color2 * emissive;\n' +
+    '  }\n' +
+    '}\n' +
+    '\n' +
+    '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
+    '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
+    '// #o3d MatrixLoadOrder RowMajor\n';
+
+/**
+ * Creates the Rotate1 manipulator's line ring material.
+ *
+ * @param {!o3d.Pack} pack The pack to create the effect and material in.
+ * @param {!o3d.DrawList} drawList The draw list against which
+ *     the material is created.
+ * @param {!o3djs.math.Vector4} color1 A color in the format [r, g, b, a].
+ * @param {!o3djs.math.Vector4} color2 A color in the format [r, g, b, a].
+ * @return {!o3d.Material} The created material.
+ */
+o3djs.manipulators.createLineRingMaterial = function(pack,
+                                                     drawList,
+                                                     color1,
+                                                     color2) {
+  var material = pack.createObject('Material');
+  material.effect = pack.createObject('Effect');
+  material.effect.loadFromFXString(o3djs.manipulators.LINE_RING_FXSTRING);
+  material.effect.name = o3djs.manipulators.LINE_RING_EFFECT_NAME;
+  material.drawList = drawList;
+  material.createParam('color1', 'ParamFloat4').value = color1;
+  material.createParam('color2', 'ParamFloat4').value = color2;
+
+  // Set up the state to allow alpha blending
+  material.state = pack.createObject('State');
+  material.state.getStateParam('AlphaBlendEnable').value = true;
+  material.state.getStateParam('SourceBlendFunction').value =
+      o3djs.base.o3d.State.BLENDFUNC_SOURCE_ALPHA;
+  material.state.getStateParam('DestinationBlendFunction').value =
+      o3djs.base.o3d.State.BLENDFUNC_INVERSE_SOURCE_ALPHA;
+  material.state.getStateParam('AlphaTestEnable').value = true;
+  material.state.getStateParam('AlphaComparisonFunction').value =
+      o3djs.base.o3d.State.CMP_GREATER;
+
+  return material;
+};

@@ -129,10 +129,10 @@ o3djs.lineprimitives.createLineVertexInfo = function() {
 };
 
 /**
- * Creates the vertices and indices for a cube of lines. The
- * cube will be created around the origin. (-size / 2, size / 2)
+ * Creates the vertices and indices for a cube of lines.
+ * The cube will be created around the origin (-size / 2, size / 2).
  * The created cube has a position stream only and can therefore only be used
- * with shaders that support those a position stream.
+ * with appropriate shaders.
  *
  * @param {number} size Width, height and depth of the cube.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply all
@@ -188,8 +188,12 @@ o3djs.lineprimitives.createLineCubeVertices = function(size, opt_matrix) {
 
 /**
  * Creates a cube of lines.
- * @param {!o3d.Pack} pack Pack to create sphere elements in.
- * @param {!o3d.Material} material to use.
+ * The cube will be created around the origin (-size / 2, size / 2).
+ * The created cube has a position stream only and can therefore only be used
+ * with appropriate shaders.
+ *
+ * @param {!o3d.Pack} pack Pack to create cube elements in.
+ * @param {!o3d.Material} material Material to use.
  * @param {number} size Width, height and depth of the cube.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply all
  *     the vertices.
@@ -208,11 +212,11 @@ o3djs.lineprimitives.createLineCube = function(
 /**
  * Creates sphere vertices.
  * The created sphere has a position stream only and can therefore only be
- * used with shaders that support those a position stream.
+ * used with appropriate shaders.
  *
  * @param {number} radius radius of the sphere.
  * @param {number} subdivisionsAxis number of steps around the sphere.
- * @param {number} subdivisionsHeight number of vertically on the sphere.
+ * @param {number} subdivisionsHeight number of steps vertically on the sphere.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply all
  *     the vertices.
  * @return {!o3djs.lineprimitives.LineVertexInfo} The created sphere vertices.
@@ -274,15 +278,14 @@ o3djs.lineprimitives.createLineSphereVertices = function(
 
 /**
  * Creates a sphere.
- * The created sphere has position, normal, uv and vertex color streams only
- * and can therefore only be used with shaders that support those 4
- * streams.
+ * The created sphere has a position stream only and can therefore only be
+ * used with appropriate shaders.
  *
  * @param {!o3d.Pack} pack Pack to create sphere elements in.
- * @param {!o3d.Material} material to use.
+ * @param {!o3d.Material} material Material to use.
  * @param {number} radius radius of the sphere.
  * @param {number} subdivisionsAxis number of steps around the sphere.
- * @param {number} subdivisionsHeight number of vertically on the sphere.
+ * @param {number} subdivisionsHeight number of steps vertically on the sphere.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply all
  *     the vertices.
  * @return {!o3d.Shape} The created sphere.
@@ -301,6 +304,79 @@ o3djs.lineprimitives.createLineSphere = function(
       radius,
       subdivisionsAxis,
       subdivisionsHeight,
+      opt_matrix);
+
+  return vertexInfo.createShape(pack, material);
+};
+
+/**
+ * Creates ring vertices.
+ * The ring is a circle in the XZ plane, centered at the origin.
+ * The created ring has a position stream and a normal stream.
+ * The normals point outwards from the center of the ring.
+ *
+ * @param {number} radius Radius of the ring.
+ * @param {number} subdivisions Number of steps around the ring.
+ * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply all
+ *     the vertices.
+ * @return {!o3djs.lineprimitives.LineVertexInfo} The created ring vertices.
+ */
+o3djs.lineprimitives.createLineRingVertices = function(
+    radius,
+    subdivisions,
+    opt_matrix) {
+  if (subdivisions < 3) {
+    throw Error('subdivisions must be >= 3');
+  }
+
+  var vertexInfo = o3djs.lineprimitives.createLineVertexInfo();
+  var positionStream = vertexInfo.addStream(
+      3, o3djs.base.o3d.Stream.POSITION);
+  var normalStream = vertexInfo.addStream(
+      3, o3djs.base.o3d.Stream.NORMAL);
+
+  // Generate the individual vertices in our vertex buffer.
+  for (var i = 0; i < subdivisions; i++) {
+    var theta = 2 * Math.PI * i / subdivisions;
+    positionStream.addElement(radius * Math.cos(theta), 0,
+                              radius * Math.sin(theta));
+    normalStream.addElement(Math.cos(theta), 0, Math.sin(theta));
+  }
+
+  // Connect the vertices by simple lines.
+  for (var i = 0; i < subdivisions; i++) {
+    vertexInfo.addLine(i, (i+1) % subdivisions);
+  }
+
+  if (opt_matrix) {
+    vertexInfo.reorient(opt_matrix);
+  }
+  return vertexInfo;
+};
+
+/**
+ * Creates a ring.
+ * The ring is a circle in the XZ plane, centered at the origin.
+ * The created ring has a position stream only and can therefore only be
+ * used with appropriate shaders.
+ *
+ * @param {!o3d.Pack} pack Pack to create ring elements in.
+ * @param {!o3d.Material} material Material to use.
+ * @param {number} radius Radius of the ring.
+ * @param {number} subdivisions Number of steps around the ring.
+ * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply all
+ *     the vertices.
+ * @return {!o3d.Shape} The created ring.
+ */
+o3djs.lineprimitives.createLineRing = function(
+    pack,
+    material,
+    radius,
+    subdivisions,
+    opt_matrix) {
+  var vertexInfo = o3djs.lineprimitives.createLineRingVertices(
+      radius,
+      subdivisions,
       opt_matrix);
 
   return vertexInfo.createShape(pack, material);

@@ -52,6 +52,7 @@ o3djs.require('o3djs.rendergraph');
 o3djs.require('o3djs.primitives');
 o3djs.require('o3djs.manipulators');
 o3djs.require('o3djs.effect');
+o3djs.require('o3djs.cameracontroller');
 
 // global variables
 var g_o3dElement;
@@ -62,10 +63,10 @@ var g_mainPack;
 var g_mainViewInfo;
 var g_mainRoot;
 var g_lightPosition = [5, 5, 7];
-var g_eyePosition = [1, 5, 23];
 var g_lastCubeTransform;
 var g_primitives = [];
 var g_manager;
+var g_cameraController;
 
 /**
  * Creates the client area.
@@ -110,14 +111,20 @@ function main(clientElements) {
 }
 
 function onMouseDown(e) {
-  g_manager.mousedown(e.x, e.y,
-                      g_mainViewInfo.drawContext.view,
-                      g_mainViewInfo.drawContext.projection,
-                      g_client.width,
-                      g_client.height);
+  if(e.button == 2) {
+    g_cameraController.mousedown(e);
+  } else {
+    g_manager.mousedown(e.x, e.y,
+                        g_mainViewInfo.drawContext.view,
+                        g_mainViewInfo.drawContext.projection,
+                        g_client.width,
+                        g_client.height);
+  }
 }
 
 function onMouseMove(e) {
+  g_cameraController.mousemove(e);
+  g_mainViewInfo.drawContext.view = g_cameraController.calculateViewMatrix();
   g_manager.mousemove(e.x, e.y,
                       g_mainViewInfo.drawContext.view,
                       g_mainViewInfo.drawContext.projection,
@@ -127,8 +134,12 @@ function onMouseMove(e) {
 }
 
 function onMouseUp(e) {
-  g_manager.mouseup();
-  g_manager.updateInactiveManipulators();
+  if(e.button == 2) {
+    g_cameraController.mouseup(e);
+  } else {
+    g_manager.mouseup();
+    g_manager.updateInactiveManipulators();
+  }
 }
 
 /**
@@ -164,12 +175,13 @@ function initContext() {
       1,                    // Near plane.
       5000);                // Far plane.
 
-  // Set up our view transformation to look towards the world origin where the
-  // primitives are located.
-  g_mainViewInfo.drawContext.view = g_math.matrix4.lookAt(
-      g_eyePosition,  // eye
-      [0, 2, 0],      // target
-      [0, 1, 0]);     // up
+  // Set up our view transformation using our CameraController.
+  g_cameraController = o3djs.cameracontroller.createCameraController(
+      [0, 2, 0], // centerPos
+      23,        // backpedal
+      0,         // heightAngle
+      0);        // rotationAngle
+  g_mainViewInfo.drawContext.view = g_cameraController.calculateViewMatrix();
 }
 
 /**
