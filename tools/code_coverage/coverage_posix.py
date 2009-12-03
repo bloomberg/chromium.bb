@@ -98,6 +98,10 @@ class Coverage(object):
       self.genhtml = os.path.join(self.lcov_directory, 'genhtml')
       self.programs = [self.lcov, self.mcov, self.genhtml]
     else:
+      # Hack to get the buildbot working.
+      os.environ['PATH'] += r';c:\coverage\coverage_analyzer'
+      os.environ['PATH'] += r';c:\coverage\performance_tools'
+      # (end hack)
       commands = ['vsperfcmd.exe', 'vsinstr.exe', 'coverage_analyzer.exe']
       self.perf = self.FindInPath('vsperfcmd.exe')
       self.instrument = self.FindInPath('vsinstr.exe')
