@@ -689,6 +689,15 @@ function syncSectionLinkClicked(e) {
 }
 
 /**
+ * Invoked when link to start sync in the promo message is clicked, and Chrome
+ * has already been synced to an account.
+ */
+function syncAlreadyEnabled(message) {
+  showNotification(message.syncEnabledMessage,
+                   localStrings.getString('close'));
+}
+
+/**
  * Returns the text used for a recently closed window.
  * @param {number} numTabs Number of tabs in the window.
  * @return {string} The text to use.

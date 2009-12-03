@@ -349,6 +349,7 @@ void NTPResourceCache::CreateNewTabHTML() {
       l10n_util::GetStringF(IDS_NTP_PROMO_MESSAGE,
           l10n_util::GetString(IDS_PRODUCT_NAME), extensionLink));
   localized_strings.SetString(L"extensionslink", extensionLink);
+  localized_strings.SetString(L"close", l10n_util::GetString(IDS_CLOSE));
 
   // Don't initiate the sync related message passing with the page if the sync
   // code is not present.

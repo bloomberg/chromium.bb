@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
@@ -148,8 +149,11 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const Value* value) {
   DCHECK(!waiting_for_initial_page_load_);
   DCHECK(sync_service_);
   if (sync_service_->HasSyncSetupCompleted()) {
-    // User clicked the 'Login again' link to re-authenticate.
-    sync_service_->ShowLoginDialog();
+    DictionaryValue value;
+    value.SetString(L"syncEnabledMessage",
+        l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO,
+            UTF16ToWide(sync_service_->GetAuthenticatedUsername())));
+    dom_ui_->CallJavascriptFunction(L"syncAlreadyEnabled", value);
   } else {
     // User clicked the 'Start now' link to begin syncing.
     ProfileSyncService::SyncEvent(ProfileSyncService::START_FROM_NTP);
