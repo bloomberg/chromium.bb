@@ -84,6 +84,10 @@ then
   # which prevented valgrind from handling wine
   patch -p0 < "${THISDIR}/vbug205541.patch"
 
+  # Add intercepts for tcmalloc memory functions.
+  patch -p0 < "${THISDIR}/intercept_tcmalloc.patch"
+
+
   if [ "${INSTALL_TSAN}" = "yes" ]
   then
     # Add ThreadSanitier to the installation.
