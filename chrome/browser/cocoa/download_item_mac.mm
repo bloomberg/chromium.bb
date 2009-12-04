@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/download_item_controller.h"
+#include "chrome/browser/cocoa/download_util_mac.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "skia/ext/skia_utils_mac.h"
 
@@ -39,17 +40,19 @@ void DownloadItemMac::OnDownloadUpdated(DownloadItem* download) {
     lastFilePath_ = download->full_path();
   }
 
-  switch (download_model_->download()->state()) {
+  switch (download->state()) {
     case DownloadItem::REMOVING:
       [item_controller_ remove];  // We're deleted now!
       break;
-    case DownloadItem::IN_PROGRESS:
-    case DownloadItem::CANCELLED:
     case DownloadItem::COMPLETE:
       if (download->auto_opened()) {
         [item_controller_ remove];  // We're deleted now!
         return;
       }
+      download_util::NotifySystemOfDownloadComplete(download->full_path());
+      // fall through
+    case DownloadItem::IN_PROGRESS:
+    case DownloadItem::CANCELLED:
       [item_controller_ setStateFromDownload:download_model_.get()];
       break;
     default:
