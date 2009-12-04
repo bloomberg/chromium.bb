@@ -7,6 +7,7 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include <limits>
+#include <string>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -27,6 +28,7 @@
 #import "chrome/browser/cocoa/tab_strip_model_observer_bridge.h"
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/throbber_view.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -40,18 +42,24 @@
 
 NSString* const kTabStripNumberOfTabsChanged = @"kTabStripNumberOfTabsChanged";
 
+namespace {
+
 // A value to indicate tab layout should use the full available width of the
 // view.
-static const CGFloat kUseFullAvailableWidth = -1.0;
+const CGFloat kUseFullAvailableWidth = -1.0;
 
 // Left-side indent for tab layout so tabs don't overlap with the window
 // controls.
-static const CGFloat kIndentLeavingSpaceForControls = 64.0;
+const CGFloat kIndentLeavingSpaceForControls = 64.0;
+
+// The amount by which tabs overlap.
+const CGFloat kTabOverlap = 20.0;
+
+// The amount by which the new tab button is offset (from the tabs).
+const CGFloat kNewTabButtonOffset = 8.0;
 
 // Time (in seconds) in which tabs animate to their final position.
-static const NSTimeInterval kAnimationDuration = 0.2;
-
-namespace {
+const NSTimeInterval kAnimationDuration = 0.2;
 
 // Helper class for doing NSAnimationContext calls that takes a bool to disable
 // all the work.  Useful for code that wants to conditionally animate.
@@ -112,6 +120,9 @@ private:
 - (NSInteger)numberOfOpenUnpinnedTabs;
 - (void)mouseMoved:(NSEvent*)event;
 - (void)setTabTrackingAreasEnabled:(BOOL)enabled;
+- (void)droppingURLsAt:(NSPoint)location
+            givesIndex:(NSInteger*)index
+           disposition:(WindowOpenDisposition*)disposition;
 @end
 
 // A simple view class that prevents the Window Server from dragging the area
@@ -289,10 +300,12 @@ private:
                                     userInfo:nil]);
     [newTabButton_ addTrackingArea:newTabTrackingArea_.get()];
     targetFrames_.reset([[NSMutableDictionary alloc] init]);
+
     dragBlockingView_.reset(
         [[TabStripControllerDragBlockingView alloc] initWithFrame:NSZeroRect
                                                        controller:self]);
     [self addSubviewToPermanentList:dragBlockingView_];
+
     newTabTargetFrame_ = NSMakeRect(0, 0, 0, 0);
     availableResizeWidth_ = kUseFullAvailableWidth;
 
@@ -325,6 +338,7 @@ private:
 - (void)dealloc {
   if (trackingArea_.get())
     [tabView_ removeTrackingArea:trackingArea_.get()];
+
   [newTabButton_ removeTrackingArea:newTabTrackingArea_.get()];
   // Invalidate all closing animations so they don't call back to us after
   // we're gone.
@@ -600,8 +614,6 @@ private:
   if (![tabArray_ count])
     return;
 
-  const CGFloat kTabOverlap = 20.0;
-  const CGFloat kNewTabButtonOffset = 8.0;
   const CGFloat kMaxTabWidth = [TabController maxTabWidth];
   const CGFloat kMinTabWidth = [TabController minTabWidth];
   const CGFloat kMinSelectedTabWidth = [TabController minSelectedTabWidth];
@@ -1399,6 +1411,139 @@ private:
   }
   [tabView_ setSubviews:subviews];
   [self setTabTrackingAreasEnabled:mouseInside_];
+}
+
+// Get the index and disposition for a potential URL(s) drop given a location
+// (in window base coordinates). It considers x coordinate of the given
+// location. If it's in the "middle" of a tab, it drops on that tab. If it's to
+// the left, it inserts to the left, and similarly for the right.
+- (void)droppingURLsAt:(NSPoint)location
+            givesIndex:(NSInteger*)index
+           disposition:(WindowOpenDisposition*)disposition {
+  // Proportion of the tab which is considered the "middle" (and causes things
+  // to drop on that tab).
+  const double kMiddleProportion = 0.5;
+  const double kLRProportion = (1.0 - kMiddleProportion) / 2.0;
+
+  DCHECK(index && disposition);
+  NSInteger i = 0;
+  for (TabController* tab in tabArray_.get()) {
+    NSView* view = [tab view];
+    DCHECK([view isKindOfClass:[TabView class]]);
+
+    // Recall that |-[NSView frame]| is in its superview's coordinates, so a
+    // |TabView|'s frame is in the coordinates of the |TabStripView| (which is
+    // confusingly called |tabView_|).
+    NSRect frame = [tabView_ convertRectToBase:[view frame]];
+
+    // Modify the frame to make it "unoverlapped".
+    frame.origin.x += kTabOverlap / 2.0;
+    frame.size.width -= kTabOverlap;
+    if (frame.size.width < 1.0)
+      frame.size.width = 1.0;  // try to avoid complete failure
+
+    // Drop in a new tab to the left of tab |i|?
+    if (location.x < (frame.origin.x + kLRProportion * frame.size.width)) {
+      *index = i;
+      *disposition = NEW_FOREGROUND_TAB;
+      return;
+    }
+
+    // Drop on tab |i|?
+    if (location.x <= (frame.origin.x +
+                       (1.0 - kLRProportion) * frame.size.width)) {
+      *index = i;
+      *disposition = CURRENT_TAB;
+      return;
+    }
+
+    // (Dropping in a new tab to the right of tab |i| will be taken care of in
+    // the next iteration.)
+    i++;
+  }
+
+  // If we've made it here, we want to append a new tab to the end.
+  *index = -1;
+  *disposition = NEW_FOREGROUND_TAB;
+}
+
+// Drop URLs at the given location.
+- (void)dropURLs:(NSArray*)urls at:(NSPoint)location {
+  if ([urls count] < 1) {
+    NOTREACHED();
+    return;
+  }
+
+  //TODO(viettrungluu): dropping multiple URLs.
+  if ([urls count] > 1)
+    NOTIMPLEMENTED();
+
+  // Get the first URL and fix it up.
+  GURL url(URLFixerUpper::FixupURL(
+      base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
+
+  // Get the index and disposition.
+  NSInteger index;
+  WindowOpenDisposition disposition;
+  [self droppingURLsAt:location
+            givesIndex:&index
+           disposition:&disposition];
+
+  // Either insert a new tab or open in a current tab.
+  switch (disposition) {
+    case NEW_FOREGROUND_TAB:
+      browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, index,
+                              true, NULL);
+      break;
+    case CURRENT_TAB:
+      tabModel_->GetTabContentsAt(index)->OpenURL(url, GURL(), CURRENT_TAB,
+                                                  PageTransition::TYPED);
+      tabModel_->SelectTabContentsAt(index, true);
+      break;
+    default:
+      NOTIMPLEMENTED();
+  }
+}
+
+// Update (possibly showing) the indicator which indicates where an URL drop
+// would happen.
+- (void)indicateDropURLsAt:(NSPoint)location {
+// TODO(viettrungluu): Make the tabs move around, show an indicator, etc. This
+// requires a re-work of the tabs code....
+#if 0
+  NSInteger index;
+  WindowOpenDisposition disposition;
+  [self droppingURLsAt:location
+            givesIndex:&index
+           disposition:&disposition];
+
+  if (index == -1) {
+    // Append a tab at the end.
+    DCHECK(disposition == NEW_FOREGROUND_TAB);
+    // TODO(viettrungluu): ...
+  } else {
+    NSRect overRect = [[[tabArray_ objectAtIndex:index] view] frame];
+    switch (disposition) {
+      case NEW_FOREGROUND_TAB:
+        // Insert tab (to the left of the given tab).
+        // TODO(viettrungluu): ...
+        break;
+      case CURRENT_TAB:
+        // Overwrite the given tab.
+        // TODO(viettrungluu): ...
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+  // TODO(viettrungluu): ...
+#endif
+}
+
+// Hide the indicator which indicates where an URL drop would happen.
+- (void)hideDropURLsIndicator {
+// TODO(viettrungluu): See TODO in |-indicateDropURLsAt:| above.
 }
 
 - (GTMWindowSheetController*)sheetController {

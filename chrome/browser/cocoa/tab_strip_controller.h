@@ -177,6 +177,13 @@ class ToolbarModel;
 // Default height for tabs.
 + (CGFloat)defaultTabHeight;
 
+// Effectively an implementation of the |URLDropTargetWindowController|
+// protocol, which the |BrowserWindowController| just reflects to us. This
+// needed for dropping URLs on the tab strip.
+- (void)dropURLs:(NSArray*)urls at:(NSPoint)location;
+- (void)indicateDropURLsAt:(NSPoint)location;
+- (void)hideDropURLsIndicator;
+
 // Returns the (lazily created) window sheet controller of this window. Used
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;

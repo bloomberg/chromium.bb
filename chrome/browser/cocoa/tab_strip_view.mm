@@ -16,6 +16,9 @@
     // Set lastMouseUp_ = -1000.0 so that timestamp-lastMouseUp_ is big unless
     // lastMouseUp_ has been reset.
     lastMouseUp_ = -1000.0;
+
+    // Register to be an URL drop target.
+    dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
   }
   return self;
 }
@@ -70,6 +73,26 @@
 
   // If clickCount is 0, the drag threshold was passed.
   lastMouseUp_ = (clickCount == 1) ? timestamp : -1000.0;
+}
+
+// Required by |URLDropTargetHandler|.
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ draggingEntered:sender];
+}
+
+// Required by |URLDropTargetHandler|.
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ draggingUpdated:sender];
+}
+
+// Required by |URLDropTargetHandler|.
+- (void)draggingExited:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ draggingExited:sender];
+}
+
+// Required by |URLDropTargetHandler|.
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+  return [dropHandler_ performDragOperation:sender];
 }
 
 @end

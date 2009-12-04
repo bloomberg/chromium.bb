@@ -519,6 +519,8 @@
         'browser/cocoa/toolbar_view.mm',
         'browser/cocoa/ui_localizer.h',
         'browser/cocoa/ui_localizer.mm',
+        'browser/cocoa/url_drop_target.h',
+        'browser/cocoa/url_drop_target.mm',
         'browser/cocoa/view_resizer.h',
         'browser/cocoa/web_drag_source.h',
         'browser/cocoa/web_drag_source.mm',

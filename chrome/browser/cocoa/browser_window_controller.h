@@ -18,6 +18,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
+#import "chrome/browser/cocoa/url_drop_target.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
@@ -47,7 +48,8 @@ class TabStripModelObserverBridge;
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
                       ViewResizer,
-                      GTMThemeDelegate> {
+                      GTMThemeDelegate,
+                      URLDropTargetWindowController> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -182,6 +184,12 @@ class TabStripModelObserverBridge;
 // Closes the tab sheet |window| and potentially shows the next sheet in the
 // tab's sheet queue.
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
+
+// Implementation of the |URLDropTargetWindowController| protocol, which is
+// needed for URL dropping on the tab strip.
+- (void)dropURLs:(NSArray*)urls at:(NSPoint)location;
+- (void)indicateDropURLsAt:(NSPoint)location;
+- (void)hideDropURLsIndicator;
 
 @end
 

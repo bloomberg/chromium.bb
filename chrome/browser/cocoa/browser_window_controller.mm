@@ -14,6 +14,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/dock_info.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/location_bar.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
@@ -41,12 +43,11 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_view.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
-#import "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
-#import "chrome/browser/cocoa/background_gradient_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
@@ -1397,6 +1398,20 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   windowTopGrowth_ = 0;
   windowBottomGrowth_ = 0;
   isShrinkingFromZoomed_ = NO;
+}
+
+// Our implementation of the |URLDropTargetWindowController| protocol just
+// reflects everything to the |tabStripController_|.
+- (void)dropURLs:(NSArray*)urls at:(NSPoint)location {
+  [tabStripController_ dropURLs:urls at:location];
+}
+
+- (void)indicateDropURLsAt:(NSPoint)location {
+  [tabStripController_ indicateDropURLsAt:location];
+}
+
+- (void)hideDropURLsIndicator {
+  [tabStripController_ hideDropURLsIndicator];
 }
 
 @end
