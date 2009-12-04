@@ -211,6 +211,17 @@ bool IsValidUrlScheme(const std::wstring& url, bool is_privileged);
 // IWinInetHttpInfo pointer.
 std::string GetRawHttpHeaders(IWinInetHttpInfo* info);
 
+// Can be used to determine whether a given request is being performed for
+// a sub-frame or iframe in Internet Explorer. This can be called
+// from various places, notably in request callbacks and the like.
+//
+// |service_provider| must not be NULL and should be a pointer to something
+// that implements IServiceProvider (if it isn't this method returns false).
+//
+// Returns true if this method can determine with some certainty that the
+// request did NOT originate from a top level frame, returns false otherwise.
+bool IsSubFrameRequest(IUnknown* service_provider);
+
 // See COM_INTERFACE_BLIND_DELEGATE below for details.
 template <class T>
 STDMETHODIMP CheckOutgoingInterface(void* obj, REFIID iid, void** ret,

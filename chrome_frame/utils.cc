@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <htiframe.h>
+#include <mshtml.h>
 #include <shlobj.h>
 #include <wininet.h>
 
@@ -634,4 +636,32 @@ std::string GetRawHttpHeaders(IWinInetHttpInfo* info) {
   }
 
   return buffer;
+}
+
+bool IsSubFrameRequest(IUnknown* service_provider) {
+  DCHECK(service_provider);
+
+  // We need to be able to get at an IWebBrowser2 if we are to decide whether
+  // this request originates from a non-top-level frame.
+  ScopedComPtr<IWebBrowser2> web_browser;
+  HRESULT hr = DoQueryService(IID_ITargetFrame2, service_provider,
+                              web_browser.Receive());
+
+  bool is_non_top_level_request = false;
+  if (web_browser) {
+    // Now check to see if we are in a sub-frame.
+    ScopedComPtr<IHTMLWindow2> current_frame, parent_frame;
+    hr = DoQueryService(IID_IHTMLWindow2, service_provider,
+                        current_frame.Receive());
+    if (current_frame) {
+      // Only the top level window will return self when get_parent is called.
+      current_frame->get_parent(parent_frame.Receive());
+      if (parent_frame != current_frame) {
+        DLOG(INFO) << "Sub frame detected";
+        is_non_top_level_request = true;
+      }
+    }
+  }
+
+  return is_non_top_level_request;
 }

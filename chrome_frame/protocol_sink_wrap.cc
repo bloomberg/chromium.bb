@@ -70,10 +70,13 @@ ProtocolSinkWrap::ProtocolSinkWrap()
 }
 
 ProtocolSinkWrap::~ProtocolSinkWrap() {
-  CComCritSecLock<CComAutoCriticalSection> lock(sink_map_lock_);
-  DCHECK(sink_map_.end() != sink_map_.find(protocol_));
-  sink_map_.erase(protocol_);
-  protocol_ = NULL;
+  // This object may be destroyed before Initialize is called.
+  if (protocol_ != NULL) {
+    CComCritSecLock<CComAutoCriticalSection> lock(sink_map_lock_);
+    DCHECK(sink_map_.end() != sink_map_.find(protocol_));
+    sink_map_.erase(protocol_);
+    protocol_ = NULL;
+  }
   DLOG(INFO) << "ProtocolSinkWrap: active sinks: " << sink_map_.size();
 }
 
@@ -614,47 +617,23 @@ ScopedComPtr<IInternetProtocolSink> ProtocolSinkWrap::MaybeWrapSink(
     IInternetProtocol* protocol, IInternetProtocolSink* prot_sink,
     const wchar_t* url) {
   ScopedComPtr<IInternetProtocolSink> sink_to_use(prot_sink);
-  ScopedComPtr<IWebBrowser2> web_browser;
 
   // FYI: GUID_NULL doesn't work when the URL is being loaded from history.
   // asking for IID_IHttpNegotiate as the service id works, but
   // getting the IWebBrowser2 interface still doesn't work.
   ScopedComPtr<IHttpNegotiate> http_negotiate;
   HRESULT hr = DoQueryService(GUID_NULL, prot_sink, http_negotiate.Receive());
-  if (http_negotiate) {
-    hr = DoQueryService(IID_ITargetFrame2, http_negotiate,
-                        web_browser.Receive());
-  }
 
-  if (web_browser) {
-    // Do one more check to make sure we don't wrap requests that are
-    // targeted to sub frames.
-    // For a use case, see FullTabModeIE_SubIFrame and FullTabModeIE_SubFrame
-    // unit tests.
-
-    // Default should_wrap to true in case no window is available.
-    // In that case this request is a top level request.
-    bool should_wrap = true;
-
-    ScopedComPtr<IHTMLWindow2> current_frame, parent_frame;
-    hr = DoQueryService(IID_IHTMLWindow2, http_negotiate,
-                        current_frame.Receive());
-    if (current_frame) {
-      // Only the top level window will return self when get_parent is called.
-      current_frame->get_parent(parent_frame.Receive());
-      if (parent_frame != current_frame) {
-        DLOG(INFO) << "Sub frame detected";
-        should_wrap = false;
-      }
-    }
-
-    if (should_wrap) {
-      CComObject<ProtocolSinkWrap>* wrap = NULL;
-      CComObject<ProtocolSinkWrap>::CreateInstance(&wrap);
-      DCHECK(wrap);
+  if (http_negotiate && !IsSubFrameRequest(http_negotiate)) {
+    CComObject<ProtocolSinkWrap>* wrap = NULL;
+    CComObject<ProtocolSinkWrap>::CreateInstance(&wrap);
+    DCHECK(wrap);
+    if (wrap) {
+      wrap->AddRef();
       if (wrap->Initialize(protocol, prot_sink, url)) {
         sink_to_use = wrap;
       }
+      wrap->Release();
     }
   }
 
