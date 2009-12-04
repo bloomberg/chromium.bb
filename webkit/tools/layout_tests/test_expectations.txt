@@ -1393,7 +1393,6 @@ BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = PASS FA
 
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10351 SKIP MAC : LayoutTests/http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
-BUG10351 MAC : LayoutTests/plugins/embed-attributes-setting.html = PASS FAIL
 BUG10351 MAC : LayoutTests/plugins/inner-html-display-none.html = FAIL
 BUG10351 MAC DEBUG : LayoutTests/plugins/invoke.html = PASS FAIL
 BUG10351 MAC : LayoutTests/plugins/mouse-events.html = CRASH FAIL
@@ -1611,7 +1610,6 @@ BUG23498 MAC : LayoutTests/fast/block/positioning/047.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/block/positioning/051.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/block/positioning/055.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/block/positioning/auto/007.html = IMAGE
-BUG23498 MAC : LayoutTests/fast/block/positioning/complex-percentage-height.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/block/positioning/fixed-positioning-scrollbar-bug.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/block/positioning/negative-rel-position.html = IMAGE
 BUG23498 MAC : LayoutTests/fast/block/positioning/relative-overflow-block.html = IMAGE
@@ -2125,7 +2123,6 @@ BUG23482 MAC : LayoutTests/svg/text/text-text-03-b.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-text-04-t.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-text-05-t.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-text-06-t.svg = IMAGE
-BUG23482 MAC : LayoutTests/svg/text/text-text-07-t.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-text-08-b.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-tref-01-b.svg = IMAGE
 BUG23482 MAC : LayoutTests/svg/text/text-tselect-01-b.svg = IMAGE
@@ -2772,8 +2769,6 @@ BUG23901 LINUX WIN DEBUG : LayoutTests/fast/box-shadow/inset.html = FAIL
 BUG23901 LINUX RELEASE : LayoutTests/fast/box-shadow/inset.html = FAIL
 BUG23901 SLOW WIN RELEASE : LayoutTests/fast/box-shadow/inset.html = FAIL
 
-// Flaky on Linux since WebKit merge 49051:49097
-BUG24331 LINUX : LayoutTests/svg/text/text-text-07-t.svg = FAIL
 // Fails since WebKit merge 49321:49372
 BUG24331 LINUX : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
 
@@ -2876,7 +2871,6 @@ BUG_LEVIN WIN DEBUG : LayoutTests/svg/custom/gradient-stop-style-change.svg = TE
 BUG28417 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
 
 // more test flakiness
-BUG27335 WIN RELEASE : LayoutTests/plugins/embed-attributes-setting.html = PASS TIMEOUT
 BUG27334 MAC RELEASE : LayoutTests/http/tests/misc/xhtml.php = PASS TIMEOUT
 BUG27334 MAC : LayoutTests/http/tests/security/xssAuditor/object-embed-tag.html = PASS
 BUG27334 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/re-login-async.html = PASS TIMEOUT
@@ -3029,10 +3023,6 @@ BUG28918 : LayoutTests/http/tests/cache/subresource-failover-to-network.html = P
 // New failures from webkit r51496
 BUG29056 WIN LINUX : LayoutTests/svg/custom/mask-with-all-units.svg = FAIL
 
-// New failures from WebKit r51527
-BUG_HAMAJI WIN LINUX : LayoutTests/fast/block/positioning/complex-percentage-height.html = IMAGE+TEXT
-BUG_HAMAJI WIN LINUX : LayoutTests/fast/lists/item-not-in-list-line-wrapping.html = IMAGE+TEXT
-
 // New failures from WebKit r51534:r51576
 BUG29157 WIN LINUX MAC :  LayoutTests/accessibility/aria-text-role.html = TEXT
 BUG29157 WIN LINUX :  LayoutTests/fast/forms/input-maxlength-ime-completed.html = TEXT
@@ -3056,3 +3046,9 @@ BUG29239 : LayoutTests/fast/css/variables/misplaced-import-test.html = FAIL
 
 // Failure from WebKit merge 51613:51615 (51615 is the cause)
 BUG29251: LayoutTests/websocket/tests/simple.html = PASS FAIL
+
+// Failures from WebKit merge 51618:51642
+BUG29339 WIN MAC : LayoutTests/plugins/embed-attributes-setting.html = CRASH FAIL
+BUG29344 : LayoutTests/svg/W3C-SVG-1.1/text-text-07-t.svg = FAIL
+BUG29344 : LayoutTests/svg/text/text-text-07-t.svg = FAIL
+BUG29344 : LayoutTests/svg/dom/svglist-exception-on-out-bounds-error.html = FAIL
