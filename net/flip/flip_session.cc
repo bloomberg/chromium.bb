@@ -227,6 +227,7 @@ net::Error FlipSession::Connect(const std::string& group_name,
 
   int rv = connection_.Init(group_name, host, priority, &connect_callback_,
                             session_->tcp_socket_pool(), NULL);
+  DCHECK(rv <= 0);
 
   // If the connect is pending, we still return ok.  The APIs enqueue
   // work until after the connect completes asynchronously later.
@@ -405,7 +406,8 @@ void FlipSession::OnTCPConnect(int result) {
     connection_.set_socket(socket);
     // TODO(willchan): Plumb LoadLog into FLIP code.
     int status = connection_.socket()->Connect(&ssl_connect_callback_, NULL);
-    CHECK(status == net::ERR_IO_PENDING);
+    if (status != ERR_IO_PENDING)
+      OnSSLConnect(status);
   } else {
     DCHECK_EQ(state_, CONNECTING);
     state_ = CONNECTED;
@@ -433,8 +435,8 @@ void FlipSession::OnSSLConnect(int result) {
     WriteSocketLater();
     ReadSocket();
   } else {
-    NOTREACHED();
-    // TODO(mbelshe): handle the error case: could not connect
+    DCHECK(result <= 0);  // It should be an error, not a byte count.
+    CloseSession(static_cast<net::Error>(result));
   }
 }
 

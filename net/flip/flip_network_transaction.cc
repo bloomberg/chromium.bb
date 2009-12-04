@@ -209,9 +209,7 @@ int FlipNetworkTransaction::DoInitConnection() {
   flip_ = session_->flip_session_pool()->Get(resolve_info, session_);
   DCHECK(flip_);
 
-  int rv = flip_->Connect(connection_group, resolve_info, request_->priority);
-  DCHECK(rv == OK);  // The API says it will always return OK.
-  return OK;
+  return flip_->Connect(connection_group, resolve_info, request_->priority);
 }
 
 int FlipNetworkTransaction::DoInitConnectionComplete(int result) {
