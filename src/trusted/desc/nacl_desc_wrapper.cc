@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <limits>
 #include <new>
+#ifndef NACL_STANDALONE
 #include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "chrome/common/transport_dib.h"
+#endif  // NACL_STANDALONE
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -17,9 +20,9 @@
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
-#ifdef NACL_LINUX
+#if defined(NACL_LINUX)
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
-#endif  // NACL_LINUX
+#endif  // defined(NACL_LINUX)
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -320,6 +323,12 @@ DescWrapper* DescWrapperFactory::ImportTransportDIB(TransportDIB* dib) {
 }
 
 DescWrapper* DescWrapperFactory::ImportSyncSocket(base::SyncSocket* sock) {
+#ifdef NACL_STANDALONE
+  // TransportDIB is only present in the Chrome hookup.
+  // TODO(sehr): Add a stub library for the Chrome dependencies for standalone.
+  UNREFERENCED_PARAMETER(sock);
+  return NULL;
+#else
   struct NaClDescSyncSocket* ss_desc = NULL;
   DescWrapper* wrapper = NULL;
 
@@ -343,6 +352,7 @@ DescWrapper* DescWrapperFactory::ImportSyncSocket(base::SyncSocket* sock) {
 cleanup:
   NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(ss_desc));
   return NULL;
+#endif  // NACL_STANDALONE
 }
 
 DescWrapper* DescWrapperFactory::MakeGeneric(struct NaClDesc* desc) {
