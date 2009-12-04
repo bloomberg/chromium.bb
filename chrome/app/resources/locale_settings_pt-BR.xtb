@@ -32,7 +32,7 @@
 <translation id="IDS_USES_UNIVERSAL_DETECTOR">false</translation>
 <translation id="IDS_SPELLCHECK_DICTIONARY">pt-BR</translation>
 <translation id="IDS_OPTIONS_DIALOG_WIDTH_CHARS">110</translation>
-<translation id="IDS_OPTIONS_DIALOG_HEIGHT_LINES">36</translation>
+<translation id="IDS_OPTIONS_DIALOG_HEIGHT_LINES">38</translation>
 <translation id="IDS_OPTIONS_DIALOG_LEFT_COLUMN_WIDTH_CHARS">30</translation>
 <translation id="IDS_OPTIONS_RESET_CONFIRM_BOX_WIDTH_CHARS">80</translation>
 <translation id="IDS_URLPICKER_DIALOG_WIDTH_CHARS">80</translation>
