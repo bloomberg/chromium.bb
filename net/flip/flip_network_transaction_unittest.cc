@@ -189,6 +189,23 @@ class DelayedSocketData : public StaticSocketDataProvider,
     DCHECK_GE(write_delay_, 0);
   }
 
+  // |connect| the result for the connect phase.
+  // |reads| the list of MockRead completions.
+  // |write_delay| the number of MockWrites to complete before allowing
+  //               a MockRead to complete.
+  // |writes| the list of MockWrite completions.
+  // Note: All MockReads and MockWrites must be async.
+  // Note: The MockRead and MockWrite lists musts end with a EOF
+  //       e.g. a MockRead(true, 0, 0);
+  DelayedSocketData(const MockConnect& connect, MockRead* reads,
+                    int write_delay, MockWrite* writes)
+    : StaticSocketDataProvider(reads, writes),
+      write_delay_(write_delay),
+      ALLOW_THIS_IN_INITIALIZER_LIST(factory_(this)) {
+    DCHECK_GE(write_delay_, 0);
+    set_connect_data(connect);
+  }
+
   virtual MockRead GetNextRead() {
     if (write_delay_)
       return MockRead(true, ERR_IO_PENDING);
@@ -861,6 +878,40 @@ TEST_F(FlipNetworkTransactionTest, PartialWrite) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
+}
+
+TEST_F(FlipNetworkTransactionTest, ConnectFailure) {
+  MockConnect connects[]  = {
+    MockConnect(true, ERR_NAME_NOT_RESOLVED),
+    MockConnect(false, ERR_NAME_NOT_RESOLVED),
+    MockConnect(true, ERR_INTERNET_DISCONNECTED),
+    MockConnect(false, ERR_INTERNET_DISCONNECTED)
+  };
+
+  for (size_t index = 0; index < arraysize(connects); ++index) {
+    MockWrite writes[] = {
+      MockWrite(true, reinterpret_cast<const char*>(kGetSyn),
+                arraysize(kGetSyn)),
+      MockWrite(true, 0, 0)  // EOF
+    };
+
+    MockRead reads[] = {
+      MockRead(true, reinterpret_cast<const char*>(kGetSynReply),
+               arraysize(kGetSynReply)),
+      MockRead(true, reinterpret_cast<const char*>(kGetBodyFrame),
+               arraysize(kGetBodyFrame)),
+      MockRead(true, 0, 0)  // EOF
+    };
+
+    HttpRequestInfo request;
+    request.method = "GET";
+    request.url = GURL("http://www.google.com/");
+    request.load_flags = 0;
+    scoped_refptr<DelayedSocketData> data(
+        new DelayedSocketData(connects[index], reads, 1, writes));
+    TransactionHelperResult out = TransactionHelper(request, data.get());
+    EXPECT_EQ(connects[index].result, out.rv);
+  }
 }
 
 }  // namespace net

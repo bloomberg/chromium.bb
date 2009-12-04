@@ -136,6 +136,9 @@ void CreateFlipHeadersFromHttpRequest(
     }
   }
 
+  // TODO(mbelshe): Add Proxy headers here. (See http_network_transaction.cc)
+  // TODO(mbelshe): Add authentication headers here.
+
   (*headers)["method"] = info.method;
   (*headers)["url"] = info.url.spec();
   (*headers)["version"] = kHttpProtocolVersion;
@@ -552,8 +555,9 @@ void FlipSession::WriteSocket() {
   delayed_write_pending_ = false;
 
   // If the socket isn't connected yet, just wait; we'll get called
-  // again when the socket connection completes.
-  if (state_ < CONNECTED)
+  // again when the socket connection completes.  If the socket is
+  // closed, just return.
+  if (state_ < CONNECTED || state_ == CLOSED)
     return;
 
   if (write_pending_)   // Another write is in progress still.
