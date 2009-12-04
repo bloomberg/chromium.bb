@@ -138,9 +138,10 @@ void HtmlDialogGtk::InitDialog() {
   gfx::Size dialog_size;
   delegate_->GetDialogSize(&dialog_size);
 
-  gtk_window_set_default_size(GTK_WINDOW(dialog_),
+  gtk_widget_set_size_request(GTK_WIDGET(tab_contents_container_->widget()),
                               dialog_size.width(),
                               dialog_size.height());
+
   gtk_widget_show_all(dialog_);
 }
 
