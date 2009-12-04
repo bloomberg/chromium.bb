@@ -198,23 +198,14 @@ class TestRunner:
     """Create appropriate subsets of test lists and returns a ResultSummary
     object. Also prints expected test counts."""
 
-    result_summary = ResultSummary(self._expectations, self._test_files)
-
     # Remove skipped - both fixable and ignored - files from the
     # top-level list of files to test.
-    skipped = set()
-    if len(self._test_files) > 1 and not self._options.force:
+    num_all_test_files = len(self._test_files)
+    skipped = ()
+    if num_all_test_files > 1 and not self._options.force:
       skipped = self._expectations.GetTestsWithResultType(
-          test_expectations.SKIP)
-      for test in skipped:
-        result_summary.Add(test, [], test_expectations.SKIP)
+                     test_expectations.SKIP)
       self._test_files -= skipped
-
-    if self._options.force:
-      logging.info('Skipped: 0 tests (--force)')
-    else:
-      logging.info('Skipped: %d tests' % len(skipped))
-    logging.info('Skipped tests do not appear in any of the below numbers\n')
 
     # Create a sorted list of test files so the subset chunk, if used, contains
     # alphabetically consecutive tests.
@@ -223,11 +214,6 @@ class TestRunner:
       random.shuffle(self._test_files_list)
     else:
       self._test_files_list.sort(self.TestFilesSort)
-
-    # Chunking replaces self._expectations, which loses all the skipped test
-    # information. Keep the prechunk expectations for tracking number of
-    # skipped tests.
-    self.prechunk_expectations = self._expectations;
 
     # If the user specifies they just want to run a subset of the tests,
     # just grab a subset of the non-skipped tests.
@@ -272,6 +258,7 @@ class TestRunner:
       slice_end = min(num_tests, slice_start + chunk_len)
 
       files = test_files[slice_start:slice_end]
+
       tests_run_msg = 'Run: %d tests (chunk slice [%d:%d] of %d)' % (
           (slice_end - slice_start), slice_start, slice_end, num_tests)
       logging.info(tests_run_msg)
@@ -284,21 +271,36 @@ class TestRunner:
         logging.info(extra_msg)
         tests_run_msg += "\n" + extra_msg
         files.extend(test_files[0:extra])
-      self._test_files_list = files
-      self._test_files = set(files)
-
       tests_run_filename = os.path.join(self._options.results_directory,
                                         "tests_run.txt")
       tests_run_file = open(tests_run_filename, "w")
       tests_run_file.write(tests_run_msg + "\n")
       tests_run_file.close()
 
-      # update expectations so that the stats are calculated correctly
+      len_skip_chunk = int(len(files) * len(skipped) /
+                           float(len(self._test_files)))
+      skip_chunk_list = list(skipped)[0:len_skip_chunk]
+      skip_chunk = set(skip_chunk_list)
+
+      # Update expectations so that the stats are calculated correctly.
+      # We need to pass a list that includes the right # of skipped files
+      # to ParseExpectations so that ResultSummary() will get the correct
+      # stats. So, we add in the subset of skipped files, and then subtract
+      # them back out.
+      self._test_files_list = files + skip_chunk_list
+      self._test_files = set(self._test_files_list)
+
       self._expectations = self.ParseExpectations(
           path_utils.PlatformName(), options.target == 'Debug')
+
+      self._test_files = set(files)
+      self._test_files_list = files
     else:
+      skip_chunk = skipped
       logging.info('Run: %d tests' % len(self._test_files))
 
+    result_summary = ResultSummary(self._expectations,
+                                   self._test_files | skip_chunk)
     self._PrintExpectedResultsOfType(result_summary, test_expectations.PASS,
         "passes")
     self._PrintExpectedResultsOfType(result_summary, test_expectations.FAIL,
@@ -307,6 +309,16 @@ class TestRunner:
         "flaky")
     self._PrintExpectedResultsOfType(result_summary, test_expectations.SKIP,
         "skipped")
+
+    if self._options.force:
+      logging.info('Running all tests, including skips (--force)')
+    else:
+      # Note that we don't actually run the skipped tests (they were
+      # subtracted out of self._test_files, above), but we stub out the
+      # results here so the statistics can remain accurate.
+      for test in skip_chunk:
+        result_summary.Add(test, [], test_expectations.SKIP)
+
     return result_summary
 
   def AddTestType(self, test_type):
