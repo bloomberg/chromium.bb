@@ -4,6 +4,8 @@
 
 #include "chrome/test/ui_test_utils.h"
 
+#include <gtk/gtk.h>
+
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser.h"

@@ -6,6 +6,10 @@
 
 #include "build/build_config.h"
 
+#if defined(OS_LINUX)
+#include <gtk/gtk.h>
+#endif
+
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/process_util.h"

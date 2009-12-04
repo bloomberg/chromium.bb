@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_GTK_FIRST_RUN_DIALOG_H_
 #define CHROME_BROWSER_GTK_FIRST_RUN_DIALOG_H_
 
+#include <gtk/gtk.h>
+
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/importer/importer.h"
 

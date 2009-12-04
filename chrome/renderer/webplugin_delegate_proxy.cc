@@ -6,6 +6,10 @@
 
 #include <algorithm>
 
+#if defined(OS_LINUX)
+#include <gtk/gtk.h>
+#endif
+
 #include "app/gfx/blit.h"
 #include "app/gfx/canvas.h"
 #include "app/gfx/native_widget_types.h"
