@@ -54,9 +54,13 @@ int kms_get_prop(struct kms_driver *kms, unsigned key, unsigned *out)
 	return kms->get_prop(kms, key, out);
 }
 
-int kms_destroy(struct kms_driver *kms)
+int kms_destroy(struct kms_driver **kms)
 {
-	free(kms);
+	if (!(*kms))
+		return 0;
+
+	free(*kms);
+	*kms = NULL;
 	return 0;
 }
 
@@ -118,7 +122,17 @@ int kms_bo_unmap(struct kms_bo *bo)
 	return bo->kms->bo_unmap(bo);
 }
 
-int kms_bo_destroy(struct kms_bo *bo)
+int kms_bo_destroy(struct kms_bo **bo)
 {
-	return bo->kms->bo_destroy(bo);
+	int ret;
+
+	if (!(*bo))
+		return 0;
+
+	ret = (*bo)->kms->bo_destroy(*bo);
+	if (ret)
+		return ret;
+
+	*bo = NULL;
+	return 0;
 }
