@@ -213,8 +213,6 @@ void PrefetchObserver::OnStartResolution(
   navigation_info.SetHostname(request_info.hostname());
   navigation_info.SetStartedState();
 
-  NavigatingTo(request_info.hostname());
-
   AutoLock auto_lock(*lock);
   // This entry will be deleted either by OnFinishResolutionWithStatus(), or
   // by  OnCancelResolution().
@@ -242,6 +240,12 @@ void PrefetchObserver::OnFinishResolutionWithStatus(
   }
   navigation_info.SetFinishedState(was_resolved);  // Get timing info
   AccruePrefetchBenefits(request_info.referrer(), &navigation_info);
+
+  // Handle sub-resource resolutions now that the critical navigational
+  // resolution has completed.  This prevents us from in any way delaying that
+  // navigational resolution.
+  NavigatingTo(request_info.hostname());
+
   if (kStartupResolutionCount <= startup_count || !was_resolved)
     return;
   // TODO(jar): Don't add host to our list if it is a non-linked lookup, and
