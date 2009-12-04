@@ -104,8 +104,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
   EXPECT_EQ(WideToUTF16(test_title), tab_title);
 }
 
-#if !defined(OS_MACOSX)
-// TODO(port): BUG16322
+#if defined(OS_MACOSX)
+// http://crbug.com//29424
+#define JavascriptAlertActivatesTab DISABLED_JavascriptAlertActivatesTab
+#endif
+
 IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
   ui_test_utils::NavigateToURL(browser(), url);
@@ -122,7 +125,6 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
   EXPECT_EQ(2, browser()->tab_count());
   EXPECT_EQ(1, browser()->selected_index());
 }
-#endif  // !defined(OS_MACOSX)
 
 // Create 34 tabs and verify that a lot of processes have been created. The
 // exact number of processes depends on the amount of memory. Previously we
@@ -147,13 +149,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   }
 }
 
+#if defined(OS_MACOSX)
+// http://crbug.com//29424
+#define ReloadThenCancelBeforeUnload DISABLED_ReloadThenCancelBeforeUnload
+#endif
+
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_ReloadThenCancelBeforeUnload) {
-#else
 IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
-#endif
   GURL url("data:text/html," + BEFORE_UNLOAD_HTML);
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -169,14 +172,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
       ExecuteJavascriptInWebFrame(L"", L"onbeforeunload=null;");
 }
 
+#if defined(OS_MACOSX)
+// http://crbug.com//29424
+#define MAYBE_SingleBeforeUnloadAfterWindowClose DISABLED_SingleBeforeUnloadAfterWindowClose
+#else
+#define MAYBE_SingleBeforeUnloadAfterWindowClose FLAKY_SingleBeforeUnloadAfterWindowClose
+#endif
+
 // Test for crbug.com/11647.  A page closed with window.close() should not have
 // two beforeunload dialogs shown.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserTest,
-                       DISABLED_SingleBeforeUnloadAfterWindowClose) {
-#else
-IN_PROC_BROWSER_TEST_F(BrowserTest, FLAKY_SingleBeforeUnloadAfterWindowClose) {
-#endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   browser()->GetSelectedTabContents()->render_view_host()->
       ExecuteJavascriptInWebFrame(L"", OPEN_NEW_BEFOREUNLOAD_PAGE);
 
@@ -210,12 +215,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RenderIdleTime) {
 
 // Test IDC_CREATE_SHORTCUTS command is enabled for url scheme file, ftp, http
 // and https and disabled for chrome://, about:// etc.
-#if defined(OS_MACOSX)
-IN_PROC_BROWSER_TEST_F(BrowserTest,
-                       DISABLED_CommandCreateAppShortcut) {
-#else
 IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
-#endif
   static const wchar_t kDocRoot[] = L"chrome/test/data";
 
   CommandUpdater* command_updater = browser()->command_updater();
