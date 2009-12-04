@@ -54,5 +54,9 @@ ___gcov_flush
 ___gcov_merge_add
 ___gcov_fork
 
+# Written in asm as a .globl.  (Is that necessary?)
+_NaClSwitch
+_NaClSyscallSeg
+
 # _ChromeMain must be listed last.  That's the whole point of this file.
 _ChromeMain
