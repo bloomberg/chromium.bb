@@ -422,7 +422,7 @@ class BrowserView : public BrowserWindow,
 #if defined(OS_WIN)
   // Builds the correct menu for when we have minimal chrome.
   void BuildSystemMenuForBrowserWindow();
-  void BuildSystemMenuForPopupWindow();
+  void BuildSystemMenuForAppOrPopupWindow(bool is_app);
 #endif
 
   // Retrieves the command id for the specified Windows app command.

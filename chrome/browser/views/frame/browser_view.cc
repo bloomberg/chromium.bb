@@ -1820,7 +1820,7 @@ void BrowserView::InitSystemMenu() {
   if (IsBrowserTypeNormal())
     BuildSystemMenuForBrowserWindow();
   else
-    BuildSystemMenuForPopupWindow();
+    BuildSystemMenuForAppOrPopupWindow(browser_->type() == Browser::TYPE_APP);
   system_menu_.reset(
       new views::NativeMenuWin(system_menu_contents_.get(),
                                frame_->GetWindow()->GetNativeWindow()));
@@ -2179,10 +2179,12 @@ void BrowserView::BuildSystemMenuForBrowserWindow() {
   // since it already has menus (Page, Chrome).
 }
 
-void BrowserView::BuildSystemMenuForPopupWindow() {
-  system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
-                                             IDS_TASK_MANAGER);
+void BrowserView::BuildSystemMenuForAppOrPopupWindow(bool is_app) {
+  if (is_app) {
+    system_menu_contents_->AddSeparator();
+    system_menu_contents_->AddItemWithStringId(IDC_TASK_MANAGER,
+                                               IDS_TASK_MANAGER);
+  }
   system_menu_contents_->AddSeparator();
   encoding_menu_contents_.reset(new EncodingMenuModel(browser_.get()));
   system_menu_contents_->AddSubMenuWithStringId(IDS_ENCODING_MENU,
@@ -2191,22 +2193,21 @@ void BrowserView::BuildSystemMenuForPopupWindow() {
   system_menu_contents_->AddSubMenuWithStringId(IDS_ZOOM_MENU,
                                                 zoom_menu_contents_.get());
   system_menu_contents_->AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-  system_menu_contents_->AddItemWithStringId(IDC_SAVE_PAGE,
-                                             IDS_SAVE_PAGE);
   system_menu_contents_->AddItemWithStringId(IDC_FIND, IDS_FIND);
   system_menu_contents_->AddSeparator();
   system_menu_contents_->AddItemWithStringId(IDC_PASTE, IDS_PASTE);
   system_menu_contents_->AddItemWithStringId(IDC_COPY, IDS_COPY);
   system_menu_contents_->AddItemWithStringId(IDC_CUT, IDS_CUT);
   system_menu_contents_->AddSeparator();
-  system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB,
-                                             IDS_APP_MENU_NEW_WEB_PAGE);
-  system_menu_contents_->AddItemWithStringId(IDC_SHOW_AS_TAB, IDS_SHOW_AS_TAB);
+  if (is_app) {
+    system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB,
+                                               IDS_APP_MENU_NEW_WEB_PAGE);
+  } else {
+    system_menu_contents_->AddItemWithStringId(IDC_SHOW_AS_TAB,
+                                               IDS_SHOW_AS_TAB);
+  }
   system_menu_contents_->AddItemWithStringId(IDC_COPY_URL,
                                              IDS_APP_MENU_COPY_URL);
-  system_menu_contents_->AddItemWithStringId(IDC_DUPLICATE_TAB,
-                                             IDS_APP_MENU_DUPLICATE_APP_WINDOW);
-  system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB, IDS_RESTORE_TAB);
   system_menu_contents_->AddSeparator();
   system_menu_contents_->AddItemWithStringId(IDC_RELOAD, IDS_APP_MENU_RELOAD);
   system_menu_contents_->AddItemWithStringId(IDC_FORWARD,
