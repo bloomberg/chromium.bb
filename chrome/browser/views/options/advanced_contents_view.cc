@@ -986,23 +986,23 @@ class OpenConnectionDialogTask : public Task {
     // Using rundll32 seems better than LaunchConnectionDialog which causes a
     // new dialog to be made for each call.  rundll32 uses the same global
     // dialog and it seems to share with the shortcut in control panel.
-    std::wstring rundll32;
+    FilePath rundll32;
     PathService::Get(base::DIR_SYSTEM, &rundll32);
-    file_util::AppendToPath(&rundll32, L"rundll32.exe");
+    rundll32 = rundll32.AppendASCII("rundll32.exe");
 
-    std::wstring shell32dll;
+    FilePath shell32dll;
     PathService::Get(base::DIR_SYSTEM, &shell32dll);
-    file_util::AppendToPath(&shell32dll, L"shell32.dll");
+    shell32dll = shell32dll.AppendASCII("shell32.dll");
 
-    std::wstring inetcpl;
+    FilePath inetcpl;
     PathService::Get(base::DIR_SYSTEM, &inetcpl);
-    file_util::AppendToPath(&inetcpl, L"inetcpl.cpl,,4");
+    inetcpl = inetcpl.AppendASCII("inetcpl.cpl,,4");
 
-    std::wstring args(shell32dll);
+    std::wstring args(shell32dll.value());
     args.append(L",Control_RunDLL ");
-    args.append(inetcpl);
+    args.append(inetcpl.value());
 
-    ShellExecute(NULL, L"open", rundll32.c_str(), args.c_str(), NULL,
+    ShellExecute(NULL, L"open", rundll32.value().c_str(), args.c_str(), NULL,
         SW_SHOWNORMAL);
   }
 
