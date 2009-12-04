@@ -66,6 +66,9 @@ var g_templates = [];
 var g_o3dPropertyRE = /^(\w+)\s+(\w+)\s+/;
 var g_startContainerRE = /^(?:function\(|!function\(|[\(<{[])/;
 var g_containerRE = /function\(|!function\(|[\(<{[]/;
+var g_overloadRE = /xxxOVERLOADED\d+xxx/;
+var g_overloadStr = 'xxxOVERLOADED';
+var g_firstOverloadStr = 'xxxOVERLOADED0xxx';
 var g_openCloseMap = {
   'function(': ')',
   '!function(': ')',
@@ -78,6 +81,7 @@ var g_closeMap = {
   '>': true,
   ']': true,
   '}': true};
+var g_symbolsWithoutOverload = {};
 
 /**
  * Called automatically by JsDoc Toolkit.
@@ -818,11 +822,14 @@ function linkifySingleType(place, type) {
         var subType = type.substring(0, period);
         var member = type.substring(period + 1);
         symbol = getSymbol(subType);
-        if (symbol && symbol.hasMember(member)) {
-          var field = type.substring(period + 1);
-          link = '<a class="el" href="' + getLinkToSymbol(symbol) + '#' +
-              field + '">' +  type + '</a>';
-          found = true;
+        if (symbol) {
+          if (symbol.hasMember(member) ||
+              symbol.hasMember(member + g_firstOverloadStr)) {
+            var field = type.substring(period + 1);
+            link = '<a class="el" href="' + getLinkToSymbol(symbol) + '#' +
+                field + '">' +  type + '</a>';
+            found = true;
+          }
         }
       }
 
@@ -1069,6 +1076,19 @@ function getQualifiedName(method) {
 }
 
 /**
+ * Removes the "xxxOVERLOADEDxxx" part of a name
+ * @param {string} name Name that may have a overloaded suffux.
+ * @return {string} The name without the overloaded suffix.
+ */
+function getNonOverloadedName(name) {
+  var index = name.indexOf(g_overloadStr);
+  if (index >= 0) {
+    return name.substring(0, index);
+  }
+  return name;
+}
+
+/**
  * Gets a Documentation name. For members of a namespace returns the fully
  * qualified name. For members of a class returns ClassName.name
  * @param {!Symbol} parent Symbol that we are making docs for.
@@ -1077,9 +1097,9 @@ function getQualifiedName(method) {
  */
 function getDocName(parent, child) {
   if (parent.isNamespace) {
-    return child.memberOf + "." + child.name;
+    return child.memberOf + "." + getNonOverloadedName(child.name);
   }
-  return parent.name + "." + child.name;
+  return parent.name + "." + getNonOverloadedName(child.name);
 }
 
 /**

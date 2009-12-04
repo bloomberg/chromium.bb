@@ -95,7 +95,7 @@ thisClass = data;
         <td class="type">
         <if test="method.type.length">{+linkifyTypeSpec(makeName('[Method Summary]', thisClass.alias, method.name), method.type)+}&nbsp;</if>
         </td>
-        <td><a class="el" href="#{+method.name+}">{+method.name+}</a>{+makeSignature(method.params)+}
+        <td><a class="el" href="#{+method.name+}">{+getNonOverloadedName(method.name)+}</a>{+makeSignature(method.params)+}
           <if test="isDeprecated(method)">
             <span class="deprecated">[[]**DEPRECATED**]</span>
           </if>

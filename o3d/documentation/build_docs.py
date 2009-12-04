@@ -161,8 +161,10 @@ def DeleteOldDocs(docs_js_outpath):
   except:
     pass
 
+
 def BuildJavaScriptForDocsFromIDLs(idl_files, output_dir):
-  RunNixysa(idl_files, 'jsheader', output_dir, ['--properties-equal-undefined'])
+  RunNixysa(idl_files, 'jsheader', output_dir,
+            ['--properties-equal-undefined', '--overloaded-function-docs'])
 
 
 def BuildJavaScriptForExternsFromIDLs(idl_files, output_dir):

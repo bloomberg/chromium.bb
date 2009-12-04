@@ -30,7 +30,7 @@ This is the complete list of members for
   <if test="ownMethods.length">
     <for each="method" in="ownMethods">
     <if test="!method.isPrivate">
-    <tr class="memlist"><td><a class="el" href="{+getLinkToClassByAlias(thisClass.alias)+}#{+method.name+}">{+method.name+}</a>{+ makeSignature(method.params) +}</td><td><a class="el" href="{+getLinkToClassByAlias(method.memberOf)+}">{+method.memberOf+}</a></td><td></td></tr>
+    <tr class="memlist"><td><a class="el" href="{+getLinkToClassByAlias(thisClass.alias)+}#{+method.name+}">{+getNonOverloadedName(method.name)+}</a>{+ makeSignature(method.params) +}</td><td><a class="el" href="{+getLinkToClassByAlias(method.memberOf)+}">{+method.memberOf+}</a></td><td></td></tr>
     </if>
     </for>
   </if>
