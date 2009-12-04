@@ -9,13 +9,10 @@
 #include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
 #include "views/controls/menu/view_menu_delegate.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/view.h"
 
 class Browser;
-
-namespace views {
-class Menu2;
-}
 
 namespace chromeos {
 
