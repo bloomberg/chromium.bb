@@ -25,6 +25,7 @@
 class WebViewDelegate;
 
 namespace WebKit {
+class WebDevToolsAgent;
 class WebFrame;
 class WebPluginContainer;
 class WebURLResponse;
@@ -243,6 +244,9 @@ class WebPluginImpl : public WebPlugin,
 
   // Helper function to set the referrer on the request passed in.
   void SetReferrer(WebKit::WebURLRequest* request, Referrer referrer_flag);
+
+  // Returns DevToolsAgent for the frame or 0.
+  WebKit::WebDevToolsAgent* GetDevToolsAgent();
 
   std::vector<ClientInfo> clients_;
 

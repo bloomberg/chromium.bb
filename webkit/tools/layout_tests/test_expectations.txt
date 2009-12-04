@@ -1386,7 +1386,7 @@ BUG10666 LINUX : chrome/fast/forms/basic-selects.html = FAIL
 // These tests are marked as failing on Linux because they depend on QuickTime.
 // See the bug for more discussion.
 BUG15797 LINUX : LayoutTests/fast/dom/object-embed-plugin-scripting.html = FAIL
-BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = PASS CRASH
+BUG15797 LINUX : LayoutTests/plugins/embed-attributes-setting.html = FAIL CRASH
 
 // Depends on plugin support.
 BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = PASS FAIL
