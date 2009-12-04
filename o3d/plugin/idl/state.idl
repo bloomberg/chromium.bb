@@ -175,92 +175,93 @@ namespace o3d {
     Valid states:
     <table>
     <tr><td>State Name</td><td>Type</td><td>Default Value</td></tr>
-    <tr><td>o3d.AlphaTestEnable</td><td>ParamBoolean</td>
-        <td>default = false</td></tr>
-    <tr><td>o3d.AlphaReference</td><td>ParamFloat 0-1</td>
-        <td>default = 0</td></tr>
-    <tr><td>o3d.AlphaComparisonFunction</td><td>ParamInteger,
-        State.Comparison</td><td>default = State.CMP_ALWAYS</td></tr>
-    <tr><td>o3d.CullMode</td><td>ParamInteger, State.Cull</td>
-        <td>default = State.CULL_CW</td></tr>
-    <tr><td>o3d.DitherEnable</td><td>ParamBoolean</td>
-        <td>default = false</td></tr>
-    <tr><td>o3d.LineSmoothEnable</td><td>ParamBoolean</td>
-        <td>default = false</td></tr>
-    <tr><td>o3d.PointSpriteEnable</td><td>ParamBoolean</td>
-        <td>default = false</td></tr>
-    <tr><td>o3d.PointSize</td><td>ParamFloat</td><td>TBD</td></tr>
-    <tr><td>o3d.PolygonOffset1</td><td>ParamFloat, polygon offset slope factor<td>0</td></tr>
-    <tr><td>o3d.PolygonOffset2</td><td>ParamFloat, polygon offset bias (in
-    resolvable units)<td>0</td></tr>
-    <tr><td>o3d.FillMode</td><td>ParamInteger, State.Fill</td>
-        <td>default = State.SOLID</td></tr>
-    <tr><td>o3d.ZEnable</td><td>ParamBoolean</td>
-        <td>default = true</td></tr>
-    <tr><td>o3d.ZWriteEnable</td><td>ParamBoolean</td>
-        <td>default = true</td></tr>
-    <tr><td>o3d.ZComparisonFunction</td>
-        <td>ParamInteger, State.Comparison</td>
-        <td>default = State.CMP_ALWAYS</td></tr>
     <tr><td>o3d.AlphaBlendEnable</td><td>ParamBoolean</td>
         <td>default = false</td></tr>
-    <tr><td>o3d.SourceBlendFunction</td>
-        <td>ParamInteger, State.BlendingFunction</td>
-        <td>default = State.BLENDFUNC_ONE</td></tr>
-    <tr><td>o3d.DestinationBlendFunction</td>
-        <td>ParamInteger, State.BlendingFunction</td>
-        <td>default = State.BLENDFUNC_ZERO</td></tr>
-    <tr><td>o3d.StencilEnable</td><td>ParamBoolean</td>
-        <td>default = false</td></tr>
-    <tr><td>o3d.StencilFailOperation</td>
-        <td>ParamInteger, State.StencilOperation</td>
-        <td>default = State.STENCIL_KEEP</td></tr>
-    <tr><td>o3d.StencilZFailOperation</td>
-        <td>ParamInteger, State.StencilOperation</td>
-        <td>default = State.STENCIL_KEEP</td></tr>
-    <tr><td>o3d.StencilPassOperation</td>
-        <td>ParamInteger, State.StencilOperation</td>
-        <td>default = State.STENCIL_KEEP</td></tr>
-    <tr><td>o3d.StencilComparisonFunction</td>
-        <td>ParamInteger, State.Comparison</td>
-        <td>default = State.CMP_ALWAYS</td></tr>
-    <tr><td>o3d.StencilReference</td><td>ParamInteger 0-255</td>
+    <tr><td>o3d.AlphaComparisonFunction</td><td>ParamInteger,
+        State.Comparison</td><td>default = State.CMP_ALWAYS</td></tr>
+    <tr><td>o3d.AlphaReference</td><td>ParamFloat 0-1</td>
         <td>default = 0</td></tr>
-    <tr><td>o3d.StencilMask</td><td>ParamInteger 0-255</td>
-        <td>default = 255</td></tr>
-    <tr><td>o3d.StencilWriteMask</td><td>ParamInteger 0-255</td>
-        <td>default = 255</td></tr>
-    <tr><td>o3d.ColorWriteEnable</td>
-        <td>ParamInteger 0-15 bit 0 = red, bit 1 = green,
-        bit 2 = blue, bit 3 = alpha</td><td>default = 15</td></tr>
+    <tr><td>o3d.AlphaTestEnable</td><td>ParamBoolean</td>
+        <td>default = false</td></tr>
+    <tr><td>o3d.BlendAlphaEquation</td>
+        <td>ParamInteger, State.BlendingEquation</td>
+        <td>default = State.BLEND_ADD</td></tr>
     <tr><td>o3d.BlendEquation</td>
         <td>ParamInteger, State.BlendingEquation</td>
         <td>default = State.BLEND_ADD</td></tr>
-    <tr><td>o3d.TwoSidedStencilEnable</td><td>ParamBoolean</td>
-        <td>default = false</td></tr>
+    <tr><td>o3d.CCWStencilComparisonFunction</td>
+        <td>ParamInteger, State.Comparison</td>
+        <td>default = State.CMP_ALWAYS</td></tr>
     <tr><td>o3d.CCWStencilFailOperation</td>
-        <td>ParamInteger, State.StencilOperation</td>
-        <td>default = State.STENCIL_KEEP</td></tr>
-    <tr><td>o3d.CCWStencilZFailOperation</td>
         <td>ParamInteger, State.StencilOperation</td>
         <td>default = State.STENCIL_KEEP</td></tr>
     <tr><td>o3d.CCWStencilPassOperation</td>
         <td>ParamInteger, State.StencilOperation</td>
         <td>default = State.STENCIL_KEEP</td></tr>
-    <tr><td>o3d.CCWStencilComparisonFunction</td>
-        <td>ParamInteger, State.Comparison</td>
-        <td>default = State.CMP_ALWAYS</td></tr>
+    <tr><td>o3d.CCWStencilZFailOperation</td>
+        <td>ParamInteger, State.StencilOperation</td>
+        <td>default = State.STENCIL_KEEP</td></tr>
+    <tr><td>o3d.ColorWriteEnable</td>
+        <td>ParamInteger 0-15 bit 0 = red, bit 1 = green,
+        bit 2 = blue, bit 3 = alpha</td><td>default = 15</td></tr>
+    <tr><td>o3d.CullMode</td><td>ParamInteger, State.Cull</td>
+        <td>default = State.CULL_CW</td></tr>
+    <tr><td>o3d.DestinationBlendAlphaFunction</td>
+        <td>ParamInteger, State.BlendingFunction</td>
+        <td>default = State.BLENDFUNC_ZERO</td></tr>
+    <tr><td>o3d.DestinationBlendFunction</td>
+        <td>ParamInteger, State.BlendingFunction</td>
+        <td>default = State.BLENDFUNC_ZERO</td></tr>
+    <tr><td>o3d.DitherEnable</td><td>ParamBoolean</td>
+        <td>default = false</td></tr>
+    <tr><td>o3d.FillMode</td><td>ParamInteger, State.Fill</td>
+        <td>default = State.SOLID</td></tr>
+    <tr><td>o3d.LineSmoothEnable</td><td>ParamBoolean</td>
+        <td>default = false</td></tr>
+    <tr><td>o3d.PointSize</td><td>ParamFloat</td><td>TBD</td></tr>
+    <tr><td>o3d.PointSpriteEnable</td><td>ParamBoolean</td>
+        <td>default = false</td></tr>
+    <tr><td>o3d.PolygonOffset1</td>
+        <td>ParamFloat, polygon offset slope factor<td>0</td></tr>
+    <tr><td>o3d.PolygonOffset2</td><td>ParamFloat, polygon offset bias (in
+        resolvable units)<td>0</td></tr>
     <tr><td>o3d.SeparateAlphaBlendEnable</td><td>ParamBoolean</td>
         <td>default = false;</td></tr>
     <tr><td>o3d.SourceBlendAlphaFunction</td>
         <td>ParamInteger, State.BlendingFunction</td>
         <td>default = State.BLENDFUNC_ONE</td></tr>
-    <tr><td>o3d.DestinationBlendAlphaFunction</td>
+    <tr><td>o3d.SourceBlendFunction</td>
         <td>ParamInteger, State.BlendingFunction</td>
-        <td>default = State.BLENDFUNC_ZERO</td></tr>
-    <tr><td>o3d.BlendAlphaEquation</td>
-        <td>ParamInteger, State.BlendingEquation</td>
-        <td>default = State.BLEND_ADD</td></tr>
+        <td>default = State.BLENDFUNC_ONE</td></tr>
+    <tr><td>o3d.StencilComparisonFunction</td>
+        <td>ParamInteger, State.Comparison</td>
+        <td>default = State.CMP_ALWAYS</td></tr>
+    <tr><td>o3d.StencilEnable</td><td>ParamBoolean</td>
+        <td>default = false</td></tr>
+    <tr><td>o3d.StencilFailOperation</td>
+        <td>ParamInteger, State.StencilOperation</td>
+        <td>default = State.STENCIL_KEEP</td></tr>
+    <tr><td>o3d.StencilMask</td><td>ParamInteger 0-255</td>
+        <td>default = 255</td></tr>
+    <tr><td>o3d.StencilPassOperation</td>
+        <td>ParamInteger, State.StencilOperation</td>
+        <td>default = State.STENCIL_KEEP</td></tr>
+    <tr><td>o3d.StencilReference</td><td>ParamInteger 0-255</td>
+        <td>default = 0</td></tr>
+    <tr><td>o3d.StencilWriteMask</td><td>ParamInteger 0-255</td>
+        <td>default = 255</td></tr>
+    <tr><td>o3d.StencilZFailOperation</td>
+        <td>ParamInteger, State.StencilOperation</td>
+        <td>default = State.STENCIL_KEEP</td></tr>
+    <tr><td>o3d.TwoSidedStencilEnable</td><td>ParamBoolean</td>
+        <td>default = false</td></tr>
+    <tr><td>o3d.ZComparisonFunction</td>
+        <td>ParamInteger, State.Comparison</td>
+        <td>default = State.CMP_LESS</td></tr>
+    <tr><td>o3d.ZEnable</td><td>ParamBoolean</td>
+        <td>default = true</td></tr>
+    <tr><td>o3d.ZWriteEnable</td><td>ParamBoolean</td>
+        <td>default = true</td></tr>
     </table>
 
     Note: Polygon offset is computed with the following formula:
