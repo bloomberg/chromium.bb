@@ -88,6 +88,9 @@ extern int NaClMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
 extern int ZygoteMain(const MainFunctionParams&);
+#ifdef NACL_WIN64
+extern int NaClBrokerMain(const MainFunctionParams&);
+#endif
 
 #if defined(OS_WIN)
 // TODO(erikkay): isn't this already defined somewhere?

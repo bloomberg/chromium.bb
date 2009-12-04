@@ -33,6 +33,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
 
   // Initialize the sandbox services.
   sandbox::SandboxInterfaceInfo sandbox_info = {0};
+#ifndef _WIN64  // Sandbox does not support Win64 yet - remove when it does
   sandbox_info.broker_services = sandbox::SandboxFactory::GetBrokerServices();
   if (!sandbox_info.broker_services)
     sandbox_info.target_services = sandbox::SandboxFactory::GetTargetServices();
@@ -41,7 +42,7 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE, wchar_t*, int) {
     // Enforces strong DEP support. Vista uses the NXCOMPAT flag in the exe.
     sandbox::SetCurrentProcessDEP(sandbox::DEP_ENABLED);
   }
-
+#endif  // _WIN64
   // Load and launch the chrome dll. *Everything* happens inside.
   MainDllLoader* loader = MakeMainDllLoader();
   int rc = loader->Launch(instance, &sandbox_info);
