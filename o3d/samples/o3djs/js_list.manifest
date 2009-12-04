@@ -39,7 +39,6 @@
   'event.js',
   'fps.js',
   'io.js',
-  'lineprimitives.js',
   'loader.js',
   'material.js',
   'math.js',
@@ -48,6 +47,7 @@
   'performance.js',
   'picking.js',
   'primitives.js',
+  'lineprimitives.js',  # lineprimitives.js must come after primitives.js
   'quaternions.js',
   'rendergraph.js',
   'scene.js',
