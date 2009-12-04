@@ -339,6 +339,9 @@ class MetricsService : public NotificationObserver,
   // Records a renderer process crash.
   void LogRendererCrash();
 
+  // Records an extension renderer process crash.
+  void LogExtensionRendererCrash();
+
   // Records a renderer process hang.
   void LogRendererHang();
 

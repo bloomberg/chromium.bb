@@ -812,10 +812,16 @@ void BrowserRenderProcessHost::OnChannelError() {
   bool did_crash =
       child_process_.get() ? child_process_->DidProcessCrash() : false;
 
+  if (did_crash) {
+    UMA_HISTOGRAM_PERCENTAGE("BrowserRenderProcessHost.ChildCrashes",
+                             extension_process_ ? 2 : 1);
+  }
+
+  RendererClosedDetails details(did_crash, extension_process_);
   NotificationService::current()->Notify(
       NotificationType::RENDERER_PROCESS_CLOSED,
       Source<RenderProcessHost>(this),
-      Details<bool>(&did_crash));
+      Details<RendererClosedDetails>(&details));
 
   WebCacheManager::GetInstance()->Remove(id());
   child_process_.reset();

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_path.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
@@ -183,6 +184,7 @@ void ChildProcessHost::OnChildDied() {
       OnProcessCrashed();
       // Report that this child process crashed.
       Notify(NotificationType::CHILD_PROCESS_CRASHED);
+      UMA_HISTOGRAM_COUNTS("ChildProcess.Crashes", this->type());
     }
     // Notify in the main loop of the disconnection.
     Notify(NotificationType::CHILD_PROCESS_HOST_DISCONNECTED);

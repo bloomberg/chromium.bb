@@ -447,10 +447,22 @@ void MetricsLog::WriteRealtimeStabilityAttributes(PrefService* pref) {
     pref->SetInteger(prefs::kStabilityRendererCrashCount, 0);
   }
 
+  count = pref->GetInteger(prefs::kStabilityExtensionRendererCrashCount);
+  if (count) {
+    WriteIntAttribute("extensionrenderercrashcount", count);
+    pref->SetInteger(prefs::kStabilityExtensionRendererCrashCount, 0);
+  }
+
   count = pref->GetInteger(prefs::kStabilityRendererHangCount);
   if (count) {
     WriteIntAttribute("rendererhangcount", count);
     pref->SetInteger(prefs::kStabilityRendererHangCount, 0);
+  }
+
+  count = pref->GetInteger(prefs::kStabilityChildProcessCrashCount);
+  if (count) {
+    WriteIntAttribute("childprocesscrashcount", count);
+    pref->SetInteger(prefs::kStabilityChildProcessCrashCount, 0);
   }
 }
 

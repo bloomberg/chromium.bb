@@ -366,6 +366,10 @@ const wchar_t kStabilityPageLoadCount[] =
 const wchar_t kStabilityRendererCrashCount[] =
     L"user_experience_metrics.stability.renderer_crash_count";
 
+// Number of times an extension renderer process crashed since the last report.
+const wchar_t kStabilityExtensionRendererCrashCount[] =
+    L"user_experience_metrics.stability.extension_renderer_crash_count";
+
 // Time when the app was last launched, in seconds since the epoch.
 const wchar_t kStabilityLaunchTimeSec[] =
     L"user_experience_metrics.stability.launch_time_sec";
@@ -388,6 +392,12 @@ const wchar_t kStabilityPluginStats[] =
 // report.
 const wchar_t kStabilityRendererHangCount[] =
     L"user_experience_metrics.stability.renderer_hang_count";
+
+// Total number of child process crashes (other than renderer / extension
+// renderer ones, and plugin children, which are counted separately) since the
+// last report.
+const wchar_t kStabilityChildProcessCrashCount[] =
+    L"user_experience_metrics.stability.child_process_crash_count";
 
 // Number of times the browser has been able to register crash reporting.
 const wchar_t kStabilityBreakpadRegistrationSuccess[] =

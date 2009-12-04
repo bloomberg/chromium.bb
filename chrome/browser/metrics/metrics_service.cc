@@ -331,7 +331,10 @@ void MetricsService::RegisterPrefs(PrefService* local_state) {
                                    0);
   local_state->RegisterIntegerPref(prefs::kStabilityPageLoadCount, 0);
   local_state->RegisterIntegerPref(prefs::kStabilityRendererCrashCount, 0);
+  local_state->RegisterIntegerPref(prefs::kStabilityExtensionRendererCrashCount,
+                                   0);
   local_state->RegisterIntegerPref(prefs::kStabilityRendererHangCount, 0);
+  local_state->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
   local_state->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationFail,
                                    0);
   local_state->RegisterIntegerPref(prefs::kStabilityBreakpadRegistrationSuccess,
@@ -558,8 +561,17 @@ void MetricsService::Observe(NotificationType type,
       break;
 
     case NotificationType::RENDERER_PROCESS_CLOSED:
-      if (*Details<bool>(details).ptr())
-        LogRendererCrash();
+      {
+        RenderProcessHost::RendererClosedDetails* process_details =
+            Details<RenderProcessHost::RendererClosedDetails>(details).ptr();
+        if (process_details->did_crash) {
+          if (process_details->was_extension_renderer) {
+            LogExtensionRendererCrash();
+          } else {
+            LogRendererCrash();
+          }
+        }
+      }
       break;
 
     case NotificationType::RENDERER_PROCESS_HANG:
@@ -1665,6 +1677,10 @@ void MetricsService::LogRendererCrash() {
   IncrementPrefValue(prefs::kStabilityRendererCrashCount);
 }
 
+void MetricsService::LogExtensionRendererCrash() {
+  IncrementPrefValue(prefs::kStabilityExtensionRendererCrashCount);
+}
+
 void MetricsService::LogRendererHang() {
   IncrementPrefValue(prefs::kStabilityRendererHangCount);
 }
@@ -1675,7 +1691,6 @@ void MetricsService::LogChildProcessChange(
     const NotificationDetails& details) {
   Details<ChildProcessInfo> child_details(details);
   const std::wstring& child_name = child_details->name();
-
 
   if (child_process_stats_buffer_.find(child_name) ==
       child_process_stats_buffer_.end()) {
@@ -1695,6 +1710,11 @@ void MetricsService::LogChildProcessChange(
 
     case NotificationType::CHILD_PROCESS_CRASHED:
       stats.process_crashes++;
+      // Exclude plugin crashes from the count below because we report them via
+      // a separate UMA metric.
+      if (child_details->type() != ChildProcessInfo::PLUGIN_PROCESS) {
+        IncrementPrefValue(prefs::kStabilityChildProcessCrashCount);
+      }
       break;
 
     default:

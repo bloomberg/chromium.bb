@@ -46,6 +46,16 @@ class RenderProcessHost : public IPC::Channel::Sender,
     TYPE_EXTENSION,  // Renderer with extension privileges.
   };
 
+  // Details for RENDERER_PROCESS_CLOSED notifications.
+  struct RendererClosedDetails {
+    RendererClosedDetails(bool did_crash, bool was_extension_renderer) {
+      this->did_crash = did_crash;
+      this->was_extension_renderer = was_extension_renderer;
+    }
+    bool did_crash;
+    bool was_extension_renderer;
+  };
+
   explicit RenderProcessHost(Profile* profile);
   virtual ~RenderProcessHost();
 
