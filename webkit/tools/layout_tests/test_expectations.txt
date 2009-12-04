@@ -2207,7 +2207,7 @@ BUG12030 MAC RELEASE : LayoutTests/plugins/embed-attributes-style.html = IMAGE
 // BUG23557 MAC : LayoutTests/fast/text/text-letter-spacing.html = IMAGE
 
 // Failing on the bots but not locally; need investigation
-BUG23560 MAC RELEASE : LayoutTests/fast/images/animated-svg-as-image.html = FAIL PASS
+BUG23560 MAC : LayoutTests/fast/images/animated-svg-as-image.html = IMAGE PASS
 BUG23560 MAC : LayoutTests/svg/W3C-SVG-1.1/filters-conv-01-f.svg = FAIL
 
 // This begin crashing some of the time after Webkit merge to r49997
