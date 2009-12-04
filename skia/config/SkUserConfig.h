@@ -138,6 +138,12 @@ void SkDebugf_FileLine(const char* file, int line, bool fatal,
     "%s:%d: failed assertion \"%s\"\n", \
     __FILE__, __LINE__, #cond); } } while (false)
 
+// All little-endian Chrome platforms agree:  BGRA is the optimal pixel layout.
+#define SK_A32_SHIFT    24
+#define SK_R32_SHIFT    16
+#define SK_G32_SHIFT    8
+#define SK_B32_SHIFT    0
+
 #if defined(SK_BUILD_FOR_WIN32)
 
 #define SK_BUILD_FOR_WIN
@@ -150,10 +156,6 @@ typedef short int16_t;
 typedef unsigned short uint16_t;
 typedef int int32_t;
 typedef unsigned uint32_t;
-#define SK_A32_SHIFT    24
-#define SK_R32_SHIFT    16
-#define SK_G32_SHIFT    8
-#define SK_B32_SHIFT    0
 
 // VC doesn't support __restrict__, so make it a NOP.
 #undef SK_RESTRICT
@@ -166,20 +168,11 @@ typedef unsigned uint32_t;
 
 #define SK_CPU_LENDIAN
 #undef  SK_CPU_BENDIAN
-// we want (memory order) BGRA, because that's what core image uses with
-// kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host, which is what
-// Apple recommends for best performance (ARGB becomes BGRA in memory on
-// little-endian) -- and we want skia and coregraphic to have matching memory
-// layouts, so that we don't have to spend time converting between them.
-#define SK_A32_SHIFT    24
-#define SK_R32_SHIFT    16
-#define SK_G32_SHIFT    8
-#define SK_B32_SHIFT    0
 
 #elif defined(SK_BUILD_FOR_UNIX)
 
 #ifdef SK_CPU_BENDIAN
-// Below we set the order for ARGB channels in registers. I suspect that, on
+// Above we set the order for ARGB channels in registers. I suspect that, on
 // big endian machines, you can keep this the same and everything will work.
 // The in-memory order will be different, of course, but as long as everything
 // is reading memory as words rather than bytes, it will all work. However, if
@@ -189,19 +182,15 @@ typedef unsigned uint32_t;
 #error Read the comment at this location
 #endif
 
-// For Linux we want to match the most common X visual, which is
-// ARGB (in registers)
-#define SK_A32_SHIFT 24
-#define SK_R32_SHIFT 16
-#define SK_G32_SHIFT 8
-#define SK_B32_SHIFT 0
-
 #endif
 
 // The default crash macro writes to badbeef which can cause some strange
 // problems. Instead, pipe this through to the logging function as a fatal
 // assertion.
 #define SK_CRASH() SkDebugf_FileLine(__FILE__, __LINE__, true, "SK_CRASH")
+
+// Enable the use of the SkEdgeBuilder class.
+#define USE_NEW_BUILDER 1
 
 // ===== End Chrome-specific definitions =====
 

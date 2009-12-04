@@ -221,6 +221,8 @@
         '../third_party/skia/src/core/SkDraw.cpp',
         '../third_party/skia/src/core/SkDrawProcs.h',
         #'../third_party/skia/src/core/SkDrawing.cpp',
+        '../third_party/skia/src/core/SkEdgeBuilder.cpp',
+        '../third_party/skia/src/core/SkEdgeClipper.cpp',
         '../third_party/skia/src/core/SkEdge.cpp',
         '../third_party/skia/src/core/SkEdge.h',
         '../third_party/skia/src/core/SkFP.h',
