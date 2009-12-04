@@ -77,6 +77,18 @@ class TabStripModelObserverBridge;
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
   CGFloat verticalOffsetForStatusBubble_;
+
+  // The total amount by which we've grown the window up or down (to display a
+  // bookmark bar and/or download shelf), respectively; reset to 0 when moved
+  // away from the bottom/top or resized (or zoomed).
+  CGFloat windowTopGrowth_;
+  CGFloat windowBottomGrowth_;
+
+  // YES only if we're shrinking the window from an apparent zoomed state (which
+  // we'll only do if we grew it to the zoomed state); needed since we'll then
+  // restrict the amount of shrinking by the amounts specified above. Reset to
+  // NO on growth.
+  BOOL isShrinkingFromZoomed_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
@@ -171,12 +183,9 @@ class TabStripModelObserverBridge;
 // tab's sheet queue.
 - (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
 
-// Delegate method called when window is resized.
-- (void)windowDidResize:(NSNotification*)notification;
-
 @end
 
-
+// Methods which are either only for testing, or only public for testing.
 @interface BrowserWindowController(TestingAPI)
 
 // Put the incognito badge on the browser and adjust the tab strip
@@ -201,6 +210,10 @@ class TabStripModelObserverBridge;
 
 // Return a point suitable for the topLeft for a bookmark bubble.
 - (NSPoint)topLeftForBubble;
+
+// Resets any saved state about window growth (due to showing the bookmark bar
+// or the download shelf), so that future shrinking will occur from the bottom.
+- (void)resetWindowGrowthState;
 
 @end  // BrowserWindowController(TestingAPI)
 

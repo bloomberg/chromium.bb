@@ -199,34 +199,53 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
   NSRect workarea = [[window screen] visibleFrame];
 
   // Place the window well above the bottom of the screen and try to adjust its
-  // height.
+  // height. It should change appropriately (and only downwards). Then get it to
+  // shrink by the same amount; it should return to its original state.
   NSRect initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y + 100,
                                    200, 200);
   [window setFrame:initialFrame display:YES];
+  [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
   NSRect finalFrame = [window frame];
   EXPECT_FALSE(NSEqualRects(finalFrame, initialFrame));
+  EXPECT_FLOAT_EQ(NSMaxY(finalFrame), NSMaxY(initialFrame));
   EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame) + 40);
+  [controller_ adjustWindowHeightBy:-40];
+  finalFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMaxY(finalFrame), NSMaxY(initialFrame));
+  EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame));
 
   // Place the window at the bottom of the screen and try again.  Its height
-  // should still change, but it should not grow down below the work area.
+  // should still change, but it should not grow down below the work area; it
+  // should instead move upwards. Then shrink it and make sure it goes back to
+  // the way it was.
   initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y, 200, 200);
   [window setFrame:initialFrame display:YES];
+  [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
+  finalFrame = [window frame];
   EXPECT_FALSE(NSEqualRects(finalFrame, initialFrame));
-  EXPECT_GE(NSMinY(finalFrame), NSMinY(initialFrame));
+  EXPECT_FLOAT_EQ(NSMinY(finalFrame), NSMinY(initialFrame));
   EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame) + 40);
+  [controller_ adjustWindowHeightBy:-40];
+  finalFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMinY(finalFrame), NSMinY(initialFrame));
+  EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame));
 
-  // Move the window slightly offscreen and try again.  The height should not
+  // Put the window slightly offscreen and try again.  The height should not
   // change this time.
   initialFrame = NSMakeRect(workarea.origin.x - 10, 0, 200, 200);
   [window setFrame:initialFrame display:YES];
+  [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
+  EXPECT_TRUE(NSEqualRects([window frame], initialFrame));
+  [controller_ adjustWindowHeightBy:-40];
   EXPECT_TRUE(NSEqualRects([window frame], initialFrame));
 
   // Make the window the same size as the workarea.  Resizing both larger and
   // smaller should have no effect.
   [window setFrame:workarea display:YES];
+  [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
   EXPECT_TRUE(NSEqualRects([window frame], workarea));
   [controller_ adjustWindowHeightBy:-40];
@@ -234,21 +253,71 @@ TEST_F(BrowserWindowControllerTest, TestAdjustWindowHeight) {
 
   // Make the window smaller than the workarea and place it near the bottom of
   // the workarea.  The window should grow down until it hits the bottom and
-  // then continue to grow up.
+  // then continue to grow up. Then shrink it, and it should return to where it
+  // was.
   initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y + 5,
                             200, 200);
   [window setFrame:initialFrame display:YES];
+  [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
   finalFrame = [window frame];
-  EXPECT_EQ(NSMinY(workarea), NSMinY(finalFrame));
+  EXPECT_FLOAT_EQ(NSMinY(workarea), NSMinY(finalFrame));
   EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame) + 40);
+  [controller_ adjustWindowHeightBy:-40];
+  finalFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMinY(initialFrame), NSMinY(finalFrame));
+  EXPECT_FLOAT_EQ(NSHeight(initialFrame), NSHeight(finalFrame));
 
   // Inset the window slightly from the workarea.  It should not grow to be
-  // larger than the workarea.
+  // larger than the workarea. Shrink it; it should return to where it started.
   initialFrame = NSInsetRect(workarea, 0, 5);
   [window setFrame:initialFrame display:YES];
+  [controller_ resetWindowGrowthState];
   [controller_ adjustWindowHeightBy:40];
-  EXPECT_EQ(NSHeight(workarea), NSHeight([window frame]));
+  finalFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMinY(workarea), NSMinY(finalFrame));
+  EXPECT_FLOAT_EQ(NSHeight(workarea), NSHeight(finalFrame));
+  [controller_ adjustWindowHeightBy:-40];
+  finalFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMinY(initialFrame), NSMinY(finalFrame));
+  EXPECT_FLOAT_EQ(NSHeight(initialFrame), NSHeight(finalFrame));
+
+  // Place the window at the bottom of the screen and grow; it should grow
+  // upwards. Move the window off the bottom, then shrink. It should then shrink
+  // from the bottom.
+  initialFrame = NSMakeRect(workarea.origin.x, workarea.origin.y, 200, 200);
+  [window setFrame:initialFrame display:YES];
+  [controller_ resetWindowGrowthState];
+  [controller_ adjustWindowHeightBy:40];
+  finalFrame = [window frame];
+  EXPECT_FALSE(NSEqualRects(finalFrame, initialFrame));
+  EXPECT_FLOAT_EQ(NSMinY(finalFrame), NSMinY(initialFrame));
+  EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame) + 40);
+  NSPoint oldOrigin = initialFrame.origin;
+  NSPoint newOrigin = NSMakePoint(oldOrigin.x, oldOrigin.y + 10);
+  [window setFrameOrigin:newOrigin];
+  initialFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMinY(initialFrame), oldOrigin.y + 10);
+  [controller_ adjustWindowHeightBy:-40];
+  finalFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMinY(finalFrame), NSMinY(initialFrame) + 40);
+  EXPECT_FLOAT_EQ(NSHeight(finalFrame), NSHeight(initialFrame) - 40);
+
+  // Do the "inset" test above, but using multiple calls to
+  // |-adjustWindowHeightBy|; the result should be the same.
+  initialFrame = NSInsetRect(workarea, 0, 5);
+  [window setFrame:initialFrame display:YES];
+  [controller_ resetWindowGrowthState];
+  for (int i = 0; i < 8; i++)
+    [controller_ adjustWindowHeightBy:5];
+  finalFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMinY(workarea), NSMinY(finalFrame));
+  EXPECT_FLOAT_EQ(NSHeight(workarea), NSHeight(finalFrame));
+  for (int i = 0; i < 8; i++)
+    [controller_ adjustWindowHeightBy:-5];
+  finalFrame = [window frame];
+  EXPECT_FLOAT_EQ(NSMinY(initialFrame), NSMinY(finalFrame));
+  EXPECT_FLOAT_EQ(NSHeight(initialFrame), NSHeight(finalFrame));
 }
 
 // Test to make sure resizing and relaying-out subviews works correctly.

@@ -51,6 +51,47 @@
 #include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
+// Notes on self-inflicted (not user-inflicted) window resizing and moving:
+//
+// When the bookmark bar goes from hidden to shown (on a non-NTP) page, or when
+// the download shelf goes from hidden to shown, we grow the window downwards in
+// order to maintain a constant content area size. When either goes from shown
+// to hidden, we consequently shrink the window from the bottom, also to keep
+// the content area size constant. To keep things simple, if the window is not
+// entirely on-screen, we don't grow/shrink the window.
+//
+// The complications come in when there isn't enough room (on screen) below the
+// window to accomodate the growth. In this case, we grow the window first
+// downwards, and then upwards. So, when it comes to shrinking, we do the
+// opposite: shrink from the top by the amount by which we grew at the top, and
+// then from the bottom -- unless the user moved/resized/zoomed the window, in
+// which case we "reset state" and just shrink from the bottom.
+//
+// A further complication arises due to the way in which "zoom" ("maximize")
+// works on Mac OS X. Basically, for our purposes, a window is "zoomed" whenever
+// it occupies the full available vertical space. (Note that the green zoom
+// button does not track zoom/unzoomed state per se, but basically relies on
+// this heuristic.) We don't, in general, want to shrink the window if the
+// window is zoomed (scenario: window is zoomed, download shelf opens -- which
+// doesn't cause window growth, download shelf closes -- shouldn't cause the
+// window to become unzoomed!). However, if we grew the window
+// (upwards/downwards) to become zoomed in the first place, we *should* shrink
+// the window by the amounts by which we grew (scenario: window occupies *most*
+// of vertical space, download shelf opens causing growth so that window
+// occupies all of vertical space -- i.e., window is effectively zoomed,
+// download shelf closes -- should return the window to its previous state).
+//
+// A major complication is caused by the way grows/shrinks are handled and
+// animated. Basically, the BWC doesn't see the global picture, but it sees
+// grows and shrinks in small increments (as dictated by the animation). Thus
+// window growth/shrinkage (at the top/bottom) have to be tracked incrementally.
+// Allowing shrinking from the zoomed state also requires tracking: We check on
+// any shrink whether we're both zoomed and have previously grown -- if so, we
+// set a flag, and constrain any resize by the allowed amounts. On further
+// shrinks, we check the flag (since the size/position of the window will no
+// longer indicate that the window is shrinking from an apparent zoomed state)
+// and if it's set we continue to constrain the resize.
+
 @interface GTMTheme (BrowserThemeProviderInitialization)
 + (GTMTheme*)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
                             isOffTheRecord:(BOOL)offTheRecord;
@@ -397,6 +438,9 @@ willPositionSheet:(NSWindow*)sheet
 // the user size.
 - (NSRect)windowWillUseStandardFrame:(NSWindow*)window
                         defaultFrame:(NSRect)frame {
+  // Forget that we grew the window up (if we in fact did).
+  [self resetWindowGrowthState];
+
   // |frame| already fills the current screen. Never touch y and height since we
   // always want to fill vertically.
 
@@ -505,26 +549,85 @@ willPositionSheet:(NSWindow*)sheet
   if (!NSContainsRect(workarea, windowFrame))
     return;
 
-  // If the window spans the full height of the current workspace, do not adjust
-  // its frame at all.
-  if (windowFrame.origin.y == workarea.origin.y &&
-      windowFrame.size.height == workarea.size.height)
-    return;
+  // Record the position of the top/bottom of the window, so we can easily check
+  // whether we grew the window upwards/downwards.
+  CGFloat oldWindowMaxY = NSMaxY(windowFrame);
+  CGFloat oldWindowMinY = NSMinY(windowFrame);
 
-  // Resize the window down until it hits the bottom of the workarea, then if
-  // needed continue resizing upwards.  Do not resize the window to be taller
-  // than the current workarea.
-  // Resize the window as requested, keeping the top left corner fixed.
-  windowFrame.origin.y -= deltaH;
-  windowFrame.size.height += deltaH;
+  // We are "zoomed" if we occupy the full vertical space.
+  bool isZoomed = (windowFrame.origin.y == workarea.origin.y &&
+                   windowFrame.size.height == workarea.size.height);
 
-  // If the bottom left corner is now outside the visible frame, move the window
-  // up to make it fit, but make sure not to move the top left corner out of the
-  // visible frame.
-  if (windowFrame.origin.y < workarea.origin.y) {
-    windowFrame.origin.y = workarea.origin.y;
-    windowFrame.size.height =
-        std::min(windowFrame.size.height, workarea.size.height);
+  // If we're shrinking the window....
+  if (deltaH < 0) {
+    bool didChange = false;
+
+    // Don't reset if not currently zoomed since shrinking can take several
+    // steps!
+    if (isZoomed)
+      isShrinkingFromZoomed_ = YES;
+
+    // If we previously grew at the top, shrink as much as allowed at the top
+    // first.
+    if (windowTopGrowth_ > 0) {
+      CGFloat shrinkAtTopBy = MIN(-deltaH, windowTopGrowth_);
+      windowFrame.size.height -= shrinkAtTopBy;  // Shrink the window.
+      deltaH += shrinkAtTopBy;            // Update the amount left to shrink.
+      windowTopGrowth_ -= shrinkAtTopBy;  // Update the growth state.
+      didChange = true;
+    }
+
+    // Similarly for the bottom (not an "else if" since we may have to
+    // simultaneously shrink at both the top and at the bottom). Note that
+    // |deltaH| may no longer be nonzero due to the above.
+    if (deltaH < 0 && windowBottomGrowth_ > 0) {
+      CGFloat shrinkAtBottomBy = MIN(-deltaH, windowBottomGrowth_);
+      windowFrame.origin.y += shrinkAtBottomBy;     // Move the window up.
+      windowFrame.size.height -= shrinkAtBottomBy;  // Shrink the window.
+      deltaH += shrinkAtBottomBy;               // Update the amount left....
+      windowBottomGrowth_ -= shrinkAtBottomBy;  // Update the growth state.
+      didChange = true;
+    }
+
+    // If we're shrinking from zoomed but we didn't change the top or bottom
+    // (since we've reached the limits imposed by |window...Growth_|), then stop
+    // here. Don't reset |isShrinkingFromZoomed_| since we might get called
+    // again for the same shrink.
+    if (isShrinkingFromZoomed_ && !didChange)
+      return;
+  } else {
+    isShrinkingFromZoomed_ = NO;
+
+    // Don't bother with anything else.
+    if (isZoomed)
+      return;
+  }
+
+  // Shrinking from zoomed is handled above (and is constrained by
+  // |window...Growth_|).
+  if (!isShrinkingFromZoomed_) {
+    // Resize the window down until it hits the bottom of the workarea, then if
+    // needed continue resizing upwards.  Do not resize the window to be taller
+    // than the current workarea.
+    // Resize the window as requested, keeping the top left corner fixed.
+    windowFrame.origin.y -= deltaH;
+    windowFrame.size.height += deltaH;
+
+    // If the bottom left corner is now outside the visible frame, move the
+    // window up to make it fit, but make sure not to move the top left corner
+    // out of the visible frame.
+    if (windowFrame.origin.y < workarea.origin.y) {
+      windowFrame.origin.y = workarea.origin.y;
+      windowFrame.size.height =
+          std::min(windowFrame.size.height, workarea.size.height);
+    }
+
+    // Record (if applicable) how much we grew the window in either direction.
+    // (N.B.: These only record growth, not shrinkage.)
+    if (NSMaxY(windowFrame) > oldWindowMaxY)
+      windowTopGrowth_ += NSMaxY(windowFrame) - oldWindowMaxY;
+    if (NSMinY(windowFrame) < oldWindowMinY)
+      windowBottomGrowth_ += oldWindowMinY - NSMinY(windowFrame);
   }
 
   // Disable subview resizing while resizing the window, or else we will get
@@ -1231,7 +1334,6 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
-
 // Delegate method called when window is resized.
 - (void)windowDidResize:(NSNotification*)notification {
   // Resize (and possibly move) the status bubble. Note that we may get called
@@ -1239,6 +1341,35 @@ willPositionSheet:(NSWindow*)sheet
   if (statusBubble_) {
     statusBubble_->UpdateSizeAndPosition();
   }
+}
+
+// Delegate method called when window did move. (See below for why we don't use
+// |-windowWillMove:|, which is called less frequently than |-windowDidMove|
+// instead.)
+- (void)windowDidMove:(NSNotification*)notification {
+  NSWindow* window = [self window];
+  NSRect windowFrame = [window frame];
+  NSRect workarea = [[window screen] visibleFrame];
+
+  // We reset the window growth state whenever the window is moved out of the
+  // work area or away (up or down) from the bottom or top of the work area.
+  // Unfortunately, Cocoa sends |-windowWillMove:| too frequently (including
+  // when clicking on the title bar to activate), and of course
+  // |-windowWillMove| is called too early for us to apply our heuristic. (The
+  // heuristic we use for detecting window movement is that if |windowTopGrowth_
+  // > 0|, then we should be at the bottom of the work area -- if we're not,
+  // we've moved. Similarly for the other side.)
+  if (!NSContainsRect(workarea, windowFrame) ||
+      (windowTopGrowth_ > 0 && NSMinY(windowFrame) != NSMinY(workarea)) ||
+      (windowBottomGrowth_ > 0 && NSMaxY(windowFrame) != NSMaxY(workarea)))
+    [self resetWindowGrowthState];
+}
+
+// Delegate method called when window will be resized; not called for
+// |-setFrame:display:|.
+- (NSSize)windowWillResize:(NSWindow*)sender toSize:(NSSize)frameSize {
+  [self resetWindowGrowthState];
+  return frameSize;
 }
 
 // (Needed for |BookmarkBarControllerDelegate| protocol.)
@@ -1259,6 +1390,13 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
   [self adjustToolbarAndBookmarkBarForCompression:
           [controller getDesiredToolbarHeightCompression]];
+}
+
+// (Private/TestingAPI)
+- (void)resetWindowGrowthState {
+  windowTopGrowth_ = 0;
+  windowBottomGrowth_ = 0;
+  isShrinkingFromZoomed_ = NO;
 }
 
 @end
@@ -1562,7 +1700,7 @@ willPositionSheet:(NSWindow*)sheet
   [self layoutSubviews];
 }
 
-@end
+@end  // @implementation BrowserWindowController (Private)
 
 @implementation GTMTheme (BrowserThemeProviderInitialization)
 + (GTMTheme*)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
@@ -1721,4 +1859,3 @@ willPositionSheet:(NSWindow*)sheet
   return theme;
 }
 @end
-
