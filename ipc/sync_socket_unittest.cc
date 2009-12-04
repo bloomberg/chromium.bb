@@ -189,6 +189,11 @@ class SyncSocketClientListener : public IPC::Channel::Listener {
   // string as was written on the SyncSocket.  These are compared
   // and a shutdown message is sent back to the server.
   void OnMsgClassResponse(const std::string& str) {
+#if defined(OS_WIN)
+    // We rely on the order of sync_socket.Send() and chan_->Send() in
+    // the SyncSocketServerListener object.
+    EXPECT_EQ(kHelloStringLength, socket_->Peek());
+#endif
     char buf[kHelloStringLength];
     socket_->Receive(static_cast<void*>(buf), kHelloStringLength);
     EXPECT_EQ(strcmp(str.c_str(), buf), 0);
