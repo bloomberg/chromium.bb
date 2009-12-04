@@ -133,8 +133,6 @@
         'controls/menu/native_menu_gtk.h',
         'controls/menu/native_menu_win.cc',
         'controls/menu/native_menu_win.h',
-        'controls/menu/simple_menu_model.cc',
-        'controls/menu/simple_menu_model.h',
         'controls/menu/submenu_view.cc',
         'controls/menu/submenu_view.h',
         'controls/menu/view_menu_delegate.h',

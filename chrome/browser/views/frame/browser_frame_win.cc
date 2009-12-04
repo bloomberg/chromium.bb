@@ -125,7 +125,7 @@ gfx::Insets BrowserFrameWin::GetClientAreaInsets() const {
 }
 
 bool BrowserFrameWin::GetAccelerator(int cmd_id,
-                                     views::Accelerator* accelerator) {
+                                     menus::Accelerator* accelerator) {
   return browser_view_->GetAccelerator(cmd_id, accelerator);
 }
 

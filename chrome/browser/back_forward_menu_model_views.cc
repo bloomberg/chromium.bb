@@ -4,6 +4,7 @@
 
 #include "chrome/browser/back_forward_menu_model_views.h"
 
+#include "app/menus/menu_model.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -22,7 +23,7 @@ BackForwardMenuModelViews::BackForwardMenuModelViews(Browser* browser,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BackForwardMenuModelViews, views::Menu2Model implementation:
+// BackForwardMenuModelViews, menus::MenuModel implementation:
 
 bool BackForwardMenuModelViews::HasIcons() const {
   return true;
@@ -32,11 +33,11 @@ int BackForwardMenuModelViews::GetItemCount() const {
   return GetTotalItemCount();
 }
 
-views::Menu2Model::ItemType BackForwardMenuModelViews::GetTypeAt(
+menus::MenuModel::ItemType BackForwardMenuModelViews::GetTypeAt(
     int index) const {
   if (IsSeparator(GetCommandIdAt(index)))
-    return views::Menu2Model::TYPE_SEPARATOR;
-  return views::Menu2Model::TYPE_COMMAND;
+    return menus::MenuModel::TYPE_SEPARATOR;
+  return menus::MenuModel::TYPE_COMMAND;
 }
 
 int BackForwardMenuModelViews::GetCommandIdAt(int index) const {
@@ -53,7 +54,7 @@ bool BackForwardMenuModelViews::IsLabelDynamicAt(int index) const {
 
 bool BackForwardMenuModelViews::GetAcceleratorAt(
     int index,
-    views::Accelerator* accelerator) const {
+    menus::Accelerator* accelerator) const {
   // Look up the history accelerator.
   if (GetCommandIdAt(index) == GetTotalItemCount())
     return frame_->GetAccelerator(IDC_SHOW_HISTORY, accelerator);
@@ -80,7 +81,7 @@ bool BackForwardMenuModelViews::IsEnabledAt(int index) const {
   return true;
 }
 
-views::Menu2Model* BackForwardMenuModelViews::GetSubmenuModelAt(
+menus::MenuModel* BackForwardMenuModelViews::GetSubmenuModelAt(
     int index) const {
   return NULL;
 }

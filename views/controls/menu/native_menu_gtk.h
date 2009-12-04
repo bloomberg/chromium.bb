@@ -9,15 +9,17 @@
 
 #include "views/controls/menu/menu_wrapper.h"
 
-namespace views {
+namespace menus {
+class MenuModel;
+}
 
-class Menu2Model;
+namespace views {
 
 // A Gtk implementation of MenuWrapper.
 // TODO(beng): rename to MenuGtk once the old class is dead.
 class NativeMenuGtk : public MenuWrapper {
  public:
-  explicit NativeMenuGtk(Menu2Model* model);
+  explicit NativeMenuGtk(menus::MenuModel* model);
   virtual ~NativeMenuGtk();
 
   // Overridden from MenuWrapper:
@@ -50,7 +52,7 @@ class NativeMenuGtk : public MenuWrapper {
   // Gtk signal handlers.
   static void CallActivate(GtkMenuItem* menu_item, NativeMenuGtk* native_menu);
 
-  Menu2Model* model_;
+  menus::MenuModel* model_;
 
   GtkWidget* menu_;
 

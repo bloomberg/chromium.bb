@@ -17,7 +17,7 @@ class Widget;
 }
 
 class BackForwardMenuModelViews : public BackForwardMenuModel,
-                                  public views::Menu2Model {
+                                  public menus::MenuModel {
  public:
   // Construct a BackForwardMenuModel. |frame| is used to locate the accelerator
   // for the history item.
@@ -25,7 +25,7 @@ class BackForwardMenuModelViews : public BackForwardMenuModel,
                             ModelType model_type,
                             views::Widget* frame);
 
-  // Overridden from views::Menu2Model:
+  // Overridden from menus::MenuModel:
   virtual bool HasIcons() const;
   virtual int GetItemCount() const;
   virtual ItemType GetTypeAt(int index) const;
@@ -33,12 +33,12 @@ class BackForwardMenuModelViews : public BackForwardMenuModel,
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsLabelDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
-                                views::Accelerator* accelerator) const;
+                                menus::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
   virtual bool IsEnabledAt(int index) const;
-  virtual Menu2Model* GetSubmenuModelAt(int index) const;
+  virtual menus::MenuModel* GetSubmenuModelAt(int index) const;
   virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow();

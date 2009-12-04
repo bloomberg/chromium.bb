@@ -73,13 +73,13 @@ NetworkMenuButton::~NetworkMenuButton() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkMenuButton, views::Menu2Model implementation:
+// NetworkMenuButton, menus::MenuModel implementation:
 
 int NetworkMenuButton::GetItemCount() const {
   return static_cast<int>(menu_items_.size());
 }
 
-views::Menu2Model::ItemType NetworkMenuButton::GetTypeAt(int index) const {
+menus::MenuModel::ItemType NetworkMenuButton::GetTypeAt(int index) const {
   return menu_items_[index].type;
 }
 
@@ -88,7 +88,7 @@ string16 NetworkMenuButton::GetLabelAt(int index) const {
 }
 
 bool NetworkMenuButton::IsItemCheckedAt(int index) const {
-  // All views::Menu2Model::TYPE_CHECK menu items are checked.
+  // All menus::MenuModel::TYPE_CHECK menu items are checked.
   return true;
 }
 
@@ -349,7 +349,7 @@ void NetworkMenuButton::InitMenuItems() {
   SkBitmap icon = cros->wifi_connected() ?
       IconForWifiStrength(cros->wifi_strength()) :
       *menu_disconnected_icon_;
-  menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       icon, WifiNetwork(), FLAG_DISABLED));
 
   // Turn Wifi Off.
@@ -358,7 +358,7 @@ void NetworkMenuButton::InitMenuItems() {
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)) :
       l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
-  menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       SkBitmap(), WifiNetwork(), FLAG_TOGGLE_WIFI));
 
   // Wifi networks ssids.
@@ -366,21 +366,21 @@ void NetworkMenuButton::InitMenuItems() {
     // No networks available message.
     label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
         l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
-    menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
         SkBitmap(), WifiNetwork(), FLAG_DISABLED));
   } else {
     for (size_t i = 0; i < networks.size(); ++i) {
       label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
           ASCIIToUTF16(networks[i].ssid));
       if (networks[i].ssid == cros->wifi_ssid()) {
-        menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_CHECK, label,
+        menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_CHECK, label,
             SkBitmap(), networks[i], 0));
       } else {
-        menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+        menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
             SkBitmap(), networks[i], 0));
         // TODO(chocobo): Once we have better icons and more reliable strength
         //   data, show icons for wifi ssids.
-//        menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+//        menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
 //            IconForWifiStrength(networks[i].strength), networks[i], 0));
       }
     }
@@ -402,7 +402,7 @@ void NetworkMenuButton::InitMenuItems() {
       l10n_util::GetStringUTF16(status));
   icon = cros->ethernet_connected() ? *menu_wired_icon_ :
                                       *menu_disconnected_icon_;
-  menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       icon, WifiNetwork(), FLAG_DISABLED));
 
   // Turn Ethernet Off.
@@ -411,7 +411,7 @@ void NetworkMenuButton::InitMenuItems() {
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)) :
       l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
-  menu_items_.push_back(MenuItem(views::Menu2Model::TYPE_COMMAND, label,
+  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       SkBitmap(), WifiNetwork(), FLAG_TOGGLE_ETHERNET));
 }
 

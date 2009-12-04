@@ -9,33 +9,7 @@
 
 namespace views {
 
-////////////////////////////////////////////////////////////////////////////////
-// Menu2Model, public:
-
-// static
-bool Menu2Model::GetModelAndIndexForCommandId(int command_id,
-                                              Menu2Model** model, int* index) {
-  int item_count = (*model)->GetItemCount();
-  for (int i = 0; i < item_count; ++i) {
-    if ((*model)->GetTypeAt(i) == TYPE_SUBMENU) {
-      Menu2Model* submenu_model = (*model)->GetSubmenuModelAt(i);
-      if (GetModelAndIndexForCommandId(command_id, &submenu_model, index)) {
-        *model = submenu_model;
-        return true;
-      }
-    }
-    if ((*model)->GetCommandIdAt(i) == command_id) {
-      *index = i;
-      return true;
-    }
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Menu2, public:
-
-Menu2::Menu2(Menu2Model* model)
+Menu2::Menu2(menus::MenuModel* model)
     : model_(model),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           wrapper_(MenuWrapper::CreateWrapper(this))) {

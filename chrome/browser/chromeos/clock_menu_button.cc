@@ -106,17 +106,17 @@ void ClockMenuButton::UpdateText() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ClockMenuButton, views::Menu2Model implementation:
+// ClockMenuButton, menus::MenuModel implementation:
 
 int ClockMenuButton::GetItemCount() const {
   return 3;
 }
 
-views::Menu2Model::ItemType ClockMenuButton::GetTypeAt(int index) const {
+menus::MenuModel::ItemType ClockMenuButton::GetTypeAt(int index) const {
   // There's a separator between the current date and the menu item to open
   // the options menu.
-  return index == 1 ? views::Menu2Model::TYPE_SEPARATOR:
-                      views::Menu2Model::TYPE_COMMAND;
+  return index == 1 ? menus::MenuModel::TYPE_SEPARATOR:
+                      menus::MenuModel::TYPE_COMMAND;
 }
 
 string16 ClockMenuButton::GetLabelAt(int index) const {

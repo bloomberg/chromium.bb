@@ -29,7 +29,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/menu/menu.h"
-#include "views/controls/menu/simple_menu_model.h"
+#include "views/controls/menu/menu_2.h"
 
 namespace chromeos {
 
@@ -41,8 +41,8 @@ const int kClockSeparation = 4;
 // BrowserWindowGtk tiles its image with this offset
 const int kCustomFrameBackgroundVerticalOffset = 15;
 
-class OptionsMenuModel : public views::SimpleMenuModel,
-                         public views::SimpleMenuModel::Delegate {
+class OptionsMenuModel : public menus::SimpleMenuModel,
+                         public menus::SimpleMenuModel::Delegate {
  public:
   // These extra command IDs must be unique when combined with the options,
   // so we just pick up the numbering where that stops.
@@ -80,7 +80,7 @@ class OptionsMenuModel : public views::SimpleMenuModel,
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      views::Accelerator* accelerator) {
+      menus::Accelerator* accelerator) {
     return false;
   }
   virtual void ExecuteCommand(int command_id) {
@@ -238,7 +238,7 @@ void StatusAreaView::CreateAppMenu() {
 
   options_menu_contents_.reset(new OptionsMenuModel(browser_));
 
-  app_menu_contents_.reset(new views::SimpleMenuModel(this));
+  app_menu_contents_.reset(new menus::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   app_menu_contents_->AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
   app_menu_contents_->AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW,
@@ -291,7 +291,7 @@ bool StatusAreaView::IsCommandIdEnabled(int command_id) const {
 
 bool StatusAreaView::GetAcceleratorForCommandId(
     int command_id,
-    views::Accelerator* accelerator) {
+    menus::Accelerator* accelerator) {
   return false;
 }
 

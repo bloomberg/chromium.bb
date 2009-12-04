@@ -18,6 +18,7 @@
 #include "grit/app_strings.h"
 #include "skia/ext/skia_utils_win.h"
 #include "views/controls/menu/menu_win.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/focus/focus_manager.h"
@@ -239,7 +240,7 @@ gfx::NativeView NativeTextfieldWin::GetTestingHandle() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NativeTextfieldWin, SimpleMenuModel::Delegate implementation:
+// NativeTextfieldWin, menus::SimpleMenuModel::Delegate implementation:
 
 bool NativeTextfieldWin::IsCommandIdChecked(int command_id) const {
   return false;
@@ -259,7 +260,7 @@ bool NativeTextfieldWin::IsCommandIdEnabled(int command_id) const {
 }
 
 bool NativeTextfieldWin::GetAcceleratorForCommandId(int command_id,
-                                                    Accelerator* accelerator) {
+    menus::Accelerator* accelerator) {
   // The standard Ctrl-X, Ctrl-V and Ctrl-C are not defined as accelerators
   // anywhere so we need to check for them explicitly here.
   switch (command_id) {
@@ -881,7 +882,7 @@ ITextDocument* NativeTextfieldWin::GetTextObjectModel() const {
 void NativeTextfieldWin::BuildContextMenu() {
   if (context_menu_contents_.get())
     return;
-  context_menu_contents_.reset(new SimpleMenuModel(this));
+  context_menu_contents_.reset(new menus::SimpleMenuModel(this));
   context_menu_contents_->AddItemWithStringId(IDS_APP_UNDO, IDS_APP_UNDO);
   context_menu_contents_->AddSeparator();
   context_menu_contents_->AddItemWithStringId(IDS_APP_CUT, IDS_APP_CUT);

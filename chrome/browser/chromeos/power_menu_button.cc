@@ -30,14 +30,14 @@ PowerMenuButton::~PowerMenuButton() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// PowerMenuButton, views::Menu2Model implementation:
+// PowerMenuButton, menus::MenuModel implementation:
 
 int PowerMenuButton::GetItemCount() const {
   return 2;
 }
 
-views::Menu2Model::ItemType PowerMenuButton::GetTypeAt(int index) const {
-  return views::Menu2Model::TYPE_COMMAND;
+menus::MenuModel::ItemType PowerMenuButton::GetTypeAt(int index) const {
+  return menus::MenuModel::TYPE_COMMAND;
 }
 
 string16 PowerMenuButton::GetLabelAt(int index) const {

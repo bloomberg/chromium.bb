@@ -10,6 +10,7 @@
 #include <string>
 
 #include "app/gfx/native_widget_types.h"
+#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 #include "build/build_config.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
-#include "views/controls/menu/simple_menu_model.h"
 #include "views/window/client_view.h"
 #include "views/window/window_delegate.h"
 
@@ -66,7 +66,7 @@ class BrowserView : public BrowserWindow,
                     public BrowserWindowTesting,
                     public NotificationObserver,
                     public TabStripModelObserver,
-                    public views::SimpleMenuModel::Delegate,
+                    public menus::SimpleMenuModel::Delegate,
                     public views::WindowDelegate,
                     public views::ClientView {
  public:
@@ -156,7 +156,7 @@ class BrowserView : public BrowserWindow,
   // command id. This can be used to provide menu item shortcut hints etc.
   // Returns true if an accelerator was found for the specified |cmd_id|, false
   // otherwise.
-  bool GetAccelerator(int cmd_id, views::Accelerator* accelerator);
+  bool GetAccelerator(int cmd_id, menus::Accelerator* accelerator);
 
   // Shows the next app-modal dialog box, if there is one to be shown, or moves
   // an existing showing one to the front. Returns true if one was shown or
@@ -305,11 +305,11 @@ class BrowserView : public BrowserWindow,
                              bool user_gesture);
   virtual void TabStripEmpty();
 
-  // Overridden from views::SimpleMenuModel::Delegate:
+  // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual bool IsLabelForCommandIdDynamic(int command_id) const;
   virtual string16 GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);

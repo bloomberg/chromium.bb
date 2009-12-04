@@ -12,6 +12,7 @@
 #include "app/gfx/canvas.h"
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
+#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/string_util.h"
@@ -24,7 +25,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/screen.h"
 
@@ -188,7 +188,7 @@ void BlockedPopupContainerViewWidget::OnSizeAllocate(
 // blocked. This view should only be used inside of BlockedPopupContainer.
 class BlockedPopupContainerInternalView : public views::View,
                                   public views::ButtonListener,
-                                  public views::SimpleMenuModel::Delegate {
+                                  public menus::SimpleMenuModel::Delegate {
  public:
   explicit BlockedPopupContainerInternalView(
       BlockedPopupContainerViewViews* container);
@@ -217,7 +217,7 @@ class BlockedPopupContainerInternalView : public views::View,
   virtual bool IsCommandIdChecked(int id) const;
   virtual bool IsCommandIdEnabled(int id) const { return true; }
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator) {
+                                          menus::Accelerator* accelerator) {
     return false;
   }
   // Called after user clicks a menu item.
@@ -234,7 +234,7 @@ class BlockedPopupContainerInternalView : public views::View,
   views::ImageButton* close_button_;
 
   // Model for the menu.
-  scoped_ptr<views::SimpleMenuModel> launch_menu_model_;
+  scoped_ptr<menus::SimpleMenuModel> launch_menu_model_;
 
   // Popup menu shown to user.
   scoped_ptr<views::Menu2> launch_menu_;
@@ -362,7 +362,7 @@ void BlockedPopupContainerInternalView::ButtonPressed(
   if (sender != popup_count_label_)
     return;
 
-  launch_menu_model_.reset(new views::SimpleMenuModel(this));
+  launch_menu_model_.reset(new menus::SimpleMenuModel(this));
 
   // Set items 1 .. popup_count as individual popups.
   size_t popup_count = container_->model()->GetBlockedPopupCount();

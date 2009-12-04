@@ -7,13 +7,11 @@
 
 #include <vector>
 
+#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "views/controls/menu/menu_wrapper.h"
-#include "views/controls/menu/simple_menu_model.h"
 
 namespace views {
-
-class Menu2Model;
 
 // A Windows implementation of MenuWrapper.
 // TODO(beng): rename to MenuWin once the old class is dead.
@@ -22,7 +20,7 @@ class NativeMenuWin : public MenuWrapper {
   // Construct a NativeMenuWin, with a model and delegate. If |system_menu_for|
   // is non-NULL, the NativeMenuWin wraps the system menu for that window.
   // The caller owns the model and the delegate.
-  NativeMenuWin(Menu2Model* model, HWND system_menu_for);
+  NativeMenuWin(menus::MenuModel* model, HWND system_menu_for);
   virtual ~NativeMenuWin();
 
   // Overridden from MenuWrapper:
@@ -83,7 +81,7 @@ class NativeMenuWin : public MenuWrapper {
   void CreateHostWindow();
 
   // Our attached model and delegate.
-  Menu2Model* model_;
+  menus::MenuModel* model_;
 
   HMENU menu_;
 
@@ -113,12 +111,12 @@ class NativeMenuWin : public MenuWrapper {
 
 // A SimpleMenuModel subclass that allows the system menu for a window to be
 // wrapped.
-class SystemMenuModel : public SimpleMenuModel {
+class SystemMenuModel : public menus::SimpleMenuModel {
  public:
   explicit SystemMenuModel(Delegate* delegate);
   virtual ~SystemMenuModel();
 
-  // Overridden from Menu2Model:
+  // Overridden from menus::MenuModel:
   virtual int GetFirstItemIndex(gfx::NativeMenu native_menu) const;
 
  protected:

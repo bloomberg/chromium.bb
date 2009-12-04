@@ -4,6 +4,7 @@
 
 #include <algorithm>
 
+#include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/compact_location_bar.h"
@@ -22,7 +23,7 @@
 #include "grit/theme_resources.h"
 #include "views/controls/button/button.h"
 #include "views/controls/button/image_button.h"
-#include "views/controls/menu/simple_menu_model.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/window/window.h"
 
 namespace {
@@ -223,7 +224,7 @@ class NormalExtender : public BrowserExtender,
 
   // Creates system menu.
   void InitSystemMenu() {
-    system_menu_contents_.reset(new views::SimpleMenuModel(browser_view()));
+    system_menu_contents_.reset(new menus::SimpleMenuModel(browser_view()));
     system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB,
                                                IDS_RESTORE_TAB);
     system_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
@@ -253,7 +254,7 @@ class NormalExtender : public BrowserExtender,
   chromeos::StatusAreaView* status_area_;
 
   // System menus.
-  scoped_ptr<views::SimpleMenuModel> system_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> system_menu_contents_;
   scoped_ptr<views::Menu2> system_menu_menu_;
 
   // CompactNavigationBar view.

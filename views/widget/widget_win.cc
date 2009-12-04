@@ -320,7 +320,7 @@ void WidgetWin::GenerateMousePressedForView(View* view,
   ProcessMousePressed(point_in_widget.ToPOINT(), MK_LBUTTON, false, false);
 }
 
-bool WidgetWin::GetAccelerator(int cmd_id, Accelerator* accelerator) {
+bool WidgetWin::GetAccelerator(int cmd_id, menus::Accelerator* accelerator) {
   return false;
 }
 

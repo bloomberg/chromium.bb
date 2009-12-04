@@ -152,7 +152,7 @@ class WidgetGtk
   virtual void GenerateMousePressedForView(View* view,
                                            const gfx::Point& point);
   virtual TooltipManager* GetTooltipManager();
-  virtual bool GetAccelerator(int cmd_id, Accelerator* accelerator);
+  virtual bool GetAccelerator(int cmd_id, menus::Accelerator* accelerator);
   virtual Window* GetWindow();
   virtual const Window* GetWindow() const;
   virtual void SetNativeWindowProperty(const std::wstring& name,

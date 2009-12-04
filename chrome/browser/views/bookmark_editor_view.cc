@@ -25,6 +25,7 @@
 #include "views/grid_layout.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
@@ -203,7 +204,7 @@ bool BookmarkEditorView::IsCommandIdEnabled(int command_id) const {
 
 bool BookmarkEditorView::GetAcceleratorForCommandId(
     int command_id,
-    views::Accelerator* accelerator) {
+    menus::Accelerator* accelerator) {
   return GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
@@ -245,7 +246,7 @@ void BookmarkEditorView::ShowContextMenu(View* source,
       (tree_model_->GetParent(tree_view_->GetSelectedNode()) ==
        tree_model_->GetRoot());
   if (!context_menu_contents_.get()) {
-    context_menu_contents_.reset(new views::SimpleMenuModel(this));
+    context_menu_contents_.reset(new menus::SimpleMenuModel(this));
     context_menu_contents_->AddItemWithStringId(IDS_EDIT, IDS_EDIT);
     context_menu_contents_->AddItemWithStringId(
         IDS_BOOMARK_EDITOR_NEW_FOLDER_MENU_ITEM,

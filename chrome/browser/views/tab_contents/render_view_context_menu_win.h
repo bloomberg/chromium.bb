@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_WIN_H_
 #define CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_WIN_H_
 
+#include "app/menus/simple_menu_model.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "chrome/browser/tab_contents/render_view_context_menu.h"
-#include "views/accelerator.h"
-#include "views/controls/menu/simple_menu_model.h"
+#include "views/controls/menu/menu_2.h"
 
 class RenderViewContextMenuWin : public RenderViewContextMenu,
-                                 public views::SimpleMenuModel::Delegate {
+                                 public menus::SimpleMenuModel::Delegate {
  public:
   RenderViewContextMenuWin(TabContents* tab_contents,
                            const ContextMenuParams& params);
@@ -21,11 +21,11 @@ class RenderViewContextMenuWin : public RenderViewContextMenu,
 
   void RunMenuAt(int x, int y);
 
-  // Overridden from SimpleMenuModel::Delegate:
+  // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   gfx::NativeMenu GetMenuHandle() const {
@@ -46,19 +46,19 @@ class RenderViewContextMenuWin : public RenderViewContextMenu,
  private:
   // Gets the target model to append items to. This is either the main context
   // menu, or a submenu if we've descended into one.
-  views::SimpleMenuModel* GetTargetModel() const;
+  menus::SimpleMenuModel* GetTargetModel() const;
 
   // The current radio group for radio menu items.
   int current_radio_group_id_;
 
   // The context menu itself and its contents.
-  scoped_ptr<views::SimpleMenuModel> menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> menu_contents_;
   scoped_ptr<views::Menu2> menu_;
   // TODO(beng): This way of building submenus is kind of retarded, but it
   //             hasn't hurt us yet. It's just a bit awkward.
-  views::SimpleMenuModel* sub_menu_contents_;
+  menus::SimpleMenuModel* sub_menu_contents_;
   // We own submenu models that we create, so we store them here.
-  ScopedVector<views::SimpleMenuModel> submenu_models_;
+  ScopedVector<menus::SimpleMenuModel> submenu_models_;
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TAB_CONTENTS_RENDER_VIEW_CONTEXT_MENU_WIN_H_

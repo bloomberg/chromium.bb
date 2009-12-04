@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_MENU_BUTTON_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_MENU_BUTTON_H_
 
+#include "app/menus/menu_model.h"
 #include "chrome/browser/chromeos/power_library.h"
 #include "chrome/browser/chromeos/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
@@ -18,26 +19,26 @@ namespace chromeos {
 // This class will handle getting the power status and populating the menu.
 class PowerMenuButton : public StatusAreaButton,
                         public views::ViewMenuDelegate,
-                        public views::Menu2Model,
+                        public menus::MenuModel,
                         public PowerLibrary::Observer {
  public:
   PowerMenuButton();
   virtual ~PowerMenuButton();
 
-  // views::Menu2Model implementation.
+  // menus::MenuModel implementation.
   virtual bool HasIcons() const  { return false; }
   virtual int GetItemCount() const;
-  virtual views::Menu2Model::ItemType GetTypeAt(int index) const;
+  virtual menus::MenuModel::ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const { return index; }
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsLabelDynamicAt(int index) const { return true; }
   virtual bool GetAcceleratorAt(int index,
-      views::Accelerator* accelerator) const { return false; }
+      menus::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const { return false; }
   virtual int GetGroupIdAt(int index) const { return 0; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const { return false; }
   virtual bool IsEnabledAt(int index) const { return false; }
-  virtual Menu2Model* GetSubmenuModelAt(int index) const { return NULL; }
+  virtual menus::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index) {}
   virtual void MenuWillShow() {}

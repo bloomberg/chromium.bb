@@ -9,6 +9,8 @@
 #include "base/keyboard_codes.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
+#include "views/accelerator.h"
+#include "views/controls/menu/menu_2.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuWin, public:
@@ -19,7 +21,7 @@ RenderViewContextMenuWin::RenderViewContextMenuWin(
     : RenderViewContextMenu(tab_contents, params),
       current_radio_group_id_(-1),
       sub_menu_contents_(NULL) {
-  menu_contents_.reset(new views::SimpleMenuModel(this));
+  menu_contents_.reset(new menus::SimpleMenuModel(this));
 }
 
 RenderViewContextMenuWin::~RenderViewContextMenuWin() {
@@ -30,7 +32,7 @@ void RenderViewContextMenuWin::RunMenuAt(int x, int y) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderViewContextMenuWin, views::SimpleMenuModel::Delegate implementation:
+// RenderViewContextMenuWin, menus::SimpleMenuModel::Delegate implementation:
 
 bool RenderViewContextMenuWin::IsCommandIdChecked(int command_id) const {
   return ItemIsChecked(command_id);
@@ -42,7 +44,7 @@ bool RenderViewContextMenuWin::IsCommandIdEnabled(int command_id) const {
 
 bool RenderViewContextMenuWin::GetAcceleratorForCommandId(
     int command_id,
-    views::Accelerator* accel) {
+    menus::Accelerator* accel) {
   // There are no formally defined accelerators we can query so we assume
   // that Ctrl+C, Ctrl+V, Ctrl+X, Ctrl-A, etc do what they normally do.
   switch (command_id) {
@@ -122,7 +124,7 @@ void RenderViewContextMenuWin::StartSubMenu(int id, const string16& label) {
     return;
   }
   current_radio_group_id_ = -1;
-  sub_menu_contents_ = new views::SimpleMenuModel(this);
+  sub_menu_contents_ = new menus::SimpleMenuModel(this);
   menu_contents_->AddSubMenu(label, sub_menu_contents_);
   submenu_models_.push_back(sub_menu_contents_);
 }
@@ -136,6 +138,6 @@ void RenderViewContextMenuWin::FinishSubMenu() {
 ////////////////////////////////////////////////////////////////////////////////
 // RenderViewContextMenuWin, private:
 
-views::SimpleMenuModel* RenderViewContextMenuWin::GetTargetModel() const {
+menus::SimpleMenuModel* RenderViewContextMenuWin::GetTargetModel() const {
   return sub_menu_contents_ ? sub_menu_contents_ : menu_contents_.get();
 }

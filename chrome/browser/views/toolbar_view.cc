@@ -51,6 +51,7 @@
 #include "views/background.h"
 #include "views/controls/button/button_dropdown.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/drag_utils.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
@@ -124,7 +125,7 @@ bool EncodingMenuModel::IsCommandIdEnabled(int command_id) const {
 
 bool EncodingMenuModel::GetAcceleratorForCommandId(
     int command_id,
-    views::Accelerator* accelerator) {
+    menus::Accelerator* accelerator) {
   return false;
 }
 
@@ -135,7 +136,7 @@ void EncodingMenuModel::ExecuteCommand(int command_id) {
 ////////////////////////////////////////////////////////////////////////////////
 // EncodingMenuModel
 
-ZoomMenuModel::ZoomMenuModel(views::SimpleMenuModel::Delegate* delegate)
+ZoomMenuModel::ZoomMenuModel(menus::SimpleMenuModel::Delegate* delegate)
     : SimpleMenuModel(delegate) {
   Build();
 }
@@ -229,7 +230,7 @@ bool ToolbarView::IsAccessibleViewTraversable(views::View* view) {
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, Menu::BaseControllerDelegate overrides:
 
-bool ToolbarView::GetAcceleratorInfo(int id, views::Accelerator* accel) {
+bool ToolbarView::GetAcceleratorInfo(int id, menus::Accelerator* accel) {
   return GetWidget()->GetAccelerator(id, accel);
 }
 
@@ -383,7 +384,7 @@ void ToolbarView::Observe(NotificationType type,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ToolbarView, views::SimpleMenuModel::Delegate implementation:
+// ToolbarView, menus::SimpleMenuModel::Delegate implementation:
 
 bool ToolbarView::IsCommandIdChecked(int command_id) const {
   if (command_id == IDC_SHOW_BOOKMARK_BAR)
@@ -396,7 +397,7 @@ bool ToolbarView::IsCommandIdEnabled(int command_id) const {
 }
 
 bool ToolbarView::GetAcceleratorForCommandId(int command_id,
-                                             views::Accelerator* accelerator) {
+    menus::Accelerator* accelerator) {
   // The standard Ctrl-X, Ctrl-V and Ctrl-C are not defined as accelerators
   // anywhere so we need to check for them explicitly here.
   // TODO(cpu) Bug 1109102. Query WebKit land for the actual bindings.
@@ -847,7 +848,7 @@ void ToolbarView::CreatePageMenu() {
   if (page_menu_contents_.get())
     return;
 
-  page_menu_contents_.reset(new views::SimpleMenuModel(this));
+  page_menu_contents_.reset(new menus::SimpleMenuModel(this));
   page_menu_contents_->AddItemWithStringId(IDC_CREATE_SHORTCUTS,
                                            IDS_CREATE_SHORTCUTS);
   page_menu_contents_->AddSeparator();
@@ -885,7 +886,7 @@ void ToolbarView::CreatePageMenu() {
 
 #if defined(OS_WIN)
 void ToolbarView::CreateDevToolsMenuContents() {
-  devtools_menu_contents_.reset(new views::SimpleMenuModel(this));
+  devtools_menu_contents_.reset(new menus::SimpleMenuModel(this));
   devtools_menu_contents_->AddItem(IDC_VIEW_SOURCE,
                                    l10n_util::GetString(IDS_VIEW_SOURCE));
   if (g_browser_process->have_inspector_files()) {
@@ -904,7 +905,7 @@ void ToolbarView::CreateAppMenu() {
   // We always rebuild the app menu so that we can get the current state of
   // the sync system.
 
-  app_menu_contents_.reset(new views::SimpleMenuModel(this));
+  app_menu_contents_.reset(new menus::SimpleMenuModel(this));
   app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
   app_menu_contents_->AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
   app_menu_contents_->AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW,
@@ -916,7 +917,7 @@ void ToolbarView::CreateAppMenu() {
   if (command_line.HasSwitch(switches::kEnableUserDataDirProfiles) &&
       !profiles_menu_contents_.get()) {
     profiles_helper_->GetProfiles(NULL);
-    profiles_menu_contents_.reset(new views::SimpleMenuModel(this));
+    profiles_menu_contents_.reset(new menus::SimpleMenuModel(this));
     app_menu_contents_->AddSubMenuWithStringId(IDS_PROFILE_MENU,
                                                profiles_menu_contents_.get());
   }

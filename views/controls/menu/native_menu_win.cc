@@ -122,7 +122,7 @@ class NativeMenuWin::MenuHostWindow {
   // Called when the user selects a specific item.
   void OnMenuCommand(int position, HMENU menu) {
     NativeMenuWin* intergoat = GetNativeMenuWinFromHMENU(menu);
-    Menu2Model* model = intergoat->model_;
+    menus::MenuModel* model = intergoat->model_;
     model->ActivatedAt(position);
   }
 
@@ -300,7 +300,7 @@ const wchar_t* NativeMenuWin::MenuHostWindow::kMenuHostWindowKey =
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuWin, public:
 
-NativeMenuWin::NativeMenuWin(Menu2Model* model, HWND system_menu_for)
+NativeMenuWin::NativeMenuWin(menus::MenuModel* model, HWND system_menu_for)
     : model_(model),
       menu_(NULL),
       owner_draw_(l10n_util::NeedOverrideDefaultUIFont(NULL, NULL) &&
@@ -339,7 +339,7 @@ void NativeMenuWin::Rebuild() {
   for (int menu_index = first_item_index_;
         menu_index < first_item_index_ + model_->GetItemCount(); ++menu_index) {
     int model_index = menu_index - first_item_index_;
-    if (model_->GetTypeAt(model_index) == Menu2Model::TYPE_SEPARATOR)
+    if (model_->GetTypeAt(model_index) == menus::MenuModel::TYPE_SEPARATOR)
       AddSeparatorItemAt(menu_index, model_index);
     else
       AddMenuItemAt(menu_index, model_index);
@@ -390,13 +390,13 @@ void NativeMenuWin::AddMenuItemAt(int menu_index, int model_index) {
 
   ItemData* item_data = new ItemData;
   item_data->label = std::wstring();
-  Menu2Model::ItemType type = model_->GetTypeAt(model_index);
-  if (type == Menu2Model::TYPE_SUBMENU) {
+  menus::MenuModel::ItemType type = model_->GetTypeAt(model_index);
+  if (type == menus::MenuModel::TYPE_SUBMENU) {
     item_data->submenu.reset(new Menu2(model_->GetSubmenuModelAt(model_index)));
     mii.fMask |= MIIM_SUBMENU;
     mii.hSubMenu = item_data->submenu->GetNativeMenu();
   } else {
-    if (type == Menu2Model::TYPE_RADIO)
+    if (type == menus::MenuModel::TYPE_RADIO)
       mii.fType |= MFT_RADIOCHECK;
     mii.wID = model_->GetCommandIdAt(model_index);
   }
@@ -456,8 +456,8 @@ void NativeMenuWin::UpdateMenuItemInfoForString(
     int model_index,
     const std::wstring& label) {
   std::wstring formatted = label;
-  Menu2Model::ItemType type = model_->GetTypeAt(model_index);
-  if (type != Menu2Model::TYPE_SUBMENU) {
+  menus::MenuModel::ItemType type = model_->GetTypeAt(model_index);
+  if (type != menus::MenuModel::TYPE_SUBMENU) {
     // Add accelerator details to the label if provided.
     views::Accelerator accelerator(base::VKEY_UNKNOWN, false, false, false);
     if (model_->GetAcceleratorAt(model_index, &accelerator)) {
@@ -521,7 +521,7 @@ void NativeMenuWin::CreateHostWindow() {
 ////////////////////////////////////////////////////////////////////////////////
 // SystemMenuModel:
 
-SystemMenuModel::SystemMenuModel(SimpleMenuModel::Delegate* delegate)
+SystemMenuModel::SystemMenuModel(menus::SimpleMenuModel::Delegate* delegate)
     : SimpleMenuModel(delegate) {
 }
 

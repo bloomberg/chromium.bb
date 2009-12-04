@@ -6,12 +6,16 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_AREA_VIEW_H_
 
 #include "app/gfx/native_widget_types.h"
+#include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
-#include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
 class Browser;
+
+namespace views {
+class Menu2;
+}
 
 namespace chromeos {
 
@@ -23,7 +27,7 @@ class StatusAreaButton;
 // This class is used to wrap the small informative widgets in the upper-right
 // of the window title bar. It is used on ChromeOS only.
 class StatusAreaView : public views::View,
-                       public views::SimpleMenuModel::Delegate,
+                       public menus::SimpleMenuModel::Delegate,
                        public views::ViewMenuDelegate {
  public:
   enum OpenTabsMode {
@@ -54,11 +58,11 @@ class StatusAreaView : public views::View,
  private:
   void CreateAppMenu();
 
-  // views::SimpleMenuModel::Delegate implementation.
+  // menus::SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // views::ViewMenuDelegate implementation.
@@ -76,8 +80,8 @@ class StatusAreaView : public views::View,
   PowerMenuButton* battery_view_;
   StatusAreaButton* menu_view_;
 
-  scoped_ptr<views::SimpleMenuModel> app_menu_contents_;
-  scoped_ptr<views::SimpleMenuModel> options_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> app_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> options_menu_contents_;
   scoped_ptr<views::Menu2> app_menu_menu_;
 
   static OpenTabsMode open_tabs_mode_;

@@ -27,6 +27,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/button/text_button.h"
 #include "views/controls/label.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
 #include "views/widget/widget_win.h"
@@ -312,7 +313,7 @@ void BalloonViewImpl::CreateOptionsMenu() {
       IDS_NOTIFICATION_BALLOON_REVOKE_MESSAGE,
       this->balloon_->notification().display_source());
 
-  options_menu_contents_.reset(new views::SimpleMenuModel(this));
+  options_menu_contents_.reset(new menus::SimpleMenuModel(this));
   options_menu_contents_->AddItem(kRevokePermissionCommand, label_text);
 
   options_menu_menu_.reset(new views::Menu2(options_menu_contents_.get()));
@@ -391,7 +392,7 @@ void BalloonViewImpl::Paint(gfx::Canvas* canvas) {
   View::Paint(canvas);
 }
 
-// SimpleMenuModel::Delegate methods
+// menus::SimpleMenuModel::Delegate methods
 bool BalloonViewImpl::IsCommandIdChecked(int /* command_id */) const {
   // Nothing in the menu is checked.
   return false;
@@ -403,7 +404,7 @@ bool BalloonViewImpl::IsCommandIdEnabled(int /* command_id */) const {
 }
 
 bool BalloonViewImpl::GetAcceleratorForCommandId(
-    int /* command_id */, views::Accelerator* /* accelerator */) {
+    int /* command_id */, menus::Accelerator* /* accelerator */) {
   // Currently no accelerators.
   return false;
 }

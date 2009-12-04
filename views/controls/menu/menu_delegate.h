@@ -24,7 +24,7 @@ class MenuButton;
 
 // Delegate for a menu. This class is used as part of MenuItemView, see it
 // for details.
-// TODO(sky): merge this with Menu2Model.
+// TODO(sky): merge this with menus::MenuModel.
 class MenuDelegate : Controller {
  public:
   // Used during drag and drop to indicate where the drop indicator should

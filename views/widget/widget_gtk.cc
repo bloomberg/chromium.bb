@@ -519,7 +519,7 @@ TooltipManager* WidgetGtk::GetTooltipManager() {
   return tooltip_manager_.get();
 }
 
-bool WidgetGtk::GetAccelerator(int cmd_id, Accelerator* accelerator) {
+bool WidgetGtk::GetAccelerator(int cmd_id, menus::Accelerator* accelerator) {
   NOTIMPLEMENTED();
   return false;
 }

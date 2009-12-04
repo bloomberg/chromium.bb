@@ -7,11 +7,11 @@
 
 #include <set>
 
+#include "app/menus/simple_menu_model.h"
 #include "app/tree_node_model.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "views/controls/button/button.h"
-#include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/controls/tree/tree_view.h"
 #include "views/window/dialog_delegate.h"
@@ -20,6 +20,7 @@
 namespace views {
 class NativeButton;
 class Window;
+class Menu2;
 }
 
 class BookmarkEditorViewTest;
@@ -44,7 +45,7 @@ class BookmarkEditorView : public BookmarkEditor,
                            public views::DialogDelegate,
                            public views::Textfield::Controller,
                            public views::ContextMenuController,
-                           public views::SimpleMenuModel::Delegate,
+                           public menus::SimpleMenuModel::Delegate,
                            public BookmarkModelObserver {
  public:
   // Type of node in the tree. Public purely for testing.
@@ -105,11 +106,11 @@ class BookmarkEditorView : public BookmarkEditor,
   // NativeButton.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // SimpleMenuModel::Delegate.
+  // menus::SimpleMenuModel::Delegate.
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // Creates a Window and adds the BookmarkEditorView to it. When the window is
@@ -240,7 +241,7 @@ class BookmarkEditorView : public BookmarkEditor,
   const EditDetails details_;
 
   // The context menu.
-  scoped_ptr<views::SimpleMenuModel> context_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<views::Menu2> context_menu_;
 
   // Mode used to create nodes from.

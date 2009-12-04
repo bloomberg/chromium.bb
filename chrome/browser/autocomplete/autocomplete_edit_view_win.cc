@@ -43,6 +43,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "skia/ext/skia_utils_win.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/drag_utils.h"
 #include "views/focus/focus_util_win.h"
 #include "views/widget/widget.h"
@@ -958,7 +959,7 @@ bool AutocompleteEditViewWin::IsCommandIdEnabled(int command_id) const {
 
 bool AutocompleteEditViewWin::GetAcceleratorForCommandId(
     int command_id,
-    views::Accelerator* accelerator) {
+    menus::Accelerator* accelerator) {
   return parent_view_->GetWidget()->GetAccelerator(command_id, accelerator);
 }
 
@@ -2416,7 +2417,7 @@ void AutocompleteEditViewWin::BuildContextMenu() {
   if (context_menu_contents_.get())
     return;
 
-  context_menu_contents_.reset(new views::SimpleMenuModel(this));
+  context_menu_contents_.reset(new menus::SimpleMenuModel(this));
   // Set up context menu.
   if (popup_window_mode_) {
     context_menu_contents_->AddItemWithStringId(IDS_COPY, IDS_COPY);

@@ -2,21 +2,21 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CONTROLS_MENU_VIEWS_SIMPLE_MENU_MODEL_H_
-#define CONTROLS_MENU_VIEWS_SIMPLE_MENU_MODEL_H_
+#ifndef APP_MENUS_SIMPLE_MENU_MODEL_H_
+#define APP_MENUS_SIMPLE_MENU_MODEL_H_
 
 #include <vector>
 
 #include "base/string16.h"
-#include "views/controls/menu/menu_2.h"
+#include "app/menus/menu_model.h"
 
-namespace views {
+namespace menus {
 
-// A simple Menu2Model implementation with an imperative API for adding menu
+// A simple MenuModel implementation with an imperative API for adding menu
 // items. This makes it easy to construct fixed menus. Menus populated by
-// dynamic data sources may be better off implementing Menu2Model directly.
-// The breadth of Menu2Model is not exposed through this API.
-class SimpleMenuModel : public Menu2Model {
+// dynamic data sources may be better off implementing MenuModel directly.
+// The breadth of MenuModel is not exposed through this API.
+class SimpleMenuModel : public MenuModel {
  public:
   class Delegate {
    public:
@@ -28,7 +28,7 @@ class SimpleMenuModel : public Menu2Model {
     // command id has a valid accelerator, false otherwise.
     virtual bool GetAcceleratorForCommandId(
         int command_id,
-        views::Accelerator* accelerator) = 0;
+        menus::Accelerator* accelerator) = 0;
 
     // Some command ids have labels that change over time.
     virtual bool IsLabelForCommandIdDynamic(int command_id) const {
@@ -59,10 +59,10 @@ class SimpleMenuModel : public Menu2Model {
   void AddCheckItemWithStringId(int command_id, int string_id);
   void AddRadioItem(int command_id, const string16& label, int group_id);
   void AddRadioItemWithStringId(int command_id, int string_id, int group_id);
-  void AddSubMenu(const string16& label, Menu2Model* model);
-  void AddSubMenuWithStringId(int string_id, Menu2Model* model);
+  void AddSubMenu(const string16& label, MenuModel* model);
+  void AddSubMenuWithStringId(int string_id, MenuModel* model);
 
-  // Overridden from Menu2Model:
+  // Overridden from MenuModel:
   virtual bool HasIcons() const;
   virtual int GetItemCount() const;
   virtual ItemType GetTypeAt(int index) const;
@@ -70,14 +70,14 @@ class SimpleMenuModel : public Menu2Model {
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsLabelDynamicAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
-                                views::Accelerator* accelerator) const;
+                                menus::Accelerator* accelerator) const;
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const;
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
   virtual bool IsEnabledAt(int index) const;
   virtual void HighlightChangedTo(int index);
   virtual void ActivatedAt(int index);
-  virtual Menu2Model* GetSubmenuModelAt(int index) const;
+  virtual MenuModel* GetSubmenuModelAt(int index) const;
 
  protected:
   // Some variants of this model (SystemMenuModel) relies on items to be
@@ -93,7 +93,7 @@ class SimpleMenuModel : public Menu2Model {
     string16 label;
     ItemType type;
     int group_id;
-    Menu2Model* submenu;
+    MenuModel* submenu;
   };
   std::vector<Item> items_;
 
@@ -102,6 +102,6 @@ class SimpleMenuModel : public Menu2Model {
   DISALLOW_COPY_AND_ASSIGN(SimpleMenuModel);
 };
 
-}  // namespace views
+}  // namespace menus
 
-#endif  // CONTROLS_MENU_VIEWS_SIMPLE_MENU_MODEL_H_
+#endif  // APP_MENUS_SIMPLE_MENU_MODEL_H_

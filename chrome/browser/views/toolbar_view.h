@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "app/menus/simple_menu_model.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bubble_positioner.h"
@@ -18,7 +19,6 @@
 #include "chrome/common/pref_member.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu.h"
-#include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
@@ -27,22 +27,23 @@ class BrowserActionsContainer;
 class Browser;
 class Profile;
 class ToolbarStarToggle;
+
 namespace views {
-class SimpleMenuModel;
+class Menu2;
 }
 
 // A menu model that builds the contents of an encoding menu.
-class EncodingMenuModel : public views::SimpleMenuModel,
-                          public views::SimpleMenuModel::Delegate {
+class EncodingMenuModel : public menus::SimpleMenuModel,
+                          public menus::SimpleMenuModel::Delegate {
  public:
   explicit EncodingMenuModel(Browser* browser);
   virtual ~EncodingMenuModel() {}
 
-  // Overridden from views::SimpleMenuModel::Delegate:
+  // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
  private:
@@ -53,9 +54,9 @@ class EncodingMenuModel : public views::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(EncodingMenuModel);
 };
 
-class ZoomMenuModel : public views::SimpleMenuModel {
+class ZoomMenuModel : public menus::SimpleMenuModel {
  public:
-  explicit ZoomMenuModel(views::SimpleMenuModel::Delegate* delegate);
+  explicit ZoomMenuModel(menus::SimpleMenuModel::Delegate* delegate);
   virtual ~ZoomMenuModel() {}
 
  private:
@@ -68,7 +69,7 @@ class ZoomMenuModel : public views::SimpleMenuModel {
 class ToolbarView : public AccessibleToolbarView,
                     public views::ViewMenuDelegate,
                     public views::DragController,
-                    public views::SimpleMenuModel::Delegate,
+                    public menus::SimpleMenuModel::Delegate,
                     public LocationBarView::Delegate,
                     public NotificationObserver,
                     public GetProfilesHelper::Delegate,
@@ -105,7 +106,7 @@ class ToolbarView : public AccessibleToolbarView,
   virtual bool IsAccessibleViewTraversable(views::View* view);
 
   // Overridden from Menu::BaseControllerDelegate:
-  virtual bool GetAcceleratorInfo(int id, views::Accelerator* accel);
+  virtual bool GetAcceleratorInfo(int id, menus::Accelerator* accel);
 
   // Overridden from views::MenuDelegate:
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
@@ -131,11 +132,11 @@ class ToolbarView : public AccessibleToolbarView,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
-  // Overridden from views::SimpleMenuModel::Delegate:
+  // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // Overridden from views::View:
@@ -215,7 +216,7 @@ class ToolbarView : public AccessibleToolbarView,
   Browser* browser_;
 
   // Contents of the profiles menu to populate with profile names.
-  scoped_ptr<views::SimpleMenuModel> profiles_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> profiles_menu_contents_;
 
   // Helper class to enumerate profiles information on the file thread.
   scoped_refptr<GetProfilesHelper> profiles_helper_;
@@ -227,11 +228,11 @@ class ToolbarView : public AccessibleToolbarView,
   DisplayMode display_mode_;
 
   // The contents of the various menus.
-  scoped_ptr<views::SimpleMenuModel> page_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> page_menu_contents_;
   scoped_ptr<ZoomMenuModel> zoom_menu_contents_;
   scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
-  scoped_ptr<views::SimpleMenuModel> devtools_menu_contents_;
-  scoped_ptr<views::SimpleMenuModel> app_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> devtools_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> app_menu_contents_;
 
   // TODO(beng): build these into MenuButton.
   scoped_ptr<views::Menu2> page_menu_menu_;

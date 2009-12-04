@@ -48,27 +48,27 @@ namespace chromeos {
 // <action> will be either On or Off depending on the current state.
 class NetworkMenuButton : public StatusAreaButton,
                           public views::ViewMenuDelegate,
-                          public views::Menu2Model,
+                          public menus::MenuModel,
                           public PasswordDialogDelegate,
                           public NetworkLibrary::Observer {
  public:
   explicit NetworkMenuButton(gfx::NativeWindow browser_window);
   virtual ~NetworkMenuButton();
 
-  // views::Menu2Model implementation.
+  // menus::MenuModel implementation.
   virtual bool HasIcons() const  { return true; }
   virtual int GetItemCount() const;
-  virtual views::Menu2Model::ItemType GetTypeAt(int index) const;
+  virtual menus::MenuModel::ItemType GetTypeAt(int index) const;
   virtual int GetCommandIdAt(int index) const { return index; }
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsLabelDynamicAt(int index) const { return true; }
   virtual bool GetAcceleratorAt(int index,
-      views::Accelerator* accelerator) const { return false; }
+      menus::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const;
   virtual int GetGroupIdAt(int index) const { return 0; }
   virtual bool GetIconAt(int index, SkBitmap* icon) const;
   virtual bool IsEnabledAt(int index) const;
-  virtual views::Menu2Model* GetSubmenuModelAt(int index) const { return NULL; }
+  virtual menus::MenuModel* GetSubmenuModelAt(int index) const { return NULL; }
   virtual void HighlightChangedTo(int index) {}
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
@@ -98,9 +98,9 @@ class NetworkMenuButton : public StatusAreaButton,
 
   struct MenuItem {
     MenuItem()
-        : type(views::Menu2Model::TYPE_SEPARATOR),
+        : type(menus::MenuModel::TYPE_SEPARATOR),
           flags(0) {}
-    MenuItem(views::Menu2Model::ItemType type, string16 label, SkBitmap icon,
+    MenuItem(menus::MenuModel::ItemType type, string16 label, SkBitmap icon,
              WifiNetwork wifi_network, int flags)
         : type(type),
           label(label),
@@ -108,7 +108,7 @@ class NetworkMenuButton : public StatusAreaButton,
           wifi_network(wifi_network),
           flags(flags) {}
 
-    views::Menu2Model::ItemType type;
+    menus::MenuModel::ItemType type;
     string16 label;
     SkBitmap icon;
     WifiNetwork wifi_network;

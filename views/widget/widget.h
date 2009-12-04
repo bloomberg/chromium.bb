@@ -15,9 +15,12 @@ class Point;
 class Rect;
 }
 
+namespace menus {
+class Accelerator;
+}
+
 namespace views {
 
-class Accelerator;
 class FocusManager;
 class RootView;
 class TooltipManager;
@@ -155,7 +158,7 @@ class Widget {
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.
   virtual bool GetAccelerator(int cmd_id,
-                              Accelerator* accelerator) = 0;
+                              menus::Accelerator* accelerator) = 0;
 
   // Returns the Window containing this Widget, or NULL if not contained in a
   // window.

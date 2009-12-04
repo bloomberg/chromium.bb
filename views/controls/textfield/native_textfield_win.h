@@ -14,14 +14,15 @@
 #include <vsstyle.h>
 
 #include "app/gfx/insets.h"
+#include "app/menus/simple_menu_model.h"
 #include "base/scoped_comptr_win.h"
-#include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/textfield/native_textfield_wrapper.h"
 
 namespace views {
 
 class NativeViewHost;
 class Textfield;
+class Menu2;
 
 static const int kDefaultEditStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN |
     WS_CLIPSIBLINGS;
@@ -32,7 +33,7 @@ class NativeTextfieldWin
                          CWinTraits<kDefaultEditStyle> >,
       public CRichEditCommands<NativeTextfieldWin>,
       public NativeTextfieldWrapper,
-      public SimpleMenuModel::Delegate {
+      public menus::SimpleMenuModel::Delegate {
  public:
   DECLARE_WND_CLASS(L"ViewsTextfieldEdit");
 
@@ -61,11 +62,11 @@ class NativeTextfieldWin
   virtual View* GetView();
   virtual gfx::NativeView GetTestingHandle() const;
 
-  // Overridden from SimpleMenuModel::Delegate:
+  // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // CWindowImpl
@@ -193,7 +194,7 @@ class NativeTextfieldWin
   static bool did_load_library_;
 
   // The contents of the context menu for the edit.
-  scoped_ptr<SimpleMenuModel> context_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<Menu2> context_menu_;
 
   // Border insets.

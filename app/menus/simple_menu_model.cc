@@ -2,11 +2,11 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "views/controls/menu/simple_menu_model.h"
+#include "app/menus/simple_menu_model.h"
 
 #include "app/l10n_util.h"
 
-namespace views {
+namespace menus {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SimpleMenuModel, public:
@@ -51,17 +51,17 @@ void SimpleMenuModel::AddRadioItemWithStringId(int command_id, int string_id,
   AddRadioItem(command_id, l10n_util::GetStringUTF16(string_id), group_id);
 }
 
-void SimpleMenuModel::AddSubMenu(const string16& label, Menu2Model* model) {
+void SimpleMenuModel::AddSubMenu(const string16& label, MenuModel* model) {
   Item item = { -1, label, TYPE_SUBMENU, -1, model };
   items_.push_back(item);
 }
 
-void SimpleMenuModel::AddSubMenuWithStringId(int string_id, Menu2Model* model) {
+void SimpleMenuModel::AddSubMenuWithStringId(int string_id, MenuModel* model) {
   AddSubMenu(l10n_util::GetStringUTF16(string_id), model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// SimpleMenuModel, Menu2Model implementation:
+// SimpleMenuModel, MenuModel implementation:
 
 bool SimpleMenuModel::HasIcons() const {
   return false;
@@ -71,7 +71,7 @@ int SimpleMenuModel::GetItemCount() const {
   return static_cast<int>(items_.size());
 }
 
-Menu2Model::ItemType SimpleMenuModel::GetTypeAt(int index) const {
+MenuModel::ItemType SimpleMenuModel::GetTypeAt(int index) const {
   return items_.at(FlipIndex(index)).type;
 }
 
@@ -92,7 +92,7 @@ bool SimpleMenuModel::IsLabelDynamicAt(int index) const {
 }
 
 bool SimpleMenuModel::GetAcceleratorAt(int index,
-                                       views::Accelerator* accelerator) const {
+                                       menus::Accelerator* accelerator) const {
   if (delegate_) {
     return delegate_->GetAcceleratorForCommandId(GetCommandIdAt(index),
                                                  accelerator);
@@ -104,7 +104,7 @@ bool SimpleMenuModel::IsItemCheckedAt(int index) const {
   if (!delegate_)
     return false;
   int item_index = FlipIndex(index);
-  Menu2Model::ItemType item_type = items_[item_index].type;
+  MenuModel::ItemType item_type = items_[item_index].type;
   return (item_type == TYPE_CHECK || item_type == TYPE_RADIO) ?
       delegate_->IsCommandIdChecked(GetCommandIdAt(index)) : false;
 }
@@ -135,7 +135,7 @@ void SimpleMenuModel::ActivatedAt(int index) {
     delegate_->ExecuteCommand(GetCommandIdAt(index));
 }
 
-Menu2Model* SimpleMenuModel::GetSubmenuModelAt(int index) const {
+MenuModel* SimpleMenuModel::GetSubmenuModelAt(int index) const {
   return items_.at(FlipIndex(index)).submenu;
 }
 

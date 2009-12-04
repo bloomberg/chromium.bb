@@ -13,16 +13,16 @@
 
 #include <string>
 
-#include "base/keyboard_codes.h"
+#include "app/menus/accelerator.h"
 #include "views/event.h"
 
 namespace views {
 
-class Accelerator {
+class Accelerator : public menus::Accelerator {
  public:
   Accelerator(base::KeyboardCode keycode,
-              bool shift_pressed, bool ctrl_pressed, bool alt_pressed)
-      : key_code_(keycode) {
+              bool shift_pressed, bool ctrl_pressed, bool alt_pressed) {
+    key_code_ = keycode;
     modifiers_ = 0;
     if (shift_pressed)
       modifiers_ |= Event::EF_SHIFT_DOWN;
@@ -30,37 +30,6 @@ class Accelerator {
       modifiers_ |= Event::EF_CONTROL_DOWN;
     if (alt_pressed)
       modifiers_ |= Event::EF_ALT_DOWN;
-  }
-
-  Accelerator(const Accelerator& accelerator) {
-    key_code_ = accelerator.key_code_;
-    modifiers_ = accelerator.modifiers_;
-  }
-
-  ~Accelerator() { }
-
-  Accelerator& operator=(const Accelerator& accelerator) {
-    if (this != &accelerator) {
-      key_code_ = accelerator.key_code_;
-      modifiers_ = accelerator.modifiers_;
-    }
-    return *this;
-  }
-
-  // We define the < operator so that the KeyboardShortcut can be used as a key
-  // in a std::map.
-  bool operator <(const Accelerator& rhs) const {
-    if (key_code_ != rhs.key_code_)
-      return key_code_ < rhs.key_code_;
-    return modifiers_ < rhs.modifiers_;
-  }
-
-  bool operator ==(const Accelerator& rhs) const {
-    return (key_code_ == rhs.key_code_) && (modifiers_ == rhs.modifiers_);
-  }
-
-  bool operator !=(const Accelerator& rhs) const {
-    return !(*this == rhs);
   }
 
   bool IsShiftDown() const {
@@ -75,23 +44,8 @@ class Accelerator {
     return (modifiers_ & Event::EF_ALT_DOWN) == Event::EF_ALT_DOWN;
   }
 
-  base::KeyboardCode GetKeyCode() const {
-    return key_code_;
-  }
-
-  int modifiers() const {
-    return modifiers_;
-  }
-
   // Returns a string with the localized shortcut if any.
   std::wstring GetShortcutText() const;
-
- private:
-  // The window keycode (VK_...).
-  base::KeyboardCode key_code_;
-
-  // The state of the Shift/Ctrl/Alt keys (see event.h).
-  int modifiers_;
 };
 
 // An interface that classes that want to register for keyboard accelerators

@@ -8,6 +8,7 @@
 #define CHROME_BROWSER_VIEWS_NOTIFICATIONS_BALLOON_VIEW_H_
 
 #include "app/gfx/path.h"
+#include "app/menus/simple_menu_model.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
 #include "base/gfx/point.h"
@@ -19,7 +20,6 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "views/controls/button/menu_button.h"
-#include "views/controls/menu/simple_menu_model.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
@@ -28,6 +28,7 @@ class ButtonListener;
 class ImagePainter;
 class TextButton;
 class WidgetWin;
+class Menu2;
 }  // namespace views
 
 class BalloonViewHost;
@@ -40,7 +41,7 @@ class SlideAnimation;
 class BalloonViewImpl : public BalloonView,
                         public views::View,
                         public views::ViewMenuDelegate,
-                        public views::SimpleMenuModel::Delegate,
+                        public menus::SimpleMenuModel::Delegate,
                         public NotificationObserver,
                         public AnimationDelegate {
  public:
@@ -64,11 +65,11 @@ class BalloonViewImpl : public BalloonView,
   // views::ViewMenuDelegate interface.
   void RunMenu(views::View* source, const gfx::Point& pt);
 
-  // views::SimpleMenuModel::Delegate interface.
+  // menus::SimpleMenuModel::Delegate interface.
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual void ExecuteCommand(int command_id);
 
   // NotificationObserver interface.
@@ -148,7 +149,7 @@ class BalloonViewImpl : public BalloonView,
   gfx::Rect anim_frame_end_;
 
   // The options menu.
-  scoped_ptr<views::SimpleMenuModel> options_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> options_menu_contents_;
   scoped_ptr<views::Menu2> options_menu_menu_;
   views::MenuButton* options_menu_button_;
 

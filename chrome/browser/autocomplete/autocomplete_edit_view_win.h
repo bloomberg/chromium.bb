@@ -13,6 +13,7 @@
 #include <tom.h>  // For ITextDocument, a COM interface to CRichEditCtrl.
 
 #include "app/gfx/font.h"
+#include "app/menus/simple_menu_model.h"
 #include "base/scoped_comptr_win.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
@@ -20,7 +21,6 @@
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/views/autocomplete/autocomplete_popup_contents_view.h"
 #include "chrome/common/page_transition_types.h"
-#include "views/controls/menu/simple_menu_model.h"
 #include "webkit/glue/window_open_disposition.h"
 
 class AutocompletePopupModel;
@@ -29,6 +29,7 @@ class Profile;
 class TabContents;
 namespace views {
 class View;
+class Menu2;
 }
 
 class AutocompleteEditController;
@@ -45,7 +46,7 @@ class AutocompleteEditViewWin
                          CWinTraits<WS_CHILD | WS_VISIBLE | ES_AUTOHSCROLL |
                                     ES_NOHIDESEL> >,
       public CRichEditCommands<AutocompleteEditViewWin>,
-      public views::SimpleMenuModel::Delegate,
+      public menus::SimpleMenuModel::Delegate,
       public AutocompleteEditView {
  public:
   struct State {
@@ -183,11 +184,11 @@ class AutocompleteEditViewWin
     DEFAULT_REFLECTION_HANDLER()  // avoids black margin area
   END_MSG_MAP()
 
-  // SimpleMenuModel::Delegate
+  // menus::SimpleMenuModel::Delegate
   virtual bool IsCommandIdChecked(int command_id) const;
   virtual bool IsCommandIdEnabled(int command_id) const;
   virtual bool GetAcceleratorForCommandId(int command_id,
-                                          views::Accelerator* accelerator);
+                                          menus::Accelerator* accelerator);
   virtual bool IsLabelForCommandIdDynamic(int command_id) const;
   virtual std::wstring GetLabelForCommandId(int command_id) const;
   virtual void ExecuteCommand(int command_id);
@@ -440,7 +441,7 @@ class AutocompleteEditViewWin
   CHARRANGE saved_selection_for_focus_change_;
 
   // The context menu for the edit.
-  scoped_ptr<views::SimpleMenuModel> context_menu_contents_;
+  scoped_ptr<menus::SimpleMenuModel> context_menu_contents_;
   scoped_ptr<views::Menu2> context_menu_;
 
   // Font we're using.  We keep a reference to make sure the font supplied to

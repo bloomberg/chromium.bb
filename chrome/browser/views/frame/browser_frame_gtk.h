@@ -42,7 +42,7 @@ class BrowserFrameGtk : public BrowserFrame,
  protected:
   // Overridden from views::WidgetGtk:
   virtual views::RootView* CreateRootView();
-  virtual bool GetAccelerator(int cmd_id, views::Accelerator* accelerator);
+  virtual bool GetAccelerator(int cmd_id, menus::Accelerator* accelerator);
 
   // Overriden from views::WindowGtk:
   virtual gboolean OnWindowStateEvent(GtkWidget* widget,

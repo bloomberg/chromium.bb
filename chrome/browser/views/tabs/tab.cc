@@ -8,6 +8,7 @@
 #include "app/gfx/font.h"
 #include "app/gfx/path.h"
 #include "app/l10n_util.h"
+#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/compiler_specific.h"
 #include "base/gfx/size.h"
@@ -15,7 +16,7 @@
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "grit/generated_resources.h"
-#include "views/controls/menu/simple_menu_model.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/widget/tooltip_manager.h"
 #include "views/widget/widget.h"
 
@@ -25,11 +26,11 @@ static const SkScalar kTabCapWidth = 15;
 static const SkScalar kTabTopCurveWidth = 4;
 static const SkScalar kTabBottomCurveWidth = 3;
 
-class Tab::TabContextMenuContents : public views::SimpleMenuModel,
-                                    public views::SimpleMenuModel::Delegate {
+class Tab::TabContextMenuContents : public menus::SimpleMenuModel,
+                                    public menus::SimpleMenuModel::Delegate {
  public:
   explicit TabContextMenuContents(Tab* tab)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(SimpleMenuModel(this)),
+      : ALLOW_THIS_IN_INITIALIZER_LIST(menus::SimpleMenuModel(this)),
         tab_(tab),
         last_command_(TabStripModel::CommandFirst) {
     Build();
@@ -49,7 +50,7 @@ class Tab::TabContextMenuContents : public views::SimpleMenuModel,
       delegate->StopAllHighlighting();
   }
 
-  // Overridden from views::SimpleMenuModel::Delegate:
+  // Overridden from menus::SimpleMenuModel::Delegate:
   virtual bool IsCommandIdChecked(int command_id) const {
     if (!tab_ || command_id != TabStripModel::CommandTogglePinned)
       return false;
@@ -62,7 +63,7 @@ class Tab::TabContextMenuContents : public views::SimpleMenuModel,
   }
   virtual bool GetAcceleratorForCommandId(
       int command_id,
-      views::Accelerator* accelerator) {
+      menus::Accelerator* accelerator) {
     return tab_->GetWidget()->GetAccelerator(command_id, accelerator);
   }
   virtual void CommandIdHighlighted(int command_id) {
