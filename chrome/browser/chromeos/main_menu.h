@@ -13,6 +13,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/common/renderer_preferences.h"
 
 class Browser;
 class RenderWidgetHostViewGtk;
@@ -144,6 +145,7 @@ class MainMenu : public RenderViewHostDelegate,
     return this;
   }
   virtual void RequestMove(const gfx::Rect& new_bounds);
+  virtual RendererPreferences GetRendererPrefs() const;
 
   // RenderViewHostDelegate::View overrides.
   virtual void CreateNewWindow(int route_id);

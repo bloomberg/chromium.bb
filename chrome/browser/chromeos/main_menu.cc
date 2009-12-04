@@ -22,6 +22,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "chrome/common/platform_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -241,6 +242,10 @@ void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
                         rwhv_size.width(), rwhv_size.height());
   popup_->SetBounds(new_bounds);
   rwhv_->SetSize(rwhv_size);
+}
+
+RendererPreferences MainMenu::GetRendererPrefs() const {
+  return platform_util::GetInitedRendererPreferences();
 }
 
 void MainMenu::CreateNewWindow(int route_id) {
