@@ -651,6 +651,9 @@ void SavePackage::Finish() {
                         save_ids));
 
   download_->Finished(all_save_items_count_);
+  // Notify download observers that we are complete (the call to Finished() set
+  // the state to complete but did not notify).
+  download_->UpdateObservers();
 
   NotificationService::current()->Notify(
       NotificationType::SAVE_PACKAGE_SUCCESSFULLY_FINISHED,
