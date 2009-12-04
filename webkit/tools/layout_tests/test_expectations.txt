@@ -3206,6 +3206,8 @@ BUG_SENORBLANCO LINUX : LayoutTests/fast/repaint/shadow-multiple-strict-vertical
 BUG_SENORBLANCO LINUX : LayoutTests/fast/repaint/shadow-multiple-vertical.html = IMAGE
 BUG_SENORBLANCO LINUX : LayoutTests/fast/repaint/transform-layout-repaint.html = IMAGE
 BUG_SENORBLANCO LINUX : LayoutTests/fast/transforms/shadows.html = IMAGE
+BUG_SENORBLANCO LINUX : LayoutTests/media/video-layer-crash.html = IMAGE
+BUG_SENORBLANCO LINUX : LayoutTests/media/video-transformed.html = IMAGE
 BUG_SENORBLANCO LINUX : LayoutTests/svg/W3C-SVG-1.1/coords-viewattr-01-b.svg = IMAGE
 BUG_SENORBLANCO LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = IMAGE
 BUG_SENORBLANCO LINUX : LayoutTests/svg/W3C-SVG-1.1/painting-marker-02-f.svg = IMAGE
