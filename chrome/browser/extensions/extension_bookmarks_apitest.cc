@@ -5,6 +5,6 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 // Flaky, http://crbug.com/19866. Please consult phajdan.jr before re-enabling.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Bookmarks) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Bookmarks) {
   ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
 }
