@@ -3052,3 +3052,5 @@ BUG29339 WIN MAC : LayoutTests/plugins/embed-attributes-setting.html = CRASH FAI
 BUG29344 : LayoutTests/svg/W3C-SVG-1.1/text-text-07-t.svg = FAIL
 BUG29344 : LayoutTests/svg/text/text-text-07-t.svg = FAIL
 BUG29344 : LayoutTests/svg/dom/svglist-exception-on-out-bounds-error.html = FAIL
+
+BUG_ATWILSON MAC : LayoutTests/fast/borders/block-mask-overlay-image.html = FAIL
