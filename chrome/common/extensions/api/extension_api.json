@@ -1747,6 +1747,12 @@
         ]
       },
       {
+        "name": "resetQuota",
+        "type": "function",
+        "description": "Reset all accumulated quota state for all extensions.  This is only used for internal unit testing.",
+        "parameters": []
+      },
+      {
         "name": "log",
         "type": "function",
         "description": "Logs a message during internal unit testing.",

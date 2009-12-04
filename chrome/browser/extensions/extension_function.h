@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_H_
 
 #include <string>
+#include <list>
 
 #include "base/values.h"
 #include "base/scoped_ptr.h"
@@ -14,6 +15,7 @@
 
 class ExtensionFunctionDispatcher;
 class Profile;
+class QuotaLimitHeuristic;
 
 #define EXTENSION_FUNCTION_VALIDATE(test) do { \
     if (!(test)) { \
@@ -48,10 +50,15 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   // Retrieves any error string from the function.
   virtual const std::string GetError() = 0;
 
+  // Returns a quota limit heuristic suitable for this function.
+  // No quota limiting by default.
+  virtual void GetQuotaLimitHeuristics(
+      std::list<QuotaLimitHeuristic*>* heuristics) const {}
+
   void set_dispatcher_peer(ExtensionFunctionDispatcher::Peer* peer) {
     peer_ = peer;
   }
-  ExtensionFunctionDispatcher* dispatcher() {
+  ExtensionFunctionDispatcher* dispatcher() const {
     return peer_->dispatcher_;
   }
 
@@ -134,7 +141,7 @@ class AsyncExtensionFunction : public ExtensionFunction {
   // Note: After Run() returns, dispatcher() can be NULL.  Since these getters
   // rely on dispatcher(), make sure it is valid before using them.
   std::string extension_id();
-  Profile* profile();
+  Profile* profile() const;
 
   // The arguments to the API. Only non-null if argument were specified.
   scoped_ptr<Value> args_;

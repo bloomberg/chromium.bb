@@ -36,7 +36,7 @@ std::string AsyncExtensionFunction::extension_id() {
   return dispatcher()->extension_id();
 }
 
-Profile* AsyncExtensionFunction::profile() {
+Profile* AsyncExtensionFunction::profile() const {
   DCHECK(dispatcher());
   return dispatcher()->profile();
 }

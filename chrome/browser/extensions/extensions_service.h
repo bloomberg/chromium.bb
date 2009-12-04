@@ -20,6 +20,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/browser/privacy_blacklist/blacklist_manager.h"
@@ -217,6 +218,8 @@ class ExtensionsService
   // Note that this may return NULL if autoupdate is not turned on.
   ExtensionUpdater* updater() { return updater_.get(); }
 
+  ExtensionsQuotaService* quota_service() { return &quota_service_; }
+
   // Notify the frontend that there was an error loading an extension.
   // This method is public because ExtensionsServiceBackend can post to here.
   void ReportExtensionLoadError(const FilePath& extension_path,
@@ -284,6 +287,9 @@ class ExtensionsService
 
   // The backend that will do IO on behalf of this instance.
   scoped_refptr<ExtensionsServiceBackend> backend_;
+
+  // Used by dispatchers to limit API quota for individual extensions.
+  ExtensionsQuotaService quota_service_;
 
   // Is the service ready to go?
   bool ready_;

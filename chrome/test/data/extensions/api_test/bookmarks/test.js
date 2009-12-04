@@ -17,6 +17,12 @@ var node2 = {parentId:"1", title:"foo quux",
              url:"http://www.example.com/bar"};
 var node3 = {parentId:"1", title:"bar baz",
              url:"http://www.google.com/hello/quux"};
+var quota_node1 = {parentId:"1", title:"Dave",
+                   url:"http://www.dmband.com/"};
+var quota_node2 = {parentId:"1", title:"UW",
+                   url:"http://www.uwaterloo.ca/"};
+var quota_node3 = {parentId:"1", title:"Whistler",
+                   url:"http://www.whistlerblackcomb.com/"};
 
 var pass = chrome.test.callbackPass;
 var fail = chrome.test.callbackFail;
@@ -64,6 +70,30 @@ function compareTrees(left, right) {
       return result;
   }
   return true;
+}
+
+function createThreeNodes(one, two, three) {
+  var bookmarks_bar = expected[0].children[0];
+  chrome.bookmarks.create(one, pass(function(results) {
+    one.id = results.id;
+    one.index = results.index;
+    bookmarks_bar.children.push(one);
+  }));
+  chrome.bookmarks.create(two, pass(function(results) {
+    two.id = results.id;
+    two.index = results.index;
+    bookmarks_bar.children.push(two);
+  }));
+  chrome.bookmarks.create(three, pass(function(results) {
+    three.id = results.id;
+    three.index = results.index;
+    bookmarks_bar.children.push(three);
+  }));
+  chrome.bookmarks.getTree(pass(function(results) {
+    chrome.test.assertTrue(compareTrees(expected, results),
+                           "getTree() result != expected");
+    expected = results;
+  }));
 }
 
 chrome.test.runTests([
@@ -136,27 +166,7 @@ chrome.test.runTests([
   },
 
   function move_setup() {
-    var bookmarks_bar = expected[0].children[0];
-    chrome.bookmarks.create(node1, pass(function(results) {
-      node1.id = results.id;
-      node1.index = results.index;
-      bookmarks_bar.children.push(node1);
-    }));
-    chrome.bookmarks.create(node2, pass(function(results) {
-      node2.id = results.id;
-      node2.index = results.index;
-      bookmarks_bar.children.push(node2);
-    }));
-    chrome.bookmarks.create(node3, pass(function(results) {
-      node3.id = results.id;
-      node3.index = results.index;
-      bookmarks_bar.children.push(node3);
-    }));
-    chrome.bookmarks.getTree(pass(function(results) {
-      chrome.test.assertTrue(compareTrees(expected, results),
-                             "getTree() result != expected");
-      expected = results;
-    }));
+    createThreeNodes(node1, node2, node3);
   },
 
   function move() {
@@ -280,7 +290,7 @@ chrome.test.runTests([
       expected = results;
     }));
   },
-  
+
   function removeTree() {
     var parentId = node2.parentId;
     var folder = expected[0].children[1].children[0];
@@ -297,5 +307,45 @@ chrome.test.runTests([
                              "getTree() result != expected");
       expected = results;
     }));
+  },
+
+  function quotaLimitedCreate() {
+    var node = {parentId:"1", title:"quotacreate", url:"http://www.quota.com/"};
+    for (i = 0; i < 100; i++) {
+      chrome.bookmarks.create(node, pass(function(results) {
+        expected[0].children[0].children.push(results);
+      }));
+    }
+    chrome.bookmarks.create(node,
+                            fail("This request exceeds available quota."));
+
+    chrome.test.resetQuota();
+
+    // Also, test that > 100 creations of different items is fine.
+    for (i = 0; i < 101; i++) {
+      var changer = {parentId:"1", title:"" + i, url:"http://www.quota.com/"};
+      chrome.bookmarks.create(changer, pass(function(results) {
+        expected[0].children[0].children.push(results);
+      }));
+    }
+  },
+
+  function quota_setup() {
+    createThreeNodes(quota_node1, quota_node2, quota_node3);
+  },
+
+  function quotaLimitedUpdate() {
+    var title = "hello, world!";
+    for (i = 0; i < 100; i++) {
+      chrome.bookmarks.update(quota_node1.id, {"title": title},
+          pass(function(results) {
+                 chrome.test.assertEq(title, results.title);
+               }
+      ));
+    }
+    chrome.bookmarks.update(quota_node1.id, {"title": title},
+        fail("This request exceeds available quota."));
+
+    chrome.test.resetQuota();
   },
 ]);

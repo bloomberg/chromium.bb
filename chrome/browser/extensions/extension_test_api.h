@@ -25,4 +25,10 @@ class ExtensionTestLogFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("test.log")
 };
 
+class ExtensionTestQuotaResetFunction : public SyncExtensionFunction {
+  ~ExtensionTestQuotaResetFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("test.resetQuota")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_

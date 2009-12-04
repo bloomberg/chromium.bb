@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_tabs_module_constants.h"
 #include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/browser/extensions/extension_toolstrip_api.h"
+#include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -149,6 +150,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTestPassFunction>();
   RegisterFunction<ExtensionTestFailFunction>();
   RegisterFunction<ExtensionTestLogFunction>();
+  RegisterFunction<ExtensionTestQuotaResetFunction>();
 }
 
 void FactoryRegistry::GetAllNames(std::vector<std::string>* names) {
@@ -281,7 +283,16 @@ void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
   function->SetArgs(args);
   function->set_request_id(request_id);
   function->set_has_callback(has_callback);
-  function->Run();
+
+  ExtensionsService* service = profile()->GetExtensionsService();
+  DCHECK(service);
+  ExtensionsQuotaService* quota = service->quota_service();
+  if (quota->Assess(extension_id(), function, args, base::TimeTicks::Now())) {
+    function->Run();
+  } else {
+    render_view_host_->SendExtensionResponse(function->request_id(), false,
+        std::string(), QuotaLimitHeuristic::kGenericOverQuotaError);
+  }
 }
 
 void ExtensionFunctionDispatcher::SendResponse(ExtensionFunction* function,

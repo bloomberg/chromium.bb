@@ -620,6 +620,7 @@
         'browser/extensions/extension_process_manager_unittest.cc',
         'browser/extensions/extension_ui_unittest.cc',
         'browser/extensions/extension_updater_unittest.cc',
+        'browser/extensions/extensions_quota_service_unittest.cc',
         'browser/extensions/extensions_service_unittest.cc',
         'browser/extensions/file_reader_unittest.cc',
         'browser/extensions/sandboxed_extension_unpacker_unittest.cc',
