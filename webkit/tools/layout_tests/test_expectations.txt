@@ -2969,6 +2969,12 @@ BUG28317 : LayoutTests/fast/css/color-correction-untagged-images.html = FAIL
 BUG_OJAN MAC : LayoutTests/http/tests/loading/text-content-type-with-binary-extension.html = TEXT PASS
 BUG_OJAN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = TEXT PASS
 
+// Started failing when we started sharding the http and fast directories.
+// Likely it's because this test depends on some other http test running before
+// it that no longer does (or vice versa, some other test running before it
+// is causing it to fail).
+BUG_OJAN LINUX DEBUG : LayoutTests/http/tests/navigation/lockedhistory-iframe.html = TEXT
+
 // These tests time out *and* are slow. The test should be fixed to not timeout,
 // then should be marked as SLOW/PASS.
 BUG2844 : LayoutTests/http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
