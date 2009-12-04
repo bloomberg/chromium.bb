@@ -84,12 +84,13 @@ class Lighttpd:
     )
 
 
-  def __init__(self, output_dir, background=False, port=None, root=None,
-               register_cygwin=None, run_background=None):
+  def __init__(self, output_dir, num_workers=None, background=False, port=None,
+               root=None, register_cygwin=None, run_background=None):
     """Args:
       output_dir: the absolute path to the layout test result directory
     """
     self._output_dir = output_dir
+    self._num_workers = num_workers
     self._process = None
     self._port = port
     self._root = root
@@ -138,6 +139,10 @@ class Lighttpd:
     # Setup log files
     f.write(('server.errorlog = "%s"\n'
              'accesslog.filename = "%s"\n\n') % (error_log, access_log))
+
+    # Setup the number of worker processes to spawn.
+    if self._num_workers:
+      f.write('server.max-worker = %s' % self._num_workers)
 
     # Setup upload folders. Upload folder is to hold temporary upload files
     # and also POST data. This is used to support XHR layout tests that does
