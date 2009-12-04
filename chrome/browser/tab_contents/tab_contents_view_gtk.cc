@@ -234,10 +234,6 @@ gfx::NativeWindow TabContentsViewGtk::GetTopLevelNativeWindow() const {
   return window ? GTK_WINDOW(window) : NULL;
 }
 
-void TabContentsViewGtk::InitRendererPrefs(RendererPreferences* prefs) {
-  gtk_util::InitRendererPrefsFromGtkSettings(prefs);
-}
-
 void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   // This is used for positioning the download shelf arrow animation,
   // as well as sizing some other widgets in Windows.  In GTK the size is

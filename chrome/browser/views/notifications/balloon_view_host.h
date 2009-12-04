@@ -9,6 +9,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "chrome/common/renderer_preferences.h"
 #include "views/controls/native/native_view_host.h"
 #include "webkit/glue/webpreferences.h"
 
@@ -82,6 +83,7 @@ class BalloonViewHost : public views::NativeViewHost,
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
+  virtual RendererPreferences GetRendererPrefs() const { return RendererPreferences();  }
 
   // Accessors.
   RenderViewHost* render_view_host() const { return render_view_host_; }

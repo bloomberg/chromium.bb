@@ -32,6 +32,7 @@
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/view_types.h"
@@ -412,6 +413,10 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
         Source<Profile>(profile_),
         Details<ExtensionHost>(this));
   }
+}
+
+RendererPreferences ExtensionHost::GetRendererPrefs() const {
+  return platform_util::GetInitedRendererPreferences();
 }
 
 WebPreferences ExtensionHost::GetWebkitPrefs() {

@@ -157,4 +157,8 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   win_util::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
 }
 
+RendererPreferences GetInitedRendererPreferences() {
+  return RendererPreferences();
+}
+
 }  // namespace platform_util

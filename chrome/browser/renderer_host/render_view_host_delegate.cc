@@ -5,9 +5,14 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 
 #include "base/gfx/rect.h"
+#include "base/singleton.h"
 #include "chrome/common/renderer_preferences.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/webpreferences.h"
+
+#if defined(OS_LINUX)
+#include "chrome/common/gtk_util.h"
+#endif
 
 RenderViewHostDelegate::View* RenderViewHostDelegate::GetViewDelegate() {
   return NULL;
@@ -66,10 +71,6 @@ void RenderViewHostDelegate::AddBlockedNotice(const GURL& url,
 
 GURL RenderViewHostDelegate::GetAlternateErrorPageURL() const {
   return GURL();
-}
-
-RendererPreferences RenderViewHostDelegate::GetRendererPrefs() const {
-  return RendererPreferences();
 }
 
 WebPreferences RenderViewHostDelegate::GetWebkitPrefs() {

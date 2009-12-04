@@ -60,9 +60,6 @@ class TabContentsView : public RenderViewHostDelegate::View {
   // dialog boxes.
   virtual gfx::NativeWindow GetTopLevelNativeWindow() const = 0;
 
-  // Initialize the passed-in renderer preferences.
-  virtual void InitRendererPrefs(RendererPreferences* prefs) {}
-
   // Computes the rectangle for the native widget that contains the contents of
   // the tab relative to its parent.
   virtual void GetContainerBounds(gfx::Rect *out) const = 0;

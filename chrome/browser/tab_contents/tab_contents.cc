@@ -259,6 +259,7 @@ TabContents::TabContents(Profile* profile,
       last_javascript_message_dismissal_(),
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
+      renderer_preferences_(platform_util::GetInitedRendererPreferences()),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI) {
 #if defined(OS_CHROMEOS)
   // Make sure the thumbnailer is started before starting the render manager.
@@ -302,8 +303,6 @@ TabContents::TabContents(Profile* profile,
   // Set-up the showing of the omnibox search infobar if applicable.
   if (OmniboxSearchHint::IsEnabled(profile))
     omnibox_search_hint_.reset(new OmniboxSearchHint(this));
-
-  view_->InitRendererPrefs(&renderer_preferences_);
 }
 
 TabContents::~TabContents() {
