@@ -136,7 +136,7 @@ class TestRunner:
       self._http_server = http_server.Lighttpd(options.results_directory)
 
     self._shardable_directories = ['chrome', 'LayoutTests', 'pending', 'fast',
-        'http', 'tests']
+        'http', 'tests', 'svg']
 
     self._websocket_server = websocket_server.PyWebSocket(
         options.results_directory)
