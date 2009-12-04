@@ -97,7 +97,7 @@ deps = {
     Var("webkit_revision"),
 
   "src/chrome/tools/test/reference_build":
-    "/trunk/deps/reference_builds@33838",
+    "/trunk/deps/reference_builds@33840",
 }
 
 
@@ -119,7 +119,7 @@ deps_os = {
     "src/third_party/xulrunner-sdk":
       "/trunk/deps/third_party/xulrunner-sdk@17887",
     "src/chrome_frame/tools/test/reference_build/chrome":
-      "/trunk/deps/reference_builds/chrome_frame@33838",
+      "/trunk/deps/reference_builds/chrome_frame@33840",
 
     # Parses Windows PE/COFF executable format.
     "src/third_party/pefile":
