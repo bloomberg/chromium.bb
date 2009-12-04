@@ -845,12 +845,13 @@ void BookmarkManagerView::UpdateSyncStatus() {
   }
 
   if (sync_service_->HasSyncSetupCompleted()) {
-      std::wstring username = sync_service_->GetAuthenticatedUsername();
-      status_label = l10n_util::GetStringF(IDS_SYNC_NTP_SYNCED_TO, username);
+      string16 username = sync_service_->GetAuthenticatedUsername();
+      status_label = l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,
+                                                username);
   } else if (sync_service_->SetupInProgress()) {
-    status_label = l10n_util::GetString(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+    status_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
   } else {
-    status_label = l10n_util::GetString(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+    status_label = l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
   }
   sync_status_button_->SetText(status_label);
   sync_status_button_->SetTooltipText(L"");
