@@ -336,6 +336,10 @@ TEST_F(WorkerTest, LimitPerPage) {
 #if defined(OS_LINUX)
 // Fails (crashes) on Linux Tests: http://crbug.com/28445
 #define LimitTotal DISABLED_LimitTotal
+#elif defined(OS_MACOSX)
+// Doesn't crash, but on Mac it sometimes fails for a few runs in a row,
+// http://crbug.com/28445
+#define LimitTotal FLAKY_LimitTotal
 #endif
 
 TEST_F(WorkerTest, LimitTotal) {
