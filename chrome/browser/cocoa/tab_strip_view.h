@@ -12,13 +12,7 @@
 @interface TabStripView : NSView {
  @private
   NSTimeInterval lastMouseUp_;
-
-  // Weak; the following come from the nib.
-  NSButton* newTabButton_;
 }
-
-@property(assign, nonatomic) IBOutlet NSButton* newTabButton;
-
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TAB_STRIP_VIEW_H_
