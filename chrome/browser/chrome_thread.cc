@@ -59,6 +59,13 @@ ChromeThread::~ChromeThread() {
 }
 
 // static
+bool ChromeThread::IsWellKnownThread(ID identifier) {
+  AutoLock lock(lock_);
+  return (identifier >= 0 && identifier < ID_COUNT &&
+          chrome_threads_[identifier]);
+}
+
+// static
 bool ChromeThread::CurrentlyOn(ID identifier) {
   AutoLock lock(lock_);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);

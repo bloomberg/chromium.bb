@@ -114,6 +114,10 @@ class ChromeThread : public base::Thread {
         identifier, from_here, new ReleaseTask<T>(object));
   }
 
+  // Callable on any thread.  Returns whether the given ID corresponds to a well
+  // known thread.
+  static bool IsWellKnownThread(ID identifier);
+
   // Callable on any thread.  Returns whether you're currently on a particular
   // thread.
   static bool CurrentlyOn(ID identifier);
