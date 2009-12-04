@@ -3072,5 +3072,10 @@ BUG_ATWILSON : LayoutTests/http/tests/security/cross-frame-access-enumeration.ht
 BUG_ATWILSON LINUX WIN : LayoutTests/fast/repaint/block-selection-gap-in-composited-layer.html = IMAGE+TEXT
 BUG_ATWILSON : LayoutTests/fast/repaint/selection-gap-overflow-scroll.html = IMAGE
 
-// Failure introduced by USE_NEW_BUILDER in Skia.
+// Failures introduced by USE_NEW_BUILDER in Skia.
 BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/canvas/set-colors.html = TEXT
+BUG_SENORBLANCO WIN : LayoutTests/fast/backgrounds/repeat/negative-offset-repeat-transformed.html = IMAGE
+BUG_SENORBLANCO WIN : LayoutTests/svg/batik/text/textFeatures.svg = IMAGE
+BUG_SENORBLANCO WIN : LayoutTests/svg/custom/foreign-object-skew.svg = IMAGE
+BUG_SENORBLANCO WIN : LayoutTests/svg/custom/js-late-gradient-and-object-creation.svg = IMAGE
+BUG_SENORBLANCO WIN : LayoutTests/transforms/2d/hindi-rotated.html = IMAGE
