@@ -265,17 +265,18 @@ private:
     bridge_.reset(new TabStripModelObserverBridge(tabModel_, self));
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
+
+    // Important note: any non-tab subviews not added to |permanentSubviews_|
+    // (see |-addSubviewToPermanentList:|) will be wiped out.
     permanentSubviews_.reset([[NSMutableArray alloc] init]);
 
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     defaultFavIcon_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
 
-    // Take the only child view present in the nib as the new tab button. For
-    // some reason, if the view is present in the nib apriori, it draws
-    // correctly. If we create it in code and add it to the tab view, it draws
-    // with all sorts of crazy artifacts.
-    newTabButton_ = [[tabView_ subviews] objectAtIndex:0];
-    DCHECK([newTabButton_ isKindOfClass:[NSButton class]]);
+    // TODO(viettrungluu): WTF? "For some reason, if the view is present in the
+    // nib a priori, it draws correctly. If we create it in code and add it to
+    // the tab view, it draws with all sorts of crazy artifacts."
+    newTabButton_ = [view newTabButton];
     [self addSubviewToPermanentList:newTabButton_];
     [newTabButton_ setTarget:nil];
     [newTabButton_ setAction:@selector(commandDispatch:)];
