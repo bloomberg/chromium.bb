@@ -52,7 +52,7 @@ declare -a DSYMS
 for SRC_NAME in "${SRC_APP_NAME}.app" \
                 "${SRC_APP_NAME} Framework.framework" \
                 "${SRC_APP_NAME} Helper.app" \
-                "plugin_carbon_interpose.dylib" ; do
+                "libplugin_carbon_interpose.dylib" ; do
   # SRC_STEM is the name of the file within the DWARF directory of the .dSYM
   # bundle, which comes from the on-disk name of an executable or dylib within
   # its enclosing .app or .framework bundle.  This is the bundle name without
