@@ -618,7 +618,7 @@ set_mode(struct connector *c, int count, int page_flip)
 	memset(&evctx, 0, sizeof evctx);
 	evctx.version = DRM_EVENT_CONTEXT_VERSION;
 	evctx.vblank_handler = NULL;
-	evctx.pageflip_handler = page_flip_handler;
+	evctx.page_flip_handler = page_flip_handler;
 	
 	while (1) {
 		struct pollfd pfd[2];
