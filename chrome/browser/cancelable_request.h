@@ -87,6 +87,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/cancellation_flag.h"
 #include "base/lock.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
@@ -365,8 +366,7 @@ class CancelableRequestBase
   CancelableRequestBase()
       : provider_(NULL),
         consumer_(NULL),
-        handle_(0),
-        canceled_(false) {
+        handle_(0) {
     callback_thread_ = MessageLoop::current();
   }
 
@@ -380,11 +380,12 @@ class CancelableRequestBase
 
   // The canceled flag indicates that the request should not be executed.
   // A request can never be uncanceled, so only a setter for true is provided.
+  // This can be called multiple times, but only from one thread.
   void set_canceled() {
-    canceled_ = true;
+    canceled_.Set();
   }
   bool canceled() {
-    return canceled_;
+    return canceled_.IsSet();
   }
 
  protected:
@@ -417,7 +418,7 @@ class CancelableRequestBase
   CancelableRequestProvider* provider_;
 
   // Notified after we execute that the request is complete.  This should only
-  // be accessed if !canceled_, otherwise the pointer is invalid.
+  // be accessed if !canceled_.IsSet(), otherwise the pointer is invalid.
   CancelableRequestConsumerBase* consumer_;
 
   // The handle to this request inside the provider. This will be initialized
@@ -427,7 +428,7 @@ class CancelableRequestBase
 
   // Set if the caller cancels this request. No callbacks should be made when
   // this is set.
-  bool canceled_;
+  base::CancellationFlag canceled_;
 
  private:
   DISALLOW_EVIL_CONSTRUCTORS(CancelableRequestBase);
@@ -512,7 +513,7 @@ class CancelableRequest : public CancelableRequestBase {
   // Executes the callback and notifies the provider and the consumer that this
   // request has been completed. This must be called on the callback_thread_.
   void ExecuteCallback(const TupleType& param) {
-    if (!canceled_) {
+    if (!canceled_.IsSet()) {
       // Execute the callback.
       callback_->RunWithParams(param);
 
@@ -522,8 +523,8 @@ class CancelableRequest : public CancelableRequestBase {
     }
   }
 
-  // This should only be executed if !canceled_, otherwise the pointers may be
-  // invalid.
+  // This should only be executed if !canceled_.IsSet(),
+  // otherwise the pointers may be invalid.
   scoped_ptr<CallbackType> callback_;
 };
 
