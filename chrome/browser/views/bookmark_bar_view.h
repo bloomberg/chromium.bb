@@ -334,6 +334,12 @@ class BookmarkBarView : public DetachableToolbarView,
                              int press_y,
                              OSExchangeData* data);
 
+  virtual bool CanStartDrag(views::View* sender,
+                            int press_x,
+                            int press_y,
+                            int x,
+                            int y);
+
   // Writes a BookmarkDragData for node to data.
   void WriteDragData(const BookmarkNode* node, OSExchangeData* data);
 

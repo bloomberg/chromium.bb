@@ -85,8 +85,16 @@ class DragController {
   // Returns the supported drag operations (see DragDropTypes for possible
   // values). A drag is only started if this returns a non-zero value.
   virtual int GetDragOperations(View* sender, int x, int y) = 0;
-};
 
+  // Returns true if a drag operation can be started.
+  // |press_x| and |press_y| represent coordinates where mouse was initially
+  // pressed down. |x| and |y| are the current mouse coordinates.
+  virtual bool CanStartDrag(View* sender,
+                            int press_x,
+                            int press_y,
+                            int x,
+                            int y) = 0;
+};
 
 /////////////////////////////////////////////////////////////////////////////
 //

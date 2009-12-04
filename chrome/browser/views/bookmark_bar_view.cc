@@ -1116,6 +1116,31 @@ void BookmarkBarView::WriteDragData(const BookmarkNode* node,
   drag_data.Write(profile_, data);
 }
 
+bool BookmarkBarView::CanStartDrag(views::View* sender,
+                                   int press_x,
+                                   int press_y,
+                                   int x,
+                                   int y) {
+  // Check if we have not moved enough horizontally but we have moved downward
+  // vertically - downward drag.
+  if (!View::ExceededDragThreshold(press_x - x, 0) && press_y < y) {
+    for (int i = 0; i < GetBookmarkButtonCount(); ++i) {
+      if (sender == GetBookmarkButton(i)) {
+        const BookmarkNode* node = model_->GetBookmarkBarNode()->GetChild(i);
+        // If the folder button was dragged, show the menu instead.
+        if (node && node->is_folder()) {
+          views::MenuButton* menu_button =
+              static_cast<views::MenuButton*>(sender);
+          menu_button->Activate();
+          return false;
+        }
+        break;
+      }
+    }
+  }
+  return true;
+}
+
 int BookmarkBarView::GetDragOperations(View* sender, int x, int y) {
   if (size_animation_->IsAnimating() ||
       (size_animation_->GetCurrentValue() == 0 && !OnNewTabPage())) {

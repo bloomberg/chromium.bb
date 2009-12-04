@@ -151,6 +151,13 @@ class ToolbarView : public AccessibleToolbarView,
                              int press_y,
                              OSExchangeData* data);
   virtual int GetDragOperations(View* sender, int x, int y);
+  virtual bool CanStartDrag(View* sender,
+                            int press_x,
+                            int press_y,
+                            int x,
+                            int y) {
+    return true;
+  }
 
   // Returns the number of pixels above the location bar in non-normal display.
   int PopupTopSpacing() const;

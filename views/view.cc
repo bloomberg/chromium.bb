@@ -487,7 +487,13 @@ bool View::ProcessMouseDragged(const MouseEvent& e, DragInfo* drag_info) {
   const bool possible_drag = drag_info->possible_drag;
   if (possible_drag && ExceededDragThreshold(drag_info->start_x - e.x(),
                                              drag_info->start_y - e.y())) {
-    DoDrag(e, drag_info->start_x, drag_info->start_y);
+    if (!drag_controller_ ||
+        drag_controller_->CanStartDrag(this,
+                                       drag_info->start_x,
+                                       drag_info->start_y,
+                                       e.x(),
+                                       e.y()))
+      DoDrag(e, drag_info->start_x, drag_info->start_y);
   } else {
     if (OnMouseDragged(e))
       return true;
