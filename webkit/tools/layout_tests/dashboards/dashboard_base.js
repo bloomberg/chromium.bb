@@ -42,7 +42,9 @@ var EXPECTATIONS_MAP = {
   'F': 'TEXT',
   'I': 'IMAGE',
   'Z': 'IMAGE+TEXT',
-  'O': 'OTHER',
+  // We used to glob a bunch of expectations into "O" as OTHER. Expectations
+  // are more precise now though and it just means MISSING.
+  'O': 'MISSING',
   'N': 'NO DATA',
   'X': 'SKIP'
 };
