@@ -3054,3 +3054,5 @@ BUG29344 : LayoutTests/svg/text/text-text-07-t.svg = FAIL
 BUG29344 : LayoutTests/svg/dom/svglist-exception-on-out-bounds-error.html = FAIL
 
 BUG_ATWILSON MAC : LayoutTests/fast/borders/block-mask-overlay-image.html = FAIL
+BUG_ATWILSON : LayoutTests/fast/block/positioning/complex-percentage-height.html = FAIL
+BUG_ATWILSON : LayoutTests/fast/lists/item-not-in-list-line-wrapping.html = FAIL
