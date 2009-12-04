@@ -61,6 +61,7 @@
 #include "grit/app_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
 #include "grit/webkit_resources.h"
 #include "views/controls/single_split_view.h"
@@ -326,6 +327,15 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
     explanation_->set_border(views::Border::CreateEmptyBorder(10, 10, 10, 10));
     layout->StartRow(0, columnset_id);
     layout->AddView(explanation_);
+
+    dialog_dimensions_ = views::Window::GetLocalizedContentsSize(
+        IDS_DOWNLOAD_IN_PROGRESS_WIDTH_CHARS,
+        IDS_DOWNLOAD_IN_PROGRESS_MINIMUM_HEIGHT_LINES);
+    const int height =
+        warning_->GetHeightForWidth(dialog_dimensions_.width()) +
+        explanation_->GetHeightForWidth(dialog_dimensions_.width());
+    dialog_dimensions_.set_height(std::max(height,
+                                           dialog_dimensions_.height()));
   }
 
   ~DownloadInProgressConfirmDialogDelegate() {
@@ -333,10 +343,7 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
 
   // View implementation:
   virtual gfx::Size GetPreferredSize() {
-    const int kContentWidth = 400;
-    const int height = warning_->GetHeightForWidth(kContentWidth) +
-                       explanation_->GetHeightForWidth(kContentWidth);
-    return gfx::Size(kContentWidth, height);
+    return dialog_dimensions_;
   }
 
   // DialogDelegate implementation:
@@ -383,6 +390,8 @@ class DownloadInProgressConfirmDialogDelegate : public views::DialogDelegate,
   std::wstring cancel_button_text_;
 
   std::wstring product_name_;
+
+  gfx::Size dialog_dimensions_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadInProgressConfirmDialogDelegate);
 };

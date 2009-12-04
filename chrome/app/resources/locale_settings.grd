@@ -655,6 +655,14 @@
       <message name="IDS_CRASH_REASON_URL" translateable="false">
         http://www.google.com/support/chrome/bin/answer.py?answer=95669&amp;hl=[GRITLANGCODE]
       </message>
+
+      <!-- The default width and min height for the 'download_in_progress' dialog. -->
+      <message name="IDS_DOWNLOAD_IN_PROGRESS_WIDTH_CHARS" use_name_for_id="true">
+        67
+      </message>
+      <message name="IDS_DOWNLOAD_IN_PROGRESS_MINIMUM_HEIGHT_LINES" use_name_for_id="true">
+        4
+      </message>
     </messages>
   </release>
 </grit>
