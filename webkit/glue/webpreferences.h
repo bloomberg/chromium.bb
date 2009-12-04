@@ -90,7 +90,7 @@ struct WebPreferences {
         java_enabled(true),
         allow_scripts_to_close_windows(false),
         uses_page_cache(false),
-        remote_fonts_enabled(false),
+        remote_fonts_enabled(true),
         xss_auditor_enabled(false),
         local_storage_enabled(false),
         databases_enabled(false),

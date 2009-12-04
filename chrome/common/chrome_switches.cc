@@ -126,6 +126,10 @@ const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 // disable that check. This switch is used during automated testing.
 const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
+// Disable remote web font support. SVG font should always work whether
+// this option is specified or not.
+const char kDisableRemoteFonts[]            = "disable-remote-fonts";
+
 // Enable shared workers. Functionality not yet complete.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
@@ -217,10 +221,6 @@ const char kEnableNewAutoFill[]             = "enable-new-autofill";
 
 // Enable Privacy Blacklists.
 const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
-
-// Enable remote web font support. SVG font should always work whether
-// this option is specified or not.
-const char kEnableRemoteFonts[]             = "enable-remote-fonts";
 
 // Turns on the accessibility in the renderer.  Off by default until
 // http://b/issue?id=1432077 is fixed.
