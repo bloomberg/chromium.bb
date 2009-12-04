@@ -121,7 +121,7 @@ void LocationBarViewMac::AcceptInput() {
 
 void LocationBarViewMac::AcceptInputWithDisposition(
     WindowOpenDisposition disposition) {
-  edit_view_->AcceptInput(disposition, false);
+  edit_view_->model()->AcceptInput(disposition, false);
 }
 
 void LocationBarViewMac::FocusLocation() {

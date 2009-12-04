@@ -15,6 +15,7 @@
 #include "testing/platform_test.h"
 
 using ::testing::Return;
+using ::testing::StrictMock;
 
 namespace {
 
@@ -53,7 +54,6 @@ class AutocompleteTextFieldEditorTest : public CocoaTest {
         [[AutocompleteTextField alloc] initWithFrame:frame]);
     field_ = field.get();
     [field_ setStringValue:@"Testing"];
-    [field_ setObserver:&field_observer_];
     [[test_window() contentView] addSubview:field_];
 
     // Arrange for |field_| to get the right field editor.
@@ -80,7 +80,6 @@ class AutocompleteTextFieldEditorTest : public CocoaTest {
 
   AutocompleteTextFieldEditor* editor_;
   AutocompleteTextField* field_;
-  MockAutocompleteTextFieldObserver field_observer_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 
  private:
@@ -88,6 +87,27 @@ class AutocompleteTextFieldEditorTest : public CocoaTest {
 };
 
 TEST_VIEW(AutocompleteTextFieldEditorTest, field_);
+
+// Base class for testing AutocompleteTextFieldObserver messages.
+class AutocompleteTextFieldEditorObserverTest
+    : public AutocompleteTextFieldEditorTest {
+ public:
+  virtual void SetUp() {
+    AutocompleteTextFieldEditorTest::SetUp();
+    [field_ setObserver:&field_observer_];
+  }
+
+  virtual void TearDown() {
+    // Clear the observer so that we don't show output for
+    // uninteresting messages to the mock (for instance, if |field_| has
+    // focus at the end of the test).
+    [field_ setObserver:NULL];
+
+    AutocompleteTextFieldEditorTest::TearDown();
+  }
+
+  StrictMock<MockAutocompleteTextFieldObserver> field_observer_;
+};
 
 // Test that the field editor is linked in correctly.
 TEST_F(AutocompleteTextFieldEditorTest, FirstResponder) {
@@ -134,19 +154,19 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
 }
 
 // Test that -paste: is correctly delegated to the observer.
-TEST_F(AutocompleteTextFieldEditorTest, Paste) {
+TEST_F(AutocompleteTextFieldEditorObserverTest, Paste) {
   EXPECT_CALL(field_observer_, OnPaste());
   [editor_ paste:nil];
 }
 
 // Test that -pasteAndGo: is correctly delegated to the observer.
-TEST_F(AutocompleteTextFieldEditorTest, PasteAndGo) {
+TEST_F(AutocompleteTextFieldEditorObserverTest, PasteAndGo) {
   EXPECT_CALL(field_observer_, OnPasteAndGo());
   [editor_ pasteAndGo:nil];
 }
 
 // Test that the menu is constructed correctly when CanPasteAndGo().
-TEST_F(AutocompleteTextFieldEditorTest, CanPasteAndGoMenu) {
+TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenu) {
   EXPECT_CALL(field_observer_, CanPasteAndGo())
       .WillOnce(Return(true));
   EXPECT_CALL(field_observer_, GetPasteActionStringId())
@@ -169,7 +189,7 @@ TEST_F(AutocompleteTextFieldEditorTest, CanPasteAndGoMenu) {
 }
 
 // Test that the menu is constructed correctly when !CanPasteAndGo().
-TEST_F(AutocompleteTextFieldEditorTest, CannotPasteAndGoMenu) {
+TEST_F(AutocompleteTextFieldEditorObserverTest, CannotPasteAndGoMenu) {
   EXPECT_CALL(field_observer_, CanPasteAndGo())
       .WillOnce(Return(false));
 
@@ -190,7 +210,7 @@ TEST_F(AutocompleteTextFieldEditorTest, CannotPasteAndGoMenu) {
 
 // Test that the menu is constructed correctly when field isn't
 // editable.
-TEST_F(AutocompleteTextFieldEditorTest, CanPasteAndGoMenuNotEditable) {
+TEST_F(AutocompleteTextFieldEditorObserverTest, CanPasteAndGoMenuNotEditable) {
   [field_ setEditable:NO];
   [editor_ setEditable:NO];
 

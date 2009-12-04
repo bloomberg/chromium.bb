@@ -48,11 +48,31 @@ class AutocompleteTextFieldObserver {
   virtual int GetPasteActionStringId() = 0;
 
   // Called when the user initiates a "paste and go" or "paste and
-  // search" into |field_|.
+  // search" into the field.
   virtual void OnPasteAndGo() = 0;
 
   // Called when the field's frame changes.
   virtual void OnFrameChanged() = 0;
+
+  // Called when the window containing the field loses focus.
+  virtual void OnDidResignKey() = 0;
+
+  // Called when the user begins editing the field, for every edit,
+  // and when the user is done editing the field.
+  virtual void OnDidBeginEditing() = 0;
+  virtual void OnDidChange() = 0;
+  virtual void OnDidEndEditing() = 0;
+
+  // NSResponder translates certain keyboard actions into selectors
+  // passed to -doCommandBySelector:.  The selector is forwarded here,
+  // return true if |cmd| is handled, false if the caller should
+  // handle it.
+  // TODO(shess): For now, I think having the code which makes these
+  // decisions closer to the other autocomplete code is worthwhile,
+  // since it calls a wide variety of methods which otherwise aren't
+  // clearly relevent to expose here.  But consider pulling more of
+  // the AutocompleteEditViewMac calls up to here.
+  virtual bool OnDoCommandBySelector(SEL cmd) = 0;
 };
 
 @interface AutocompleteTextField : StyledTextField {

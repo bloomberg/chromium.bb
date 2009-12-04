@@ -7,26 +7,16 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/basictypes.h"
-#include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
-#include "chrome/browser/toolbar_model.h"
 #include "chrome/browser/cocoa/autocomplete_text_field.h"
-#include "chrome/common/page_transition_types.h"
-#include "grit/generated_resources.h"
-#include "webkit/glue/window_open_disposition.h"
 
 class AutocompleteEditController;
-class AutocompleteEditModel;
-@class AutocompleteFieldDelegate;
 class AutocompletePopupViewMac;
 class BubblePositioner;
 class Clipboard;
 class CommandUpdater;
 class Profile;
-class TabContents;
 class ToolbarModel;
 
 // Implements AutocompleteEditView on an AutocompleteTextField.
@@ -94,43 +84,11 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual int GetPasteActionStringId();
   virtual void OnPasteAndGo();
   virtual void OnFrameChanged();
-
-  // Helper functions for use from AutocompleteEditHelper Objective-C
-  // class.
-
-  // Returns true if |popup_view_| is open.
-  bool IsPopupOpen() const;
-
-  // Trivial wrappers forwarding to |model_| methods.
-  void OnEscapeKeyPressed();
-  void OnUpOrDownKeyPressed(bool up, bool by_page);
-
-  // Called when editing begins in the field, and before the results
-  // of any editing are communicated to |model_|.
-  void OnWillBeginEditing();
-
-  // Called when editing ends in the field.
-  void OnDidEndEditing();
-
-  // Called when the window |field_| is in loses key to clean up
-  // visual state (such as closing the popup).
-  void OnDidResignKey();
-
-  // Checks if a keyword search is possible and forwards to |model_|
-  // if so.  Returns true if the tab should be eaten.
-  bool OnTabPressed();
-
-  // Called when the user hits backspace in |field_|.  Checks whether
-  // keyword search is being terminated.  Returns true if the
-  // backspace should be intercepted (not forwarded on to the standard
-  // machinery).
-  bool OnBackspacePressed();
-
-  // Forward to same method in |popup_view_| model.  Used when
-  // Shift-Delete is pressed, to delete items from the popup.
-  void TryDeletingCurrentItem();
-
-  void AcceptInput(WindowOpenDisposition disposition, bool for_drop);
+  virtual void OnDidResignKey();  // Closes the popup.
+  virtual void OnDidBeginEditing();
+  virtual void OnDidChange();
+  virtual void OnDidEndEditing();
+  virtual bool OnDoCommandBySelector(SEL cmd);
 
   // Helper for LocationBarViewMac.  Selects all in |field_|.
   void FocusLocation();
@@ -140,6 +98,12 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   static std::wstring GetClipboardText(Clipboard* clipboard);
 
  private:
+  // Called when the user hits backspace in |field_|.  Checks whether
+  // keyword search is being terminated.  Returns true if the
+  // backspace should be intercepted (not forwarded on to the standard
+  // machinery).
+  bool OnBackspacePressed();
+
   // Returns the field's currently selected range.  Only valid if the
   // field has focus.
   NSRange GetSelectedRange() const;
@@ -177,9 +141,6 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   CommandUpdater* command_updater_;
 
   AutocompleteTextField* field_;  // owned by tab controller
-
-  // Objective-C object to bridge field_ delegate calls to C++.
-  scoped_nsobject<AutocompleteFieldDelegate> edit_helper_;
 
   // Selection at the point where the user started using the
   // arrows to move around in the popup.

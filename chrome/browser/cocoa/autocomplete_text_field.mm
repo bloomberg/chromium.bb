@@ -15,13 +15,20 @@
   return [AutocompleteTextFieldCell class];
 }
 
+- (void)dealloc {
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [super dealloc];
+}
+
 - (void)awakeFromNib {
   DCHECK([[self cell] isKindOfClass:[AutocompleteTextFieldCell class]]);
 }
 
 - (void)flagsChanged:(NSEvent*)theEvent {
-  bool controlFlag = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
-  observer_->OnControlKeyChanged(controlFlag);
+  if (observer_) {
+    const bool controlFlag = ([theEvent modifierFlags]&NSControlKeyMask) != 0;
+    observer_->OnControlKeyChanged(controlFlag);
+  }
 }
 
 - (AutocompleteTextFieldCell*)autocompleteTextFieldCell {
@@ -168,6 +175,67 @@
 
 - (void)clearUndoChain {
   [undoManager_ removeAllActions];
+}
+
+// NOTE(shess): http://crbug.com/19116 describes a weird bug which
+// happens when the user runs a Print panel on Leopard.  After that,
+// spurious -controlTextDidBeginEditing notifications are sent when an
+// NSTextField is firstResponder, even though -currentEditor on that
+// field returns nil.  That notification caused significant problems
+// in AutocompleteEditViewMac.  -textDidBeginEditing: was NOT being
+// sent in those cases, so this approach doesn't have the problem.
+- (void)textDidBeginEditing:(NSNotification*)aNotification {
+  [super textDidBeginEditing:aNotification];
+  if (observer_) {
+    observer_->OnDidBeginEditing();
+  }
+}
+
+- (void)textDidChange:(NSNotification *)aNotification {
+  [super textDidChange:aNotification];
+  if (observer_) {
+    observer_->OnDidChange();
+  }
+}
+
+- (void)textDidEndEditing:(NSNotification *)aNotification {
+  [super textDidEndEditing:aNotification];
+  if (observer_) {
+    observer_->OnDidEndEditing();
+  }
+}
+
+- (BOOL)textView:(NSTextView*)textView doCommandBySelector:(SEL)cmd {
+  if (observer_ && observer_->OnDoCommandBySelector(cmd)) {
+    return YES;
+  }
+  return [super textView:textView doCommandBySelector:cmd];
+}
+
+- (void)windowDidResignKey:(NSNotification*)notification {
+  DCHECK_EQ([self window], [notification object]);
+  if (observer_) {
+    observer_->OnDidResignKey();
+  }
+}
+
+- (void)viewWillMoveToWindow:(NSWindow*)newWindow {
+  if ([self window]) {
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc removeObserver:self
+                  name:NSWindowDidResignKeyNotification
+                object:[self window]];
+  }
+}
+
+- (void)viewDidMoveToWindow {
+  if ([self window]) {
+    NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+    [nc addObserver:self
+           selector:@selector(windowDidResignKey:)
+               name:NSWindowDidResignKeyNotification
+             object:[self window]];
+  }
 }
 
 @end

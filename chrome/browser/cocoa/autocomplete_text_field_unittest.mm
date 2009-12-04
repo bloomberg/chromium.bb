@@ -14,18 +14,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 using ::testing::InSequence;
-
-// OCMock wants to mock a concrete class or protocol.  This should
-// provide a correct protocol for newer versions of the SDK, while
-// providing something mockable for older versions.
-
-@protocol MockTextEditingDelegate<NSControlTextEditingDelegate>
-- (void)controlTextDidBeginEditing:(NSNotification*)aNotification;
-- (BOOL)control:(NSControl*)control textShouldEndEditing:(NSText*)fieldEditor;
-@end
+using ::testing::Return;
+using ::testing::StrictMock;
 
 namespace {
 // Mock a SecurityImageView.
@@ -78,7 +70,6 @@ class AutocompleteTextFieldTest : public CocoaTest {
         [[AutocompleteTextField alloc] initWithFrame:frame]);
     field_ = field.get();
     [field_ setStringValue:@"Test test"];
-    [field_ setObserver:&field_observer_];
     [[test_window() contentView] addSubview:field_];
 
     window_delegate_.reset(
@@ -113,11 +104,30 @@ class AutocompleteTextFieldTest : public CocoaTest {
   }
 
   AutocompleteTextField* field_;
-  MockAutocompleteTextFieldObserver field_observer_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
 };
 
 TEST_VIEW(AutocompleteTextFieldTest, field_);
+
+// Base class for testing AutocompleteTextFieldObserver messages.
+class AutocompleteTextFieldObserverTest : public AutocompleteTextFieldTest {
+ public:
+  virtual void SetUp() {
+    AutocompleteTextFieldTest::SetUp();
+    [field_ setObserver:&field_observer_];
+  }
+
+  virtual void TearDown() {
+    // Clear the observer so that we don't show output for
+    // uninteresting messages to the mock (for instance, if |field_| has
+    // focus at the end of the test).
+    [field_ setObserver:NULL];
+
+    AutocompleteTextFieldTest::TearDown();
+  }
+
+  StrictMock<MockAutocompleteTextFieldObserver> field_observer_;
+};
 
 // Test that we have the right cell class.
 TEST_F(AutocompleteTextFieldTest, CellClass) {
@@ -209,7 +219,7 @@ TEST_F(AutocompleteTextFieldTest, Display) {
   [field_ display];
 }
 
-TEST_F(AutocompleteTextFieldTest, FlagsChanged) {
+TEST_F(AutocompleteTextFieldObserverTest, FlagsChanged) {
   InSequence dummy;  // Call mock in exactly the order specified.
 
   // Test without Control key down, but some other modifier down.
@@ -224,7 +234,7 @@ TEST_F(AutocompleteTextFieldTest, FlagsChanged) {
 // This test is here rather than in the editor's tests because the
 // field catches -flagsChanged: because it's on the responder chain,
 // the field editor doesn't implement it.
-TEST_F(AutocompleteTextFieldTest, FieldEditorFlagsChanged) {
+TEST_F(AutocompleteTextFieldObserverTest, FieldEditorFlagsChanged) {
   [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
   NSResponder* firstResponder = [[field_ window] firstResponder];
   EXPECT_EQ(firstResponder, [field_ currentEditor]);
@@ -241,7 +251,7 @@ TEST_F(AutocompleteTextFieldTest, FieldEditorFlagsChanged) {
 }
 
 // Frame size changes are propagated to |observer_|.
-TEST_F(AutocompleteTextFieldTest, FrameChanged) {
+TEST_F(AutocompleteTextFieldObserverTest, FrameChanged) {
   EXPECT_CALL(field_observer_, OnFrameChanged());
   NSRect frame = [field_ frame];
   frame.size.width += 10.0;
@@ -345,60 +355,23 @@ TEST_F(AutocompleteTextFieldTest, ResetFieldEditorKeywordHint) {
 }
 
 // Test that resetting the field editor bounds does not cause untoward
-// messages to the field's delegate.
-TEST_F(AutocompleteTextFieldTest, ResetFieldEditorBlocksEndEditing) {
-  // First, test that -makeFirstResponder: sends
-  // -controlTextDidBeginEditing: and -control:textShouldEndEditing at
-  // the expected times.
-  {
-    id mockDelegate =
-        [OCMockObject mockForProtocol:@protocol(MockTextEditingDelegate)];
+// messages to the field's observer.
+TEST_F(AutocompleteTextFieldObserverTest, ResetFieldEditorContinuesEditing) {
+  // Becoming first responder doesn't begin editing.
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
+  NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
+  EXPECT_TRUE(nil != editor);
 
-    [field_ setDelegate:mockDelegate];
+  // This should begin editing and indicate a change.
+  EXPECT_CALL(field_observer_, OnDidBeginEditing());
+  EXPECT_CALL(field_observer_, OnDidChange());
+  [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
+  [editor didChangeText];
 
-    // Becoming first responder doesn't begin editing.
-    [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
-    NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
-    EXPECT_TRUE(nil != editor);
-    [mockDelegate verify];
-
-    // This should begin editing.
-    [[mockDelegate expect] controlTextDidBeginEditing:OCMOCK_ANY];
-    [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
-    [mockDelegate verify];
-
-    // Changing first responder ends editing.
-    BOOL yes = YES;
-    [[[mockDelegate expect] andReturnValue:OCMOCK_VALUE(yes)]
-      control:OCMOCK_ANY textShouldEndEditing:OCMOCK_ANY];
-    [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
-    [mockDelegate verify];
-
-    [field_ setDelegate:nil];
-  }
-
-  // Test that -resetFieldEditorFrameIfNeeded manages to rearrange the
-  // editor without ending editing.
-  {
-    id mockDelegate =
-        [OCMockObject mockForProtocol:@protocol(MockTextEditingDelegate)];
-
-    [field_ setDelegate:mockDelegate];
-
-    // Start editing.
-    [[mockDelegate expect] controlTextDidBeginEditing:OCMOCK_ANY];
-    NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
-    [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
-    [mockDelegate verify];
-
-    // No more messages to mockDelegate.
-    AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
-    [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
-    [field_ resetFieldEditorFrameIfNeeded];
-    [mockDelegate verify];
-
-    [field_ setDelegate:nil];
-  }
+  // No messages to |field_observer_| when resetting the frame.
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  [cell setSearchHintString:@"Type to search" availableWidth:kWidth];
+  [field_ resetFieldEditorFrameIfNeeded];
 }
 
 // Clicking in the search hint should put the caret in the rightmost
@@ -561,7 +534,7 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
   EXPECT_EQ(selectedRange.length, [[field_ stringValue] length]);
 }
 
-TEST_F(AutocompleteTextFieldTest, SecurityIconMouseDown) {
+TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
   MockSecurityImageView security_image_view(NULL, NULL);
@@ -670,4 +643,52 @@ TEST_F(AutocompleteTextFieldTest, EditorGetsCorrectUndoManager) {
   EXPECT_TRUE(editor);
   EXPECT_EQ([field_ undoManagerForTextView:editor], [editor undoManager]);
 }
+
+TEST_F(AutocompleteTextFieldObserverTest, SendsEditingMessages) {
+  // Becoming first responder doesn't begin editing.
+  [test_window() makePretendKeyWindowAndSetFirstResponder:field_];
+  NSTextView* editor = static_cast<NSTextView*>([field_ currentEditor]);
+  EXPECT_TRUE(nil != editor);
+
+  // This should begin editing and indicate a change.
+  EXPECT_CALL(field_observer_, OnDidBeginEditing());
+  EXPECT_CALL(field_observer_, OnDidChange());
+  [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
+  [editor didChangeText];
+
+  // Further changes don't send the begin message.
+  EXPECT_CALL(field_observer_, OnDidChange());
+  [editor shouldChangeTextInRange:NSMakeRange(0, 0) replacementString:@""];
+  [editor didChangeText];
+
+  // -doCommandBySelector: should forward to observer via |field_|.
+  // TODO(shess): Test with a fake arrow-key event?
+  const SEL cmd = @selector(moveDown:);
+  EXPECT_CALL(field_observer_, OnDoCommandBySelector(cmd))
+      .WillOnce(Return(true));
+  [editor doCommandBySelector:cmd];
+
+  // Finished with the changes.
+  EXPECT_CALL(field_observer_, OnDidEndEditing());
+  [test_window() clearPretendKeyWindowAndFirstResponder];
+}
+
+// Test that the resign-key notification is forwarded right, and that
+// the notification is registered and unregistered when the view moves
+// in and out of the window.
+// TODO(shess): Should this test the key window for realz?  That would
+// be really annoying to whoever is running the tests.
+TEST_F(AutocompleteTextFieldObserverTest, SendsOnResignKey) {
+  EXPECT_CALL(field_observer_, OnDidResignKey());
+  [test_window() resignKeyWindow];
+
+  scoped_nsobject<AutocompleteTextField> pin([field_ retain]);
+  [field_ removeFromSuperview];
+  [test_window() resignKeyWindow];
+
+  [[test_window() contentView] addSubview:field_];
+  EXPECT_CALL(field_observer_, OnDidResignKey());
+  [test_window() resignKeyWindow];
+}
+
 }  // namespace

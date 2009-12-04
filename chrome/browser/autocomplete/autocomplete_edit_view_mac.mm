@@ -7,10 +7,7 @@
 #include <Carbon/Carbon.h>  // kVK_Return
 
 #include "app/clipboard/clipboard.h"
-#include "app/gfx/font.h"
-#include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
-#import "base/cocoa_protocols_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
@@ -19,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/toolbar_model.h"
 #include "grit/generated_resources.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
@@ -124,21 +122,6 @@ NSRange ComponentToNSRange(const url_parse::Component& component) {
 
 }  // namespace
 
-// Thin Obj-C bridge class that is the delegate of the omnibox field.
-// It intercepts various control delegate methods and vectors them to
-// the edit view.
-
-// TODO(shess): Consider moving more of this code off to
-// AutocompleteTextFieldObserver.
-
-@interface AutocompleteFieldDelegate : NSObject<NSTextFieldDelegate> {
- @private
-  AutocompleteEditViewMac* edit_view_;  // weak, owns us.
-}
-- initWithEditView:(AutocompleteEditViewMac*)view;
-- (void)windowDidResignKey:(NSNotification*)notification;
-@end
-
 // TODO(shess): AutocompletePopupViewMac doesn't really need an
 // NSTextField.  It wants to know where the position the popup, what
 // font to use, and it also needs to be able to attach the popup to
@@ -156,26 +139,16 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
-      field_(field),
-      edit_helper_([[AutocompleteFieldDelegate alloc] initWithEditView:this]) {
+      field_(field) {
   DCHECK(controller);
   DCHECK(toolbar_model);
   DCHECK(profile);
   DCHECK(command_updater);
   DCHECK(field);
-  [field_ setDelegate:edit_helper_.get()];
   [field_ setObserver:this];
 
   // Needed so that editing doesn't lose the styling.
   [field_ setAllowsEditingTextAttributes:YES];
-
-  // Track the window's key status for signalling focus changes to
-  // |model_|.
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  [nc addObserver:edit_helper_
-         selector:@selector(windowDidResignKey:)
-             name:NSWindowDidResignKeyNotification
-           object:[field_ window]];
 }
 
 AutocompleteEditViewMac::~AutocompleteEditViewMac() {
@@ -188,9 +161,7 @@ AutocompleteEditViewMac::~AutocompleteEditViewMac() {
   popup_view_.reset();
   model_.reset();
 
-  // Disconnect field_ from edit_helper_ so that we don't get calls
-  // after destruction.
-  [field_ setDelegate:nil];
+  // Disconnect from |field_|, it outlives this object.
   [field_ setObserver:NULL];
 }
 
@@ -561,22 +532,7 @@ gfx::NativeView AutocompleteEditViewMac::GetNativeView() const {
   return field_;
 }
 
-void AutocompleteEditViewMac::OnUpOrDownKeyPressed(bool up, bool by_page) {
-  // We should only arrive here when the field is focussed.
-  DCHECK(IsFirstResponder());
-
-  const int count = by_page ? model_->result().size() : 1;
-  model_->OnUpOrDownKeyPressed(up ? -count : count);
-}
-
-void AutocompleteEditViewMac::OnEscapeKeyPressed() {
-  // We should only arrive here when the field is focussed.
-  DCHECK(IsFirstResponder());
-
-  model_->OnEscapeKeyPressed();
-}
-
-void AutocompleteEditViewMac::OnWillBeginEditing() {
+void AutocompleteEditViewMac::OnDidBeginEditing() {
   // We should only arrive here when the field is focussed.
   DCHECK([field_ currentEditor]);
 
@@ -588,11 +544,121 @@ void AutocompleteEditViewMac::OnWillBeginEditing() {
   OnBeforePossibleChange();
 }
 
+void AutocompleteEditViewMac::OnDidChange() {
+  // Figure out what changed and notify the model_.
+  OnAfterPossibleChange();
+
+  // Then capture the new state.
+  OnBeforePossibleChange();
+}
+
 void AutocompleteEditViewMac::OnDidEndEditing() {
   ClosePopup();
 
   // Tell the model to reset itself.
   model_->OnKillFocus();
+}
+
+bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
+  // We should only arrive here when the field is focussed.
+  DCHECK(IsFirstResponder());
+
+  // Don't intercept up/down-arrow if the popup isn't open.
+  if (popup_view_->IsOpen()) {
+    if (cmd == @selector(moveDown:)) {
+      model_->OnUpOrDownKeyPressed(1);
+      return true;
+    }
+
+    if (cmd == @selector(moveUp:)) {
+      model_->OnUpOrDownKeyPressed(-1);
+      return true;
+    }
+  }
+
+  if (cmd == @selector(scrollPageDown:)) {
+    model_->OnUpOrDownKeyPressed(model_->result().size());
+    return true;
+  }
+
+  if (cmd == @selector(scrollPageUp:)) {
+    model_->OnUpOrDownKeyPressed(-model_->result().size());
+    return true;
+  }
+
+  if (cmd == @selector(cancelOperation:)) {
+    model_->OnEscapeKeyPressed();
+    return true;
+  }
+
+  if (cmd == @selector(insertTab:)) {
+    if (model_->is_keyword_hint() && !model_->keyword().empty()) {
+      model_->AcceptKeyword();
+      return true;
+    }
+  }
+
+  // TODO(shess): Option-tab, would normally insert a literal tab
+  // character.  Consider combining with -insertTab:
+  if (cmd == @selector(insertTabIgnoringFieldEditor:)) {
+    return true;
+  }
+
+  // |-noop:| is sent when the user presses Cmd+Return. Override the no-op
+  // behavior with the proper WindowOpenDisposition.
+  NSEvent* event = [NSApp currentEvent];
+  if (cmd == @selector(insertNewline:) ||
+     (cmd == @selector(noop:) && [event keyCode] == kVK_Return)) {
+    WindowOpenDisposition disposition =
+        event_utils::WindowOpenDispositionFromNSEvent(event);
+    model_->AcceptInput(disposition, false);
+    // Opening a URL in a background tab should also revert the omnibox contents
+    // to their original state.  We cannot do a blanket revert in OpenURL()
+    // because middle-clicks also open in a new background tab, but those should
+    // not revert the omnibox text.
+    RevertAll();
+    return true;
+  }
+
+  // Option-Return
+  if (cmd == @selector(insertNewlineIgnoringFieldEditor:)) {
+    model_->AcceptInput(NEW_FOREGROUND_TAB, false);
+    return true;
+  }
+
+  // When the user does Control-Enter, the existing content has "www."
+  // prepended and ".com" appended.  |model_| should already have
+  // received notification when the Control key was depressed, but it
+  // is safe to tell it twice.
+  if (cmd == @selector(insertLineBreak:)) {
+    OnControlKeyChanged(true);
+    WindowOpenDisposition disposition =
+        event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
+    model_->AcceptInput(disposition, false);
+    return true;
+  }
+
+  if (cmd == @selector(deleteBackward:)) {
+    if (OnBackspacePressed()) {
+      return true;
+    }
+  }
+
+  if (cmd == @selector(deleteForward:)) {
+    const NSUInteger modifiers = [[NSApp currentEvent] modifierFlags];
+    if ((modifiers & NSShiftKeyMask) != 0) {
+      if (popup_view_->IsOpen()) {
+        popup_view_->GetModel()->TryDeletingCurrentItem();
+        return true;
+      }
+    }
+  }
+
+  // Capture the state before the operation changes the content.
+  // TODO(shess): Determine if this is always redundent WRT the call
+  // in -controlTextDidChange:.
+  OnBeforePossibleChange();
+  return false;
 }
 
 void AutocompleteEditViewMac::OnDidResignKey() {
@@ -665,14 +731,6 @@ void AutocompleteEditViewMac::OnFrameChanged() {
   controller_->OnChanged();
 }
 
-bool AutocompleteEditViewMac::OnTabPressed() {
-  if (model_->is_keyword_hint() && !model_->keyword().empty()) {
-    model_->AcceptKeyword();
-    return true;
-  }
-  return false;
-}
-
 bool AutocompleteEditViewMac::OnBackspacePressed() {
   // Don't intercept if not in keyword search mode.
   if (model_->is_keyword_hint() || model_->keyword().empty()) {
@@ -692,21 +750,8 @@ bool AutocompleteEditViewMac::OnBackspacePressed() {
   return true;
 }
 
-bool AutocompleteEditViewMac::IsPopupOpen() const {
-  return popup_view_->IsOpen();
-}
-
-void AutocompleteEditViewMac::TryDeletingCurrentItem() {
-  popup_view_->GetModel()->TryDeletingCurrentItem();
-}
-
 void AutocompleteEditViewMac::OnControlKeyChanged(bool pressed) {
   model_->OnControlKeyChanged(pressed);
-}
-
-void AutocompleteEditViewMac::AcceptInput(
-    WindowOpenDisposition disposition, bool for_drop) {
-  model_->AcceptInput(disposition, for_drop);
 }
 
 void AutocompleteEditViewMac::FocusLocation() {
@@ -755,154 +800,3 @@ std::wstring AutocompleteEditViewMac::GetClipboardText(Clipboard* clipboard) {
 
   return std::wstring();
 }
-
-@implementation AutocompleteFieldDelegate
-
-- initWithEditView:(AutocompleteEditViewMac*)view {
-  self = [super init];
-  if (self) {
-    edit_view_ = view;
-  }
-  return self;
-}
-
-- (void)dealloc {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
-}
-
-- (BOOL)control:(NSControl*)control
-       textView:(NSTextView*)textView doCommandBySelector:(SEL)cmd {
-  // Don't intercept up/down-arrow if the popup isn't open.
-  if (edit_view_->IsPopupOpen()) {
-    if (cmd == @selector(moveDown:)) {
-      edit_view_->OnUpOrDownKeyPressed(false, false);
-      return YES;
-    }
-
-    if (cmd == @selector(moveUp:)) {
-      edit_view_->OnUpOrDownKeyPressed(true, false);
-      return YES;
-    }
-  }
-
-  if (cmd == @selector(scrollPageDown:)) {
-    edit_view_->OnUpOrDownKeyPressed(false, true);
-    return YES;
-  }
-
-  if (cmd == @selector(scrollPageUp:)) {
-    edit_view_->OnUpOrDownKeyPressed(true, true);
-    return YES;
-  }
-
-  if (cmd == @selector(cancelOperation:)) {
-    edit_view_->OnEscapeKeyPressed();
-    return YES;
-  }
-
-  if (cmd == @selector(insertTab:)) {
-    if (edit_view_->OnTabPressed()) {
-      return YES;
-    }
-  }
-
-  // TODO(shess): Option-tab, would normally insert a literal tab
-  // character.  Consider combining with -insertTab:
-  if (cmd == @selector(insertTabIgnoringFieldEditor:)) {
-    return YES;
-  }
-
-  // |-noop:| is sent when the user presses Cmd+Return. Override the no-op
-  // behavior with the proper WindowOpenDisposition.
-  NSEvent* event = [NSApp currentEvent];
-  if (cmd == @selector(insertNewline:) ||
-     (cmd == @selector(noop:) && [event keyCode] == kVK_Return)) {
-    WindowOpenDisposition disposition =
-        event_utils::WindowOpenDispositionFromNSEvent(event);
-    edit_view_->AcceptInput(disposition, false);
-    // Opening a URL in a background tab should also revert the omnibox contents
-    // to their original state.  We cannot do a blanket revert in OpenURL()
-    // because middle-clicks also open in a new background tab, but those should
-    // not revert the omnibox text.
-    edit_view_->RevertAll();
-    return YES;
-  }
-
-  // Option-Return
-  if (cmd == @selector(insertNewlineIgnoringFieldEditor:)) {
-    edit_view_->AcceptInput(NEW_FOREGROUND_TAB, false);
-    return YES;
-  }
-
-  // When the user does Control-Enter, the existing content has "www."
-  // prepended and ".com" appended.  |model_| should already have
-  // received notification when the Control key was depressed, but it
-  // is safe to tell it twice.
-  if (cmd == @selector(insertLineBreak:)) {
-    edit_view_->OnControlKeyChanged(true);
-    WindowOpenDisposition disposition =
-        event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-    edit_view_->AcceptInput(disposition, false);
-    return YES;
-  }
-
-  if (cmd == @selector(deleteBackward:)) {
-    if (edit_view_->OnBackspacePressed()) {
-      return YES;
-    }
-  }
-
-  if (cmd == @selector(deleteForward:)) {
-    const NSUInteger modifiers = [[NSApp currentEvent] modifierFlags];
-    if ((modifiers & NSShiftKeyMask) != 0) {
-      if (edit_view_->IsPopupOpen()) {
-        edit_view_->TryDeletingCurrentItem();
-        return YES;
-      }
-    }
-  }
-
-  // Capture the state before the operation changes the content.
-  // TODO(shess): Determine if this is always redundent WRT the call
-  // in -controlTextDidChange:.
-  edit_view_->OnBeforePossibleChange();
-  return NO;
-}
-
-- (void)controlTextDidBeginEditing:(NSNotification*)aNotification {
-  // After the user runs the Print or Page Layout panels, this
-  // notification starts coming at inappropriate times.  Ignore the
-  // notification when the field does not have a field editor.  See
-  // http://crbug.com/19116 for additional info.
-  NSTextField* field = static_cast<NSTextField*>([aNotification object]);
-  if ([field isKindOfClass:[NSTextField class]] && ![field currentEditor]) {
-    return;
-  }
-
-  edit_view_->OnWillBeginEditing();
-}
-
-- (void)controlTextDidChange:(NSNotification*)aNotification {
-  // Figure out what changed and notify the model_.
-  edit_view_->OnAfterPossibleChange();
-
-  // Then capture the new state.
-  edit_view_->OnBeforePossibleChange();
-}
-
-- (BOOL)control:(NSControl*)control textShouldEndEditing:(NSText*)fieldEditor {
-  edit_view_->OnDidEndEditing();
-
-  return YES;
-
-  // TODO(shess): Figure out where the selection belongs.  On GTK,
-  // it's set to the start of the text.
-}
-
-// Signal that we've lost focus when the window resigns key.
-- (void)windowDidResignKey:(NSNotification*)notification {
-  edit_view_->OnDidResignKey();
-}
-
-@end
