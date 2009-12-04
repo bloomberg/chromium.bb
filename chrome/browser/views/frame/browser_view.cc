@@ -66,6 +66,7 @@
 #include "views/controls/single_split_view.h"
 #include "views/fill_layout.h"
 #include "views/focus/external_focus_tracker.h"
+#include "views/focus/view_storage.h"
 #include "views/grid_layout.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
@@ -124,7 +125,7 @@ static const int kNewtabBarRoundness = 5;
 // ------------
 
 // Returned from BrowserView::GetClassName.
-static const char kBrowserViewClassName[] = "browser/views/BrowserView";
+const char BrowserView::kViewClassName[] = "browser/views/BrowserView";
 
 ///////////////////////////////////////////////////////////////////////////////
 // BookmarkExtensionBackground, private:
@@ -412,7 +413,9 @@ BrowserView::BrowserView(Browser* browser)
       hung_window_detector_(&hung_plugin_action_),
       ticker_(0),
 #endif
-      extension_shelf_(NULL) {
+      extension_shelf_(NULL),
+      last_focused_view_storage_id_(
+          views::ViewStorage::GetSharedInstance()->CreateStorageID()) {
   InitClass();
   browser_->tabstrip_model()->AddObserver(this);
 }
@@ -655,6 +658,17 @@ void BrowserView::PrepareToRunSystemMenu(HMENU menu) {
   system_menu_->UpdateStates();
 }
 #endif
+
+void BrowserView::TraverseNextAccessibleToolbar(bool forward) {
+  // TODO(mohamed) This needs to be smart, that applies to all toolbars.
+  //               Currently it just traverses between bookmarks and toolbar.
+  if (!forward && toolbar_->IsVisible() && toolbar_->IsEnabled()) {
+    toolbar_->InitiateTraversal(last_focused_view_storage_id_);
+  } else if (forward && bookmark_bar_view_->IsVisible() &&
+             bookmark_bar_view_->IsEnabled()) {
+    bookmark_bar_view_->InitiateTraversal(last_focused_view_storage_id_);
+  }
+}
 
 // static
 void BrowserView::RegisterBrowserViewPrefs(PrefService* prefs) {
@@ -958,7 +972,17 @@ void BrowserView::UpdateToolbar(TabContents* contents,
 }
 
 void BrowserView::FocusToolbar() {
-  toolbar_->InitializeTraversal();
+  // Remove existing views in the storage, traversal should be restarted.
+  views::ViewStorage* view_storage = views::ViewStorage::GetSharedInstance();
+  if (view_storage->RetrieveView(last_focused_view_storage_id_))
+    view_storage->RemoveView(last_focused_view_storage_id_);
+
+  // Store the last focused view into the storage, to handle existing traversal.
+  view_storage->StoreView(last_focused_view_storage_id_,
+                          GetRootView()->GetFocusedView());
+
+  // Start the traversal within the main toolbar.
+  toolbar_->InitiateTraversal(last_focused_view_storage_id_);
 }
 
 void BrowserView::DestroyBrowser() {
@@ -1642,7 +1666,7 @@ gfx::Size BrowserView::GetMinimumSize() {
 // BrowserView, views::View overrides:
 
 std::string BrowserView::GetClassName() const {
-  return kBrowserViewClassName;
+  return kViewClassName;
 }
 
 void BrowserView::Layout() {
@@ -2074,7 +2098,7 @@ bool BrowserView::UpdateChildViewAndLayout(views::View* new_view,
     new_view->SetBounds((*old_view)->bounds());
     new_view->SchedulePaint();
   } else if (new_view) {
-    DCHECK(new_height == 0);
+    DCHECK_EQ(0, new_height);
     // The heights are the same, but the old view is null. This only happens
     // when the height is zero. Zero out the bounds.
     new_view->SetBounds(0, 0, 0, 0);
