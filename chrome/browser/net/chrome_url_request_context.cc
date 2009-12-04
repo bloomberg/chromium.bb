@@ -756,10 +756,11 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   referrer_charset_ = other->referrer_charset_;
 
   // Set ChromeURLRequestContext members
-  appcache_service_ = other->appcache_service_;
-  blacklist_manager_ = other->blacklist_manager_;
   extension_paths_ = other->extension_paths_;
   user_script_dir_path_ = other->user_script_dir_path_;
+  appcache_service_ = other->appcache_service_;
+  host_zoom_map_ = other->host_zoom_map_;
+  blacklist_manager_ = other->blacklist_manager_;
   is_media_ = other->is_media_;
   is_off_the_record_ = other->is_off_the_record_;
 }
@@ -829,6 +830,8 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   cookie_policy_type_ = net::CookiePolicy::FromInt(
       prefs->GetInteger(prefs::kCookieBehavior));
 
+  host_zoom_map_ = profile->GetHostZoomMap();
+
   blacklist_manager_ = profile->GetBlacklistManager();
 
   // TODO(eroman): this doesn't look safe; sharing between IO and UI threads!
@@ -846,7 +849,6 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   if (profile->GetUserScriptMaster())
     user_script_dir_path_ = profile->GetUserScriptMaster()->user_script_dir();
 
-  // TODO(eroman): this doesn't look safe; sharing between IO and UI threads!
   ssl_config_service_ = profile->GetSSLConfigService();
 
   profile_dir_path_ = profile->GetPath();
@@ -868,6 +870,7 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_cookie_policy_type(cookie_policy_type_);
   context->set_extension_paths(extension_paths_);
   context->set_user_script_dir_path(user_script_dir_path_);
+  context->set_host_zoom_map(host_zoom_map_);
   context->set_blacklist_manager(blacklist_manager_.get());
   context->set_strict_transport_security_state(
       strict_transport_security_state_);

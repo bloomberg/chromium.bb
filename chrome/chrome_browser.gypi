@@ -969,6 +969,8 @@
         'browser/history/visit_tracker.h',
         'browser/history/visitsegment_database.cc',
         'browser/history/visitsegment_database.h',
+        'browser/host_zoom_map.cc',
+        'browser/host_zoom_map.h',
         'browser/hung_renderer_dialog.h',
         'browser/icon_loader.h',
         'browser/icon_loader.cc',

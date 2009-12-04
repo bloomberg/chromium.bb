@@ -16,6 +16,7 @@
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
@@ -23,9 +24,9 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/plugin_service.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/privacy_blacklist/blacklist_ui.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
@@ -155,12 +156,12 @@ ResourceMessageFilter::ResourceMessageFilter(
       resource_dispatcher_host_(resource_dispatcher_host),
       plugin_service_(plugin_service),
       print_job_manager_(print_job_manager),
+      profile_(profile),
       ALLOW_THIS_IN_INITIALIZER_LIST(resolve_proxy_msg_helper_(this, NULL)),
       request_context_(request_context),
       media_request_context_(profile->GetRequestContextForMedia()),
       extensions_request_context_(profile->GetRequestContextForExtensions()),
       extensions_message_service_(profile->GetExtensionMessageService()),
-      profile_(profile),
       render_widget_helper_(render_widget_helper),
       audio_renderer_host_(audio_renderer_host),
       appcache_dispatcher_host_(
@@ -173,6 +174,7 @@ ResourceMessageFilter::ResourceMessageFilter(
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
       socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
+      host_zoom_map_(profile->GetHostZoomMap()),
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)) {
@@ -369,6 +371,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
 #endif
       IPC_MESSAGE_HANDLER(ViewHostMsg_ResourceTypeStats, OnResourceTypeStats)
       IPC_MESSAGE_HANDLER(ViewHostMsg_V8HeapStats, OnV8HeapStats)
+      IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomHost, OnDidZoomHost)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ResolveProxy, OnResolveProxy)
       IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_GetDefaultPrintSettings,
                                       OnGetDefaultPrintSettings)
@@ -841,6 +844,31 @@ void ResourceMessageFilter::OnV8HeapStatsOnUIThread(
       renderer_id,
       static_cast<size_t>(v8_memory_allocated),
       static_cast<size_t>(v8_memory_used));
+}
+
+void ResourceMessageFilter::OnDidZoomHost(const std::string& host,
+                                          int zoom_level) {
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this,
+                        &ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread,
+                        host, zoom_level));
+}
+
+void ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread(
+    const std::string& host,
+    int zoom_level) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  host_zoom_map_->SetZoomLevel(host, zoom_level);
+
+  // Notify renderers.
+  for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
+       !i.IsAtEnd(); i.Advance()) {
+    RenderProcessHost* render_process_host = i.GetCurrentValue();
+    if (render_process_host->profile() == profile_) {
+      render_process_host->Send(
+          new ViewMsg_SetZoomLevelForCurrentHost(host, zoom_level));
+    }
+  }
 }
 
 void ResourceMessageFilter::OnResolveProxy(const GURL& url,

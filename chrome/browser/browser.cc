@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,6 +37,7 @@
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/google_util.h"
+#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/browser_url_util.h"
@@ -1125,19 +1126,12 @@ void Browser::FindPrevious() {
   FindInPage(true, false);
 }
 
-void Browser::ZoomIn() {
-  UserMetrics::RecordAction("ZoomPlus", profile_);
-  GetSelectedTabContents()->render_view_host()->Zoom(PageZoom::LARGER);
-}
-
-void Browser::ZoomReset() {
-  UserMetrics::RecordAction("ZoomNormal", profile_);
-  GetSelectedTabContents()->render_view_host()->Zoom(PageZoom::STANDARD);
-}
-
-void Browser::ZoomOut() {
-  UserMetrics::RecordAction("ZoomMinus", profile_);
-  GetSelectedTabContents()->render_view_host()->Zoom(PageZoom::SMALLER);
+void Browser::Zoom(PageZoom::Function zoom_function) {
+  static const char* kActions[] = { "ZoomMinus", "ZoomNormal", "ZoomPlus" };
+  UserMetrics::RecordComputedAction(
+      kActions[zoom_function - PageZoom::ZOOM_OUT], profile_);
+  TabContents* tab_contents = GetSelectedTabContents();
+  tab_contents->render_view_host()->Zoom(zoom_function);
 }
 
 void Browser::FocusToolbar() {
@@ -1523,9 +1517,9 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_FIND_PREVIOUS:         FindPrevious();                break;
 
     // Zoom
-    case IDC_ZOOM_PLUS:             ZoomIn();                      break;
-    case IDC_ZOOM_NORMAL:           ZoomReset();                   break;
-    case IDC_ZOOM_MINUS:            ZoomOut();                     break;
+    case IDC_ZOOM_PLUS:             Zoom(PageZoom::ZOOM_IN);       break;
+    case IDC_ZOOM_NORMAL:           Zoom(PageZoom::RESET);         break;
+    case IDC_ZOOM_MINUS:            Zoom(PageZoom::ZOOM_OUT);      break;
 
     // Focus various bits of UI
     case IDC_FOCUS_TOOLBAR:         FocusToolbar();                break;

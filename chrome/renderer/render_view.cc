@@ -436,6 +436,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(ViewMsg_DeterminePageText, OnDeterminePageText)
     IPC_MESSAGE_HANDLER(ViewMsg_Zoom, OnZoom)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForLoadingHost,
+                        OnSetZoomLevelForLoadingHost)
     IPC_MESSAGE_HANDLER(ViewMsg_SetPageEncoding, OnSetPageEncoding)
     IPC_MESSAGE_HANDLER(ViewMsg_ResetPageEncodingToDefault,
                         OnResetPageEncodingToDefault)
@@ -1042,6 +1044,17 @@ void RenderView::UpdateURL(WebFrame* frame) {
 
   if (!frame->parent()) {
     // Top-level navigation.
+
+    // Set zoom level.
+    HostZoomLevels::iterator host =
+        host_zoom_levels_.find(GURL(request.url()).host());
+    if (host != host_zoom_levels_.end()) {
+      webview()->setZoomLevel(false, host->second);
+      // This zoom level was merely recorded transiently for this load.  We can
+      // erase it now.  If at some point we reload this page, the browser will
+      // send us a new, up-to-date zoom level.
+      host_zoom_levels_.erase(host);
+    }
 
     // Update contents MIME type for main frame.
     params.contents_mime_type = ds->response().mimeType().utf8();
@@ -2132,14 +2145,13 @@ void RenderView::didReceiveServerRedirectForProvisionalLoad(WebFrame* frame) {
   std::vector<GURL> redirects;
   GetRedirectChain(data_source, &redirects);
   if (redirects.size() >= 2) {
-    Send(new ViewHostMsg_DidRedirectProvisionalLoad(
-         routing_id_, page_id_, redirects[redirects.size() - 2],
-         redirects[redirects.size() - 1]));
+    Send(new ViewHostMsg_DidRedirectProvisionalLoad(routing_id_, page_id_,
+        redirects[redirects.size() - 2], redirects.back()));
   }
 }
 
-void RenderView::didFailProvisionalLoad(
-    WebFrame* frame, const WebURLError& error) {
+void RenderView::didFailProvisionalLoad(WebFrame* frame,
+                                        const WebURLError& error) {
   // Notify the browser that we failed a provisional load with an error.
   //
   // Note: It is important this notification occur before DidStopLoading so the
@@ -2220,8 +2232,8 @@ void RenderView::didReceiveDocumentData(
   }
 }
 
-void RenderView::didCommitProvisionalLoad(
-    WebFrame* frame, bool is_new_navigation) {
+void RenderView::didCommitProvisionalLoad(WebFrame* frame,
+                                          bool is_new_navigation) {
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->dataSource());
 
@@ -2963,21 +2975,25 @@ void RenderView::DnsPrefetch(const std::vector<std::string>& host_names) {
   Send(new ViewHostMsg_DnsPrefetch(host_names));
 }
 
-void RenderView::OnZoom(int function) {
-  static const bool kZoomIsTextOnly = false;
-  switch (function) {
-    case PageZoom::SMALLER:
-      webview()->zoomOut(kZoomIsTextOnly);
-      break;
-    case PageZoom::STANDARD:
-      webview()->zoomDefault();
-      break;
-    case PageZoom::LARGER:
-      webview()->zoomIn(kZoomIsTextOnly);
-      break;
-    default:
-      NOTREACHED();
-  }
+void RenderView::OnZoom(PageZoom::Function function) {
+  if (!webview())  // Not sure if this can happen, but no harm in being safe.
+    return;
+
+  int zoom_level = webview()->zoomLevel();
+  int new_zoom_level = webview()->setZoomLevel(false,
+      (function == PageZoom::RESET) ? 0 : (zoom_level + function));
+
+  // Tell the browser which host got zoomed so it can update the saved values.
+  // Pages like the safe browsing interstitial can have empty hosts; don't
+  // record those.
+  std::string host(GURL(webview()->mainFrame()->url()).host());
+  if (!host.empty())
+    Send(new ViewHostMsg_DidZoomHost(host, new_zoom_level));
+}
+
+void RenderView::OnSetZoomLevelForLoadingHost(std::string host,
+                                              int zoom_level) {
+  host_zoom_levels_[host] = zoom_level;
 }
 
 void RenderView::OnSetPageEncoding(const std::string& encoding_name) {

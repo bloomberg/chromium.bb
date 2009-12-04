@@ -24,6 +24,7 @@
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/page_zoom.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/common/view_types.h"
 #include "ipc/ipc_channel_handle.h"
@@ -347,9 +348,24 @@ IPC_BEGIN_MESSAGES(View)
   // will handle communication with inspected page DevToolsAgent.
   IPC_MESSAGE_ROUTED0(ViewMsg_SetupDevToolsClient)
 
-  // Change the zoom level in the renderer.
+  // Change the zoom level for the current main frame.  If the level actually
+  // changes, a ViewHostMsg_DidZoomHost message will be sent back to the browser
+  // telling it what host got zoomed and what its current zoom level is.
   IPC_MESSAGE_ROUTED1(ViewMsg_Zoom,
-                      int /* One of PageZoom::Function */)
+                      PageZoom::Function /* function */)
+
+  // Set the zoom level for a particular hostname that the renderer is in the
+  // process of loading.  This will be stored, to be used if the load commits
+  // and ignored otherwise.
+  IPC_MESSAGE_ROUTED2(ViewMsg_SetZoomLevelForLoadingHost,
+                      std::string /* host */,
+                      int /* zoom_level */)
+
+  // Set the zoom level for a particular hostname, so all render views
+  // displaying this host can update their zoom levels to match.
+  IPC_MESSAGE_CONTROL2(ViewMsg_SetZoomLevelForCurrentHost,
+                       std::string /* host */,
+                       int /* zoom_level */)
 
   // Change encoding of page in the renderer.
   IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
@@ -1550,6 +1566,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // UploadProgress message.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UploadProgress_ACK,
                       int /* request_id */)
+
+  // Sent when the renderer changes the zoom level for a particular host, so the
+  // browser can update its records.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_DidZoomHost,
+                       std::string /* host */,
+                       int /* zoom_level */)
 
 #if defined(OS_WIN)
   // Duplicates a shared memory handle from the renderer to the browser. Then

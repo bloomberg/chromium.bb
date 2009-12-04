@@ -43,6 +43,7 @@ class ExtensionMessageService;
 class ExtensionsService;
 class FaviconService;
 class HistoryService;
+class HostZoomMap;
 class NavigationController;
 class NTPResourceCache;
 class PasswordStore;
@@ -287,6 +288,9 @@ class Profile {
   // Returns the SSLConfigService for this profile.
   virtual net::SSLConfigService* GetSSLConfigService() = 0;
 
+  // Returns the Hostname <-> Zoom Level map for this profile.
+  virtual HostZoomMap* GetHostZoomMap() = 0;
+
   // Returns the Privacy Blacklist Manager for this profile.
   virtual BlacklistManager* GetBlacklistManager() = 0;
 
@@ -433,6 +437,7 @@ class ProfileImpl : public Profile,
   virtual URLRequestContextGetter* GetRequestContextForMedia();
   virtual URLRequestContextGetter* GetRequestContextForExtensions();
   virtual net::SSLConfigService* GetSSLConfigService();
+  virtual HostZoomMap* GetHostZoomMap();
   virtual BlacklistManager* GetBlacklistManager();
   virtual SessionService* GetSessionService();
   virtual void ShutdownSessionService();
@@ -516,6 +521,7 @@ class ProfileImpl : public Profile,
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
+  scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<BlacklistManager> blacklist_manager_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;

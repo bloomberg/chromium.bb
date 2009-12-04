@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -293,6 +293,10 @@ const wchar_t kDesktopNotificationAllowedOrigins[] =
     L"profile.notification_allowed_sites";
 const wchar_t kDesktopNotificationDeniedOrigins[] =
     L"profile.notification_denied_sites";
+
+// Dictionary that maps hostnames to zoom levels.  Hosts not in this pref will
+// be displayed at the default zoom level.
+const wchar_t kPerHostZoomLevels[] = L"profile.per_host_zoom_levels";
 
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation

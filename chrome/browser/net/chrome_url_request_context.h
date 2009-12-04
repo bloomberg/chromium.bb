@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_CHROME_URL_REQUEST_CONTEXT_H_
 
 #include "base/file_path.h"
+#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/notification_registrar.h"
@@ -178,6 +179,8 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   virtual bool AllowSendingCookies(const URLRequest* request) const;
 
+  const HostZoomMap* host_zoom_map() const { return host_zoom_map_; }
+
   // Gets the Privacy Blacklist, if any for this context.
   const Blacklist* GetBlacklist() const;
 
@@ -243,6 +246,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_extension_paths(const ExtensionPaths& paths) {
     extension_paths_ = paths;
   }
+  void set_host_zoom_map(HostZoomMap* host_zoom_map) {
+    host_zoom_map_ = host_zoom_map;
+  }
   void set_blacklist_manager(BlacklistManager* blacklist_manager);
   void set_appcache_service(ChromeAppCacheService* service) {
     appcache_service_ = service;
@@ -266,6 +272,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   FilePath user_script_dir_path_;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
+  scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<BlacklistManager> blacklist_manager_;
 
   bool is_media_;
@@ -308,6 +315,7 @@ class ChromeURLRequestContextFactory {
   net::CookiePolicy::Type cookie_policy_type_;
   ChromeURLRequestContext::ExtensionPaths extension_paths_;
   FilePath user_script_dir_path_;
+  scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<BlacklistManager> blacklist_manager_;
   net::StrictTransportSecurityState* strict_transport_security_state_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;

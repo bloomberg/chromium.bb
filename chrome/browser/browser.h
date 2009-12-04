@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/notification_registrar.h"
+#include "chrome/common/page_zoom.h"
 #include "chrome/common/pref_member.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -390,9 +391,7 @@ class Browser : public TabStripModelDelegate,
   void FindPrevious();
 
   // Zoom
-  void ZoomIn();
-  void ZoomReset();
-  void ZoomOut();
+  void Zoom(PageZoom::Function zoom_function);
 
   // Focus various bits of UI
   void FocusToolbar();

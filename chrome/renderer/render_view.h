@@ -24,6 +24,7 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/page_zoom.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/view_types.h"
 #include "chrome/renderer/automation/dom_automation_controller.h"
@@ -451,6 +452,8 @@ class RenderView : public RenderWidget,
   FRIEND_TEST(RenderViewTest, MacTestCmdUp);
 #endif
 
+  typedef std::map<std::string, int> HostZoomLevels;
+
   explicit RenderView(RenderThreadBase* render_thread,
                       const WebPreferences& webkit_preferences);
 
@@ -552,7 +555,8 @@ class RenderView : public RenderWidget,
   void OnCancelDownload(int32 download_id);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnDeterminePageText();
-  void OnZoom(int function);
+  void OnZoom(PageZoom::Function function);
+  void OnSetZoomLevelForLoadingHost(std::string host, int zoom_level);
   void OnSetPageEncoding(const std::string& encoding_name);
   void OnResetPageEncodingToDefault();
   void OnGetAllSavableResourceLinksForCurrentPage(const GURL& page_url);
@@ -1006,6 +1010,8 @@ class RenderView : public RenderWidget,
   ImageResourceFetcherSet image_fetchers_;
 
   typedef std::map<WebKit::WebView*, RenderView*> ViewMap;
+
+  HostZoomLevels host_zoom_levels_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

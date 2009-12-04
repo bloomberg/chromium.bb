@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #include "base/logging.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/render_messages.h"
 #include "net/base/io_buffer.h"
 
@@ -97,6 +99,24 @@ bool AsyncResourceHandler::OnRequestRedirected(int request_id,
 
 bool AsyncResourceHandler::OnResponseStarted(int request_id,
                                              ResourceResponse* response) {
+  // For changes to the main frame, inform the renderer of the new URL's zoom
+  // level before the request actually commits.  This way the renderer will be
+  // able to set the zoom level precisely at the time the request commits,
+  // avoiding the possibility of zooming the old content or of having to layout
+  // the new content twice.
+  URLRequest* request = rdh_->GetURLRequest(
+      ResourceDispatcherHost::GlobalRequestID(process_id_, request_id));
+  ResourceDispatcherHostRequestInfo* info = rdh_->InfoForRequest(request);
+  if (info->resource_type() == ResourceType::MAIN_FRAME) {
+    std::string host(request->url().host());
+    ChromeURLRequestContext* context =
+        static_cast<ChromeURLRequestContext*>(request->context());
+    if (!host.empty() && context) {
+      receiver_->Send(new ViewMsg_SetZoomLevelForLoadingHost(info->route_id(),
+          host, context->host_zoom_map()->GetZoomLevel(host)));
+    }
+  }
+
   receiver_->Send(new ViewMsg_Resource_ReceivedResponse(
       routing_id_, request_id, response->response_head));
   return true;

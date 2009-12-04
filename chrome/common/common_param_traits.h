@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
+#include "chrome/common/page_zoom.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/transport_dib.h"
 #include "ipc/ipc_message_utils.h"
@@ -90,14 +91,36 @@ template <>
 struct ParamTraits<gfx::NativeWindow> {
   typedef gfx::NativeWindow param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteIntPtr(reinterpret_cast<intptr_t>(p));
+    WriteParam(m, reinterpret_cast<intptr_t>(p));
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    DCHECK_EQ(sizeof(param_type), sizeof(intptr_t));
-    return m->ReadIntPtr(iter, reinterpret_cast<intptr_t*>(r));
+    intptr_t value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    *r = reinterpret_cast<param_type>(value);
+    return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"0x%X", p));
+    LogParam(reinterpret_cast<intptr_t>(p), l);
+  }
+};
+
+
+template <>
+struct ParamTraits<PageZoom::Function> {
+  typedef PageZoom::Function param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p));
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    *r = static_cast<param_type>(value);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(static_cast<int>(p), l);
   }
 };
 
@@ -106,16 +129,17 @@ template <>
 struct ParamTraits<WindowOpenDisposition> {
   typedef WindowOpenDisposition param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteInt(p);
+    WriteParam(m, static_cast<int>(p));
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    int temp;
-    bool res = m->ReadInt(iter, &temp);
-    *r = static_cast<WindowOpenDisposition>(temp);
-    return res;
+    int value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    *r = static_cast<param_type>(value);
+    return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(StringPrintf(L"%d", p));
+    LogParam(static_cast<int>(p), l);
   }
 };
 

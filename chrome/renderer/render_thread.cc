@@ -50,6 +50,7 @@
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_view.h"
+#include "chrome/renderer/render_view_visitor.h"
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 #include "chrome/renderer/renderer_web_database_observer.h"
 #include "chrome/renderer/socket_stream_dispatcher.h"
@@ -63,6 +64,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebCrossOriginPreflightResultCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDatabase.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFontCache.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebScriptController.h"
@@ -117,6 +119,27 @@ class SuicideOnChannelErrorFilter : public IPC::ChannelProxy::MessageFilter {
   }
 };
 #endif
+
+class RenderViewZoomer : public RenderViewVisitor {
+ public:
+  RenderViewZoomer(const std::string& host, int zoom_level)
+      : host_(host),
+        zoom_level_(zoom_level) {
+  }
+
+  virtual bool Visit(RenderView* render_view) {
+    WebView* webview = render_view->webview();  // Guaranteed non-NULL.
+    if (GURL(webview->mainFrame()->url()).host() == host_)
+      webview->setZoomLevel(false, zoom_level_);
+    return true;
+  }
+
+ private:
+  std::string host_;
+  int zoom_level_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderViewZoomer);
+};
 }  // namespace
 
 // When we run plugins in process, we actually run them on the render thread,
@@ -243,6 +266,12 @@ void RenderThread::OnResetVisitedLinks() {
   WebView::resetVisitedLinkState();
 }
 
+void RenderThread::OnSetZoomLevelForCurrentHost(const std::string& host,
+                                                int zoom_level) {
+  RenderViewZoomer zoomer(host, zoom_level);
+  RenderView::ForEach(&zoomer);
+}
+
 void RenderThread::OnUpdateUserScripts(
     base::SharedMemoryHandle scripts) {
   DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
@@ -297,6 +326,8 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_NewTable, OnUpdateVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Add, OnAddVisitedLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_VisitedLink_Reset, OnResetVisitedLinks)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetZoomLevelForCurrentHost,
+                        OnSetZoomLevelForCurrentHost)
     IPC_MESSAGE_HANDLER(ViewMsg_SetNextPageID, OnSetNextPageID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetCSSColors, OnSetCSSColors)
     // TODO(port): removed from render_messages_internal.h;

@@ -36,11 +36,11 @@ class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
 class ExtensionMessageService;
+class HostZoomMap;
 class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
 class SocketStreamDispatcherHost;
-class SpellChecker;
 class URLRequestContextGetter;
 struct ViewHostMsg_Audio_CreateStream;
 struct WebPluginInfo;
@@ -75,10 +75,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                               public ResolveProxyMsgHelper::Delegate {
  public:
   // Create the filter.
-  // Note:  because the lifecycle of the ResourceMessageFilter is not
-  //        tied to the lifecycle of the object which created it, the
-  //        ResourceMessageFilter is 'given' ownership of the spellchecker
-  //        object and must clean it up on exit.
   ResourceMessageFilter(ResourceDispatcherHost* resource_dispatcher_host,
                         int child_id,
                         AudioRendererHost* audio_renderer_host,
@@ -251,6 +247,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                                       int v8_memory_used,
                                       base::ProcessId renderer_id);
 
+  void OnDidZoomHost(const std::string& host, int zoom_level);
+  void UpdateHostZoomLevelsOnUIThread(const std::string& host, int zoom_level);
+
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
   // ResolveProxyMsgHelper::Delegate implementation:
@@ -336,11 +335,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   PluginService* plugin_service_;
   printing::PrintJobManager* print_job_manager_;
 
-  // ID for the RenderProcessHost that corresponds to this channel.  This is
-  // used by the ResourceDispatcherHost to look up the TabContents that
-  // originated URLRequest.  Since the RenderProcessHost can be destroyed
-  // before this object, we only hold an ID for lookup.
-  int child_id_;
+  // The Profile associated with our renderer process.  This should only be
+  // accessed on the UI thread!
+  Profile* profile_;
 
   // Helper class for handling PluginProcessHost_ResolveProxy messages (manages
   // the requests to the proxy service).
@@ -357,16 +354,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Used for routing extension messages.
   scoped_refptr<ExtensionMessageService> extensions_message_service_;
-
-  // A pointer to the profile associated with this filter.
-  //
-  // DANGER! Do not dereference this pointer! This class lives on the I/O thread
-  // and the profile may only be used on the UI thread. It is used only for
-  // determining which notifications to watch for.
-  //
-  // This is void* to prevent people from accidentally dereferencing it.
-  // When registering for observers, cast to Profile*.
-  void* profile_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 
@@ -388,6 +375,9 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Handles Socket Stream related messages.
   scoped_ptr<SocketStreamDispatcherHost> socket_stream_dispatcher_host_;
+
+  // Handles zoom-related messages.
+  scoped_refptr<HostZoomMap> host_zoom_map_;
 
   // Whether this process is used for off the record tabs.
   bool off_the_record_;

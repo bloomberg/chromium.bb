@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -616,25 +616,25 @@ void EventSendingController::DoLeapForward(int milliseconds) {
 // WebKit/WebView/WebView.mm)
 void EventSendingController::textZoomIn(
     const CppArgumentList& args, CppVariant* result) {
-  webview()->zoomIn(true);
+  webview()->setZoomLevel(true, webview()->zoomLevel() + 1);
   result->SetNull();
 }
 
 void EventSendingController::textZoomOut(
     const CppArgumentList& args, CppVariant* result) {
-  webview()->zoomOut(true);
+  webview()->setZoomLevel(true, webview()->zoomLevel() - 1);
   result->SetNull();
 }
 
 void EventSendingController::zoomPageIn(
     const CppArgumentList& args, CppVariant* result) {
-  webview()->zoomIn(false);
+  webview()->setZoomLevel(false, webview()->zoomLevel() + 1);
   result->SetNull();
 }
 
 void EventSendingController::zoomPageOut(
     const CppArgumentList& args, CppVariant* result) {
-  webview()->zoomOut(false);
+  webview()->setZoomLevel(false, webview()->zoomLevel() - 1);
   result->SetNull();
 }
 

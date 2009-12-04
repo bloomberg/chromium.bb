@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,6 +29,7 @@
 #include "chrome/browser/spellcheck_host.h"
 #include "chrome/browser/strict_transport_security_persister.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/ssl_config_service_manager.h"
@@ -403,6 +404,14 @@ class OffTheRecordProfileImpl : public Profile,
     return GetOriginalProfile()->GetSSLConfigService();
   }
 
+  virtual HostZoomMap* GetHostZoomMap() {
+    // Need to use a separate map from the normal one to avoid persisting zoom
+    // changes in OTR mode.
+    if (!host_zoom_map_)
+      host_zoom_map_ = new HostZoomMap(this);
+    return host_zoom_map_.get();
+  }
+
   virtual BlacklistManager* GetBlacklistManager() {
     return GetOriginalProfile()->GetBlacklistManager();
   }
@@ -525,6 +534,8 @@ class OffTheRecordProfileImpl : public Profile,
 
   scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
 
+  scoped_refptr<HostZoomMap> host_zoom_map_;
+
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
 
@@ -560,6 +571,7 @@ ProfileImpl::ProfileImpl(const FilePath& path)
       request_context_(NULL),
       media_request_context_(NULL),
       extensions_request_context_(NULL),
+      host_zoom_map_(NULL),
       blacklist_manager_(NULL),
       blacklist_manager_created_(false),
       history_service_created_(false),
@@ -950,6 +962,12 @@ URLRequestContextGetter* ProfileImpl::GetRequestContextForExtensions() {
 
 net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
   return ssl_config_service_manager_->Get();
+}
+
+HostZoomMap* ProfileImpl::GetHostZoomMap() {
+  if (!host_zoom_map_)
+    host_zoom_map_ = new HostZoomMap(this);
+  return host_zoom_map_.get();
 }
 
 BlacklistManager* ProfileImpl::GetBlacklistManager() {
