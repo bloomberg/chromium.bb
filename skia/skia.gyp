@@ -576,16 +576,13 @@
         [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
         }],
-        [ 'target_arch == "arm" and armv7 == 1', {
+        [ 'armv7 == 1', {
           'defines': [
             '__ARM_HAVE_NEON',
             '__ARM_ARCH__=7',
           ],
-          'cflags!': [
-            # These files contain ARM assembly, and building with thumb breaks
-            # the assembler.
-            '-mthumb',
-          ],
+        }],
+        [ 'target_arch == "arm"', {
           'sources!': [
             '../third_party/skia/src/opts/opts_check_SSE2.cpp'
           ],
