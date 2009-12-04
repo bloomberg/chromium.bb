@@ -1,0 +1,130 @@
+diff -rub newlib-1.17.0/newlib/libc/include/sys/lock.h newlib-1.17.0_arm/newlib/libc/include/sys/lock.h
+--- newlib-1.17.0/newlib/libc/include/sys/lock.h	2008-12-11 12:27:55.000000000 -0500
++++ newlib-1.17.0_arm/newlib/libc/include/sys/lock.h	2009-12-04 16:19:09.000000000 -0500
+@@ -1,24 +1,58 @@
+ #ifndef __SYS_LOCK_H__
+ #define __SYS_LOCK_H__
+ 
+-/* dummy lock routines for single-threaded aps */
++/*
++ * The structure below mimics the layout of pthread_mutex_t as defined in
++ * pthread.h (native_client/tools/nc_threads/pthread.h). Including pthread.h
++ * from here causes include conflicts. When changing any the definition in
++ * pthreads.h, make sure to change this file too.
++ */
+ 
+-typedef int _LOCK_T;
+-typedef int _LOCK_RECURSIVE_T;
++typedef struct __local_pthread_mutex_t {
++  int spinlock;
++  int mutex_type;
++  int owner_thread_id;
++  int recursion_counter;
++  int mutex_handle;
++} _LOCK_T;
++typedef _LOCK_T _LOCK_RECURSIVE_T;
+  
+-#include <_ansi.h>
++#define __LOCAL_PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP \
++    {0, 1, (0xffffffff), 0, -1}
++#define __LOCAL_PTHREAD_MUTEX_INITIALIZER {0, 0, (0xffffffff), 0, -1}
+ 
+-#define __LOCK_INIT(class,lock) static int lock = 0;
+-#define __LOCK_INIT_RECURSIVE(class,lock) static int lock = 0;
+-#define __lock_init(lock) (_CAST_VOID 0)
+-#define __lock_init_recursive(lock) (_CAST_VOID 0)
+-#define __lock_close(lock) (_CAST_VOID 0)
+-#define __lock_close_recursive(lock) (_CAST_VOID 0)
+-#define __lock_acquire(lock) (_CAST_VOID 0)
+-#define __lock_acquire_recursive(lock) (_CAST_VOID 0)
+-#define __lock_try_acquire(lock) (_CAST_VOID 0)
+-#define __lock_try_acquire_recursive(lock) (_CAST_VOID 0)
+-#define __lock_release(lock) (_CAST_VOID 0)
+-#define __lock_release_recursive(lock) (_CAST_VOID 0)
++
++/*
++ * The locking functions are declared as weak symbols in libnacl
++ * and as strong symbols in libpthread
++ */
++extern void __local_lock_init(_LOCK_T* lock);
++extern void __local_lock_init_recursive(_LOCK_T* lock);
++extern void __local_lock_close(_LOCK_T* lock);
++extern void __local_lock_close_recursive(_LOCK_T* lock);
++extern void __local_lock_acquire(_LOCK_T* lock);
++extern void __local_lock_acquire_recursive(_LOCK_T* lock);
++extern int __local_lock_try_acquire(_LOCK_T* lock);
++extern int __local_lock_try_acquire_recursive(_LOCK_T* lock);
++extern void __local_lock_release(_LOCK_T* lock);
++extern void __local_lock_release_recursive(_LOCK_T* lock);
++
++#define __LOCK_INIT(CLASS,NAME) \
++    CLASS _LOCK_T NAME = __LOCAL_PTHREAD_MUTEX_INITIALIZER;
++#define __LOCK_INIT_RECURSIVE(CLASS,NAME) \
++    CLASS _LOCK_RECURSIVE_T NAME= \
++    __LOCAL_PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
++
++#define __lock_init(NAME) __local_lock_init(&(NAME))
++#define __lock_init_recursive(NAME) __local_lock_init_recursive(&(NAME))
++#define __lock_close(NAME) __local_lock_close(&(NAME))
++#define __lock_close_recursive(NAME) __local_lock_close_recursive(&(NAME))
++#define __lock_acquire(NAME) __local_lock_acquire(&(NAME))
++#define __lock_acquire_recursive(NAME) __local_lock_acquire_recursive(&(NAME))
++#define __lock_try_acquire(NAME) __local_lock_try_acquire(&(NAME))
++#define __lock_try_acquire_recursive(NAME) \
++    __local_lock_try_acquire_recursive(&(NAME))
++#define __lock_release(NAME) __local_lock_release(&(NAME))
++#define __lock_release_recursive(NAME) __local_lock_release_recursive(&(NAME))
+ 
+ #endif /* __SYS_LOCK_H__ */
+diff -rub newlib-1.17.0/newlib/libc/include/sys/reent.h newlib-1.17.0_arm/newlib/libc/include/sys/reent.h
+--- newlib-1.17.0/newlib/libc/include/sys/reent.h	2008-12-10 18:43:12.000000000 -0500
++++ newlib-1.17.0_arm/newlib/libc/include/sys/reent.h	2009-12-04 16:19:09.000000000 -0500
+@@ -809,7 +809,7 @@
+ #define __ATTRIBUTE_IMPURE_PTR__
+ #endif
+ 
+-extern struct _reent *_impure_ptr __ATTRIBUTE_IMPURE_PTR__;
++extern __thread struct _reent *_impure_ptr __ATTRIBUTE_IMPURE_PTR__;
+ extern struct _reent *_CONST _global_impure_ptr __ATTRIBUTE_IMPURE_PTR__;
+ 
+ void _reclaim_reent _PARAMS ((struct _reent *));
+diff -rub newlib-1.17.0/newlib/libc/reent/impure.c newlib-1.17.0_arm/newlib/libc/reent/impure.c
+--- newlib-1.17.0/newlib/libc/reent/impure.c	2004-09-15 17:44:39.000000000 -0400
++++ newlib-1.17.0_arm/newlib/libc/reent/impure.c	2009-12-04 16:19:09.000000000 -0500
+@@ -9,9 +9,33 @@
+ #define __ATTRIBUTE_IMPURE_DATA__
+ #endif
+ 
+-static struct _reent __ATTRIBUTE_IMPURE_DATA__ impure_data = _REENT_INIT (impure_data);
++static struct _reent __ATTRIBUTE_IMPURE_DATA__ global_impure_data = _REENT_INIT (global_impure_data);
++static __thread struct _reent __ATTRIBUTE_IMPURE_DATA__ impure_data = _REENT_INIT (global_impure_data);
+ #ifdef __CYGWIN__
+ extern struct _reent reent_data __attribute__ ((alias("impure_data")));
+ #endif
+-struct _reent *__ATTRIBUTE_IMPURE_PTR__ _impure_ptr = &impure_data;
+-struct _reent *_CONST __ATTRIBUTE_IMPURE_PTR__ _global_impure_ptr = &impure_data;
++__thread struct _reent *__ATTRIBUTE_IMPURE_PTR__ _impure_ptr = -1; //NULL; - try to avoid tbss until its alignment is fixed
++struct _reent *_CONST __ATTRIBUTE_IMPURE_PTR__ _global_impure_ptr = &global_impure_data;
++
++/*
++ * This function should be called on thread startup (for each thread).
++ */
++void __newlib_thread_init()
++{
++#if 0
++  /* NOTE: this code stems from the nacl x86 patch for newlib
++   *       but does not quite work ARM
++   */
++  /*
++   * Fix the initialization - REENT_INIT pointed
++   * the pointers to the global structure.
++   */
++  impure_data._stdin = &impure_data.__sf[0];
++  impure_data._stdout = &impure_data.__sf[1];
++  impure_data._stderr = &impure_data.__sf[2];
++#else
++  __sinit(&impure_data);
++#endif
++  /* Set the pointer to point to the thread-specific structure. */
++  _impure_ptr = &impure_data;
++}
