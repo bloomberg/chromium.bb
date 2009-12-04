@@ -19,8 +19,10 @@ VERBOSE = 0
 BASE = '/usr/local/crosstool'
 
 
-LLVM_GCC_ASSEMBLER_FLAGS = [#'-march=armv7',
-                            '-march=armv6',
+LLVM_GCC_ASSEMBLER_FLAGS = ['-march=armv6',
+                            '-mfpu=vfp',
+                            # Possible other settings:
+                            #'-march=armv7',
                             #'-mcpu=cortex-a8',
                             ]
 
@@ -28,7 +30,7 @@ LLVM_PREFIX = BASE + '/arm-none-linux-gnueabi/llvm-gcc-4.2/bin/llvm'
 
 LLC_FLAGS_SHARED = ['-march=arm',
                     # c.f. lib/Target/ARM/ARMGenSubtarget.inc
-                    '-mcpu=arm1156t2-s',
+                    '-mcpu=arm1156t2f-s',
                     #'-mcpu=cortex-a8',
                     '-mtriple=armv6-*-*eabi*',
                     #'-mtriple=armv7a-*-*eabi*',
@@ -45,7 +47,9 @@ LLC_SFI = [BASE + '/arm-none-linux-gnueabi/llvm/bin/llc-sfi',
            #     '-aeabi-calls '
            #     '-sfi-zero-mask',
            '-sfi-cp-fudge',
-           '-sfi-cp-fudge-percent=90',
+           # NOTE: we need a fairly high fudge factor because of
+           # some vfp instructions which only have a 9bit offset
+           '-sfi-cp-fudge-percent=80',
            '-sfi-store',
            '-sfi-stack',
            '-sfi-branch',
@@ -61,6 +65,11 @@ OPT = [BASE + '/arm-none-linux-gnueabi/llvm/bin/opt',
 AS = ([BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-as', ] +
       LLVM_GCC_ASSEMBLER_FLAGS)
 
+
+# Note: this works around an assembler bug that has been fixed only recently
+# versions of binutils - we probably can drop this once we are switch to
+# codesourcery 2009Q4
+HACK_ASM = ['sed', '-e', 's/vmrs.*apsr_nzcv, fpscr/fmrx r15, fpscr/g']
 
 
 def Run(a):
@@ -97,6 +106,9 @@ def SfiCompile(argv, out_pos, is_sfi):
   llc.append(filename + '.s')
   Run(llc)
 
+  HACK_ASM.append('-i.orig')
+  HACK_ASM.append(filename + '.s')
+  Run(HACK_ASM)
 
   AS.append(filename + '.s')
   AS.append('-o')
@@ -114,13 +126,13 @@ def PatchAbiVersionIntoElfHeader(filename):
 
   ELF_OSABI = 7
   ELF_ABIVERSION = 8
-  ELF_FLACS = 22
+  # ELF_FLAGS = 22
   t = list(struct.unpack(FORMAT, data))
   # c.f. nacl_elf.h
   t[ELF_OSABI] = 123
   t[ELF_ABIVERSION] = 6
   # TODO(robertm): this currently breaks running images in sel_ldr
-  # t[ELF_FLACS] = t[ELF_FLACS] | 0x100000
+  # t[ELF_FLAGS] = t[ELF_FLAGS] | 0x100000
   data = struct.pack(FORMAT, *t)
   fp = open(filename, 'rb+')
   fp.write(data)

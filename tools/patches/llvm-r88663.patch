@@ -42,18 +42,14 @@ Index: lib/Target/ARM/ARMSubtarget.cpp
  ARMSubtarget::ARMSubtarget(const std::string &TT, const std::string &FS,
                             bool isT)
    : ARMArchVersion(V4T)
-@@ -36,8 +47,10 @@
+@@ -36,6 +47,7 @@
    , ThumbMode(Thumb1)
    , PostRAScheduler(false)
    , IsR9Reserved(ReserveR9)
 +  , UseInlineJumpTables(!NoInlineJumpTables) // @LOCAMOD
    , stackAlignment(4)
--  , CPUString("generic")
-+   , CPUString("arm10tdmi")  // @LOCALMOD
-+    //  , CPUString("generic")  // @LOCALMOD
+   , CPUString("generic")
    , TargetType(isELF) // Default to ELF unless otherwise specified.
-   , TargetABI(ARM_ABI_APCS) {
-   // default to soft float ABI
 Index: lib/Target/ARM/ARMISelLowering.h
 ===================================================================
 --- lib/Target/ARM/ARMISelLowering.h	(revision 88663)

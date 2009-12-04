@@ -21,7 +21,6 @@ NACL_CC=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc \
         -DNACL_TARGET_ARCH=arm \
         -DNACL_TARGET_SUBARCH=32 \
         -DNACL_LINUX=1 \
-        -march=armv7 \
         -ffixed-r9 \
         -isystem $(SDK_ROOT)/arm-newlib/newlib_extra_header \
         -isystem $(SDK_ROOT)/codesourcery/arm-2007q3/arm-none-linux-gnueabi/include/c++/4.2.1 \
@@ -30,7 +29,6 @@ NACL_CC=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc \
 
 
 NACL_LINK=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc \
-          -march=armv6 \
           -static \
           -nostdlib \
           -Wl,-T -Wl,$(SDK_ROOT)/arm-none-linux-gnueabi/ld_script_arm_untrusted \
