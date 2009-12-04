@@ -8,6 +8,7 @@
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
+#import "chrome/browser/cocoa/tab_strip_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,13 +85,14 @@ class TabStripControllerTest : public CocoaTest {
     // already as the "new tab" button so create that too.
     NSRect strip_frame = NSMakeRect(0, NSMaxY(switch_frame),
                                     content_frame.size.width, 30);
-    scoped_nsobject<NSView> tab_strip(
-        [[NSView alloc] initWithFrame:strip_frame]);
+    scoped_nsobject<TabStripView> tab_strip(
+        [[TabStripView alloc] initWithFrame:strip_frame]);
     [parent addSubview:tab_strip.get()];
     NSRect button_frame = NSMakeRect(0, 0, 15, 15);
-    scoped_nsobject<NSButton> close_button(
+    scoped_nsobject<NSButton> new_tab_button(
         [[NSButton alloc] initWithFrame:button_frame]);
-    [tab_strip addSubview:close_button.get()];
+    [tab_strip addSubview:new_tab_button.get()];
+    [tab_strip setNewTabButton:new_tab_button.get()];
 
     delegate_.reset(new TestTabStripDelegate());
     model_ = browser->tabstrip_model();

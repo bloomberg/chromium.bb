@@ -8,6 +8,8 @@
 
 @implementation TabStripView
 
+@synthesize newTabButton = newTabButton_;
+
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
