@@ -43,17 +43,27 @@ size_t BackingStore::MemorySize() {
 // Paint the contents of a TransportDIB into a rectangle of our CGLayer
 void BackingStore::PaintRect(base::ProcessHandle process,
                              TransportDIB* bitmap,
-                             const gfx::Rect& bitmap_rect) {
+                             const gfx::Rect& bitmap_rect,
+                             const gfx::Rect& copy_rect) {
   DCHECK_NE(static_cast<bool>(cg_layer()), static_cast<bool>(cg_bitmap()));
 
   scoped_cftyperef<CGDataProviderRef> data_provider(
       CGDataProviderCreateWithData(NULL, bitmap->memory(),
       bitmap_rect.width() * bitmap_rect.height() * 4, NULL));
-  scoped_cftyperef<CGImageRef> image(
+
+  scoped_cftyperef<CGImageRef> bitmap_image(
       CGImageCreate(bitmap_rect.width(), bitmap_rect.height(), 8, 32,
           4 * bitmap_rect.width(), mac_util::GetSystemColorSpace(),
           kCGImageAlphaPremultipliedFirst | kCGBitmapByteOrder32Host,
           data_provider, NULL, false, kCGRenderingIntentDefault));
+
+  // Only the subpixels given by copy_rect have pixels to copy.
+  scoped_cftyperef<CGImageRef> image(
+      CGImageCreateWithImageInRect(bitmap_image, CGRectMake(
+          copy_rect.x() - bitmap_rect.x(),
+          copy_rect.y() - bitmap_rect.y(),
+          copy_rect.width(),
+          copy_rect.height())));
 
   if (!cg_layer()) {
     // The view may have moved to a window.  Try to get a CGLayer.
@@ -77,13 +87,13 @@ void BackingStore::PaintRect(base::ProcessHandle process,
     // cause the image to get drawn upside down.  So we move the rectangle
     // to the right position before drawing the image.
     CGContextRef layer = CGLayerGetContext(cg_layer());
-    gfx::Rect paint_rect = bitmap_rect;
-    paint_rect.set_y(size_.height() - bitmap_rect.bottom());
+    gfx::Rect paint_rect = copy_rect;
+    paint_rect.set_y(size_.height() - copy_rect.bottom());
     CGContextDrawImage(layer, paint_rect.ToCGRect(), image);
   } else {
     // The layer hasn't been created yet, so draw into the cache bitmap.
-    gfx::Rect paint_rect = bitmap_rect;
-    paint_rect.set_y(size_.height() - bitmap_rect.bottom());
+    gfx::Rect paint_rect = copy_rect;
+    paint_rect.set_y(size_.height() - copy_rect.bottom());
     CGContextDrawImage(cg_bitmap_, paint_rect.ToCGRect(), image);
   }
 }
@@ -149,7 +159,7 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
     }
   }
   // Now paint the new bitmap data
-  PaintRect(process, bitmap, bitmap_rect);
+  PaintRect(process, bitmap, bitmap_rect, bitmap_rect);
   return;
 }
 

@@ -2111,7 +2111,7 @@ void RenderView::didStartProvisionalLoad(WebFrame* frame) {
     completed_client_redirect_src_ = GURL();
   } else if (frame->parent()->isLoading()) {
     // Take note of AUTO_SUBFRAME loads here, so that we can know how to
-    // load an error page.  See DidFailProvisionalLoadWithError.
+    // load an error page.  See didFailProvisionalLoad.
     navigation_state->set_transition_type(PageTransition::AUTO_SUBFRAME);
   }
 

@@ -5,11 +5,12 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_MANAGER_H_
 #define CHROME_BROWSER_RENDERER_HOST_BACKING_STORE_MANAGER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
 #include "base/process.h"
-#include "build/build_config.h"
 
 class BackingStore;
 class RenderWidgetHost;
@@ -44,12 +45,14 @@ class BackingStoreManager {
   // needs_full_paint
   //   Set if we need to send out a request to paint the view
   //   to the renderer.
-  static BackingStore* PrepareBackingStore(RenderWidgetHost* host,
-                                           const gfx::Size& backing_store_size,
-                                           base::ProcessHandle process_handle,
-                                           TransportDIB* bitmap,
-                                           const gfx::Rect& bitmap_rect,
-                                           bool* needs_full_paint);
+  static BackingStore* PrepareBackingStore(
+      RenderWidgetHost* host,
+      const gfx::Size& backing_store_size,
+      base::ProcessHandle process_handle,
+      TransportDIB* bitmap,
+      const gfx::Rect& bitmap_rect,
+      const std::vector<gfx::Rect>& copy_rects,
+      bool* needs_full_paint);
 
   // Returns a matching backing store for the host.
   // Returns NULL if we fail to find one.

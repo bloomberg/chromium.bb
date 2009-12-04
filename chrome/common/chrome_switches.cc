@@ -525,6 +525,10 @@ const char kShowIcons[]                     = "show-icons";
 // Show extensions on top with toolbar.
 const char kShowExtensionsOnTop[]           = "show-extensions-on-top";
 
+// Visibly render a border around paint rects in the web page to help debug
+// and study painting behavior.
+const char kShowPaintRects[]                = "show-paint-rects";
+
 // Change the DCHECKS to dump memory and continue instead of displaying error
 // dialog. This is valid only in Release mode when --enable-dcheck is
 // specified.

@@ -76,6 +76,7 @@ void RenderWidgetHostProcess::InitPaintRectParams(
     current_paint_buf_ = TransportDIB::Create(pixel_size, 0);
   params->bitmap = current_paint_buf_->id();
   params->bitmap_rect = gfx::Rect(0, 0, w, h);
+  params->update_rects.push_back(params->bitmap_rect);
   params->view_size = gfx::Size(w, h);
   params->flags = paint_msg_reply_flags_;
 }

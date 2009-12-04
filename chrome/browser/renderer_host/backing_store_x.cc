@@ -105,7 +105,8 @@ size_t BackingStore::MemorySize() {
 }
 
 void BackingStore::PaintRectWithoutXrender(TransportDIB* bitmap,
-                                           const gfx::Rect &bitmap_rect) {
+                                           const gfx::Rect& bitmap_rect,
+                                           const gfx::Rect& copy_rect) {
   const int width = bitmap_rect.width();
   const int height = bitmap_rect.height();
   Pixmap pixmap = XCreatePixmap(display_, root_window_, width, height,
@@ -202,21 +203,28 @@ void BackingStore::PaintRectWithoutXrender(TransportDIB* bitmap,
                  << " bpp:" << pixmap_bpp_ << ")";
   }
 
-  XCopyArea(display_, pixmap /* source */, pixmap_ /* target */,
-            static_cast<GC>(pixmap_gc_),
-            0, 0 /* source x, y */, bitmap_rect.width(), bitmap_rect.height(),
-            bitmap_rect.x(), bitmap_rect.y() /* dest x, y */);
+  XCopyArea(display_,
+            pixmap,                           // src
+            pixmap_,                          // dest
+            static_cast<GC>(pixmap_gc_),      // gc
+            copy_rect.x() - bitmap_rect.x(),  // src_x
+            copy_rect.y() - bitmap_rect.y(),  // src_y
+            copy_rect.width(),                // width
+            copy_rect.height(),               // height
+            copy_rect.x(),                    // dest_x
+            copy_rect.y());                   // dest_y
 
   XFreePixmap(display_, pixmap);
 }
 
 void BackingStore::PaintRect(base::ProcessHandle process,
                              TransportDIB* bitmap,
-                             const gfx::Rect& bitmap_rect) {
+                             const gfx::Rect& bitmap_rect,
+                             const gfx::Rect& copy_rect) {
   if (!display_)
     return;
 
-  if (bitmap_rect.IsEmpty())
+  if (bitmap_rect.IsEmpty() || copy_rect.IsEmpty())
     return;
 
   const int width = bitmap_rect.width();
@@ -228,7 +236,7 @@ void BackingStore::PaintRect(base::ProcessHandle process,
     return;
 
   if (!use_render_)
-    return PaintRectWithoutXrender(bitmap, bitmap_rect);
+    return PaintRectWithoutXrender(bitmap, bitmap_rect, copy_rect);
 
   Picture picture;
   Pixmap pixmap;
@@ -280,11 +288,19 @@ void BackingStore::PaintRect(base::ProcessHandle process,
   }
 
   picture = x11_util::CreatePictureFromSkiaPixmap(display_, pixmap);
-  XRenderComposite(display_, PictOpSrc, picture /* source */, 0 /* mask */,
-                   picture_ /* dest */, 0, 0 /* source x, y */,
-                   0, 0 /* mask x, y */,
-                   bitmap_rect.x(), bitmap_rect.y() /* target x, y */,
-                   width, height);
+  XRenderComposite(display_,
+                   PictOpSrc,                        // op
+                   picture,                          // src
+                   0,                                // mask
+                   picture_,                         // dest
+                   copy_rect.x() - bitmap_rect.x(),  // src_x
+                   copy_rect.y() - bitmap_rect.y(),  // src_y
+                   0,                                // mask_x
+                   0,                                // mask_y
+                   copy_rect.x(),                    // dest_x
+                   copy_rect.y(),                    // dest_y
+                   width,                            // width
+                   height);                          // height
 
   // In the case of shared memory, we wait for the composite to complete so that
   // we are sure that the X server has finished reading.
@@ -331,7 +347,7 @@ void BackingStore::ScrollRect(base::ProcessHandle process,
     }
   }
 
-  PaintRect(process, bitmap, bitmap_rect);
+  PaintRect(process, bitmap, bitmap_rect, bitmap_rect);
 }
 
 void BackingStore::ShowRect(const gfx::Rect& rect, XID target) {

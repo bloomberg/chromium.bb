@@ -209,14 +209,17 @@ BitmapPlatformDevice* BitmapPlatformDevice::create(
   bitmap.setPixels(data);
   bitmap.setIsOpaque(is_opaque);
 
-  if (is_opaque) {
+  // If we were given data, then don't clobber it!
+  if (!shared_section) {
+    if (is_opaque) {
 #ifndef NDEBUG
-    // To aid in finding bugs, we set the background color to something
-    // obviously wrong so it will be noticable when it is not cleared
-    bitmap.eraseARGB(255, 0, 255, 128);  // bright bluish green
+      // To aid in finding bugs, we set the background color to something
+      // obviously wrong so it will be noticable when it is not cleared
+      bitmap.eraseARGB(255, 0, 255, 128);  // bright bluish green
 #endif
-  } else {
-    bitmap.eraseARGB(0, 0, 0, 0);
+    } else {
+      bitmap.eraseARGB(0, 0, 0, 0);
+    }
   }
 
   // The device object will take ownership of the HBITMAP. The initial refcount

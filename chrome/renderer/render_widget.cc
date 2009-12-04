@@ -4,12 +4,14 @@
 
 #include "chrome/renderer/render_widget.h"
 
+#include "base/command_line.h"
 #include "base/gfx/point.h"
 #include "base/gfx/size.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/transport_dib.h"
 #include "chrome/renderer/render_process.h"
@@ -247,7 +249,7 @@ void RenderWidget::OnWasRestored(bool needs_repainting) {
     return;
   needs_repainting_on_restore_ = false;
 
-  // Tag the next paint as a restore ack, which is picked up by DoDeferredPaint
+  // Tag the next paint as a restore ack, which is picked up by DoDeferredUpdate
   // when it sends out the next PaintRect message.
   set_next_paint_is_restore_ack();
 
@@ -353,11 +355,13 @@ void RenderWidget::ClearFocus() {
 }
 
 void RenderWidget::PaintRect(const gfx::Rect& rect,
+                             const gfx::Point& canvas_origin,
                              skia::PlatformCanvas* canvas) {
+  canvas->save();
 
   // Bring the canvas into the coordinate system of the paint rect.
-  canvas->translate(static_cast<SkScalar>(-rect.x()),
-                    static_cast<SkScalar>(-rect.y()));
+  canvas->translate(static_cast<SkScalar>(-canvas_origin.x()),
+                    static_cast<SkScalar>(-canvas_origin.y()));
 
   // If there is a custom background, tile it.
   if (!background_.empty()) {
@@ -372,8 +376,29 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
 
   webwidget_->paint(webkit_glue::ToWebCanvas(canvas), rect);
 
+  PaintDebugBorder(rect, canvas);
+
   // Flush to underlying bitmap.  TODO(darin): is this needed?
   canvas->getTopPlatformDevice().accessBitmap(false);
+
+  canvas->restore();
+}
+
+void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
+                                    skia::PlatformCanvas* canvas) {
+  static bool kPaintBorder =
+      CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowPaintRects);
+  if (!kPaintBorder)
+    return;
+
+  SkPaint paint;
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setColor(SkColorSetARGB(0x7F, 0xFF, 0, 0));
+  paint.setStrokeWidth(1);
+
+  SkIRect irect;
+  irect.set(rect.x(), rect.y(), rect.right() - 1, rect.bottom() - 1);
+  canvas->drawIRect(irect, paint);
 }
 
 void RenderWidget::CallDoDeferredUpdate() {
@@ -437,32 +462,36 @@ void RenderWidget::DoDeferredUpdate() {
 
     plugin_window_moves_.clear();
 
-    PaintRect(damaged_rect, canvas.get());
+    PaintRect(damaged_rect, damaged_rect.origin(), canvas.get());
     Send(new ViewHostMsg_ScrollRect(routing_id_, params));
   }
 
-  if (!update.paint_rect.IsEmpty()) {
+  if (!update.paint_rects.empty()) {
     // Normal painting
 
-    gfx::Rect damaged_rect = update.paint_rect;
+    gfx::Rect bounds = update.GetPaintBounds();
 
     // Compute a buffer for painting and cache it.
     scoped_ptr<skia::PlatformCanvas> canvas(
         RenderProcess::current()->GetDrawingCanvas(&current_paint_buf_,
-                                                   damaged_rect));
+                                                   bounds));
     if (!canvas.get()) {
       NOTREACHED();
       return;
     }
 
     // We may get back a smaller canvas than we asked for.
-    damaged_rect.set_width(canvas->getDevice()->width());
-    damaged_rect.set_height(canvas->getDevice()->height());
+    bounds.set_width(canvas->getDevice()->width());
+    bounds.set_height(canvas->getDevice()->height());
 
-    PaintRect(damaged_rect, canvas.get());
+    HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
+
+    for (size_t i = 0; i < update.paint_rects.size(); ++i)
+      PaintRect(update.paint_rects[i], bounds.origin(), canvas.get());
 
     ViewHostMsg_PaintRect_Params params;
-    params.bitmap_rect = damaged_rect;
+    params.bitmap_rect = bounds;
+    params.update_rects = update.paint_rects;  // XXX clip to bounds?
     params.view_size = size_;
     params.plugin_window_moves = plugin_window_moves_;
     params.flags = next_paint_flags_;

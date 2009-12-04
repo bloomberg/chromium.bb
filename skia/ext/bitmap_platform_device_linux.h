@@ -64,8 +64,6 @@ class BitmapPlatformDevice : public PlatformDevice {
   // This doesn't take ownership of |data|
   static BitmapPlatformDevice* Create(int width, int height,
                                       bool is_opaque, uint8_t* data);
-  static BitmapPlatformDevice* Create(int width, int height,
-                                      bool is_opaque, cairo_surface_t* surface);
 
   // Create a BitmapPlatformDeviceLinux from an already constructed bitmap;
   // you should probably be using Create(). This may become private later if
@@ -92,6 +90,9 @@ class BitmapPlatformDevice : public PlatformDevice {
   virtual void setMatrixClip(const SkMatrix& transform, const SkRegion& region);
 
  private:
+  static BitmapPlatformDevice* Create(int width, int height, bool is_opaque,
+                                      cairo_surface_t* surface);
+
   scoped_refptr<BitmapPlatformDeviceData> data_;
 };
 

@@ -119,7 +119,11 @@ class RenderWidget : public IPC::Channel::Listener,
   // Paints the given rectangular region of the WebWidget into canvas (a
   // shared memory segment returned by AllocPaintBuf on Windows). The caller
   // must ensure that the given rect fits within the bounds of the WebWidget.
-  void PaintRect(const gfx::Rect& rect, skia::PlatformCanvas* canvas);
+  void PaintRect(const gfx::Rect& rect, const gfx::Point& canvas_origin,
+                 skia::PlatformCanvas* canvas);
+
+  // Paints a border at the given rect for debugging purposes.
+  void PaintDebugBorder(const gfx::Rect& rect, skia::PlatformCanvas* canvas);
 
   void CallDoDeferredUpdate();
   void DoDeferredUpdate();

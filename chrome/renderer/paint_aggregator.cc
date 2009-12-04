@@ -6,14 +6,26 @@
 
 #include "base/logging.h"
 
-// We implement a very simple algorithm:
+// ----------------------------------------------------------------------------
+// ALGORITHM NOTES
 //
-// - Multiple repaints are unioned to form the smallest bounding box.
-// - If a scroll intersects a repaint, then the scroll is downgraded
-//   to a repaint and then unioned with the existing repaint.
+// We attempt to maintain a scroll rect in the presence of invalidations that
+// are contained within the scroll rect.  If an invalidation crosses a scroll
+// rect, then we just treat the scroll rect as an invalidation rect.
 //
-// This allows for a scroll to exist in parallel to a repaint provided the two
-// do not intersect.
+// For invalidations performed prior to scrolling and contained within the
+// scroll rect, we offset the invalidation rects to account for the fact that
+// the consumer will perform scrolling before painting.
+//
+// We only support scrolling along one axis at a time.  A diagonal scroll will
+// therefore be treated as an invalidation.
+// ----------------------------------------------------------------------------
+
+// If the combined area of paint rects contained within the scroll rect grows
+// too large, then we might as well just treat the scroll rect as a paint rect.
+// This constant sets the max ratio of paint rect area to scroll rect area that
+// we will tolerate before downgrading the scroll into a repaint.
+static const float kMaxRedundantPaintToScrollArea = 0.8f;
 
 gfx::Rect PaintAggregator::PendingUpdate::GetScrollDamage() const {
   // Should only be scrolling in one direction at a time.
@@ -51,8 +63,15 @@ gfx::Rect PaintAggregator::PendingUpdate::GetScrollDamage() const {
   return scroll_rect.Intersect(damaged_rect);
 }
 
+gfx::Rect PaintAggregator::PendingUpdate::GetPaintBounds() const {
+  gfx::Rect bounds;
+  for (size_t i = 0; i < paint_rects.size(); ++i)
+    bounds = bounds.Union(paint_rects[i]);
+  return bounds;
+}
+
 bool PaintAggregator::HasPendingUpdate() const {
-  return !update_.scroll_rect.IsEmpty() || !update_.paint_rect.IsEmpty();
+  return !update_.scroll_rect.IsEmpty() || !update_.paint_rects.empty();
 }
 
 void PaintAggregator::ClearPendingUpdate() {
@@ -60,46 +79,125 @@ void PaintAggregator::ClearPendingUpdate() {
 }
 
 void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
-  // If this invalidate overlaps with a pending scroll, then we have to
-  // downgrade to invalidating the scroll rect.
-  if (rect.Intersects(update_.scroll_rect)) {
-    update_.paint_rect = update_.paint_rect.Union(update_.scroll_rect);
-    update_.scroll_rect = gfx::Rect();
-    update_.scroll_delta = gfx::Point();
+  // Combine overlapping paints using smallest bounding box.
+  for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
+    gfx::Rect r = update_.paint_rects[i];
+    if (rect.Intersects(r)) {
+      if (!r.Contains(rect)) {  // Optimize for redundant paint.
+        update_.paint_rects.erase(update_.paint_rects.begin() + i);
+        InvalidateRect(rect.Union(r));
+      }
+      return;
+    }
   }
 
-  update_.paint_rect = update_.paint_rect.Union(rect);
+  // Add a non-overlapping paint.
+  // TODO(darin): Limit the size of this vector?
+  // TODO(darin): Coalesce adjacent rects.
+  update_.paint_rects.push_back(rect);
+
+  // If the new paint overlaps with a scroll, then it forces an invalidation of
+  // the scroll.  If the new paint is contained by a scroll, then trim off the
+  // scroll damage to avoid redundant painting.
+  if (!update_.scroll_rect.IsEmpty()) {
+    if (ShouldInvalidateScrollRect(rect)) {
+      InvalidateScrollRect();
+    } else if (update_.scroll_rect.Contains(rect)) {
+      update_.paint_rects[update_.paint_rects.size() - 1] =
+          rect.Subtract(update_.GetScrollDamage());
+      if (update_.paint_rects[update_.paint_rects.size() - 1].IsEmpty())
+        update_.paint_rects.erase(update_.paint_rects.end() - 1);
+    }
+  }
 }
 
 void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
+  // We only support scrolling along one axis at a time.
   if (dx != 0 && dy != 0) {
-    // We only support scrolling along one axis at a time.
-    ScrollRect(0, dy, clip_rect);
-    dy = 0;
-  }
-
-  bool intersects_with_painting = update_.paint_rect.Intersects(clip_rect);
-
-  // If we already have a pending scroll operation or if this scroll operation
-  // intersects the existing paint region, then just failover to invalidating.
-  if (!update_.scroll_rect.IsEmpty() || intersects_with_painting) {
-    if (!intersects_with_painting && update_.scroll_rect == clip_rect) {
-      // OK, we can just update the scroll delta (requires same scrolling axis)
-      if (!dx && !update_.scroll_delta.x()) {
-        update_.scroll_delta.set_y(update_.scroll_delta.y() + dy);
-        return;
-      }
-      if (!dy && !update_.scroll_delta.y()) {
-        update_.scroll_delta.set_x(update_.scroll_delta.x() + dx);
-        return;
-      }
-    }
-    InvalidateRect(update_.scroll_rect);
-    DCHECK(update_.scroll_rect.IsEmpty());
     InvalidateRect(clip_rect);
     return;
   }
 
+  // We can only scroll one rect at a time.
+  if (!update_.scroll_rect.IsEmpty() &&
+      !update_.scroll_rect.Equals(clip_rect)) {
+    InvalidateRect(clip_rect);
+    return;
+  }
+
+  // Again, we only support scrolling along one axis at a time.  Make sure this
+  // update doesn't scroll on a different axis than any existing one.
+  if ((dx && update_.scroll_delta.y()) || (dy && update_.scroll_delta.x())) {
+    InvalidateRect(clip_rect);
+    return;
+  }
+
+  // The scroll rect is new or isn't changing (though the scroll amount may
+  // be changing).
   update_.scroll_rect = clip_rect;
-  update_.scroll_delta = gfx::Point(dx, dy);
+  update_.scroll_delta.Offset(dx, dy);
+
+  // Adjust any contained paint rects and check for any overlapping paints.
+  for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
+    if (update_.scroll_rect.Contains(update_.paint_rects[i])) {
+      update_.paint_rects[i] = ScrollPaintRect(update_.paint_rects[i], dx, dy);
+      // The rect may have been scrolled out of view.
+      if (update_.paint_rects[i].IsEmpty()) {
+        update_.paint_rects.erase(update_.paint_rects.begin() + i);
+        i--;
+      }
+    } else if (update_.scroll_rect.Intersects(update_.paint_rects[i])) {
+      InvalidateScrollRect();
+      return;
+    }
+  }
+
+  // If the new scroll overlaps too much with contained paint rects, then force
+  // an invalidation of the scroll.
+  if (ShouldInvalidateScrollRect(gfx::Rect()))
+    InvalidateScrollRect();
+}
+
+gfx::Rect PaintAggregator::ScrollPaintRect(const gfx::Rect& paint_rect,
+                                           int dx, int dy) const {
+  gfx::Rect result = paint_rect;
+
+  result.Offset(dx, dy);
+  result = update_.scroll_rect.Intersect(result);
+
+  // Subtract out the scroll damage rect to avoid redundant painting.
+  return result.Subtract(update_.GetScrollDamage());
+}
+
+bool PaintAggregator::ShouldInvalidateScrollRect(const gfx::Rect& rect) const {
+  if (!rect.IsEmpty()) {
+    if (!update_.scroll_rect.Intersects(rect))
+      return false;
+
+    if (!update_.scroll_rect.Contains(rect))
+      return true;
+  }
+
+  // Check if the combined area of all contained paint rects plus this new
+  // rect comes too close to the area of the scroll_rect.  If so, then we
+  // might as well invalidate the scroll rect.
+
+  int paint_area = rect.width() * rect.height();
+  for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
+    const gfx::Rect& r = update_.paint_rects[i];
+    if (update_.scroll_rect.Contains(r))
+      paint_area += r.width() * r.height();
+  }
+  int scroll_area = update_.scroll_rect.width() * update_.scroll_rect.height();
+  if (float(paint_area) / float(scroll_area) > kMaxRedundantPaintToScrollArea)
+    return true;
+
+  return false;
+}
+
+void PaintAggregator::InvalidateScrollRect() {
+  gfx::Rect scroll_rect = update_.scroll_rect;
+  update_.scroll_rect = gfx::Rect();
+  update_.scroll_delta = gfx::Point();
+  InvalidateRect(scroll_rect);
 }

@@ -90,10 +90,13 @@ class BackingStore {
   void PaintToRect(const gfx::Rect& dest_rect, GdkDrawable* target);
 #endif
 
-  // Paints the bitmap from the renderer onto the backing store.
+  // Paints the bitmap from the renderer onto the backing store.  bitmap_rect
+  // gives the location of bitmap, and copy_rect specifies the subregion of
+  // the backingstore to be painted from the bitmap.
   void PaintRect(base::ProcessHandle process,
                  TransportDIB* bitmap,
-                 const gfx::Rect& bitmap_rect);
+                 const gfx::Rect& bitmap_rect,
+                 const gfx::Rect& copy_rect);
 
   // Scrolls the given rect in the backing store, replacing the given region
   // identified by |bitmap_rect| by the bitmap in the file identified by the
@@ -140,7 +143,8 @@ class BackingStore {
   // Paints the bitmap from the renderer onto the backing store without
   // using Xrender to composite the pixmaps.
   void PaintRectWithoutXrender(TransportDIB* bitmap,
-                               const gfx::Rect& bitmap_rect);
+                               const gfx::Rect& bitmap_rect,
+                               const gfx::Rect& copy_rect);
 
   // This is the connection to the X server where this backing store will be
   // displayed.

@@ -197,17 +197,18 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(CGContextRef context,
     bitmap.setPixels(data);
   } else {
     data = bitmap.getPixels();
-  }
 
-  // Note: The Windows implementation clears the Bitmap later on.
-  // This bears mentioning since removal of this line makes the
-  // unit tests only fail periodically (or when MallocPreScribble is set).
-  bitmap.eraseARGB(0, 0, 0, 0);
+    // Note: The Windows implementation clears the Bitmap later on.
+    // This bears mentioning since removal of this line makes the
+    // unit tests only fail periodically (or when MallocPreScribble is set).
+    bitmap.eraseARGB(0, 0, 0, 0);
+  }
 
   bitmap.setIsOpaque(is_opaque);
 
+  // If we were given data, then don't clobber it!
 #ifndef NDEBUG
-  if (is_opaque) {
+  if (!context && is_opaque) {
     // To aid in finding bugs, we set the background color to something
     // obviously wrong so it will be noticable when it is not cleared
     bitmap.eraseARGB(255, 0, 255, 128);  // bright bluish green

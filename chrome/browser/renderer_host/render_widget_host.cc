@@ -723,7 +723,8 @@ void RenderWidgetHost::OnMsgPaintRect(
       // Paint the backing store. This will update it with the renderer-supplied
       // bits. The view will read out of the backing store later to actually
       // draw to the screen.
-      PaintBackingStoreRect(dib, params.bitmap_rect, params.view_size);
+      PaintBackingStoreRect(dib, params.bitmap_rect, params.update_rects,
+                            params.view_size);
     }
   }
 
@@ -935,9 +936,11 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
 
 #endif
 
-void RenderWidgetHost::PaintBackingStoreRect(TransportDIB* bitmap,
-                                             const gfx::Rect& bitmap_rect,
-                                             const gfx::Size& view_size) {
+void RenderWidgetHost::PaintBackingStoreRect(
+    TransportDIB* bitmap,
+    const gfx::Rect& bitmap_rect,
+    const std::vector<gfx::Rect>& copy_rects,
+    const gfx::Size& view_size) {
   // The view may be destroyed already.
   if (!view_)
     return;
@@ -953,7 +956,7 @@ void RenderWidgetHost::PaintBackingStoreRect(TransportDIB* bitmap,
   bool needs_full_paint = false;
   BackingStoreManager::PrepareBackingStore(this, view_size,
                                            process_->GetHandle(),
-                                           bitmap, bitmap_rect,
+                                           bitmap, bitmap_rect, copy_rects,
                                            &needs_full_paint);
   if (needs_full_paint) {
     repaint_start_time_ = TimeTicks::Now();

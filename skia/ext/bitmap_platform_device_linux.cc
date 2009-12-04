@@ -144,12 +144,6 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
   bitmap.setPixels(cairo_image_surface_get_data(surface));
   bitmap.setIsOpaque(is_opaque);
 
-#ifndef NDEBUG
-  if (is_opaque) {
-    bitmap.eraseARGB(255, 0, 255, 128);  // bright bluish green
-  }
-#endif
-
   // The device object will take ownership of the graphics context.
   return new BitmapPlatformDevice
       (bitmap, new BitmapPlatformDeviceData(surface));
@@ -161,7 +155,14 @@ BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
       cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                  width, height);
 
-  return Create(width, height, is_opaque, surface);
+  BitmapPlatformDevice* device = Create(width, height, is_opaque, surface);
+
+#ifndef NDEBUG
+  if (is_opaque)  // Fill with bright bluish green
+    device->eraseColor(SkColorSetARGB(255, 0, 255, 128));
+#endif
+
+  return device;
 }
 
 BitmapPlatformDevice* BitmapPlatformDevice::Create(int width, int height,
