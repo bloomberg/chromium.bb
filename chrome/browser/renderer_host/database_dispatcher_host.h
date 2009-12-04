@@ -55,7 +55,7 @@ class DatabaseDispatcherHost
   void AddObserver();
   void RemoveObserver();
 
-  void ReceivedBadMessage(uint16 msg_type);
+  void ReceivedBadMessage(uint32 msg_type);
   void SendMessage(IPC::Message* message);
 
   // VFS message handlers (file thread)

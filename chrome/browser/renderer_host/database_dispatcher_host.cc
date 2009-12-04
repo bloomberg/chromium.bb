@@ -90,7 +90,7 @@ bool DatabaseDispatcherHost::OnMessageReceived(
   return handled;
 }
 
-void DatabaseDispatcherHost::ReceivedBadMessage(uint16 msg_type) {
+void DatabaseDispatcherHost::ReceivedBadMessage(uint32 msg_type) {
   BrowserRenderProcessHost::BadMessageTerminateProcess(
       msg_type, process_handle_);
 }

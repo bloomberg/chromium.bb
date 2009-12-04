@@ -188,7 +188,7 @@ void AppCacheDispatcherHost::SwapCacheCallback(bool result, void* param) {
   frontend_proxy_.sender()->Send(pending_reply_msg_.release());
 }
 
-void AppCacheDispatcherHost::ReceivedBadMessage(uint16 msg_type) {
+void AppCacheDispatcherHost::ReceivedBadMessage(uint32 msg_type) {
   // TODO(michaeln): Consider gathering UMA stats
   // http://code.google.com/p/chromium/issues/detail?id=24634
   BrowserRenderProcessHost::BadMessageTerminateProcess(

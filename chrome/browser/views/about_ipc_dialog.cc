@@ -88,7 +88,7 @@ struct Settings {
 
 } settings_views = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 
-void CreateColumn(uint16 start, uint16 end, HWND hwnd,
+void CreateColumn(uint32 start, uint32 end, HWND hwnd,
                   CListViewCtrl** control) {
   DCHECK(*control == NULL);
   *control = new CListViewCtrl(hwnd);

@@ -145,8 +145,8 @@
 // Do label##PreStart so that automation messages keep the same id as before.
 #define IPC_BEGIN_MESSAGES(label) \
   enum label##MsgType { \
-  label##Start = label##MsgStart << 12, \
-  label##PreStart = (label##MsgStart << 12) - 1,
+  label##Start = label##MsgStart << 16, \
+  label##PreStart = (label##MsgStart << 16) - 1,
 
 #define IPC_END_MESSAGES(label) \
   label##End \
@@ -387,7 +387,7 @@ void class_name::OnMessageReceived(const IPC::Message& msg) \
 
 #ifndef IPC_LOG_TABLE_CREATED
 #define IPC_LOG_TABLE_CREATED
-typedef void (*LogFunction)(uint16 type,
+typedef void (*LogFunction)(uint32 type,
                            std::wstring* name,
                            const IPC::Message* msg,
                            std::wstring* params);
@@ -397,7 +397,7 @@ LogFunction g_log_function_mapping[LastMsgIndex];
 
 
 #define IPC_BEGIN_MESSAGES(label) \
-  void label##MsgLog(uint16 type, std::wstring* name, const IPC::Message* msg, std::wstring* params) { \
+  void label##MsgLog(uint32 type, std::wstring* name, const IPC::Message* msg, std::wstring* params) { \
   switch (type) {
 
 #define IPC_END_MESSAGES(label) \

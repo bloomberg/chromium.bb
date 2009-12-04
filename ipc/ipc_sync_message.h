@@ -22,7 +22,7 @@ class MessageReplyDeserializer;
 
 class SyncMessage : public Message {
  public:
-  SyncMessage(int32 routing_id, uint16 type, PriorityValue priority,
+  SyncMessage(int32 routing_id, uint32 type, PriorityValue priority,
               MessageReplyDeserializer* deserializer);
 
   // Call this to get a deserializer for the output parameters.

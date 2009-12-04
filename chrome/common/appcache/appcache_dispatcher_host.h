@@ -54,7 +54,7 @@ class AppCacheDispatcherHost {
   void StartUpdateCallback(bool result, void* param);
   void SwapCacheCallback(bool result, void* param);
 
-  void ReceivedBadMessage(uint16 msg_type);
+  void ReceivedBadMessage(uint32 msg_type);
 
   AppCacheFrontendProxy frontend_proxy_;
   appcache::AppCacheBackendImpl backend_impl_;

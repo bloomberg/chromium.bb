@@ -358,7 +358,7 @@ bool BrowserRenderProcessHost::WaitForPaintMsg(int render_widget_id,
   return widget_helper_->WaitForPaintMsg(render_widget_id, max_delay, msg);
 }
 
-void BrowserRenderProcessHost::ReceivedBadMessage(uint16 msg_type) {
+void BrowserRenderProcessHost::ReceivedBadMessage(uint32 msg_type) {
   BadMessageTerminateProcess(msg_type, GetHandle());
 }
 
@@ -789,7 +789,7 @@ void BrowserRenderProcessHost::OnChannelConnected(int32 peer_pid) {
 
 // Static. This function can be called from any thread.
 void BrowserRenderProcessHost::BadMessageTerminateProcess(
-    uint16 msg_type, base::ProcessHandle process) {
+    uint32 msg_type, base::ProcessHandle process) {
   LOG(ERROR) << "bad message " << msg_type << " terminating renderer.";
   if (run_renderer_in_process()) {
     // In single process mode it is better if we don't suicide but just crash.

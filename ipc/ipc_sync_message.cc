@@ -22,7 +22,7 @@ base::WaitableEvent* dummy_event = new base::WaitableEvent(true, true);
 
 SyncMessage::SyncMessage(
     int32 routing_id,
-    uint16 type,
+    uint32 type,
     PriorityValue priority,
     MessageReplyDeserializer* deserializer)
     : Message(routing_id, type, priority),

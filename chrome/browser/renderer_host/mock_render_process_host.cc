@@ -37,7 +37,7 @@ bool MockRenderProcessHost::WaitForPaintMsg(int render_widget_id,
   return false;
 }
 
-void MockRenderProcessHost::ReceivedBadMessage(uint16 msg_type) {
+void MockRenderProcessHost::ReceivedBadMessage(uint32 msg_type) {
   ++bad_msg_count_;
 }
 

@@ -27,7 +27,7 @@ Message::Message()
   InitLoggingVariables();
 }
 
-Message::Message(int32 routing_id, uint16 type, PriorityValue priority)
+Message::Message(int32 routing_id, uint32 type, PriorityValue priority)
     : Pickle(sizeof(Header)) {
   header()->routing = routing_id;
   header()->type = type;

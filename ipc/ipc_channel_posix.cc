@@ -772,7 +772,9 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
           reinterpret_cast<int*>(CMSG_DATA(cmsg)));
       msgh.msg_controllen = cmsg->cmsg_len;
 
-      msg->header()->num_fds = num_fds;
+      // DCHECK_LE above already checks that
+      // num_fds < MAX_DESCRIPTORS_PER_MESSAGE so no danger of overflow.
+      msg->header()->num_fds = static_cast<uint16>(num_fds);
 
 #if defined(OS_LINUX)
       if (!uses_fifo_ &&

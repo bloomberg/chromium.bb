@@ -157,13 +157,13 @@ void Logging::OnPostDispatchMessage(const Message& message,
   }
 }
 
-void Logging::GetMessageText(uint16 type, std::wstring* name,
+void Logging::GetMessageText(uint32 type, std::wstring* name,
                              const Message* message,
                              std::wstring* params) {
   if (!log_function_mapping_)
     return;
 
-  int message_class = type >> 12;
+  int message_class = type >> 16;
   if (log_function_mapping_[message_class] != NULL) {
     log_function_mapping_[message_class](type, name, message, params);
   } else {

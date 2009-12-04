@@ -45,11 +45,9 @@ enum IPCMessageStart {
   WorkerMsgStart,
   WorkerHostMsgStart,
   NaClProcessMsgStart,
+  //CommandBufferMsgStart,
   // NOTE: When you add a new message class, also update
   // IPCStatusView::IPCStatusView to ensure logging works.
-  // NOTE: this enum is used by IPC_MESSAGE_MACRO to generate a unique message
-  // id.  Only 4 bits are used for the message type, so if this enum needs more
-  // than 16 entries, that code needs to be updated.
   LastMsgIndex
 };
 
@@ -782,7 +780,7 @@ struct ParamTraits<XFORM> {
 struct LogData {
   std::string channel;
   int32 routing_id;
-  uint16 type;  // "User-defined" message type, from ipc_message.h.
+  uint32 type;  // "User-defined" message type, from ipc_message.h.
   std::wstring flags;
   int64 sent;  // Time that the message was sent (i.e. at Send()).
   int64 receive;  // Time before it was dispatched (i.e. before calling
@@ -978,7 +976,7 @@ class MessageWithTuple : public Message {
   typedef ParamType Param;
   typedef typename ParamType::ParamTuple RefParam;
 
-  MessageWithTuple(int32 routing_id, uint16 type, const RefParam& p)
+  MessageWithTuple(int32 routing_id, uint32 type, const RefParam& p)
       : Message(routing_id, type, PRIORITY_NORMAL) {
     WriteParam(this, p);
   }
@@ -1142,7 +1140,7 @@ class MessageWithReply : public SyncMessage {
   typedef typename SendParam::ParamTuple RefSendParam;
   typedef ReplyParamType ReplyParam;
 
-  MessageWithReply(int32 routing_id, uint16 type,
+  MessageWithReply(int32 routing_id, uint32 type,
                    const RefSendParam& send, const ReplyParam& reply)
       : SyncMessage(routing_id, type, PRIORITY_NORMAL,
                     new ParamDeserializer<ReplyParam>(reply)) {

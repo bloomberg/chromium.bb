@@ -58,7 +58,7 @@ class Message : public Pickle {
 
   // Initialize a message with a user-defined type, priority value, and
   // destination WebView ID.
-  Message(int32 routing_id, uint16 type, PriorityValue priority);
+  Message(int32 routing_id, uint32 type, PriorityValue priority);
 
   // Initializes a message from a const block of data.  The data is not copied;
   // instead the data is merely referenced by this message.  Only const methods
@@ -117,7 +117,7 @@ class Message : public Pickle {
     return (header()->flags & PUMPING_MSGS_BIT) != 0;
   }
 
-  uint16 type() const {
+  uint32 type() const {
     return header()->type;
   }
 
@@ -216,13 +216,13 @@ class Message : public Pickle {
     HAS_SENT_TIME_BIT = 0x0080,
   };
 
-#pragma pack(push, 2)
+#pragma pack(push, 4)
   struct Header : Pickle::Header {
     int32 routing;  // ID of the view that this message is destined for
-    uint16 type;    // specifies the user-defined message type
-    uint16 flags;   // specifies control flags for the message
+    uint32 type;    // specifies the user-defined message type
+    uint32 flags;   // specifies control flags for the message
 #if defined(OS_POSIX)
-    uint32 num_fds; // the number of descriptors included with this message
+    uint16 num_fds; // the number of descriptors included with this message
 #endif
   };
 #pragma pack(pop)
@@ -273,7 +273,7 @@ enum SpecialRoutingIDs {
   MSG_ROUTING_CONTROL = kint32max,
 };
 
-#define IPC_REPLY_ID 0xFFF0  // Special message id for replies
-#define IPC_LOGGING_ID 0xFFF1  // Special message id for logging
+#define IPC_REPLY_ID 0xFFFFFFF0  // Special message id for replies
+#define IPC_LOGGING_ID 0xFFFFFFF1  // Special message id for logging
 
 #endif  // IPC_IPC_MESSAGE_H__
