@@ -1854,3 +1854,21 @@
    fun:_ZN19PlatformContextSkia4saveEv
    fun:_ZN7WebCore15GraphicsContext17savePlatformStateEv
 }
+{
+   bug_29392a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net15FlipSessionPool3GetERKNS_12HostResolver11RequestInfoEPNS_18HttpNetworkSessionE
+   fun:_ZN3net22FlipNetworkTransaction16DoInitConnectionEv
+   fun:_ZN3net22FlipNetworkTransaction6DoLoopEi
+   fun:_ZN3net22FlipNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
+}
+{
+   bug_29392b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3net11FlipSession17GetOrCreateStreamERKNS_15HttpRequestInfoEPKNS_16UploadDataStreamE
+   fun:_ZN3net22FlipNetworkTransaction13DoSendRequestEv
+   fun:_ZN3net22FlipNetworkTransaction6DoLoopEi
+   fun:_ZN3net22FlipNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
+}
