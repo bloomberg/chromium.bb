@@ -80,6 +80,10 @@
 #include "tools/memory_watcher/memory_watcher.h"
 #endif
 
+#if defined(USE_TCMALLOC)
+#include "third_party/tcmalloc/chromium/src/google/malloc_extension.h"
+#endif
+
 extern int BrowserMain(const MainFunctionParams&);
 extern int RendererMain(const MainFunctionParams&);
 extern int PluginMain(const MainFunctionParams&);
@@ -137,6 +141,13 @@ void PureCall() {
 }
 
 void OnNoMemory() {
+#if defined(USE_TCMALLOC)
+  // Try to get some information on the stack to make the crash easier to
+  // diagnose from a minidump, being very careful not to do anything that might
+  // try to heap allocate.
+  char buf[32*1024];
+  MallocExtension::instance()->GetStats(buf, sizeof(buf));
+#endif
   // Kill the process. This is important for security, since WebKit doesn't
   // NULL-check many memory allocations. If a malloc fails, returns NULL, and
   // the buffer is then used, it provides a handy mapping of memory starting at
