@@ -703,7 +703,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
       response_info.last_modified,
       request_is_seekable);
 
-  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
+  if (WebDevToolsAgent* devtools_agent = webframe_->view()->devToolsAgent()) {
     ClientInfo* client_info = GetClientInfoFromLoader(loader);
     if (client_info)
       devtools_agent->didReceiveResponse(client_info->id, response);
@@ -745,7 +745,7 @@ void WebPluginImpl::didReceiveData(WebURLLoader* loader,
     client->DidReceiveData(buffer, length, 0);
   }
 
-  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
+  if (WebDevToolsAgent* devtools_agent = webframe_->view()->devToolsAgent()) {
     ClientInfo* client_info = GetClientInfoFromLoader(loader);
     if (client_info)
       devtools_agent->didReceiveData(client_info->id, length);
@@ -770,7 +770,7 @@ void WebPluginImpl::didFinishLoading(WebURLLoader* loader) {
     client_info->client = NULL;
     resource_client->DidFinishLoading();
 
-    if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent())
+    if (WebDevToolsAgent* devtools_agent = webframe_->view()->devToolsAgent())
       devtools_agent->didFinishLoading(client_info->id);
   }
 }
@@ -786,7 +786,7 @@ void WebPluginImpl::didFail(WebURLLoader* loader,
     client_info->client = NULL;
     resource_client->DidFail();
 
-    if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent())
+    if (WebDevToolsAgent* devtools_agent = webframe_->view()->devToolsAgent())
       devtools_agent->didFailLoading(client_info->id, error);
   }
 }
@@ -928,7 +928,7 @@ bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
 
   // Sets the routing id to associate the ResourceRequest with the RenderView.
   webframe_->dispatchWillSendRequest(info.request);
-  if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent()) {
+  if (WebDevToolsAgent* devtools_agent = webframe_->view()->devToolsAgent()) {
     devtools_agent->identifierForInitialRequest(resource_id, webframe_,
                                                 info.request);
     devtools_agent->willSendRequest(resource_id, info.request);
@@ -991,7 +991,8 @@ void WebPluginImpl::SetDeferResourceLoading(unsigned long resource_id,
         resource_client->DidFail();
 
         // Report that resource loading finished.
-        if (WebDevToolsAgent* devtools_agent = GetDevToolsAgent())
+        WebDevToolsAgent* devtools_agent = webframe_->view()->devToolsAgent();
+        if (devtools_agent)
           devtools_agent->didFinishLoading(resource_id);
       }
       break;
@@ -1119,15 +1120,6 @@ void WebPluginImpl::SetReferrer(WebKit::WebURLRequest* request,
     default:
       break;
   }
-}
-
-WebDevToolsAgent* WebPluginImpl::GetDevToolsAgent() {
-  if (!webframe_)
-    return NULL;
-  WebView* view = webframe_->view();
-  if (!view)
-    return NULL;
-  return view->devToolsAgent();
 }
 
 }  // namespace webkit_glue
