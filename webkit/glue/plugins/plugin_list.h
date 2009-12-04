@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGIN_PLUGIN_LIST_H__
-#define WEBKIT_GLUE_PLUGIN_PLUGIN_LIST_H__
+#ifndef WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_
+#define WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_
 
-#include <set>
 #include <string>
 #include <vector>
 
@@ -24,8 +23,7 @@ struct DefaultLazyInstanceTraits;
 
 }  // namespace base
 
-namespace NPAPI
-{
+namespace NPAPI {
 
 #define kDefaultPluginLibraryName FILE_PATH_LITERAL("default_plugin")
 #define kGearsPluginLibraryName FILE_PATH_LITERAL("gears")
@@ -132,6 +130,11 @@ class PluginList {
   void LoadPlugin(const FilePath& filename,
                   std::vector<WebPluginInfo>* plugins);
 
+#if defined(USE_LINUX_BREAKPAD)
+  // Get a comma separated string with the list of successfully loaded plugins.
+  static std::string* GetLoadedPlugins();
+#endif
+
  private:
   // Constructors are private for singletons
   PluginList();
@@ -222,6 +225,6 @@ class PluginList {
   DISALLOW_COPY_AND_ASSIGN(PluginList);
 };
 
-} // namespace NPAPI
+}  // namespace NPAPI
 
-#endif  // WEBKIT_GLUE_PLUGIN_PLUGIN_LIST_H__
+#endif  // WEBKIT_GLUE_PLUGINS_PLUGIN_LIST_H_

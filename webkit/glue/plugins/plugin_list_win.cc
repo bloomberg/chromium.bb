@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "webkit/glue/plugins/plugin_list.h"
+
 #include <tchar.h>
 
-#include "webkit/glue/plugins/plugin_list.h"
+#include <set>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -193,7 +195,6 @@ void GetJavaDirectory(std::set<FilePath>* plugin_dirs) {
     //    value under the Java version key.
     std::wstring java_plugin_directory;
     if (java_key.ReadValue(kRegistryJavaHome, &java_plugin_directory)) {
-
       // 4. The new plugin resides under the 'bin/new_plugin'
       //    subdirectory.
       DCHECK(!java_plugin_directory.empty());
@@ -206,10 +207,9 @@ void GetJavaDirectory(std::set<FilePath>* plugin_dirs) {
   }
 }
 
-}
+}  // anonymous namespace
 
-namespace NPAPI
-{
+namespace NPAPI {
 
 void PluginList::PlatformInit() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -355,4 +355,4 @@ bool PluginList::ShouldLoadPlugin(const WebPluginInfo& info,
   return true;
 }
 
-} // namespace NPAPI
+}  // namespace NPAPI

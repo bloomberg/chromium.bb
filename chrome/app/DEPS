@@ -4,4 +4,5 @@ include_rules = [
   "+chrome/installer",
   "+sandbox",
   "+tools/memory_watcher",
+  "+webkit/glue/plugins",  # For GetPluginList() on Linux.
 ]
