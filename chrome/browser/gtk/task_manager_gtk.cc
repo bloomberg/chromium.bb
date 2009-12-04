@@ -511,7 +511,7 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN);
 
   // Hide some columns by default.
-  TreeViewColumnSetVisible(treeview_, kTaskManagerPrivateMem, false);
+  TreeViewColumnSetVisible(treeview_, kTaskManagerSharedMem, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerProcessID, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreImageCache, false);
   TreeViewColumnSetVisible(treeview_, kTaskManagerWebCoreScriptsCache, false);
@@ -734,7 +734,7 @@ void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview,
   // size even if the data would overflow, preventing a horizontal scroll
   // bar from appearing due to the row data.
   const TaskManagerColumn dfl_columns[] = {kTaskManagerNetwork, kTaskManagerCPU,
-                                           kTaskManagerSharedMem};
+                                           kTaskManagerPrivateMem};
   GtkTreeViewColumn* column = NULL;
   gint width;
   for (size_t i = 0; i < arraysize(dfl_columns); ++i) {
