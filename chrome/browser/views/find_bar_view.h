@@ -72,6 +72,9 @@ class FindBarView : public DropdownBarView,
   // Resets the background for the match count label.
   void ResetMatchCountBackground();
 
+  // Overridden from views::View.
+  virtual void ThemeChanged();
+
   // We use a hidden view to grab mouse clicks and bring focus to the find
   // text box. This is because although the find text box may look like it
   // extends all the way to the find button, it only goes as far as to the

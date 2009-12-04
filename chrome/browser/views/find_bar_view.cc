@@ -136,11 +136,11 @@ FindBarView::FindBarView(FindBarHost* host)
   close_button_->set_tag(CLOSE_TAG);
   close_button_->SetFocusable(true);
   close_button_->SetImage(views::CustomButton::BS_NORMAL,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR));
   close_button_->SetImage(views::CustomButton::BS_HOT,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_H));
   close_button_->SetImage(views::CustomButton::BS_PUSHED,
-      rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
+                          rb.GetBitmapNamed(IDR_CLOSE_BAR_P));
   close_button_->SetTooltipText(
       l10n_util::GetString(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP));
   AddChildView(close_button_);
@@ -324,6 +324,8 @@ void FindBarView::Layout() {
                            (height() - sz.height()) / 2,
                            sz.width(),
                            sz.height());
+  // Set the color.
+  ThemeChanged();
 
   // Next, the FindNext button to the left the close button.
   sz = find_next_button_->GetPreferredSize();
@@ -382,7 +384,7 @@ void FindBarView::Layout() {
                                    find_previous_button_->height());
 }
 
-void FindBarView::ViewHierarchyChanged(bool is_add, View *parent, View *child) {
+void FindBarView::ViewHierarchyChanged(bool is_add, View* parent, View* child) {
   if (is_add && child == this) {
     find_text_->SetHorizontalMargins(3, 3);  // Left and Right margins.
     find_text_->RemoveBorder();  // We draw our own border (a background image).
@@ -502,4 +504,14 @@ bool FindBarView::FocusForwarderView::OnMousePressed(
 
 FindBarHost* FindBarView::find_bar_host() const {
   return static_cast<FindBarHost*>(host());
+}
+
+void FindBarView::ThemeChanged() {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (GetThemeProvider()) {
+    close_button_->SetBackground(
+        GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR),
+        rb.GetBitmapNamed(IDR_CLOSE_BAR_MASK));
+  }
 }
