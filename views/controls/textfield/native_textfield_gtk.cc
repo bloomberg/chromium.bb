@@ -6,6 +6,7 @@
 
 #include "views/controls/textfield/native_textfield_gtk.h"
 
+#include "app/gfx/insets.h"
 #include "app/gfx/gtk_util.h"
 #include "base/string_util.h"
 #include "skia/ext/skia_utils_gtk.h"
@@ -139,23 +140,29 @@ gfx::Insets NativeTextfieldGtk::CalculateInsets() {
 
   GtkWidget* widget = native_view();
   GtkEntry* entry = GTK_ENTRY(widget);
-  const GtkBorder* inner_border = gtk_entry_get_inner_border(entry);
-  int left = 0, right = 0, top = 0, bottom = 0;
-  if (!inner_border)
-    gtk_widget_style_get(widget, "inner-border", &inner_border, NULL);
+  gfx::Insets insets;
 
+  const GtkBorder* inner_border = gtk_entry_get_inner_border(entry);
   if (inner_border) {
-    left += inner_border->left;
-    right += inner_border->right;
-    top += inner_border->top;
-    bottom += inner_border->bottom;
+    insets += gfx::Insets(*inner_border);
+  } else {
+    // No explicit border set, try the style.
+    GtkBorder* style_border;
+    gtk_widget_style_get(widget, "inner-border", &style_border, NULL);
+    if (style_border) {
+      insets += gfx::Insets(*style_border);
+      gtk_border_free(style_border);
+    } else {
+      // If border is null, Gtk uses 2 on all sides.
+      insets += gfx::Insets(2, 2, 2, 2);
+    }
   }
 
   if (entry->has_frame) {
-    left += widget->style->xthickness;
-    right += widget->style->xthickness;
-    top += widget->style->ythickness;
-    bottom += widget->style->ythickness;
+    insets += gfx::Insets(widget->style->ythickness,
+                          widget->style->xthickness,
+                          widget->style->ythickness,
+                          widget->style->xthickness);
   }
 
   gboolean interior_focus;
@@ -164,14 +171,10 @@ gfx::Insets NativeTextfieldGtk::CalculateInsets() {
                        "focus-line-width", &focus_width,
                        "interior-focus", &interior_focus,
                        NULL);
-  if (!interior_focus) {
-    left += focus_width;
-    right += focus_width;
-    top += focus_width;
-    bottom += focus_width;
-  }
+  if (!interior_focus)
+    insets += gfx::Insets(focus_width, focus_width, focus_width, focus_width);
 
-  return gfx::Insets(top, left, bottom, right);
+  return insets;
 }
 
 void NativeTextfieldGtk::SetHorizontalMargins(int left, int right) {

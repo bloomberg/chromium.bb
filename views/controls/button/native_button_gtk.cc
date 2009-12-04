@@ -88,8 +88,7 @@ gfx::Size NativeButtonGtk::GetPreferredSize() {
   if (preferred_size_.IsEmpty()) {
     GtkRequisition size_request = { 0, 0 };
     gtk_widget_size_request(native_view(), &size_request);
-    preferred_size_.SetSize(size_request.width,
-                            std::max(size_request.height, 29));
+    preferred_size_.SetSize(size_request.width, size_request.height);
   }
   return preferred_size_;
 }

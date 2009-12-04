@@ -5,6 +5,12 @@
 #ifndef APP_GFX_INSETS_H_
 #define APP_GFX_INSETS_H_
 
+#include "build/build_config.h"
+
+#if defined(OS_LINUX)
+#include <gtk/gtkstyle.h>
+#endif
+
 namespace gfx {
 
 //
@@ -16,7 +22,17 @@ class Insets {
  public:
   Insets() : top_(0), left_(0), bottom_(0), right_(0) {}
   Insets(int top, int left, int bottom, int right)
-      : top_(top), left_(left), bottom_(bottom), right_(right) { }
+      : top_(top),
+        left_(left),
+        bottom_(bottom),
+        right_(right) {}
+#if defined(OS_LINUX)
+  explicit Insets(const GtkBorder& border)
+      : top_(border.top),
+        left_(border.left),
+        bottom_(border.bottom),
+        right_(border.right) {}
+#endif
 
   ~Insets() {}
 
