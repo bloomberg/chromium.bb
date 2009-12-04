@@ -238,7 +238,7 @@ class WindowWin : public WidgetWin,
   HWND owning_hwnd_;
 
   // The smallest size the window can be.
-  CSize minimum_size_;
+  gfx::Size minimum_size_;
 
   // Whether or not the window is modal. This comes from the delegate and is
   // cached at Init time to avoid calling back to the delegate from the
