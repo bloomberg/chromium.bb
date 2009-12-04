@@ -99,7 +99,7 @@ class QuotaLimitHeuristic {
   // come in). So, a bucket has an expiration to denote it has becomes stale.
   class Bucket {
    public:
-    explicit Bucket() : num_tokens_(0) {}
+    Bucket() : num_tokens_(0) {}
     // Removes a token from this bucket, and returns true if the bucket had
     // any tokens in the first place.
     bool DeductToken() { return num_tokens_-- > 0; }
@@ -130,6 +130,7 @@ class QuotaLimitHeuristic {
   // for this QuotaLimitHeuristic.
   class BucketMapper {
    public:
+    virtual ~BucketMapper() {}
     // In most cases, this should simply extract item IDs from the arguments
     // (e.g for bookmark operations involving an existing item). If a problem
     // occurs while parsing |args|, the function aborts - buckets may be non-

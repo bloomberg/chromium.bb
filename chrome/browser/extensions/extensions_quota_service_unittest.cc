@@ -34,12 +34,9 @@ class Mapper : public QuotaLimitHeuristic::BucketMapper {
     for (size_t i = 0; i < v->GetSize(); i++) {
       int id;
       ASSERT_TRUE(v->GetInteger(i, &id));
-      Bucket* bucket = buckets_[id];
-      if (bucket == NULL) {
-        bucket = new Bucket();
-        buckets_[id] = bucket;
-      }
-      buckets->push_back(bucket);
+      if (buckets_.find(id) == buckets_.end())
+        buckets_[id] = new Bucket();
+      buckets->push_back(buckets_[id]);
     }
   }
  private:
