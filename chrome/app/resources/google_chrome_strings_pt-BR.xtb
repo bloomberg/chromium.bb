@@ -3,15 +3,19 @@
 <translationbundle lang="pt-BR">
 <translation id="8000275528373650868">O Google Chrome requer o Windows Vista ou o Windows XP com SP2 ou superior.</translation>
 <translation id="6676384891291319759">Acessar a internet</translation>
+<translation id="4517682492677349713">Deseja que o Google Chrome salve estas informações?</translation>
 <translation id="2770231113462710648">Alterar navegador padrão para:</translation>
 <translation id="698670068493841342">O Google Chrome já foi instalado para este usuário. Se o software não estiver funcionando, desinstale o Google Chrome e baixe-o novamente.</translation>
 <translation id="7400722733683201933">Sobre o Google Chrome</translation>
+<translation id="7781002470561365167">Uma nova versão do Google Chrome está disponível.</translation>
 <translation id="7101265395643981223">Iniciar o Google Chrome</translation>
 <translation id="2370289711218562573">O Google Chrome está importando os Favoritos.</translation>
 <translation id="8970027151245482499">O Google Chrome não está instalado ou não foi possível localizar o diretório de instalação. Baixe o Google Chrome novamente.</translation>
 <translation id="2040709530900803995">Visualizador do Google Chrome</translation>
 <translation id="4281844954008187215">Termos de Serviço</translation>
 <translation id="1137776625614346046">A área &quot;Mais visitados&quot; mostra os sites que você usa com mais freqüência. Depois de usar o Google Chrome por algum tempo, você verá os sites mais visitados sempre que abrir uma nova guia. Saiba mais sobre esse e outros recursos na <ph name="BEGIN_LINK"/>página Primeiros passos<ph name="END_LINK"/>.</translation>
+<translation id="3555616473548901994">Desinstalação concluída.</translation>
+<translation id="1826297811907343327">Se você cancelar agora, apenas parte dos itens será importada. Você pode importar novamente mais tarde no menu do Google Chrome.</translation>
 <translation id="4728575227883772061">Houve uma falha na instalação devido a um erro não-especificado. Se o Google Chrome estiver em execução no momento, feche-o e tente novamente.</translation>
 <translation id="4149882025268051530">Houve uma falha no instalador ao descompactar o arquivo. Baixe o Google Chrome novamente.</translation>
 <translation id="5744005218040929396">Utilitário do Google Chrome</translation>
@@ -36,31 +40,36 @@
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
 <translation id="6009537148180854585">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o certificado apresentado pelo servidor contém erros. O Google Chrome não pode usar um certificado com erros e não pode validar a identidade do site ao qual você tentou se conectar. Sua conexão não é segura e você não deve continuar.</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
+<translation id="8899050679030089927">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração entre em vigor.</translation>
 <translation id="3324235665723428530">O seu perfil não pode ser usado, pois ele é de uma versão mais recente do Google Chrome.\n\nAlguns recursos podem estar indisponíveis. Especifique um diretório de perfil diferente ou use uma versão mais recente do Chrome.</translation>
+<translation id="7214670531148488183">O Google Chrome pode usar serviços da web para melhorar a qualidade da sua navegação. Você pode desativar esses serviços.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
 <translation id="2044287590254833138">Barra de ferramentas do Google Chrome</translation>
 <translation id="5074344184765391290">Host do plug-in do Google Chrome</translation>
-<translation id="1473088902761932034">Que bom que você voltou! Mas o Google Chrome não é o seu navegador padrão.</translation>
 <translation id="6481075104394517441">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Nenhuma informação está disponível para indicar se o certificado é confiável. O Google Chrome não pode garantir que você esteja se comunicando com o &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um invasor. Verifique se o relógio e o fuso horário estão definidos corretamente no seu computador. Caso não estejam, corrija e atualize esta página. Se estiverem corretos, você não deve continuar.</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>
 <translation id="595871952790078940">Utilitário do Google Chrome</translation>
 <translation id="2874156562296220396">O Google Chrome foi possibilitado pelo projeto de código aberto <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> e outros <ph name="BEGIN_LINK_OSS"/>softwares de código aberto<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">O Google Chrome está pronto para concluir a instalação.</translation>
 <translation id="7100330187273168372">O Google Chrome não pode ler nem gravar em seu diretório de dados:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="6757767188268205357">Não estou a fim</translation>
 <translation id="2290095356545025170">Tem certeza de que deseja desinstalar o Google Chrome?</translation>
 <translation id="5941830788786076944">Fazer do Google Chrome o navegador padrão</translation>
 <translation id="4127951844153999091">Nesse caso, o endereço listado no certificado não corresponde ao endereço do site que seu navegador tentou acessar. Um possível motivo para isso é o fato de suas comunicações serem interceptadas por um invasor que está apresentando um certificado para um site diferente, o que poderia causar uma correspondência incorreta. Outro possível motivo é o fato de o servidor estar configurado para retornar o mesmo certificado para vários sites, incluindo o que você está tentando visitar, mesmo que esse certificado não seja válido para todos os sites. O Google Chrome pode afirmar com certeza que você acessou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, mas não pode confirmar que este é o mesmo site que &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, que você pretendia acessar.
 Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta de nomes. Em geral, é melhor não continuar além deste ponto.</translation>
 <translation id="2712549016134575851">Foi detectado um conflito com outro aplicativo instalado.</translation>
+<translation id="7018032895891496381">O Google Chrome usa o seu mecanismo de pesquisa padrão, que no momento está definido como <ph name="PAGE_TITLE"/>. Deseja manter o seu mecanismo de pesquisa padrão?</translation>
 <translation id="7161904924553537242">Bem-vindo ao Google Chrome</translation>
 <translation id="8669527147644353129">Auxiliar do Google Chrome</translation>
 <translation id="8236873504073475138">O Google Chrome não é compatível com o Windows 2000. Alguns recursos talvez não funcionem.</translation>
 <translation id="5318056482164160049">Host do plug-in do Google Chrome</translation>
+<translation id="6126631249883707068">Deseja que o Google Chrome salve a sua senha?</translation>
 <translation id="5046764976540625289">Sair do Chrome</translation>
 <translation id="9039578207253536065">Operador do Google Chrome</translation>
 <translation id="8865765905101981392">Navegador da internet</translation>
 <translation id="8776515774046280928">O Google Chrome já está instalado e disponível para todos os usuários deste computador. Se você desejar instalar o Google Chrome para um usuário específico, primeiro desinstale a versão para sistema instalada pelo administrador.</translation>
+<translation id="7196020411877309443">Por que estou vendo este aviso?</translation>
 <translation id="2769762047821873045">O Google Chrome não é o seu navegador padrão.</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="3335672657969596251">O Google Chrome não é compatível com o <ph name="OS_NAME"/>.</translation>
@@ -74,6 +83,7 @@ Se continuar, o Chrome não procurará nenhuma outra correspondência incorreta 
 <translation id="6626317981028933585">Infelizmente, suas configurações do Mozilla Firefox não ficarão disponíveis enquanto esse navegador estiver sendo executado. Para importar essas configurações para o Google Chrome, salve o seu trabalho e feche todas as janelas do Firefox. Em seguida, clique em &quot;Continuar&quot;.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="6049075767726609708">Um administrador instalou o Google Chrome no sistema e ele está disponível para todos os usuários. O Google Chrome no nível do sistema substituirá sua instalação no nível do usuário agora.</translation>
+<translation id="7123348595797445166">Experimentar (já instalado)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">Altere o idioma dos menus, caixas de diálogo e dicas de ferramenta do Google Chrome.</translation>
 <translation id="9189723490960700326">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado expirado. Nenhuma informação está disponível para indicar se o certificado foi comprometido desde que expirou. Isto significa que o Google Chrome não pode garantir que você esteja se comunicando com o &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e não com um invasor. Você não deve continuar.</translation>

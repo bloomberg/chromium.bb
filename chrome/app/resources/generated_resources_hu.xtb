@@ -7,6 +7,7 @@
 <translation id="3581034179710640788">A hely biztonsági tanúsítványa lejárt!</translation>
 <translation id="8275038454117074363">Importálás</translation>
 <translation id="8418445294933751433">&amp;Megjelenítés lapként</translation>
+<translation id="6985276906761169321">Azonosító:</translation>
 <translation id="2160383474450212653">Betűtípusok és nyelvek</translation>
 <translation id="4405141258442788789">A művelet túllépte az időkeretet.</translation>
 <translation id="5048179823246820836">Skandináv</translation>
@@ -28,11 +29,15 @@
 <translation id="8571213806525832805">Elmúlt négy héten</translation>
 <translation id="6021004449668343960">Sans-Serif betűtípus:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
+<translation id="8460952460426246415">Könyvjelzői mostantól szinkronizálva lesznek az összes számítógépen, amelyen engedélyezi ezt a szolgáltatást.</translation>
 <translation id="4422428420715047158">Domain:</translation>
 <translation id="4021918302616263355">Kereső: <ph name="ENGINE"/>; kifejezés: &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
 <translation id="5376169624176189338">Kattintson, ha az előző oldalra szeretne lépni; tartsa lenyomva, ha látni szeretné az előzményeket</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> másodperc van hátra</translation>
 <translation id="9181716872983600413">Unicode</translation>
+<translation id="7383539497402338906">A Könyvjelző-szinkronizálás segítségével ugyanazokat a könyvjelzőket több számítógépen is használhatja.
+        Ha engedélyezi a szinkronizálást, könyvjelzői online, az Ön Google Fiókjában is el lesznek mentve.
+        Minden számítógépen, amelyen bekapcsolja ezt a szolgáltatást, rendelkezni fog ugyanazokkal a könyvjelzőkkel.</translation>
 <translation id="1383861834909034572">Megnyitás, amikor kész</translation>
 <translation id="4211171103079968550">Java engedélyezése</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
@@ -45,12 +50,12 @@
 <translation id="9154072353677278078">A(z) <ph name="DOMAIN"/> szerveren található <ph name="REALM"/> felhasználónevet és jelszót kér.</translation>
 <translation id="2193841602817119749">A(z) &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; címen lévő webhelyről azt jelentették, hogy &quot;adathalász&quot; oldal.  Az adathalász oldalak trükkök segítségével kicsalják a felhasználók személyes vagy pénzügyi adatait, gyakran úgy, hogy hiteles intézmények, például bankok nevében írnak.</translation>
 <translation id="8178665534778830238">Tartalom:</translation>
-<translation id="1379170046778889619">Biztonsági információ</translation>
 <translation id="4771019161370731727">Legutóbbi tevékenységek</translation>
 <translation id="8974161578568356045">Automatikus felismerés</translation>
 <translation id="1818606096021558659">Oldal</translation>
 <translation id="1657406563541664238">Segítsen a <ph name="PRODUCT_NAME"/> fejlesztésében azáltal, hogy automatikusan elküldi a használati statisztikákat és hibajelentéseket a Google részére</translation>
 <translation id="7982789257301363584">Hálózat</translation>
+<translation id="2336228925368920074">Összes lap hozzáadása a könyvjelzőkhöz...</translation>
 <translation id="4108206167095122329">Minden &amp;eltávolítása</translation>
 <translation id="7481475534986701730">Mostanában megtekintett webhelyek</translation>
 <translation id="4260722247480053581">Megnyitás inkognitóablakban</translation>
@@ -71,10 +76,12 @@
 <translation id="9218430445555521422">Beállítás alapértelmezettként</translation>
 <translation id="4589279373639964403">Könyvjelzők exportálása...</translation>
 <translation id="8876215549894133151">Formátum:</translation>
+<translation id="5234764350956374838">Elvetés</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> indexe</translation>
 <translation id="5154917547274118687">Memória</translation>
 <translation id="1735662153177951739">Ezt az oldalt nem sikerült teljes mértékben lekérni biztonságos kapcsolaton keresztül. Van olyan tartalma, amely nem biztonságos kapcsolaton keresztül érkezett.</translation>
 <translation id="6628463337424475685">Keresés: <ph name="ENGINE"/></translation>
+<translation id="6726379128203862332"><ph name="SIZE_TAKEN"/> MB</translation>
 <translation id="2459861677908225199">TLS 1.0 használata</translation>
 <translation id="873849583815421063">Befejezés...</translation>
 <translation id="5819484510464120153">P&amp;arancsikonok létrehozása az alkalmazásokhoz...</translation>
@@ -94,11 +101,13 @@
 <translation id="443008484043213881">Eszközök</translation>
 <translation id="314605055819837597">Felhasználói adatok</translation>
 <translation id="8534801226027872331">Ebben az esetben a böngészőnek felmutatott tanúsítvány hibás, és nem érthető. Ez azt is jelentheti, hogy nem értjük a tanúsítványban lévő jellemzőket, vagy egyéb olyan, a tanúsítványban szereplő információkat, amelyek a kapcsolat biztonságossá tételére. Nem javasoljuk, hogy folytassa.</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> most már rendelkezik <ph name="BEGIN_LINK"/>bővítményekkel<ph name="END_LINK"/> és <ph name="BEGIN_BUTTON"/>szinkronizálja a könyvjelzőket<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Könyvjelzői össze lesznek vonva.</translation>
 <translation id="4422347585044846479">Könyvjelző szerkesztése ehhez az oldalhoz</translation>
 <translation id="7367545749698325833">Könyvjelzőket és beállításokat importálhat más böngészőkből, vagy törölheti a böngészési adatokat a számítógépről.</translation>
 <translation id="51285338152176012">Nemrég bezárt lapok elrejtése</translation>
 <translation id="8546306075665861288">Képek gyorsítótára</translation>
+<translation id="801357260673640054">Könyvjelzők szinkronizálva...</translation>
 <translation id="1399076603473531278">A bejelentkezési adatok elavultak.</translation>
 <translation id="3391060940042023865">Az alábbi plug-in összeomlott:<ph name="PLUGIN_NAME"/></translation>
 <translation id="8879284080359814990">Megjeleníté&amp;s lapként</translation>
@@ -109,7 +118,7 @@
 <translation id="2994458892329442723">Pluginek engedélyezése</translation>
 <translation id="1674989413181946727">Számítógépre érvényes SSL-beállítások:</translation>
 <translation id="8703575177326907206">Kapcsolódása (<ph name="DOMAIN"/>) nem titkosított.</translation>
-<translation id="7345141778157460052">Könyvjelző-szinkronizálás:</translation>
+<translation id="4197577448076628265">Ez a bővítmény hozzá fog férni az Ön böngészési előzményeihez, valamint személyes adataihoz a következő webhelyen: <ph name="HOST"/>.</translation>
 <translation id="1644574205037202324">Előzmények</translation>
 <translation id="2518917559152314023">H&amp;ozzáadás...</translation>
 <translation id="6583406242234752719">Nem állította be, hogy könyvjelzői szinkronizálva legyenek más számítógépekkel.</translation>
@@ -133,25 +142,33 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> másodperc</translation>
 <translation id="5098629044894065541">Héber</translation>
 <translation id="7751559664766943798">A könyvjelzősáv állandó megjelenítése</translation>
+<translation id="144136026008224475">További bővítmények megszerzése &gt;&gt;</translation>
 <translation id="8584280235376696778">&amp;Videó megnyitása új lapon</translation>
 <translation id="2845382757467349449">A könyvjelzők eszköztárának megjelenítése mindig</translation>
 <translation id="6827094223626760756">előnézet</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> óra van hátra</translation>
 <translation id="1720675772864601791">Nem biztonságos képek engedélyezése</translation>
+<translation id="471372654970523967"><ph name="NETWORKDEVICE"/> bekapcsolása</translation>
+<translation id="4001299999465067131">Írja be a fenti képen látható betűket.</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="5233638681132016545">Új lap</translation>
 <translation id="5210365745912300556">Lap bezárása</translation>
 <translation id="8806796506533854282">Új profilnév megadása</translation>
 <translation id="2551763528995812091">Jelszavak és kivételek</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="2263497240924215535">(Kikapcsolva)</translation>
 <translation id="6360709384096878403">Hiba vagy nem működő webhely bejelentése...</translation>
 <translation id="1110535155349301542">eltávolítás</translation>
 <translation id="8571852575982769756">Nincsenek telepített pluginek</translation>
+<translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Várakozás a szerverre: <ph name="HOST_NAME"/>...</translation>
+<translation id="5850800573054873412">Ez a bővítmény hozzá fog férni az Ön böngészési előzményeihez, valamint személyes adataihoz az összes webhelyen.</translation>
 <translation id="3280237271814976245">Mentés &amp;másként...</translation>
 <translation id="5300471193642408424">Oldalak megjelenítése</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="6996264303975215450">Weboldal, teljes</translation>
+<translation id="8744320793514149773">Ez a bővítmény hozzá fog férni az Ön személyes adataihoz az összes webhelyen.</translation>
+<translation id="3435896845095436175">Engedélyezés</translation>
 <translation id="2154710561487035718">URL másolása</translation>
 <translation id="4244236525807044920">Betűtípus és nyelv beállításainak módosítása</translation>
 <translation id="3241680850019875542">Válassza ki a bővítmény gyökérkönyvtárát. A bővítmény frissítéséhez meg kell adni az ismét használandó privátkulcs-fájlt is.</translation>
@@ -159,6 +176,7 @@
 <translation id="6746124502594467657">Mozgatás lefelé</translation>
 <translation id="4657169630710541069">Erőforráshiba</translation>
 <translation id="3383487468758466563">Betűtípusok és nyelvek:</translation>
+<translation id="7339949551808462689">Bővítmény <ph name="EXTENSION_NAME"/></translation>
 <translation id="6163363155248589649">&amp;Normál</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(Névtelen)</translation>
@@ -168,14 +186,17 @@
 <translation id="3605499851022050619">Diagnosztikai oldal - Biztonságos böngészés</translation>
 <translation id="4307992518367153382">Alapok</translation>
 <translation id="5912378097832178659">&amp;Keresők beállítása...</translation>
+<translation id="3173397526570909331">Szinkronizálás leállítása</translation>
 <translation id="4813345808229079766">Kapcsolat</translation>
 <translation id="411666854932687641">Saját memória</translation>
 <translation id="119944043368869598">Összes törlése</translation>
 <translation id="1336254985736398701">Oldal adata&amp;inak megtekintése</translation>
+<translation id="5678480951567683474">Az Oldal és az Eszközök menü megjelenítése</translation>
 <translation id="1652965563555864525">&amp;Elnémítás</translation>
 <translation id="4200983522494130825">Új &amp;lap</translation>
 <translation id="7979036127916589816">Szinkronizálási hiba</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/>, összesen: <ph name="TOTAL_MATCHCOUNT"/></translation>
+<translation id="5178488982078290579">A könyvjelzők szinkronizálva...</translation>
 <translation id="2303544859777878640">Nyelvek:</translation>
 <translation id="2021921916539001817">Adatátvitel a szerverről: <ph name="HOST_NAME"/>...</translation>
 <translation id="6909042471249949473">Adatok törlése az alábbi időszakból:</translation>
@@ -185,10 +206,13 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7456847797759667638">Hely megnyitása...</translation>
 <translation id="5392041771307264501">Profil kiválasztása egy új ablak megnyitásához</translation>
+<translation id="1388866984373351434">Böngészési adatok</translation>
+<translation id="7378627244592794276">Nem</translation>
 <translation id="68541483639528434">A többi lap bezárása</translation>
 <translation id="4022426551683927403">&amp;Hozzáadás a szótárhoz</translation>
 <translation id="2897878306272793870">Biztosan meg szeretne nyitni <ph name="TAB_COUNT"/> lapot?</translation>
 <translation id="362276910939193118">Minden előzmény megjelenítése</translation>
+<translation id="7879113706359663444">du. <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="1073286447082909762">Keret megnyitása új &amp;ablakban</translation>
 <translation id="692135145298539227">törlés</translation>
 <translation id="8343477974731263456">Felkészülés a könyvjelzők szinkronizálására</translation>
@@ -200,6 +224,7 @@
 <translation id="2678063897982469759">Újraengedélyezés</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="1965338962645102116">Ahhoz, hogy a Google Eszköztár könyvjelzőit a Chrome-ba importálhassa, be kell jelentkeznie a Google Fiókjába. Kérjük, jelentkezzen be, és próbálja újra az importálást.</translation>
+<translation id="5035846689029228055">Könyvjelző-szinkronizálás:</translation>
 <translation id="5922220455727404691">SSL 3.0 használata</translation>
 <translation id="5903264686717710770">Megszólítás:</translation>
 <translation id="8899851313684471736">Link megnyitása új &amp;ablakban</translation>
@@ -208,11 +233,13 @@
 <translation id="6686490380836145850">Jobbra lévő lapok bezárása</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> óra</translation>
 <translation id="2790948358747073186">Továbbiak</translation>
+<translation id="5774515636230743468">Megnyilvánulás:</translation>
 <translation id="2423578206845792524">Ké&amp;p mentése másként...</translation>
 <translation id="1095038624419434542">Hiba történt egy programerőforrás betöltése közben. Próbálja meg újratelepíteni.</translation>
 <translation id="9068931793451030927">Elérési út:</translation>
 <translation id="7052402604161570346">Az ilyen fájlok kárt okozhatnak a számítógépében. Biztosan letölti a(z) <ph name="FILE_NAME"/> fájlt?</translation>
 <translation id="8642489171979176277">A Google Eszköztárból importálva</translation>
+<translation id="5905978244564263718">Az Automatikus kitöltés beállítása...</translation>
 <translation id="7335374713830044009">Keret megnyitása inko&amp;gnitóablakban</translation>
 <translation id="2011110593081822050">Web Worker: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">Fájlnév?</translation>
@@ -261,25 +288,31 @@
 <translation id="1608306110678187802">Keret n&amp;yomtatása...</translation>
 <translation id="4948468046837535074">A következő oldalak megnyitása:</translation>
 <translation id="6978121630131642226">Keresők</translation>
+<translation id="6745994589677103306">Ne tegyen semmit</translation>
 <translation id="855081842937141170">Lap rögzítése</translation>
+<translation id="2723893843198727027">Fejlesztői mód:</translation>
 <translation id="5362741141255528695">Válasszon ki privátkulcs-fájlt.</translation>
 <translation id="7012108905414904806">Ennek ellenére az oldal olyan erőforrásokat is tartalmaz, amelyek nem biztonságosak. Ezeket az erőforrásokat mások is megtekinthetik útközben, és egy támadó módosíthatja annak érdekében, hogy megváltoztassa az oldal megjelenését vagy viselkedését.</translation>
 <translation id="4515911410595374805">Az oldalon található egyes elemek ellenőrizetlen forrásból érkeznek, ezért nem jelentek meg a képernyőn.</translation>
 <translation id="1195447618553298278">Ismeretlen hiba.</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> days ago</translation>
 <translation id="4800557284502805285">A szerver tanúsítványa gyenge aláírási algoritmussal van aláírva</translation>
+<translation id="6610600335992778838">Wifi</translation>
 <translation id="1087119889335281750">&amp;Nincs helyesírási javaslat</translation>
 <translation id="718141787353053227">Oldal beállítása...</translation>
 <translation id="5076340679995252485">&amp;Beillesztés</translation>
+<translation id="5097982659374947325">Cookie-k elfogadása csak a meglátogatott webhelyekről</translation>
 <translation id="14171126816530869"><ph name="ORGANIZATION"/> identitását <ph name="LOCALITY"/> régióban <ph name="ISSUER"/> ellenőrizte.</translation>
 <translation id="1587275751631642843">&amp;JavaScript konzol</translation>
 <translation id="5821894118254011366">Harmadik féltől származó cookie-k teljes blokkolása</translation>
 <translation id="3511307672085573050">Link címén&amp;ek másolása</translation>
 <translation id="1134009406053225289">Megnyitás inkognitóablakban</translation>
+<translation id="6655190889273724601">Fejlesztői mód</translation>
 <translation id="3473105180351527598">Adathalászat és kártékony programok elleni védelem bekapcsolása</translation>
 <translation id="6151323131516309312">Nyomja meg a(z) <ph name="SEARCH_KEY"/> gombot a(z) <ph name="SITE_NAME"/> kereséshez</translation>
 <translation id="2342959293776168129">Letöltés előzményeinek törlése</translation>
 <translation id="2503522102815150840">A böngésző összeomlott</translation>
+<translation id="425878420164891689">Idő számítása, amíg meg nem telik</translation>
 <translation id="1272079795634619415">Leállítás</translation>
 <translation id="6786747875388722282">Kiterjesztések</translation>
 <translation id="9053965862400494292">Hiba történt a szinkronizáláshoz való felkészülés során.</translation>
@@ -294,16 +327,21 @@
 <translation id="5710435578057952990">A webhely valódiságát nem ellenőriztük.</translation>
 <translation id="5287240709317226393">Cookie-k megjelenítése</translation>
 <translation id="5451646087589576080">Keret adata&amp;inak megtekintése</translation>
+<translation id="3368922792935385530">Kapcsolódva</translation>
 <translation id="8486154204771389705">Rögzítés az oldalon</translation>
 <translation id="6824564591481349393">&amp;E-mail cím másolása</translation>
+<translation id="5184063094292164363">&amp;JavaScript konzol</translation>
 <translation id="333371639341676808">Ez az oldal ne nyisson meg további párbeszédablakokat.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> friss (<ph name="VERSION"/>)</translation>
 <translation id="4254921211241441775">Fiók szinkronizálásának leállítása</translation>
+<translation id="8661648338644250771">Ez a bővítmény hozzá fog férni személyes adataihoz a következő webhelyen: <ph name="HOST"/>.</translation>
 <translation id="7791543448312431591">Hozzáadás</translation>
 <translation id="307505906468538196">Google Fiók létrehozása</translation>
 <translation id="48838266408104654">&amp;Feladatkezelő</translation>
 <translation id="3694027410380121301">Előző lap kiválasztása</translation>
 <translation id="6178664161104547336">Tanúsítvány kiválasztása</translation>
+<translation id="5702898740348134351">&amp;Keresők szerkesztése...</translation>
+<translation id="2365740070488517695">Tippek</translation>
 <translation id="772440777491435074">Tanúsítvány adatai</translation>
 <translation id="2869459179306435079">Beállítások importálása innen:</translation>
 <translation id="732677191631732447">H&amp;ang URL-címének másolása</translation>
@@ -311,6 +349,8 @@
 <translation id="3369624026883419694">Szerver azonosítása folyamatban...</translation>
 <translation id="8870413625673593573">Nemrégiben bezárt</translation>
 <translation id="9145357542626308749">A webhely biztonsági tanúsítványát gyenge aláírási algoritmussal hitelesítették!</translation>
+<translation id="8800574954100068740">Alapértelmezett kereső</translation>
+<translation id="6551701656367809067">A Könyvjelző-szinkronizálás nem működik megfelelően, mert a szerver túl sok kérést kapott. Úgy tűnik, hogy a(z) <ph name="NAME_OF_EXTENSION"/> túl sok módosítást hajt végre a könyvjelzői között.</translation>
 <translation id="8249296373107784235">Megszakítás</translation>
 <translation id="3967132639560659870">Számos SSL-hiba van az oldalon:</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
@@ -322,6 +362,7 @@
 <translation id="1319824869167805246">Összes könyvjelző megnyitása új ablakban</translation>
 <translation id="3493653833301553455">Űrlap automatikus kitöltése:</translation>
 <translation id="3895288786311724904">hozzáadva</translation>
+<translation id="3371861036502301517">Bővítménytelepítési hiba</translation>
 <translation id="644038709730536388">További tájékoztatás arról, hogyan védheti meg magát a kártékony internetes szoftverek ellen.</translation>
 <translation id="4172706149171596436">Proxybeállítások módosítása</translation>
 <translation id="5650551054760837876">Nincs keresési eredmény</translation>
@@ -329,6 +370,8 @@
 <translation id="3234408098842461169">Lefelé nyíl</translation>
 <translation id="825608351287166772">A tanúsítványoknak van egy érvényességi időszaka, ugyanúgy, ahogy minden más azonosításra szolgáló dokumentumnak (pl. útlevél) A böngészőnek felmutatott tanúsítvány még nem érvényes Amikor egy tanúsítvány kívül van az érvényességi időn, akkor a tanúsítvány állapotának bizonyos adatait (visszavonták-e már, és ezért nem szabad elfogadni) már nem szükséges karbantartani. Ezért ilyenkor már nem lehet ellenőrizni, hogy egy tanúsítvány megbízható-e. Nem javasoljuk, hogy folytassa.</translation>
 <translation id="2742457360514408037"><ph name="COUNT"/> blokkolt felugró ablak</translation>
+<translation id="7154150278819212687">Ez a bővítmény hozzá fog férni az Ön böngészési előzményeihez.</translation>
+<translation id="1516602185768225813">Az utoljára megnyitott oldalak újbóli megnyitása</translation>
 <translation id="4874539263382920044">A címnek legalább egy karaktert kell tartalmaznia</translation>
 <translation id="3549657413697417275">Keresés az előzményekben</translation>
 <translation id="7344633671344536647">Böngészési adatok:</translation>
@@ -347,17 +390,21 @@
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> perc van hátra</translation>
 <translation id="5496587651328244253">Rendezés</translation>
 <translation id="2592884116796016067">Az oldal egy része (HMTL WebWorker) leállt, ezért az nem fog rendesen működni.</translation>
+<translation id="8425755597197517046">Beille&amp;sztés és keresés</translation>
+<translation id="4728278536628384335">A Könyvjelző-szinkronizálás kikapcsolása</translation>
 <translation id="5568069709869097550">Nem sikerült a bejelentkezés</translation>
 <translation id="4181898366589410653">A szerver tanúsítványában nem találtak visszavonási mechanizmusról.</translation>
 <translation id="1665770420914915777">Használja az &quot;Új lap&quot; oldalt</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> órája</translation>
 <translation id="7789175495288668515">Az alapértelmezett telepítési beállítások módosítása.</translation>
 <translation id="347250956943431997">A szerver tanúsítványát visszavonták</translation>
+<translation id="1936157145127842922">Megjelenítés mappában</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> perce</translation>
 <translation id="7977590112176369853">&lt;lekérdezés megadása&gt;</translation>
 <translation id="994771890067000105">Kiemelt extra</translation>
 <translation id="5155632014218747366">A webhellyel kapcsolatosan részletes információt talál a következő oldalon: Google <ph name="DIAGNOSTIC_PAGE"/> - <ph name="DOMAIN"/>.</translation>
 <translation id="1120026268649657149">A kulcsszónak üresnek vagy egyedinek kell lennie</translation>
+<translation id="7954187762705269222">de. <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="5317780077021120954">Mentés</translation>
 <translation id="9027459031423301635">Link megnyitása új &amp;lapon</translation>
 <translation id="358344266898797651">Kelta</translation>
@@ -391,18 +438,26 @@
 <translation id="52912272896845572">A privátkulcs-fájl érvénytelen.</translation>
 <translation id="4222982218026733335">A szervezet tanúsítványa érvénytelen</translation>
 <translation id="8494214181322051417">Új!</translation>
+<translation id="7403160227718463124">Összes beállítás ezen a webhelyen:</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Ön inkognitóra váltott<ph name="END_BOLD"/>. Az inkognitóablakban megtekintett oldalak nem jelennek meg böngészője előzményeiben, illetve keresési előzményeiben, és nem hagynak más nyomot pl. cookie-t sem a számítógépén az inkognitóablak bezárását követően. A letöltött fájlok, valamint a létrehozott könyvjelzők azonban megmaradnak.        <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>Az inkognitó üzemmód nem befolyásolja a többi felhasználó, szerver vagy szoftver viselkedését. Ügyeljen a következőkre:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>Olyan webhelyek, amelyek információt gyűjtenek vagy osztanak meg Önről<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Olyan internetszolgáltatók vagy alkalmazottaik, akik nyomon követik az Ön által látogatott oldalakat<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Olyan kártékony szoftverek, amelyek ingyenes hangulatjelekért cserébe nyomon követik billentyűbeviteleit<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Titkos ügynökök megfigyelése<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Az Ön mögött álló emberek<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        <ph name="BEGIN_LINK"/>További tájékoztatás<ph name="END_LINK"/> az inkognitóban történő böngészésről.</translation>
 <translation id="4439241094464540230">&lt;Új profil&gt;...</translation>
 <translation id="2135787500304447609">&amp;Folytatás</translation>
 <translation id="1813414402673211292">Böngészési adatok törlése</translation>
 <translation id="2356762928523809690">A szerver frissítése nem érhető el (hiba: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Kiemelt téma</translation>
+<translation id="219008588003277019">Natív kliensmodul: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> keresés:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
+<translation id="7616581516194661584">Másodpéldány</translation>
 <translation id="8730621377337864115">Kész</translation>
+<translation id="245834195813628985"><ph name="HOUR"/>:<ph name="MIUTE"/> maradt</translation>
 <translation id="6267166720438879315">Válasszon tanúsítványt a <ph name="HOST_NAME"/> hitelesítéséhez</translation>
+<translation id="7198134478421755850">Bővítmény</translation>
+<translation id="4713481510227594233">A Könyvjelző-szinkronizálás ki lett kapcsolva ezen a számítógépen. A(z) <ph name="NAME_OF_EXTENSION"/> eltávolítása után újra engedélyezheti a Könyvjelző-szinkronizálást az Eszközök menü &quot;Könyvjelzők szinkronizálása...&quot; elemére kattintva.</translation>
+<translation id="9061845622728745852">Időzóna:</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> perc</translation>
 <translation id="6315493146179903667">Összes az előtérbe</translation>
+<translation id="5095777643592758820">Könyvjelző-szinkronizálási hiba...</translation>
 <translation id="5015344424288992913">Proxy azonosítása folyamatban...</translation>
 <translation id="3675321783533846350">Proxy beállítása a hálózathoz való kapcsolódáshoz.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> nap</translation>
@@ -427,16 +482,19 @@
 <translation id="9010612682952491200">Új lap [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Megosztott memória</translation>
 <translation id="6248988683584659830">Keresési beállítások</translation>
+<translation id="2242457451044347345">Könyvjelző-szinkronizálás</translation>
 <translation id="2727712005121231835">Valós méret</translation>
 <translation id="8887733174653581061">Mindig a tetején</translation>
 <translation id="610886263749567451">JavaScript figyelmeztetés</translation>
 <translation id="6556866813142980365">Újra</translation>
+<translation id="6584811624537923135">Eltávolítás megerősítése</translation>
 <translation id="8413126021676339697">Minden előzmény megjelenítése</translation>
 <translation id="8860923508273563464">Várakozás a letöltések végéig</translation>
 <translation id="5288678174502918605">Bezárt lap m&amp;egnyitása</translation>
 <translation id="9157595877708044936">Előkészítés...</translation>
 <translation id="1823768272150895732">Betűtípus</translation>
 <translation id="4475552974751346499">Letöltések keresése</translation>
+<translation id="5339267765524260207">Ha kikapcsolja a szinkronizálást, könyvjelzői többé nem lesznek szinkronizálva a Google Fiókjában, illetve más számítógépeken tárolt könyvjelzőivel. Könyvjelzők nem kerülnek törlésre. Minden már meglévő könyvjelző megmarad ezen a számítógépen és az Ön Google Fiókjában.</translation>
 <translation id="1111153019813902504">Legutóbbi könyvjelzők</translation>
 <translation id="7497564420220535101">&amp;Képernyőkép mentése...</translation>
 <translation id="3786934874263773074">&amp;Keresés ezen az oldalon</translation>
@@ -459,6 +517,7 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> másodperc</translation>
 <translation id="3551320343578183772">Lap bezárása</translation>
 <translation id="3345886924813989455">Nem található támogatott böngésző</translation>
+<translation id="6727102863431372879">Beállítás</translation>
 <translation id="3712897371525859903">Oldal mentése &amp;másként...</translation>
 <translation id="7926251226597967072">A <ph name="PRODUCT_NAME"/> a következő elemeket importálja a(z) <ph name="IMPORT_BROWSER_NAME"/> böngészőből:</translation>
 <translation id="1018656279737460067">Megszakítva</translation>
@@ -469,6 +528,7 @@
 <translation id="8942948210663084792">Adatok törlése:</translation>
 <translation id="208047771235602537">Ki akar lépni a <ph name="PRODUCT_NAME"/>-ból a folyamatban lévő letöltéssel is?</translation>
 <translation id="6710213216561001401">Előző</translation>
+<translation id="1567993339577891801">JavaScript konzol</translation>
 <translation id="583281660410589416">Ismeretlen</translation>
 <translation id="7635303043999550515">A &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; webhely túl sok
         átirányítást eredményezett. A webhelyhez tartozó cookie-k vagy harmadik fél cookie-jainak engedélyezése segíthet a probléma megoldásában. Ha
@@ -482,16 +542,20 @@
 <translation id="1560991001553749272">Könyvjelző hozzáadva!</translation>
 <translation id="3966072572894326936">Válasszon másik mappát...</translation>
 <translation id="7781829728241885113">Tegnap</translation>
+<translation id="1523341279170789507">Összes cookie engedélyezése</translation>
 <translation id="7596288230018319236">Az összes meglátogatott oldal itt jelenik meg, kivéve azokat, amelyeket inkognitóablakban nyit meg. Az oldalon található Keresés gomb segítségével az előzmények bármely oldalán kereshet.</translation>
 <translation id="2665163749053788434">Előzmények megtekintése</translation>
 <translation id="7434509671034404296">Fejlesztő</translation>
 <translation id="6447842834002726250">Cookie-k</translation>
 <translation id="5170568018924773124">Megjelenítés mappában</translation>
+<translation id="883848425547221593">Egyéb könyvjelzők</translation>
 <translation id="4870177177395420201">A <ph name="PRODUCT_NAME"/> nem tudja megállapítani, hogy mi az alapértelmezett böngésző, vagy nem tudja beállítani azt.</translation>
 <translation id="8898786835233784856">Következő lap kiválasztása</translation>
 <translation id="2674170444375937751">Biztosan törölni szeretné ezeket az oldalakat az előzmények közül?</translation>
 <translation id="4203689580933736628">Blokkolt elemek: <ph name="COUNT"/></translation>
+<translation id="2653166165688724436">Internetes adatbázis</translation>
 <translation id="7629827748548208700">Lap: <ph name="TAB_NAME"/></translation>
+<translation id="8449008133205184768">Beillesztés és stílus egyeztetése</translation>
 <translation id="8028993641010258682">Méret</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="8398877366907290961">Továbblépés</translation>
@@ -502,6 +566,7 @@
 <translation id="8789544147407756448">Az alábbi bővítmény összeomlott: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> perc van hátra</translation>
 <translation id="2022540532491530427">&amp;Fájl másolása</translation>
+<translation id="1099979722614954862"><ph name="PRODUCT_NAME"/> most már rendelkezik <ph name="BEGIN_LINK"/>bővítményekkel<ph name="END_LINK"/> és <ph name="BEGIN2_LINK"/>szinkronizálja a könyvjelzőket<ph name="END2_LINK"/>.</translation>
 <translation id="5966654788342289517">Személyes dolgok</translation>
 <translation id="2576802705154232609">Webklipek</translation>
 <translation id="8664389313780386848">&amp;Oldal forrásának megtekintése</translation>
@@ -512,6 +577,7 @@
 <translation id="6507969014813375884">Kínai egyszerűsített</translation>
 <translation id="1767991048059195456">Jelentés küldése</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
+<translation id="4474155171896946103">Összes lap hozzáadása a könyvjelzőkhöz...</translation>
 <translation id="5646376287012673985">Tartózkodási hely</translation>
 <translation id="1110155001042129815">Várakozás</translation>
 <translation id="7071586181848220801">Ismeretlen plugin</translation>
@@ -525,6 +591,7 @@
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="4006726980536015530">Ha most bezárja a <ph name="PRODUCT_NAME"/>-ot, akkor ezek a letöltések megszakadnak.</translation>
 <translation id="59174027418879706">Engedélyezve</translation>
+<translation id="6639554308659482635">SQLite memória</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Az összes könyvjelző megnyitása</translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
@@ -545,6 +612,8 @@
 <translation id="5087864757604726239">vissza</translation>
 <translation id="2819994928625218237">&amp;Nincs helyesírási javaslat</translation>
 <translation id="4316305410440790958">Keret megnyitása új &amp;lapon</translation>
+<translation id="9142623379911037913">Megengedi, hogy a(z) <ph name="SITE"/> megjelenítsen értesítéseket az asztalon?</translation>
+<translation id="4196320913210960460">A telepített összetevőket az Eszközök menü Bővítmények elemére kattintva kezelheti.</translation>
 <translation id="9118804773997839291">Az alábbiakban az oldal nem biztonságos elemeinek listája található. Kattintson a Diagnosztika linkre, ha további információt szeretne az adott elemhez tartozó szálról.</translation>
 <translation id="3664021239099029884">Az összes letöltés megtekintése</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> perce</translation>
@@ -576,6 +645,7 @@
 <translation id="4890284164788142455">Thai</translation>
 <translation id="3889424535448813030">Jobb nyíl</translation>
 <translation id="5435666907653217300">Egyéb probléma</translation>
+<translation id="4479639480957787382">Ethernet</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="5167270755190684957">Google Chrome témák galériája</translation>
 <translation id="8382913212082956454">&amp;E-mail cím másolása</translation>
@@ -585,8 +655,10 @@
 <translation id="1047726139967079566">Könyvjelző hozzáadása ehhez az oldalhoz...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> másodperc van hátra</translation>
 <translation id="4767443964295394154">Letöltés helye</translation>
+<translation id="720658115504386855">A kis- és nagybetűk nem különböznek</translation>
 <translation id="2454247629720664989">Kulcsszó</translation>
 <translation id="3950820424414687140">Bejelentkezés</translation>
+<translation id="2840798130349147766">Internetes adatbázis</translation>
 <translation id="1628736721748648976">Kódolás</translation>
 <translation id="6521850982405273806">Hibajelentés</translation>
 <translation id="1769104665586091481">Link megnyitása új &amp;ablakban</translation>
@@ -596,6 +668,7 @@
 <translation id="7642109201157405070">Importálás folytatása</translation>
 <translation id="6463795194797719782">&amp;Szerkesztés</translation>
 <translation id="5720119176273625078">Az utaló nincs elküldve</translation>
+<translation id="4775879719735953715">Alapértelmezett böngésző</translation>
 <translation id="4805261289453566571">Ismételt bejelentkezés</translation>
 <translation id="4188026131102273494">Kulcsszó:</translation>
 <translation id="2290414052248371705">Összes tartalom megjelenítése</translation>
@@ -603,8 +676,10 @@
 <translation id="3268761268932257769">Képek betöltése automatikusan</translation>
 <translation id="7227780179130368205">Ártalmas programot észleltünk!</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
+<translation id="2912839854477398763">Biztos benne, hogy eltávolítja ezt a bővítményt? </translation>
 <translation id="3942946088478181888">Segítsenek, hogy megérthessem</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Alapértelmezett)</translation>
+<translation id="6543631358510643997">Ez a bővítmény teljes mértékben hozzáfér az Ön számítógépéhez és személyes adataihoz.</translation>
 <translation id="111844081046043029">Biztos, hogy el szeretné hagyni ezt az oldalt?</translation>
 <translation id="4497415007571823067">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; szervert, de valójában a magát &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; néven azonosító szerverrel lépett kapcsolatba. Ennek az oka a szerver helytelen konfigurálása is lehet, de előfordulhat, hogy egy súlyosabb problémáról van szó. Előfordulhat, hogy egy támadó megpróbálta Önnel meglátogattatni a(z) &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; egy hamis (és esetlegesen ártalmas) verzióját. Nem javasoljuk, hogy folytassa.</translation>
 <translation id="3202578601642193415">Legújabb</translation>
@@ -622,7 +697,10 @@
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> perc van hátra</translation>
 <translation id="2192505247865591433">Innen:</translation>
 <translation id="5921544176073914576">Adathalászoldal</translation>
+<translation id="7143207342074048698">Kapcsolódás</translation>
 <translation id="6192792657125177640">Kivételek</translation>
+<translation id="4568660204877256194">Könyvjelzők exportálása...</translation>
+<translation id="4577070033074325641">Könyvjelzők importálása...</translation>
 <translation id="2822650824848709219">Az összes nem biztonságos tartalom blokkolása</translation>
 <translation id="1715941336038158809">Érvénytelen felhasználónév vagy jelszó.</translation>
 <translation id="1901303067676059328">Össz&amp;es kiválasztása</translation>
@@ -638,6 +716,7 @@
 <translation id="872451400847464257">Keresőmotor beállítása</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> perc</translation>
 <translation id="8717266507183354698">Tekintse meg az előzmények olyan oldalait, amelyek az alábbi kifejezést tartalmazzák: <ph name="SEARCH_TERMS"/>.</translation>
+<translation id="2466804342846034717">Írja be fent a helyes jelszót, majd írja be az alábbi képen látható karaktereket.</translation>
 <translation id="2922560965807694149">elrejtés</translation>
 <translation id="5645845270586517071">Biztonsági hiba</translation>
 <translation id="8695758493354644945">Tekintse meg az előzmények legutóbbi <ph name="NUM_MATCHES"/> oldalát, amely az alábbi kifejezést tartalmazza: <ph name="SEARCH_TERMS"/></translation>
@@ -662,6 +741,7 @@
 <translation id="5384051050210890146">Válasszon megbízható SSL-tanúsítványokat.</translation>
 <translation id="6865323153634004209">Beállításainak személyre szabása</translation>
 <translation id="7487067081878637334">Technológia</translation>
+<translation id="4176463684765177261">Kikapcsolva</translation>
 <translation id="154603084978752493">Hozzáadás keresőmotorké&amp;nt...</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="114140604515785785">A bővítmény gyökérkönyvtára:</translation>
@@ -670,8 +750,10 @@
 <translation id="1800035677272595847">Adathalászat</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
 <translation id="4610637590575890427">Valójában ide szeretett volna menni: <ph name="SITE"/>?</translation>
+<translation id="5320331575990471017">forrás <ph name="SOURCE_ORIGIN"/></translation>
 <translation id="8349305172487531364">Könyvjelzősáv</translation>
 <translation id="7208899522964477531">Keresés <ph name="SITE_NAME"/> keresővel a következő kifejezésre: &quot;<ph name="SEARCH_TERMS"/>&quot;</translation>
+<translation id="5584091888252706332">Kezdő oldalak</translation>
 <translation id="8004582292198964060">Böngésző</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Mappa nevének szerkesztése</translation>
@@ -698,7 +780,9 @@
 <translation id="8877448029301136595">[fölérendelt könyvtár]</translation>
 <translation id="1963227389609234879">Minden eltávolítása</translation>
 <translation id="8027581147000338959">Megnyitás új ablakban</translation>
+<translation id="8019305344918958688">Huhh... Nincs telepített bővítmény :-(</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="4720829798001058201">Könyvjelzői szinkronizálva vannak a Google Dokumentumokkal. Ahhoz, hogy összevonja a könyvjelzőit és szinkronizálja azokat egy másik számítógépen lévő Google Chrome böngészővel, ismételje meg ugyanezt a telepítési folyamatot azon a számítógépen.</translation>
 <translation id="2496180316473517155">Böngészés előzményei</translation>
 <translation id="602251597322198729">A webhely több fájlt próbál letölteni. Engedélyezi?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> óra</translation>
@@ -710,6 +794,7 @@
 <translation id="1002064594444093641">Keret n&amp;yomtatása...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Megjelenítés mappában</translation>
+<translation id="5554489410841842733">Ez az ikon akkor látható, ha a bővítmény tehet valamit az aktuális oldalon.</translation>
 <translation id="4756388243121344051">&amp;Előzmények</translation>
 <translation id="3789841737615482174">Telepítés</translation>
 <translation id="4789872672210757069">A &amp;<ph name="PRODUCT_NAME"/> névjegye</translation>
@@ -757,6 +842,7 @@
 <translation id="5178667623289523808">Előző keresése</translation>
 <translation id="2815448242176260024">Soha ne mentse el a jelszavakat</translation>
 <translation id="2989805286512600854">Megnyitás új lapon</translation>
+<translation id="2701236005765480329">Bővítmény figyelmeztetés</translation>
 <translation id="6503077044568424649">Leggyakrabban látogatott webhelyek</translation>
 <translation id="3265459715026181080">Ablak bezárása</translation>
 <translation id="3831099738707437457">&amp;Helyesírás panel elrejtése</translation>
@@ -766,7 +852,7 @@
 <translation id="3319048459796106952">Új &amp;inkognitóablak</translation>
 <translation id="3127919023693423797">Hitelesítés...</translation>
 <translation id="4195643157523330669">Megnyitás új lapon</translation>
-<translation id="3683878911947678690">Google Fiókjának segítségével több számítógépen is szinkronizálhatja könyvjelzőit</translation>
+<translation id="8030169304546394654">Nincs kapcsolat</translation>
 <translation id="4178055285485194276">Kezdő oldalak:</translation>
 <translation id="1154228249304313899">A következő oldal megnyitása:</translation>
 <translation id="9074348188580488499">Biztosan törölni szeretné az összes jelszót?</translation>
@@ -783,13 +869,16 @@
 <translation id="1285631718404404702">Legutóbbi tevékenységek megjelenítése</translation>
 <translation id="6783679543387074885">Hiba vagy nem működő webhely jelentése</translation>
 <translation id="3494444535872870968">&amp;Keret mentése másként...</translation>
+<translation id="5731247495086897348">Beille&amp;sztés</translation>
 <translation id="3413103074007669042">Ezen az oldalon nem biztonságos tartalom is található</translation>
 <translation id="4887833561977827087">Még nincs megjeleníthető elem.
         <ph name="BEGIN_LINK"/>Szabja testre<ph name="END_LINK"/>
         a webklipeket, és vegyen föl több forrást.</translation>
 <translation id="5285267187067365830">Plugin telepítése...</translation>
 <translation id="1166212789817575481">A jobbra eső lapok bezárása</translation>
+<translation id="6472893788822429178">A Főoldal gomb megjelenítése</translation>
 <translation id="5685236799358487266">Hozzáadás keresőmotorké&amp;nt...</translation>
+<translation id="3437016096396740659">Az akkumulátor feltöltve</translation>
 <translation id="7907591526440419938">Fájl megnyitása</translation>
 <translation id="21133533946938348">Lap rögzítése</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
@@ -800,36 +889,49 @@
 <translation id="9012607008263791152">Úgy értesültünk, hogy ez a webhely árthat számítógépének.</translation>
 <translation id="1441458099223378239">Nem tudok bejelentkezni a fiókomba</translation>
 <translation id="5793220536715630615">V&amp;ideó URL-címének másolása</translation>
+<translation id="523397668577733901">Szeretne inkább <ph name="BEGIN_LINK"/>körülnézni a galériában<ph name="END_LINK"/>?</translation>
+<translation id="3778740492972734840">Fejlesz&amp;tői eszközök</translation>
 <translation id="6004539838376062211">&amp;Helyesírás-ellenőrző beállításai</translation>
+<translation id="5350198318881239970">Profilját nem sikerült rendesen megnyitni.\n\nLehet, hogy néhány funkciót nem tud használni.  Kérjük, ellenőrizze, hogy a profil létezik-e, és hogy Önnek van-e engedélye olvasni és írni annak tartalmát.</translation>
 <translation id="4058793769387728514">Dokumentum ellenőrzése</translation>
 <translation id="2915134691870672002">Javaslatok elrejtése</translation>
+<translation id="756445078718366910">Böngészőablak megnyitása</translation>
 <translation id="7887334752153342268">Másodpéldány</translation>
 <translation id="4980691186726139495">Ne rögzítse az oldalon</translation>
+<translation id="9026731007018893674">letöltés</translation>
 <translation id="7646591409235458998">E-mail:</translation>
 <translation id="703748601351783580">Összes könyvjelző megnyitása új ablakban</translation>
+<translation id="8409023599530904397">Eszköztár:</translation>
+<translation id="770273299705142744">Űrlap automatikus kitöltése</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="8414273245158967435">A(z) <ph name="NAME_OF_EXTENSION"/> ki lett kapcsolva. Ha kikapcsolja a Könyvjelző-szinkronizálást, újra engedélyezheti ezt a bővítményt a bővítmények oldalon, amelyet az Eszközök menüből érhet el.</translation>
 <translation id="4478664379124702289">Link mentése &amp;másként...</translation>
 <translation id="1044231968500257587">Meglévő online könyvjelzői össze lesznek vonva a
         számítógépen található könyvjelzőkkel. A Könyvjelzőkezelő segítségével rendezheti el
         könyvjelzőit az összevonás után.</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> személyre szabása és beállításai</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> órája</translation>
+<translation id="768570155019561996">Ez a bővítmény több webhelyen hozzá fog férni személyes adataihoz.</translation>
 <translation id="7180865173735832675">Testreszabás</translation>
 <translation id="1430594899542257414">Tippek és trükkök</translation>
 <translation id="2115926821277323019">Érvényes URL-nek kell lennie</translation>
 <translation id="7397054681783221164">Beleértve a következő elemeket:</translation>
 <translation id="4891251785049117953">Mentett űrlapadatok törlése</translation>
 <translation id="1531836666020185856">Kiemelt</translation>
+<translation id="580571955903695899">Rendezés cím alapján</translation>
 <translation id="5230516054153933099">Ablak</translation>
 <translation id="7554791636758816595">Új lap</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
+<translation id="1103966635949043187">A webhely kezdőlapjának megtekintése:</translation>
 <translation id="4400697530699263877">Az oldalbetöltés teljesítményének javítása érdekében használjon DNS előretöltést</translation>
 <translation id="1086613338090581534">Egy olyan tanúsítványnál, amely még nem járt le, a tanúsítvány kibocsátója felelős az úgynevezett &quot;visszavonási lista&quot; karbantartásáért. Ha egy tanúsítvány megfertőződik, a kibocsátó visszavonhatja, ha a visszavonási listára helyezi, és így ezt a tanúsítványt a böngésző már nem hitelesíti. A visszavonási állapotot nem szükséges karbantartani a lejárt tanúsítványoknál, így amíg ez  tanúsítvány érvényes volt a meglátogatott webhelynél, ekkor nem lehet eldönteni, hogy a tanúsítvánnyal kapcsolatban probléma lépett fel, és visszavonták, vagy továbbra is ugyanolyan biztonságos, mint azelőtt. Így nem lehet megmondani, hogy a törvényes webhellyel kommunikál-e, vagy a tanúsítvány fertőzött volt, és most egy támadónál van, akivel Ön kommunikál. Ennél a pontnál nem szabad tovább folytatni a műveletet.</translation>
 <translation id="2645575947416143543">Ha azonban olyan szervezetnél dolgozik, amelyik saját maga generálja a tanúsítványát, és megpróbál csatlakozni az ilyen tanúsítványt használó szervezet egyik belső webhelyéhez, akkor lehet, hogy biztonságosan meg tudja oldani a problémát. Importálhatja a szervezet főtanúsítványát &quot;főtanúsítványként&quot;, így az Ön szervezete által kiadott vagy ellenőrzött tanúsítványok megbízhatók lesznek, Ön pedig nem fogja látni ezt a hibaüzenetet, ha legközelebb megpróbál csatlakozni egy belső webhelyhez. Keresse fel szervezete rendszergazdáit, akik segíthetnek abban, hogyan tud felvenni egy új főtanúsítványt.</translation>
 <translation id="3157931365184549694">Visszaállítás</translation>
+<translation id="7426243339717063209">Eltávolítás &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="6059232451013891645">Mappa:</translation>
 <translation id="8182985032676093812"><ph name="PAGE_URL"/> forrása</translation>
 <translation id="7042418530779813870">Beille&amp;sztés és keresés</translation>
+<translation id="2101225219012730419">Verzió:</translation>
 <translation id="1570242578492689919">Betűtípusok és kódolás</translation>
 <translation id="3031557471081358569">Válassza ki az importálandó elemeket:</translation>
 <translation id="3031433885594348982">Kapcsolódása (<ph name="DOMAIN"/>) bites titkosítással titkosított.</translation>
@@ -849,6 +951,7 @@
 <translation id="6181769708911894002">Figyelmeztetés: A webhely megtekintése árthat számítógépének.</translation>
 <translation id="3412265149091626468">Ugrás a kijelöléshez</translation>
 <translation id="3785852283863272759">Az oldal küldése e-mailben</translation>
+<translation id="7326526699920221209">Akkumulátor: <ph name="PRECENTAGE"/>%</translation>
 <translation id="601778514741867265">Cookie-k elfogadása csak a meglátogatott webhelyekről</translation>
 <translation id="8299269255470343364">Japán</translation>
 <translation id="5204993535447683655">A weboldal &lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;újratöltése&lt;/a&gt; később.</translation>
@@ -856,10 +959,12 @@
 <translation id="7280343984261969618">A plugineket előjogok nélkül a homokveremben lehet folytatni. Néhány plugin nem fog megfelelően működni.</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> nap van hátra</translation>
 <translation id="2885378588091291677">Feladatkezelő</translation>
+<translation id="1215711112676250731">Kvóta:</translation>
 <translation id="2359808026110333948">Folytatás</translation>
 <translation id="1618661679583408047">A szerver biztonsági tanúsítványa még nem érvényes!</translation>
 <translation id="9040508646567685134">Az oldalon futó egyik szkript meglehetősen lassan végzi feladatát. Szeretné látni, hogy a szkript be tudja-e fejezni, vagy abba szeretné hagyni most?</translation>
 <translation id="3065140616557457172">Írja be a keresett kifejezést, vagy írja be a felkeresni kívánt URL-címet – mindkét lehetőség működik.</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="5509693895992845810">Mentés &amp;másként...</translation>
 <translation id="5986279928654338866">A(z) <ph name="DOMAIN"/> szerverhez felhasználónév és jelszó szükséges.</translation>
 <translation id="521467793286158632">Az összes jelszó eltávolítása</translation>
@@ -869,10 +974,10 @@
 <translation id="7221869452894271364">Az oldal újratöltése</translation>
 <translation id="8646430701497924396">SSL 2.0 használata</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="5481650329671719147">A bővítmények és a témák esetleg károsíthatják számítógépét. Biztos folytatja?</translation>
 <translation id="8261506727792406068">Törlés</translation>
 <translation id="345693547134384690">Kép &amp;megnyitása új lapon</translation>
 <translation id="7422192691352527311">Beállítások...</translation>
-<translation id="7220379225958650049">Indítás most</translation>
 <translation id="1375198122581997741">A verzióról</translation>
 <translation id="1474307029659222435">Keret megnyitása új &amp;ablakban</translation>
 <translation id="7133850061938542637">Szinkronizálva a(z) <ph name="USER_EMAIL_ADDRESS"/> fiókkal\nUtolsó szinkronizálás: <ph name="LAST_SYNC_TIME"/></translation>
@@ -887,11 +992,14 @@
 <translation id="884923133447025588">Nem található visszavonási mechanizmus.</translation>
 <translation id="7240072072812590475">A Szinkron beállítások módosítása</translation>
 <translation id="6001785649757655903">Adatvédelmi feketelista hibája</translation>
+<translation id="2480155717379390016"><ph name="NAME_OF_EXTENSION"/> kikapcsolása</translation>
+<translation id="492643400682328128"><ph name="NETWORKDEVICE"/> kikapcsolása</translation>
 <translation id="7671130400130574146">A rendszer címsávjának és határainak használata</translation>
 <translation id="9170848237812810038">&amp;Visszavonás</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
 <translation id="4444364671565852729"><ph name="PRODUCT_NAME"/> frissítése megtörtént, új verzió: <ph name="VERSION"/></translation>
 <translation id="2731392572903530958">Bezárt ablak újram&amp;egnyitása</translation>
+<translation id="4264420740606601613">Harmadik féltől származó cookie-k teljes letiltása</translation>
 <translation id="6483805311199035658"><ph name="FILE"/> megnyitása...</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="9154176715500758432">Maradok ezen az oldalon</translation>
@@ -903,10 +1011,14 @@
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Folytatás</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
+<translation id="5663016964925996918">A(z) <ph name="EXTENSION_NAME"/> most már telepítve van.</translation>
 <translation id="3009731429620355204">Munkamenetek</translation>
 <translation id="7658590191988721853">Függőleges oldalak görgetésének engedélyezése</translation>
+<translation id="5190835502935405962">Könyvjelzősáv</translation>
+<translation id="5438430601586617544">(Becsomagolatlan)</translation>
 <translation id="6460601847208524483">Következő keresése</translation>
 <translation id="3473034187222004855">Fájl &amp;elérési útjának másolása</translation>
+<translation id="3038131737570201586">Ez a bővítmény hozzá fog férni az Ön böngészési előzményeihez, valamint személyes adataihoz több webhelyen.</translation>
 <translation id="6325525973963619867">Nem sikerült</translation>
 <translation id="1676388805288306495">A weboldalak alapértelmezett betűtípusa és nyelve.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
@@ -921,6 +1033,7 @@
 <translation id="5333374927882515515">Könyvjelzők, jelszavak és más beállítások importálása innen: <ph name="DEF_BROWSER"/></translation>
 <translation id="4239831617079978238">Munkamenet vége</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
+<translation id="5960889226412209189">Váltás kompakt navigációs sávra</translation>
 <translation id="8954894007019320973">(Folyt.)</translation>
 <translation id="3748412725338508953">Túl sok átirányítás történt.</translation>
 <translation id="8929159553808058020">A preferencia alapján adja hozzá a listához a webhelyek olvasásához használt nyelveket. Csak azokat adja hozzá, amelyekre szüksége van, mivel egyes karakterekkel nem minden webhely működik más nyelveken.</translation>
@@ -936,10 +1049,13 @@
 <translation id="7088615885725309056">Régebbi</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
 <translation id="8562413501751825163">Importálás előtt zárja be a Firefox böngészőt</translation>
+<translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K élő)</translation>
 <translation id="5034259512732355072">Másik mappa kiválasztása...</translation>
 <translation id="5074322878757699801">Adatok importálása...</translation>
+<translation id="7505152414826719222">Helyi tárhely</translation>
 <translation id="5706242308519462060">Alapértelmezett kódolás:</translation>
 <translation id="5280833172404792470">Kilépés a teljes képernyős módból (<ph name="ACCELERATOR"/>)</translation>
+<translation id="4000986992587584088">Mindig mutassa a felugró ablakokat innen: <ph name="URL"/></translation>
 <translation id="129553762522093515">Nemrégiben bezárt</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> nap</translation>
 <translation id="3891357445869647828">JavaScript engedélyezése</translation>
@@ -956,14 +1072,18 @@
 <translation id="4867297348137739678">Múlt héten</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="5457793226917888578">Ezen az oldalon nem biztonságos tartalom is található.</translation>
+<translation id="5988520580879236902">Aktív nézetek vizsgálata:</translation>
 <translation id="5981759340456370804">Statisztikák számítógépeseknek</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> nap</translation>
 <translation id="6512448926095770873">Az oldal elhagyása</translation>
 <translation id="5607455023223000189">Telepített pluginek</translation>
 <translation id="6294193300318171613">&amp;A könyvjelzők eszköztára mindig látható</translation>
+<translation id="3414952576877147120">Méret:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> másodperce</translation>
 <translation id="7009102566764819240">Az alábbiakban az oldal nem biztonságos elemeinek listája található. Kattintson a Diagnosztika linkre, ha további információt szeretne az adott forráshoz tartozó ártalmas szálról. Ha egy forrást tévesen adathalászatot folytató webhely forrásaként jelentettek, kattintson a &quot;Hibajelentés&quot; linkre.</translation>
+<translation id="676327646545845024">Többé ne mutassa a párbeszédpanelt az ilyen típusú linkekhez.</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> másodperc van hátra.</translation>
+<translation id="6863682319656084809">Bővítmény-figyelmeztetés <ph name="EXTENSION_NAME"/></translation>
 <translation id="1485146213770915382">Szúrja be a(z) <ph name="SEARCH_TERMS_LITERAL"/> kifejezést abba az URL-be, ahol a keresési kifejezéseknek meg kell jelenniük.</translation>
 <translation id="4839303808932127586">Vi&amp;deo mentése másként...</translation>
 <translation id="5626134646977739690">Név:</translation>
@@ -974,6 +1094,7 @@
 <translation id="4876916865079819322">Könyvjelzők szinkronizálása</translation>
 <translation id="146000042969587795">A keretet blokkoltuk, mert nem biztonságos elemeket is tartalmaz.</translation>
 <translation id="8112223930265703044">Minden</translation>
+<translation id="8023801379949507775">Bővítmények frissítése most</translation>
 <translation id="1983108933174595844">Az aktuális képernyő képének küldése</translation>
 <translation id="436869212180315161">Sajtó</translation>
 <translation id="8241707690549784388">A keresett oldal a megadott információt használta. Ha visszatér arra az oldalra, akkor lehet, hogy az egyszer már megtett mozdulatok ismétlésre kerülnek. Mégis továbblép?</translation>
@@ -986,6 +1107,7 @@
 <translation id="1753905327828125965">Leggyakrabban látogatott</translation>
 <translation id="170407012880898501">Szöveg elmentése az űrlapokból a kitöltés megkönnyítése céljából</translation>
 <translation id="8116972784401310538">&amp;Könyvjelzőkezelő</translation>
+<translation id="1849632043866553433">Alkalmazás-gyorsítótárak</translation>
 <translation id="4927301649992043040">Bővítmény becsomagolása</translation>
 <translation id="6040143037577758943">Bezárás</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
@@ -998,12 +1120,15 @@
 <translation id="1232569758102978740">Névtelen</translation>
 <translation id="9149866541089851383">Szerkesztés...</translation>
 <translation id="7000311294523403548">Névtelen weboldal</translation>
+<translation id="4593021220803146968">&amp;Ugrás: <ph name="URL"/></translation>
 <translation id="7649070708921625228">Súgó</translation>
 <translation id="6119719873954126908">Ezen a részen tippeket és javaslatokat láthat a hatékonyabb böngészés érdekében!</translation>
 <translation id="7442246004212327644">Tö&amp;rlés</translation>
 <translation id="281133045296806353">Új ablak jött létre a már futó böngésző-programfolyamatban.</translation>
+<translation id="6314007596429871800">Alkalmazás-gyorsítótár</translation>
 <translation id="9002707937526687073">N&amp;yomtatás</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
+<translation id="8326395326942127023">Adatbázis neve:</translation>
 <translation id="7727721885715384408">Átnevezés...</translation>
 <translation id="5508407262627860757">Törlés</translation>
 <translation id="7587108133605326224">Balti</translation>
@@ -1012,6 +1137,7 @@
 <translation id="3021678814754966447">&amp;Keret forrásának megtekintése</translation>
 <translation id="5271549068863921519">Jelszó mentése</translation>
 <translation id="3251855518428926750">Hozzáadás...</translation>
+<translation id="3508920295779105875">Válasszon másik mappát...</translation>
 <translation id="2987775926667433828">Kínai (hagyományos)</translation>
 <translation id="3954582159466790312">Né&amp;mítás feloldása</translation>
 <translation id="5809606740668187902">Blokkolt erőforrás</translation>
@@ -1023,8 +1149,10 @@
 <translation id="8045462269890919536">Román</translation>
 <translation id="2927657246008729253">Módosítás...</translation>
 <translation id="7978412674231730200">Privát kulcs</translation>
+<translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">Új &amp;inkognitóablak</translation>
 <translation id="3478477629095836699">Cookie-beállítások:</translation>
+<translation id="6529237754759924038">Dátum és idő</translation>
 <translation id="7278870042769914968">GTK+ téma használata</translation>
 <translation id="2108475813351458355">Biztonságos kapcsolat: <ph name="DOMAIN"/></translation>
 <translation id="942671148946453043">Ön megnyitott egy inkognitóablakot. Az ebben az ablakban megnyitott oldalak nem jelennek meg az Előzményekben.</translation>
@@ -1060,11 +1188,14 @@
 <translation id="3943582379552582368">&amp;Előző</translation>
 <translation id="7607002721634913082">Szünet</translation>
 <translation id="480990236307250886">A kezdőoldal megnyitása</translation>
+<translation id="5757539081890243754">Kezdőoldal</translation>
 <translation id="6709133671862442373">Hírek</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> óra van hátra</translation>
+<translation id="6550675742724504774">Beállítások</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>
 <translation id="737801893573836157">A rendszer címsávjának elrejtése és keskenyebb határok használata</translation>
 <translation id="5040262127954254034">Adatvédelem</translation>
+<translation id="1058681476058291010">Könyvjelző-szinkronizálási hiba...</translation>
 <translation id="1908748899139377733">Keret &amp;információinak megtekintése</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="803771048473350947">Fájl</translation>
@@ -1073,6 +1204,7 @@
 <translation id="566920818739465183">Ezt az oldalt először a következő napon látogatta meg:<ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Kattintson, ha tovább szeretne lépni; tartsa lenyomva, ha látni szeretné az előzményeket</translation>
 <translation id="923083373181549309">Kérjük, indítsa újra a <ph name="PRODUCT_NAME"/> alkalmazást</translation>
+<translation id="8678305583783039525">Cookie-k és webhelyengedélyek megjelenítése</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> másodperc</translation>
 <translation id="176587472219019965">Új &amp;ablak</translation>
 <translation id="8689341121182997459">Lejár:</translation>
@@ -1089,11 +1221,13 @@
 <translation id="2238123906478057869">A <ph name="PRODUCT_NAME"/> az alábbi feladatokat végzi el:</translation>
 <translation id="1812622104192390866">Beállítások importálása innen:</translation>
 <translation id="4042471398575101546">Oldal hozzáadása</translation>
+<translation id="4871865824885782245">Dátum- és időbeállítások megnyitása...</translation>
 <translation id="988159990683914416">Fejlesztői változat</translation>
 <translation id="921175996768281472">A bővítmény becsomagolása nem sikerült</translation>
 <translation id="2183426022964444701">Válassza ki a bővítmény gyökérkönyvtárát.</translation>
 <translation id="6790650291892352751">Keresés téma vagy URL-cím alapján:</translation>
 <translation id="5398353896536222911">A helyesírás panel meg&amp;jelenítése</translation>
+<translation id="8046048349148382412"><ph name="HOUR"/>:<ph name="MIUTE"/> a teljes feltöltésig</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">URL-cím:</translation>
 <translation id="7481312909269577407">Továbbítás</translation>
@@ -1106,6 +1240,7 @@
 <translation id="2444683954290143042">Szinkronizálási hiba - jelentkezzen be újra</translation>
 <translation id="5830720307094128296">Oldal mentése &amp;másként...</translation>
 <translation id="5822838715583768518">Alkalmazás futtatása</translation>
+<translation id="2433507940547922241">Megjelenés</translation>
 <translation id="839072384475670817">Paranc&amp;sikonok létrehozása az alkalmazásokhoz...</translation>
 <translation id="6756161853376828318">A <ph name="PRODUCT_NAME"/> legyen az alapértelmezett böngészőm</translation>
 <translation id="2640524951934795733">Hm, mit is tegyünk ide?</translation>
@@ -1116,6 +1251,7 @@
 <translation id="3807747707162121253">&amp;Törlés</translation>
 <translation id="2850243184678184884">pl. jégkorong, BBC, http://engadget.com/rss.xml</translation>
 <translation id="77999321721642562">Az alábbi területen kis idő múlva megjelenik a nyolc leggyakrabban látogatott webhely.</translation>
+<translation id="5864830997591220873">Összes cookie letiltása</translation>
 <translation id="7447718177945067973">Nem sikerült megtalálni a szervert.</translation>
 <translation id="715468010956678290">Keret megnyitása inko&amp;gnitóablakban</translation>
 <translation id="7755167023778553803">Ennek ellenére az oldal olyan erőforrásokat is tartalmaz, amelyeket nem lehet biztonságosan kérni.</translation>
@@ -1123,6 +1259,7 @@
 <translation id="3455546154539383562">Megpróbálta elérni a(z) &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; domaint, de a szerver tanúsítványát visszavonta a kibocsátó. Ez azt jelenti, hogy nem szabad vakon megbízni a szerverben sem. Előfordulhat, hogy támadójával kommunikál, anélkül, hogy tudna róla. Nem javasoljuk, hogy folytassa.</translation>
 <translation id="1177437665183591855">Ismeretlen szervertanúsítvány hiba</translation>
 <translation id="3819800052061700452">&amp;Teljes képernyő</translation>
+<translation id="3533943170037501541">Üdvözli a kezdőlapja!</translation>
 <translation id="3218306954729745977">Nemrég bezárt lapok megjelenítése</translation>
 <translation id="3737554291183722650">Oldal címe:</translation>
 <translation id="1581962803218266616">Megjelenítés a Finderben</translation>
@@ -1141,16 +1278,19 @@
 <translation id="1208126399996836490">Ne állítsa vissza</translation>
 <translation id="806812017500012252">Rendezés cím alapján</translation>
 <translation id="2960316970329790041">Importálás leállítása</translation>
+<translation id="5361734574074701223">A hátralévő idő kiszámítása</translation>
 <translation id="1731911755844941020">Lekérés küldése folyamatban...</translation>
 <translation id="1038842779957582377">Ismeretlen név</translation>
 <translation id="5327248766486351172">Név</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="2052895926110224873">Nem sikerült betölteni az adatvédelmi feketelistát.</translation>
 <translation id="2445081178310039857">A bővítmény gyökérkönyvtárát kötelező megadni.</translation>
+<translation id="8251578425305135684">Indexkép eltávolítva.</translation>
 <translation id="3037605927509011580">A manóba!</translation>
 <translation id="1918141783557917887">&amp;Kisebb</translation>
 <translation id="4065006016613364460">Kép URL-jének má&amp;solása</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="4481249487722541506">Kicsomagolt bővítmények betöltése...</translation>
 <translation id="8542113417382134668">Serif betűtípus:</translation>
 <translation id="2149973817440762519">Könyvjelző szerkesztése</translation>
 <translation id="430831869130657585">Toldalékok</translation>
@@ -1174,17 +1314,27 @@
 <translation id="6053401458108962351">&amp;Böngészési adatok törlése...</translation>
 <translation id="2339641773402824483">Frissítések keresése...</translation>
 <translation id="8600200086690278232">Kiemelt webklipek</translation>
+<translation id="8582728318425382804">Cookie-k és webhelyengedélyek</translation>
 <translation id="2766006623206032690">Beille&amp;sztés és ugrás</translation>
 <translation id="9071050381089585305">Nem válaszol a szkript</translation>
+<translation id="4394049700291259645">Kikapcsolás</translation>
 <translation id="969892804517981540">Hivatalos verzió</translation>
 <translation id="724208122063442954">Azt választotta, hogy bizonyos fájltípusokat automatikusan megnyit a letöltést követően. Törölheti ezeket a beállításokat annak érdekében, hogy a letöltött fájlok ne nyíljanak meg automatikusan.</translation>
 <translation id="5765491088802881382">Nincs elérhető hálózat</translation>
 <translation id="5183088099396036950">Nem sikerült csatlakozni a szerverhez</translation>
-<translation id="4477534650265381513">A gyors elérés érdekében helyezze könyvjelzőit ide, a könyvjelzősávra.</translation>
+<translation id="4469842253116033348"><ph name="SITE"/> értesítéseinek kikapcsolása</translation>
+<translation id="7999229196265990314">A rendszer a következő fájlokat hozta létre:
+        
+Bővítmény: <ph name="EXTENSION_FILE"/>
+Kulcsfájl: <ph name="KEY_FILE"/>
+
+A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új verziókat készítsen bővítményéből.</translation>
 <translation id="3036649622769666520">Fájlok megnyitása</translation>
 <translation id="7909652923456235549">A cookie-k nem lettek elküldve</translation>
+<translation id="7685049629764448582">JavaScript memória</translation>
 <translation id="4508765956121923607">F&amp;orrás megtekintése</translation>
 <translation id="8080048886850452639">H&amp;ang URL-címének másolása</translation>
+<translation id="5849869942539715694">Bővítmény becsomagolása...</translation>
 <translation id="7339785458027436441">Helyesírás-ellenőrzés gépeléskor</translation>
 <translation id="1384721974622518101">Tudta, hogy a fenti mezőben közvetlenül is kereshet?</translation>
 <translation id="8203365863660628138">Telepítés megerősítése</translation>

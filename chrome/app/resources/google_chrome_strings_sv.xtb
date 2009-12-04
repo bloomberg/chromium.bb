@@ -3,15 +3,19 @@
 <translationbundle lang="sv">
 <translation id="8000275528373650868">För Google Chrome krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
+<translation id="4517682492677349713">Vill du att Google Chrome ska spara informationen?</translation>
 <translation id="2770231113462710648">Ändra standardwebbläsare till:</translation>
 <translation id="698670068493841342">Google Chrome är redan installerat för den här användaren. Om programmet inte fungerar avinstallerar du Google Chrome och hämtar det igen.</translation>
 <translation id="7400722733683201933">Om Google Chrome</translation>
+<translation id="7781002470561365167">Det finns en ny version av Google Chrome tillgänglig.</translation>
 <translation id="7101265395643981223">Starta Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importerar favoriter/bokmärken.</translation>
 <translation id="8970027151245482499">Google Chrome är inte installerat eller installationskatalogen gick inte att hitta. Hämta Google Chrome igen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="4281844954008187215">Användarvillkor</translation>
 <translation id="1137776625614346046">Avsnittet &quot;Mest besökta&quot; visar vilka webbplatser som du besöker oftast. När du har använt Google Chrome ett tag visas de mest besökta webbplatserna varje gång du öppnar en ny flik. Du kan läsa mer om den här och andra funktioner på <ph name="BEGIN_LINK"/>sidan Komma igång<ph name="END_LINK"/>.</translation>
+<translation id="3555616473548901994">Avinstallation slutförd.</translation>
+<translation id="1826297811907343327">Om du avbryter nu importeras inte alla objekt. Du kan importera igen senare från Google Chromes meny.</translation>
 <translation id="4728575227883772061">Installationen misslyckades på grund av ett ospecificerat fel. Stäng Google Chrome, om det är igång, och försök sedan igen.</translation>
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Hämta Google Chrome igen.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -36,30 +40,35 @@
 <translation id="7747138024166251722">Det gick inte att skapa en tillfällig katalog för installationsfilen. Kontrollera diskutrymmet och att du har behörighet att installera program.</translation>
 <translation id="6009537148180854585">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men certifikatet som servern angav innehåller fel. Google Chrome kan inte använda ett certifikat som innehåller fel och kan inte validera identiteten för webbplatsen som du försöker öppna. Anslutningen är inte säker och du bör inte fortsätta.</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
+<translation id="8899050679030089927">Stäng alla Google Chromes fönster och starta om för att ändringen ska träda i kraft.</translation>
 <translation id="3324235665723428530">Din profil kan inte användas eftersom den kommer från en nyare version av Google Chrome.\n\nEn del funktioner kan vara otillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chrome.</translation>
+<translation id="7214670531148488183">Google Chrome kan använda webbtjänster för att förbättra din upplevelse när du surfar. Om du vill kan du inaktivera sådana tjänster.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="2044287590254833138">Verktygsfältet Google Chrome</translation>
 <translation id="5074344184765391290">Plugin-värd för Chrome</translation>
-<translation id="1473088902761932034">Hurra, du har kommit tillbaka! Men Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="6481075104394517441">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men certifikatet som servern angav är inte giltigt ännu. Det finns ingen information om huruvida certifikatet är tillförlitligt. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Kontrollera att klockan och tidszonen är korrekt angivna på datorn. I annat fall bör du korrigera dem och uppdatera den här sidan. Fortsätt inte om de är korrekta.</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome fungerar tack vare det öppna källkodsprojektet <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> och andra <ph name="BEGIN_LINK_OSS"/>program med öppen källkod<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome är redo att slutföra installationen.</translation>
 <translation id="7100330187273168372">Google Chrome kan inte läsa och skriva till sin datakatalog:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="6757767188268205357">Stör mig inte</translation>
 <translation id="2290095356545025170">Är du säker på att du vill avinstallera Google Chrome?</translation>
 <translation id="5941830788786076944">Använd Google Chrome som standardwebbläsare</translation>
 <translation id="4127951844153999091">I det här fallet överensstämmer inte adressen i certifikatet med adressen på webbplatsen som webbläsaren försökte besöka. Det kan bero på att kommunikationen har kapats av en bedragare som anger ett certifikat för en annan webbplats, vilket orsakar konflikten. En annan orsak kan vara att servern är inställd för att returnera samma certifikat till flera webbplatser, inklusive den som du försöker besöka, trots att certifikatet inte är giltigt för alla dessa webbplatser. Google Chrome kan intyga att du nått &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, men kan inte bekräfta att det är webbplatsen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; som du vill komma till. Om du fortsätter kommer inte Chrome att söka efter eventuella nya namnkonflikter. I allmänhet är det bäst att inte fortsätta med åtgärden.</translation>
 <translation id="2712549016134575851">En konflikt med ett annat installerat program har upptäckts.</translation>
+<translation id="7018032895891496381">Google Chrome använder din standardsökmotor, som för närvarande är <ph name="PAGE_TITLE"/>. Vill du behålla din standardsökmotor?</translation>
 <translation id="7161904924553537242">Välkommen till Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8236873504073475138">Google Chrome saknar stöd för Windows 2000. En del funktioner fungerar eventuellt inte.</translation>
 <translation id="5318056482164160049">Plugin-värd för Google Chrome</translation>
+<translation id="6126631249883707068">Vill du att Google Chrome ska spara ditt lösenord?</translation>
 <translation id="5046764976540625289">Avsluta Chrome</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Webbläsare</translation>
 <translation id="8776515774046280928">Google Chrome är redan installerat och tillgängligt för alla användare på den här datorn. Om du vill installera Google Chrome på användarnivå måste du först avinstallera den systemnivåversion som installerats av en administratör.</translation>
+<translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="2769762047821873045">Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Hämta Google Chrome igen.</translation>
 <translation id="3335672657969596251">Google Chrome saknar stöd för <ph name="OS_NAME"/>.</translation>
@@ -73,6 +82,7 @@
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="6049075767726609708">En administratör har installerat Google Chrome på systemet så att det är tillgängligt för alla användare. Systemnivåversionen av Google Chrome ersätter nu installationen på användarnivå.</translation>
+<translation id="7123348595797445166">Testa den (redan installerad)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">Ändra språket i menyerna, dialogrutorna och verktygstipsen i Google Chrome.</translation>
 <translation id="9189723490960700326">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men servern angav ett utgånget certifikat. Det finns ingen information om huruvida certifikatet har äventyrats sedan det utgått. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Du bör inte fortsätta.</translation>

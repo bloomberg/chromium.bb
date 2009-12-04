@@ -7,6 +7,7 @@
 <translation id="3581034179710640788">সাইটের নিরাপত্তা শংসাপত্রের মেয়াদ শেষ হয়েছে!</translation>
 <translation id="8275038454117074363">আমদানি</translation>
 <translation id="8418445294933751433">ট্যাব রূপে &amp;দেখান</translation>
+<translation id="6985276906761169321">ID:</translation>
 <translation id="2160383474450212653">হরফ এবং ভাষাসমূহ</translation>
 <translation id="4405141258442788789">ক্রিয়াকলাপের সময় শেষ হয়েছে৷</translation>
 <translation id="5048179823246820836">নরডিক</translation>
@@ -28,11 +29,15 @@
 <translation id="8571213806525832805">গত 4 সপ্তাহ</translation>
 <translation id="6021004449668343960">Sans-Serif হরফ:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
+<translation id="8460952460426246415">এখন আপনার বুকমার্কগুলি আপনার সিঙ্ক সক্ষম করা সকল কম্পিউটারে সিঙ্ক হবে৷</translation>
 <translation id="4422428420715047158">DOMAIN:</translation>
 <translation id="4021918302616263355"><ph name="ENGINE"/>-এ <ph name="SEARCH_TERMS"/> অনুসন্ধান করুন</translation>
 <translation id="5376169624176189338">পিছনে যাওয়ার জন্য ক্লিক করুন, ইতিহাস দেখার জন্য ধরে রাখুন</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> সেকেন্ড বাকি</translation>
 <translation id="9181716872983600413">ইউনিকোড</translation>
+<translation id="7383539497402338906">একাধিক কম্পিউটারে একই বুকমার্কের সেট রাখার জন্য বুকমার্ক সিঙ্ক এটিকে সহজ করে তোলে৷
+        আপনি যখন সিঙ্ক সক্ষম করেন তখন, আপনার বুকমার্কগুলি আপনার Google অ্যাকাউন্টে অনলাইনে জমা হতে শুরু হবে৷
+        আপনার সিঙ্ক সক্ষম করা প্রতিটি অতিরিক্ত কম্পিউটার একই বুকমার্ক পাবে৷</translation>
 <translation id="1383861834909034572">সম্পন্ন হলে খোলে</translation>
 <translation id="4211171103079968550">Java সক্ষম করুন</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
@@ -45,12 +50,12 @@
 <translation id="9154072353677278078"><ph name="REALM"/> -এর <ph name="DOMAIN"/> সার্ভারটির একটি ব্যবহারকারী নাম এবং পাসওয়ার্ড প্রয়োজন৷</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt;-এ ওয়েবসাইটটি একটি “ফিশিং” সাইট রূপে প্রতিবেদন করা হয়েছে৷  ফিশিং সাইট প্রায়ই কোনো বিশ্বস্ত প্রতিষ্ঠান যেমন ব্যাঙ্ক রূপে নিজেদের উপস্থাপন করার ভান করে ব্যবহারকারীদের ব্যক্তিগত অথবা আর্থিক তথ্য প্রকাশ করার জন্য প্ররোচিত করে৷</translation>
 <translation id="8178665534778830238">সামগ্রী:</translation>
-<translation id="1379170046778889619">নিরাপত্তা তথ্য</translation>
 <translation id="4771019161370731727">সাম্প্রতিক কার্যকলাপগুলি</translation>
 <translation id="8974161578568356045">স্বয়ং সনাক্ত</translation>
 <translation id="1818606096021558659">পৃষ্ঠা</translation>
 <translation id="1657406563541664238">Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন স্বয়ংক্রিয়ভাবে পাঠিয়ে <ph name="PRODUCT_NAME"/>-কে সর্বোত্তম করে তুলতে সাহায্য করুন</translation>
 <translation id="7982789257301363584">নেটওয়ার্ক</translation>
+<translation id="2336228925368920074">সকল ট্যাব বুকমার্ক করুন...</translation>
 <translation id="4108206167095122329">&amp;সকল সরান</translation>
 <translation id="7481475534986701730">সাম্প্রতিককালে দেখা সাইট</translation>
 <translation id="4260722247480053581">ছদ্মবেশী উইন্ডোতে খুলুন</translation>
@@ -71,10 +76,12 @@
 <translation id="9218430445555521422">ডিফল্ট হিসেবে সেট করুন</translation>
 <translation id="4589279373639964403">বুকমার্কগুলি রফতানি করুন...</translation>
 <translation id="8876215549894133151">ফর্ম্যাট:</translation>
+<translation id="5234764350956374838">খারিজ</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/>-এর সূচী</translation>
 <translation id="5154917547274118687">স্মৃতি</translation>
 <translation id="1735662153177951739">এই পৃষ্ঠাটি কোনও নিরাপদ সংযোগে সামগ্রিকভাবে পুনরুদ্ধার করা হয় নি৷  এতে এমন কিছু লিখিত সামগ্রী আছে যা অনিরাপদ কানেকশনে পুনরুদ্ধার করা হয়েছে৷</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> অনুসন্ধান</translation>
+<translation id="6726379128203862332"><ph name="SIZE_TAKEN"/>MB</translation>
 <translation id="2459861677908225199">TLS 1.0 ব্যবহার করুন</translation>
 <translation id="873849583815421063">শেষ হচ্ছে...</translation>
 <translation id="5819484510464120153">অ্যাপ্লিকেশন &amp;শর্টকাট তৈরি করুন...</translation>
@@ -99,6 +106,7 @@
 <translation id="7367545749698325833">আপনি নিজের বুকমার্কগুলি ও সেটিংস অন্যান্য ব্রাউজার থেকে আমদানি করতে পারেন বা এই কম্পিউটার থেকে আপনার ব্রাউজিংয়ের ডেটা সাফ করতে পারেন৷</translation>
 <translation id="51285338152176012">সম্প্রতি বন্ধ হওয়া ট্যাবগুলি লুকান</translation>
 <translation id="8546306075665861288">চিত্র ক্যাশে</translation>
+<translation id="801357260673640054">সিঙ্ক করা বুকমার্কগুলি...</translation>
 <translation id="1399076603473531278">লগইন বিশদ পুরনো৷</translation>
 <translation id="3391060940042023865">নিম্নোক্ত প্ল্যাগ-ইনটি ক্র্যাশ করেছে:<ph name="PLUGIN_NAME"/></translation>
 <translation id="8879284080359814990">ট্যাব রূপে &amp;দেখান</translation>
@@ -109,7 +117,7 @@
 <translation id="2994458892329442723">প্ল্যাগ-ইন সক্ষম করুন</translation>
 <translation id="1674989413181946727">কম্পিউটার-ওয়াইড SSL সেটিংস:</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/>-এ আপনার কানেকশন এনক্রিপ্ট হয় নি৷</translation>
-<translation id="7345141778157460052">বুকমার্ক সিঙ্ক:</translation>
+<translation id="4197577448076628265">এই এক্সটেনশানটির <ph name="HOST"/>-এ আপনার ব্রাউজিং ইতিহাসে এবং ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="2518917559152314023">যু&amp;ক্ত...</translation>
 <translation id="6583406242234752719">আপনি নিজের অন্য কম্পিউটারগুলির সাথে নিজের বুকমার্কগুলিকে সিঙ্ক করার জন্য সেট আপ করেন নি৷</translation>
@@ -133,25 +141,33 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> সেকেন্ড</translation>
 <translation id="5098629044894065541">হিব্রু</translation>
 <translation id="7751559664766943798">সর্বদা বুকমার্কস দণ্ড দেখান</translation>
+<translation id="144136026008224475">আরও এক্সটেনশান পান &gt;&gt;</translation>
 <translation id="8584280235376696778">ভিডিও নতুন ট্যাবে &amp;খুলুন</translation>
 <translation id="2845382757467349449">সর্বদা বুকমার্কস দণ্ড দেখান</translation>
 <translation id="6827094223626760756">পূর্বরূপ</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ঘন্টা বাকি</translation>
 <translation id="1720675772864601791">অনিরাপদ ছবিগুলি মঞ্জুর করুন</translation>
+<translation id="471372654970523967"><ph name="NETWORKDEVICE"/> চালু করুন</translation>
+<translation id="4001299999465067131">উপরের ছবিতে যেমন দেখানো আছে তেমনভাবে অক্ষরগুলি লিখুন৷</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="5233638681132016545">নতুন ট্যাব</translation>
 <translation id="5210365745912300556">ট্যাব বন্ধ করুন</translation>
 <translation id="8806796506533854282">একটি নতুন প্রোফাইল নাম প্রবেশ করুন</translation>
 <translation id="2551763528995812091">পাসওয়ার্ড এবং ব্যতিক্রমগুলি</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="2263497240924215535">(অক্ষম)</translation>
 <translation id="6360709384096878403">বাগ অথবা ভেঙে যাওয়া ওয়েব সাইটের প্রতিবেদন করুন...</translation>
 <translation id="1110535155349301542">সরান</translation>
 <translation id="8571852575982769756">কোনও প্ল্যাগ-ইনস ইনস্টল নেই</translation>
+<translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/>-এর জন্য অপেক্ষা করা হচ্ছে...</translation>
+<translation id="5850800573054873412">এই এক্সটেনশানটির সকল ওয়েবসাইটে আপনার ব্রাউজিং ইতিহাসে এবং ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
 <translation id="3280237271814976245">এই &amp;রূপে সংরক্ষণ করুন...</translation>
 <translation id="5300471193642408424">পৃষ্ঠাগুলি দেখান</translation>
 <translation id="7658239707568436148">বাতিল</translation>
 <translation id="6996264303975215450">ওয়েব পৃষ্ঠা, সম্পূর্ণ</translation>
+<translation id="8744320793514149773">এই এক্সটেনশানটির সকল ওয়েবসাইটে আপনার ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
+<translation id="3435896845095436175">সক্ষম</translation>
 <translation id="2154710561487035718">URL অনুলিপি করুন</translation>
 <translation id="4244236525807044920">হরফ এবং ভাষা সেটিংস পরিবর্তন করুন</translation>
 <translation id="3241680850019875542">প্যাক করার জন্য এক্সটেনশনের রুট ডিরেক্টরিটি নির্বাচন করুন৷ কোন এক্সটেনশন আপডেট করতে, পুনরায় ব্যবহার করার জন্য ব্যক্তিগত কী ফাইলটিও নির্বাচন করুন৷</translation>
@@ -159,6 +175,7 @@
 <translation id="6746124502594467657">নিচে যান</translation>
 <translation id="4657169630710541069">সংস্থান ত্রুটি</translation>
 <translation id="3383487468758466563">হরফ এবং ভাষাসমূহ:</translation>
+<translation id="7339949551808462689">এক্সটেনশান <ph name="EXTENSION_NAME"/></translation>
 <translation id="6163363155248589649">&amp;সাধারণ</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(শিরোনামহীন)</translation>
@@ -168,14 +185,17 @@
 <translation id="3605499851022050619">নিরাপদ ব্রাউজিং ডায়গনিস্টিক পৃষ্ঠা</translation>
 <translation id="4307992518367153382">বুনিয়াদি</translation>
 <translation id="5912378097832178659">&amp;সার্চ ইঞ্জিন সম্পাদনা...</translation>
+<translation id="3173397526570909331">সিঙ্ক করা থামান</translation>
 <translation id="4813345808229079766">কানেকশন</translation>
 <translation id="411666854932687641">ব্যক্তিগত স্মৃতি</translation>
 <translation id="119944043368869598">সব পরিষ্কার করুন</translation>
 <translation id="1336254985736398701">পৃষ্ঠা &amp;তথ্য দেখুন</translation>
+<translation id="5678480951567683474">পৃষ্ঠা এবং সরঞ্জাম মেনু দেখান</translation>
 <translation id="1652965563555864525">&amp;নিঃশব্দ</translation>
 <translation id="4200983522494130825">নতুন &amp;ট্যাব</translation>
 <translation id="7979036127916589816">সিঙ্ক ত্রুটি</translation>
 <translation id="5455790498993699893"><ph name="TOTAL_MATCHCOUNT"/> এর <ph name="ACTIVE_MATCH"/></translation>
+<translation id="5178488982078290579">সিঙ্ক করা বুকমার্ক...</translation>
 <translation id="2303544859777878640">ভাষাসমূহ:</translation>
 <translation id="2021921916539001817"><ph name="HOST_NAME"/> থেকে স্থানান্তরিত হচ্ছে...</translation>
 <translation id="6909042471249949473">এই সময় থেকে ডেটা সাফ করুন:</translation>
@@ -185,10 +205,13 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7456847797759667638">অবস্থান খুলুন...</translation>
 <translation id="5392041771307264501">কোনও নতুন উইন্ডো খুলতে একটি প্রোফাইল নির্বাচন করুন</translation>
+<translation id="1388866984373351434">ব্রাউজিং ডেটা</translation>
+<translation id="7378627244592794276">না</translation>
 <translation id="68541483639528434">অন্যান্য ট্যাব বন্ধ করুন</translation>
 <translation id="4022426551683927403">&amp;অভিধানে যুক্ত করুন</translation>
 <translation id="2897878306272793870">আপনি কি <ph name="TAB_COUNT"/>টি ট্যাব খোলার ব্যাপারে নিশ্চিত?</translation>
 <translation id="362276910939193118">সম্পূর্ণ ইতিহাস দেখান</translation>
+<translation id="7879113706359663444"><ph name="HOUR"/>:<ph name="MIUTE"/>p</translation>
 <translation id="1073286447082909762">নতুন &amp;উইন্ডোতে ফ্রেম খুলুন</translation>
 <translation id="692135145298539227">মুছুন</translation>
 <translation id="8343477974731263456">বুকমার্কস সিঙ্ক সেট আপ হচ্ছে</translation>
@@ -208,11 +231,13 @@
 <translation id="6686490380836145850">ডানদিকের ট্যাবস বন্ধ করুন</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ঘন্টা</translation>
 <translation id="2790948358747073186">এমনকি আরও</translation>
+<translation id="5774515636230743468">সুস্পষ্ট:</translation>
 <translation id="2423578206845792524">এই রূপে ছবি সং&amp;রক্ষণ করুন...</translation>
 <translation id="1095038624419434542">একটি প্রোগ্রাম সংস্থান লোড করার সময় একটি ত্রুটি ঘটেছে৷ পুনরায় ইনস্টল করার চেষ্টা করুন৷</translation>
 <translation id="9068931793451030927">পথ:</translation>
 <translation id="7052402604161570346">এই ধরনের ফাইল আপনার কম্পিউটারের ক্ষতি করতে পারে৷  আপনি কি <ph name="FILE_NAME"/> ডাউনলোড করার ব্যাপারে নিশ্চিত?</translation>
 <translation id="8642489171979176277">Google সরঞ্জামদণ্ড থেকে আমদানিকৃত</translation>
+<translation id="5905978244564263718">স্বয়ং-পূর্ণ সেট করুন...</translation>
 <translation id="7335374713830044009">ফ্রেমটি ছ&amp;দ্মবেশী উইন্ডোতে খুলুন</translation>
 <translation id="2011110593081822050">ওয়েব ওয়ার্কার: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">ফাইলের নাম:</translation>
@@ -261,25 +286,31 @@
 <translation id="1608306110678187802">মু&amp;দ্রণ ফ্রেম...</translation>
 <translation id="4948468046837535074">নিম্নোক্ত পৃষ্ঠাগুলি খুলুন:</translation>
 <translation id="6978121630131642226">সার্চ ইঞ্জিনসমূহ</translation>
+<translation id="6745994589677103306">কিছুই করবেন না</translation>
 <translation id="855081842937141170">ট্যাব আরও দ্রুত করুন</translation>
+<translation id="2723893843198727027">বিকাশকারী মোড:</translation>
 <translation id="5362741141255528695">ব্যক্তিগত কী ফাইল নির্বাচন করুন৷</translation>
 <translation id="7012108905414904806">যাই হোক, এই পৃষ্ঠাটি নিরাপদ নয় এমন সম্পদ অন্তর্ভুক্ত করে৷ স্থানান্তরের সময় এই সম্পদগুলিকে অন্যেরা দেখতে পারে এবং পৃষ্ঠার চেহারা বা আচরণ পরিবর্তন করার জন্য কোনো আক্রমণকারী সংশোধন করতে পারে৷</translation>
 <translation id="4515911410595374805">এই পৃষ্ঠার কিছু উপাদান কোনো যাচাই না করা উত্স থেকে এসেছে এবং প্রর্দশন করা হয় নি৷</translation>
 <translation id="1195447618553298278">অজানা ত্রুটি৷</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> days ago</translation>
 <translation id="4800557284502805285">সার্ভারের শংসাপত্র কোন উইক সিগনেচার অ্যালগরিদিম ব্যবহার করে সাইন করেছে</translation>
+<translation id="6610600335992778838">Wifi</translation>
 <translation id="1087119889335281750">&amp;কোনও বানানের সাজেশন নেই</translation>
 <translation id="718141787353053227">পৃষ্ঠা সেটআপ...</translation>
 <translation id="5076340679995252485">&amp;প্রতিলেপন</translation>
+<translation id="5097982659374947325">আমি ভিজিট করি কেবলমাত্র এমন সাইট থেকে কুকিজ মঞ্জুর করুন</translation>
 <translation id="14171126816530869"><ph name="LOCALITY"/>-তে <ph name="ORGANIZATION"/>-এর পরিচয় <ph name="ISSUER"/> যাচাই করেছে৷</translation>
 <translation id="1587275751631642843">&amp;JavaScript কনসোল</translation>
 <translation id="5821894118254011366">তৃতীয়-পক্ষ কুকিজ সম্পূর্ণরূপে অবরোধ করুন</translation>
 <translation id="3511307672085573050">লিঙ্ক ঠি&amp;কানা অনুলিপি করুন</translation>
 <translation id="1134009406053225289">ছদ্মবেশী উইন্ডোতে খুলুন</translation>
+<translation id="6655190889273724601">বিকাশকারী মোড</translation>
 <translation id="3473105180351527598">ফিশিং এবং ম্যালওয়্যার সুরক্ষা সক্ষম করুন</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME"/> অনুসন্ধানের জন্য <ph name="SEARCH_KEY"/> টিপুন</translation>
 <translation id="2342959293776168129">ডাউনলোড ইতিহাস সাফ করুন</translation>
 <translation id="2503522102815150840">ব্রাউজার বিফল...ধরাস</translation>
+<translation id="425878420164891689">পূরণ হওয়া পর্যন্ত সময় গণনা</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
 <translation id="6786747875388722282">এক্সটেনশনস</translation>
 <translation id="9053965862400494292">সিঙ্ক সেট আপের চেষ্টা করার  সময় একটি ত্রুটি ঘটেছে৷</translation>
@@ -294,16 +325,21 @@
 <translation id="5710435578057952990">এই ওয়েবসাইটির পরিচয় যাচাই করা হয় নি৷</translation>
 <translation id="5287240709317226393">কুকিজ দেখান</translation>
 <translation id="5451646087589576080">ফ্রেম &amp;তথ্য দেখুন</translation>
+<translation id="3368922792935385530">সংযুক্ত</translation>
 <translation id="8486154204771389705">এই পৃষ্ঠাটিতে রাখুন</translation>
 <translation id="6824564591481349393">&amp;ইমেল ঠিকানা অনুলিপি করুন</translation>
+<translation id="5184063094292164363">&amp;JavaScript কনসোল</translation>
 <translation id="333371639341676808">এই পৃষ্ঠাটিকে অতিরিক্ত কথোপকথন তৈরি করা থেকে আটকান৷</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> আপ টু ডেট (<ph name="VERSION"/>)</translation>
 <translation id="4254921211241441775">এই অ্যাকাউন্টটি সিঙ্ক করা থামান</translation>
+<translation id="8661648338644250771">এই এক্সটেনশানটির <ph name="HOST"/>-এ আপনার ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
 <translation id="7791543448312431591">যুক্ত করুন</translation>
 <translation id="307505906468538196">একটি Google অ্যাকাউন্ট তৈরি করুন</translation>
 <translation id="48838266408104654">&amp;কার্য পরিচালক</translation>
 <translation id="3694027410380121301">পূর্ববর্তী ট্যাব নির্বাচন করুন</translation>
 <translation id="6178664161104547336">একটি শংসাপত্র নির্বাচন করুন</translation>
+<translation id="5702898740348134351">&amp;সার্চ ইঞ্জিন সম্পাদনা...</translation>
+<translation id="2365740070488517695">ইঙ্গিতগুলি</translation>
 <translation id="772440777491435074">শংসাপত্র তথ্য...</translation>
 <translation id="2869459179306435079">এর থেকে সেটিংস আমদানি করুন:</translation>
 <translation id="732677191631732447">অডিও URL অনু&amp;লিপি করুন</translation>
@@ -311,6 +347,8 @@
 <translation id="3369624026883419694">হোস্ট স্থির করা হচ্ছে...</translation>
 <translation id="8870413625673593573">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="9145357542626308749">সাইটের নিরাপত্তা শংসাপত্রটি কোন উইক সিগনেচার অ্যালগরিদিম ব্যবহার করে সাইন করেছে!</translation>
+<translation id="8800574954100068740">ডিফল্ট অনুসন্ধান</translation>
+<translation id="6551701656367809067">সার্ভারে অত্যধিক অনুরোধ পাঠানোর কারণে বুকমার্ক সিঙ্ক স্বাভাবিকভাবে কাজ করছে না৷ দেখে মনে হচ্ছে <ph name="NAME_OF_EXTENSION"/> আপনার বুকমার্কগুলিতে অনেক পরিবর্তন করছে৷</translation>
 <translation id="8249296373107784235">বাতিল</translation>
 <translation id="3967132639560659870">এই পৃষ্ঠাতে আলাদা আলাদা SSL ত্রুটি আছে:</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
@@ -322,6 +360,7 @@
 <translation id="1319824869167805246">নতুন উইন্ডোতে সকল বুকমার্ক খুলুন</translation>
 <translation id="3493653833301553455">ফর্ম স্বতঃপূর্ণ:</translation>
 <translation id="3895288786311724904">যুক্ত হয়েছে</translation>
+<translation id="3371861036502301517">এক্সটেশন ইনস্টল ব্যর্থ</translation>
 <translation id="644038709730536388">অনলাইনের ক্ষতিকারক সফ্টওয়্যার থেকে কীভাবে নিজেকে বাঁচাতে হবে সেই সম্বন্ধে আরও জানুন৷</translation>
 <translation id="4172706149171596436">প্রক্সি সেটিংস পরিবর্তন করুন</translation>
 <translation id="5650551054760837876">কোন অনুসন্ধান ফলাফল পাওয়া যায় নি৷</translation>
@@ -329,6 +368,8 @@
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="825608351287166772">শংসাপত্রের একটি কার্যকারিতা সময় থাকে, যা অনেকটা আপনার কোনও পরিচয় দস্তাবেজের মত (যেমন কোনো পাসপোর্ট) হয়৷ আপনার ব্রাউজারে উপস্থাপিত শংসাপত্রটি এখনও কার্যকর নয়৷ কোনো শংসাপত্র সেটির কার্যকারিতা সময়ের বাইরে থাকলে, শংসাপত্রটির স্থিতি (সেটি প্রত্যাহার করা হলে এবং আর বিশ্বস্ত না থাকলে) সম্পর্কীয় নির্দিষ্ট তথ্য রক্ষণাবেক্ষণের প্রয়োজন নেই৷ যেমন, এই শংসাপত্রটি বিশ্বাসযোগ্য তা যাচাই করা সম্ভব নয়৷ আপনার এগিয়ে যাওয়া উচিত নয়৷</translation>
 <translation id="2742457360514408037">অবরুদ্ধ পপ-আপ: <ph name="COUNT"/></translation>
+<translation id="7154150278819212687">এই এক্সটেনশানটির আপনার ব্রাউজিং ইতিহাসে অ্যাক্সেস থাকবে৷</translation>
+<translation id="1516602185768225813">শেষ বার খোলা পৃষ্ঠাগুলি পুনরায় খুলুন</translation>
 <translation id="4874539263382920044">শিরোনামে কমপক্ষে একটি অক্ষর থাকা আবশ্যক</translation>
 <translation id="3549657413697417275">আপনার ইতিহাস অনুসন্ধান করুন</translation>
 <translation id="7344633671344536647">ব্রাউজিং ডেটা:</translation>
@@ -347,17 +388,21 @@
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> মিনিট বাকি</translation>
 <translation id="5496587651328244253">সংগঠিত করুন</translation>
 <translation id="2592884116796016067">এই পৃষ্ঠার একটি অংশ (HTML ওয়েবওয়ার্কার) ক্র্যাশ করেছে, তাই এটি সঠিকভাবে নাও কাজ করতে পারে৷</translation>
+<translation id="8425755597197517046">আট&amp;কান এবং অনুসন্ধান করুন</translation>
+<translation id="4728278536628384335">বুকমার্ক সিঙ্ক অক্ষম</translation>
 <translation id="5568069709869097550">সাইন ইন করতে পারছেন না</translation>
 <translation id="4181898366589410653">সার্ভারের শংসাপত্রে কোন প্রত্যাহার নির্মাণকৌশল পাওয়া যায় নি৷</translation>
 <translation id="1665770420914915777">নতুন ট্যাব পৃষ্ঠাটি ব্যবহার করুন</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> hour ago</translation>
 <translation id="7789175495288668515">ডিফল্ট ইনস্টলেশন বিকল্পগুলি পরিবর্তন করুন৷</translation>
 <translation id="347250956943431997">সার্ভারের শংসাপত্র প্রত্যাহার করা হয়েছে</translation>
+<translation id="1936157145127842922">ফোল্ডারে দেখান</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> মিনিট আগে</translation>
 <translation id="7977590112176369853">&lt;ক্যোয়ারী প্রবেশ করান&gt;</translation>
 <translation id="994771890067000105">অতিরিক্ত বৈশিষ্ট্যযুক্ত</translation>
 <translation id="5155632014218747366">এই সাইটের সমস্যা সম্পর্কে বিস্তারিত তথ্যের জন্য, <ph name="DOMAIN"/>-এর Google <ph name="DIAGNOSTIC_PAGE"/> পরিদর্শন করুন৷</translation>
 <translation id="1120026268649657149">মূলশব্দ খালি থাকা অথবা অনন্য হওয়া আবশ্যক</translation>
+<translation id="7954187762705269222"><ph name="HOUR"/>:<ph name="MIUTE"/>a</translation>
 <translation id="5317780077021120954">সংরক্ষণ</translation>
 <translation id="9027459031423301635">নতুন &amp;ট্যাবে লিঙ্ক খুলুন</translation>
 <translation id="358344266898797651">কেলটিক</translation>
@@ -391,6 +436,7 @@
 <translation id="52912272896845572">ব্যক্তিগত কী ফাইলটি অবৈধ৷</translation>
 <translation id="4222982218026733335">অকার্যকর সার্ভার শংসাপত্র</translation>
 <translation id="8494214181322051417">নতুন!</translation>
+<translation id="7403160227718463124">সামগ্রিকভাবে এই সাইটের জন্য:</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>আপনি ছদ্মবেশ ধরেছেন<ph name="END_BOLD"/>৷ এই পৃষ্ঠাতে আপনি যেসব পৃষ্ঠা দেখবেন সেগুলি আপনার ব্রাউজার ইতিহাসে বা অনুসন্ধান ইতিহাসে উপস্থিত হবে না, এবং আপনি ছদ্মবেশী উইন্ডোটি বন্ধ করার পর সেগুলি আপনার কম্পিউটারে কুকিজের মত অন্য কোনোকিছু চিহ্ন ছেড়ে যাবে না৷ যাইহোক, আপনার ডাউনলোড করা যেকোনও ফাইল অথবা তৈরি করা বুকমার্কস সংরক্ষিত হবে৷
 <ph name="LINE_BREAK"/>
 <ph name="BEGIN_BOLD"/>ছদ্মবেশ ধরলে তা অন্যান্য ব্যক্তিদের আচরণকে, সার্ভারকে বা সফ্টওয়্যারকে প্রভাবিত করে না৷ এর থেকে সতর্ক থাকুন:<ph name="END_BOLD"/>
@@ -407,12 +453,19 @@
 <translation id="1813414402673211292">ব্রাউজ করা ডেটা সাফ করুন</translation>
 <translation id="2356762928523809690">আপডেট সার্ভার উপলব্ধ নয় (ত্রুটি: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">বৈশিষ্ট্যযুক্ত থিম</translation>
+<translation id="219008588003277019">স্থানীয় গ্রাহক মডিউল: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> অনুসন্ধান করুন:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
+<translation id="7616581516194661584">সদৃশ</translation>
 <translation id="8730621377337864115">সম্পন্ন</translation>
+<translation id="245834195813628985"><ph name="HOUR"/>:<ph name="MIUTE"/> অবশিষ্ট</translation>
 <translation id="6267166720438879315">নিজেকে <ph name="HOST_NAME"/> এ প্রমাণীকৃত করতে একটি শংসাপত্র নির্বাচন করুন</translation>
+<translation id="7198134478421755850">এক্সটেনশান</translation>
+<translation id="4713481510227594233">এই কম্পিউটারে বুকমার্ক সিঙ্ক অক্ষম করা হয়েছে৷ আপনি যদি <ph name="NAME_OF_EXTENSION"/> আনইনস্টল  করেন তাহলে, সরঞ্জাম মেনুতে &quot;আমার বুকমার্কগুলি সিঙ্ক করুন...&quot; চয়ন করে বুকমার্ক সিঙ্ক পুনরায়-সক্ষম করতে পারেন৷</translation>
+<translation id="9061845622728745852">সময় অঞ্চল:</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> মিনিট</translation>
 <translation id="6315493146179903667">সমস্ত সামনে আনুন</translation>
+<translation id="5095777643592758820">বুকমার্ক সিঙ্ক ত্রুটি...</translation>
 <translation id="5015344424288992913">প্রক্সি স্থির করা হচ্ছে...</translation>
 <translation id="3675321783533846350">নেটওয়ার্কে সংযোগ করার জন্য কোনো প্রক্সি সেট করুন৷</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> দিন</translation>
@@ -437,16 +490,19 @@
 <translation id="9010612682952491200">নতুন ট্যাব [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">ভাগকরা স্মৃতি</translation>
 <translation id="6248988683584659830">অনুসন্ধান সেটিংস</translation>
+<translation id="2242457451044347345">বুকমার্ক সিঙ্ক</translation>
 <translation id="2727712005121231835">আসল আকার</translation>
 <translation id="8887733174653581061">সর্বদা শীর্ষে</translation>
 <translation id="610886263749567451">Javascript সতর্কতা</translation>
 <translation id="6556866813142980365">পুনরায় করুন</translation>
+<translation id="6584811624537923135">আনইনস্টলেশান নিশ্চিত করুন</translation>
 <translation id="8413126021676339697">সম্পূর্ণ ইতিহাস দেখান</translation>
 <translation id="8860923508273563464">ডাউনলোডগুলি শেষ হওয়া পর্যন্ত অপেক্ষা করুন</translation>
 <translation id="5288678174502918605">বন্ধ হওয়া ট্যাব পুনরায়&amp;খুলুন</translation>
 <translation id="9157595877708044936">সেট আপ হচ্ছে...</translation>
 <translation id="1823768272150895732">হরফ</translation>
 <translation id="4475552974751346499">ডাউনলোডগুলি অনুসন্ধান করুন</translation>
+<translation id="5339267765524260207">আপনি সিঙ্ক অক্ষম করলে, আপনার বুকমার্কগুলি আপনার Google অ্যাকাউন্টে অথবা অন্য মেশিনে সঞ্চিত বুকমার্কগুলির সাথে আর সিঙ্ক অবস্থায় রাখা যাবে না৷ কোনও বুকমার্ক মোছা যাবে না৷ বিদ্যমান সমস্ত বুকমার্ক এই কম্পিউটারে এবং আপনার Google অ্যাকাউন্টে থাকবে৷</translation>
 <translation id="1111153019813902504">সাম্প্রতিক বুকমার্কস</translation>
 <translation id="7497564420220535101">&amp;স্ক্রিনশট সংরক্ষণ করুন...</translation>
 <translation id="3786934874263773074">পৃষ্ঠাতে &amp;খুঁজুন</translation>
@@ -468,6 +524,7 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> সেকেন্ড</translation>
 <translation id="3551320343578183772">ট্যাব বন্ধ করুন</translation>
 <translation id="3345886924813989455">কোন সমর্থিত ব্রাউজার খুঁজে পাওয়া যায় নি</translation>
+<translation id="6727102863431372879">সেট</translation>
 <translation id="3712897371525859903">এ&amp;ইভাবে পৃষ্ঠা সংরক্ষণ করুন...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> বর্তমানে <ph name="IMPORT_BROWSER_NAME"/> থেকে নিম্নোক্ত আইটেমগুলি আমদানি করছে:</translation>
 <translation id="1018656279737460067">বাতিল হয়েছে</translation>
@@ -478,6 +535,7 @@
 <translation id="8942948210663084792">ডেটা সাফ করুন:</translation>
 <translation id="208047771235602537">আপনি কি <ph name="PRODUCT_NAME"/>-কে কোন ডাউনলোড প্রগতিতে থাকা অবস্থায় বন্ধ করতে চান?</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
+<translation id="1567993339577891801">JavaScript কনসোল</translation>
 <translation id="583281660410589416">অজানা</translation>
 <translation id="7635303043999550515">&lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; এ থাকা ওয়েবপৃষ্ঠা
         অনেকগুলি পুনঃচালনার ফলাফল রূপে এসেছে৷  এই সাইটের জন্য কুকিজ সাফ করলে বা তৃতীয়-পক্ষের কুকিজের অনুমতি দিলে সমস্যাটির সমাধান হতে পারে৷  যদি
@@ -491,16 +549,20 @@
 <translation id="1560991001553749272">বুকমার্ক যুক্ত হয়েছে!</translation>
 <translation id="3966072572894326936">অন্য ফোল্ডার চয়ন করুন...</translation>
 <translation id="7781829728241885113">গতকাল</translation>
+<translation id="1523341279170789507">সকল কুকিজ মঞ্জুর করুন</translation>
 <translation id="7596288230018319236">আপনার পরিদর্শন করা সমস্ত পৃষ্ঠা, কোনো ছদ্মবেশী উইন্ডোতে না খোলা পর্যন্ত, এখানে উপস্থিত হবে৷ আপনার ইতিবৃত্তে সমস্ত পৃষ্ঠা অনুসন্ধান করার জন্য অনুসন্ধান বোতামটিকে এই পৃষ্ঠাতে ব্যবহার করতে পারেন৷</translation>
 <translation id="2665163749053788434">ইতিহাস দেখুন</translation>
 <translation id="7434509671034404296">বিকাশকারী</translation>
 <translation id="6447842834002726250">কুকিজ</translation>
 <translation id="5170568018924773124">ফোল্ডারে দেখান</translation>
+<translation id="883848425547221593">অন্যান্য বুকমার্ক</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> ডিফল্ট ব্রাউজারকে নির্ধারণ বা সেট করতে পারে না৷</translation>
 <translation id="8898786835233784856">পরবর্তী ট্যাব নির্বাচন করুন</translation>
 <translation id="2674170444375937751">আপনি কি আপনার ইতিহাস থেকে এই পৃষ্ঠাগুলি মোছার বিষয়ে নিশ্চিত?</translation>
 <translation id="4203689580933736628">ব্লক করা আইটেম: <ph name="COUNT"/>টি</translation>
+<translation id="2653166165688724436">ওয়েব ডেটাবেস</translation>
 <translation id="7629827748548208700">ট্যাব: <ph name="TAB_NAME"/></translation>
+<translation id="8449008133205184768">আটকানো ও মানান শৈলী</translation>
 <translation id="8028993641010258682">মাপ</translation>
 <translation id="1383876407941801731">অনুসন্ধান</translation>
 <translation id="8398877366907290961">যাইহোক এগিয়ে যান</translation>
@@ -511,6 +573,7 @@
 <translation id="8789544147407756448">নিম্নলিখিত এক্সটেনশনটি ক্র্যাশ করেছে : <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> মিনিট বাকি</translation>
 <translation id="2022540532491530427">&amp;ফাইল অনুলিপি করুন</translation>
+<translation id="1099979722614954862"><ph name="PRODUCT_NAME"/>-এর এখন <ph name="BEGIN_LINK"/>এক্সটেনশান<ph name="END_LINK"/> এবং <ph name="BEGIN2_LINK"/>বুকমার্ক সিঙ্ক<ph name="END2_LINK"/> আছে৷</translation>
 <translation id="5966654788342289517">ব্যক্তিগত স্টাফ</translation>
 <translation id="2576802705154232609">ওয়েব ক্লিপ্স</translation>
 <translation id="8664389313780386848">পৃষ্ঠা উত্স &amp;দেখুন</translation>
@@ -521,6 +584,7 @@
 <translation id="6507969014813375884">চিনা সরলীকৃত</translation>
 <translation id="1767991048059195456">প্রতিবেদন পাঠান</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
+<translation id="4474155171896946103">সকল ট্যাব বুকমার্ক করুন...</translation>
 <translation id="5646376287012673985">অবস্থান</translation>
 <translation id="1110155001042129815">অপেক্ষা করুন</translation>
 <translation id="7071586181848220801">অজানা প্ল্যাগ-ইন</translation>
@@ -534,6 +598,7 @@
 <translation id="1181037720776840403">সরান</translation>
 <translation id="4006726980536015530">আপনি যদি <ph name="PRODUCT_NAME"/> এখনই বন্ধ করেন তাহলে এই ডাউনলোডগুলি বাতিল হয়ে যাবে৷</translation>
 <translation id="59174027418879706">সক্ষম</translation>
+<translation id="6639554308659482635">SQLite স্মৃতি</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">সকল বুকমার্ক খুলুন</translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
@@ -554,6 +619,7 @@
 <translation id="5087864757604726239">ফিরুন</translation>
 <translation id="2819994928625218237">&amp;কোনও বানানের সাজেশন নেই</translation>
 <translation id="4316305410440790958">নতুন &amp;ট্যাবে ফ্রেম খুলুন</translation>
+<translation id="9142623379911037913">ডেস্কটপ বিজ্ঞপ্তিগুলি দেখানোর জন্য <ph name="SITE"/>-কে মঞ্জুরি দেবেন?</translation>
 <translation id="9118804773997839291">নীচে সমস্ত অনিরাপদ উপাদানের একটি তালিকা রয়েছে৷  কোনও নির্দিষ্ট উপাদানের জন্য থ্রেডে আরও তথ্যের জন্য ডায়াগনস্টিক লিঙ্কটিকে ক্লিক করুন৷</translation>
 <translation id="3664021239099029884">সমস্ত ডাউনলোড দেখুন</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> মিনিট আগে</translation>
@@ -585,6 +651,7 @@
 <translation id="4890284164788142455">থাই</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
 <translation id="5435666907653217300">অন্যান্য সমস্যা</translation>
+<translation id="4479639480957787382">ইথারনেট</translation>
 <translation id="1264974993859112054">খেলাধূলা</translation>
 <translation id="5167270755190684957">Google Chrome থিমগুলির গ্যালারী</translation>
 <translation id="8382913212082956454">&amp;ইমেল ঠিকানা কপি করুন</translation>
@@ -594,8 +661,10 @@
 <translation id="1047726139967079566">এই পৃষ্ঠাটি বুকমার্ক করুন...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> সেকেন্ড বাকি</translation>
 <translation id="4767443964295394154">ডাউনলোড অবস্থান</translation>
+<translation id="720658115504386855">অক্ষরগুলি কেস সংবেদনশীল নয়</translation>
 <translation id="2454247629720664989">মূলশব্দ</translation>
 <translation id="3950820424414687140">সাইন ইন</translation>
+<translation id="2840798130349147766">ওয়েব ডেটাবেসসমূহ</translation>
 <translation id="1628736721748648976">এনকোডিং</translation>
 <translation id="6521850982405273806">কোনো ত্রুটি প্রতিবেদন করুন</translation>
 <translation id="1769104665586091481">নতুন &amp;উইন্ডোতে লিঙ্ক খুলুন</translation>
@@ -605,6 +674,7 @@
 <translation id="7642109201157405070">আমদানি অবিরত করুন</translation>
 <translation id="6463795194797719782">&amp;সম্পাদনা</translation>
 <translation id="5720119176273625078">রেফারার পাঠানো হয় নি</translation>
+<translation id="4775879719735953715">ডিফল্ট ব্রাউজার</translation>
 <translation id="4805261289453566571">আবার লগইন করুন</translation>
 <translation id="4188026131102273494">মূলশব্দ:</translation>
 <translation id="2290414052248371705">সকল সামগ্রী দেখান</translation>
@@ -612,8 +682,10 @@
 <translation id="3268761268932257769">স্বয়ংক্রিয়ভাবে ছবি ডাউনলোড করুন</translation>
 <translation id="7227780179130368205">ম্যালওয়ার সনাক্ত হয়েছে!</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
+<translation id="2912839854477398763">আপনি কি এই এক্সটেনশানটি আনইনস্টল করার ব্যাপারে নিশ্চিত?</translation>
 <translation id="3942946088478181888">আমাকে বুঝতে সাহায্য করুন</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (ডিফল্ট)</translation>
+<translation id="6543631358510643997">এই এক্সটেনশটির আপনার কম্পিউটারে এবং ব্যক্তিগত ডেটাতে পূর্ণ অ্যাক্সেস থাকবে৷</translation>
 <translation id="111844081046043029">আপনি এই পৃষ্ঠাটি ছেড়ে যাওয়ার ব্যাপারে কি নিশ্চিত?</translation>
 <translation id="4497415007571823067">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এ পৌঁছানোর প্রচেষ্টা করেছেন, কিন্তু এর পরিবর্তে আপনি আসলে একটি সার্ভারে পৌঁছেছেন যেটি নিজেকে &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; রূপে পরিচয় দিচ্ছে৷ এটি সার্ভারে একটি ভুল কনফিগারেশনের কারণে অথবা কিছু বেশি গুরুতর জিনিসের কারণে হতে পারে৷  আপনি যাতে &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;-এর জালিয়াত (এবং সম্ভাব্যরূপে ক্ষতিকারক) সংস্করণে পরিদর্শন করেন, আপনার নেটওয়ার্কে কোনো আক্রমণকারী, তার চেষ্টা করতে পারে৷ আপনার এগিয়ে যাওয়া উচিত নয়৷</translation>
 <translation id="3202578601642193415">নবীনতম</translation>
@@ -631,7 +703,10 @@
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> মিনিট বাকি</translation>
 <translation id="2192505247865591433">থেকে:</translation>
 <translation id="5921544176073914576">ফিশিং পৃষ্ঠা</translation>
+<translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
 <translation id="6192792657125177640">ব্যতিক্রমগুলি</translation>
+<translation id="4568660204877256194">বুকমার্কগুলি রপ্তানি করুন...</translation>
+<translation id="4577070033074325641">বুকমার্কগুলি আমদানি...</translation>
 <translation id="2822650824848709219">সমস্ত অনিরাপদ সামগ্রী ব্লক করুন</translation>
 <translation id="1715941336038158809">অবৈধ ব্যবহারকারী নাম বা পাসওয়ার্ড৷</translation>
 <translation id="1901303067676059328">&amp;সকল নির্বাচন করুন</translation>
@@ -647,6 +722,7 @@
 <translation id="872451400847464257">সার্চ ইঞ্জিন সম্পাদনা করুন</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> মিনিট</translation>
 <translation id="8717266507183354698">ইতিহাসে এমন সকল পৃষ্ঠা দেখুন যাতে <ph name="SEARCH_TERMS"/> আছে</translation>
+<translation id="2466804342846034717">সঠিক পাসওয়ার্ডটি উপরে লিখুন এবং তারপরে নীচের ছবিতে আপনি যে অক্ষরগুলি দেখছেন সেগুলি টাইপ করুন৷</translation>
 <translation id="2922560965807694149">লুকান</translation>
 <translation id="5645845270586517071">নিরাপত্তা ত্রুটি</translation>
 <translation id="8695758493354644945">ইতিবৃত্তে <ph name="NUM_MATCHES"/>টি সাম্প্রতিক পৃষ্ঠা দেখুন যাতে <ph name="SEARCH_TERMS"/> আছে</translation>
@@ -671,6 +747,7 @@
 <translation id="5384051050210890146">বিশ্বস্ত SSL শংসাপত্র নির্বাচন করুন৷</translation>
 <translation id="6865323153634004209">এই সেটিংগুলি কাস্টমাইজ করুন</translation>
 <translation id="7487067081878637334">প্রযুক্তি</translation>
+<translation id="4176463684765177261">অক্ষম</translation>
 <translation id="154603084978752493">সার্চ ই&amp;ঞ্জিন রূপে যুক্ত করুন...</translation>
 <translation id="2079545284768500474">পূর্বাবস্থায় ফিরুন</translation>
 <translation id="114140604515785785">এক্সটেনশন রুট ডিরেক্টরি:</translation>
@@ -679,8 +756,10 @@
 <translation id="1800035677272595847">ফিশিং</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
 <translation id="4610637590575890427">আপনি <ph name="SITE"/>-এ যেতে চাওয়ার কথা বলছেন কি?</translation>
+<translation id="5320331575990471017"><ph name="SOURCE_ORIGIN"/>-এর থেকে</translation>
 <translation id="8349305172487531364">বুকমার্কস দণ্ড</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/>-এ <ph name="SEARCH_TERMS"/> অনুসন্ধান করুন</translation>
+<translation id="5584091888252706332">প্রারম্ভে:</translation>
 <translation id="8004582292198964060">ব্রাউজার</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">ফোল্ডার নাম সম্পাদনা করুন</translation>
@@ -707,7 +786,9 @@
 <translation id="8877448029301136595">[পেরেন্ট ডাইরেক্টরি]</translation>
 <translation id="1963227389609234879">সকল সরান</translation>
 <translation id="8027581147000338959">নতুন উইন্ডোতে খুলুন</translation>
+<translation id="8019305344918958688">বু... কোনও এক্সটেনশান ইনস্টল নেই :-(</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="4720829798001058201">আপনার বুকমার্কগুলি এখন Google Docs-এ সিঙ্ক হয়েছে! আপনার বুকমার্কগুলি অন্য কম্পিউটারে Chrome-এ মার্জ এবং সিঙ্ক করার জন্য, শুধুমাত্র সেই কম্পিউটারে একই সেটআপ প্রক্রিয়ার পুনরাবৃত্তি করুন৷</translation>
 <translation id="2496180316473517155">ব্রাউজিং ইতিহাস</translation>
 <translation id="602251597322198729">এই সাইটটি একাধিক ফাইল ডাউনলোডের প্রয়াস করছে৷ আপনি কি এটি মঞ্জুরি দিতে চান?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> ঘন্টা</translation>
@@ -719,6 +800,7 @@
 <translation id="1002064594444093641">মু&amp;দ্রণ ফ্রেম...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">ফোল্ডারে &amp;দেখান</translation>
+<translation id="5554489410841842733">এক্সটেনশানটি বর্তমান পৃষ্ঠাতে কাজ করলে এই আইনকটিকে দেখা যাবে৷</translation>
 <translation id="4756388243121344051">&amp;ইতিহাস</translation>
 <translation id="3789841737615482174">ইনস্টল করুন</translation>
 <translation id="4789872672210757069">&amp;<ph name="PRODUCT_NAME"/> সম্বন্ধে</translation>
@@ -766,6 +848,7 @@
 <translation id="5178667623289523808">পূর্ববর্তী খুঁজুন</translation>
 <translation id="2815448242176260024">কখনও পাসওয়ার্ড সংরক্ষণ করবেন না</translation>
 <translation id="2989805286512600854">নতুন ট্যাবে খুলুন</translation>
+<translation id="2701236005765480329">এক্সটেনশান সতর্কতা</translation>
 <translation id="6503077044568424649">সর্বাধিক দেখা</translation>
 <translation id="3265459715026181080">উইন্ডো বন্ধ করুন</translation>
 <translation id="3831099738707437457">&amp;বানানের প্যানেল লুকান</translation>
@@ -775,7 +858,7 @@
 <translation id="3319048459796106952">নতুন &amp;ছদ্মবেশ উইন্ডো</translation>
 <translation id="3127919023693423797">প্রমাণ করা হচ্ছে...</translation>
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
-<translation id="3683878911947678690">আপনি নিজের Google অ্যাকাউন্ট ব্যবহার করে কম্পিউটারগুলি জুড়ে নিজের বুকমার্কগুলিকে সিঙ্ক করতে পারেন</translation>
+<translation id="8030169304546394654">সংযোগ বিচ্ছিন্ন</translation>
 <translation id="4178055285485194276">প্রারম্ভে:</translation>
 <translation id="1154228249304313899">এই পৃষ্ঠাটি খুলুন:</translation>
 <translation id="9074348188580488499">আপনি কি সকল পাসওয়ার্ড সরানোর বিষয়ে নিশ্চিত?</translation>
@@ -792,13 +875,16 @@
 <translation id="1285631718404404702">সাম্প্রতিক ক্রিয়াকলাপগুলি দেখান</translation>
 <translation id="6783679543387074885">বাগ অথবা ভেঙে যাওয়া ওয়েব সাইটের প্রতিবেদন করুন</translation>
 <translation id="3494444535872870968">&amp;ফ্রেমকে এই রূপে সংরক্ষণ করুন...</translation>
+<translation id="5731247495086897348">আ&amp;টকান এবং যান</translation>
 <translation id="3413103074007669042">এই পৃষ্ঠাতে কিছু অনিরাপদ লিখিত সামগ্রী রয়েছে</translation>
 <translation id="4887833561977827087">এখানে প্রদর্শনের জন্য এখনও কোন আইটেম নেই৷
         আপনার ওয়েব ক্লিপগুলি <ph name="BEGIN_LINK"/>কাস্টমাইজ<ph name="END_LINK"/>
         করুন এবং আরও সংস্থান যুক্ত করুন৷</translation>
 <translation id="5285267187067365830">প্ল্যাগ-ইন ইনস্টল করুন...</translation>
 <translation id="1166212789817575481">ডানদিকের ট্যাবস বন্ধ করুন</translation>
+<translation id="6472893788822429178">হোম বোতাম দেখান</translation>
 <translation id="5685236799358487266">সার্চ ই&amp;ঞ্জিন রূপে যুক্ত করুন...</translation>
+<translation id="3437016096396740659">ব্যাটারি চার্জ করা আছে</translation>
 <translation id="7907591526440419938">খোলা ফাইল</translation>
 <translation id="21133533946938348">পিন ট্যাব</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
@@ -809,36 +895,49 @@
 <translation id="9012607008263791152">আমি জানি এই সাইটটির পরিদর্শন আমার কম্পিউটারের জন্য ক্ষতিকারক হতে পারে৷</translation>
 <translation id="1441458099223378239">আমি আমার অ্যাকাউন্ট অ্যাক্সেস করতে পারছি না</translation>
 <translation id="5793220536715630615">ভিডিও URL অ&amp;নুলিপি করুন</translation>
+<translation id="523397668577733901">এর পরিবর্তে <ph name="BEGIN_LINK"/>গ্যালারি ব্রাউজ<ph name="END_LINK"/> করতে চান?</translation>
+<translation id="3778740492972734840">&amp;বিকাশকারী সরঞ্জাম</translation>
 <translation id="6004539838376062211">&amp;বানান-পরীক্ষা বিকল্পসমূহ</translation>
+<translation id="5350198318881239970">আপনার প্রোফাইলটি সঠিকভাবে খোলা যাবে না৷\n\nকিছু বৈশিষ্ট্য অনুপলব্ধ হতে পারে৷  দয়া করে চেক করুন যে প্রোফাইলটি বিদ্যমান এবং এটির সামগ্রী পড়ার ও লেখার অনুমতি আপনার কাছে আছে৷</translation>
 <translation id="4058793769387728514">এখন দস্তাবেজ চেক করুন</translation>
 <translation id="2915134691870672002">সুপারিশগুলি লুকান</translation>
+<translation id="756445078718366910">ব্রাউজার উইন্ডো খুলুন</translation>
 <translation id="7887334752153342268">সদৃশ</translation>
 <translation id="4980691186726139495">এই পৃষ্ঠাতে রাখবেন না</translation>
+<translation id="9026731007018893674">ডাউনলোড</translation>
 <translation id="7646591409235458998">ইমেল:</translation>
 <translation id="703748601351783580">নতুন উইন্ডোতে সকল বুকমার্ক খুলুন</translation>
+<translation id="8409023599530904397">সরজ্ঞামদণ্ড:</translation>
+<translation id="770273299705142744">ফর্ম স্বতঃপূর্ণ</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/>-কে অক্ষম করা হয়েছে৷ আপনি যদি বুকমার্ক সিঙ্ক বন্ধ করেন তাহলে, সরঞ্জাম মেনুর মাধ্যমে অ্যাক্সেসযোগ্য এক্সটেনশান পৃষ্ঠাতে এই এক্সটেনশানটিকে আপনি পুনরায়-সক্ষম করতে পারবেন৷</translation>
 <translation id="4478664379124702289">লি&amp;ঙ্ক এই রূপে সংরক্ষণ করুন...</translation>
 <translation id="1044231968500257587">আপনার বিদ্যমান অনলাইন বুকমার্কগুলি এই মেশিনের
         বুকমার্কের সাথে মার্জ করা হবে৷ মার্জ করার পরে আপনার বুকমার্কগুলিকে সাজানোর জন্য আপনি বুকমার্ক পরিচালকটিকে
         ব্যবহার করতে পারেন৷</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> ঘন্টা আগে</translation>
+<translation id="768570155019561996">এই এক্সটেনশানটি একাধিক ওয়েবসাইটে আপনার ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
 <translation id="7180865173735832675">কাস্টমাইজ করুন</translation>
 <translation id="1430594899542257414">টিপ্স এবং কৌশলগুলি</translation>
 <translation id="2115926821277323019">একটি কার্যকর URL হওয়া আবশ্যক</translation>
 <translation id="7397054681783221164">নিম্নোক্ত আইটেমগুলি নিশ্চিহ্ন করুন:</translation>
 <translation id="4891251785049117953">সংরক্ষিত ফর্ম ডেটা পরিষ্কার করুন</translation>
 <translation id="1531836666020185856">বৈশিষ্ট্যযুক্ত</translation>
+<translation id="580571955903695899">শিরোনাম অনুসারে পুনঃক্রম করুন</translation>
 <translation id="5230516054153933099">উইন্ডো</translation>
 <translation id="7554791636758816595">নতুন ট্যাব</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
+<translation id="1103966635949043187">সাইটের হোম পৃষ্ঠাতে যান:</translation>
 <translation id="4400697530699263877">পৃষ্ঠা লোড সম্পাদনা উন্নত করার জন্য DNS পূর্ব-আনয়ন ব্যবহার করুন</translation>
 <translation id="1086613338090581534">কোনো মেয়াদ শেষ না হওয়া শংসাপত্রের ইস্যুকারী সেটির “প্রত্যাহার তালিকা” নামক জিনিসের রক্ষনাবেক্ষণের জন্য দ্বায়িত্বশীল৷ যদি কোনো শংসাপত্রে কখনও সন্দেহ থাকে তাহলে ইস্যুকারী সেটিকে প্রত্যাহার তালিকাতে যুক্ত করে প্রত্যাহার করতে পারে এবং এরপর থেকে এই শংসাপত্রটিকে আপনার ব্রাউজার আর ভরসা করবে না৷ মেয়াদ শেষ হওয়া সংশাপত্রের জন্য প্রত্যাহার স্থিতি অক্ষুণ্ণ রাখার দরকার নেই, ফলে আপনার পরিদর্শন করা ওয়েবসাইটের জন্য এই শংসাপত্রটি বৈধ হলে, সেই ক্ষেত্রে এটি নির্ধারণ করা সম্ভব হয় না যে শংসাপত্রটি সন্দেহজনক এবং পশাত্কালে প্রত্যাহার করা হয়েছিল কি না অথবা এটি এখনও নিরাপদ কি না৷ যেমন আপনি আইনসঙ্গত ওয়েব সাইটে যোগাযোগ করছেন কি না অথবা শংসাপত্রটি সন্দেহজনক কি না এবং এখন আপনি যার সাথে যোগাযোগ করছেন সেটি আক্রমণকারীর অধীনে আছে কি না তা বলা সত্যিই অসম্ভব৷ আপনার এর বেশি এগোনো উচিত নয়৷</translation>
 <translation id="2645575947416143543">যাইহোক, যদি আপনি এমন কোন সংস্থাতে কাজ করেন যা নিজের শংসাপত্র তৈরি করে এবং আপনি এই ধরনের কোন  শংসাপত্র ব্যবহার করে এই সংস্থার কোন অভ্যন্তরীণ ওয়েবসাইটে সংযোগের চেষ্টা করেন, তাহলে আপনি নিরাপদভাবে এই সমস্যা সমাধানে সক্ষম হতে পারেন৷ আপনি আপনার সংস্থার মূল শংসাপত্র একটি &quot;মূল শংসাপত্র&quot; রূপে আমদানি করতে পারেন, এরপরে আপনার সংস্থা কতৃক ইস্যু করা বা যাচাই করা শংসাপত্র বিশ্বস্ত হবে এবং পরের বার যখন আপনি কোন  অভ্যন্তরীণ ওয়েবসাইটে সংযোগের চেষ্টা করবেন এই ত্রুটি দেখবেন না৷ আপনার কম্পিউটারে একটি নতুন মূল শংসাপত্র যুক্ত করতে সহায়তার জন্য আপনার সংস্থার সহায়তা কর্মীর সাথে যোগাযোগ করুন৷</translation>
 <translation id="3157931365184549694">পুনরুদ্ধার করুন</translation>
+<translation id="7426243339717063209">&quot;<ph name="EXTENSION_NAME"/>&quot; আনইনস্টল করবেন?</translation>
 <translation id="6059232451013891645">ফোল্ডার:</translation>
 <translation id="8182985032676093812"><ph name="PAGE_URL"/>-এর উত্স</translation>
 <translation id="7042418530779813870">প্রতি&amp;লেপন এবং অনুসন্ধান করুন</translation>
+<translation id="2101225219012730419">সংস্করণ:</translation>
 <translation id="1570242578492689919">হরফ এবং এনকোডিং</translation>
 <translation id="3031557471081358569">আমদানির জন্য আইটেম নির্বাচন করুন:</translation>
 <translation id="3031433885594348982"><ph name="DOMAIN"/>-এ আপনার কানেকশন দুর্বল এনক্রিপশনে এনক্রিপ্ট হয়েছে৷</translation>
@@ -858,6 +957,7 @@
 <translation id="6181769708911894002">সাবধানবাণী: এই সাইটটির পরিদর্শন আপনার কম্পিউটারের পক্ষে ক্ষতিকারক হতে পারে!</translation>
 <translation id="3412265149091626468">নির্বাচনে যান</translation>
 <translation id="3785852283863272759">ইমেল পৃষ্ঠার অবস্থান</translation>
+<translation id="7326526699920221209">ব্যাটারি: <ph name="PRECENTAGE"/>%</translation>
 <translation id="601778514741867265">আমি ভিজিট করি কেবলমাত্র এমন সাইট থেকে কুকি স্বীকার করুন</translation>
 <translation id="8299269255470343364">জাপানী</translation>
 <translation id="5204993535447683655">এই ওয়েব পৃষ্ঠাটি পরে &lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;পুনঃ লোড করুন&lt;/a&gt;৷</translation>
@@ -865,10 +965,12 @@
 <translation id="7280343984261969618">কোনও বিশেষাধিকার ছাড়াই প্ল্যাগ-ইনস কোনো স্যান্ডবাক্সে চালায়৷ কিছু প্ল্যাগ-ইনস সঠিকভাবে কাজ না করার কারণ হবে৷</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> দিন বাকি</translation>
 <translation id="2885378588091291677">কার্য পরিচালক</translation>
+<translation id="1215711112676250731">কোটা:</translation>
 <translation id="2359808026110333948">অবিরত</translation>
 <translation id="1618661679583408047">সার্ভারের নিরাপত্তা শংসাপত্র এখনও কার্যকর হয় নি!</translation>
 <translation id="9040508646567685134">এই পৃষ্ঠাতে চলমান একটি স্ক্রিপ্ট তার কাজ করার জন্য দীর্ঘক্ষণ সময় নিচ্ছে৷ স্ক্রিপ্টটি সম্পূর্ণ হতে পারবে কি না আপনি তা দেখতে চান, না হাল ছেড়ে দেবেন?</translation>
 <translation id="3065140616557457172">অনুসন্ধানের জন্য টাইপ করুন অথবা সমস্তকিছু ঠিকঠাক কাজ করছে - তা নেভিগেট করা জন্য একটি URL প্রবেশ করান৷</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="5509693895992845810">এই &amp;রূপে সংরক্ষণ করুন...</translation>
 <translation id="5986279928654338866"><ph name="DOMAIN"/> সার্ভারটির একটি ব্যবহারকারী নাম এবং পাসওয়ার্ড প্রয়োজন৷</translation>
 <translation id="521467793286158632">সমস্ত পাসওয়ার্ড সরান</translation>
@@ -878,10 +980,10 @@
 <translation id="7221869452894271364">এই পৃষ্ঠাটি পুনঃ লোড করুন</translation>
 <translation id="8646430701497924396">SSL 2.0 ব্যবহার করুন</translation>
 <translation id="8179976553408161302">প্রবেশ করান</translation>
+<translation id="5481650329671719147">এক্সটেনশান এবং থিম আপনার কম্পিউটারের ক্ষতি করতে পারে৷ আপনি কি অবিরত করার ব্যাপারে নিশ্চিত?</translation>
 <translation id="8261506727792406068">মুছুন</translation>
 <translation id="345693547134384690">&amp;ছবি নতুন ট্যাবে খুলুন</translation>
 <translation id="7422192691352527311">অগ্রাধিকারগুলি...</translation>
-<translation id="7220379225958650049">এখন শুরু করুন</translation>
 <translation id="1375198122581997741">সংস্করণ সম্পর্কে</translation>
 <translation id="1474307029659222435">নতুন &amp;উইন্ডোতে ফ্রেম খুলুন</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/>-তে সিঙ্ক হয়েছে\nশেষ বার সিঙ্ক হয়েছে: <ph name="LAST_SYNC_TIME"/></translation>
@@ -896,11 +998,14 @@
 <translation id="884923133447025588">কোন প্রত্যাহার নির্মাণকৌশল পাওয়া যায় নি৷</translation>
 <translation id="7240072072812590475">গিয়ার্স সেটিংস পরিবর্তন করুন</translation>
 <translation id="6001785649757655903">গোপনীয়তা কালো তালিকা ত্রুটি</translation>
+<translation id="2480155717379390016">অক্ষম <ph name="NAME_OF_EXTENSION"/></translation>
+<translation id="492643400682328128"><ph name="NETWORKDEVICE"/> বন্ধ করুন</translation>
 <translation id="7671130400130574146">সিস্টেম শিরোনাম দণ্ড ও সীমানাগুলি ব্যবহার করুন</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
 <translation id="4444364671565852729"><ph name="PRODUCT_NAME"/> <ph name="VERSION"/>-এ আপডেট হয়েছে</translation>
 <translation id="2731392572903530958">বন্ধ হওয়া উইল্ডো পুনরায়&amp;খুলুন</translation>
+<translation id="4264420740606601613">তৃতীয়-পক্ষ কুকিজ সম্পূর্ণরূপে অবরোধ</translation>
 <translation id="6483805311199035658"><ph name="FILE"/> খোলা হচ্ছে...</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="9154176715500758432">এই পৃষ্ঠাতে থাকুন</translation>
@@ -912,10 +1017,13 @@
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">পুনঃসূচনা</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
+<translation id="5663016964925996918"><ph name="EXTENSION_NAME"/> এখন ইনস্টল হয়েছে</translation>
 <translation id="3009731429620355204">অধিবেশনগুলি</translation>
 <translation id="7658590191988721853">উল্লম্ব কিনারা স্ক্রোলিং সক্ষম করুন</translation>
+<translation id="5190835502935405962">বুকমার্ক দণ্ড</translation>
 <translation id="6460601847208524483">পরবর্তী খুঁজুন</translation>
 <translation id="3473034187222004855">ফাইল &amp;পথ অনুলিপি করুন</translation>
+<translation id="3038131737570201586">এই এক্সটেনশানটির একাধিক ওয়েবসাইটে আপনার ব্রাউজিং ইতিহাসে এবং ব্যক্তিগত ডেটাতে অ্যাক্সেস থাকবে৷</translation>
 <translation id="6325525973963619867">ব্যর্থ</translation>
 <translation id="1676388805288306495">ওয়েবপৃষ্ঠার ডিফল্ট হরফ এবং ভাষা পরিবর্তন করুন৷</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
@@ -930,6 +1038,7 @@
 <translation id="5333374927882515515"><ph name="DEF_BROWSER"/> থেকে বুকমার্কস, পাসওয়ার্ড এবং অন্যান্য সেটিংস আমদানি করুন</translation>
 <translation id="4239831617079978238">অধিবেশন সমাপ্তি</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
+<translation id="5960889226412209189">কমপ্যাক্ট নেভিগেশন বার টগল করুন</translation>
 <translation id="8954894007019320973">(চলছে)</translation>
 <translation id="3748412725338508953">অত্যধিক পুনঃনির্দেশ ছিল৷</translation>
 <translation id="8929159553808058020">ওয়েবসাইট পড়ার জন্য আপনি যে ভাষাগুলি ব্যবহার করেন ,সেগুলি পছন্দ অনুযায়ী তালিকাভুক্ত করুন৷ কেবলমাত্র যেগুলি দরকার সেগুলি যুক্ত করুন, কেন না কিছু অক্ষর ওয়েবসাইট অন্য ভাষাতে প্রকাশ করার জন্য ব্যবহৃত হতে পারে৷</translation>
@@ -945,10 +1054,13 @@
 <translation id="7088615885725309056">পূর্বতর</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
 <translation id="8562413501751825163">আমদানি করার আগে Firefox বন্ধ করুন</translation>
+<translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K লাইভ)</translation>
 <translation id="5034259512732355072">অন্য ডাইরেক্টরি চয়ন করুন...</translation>
 <translation id="5074322878757699801">ডেটা আমদানি হচ্ছে...</translation>
+<translation id="7505152414826719222">স্থানীয় সঞ্চয়</translation>
 <translation id="5706242308519462060">ডিফল্ট এনকোডিং:</translation>
 <translation id="5280833172404792470">পূর্ণ স্ক্রীন থেকে প্রস্থান করুন (<ph name="ACCELERATOR"/>)</translation>
+<translation id="4000986992587584088">সর্বদা <ph name="URL"/>-এর পপ-আপগুলি দেখান</translation>
 <translation id="129553762522093515">সম্প্রতি বন্ধ হয়েছে</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> দিন</translation>
 <translation id="3891357445869647828">JavaScript সক্ষম করুন</translation>
@@ -965,14 +1077,18 @@
 <translation id="4867297348137739678">গত সপ্তাহ</translation>
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="5457793226917888578">এই পৃষ্ঠাতে অনিরাপদ লিখিত সামগ্রী রয়েছে৷</translation>
+<translation id="5988520580879236902">সক্রিয় দর্শনগুলি পরিদর্শন করুন:</translation>
 <translation id="5981759340456370804">একরোখা প্রযুক্তিবিদের জন্য পরিসংখ্যান</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> দিন</translation>
 <translation id="6512448926095770873">এই পৃষ্ঠাটি ত্যাগ করুন</translation>
 <translation id="5607455023223000189">ইনস্টল হওয়া প্ল্যাগ-ইন</translation>
 <translation id="6294193300318171613">&amp;সর্বদা বুকমার্কস দণ্ড দেখান</translation>
+<translation id="3414952576877147120">মাপ:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> সেকেন্ড আগে</translation>
 <translation id="7009102566764819240">নীচে সমস্ত অনিরাপদ উপাদানের একটি তালিকা রয়েছে৷  কোনও নির্দিষ্ট রিসোর্সে ম্যালওয়ার থ্রেডে আরও তথ্যের জন্য ডায়াগনস্টিক লিঙ্কটিকে ক্লিক করুন৷ আপনি যদি জানতে পারেন যে কোন রিসোর্সকে ভুল করে ফিশিং হিসাবে রিপোর্ট করা হয়ে গেছে তবে ‘ত্রুটি রিপোর্ট করুন’ লিঙ্কটিকে ক্লিক করুন৷</translation>
+<translation id="676327646545845024">এই ধরণের সমস্ত লিঙ্কের জন্য কথোপকথনটি কখনও দেখাবেন না৷</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> সেকেন্ড বাকি</translation>
+<translation id="6863682319656084809">এক্সটেনশান সতর্কতা <ph name="EXTENSION_NAME"/></translation>
 <translation id="1485146213770915382">যেখানে অনুসন্ধান পদটি উপস্থিত হওয়া উচিত সেখানে URL-এ <ph name="SEARCH_TERMS_LITERAL"/> অন্তর্ভুক্ত করুন৷</translation>
 <translation id="4839303808932127586">এইরূপে ভিডিও সংর&amp;ক্ষণ করুন...</translation>
 <translation id="5626134646977739690">নাম:</translation>
@@ -983,6 +1099,7 @@
 <translation id="4876916865079819322">আমার বুকমার্কগুলিকে সিঙ্ক করুন</translation>
 <translation id="146000042969587795">কিছু অনিরাপদ সামগ্রী থাকার কারণে এই ফ্রেমটি আটকানো হয়্ছে৷</translation>
 <translation id="8112223930265703044">সবকিছু</translation>
+<translation id="8023801379949507775">এক্সটেনশগুলি এখনই আপডেট করুন</translation>
 <translation id="1983108933174595844">বর্তমান পৃষ্ঠার স্ক্রীন শট পাঠান</translation>
 <translation id="436869212180315161">টিপুন</translation>
 <translation id="8241707690549784388">আপনি যে পৃষ্ঠাটি খুঁজছেন সেটি আপনার প্রবেশ করানো তথ্য ব্যবহার করছে৷ এই পৃষ্ঠাতে ফিরে এলে কোনো ক্রিয়া আবার করতে হতে পারে৷ আপনি কি অবিরত করতে চান?</translation>
@@ -995,6 +1112,7 @@
 <translation id="1753905327828125965">সর্বাধিক দেখা</translation>
 <translation id="170407012880898501">ফর্মগুলি সহজে পূরণ করতে সেখান থেকে পাঠ্য সংরক্ষণ করুন</translation>
 <translation id="8116972784401310538">&amp;বুকমার্ক পরিচালক</translation>
+<translation id="1849632043866553433">অ্যাপ্লিকেশন ক্যাশে</translation>
 <translation id="4927301649992043040">প্যাক এক্সটেনশন</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
@@ -1007,12 +1125,15 @@
 <translation id="1232569758102978740">শিরোনামহীন</translation>
 <translation id="9149866541089851383">সম্পাদনা...</translation>
 <translation id="7000311294523403548">শিরোনামহীন ওয়েব পৃষ্ঠা</translation>
+<translation id="4593021220803146968">&amp;এখানে যান <ph name="URL"/></translation>
 <translation id="7649070708921625228">সহায়তা</translation>
 <translation id="6119719873954126908">আরও ভাল ব্রাউজিংয়ের জন্য টিপ্স ও পরামর্শ পেতে এই স্থানটি দেখুন!</translation>
 <translation id="7442246004212327644">সা&amp;ফ</translation>
 <translation id="281133045296806353">বিদ্যমান ব্রাউজার সেশনে নতুন উইন্ডো তৈরি হয়েছে৷</translation>
+<translation id="6314007596429871800">অ্যাপ্লিকেশান ক্যাশে</translation>
 <translation id="9002707937526687073">মু&amp;দ্রণ...</translation>
 <translation id="5556459405103347317">পুনঃলোড</translation>
+<translation id="8326395326942127023">ডেটাবেস নাম:</translation>
 <translation id="7727721885715384408">পুনঃনামকরণ...</translation>
 <translation id="5508407262627860757">যাইহোক বাতিল করুন</translation>
 <translation id="7587108133605326224">বাল্টিক</translation>
@@ -1021,6 +1142,7 @@
 <translation id="3021678814754966447">ফ্রেম উত্স &amp;দেখুন</translation>
 <translation id="5271549068863921519">পাসওয়ার্ড সংরক্ষণ করুন</translation>
 <translation id="3251855518428926750">যুক্ত করুন...</translation>
+<translation id="3508920295779105875">অন্য ফোল্ডার চয়ন করুন...</translation>
 <translation id="2987775926667433828">চিনা ঐতিহ্যশালী</translation>
 <translation id="3954582159466790312">নিঃ&amp;শব্দ মুক্ত করুন</translation>
 <translation id="5809606740668187902">অবরুদ্ধ সম্পদ</translation>
@@ -1032,8 +1154,10 @@
 <translation id="8045462269890919536">রোমানিয়</translation>
 <translation id="2927657246008729253">পরিবর্তন...</translation>
 <translation id="7978412674231730200">ব্যক্তিগত কী</translation>
+<translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">নতুন &amp;ছদ্মবেশী উইন্ডো</translation>
 <translation id="3478477629095836699">কুকি সেটিংস:</translation>
+<translation id="6529237754759924038">তারিখ এবং সময়</translation>
 <translation id="7278870042769914968">GTK+ থিম ব্যবহার করুন</translation>
 <translation id="2108475813351458355"><ph name="DOMAIN"/>-এ নিরাপদ কানেকশন</translation>
 <translation id="942671148946453043">আপনি একটি ছদদ্মবেশ উইন্ডো খুলেছেন৷ এই উইন্ডোতে আপনি যে পৃষ্ঠাগুলি খুলেছেন সেগুলি আপনার ইতিহাসে উপস্থিত হবে না৷</translation>
@@ -1069,11 +1193,14 @@
 <translation id="3943582379552582368">&amp;ফিরুন</translation>
 <translation id="7607002721634913082">বিরাম দেওয়া</translation>
 <translation id="480990236307250886">হোম পৃষ্ঠাটি খুলুন</translation>
+<translation id="5757539081890243754">হোম পৃষ্ঠা</translation>
 <translation id="6709133671862442373">সংবাদ</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ঘন্টা বাকি</translation>
+<translation id="6550675742724504774">বিকল্পসমূহ</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>
 <translation id="737801893573836157">সিস্টেম শিরোনাম দণ্ড লুকান এবং ঘনবিন্যস্ত সীমানা ব্যবহার করুন</translation>
 <translation id="5040262127954254034">গোপনীয়তা</translation>
+<translation id="1058681476058291010">বুকমার্ক সিঙ্ক ত্রুটি...</translation>
 <translation id="1908748899139377733">ফ্রেম &amp;তথ্য দেখুন</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="803771048473350947">ফাইল</translation>
@@ -1082,6 +1209,7 @@
 <translation id="566920818739465183">আপনি এই সাইটটি প্রথমবার <ph name="VISIT_DATE"/>-এ পরিদর্শন করেছিলেন৷</translation>
 <translation id="2961695502793809356">এগিয়ে যাওয়ার জন্য ক্লিক করুন, ইতিহাস দেখার জন্য ধরে রাখুন</translation>
 <translation id="923083373181549309">দয়া করে <ph name="PRODUCT_NAME"/> পুনর্সূচনা করুন</translation>
+<translation id="8678305583783039525">কুকিজ এবং ওয়েবসাইট অনুমতিগুলি দেখান</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> সেকেন্ড</translation>
 <translation id="176587472219019965">&amp;নতুন উইন্ডো</translation>
 <translation id="8689341121182997459">মেয়াদ শেষ:</translation>
@@ -1098,11 +1226,13 @@
 <translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> এই কার্যগুলি করবে:</translation>
 <translation id="1812622104192390866">এর থেকে সেটিংস আমদানি করুন</translation>
 <translation id="4042471398575101546">পৃষ্ঠা যুক্ত করুন</translation>
+<translation id="4871865824885782245">তারিখ এবং সময় বিকল্পগুলি খুলুন...</translation>
 <translation id="988159990683914416">বিকাশকারী বিল্ড</translation>
 <translation id="921175996768281472">এক্সটেনশন প্যাকেজিং ব্যর্থ</translation>
 <translation id="2183426022964444701">এক্সটেনশন রুট ডিরেক্টরি নির্বাচন করুন৷</translation>
 <translation id="6790650291892352751">বিষয় বা URL অনুসারে অনুসন্ধান করুন:</translation>
 <translation id="5398353896536222911">বানানের প্যানেল &amp;দেখান</translation>
+<translation id="8046048349148382412"><ph name="HOUR"/>:<ph name="MIUTE"/> ইউনিট পূর্ণ</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="7481312909269577407">ফরওয়ার্ড</translation>
@@ -1115,6 +1245,7 @@
 <translation id="2444683954290143042">সিঙ্ক ত্রুটি - দয়া করে আবার লগইন করুন</translation>
 <translation id="5830720307094128296">&amp;এই রূপে পৃষ্ঠা সংরক্ষণ করুন...</translation>
 <translation id="5822838715583768518">অ্যাপ্লেকশন প্রবর্তন করুন</translation>
+<translation id="2433507940547922241">উপস্থিতি</translation>
 <translation id="839072384475670817">অ্যাপ্লিকেশন &amp;শর্টকাট তৈরি করুন...</translation>
 <translation id="6756161853376828318"><ph name="PRODUCT_NAME"/>-কে আমার ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="2640524951934795733">আমরা এখানে কী রাখব?</translation>
@@ -1125,6 +1256,7 @@
 <translation id="3807747707162121253">&amp;বাতিল</translation>
 <translation id="2850243184678184884">উদাহরণস্বরূপ, হকি, বিবিসি, http://engadget.com/rss.xml</translation>
 <translation id="77999321721642562">সময় শেষে, নীচের অঞ্চলটি আপনার সর্বাধিক দেখা আটটি সাইট প্রদর্শন করবে৷</translation>
+<translation id="5864830997591220873">সকল কুকি অবরোধ করুন</translation>
 <translation id="7447718177945067973">সার্ভাটি খুঁজে পাওয়া যায় নি৷</translation>
 <translation id="715468010956678290">ফ্রেমটি ছ&amp;দ্মবেশী উইন্ডোতে খুলুন</translation>
 <translation id="7755167023778553803">যাইহোক, এই পৃষ্ঠাটিতে অন্য ওয়েবসাইটের এমন সম্পদ আছে যাদের পরিচয় যাচাই করা যাবে না৷</translation>
@@ -1132,6 +1264,7 @@
 <translation id="3455546154539383562">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;–এ পৌঁছানোর প্রচেষ্টা করেছেন, কিন্তু সার্ভার দ্বারা উপস্থাপিত শংসাপত্রটি সেটির ইস্যুকারী প্রত্যাহার করেছে৷ এর অর্থ হল সার্ভার দ্বারা উপস্থাপিত নিরাপত্তা প্রমাণ-পত্রটিকে কখনই ভরসা করা উচিত নয়৷ হতে পারে আপনি একটি আক্রমণকারীর সাথে যোগাযোগ করছেন৷ আপনার এগিয়ে যাওয়া উচিত নয়৷</translation>
 <translation id="1177437665183591855">অজানা সার্ভার শংসাপত্র ত্রুটি</translation>
 <translation id="3819800052061700452">&amp;পূর্ণ-স্ক্রীন</translation>
+<translation id="3533943170037501541">আমনার হোম পৃষ্ঠাতে স্বাগতম!</translation>
 <translation id="3218306954729745977">সম্প্রতি বন্ধ হওয়া ট্যাবগুলি দেখান</translation>
 <translation id="3737554291183722650">পৃষ্ঠার শিরোনাম:</translation>
 <translation id="1581962803218266616">ফাইন্ডারে দেখান</translation>
@@ -1150,12 +1283,14 @@
 <translation id="1208126399996836490">রিসেট করবেন না</translation>
 <translation id="806812017500012252">শিরোনাম অনুসারে পুনঃক্রম করুন</translation>
 <translation id="2960316970329790041">আমদানি থামান</translation>
+<translation id="5361734574074701223">অবশিষ্ট সময় গণনা করা হচ্ছে</translation>
 <translation id="1731911755844941020">অনুরোধ পাঠানো হচ্ছে...</translation>
 <translation id="1038842779957582377">অজানা নাম</translation>
 <translation id="5327248766486351172">নাম</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="2052895926110224873">আপনার গোপনীয়তা কালো তালিকাগুলি লোড হতে ব্যর্থ হয়েছে৷</translation>
 <translation id="2445081178310039857">এক্সটেনশন রুট ডিরেক্টরি প্রয়োজন৷</translation>
+<translation id="8251578425305135684">থাম্বনেল সরানো হয়েছে৷</translation>
 <translation id="3037605927509011580">ইস!</translation>
 <translation id="1918141783557917887">&amp;ক্ষুদ্রতর</translation>
 <translation id="4065006016613364460">ছবির URL ক&amp;পি করুন</translation>
@@ -1183,17 +1318,27 @@
 <translation id="6053401458108962351">&amp;ব্রাউজিং ডেটা সাফ করুন...</translation>
 <translation id="2339641773402824483">আপডেটের জন্য চেক করা হচ্ছে...</translation>
 <translation id="8600200086690278232">বৈশিষ্ট্যযুক্ত ওয়েব ক্লিপস</translation>
+<translation id="8582728318425382804">কুকিজ এবং ওয়েবসাইট অনুমতিসমূহ</translation>
 <translation id="2766006623206032690">প্র&amp;তিলেপন করুন ও যান</translation>
 <translation id="9071050381089585305">প্রতিক্রিয়াবিহীন স্ক্রিপ্ট</translation>
+<translation id="4394049700291259645">অক্ষম</translation>
 <translation id="969892804517981540">অফিসিয়াল বিল্ড</translation>
 <translation id="724208122063442954">আপনি কিছু নির্দিষ্ট প্রকারের ফাইল ডাউনলোডের পরে আপনাআপনি খোলার জন্য চয়ন করেছেন৷ আপনি এই সেটিংগুলি পরিষ্কার করতে পারেন যাতে ডাউনলোড হওয়া ফাইলগুলো স্বয়ংক্রিয়ভাবে না খোলে৷</translation>
 <translation id="5765491088802881382">কোন নেটওয়ার্ক উপলব্ধ নয়</translation>
 <translation id="5183088099396036950">সার্ভারে সংযোগ করতে পারে নি</translation>
-<translation id="4477534650265381513">দ্রুত অ্যাক্সেসের জন্য, আপনার বুকমার্কস এখানে বুকমার্কস দণ্ডে রাখুন৷</translation>
+<translation id="4469842253116033348"><ph name="SITE"/>-এর থেকে বিজ্ঞপ্তি অক্ষম করুন</translation>
+<translation id="7999229196265990314">নিম্নোক্ত ফাইলগুলি তৈরি হয়েছে:
+
+এক্সটেনশান: <ph name="EXTENSION_FILE"/>
+কী ফাইল: <ph name="KEY_FILE"/>
+
+নিজের কী ফাইল কোন নিরাপদ স্থানে রাখুন৷ আপনাকে নিজের এক্সটেনশানের নতুন সংস্করণ তৈরি করতে হবে৷</translation>
 <translation id="3036649622769666520">খোলা ফাইল</translation>
 <translation id="7909652923456235549">কুকিজ পাঠানো হয় নি</translation>
+<translation id="7685049629764448582">JavaScript স্মৃতি</translation>
 <translation id="4508765956121923607">উ&amp;ত্স দেখুন</translation>
 <translation id="8080048886850452639">অ&amp;ডিও URL অনুলিপি করুন</translation>
+<translation id="5849869942539715694">প্যাক এক্সটেনশান...</translation>
 <translation id="7339785458027436441">টাইপ করার সময় বানান পরীক্ষা করুন</translation>
 <translation id="1384721974622518101">আপনি কি জানতেন, আপনি উপরের বাক্সটি থেকে সরাসরি অনুসন্ধান করতে পারেন?</translation>
 <translation id="8203365863660628138">ইনস্টলেশন নিশ্চিত করুন</translation>

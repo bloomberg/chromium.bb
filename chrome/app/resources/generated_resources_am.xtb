@@ -30,7 +30,6 @@
 <translation id="9154072353677278078">በ<ph name="REALM"/> ያለው አገልጋይ <ph name="DOMAIN"/> የተጠቃሚ ስም እና የይለፈ ቃል ይፈልጋል።</translation>
 <translation id="2193841602817119749">በ&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ያለው ድር ጣቢያ እንደ ‹‹አስጋሪ›› ተዘግቧል፡፡ ‹‹አስጋሪ›› ጣቢያዎች የተጠቃሚዎችን የግል እና የፋይናንስ መረጃ በማጋለጥ ያታልላሉ፤ ብዙ ጊዜም የታመኑ ድርጅቶችን በማስመሰል ይወክላሉ፣ ለምሳሌ ባንኮችን፡፡</translation>
 <translation id="8178665534778830238">ይዘት፡</translation>
-<translation id="1379170046778889619">የደህንነት ጥበቃ መረጃ</translation>
 <translation id="4771019161370731727">የቅርብ ጊዜ ክንውኖች</translation>
 <translation id="1818606096021558659">ገጽ</translation>
 <translation id="7982789257301363584">አውታረ መረብ</translation>
@@ -133,8 +132,8 @@
 <translation id="119944043368869598">ሁሉንም አጽዳ</translation>
 <translation id="1652965563555864525">&amp;ድምጽ አጥፋ</translation>
 <translation id="4200983522494130825">አዲስ &amp;ትር</translation>
-<translation id="5455790498993699893">&quot;<ph name="ACTIVE_MATCH"/> ከ
-<ph name="TOTAL_MATCHCOUNT"/>&quot;</translation>
+<translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> ከ 
+<ph name="TOTAL_MATCHCOUNT"/></translation>
 <translation id="2303544859777878640">ቋንቋዎች፡</translation>
 <translation id="2021921916539001817">በማስተላለፍ ላይ ከ<ph name="HOST_NAME"/>…</translation>
 <translation id="6909042471249949473">ከዚህ ክፍለ ጊዜ ውሂብ አጽዳ፡</translation>
@@ -273,8 +272,8 @@
 <translation id="6982279413068714821">ከ<ph name="NUMBER_DEFAULT"/> ደቂቃ በፊት</translation>
 <translation id="7977590112176369853">‹ጥያቄ ያስገቡ›</translation>
 <translation id="994771890067000105">ባህሪያት ያሉት ተጨማሪ</translation>
-<translation id="5155632014218747366">&quot;ከእዚህ ጣቢያ ጋር ላሉት ችግሮች ዝርዝር መረጃ፣ የጉግልን <ph name="DIAGNOSTIC_PAGE"/>ለ
-<ph name="DOMAIN"/> ይጎብኙ፡፡&quot;</translation>
+<translation id="5155632014218747366">ከእዚህ ጣቢያ ጋር ላሉት ችግሮች ዝርዝር መረጃ፣ የጉግልን <ph name="DIAGNOSTIC_PAGE"/>ለ
+<ph name="DOMAIN"/> ይጎብኙ፡፡</translation>
 <translation id="1120026268649657149">ቁልፍ ቃል ባዶ ወይም የተለየ መሆን ይኖርበታል</translation>
 <translation id="5317780077021120954">አስቀመጥ</translation>
 <translation id="358344266898797651">ሴልቲክ</translation>
@@ -301,7 +300,7 @@
 <translation id="254416073296957292">&amp;የቋንቋ ቅንጅቶች…</translation>
 <translation id="4222982218026733335">ልክ ያልሆነ የአገልጋይ ሰርቲፊኬት</translation>
 <translation id="8494214181322051417">አዲስ!</translation>
-<translation id="7762841930144642410">&quot;<ph name="BEGIN_BOLD"/>ማንነትን የማያሳውቅ እያሄዱ ነው<ph name="END_BOLD"/>፡፡ በዚህ መስኮት የሚመለከቷቸው ገፆች በአሳሽዎ ታሪክ ወይም በፍለጋዎ ታሪክ አይታዩም፣ እና ማንነትን የማያሳውቅ መስኮትን ከዘጉ በኋላ ሌላ ዱካዎችን በኮምፒውተር ላይ ትተው አያልፉም, ልክ እንደ ኩኪዎች፡፡ ማንኛውም ያወረዷቸው ፋይሎች ወይም የፈጠሯቸው ዕልባቶች ግን ይጠበቃሉ፡፡
+<translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>ማንነትን የማያሳውቅ እያሄዱ ነው<ph name="END_BOLD"/>፡፡ በዚህ መስኮት የሚመለከቷቸው ገፆች በአሳሽዎ ታሪክ ወይም በፍለጋዎ ታሪክ አይታዩም፣ እና ማንነትን የማያሳውቅ መስኮትን ከዘጉ በኋላ ሌላ ዱካዎችን በኮምፒውተር ላይ ትተው አያልፉም, ልክ እንደ ኩኪዎች፡፡ ማንኛውም ያወረዷቸው ፋይሎች ወይም የፈጠሯቸው ዕልባቶች ግን ይጠበቃሉ፡፡
         <ph name="LINE_BREAK"/>
         <ph name="BEGIN_BOLD"/>ማንነትን የማያሳውቅ ማሄድ የሌሎች ሰዎችን፣ አገልጋዮችን፣ ወይም ሶፍትዌር  ባህሪ ላይ ተጽዕኖ አያሳድርም፡፡ ይጠንቀቁ፡<ph name="END_BOLD"/>
         <ph name="BEGIN_LIST"/>
@@ -311,8 +310,9 @@
           <ph name="BEGIN_LIST_ITEM"/>በምስጢራዊ ወኪሎች ከሚቆጣጣሩ<ph name="END_LIST_ITEM"/>
           <ph name="BEGIN_LIST_ITEM"/>ከጀርባዎ ካሉ ሰዎች<ph name="END_LIST_ITEM"/>
         <ph name="END_LIST"/>
-        ስለ ማንነትን የማያሳውቅ አሰሳ <ph name="BEGIN_LINK"/>ተጨማሪ ይማሩ<ph name="END_LINK"/>፡፡&quot;</translation>
+        ስለ ማንነትን የማያሳውቅ አሰሳ <ph name="BEGIN_LINK"/>ተጨማሪ ይወቁ<ph name="END_LINK"/>፡፡</translation>
 <translation id="4439241094464540230">‹አዲስ መገለጫ›…</translation>
+<translation id="2135787500304447609">&amp;ከቆመበት ቀጥል</translation>
 <translation id="1813414402673211292">የእሰሳ ውሂብ አጽዳ</translation>
 <translation id="2356762928523809690">የማዘመኛ አገልጋይ የለም (ስህተት፡ <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">ባህሪያት ያሉት ገጽታ</translation>
@@ -607,8 +607,8 @@
 <translation id="1285631718404404702">የቅረብ ጊዜ ክንውኖችን አሳይ</translation>
 <translation id="6783679543387074885">ስህተት ወይም የተሰናከለ የድር ጣቢያ ሪፖርት ያድርጉ</translation>
 <translation id="3413103074007669042">ይህ ገጽ አንዳንድ ደኅንነቱ ያልተጠበቀ ይዘት ይዟል</translation>
-<translation id="4887833561977827087">&quot;ከእንግደህ እዚህ ሊታዩ ንጥሎች የሉም፡፡
-የድር ክሊፖችዎን <ph name="BEGIN_LINK"/>ያብጁ<ph name="END_LINK"/> እና ተጨማሪ ምንጮች ያክሉ፡፡       &quot;</translation>
+<translation id="4887833561977827087">እስካሁን እዚህ ለማሳየት ንጥሎች የሉም፡፡ 
+የድር ክሊፖችዎን <ph name="BEGIN_LINK"/>ያብጁ<ph name="END_LINK"/> እና ተጨማሪ ምንጮች ያክሉ፡፡</translation>
 <translation id="5285267187067365830">ተሰኪ ጫን…</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> ቀን ይቀራል</translation>
 <translation id="8015746205953933323">ይህ ድረ-ገጽ የለም፡፡</translation>
@@ -654,6 +654,7 @@
 <translation id="74568296546932365"><ph name="PAGE_TITLE"/>ን እንደ መነሻ የፍለጋ ፕሮግራም አቆይ</translation>
 <translation id="9092040507273639934">ድንክየ አስወግድ</translation>
 <translation id="6181769708911894002">ማስጠንቀቂያ፡- ይህን ገጽ መጎብኘት ኮምፒውተርዎን ሊጎዳ ይችላል!</translation>
+<translation id="3412265149091626468">ወደ ተመረጠው ዝለል</translation>
 <translation id="8299269255470343364">ጃፓንኛ</translation>
 <translation id="5204993535447683655">ይህን ድረ-ገጽ በኋላ&lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;ዳግም ጫን&lt;/a&gt;፡፡</translation>
 <translation id="3635774677705394651">በ&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ያለው ድር ጣቢያ ማልዌርን የሚያሰተናግድ ይመስላል- ኮምፒውተርዎን የሚጎዳ ሶፍትዌር ወይም ያለፈቃድዎ የሚሰራ፡፡ ማልዌርን የሚያሰተናግድ ጣቢያ መጎብኘት ኮምፒውተርዎን ሊበክል ይችላል፡፡</translation>
@@ -675,8 +676,8 @@
 <translation id="1375198122581997741">ስለ ስሪት</translation>
 <translation id="1474307029659222435">አንጓ ስእሉን በአዲስ &amp;መስኮት ክፈት</translation>
 <translation id="3527085408025491307">አቃፊ</translation>
-<translation id="3169621169201401257">&quot;ከእነዚህ አባሎች ጋር ላሉት ችግሮች ዝርዝር መረጃ፣ የጉግልን <ph name="DIAGNOSTIC_PAGE"/>ለ
-<ph name="DOMAIN"/> ይጎብኙ፡፡&quot;</translation>
+<translation id="3169621169201401257">ከእነዚህ አባሎች ጋር ላሉት ችግሮች ዝርዝር መረጃ፣ የጉግልን <ph name="DIAGNOSTIC_PAGE"/>ለ
+<ph name="DOMAIN"/> ይጎብኙ፡፡</translation>
 <translation id="2559292239863842334">በሌሎች ጣቢያዎች በጣም በተደጋጋሚ የሚጠቀሟቸው የፍለጋ ሳጥኖች እዚህ ይታያሉ፡፡</translation>
 <translation id="7385854874724088939">ለማተም በሚሞክርበት ጊዜ አንድ ነገር በትክክል እየሄደ አልነበረም፡፡ እባክዎ አታሚዎን ይፈትሹና እንደገና ይሞክሩ፡፡</translation>
 <translation id="770015031906360009">ግሪክኛ</translation>
@@ -757,7 +758,7 @@
 <translation id="721197778055552897">ሰለዚህ ችግር <ph name="BEGIN_LINK"/>ተጨማሪ ይወቁ<ph name="END_LINK"/> ፡፡</translation>
 <translation id="7774607445702416100">ኢንተርኔት ኤክስፕሎረር</translation>
 <translation id="8156020606310233796">ዝርዝር እይታ</translation>
-<translation id="146000042969587795">ይህ የክፍለ ገጸ ድር ታግዷል፡፡ ምክንያቱም ደኅንነቱ ያልተጠበቀ ይዘት ይዟል</translation>
+<translation id="146000042969587795">ይህ የክፍለ ገጽ ድር ታግዷል፡፡ ምክንያቱም ደኅንነቱ ያልተጠበቀ ይዘት ይዟል</translation>
 <translation id="8112223930265703044">ማንኛውንም</translation>
 <translation id="1983108933174595844">የአሁን ገጽ የገጽ-ምስልን ላክ</translation>
 <translation id="436869212180315161">ይጫኑ</translation>
@@ -913,7 +914,6 @@
 <translation id="9071050381089585305">ምላሽ የማይሰጥ ስክሪፕት</translation>
 <translation id="969892804517981540">ይፋ ግንብ</translation>
 <translation id="724208122063442954">የተወሰኑ የፋይል አይነቶች ከወረዱ በኋላ አውቶማቲካሊ አንዲከፈቱ መርጠዋል፡፡ እነዚህን ቀንጅቶች ማጽዳት ይችላሉ እናም የወረዱ ፋይሎች አውቶማቲካሊ አይከፈቱም፡፡</translation>
-<translation id="4477534650265381513">በቶሎ ለማግኘት፣ ዕልባቶችዎን እዚህ በዕልባቶች አሞሌ ውስጥ ያኑሩ፡፡</translation>
 <translation id="8080048886850452639">የተሰሚ ዩአርኤል ቅ&amp;ዳ</translation>
 <translation id="8203365863660628138">መጫን አረጋግጥ</translation>
 <translation id="406259880812417922">(ቁልፍ ቃል፡- <ph name="KEYWORD"/>)</translation>

@@ -7,6 +7,7 @@
 <translation id="3581034179710640788">Das Sicherheitszertifikat der Website ist abgelaufen!</translation>
 <translation id="8275038454117074363">Importieren</translation>
 <translation id="8418445294933751433">Al&amp;s Tab anzeigen</translation>
+<translation id="6985276906761169321">ID:</translation>
 <translation id="2160383474450212653">Schriftarten und Sprachen</translation>
 <translation id="4405141258442788789">Zeitüberschreitung beim Ladevorgang.</translation>
 <translation id="5048179823246820836">Nordisch</translation>
@@ -28,11 +29,15 @@
 <translation id="8571213806525832805">Letzte 4 Wochen</translation>
 <translation id="6021004449668343960">Schriftart Sans-Serif:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
+<translation id="8460952460426246415">Ihre Lesezeichen werden nun zwischen allen Computern synchronisiert, auf denen Sie die Synchronisierung aktiviert haben.</translation>
 <translation id="4422428420715047158">Domain:</translation>
 <translation id="4021918302616263355"><ph name="ENGINE"/> nach <ph name="SEARCH_TERMS"/> durchsuchen</translation>
 <translation id="5376169624176189338">Klicken, um zurückzugehen. Gedrückt halten, um Verlauf anzuzeigen.</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> Sekunden übrig</translation>
 <translation id="9181716872983600413">Unicode</translation>
+<translation id="7383539497402338906">Mit der Lesezeichen-Synchronisierung haben Sie die Möglichkeit, die gleichen Lesezeichen von verschiedenen Computern aus zu nutzen.
+        Sobald Sie die Synchronisierung aktivieren, werden Ihre Lesezeichen online in Ihrem Google-Konto gespeichert.
+        Diese Lesezeichen werden an jeden weiteren Computer übertragen, auf dem Sie die Synchronisierung aktivieren.</translation>
 <translation id="1383861834909034572">Nach Download öffnen</translation>
 <translation id="4211171103079968550">Java aktivieren</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
@@ -45,12 +50,12 @@
 <translation id="9154072353677278078">Für den Server <ph name="DOMAIN"/> unter <ph name="REALM"/> sind ein Nutzername und ein Passwort erforderlich.</translation>
 <translation id="2193841602817119749">Die Website unter &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; wurde als &quot;Phishing&quot;-Website gemeldet.Phishing-Websites täuschen Nutzer, damit diese ihre privaten oder finanziellen Daten freigeben, oft durch Vortäuschen, dass sie vertrauenswürdige Einrichtungen wie z. B. Banken seien.</translation>
 <translation id="8178665534778830238">Content:</translation>
-<translation id="1379170046778889619">Sicherheitsinformationen</translation>
 <translation id="4771019161370731727">Letzte Aktivitäten</translation>
 <translation id="8974161578568356045">Automatisch erkennen</translation>
 <translation id="1818606096021558659">Seite</translation>
 <translation id="1657406563541664238">Unterstützen Sie Google bei der Verbesserung von <ph name="PRODUCT_NAME"/> durch automatisches Senden von Nutzungsstatistiken und Ausfallberichten an Google.</translation>
 <translation id="7982789257301363584">Netzwerk</translation>
+<translation id="2336228925368920074">Alle Tabs als Lesezeichen speichern...</translation>
 <translation id="4108206167095122329">&amp;Alle löschen</translation>
 <translation id="7481475534986701730">Vor kurzem besuchte Websites</translation>
 <translation id="4260722247480053581">In Inkognito-Fenster öffnen</translation>
@@ -71,10 +76,12 @@
 <translation id="9218430445555521422">Als Standardbrowser festlegen</translation>
 <translation id="4589279373639964403">Lesezeichen exportieren...</translation>
 <translation id="8876215549894133151">Format:</translation>
+<translation id="5234764350956374838">Ablehnen</translation>
 <translation id="5463275305984126951">Index von <ph name="LOCATION"/></translation>
 <translation id="5154917547274118687">Arbeitsspeicher</translation>
 <translation id="1735662153177951739">Diese Seite wird nicht vollständig über eine sichere Verbindung abgerufen. Sie enthält Content, der über eine unsichere Verbindung abgerufen wird.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/>-Suche</translation>
+<translation id="6726379128203862332"><ph name="SIZE_TAKEN"/> MB</translation>
 <translation id="2459861677908225199">TLS 1.0 verwenden</translation>
 <translation id="873849583815421063">Wird fertiggestellt...</translation>
 <translation id="5819484510464120153">Anwendung&amp;sverknüpfungen erstellen...</translation>
@@ -94,11 +101,13 @@
 <translation id="443008484043213881">Tools</translation>
 <translation id="314605055819837597">Nutzerdaten</translation>
 <translation id="8534801226027872331">In diesem Fall weist das dem Browser präsentierte Zertifikat Fehler auf und kann nicht entschlüsselt werden. Dies bedeutet möglicherweise, dass entweder die Identitätsinformationen oder bestimmte andere Informationen im Zertifikat zum Sichern der Verbindung nicht entschlüsselt werden können. Fahren Sie nicht fort.</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> jetzt mit <ph name="BEGIN_LINK"/>Erweiterungen<ph name="END_LINK"/> und <ph name="BEGIN_BUTTON"/>Lesezeichen-Synchronisierung<ph name="END_BUTTON"/></translation>
 <translation id="3147949335879360642">Ihre Lesezeichen werden zusammengeführt.</translation>
 <translation id="4422347585044846479">Lesezeichen für diese Seite bearbeiten</translation>
 <translation id="7367545749698325833">Sie können Lesezeichen und Einstellungen von anderen Browsern importieren oder Ihre Internetdaten von diesem Computer löschen.</translation>
 <translation id="51285338152176012">Zuletzt geschlossene Tabs ausblenden</translation>
 <translation id="8546306075665861288">Bildercache</translation>
+<translation id="801357260673640054">Lesezeichen synchronisiert...</translation>
 <translation id="1399076603473531278">Anmeldedaten sind nicht mehr aktuell.</translation>
 <translation id="3391060940042023865">Das folgende Plug-in ist abgestürzt: <ph name="PLUGIN_NAME"/>.</translation>
 <translation id="8879284080359814990">Tab &quot;Anzeigen al&amp;s&quot;</translation>
@@ -109,7 +118,7 @@
 <translation id="2994458892329442723">Plug-ins aktivieren</translation>
 <translation id="1674989413181946727">SSL-Einstellungen für den ganzen Computer:</translation>
 <translation id="8703575177326907206">Die Verbindung zu <ph name="DOMAIN"/> ist nicht verschlüsselt.</translation>
-<translation id="7345141778157460052">Lesezeichen-Synchronisierung:</translation>
+<translation id="4197577448076628265">Dieser Erweiterung wird Zugriff auf Ihren Suchverlauf und Ihre privaten Daten auf <ph name="HOST"/> gewährt.</translation>
 <translation id="1644574205037202324">Verlauf</translation>
 <translation id="2518917559152314023">Hinz&amp;ufügen...</translation>
 <translation id="6583406242234752719">Die Synchronisierung Ihrer Lesezeichen mit mehreren Computern ist nicht eingerichtet.</translation>
@@ -133,25 +142,33 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> Sekunden</translation>
 <translation id="5098629044894065541">Hebräisch</translation>
 <translation id="7751559664766943798">Lesezeichenleiste immer anzeigen</translation>
+<translation id="144136026008224475">Weitere Erweiterungen herunterladen &gt;&gt;</translation>
 <translation id="8584280235376696778">&amp;Video in neuem Tab öffnen</translation>
 <translation id="2845382757467349449">Lesezeichenleiste immer anzeigen</translation>
 <translation id="6827094223626760756">Vorschau</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> Stunden übrig</translation>
 <translation id="1720675772864601791">Nicht sichere Bilder zulassen</translation>
+<translation id="471372654970523967"><ph name="NETWORKDEVICE"/> aktivieren</translation>
+<translation id="4001299999465067131">Geben Sie die im folgenden Bild angezeigten Buchstaben ein.</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="5233638681132016545">Neuer Tab</translation>
 <translation id="5210365745912300556">Tab schließen</translation>
 <translation id="8806796506533854282">Neuen Profilnamen eingeben</translation>
 <translation id="2551763528995812091">Passwörter und Ausnahmen</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="2263497240924215535">(Deaktiviert)</translation>
 <translation id="6360709384096878403">Fehler oder defekte Website melden...</translation>
 <translation id="1110535155349301542">entfernen</translation>
 <translation id="8571852575982769756">Keine Plug-ins sind installiert</translation>
+<translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Warten auf <ph name="HOST_NAME"/>...</translation>
+<translation id="5850800573054873412">Dieser Erweiterung wird Zugriff auf Ihren Suchverlauf und Ihre privaten Daten auf allen Websites gewährt.</translation>
 <translation id="3280237271814976245">Speichern &amp;unter...</translation>
 <translation id="5300471193642408424">Seiten anzeigen</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
-<translation id="6996264303975215450">Webseite, Beenden</translation>
+<translation id="6996264303975215450">Webseite, komplett</translation>
+<translation id="8744320793514149773">Dieser Erweiterung wird Zugriff auf Ihre privaten Daten auf allen Websites gewährt.</translation>
+<translation id="3435896845095436175">Aktivieren</translation>
 <translation id="2154710561487035718">URL kopieren</translation>
 <translation id="4244236525807044920">Schriftart- und Spracheinstellungen ändern</translation>
 <translation id="3241680850019875542">Wählen Sie das Stammverzeichnis der Erweiterung, die gepackt werden soll. Zur Aktualisierung einer Erweiterung wählen Sie eine private Schlüsseldatei zur Wiederverwendung.</translation>
@@ -159,6 +176,7 @@
 <translation id="6746124502594467657">Nach unten</translation>
 <translation id="4657169630710541069">Ressourcenfehler</translation>
 <translation id="3383487468758466563">Schriftarten und Sprachen:</translation>
+<translation id="7339949551808462689"><ph name="EXTENSION_NAME"/>-Erweiterung</translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(Unbenannt)</translation>
@@ -168,14 +186,17 @@
 <translation id="3605499851022050619">SafeBrowsing Diagnoseseite</translation>
 <translation id="4307992518367153382">Grundeinstellungen</translation>
 <translation id="5912378097832178659">Suchmaschin&amp;en bearbeiten...</translation>
+<translation id="3173397526570909331">Synchronisierung anhalten</translation>
 <translation id="4813345808229079766">Verbindung</translation>
 <translation id="411666854932687641">Privater Arbeitsspeicher</translation>
 <translation id="119944043368869598">Alle löschen</translation>
 <translation id="1336254985736398701">Seiten&amp;info anzeigen</translation>
+<translation id="5678480951567683474">Menüs &quot;Seite&quot; und &quot;Tools&quot; anzeigen</translation>
 <translation id="1652965563555864525">&amp;Stumm schalten</translation>
 <translation id="4200983522494130825">Neuer &amp;Tab</translation>
 <translation id="7979036127916589816">Synchronisierungsfehler</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> von <ph name="TOTAL_MATCHCOUNT"/></translation>
+<translation id="5178488982078290579">Lesezeichen synchronisiert...</translation>
 <translation id="2303544859777878640">Sprachen:</translation>
 <translation id="2021921916539001817">Übertragen von <ph name="HOST_NAME"/>...</translation>
 <translation id="6909042471249949473">Daten aus diesem Zeitraum löschen:</translation>
@@ -185,10 +206,13 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7456847797759667638">Adresse öffnen...</translation>
 <translation id="5392041771307264501">Profil zum Öffnen eines neuen Fensters auswählen</translation>
+<translation id="1388866984373351434">Internetdaten</translation>
+<translation id="7378627244592794276">Nein</translation>
 <translation id="68541483639528434">Andere Tabs schließen</translation>
 <translation id="4022426551683927403">&amp;Zum Wörterbuch hinzufügen</translation>
 <translation id="2897878306272793870">Möchten Sie wirklich <ph name="TAB_COUNT"/> Registerkarten öffnen?</translation>
 <translation id="362276910939193118">Gesamtverlauf anzeigen</translation>
+<translation id="7879113706359663444"><ph name="HOUR"/>:<ph name="MIUTE"/>p</translation>
 <translation id="1073286447082909762">Frame in neuem &amp;Fenster öffnen</translation>
 <translation id="692135145298539227">löschen</translation>
 <translation id="8343477974731263456">Einrichtung der Lesezeichen-Synchronisierung</translation>
@@ -200,6 +224,7 @@
 <translation id="2678063897982469759">Wieder aktivieren</translation>
 <translation id="4850886885716139402">Darstellung</translation>
 <translation id="1965338962645102116">Für den Import von Google Toolbar-Lesezeichen in Google Chrome müssen Sie in Ihrem Google-Konto angemeldet sein. Melden Sie sich an und versuchen Sie es erneut.</translation>
+<translation id="5035846689029228055">Lesezeichen-Synchronisierung:</translation>
 <translation id="5922220455727404691">SSL 3.0 verwenden</translation>
 <translation id="5903264686717710770">Titel:</translation>
 <translation id="8899851313684471736">Link in neuem &amp;Fenster öffnen</translation>
@@ -208,11 +233,13 @@
 <translation id="6686490380836145850">Tabs rechts schließen</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> Stunden</translation>
 <translation id="2790948358747073186">Und noch mehr</translation>
+<translation id="5774515636230743468">Manifest:</translation>
 <translation id="2423578206845792524">Bi&amp;ld speichern unter...</translation>
 <translation id="1095038624419434542">Beim Laden der Programmressource ist ein Fehler aufgetreten. Versuchen Sie eine Neuinstallation.</translation>
 <translation id="9068931793451030927">Pfad:</translation>
 <translation id="7052402604161570346">Dateien dieses Typs können Schäden an Ihrem Computer verursachen. Möchten Sie die Datei <ph name="FILE_NAME"/> wirklich herunterladen?</translation>
 <translation id="8642489171979176277">Aus Google Toolbar importiert</translation>
+<translation id="5905978244564263718">AutoFill einrichten...</translation>
 <translation id="7335374713830044009">Frame in Inko&amp;gnito-Fenster öffnen</translation>
 <translation id="2011110593081822050">Web Worker: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">Dateiname:</translation>
@@ -261,25 +288,32 @@
 <translation id="1608306110678187802">Frame d&amp;rucken...</translation>
 <translation id="4948468046837535074">Folgende Seiten öffnen:</translation>
 <translation id="6978121630131642226">Suchmaschinen</translation>
+<translation id="6745994589677103306">Nicht starten
+</translation>
 <translation id="855081842937141170">Tab verankern</translation>
+<translation id="2723893843198727027">Entwicklermodus:</translation>
 <translation id="5362741141255528695">Private Schlüsseldatei auswählen</translation>
 <translation id="7012108905414904806">Diese Seite enthält jedoch andere Ressourcen, die nicht sicher sind. Diese Ressourcen können während der Übertragung von anderen gesehen werden und erlauben Hackern, das Layout und Verhalten der Seite zu ändern.</translation>
 <translation id="4515911410595374805">Einige Elemente auf dieser Seite stammen von einer nicht bestätigten Quelle und werden nicht angezeigt.</translation>
 <translation id="1195447618553298278">Unbekannter Fehler.</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> days ago</translation>
 <translation id="4800557284502805285">Das Zertifikat des Servers ist mit einem schwachen Signaturalgorithmus signiert.</translation>
+<translation id="6610600335992778838">WiFi</translation>
 <translation id="1087119889335281750">&amp;Keine Rechtschreibvorschläge</translation>
 <translation id="718141787353053227">Papierformat...</translation>
 <translation id="5076340679995252485">&amp;Einfügen</translation>
+<translation id="5097982659374947325">Nur Cookies von besuchten Seiten akzeptieren</translation>
 <translation id="14171126816530869">Die Identität von <ph name="ORGANIZATION"/> bei <ph name="LOCALITY"/> wurde von <ph name="ISSUER"/> bestätigt.</translation>
 <translation id="1587275751631642843">&amp;JavaScript-Konsole</translation>
 <translation id="5821894118254011366">Drittanbieter-Cookies blockieren</translation>
 <translation id="3511307672085573050">Adr&amp;esse des Links kopieren</translation>
 <translation id="1134009406053225289">In Inkognito-Fenster öffnen</translation>
+<translation id="6655190889273724601">Entwicklermodus</translation>
 <translation id="3473105180351527598">Phishing- und Malware-Schutz aktivieren</translation>
 <translation id="6151323131516309312">Drücken Sie <ph name="SEARCH_KEY"/>, um <ph name="SITE_NAME"/> zu durchsuchen.</translation>
 <translation id="2342959293776168129">Download-Verlauf löschen</translation>
 <translation id="2503522102815150840">Browser-Absturz</translation>
+<translation id="425878420164891689">Zeit bis zur vollständigen Aufladung wird berechnet.</translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
 <translation id="9053965862400494292">Bei der Einrichtung der Synchronisierung ist ein Fehler aufgetreten.</translation>
@@ -294,16 +328,21 @@
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht bestätigt.</translation>
 <translation id="5287240709317226393">Cookies anzeigen</translation>
 <translation id="5451646087589576080">Frame&amp;informationen anzeigen</translation>
+<translation id="3368922792935385530">Verbunden</translation>
 <translation id="8486154204771389705">Auf dieser Seite belassen</translation>
 <translation id="6824564591481349393">E-Mail-Adr&amp;esse kopieren</translation>
+<translation id="5184063094292164363">&amp;JavaScript-Konsole</translation>
 <translation id="333371639341676808">Diese Seite am Erstellen zusätzlicher Dialoge hindern.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> ist aktuell (<ph name="VERSION"/>)</translation>
 <translation id="4254921211241441775">Synchronisierung des Kontos stoppen</translation>
+<translation id="8661648338644250771">Dieser Erweiterung wird Zugriff auf Ihre privaten Daten auf <ph name="HOST"/> gewährt.</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="307505906468538196">Google-Konto erstellen</translation>
 <translation id="48838266408104654">&amp;Task-Manager</translation>
 <translation id="3694027410380121301">Vorherigen Tab auswählen</translation>
 <translation id="6178664161104547336">Zertifikat auswählen</translation>
+<translation id="5702898740348134351">Suchmaschin&amp;en bearbeiten...</translation>
+<translation id="2365740070488517695">Tipps</translation>
 <translation id="772440777491435074">Zertifikatinformationen...</translation>
 <translation id="2869459179306435079">Einstellungen importieren von:</translation>
 <translation id="732677191631732447">Audio-URL k&amp;opieren</translation>
@@ -311,6 +350,8 @@
 <translation id="3369624026883419694">Host auflösen...</translation>
 <translation id="8870413625673593573">Kürzlich geschlossen</translation>
 <translation id="9145357542626308749">Das Sicherheitszertifikat der Seite verwendet einen schwachen Signaturalgorithmus!</translation>
+<translation id="8800574954100068740">Standardsuche</translation>
+<translation id="6551701656367809067">Die Lesezeichen-Synchronisierung funktioniert nicht ordnungsgemäß, da momentan zu viele Anfragen an den Server gesendet werden. <ph name="NAME_OF_EXTENSION"/> nimmt anscheinend zu viele Änderungen an Ihren Lesezeichen vor.</translation>
 <translation id="8249296373107784235">Abbrechen</translation>
 <translation id="3967132639560659870">Mehrere SSL-Fehler auf dieser Seite:</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
@@ -322,6 +363,7 @@
 <translation id="1319824869167805246">Alle Lesezeichen in neuem Fenster öffnen</translation>
 <translation id="3493653833301553455">AutoFill für Formulare:</translation>
 <translation id="3895288786311724904">hinzugefügt</translation>
+<translation id="3371861036502301517">Fehler beim Installieren der Erweiterung</translation>
 <translation id="644038709730536388">Weitere Informationen zum Selbstschutz vor schädlicher Software im Internet.</translation>
 <translation id="4172706149171596436">Proxy-Einstellungen ändern</translation>
 <translation id="5650551054760837876">Keine Suchergebnisse gefunden.</translation>
@@ -329,6 +371,8 @@
 <translation id="3234408098842461169">Abwärtspfeil</translation>
 <translation id="825608351287166772">Zertifikate haben (ähnlich wie Reisepässe) einen beschränkten Gültigkeitszeitraum. Das dem Browser präsentierte Zertifikat ist noch nicht gültig. Bestimmte Informationen über den Status (ob zurückgerufen oder nicht mehr vertrauenswürdig) von außerhalb des Gültigkeitszeitraums liegenden Zertifikaten müssen nicht protokolliert werden. Es ist daher nicht möglich, die Vertrauenswürdigkeit dieses Zertifikats zu bestätigen. Fahren Sie nicht fort.</translation>
 <translation id="2742457360514408037">Anzahl blockierter Pop-ups: <ph name="COUNT"/></translation>
+<translation id="7154150278819212687">Dieser Erweiterung wird Zugriff auf Ihren Suchverlauf gewährt.</translation>
+<translation id="1516602185768225813">Zuletzt geöffnete Seiten erneut öffnen</translation>
 <translation id="4874539263382920044">Titel muss mindestens ein Zeichen enthalten</translation>
 <translation id="3549657413697417275">Verlauf durchsuchen</translation>
 <translation id="7344633671344536647">Internetdaten:</translation>
@@ -347,17 +391,21 @@
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> Minute übrig</translation>
 <translation id="5496587651328244253">Organisieren</translation>
 <translation id="2592884116796016067">Ein Teil dieser Seite (HTML WebWorker) ist abgestürzt und funktioniert möglicherweise nicht richtig.</translation>
+<translation id="8425755597197517046">Einfügen und &amp;suchen</translation>
+<translation id="4728278536628384335">Lesezeichen-Synchronisierung deaktivieren</translation>
 <translation id="5568069709869097550">Anmeldung nicht möglich</translation>
 <translation id="4181898366589410653">Kein Sperrmechanismus im Serverzertifikat gefunden.</translation>
 <translation id="1665770420914915777">Seite &quot;Neuer Tab&quot; verwenden</translation>
 <translation id="2629089419211541119">Vor <ph name="NUMBER_ONE"/> Stunde</translation>
 <translation id="7789175495288668515">Ändern Sie die Standardinstallationsoptionen.</translation>
 <translation id="347250956943431997">Serverzertifikat wurde widerrufen</translation>
+<translation id="1936157145127842922">In Ordner anzeigen</translation>
 <translation id="6982279413068714821">Vor <ph name="NUMBER_DEFAULT"/> Minuten</translation>
 <translation id="7977590112176369853">&lt;Suchanfrage eingeben&gt;</translation>
 <translation id="994771890067000105">Vorgestelltes Extra</translation>
 <translation id="5155632014218747366">Detaillierte Informationen zu den Problemen mit dieser Website finden Sie auf der folgenden Google-Seite: <ph name="DIAGNOSTIC_PAGE"/> für <ph name="DOMAIN"/>.</translation>
 <translation id="1120026268649657149">Suchkürzel muss leer oder eindeutig sein</translation>
+<translation id="7954187762705269222"><ph name="HOUR"/>:<ph name="MIUTE"/>a</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="9027459031423301635">Link in neuem Tab öffnen</translation>
 <translation id="358344266898797651">Keltisch</translation>
@@ -391,18 +439,26 @@
 <translation id="52912272896845572">Private Schlüsseldatei ist ungültig.</translation>
 <translation id="4222982218026733335">Ungültiges Serverzertifikat</translation>
 <translation id="8494214181322051417">Neu!</translation>
+<translation id="7403160227718463124">Insgesamt für diese Website:</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Sie haben den Modus für anonymes Browsen aktiviert<ph name="END_BOLD"/>. In diesem Fenster aufgerufene Seiten werden nicht im Browserverlauf oder Suchverlauf angezeigt. Zudem werden nach dem Schließen des Inkognito-Fensters keine anderen Hinweise wie Cookies auf dem Computer gespeichert. Heruntergeladene Dateien oder hinzugefügte Lesezeichen werden jedoch beibehalten. <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>Das anonyme Browsen wirkt sich nicht auf das Nutzerverhalten bzw. auf die Funktionsweise von Servern oder Software aus. Vorsicht ist geboten bei:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>Websites, auf denen Informationen über Sie gesammelt oder weitergegeben werden<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Internetanbietern oder Arbeitgebern, die die von Ihnen aufgerufenen Seiten protokollieren<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Bösartiger Software, mit der Ihre Tastatureingaben festgehalten werden (dafür bekommen Sie Smileys gratis)<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Überwachung durch Ermittlungsbehörden<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Personen, die hinter Ihnen stehen<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        Weitere Informationen zum anonymen Browsen erhalten Sie <ph name="BEGIN_LINK"/>hier<ph name="END_LINK"/>.</translation>
 <translation id="4439241094464540230">&lt;Neues Profil&gt;...</translation>
 <translation id="2135787500304447609">&amp;Fortsetzen</translation>
 <translation id="1813414402673211292">Private Daten löschen</translation>
 <translation id="2356762928523809690">Aktualisierungsserver ist nicht verfügbar (Fehler: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Vorgestelltes Design</translation>
+<translation id="219008588003277019">Natives Client-Modul: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> durchsuchen:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
+<translation id="7616581516194661584">Duplizieren</translation>
 <translation id="8730621377337864115">Fertig</translation>
+<translation id="245834195813628985">Noch <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="6267166720438879315">Wählen Sie ein Zertifikat für die Authentifizierung bei <ph name="HOST_NAME"/> aus.</translation>
+<translation id="7198134478421755850">Erweiterung</translation>
+<translation id="4713481510227594233">Die Lesezeichen-Synchronisierung wurde auf diesem Computer deaktiviert. Wenn Sie <ph name="NAME_OF_EXTENSION"/> deinstallieren, können Sie die Lesezeichen-Synchronisierung über die Option &quot;Meine Lesezeichen synchronisieren&quot; im Menü &quot;Tools&quot; wieder aktivieren.</translation>
+<translation id="9061845622728745852">Zeitzone:</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> Minute</translation>
 <translation id="6315493146179903667">Alle nach vorne bringen</translation>
+<translation id="5095777643592758820">Lesezeichen-Synchronisierungsfehler...</translation>
 <translation id="5015344424288992913">Proxy auflösen...</translation>
 <translation id="3675321783533846350">Richten Sie einen Proxy ein, um eine Verbindung zum Netzwerk herzustellen.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> Tage</translation>
@@ -415,7 +471,7 @@
 <translation id="5048040498971143039">Suchergebnisse für &quot;<ph name="SEARCH_STRING"/>&quot;</translation>
 <translation id="7772127298218883077">Über <ph name="PRODUCT_NAME"/></translation>
 <translation id="5453632173748266363">Kyrillisch</translation>
-<translation id="8415351664471761088">Warten Sie, bis der Download abgeschlossen ist.</translation>
+<translation id="8415351664471761088">Warten, bis der Download abgeschlossen ist.</translation>
 <translation id="1545775234664667895">Design &quot;<ph name="THEME_NAME"/>&quot; installiert</translation>
 <translation id="5329858601952122676">&amp;Löschen</translation>
 <translation id="6100736666660498114">Startmenü</translation>
@@ -427,16 +483,19 @@
 <translation id="9010612682952491200">Neuer Tab [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Freigegebener Arbeitsspeicher</translation>
 <translation id="6248988683584659830">Sucheinstellungen</translation>
+<translation id="2242457451044347345">Lesezeichen-Synchronisierung</translation>
 <translation id="2727712005121231835">Originalgröße</translation>
 <translation id="8887733174653581061">Immer im Vordergrund</translation>
 <translation id="610886263749567451">Javascript-Warnmeldung</translation>
 <translation id="6556866813142980365">Wiederholen</translation>
+<translation id="6584811624537923135">Deinstallation bestätigen</translation>
 <translation id="8413126021676339697">Gesamtverlauf anzeigen</translation>
 <translation id="8860923508273563464">Warten, bis der Download abgeschlossen ist.</translation>
 <translation id="5288678174502918605">Geschlossenen Tab wieder öffn&amp;en</translation>
 <translation id="9157595877708044936">Einrichtung läuft...</translation>
 <translation id="1823768272150895732">Schriftart</translation>
 <translation id="4475552974751346499">Downloads durchsuchen</translation>
+<translation id="5339267765524260207">Wenn Sie die Synchronisierung deaktivieren, werden Ihre Lesezeichen nicht mehr mit den in Ihrem Google-Konto oder in anderen Suchmaschinen gespeicherten Lesezeichen synchronisiert. Es werden jedoch keine Lesezeichen gelöscht. Alle vorhandenen Lesezeichen bleiben auf diesem Computer und in Ihrem Google-Konto erhalten.</translation>
 <translation id="1111153019813902504">Vor kurzem gespeicherte Lesezeichen</translation>
 <translation id="7497564420220535101">&amp;Screenshot speichern...</translation>
 <translation id="3786934874263773074">Au&amp;f Seite suchen</translation>
@@ -458,6 +517,7 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> Sekunden</translation>
 <translation id="3551320343578183772">Tab schließen</translation>
 <translation id="3345886924813989455">Keine unterstützten Browser gefunden</translation>
+<translation id="6727102863431372879">Festlegen</translation>
 <translation id="3712897371525859903">Seite speichern &amp;unter...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> importiert nun die folgenden Elemente aus <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="1018656279737460067">Abgebrochen</translation>
@@ -468,6 +528,7 @@
 <translation id="8942948210663084792">Daten löschen:</translation>
 <translation id="208047771235602537">Sind Sie sicher, dass Sie <ph name="PRODUCT_NAME"/> beenden wollen, während ein Download läuft?</translation>
 <translation id="6710213216561001401">Zurück</translation>
+<translation id="1567993339577891801">JavaScript-Konsole</translation>
 <translation id="583281660410589416">Unbekannt</translation>
 <translation id="7635303043999550515">Die Webseite unter &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; hat zu viele Umleitungen erzeugt. Das Löschen Ihrer Cookies für diese Website oder das Zulassen von Drittanbieter-Cookies könnte das Problem möglicherweise beheben. Sollte das Problem damit nicht behoben sein, liegt möglicherweise ein Serverkonfigurationsfehler und kein Problem mit Ihrem Computer vor.</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
@@ -478,16 +539,20 @@
 <translation id="1560991001553749272">Lesezeichen hinzugefügt!</translation>
 <translation id="3966072572894326936">Anderen Ordner wählen...</translation>
 <translation id="7781829728241885113">Gestern</translation>
+<translation id="1523341279170789507">Alle Cookies zulassen</translation>
 <translation id="7596288230018319236">Alle besuchten Seiten erscheinen hier, sofern Sie sie nicht in einem Inkognito-Fenster öffnen. Sie können die Schaltfläche &quot;Suchen&quot; auf dieser Seite verwenden, um alle Seiten in Ihrem Verlauf zu durchsuchen.</translation>
 <translation id="2665163749053788434">Zugriffsverlauf</translation>
 <translation id="7434509671034404296">Entwickler</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="5170568018924773124">In Ordner anzeigen</translation>
+<translation id="883848425547221593">Andere Lesezeichen</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> kann den Standardbrowser nicht bestimmen oder einstellen.</translation>
 <translation id="8898786835233784856">Nächsten Tab auswählen</translation>
 <translation id="2674170444375937751">Möchten Sie diese Seiten wirklich aus dem Verlauf löschen?</translation>
 <translation id="4203689580933736628">Blockierte Elemente: <ph name="COUNT"/></translation>
+<translation id="2653166165688724436">Web-Datenbank</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME"/></translation>
+<translation id="8449008133205184768">Einfügen und Formatvorlage anpassen</translation>
 <translation id="8028993641010258682">Größe</translation>
 <translation id="1383876407941801731">Suche</translation>
 <translation id="8398877366907290961">Trotzdem fortfahren</translation>
@@ -498,9 +563,10 @@
 <translation id="8789544147407756448">Die folgende Erweiterung ist zusammengebrochen: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> Minuten übrig</translation>
 <translation id="2022540532491530427">&amp;Datei kopieren</translation>
+<translation id="1099979722614954862"><ph name="PRODUCT_NAME"/> jetzt mit <ph name="BEGIN_LINK"/>Erweiterungen<ph name="END_LINK"/> und <ph name="BEGIN2_LINK"/>Lesezeichen-Synchronisierung<ph name="END2_LINK"/></translation>
 <translation id="5966654788342289517">Privates</translation>
 <translation id="2576802705154232609">Webclips</translation>
-<translation id="8664389313780386848">Seitenquelle &amp;anzeigen</translation>
+<translation id="8664389313780386848">Seiten-Quelltext &amp;anzeigen</translation>
 <translation id="3089982169226026948">Profil auswählen</translation>
 <translation id="57646104491463491">Änderungsdatum</translation>
 <translation id="6402372417119601621">Der eingegebene Feed konnte nicht geladen werden.</translation>
@@ -508,6 +574,7 @@
 <translation id="6507969014813375884">Chinesisch (vereinfacht)</translation>
 <translation id="1767991048059195456">Bericht senden</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
+<translation id="4474155171896946103">Alle Tabs als Lesezeichen speichern...</translation>
 <translation id="5646376287012673985">Standort</translation>
 <translation id="1110155001042129815">Warten</translation>
 <translation id="7071586181848220801">Unbekanntes Plug-in</translation>
@@ -521,6 +588,7 @@
 <translation id="1181037720776840403">Löschen</translation>
 <translation id="4006726980536015530">Wenn Sie <ph name="PRODUCT_NAME"/> jetzt beenden, werden diese Downloads abgebrochen.</translation>
 <translation id="59174027418879706">Aktiviert</translation>
+<translation id="6639554308659482635">SQLite-Speicher</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Alle Lesezeichen öffnen</translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
@@ -541,6 +609,8 @@
 <translation id="5087864757604726239">zurück</translation>
 <translation id="2819994928625218237">&amp;Keine Rechtschreibvorschläge</translation>
 <translation id="4316305410440790958">Frame in neuem &amp;Tab öffnen</translation>
+<translation id="9142623379911037913">Anzeige von Desktop-Benachrichtigungen auf <ph name="SITE"/> zulassen?</translation>
+<translation id="4196320913210960460">Klicken Sie zur Verwaltung Ihrer installierten Erweiterungen im Menü &quot;Tools&quot; auf &quot;Erweiterungen&quot;.</translation>
 <translation id="9118804773997839291">Die folgende Liste führt alle gefährlichen Elemente der Seite auf. Klicken Sie auf den Diagnoselink, um weitere Informationen zum Thread eines bestimmten Elements zu erhalten.</translation>
 <translation id="3664021239099029884">Alle Downloads anzeigen</translation>
 <translation id="2207746515960750386">Vor <ph name="MINUTE"/> Minute(n)</translation>
@@ -556,7 +626,7 @@
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> Sekunde</translation>
 <translation id="3122496702278727796">Erstellen eines Datenverzeichnisses fehlgeschlagen</translation>
 <translation id="8888930795132369495">Datei&amp;pfad kopieren</translation>
-<translation id="4517036173149081027">Download schließen und abbrechen</translation>
+<translation id="4517036173149081027">Download abbrechen und schließen.</translation>
 <translation id="8446970197849314122">Sie können Lesezeichen und Einstellungen von anderen Browsern und Nutzerkonten auf diesem Computer importieren.</translation>
 <translation id="6281636957902664775">Zu <ph name="URL"/> wechseln</translation>
 <translation id="9148058034647219655">Beenden</translation>
@@ -572,6 +642,7 @@
 <translation id="4890284164788142455">Thailändisch</translation>
 <translation id="3889424535448813030">Rechtspfeil</translation>
 <translation id="5435666907653217300">Anderes Problem</translation>
+<translation id="4479639480957787382">Ethernet</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="5167270755190684957">Google Chrome-Designgalerie</translation>
 <translation id="8382913212082956454">E-Mail-Adr&amp;esse kopieren</translation>
@@ -581,8 +652,11 @@
 <translation id="1047726139967079566">Diese Seite als Lesezeichen speichern...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> Sekunden übrig</translation>
 <translation id="4767443964295394154">Downloadpfad</translation>
+<translation id="720658115504386855">Buchstaben werden nicht nach Groß- und Kleinschreibung unterschieden.
+</translation>
 <translation id="2454247629720664989">Suchkürzel</translation>
 <translation id="3950820424414687140">Anmelden</translation>
+<translation id="2840798130349147766">Web-Datenbanken</translation>
 <translation id="1628736721748648976">Codierung</translation>
 <translation id="6521850982405273806">Einen Fehler melden</translation>
 <translation id="1769104665586091481">Link in neuem &amp;Fenster öffnen</translation>
@@ -592,6 +666,7 @@
 <translation id="7642109201157405070">Import fortsetzen</translation>
 <translation id="6463795194797719782">B&amp;earbeiten</translation>
 <translation id="5720119176273625078">Referrer nicht gesendet</translation>
+<translation id="4775879719735953715">Standardbrowser</translation>
 <translation id="4805261289453566571">Erneut anmelden</translation>
 <translation id="4188026131102273494">Suchkürzel:</translation>
 <translation id="2290414052248371705">Sämtlichen Content anzeigen</translation>
@@ -599,8 +674,10 @@
 <translation id="3268761268932257769">Bilder automatisch laden</translation>
 <translation id="7227780179130368205">Malware entdeckt!</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
+<translation id="2912839854477398763">Möchten Sie diese Erweiterung wirklich deinstallieren?</translation>
 <translation id="3942946088478181888">Mehr Infos dazu</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Standardeinstellung)</translation>
+<translation id="6543631358510643997">Dieser Erweiterung wird Zugriff auf Ihren Computer und Ihre privaten Daten gewährt.</translation>
 <translation id="111844081046043029">Möchten Sie diese Seite wirklich verlassen?</translation>
 <translation id="4497415007571823067">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen, stattdessen jedoch einen Server erreicht, der sich selbst als &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ausgegeben hat. Dies wurde möglicherweise durch eine fehlerhafte Konfiguration auf dem Server oder etwas noch schwerwiegenderes verursacht. Ein Hacker in Ihrem Netzwerk könnte versuchen, Sie dazu zu bringen, eine gefälschte (und möglicherweise schädliche) Version von &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; aufzurufen. Fahren Sie nicht fort.</translation>
 <translation id="3202578601642193415">Neueste</translation>
@@ -618,7 +695,10 @@
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> Minuten übrig</translation>
 <translation id="2192505247865591433">Von:</translation>
 <translation id="5921544176073914576">Phishing-Seite</translation>
+<translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
 <translation id="6192792657125177640">Ausnahmen</translation>
+<translation id="4568660204877256194">Lesezeichen exportieren...</translation>
+<translation id="4577070033074325641">Lesezeichen importieren...</translation>
 <translation id="2822650824848709219">Sämtlichen nicht sicheren Content blockieren</translation>
 <translation id="1715941336038158809">Ungültiger Nutzername oder ungültiges Passwort</translation>
 <translation id="1901303067676059328">&amp;Alles auswählen</translation>
@@ -634,6 +714,7 @@
 <translation id="872451400847464257">Suchmaschine bearbeiten</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> Minuten</translation>
 <translation id="8717266507183354698">Alle Seiten im Verlauf anzeigen, die <ph name="SEARCH_TERMS"/> enthalten</translation>
+<translation id="2466804342846034717">Geben Sie oben das richtige Passwort und anschließend die im unten stehenden Bild angezeigten Zeichen ein.</translation>
 <translation id="2922560965807694149">ausblenden</translation>
 <translation id="5645845270586517071">Sicherheitsfehler</translation>
 <translation id="8695758493354644945"><ph name="NUM_MATCHES"/> letzten Seiten im Verlauf anzeigen, die <ph name="SEARCH_TERMS"/> enthalten</translation>
@@ -658,6 +739,7 @@
 <translation id="5384051050210890146">Wählen Sie vertrauenswürdige SSL-Zertifikate aus.</translation>
 <translation id="6865323153634004209">Diese Einstellungen anpassen</translation>
 <translation id="7487067081878637334">Technik</translation>
+<translation id="4176463684765177261">Deaktiviert</translation>
 <translation id="154603084978752493">Als Suc&amp;hmaschine hinzufügen...</translation>
 <translation id="2079545284768500474">Rückgängig</translation>
 <translation id="114140604515785785">Stammverzeichnis der Erweiterung:</translation>
@@ -666,8 +748,10 @@
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
 <translation id="4610637590575890427">Wollten Sie <ph name="SITE"/> aufrufen?</translation>
+<translation id="5320331575990471017">von <ph name="SOURCE_ORIGIN"/></translation>
 <translation id="8349305172487531364">Lesezeichenleiste</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME"/> nach <ph name="SEARCH_TERMS"/> durchsuchen</translation>
+<translation id="5584091888252706332">Beim Start</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Ordnername bearbeiten</translation>
@@ -694,7 +778,9 @@
 <translation id="8877448029301136595">[übergeordnetes Verzeichnis]</translation>
 <translation id="1963227389609234879">Alle entfernen</translation>
 <translation id="8027581147000338959">In neuem Fenster öffnen</translation>
+<translation id="8019305344918958688">Schade... Keine Erweiterungen installiert :-(</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="4720829798001058201">Ihre Lesezeichen sind nun mit Google Text &amp; Tabellen synchronisiert. Wenn Sie Ihre Lesezeichen auch auf einem anderen Computer mit Google Chrome zusammenführen und synchronisieren möchten, wiederholen Sie einfach die gleichen Schritte auf dem anderen Computer.</translation>
 <translation id="2496180316473517155">Browserverlauf</translation>
 <translation id="602251597322198729">Die Website versucht, mehrere Dateien herunterzuladen. Möchten Sie dies zulassen?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> Stunden</translation>
@@ -706,6 +792,7 @@
 <translation id="1002064594444093641">Frame d&amp;rucken...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;In Ordner anzeigen</translation>
+<translation id="5554489410841842733">Dieses Symbol wird eingeblendet, wenn die Erweiterung auf die aktuelle Seite angewendet werden kann.</translation>
 <translation id="4756388243121344051">&amp;Verlauf</translation>
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="4789872672210757069">Info zu &amp;<ph name="PRODUCT_NAME"/></translation>
@@ -753,6 +840,7 @@
 <translation id="5178667623289523808">Vorherige Übereinstimmung suchen</translation>
 <translation id="2815448242176260024">Passwörter nie speichern</translation>
 <translation id="2989805286512600854">In neuem Tab öffnen</translation>
+<translation id="2701236005765480329">Erweiterungswarnung</translation>
 <translation id="6503077044568424649">Am häufigsten besucht</translation>
 <translation id="3265459715026181080">Fenster schließen</translation>
 <translation id="3831099738707437457">Rechtschreibung &amp;ausblenden</translation>
@@ -762,7 +850,7 @@
 <translation id="3319048459796106952">Neues &amp;Inkognito-Fenster</translation>
 <translation id="3127919023693423797">Authentifizierung wird durchgeführt...</translation>
 <translation id="4195643157523330669">In neuem Tab öffnen</translation>
-<translation id="3683878911947678690">Sie können Ihre Lesezeichen mithilfe Ihres Google-Kontos auf mehreren Computern synchronisieren.</translation>
+<translation id="8030169304546394654">Verbindung getrennt</translation>
 <translation id="4178055285485194276">Beim Start:</translation>
 <translation id="1154228249304313899">Diese Seite öffnen:</translation>
 <translation id="9074348188580488499">Möchten Sie wirklich alle Passwörter entfernen?</translation>
@@ -779,12 +867,15 @@
 <translation id="1285631718404404702">&quot;Letzte Aktivitäten&quot; anzeigen</translation>
 <translation id="6783679543387074885">Fehler oder defekte Website melden</translation>
 <translation id="3494444535872870968">&amp;Frame speichern unter...</translation>
+<translation id="5731247495086897348">Einfügen und &amp;fortfahren</translation>
 <translation id="3413103074007669042">Diese Seite enthält unsicheren Content.</translation>
 <translation id="4887833561977827087">Es sind noch keine Elemente vorhanden.
 Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> und weitere Quellen hinzufügen.</translation>
 <translation id="5285267187067365830">Plug-in installieren...</translation>
 <translation id="1166212789817575481">Tabs rechts schließen</translation>
+<translation id="6472893788822429178">Schaltfläche &quot;Home&quot; anzeigen</translation>
 <translation id="5685236799358487266">Als Suc&amp;hmaschine hinzufügen...</translation>
+<translation id="3437016096396740659">Akku ist geladen.</translation>
 <translation id="7907591526440419938">Datei öffnen</translation>
 <translation id="21133533946938348">Tab verankern</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
@@ -795,36 +886,49 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="9012607008263791152">Mir ist bewusst, dass mein Computer durch Aufrufen dieser Website beschädigt werden kann.</translation>
 <translation id="1441458099223378239">Ich kann nicht auf mein Konto zugreifen.</translation>
 <translation id="5793220536715630615">Video-URL k&amp;opieren</translation>
+<translation id="523397668577733901">Möchten Sie lieber die <ph name="BEGIN_LINK"/>Galerie durchsuchen<ph name="END_LINK"/>?</translation>
+<translation id="3778740492972734840">&amp;Entwicklertools</translation>
 <translation id="6004539838376062211">&amp;Optionen der Rechtschreibprüfung</translation>
+<translation id="5350198318881239970">Ihr Profil konnte nicht ordnungsgemäß geöffnet werden.\n\nMöglicherweise stehen nicht alle Funktionen zur Verfügung. Überprüfen Sie, ob das Profil vorhanden ist und Sie Lese- und Schreibzugriff für die Profilinhalte besitzen.</translation>
 <translation id="4058793769387728514">Dokument jetzt prüfen</translation>
 <translation id="2915134691870672002">Empfehlungen ausblenden</translation>
+<translation id="756445078718366910">Browserfenster öffnen</translation>
 <translation id="7887334752153342268">Duplizieren</translation>
 <translation id="4980691186726139495">Nicht auf dieser Seite belassen</translation>
+<translation id="9026731007018893674">Download</translation>
 <translation id="7646591409235458998">E-Mail:</translation>
 <translation id="703748601351783580">Alle Lesezeichen in neuem Fenster öffnen</translation>
+<translation id="8409023599530904397">Symbolleiste:</translation>
+<translation id="770273299705142744">AutoFill für Formulare</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/> wurde deaktiviert. Wenn Sie die Lesezeichen-Synchronisierung deaktivieren, können Sie diese Erweiterung über das Menü &quot;Tools&quot; auf der Seite &quot;Erweiterungen&quot; wieder aktivieren.</translation>
 <translation id="4478664379124702289">Lin&amp;k speichern unter...</translation>
 <translation id="1044231968500257587">Ihre bestehenden Online-Lesezeichen werden mit den
         Lesezeichen auf diesem Rechner zusammengeführt. Sie können den Lesezeichen-Manager verwenden,
         um Ihre Lesezeichen nach der Zusammenführung zu ordnen.</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> anpassen</translation>
 <translation id="2797524280730715045">Vor <ph name="NUMBER_DEFAULT"/> Stunden</translation>
+<translation id="768570155019561996">Dieser Erweiterung wird Zugriff auf Ihre privaten Daten auf verschiedenen Websites gewährt.</translation>
 <translation id="7180865173735832675">Anpassen</translation>
 <translation id="1430594899542257414">Tipps &amp; Tricks</translation>
 <translation id="2115926821277323019">Muss eine gültige URL sein</translation>
 <translation id="7397054681783221164">Löschen Sie die folgenden Elemente:</translation>
 <translation id="4891251785049117953">Gespeicherte Formulardaten löschen</translation>
 <translation id="1531836666020185856">Vorgestellt</translation>
+<translation id="580571955903695899">Neu sortieren nach Titel</translation>
 <translation id="5230516054153933099">Fenster</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
+<translation id="1103966635949043187">Gehen Sie zur Homepage der Website:</translation>
 <translation id="4400697530699263877">DNS-Vorabruf zur Verbesserung der Seitenladeleistung verwenden</translation>
 <translation id="1086613338090581534">Der Aussteller eines Zertifikats, das nicht abgelaufen ist, ist für das Führen einer so genannten &quot;Sperrliste&quot; verantwortlich. Falls ein Zertifikat in den Besitz eines anderen gelangt, kann der Aussteller es widerrufen, indem er es der Sperrliste hinzufügt. In diesem Fall vertraut Ihr Browser dem Zertifikat nicht mehr. Für abgelaufene Zertifikate ist kein Widerrufstatus erforderlich. Während der Gültigkeit dieses Zertifikats für die besuchte Website kann daher nicht ermittelt werden, ob das Zertifikat in den Besitz eines anderen gelangt ist und später widerrufen wurde oder ob es weiterhin sicher ist. Daher kann nicht ermittelt werden, ob Sie mit der rechtmäßigen Website kommunizieren oder ob sich das Zertifikat nun im Besitz eines Hackers befindet und Sie jetzt mit diesem kommunizieren. In diesem Fall sollten Sie nicht fortfahren.</translation>
 <translation id="2645575947416143543">Falls Sie jedoch in einem Unternehmen arbeiten, das eigene Zertifikate erzeugt, und Sie versuchen, mithilfe eines solchen Zertifikats eine Verbindung zu einer internen Website dieses Unternehmens herzustellen, können Sie das Problem auf sichere Weise lösen, indem Sie das Stammzertifikat des Unternehmens als &quot;Stammzertifikat&quot; importieren. In diesem Fall werden Zertifikate, die von Ihrem Unternehmen ausgestellt oder bestätigt wurden, als vertrauenswürdig eingestuft und Sie erhalten diese Fehlermeldung nicht, wenn Sie das nächste Mal versuchen, eine Verbindung zu einer internen Website herzustellen. Wenden Sie sich an die Supportmitarbeiter in Ihrem Unternehmen, wenn Sie beim Hinzufügen eines neuen Stammzertifikats in Ihrem Computer Hilfe benötigen.</translation>
 <translation id="3157931365184549694">Wiederherstellen</translation>
+<translation id="7426243339717063209">&quot;<ph name="EXTENSION_NAME"/>&quot; deinstallieren?</translation>
 <translation id="6059232451013891645">Ordner:</translation>
 <translation id="8182985032676093812">Quelle von <ph name="PAGE_URL"/></translation>
 <translation id="7042418530779813870">Einfügen und &amp;suchen</translation>
+<translation id="2101225219012730419">Version:</translation>
 <translation id="1570242578492689919">Schriftarten und Codierung</translation>
 <translation id="3031557471081358569">Wählen Sie die zu importierenden Elemente:</translation>
 <translation id="3031433885594348982">Die Verbindung zu <ph name="DOMAIN"/> ist schwach verschlüsselt.</translation>
@@ -844,6 +948,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="6181769708911894002">Warnung: Durch das Aufrufen dieser Website wird Ihr Computer möglicherweise beschädigt!</translation>
 <translation id="3412265149091626468">Auswahl anzeigen</translation>
 <translation id="3785852283863272759">Seitenadresse als E-Mail senden</translation>
+<translation id="7326526699920221209">Akku: <ph name="PRECENTAGE"/> %</translation>
 <translation id="601778514741867265">Nur Cookies von besuchten Seiten akzeptieren</translation>
 <translation id="8299269255470343364">Japanisch</translation>
 <translation id="5204993535447683655">Diese Webseite später &lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;neu laden&lt;/a&gt;.</translation>
@@ -851,10 +956,12 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="7280343984261969618">Plug-ins in einem &quot;Sandkasten&quot; ohne Rechte ausführen. Dadurch werden einige Plug-ins nicht richtig funktionieren.</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> Tag übrig</translation>
 <translation id="2885378588091291677">Task-Manager</translation>
+<translation id="1215711112676250731">Kontingent:</translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="1618661679583408047">Das Sicherheitszertifikat des Servers ist noch nicht gültig!</translation>
 <translation id="9040508646567685134">Ein auf dieser Seite ausgeführtes Skript benötigt sehr viel Zeit für seine Aufgabe. Möchten Sie sehen, ob das Skript vollständig ausgeführt werden kann, oder abbrechen?</translation>
 <translation id="3065140616557457172">Einfach Suchbegriff oder Webadresse eingeben – alles ist möglich.</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="5509693895992845810">Speichern &amp;unter...</translation>
 <translation id="5986279928654338866">Für den Server <ph name="DOMAIN"/> ist ein Nutzername und ein Passwort erforderlich.</translation>
 <translation id="521467793286158632">Alle Passwörter entfernen</translation>
@@ -864,10 +971,10 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="7221869452894271364">Diese Seite neu laden</translation>
 <translation id="8646430701497924396">SSL 2.0 verwenden</translation>
 <translation id="8179976553408161302">Enter</translation>
+<translation id="5481650329671719147">Erweiterungen und Designs können Schäden an Ihrem Computer verursachen. Möchten Sie den Vorgang wirklich fortsetzen?</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="345693547134384690">B&amp;ild in neuem Tab öffnen</translation>
 <translation id="7422192691352527311">Einstellungen...</translation>
-<translation id="7220379225958650049">Jetzt starten</translation>
 <translation id="1375198122581997741">Informationen zur Version</translation>
 <translation id="1474307029659222435">Frame in neuem &amp;Fenster öffnen</translation>
 <translation id="7133850061938542637">Mit <ph name="USER_EMAIL_ADDRESS"/> synchronisiert\nLetzte Synchronisierung: <ph name="LAST_SYNC_TIME"/></translation>
@@ -882,11 +989,15 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="884923133447025588">Kein Sperrmechanismus gefunden.</translation>
 <translation id="7240072072812590475">Gears-Einstellungen ändern</translation>
 <translation id="6001785649757655903">Datenschutz-Blacklist-Fehler</translation>
+<translation id="2480155717379390016"><ph name="NAME_OF_EXTENSION"/> deaktivieren</translation>
+<translation id="492643400682328128"><ph name="NETWORKDEVICE"/> deaktivieren
+</translation>
 <translation id="7671130400130574146">Titelleiste und Ränder des Systems verwenden</translation>
 <translation id="9170848237812810038">&amp;Rückgängig</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>KB</translation>
 <translation id="4444364671565852729"><ph name="PRODUCT_NAME"/> wurde auf <ph name="VERSION"/> aktualisiert</translation>
 <translation id="2731392572903530958">Geschlossenes Fenster wieder öffn&amp;en</translation>
+<translation id="4264420740606601613">Drittanbieter-Cookies vollständig sperren</translation>
 <translation id="6483805311199035658"><ph name="FILE"/> wird geöffnet...</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="9154176715500758432">Auf dieser Seite bleiben</translation>
@@ -898,14 +1009,18 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Fortsetzen</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
+<translation id="5663016964925996918"><ph name="EXTENSION_NAME"/> ist nun installiert.</translation>
 <translation id="3009731429620355204">Sitzungen</translation>
 <translation id="7658590191988721853">Vertikales lineares Blättern aktivieren</translation>
+<translation id="5190835502935405962">Lesezeichenleiste</translation>
+<translation id="5438430601586617544">(Entpackt)</translation>
 <translation id="6460601847208524483">Nächste Übereinstimmung suchen</translation>
 <translation id="3473034187222004855">Datei&amp;pfad kopieren</translation>
+<translation id="3038131737570201586">Dieser Erweiterung wird Zugriff auf Ihren Suchverlauf und Ihre privaten Daten auf verschiedenen Websites gewährt.</translation>
 <translation id="6325525973963619867">Fehlgeschlagen</translation>
 <translation id="1676388805288306495">Standardschriftart/-sprache für Webseiten ändern</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
-<translation id="1163931534039071049">Frame-Quelle &amp;anzeigen</translation>
+<translation id="1163931534039071049">Frame-Quelltext &amp;anzeigen</translation>
 <translation id="7564847347806291057">Vorgang beenden</translation>
 <translation id="7851589172948533362">Überprüft von <ph name="ISSUER"/></translation>
 <translation id="7063412606254013905">Weitere Informationen zum Phishing-Betrug.</translation>
@@ -916,6 +1031,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="5333374927882515515">Lesezeichen, Passwörter und andere Einstellungen von <ph name="DEF_BROWSER"/> importieren</translation>
 <translation id="4239831617079978238">Sitzungsende</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
+<translation id="5960889226412209189">Kompakte Navigationsleiste ein-/ausblenden</translation>
 <translation id="8954894007019320973">(Forts.)</translation>
 <translation id="3748412725338508953">Zu viele Umleitungen.</translation>
 <translation id="8929159553808058020">Fügen Sie die Sprachen hinzu, die Sie zum Lesen von Websites verwenden, und listen Sie sie in beliebiger Reihenfolge auf. Fügen Sie nur benötigte Sprachen hinzu, da einige Zeichen verwendet werden können, um Websites in anderen Sprachen darzustellen.</translation>
@@ -931,10 +1047,14 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="7088615885725309056">Älter</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
 <translation id="8562413501751825163">Firefox vor dem Import schließen</translation>
+<translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/> KB (<ph name="NUM_KILOBYTES_LIVE"/> KB live)</translation>
 <translation id="5034259512732355072">Anderes Verzeichnis wählen...</translation>
 <translation id="5074322878757699801">Daten importieren...</translation>
+<translation id="7505152414826719222">Lokaler Speicher</translation>
 <translation id="5706242308519462060">Standard-Codierung:</translation>
 <translation id="5280833172404792470">Vollbildmodus beenden (<ph name="ACCELERATOR"/>)</translation>
+<translation id="4000986992587584088">Pop-ups von <ph name="URL"/> immer anzeigen
+</translation>
 <translation id="129553762522093515">Kürzlich geschlossen</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> Tage</translation>
 <translation id="3891357445869647828">JavaScript aktivieren</translation>
@@ -951,14 +1071,18 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="4867297348137739678">Letzte Woche</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="5457793226917888578">Diese Seite enthält unsicheren Content.</translation>
+<translation id="5988520580879236902">Aktive Ansichten prüfen:</translation>
 <translation id="5981759340456370804">Statistiken für Computerfreaks</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> Tag</translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
 <translation id="5607455023223000189">Installierte Plug-ins</translation>
 <translation id="6294193300318171613">&amp;Lesezeichenleiste immer anzeigen</translation>
+<translation id="3414952576877147120">Größe:</translation>
 <translation id="9098468523912235228">Vor <ph name="NUMBER_DEFAULT"/> Sekunden</translation>
 <translation id="7009102566764819240">Die folgende Liste führt alle gefährlichen Elemente der Seite auf. Klicken Sie auf den Diagnoselink, um weitere Informationen zum Malware-Thread eines bestimmten Elements zu erhalten. Falls Sie sicher sind, dass eine Ressource fälschlicherweise als Phishing-Ressource gemeldet wurde, klicken Sie auf den Link &quot;Einen Fehler melden&quot;.</translation>
+<translation id="676327646545845024">Dieses Dialogfeld für Links dieser Art nicht mehr anzeigen</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> Sekunden übrig</translation>
+<translation id="6863682319656084809"><ph name="EXTENSION_NAME"/>-Erweiterungswarnung</translation>
 <translation id="1485146213770915382">Fügen Sie <ph name="SEARCH_TERMS_LITERAL"/> an der Position in die URL ein, an der die Suchbegriffe erscheinen sollen.</translation>
 <translation id="4839303808932127586">Video &amp;speichern unter...</translation>
 <translation id="5626134646977739690">Name:</translation>
@@ -969,6 +1093,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="4876916865079819322">Lesezeichen synchronisieren</translation>
 <translation id="146000042969587795">Dieser Frame wurde gesperrt, weil er unsicheren Inhalt enthält.</translation>
 <translation id="8112223930265703044">Alles</translation>
+<translation id="8023801379949507775">Erweiterungen jetzt aktualisieren</translation>
 <translation id="1983108933174595844">Screenshot der aktuellen Seite senden</translation>
 <translation id="436869212180315161">Klicken</translation>
 <translation id="8241707690549784388">Die gesuchte Seite hat die von Ihnen eingegebenen Informationen verwendet bzw. verarbeitet. Wenn Sie zu dieser Seite zurückgehen, wird möglicherweise eine bereits ausgeführte Aktion wiederholt. Möchten Sie fortfahren?</translation>
@@ -981,6 +1106,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="1753905327828125965">Am häufigsten besucht</translation>
 <translation id="170407012880898501">Text aus Formularen speichern, um sie einfacher ausfüllen zu können</translation>
 <translation id="8116972784401310538">&amp;Lesezeichen-Manager</translation>
+<translation id="1849632043866553433">Cashes</translation>
 <translation id="4927301649992043040">Erweiterung packen</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
@@ -993,12 +1119,15 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="1232569758102978740">Unbenannt</translation>
 <translation id="9149866541089851383">Bearbeiten...</translation>
 <translation id="7000311294523403548">Unbenannte Webseite</translation>
+<translation id="4593021220803146968">Zu <ph name="URL"/> &amp;wechseln</translation>
 <translation id="7649070708921625228">Hilfe</translation>
 <translation id="6119719873954126908">Hier finden Sie bald Tipps und Vorschläge für besseres Browsen. Schauen Sie wieder rein!</translation>
 <translation id="7442246004212327644">&amp;Löschen</translation>
 <translation id="281133045296806353">Neues Fenster in aktueller Browsersitzung erstellt.</translation>
+<translation id="6314007596429871800">Cashe</translation>
 <translation id="9002707937526687073">D&amp;rucken...</translation>
 <translation id="5556459405103347317">Aktuelle Seite neu laden</translation>
+<translation id="8326395326942127023">Datenbankname:</translation>
 <translation id="7727721885715384408">Umbenennen...</translation>
 <translation id="5508407262627860757">Trotzdem abbrechen</translation>
 <translation id="7587108133605326224">Baltisch</translation>
@@ -1007,6 +1136,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="3021678814754966447">Framequelle &amp;anzeigen</translation>
 <translation id="5271549068863921519">Passwort speichern</translation>
 <translation id="3251855518428926750">Hinzufügen...</translation>
+<translation id="3508920295779105875">Anderen Ordner wählen...</translation>
 <translation id="2987775926667433828">Chinesisch (traditionell)</translation>
 <translation id="3954582159466790312">&amp;Ton einschalten</translation>
 <translation id="5809606740668187902">Blockierte Ressource</translation>
@@ -1018,8 +1148,10 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="8045462269890919536">Rumänisch</translation>
 <translation id="2927657246008729253">Ändern...</translation>
 <translation id="7978412674231730200">Privater Schlüssel</translation>
+<translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">Neues &amp;Inkognito-Fenster</translation>
 <translation id="3478477629095836699">Cookie-Einstellungen:</translation>
+<translation id="6529237754759924038">Datum und Uhrzeit</translation>
 <translation id="7278870042769914968">GTK+-Design verwenden</translation>
 <translation id="2108475813351458355">Sichere Verbindung zu <ph name="DOMAIN"/></translation>
 <translation id="942671148946453043">Sie haben ein Inkognito-Fenster geöffnet. Seiten, die Sie in diesem Fenster öffnen, erscheinen nicht im Verlauf.</translation>
@@ -1055,11 +1187,14 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="3943582379552582368">&amp;Zurück</translation>
 <translation id="7607002721634913082">Angehalten</translation>
 <translation id="480990236307250886">Homepage öffnen</translation>
+<translation id="5757539081890243754">Homepage</translation>
 <translation id="6709133671862442373">Nachrichten</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> Stunden übrig</translation>
+<translation id="6550675742724504774">Optionen</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>
 <translation id="737801893573836157">Titelleiste des Systems ausblenden und Kompaktränder verwenden</translation>
 <translation id="5040262127954254034">Datenschutz</translation>
+<translation id="1058681476058291010">Lesezeichen-Synchronisierungsfehler...</translation>
 <translation id="1908748899139377733">Frame-&amp;Informationen anzeigen</translation>
 <translation id="8400147561352026160">Umschalt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="803771048473350947">Ablage</translation>
@@ -1068,6 +1203,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="566920818739465183">Sie haben diese Website erstmals am <ph name="VISIT_DATE"/> besucht.</translation>
 <translation id="2961695502793809356">Klicken, um weiterzugehen. Gedrückt halten, um Verlauf anzuzeigen.</translation>
 <translation id="923083373181549309"><ph name="PRODUCT_NAME"/> neu starten</translation>
+<translation id="8678305583783039525">Cookies und Website-Berechtigungen anzeigen</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> Sekunden</translation>
 <translation id="176587472219019965">&amp;Neues Fenster</translation>
 <translation id="8689341121182997459">Läuft ab:</translation>
@@ -1084,11 +1220,13 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> führt folgende Aufgaben aus:</translation>
 <translation id="1812622104192390866">Einstellungen importieren von</translation>
 <translation id="4042471398575101546">Seite hinzufügen</translation>
+<translation id="4871865824885782245">Datum- und Uhrzeitoptionen öffnen...</translation>
 <translation id="988159990683914416">Entwickler-Build</translation>
 <translation id="921175996768281472">Fehler beim Packen der Erweiterung</translation>
 <translation id="2183426022964444701">Stammverzeichnis der Erweiterung auswählen</translation>
 <translation id="6790650291892352751">Suche nach Thema oder URL:</translation>
 <translation id="5398353896536222911">Rechtschreibung &amp;einblenden</translation>
+<translation id="8046048349148382412"><ph name="HOUR"/>:<ph name="MIUTE"/> bis zur vollständigen Aufladung</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="7481312909269577407">Vorwärts</translation>
@@ -1101,6 +1239,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="2444683954290143042">Synchronisierungsfehler. Bitte erneut anmelden</translation>
 <translation id="5830720307094128296">Seite speichern &amp;unter...</translation>
 <translation id="5822838715583768518">Anwendung starten</translation>
+<translation id="2433507940547922241">Erscheinungsbild</translation>
 <translation id="839072384475670817">Erstellen von Anwendungs&amp;verknüpfungen...</translation>
 <translation id="6756161853376828318"><ph name="PRODUCT_NAME"/> als Standardbrowser festlegen</translation>
 <translation id="2640524951934795733">Was hier wohl stehen wird?</translation>
@@ -1111,6 +1250,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="3807747707162121253">Abbre&amp;chen</translation>
 <translation id="2850243184678184884">z. B. Hockey, BBC, http://engadget.com/rss.xml</translation>
 <translation id="77999321721642562">Später werden hier Ihre acht meistbesuchten Websites angezeigt.</translation>
+<translation id="5864830997591220873">Alle Cookies sperren</translation>
 <translation id="7447718177945067973">Der Server wurde nicht gefunden.</translation>
 <translation id="715468010956678290">Frame in Inko&amp;gnito-Fenster öffnen</translation>
 <translation id="7755167023778553803">Diese Seite enthält jedoch Ressourcen von anderen Websites, deren Identität nicht überprüft werden kann.</translation>
@@ -1118,6 +1258,7 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="3455546154539383562">Sie haben versucht, auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen. Der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das von seinem Aussteller widerrufen wurde. Das bedeutet, dass die vom Server bereitgestellten Sicherheits-Berechtigungsnachweise (Security Credentials) absolut nicht vertrauenswürdig sind. Sie kommunizieren möglicherweise mit einem Hacker. Fahren Sie nicht fort.</translation>
 <translation id="1177437665183591855">Fehler wegen unbekanntem Serverzertifikat</translation>
 <translation id="3819800052061700452">&amp;Vollbildmodus</translation>
+<translation id="3533943170037501541">Willkommen auf Ihrer Homepage!</translation>
 <translation id="3218306954729745977">Zuletzt geschlossene Tabs anzeigen</translation>
 <translation id="3737554291183722650">Seitentitel:</translation>
 <translation id="1581962803218266616">Im Finder anzeigen</translation>
@@ -1136,16 +1277,19 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="1208126399996836490">Nicht zurücksetzen</translation>
 <translation id="806812017500012252">Neu sortieren nach Titel</translation>
 <translation id="2960316970329790041">Import anhalten</translation>
+<translation id="5361734574074701223">Verbleibende Zeit wird berechnet.</translation>
 <translation id="1731911755844941020">Anfrage senden...</translation>
 <translation id="1038842779957582377">Unbekannter Name</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="2052895926110224873">Ihre Datenschutz-Blacklists wurden nicht geladen.</translation>
 <translation id="2445081178310039857">Stammverzeichnis der Erweiterung ist erforderlich.</translation>
+<translation id="8251578425305135684">Miniaturansicht wurde entfernt.</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="1918141783557917887">&amp;Kleiner</translation>
 <translation id="4065006016613364460">Bild-URL k&amp;opieren</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="4481249487722541506">Entpackte Erweiterung laden...</translation>
 <translation id="8542113417382134668">Schriftart Serif:</translation>
 <translation id="2149973817440762519">Lesezeichen bearbeiten</translation>
 <translation id="430831869130657585">Suffixe</translation>
@@ -1168,18 +1312,29 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="6053401458108962351">&amp;Private Daten löschen...</translation>
 <translation id="2339641773402824483">Sucht nach Updates...</translation>
 <translation id="8600200086690278232">Vorgestellte Webclips</translation>
+<translation id="8582728318425382804">Cookies und Website-Berechtigungen</translation>
 <translation id="2766006623206032690">Einfügen und &amp;fortfahren</translation>
 <translation id="9071050381089585305">Skript reagiert nicht</translation>
+<translation id="4394049700291259645">Deaktivieren
+</translation>
 <translation id="969892804517981540">Offizieller Build</translation>
 <translation id="724208122063442954">Sie möchten bestimmte Dateitypen nach dem Herunterladen automatisch öffnen. Sie können diese Einstellungen löschen, sodass heruntergeladene Dateien nicht automatisch geöffnet werden.</translation>
 <translation id="5765491088802881382">Keine Netzwerke verfügbar</translation>
 <translation id="5183088099396036950">Verbindung zum Server konnte nicht hergestellt werden.</translation>
-<translation id="4477534650265381513">Platzieren Sie Ihre Lesezeichen hier in der Lesezeichenleiste, um schneller auf sie zugreifen zu können.</translation>
+<translation id="4469842253116033348">Benachrichtigungen von <ph name="SITE"/> deaktivieren</translation>
+<translation id="7999229196265990314">Folgende Dateien wurden erstellt:
+        
+Erweiterung: <ph name="EXTENSION_FILE"/>
+Schlüsseldatei: <ph name="KEY_FILE"/>
+
+Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Datei, um neue Versionen Ihrer Erweiterung zu erstellen.</translation>
 <translation id="3036649622769666520">Dateien öffnen</translation>
 <translation id="7909652923456235549">Cookies nicht gesendet</translation>
+<translation id="7685049629764448582">JavaScript-Speicher</translation>
 <translation id="4508765956121923607">Q&amp;uelle anzeigen</translation>
 <translation id="8080048886850452639">Audio-URL k&amp;opieren</translation>
-<translation id="7339785458027436441">Rechtschreibung während Eingabe prüfen</translation>
+<translation id="5849869942539715694">Erweiterung packen...</translation>
+<translation id="7339785458027436441">Rechtschreibung während der Eingabe prüfen</translation>
 <translation id="1384721974622518101">Wussten Sie, dass Sie Ihre Suche direkt vom obigen Feld aus durchführen können?</translation>
 <translation id="8203365863660628138">Installation bestätigen</translation>
 <translation id="406259880812417922">(Suchkürzel: <ph name="KEYWORD"/>)</translation>

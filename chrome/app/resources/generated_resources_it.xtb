@@ -7,6 +7,7 @@
 <translation id="3581034179710640788">Il certificato di sicurezza del sito è scaduto!</translation>
 <translation id="8275038454117074363">Importa</translation>
 <translation id="8418445294933751433">&amp;Mostra come scheda</translation>
+<translation id="6985276906761169321">ID:</translation>
 <translation id="2160383474450212653">Caratteri e lingue</translation>
 <translation id="4405141258442788789">Tempo esaurito per l'operazione.</translation>
 <translation id="5048179823246820836">Nordico</translation>
@@ -28,11 +29,15 @@
 <translation id="8571213806525832805">Ultime 4 settimane</translation>
 <translation id="6021004449668343960">Carattere Sans-Serif:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> ore fa</translation>
+<translation id="8460952460426246415">I tuoi Preferiti ora saranno sincronizzati tra tutti i computer su cui hai abilitato la sincronizzazione.</translation>
 <translation id="4422428420715047158">Dominio:</translation>
 <translation id="4021918302616263355">Cerca <ph name="SEARCH_TERMS"/> con <ph name="ENGINE"/></translation>
 <translation id="5376169624176189338">Fai clic per tornare indietro, tieni premuto per vedere la cronologia</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> sec. rimanenti</translation>
 <translation id="9181716872983600413">Unicode</translation>
+<translation id="7383539497402338906">La sincronizzazione dei Preferiti permette di mantenere facilmente lo stesso insieme di Preferiti su più computer.
+        Quando abiliti la sincronizzazione, i Preferiti vengono memorizzati online nel tuo account Google.
+        Ogni computer aggiuntivo su cui abiliti la sincronizzazione riceverà gli stessi Preferiti.</translation>
 <translation id="1383861834909034572">Apri al termine</translation>
 <translation id="4211171103079968550">Attiva Java</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
@@ -45,12 +50,12 @@
 <translation id="9154072353677278078">Il server <ph name="DOMAIN"/> su <ph name="REALM"/> richiede un nome utente e una password.</translation>
 <translation id="2193841602817119749">Sul sito web &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; è stata segnalata attività di “phishing”. I siti di phishing frodano gli utenti chiedendo loro di divulgare informazioni personali o finanziarie, spesso spacciandosi per enti affidabili, come istituti bancari.</translation>
 <translation id="8178665534778830238">Contenuto:</translation>
-<translation id="1379170046778889619">Informazioni di sicurezza</translation>
 <translation id="4771019161370731727">Attività recenti</translation>
 <translation id="8974161578568356045">Rileva automaticamente</translation>
 <translation id="1818606096021558659">Pagina</translation>
 <translation id="1657406563541664238">Aiutaci a migliorare <ph name="PRODUCT_NAME"/> inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali</translation>
 <translation id="7982789257301363584">Rete</translation>
+<translation id="2336228925368920074">Aggiungi tutte le schede ai Preferiti...</translation>
 <translation id="4108206167095122329">Rimuovi &amp;tutti</translation>
 <translation id="7481475534986701730">Siti visitati di recente</translation>
 <translation id="4260722247480053581">Apri nella finestra di navigazione in incognito</translation>
@@ -71,10 +76,12 @@
 <translation id="9218430445555521422">Imposta come predefinito</translation>
 <translation id="4589279373639964403">Esporta Preferiti...</translation>
 <translation id="8876215549894133151">Formato:</translation>
+<translation id="5234764350956374838">Ignora</translation>
 <translation id="5463275305984126951">Indice di <ph name="LOCATION"/></translation>
 <translation id="5154917547274118687">Memoria</translation>
 <translation id="1735662153177951739">Questa pagina non viene recuperata interamente tramite una connessione protetta. Ha alcuni contenuti recuperati tramite connessioni non protette.</translation>
 <translation id="6628463337424475685">Ricerca <ph name="ENGINE"/></translation>
+<translation id="6726379128203862332"><ph name="SIZE_TAKEN"/> MB</translation>
 <translation id="2459861677908225199">Utilizza TLS 1.0</translation>
 <translation id="873849583815421063">Completamento in corso...</translation>
 <translation id="5819484510464120153">Crea &amp;scorciatoie applicazione...</translation>
@@ -94,11 +101,13 @@
 <translation id="443008484043213881">Strumenti</translation>
 <translation id="314605055819837597">Dati utente</translation>
 <translation id="8534801226027872331">In questo caso il certificato presentato al browser contiene degli errori e non è comprensibile. Potremmo non essere in grado di verificare le informazioni sull'identità contenute nel certificato o altre informazioni utilizzate per proteggere la connessione. Non procedere oltre.</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> ora include <ph name="BEGIN_LINK"/>estensioni<ph name="END_LINK"/> e <ph name="BEGIN_BUTTON"/>sincronizzazione Preferiti<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">I Preferiti verranno uniti.</translation>
 <translation id="4422347585044846479">Modifica Preferito</translation>
 <translation id="7367545749698325833">Puoi importare i tuoi preferiti e le tue impostazioni da altri browser o cancellare i tuoi dati di navigazione da questo computer.</translation>
 <translation id="51285338152176012">Nascondi schede chiuse di recente</translation>
 <translation id="8546306075665861288">Cache immagini</translation>
+<translation id="801357260673640054">Preferiti sincronizzati...</translation>
 <translation id="1399076603473531278">I dati di accesso sono obsoleti.</translation>
 <translation id="3391060940042023865">Il plug-in seguente si è bloccato: <ph name="PLUGIN_NAME"/></translation>
 <translation id="8879284080359814990">Mostra come &amp;scheda</translation>
@@ -109,7 +118,7 @@
 <translation id="2994458892329442723">Attiva plug-in</translation>
 <translation id="1674989413181946727">Impostazioni SSL per il computer:</translation>
 <translation id="8703575177326907206">La connessione a <ph name="DOMAIN"/> non è crittografata.</translation>
-<translation id="7345141778157460052">Sincronizzazione Preferiti:</translation>
+<translation id="4197577448076628265">Questa estensione avrà accesso alla tua cronologia di navigazione e ai tuoi dati privati su <ph name="HOST"/>.</translation>
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="2518917559152314023">A&amp;ggiungi...</translation>
 <translation id="6583406242234752719">Non hai configurato la sincronizzazione dei tuoi Preferiti con altri computer.</translation>
@@ -133,25 +142,33 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> sec.</translation>
 <translation id="5098629044894065541">Ebraico</translation>
 <translation id="7751559664766943798">Mostra sempre barra dei Preferiti</translation>
+<translation id="144136026008224475">Prova altre estensioni &gt;&gt;</translation>
 <translation id="8584280235376696778">&amp;Apri video in nuova scheda</translation>
 <translation id="2845382757467349449">Mostra sempre barra dei Preferiti</translation>
 <translation id="6827094223626760756">anteprima</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ore rimanenti</translation>
 <translation id="1720675772864601791">Consenti immagini non protette</translation>
+<translation id="471372654970523967">Attiva <ph name="NETWORKDEVICE"/></translation>
+<translation id="4001299999465067131">Inserisci le lettere così come sono visualizzate nell'immagine precedente.</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="5233638681132016545">Nuova scheda</translation>
 <translation id="5210365745912300556">Chiudi scheda</translation>
 <translation id="8806796506533854282">Inserisci il nome di un nuovo profilo</translation>
 <translation id="2551763528995812091">Password ed eccezioni</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="2263497240924215535">(Disabilitata)</translation>
 <translation id="6360709384096878403">Segnala bug o sito web non funzionante...</translation>
 <translation id="1110535155349301542">rimuovi</translation>
 <translation id="8571852575982769756">Nessun plug-in installato</translation>
+<translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">In attesa di risposta da <ph name="HOST_NAME"/>...</translation>
+<translation id="5850800573054873412">Questa estensione avrà accesso alla tua cronologia di navigazione e ai tuoi dati privati su tutti i siti web.</translation>
 <translation id="3280237271814976245">Salva con &amp;nome...</translation>
 <translation id="5300471193642408424">Mostra pagine</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="6996264303975215450">Pagina web, completa</translation>
+<translation id="8744320793514149773">Questa estensione avrà accesso a tutti i tuoi dati privati su tutti i siti web.</translation>
+<translation id="3435896845095436175">Abilita</translation>
 <translation id="2154710561487035718">Copia URL</translation>
 <translation id="4244236525807044920">Cambia carattere e lingua</translation>
 <translation id="3241680850019875542">Seleziona la directory principale dell'estensione di cui creare il pacchetto. Per aggiornare un'estensione, seleziona anche il file delle chiave privata da riutilizzare.</translation>
@@ -159,6 +176,7 @@
 <translation id="6746124502594467657">Sposta giù</translation>
 <translation id="4657169630710541069">Errore risorsa</translation>
 <translation id="3383487468758466563">Caratteri e lingue:</translation>
+<translation id="7339949551808462689">Estensione <ph name="EXTENSION_NAME"/></translation>
 <translation id="6163363155248589649">&amp;Normale</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(Senza titolo)</translation>
@@ -168,14 +186,17 @@
 <translation id="3605499851022050619">Pagina di diagnostica Navigazione sicura.</translation>
 <translation id="4307992518367153382">Impostazioni di base</translation>
 <translation id="5912378097832178659">&amp;Cambia motori di ricerca...</translation>
+<translation id="3173397526570909331">Interrompi sincronizzazione</translation>
 <translation id="4813345808229079766">Connessione</translation>
 <translation id="411666854932687641">Memoria privata</translation>
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="1336254985736398701">Visualizza &amp;informazioni pagina</translation>
+<translation id="5678480951567683474">Mostra menu Pagina e Strumenti</translation>
 <translation id="1652965563555864525">Disattiva &amp;audio</translation>
 <translation id="4200983522494130825">Nuova &amp;scheda</translation>
 <translation id="7979036127916589816">Errore di sincronizzazione</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> di <ph name="TOTAL_MATCHCOUNT"/></translation>
+<translation id="5178488982078290579">Preferiti sincronizzati...</translation>
 <translation id="2303544859777878640">Lingue:</translation>
 <translation id="2021921916539001817">Trasferimento in corso da <ph name="HOST_NAME"/>...</translation>
 <translation id="6909042471249949473">Cancella dati nel seguente periodo:</translation>
@@ -185,10 +206,13 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7456847797759667638">Apri percorso...</translation>
 <translation id="5392041771307264501">Seleziona un profilo per aprire una nuova finestra</translation>
+<translation id="1388866984373351434">Dati di navigazione</translation>
+<translation id="7378627244592794276">No</translation>
 <translation id="68541483639528434">Chiudi le altre schede</translation>
 <translation id="4022426551683927403">&amp;Aggiungi al dizionario</translation>
 <translation id="2897878306272793870">Aprire <ph name="TAB_COUNT"/> schede?</translation>
 <translation id="362276910939193118">Mostra cronologia completa</translation>
+<translation id="7879113706359663444"><ph name="HOUR"/>:<ph name="MIUTE"/>p</translation>
 <translation id="1073286447082909762">Apri frame in un'altra &amp;finestra</translation>
 <translation id="692135145298539227">elimina</translation>
 <translation id="8343477974731263456">Configurazione sincronizzazione Preferiti</translation>
@@ -200,6 +224,7 @@
 <translation id="2678063897982469759">Riattiva</translation>
 <translation id="4850886885716139402">Visualizza</translation>
 <translation id="1965338962645102116">Per poter importare i Segnalibri di Google Toolbar nei Preferiti di Google Chrome, devi aver eseguito l'accesso al tuo account Google. Esegui l'accesso e riprova a importare.</translation>
+<translation id="5035846689029228055">Sincronizzazione Preferiti:</translation>
 <translation id="5922220455727404691">Utilizza SSL 3.0</translation>
 <translation id="5903264686717710770">Titolo:</translation>
 <translation id="8899851313684471736">Apri link in un'altra &amp;finestra</translation>
@@ -208,11 +233,13 @@
 <translation id="6686490380836145850">Chiudi schede a destra</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ore</translation>
 <translation id="2790948358747073186">Altro ancora</translation>
+<translation id="5774515636230743468">Manifest:</translation>
 <translation id="2423578206845792524">Sa&amp;lva immagine con nome...</translation>
 <translation id="1095038624419434542">Si è verificato un errore durante il caricamento di una risorsa del programma. Prova a reinstallare.</translation>
 <translation id="9068931793451030927">Percorso:</translation>
 <translation id="7052402604161570346">Questo tipo di file può danneggiare il computer. Scaricare <ph name="FILE_NAME"/>?</translation>
 <translation id="8642489171979176277">Importati da Google Toolbar</translation>
+<translation id="5905978244564263718">Imposta compilazione automatica...</translation>
 <translation id="7335374713830044009">Apri frame nella finestra di navigazione in inco&amp;gnito</translation>
 <translation id="2011110593081822050">Web Worker: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">Nome file:</translation>
@@ -261,25 +288,31 @@
 <translation id="1608306110678187802">Stam&amp;pa frame...</translation>
 <translation id="4948468046837535074">Apri le seguenti pagine:</translation>
 <translation id="6978121630131642226">Motori di ricerca</translation>
+<translation id="6745994589677103306">Nessuna azione</translation>
 <translation id="855081842937141170">Blocca scheda</translation>
+<translation id="2723893843198727027">Modalità sviluppatore:</translation>
 <translation id="5362741141255528695">Seleziona il file della chiave privata.</translation>
 <translation id="7012108905414904806">Tuttavia, questa pagina include risorse non sicure. Tali risorse potrebbero essere visualizzate da altri utenti e potrebbero essere modificate da un hacker al fine di cambiare l'aspetto o il comportamento della pagina.</translation>
 <translation id="4515911410595374805">Alcuni elementi presenti sulla pagina provengono da un'origine non verificata e non sono stati visualizzati.</translation>
 <translation id="1195447618553298278">Errore sconosciuto.</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> giorni fa</translation>
 <translation id="4800557284502805285">Il certificato del server è stato firmato utilizzando un algoritmo di firma debole</translation>
+<translation id="6610600335992778838">Wi-Fi</translation>
 <translation id="1087119889335281750">&amp;Nessun suggerimento ortografico</translation>
 <translation id="718141787353053227">Imposta pagina...</translation>
 <translation id="5076340679995252485">&amp;Incolla</translation>
+<translation id="5097982659374947325">Accetta soltanto i cookie dei siti da me visitati</translation>
 <translation id="14171126816530869">L'identità di <ph name="ORGANIZATION"/> con sede a <ph name="LOCALITY"/> è stata verifica da <ph name="ISSUER"/>.</translation>
 <translation id="1587275751631642843">Console &amp;JavaScript</translation>
 <translation id="5821894118254011366">Blocca tutti i cookie di terze parti</translation>
 <translation id="3511307672085573050">Copia indir&amp;izzo link</translation>
 <translation id="1134009406053225289">Apri nella finestra di navigazione in incognito</translation>
+<translation id="6655190889273724601">Modalità sviluppatore</translation>
 <translation id="3473105180351527598">Attiva protezione contro phishing e malware</translation>
 <translation id="6151323131516309312">Premi <ph name="SEARCH_KEY"/> per cercare su <ph name="SITE_NAME"/></translation>
 <translation id="2342959293776168129">Cancella cronologia download</translation>
 <translation id="2503522102815150840">Il browser si impalla...</translation>
+<translation id="425878420164891689">Calcolo del tempo rimanente al completamento della ricarica</translation>
 <translation id="1272079795634619415">Interrompi</translation>
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="9053965862400494292">Si è verificato un errore durante il tentativo di configurazione della sincronizzazione.</translation>
@@ -294,16 +327,21 @@
 <translation id="5710435578057952990">L'identità di questo sito web non è stata verifica.</translation>
 <translation id="5287240709317226393">Mostra cookie</translation>
 <translation id="5451646087589576080">Visualizza &amp;informazioni frame</translation>
+<translation id="3368922792935385530">Connesso</translation>
 <translation id="8486154204771389705">Tieni su questa pagina</translation>
 <translation id="6824564591481349393">Copia indirizzo &amp;email</translation>
+<translation id="5184063094292164363">Console &amp;JavaScript</translation>
 <translation id="333371639341676808">Impedisci alla pagina di creare altre finestre di dialogo.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> è aggiornato (<ph name="VERSION"/>)</translation>
 <translation id="4254921211241441775">Interrompi sincronizzazione dell'account</translation>
+<translation id="8661648338644250771">Questa estensione avrà accesso ai tuoi dati privati su <ph name="HOST"/>.</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="307505906468538196">Crea un account Google</translation>
 <translation id="48838266408104654">&amp;Task Manager</translation>
 <translation id="3694027410380121301">Seleziona scheda precedente</translation>
 <translation id="6178664161104547336">Seleziona un certificato</translation>
+<translation id="5702898740348134351">Modifica motori di ric&amp;erca...</translation>
+<translation id="2365740070488517695">Suggerimenti</translation>
 <translation id="772440777491435074">Informazioni certificato...</translation>
 <translation id="2869459179306435079">Importa impostazioni da:</translation>
 <translation id="732677191631732447">C&amp;opia URL audio</translation>
@@ -311,6 +349,8 @@
 <translation id="3369624026883419694">Risoluzione host in corso...</translation>
 <translation id="8870413625673593573">Chiusi di recente</translation>
 <translation id="9145357542626308749">Il certificato di sicurezza del sito è stato firmato utilizzando un algoritmo di firma debole.</translation>
+<translation id="8800574954100068740">Ricerca predefinita</translation>
+<translation id="6551701656367809067">La sincronizzazione dei Preferiti non sta funzionando correttamente perché il server sta ricevendo troppe richieste. Sembra che <ph name="NAME_OF_EXTENSION"/> stia apportando troppe modifiche ai tuoi Preferiti.</translation>
 <translation id="8249296373107784235">Interrompi</translation>
 <translation id="3967132639560659870">Sono presenti diversi errori SSL sulla pagina:</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minuti fa</translation>
@@ -322,6 +362,7 @@
 <translation id="1319824869167805246">Apri tutti i Preferiti in un'altra finestra</translation>
 <translation id="3493653833301553455">Compilazione automatica moduli:</translation>
 <translation id="3895288786311724904">aggiunto</translation>
+<translation id="3371861036502301517">Errore nell'installazione dell'estensione</translation>
 <translation id="644038709730536388">Scopri come proteggere il tuo computer dai software dannosi presenti sulla Rete.</translation>
 <translation id="4172706149171596436">Modifica impostazioni proxy</translation>
 <translation id="5650551054760837876">Nessun risultato di ricerca trovato.</translation>
@@ -329,6 +370,8 @@
 <translation id="3234408098842461169">Freccia GIÙ</translation>
 <translation id="825608351287166772">I certificati hanno un periodo di validità, proprio come un qualsiasi documento di identità. Il certificato presentato non è ancora valido. Quando il certificato non rientra nel periodo di validità, l'autorità emittente non è tenuta a specificare determinate informazioni sullo stato del certificato (ad esempio, se è stato revocato e non è più affidabile). Non è possibile, pertanto, verificare l'affidabilità del certificato. Non procedere oltre.</translation>
 <translation id="2742457360514408037">Popup bloccati: <ph name="COUNT"/></translation>
+<translation id="7154150278819212687">Questa estensione avrà accesso alla tua cronologia di navigazione.</translation>
+<translation id="1516602185768225813">Riapri le pagine che erano aperte l'ultima volta</translation>
 <translation id="4874539263382920044">Il titolo deve contenere almeno un carattere</translation>
 <translation id="3549657413697417275">Cerca nella cronologia</translation>
 <translation id="7344633671344536647">Dati di navigazione:</translation>
@@ -347,17 +390,21 @@
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> min. rimanente</translation>
 <translation id="5496587651328244253">Organizza</translation>
 <translation id="2592884116796016067">Si è verificato un arresto anomalo di una parte di questa pagina (WebWorker HTML), quindi potrebbe non funzionare correttamente.</translation>
+<translation id="8425755597197517046">Incolla ed e&amp;segui ricerca</translation>
+<translation id="4728278536628384335">Disabilita sincronizzazione Preferiti</translation>
 <translation id="5568069709869097550">Non riesco a effettuare l'accesso</translation>
 <translation id="4181898366589410653">Nessun sistema di revoca trovato nel certificato del server.</translation>
 <translation id="1665770420914915777">Usa la pagina Nuova scheda</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> ora fa</translation>
 <translation id="7789175495288668515">Modifica le opzioni di installazione predefinite.</translation>
 <translation id="347250956943431997">Il certificato del server è stato revocato</translation>
+<translation id="1936157145127842922">Mostra nella cartella</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> minuti fa</translation>
 <translation id="7977590112176369853">&lt;inserisci query&gt;</translation>
 <translation id="994771890067000105">Extra in primo piano</translation>
 <translation id="5155632014218747366">Per ulteriori informazioni sui problemi relativi a questo sito, visita <ph name="DIAGNOSTIC_PAGE"/> di Google per <ph name="DOMAIN"/>.</translation>
 <translation id="1120026268649657149">Specifica una parola chiave univoca o lascia il campo vuoto</translation>
+<translation id="7954187762705269222"><ph name="HOUR"/>:<ph name="MIUTE"/>a</translation>
 <translation id="5317780077021120954">Salva</translation>
 <translation id="9027459031423301635">Apri link in un'altra &amp;scheda</translation>
 <translation id="358344266898797651">Celtico</translation>
@@ -391,18 +438,26 @@
 <translation id="52912272896845572">Il file della chiave privata non è valido.</translation>
 <translation id="4222982218026733335">Certificato del server non valido</translation>
 <translation id="8494214181322051417">Novità!</translation>
+<translation id="7403160227718463124">Impostazioni generali per questo sito:</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Sei passato alla navigazione in incognito<ph name="END_BOLD"/>. Le pagine aperte in questa finestra non vengono registrate nella cronologia di navigazione o di ricerca, e non lasciano traccia sul tuo computer, ad esempio sotto forma di cookie, una volta chiusa la finestra. Tuttavia, qualsiasi file scaricato o preferito creato verrà conservato.        <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>La navigazione in incognito non influisce sul comportamento di altri utenti, server o software. Diffida di:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>Siti web che raccolgono o condividono informazioni su di te<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Provider di servizi Internet o datori di lavoro che registrano le pagine da te visitate<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Software dannosi che registrano le sequenze di tasti da te utilizzate in cambio di smiley gratuiti<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Agenti segreti<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Persone che ti stanno alle spalle<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        <ph name="BEGIN_LINK"/>Ulteriori informazioni<ph name="END_LINK"/> sulla navigazione in incognito.</translation>
 <translation id="4439241094464540230">&lt;Nuovo profilo&gt;...</translation>
 <translation id="2135787500304447609">&amp;Riprendi</translation>
 <translation id="1813414402673211292">Cancella dati di navigazione</translation>
 <translation id="2356762928523809690">Server di aggiornamento non disponibile (errore: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Tema in primo piano</translation>
+<translation id="219008588003277019">Modulo client nativo: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">Cerca su <ph name="SITE_NAME"/>:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
+<translation id="7616581516194661584">Duplica</translation>
 <translation id="8730621377337864115">Fine</translation>
+<translation id="245834195813628985"><ph name="HOUR"/>:<ph name="MIUTE"/> rimanenti</translation>
 <translation id="6267166720438879315">Seleziona un certificato per autenticarti a <ph name="HOST_NAME"/></translation>
+<translation id="7198134478421755850">Estensione</translation>
+<translation id="4713481510227594233">La sincronizzazione dei Preferiti è stata disabilitata su questo computer. Se disinstalli <ph name="NAME_OF_EXTENSION"/> puoi riabilitare la Sincronizzazione dei preferiti scegliendo &quot;Sincronizza i miei Preferiti...&quot; nel menu Strumenti.</translation>
+<translation id="9061845622728745852">Fuso orario:</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> min.</translation>
 <translation id="6315493146179903667">Porta tutto in primo piano</translation>
+<translation id="5095777643592758820">Errore di sincronizzazione dei Preferiti...</translation>
 <translation id="5015344424288992913">Risoluzione proxy in corso...</translation>
 <translation id="3675321783533846350">Imposta proxy per connessione alla rete.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> giorni</translation>
@@ -427,16 +482,19 @@
 <translation id="9010612682952491200">Nuova scheda [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Memoria condivisa</translation>
 <translation id="6248988683584659830">Impostazioni di ricerca</translation>
+<translation id="2242457451044347345">Sincronizzazione Preferiti</translation>
 <translation id="2727712005121231835">Dimensioni reali</translation>
 <translation id="8887733174653581061">Sempre in primo piano</translation>
 <translation id="610886263749567451">Avviso Javascript</translation>
 <translation id="6556866813142980365">Ripeti</translation>
+<translation id="6584811624537923135">Conferma disinstallazione</translation>
 <translation id="8413126021676339697">Mostra cronologia completa</translation>
 <translation id="8860923508273563464">Attendi completamento download</translation>
 <translation id="5288678174502918605">Riapri sch&amp;eda chiusa</translation>
 <translation id="9157595877708044936">Configurazione in corso...</translation>
 <translation id="1823768272150895732">Carattere</translation>
 <translation id="4475552974751346499">Cerca tra i file scaricati</translation>
+<translation id="5339267765524260207">Se disabiliti la sincronizzazione, i tuoi Preferiti non verranno più sincronizzati con quelli memorizzati nel tuo account Google o negli altri tuoi computer. Nessun preferito verrà eliminato. Tutti i Preferiti esistenti rimarranno su questo computer e nel tuo account Google.</translation>
 <translation id="1111153019813902504">Preferiti aggiunti di recente</translation>
 <translation id="7497564420220535101">Salva &amp;screenshot...</translation>
 <translation id="3786934874263773074">&amp;Trova nella pagina</translation>
@@ -458,6 +516,7 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> sec.</translation>
 <translation id="3551320343578183772">Chiudi scheda</translation>
 <translation id="3345886924813989455">Non è stato trovato nessun browser supportato</translation>
+<translation id="6727102863431372879">Imposta</translation>
 <translation id="3712897371525859903">Salva pagina &amp;con nome...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> sta importando i seguenti elementi da <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="1018656279737460067">Operazione annullata</translation>
@@ -468,6 +527,7 @@
 <translation id="8942948210663084792">Cancella dati:</translation>
 <translation id="208047771235602537">Uscire da <ph name="PRODUCT_NAME"/> con un download in corso?</translation>
 <translation id="6710213216561001401">Indietro</translation>
+<translation id="1567993339577891801">Console JavaScript</translation>
 <translation id="583281660410589416">Sconosciuto</translation>
 <translation id="7635303043999550515">La pagina web all'indirizzo &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; ha causato
         troppi reindirizzamenti.  La cancellazione dei cookie relativi a questo sito o l'attivazione di cookie di terze parti potrebbe risolvere il problema.  In caso
@@ -481,16 +541,20 @@
 <translation id="1560991001553749272">Aggiunto ai Preferiti!</translation>
 <translation id="3966072572894326936">Scegli un'altra cartella...</translation>
 <translation id="7781829728241885113">Ieri</translation>
+<translation id="1523341279170789507">Accetta tutti i cookie</translation>
 <translation id="7596288230018319236">Tutte le pagine visitate vengono visualizzate qui, a meno che non vengano aperte in una finestra di navigazione in incognito. Puoi utilizzare il pulsante di ricerca per cercare in tutte le pagine presenti nella cronologia.</translation>
 <translation id="2665163749053788434">Cronologia visite</translation>
 <translation id="7434509671034404296">Opzioni per sviluppatori</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="5170568018924773124">Mostra nella cartella</translation>
+<translation id="883848425547221593">Altri Preferiti</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> non è in grado di determinare o impostare il browser predefinito.</translation>
 <translation id="8898786835233784856">Seleziona scheda successiva</translation>
 <translation id="2674170444375937751">Eliminare le pagine dalla cronologia?</translation>
 <translation id="4203689580933736628">Elementi bloccati: <ph name="COUNT"/></translation>
+<translation id="2653166165688724436">Database web</translation>
 <translation id="7629827748548208700">Scheda: <ph name="TAB_NAME"/></translation>
+<translation id="8449008133205184768">Incolla e mantieni lo stile</translation>
 <translation id="8028993641010258682">Dimensioni</translation>
 <translation id="1383876407941801731">Ricerca</translation>
 <translation id="8398877366907290961">Procedi comunque</translation>
@@ -501,6 +565,7 @@
 <translation id="8789544147407756448">L'estensione seguente si è bloccata: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> min. rimanenti</translation>
 <translation id="2022540532491530427">Copia &amp;file</translation>
+<translation id="1099979722614954862"><ph name="PRODUCT_NAME"/> ora include <ph name="BEGIN_LINK"/>estensioni<ph name="END_LINK"/> e <ph name="BEGIN2_LINK"/>sincronizzazione Preferiti<ph name="END2_LINK"/>.</translation>
 <translation id="5966654788342289517">Impostazioni personali</translation>
 <translation id="2576802705154232609">Clip web</translation>
 <translation id="8664389313780386848">&amp;Visualizza sorgente pagina</translation>
@@ -511,6 +576,7 @@
 <translation id="6507969014813375884">Cinese semplificato</translation>
 <translation id="1767991048059195456">Invia segnalazione</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
+<translation id="4474155171896946103">Aggiungi tutte le schede ai Preferiti...</translation>
 <translation id="5646376287012673985">Percorso</translation>
 <translation id="1110155001042129815">Attendi</translation>
 <translation id="7071586181848220801">Plug-in sconosciuto</translation>
@@ -524,6 +590,7 @@
 <translation id="1181037720776840403">Rimuovi</translation>
 <translation id="4006726980536015530">Se chiudi ora <ph name="PRODUCT_NAME"/>, questi download verranno annullati.</translation>
 <translation id="59174027418879706">Attivati</translation>
+<translation id="6639554308659482635">Memoria SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Apri tutti i Preferiti</translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
@@ -544,6 +611,8 @@
 <translation id="5087864757604726239">indietro</translation>
 <translation id="2819994928625218237">&amp;Nessun suggerimento ortografico</translation>
 <translation id="4316305410440790958">Apri frame in un'al&amp;tra scheda</translation>
+<translation id="9142623379911037913">Consentire a <ph name="SITE"/> di mostrare le notifiche desktop?</translation>
+<translation id="4196320913210960460">Puoi gestire le estensioni installate facendo clic su Estensioni nel menu Strumenti.</translation>
 <translation id="9118804773997839291">Di seguito è riportato un elenco di tutti gli elementi non sicuri della pagina. Fai clic sul link Diagnostica per ulteriori informazioni sul thread di uno specifico elemento.</translation>
 <translation id="3664021239099029884">Visualizza tutti i download</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> minuto/minuti fa</translation>
@@ -575,6 +644,7 @@
 <translation id="4890284164788142455">Tailandese</translation>
 <translation id="3889424535448813030">Freccia destra</translation>
 <translation id="5435666907653217300">Altro problema</translation>
+<translation id="4479639480957787382">Ethernet</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="5167270755190684957">Galleria di temi di Google Chrome</translation>
 <translation id="8382913212082956454">Copia indirizzo &amp;email</translation>
@@ -584,8 +654,10 @@
 <translation id="1047726139967079566">Aggiungi questa pagina ai Preferiti...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> sec. rimanenti</translation>
 <translation id="4767443964295394154">Percorso di download</translation>
+<translation id="720658115504386855">Le lettere possono essere maiuscole o minuscole</translation>
 <translation id="2454247629720664989">Parola chiave</translation>
 <translation id="3950820424414687140">Accedi</translation>
+<translation id="2840798130349147766">Database web</translation>
 <translation id="1628736721748648976">Codifica</translation>
 <translation id="6521850982405273806">Segnala un errore</translation>
 <translation id="1769104665586091481">Apri link in un'altra &amp;finestra</translation>
@@ -595,6 +667,7 @@
 <translation id="7642109201157405070">Continua importazione</translation>
 <translation id="6463795194797719782">&amp;Modifica</translation>
 <translation id="5720119176273625078">Referrer non inviato</translation>
+<translation id="4775879719735953715">Browser predefinito</translation>
 <translation id="4805261289453566571">Accedi nuovamente</translation>
 <translation id="4188026131102273494">Parola chiave:</translation>
 <translation id="2290414052248371705">Mostra tutti i contenuti</translation>
@@ -602,8 +675,10 @@
 <translation id="3268761268932257769">Carica immagini automaticamente</translation>
 <translation id="7227780179130368205">Malware rilevato!</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
+<translation id="2912839854477398763">Disinstallare l'estensione?</translation>
 <translation id="3942946088478181888">Ulteriori informazioni</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (predefinito)</translation>
+<translation id="6543631358510643997">Questa estensione avrà accesso completo al tuo computer e ai tuoi dati privati.</translation>
 <translation id="111844081046043029">Vuoi uscire dalla pagina?</translation>
 <translation id="4497415007571823067">Hai tentato di accedere a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma sei stato indirizzato a un server che si identifica come &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Questo problema potrebbe essere causato da un errore di configurazione sul server o da qualcosa di più grave. È possibile che qualcuno stia cercando di indirizzarti a una versione fasulla (e potenzialmente pericolosa) di &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. Non procedere oltre.</translation>
 <translation id="3202578601642193415">Ultimo</translation>
@@ -621,7 +696,10 @@
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> min. rimanenti</translation>
 <translation id="2192505247865591433">Da:</translation>
 <translation id="5921544176073914576">Tentativo di phishing</translation>
+<translation id="7143207342074048698">Connessione in corso</translation>
 <translation id="6192792657125177640">Eccezioni</translation>
+<translation id="4568660204877256194">Esporta Preferiti...</translation>
+<translation id="4577070033074325641">Importa Preferiti...</translation>
 <translation id="2822650824848709219">Blocca tutti i contenuti non protetti</translation>
 <translation id="1715941336038158809">Password o nome utente non valido.</translation>
 <translation id="1901303067676059328">Seleziona &amp;tutto</translation>
@@ -637,6 +715,7 @@
 <translation id="872451400847464257">Modifica motore di ricerca</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> min.</translation>
 <translation id="8717266507183354698">Visualizza tutte le pagine della cronologia contenenti <ph name="SEARCH_TERMS"/></translation>
+<translation id="2466804342846034717">Inserisci la password corretta nella parte superiore e quindi ridigita i caratteri mostrati nella seguente immagine.</translation>
 <translation id="2922560965807694149">nascondi</translation>
 <translation id="5645845270586517071">Errore di sicurezza</translation>
 <translation id="8695758493354644945">Visualizza <ph name="NUM_MATCHES"/> pagine recenti nella cronologia contenenti <ph name="SEARCH_TERMS"/></translation>
@@ -661,6 +740,7 @@
 <translation id="5384051050210890146">Seleziona i certificati SSL affidabili.</translation>
 <translation id="6865323153634004209">Personalizza impostazioni</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
+<translation id="4176463684765177261">Disabilitato</translation>
 <translation id="154603084978752493">A&amp;ggiungi come motore di ricerca...</translation>
 <translation id="2079545284768500474">Annulla</translation>
 <translation id="114140604515785785">Directory principale estensione:</translation>
@@ -669,8 +749,10 @@
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secondi fa</translation>
 <translation id="4610637590575890427">Forse intendevi accedere a <ph name="SITE"/>?</translation>
+<translation id="5320331575990471017">da <ph name="SOURCE_ORIGIN"/></translation>
 <translation id="8349305172487531364">Barra dei Preferiti</translation>
 <translation id="7208899522964477531">Cerca <ph name="SEARCH_TERMS"/> su <ph name="SITE_NAME"/></translation>
+<translation id="5584091888252706332">All'avvio</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Modifica nome cartella</translation>
@@ -697,7 +779,9 @@
 <translation id="8877448029301136595">[directory principale]</translation>
 <translation id="1963227389609234879">Rimuovi tutto</translation>
 <translation id="8027581147000338959">Apri in un'altra finestra</translation>
+<translation id="8019305344918958688">Spiacenti, nessuna estensione installata.</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="4720829798001058201">Adesso i tuoi Preferiti sono sincronizzati con Google Documenti. Per unire e sincronizzare i tuoi Preferiti con Chrome su un altro computer, ripeti la stessa procedura su tale computer.</translation>
 <translation id="2496180316473517155">Cronologia di navigazione</translation>
 <translation id="602251597322198729">Questo sito sta tentando di scaricare più file. Consentire l'operazione?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> ore</translation>
@@ -709,6 +793,7 @@
 <translation id="1002064594444093641">Stampa f&amp;rame...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">Mo&amp;stra nella cartella</translation>
+<translation id="5554489410841842733">Questa icona sarà visibile quando l'estensione potrà interagire nella pagina corrente.</translation>
 <translation id="4756388243121344051">&amp;Cronologia</translation>
 <translation id="3789841737615482174">Installa</translation>
 <translation id="4789872672210757069">Informazioni su &amp;<ph name="PRODUCT_NAME"/></translation>
@@ -756,6 +841,7 @@
 <translation id="5178667623289523808">Trova precedente</translation>
 <translation id="2815448242176260024">Non salvare mai le password</translation>
 <translation id="2989805286512600854">Apri in un'altra scheda</translation>
+<translation id="2701236005765480329">Avviso estensione</translation>
 <translation id="6503077044568424649">Più visitati</translation>
 <translation id="3265459715026181080">Chiudi finestra</translation>
 <translation id="3831099738707437457">&amp;Nascondi riquadro ortografia</translation>
@@ -765,7 +851,7 @@
 <translation id="3319048459796106952">Nuova f&amp;inestra di navigazione in incognito</translation>
 <translation id="3127919023693423797">Autenticazione in corso...</translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
-<translation id="3683878911947678690">Puoi sincronizzare i tuoi Preferiti tra computer utilizzando il tuo account Google</translation>
+<translation id="8030169304546394654">Disconnesso</translation>
 <translation id="4178055285485194276">All'avvio:</translation>
 <translation id="1154228249304313899">Apri questa pagina:</translation>
 <translation id="9074348188580488499">Rimuovere tutte le password?</translation>
@@ -782,13 +868,16 @@
 <translation id="1285631718404404702">Visualizza attività recenti</translation>
 <translation id="6783679543387074885">Segnala bug o sito web non funzionante</translation>
 <translation id="3494444535872870968">Salva &amp;frame con nome...</translation>
+<translation id="5731247495086897348">Incolla e vi&amp;sita</translation>
 <translation id="3413103074007669042">Questa pagina ha alcuni contenuti non sicuri</translation>
 <translation id="4887833561977827087">Al momento non esistono elementi da visualizzare qui.
         <ph name="BEGIN_LINK"/>Personalizza<ph name="END_LINK"/>
         i tuoi clip web e aggiungi altre fonti.</translation>
 <translation id="5285267187067365830">Installa plug-in...</translation>
 <translation id="1166212789817575481">Chiudi schede a destra</translation>
+<translation id="6472893788822429178">Mostra pulsante Pagina iniziale</translation>
 <translation id="5685236799358487266">Aggiun&amp;gi come motore di ricerca...</translation>
+<translation id="3437016096396740659">Batteria caricata</translation>
 <translation id="7907591526440419938">Apri file</translation>
 <translation id="21133533946938348">Blocca scheda</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
@@ -799,26 +888,36 @@
 <translation id="9012607008263791152">Sono consapevole che accedendo a questo sito potrei danneggiare il mio computer.</translation>
 <translation id="1441458099223378239">Non riesco ad accedere al mio account</translation>
 <translation id="5793220536715630615">C&amp;opia URL video</translation>
+<translation id="523397668577733901"><ph name="BEGIN_LINK"/>Sfogliare la galleria<ph name="END_LINK"/>?</translation>
+<translation id="3778740492972734840">&amp;Strumenti per sviluppatori</translation>
 <translation id="6004539838376062211">&amp;Opzioni correttore ortografico</translation>
+<translation id="5350198318881239970">Impossibile aprire correttamente il tuo profilo.\n\nAlcune funzioni potrebbero non essere disponibili. Verifica che il profilo esista e che tu sia autorizzato alla lettura e alla scrittura dei relativi contenuti.</translation>
 <translation id="4058793769387728514">Controlla documento ora</translation>
 <translation id="2915134691870672002">Nascondi suggerimenti</translation>
+<translation id="756445078718366910">Apri finestra del browser</translation>
 <translation id="7887334752153342268">Duplica</translation>
 <translation id="4980691186726139495">Non tenere su questa pagina</translation>
+<translation id="9026731007018893674">download</translation>
 <translation id="7646591409235458998">Email:</translation>
 <translation id="703748601351783580">Apri tutti i Preferiti in un'altra finestra</translation>
+<translation id="8409023599530904397">Barra degli strumenti:</translation>
+<translation id="770273299705142744">Compilazione automatica moduli</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="8414273245158967435">L'estensione <ph name="NAME_OF_EXTENSION"/> è stata disabilitata. Se disattivi la sincronizzazione dei Preferiti, puoi riabilitare l'estensione nella pagina delle estensioni, accessibile dal menu Strumenti.</translation>
 <translation id="4478664379124702289">Salva lin&amp;k con nome...</translation>
 <translation id="1044231968500257587">I Preferiti online esistenti verranno uniti ai
         Preferiti su questa macchina. Puoi utilizzare Gestione Preferiti per organizzare
         i tuoi Preferiti dopo l'unione.</translation>
 <translation id="8502249598105294518">Personalizza e controlla <ph name="PRODUCT_NAME"/></translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> ore fa</translation>
+<translation id="768570155019561996">Questa estensione avrà accesso a tutti i tuoi dati privati su più siti web.</translation>
 <translation id="7180865173735832675">Personalizza</translation>
 <translation id="1430594899542257414">Consigli e trucchi</translation>
 <translation id="2115926821277323019">Specificare un URL valido</translation>
 <translation id="7397054681783221164">Cancella i seguenti elementi:</translation>
 <translation id="4891251785049117953">Cancella i dati salvati del modulo</translation>
 <translation id="1531836666020185856">In primo piano</translation>
+<translation id="580571955903695899">Riordina per titolo</translation>
 <translation id="5230516054153933099">Finestra</translation>
 <translation id="7554791636758816595">Nuova scheda</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
@@ -827,9 +926,11 @@
 <translation id="1086613338090581534">Per un certificato non scaduto l'autorità emittente è responsabile della gestione di un cosiddetto &quot;elenco di revoche&quot;. Qualora un certificato fosse compromesso, l'autorità emittente ha la possibilità di revocarlo aggiungendolo all'elenco di revoche. In questo modo il certificato non viene più ritenuto affidabile dal browser. Tuttavia per i certificati scaduti non è necessario mantenere lo stato di revoca, pertanto, sebbene in precedenza il certificato fosse valido per il sito web che stai visitando, al momento non è possibile stabilire se è stato violato, e di conseguenza revocato, o se è ancora sicuro. Non è possibile stabilire se stai comunicando con un sito web attendibile o se il certificato è stato violato da un hacker. Non procedere oltre questo punto.</translation>
 <translation id="2645575947416143543">Se, però, lavori per un'organizzazione che genera i propri certificati e stai tentando di collegarti a un sito web interno di tale organizzazione utilizzando un suo certificato, potresti riuscire a risolvere questo problema in modo sicuro. Puoi importare il certificato principale dell'organizzazione come &quot;certificato principale&quot;, dopodiché i certificati emessi o verificati dall'organizzazione saranno ritenuti attendibili e questo errore non verrà più visualizzato al successivo tentativo di collegarti a un sito web interno. Contatta il personale di supporto dell'organizzazione per ricevere assistenza nell'aggiunta di un nuovo certificato principale sul tuo computer.</translation>
 <translation id="3157931365184549694">Ripristina</translation>
+<translation id="7426243339717063209">Disinstallare &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="6059232451013891645">Cartella:</translation>
 <translation id="8182985032676093812">Sorgente di <ph name="PAGE_URL"/></translation>
 <translation id="7042418530779813870">In&amp;colla e cerca</translation>
+<translation id="2101225219012730419">Versione:</translation>
 <translation id="1570242578492689919">Caratteri e codifica</translation>
 <translation id="3031557471081358569">Seleziona elementi da importare:</translation>
 <translation id="3031433885594348982">La connessione a <ph name="DOMAIN"/> è protetta con una crittografia debole.</translation>
@@ -849,6 +950,7 @@
 <translation id="6181769708911894002">Attenzione: l'apertura di questo sito potrebbe danneggiare il tuo computer!</translation>
 <translation id="3412265149091626468">Passa alla selezione</translation>
 <translation id="3785852283863272759">Invia percorso pagina tramite email</translation>
+<translation id="7326526699920221209">Batteria: <ph name="PRECENTAGE"/>%</translation>
 <translation id="601778514741867265">Accetta soltanto i cookie dei siti da me visitati</translation>
 <translation id="8299269255470343364">Giapponese</translation>
 <translation id="5204993535447683655">&lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;Ricarica&lt;/a&gt; la pagina web più tardi.</translation>
@@ -856,10 +958,12 @@
 <translation id="7280343984261969618">Esegue i plug-in in una sandbox senza privilegi. Alcuni plug-in non funzioneranno correttamente.</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> giorno rimanente</translation>
 <translation id="2885378588091291677">Task Manager</translation>
+<translation id="1215711112676250731">Spazio di archiviazione:</translation>
 <translation id="2359808026110333948">Continua</translation>
 <translation id="1618661679583408047">Il certificato di sicurezza del server non è ancora valido!</translation>
 <translation id="9040508646567685134">Uno script in esecuzione su questa pagina ci sta mettendo una vita per funzionare. Vuoi aspettare ancora o lasci perdere?</translation>
 <translation id="3065140616557457172">Digita i termini di ricerca o inserisci un URL per navigare. Entrambe le soluzioni funzionano.</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="5509693895992845810">S&amp;alva con nome...</translation>
 <translation id="5986279928654338866">Il server <ph name="DOMAIN"/> richiede un nome utente e una password.</translation>
 <translation id="521467793286158632">Rimuovi tutte le password</translation>
@@ -869,10 +973,10 @@
 <translation id="7221869452894271364">Ricarica questa pagina</translation>
 <translation id="8646430701497924396">Utilizza SSL 2.0</translation>
 <translation id="8179976553408161302">Invio</translation>
+<translation id="5481650329671719147">Estensioni e temi possono danneggiare il tuo computer. Continuare?</translation>
 <translation id="8261506727792406068">Elimina</translation>
 <translation id="345693547134384690">Apri &amp;immagine in un'altra scheda</translation>
 <translation id="7422192691352527311">Preferenze...</translation>
-<translation id="7220379225958650049">Avvia ora</translation>
 <translation id="1375198122581997741">Informazioni sulla versione</translation>
 <translation id="1474307029659222435">Apri frame in un'altra &amp;finestra</translation>
 <translation id="7133850061938542637">Sincronizzazione con <ph name="USER_EMAIL_ADDRESS"/> eseguita\nUltima sincronizzazione: <ph name="LAST_SYNC_TIME"/></translation>
@@ -887,11 +991,14 @@
 <translation id="884923133447025588">Nessun sistema di revoca trovato.</translation>
 <translation id="7240072072812590475">Modifica impostazioni Gears</translation>
 <translation id="6001785649757655903">Errore blacklist per la privacy</translation>
+<translation id="2480155717379390016">Disabilita <ph name="NAME_OF_EXTENSION"/></translation>
+<translation id="492643400682328128">Disattiva <ph name="NETWORKDEVICE"/></translation>
 <translation id="7671130400130574146">Usa barra del titolo di sistema e bordi</translation>
 <translation id="9170848237812810038">&amp;Annulla</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
 <translation id="4444364671565852729"><ph name="PRODUCT_NAME"/> è stato aggiornato alla versione <ph name="VERSION"/></translation>
 <translation id="2731392572903530958">R&amp;iapri finestra chiusa</translation>
+<translation id="4264420740606601613">Blocca completamente cookie di terze parti</translation>
 <translation id="6483805311199035658">Apertura di <ph name="FILE"/> in corso...</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> ore fa</translation>
 <translation id="9154176715500758432">Rimani su questa pagina</translation>
@@ -903,10 +1010,14 @@
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Riprendi</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secondi fa</translation>
+<translation id="5663016964925996918">L'estensione <ph name="EXTENSION_NAME"/> è ora installata</translation>
 <translation id="3009731429620355204">Sessioni</translation>
 <translation id="7658590191988721853">Attiva scorrimento bordo verticale</translation>
+<translation id="5190835502935405962">Barra dei Preferiti</translation>
+<translation id="5438430601586617544">(Non pacchettizata)</translation>
 <translation id="6460601847208524483">Trova successivo</translation>
 <translation id="3473034187222004855">Copia &amp;percorso file</translation>
+<translation id="3038131737570201586">Questa estensione avrà accesso alla tua cronologia di navigazione e ai tuoi dati privati su più siti web.</translation>
 <translation id="6325525973963619867">Non riuscito</translation>
 <translation id="1676388805288306495">Cambia carattere e lingua predefiniti per le pagine web.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
@@ -921,6 +1032,7 @@
 <translation id="5333374927882515515">Importerà preferiti, password e altre impostazioni da <ph name="DEF_BROWSER"/></translation>
 <translation id="4239831617079978238">Fine della sessione</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
+<translation id="5960889226412209189">Attiva/disattiva barra di navigazione compatta</translation>
 <translation id="8954894007019320973">(Continua)</translation>
 <translation id="3748412725338508953">Si sono verificati troppi reindirizzamenti.</translation>
 <translation id="8929159553808058020">Aggiungi le lingue utilizzate per leggere i siti web, in ordine di preferenza. Aggiungi solo quelle che ti servono, poiché alcuni caratteri possono essere utilizzati per rappresentare siti web in altre lingue.</translation>
@@ -936,10 +1048,13 @@
 <translation id="7088615885725309056">Meno recente</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> giorni fa</translation>
 <translation id="8562413501751825163">Chiudi Firefox prima di eseguire l'importazione</translation>
+<translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/> kB (<ph name="NUM_KILOBYTES_LIVE"/> kB effettivi)</translation>
 <translation id="5034259512732355072">Scegli un'altra directory...</translation>
 <translation id="5074322878757699801">Importa dati...</translation>
+<translation id="7505152414826719222">Archiviazione locale</translation>
 <translation id="5706242308519462060">Codifica predefinita:</translation>
 <translation id="5280833172404792470">Esci da schermo intero (<ph name="ACCELERATOR"/>)</translation>
+<translation id="4000986992587584088">Mostra sempre popup di <ph name="URL"/></translation>
 <translation id="129553762522093515">Chiuse di recente</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> giorni</translation>
 <translation id="3891357445869647828">Attiva JavaScript</translation>
@@ -956,14 +1071,18 @@
 <translation id="4867297348137739678">Settimana scorsa</translation>
 <translation id="4881695831933465202">Apri</translation>
 <translation id="5457793226917888578">Questa pagina ha contenuti non sicuri.</translation>
+<translation id="5988520580879236902">Esamina visualizzazioni attive:</translation>
 <translation id="5981759340456370804">Statistiche per nerd</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> giorno</translation>
 <translation id="6512448926095770873">Esci dalla pagina</translation>
 <translation id="5607455023223000189">Plug-in installati</translation>
 <translation id="6294193300318171613">Mostr&amp;a sempre barra dei Preferiti</translation>
+<translation id="3414952576877147120">Dimensioni:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> secondi fa</translation>
 <translation id="7009102566764819240">Di seguito è riportato un elenco di tutti gli elementi non sicuri della pagina. Fai clic sul link Diagnostica per ulteriori informazioni sul thread di uno specifico elemento. Se ritieni che una risorsa sia stata segnalata erroneamente come phishing, fai clic sul link &quot;Segnala errore&quot;.</translation>
+<translation id="676327646545845024">Non mostrare più questa finestra di dialogo per tutti i link di questo tipo.</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> sec. rimanenti</translation>
+<translation id="6863682319656084809">Avviso estensione <ph name="EXTENSION_NAME"/></translation>
 <translation id="1485146213770915382">Inserisci <ph name="SEARCH_TERMS_LITERAL"/> nell'URL come segnaposto per i termini di ricerca.</translation>
 <translation id="4839303808932127586">Sal&amp;va video come...</translation>
 <translation id="5626134646977739690">Nome:</translation>
@@ -974,6 +1093,7 @@
 <translation id="4876916865079819322">Sincronizza i miei Preferiti</translation>
 <translation id="146000042969587795">Il frame è stato bloccato poiché contiene contenuti non protetti.</translation>
 <translation id="8112223930265703044">Tutto</translation>
+<translation id="8023801379949507775">Aggiorna estensioni adesso</translation>
 <translation id="1983108933174595844">Invia schermata pagina corrente</translation>
 <translation id="436869212180315161">Premi</translation>
 <translation id="8241707690549784388">La pagina a cui stai tentando di accedere utilizzava informazioni inserite da te. Tornando a quella pagina, è possibile che eventuali azioni che hai eseguito vengano ripetute. Continuare?</translation>
@@ -986,6 +1106,7 @@
 <translation id="1753905327828125965">Più visitati</translation>
 <translation id="170407012880898501">Salva il testo dei moduli per facilitarne la compilazione</translation>
 <translation id="8116972784401310538">Gestione &amp;Preferiti</translation>
+<translation id="1849632043866553433">Cache applicazione</translation>
 <translation id="4927301649992043040">Crea pacchetto estensione</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> minuti fa</translation>
@@ -998,12 +1119,15 @@
 <translation id="1232569758102978740">Senza titolo</translation>
 <translation id="9149866541089851383">Modifica...</translation>
 <translation id="7000311294523403548">Pagina web senza titolo</translation>
+<translation id="4593021220803146968">Vai alla pa&amp;gina <ph name="URL"/></translation>
 <translation id="7649070708921625228">Guida</translation>
 <translation id="6119719873954126908">Guarda questo spazio per ricevere consigli e suggerimenti per una migliore navigazione.</translation>
 <translation id="7442246004212327644">C&amp;ancella</translation>
 <translation id="281133045296806353">È stata creata una nuova finestra nella sessione corrente del browser.</translation>
+<translation id="6314007596429871800">Cache applicazione</translation>
 <translation id="9002707937526687073">S&amp;tampa...</translation>
 <translation id="5556459405103347317">Ricarica</translation>
+<translation id="8326395326942127023">Nome database:</translation>
 <translation id="7727721885715384408">Rinomina...</translation>
 <translation id="5508407262627860757">Annulla comunque</translation>
 <translation id="7587108133605326224">Baltico</translation>
@@ -1012,6 +1136,7 @@
 <translation id="3021678814754966447">&amp;Visualizza sorgente frame</translation>
 <translation id="5271549068863921519">Salva password</translation>
 <translation id="3251855518428926750">Aggiungi...</translation>
+<translation id="3508920295779105875">Scegli un'altra cartella...</translation>
 <translation id="2987775926667433828">Cinese tradizionale</translation>
 <translation id="3954582159466790312">&amp;Attiva audio</translation>
 <translation id="5809606740668187902">Risorsa bloccata</translation>
@@ -1023,8 +1148,10 @@
 <translation id="8045462269890919536">Rumeno</translation>
 <translation id="2927657246008729253">Modifica...</translation>
 <translation id="7978412674231730200">Chiave privata</translation>
+<translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">Nuova finestra di navigazione in &amp;incognito</translation>
 <translation id="3478477629095836699">Impostazioni cookie:</translation>
+<translation id="6529237754759924038">Data e ora</translation>
 <translation id="7278870042769914968">Utilizza tema GTK+</translation>
 <translation id="2108475813351458355">Connessione protetta a <ph name="DOMAIN"/></translation>
 <translation id="942671148946453043">Hai aperto una finestra di navigazione in incognito. Le pagine aperte in questa finestra non compariranno nella cronologia.</translation>
@@ -1060,11 +1187,14 @@
 <translation id="3943582379552582368">&amp;Indietro</translation>
 <translation id="7607002721634913082">In pausa</translation>
 <translation id="480990236307250886">Apri pagina iniziale</translation>
+<translation id="5757539081890243754">Home page</translation>
 <translation id="6709133671862442373">Notizie</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ore rimanenti</translation>
+<translation id="6550675742724504774">Opzioni</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> ore fa</translation>
 <translation id="737801893573836157">Nascondi barra del titolo di sistema e utilizza bordi compatti</translation>
 <translation id="5040262127954254034">Privacy</translation>
+<translation id="1058681476058291010">Errore di sincronizzazione dei Preferiti...</translation>
 <translation id="1908748899139377733">&amp;Informazioni frame</translation>
 <translation id="8400147561352026160">Maiusc+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="803771048473350947">Archivio</translation>
@@ -1073,6 +1203,7 @@
 <translation id="566920818739465183">Hai visitato per la prima volta questo sito in data <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Fai clic per andare avanti, tieni premuto per vedere la cronologia</translation>
 <translation id="923083373181549309">Riavvia <ph name="PRODUCT_NAME"/></translation>
+<translation id="8678305583783039525">Mostra autorizzazioni siti web e cookie</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> sec.</translation>
 <translation id="176587472219019965">&amp;Nuova finestra</translation>
 <translation id="8689341121182997459">Scadenza:</translation>
@@ -1089,11 +1220,13 @@
 <translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> svolgerà le seguenti operazioni:</translation>
 <translation id="1812622104192390866">Importa impostazioni da</translation>
 <translation id="4042471398575101546">Aggiungi pagina</translation>
+<translation id="4871865824885782245">Apri opzioni di data e ora...</translation>
 <translation id="988159990683914416">Build</translation>
 <translation id="921175996768281472">Errore creazione pacchetto estensione</translation>
 <translation id="2183426022964444701">Seleziona la directory principale dell'estensione.</translation>
 <translation id="6790650291892352751">Cerca per argomento o URL:</translation>
 <translation id="5398353896536222911">Mo&amp;stra riquadro ortografia</translation>
+<translation id="8046048349148382412"><ph name="HOUR"/>:<ph name="MIUTE"/> rimanenti al completamento della ricarica</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="7481312909269577407">Avanti</translation>
@@ -1106,6 +1239,7 @@
 <translation id="2444683954290143042">Errore di sincronizzazione: esegui di nuovo l'accesso</translation>
 <translation id="5830720307094128296">S&amp;alva pagina con nome...</translation>
 <translation id="5822838715583768518">Avvia applicazione</translation>
+<translation id="2433507940547922241">Aspetto</translation>
 <translation id="839072384475670817">Crea &amp;scorciatoie applicazione...</translation>
 <translation id="6756161853376828318">Imposta <ph name="PRODUCT_NAME"/> come browser predefinito</translation>
 <translation id="2640524951934795733">E qui che cosa ci mettiamo?</translation>
@@ -1116,6 +1250,7 @@
 <translation id="3807747707162121253">&amp;Annulla</translation>
 <translation id="2850243184678184884">ad es. hockey, BBC, http://engadget.com/rss.xml</translation>
 <translation id="77999321721642562">Con il passare del tempo, nell'area sottostante verranno visualizzati i tuoi otto siti più visitati.</translation>
+<translation id="5864830997591220873">Blocca tutti i cookie</translation>
 <translation id="7447718177945067973">Impossibile trovare il server.</translation>
 <translation id="715468010956678290">Apri frame in finestra di navigazione in inco&amp;gnito</translation>
 <translation id="7755167023778553803">Tuttavia, la pagina contiene risorse provenienti da altri siti web di cui non è possibile verificare l'identità.</translation>
@@ -1123,10 +1258,11 @@
 <translation id="3455546154539383562">Hai tentato di accedere a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato presentato dal server è stato revocato dall'autorità emittente, pertanto le credenziali di sicurezza presentate dal server non sono affidabili. È possibile che tu stia comunicando con un hacker. Non procedere oltre.</translation>
 <translation id="1177437665183591855">Errore certificato server sconosciuto</translation>
 <translation id="3819800052061700452">&amp;Schermo intero</translation>
+<translation id="3533943170037501541">Benvenuto nella tua pagina iniziale.</translation>
 <translation id="3218306954729745977">Mostra schede chiuse di recente</translation>
 <translation id="3737554291183722650">Titolo pagina:</translation>
 <translation id="1581962803218266616">Mostra nel Finder</translation>
-<translation id="4726901538158498735">Ricerca predefinita</translation>
+<translation id="4726901538158498735">Ricerca predefinita:</translation>
 <translation id="923467487918828349">Mostra tutte</translation>
 <translation id="5101042277149003567">Apri tutti i Preferiti</translation>
 <translation id="6349678711452810642">Imposta come predefinito</translation>
@@ -1141,16 +1277,19 @@
 <translation id="1208126399996836490">Non ripristinare</translation>
 <translation id="806812017500012252">Riordina per titolo</translation>
 <translation id="2960316970329790041">Interrompi importazione</translation>
+<translation id="5361734574074701223">Calcolo del tempo rimanente in corso</translation>
 <translation id="1731911755844941020">Invio richiesta in corso...</translation>
 <translation id="1038842779957582377">nome sconosciuto</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="2052895926110224873">Impossibile caricare le blacklist per la privacy.</translation>
 <translation id="2445081178310039857">La directory principale dell'estensione è obbligatoria.</translation>
+<translation id="8251578425305135684">Miniatura rimossa.</translation>
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="1918141783557917887">Più &amp;piccolo</translation>
 <translation id="4065006016613364460">C&amp;opia URL immagine</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="4481249487722541506">Carica estensione non pacchettizzata...</translation>
 <translation id="8542113417382134668">Carattere Serif:</translation>
 <translation id="2149973817440762519">Modifica Preferito</translation>
 <translation id="430831869130657585">Suffissi</translation>
@@ -1174,17 +1313,27 @@
 <translation id="6053401458108962351">&amp;Cancella dati di navigazione...</translation>
 <translation id="2339641773402824483">Verifica aggiornamenti in corso...</translation>
 <translation id="8600200086690278232">Clip web in primo piano</translation>
+<translation id="8582728318425382804">Autorizzazioni siti web e cookie</translation>
 <translation id="2766006623206032690">In&amp;colla e vai</translation>
 <translation id="9071050381089585305">Lo script non risponde</translation>
+<translation id="4394049700291259645">Disabilita</translation>
 <translation id="969892804517981540">Build ufficiale</translation>
 <translation id="724208122063442954">Hai scelto di aprire automaticamente determinati file dopo il download. Puoi cancellare queste impostazioni in modo che i file non vengano più aperti automaticamente.</translation>
 <translation id="5765491088802881382">Nessuna rete disponibile</translation>
 <translation id="5183088099396036950">Impossibile collegarsi al server</translation>
-<translation id="4477534650265381513">Aggiungi le tue pagine preferite nella barra dei Preferiti per accedervi rapidamente.</translation>
+<translation id="4469842253116033348">Disabilita notifiche da <ph name="SITE"/></translation>
+<translation id="7999229196265990314">Sono stati creati i file seguenti:
+        
+Estensione: <ph name="EXTENSION_FILE"/>
+File di chiave: <ph name="KEY_FILE"/>
+
+Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove versioni dell'estensione.</translation>
 <translation id="3036649622769666520">Apri file</translation>
 <translation id="7909652923456235549">Cookie non inviati</translation>
+<translation id="7685049629764448582">Memoria JavaScript</translation>
 <translation id="4508765956121923607">Visualizza s&amp;orgente</translation>
 <translation id="8080048886850452639">C&amp;opia URL audio</translation>
+<translation id="5849869942539715694">Crea pacchetto estensione...</translation>
 <translation id="7339785458027436441">Controllo ortografico durante la digitazione</translation>
 <translation id="1384721974622518101">Sapevi che puoi eseguire ricerche direttamente dalla casella in alto?</translation>
 <translation id="8203365863660628138">Conferma installazione</translation>

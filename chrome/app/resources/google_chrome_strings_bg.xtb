@@ -3,15 +3,19 @@
 <translationbundle lang="bg">
 <translation id="8000275528373650868">За Google Chrome се изисква Windows Vista или Windows XP с SP2 или по-нова версия.</translation>
 <translation id="6676384891291319759">Достъп до интернет</translation>
+<translation id="4517682492677349713">Искате ли Google Chrome да запази тази информация?</translation>
 <translation id="2770231113462710648">Промяна на браузъра по подразбиране с/ъс:</translation>
 <translation id="698670068493841342">Google Chrome вече е инсталиран за този потребител. Ако софтуерът не работи, моля, деинсталирайте Google Chrome и го изтеглете отново.</translation>
 <translation id="7400722733683201933">Всичко за Google Chrome</translation>
+<translation id="7781002470561365167">Налице е нова версия на Google Chrome.</translation>
 <translation id="7101265395643981223">Стартиране на Google Chrome</translation>
 <translation id="2370289711218562573">В момента Google Chrome импортира „Любими/Отметки“.</translation>
 <translation id="8970027151245482499">Google Chrome не е инсталиран или не е успял да намери инсталационната директория. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
 <translation id="1137776625614346046">Областта „Най-посещавани“ съдържа най-често използваните от вас уебсайтове. След като използвате Google Chrome за известно време, ще забележите, че най-посещаваните от вас сайтове се показват всеки път, когато отворите нов раздел в браузъра. Можете да научите повече за това и за другите функции на <ph name="BEGIN_LINK"/>страницата Първи стъпки<ph name="END_LINK"/>.</translation>
+<translation id="3555616473548901994">Деинсталирането завърши.</translation>
+<translation id="1826297811907343327">Ако откажете сега, няма да бъдат импортирани всички елементи. Можете да импортирате отново по-късно от менюто на Google Chrome.</translation>
 <translation id="4728575227883772061">Инсталирането не бе успешно поради неизвестна грешка. Ако Google Chrome понастоящем работи, моля, затворете го и опитайте отново.</translation>
 <translation id="4149882025268051530">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -37,30 +41,35 @@
 <translation id="6009537148180854585">Опитахте да се свържете с &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но представеният от сървъра сертификат съдържа грешки. Google Chrome не може да използва сертификат, съдържащ грешки, и не може да провери самоличността на сайта, с който се опитахте да се свържете. 
 Връзката ви не е защитена и не трябва да продължавате по-нататък.</translation>
 <translation id="2485422356828889247">Деинсталиране</translation>
+<translation id="8899050679030089927">Моля, затворете всички прозорци на Google Chrome и го рестартирайте, за да влезе в сила промяната.</translation>
 <translation id="3324235665723428530">Не можете да използвате профила си, тъй като той е от по-нова версия на Google Chrome.\n\nВъзможно е някои функции да са недостъпни. Моля посочете директория на друг профил или използвайте по-нова версия на Chrome.</translation>
+<translation id="7214670531148488183">Google Chrome може да използва уеб услуги, за да подобри сърфирането ви. Ако искате, можете да ги деактивирате.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
 <translation id="2044287590254833138">Лента с инструменти на Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">Ура! Върнахте се. Но Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="6481075104394517441">Опитахте да се свържете с &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но представеният от сървъра сертификат още не е валиден. Няма информация за това дали сертификатът е надежден. Това означава, че Google Chrome не може със сигурност да гарантира, че комуникирате с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;,  а не с хакер. Трябва да се уверите, че часовникът и часовата зона на компютъра са зададени правилно. Ако не са, трябва да отстраните нередностите и да обновите тази страница. Ако те са зададени правилно, не продължавайте по-нататък.</translation>
 <translation id="8862326446509486874">Нямате подходящи права за инсталация на ниво система. Опитайте да стартирате отново инсталационната програма като администратор.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome съществува благодарение на проекта с отворен код <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> и други <ph name="BEGIN_LINK_OSS"/>софтуерни продукти с отворен код<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome е готов да завърши инсталирането.</translation>
 <translation id="7100330187273168372">Google Chrome не може да чете и записва в директорията си с данни:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="6757767188268205357">Не ме занимавайте</translation>
 <translation id="2290095356545025170">Наистина ли искате да деинсталирате Google Chrome?</translation>
 <translation id="5941830788786076944">Искам Google Chrome да бъде браузърът по подразбиране</translation>
 <translation id="4127951844153999091">В този случай посоченият в сертификата адрес не съответства на адреса на уебсайта, който браузърът ви се е опитал да отвори. Една от възможните причини за това е комуникацията ви да се прихваща от хакер, който представя сертификат за различен уебсайт, поради което има несъответствие между тях. Друга възможна причина е сървърът да е настроен да връща един и същи сертификат за голям брой уебсайтове, включително и за този, който се опитвате да отворите, въпреки че този сертификат може да не е валиден за всички от тях. Google Chrome гарантира със сигурност, че сте се свързали с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, но не може да провери дали това е същият сайт като &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, с който искахте да се свържете. Ако продължите, Google Chrome няма повече да проверява за несъответствие между имената. По принцип е най-добре да не продължавате по-нататък.</translation>
 <translation id="2712549016134575851">Установен е конфликт с друго инсталирано приложение.</translation>
+<translation id="7018032895891496381">Google Chrome използва търсещата ви машина по подразбираме, която понастоящем е <ph name="PAGE_TITLE"/>. Искате ли да я запазите?</translation>
 <translation id="7161904924553537242">Добре дошли в Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8236873504073475138">Google Chrome не поддържа Windows 2000. Някои функции може да не работят.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="6126631249883707068">Искате ли Google Chrome да запази паролата ви?</translation>
 <translation id="5046764976540625289">Изход от Chrome</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Интернет браузър</translation>
 <translation id="8776515774046280928">Google Chrome вече е инсталиран и достъпен за всички потребители на този компютър. Ако искате да инсталирате Google Chrome на потребителско ниво, трябва първо да деинсталирате версията на системно ниво, инсталирана от администратор.</translation>
+<translation id="7196020411877309443">Защо се показва това?</translation>
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome не поддържа <ph name="OS_NAME"/>.</translation>
@@ -74,6 +83,7 @@
 <translation id="6626317981028933585">За съжаление настройките на Mozilla Firefox са недостъпни, докато този браузър работи. За да импортирате тези настройки в Google Chrome, запазете работата си и затворете всички прозорци на Firefox. След това кликнете върху „Напред”.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="6049075767726609708">Google Chrome е бил инсталиран на този компютър от администратор и е достъпен за всички потребители. Google Chrome на системно ниво ще замести инсталацията на потребителско ниво.</translation>
+<translation id="7123348595797445166">Ще я изпробвам (вече е инсталирана)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">Промяна на езика, използван в менютата, диалоговите прозорци и екранните пояснения на Google Chrome.</translation>
 <translation id="9189723490960700326">Опитахте да се свърже с &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но представеният от сървъра сертификат е изтекъл. Няма информация за това дали е преодоляна защитата на сертификата, след като валидността му е изтекла. Това означава, че Google Chrome не може да гарантира, че комуникирате с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;,  а не с хакер. Не продължавайте по-нататък.</translation>

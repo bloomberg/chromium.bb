@@ -7,6 +7,7 @@
 <translation id="3581034179710640788">Saidi turvasert on aegunud!</translation>
 <translation id="8275038454117074363">Impordi</translation>
 <translation id="8418445294933751433">&amp;Kuva vahelehena</translation>
+<translation id="6985276906761169321">ID:</translation>
 <translation id="2160383474450212653">Fondid ja keeled</translation>
 <translation id="4405141258442788789">Toiming aegus.</translation>
 <translation id="5048179823246820836">Põhjamaade</translation>
@@ -28,11 +29,15 @@
 <translation id="8571213806525832805">Viimased 4 nädalat</translation>
 <translation id="6021004449668343960">Seriifideta font:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> tundi tagasi</translation>
+<translation id="8460952460426246415">Teie järjehoidjad sünkroonitakse nüüd kõikide arvutite vahel, kus olete sünkroonimisfunktsiooni lubanud.</translation>
 <translation id="4422428420715047158">Domeen:</translation>
 <translation id="4021918302616263355">Otsi <ph name="ENGINE"/>'s päringut <ph name="SEARCH_TERMS"/></translation>
 <translation id="5376169624176189338">Klõpsake tagasi minemiseks, hoidke all ajaloo kuvamiseks</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> sekundit jäänud</translation>
 <translation id="9181716872983600413">Unicode</translation>
+<translation id="7383539497402338906">Järjehoidjate sünkroonimise abil saate lihtsalt hoida sama järjehoidjakomplekti mitmes arvutis.
+        Kui lubate sünkroonimise, siis salvestatakse teie järjehoidjad veebis teie Google'i kontol.
+        Kõik muud arvutid, kus lubate sünkroonimise, saavad samad järjehoidjad.</translation>
 <translation id="1383861834909034572">Avaneb pärast lõpetamist</translation>
 <translation id="4211171103079968550">Luba Java</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
@@ -45,12 +50,12 @@
 <translation id="9154072353677278078">Server <ph name="DOMAIN"/> aadressil <ph name="REALM"/> nõuab kasutajanime ja parooli.</translation>
 <translation id="2193841602817119749">Veebisaidi kohta aadressil &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; on teada antud kui andmepüügiga tegelevast saidist. Andmepüügiga tegelevad saidid meelitavad kasutajad isikuandmete või rahaga seotud andmete edastamisele, teeseldes sageli usaldusväärsete asutuste, nagu näiteks pankade, esindamist.</translation>
 <translation id="8178665534778830238">Sisu:</translation>
-<translation id="1379170046778889619">Turvateave</translation>
 <translation id="4771019161370731727">Hiljutised toimingud</translation>
 <translation id="8974161578568356045">Automaatne tuvastamine</translation>
 <translation id="1818606096021558659">Lehekülg</translation>
 <translation id="1657406563541664238">Aidake muuta rakendus <ph name="PRODUCT_NAME"/> paremaks, saates Google'ile automaatselt kasutusstatistikat ja veaaruandeid</translation>
 <translation id="7982789257301363584">Võrk</translation>
+<translation id="2336228925368920074">Lisa kõik vahelehed järjehoidjatesse...</translation>
 <translation id="4108206167095122329">Eemalda &amp;kõik</translation>
 <translation id="7481475534986701730">Viimati külastatud saidid</translation>
 <translation id="4260722247480053581">Ava inkogonito aknas</translation>
@@ -71,10 +76,12 @@
 <translation id="9218430445555521422">Seadista vaikebrauseriks</translation>
 <translation id="4589279373639964403">Ekspordi järjehoidjad...</translation>
 <translation id="8876215549894133151">Vorming:</translation>
+<translation id="5234764350956374838">Loobu</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> indeks</translation>
 <translation id="5154917547274118687">Mälu</translation>
 <translation id="1735662153177951739">Seda lehekülge ei hangita täielikult turvalise ühenduse kaudu. See sisaldab ebaturvalise ühenduse kaudu hangitud sisu.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/>'i otsing</translation>
+<translation id="6726379128203862332"><ph name="SIZE_TAKEN"/>MB</translation>
 <translation id="2459861677908225199">Kasutage TLS 1.0</translation>
 <translation id="873849583815421063">Lõpetamine...</translation>
 <translation id="5819484510464120153">Loo rakenduste &amp;otseteed...</translation>
@@ -94,11 +101,13 @@
 <translation id="443008484043213881">Tööriistad</translation>
 <translation id="314605055819837597">Kasutajaandmed</translation>
 <translation id="8534801226027872331">Sellisel juhul sisaldab teie brauserile esitatav sert vigu ja seda pole võimalik kasutada. See võib tähendada, et me ei saa kasutada serdis sisalduvaid identiteediandmeid või muid ühenduse turvalisuse tagamiseks serdis esitatud andmeid. Te ei tohiks jätkata.</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/>'il on nüüd <ph name="BEGIN_LINK"/>laiendid<ph name="END_LINK"/> ja <ph name="BEGIN_BUTTON"/>järjehoidjate sünkroonimise funktsioon<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Teie järjehoidjad liidetakse kokku.</translation>
 <translation id="4422347585044846479">Muuda selle lehekülje järjehoidjat</translation>
 <translation id="7367545749698325833">Võite importida teistest brauseritest oma järjehoidjaid ja seadeid või eemaldada sellest arvutist oma sirvimisandmed.</translation>
 <translation id="51285338152176012">Peida viimasena suletud vahekaardid</translation>
 <translation id="8546306075665861288">Kujutise vahemälu</translation>
+<translation id="801357260673640054">Järjehoidjate sünkroonimine...</translation>
 <translation id="1399076603473531278">Sisselogimise andmed on aegunud.</translation>
 <translation id="3391060940042023865">Järgmine lisandmoodul jooksis kokku: <ph name="PLUGIN_NAME"/></translation>
 <translation id="8879284080359814990">&amp;Kuva vahelehena</translation>
@@ -109,7 +118,7 @@
 <translation id="2994458892329442723">Luba lisandmoodulid.</translation>
 <translation id="1674989413181946727">Ülearvutilised SSL-seaded:</translation>
 <translation id="8703575177326907206">Teie ühendus <ph name="DOMAIN"/>'ga pole krüptitud.</translation>
-<translation id="7345141778157460052">Järjehoidja sünkroonimine:</translation>
+<translation id="4197577448076628265">See laiend saab juurdepääsu teie sirvimisajaloole ja eraandmetele saidil <ph name="HOST"/>.</translation>
 <translation id="1644574205037202324">Ajalugu</translation>
 <translation id="2518917559152314023">L&amp;isa...</translation>
 <translation id="6583406242234752719">Te pole seadistanud järjehoidjate sünkroonimist teiste arvutitega.</translation>
@@ -133,25 +142,33 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> sekundit</translation>
 <translation id="5098629044894065541">heebrea</translation>
 <translation id="7751559664766943798">Kuva alati järjehoidjariba</translation>
+<translation id="144136026008224475">Hangi rohkem laiendeid &gt;&gt;</translation>
 <translation id="8584280235376696778">&amp;Ava video uuel vahelehel</translation>
 <translation id="2845382757467349449">Kuva alati järjehoidjariba</translation>
 <translation id="6827094223626760756">Eelvaade</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> tundi jäänud</translation>
 <translation id="1720675772864601791">Luba ebaturvalised pildid</translation>
+<translation id="471372654970523967">Lülita <ph name="NETWORKDEVICE"/> sisse</translation>
+<translation id="4001299999465067131">Sisestage tähemärgid nii, nagu näete neid ülaloleval kujutisel.</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="5233638681132016545">Uus vaheleht</translation>
 <translation id="5210365745912300556">Sule vaheleht</translation>
 <translation id="8806796506533854282">Sisestage uus profiili nimi</translation>
 <translation id="2551763528995812091">Paroolid ja erandid</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="2263497240924215535">(Keelatud)</translation>
 <translation id="6360709384096878403">Teata veast või katkisest veebisaidist...</translation>
 <translation id="1110535155349301542">Eemalda</translation>
 <translation id="8571852575982769756">Lisandmooduleid pole installitud</translation>
+<translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> vastuse ootel...</translation>
+<translation id="5850800573054873412">See laiend saab kõikidel veebisaitidel juurdepääsu teie eraandmetele ja teie sirvimisajaloole.</translation>
 <translation id="3280237271814976245">Salvesta &amp;nimega...</translation>
 <translation id="5300471193642408424">Kuva leheküljed</translation>
 <translation id="7658239707568436148">Loobu</translation>
 <translation id="6996264303975215450">Veebileht, valmis</translation>
+<translation id="8744320793514149773">See laiend saab kõikidel veebisaitidel juurdepääsu teie eraandmetele.</translation>
+<translation id="3435896845095436175">Luba</translation>
 <translation id="2154710561487035718">Kopeeri URL</translation>
 <translation id="4244236525807044920">Muuda fondi ja keele seadeid</translation>
 <translation id="3241680850019875542">Valige pakkimiseks laiendi juurkataloog. Laiendi värskendamiseks valige uuesti kasutamiseks ka privaatvõtme fail.</translation>
@@ -159,6 +176,7 @@
 <translation id="6746124502594467657">Liiguta alla</translation>
 <translation id="4657169630710541069">Ressursi viga</translation>
 <translation id="3383487468758466563">Fondid ja keeled:</translation>
+<translation id="7339949551808462689">Laiend <ph name="EXTENSION_NAME"/></translation>
 <translation id="6163363155248589649">&amp;Tavaline</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(Pealkirjata)</translation>
@@ -168,14 +186,17 @@
 <translation id="3605499851022050619">Safe Browsing diagnostikaleht</translation>
 <translation id="4307992518367153382">Põhiteave</translation>
 <translation id="5912378097832178659">&amp;Muuda otsingumootoreid...</translation>
+<translation id="3173397526570909331">Peata sünkroonimine</translation>
 <translation id="4813345808229079766">Ühendus</translation>
 <translation id="411666854932687641">Privaatmälu</translation>
 <translation id="119944043368869598">Tühjenda kõik</translation>
 <translation id="1336254985736398701">Kuva lehe and&amp;med</translation>
+<translation id="5678480951567683474">Kuva lehe ja tööriistade menüüsid</translation>
 <translation id="1652965563555864525">&amp;Hääleta</translation>
 <translation id="4200983522494130825">Uus &amp;vaheleht</translation>
 <translation id="7979036127916589816">Sünkroonimise viga</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> / <ph name="TOTAL_MATCHCOUNT"/></translation>
+<translation id="5178488982078290579">Järjehoidjate sünkroonimine...</translation>
 <translation id="2303544859777878640">Keeled:</translation>
 <translation id="2021921916539001817"><ph name="HOST_NAME"/> laadimine...</translation>
 <translation id="6909042471249949473">Kustuta andmed ajavahemikust:</translation>
@@ -185,10 +206,13 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7456847797759667638">Ava asukoht...</translation>
 <translation id="5392041771307264501">Uue akna avamiseks valige profiil</translation>
+<translation id="1388866984373351434">Sirvimisandmed</translation>
+<translation id="7378627244592794276">Ei</translation>
 <translation id="68541483639528434">Sule muud vahelehed</translation>
 <translation id="4022426551683927403">&amp;Lisa sõnaraamatule</translation>
 <translation id="2897878306272793870">Kas te soovite kindlasti avada <ph name="TAB_COUNT"/> vahekaarti?</translation>
 <translation id="362276910939193118">Näita kogu ajalugu</translation>
+<translation id="7879113706359663444"><ph name="HOUR"/>.<ph name="MIUTE"/></translation>
 <translation id="1073286447082909762">Ava raam uues &amp;aknas</translation>
 <translation id="692135145298539227">Kustuta</translation>
 <translation id="8343477974731263456">Järjehoidjate sünkroonimise seadistamine</translation>
@@ -200,6 +224,7 @@
 <translation id="2678063897982469759">Luba uuesti</translation>
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="1965338962645102116">Peate olema oma Google'i kontole sisse logitud, et importida tööriistariba järjehoidjaid Chrome'i. Palun logige sisse ning proovige uuesti importida.</translation>
+<translation id="5035846689029228055">Järjehoidja sünkroonimine:</translation>
 <translation id="5922220455727404691">Kasuta SSL versiooni 3.0</translation>
 <translation id="5903264686717710770">Pealkiri:</translation>
 <translation id="8899851313684471736">Ava link uues &amp;aknas</translation>
@@ -208,11 +233,13 @@
 <translation id="6686490380836145850">Sule vahelehed paremale</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> tundi</translation>
 <translation id="2790948358747073186">Veelgi rohkem</translation>
+<translation id="5774515636230743468">Manifest:</translation>
 <translation id="2423578206845792524">Sa&amp;lvesta pilt nimega...</translation>
 <translation id="1095038624419434542">Programmi ressursi laadimisel tekkis viga. Proovige uuesti installida.</translation>
 <translation id="9068931793451030927">Tee:</translation>
 <translation id="7052402604161570346">Seda tüüpi fail võib teie arvutit kahjustada. Kas te soovite kindlasti faili <ph name="FILE_NAME"/> alla laadida?</translation>
 <translation id="8642489171979176277">Imporditud Google'i tööriistaribalt</translation>
+<translation id="5905978244564263718">Automaatse täitmise seadistamine...</translation>
 <translation id="7335374713830044009">Ava raam inko&amp;gnito aknas</translation>
 <translation id="2011110593081822050">Veebitööline: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">Faili nimi:</translation>
@@ -261,25 +288,31 @@
 <translation id="1608306110678187802">P&amp;rindi paneel...</translation>
 <translation id="4948468046837535074">Ava järgmised leheküljed:</translation>
 <translation id="6978121630131642226">Otsingumootorid</translation>
+<translation id="6745994589677103306">Ära tee midagi</translation>
 <translation id="855081842937141170">Kinnita vahekaart</translation>
+<translation id="2723893843198727027">Arendaja režiim:</translation>
 <translation id="5362741141255528695">Privaatvõtme faili valimine.</translation>
 <translation id="7012108905414904806">See lehekülg sisaldab aga muid ressursse, mis ei ole turvalised. Neid ressursse saavad teised siirde ajal vaadata ning neid saab ründaja muuta, et muuta lehekülje väljanägemist või toimimist.</translation>
 <translation id="4515911410595374805">Mõned selle lehekülje elemendid on pärit kinnitamata allikast ning neid ei kuvatud.</translation>
 <translation id="1195447618553298278">Tundmatu viga.</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> päeva tagasi</translation>
 <translation id="4800557284502805285">Serveri sertifikaat on allkirjastatud nõrga allkirja algoritmiga</translation>
+<translation id="6610600335992778838">WiFi</translation>
 <translation id="1087119889335281750">&amp;Õigekirjasoovitusi pole</translation>
 <translation id="718141787353053227">Lehe seadistus...</translation>
 <translation id="5076340679995252485">&amp;Kleebi</translation>
+<translation id="5097982659374947325">Võta küpsiseid vastu ainult lehtedelt, mida külastan</translation>
 <translation id="14171126816530869"><ph name="ORGANIZATION"/> identiteeti leheküljel <ph name="LOCALITY"/> kinnitas <ph name="ISSUER"/>.</translation>
 <translation id="1587275751631642843">&amp;JavaScript i konsool</translation>
 <translation id="5821894118254011366">Keela täielikult kolmanda osapoole küpsised</translation>
 <translation id="3511307672085573050">K&amp;opeeri lingi aadress</translation>
 <translation id="1134009406053225289">Ava inkogonito aknas</translation>
+<translation id="6655190889273724601">Arendaja režiim</translation>
 <translation id="3473105180351527598">Luba andmepüügi ja pahavara kaitse</translation>
 <translation id="6151323131516309312">Vajutage <ph name="SEARCH_KEY"/>, et otsida <ph name="SITE_NAME"/>-st</translation>
 <translation id="2342959293776168129">Kustuta allalaadimiste ajalugu</translation>
 <translation id="2503522102815150840">Viga brauseris...</translation>
+<translation id="425878420164891689">Laadimiseks kuluva aja arvutamine</translation>
 <translation id="1272079795634619415">Peata</translation>
 <translation id="6786747875388722282">Laiendused</translation>
 <translation id="9053965862400494292">Sünkroonimise seadistamise üritamisel ilmes viga.</translation>
@@ -294,16 +327,21 @@
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5287240709317226393">Kuva küpsised</translation>
 <translation id="5451646087589576080">Vaata raami tea&amp;vet</translation>
+<translation id="3368922792935385530">Ühendatud</translation>
 <translation id="8486154204771389705">Hoia sellel lehel</translation>
 <translation id="6824564591481349393">Kopeeri &amp;e-posti aadress</translation>
+<translation id="5184063094292164363">&amp;JavaScripti konsool</translation>
 <translation id="333371639341676808">Keela sellel leheküljel lisadialoogide loomine.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> on värskendatud (<ph name="VERSION"/>)</translation>
 <translation id="4254921211241441775">Peata selle konto sünkimine</translation>
+<translation id="8661648338644250771">See laiend saab juurdepääsu teie isiklike andmetele saidil <ph name="HOST"/>.</translation>
 <translation id="7791543448312431591">Lisa</translation>
 <translation id="307505906468538196">Looge Google'i konto</translation>
 <translation id="48838266408104654">Tegumihal&amp;dur</translation>
 <translation id="3694027410380121301">Vali eelmine vaheleht</translation>
 <translation id="6178664161104547336">Sertifikaadi valimine</translation>
+<translation id="5702898740348134351">&amp;Muuda otsingumootoreid...</translation>
+<translation id="2365740070488517695">Nõuanded</translation>
 <translation id="772440777491435074">Serdi andmed...</translation>
 <translation id="2869459179306435079">Impordi seaded asukohast:</translation>
 <translation id="732677191631732447">K&amp;opeeri heli URL</translation>
@@ -311,6 +349,8 @@
 <translation id="3369624026883419694">Hosti lahendamine...</translation>
 <translation id="8870413625673593573">Viimati suletud</translation>
 <translation id="9145357542626308749">Selle saidi turvasertifikaat on allkirjastatud nõrga allkirja algoritmiga!</translation>
+<translation id="8800574954100068740">Vaikeotsing</translation>
+<translation id="6551701656367809067">Järjehoidja sünkroonimises esineb tõrkeid, sest serverisse saadetakse liiga palju taotlusi. Tundub, et laiend <ph name="NAME_OF_EXTENSION"/> teeb teie järjehoidjates liiga palju muudatusi.</translation>
 <translation id="8249296373107784235">Katkesta</translation>
 <translation id="3967132639560659870">Sellel leheküljel on mitu SSL-i viga:</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> minutit tagasi</translation>
@@ -322,6 +362,7 @@
 <translation id="1319824869167805246">Ava kõik järjehoidjad uues aknas</translation>
 <translation id="3493653833301553455">Vormi automaatne täitmine:</translation>
 <translation id="3895288786311724904">Lisatud</translation>
+<translation id="3371861036502301517">Laiendi installimise nurjumine</translation>
 <translation id="644038709730536388">Lugege lisateavet selle kohta, kuidas end võrgus kahjuliku tarkvara eest kaitsta.</translation>
 <translation id="4172706149171596436">Muuda puhverserveri seadeid</translation>
 <translation id="5650551054760837876">Otsingutulemusi ei leitud.</translation>
@@ -329,6 +370,8 @@
 <translation id="3234408098842461169">Allanool</translation>
 <translation id="825608351287166772">Sertidel on kehtivusaeg, nagu igal identiteedidokumendil (nagu näiteks passil). Teie brauserile esitatud sert ei kehti veel. Kui sert parasjagu ei kehti, pole nõutud serdi olekuga seotud teatud andmete (kas sert on tühistatud ja see pole enam usaldusväärne) haldamine. Seetõttu pole võimalik kindlaks teha, kas see sert on usaldusväärne. Te ei tohiks jätkata.</translation>
 <translation id="2742457360514408037">Blokeeritud hüpikaknaid: <ph name="COUNT"/></translation>
+<translation id="7154150278819212687">See laiend saab juurdepääsu teie sirvimisajaloole.</translation>
+<translation id="1516602185768225813">Ava uuesti viimati avatud leheküljed</translation>
 <translation id="4874539263382920044">Pealkiri peab sisaldama vähemalt üht tähemärki</translation>
 <translation id="3549657413697417275">Otsige oma ajaloost</translation>
 <translation id="7344633671344536647">Sirvimisandmed:</translation>
@@ -347,17 +390,21 @@
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minutit jäänud</translation>
 <translation id="5496587651328244253">Korraldamine</translation>
 <translation id="2592884116796016067">Osa sellest lehest (HTML WebWorker) jooksis kokku, seega ei pruugi see õigesti toimida.</translation>
+<translation id="8425755597197517046">Kl&amp;eebi ja otsi</translation>
+<translation id="4728278536628384335">Järjehoidja sünkroonimise keelamine</translation>
 <translation id="5568069709869097550">Ei saa sisse logida</translation>
 <translation id="4181898366589410653">Serveri serdis ei leitud tühistusmehhanismi.</translation>
 <translation id="1665770420914915777">Kasuta Uue vahelehe lehekülge</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> tund tagasi</translation>
 <translation id="7789175495288668515">Muuda installi vaikevalikuid.</translation>
 <translation id="347250956943431997">Serveri sert on tühistatud</translation>
+<translation id="1936157145127842922">Kuva kaustas</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> minutit tagasi</translation>
 <translation id="7977590112176369853">&lt;sisesta päring&gt;</translation>
 <translation id="994771890067000105">Esiletoodud lisa</translation>
 <translation id="5155632014218747366">Detailset infot selle saidi probleemide kohta saate, kui klastate Google <ph name="DIAGNOSTIC_PAGE"/> domeeni <ph name="DOMAIN"/> jaoks.</translation>
 <translation id="1120026268649657149">Klaviatuur peab olema tühi või kordumatu</translation>
+<translation id="7954187762705269222"><ph name="HOUR"/>.<ph name="MIUTE"/></translation>
 <translation id="5317780077021120954">Salvesta</translation>
 <translation id="9027459031423301635">Ava &amp;link uuel vahelehel</translation>
 <translation id="358344266898797651">Keldi</translation>
@@ -391,18 +438,26 @@
 <translation id="52912272896845572">Privaatvõtme fail on kehtetu.</translation>
 <translation id="4222982218026733335">Kehtetu serveri sert</translation>
 <translation id="8494214181322051417">Uus!</translation>
+<translation id="7403160227718463124">Tervele saidile:</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Te surfate tundmatuna<ph name="END_BOLD"/>. Leheküljed, mida selles aknas vaatate, ei ilmu teie brauseri ega otsingu ajalukku ega jäta pärast incognito akna sulgemist teie arvutisse muid jälgi (nt küpsiseid). Samas säilivad kõik failid, mida alla laadite või teie loodud järjehoidjad.        <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>Tundmatuna surfamine ei mõjuta teiste inimeste, serverite või tarkvara käitumist. Vaadake ette:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>Veebisaidid, mis koguvad ja jagavad andmeid teie kohta<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Interneti teenusepakkujad või töötajad, kes jälitavad teie külastatud lehekülgi<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Õelvara, mis jälitab teie klahvilööke vastutasuks tasuta naeratuste eest<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Salaagentide jälitustegevus<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Inimesed, kes seisavad teie selja taga<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        <ph name="BEGIN_LINK"/>Lugege lisateavet<ph name="END_LINK"/> tundmatuna surfamise kohta.</translation>
 <translation id="4439241094464540230">&lt;Uus profiil&gt;...</translation>
 <translation id="2135787500304447609">&amp;Taasta</translation>
 <translation id="1813414402673211292">Kustuta sirvimise andmed</translation>
 <translation id="2356762928523809690">Värskendusserver pole saadaval (viga: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Esiletoodud teema</translation>
+<translation id="219008588003277019">Omakliendi moodul: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">Otsi <ph name="SITE_NAME"/>-st:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
+<translation id="7616581516194661584">Koopia</translation>
 <translation id="8730621377337864115">Valmis</translation>
+<translation id="245834195813628985">Jäänud <ph name="HOUR"/>.<ph name="MIUTE"/></translation>
 <translation id="6267166720438879315">Valige sertifikaat, et tuvastada ennast hostile <ph name="HOST_NAME"/></translation>
+<translation id="7198134478421755850">Laiend</translation>
+<translation id="4713481510227594233">Järjehoidja sünkroonimine on selles arvutis keelatud. Kui desinstallite laiendi <ph name="NAME_OF_EXTENSION"/>, siis võite järjehoidja sünkroonimise uuesti lubada, valides selleks menüüs Tööriistad suvandi „Sünkrooni mu järjehoidjad...“.</translation>
+<translation id="9061845622728745852">Ajavöönd:</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minut</translation>
 <translation id="6315493146179903667">Too kõik ette</translation>
+<translation id="5095777643592758820">Järjehoidja sünkroonimise viga...</translation>
 <translation id="5015344424288992913">Puhverserveri lahendamine...</translation>
 <translation id="3675321783533846350">Seadistage võrku ühendamiseks puhverserver.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> päeva</translation>
@@ -427,16 +482,19 @@
 <translation id="9010612682952491200">Uus vahekaart [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Ühismälu</translation>
 <translation id="6248988683584659830">Otsinguseaded</translation>
+<translation id="2242457451044347345">Järjehoidja sünkroonimine</translation>
 <translation id="2727712005121231835">Tegelik suurus</translation>
 <translation id="8887733174653581061">Alati peal</translation>
 <translation id="610886263749567451">JavaScripti märguanne</translation>
 <translation id="6556866813142980365">Tee uuesti</translation>
+<translation id="6584811624537923135">Kinnitage desinstallimine</translation>
 <translation id="8413126021676339697">Näita kogu ajalugu</translation>
 <translation id="8860923508273563464">Oota, kuni allalaadimised lõpetatakse</translation>
 <translation id="5288678174502918605">Ava suletud vaheleht &amp;uuesti</translation>
 <translation id="9157595877708044936">Seadistamine...</translation>
 <translation id="1823768272150895732">Font</translation>
 <translation id="4475552974751346499">Otsi allalaadimisi</translation>
+<translation id="5339267765524260207">Kui keelate sünkroonimise, siis ei sünkroonita teie järjehoidjaid enam teie Google'i kontole või teistesse arvutitesse salvestatud järjehoidjatega. Ühtegi järjehoidjat ei kustutata. Kõik olemasolevad järjehoidjad jäävad siia arvutisse ja teie Google'i kontole.</translation>
 <translation id="1111153019813902504">Viimased järjehoidjaid</translation>
 <translation id="7497564420220535101">&amp;Salvestamine ja kuvatõmmis...</translation>
 <translation id="3786934874263773074">&amp;Otsi leheküljelt</translation>
@@ -458,6 +516,7 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> sekundit</translation>
 <translation id="3551320343578183772">Sule vaheleht</translation>
 <translation id="3345886924813989455">Ei leitud ühtegi toetatud brauserit</translation>
+<translation id="6727102863431372879">Määra</translation>
 <translation id="3712897371525859903">Salvesta lehekülg &amp;nimega...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> impordib asukohast <ph name="IMPORT_BROWSER_NAME"/> järgnevat:</translation>
 <translation id="1018656279737460067">Tühistatud</translation>
@@ -468,6 +527,7 @@
 <translation id="8942948210663084792">Tühjenda andmed:</translation>
 <translation id="208047771235602537">Kas soovite väljuda rakendusest <ph name="PRODUCT_NAME"/>, kui allalaadimine on pooleli?</translation>
 <translation id="6710213216561001401">Eelmine</translation>
+<translation id="1567993339577891801">JavaScripti konsool</translation>
 <translation id="583281660410589416">Tundmatu</translation>
 <translation id="7635303043999550515">Veebilehekülg aadressil &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; on põhjustanud
         liiga palju ümbersuunamisi. Probleem võib laheneda, kui eemaldate selle saidi küpsised oma brauserist või lubate kolmandate osapoolte küpsiseid. Kui see        probleemi ei lahenda, siis on võimalik, et tegemist on serveri konfigureerimise ja mitte teie
@@ -480,16 +540,20 @@
 <translation id="1560991001553749272">Järjehoidja lisatud!</translation>
 <translation id="3966072572894326936">Vali muu kaust...</translation>
 <translation id="7781829728241885113">Eile</translation>
+<translation id="1523341279170789507">Luba kõik küpsised</translation>
 <translation id="7596288230018319236">Kõik teie poolt külastatavad leheküljed ilmuvad siia, välja arvatud juhul, kui avate need incognito aknas. Sellel leheküljel asuva nupu &quot;Otsing&quot; abil saate otsida kõiki oma ajaloos leiduvaid lehekülgi.</translation>
 <translation id="2665163749053788434">Külastusajalugu</translation>
 <translation id="7434509671034404296">Arendaja</translation>
 <translation id="6447842834002726250">Küpsised</translation>
 <translation id="5170568018924773124">Kuva kaustas</translation>
+<translation id="883848425547221593">Muud järjehoidjad</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> ei saa määrata ega seadistada vaikebrauserit.</translation>
 <translation id="8898786835233784856">Vali järgmine vaheleht</translation>
 <translation id="2674170444375937751">Olete kindel, et soovite need leheküljed oma ajaloost kustutada?</translation>
 <translation id="4203689580933736628">Blokeeritud üksused: <ph name="COUNT"/></translation>
+<translation id="2653166165688724436">Veebi andmebaas</translation>
 <translation id="7629827748548208700">Vaheleht: <ph name="TAB_NAME"/></translation>
+<translation id="8449008133205184768">Kleebi ja ühita laad</translation>
 <translation id="8028993641010258682">Suurus</translation>
 <translation id="1383876407941801731">Otsi</translation>
 <translation id="8398877366907290961">Jätka ikkagi</translation>
@@ -500,6 +564,7 @@
 <translation id="8789544147407756448">Järgmine laiend ei toimi: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> minutit jäänud</translation>
 <translation id="2022540532491530427">Kopeeri &amp;fail</translation>
+<translation id="1099979722614954862"><ph name="PRODUCT_NAME"/>'il on nüüd <ph name="BEGIN_LINK"/>laiendid<ph name="END_LINK"/> ja <ph name="BEGIN2_LINK"/>järjehoidjate sünkroonimise funktsioon<ph name="END2_LINK"/>.</translation>
 <translation id="5966654788342289517">Isiklikud asjad</translation>
 <translation id="2576802705154232609">Veebiklipid</translation>
 <translation id="8664389313780386848">&amp;Vaata lehekülje allikat</translation>
@@ -510,6 +575,7 @@
 <translation id="6507969014813375884">Hiina (lihtsustatud)</translation>
 <translation id="1767991048059195456">Saada aruanne</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
+<translation id="4474155171896946103">Lisa kõik vahelehed järjehoidjatesse...</translation>
 <translation id="5646376287012673985">Asukoht</translation>
 <translation id="1110155001042129815">Oota</translation>
 <translation id="7071586181848220801">Tundmatu lisandmoodul</translation>
@@ -523,6 +589,7 @@
 <translation id="1181037720776840403">Eemalda</translation>
 <translation id="4006726980536015530">Kui sulete rakenduse <ph name="PRODUCT_NAME"/> praegu, tühistatakse need allalaadimised.</translation>
 <translation id="59174027418879706">Lubatud</translation>
+<translation id="6639554308659482635">SQLite'i mälu</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Kõikide järjehoidjate avamine</translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
@@ -543,6 +610,8 @@
 <translation id="5087864757604726239">Tagasi</translation>
 <translation id="2819994928625218237">&amp;Õigekirjasoovitusi pole</translation>
 <translation id="4316305410440790958">Ava raam uuel &amp;vahelehel</translation>
+<translation id="9142623379911037913">Kas lubate saidil <ph name="SITE"/> kuvada töölaua teateid?</translation>
+<translation id="4196320913210960460">Installitud laiendite haldamiseks klõpsake menüüs Tööriistad valikul Laiendid.</translation>
 <translation id="9118804773997839291">Allpool on loend kõigist lehe ohtlikest elementidest. Lisateabe saamiseks klikkige konkreetse elemendi lõimul asuval diagnostikalingil.</translation>
 <translation id="3664021239099029884">Kuva kõik allalaadimised</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> minut/minutit tagasi</translation>
@@ -574,6 +643,7 @@
 <translation id="4890284164788142455">Tai</translation>
 <translation id="3889424535448813030">Paremnool</translation>
 <translation id="5435666907653217300">Muu probleem</translation>
+<translation id="4479639480957787382">Ethernet</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="5167270755190684957">Google Chrome'i teemade galerii</translation>
 <translation id="8382913212082956454">Kopeeri &amp;e-posti aadress</translation>
@@ -583,8 +653,10 @@
 <translation id="1047726139967079566">Lisa selle lehe järjehoidja...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> sekundit jäänud</translation>
 <translation id="4767443964295394154">Allalaadimise asukoht</translation>
+<translation id="720658115504386855">Tähed ei ole tõstutundlikud</translation>
 <translation id="2454247629720664989">Märksõna</translation>
 <translation id="3950820424414687140">Logi sisse</translation>
+<translation id="2840798130349147766">Veebi andmebaasid</translation>
 <translation id="1628736721748648976">Kodeerimine</translation>
 <translation id="6521850982405273806">Teata veast</translation>
 <translation id="1769104665586091481">Ava link uues &amp;aknas</translation>
@@ -594,6 +666,7 @@
 <translation id="7642109201157405070">Jätka importi</translation>
 <translation id="6463795194797719782">&amp;Muuda</translation>
 <translation id="5720119176273625078">Viitajat ei saadetud</translation>
+<translation id="4775879719735953715">Vaikebrauser</translation>
 <translation id="4805261289453566571">Logige uuesti sisse</translation>
 <translation id="4188026131102273494">Märksõna:</translation>
 <translation id="2290414052248371705">Kuva kogu sisu</translation>
@@ -601,8 +674,11 @@
 <translation id="3268761268932257769">Laadi pildid automaatselt</translation>
 <translation id="7227780179130368205">Tuvastatud pahavara!</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
+<translation id="2912839854477398763">Olete kindel, et soovite selle laiendi desinstallida?
+</translation>
 <translation id="3942946088478181888">Aita mul mõista</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (vaikimisi)</translation>
+<translation id="6543631358510643997">See laiend saab täieliku juurdepääsu teie arvutile ja isiklikele andmetele.</translation>
 <translation id="111844081046043029">Olete kindel, et soovite sellele lehelt lahkuda?</translation>
 <translation id="4497415007571823067">Te proovisite jõuda serverisse &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid jõudsite hoopis serverisse nimega &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Selle põhjus võib olla serveri väärkonfiguratsioon või midagi tõsisemat. Teie võrgus asuv ründaja võib üritada panna teid külastama võltsi (ja tõenäoliselt ohtlikku) &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; versiooni. Te ei tohiks jätkata.</translation>
 <translation id="3202578601642193415">Kõige uuemad</translation>
@@ -620,7 +696,10 @@
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minutit jäänud</translation>
 <translation id="2192505247865591433">Saatja:</translation>
 <translation id="5921544176073914576">Andmepüügilehekülg</translation>
+<translation id="7143207342074048698">Ühenduse loomine</translation>
 <translation id="6192792657125177640">Erandid</translation>
+<translation id="4568660204877256194">Järjehoidjate eksportimine...</translation>
+<translation id="4577070033074325641">Impordi järjehoidjad...</translation>
 <translation id="2822650824848709219">Keela kogu ebaturvaline sisu</translation>
 <translation id="1715941336038158809">Kehtetu kasutaja nimi või parool.</translation>
 <translation id="1901303067676059328">Vali &amp;kõik</translation>
@@ -636,6 +715,7 @@
 <translation id="872451400847464257">Muuda otsingumootorit</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minutit</translation>
 <translation id="8717266507183354698">Kuva kõik ajaloo lehed, mis sisaldavad <ph name="SEARCH_TERMS"/></translation>
+<translation id="2466804342846034717">Sisestage ülalpool õige parool ja trükkige seejärel allpool tärgid, mida näete kujutisel.</translation>
 <translation id="2922560965807694149">Peida</translation>
 <translation id="5645845270586517071">Turvatõrge</translation>
 <translation id="8695758493354644945">Vaata <ph name="NUM_MATCHES"/> ajaloo viimaseid lehekülgi, mis sisaldavad <ph name="SEARCH_TERMS"/></translation>
@@ -660,6 +740,7 @@
 <translation id="5384051050210890146">Vali usaldusväärsed SSL-serdid.</translation>
 <translation id="6865323153634004209">Kohanda neid seadeid</translation>
 <translation id="7487067081878637334">Tehnoloogia</translation>
+<translation id="4176463684765177261">Keelatud</translation>
 <translation id="154603084978752493">Lisa otsingumo&amp;otorina...</translation>
 <translation id="2079545284768500474">Võta tagasi</translation>
 <translation id="114140604515785785">Laiendi juurkataloog:</translation>
@@ -668,8 +749,10 @@
 <translation id="1800035677272595847">Õngevõtmine</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> sekundit tagasi</translation>
 <translation id="4610637590575890427">Kas soovisite minna aadressile <ph name="SITE"/>?</translation>
+<translation id="5320331575990471017">Allikas: <ph name="SOURCE_ORIGIN"/></translation>
 <translation id="8349305172487531364">Järjehoidjariba</translation>
 <translation id="7208899522964477531">Otsi <ph name="SITE_NAME"/>-st päringut <ph name="SEARCH_TERMS"/></translation>
+<translation id="5584091888252706332">Käivitamisel</translation>
 <translation id="8004582292198964060">Brauser</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">Muuda kausta nime</translation>
@@ -696,7 +779,9 @@
 <translation id="8877448029301136595">[emakataloog]</translation>
 <translation id="1963227389609234879">Eemalda kõik</translation>
 <translation id="8027581147000338959">Ava uues aknas</translation>
+<translation id="8019305344918958688">Kahju... Ühtegi laiendit pole installitud :-(</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="4720829798001058201">Teie järjehoidjad on nüüd sünkroonitud teenusega Google Docs! Järjehoidjate ühendamiseks ja Chrome'i või muu arvutiga sünkroonimiseks korrake lihtsalt sama seadistusprotsessi vastavas arvutis.</translation>
 <translation id="2496180316473517155">Sirvimise ajalugu</translation>
 <translation id="602251597322198729">See sait proovib alla laadida mitut faili. Kas lubate seda?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> tundi</translation>
@@ -708,6 +793,7 @@
 <translation id="1002064594444093641">P&amp;rindi raam...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Kuva kaustas</translation>
+<translation id="5554489410841842733">See ikoon on nähtav, kui laiendit saab vaadataval lehel kasutada.</translation>
 <translation id="4756388243121344051">&amp;Ajalugu</translation>
 <translation id="3789841737615482174">Installi</translation>
 <translation id="4789872672210757069">Teave &amp;<ph name="PRODUCT_NAME"/> kohta</translation>
@@ -755,6 +841,7 @@
 <translation id="5178667623289523808">Otsi eelmine</translation>
 <translation id="2815448242176260024">Ära kunagi salvesta paroole</translation>
 <translation id="2989805286512600854">Ava uuel vahelehel</translation>
+<translation id="2701236005765480329">Laiendi märguanne</translation>
 <translation id="6503077044568424649">Enim külastatud</translation>
 <translation id="3265459715026181080">Sulge aken</translation>
 <translation id="3831099738707437457">&amp;Peida õigekirja paneel</translation>
@@ -764,7 +851,7 @@
 <translation id="3319048459796106952">Uus &amp;incognito aken</translation>
 <translation id="3127919023693423797">Autentimine...</translation>
 <translation id="4195643157523330669">Ava uuel &amp;vahelehel</translation>
-<translation id="3683878911947678690">Nüüd saate oma järjehoidjad Google'i kontot kasutades kõigis arvutites sünkroonida</translation>
+<translation id="8030169304546394654">Ühendus katkestatud</translation>
 <translation id="4178055285485194276">Algusleheküljel:</translation>
 <translation id="1154228249304313899">Avage see lehekülg:</translation>
 <translation id="9074348188580488499">Kas soovite kindlasti eemaldada kõik paroolid?</translation>
@@ -781,13 +868,16 @@
 <translation id="1285631718404404702">Kuva hiljutisi toiminguid</translation>
 <translation id="6783679543387074885">Teata veast või katkisest veebisaidist</translation>
 <translation id="3494444535872870968">Salvesta &amp;raam nimega...</translation>
+<translation id="5731247495086897348">Kl&amp;eebi ja mine</translation>
 <translation id="3413103074007669042">See leht sisaldab ebaturvalist sisu</translation>
 <translation id="4887833561977827087">Praegu ei ole siin kuvamiseks veel ühtegi klippi.
         <ph name="BEGIN_LINK"/>Kohandage<ph name="END_LINK"/>
         oma veebiklippe ja lisage rohkem allikaid.</translation>
 <translation id="5285267187067365830">Installi lisandmoodul...</translation>
 <translation id="1166212789817575481">Sulge vahelehed paremale</translation>
+<translation id="6472893788822429178">Kuva nupp Avaleht</translation>
 <translation id="5685236799358487266">Lisa otsingumo&amp;otorina...</translation>
+<translation id="3437016096396740659">Aku on laetud</translation>
 <translation id="7907591526440419938">Faili avamine</translation>
 <translation id="21133533946938348">Kinnita vaheleht</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
@@ -798,36 +888,49 @@
 <translation id="9012607008263791152">Mulle tundub, et saidi külastamine võib teie arvutile kahju tuua.</translation>
 <translation id="1441458099223378239">Ma ei pääse oma kontole ligi</translation>
 <translation id="5793220536715630615">K&amp;opeeri video URL</translation>
+<translation id="523397668577733901">Soovite selle asemel <ph name="BEGIN_LINK"/>galeriid sirvida<ph name="END_LINK"/>?</translation>
+<translation id="3778740492972734840">&amp;Arendaja tööriistad</translation>
 <translation id="6004539838376062211">&amp;Õigekirja kontrolli valikud</translation>
+<translation id="5350198318881239970">Teie profiili ei õnnestunud õigesti avada.\n\nMõned funktsioonid ei pruugi olla saadaval. Kontrollige, et profiil on olemas ja teil on luba selle sisu lugeda ja kirjutada.</translation>
 <translation id="4058793769387728514">Kontrolli dokumenti kohe</translation>
 <translation id="2915134691870672002">Peida soovitused</translation>
+<translation id="756445078718366910">Ava brauseri aken</translation>
 <translation id="7887334752153342268">Tee koopia</translation>
 <translation id="4980691186726139495">Ära sellel lehel hoia</translation>
+<translation id="9026731007018893674">Allalaaditud fail</translation>
 <translation id="7646591409235458998">E-post:</translation>
 <translation id="703748601351783580">Ava kõik järjehoidjad uues aknas</translation>
+<translation id="8409023599530904397">Tööriistariba:</translation>
+<translation id="770273299705142744">Vormi automaatne täitmine</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/> on keelatud. Kui lülitate järjehoidja sünkroonimise välja, siis saate laiendi uuesti lubada laiendite lehel, millele pääsete juurde tööriistariba menüü kaudu.</translation>
 <translation id="4478664379124702289">&amp;Salvesta link nimega...</translation>
 <translation id="1044231968500257587">Teie olemasolevad onlain-järjehoidjad liidetakse
         arvutis olevate järjehoidjatega. Saate kasutada järjehoidjate haldurit
         oma järjehoidjate korrastamiseks pärast kokkuliitmist.</translation>
 <translation id="8502249598105294518">Kohanda ja halda <ph name="PRODUCT_NAME"/>'i</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> tundi tagasi</translation>
+<translation id="768570155019561996">See laiend saab juurdepääsu teie eraandmetele mitmel veebisaidil.</translation>
 <translation id="7180865173735832675">Kohandamine</translation>
 <translation id="1430594899542257414">Nõuanded ja vihjed</translation>
 <translation id="2115926821277323019">Peab olema kehtiv URL.</translation>
 <translation id="7397054681783221164">Kustuta järgmised üksused:</translation>
 <translation id="4891251785049117953">Tühjenda salvestatud vormiandmed</translation>
 <translation id="1531836666020185856">Esiletoodud</translation>
+<translation id="580571955903695899">Järjesta pealkirja alusel uuesti</translation>
 <translation id="5230516054153933099">Aken</translation>
 <translation id="7554791636758816595">Uus vaheleht</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
+<translation id="1103966635949043187">Mine saidi kodulehele:</translation>
 <translation id="4400697530699263877">Kasuta DNS eelvaadet, et parandada lehekülje laadimist</translation>
 <translation id="1086613338090581534">Aegumata serdi puhul vastutab serdi väljaandja nn &quot;tühistamisloendi&quot; haldamise eest. Kui serdi turvalisust ohustatakse, saab väljaandja selle tühistamisloendisse lisada, misjärel teie brauser seda enam ei usalda. Tühistamise olekut pole vaja määrata aegunud sertidel, nii et kuigi see sert oli varem teie külastatava veebisaidi puhul kehtiv, pole praegu võimalik kindlaks määrata, kas serdi turvalisust ohustati, mistõttu see tühistati, või on see jätkuvalt turvaline. Seetõttu on võimatu öelda, kas suhtlete seadusliku veebisaidiga või kas serdi turvalisus seati ohtu ja nüüd suhtlete te seda valdava ründajaga. Sellest punktist ei tohiks te edasi minna.</translation>
 <translation id="2645575947416143543">Ent kui te töötate organisatsioonis, mis loob ise oma sertifikaate ning üritate sellist sertifikaati kasutades saada ühendust selle organisatsiooni sisemise veebisaidiga, on võimalik, et saate selle probleemi turvaliselt lahendada. Saate importida oma organisatsiooni juursertifikaadi „juursertifikaadina“ ning seejärel usaldatakse teie organisatsiooni välja antud või kontrollitud sertifikaate ning te ei näe seda viga järgmisel korral, kui üritate sisemise veebisaidiga ühendust võtta. Võtke ühendust oma organisatsiooni abipersonaliga, kes aitab teie arvutile uue juursertifikaadi lisada.</translation>
 <translation id="3157931365184549694">Taasta</translation>
+<translation id="7426243339717063209">Desinstallida „<ph name="EXTENSION_NAME"/>“?</translation>
 <translation id="6059232451013891645">Kaust:</translation>
 <translation id="8182985032676093812"><ph name="PAGE_URL"/> allikas</translation>
 <translation id="7042418530779813870">Kl&amp;eebi ja otsi</translation>
+<translation id="2101225219012730419">Versioon:</translation>
 <translation id="1570242578492689919">Fondid ja kodeering</translation>
 <translation id="3031557471081358569">Vali importimiseks üksused:</translation>
 <translation id="3031433885594348982">Teie ühendus <ph name="DOMAIN"/>'ga on krüptitud nõrga krüpteeringuga.</translation>
@@ -847,6 +950,7 @@
 <translation id="6181769708911894002">Hoiatus. Selle saidi külastamine võib teie arvutile kahju tuua!</translation>
 <translation id="3412265149091626468">Hüppa valikusse</translation>
 <translation id="3785852283863272759">Meililehe asukoht</translation>
+<translation id="7326526699920221209">Aku: <ph name="PRECENTAGE"/>%</translation>
 <translation id="601778514741867265">Võta küpsiseid vastu ainult lehtedelt, mida ma külastan</translation>
 <translation id="8299269255470343364">jaapani</translation>
 <translation id="5204993535447683655">&lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;Laadi uuesti&lt;/a&gt; see lehekülg hiljem.</translation>
@@ -854,10 +958,12 @@
 <translation id="7280343984261969618">Käivitab lisandmoodulid privileegideta turvahaldajas. Põhjustab mõnede lisandmoodulite mitte korraliku toimimise.</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> päev jäänud</translation>
 <translation id="2885378588091291677">Tegumihaldur</translation>
+<translation id="1215711112676250731">Kvoot:</translation>
 <translation id="2359808026110333948">Jätka</translation>
 <translation id="1618661679583408047">Serveri turvasert ei kehti veel!</translation>
 <translation id="9040508646567685134">Sellel leheküljel töötaval skriptil kulub töö tegemiseks väääga pikk aeg. Kas soovite vaadata, kas skript jõuab töö lõpetada, või soovite hoopis loobuda?</translation>
 <translation id="3065140616557457172">Tippige otsinguks või sisestage navigeerimiseks URL - ja kõik lihtsalt toimib.</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="5509693895992845810">Salvesta &amp;nimega...</translation>
 <translation id="5986279928654338866">Server <ph name="DOMAIN"/> nõuab kasutajanime ja parooli.</translation>
 <translation id="521467793286158632">Eemalda kõik paroolid</translation>
@@ -867,10 +973,10 @@
 <translation id="7221869452894271364">Laadi see lehekülg uuesti</translation>
 <translation id="8646430701497924396">Kasuta SSL versiooni 2.0</translation>
 <translation id="8179976553408161302">Sisestusklahv</translation>
+<translation id="5481650329671719147">Laiendid ja teemad võivad teie arvutit kahjustada. Olete kindel, et soovite jätkata?</translation>
 <translation id="8261506727792406068">Kustuta</translation>
 <translation id="345693547134384690">Ava pilt uuel &amp;vahelehel</translation>
 <translation id="7422192691352527311">Eelistused...</translation>
-<translation id="7220379225958650049">Alustage nüüd</translation>
 <translation id="1375198122581997741">Teave versiooni kohta</translation>
 <translation id="1474307029659222435">Ava paneel uues &amp;aknas</translation>
 <translation id="7133850061938542637">Sünkroonitud: <ph name="USER_EMAIL_ADDRESS"/>\nViimati sünkroonitud: <ph name="LAST_SYNC_TIME"/></translation>
@@ -885,11 +991,14 @@
 <translation id="884923133447025588">Tühistusmehhanismi ei leitud.</translation>
 <translation id="7240072072812590475">Muuda Gearsi seadeid</translation>
 <translation id="6001785649757655903">Privaatsuse musta nimekirja viga</translation>
+<translation id="2480155717379390016">Keela <ph name="NAME_OF_EXTENSION"/></translation>
+<translation id="492643400682328128">Lülita <ph name="NETWORKDEVICE"/> välja</translation>
 <translation id="7671130400130574146">Kasutage süsteemi pealkirjariba ja ääriseid</translation>
 <translation id="9170848237812810038">&amp;Võta tagasi</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
 <translation id="4444364671565852729"><ph name="PRODUCT_NAME"/> on värskendatud versiooniks <ph name="VERSION"/></translation>
 <translation id="2731392572903530958">A&amp;va suletud aken uuesti</translation>
+<translation id="4264420740606601613">Keela täielikult kolmanda osapoole küpsised</translation>
 <translation id="6483805311199035658">Avatakse <ph name="FILE"/>...</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> tundi tagasi</translation>
 <translation id="9154176715500758432">Jää sellele leheküljele</translation>
@@ -901,10 +1010,14 @@
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Taasta</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> sekundit tagasi</translation>
+<translation id="5663016964925996918"><ph name="EXTENSION_NAME"/> on nüüd installitud</translation>
 <translation id="3009731429620355204">Sessioonid</translation>
 <translation id="7658590191988721853">Luba vertikaalne kerimine servas</translation>
+<translation id="5190835502935405962">Järjehoidjariba</translation>
+<translation id="5438430601586617544">(Pakkimata)</translation>
 <translation id="6460601847208524483">Otsi järgmine</translation>
 <translation id="3473034187222004855">Kopeeri faili &amp;tee</translation>
+<translation id="3038131737570201586">See laiend saab juurdepääsu teie sirvimisajaloole ja isiklikele andmetele paljudel veebisaitidel.</translation>
 <translation id="6325525973963619867">Ebaõnnestus</translation>
 <translation id="1676388805288306495">Muuda veebilehtede vaikefonti ja -keelt.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
@@ -919,6 +1032,7 @@
 <translation id="5333374927882515515">Impordib <ph name="DEF_BROWSER"/>'i järjehoidjad, paroolid ja muud seaded.</translation>
 <translation id="4239831617079978238">Sessiooni lõpp</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
+<translation id="5960889226412209189">Kompaktse navigeerimisriba sisse/välja lülitamine</translation>
 <translation id="8954894007019320973">(Jätkub)</translation>
 <translation id="3748412725338508953">Liiga palju ümbersuunamisi.</translation>
 <translation id="8929159553808058020">Lisage keeled, mida kasutate veebisaitide lugemiseks, järjestades need eelistuse järgi. Lisage ainult need, mida te vajate, kuna mõndasid tähemärke saab kasutada muudes keeltes olevate veebisaitide esitamiseks.</translation>
@@ -934,10 +1048,14 @@
 <translation id="7088615885725309056">Vanemad</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> päeva tagasi</translation>
 <translation id="8562413501751825163">Sule Firefox enne importimist</translation>
+<translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>kB (<ph name="NUM_KILOBYTES_LIVE"/>kB reaalajas)</translation>
 <translation id="5034259512732355072">Vali muu kataloog...</translation>
 <translation id="5074322878757699801">Impordi andmeid ...</translation>
+<translation id="7505152414826719222">Kohalik salvestus</translation>
 <translation id="5706242308519462060">Vaikekodeering:</translation>
 <translation id="5280833172404792470">Välju täisekraanilt (<ph name="ACCELERATOR"/>)</translation>
+<translation id="4000986992587584088">Näita alati hüpikaknaid hostilt <ph name="URL"/>
+</translation>
 <translation id="129553762522093515">Viimati suletud</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> päeva</translation>
 <translation id="3891357445869647828">Luba JavaScript</translation>
@@ -954,14 +1072,18 @@
 <translation id="4867297348137739678">Eelmine nädal</translation>
 <translation id="4881695831933465202">Ava</translation>
 <translation id="5457793226917888578">See lehekülg sisaldab ebaturvalist sisu.</translation>
+<translation id="5988520580879236902">Kontrolli aktiivseid kuvamisi:</translation>
 <translation id="5981759340456370804">Statistika nohikutele</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> päev</translation>
 <translation id="6512448926095770873">Lahku sellelt leheküljelt</translation>
 <translation id="5607455023223000189">Installitud lisandmoodulid</translation>
 <translation id="6294193300318171613">&amp;Kuva alati järjehoidjariba</translation>
+<translation id="3414952576877147120">Suurus:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> sekundit tagasi</translation>
 <translation id="7009102566764819240">Allpool on loend kõigist lehe ohtlikest elementidest. Lisateabe saamiseks klikkige konkreetse ressursi pahavara lõimul asuval diagnostikalingil. Kui teate, et teave, nagu tegeleks see ressurss õngevõtmisega, on vale, siis klikkige lingil „Teata veast“.</translation>
+<translation id="676327646545845024">Kõikide sellist tüüpi linkide puhul ära enam edaspidi seda dialoogi näita.</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> sekundit jäänud</translation>
+<translation id="6863682319656084809">Laiendi märguanne <ph name="EXTENSION_NAME"/></translation>
 <translation id="1485146213770915382">Sisestage URLi sisse otsingusõnade ilmumise kohta <ph name="SEARCH_TERMS_LITERAL"/>.</translation>
 <translation id="4839303808932127586">Sa&amp;lvesta video nimega ...</translation>
 <translation id="5626134646977739690">Nimi:</translation>
@@ -972,6 +1094,7 @@
 <translation id="4876916865079819322">Sünkrooni minu järjehoidjad</translation>
 <translation id="146000042969587795">See paneel keelati, kuna see sisaldab osaliselt ebaturvalist sisu.</translation>
 <translation id="8112223930265703044">Kõik</translation>
+<translation id="8023801379949507775">Värskenda nüüd laiendeid</translation>
 <translation id="1983108933174595844">Saada praeguse lehekülje kuvatõmmis</translation>
 <translation id="436869212180315161">Vajuta</translation>
 <translation id="8241707690549784388">Teie poolt otsitav lehekülg kasutas teie sisestatud andmeid. Sellele leheküljele naasmine võib kaasa tuua kõikide sooritatud tegevuste kordamise. Soovite jätkata?</translation>
@@ -984,6 +1107,7 @@
 <translation id="1753905327828125965">Enim külastatud</translation>
 <translation id="170407012880898501">Täitmise lihtsustamiseks salvesta vormide tekst</translation>
 <translation id="8116972784401310538">&amp;Järjehoidjate haldur</translation>
+<translation id="1849632043866553433">Rakenduste vahemälud</translation>
 <translation id="4927301649992043040">Paki laiend</translation>
 <translation id="6040143037577758943">Sule</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> minutit tagasi</translation>
@@ -996,12 +1120,15 @@
 <translation id="1232569758102978740">Pealkirjata</translation>
 <translation id="9149866541089851383">Muuda...</translation>
 <translation id="7000311294523403548">Pealkirjata veebileht</translation>
+<translation id="4593021220803146968">&amp;Mine asukohta <ph name="URL"/></translation>
 <translation id="7649070708921625228">Abi</translation>
 <translation id="6119719873954126908">Parema sirvimise kohta nõuannete ja soovituste saamiseks jälgige seda välja.</translation>
 <translation id="7442246004212327644">K&amp;ustuta</translation>
 <translation id="281133045296806353">Olemasoleva brauseri seansi ajal loodi uus aken.</translation>
+<translation id="6314007596429871800">Rakenduse vahemälu</translation>
 <translation id="9002707937526687073">P&amp;rindi...</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
+<translation id="8326395326942127023">Andmebaasi nimi:</translation>
 <translation id="7727721885715384408">Muuda nime ...</translation>
 <translation id="5508407262627860757">Loobu ikkagi</translation>
 <translation id="7587108133605326224">Balti</translation>
@@ -1010,6 +1137,7 @@
 <translation id="3021678814754966447">&amp;Vaata raami allikat</translation>
 <translation id="5271549068863921519">Salvesta parool</translation>
 <translation id="3251855518428926750">Lisa...</translation>
+<translation id="3508920295779105875">Valige muu kaust...</translation>
 <translation id="2987775926667433828">Hiina (traditsiooniline)</translation>
 <translation id="3954582159466790312">Taa&amp;sta heli</translation>
 <translation id="5809606740668187902">Blokeeritud ressurss</translation>
@@ -1021,8 +1149,10 @@
 <translation id="8045462269890919536">rumeenia</translation>
 <translation id="2927657246008729253">Muuda...</translation>
 <translation id="7978412674231730200">Privaatvõti</translation>
+<translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">Uus &amp;inkognito aken</translation>
 <translation id="3478477629095836699">Küpsiste seaded:</translation>
+<translation id="6529237754759924038">Kuupäev ja kellaaeg</translation>
 <translation id="7278870042769914968">Kasuta GTK+ teemat</translation>
 <translation id="2108475813351458355">Turvaline ühendus asukohta <ph name="DOMAIN"/></translation>
 <translation id="942671148946453043">Avasite inkognito akna. Selles aknas avatavad leheküljed ei ilmu teie ajaloos.</translation>
@@ -1058,11 +1188,14 @@
 <translation id="3943582379552582368">&amp;Tagasi</translation>
 <translation id="7607002721634913082">Peatatud</translation>
 <translation id="480990236307250886">Avage kodulehekülg</translation>
+<translation id="5757539081890243754">Avaleht</translation>
 <translation id="6709133671862442373">Uudised</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> tundi jäänud</translation>
+<translation id="6550675742724504774">Valikud</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> tundi tagasi</translation>
 <translation id="737801893573836157">Peida süsteemi pealkirjariba ning kasuta kompaktseid ääriseid</translation>
 <translation id="5040262127954254034">Privaatsus</translation>
+<translation id="1058681476058291010">Järjehoidja sünkroonimise viga...</translation>
 <translation id="1908748899139377733">Vaata raami &amp;teavet</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="803771048473350947">Fail</translation>
@@ -1071,6 +1204,7 @@
 <translation id="566920818739465183">Esmalt külastasite te seda saiti <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Klõpsake edasi minemiseks, hoidke all ajaloo kuvamiseks</translation>
 <translation id="923083373181549309">Taaskäivitage <ph name="PRODUCT_NAME"/></translation>
+<translation id="8678305583783039525">Kuva küpsiseid ja veebisaitide lubasid</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> sekundit</translation>
 <translation id="176587472219019965">&amp;Uus aken</translation>
 <translation id="8689341121182997459">Aegub:</translation>
@@ -1087,11 +1221,13 @@
 <translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> sooritab järgmised ülesanded:</translation>
 <translation id="1812622104192390866">Impordi seaded asukohast</translation>
 <translation id="4042471398575101546">Lehe lisamine</translation>
+<translation id="4871865824885782245">Ava kuupäeva ja kellaaja valikud...</translation>
 <translation id="988159990683914416">Arendaja järk</translation>
 <translation id="921175996768281472">Laiendi pakendamise nurjumine</translation>
 <translation id="2183426022964444701">Valige laiendi juurkataloog.</translation>
 <translation id="6790650291892352751">Teema või URL-i järgi otsimine:</translation>
 <translation id="5398353896536222911">&amp;Kuva õigekirja paneel</translation>
+<translation id="8046048349148382412">Täielikuks laadimiseks kulub <ph name="HOUR"/>.<ph name="MIUTE"/></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="7481312909269577407">Edasta</translation>
@@ -1104,6 +1240,7 @@
 <translation id="2444683954290143042">Sünkroonimisviga — logige uuesti sisse</translation>
 <translation id="5830720307094128296">Salvesta leht &amp;nimega...</translation>
 <translation id="5822838715583768518">Käivita rakendus</translation>
+<translation id="2433507940547922241">Välimus</translation>
 <translation id="839072384475670817">Loo rakenduste &amp;otseteed...</translation>
 <translation id="6756161853376828318">Tee <ph name="PRODUCT_NAME"/> vaikevalikuks</translation>
 <translation id="2640524951934795733">Mis me küll siia paneme?</translation>
@@ -1114,6 +1251,7 @@
 <translation id="3807747707162121253">&amp;Loobu</translation>
 <translation id="2850243184678184884">nt hoki, BBC, http://engadget.com/rss.xml</translation>
 <translation id="77999321721642562">Mõne aja jooksul hakkab allolev ala kuvama kaheksat enim külastatud saiti.</translation>
+<translation id="5864830997591220873">Keela kõik küpsised</translation>
 <translation id="7447718177945067973">Serverit ei leitud.</translation>
 <translation id="715468010956678290">Ava paneel inko&amp;gnito aknas</translation>
 <translation id="7755167023778553803">See lehekülg sisaldab aga ressursse muudelt veebisaitidelt, mille identiteeti ei saa kinnitada.</translation>
@@ -1121,6 +1259,7 @@
 <translation id="3455546154539383562">Te proovisite otsida &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid serveri poolt esitatud serdi on selle väljaandja tühistanud. See tähendab, et serveri esitatud turvamandaate ei tohiks mingil juhul usaldada. Te võite suhelda ründjaga. Te ei tohiks jätkata.</translation>
 <translation id="1177437665183591855">Tundmatu serveri serdi viga</translation>
 <translation id="3819800052061700452">&amp;Täisekraan</translation>
+<translation id="3533943170037501541">Tere tulemast avalehele!</translation>
 <translation id="3218306954729745977">Näita viimasena suletud vahekaarte</translation>
 <translation id="3737554291183722650">Lehekülje pealkiri:</translation>
 <translation id="1581962803218266616">Näita otsijas</translation>
@@ -1139,16 +1278,19 @@
 <translation id="1208126399996836490">Ära lähtesta</translation>
 <translation id="806812017500012252">Järjesta pealkirja alusel uuesti</translation>
 <translation id="2960316970329790041">Peata import</translation>
+<translation id="5361734574074701223">Järelejäänud aja arvutamine</translation>
 <translation id="1731911755844941020">Pringu saatmine...</translation>
 <translation id="1038842779957582377">tundmatu nimi</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="2052895926110224873">Teie privaatsuse mustade nimekirjade laadimine nurjus.</translation>
 <translation id="2445081178310039857">Laiendi juurkataloog on nõutav.</translation>
+<translation id="8251578425305135684">Pisipilt eemaldatud.</translation>
 <translation id="3037605927509011580">Ups, ebaõnn!</translation>
 <translation id="1918141783557917887">&amp;Väiksemaks</translation>
 <translation id="4065006016613364460">K&amp;opeeri pildi URL</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="4481249487722541506">Laadi pakkimata laiend...</translation>
 <translation id="8542113417382134668">Seriifidega font:</translation>
 <translation id="2149973817440762519">Muuda järjehoidjat</translation>
 <translation id="430831869130657585">Suffiksid</translation>
@@ -1172,17 +1314,27 @@
 <translation id="6053401458108962351">Kustuta &amp;sirvimise andmed...</translation>
 <translation id="2339641773402824483">Värskenduste otsimine...</translation>
 <translation id="8600200086690278232">Esiletoodud veebiklipid</translation>
+<translation id="8582728318425382804">Küpsiste ja veebisaitide load</translation>
 <translation id="2766006623206032690">Kl&amp;eebi ja mine</translation>
 <translation id="9071050381089585305">Skript ei reageeri</translation>
+<translation id="4394049700291259645">Keela</translation>
 <translation id="969892804517981540">Ametlik järk</translation>
 <translation id="724208122063442954">Valisite teatud failitüüpide kohe avamise pärast allalaadimist. Te võite need seaded tühistada, misjärel allalaaditud faile automaatselt ei avata.</translation>
 <translation id="5765491088802881382">Ühtki võrku pole saadaval</translation>
 <translation id="5183088099396036950">Serveriga ei saanud ühendust</translation>
-<translation id="4477534650265381513">Kiire ligipääsu võimaldamiseks paigutage oma järjehoidjad siia järjehoidjaribale.</translation>
+<translation id="4469842253116033348">Keela teated saidilt <ph name="SITE"/></translation>
+<translation id="7999229196265990314">Loodi järgmised failid:
+
+Laiend: <ph name="EXTENSION_FILE"/>
+Võtmefail: <ph name="KEY_FILE"/>
+
+Hoidke oma võtmefail kindlas kohas. Teil läheb seda oma laiendi uute versioonide loomiseks vaja.</translation>
 <translation id="3036649622769666520">Failide avamine</translation>
 <translation id="7909652923456235549">Küpsiseid ei saadeta</translation>
+<translation id="7685049629764448582">JavaScripti mälu</translation>
 <translation id="4508765956121923607">Vaata a&amp;llikat</translation>
 <translation id="8080048886850452639">K&amp;opeeri heli URL</translation>
+<translation id="5849869942539715694">Paki laiend...</translation>
 <translation id="7339785458027436441">Kontrolli õigekirja tippimise ajal</translation>
 <translation id="1384721974622518101">Kas teadsite, et saate otsida otse ülalolevast kastist?</translation>
 <translation id="8203365863660628138">Kinnita install</translation>

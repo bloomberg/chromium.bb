@@ -7,6 +7,7 @@
 <translation id="3581034179710640788">സൈറ്റിന്റെ  സുരക്ഷാ സര്‍ട്ടിഫിക്കറ്റ്‍ കാലഹരണപ്പെട്ടു!</translation>
 <translation id="8275038454117074363">ഇറക്കുമതിചെയ്യുക</translation>
 <translation id="8418445294933751433">&amp;ടാബ് പോലെ കാണിക്കുക</translation>
+<translation id="6985276906761169321">ID:</translation>
 <translation id="2160383474450212653">ഫോണ്ടുകളും ഭാഷകളും</translation>
 <translation id="4405141258442788789">പ്രവൃത്തിയുടെ സമയം കഴിഞ്ഞു.</translation>
 <translation id="5048179823246820836">നോര്‍ഡിക്</translation>
@@ -28,11 +29,15 @@
 <translation id="8571213806525832805">കഴിഞ്ഞ 4 ആഴ്ച</translation>
 <translation id="6021004449668343960">Sans-Serif ഫോണ്ട്:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
+<translation id="8460952460426246415">നിങ്ങള്‍‌ സമന്വയം പ്രാപ്‌തമാക്കിയ എല്ലാ കമ്പ്യൂട്ടറുകളും തമ്മില്‍‌ നിങ്ങളുടെ ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ ഇപ്പോള്‍‌ സമന്വയിപ്പിക്കുന്നതായിരിക്കും..</translation>
 <translation id="4422428420715047158">Domain:</translation>
 <translation id="4021918302616263355"><ph name="SEARCH_TERMS"/> ന് വേണ്ടി <ph name="ENGINE"/> തിരയുക</translation>
 <translation id="5376169624176189338">ചരിത്രം കാണുന്നതിനായി പുറകിലേക്ക് പോകുന്നതിന് ക്ലിക്കുചെയ്യുക</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> സെക്കന്റ്‍ ശേഷിക്കുന്നു</translation>
 <translation id="9181716872983600413">യൂണിക്കോഡ്</translation>
+<translation id="7383539497402338906">വിവിധ കമ്പ്യൂട്ടറുകളില്‍‌ ഒരേ ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ സൂക്ഷിക്കുന്നതിന് ബുക്ക്‌മാര്‍ക്ക് സമന്വയം ഇത് സുഗമമാക്കുന്നു.
+        നിങ്ങള്‍‌ സമന്വയം പ്രാപ്‌തമാക്കുമ്പോള്‍‌, നിങ്ങളുടെ ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ നിങ്ങളുടെ Google അക്കൌണ്ടിലെ ഓണ്‍‌ലൈനില്‍‌ സംഭരിക്കും .
+        നിങ്ങള്‍‌ സമന്വയം പ്രാപ്‌തമാക്കുന്ന ഓരോ അധിക കമ്പ്യൂട്ടറും ഒരേ ബുക്ക്‌മാര്‍‌ക്കുകളെ സ്വീകരിക്കും.</translation>
 <translation id="1383861834909034572">പൂര്‍ത്തിയാകുമ്പോള്‍ തുറക്കുന്നു</translation>
 <translation id="4211171103079968550">Java പ്രാപ്തമാക്കുക</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
@@ -45,12 +50,12 @@
 <translation id="9154072353677278078"><ph name="REALM"/> ലെ സെര്‍വര്‍ <ph name="DOMAIN"/> ന് ഒരു ഉപയോക്തൃനാമവും പാസ്‌വേഡും ആവശ്യമാണ്.</translation>
 <translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; ലെ വെബ്സൈറ്റ് “ഫിഷിംഗ് സൈറ്റ്” ആയി റിപ്പോര്‍ട്ട് ചെയ്തിരിക്കുന്നു.  വ്യക്തിപരവും സാമ്പത്തികവുമാ‍യ വിവരങ്ങള്‍ വെളിപ്പെടുത്തുന്നതിനായി ഫിഷിംഗ് സൈറ്റ്  ബാങ്കുകള്‍ പോലുള്ള വിശ്വാസയോഗ്യമായ സ്ഥാപനങ്ങളായി നടിച്ച് ഉപയോക്താക്കളെ കബളിപ്പിക്കുന്നു.</translation>
 <translation id="8178665534778830238">ഉള്ളടക്കം:</translation>
-<translation id="1379170046778889619">സുരക്ഷാ വിവരം</translation>
 <translation id="4771019161370731727">സമീപകാല പ്രവര്‍ത്തനങ്ങള്‍</translation>
 <translation id="8974161578568356045">സ്വയം തിരിച്ചറിയുക</translation>
 <translation id="1818606096021558659">പേജ്</translation>
 <translation id="1657406563541664238">Google ലേക്ക് ഉപയോഗ സ്ഥിതിവിവരകണക്കുകളും ക്രാഷ് റിപ്പോര്‍ട്ടുകളും സ്വപ്രേരിതമായി അയച്ചുകൊണ്ട് <ph name="PRODUCT_NAME"/> മെച്ചപ്പെട്ട രീതിയില്‍ നിര്‍മ്മിക്കാന്‍ സഹായിക്കുക</translation>
 <translation id="7982789257301363584">നെറ്റ്വര്‍ക്ക്</translation>
+<translation id="2336228925368920074">എല്ലാ ടാബുകളും ബുക്ക്‌മാര്‍‌ക്ക് ചെയ്യുക...</translation>
 <translation id="4108206167095122329">എല്ലാം &amp;നീക്കംചെയ്യൂ</translation>
 <translation id="7481475534986701730">സമീപകാലത്ത് സന്ദര്‍ശിച്ച സൈറ്റുകള്‍</translation>
 <translation id="4260722247480053581">വേഷ പ്രച്ഛന്ന വിന്‍ഡോയില്‍ തുറക്കുക</translation>
@@ -71,10 +76,12 @@
 <translation id="9218430445555521422">സ്ഥിരസ്ഥിതിയാക്കുക</translation>
 <translation id="4589279373639964403">ബുക്മാര്‍ക്കുകള്‍ കയറ്റുമതി ചെയ്യുക...</translation>
 <translation id="8876215549894133151">ഫോര്‍മാറ്റ്:</translation>
+<translation id="5234764350956374838">ബഹിഷ്‌ക്കരിക്കുക</translation>
 <translation id="5463275305984126951"><ph name="LOCATION"/> ന്റെ സൂചിക</translation>
 <translation id="5154917547274118687">മെമ്മറി</translation>
 <translation id="1735662153177951739">ഒരു സുരക്ഷിത കണക്ഷനിലൂടെ ഈ പേജ് പൂര്‍ണമായി വീണ്ടെടുക്കാനാവില്ല.  സുരക്ഷിതമല്ലാത്ത കണക്ഷനുകളിലൂടെ വീണ്ടെടുത്ത ചില ഉള്ളടക്കം ഇതില്‍ അടങ്ങിയിരിക്കുന്നു.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE"/> തിരയല്‍</translation>
+<translation id="6726379128203862332"><ph name="SIZE_TAKEN"/>MB</translation>
 <translation id="2459861677908225199">TLS 1.0 ഉപയോഗിക്കുക</translation>
 <translation id="873849583815421063">അവസാനിപ്പിക്കുന്നു...</translation>
 <translation id="5819484510464120153">അപ്ലിക്കേഷനുകളും കുറുക്കുവഴികളും സൃഷ്ടിക്കൂ...</translation>
@@ -94,11 +101,13 @@
 <translation id="443008484043213881">ടൂളുകള്‍</translation>
 <translation id="314605055819837597">ഉപയോക്തൃ ഡാറ്റാ</translation>
 <translation id="8534801226027872331">ഈ സാഹചര്യത്തില്‍, നിങ്ങളുടെ ബ്രൌസറിനായി നല്‍കപ്പെട്ടിട്ടുള്ള സര്‍ട്ടിഫിക്കറ്റില്‍ പിശകുകളുണ്ടായിരിക്കും, അവ മനസിലാക്കാനും കഴിയില്ല. ഇത് ഒരു പക്ഷെ അര്‍ത്ഥമാക്കുന്നത് നമുക്ക് സര്‍ട്ടിഫിക്കറ്റിലെ തിരിച്ചറിയല്‍ വിവരങ്ങള്‍ മനസ്സിലാക്കാന്‍ കഴിഞ്ഞില്ല, അല്ലെങ്കില്‍ സര്‍ട്ടിഫിക്കറ്റിലെ മറ്റ് ചില വിവരങ്ങള്‍ കണക്ഷന്‍ സുരക്ഷിതമാക്കുന്നതിനായി ഉപയോഗിക്കുന്നു എന്നാണ്. നിങ്ങള്‍ മുന്നോട്ട് പോകരുത്.</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> ന് ഇപ്പോള്‍ <ph name="BEGIN_LINK"/>എക്സ്റ്റന്‍ഷനുകളും<ph name="END_LINK"/> കൂടാതെ <ph name="BEGIN_BUTTON"/> ബുക്മാര്‍ക്ക് സമന്വയവും<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">നിങ്ങളുടെ ബുക്ക്‌മാര്‍ക്കുകള്‍ ലയിപ്പിക്കും.</translation>
 <translation id="4422347585044846479">ഈ പേജിനാ‍യി ബുക്മാര്‍ക്ക് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="7367545749698325833">നിങ്ങള്‍ക്ക് മറ്റ് ബ്രൌസറുകളില്‍ നിന്ന് ബുക്ക്‌മാര്‍ക്കുകളും ക്രമീകരണങ്ങളും കയറ്റുമതി ചെയ്യാനോ അല്ലെങ്കില്‍ ഈ കമ്പ്യൂട്ടറില്‍ നിന്ന് നിങ്ങളുടെ ബ്രൌസിംഗ് ഡാറ്റ ഇല്ലാതാക്കാനോ കഴിയും.</translation>
 <translation id="51285338152176012">സമീപകാലത്ത് അടച്ച ടാബുകള്‍‌ മറയ്‌ക്കുക</translation>
 <translation id="8546306075665861288">ചിത്ര കാഷേ</translation>
+<translation id="801357260673640054">ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ സമന്വയിപ്പിച്ചു...</translation>
 <translation id="1399076603473531278">പ്രവേശന വിശദാംശങ്ങള്‍‌ കാലഹരണപ്പെട്ടതാണ്.</translation>
 <translation id="3391060940042023865">ഇനി പറയുന്ന പ്ലഗ്-ഇന്നുകള്‍ തകര്‍ന്നു: <ph name="PLUGIN_NAME"/></translation>
 <translation id="8879284080359814990">&amp;ടാബായി കാണിക്കുക</translation>
@@ -109,7 +118,7 @@
 <translation id="2994458892329442723">പ്ലഗ്-ഇന്നുകള്‍ പ്രാപ്തമാക്കുക</translation>
 <translation id="1674989413181946727">കമ്പ്യൂട്ടര്‍-വൈഡ് SSL സജ്ജീകരണങ്ങള്‍:</translation>
 <translation id="8703575177326907206"><ph name="DOMAIN"/> ലേക്കുള്ള നിങ്ങളുടെ കണക്ഷന്‍ എന്‍‌ക്രിപ്റ്റ് ചെയ്തിട്ടില്ല.</translation>
-<translation id="7345141778157460052">ബുക്ക്‍മാര്‍‌ക്ക് സമന്വയം:</translation>
+<translation id="4197577448076628265">ഈ വിപുലീകരണത്തിന് <ph name="HOST"/> ലെ നിങ്ങളുടെ ബ്രൌസിംഗ് ചരിത്രത്തിലേയ്‌ക്കും സ്വകാര്യ ഡാറ്റയിലേയ്‌ക്കും ആക്‌സസ് ഉണ്ടായിരിക്കും.</translation>
 <translation id="1644574205037202324">ചരിത്രം</translation>
 <translation id="2518917559152314023">ചേ&amp;ര്‍ക്കൂ....</translation>
 <translation id="6583406242234752719">നിങ്ങളുടെ മറ്റ് കമ്പ്യൂട്ടറുകള്‍‌ക്കൊപ്പം നിങ്ങളുടെ ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ സമന്വയിപ്പിക്കുന്നതിന് സജ്ജമാക്കിയിട്ടില്ല.</translation>
@@ -133,25 +142,33 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> സെക്കന്റ്</translation>
 <translation id="5098629044894065541">ഹീബ്രു</translation>
 <translation id="7751559664766943798">ബുക്മാര്‍ക്ക് ബാര്‍ എപ്പോഴും കാണിക്കുക</translation>
+<translation id="144136026008224475">കൂടുതല്‍‌ വിപുലീകരണങ്ങള്‍‌ നേടുക &gt;&gt;</translation>
 <translation id="8584280235376696778">&amp;വീഡിയോ പുതിയ ടാബില്‍ തുറക്കുക</translation>
 <translation id="2845382757467349449">ബുക്ക്മാര്‍‌ക്കുകള്‍‌ ബാര്‍ എപ്പോഴും കാണിക്കുക</translation>
 <translation id="6827094223626760756">തിരനോട്ടം</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> മണിക്കൂര്‍‍ അവശേഷിക്കുന്നു</translation>
 <translation id="1720675772864601791">സുരക്ഷിതമല്ലാത്ത ഇമേജുകള്‍ അനുവദിക്കൂ</translation>
+<translation id="471372654970523967"><ph name="NETWORKDEVICE"/> ഓണാക്കുക</translation>
+<translation id="4001299999465067131">മുകളിലുള്ള ചിത്രത്തില്‍‌ കാണിച്ചിരിക്കുന്നതുപോലെ അക്ഷരങ്ങള്‍‌ നല്‍‌കുക.</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="5233638681132016545">പുതിയ ടാബ്</translation>
 <translation id="5210365745912300556">ടാബ് അടയ്ക്കൂ</translation>
 <translation id="8806796506533854282">ഒരു പ്രൊഫൈല്‍‌ നാമം നല്‍‌കുക</translation>
 <translation id="2551763528995812091">പാസ്‌വേഡുകളും ഒഴിവാക്കലുകളും</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="2263497240924215535">(അപ്രാപ്‌തമാക്കി)</translation>
 <translation id="6360709384096878403">ബഗ് അല്ലെങ്കില്‍ തകര്‍ന്ന വെബ്‌സൈറ്റ് റിപ്പോര്‍ട്ടുചെയ്യുക...</translation>
 <translation id="1110535155349301542">നീക്കംചെയ്യുക</translation>
 <translation id="8571852575982769756">ഒരു പ്ലഗ്-ഇന്നുകളും ഇന്‍സ്റ്റോള്‍ ചെയ്തിട്ടില്ല</translation>
+<translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME"/> നായി കാത്തിരിക്കുന്നു...</translation>
+<translation id="5850800573054873412">ഈ വിപുലീകരണത്തിന് എല്ലാ വെബ്‌സൈറ്റുകളിലേയും നിങ്ങളുടെ ബ്രൌസിംഗ് ചരിത്രത്തിലേക്കും സ്വകാര്യ ഡാറ്റയിലേക്കും ആക്‌സസ് ഉണ്ടായിരിക്കും.</translation>
 <translation id="3280237271814976245">ഇതുപോലെ&amp; സംരക്ഷിക്കുക..</translation>
 <translation id="5300471193642408424">പേജുകള്‍ കാണിക്കുക</translation>
 <translation id="7658239707568436148">റദ്ദാക്കുക</translation>
 <translation id="6996264303975215450">വെബ്‌പേജ്, പൂര്‍ണ്ണം</translation>
+<translation id="8744320793514149773">ഈ വിപുലീകരണത്തിന് എല്ലാ വെബ്‌സൈറ്റുകളിലേയും നിങ്ങളുടെ സ്വകാര്യ ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ടായിരിക്കും.</translation>
+<translation id="3435896845095436175">സാദ്ധ്യമാക്കുക</translation>
 <translation id="2154710561487035718">URL പകര്‍ത്തുക</translation>
 <translation id="4244236525807044920">ഫോണ്ടും ഭാഷാ സജ്ജീകരണങ്ങളും മാറ്റുക</translation>
 <translation id="3241680850019875542">പാക്ക് ചെയ്യുന്നതിന് വിപുലീകരണത്തിന്‍റെ റൂട്ട് ഡയറക്‌ടറി തിരഞ്ഞെടുക്കുക. ഒരു വിപുലീകരണം അപ്‌ഡേറ്റ് ചെയ്യുന്നതിന്, വീണ്ടും ഉപയോഗിക്കുന്നതിന് സ്വകാര്യ കീ ഫയലും തിരഞ്ഞെടുക്കുക.</translation>
@@ -159,6 +176,7 @@
 <translation id="6746124502594467657">താഴേക്ക് നീക്കുക</translation>
 <translation id="4657169630710541069">ഉറവിട പിശക്</translation>
 <translation id="3383487468758466563">ഫോണ്ടുകളും ഭാഷകളും:</translation>
+<translation id="7339949551808462689">വിപുലീകരണം <ph name="EXTENSION_NAME"/></translation>
 <translation id="6163363155248589649">&amp;സാധാരണ</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(ശീര്‍ഷകമില്ലാത്ത)</translation>
@@ -168,14 +186,17 @@
 <translation id="3605499851022050619">സുരക്ഷിത ബ്രൌസിംഗ് ഡയഗണോസ്റ്റിക് പേജ്</translation>
 <translation id="4307992518367153382">അടിസ്ഥാനങ്ങള്‍</translation>
 <translation id="5912378097832178659">&amp;സെര്‍ച് എഞ്ചിനുകള്‍ എഡിറ്റ് ചെയ്യൂ...</translation>
+<translation id="3173397526570909331">സമന്വയിപ്പിക്കുന്നത് നിര്‍‌ത്തുക</translation>
 <translation id="4813345808229079766">കണക്ഷന്‍</translation>
 <translation id="411666854932687641">സ്വകാര്യ മെമ്മറി</translation>
 <translation id="119944043368869598">എല്ലാം നീക്കുക</translation>
 <translation id="1336254985736398701">പേജ് വിവ&amp;രം കാണുക</translation>
+<translation id="5678480951567683474">പേജ്, ഉപകരണങ്ങള്‍‌ മെനുകള്‍‌ കാണിക്കുക</translation>
 <translation id="1652965563555864525">&amp;നിശബ്ദമാക്കുക</translation>
 <translation id="4200983522494130825">പുതിയ &amp;ടാബ്</translation>
 <translation id="7979036127916589816">സമന്വയ പിശക്</translation>
 <translation id="5455790498993699893"><ph name="TOTAL_MATCHCOUNT"/> ന്റെ <ph name="ACTIVE_MATCH"/></translation>
+<translation id="5178488982078290579">ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ സമന്വയിപ്പിച്ചു...</translation>
 <translation id="2303544859777878640">ഭാഷകള്‍:</translation>
 <translation id="2021921916539001817"><ph name="HOST_NAME"/> ല്‍ നിന്നും ട്രാന്‍സ്‌ഫര്‍ ചെയ്യുന്നു...</translation>
 <translation id="6909042471249949473">ഈ കാലയളവ് മുതലുള്ള ഡാറ്റകള്‍ മായ്ക്കുക:</translation>
@@ -185,10 +206,13 @@
 <translation id="7400418766976504921">URL</translation>
 <translation id="7456847797759667638">സ്ഥാനം തുറക്കുക...</translation>
 <translation id="5392041771307264501">ഒരു പുതിയ വിന്‍‌ഡോ തുറക്കുന്നതിന് ഒരു പ്രൊഫൈല്‍‌ തിരഞ്ഞെടുക്കുക</translation>
+<translation id="1388866984373351434">ഡാറ്റ ബ്രൌസ് ചെയ്യുന്നു</translation>
+<translation id="7378627244592794276">നോപ്പ്</translation>
 <translation id="68541483639528434">മറ്റ് ടാബുകള്‍ അടയ്ക്കുക</translation>
 <translation id="4022426551683927403">&amp;നിഘണ്ടുവിലേക്ക് ചേര്‍ക്കുക</translation>
 <translation id="2897878306272793870">നിങ്ങള്‍ <ph name="TAB_COUNT"/> ടാബുകള്‍ തുറക്കാന്‍ പോവുകയാണെന്ന് ഉറപ്പുണ്ടോ?</translation>
 <translation id="362276910939193118">മുഴുവന്‍ ചരിത്രവും കാണിക്കുക</translation>
+<translation id="7879113706359663444"><ph name="HOUR"/>:<ph name="MIUTE"/>p</translation>
 <translation id="1073286447082909762">ഫ്രെയിം ഒരു പു‌തിയ &amp;വിന്‍‌ഡോയില്‍ തുറക്കുക</translation>
 <translation id="692135145298539227">ഇല്ലാതാക്കൂ</translation>
 <translation id="8343477974731263456">ബുക്ക്‌മാര്‍‌ക്ക് സമന്വയങ്ങള്‍ സജ്ജീകരിക്കുക</translation>
@@ -200,6 +224,7 @@
 <translation id="2678063897982469759">പുനഃപ്രാപ്‌തമാക്കുക</translation>
 <translation id="4850886885716139402">കാണുക</translation>
 <translation id="1965338962645102116">Chrome ലേക്ക് ടൂള്‍‌ബാര്‍‌ ബുക്മാര്‍‌ക്കുകള്‍‌ ഇറക്കുമതി ചെയ്യുന്നതിന്, നിങ്ങളുടെ Google അക്കൌണ്ടിലേക്ക് പ്രവേശിച്ചിരിക്കണം. ദയവായി പ്രവേശിച്ച് വീണ്ടും ഇറക്കുമതി ചെയ്യാന്‍‌ ശ്രമിക്കൂ.</translation>
+<translation id="5035846689029228055">ബുക്മാര്‍ക്ക് സമന്വയം:</translation>
 <translation id="5922220455727404691">SSL 3.0 ഉപയോഗിക്കുക</translation>
 <translation id="5903264686717710770">ശീര്‍ഷകം:</translation>
 <translation id="8899851313684471736">പുതിയ &amp;വിന്‍ഡോയിലെ ലിങ്ക് തുറക്കുക</translation>
@@ -208,11 +233,13 @@
 <translation id="6686490380836145850">വലത്തേക്കുള്ള ടാബുകള്‍ അടയ്ക്കുക</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> മണിക്കൂര്‍</translation>
 <translation id="2790948358747073186">ഇതിലും കൂടുതല്‍</translation>
+<translation id="5774515636230743468">മാനിഫെസ്റ്റ്:</translation>
 <translation id="2423578206845792524">ഇമേജ് ഇതുപോലെ സം&amp;രക്ഷിക്കുക</translation>
 <translation id="1095038624419434542">ഒരു പ്രോഗ്രാം ഉറവിടം ലോഡുചെയ്യുന്നതിനിടയില്‍ ഒരു പിശക് നേരിട്ടു. വീണ്ടും ഇന്‍സ്റ്റാളുചെയ്യാന്‍ ശ്രമിക്കുക.</translation>
 <translation id="9068931793451030927">പാത:</translation>
 <translation id="7052402604161570346">ഈ ഫയലുകള്‍ കമ്പ്യൂട്ടറിന് ഹാനികരമാകാം. <ph name="FILE_NAME"/> ഡൌണ്‍ലോഡ് ചെയ്യണോ?</translation>
 <translation id="8642489171979176277">Google ടൂള്‍‌ബാറില്‍‌ നിന്നും ഇറക്കുമതി ചെയ്‌തത്</translation>
+<translation id="5905978244564263718">ഓട്ടോഫില്‍‌ സജ്ജമാക്കുക...</translation>
 <translation id="7335374713830044009">വേഷ&amp;പ്രച്ഛന്ന വിന്‍ഡോയില്‍ ഫ്രെയിം തുറക്കുക</translation>
 <translation id="2011110593081822050">വെബ്‌ വര്‍‌ക്കര്‍‌: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">ഫയല്‍ നാമം:</translation>
@@ -261,25 +288,31 @@
 <translation id="1608306110678187802">ഫ്രെയിം അ&amp;ച്ചടിക്കുക...</translation>
 <translation id="4948468046837535074">ഇനിപ്പറയുന്ന പേജുകള്‍ തുറക്കുക:</translation>
 <translation id="6978121630131642226">സെര്‍ച്ച് എഞ്ചിനുകള്‍</translation>
+<translation id="6745994589677103306">ഒന്നും ചെയ്യരുത്</translation>
 <translation id="855081842937141170">പിന്‍ ടാബ്</translation>
+<translation id="2723893843198727027">ഡെവലപ്പര്‍ മോഡ്:</translation>
 <translation id="5362741141255528695">സ്വകാര്യ കീ ഫയല്‍‌ തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="7012108905414904806">അങ്ങനെയാണെങ്കിലും, ഈ പേജില്‍ സുരക്ഷിതമല്ലാത്ത മറ്റ് വസ്തുതകള്‍ ഉള്‍പ്പെടുന്നു. ട്രാന്‍സിറ്റിലായിരിക്കുമ്പോള്‍ മറ്റുള്ളവര്‍ക്ക് ഈ വസ്തുതകള്‍ കാണാന്‍ കഴിയും, മാത്രമല്ല ഒരു അതിക്രമിക്ക് പേജിന്റെ രൂപത്തിലോ അല്ലെങ്കില്‍ സ്വഭാവത്തിലോ പരിഷ്കാരങ്ങള്‍ വരുത്താനും കഴിയും.</translation>
 <translation id="4515911410595374805">ഈ പേജിലെ ചില ഘടകങ്ങള്‍ പരിശോധിച്ചിട്ടില്ലാത്ത ഒരു ഉറവിടത്തില്‍ നിന്നാണ് വന്നത്,  അവ പ്രദര്‍ശിപ്പിച്ചിട്ടുമില്ല.</translation>
 <translation id="1195447618553298278">അജ്ഞാത പിശക്.</translation>
 <translation id="3353284378027041011"><ph name="NUMBER_FEW"/> days ago</translation>
 <translation id="4800557284502805285">ഒരു ദുര്‍‌ബ്ബല സിഗ്‌നേച്ചര്‍‌ അല്‍‌ഗോരിതം ഉപയോഗിച്ചുകൊണ്ട് സെര്‍‌വറിന്‍റെ സര്‍‌ട്ടിഫിക്കറ്റ് സൈന്‍‌ ചെയ്‌തു</translation>
+<translation id="6610600335992778838">Wifi</translation>
 <translation id="1087119889335281750">&amp;സ്പെല്ലിംഗ് നിര്‍ദ്ദേശങ്ങള്‍ ഒന്നുമില്ല</translation>
 <translation id="718141787353053227">പേജ് സജ്ജീകരണം...</translation>
 <translation id="5076340679995252485">&amp;ഒട്ടിക്കുക</translation>
+<translation id="5097982659374947325">ഞാന്‍ സന്ദര്‍ശിക്കുന്ന സൈറ്റുകളില്‍ നിന്നുള്ള കുക്കുകള്‍ മാത്രം സ്വീകരിക്കുക</translation>
 <translation id="14171126816530869"><ph name="LOCALITY"/> ലെ <ph name="ORGANIZATION"/> ന്റെ വ്യക്തിത്വം <ph name="ISSUER"/> പരിശോധിച്ചു.</translation>
 <translation id="1587275751631642843">&amp;JavaScript കണ്‍സോള്‍</translation>
 <translation id="5821894118254011366">മൂന്നാം-കക്ഷി കുക്കികളെ പൂര്‍ണ്ണമായും തടയുക</translation>
 <translation id="3511307672085573050">ലിങ്ക് വിലാ&amp;സം പകര്‍ത്തുക</translation>
 <translation id="1134009406053225289">വേഷ പ്രഛന്ന വിന്‍ഡോയില്‍ തുറക്കുക</translation>
+<translation id="6655190889273724601">ഡെവലപ്പര്‍ മോഡ്</translation>
 <translation id="3473105180351527598">ഫിഷിംഗും മാല്‍വെയര്‍ പരിരക്ഷണവും പ്രാപ്തമാക്കുക</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME"/> തിരയുന്നതിനായി <ph name="SEARCH_KEY"/> അമര്‍ത്തുക</translation>
 <translation id="2342959293776168129">ഡൌണ്‍ലോഡ് ചരിത്രം മായ്ക്കുക</translation>
 <translation id="2503522102815150840">ബ്രൌസര്‍ അപകടം... ബൂമിലേക്ക് പോകൂ</translation>
+<translation id="425878420164891689">പൂര്‍‌ണ്ണമാകുന്നതുവരെ സമയം കണക്കാക്കുന്നു</translation>
 <translation id="1272079795634619415">നിര്‍ത്തുക</translation>
 <translation id="6786747875388722282">വിപുലീകരണങ്ങള്‍</translation>
 <translation id="9053965862400494292">സമന്വയം സജ്ജമാക്കാന്‍ ശ്രമിക്കുന്നതിനിടയില്‍ ഒരു പിശകു സംഭവിച്ചു.</translation>
@@ -294,16 +327,21 @@
 <translation id="5710435578057952990">ഈ വെബ്സൈറ്റിന്റെ വ്യക്തിത്വം പരിശോധിച്ചിട്ടില്ല.</translation>
 <translation id="5287240709317226393">കുക്കികള്‍ കാണിക്കുക</translation>
 <translation id="5451646087589576080">ഫ്രെയിമിന്റെ &amp;വിവരങ്ങള്‍ കാണുക</translation>
+<translation id="3368922792935385530">ബന്ധിപ്പിച്ചു</translation>
 <translation id="8486154204771389705">ഈ പേജില്‍ സൂക്ഷിക്കുക</translation>
 <translation id="6824564591481349393">&amp;ഇമെയില്‍ വിലാസം പകര്‍ത്തുക</translation>
+<translation id="5184063094292164363">&amp;JavaScript കണ്‍‌സോള്‍‌</translation>
 <translation id="333371639341676808">അധികമുള്ള ഡയലോഗുകള്‍ സൃഷ്ടിക്കുന്നതില്‍ നിന്ന് ഈ പേജിനെ തടയൂ.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> തീയതി വരെ ആകുന്നു (<ph name="VERSION"/>)</translation>
 <translation id="4254921211241441775">ഈ അക്കൌണ്ട് സമന്വയിപ്പിക്കുന്നത് അവസാനിപ്പിക്കുക</translation>
+<translation id="8661648338644250771">ഈ വിപുലീകരണത്തിന് നിങ്ങളുടെ സ്വകാര്യ ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ടായിരിക്കും<ph name="HOST"/>.</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="307505906468538196">ഒരു Google അക്കൌണ്ട് സൃഷ്ടിക്കുക</translation>
 <translation id="48838266408104654">&amp;ടാസ്‌ക് മാനേജര്‍</translation>
 <translation id="3694027410380121301">മുമ്പത്തെ ടാബ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="6178664161104547336">ഒരു സര്‍ട്ടിഫിക്കറ്റ് തിരഞ്ഞെടുക്കുക</translation>
+<translation id="5702898740348134351">&amp;തിരയല്‍‌ എഞ്ചിനുകള്‍‌ എഡിറ്റുചെയ്യുക...</translation>
+<translation id="2365740070488517695">സൂചനകള്‍‌</translation>
 <translation id="772440777491435074">സര്‍ട്ടിഫിക്കറ്റ് വിവരം...</translation>
 <translation id="2869459179306435079">ഇതില്‍ നിന്ന് സജ്ജീകരണങ്ങള്‍ ഇറക്കുമതി ചെയ്യുക:</translation>
 <translation id="732677191631732447">ഓഡിയോ URL പകര്‍&amp;ത്തുക</translation>
@@ -311,6 +349,8 @@
 <translation id="3369624026883419694">റിസോള്‍വിംഗ് ഹോസ്റ്റ്...</translation>
 <translation id="8870413625673593573">സമീപകാലത്ത് അടച്ചു</translation>
 <translation id="9145357542626308749">ഒരു ദുര്‍‌ബ്ബല സിഗ്‌നേച്ചര്‍‌ അല്‍‌ഗോരിതം ഉപയോഗിച്ചുകൊണ്ട് സൈറ്റിന്‍റെ സര്‍‌ട്ടിഫിക്കറ്റ് സൈന്‍‌ ചെയ്‌തു!</translation>
+<translation id="8800574954100068740">സ്ഥിരസ്ഥിതി തിരയല്‍‌</translation>
+<translation id="6551701656367809067">സെര്‍‌വറിലേക്ക് വളരെയധികം അഭ്യര്‍‌ത്ഥനകള്‍‌ അയച്ചതിനാല്‍‌ Bookmark Sync തെറ്റായി പ്രവര്‍‌ത്തിക്കുന്നു. <ph name="NAME_OF_EXTENSION"/> നിങ്ങളുടെ ബുക്ക്‌മാര്‍‌ക്കുകളിലേക്ക് വളരെയധികം മാറ്റങ്ങള്‍‌ വരുത്തുന്നുവെന്ന് തോന്നുന്നു.</translation>
 <translation id="8249296373107784235">ഉപേക്ഷിക്കുക</translation>
 <translation id="3967132639560659870">ഈ പേജില്‍ നിരവധി SSL പിശകുകള്‍ ഉണ്ട്:</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
@@ -322,6 +362,7 @@
 <translation id="1319824869167805246">എല്ലാ ബുക്ക്‌മാര്‍ക്കുകളും പുതിയ വിന്‍‌ഡോയില്‍‌ തുറക്കുക</translation>
 <translation id="3493653833301553455">ഫോം ഓട്ടോഫില്‍:</translation>
 <translation id="3895288786311724904">ചേര്‍ത്തു</translation>
+<translation id="3371861036502301517">വിപുലീകരണം ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യുന്നത് പരാജയപ്പെട്ടു</translation>
 <translation id="644038709730536388">ദോഷകരമായ സോഫ്റ്റ്വെയര്‍ ഓണ്‍ലൈനില്‍ നിന്ന് സ്വയം എങ്ങനെ സംരക്ഷിക്കാമെന്ന് കൂടുതല്‍ മനസിലാക്കുക.</translation>
 <translation id="4172706149171596436">പ്രോക്സി സജ്ജീകരണങ്ങള്‍ മാറ്റുക</translation>
 <translation id="5650551054760837876">തിരയല്‍ ഫലങ്ങള്‍ കണ്ടെത്തിയില്ല.</translation>
@@ -329,6 +370,8 @@
 <translation id="3234408098842461169">താഴേക്കുള്ള ആരോ അടയാളം</translation>
 <translation id="825608351287166772">നിങ്ങള്‍ക്കുണ്ടായിരിക്കാവുന്ന ഏതൊരു തിരിച്ചറിയല്‍ പ്രമാണങ്ങള്‍ പോലെയും (ഒരു പാസ്പോര്‍ട്ട് പോലെ) സര്‍ട്ടിഫിക്കറ്റുകള്‍ക്ക് ഒരു സാധുത കാലയളവ് ഉണ്ടായിരിക്കും. നിങ്ങളുടെ ബ്രൌസറില്‍ ഹാജരാക്കിയിരിക്കുന്ന സര്‍ട്ടിഫിക്കറ്റ് ഇപ്പോഴും സാധുവല്ല. ഒരു സര്‍ട്ടിഫിക്കറ്റിന്റെ സാധുതാ കാലയളവ് കഴിഞ്ഞാല്‍, അതിന്റെ അവസ്ഥയെക്കുറിച്ചുള്ള ചില വിവരങ്ങള്‍ (അത് അസാധുവാക്കപ്പെട്ടുവെങ്കിലോ വിശ്വസനീയമല്ലെങ്കിലോ മാത്രം) സൂക്ഷിക്കേണ്ട ആവശ്യമില്ല. അത് പോലെ, ഈ സര്‍ട്ടിഫിക്കറ്റ് വിശ്വാസയോഗ്യത പരിശോധിക്കാന്‍ സാദ്ധ്യമല്ല. നിങ്ങള്‍ മുന്നോട്ട് പോകേണ്ടതില്ല</translation>
 <translation id="2742457360514408037">പോപ്പ്-അപ്പുകള്‍ തടഞ്ഞു: <ph name="COUNT"/></translation>
+<translation id="7154150278819212687">ഈ വിപുലീ‍കരണത്തിന് നിങ്ങളുടെ ബ്രൌസിംഗ് ചരിത്രത്തിലേക്ക് ആക്‌സസ് ഉണ്ടായിരിക്കും.</translation>
+<translation id="1516602185768225813">അവസാനം തുറന്ന പേജുകള്‍‌ വീണ്ടും തുറക്കുക</translation>
 <translation id="4874539263382920044">ശീര്‍ഷകത്തില്‍ കുറഞ്ഞത് ഒരു അക്ഷരമെങ്കിലും ഉണ്ടായിരിക്കണം</translation>
 <translation id="3549657413697417275">ചരിത്രം തിരയുക</translation>
 <translation id="7344633671344536647">ബ്രൌസിംഗ് ഡാറ്റ:</translation>
@@ -347,17 +390,21 @@
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> മിനിറ്റ് ശേഷിക്കുന്നു</translation>
 <translation id="5496587651328244253">ഓര്‍ഗനൈസുചെയ്യുക</translation>
 <translation id="2592884116796016067">ഈ പേജിന്റെ ഒരു ഭാഗം (HTML WebWorker) തകര്‍ന്നു, അതിനാല്‍ ഇത് ശരിയായി പ്രവര്‍ത്തിച്ചെന്ന് വരില്ല.</translation>
+<translation id="8425755597197517046">ഒട്ടിക്കു&amp;കയും തിരയുകയും ചെയ്യുക</translation>
+<translation id="4728278536628384335">Bookmark Sync അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="5568069709869097550">പ്രവേശിക്കാന്‍ കഴിയില്ല</translation>
 <translation id="4181898366589410653">സെര്‍വറിന്റെ സര്‍ട്ടിഫിക്കറ്റില്‍ ഒരു അസാധുവാക്കല്‍ പ്രവര്‍ത്തനവും കണ്ടെത്തിയിട്ടില്ല.</translation>
 <translation id="1665770420914915777">പുതിയ ടാബ് പേജ് ഉപയോഗിക്കുക</translation>
 <translation id="2629089419211541119"><ph name="NUMBER_ONE"/> hour ago</translation>
 <translation id="7789175495288668515">സ്ഥിരസ്ഥിതി ഇന്‍സ്റ്റാളേഷന്‍ ഓപ്ഷനുകള്‍ മാറ്റുക.</translation>
 <translation id="347250956943431997">സെര്‍വറിന്റെ സര്‍ട്ടിഫിക്കറ്റ് അസാധുവായിരിക്കുന്നു</translation>
+<translation id="1936157145127842922">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
 <translation id="6982279413068714821"><ph name="NUMBER_DEFAULT"/> mins ago</translation>
 <translation id="7977590112176369853">&lt;ചോദ്യം നല്‍കുക&gt;</translation>
 <translation id="994771890067000105">അധികമായി അവതരിപ്പിക്കുന്നവ</translation>
 <translation id="5155632014218747366">ഈ സൈറ്റുകളിലെ പ്രശ്നങ്ങളെക്കുറിച്ചുള്ള കൂടുതല്‍ വിവരങ്ങള്‍ക്കായി, <ph name="DOMAIN"/> കള്‍ക്കായി Google <ph name="DIAGNOSTIC_PAGE"/> സന്ദര്‍ശിക്കുക.</translation>
 <translation id="1120026268649657149">കീവേഡ് ശൂന്യമോ അല്ലെങ്കില്‍ അദ്വിതീയമോ ആയിരിക്കണം</translation>
+<translation id="7954187762705269222"><ph name="HOUR"/>:<ph name="MIUTE"/>a</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കൂ</translation>
 <translation id="9027459031423301635">ലിങ്ക് പുതിയ &amp;ടാബില്‍ തുറക്കുക</translation>
 <translation id="358344266898797651">കെല്‍റ്റിക്</translation>
@@ -391,6 +438,7 @@
 <translation id="52912272896845572">സ്വകാര്യ കീ ഫയല്‍‌ അസാധുവാണ്.</translation>
 <translation id="4222982218026733335">അസാധുവായ സെര്‍വര്‍ സര്‍ട്ടിഫിക്കറ്റ്</translation>
 <translation id="8494214181322051417">പുതിയത്!</translation>
+<translation id="7403160227718463124">മൊത്തത്തില്‍‌ ഈ സൈറ്റിനായി:</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>നിങ്ങള്‍ വേഷപ്രച്ഛന്നനായി പോയിക്കഴിഞ്ഞു<ph name="END_BOLD"/>. ഈ വിന്‍ഡോയില്‍ നിങ്ങള്‍ കണ്ട പേജുകള്‍ നിങ്ങളുടെ ബ്രൌസര്‍ ചരിത്രത്തിലോ അല്ലെങ്കില്‍ തിരയല്‍ ചരിത്രത്തിലോ ദൃശ്യമാകുന്നതല്ല, മാത്രമല്ല നിങ്ങള്‍ വേഷപ്രച്ഛന്ന വിന്‍ഡോ അടച്ചതിനുശേഷം അവ കുക്കികള്‍ പോലുള്ള മറ്റ് ട്രെയ്സുകളെ നിങ്ങളുടെ കമ്പ്യൂട്ടറില്‍ ഉപേക്ഷിക്കുന്നതുമല്ല. എങ്ങനെയാണെങ്കിലും, നിങ്ങള്‍ ഡൌണ്‍ലോഡ് ചെയ്യുന്ന എല്ലാ ഫയലുകളും അല്ലെങ്കില്‍ നിങ്ങള്‍ സൃഷ്ടിക്കുന്ന ബുക്മാര്‍ക്കുകളും സൂക്ഷിക്കപ്പെടും.
 <ph name="LINE_BREAK"/>
 <ph name="BEGIN_BOLD"/>ആള്‍മാറാട്ടം നടത്തുന്നത് മറ്റ് ആളുകള്‍, സെര്‍വറുകള്‍, അല്ലെങ്കില്‍ സോഫ്റ്റ്വെയര്‍ എന്നിവയുടെ സ്വഭാവത്തെ ബാധിക്കില്ല. ഇതിനെക്കുറിച്ച് ജാഗ്രത പാലിക്കുക:<ph name="END_BOLD"/>
@@ -407,12 +455,19 @@
 <translation id="1813414402673211292">ബ്രൌസിംഗ് ഡാറ്റാ മായ്ക്കുക...</translation>
 <translation id="2356762928523809690">അപ്‌ഡേറ്റ് സെര്‍വര്‍ ലഭ്യമല്ല (പിശക്: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">അവതരിപ്പിക്കുന്ന തീം</translation>
+<translation id="219008588003277019">നേറ്റീവ് ക്ലയന്‍റ് മൊഡ്യൂള്‍‌: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446"><ph name="SITE_NAME"/> തിരയുക:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
+<translation id="7616581516194661584">തനിപ്പകര്‍‌പ്പ്</translation>
 <translation id="8730621377337864115">ചെയ്തുകഴിഞ്ഞു</translation>
+<translation id="245834195813628985"><ph name="HOUR"/>:<ph name="MIUTE"/> ശേഷിക്കുന്നു</translation>
 <translation id="6267166720438879315">നിങ്ങളെ <ph name="HOST_NAME"/> ലേക്ക് ആധാരീകരിക്കാന്‍ ഒരു സര്‍ട്ടിഫിക്കറ്റ് തിരഞ്ഞെടുക്കുക</translation>
+<translation id="7198134478421755850">വിപുലീകരണം</translation>
+<translation id="4713481510227594233">ഈ കമ്പ്യൂട്ടറില്‍‌Bookmark Sync അപ്രാപ്‌തമാക്കി. നിങ്ങള്‍‌<ph name="NAME_OF_EXTENSION"/>അണ്‍‌ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യുകയാണെങ്കില്‍‌, ഉപകരണങ്ങള്‍‌ മെനുവിലെ “എന്‍റെ ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ സമന്വയിപ്പിക്കുക...” തിരഞ്ഞെടുത്തുകൊണ്ട്Bookmark Sync നിങ്ങള്‍‌ക്ക് പുനഃപ്രാപ്‌തമാക്കാന്‍‌ കഴിയും.</translation>
+<translation id="9061845622728745852">സമയമേഖല:</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> മിനിറ്റ്</translation>
 <translation id="6315493146179903667">എല്ലാം മുന്നിലേക്ക് കൊണ്ടുവരുക</translation>
+<translation id="5095777643592758820">Bookmark sync പിശക്...</translation>
 <translation id="5015344424288992913">റിസോള്‍വിംഗ് പ്രോക്സി...</translation>
 <translation id="3675321783533846350">നെറ്റ്വര്‍ക്കിലേക്ക് കണക്റ്റ് ചെയ്യുന്നതിനായി ഒരു പ്രോക്സി സജ്ജീകരിക്കുക.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> ദിവസം</translation>
@@ -437,16 +492,19 @@
 <translation id="9010612682952491200">പുതിയ ടാബ് [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">പങ്കിട്ട മെമ്മറി</translation>
 <translation id="6248988683584659830">തിരയല്‍ സജ്ജീകരണങ്ങള്‍</translation>
+<translation id="2242457451044347345">Bookmark sync</translation>
 <translation id="2727712005121231835">യഥാര്‍ത്ഥ വലിപ്പം</translation>
 <translation id="8887733174653581061">എല്ലായ്പോഴും മുകളിലാണ്</translation>
 <translation id="610886263749567451">Javascript അലേര്‍ട്ട്</translation>
 <translation id="6556866813142980365">വീണ്ടുംചെയ്യുക</translation>
+<translation id="6584811624537923135">അണ്‍‌ഇന്‍‌സ്റ്റാളേഷന്‍‌ സ്ഥിരീകരിക്കുക</translation>
 <translation id="8413126021676339697">മുഴുവന്‍ ചരിത്രവും കാണിക്കുക</translation>
 <translation id="8860923508273563464">ഡൌണ്‍ലോഡുകള്‍ അവസാനിക്കാന്‍ കാത്തിരിക്കുക</translation>
 <translation id="5288678174502918605">അടച്ച ടാബ് വീ&amp;ണ്ടും തുറക്കുക</translation>
 <translation id="9157595877708044936">സജ്ജീകരിക്കുന്നു...</translation>
 <translation id="1823768272150895732">ഫോണ്ട്</translation>
 <translation id="4475552974751346499">ഡൌണ്‍ലോഡുകള്‍ തിരയുക</translation>
+<translation id="5339267765524260207">നിങ്ങള്‍‌ സമന്വയം അപ്രാപ്‌തമാക്കുകയാണെങ്കില്‍‌, നിങ്ങളുടെ ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ നിങ്ങളുടെ Google അക്കൌണ്ട് അല്ലെങ്കില്‍‌ നിങ്ങളുടെ മറ്റ് മെഷീനുകളില്‍‌ സംഭരിച്ചിരുന്നവയുമായി സമന്വയത്തില്‍‌ ഇനിമേല്‍‌ സൂക്ഷിക്കുന്നതല്ല. ബുക്ക്‌മാര്‍‌ക്കുകളൊന്നും ഇല്ലാതാക്കുന്നതല്ല. നിലവിലുള്ള എല്ലാ ബുക്ക്‌മാര്‍‌ക്കുകളും ഈ കമ്പ്യൂട്ടറിലും നിങ്ങളുടെ Google അക്കൌണ്ടിലും‌ ശേഷിക്കും.</translation>
 <translation id="1111153019813902504">സമീപകാലത്തെ ബുക്‌മാര്‍ക്കുകള്‍</translation>
 <translation id="7497564420220535101">&amp;സ്‌‌ക്രീന്‍‌ഷോട്ട് സംരക്ഷിക്കുക...</translation>
 <translation id="3786934874263773074">&amp;പേജില്‍ കണ്ടുപിടിക്കുക</translation>
@@ -468,6 +526,7 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> സെക്കന്റ്</translation>
 <translation id="3551320343578183772">ടാബ് അടയ്‌ക്കുക</translation>
 <translation id="3345886924813989455">പിന്തുണയ്‌ക്കുന്ന ഒരു ബ്രൌസറും കണ്ടെത്തിയില്ല</translation>
+<translation id="6727102863431372879">സജ്ജമാക്കുക</translation>
 <translation id="3712897371525859903">പേജ് &amp;ഇതുപോലെ സംരക്ഷിക്കുക...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> ഇപ്പോള്‍ <ph name="IMPORT_BROWSER_NAME"/> ല്‍ നിന്ന് ഇനിപ്പറയുന്ന ഇനങ്ങള്‍ ഇറക്കുമതി ചെയ്യുകയാണ്:</translation>
 <translation id="1018656279737460067">റദ്ദാക്കി</translation>
@@ -478,6 +537,7 @@
 <translation id="8942948210663084792">ഡാറ്റാ മായ്‌ക്കുക:</translation>
 <translation id="208047771235602537">ഡൌണ്‍‌ലോഡ് പുരോഗതിയിലായിക്കുമ്പോള്‍ <ph name="PRODUCT_NAME"/> നിങ്ങള്‍ക്ക് പുറത്തുപോകണോ?</translation>
 <translation id="6710213216561001401">കഴിഞ്ഞ</translation>
+<translation id="1567993339577891801">JavaScript കണ്‍‌സോള്‍‌</translation>
 <translation id="583281660410589416">അജ്ഞാതം</translation>
 <translation id="7635303043999550515">&lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; ലെ വെബ്‌സൈറ്റ് ഇതില്‍ ധാരാളം റീഡയറക്ഷനുകള്‍ ഫലമായി നല്‍കി
       വളരെയധികം വ്യതിചലനങ്ങളുടെയും പ്രശ്നമല്ല‍.  ഈ സൈറ്റിനായി നിങ്ങളുടെ കുക്കികള്‍ മായ്ക്കുന്നത് അല്ലെങ്കില്‍ മൂന്നാം കക്ഷി കുക്കികള്‍       അനുവദിക്കുന്നത് ഈ പ്രശ്നം പരിഹരിച്ചേക്കാം.  അത്
@@ -491,16 +551,20 @@
 <translation id="1560991001553749272">ബുക്മാര്‍ക്ക് ചേര്‍ത്തിരിക്കുന്നു!</translation>
 <translation id="3966072572894326936">മറ്റൊരു ഫോള്‍ഡര്‍ തിരഞ്ഞെടുക്കൂ...</translation>
 <translation id="7781829728241885113">ഇന്നലെ</translation>
+<translation id="1523341279170789507">എല്ലാ കുക്കികളും അനുവദിക്കുക</translation>
 <translation id="7596288230018319236">ഒരു വേഷപ്രച്ഛന്ന വിന്‍ഡോയിലൂടെ തുറക്കുന്നില്ലെങ്കില്‍ നിങ്ങള്‍ സന്ദര്‍ശിച്ച എല്ലാ പേജുകളും ഇവിടെ നിന്ന് അപ്രത്യക്ഷമാകും. നിങ്ങള്‍ക്ക് ഈ പേജില്‍ സെര്‍ച്ച് ബട്ടണ്‍ ഉപയോഗിക്കുക വഴി നിങ്ങളുടെ ചരിത്രത്തിലെ എല്ലാ പേജുകളും തിരയാന്‍ കഴിയും.</translation>
 <translation id="2665163749053788434">ചരിത്രം കാണുക</translation>
 <translation id="7434509671034404296">വികാസകന്‍</translation>
 <translation id="6447842834002726250">കുക്കികള്‍</translation>
 <translation id="5170568018924773124">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
+<translation id="883848425547221593">മറ്റുള്ള ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> നിര്‍‌ണ്ണയിക്കാന്‍‌ അല്ലെങ്കില്‍‌ സ്ഥിരസ്ഥിതി ബ്രൌസര്‍‌ സജ്ജമാക്കാന്‍‌ കഴിയില്ല.</translation>
 <translation id="8898786835233784856">അടുത്ത ടാബ് തിരഞ്ഞെടുക്കുക</translation>
 <translation id="2674170444375937751">നിങ്ങളുടെ ചരിത്രത്തില്‍ നിന്നും ഈ പേജുകള്‍ മായ്ക്കുന്നതിന് നിങ്ങള്‍ താല്പര്യമുണ്ടോ?</translation>
 <translation id="4203689580933736628">തടഞ്ഞ ഇനങ്ങള്‍‌: <ph name="COUNT"/></translation>
+<translation id="2653166165688724436">വെബ് ഡാറ്റാബേസ്</translation>
 <translation id="7629827748548208700">ടാബ്: <ph name="TAB_NAME"/></translation>
+<translation id="8449008133205184768">ശൈലി ഒട്ടിക്കുകയും പൊരുത്തപ്പെടുത്തുകയും ചെയ്യുക</translation>
 <translation id="8028993641010258682">വലുപ്പം</translation>
 <translation id="1383876407941801731">തിരയൂ</translation>
 <translation id="8398877366907290961">എങ്ങനെയാണെങ്കിലും മുന്നോട്ട് പോകുക</translation>
@@ -511,6 +575,7 @@
 <translation id="8789544147407756448">ഇനി പറയുന്ന വിപുലീകരണം തകര്‍ന്നു : <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> മിനിറ്റ്‍ അവശേഷിക്കുന്നു</translation>
 <translation id="2022540532491530427">ഫയല്‍ &amp;പകര്‍ത്തുക</translation>
+<translation id="1099979722614954862">ഇപ്പോള്‍‌<ph name="PRODUCT_NAME"/> ന് <ph name="BEGIN_LINK"/>വിപുലീകരണങ്ങള്‍‌<ph name="END_LINK"/>, <ph name="BEGIN2_LINK"/>bookmark sync<ph name="END2_LINK"/> എന്നിവയുണ്ട്.</translation>
 <translation id="5966654788342289517">സ്വകാര്യ വസ്‌തുക്കള്‍</translation>
 <translation id="2576802705154232609">വെബ് ക്ലിപ്പുകള്‍</translation>
 <translation id="8664389313780386848">&amp;പേജ് ഉറവിടം കാണുക</translation>
@@ -521,6 +586,7 @@
 <translation id="6507969014813375884">ചൈനീസ് ലളിതം</translation>
 <translation id="1767991048059195456">റിപ്പോര്‍ട്ട് അയയ്ക്കുക</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
+<translation id="4474155171896946103">എല്ലാ ടാബുകളും ബുക്ക്‌മാര്‍‌ക്ക് ചെയ്യുക...</translation>
 <translation id="5646376287012673985">സ്ഥാനം</translation>
 <translation id="1110155001042129815">കാത്തിരിക്കുക</translation>
 <translation id="7071586181848220801">അജ്ഞാത പ്ലഗ്-ഇന്‍</translation>
@@ -534,6 +600,7 @@
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
 <translation id="4006726980536015530">നിങ്ങള്‍ <ph name="PRODUCT_NAME"/> ഇപ്പോള്‍ അടയ്‌ക്കുകയാണെങ്കില്‍, ഈ ഡൌണ്‍‌ലോഡുകള്‍ റദ്ദാകും.</translation>
 <translation id="59174027418879706">പ്രാപ്തമാക്കി</translation>
+<translation id="6639554308659482635">SQLite മെമ്മറി</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">എല്ലാ ബുക്ക്‍മാര്‍ക്കുകളും തുറക്കുക</translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
@@ -554,6 +621,8 @@
 <translation id="5087864757604726239">തിരികെ</translation>
 <translation id="2819994928625218237">&amp;അക്ഷരക്രമ നിര്‍ദ്ദേശങ്ങള്‍ ഒന്നുമില്ല</translation>
 <translation id="4316305410440790958">ഫ്രെയിം പുതിയ &amp;ടാബില്‍ തുറക്കുക</translation>
+<translation id="9142623379911037913">ഡെസ്‌ക്‌ടോപ്പ് വിജ്ഞാപനങ്ങള്‍‌ കാണിക്കുന്നതിന് <ph name="SITE"/> നെ അനുവദിക്കണോ?</translation>
+<translation id="4196320913210960460">ടൂള്‍സ് മെനുവിലുള്ള എക്സ്റ്റന്‍ഷനുകളില്‍ ക്ലിക്ക് ചെയ്തുകൊണ്ട് നിങ്ങള്‍ക്ക് നിങ്ങളുടെ ഇന്‍സ്റ്റാള്‍ ചെയ്ത എക്സ്റ്റന്‍ഷനുകളെ മാനേജ് ചെയ്യാം.</translation>
 <translation id="9118804773997839291">പേജിനായുള്ള സുരക്ഷിതമല്ലാത്ത എല്ലാ ഘടകങ്ങളും ചുവടെയുള്ള ഒരു പട്ടികയിലുണ്ട്. ഒരു പ്രത്യേക ഘടകത്തിനായി ത്രെഡിനെക്കുറിച്ച് കൂടുതല്‍‌ വിവരങ്ങള്‍‌ക്കായി ഡയഗണോസ്റ്റിക് ലിങ്കില്‍‌ ക്ലിക്കുചെയ്യുക.</translation>
 <translation id="3664021239099029884">എല്ലാ ഡൌണ്‍‌ലോഡുകളും കാണുക</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> മിനിറ്റ്/മിനിറ്റ് മുമ്പ്</translation>
@@ -585,6 +654,7 @@
 <translation id="4890284164788142455">തായ്</translation>
 <translation id="3889424535448813030">വലതുഭാഗത്തെ അമ്പടയാളം</translation>
 <translation id="5435666907653217300">മറ്റ് പ്രശ്നം</translation>
+<translation id="4479639480957787382">എതെര്‍‌നെറ്റ്</translation>
 <translation id="1264974993859112054">കായികം</translation>
 <translation id="5167270755190684957">Google Chrome തീംസ് ഗാലറി</translation>
 <translation id="8382913212082956454">ഇമെയില്‍ വിലാസം&amp; പകര്‍ത്തുക</translation>
@@ -594,8 +664,10 @@
 <translation id="1047726139967079566">ഈ പേജ് ബുക്ക്‌മാര്‍ക്ക് ചെയ്യുക...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> സെക്കന്റ് അവശേഷിക്കുന്നു</translation>
 <translation id="4767443964295394154">ഡൌണ്‍ലോഡ് സ്ഥാനം</translation>
+<translation id="720658115504386855">അക്ഷരങ്ങള്‍‌ കേസ് സെന്‍‌സിറ്റീവ് അല്ല</translation>
 <translation id="2454247629720664989">കീവേഡ്</translation>
 <translation id="3950820424414687140">പ്രവേശിക്കുക</translation>
+<translation id="2840798130349147766">വെബ് ഡാറ്റാബേസുകള്‍‌</translation>
 <translation id="1628736721748648976">എന്‍‌കോഡിംഗ്</translation>
 <translation id="6521850982405273806">ഒരു പിശക് റിപ്പോര്‍ട്ട് ചെയ്യുക</translation>
 <translation id="1769104665586091481">ലിങ്ക് ഒരു പു‌തിയ &amp;വിന്‍‌ഡോയില്‍ തുറക്കുക</translation>
@@ -605,6 +677,7 @@
 <translation id="7642109201157405070">ഇറക്കുമതി തുടരൂ</translation>
 <translation id="6463795194797719782">&amp;എഡിറ്റ്‌ചെയ്യൂ</translation>
 <translation id="5720119176273625078">റഫറര്‍‌ അയച്ചില്ല</translation>
+<translation id="4775879719735953715">സ്ഥിരസ്ഥിതി ബ്രൌസര്‍</translation>
 <translation id="4805261289453566571">വീണ്ടും പ്രവേശിക്കുക</translation>
 <translation id="4188026131102273494">കീവേഡ്:</translation>
 <translation id="2290414052248371705">എല്ലാ ഉള്ളടക്കവും കാണിക്കുക</translation>
@@ -612,8 +685,10 @@
 <translation id="3268761268932257769">ഇമേജുകള്‍ സ്വപ്രേരിതമായി ലോഡ് ചെയ്യുക</translation>
 <translation id="7227780179130368205">ക്ഷുദ്രസോഫ്റ്റ്വെയര്‍ കണ്ടുപിടിച്ചു!</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> hours left</translation>
+<translation id="2912839854477398763">ഈ വിപുലീകരണം അണ്‍‌ഇന്‍‌സ്റ്റാള്‍ ചെയ്യാന്‍‌ നിങ്ങള്‍‌ താല്‍‌പ്പര്യപ്പെടുന്നോ?</translation>
 <translation id="3942946088478181888">മനസ്സിലാക്കാ‍ന്‍ എന്നെ സഹായിക്കൂ</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (സ്ഥിരസ്ഥിതി)</translation>
+<translation id="6543631358510643997">നിങ്ങളുടെ കമ്പ്യൂട്ടറിലേക്കും സ്വകാര്യ ഡാറ്റയിലേക്കും ഈ വിപുലീകരണത്തിന് പൂര്‍‌ണ്ണ ആക്‌സസ് ഉണ്ടായിരിക്കും.</translation>
 <translation id="111844081046043029">നിങ്ങള്‍ക്ക് ഈ പേജ് ഉപേക്ഷിക്കുന്നതിന് താല്പര്യമുണ്ടോ?</translation>
 <translation id="4497415007571823067">നിങ്ങള്‍ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ല്‍ എത്താന്‍ ശ്രമിച്ചു, പക്ഷെ പകരം &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; എന്ന് സ്വയം സ്വയം പറയുന്ന സെര്‍വറിലാണ് നിങ്ങള്‍ യഥാര്‍ത്ഥത്തില്‍ എത്തിയത്. ഇത് സെര്‍വര്‍ തെറ്റായി കോണ്‍‌ഫിഗര്‍ ചെയ്തതിനാലോ  അല്ലെങ്കില്‍ കൂടുതല്‍ ഗുരുതരമായ എന്തെങ്കിലും പ്രശ്നത്താലോ സംഭവിച്ചതാകാം. നിങ്ങളുടെ നെറ്റ്‌വര്‍ക്കിലെ അക്രമി നിങ്ങളെ &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; ന്റെ വ്യാജ (ഉപദ്രവകരമാകാനിടയുള്ള) പതിപ്പിലേക്ക് സന്ദര്‍ശിപ്പിക്കാന്‍ ശ്രമിക്കും. നിങ്ങള്‍ മുന്നോട്ട് പോകരുത്.</translation>
 <translation id="3202578601642193415">ഏറ്റവും പുതിയ</translation>
@@ -631,7 +706,10 @@
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> മിനിറ്റ് അവശേഷിക്കുന്നു</translation>
 <translation id="2192505247865591433">പ്രേഷിതാവ്:</translation>
 <translation id="5921544176073914576">ഫിഷിംഗ് പേജ്</translation>
+<translation id="7143207342074048698">ബന്ധിപ്പിക്കുന്നു</translation>
 <translation id="6192792657125177640">അപവാദങ്ങള്‍</translation>
+<translation id="4568660204877256194">ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ കയറ്റുമതി ചെയ്യുക...</translation>
+<translation id="4577070033074325641">ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ ഇറക്കുമതി ചെയ്യുക...</translation>
 <translation id="2822650824848709219">എല്ലാ അസുരക്ഷിത ഉള്ളടക്കവും തടയുക</translation>
 <translation id="1715941336038158809">ഉപയോക്തൃ നാമം അല്ലെങ്കില്‍ പാസ്‌വേഡ് അസാധുവാണ്.</translation>
 <translation id="1901303067676059328">എല്ലാം &amp;തിരഞ്ഞെടുക്കൂ</translation>
@@ -647,6 +725,7 @@
 <translation id="872451400847464257">സെര്‍ച് എഞ്ചിനുകള്‍ എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> മിനിറ്റ്</translation>
 <translation id="8717266507183354698">ചരിത്രത്തിലെ <ph name="SEARCH_TERMS"/> അടങ്ങിയിരിക്കുന്ന എല്ലാ പേജുകളും നോക്കുക</translation>
+<translation id="2466804342846034717">മുകളില്‍‌ ശരിയായ പാസ്‌വേഡ് നല്‍‌കുക, തുടര്‍‌ന്ന് ചുവടെയുള്ള ചിത്രത്തില്‍‌ നിങ്ങള്‍‌ കാണുന്ന പ്രതീകങ്ങള്‍‌ ടൈപ്പ് ചെയ്യുക.</translation>
 <translation id="2922560965807694149">മറയ്‌ക്കുക</translation>
 <translation id="5645845270586517071">സുരക്ഷാ പിശക്</translation>
 <translation id="8695758493354644945">ചരിത്രത്തിലെ <ph name="SEARCH_TERMS"/> അടങ്ങിയിരിക്കുന്ന <ph name="NUM_MATCHES"/> സമീപകാല പേജുകള്‍ നോക്കുക</translation>
@@ -671,6 +750,7 @@
 <translation id="5384051050210890146">വിശ്വസനീയമായ SSL സര്‍ട്ടിഫിക്കറ്റുകള്‍ തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="6865323153634004209">ഈ സജ്ജീകരണങ്ങള്‍ ഉപഭോക്തൃവല്‍ക്കരിക്കൂ</translation>
 <translation id="7487067081878637334">സാങ്കേതികവിദ്യ</translation>
+<translation id="4176463684765177261">അപ്രാപ്‌തമാക്കി</translation>
 <translation id="154603084978752493">സെര്‍ച് എഞ്ചിനായി ചേര്‍ക്കുക...</translation>
 <translation id="2079545284768500474">പൂര്‍‌വ്വാവസ്ഥയിലാക്കുക</translation>
 <translation id="114140604515785785">വിപുലീകരണ റൂട്ട് ഡയറക്‌ടറി:</translation>
@@ -679,8 +759,10 @@
 <translation id="1800035677272595847">ഫിഷിംഗ്</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
 <translation id="4610637590575890427"><ph name="SITE"/> ലേക്ക് പോകുന്നതാണോ നിങ്ങള്‍ അര്‍ത്ഥമാക്കിയത്?</translation>
+<translation id="5320331575990471017"><ph name="SOURCE_ORIGIN"/> ല്‍‌ നിന്ന്</translation>
 <translation id="8349305172487531364">ബുക്മാര്‍ക്ക് ബാര്‍</translation>
 <translation id="7208899522964477531"><ph name="SEARCH_TERMS"/> നായി <ph name="SITE_NAME"/> തിരയുക</translation>
+<translation id="5584091888252706332">സ്റ്റാര്‍‌ട്ട്‌അപ്പില്‍‌</translation>
 <translation id="8004582292198964060">ബ്രൌസര്‍</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> days</translation>
 <translation id="2224551243087462610">ഫോള്‍ഡര്‍ നാമം എഡിറ്റ് ചെയ്യുക</translation>
@@ -707,7 +789,9 @@
 <translation id="8877448029301136595">[രക്ഷാകര്‍തൃ ഡയറക്ടറി]</translation>
 <translation id="1963227389609234879">എല്ലാം നീക്കംചെയ്യൂ</translation>
 <translation id="8027581147000338959">പുതിയ വിന്‍ഡോയില്‍ തുറക്കുക</translation>
+<translation id="8019305344918958688">അയ്യേ... വിപുലീകരണങ്ങളൊന്നും ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്‌തില്ല :-(</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="4720829798001058201">നിങ്ങളുടെ ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ ഇപ്പോള്‍‌Google ഡോക്‌സിലേക്ക് സമന്വയിപ്പിച്ചു! മറ്റൊരു കമ്പ്യൂട്ടറിലെChrome ലേക്ക് നിങ്ങളുടെ ബുക്ക്‌മാര്‍‌ക്കുകളെ ലയിപ്പിക്കുകയും സമന്വയിപ്പിക്കുകയും ചെയ്യുന്നതിന്, ആ കമ്പ്യൂട്ടറിലെ അതേ സജ്ജമാക്കല്‍‌ പ്രക്രിയ ആവര്‍‌ത്തിക്കുക.</translation>
 <translation id="2496180316473517155">ബ്രൌസിംഗ് ചരിത്രം</translation>
 <translation id="602251597322198729">ഈ സൈറ്റ് ബഹുവിധ ഫയലുകള്‍ ഡൌണ്‍ലോഡ് ചെയ്യാന്‍ ശ്രമിച്ചു. നിങ്ങള്‍ക്കിത് അനുവദിക്കണോ?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> മണിക്കൂര്‍</translation>
@@ -719,6 +803,7 @@
 <translation id="1002064594444093641">ഫ്രെയിം അച്ച&amp;ടിക്കുക...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
+<translation id="5554489410841842733">വിപുലീകരണത്തിന് നിലവിലുള്ള പേജില്‍‌ പ്രവര്‍‌ത്തിക്കാന്‍‌ കഴിയുമ്പോള്‍‌, ഈ ഐക്കണ്‍‌ കാണാനാകും.</translation>
 <translation id="4756388243121344051">&amp;ചരിത്രം</translation>
 <translation id="3789841737615482174">ഇന്‍സ്റ്റോള്‍ ചെയ്യുക</translation>
 <translation id="4789872672210757069">&amp;<ph name="PRODUCT_NAME"/> നെ കുറിച്ച്</translation>
@@ -766,6 +851,7 @@
 <translation id="5178667623289523808">മുമ്പത്തേത് കണ്ടെത്തുക</translation>
 <translation id="2815448242176260024">പാസ്‌വേഡുകള്‍ ഒരിക്കലും സംരക്ഷിക്കരുത്</translation>
 <translation id="2989805286512600854">പുതിയ ടാബില്‍ തുറക്കുക</translation>
+<translation id="2701236005765480329">വിപുലീകരണ അലേര്‍‌ട്ട്</translation>
 <translation id="6503077044568424649">കൂടുതല്‍ സന്ദര്‍ശിച്ചത്</translation>
 <translation id="3265459715026181080">വിന്‍‌ഡോ അടയ്‌ക്കുക</translation>
 <translation id="3831099738707437457">&amp;സ്‌പെല്ലിംഗ് പാനല്‍ മറയ്‌ക്കുക</translation>
@@ -775,7 +861,7 @@
 <translation id="3319048459796106952">പുതിയ &amp;അദൃശ്യ വിന്‍ഡോ</translation>
 <translation id="3127919023693423797">പ്രാമാണീകരിക്കുന്നു...</translation>
 <translation id="4195643157523330669">പുതിയ ടാബില്‍ തുറക്കുക</translation>
-<translation id="3683878911947678690">നിങ്ങളുടെ ബുക്ക്‌മാര്‍‌ക്കുകളെ നിങ്ങളുടെ Google അക്കൌണ്ടുപയോഗിച്ച് കമ്പ്യൂട്ടറുകളിലുടനീളം സമന്വയിപ്പിക്കാന്‍‌ കഴിയും</translation>
+<translation id="8030169304546394654">വിച്ഛേദിച്ചു</translation>
 <translation id="4178055285485194276">തുടക്കത്തില്‍:</translation>
 <translation id="1154228249304313899">ഈ പേജ് തുറക്കുക:</translation>
 <translation id="9074348188580488499">എല്ലാ പാസ്‌വേഡുകളും നീക്കം ചെയ്യണമെന്ന് നിങ്ങള്‍ക്ക് ഉറപ്പാണോ?</translation>
@@ -792,13 +878,16 @@
 <translation id="1285631718404404702">സമീപകാല പ്രവര്‍ത്തനങ്ങള്‍ കാണിക്കുക</translation>
 <translation id="6783679543387074885">ബഗ്ഗോ അല്ലെങ്കില്‍ ബ്രോക്കണ്‍ വെബ്സൈറ്റോ റിപ്പോര്‍ട്ട് ചെയ്യുക</translation>
 <translation id="3494444535872870968">&amp;ഫ്രെയിം ഇതായി സംരക്ഷിക്കുക...</translation>
+<translation id="5731247495086897348">ഒട്ടിക്കു&amp;കയും പോകുകയും ചെയ്യുക</translation>
 <translation id="3413103074007669042">ഈ പേജില്‍ സുരക്ഷിതമല്ലാത്ത ചില ഉള്ളടക്കം അടങ്ങിയിരിക്കുന്നു</translation>
 <translation id="4887833561977827087">ഇതുവരേയും ഇവിടെ പ്രദര്‍ശിപ്പിക്കാനുള്ള ഒരിനങ്ങളും ഇല്ല.
         <ph name="BEGIN_LINK"/>ഇച്ഛാനുസൃതമാക്കുക<ph name="END_LINK"/>
         നിങ്ങളുടെ വെബ്‌ക്ലിപ്പുകളും കൂടാതെ കൂടുതല്‍ ഉറവിടങ്ങളും.</translation>
 <translation id="5285267187067365830">പ്ലഗ്-ഇന്‍ ഇന്‍സ്റ്റോള്‍ ചെയ്യുക...</translation>
 <translation id="1166212789817575481">ടാബുകള്‍ വലത്തേയ്‌ക്ക് അടയ്‌ക്കുക</translation>
+<translation id="6472893788822429178">ഹോം ബട്ടണ്‍ കാണിക്കുക</translation>
 <translation id="5685236799358487266">തിരയല്‍ എഞ്ചി&amp;നായി ചേര്‍ക്കുക...</translation>
+<translation id="3437016096396740659">ബാറ്ററി ചാര്‍‌ജ്ജ് ചെയ്‌തു</translation>
 <translation id="7907591526440419938">ഫയല്‍ തുറക്കുക</translation>
 <translation id="21133533946938348">പിന്‍ ടാബ്</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> days left</translation>
@@ -809,35 +898,48 @@
 <translation id="9012607008263791152">ഈ സൈറ്റ് സന്ദര്‍ശിക്കുന്നതു വഴി എന്‍റെ കമ്പ്യൂട്ടര്‍ കേടുവരുമെന്ന് ഞാന്‍ മനസ്സിലാക്കുന്നു.</translation>
 <translation id="1441458099223378239">എനിക്ക് എന്‍റെ അക്കൌണ്ട് ആക്സസ്സ് ചെയ്യാനാകുന്നില്ല</translation>
 <translation id="5793220536715630615">വീഡിയോ URL പക&amp;ര്‍ത്തുക</translation>
+<translation id="523397668577733901">പകരം <ph name="BEGIN_LINK"/>ഗ്യാലറി ബ്രൌസ് ചെയ്യാന്‍‌<ph name="END_LINK"/> താല്‍‌പ്പര്യപ്പെടുന്നോ?</translation>
+<translation id="3778740492972734840">&amp;ഡെവലപ്പര്‍ ഉപകരണങ്ങള്‍‌</translation>
 <translation id="6004539838376062211">&amp;സ്പെല്‍-ചെക്കര്‍ ഓപ്ഷനുകള്‍</translation>
+<translation id="5350198318881239970">നിങ്ങളുടെ പ്രൊഫൈല്‍‌ തുറക്കാന്‍‌ കഴിഞ്ഞില്ല.\n\nചില സവിശേഷതകള്‍‌ ലഭ്യമല്ലായിരിക്കാം.  ദയവായി പ്രൊഫൈല്‍‌ നിലവിലുണ്ടെന്നതും അതിന്‍റെ ഉള്ളടക്കങ്ങള്‍‌ എഴുതുകയും വായിക്കുകയും ചെയ്യുന്നതിന് നിങ്ങള്‍‌ക്ക് അനുമതിയുണ്ടെന്നതും പരിശോധിക്കുക.</translation>
 <translation id="4058793769387728514">പ്രമാണം ഇപ്പോള്‍‌ പരിശോധിക്കുക</translation>
 <translation id="2915134691870672002">നിര്‍ദ്ദേശങ്ങള്‍ മറയ്‌ക്കുക</translation>
+<translation id="756445078718366910">ബ്രൌസര്‍‌ വിന്‍‌ഡോ തുറക്കുക</translation>
 <translation id="7887334752153342268">തനിപ്പകര്‍പ്പ്</translation>
 <translation id="4980691186726139495">ഈ പേജില്‍ സൂക്ഷിക്കരുത്</translation>
+<translation id="9026731007018893674">ഡൌണ്‍‌ലോഡുചെയ്യുക</translation>
 <translation id="7646591409235458998">ഇമെയില്‍:</translation>
 <translation id="703748601351783580">പുതിയ വിന്‍ഡോയിലെ എല്ലാ ബുക്മാര്‍ക്കുകളും തുറക്കുക</translation>
+<translation id="8409023599530904397">ടൂള്‍‌ബാര്‍‌:</translation>
+<translation id="770273299705142744">ഫോം ഓട്ടോഫില്‍‌</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/> അപ്രാപ്‌തമാക്കി. നിങ്ങള്‍‌ Bookmark Sync ഓഫാക്കുകയാണെങ്കില്‍‌, ഉപകരണങ്ങള്‍‌ മെനുവിലൂടെ ആക്‌സസ് ചെയ്യാന്‍‌ കഴിയുന്ന, വിപുലീകരണങ്ങള്‍‌ പേജില്‍‌ നിങ്ങള്‍‌ക്ക് ഈ വിപുലീകരണം പുനഃപ്രാപ്‌തമാക്കാന്‍‌ കഴിയും.</translation>
 <translation id="4478664379124702289">ലി&amp;ങ്ക് ഇതായി സംരക്ഷിക്കുക</translation>
 <translation id="1044231968500257587">നിങ്ങളുടെ ഓണ്‍ലൈനിനുള്ള ബുക്ക്‌മാര്‍ക്കുകള്‍
       ഈ മെഷീനിലെ ബുക്ക്‌മാര്‍ക്കുകളുമായി ലയിപ്പിക്കും. ലയിപ്പിച്ച ശേഷം നിങ്ങളുടെ ബുക്ക്‌മാര്‍ക്കുകള്‍ മാനേജുചെയ്യാന്‍ നിങ്ങള്‍ക്ക് ബുക്ക്‌മാര്‍ക്ക് മാനേജര്‍ ഉപയോഗിക്കാന്‍ കഴിയും.</translation>
 <translation id="8502249598105294518"><ph name="PRODUCT_NAME"/> ഉപഭോക്തൃവല്‍കരിക്കുകയും തടയുകയും ചെയ്യുക</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> hours ago</translation>
+<translation id="768570155019561996">ഈ വിപുലീകരണത്തിന് നിരവധി വെബ്‌സറ്റുകളിലെ നിങ്ങളുടെ സ്വകാര്യ ഡാറ്റയിലേക്ക് ആക്‌സസ് ഉണ്ടായിരിക്കും.</translation>
 <translation id="7180865173735832675">ഇച്ഛാനുസൃതമാക്കുക</translation>
 <translation id="1430594899542257414">നിര്‍ദ്ദേശങ്ങളും &amp; തന്ത്രങ്ങളും</translation>
 <translation id="2115926821277323019">സാധുവായ URL ആയിരിക്കണം</translation>
 <translation id="7397054681783221164">താഴെപ്പറയുന്ന ഇനങ്ങള്‍ ഇല്ലാതാക്കുക:</translation>
 <translation id="4891251785049117953">സംരക്ഷിച്ച ഫോം ഡാറ്റാ മായ്ക്കുക</translation>
 <translation id="1531836666020185856">സവിശേഷമാക്കിയത്</translation>
+<translation id="580571955903695899">ശീര്‍‌ഷക പ്രകാരം പുനഃക്രമീകരിക്കുക</translation>
 <translation id="5230516054153933099">വിന്‍‌ഡോ</translation>
 <translation id="7554791636758816595">പുതിയ ടാബ്</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> mins left</translation>
+<translation id="1103966635949043187">സൈറ്റിന്‍റെ ഹോം പേജിലേക്ക് പോകുക:</translation>
 <translation id="4400697530699263877">പേജ് ലോഡ് ചെയ്യല്‍ നടപടി മെച്ചപ്പെടുത്തുന്നതിന് DNS പ്രീ-ഫെച്ചിംഗ് ഉപയോഗിക്കുക</translation>
 <translation id="1086613338090581534">കാലവധി അവസാനിക്കാത്ത ഒരു സര്‍ട്ടിഫിക്കറ്റിന് ‍, ആ സര്‍ട്ടിഫിക്കറ്റ് നല്‍കുന്നയാള്‍ &quot;അസാധുത പട്ടിക&quot; എന്നതു പോലുള്ള ചിലത് സൂക്ഷിക്കാന്‍ കടപ്പെട്ടിരിക്കുന്നു. സര്‍ട്ടിഫിക്കറ്റ് ഒരിക്കലും വിട്ടുവീഴ്ചചെയ്തില്ലെങ്കില്‍‍, നല്‍കുന്നയാള്‍ക്ക് അത് അസാധുതാ പട്ടികയില്‍ ചേര്‍ക്കുക വഴി റദ്ദു ചെയ്യാന്‍ സാധിക്കും, മാത്രമല്ല പിന്നീട് ഈ സര്‍ട്ടിഫിക്കറ്റ് നിങ്ങളുടെ ബ്രൌസര്‍ക്ക് ഒരിക്കലും വിശ്വാസയോഗ്യവുമായിരിക്കില്ല. കാലാവധി അവസാനിച്ച സര്‍ട്ടിഫിക്കറ്റുകള്‍ക്ക് അസാധുതാനില പാലിക്കേണ്ട ആവശ്യമില്ല, ആയതിനാല്‍ നിങ്ങള്‍ സന്ദര്‍ശിക്കുന്ന വെബ്സൈറ്റുകളുടെ സാധുതയ്ക്കായി ഈ സര്‍ട്ടിഫിക്കറ്റ് ഉപയോഗിക്കുമ്പോള്‍ അത് ശരിയായോ, അസാധുവായോ അല്ലെങ്കില്‍ സുരക്ഷിതമായി തുടരുന്നുണ്ടോ എന്നൊക്കെ നിര്‍ണ്ണയിക്കാന്‍ സാധ്യമല്ല. അങ്ങനെയുള്ള അവസരങ്ങളില്‍ നിങ്ങള്‍ നിയമാനുസൃതമായ വെബ്സൈറ്റുമായാണോ ആശയവിനിമയം നടത്തുന്നതെന്ന് പറയുവാന്‍ സാധ്യമല്ല, അല്ലെങ്കില്‍ സര്‍ട്ടിഫിക്കറ്റ് ശരിയാകുകയും അത് ഇപ്പോള്‍ നിങ്ങള്‍ ആശയവിനിമയം നടത്തുന്നയാളോടൊപ്പം ഒരു അതിക്രമിയുടെ സ്ഥാനത്തുമായിരിക്കും. പഴയത് നിങ്ങള്‍ ഈ സ്ഥാനത്ത് തുടരരുത്.</translation>
 <translation id="2645575947416143543">ഒരുപക്ഷേ, നിങ്ങള്‍ ജോലി ചെയ്യുന്ന സ്ഥാപനം അവരുടെ സ്വന്തം സര്‍ട്ടിഫിക്കറ്റുകള്‍‌ ജനറേറ്റ് ചെയ്യുകയും, ആ സര്‍ട്ടിഫിക്കറ്റ് ഉപയോഗിച്ച് നിങ്ങള്‍ ആ സ്ഥാപനത്തിന്‍റെ ഒരു ആന്തരിക വെബ്‌സൈറ്റ് കണക്റ്റ് ചെയ്യാന്‍ ശ്രമിക്കുകയും ചെയ്യുകയാണെങ്കില്‍,‌ നിങ്ങള്‍ക്ക് ഈ പ്രശ്‌നം സുരക്ഷിതമായി പരിഹരിക്കാന്‍ സാധിക്കും. നിങ്ങള്‍ക്ക് നിങ്ങളുടെ സ്ഥാപനത്തിന്‍റെ റൂട്ട് സര്‍ട്ടിഫിക്കറ്റ് ഒരു &quot;റൂട്ട് സര്‍ട്ടിഫിക്കറ്റാ&quot;യി ഇറക്കുമതി ചെയ്യാന്‍ കഴിയും, മാത്രമല്ല അതിനുശേഷം നിങ്ങളുടെ സ്ഥാപനം നല്‍കിയതോ പരിശോധിച്ചതോ ആയ സര്‍ട്ടിഫിക്കറ്റുകള്‍ വിശ്വസനീയമായിരിക്കും കൂടാതെ ഒരു ആന്തരിക വെബ്‌സൈറ്റിലേക്ക് കണക്റ്റ് ചെയ്യാന്‍ നിങ്ങള്‍ പിന്നീട് ശ്രമിക്കുമ്പോള്‍ ഈ പിശക് നിങ്ങള്‍ കാണുകയില്ല. നിങ്ങളുടെ കമ്പ്യൂട്ടറിലേക്ക് ഒരു പുതിയ റൂട്ട് സര്‍ട്ടിഫിക്കറ്റ് ചേര്‍ക്കുവാന്‍ സഹായിക്കുന്നതിനായി നിങ്ങളുടെ സ്ഥാപനത്തിലെ സഹായ സ്റ്റാഫുകളെ ബന്ധപ്പെടുക.</translation>
 <translation id="3157931365184549694">പുനസ്സംഭരിക്കുക</translation>
+<translation id="7426243339717063209">&quot;<ph name="EXTENSION_NAME"/>&quot; അണ്‍‌ഇന്‍‌സ്റ്റാള്‍‌ ചെയ്യണോ?</translation>
 <translation id="6059232451013891645">ഫോള്‍ഡര്‍:</translation>
 <translation id="8182985032676093812"><ph name="PAGE_URL"/> ന്റെ ഉറവിടം</translation>
 <translation id="7042418530779813870">ഒട്ടി&amp;ച്ച് തിരയൂ</translation>
+<translation id="2101225219012730419">പതിപ്പ്:</translation>
 <translation id="1570242578492689919">ഫോണ്ടുകളും എന്‍കോഡിംഗും</translation>
 <translation id="3031557471081358569">ഇറക്കുമതി ചെയ്യുന്നതിനായി ഇനങ്ങള്‍ തിരഞ്ഞെടുക്കുക:</translation>
 <translation id="3031433885594348982">നിങ്ങളുടെ <ph name="DOMAIN"/> ലേക്കുള്ള കണക്ഷന്‍ ദുര്‍ബല എന്‍‌ക്രിപ്ഷനുമായി എന്‍‌ക്രിപ്റ്റ് ചെയ്തിരിക്കുന്നു.</translation>
@@ -857,6 +959,7 @@
 <translation id="6181769708911894002">മുന്നറിയിപ്പ്: ഈ സൈറ്റ് സന്ദര്‍ശിക്കുന്നത് നിങ്ങളുടെ കമ്പ്യൂട്ടറിന് ഹാനികരമായേക്കാം!</translation>
 <translation id="3412265149091626468">തിരഞ്ഞെടുക്കുന്നതിലേക്ക് പോകുക</translation>
 <translation id="3785852283863272759">പേജ് സ്ഥാനം ഇമെയില്‍‌ ചെയ്യുക</translation>
+<translation id="7326526699920221209">ബാറ്ററി: <ph name="PRECENTAGE"/>%</translation>
 <translation id="601778514741867265">ഞാന്‍ സന്ദര്‍ശിക്കുന്നസൈറ്റുകളില്‍ നിന്നുള്ള കുക്കുകള്‍ മാത്രം സ്വീകരിക്കുക</translation>
 <translation id="8299269255470343364">ജാപ്പനീസ്</translation>
 <translation id="5204993535447683655">&lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;&lt;/a&gt; ഈ വെബ് പേജ് കുറച്ച് കഴിഞ്ഞ് വീണ്ടും ലോഡ്ചെയ്യുക.</translation>
@@ -864,10 +967,12 @@
 <translation id="7280343984261969618">സാന്‍ഡ്ബോക്സിലെ പ്ലഗ്-ഇന്നുകള്‍ യാതൊരു വിശേഷാധികാരവുമില്ലാതെ പ്രവര്‍ത്തിക്കുന്നു. ചില പ്ലഗ്-ഇന്നുകള്‍ ശരിയായി പ്രവര്‍ത്തിക്കാതിരിക്കുന്നതിന് കാരണമാകുന്നു.</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> ദിവസം അവശേഷിക്കുന്നു</translation>
 <translation id="2885378588091291677">ടാസ്‌ക് മാനേജര്‍</translation>
+<translation id="1215711112676250731">ക്വാട്ട:</translation>
 <translation id="2359808026110333948">തുടരൂ</translation>
 <translation id="1618661679583408047">സെര്‍വറിന്റെ സുരക്ഷാ സര്‍ട്ടിഫിക്കറ്റ് ഇതുവരെ സാധൂകരിച്ചിട്ടില്ല!</translation>
 <translation id="9040508646567685134">ഈ പേജില്‍ പ്രവര്‍ത്തിക്കുന്ന ഒരു സ്ക്രിപ്റ്റ് അതിന്റെ ജോലി ചെയ്യാന്‍ ധാരാളം സമയമെടുക്കുകയാണ്. സ്ക്രിപ്റ്റ് പൂര്‍ത്തിയാകുന്നത് കാണാന്‍ നിങ്ങള്‍ക്ക് താല്പര്യമുണ്ടോ, അല്ലെങ്കില്‍ ഉപേക്ഷിക്കണമോ?</translation>
 <translation id="3065140616557457172">തിരയാന്‍ ടൈപ്പുചെയ്യുക അല്ലെങ്കില്‍ നാവിഗേറ്റുചെയ്യാനായി URL നല്‍കുക - ഇപ്പോള്‍ പ്രവര്‍ത്തിച്ചവ എല്ലാം.</translation>
+<translation id="977224059380370527">MB</translation>
 <translation id="5509693895992845810">ഇതായി &amp;സംരക്ഷിക്കുക...</translation>
 <translation id="5986279928654338866">സെര്‍വര്‍ <ph name="DOMAIN"/> ന് ഒരു ഉപയോക്തൃനാമവും പാസ്‌വേഡും ആവശ്യമാണ്.</translation>
 <translation id="521467793286158632">എല്ലാ പാസ്‌വേഡുകളും നീക്കംചെയ്യുക</translation>
@@ -877,10 +982,10 @@
 <translation id="7221869452894271364">ഈ പേജ് വീണ്ടും ലോഡ് ചെയ്യുക</translation>
 <translation id="8646430701497924396">SSL 2.0 ഉപയോഗിക്കുക</translation>
 <translation id="8179976553408161302">രേഖപ്പെടുത്തുക</translation>
+<translation id="5481650329671719147">വിപുലീകരണങ്ങള്‍‌ക്കും തീമുകള്‍‌ക്കും നിങ്ങളുടെ കമ്പ്യൂട്ടറിന് കേടുവരുത്താന്‍‌ കഴിയും. തുടരാന്‍‌ നിങ്ങള്‍‌ താല്‍‌പ്പര്യപ്പെടുന്നോ?</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കൂ</translation>
 <translation id="345693547134384690">പുതിയ ടാബിലെ ഇമേജ് &amp;തുറക്കുക</translation>
 <translation id="7422192691352527311">മുന്‍ഗണനകള്‍...</translation>
-<translation id="7220379225958650049">ഇപ്പോള്‍‌ ആരംഭിക്കുക</translation>
 <translation id="1375198122581997741">പതിപ്പിനെ കുറിച്ച്</translation>
 <translation id="1474307029659222435">പുതിയ &amp;വിന്‍ഡോയില്‍ ഫ്രെയിം തുറക്കുക</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/> സമന്വയിപ്പിച്ചു\nഅവസാനം സമന്വയിപ്പിച്ചത്: <ph name="LAST_SYNC_TIME"/></translation>
@@ -895,11 +1000,14 @@
 <translation id="884923133447025588">അസാധുവാക്കല്‍ പ്രവര്‍ത്തനം കണ്ടെത്തിയിട്ടില്ല.</translation>
 <translation id="7240072072812590475">Gears ക്രമീകരണങ്ങള്‍ മാറ്റുക</translation>
 <translation id="6001785649757655903">സ്വകാര്യ കരിമ്പട്ടിക പിശക്</translation>
+<translation id="2480155717379390016"><ph name="NAME_OF_EXTENSION"/> അപ്രാപ്‌തമാക്കുക</translation>
+<translation id="492643400682328128"><ph name="NETWORKDEVICE"/> ഓഫാക്കുക</translation>
 <translation id="7671130400130574146">സിസ്റ്റം ശീര്‍ഷക ബാറും ബോര്‍ഡറുകളും ഉപയോഗിക്കുക</translation>
 <translation id="9170848237812810038">‍&amp;പൂര്‍വാവസ്ഥയിലാക്കുക</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/>K</translation>
 <translation id="4444364671565852729"><ph name="VERSION"/> ലേക്ക് <ph name="PRODUCT_NAME"/> അപ്‌ഡേറ്റുചെയ്തു</translation>
 <translation id="2731392572903530958">അടച്ച വിന്‍ഡോ വീ&amp;ണ്ടും തുറക്കുക</translation>
+<translation id="4264420740606601613">മൂന്നാം-കക്ഷി കുക്കികളെ പൂര്‍‌ണ്ണമായും തടയുക</translation>
 <translation id="6483805311199035658"><ph name="FILE"/> തുറക്കുന്നു...</translation>
 <translation id="1285266685456062655"><ph name="NUMBER_FEW"/> hours ago</translation>
 <translation id="9154176715500758432">ഈ പേജില്‍ നില്‍ക്കുക</translation>
@@ -911,10 +1019,14 @@
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">തുടരൂ</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
+<translation id="5663016964925996918"><ph name="EXTENSION_NAME"/> ഇപ്പോള്‍‌ ഇന്‍‌സ്റ്റാ‍ള്‍‌ ചെയ്‌തു</translation>
 <translation id="3009731429620355204">സെഷനുകള്‍</translation>
 <translation id="7658590191988721853">ലംബമായ എഡ്‌ജ് സ്‌ക്രോളിംഗ് പ്രാപ്‌തമാക്കുക</translation>
+<translation id="5190835502935405962">ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌ ബാര്‍‌</translation>
+<translation id="5438430601586617544">(പായ്ക്ക് ചെയ്യാത്തത്)</translation>
 <translation id="6460601847208524483">അടുത്തത് കണ്ടെത്തുക</translation>
 <translation id="3473034187222004855">ഫയലും &amp;വഴിയും പകര്‍ത്തുക</translation>
+<translation id="3038131737570201586">ഈ വിപുലീകരണത്തിന് നിരവധി വെബ്‌സൈറ്റുകളിലെ നിങ്ങളുടെ ബ്രൌസിംഗ് ചരിത്രത്തിലേയ്‌ക്കും നിങ്ങളുടെ സ്വകാര്യ ഡാറ്റയിലേയ്‌ക്കും ആക്‌സസ് ഉണ്ടായിരിക്കും.</translation>
 <translation id="6325525973963619867">പരാജയപ്പെട്ടു</translation>
 <translation id="1676388805288306495">വെബ്പേജുകള്‍ക്കായി സ്ഥിരസ്ഥിതി ഫോണ്ടും ഭാഷയും മാറ്റുക.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
@@ -929,6 +1041,7 @@
 <translation id="5333374927882515515"><ph name="DEF_BROWSER"/> ല്‍ നിന്ന് ബുക്‌മാര്‍ക്കുകള്‍, പാസ്‌വേഡുകള്‍, മറ്റ് സജ്ജീകരണങ്ങള്‍ എന്നിവ ഇറക്കുമതി ചെയ്യുക</translation>
 <translation id="4239831617079978238">സെഷന്റെ അവസാനം</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
+<translation id="5960889226412209189">കോം‌പാക്റ്റ് നാവിഗേഷന്‍‌ ബാര്‍‌ ടോഗിള്‍‌ ചെയ്യുക</translation>
 <translation id="8954894007019320973">(തുടര്‍.)</translation>
 <translation id="3748412725338508953">അവിടെ നിരവധി റീഡയറക്‌റ്റുകള്‍ ഉണ്ട്.</translation>
 <translation id="8929159553808058020">വെബ്സൈറ്റുകള്‍ വായിക്കാന്‍ നിങ്ങള്‍ ഉപയോഗിക്കുന്ന ഭാഷ മുന്‍ഗണനാടിസ്ഥാനത്തില്‍ പട്ടികപ്പെടുത്തി ചേര്‍ക്കൂ. മറ്റ് ഭാഷകളിലെ വെബ്സൈറ്റുകളെ കബളിപ്പിക്കുന്നതിന് ചില അക്ഷരങ്ങള്‍ ഉപയോഗിക്കാമെന്നതിനാല്‍, നിങ്ങള്‍ക്കാവശ്യമുള്ളത് മാത്രം ചേര്‍ക്കുക</translation>
@@ -944,10 +1057,13 @@
 <translation id="7088615885725309056">വളരെ പഴയ</translation>
 <translation id="5263972071113911534"><ph name="NUMBER_MANY"/> days ago</translation>
 <translation id="8562413501751825163">ഇറക്കുമതി ചെയ്യുന്നതിന് മുമ്പായി Firefox അടയ്ക്കുക</translation>
+<translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K ലൈവ്)</translation>
 <translation id="5034259512732355072">മറ്റൊരു ഡയറക്ടറി തിരഞ്ഞെടുക്കൂ...</translation>
 <translation id="5074322878757699801">ഡാറ്റാ ഇറക്കുമതി ചെയ്യുക...</translation>
+<translation id="7505152414826719222">പ്രാദേശിക സംഭരണം</translation>
 <translation id="5706242308519462060">സ്ഥിരസ്ഥിതി എന്‍കോഡിംഗ്:</translation>
 <translation id="5280833172404792470">പൂര്‍ണ്ണ സ്‌ക്രീനില്‍ നിന്നും നിര്‍ഗമിക്കുക (<ph name="ACCELERATOR"/>)</translation>
+<translation id="4000986992587584088">എല്ലായ്‌പ്പോഴും <ph name="URL"/> ല്‍‌ നിന്നുമുള്ള പോപ്പ്‌‌‌അപ്പ് കാണിക്കുക</translation>
 <translation id="129553762522093515">സമീപകാലത്ത് അടച്ചു</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> ദിവസം</translation>
 <translation id="3891357445869647828">JavaScript പ്രാപ്തമാക്കുക</translation>
@@ -964,14 +1080,18 @@
 <translation id="4867297348137739678">കഴിഞ്ഞ ആഴ്ച്ച</translation>
 <translation id="4881695831933465202">തുറക്കുക</translation>
 <translation id="5457793226917888578">ഈ പേജില്‍ സുരക്ഷിതമല്ലാത്ത ഉള്ളടക്കം ഉള്‍ക്കൊള്ളുന്നു.</translation>
+<translation id="5988520580879236902">സജീവ കാഴ്‌ചകള്‍‌‌ പരിശോധിക്കുക:</translation>
 <translation id="5981759340456370804">വാശിക്കാര്‍ക്കുള്ള സ്ഥിതി</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> ദിവസം</translation>
 <translation id="6512448926095770873">ഈ പേജ് വിടുക</translation>
 <translation id="5607455023223000189">പ്ലഗ്-ഇന്നുകള്‍‍ ഇന്‍സ്റ്റോള്‍ ചെയ്തു</translation>
 <translation id="6294193300318171613">ബുക്ക്‌മാര്‍ക്ക് മാനേജര്‍ എല്ലായ്‌പ്പോഴും കാണിക്കുക‍</translation>
+<translation id="3414952576877147120">വലുപ്പം:</translation>
 <translation id="9098468523912235228"><ph name="NUMBER_DEFAULT"/> സെക്കന്റ് മുമ്പ്</translation>
 <translation id="7009102566764819240">പേജിനായുള്ള സുരക്ഷിതമല്ലാത്ത എല്ലാ ഘടകങ്ങളും ചുവടെയുള്ള ഒരു പട്ടികയിലുണ്ട്. ഒരു പ്രത്യേക വിഭവത്തിനായി ക്ഷുദ്രവെയര്‍‌ ത്രെഡിനെക്കുറിച്ചുള്ള കൂടുതല്‍‌ വിവരങ്ങള്‍‌ക്കായി ഡയഗണോസ്റ്റിക് ലിങ്കില്‍‌ ക്ലിക്കുചെയ്യുക. ആ വിഭവം ഫിഷിംഗെന്ന് തെറ്റായി റിപ്പോര്‍‌ട്ട് ചെയ്‌തിരിക്കുന്നതായി നിങ്ങള്‍‌ക്കറിയാമെങ്കില്‍‌, ‘പിശക് റിപ്പോര്‍‌ട്ട് ചെയ്യുക’ ലിങ്ക് ക്ലിക്കുചെയ്യുക.</translation>
+<translation id="676327646545845024">ഈ തരത്തിന്‍റെ എല്ലാ ലിങ്കുകള്‍‌ക്കുമായി സംഭാഷണം ഒരിക്കലും കാണിക്കരുത്.</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> സെക്കന്റ് അവശേഷിക്കുന്നു</translation>
+<translation id="6863682319656084809">വിപുലീകരണ അലേര്‍‌ട്ട്<ph name="EXTENSION_NAME"/></translation>
 <translation id="1485146213770915382">തിരയല്‍ നിബന്ധനകള്‍ പ്രത്യക്ഷപ്പെടുന്നതിന് വേണ്ടി URL ല്‍  <ph name="SEARCH_TERMS_LITERAL"/> ഉള്‍പ്പെടുത്തുക.</translation>
 <translation id="4839303808932127586">വീഡിയോ ഇതുപോലെ സം&amp;രക്ഷിക്കുക...</translation>
 <translation id="5626134646977739690">നാമം:</translation>
@@ -982,6 +1102,7 @@
 <translation id="4876916865079819322">എന്‍റെ ബുക്ക്‌മാര്‍‌ക്കുകള്‍ സമന്വയിപ്പിക്കുക‌</translation>
 <translation id="146000042969587795">ഈ ഫ്രെയിം തടഞ്ഞു കാരണം ഇതില്‍ ചില സുരക്ഷിതമല്ലാത്ത ഉള്ളടക്കം അടങ്ങിയിരിക്കുന്നു.</translation>
 <translation id="8112223930265703044">എല്ലാം</translation>
+<translation id="8023801379949507775">ഇപ്പോള്‍‌ വിപുലീകരണങ്ങള്‍‌ അപ്ഡേറ്റുചെയ്യുക </translation>
 <translation id="1983108933174595844">നിലവിലുള്ള പേജിന്റെ സ്ക്രീന്‍ ഷോട്ട് അയയ്ക്കുക</translation>
 <translation id="436869212180315161">അമര്‍ത്തുക</translation>
 <translation id="8241707690549784388">നിങ്ങള്‍ അന്വേഷിക്കുന്ന പേജ് നിങ്ങള്‍ രേഖപ്പെടുത്തിയ വിവരങ്ങള്‍ ഉപയോഗിക്കുന്നു. ആ പേജിലേക്ക് മടങ്ങുന്നത് നിങ്ങള്‍ ആവര്‍ത്തിക്കാവുന്ന ഏതെങ്കിലും പ്രവൃത്തിക്ക് കാരണമായേക്കും. തുടരാന്‍ നിങ്ങള്‍ ആഗ്രഹിക്കുന്നുണ്ടോ?</translation>
@@ -994,6 +1115,7 @@
 <translation id="1753905327828125965">കൂടുതല്‍ സന്ദര്‍ശിച്ചത്</translation>
 <translation id="170407012880898501">ഫോമുകള്‍ പൂരിപ്പിക്കുന്നത് എളുപ്പത്തിലാക്കാന്‍ അവയില്‍ നിന്നും ടെക്സ്റ്റുകള്‍ സംരക്ഷിക്കുക</translation>
 <translation id="8116972784401310538">&amp;ബുക്മാര്‍ക്ക് മാനേജര്‍</translation>
+<translation id="1849632043866553433">അപ്ലിക്കേഷന്‍‌ കാഷെകള്‍‌</translation>
 <translation id="4927301649992043040">പാക്ക് വിപുലീകരണം</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
@@ -1006,12 +1128,15 @@
 <translation id="1232569758102978740">ശീര്‍ഷകമില്ലാത്ത</translation>
 <translation id="9149866541089851383">എഡിറ്റ്‌ചെയ്യൂ...</translation>
 <translation id="7000311294523403548">ശീര്‍ഷകമില്ലാത്ത വെബ് പേജ്</translation>
+<translation id="4593021220803146968">&amp;<ph name="URL"/> ലേക്ക് പോകുക</translation>
 <translation id="7649070708921625228">സഹായം</translation>
 <translation id="6119719873954126908">മികച്ച ബ്രൌസിംഗിനായുള്ള അഭിപ്രായങ്ങള്‍ക്കും നിര്‍ദ്ദേശങ്ങള്‍ക്കുമായി ഈ സ്‌പെയ്‌സ് കാണുക!</translation>
 <translation id="7442246004212327644">മാ&amp;യ്ക്കുക</translation>
 <translation id="281133045296806353">നിലവിലുള്ള ബ്രൌസിംഗ് സെഷനില്‍ പുതിയ വിന്‍ഡോ സൃഷ്‌ടിച്ചു.</translation>
+<translation id="6314007596429871800">അപ്ലിക്കേഷന്‍ കാഷേ</translation>
 <translation id="9002707937526687073">അ&amp;ച്ചടിക്കുക...</translation>
 <translation id="5556459405103347317">വീണ്ടും ലോഡുചെയ്യുക</translation>
+<translation id="8326395326942127023">ഡാറ്റാബേസ് നാമം:</translation>
 <translation id="7727721885715384408">നാമം‌മാറ്റൂ...</translation>
 <translation id="5508407262627860757">എങ്ങനെയെങ്കിലും റദ്ദാക്കുക</translation>
 <translation id="7587108133605326224">ബാള്‍ട്ടിക്</translation>
@@ -1020,6 +1145,7 @@
 <translation id="3021678814754966447">&amp;ഫ്രെയിം ഉറവിടം കാണുക</translation>
 <translation id="5271549068863921519">പാസ്‌വേഡ് സംരക്ഷിക്കുക</translation>
 <translation id="3251855518428926750">ചേര്‍ക്കുക...</translation>
+<translation id="3508920295779105875">മറ്റൊരു ഫോള്‍‌ഡര്‍‌ തിരഞ്ഞെടുക്കുക...</translation>
 <translation id="2987775926667433828">ചൈനീസ് പരമ്പരാഗതം</translation>
 <translation id="3954582159466790312">നിശ&amp;ബ്‌ദത മാറ്റുക</translation>
 <translation id="5809606740668187902">തടഞ്ഞ ഉറവിടം</translation>
@@ -1031,8 +1157,10 @@
 <translation id="8045462269890919536">റുമാനിയന്‍</translation>
 <translation id="2927657246008729253">മാറ്റൂ...</translation>
 <translation id="7978412674231730200">സ്വകാര്യ കീ</translation>
+<translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">പുതിയത് &amp;വേഷപ്രച്ഛന്ന വിന്‍ഡോ</translation>
 <translation id="3478477629095836699">കുക്കി സജ്ജീകരണങ്ങള്‍</translation>
+<translation id="6529237754759924038">തീയതിയും സമയവും</translation>
 <translation id="7278870042769914968">GTK+ തീം ഉപയോഗിക്കുക</translation>
 <translation id="2108475813351458355"><ph name="DOMAIN"/> ലേക്ക് കണക്ഷന്‍ സുരക്ഷിതമാക്കുക</translation>
 <translation id="942671148946453043">നിങ്ങള്‍ ഒരു വേഷപ്രച്ഛന്ന വിന്‍ഡോ തുറന്നു. ഈ ജാലകത്തില്‍ നിങ്ങള്‍ തുറക്കുന്ന പേജുകള്‍ നിങ്ങളുടെ ചരിത്രത്തില്‍ ദൃശ്യമാകില്ല.</translation>
@@ -1068,11 +1196,14 @@
 <translation id="3943582379552582368">&amp;പിന്നോട്ട്</translation>
 <translation id="7607002721634913082">അല്പംനിര്‍ത്തി</translation>
 <translation id="480990236307250886">ഹോംപേജ് തുറക്കുക</translation>
+<translation id="5757539081890243754">ഹോം പേജ്</translation>
 <translation id="6709133671862442373">വാര്‍‌ത്ത</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> മണിക്കൂര്‍ ശേഷിക്കുന്നു</translation>
+<translation id="6550675742724504774">ഐച്ഛികങ്ങള്‍‌</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>
 <translation id="737801893573836157">സിസ്റ്റത്തിന്റെ ശീര്‍ഷക ബാര്‍ മറയ്‌ക്കുകയും ഒതുക്കമുള്ള അതിരുകള്‍ ഉപയോഗിക്കുകയും ചെയ്യുക</translation>
 <translation id="5040262127954254034">സ്വകാര്യത</translation>
+<translation id="1058681476058291010">Bookmark Sync പിശക്...</translation>
 <translation id="1908748899139377733">ഫ്രെയിം &amp;വിവരം കാണുക</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="803771048473350947">ഫയല്‍</translation>
@@ -1081,6 +1212,7 @@
 <translation id="566920818739465183">ഈ സൈറ്റ് നിങ്ങള്‍ ആദ്യം <ph name="VISIT_DATE"/> ല്‍ ആണ് സന്ദര്‍ശിച്ചത്.</translation>
 <translation id="2961695502793809356">മുന്നോട്ട് പോകുന്നതിനായി ക്ലിക്കുചെയ്യുക, ചരിത്രം കാണാന്‍ ഹോള്‍ഡ് ചെയ്യുക</translation>
 <translation id="923083373181549309">ദയവായി <ph name="PRODUCT_NAME"/> പുനരാരംഭിക്കുക</translation>
+<translation id="8678305583783039525">കുക്കികളും വെബ്‌സൈറ്റ് അനുമതികളും കാണിക്കുക</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> സെക്കന്റ്</translation>
 <translation id="176587472219019965">&amp;പുതിയ വിന്‍ഡോ</translation>
 <translation id="8689341121182997459">അവസാനിക്കുന്നു:</translation>
@@ -1097,11 +1229,13 @@
 <translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> ഈ ടാസ്‌ക്കുകളെല്ലാം ചെയ്യും:</translation>
 <translation id="1812622104192390866">ഇതില്‍ നിന്ന് ക്രമീകരണങ്ങള്‍ ഇറക്കുമതി ചെയ്യുക</translation>
 <translation id="4042471398575101546">പേജ് ചേര്‍‌ക്കുക</translation>
+<translation id="4871865824885782245">തീയതി, സമയ ഐച്ഛികങ്ങള്‍‌ തുറക്കുക...</translation>
 <translation id="988159990683914416">വികാസക പതിപ്പ്</translation>
 <translation id="921175996768281472">വിപുലീകരണ പാക്കേജിംഗ് പരാജയം</translation>
 <translation id="2183426022964444701">വിപുലീകരണ റൂട്ട് ഡയറക്‌ടറി തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="6790650291892352751">വിഷയം അല്ലെങ്കില്‍ URL പ്രകാരം തിരയുക:</translation>
 <translation id="5398353896536222911">&amp;അക്ഷരപാനല്‍ കാണിക്കുക</translation>
+<translation id="8046048349148382412"><ph name="HOUR"/>:<ph name="MIUTE"/> പൂര്‍‌ണ്ണമാകുന്നതുവരെ</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">URL:</translation>
 <translation id="7481312909269577407">മുന്നോട്ട്</translation>
@@ -1114,6 +1248,7 @@
 <translation id="2444683954290143042">സമന്വയ പിശക് - ദയവായി വീണ്ടും പ്രവേശിക്കുക</translation>
 <translation id="5830720307094128296">പേജ് ഇതായി &amp;സംരക്ഷിക്കുക</translation>
 <translation id="5822838715583768518">അപ്ലിക്കേഷന്‍ സമാരംഭിക്കുക</translation>
+<translation id="2433507940547922241">ദൃശ്യപരത</translation>
 <translation id="839072384475670817">അപ്ലിക്കേഷന്‍ &amp;കുറുക്കുവഴികള്‍ സൃഷ്‌ടിക്കുക...</translation>
 <translation id="6756161853376828318">എന്റെ സ്ഥിരസ്ഥിതി ബ്രൌസര്‍ <ph name="PRODUCT_NAME"/> നിര്‍മ്മിക്കുക</translation>
 <translation id="2640524951934795733">ഞങ്ങള്‍ ഇവിടെ എന്താണ് ഇടുക?</translation>
@@ -1124,6 +1259,7 @@
 <translation id="3807747707162121253">&amp;റദ്ദാക്കൂ</translation>
 <translation id="2850243184678184884">ഉദാ. hockey, BBC, http://engadget.com/rss.xml</translation>
 <translation id="77999321721642562">ഓവര്‍ ‌ടൈം, ചുവടെയുള്ള ഏര്യ നിങ്ങള്‍ ഏറ്റവും കൂടുതല്‍ സന്ദര്‍ശിച്ച എട്ട് സൈറ്റുകള്‍ കാണിക്കും.</translation>
+<translation id="5864830997591220873">എല്ലാ കുക്കികളും തടയുക</translation>
 <translation id="7447718177945067973">സെര്‍വര്‍ കണ്ടെത്താന്‍ കഴിഞ്ഞില്ല.</translation>
 <translation id="715468010956678290">അദൃ&amp;ശ്യ വിന്‍ഡോയിലെ ഫ്രെയിം തുറക്കു</translation>
 <translation id="7755167023778553803">എങ്ങനെയാണെങ്കിലും, ഈ പേജില്‍ മറ്റ് വെബ്സൈറ്റുകളിലെ വ്യക്തിത്വം നിര്‍ണ്ണയിക്കാന്‍ കഴിയാത്ത വസ്തുതകള്‍ ഉള്‍പ്പെട്ടിട്ടുണ്ട്.</translation>
@@ -1131,6 +1267,7 @@
 <translation id="3455546154539383562">നിങ്ങള്‍ &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ല്‍ എത്താന്‍ ശ്രമിച്ചു, പക്ഷേ നിങ്ങളുടെ ബ്രൌസറിനായി നല്‍കപ്പെട്ടിട്ടുള്ള സര്‍ട്ടിഫിക്കറ്റ് അത് നല്‍കിയ വ്യക്തി തന്നെ അസാധുവാക്കി. ഇത്  അര്‍ത്ഥമാക്കുന്നത്  സെര്‍വര്‍ നല്‍കിയ സുരക്ഷാ ക്രെഡന്‍ഷ്യലുകള്‍ തികച്ചും വിശ്വാസയോഗ്യമല്ലെന്നാണ്. നിങ്ങള്‍ ഒരു അക്രമിയുമായാകാം ആശയവിനിമയം നടത്തുന്നത്. നിങ്ങള്‍ മുന്നോട്ട് പോകരുത്.</translation>
 <translation id="1177437665183591855">അജ്ഞാത സെര്‍വര്‍ സര്‍ട്ടിഫിക്കറ്റ് പിശക്</translation>
 <translation id="3819800052061700452">&amp;പൂര്‍ണ്ണ സ്‌ക്രീന്‍</translation>
+<translation id="3533943170037501541">നിങ്ങളുടെ ഹോം പേജിലേക്ക് സ്വാഗതം!</translation>
 <translation id="3218306954729745977">സമീപകാലത്ത് അടച്ച ടാബുകള്‍‌ കാണിക്കുക</translation>
 <translation id="3737554291183722650">പേജ് ശീര്‍ഷകം:</translation>
 <translation id="1581962803218266616">ഫൈന്‍ഡറില്‍ കാണിക്കുക</translation>
@@ -1149,16 +1286,19 @@
 <translation id="1208126399996836490">വീണ്ടും സജ്ജീകരിക്കരുത്</translation>
 <translation id="806812017500012252">ശീര്‍ഷക പ്രകാരം പുനര്‍ക്രമീകരിക്കുക</translation>
 <translation id="2960316970329790041">ഇറക്കുമതി നിര്‍ത്തുക</translation>
+<translation id="5361734574074701223">ശേഷിക്കുന്ന സമയം കണക്കാക്കുന്നു</translation>
 <translation id="1731911755844941020">അഭ്യര്‍ത്ഥന അയയ്ക്കുന്നു...</translation>
 <translation id="1038842779957582377">അജ്ഞാത നാമം</translation>
 <translation id="5327248766486351172">നാമം</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="2052895926110224873">നിങ്ങളുടെ സ്വകാര്യ കരിമ്പട്ടികകള്‍‌ ലോഡ് ചെയ്യുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="2445081178310039857">വിപുലീകരണ റൂട്ട് ഡയറക്‌ടറി ആവശ്യമാണ്.</translation>
+<translation id="8251578425305135684">ലഘുചിത്രം നീക്കംചെയ്‌തു.</translation>
 <translation id="3037605927509011580">കഷ്ടം!</translation>
 <translation id="1918141783557917887">&amp;വളരെ ചെറുത്</translation>
 <translation id="4065006016613364460">URLഇമേജ് പ&amp;കര്‍ത്തൂ</translation>
 <translation id="6965382102122355670">ശരി</translation>
+<translation id="4481249487722541506">പായ്ക്ക് ചെയ്യാത്ത എക്സ്റ്റന്‍ഷന്‍ ലോഡ്ചെയ്യൂ</translation>
 <translation id="8542113417382134668">Serif ഫോണ്ട്:</translation>
 <translation id="2149973817440762519">ബുക്മാര്‍ക്ക് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="430831869130657585">സഫിക്സുകള്‍</translation>
@@ -1182,17 +1322,27 @@
 <translation id="6053401458108962351">&amp;ബ്രൌസിംഗ് ഡാറ്റാ മായ്ക്കുക...</translation>
 <translation id="2339641773402824483">അപ്ഡേറ്റുകള്‍ക്കായി പരിശോധിക്കൂ...</translation>
 <translation id="8600200086690278232">അവതരിപ്പിക്കുന്ന വെബ്‌ക്ലിപ്പുകള്‍</translation>
+<translation id="8582728318425382804">കുക്കികളും വെബ്‌സൈറ്റ് അനുമതികളും</translation>
 <translation id="2766006623206032690">ഒട്ടി&amp;ക്കൂ കൂടാതെ പോകൂ</translation>
 <translation id="9071050381089585305">പ്രതികരണമില്ലാത്ത സ്ക്രിപ്റ്റ്</translation>
+<translation id="4394049700291259645">അപ്രാപ്‌തമാക്കുക</translation>
 <translation id="969892804517981540">ഔദ്യോഗിക ബില്‍ഡ്</translation>
 <translation id="724208122063442954">ഡൌണ്‍ലോഡ് ചെയ്തതിന് ശേഷം നിരവധി ഫയല്‍ തരങ്ങള്‍ സ്വയം തുറക്കാന്‍ നിങ്ങള്‍ തിരഞ്ഞെടുത്തിരുന്നു. നിങ്ങള്‍ക്ക് ഈ സജ്ജീകരണങ്ങള്‍ മായ്ക്കാന്‍ കഴിയും അതിനാല്‍ ഡൌണ്‍ലോഡ് ചെയ്ത ഫയലുകള്‍ സ്വയം തുറക്കില്ല.</translation>
 <translation id="5765491088802881382">നെറ്റ്‌വര്‍ക്കുകളോന്നും ലഭ്യമല്ല</translation>
 <translation id="5183088099396036950">സെര്‍വറിലേക്ക് ബന്ധിപ്പിക്കാന്‍ കഴിയുന്നില്ല</translation>
-<translation id="4477534650265381513">പെട്ടെന്നുള്ള ആക്സസിനായി, ഇവിടെയുള്ള ബുക്മാര്‍ക്ക് ബാറില്‍ നിങ്ങളുടെ ബുക്മാര്‍ക്കുകള്‍ സ്ഥാപിക്കുക.</translation>
+<translation id="4469842253116033348"><ph name="SITE"/> ല്‍‌ നിന്നുള്ള വിജ്ഞാപനങ്ങള്‍‌ അപ്രാപ്‌തമാക്കുക</translation>
+<translation id="7999229196265990314">ഇനിപ്പറയുന്ന ഫയലുകള്‍‌ സൃഷ്‌ടിച്ചു:
+
+വിപുലീകരണം: <ph name="EXTENSION_FILE"/>
+പ്രധാന ഫയല്‍‌: <ph name="KEY_FILE"/>
+
+നിങ്ങളുടെ പ്രധാന ഫയല്‍‌ ഒരു സുരക്ഷിത സ്ഥലത്ത് സൂക്ഷിക്കുക. നിങ്ങളുടെ വിപുലീകരണത്തിന്‍റെ പുതിയ പതിപ്പുകള്‍‌ സൃഷ്‌ടിക്കുന്നതിന് നിങ്ങള്‍‌ക്ക് അത് ആവശ്യമാണ്.</translation>
 <translation id="3036649622769666520">ഫയലുകള്‍‌ തുറക്കുക</translation>
 <translation id="7909652923456235549">കുക്കികള്‍‌ അയച്ചില്ല</translation>
+<translation id="7685049629764448582">JavaScript മെമ്മറി</translation>
 <translation id="4508765956121923607">ഉറ&amp;വിടം കാണുക</translation>
 <translation id="8080048886850452639">ഓഡിയോ URL പക&amp;ര്‍ത്തുക</translation>
+<translation id="5849869942539715694">പായ്ക്ക് വിപുലീകരണം...</translation>
 <translation id="7339785458027436441">ടൈപ്പ് ചെയ്യുന്ന സമയത്ത് സ്‌പെല്ലിംഗ് പരിശോധിക്കുക</translation>
 <translation id="1384721974622518101">മുകളിലുള്ള ബോക്‌സില്‍‌ നിന്നും നിങ്ങള്‍‌ക്ക് നേരെ തിരയാന്‍‌ കഴിയുമെന്ന് അറിയാമോ?</translation>
 <translation id="8203365863660628138">ഇന്‍‌സ്റ്റാളേഷന്‍‌ സ്ഥിരീകരിക്കുക</translation>

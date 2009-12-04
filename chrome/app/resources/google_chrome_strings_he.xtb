@@ -3,15 +3,19 @@
 <translationbundle lang="he">
 <translation id="8000275528373650868">להפעלת Google Chrome יש להשתמש במערכת ההפעלה Windows Vista או Windows XP עם SP2 ואילך.</translation>
 <translation id="6676384891291319759">גישה אל האינטרנט</translation>
+<translation id="4517682492677349713">האם אתה רוצה ש-Google Chrome ישמור נתונים אלה? </translation>
 <translation id="2770231113462710648">שנה את דפדפן ברירת המחדל ל:</translation>
 <translation id="698670068493841342">Google Chrome הותקן כבר עבור משתמש זה. אם התוכנה אינה פועלת, הסר את Google Chrome שמותקן והורד אותו שוב.</translation>
 <translation id="7400722733683201933">אודות Google Chrome</translation>
+<translation id="7781002470561365167">גרסה חדשה של Google Chrome זמינה כעת.</translation>
 <translation id="7101265395643981223">התחל את Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome מייבא כעת מועדפים/סימניות.</translation>
 <translation id="8970027151245482499">Google Chrome אינו מותקן או שהוא נכשל במציאת ספריה להתקנה. הורד שוב את Google Chrome.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="4281844954008187215">תנאי שירות</translation>
 <translation id="1137776625614346046">האזור &quot;הכי פופולרי&quot; מציג את האתרים שביקרת בהם בתדירות הרבה ביותר. אחרי שתשתמש ב-Google Chrome למשך זמן מה, תראה את האתרים הפופולריים ביותר שלך בכל פעם שתפתח כרטיסייה חדשה. ניתן לקבל מידע נוסף על תכונה זו ועל תכונות נוספות בדף <ph name="BEGIN_LINK"/>התחלת העבודה<ph name="END_LINK"/>.</translation>
+<translation id="3555616473548901994">הסרת ההתקנה הושלמה.</translation>
+<translation id="1826297811907343327">אם תבטל כעת, לא כל הפריטים ייובאו. תוכל לייבא שוב מאוחר יותר מהתפריט של Google Chrome.</translation>
 <translation id="4728575227883772061">ההתקנה נכשלה בשל שגיאה לא צפויה. אם Google Chrome פועל כעת, סגור אותו ונסה שוב.</translation>
 <translation id="4149882025268051530">המתקין נכשל בביצוע דחיסה לארכיון. הורד שוב את Google Chrome.</translation>
 <translation id="5744005218040929396">תוכנית השירות Google Chrome Utility</translation>
@@ -36,30 +40,35 @@
 <translation id="7747138024166251722">המתקין לא הצליח ליצור ספריה זמנית. בדוק את המקום הפנוי בדיסק ואת האישור להתקנת תוכנה.</translation>
 <translation id="6009537148180854585">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך האישור שהוצג על ידי השרת מכיל שגיאות. Google Chrome אינו יכול להשתמש באישור המכיל שגיאות ואינו יכול לאמת את זהות האתר שאליו ניסית להתחבר. ההתחברות שלך אינה בטוחה ומומלץ לא להמשיך.</translation>
 <translation id="2485422356828889247">הסר התקנה</translation>
+<translation id="8899050679030089927">כדי ששינוי זה ייכנס לתוקף, סגור את כל החלונות של Google Chrome והפעל אותו מחדש.</translation>
 <translation id="3324235665723428530">לא ניתן להשתמש בפרופיל שלך מכיוון שהוא מגיע מגירסה חדשה יותר של Google Chrome. \n\nיתכן שתכונות מסוימות לא יהיו זמינות. אנא ציין ספריית פרופיל אחרת או השתמש בגירסה חדשה יותר של .Chrome</translation>
+<translation id="7214670531148488183">Google Chrome יכול להשתמש בשירותי האינטרנט לשיפור חוויית הגלישה שלך. אתה יכול להשבית את השירותים האלו על פי בחירתך.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">למחוק גם את נתוני הגלישה שלך?</translation>
 <translation id="2044287590254833138">סרגל הכלים של Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">הידד, חזרת! אבל  Google Chrome‏ אינו דפדפן ברירת המחדל שלך.</translation>
 <translation id="6481075104394517441">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שתוקפו פג. אין מידע זמין שיכול לרמוז על מידת אמינותו של האישור. Google Chrome אינו יכול להבטיח כי אתה מתקשר עם  &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם גורם תוקפן. מומלץ לוודא שהשעון ואזור הזמן שלך מוגדרים כהלכה במחשב שלך. אם הם לא מעודכנים, מומלץ לתקן את הבעיה ולרענן דף זה. אם הם מעודכנים, מומלץ לא להמשיך.</translation>
 <translation id="8862326446509486874">אין לך זכויות שמתאימות להתקנה ברמת המערכת. נסה להפעיל שוב את המתקין כמנהל מערכת.</translation>
 <translation id="595871952790078940">תוכנית השירות Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome התאפשר תודות לפרוייקט המקור הפתוח <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ו<ph name="BEGIN_LINK_OSS"/>תוכנות מקור פתוח אחרות<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome מוכן להשלים את ההתקנה.</translation>
 <translation id="7100330187273168372">Google Chrome אינו יכול לקרוא ולכתוב אל ספריית המידע שלו:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="6757767188268205357">אל תנדנד לי</translation>
 <translation id="2290095356545025170">האם אתה בטוח שאתה רוצה להסיר את Google Chrome?</translation>
 <translation id="5941830788786076944">הפוך את Google Chrome לדפדפן ברירת המחדל</translation>
 <translation id="4127951844153999091">במקרה כזה, הכתובת שמופיעה באישור אינה תואמת לכתובת של האתר שאליו הדפדפן שלך ניסה להגיע. סיבה אפשרית לכך היא שהתכתובות שלך נלכדות על ידי גורם פוגע שמציג אישור עבור אתר שונה, ובעקבות זאת נוצרה אי ההתאמה. סיבה אפשרית נוספת היא שהשרת מוגדר להצגת אותו אישור עבור אתרים מרובים, לרבות האתר שבו אתה מנסה לבקר, גם אם האישור אינו תקף לכל אותם אתרים. Google Chrome יכול לקבוע בוודאות שהגעת ל&lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, אך אינו יכול לאמת כי הוא זהה ל-&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, שאליו ניסית להגיע. אם תמשיך, Chrome לא יחפש אי התאמות שמיות נוספות. ככלל, מומלץ לא להמשיך מעבר לנקודה זו.</translation>
 <translation id="2712549016134575851">אותרה התנגשות עם יישום מותקן אחר.</translation>
+<translation id="7018032895891496381">Google Chrome משתמש במנוע חיפוש המוגדר כברירת מחדל, שמוגדר כרגע ל-<ph name="PAGE_TITLE"/>. האם ברצונך לשמור על מנוע החיפוש המוגדר כברירת מחדל?</translation>
 <translation id="7161904924553537242">ברוך הבא ל-Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8236873504073475138">Google Chrome אינו תומך ב-Windows 2000. תכונות מסוימות עלולות שלא לפעול.</translation>
 <translation id="5318056482164160049">מארח הפלאגין של Google Chrome</translation>
+<translation id="6126631249883707068">האם אתה רוצה ש-Google Chrome ישמור את הסיסמה שלך? </translation>
 <translation id="5046764976540625289">צא מ-Chrome</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">דפדפן אינטרנט</translation>
 <translation id="8776515774046280928">Google Chrome כבר מותקן וזמין לכל המשתמשים במחשב זה. אם אתה מעוניין להתקין את Google Chrome ברמת המשתמש, עליך ראשית להסיר את הגרסה המותקנת ברמת המערכת אשר הותקנה על ידי המנהל.</translation>
+<translation id="7196020411877309443">למה אני רואה את הדף הזה?</translation>
 <translation id="2769762047821873045">Google Chrome‏ אינו דפדפן ברירת המחדל שלך.</translation>
 <translation id="7825851276765848807">ההתקנה נכשלה בשל שגיאה לא מזוהה. הורד שוב את Google Chrome.</translation>
 <translation id="3335672657969596251">Google Chrome אינו תומך ב <ph name="OS_NAME"/></translation>
@@ -73,6 +82,7 @@
 <translation id="6626317981028933585">למרבה הצער, הגדרות Mozilla Firefox שלך אינן זמינות בשעה שהדפדפן פועל. על מנת לייבא הגדרות אלו ל-Google Chrome, שמור את עבודתך וסגור את כל חלונות Firefox. לאחר מכן, לחץ על 'המשך'.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="6049075767726609708">במערכת זו הותקן דפדפן Google Chrome על ידי מנהל והוא זמין עבור כל המשתמשים. Google Chrome ברמת המערכת יחליף כעת את ההתקנה שלך ברמת המשתמש.</translation>
+<translation id="7123348595797445166">נסה את זה (מותקן כבר)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">שנה את השפה המשמשת בתפריטים, בתיבות הדיאלוג ובטיפים של Google Chrome.</translation>
 <translation id="9189723490960700326">ניסית להגיע אל &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, אך השרת הציג אישור שתוקפו פג. אין מידע זמין שיכול לרמוז על כך שהאישור נפגע מאז פג תוקפו. משמעות הדבר היא ש-Google Chrome אינו יכול להבטיח כי אתה מתקשר עם &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ולא עם תוקף. מומלץ לא להמשיך.</translation>

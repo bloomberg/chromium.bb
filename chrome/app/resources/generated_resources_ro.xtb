@@ -7,6 +7,7 @@
 <translation id="3581034179710640788">Certificatul de securitate al site-ului a expirat!</translation>
 <translation id="8275038454117074363">Importaţi</translation>
 <translation id="8418445294933751433">&amp;Afişaţi ca filă</translation>
+<translation id="6985276906761169321">ID:</translation>
 <translation id="2160383474450212653">Fonturi şi limbi</translation>
 <translation id="4405141258442788789">Operaţia a expirat.</translation>
 <translation id="5048179823246820836">Nordică</translation>
@@ -28,11 +29,15 @@
 <translation id="8571213806525832805">Ultimele 4 săptămâni</translation>
 <translation id="6021004449668343960">Font Sans-Serif:</translation>
 <translation id="5341849548509163798">Cu <ph name="NUMBER_MANY"/> (de) ore în urmă</translation>
+<translation id="8460952460426246415">Acum, marcajele dvs. vor fi sincronizate pe toate computerele pe care aţi activat sincronizarea.</translation>
 <translation id="4422428420715047158">Domeniul:</translation>
 <translation id="4021918302616263355">Căutaţi în <ph name="ENGINE"/> după <ph name="SEARCH_TERMS"/></translation>
 <translation id="5376169624176189338">Faceţi clic pentru a merge înapoi, ţineţi apăsat pentru a vedea istoricul</translation>
 <translation id="6310545596129886942"><ph name="NUMBER_FEW"/> secunde rămase</translation>
 <translation id="9181716872983600413">Unicod</translation>
+<translation id="7383539497402338906">Sincronizarea marcajelor facilitează păstrarea aceluiaşi set de marcaje pe mai multe computere.
+        Când activaţi sincronizarea, marcajele dvs. vor fi memorate online în Contul dvs. Google.
+        Fiecare computer suplimentar pe care activaţi sincronizarea va primi aceleaşi marcaje.</translation>
 <translation id="1383861834909034572">Se deschide când este complet</translation>
 <translation id="4211171103079968550">Activaţi Java</translation>
 <translation id="1076818208934827215">Microsoft Internet Explorer</translation>
@@ -45,12 +50,12 @@
 <translation id="9154072353677278078">Serverul <ph name="DOMAIN"/> de la <ph name="REALM"/> necesită un nume de utilizator şi o parolă.</translation>
 <translation id="2193841602817119749">Site-ul Web de la &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; a fost raportat ca site de „phishing”.  Site-urile de phishing înşeală utilizatorii în a divulga informaţii personale sau financiare, deseori pretinzând a reprezenta instituţii de încredere, cum ar fi bănci.</translation>
 <translation id="8178665534778830238">Conţinut:</translation>
-<translation id="1379170046778889619">Informaţii de securitate</translation>
 <translation id="4771019161370731727">Activităţi recente</translation>
 <translation id="8974161578568356045">Detectare automată</translation>
 <translation id="1818606096021558659">Pagina</translation>
 <translation id="1657406563541664238">Ajutaţi la îmbunătăţirea <ph name="PRODUCT_NAME"/> prin trimiterea automată de statistici de utilizare şi rapoarte de avarie la Google</translation>
 <translation id="7982789257301363584">Reţea</translation>
+<translation id="2336228925368920074">Marcaţi toate filele...</translation>
 <translation id="4108206167095122329">Eliminaţi to&amp;ate</translation>
 <translation id="7481475534986701730">Site-uri vizitate recent</translation>
 <translation id="4260722247480053581">Deschideţi în fereastră incognito</translation>
@@ -71,10 +76,12 @@
 <translation id="9218430445555521422">Setaţi ca prestabilit</translation>
 <translation id="4589279373639964403">Exportaţi marcajele...</translation>
 <translation id="8876215549894133151">Format:</translation>
+<translation id="5234764350956374838">Renunţaţi</translation>
 <translation id="5463275305984126951">Index pentru <ph name="LOCATION"/></translation>
 <translation id="5154917547274118687">Memorie</translation>
 <translation id="1735662153177951739">Această pagină nu a fost preluată în întregime printr-o conexiune securizată. Aceasta include conţinut preluat prin conexiuni nesecurizate.</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE"/></translation>
+<translation id="6726379128203862332"><ph name="SIZE_TAKEN"/> MO</translation>
 <translation id="2459861677908225199">Utilizaţi TLS 1.0</translation>
 <translation id="873849583815421063">Finalizare...</translation>
 <translation id="5819484510464120153">Creaţi &amp;comenzi rapide pentru aplicaţie...</translation>
@@ -94,11 +101,13 @@
 <translation id="443008484043213881">Instrumente</translation>
 <translation id="314605055819837597">Datele despre utilizator</translation>
 <translation id="8534801226027872331">În acest caz, certificatul prezentat pentru browser-ul dvs. are erori şi nu poate fi înţeles. Aceasta poate însemna că nu putem înţelege informaţiile despre identitate din certificat sau că alte informaţii din certificat securizau până acum conexiunea. Nu trebuie să mergeţi mai departe.</translation>
+<translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> dispune acum de <ph name="BEGIN_LINK"/>extensii<ph name="END_LINK"/> şi de <ph name="BEGIN_BUTTON"/>sincronizarea marcajelor<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Marcajele vor fi îmbinate.</translation>
 <translation id="4422347585044846479">Editaţi marcajul pentru această pagină</translation>
 <translation id="7367545749698325833">Puteţi importa marcajele şi setările din alte browsere sau puteţi şterge datele de navigare din acest computer.</translation>
 <translation id="51285338152176012">Ascundeţi filele închise recent</translation>
 <translation id="8546306075665861288">Memorie cache de imagini</translation>
+<translation id="801357260673640054">Marcaje sincronizate...</translation>
 <translation id="1399076603473531278">Detaliile de conectare sunt învechite.</translation>
 <translation id="3391060940042023865">Următorul plugin s-a închis cu o eroare: <ph name="PLUGIN_NAME"/></translation>
 <translation id="8879284080359814990">&amp;Afişaţi ca filă</translation>
@@ -109,7 +118,7 @@
 <translation id="2994458892329442723">Activaţi plug-in-uri</translation>
 <translation id="1674989413181946727">Setări SSL aplicabile întregului computer:</translation>
 <translation id="8703575177326907206">Conexiunea dvs. cu <ph name="DOMAIN"/> nu este criptată.</translation>
-<translation id="7345141778157460052">Sincronizarea marcajelor:</translation>
+<translation id="4197577448076628265">Această extensie va avea acces la istoricul dvs. de navigare şi la informaţiile dvs. private de pe <ph name="HOST"/>.</translation>
 <translation id="1644574205037202324">Istoric</translation>
 <translation id="2518917559152314023">A&amp;dăugaţi...</translation>
 <translation id="6583406242234752719">Setările nu sunt configurate pentru a sincroniza marcajele cu celelalte computere ale dvs.</translation>
@@ -133,25 +142,33 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> secunde</translation>
 <translation id="5098629044894065541">Ebraică</translation>
 <translation id="7751559664766943798">Afişează mereu bara de marcaje</translation>
+<translation id="144136026008224475">Obţineţi mai multe extensii &gt;&gt;</translation>
 <translation id="8584280235376696778">&amp;Deschideţi videoclipul într-o filă nouă</translation>
 <translation id="2845382757467349449">Afişează mereu bara de marcaje</translation>
 <translation id="6827094223626760756">vizualizaţi</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> ore rămase</translation>
 <translation id="1720675772864601791">Permiteţi imaginile nesigure</translation>
+<translation id="471372654970523967">Porniţi <ph name="NETWORKDEVICE"/></translation>
+<translation id="4001299999465067131">Introduceţi literele aşa cum sunt afişate în imaginea de mai sus.</translation>
 <translation id="2167276631610992935">Javascript</translation>
 <translation id="5233638681132016545">Filă nouă</translation>
 <translation id="5210365745912300556">Închideţi fila</translation>
 <translation id="8806796506533854282">Introduceţi un nume nou de profil</translation>
 <translation id="2551763528995812091">Parole şi excepţii</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
+<translation id="2263497240924215535">(Dezactivată)</translation>
 <translation id="6360709384096878403">Raportaţi o eroare sau un site web cu probleme...</translation>
 <translation id="1110535155349301542">eliminaţi</translation>
 <translation id="8571852575982769756">Nu este instalat niciun plug-in</translation>
+<translation id="8017335670460187064"><ph name="LABEL"/></translation>
 <translation id="7925285046818567682">Se aşteaptă <ph name="HOST_NAME"/>...</translation>
+<translation id="5850800573054873412">Această extensie va avea acces la istoricul dvs. de navigare şi la informaţiile dvs. private de pe toate site-urile web.</translation>
 <translation id="3280237271814976245">Salvaţi c&amp;a...</translation>
 <translation id="5300471193642408424">Afişaţi paginile</translation>
 <translation id="7658239707568436148">Anulaţi</translation>
 <translation id="6996264303975215450">Pagină Web completă</translation>
+<translation id="8744320793514149773">Această extensie va avea acces la informaţiile dvs. private de pe toate site-urile web.</translation>
+<translation id="3435896845095436175">Activaţi</translation>
 <translation id="2154710561487035718">Copiaţi adresa URL</translation>
 <translation id="4244236525807044920">Modificaţi setările pentru fonturi şi limbă</translation>
 <translation id="3241680850019875542">Selectaţi directorul rădăcină al extensiei pentru care se va crea pachetul. Pentru actualizarea unei extensii, selectaţi, de asemenea, fişierul cu cheia privată care va fi reutilizat.</translation>
@@ -159,6 +176,7 @@
 <translation id="6746124502594467657">Mutaţi în jos</translation>
 <translation id="4657169630710541069">Eroare resursă</translation>
 <translation id="3383487468758466563">Fonturi şi limbi:</translation>
+<translation id="7339949551808462689">Extensie <ph name="EXTENSION_NAME"/></translation>
 <translation id="6163363155248589649">&amp;Normal</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="3873963583678942942">(Fără titlu)</translation>
@@ -168,14 +186,17 @@
 <translation id="3605499851022050619">Pagina de diagnostic Navigare sigură</translation>
 <translation id="4307992518367153382">Elemente de bază</translation>
 <translation id="5912378097832178659">&amp;Editaţi motoarele de căutare...</translation>
+<translation id="3173397526570909331">Opriţi sincronizarea</translation>
 <translation id="4813345808229079766">Conexiune</translation>
 <translation id="411666854932687641">Memorie privată</translation>
 <translation id="119944043368869598">Ştergeţi toate descărcările</translation>
 <translation id="1336254985736398701">Vedeţi &amp;informaţii despre pagină</translation>
+<translation id="5678480951567683474">Afişaţi meniurile Pagină şi Instrumente</translation>
 <translation id="1652965563555864525">Dezactivaţi &amp;sunetul</translation>
 <translation id="4200983522494130825">Filă &amp;nouă</translation>
 <translation id="7979036127916589816">Eroare de sincronizare</translation>
 <translation id="5455790498993699893"><ph name="ACTIVE_MATCH"/> din <ph name="TOTAL_MATCHCOUNT"/></translation>
+<translation id="5178488982078290579">Marcaje sincronizate...</translation>
 <translation id="2303544859777878640">Limbi:</translation>
 <translation id="2021921916539001817">Se transferă de la <ph name="HOST_NAME"/>...</translation>
 <translation id="6909042471249949473">Ştergeţi datele din această perioadă:</translation>
@@ -185,10 +206,13 @@
 <translation id="7400418766976504921">Adresa URL</translation>
 <translation id="7456847797759667638">Deschideţi o locaţie...</translation>
 <translation id="5392041771307264501">Selectaţi un profil pentru a deschide o fereastră nouă</translation>
+<translation id="1388866984373351434">Date de navigare</translation>
+<translation id="7378627244592794276">Nu</translation>
 <translation id="68541483639528434">Închideţi celelalte file</translation>
 <translation id="4022426551683927403">&amp;Adăugaţi în dicţionar</translation>
 <translation id="2897878306272793870">Sunteţi sigur că doriţi să deschideţi <ph name="TAB_COUNT"/> (de) file?</translation>
 <translation id="362276910939193118">Afişaţi întregul istoric</translation>
+<translation id="7879113706359663444"><ph name="HOUR"/>:<ph name="MIUTE"/> p.m.</translation>
 <translation id="1073286447082909762">Deschideţi cadrul într-o &amp;fereastră nouă</translation>
 <translation id="692135145298539227">ştergeţi</translation>
 <translation id="8343477974731263456">Se configurează sincronizarea marcajelor</translation>
@@ -200,6 +224,7 @@
 <translation id="2678063897982469759">Reactivaţi</translation>
 <translation id="4850886885716139402">Afişaţi</translation>
 <translation id="1965338962645102116">Pentru a importa marcajele din Bara de instrumente Google în Chrome, trebuie să fiţi conectat la Contul dvs. Google. Conectaţi-vă, apoi încercaţi din nou să importaţi.</translation>
+<translation id="5035846689029228055">Sincronizarea marcajelor:</translation>
 <translation id="5922220455727404691">Utilizaţi SSL 3.0</translation>
 <translation id="5903264686717710770">Titlul:</translation>
 <translation id="8899851313684471736">Deschideţi linkul într-o &amp;fereastră nouă</translation>
@@ -208,11 +233,13 @@
 <translation id="6686490380836145850">Închideţi filele de la dreapta</translation>
 <translation id="5608669887400696928"><ph name="NUMBER_DEFAULT"/> ore</translation>
 <translation id="2790948358747073186">Chiar mai mult</translation>
+<translation id="5774515636230743468">Manifest:</translation>
 <translation id="2423578206845792524">Sal&amp;vaţi imaginea ca...</translation>
 <translation id="1095038624419434542">A apărut o eroare la încărcarea unei resurse a programului. Încercaţi să reinstalaţi.</translation>
 <translation id="9068931793451030927">Calea:</translation>
 <translation id="7052402604161570346">Acest tip de fişier poate fi dăunător pentru computerul dvs. Sunteţi sigur că doriţi să descărcaţi <ph name="FILE_NAME"/>?</translation>
 <translation id="8642489171979176277">Importate din Bara de instrumente Google</translation>
+<translation id="5905978244564263718">Configuraţi Completarea automată...</translation>
 <translation id="7335374713830044009">Deschideţi cadrul într-o fereastră inco&amp;gnito</translation>
 <translation id="2011110593081822050">Proces Worker Web: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">Nume fişier:</translation>
@@ -261,25 +288,31 @@
 <translation id="1608306110678187802">Cadru de p&amp;rintare...</translation>
 <translation id="4948468046837535074">Deschideţi următoarele pagini:</translation>
 <translation id="6978121630131642226">Motoarele de căutare</translation>
+<translation id="6745994589677103306">Nicio acţiune</translation>
 <translation id="855081842937141170">Fixaţi fila</translation>
+<translation id="2723893843198727027">Mod dezvoltator:</translation>
 <translation id="5362741141255528695">Selectaţi fişierul cu cheia privată.</translation>
 <translation id="7012108905414904806">Cu toate acestea, această pagină include şi alte resurse care nu sunt sigure. Aceste resurse pot fi văzute de alte persoane în trecere şi pot fi modificate de un atacator, pentru a schimba aspectul sau comportamentul paginii.</translation>
 <translation id="4515911410595374805">Unele elemente de pe această pagină provin dintr-o sursă neverificată şi nu au fost afişate.</translation>
 <translation id="1195447618553298278">Eroare necunoscută.</translation>
 <translation id="3353284378027041011">Cu <ph name="NUMBER_FEW"/> zile în urmă</translation>
 <translation id="4800557284502805285">Certificatul serverului este semnat utilizând un algoritm de semnături slab!</translation>
+<translation id="6610600335992778838">Wifi</translation>
 <translation id="1087119889335281750">&amp;Fără sugestii de ortografie</translation>
 <translation id="718141787353053227">Configurarea pagini...</translation>
 <translation id="5076340679995252485">&amp;Inseraţi</translation>
+<translation id="5097982659374947325">Doresc să fie acceptate module cookie numai de la site-urile pe care le accesez</translation>
 <translation id="14171126816530869">Identitatea <ph name="ORGANIZATION"/> din <ph name="LOCALITY"/> a fost verificată de către <ph name="ISSUER"/>.</translation>
 <translation id="1587275751631642843">Consolă pentru &amp;JavaScript</translation>
 <translation id="5821894118254011366">Blocaţi complet cookie-urile de la terţe părţi</translation>
 <translation id="3511307672085573050">Copiaţi adresa linkului</translation>
 <translation id="1134009406053225289">Deschideţi în fereastră incognito</translation>
+<translation id="6655190889273724601">Mod dezvoltator</translation>
 <translation id="3473105180351527598">Activaţi protecţia pentru phishing şi malware</translation>
 <translation id="6151323131516309312">Apăsaţi pe <ph name="SEARCH_KEY"/> pentru a căuta în <ph name="SITE_NAME"/></translation>
 <translation id="2342959293776168129">Ştergeţi istoricul descărcărilor</translation>
 <translation id="2503522102815150840">Eroare browser</translation>
+<translation id="425878420164891689">Se calculează timpul până la finalizare</translation>
 <translation id="1272079795634619415">Opriţi</translation>
 <translation id="6786747875388722282">Extensii</translation>
 <translation id="9053965862400494292">A apărut o eroare la configurarea sincronizării.</translation>
@@ -294,16 +327,21 @@
 <translation id="5710435578057952990">Identitatea acestui site nu a fost verificată.</translation>
 <translation id="5287240709317226393">Afişaţi cookie-urile</translation>
 <translation id="5451646087589576080">Vedeţi &amp;informaţii despre cadru</translation>
+<translation id="3368922792935385530">Conectat</translation>
 <translation id="8486154204771389705">Fixaţi pe această pagină</translation>
 <translation id="6824564591481349393">Copiaţi adresa de &amp;e-mail</translation>
+<translation id="5184063094292164363">Consolă &amp;JavaScript</translation>
 <translation id="333371639341676808">Restricţionaţi crearea de dialoguri suplimentare de către această pagină.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> este actualizat (<ph name="VERSION"/>)</translation>
 <translation id="4254921211241441775">Nu mai sincronizaţi acest cont</translation>
+<translation id="8661648338644250771">Această extensie va avea acces la informaţiile dvs. private de pe <ph name="HOST"/>.</translation>
 <translation id="7791543448312431591">Adăugaţi</translation>
 <translation id="307505906468538196">Creaţi un Cont Google</translation>
 <translation id="48838266408104654">Manager de ac&amp;tivităţi</translation>
 <translation id="3694027410380121301">Selectaţi fila anterioară</translation>
 <translation id="6178664161104547336">Selectaţi un certificat</translation>
+<translation id="5702898740348134351">&amp;Editaţi motoarele de căutare...</translation>
+<translation id="2365740070488517695">Sfaturi</translation>
 <translation id="772440777491435074">Informaţii despre certificat...</translation>
 <translation id="2869459179306435079">Importaţi setări din:</translation>
 <translation id="732677191631732447">C&amp;opiaţi adresa URL a conţinutului audio</translation>
@@ -311,6 +349,8 @@
 <translation id="3369624026883419694">Se rezolvă gazda...</translation>
 <translation id="8870413625673593573">Închise recent</translation>
 <translation id="9145357542626308749">Certificatul de securitate al site-ului este semnat utilizând un algoritm de semnături slab!</translation>
+<translation id="8800574954100068740">Căutare prestabilită</translation>
+<translation id="6551701656367809067">Sincronizarea marcajelor nu funcţionează corect deoarece sunt trimise prea multe solicitări către server. Este posibil ca <ph name="NAME_OF_EXTENSION"/> să efectueze prea multe modificări marcajelor dvs.</translation>
 <translation id="8249296373107784235">Abandonaţi</translation>
 <translation id="3967132639560659870">Există mai multe erori SSL pe această pagină:</translation>
 <translation id="7770995925463083016">Cu <ph name="NUMBER_TWO"/> minute în urmă</translation>
@@ -322,6 +362,7 @@
 <translation id="1319824869167805246">Deschideţi toate marcajele într-o fereastră nouă</translation>
 <translation id="3493653833301553455">Completare automată a formularelor:</translation>
 <translation id="3895288786311724904">adăugat</translation>
+<translation id="3371861036502301517">Instalarea extensiei nu a reuşit</translation>
 <translation id="644038709730536388">Aflaţi mai multe despre cum să vă protejaţi de software rău-intenţionat online.</translation>
 <translation id="4172706149171596436">Modificaţi setările proxy</translation>
 <translation id="5650551054760837876">Nu au fost găsite rezultate de căutare.</translation>
@@ -329,6 +370,8 @@
 <translation id="3234408098842461169">Săgeata în jos</translation>
 <translation id="825608351287166772">Certificatele au o perioadă de valabilitate, ca şi orice document de identitate (cum ar fi un paşaport) pe care îl aveţi. Certificatul prezentat browser-ului dvs. nu este încă valabil. Când un certificat se află în afara perioadei sale de valabilitate, anumite informaţii despre starea certificatului (dacă a fost revocat şi nu mai prezintă garanţie) nu este necesar să fie menţinute. Prin urmare, nu este posibil să se confirme faptul că acest certificat este demn de încredere. Nu trebuie să mergeţi mai departe.</translation>
 <translation id="2742457360514408037">Ferestre de tip pop-up blocate: <ph name="COUNT"/></translation>
+<translation id="7154150278819212687">Această extensie va avea acces la istoricul dvs. de navigare.</translation>
+<translation id="1516602185768225813">Redeschideţi paginile care au fost deschise ultimele</translation>
 <translation id="4874539263382920044">Titlul trebuie să conţină cel puţin un caracter</translation>
 <translation id="3549657413697417275">Căutaţi în istoricul dvs.</translation>
 <translation id="7344633671344536647">Date de navigare:</translation>
@@ -347,17 +390,21 @@
 <translation id="5935630983280450497"><ph name="NUMBER_ONE"/> minut rămas</translation>
 <translation id="5496587651328244253">Organizaţi</translation>
 <translation id="2592884116796016067">O parte a acestei pagini (HTML WebWorker) a generat erori şi este posibil să nu funcţioneze corespunzător.</translation>
+<translation id="8425755597197517046">In&amp;seraţi şi căutaţi</translation>
+<translation id="4728278536628384335">Dezactivaţi sincronizarea marcajelor</translation>
 <translation id="5568069709869097550">Nu se poate conecta</translation>
 <translation id="4181898366589410653">Nu a fost găsit niciun mecanism de revocare în certificatul serverului.</translation>
 <translation id="1665770420914915777">Utilizaţi pagina Filă nouă</translation>
 <translation id="2629089419211541119">Cu <ph name="NUMBER_ONE"/> oră în urmă</translation>
 <translation id="7789175495288668515">Modificaţi opţiunile de instalare prestabilite.</translation>
 <translation id="347250956943431997">Certificatul serverului a fost revocat</translation>
+<translation id="1936157145127842922">Afişaţi în dosar</translation>
 <translation id="6982279413068714821">Cu <ph name="NUMBER_DEFAULT"/> (de) minute în urmă</translation>
 <translation id="7977590112176369853">&lt;introduceţi interogarea&gt;</translation>
 <translation id="994771890067000105">Modul special</translation>
 <translation id="5155632014218747366">Pentru informaţii detaliate despre problemele acestui site, vizitaţi Google <ph name="DIAGNOSTIC_PAGE"/> pentru <ph name="DOMAIN"/>.</translation>
 <translation id="1120026268649657149">Cuvântul cheie trebuie să lipsească sau să fie unic</translation>
+<translation id="7954187762705269222"><ph name="HOUR"/>:<ph name="MIUTE"/> a.m.</translation>
 <translation id="5317780077021120954">Salvaţi</translation>
 <translation id="9027459031423301635">Deschideţi linkul într-o filă &amp;nouă</translation>
 <translation id="358344266898797651">Celtică</translation>
@@ -391,18 +438,26 @@
 <translation id="52912272896845572">Fişierul cu cheia privată este nevalid.</translation>
 <translation id="4222982218026733335">Certificat de server nevalabil</translation>
 <translation id="8494214181322051417">Nou!</translation>
+<translation id="7403160227718463124">Global pentru acest site:</translation>
 <translation id="7762841930144642410"><ph name="BEGIN_BOLD"/>Aţi trecut în modul incognito<ph name="END_BOLD"/>. Paginile pe care le vedeţi în această fereastră nu vor apărea în istoricul browserului sau în istoricul căutării şi nu vor lăsa urme pe computer, cum ar fi cookie-uri, după ce închideţi fereastra incognito. Cu toate acestea, vor fi păstrate orice fişiere descărcate sau marcaje create.        <ph name="LINE_BREAK"/>        <ph name="BEGIN_BOLD"/>Intrarea incognito nu afectează comportamentul altor persoane, servere sau aplicaţii software. Fiţi atent la:<ph name="END_BOLD"/>        <ph name="BEGIN_LIST"/>          <ph name="BEGIN_LIST_ITEM"/>Site-urile Web care colectează sau distribuie informaţii despre dvs.<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Furnizorii de servicii Internet sau angajaţii care urmăresc paginile pe care le vizitaţi<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Aplicaţiile software dăunătoare care urmăresc apăsarea tastelor în schimbul emoticoanelor gratuite<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Supravegherea de către agenţi secreţi<ph name="END_LIST_ITEM"/>          <ph name="BEGIN_LIST_ITEM"/>Persoanele care stau în spatele dvs.<ph name="END_LIST_ITEM"/>        <ph name="END_LIST"/>        <ph name="BEGIN_LINK"/>Aflaţi mai multe<ph name="END_LINK"/> despre accesarea incognito.</translation>
 <translation id="4439241094464540230">&lt;Profil nou&gt;...</translation>
 <translation id="2135787500304447609">&amp;Reluaţi</translation>
 <translation id="1813414402673211292">Ştergeţi datele de navigare</translation>
 <translation id="2356762928523809690">Serverul de actualizare nu este disponibil (eroare: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Tema specială</translation>
+<translation id="219008588003277019">Modul client nativ: <ph name="NEXE_NAME"/></translation>
 <translation id="5436510242972373446">Căutaţi în <ph name="SITE_NAME"/>:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> ore</translation>
+<translation id="7616581516194661584">Duplicaţi</translation>
 <translation id="8730621377337864115">Terminat</translation>
+<translation id="245834195813628985">Timp rămas: <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="6267166720438879315">Selectaţi un certificat pentru a vă autentifica pe <ph name="HOST_NAME"/></translation>
+<translation id="7198134478421755850">Extensie</translation>
+<translation id="4713481510227594233">Sincronizarea marcajelor a fost dezactivată pe acest computer. Dacă dezinstalaţi <ph name="NAME_OF_EXTENSION"/> puteţi reactiva Sincronizarea marcajelor selectând „Sincronizaţi marcajele proprii...” din meniul Instrumente.</translation>
+<translation id="9061845622728745852">Fus orar:</translation>
 <translation id="2953767478223974804"><ph name="NUMBER_ONE"/> minut</translation>
 <translation id="6315493146179903667">Toate în faţă</translation>
+<translation id="5095777643592758820">Eroare la sincronizarea marcajelor...</translation>
 <translation id="5015344424288992913">Se rezolvă proxy-ul...</translation>
 <translation id="3675321783533846350">Setaţi un proxy pentru conectarea la reţea.</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> zile</translation>
@@ -427,16 +482,19 @@
 <translation id="9010612682952491200">Filă nouă [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Memorie comună</translation>
 <translation id="6248988683584659830">Setări de căutare</translation>
+<translation id="2242457451044347345">Sincronizarea marcajelor</translation>
 <translation id="2727712005121231835">Dimensiunea reală</translation>
 <translation id="8887733174653581061">Mereu deasupra</translation>
 <translation id="610886263749567451">Alertă JavaScript</translation>
 <translation id="6556866813142980365">Refaceţi</translation>
+<translation id="6584811624537923135">Confirmaţi dezinstalarea</translation>
 <translation id="8413126021676339697">Afişaţi întregul istoric</translation>
 <translation id="8860923508273563464">Aşteptaţi finalizarea descărcărilor</translation>
 <translation id="5288678174502918605">R&amp;edeschideţi fila închisă</translation>
 <translation id="9157595877708044936">Se configurează...</translation>
 <translation id="1823768272150895732">Font</translation>
 <translation id="4475552974751346499">Căutaţi în descărcări</translation>
+<translation id="5339267765524260207">Dacă dezactivaţi sincronizarea, marcajele nu vor mai fi menţinute sincronizate cu cele memorate în Contul Google sau pe alte computere. Nu va fi şters niciun marcaj. Toate marcajele existente vor rămâne pe acest computer şi în Contul dvs. Google.</translation>
 <translation id="1111153019813902504">Marcaje recente</translation>
 <translation id="7497564420220535101">&amp;Salvaţi captura de ecran...</translation>
 <translation id="3786934874263773074">&amp;Găsiţi în pagină</translation>
@@ -458,6 +516,7 @@
 <translation id="8088823334188264070"><ph name="NUMBER_MANY"/> secunde</translation>
 <translation id="3551320343578183772">Închideţi fila</translation>
 <translation id="3345886924813989455">Nu s-a găsit niciun browser acceptat</translation>
+<translation id="6727102863431372879">Setaţi</translation>
 <translation id="3712897371525859903">Salvaţi pagina c&amp;a...</translation>
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> importă acum următoarele elemente din <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="1018656279737460067">Anulat</translation>
@@ -468,6 +527,7 @@
 <translation id="8942948210663084792">Ştergeţi datele:</translation>
 <translation id="208047771235602537">O descărcare este în curs. Ieşiţi totuşi din <ph name="PRODUCT_NAME"/>?</translation>
 <translation id="6710213216561001401">Înapoi</translation>
+<translation id="1567993339577891801">Consolă JavaScript</translation>
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="7635303043999550515">Pagina Web &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; a avut ca rezultat
         prea multe redirecţionări. Problema ar putea fi remediată prin ştergerea modulelor cookie pentru acest site sau prin acceptarea modulelor cookie ale terţelor părţi. În caz
@@ -481,16 +541,20 @@
 <translation id="1560991001553749272">Marcajul a fost adăugat!</translation>
 <translation id="3966072572894326936">Alegeţi alt dosar...</translation>
 <translation id="7781829728241885113">Ieri</translation>
+<translation id="1523341279170789507">Permiteţi toate modulele cookie</translation>
 <translation id="7596288230018319236">Toate paginile pe care le accesaţi vor apărea aici, dacă nu le deschideţi într-o fereastră incognito. Puteţi utiliza butonul Căutaţi de pe această pagină pentru a căuta în toate paginile din istoric.</translation>
 <translation id="2665163749053788434">Accesaţi istoricul</translation>
 <translation id="7434509671034404296">Programator</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="5170568018924773124">Afişaţi în dosar</translation>
+<translation id="883848425547221593">Alte marcaje</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> nu poate să identifice sau să seteze browserul prestabilit.</translation>
 <translation id="8898786835233784856">Selectaţi următoarea filă</translation>
 <translation id="2674170444375937751">Sigur doriţi să ştergeţi aceste pagini din istoric?</translation>
 <translation id="4203689580933736628">Elemente blocate: <ph name="COUNT"/></translation>
+<translation id="2653166165688724436">Bază de date web</translation>
 <translation id="7629827748548208700">Fila: <ph name="TAB_NAME"/></translation>
+<translation id="8449008133205184768">Inseraţi şi potriviţi stilul</translation>
 <translation id="8028993641010258682">Dimensiune</translation>
 <translation id="1383876407941801731">Căutaţi</translation>
 <translation id="8398877366907290961">Accesaţi oricum</translation>
@@ -501,6 +565,7 @@
 <translation id="8789544147407756448">Următoarea extensie s-a închis cu o eroare: <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> minute rămase</translation>
 <translation id="2022540532491530427">Copiaţi &amp;fişierul</translation>
+<translation id="1099979722614954862"><ph name="PRODUCT_NAME"/> dispune acum de <ph name="BEGIN_LINK"/>extensii<ph name="END_LINK"/> şi de <ph name="BEGIN2_LINK"/>sincronizarea marcajelor<ph name="END2_LINK"/>.</translation>
 <translation id="5966654788342289517">Lucruri personale</translation>
 <translation id="2576802705154232609">De pe Web</translation>
 <translation id="8664389313780386848">&amp;Vedeţi sursa paginii</translation>
@@ -511,6 +576,7 @@
 <translation id="6507969014813375884">Chineză simplificată</translation>
 <translation id="1767991048059195456">Trimiteţi raportul</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
+<translation id="4474155171896946103">Marcaţi toate filele...</translation>
 <translation id="5646376287012673985">Locaţia</translation>
 <translation id="1110155001042129815">Aşteptaţi</translation>
 <translation id="7071586181848220801">Plug-in necunoscut</translation>
@@ -524,6 +590,7 @@
 <translation id="1181037720776840403">Eliminaţi</translation>
 <translation id="4006726980536015530">Dacă închideţi acum <ph name="PRODUCT_NAME"/>, aceste descărcări vor fi anulate.</translation>
 <translation id="59174027418879706">Activate</translation>
+<translation id="6639554308659482635">Memorie SQLite</translation>
 <translation id="8141503649579618569"><ph name="DOWNLOAD_RECEIVED"/>/<ph name="DOWNLOAD_TOTAL"/>, <ph name="TIME_LEFT"/></translation>
 <translation id="6550769511678490130">Deschideţi toate marcajele</translation>
 <translation id="2534091581909016888"><ph name="SITE"/></translation>
@@ -544,6 +611,8 @@
 <translation id="5087864757604726239">înapoi</translation>
 <translation id="2819994928625218237">&amp;Fără sugestii de ortografie</translation>
 <translation id="4316305410440790958">Deschideţi cadrul într-o filă &amp;nouă</translation>
+<translation id="9142623379911037913">Permiteţi site-ului <ph name="SITE"/> să afişeze notificări pe desktop?</translation>
+<translation id="4196320913210960460">Puteţi gestiona extensiile instalate făcând clic pe Extensii din meniul Instrumente.</translation>
 <translation id="9118804773997839291">Mai jos puteţi găsi o listă cu toate elementele nesigure ale paginii. Faceţi clic pe linkul Diagnostic pentru a obţine informaţii suplimentare cu privire la firul de execuţie pentru un anumit element.</translation>
 <translation id="3664021239099029884">Vizualizaţi toate descărcările</translation>
 <translation id="2207746515960750386">Cu <ph name="MINUTE"/> (de) minut(e) în urmă</translation>
@@ -575,6 +644,7 @@
 <translation id="4890284164788142455">Thailandeză</translation>
 <translation id="3889424535448813030">Săgeata spre dreapta</translation>
 <translation id="5435666907653217300">Altă problemă</translation>
+<translation id="4479639480957787382">Ethernet</translation>
 <translation id="1264974993859112054">Sport</translation>
 <translation id="5167270755190684957">Galeria de teme Google Chrome</translation>
 <translation id="8382913212082956454">Copiaţi adresa &amp;e-mail</translation>
@@ -584,8 +654,10 @@
 <translation id="1047726139967079566">Marcaţi această pagină...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> secunde rămase</translation>
 <translation id="4767443964295394154">Locaţia de descărcare</translation>
+<translation id="720658115504386855">Literele nu sunt sensibile la majuscule/minuscule.</translation>
 <translation id="2454247629720664989">Cuvânt cheie</translation>
 <translation id="3950820424414687140">Conectaţi-vă</translation>
+<translation id="2840798130349147766">Baze de date web</translation>
 <translation id="1628736721748648976">Codificare</translation>
 <translation id="6521850982405273806">Raportaţi o eroare</translation>
 <translation id="1769104665586091481">Deschideţi linkul într-o &amp;fereastră nouă</translation>
@@ -595,6 +667,7 @@
 <translation id="7642109201157405070">Continuaţi importul</translation>
 <translation id="6463795194797719782">&amp;Editaţi</translation>
 <translation id="5720119176273625078">Valoarea Referrer nu a fost trimisă</translation>
+<translation id="4775879719735953715">Browser prestabilit</translation>
 <translation id="4805261289453566571">Conectaţi-vă din nou</translation>
 <translation id="4188026131102273494">Cuvânt cheie:</translation>
 <translation id="2290414052248371705">Afişează tot conţinutul</translation>
@@ -602,8 +675,10 @@
 <translation id="3268761268932257769">Încărcaţi imaginile automat</translation>
 <translation id="7227780179130368205">A fost detectat malware!</translation>
 <translation id="5149131957118398098"><ph name="NUMBER_ZERO"/> ore rămase</translation>
+<translation id="2912839854477398763">Sunteţi sigur(ă) că doriţi să dezinstalaţi această extensie?</translation>
 <translation id="3942946088478181888">Ajută-mă să înţeleg</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Prestabilit)</translation>
+<translation id="6543631358510643997">Această extensie va avea acces complet la computerul dvs. şi la informaţiile dvs. private.</translation>
 <translation id="111844081046043029">Sigur doriţi să părăsiţi această pagină?</translation>
 <translation id="4497415007571823067">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar aţi accesat de fapt un server autoidentificat ca &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Motivul ar putea fi o configurare greşită pe server sau ceva mai grav. Un atacator de pe reţeaua dvs. ar putea încerca să vă determine să accesaţi o versiune falsă (şi posibil rău-intenţionată) de &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. Nu trebuie să mergeţi mai departe.</translation>
 <translation id="3202578601642193415">Cele mai noi</translation>
@@ -621,7 +696,10 @@
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> minute rămase</translation>
 <translation id="2192505247865591433">Din:</translation>
 <translation id="5921544176073914576">Pagină de phishing</translation>
+<translation id="7143207342074048698">Se conectează</translation>
 <translation id="6192792657125177640">Excepţii</translation>
+<translation id="4568660204877256194">Exportaţi marcajele...</translation>
+<translation id="4577070033074325641">Importaţi marcajele...</translation>
 <translation id="2822650824848709219">Blocaţi orice conţinut nesigur</translation>
 <translation id="1715941336038158809">Nume de utilizator sau parolă nevalidă.</translation>
 <translation id="1901303067676059328">Select&amp;aţi tot</translation>
@@ -637,6 +715,7 @@
 <translation id="872451400847464257">Editaţi motorul de căutare</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> minute</translation>
 <translation id="8717266507183354698">Consultaţi toate paginile din istoric care conţin <ph name="SEARCH_TERMS"/></translation>
+<translation id="2466804342846034717">Introduceţi mai sus parola corectă, apoi introduceţi caracterele afişate în imaginea de mai jos.</translation>
 <translation id="2922560965807694149">ascundeţi</translation>
 <translation id="5645845270586517071">Eroare de securitate</translation>
 <translation id="8695758493354644945">Consultaţi cele <ph name="NUM_MATCHES"/> pagini recente din istoric care conţin <ph name="SEARCH_TERMS"/></translation>
@@ -661,6 +740,7 @@
 <translation id="5384051050210890146">Selectaţi certificatele SSL de încredere.</translation>
 <translation id="6865323153634004209">Personalizaţi aceste setări</translation>
 <translation id="7487067081878637334">Tehnologie</translation>
+<translation id="4176463684765177261">Dezactivat</translation>
 <translation id="154603084978752493">Adău&amp;gaţi ca motor de căutare...</translation>
 <translation id="2079545284768500474">Anulaţi</translation>
 <translation id="114140604515785785">Director rădăcină pentru extensie:</translation>
@@ -669,8 +749,10 @@
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022">Cu <ph name="NUMBER_ZERO"/> secunde în urmă</translation>
 <translation id="4610637590575890427">Aţi vrut să accesaţi <ph name="SITE"/>?</translation>
+<translation id="5320331575990471017">de la <ph name="SOURCE_ORIGIN"/></translation>
 <translation id="8349305172487531364">Bara de marcaje</translation>
 <translation id="7208899522964477531">Căutaţi <ph name="SEARCH_TERMS"/> pe <ph name="SITE_NAME"/></translation>
+<translation id="5584091888252706332">La pornire</translation>
 <translation id="8004582292198964060">Browser</translation>
 <translation id="6357135709975569075"><ph name="NUMBER_ZERO"/> zile</translation>
 <translation id="2224551243087462610">Editaţi numele dosarului</translation>
@@ -697,7 +779,9 @@
 <translation id="8877448029301136595">[directorul părinte]</translation>
 <translation id="1963227389609234879">Eliminaţi toate</translation>
 <translation id="8027581147000338959">Deschideţi într-o fereastră nouă</translation>
+<translation id="8019305344918958688">Hopa... Nicio extensie instalată :-(</translation>
 <translation id="7052633198403197513">F1</translation>
+<translation id="4720829798001058201">Marcajele dvs. sunt acum sincronizate cu Google Docs! Pentru a îmbina şi a sincroniza marcajele cu Chrome pe un alt computer, este suficient să repetaţi acelaşi proces de configurare pe acel computer.</translation>
 <translation id="2496180316473517155">Istoricul de navigare</translation>
 <translation id="602251597322198729">Acest site încearcă să descarce mai multe fişiere. Permiteţi această operaţie?</translation>
 <translation id="2052389551707911401"><ph name="NUMBER_MANY"/> ore</translation>
@@ -709,6 +793,7 @@
 <translation id="1002064594444093641">Cadru de p&amp;rintare...</translation>
 <translation id="3574305903863751447"><ph name="CITY"/>, <ph name="STATE"/> <ph name="COUNTRY"/></translation>
 <translation id="8724859055372736596">&amp;Afişaţi în dosar</translation>
+<translation id="5554489410841842733">Această pictogramă va deveni vizibilă când extensia va putea acţiona pe pagina curentă.</translation>
 <translation id="4756388243121344051">&amp;Istoric</translation>
 <translation id="3789841737615482174">Instalaţi</translation>
 <translation id="4789872672210757069">Despre &amp;<ph name="PRODUCT_NAME"/></translation>
@@ -756,6 +841,7 @@
 <translation id="5178667623289523808">Găsiţi elementul anterior</translation>
 <translation id="2815448242176260024">Nu salva niciodată parolele</translation>
 <translation id="2989805286512600854">Deschideţi într-o filă nouă</translation>
+<translation id="2701236005765480329">Alertă extensie</translation>
 <translation id="6503077044568424649">Cele mai vizitate</translation>
 <translation id="3265459715026181080">Închideţi fereastra</translation>
 <translation id="3831099738707437457">&amp;Ascundeţi panoul de verificare a ortografiei</translation>
@@ -765,7 +851,7 @@
 <translation id="3319048459796106952">Fereastră nouă &amp;incognito</translation>
 <translation id="3127919023693423797">Se autentifică...</translation>
 <translation id="4195643157523330669">Deschideţi într-o filă nouă</translation>
-<translation id="3683878911947678690">Puteţi sincroniza marcajele între computere cu ajutorul Contului Google</translation>
+<translation id="8030169304546394654">Deconectat</translation>
 <translation id="4178055285485194276">La pornire:</translation>
 <translation id="1154228249304313899">Deschideţi această pagină:</translation>
 <translation id="9074348188580488499">Sigur doriţi să eliminaţi toate parolele?</translation>
@@ -782,13 +868,16 @@
 <translation id="1285631718404404702">Afişaţi activităţile recente</translation>
 <translation id="6783679543387074885">Raportaţi o eroare sau un site Web defect</translation>
 <translation id="3494444535872870968">Salvaţi &amp;cadrul ca...</translation>
+<translation id="5731247495086897348">In&amp;seraţi şi accesaţi</translation>
 <translation id="3413103074007669042">Această pagină include conţinut nesecurizat</translation>
 <translation id="4887833561977827087">În acest moment nu există elemente de afişat în această zonă.
         <ph name="BEGIN_LINK"/>Personalizaţi<ph name="END_LINK"/>
         elemente preluate de pe Web şi adăugaţi mai multe surse.</translation>
 <translation id="5285267187067365830">Instalaţi plug-in-ul...</translation>
 <translation id="1166212789817575481">Închideţi filele de la dreapta</translation>
+<translation id="6472893788822429178">Afişaţi butonul Pagină de pornire</translation>
 <translation id="5685236799358487266">Adău&amp;gaţi ca motor de căutare...</translation>
+<translation id="3437016096396740659">Bateria este încărcată</translation>
 <translation id="7907591526440419938">Deschideţi fişierul</translation>
 <translation id="21133533946938348">Fixaţi fila</translation>
 <translation id="2864069933652346933"><ph name="NUMBER_ZERO"/> zile rămase</translation>
@@ -799,34 +888,47 @@
 <translation id="9012607008263791152">Înţeleg că accesarea acestui site poate produce pagube computerului meu.</translation>
 <translation id="1441458099223378239">Nu îmi pot accesa contul</translation>
 <translation id="5793220536715630615">C&amp;opiaţi adresa URL a videoclipului</translation>
+<translation id="523397668577733901">Doriţi mai bine <ph name="BEGIN_LINK"/>să răsfoiţi galeria<ph name="END_LINK"/>?</translation>
+<translation id="3778740492972734840">&amp;Instrumente pentru dezvoltatori</translation>
 <translation id="6004539838376062211">&amp;Opţiuni verificator ortografic</translation>
+<translation id="5350198318881239970">Profilul dvs. nu a putut fi deschis corect.\n\nEste posibil ca unele funcţii să nu fie disponibile. Verificaţi dacă profilul există şi dacă aveţi permisiunea de scriere şi de citire a conţinutului său.</translation>
 <translation id="4058793769387728514">Verificaţi acum documentul</translation>
 <translation id="2915134691870672002">Ascundeţi recomandările</translation>
+<translation id="756445078718366910">Deschideţi fereastra de browser</translation>
 <translation id="7887334752153342268">Duplicaţi</translation>
 <translation id="4980691186726139495">Anulaţi fixarea pe această pagină</translation>
+<translation id="9026731007018893674">descărcare</translation>
 <translation id="7646591409235458998">E-mail:</translation>
 <translation id="703748601351783580">Deschideţi toate marcajele într-o fereastră nouă</translation>
+<translation id="8409023599530904397">Bara de instrumente Google:</translation>
+<translation id="770273299705142744">Completare automată a formularelor</translation>
 <translation id="1293699935367580298">Esc (Ieşiţi)</translation>
+<translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/> a fost dezactivată. Dacă dezactivaţi Sincronizarea marcajelor, puteţi reactiva această extensie din pagina de extensii din meniul Instrumente.</translation>
 <translation id="4478664379124702289">Salvaţi lin&amp;kul ca...</translation>
 <translation id="1044231968500257587">Marcajele online existente vor fi îmbinate cu marcajele de pe acest computer. Pentru a organiza marcajele după îmbinare, utilizaţi Managerul de marcaje.</translation>
 <translation id="8502249598105294518">Meniu <ph name="PRODUCT_NAME"/></translation>
 <translation id="2797524280730715045">Cu <ph name="NUMBER_DEFAULT"/> (de) ore în urmă</translation>
+<translation id="768570155019561996">Această extensie va avea acces la informaţiile dvs. private de pe mai multe site-uri web.</translation>
 <translation id="7180865173735832675">Personalizaţi</translation>
 <translation id="1430594899542257414">Sfaturi şi trucuri</translation>
 <translation id="2115926821277323019">Trebuie să fie o adresă URL valabilă</translation>
 <translation id="7397054681783221164">Eliminaţi elementele următoare:</translation>
 <translation id="4891251785049117953">Goliţi datele din formular salvate anterior</translation>
 <translation id="1531836666020185856">Speciale</translation>
+<translation id="580571955903695899">Reordonaţi după titlu</translation>
 <translation id="5230516054153933099">Fereastră</translation>
 <translation id="7554791636758816595">Filă nouă</translation>
 <translation id="1308727876662951186"><ph name="NUMBER_ZERO"/> minute rămase</translation>
+<translation id="1103966635949043187">Accesaţi pagina de pornire a site-ului:</translation>
 <translation id="4400697530699263877">Utilizaţi preluarea în avans a datelor DNS pentru a îmbunătăţi performanţele de încărcare a paginii</translation>
 <translation id="1086613338090581534">Pentru un certificat care nu a expirat, emitentul acelui certificat este responsabil de păstrarea unei „liste de revocări”. Dacă un certificat este vreodată compromis, emitentul îl poate revoca adăugându-l la lista de revocări, apoi acest certificat nu va mai fi de încredere pentru browser-ul dvs. Starea de revocare nu este necesar să fie menţinută pentru certificatele expirate, deci, deşi acest certificat a fost valabil pentru site-ul Web pe care îl accesaţi, în acest moment nu se poate determina dacă certificatul a fost compromis şi apoi revocat, sau este încă sigur. Astfel, este imposibil de spus dacă dvs. comunicaţi cu site-ul Web legitim sau certificatul a fost compromis şi acum este în posesia unui atacator, cu care comunicaţi. Nu trebuie să mergeţi mai departe.</translation>
 <translation id="2645575947416143543">Totuşi, dacă lucraţi într-o organizaţie care îşi generează propriile certificate şi încercaţi să vă conectaţi la un site web intern al respectivei organizaţii utilizând un astfel de certificat, puteţi rezolva această problemă în mod securizat. Puteţi să importaţi certificatul rădăcină al organizaţiei ca „certificat rădăcină”, iar apoi certificatele emise sau confirmate de organizaţia dvs. vor fi de încredere şi nu veţi mai vedea această eroare la următoarea încercare de a vă conecta la un site intern. Pentru asistenţă la adăugarea unui nou certificat rădăcină pe computer, contactaţi personalul de ajutor al organizaţiei.</translation>
 <translation id="3157931365184549694">Restabiliţi</translation>
+<translation id="7426243339717063209">Dezinstalaţi „<ph name="EXTENSION_NAME"/>”?</translation>
 <translation id="6059232451013891645">Dosar:</translation>
 <translation id="8182985032676093812">Sursa pentru <ph name="PAGE_URL"/></translation>
 <translation id="7042418530779813870">In&amp;seraţi şi căutaţi</translation>
+<translation id="2101225219012730419">Versiune:</translation>
 <translation id="1570242578492689919">Fonturi şi codificare</translation>
 <translation id="3031557471081358569">Selectaţi elementele de importat:</translation>
 <translation id="3031433885594348982">Conexiunea dvs. spre <ph name="DOMAIN"/> este criptată cu o criptare slabă.</translation>
@@ -846,6 +948,7 @@
 <translation id="6181769708911894002">Avertisment: Accesarea acestui site poate produce pagube computerului dvs.!</translation>
 <translation id="3412265149091626468">Accesaţi selecţia</translation>
 <translation id="3785852283863272759">Trimiteţi prin e-mail locaţia paginii</translation>
+<translation id="7326526699920221209">Baterie: <ph name="PRECENTAGE"/> %</translation>
 <translation id="601778514741867265">Doresc să fie acceptate module cookie numai de la site-urile pe care le accesez</translation>
 <translation id="8299269255470343364">Japoneză</translation>
 <translation id="5204993535447683655">&lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;Reîncărcaţi&lt;/a&gt; această pagină Web mai târziu.</translation>
@@ -853,10 +956,12 @@
 <translation id="7280343984261969618">Rulează plug-in-uri într-o memorie de testare fără privilegii. Va face ca unele plug-in-uri să nu funcţioneze corect.</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> zi rămasă</translation>
 <translation id="2885378588091291677">Manager de activităţi</translation>
+<translation id="1215711112676250731">Cotă:</translation>
 <translation id="2359808026110333948">Continuaţi</translation>
 <translation id="1618661679583408047">Certificatul de securitate al site-ului nu este încă valabil!</translation>
 <translation id="9040508646567685134">Un script care rulează pe această pagină are nevoie de muuult timp pentru a se finaliza. Doriţi să vedeţi dacă scriptul se poate finaliza sau renunţaţi?</translation>
 <translation id="3065140616557457172">Tastaţi pentru a căuta sau introduceţi o adresă URL pentru a naviga - orice variantă funcţionează.</translation>
+<translation id="977224059380370527">MO</translation>
 <translation id="5509693895992845810">Salvaţi c&amp;a...</translation>
 <translation id="5986279928654338866">Pentru a accesa serverul <ph name="DOMAIN"/>, trebuie să introduceţi un nume de utilizator şi o parolă.</translation>
 <translation id="521467793286158632">Eliminaţi toate parolele</translation>
@@ -866,10 +971,10 @@
 <translation id="7221869452894271364">Reîncărcaţi această pagină</translation>
 <translation id="8646430701497924396">Utilizaţi SSL 2.0</translation>
 <translation id="8179976553408161302">Enter (Introduceţi)</translation>
+<translation id="5481650329671719147">Extensiile şi temele pot dăuna computerului. Sigur doriţi să continuaţi?</translation>
 <translation id="8261506727792406068">Ştergeţi</translation>
 <translation id="345693547134384690">Deschideţi &amp;imaginea într-o filă nouă</translation>
 <translation id="7422192691352527311">Preferinţe...</translation>
-<translation id="7220379225958650049">Începeţi acum</translation>
 <translation id="1375198122581997741">Despre versiune</translation>
 <translation id="1474307029659222435">Deschideţi cadrul într-o &amp;fereastră nouă</translation>
 <translation id="7133850061938542637">Sincronizat cu <ph name="USER_EMAIL_ADDRESS"/>\nUltima sincronizare: <ph name="LAST_SYNC_TIME"/></translation>
@@ -884,11 +989,14 @@
 <translation id="884923133447025588">Nu a fost găsit niciun mecanism de revocare.</translation>
 <translation id="7240072072812590475">Modificaţi setările pentru Gears</translation>
 <translation id="6001785649757655903">Eroare la încărcarea listei negre pentru confidenţialitate</translation>
+<translation id="2480155717379390016">Dezactivaţi <ph name="NAME_OF_EXTENSION"/></translation>
+<translation id="492643400682328128">Opriţi <ph name="NETWORKDEVICE"/></translation>
 <translation id="7671130400130574146">Utilizaţi bara de titlu şi chenarele definite în sistem</translation>
 <translation id="9170848237812810038">&amp;Anulaţi</translation>
 <translation id="8135557862853121765"><ph name="NUM_KILOBYTES"/> K</translation>
 <translation id="4444364671565852729"><ph name="PRODUCT_NAME"/> a fost actualizat la versiunea <ph name="VERSION"/></translation>
 <translation id="2731392572903530958">R&amp;edeschideţi fereastra închisă</translation>
+<translation id="4264420740606601613">Blocaţi complet modulele cookie de la terţe părţi</translation>
 <translation id="6483805311199035658">Se deschide <ph name="FILE"/>...</translation>
 <translation id="1285266685456062655">Cu <ph name="NUMBER_FEW"/> ore în urmă</translation>
 <translation id="9154176715500758432">Rămâneţi pe această pagină</translation>
@@ -900,10 +1008,14 @@
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Reluaţi</translation>
 <translation id="6358975074282722691">Cu <ph name="NUMBER_TWO"/> secunde în urmă</translation>
+<translation id="5663016964925996918"><ph name="EXTENSION_NAME"/> este acum instalată</translation>
 <translation id="3009731429620355204">Sesiuni</translation>
 <translation id="7658590191988721853">Activaţi derularea marginii verticale</translation>
+<translation id="5190835502935405962">Bara de marcaje</translation>
+<translation id="5438430601586617544">(Neîmpachetată)</translation>
 <translation id="6460601847208524483">Găsiţi următorul</translation>
 <translation id="3473034187222004855">Co&amp;piaţi calea fişierului</translation>
+<translation id="3038131737570201586">Această extensie va avea acces la istoricul dvs. de navigare şi la informaţiile dvs. private de pe mai multe site-uri web.</translation>
 <translation id="6325525973963619867">Eşuat</translation>
 <translation id="1676388805288306495">Schimbaţi fonturile şi limba prestabilite pentru paginile Web.</translation>
 <translation id="4701488924964507374"><ph name="SENTENCE1"/> <ph name="SENTENCE2"/></translation>
@@ -918,6 +1030,7 @@
 <translation id="5333374927882515515">va importa marcaje, parole şi alte setări din <ph name="DEF_BROWSER"/></translation>
 <translation id="4239831617079978238">Finalul sesiunii</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
+<translation id="5960889226412209189">Comutaţi bara de navigare compactă</translation>
 <translation id="8954894007019320973">(Cont.)</translation>
 <translation id="3748412725338508953">Au fost prea multe redirecţionări.</translation>
 <translation id="8929159553808058020">Adăugaţi limbile pe care le utilizaţi pentru a citi site-urile Web, listate în ordinea preferinţelor. Adăugaţi-le numai pe cele de care aveţi nevoie, deoarece unele caractere pot fi utilizate pentru a substitui identitatea site-urilor Web în alte limbi.</translation>
@@ -933,10 +1046,14 @@
 <translation id="7088615885725309056">Mai vechi</translation>
 <translation id="5263972071113911534">Cu <ph name="NUMBER_MANY"/> (de) zile în urmă</translation>
 <translation id="8562413501751825163">Închideţi Firefox înainte de a face importul</translation>
+<translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/> KO (<ph name="NUM_KILOBYTES_LIVE"/> KO live)</translation>
 <translation id="5034259512732355072">Alegeţi alt director...</translation>
 <translation id="5074322878757699801">Importaţi date...</translation>
+<translation id="7505152414826719222">Stocare locală</translation>
 <translation id="5706242308519462060">Codificare prestabilită:</translation>
 <translation id="5280833172404792470">Ieşiţi din ecran complet (<ph name="ACCELERATOR"/>)</translation>
+<translation id="4000986992587584088">Doresc să fie afişate întotdeauna ferestre pop-up de la  <ph name="URL"/>
+</translation>
 <translation id="129553762522093515">Închise recent</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> zile</translation>
 <translation id="3891357445869647828">Activaţi JavaScript</translation>
@@ -953,14 +1070,18 @@
 <translation id="4867297348137739678">Ultima săptămână</translation>
 <translation id="4881695831933465202">Deschideţi</translation>
 <translation id="5457793226917888578">Această pagină include conţinut nesecurizat.</translation>
+<translation id="5988520580879236902">Inspectaţi afişările active:</translation>
 <translation id="5981759340456370804">Statistici pentru pasionaţi</translation>
 <translation id="6644971472240498405"><ph name="NUMBER_ONE"/> zi</translation>
 <translation id="6512448926095770873">Părăsiţi această pagină</translation>
 <translation id="5607455023223000189">Plug-in-uri instalate</translation>
 <translation id="6294193300318171613">Doresc să se &amp;afişeze mereu bara de marcaje</translation>
+<translation id="3414952576877147120">Dimensiune:</translation>
 <translation id="9098468523912235228">Cu <ph name="NUMBER_DEFAULT"/> (de) secunde în urmă</translation>
 <translation id="7009102566764819240">Mai jos puteţi găsi o listă cu toate elementele nesigure ale paginii. Faceţi clic pe linkul Diagnostic pentru a obţine informaţii suplimentare cu privire la firul de execuţie al programului malware pentru o anumită resursă. Dacă ştiţi că o resursă a fost raportată în mod incorect ca practicând phishingul, faceţi clic pe linkul „Raportaţi eroarea”.</translation>
+<translation id="676327646545845024">Doresc să nu se mai afişeze niciodată caseta de dialog pentru linkurile de acest tip.</translation>
 <translation id="494645311413743213"><ph name="NUMBER_TWO"/> secunde rămase</translation>
+<translation id="6863682319656084809">Alertă extensie <ph name="EXTENSION_NAME"/></translation>
 <translation id="1485146213770915382">Inseraţi <ph name="SEARCH_TERMS_LITERAL"/> în adresa URL unde ar trebui să apară termenii de căutare.</translation>
 <translation id="4839303808932127586">Sal&amp;vaţi videoclipul ca...</translation>
 <translation id="5626134646977739690">Nume:</translation>
@@ -971,6 +1092,7 @@
 <translation id="4876916865079819322">Doresc sincronizarea marcajelor mele</translation>
 <translation id="146000042969587795">Acest cadru a fost blocat, deoarece are şi conţinut nesigur.</translation>
 <translation id="8112223930265703044">Tot</translation>
+<translation id="8023801379949507775">Actualizaţi extensiile imediat</translation>
 <translation id="1983108933174595844">Trimiteţi o captură de ecran a paginii curente</translation>
 <translation id="436869212180315161">Apăsaţi</translation>
 <translation id="8241707690549784388">Pagina pe care o căutaţi a utilizat informaţiile pe care le-aţi introdus. Întoarcerea la acea pagină ar putea duce la repetarea oricărei acţiuni pe care aţi realizat-o. Doriţi să continuaţi?</translation>
@@ -983,6 +1105,7 @@
 <translation id="1753905327828125965">Cele mai vizitate</translation>
 <translation id="170407012880898501">Salvaţi textul din formulare, astfel încât completarea acestora să devină mai uşoară</translation>
 <translation id="8116972784401310538">&amp;Manager de marcaje</translation>
+<translation id="1849632043866553433">Memoriile cache ale aplicaţiei</translation>
 <translation id="4927301649992043040">Creaţi un pachet pentru extensie</translation>
 <translation id="6040143037577758943">Închideţi</translation>
 <translation id="1101671447232096497">Cu <ph name="NUMBER_MANY"/> (de) minute în urmă</translation>
@@ -995,12 +1118,15 @@
 <translation id="1232569758102978740">Fără titlu</translation>
 <translation id="9149866541089851383">Editaţi...</translation>
 <translation id="7000311294523403548">Pagină Web fără titlu</translation>
+<translation id="4593021220803146968">&amp;Accesaţi <ph name="URL"/></translation>
 <translation id="7649070708921625228">Ajutor</translation>
 <translation id="6119719873954126908">Urmăriţi această zonă pentru sfaturi şi sugestii privind o navigare mai bună!</translation>
 <translation id="7442246004212327644">Go&amp;liţi</translation>
 <translation id="281133045296806353">În sesiunea de browser existentă a fost creată o fereastră nouă.</translation>
+<translation id="6314007596429871800">Memoria cache a aplicaţiei</translation>
 <translation id="9002707937526687073">P&amp;rintaţi...</translation>
 <translation id="5556459405103347317">Reîncărcaţi</translation>
+<translation id="8326395326942127023">Nume bază de date:</translation>
 <translation id="7727721885715384408">Redenumiţi...</translation>
 <translation id="5508407262627860757">Anulaţi oricum</translation>
 <translation id="7587108133605326224">Baltică</translation>
@@ -1009,6 +1135,7 @@
 <translation id="3021678814754966447">&amp;Vedeţi sursa cadrului</translation>
 <translation id="5271549068863921519">Salvaţi parola</translation>
 <translation id="3251855518428926750">Adăugaţi...</translation>
+<translation id="3508920295779105875">Alegeţi alt dosar...</translation>
 <translation id="2987775926667433828">Chineză tradiţională</translation>
 <translation id="3954582159466790312">Activaţi su&amp;netul</translation>
 <translation id="5809606740668187902">Resursă blocată</translation>
@@ -1020,8 +1147,10 @@
 <translation id="8045462269890919536">Română</translation>
 <translation id="2927657246008729253">Modificaţi...</translation>
 <translation id="7978412674231730200">Cheie privată</translation>
+<translation id="9111395131601239814"><ph name="NETWORKDEVICE"/>: <ph name="STATUS"/></translation>
 <translation id="4414232939543644979">Fereastră nouă &amp;incognito</translation>
 <translation id="3478477629095836699">Setări cookie-uri:</translation>
+<translation id="6529237754759924038">Data şi ora</translation>
 <translation id="7278870042769914968">Utilizaţi tema GTK+</translation>
 <translation id="2108475813351458355">Conexiune sigură spre <ph name="DOMAIN"/></translation>
 <translation id="942671148946453043">Aţi deschis o fereastră incognito. Paginile pe care le deschideţi în această fereastră nu vor apărea în istoricul dvs.</translation>
@@ -1057,11 +1186,14 @@
 <translation id="3943582379552582368">&amp;Înapoi</translation>
 <translation id="7607002721634913082">Oprită temporar</translation>
 <translation id="480990236307250886">Deschideţi pagina de pornire</translation>
+<translation id="5757539081890243754">Pagina de pornire</translation>
 <translation id="6709133671862442373">Ştiri</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> ore rămase</translation>
+<translation id="6550675742724504774">Opţiuni</translation>
 <translation id="8959208747503200525">Cu <ph name="NUMBER_TWO"/> ore în urmă</translation>
 <translation id="737801893573836157">Ascundeţi bara de titlu a sistemului şi utilizaţi chenare compacte</translation>
 <translation id="5040262127954254034">Confidenţialitate</translation>
+<translation id="1058681476058291010">Eroare la sincronizarea marcajelor...</translation>
 <translation id="1908748899139377733">Vedeţi &amp;informaţii despre cadru</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="803771048473350947">Fişier</translation>
@@ -1070,6 +1202,7 @@
 <translation id="566920818739465183">Aţi accesat prima dată acest site pe <ph name="VISIT_DATE"/>.</translation>
 <translation id="2961695502793809356">Faceţi clic pentru a merge înainte, ţineţi apăsat pentru a vedea istoricul</translation>
 <translation id="923083373181549309">Reporniţi <ph name="PRODUCT_NAME"/></translation>
+<translation id="8678305583783039525">Afişaţi modulele cookie şi permisiunile site-urilor web</translation>
 <translation id="8421864404045570940"><ph name="NUMBER_DEFAULT"/> secunde</translation>
 <translation id="176587472219019965">&amp;Fereastră nouă</translation>
 <translation id="8689341121182997459">Expiră:</translation>
@@ -1086,11 +1219,13 @@
 <translation id="2238123906478057869"><ph name="PRODUCT_NAME"/> va executa următoarele comenzi:</translation>
 <translation id="1812622104192390866">Importaţi setări din</translation>
 <translation id="4042471398575101546">Adăugaţi pagina</translation>
+<translation id="4871865824885782245">Deschideţi opţiunile de dată şi oră...</translation>
 <translation id="988159990683914416">Versiune de programare</translation>
 <translation id="921175996768281472">Eroare la crearea pachetului pentru extensie</translation>
 <translation id="2183426022964444701">Selectaţi directorul rădăcină pentru extensie.</translation>
 <translation id="6790650291892352751">Căutaţi după subiect sau adresă URL:</translation>
 <translation id="5398353896536222911">&amp;Afişaţi panoul de verificare a ortografiei</translation>
+<translation id="8046048349148382412">Timp până la finalizare: <ph name="HOUR"/>:<ph name="MIUTE"/></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="4268574628540273656">Adresa URL:</translation>
 <translation id="7481312909269577407">Redirecţionaţi</translation>
@@ -1103,6 +1238,7 @@
 <translation id="2444683954290143042">Eroare de sincronizare. Conectaţi-vă din nou</translation>
 <translation id="5830720307094128296">Salvaţi pagina c&amp;a...</translation>
 <translation id="5822838715583768518">Lansaţi aplicaţia</translation>
+<translation id="2433507940547922241">Aspect</translation>
 <translation id="839072384475670817">Creaţi c&amp;omenzi rapide pentru aplicaţie...</translation>
 <translation id="6756161853376828318">Setaţi <ph name="PRODUCT_NAME"/> ca browser prestabilit</translation>
 <translation id="2640524951934795733">Ce am putea pune aici?</translation>
@@ -1113,6 +1249,7 @@
 <translation id="3807747707162121253">&amp;Anulaţi</translation>
 <translation id="2850243184678184884">de ex., hochei, BBC, http://engadget.com/rss.xml</translation>
 <translation id="77999321721642562">În timp, zona de dedesubt va afişa cele mai vizitate 8 site-uri.</translation>
+<translation id="5864830997591220873">Blocaţi toate modulele cookie</translation>
 <translation id="7447718177945067973">Serverul nu a putut fi găsit.</translation>
 <translation id="715468010956678290">Deschideţi cadrul într-o fereastră inco&amp;gnito</translation>
 <translation id="7755167023778553803">Cu toate acestea, această pagină include şi resurse de la alte site-uri Web, a căror identitate nu poate fi verificată.</translation>
@@ -1120,6 +1257,7 @@
 <translation id="3455546154539383562">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar certificatul prezentat de server a fost revocat de emitentul său. Aceasta înseamnă că acreditările de securitate prezentate de server nu mai sunt de încredere absolut deloc. Este posibil să comunicaţi cu un atacator. Nu trebuie să mergeţi mai departe.</translation>
 <translation id="1177437665183591855">Eroare de certificat de server necunoscută</translation>
 <translation id="3819800052061700452">&amp;Ecran complet</translation>
+<translation id="3533943170037501541">Bun venit la pagina de pornire!</translation>
 <translation id="3218306954729745977">Afişaţi filele închise recent</translation>
 <translation id="3737554291183722650">Titlul paginii:</translation>
 <translation id="1581962803218266616">Afişaţi în Finder</translation>
@@ -1138,16 +1276,19 @@
 <translation id="1208126399996836490">Nu resetaţi</translation>
 <translation id="806812017500012252">Reordonaţi după titlu</translation>
 <translation id="2960316970329790041">Opriţi importul</translation>
+<translation id="5361734574074701223">Se calculează timpul rămas</translation>
 <translation id="1731911755844941020">Se trimite solicitarea...</translation>
 <translation id="1038842779957582377">nume necunoscut</translation>
 <translation id="5327248766486351172">Nume</translation>
 <translation id="8989148748219918422"><ph name="ORGANIZATION"/> [<ph name="COUNTRY"/>]</translation>
 <translation id="2052895926110224873">Încărcarea listelor negre pentru confidenţialitate nu a reuşit.</translation>
 <translation id="2445081178310039857">Este necesar directorul rădăcină pentru extensie.</translation>
+<translation id="8251578425305135684">Miniatura a fost eliminată.</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="1918141783557917887">&amp;Mai mic</translation>
 <translation id="4065006016613364460">C&amp;opiaţi adresa URL a imaginii</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="4481249487722541506">Încărcaţi extensiile neîmpachetate...</translation>
 <translation id="8542113417382134668">Font Serif:</translation>
 <translation id="2149973817440762519">Editaţi marcajul</translation>
 <translation id="430831869130657585">Sufixe</translation>
@@ -1171,17 +1312,27 @@
 <translation id="6053401458108962351">&amp;Ştergeţi datele de navigare...</translation>
 <translation id="2339641773402824483">Se caută actualizări...</translation>
 <translation id="8600200086690278232">Clipuri Web speciale</translation>
+<translation id="8582728318425382804">Module cookie şi permisiuni pentru site-uri web</translation>
 <translation id="2766006623206032690">In&amp;seraţi şi accesaţi</translation>
 <translation id="9071050381089585305">Script inactiv</translation>
+<translation id="4394049700291259645">Dezactivaţi</translation>
 <translation id="969892804517981540">Creat oficial</translation>
 <translation id="724208122063442954">Aţi ales să deschideţi automat anumite tipuri de fişiere după descărcare. Puteţi anula aceste setări, pentru ca fişierele descărcate să nu se deschidă automat.</translation>
 <translation id="5765491088802881382">Nu sunt disponibile reţele</translation>
 <translation id="5183088099396036950">Nu s-a putut stabili conexiunea cu serverul</translation>
-<translation id="4477534650265381513">Pentru acces rapid, plasaţi marcajele aici, în bara de marcaje.</translation>
+<translation id="4469842253116033348">Dezactivaţi notificările de la <ph name="SITE"/></translation>
+<translation id="7999229196265990314">Au fost create următoarele fişiere:
+        
+Extensie: <ph name="EXTENSION_FILE"/>
+Fişier cheie: <ph name="KEY_FILE"/>
+
+Păstraţi fişierul cu cheia într-o locaţie sigură. Acesta va fi necesar la crearea noilor versiuni ale extensiei dvs.</translation>
 <translation id="3036649622769666520">Deschideţi fişierele</translation>
 <translation id="7909652923456235549">Modulele cookie nu au fost trimise</translation>
+<translation id="7685049629764448582">Memorie JavaScript</translation>
 <translation id="4508765956121923607">Vedeţi s&amp;ursa</translation>
 <translation id="8080048886850452639">C&amp;opiaţi adresa URL a conţinutului audio</translation>
+<translation id="5849869942539715694">Creaţi un pachet pentru extensie...</translation>
 <translation id="7339785458027436441">Doresc verificarea ortografiei pe măsură ce se introduce text</translation>
 <translation id="1384721974622518101">Ştiaţi că puteţi căuta direct din caseta de mai sus?</translation>
 <translation id="8203365863660628138">Confirmaţi instalarea</translation>

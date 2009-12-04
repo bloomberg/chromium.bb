@@ -30,7 +30,6 @@
 <translation id="9154072353677278078">Seva <ph name="DOMAIN"/> iliyo <ph name="REALM"/> inahitaji jina la mtumiaji na nenosiri.</translation>
 <translation id="2193841602817119749">Tovuti iliyo &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; imeripotiwa kuwa ya 'hadaa'. Tovuti za hadaa huwatapeli watumiaji kufichua maelezo ya kibinafsi au ya kifedha, mara nyingi kwa kujidai kuwa zinawakilisha taasisi zinazoaminika, kama vile benki.</translation>
 <translation id="8178665534778830238">Maudhui:</translation>
-<translation id="1379170046778889619">Maelezo ya usalama</translation>
 <translation id="4771019161370731727">Shughuli za hivi karibuni</translation>
 <translation id="1818606096021558659">Ukurasa</translation>
 <translation id="7982789257301363584">Mtandao</translation>
@@ -859,7 +858,7 @@
 <translation id="3819800052061700452">&amp;Skrini kamili</translation>
 <translation id="3218306954729745977">Onyesha vichupo vilivyofungwa hivi karibuni</translation>
 <translation id="3737554291183722650">Kichwa cha ukurasa:</translation>
-<translation id="4726901538158498735">Injini tafuti chaguo-msingi</translation>
+<translation id="4726901538158498735">Injini tafuti chaguo-msingi:</translation>
 <translation id="5101042277149003567">Fungua alamisho zote</translation>
 <translation id="6349678711452810642">Fanya Chaguo-Msingi</translation>
 <translation id="3741375896128849698">Cheti cha seva bado si sahihi</translation>
@@ -899,7 +898,6 @@
 <translation id="9071050381089585305">Hati imekwama</translation>
 <translation id="969892804517981540">Muundo Rasmi</translation>
 <translation id="724208122063442954">Umechagua kufungua aina fulani za faili atomatiki baada ya kuzipakua. Unaweza kufuta mipangilio hii ili faili zilizopakuliwa zisifunguliwe atomatiki.</translation>
-<translation id="4477534650265381513">Kufikia alamisho zako kwa urahisi, ziweke hapa kwenye upau wa alamisho.</translation>
 <translation id="8080048886850452639">&amp;Nakili URL ya audio</translation>
 <translation id="8203365863660628138">Thibitisha Kusakinisha</translation>
 <translation id="406259880812417922">(Neno muhimu: <ph name="KEYWORD"/>)</translation>

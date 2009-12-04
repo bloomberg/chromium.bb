@@ -3,15 +3,19 @@
 <translationbundle lang="ja">
 <translation id="8000275528373650868">Google Chrome のご利用には Windows Vista または Windows XP SP2 以降が必要です。</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
+<translation id="4517682492677349713">Google Chrome でこの情報を保存しますか？</translation>
 <translation id="2770231113462710648">既定のブラウザを変更:</translation>
 <translation id="698670068493841342">Google Chrome は既にこのユーザー用にインストールされています。アプリケーションが動作しない場合は、アンインストールしてからダウンロードし直してください。</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
+<translation id="7781002470561365167">Google Chrome の最新バージョンをぜひお試しください</translation>
 <translation id="7101265395643981223">Google Chrome を起動</translation>
 <translation id="2370289711218562573">Google Chrome にお気に入り/ブックマークをインポートしています。</translation>
 <translation id="8970027151245482499">Google Chrome がインストールされていないか、インストールされたディレクトリが見つかりません。Google Chrome をダウンロードし直してください。</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="4281844954008187215">利用規約</translation>
 <translation id="1137776625614346046">ここには最もよく使うウェブサイトが表示されます。また、Google Chrome をある程度使い続けると、新しいタブを開いたときにもよく使うサイトが一覧表示されます。詳細については<ph name="BEGIN_LINK"/>スタートガイド<ph name="END_LINK"/>をご覧ください。</translation>
+<translation id="3555616473548901994">アンインストールが完了しました。</translation>
+<translation id="1826297811907343327">キャンセルすると一部のアイテムはインポートされません。Google Chrome のメニューから後で再度インポートすることができます。</translation>
 <translation id="4728575227883772061">原因不明のエラーによりインストールが失敗しました。実行中の Google Chrome を終了してからやり直してください。</translation>
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -36,30 +40,35 @@
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
 <translation id="6009537148180854585">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーの証明書にエラーが含まれています。エラーのある証明書は Google Chrome で使用できないため、接続しようとしているサイトの身元を検証することができません。この接続は安全でないため、ここで操作を止めてください。</translation>
 <translation id="2485422356828889247">アンインストール</translation>
+<translation id="8899050679030089927">この変更を反映するには、すべての Google Chrome ウィンドウを終了してからもう一度起動してください。</translation>
 <translation id="3324235665723428530">バージョンが新しい Google Chrome のプロフィールは使用できません。\n\n一部の機能が使用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chrome をご使用ください</translation>
+<translation id="7214670531148488183">Google Chrome は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。これらは無効にすることもできます。</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="2044287590254833138">Google Chrome ツールバー</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">Google Chrome はデフォルトのブラウザとして設定されていません。</translation>
 <translation id="6481075104394517441">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーの証明書が有効ではありません。この証明書の信頼性について有効な情報がないため、通信先が本当に <ph name="DOMAIN2"/> であるか Google Chrome で判断できず、なりすましの可能性を完全には否定できません。コンピュータの時刻とタイムゾーンが正しく設定されていることを確認してください。設定に問題がある場合は、設定を修正してからこのページを更新してください。正しく設定されているにも関わらずこの警告が表示される場合は、ここで操作を止めてください。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome はオープンソース プロジェクト <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> やその他の<ph name="BEGIN_LINK_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_OSS"/>によって実現しました。</translation>
 <translation id="6921913858457830952">Google Chrome をインストールする準備ができました。</translation>
 <translation id="7100330187273168372">このディレクトリには Google Chrome はアクセスできません:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="2290095356545025170">Google Chrome をアンインストールしてもよろしいですか？</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
 <translation id="4127951844153999091">証明書のアドレスと、実際にアクセスしようとしているウェブサイトのアドレスが一致していません。これには、悪意のあるユーザーによって通信が傍受されているか、または複数のサイトで同じ証明書を返すようサーバーで設定しているにも関わらず、証明書が有効になっていないサイトが含まれている可能性があります。Google Chrome で検出されたアクセスは &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; で、それが &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; と同じサイトであるかどうかは確認できません。名前の不一致を無視してこのまま続行することもできますが、通常はここで操作を止めることをおすすめします。</translation>
 <translation id="2712549016134575851">インストールされている別のアプリケーションとの競合が検出されました。</translation>
+<translation id="7018032895891496381">Google Chrome は既定の検索エンジンを使用します。現在は <ph name="PAGE_TITLE"/> に設定されています。この検索エンジンを使用しますか？</translation>
 <translation id="7161904924553537242">Google Chrome へようこそ</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8236873504073475138">Google Chrome は Windows 2000 に対応していません。動作しない機能がある可能性があります。</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="6126631249883707068">Google Chrome でパスワードを保存しますか？</translation>
 <translation id="5046764976540625289">Chrome を終了</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">インターネット ブラウザ</translation>
 <translation id="8776515774046280928">このコンピュータには既に Google Chrome がインストールされており、コンピュータのすべてのユーザーが使用できます。ユーザー レベルで Google Chrome をインストールする場合は、管理者がインストールしたシステム レベルの Google Chrome を最初にアンインストールする必要があります。</translation>
+<translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
 <translation id="3335672657969596251">Google Chrome は <ph name="OS_NAME"/> に対応していません。</translation>
@@ -73,6 +82,7 @@
 <translation id="6626317981028933585">Mozilla Firefox の設定を Google Chrome にインポートするには、まず Firefox のウィンドウをすべて閉じてください。その後 [続行] をクリックしてください。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="6049075767726609708">このコンピュータには管理者権限のあるユーザーがインストールしたシステムレベル (コンピュータの全ユーザーが利用可) の Google Chromeがあります。ユーザー レベルの Google Chrome はシステム レベルの Google Chrome に置き換えられます。</translation>
+<translation id="7123348595797445166">使ってみる（既にインストール済み）</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">Google Chrome の画面メニューの言語を変更します。</translation>
 <translation id="9189723490960700326">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーの証明書の有効期限が失効しています。証明書の失効後もセキュリティに問題がないことを確認する情報ありません。通信先が本当に <ph name="DOMAIN2"/> であるか Google Chrome で判断できないため、なりすましの可能性を完全には否定できません。ここで操作を止めてください。</translation>

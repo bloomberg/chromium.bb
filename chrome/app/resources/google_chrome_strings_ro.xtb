@@ -3,15 +3,19 @@
 <translationbundle lang="ro">
 <translation id="8000275528373650868">Google Chrome necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
 <translation id="6676384891291319759">Accesaţi Internetul</translation>
+<translation id="4517682492677349713">Doriţi ca Google Chrome să salveze aceste informaţii?</translation>
 <translation id="2770231113462710648">Schimbaţi browserul prestabilit la:</translation>
 <translation id="698670068493841342">Acest calculator are deja o versiune mai nouă de Google Chrome. Dacă programul nu funcţionează, vă rugăm să dezinstalaţi Google Chrome şi să-l descărcaţi din nou.</translation>
 <translation id="7400722733683201933">Despre Google Chrome</translation>
+<translation id="7781002470561365167">Este disponibilă o nouă versiune a browserului Google Chrome.</translation>
 <translation id="7101265395643981223">Porniţi Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome importă acum Preferinţele/Marcajele.</translation>
 <translation id="8970027151245482499">Google Chrome nu este instalat sau nu a putut găsi directorul de instalare. Descărcaţi din nou Google Chrome.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="4281844954008187215">Condiţii de furnizare a serviciilor</translation>
 <translation id="1137776625614346046">Zona „Cele mai vizitate” arată site-urile Web pe care le utilizaţi cel mai frecvent. După ce veţi utiliza o perioadă Google Chrome, veţi vedea site-urile cele mai vizitate, ori de câte ori deschideţi o filă nouă. Puteţi afla mai multe despre aceasta şi despre alte funcţii pe <ph name="BEGIN_LINK"/>pagina Noţiuni de bază<ph name="END_LINK"/>.</translation>
+<translation id="3555616473548901994">Dezinstalare finalizată.</translation>
+<translation id="1826297811907343327">Dacă anulaţi acum, nu vor fi importate toate elementele. Puteţi importa din nou mai târziu, din meniul Google Chrome.</translation>
 <translation id="4728575227883772061">Instalarea a eşuat din cauza unei erori necunoscute. Dacă Google Chrome rulează în acest moment, închideţi-l şi încercaţi din nou.</translation>
 <translation id="4149882025268051530">Programul de instalare nu a putut decomprima arhiva. Descărcaţi din nou Google Chrome.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -36,30 +40,35 @@
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verificaţi dacă există suficient spaţiu liber şi dacă aveţi drepturile necesare pentru a instala software-ul.</translation>
 <translation id="6009537148180854585">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar certificatul prezentat de server conţine erori. Google Chrome nu poate utiliza un certificat cu erori şi nu poate valida identitatea site-ului la care aţi încercat să vă conectaţi. Conexiunea dvs. nu este sigură şi nu trebuie să mergeţi mai departe.</translation>
 <translation id="2485422356828889247">Dezinstalaţi</translation>
+<translation id="8899050679030089927">Închideţi toate ferestrele Google Chrome şi reporniţi-l pentru ca această modificare să aibă efect.</translation>
 <translation id="3324235665723428530">Profilul dvs. nu poate fi utilizat, deoarece provine de la o versiune Google Chrome mai recentă.\n\nEste posibil ca unele funcţii să nu fie disponibile. Specificaţi un director de profil diferit sau utilizaţi o versiune Chrome mai nouă.</translation>
+<translation id="7214670531148488183">Google Chrome poate utiliza servicii web pentru a îmbunătăţi experienţa dvs. de navigare. Aveţi opţiunea de a dezactiva aceste servicii.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Ştergeţi şi datele de navigare?</translation>
 <translation id="2044287590254833138">Bara de instrumente Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">Suuuper, v-aţi întors! Dar Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="6481075104394517441">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a prezentat un certificat care încă nu este valabil. Nu sunt disponibile informaţii care să indice dacă acel certificat prezintă garanţie. Google Chrome nu vă poate garanta în mod sigur că dvs. comunicaţi cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; şi nu cu un atacator. Ar trebui să vă asiguraţi că ora şi fusul orar sunt setate corect pe computerul dvs. Dacă nu sunt, trebuie să corectaţi orice erori şi să actualizaţi această pagină. Dacă sunt corecte, nu trebuie să mergeţi mai departe.</translation>
 <translation id="8862326446509486874">Nu aveţi drepturile adecvate pentru instalarea la nivel de sistem. Încercaţi să rulaţi din nou programul de instalare ca Administrator.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chrome există ca urmare a proiectului open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> şi a altor <ph name="BEGIN_LINK_OSS"/>produse software open source<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome este gata să finalizeze instalarea.</translation>
 <translation id="7100330187273168372">Google Chrome nu poate citi sau scrie în directorul propriu de date:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="6757767188268205357">Doresc să nu mai fiu deranjat</translation>
 <translation id="2290095356545025170">Sunteţi sigur că doriţi să dezinstalaţi Google Chrome?</translation>
 <translation id="5941830788786076944">Setaţi Google Chrome ca browser prestabilit</translation>
 <translation id="4127951844153999091">În acest caz, adresa afişată în certificat nu se potriveşte cu adresa site-ului la care a încercat să ajungă browser-ul dvs. Un motiv posibil pentru aceasta este interceptarea comunicaţiilor dvs. de către un atacator, care prezintă un certificat pentru un alt site Web, ceea ce ar provoca o nepotrivire. Un alt motiv posibil este că serverul este setat să returneze acelaşi certificat pentru mai multe site-uri Web, inclusiv cel pe care încercaţi să-l accesaţi, chiar dacă acel certificat nu este valabil pentru toate acele site-uri. Google Chrome poate confirma că aţi accesat &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, dar nu poate verifica dacă este acelaşi site ca şi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; pe care aţi intenţionat să-l accesaţi. Dacă mergeţi mai departe, Chrome nu va mai verifica nicio altă nepotrivire de nume. În general, cel mai bine este să nu mergeţi mai departe.</translation>
 <translation id="2712549016134575851">S-a detectat un conflict cu o altă aplicaţie instalată.</translation>
+<translation id="7018032895891496381">Google Chrome utilizează motorul de căutare prestabilit, setat în prezent la <ph name="PAGE_TITLE"/>. Doriţi să păstraţi motorul de căutare prestabilit?</translation>
 <translation id="7161904924553537242">Bun venit la Google Chrome</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8236873504073475138">Google Chrome nu acceptă Windows 2000. Este posibil ca unele funcţii să nu funcţioneze.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="6126631249883707068">Doriţi ca Google Chrome să vă salveze parola?</translation>
 <translation id="5046764976540625289">Ieşiţi din Chrome</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Browser de Internet</translation>
 <translation id="8776515774046280928">Google Chrome este deja instalat şi disponibil tuturor utilizatorilor de pe acest computer. Dacă doriţi să instalaţi Google Chrome la nivel de utilizator, trebuie să dezinstalaţi mai întâi versiunea disponibilă la nivel de sistem instalată de un administrator.</translation>
+<translation id="7196020411877309443">De ce primesc această notificare?</translation>
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="7825851276765848807">Instalarea nu a reuşit din cauza unei erori neprecizate. Descărcaţi Google Chrome din nou.</translation>
 <translation id="3335672657969596251">Google Chrome nu acceptă <ph name="OS_NAME"/>.</translation>
@@ -73,6 +82,7 @@
 <translation id="6626317981028933585">Din păcate, setările dvs. Mozilla Firefox nu sunt disponibile în timp ce browser-ul respectiv rulează. Pentru a importa aceste setări în Google Chrome, salvaţi ceea ce lucraţi şi închideţi toate ferestrele Firefox. Apoi faceţi clic pe Continuaţi.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="6049075767726609708">Un administrator a instalat Google Chrome pe acest sistem, iar acum acesta este disponibil pentru toţi utilizatorii. Versiunea Google Chrome la nivel de sistem o va înlocui acum pe cea la nivel de utilizator.</translation>
+<translation id="7123348595797445166">Testaţi-l (deja instalat)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">Modificaţi limba utilizată în meniurile, casetele de dialog şi sfaturile de instrument Google Chrome.</translation>
 <translation id="9189723490960700326">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a prezentat un certificat expirat. Nu sunt disponibile informaţii care să indice dacă acel certificat a fost compromis de la expirarea sa. Aceasta înseamnă că Google Chrome nu poate garanta că dvs. comunicaţi cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; şi nu cu un atacator. Nu ar trebui să mergeţi mai departe.</translation>

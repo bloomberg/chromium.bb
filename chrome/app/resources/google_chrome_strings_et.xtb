@@ -3,15 +3,19 @@
 <translationbundle lang="et">
 <translation id="8000275528373650868">Google Chrome vajab operatsioonisüsteemi Windows Vista või Windows XP hoolduspaketiga SP2 või uuem.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
+<translation id="4517682492677349713">Kas soovite, et Google Chrome salvestaks selle teabe?</translation>
 <translation id="2770231113462710648">Asenda vaikebrauser:</translation>
 <translation id="698670068493841342">Sellele kasutajale on Google Chrome juba installitud. Kui tarkvara ei tööta, desinstallige palun Google Chrome ja laadige see uuesti alla.</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
+<translation id="7781002470561365167">Saadaval on uus Google Chrome'i versioon.</translation>
 <translation id="7101265395643981223">Käivitage Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome impordib nüüd lemmikud/järjehoidjad.</translation>
 <translation id="8970027151245482499">Google Chrome ei ole installitud või installikataloogi ei leitud. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="2040709530900803995">Google Chrome'i renderdaja</translation>
 <translation id="4281844954008187215">Kasutustingimused</translation>
 <translation id="1137776625614346046">Ala „Enim külastatud” näitab veebisaite, mida te kõige sagedamini kasutate. Kui olete Google Chrome'i juba mõnda aega kasutanud, näete enim külastatud saite iga kord, kui avate uue vahelehe. Saate lisateavet selle ja teiste funktsioonide kohta leheküljelt <ph name="BEGIN_LINK"/>Alustamine<ph name="END_LINK"/>.</translation>
+<translation id="3555616473548901994">Desinstallimine on lõpetatud.</translation>
+<translation id="1826297811907343327">Kui tühistate praegu importimise, siis ei impordita kõiki üksuseid. Võite hiljem Google Chrome'i menüü kaudu uuesti importida.</translation>
 <translation id="4728575227883772061">Install ebaõnnestus määramata vea tõttu. Kui Google Chrome parasjagu töötab, siis palun sulgege see ja proovige uuesti.</translation>
 <translation id="4149882025268051530">Installijal ei õnnestunud arhiivi lahti pakkida. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="5744005218040929396">Google Chrome'i utiliit</translation>
@@ -36,30 +40,35 @@
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>
 <translation id="6009537148180854585">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid serveri esitatud sert sisaldab vigu. Google Chrome ei saa kasutada vigadega serti ega kinnitada saidi identiteeti, millega proovisite ühendust luua. Teie ühendus pole turvaline ning te ei tohiks jätkata.</translation>
 <translation id="2485422356828889247">Desinstalli</translation>
+<translation id="8899050679030089927">Muudatuse rakendamiseks sulgege kõik Google Chrome'i aknad ja taaskäivitage Chrome.</translation>
 <translation id="3324235665723428530">Teie profiili ei saa kasutada, kuna see pärineb uuemast Google Chrome'i versioonist.\n\nMõned funktsioonid ei pruugi olla kättesaadavad. Palun täpsustage mõni teine profiilikaust või kasutage Chrome'i uuemat versiooni.</translation>
+<translation id="7214670531148488183">Google Chrome võib sirvimise parandamiseks kasutada veebiteenuseid — võite neid teenuseid valikuliselt keelata.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="2044287590254833138">Google Chrome'i tööriistariba</translation>
 <translation id="5074344184765391290">Chrome'i Plug-In Host</translation>
-<translation id="1473088902761932034">Tore, te olete tagasi! Kuid Google Chrome ei ole teie vaikebrauser.</translation>
 <translation id="6481075104394517441">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas veel mitte kehtiva serdi. Serdi usaldusväärsuse kohta andmed puuduvad. Google Chrome ei saa tagada, et teie suhtluspartneriks on &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ja mitte ründaja. Veenduge, et teie arvuti kellaaeg ja ajavöönd on õiged. Kui need pole õiged, parandage need ja värskendage seda lehekülge. Kui need on õiged, ei tohiks te jätkata.</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
 <translation id="595871952790078940">Chrome'i utiliit</translation>
 <translation id="2874156562296220396">Google Chrome'i on teinud võimalikuks avatud lähtekoodiga <ph name="BEGIN_LINK_CHROMIUM"/>Chromiumi<ph name="END_LINK_CHROMIUM"/> projekt ja muu <ph name="BEGIN_LINK_OSS"/>avatud lähtekoodiga tarkvara<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome on valmis teie installi lõpuni viima.</translation>
 <translation id="7100330187273168372">Google Chrome ei suuda oma andmekaustast lugeda ega sinna kirjutada:\n\n<ph name="USER_DATA_DIRECTORY"/></translation>
+<translation id="6757767188268205357">Ära tüüta mind</translation>
 <translation id="2290095356545025170">Olete kindel, et soovite Google Chrome'i desinstallida?</translation>
 <translation id="5941830788786076944">Tee Google Chrome vaikebrauseriks</translation>
 <translation id="4127951844153999091">Sellisel juhul ei kattu serdis kirjas olev aadress veebisaidi aadressiga, millele teie brauser minna üritas. Üks võimalik põhjus võib olla ründajas, kes teie suhtlust ümber suunab, esitades muu veebisaidi serti, mis võib põhjustada nimetatud erinemist. Teine võimalik põhjus on, et server on seatud sama serdi saatmisele mitme erineva veebisaidi puhul, sealhulgas veebisaidi puhul, mida te üritate külastada, isegi kui see sert ei ole kõikide nende veebisaitide puhul kehtiv. Google Chrome oskab kindlasti öelda, et te jõudsite lehele &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, kuid ei suuda kinnitada, et see on sama leht kui &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuhu te kavatsesite jõuda. Jätkamise korral ei kontrolli Chrome enam järgnevaid nimede mittekattumisi. Üldiselt on parem sellest punktist mitte edasi minna.</translation>
 <translation id="2712549016134575851">Tuvastatud on konflikt teise installitud rakendusega.</translation>
+<translation id="7018032895891496381">Google Chrome kasutab teie vaikeotsingumootorit, mis praegu on <ph name="PAGE_TITLE"/>. Soovite jätkata sama vaikeotsingumootori kasutamist?</translation>
 <translation id="7161904924553537242">Tere tulemast Google Chrome'i</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8236873504073475138">Google Chrome ei toeta operatsioonisüsteemi Windows 2000. Mõned funktsioonid ei pruugi töötada.</translation>
 <translation id="5318056482164160049">Google Chrome'i pistikprogrammi host</translation>
+<translation id="6126631249883707068">Kas soovite, et Google Chrome salvestaks teie parooli?</translation>
 <translation id="5046764976540625289">Välju Chrome'ist</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Interneti-brauser</translation>
 <translation id="8776515774046280928">Google Chrome on juba installitud ja kõigile selle arvuti kasutajatele kättesaadav. Kui soovite installida Google Chrome'i kasutajatasandil, peate esmalt desinstallima administraatori installitud süsteemitasandil versiooni.</translation>
+<translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="2769762047821873045">Google Chrome ei ole vaikebrauser.</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
 <translation id="3335672657969596251">Google Chrome ei toeta <ph name="OS_NAME"/>.</translation>
@@ -73,6 +82,7 @@
 <translation id="6626317981028933585">Kahjuks pole teie Mozilla Firefoxi seaded saadaval samal ajal kui brauser töötab. Nende seadete Google Chrome'i importimiseks salvestage oma töö ja sulgege kõik Firefoxi aknad. Siis klõpsake Jätka.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="6049075767726609708">Administraator on installinud Google Chrome'i sellesse süsteemi ja see on saadaval kõigile kasutajatele. Süsteemitasandi Google Chrome asendab nüüd teie kasutajatasandi installi.</translation>
+<translation id="7123348595797445166">Proovi seda (juba installitud)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">Muutke keelt, mida kasutatakse Google Chrome'i menüüdes, dialoogides ja kohtspikrites.</translation>
 <translation id="9189723490960700326">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas aegunud serdi. Puuduvad andmed serdi turvalisuse ohustamise kohta pärast selle aegumist. Google Chrome ei suuda usaldusväärselt tagada, et teie suhtluspartneriks on &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ja mitte ründaja. Te ei tohiks jätkata.</translation>

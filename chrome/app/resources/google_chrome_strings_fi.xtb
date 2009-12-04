@@ -3,15 +3,19 @@
 <translationbundle lang="fi">
 <translation id="8000275528373650868">Google Chrome edellyttää, että käyttöjärjestelmä on Windows Vista tai Windows XP (SP2 tai uudempi).</translation>
 <translation id="6676384891291319759">Käytä internetiä</translation>
+<translation id="4517682492677349713">Haluatko, että Google Chrome tallentaa nämä tiedot?</translation>
 <translation id="2770231113462710648">Vaihda oletusselaimeksi:</translation>
 <translation id="698670068493841342">Google Chrome on jo asennettu tällä käyttäjälle. Jos ohjelma ei toimi, poista Google Chromen asennus ja lataa se uudelleen.</translation>
 <translation id="7400722733683201933">Tietoja Google Chromesta</translation>
+<translation id="7781002470561365167">Google Chromen uusi versio on saatavilla.</translation>
 <translation id="7101265395643981223">Käynnistä Google Chrome</translation>
 <translation id="2370289711218562573">Google Chrome tuo suosikkeja/kirjanmerkkejä.</translation>
 <translation id="8970027151245482499">Google Chromea ei ole asennettu tai asennushakemistoa ei löytynyt. Lataa Google Chrome uudelleen.</translation>
 <translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="4281844954008187215">Käyttöehdot</translation>
 <translation id="1137776625614346046">Käydyimmät-alueella näkyvät sivustot, joita käytät useimmin. Kun olet käyttänyt Google Chromea jonkun aikaa, näet käydyimmät sivustot aina, kun avaat uuden välilehden. Lisätietoja Chromen ominaisuuksista on <ph name="BEGIN_LINK"/>aloitussivulla<ph name="END_LINK"/>.</translation>
+<translation id="3555616473548901994">Poistaminen valmis.</translation>
+<translation id="1826297811907343327">Jos peruutat nyt, kaikki kohteita ei tuoda. Voit tuoda kohteita uudelleen myöhemmin Google Chrome -valikon kautta.</translation>
 <translation id="4728575227883772061">Asennus epäonnistui tuntemattoman virheen takia. Jos Google Chrome on tällä hetkellä käynnissä, sulje ohjelma ja yritä uudelleen.</translation>
 <translation id="4149882025268051530">Asennusohjelma ei pystynyt purkamaan arkistotiedostoa. Lataa Google Chrome uudelleen.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
@@ -36,30 +40,35 @@
 <translation id="7747138024166251722">Asennusohjelma ei pystynyt luomaan väliaikaista hakemistoa. Tarkista, että käytettävissä on riittävästi levytilaa ja että sinulla on oikeus asentaa ohjelmia.</translation>
 <translation id="6009537148180854585">Yritit päästä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelimen esittämässä varmenteessa on virheitä. Google Chrome ei voi käyttää virheellistä varmennetta, eikä todentaa haluamasi sivuston identiteettiä.  Yhteytesi ei ole suojattu, eikä sinun tule jatkaa.</translation>
 <translation id="2485422356828889247">Poista</translation>
+<translation id="8899050679030089927">Sulje kaikki Chrome-ikkunat ja käynnistä selain uudelleen, jotta muutos tulee voimaan.</translation>
 <translation id="3324235665723428530">Profiiliasi ei voida käyttää koska se on peräisin Google Chromen uudemmasta versiosta.\n\n Kaikki ominaisuudet eivät välttämättä toimi. Valitse toinen profiili tai käytä uudempaa Chrome-versiota.</translation>
+<translation id="7214670531148488183">Google Chrome voi käyttää verkkopalveluita selauskokemuksen parantamiseen. Voit halutessasi poistaa palvelut käytöstä.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="2044287590254833138">Google Chrome-työkalupalkki</translation>
 <translation id="5074344184765391290">Chrome-laajennuksen isäntä</translation>
-<translation id="1473088902761932034">Kiva nähdä sinua taas! Google Chrome ei tosin ole vielä oletusselaimesi.</translation>
 <translation id="6481075104394517441">Yritit verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin esitti varmenteen, joka ei ole vielä voimassa. Varmenteen luotettavuuden osoittamiseksi ei ole saatavissa tietoja. <ph name="DOMAIN2"/> Varmista, että tietokoneesi kello- ja aikavyöhykeasetukset ovat oikeat. Jos ne eivät ole, korjaa ongelmat ja päivitä tämä sivu. Jos ne ovat oikeat, sinun ei tule jatkaa.</translation>
 <translation id="8862326446509486874">Sinulla ei ole käyttöoikeuksia järjestelmätason asennukseen. Kokeile asennusohjelman suorittamista uudelleen järjestelmänvalvojana.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
 <translation id="2874156562296220396">Google Chromen mahdollistivat avoimen lähdekoodin projekti <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ja muut <ph name="BEGIN_LINK_OSS"/>avoimen lähdekoodin ohjelmistot<ph name="END_LINK_OSS"/>.</translation>
 <translation id="6921913858457830952">Google Chrome on valmis suorittamaan asennuksen loppuun.</translation>
 <translation id="7100330187273168372">Google Chrome ei voi lukea datahakemistoa :\n\n<ph name="USER_DATA_DIRECTORY"/>, eikä kirjoittaa siihen</translation>
+<translation id="6757767188268205357">Älä häiritse</translation>
 <translation id="2290095356545025170">Haluatko varmasti poistaa Google Chromen?</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
 <translation id="4127951844153999091">Tällöin varmenteessa mainittu osoite ei vastaa sen sivuston osoitetta, johon selaimesi yritti siirtyä. Yksi mahdollinen syy on, että hyökkääjä on siepannut yhteytesi ja esittää eri sivuston varmenteen. Toinen syy voi olla se, että palvelin on määritetty palauttamaan sama varmenne useille sivustoille, myös sille, johon yrität päästä, vaikka varmenne ei kelpaa kaikissa kyseessä olevissa sivustoissa. <ph name="DOMAIN2"/><ph name="DOMAIN"/> Jos jatkat, Chrome ei tarkista enää muita vastaamattomia nimiä. Yleensä on parempi olla jatkamatta tästä eteenpäin.</translation>
 <translation id="2712549016134575851">Ristiriita toisen asennetun sovelluksen kanssa havaittu.</translation>
+<translation id="7018032895891496381">Google Chrome käyttää oletushakukonettasi, joka on tällä hetkellä <ph name="PAGE_TITLE"/>. Haluatko säilyttää oletushakukoneen samana?</translation>
 <translation id="7161904924553537242">Tervetuloa Google Chromeen</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8236873504073475138">Google Chrome ei tue Windows 2000-käyttöjärjestelmää. Kaikki ominaisuudet eivät välttämättä toimi.</translation>
 <translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="6126631249883707068">Haluatko, että Google Chrome tallentaa salasanasi?</translation>
 <translation id="5046764976540625289">Poistu Chromesta</translation>
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Internetselain</translation>
 <translation id="8776515774046280928">Google Chrome on jo asennettu ja kaikkien tietokoneen käyttäjien käytettävissä. Jos haluat asentaa Google Chrome käyttäjätasolla, poista ensin järjestelmänvalvojan asentama järjestelmätason versio.</translation>
+<translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
 <translation id="2769762047821873045">Google Chrome ei ole oletusselain.</translation>
 <translation id="7825851276765848807">Asennus epäonnistui tuntemattoman virheen vuoksi. Lataa Google Chrome uudelleen.</translation>
 <translation id="3335672657969596251">Google Chrome ei tue <ph name="OS_NAME"/>-käyttöjärjestelmää</translation>
@@ -73,6 +82,7 @@
 <translation id="6626317981028933585">Valitettavasti Mozilla Firefox-asetuksesi eivät ole käytettävissä kun kyseinen selain on toiminnassa. Tuodaksesi asetukset Google Chromeen, tallenna mahdolliset keskeneräiset työt ja sulje kaikki Firefox-ikkunat. Napsauta sitten Jatka.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="6049075767726609708">Järjestelmänvalvoja on asentanut Google Chromen tähän järjestelmään ja selain on kaikkien käyttäjien käytettävissä. Järjestelmätason Google Chrome korvaa käyttäjätason asennuksen.</translation>
+<translation id="7123348595797445166">Kokeile (valmiiksi asennettu)</translation>
 <translation id="3870154837782082782">Google Inc.</translation>
 <translation id="1446473746922165495">Muuta Google Chromen valikkojen, viesti-ikkunoiden ja vihjetekstien kieli.</translation>
 <translation id="9189723490960700326">Yritit päästä verkkotunnukseen &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mutta palvelin esitti vanhentuneen varmenteen. Ei ole saatavissa tietoja siitä, onko varmenne vaarantunut vanhentumisensa jälkeen. <ph name="DOMAIN2"/> Sinun ei pidä jatkaa.</translation>
