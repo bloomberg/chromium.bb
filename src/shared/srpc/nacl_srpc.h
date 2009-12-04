@@ -75,8 +75,6 @@ typedef int NaClSrpcImcDescType;
 #else
 #  include "native_client/src/include/portability.h"
 #  include "native_client/src/include/nacl_base.h"
-
-#  include "native_client/src/shared/imc/nacl_imc_c.h"
 #  include "native_client/src/shared/platform/nacl_log.h"
 #  include "native_client/src/trusted/desc/nrd_all_modules.h"
 #  include "native_client/src/trusted/desc/nrd_xfer.h"

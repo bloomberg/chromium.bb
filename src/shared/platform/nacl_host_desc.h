@@ -174,7 +174,7 @@ extern int NaClHostDescUnmapUnsafe(void   *start_addr,
  * Underlying host-OS functions: open / _s_open_s
  */
 extern int NaClHostDescOpen(struct NaClHostDesc *d,
-                            char                *path,
+                            char const          *path,
                             int                 mode,
                             int                 perms);
 

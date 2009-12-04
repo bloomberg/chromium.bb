@@ -38,12 +38,11 @@
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 #include "native_client/src/trusted/desc/nrd_all_modules.h"
-#include "native_client/src/trusted/desc/nrd_xfer.h"
-#include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 
 // An incomplete class for the client runtime.
 namespace nacl_srpc {
@@ -91,6 +90,8 @@ class Plugin : public PortableHandle {
   virtual ~Plugin();
 
   bool Init(struct PortableHandleInitializer* init_info);
+
+  nacl::DescWrapperFactory* wrapper_factory() { return wrapper_factory_; }
   void LoadMethods();
   // overriding virtual methods
   virtual bool InvokeEx(uintptr_t method_id,
@@ -135,10 +136,6 @@ class Plugin : public PortableHandle {
   // Catch bad accesses during loading.
   static void SignalHandler(int value);
 
- public:
-  struct NaClDescEffector* effp_;
-  struct NaClNrdXferEffector eff_;
-
  private:
   static int number_alive_counter;
   ScriptableHandle<SocketAddress>* socket_address_;
@@ -153,6 +150,8 @@ class Plugin : public PortableHandle {
   std::string nacl_module_origin_;
 
   bool origin_valid_;
+
+  nacl::DescWrapperFactory* wrapper_factory_;
 
   static PLUGIN_JMPBUF loader_env;
 

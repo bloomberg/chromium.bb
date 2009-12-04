@@ -130,7 +130,7 @@ bool ConnectedSocket::Init(
 
   dprintf(("ConnectedSocket::Init(%p, %p, %d, %p)\n",
            static_cast<void *>(socket_init_info->plugin_),
-           static_cast<void *>(socket_init_info->desc_),
+           static_cast<void *>(socket_init_info->wrapper_),
            socket_init_info->is_srpc_client_,
            static_cast<void *>(socket_init_info->serv_rtm_info_)));
 

@@ -36,7 +36,10 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 
+#include "native_client/src/include/nacl_base.h"
 #include "native_client/src/shared/platform/nacl_log.h"
+
+EXTERN_C_BEGIN
 
 /*
  * We cannot use variadic macros since not all preprocessors provide
@@ -106,5 +109,7 @@ extern int nacl_check_debug_mode;
  * reference directly.
  */
 extern void NaClCheckIntern(char *fmt, ...);
+
+EXTERN_C_END
 
 #endif

@@ -7,8 +7,13 @@
 #include "base/sync_socket.h"
 #include "chrome/common/transport_dib.h"
 #include "native_client/src/include/portability.h"
+#include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
+#include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -16,18 +21,93 @@
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 #endif  // NACL_LINUX
 #include "native_client/src/trusted/desc/nrd_xfer.h"
+#include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
-/*
- * TODO(bsy): remove when we put SIZE_T_MAX in a common header file.
- */
-#if !defined(SIZE_T_MAX)
-# define SIZE_T_MAX ((size_t) -1)
-#endif
+namespace {
+static const size_t kSizeTMax = std::numeric_limits<size_t>::max();
+}  // namespace
 
 namespace nacl {
+
+// Descriptor creation and manipulation sometimes requires additional state
+// (for instance, Effectors).  Therefore, we create an object that encapsulates
+// that state.
+class DescWrapperCommon {
+  friend class DescWrapperFactory;
+
+ public:
+  typedef uint32_t RefCountType;
+
+  // Get a pointer to the effector.
+  struct NaClDescEffector* effp() {
+    return reinterpret_cast<struct NaClDescEffector*>(&eff_);
+  }
+
+  // Inform clients that the object was successfully initialized.
+  bool is_initialized() const { return is_initialized_; }
+
+  // Manipulate reference count
+  DescWrapperCommon* Ref() {
+    // TODO(sehr): replace with a reference count class when we have one.
+    NaClXMutexLock(&ref_count_mu_);
+    if (std::numeric_limits<RefCountType>::max() == ref_count_) {
+      NaClLog(LOG_FATAL, "DescWrapperCommon ref count overflow\n");
+    }
+    ++ref_count_;
+    NaClXMutexUnlock(&ref_count_mu_);
+    return this;
+  }
+
+  void Unref() {
+    NaClXMutexLock(&ref_count_mu_);
+    if (0 == ref_count_) {
+      NaClLog(LOG_FATAL, "DescWrapperCommon ref count already zero\n");
+    }
+    --ref_count_;
+    bool destroy = (0 == ref_count_);
+    NaClXMutexUnlock(&ref_count_mu_);
+    if (destroy) {
+      delete this;
+    }
+  }
+
+ private:
+  DescWrapperCommon() : is_initialized_(false), ref_count_(1) {
+    sockets_[0] = NULL;
+    sockets_[1] = NULL;
+    NaClMutexCtor(&ref_count_mu_);
+  }
+  ~DescWrapperCommon() {
+    if (is_initialized_) {
+      effp()->vtbl->Dtor(effp());
+      // effector took ownership of sockets_, so no need to Unref directly.
+    } else {
+      NaClDescSafeUnref(sockets_[0]);
+      sockets_[0] = NULL;
+      NaClDescSafeUnref(sockets_[1]);
+      sockets_[1] = NULL;
+    }
+    NaClMutexDtor(&ref_count_mu_);
+  }
+
+  // Set up the state.  Returns true on success.
+  bool Init();
+
+  // Boolean to indicate the object was successfully initialized.
+  bool is_initialized_;
+  // Effector for transferring descriptors.
+  struct NaClNrdXferEffector eff_;
+  // Bound socket, socket address pair (used for effectors).
+  struct NaClDesc* sockets_[2];
+  // The reference count and the mutex to protect it.
+  RefCountType ref_count_;
+  struct NaClMutex ref_count_mu_;
+
+  DISALLOW_COPY_AND_ASSIGN(DescWrapperCommon);
+};
 
 bool DescWrapperCommon::Init() {
   // Create a bound socket for use by the transfer effector.
@@ -36,41 +116,30 @@ bool DescWrapperCommon::Init() {
   }
   // Set up the transfer effector.
   if (!NaClNrdXferEffectorCtor(&eff_, sockets_[0])) {
-    Cleanup();
     return false;
   }
+  sockets_[0] = NULL;  // eff_ took ownership.
+  NaClDescUnref(sockets_[1]);
+  sockets_[1] = NULL;  // NaClDescUnref freed this already.
+  // Successfully initialized.
   is_initialized_ = true;
   return true;
 }
 
-void DescWrapperCommon::Cleanup() {
-  NaClDescSafeUnref(sockets_[0]);
-  sockets_[0] = NULL;
-  NaClDescSafeUnref(sockets_[1]);
-  sockets_[1] = NULL;
-}
-
-DescWrapperCommon::~DescWrapperCommon() {
-  if (is_initialized_) {
-    effp()->vtbl->Dtor(effp());
-  }
-  Cleanup();
-}
-
 DescWrapperFactory::DescWrapperFactory() {
   common_data_ = new(std::nothrow) DescWrapperCommon();
-  if (common_data_ && !common_data_->Init()) {
-    delete common_data_;
-    common_data_ = reinterpret_cast<DescWrapperCommon*>(NULL);
+  if (NULL == common_data_) {
+    return;
   }
-  if (reinterpret_cast<DescWrapperCommon*>(NULL) != common_data_) {
-    common_data_->AddRef();
+  if (!common_data_->Init()) {
+    delete common_data_;
+    common_data_ = NULL;
   }
 }
 
 DescWrapperFactory::~DescWrapperFactory() {
-  if (reinterpret_cast<DescWrapperCommon*>(NULL) != common_data_) {
-    common_data_->RemoveRef();
+  if (NULL != common_data_) {
+    common_data_->Unref();
   }
 }
 
@@ -90,14 +159,12 @@ int DescWrapperFactory::MakeBoundSock(DescWrapper* pair[2]) {
   if (NULL == tmp_pair[0]) {
     goto cleanup;
   }
-  // DescWrapper took ownership of descs[0], so to allow cleanup we NULL it out.
-  descs[0] = NULL;
+  descs[0] = NULL;  // DescWrapper took ownership of descs[0].
   tmp_pair[1] = new(std::nothrow) DescWrapper(common_data_, descs[1]);
   if (NULL == tmp_pair[1]) {
     goto cleanup;
   }
-  // DescWrapper took ownership of descs[1], so to allow cleanup we NULL it out.
-  descs[1] = NULL;
+  descs[1] = NULL;  // DescWrapper took ownership of descs[1].
   pair[0] = tmp_pair[0];
   pair[1] = tmp_pair[1];
   return 0;
@@ -108,6 +175,36 @@ cleanup:
   delete tmp_pair[0];
   delete tmp_pair[1];
   return -1;
+}
+
+DescWrapper* DescWrapperFactory::MakeImcSock(NaClHandle handle) {
+  // Return an error if the factory wasn't properly initialized.
+  if (!common_data_->is_initialized()) {
+    return NULL;
+  }
+  struct NaClDescImcDesc* imc_desc = NULL;
+  DescWrapper* wrapper = NULL;
+
+  imc_desc = new(std::nothrow) NaClDescImcDesc;
+  if (NULL == imc_desc) {
+    goto cleanup;
+  }
+  if (!NaClDescImcDescCtor(imc_desc, handle)) {
+    delete imc_desc;
+    imc_desc = NULL;
+    goto cleanup;
+  }
+  wrapper = new(std::nothrow)
+      DescWrapper(common_data_, reinterpret_cast<struct NaClDesc*>(imc_desc));
+  if (NULL == wrapper) {
+    goto cleanup;
+  }
+  imc_desc = NULL;  // DescWrapper takes ownership of imc_desc.
+  return wrapper;
+
+cleanup:
+  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(imc_desc));
+  return NULL;
 }
 
 DescWrapper* DescWrapperFactory::MakeShm(size_t size) {
@@ -142,8 +239,7 @@ DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
   if (NULL == wrapper) {
     goto cleanup;
   }
-  // DescWrapper takes ownership of imc_desc, so we NULL it out.
-  imc_desc = NULL;
+  imc_desc = NULL;  // DescWrapper takes ownership of imc_desc.
   return wrapper;
 
 cleanup:
@@ -185,6 +281,12 @@ cleanup:
 #endif  // NACL_LINUX
 
 DescWrapper* DescWrapperFactory::ImportSharedMemory(base::SharedMemory* shm) {
+#ifdef NACL_STANDALONE
+  // base::SharedMemory is only present in the Chrome hookup.
+  // TODO(sehr): Add a stub library for the Chrome dependencies for standalone.
+  UNREFERENCED_PARAMETER(shm);
+  return NULL;
+#else
 #if  NACL_LINUX || NACL_OSX
   return ImportShmHandle(shm->handle().fd, shm->max_size());
 #elif NACL_WINDOWS
@@ -192,9 +294,16 @@ DescWrapper* DescWrapperFactory::ImportSharedMemory(base::SharedMemory* shm) {
 #else
 # error "What platform?"
 #endif  // NACL_LINUX || NACL_OSX
+#endif  // NACL_STANDALONE
 }
 
 DescWrapper* DescWrapperFactory::ImportTransportDIB(TransportDIB* dib) {
+#ifdef NACL_STANDALONE
+  // TransportDIB is only present in the Chrome hookup.
+  // TODO(sehr): Add a stub library for the Chrome dependencies for standalone.
+  UNREFERENCED_PARAMETER(dib);
+  return NULL;
+#else
 #if  NACL_LINUX
   // TransportDIBs use SysV (X) shared memory on Linux.
   return ImportSysvShm(dib->handle(), dib->size());
@@ -207,6 +316,7 @@ DescWrapper* DescWrapperFactory::ImportTransportDIB(TransportDIB* dib) {
 #else
 # error "What platform?"
 #endif  // NACL_LINUX
+#endif  // NACL_STANDALONE
 }
 
 DescWrapper* DescWrapperFactory::ImportSyncSocket(base::SyncSocket* sock) {
@@ -227,8 +337,7 @@ DescWrapper* DescWrapperFactory::ImportSyncSocket(base::SyncSocket* sock) {
   if (NULL == wrapper) {
     goto cleanup;
   }
-  // DescWrapper takes ownership of ss_desc, so we NULL it out.
-  ss_desc = NULL;
+  ss_desc = NULL;  // DescWrapper takes ownership of ss_desc.
   return wrapper;
 
 cleanup:
@@ -244,34 +353,144 @@ DescWrapper* DescWrapperFactory::MakeGeneric(struct NaClDesc* desc) {
   return new(std::nothrow) DescWrapper(common_data_, desc);
 }
 
+DescWrapper* DescWrapperFactory::MakeSocketAddress(const char* str) {
+  struct NaClDescConnCap* conn_cap = NULL;
+  DescWrapper* wrapper = NULL;
+
+  // Ensure argument is a valid string short enough to be a socket address.
+  if (NULL == str) {
+    return NULL;
+  }
+  size_t len = strnlen(str, NACL_PATH_MAX);
+  // strnlen ensures NACL_PATH_MAX >= len.  If NACL_PATH_MAX == len, then
+  // there is not enough room to hold the address.
+  if (NACL_PATH_MAX == len) {
+    return NULL;
+  }
+  // Create a NaClSocketAddress from the string.
+  struct NaClSocketAddress sock_addr;
+  // We need len + 1 to guarantee the zero byte is written.  This is safe,
+  // since NACL_PATH_MAX >= len + 1 from above.
+  strncpy(sock_addr.path, str, len + 1);
+  // Create a NaClDescConnCap from the socket address.
+  conn_cap = new(std::nothrow) NaClDescConnCap;
+  if (NULL == conn_cap) {
+    goto cleanup;
+  }
+  if (!NaClDescConnCapCtor(conn_cap, &sock_addr)) {
+    delete conn_cap;
+    conn_cap = NULL;
+    goto cleanup;
+  }
+  wrapper = MakeGeneric(reinterpret_cast<struct NaClDesc*>(conn_cap));
+  if (NULL == wrapper) {
+    goto cleanup;
+  }
+  // If wrapper was created, it took ownership.  If not, NaClDescUnref freed it.
+  conn_cap = NULL;
+  return wrapper;
+
+cleanup:
+  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(conn_cap));
+  return NULL;
+}
+
+int DescWrapperFactory::MakeSocketPair(DescWrapper* pair[2]) {
+  // Return an error if the factory wasn't properly initialized.
+  if (!common_data_->is_initialized()) {
+    return -1;
+  }
+  struct NaClDesc* descs[2] = { NULL, NULL };
+  DescWrapper* tmp_pair[2] = { NULL, NULL };
+
+  int ret = NaClCommonDescSocketPair(descs);
+  if (0 != ret) {
+    return ret;
+  }
+  tmp_pair[0] = new(std::nothrow) DescWrapper(common_data_, descs[0]);
+  if (NULL == tmp_pair[0]) {
+    goto cleanup;
+  }
+  descs[0] = NULL;  // DescWrapper took ownership of descs[0].
+  tmp_pair[1] = new(std::nothrow) DescWrapper(common_data_, descs[1]);
+  if (NULL == tmp_pair[1]) {
+    goto cleanup;
+  }
+  descs[1] = NULL;  // DescWrapper took ownership of descs[1].
+  pair[0] = tmp_pair[0];
+  pair[1] = tmp_pair[1];
+  return 0;
+
+cleanup:
+  NaClDescSafeUnref(descs[0]);
+  NaClDescSafeUnref(descs[1]);
+  delete tmp_pair[0];
+  delete tmp_pair[1];
+  return -1;
+}
+
+DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
+                                              int flags,
+                                              int mode) {
+  struct NaClHostDesc *nhdp = NULL;
+  struct NaClDescIoDesc *ndiodp = NULL;
+  DescWrapper* wrapper = NULL;
+
+  nhdp = new(std::nothrow) struct NaClHostDesc;
+  if (NULL == nhdp) {
+    goto cleanup;
+  }
+  if (0 != NaClHostDescOpen(nhdp, fname, flags, mode)) {
+    goto cleanup;
+  }
+  ndiodp = NaClDescIoDescMake(nhdp);
+  if (NULL == ndiodp) {
+    NaClHostDescClose(nhdp);
+    delete nhdp;
+    nhdp = NULL;
+    goto cleanup;
+  }
+  nhdp = NULL;  // IoDesc took ownership of nhd
+  wrapper = MakeGeneric(reinterpret_cast<struct NaClDesc*>(ndiodp));
+  if (NULL == wrapper) {
+    goto cleanup;
+  }
+  return wrapper;
+
+cleanup:
+  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(ndiodp));
+  delete nhdp;
+  return NULL;
+}
+
 DescWrapper::DescWrapper(DescWrapperCommon* common_data,
                          struct NaClDesc* desc)
       : common_data_(common_data), desc_(desc) {
-  if (reinterpret_cast<DescWrapperCommon*>(NULL) != common_data_) {
-    common_data_->AddRef();
+  // DescWrapper takes ownership of desc from caller, so no Ref call here.
+  if (NULL != common_data_) {
+    common_data_->Ref();
   }
 }
 
 DescWrapper::~DescWrapper() {
-  if (reinterpret_cast<DescWrapperCommon*>(NULL) != common_data_) {
-    common_data_->RemoveRef();
+  if (NULL != common_data_) {
+    common_data_->Unref();
   }
   NaClDescSafeUnref(desc_);
   desc_ = NULL;
 }
 
-void* DescWrapper::Map(void* start_addr,
-                       size_t len,
-                       int prot,
-                       int flags,
-                       nacl_off64_t offset) {
-  return reinterpret_cast<void*>(desc_->vtbl->Map(desc_,
-                                                  common_data_->effp(),
-                                                  start_addr,
-                                                  len,
-                                                  prot,
-                                                  flags,
-                                                  offset));
+const char* DescWrapper::conn_cap_path() const {
+  if (NULL == desc_ || NACL_DESC_CONN_CAP != type_tag()) {
+    return NULL;
+  }
+  struct NaClDescConnCap* conn_cap =
+      reinterpret_cast<struct NaClDescConnCap*>(desc_);
+  return conn_cap->cap.path;
+}
+
+int DescWrapper::Map(void** addr, size_t* size) {
+  return NaClDescMapDescriptor(desc_, common_data_->effp(), addr, size);
 }
 
 int DescWrapper::Unmap(void* start_addr, size_t len) {
@@ -348,13 +567,14 @@ int DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;
   // Allocate and copy IOV.
-  if (SIZE_T_MAX / sizeof(NaClImcMsgIoVec) <= diov_length) {
+  if (kSizeTMax / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
   }
   header.iov = new(std::nothrow) NaClImcMsgIoVec[dgram->iov_length];
   if (NULL == header.iov) {
     goto cleanup;
   }
+  header.iov_length = diov_length;
   for (i = 0; i < dgram->iov_length; ++i) {
     header.iov[i].base = dgram->iov[i].base;
     header.iov[i].length = dgram->iov[i].length;
@@ -363,13 +583,14 @@ int DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   if (kHandleCountMax < dgram->ndescv_length) {
     goto cleanup;
   }
-  if (SIZE_T_MAX / sizeof(NaClDesc*) <= ddescv_length) {
+  if (kSizeTMax / sizeof(NaClDesc*) <= ddescv_length) {
     goto cleanup;
   }
   header.ndescv = new(std::nothrow) NaClDesc*[dgram->ndescv_length];
   if (NULL == header.iov) {
     goto cleanup;
   }
+  header.ndesc_length = ddescv_length;
   for (i = 0; i < dgram->ndescv_length; ++i) {
     header.ndescv[i] = dgram->ndescv[i]->desc_;
   }
@@ -392,17 +613,18 @@ int DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   // Initialize to allow simple cleanups.
   header.ndescv = NULL;
   for (i = 0; i < dgram->iov_length; ++i) {
-    dgram->ndescv[i] = reinterpret_cast<DescWrapper*>(NULL);
+    dgram->ndescv[i] = NULL;
   }
 
   // Allocate and copy the IOV.
-  if (SIZE_T_MAX / sizeof(NaClImcMsgIoVec) <= diov_length) {
+  if (kSizeTMax / sizeof(NaClImcMsgIoVec) <= diov_length) {
     goto cleanup;
   }
   header.iov = new(std::nothrow) NaClImcMsgIoVec[dgram->iov_length];
   if (NULL == header.iov) {
     goto cleanup;
   }
+  header.iov_length = diov_length;
   for (i = 0; i < dgram->iov_length; ++i) {
     header.iov[i].base = dgram->iov[i].base;
     header.iov[i].length = dgram->iov[i].length;
@@ -411,27 +633,30 @@ int DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   if (kHandleCountMax < dgram->ndescv_length) {
     goto cleanup;
   }
-  if (SIZE_T_MAX / sizeof(NaClDesc*) <= ddescv_length) {
+  if (kSizeTMax / sizeof(NaClDesc*) <= ddescv_length) {
     goto cleanup;
   }
   header.ndescv = new(std::nothrow) NaClDesc*[dgram->ndescv_length];
   if (NULL == header.ndescv) {
     goto cleanup;
   }
+  header.ndesc_length = diov_length;
   // Receive the message.
   ret = NaClImcRecvTypedMessage(desc_, common_data_->effp(), &header, flags);
+  dgram->ndescv_length = header.ndesc_length;
+  dgram->flags = header.flags;
   // Copy the descriptors, creating new DescWrappers around them.
-  for (i = 0; i < dgram->ndescv_length; ++i) {
+  for (i = 0; i < header.ndesc_length; ++i) {
     dgram->ndescv[i] =
         new(std::nothrow) DescWrapper(common_data_, header.ndescv[i]);
-    if (reinterpret_cast<DescWrapper*>(NULL) == dgram->ndescv[i]) {
+    if (NULL == dgram->ndescv[i]) {
       goto cleanup;
     }
   }
   return ret;
 
 cleanup:
-  for (i = 0; i < dgram->ndescv_length; ++i) {
+  for (i = 0; i < ddescv_length; ++i) {
     delete dgram->ndescv[i];
   }
   delete header.ndescv;
@@ -452,7 +677,12 @@ DescWrapper* DescWrapper::Connect() {
     // Take from effector failed.
     return NULL;
   }
-  return new(std::nothrow) DescWrapper(common_data_, connected_desc);
+  DescWrapper* wrapper =
+      new(std::nothrow) DescWrapper(common_data_, connected_desc);
+  if (NULL == wrapper) {
+    NaClDescUnref(connected_desc);
+  }
+  return wrapper;
 }
 
 DescWrapper* DescWrapper::Accept() {
@@ -469,7 +699,12 @@ DescWrapper* DescWrapper::Accept() {
     // Take from effector failed.
     return NULL;
   }
-  return new(std::nothrow) DescWrapper(common_data_, connected_desc);
+  DescWrapper* wrapper =
+      new(std::nothrow) DescWrapper(common_data_, connected_desc);
+  if (NULL == wrapper) {
+    NaClDescUnref(connected_desc);
+  }
+  return wrapper;
 }
 
 int DescWrapper::Post() {

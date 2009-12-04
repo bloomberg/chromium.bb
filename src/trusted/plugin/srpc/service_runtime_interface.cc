@@ -388,84 +388,45 @@ ScriptableHandle<ConnectedSocket>*
 ScriptableHandle<SocketAddress>* ServiceRuntimeInterface::GetSocketAddress(
     Plugin* plugin,
     NaClHandle channel) {
-  NaClImcTypedMsgHdr  header;
-  NaClImcMsgIoVec     iovec[1];
-  unsigned char       bytes[NACL_ABI_IMC_USER_BYTES_MAX];
-  NaClDesc*           descs[NACL_ABI_IMC_USER_DESC_MAX];
-  NaClNrdXferEffector eff;
+  nacl::DescWrapper::MsgHeader header;
+  nacl::DescWrapper::MsgIoVec iovec[1];
+  unsigned char bytes[NACL_ABI_IMC_USER_BYTES_MAX];
+  nacl::DescWrapper* descs[NACL_ABI_IMC_USER_DESC_MAX];
 
   dprintf(("ServiceRuntimeInterface::GetSocketAddress(%p, %p)\n",
            static_cast<void *>(plugin),
            reinterpret_cast<void *>(channel)));
 
   ScriptableHandle<SocketAddress>* retval = NULL;
-  // Create a NaClDesc to use for message passing over channel.
-  struct NaClDesc* desc(reinterpret_cast<struct NaClDesc*>(
-                            malloc(sizeof(struct NaClDescImcDesc))));
-
-  if (NULL == desc) {
-    dprintf(("ServiceRuntimeInterface::GetSocketAddress: malloc failed\n"));
-    goto cleanup;
-  }
-  // desc takes ownership of channel
-  if (!NaClDescImcDescCtor(reinterpret_cast<struct NaClDescImcDesc*>(desc),
-                           channel)) {
-    dprintf(("ServiceRuntimeInterface::GetSocketAddress: "
-             "NaClDescImcDescCtor failed\n"));
-    free(desc);
-    desc = NULL;
-    goto cleanup;
-  }
-  channel = NACL_INVALID_HANDLE;
-  // Set up the effector to read the message.
-  // TODO(bsy): using desc here is wrong, but doesn't really matter.
-  if (!NaClNrdXferEffectorCtor(&eff, desc)) {
-    dprintf(("ServiceRuntimeInterface::GetSocketAddress: "
-             "NaClNrdXferEffectorCtor failed\n"));
-    goto cleanup;
-  }
+  nacl::DescWrapper* imc_desc = plugin->wrapper_factory()->MakeImcSock(channel);
   // Set up to receive a message.
   iovec[0].base = bytes;
   iovec[0].length = NACL_ABI_IMC_USER_BYTES_MAX;
   header.iov = iovec;
   header.iov_length = NACL_ARRAY_SIZE(iovec);
   header.ndescv = descs;
-  header.ndesc_length = NACL_ARRAY_SIZE(descs);
+  header.ndescv_length = NACL_ARRAY_SIZE(descs);
   header.flags = 0;
   // Receive the message.
-  NaClImcRecvTypedMessage(desc,
-                          reinterpret_cast<NaClDescEffector*>(&eff),
-                          &header,
-                          0);
+  int ret = imc_desc->RecvMsg(&header, 0);
   // Check that there was exactly one descriptor passed.
-  if (1 != header.ndesc_length) {
+  if (0 > ret || 1 != header.ndescv_length) {
     dprintf(("ServiceRuntimeInterface::GetSocketAddress: "
-             "message receive failed %u %u\n",
-             (unsigned) header.ndesc_length, (unsigned) header.iov_length));
-    goto cleanup_eff;
+             "message receive failed %d %u %u\n", ret,
+             (unsigned) header.ndescv_length,
+             (unsigned) header.iov_length));
+    goto cleanup;
   }
   dprintf(("ServiceRuntimeInterface::GetSocketAddress: "
-           "-X result descriptor (NaClDesc*) = %p\n",
+           "-X result descriptor (DescWrapper*) = %p\n",
            static_cast<void *>(descs[0])));
   /* SCOPE */ {
     SocketAddressInitializer init_info(plugin_interface_, descs[0], plugin);
     retval = ScriptableHandle<SocketAddress>::New(
         static_cast<PortableHandleInitializer*>(&init_info));
   }
-  // TODO(bsy): use NaClDescObj and scoped_ptr when NaClDescObj is
-  // ready, and get rid of the gotos.
- cleanup_eff:
-  dprintf((" dtoring the effector\n"));
-  (*eff.base.vtbl->Dtor)(reinterpret_cast<struct NaClDescEffector *>(&eff));
  cleanup:
-  if (NULL != desc) {
-    NaClDescUnref(desc);
-  }
-  if (NACL_INVALID_HANDLE != channel) {
-    dprintf((" NaClClose(handle = %p\n",
-             reinterpret_cast<void *>(channel)));
-    NaClClose(channel);
-  }
+  imc_desc->Delete();
   dprintf((" returning %p\n", static_cast<void *>(retval)));
   return retval;
 }

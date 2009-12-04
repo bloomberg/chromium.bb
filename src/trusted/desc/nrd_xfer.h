@@ -62,6 +62,7 @@
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 /* NaClImcMsgIoVec */
 
@@ -108,6 +109,16 @@ int32_t NaClImcRecvTypedMessage(struct NaClDesc           *channel,
  * pair[1] is a NaClDescConnCap.
  */
 int32_t NaClCommonDescMakeBoundSock(struct NaClDesc   *pair[2]);
+
+/**
+ * Create a pair of connected sockets.
+ * Returns 0 on success, and a negative value (negated errno) on
+ * error.
+ *
+ * pair[0] is a NaClDescXferableDataDesc, and
+ * pair[1] is a NaClDescXferableDataDesc.
+ */
+int32_t NaClCommonDescSocketPair(struct NaClDesc *pair[2]);
 
 EXTERN_C_END
 

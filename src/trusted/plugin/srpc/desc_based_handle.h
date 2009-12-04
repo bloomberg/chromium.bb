@@ -39,19 +39,20 @@
 #include <map>
 #include <string>
 #include "base/basictypes.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 namespace nacl_srpc {
 
   struct DescHandleInitializer : PortableHandleInitializer {
-    struct NaClDesc* desc_;
+    nacl::DescWrapper* wrapper_;
     Plugin* plugin_;
     DescHandleInitializer(PortablePluginInterface* plugin_interface,
-                          struct NaClDesc *desc,
+                          nacl::DescWrapper* wrapper,
                           Plugin *plugin):
         PortableHandleInitializer(plugin_interface),
-        desc_(desc),
+        wrapper_(wrapper),
         plugin_(plugin) {}
   };
 
@@ -62,7 +63,8 @@ namespace nacl_srpc {
    public:
 
     // Get the contained descriptor.
-    struct NaClDesc* desc() { return desc_; }
+    nacl::DescWrapper* wrapper() { return wrapper_; }
+    struct NaClDesc* desc() { return wrapper_->desc(); }
 
     // There are derived classes, so the constructor and destructor must
     // be visible.
@@ -84,7 +86,7 @@ namespace nacl_srpc {
    public:
     Plugin* plugin_;
    private:
-    struct NaClDesc* desc_;
+    nacl::DescWrapper* wrapper_;
     static int number_alive_counter;
   };
 

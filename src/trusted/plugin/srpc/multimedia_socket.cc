@@ -207,7 +207,6 @@ void MultimediaSocket::set_upcall_thread_id(uint32_t tid) {
 
 static void WINAPI UpcallThread(void *arg) {
   nacl::VideoCallbackData *cbdata;
-  struct NaClDescImcDesc* desc;
   NaClSrpcHandlerDesc handlers[] = {
     { "upcall::", handleUpcall },
     { NULL, NULL }
@@ -217,22 +216,14 @@ static void WINAPI UpcallThread(void *arg) {
   dprintf(("MultimediaSocket::UpcallThread(%p)\n", arg));
   dprintf(("MultimediaSocket::cbdata->portable_plugin %p\n",
            static_cast<void *>(cbdata->portable_plugin)));
-  // Set up the NaClDesc the server will be placed on.
-  desc = reinterpret_cast<struct NaClDescImcDesc*>(malloc(sizeof(*desc)));
-  if (NULL == desc) {
+  // Set up the DescWrapper* the server will be placed on.
+  if (NULL == cbdata->handle) {
     dprintf(("MultimediaSocket::UpcallThread(%p) FAILED\n", arg));
-    return;
-  }
-  if (!NaClDescImcDescCtor(desc, cbdata->handle)) {
-    dprintf(("MultimediaSocket::UpcallThread(%p) FAILED\n", arg));
-    free(desc);
     return;
   }
   cbdata->msp->set_upcall_thread_id(NaClThreadId());
   // Run the SRPC server.
-  NaClSrpcServerLoop(reinterpret_cast<struct NaClDesc*>(desc),
-                     handlers,
-                     cbdata);
+  NaClSrpcServerLoop(cbdata->handle->desc(), handlers, cbdata);
   // release the cbdata
   cbdata->msp->UpcallThreadExiting();
   nacl::VideoGlobalLock();
@@ -269,14 +260,14 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
     return false;
   }
   // Create a socket pair.
-  NaClHandle nh[2];
-  if (0 != NaClSocketPair(nh)) {
-    dprintf(("NaClSocketPair failed!\n"));
+  nacl::DescWrapper* desc[2];
+  if (0 != plugin->wrapper_factory()->MakeSocketPair(desc)) {
+    dprintf(("MakeSocketPair failed!\n"));
     return false;
   }
   // Start a thread to handle the upcalls.
   nacl::VideoCallbackData *cbdata;
-  cbdata = video->InitCallbackData(nh[0], plugin_interface, this);
+  cbdata = video->InitCallbackData(desc[0], plugin_interface, this);
   dprintf((
       "MultimediaSocket::InitializeModuleMultimedia: launching thread\n"));
   uint32_t tid;
@@ -306,39 +297,14 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
            tid);
   service_runtime_->LogAtServiceRuntime(4, buf);
 
-  // The arguments to nacl_multimedia_bridge are an object for the video
-  // shared memory and a connected socket to send the plugin's up calls to.
-  struct NaClDescXferableDataDesc *sr_desc =
-      reinterpret_cast<struct NaClDescXferableDataDesc *>(malloc(sizeof
-                                                                 *sr_desc));
-  if (NULL == sr_desc) {
-    return false;
-  }
-  if (!NaClDescXferableDataDescCtor(sr_desc, nh[1])) {
-    free(sr_desc);
-    return false;
-  }
-  ConnectedSocketInitializer init_info(plugin_interface,
-      reinterpret_cast<struct NaClDesc*>(sr_desc),
-      plugin, false, NULL);
-  ScriptableHandle<ConnectedSocket>* sock =
-      ScriptableHandle<ConnectedSocket>::New(
-        static_cast<PortableHandleInitializer*>(&init_info));
-  if (NULL == sock) {
-    NaClDescUnref(reinterpret_cast<struct NaClDesc *>(sr_desc));
-    return false;
-  }
-
   SrpcParams params("oo", "");
 
   params.Input(0)->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-  SharedMemory *internal_video_shared_memory =
+  SharedMemory* internal_video_shared_memory =
       static_cast<SharedMemory*>(video_shared_memory->get_handle());
   params.Input(0)->u.hval = internal_video_shared_memory->desc();
   params.Input(1)->tag = NACL_SRPC_ARG_TYPE_HANDLE;
-  ConnectedSocket *internal_sock =
-      static_cast<ConnectedSocket*>(sock->get_handle());
-  params.Input(1)->u.hval = internal_sock->desc();
+  params.Input(1)->u.hval = desc[1]->desc();
 
   dprintf(("CS:IMM params %p\n", static_cast<void *>(&params)));
 
@@ -346,9 +312,7 @@ bool MultimediaSocket::InitializeModuleMultimedia(Plugin *plugin) {
                                                 METHOD_CALL,
                                                 &params));
   dprintf(("CS:IMM returned %d\n", static_cast<int>(rpc_result)));
-  // BUG(sehr): probably not right
-  NaClDescUnref(reinterpret_cast<struct NaClDesc *>(sr_desc));
-  sock->Unref();  // used to be called from NPN_ReleaseVariantValue
+  desc[1]->Delete();
 
   return rpc_result;
 }

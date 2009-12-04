@@ -58,6 +58,7 @@
 #include "native_client/src/untrusted/av/nacl_av_priv.h"
 #include "native_client/src/shared/imc/nacl_htp.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
@@ -87,12 +88,12 @@ enum {
 };
 
 struct VideoCallbackData {
-  NaClHandle handle;
+  DescWrapper *handle;
   PortablePluginInterface *portable_plugin;
   int  refcount;
   nacl_srpc::MultimediaSocket *msp;
 
-  VideoCallbackData(NaClHandle h,
+  VideoCallbackData(DescWrapper *h,
                     PortablePluginInterface *p,
                     int r,
                     nacl_srpc::MultimediaSocket *sockp):
@@ -115,7 +116,7 @@ class VideoMap {
   int32_t GetVideoUpdateMode() { return video_update_mode_; }
   int16_t HandleEvent(void* event);
   int InitializeSharedMemory(PluginWindow* window);
-  VideoCallbackData* InitCallbackData(NaClHandle h,
+  VideoCallbackData* InitCallbackData(DescWrapper* desc,
                                       PortablePluginInterface *p,
                                       nacl_srpc::MultimediaSocket *msp);
   void Invalidate();
@@ -131,7 +132,7 @@ class VideoMap {
   bool SetWindow(PluginWindow* window);
   void set_platform_specific(void *sp) { platform_specific_ = sp; }
   void* platform_specific() { return platform_specific_; }
-  HtpHandle video_handle() { return video_handle_; }
+  DescWrapper* video_handle() { return video_handle_; }
   nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>* video_shared_memory()
       { return video_shared_memory_; }
   nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
@@ -166,7 +167,7 @@ class VideoMap {
   volatile bool            request_redraw_;
   PortablePluginInterface* plugin_interface_;
   NaClVideoShare*          untrusted_video_share_;
-  HtpHandle                video_handle_;
+  DescWrapper*             video_handle_;
   size_t                   video_size_;
   bool                     video_enabled_;
   VideoCallbackData*       video_callback_data_;

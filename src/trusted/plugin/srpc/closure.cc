@@ -105,8 +105,7 @@ UrlAsNaClDescNotify::~UrlAsNaClDescNotify() {
 }
 
 void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
-  // open file as NaClHostDesc, create NaClDesc object, make available
-  // via np_callback_
+  // open file in DescWrapper, make available via np_callback_
   NPVariant retval;
   NPVariant status;
   NPObject *nacl_desc = NULL;
@@ -140,39 +139,24 @@ void UrlAsNaClDescNotify::Run(NPStream *stream, const char *fname) {
       break;
     }
 
-    NaClHostDesc *nhd = static_cast<NaClHostDesc *>(malloc(sizeof *nhd));
-    if (NULL == nhd) {
-      dprintf(("no memory for nhd\n"));
-      // TODO(bsy) failure callback
-
-      ScalarToNPVariant("No memory for NaClHostDesc object", &status);
-      break;
-    }
-    int oserr = NaClHostDescOpen(nhd, const_cast<char *>(fname),
-      NACL_ABI_O_RDONLY, 0);
-    if (0 != oserr) {
-      dprintf(("NaClHostDescOpen failed, NaCl error %d\n", oserr));
-      free(nhd);
+    nacl::DescWrapper* ndiod =
+        plugin()->wrapper_factory()->OpenHostFile(const_cast<char *>(fname),
+                                                  NACL_ABI_O_RDONLY,
+                                                  0);
+    if (NULL == ndiod) {
+      dprintf(("NaClHostDescOpen failed\n"));
 
       ScalarToNPVariant("NaClHostDescOpen failed", &status);
-      break;
-    }
-    NaClDescIoDesc *ndiod = NaClDescIoDescMake(nhd);  // takes ownership of nhd
-    if (NULL == ndiod) {
-      dprintf(("no memory for ndiod\n"));
-      NaClHostDescClose(nhd);
-      free(nhd);
-
-      ScalarToNPVariant("No memory for NaClDescIoDesc object", &status);
       break;
     }
     dprintf(("created ndiod %p\n",
              static_cast<void *>(ndiod)));
     DescHandleInitializer init_info(plugin()->GetPortablePluginInterface(),
-                                    reinterpret_cast<NaClDesc *>(ndiod),
+                                    ndiod,
                                     plugin());
 
     nacl_desc = ScriptableHandle<DescBasedHandle>::New(&init_info);
+    // nacl_desc takes ownership of ndiod.
     callback_selector = (NPIdentifier)PortablePluginInterface::kOnloadIdent;
 
     ScalarToNPVariant(static_cast<NPObject*>(nacl_desc), &status);

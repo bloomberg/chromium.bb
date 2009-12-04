@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
-#if !NACL_LINUX
-// This bit of ugliness is because base/basictypes.h defines CHECK
-// on Linux but not elsewhere.
-#include "native_client/src/shared/platform/nacl_check.h"
-#endif
-#include "native_client/src/trusted/desc/nacl_desc_base.h"
-#include "native_client/src/trusted/desc/nrd_xfer_effector.h"
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_WRAPPER_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_WRAPPER_H_
 
+#include "native_client/src/shared/platform/nacl_log.h"
+#include "native_client/src/trusted/desc/nacl_desc_base.h"
+#include "native_client/src/trusted/desc/nrd_xfer.h"
+
+// Incomplete definitions for classes defined in Chrome.
 namespace base {
 class SharedMemory;
 class SyncSocket;
@@ -19,56 +18,9 @@ class SyncSocket;
 class TransportDIB;
 
 namespace nacl {
-// Forward declaration.
+// Forward declarations.
 class DescWrapper;
-
-// Descriptor creation and manipulation sometimes requires additional state
-// (for instance, Effectors).  Therefore, we create an object that encapsulates
-// that state.
-class DescWrapperCommon {
- public:
-  DescWrapperCommon() : is_initialized_(false), ref_count_(0) {
-    sockets_[0] = NULL;
-    sockets_[1] = NULL;
-  }
-  ~DescWrapperCommon();
-
-  // Set up the state.  Returns true on success.
-  bool Init();
-
-  // Get a pointer to the effector.
-  struct NaClDescEffector* effp() {
-    return reinterpret_cast<struct NaClDescEffector*>(&eff_);
-  }
-
-  // Inform clients that the object was successfully initialized.
-  bool is_initialized() const { return is_initialized_; }
-
-  // Manipulate reference count
-  void AddRef() {
-    ++ref_count_;
-    CHECK(ref_count_ > 0);
-  }
-  void RemoveRef() {
-    CHECK(ref_count_ > 0);
-    --ref_count_;
-  }
-
- private:
-  // Shut down a partially or fully created factory.
-  void Cleanup();
-
-  // Boolean to indicate the object was successfully initialized.
-  bool is_initialized_;
-  // Effector for transferring descriptors.
-  struct NaClNrdXferEffector eff_;
-  // The reference count.
-  uint32_t ref_count_;
-  // Bound socket, socket address pair (used for effectors).
-  struct NaClDesc* sockets_[2];
-
-  DISALLOW_COPY_AND_ASSIGN(DescWrapperCommon);
-};
+class DescWrapperCommon;
 
 // We also create a utility class that allows creation of wrappers for the
 // NaClDescs.
@@ -79,8 +31,17 @@ class DescWrapperFactory {
 
   // Create a bound socket, socket address pair.
   int MakeBoundSock(DescWrapper* pair[2]);
+  // Create a pair of DescWrappers for XferableDataDesc for a connnected socket.
+  int MakeSocketPair(DescWrapper* pair[2]);
+  // Create an IMC socket object.
+  DescWrapper* MakeImcSock(NaClHandle handle);
   // Create a shared memory object.
   DescWrapper* MakeShm(size_t size);
+  // Create a DescWrapper from a socket address string.
+  DescWrapper* MakeSocketAddress(const char* addr);
+  // Create a DescWrapper from opening a host file.
+  DescWrapper* OpenHostFile(const char* fname, int flags, int mode);
+
   // Create a DescWrapper from a base::SharedMemory
   DescWrapper* ImportSharedMemory(base::SharedMemory* shm);
   // Create a DescWrapper from a TransportDIB
@@ -106,6 +67,8 @@ class DescWrapperFactory {
 // A wrapper around NaClDesc to provide slightly higher level abstractions for
 // common operations.
 class DescWrapper {
+  friend class DescWrapperFactory;
+
  public:
   struct MsgIoVec {
     void*  base;
@@ -118,27 +81,34 @@ class DescWrapper {
     DescWrapper**    ndescv;  // Pointer to array of pointers.
     nacl_abi_size_t  ndescv_length;
     int32_t          flags;
+    // flags may contain 0 or any combination of the following.
+    static const int32_t kRecvMsgDataTruncated =
+        NACL_ABI_RECVMSG_DATA_TRUNCATED;
+    static const int32_t kRecvMsgDescTruncated =
+        NACL_ABI_RECVMSG_DESC_TRUNCATED;
   };
 
-  DescWrapper(DescWrapperCommon* common_data, struct NaClDesc* desc);
-  ~DescWrapper();
+  // Delete this wrapper.
+  void Delete() { delete this; }
 
   // Extract a NaClDesc from the wrapper.
   struct NaClDesc* desc() const { return desc_; }
+
+  // Get the type of the wrapped NaClDesc.
+  enum NaClDescTypeTag type_tag() const { return desc_->vtbl->typeTag; }
+
+  // Get the path string from a NaClDescConnCap.  Returns NULL if the
+  // type of the NaClDesc is not NACL_DESC_CONN_CAP (a socket address).
+  const char* conn_cap_path() const;
 
   // We do not replicate the underlying NaClDesc object hierarchy, so there
   // are obviously many more methods than a particular derived class
   // implements.
 
-  // Map a shared memory descriptor in at the given address
-  // Uses the NaCl ABI prots and flags.
-  // Returns the address at which the descriptor was mapped on success.
-  // [-64K, -1] as NaCl ABI errno on failure.
-  void* Map(void* start_addr,
-            size_t len,
-            int prot,
-            int flags,
-            nacl_off64_t offset);
+  // Map a shared memory descriptor.
+  // Sets the address to the place mapped to and the size to the rounded result.
+  // Returns zero on success, negative NaCl ABI errno on failure.
+  int Map(void** addr, size_t* size);
 
   // Unmaps a region of shared memory.
   // Returns zero on success, negative NaCl ABI errno on failure.
@@ -229,8 +199,15 @@ class DescWrapper {
   int GetValue();
 
  private:
+  DescWrapper(DescWrapperCommon* common_data, struct NaClDesc* desc);
+  ~DescWrapper();
+
   DescWrapperCommon* common_data_;
   struct NaClDesc* desc_;
+
   DISALLOW_COPY_AND_ASSIGN(DescWrapper);
 };
+
 }  // namespace nacl
+
+#endif  // NATIVE_CLIENT_SRC_TRUSTED_DESC_NACL_DESC_WRAPPER_H_

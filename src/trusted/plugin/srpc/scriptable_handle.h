@@ -678,10 +678,11 @@ class ScriptableHandle: public ScriptableHandleBase {
         break;
       case NACL_SRPC_ARG_TYPE_HANDLE:
         /* SCOPE */ {
-          struct NaClDesc* desc = outs[i]->u.hval;
           Plugin* plugin = handle_->GetPlugin();
+          nacl::DescWrapper* desc =
+              plugin->wrapper_factory()->MakeGeneric(outs[i]->u.hval);
 
-          if (NACL_DESC_CONN_CAP == desc->vtbl->typeTag) {
+          if (NACL_DESC_CONN_CAP == desc->type_tag()) {
             SocketAddressInitializer init_info(plugin_interface_, desc, plugin);
             NPObject* sock_addr = ScriptableHandle<SocketAddress>::New(
                 static_cast<PortableHandleInitializer*>(&init_info));

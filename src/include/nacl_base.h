@@ -47,6 +47,20 @@
 #ifdef __cplusplus
 # define EXTERN_C_BEGIN  extern "C" {
 # define EXTERN_C_END    }
+# if !defined(DISALLOW_COPY_AND_ASSIGN)
+/*
+ * This code is duplicated from base/basictypes.h, but including
+ * that code should not be done except when building as part of Chrome.
+ * Removing inclusion was necessitated by the fact that base/basictypes.h
+ * sometimes defines CHECK, which conflicts with the NaCl definition.
+ * Unfortunately this causes an include order dependency (this file has to
+ * come after base/basictypes.h).
+ * TODO(sehr): change CHECK to NACL_CHECK everywhere and remove this definition.
+ */
+#  define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+     TypeName(const TypeName&); \
+     void operator=(const TypeName&)
+#endif  /* !defined(DISALLOW_COPY_AND_ASSIGN) */
 #else
 # define EXTERN_C_BEGIN
 # define EXTERN_C_END

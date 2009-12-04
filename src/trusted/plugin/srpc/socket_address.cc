@@ -73,15 +73,17 @@ bool SocketAddress::RpcConnect(void* obj, SrpcParams *params) {
 
 bool SocketAddress::RpcToString(void* obj, SrpcParams *params) {
   SocketAddress* socket_addr = reinterpret_cast<SocketAddress*>(obj);
-  struct NaClDescConnCap* conn_cap =
-      reinterpret_cast<struct NaClDescConnCap*>(socket_addr->desc());
-  size_t len = strnlen(conn_cap->cap.path, NACL_PATH_MAX);
+  const char* str = socket_addr->wrapper()->conn_cap_path();
+  if (NULL == str) {
+    return false;
+  }
+  size_t len = strnlen(str, NACL_PATH_MAX);
   // strnlen ensures that len <= NACL_PATH_MAX < SIZE_T_MAX, so no overflow.
   char* ret_string = reinterpret_cast<char*>(malloc(len + 1));
   if (NULL == ret_string) {
     return false;
   }
-  strncpy(ret_string, conn_cap->cap.path, len + 1);
+  strncpy(ret_string, str, len + 1);
   params->outs[0]->tag = NACL_SRPC_ARG_TYPE_STRING;
   params->outs[0]->u.sval = ret_string;
   return true;
@@ -103,10 +105,11 @@ SocketAddress::~SocketAddress() {
 ScriptableHandle<ConnectedSocket>*
     SocketAddress::Connect(ServiceRuntimeInterface* sri) {
   dprintf(("SocketAddress::Connect(%p)\n", static_cast<void *>(sri)));
-  int rv = (desc()->vtbl->ConnectAddr)(desc(), plugin_->effp_);
-  dprintf(("SocketAddress::Connect: returned %d\n", rv));
-  if (0 == rv) {
-    struct NaClDesc* con_desc = NaClNrdXferEffectorTakeDesc(&plugin_->eff_);
+  nacl::DescWrapper* con_desc = wrapper()->Connect();
+  if (NULL == con_desc) {
+    dprintf(("SocketAddress::Connect: connect failed\n"));
+    return NULL;
+  } else {
     struct ConnectedSocketInitializer init_info(GetPortablePluginInterface(),
                                                 con_desc,
                                                 plugin_,
@@ -119,9 +122,6 @@ ScriptableHandle<ConnectedSocket>*
     dprintf(("SocketAddress::Connect: CS returned %p\n",
              static_cast<void *>(connected_socket)));
     return connected_socket;
-  } else {
-    dprintf(("SocketAddress::Connect: connect failed\n"));
-    return NULL;
   }
 }
 

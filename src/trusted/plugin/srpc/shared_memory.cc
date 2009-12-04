@@ -217,45 +217,35 @@ bool SharedMemory::Init(struct PortableHandleInitializer* init_info) {
       static_cast<SharedMemoryInitializer*>(init_info);
   bool allocated_memory = false;
 
-  if (NULL == shm_init_info->desc_) {
+  if (NULL == shm_init_info->wrapper_) {
     // Creating a new object by size
     size_t size = static_cast<size_t>(shm_init_info->length_);
     // The Map virtual function rounds up to the nearest AllocPage.
     size_t rounded_size = NaClRoundAllocPage(size);
-    NaClHandle handle = nacl::CreateMemoryObject(rounded_size);
-    if (nacl::kInvalidHandle == handle) {
+    nacl::DescWrapper* wrapper =
+        shm_init_info->plugin_->wrapper_factory()->MakeShm(rounded_size);
+    if (NULL == wrapper) {
       return false;
     }
-
-    struct NaClDescImcShm *imc_desc =
-      reinterpret_cast<struct NaClDescImcShm*>(malloc(sizeof(*imc_desc)));
-    if (NULL == imc_desc) {
-      nacl::Close(handle);
-      return false;
-    }
-    struct NaClDesc* desc = reinterpret_cast<struct NaClDesc*>(imc_desc);
 
     dprintf(("SharedMemory::Init(%p, 0x%08x)\n",
              static_cast<void *>(shm_init_info->plugin_),
              static_cast<unsigned>(shm_init_info->length_)));
-    NaClDescImcShmCtor(imc_desc, handle, shm_init_info->length_);
-    shm_init_info->desc_ = desc;
+    shm_init_info->wrapper_ = wrapper;
     // Now allocate the object through the canonical factory and return.
     allocated_memory = true;
   }
 
   if (!DescBasedHandle::Init(init_info)) {
     if (allocated_memory) {
-      NaClDescUnref(shm_init_info->desc_);
+      shm_init_info->wrapper_->Delete();
+      shm_init_info->wrapper_ = NULL;
     }
     return false;
   }
 
-  int rval = NaClDescMapDescriptor(desc(),
-                                   plugin_->effp_,
-                                   &map_addr_,
-                                   &size_);
-  if (0 != rval || (NULL == map_addr_)) {
+  if (0 > wrapper()->Map(&map_addr_, &size_)) {
+    // BUG: we are leaking the shared memory object here.
     return false;
   }
 
@@ -296,7 +286,7 @@ SharedMemory::~SharedMemory() {
   //     map_addr_,
   //     size_);
   // }
-  // TODO(sehr): is there a missing NaClDescUnref here?
+  // TODO(sehr): is there a missing delete desc() here?
   // TODO(gregoryd): in addition, should we unref the descriptor if it was
   // constructed during the initialization of this object?
 }

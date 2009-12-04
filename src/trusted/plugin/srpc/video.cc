@@ -1185,7 +1185,7 @@ nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>*
            static_cast<void *>(video_shared_memory_),
            static_cast<void *>(video_handle_)));
   if (NULL == video_shared_memory_) {
-    if (kInvalidHtpHandle == video_handle_) {
+    if (NULL  == video_handle_) {
       // The plugin has not set up a shared memory object for the display.
       // This indicates either the plugin was set to be invisible, or had
       // an error when SetWindow was invoked.  In either case, it is an
@@ -1242,11 +1242,11 @@ void VideoMap::Invalidate() {
   }
 }
 
-VideoCallbackData* VideoMap::InitCallbackData(NaClHandle h,
+VideoCallbackData* VideoMap::InitCallbackData(DescWrapper* desc,
                                             PortablePluginInterface *p,
                                             nacl_srpc::MultimediaSocket *msp) {
   // initialize with refcount set to 2
-  video_callback_data_ = new(std::nothrow) VideoCallbackData(h, p, 2, msp);
+  video_callback_data_ = new(std::nothrow) VideoCallbackData(desc, p, 2, msp);
   return video_callback_data_;
 }
 
@@ -1304,28 +1304,26 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
     window_ = window;
     vps_size = NaClRoundAllocPage(vps_size);
     video_size_ = vps_size;
-    video_handle_ = CreateShmDesc(CreateMemoryObject(video_size_),
-        video_size_);
-    if (kInvalidHtpHandle == video_handle_) {
+    nacl_srpc::Plugin* plugin =
+        reinterpret_cast<nacl_srpc::Plugin*>(
+            plugin_interface_->plugin()->get_handle());
+    video_handle_ = plugin->wrapper_factory()->MakeShm(video_size_);
+    if (NULL  == video_handle_) {
       video_size_ = 0;
       return -1;
     }
     dprintf(("VideoMap::Initialize about to Map...\n"));
-    untrusted_video_share_ = static_cast<NaClVideoShare*>(
-      Map(NULL,
-          video_size_,
-          kProtRead | kProtWrite,
-          kMapShared,
-          video_handle_,
-          0));
-    if (kMapFailed == untrusted_video_share_) {
+
+    void* map_addr;
+    if (0 > video_handle_->Map(&map_addr, &video_size_)) {
       untrusted_video_share_ = NULL;
-      nacl::Close(video_handle_);
+      video_handle_->Delete();
       untrusted_video_share_ = NULL;
       video_size_ = 0;
       window_ = NULL;
       return -1;
     }
+    untrusted_video_share_ = reinterpret_cast<NaClVideoShare*>(map_addr);
 
     // clear entire untrusted memory window
     memset(untrusted_video_share_, 0, video_size_);
@@ -1373,7 +1371,7 @@ VideoMap::VideoMap(PortablePluginInterface *plugin_interface)
     platform_specific_(NULL),
     request_redraw_(false),
     untrusted_video_share_(NULL),
-    video_handle_(kInvalidHtpHandle),
+    video_handle_(NULL),
     video_size_(0),
     video_enabled_(false),
     video_callback_data_(NULL),

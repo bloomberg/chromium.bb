@@ -40,6 +40,7 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
@@ -51,7 +52,7 @@ class Plugin;
 struct SharedMemoryInitializer: DescHandleInitializer {
  public:
   SharedMemoryInitializer(PortablePluginInterface* plugin_interface,
-                          struct NaClDesc* desc,
+                          nacl::DescWrapper* desc,
                           Plugin* plugin):
       DescHandleInitializer(plugin_interface, desc, plugin),
       length_(0) {}

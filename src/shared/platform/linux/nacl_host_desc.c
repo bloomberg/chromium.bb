@@ -221,7 +221,7 @@ int NaClHostDescUnmap(void    *start_addr,
 }
 
 int NaClHostDescOpen(struct NaClHostDesc  *d,
-                     char                 *path,
+                     char const           *path,
                      int                  flags,
                      int                  mode) {
   int host_desc;

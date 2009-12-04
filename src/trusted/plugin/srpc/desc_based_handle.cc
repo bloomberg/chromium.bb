@@ -51,7 +51,7 @@ namespace nacl_srpc {
   int DescBasedHandle::number_alive_counter = 0;
 
   DescBasedHandle::DescBasedHandle(): plugin_(NULL),
-                                      desc_(NULL) {
+                                      wrapper_(NULL) {
     dprintf(("DescBasedHandle::DescBasedHandle(%p, %d)\n",
              static_cast<void *>(this),
              ++number_alive_counter));
@@ -61,8 +61,9 @@ namespace nacl_srpc {
     dprintf(("DescBasedHandle::~DescBasedHandle(%p, %d)\n",
              static_cast<void *>(this),
              --number_alive_counter));
-    if (NULL != desc_) {
-      NaClDescUnref(desc_);
+    if (NULL != wrapper_) {
+      wrapper_->Delete();
+      wrapper_ = NULL;
     }
   }
 
@@ -72,9 +73,11 @@ namespace nacl_srpc {
     }
     DescHandleInitializer *desc_init_info =
         static_cast<DescHandleInitializer*>(init_info);
-    desc_ = desc_init_info->desc_;
+    wrapper_ = desc_init_info->wrapper_;
     plugin_ = desc_init_info->plugin_;
-    NaClDescRef(desc_);
+    // TODO(sehr): there's an ownership sharing/transfer problem with
+    // SRPC clients and ConnectedSocket that needs fixing.
+    NaClDescRef(wrapper_->desc());
     LoadMethods();
     return true;
   }
@@ -87,7 +90,7 @@ namespace nacl_srpc {
   bool DescBasedHandle::Map(void* obj, SrpcParams* params) {
     DescBasedHandle *ptr = reinterpret_cast<DescBasedHandle*>(obj);
     struct SharedMemoryInitializer init_info(ptr->GetPortablePluginInterface(),
-        ptr->desc_, ptr->plugin_);
+        ptr->wrapper_, ptr->plugin_);
 
     ScriptableHandle<SharedMemory>* shared_memory =
       ScriptableHandle<SharedMemory>::New(

@@ -175,41 +175,19 @@ bool Plugin::SocketAddressFactory(void *obj, SrpcParams *params) {
   if (NACL_SRPC_ARG_TYPE_STRING != params->Input(0)->tag) {
     return false;
   }
-  // Ensure it's a valid string short enough to be a socket address.
   char* str = params->Input(0)->u.sval;
-  if (NULL == str) {
-    return false;
-  }
-  size_t len = strnlen(str, NACL_PATH_MAX);
-  // strnlen ensures NACL_PATH_MAX >= len.  If NACL_PATH_MAX == len, then
-  // there is not enough room to hold the address.
-  if (NACL_PATH_MAX == len) {
-    return false;
-  }
-  // Create a NaClSocketAddress from the string.
-  struct NaClSocketAddress nsap;
-  // We need len + 1 to guarantee the zero byte is written.  This is safe,
-  // since NACL_PATH_MAX >= len + 1 from above.
-  strncpy(nsap.path, str, len + 1);
-  // Create a NaClDescConnCap from the socket address.
-  struct NaClDescConnCap* conn_cap =
-      reinterpret_cast<struct NaClDescConnCap*>(
-          malloc(sizeof(struct NaClDescConnCap)));
-  if (NULL == conn_cap) {
-    return false;
-  }
-  if (!NaClDescConnCapCtor(conn_cap, &nsap)) {
-    free(conn_cap);
+  nacl::DescWrapper* desc = plugin->wrapper_factory()->MakeSocketAddress(str);
+  if (NULL == desc) {
     return false;
   }
   // Create a scriptable object to return.
   DescHandleInitializer init_info(plugin->GetPortablePluginInterface(),
-                                  reinterpret_cast<struct NaClDesc*>(conn_cap),
+                                  desc,
                                   plugin);
   ScriptableHandle<SocketAddress>* socket_address =
       ScriptableHandle<SocketAddress>::New(&init_info);
   if (NULL == socket_address) {
-    NaClDescUnref(reinterpret_cast<struct NaClDesc*>(conn_cap));
+    desc->Delete();
     params->SetExceptionInfo("out of memory");
     return false;
   }
@@ -367,31 +345,24 @@ bool Plugin::Init(struct PortableHandleInitializer* init_info) {
 
 
 Plugin::Plugin()
-  : effp_(NULL),
-    socket_address_(NULL),
+  : socket_address_(NULL),
     socket_(NULL),
     service_runtime_interface_(NULL),
     local_url_(NULL),
     height_(0),
     video_update_mode_(nacl::kVideoUpdatePluginPaint),
-    width_(0) {
+    width_(0),
+    wrapper_factory_(NULL) {
   dprintf(("Plugin::Plugin(%p, %d)\n",
            static_cast<void *>(this),
            ++number_alive_counter));
 }
 
 bool Plugin::Start() {
-  struct NaClDesc* pair[2];
-
-  if (0 != NaClCommonDescMakeBoundSock(pair)) {
-    dprintf(("Plugin::Plugin: make bound sock failed.\n"));
+  wrapper_factory_ = new nacl::DescWrapperFactory();
+  if (NULL == wrapper_factory_) {
     return false;
   }
-  if (!NaClNrdXferEffectorCtor(&eff_, pair[0])) {
-    dprintf(("Plugin::Plugin: EffectorCtor failed.\n"));
-    return false;
-  }
-  effp_ = (struct NaClDescEffector*) &eff_;
   return true;
 }
 

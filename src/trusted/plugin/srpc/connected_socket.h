@@ -37,6 +37,7 @@
 
 // TODO(gregoryd): reduce the headers needed for this.
 #include <setjmp.h>
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -56,7 +57,7 @@ struct ConnectedSocketInitializer: DescHandleInitializer {
   ServiceRuntimeInterface* serv_rtm_info_;
   bool is_command_channel_;
   ConnectedSocketInitializer(PortablePluginInterface* plugin_interface,
-                             struct NaClDesc* desc,
+                             nacl::DescWrapper* desc,
                              Plugin* plugin,
                              bool is_srpc_client,
                              ServiceRuntimeInterface* serv_rtm_info):
