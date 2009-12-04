@@ -47,6 +47,7 @@ int FlipNetworkTransaction::Start(const HttpRequestInfo* request_info,
   CHECK(request_info);
   CHECK(callback);
 
+  load_log_ = load_log;
   request_ = request_info;
   start_time_ = base::TimeTicks::Now();
 
@@ -156,30 +157,46 @@ int FlipNetworkTransaction::DoLoop(int result) {
     switch (state) {
       case STATE_INIT_CONNECTION:
         DCHECK_EQ(OK, rv);
+        LoadLog::BeginEvent(load_log_,
+                            LoadLog::TYPE_FLIP_TRANSACTION_INIT_CONNECTION);
         rv = DoInitConnection();
         break;
       case STATE_INIT_CONNECTION_COMPLETE:
+        LoadLog::EndEvent(load_log_,
+                          LoadLog::TYPE_FLIP_TRANSACTION_INIT_CONNECTION);
         rv = DoInitConnectionComplete(rv);
         break;
       case STATE_SEND_REQUEST:
         DCHECK_EQ(OK, rv);
+        LoadLog::BeginEvent(load_log_,
+                            LoadLog::TYPE_FLIP_TRANSACTION_SEND_REQUEST);
         rv = DoSendRequest();
         break;
       case STATE_SEND_REQUEST_COMPLETE:
+        LoadLog::EndEvent(load_log_,
+                          LoadLog::TYPE_FLIP_TRANSACTION_SEND_REQUEST);
         rv = DoSendRequestComplete(rv);
         break;
       case STATE_READ_HEADERS:
         DCHECK_EQ(OK, rv);
+        LoadLog::BeginEvent(load_log_,
+                            LoadLog::TYPE_FLIP_TRANSACTION_READ_HEADERS);
         rv = DoReadHeaders();
         break;
       case STATE_READ_HEADERS_COMPLETE:
+        LoadLog::EndEvent(load_log_,
+                          LoadLog::TYPE_FLIP_TRANSACTION_READ_HEADERS);
         rv = DoReadHeadersComplete(rv);
         break;
       case STATE_READ_BODY:
         DCHECK_EQ(OK, rv);
+        LoadLog::BeginEvent(load_log_,
+                            LoadLog::TYPE_FLIP_TRANSACTION_READ_BODY);
         rv = DoReadBody();
         break;
       case STATE_READ_BODY_COMPLETE:
+        LoadLog::EndEvent(load_log_,
+                          LoadLog::TYPE_FLIP_TRANSACTION_READ_BODY);
         rv = DoReadBodyComplete(rv);
         break;
       case STATE_NONE:

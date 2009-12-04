@@ -477,7 +477,8 @@ void FlipSession::OnWriteComplete(int result) {
 
   write_pending_ = false;
 
-  LOG(INFO) << "Flip write complete (result=" << result << ")";
+  LOG(INFO) << "Flip write complete (result=" << result << ") for stream: "
+            << in_flight_write_.stream()->stream_id();
 
   if (result >= 0) {
     // It should not be possible to have written more bytes than our
@@ -826,6 +827,9 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
     LOG(WARNING) << "Received SYN_REPLY for invalid stream " << stream_id;
     return;
   }
+
+  LOG(INFO) << "FLIP SYN_REPLY RESPONSE HEADERS for stream: " << stream_id; 
+  DumpFlipHeaders(*headers);
 
   // We record content declared as being pushed so that we don't
   // request a duplicate stream which is already scheduled to be

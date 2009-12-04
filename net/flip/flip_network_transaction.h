@@ -87,6 +87,8 @@ class FlipNetworkTransaction : public HttpTransaction {
   int DoReadBody();
   int DoReadBodyComplete(int result);
 
+  scoped_refptr<LoadLog> load_log_;
+
   // The Flip session servicing this request.  If NULL, the request has not
   // started.
   scoped_refptr<FlipSession> flip_;
