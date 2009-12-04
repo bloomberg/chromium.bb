@@ -70,8 +70,7 @@ std::ostream& operator<<(std::ostream& out,
 }  // namespace
 
 // Test the cases where we should be the same as WebKit's old KURL.
-// Disabled for now: http://crbug.com/29212
-TEST(GKURL, DISABLED_SameGetters) {
+TEST(GKURL, SameGetters) {
   struct GetterCase {
     const char* url;
     const char* protocol;
@@ -85,10 +84,10 @@ TEST(GKURL, DISABLED_SameGetters) {
     bool has_ref;
   } cases[] = {
     {"http://www.google.com/foo/blah?bar=baz#ref", "http", "www.google.com", 0, "", NULL, "blah", "bar=baz", "ref", true},
-    {"http://foo.com:1234/foo/bar/", "http", "foo.com", 1234, "", NULL, "bar", "", NULL, false},
+    {"http://foo.com:1234/foo/bar/", "http", "foo.com", 1234, "", NULL, "bar", NULL, NULL, false},
     {"http://www.google.com?#", "http", "www.google.com", 0, "", NULL, NULL, "", "", true},
-    {"https://me:pass@google.com:23#foo", "https", "google.com", 23, "me", "pass", NULL, "", "foo", true},
-    {"javascript:hello!//world", "javascript", "", 0, "", NULL, "world", "", NULL, false},
+    {"https://me:pass@google.com:23#foo", "https", "google.com", 23, "me", "pass", NULL, NULL, "foo", true},
+    {"javascript:hello!//world", "javascript", "", 0, "", NULL, "world", NULL, NULL, false},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
@@ -126,24 +125,23 @@ TEST(GKURL, DISABLED_SameGetters) {
 
 // Test a few cases where we're different just to make sure we give reasonable
 // output.
-// Disabled for now: http://crbug.com/29212
-TEST(GKURL, DISABLED_DifferentGetters) {
+TEST(GKURL, DifferentGetters) {
   ComponentCase cases[] = {
      // url                                   protocol      host        port  user  pass    path                last_path query      ref
 
     // Old WebKit allows references and queries in what we call "path" URLs
     // like javascript, so the path here will only consist of "hello!".
-    {"javascript:hello!?#/\\world",           "javascript", "",         0,    "",   NULL,   "hello!?#/\\world", "world",  "",      NULL},
+    {"javascript:hello!?#/\\world",           "javascript", "",         0,    "",   NULL,   "hello!?#/\\world", "world",  NULL,      NULL},
 
     // Old WebKit doesn't handle "parameters" in paths, so will
     // disagree with us about where the path is for this URL.
-    {"http://a.com/hello;world",              "http",       "a.com",    0,    "",   NULL,     "/hello;world",     "hello",  "",    NULL},
+    {"http://a.com/hello;world",              "http",       "a.com",    0,    "",   NULL,     "/hello;world",     "hello",  NULL,    NULL},
 
     // WebKit doesn't like UTF-8 or UTF-16 input.
-    {"http://\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd/", "http", "xn--6qqa088eba", 0, "", NULL, "/",   NULL,     "",       NULL},
+    {"http://\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd/", "http", "xn--6qqa088eba", 0, "", NULL, "/",   NULL,     NULL,       NULL},
 
     // WebKit %-escapes non-ASCII characters in reference, but we don't.
-    {"http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http", "www.google.com", 0, "", NULL, "/foo/blah/", "blah", "bar=baz", "\xce\xb1\xce\xb2"}
+    {"http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http", "www.google.com", 0, "", NULL, "/foo/blah/", "blah", "bar=baz", "\xce\xb1\xce\xb2"},
   };
 
   for (size_t i = 0; i < arraysize(cases); i++) {
