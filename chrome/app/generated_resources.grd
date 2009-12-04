@@ -4588,7 +4588,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of a HTML standard)">
         Local Storage
       </message>
-      
+
       <!-- New Tab -->
       <message name="IDS_NEW_TAB_TITLE"
                desc="Title of the new tab page, this is only shown while loading, then the title comes from the page">
@@ -5292,7 +5292,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_RESET_CANCELLABEL" desc="The label of the Cancel button in the 'Reset Chrome options' confirmation dialog box">
         Don't reset
       </message>
-      
+
       <!-- General app failure messages -->
       <message name="IDS_COULDNT_OPEN_PROFILE_ERROR" desc="Error displayed on startup when the profile can not be opened correctly due to problems reading or writing files in it">
         Your profile could not be opened correctly.\n\nSome features may be unavailable.  Please check that the profile exists and you have permission to read and write its contents.
@@ -5545,9 +5545,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_SYNC_NOT_SET_UP_INFO" desc="The message that appears in the options dialog when sync has not been set up by the user.">
         You are not set up to sync your bookmarks with your other computers.
       </message>
-      <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
-        Synchronize my bookmarks...
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
+          Synchronize my bookmarks...
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_SYNC_START_SYNC_BUTTON_LABEL" desc="In Title Case. The label that appears on the sync button in the options dialog when sync has not been set up by the user.">
+          Synchronize My Bookmarks...
+        </message>
+      </if>
       <message name="IDS_SYNC_SETUP_ERROR" desc="The message displayed when an unspecified but unrecoverable error occurs during sync setup.">
         An error occurred while trying to set up sync.
       </message>
@@ -5748,7 +5755,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Disable notifications from <ph name="site">$1<ex>mail.google.com</ex></ph>
       </message>
 
-      
+
       <!-- New Tab Page Promotional messages -->
       <message name="IDS_NTP_PROMOTION_NEW" desc="Beginning of promotional message; a word in special red font signaling something new is coming.">
         New!
