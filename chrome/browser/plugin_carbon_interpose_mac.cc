@@ -85,18 +85,29 @@ static bool IsModalWindow(WindowRef window) {
   return (status == noErr) && (modality != kWindowModalityNone);
 }
 
+static bool IsContainingWindowActive(const WebPluginDelegateImpl* delegate) {
+  // TODO(stuartmorgan): We need a way to find out if the delegate is in the
+  // active window; for now we just lie and always say yes so plugins don't
+  // throw events away.
+  return true;
+}
+
 #pragma mark -
 
-static Boolean ChromePluginIsWindowHilited(WindowRef window) {
-  // TODO(stuartmorgan): Always returning true (instead of the real answer,
-  // which would be false) means that clicking works, but it's not correct
-  // either. Ideally we need a way to find out if the delegate corresponds
-  // to a browser window that is active.
+static Boolean ChromePluginIsWindowActive(WindowRef window) {
   const WebPluginDelegateImpl* delegate =
       FakePluginWindowTracker::SharedInstance()->GetDelegateForFakeWindow(
           window);
-  Boolean isHilited = delegate ? true : IsWindowHilited(window);
-  return isHilited;
+  return delegate ? IsContainingWindowActive(delegate)
+                  : IsWindowActive(window);
+}
+
+static Boolean ChromePluginIsWindowHilited(WindowRef window) {
+  const WebPluginDelegateImpl* delegate =
+      FakePluginWindowTracker::SharedInstance()->GetDelegateForFakeWindow(
+          window);
+  return delegate ? IsContainingWindowActive(delegate)
+                  : IsWindowHilited(window);
 }
 
 static CGRect CGRectForWindow(WindowRef window) {
@@ -160,6 +171,7 @@ struct interpose_substitution {
 
 __attribute__((used)) static const interpose_substitution substitutions[]
     __attribute__((section("__DATA, __interpose"))) = {
+  INTERPOSE_FUNCTION(IsWindowActive),
   INTERPOSE_FUNCTION(IsWindowHilited),
   INTERPOSE_FUNCTION(SelectWindow),
   INTERPOSE_FUNCTION(ShowWindow),
