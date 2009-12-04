@@ -14,7 +14,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "net/ftp/ftp_directory_listing_parsers.h"
+#include "net/ftp/ftp_directory_listing_parser.h"
 #include "net/ftp/ftp_server_type_histograms.h"
 #include "unicode/ucsdet.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
