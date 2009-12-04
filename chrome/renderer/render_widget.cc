@@ -486,12 +486,19 @@ void RenderWidget::DoDeferredUpdate() {
 
     HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
 
+    // TODO(darin): re-enable painting multiple damage rects once the
+    // page-cycler regressions are resolved.
+    if (update.scroll_rect.IsEmpty()) {
+      update.paint_rects.clear();
+      update.paint_rects.push_back(bounds);
+    }
+
     for (size_t i = 0; i < update.paint_rects.size(); ++i)
       PaintRect(update.paint_rects[i], bounds.origin(), canvas.get());
 
     ViewHostMsg_PaintRect_Params params;
     params.bitmap_rect = bounds;
-    params.update_rects = update.paint_rects;  // XXX clip to bounds?
+    params.update_rects = update.paint_rects;  // TODO(darin): clip to bounds?
     params.view_size = size_;
     params.plugin_window_moves = plugin_window_moves_;
     params.flags = next_paint_flags_;
