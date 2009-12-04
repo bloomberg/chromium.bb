@@ -37,5 +37,22 @@ __ZNK23FakePluginWindowTracker24GetDelegateForFakeWindowEP15OpaqueWindowPtr
 __ZnwmPv
 _catch_exception_raise
 
+# List the gcov symbols so the code coverage bot doesn't trip up in
+# the verify_order post build step.
+___gcov_init
+___gcov_seek
+___gcov_write_tag_length
+___gcov_write_counter
+___gcov_write_unsigned
+___gcov_write_summary
+___gcov_read_counter
+___gcov_read_unsigned
+___gcov_read_summary
+___gcov_close
+___gcov_open
+___gcov_flush
+___gcov_merge_add
+___gcov_fork
+
 # _ChromeMain must be listed last.  That's the whole point of this file.
 _ChromeMain
