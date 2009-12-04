@@ -105,9 +105,11 @@ class ChildProcessLauncher::Context
     // case then.
     bool is_renderer = cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
         switches::kRendererProcess;
+    bool is_extension = cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
+        switches::kExtensionProcess;
     bool is_plugin = cmd_line->GetSwitchValueASCII(switches::kProcessType) ==
         switches::kPluginProcess;
-    if (is_renderer &&
+    if ((is_renderer || is_extension) &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kRendererCmdPrefix)) {
       zygote = true;
