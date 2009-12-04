@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_updater.h"
+#include "chrome/browser/google_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
@@ -74,13 +75,13 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
   localized_strings.SetString(L"suggestGallery",
       l10n_util::GetStringF(IDS_EXTENSIONS_NONE_INSTALLED_SUGGEST_GALLERY,
           std::wstring(L"<a href='") +
-              ASCIIToWide(extension_urls::kGalleryBrowsePrefix) +
-              L"'>",
+          ASCIIToWide(google_util::AppendGoogleLocaleParam(
+              GURL(extension_urls::kGalleryBrowsePrefix)).spec()) + L"'>",
           L"</a>"));
   localized_strings.SetString(L"getMoreExtensions",
       std::wstring(L"<a href='") +
-          ASCIIToWide(extension_urls::kGalleryBrowsePrefix) +
-          L"'>" +
+          ASCIIToWide(google_util::AppendGoogleLocaleParam(
+              GURL(extension_urls::kGalleryBrowsePrefix)).spec()) + L"'>" +
           l10n_util::GetString(IDS_GET_MORE_EXTENSIONS) +
           L"</a>");
   localized_strings.SetString(L"extensionDisabled",
