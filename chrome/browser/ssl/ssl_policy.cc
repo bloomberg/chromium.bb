@@ -86,6 +86,9 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
 }
 
 void SSLPolicy::DidDisplayInsecureContent(NavigationEntry* entry) {
+  if (!entry)
+    return;
+
   // TODO(abarth): We don't actually need to break the whole origin here,
   //               but we can handle that in a later patch.
   DidRunInsecureContent(entry, entry->url().spec());
