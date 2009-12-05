@@ -206,16 +206,18 @@ class Coverage(object):
     return sys.platform in ('win32', 'cygwin')
 
   def ClearData(self):
-    """Clear old gcda files"""
+    """Clear old gcda files and old coverage info files."""
     if not self.IsPosix():
       return
     subprocess.call([self.lcov,
                      '--directory', self.directory_parent,
                      '--zerocounters'])
     shutil.rmtree(os.path.join(self.directory, 'coverage'))
+    if os.path.exists(self.coverage_info_file):
+      os.remove(self.coverage_info_file)
 
-  def BeforeRunTests(self):
-    """Do things before running tests."""
+  def BeforeRunOneTest(self, testname):
+    """Do things before running each test."""
     if not self.IsWindows():
       return
     # Stop old counters if needed
@@ -232,7 +234,7 @@ class Coverage(object):
     self.Run(cmdlist)
 
   def RunTests(self):
-    """Run all unit tests."""
+    """Run all unit tests and generate appropriate lcov files."""
     for fulltest in self.tests:
       if not os.path.exists(fulltest):
         logging.fatal(fulltest + ' does not exist')
@@ -247,15 +249,19 @@ class Coverage(object):
         # cmdlist.append('--gtest_filter=RenderWidgetHost*')
         cmdlist.append('--gtest_filter=CommandLine*')
 
+      self.BeforeRunOneTest(fulltest)
       retcode = subprocess.call(cmdlist)
+      self.AfterRunOneTest(fulltest)
+
       if retcode:
         logging.fatal('COVERAGE: test %s failed; return code: %d' %
                       (fulltest, retcode))
         if self.options.strict:
           sys.exit(retcode)
+    self.AfterRunAllTests()
 
-  def AfterRunTests(self):
-    """Do things right after running tests."""
+  def AfterRunOneTest(self, testname):
+    """Do things right after running each test."""
     if not self.IsWindows():
       return
     # Stop counters
@@ -263,6 +269,14 @@ class Coverage(object):
     self.Run(cmdlist)
     full_output = self.vsts_output + '.coverage'
     shutil.move(full_output, self.vsts_output)
+    # generate lcov!
+    self.GenerateLcovWindows(testname)
+
+  def AfterRunAllTests(self):
+    """Do things right after running ALL tests."""
+    if self.IsPosix():
+      # On POSIX we can do it all at once without running out of memory.
+      self.GenerateLcovPosix()
 
   def GenerateLcovPosix(self):
     """Convert profile data to lcov."""
@@ -277,8 +291,8 @@ class Coverage(object):
       if self.options.strict:
         sys.exit(retcode)
 
-  def GenerateLcovWindows(self):
-    """Convert VSTS format to lcov."""
+  def GenerateLcovWindows(self, testname=None):
+    """Convert VSTS format to lcov.  Appends coverage data to sum file."""
     lcov_file = self.vsts_output + '.lcov'
     if os.path.exists(lcov_file):
       os.remove(lcov_file)
@@ -292,18 +306,19 @@ class Coverage(object):
     if not os.path.exists(lcov_file):
       logging.fatal('Output file %s not created' % lcov_file)
       sys.exit(1)
-    # So we name it appropriately
+    logging.info('Appending lcov for test %s to %s' %
+                 (testname, self.coverage_info_file))
+    size_before = 0
     if os.path.exists(self.coverage_info_file):
-      os.remove(self.coverage_info_file)
-    logging.info('Renaming LCOV file to %s to be consistent' %
-                 self.coverage_info_file)
-    shutil.move(self.vsts_output + '.lcov', self.coverage_info_file)
-
-  def GenerateLcov(self):
-    if self.IsPosix():
-      self.GenerateLcovPosix()
-    else:
-      self.GenerateLcovWindows()
+      size_before = os.stat(self.coverage_info_file).st_size
+    src = open(lcov_file, 'r')
+    dst = open(self.coverage_info_file, 'a')
+    dst.write(src.read())
+    src.close()
+    dst.close()
+    size_after = os.stat(self.coverage_info_file).st_size
+    logging.info('Lcov file growth for %s: %d --> %d' %
+                 (self.coverage_info_file, size_before, size_after))
 
   def GenerateHtml(self):
     """Convert lcov to html."""
@@ -369,10 +384,7 @@ def main():
   coverage.FindTests()
   if options.trim:
     coverage.TrimTests()
-  coverage.BeforeRunTests()
   coverage.RunTests()
-  coverage.AfterRunTests()
-  coverage.GenerateLcov()
   if options.genhtml:
     coverage.GenerateHtml()
   return 0
