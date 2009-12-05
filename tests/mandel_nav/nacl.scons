@@ -45,7 +45,7 @@ mandel_nav_files = [
 ]
 
 env.ComponentProgram('mandel_nav.nexe', 'mandel_nav.c',
-                     EXTRA_LIBS=['av', 'srpc', 'google_nacl_imc_c', 'pthread'])
+                     EXTRA_LIBS=['av', 'srpc',  'pthread'])
 
 env.Publish('mandel_nav.nexe', 'run', mandel_nav_files)
 

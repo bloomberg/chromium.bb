@@ -31,7 +31,7 @@
 Import('env')
 
 env.ComponentProgram('srpc_hw.nexe', 'srpc_hw.c',
-                     EXTRA_LIBS=['srpc', 'google_nacl_imc_c','pthread'])
+                     EXTRA_LIBS=['srpc', 'pthread'])
 
 # Note that the html is required to run this program.
 env.Publish('srpc_hw.nexe', 'run',
