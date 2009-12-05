@@ -914,7 +914,7 @@ BUG10288 WIN LINUX : LayoutTests/svg/batik/text/verticalText.svg = FAIL
 BUG10289 WIN LINUX : LayoutTests/svg/batik/masking/maskRegions.svg = FAIL
 
 // Merge 51681:51711 - regression
-BUG29453 WIN MAC LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-13-b.svg = IMAGE
+BUG29453 WIN MAC LINUX : LayoutTests/svg/W3C-SVG-1.1/pservers-grad-13-b.svg = IMAGE+TEXT
 BUG29453 WIN MAC LINUX : LayoutTests/svg/custom/radial-gradient-with-outstanding-focalPoint.svg = IMAGE
 
 // Bug in Skia, see https://bugs.webkit.org/show_bug.cgi?id=24534 .
@@ -2171,7 +2171,7 @@ BUG23473 MAC : LayoutTests/fast/repaint/inline-block-overflow.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/layer-child-outline.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/layer-outline.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/list-marker.html = PASS
-BUG23473 MAC : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = PASS
+BUG23473 MAC WIN : LayoutTests/fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = IMAGE+TEXT PASS
 BUG23473 MAC : LayoutTests/fast/repaint/table-cell-vertical-overflow.html = PASS
 BUG23473 MAC : LayoutTests/fast/repaint/text-shadow.html = PASS
 BUG23473 MAC : pending/fast/repaint/bugzilla-6473.html = IMAGE
@@ -2821,6 +2821,16 @@ BUG_JEREMY MAC : LayoutTests/fast/frames/onlyCommentInIFrame.html = FAIL
 // WebKit Roll 49684:49761
 BUG26042 DEBUG : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
 BUG26042 LINUX RELEASE : LayoutTests/http/tests/security/mixedContent/insecure-plugin-in-iframe.html = PASS TEXT
+
+// Webkit Roll 51681:51711 - regression
+BUG_AJWONG WIN : LayoutTests/http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
+BUG_AJWONG WIN : LayoutTests/svg/dom/SVGScriptElement/script-load-and-error-events.svg = TEXT PASS
+BUG_AJWONG WIN : LayoutTests/http/tests/appcache/404-manifest.html = TIMEOUT PASS
+BUG_AJWONG WIN : LayoutTests/http/tests/appcache/404-resource.html = TIMEOUT PASS
+BUG_AJWONG WIN : LayoutTests/http/tests/appcache/foreign-iframe-main.html = TIMEOUT PASS
+BUG_AJWONG WIN : LayoutTests/http/tests/appcache/non-html.xhtml = TIMEOUT PASS
+BUG_AJWONG WIN : LayoutTests/svg/batik/paints/gradientLimit.svg = TIMEOUT FAIL
+BUG_AJWONG WIN : LayoutTests/http/tests/appcache/fallback.html = TIMEOUT
 
 // WebKit Roll 49809:49830
 // New test flakiness is being observed.
