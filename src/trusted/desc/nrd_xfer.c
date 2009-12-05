@@ -41,7 +41,6 @@
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/nacl_macros.h"
 
-#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_cond.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"

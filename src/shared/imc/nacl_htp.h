@@ -46,6 +46,7 @@
 #include <nacl/nacl_imc.h>
 #else
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #endif  // __native_client__
 
 #ifdef __native_client__
@@ -137,10 +138,12 @@ HtpHandle CreateShmDesc(Handle handle, off_t length);
 HtpHandle CreateImcDesc(Handle handle);
 
 // Reads up to count bytes from the handle into buffer.
-int Read(HtpHandle handle, void* buffer, size_t count);
+nacl_abi_ssize_t Read(HtpHandle handle, void* buffer, nacl_abi_size_t count);
 
 // Writes up to count bytes to the handle from buffer.
-int Write(HtpHandle handle, const void* buffer, size_t count);
+nacl_abi_ssize_t Write(HtpHandle handle,
+                       const void* buffer,
+                       nacl_abi_size_t count);
 
 const HtpHandle kInvalidHtpHandle = NULL;
 
