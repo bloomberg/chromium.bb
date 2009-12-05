@@ -39,8 +39,7 @@ npapi_pi_inputs = [
 ]
 
 env.ComponentProgram('npapi_pi.nexe', npapi_pi_inputs,
-                     EXTRA_LIBS=['google_nacl_imc',
-                                 'google_nacl_npruntime',
+                     EXTRA_LIBS=['google_nacl_npruntime',
                                  'pthread',
                                  'srpc'])
 

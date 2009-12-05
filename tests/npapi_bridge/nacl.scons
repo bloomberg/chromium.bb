@@ -40,8 +40,7 @@ nacl_npplugin_test_inputs = [
 
 # TODO: should this link against the sdk version of google_nacl_npruntime?
 env.ComponentProgram('npapi_test.nexe', nacl_npplugin_test_inputs,
-                     EXTRA_LIBS=['google_nacl_imc',
-                                 'google_nacl_npruntime',
+                     EXTRA_LIBS=['google_nacl_npruntime',
                                  'pthread',
                                  'srpc'])
 
