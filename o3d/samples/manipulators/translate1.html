@@ -259,31 +259,13 @@ function createManipulators() {
   // from the scene's transforms.
   var manipulatorRoot = pack.createObject('Transform');
 
-  // Create the render graph for the manipulators view that uses the same
-  // DrawContext as the main view.
-  var manipulatorViewInfo = o3djs.rendergraph.createView(
+  g_manager = o3djs.manipulators.createManager(
       pack,
       manipulatorRoot,
       g_client.renderGraphRoot,
-      undefined,  // clearColor
-      undefined,  // priority
-      undefined,  // viewport
-      undefined,  // performanceDrawList
-      undefined,  // zOrderedDrawList
+      g_mainViewInfo.root.priority + 1,
       g_mainViewInfo.drawContext);
 
-  // Make sure the manipulators gets drawn after the scene.
-  manipulatorViewInfo.root.priority = g_mainViewInfo.root.priority + 1;
-
-  // Turn off clearing the color for the manipulators.
-  manipulatorViewInfo.clearBuffer.clearColorFlag = false;
-
-  g_manager = o3djs.manipulators.createManager(
-      pack,
-      manipulatorViewInfo.performanceDrawList,
-      manipulatorRoot,
-      null,
-      0);
   var jj = 2;
   for (var ii = 0; ii < g_primitives.length; ii++) {
     var manip = g_manager.createTranslate1();

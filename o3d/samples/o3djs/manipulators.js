@@ -38,15 +38,10 @@
 o3djs.provide('o3djs.manipulators');
 
 o3djs.require('o3djs.lineprimitives');
-
 o3djs.require('o3djs.material');
-
 o3djs.require('o3djs.math');
-
 o3djs.require('o3djs.picking');
-
 o3djs.require('o3djs.primitives');
-
 o3djs.require('o3djs.quaternions');
 
 /**
@@ -65,28 +60,28 @@ o3djs.manipulators = o3djs.manipulators || {};
  * is passed in.
  * @param {!o3d.Pack} pack Pack in which manipulators' geometry and
  *     materials will be created.
- * @param {!o3d.DrawList} drawList The draw list against which
- *     internal materials are created.
  * @param {!o3d.Transform} parentTransform The parent transform under
  *     which the manipulators' geometry should be parented.
  * @param {!o3d.RenderNode} parentRenderNode The parent render node
  *     under which the manipulators' draw elements should be placed.
  * @param {number} renderNodePriority The priority that the
  *     manipulators' geometry should use for rendering.
+ * @param {!o3d.DrawContext} drawContext The DrawContext to use for the
+ *     manipulators.
  * @return {!o3djs.manipulators.Manager} The created manipulator
  *     manager.
  */
 o3djs.manipulators.createManager = function(pack,
-                                            drawList,
                                             parentTransform,
                                             parentRenderNode,
-                                            renderNodePriority) {
+                                            renderNodePriority,
+                                            drawContext) {
   return new o3djs.manipulators.Manager(pack,
-                                        drawList,
                                         parentTransform,
                                         parentRenderNode,
-                                        renderNodePriority);
-}
+                                        renderNodePriority,
+                                        drawContext);
+};
 
 //
 // Some linear algebra classes.
@@ -119,7 +114,7 @@ o3djs.manipulators.Line_ = function(opt_direction,
    */
   this.point_ = o3djs.math.copyVector(opt_point || [0, 0, 0]);
   this.recalc_();
-}
+};
 
 /**
  * Sets the direction of this line.
@@ -131,7 +126,7 @@ o3djs.manipulators.Line_ = function(opt_direction,
 o3djs.manipulators.Line_.prototype.setDirection = function(direction) {
   this.direction_ = o3djs.math.copyVector(direction);
   this.recalc_();
-}
+};
 
 /**
  * Gets the direction of this line.
@@ -140,7 +135,7 @@ o3djs.manipulators.Line_.prototype.setDirection = function(direction) {
  */
 o3djs.manipulators.Line_.prototype.getDirection = function() {
   return this.direction_;
-}
+};
 
 /**
  * Sets one point through which this line travels.
@@ -151,7 +146,7 @@ o3djs.manipulators.Line_.prototype.getDirection = function() {
 o3djs.manipulators.Line_.prototype.setPoint = function(point) {
   this.point_ = o3djs.math.copyVector(point);
   this.recalc_();
-}
+};
 
 /**
  * Gets one point through which this line travels.
@@ -161,7 +156,7 @@ o3djs.manipulators.Line_.prototype.setPoint = function(point) {
  */
 o3djs.manipulators.Line_.prototype.getPoint = function() {
   return this.point_;
-}
+};
 
 /**
  * Projects a point onto the line.
@@ -175,7 +170,7 @@ o3djs.manipulators.Line_.prototype.projectPoint = function(point) {
   return o3djs.math.addVector(this.alongVec_,
                               o3djs.math.mulScalarVector(dotp,
                                                          this.direction_));
-}
+};
 
 /**
  * A threshold / error tolerance for determining if a number should be
@@ -195,7 +190,6 @@ o3djs.manipulators.X_AXIS = [1, 0, 0];
  * @type {!o3djs.math.Vector3}
  */
 o3djs.manipulators.Z_AXIS = [0, 0, 1];
-
 
 /**
  * Returns the closest point on this line to the given ray, which is
@@ -271,7 +265,7 @@ o3djs.manipulators.Line_.prototype.closestPointToRay = function(startPoint,
                                     x[0],
                                     this.direction_));
   }
-}
+};
 
 /**
  * Performs internal recalculations when the parameters of the line change.
@@ -294,7 +288,7 @@ o3djs.manipulators.Line_.prototype.recalc_ = function() {
                                o3djs.math.dot(this.point_,
                                               this.direction_),
                                this.direction_));
-}
+};
 
 /**
  * A vector with 4 entries, the R,G,B, and A components of the default color
@@ -309,7 +303,6 @@ o3djs.manipulators.DEFAULT_COLOR = [0.8, 0.8, 0.8, 1.0];
  * @type {!o3djs.math.Vector4}
  */
 o3djs.manipulators.HIGHLIGHTED_COLOR = [0.9, 0.9, 0.0, 1.0];
-
 
 /**
  * Creates a new Plane object.
@@ -330,7 +323,7 @@ o3djs.manipulators.Plane_ = function(opt_normal,
    */
   this.point_ = o3djs.math.copyVector(opt_point || [0, 0, 0]);
   this.setNormal(opt_normal || [0, 1, 0]);
-}
+};
 
 /**
  * Sets the normal of this plane.
@@ -353,7 +346,7 @@ o3djs.manipulators.Plane_.prototype.setNormal = function(normal) {
    */
   this.normal_ = o3djs.math.normalize(normal); // Makes copy.
   this.recalc_();
-}
+};
 
 /**
  * Gets the normal of this plane, as a unit vector.
@@ -362,7 +355,7 @@ o3djs.manipulators.Plane_.prototype.setNormal = function(normal) {
  */
 o3djs.manipulators.Plane_.prototype.getNormal = function() {
   return this.normal_;
-}
+};
 
 /**
  * Sets one point through which this plane passes.
@@ -372,7 +365,7 @@ o3djs.manipulators.Plane_.prototype.getNormal = function() {
 o3djs.manipulators.Plane_.prototype.setPoint = function(point) {
   this.point_ = o3djs.math.copyVector(point);
   this.recalc_();
-}
+};
 
 /**
  * Gets one point through which this plane passes.
@@ -381,7 +374,7 @@ o3djs.manipulators.Plane_.prototype.setPoint = function(point) {
  */
 o3djs.manipulators.Plane_.prototype.getPoint = function() {
   return this.point_;
-}
+};
 
 /**
  * Projects a point onto the plane.
@@ -396,7 +389,7 @@ o3djs.manipulators.Plane_.prototype.projectPoint = function(point) {
   return o3djs.math.subVector(point,
                               o3djs.math.mulScalarVector(distFromPlane,
                                                          this.normal_));
-}
+};
 
 /**
  * Intersects a ray with the plane. Returns the point of intersection.
@@ -420,7 +413,7 @@ o3djs.manipulators.Plane_.prototype.intersectRay = function(rayStart,
   var t = distFromPlane / denom;
   return o3djs.math.addVector(rayStart,
                               o3djs.math.mulScalarVector(t, rayDirection));
-}
+};
 
 /**
  * Performs internal recalculations when the parameters of the plane change.
@@ -434,9 +427,7 @@ o3djs.manipulators.Plane_.prototype.recalc_ = function() {
    * @type {!number}
    */
   this.normalDotPoint_ = o3djs.math.dot(this.normal_, this.point_);
-}
-
-
+};
 
 /**
  * Constructs a new manipulator manager. Do not call this directly;
@@ -444,30 +435,80 @@ o3djs.manipulators.Plane_.prototype.recalc_ = function() {
  * @constructor
  * @param {!o3d.Pack} pack Pack in which manipulators' geometry and
  *     materials will be created.
- * @param {!o3d.DrawList} drawList The draw list against which
- *     internal materials are created.
  * @param {!o3d.Transform} parentTransform The parent transform under
  *     which the manipulators' geometry should be parented.
  * @param {!o3d.RenderNode} parentRenderNode The parent render node
  *     under which the manipulators' draw elements should be placed.
  * @param {number} renderNodePriority The priority that the
  *     manipulators' geometry should use for rendering.
+ * @param {!o3d.DrawContext} drawContext The DrawContext to use for the
+ *     manipulators.
  */
 o3djs.manipulators.Manager = function(pack,
-                                      drawList,
                                       parentTransform,
                                       parentRenderNode,
-                                      renderNodePriority) {
+                                      renderNodePriority,
+                                      drawContext) {
   /**
    * Pack in which manipulators' geometry and materials are created.
    * @type {!o3d.Pack}
    */
   this.pack = pack;
   /**
-   * The draw list against which internal materials are created.
+   * The ViewInfo used to render the manipulators.
+   * @type {!o3djs.rendergraph.ViewInfo}
+   */
+  this.viewInfo = o3djs.rendergraph.createView(
+      pack,
+      parentTransform,
+      parentRenderNode,
+      undefined,  // clearColor
+      renderNodePriority,  // priority
+      undefined,  // viewport
+      undefined,  // performanceDrawList
+      undefined,  // zOrderedDrawList
+      drawContext);
+
+  // Turn off clearing the color for the manipulators.
+  this.viewInfo.clearBuffer.active = false;
+
+  // Set the ZComparisonFunction to the opposite of normal so we only
+  // draw when we should be obscured for the obscured DrawList.
+  var state = this.viewInfo.zOrderedState;
+  state.getStateParam('ZComparisonFunction').value =
+      o3djs.base.o3d.State.CMP_GREATER;
+
+  // Swap the priorities of the DrawPasses so they get drawn in the
+  // opposite order
+  var temp = this.viewInfo.performanceDrawPassInfo.root.priority;
+  this.viewInfo.performanceDrawPassInfo.root.priority =
+      this.viewInfo.zOrderedDrawPassInfo.root.priority
+  this.viewInfo.zOrderedDrawPassInfo.root.priority = temp;
+
+  // The following two DrawLists are used to render manipulators. We give each
+  // manipulator 2 DrawElements so they get drawn twice. Once they are
+  // drawn with the reverse of the normal zBuffer test so that only the parts
+  // of the manipulator that would be obscured by zbuffering are drawn. Then we
+  // draw them again with normal zBuffering test so that the parts that are not
+  // obscured get drawn as normal. This allows the obscured parts
+  // of the manipulators to be rendered with a different material.
+
+  /**
+   * The DrawList we use to render manipulators that are unobscured by the main
+   * scene.
+   * @private
    * @type {!o3d.DrawList}
    */
-  this.drawList = drawList;
+  this.unobscuredDrawList_ = this.viewInfo.performanceDrawList;
+
+  /**
+   * The DrawList we use to render manipulators that are obscured by the main
+   * scene.
+   * @private
+   * @type {!o3d.DrawList}
+   */
+  this.obscuredDrawList_ = this.viewInfo.zOrderedDrawList;
+
   /**
    * The parent transform under which the manipulators' geometry
    * shall be parented.
@@ -500,10 +541,27 @@ o3djs.manipulators.Manager = function(pack,
    * use this constant shader for Translate1+2 line geometry, if we add it.
    * Rotate1 line geometry uses a different, special shader.
    *
+   * @private
    * @type {!o3d.Material}
    */
-  this.constantMaterial =
+  this.constantMaterial_ =
       this.createConstantMaterial_(o3djs.manipulators.DEFAULT_COLOR);
+
+  /**
+   * The material used to draw the obscured part of some
+   * manipulators..
+   *
+   * @private
+   * @type {!o3d.Material}
+   *
+   * TODO(gman): Use a different material that doesn't use the same param
+   *    names as the constant material OR put them on separate transforms.
+   */
+  this.obscuredConstantMaterial_ = o3djs.material.createBasicMaterial(
+      pack,
+      this.viewInfo,
+      [1, 0, 0, 0.3],  // TODO(gman): Pick an appropriate color.
+      true);
 
   /**
    * A map from the manip's parent Transform clientId to the manip.
@@ -529,20 +587,63 @@ o3djs.manipulators.Manager = function(pack,
    * @type {o3djs.manipulators.Manip}
    */
   this.draggedManip_ = null;
-}
+};
 
 /**
  * Creates a constant-shaded material based on the given single color.
  * @private
  * @param {!o3djs.math.Vector4} baseColor A vector with 4 entries, the
  *     R,G,B, and A components of a color.
- * @return {!o3d.Material} A constant material whose overall pigment is baseColor.
+ * @return {!o3d.Material} A constant material whose overall pigment is
+ *     baseColor.
  */
 o3djs.manipulators.Manager.prototype.createConstantMaterial_ =
     function(baseColor) {
   return o3djs.material.createConstantMaterialEx(
-     this.pack, this.drawList, baseColor);
-}
+     this.pack, this.unobscuredDrawList_, baseColor);
+};
+
+/**
+ * Gets the constant material used for manipulators.
+ * @return {!o3d.Material} A material.
+ */
+o3djs.manipulators.Manager.prototype.getConstantMaterial = function() {
+  return this.constantMaterial_;
+};
+
+/**
+ * Gets the constant material used for manipulators.
+ * @return {!o3d.Material} A material.
+ */
+o3djs.manipulators.Manager.prototype.getObscuredConstantMaterial = function() {
+  return this.obscuredConstantMaterial_;
+};
+
+/**
+ * Gets the material used for the line ring manipulators.
+ * @return {!o3d.Material} A material.
+ */
+o3djs.manipulators.Manager.prototype.getLineRingMaterial = function() {
+  if (!this.lineRingMaterial_) {
+    this.lineRingMaterial_ = o3djs.manipulators.createLineRingMaterial(
+        this.pack, this.unobscuredDrawList_,
+        [1, 1, 1, 1], [1, 1, 1, 0.4]);
+  }
+  return this.lineRingMaterial_;
+};
+
+/**
+ * Gets the material used for the line ring manipulators.
+ * @return {!o3d.Material} A material.
+ */
+o3djs.manipulators.Manager.prototype.getObscuredLineRingMaterial = function() {
+  if (!this.obscuredLineRingMaterial_) {
+    this.obscuredLineRingMaterial_ = o3djs.manipulators.createLineRingMaterial(
+        this.pack, this.obscuredDrawList_,
+        [1, 0, 0, 1], [1, 1, 1, 0.4]);  // TODO(gman): Pick a color.
+  }
+  return this.obscuredLineRingMaterial_;
+};
 
 // TODO(simonrad): Add phong shader back in. We need it for the solid cones
 // of the Translate1+2 manipulators. Note that for highlighting, the phong
@@ -559,7 +660,7 @@ o3djs.manipulators.Manager.prototype.createTranslate1 = function() {
   var manip = new o3djs.manipulators.Translate1(this);
   this.add_(manip);
   return manip;
-}
+};
 
 /**
  * Creates a new Translate2 manipulator. A Translate2 moves around the
@@ -570,7 +671,7 @@ o3djs.manipulators.Manager.prototype.createTranslate2 = function() {
   var manip = new o3djs.manipulators.Translate2(this);
   this.add_(manip);
   return manip;
-}
+};
 
 /**
  * Creates a new Rotate1 manipulator. A Rotate1 rotates about the
@@ -581,7 +682,7 @@ o3djs.manipulators.Manager.prototype.createRotate1 = function() {
   var manip = new o3djs.manipulators.Rotate1(this);
   this.add_(manip);
   return manip;
-}
+};
 
 /**
  * Adds a manipulator to this manager's set.
@@ -593,7 +694,7 @@ o3djs.manipulators.Manager.prototype.add_ = function(manip) {
   manip.getTransform().createDrawElements(this.pack, null);
   // Add the manipulator into our managed list
   this.manipsByClientId[manip.getTransform().clientId] = manip;
-}
+};
 
 /**
  * Event handler for multiple kinds of mouse events.
@@ -642,7 +743,7 @@ o3djs.manipulators.Manager.prototype.handleMouse_ = function(x,
   } else {
     func(this, null, null);
   }
-}
+};
 
 /**
  * Callback handling the mouse-down event on a manipulator.
@@ -661,7 +762,7 @@ o3djs.manipulators.mouseDownCallback_ = function(manager,
     manager.draggedManip_ = manip;
     manip.makeActive(pickResult);
   }
-}
+};
 
 /**
  * Callback handling the mouse-over event on a manipulator.
@@ -687,7 +788,7 @@ o3djs.manipulators.hoverCallback_ = function(manager,
     manip.highlight(pickResult);
     manager.highlightedManip = manip;
   }
-}
+};
 
 /**
  * Method which should be called by end user code upon receiving a
@@ -707,7 +808,7 @@ o3djs.manipulators.Manager.prototype.mousedown = function(x,
                                                           height) {
   this.handleMouse_(x, y, view, projection, width, height,
                     o3djs.manipulators.mouseDownCallback_);
-}
+};
 
 /**
  * Method which should be called by end user code upon receiving a
@@ -736,7 +837,7 @@ o3djs.manipulators.Manager.prototype.mousemove = function(x,
     this.handleMouse_(x, y, view, projection, width, height,
                       o3djs.manipulators.hoverCallback_);
   }
-}
+};
 
 /**
  * Method which should be called by end user code upon receiving a
@@ -747,7 +848,7 @@ o3djs.manipulators.Manager.prototype.mouseup = function() {
     this.draggedManip_.makeInactive();
     this.draggedManip_ = null;
   }
-}
+};
 
 /**
  * Method which should be called by end user code, typically in
@@ -763,7 +864,7 @@ o3djs.manipulators.Manager.prototype.updateInactiveManipulators = function() {
       manip.updateBaseTransformFromAttachedTransform_();
     }
   }
-}
+};
 
 /**
  * Base class for all manipulators.
@@ -854,7 +955,7 @@ o3djs.manipulators.Manip = function(manager) {
    * @type {boolean}
    */
   this.active_ = false;
-}
+};
 
 /**
  * Adds shapes to the internal transform of this manipulator.
@@ -874,7 +975,7 @@ o3djs.manipulators.Manip.prototype.addShapes_ = function(shapes, opt_visible) {
       this.invisibleTransform_.addShape(shapes[ii]);
     }
   }
-}
+};
 
 /**
  * Returns the "base" transform of this manipulator, which places the
@@ -885,7 +986,7 @@ o3djs.manipulators.Manip.prototype.addShapes_ = function(shapes, opt_visible) {
  */
 o3djs.manipulators.Manip.prototype.getBaseTransform_ = function() {
   return this.baseTransform_;
-}
+};
 
 /**
  * Returns the "offset" transform of this manipulator, which allows
@@ -895,7 +996,7 @@ o3djs.manipulators.Manip.prototype.getBaseTransform_ = function() {
  */
 o3djs.manipulators.Manip.prototype.getOffsetTransform = function() {
   return this.offsetTransform_;
-}
+};
 
 /**
  * Returns the local transform of this manipulator, which contains the
@@ -907,7 +1008,7 @@ o3djs.manipulators.Manip.prototype.getOffsetTransform = function() {
  */
 o3djs.manipulators.Manip.prototype.getTransform = function() {
   return this.localTransform_;
-}
+};
 
 /**
  * Sets the translation component of the offset transform. This is
@@ -921,7 +1022,7 @@ o3djs.manipulators.Manip.prototype.setOffsetTranslation =
   this.getOffsetTransform().localMatrix =
     o3djs.math.matrix4.setTranslation(this.getOffsetTransform().localMatrix,
                                       translation);
-}
+};
 
 /**
  * Sets the rotation component of the offset transform. This is useful
@@ -935,7 +1036,7 @@ o3djs.manipulators.Manip.prototype.setOffsetRotation = function(quaternion) {
   this.getOffsetTransform().localMatrix =
     o3djs.math.matrix4.setUpper3x3(this.getOffsetTransform().localMatrix,
                                    rot);
-}
+};
 
 /**
  * Explicitly sets the local translation of this manipulator.
@@ -948,7 +1049,7 @@ o3djs.manipulators.Manip.prototype.setTranslation = function(translation) {
   this.getTransform().localMatrix =
     o3djs.math.matrix4.setTranslation(this.getTransform().localMatrix,
                                       translation);
-}
+};
 
 /**
  * Explicitly sets the local rotation of this manipulator. (TODO(kbr):
@@ -961,7 +1062,7 @@ o3djs.manipulators.Manip.prototype.setRotation = function(quaternion) {
   this.getTransform().localMatrix =
     o3djs.math.matrix4.setUpper3x3(this.getTransform().localMatrix,
                                    rot);
-}
+};
 
 /**
  * Attaches this manipulator to the given transform. Interactions with
@@ -975,7 +1076,7 @@ o3djs.manipulators.Manip.prototype.attachTo = function(transform) {
   // Update our base transform to place the manipulator at exactly the
   // location of the attached transform.
   this.updateBaseTransformFromAttachedTransform_();
-}
+};
 
 /**
  * Highlights this manipulator according to the given pick result.
@@ -983,13 +1084,13 @@ o3djs.manipulators.Manip.prototype.attachTo = function(transform) {
  *     caused this manipulator to become highlighted.
  */
 o3djs.manipulators.Manip.prototype.highlight = function(pickResult) {
-}
+};
 
 /**
  * Clears any highlight for this manipulator.
  */
 o3djs.manipulators.Manip.prototype.clearHighlight = function() {
-}
+};
 
 /**
  * Activates this manipulator according to the given pick result. In
@@ -1000,14 +1101,14 @@ o3djs.manipulators.Manip.prototype.clearHighlight = function() {
  */
 o3djs.manipulators.Manip.prototype.makeActive = function(pickResult) {
   this.active_ = true;
-}
+};
 
 /**
  * Deactivates this manipulator.
  */
 o3djs.manipulators.Manip.prototype.makeInactive = function() {
   this.active_ = false;
-}
+};
 
 /**
  * Drags this manipulator according to the world-space ray specified
@@ -1034,7 +1135,7 @@ o3djs.manipulators.Manip.prototype.drag = function(startPoint,
                                                    projection,
                                                    width,
                                                    height) {
-}
+};
 
 /**
  * Indicates whether this manipulator is active.
@@ -1042,7 +1143,7 @@ o3djs.manipulators.Manip.prototype.drag = function(startPoint,
  */
 o3djs.manipulators.Manip.prototype.isActive = function() {
   return this.active_;
-}
+};
 
 /**
  * Updates the base transform of this manipulator from the state of
@@ -1061,7 +1162,7 @@ o3djs.manipulators.Manip.prototype.updateBaseTransformFromAttachedTransform_ =
     // Reset the manipulator's local matrix to the identity.
     this.localTransform_.localMatrix = o3djs.math.matrix4.identity();
   }
-}
+};
 
 /**
  * Updates this manipulator's attached transform based on the values
@@ -1083,7 +1184,6 @@ o3djs.manipulators.Manip.prototype.updateAttachedTransformFromLocalTransform_ =
     totalMat = o3djs.math.matrix4.mul(totalMat, offset);
     totalMat = o3djs.math.matrix4.mul(totalMat, base);
 
-
     // Set this into the attached transform, taking into account its
     // parent's transform, if any.
     // Note that we can not query the parent's transform directly, so
@@ -1098,7 +1198,7 @@ o3djs.manipulators.Manip.prototype.updateAttachedTransformFromLocalTransform_ =
     totalMat = o3djs.math.matrix4.mul(totalMat, attParentMatInv);
     this.attachedTransform_.localMatrix = totalMat;
   }
-}
+};
 
 /**
  * Sets the material of the given shape's draw elements.
@@ -1115,7 +1215,7 @@ o3djs.manipulators.Manip.prototype.setMaterial_ = function(shape, material) {
       drawElements[jj].material = material;
     }
   }
-}
+};
 
 /**
  * Sets the materials of the given shapes' draw elements.
@@ -1128,8 +1228,7 @@ o3djs.manipulators.Manip.prototype.setMaterials_ = function(shapes, material) {
   for (var ii = 0; ii < shapes.length; ii++) {
     this.setMaterial_(shapes[ii], material);
   }
-}
-
+};
 
 /**
  * Create the geometry for a double-ended arrow going from
@@ -1166,8 +1265,7 @@ o3djs.manipulators.createArrowVertices_ = function(matrix) {
       matrix4.mul(matrix4.translation([0, -0.85, 0]), matrix)));
 
   return verts;
-}
-
+};
 
 /**
  * A manipulator allowing an object to be dragged along a line.
@@ -1181,7 +1279,7 @@ o3djs.manipulators.Translate1 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.constantMaterial;
+  var material = manager.getConstantMaterial();
 
   var shape = manager.translate1Shape_;
   if (!shape) {
@@ -1190,6 +1288,9 @@ o3djs.manipulators.Translate1 = function(manager) {
     var verts = o3djs.manipulators.createArrowVertices_(
         o3djs.math.matrix4.rotationZ(Math.PI / 2));
     shape = verts.createShape(pack, material);
+    // Add a second DrawElement to this shape to draw it a second time
+    // with a different material when it's obscured.
+    shape.createDrawElements(pack, manager.getObscuredConstantMaterial());
     manager.translate1Shape_ = shape;
   }
 
@@ -1210,7 +1311,7 @@ o3djs.manipulators.Translate1 = function(manager) {
    * @type {!o3djs.manipulators.Line_}
    */
   this.dragLine_ = new o3djs.manipulators.Line_();
-}
+};
 
 o3djs.base.inherit(o3djs.manipulators.Translate1, o3djs.manipulators.Manip);
 
@@ -1219,11 +1320,11 @@ o3djs.manipulators.Translate1.prototype.highlight = function(pickResult) {
   // entire color changes during highlighting.
   // TODO(kbr): support custom user geometry and associated callbacks.
   this.colorParam_.value = o3djs.manipulators.HIGHLIGHTED_COLOR;
-}
+};
 
 o3djs.manipulators.Translate1.prototype.clearHighlight = function() {
   this.colorParam_.value = o3djs.manipulators.DEFAULT_COLOR;
-}
+};
 
 o3djs.manipulators.Translate1.prototype.makeActive = function(pickResult) {
   o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
@@ -1233,14 +1334,14 @@ o3djs.manipulators.Translate1.prototype.makeActive = function(pickResult) {
       o3djs.math.matrix4.transformDirection(localToWorld,
                                             o3djs.manipulators.X_AXIS));
   this.dragLine_.setPoint(pickResult.worldIntersectionPosition);
-}
+};
 
 o3djs.manipulators.Translate1.prototype.makeInactive = function() {
   o3djs.manipulators.Manip.prototype.makeInactive.call(this);
   this.clearHighlight();
   this.updateAttachedTransformFromLocalTransform_();
   this.updateBaseTransformFromAttachedTransform_();
-}
+};
 
 o3djs.manipulators.Translate1.prototype.drag = function(startPoint,
                                                         endPoint,
@@ -1271,8 +1372,7 @@ o3djs.manipulators.Translate1.prototype.drag = function(startPoint,
           o3djs.math.matrix4.transformDirection(worldToLocal,
                                                 diffVector));
   this.updateAttachedTransformFromLocalTransform_();
-}
-
+};
 
 /**
  * A manipulator allowing an object to be dragged around a plane.
@@ -1286,7 +1386,7 @@ o3djs.manipulators.Translate2 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.constantMaterial;
+  var material = manager.getConstantMaterial();
 
   var shape = manager.Translate2Shape_;
   if (!shape) {
@@ -1298,6 +1398,9 @@ o3djs.manipulators.Translate2 = function(manager) {
     verts.append(o3djs.manipulators.createArrowVertices_(
         o3djs.math.matrix4.rotationZ(0)));
     shape = verts.createShape(pack, material);
+    // Add a second DrawElement to this shape to draw it a second time
+    // with a different material when it's obscured.
+    shape.createDrawElements(pack, manager.getObscuredConstantMaterial());
     manager.Translate2Shape_ = shape;
   }
 
@@ -1318,7 +1421,7 @@ o3djs.manipulators.Translate2 = function(manager) {
    * @type {!o3djs.manipulators.Plane_}
    */
   this.dragPlane_ = new o3djs.manipulators.Plane_();
-}
+};
 
 o3djs.base.inherit(o3djs.manipulators.Translate2, o3djs.manipulators.Manip);
 
@@ -1327,11 +1430,11 @@ o3djs.manipulators.Translate2.prototype.highlight = function(pickResult) {
   // entire color changes during highlighting.
   // TODO(kbr): support custom user geometry and associated callbacks.
   this.colorParam_.value = o3djs.manipulators.HIGHLIGHTED_COLOR;
-}
+};
 
 o3djs.manipulators.Translate2.prototype.clearHighlight = function() {
   this.colorParam_.value = o3djs.manipulators.DEFAULT_COLOR;
-}
+};
 
 o3djs.manipulators.Translate2.prototype.makeActive = function(pickResult) {
   o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
@@ -1341,14 +1444,14 @@ o3djs.manipulators.Translate2.prototype.makeActive = function(pickResult) {
       o3djs.math.matrix4.transformDirection(localToWorld,
                                             o3djs.manipulators.Z_AXIS));
   this.dragPlane_.setPoint(pickResult.worldIntersectionPosition);
-}
+};
 
 o3djs.manipulators.Translate2.prototype.makeInactive = function() {
   o3djs.manipulators.Manip.prototype.makeInactive.call(this);
   this.clearHighlight();
   this.updateAttachedTransformFromLocalTransform_();
   this.updateBaseTransformFromAttachedTransform_();
-}
+};
 
 o3djs.manipulators.Translate2.prototype.drag = function(startPoint,
                                                         endPoint,
@@ -1380,8 +1483,7 @@ o3djs.manipulators.Translate2.prototype.drag = function(startPoint,
           o3djs.math.matrix4.transformDirection(worldToLocal,
                                                 diffVector));
   this.updateAttachedTransformFromLocalTransform_();
-}
-
+};
 
 /**
  * A manipulator allowing an object to be rotated about a single axis.
@@ -1396,11 +1498,6 @@ o3djs.manipulators.Rotate1 = function(manager) {
 
   var pack = manager.pack;
 
-  if (!manager.lineRingMaterial) {
-    manager.lineRingMaterial = o3djs.manipulators.createLineRingMaterial(
-        pack, manager.drawList, [1, 1, 1, 1], [1, 1, 1, 0.4]);
-  }
-
   var pickShape = manager.Rotate1PickShape_;
   if (!pickShape) {
     // Create the polygon geometry for picking the manipulator, which looks like
@@ -1411,7 +1508,7 @@ o3djs.manipulators.Rotate1 = function(manager) {
         16,
         6,
         o3djs.math.matrix4.rotationZ(Math.PI / 2));
-    pickShape = verts.createShape(pack, manager.constantMaterial);
+    pickShape = verts.createShape(pack, manager.getConstantMaterial());
     manager.Rotate1PickShape_ = pickShape;
   }
 
@@ -1423,7 +1520,11 @@ o3djs.manipulators.Rotate1 = function(manager) {
         1.0,
         32,
         o3djs.math.matrix4.rotationZ(Math.PI / 2));
-    visibleShape = verts.createShape(pack, manager.lineRingMaterial);
+    visibleShape = verts.createShape(pack, manager.getLineRingMaterial());
+    // Add a second DrawElement to this shape to draw it a second time
+    // with a different material when it's obscured.
+    visibleShape.createDrawElements(
+        pack, manager.getObscuredLineRingMaterial());
     manager.Rotate1VisibleShape_ = visibleShape;
   }
 
@@ -1446,7 +1547,7 @@ o3djs.manipulators.Rotate1 = function(manager) {
    * @type {!o3djs.manipulators.Line_}
    */
   this.dragLine_ = new o3djs.manipulators.Line_();
-}
+};
 
 o3djs.base.inherit(o3djs.manipulators.Rotate1, o3djs.manipulators.Manip);
 
@@ -1455,11 +1556,11 @@ o3djs.manipulators.Rotate1.prototype.highlight = function(pickResult) {
   // entire color changes during highlighting.
   // TODO(kbr): support custom user geometry and associated callbacks.
   this.colorParam_.value = o3djs.manipulators.HIGHLIGHTED_COLOR;
-}
+};
 
 o3djs.manipulators.Rotate1.prototype.clearHighlight = function() {
   this.colorParam_.value = o3djs.manipulators.DEFAULT_COLOR;
-}
+};
 
 o3djs.manipulators.Rotate1.prototype.makeActive = function(pickResult) {
   o3djs.manipulators.Manip.prototype.makeActive.call(this, pickResult);
@@ -1483,14 +1584,14 @@ o3djs.manipulators.Rotate1.prototype.makeActive = function(pickResult) {
 
   // TODO(simonrad): It would be nice to draw an arrow on the screen
   // at the click position, indicating the direction of the line.
-}
+};
 
 o3djs.manipulators.Rotate1.prototype.makeInactive = function() {
   o3djs.manipulators.Manip.prototype.makeInactive.call(this);
   this.clearHighlight();
   this.updateAttachedTransformFromLocalTransform_();
   this.updateBaseTransformFromAttachedTransform_();
-}
+};
 
 /**
  * Convert the specified frustum-space position into
@@ -1508,7 +1609,7 @@ o3djs.manipulators.frustumPositionToClientPosition_ = function(frustumPoint,
                                                                height) {
   return [(frustumPoint[0] + 1) * width / 2,
           (-frustumPoint[1] + 1) * height / 2];
-}
+};
 
 o3djs.manipulators.Rotate1.prototype.drag = function(startPoint,
                                                      endPoint,
@@ -1548,8 +1649,7 @@ o3djs.manipulators.Rotate1.prototype.drag = function(startPoint,
   var angle = (dragDistance / Math.max(width, height)) * 2 * Math.PI;
   this.getTransform().localMatrix = o3djs.math.matrix4.rotationX(-angle);
   this.updateAttachedTransformFromLocalTransform_();
-}
-
+};
 
 // The shader and material for the Rotate1 manipulator's line ring.
 // TODO(simonrad): Find a better place for these?
