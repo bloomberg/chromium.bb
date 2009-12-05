@@ -43,7 +43,6 @@
 #endif
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
-#include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
@@ -161,64 +160,12 @@ HtpHandle CreateImcDesc(Handle handle) {
   return reinterpret_cast<NaClDesc*>(desc);
 }
 
-nacl_abi_ssize_t Read(HtpHandle handle, void* buffer, nacl_abi_size_t count) {
-  // We're only actually capable of returning a signed size, so make
-  // sure the request doesn't exceed that limit. Read() is allowed to return
-  // a smaller value than "count" without setting errno, so we'll just
-  // truncate here rather than raising an error.
-  size_t realCount = nacl_abi_ssize_t_saturate(count);
-
-  // Do the read.
-  ssize_t result = NaClDescIoDescRead(handle,
-                                      NULL,
-                                      buffer,
-                                      realCount);
-
-  // This next conditional does a sanity check on the result. It is only
-  // necessary on systems where SIZE_T and NACL_ABI_SIZE_T are different
-  // data types.
-#if !NACL_ABI_WORDSIZE_IS_NATIVE
-  // Since the "count" parameter is a nacl_abi_size_t, and we already truncated
-  // it to a nacl_abi_ssize_t, it would be horribly unusual if the return value
-  // exceeded NACL_ABI_SIZE_T_MAX. Almost certainly it would indicate a fatal
-  // error. So panic.
-  if (result > NACL_ABI_SSIZE_T_MAX) {
-    NaClLog(LOG_FATAL, "Overflow in return from NaClDescIoDescRead()\n");
-  }
-#endif
-
-  return nacl_abi_ssize_t_saturate(result);
+int Read(HtpHandle handle, void* buffer, size_t count) {
+  return NaClDescIoDescRead(handle, NULL, buffer, count);
 }
 
-nacl_abi_ssize_t Write(HtpHandle handle,
-                       const void* buffer,
-                       nacl_abi_size_t count) {
-  // We're only actually capable of returning a signed size, so make
-  // sure the request doesn't exceed that limit. Write() is allowed to return
-  // a smaller value than "count" without setting errno, so we'll just
-  // truncate here rather than raising an error.
-  size_t realCount = nacl_abi_ssize_t_saturate(count);
-
-  // Do the read.
-  ssize_t result = NaClDescIoDescWrite(handle,
-                                       NULL,
-                                       buffer,
-                                       realCount);
-
-  // This next conditional does a sanity check on the result. It is only
-  // necessary on systems where SIZE_T and NACL_ABI_SIZE_T are different
-  // data types.
-#if (!NACL_ABI_WORDSIZE_IS_NATIVE)
-  // Since the "count" parameter is a nacl_abi_size_t, and we already truncated
-  // it to a nacl_abi_ssize_t, it would be horribly unusual if the return value
-  // exceeded NACL_ABI_SIZE_T_MAX. Almost certainly it would indicate a fatal
-  // error. So panic.
-  if (result > NACL_ABI_SSIZE_T_MAX) {
-    NaClLog(LOG_FATAL, "Overflow in return from NaClDescIoDescWrite()\n");
-  }
-#endif
-
-  return nacl_abi_ssize_t_saturate(result);
+int Write(HtpHandle handle, const void* buffer, size_t count) {
+  return NaClDescIoDescWrite(handle, NULL, buffer, count);
 }
 
 #endif  // __native_client__

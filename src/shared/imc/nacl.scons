@@ -42,11 +42,11 @@ nacl_imc_inputs = env.ComponentObject(nacl_imc_inputs)
 nacl_imc_c_inputs = nacl_imc_inputs + ['nacl_imc_c.cc']
 
 env.ComponentLibrary('google_nacl_imc', nacl_imc_inputs)
-env.ComponentLibrary( nacl_imc_c_inputs)
+env.ComponentLibrary('google_nacl_imc_c', nacl_imc_c_inputs)
 
 
-#env.AddLibraryToSdk(['google_nacl_imc', 'google_nacl_imc_c'])
-#env.AddHeaderToSdk(['nacl_imc.h',
-#                    'nacl_imc_c.h',
-#                    'nacl_htp.h',
-#                    'nacl_htp_c.h'])
+env.AddLibraryToSdk(['google_nacl_imc', 'google_nacl_imc_c'])
+env.AddHeaderToSdk(['nacl_imc.h',
+                    'nacl_imc_c.h',
+                    'nacl_htp.h',
+                    'nacl_htp_c.h'])

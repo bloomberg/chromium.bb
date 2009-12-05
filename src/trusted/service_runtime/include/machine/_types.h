@@ -51,19 +51,6 @@
 #define NULL 0
 #endif
 
-#define NACL_ABI_WORDSIZE 32
-
-#define NACL_ABI_MAKE_WORDSIZE_TYPE(T)  T ## NACL_ABI_WORDSIZE ## _t
-#define NACL_ABI_SIGNED_WORD            NACL_ABI_MAKE_WORDSIZE_TYPE(int)
-#define NACL_ABI_UNSIGNED_WORD          NACL_ABI_MAKE_WORDSIZE_TYPE(uint)
-
-#ifndef __native_client__
-# if (NACL_ABI_WORDSIZE == NACL_HOST_WORDSIZE)
-#   define NACL_ABI_WORDSIZE_IS_NATIVE 1
-# else
-#   define NACL_ABI_WORDSIZE_IS_NATIVE 0
-# endif
-#endif
 
 #define NACL_CONCAT3_(a, b, c) a ## b ## c
 #define NACL_PRI_(fmt, size) NACL_CONCAT3_(PRI, fmt, size)
@@ -94,12 +81,12 @@ typedef nacl_abi___ino_t nacl_abi_ino_t;
 #endif
 #endif
 
-#define PRIdNACL_INO NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_INO NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_INO NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_INO NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_INO NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_INO NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_INO NACL_PRI_(d, 32)
+#define PRIiNACL_INO NACL_PRI_(i, 32)
+#define PRIoNACL_INO NACL_PRI_(o, 32)
+#define PRIuNACL_INO NACL_PRI_(u, 32)
+#define PRIxNACL_INO NACL_PRI_(x, 32)
+#define PRIXNACL_INO NACL_PRI_(X, 32)
 
 #define NACL_ABI_INO_T_MIN ((nacl_abi_ino_t) 0)
 #define NACL_ABI_INO_T_MAX ((nacl_abi_ino_t) -1)
@@ -112,12 +99,12 @@ typedef nacl_abi___mode_t nacl_abi_mode_t;
 #endif
 #endif
 
-#define PRIdNACL_MODE NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_MODE NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_MODE NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_MODE NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_MODE NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_MODE NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_MODE NACL_PRI_(d, 32)
+#define PRIiNACL_MODE NACL_PRI_(i, 32)
+#define PRIoNACL_MODE NACL_PRI_(o, 32)
+#define PRIuNACL_MODE NACL_PRI_(u, 32)
+#define PRIxNACL_MODE NACL_PRI_(x, 32)
+#define PRIXNACL_MODE NACL_PRI_(X, 32)
 
 #define NACL_ABI_MODE_T_MIN ((nacl_abi_mode_t) 0)
 #define NACL_ABI_MODE_T_MAX ((nacl_abi_mode_t) -1)
@@ -130,12 +117,12 @@ typedef nacl_abi___nlink_t nacl_abi_nlink_t;
 #endif
 #endif
 
-#define PRIdNACL_NLINK NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_NLINK NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_NLINK NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_NLINK NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_NLINK NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_NLINK NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_NLINK NACL_PRI_(d, 32)
+#define PRIiNACL_NLINK NACL_PRI_(i, 32)
+#define PRIoNACL_NLINK NACL_PRI_(o, 32)
+#define PRIuNACL_NLINK NACL_PRI_(u, 32)
+#define PRIxNACL_NLINK NACL_PRI_(x, 32)
+#define PRIXNACL_NLINK NACL_PRI_(X, 32)
 
 #define NACL_ABI_NLINK_T_MIN ((nacl_abi_nlink_t) 0)
 #define NACL_ABI_NLINK_T_MAX ((nacl_abi_nlink_t) -1)
@@ -148,12 +135,12 @@ typedef nacl_abi___uid_t nacl_abi_uid_t;
 #endif
 #endif
 
-#define PRIdNACL_UID NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_UID NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_UID NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_UID NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_UID NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_UID NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_UID NACL_PRI_(d, 32)
+#define PRIiNACL_UID NACL_PRI_(i, 32)
+#define PRIoNACL_UID NACL_PRI_(o, 32)
+#define PRIuNACL_UID NACL_PRI_(u, 32)
+#define PRIxNACL_UID NACL_PRI_(x, 32)
+#define PRIXNACL_UID NACL_PRI_(X, 32)
 
 #define NACL_ABI_UID_T_MIN ((nacl_abi_uid_t) 0)
 #define NACL_ABI_UID_T_MAX ((nacl_abi_uid_t) -1)
@@ -166,12 +153,12 @@ typedef nacl_abi___gid_t nacl_abi_gid_t;
 #endif
 #endif
 
-#define PRIdNACL_GID NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_GID NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_GID NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_GID NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_GID NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_GID NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_GID NACL_PRI_(d, 32)
+#define PRIiNACL_GID NACL_PRI_(i, 32)
+#define PRIoNACL_GID NACL_PRI_(o, 32)
+#define PRIuNACL_GID NACL_PRI_(u, 32)
+#define PRIxNACL_GID NACL_PRI_(x, 32)
+#define PRIXNACL_GID NACL_PRI_(X, 32)
 
 #define NACL_ABI_GID_T_MIN ((nacl_abi_gid_t) 0)
 #define NACL_ABI_GID_T_MAX ((nacl_abi_gid_t) -1)
@@ -184,15 +171,15 @@ typedef nacl_abi__off_t nacl_abi_off_t;
 #endif
 #endif
 
-#define PRIdNACL_OFF NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_OFF NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_OFF NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_OFF NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_OFF NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_OFF NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_OFF NACL_PRI_(d, 32)
+#define PRIiNACL_OFF NACL_PRI_(i, 32)
+#define PRIoNACL_OFF NACL_PRI_(o, 32)
+#define PRIuNACL_OFF NACL_PRI_(u, 32)
+#define PRIxNACL_OFF NACL_PRI_(x, 32)
+#define PRIXNACL_OFF NACL_PRI_(X, 32)
 
-#define NACL_ABI_OFF_T_MIN ((nacl_abi_off_t) 1 << (NACL_ABI_WORDSIZE - 1))
-#define NACL_ABI_OFF_T_MAX (~((nacl_abi_off_t) 1 << (NACL_ABI_WORDSIZE - 1)))
+#define NACL_ABI_OFF_T_MIN ((nacl_abi_off_t) 1 << 31)
+#define NACL_ABI_OFF_T_MAX (~((nacl_abi_off_t) 1 << 31))
 
 #ifndef nacl_abi___off64_t_defined
 #define nacl_abi___off64_t_defined
@@ -218,17 +205,15 @@ typedef int32_t nacl_abi___blksize_t;
 typedef nacl_abi___blksize_t nacl_abi_blksize_t;
 #endif
 
-#define PRIdNACL_BLKSIZE NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_BLKSIZE NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_BLKSIZE NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_BLKSIZE NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_BLKSIZE NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_BLKSIZE NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_BLKSIZE NACL_PRI_(d, 32)
+#define PRIiNACL_BLKSIZE NACL_PRI_(i, 32)
+#define PRIoNACL_BLKSIZE NACL_PRI_(o, 32)
+#define PRIuNACL_BLKSIZE NACL_PRI_(u, 32)
+#define PRIxNACL_BLKSIZE NACL_PRI_(x, 32)
+#define PRIXNACL_BLKSIZE NACL_PRI_(X, 32)
 
-#define NACL_ABI_BLKSIZE_T_MIN \
-  ((nacl_abi_blksize_t) 1 << (NACL_ABI_WORDSIZE - 1))
-#define NACL_ABI_BLKSIZE_T_MAX \
-  (~((nacl_abi_blksize_t) 1 << (NACL_ABI_WORDSIZE - 1)))
+#define NACL_ABI_BLKSIZE_T_MIN ((nacl_abi_blksize_t) 1 << 31)
+#define NACL_ABI_BLKSIZE_T_MAX (~((nacl_abi_blksize_t) 1 << 31))
 
 #ifndef nacl_abi___blkcnt_t_defined
 #define nacl_abi___blkcnt_t_defined
@@ -236,17 +221,15 @@ typedef int32_t nacl_abi___blkcnt_t;
 typedef nacl_abi___blkcnt_t nacl_abi_blkcnt_t;
 #endif
 
-#define PRIdNACL_BLKCNT NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_BLKCNT NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_BLKCNT NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_BLKCNT NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_BLKCNT NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_BLKCNT NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_BLKCNT NACL_PRI_(d, 32)
+#define PRIiNACL_BLKCNT NACL_PRI_(i, 32)
+#define PRIoNACL_BLKCNT NACL_PRI_(o, 32)
+#define PRIuNACL_BLKCNT NACL_PRI_(u, 32)
+#define PRIxNACL_BLKCNT NACL_PRI_(x, 32)
+#define PRIXNACL_BLKCNT NACL_PRI_(X, 32)
 
-#define NACL_ABI_BLKCNT_T_MIN \
-  ((nacl_abi_blkcnt_t) 1 << (NACL_ABI_WORDSIZE - 1))
-#define NACL_ABI_BLKCNT_T_MAX \
-  (~((nacl_abi_blkcnt_t) 1 << (NACL_ABI_WORDSIZE - 1)))
+#define NACL_ABI_BLKCNT_T_MIN ((nacl_abi_blkcnt_t) 1 << 31)
+#define NACL_ABI_BLKCNT_T_MAX (~((nacl_abi_blkcnt_t) 1 << 31))
 
 #ifndef nacl_abi___time_t_defined
 #define nacl_abi___time_t_defined
@@ -254,15 +237,15 @@ typedef int32_t       nacl_abi___time_t;
 typedef nacl_abi___time_t nacl_abi_time_t;
 #endif
 
-#define PRIdNACL_TIME NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_TIME NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_TIME NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_TIME NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_TIME NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_TIME NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_TIME NACL_PRI_(d, 32)
+#define PRIiNACL_TIME NACL_PRI_(i, 32)
+#define PRIoNACL_TIME NACL_PRI_(o, 32)
+#define PRIuNACL_TIME NACL_PRI_(u, 32)
+#define PRIxNACL_TIME NACL_PRI_(x, 32)
+#define PRIXNACL_TIME NACL_PRI_(X, 32)
 
-#define NACL_ABI_TIME_T_MIN ((nacl_abi_time_t) 1 << (NACL_ABI_WORDSIZE - 1))
-#define NACL_ABI_TIME_T_MAX (~((nacl_abi_time_t) 1 << (NACL_ABI_WORDSIZE - 1)))
+#define NACL_ABI_TIME_T_MIN ((nacl_abi_time_t) 1 << 31)
+#define NACL_ABI_TIME_T_MAX (~((nacl_abi_time_t) 1 << 31))
 
 /*
  * stddef.h defines size_t, and we cannot export another definition.
@@ -284,17 +267,15 @@ typedef uint32_t NACL_NO_STRIP(size_t);
 typedef int32_t NACL_NO_STRIP(ssize_t);
 #endif
 
-#define NACL_ABI_SSIZE_T_MIN \
-  ((nacl_abi_ssize_t) 1 << (NACL_ABI_WORDSIZE - 1))
-#define NACL_ABI_SSIZE_T_MAX \
-  (~((nacl_abi_ssize_t) 1 << (NACL_ABI_WORDSIZE - 1)))
+#define NACL_ABI_SSIZE_T_MIN ((nacl_abi_ssize_t) 1 << 31)
+#define NACL_ABI_SSIZE_T_MAX (~((nacl_abi_ssize_t) 1 << 31))
 
-#define PRIdNACL_SIZE NACL_PRI_(d, NACL_ABI_WORDSIZE)
-#define PRIiNACL_SIZE NACL_PRI_(i, NACL_ABI_WORDSIZE)
-#define PRIoNACL_SIZE NACL_PRI_(o, NACL_ABI_WORDSIZE)
-#define PRIuNACL_SIZE NACL_PRI_(u, NACL_ABI_WORDSIZE)
-#define PRIxNACL_SIZE NACL_PRI_(x, NACL_ABI_WORDSIZE)
-#define PRIXNACL_SIZE NACL_PRI_(X, NACL_ABI_WORDSIZE)
+#define PRIdNACL_SIZE NACL_PRI_(d, 32)
+#define PRIiNACL_SIZE NACL_PRI_(i, 32)
+#define PRIoNACL_SIZE NACL_PRI_(o, 32)
+#define PRIuNACL_SIZE NACL_PRI_(u, 32)
+#define PRIxNACL_SIZE NACL_PRI_(x, 32)
+#define PRIXNACL_SIZE NACL_PRI_(X, 32)
 
 /**
  * Inline functions to aid in conversion between system (s)size_t and
