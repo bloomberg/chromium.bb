@@ -608,6 +608,7 @@ pid_t HandleCrashDump(const BreakpadInfo& info) {
     sys__exit(1);
   }
 
+  HANDLE_EINTR(sys_waitpid(child, NULL, 0));
   return child;
 }
 
