@@ -223,6 +223,7 @@ class Message : public Pickle {
     uint32 flags;   // specifies control flags for the message
 #if defined(OS_POSIX)
     uint16 num_fds; // the number of descriptors included with this message
+    uint16 pad;     // explicitly initialize this to appease valgrind
 #endif
   };
 #pragma pack(pop)
