@@ -61,11 +61,9 @@ static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
   subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(body))));
 
   if (icon_url.is_valid()) {
-    subst.push_back(ASCIIToUTF16("block"));
-    subst.push_back(ASCIIToUTF16("60"));
+    subst.push_back(ASCIIToUTF16("margin-left:56px;"));
   } else {
-    subst.push_back(ASCIIToUTF16("none"));
-    subst.push_back(ASCIIToUTF16("5"));
+    subst.push_back(EmptyString16());
   }
 
   string16 format_string = ASCIIToUTF16("data:text/html;charset=utf-8,"

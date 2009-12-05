@@ -1,36 +1,39 @@
 <html>
 <head>
-<title>$2</title>
-<style type="text/css"><!--
-#icon {
-height:48px;
-width:48px;
-position:absolute;
-top:2px;
-left:2px;
-display:$4;
-}
-#title {
-font-weight:bold;
-position:absolute;
-top:3px;
-left:$5px;
-font-family:sans-serif;
-font-size:11pt;
-}
-#body {
-position:absolute;
-left:$5px;
-top:20px;
-font-family:sans-serif;
-font-size:9pt;
-}
-//-->
-</style>
+  <title>$2</title>
+  <style type="text/css">
+  body {
+    margin:4px;
+  }
+  #body {
+    $4 
+    position:relative;
+  }
+  #icon {
+    position:absolute;
+    left:-52px; 
+    top:2px;
+    height:48px;
+    width:48px;
+    padding-right:4px;
+    display:block;
+  }
+  #title {
+    font-weight:bold;
+    font-family:helvetica, arial, sans-serif;
+    font-size:100%;
+  }
+  #description {
+    font-family:helvetica, arial, sans-serif;
+    font-size:84%;
+  }
+  </style>
 </head>
 <body>
-<div id="icon"><img src="$1" /></div>
-<div id="title">$2</div>
-<div id="body">$3</div>
+  <div id="body">
+    <div id="icon"><img src="$1" width="48" height="48" /></div>
+    <div id="title">$2</div>
+    <div id="description">$3</div>
+  </div>
 </body>
 </html>

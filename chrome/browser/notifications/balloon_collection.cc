@@ -18,6 +18,10 @@ const double kPercentBalloonFillFactor = 0.7;
 // Allow at least this number of balloons on the screen.
 const int kMinAllowedBalloonCount = 2;
 
+// Margin from the edge of the work area
+const int kVerticalEdgeMargin = 5;
+const int kHorizontalEdgeMargin = 5;
+
 }  // namespace
 
 // static
@@ -127,20 +131,20 @@ gfx::Point BalloonCollectionImpl::Layout::GetLayoutOrigin() const {
   int y = 0;
   switch (placement_) {
     case HORIZONTALLY_FROM_BOTTOM_LEFT:
-      x = work_area_.x();
-      y = work_area_.bottom();
+      x = work_area_.x() + kHorizontalEdgeMargin;
+      y = work_area_.bottom() - kVerticalEdgeMargin;
       break;
     case HORIZONTALLY_FROM_BOTTOM_RIGHT:
-      x = work_area_.right();
-      y = work_area_.bottom();
+      x = work_area_.right() - kHorizontalEdgeMargin;
+      y = work_area_.bottom() - kVerticalEdgeMargin;
       break;
     case VERTICALLY_FROM_TOP_RIGHT:
-      x = work_area_.right();
-      y = work_area_.y();
+      x = work_area_.right() - kHorizontalEdgeMargin;
+      y = work_area_.y() + kVerticalEdgeMargin;
       break;
     case VERTICALLY_FROM_BOTTOM_RIGHT:
-      x = work_area_.right();
-      y = work_area_.bottom();
+      x = work_area_.right() - kHorizontalEdgeMargin;
+      y = work_area_.bottom() - kVerticalEdgeMargin;
       break;
     default:
       NOTREACHED();

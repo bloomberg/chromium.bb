@@ -42,14 +42,14 @@ const int kTopMargin = 1;
 const int kBottomMargin = 1;
 const int kLeftMargin = 1;
 const int kRightMargin = 1;
-const int kShelfBorderTopOverlap = 2;
+const int kShelfBorderTopOverlap = 3;
 
 // Properties of the dismiss button.
-const int kDismissButtonWidth = 46;
+const int kDismissButtonWidth = 60;
 const int kDismissButtonHeight = 20;
 
 // Properties of the options menu.
-const int kOptionsMenuWidth = 48;
+const int kOptionsMenuWidth = 60;
 const int kOptionsMenuHeight = 20;
 
 // Properties of the origin label.
@@ -208,6 +208,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   SetBounds(balloon_->position().x(), balloon_->position().y(),
             balloon_->size().width(), balloon_->size().height());
 
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
   // We have to create two windows: one for the contents and one for the
   // frame.  Why?
   // * The contents is an html window which cannot be a
@@ -243,10 +245,13 @@ void BalloonViewImpl::Show(Balloon* balloon) {
       l10n_util::GetString(IDS_NOTIFICATION_BALLOON_DISMISS_LABEL);
   close_button_ = new views::TextButton(close_button_listener_.get(),
                                         dismiss_text);
-  close_button_->SetFont(
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::SmallFont));
-  close_button_->SetEnabledColor(BrowserThemeProvider::kDefaultColorTabText);
+  close_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+  close_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
+  close_button_->SetHoverIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE_HOVER));
+  close_button_->SetEnabledColor(SK_ColorWHITE);
+  close_button_->SetHoverColor(SK_ColorDKGRAY);
   close_button_->set_alignment(views::TextButton::ALIGN_CENTER);
+  close_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
   close_button_->SetBounds(width() - kDismissButtonWidth
                                    - kRightMargin,
                            height() - kDismissButtonHeight
@@ -259,10 +264,14 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   const std::wstring options_text =
       l10n_util::GetString(IDS_NOTIFICATION_OPTIONS_MENU_LABEL);
   options_menu_button_ = new views::MenuButton(NULL, options_text, this, false);
-  options_menu_button_->SetFont(
-      ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::SmallFont));
-  options_menu_button_->SetEnabledColor(
-      BrowserThemeProvider::kDefaultColorTabText);
+  options_menu_button_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+  options_menu_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW));
+  options_menu_button_->SetHoverIcon(
+      *rb.GetBitmapNamed(IDR_BALLOON_OPTIONS_ARROW_HOVER));
+  options_menu_button_->set_alignment(views::TextButton::ALIGN_CENTER);
+  options_menu_button_->set_icon_placement(views::TextButton::ICON_ON_RIGHT);
+  options_menu_button_->SetEnabledColor(SK_ColorWHITE);
+  options_menu_button_->SetHoverColor(SK_ColorDKGRAY);
   options_menu_button_->SetBounds(width() - kDismissButtonWidth
                                           - kOptionsMenuWidth
                                           - kRightMargin,
@@ -280,7 +289,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   views::Label* source_label = new views::Label(source_label_text);
   source_label->SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::SmallFont));
-  source_label->SetColor(BrowserThemeProvider::kDefaultColorTabText);
+  source_label->SetColor(SK_ColorWHITE);
   source_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   source_label->SetBounds(kLeftLabelMargin,
                           height() - kDismissButtonHeight
@@ -325,21 +334,21 @@ void BalloonViewImpl::GetContentsMask(const gfx::Rect& rect,
   //
   //   xx
   //   x
-  path->moveTo(SkScalar(1), SkScalar(0));
+  path->moveTo(SkScalar(0.5), SkScalar(0));
   // Upper right corner
-  path->arcTo(rect.width() - SkScalar(2), SkScalar(0),
-              rect.width() - SkScalar(1), SkScalar(2),
+  path->arcTo(rect.width() - SkScalar(1.5), SkScalar(0),
+              rect.width() - SkScalar(0.5), SkScalar(1.5),
               SkScalar(1));
   // Lower right corner
-  path->arcTo(rect.width() - SkScalar(1), rect.height() - SkScalar(2),
-              rect.width() - SkScalar(2), rect.height() - SkScalar(1),
+  path->arcTo(rect.width() - SkScalar(0.5), rect.height() - SkScalar(1.5),
+              rect.width() - SkScalar(1.5), rect.height() - SkScalar(0.5),
               SkScalar(1));
   // Lower left corner
-  path->arcTo(SkScalar(1), rect.height() - SkScalar(1),
-              0, rect.height() - SkScalar(2),
+  path->arcTo(SkScalar(0.5), rect.height() - SkScalar(0.5),
+              0, rect.height() - SkScalar(1.5),
               SkScalar(1));
   // Upper left corner
-  path->arcTo(0, SkScalar(1), SkScalar(1), 0, SkScalar(1));
+  path->arcTo(0, SkScalar(0.5), SkScalar(0.5), 0, SkScalar(1));
 }
 
 gfx::Point BalloonViewImpl::GetContentsOffset() const {
