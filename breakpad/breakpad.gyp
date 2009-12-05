@@ -3,6 +3,10 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    'breakpad_sender.gypi',
+    'breakpad_handler.gypi',
+  ],
   'conditions': [
     [ 'OS=="mac"', {
       'target_defaults': {
@@ -152,72 +156,6 @@
             'src/client/mac/Framework/Breakpad.mm',
             'src/client/mac/Framework/OnDemandServer.mm',
           ],
-        },
-      ],
-    }],
-    [ 'OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'breakpad_handler',
-          'type': '<(library)',
-          'msvs_guid': 'B55CA863-B374-4BAF-95AC-539E4FA4C90C',
-          'sources': [
-            'src/client/windows/crash_generation/client_info.cc',
-            'src/client/windows/crash_generation/client_info.h',
-            'src/client/windows/crash_generation/crash_generation_client.cc',
-            'src/client/windows/crash_generation/crash_generation_client.h',
-            'src/client/windows/crash_generation/crash_generation_server.cc',
-            'src/client/windows/crash_generation/crash_generation_server.h',
-            'src/client/windows/handler/exception_handler.cc',
-            'src/client/windows/handler/exception_handler.h',
-            'src/common/windows/guid_string.cc',
-            'src/common/windows/guid_string.h',
-            'src/google_breakpad/common/minidump_format.h',
-            'src/client/windows/crash_generation/minidump_generator.cc',
-            'src/client/windows/crash_generation/minidump_generator.h',
-            'src/common/windows/string_utils-inl.h',
-          ],
-          'include_dirs': [
-            'src',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lurlmon.lib',
-            ],
-          },
-          'defines': [
-            # Avoid the TerminateThread Application Verifier Failure.
-            'BREAKPAD_NO_TERMINATE_THREAD',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              'src',
-            ],
-          },
-        },
-        {
-          'target_name': 'breakpad_sender',
-          'type': '<(library)',
-          'msvs_guid': '9946A048-043B-4F8F-9E07-9297B204714C',
-          'sources': [
-            'src/client/windows/sender/crash_report_sender.cc',
-            'src/common/windows/http_upload.cc',
-            'src/client/windows/sender/crash_report_sender.h',
-            'src/common/windows/http_upload.h',
-          ],
-          'include_dirs': [
-            'src',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lurlmon.lib',
-            ],
-          },
-          'direct_dependent_settings': {
-            'include_dirs': [
-              'src',
-            ],
-          },
         },
       ],
     }],
