@@ -294,7 +294,9 @@ WONTFIX LINUX WIN : LayoutTests/fast/replaced/pdf-as-image.html = FAIL
 // These tests try to print a PDF file as the expected result.  I don't think
 // we plan on supporting this anytime soon.
 WONTFIX SKIP : LayoutTests/printing/media-queries-print.html = PASS
-WONTFIX SKIP : LayoutTests/printing/compositing-layer-printing.html = PASS
+
+// TODO(ajwong): uncomment with next DEPS roll.
+//WONTFIX SKIP : LayoutTests/printing/compositing-layer-printing.html = PASS
 
 // Chrome doesn't call the willCacheResponse callback (a method
 // of ResourceHandleClient).  That function is Mac-specific.
@@ -785,7 +787,7 @@ BUG13907 BUG25376 MAC DEBUG : LayoutTests/media/video-empty-source.html = FAIL
 BUG13907 : LayoutTests/media/controls-styling.html = FAIL
 
 // These tests are flaky with subtle pixel differences.
-BUG9798 BUG13907 MAC : LayoutTests/media/video-transformed.html = IMAGE PASS
+BUG9798 BUG13907 LINUX MAC : LayoutTests/media/video-transformed.html = IMAGE PASS
 BUG9798 BUG13907 MAC : LayoutTests/media/video-layer-crash.html = IMAGE PASS
 
 // These tests are failing because they use position-dependent mouse clicks.
