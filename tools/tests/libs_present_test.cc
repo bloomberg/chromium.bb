@@ -33,7 +33,7 @@
 // it does not actually execute any of the library code.
 
 
-#include "native_client/tools/tests/libs_present_stub.h"
+#include "libs_present_stub.h"
 
 // This list should include all exported header files (directly or indirectly)
 // to ensure they were properly included in the SDK.
