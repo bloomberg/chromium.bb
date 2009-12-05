@@ -213,6 +213,15 @@ typedef uint32       (*NPN_ScheduleTimerPtr)(NPP npp,
                          void (*timerFunc)(NPP npp, uint32 timerID));
 typedef void         (*NPN_UnscheduleTimerPtr)(NPP npp,
                          uint32 timerID);
+typedef NPError      (*NPN_PopUpContextMenuPtr)(NPP npp,
+                         NPMenu* menu);
+typedef NPBool       (*NPN_ConvertPointPtr)(NPP npp,
+                         double sourceX,
+                         double sourceY,
+                         NPCoordinateSpace sourceSpace,
+                         double *destX,
+                         double *destY,
+                         NPCoordinateSpace destSpace);
 
 //
 // NPAPI Function table of NPP functions (functions provided by plugin to host)
@@ -293,6 +302,8 @@ typedef struct _NPNetscapeFuncs {
     NPN_GetAuthenticationInfoPtr getauthenticationinfo;
     NPN_ScheduleTimerPtr scheduletimer;
     NPN_UnscheduleTimerPtr unscheduletimer;
+    NPN_PopUpContextMenuPtr popupcontextmenu;
+    NPN_ConvertPointPtr convertpoint;
 } NPNetscapeFuncs;
 
 //

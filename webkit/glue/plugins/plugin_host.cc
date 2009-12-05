@@ -111,6 +111,8 @@ void PluginHost::InitializeHostFuncs() {
   host_funcs_.getauthenticationinfo = NPN_GetAuthenticationInfo;
   host_funcs_.scheduletimer = NPN_ScheduleTimer;
   host_funcs_.unscheduletimer = NPN_UnscheduleTimer;
+  host_funcs_.popupcontextmenu = NPN_PopUpContextMenu;
+  host_funcs_.convertpoint = NPN_ConvertPoint;
 }
 
 void PluginHost::PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides) {
@@ -1188,5 +1190,22 @@ void NPN_UnscheduleTimer(NPP id, uint32 timer_id) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin)
     plugin->UnscheduleTimer(timer_id);
+}
+
+NPError NPN_PopUpContextMenu(NPP instance, NPMenu* menu) {
+  NOTIMPLEMENTED();
+  return NPERR_GENERIC_ERROR;
+}
+
+NPBool NPN_ConvertPoint(NPP instance, double sourceX, double sourceY,
+                        NPCoordinateSpace sourceSpace,
+                        double *destX, double *destY,
+                        NPCoordinateSpace destSpace) {
+  NOTIMPLEMENTED();
+  if (destX)
+    *destX = sourceX;
+  if (destY)
+    *destY = sourceY;
+  return FALSE;
 }
 } // extern "C"
