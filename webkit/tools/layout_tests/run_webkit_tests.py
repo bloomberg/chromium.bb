@@ -610,8 +610,11 @@ class TestRunner:
         result_summary)
     final_results_by_test = original_results_by_test
     final_results_by_type = original_results_by_type
+
+    # We exclude the crashes from the list of results to retry, because
+    # we want to treat even a potentially flaky crash as an error.
     failed_results_by_test, failed_results_by_type = self._OnlyFailures(
-        original_results_by_test)
+        original_results_by_test, include_crashes=False)
     num_passes = len(original_results_by_test) - len(failed_results_by_test)
 
     retries = 0
@@ -627,7 +630,7 @@ class TestRunner:
       final_results_by_test, final_results_by_type = self._CompareResults(
           retry_summary)
       failed_results_by_test, failed_results_by_type = self._OnlyFailures(
-          final_results_by_test)
+          final_results_by_test, include_crashes=True)
 
     self._StopLayoutTestHelper(layout_test_helper_proc)
 
@@ -705,24 +708,30 @@ class TestRunner:
       results_by_type[result].add(test)
     return results_by_test, results_by_type
 
-  def _OnlyFailures(self, results_by_test):
+  def _OnlyFailures(self, results_by_test, include_crashes):
     """Filters a dict of results and returns only the failures.
 
     Args:
       results_by_test: a dict of files -> results
-
+      include_crashes: whether crashes are included in the output.
+        We use False when finding the list of failures to retry
+        to see if the results were flaky. Although the crashes may also be
+        flaky, we treat them as if they aren't so that they're not ignored.
     Returns:
       a dict of files -> results and results -> sets of files.
     """
     failed_results_by_test = {}
     failed_results_by_type = {}
     for test, result in results_by_test.iteritems():
-      if result != test_expectations.PASS:
-        failed_results_by_test[test] = result
-        if result in failed_results_by_type:
-          failed_results_by_type.add(test)
-        else:
-          failed_results_by_type = set([test])
+      if (result == test_expectations.PASS or
+          result == test_expectations.CRASH and not include_crashes):
+        continue
+
+      failed_results_by_test[test] = result
+      if result in failed_results_by_type:
+        failed_results_by_type.add(test)
+      else:
+        failed_results_by_type = set([test])
     return failed_results_by_test, failed_results_by_type
 
   def _WriteJSONFiles(self, result_summary, individual_test_timings):
@@ -736,7 +745,7 @@ class TestRunner:
     expectations_file.close()
 
     json_results_generator.JSONResultsGenerator(self._options,
-        result_summary, individual_test_timings,
+        self._expectations, result_summary, individual_test_timings,
         self._options.results_directory, self._test_files_list)
 
     logging.debug("Finished writing JSON files.")
@@ -981,7 +990,11 @@ class TestRunner:
     non_flaky_results_by_type = {}
 
     for test, result in original_results_by_test.iteritems():
+      # Note that if a test crashed in the original run, we ignore whether or
+      # not it crashed when we retried it (if we retried it), and always
+      # consider the result "not flaky".
       if (result == test_expectations.PASS or
+          result == test_expectations.CRASH or
           (test in final_results_by_test and
            result == final_results_by_test[test])):
         if result in non_flaky_results_by_type:
@@ -1116,7 +1129,7 @@ class TestRunner:
     # test failures
     failures = result_summary.failures
     failed_results_by_test, failed_results_by_type = self._OnlyFailures(
-        result_summary.unexpected_results)
+        result_summary.unexpected_results, include_crashes=True)
     if self._options.full_results_html:
       test_files = failures.keys()
     else:
