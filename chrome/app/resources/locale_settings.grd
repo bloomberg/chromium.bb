@@ -632,7 +632,7 @@
       
       <!-- The height of the sync setup wizard / login dialog in lines. -->
       <message name="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES" use_name_for_id="true">
-        14.5
+        15
       </message>
 
       <!-- The default width/height for confirmation dialogs. -->
