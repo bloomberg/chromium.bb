@@ -42,6 +42,7 @@ class JSONResultsGenerator:
   WONTFIX = "wontfixCounts"
   DEFERRED = "deferredCounts"
   FIXABLE = "fixableCounts"
+  ALL_FIXABLE_COUNT = "allFixableCount"
   FIXABLE_COUNT = "fixableCount"
 
   # Note that we omit test_expectations.FAIL from this list because
@@ -60,13 +61,14 @@ class JSONResultsGenerator:
   BUILDER_BASE_URL = "http://build.chromium.org/buildbot/layout_test_results/"
   RESULTS_FILENAME = "results.json"
 
-  def __init__(self, options, result_summary, individual_test_timings,
-      results_file_base_path, all_tests):
+  def __init__(self, options, expectations, result_summary,
+      individual_test_timings, results_file_base_path, all_tests):
     """Modifies the results.json file. Grabs it off the archive directory if it
     is not found locally.
 
     Args
       options: a dictionary of command line options
+      expectations: TestExpectations object with what we expected to get
       result_summary: ResultsSummary object containing failure counts for
           different groups of tests.
       individual_test_times: Map of test name to a tuple containing the
@@ -84,6 +86,7 @@ class JSONResultsGenerator:
     self._all_tests = [self._GetPathRelativeToLayoutTestRoot(test)
         for test in all_tests]
 
+    self._expectations = expectations
     self._result_summary = result_summary
 
     self._test_timings = {}
@@ -269,6 +272,9 @@ class JSONResultsGenerator:
             self._result_summary.tests_by_timeline[test_expectations.NOW]),
         self.FIXABLE_COUNT)
     self._InsertItemIntoRawList(results_for_builder,
+        len(self._expectations.GetTestsWithTimeline(test_expectations.NOW)),
+        self.ALL_FIXABLE_COUNT)
+    self._InsertItemIntoRawList(results_for_builder,
         self._GetFailureSummaryEntry(test_expectations.DEFER),
         self.DEFERRED)
     self._InsertItemIntoRawList(results_for_builder,
@@ -291,7 +297,7 @@ class JSONResultsGenerator:
     timeline_tests = summary.tests_by_timeline[timeline]
     entry[self.SKIP_RESULT] = len(
         summary.tests_by_expectation[test_expectations.SKIP] & timeline_tests)
-    entry[self.SKIP_RESULT] = len(
+    entry[self.PASS_RESULT] = len(
         summary.tests_by_expectation[test_expectations.PASS] & timeline_tests)
     for failure_type in summary.tests_by_expectation.keys():
       if failure_type not in self.FAILURE_TO_CHAR:
