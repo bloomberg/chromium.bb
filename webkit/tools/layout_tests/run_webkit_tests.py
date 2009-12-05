@@ -201,7 +201,7 @@ class TestRunner:
     # Remove skipped - both fixable and ignored - files from the
     # top-level list of files to test.
     num_all_test_files = len(self._test_files)
-    skipped = ()
+    skipped = set()
     if num_all_test_files > 1 and not self._options.force:
       skipped = self._expectations.GetTestsWithResultType(
                      test_expectations.SKIP)
