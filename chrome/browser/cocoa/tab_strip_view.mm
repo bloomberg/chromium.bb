@@ -9,6 +9,8 @@
 @implementation TabStripView
 
 @synthesize newTabButton = newTabButton_;
+@synthesize dropArrowShown = dropArrowShown_;
+@synthesize dropArrowPosition = dropArrowPosition_;
 
 - (id)initWithFrame:(NSRect)frame {
   self = [super initWithFrame:frame];
@@ -30,6 +32,65 @@
   [[NSColor colorWithCalibratedWhite:0.0 alpha:0.2] set];
 
   NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+
+  // Draw drop-indicator arrow (if appropriate).
+  // TODO(viettrungluu): this is all a stop-gap measure.
+  if ([self dropArrowShown]) {
+    // Programmer art: an arrow parametrized by many knobs. Note that the arrow
+    // points downwards (so understand "width" and "height" accordingly).
+
+    // How many (pixels) to inset on the top/bottom.
+    const CGFloat kArrowTopInset = 1.5;
+    const CGFloat kArrowBottomInset = 1;
+
+    // What proportion of the vertical space is dedicated to the arrow tip,
+    // i.e., (arrow tip height)/(amount of vertical space).
+    const CGFloat kArrowTipProportion = 0.5;
+
+    // This is a slope, i.e., (arrow tip height)/(0.5 * arrow tip width).
+    const CGFloat kArrowTipSlope = 1.2;
+
+    // What proportion of the arrow tip width is the stem, i.e., (stem
+    // width)/(arrow tip width).
+    const CGFloat kArrowStemProportion = 0.33;
+
+    NSPoint arrowTipPos = [self dropArrowPosition];
+    arrowTipPos.y += kArrowBottomInset;  // Inset on the bottom.
+
+    // Height we have to work with (insetting on the top).
+    CGFloat availableHeight =
+        NSMaxY([self bounds]) - arrowTipPos.y - kArrowTopInset;
+    DCHECK(availableHeight >= 5);
+
+    // Based on the knobs above, calculate actual dimensions which we'll need
+    // for drawing.
+    CGFloat arrowTipHeight = kArrowTipProportion * availableHeight;
+    CGFloat arrowTipWidth = 2 * arrowTipHeight / kArrowTipSlope;
+    CGFloat arrowStemHeight = availableHeight - arrowTipHeight;
+    CGFloat arrowStemWidth = kArrowStemProportion * arrowTipWidth;
+    CGFloat arrowStemInset = (arrowTipWidth - arrowStemWidth) / 2;
+
+    // The line width is arbitrary, but our path really should be mitered.
+    NSBezierPath* arrow = [NSBezierPath bezierPath];
+    [arrow setLineJoinStyle:NSMiterLineJoinStyle];
+    [arrow setLineWidth:1];
+
+    // Define the arrow's shape! We start from the tip and go clockwise.
+    [arrow moveToPoint:arrowTipPos];
+    [arrow relativeLineToPoint:NSMakePoint(-arrowTipWidth / 2, arrowTipHeight)];
+    [arrow relativeLineToPoint:NSMakePoint(arrowStemInset, 0)];
+    [arrow relativeLineToPoint:NSMakePoint(0, arrowStemHeight)];
+    [arrow relativeLineToPoint:NSMakePoint(arrowStemWidth, 0)];
+    [arrow relativeLineToPoint:NSMakePoint(0, -arrowStemHeight)];
+    [arrow relativeLineToPoint:NSMakePoint(arrowStemInset, 0)];
+    [arrow closePath];
+
+    // Draw and fill the arrow.
+    [[NSColor colorWithCalibratedWhite:0 alpha:0.67] set];
+    [arrow stroke];
+    [[NSColor colorWithCalibratedWhite:1 alpha:0.67] setFill];
+    [arrow fill];
+  }
 }
 
 // We accept first mouse so clicks onto close/zoom/miniaturize buttons and

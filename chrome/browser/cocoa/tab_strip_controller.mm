@@ -1508,42 +1508,49 @@ private:
 // Update (possibly showing) the indicator which indicates where an URL drop
 // would happen.
 - (void)indicateDropURLsAt:(NSPoint)location {
-// TODO(viettrungluu): Make the tabs move around, show an indicator, etc. This
-// requires a re-work of the tabs code....
-#if 0
+  // The minimum y-coordinate at which one should consider place the arrow.
+  const CGFloat arrowBaseY = 25;
+
   NSInteger index;
   WindowOpenDisposition disposition;
   [self droppingURLsAt:location
             givesIndex:&index
            disposition:&disposition];
 
+  NSPoint arrowPos = NSMakePoint(0, arrowBaseY);
   if (index == -1) {
     // Append a tab at the end.
     DCHECK(disposition == NEW_FOREGROUND_TAB);
-    // TODO(viettrungluu): ...
+    NSInteger lastIndex = [tabArray_ count] - 1;
+    NSRect overRect = [[[tabArray_ objectAtIndex:lastIndex] view] frame];
+    arrowPos.x = overRect.origin.x + overRect.size.width - kTabOverlap / 2.0;
   } else {
     NSRect overRect = [[[tabArray_ objectAtIndex:index] view] frame];
     switch (disposition) {
       case NEW_FOREGROUND_TAB:
         // Insert tab (to the left of the given tab).
-        // TODO(viettrungluu): ...
+        arrowPos.x = overRect.origin.x + kTabOverlap / 2.0;
         break;
       case CURRENT_TAB:
         // Overwrite the given tab.
-        // TODO(viettrungluu): ...
+        arrowPos.x = overRect.origin.x + overRect.size.width / 2.0;
         break;
       default:
         NOTREACHED();
     }
   }
 
-  // TODO(viettrungluu): ...
-#endif
+  [tabView_ setDropArrowPosition:arrowPos];
+  [tabView_ setDropArrowShown:YES];
+  [tabView_ setNeedsDisplay:YES];
 }
 
 // Hide the indicator which indicates where an URL drop would happen.
 - (void)hideDropURLsIndicator {
-// TODO(viettrungluu): See TODO in |-indicateDropURLsAt:| above.
+  if ([tabView_ dropArrowShown]) {
+    [tabView_ setDropArrowShown:NO];
+    [tabView_ setNeedsDisplay:YES];
+  }
 }
 
 - (GTMWindowSheetController*)sheetController {
