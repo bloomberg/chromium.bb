@@ -880,7 +880,9 @@ TEST_F(FlipNetworkTransactionTest, PartialWrite) {
   EXPECT_EQ("hello!", out.response_data);
 }
 
-TEST_F(FlipNetworkTransactionTest, ConnectFailure) {
+// Disabled due to flaky mac (and possibly linux) valgrind errors.
+// http://crbug.com/29471
+TEST_F(FlipNetworkTransactionTest, DISABLED_ConnectFailure) {
   MockConnect connects[]  = {
     MockConnect(true, ERR_NAME_NOT_RESOLVED),
     MockConnect(false, ERR_NAME_NOT_RESOLVED),
