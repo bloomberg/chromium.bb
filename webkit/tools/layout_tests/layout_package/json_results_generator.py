@@ -267,9 +267,11 @@ class JSONResultsGenerator:
       results_for_builder: Dictionary containing the test results for a single
           builder.
     """
+    summary = self._result_summary
     self._InsertItemIntoRawList(results_for_builder,
-        len(set(self._result_summary.failures.keys()) &
-            self._result_summary.tests_by_timeline[test_expectations.NOW]),
+        len((set(summary.failures.keys()) |
+             summary.tests_by_expectation[test_expectations.SKIP]) &
+            summary.tests_by_timeline[test_expectations.NOW]),
         self.FIXABLE_COUNT)
     self._InsertItemIntoRawList(results_for_builder,
         len(self._expectations.GetTestsWithTimeline(test_expectations.NOW)),
