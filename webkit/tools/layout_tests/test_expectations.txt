@@ -294,9 +294,7 @@ WONTFIX LINUX WIN : LayoutTests/fast/replaced/pdf-as-image.html = FAIL
 // These tests try to print a PDF file as the expected result.  I don't think
 // we plan on supporting this anytime soon.
 WONTFIX SKIP : LayoutTests/printing/media-queries-print.html = PASS
-
-// TODO(ajwong): uncomment with next DEPS roll.
-//WONTFIX SKIP : LayoutTests/printing/compositing-layer-printing.html = PASS
+WONTFIX SKIP : LayoutTests/printing/compositing-layer-printing.html = PASS
 
 // Chrome doesn't call the willCacheResponse callback (a method
 // of ResourceHandleClient).  That function is Mac-specific.
@@ -1338,7 +1336,7 @@ BUG10331 LINUX : LayoutTests/css2.1/t1008-c44-ln-box-02-d-ag.html = FAIL
 BUG10332 LINUX : LayoutTests/css2.1/t1605-c545-txttrans-00-b-ag.html = FAIL
 
 // Linux: color off by one.  Rounding error?
-BUG10333 LINUX : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL
+BUG10333 LINUX WIN : LayoutTests/editing/deleting/deletionUI-single-instance.html = FAIL IMAGE
 
 // Asks for "system" fonts, which we don't support at all.
 BUG10335 LINUX : LayoutTests/fast/css/css2-system-fonts.html = FAIL
@@ -3093,3 +3091,38 @@ BUG_SENORBLANCO WIN : LayoutTests/svg/batik/text/textFeatures.svg = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/svg/custom/foreign-object-skew.svg = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/svg/custom/js-late-gradient-and-object-creation.svg = IMAGE
 BUG_SENORBLANCO WIN : LayoutTests/transforms/2d/hindi-rotated.html = IMAGE
+
+// Need rebaselining due to r51722.
+BUG_29470 : LayoutTests/fast/borders/border-radius-constraints.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/border-radius-huge-assert.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/border-radius-split-inline.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusAllStylesAllCorners.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusArcs01.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusDashed01.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusDashed02.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusDashed03.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusDotted01.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusDotted02.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusDotted03.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusDouble02.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusGroove01.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusGroove02.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusInset01.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusInvalidColor.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusOutset01.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusRidge01.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusSolid01.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusSolid02.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusSolid03.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/borderRadiusSolid04.html = IMAGE
+BUG_29470 : LayoutTests/fast/borders/fieldsetBorderRadius.html = IMAGE
+BUG_29470 : LayoutTests/fast/css/text-input-with-webkit-border-radius.html = IMAGE
+BUG_29470 : LayoutTests/fast/repaint/border-radius-repaint.html = IMAGE
+BUG_29470 : LayoutTests/svg/custom/svg-fonts-in-html.html = IMAGE
+
+// Failures from WebKit merge 51711:51724
+BUG_AJWONG : LayoutTests/fast/js/string-property-deletion.html = TEXT
+BUG_AJWONG : LayoutTests/svg/carto.net/selectionlist.svg = IMAGE PASS
+BUG_AJWONG : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
+BUG_AJWONG WIN : chrome/fast/forms/basic-selects.html = IMAGE
+BUG_AJWONG WIN :LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
