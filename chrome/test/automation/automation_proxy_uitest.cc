@@ -29,7 +29,6 @@
 #include "chrome/test/ui/ui_test.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_unittest.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
 #include "testing/gmock_mutant.h"
 #include "views/event.h"
@@ -653,288 +652,52 @@ TEST_F(AutomationProxyTest, BlockedPopupTest) {
 
 // TODO(port): Remove HWND if possible
 #if defined(OS_WIN)
-static const wchar_t class_name[] = L"External_Tab_UI_Test_Class";
-static const wchar_t window_title[] = L"External Tab Tester";
-
-AutomationProxyForExternalTab::AutomationProxyForExternalTab(
-    int execution_timeout)
-    : AutomationProxy(execution_timeout),
-      messages_received_(0),
-      navigate_complete_(false),
-      quit_after_(QUIT_INVALID),
-      host_window_class_(NULL),
-      host_window_(NULL) {
-}
-
-AutomationProxyForExternalTab::~AutomationProxyForExternalTab() {
-  DestroyHostWindow();
-  UnregisterClassW(host_window_class_, NULL);
-}
-
-gfx::NativeWindow AutomationProxyForExternalTab::CreateHostWindow() {
-  DCHECK(!IsWindow(host_window_));
-  if (!host_window_class_) {
-    WNDCLASSEX wnd_class = {0};
-    wnd_class.cbSize = sizeof(wnd_class);
-    wnd_class.style = CS_HREDRAW | CS_VREDRAW;
-    wnd_class.lpfnWndProc = DefWindowProc;
-    wnd_class.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-    wnd_class.lpszClassName = class_name;
-    host_window_class_ = reinterpret_cast<const wchar_t*>(
-        RegisterClassEx(&wnd_class));
-    if (!host_window_class_) {
-      NOTREACHED() << "RegisterClassEx failed. Error: " << GetLastError();
-      return false;
-    }
-  }
-
-  unsigned long style = WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN;
-  host_window_ = CreateWindow(host_window_class_, window_title, style,
-                              CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL,
-                              NULL, NULL, NULL);
-  if (!host_window_) {
-    NOTREACHED() << "CreateWindow failed. Error: " << GetLastError();
-    return false;
-  }
-
-  ShowWindow(host_window_, SW_SHOW);
-  return host_window_;
-}
-
-scoped_refptr<TabProxy> AutomationProxyForExternalTab::CreateTabWithHostWindow(
-    bool is_incognito, const GURL& initial_url,
-    gfx::NativeWindow* container_wnd, gfx::NativeWindow* tab_wnd) {
-  DCHECK(container_wnd);
-  DCHECK(tab_wnd);
-
-  CreateHostWindow();
-  EXPECT_NE(FALSE, ::IsWindow(host_window_));
-
-  RECT client_area = {0};
-  GetClientRect(host_window_, &client_area);
-
-  const IPC::ExternalTabSettings settings = {
-    host_window_,
-    gfx::Rect(client_area),
-    WS_CHILD | WS_VISIBLE,
-    is_incognito,
-    false,
-    false,
-    initial_url
-  };
-
-  scoped_refptr<TabProxy> tab(CreateExternalTab(settings, container_wnd,
-                                                tab_wnd));
-
-  EXPECT_TRUE(tab != NULL);
-  EXPECT_NE(FALSE, ::IsWindow(*container_wnd));
-  EXPECT_NE(FALSE, ::IsWindow(*tab_wnd));
-  return tab;
-}
-
-void AutomationProxyForExternalTab::DestroyHostWindow() {
-  if (host_window_) {
-    DestroyWindow(host_window_);
-    host_window_ = NULL;
-  }
-}
-
-bool AutomationProxyForExternalTab::WaitForNavigation(int timeout_ms) {
-  set_quit_after(AutomationProxyForExternalTab::QUIT_AFTER_NAVIGATION);
-  return RunMessageLoop(timeout_ms, NULL);
-}
-
-bool AutomationProxyForExternalTab::WaitForMessage(int timeout_ms) {
-  set_quit_after(AutomationProxyForExternalTab::QUIT_AFTER_MESSAGE);
-  return RunMessageLoop(timeout_ms, NULL);
-}
-
-bool AutomationProxyForExternalTab::WaitForTabCleanup(TabProxy* tab,
-                                                      int timeout_ms) {
-  DCHECK(tab);
-  base::Time end_time =
-      base::Time::Now() + TimeDelta::FromMilliseconds(timeout_ms);
-  while (base::Time::Now() < end_time) {
-    const int kWaitInterval = 50;
-    DWORD wait_result = MsgWaitForMultipleObjects(0, NULL, FALSE, kWaitInterval,
-                                                  QS_ALLINPUT);
-    if (!tab->is_valid())
-      break;
-    if (WAIT_OBJECT_0 == wait_result) {
-      MSG msg = {0};
-      while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-      }
-    }
-  }
-
-  return !tab->is_valid();
-}
-
-bool AutomationProxyForExternalTab::RunMessageLoop(
-    int timeout_ms,
-    gfx::NativeWindow window_to_monitor) {
-  // If there's no host window then the abort or this loop will be stuck
-  // in GetMessage
-  if (!IsWindow(host_window_))
-    return false;
-
-  // Allow the renderers to connect.
-  const int kTimerIdQuit = 100;
-  const int kTimerIdProcessPendingMessages = 101;
-
-  if (!window_to_monitor)
-    window_to_monitor = host_window_;
-
-  UINT_PTR quit_timer = ::SetTimer(host_window_, kTimerIdQuit,
-                                   timeout_ms, NULL);
-  UINT_PTR pump_timer = ::SetTimer(host_window_,
-                                   kTimerIdProcessPendingMessages, 50, NULL);
-
-  MSG msg;
-  bool quit = false;
-  do {
-    BOOL ok = ::GetMessage(&msg, NULL, 0, 0);
-    if (!ok || ok == -1)
-      break;
-
-    if (msg.message == WM_TIMER && msg.hwnd == host_window_) {
-      switch (msg.wParam) {
-        case kTimerIdProcessPendingMessages:
-          MessageLoop::current()->RunAllPending();
-          break;
-        case kTimerIdQuit:
-          quit = true;
-          break;
-        default:
-          NOTREACHED() << "invalid timer id";
-          break;
-      }
-    } else if ((msg.message == WM_QUIT) || (msg.message == kQuitLoopMessage)) {
-      quit = true;
-    } else {
-      ::TranslateMessage(&msg);
-      ::DispatchMessage(&msg);
-    }
-  } while (!quit && ::IsWindow(window_to_monitor));
-
-  KillTimer(host_window_, quit_timer);
-  KillTimer(host_window_, pump_timer);
-  quit_after_ = QUIT_INVALID;
-  return true;
-}
-
-void AutomationProxyForExternalTab::OnMessageReceived(const IPC::Message& msg) {
-  IPC_BEGIN_MESSAGE_MAP(AutomationProxyForExternalTab, msg)
-    IPC_MESSAGE_HANDLER(AutomationMsg_DidNavigate, OnDidNavigate)
-    IPC_MESSAGE_HANDLER(AutomationMsg_ForwardMessageToExternalHost,
-                        OnForwardMessageToExternalHost)
-  IPC_END_MESSAGE_MAP()
-}
-
-void AutomationProxyForExternalTab::OnDidNavigate(
-    int tab_handle,
-    const IPC::NavigationInfo& nav_info) {
-  navigate_complete_ = true;
-  if (QUIT_AFTER_NAVIGATION == quit_after_)
-    QuitLoop();
-}
-
-void AutomationProxyForExternalTab::OnForwardMessageToExternalHost(
-    int handle,
-    const std::string& message,
-    const std::string& origin,
-    const std::string& target) {
-  messages_received_++;
-  message_ = message;
-  origin_ = origin;
-  target_ = target;
-
-  if (QUIT_AFTER_MESSAGE == quit_after_)
-    QuitLoop();
-}
 
 const char simple_data_url[] =
     "data:text/html,<html><head><title>External tab test</title></head>"
     "<body>A simple page for testing a floating/invisible tab<br></div>"
     "</body></html>";
 
-// We have to derive from AutomationProxy in order to hook up
-// OnMessageReceived callbacks.
-class ExternalTabUITestMockClient : public AutomationProxy {
- public:
-  explicit ExternalTabUITestMockClient(int execution_timeout)
-      : AutomationProxy(execution_timeout),
-        host_window_(NULL) {
-  }
+ExternalTabUITestMockClient::ExternalTabUITestMockClient(int execution_timeout)
+    : AutomationProxy(execution_timeout),
+      host_window_(NULL) {
+}
 
-  MOCK_METHOD2(OnDidNavigate, void(int tab_handle,
-      const IPC::NavigationInfo& nav_info));
-  MOCK_METHOD4(OnForwardMessageToExternalHost, void(int handle,
-      const std::string& message, const std::string& origin,
-      const std::string& target));
-  MOCK_METHOD3(OnRequestStart, void(int tab_handle, int request_id,
-      const IPC::AutomationURLRequest& request));
-  MOCK_METHOD3(OnRequestRead, void(int tab_handle, int request_id,
-      int bytes_to_read));
-  MOCK_METHOD3(OnRequestEnd, void(int tab_handle, int request_id,
-      const URLRequestStatus& status));
-  MOCK_METHOD3(OnSetCookieAsync, void(int tab_handle, const GURL& url,
-      const std::string& cookie));
+void ExternalTabUITestMockClient::ReplyStarted(
+    const IPC::AutomationURLResponse* response,
+    int tab_handle, int request_id) {
+  AutomationProxy::Send(new AutomationMsg_RequestStarted(0, tab_handle,
+      request_id, *response));
+}
 
+void ExternalTabUITestMockClient::ReplyData(
+    const std::string* data, int tab_handle, int request_id) {
+  AutomationProxy::Send(new AutomationMsg_RequestData(0, tab_handle,
+                                                      request_id, *data));
+}
 
-  MOCK_METHOD1(HandleClosed, void(int handle));
+void ExternalTabUITestMockClient::ReplyEOF(int tab_handle, int request_id) {
+  AutomationProxy::Send(new AutomationMsg_RequestEnd(0, tab_handle,
+                                                     request_id,
+                                                     URLRequestStatus()));
+}
 
+void ExternalTabUITestMockClient::Reply404(int tab_handle, int request_id) {
+  const IPC::AutomationURLResponse notfound = {"", "HTTP/1.1 404\r\n\r\n"};
+  ReplyStarted(&notfound, tab_handle, request_id);
+  ReplyEOF(tab_handle, request_id);
+}
 
-  // Action helpers for OnRequest* incoming messages. Create the message and
-  // delegate sending to the base class. Apparently we do not have wrappers
-  // in AutomationProxy for these messages.
-  void ReplyStarted(const IPC::AutomationURLResponse* response,
-                    int tab_handle, int request_id) {
-    AutomationProxy::Send(new AutomationMsg_RequestStarted(0, tab_handle,
-        request_id, *response));
-  }
+void ExternalTabUITestMockClient::InvalidateHandle(
+    const IPC::Message& message) {
+  void* iter = NULL;
+  int handle;
+  ASSERT_TRUE(message.ReadInt(&iter, &handle));
 
-  void ReplyData(const std::string* data, int tab_handle, int request_id) {
-    AutomationProxy::Send(new AutomationMsg_RequestData(0, tab_handle,
-                                                        request_id, *data));
-  }
-
-  void ReplyEOF(int tab_handle, int request_id) {
-    AutomationProxy::Send(new AutomationMsg_RequestEnd(0, tab_handle,
-                                                       request_id,
-                                                       URLRequestStatus()));
-  }
-
-  void Reply404(int tab_handle, int request_id) {
-    const IPC::AutomationURLResponse notfound = {"", "HTTP/1.1 404\r\n\r\n"};
-    ReplyStarted(&notfound, tab_handle, request_id);
-    ReplyEOF(tab_handle, request_id);
-  }
-
-  // Test setup helpers
-  scoped_refptr<TabProxy> CreateHostWindowAndTab(
-      const IPC::ExternalTabSettings& settings);
-  scoped_refptr<TabProxy> CreateTabWithUrl(const GURL& initial_url);
-  void DestroyHostWindow();
-
-  static const IPC::ExternalTabSettings default_settings;
- protected:
-  HWND host_window_;
-
-  // Simple dispatcher to above OnXXX methods.
-  virtual void OnMessageReceived(const IPC::Message& msg);
-  virtual void InvalidateHandle(const IPC::Message& message) {
-    void* iter = NULL;
-    int handle;
-    ASSERT_TRUE(message.ReadInt(&iter, &handle));
-
-    // Call base class
-    AutomationProxy::InvalidateHandle(message);
-    HandleClosed(handle);
-  }
-};
+  // Call base class
+  AutomationProxy::InvalidateHandle(message);
+  HandleClosed(handle);
+}
 
 // Most of the time we need external tab with these settings.
 const IPC::ExternalTabSettings ExternalTabUITestMockClient::default_settings = {
@@ -995,7 +758,13 @@ scoped_refptr<TabProxy> ExternalTabUITestMockClient::CreateTabWithUrl(
 
 void ExternalTabUITestMockClient::DestroyHostWindow() {
   ::DestroyWindow(host_window_);
+  host_window_ = NULL;
 }
+
+bool ExternalTabUITestMockClient::HostWindowExists() {
+  return (host_window_ != NULL) && ::IsWindow(host_window_);
+}
+
 
 // Handy macro
 #define QUIT_LOOP(loop) testing::InvokeWithoutArgs(\

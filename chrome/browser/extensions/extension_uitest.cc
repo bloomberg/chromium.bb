@@ -15,9 +15,22 @@
 #include "chrome/test/automation/automation_proxy_uitest.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_test.h"
+#include "chrome/test/ui_test_utils.h"
 #include "googleurl/src/gurl.h"
+#define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
+#include "testing/gmock_mutant.h"
 
 namespace {
+
+using testing::_;
+using testing::CreateFunctor;
+using testing::DoAll;
+using testing::Invoke;
+using testing::InvokeWithoutArgs;
+using testing::SaveArg;
+using testing::WithArgs;
+
+using ui_test_utils::TimedMessageLoopRunner;
 
 static const char kTestDirectorySimpleApiCall[] =
     "extensions/uitest/simple_api_call";
@@ -25,6 +38,9 @@ static const char kTestDirectoryRoundtripApiCall[] =
     "extensions/uitest/roundtrip_api_call";
 static const char kTestDirectoryBrowserEvent[] =
     "extensions/uitest/event_sink";
+
+// TODO(port) Once external tab stuff is ported.
+#if defined(OS_WIN)
 
 // Base class to test extensions almost end-to-end by including browser
 // startup, manifest parsing, and the actual process model in the
@@ -37,10 +53,10 @@ static const char kTestDirectoryBrowserEvent[] =
 // By default, makes Chrome forward all Chrome Extension API function calls
 // via the automation interface. To override this, call set_functions_enabled()
 // with a list of function names that should be forwarded,
-template <class ParentTestType>
-class ExtensionUITest : public ParentTestType {
+class ExtensionUITest : public ExternalTabUITest {
  public:
-  explicit ExtensionUITest(const std::string& extension_path) {
+   explicit ExtensionUITest(const std::string& extension_path)
+      : loop_(MessageLoop::current()) {
     FilePath filename(test_data_directory_);
     filename = filename.AppendASCII(extension_path);
     launch_arguments_.AppendSwitchWithValue(switches::kLoadExtension,
@@ -54,76 +70,41 @@ class ExtensionUITest : public ParentTestType {
   }
 
   void SetUp() {
-    ParentTestType::SetUp();
-
-    AutomationProxyForExternalTab* proxy =
-        static_cast<AutomationProxyForExternalTab*>(automation());
-    HWND external_tab_container = NULL;
-    HWND tab_wnd = NULL;
-    tab_ = proxy->CreateTabWithHostWindow(false,
-        GURL(), &external_tab_container, &tab_wnd);
-
+    ExternalTabUITest::SetUp();
+    tab_ = mock_->CreateTabWithUrl(GURL());
     tab_->SetEnableExtensionAutomation(functions_enabled_);
   }
 
   void TearDown() {
     tab_->SetEnableExtensionAutomation(std::vector<std::string>());
-
-    AutomationProxyForExternalTab* proxy =
-        static_cast<AutomationProxyForExternalTab*>(automation());
-    proxy->DestroyHostWindow();
-    proxy->WaitForTabCleanup(tab_, action_max_timeout_ms());
-    EXPECT_FALSE(tab_->is_valid());
-    tab_.release();
-
-    ParentTestType::TearDown();
-  }
-
-  void TestWithURL(const GURL& url) {
-    EXPECT_TRUE(tab_->is_valid());
-    if (tab_) {
-      AutomationProxyForExternalTab* proxy =
-        static_cast<AutomationProxyForExternalTab*>(automation());
-
-      // Enter a message loop to allow the tab to be created
-      proxy->WaitForNavigation(2000);
-      DoAdditionalPreNavigateSetup(tab_.get());
-
-      // We explicitly do not make this a toolstrip in the extension manifest,
-      // so that the test can control when it gets loaded, and so that we test
-      // the intended behavior that tabs should be able to show extension pages
-      // (useful for development etc.)
-      tab_->NavigateInExternalTab(url, GURL());
-      EXPECT_TRUE(proxy->WaitForMessage(action_max_timeout_ms()));
-    }
-  }
-
-  // Override if you need additional stuff before we navigate the page.
-  virtual void DoAdditionalPreNavigateSetup(TabProxy* tab) {
+    tab_ = NULL;
+    EXPECT_TRUE(mock_->HostWindowExists()) <<
+        "You shouldn't DestroyHostWindow yourself, or extension automation "
+        "won't be correctly reset. Just exit your message loop.";
+    mock_->DestroyHostWindow();
+    ExternalTabUITest::TearDown();
   }
 
  protected:
   // Extension API functions that we want to take over.  Defaults to all.
   std::vector<std::string> functions_enabled_;
+
+  // Message loop for running the async bits of your test.
+  TimedMessageLoopRunner loop_;
+
+  // The external tab.
   scoped_refptr<TabProxy> tab_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionUITest);
 };
 
-// For tests that only need to check for a single postMessage
-// being received from the tab in Chrome.  These tests can send a message
-// to the tab before receiving the new message, but there will not be
-// a chance to respond by sending a message from the test to the tab after
-// the postMessage is received.
-typedef ExtensionUITest<ExternalTabTestType> SingleMessageExtensionUITest;
-
 // A test that loads a basic extension that makes an API call that does
 // not require a response.
-class SimpleApiCallExtensionTest : public SingleMessageExtensionUITest {
+class ExtensionTestSimpleApiCall : public ExtensionUITest {
  public:
-  SimpleApiCallExtensionTest()
-      : SingleMessageExtensionUITest(kTestDirectorySimpleApiCall) {
+  ExtensionTestSimpleApiCall()
+      : ExtensionUITest(kTestDirectorySimpleApiCall) {
   }
 
   void SetUp() {
@@ -132,30 +113,37 @@ class SimpleApiCallExtensionTest : public SingleMessageExtensionUITest {
     // universal forwarding.
     functions_enabled_.clear();
     functions_enabled_.push_back("tabs.remove");
-    SingleMessageExtensionUITest::SetUp();
+    ExtensionUITest::SetUp();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SimpleApiCallExtensionTest);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTestSimpleApiCall);
 };
 
-// TODO(port) Should become portable once ExternalTabMessageLoop is ported.
-#if defined(OS_WIN)
-TEST_F(SimpleApiCallExtensionTest, RunTest) {
+TEST_F(ExtensionTestSimpleApiCall, RunTest) {
   namespace keys = extension_automation_constants;
 
-  TestWithURL(GURL(
-      "chrome-extension://pmgpglkggjdpkpghhdmbdhababjpcohk/test.html"));
-  AutomationProxyForExternalTab* proxy =
-      static_cast<AutomationProxyForExternalTab*>(automation());
-  ASSERT_GT(proxy->messages_received(), 0);
+  ASSERT_THAT(mock_, testing::NotNull());
+  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
 
-  // Using EXPECT_TRUE rather than EXPECT_EQ as the compiler (VC++) isn't
-  // finding the right match for EqHelper.
-  EXPECT_TRUE(proxy->origin() == keys::kAutomationOrigin);
-  EXPECT_TRUE(proxy->target() == keys::kAutomationRequestTarget);
+  std::string message_received;
+  EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
+      _, _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
+      .WillOnce(DoAll(
+        SaveArg<1>(&message_received),
+        InvokeWithoutArgs(
+            CreateFunctor(&loop_, &TimedMessageLoopRunner::Quit))));
 
-  scoped_ptr<Value> message_value(base::JSONReader::Read(proxy->message(),
+  EXPECT_CALL(*mock_, HandleClosed(_));
+
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab_->NavigateInExternalTab(
+      GURL("chrome-extension://pmgpglkggjdpkpghhdmbdhababjpcohk/test.html"),
+      GURL("")));
+
+  loop_.RunFor(2 * action_max_timeout_ms());
+  ASSERT_FALSE(message_received.empty());
+
+  scoped_ptr<Value> message_value(base::JSONReader::Read(message_received,
                                                          false));
   ASSERT_TRUE(message_value->IsType(Value::TYPE_DICTIONARY));
   DictionaryValue* message_dict =
@@ -177,83 +165,46 @@ TEST_F(SimpleApiCallExtensionTest, RunTest) {
                                        &has_callback));
   EXPECT_FALSE(has_callback);
 }
-#endif  // defined(OS_WIN)
 
-// A base class for an automation proxy that checks several messages in
-// a row.
-class MultiMessageAutomationProxy : public AutomationProxyForExternalTab {
- public:
-  explicit MultiMessageAutomationProxy(int execution_timeout)
-      : AutomationProxyForExternalTab(execution_timeout) {
+// A test that loads a basic extension that makes an API call that does
+// not require a response.
+class ExtensionTestRoundtripApiCall : public ExtensionUITest {
+public:
+  ExtensionTestRoundtripApiCall()
+    : ExtensionUITest(kTestDirectoryRoundtripApiCall),
+      messages_received_(0) {
   }
 
-  // Call when testing with the current tab is finished.
-  void Quit() {
-    PostQuitMessage(0);
+  void SetUp() {
+    // Set just this one function explicitly to be forwarded, as a test of
+    // the selective forwarding.  The next test will leave the default to test
+    // universal forwarding.
+    functions_enabled_.clear();
+    functions_enabled_.push_back("tabs.getSelected");
+    functions_enabled_.push_back("tabs.remove");
+    ExtensionUITest::SetUp();
   }
 
- protected:
-  virtual void OnMessageReceived(const IPC::Message& msg) {
-    IPC_BEGIN_MESSAGE_MAP(MultiMessageAutomationProxy, msg)
-      IPC_MESSAGE_HANDLER(AutomationMsg_DidNavigate,
-                          AutomationProxyForExternalTab::OnDidNavigate)
-      IPC_MESSAGE_HANDLER(AutomationMsg_ForwardMessageToExternalHost,
-                          OnForwardMessageToExternalHost)
-    IPC_END_MESSAGE_MAP()
-  }
-
-  void OnForwardMessageToExternalHost(int handle,
-                                      const std::string& message,
-                                      const std::string& origin,
-                                      const std::string& target) {
-    messages_received_++;
-    message_ = message;
-    origin_ = origin;
-    target_ = target;
-    HandleMessageFromChrome();
-  }
-
-  // Override to do your custom checking and initiate any custom actions
-  // needed in your particular unit test.
-  virtual void HandleMessageFromChrome() = 0;
-};
-
-// This proxy is specific to RoundtripApiCallExtensionTest.
-class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
- public:
-  explicit RoundtripAutomationProxy(int execution_timeout)
-      : MultiMessageAutomationProxy(execution_timeout),
-        tab_(NULL) {
-  }
-
-  // Must set before initiating test.
-  TabProxy* tab_;
-
- protected:
-  virtual void HandleMessageFromChrome() {
+  void CheckAndSendResponse(const std::string& message) {
     namespace keys = extension_automation_constants;
+    ++messages_received_;
 
     ASSERT_TRUE(tab_ != NULL);
     ASSERT_TRUE(messages_received_ == 1 || messages_received_ == 2);
 
-    // Using EXPECT_TRUE rather than EXPECT_EQ as the compiler (VC++) isn't
-    // finding the right match for EqHelper.
-    EXPECT_TRUE(origin_ == keys::kAutomationOrigin);
-    EXPECT_TRUE(target_ == keys::kAutomationRequestTarget);
-
-    scoped_ptr<Value> message_value(base::JSONReader::Read(message_, false));
+    scoped_ptr<Value> message_value(base::JSONReader::Read(message, false));
     ASSERT_TRUE(message_value->IsType(Value::TYPE_DICTIONARY));
     DictionaryValue* request_dict =
-        static_cast<DictionaryValue*>(message_value.get());
+      static_cast<DictionaryValue*>(message_value.get());
     std::string function_name;
     ASSERT_TRUE(request_dict->GetString(keys::kAutomationNameKey,
-                                        &function_name));
+      &function_name));
     int request_id = -2;
     EXPECT_TRUE(request_dict->GetInteger(keys::kAutomationRequestIdKey,
-                                         &request_id));
+      &request_id));
     bool has_callback = false;
     EXPECT_TRUE(request_dict->GetBoolean(keys::kAutomationHasCallbackKey,
-                                         &has_callback));
+      &has_callback));
 
     if (messages_received_ == 1) {
       EXPECT_EQ(function_name, "tabs.getSelected");
@@ -268,7 +219,7 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
       tab_dict.SetInteger(extension_tabs_module_constants::kWindowIdKey, 1);
       tab_dict.SetBoolean(extension_tabs_module_constants::kSelectedKey, true);
       tab_dict.SetString(extension_tabs_module_constants::kUrlKey,
-                         "http://www.google.com");
+        "http://www.google.com");
 
       std::string tab_json;
       base::JSONWriter::Write(&tab_dict, false, &tab_json);
@@ -279,9 +230,9 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
       base::JSONWriter::Write(&response_dict, false, &response_json);
 
       tab_->HandleMessageFromExternalHost(
-          response_json,
-          keys::kAutomationOrigin,
-          keys::kAutomationResponseTarget);
+        response_json,
+        keys::kAutomationOrigin,
+        keys::kAutomationResponseTarget);
     } else if (messages_received_ == 2) {
       EXPECT_EQ(function_name, "tabs.remove");
       EXPECT_FALSE(has_callback);
@@ -289,76 +240,92 @@ class RoundtripAutomationProxy : public MultiMessageAutomationProxy {
       std::string args;
       EXPECT_TRUE(request_dict->GetString(keys::kAutomationArgsKey, &args));
       EXPECT_NE(args.find("42"), -1);
-
-      Quit();
+      loop_.Quit();
     } else {
-      Quit();
       FAIL();
+      loop_.Quit();
     }
   }
+
+private:
+  int messages_received_;
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTestRoundtripApiCall);
 };
 
-class RoundtripApiCallExtensionTest
-    : public ExtensionUITest<
-                 CustomAutomationProxyTest<RoundtripAutomationProxy>> {
- public:
-  RoundtripApiCallExtensionTest()
-      : ExtensionUITest<
-          CustomAutomationProxyTest<
-              RoundtripAutomationProxy> >(kTestDirectoryRoundtripApiCall) {
-  }
+TEST_F(ExtensionTestRoundtripApiCall, RunTest) {
+  namespace keys = extension_automation_constants;
 
-  void DoAdditionalPreNavigateSetup(TabProxy* tab) {
-    RoundtripAutomationProxy* proxy =
-      static_cast<RoundtripAutomationProxy*>(automation());
-    proxy->tab_ = tab;
-  }
+  ASSERT_THAT(mock_, testing::NotNull());
+  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(RoundtripApiCallExtensionTest);
-};
+  EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
+    _, _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
+    .Times(2)
+    .WillRepeatedly(WithArgs<1>(Invoke(
+        CreateFunctor(this,
+            &ExtensionTestRoundtripApiCall::CheckAndSendResponse))));
 
-// TODO(port) Should become portable once
-// ExternalTabMessageLoop is ported.
-#if defined(OS_WIN)
-TEST_F(RoundtripApiCallExtensionTest, RunTest) {
-  TestWithURL(GURL(
-      "chrome-extension://ofoknjclcmghjfmbncljcnpjmfmldhno/test.html"));
-  RoundtripAutomationProxy* proxy =
-      static_cast<RoundtripAutomationProxy*>(automation());
+  EXPECT_CALL(*mock_, HandleClosed(_));
 
-  // Validation is done in the RoundtripAutomationProxy, so we just check
-  // something basic here.
-  EXPECT_EQ(proxy->messages_received(), 2);
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab_->NavigateInExternalTab(
+    GURL("chrome-extension://ofoknjclcmghjfmbncljcnpjmfmldhno/test.html"),
+    GURL("")));
+
+  // CheckAndSendResponse (called by OnForwardMessageToExternalHost)
+  // will end the loop once it has received both of our expected messages.
+  loop_.RunFor(2 * action_max_timeout_ms());
 }
-#endif  // defined(OS_WIN)
 
-// This proxy is specific to BrowserEventExtensionTest.
-class BrowserEventAutomationProxy : public MultiMessageAutomationProxy {
+class ExtensionTestBrowserEvents : public ExtensionUITest {
  public:
-  explicit BrowserEventAutomationProxy(int execution_timeout)
-      : MultiMessageAutomationProxy(execution_timeout),
-        tab_(NULL) {
+  ExtensionTestBrowserEvents()
+    : ExtensionUITest(kTestDirectoryBrowserEvent),
+      response_count_(0) {
   }
 
-  // Must set before initiating test.
-  TabProxy* tab_;
+  void SetUp() {
+    // Set just this one function explicitly to be forwarded, as a test of
+    // the selective forwarding.  The next test will leave the default to test
+    // universal forwarding.
+    functions_enabled_.clear();
+    functions_enabled_.push_back("windows.getCurrent");
+    ExtensionUITest::SetUp();
+  }
 
+  // Fire an event of the given name to the test extension.
+  void FireEvent(const char* event_name) {
+    namespace keys = extension_automation_constants;
+
+    ASSERT_TRUE(tab_ != NULL);
+
+    // Build the event message to send to the extension.  The only important
+    // part is the name, as the payload is not used by the test extension.
+    std::string message;
+    message += event_name;
+
+    tab_->HandleMessageFromExternalHost(
+        message,
+        keys::kAutomationOrigin,
+        keys::kAutomationBrowserEventRequestTarget);
+  }
+
+  void HandleMessageFromChrome(const std::string& message,
+                               const std::string& target);
+
+ protected:
   // Counts the number of times we got a given event.
   std::map<std::string, int> event_count_;
 
   // Array containing the names of the events to fire to the extension.
   static const char* events_[];
 
- protected:
-  // Process a message received from the test extension.
-  virtual void HandleMessageFromChrome();
+  // Number of events extension has told us it received.
+  int response_count_;
 
-  // Fire an event of the given name to the test extension.
-  void FireEvent(const char* event_name);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionTestBrowserEvents);
 };
 
-const char* BrowserEventAutomationProxy::events_[] = {
+const char* ExtensionTestBrowserEvents::events_[] = {
   // Window events.
   "[\"windows.onCreated\", \"[{'id':42,'focused':true,'top':0,'left':0,"
       "'width':100,'height':100}]\"]",
@@ -399,16 +366,13 @@ const char* BrowserEventAutomationProxy::events_[] = {
       "{'childIds':['1', '2', '3']}]\"]"
 };
 
-void BrowserEventAutomationProxy::HandleMessageFromChrome() {
+void ExtensionTestBrowserEvents::HandleMessageFromChrome(
+    const std::string& message,
+    const std::string& target) {
   namespace keys = extension_automation_constants;
   ASSERT_TRUE(tab_ != NULL);
 
-  std::string message(message());
-  std::string origin(origin());
-  std::string target(target());
-
   ASSERT_TRUE(message.length() > 0);
-  ASSERT_STREQ(keys::kAutomationOrigin, origin.c_str());
 
   if (target == keys::kAutomationRequestTarget) {
     // This should be a request for the current window.  We don't need to
@@ -452,72 +416,59 @@ void BrowserEventAutomationProxy::HandleMessageFromChrome() {
         reinterpret_cast<DictionaryValue*>(message_value.get());
 
     std::string event_name;
-    ASSERT_TRUE(message_dict->GetString(L"data", &event_name));
+    message_dict->GetString(keys::kAutomationMessageDataKey, &event_name);
     if (event_name == "\"ACK\"") {
       ASSERT_EQ(0, event_count_.size());
+    } else if (event_name.empty()) {
+      // This must be the post disconnect.
+      int request_id = -1;
+      message_dict->GetInteger(keys::kAutomationRequestIdKey, &request_id);
+      ASSERT_EQ(keys::CHANNEL_CLOSED, request_id);
     } else {
       ++event_count_[event_name];
+    }
+
+    // Check if we're done.
+    if (event_count_.size() == arraysize(events_)) {
+      loop_.Quit();
     }
   }
 }
 
-void BrowserEventAutomationProxy::FireEvent(const char* event) {
-  namespace keys = extension_automation_constants;
-
-  // Build the event message to send to the extension.  The only important
-  // part is the name, as the payload is not used by the test extension.
-  std::string message;
-  message += event;
-
-  tab_->HandleMessageFromExternalHost(
-      message,
-      keys::kAutomationOrigin,
-      keys::kAutomationBrowserEventRequestTarget);
-}
-
-class BrowserEventExtensionTest
-    : public ExtensionUITest<
-                 CustomAutomationProxyTest<BrowserEventAutomationProxy>> {
- public:
-  BrowserEventExtensionTest()
-      : ExtensionUITest<
-          CustomAutomationProxyTest<
-              BrowserEventAutomationProxy> >(kTestDirectoryBrowserEvent) {
-  }
-
-  void DoAdditionalPreNavigateSetup(TabProxy* tab) {
-    BrowserEventAutomationProxy* proxy =
-      static_cast<BrowserEventAutomationProxy*>(automation());
-    proxy->tab_ = tab;
-  }
-
- private:
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserEventExtensionTest);
-};
-
-// TODO(port) Should become portable once
-// ExternalTabMessageLoop is ported.
-#if defined(OS_WIN)
-TEST_F(BrowserEventExtensionTest, RunTest) {
+TEST_F(ExtensionTestBrowserEvents, RunTest) {
   // This test loads an HTML file that tries to add listeners to a bunch of
   // chrome.* events and upon adding a listener it posts the name of the event
   // to the automation layer, which we'll count to make sure the events work.
-  TestWithURL(GURL(
-      "chrome-extension://ofoknjclcmghjfmbncljcnpjmfmldhno/test.html"));
-  BrowserEventAutomationProxy* proxy =
-      static_cast<BrowserEventAutomationProxy*>(automation());
+  namespace keys = extension_automation_constants;
+
+  ASSERT_THAT(mock_, testing::NotNull());
+  EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
+
+  EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
+    _, _, keys::kAutomationOrigin, _))
+    .WillRepeatedly(WithArgs<1, 3>(Invoke(
+        CreateFunctor(this,
+            &ExtensionTestBrowserEvents::HandleMessageFromChrome))));
+
+  EXPECT_CALL(*mock_, HandleClosed(_));
+
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab_->NavigateInExternalTab(
+    GURL("chrome-extension://ofoknjclcmghjfmbncljcnpjmfmldhno/test.html"),
+    GURL("")));
+
+  // HandleMessageFromChrome (called by OnForwardMessageToExternalHost) ends
+  // the loop when we've received the number of response messages we expect.
+  loop_.RunFor(2 * action_max_timeout_ms());
 
   // If this assert hits and the actual size is 0 then you need to look at:
   // src\chrome\test\data\extensions\uitest\event_sink\test.html and see if
   // all the events we are attaching to are valid. Also compare the list against
   // the event_names_ string array above.
-  EXPECT_EQ(arraysize(BrowserEventAutomationProxy::events_),
-            proxy->event_count_.size());
-  for (std::map<std::string, int>::iterator i = proxy->event_count_.begin();
-      i != proxy->event_count_.end(); ++i) {
+  ASSERT_EQ(arraysize(events_), event_count_.size());
+  for (std::map<std::string, int>::iterator i = event_count_.begin();
+      i != event_count_.end(); ++i) {
     const std::pair<std::string, int>& value = *i;
-    ASSERT_EQ(1, value.second);
+    EXPECT_EQ(1, value.second);
   }
 }
 #endif  // defined(OS_WIN)
