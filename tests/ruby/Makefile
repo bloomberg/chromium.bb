@@ -19,7 +19,7 @@ CCFLAGS=-Wall
 NAME:=ruby
 
 LIBS = -lgoogle_nacl_npruntime
-#LIBS+= -lgoogle_nacl_imc
+LIBS+= -lgoogle_nacl_imc
 LIBS+= -lunimpl
 NACL_INCLUDE = -I$(GOOGLE_CLIENT)/third_party/npapi/files/include \
                -I$(GOOGLE_CLIENT)/native_client/tests/ruby/$(RUBY_DIR)/

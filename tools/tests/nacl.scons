@@ -47,7 +47,9 @@ env.ComponentProgram('libs_present_test.nexe',
                      LIBS=['m',
                            'av',
                            'pthread',
-                           'srpc','google_nacl_npruntime',
+                           'srpc',
+                           'google_nacl_imc',
+                           'google_nacl_npruntime',
                            'unimpl'])
 
 if 'TRUSTED_ENV' in env:

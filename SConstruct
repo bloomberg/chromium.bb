@@ -1067,7 +1067,7 @@ if not ARGUMENTS.get('nocpp'):
   nacl_extra_sdk_env.Append(
       BUILD_SCONSCRIPTS = [
         ####  ALPHABETICALLY SORTED ####
-#        'src/shared/imc/nacl.scons',
+        'src/shared/imc/nacl.scons',
         'src/shared/npruntime/nacl.scons',
         ####  ALPHABETICALLY SORTED ####
       ],

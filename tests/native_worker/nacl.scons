@@ -31,14 +31,14 @@
 Import('env')
 
 env.ComponentProgram('native_worker.nexe', 'native_worker.c',
-                     EXTRA_LIBS=['srpc',  'pthread'])
+                     EXTRA_LIBS=['srpc', 'google_nacl_imc_c', 'pthread'])
 
 # Note that the html is required to run this program.
 env.Publish('native_worker.nexe', 'run',
             ['native_worker.html'])
 
 env.ComponentProgram('mandel_worker.nexe', 'mandel_worker.c',
-                     EXTRA_LIBS=['srpc',  'pthread'])
+                     EXTRA_LIBS=['srpc', 'google_nacl_imc_c', 'pthread'])
 
 env.Publish('mandel_worker.nexe', 'run', ['mandel_worker.html',
                                           'mandel_worker.js'])

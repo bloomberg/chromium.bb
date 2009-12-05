@@ -31,7 +31,7 @@
 Import('env')
 
 env.ComponentProgram('autoloader_default.nexe', 'autoloader_default.c',
-                     EXTRA_LIBS=['srpc', 'pthread'])
+                     EXTRA_LIBS=['srpc', 'google_nacl_imc_c','pthread'])
 
 # Note that the html is required to run this program.
 node = env.Publish('autoloader_default.nexe',

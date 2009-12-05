@@ -43,6 +43,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <nacl/nacl_av.h>
+#include <nacl/nacl_imc.h>
 #include <nacl/nacl_npapi.h>
 #include <nacl/nacl_srpc.h>
 #include <nacl/npruntime.h>
@@ -73,6 +74,10 @@ static void TestLibsPresent() {
   // Test that libav is present.
   if (run_tests)
     nacl_multimedia_init(NACL_SUBSYSTEM_VIDEO);
+
+  // Test that libgoogle_nacl_imc is present.
+  if (run_tests)
+    bool_value = nacl::WouldBlock();
 
   // Test that libgoogle_nacl_npruntime is present.
   if (run_tests) {
