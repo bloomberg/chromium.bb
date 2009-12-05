@@ -340,6 +340,22 @@ int ChromeMain(int argc, char** argv) {
   // Set C library locale to make sure CommandLine can parse argument values
   // in correct encoding.
   setlocale(LC_ALL, "");
+
+  // Sanitise our signal handling state. Signals that were ignored by our
+  // parent will also be ignored by us. We also inherit our parent's sigmask.
+  sigset_t empty_signal_set;
+  CHECK(0 == sigemptyset(&empty_signal_set));
+  CHECK(0 == sigprocmask(SIG_SETMASK, &empty_signal_set, NULL));
+
+  struct sigaction sigact;
+  memset(&sigact, 0, sizeof(sigact));
+  sigact.sa_handler = SIG_DFL;
+  static const int signals_to_reset[] =
+      {SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
+       SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
+  for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
+    CHECK(0 == sigaction(signals_to_reset[i], &sigact, NULL));
+  }
 #endif
 
   // Initialize the command line.
