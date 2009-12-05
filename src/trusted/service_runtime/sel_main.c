@@ -140,9 +140,10 @@ static void PrintUsage() {
           "               [-h d:D] [-r d:D] [-w d:D] [-i d:D]\n"
           "               [-f nacl_file]\n"
           "               [-P SRPC port number]\n"
+          "               [-sS]\n"
           "\n"
           "               [-D desc]\n"
-          "               [-X d] [-dmMv]\n"
+          "               [-X d] [-dmMv] -- [nacl_file] [args]\n"
           "\n");
   fprintf(stderr,
           " -a associates an IMC address with application descriptor d\n"
@@ -152,8 +153,10 @@ static void PrintUsage() {
           "    that was opened in O_RDWR, O_RDONLY, and O_WRONLY modes\n"
           "    respectively\n"
           " -i associates an IMC handle D with app desc d\n"
-          " -f file to load\n"
+          " -f file to load; if omitted, 1st arg after \"--\" is loaded\n"
           " -P set SRPC port number for SRPC calls\n"
+          " -s enable shm for dynamic code [default]\n"
+          " -S disable shm for dyanmic code\n"
           " -v increases verbosity\n"
           " -X create a bound socket and export the address via an\n"
           "    IMC message to a corresponding NaCl app descriptor\n"
@@ -165,7 +168,7 @@ static void PrintUsage() {
           "    the main NaCl app thread, so that we're enforcing (bug)\n"
           "    compatibility with standalone windows apps that must\n"
           "    make certain (e.g., graphics) calls from the main\n"
-          "    thread"
+          "    thread (default)\n"
           " -M allow syscalls to be made from any NaCl app thread,\n"
           "    since these (windows-library-using) syscalls are\n"
           "    actually done via a work queue using the sel_ldr\n"
@@ -217,6 +220,7 @@ int main(int  ac,
   struct GioFile                *log_gio;
   int                           log_desc;
   int                           debug_mode = 0;
+  int                           enable_shm = 1;  /* default */
 
   struct NaClEnvCleanser        filtered_env;
 
@@ -330,6 +334,12 @@ int main(int  ac,
         /* Conduit to convey the descriptor ID to the application code. */
         NaClSrpcFileDescriptor = strtol(optarg, (char **) 0, 0);
         break;
+      case 's':
+        enable_shm = 1;
+        break;
+      case 'S':
+        enable_shm = 0;
+        break;
       case 'v':
         ++verbosity;
         NaClLogIncrVerbosity();
@@ -400,6 +410,7 @@ int main(int  ac,
   }
 
   state.restrict_to_main_thread = main_thread_only;
+  state.use_shm_for_dynamic_text = enable_shm;
 
   nap = &state;
   errcode = LOAD_OK;

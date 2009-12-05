@@ -39,13 +39,16 @@
 #define PTR_ALIGN_MASK  ((sizeof(void *))-1)
 
 
+
 NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
                               struct NaClApp   *nap,
                               enum NaClAbiCheckOption check_abi) {
-  NaClErrorCode        ret = LOAD_INTERNAL;
-  NaClErrorCode        subret;
-  uintptr_t            max_vaddr;
-  struct NaClElfImage  *image = NULL;
+  NaClErrorCode       ret = LOAD_INTERNAL;
+  NaClErrorCode       subret;
+  uintptr_t           rodata_end;
+  uintptr_t           data_end;
+  uintptr_t           max_vaddr;
+  struct NaClElfImage *image = NULL;
 
   /* NACL_MAX_ADDR_BITS < 32 */
   if (nap->addr_bits > NACL_MAX_ADDR_BITS) {
@@ -70,7 +73,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   }
 
   subret = NaClElfImageValidateElfHeader(image);
-  if (subret != LOAD_OK) {
+  if (LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
@@ -78,14 +81,23 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   subret = NaClElfImageValidateProgramHeaders(image,
                                               nap->addr_bits,
                                               &nap->static_text_end,
+                                              &nap->rodata_start,
+                                              &rodata_end,
+                                              &nap->data_start,
+                                              &data_end,
                                               &max_vaddr);
-  if (subret != LOAD_OK) {
+  if (LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
 
   nap->break_addr = max_vaddr;
   nap->data_end = max_vaddr;
+
+  NaClLog(4, "rodata_end = %08"PRIxPTR"\n", rodata_end);
+  NaClLog(4, "data_start = %08"PRIxPTR"\n", nap->data_start);
+  NaClLog(4, "data_end   = %08"PRIxPTR"\n", data_end);
+  NaClLog(4, "max_vaddr  = %08"PRIxPTR"\n", max_vaddr);
 
   nap->bundle_size = NaClElfImageGetBundleSize(image);
   if (nap->bundle_size == 0) {
@@ -106,9 +118,57 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
           nap->data_end,
           nap->entry_pt,
           nap->bundle_size);
+
   if (!NaClAddrIsValidEntryPt(nap, nap->entry_pt)) {
     ret = LOAD_BAD_ENTRY;
     goto done;
+  }
+
+  /*
+   * Basic address space layout sanity check.
+   */
+  if (0 != nap->data_start) {
+    if (data_end != max_vaddr) {
+      NaClLog(LOG_INFO, "data segment is not last\n");
+      ret = LOAD_DATA_NOT_LAST_SEGMENT;
+      goto done;
+    }
+  } else if (0 != nap->rodata_start) {
+    if (rodata_end != max_vaddr) {
+      /*
+       * This should be unreachable, but we include it just for
+       * completeness.
+       *
+       * Here is why it is unreachable:
+       *
+       * NaClPhdrChecks checks the test segment starting address.  The
+       * only allowed loaded segments are text, data, and rodata.
+       * Thus unless the rodata is in the trampoline region, it must
+       * be after the text.  And NaClElfImageValidateProgramHeaders
+       * ensures that all segments start after the trampoline region.
+       */
+      NaClLog(LOG_INFO, "no data segment, but rodata segment is not last\n");
+      ret = LOAD_NO_DATA_BUT_RODATA_NOT_LAST_SEGMENT;
+      goto done;
+    }
+  }
+  if (0 != nap->rodata_start && 0 != nap->data_start) {
+    if (rodata_end > nap->data_start) {
+      NaClLog(LOG_INFO, "rodata_overlaps data.\n");
+      ret = LOAD_RODATA_OVERLAPS_DATA;
+      goto done;
+    }
+  }
+  if (0 != nap->rodata_start) {
+    if (NaClRoundAllocPage(NaClEndOfText(nap)) > nap->rodata_start) {
+      ret = LOAD_TEXT_OVERLAPS_RODATA;
+      goto done;
+    }
+  } else if (0 != nap->data_start) {
+    if (NaClRoundAllocPage(NaClEndOfText(nap)) > nap->data_start) {
+      ret = LOAD_TEXT_OVERLAPS_DATA;
+      goto done;
+    }
   }
 
   NaClLog(2, "Allocating address space\n");

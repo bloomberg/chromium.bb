@@ -643,6 +643,42 @@ if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
 
 
   node = env.CommandSelLdrTestNacl(
+      'rodata_and_data_overlap.out',
+      command=[env.File('testdata/rodata_data_overlap.nexe')],
+      stderr_golden=env.File('testdata/rodata_data_overlap.stderr'),
+      stderr_filter=ERROR_WHILE_LOADING,
+      exit_status='1')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
+
+
+  node = env.CommandSelLdrTestNacl(
+      'data_not_last.out',
+      command=[env.File('testdata/data_not_last.nexe')],
+      stderr_golden=env.File('testdata/data_not_last.stderr'),
+      stderr_filter=ERROR_WHILE_LOADING,
+      exit_status='1')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
+
+
+  node = env.CommandSelLdrTestNacl(
+      'text_overlaps_rodata.out',
+      command=[env.File('testdata/text_overlaps_rodata.nexe')],
+      stderr_golden=env.File('testdata/text_overlaps_rodata.stderr'),
+      stderr_filter=ERROR_WHILE_LOADING,
+      exit_status='1')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
+
+
+  node = env.CommandSelLdrTestNacl(
+      'text_overlaps_data.out',
+      command=[env.File('testdata/text_overlaps_data.nexe')],
+      stderr_golden=env.File('testdata/text_overlaps_data.stderr'),
+      stderr_filter=ERROR_WHILE_LOADING,
+      exit_status='1')
+  env.AddNodeToTestSuite(node, ['medium_tests'])
+
+
+  node = env.CommandSelLdrTestNacl(
       'old_abi.out',
       command=[env.File('testdata/old_abi.nexe')],
       stderr_golden=env.File('testdata/old_abi.stderr'),

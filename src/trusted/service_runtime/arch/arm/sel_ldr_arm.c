@@ -86,11 +86,15 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
  * instruction, which is NACL_HALT_LEN in size.
  */
 void NaClFillEndOfTextRegion(struct NaClApp *nap) {
-  size_t page_pad = NaClRoundPage(nap->static_text_end) - nap->static_text_end;
-  if (!nap->use_shm_for_dynamic_text) {
-    CHECK(page_pad < NACL_PAGESIZE);
-  } else {
+  size_t page_pad;
+
+  if (nap->use_shm_for_dynamic_text) {
+    page_pad = (NaClRoundAllocPage(nap->static_text_end)
+                - nap->static_text_end);
     page_pad += nap->dynamic_text_end - nap->dynamic_text_start;
+  } else {
+    page_pad = NaClRoundPage(nap->static_text_end) - nap->static_text_end;
+    CHECK(page_pad < NACL_PAGESIZE);
   }
 
   NaClLog(4,

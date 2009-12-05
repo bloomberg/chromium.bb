@@ -403,6 +403,17 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
     case LOAD_DATA_OVERLAPS_STACK_SECTION:
       return ("Memory \"hole\" between end of BSS and start of stack"
               " is negative in size");
+    case LOAD_RODATA_OVERLAPS_DATA:
+      return "Read-only data segment overlaps data segment";
+    case LOAD_DATA_NOT_LAST_SEGMENT:
+      return "Data segment exists, but is not last segment";
+    case LOAD_NO_DATA_BUT_RODATA_NOT_LAST_SEGMENT:
+      return ("No data segment, read-only data segment exists,"
+              " but is not last segment");
+    case LOAD_TEXT_OVERLAPS_RODATA:
+      return "Text segment overlaps rodata segment";
+    case LOAD_TEXT_OVERLAPS_DATA:
+      return "No rodata segment, and text segment overlaps data segment";
     case LOAD_UNLOADABLE:
       return "Error during loading";
     case LOAD_BAD_ELF_TEXT:

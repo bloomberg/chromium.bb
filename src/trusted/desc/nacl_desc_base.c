@@ -588,13 +588,13 @@ int NaClDescMapDescriptor(struct NaClDesc         *desc,
     }
 #endif
     rval_ptr = (*desc->vtbl->Map)(desc,
-                                        effector,
-                                        map_addr,
-                                        rounded_size,
-                                        NACL_ABI_PROT_READ
-                                        | NACL_ABI_PROT_WRITE,
-                                        NACL_ABI_MAP_SHARED,
-                                        0);
+                                  effector,
+                                  map_addr,
+                                  rounded_size,
+                                  NACL_ABI_PROT_READ
+                                  | NACL_ABI_PROT_WRITE,
+                                  NACL_ABI_MAP_SHARED,
+                                  0);
     if (NaClIsNegErrno(rval_ptr)) {
       /*
        * A nonzero return from NaClIsNegErrno

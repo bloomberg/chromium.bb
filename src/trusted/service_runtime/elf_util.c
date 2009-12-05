@@ -35,6 +35,8 @@ struct NaClElfImage {
 enum NaClPhdrCheckAction {
   PCA_NONE,
   PCA_TEXT_CHECK,
+  PCA_RODATA,
+  PCA_DATA,
   PCA_IGNORE  /* ignore this segment.  currently used only for PT_PHDR. */
 };
 
@@ -56,9 +58,9 @@ static const struct NaClPhdrChecks nacl_phdr_check_data[] = {
   /* text */
   { PT_LOAD, PF_R|PF_X, PCA_TEXT_CHECK, 1, NACL_TRAMPOLINE_END, },
   /* rodata */
-  { PT_LOAD, PF_R, PCA_NONE, 0, 0, },
+  { PT_LOAD, PF_R, PCA_RODATA, 0, 0, },
   /* data/bss */
-  { PT_LOAD, PF_R|PF_W, PCA_NONE, 0, 0, },
+  { PT_LOAD, PF_R|PF_W, PCA_DATA, 0, 0, },
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   /* arm exception handling unwind info (for c++)*/
   /* TODO(robertm): for some reason this does NOT end up in ro maybe because
@@ -178,6 +180,10 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
   struct NaClElfImage *image,
   uint32_t            addr_bits,
   uint32_t            *static_text_end,
+  uintptr_t           *rodata_start,
+  uintptr_t           *rodata_end,
+  uintptr_t           *data_start,
+  uintptr_t           *data_end,
   uintptr_t           *max_vaddr) {
     /*
      * Scan phdrs and do sanity checks in-line.  Verify that the load
@@ -210,11 +216,11 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
       if (php->p_type == nacl_phdr_check_data[j].p_type
           && php->p_flags == nacl_phdr_check_data[j].p_flags) {
         NaClLog(2, "Matched nacl_phdr_check_data[%"PRIdS"]\n", j);
-        if (seen_seg[j] > 0) {
+        if (seen_seg[j]) {
           NaClLog(2, "Segment %d is a type that has been seen\n", segnum);
           return LOAD_DUP_SEGMENT;
         }
-        ++seen_seg[j];
+        seen_seg[j] = 1;
 
         if (PCA_IGNORE == nacl_phdr_check_data[j].action) {
           NaClLog(3, "Ignoring\n");
@@ -290,6 +296,14 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
             }
             *static_text_end = NACL_TRAMPOLINE_END + php->p_filesz;
             break;
+          case PCA_RODATA:
+            *rodata_start = php->p_vaddr;
+            *rodata_end = php->p_vaddr + php->p_memsz;
+            break;
+          case PCA_DATA:
+            *data_start = php->p_vaddr;
+            *data_end = php->p_vaddr + php->p_memsz;
+            break;
           case PCA_IGNORE:
             break;
         }
@@ -308,7 +322,7 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
             php->p_flags);
     return LOAD_BAD_SEGMENT;
  next_seg:
-    {}
+    continue;
   }
   for (j = 0; j < NACL_ARRAY_SIZE(nacl_phdr_check_data); ++j) {
     if (nacl_phdr_check_data[j].required && !seen_seg[j]) {
