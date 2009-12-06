@@ -661,6 +661,8 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
         is_non_top_level_request = true;
       }
     }
+  } else {
+    is_non_top_level_request = true;
   }
 
   return is_non_top_level_request;
