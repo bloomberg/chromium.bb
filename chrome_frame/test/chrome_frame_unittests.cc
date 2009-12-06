@@ -574,32 +574,25 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceDefaultCtor) {
 
 const wchar_t kCFInstallBasicTestPage[] = L"files/CFInstall_basic.html";
 
-// Disabling the following tests as the consistently fail on the chrome frame
-// builder.
-// 1. FullTabIE_CFInstallBasic
-// 2. FullTabIE_CFInstallDismiss
-// 3. FullTabIE_CFInstallOverlay
-// 4. FullTabIE_CFInstallPlace
-// Issue:- http://code.google.com/p/chromium/issues/detail?id=29193
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabIE_CFInstallBasic) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallBasic) {
   SimpleBrowserTest(IE, kCFInstallBasicTestPage, L"CFInstallBasic");
 }
 
 const wchar_t kCFInstallPlaceTestPage[] = L"files/CFInstall_place.html";
 
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabIE_CFInstallPlace) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallPlace) {
   SimpleBrowserTest(IE, kCFInstallPlaceTestPage, L"CFInstallPlace");
 }
 
 const wchar_t kCFInstallOverlayTestPage[] = L"files/CFInstall_overlay.html";
 
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabIE_CFInstallOverlay) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallOverlay) {
   SimpleBrowserTest(IE, kCFInstallOverlayTestPage, L"CFInstallOverlay");
 }
 
 const wchar_t kCFInstallDismissTestPage[] = L"files/CFInstall_dismiss.html";
 
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabIE_CFInstallDismiss) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallDismiss) {
   SimpleBrowserTest(IE, kCFInstallDismissTestPage, L"CFInstallDismiss");
 }
 
@@ -1452,7 +1445,7 @@ const wchar_t kChromeFrameFullTabWindowOpenPopupUrl[] =
 // This test checks if window.open calls issued by a full tab mode ChromeFrame
 // instance make it back to IE and then transitions back to Chrome as the
 // window.open target page is supposed to render within Chrome.
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_WindowOpen) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_WindowOpen) {
   TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
 
