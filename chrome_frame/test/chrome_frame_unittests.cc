@@ -574,25 +574,31 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceDefaultCtor) {
 
 const wchar_t kCFInstallBasicTestPage[] = L"files/CFInstall_basic.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallBasic) {
+// The following tests have been marked FLAKY as they fail on the buildbot
+// 1. FullTabIE_CFInstallBasic
+// 2. FullTabIE_CFInstallPlace
+// 3. FullTabIE_CFInstallOverlay
+// 4. FullTabIE_CFInstallDismiss
+// Bug http://code.google.com/p/chromium/issues/detail?id=29193
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabIE_CFInstallBasic) {
   SimpleBrowserTest(IE, kCFInstallBasicTestPage, L"CFInstallBasic");
 }
 
 const wchar_t kCFInstallPlaceTestPage[] = L"files/CFInstall_place.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallPlace) {
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabIE_CFInstallPlace) {
   SimpleBrowserTest(IE, kCFInstallPlaceTestPage, L"CFInstallPlace");
 }
 
 const wchar_t kCFInstallOverlayTestPage[] = L"files/CFInstall_overlay.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallOverlay) {
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabIE_CFInstallOverlay) {
   SimpleBrowserTest(IE, kCFInstallOverlayTestPage, L"CFInstallOverlay");
 }
 
 const wchar_t kCFInstallDismissTestPage[] = L"files/CFInstall_dismiss.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabIE_CFInstallDismiss) {
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabIE_CFInstallDismiss) {
   SimpleBrowserTest(IE, kCFInstallDismissTestPage, L"CFInstallDismiss");
 }
 
