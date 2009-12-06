@@ -482,11 +482,17 @@ void RenderThread::SetCacheMode(bool enabled) {
 
 static void* CreateHistogram(
     const char *name, int min, int max, size_t buckets) {
-  Histogram* histogram = new Histogram(name, min, max, buckets);
-  if (histogram) {
-    histogram->SetFlags(kUmaTargetedHistogramFlag);
-  }
-  return histogram;
+  if (min <= 0)
+    min = 1;
+  scoped_refptr<Histogram> histogram =
+      Histogram::HistogramFactoryGet(name, min, max, buckets);
+  // We verify this was not being destructed by setting a novel "PlannedLeak"
+  // flag and watching out for the flag in the destructor.
+  histogram->SetFlags(kUmaTargetedHistogramFlag | kPlannedLeakFlag);
+  // We'll end up leaking these histograms, unless there is some code hiding in
+  // there to do the dec-ref.
+  histogram->AddRef();
+  return histogram.get();
 }
 
 static void AddHistogramSample(void* hist, int sample) {

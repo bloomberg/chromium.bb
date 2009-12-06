@@ -28,31 +28,36 @@ static const int kWebSocketTimeSec = 10;
 static const int kTimeBucketCount = 50;
 
 // TODO(ukai): Use new thread-safe-reference-counted Histograms.
-#define UPDATE_HISTOGRAM(name, sample, min, max, bucket_count) do { \
-    switch (task_state_) {                                          \
-      case STATE_RUN_WS:                                            \
-        {                                                           \
-          static LinearHistogram counter(                               \
-              "WebSocketExperiment.Basic." name, min, max, bucket_count); \
-          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
-          counter.Add(sample);                                          \
+#define UPDATE_HISTOGRAM(name, sample, min, max, bucket_count) do {     \
+    switch (task_state_) {                                              \
+      case STATE_RUN_WS:                                                \
+        {                                                               \
+          static scoped_refptr<Histogram> counter =                     \
+              LinearHistogram::LinearHistogramFactoryGet(\
+                  "WebSocketExperiment.Basic." name,                    \
+                  min, max, bucket_count);                              \
+          counter->SetFlags(kUmaTargetedHistogramFlag);                 \
+          counter->Add(sample);                                         \
         }                                                               \
         break;                                                          \
       case STATE_RUN_WSS:                                               \
         {                                                               \
-          static LinearHistogram counter(                               \
-              "WebSocketExperiment.Secure." name, min, max, bucket_count); \
-          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
-          counter.Add(sample);                                          \
+          static scoped_refptr<Histogram> counter =                     \
+              LinearHistogram::LinearHistogramFactoryGet(\
+                  "WebSocketExperiment.Secure." name,                   \
+                  min, max, bucket_count);                              \
+          counter->SetFlags(kUmaTargetedHistogramFlag);                 \
+          counter->Add(sample);                                         \
         }                                                               \
         break;                                                          \
       case STATE_RUN_WS_NODEFAULT_PORT:                                 \
         {                                                               \
-          static LinearHistogram counter(                               \
-              "WebSocketExperiment.NoDefaultPort." name,                \
-              min, max, bucket_count);                                  \
-          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
-          counter.Add(sample);                                          \
+          static scoped_refptr<Histogram> counter =                     \
+              LinearHistogram::LinearHistogramFactoryGet(\
+                  "WebSocketExperiment.NoDefaultPort." name,            \
+                  min, max, bucket_count);                              \
+          counter->SetFlags(kUmaTargetedHistogramFlag);                 \
+          counter->Add(sample);                                         \
         }                                                               \
         break;                                                          \
       default:                                                          \
@@ -61,31 +66,36 @@ static const int kTimeBucketCount = 50;
     }                                                                   \
   } while (0)
 
-#define UPDATE_HISTOGRAM_TIMES(name, sample, min, max, bucket_count) do {    \
+#define UPDATE_HISTOGRAM_TIMES(name, sample, min, max, bucket_count) do { \
     switch (task_state_) {                                              \
       case STATE_RUN_WS:                                                \
         {                                                               \
-          static Histogram counter(                                     \
-              "WebSocketExperiment.Basic." name, min, max, bucket_count); \
-          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
-          counter.AddTime(sample);                                      \
+          static scoped_refptr<Histogram> counter =                     \
+              Histogram::HistogramFactoryGet(\
+                  "WebSocketExperiment.Basic." name,                    \
+                  min, max, bucket_count);                              \
+          counter->SetFlags(kUmaTargetedHistogramFlag);                 \
+          counter->AddTime(sample);                                     \
         }                                                               \
         break;                                                          \
       case STATE_RUN_WSS:                                               \
         {                                                               \
-          static Histogram counter(                                     \
-              "WebSocketExperiment.Secure." name, min, max, bucket_count); \
-          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
-          counter.AddTime(sample);                                      \
+          static scoped_refptr<Histogram> counter =                     \
+              Histogram::HistogramFactoryGet(\
+                  "WebSocketExperiment.Secure." name,                   \
+                  min, max, bucket_count);                              \
+          counter->SetFlags(kUmaTargetedHistogramFlag);                 \
+          counter->AddTime(sample);                                     \
         }                                                               \
         break;                                                          \
       case STATE_RUN_WS_NODEFAULT_PORT:                                 \
         {                                                               \
-          static Histogram counter(                                     \
-              "WebSocketExperiment.NoDefaultPort." name,                \
-              min, max, bucket_count);                                  \
-          counter.SetFlags(kUmaTargetedHistogramFlag);                  \
-          counter.AddTime(sample);                                      \
+          static scoped_refptr<Histogram> counter =                     \
+              Histogram::HistogramFactoryGet(\
+                  "WebSocketExperiment.NoDefaultPort." name,            \
+                  min, max, bucket_count);                              \
+          counter->SetFlags(kUmaTargetedHistogramFlag);                 \
+          counter->AddTime(sample);                                     \
         }                                                               \
         break;                                                          \
       default:                                                          \

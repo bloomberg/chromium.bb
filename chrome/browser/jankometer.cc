@@ -91,13 +91,15 @@ class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
       : MaxMessageDelay_(excessive_duration),
         slow_processing_counter_(std::string("Chrome.SlowMsg") + thread_name),
         queueing_delay_counter_(std::string("Chrome.DelayMsg") + thread_name),
-        process_times_((std::string("Chrome.ProcMsgL ") +
-                        thread_name).c_str(), 1, 3600000, 50),
-        total_times_((std::string("Chrome.TotalMsgL ") +
-                      thread_name).c_str(), 1, 3600000, 50),
         total_time_watchdog_(excessive_duration, thread_name, watchdog_enable) {
-    process_times_.SetFlags(kUmaTargetedHistogramFlag);
-    total_times_.SetFlags(kUmaTargetedHistogramFlag);
+    process_times_ = Histogram::HistogramFactoryGet(
+        (std::string("Chrome.ProcMsgL ") + thread_name),
+        1, 3600000, 50);
+    total_times_ = Histogram::HistogramFactoryGet(
+        (std::string("Chrome.TotalMsgL ") + thread_name),
+        1, 3600000, 50);
+    process_times_->SetFlags(kUmaTargetedHistogramFlag);
+    total_times_->SetFlags(kUmaTargetedHistogramFlag);
   }
 
   // Attaches the observer to the current thread's message loop. You can only
@@ -137,8 +139,8 @@ class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
     TimeTicks now = TimeTicks::Now();
     if (begin_process_message_ != TimeTicks()) {
       TimeDelta processing_time = now - begin_process_message_;
-      process_times_.AddTime(processing_time);
-      total_times_.AddTime(queueing_time_ + processing_time);
+      process_times_->AddTime(processing_time);
+      total_times_->AddTime(queueing_time_ + processing_time);
     }
     if (now - begin_process_message_ >
         TimeDelta::FromMilliseconds(kMaxMessageProcessingMs)) {
@@ -208,8 +210,8 @@ class JankObserver : public base::RefCountedThreadSafe<JankObserver>,
   // Counters for the two types of jank we measure.
   StatsCounter slow_processing_counter_;  // Messages with long processing time.
   StatsCounter queueing_delay_counter_;   // Messages with long queueing delay.
-  Histogram process_times_;           // Time spent processing task.
-  Histogram total_times_;             // Total of queueing plus processing time.
+  scoped_refptr<Histogram> process_times_;  // Time spent processing task.
+  scoped_refptr<Histogram> total_times_;  // Total queueing plus processing.
   JankWatchdog total_time_watchdog_;  // Watching for excessive total_time.
 
   DISALLOW_EVIL_CONSTRUCTORS(JankObserver);

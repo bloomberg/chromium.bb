@@ -104,10 +104,11 @@ void DnsHostInfo::RemoveFromQueue() {
   }
   // Make a custom linear histogram for the region from 0 to boundary.
   const size_t kBucketCount = 52;
-  static LinearHistogram histogram("DNS.QueueRecycledUnder2", TimeDelta(),
-                                   kBoundary, kBucketCount);
-  histogram.SetFlags(kUmaTargetedHistogramFlag);
-  histogram.AddTime(queue_duration_);
+  static scoped_refptr<Histogram> histogram =
+      LinearHistogram::LinearHistogramFactoryGet("DNS.QueueRecycledUnder2",
+          TimeDelta(), kBoundary, kBucketCount);
+  histogram->SetFlags(kUmaTargetedHistogramFlag);
+  histogram->AddTime(queue_duration_);
 }
 
 void DnsHostInfo::SetPendingDeleteState() {

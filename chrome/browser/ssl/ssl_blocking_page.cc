@@ -34,9 +34,11 @@ enum SSLBlockingPageEvent {
 };
 
 void RecordSSLBlockingPageStats(SSLBlockingPageEvent event) {
-  static LinearHistogram histogram("interstial.ssl", 0, 2, 3);
-  histogram.SetFlags(kUmaTargetedHistogramFlag);
-  histogram.Add(event);
+  static scoped_refptr<Histogram> histogram =
+      LinearHistogram::LinearHistogramFactoryGet(
+          "interstial.ssl", 1, 2, 3);
+  histogram->SetFlags(kUmaTargetedHistogramFlag);
+  histogram->Add(event);
 }
 
 }  // namespace

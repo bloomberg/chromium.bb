@@ -19,11 +19,17 @@ class HistogramTest : public testing::Test {
 // Check for basic syntax and use.
 TEST(HistogramTest, StartupShutdownTest) {
   // Try basic construction
-  Histogram histogram("TestHistogram", 1, 1000, 10);
-  Histogram histogram1("Test1Histogram", 1, 1000, 10);
+  scoped_refptr<Histogram> histogram =
+    Histogram::HistogramFactoryGet("TestHistogram", 1, 1000, 10);
+  scoped_refptr<Histogram> histogram1 =
+      Histogram::HistogramFactoryGet("Test1Histogram", 1, 1000, 10);
 
-  LinearHistogram linear_histogram("TestLinearHistogram", 1, 1000, 10);
-  LinearHistogram linear_histogram1("Test1LinearHistogram", 1, 1000, 10);
+  scoped_refptr<Histogram> linear_histogram =
+      LinearHistogram::LinearHistogramFactoryGet("TestLinearHistogram", 1, 1000,
+          10);
+  scoped_refptr<Histogram> linear_histogram1 =
+      LinearHistogram::LinearHistogramFactoryGet("Test1LinearHistogram", 1,
+          1000, 10);
 
   // Use standard macros (but with fixed samples)
   HISTOGRAM_TIMES("Test2Histogram", TimeDelta::FromDays(1));
@@ -57,17 +63,23 @@ TEST(HistogramTest, RecordedStartupTest) {
   EXPECT_EQ(0U, histograms.size());
 
   // Try basic construction
-  Histogram histogram("TestHistogram", 1, 1000, 10);
+  scoped_refptr<Histogram> histogram =
+      Histogram::HistogramFactoryGet("TestHistogram", 1, 1000, 10);
   histograms.clear();
   StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
   EXPECT_EQ(1U, histograms.size());
-  Histogram histogram1("Test1Histogram", 1, 1000, 10);
+  scoped_refptr<Histogram> histogram1 =
+      Histogram::HistogramFactoryGet("Test1Histogram", 1, 1000, 10);
   histograms.clear();
   StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
   EXPECT_EQ(2U, histograms.size());
 
-  LinearHistogram linear_histogram("TestLinearHistogram", 1, 1000, 10);
-  LinearHistogram linear_histogram1("Test1LinearHistogram", 1, 1000, 10);
+  scoped_refptr<Histogram> linear_histogram =
+      LinearHistogram::LinearHistogramFactoryGet(
+          "TestLinearHistogram", 1, 1000, 10);
+  scoped_refptr<Histogram> linear_histogram1 =
+      LinearHistogram::LinearHistogramFactoryGet(
+          "Test1LinearHistogram", 1, 1000, 10);
   histograms.clear();
   StatisticsRecorder::GetHistograms(&histograms);  // Load up lists
   EXPECT_EQ(4U, histograms.size());
@@ -102,55 +114,62 @@ TEST(HistogramTest, RangeTest) {
   recorder.GetHistograms(&histograms);
   EXPECT_EQ(0U, histograms.size());
 
-  Histogram histogram("Histogram", 1, 64, 8);  // As mentioned in header file.
+  scoped_refptr<Histogram> histogram = Histogram::HistogramFactoryGet(
+      "Histogram", 1, 64, 8);  // As mentioned in header file.
   // Check that we got a nice exponential when there was enough rooom.
-  EXPECT_EQ(0, histogram.ranges(0));
+  EXPECT_EQ(0, histogram->ranges(0));
   int power_of_2 = 1;
   for (int i = 1; i < 8; i++) {
-    EXPECT_EQ(power_of_2, histogram.ranges(i));
+    EXPECT_EQ(power_of_2, histogram->ranges(i));
     power_of_2 *= 2;
   }
-  EXPECT_EQ(INT_MAX, histogram.ranges(8));
+  EXPECT_EQ(INT_MAX, histogram->ranges(8));
 
-  Histogram short_histogram("Histogram Shortened", 1, 7, 8);
+  scoped_refptr<Histogram> short_histogram =
+      Histogram::HistogramFactoryGet("Histogram Shortened", 1, 7, 8);
   // Check that when the number of buckets is short, we get a linear histogram
   // for lack of space to do otherwise.
   for (int i = 0; i < 8; i++)
-    EXPECT_EQ(i, short_histogram.ranges(i));
-  EXPECT_EQ(INT_MAX, short_histogram.ranges(8));
+    EXPECT_EQ(i, short_histogram->ranges(i));
+  EXPECT_EQ(INT_MAX, short_histogram->ranges(8));
 
-  LinearHistogram linear_histogram("Linear", 1, 7, 8);
+  scoped_refptr<Histogram> linear_histogram =
+      LinearHistogram::LinearHistogramFactoryGet("Linear", 1, 7, 8);
   // We also get a nice linear set of bucket ranges when we ask for it
   for (int i = 0; i < 8; i++)
-    EXPECT_EQ(i, linear_histogram.ranges(i));
-  EXPECT_EQ(INT_MAX, linear_histogram.ranges(8));
+    EXPECT_EQ(i, linear_histogram->ranges(i));
+  EXPECT_EQ(INT_MAX, linear_histogram->ranges(8));
 
-  LinearHistogram linear_broad_histogram("Linear widened", 2, 14, 8);
+  scoped_refptr<Histogram> linear_broad_histogram =
+      LinearHistogram::LinearHistogramFactoryGet(
+          "Linear widened", 2, 14, 8);
   // ...but when the list has more space, then the ranges naturally spread out.
   for (int i = 0; i < 8; i++)
-    EXPECT_EQ(2 * i, linear_broad_histogram.ranges(i));
-  EXPECT_EQ(INT_MAX, linear_broad_histogram.ranges(8));
+    EXPECT_EQ(2 * i, linear_broad_histogram->ranges(i));
+  EXPECT_EQ(INT_MAX, linear_broad_histogram->ranges(8));
 
-  ThreadSafeHistogram threadsafe_histogram("ThreadSafe", 1, 32, 15);
+  scoped_refptr<Histogram> threadsafe_histogram =
+      ThreadSafeHistogram::ThreadSafeHistogramFactoryGet("ThreadSafe", 1, 32,
+          15);
   // When space is a little tight, we transition from linear to exponential.
   // This is what happens in both the basic histogram, and the threadsafe
   // variant (which is derived).
-  EXPECT_EQ(0, threadsafe_histogram.ranges(0));
-  EXPECT_EQ(1, threadsafe_histogram.ranges(1));
-  EXPECT_EQ(2, threadsafe_histogram.ranges(2));
-  EXPECT_EQ(3, threadsafe_histogram.ranges(3));
-  EXPECT_EQ(4, threadsafe_histogram.ranges(4));
-  EXPECT_EQ(5, threadsafe_histogram.ranges(5));
-  EXPECT_EQ(6, threadsafe_histogram.ranges(6));
-  EXPECT_EQ(7, threadsafe_histogram.ranges(7));
-  EXPECT_EQ(9, threadsafe_histogram.ranges(8));
-  EXPECT_EQ(11, threadsafe_histogram.ranges(9));
-  EXPECT_EQ(14, threadsafe_histogram.ranges(10));
-  EXPECT_EQ(17, threadsafe_histogram.ranges(11));
-  EXPECT_EQ(21, threadsafe_histogram.ranges(12));
-  EXPECT_EQ(26, threadsafe_histogram.ranges(13));
-  EXPECT_EQ(32, threadsafe_histogram.ranges(14));
-  EXPECT_EQ(INT_MAX, threadsafe_histogram.ranges(15));
+  EXPECT_EQ(0, threadsafe_histogram->ranges(0));
+  EXPECT_EQ(1, threadsafe_histogram->ranges(1));
+  EXPECT_EQ(2, threadsafe_histogram->ranges(2));
+  EXPECT_EQ(3, threadsafe_histogram->ranges(3));
+  EXPECT_EQ(4, threadsafe_histogram->ranges(4));
+  EXPECT_EQ(5, threadsafe_histogram->ranges(5));
+  EXPECT_EQ(6, threadsafe_histogram->ranges(6));
+  EXPECT_EQ(7, threadsafe_histogram->ranges(7));
+  EXPECT_EQ(9, threadsafe_histogram->ranges(8));
+  EXPECT_EQ(11, threadsafe_histogram->ranges(9));
+  EXPECT_EQ(14, threadsafe_histogram->ranges(10));
+  EXPECT_EQ(17, threadsafe_histogram->ranges(11));
+  EXPECT_EQ(21, threadsafe_histogram->ranges(12));
+  EXPECT_EQ(26, threadsafe_histogram->ranges(13));
+  EXPECT_EQ(32, threadsafe_histogram->ranges(14));
+  EXPECT_EQ(INT_MAX, threadsafe_histogram->ranges(15));
 
   recorder.GetHistograms(&histograms);
   EXPECT_EQ(5U, histograms.size());
@@ -159,21 +178,22 @@ TEST(HistogramTest, RangeTest) {
 // Make sure histogram handles out-of-bounds data gracefully.
 TEST(HistogramTest, BoundsTest) {
   const size_t kBucketCount = 50;
-  Histogram histogram("Bounded", 10, 100, kBucketCount);
+  scoped_refptr<Histogram> histogram = Histogram::HistogramFactoryGet("Bounded",
+     10, 100, kBucketCount);
 
   // Put two samples "out of bounds" above and below.
-  histogram.Add(5);
-  histogram.Add(-50);
+  histogram->Add(5);
+  histogram->Add(-50);
 
-  histogram.Add(100);
-  histogram.Add(10000);
+  histogram->Add(100);
+  histogram->Add(10000);
 
   // Verify they landed in the underflow, and overflow buckets.
   Histogram::SampleSet sample;
-  histogram.SnapshotSample(&sample);
+  histogram->SnapshotSample(&sample);
   EXPECT_EQ(2, sample.counts(0));
   EXPECT_EQ(0, sample.counts(1));
-  size_t array_size = histogram.bucket_count();
+  size_t array_size = histogram->bucket_count();
   EXPECT_EQ(kBucketCount, array_size);
   EXPECT_EQ(0, sample.counts(array_size - 2));
   EXPECT_EQ(2, sample.counts(array_size - 1));
@@ -181,31 +201,32 @@ TEST(HistogramTest, BoundsTest) {
 
 // Check to be sure samples land as expected is "correct" buckets.
 TEST(HistogramTest, BucketPlacementTest) {
-  Histogram histogram("Histogram", 1, 64, 8);  // As mentioned in header file.
+  scoped_refptr<Histogram> histogram = Histogram::HistogramFactoryGet(
+      "Histogram", 1, 64, 8);  // As mentioned in header file.
 
   // Check that we got a nice exponential since there was enough rooom.
-  EXPECT_EQ(0, histogram.ranges(0));
+  EXPECT_EQ(0, histogram->ranges(0));
   int power_of_2 = 1;
   for (int i = 1; i < 8; i++) {
-    EXPECT_EQ(power_of_2, histogram.ranges(i));
+    EXPECT_EQ(power_of_2, histogram->ranges(i));
     power_of_2 *= 2;
   }
-  EXPECT_EQ(INT_MAX, histogram.ranges(8));
+  EXPECT_EQ(INT_MAX, histogram->ranges(8));
 
   // Add i+1 samples to the i'th bucket.
-  histogram.Add(0);
+  histogram->Add(0);
   power_of_2 = 1;
   for (int i = 1; i < 8; i++) {
     for (int j = 0; j <= i; j++)
-      histogram.Add(power_of_2);
+      histogram->Add(power_of_2);
     power_of_2 *= 2;
   }
   // Leave overflow bucket empty.
 
   // Check to see that the bucket counts reflect our additions.
   Histogram::SampleSet sample;
-  histogram.SnapshotSample(&sample);
-  EXPECT_EQ(INT_MAX, histogram.ranges(8));
+  histogram->SnapshotSample(&sample);
+  EXPECT_EQ(INT_MAX, histogram->ranges(8));
   for (int i = 0; i < 8; i++)
     EXPECT_EQ(i + 1, sample.counts(i));
 }

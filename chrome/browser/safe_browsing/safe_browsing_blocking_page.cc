@@ -69,9 +69,11 @@ enum SafeBrowsingBlockingPageEvent {
 };
 
 void RecordSafeBrowsingBlockingPageStats(SafeBrowsingBlockingPageEvent event) {
-  static LinearHistogram histogram("interstial.safe_browsing", 0, 2, 3);
-  histogram.SetFlags(kUmaTargetedHistogramFlag);
-  histogram.Add(event);
+  static scoped_refptr<Histogram> histogram =
+      LinearHistogram::LinearHistogramFactoryGet("interstial.safe_browsing",
+                                                 1, 2, 3);
+  histogram->SetFlags(kUmaTargetedHistogramFlag);
+  histogram->Add(event);
 }
 
 }  // namespace
