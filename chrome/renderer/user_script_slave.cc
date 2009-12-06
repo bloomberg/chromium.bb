@@ -189,7 +189,7 @@ bool UserScriptSlave::InjectScripts(WebFrame* frame,
 
         // We add this dumb function wrapper for standalone user script to
         // emulate what Greasemonkey does.
-        if (script->is_standalone()) {
+        if (script->is_standalone() || script->emulate_greasemonkey()) {
           content.insert(0, kUserScriptHead);
           content += kUserScriptTail;
         }

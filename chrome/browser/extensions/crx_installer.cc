@@ -36,11 +36,11 @@ void CrxInstaller::Start(const FilePath& crx_path,
                          bool allow_privilege_increase,
                          ExtensionsService* frontend,
                          ExtensionInstallUI* client) {
-  // Note: We don't keep a reference because this object manages its own
-  // lifetime.
-  CrxInstaller* installer = new CrxInstaller(crx_path, install_directory,
-                                             delete_source, frontend,
-                                             client);
+  // Note: This object manages its own lifetime.
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(crx_path, install_directory, delete_source, frontend,
+                       client));
+
   installer->install_source_ = install_source;
   installer->expected_id_ = expected_id;
   installer->allow_privilege_increase_ = allow_privilege_increase;
@@ -49,7 +49,7 @@ void CrxInstaller::Start(const FilePath& crx_path,
       new SandboxedExtensionUnpacker(
           installer->source_file_,
           g_browser_process->resource_dispatcher_host(),
-          installer));
+          installer.get()));
 
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
@@ -63,13 +63,15 @@ void CrxInstaller::InstallUserScript(const FilePath& source_file,
                                      bool delete_source,
                                      ExtensionsService* frontend,
                                      ExtensionInstallUI* client) {
-  CrxInstaller* installer = new CrxInstaller(source_file, install_directory,
-                                             delete_source, frontend, client);
+  scoped_refptr<CrxInstaller> installer(
+      new CrxInstaller(source_file, install_directory, delete_source, frontend,
+                       client));
   installer->original_url_ = original_url;
 
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(installer, &CrxInstaller::ConvertUserScriptOnFileThread));
+      NewRunnableMethod(installer.get(),
+                        &CrxInstaller::ConvertUserScriptOnFileThread));
 }
 
 CrxInstaller::CrxInstaller(const FilePath& source_file,

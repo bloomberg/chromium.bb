@@ -12,6 +12,7 @@
 #include "base/path_service.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
@@ -682,8 +683,7 @@ TEST_F(ExtensionsServiceTest, CleanupOnStartup) {
 // Test installing extensions. This test tries to install few extensions using
 // crx files. If you need to change those crx files, feel free to repackage
 // them, throw away the key used and change the id's above.
-// TODO(mad): http://crbug.com/26214
-TEST_F(ExtensionsServiceTest, DISABLED_InstallExtension) {
+TEST_F(ExtensionsServiceTest, InstallExtension) {
   InitializeEmptyExtensionsService();
 
   FilePath extensions_path;
@@ -740,6 +740,40 @@ TEST_F(ExtensionsServiceTest, DISABLED_InstallExtension) {
 
   // TODO(erikkay): add more tests for many of the failure cases.
   // TODO(erikkay): add tests for upgrade cases.
+}
+
+// Install a user script (they get converted automatically to an extension)
+TEST_F(ExtensionsServiceTest, InstallUserScript) {
+  // The details of script conversion are tested elsewhere, this just tests
+  // integration with ExtensionsService.
+  InitializeEmptyExtensionsService();
+
+  FilePath path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII("extensions")
+             .AppendASCII("user_script_basic.user.js");
+
+  ASSERT_TRUE(file_util::PathExists(path));
+  CrxInstaller::InstallUserScript(
+      path,
+      GURL("http://www.aaronboodman.com/scripts/user_script_basic.user.js"),
+      service_->install_directory(),
+      false,  // do not delete source
+      service_,
+      NULL);  // install UI
+
+  loop_.RunAllPending();
+  std::vector<std::string> errors = GetErrors();
+  EXPECT_TRUE(installed_) << "Nothing was installed.";
+  ASSERT_EQ(1u, loaded_.size()) << "Nothing was loaded.";
+  EXPECT_EQ(0u, errors.size()) << "There were errors: "
+                               << JoinString(errors, ',');
+  EXPECT_TRUE(service_->GetExtensionById(loaded_[0]->id(), false)) <<
+              path.value();
+
+  installed_ = NULL;
+  loaded_.clear();
+  ExtensionErrorReporter::GetInstance()->ClearErrors();
 }
 
 // Test Packaging and installing an extension.
