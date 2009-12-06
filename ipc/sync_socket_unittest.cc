@@ -189,14 +189,14 @@ class SyncSocketClientListener : public IPC::Channel::Listener {
   // string as was written on the SyncSocket.  These are compared
   // and a shutdown message is sent back to the server.
   void OnMsgClassResponse(const std::string& str) {
-#if defined(OS_WIN)
     // We rely on the order of sync_socket.Send() and chan_->Send() in
     // the SyncSocketServerListener object.
     EXPECT_EQ(kHelloStringLength, socket_->Peek());
-#endif
     char buf[kHelloStringLength];
     socket_->Receive(static_cast<void*>(buf), kHelloStringLength);
     EXPECT_EQ(strcmp(str.c_str(), buf), 0);
+    // After receiving from the socket there should be no bytes left.
+    EXPECT_EQ(0, socket_->Peek());
     IPC::Message* msg = new MsgClassShutdown();
     EXPECT_NE(msg, reinterpret_cast<IPC::Message*>(NULL));
     EXPECT_TRUE(chan_->Send(msg));
@@ -221,6 +221,9 @@ TEST_F(SyncSocketTest, SanityTest) {
   // Create a pair of SyncSockets.
   base::SyncSocket* pair[2];
   base::SyncSocket::CreatePair(pair);
+  // Immediately after creation there should be no pending bytes.
+  EXPECT_EQ(0, pair[0]->Peek());
+  EXPECT_EQ(0, pair[1]->Peek());
   base::SyncSocket::Handle target_handle;
   // Connect the channel and listener.
   ASSERT_TRUE(chan.Connect());
