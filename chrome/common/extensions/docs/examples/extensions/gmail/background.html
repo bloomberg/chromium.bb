@@ -9,7 +9,9 @@ var gmail = "https://mail.google.com/";
 var gmailAtomRef = "https://mail.google.com/mail/feed/atom";
 var gmailRe = /https?\:\/\/mail.google.com\/(?!a\/)/;
 var loggedInImage;
-var pollInterval = 1000 * 60;  // 1 minute
+var pollIntervalMin = 1000 * 60;  // 1 minute
+var pollIntervalMax = 1000 * 60 * 60;  // 1 hour
+var requestFailureCount = 0;  // used for exponential backoff
 var requestTimeout = 1000 * 2;  // 5 seconds
 var rotation = 0;
 var unreadCount = -1;
@@ -81,7 +83,18 @@ function init() {
 }
 
 function scheduleRequest() {
-  window.setTimeout(startRequest, pollInterval);
+  var randomness = Math.random() * 2;
+  var exponent = Math.pow(2, requestFailureCount);
+  var delay = Math.min(randomness * pollIntervalMin * exponent,
+                       pollIntervalMax);
+  delay = Math.round(delay);
+
+  console.log("Scheduling request...");
+  console.log("  exponent: ", exponent);
+  console.log("  randomness: ", randomness);
+  console.log("  delay: ", delay);
+
+  window.setTimeout(startRequest, delay);
 }
 
 // ajax stuff
@@ -108,12 +121,14 @@ function getInboxCount(onSuccess, onError) {
   }, requestTimeout);
 
   function handleSuccess(count) {
+    requestFailureCount = 0;
     window.clearTimeout(abortTimerId);
     if (onSuccess)
       onSuccess(count);
   }
 
   function handleError() {
+    ++requestFailureCount;
     window.clearTimeout(abortTimerId);
     if (onError)
       onError();
@@ -123,26 +138,29 @@ function getInboxCount(onSuccess, onError) {
     console.log("request..");
     xhr.onreadystatechange = function(){
       console.log("readystate: " + xhr.readyState);
-      if (xhr.readyState == 4) {
-        console.log("responseText: " + xhr.responseText.substring(0, 200) +
+      if (xhr.readyState != 4)
+        return;
+
+      console.log("responseText: " + xhr.responseText.substring(0, 200) +
                     "...");
-        if (xhr.responseXML) {
-          var xmlDoc = xhr.responseXML;
-          var fullCountSet = xmlDoc.evaluate("/gmail:feed/gmail:fullcount",
-              xmlDoc, gmailNSResolver, XPathResult.ANY_TYPE, null);
-          var fullCountNode = fullCountSet.iterateNext();
-          if (fullCountNode) {
-            handleSuccess(fullCountNode.textContent);
-          } else {
-            console.log("fullcount not found!");
-            console.error("Error: feed retrieved, but no <fullcount> node " +
-                          "found");
-            handleError();
-          }
+      if (xhr.responseXML) {
+        var xmlDoc = xhr.responseXML;
+        var fullCountSet = xmlDoc.evaluate("/gmail:feed/gmail:fullcount",
+            xmlDoc, gmailNSResolver, XPathResult.ANY_TYPE, null);
+        var fullCountNode = fullCountSet.iterateNext();
+        if (fullCountNode) {
+          handleSuccess(fullCountNode.textContent);
+          return;
         } else {
-          console.log("No responseXML!");
+          console.log("fullcount not found!");
+          console.error("Error: feed retrieved, but no <fullcount> node " +
+                        "found");
         }
+      } else {
+        console.log("No responseXML!");
       }
+
+      handleError();
     }
 
     xhr.onerror = function(error) {
