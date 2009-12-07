@@ -299,8 +299,8 @@ void BackingStore::PaintRect(base::ProcessHandle process,
                    0,                                // mask_y
                    copy_rect.x(),                    // dest_x
                    copy_rect.y(),                    // dest_y
-                   width,                            // width
-                   height);                          // height
+                   copy_rect.width(),                // width
+                   copy_rect.height());              // height
 
   // In the case of shared memory, we wait for the composite to complete so that
   // we are sure that the X server has finished reading.
