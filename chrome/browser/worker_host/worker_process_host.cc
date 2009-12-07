@@ -52,8 +52,8 @@ class WorkerCrashTask : public Task {
 
 
 WorkerProcessHost::WorkerProcessHost(
-    ResourceDispatcherHost* resource_dispatcher_host_)
-    : ChildProcessHost(WORKER_PROCESS, resource_dispatcher_host_) {
+    ResourceDispatcherHost* resource_dispatcher_host)
+    : ChildProcessHost(WORKER_PROCESS, resource_dispatcher_host) {
   next_route_id_callback_.reset(NewCallbackWithReturnValue(
       WorkerService::GetInstance(), &WorkerService::next_worker_route_id));
 }
@@ -104,6 +104,40 @@ bool WorkerProcessHost::Init() {
           switches::kWorkerStartupDialog)) {
     cmd_line->AppendSwitch(switches::kWorkerStartupDialog);
   }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableLogging)) {
+    cmd_line->AppendSwitch(switches::kEnableLogging);
+  }
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kLoggingLevel)) {
+    const std::wstring level =
+        CommandLine::ForCurrentProcess()->GetSwitchValue(
+            switches::kLoggingLevel);
+    cmd_line->AppendSwitchWithValue(
+        switches::kLoggingLevel, level);
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableWebSockets)) {
+    cmd_line->AppendSwitch(switches::kDisableWebSockets);
+  }
+#if defined(OS_WIN)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDesktopNotifications)) {
+    cmd_line->AppendSwitch(switches::kDisableDesktopNotifications);
+  }
+#endif
+
+#if defined(OS_POSIX)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRendererCmdPrefix)) {
+    const std::wstring prefix =
+        CommandLine::ForCurrentProcess()->GetSwitchValue(
+            switches::kRendererCmdPrefix);
+    cmd_line->PrependWrapper(prefix);
+  }
+#endif
 
   Launch(
 #if defined(OS_WIN)
@@ -523,4 +557,3 @@ WorkerProcessHost::WorkerInstance::GetSender() const {
   DCHECK(NumSenders() == 1);
   return *senders_.begin();
 }
-

@@ -4,13 +4,18 @@
 
 #include "chrome/worker/worker_thread.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/thread_local.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/worker_messages.h"
 #include "chrome/worker/webworker_stub.h"
 #include "chrome/worker/websharedworker_stub.h"
 #include "chrome/worker/worker_webkitclient_impl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebRuntimeFeatures.h"
+
+using WebKit::WebRuntimeFeatures;
 
 static base::LazyInstance<base::ThreadLocalPointer<WorkerThread> > lazy_tls(
     base::LINKER_INITIALIZED);
@@ -20,6 +25,15 @@ WorkerThread::WorkerThread() {
   lazy_tls.Pointer()->Set(this);
   webkit_client_.reset(new WorkerWebKitClientImpl);
   WebKit::initialize(webkit_client_.get());
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+#if defined(OS_WIN)
+  // We don't yet support notifications on non-Windows, so hide it from pages.
+  WebRuntimeFeatures::enableNotifications(
+      !command_line.HasSwitch(switches::kDisableDesktopNotifications));
+#endif
+  WebRuntimeFeatures::enableSockets(
+      !command_line.HasSwitch(switches::kDisableWebSockets));
 }
 
 WorkerThread::~WorkerThread() {
