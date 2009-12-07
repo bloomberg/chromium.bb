@@ -3079,7 +3079,6 @@ BUG_29393 : LayoutTests/fast/loader/stateobjects/replacestate-then-pushstate.htm
 
 BUG_ATWILSON : LayoutTests/accessibility/aria-scrollbar-role.html = TEXT
 BUG_ATWILSON : LayoutTests/http/tests/security/cross-frame-access-enumeration.html = TEXT
-BUG_ATWILSON LINUX WIN : LayoutTests/fast/repaint/block-selection-gap-in-composited-layer.html = IMAGE+TEXT
 BUG_ATWILSON : LayoutTests/fast/repaint/selection-gap-overflow-scroll.html = IMAGE
 
 // Failures introduced by USE_NEW_BUILDER in Skia.
@@ -3120,5 +3119,13 @@ BUG_AJWONG : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
 BUG_AJWONG WIN : chrome/fast/forms/basic-selects.html = IMAGE
 BUG_AJWONG WIN :LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
 
-// Failres from Webkit merger 51724 -> 51772
+// Failures from Webkit merger 51724 -> 51772
 BUG_AJWONG: LayoutTests/http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html = TEXT
+
+// Regression from Webkit merge r51776
+BUG_AJWONG : LayoutTests/fast/repaint/block-selection-gap-stale-cache-2.html = IMAGE IMAGE+TEXT
+BUG_AJWONG : LayoutTests/fast/repaint/block-selection-gap-stale-cache.html = IMAGE IMAGE+TEXT
+
+// Regression from Webkit merge 51772 -> 51784
+BUG_AJWONG : LayoutTests/storage/domstorage/quota.html = CRASH
+BUG_AJWONG : LayoutTests/http/tests/appcache/resource-redirect-2.html = TIMEOUT
