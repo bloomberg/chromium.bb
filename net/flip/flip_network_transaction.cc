@@ -226,7 +226,8 @@ int FlipNetworkTransaction::DoInitConnection() {
   flip_ = session_->flip_session_pool()->Get(resolve_info, session_);
   DCHECK(flip_);
 
-  return flip_->Connect(connection_group, resolve_info, request_->priority);
+  return flip_->Connect(
+      connection_group, resolve_info, request_->priority, load_log_);
 }
 
 int FlipNetworkTransaction::DoInitConnectionComplete(int result) {

@@ -12,6 +12,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "net/base/load_flags.h"
+#include "net/base/load_log.h"
 #include "net/base/net_util.h"
 #include "net/flip/flip_frame_builder.h"
 #include "net/flip/flip_protocol.h"
@@ -213,7 +214,8 @@ FlipSession::~FlipSession() {
 
 net::Error FlipSession::Connect(const std::string& group_name,
                                 const HostResolver::RequestInfo& host,
-                                RequestPriority priority) {
+                                RequestPriority priority,
+                                LoadLog* load_log) {
   DCHECK(priority >= FLIP_PRIORITY_HIGHEST && priority <= FLIP_PRIORITY_LOWEST);
 
   // If the connect process is started, let the caller continue.
@@ -226,7 +228,7 @@ net::Error FlipSession::Connect(const std::string& group_name,
   flip_sessions.Increment();
 
   int rv = connection_.Init(group_name, host, priority, &connect_callback_,
-                            session_->tcp_socket_pool(), NULL);
+                            session_->tcp_socket_pool(), load_log);
   DCHECK(rv <= 0);
 
   // If the connect is pending, we still return ok.  The APIs enqueue

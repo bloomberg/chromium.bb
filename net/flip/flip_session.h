@@ -32,6 +32,7 @@ class FlipStream;
 class HttpNetworkSession;
 class HttpRequestInfo;
 class HttpResponseInfo;
+class LoadLog;
 
 class FlipSession : public base::RefCounted<FlipSession>,
                     public flip::FlipFramerVisitorInterface {
@@ -45,7 +46,8 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // immediately start using the FlipSession while it connects.
   net::Error Connect(const std::string& group_name,
                      const HostResolver::RequestInfo& host,
-                     RequestPriority priority);
+                     RequestPriority priority,
+                     LoadLog* load_log);
 
   // Get a stream for a given |request|.  In the typical case, this will involve
   // the creation of a new stream (and will send the SYN frame).  If the server
