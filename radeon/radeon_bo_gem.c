@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sys/ioctl.h>
 #include <errno.h>
 #include "xf86drm.h"
 #include "drm.h"
@@ -86,7 +85,7 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
 
         memset(&open_arg, 0, sizeof(open_arg));
         open_arg.name = handle;
-        r = ioctl(bom->fd, DRM_IOCTL_GEM_OPEN, &open_arg);
+        r = drmIoctl(bom->fd, DRM_IOCTL_GEM_OPEN, &open_arg);
         if (r != 0) {
             free(bo);
             return NULL;
@@ -142,7 +141,7 @@ static struct radeon_bo *bo_unref(struct radeon_bo *bo)
 
     /* close object */
     args.handle = bo->handle;
-    ioctl(bo->bom->fd, DRM_IOCTL_GEM_CLOSE, &args);
+    drmIoctl(bo->bom->fd, DRM_IOCTL_GEM_CLOSE, &args);
     memset(bo_gem, 0, sizeof(struct radeon_bo_gem));
     free(bo_gem);
     return NULL;
@@ -318,7 +317,7 @@ int radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name)
     int r;
 
     flink.handle = bo->handle;
-    r = ioctl(bo->bom->fd, DRM_IOCTL_GEM_FLINK, &flink);
+    r = drmIoctl(bo->bom->fd, DRM_IOCTL_GEM_FLINK, &flink);
     if (r) {
 	return r;
     }
