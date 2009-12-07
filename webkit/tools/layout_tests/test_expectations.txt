@@ -3081,34 +3081,6 @@ BUG_ATWILSON : LayoutTests/fast/repaint/selection-gap-overflow-scroll.html = IMA
 // Failures introduced by USE_NEW_BUILDER in Skia.
 BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/canvas/set-colors.html = TEXT
 
-// Need rebaselining due to r51722.
-BUG_29470 : LayoutTests/fast/borders/border-radius-constraints.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/border-radius-huge-assert.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/border-radius-split-inline.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusAllStylesAllCorners.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusArcs01.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusDashed01.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusDashed02.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusDashed03.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusDotted01.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusDotted02.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusDotted03.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusDouble02.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusGroove01.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusGroove02.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusInset01.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusInvalidColor.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusOutset01.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusRidge01.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusSolid01.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusSolid02.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusSolid03.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/borderRadiusSolid04.html = IMAGE
-BUG_29470 : LayoutTests/fast/borders/fieldsetBorderRadius.html = IMAGE
-BUG_29470 : LayoutTests/fast/css/text-input-with-webkit-border-radius.html = IMAGE
-BUG_29470 : LayoutTests/fast/repaint/border-radius-repaint.html = IMAGE
-BUG_29470 : LayoutTests/svg/custom/svg-fonts-in-html.html = IMAGE
-
 // Failures from WebKit merge 51711:51724
 BUG_AJWONG : LayoutTests/fast/js/string-property-deletion.html = TEXT
 BUG_AJWONG : LayoutTests/svg/carto.net/selectionlist.svg = IMAGE PASS
