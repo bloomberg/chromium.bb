@@ -99,6 +99,11 @@ static void AnalyzeSegments(ncfile* ncf, NcValidatorState* state) {
 /* Define if we should process segments (rather than sections). */
 static Bool FLAGS_analyze_segments = FALSE;
 
+/* Define if we should print all validator error messages (rather
+ * than quit after the first error).
+ */
+static Bool FLAGS_quit_on_error = FALSE;
+
 /* Define the value for the base register. */
 static OperandKind base_register =
     (64 == NACL_TARGET_SUBARCH ? RegR15 : RegUnknown);
@@ -113,7 +118,9 @@ static void AnalyzeCodeSegments(ncfile *ncf, const char *fname) {
 
   GetVBaseAndLimit(ncf, &vbase, &vlimit);
   vstate = NcValidatorStateCreate(vbase, vlimit - vbase,
-                                  ncf->ncalign, base_register, stderr);
+                                  ncf->ncalign, base_register,
+                                  FLAGS_quit_on_error,
+                                  stderr);
   if (vstate == NULL) {
     NcValidatorMessage(LOG_FATAL, vstate, "Unable to create validator state");
   }
@@ -169,6 +176,8 @@ static int GrokFlags(int argc, const char* argv[]) {
         NcValidatorMessage(LOG_FATAL, NULL,
                            "-error_level=%s not defined!\n", error_level);
       }
+    } else if (GrokBoolFlag("--quit-on-error", arg, &FLAGS_quit_on_error)) {
+      continue;
     } else {
       argv[new_argc++] = argv[i];
     }
@@ -217,7 +226,13 @@ static ValidateData* ValidateLoad(int argc, const char* argv[]) {
     NcValidatorMessage(LOG_FATAL, NULL, "Unsufficient memory to run");
   }
   data->fname = argv[1];
+
+  /* TODO(karl): Once we fix elf values put in by compiler, so that
+   * we no longer get load errors from ncfilutil.c, find a way to
+   * terminate early if errors occur during loading.
+   */
   data->ncf = ValidateLoadFile(data->fname);
+
   if (NULL == data->ncf) {
     NcValidatorMessage(LOG_FATAL, NULL, "nc_loadfile(%s): %s\n",
                        data->fname, strerror(errno));

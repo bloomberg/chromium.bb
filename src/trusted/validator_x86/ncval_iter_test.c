@@ -111,7 +111,8 @@ static void* ValidateLoad(int argc, const char* argv[]) {
 static int ValidateAnalyze(ValidateData* data) {
   NcValidatorState* state;
   state = NcValidatorStateCreate(data->base, data->num_bytes,
-                                 (uint8_t) FLAGS_alignment, RegR15, stdout);
+                                 (uint8_t) FLAGS_alignment, RegR15, FALSE,
+                                 stdout);
   if (NULL == state) {
     NcValidatorMessage(LOG_FATAL, NULL, "Unable to create validator state");
   }

@@ -76,23 +76,29 @@ static const char *LogLevelLabel(int level) {
  * Parameters:
  *   state - The validator state (may be NULL).
  *   level - The log level of the validator message.
+ * Returns - Updated error level, based on state.
  */
-static INLINE void RecordIfValidatorError(NcValidatorState* state, int level) {
+static INLINE int RecordIfValidatorError(NcValidatorState* state, int level) {
   switch (level) {
     case LOG_ERROR:
+      if (state != NULL && state->quit_after_first_error) level = LOG_FATAL;
+      /* Intentionally fall to next case, since if an error occurs, it doesn't
+       * validate as ok.
+       */
     case LOG_FATAL:
       if (state != NULL) state->validates_ok = FALSE;
       break;
     default:
       break;
   }
+  return level;
 }
 
 void NcValidatorMessage(int level,
                         NcValidatorState* state,
                         const char* format,
                         ...) {
-  RecordIfValidatorError(state, level);
+  level = RecordIfValidatorError(state, level);
   if (level <= NaClLogGetVerbosity()) {
     va_list ap;
 
@@ -109,7 +115,7 @@ void NcValidatorVarargMessage(int level,
                               NcValidatorState* state,
                               const char* format,
                               va_list ap) {
-  RecordIfValidatorError(state, level);
+  level = RecordIfValidatorError(state, level);
   if (level <= NaClLogGetVerbosity()) {
     NaClLogLock();
     NaClLog_mu(level, "%s", LogLevelLabel(level));
@@ -123,7 +129,7 @@ void NcValidatorPcAddressMessage(int level,
                                  PcAddress addr,
                                  const char* format,
                                  ...) {
-  RecordIfValidatorError(state, level);
+  level = RecordIfValidatorError(state, level);
   if (level <= NaClLogGetVerbosity()) {
     va_list ap;
 
@@ -143,17 +149,17 @@ void NcValidatorInstMessage(int level,
                             NcInstState* inst,
                             const char* format,
                             ...) {
-  RecordIfValidatorError(state, level);
+  level = RecordIfValidatorError(state, level);
   if (level <= NaClLogGetVerbosity()) {
     va_list ap;
 
-    /* TODO(karl) - Make printing of instruction state possible via format. */
-    if (level <= NaClLogGetVerbosity()) {
-      /* TODO(karl) currently does nothing; plz fix this */
-      NaClLog(level, "%s", "");  /* TODO(karl): empty fmt strings not allowed */
-      PrintNcInstStateInstruction(NcValidatorStateLogFile(state), inst);
-    }
     NaClLogLock();
+
+    /* TODO(karl): empty fmt strings not allowed */
+    NaClLog_mu(level, "%s", "");
+    /* TODO(karl) - Make printing of instruction state possible via format. */
+    PrintNcInstStateInstruction(NcValidatorStateLogFile(state), inst);
+
     va_start(ap, format);
     NaClLog_mu(level, "%s", LogLevelLabel(level));
     NaClLogV_mu(level, format, ap);
@@ -193,9 +199,9 @@ void NcRegisterNcValidator(NcValidator validator,
   ValidatorDefinition* defn;
   assert(NULL != validator);
   if (g_num_validators >= MAX_NCVALIDATORS) {
-    fprintf(stderr,
-            "Too many validators specified, can't register. Quitting!\n");
-    exit(1);
+    NcValidatorMessage(
+        LOG_FATAL, NULL,
+        "Too many validators specified, can't register. Quitting!\n");
   }
   defn = &validators[g_num_validators++];
   defn->validator = validator;
@@ -208,6 +214,7 @@ NcValidatorState* NcValidatorStateCreate(const PcAddress vbase,
                                          const MemorySize sz,
                                          const uint8_t alignment,
                                          const OperandKind base_register,
+                                         Bool quit_after_first_error,
                                          FILE* log_file) {
   NcValidatorState* state;
   NcValidatorState* return_value = NULL;
@@ -234,6 +241,7 @@ NcValidatorState* NcValidatorStateCreate(const PcAddress vbase,
     GetCPUFeatures(&(state->cpu_features));
     state->base_register = base_register;
     state->validates_ok = TRUE;
+    state->quit_after_first_error = quit_after_first_error;
     state->number_validators = g_num_validators;
     for (i = 0; i < state->number_validators; ++i) {
       ValidatorDefinition* defn = &validators[i];

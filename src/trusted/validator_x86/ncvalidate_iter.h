@@ -69,6 +69,8 @@ typedef struct NcValidatorState NcValidatorState;
  *   alignment: 16 or 32, specifying alignment.
  *   base_register - OperandKind defining value for base register (or
  *     RegUnknown if not defined).
+ *   quit_after_first_error - Don't report multiple validator errors
+ *     (if possible).
  *   log_file - The file to log messages to.
  * Returns:
  *   A pointer to an initialized validator state if everything is ok, NULL
@@ -78,6 +80,7 @@ NcValidatorState* NcValidatorStateCreate(const PcAddress vbase,
                                          const MemorySize sz,
                                          const uint8_t alignment,
                                          const OperandKind base_register,
+                                         Bool quit_after_first_error,
                                          FILE* log_file);
 
 /* Returns the file that messages are being logged to. */

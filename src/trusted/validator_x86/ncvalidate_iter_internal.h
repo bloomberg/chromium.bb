@@ -58,6 +58,10 @@ struct NcValidatorState {
   OperandKind base_register;
   /* Holds if the validation is still valid. */
   Bool validates_ok;
+  /* Holds if we should quit validation quickly if an error occurs
+   * (preferably after first error).
+   */
+  Bool quit_after_first_error;
   /* Holds the local memory associated with validators to be applied to this
    * state.
    */
