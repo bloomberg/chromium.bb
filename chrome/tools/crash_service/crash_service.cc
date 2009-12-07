@@ -9,11 +9,13 @@
 #include <iostream>
 #include <fstream>
 #include <map>
+#include <sddl.h>
 
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/win_util.h"
 #include "breakpad/src/client/windows/crash_generation/crash_generation_server.h"
 #include "breakpad/src/client/windows/sender/crash_report_sender.h"
 #include "chrome/common/chrome_constants.h"
@@ -168,6 +170,7 @@ CrashService::~CrashService() {
   delete sender_;
 }
 
+
 bool CrashService::Initialize(const std::wstring& command_line) {
   using google_breakpad::CrashReportSender;
   using google_breakpad::CrashGenerationServer;
@@ -209,20 +212,42 @@ bool CrashService::Initialize(const std::wstring& command_line) {
     }
     sender_->set_max_reports_per_day(max_reports);
   }
+
+  SECURITY_ATTRIBUTES security_attributes = {0};
+  SECURITY_ATTRIBUTES* security_attributes_actual = NULL;
+
+  if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA) {
+    SECURITY_DESCRIPTOR* security_descriptor =
+        reinterpret_cast<SECURITY_DESCRIPTOR*>(
+            GetSecurityDescriptorForLowIntegrity());
+    DCHECK(security_descriptor != NULL);
+
+    security_attributes.nLength = sizeof(security_attributes);
+    security_attributes.lpSecurityDescriptor = security_descriptor;
+    security_attributes.bInheritHandle = FALSE;
+
+    security_attributes_actual = &security_attributes;
+  }
+
   // Create the OOP crash generator object.
-  dumper_ = new CrashGenerationServer(pipe_name, NULL,
+  dumper_ = new CrashGenerationServer(pipe_name, security_attributes_actual,
                                       &CrashService::OnClientConnected, this,
                                       &CrashService::OnClientDumpRequest, this,
                                       &CrashService::OnClientExited, this,
                                       true, &dumps_path);
+
   if (!dumper_) {
     LOG(ERROR) << "could not create dumper";
+    if (security_attributes.lpSecurityDescriptor)
+      LocalFree(security_attributes.lpSecurityDescriptor);
     return false;
   }
 
   if (!CreateTopWindow(::GetModuleHandleW(NULL),
                        !cmd_line.HasSwitch(kNoWindow))) {
     LOG(ERROR) << "could not create window";
+    if (security_attributes.lpSecurityDescriptor)
+      LocalFree(security_attributes.lpSecurityDescriptor);
     return false;
   }
 
@@ -244,8 +269,13 @@ bool CrashService::Initialize(const std::wstring& command_line) {
   // Start servicing clients.
   if (!dumper_->Start()) {
     LOG(ERROR) << "could not start dumper";
+    if (security_attributes.lpSecurityDescriptor)
+      LocalFree(security_attributes.lpSecurityDescriptor);
     return false;
   }
+
+  if (security_attributes.lpSecurityDescriptor)
+    LocalFree(security_attributes.lpSecurityDescriptor);
 
   // This is throwaway code. We don't need to sync with the browser process
   // once Google Update is updated to a version supporting OOP crash handling.
@@ -426,3 +456,27 @@ int CrashService::ProcessingLoop() {
 
   return static_cast<int>(msg.wParam);
 }
+
+PSECURITY_DESCRIPTOR CrashService::GetSecurityDescriptorForLowIntegrity() {
+  // Build the SDDL string for the label.
+  std::wstring sddl = L"S:(ML;;NW;;;S-1-16-4096)";
+
+  DWORD error = ERROR_SUCCESS;
+  PSECURITY_DESCRIPTOR sec_desc = NULL;
+
+  PACL sacl = NULL;
+  BOOL sacl_present = FALSE;
+  BOOL sacl_defaulted = FALSE;
+
+  if (::ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(),
+                                                             SDDL_REVISION,
+                                                             &sec_desc, NULL)) {
+    if (::GetSecurityDescriptorSacl(sec_desc, &sacl_present, &sacl,
+                                    &sacl_defaulted)) {
+      return sec_desc;
+    }
+  }
+
+  return NULL;
+}
+

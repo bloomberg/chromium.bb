@@ -93,6 +93,11 @@ class CrashService {
   // lock when it is performing the send.
   static unsigned long __stdcall AsyncSendDump(void* context);
 
+  // Returns the security descriptor which access to low integrity processes
+  // The caller is supposed to free the security descriptor by calling
+  // LocalFree.
+  PSECURITY_DESCRIPTOR GetSecurityDescriptorForLowIntegrity();
+
   google_breakpad::CrashGenerationServer* dumper_;
   google_breakpad::CrashReportSender* sender_;
 
