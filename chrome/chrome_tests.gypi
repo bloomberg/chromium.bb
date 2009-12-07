@@ -3,6 +3,97 @@
 # found in the LICENSE file.
 
 {
+  'variables' : {
+    'browser_tests_sources': [
+      'browser/autocomplete/autocomplete_browsertest.cc',
+      'browser/browser_browsertest.cc',
+      'browser/browser_init_browsertest.cc',
+      'browser/crash_recovery_browsertest.cc',
+      'browser/download/save_page_browsertest.cc',
+      'browser/extensions/autoupdate_interceptor.cc',
+      'browser/extensions/autoupdate_interceptor.h',
+      'browser/extensions/browser_action_apitest.cc',
+      'browser/extensions/content_script_all_frames_apitest.cc',
+      'browser/extensions/cross_origin_xhr_apitest.cc',
+      'browser/extensions/execute_script_apitest.cc',
+      'browser/extensions/extension_apitest.cc',
+      'browser/extensions/extension_apitest.h',
+      'browser/extensions/extension_bookmarks_apitest.cc',
+      'browser/extensions/extension_history_apitest.cc',
+      'browser/extensions/extension_javascript_url_apitest.cc',
+      'browser/extensions/extension_messages_apitest.cc',
+      'browser/extensions/extension_browsertest.cc',
+      'browser/extensions/extension_browsertest.h',
+      'browser/extensions/extension_browsertests_misc.cc',
+      'browser/extensions/extension_override_apitest.cc',
+      'browser/extensions/extension_toolstrip_apitest.cc',
+      'browser/extensions/isolated_world_apitest.cc',
+      'browser/extensions/page_action_apitest.cc',
+      'browser/extensions/stubs_apitest.cc',
+      'browser/gtk/bookmark_manager_browsertest.cc',
+      'browser/net/cookie_policy_browsertest.cc',
+      'browser/net/ftp_browsertest.cc',
+      'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
+      'browser/ssl/ssl_browser_tests.cc',
+      'browser/task_manager_browsertest.cc',
+    ],
+    'browser_tests_sources_gtk_specific': [
+      'browser/gtk/view_id_util_browsertest.cc',
+    ],
+    'browser_tests_sources_views_specific': [
+      'browser/views/find_bar_host_browsertest.cc',
+    ],
+    'browser_tests_sources_win_specific': [
+      'browser/extensions/extension_devtools_browsertest.cc',
+      'browser/extensions/extension_devtools_browsertest.h',
+      'browser/extensions/extension_devtools_browsertests.cc',
+      'browser/extensions/extension_shelf_model_unittest.cc',
+      'browser/extensions/extension_startup_unittest.cc',
+      'browser/extensions/extension_storage_apitest.cc',
+      'browser/extensions/extension_tabs_apitest.cc',
+      'browser/extensions/extension_i18n_apitest.cc',
+      'browser/extensions/extension_popup_apitest.cc',
+      # TODO(jam): http://crbug.com/15101 These tests fail on Linux and Mac.
+      'browser/child_process_security_policy_browser_test.cc',
+      'browser/renderer_host/test/web_cache_manager_browsertest.cc',
+      'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
+      'browser/views/browser_views_accessibility_browsertest.cc',
+    ],
+    'browser_tests_sources_exclude_on_mac': [
+      'browser/extensions/browser_action_apitest.cc',
+      'browser/extensions/content_script_all_frames_apitest.cc',
+      'browser/extensions/cross_origin_xhr_apitest.cc',
+      'browser/extensions/execute_script_apitest.cc',
+      'browser/extensions/extension_apitest.cc',
+      'browser/extensions/extension_apitest.h',
+      'browser/extensions/extension_bookmarks_apitest.cc',
+      'browser/extensions/extension_history_apitest.cc',
+      'browser/extensions/extension_javascript_url_apitest.cc',
+      'browser/extensions/extension_messages_apitest.cc',
+      'browser/extensions/extension_browsertest.cc',
+      'browser/extensions/extension_browsertest.h',
+      'browser/extensions/extension_browsertests_misc.cc',
+      'browser/extensions/extension_override_apitest.cc',
+      'browser/extensions/extension_toolstrip_apitest.cc',
+      'browser/extensions/isolated_world_apitest.cc',
+      'browser/extensions/page_action_apitest.cc',
+      'browser/extensions/stubs_apitest.cc',
+      'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
+      'browser/ssl/ssl_browser_tests.cc',
+      'browser/task_manager_browsertest.cc',
+    ],
+    # TODO(jcampan): move these vars to views.gyp.
+    'views_unit_tests_sources': [
+      '../views/view_unittest.cc',
+      '../views/focus/focus_manager_unittest.cc',
+      '../views/controls/label_unittest.cc',
+      '../views/controls/table/table_view_unittest.cc',
+    ],
+    'views_unit_tests_sources_win_specific': [
+      # TODO(jcampan): make the following tests work on Linux.
+      '../views/grid_layout_unittest.cc',
+    ],
+  },
   'targets': [
     {
       # This target contains mocks and test utilities that don't belong in
@@ -30,6 +121,7 @@
       'sources': [
         # The only thing used from browser is Browser::Type.
         'browser/browser.h',
+        'browser/cocoa/browser_test_helper.h',
         # TODO:  these should live here but are currently used by
         # production code code in libbrowser (above).
         #'browser/net/url_request_mock_http_job.cc',
