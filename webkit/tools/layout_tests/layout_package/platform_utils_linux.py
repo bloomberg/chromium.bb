@@ -115,7 +115,7 @@ def ShutDownHTTPServer(server_process):
     # processes not started by http_server.py, but good enough for now.
     subprocess.call(['killall', '-u', os.getenv('USER'), '-TERM', 'lighttpd'])
   else:
-    os.kill(server_process.pid, signal.SIGTERM)
+    os.kill(server_process.pid, signal.SIGKILL)
 
 def KillProcess(pid):
   """Forcefully kill the process.
