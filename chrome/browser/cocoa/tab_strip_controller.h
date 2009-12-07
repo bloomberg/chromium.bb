@@ -41,7 +41,7 @@ class ToolbarModel;
            GTMWindowSheetControllerDelegate> {
  @private
   TabContents* currentTab_;   // weak, tab for which we're showing state
-  scoped_nsobject<TabStripView> tabStripView_;  // strong
+  scoped_nsobject<TabStripView> tabStripView_;
   NSView* switchView_;  // weak
   scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server drags
   NSButton* newTabButton_;  // weak, obtained from the nib.
@@ -50,7 +50,7 @@ class ToolbarModel;
   scoped_nsobject<NSTrackingArea> newTabTrackingArea_;
   scoped_ptr<TabStripModelObserverBridge> bridge_;
   Browser* browser_;  // weak
-  TabStripModel* tabModel_;  // weak
+  TabStripModel* tabStripModel_;  // weak
   // Access to the TabContentsControllers (which own the parent view
   // for the toolbar and associated tab contents) given an index. This needs
   // to be kept in the same order as the tab strip's model as we will be

@@ -272,8 +272,8 @@ private:
     tabStripView_.reset([view retain]);
     switchView_ = switchView;
     browser_ = browser;
-    tabModel_ = browser_->tabstrip_model();
-    bridge_.reset(new TabStripModelObserverBridge(tabModel_, self));
+    tabStripModel_ = browser_->tabstrip_model();
+    bridge_.reset(new TabStripModelObserverBridge(tabStripModel_, self));
     tabContentsArray_.reset([[NSMutableArray alloc] init]);
     tabArray_.reset([[NSMutableArray alloc] init]);
 
@@ -358,7 +358,7 @@ private:
 // model and swaps out the sole child of the contentArea to display its
 // contents.
 - (void)swapInTabAtIndex:(NSInteger)modelIndex {
-  DCHECK(modelIndex >= 0 && modelIndex < tabModel_->count());
+  DCHECK(modelIndex >= 0 && modelIndex < tabStripModel_->count());
   NSInteger index = [self indexFromModelIndex:modelIndex];
   TabContentsController* controller = [tabContentsArray_ objectAtIndex:index];
 
@@ -386,7 +386,7 @@ private:
 
   // Make sure the new tabs's sheets are visible (necessary when a background
   // tab opened a sheet while it was in the background and now becomes active).
-  TabContents* newTab = tabModel_->GetTabContentsAt(modelIndex);
+  TabContents* newTab = tabStripModel_->GetTabContentsAt(modelIndex);
   DCHECK(newTab);
   if (newTab) {
     TabContents::ConstrainedWindowList::iterator it, end;
@@ -426,7 +426,7 @@ private:
 // number of TabControllers we know about (as there's a 1-to-1 mapping from
 // these controllers to a tab) less the number of closing tabs.
 - (NSInteger)numberOfOpenTabs {
-  return static_cast<NSInteger>(tabModel_->count());
+  return static_cast<NSInteger>(tabStripModel_->count());
 }
 
 // (Private) Returns the number of open, pinned tabs.
@@ -434,7 +434,7 @@ private:
   // Ask the model for the number of pinned tabs. Note that tabs which are in
   // the process of closing (i.e., whose controllers are in
   // |closingControllers_|) have already been removed from the model.
-  return static_cast<NSInteger>(tabModel_->IndexOfFirstNonPinnedTab());
+  return static_cast<NSInteger>(tabStripModel_->IndexOfFirstNonPinnedTab());
 }
 
 // (Private) Returns the number of open, unpinned tabs.
@@ -516,8 +516,8 @@ private:
 - (void)selectTab:(id)sender {
   DCHECK([sender isKindOfClass:[NSView class]]);
   int index = [self modelIndexForTabView:sender];
-  if (tabModel_->ContainsIndex(index))
-    tabModel_->SelectTabContentsAt(index, true);
+  if (tabStripModel_->ContainsIndex(index))
+    tabStripModel_->SelectTabContentsAt(index, true);
 }
 
 // Called when the user closes a tab. Asks the model to close the tab. |sender|
@@ -529,10 +529,10 @@ private:
   }
 
   NSInteger index = [self modelIndexForTabView:sender];
-  if (!tabModel_->ContainsIndex(index))
+  if (!tabStripModel_->ContainsIndex(index))
     return;
 
-  TabContents* contents = tabModel_->GetTabContentsAt(index);
+  TabContents* contents = tabStripModel_->GetTabContentsAt(index);
   if (contents)
     UserMetrics::RecordAction("CloseTab_Mouse", contents->profile());
   const NSInteger numberOfOpenTabs = [self numberOfOpenTabs];
@@ -551,7 +551,7 @@ private:
       NSView* lastTab = [self viewAtIndex:numberOfOpenTabs - 1];
       availableResizeWidth_ = NSMaxX([lastTab frame]);
     }
-    tabModel_->CloseTabContentsAt(index);
+    tabStripModel_->CloseTabContentsAt(index);
   } else {
     // Use the standard window close if this is the last tab
     // this prevents the tab from being removed from the model until after
@@ -564,8 +564,8 @@ private:
 - (void)commandDispatch:(TabStripModel::ContextMenuCommand)command
           forController:(TabController*)controller {
   int index = [self modelIndexForTabView:[controller view]];
-  if (tabModel_->ContainsIndex(index))
-    tabModel_->ExecuteContextMenuCommand(index, command);
+  if (tabStripModel_->ContainsIndex(index))
+    tabStripModel_->ExecuteContextMenuCommand(index, command);
 }
 
 // Returns YES if the specificed command should be enabled for the given
@@ -573,9 +573,9 @@ private:
 - (BOOL)isCommandEnabled:(TabStripModel::ContextMenuCommand)command
            forController:(TabController*)controller {
   int index = [self modelIndexForTabView:[controller view]];
-  if (!tabModel_->ContainsIndex(index))
+  if (!tabStripModel_->ContainsIndex(index))
     return NO;
-  return tabModel_->IsContextMenuCommandEnabled(index, command) ? YES : NO;
+  return tabStripModel_->IsContextMenuCommandEnabled(index, command) ? YES : NO;
 }
 
 - (void)insertPlaceholderForTab:(TabView*)tab
@@ -829,7 +829,7 @@ private:
                  inForeground:(bool)inForeground {
   DCHECK(contents);
   DCHECK(modelIndex == TabStripModel::kNoTab ||
-         tabModel_->ContainsIndex(modelIndex));
+         tabStripModel_->ContainsIndex(modelIndex));
 
   // Take closing tabs into account.
   NSInteger index = [self indexFromModelIndex:modelIndex];
@@ -1013,7 +1013,7 @@ private:
   NSInteger index = [self indexFromModelIndex:modelIndex];
 
   TabController* tab = [tabArray_ objectAtIndex:index];
-  if (tabModel_->count() > 0) {
+  if (tabStripModel_->count() > 0) {
     [self startClosingTabWithAnimation:tab];
     [self layoutTabs];
   } else {
@@ -1074,7 +1074,7 @@ private:
 
   bool oldHasIcon = [tabController iconView] != nil;
   bool newHasIcon = contents->ShouldDisplayFavIcon() ||
-      tabModel_->IsTabPinned(index);  // always show an icon for pinned tabs
+      tabStripModel_->IsTabPinned(index);  // always show icon for pinned tabs
 
   TabLoadingState oldState = [tabController loadingState];
   TabLoadingState newState = kTabDone;
@@ -1168,7 +1168,8 @@ private:
   [tabArray_ insertObject:movedTabController.get() atIndex:to];
 
   if (pinnedChanged) {
-    [movedTabController setPinned:(tabModel_->IsTabPinned(modelTo) ? YES : NO)];
+    [movedTabController
+        setPinned:(tabStripModel_->IsTabPinned(modelTo) ? YES : NO)];
     [self updateFavIconForContents:contents atIndex:modelTo];
   }
 
@@ -1182,7 +1183,7 @@ private:
                                   atIndex:(NSInteger)index {
   TabController* tabController = [tabArray_ objectAtIndex:index];
   DCHECK([tabController isKindOfClass:[TabController class]]);
-  [tabController setPinned:(tabModel_->IsTabPinned(index) ? YES : NO)];
+  [tabController setPinned:(tabStripModel_->IsTabPinned(index) ? YES : NO)];
   [self updateFavIconForContents:contents atIndex:index];
 
   // TODO(viettrungluu): I don't think this is needed. Investigate. See also
@@ -1199,7 +1200,7 @@ private:
 }
 
 - (NSView*)selectedTabView {
-  int selectedIndex = tabModel_->selected_index();
+  int selectedIndex = tabStripModel_->selected_index();
   // Take closing tabs into account. They can't ever be selected.
   selectedIndex = [self indexFromModelIndex:selectedIndex];
   return [self viewAtIndex:selectedIndex];
@@ -1211,7 +1212,7 @@ private:
   double placeholderX = placeholderFrame_.origin.x;
   int index = 0;
   int location = 0;
-  const int count = tabModel_->count();
+  const int count = tabStripModel_->count();
   while (index < count) {
     NSView* curr = [self viewAtIndex:index];
     // The placeholder tab works by changing the frame of the tab being dragged
@@ -1234,7 +1235,7 @@ private:
 // current placeholder.
 - (void)moveTabFromIndex:(NSInteger)from {
   int toIndex = [self indexOfPlaceholder];
-  tabModel_->MoveTabContentsAt(from, toIndex, true);
+  tabStripModel_->MoveTabContentsAt(from, toIndex, true);
 }
 
 // Drop a given TabContents at the location of the current placeholder. If there
@@ -1252,14 +1253,14 @@ private:
 
   // Insert it into this tab strip. We want it in the foreground and to not
   // inherit the current tab's group.
-  tabModel_->InsertTabContentsAt(index, contents, true, false);
+  tabStripModel_->InsertTabContentsAt(index, contents, true, false);
 
   // The tab's pinned status may have changed.
   // TODO(viettrungluu): Improve the behaviour for drops at the dividing point
   // between pinned and unpinned tabs.
   TabController* tabController = [tabArray_ objectAtIndex:index];
   DCHECK([tabController isKindOfClass:[TabController class]]);
-  [tabController setPinned:(tabModel_->IsTabPinned(index) ? YES : NO)];
+  [tabController setPinned:(tabStripModel_->IsTabPinned(index) ? YES : NO)];
   [self updateFavIconForContents:contents atIndex:index];
 }
 
@@ -1496,9 +1497,9 @@ private:
                               true, NULL);
       break;
     case CURRENT_TAB:
-      tabModel_->GetTabContentsAt(index)->OpenURL(url, GURL(), CURRENT_TAB,
-                                                  PageTransition::TYPED);
-      tabModel_->SelectTabContentsAt(index, true);
+      tabStripModel_->GetTabContentsAt(index)->OpenURL(url, GURL(), CURRENT_TAB,
+                                                       PageTransition::TYPED);
+      tabStripModel_->SelectTabContentsAt(index, true);
       break;
     default:
       NOTIMPLEMENTED();
@@ -1570,7 +1571,7 @@ private:
   NSInteger index = [self modelIndexForContentsView:view];
   DCHECK(index >= 0);
   if (index >= 0)
-    tabModel_->SelectTabContentsAt(index, false /* not a user gesture */);
+    tabStripModel_->SelectTabContentsAt(index, false /* not a user gesture */);
 }
 
 - (BOOL)attachConstrainedWindow:(ConstrainedWindowMac*)window {
