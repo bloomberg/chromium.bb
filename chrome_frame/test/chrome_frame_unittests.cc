@@ -24,6 +24,7 @@
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test_utils.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/helper.h"
 
@@ -78,7 +79,24 @@ _ATL_FUNC_INFO WebBrowserEventSink::kNewWindow3Info = {
 _ATL_FUNC_INFO WebBrowserEventSink::kVoidMethodInfo = {
     CC_STDCALL, VT_EMPTY, 0, {NULL}};
 
+void ChromeFrameTestWithWebServer::CloseAllBrowsers() {
+  // Web browsers tend to relaunch themselves in other processes, meaning the
+  // KillProcess stuff above might not have actually cleaned up all our browser
+  // instances, so make really sure browsers are dead.
+  base::KillProcesses(chrome_frame_test::kIEImageName, 0, NULL);
+  base::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0, NULL);
+  base::KillProcesses(chrome_frame_test::kFirefoxImageName, 0, NULL);
+  base::KillProcesses(chrome_frame_test::kSafariImageName, 0, NULL);
+
+  // Endeavour to only kill off Chrome Frame derived Chrome processes.
+  KillAllNamedProcessesWithArgument(chrome_frame_test::kChromeImageName,
+                                    UTF8ToWide(switches::kChromeFrame));
+}
+
 void ChromeFrameTestWithWebServer::SetUp() {
+  // Make sure our playground is clean before we start.
+  CloseAllBrowsers();
+
   server_.SetUp();
   results_dir_ = server_.GetDataDir();
   file_util::AppendToPath(&results_dir_, L"dump");
@@ -87,14 +105,7 @@ void ChromeFrameTestWithWebServer::SetUp() {
 void ChromeFrameTestWithWebServer::TearDown() {
   CloseBrowser();
 
-  // Web browsers tend to relaunch themselves in other processes, meaning the
-  // KillProcess stuff above might not have actually cleaned up all our browser
-  // instances, so make really sure browsers are dead.
-  base::KillProcesses(chrome_frame_test::kIEImageName, 0, NULL);
-  base::KillProcesses(chrome_frame_test::kIEBrokerImageName, 0, NULL);
-  base::KillProcesses(chrome_frame_test::kFirefoxImageName, 0, NULL);
-  base::KillProcesses(chrome_frame_test::kSafariImageName, 0, NULL);
-  base::KillProcesses(chrome_frame_test::kChromeImageName, 0, NULL);
+  CloseAllBrowsers();
 
   server_.TearDown();
 }

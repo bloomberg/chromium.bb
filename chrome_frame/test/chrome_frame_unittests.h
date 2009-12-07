@@ -63,6 +63,9 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   void VersionTest(BrowserKind browser, const wchar_t* page,
                    const wchar_t* result_file_to_check);
 
+  // Closes all browsers in preparation for a test and during cleanup.
+  void CloseAllBrowsers();
+
   void CloseBrowser();
 
   // Ensures (well, at least tries to ensure) that the browser window has focus.
