@@ -146,15 +146,15 @@ class Coverage(object):
     """Trim specific tests for each platform."""
     if self.IsWindows():
       return
-      # Special case to be fast, as needed...
-      # TODO(jrg): remove
-      inclusion = ['base_unittests']
+      # TODO(jrg): remove when not needed
+      inclusion = ['unit_tests']
       keep = []
       for test in self.tests:
         for i in inclusion:
           if i in test:
             keep.append(test)
       self.tests = keep
+      logging.info('After trimming tests we have ' + ' '.join(self.tests))
       return
     if self.IsLinux():
       return
@@ -207,14 +207,13 @@ class Coverage(object):
 
   def ClearData(self):
     """Clear old gcda files and old coverage info files."""
-    if not self.IsPosix():
-      return
-    subprocess.call([self.lcov,
-                     '--directory', self.directory_parent,
-                     '--zerocounters'])
-    shutil.rmtree(os.path.join(self.directory, 'coverage'))
     if os.path.exists(self.coverage_info_file):
       os.remove(self.coverage_info_file)
+    if self.IsPosix():
+      subprocess.call([self.lcov,
+                       '--directory', self.directory_parent,
+                       '--zerocounters'])
+      shutil.rmtree(os.path.join(self.directory, 'coverage'))
 
   def BeforeRunOneTest(self, testname):
     """Do things before running each test."""
