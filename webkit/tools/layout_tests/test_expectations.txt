@@ -2981,7 +2981,7 @@ BUG_OJAN LINUX DEBUG : LayoutTests/http/tests/navigation/lockedhistory-iframe.ht
 // These tests time out *and* are slow. The test should be fixed to not timeout,
 // then should be marked as SLOW/PASS.
 BUG2844 : LayoutTests/http/tests/appcache/cyrillic-uri.html = TIMEOUT PASS
-BUG2844 : LayoutTests/http/tests/appcache/fail-on-update.html = TIMEOUT PASS
+BUG2844 : LayoutTests/http/tests/appcache/fail-on-update.html = TIMEOUT PASS TEXT
 BUG2844 : LayoutTests/http/tests/appcache/offline-access.html = TIMEOUT PASS
 BUG2844 LINUX: LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
 BUG2844 WIN RELEASE : LayoutTests/http/tests/appcache/remove-cache.html = TIMEOUT PASS
