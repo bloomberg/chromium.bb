@@ -139,7 +139,7 @@ class TabSwitchingUITest : public UITest {
   DISALLOW_COPY_AND_ASSIGN(TabSwitchingUITest);
 };
 
-TEST_F(TabSwitchingUITest, DISABLED_GenerateTabSwitchStats) {
+TEST_F(TabSwitchingUITest, GenerateTabSwitchStats) {
   RunTabSwitchingUITest();
 }
 
