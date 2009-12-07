@@ -19,6 +19,7 @@
 struct IE7PasswordInfo;
 #endif
 class MessageLoop;
+class NotificationType;
 class Task;
 class WebDatabase;
 
@@ -371,6 +372,9 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   // Cancel any pending request. You need to call this method if your
   // WebDataServiceConsumer is about to be deleted.
   void CancelRequest(Handle h);
+
+  // Sends a notification using the notification service.
+  void Notify(NotificationType type);
 
   //////////////////////////////////////////////////////////////////////////////
   //

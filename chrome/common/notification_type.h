@@ -775,6 +775,10 @@ class NotificationType {
     // (the pointer is usable). No details are expected.
     NOTIFY_BALLOON_DISCONNECTED,
 
+    // This notification is sent whenever the list of autofill values
+    // has been changed.
+    AUTOFILL_CHANGED,
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

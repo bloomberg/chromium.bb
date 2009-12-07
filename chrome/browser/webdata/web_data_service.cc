@@ -4,9 +4,13 @@
 
 #include "chrome/browser/webdata/web_data_service.h"
 
+#include "base/message_loop.h"
+#include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/webdata/web_database.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "webkit/glue/password_form.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,6 +120,12 @@ void WebDataService::CancelRequest(Handle h) {
   i->second->Cancel();
 }
 
+void WebDataService::Notify(NotificationType type) {
+  NotificationService::current()->Notify(type,
+                                         NotificationService::AllSources(),
+                                         NotificationService::NoDetails());
+}
+
 void WebDataService::AddFormFieldValues(
     const std::vector<FormField>& element) {
   GenericRequest<std::vector<FormField> >* request =
@@ -177,6 +187,12 @@ void WebDataService::RequestCompleted(Handle h) {
     consumer->OnWebDataServiceRequestDone(request->GetHandle(),
                                           request->GetResult());
   }
+
+  // If this is an autofill request, post the notifications.
+  if (!request->IsCancelled() &&
+      request->GetResult() &&
+      request->GetResult()->GetType() == AUTOFILL_VALUE_RESULT)
+    Notify(NotificationType::AUTOFILL_CHANGED);
 }
 
 //////////////////////////////////////////////////////////////////////////////
