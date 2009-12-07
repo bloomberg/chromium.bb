@@ -40,6 +40,7 @@
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/renderer_host/save_file_resource_handler.h"
+#include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "chrome/browser/renderer_host/sync_resource_handler.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
@@ -249,6 +250,7 @@ ResourceDispatcherHost::ResourceDispatcherHost()
       ALLOW_THIS_IN_INITIALIZER_LIST(user_script_listener_(
           new UserScriptListener(this))),
       safe_browsing_(new SafeBrowsingService),
+      socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
       webkit_thread_(new WebKitThread),
       request_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_runner_(this)),
@@ -336,8 +338,10 @@ bool ResourceDispatcherHost::HandleExternalProtocol(int request_id,
 bool ResourceDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                Receiver* receiver,
                                                bool* message_was_ok) {
-  if (!IsResourceDispatcherHostMessage(message))
-    return false;
+  if (!IsResourceDispatcherHostMessage(message)) {
+    return socket_stream_dispatcher_host_->OnMessageReceived(
+        message, receiver, message_was_ok);
+  }
 
   *message_was_ok = true;
   receiver_ = receiver;

@@ -31,7 +31,6 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
-#include "chrome/browser/renderer_host/socket_stream_dispatcher_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
@@ -173,7 +172,6 @@ ResourceMessageFilter::ResourceMessageFilter(
           new DatabaseDispatcherHost(profile->GetDatabaseTracker(), this))),
       notification_prefs_(
           profile->GetDesktopNotificationService()->prefs_cache()),
-      socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
       host_zoom_map_(profile->GetHostZoomMap()),
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
@@ -183,7 +181,6 @@ ResourceMessageFilter::ResourceMessageFilter(
   DCHECK(audio_renderer_host_.get());
   DCHECK(appcache_dispatcher_host_.get());
   DCHECK(dom_storage_dispatcher_host_.get());
-  DCHECK(socket_stream_dispatcher_host_.get());
 
   render_widget_helper_->Init(id(), resource_dispatcher_host_);
 }
@@ -234,7 +231,6 @@ void ResourceMessageFilter::OnChannelConnected(int32 peer_pid) {
 
   WorkerService::GetInstance()->Initialize(resource_dispatcher_host_);
   appcache_dispatcher_host_->Initialize(this, id(), handle());
-  socket_stream_dispatcher_host_->Initialize(this, id());
   dom_storage_dispatcher_host_->Init(handle());
   db_dispatcher_host_->Init(handle());
 }
@@ -269,8 +265,7 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(
-          msg, this, next_route_id_callback(), &msg_is_ok) ||
-      socket_stream_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
+          msg, this, next_route_id_callback(), &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

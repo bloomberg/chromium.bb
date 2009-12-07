@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/id_map.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "ipc/ipc_message.h"
 #include "net/socket_stream/socket_stream.h"
 
@@ -22,8 +23,9 @@ class SocketStreamDispatcherHost : public net::SocketStream::Delegate {
   SocketStreamDispatcherHost();
   virtual ~SocketStreamDispatcherHost();
 
-  void Initialize(IPC::Message::Sender* sender, int process_id);
-  bool OnMessageReceived(const IPC::Message& msg, bool* msg_ok);
+  bool OnMessageReceived(const IPC::Message& msg,
+                         ResourceDispatcherHost::Receiver* receiver,
+                         bool* msg_ok);
 
   // SocketStream::Delegate methods.
   virtual void OnConnected(net::SocketStream* socket,
@@ -33,22 +35,26 @@ class SocketStreamDispatcherHost : public net::SocketStream::Delegate {
                               const char* data, int len);
   virtual void OnClose(net::SocketStream* socket);
 
-  // For sync message.
-  bool Send(IPC::Message* message) {
-    return sender_->Send(message);
-  }
-
  private:
   // Message handlers called by OnMessageReceived.
   void OnConnect(const GURL& url, int socket_id);
   void OnSendData(int socket_id, const std::vector<char>& data);
   void OnCloseReq(int socket_id);
 
-  void DeleteSocketStreamHost(int socket_id);
+  void DeleteSocketStreamHost(int host_id, int socket_id);
 
-  IPC::Message::Sender* sender_;
-  int process_id_;
-  IDMap<SocketStreamHost> hosts_;
+  void AddHostMap(int host_id, int socket_id,
+                  SocketStreamHost* socket_stream_host);
+  SocketStreamHost* LookupHostMap(int host_id, int socket_id);
+
+  // Returns true if the message passed in is a SocketStream related message.
+  static bool IsSocketStreamDispatcherHostMessage(const IPC::Message& message);
+
+  // key: host_id -> { key: socket_id -> value: SocketStreamHost }
+  IDMap< IDMap<SocketStreamHost> > hostmap_;
+
+  // valid while OnMessageReceived processing.
+  ResourceDispatcherHost::Receiver* receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcherHost);
 };

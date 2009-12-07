@@ -36,6 +36,7 @@ class ResourceDispatcherHostRequestInfo;
 class ResourceHandler;
 class SafeBrowsingService;
 class SaveFileManager;
+class SocketStreamDispatcherHost;
 class SSLClientAuthHandler;
 class UserScriptListener;
 class URLRequestContext;
@@ -425,6 +426,8 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   scoped_refptr<UserScriptListener> user_script_listener_;
 
   scoped_refptr<SafeBrowsingService> safe_browsing_;
+
+  scoped_ptr<SocketStreamDispatcherHost> socket_stream_dispatcher_host_;
 
   // We own the WebKit thread and see to its destruction.
   scoped_ptr<WebKitThread> webkit_thread_;

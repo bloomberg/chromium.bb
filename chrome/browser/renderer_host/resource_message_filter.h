@@ -40,7 +40,6 @@ class HostZoomMap;
 class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
-class SocketStreamDispatcherHost;
 class URLRequestContextGetter;
 struct ViewHostMsg_Audio_CreateStream;
 struct WebPluginInfo;
@@ -372,9 +371,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // A cache of notifications preferences which is used to handle
   // Desktop Notifications permission messages.
   scoped_refptr<NotificationsPrefsCache> notification_prefs_;
-
-  // Handles Socket Stream related messages.
-  scoped_ptr<SocketStreamDispatcherHost> socket_stream_dispatcher_host_;
 
   // Handles zoom-related messages.
   scoped_refptr<HostZoomMap> host_zoom_map_;
