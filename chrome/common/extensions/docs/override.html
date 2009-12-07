@@ -192,18 +192,32 @@
         <h1 class="page_title">Override</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
-        <div id="toc" style="display: none; ">
+        <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a>h2Name</a>
+              <a href="#manifest">Manifest</a>
               <ol>
-                <li>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#tips">Tips</a>
+              <ol>
+                <li style="display: none; ">
+                  <a>h3Name</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#examples"> Examples </a>
+              <ol>
+                <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-            <div>
+            <div style="display: none; ">
               <li>
                 <a href="#apiReference">API reference</a>
                 <ol>
@@ -268,6 +282,7 @@
 </style>
 
 <div id="pageData-title" class="pageData">Override Pages</div>
+<div id="pageData-showTOC" class="pageData">true</div>
 
 <p>
 Override pages are a way to replace a page
@@ -363,15 +378,16 @@ For an effective New Tab page, follow these guidelines:
   </li>
 </ul>
 
-<h2 id="examples">Examples</h2>
+<h2 id="examples"> Examples </h2>
 
 <p>
-For an example of specifying a very simple New Tab page,
-see the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/override_igoogle/">override_igoogle</a> sample.
-It uses a 3-line file named <code>redirect.html</code>
-to implement the New Tab page.
+You can find simple examples of defining override pages in the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/override/">examples/api/override</a>
+directory.
+For other examples and for help in viewing the source code, see
+<a href="samples.html">Samples</a>.
 </p>
+
 
 <!-- [PENDING: Maybe have a gallery of NTPs?] -->
 </div>

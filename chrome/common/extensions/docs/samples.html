@@ -196,28 +196,25 @@
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#H2-0">Google Mail Checker</a>
+              <a href="#featured">Sample extensions</a>
+              <ol>
+                <li>
+                  <a href="#gmail">Google Mail Checker</a>
+                </li><li>
+                  <a href="#subscribe_page_action">Subscribe in Feed Reader</a>
+                </li><li>
+                  <a href="#news">News Reader</a>
+                </li>
+              </ol>
+            </li><li>
+              <a href="#otherExtensions">Other sample extensions</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#H2-1">Subscribe in Feed Reader</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#H2-2">News Reader</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#H2-3">Other samples</a>
+              <a href="#viewsource">How to view the source code</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -289,17 +286,20 @@ for each feature used by the sample.
 </p><p>
 For more example code, see the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/" target="_blank">Chromium examples directory</a>.
+For tips on using the code viewer, see
+<a href="#viewsource">How to view the source code</a>.
 </p>
 
+<h2 id="featured">Sample extensions</h2>
 
-<a name="H2-0"></a><h2>Google Mail Checker</h2>
+<h3 id="gmail">Google Mail Checker</h3>
 
-<p>Adds a Google Mail button to the toolbar which displays the number of unread messages in your inbox. You can also click the button to open your inbox.
+<p>Adds a Google Mail button to the toolbar, displaying the number of unread messages in your inbox. Click the button to open your inbox.
 
 </p><p>Included with no charge is a swell animation when the number of unread items changes.
 
 </p><p><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US"><img src="images/google-mail-checker-capture.png" width="243" height="170" style="margin-bottom:0.5em"></a><br>
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;
+<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmihcahmgecmbnbcchbopgniflfhgnkff%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/">Source code</a></b>
 
 <br><br>
@@ -315,15 +315,14 @@ For more example code, see the
 
 <br>
 
-<a name="H2-1"></a><h2>Subscribe in Feed Reader</h2>
+<h3 id="subscribe_page_action">Subscribe in Feed Reader</h3>
 
-<p>Adds a small icon to the omnibox when a web page contains a feed that can be subscribed to. When you click the icon, present a preview of the feed and the option to subscribe in the web-based reader of your choice.
+<p>Adds a small icon to the address bar when a web page contains a feed that can be subscribed to. When you click the icon, you'll see a preview of the feed and have the option to subscribe with the web-based reader of your choice.
 
 </p><p><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US"><img src="images/subscribe-cap1.png" style="margin-bottom:0.5em" width="342" height="165"></a>
 
 </p><p><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US"><img src="images/subscribe-cap2.png" style="margin-bottom:0.5em" width="566" height="327"></a><br>
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/subscribe_page_action/">Source code</a></b>
+<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dnlbjncdgjeocebhnmkbbbdekmmmcbfjd%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/subscribe_page_action/">Source code</a></b>
 
 <br><br>
 </p><p>Features used:
@@ -338,14 +337,13 @@ For more example code, see the
 
 <br>
 
-<a name="H2-2"></a><h2>News Reader</h2>
+<h3 id="news">News Reader</h3>
 
-<p>Displays the first 5 items from the 'Google News - top news' RSS feed in a popup. Also shows how a popup can dynamically resize itself to fit additional content.
+<p>Uses a popup to display the first 5 items from the 'Google News - top news' RSS feed. The popup dynamically resizes itself to fit additional content.
 
 </p><p><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmmdhomleggalggemanamhjdhafaabfdi%26uc%26lang%3Den-US"><img src="images/news.gif" style="margin-bottom:0.5em" width="475" height="346"></a><br>
 
-<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmmdhomleggalggemanamhjdhafaabfdi%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">Source code</a></b>
+<b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dmmdhomleggalggemanamhjdhafaabfdi%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">Source code</a></b>
 
 <br><br>
 </p><p>Features used:
@@ -356,13 +354,54 @@ For more example code, see the
 </li></ul>
 
 <br>
-<a name="H2-3"></a><h2>Other samples</h2>
+<h2 id="otherExtensions">Other sample extensions</h2>
 <p>These samples use similar capabilities to the ones above, but to implement different features.</p>
-<ul>
-  <li><b>Chromium buildbot monitor</b>: Monitors the Chromium tree status. <a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dafmppjmdopaajlhgcddfhfhfgincjeih%26uc%26lang%3Den-US">Install</a> <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">Source</a>
-  </li><li><b>Mappy</b>: Easily access a map for the first address on any web page. <a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dobjeacibkcphiplbghlbmlbnihbbmfjl%26uc%26lang%3Den-US">Install</a> <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/">Source</a>
-  </li><li><b>Email this page</b>: Share the web page you are viewing by sending it as an email.  <a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Ddbeoemfhkdniadbojeencpkgmobndpai%26uc%26lang%3Den-US">Install</a> <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/">Source</a>
-</li></ul>
+<dl>
+  <dt>Chromium buildbot monitor</dt>
+  <dd>Monitors the Chromium tree status <br>
+  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dafmppjmdopaajlhgcddfhfhfgincjeih%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/news/">Source code</a></b>
+  </dd>
+
+  <dt>Mappy</dt>
+  <dd>Lets you bring up a map for the first address on any web page <br>
+  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Dobjeacibkcphiplbghlbmlbnihbbmfjl%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/mappy/">Source code</a></b>
+  </dd>
+
+  <dt>Email this page</dt>
+  <dd>Lets you share the current web page by sending it in an email <br>
+  <b><a href="https://clients2.google.com/service/update2/crx?response=redirect&amp;x=id%3Ddbeoemfhkdniadbojeencpkgmobndpai%26uc%26lang%3Den-US">Install</a>&nbsp;&nbsp;&nbsp;<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/email_this_page/">Source code</a></b>
+  </dd>
+</dl>
+
+
+<h2 id="viewsource">How to view the source code</h2>
+
+<p>
+The source code links in this page take you to a directory
+(for example,
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/">examples/extensions/gmail</a>)
+that lists all the files in an extension.
+To view a file,
+first click its filename.
+If the page that comes up has an <b>as text</b> link,
+click that link to view the page's source code.
+</p>
+
+<p>
+To download the file,
+right-click the <b>download</b> link.
+You can also left-click the <b>download</b> link
+to view the source code for files such as
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/extensions/gmail/manifest.json">manifest.json</a>
+that have no <b>as text</b> link.
+</p>
+
+<p>
+We're working on a way to make it easier to look at the sample source code.
+If you'd like to track our progress,
+put a star by bug <a href="http://code.google.com/p/chromium/issues/detail?id=25247">25247</a>.
+</p>
+
 </div>
 
         <!-- API PAGE -->
