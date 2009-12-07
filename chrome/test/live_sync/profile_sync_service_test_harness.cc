@@ -112,9 +112,9 @@ ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(
       last_status_(kInvalidStatus), min_updates_needed_(kMinUpdatesNeededNone),
       username_(username), password_(password) {
   // Ensure the profile has enough prefs registered for use by sync.
-  if (!p->GetPrefs()->IsPrefRegistered(prefs::kAcceptLanguages))
+  if (!p->GetPrefs()->FindPreference(prefs::kAcceptLanguages))
     TabContents::RegisterUserPrefs(p->GetPrefs());
-  if (!p->GetPrefs()->IsPrefRegistered(prefs::kCookieBehavior))
+  if (!p->GetPrefs()->FindPreference(prefs::kCookieBehavior))
     Browser::RegisterUserPrefs(p->GetPrefs());
 }
 

@@ -658,7 +658,7 @@ bool FirstRun::SetOEMFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
-  if (!local_state->IsPrefRegistered(prefs::kShouldUseOEMFirstRunBubble)) {
+  if (!local_state->FindPreference(prefs::kShouldUseOEMFirstRunBubble)) {
     local_state->RegisterBooleanPref(prefs::kShouldUseOEMFirstRunBubble,
                                      false);
     local_state->SetBoolean(prefs::kShouldUseOEMFirstRunBubble, true);

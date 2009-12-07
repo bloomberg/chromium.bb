@@ -1073,10 +1073,10 @@ FilePath SavePackage::EnsureHtmlExtension(const FilePath& name) {
 FilePath SavePackage::GetSaveDirPreference(PrefService* prefs) {
   DCHECK(prefs);
 
-  if (!prefs->IsPrefRegistered(prefs::kSaveFileDefaultDirectory)) {
+  if (!prefs->FindPreference(prefs::kSaveFileDefaultDirectory)) {
     FilePath default_save_path;
     StringPrefMember default_download_path;
-    DCHECK(prefs->IsPrefRegistered(prefs::kDownloadDefaultDirectory));
+    DCHECK(prefs->FindPreference(prefs::kDownloadDefaultDirectory));
     default_download_path.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
     default_save_path =
         FilePath::FromWStringHack(default_download_path.GetValue());

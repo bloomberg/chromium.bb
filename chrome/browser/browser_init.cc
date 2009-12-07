@@ -675,7 +675,7 @@ void BrowserInit::LaunchWithProfile::AddStartupURLs(
   // specified on the command line.
   startup_urls->push_back(GURL());  // New tab page.
   PrefService* prefs = g_browser_process->local_state();
-  if (prefs->IsPrefRegistered(prefs::kShouldShowWelcomePage) &&
+  if (prefs->FindPreference(prefs::kShouldShowWelcomePage) &&
       prefs->GetBoolean(prefs::kShouldShowWelcomePage)) {
     // Reset the preference so we don't show the welcome page next time.
     prefs->ClearPref(prefs::kShouldShowWelcomePage);

@@ -116,9 +116,6 @@ class PrefService : public NonThreadSafe,
   void RegisterLocalizedStringPref(const wchar_t* path,
                                    int locale_default_message_id);
 
-  // Returns whether the specified pref has been registered.
-  bool IsPrefRegistered(const wchar_t* path);
-
   // If the path is valid and the value at the end of the path matches the type
   // specified, it will return the specified value.  Otherwise, the default
   // value (set when the pref was registered) will be returned.
@@ -166,8 +163,8 @@ class PrefService : public NonThreadSafe,
   ListValue* GetMutableList(const wchar_t* path);
 
   // Returns true if a value has been set for the specified path.
-  // NOTE: this is NOT the same as IsPrefRegistered. In particular
-  // IsPrefRegistered returns whether RegisterXXX has been invoked, where as
+  // NOTE: this is NOT the same as FindPreference. In particular
+  // FindPreference returns whether RegisterXXX has been invoked, where as
   // this checks if a value exists for the path.
   bool HasPrefPath(const wchar_t* path) const;
 

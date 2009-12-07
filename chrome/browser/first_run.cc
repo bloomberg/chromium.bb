@@ -82,7 +82,7 @@ bool FirstRun::SetShowFirstRunBubblePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
-  if (!local_state->IsPrefRegistered(prefs::kShouldShowFirstRunBubble)) {
+  if (!local_state->FindPreference(prefs::kShouldShowFirstRunBubble)) {
     local_state->RegisterBooleanPref(prefs::kShouldShowFirstRunBubble, false);
     local_state->SetBoolean(prefs::kShouldShowFirstRunBubble, true);
   }
@@ -93,7 +93,7 @@ bool FirstRun::SetShowWelcomePagePref() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return false;
-  if (!local_state->IsPrefRegistered(prefs::kShouldShowWelcomePage)) {
+  if (!local_state->FindPreference(prefs::kShouldShowWelcomePage)) {
     local_state->RegisterBooleanPref(prefs::kShouldShowWelcomePage, false);
     local_state->SetBoolean(prefs::kShouldShowWelcomePage, true);
   }

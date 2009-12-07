@@ -200,12 +200,6 @@ void PrefService::RegisterLocalizedStringPref(const wchar_t* path,
   RegisterPreference(pref);
 }
 
-bool PrefService::IsPrefRegistered(const wchar_t* path) {
-  DCHECK(CalledOnValidThread());
-  // TODO(tc): We can remove this method and just use FindPreference.
-  return FindPreference(path) ? true : false;
-}
-
 bool PrefService::GetBoolean(const wchar_t* path) const {
   DCHECK(CalledOnValidThread());
 

@@ -187,7 +187,7 @@ void CloseDialog() {
   if (!current_profile)
     return;
   PrefService* prefs = current_profile->GetPrefs();
-  if (!prefs->IsPrefRegistered(prefs::kIpcDisabledMessages))
+  if (!prefs->FindPreference(prefs::kIpcDisabledMessages))
     return;
   ListValue* list = prefs->GetMutableList(prefs::kIpcDisabledMessages);
   list->Clear();

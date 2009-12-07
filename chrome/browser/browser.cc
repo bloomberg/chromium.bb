@@ -260,10 +260,10 @@ void Browser::CreateBrowserWindow() {
   PrefService* local_state = g_browser_process->local_state();
   if (!local_state)
     return;
-  if (local_state->IsPrefRegistered(prefs::kShouldShowFirstRunBubble) &&
+  if (local_state->FindPreference(prefs::kShouldShowFirstRunBubble) &&
       local_state->GetBoolean(prefs::kShouldShowFirstRunBubble)) {
     bool show_OEM_bubble = (local_state->
-        IsPrefRegistered(prefs::kShouldUseOEMFirstRunBubble) &&
+        FindPreference(prefs::kShouldUseOEMFirstRunBubble) &&
         local_state->GetBoolean(prefs::kShouldUseOEMFirstRunBubble));
     // Reset the preference so we don't show the bubble for subsequent windows.
     local_state->ClearPref(prefs::kShouldShowFirstRunBubble);

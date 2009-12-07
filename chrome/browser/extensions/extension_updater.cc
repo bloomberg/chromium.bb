@@ -176,12 +176,12 @@ ExtensionUpdater::~ExtensionUpdater() {}
 
 static void EnsureInt64PrefRegistered(PrefService* prefs,
                                       const wchar_t name[]) {
-  if (!prefs->IsPrefRegistered(name))
+  if (!prefs->FindPreference(name))
     prefs->RegisterInt64Pref(name, 0);
 }
 
 static void EnsureBlacklistVersionPrefRegistered(PrefService* prefs) {
-  if (!prefs->IsPrefRegistered(kExtensionBlacklistUpdateVersion))
+  if (!prefs->FindPreference(kExtensionBlacklistUpdateVersion))
     prefs->RegisterStringPref(kExtensionBlacklistUpdateVersion, L"0");
 }
 

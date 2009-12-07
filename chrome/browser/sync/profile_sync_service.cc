@@ -98,7 +98,7 @@ void ProfileSyncService::InitSettings() {
 
 void ProfileSyncService::RegisterPreferences() {
   PrefService* pref_service = profile_->GetPrefs();
-  if (pref_service->IsPrefRegistered(prefs::kSyncLastSyncedTime))
+  if (pref_service->FindPreference(prefs::kSyncLastSyncedTime))
     return;
   pref_service->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   pref_service->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);

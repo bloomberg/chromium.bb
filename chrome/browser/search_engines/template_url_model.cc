@@ -836,7 +836,7 @@ bool TemplateURLModel::LoadDefaultSearchProviderFromPrefs(
 }
 
 void TemplateURLModel::RegisterPrefs(PrefService* prefs) {
-  if (prefs->IsPrefRegistered(prefs::kDefaultSearchProviderName))
+  if (prefs->FindPreference(prefs::kDefaultSearchProviderName))
     return;
   prefs->RegisterStringPref(
       prefs::kDefaultSearchProviderName, std::wstring());
