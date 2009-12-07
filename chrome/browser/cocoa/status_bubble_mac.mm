@@ -350,8 +350,10 @@ void StatusBubbleMac::Attach() {
 void StatusBubbleMac::Detach() {
   // This method may be called several times in the process of hiding or
   // destroying a status bubble.
-  if (is_attached())
-    [parent_ removeChildWindow:window_];
+  if (is_attached()) {
+    [parent_ removeChildWindow:window_];  // See crbug.com/28107 ...
+    [window_ orderOut:nil];               // ... and crbug.com/29054.
+  }
 }
 
 void StatusBubbleMac::AnimationDidStop(CAAnimation* animation, bool finished) {
