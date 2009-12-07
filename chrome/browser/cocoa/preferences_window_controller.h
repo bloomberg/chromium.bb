@@ -10,6 +10,7 @@
 #include "chrome/common/pref_member.h"
 
 @class CustomHomePagesModel;
+@class FontLanguageSettingsController;
 class PrefObserverBridge;
 class PrefService;
 class Profile;
@@ -95,6 +96,7 @@ class ProfileSyncService;
   IBOutlet NSButton* downloadLocationButton_;
   StringPrefMember defaultDownloadLocation_;
   BooleanPrefMember askForSaveLocation_;
+  FontLanguageSettingsController* fontLanguageSettings_;
   StringPrefMember currentTheme_;
   IBOutlet NSButton* enableLoggingCheckbox_;
 }
@@ -128,6 +130,7 @@ class ProfileSyncService;
 // Under the hood
 - (IBAction)browseDownloadLocation:(id)sender;
 - (IBAction)privacyLearnMore:(id)sender;
+- (IBAction)changeFontAndLanguageSettings:(id)sender;
 
 // When a toolbar button is clicked
 - (IBAction)toolbarButtonSelected:(id)sender;

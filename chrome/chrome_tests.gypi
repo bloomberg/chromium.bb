@@ -557,6 +557,7 @@
         'browser/cocoa/find_bar_view_unittest.mm',
         'browser/cocoa/find_pasteboard_unittest.mm',
         'browser/cocoa/focus_tracker_unittest.mm',
+        'browser/cocoa/font_language_settings_controller_unittest.mm',
         'browser/cocoa/fullscreen_window_unittest.mm',
         'browser/cocoa/html_dialog_window_controller_unittest.mm',
         'browser/cocoa/hung_renderer_controller_unittest.mm',

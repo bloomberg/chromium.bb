@@ -414,6 +414,8 @@
         'browser/cocoa/first_run_dialog.mm',
         'browser/cocoa/focus_tracker.h',
         'browser/cocoa/focus_tracker.mm',
+        'browser/cocoa/font_language_settings_controller.h',
+        'browser/cocoa/font_language_settings_controller.mm',
         'browser/cocoa/fullscreen_window.h',
         'browser/cocoa/fullscreen_window.mm',
         'browser/cocoa/gradient_button_cell.h',

@@ -2155,6 +2155,7 @@
                 'app/nibs/ExtensionShelf.xib',
                 'app/nibs/FindBar.xib',
                 'app/nibs/FirstRunDialog.xib',
+                'app/nibs/FontLanguageSettings.xib',
                 'app/nibs/HungRendererDialog.xib',
                 'app/nibs/HttpAuthLoginSheet.xib',
                 'app/nibs/ImportSettingsDialog.xib',

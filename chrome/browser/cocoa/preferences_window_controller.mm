@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
+#import "chrome/browser/cocoa/font_language_settings_controller.h"
 #import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/search_engine_list_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -1551,6 +1552,26 @@ const int kDisabledIndex = 1;
     [self recordUserAction:"Options_AskForSaveLocation_Disable"];
   }
   askForSaveLocation_.SetValue(value);
+}
+
+- (void)fontAndLanguageEndSheet:(NSWindow*)sheet
+                     returnCode:(NSInteger)returnCode
+                    contextInfo:(void*)context {
+  [sheet close];
+  [sheet orderOut:self];
+  fontLanguageSettings_ = nil;
+}
+
+- (IBAction)changeFontAndLanguageSettings:(id)sender {
+  // Intentionally leak the controller as it will clean itself up when the
+  // sheet closes.
+  fontLanguageSettings_ =
+      [[FontLanguageSettingsController alloc] initWithProfile:profile_];
+  [NSApp beginSheet:[fontLanguageSettings_ window]
+     modalForWindow:[self window]
+      modalDelegate:self
+     didEndSelector:@selector(fontAndLanguageEndSheet:returnCode:contextInfo:)
+        contextInfo:nil];
 }
 
 //-------------------------------------------------------------------------
