@@ -93,6 +93,8 @@ using WebKit::WebView;
 namespace {
 static const unsigned int kCacheStatsDelayMS = 2000 /* milliseconds */;
 static const double kInitialIdleHandlerDelayS = 1.0 /* seconds */;
+static const double kInitialExtensionIdleHandlerDelayS = 5.0 /* seconds */;
+static const int64 kMaxExtensionIdleHandlerDelayS = 5*60 /* seconds */;
 
 static base::LazyInstance<base::ThreadLocalPointer<RenderThread> > lazy_tls(
     base::LINKER_INITIALIZED);
@@ -161,11 +163,15 @@ void RenderThread::Init() {
     CoInitialize(0);
 #endif
 
+  std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kProcessType);
+  is_extension_process_ = type_str == switches::kExtensionProcess;
   plugin_refresh_allowed_ = true;
   cache_stats_task_pending_ = false;
   widget_count_ = 0;
   hidden_widget_count_ = 0;
-  idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
+  idle_notification_delay_in_s_ = is_extension_process_ ?
+      kInitialExtensionIdleHandlerDelayS : kInitialIdleHandlerDelayS;
   task_factory_.reset(new ScopedRunnableMethodFactory<RenderThread>(this));
 
   visited_link_slave_.reset(new VisitedLinkSlave());
@@ -220,25 +226,16 @@ void RenderThread::RemoveFilter(IPC::ChannelProxy::MessageFilter* filter) {
 void RenderThread::WidgetHidden() {
   DCHECK(hidden_widget_count_ < widget_count_);
   hidden_widget_count_++;
-  if (widget_count_ && hidden_widget_count_ == widget_count_) {
-    // Reset the delay.
-    idle_notification_delay_in_s_ = kInitialIdleHandlerDelayS;
-
-    // Schedule the IdleHandler to wakeup in a bit.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        task_factory_->NewRunnableMethod(&RenderThread::IdleHandler),
-        static_cast<int64>(floor(idle_notification_delay_in_s_)) * 1000);
-  }
+  if (!is_extension_process() &&
+      widget_count_ && hidden_widget_count_ == widget_count_)
+    ScheduleIdleHandler(kInitialIdleHandlerDelayS);
 }
 
 void RenderThread::WidgetRestored() {
   DCHECK(hidden_widget_count_ > 0);
   hidden_widget_count_--;
-
-  // Note: we may have a timer pending to call the IdleHandler (see the
-  // WidgetHidden() code).  But we don't bother to cancel it as it is
-  // benign and won't do anything if the tab is un-hidden when it is
-  // called.
+  if (!is_extension_process())
+    idle_timer_.Stop();
 }
 
 void RenderThread::Resolve(const char* name, size_t length) {
@@ -291,6 +288,11 @@ void RenderThread::OnExtensionSetAPIPermissions(
     const std::string& extension_id,
     const std::vector<std::string>& permissions) {
   ExtensionProcessBindings::SetAPIPermissions(extension_id, permissions);
+
+  // This is called when starting a new extension page, so start the idle
+  // handler ticking.
+  DCHECK(is_extension_process());
+  ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
 }
 
 void RenderThread::OnExtensionSetHostPermissions(
@@ -500,6 +502,14 @@ void RenderThread::EnsureWebKitInitialized() {
   if (webkit_client_.get())
     return;
 
+  // For extensions, we want to ensure we call the IdleHandler every so often,
+  // even if the extension keeps up activity.
+  if (is_extension_process()) {
+    forced_idle_timer_.Start(
+        base::TimeDelta::FromSeconds(kMaxExtensionIdleHandlerDelayS),
+        this, &RenderThread::IdleHandler);
+  }
+
   v8::V8::SetCounterFunction(StatsTable::FindLocation);
   v8::V8::SetCreateHistogramFunction(CreateHistogram);
   v8::V8::SetAddHistogramSampleFunction(AddHistogramSample);
@@ -601,11 +611,6 @@ void RenderThread::EnsureWebKitInitialized() {
 }
 
 void RenderThread::IdleHandler() {
-  // It is possible that the timer was set while the widgets were idle,
-  // but that they are no longer idle.  If so, just return.
-  if (!widget_count_ || hidden_widget_count_ < widget_count_)
-    return;
-
 #if defined(OS_WIN) && defined(USE_TCMALLOC)
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
@@ -620,18 +625,37 @@ void RenderThread::IdleHandler() {
   //    1s, 1, 1, 2, 2, 2, 2, 3, 3, ...
   // Note that idle_notification_delay_in_s_ would be reset to
   // kInitialIdleHandlerDelayS in RenderThread::WidgetHidden.
-  idle_notification_delay_in_s_ +=
-      1.0 / (idle_notification_delay_in_s_ + 2.0);
+  ScheduleIdleHandler(idle_notification_delay_in_s_ +
+                      1.0 / (idle_notification_delay_in_s_ + 2.0));
+  if (is_extension_process()) {
+    // Dampen the forced delay as well if the extension stays idle for long
+    // periods of time.
+    int64 forced_delay_s =
+        std::max(static_cast<int64>(idle_notification_delay_in_s_),
+                 kMaxExtensionIdleHandlerDelayS);
+    forced_idle_timer_.Stop();
+    forced_idle_timer_.Start(
+        base::TimeDelta::FromSeconds(forced_delay_s),
+        this, &RenderThread::IdleHandler);
+  }
+}
 
-  // Schedule the next timer.
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      task_factory_->NewRunnableMethod(&RenderThread::IdleHandler),
-      static_cast<int64>(floor(idle_notification_delay_in_s_)) * 1000);
+void RenderThread::ScheduleIdleHandler(double initial_delay_s) {
+  idle_notification_delay_in_s_ = initial_delay_s;
+  idle_timer_.Stop();
+  idle_timer_.Start(
+      base::TimeDelta::FromSeconds(static_cast<int64>(initial_delay_s)),
+      this, &RenderThread::IdleHandler);
 }
 
 void RenderThread::OnExtensionMessageInvoke(const std::string& function_name,
                                             const ListValue& args) {
   RendererExtensionBindings::Invoke(function_name, args, NULL);
+
+  // Reset the idle handler each time there's any activity like event or message
+  // dispatch, for which Invoke is the chokepoint.
+  if (is_extension_process())
+    ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
 }
 
 void RenderThread::OnPurgeMemory() {

@@ -12,6 +12,8 @@
 #include "base/shared_memory.h"
 #include "base/string16.h"
 #include "base/task.h"
+#include "base/time.h"
+#include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/common/child_thread.h"
 #include "chrome/common/css_colors.h"
@@ -125,6 +127,8 @@ class RenderThread : public RenderThreadBase,
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
 
+  bool is_extension_process() const { return is_extension_process_; }
+
   // Do DNS prefetch resolution of a hostname.
   void Resolve(const char* name, size_t length);
 
@@ -206,6 +210,9 @@ class RenderThread : public RenderThreadBase,
   // A task we invoke periodically to assist with idle cleanup.
   void IdleHandler();
 
+  // Schedule a call to IdleHandler with the given initial delay.
+  void ScheduleIdleHandler(double initial_delay_s);
+
   // These objects live solely on the render thread.
   scoped_ptr<ScopedRunnableMethodFactory<RenderThread> > task_factory_;
   scoped_ptr<VisitedLinkSlave> visited_link_slave_;
@@ -241,6 +248,16 @@ class RenderThread : public RenderThreadBase,
 
   // The current value of the idle notification timer delay.
   double idle_notification_delay_in_s_;
+
+  // True if this renderer is running extensions.
+  bool is_extension_process_;
+
+  // Timer that periodically calls IdleHandler.
+  base::RepeatingTimer<RenderThread> idle_timer_;
+
+  // Same as above, but on a longer timer and will run even if the process is
+  // not idle, to ensure that IdleHandle gets called eventually.
+  base::RepeatingTimer<RenderThread> forced_idle_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThread);
 };
