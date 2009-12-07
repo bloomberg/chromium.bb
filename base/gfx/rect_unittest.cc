@@ -278,3 +278,37 @@ TEST(RectTest, IsEmpty) {
   EXPECT_FALSE(gfx::Rect(0, 0, 10, 10).IsEmpty());
   EXPECT_FALSE(gfx::Rect(0, 0, 10, 10).size().IsEmpty());
 }
+
+TEST(RectTest, SharesEdgeWith) {
+  gfx::Rect r(2, 3, 4, 5);
+
+  // Must be non-overlapping
+  EXPECT_FALSE(r.SharesEdgeWith(r));
+
+  gfx::Rect just_above(2, 1, 4, 2);
+  gfx::Rect just_below(2, 8, 4, 2);
+  gfx::Rect just_left(0, 3, 2, 5);
+  gfx::Rect just_right(6, 3, 2, 5);
+
+  EXPECT_TRUE(r.SharesEdgeWith(just_above));
+  EXPECT_TRUE(r.SharesEdgeWith(just_below));
+  EXPECT_TRUE(r.SharesEdgeWith(just_left));
+  EXPECT_TRUE(r.SharesEdgeWith(just_right));
+
+  // Wrong placement
+  gfx::Rect same_height_no_edge(0, 0, 1, 5);
+  gfx::Rect same_width_no_edge(0, 0, 4, 1);
+
+  EXPECT_FALSE(r.SharesEdgeWith(same_height_no_edge));
+  EXPECT_FALSE(r.SharesEdgeWith(same_width_no_edge));
+
+  gfx::Rect just_above_no_edge(2, 1, 5, 2);  // too wide
+  gfx::Rect just_below_no_edge(2, 8, 3, 2);  // too narrow
+  gfx::Rect just_left_no_edge(0, 3, 2, 6);   // too tall
+  gfx::Rect just_right_no_edge(6, 3, 2, 4);  // too short
+
+  EXPECT_FALSE(r.SharesEdgeWith(just_above_no_edge));
+  EXPECT_FALSE(r.SharesEdgeWith(just_below_no_edge));
+  EXPECT_FALSE(r.SharesEdgeWith(just_left_no_edge));
+  EXPECT_FALSE(r.SharesEdgeWith(just_right_no_edge));
+}

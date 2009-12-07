@@ -393,7 +393,7 @@ void RenderWidget::PaintDebugBorder(const gfx::Rect& rect,
 
   SkPaint paint;
   paint.setStyle(SkPaint::kStroke_Style);
-  paint.setColor(SkColorSetARGB(0x7F, 0xFF, 0, 0));
+  paint.setColor(SkColorSetARGB(0x3F, 0xFF, 0, 0));
   paint.setStrokeWidth(1);
 
   SkIRect irect;
@@ -484,14 +484,8 @@ void RenderWidget::DoDeferredUpdate() {
     bounds.set_width(canvas->getDevice()->width());
     bounds.set_height(canvas->getDevice()->height());
 
-    HISTOGRAM_COUNTS_100("MPArch.RW_PaintRectCount", update.paint_rects.size());
-
-    // TODO(darin): re-enable painting multiple damage rects once the
-    // page-cycler regressions are resolved.
-    if (update.scroll_rect.IsEmpty()) {
-      update.paint_rects.clear();
-      update.paint_rects.push_back(bounds);
-    }
+    HISTOGRAM_COUNTS_10000("MPArch.RW_PaintRectCount",
+                           update.paint_rects.size());
 
     for (size_t i = 0; i < update.paint_rects.size(); ++i)
       PaintRect(update.paint_rects[i], bounds.origin(), canvas.get());

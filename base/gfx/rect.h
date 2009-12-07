@@ -149,6 +149,10 @@ class Rect {
   // Returns the center of this rectangle.
   Point CenterPoint() const;
 
+  // Returns true if this rectangle shares an entire edge (i.e., same width or
+  // same height) with the given rectangle, and the rectangles do not overlap.
+  bool SharesEdgeWith(const gfx::Rect& rect) const;
+
  private:
   gfx::Point origin_;
   gfx::Size size_;

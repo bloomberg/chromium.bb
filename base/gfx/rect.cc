@@ -225,6 +225,13 @@ Point Rect::CenterPoint() const {
   return Point(x() + (width() + 1) / 2, y() + (height() + 1) / 2);
 }
 
+bool Rect::SharesEdgeWith(const gfx::Rect& rect) const {
+  return (y() == rect.y() && height() == rect.height() &&
+             (x() == rect.right() || right() == rect.x())) ||
+         (x() == rect.x() && width() == rect.width() &&
+             (y() == rect.bottom() || bottom() == rect.y()));
+}
+
 }  // namespace gfx
 
 std::ostream& operator<<(std::ostream& out, const gfx::Rect& r) {

@@ -4,6 +4,7 @@
 
 #include "chrome/renderer/paint_aggregator.h"
 
+#include "base/histogram.h"
 #include "base/logging.h"
 
 // ----------------------------------------------------------------------------
@@ -81,20 +82,28 @@ void PaintAggregator::ClearPendingUpdate() {
 void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
   // Combine overlapping paints using smallest bounding box.
   for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
-    gfx::Rect r = update_.paint_rects[i];
-    if (rect.Intersects(r)) {
-      if (!r.Contains(rect)) {  // Optimize for redundant paint.
-        update_.paint_rects.erase(update_.paint_rects.begin() + i);
-        InvalidateRect(rect.Union(r));
-      }
+    const gfx::Rect& existing_rect = update_.paint_rects[i];
+    if (existing_rect.Contains(rect))  // Optimize out redundancy.
+      return;
+    if (rect.Intersects(existing_rect) || rect.SharesEdgeWith(existing_rect)) {
+      // Re-invalidate in case the union intersects other paint rects.
+      gfx::Rect combined_rect = existing_rect.Union(rect);
+      update_.paint_rects.erase(update_.paint_rects.begin() + i);
+      InvalidateRect(combined_rect);
       return;
     }
   }
 
-  // Add a non-overlapping paint.
-  // TODO(darin): Limit the size of this vector?
-  // TODO(darin): Coalesce adjacent rects.
+  // Add a non-overlapping paint.  TODO(darin): Limit the size of this vector?
   update_.paint_rects.push_back(rect);
+
+  // Track how large the paint_rects vector grows during an invalidation
+  // sequence.  Note: A subsequent invalidation may end up being combined
+  // with all existing paints, which means that tracking the size of
+  // paint_rects at the time when GetPendingUpdate() is called may mask
+  // certain performance problems.
+  HISTOGRAM_COUNTS_10000("MPArch.RW_IntermediatePaintRectCount",
+                          update_.paint_rects.size());
 
   // If the new paint overlaps with a scroll, then it forces an invalidation of
   // the scroll.  If the new paint is contained by a scroll, then trim off the
@@ -182,13 +191,13 @@ bool PaintAggregator::ShouldInvalidateScrollRect(const gfx::Rect& rect) const {
   // rect comes too close to the area of the scroll_rect.  If so, then we
   // might as well invalidate the scroll rect.
 
-  int paint_area = rect.width() * rect.height();
+  int paint_area = rect.size().GetArea();
   for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
-    const gfx::Rect& r = update_.paint_rects[i];
-    if (update_.scroll_rect.Contains(r))
-      paint_area += r.width() * r.height();
+    const gfx::Rect& existing_rect = update_.paint_rects[i];
+    if (update_.scroll_rect.Contains(existing_rect))
+      paint_area += existing_rect.size().GetArea();
   }
-  int scroll_area = update_.scroll_rect.width() * update_.scroll_rect.height();
+  int scroll_area = update_.scroll_rect.size().GetArea();
   if (float(paint_area) / float(scroll_area) > kMaxRedundantPaintToScrollArea)
     return true;
 
