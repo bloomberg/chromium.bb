@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_directory_listing_parser_ls.h"
+#include "net/ftp/ftp_directory_listing_parser_netware.h"
 #include "net/ftp/ftp_directory_listing_parser_vms.h"
 #include "net/ftp/ftp_directory_listing_parser_windows.h"
 #include "unicode/ucsdet.h"
@@ -44,6 +45,7 @@ namespace net {
 FtpDirectoryListingBuffer::FtpDirectoryListingBuffer()
     : current_parser_(NULL) {
   parsers_.insert(new FtpDirectoryListingParserLs());
+  parsers_.insert(new FtpDirectoryListingParserNetware());
   parsers_.insert(new FtpDirectoryListingParserVms());
   parsers_.insert(new FtpDirectoryListingParserWindows());
 }
@@ -80,7 +82,6 @@ int FtpDirectoryListingBuffer::ProcessRemainingData() {
   if (rv != OK)
     return rv;
 
-  DCHECK(current_parser_);
   return OK;
 }
 
@@ -169,7 +170,18 @@ int FtpDirectoryListingBuffer::OnEndOfInput() {
   }
 
   if (parsers_.size() != 1) {
-    current_parser_ = NULL;
+    DCHECK(!current_parser_);
+
+    // We may hit an ambiguity in case of listings which have no entries. That's
+    // fine, as long as all remaining parsers agree that the listing is empty.
+    bool all_listings_empty = true;
+    for (ParserSet::iterator i = parsers_.begin(); i != parsers_.end(); ++i) {
+      if ((*i)->EntryAvailable())
+        all_listings_empty = false;
+    }
+    if (all_listings_empty)
+      return OK;
+
     return ERR_UNRECOGNIZED_FTP_DIRECTORY_LISTING_FORMAT;
   }
 
