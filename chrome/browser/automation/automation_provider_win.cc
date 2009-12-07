@@ -47,8 +47,9 @@ static void MoveMouse(const POINT& point) {
   // Verify
 #ifndef NDEBUG
   DWORD pos = GetMessagePos();
-  DCHECK_EQ(point.x, GET_X_LPARAM(pos));
-  DCHECK_EQ(point.y, GET_Y_LPARAM(pos));
+  gfx::Point cursor_point(pos);
+  DCHECK_EQ(point.x, cursor_point.x());
+  DCHECK_EQ(point.y, cursor_point.y());
 #endif
 }
 

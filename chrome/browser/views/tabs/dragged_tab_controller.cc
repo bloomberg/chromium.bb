@@ -1296,7 +1296,7 @@ void DraggedTabController::EnsureDraggedView() {
 gfx::Point DraggedTabController::GetCursorScreenPoint() const {
 #if defined(OS_WIN)
   DWORD pos = GetMessagePos();
-  return gfx::Point(GET_X_LPARAM(pos), GET_Y_LPARAM(pos));
+  return gfx::Point(pos);
 #else
   gint x, y;
   gdk_display_get_pointer(gdk_display_get_default(), NULL, &x, &y, NULL);
