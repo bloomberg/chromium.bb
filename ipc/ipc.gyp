@@ -23,49 +23,10 @@
       ]}],
     ],
   },
+  'includes': [
+    'ipc.gypi',
+  ],
   'targets': [
-   {
-      'target_name': 'ipc',
-      'type': '<(library)',
-      'dependencies': [
-        '../base/base.gyp:base',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'file_descriptor_set_posix.cc',
-        'file_descriptor_set_posix.h',
-        'ipc_channel.h',
-        'ipc_channel_handle.h',
-        'ipc_channel_posix.cc',
-        'ipc_channel_posix.h',
-        'ipc_channel_proxy.cc',
-        'ipc_channel_proxy.h',
-        'ipc_channel_win.cc',
-        'ipc_channel_win.h',
-        'ipc_descriptors.h',
-        'ipc_logging.cc',
-        'ipc_logging.h',
-        'ipc_message.cc',
-        'ipc_message.h',
-        'ipc_message_macros.h',
-        'ipc_message_utils.cc',
-        'ipc_message_utils.h',
-        'ipc_platform_file.h',
-        'ipc_switches.cc',
-        'ipc_switches.h',
-        'ipc_sync_channel.cc',
-        'ipc_sync_channel.h',
-        'ipc_sync_message.cc',
-        'ipc_sync_message.h',
-     ],
-     'direct_dependent_settings': {
-        'include_dirs': [
-          '..',
-        ],
-      },
-    },
     {
       'target_name': 'ipc_tests',
       'type': 'executable',
@@ -104,7 +65,7 @@
         }],
       ],
     },
-  ]
+  ],
 }
 
 # Local Variables:
