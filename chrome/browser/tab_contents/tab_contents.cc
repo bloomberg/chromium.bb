@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/dom_operation_notification_details.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
@@ -55,6 +56,7 @@
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
+#include "chrome/common/bindings_policy.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
@@ -2517,6 +2519,15 @@ bool TabContents::CreateRenderViewForRenderManager(
   if (render_manager_.pending_dom_ui())
     render_view_host->AllowBindings(
         render_manager_.pending_dom_ui()->bindings());
+
+  // If the pending url is to an extensions gallery page, enable the silent
+  // install bindings privilege. It is important to enforce that this renderer
+  // never get used for non-gallery URLs.
+  if (!process()->run_renderer_in_process() &&
+      !process()->HasConnection() &&
+      Extension::IsGalleryURL(controller_.pending_entry()->url()))
+    ChildProcessSecurityPolicy::GetInstance()->GrantInstallExtensionsSilently(
+       render_view_host->process()->id());
 
   RenderWidgetHostView* rwh_view = view_->CreateViewForWidget(render_view_host);
 

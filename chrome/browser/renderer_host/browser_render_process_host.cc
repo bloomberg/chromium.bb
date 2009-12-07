@@ -362,6 +362,10 @@ void BrowserRenderProcessHost::ReceivedBadMessage(uint32 msg_type) {
   BadMessageTerminateProcess(msg_type, GetHandle());
 }
 
+void BrowserRenderProcessHost::PolicyViolated(const std::string& policy_name) {
+  PolicyViolationTerminateProcess(policy_name, GetHandle());
+}
+
 void BrowserRenderProcessHost::ViewCreated() {
   visited_link_updater_->ReceiverReady(this);
 }
@@ -798,6 +802,19 @@ void BrowserRenderProcessHost::BadMessageTerminateProcess(
   }
   NOTREACHED();
   base::KillProcess(process, ResultCodes::KILLED_BAD_MESSAGE, false);
+}
+
+// Static. This function can be called from any thread.
+void BrowserRenderProcessHost::PolicyViolationTerminateProcess(
+    const std::string& policy_name, base::ProcessHandle process) {
+  LOG(ERROR) << "child process policy " << policy_name << " violated. "
+             << "terminating renderer.";
+  if (run_renderer_in_process()) {
+    // In single process mode it is better if we don't suicide but just crash.
+    CHECK(false);
+  }
+  NOTREACHED();
+  base::KillProcess(process, ResultCodes::KILLED_POLICY_VIOLATION, false);
 }
 
 void BrowserRenderProcessHost::OnChannelError() {

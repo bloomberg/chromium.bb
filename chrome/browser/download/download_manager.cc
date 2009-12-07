@@ -576,8 +576,8 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
     if (IsDangerous(info->suggested_path.BaseName()))
       info->is_dangerous = true;
     else if (IsExtensionInstall(info) &&
-             !ExtensionsService::IsDownloadFromGallery(info->url,
-                                                       info->referrer_url)) {
+             !Extension::IsDownloadFromGallery(info->url,
+                                               info->referrer_url)) {
       info->is_dangerous = true;
     }
   }

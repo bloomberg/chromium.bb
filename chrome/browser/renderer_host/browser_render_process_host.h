@@ -67,6 +67,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
                                const base::TimeDelta& max_delay,
                                IPC::Message* msg);
   virtual void ReceivedBadMessage(uint32 msg_type);
+  virtual void PolicyViolated(const std::string& policy_name);
   virtual void WidgetRestored();
   virtual void WidgetHidden();
   virtual void ViewCreated();
@@ -91,6 +92,13 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // can be safely called from any thread.
   static void BadMessageTerminateProcess(uint32 msg_type,
                                          base::ProcessHandle renderer);
+
+  // Called to terminate a renderer which has violated the conditions of a
+  // security policy privilege. This function can be safely called from any
+  // thread.
+  static void PolicyViolationTerminateProcess(const std::string& policy_name,
+                                              base::ProcessHandle renderer);
+  
 
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,

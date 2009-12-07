@@ -117,11 +117,6 @@ class TestRenderViewHost : public RenderViewHost {
   // This is a helper function for simulating the most common types of loads.
   void SendNavigate(int page_id, const GURL& url);
 
-  // If set, *delete_counter is incremented when this object destructs.
-  void set_delete_counter(int* delete_counter) {
-    delete_counter_ = delete_counter;
-  }
-
   // Sets whether the RenderView currently exists or not. This controls the
   // return value from IsRenderViewLive, which the rest of the system uses to
   // check whether the RenderView has crashed or not.
@@ -140,9 +135,6 @@ class TestRenderViewHost : public RenderViewHost {
   // Tracks if the caller thinks if it created the RenderView. This is so we can
   // respond to IsRenderViewLive appropriately.
   bool render_view_created_;
-
-  // See set_delete_counter() above. May be NULL.
-  int* delete_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };

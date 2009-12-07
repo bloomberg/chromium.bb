@@ -80,6 +80,11 @@ class ChildProcessSecurityPolicy {
   // Grant this renderer the ability to use extension Bindings.
   void GrantExtensionBindings(int renderer_id);
 
+  // Grant bindings to this renderer for the ability to silently install
+  // extensions. Granting this permission to a renderer requires that the
+  // renderer ONLY be used for gallery URLS.
+  void GrantInstallExtensionsSilently(int renderer_id);
+
   // Grant this renderer the ability to read raw cookies.
   void GrantReadRawCookies(int renderer_id);
 
@@ -101,10 +106,16 @@ class ChildProcessSecurityPolicy {
   // allowed to use DOMUIBindings.
   bool HasDOMUIBindings(int renderer_id);
 
-  // Returns true if the specified renderer_id has been granted DOMUIBindings.
-  // The browser should check this property before assuming the renderer is
-  // allowed to use extension bindings.
+  // Returns true if the specified renderer_id has been granted extension
+  // bindings. The browser should check this property before assuming the
+  // renderer is allowed to use extension bindings.
   bool HasExtensionBindings(int renderer_id);
+
+  // Returns true if the specified renderer_id has been granted
+  // InstallExtensionsSilently. The browser should check this property before
+  // allowing an extension to be installed without prompting the user
+  // for confirmation.
+  bool CanInstallExtensionsSilently(int renderer_id);
 
   // Returns true if the specified renderer_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int renderer_id);

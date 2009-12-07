@@ -122,6 +122,14 @@ class Extension {
   explicit Extension(const FilePath& path);
   virtual ~Extension();
 
+  // Determine if a given |url| is a gallery browse URL.
+  static bool IsGalleryURL(const GURL& url);
+
+  // Determine if a given extension download should be treated as if it came
+  // from the theme gallery.
+  static bool IsDownloadFromGallery(const GURL& download_url,
+                                    const GURL& referrer_url);
+
   // Checks to see if the extension has a valid ID.
   static bool IdIsValid(const std::string& id);
 

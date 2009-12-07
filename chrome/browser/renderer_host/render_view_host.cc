@@ -30,6 +30,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
@@ -966,6 +967,14 @@ void RenderViewHost::OnMsgNavigate(const IPC::Message& msg) {
   const int renderer_id = process()->id();
   ChildProcessSecurityPolicy* policy =
       ChildProcessSecurityPolicy::GetInstance();
+  // Gallery URLs are granted CanInstallExtensionsSilently. RenderView delegates
+  // navigations to & from gallery URLs to the browser process so it can swap
+  // processes and ensure that non-gallery URLs do not acquire this privilege.
+  // This is an extra-paranoid check on a privileged renderer navigating away.
+  if (policy->CanInstallExtensionsSilently(renderer_id) &&
+      !Extension::IsGalleryURL(validated_params.url)) {
+    process()->PolicyViolated("can_silently_install_extensions");
+  }
   // Without this check, an evil renderer can trick the browser into creating
   // a navigation entry for a banned URL.  If the user clicks the back button
   // followed by the forward button (or clicks reload, or round-trips through

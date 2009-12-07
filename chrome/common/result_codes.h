@@ -39,6 +39,8 @@ class ResultCodes {
     UNINSTALL_DELETE_PROFILE,   // Delete profile as well during uninstall.
     UNSUPPORTED_PARAM,          // Command line parameter is not supported.
     KILLED_BAD_MESSAGE,         // A bad message caused the process termination.
+    KILLED_POLICY_VIOLATION,    // A renderer violated the contract of a policy
+                                // permission that it had been granted.
     IMPORTER_CANCEL,            // The user canceled the browser import.
     IMPORTER_HUNG,              // Browser import hung and was killed.
     RESPAWN_FAILED,             // Trying to restart the browser we crashed.

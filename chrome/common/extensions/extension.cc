@@ -128,6 +128,32 @@ const std::string Extension::VersionString() const {
 }
 
 // static
+bool Extension::IsGalleryURL(const GURL& url) {
+  return StartsWithASCII(url.spec(),
+      std::string(extension_urls::kGalleryBrowsePrefix), true);
+}
+
+// static
+bool Extension::IsDownloadFromGallery(const GURL& download_url,
+                                      const GURL& referrer_url) {
+  if (StartsWithASCII(download_url.spec(),
+                      extension_urls::kMiniGalleryDownloadPrefix, false) &&
+      StartsWithASCII(referrer_url.spec(),
+                      extension_urls::kMiniGalleryBrowsePrefix, false)) {
+    return true;
+  }
+
+  if (StartsWithASCII(download_url.spec(),
+                      extension_urls::kGalleryDownloadPrefix, false) &&
+      StartsWithASCII(referrer_url.spec(),
+                      extension_urls::kGalleryBrowsePrefix, false)) {
+    return true;
+  }
+
+  return false;
+}
+
+// static
 bool Extension::IsExtension(const FilePath& file_name) {
   return file_name.MatchesExtension(
       FilePath::StringType(FILE_PATH_LITERAL(".")) +

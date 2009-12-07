@@ -19,7 +19,8 @@ class ChildProcessSecurityPolicy::SecurityState {
  public:
   SecurityState()
     : enabled_bindings_(0),
-      can_read_raw_cookies_(false) { }
+      can_read_raw_cookies_(false),
+      can_install_extensions_silently_(false) { }
   ~SecurityState() {
     scheme_policy_.clear();
   }
@@ -45,6 +46,10 @@ class ChildProcessSecurityPolicy::SecurityState {
 
   void GrantReadRawCookies() {
     can_read_raw_cookies_ = true;
+  }
+
+  void GrantInstallExtensionsSilently() {
+    can_install_extensions_silently_ = true;
   }
 
   void RevokeReadRawCookies() {
@@ -76,6 +81,10 @@ class ChildProcessSecurityPolicy::SecurityState {
     return BindingsPolicy::is_extension_enabled(enabled_bindings_);
   }
 
+  bool can_install_extensions_silently() const {
+    return can_install_extensions_silently_;
+  }
+
   bool can_read_raw_cookies() const {
     return can_read_raw_cookies_;
   }
@@ -97,6 +106,8 @@ class ChildProcessSecurityPolicy::SecurityState {
   int enabled_bindings_;
 
   bool can_read_raw_cookies_;
+
+  bool can_install_extensions_silently_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityState);
 };
@@ -268,6 +279,17 @@ void ChildProcessSecurityPolicy::GrantExtensionBindings(int renderer_id) {
   state->second->GrantBindings(BindingsPolicy::EXTENSION);
 }
 
+void ChildProcessSecurityPolicy::GrantInstallExtensionsSilently(
+    int renderer_id) {
+  AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  if (state == security_state_.end())
+    return;
+
+  state->second->GrantInstallExtensionsSilently();
+}
+
 void ChildProcessSecurityPolicy::GrantReadRawCookies(int renderer_id) {
   AutoLock lock(lock_);
 
@@ -360,6 +382,16 @@ bool ChildProcessSecurityPolicy::HasExtensionBindings(int renderer_id) {
     return false;
 
   return state->second->has_extension_bindings();
+}
+
+bool ChildProcessSecurityPolicy::CanInstallExtensionsSilently(int renderer_id) {
+  AutoLock lock(lock_);
+
+  SecurityStateMap::iterator state = security_state_.find(renderer_id);
+  if (state == security_state_.end())
+    return false;
+
+  return state->second->can_install_extensions_silently();
 }
 
 bool ChildProcessSecurityPolicy::CanReadRawCookies(int renderer_id) {

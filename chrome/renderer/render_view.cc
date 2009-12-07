@@ -30,6 +30,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/plugin_messages.h"
@@ -1955,6 +1956,30 @@ WebNavigationPolicy RenderView::decidePolicyForNavigation(
       OpenURL(url, GURL(), default_policy);
       return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
     }
+  }
+
+  // Extension gallery URLs are granted special permission to silently install
+  // extensions. If the navigation is either from or to a gallery URL, kick
+  // it up to browser so that the renderer process can be properly managed
+  // (i.e. display gallery urls in a seperate process that contains nothing
+  // else).
+  if (default_policy == WebKit::WebNavigationPolicyCurrentTab &&
+      (is_content_initiated || is_redirect) && frame->parent() == NULL &&
+      Extension::IsGalleryURL(url) != Extension::IsGalleryURL(frame->url())) {
+    // TODO(rafaelw): is it OK to use frame->url() as referrer rather than
+    // GURL() (as above)?
+    OpenURL(url, frame->url(), default_policy);
+    return WebKit::WebNavigationPolicyIgnore;  // Suppress the load here.
+  }
+
+  // The renderer for the extension gallery should not allow any non-gallery
+  // subframe navigations, since the frames would also have elevated
+  // permissions.
+  if (default_policy == WebKit::WebNavigationPolicyCurrentTab &&
+      frame->parent() != NULL &&
+      Extension::IsGalleryURL(frame->top()->url()) &&
+      !Extension::IsGalleryURL(url)) {
+    return WebKit::WebNavigationPolicyIgnore;  // Ignore the navigation.
   }
 
   // Detect when a page is "forking" a new tab that can be safely rendered in

@@ -16,6 +16,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/render_messages.h"
@@ -301,6 +302,12 @@ bool RenderViewHostManager::ShouldSwapProcessesForNavigation(
       return true;
   }
 
+  // Extension gallery pages are granted special install privileges for
+  // extensions. Thus, gallery pages must be contained in a separate process.
+  if (Extension::IsGalleryURL(cur_entry->url()) != 
+      Extension::IsGalleryURL(new_entry->url()))
+    return true;
+  
   return false;
 }
 

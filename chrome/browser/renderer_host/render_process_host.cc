@@ -59,11 +59,20 @@ static bool IsSuitableHost(RenderProcessHost* host, Profile* profile,
   if (host->profile() != profile)
     return false;
 
+  // We classify renderers according to their highest privilege, and try
+  // to group pages into renderers with similar privileges.
+  // Note: it may be possible for a renderer to have both DOMUI and EXTENSION
+  // privileges, in which case we call it an "extension" renderer.
+  // TYPE_EXTENSION_GALLERY should never be TYPE_DOMUI and/or TYPE_EXTENSION
+  // as well.
   RenderProcessHost::Type host_type = RenderProcessHost::TYPE_NORMAL;
+  if (ChildProcessSecurityPolicy::GetInstance()->
+          CanInstallExtensionsSilently(host->id()))
+    host_type = RenderProcessHost::TYPE_EXTENSION_GALLERY;
   if (ChildProcessSecurityPolicy::GetInstance()->HasDOMUIBindings(host->id()))
     host_type = RenderProcessHost::TYPE_DOMUI;
   if (ChildProcessSecurityPolicy::GetInstance()->
-        HasExtensionBindings(host->id()))
+          HasExtensionBindings(host->id()))
     host_type = RenderProcessHost::TYPE_EXTENSION;
 
   return host_type == type;
