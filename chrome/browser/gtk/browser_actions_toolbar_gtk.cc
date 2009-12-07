@@ -203,18 +203,20 @@ class BrowserActionButton : public NotificationObserver,
 BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
+      model_(NULL),
       hbox_(gtk_hbox_new(FALSE, kBrowserActionButtonPadding)) {
-  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                 Source<Profile>(profile_));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                 Source<Profile>(profile_));
-  registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                 Source<Profile>(profile_));
-
-  CreateAllButtons();
+  ExtensionsService* extension_service = profile_->GetExtensionsService();
+  // The |extension_service| can be NULL in Incognito.
+  if (extension_service) {
+    model_ = extension_service->toolbar_model();
+    model_->AddObserver(this);
+    CreateAllButtons();
+  }
 }
 
 BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
+  if (model_)
+    model_->RemoveObserver(this);
   hbox_.Destroy();
 }
 
@@ -233,38 +235,14 @@ void BrowserActionsToolbarGtk::Update() {
   }
 }
 
-void BrowserActionsToolbarGtk::Observe(NotificationType type,
-                                       const NotificationSource& source,
-                                       const NotificationDetails& details) {
-  Extension* extension = Details<Extension>(details).ptr();
-
-  if (type == NotificationType::EXTENSION_LOADED) {
-    CreateButtonForExtension(extension);
-  } else if (type == NotificationType::EXTENSION_UNLOADED ||
-             type == NotificationType::EXTENSION_UNLOADED_DISABLED) {
-    RemoveButtonForExtension(extension);
-  } else {
-    NOTREACHED() << "Received unexpected notification";
-  }
-}
-
 void BrowserActionsToolbarGtk::CreateAllButtons() {
-  ExtensionsService* extension_service = profile_->GetExtensionsService();
-  if (!extension_service)  // The |extension_service| can be NULL in Incognito.
-    return;
-
-  for (size_t i = 0; i < extension_service->extensions()->size(); ++i) {
-    Extension* extension = extension_service->GetExtensionById(
-        extension_service->extensions()->at(i)->id(), false);
-    CreateButtonForExtension(extension);
+  for (ExtensionList::iterator iter = model_->begin();
+       iter != model_->end(); ++iter) {
+    CreateButtonForExtension(*iter);
   }
 }
 
 void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension) {
-  // Only show extensions with browser actions.
-  if (!extension->browser_action())
-    return;
-
   RemoveButtonForExtension(extension);
   linked_ptr<BrowserActionButton> button(
       new BrowserActionButton(this, extension));
@@ -285,4 +263,14 @@ void BrowserActionsToolbarGtk::UpdateVisibility() {
     gtk_widget_hide(widget());
   else
     gtk_widget_show(widget());
+}
+
+void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
+                                                  int index) {
+  // TODO(estade): respect |index|.
+  CreateButtonForExtension(extension);
+}
+
+void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
+  RemoveButtonForExtension(extension);
 }

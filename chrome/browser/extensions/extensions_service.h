@@ -20,6 +20,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
@@ -32,6 +33,7 @@ class Browser;
 class DictionaryValue;
 class Extension;
 class ExtensionsServiceBackend;
+class ExtensionToolbarModel;
 class ExtensionUpdater;
 class GURL;
 class PrefService;
@@ -213,6 +215,8 @@ class ExtensionsService
   // Note that this may return NULL if autoupdate is not turned on.
   ExtensionUpdater* updater() { return updater_.get(); }
 
+  ExtensionToolbarModel* toolbar_model() { return &toolbar_model_; }
+
   ExtensionsQuotaService* quota_service() { return &quota_service_; }
 
   // Notify the frontend that there was an error loading an extension.
@@ -291,6 +295,9 @@ class ExtensionsService
 
   // Our extension updater, if updates are turned on.
   scoped_refptr<ExtensionUpdater> updater_;
+
+  // The model that tracks extensions with BrowserAction buttons.
+  ExtensionToolbarModel toolbar_model_;
 
   // Map of inspector cookies that are detached, waiting for an extension to be
   // reloaded.

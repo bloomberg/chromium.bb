@@ -91,7 +91,8 @@ ExtensionsService::ExtensionsService(Profile* profile,
       install_directory_(install_directory),
       extensions_enabled_(true),
       show_extensions_prompts_(true),
-      ready_(false) {
+      ready_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(toolbar_model_(this)) {
   // Figure out if extension installation should be enabled.
   if (command_line->HasSwitch(switches::kDisableExtensions)) {
     extensions_enabled_ = false;

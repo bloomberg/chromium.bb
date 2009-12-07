@@ -686,6 +686,8 @@
         'browser/extensions/extension_tabs_module_constants.h',
         'browser/extensions/extension_test_api.cc',
         'browser/extensions/extension_test_api.h',
+        'browser/extensions/extension_toolbar_model.cc',
+        'browser/extensions/extension_toolbar_model.h',
         'browser/extensions/extension_toolstrip_api.cc',
         'browser/extensions/extension_toolstrip_api.h',
         'browser/extensions/extension_updater.cc',

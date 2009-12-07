@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/linked_ptr.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -20,7 +21,7 @@ class Profile;
 
 typedef struct _GtkWidget GtkWidget;
 
-class BrowserActionsToolbarGtk : public NotificationObserver {
+class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
  public:
   explicit BrowserActionsToolbarGtk(Browser* browser);
   ~BrowserActionsToolbarGtk();
@@ -36,11 +37,6 @@ class BrowserActionsToolbarGtk : public NotificationObserver {
 
   // Update the display of all buttons.
   void Update();
-
-  // NotificationObserver implementation.
-  void Observe(NotificationType type,
-               const NotificationSource& source,
-               const NotificationDetails& details);
 
  private:
   // Query the extensions service for all extensions with browser actions,
@@ -60,13 +56,17 @@ class BrowserActionsToolbarGtk : public NotificationObserver {
   // to show.
   void UpdateVisibility();
 
+  // ExtensionToolbarModel::Observer implementation.
+  virtual void BrowserActionAdded(Extension* extension, int index);
+  virtual void BrowserActionRemoved(Extension* extension);
+
   Browser* browser_;
 
   Profile* profile_;
 
-  OwnedWidgetGtk hbox_;
+  ExtensionToolbarModel* model_;
 
-  NotificationRegistrar registrar_;
+  OwnedWidgetGtk hbox_;
 
   // Map from extension ID to BrowserActionButton, which is a wrapper for
   // a chrome button and related functionality. There should be one entry
