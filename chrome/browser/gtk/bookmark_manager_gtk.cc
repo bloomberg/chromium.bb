@@ -23,6 +23,7 @@
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
@@ -165,7 +166,7 @@ void BookmarkManagerGtk::SelectInTree(const BookmarkNode* node, bool expand) {
   int64 id = node->is_folder() ? node->id() : node->GetParent()->id();
   if (RecursiveFind(GTK_TREE_MODEL(left_store_), &iter, id)) {
     GtkTreePath* path = gtk_tree_model_get_path(GTK_TREE_MODEL(left_store_),
-                        &iter);
+                                                &iter);
     gtk_tree_view_expand_to_path(GTK_TREE_VIEW(left_tree_view_), path);
     gtk_tree_selection_select_path(left_selection(), path);
     if (expand)
@@ -307,6 +308,9 @@ BookmarkManagerGtk::BookmarkManagerGtk(Profile* profile)
     : profile_(profile),
       model_(profile->GetBookmarkModel()),
       organize_is_for_left_(true),
+      sync_status_menu_(NULL),
+      sync_service_(NULL),
+      sync_relogin_required_(false),
       search_factory_(this),
       select_file_dialog_(SelectFileDialog::Create(this)),
       delaying_mousedown_(false),
@@ -319,6 +323,12 @@ BookmarkManagerGtk::BookmarkManagerGtk(Profile* profile)
   if (model_->IsLoaded())
     Loaded(model_);
 
+  if (profile_->GetProfileSyncService()) {
+    sync_service_ = profile_->GetProfileSyncService();
+    sync_service_->AddObserver(this);
+    UpdateSyncStatus();
+  }
+
   gtk_widget_show_all(window_);
 }
 
@@ -328,6 +338,9 @@ BookmarkManagerGtk::~BookmarkManagerGtk() {
       gtk_paned_get_position(GTK_PANED(paned_)));
   SaveColumnConfiguration();
   model_->RemoveObserver(this);
+
+  if (sync_service_)
+    sync_service_->RemoveObserver(this);
 
   gtk_accel_group_disconnect_key(accel_group_, GDK_w, GDK_CONTROL_MASK);
   gtk_window_remove_accel_group(GTK_WINDOW(window_), accel_group_);
@@ -382,9 +395,15 @@ void BookmarkManagerGtk::InitWidgets() {
       l10n_util::GetStringUTF8(IDS_BOOKMARK_MANAGER_TOOLS_MENU).c_str());
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(tools), tools_menu);
 
+  // Build the sync status menu item.
+  sync_status_menu_ = gtk_menu_item_new_with_label("");
+  g_signal_connect(sync_status_menu_, "activate",
+                   G_CALLBACK(OnSyncStatusMenuActivated), this);
+
   GtkWidget* menu_bar = gtk_menu_bar_new();
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), organize_);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), tools);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu_bar), sync_status_menu_);
   SetMenuBarStyle();
   gtk_widget_set_name(menu_bar, "chrome-bm-menubar");
 
@@ -1372,6 +1391,18 @@ void BookmarkManagerGtk::OnExportItemActivated(
       reinterpret_cast<void*>(IDS_BOOKMARK_MANAGER_EXPORT_MENU));
 }
 
+// static
+void BookmarkManagerGtk::OnSyncStatusMenuActivated(GtkMenuItem* menu_item,
+                                                   BookmarkManagerGtk* bm) {
+  if (bm->sync_relogin_required_) {
+    DCHECK(bm->sync_service_);
+    bm->sync_service_->ShowLoginDialog();
+  } else {
+    sync_ui_util::OpenSyncMyBookmarksDialog(
+        bm->profile_, ProfileSyncService::START_FROM_BOOKMARK_MANAGER);
+  }
+}
+
 gboolean BookmarkManagerGtk::OnWindowDestroyed(GtkWidget* window) {
   DCHECK_EQ(this, manager);
 
@@ -1434,6 +1465,10 @@ void BookmarkManagerGtk::FileSelected(const FilePath& path,
   }
 }
 
+void BookmarkManagerGtk::OnStateChanged() {
+  UpdateSyncStatus();
+}
+
 // static
 gboolean BookmarkManagerGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
     GObject* acceleratable,
@@ -1450,4 +1485,34 @@ gboolean BookmarkManagerGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
   gtk_widget_destroy(bookmark_manager->window_);
 
   return TRUE;
+}
+
+void BookmarkManagerGtk::UpdateSyncStatus() {
+  DCHECK(sync_service_);
+  string16 status_label;
+  string16 link_label;
+  sync_relogin_required_ = sync_ui_util::GetStatusLabels(
+      sync_service_, &status_label, &link_label) == sync_ui_util::SYNC_ERROR;
+
+  if (sync_relogin_required_) {
+    GtkWidget* sync_status_label = gtk_bin_get_child(
+        GTK_BIN(sync_status_menu_));
+    gtk_label_set_label(
+        GTK_LABEL(sync_status_label),
+        l10n_util::GetStringUTF8(IDS_SYNC_BOOKMARK_BAR_ERROR).c_str());
+    return;
+  }
+
+  if (sync_service_->HasSyncSetupCompleted()) {
+      string16 username = sync_service_->GetAuthenticatedUsername();
+      status_label = l10n_util::GetStringFUTF16(IDS_SYNC_NTP_SYNCED_TO,
+                                                username);
+  } else if (sync_service_->SetupInProgress()) {
+    status_label = l10n_util::GetStringUTF16(IDS_SYNC_NTP_SETUP_IN_PROGRESS);
+  } else {
+    status_label = l10n_util::GetStringUTF16(IDS_SYNC_START_SYNC_BUTTON_LABEL);
+  }
+  GtkWidget* sync_status_label = gtk_bin_get_child(GTK_BIN(sync_status_menu_));
+  gtk_label_set_label(GTK_LABEL(sync_status_label),
+                      UTF16ToUTF8(status_label).c_str());
 }

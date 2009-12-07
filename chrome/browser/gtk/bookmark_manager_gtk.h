@@ -14,6 +14,7 @@
 #include "base/task.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/gtk/bookmark_context_menu_gtk.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/gtk_tree.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -23,6 +24,7 @@ class BookmarkTableModel;
 class Profile;
 
 class BookmarkManagerGtk : public BookmarkModelObserver,
+                           public ProfileSyncServiceObserver,
                            public gtk_tree::TableAdapter::Delegate,
                            public SelectFileDialog::Listener {
  public:
@@ -67,6 +69,9 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // SelectFileDialog::Listener implemenation.
   virtual void FileSelected(const FilePath& path,
                             int index, void* params);
+
+  // ProfileSyncServiceObserver implementation.
+  virtual void OnStateChanged();
 
  private:
   friend class BookmarkManagerTest;
@@ -264,6 +269,10 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   static void OnExportItemActivated(GtkMenuItem* menuitem,
                                     BookmarkManagerGtk* bm);
 
+  // Sync status menu item callback.
+  static void OnSyncStatusMenuActivated(GtkMenuItem* menu_item,
+                                        BookmarkManagerGtk* bm);
+
   // Window callbacks.
   static gboolean OnWindowDestroyedThunk(GtkWidget* window, gpointer self) {
     return reinterpret_cast<BookmarkManagerGtk*>(self)->
@@ -293,6 +302,8 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
                                    guint keyval,
                                    GdkModifierType modifier,
                                    BookmarkManagerGtk* bookmark_manager);
+
+  void UpdateSyncStatus();
 
   GtkWidget* window_;
   GtkWidget* search_entry_;
@@ -330,6 +341,17 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   scoped_ptr<BookmarkContextMenuGtk> organize_menu_;
   // Whether the menu refers to the left selection.
   bool organize_is_for_left_;
+
+  // The sync status menu item that notifies the user about the current status
+  // of bookmarks synchronization.
+  GtkWidget* sync_status_menu_;
+
+  // A pointer to the ProfileSyncService instance if one exists.
+  ProfileSyncService* sync_service_;
+
+  // True if the cached credentials have expired and we need to prompt the
+  // user to re-enter their password.
+  bool sync_relogin_required_;
 
   // Factory used for delaying search.
   ScopedRunnableMethodFactory<BookmarkManagerGtk> search_factory_;
