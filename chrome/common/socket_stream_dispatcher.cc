@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/socket_stream_dispatcher.h"
+#include "chrome/common/socket_stream_dispatcher.h"
 
 #include <vector>
 
 #include "base/id_map.h"
 #include "base/ref_counted.h"
+#include "chrome/common/child_thread.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/net/socket_stream.h"
-#include "chrome/renderer/render_thread.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
 #include "webkit/glue/websocketstreamhandle_delegate.h"
@@ -21,11 +21,11 @@ class IPCWebSocketStreamHandleBridge
     : public webkit_glue::WebSocketStreamHandleBridge {
  public:
   IPCWebSocketStreamHandleBridge(
-      IPC::Message::Sender* sender,
+      ChildThread* child_thread,
       WebKit::WebSocketStreamHandle* handle,
       webkit_glue::WebSocketStreamHandleDelegate* delegate)
       : socket_id_(chrome_common_net::kNoSocketId),
-        sender_(sender),
+        child_thread_(child_thread),
         handle_(handle),
         delegate_(delegate) {}
 
@@ -49,7 +49,7 @@ class IPCWebSocketStreamHandleBridge
   void DoConnect(const GURL& url);
   int socket_id_;
 
-  IPC::Message::Sender* sender_;
+  ChildThread* child_thread_;
   WebKit::WebSocketStreamHandle* handle_;
   webkit_glue::WebSocketStreamHandleDelegate* delegate_;
 
@@ -69,15 +69,15 @@ IPCWebSocketStreamHandleBridge::~IPCWebSocketStreamHandleBridge() {
   DLOG(INFO) << "IPCWebSocketStreamHandleBridge destructor socket_id="
              << socket_id_;
   if (socket_id_ != chrome_common_net::kNoSocketId) {
-    sender_->Send(new ViewHostMsg_Close(socket_id_));
+    child_thread_->Send(new ViewHostMsg_Close(socket_id_));
     socket_id_ = chrome_common_net::kNoSocketId;
   }
 }
 
 void IPCWebSocketStreamHandleBridge::Connect(const GURL& url) {
-  DCHECK(sender_);
+  DCHECK(child_thread_);
   DLOG(INFO) << "Connect url=" << url;
-  MessageLoop::current()->PostTask(
+  child_thread_->message_loop()->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &IPCWebSocketStreamHandleBridge::DoConnect,
                         url));
@@ -86,7 +86,8 @@ void IPCWebSocketStreamHandleBridge::Connect(const GURL& url) {
 bool IPCWebSocketStreamHandleBridge::Send(
     const std::vector<char>& data) {
   DLOG(INFO) << "Send data.size=" << data.size();
-  if (sender_->Send(new ViewHostMsg_SocketStream_SendData(socket_id_, data))) {
+  if (child_thread_->Send(
+          new ViewHostMsg_SocketStream_SendData(socket_id_, data))) {
     if (delegate_)
       delegate_->WillSendData(handle_, &data[0], data.size());
     return true;
@@ -96,7 +97,7 @@ bool IPCWebSocketStreamHandleBridge::Send(
 
 void IPCWebSocketStreamHandleBridge::Close() {
   DLOG(INFO) << "Close socket_id" << socket_id_;
-  sender_->Send(new ViewHostMsg_SocketStream_Close(socket_id_));
+  child_thread_->Send(new ViewHostMsg_SocketStream_Close(socket_id_));
 }
 
 void IPCWebSocketStreamHandleBridge::OnConnected(int max_pending_send_allowed) {
@@ -131,14 +132,15 @@ void IPCWebSocketStreamHandleBridge::OnClosed() {
 }
 
 void IPCWebSocketStreamHandleBridge::DoConnect(const GURL& url) {
-  DCHECK(sender_);
+  DCHECK(child_thread_);
   DCHECK_EQ(socket_id_, chrome_common_net::kNoSocketId);
   if (delegate_)
     delegate_->WillOpenStream(handle_, url);
 
   socket_id_ = all_bridges.Add(this);
   DCHECK_NE(socket_id_, chrome_common_net::kNoSocketId);
-  if (sender_->Send(new ViewHostMsg_SocketStream_Connect(url, socket_id_))) {
+  if (child_thread_->Send(
+          new ViewHostMsg_SocketStream_Connect(url, socket_id_))) {
     DLOG(INFO) << "Connect socket_id=" << socket_id_;
     AddRef();  // Released in OnClosed().
     // TODO(ukai): timeout to OnConnected.
@@ -161,7 +163,6 @@ SocketStreamDispatcher::CreateBridge(
 }
 
 bool SocketStreamDispatcher::OnMessageReceived(const IPC::Message& msg) {
-  DLOG(INFO) << "SocketStreamDispatcher::OnMessageReceived";
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(SocketStreamDispatcher, msg)
     IPC_MESSAGE_HANDLER(ViewMsg_SocketStream_Connected, OnConnected)

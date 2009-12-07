@@ -13,6 +13,7 @@
 #include "ipc/ipc_message.h"
 
 class NotificationService;
+class SocketStreamDispatcher;
 
 // The main thread of a child process derives from this class.
 class ChildThread : public IPC::Channel::Listener,
@@ -33,6 +34,10 @@ class ChildThread : public IPC::Channel::Listener,
 
   ResourceDispatcher* resource_dispatcher() {
     return resource_dispatcher_.get();
+  }
+
+  SocketStreamDispatcher* socket_stream_dispatcher() {
+    return socket_stream_dispatcher_.get();
   }
 
   MessageLoop* message_loop() { return message_loop_; }
@@ -71,6 +76,9 @@ class ChildThread : public IPC::Channel::Listener,
 
   // Handles resource loads for this process.
   scoped_ptr<ResourceDispatcher> resource_dispatcher_;
+
+  // Handles SocketStream for this process.
+  scoped_ptr<SocketStreamDispatcher> socket_stream_dispatcher_;
 
   // If true, checks with the browser process before shutdown.  This avoids race
   // conditions if the process refcount is 0 but there's an IPC message inflight

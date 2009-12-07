@@ -10,6 +10,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/plugin_messages.h"
+#include "chrome/common/socket_stream_dispatcher.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_switches.h"
@@ -45,6 +46,7 @@ void ChildThread::Init() {
 #endif
 
   resource_dispatcher_.reset(new ResourceDispatcher(this));
+  socket_stream_dispatcher_.reset(new SocketStreamDispatcher());
 
   // When running in unit tests, there is already a NotificationService object.
   // Since only one can exist at a time per thread, check first.
@@ -96,6 +98,8 @@ void ChildThread::RemoveRoute(int32 routing_id) {
 void ChildThread::OnMessageReceived(const IPC::Message& msg) {
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))
+    return;
+  if (socket_stream_dispatcher_->OnMessageReceived(msg))
     return;
 
   bool handled = true;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_RENDERER_SOCKET_STREAM_DISPATCHER_H_
-#define CHROME_RENDERER_SOCKET_STREAM_DISPATCHER_H_
+#ifndef CHROME_COMMON_SOCKET_STREAM_DISPATCHER_H_
+#define CHROME_COMMON_SOCKET_STREAM_DISPATCHER_H_
 
 #include <vector>
 
@@ -35,4 +35,4 @@ class SocketStreamDispatcher {
   DISALLOW_COPY_AND_ASSIGN(SocketStreamDispatcher);
 };
 
-#endif  // CHROME_RENDERER_SOCKET_STREAM_DISPATCHER_H_
+#endif  // CHROME_COMMON_SOCKET_STREAM_DISPATCHER_H_

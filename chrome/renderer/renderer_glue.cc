@@ -19,12 +19,12 @@
 #include "base/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/socket_stream_dispatcher.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/socket_stream_dispatcher.h"
 #include "googleurl/src/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
@@ -242,7 +242,7 @@ WebSocketStreamHandleBridge* WebSocketStreamHandleBridge::Create(
     WebKit::WebSocketStreamHandle* handle,
     WebSocketStreamHandleDelegate* delegate) {
   SocketStreamDispatcher* dispatcher =
-      RenderThread::current()->socket_stream_dispatcher();
+      ChildThread::current()->socket_stream_dispatcher();
   return dispatcher->CreateBridge(handle, delegate);
 }
 
