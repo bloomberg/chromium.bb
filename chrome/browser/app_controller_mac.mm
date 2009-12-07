@@ -539,6 +539,12 @@ static bool g_is_opening_new_window = false;
       Browser::OpenEmptyWindow(defaultProfile);
       g_is_opening_new_window = false;
       break;
+    case IDC_FOCUS_SEARCH:
+      g_is_opening_new_window = true;
+      Browser::OpenEmptyWindow(defaultProfile);
+      g_is_opening_new_window = false;
+      BrowserList::GetLastActive()->FocusSearch();
+      break;
     case IDC_NEW_INCOGNITO_WINDOW:
       Browser::OpenEmptyWindow(defaultProfile->GetOffTheRecordProfile());
       break;
@@ -546,7 +552,9 @@ static bool g_is_opening_new_window = false;
       Browser::OpenWindowWithRestoredTabs(defaultProfile);
       break;
     case IDC_OPEN_FILE:
+      g_is_opening_new_window = true;
       Browser::OpenEmptyWindow(defaultProfile);
+      g_is_opening_new_window = false;
       BrowserList::GetLastActive()->
           ExecuteCommandWithDisposition(IDC_OPEN_FILE, CURRENT_TAB);
       break;
@@ -627,6 +635,7 @@ static bool g_is_opening_new_window = false;
   menuState_->UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);
   menuState_->UpdateCommandEnabled(IDC_RESTORE_TAB, false);
   menuState_->UpdateCommandEnabled(IDC_FOCUS_LOCATION, true);
+  menuState_->UpdateCommandEnabled(IDC_FOCUS_SEARCH, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_HISTORY, true);
   menuState_->UpdateCommandEnabled(IDC_SHOW_DOWNLOADS, true);
   menuState_->UpdateCommandEnabled(IDC_MANAGE_EXTENSIONS, true);

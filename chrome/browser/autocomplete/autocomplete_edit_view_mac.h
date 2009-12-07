@@ -59,7 +59,7 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   virtual void SetWindowTextAndCaretPos(const std::wstring& text,
                                         size_t caret_pos);
 
-  virtual void SetForcedQuery() { NOTIMPLEMENTED(); }
+  virtual void SetForcedQuery();
 
   virtual bool IsSelectAll();
 

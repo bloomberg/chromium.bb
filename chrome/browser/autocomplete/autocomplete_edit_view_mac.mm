@@ -301,6 +301,19 @@ void AutocompleteEditViewMac::SetWindowTextAndCaretPos(const std::wstring& text,
   SetTextAndSelectedRange(text, NSMakeRange(caret_pos, caret_pos));
 }
 
+void AutocompleteEditViewMac::SetForcedQuery() {
+  // We need to do this first, else |SetSelectedRange()| won't work.
+  FocusLocation();
+
+  const std::wstring current_text(GetText());
+  if (current_text.empty() || (current_text[0] != '?')) {
+    SetUserText(L"?");
+  } else {
+    NSRange range = NSMakeRange(1, current_text.size() - 1);
+    [[field_ currentEditor] setSelectedRange:range];
+  }
+}
+
 bool AutocompleteEditViewMac::IsSelectAll() {
   if (![field_ currentEditor])
     return true;

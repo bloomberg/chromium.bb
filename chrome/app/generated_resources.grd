@@ -5886,6 +5886,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_EDIT_FIND_SUBMENU_MAC" desc="The Mac menu item for the find submenu in the edit menu.">
           Find
         </message>
+        <message name="IDS_EDIT_SEARCH_WEB_MAC" desc="The Mac menu item for search the web (using, e.g., Google or Yahoo! search) in the edit menu.">
+          Search the Web...
+        </message>
         <message name="IDS_EDIT_FIND_MAC" desc="The Mac menu item for find in the edit menu.">
           Find...
         </message>
