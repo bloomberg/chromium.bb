@@ -517,6 +517,23 @@
    fun:_ZN24BrowserRenderProcessHost4InitEbP23URLRequestContextGetter
    fun:_ZN14RenderViewHost16CreateRenderViewEP23URLRequestContextGetter
 }
+{
+   # Async callback leak on exit in metrics_service.cc
+   intentional_MetricsService_GetPluginListTask_Run_Leak
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14MetricsService17GetPluginListTask3RunEv
+}
+{
+   # Async deletion leak on exit in ChromeThread.
+   # This fails once in a while in LocaleTest.
+   intentional_ChromeThread_DeleteSoon_ExtensionMessageService_Leak
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN12ChromeThread10DeleteSoonI23ExtensionMessageServiceEEbNS_2IDERKN15tracked_objects8LocationEPT_
+   fun:_ZN12ChromeThread14DeleteOnThreadILNS_2IDE0EE8DestructI23ExtensionMessageServiceEEvPT_
+}
+
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
 # These should all be in chromium's bug tracking system (but a few aren't yet).
