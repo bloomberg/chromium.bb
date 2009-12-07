@@ -269,7 +269,7 @@ private:
            browser:(Browser*)browser {
   DCHECK(view && switchView && browser);
   if ((self = [super init])) {
-    tabView_.reset([view retain]);
+    tabStripView_.reset([view retain]);
     switchView_ = switchView;
     browser_ = browser;
     tabModel_ = browser_->tabstrip_model();
@@ -320,7 +320,7 @@ private:
         addObserver:self
            selector:@selector(tabViewFrameChanged:)
                name:NSViewFrameDidChangeNotification
-             object:tabView_];
+             object:tabStripView_];
 
     trackingArea_.reset([[NSTrackingArea alloc]
         initWithRect:NSZeroRect  // Ignored by NSTrackingInVisibleRect
@@ -330,14 +330,14 @@ private:
                      NSTrackingInVisibleRect
                owner:self
             userInfo:nil]);
-    [tabView_ addTrackingArea:trackingArea_.get()];
+    [tabStripView_ addTrackingArea:trackingArea_.get()];
   }
   return self;
 }
 
 - (void)dealloc {
   if (trackingArea_.get())
-    [tabView_ removeTrackingArea:trackingArea_.get()];
+    [tabStripView_ removeTrackingArea:trackingArea_.get()];
 
   [newTabButton_ removeTrackingArea:newTabTrackingArea_.get()];
   // Invalidate all closing animations so they don't call back to us after
@@ -556,7 +556,7 @@ private:
     // Use the standard window close if this is the last tab
     // this prevents the tab from being removed from the model until after
     // the window dissapears
-    [[tabView_ window] performClose:nil];
+    [[tabStripView_ window] performClose:nil];
   }
 }
 
@@ -590,7 +590,7 @@ private:
 - (BOOL)isTabFullyVisible:(TabView*)tab {
   NSRect frame = [tab frame];
   return NSMinX(frame) >= kIndentLeavingSpaceForControls &&
-      NSMaxX(frame) <= NSMaxX([tabView_ frame]);
+      NSMaxX(frame) <= NSMaxX([tabStripView_ frame]);
 }
 
 - (void)showNewTabButton:(BOOL)show {
@@ -635,7 +635,7 @@ private:
   if ([self inRapidClosureMode]) {
     availableWidth = availableResizeWidth_;
   } else {
-    availableWidth = NSWidth([tabView_ frame]);
+    availableWidth = NSWidth([tabStripView_ frame]);
     availableWidth -= NSWidth([newTabButton_ frame]) + kNewTabButtonOffset;
   }
   availableWidth -= kIndentLeavingSpaceForControls;
@@ -661,7 +661,7 @@ private:
   }
 
   const CGFloat minX = NSMinX(placeholderFrame_);
-  BOOL visible = [[tabView_ window] isVisible];
+  BOOL visible = [[tabStripView_ window] isVisible];
 
   CGFloat offset = kIndentLeavingSpaceForControls;
   NSUInteger i = 0;
@@ -765,9 +765,9 @@ private:
 
     if (!NSEqualRects(newTabTargetFrame_, newTabNewFrame)) {
       // Set the new tab button image correctly based on where the cursor is.
-      NSWindow* window = [tabView_ window];
+      NSWindow* window = [tabStripView_ window];
       NSPoint currentMouse = [window mouseLocationOutsideOfEventStream];
-      currentMouse = [tabView_ convertPoint:currentMouse fromView:nil];
+      currentMouse = [tabStripView_ convertPoint:currentMouse fromView:nil];
       NSString* imageName = nil;
       if (NSPointInRect(currentMouse, newTabNewFrame)) {
         imageName = @"newtab_h";
@@ -1278,9 +1278,9 @@ private:
 - (void)tabUpdateTracking:(NSNotification*)notification {
   DCHECK([[notification object] isKindOfClass:[TabView class]]);
   DCHECK(mouseInside_);
-  NSWindow* window = [tabView_ window];
+  NSWindow* window = [tabStripView_ window];
   NSPoint location = [window mouseLocationOutsideOfEventStream];
-  if (NSPointInRect(location, [tabView_ frame])) {
+  if (NSPointInRect(location, [tabStripView_ frame])) {
     NSEvent* mouseEvent = [NSEvent mouseEventWithType:NSMouseMoved
                                              location:location
                                         modifierFlags:0
@@ -1305,7 +1305,8 @@ private:
 
 - (void)mouseMoved:(NSEvent*)event {
   // Use hit test to figure out what view we are hovering over.
-  TabView* targetView = (TabView*)[tabView_ hitTest:[event locationInWindow]];
+  TabView* targetView =
+      (TabView*)[tabStripView_ hitTest:[event locationInWindow]];
   if (![targetView isKindOfClass:[TabView class]]) {
     if ([[targetView superview] isKindOfClass:[TabView class]]) {
       targetView = (TabView*)[targetView superview];
@@ -1409,7 +1410,7 @@ private:
   if (selectedTabView) {
     [subviews addObject:selectedTabView];
   }
-  [tabView_ setSubviews:subviews];
+  [tabStripView_ setSubviews:subviews];
   [self setTabTrackingAreasEnabled:mouseInside_];
 }
 
@@ -1432,9 +1433,8 @@ private:
     DCHECK([view isKindOfClass:[TabView class]]);
 
     // Recall that |-[NSView frame]| is in its superview's coordinates, so a
-    // |TabView|'s frame is in the coordinates of the |TabStripView| (which is
-    // confusingly called |tabView_|).
-    NSRect frame = [tabView_ convertRectToBase:[view frame]];
+    // |TabView|'s frame is in the coordinates of the |TabStripView|.
+    NSRect frame = [tabStripView_ convertRectToBase:[view frame]];
 
     // Modify the frame to make it "unoverlapped".
     frame.origin.x += kTabOverlap / 2.0;
@@ -1540,16 +1540,16 @@ private:
     }
   }
 
-  [tabView_ setDropArrowPosition:arrowPos];
-  [tabView_ setDropArrowShown:YES];
-  [tabView_ setNeedsDisplay:YES];
+  [tabStripView_ setDropArrowPosition:arrowPos];
+  [tabStripView_ setDropArrowShown:YES];
+  [tabStripView_ setNeedsDisplay:YES];
 }
 
 // Hide the indicator which indicates where an URL drop would happen.
 - (void)hideDropURLsIndicator {
-  if ([tabView_ dropArrowShown]) {
-    [tabView_ setDropArrowShown:NO];
-    [tabView_ setNeedsDisplay:YES];
+  if ([tabStripView_ dropArrowShown]) {
+    [tabStripView_ setDropArrowShown:NO];
+    [tabStripView_ setNeedsDisplay:YES];
   }
 }
 

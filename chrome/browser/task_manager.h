@@ -55,9 +55,9 @@ class TaskManager {
     virtual bool ReportsSqliteMemoryUsed() const { return false; }
     virtual size_t SqliteMemoryUsedBytes() const { return 0; }
 
-  // Return extension associated with the resource, or NULL
-  // if not applicable.
-  virtual const Extension* GetExtension() const { return NULL; }
+    // Return extension associated with the resource, or NULL
+    // if not applicable.
+    virtual const Extension* GetExtension() const { return NULL; }
 
     virtual bool ReportsV8MemoryStats() const { return false; }
     virtual size_t GetV8MemoryAllocated() const { return 0; }

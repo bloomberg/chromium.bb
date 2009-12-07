@@ -41,7 +41,7 @@ class ToolbarModel;
            GTMWindowSheetControllerDelegate> {
  @private
   TabContents* currentTab_;   // weak, tab for which we're showing state
-  scoped_nsobject<TabStripView> tabView_;  // strong
+  scoped_nsobject<TabStripView> tabStripView_;  // strong
   NSView* switchView_;  // weak
   scoped_nsobject<NSView> dragBlockingView_;  // avoid bad window server drags
   NSButton* newTabButton_;  // weak, obtained from the nib.
