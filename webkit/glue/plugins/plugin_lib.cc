@@ -13,8 +13,7 @@
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
-namespace NPAPI
-{
+namespace NPAPI {
 
 const char kPluginLibrariesLoadedCounter[] = "PluginLibrariesLoaded";
 const char kPluginInstancesActiveCounter[] = "PluginInstancesActive";

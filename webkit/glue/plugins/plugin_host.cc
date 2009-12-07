@@ -20,6 +20,7 @@
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/webplugin_delegate.h"
 #include "webkit/glue/webkit_glue.h"
+#include "webkit/glue/plugins/npapi_extension_thunk.h"
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/plugins/plugin_lib.h"
 #include "webkit/glue/plugins/plugin_list.h"
@@ -29,8 +30,18 @@
 
 using WebKit::WebBindings;
 
-namespace NPAPI
-{
+// Finds a PluginInstance from an NPP.
+// The caller must take a reference if needed.
+static NPAPI::PluginInstance* FindInstance(NPP id) {
+  if (id == NULL) {
+    NOTREACHED();
+    return NULL;
+  }
+  return reinterpret_cast<NPAPI::PluginInstance*>(id->ndata);
+}
+
+namespace NPAPI {
+
 scoped_refptr<PluginHost> PluginHost::singleton_;
 
 PluginHost::PluginHost() {
@@ -151,7 +162,7 @@ void PluginHost::PatchNPNetscapeFuncs(NPNetscapeFuncs* overrides) {
     host_funcs_.enumerate = overrides->enumerate;
 }
 
-bool PluginHost::SetPostData(const char *buf,
+bool PluginHost::SetPostData(const char* buf,
                              uint32 length,
                              std::vector<std::string>* names,
                              std::vector<std::string>* values,
@@ -179,8 +190,8 @@ bool PluginHost::SetPostData(const char *buf,
                              { GETVALUE, GETNAME, DONE, GETVALUE },
                              { GETDATA,  GETDATA, DONE, GETDATA } };
   std::string name, value;
-  char *ptr = (char*)buf;
-  char *start = ptr;
+  const char* ptr = static_cast<const char*>(buf);
+  const char* start = ptr;
   int state = GETNAME;  // initial state
   bool done = false;
   bool err = false;
@@ -209,42 +220,41 @@ bool PluginHost::SetPostData(const char *buf,
     // Take action based on the new state.
     if (state != newstate) {
       switch (newstate) {
-      case GETNAME:
-        // Got a value.
-        value = std::string(start, ptr - start);
-        TrimWhitespace(value, TRIM_ALL, &value);
-        // If the name field is empty, we'll skip this header
-        // but we won't error out.
-        if (!name.empty() && name != "content-length") {
-          names->push_back(name);
-          values->push_back(value);
-        }
-        start = ptr + 1;
-        break;
-      case GETVALUE:
-        // Got a header.
-        name = StringToLowerASCII(std::string(start, ptr - start));
-        TrimWhitespace(name, TRIM_ALL, &name);
-        start = ptr + 1;
-        break;
-      case GETDATA:
-      {
-        // Finished headers, now get body
-        if (*ptr)
+        case GETNAME:
+          // Got a value.
+          value = std::string(start, ptr - start);
+          TrimWhitespace(value, TRIM_ALL, &value);
+          // If the name field is empty, we'll skip this header
+          // but we won't error out.
+          if (!name.empty() && name != "content-length") {
+            names->push_back(name);
+            values->push_back(value);
+          }
           start = ptr + 1;
-        size_t previous_size = body->size();
-        size_t new_body_size = length - static_cast<int>(start - buf);
-        body->resize(previous_size + new_body_size);
-        if (!body->empty())
-          memcpy(&body->front() + previous_size, start, new_body_size);
-        done = true;
-        break;
-      }
-      case ERR:
-        // error
-        err = true;
-        done = true;
-        break;
+          break;
+        case GETVALUE:
+          // Got a header.
+          name = StringToLowerASCII(std::string(start, ptr - start));
+          TrimWhitespace(name, TRIM_ALL, &name);
+          start = ptr + 1;
+          break;
+        case GETDATA: {
+          // Finished headers, now get body
+          if (*ptr)
+            start = ptr + 1;
+          size_t previous_size = body->size();
+          size_t new_body_size = length - static_cast<int>(start - buf);
+          body->resize(previous_size + new_body_size);
+          if (!body->empty())
+            memcpy(&body->front() + previous_size, start, new_body_size);
+          done = true;
+          break;
+        }
+        case ERR:
+          // error
+          err = true;
+          done = true;
+          break;
       }
     }
     state = newstate;
@@ -254,21 +264,9 @@ bool PluginHost::SetPostData(const char *buf,
   return !err;
 }
 
-} // namespace NPAPI
+}  // namespace NPAPI
 
 extern "C" {
-
-// FindInstance()
-// Finds a PluginInstance from an NPP.
-// The caller must take a reference if needed.
-NPAPI::PluginInstance* FindInstance(NPP id) {
-  if (id == NULL) {
-    NOTREACHED();
-    return NULL;
-  }
-
-  return (NPAPI::PluginInstance *)id->ndata;
-}
 
 // Allocates memory from the host's memory space.
 void* NPN_MemAlloc(uint32 size) {
@@ -287,9 +285,8 @@ void* NPN_MemAlloc(uint32 size) {
 void NPN_MemFree(void* ptr) {
   scoped_refptr<NPAPI::PluginHost> host = NPAPI::PluginHost::Singleton();
   if (host != NULL) {
-    if (ptr != NULL && ptr != (void*)-1) {
+    if (ptr != NULL && ptr != reinterpret_cast<void*>(-1))
       free(ptr);
-    }
   }
 }
 
@@ -301,22 +298,20 @@ uint32 NPN_MemFlush(uint32 size) {
 
 // This is for dynamic discovery of new plugins.
 // Should force a re-scan of the plugins directory to load new ones.
-void  NPN_ReloadPlugins(NPBool reloadPages) {
+void NPN_ReloadPlugins(NPBool reloadPages) {
   // TODO: implement me
   DLOG(INFO) << "NPN_ReloadPlugin is not implemented yet.";
 }
 
 // Requests a range of bytes for a seekable stream.
-NPError  NPN_RequestRead(NPStream* stream, NPByteRange* range_list) {
-  if (!stream || !range_list) {
+NPError NPN_RequestRead(NPStream* stream, NPByteRange* range_list) {
+  if (!stream || !range_list)
     return NPERR_GENERIC_ERROR;
-  }
 
   scoped_refptr<NPAPI::PluginInstance> plugin =
       reinterpret_cast<NPAPI::PluginInstance*>(stream->ndata);
-  if (!plugin.get()) {
+  if (!plugin.get())
     return NPERR_GENERIC_ERROR;
-  }
 
   plugin->RequestRead(stream, range_list);
   return NPERR_NO_ERROR;
@@ -377,7 +372,7 @@ NPError NPN_GetURLNotify(NPP id,
   return GetURLNotify(id, url, target, true, notify_data);
 }
 
-NPError  NPN_GetURL(NPP id, const char* url, const char* target) {
+NPError NPN_GetURL(NPP id, const char* url, const char* target) {
   // Notes:
   //    Request from the Plugin to fetch content either for the plugin
   //    or to be placed into a browser window.
@@ -487,22 +482,22 @@ static NPError PostURLNotify(NPP id,
   return NPERR_NO_ERROR;
 }
 
-NPError  NPN_PostURLNotify(NPP id,
-                           const char* url,
-                           const char* target,
-                           uint32 len,
-                           const char* buf,
-                           NPBool file,
-                           void* notify_data) {
+NPError NPN_PostURLNotify(NPP id,
+                          const char* url,
+                          const char* target,
+                          uint32 len,
+                          const char* buf,
+                          NPBool file,
+                          void* notify_data) {
   return PostURLNotify(id, url, target, len, buf, file, true, notify_data);
 }
 
-NPError  NPN_PostURL(NPP id,
-                     const char* url,
-                     const char* target,
-                     uint32 len,
-                     const char* buf,
-                     NPBool file) {
+NPError NPN_PostURL(NPP id,
+                    const char* url,
+                    const char* target,
+                    uint32 len,
+                    const char* buf,
+                    NPBool file) {
   // POSTs data to an URL, either from a temp file or a buffer.
   // If file is true, buf contains a temp file (which host will delete after
   //   completing), and len contains the length of the filename.
@@ -643,9 +638,8 @@ void NPN_InvalidateRegion(NPP id, NPRegion invalidRegion) {
   // very least, fetch the region's bounding box and pass it to InvalidateRect).
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   DCHECK(plugin.get() != NULL);
-  if (plugin.get() && plugin->webplugin()) {
+  if (plugin.get() && plugin->webplugin())
     plugin->webplugin()->Invalidate();
-  }
 }
 
 void NPN_ForceRedraw(NPP id) {
@@ -667,122 +661,7 @@ void NPN_ForceRedraw(NPP id) {
   NOTIMPLEMENTED();
 }
 
-#if defined(PEPPER_APIS_ENABLED)
-// Pepper 2D device API --------------------------------------------------------
-
-static NPError Device2DQueryCapability(NPP id, int32 capability, int32* value) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    plugin->webplugin()->delegate()->Device2DQueryCapability(capability, value);
-    return NPERR_NO_ERROR;
-  } else {
-    return NPERR_GENERIC_ERROR;
-  }
-}
-
-static NPError Device2DQueryConfig(NPP id,
-                                   const NPDeviceConfig* request,
-                                   NPDeviceConfig* obtain) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    return plugin->webplugin()->delegate()->Device2DQueryConfig(
-        static_cast<const NPDeviceContext2DConfig*>(request),
-        static_cast<NPDeviceContext2DConfig*>(obtain));
-  }
-  return NPERR_GENERIC_ERROR;
-}
-
-static NPError Device2DInitializeContext(NPP id,
-                                         const NPDeviceConfig* config,
-                                         NPDeviceContext* context) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    return plugin->webplugin()->delegate()->Device2DInitializeContext(
-        static_cast<const NPDeviceContext2DConfig*>(config),
-        static_cast<NPDeviceContext2D*>(context));
-  }
-  return NPERR_GENERIC_ERROR;
-}
-
-static NPError Device2DSetStateContext(NPP id,
-                                       NPDeviceContext* context,
-                                       int32 state,
-                                       int32 value) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    return plugin->webplugin()->delegate()->Device2DSetStateContext(
-        static_cast<NPDeviceContext2D*>(context), state, value);
-  }
-  return NPERR_GENERIC_ERROR;
-}
-
-static NPError Device2DGetStateContext(NPP id,
-                                       NPDeviceContext* context,
-                                       int32 state,
-                                       int32* value) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    return plugin->webplugin()->delegate()->Device2DGetStateContext(
-        static_cast<NPDeviceContext2D*>(context), state, value);
-  }
-  return NPERR_GENERIC_ERROR;
-}
-
-static NPError Device2DFlushContext(NPP id,
-                                    NPDeviceContext* context,
-                                    NPDeviceFlushContextCallbackPtr callback,
-                                    void* user_data) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    NPError err = plugin->webplugin()->delegate()->Device2DFlushContext(
-        static_cast<NPDeviceContext2D*>(context), callback, user_data);
-
-    // Invoke the callback to inform the caller the work was done.
-    // TODO(brettw) this is probably not how we want this to work, this should
-    // happen when the frame is painted so the plugin knows when it can draw
-    // the next frame.
-    if (callback != NULL)
-      (*callback)(id, context, err, user_data);
-
-    // Return any errors.
-    return err;
-  }
-  return NPERR_GENERIC_ERROR;
-}
-
-static NPError Device2DDestroyContext(NPP id,
-                                      NPDeviceContext* context) {
-  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    return plugin->webplugin()->delegate()->Device2DDestroyContext(
-        static_cast<NPDeviceContext2D*>(context));
-  }
-  return NPERR_GENERIC_ERROR;
-}
-
-// -----------------------------------------------------------------------------
-
-static NPDevice* AcquireDevice(NPP id, NPDeviceID device_id) {
-  static NPDevice device_2d = {
-    Device2DQueryCapability,
-    Device2DQueryConfig,
-    Device2DInitializeContext,
-    Device2DSetStateContext,
-    Device2DGetStateContext,
-    Device2DFlushContext,
-    Device2DDestroyContext,
-  };
-  switch (device_id) {
-    case NPPepper2DDevice:
-      return const_cast<NPDevice*>(&device_2d);
-    default:
-      return NULL;
-  }
-}
-
-#endif  // defined(PEPPER_APIS_ENABLED)
-
-NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
+NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   // Allows the plugin to query the browser for information
   //
   // Variables:
@@ -797,251 +676,223 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {
   NPError rv = NPERR_GENERIC_ERROR;
 
   switch (variable) {
-  case NPNVWindowNPObject:
-  {
-    scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-    NPObject *np_object = plugin->webplugin()->GetWindowScriptNPObject();
-    // Return value is expected to be retained, as
-    // described here:
-    // <http://www.mozilla.org/projects/plugins/npruntime.html#browseraccess>
-    if (np_object) {
-      WebBindings::retainObject(np_object);
-      void **v = (void **)value;
-      *v = np_object;
-      rv = NPERR_NO_ERROR;
-    } else {
-      NOTREACHED();
+    case NPNVWindowNPObject: {
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      NPObject *np_object = plugin->webplugin()->GetWindowScriptNPObject();
+      // Return value is expected to be retained, as
+      // described here:
+      // <http://www.mozilla.org/projects/plugins/npruntime.html#browseraccess>
+      if (np_object) {
+        WebBindings::retainObject(np_object);
+        void **v = (void **)value;
+        *v = np_object;
+        rv = NPERR_NO_ERROR;
+      } else {
+        NOTREACHED();
+      }
+      break;
     }
-    break;
-  }
-  case NPNVPluginElementNPObject:
-  {
-    scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-    NPObject *np_object = plugin->webplugin()->GetPluginElement();
-    // Return value is expected to be retained, as
-    // described here:
-    // <http://www.mozilla.org/projects/plugins/npruntime.html#browseraccess>
-    if (np_object) {
-      WebBindings::retainObject(np_object);
-      void **v = (void **)value;
-      *v = np_object;
-      rv = NPERR_NO_ERROR;
-    } else {
-      NOTREACHED();
+    case NPNVPluginElementNPObject: {
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      NPObject *np_object = plugin->webplugin()->GetPluginElement();
+      // Return value is expected to be retained, as
+      // described here:
+      // <http://www.mozilla.org/projects/plugins/npruntime.html#browseraccess>
+      if (np_object) {
+        WebBindings::retainObject(np_object);
+        void** v = static_cast<void**>(value);
+        *v = np_object;
+        rv = NPERR_NO_ERROR;
+      } else {
+        NOTREACHED();
+      }
+      break;
     }
-    break;
-  }
-  case NPNVnetscapeWindow:
-  {
-#if defined(OS_WIN) || defined(OS_LINUX)
-    scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-    gfx::PluginWindowHandle handle = plugin->window_handle();
-    *((void**)value) = (void*)handle;
-    rv = NPERR_NO_ERROR;
-#else
-    NOTIMPLEMENTED();
-#endif
-    break;
-  }
-  case NPNVjavascriptEnabledBool:
-  {
-    // yes, JS is enabled.
-    *((void**)value) = (void*)1;
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-#if defined(OS_LINUX)
-  case NPNVToolkit:
-    // Tell them we are GTK2.  (The alternative is GTK 1.2.)
-    *reinterpret_cast<int*>(value) = NPNVGtk2;
-    rv = NPERR_NO_ERROR;
-    break;
+    case NPNVnetscapeWindow: {
+  #if defined(OS_WIN) || defined(OS_LINUX)
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      gfx::PluginWindowHandle handle = plugin->window_handle();
+      *((void**)value) = (void*)handle;
+      rv = NPERR_NO_ERROR;
+  #else
+      NOTIMPLEMENTED();
+  #endif
+      break;
+    }
+    case NPNVjavascriptEnabledBool: {
+      // yes, JS is enabled.
+      *((void**)value) = (void*)1;
+      rv = NPERR_NO_ERROR;
+      break;
+    }
+  #if defined(OS_LINUX)
+    case NPNVToolkit:
+      // Tell them we are GTK2.  (The alternative is GTK 1.2.)
+      *reinterpret_cast<int*>(value) = NPNVGtk2;
+      rv = NPERR_NO_ERROR;
+      break;
 
-  case NPNVSupportsXEmbedBool:
-    // Yes, we support XEmbed.
-    *reinterpret_cast<NPBool*>(value) = TRUE;
-    rv = NPERR_NO_ERROR;
-    break;
-#endif
-  case NPNVSupportsWindowless:
-  {
-    NPBool* supports_windowless = reinterpret_cast<NPBool*>(value);
-    *supports_windowless = TRUE;
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-  case NPNVprivateModeBool:
-  {
-    NPBool* private_mode = reinterpret_cast<NPBool*>(value);
-    scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-    *private_mode = plugin->webplugin()->IsOffTheRecord();
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-  case default_plugin::kMissingPluginStatusStart +
-       default_plugin::MISSING_PLUGIN_AVAILABLE:
-  // fall through
-  case default_plugin::kMissingPluginStatusStart +
-       default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD:
-  {
-    // This is a hack for the default plugin to send notification to renderer.
-    // Even though we check if the plugin is the default plugin, we still need
-    // to worry about future standard change that may conflict with the
-    // variable definition, in order to avoid duplicate case clauses in this
-    // big switch statement.
-    scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-    if (plugin->plugin_lib()->plugin_info().path.value() ==
-          kDefaultPluginLibraryName) {
-      plugin->webplugin()->OnMissingPluginStatus(
-          variable - default_plugin::kMissingPluginStatusStart);
+    case NPNVSupportsXEmbedBool:
+      // Yes, we support XEmbed.
+      *reinterpret_cast<NPBool*>(value) = TRUE;
+      rv = NPERR_NO_ERROR;
+      break;
+  #endif
+    case NPNVSupportsWindowless: {
+      NPBool* supports_windowless = reinterpret_cast<NPBool*>(value);
+      *supports_windowless = TRUE;
+      rv = NPERR_NO_ERROR;
+      break;
     }
-    break;
-  }
-#if defined(OS_MACOSX)
-  case NPNVpluginDrawingModel:
-  {
-    // return the drawing model that was negotiated when we initialized.
-    scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-    *reinterpret_cast<int*>(value) = plugin->drawing_model();
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-  case NPNVsupportsQuickDrawBool:
-  {
-    // we do not admit to supporting the QuickDraw drawing model.
-    NPBool* supports_qd = reinterpret_cast<NPBool*>(value);
-    *supports_qd = FALSE;
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-  case NPNVsupportsCoreGraphicsBool:
-  case NPNVsupportsCarbonBool:
-  case NPNVsupportsCocoaBool:
-  {
-    // we do support these drawing and event models.
-    NPBool* supports_model = reinterpret_cast<NPBool*>(value);
-    *supports_model = TRUE;
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-  case NPNVsupportsOpenGLBool:
-  case NPNVsupportsCoreAnimationBool:
-  {
-    // we do not support these drawing and event models.
-    NPBool* supports_model = reinterpret_cast<NPBool*>(value);
-    *supports_model = FALSE;
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-#endif
-#if defined(PEPPER_APIS_ENABLED)
-  case NPNVPepperExtensions:
-  {
-    static const NPExtensions kExtensions = {
-      AcquireDevice,
-    };
-    // Return a pointer to the canonical function table.
-    NPExtensions* extensions = const_cast<NPExtensions*>(&kExtensions);
-    NPExtensions** exts = reinterpret_cast<NPExtensions**>(value);
-    *exts = extensions;
-    rv = NPERR_NO_ERROR;
-    break;
-  }
-#endif  // defined(PEPPER_APIS_ENABLED)
-  default:
-  {
-    // TODO: implement me
-    DLOG(INFO) << "NPN_GetValue(" << variable << ") is not implemented yet.";
-    break;
-  }
+    case NPNVprivateModeBool: {
+      NPBool* private_mode = reinterpret_cast<NPBool*>(value);
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      *private_mode = plugin->webplugin()->IsOffTheRecord();
+      rv = NPERR_NO_ERROR;
+      break;
+    }
+    case default_plugin::kMissingPluginStatusStart +
+         default_plugin::MISSING_PLUGIN_AVAILABLE:
+    // fall through
+    case default_plugin::kMissingPluginStatusStart +
+         default_plugin::MISSING_PLUGIN_USER_STARTED_DOWNLOAD: {
+      // This is a hack for the default plugin to send notification to
+      // renderer.  Even though we check if the plugin is the default plugin,
+      // we still need to worry about future standard change that may conflict
+      // with the variable definition, in order to avoid duplicate case clauses
+      // in this big switch statement.
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      if (plugin->plugin_lib()->plugin_info().path.value() ==
+            kDefaultPluginLibraryName) {
+        plugin->webplugin()->OnMissingPluginStatus(
+            variable - default_plugin::kMissingPluginStatusStart);
+      }
+      break;
+    }
+  #if defined(OS_MACOSX)
+    case NPNVpluginDrawingModel: {
+      // return the drawing model that was negotiated when we initialized.
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      *reinterpret_cast<int*>(value) = plugin->drawing_model();
+      rv = NPERR_NO_ERROR;
+      break;
+    }
+    case NPNVsupportsQuickDrawBool: {
+      // we do not admit to supporting the QuickDraw drawing model.
+      NPBool* supports_qd = reinterpret_cast<NPBool*>(value);
+      *supports_qd = FALSE;
+      rv = NPERR_NO_ERROR;
+      break;
+    }
+    case NPNVsupportsCoreGraphicsBool:
+    case NPNVsupportsCarbonBool:
+    case NPNVsupportsCocoaBool: {
+      // we do support these drawing and event models.
+      NPBool* supports_model = reinterpret_cast<NPBool*>(value);
+      *supports_model = TRUE;
+      rv = NPERR_NO_ERROR;
+      break;
+    }
+    case NPNVsupportsOpenGLBool:
+    case NPNVsupportsCoreAnimationBool: {
+      // we do not support these drawing and event models.
+      NPBool* supports_model = reinterpret_cast<NPBool*>(value);
+      *supports_model = FALSE;
+      rv = NPERR_NO_ERROR;
+      break;
+    }
+  #endif  // OS_MACOSX
+    case NPNVPepperExtensions:
+      rv = NPAPI::GetPepperExtensionsFunctions(value);
+      break;
+    default:
+      DLOG(INFO) << "NPN_GetValue(" << variable << ") is not implemented yet.";
+      break;
   }
   return rv;
 }
 
-NPError  NPN_SetValue(NPP id, NPPVariable variable, void *value) {
+NPError NPN_SetValue(NPP id, NPPVariable variable, void* value) {
   // Allows the plugin to set various modes
 
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  switch(variable)
-  {
-  case NPPVpluginWindowBool:
-  {
-    // Sets windowless mode for display of the plugin
-    // Note: the documentation at http://developer.mozilla.org/en/docs/NPN_SetValue
-    // is wrong.  When value is NULL, the mode is set to true.  This is the same
-    // way Mozilla works.
-    plugin->set_windowless(value == 0);
-    return NPERR_NO_ERROR;
-  }
-  case NPPVpluginTransparentBool:
-  {
-    // Sets transparent mode for display of the plugin
-    //
-    // Transparent plugins require the browser to paint the background
-    // before having the plugin paint.  By default, windowless plugins
-    // are transparent.  Making a windowless plugin opaque means that
-    // the plugin does not require the browser to paint the background.
-    //
-    bool mode = (value != 0);
-    plugin->set_transparent(mode);
-    return NPERR_NO_ERROR;
-  }
-  case NPPVjavascriptPushCallerBool:
-    // Specifies whether you are pushing or popping the JSContext off
-    // the stack
-    // TODO: implement me
-    DLOG(INFO) << "NPN_SetValue(NPPVJavascriptPushCallerBool) is not implemented.";
-    return NPERR_GENERIC_ERROR;
-  case NPPVpluginKeepLibraryInMemory:
-    // Tells browser that plugin library should live longer than usual.
-    // TODO: implement me
-    DLOG(INFO) << "NPN_SetValue(NPPVpluginKeepLibraryInMemory) is not implemented.";
-    return NPERR_GENERIC_ERROR;
-#if defined(OS_MACOSX)
-  case NPPVpluginDrawingModel:
-  {
-    // we only admit to supporting the CoreGraphics drawing model.  The logic
-    // here is that our QuickDraw plugin support is so rudimentary that we
-    // only want to use it as a fallback to keep plugins from crashing: if
-    // a plugin knows enough to ask, we want them to use CoreGraphics.
-    int model = reinterpret_cast<int>(value);
-    if (model == NPDrawingModelCoreGraphics) {
-      plugin->set_drawing_model(model);
+  switch(variable) {
+    case NPPVpluginWindowBool: {
+      // Sets windowless mode for display of the plugin
+      // Note: the documentation at
+      // http://developer.mozilla.org/en/docs/NPN_SetValue is wrong.  When
+      // value is NULL, the mode is set to true.  This is the same way Mozilla
+      // works.
+      plugin->set_windowless(value == 0);
       return NPERR_NO_ERROR;
     }
-    return NPERR_GENERIC_ERROR;
-  }
-  case NPPVpluginEventModel:
-  {
-    // we support Carbon and Cocoa event models
-    int model = reinterpret_cast<int>(value);
-    switch (model) {
-      case NPEventModelCarbon:
-      case NPEventModelCocoa:
-        plugin->set_event_model(model);
-        return NPERR_NO_ERROR;
-        break;
+    case NPPVpluginTransparentBool: {
+      // Sets transparent mode for display of the plugin
+      //
+      // Transparent plugins require the browser to paint the background
+      // before having the plugin paint.  By default, windowless plugins
+      // are transparent.  Making a windowless plugin opaque means that
+      // the plugin does not require the browser to paint the background.
+      bool mode = (value != 0);
+      plugin->set_transparent(mode);
+      return NPERR_NO_ERROR;
     }
-    return NPERR_GENERIC_ERROR;
-  }
-#endif
-  default:
-    // TODO: implement me
-    DLOG(INFO) << "NPN_SetValue(" << variable << ") is not implemented.";
-    break;
+    case NPPVjavascriptPushCallerBool:
+      // Specifies whether you are pushing or popping the JSContext off.
+      // the stack
+      // TODO: implement me
+      DLOG(INFO) <<
+          "NPN_SetValue(NPPVJavascriptPushCallerBool) is not implemented.";
+      return NPERR_GENERIC_ERROR;
+    case NPPVpluginKeepLibraryInMemory:
+      // Tells browser that plugin library should live longer than usual.
+      // TODO: implement me
+      DLOG(INFO) <<
+          "NPN_SetValue(NPPVpluginKeepLibraryInMemory) is not implemented.";
+      return NPERR_GENERIC_ERROR;
+  #if defined(OS_MACOSX)
+    case NPPVpluginDrawingModel: {
+      // We only admit to supporting the CoreGraphics drawing model.  The logic
+      // here is that our QuickDraw plugin support is so rudimentary that we
+      // only want to use it as a fallback to keep plugins from crashing: if
+      // a plugin knows enough to ask, we want them to use CoreGraphics.
+      int model = reinterpret_cast<int>(value);
+      if (model == NPDrawingModelCoreGraphics) {
+        plugin->set_drawing_model(model);
+        return NPERR_NO_ERROR;
+      }
+      return NPERR_GENERIC_ERROR;
+    }
+    case NPPVpluginEventModel: {
+      // we support Carbon and Cocoa event models
+      int model = reinterpret_cast<int>(value);
+      switch (model) {
+        case NPEventModelCarbon:
+        case NPEventModelCocoa:
+          plugin->set_event_model(model);
+          return NPERR_NO_ERROR;
+          break;
+      }
+      return NPERR_GENERIC_ERROR;
+    }
+  #endif
+    default:
+      // TODO: implement me
+      DLOG(INFO) << "NPN_SetValue(" << variable << ") is not implemented.";
+      break;
   }
 
   NOTREACHED();
   return NPERR_GENERIC_ERROR;
 }
 
-void *NPN_GetJavaEnv() {
+void* NPN_GetJavaEnv() {
   // TODO: implement me
   DLOG(INFO) << "NPN_GetJavaEnv is not implemented.";
   return NULL;
 }
 
-void *NPN_GetJavaPeer(NPP) {
+void* NPN_GetJavaPeer(NPP) {
   // TODO: implement me
   DLOG(INFO) << "NPN_GetJavaPeer is not implemented.";
   return NULL;
@@ -1049,32 +900,29 @@ void *NPN_GetJavaPeer(NPP) {
 
 void NPN_PushPopupsEnabledState(NPP id, NPBool enabled) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
+  if (plugin)
     plugin->PushPopupsEnabledState(enabled);
-  }
 }
 
 void NPN_PopPopupsEnabledState(NPP id) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
+  if (plugin)
     plugin->PopPopupsEnabledState();
-  }
 }
 
 void NPN_PluginThreadAsyncCall(NPP id,
-                               void (*func)(void *),
-                               void *userData) {
+                               void (*func)(void*),
+                               void* user_data) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
-  if (plugin) {
-    plugin->PluginThreadAsyncCall(func, userData);
-  }
+  if (plugin)
+    plugin->PluginThreadAsyncCall(func, user_data);
 }
 
 NPError NPN_GetValueForURL(NPP id,
                            NPNURLVariable variable,
-                           const char *url,
-                           char **value,
-                           uint32_t *len) {
+                           const char* url,
+                           char** value,
+                           uint32* len) {
   if (!id)
     return NPERR_INVALID_PARAM;
 
@@ -1122,9 +970,9 @@ NPError NPN_GetValueForURL(NPP id,
 
 NPError NPN_SetValueForURL(NPP id,
                            NPNURLVariable variable,
-                           const char *url,
-                           const char *value,
-                           uint32_t len) {
+                           const char* url,
+                           const char* value,
+                           uint32 len) {
   if (!id)
     return NPERR_INVALID_PARAM;
 
@@ -1158,15 +1006,15 @@ NPError NPN_SetValueForURL(NPP id,
 }
 
 NPError NPN_GetAuthenticationInfo(NPP id,
-                                  const char *protocol,
-                                  const char *host,
+                                  const char* protocol,
+                                  const char* host,
                                   int32_t port,
-                                  const char *scheme,
-                                  const char *realm,
-                                  char **username,
-                                  uint32_t *ulen,
-                                  char **password,
-                                  uint32_t *plen) {
+                                  const char* scheme,
+                                  const char* realm,
+                                  char** username,
+                                  uint32* ulen,
+                                  char** password,
+                                  uint32* plen) {
   if (!id || !protocol || !host || !scheme || !realm || !username ||
       !ulen || !password || !plen)
     return NPERR_INVALID_PARAM;
@@ -1208,4 +1056,5 @@ NPBool NPN_ConvertPoint(NPP instance, double sourceX, double sourceY,
     *destY = sourceY;
   return FALSE;
 }
-} // extern "C"
+
+}  // extern "C"

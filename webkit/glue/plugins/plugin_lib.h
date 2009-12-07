@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_PLUGIN_PLUGIN_LIB_H__
-#define WEBKIT_GLUE_PLUGIN_PLUGIN_LIB_H__
+#ifndef WEBKIT_GLUE_PLUGIN_PLUGIN_LIB_H_
+#define WEBKIT_GLUE_PLUGIN_PLUGIN_LIB_H_
 
 #include <string>
 #include <vector>
@@ -18,8 +18,7 @@
 
 struct WebPluginInfo;
 
-namespace NPAPI
-{
+namespace NPAPI {
 
 class PluginInstance;
 
@@ -97,19 +96,19 @@ class PluginLib : public base::RefCounted<PluginLib> {
 
  private:
   bool internal_;  // True for plugins that are built-in into chrome binaries.
-  WebPluginInfo web_plugin_info_;  // supported mime types, description
-  base::NativeLibrary library_;  // the opened library reference
-  NPPluginFuncs plugin_funcs_;  // the struct of plugin side functions
-  bool initialized_;  // is the plugin initialized
-  NPSavedData *saved_data_;  // persisted plugin info for NPAPI
-  int instance_count_;  // count of plugins in use
+  WebPluginInfo web_plugin_info_;  // Supported mime types, description
+  base::NativeLibrary library_;  // The opened library reference.
+  NPPluginFuncs plugin_funcs_;  // The struct of plugin side functions.
+  bool initialized_;  // Is the plugin initialized?
+  NPSavedData *saved_data_;  // Persisted plugin info for NPAPI.
+  int instance_count_;  // Count of plugins in use.
 
   // Function pointers to entry points into the plugin.
   PluginEntryPoints entry_points_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PluginLib);
+  DISALLOW_COPY_AND_ASSIGN(PluginLib);
 };
 
-} // namespace NPAPI
+}  // namespace NPAPI
 
-#endif  // WEBKIT_GLUE_PLUGIN_PLUGIN_LIB_H__
+#endif  // WEBKIT_GLUE_PLUGIN_PLUGIN_LIB_H_

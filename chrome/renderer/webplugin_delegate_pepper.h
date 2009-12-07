@@ -80,6 +80,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       bool notify_needed,
       intptr_t notify_data,
       intptr_t stream);
+
+  // WebPlugin2DDeviceDelegate implementation.
   virtual NPError Device2DQueryCapability(int32 capability, int32* value);
   virtual NPError Device2DQueryConfig(const NPDeviceContext2DConfig* request,
                                       NPDeviceContext2DConfig* obtain);
@@ -92,10 +94,30 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   virtual NPError Device2DGetStateContext(NPDeviceContext2D* context,
                                           int32 state,
                                           int32* value);
-  virtual NPError Device2DFlushContext(NPDeviceContext2D* context,
+  virtual NPError Device2DFlushContext(NPP id,
+                                       NPDeviceContext2D* context,
                                        NPDeviceFlushContextCallbackPtr callback,
                                        void* user_data);
   virtual NPError Device2DDestroyContext(NPDeviceContext2D* context);
+
+  // WebPlugin3DDeviceDelegate implementation.
+  virtual NPError Device3DQueryCapability(int32 capability, int32* value);
+  virtual NPError Device3DQueryConfig(const NPDeviceContext3DConfig* request,
+                                      NPDeviceContext3DConfig* obtain);
+  virtual NPError Device3DInitializeContext(
+      const NPDeviceContext3DConfig* config,
+      NPDeviceContext3D* context);
+  virtual NPError Device3DSetStateContext(NPDeviceContext3D* context,
+                                          int32 state,
+                                          int32 value);
+  virtual NPError Device3DGetStateContext(NPDeviceContext3D* context,
+                                          int32 state,
+                                          int32* value);
+  virtual NPError Device3DFlushContext(NPP id,
+                                       NPDeviceContext3D* context,
+                                       NPDeviceFlushContextCallbackPtr callback,
+                                       void* user_data);
+  virtual NPError Device3DDestroyContext(NPDeviceContext3D* context);
   // End of WebPluginDelegate implementation.
 
   bool IsWindowless() const { return true; }

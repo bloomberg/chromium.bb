@@ -295,6 +295,7 @@ NPError WebPluginDelegatePepper::Device2DGetStateContext(
 }
 
 NPError WebPluginDelegatePepper::Device2DFlushContext(
+    NPP id,
     NPDeviceContext2D* context,
     NPDeviceFlushContextCallbackPtr callback,
     void* user_data) {
@@ -302,7 +303,7 @@ NPError WebPluginDelegatePepper::Device2DFlushContext(
   OpenPaintContextMap::iterator found = open_paint_contexts_.find(
       context->u.graphicsRgba.region);
   if (found == open_paint_contexts_.end())
-    return NPERR_INVALID_PARAM;
+    return NPERR_INVALID_PARAM;  // TODO(brettw) call callback.
 
   OpenPaintContext* paint_context = found->second.get();
 
@@ -330,6 +331,16 @@ NPError WebPluginDelegatePepper::Device2DFlushContext(
       &src_rect, dest_rect);
 
   committed_bitmap_.setIsOpaque(false);
+
+  // Invoke the callback to inform the caller the work was done.
+  // TODO(brettw) this is not how we want this to work, this should
+  // happen when the frame is painted so the plugin knows when it can draw
+  // the next frame.
+  //
+  // This should also be called in the failure cases as well.
+  if (callback != NULL)
+    (*callback)(id, context, NPERR_NO_ERROR, user_data);
+
   return NPERR_NO_ERROR;
 }
 
@@ -342,6 +353,50 @@ NPError WebPluginDelegatePepper::Device2DDestroyContext(
 
   open_paint_contexts_.erase(found);
   return NPERR_NO_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DQueryCapability(int32 capability,
+                                                         int32* value) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DQueryConfig(
+    const NPDeviceContext3DConfig* request,
+    NPDeviceContext3DConfig* obtain) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DInitializeContext(
+    const NPDeviceContext3DConfig* config,
+    NPDeviceContext3D* context) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DSetStateContext(
+    NPDeviceContext3D* context,
+    int32 state,
+    int32 value) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DGetStateContext(
+    NPDeviceContext3D* context,
+    int32 state,
+    int32* value) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DFlushContext(
+    NPP id,
+    NPDeviceContext3D* context,
+    NPDeviceFlushContextCallbackPtr callback,
+    void* user_data) {
+  return NPERR_GENERIC_ERROR;
+}
+
+NPError WebPluginDelegatePepper::Device3DDestroyContext(
+    NPDeviceContext3D* context) {
+  return NPERR_GENERIC_ERROR;
 }
 
 bool WebPluginDelegatePepper::IsPluginDelegateWindow(

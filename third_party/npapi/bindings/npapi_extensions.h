@@ -198,11 +198,6 @@ typedef struct _NPPepperEvent
 
 #define NPPepper2DDevice 1
 
-typedef enum _NPRenderType
-{
-  NPRenderGraphicsRGBA
-} NPRenderType;
-
 typedef struct _NPDeviceContext2DConfig {
 } NPDeviceContext2DConfig;
 
@@ -227,5 +222,18 @@ typedef struct _NPDeviceContext2D
     } graphicsRgba;
   } u;
 } NPDeviceContext2D;
+
+/* 3D -----------------------------------------------------------------------*/
+
+#define NPPepper3DDevice 2
+
+typedef struct _NPDeviceContext3DConfig {
+} NPDeviceContext3DConfig;
+
+typedef struct _NPDeviceContext3D
+{
+  void* buffer;
+  int32 bufferLength;
+} NPDeviceContext3D;
 
 #endif  /* _NP_EXTENSIONS_H_ */
