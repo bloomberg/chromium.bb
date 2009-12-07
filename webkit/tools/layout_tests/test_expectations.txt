@@ -2876,9 +2876,6 @@ BUG9798 WIN DEBUG : LayoutTests/media/video-empty-source.html = IMAGE PASS
 BUG9798 RELEASE : LayoutTests/fast/dom/defaultView.html = TEXT PASS
 BUG9798 WIN RELEASE : LayoutTests/http/tests/navigation/no-referrer-reset.html = TIMEOUT PASS
 
-// WebKit 50603:50667
-BUG_LEVIN WIN DEBUG : LayoutTests/svg/custom/gradient-stop-style-change.svg = TEXT PASS
-
 // Webkit 50667:50696
 BUG28417 LINUX WIN : LayoutTests/http/tests/xmlhttprequest/xmlhttprequest-setrequestheader-no-value.html = TEXT
 
