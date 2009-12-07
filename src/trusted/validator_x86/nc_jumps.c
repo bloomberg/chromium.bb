@@ -189,6 +189,15 @@ static void NcAddJumpToJumpSets(NcValidatorState* state,
         /* vprint(("ignoring target %08x in trampoline\n", target)); */
         is_good = FALSE;
       }
+      if (0 == to_address) {
+        /* This clause was added to allow the validator to continue after
+         * seeing a call to address 0 as in "callq  0 <NACLALIGN-0x5>.
+         * These can happen when a binary has unresolved symbols. By
+         * setting is_good to FALSE, we get an error message instead
+         * of an assertion failure in AddressSetAdd().
+         */
+        is_good = FALSE;
+      }
     }
   } else {
     is_good = FALSE;
@@ -586,7 +595,8 @@ void NcJumpValidatorSummarize(FILE* file,
   for (addr = state->vbase; addr < state->vlimit; addr++) {
     if (AddressSetContains(jump_sets->actual_targets, addr, state)) {
       if (!AddressSetContains(jump_sets->possible_targets, addr, state)) {
-        NcValidatorPcAddressMessage(LOG_ERROR, state, addr, "Bad jump target\n");
+        NcValidatorPcAddressMessage(LOG_ERROR, state, addr,
+                                    "Bad jump target\n");
       }
     }
   }

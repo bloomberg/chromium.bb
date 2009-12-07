@@ -603,14 +603,14 @@ void DefineOneByteOpcodes() {
   DefineOperand(G_Operand, OpFlag(OpUse));
 
 
-  DefineOpcode(0x63, NACLi_SYSTEM,
+  DefineOpcode(0x63, NACLi_386,
                InstFlag(Opcode64Only) | InstFlag(OperandSize_o) |
                InstFlag(OpcodeUsesRexW) | InstFlag(OpcodeUsesModRm),
                InstMovsxd);
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(Ev_Operand, OpFlag(OpUse));
 
-  /* NOTE: this form of movsxd should be discourages. */
+  /* NOTE: this form of movsxd should be discouraged. */
   DefineOpcode(0x63, /* NACLi_SYSTEM, */ NACLi_ILLEGAL,
                InstFlag(Opcode64Only) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeUsesModRm),
