@@ -74,10 +74,16 @@ void RenderViewContextMenuMac::DoInit() {
                                         eventNumber:0
                                          clickCount:1
                                            pressure:1.0];
+
+  bool old_state = MessageLoop::current()->NestableTasksAllowed();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
+
   // Show the menu.
   [NSMenu popUpContextMenu:menu_
                  withEvent:clickEvent
                    forView:parent_view_];
+
+  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
 // Do things like remove the windows accelerators.
