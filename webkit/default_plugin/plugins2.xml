@@ -11,7 +11,7 @@
   	<mime_types>audio/x-pn-realaudio-plugin;audio/x-pn-realaudio;audio/vnd.rn-realaudio;video/vnd.rn-realvideo</mime_types>
 	  <lang>en-us</lang>
   	<name>RealPlayer</name>
-  	<url>http://software-dl.real.com/free/windows/installer/R41R02F/RealPlayer11GOLD.exe</url>
+  	<url>http://forms.real.com/real/realone/download.html?type=rpsp_us</url>
   </plugin>
 
   <plugin>
@@ -47,6 +47,13 @@
 	  <lang>en-us</lang>
   	<name>Windows Media Player Plugin</name>
   	<url>http://port25.technet.com/videos/downloads/wmpfirefoxplugin.exe</url>
+  </plugin>
+
+  <plugin>
+    <mime_types>video/divx;video/x-matroska</mime_types>
+    <lang>en-us</lang>
+    <name>DivX Web Player</name>
+    <url>http://download.divx.com/player/divxdotcom/DivXWebPlayerInstaller.exe</url>
   </plugin>
   
 </plugins>
