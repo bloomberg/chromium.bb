@@ -92,8 +92,12 @@ class NormalExtender : public BrowserExtender,
 
     if (browser->type() == Browser::TYPE_NORMAL) {
       std::string wm_name;
-      force_maximized_window_ = x11_util::GetWindowManagerName(&wm_name) &&
-          wm_name == kChromeOsWindowManagerName;
+      bool wm_name_valid = x11_util::GetWindowManagerName(&wm_name);
+      // NOTE: On Chrome OS the wm and Chrome are started in parallel. This
+      // means it's possible for us not to be able to get the name of the window
+      // manager. We assume that when this happens we're on Chrome OS.
+      force_maximized_window_ = (!wm_name_valid ||
+                                 wm_name == kChromeOsWindowManagerName);
     }
   }
 
