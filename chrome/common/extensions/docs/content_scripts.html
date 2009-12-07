@@ -345,14 +345,18 @@ learn about the
 
 <p>Content scripts are registered in an extension's <a href="manifest.html">manifest.json</a> file, like so:
 
-</p><pre>"content_scripts": [
-  {
-    "matches": ["http://www.google.com/*"],
-    "css": ["mystyles.css"],
-    "js": ["jquery.js", "myscript.js"]
-  }
-]
-</pre>
+</p><pre>{
+  "name": "My extension",
+  ...
+  <b>"content_scripts": [
+    {
+      "matches": ["http://www.google.com/*"],
+      "css": ["mystyles.css"],
+      "js": ["jquery.js", "myscript.js"]
+    }
+  ]</b>,
+  ...
+}</pre>
 
 <p>An extension can contain any number of content scripts, and a content script can consist of any number of JavaScript or CSS files. The value of the <code>matches</code> property controls when the content script will run.
 

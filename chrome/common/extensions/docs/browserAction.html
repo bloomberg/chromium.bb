@@ -319,10 +319,15 @@ Register your browser action in the
 like this:
 </p>
 
-<pre>"browser_action": {
-  "default_icon": "images/icon19.png", <em>// <b>required</b></em>
-  "default_title": "Google Mail",      <em>// optional; shown in tooltip</em>
-  "popup": "popup.html"                <em>// optional</em>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"browser_action": {
+    "default_icon": "images/icon19.png", <em>// <b>required</b></em>
+    "default_title": "Google Mail",      <em>// optional; shown in tooltip</em>
+    "popup": "popup.html"                <em>// optional</em>
+  }</b>,
+  ...
 }</pre>
 
 <h2 id="ui">Parts of the UI</h2>

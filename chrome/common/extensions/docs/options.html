@@ -261,19 +261,18 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name class=" pagedata"="">Options</div>
+        <div id="static"><div id="pageData-name" class="pageData">Options</div>
 <div id="pageData-showTOC" class="pageData">true</div>
 <p>To allow users to customize the behavior of your extension, you may wish to provide an options page. If you do, a link to it will be provided from the extensions management page at chrome://extensions. Clicking the Options link opens a new tab pointing at your options page.
 
 </p><a name="H2-0"></a><h2>Step 1: Declare your options page in the manifest</h2>
 
 <pre>{
-  "name": "Test Extension",
-  "version": "1.0",
-  "description": "This is a test",
-  <b>"options_page": "options.html"</b>
-}
-</pre>
+  "name": "My extension",
+  ...
+  <b>"options_page": "options.html"</b>,
+  ...
+}</pre>
 
 
 <a name="H2-1"></a><h2>Step 2: Write your options page</h2>

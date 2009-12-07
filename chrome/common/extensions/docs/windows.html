@@ -292,8 +292,13 @@ the window and tabs modules interact so closely we
 decided to just share one permission between them.)
 For example:
 </p>
-<pre>"permissions": ["tabs"]
-</pre>
+
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"permissions": ["tabs"]</b>,
+  ...
+}</pre>
 
 <h2 id="current-window">The current window</h2>
 

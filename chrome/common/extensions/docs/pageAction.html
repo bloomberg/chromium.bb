@@ -312,10 +312,15 @@ Register your page action in the
 like this:
 </p>
 
-<pre>"page_action": {
-  "default_icon": "icons/foo.png", <em>// <b>required</b></em>
-  "default_title": "Do action",    <em>// optional; shown in tooltip</em>
-  "popup": "popup.html"            <em>// optional</em>
+<pre>{
+  "name": "My extension",
+  ...
+  <b>"page_action": {
+    "default_icon": "icons/foo.png", <em>// <b>required</b></em>
+    "default_title": "Do action",    <em>// optional; shown in tooltip</em>
+    "popup": "popup.html"            <em>// optional</em>
+  }</b>,
+  ...
 }</pre>
 
 <h2 id="ui">Parts of the UI</h2>
