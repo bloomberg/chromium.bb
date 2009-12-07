@@ -731,7 +731,7 @@ unix_like_env.Prepend(
   ],
   CXXFLAGS=['-std=c++98'],
   LIBPATH=['/usr/lib'],
-  LIBS = ['pthread', 'ssl', 'crypto'],
+  LIBS = ['pthread', 'crypto'],
   CPPDEFINES = [['__STDC_LIMIT_MACROS', '1'],
                 ['__STDC_FORMAT_MACROS', '1'],
                 ],
@@ -835,8 +835,8 @@ elif linux_env['BUILD_ARCHITECTURE'] == 'arm':
                     LINKFLAGS=os.getenv('ARM_LINKFLAGS', ''),
                     )
 
-  linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'ssl', 'crypto'],
-                   CCFLAGS=['-march=armv7a'])
+  linux_env.Append(LIBS=['rt', 'dl', 'pthread', 'crypto'],
+                   CCFLAGS=['-march=armv6'])
 else:
   Banner('Strange platform: %s' % BUILD_NAME)
 
