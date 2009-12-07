@@ -271,12 +271,12 @@
     // We currently only support CF in IE
     // TODO(slightlyoff): Update this should we support other browsers!
     var ua = navigator.userAgent;
-    var ieRe = /MSIE \S+; Windows NT/;
+    var ieRe = /MSIE (\S+); Windows NT/;
     var bail = false;
     if (ieRe.test(ua)) {
       // We also only support Win2003/XPSP2 or better. See:
       //  http://msdn.microsoft.com/en-us/library/ms537503%28VS.85%29.aspx
-      if (parseFloat(ua.split(ieRe)[1]) < 6 &&
+      if (parseFloat(ieRe.exec(ua)[1]) < 6 &&
           // 'SV1' indicates SP2, only bail if not SP2 or Win2K3
           ua.indexOf('SV1') < 0) {
         bail = true;
