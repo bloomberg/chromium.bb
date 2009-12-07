@@ -391,14 +391,17 @@ void WebSocket::ProcessFrameData() {
     unsigned char frame_byte = static_cast<unsigned char>(*p++);
     if ((frame_byte & 0x80) == 0x80) {
       int length = 0;
-      while (p < end && (*p & 0x80) == 0x80) {
+      while (p < end) {
         if (length > std::numeric_limits<int>::max() / 128) {
           // frame length overflow.
           socket_stream_->Close();
           return;
         }
-        length = length * 128 + (*p & 0x7f);
+        unsigned char c = static_cast<unsigned char>(*p);
+        length = length * 128 + (c & 0x7f);
         ++p;
+        if ((c & 0x80) != 0x80)
+          break;
       }
       // Checks if the frame body hasn't been completely received yet.
       // It also checks the case the frame length bytes haven't been completely

@@ -258,16 +258,16 @@ TEST_F(WebSocketTest, ProcessFrameDataForLengthCalculation) {
       new WebSocket(request, delegate.get()));
 
   // Frame data: skip length 1 ('x'), and try to skip length 129
-  // (1 * 128 + 1) bytes after second \x81, but buffer is too short to skip.
+  // (1 * 128 + 1) bytes after \x81\x01, but buffer is too short to skip.
   static const char kTestLengthFrame[] =
-      "\x80\x81x\x80\x81\x81\x01\x00unexpected data\xFF";
+      "\x80\x01x\x80\x81\x01\x01\x00unexpected data\xFF";
   const int kTestLengthFrameLength = sizeof(kTestLengthFrame) - 1;
   InitReadBuf(websocket.get());
   AddToReadBuf(websocket.get(), kTestLengthFrame, kTestLengthFrameLength);
   SetReadConsumed(websocket.get(), 0);
 
   static const char kExpectedRemainingFrame[] =
-      "\x80\x81\x81\x01\x00unexpected data\xFF";
+      "\x80\x81\x01\x01\x00unexpected data\xFF";
   const int kExpectedRemainingLength = sizeof(kExpectedRemainingFrame) - 1;
   TestProcessFrameData(websocket.get(),
                        kExpectedRemainingFrame, kExpectedRemainingLength);
