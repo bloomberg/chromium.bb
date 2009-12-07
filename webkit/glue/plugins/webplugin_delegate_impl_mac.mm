@@ -85,6 +85,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       last_mouse_x_(0),
       last_mouse_y_(0),
       have_focus_(false),
+      focus_notifier_(NULL),
       handle_event_depth_(0),
       user_gesture_message_posted_(this),
       user_gesture_msg_factory_(this) {

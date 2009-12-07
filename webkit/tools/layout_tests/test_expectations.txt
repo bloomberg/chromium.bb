@@ -1400,13 +1400,13 @@ BUG10351 MAC : LayoutTests/fast/dom/object-embed-plugin-scripting.html = PASS FA
 BUG10351 SKIP MAC : LayoutTests/http/tests/plugins/geturlnotify-from-npp-destroystream.html = FAIL
 BUG10351 MAC : LayoutTests/plugins/inner-html-display-none.html = FAIL
 BUG10351 MAC DEBUG : LayoutTests/plugins/invoke.html = PASS FAIL
-BUG10351 MAC : LayoutTests/plugins/mouse-events.html = CRASH FAIL
+BUG10351 MAC : LayoutTests/plugins/mouse-events.html = FAIL
 BUG10351 MAC DEBUG : LayoutTests/http/tests/plugins/npapi-response-headers.html = PASS FAIL
 // Skip because we throw an exception before we get to dumpAsText.
 BUG10667 SKIP MAC : chrome/plugins/get-url-with-blank-target.html = FAIL
 BUG10667 SLOW MAC DEBUG : chrome/plugins/multiple-plugins.html = FAIL PASS
 BUG10667 MAC : chrome/plugins/return-npobject.html = FAIL
-BUG10667 MAC : LayoutTests/plugins/iframe-shims.html = CRASH FAIL
+BUG10667 MAC : LayoutTests/plugins/iframe-shims.html = FAIL
 // BUG10667 SLOW MAC RELEASE : LayoutTests/plugins/iframe-shims.html = FAIL
 
 // NEW FOR MERGE 36102:37604
