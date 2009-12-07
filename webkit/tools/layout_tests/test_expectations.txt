@@ -3119,3 +3119,6 @@ BUG_AJWONG : LayoutTests/svg/carto.net/selectionlist.svg = IMAGE PASS
 BUG_AJWONG : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
 BUG_AJWONG WIN : chrome/fast/forms/basic-selects.html = IMAGE
 BUG_AJWONG WIN :LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
+
+// Failres from Webkit merger 51724 -> 51772
+BUG_AJWONG: LayoutTests/http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html = TEXT
