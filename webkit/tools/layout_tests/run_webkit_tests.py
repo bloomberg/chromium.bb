@@ -133,8 +133,7 @@ class TestRunner:
       self._http_server = apache_http_server.LayoutTestApacheHttpd(
           options.results_directory)
     else:
-      self._http_server = http_server.Lighttpd(options.results_directory,
-          num_workers=self._options.num_test_shells)
+      self._http_server = http_server.Lighttpd(options.results_directory)
 
     self._shardable_directories = ['chrome', 'LayoutTests', 'pending', 'fast',
         'svg']

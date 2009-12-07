@@ -110,7 +110,7 @@ def ShutDownHTTPServer(server_process):
                     stderr=null)
     null.close()
   else:
-    os.kill(server_process.pid, signal.SIGKILL)
+    os.kill(server_process.pid, signal.SIGTERM)
 
 def KillProcess(pid):
   """Forcefully kill the process.

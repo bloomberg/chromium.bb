@@ -9,14 +9,20 @@ import optparse
 import os
 import subprocess
 import sys
+import time
 
 import google.httpd_utils
 
-import http_server_base
 import path_utils
 import platform_utils
 
-class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
+class LayoutTestApacheHttpd(object):
+  _PORTS = [
+    {'port': 8000},
+    {'port': 8080},
+    {'port': 8443, 'is_ssl': True}
+  ]
+
   def __init__(self, output_dir):
     """Args:
       output_dir: the absolute path to the layout test result directory
@@ -24,12 +30,6 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
     self._output_dir = output_dir
     self._httpd_proc = None
     path_utils.MaybeMakeDirectory(output_dir)
-
-    self.mappings = [
-      {'port': 8000},
-      {'port': 8080},
-      {'port': 8443, 'sslcert': True}
-    ]
 
     # The upstream .conf file assumed the existence of /tmp/WebKit for placing
     # apache files like the lock file there.
@@ -93,6 +93,15 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
                       ssl and 'SSLEngine On' or '',
                       '</VirtualHost>', ''))
 
+  def _IsServerRunningOnAllPorts(self):
+    """Returns whether the server is running on all the desired ports."""
+    for mapping in self._PORTS:
+      url = 'http%s://127.0.0.1:%d/' % ('is_ssl' in mapping and 's' or '',
+                                        mapping['port'])
+      if not google.httpd_utils.UrlIsAlive(url):
+        return False
+
+    return True
 
   def _StartHttpdProcess(self):
     """Starts the httpd process and returns whether there were errors."""
@@ -101,15 +110,28 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
       return False
     return True
 
+  def _WaitForAction(self, action):
+    """Repeat the action for 20 seconds or until it succeeds. Returns whether
+    it succeeded."""
+    succeeded = False
+
+    start_time = time.time()
+    # Give apache up to 20 seconds to start up.
+    while time.time() - start_time < 20 and not succeeded:
+      time.sleep(0.1)
+      succeeded = action()
+
+    return succeeded
+
   def Start(self):
     """Starts the apache http server."""
     # Stop any currently running servers.
     self.Stop()
 
     logging.debug("Starting apache http server")
-    server_started = self.WaitForAction(self._StartHttpdProcess)
+    server_started = self._WaitForAction(self._StartHttpdProcess)
     if server_started:
-      server_started = self.WaitForAction(self.IsServerRunningOnAllPorts)
+      server_started = self._WaitForAction(self._IsServerRunningOnAllPorts)
 
     if server_started:
       logging.debug("Server successfully started")
