@@ -6,7 +6,6 @@
 
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
@@ -151,19 +150,4 @@ WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
   if (!web_view)
     return NULL;
   return web_view->devToolsAgent();
-}
-
-// static
-void WebKit::WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(
-    const WebString& class_name,
-    const WebString& method_name,
-    const WebString& param1,
-    const WebString& param2,
-    const WebString& param3) {
-    DevToolsAgentFilter::SendRpcMessage(
-        class_name.utf8(),
-        method_name.utf8(),
-        param1.utf8(),
-        param2.utf8(),
-        param3.utf8());
 }

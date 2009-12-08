@@ -44,6 +44,7 @@ DebuggerAgentImpl::DebuggerAgentImpl(
     : web_view_impl_(web_view_impl),
       delegate_(delegate),
       webdevtools_agent_(webdevtools_agent),
+      profiler_log_position_(0),
       auto_continue_on_exception_(false) {
   DebuggerAgentManager::DebugAttach(this);
 }
@@ -54,6 +55,31 @@ DebuggerAgentImpl::~DebuggerAgentImpl() {
 
 void DebuggerAgentImpl::GetContextId() {
   delegate_->SetContextId(webdevtools_agent_->host_id());
+}
+
+void DebuggerAgentImpl::StartProfiling(int flags) {
+  v8::HandleScope scope;
+  WebCore::Frame* frame = GetPage()->mainFrame();
+  ASSERT(V8Proxy::retrieve(GetPage()->mainFrame())->isContextInitialized());
+  v8::Context::Scope context_scope(V8Proxy::context(frame));
+  v8::V8::ResumeProfilerEx(flags);
+}
+
+void DebuggerAgentImpl::StopProfiling(int flags) {
+  v8::V8::PauseProfilerEx(flags);
+}
+
+void DebuggerAgentImpl::GetActiveProfilerModules() {
+  delegate_->DidGetActiveProfilerModules(v8::V8::GetActiveProfilerModules());
+}
+
+void DebuggerAgentImpl::GetNextLogLines() {
+  static char buffer[65536];
+  int read_size = v8::V8::GetLogLines(
+      profiler_log_position_, buffer, sizeof(buffer) - 1);
+  profiler_log_position_ += read_size;
+  buffer[read_size] = '\0';
+  delegate_->DidGetNextLogLines(buffer);
 }
 
 void DebuggerAgentImpl::DebuggerOutput(const String& command) {

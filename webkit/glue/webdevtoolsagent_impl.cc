@@ -41,7 +41,6 @@
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
-#include "webkit/glue/devtools/profiler_agent_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
 
@@ -112,27 +111,6 @@ static const char kApuAgentFeatureName[] = "apu-agent";
 // Keep these in sync with the ones in inject_dispatch.js.
 static const char kTimelineFeatureName[] = "timeline-profiler";
 static const char kResourceTrackingFeatureName[] = "resource-tracking";
-
-class IoRpcDelegate : public DevToolsRpc::Delegate {
- public:
-  IoRpcDelegate() {}
-  virtual ~IoRpcDelegate() {}
-  virtual void SendRpcMessage(const String& class_name,
-                              const String& method_name,
-                              const String& p1,
-                              const String& p2,
-                              const String& p3) {
-    WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(
-        webkit_glue::StringToWebString(class_name),
-        webkit_glue::StringToWebString(method_name),
-        webkit_glue::StringToWebString(p1),
-        webkit_glue::StringToWebString(p2),
-        webkit_glue::StringToWebString(p3));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(IoRpcDelegate);
-};
 
 } //  namespace
 
@@ -624,25 +602,6 @@ void WebDevToolsAgent::debuggerPauseScript() {
 void WebDevToolsAgent::setMessageLoopDispatchHandler(
     MessageLoopDispatchHandler handler) {
   DebuggerAgentManager::SetMessageLoopDispatchHandler(handler);
-}
-
-// static
-bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
-    const WebString& className,
-    const WebString& methodName,
-    const WebString& param1,
-    const WebString& param2,
-    const WebString& param3) {
-  IoRpcDelegate transport;
-  ProfilerAgentDelegateStub stub(&transport);
-  ProfilerAgentImpl agent(&stub);
-  return ProfilerAgentDispatch::Dispatch(
-      &agent,
-      webkit_glue::WebStringToString(className),
-      webkit_glue::WebStringToString(methodName),
-      webkit_glue::WebStringToString(param1),
-      webkit_glue::WebStringToString(param2),
-      webkit_glue::WebStringToString(param3));
 }
 
 } // namespace WebKit

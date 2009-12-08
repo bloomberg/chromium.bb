@@ -42,7 +42,6 @@ devtools.ToolsAgent = function() {
   RemoteToolsAgent.DispatchOnClient =
       goog.bind(this.dispatchOnClient_, this);
   this.debuggerAgent_ = new devtools.DebuggerAgent();
-  this.profilerAgent_ = new devtools.ProfilerAgent();
 };
 
 
@@ -52,7 +51,6 @@ devtools.ToolsAgent = function() {
 devtools.ToolsAgent.prototype.reset = function() {
   InspectorFrontendHost.reset();
   this.debuggerAgent_.reset();
-  this.profilerAgent_.reset();
 };
 
 
@@ -73,14 +71,6 @@ devtools.ToolsAgent.prototype.evaluateJavaScript = function(script,
  */
 devtools.ToolsAgent.prototype.getDebuggerAgent = function() {
   return this.debuggerAgent_;
-};
-
-
-/**
- * @return {devtools.ProfilerAgent} Profiler agent instance.
- */
-devtools.ToolsAgent.prototype.getProfilerAgent = function() {
-  return this.profilerAgent_;
 };
 
 
@@ -329,7 +319,7 @@ WebInspector.ScriptsPanel.prototype.__defineGetter__(
 (function InterceptProfilesPanelEvents() {
   var oldShow = WebInspector.ProfilesPanel.prototype.show;
   WebInspector.ProfilesPanel.prototype.show = function() {
-    devtools.tools.getProfilerAgent().initializeProfiling();
+    devtools.tools.getDebuggerAgent().initializeProfiling();
     this.enableToggleButton.visible = false;
     oldShow.call(this);
     // Show is called on every show event of a panel, so

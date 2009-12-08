@@ -38,6 +38,14 @@ class DebuggerAgentImpl : public DebuggerAgent {
   // DebuggerAgent implementation.
   virtual void GetContextId();
 
+  virtual void StartProfiling(int flags);
+
+  virtual void StopProfiling(int flags);
+
+  virtual void GetActiveProfilerModules();
+
+  virtual void GetNextLogLines();
+
   void DebuggerOutput(const WebCore::String& out);
 
   void set_auto_continue_on_exception(bool auto_continue) {
@@ -72,6 +80,7 @@ class DebuggerAgentImpl : public DebuggerAgent {
   WebKit::WebViewImpl* web_view_impl_;
   DebuggerAgentDelegate* delegate_;
   WebDevToolsAgentImpl* webdevtools_agent_;
+  int profiler_log_position_;
   bool auto_continue_on_exception_;
 };
 

@@ -135,8 +135,8 @@ devtools.InspectorBackendImpl.prototype.setPauseOnExceptions = function(
  * @override
  */
 devtools.InspectorBackendImpl.prototype.startProfiling = function() {
-  devtools.tools.getProfilerAgent().startProfiling(
-      devtools.ProfilerAgent.ProfilerModules.PROFILER_MODULE_CPU);
+  devtools.tools.getDebuggerAgent().startProfiling(
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
 };
 
 
@@ -144,8 +144,8 @@ devtools.InspectorBackendImpl.prototype.startProfiling = function() {
  * @override
  */
 devtools.InspectorBackendImpl.prototype.stopProfiling = function() {
-  devtools.tools.getProfilerAgent().stopProfiling(
-      devtools.ProfilerAgent.ProfilerModules.PROFILER_MODULE_CPU);
+  devtools.tools.getDebuggerAgent().stopProfiling(
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_CPU);
 };
 
 
@@ -181,10 +181,10 @@ devtools.InspectorBackendImpl.prototype.getProfile = function(callId, uid) {
  * @override
  */
 devtools.InspectorBackendImpl.prototype.takeHeapSnapshot = function() {
-  devtools.tools.getProfilerAgent().startProfiling(
-      devtools.ProfilerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT
-      | devtools.ProfilerAgent.ProfilerModules.PROFILER_MODULE_HEAP_STATS
-      | devtools.ProfilerAgent.ProfilerModules.PROFILER_MODULE_JS_CONSTRUCTORS);
+  devtools.tools.getDebuggerAgent().startProfiling(
+      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT
+      | devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_STATS
+      | devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_JS_CONSTRUCTORS);
 };
 
 

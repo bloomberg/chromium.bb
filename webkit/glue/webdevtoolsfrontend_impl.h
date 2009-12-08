@@ -29,7 +29,6 @@ class WebViewImpl;
 class BoundObject;
 class JsDebuggerAgentBoundObj;
 class JsNetAgentBoundObj;
-class JsProfilerAgentBoundObj;
 class JsToolsAgentBoundObj;
 class ToolsAgentNativeDelegateImpl;
 class WebDevToolsClientDelegate;
@@ -96,7 +95,6 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   String application_locale_;
   OwnPtr<BoundObject> debugger_command_executor_obj_;
   OwnPtr<JsDebuggerAgentBoundObj> debugger_agent_obj_;
-  OwnPtr<JsProfilerAgentBoundObj> profiler_agent_obj_;
   OwnPtr<JsToolsAgentBoundObj> tools_agent_obj_;
   bool loaded_;
   Vector<Vector<String> > pending_incoming_messages_;

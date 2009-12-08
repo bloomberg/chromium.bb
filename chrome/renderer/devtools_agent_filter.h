@@ -22,17 +22,9 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
   DevToolsAgentFilter();
   virtual ~DevToolsAgentFilter();
 
-  static void SendRpcMessage(const std::string& class_name,
-                             const std::string& method_name,
-                             const std::string& param1,
-                             const std::string& param2,
-                             const std::string& param3);
-
  private:
   // IPC::ChannelProxy::MessageFilter override. Called on IO thread.
   virtual bool OnMessageReceived(const IPC::Message& message);
-
-  virtual void OnFilterAdded(IPC::Channel* channel) { channel_ = channel; }
 
   static void DispatchMessageLoop();
 
@@ -40,18 +32,8 @@ class DevToolsAgentFilter : public IPC::ChannelProxy::MessageFilter {
   // handle debug messages even when v8 is stopped.
   void OnDebuggerCommand(const std::string& command);
   void OnDebuggerPauseScript();
-  void OnRpcMessage(const std::string& class_name,
-                    const std::string& method_name,
-                    const std::string& param1,
-                    const std::string& param2,
-                    const std::string& param3);
 
-  bool message_handled_;
-
-  // Made static to allow DevToolsAgent to use it for replying directly
-  // from IO thread.
-  static int current_routing_id_;
-  static IPC::Channel* channel_;
+  int current_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsAgentFilter);
 };

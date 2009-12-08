@@ -430,8 +430,8 @@ TestSuite.prototype.testProfilerTab = function() {
       });
   var ticksCount = 0;
   var tickRecord = '\nt,';
-  this.addSniffer(RemoteProfilerAgent, 'DidGetLogLines',
-      function(posIgnored, log) {
+  this.addSniffer(RemoteDebuggerAgent, 'DidGetNextLogLines',
+      function(log) {
         var pos = 0;
         while ((pos = log.indexOf(tickRecord, pos)) != -1) {
           pos += tickRecord.length;
