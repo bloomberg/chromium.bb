@@ -387,7 +387,6 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
   HRESULT hr = S_OK;
   if (BSCF_FIRSTDATANOTIFICATION & flags) {
     DCHECK(!cached_data_.is_valid());
-    cached_data_.Create();
   }
 
   // Always read data into cache. We have to read all the data here at this
@@ -399,13 +398,12 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
       " -  Bytes read into cache: " << bytes_available;
 
-  if (pending_read_size_) {
+  if (pending_read_size_ && cached_data_.is_valid()) {
     CComObjectStackEx<SendStream> send_stream;
     send_stream.Initialize(this);
     cached_data_.Read(&send_stream, pending_read_size_, &pending_read_size_);
     DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
         " - size read: " << pending_read_size_;
-    pending_read_size_ = 0;
   } else {
     DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
         " - waiting for remote read";
@@ -788,75 +786,31 @@ void UrlmonUrlRequest::ReleaseBindings() {
 // UrlmonUrlRequest::Cache implementation.
 //
 
-size_t UrlmonUrlRequest::Cache::Size() {
-  size_t size = 0;
-  if (stream_) {
-    STATSTG cache_stat = {0};
-    stream_->Stat(&cache_stat, STATFLAG_NONAME);
-
-    DCHECK_EQ(0, cache_stat.cbSize.HighPart);
-    size = cache_stat.cbSize.LowPart;
-  }
-
-  return size;
-}
-
-size_t UrlmonUrlRequest::Cache::CurrentPos() {
-  size_t pos = 0;
-  if (stream_) {
-    ULARGE_INTEGER current_index = {0};
-    stream_->Seek(kZero, STREAM_SEEK_CUR, &current_index);
-
-    DCHECK_EQ(0, current_index.HighPart);
-    pos = current_index.LowPart;
-  }
-
-  return pos;
-}
-
-size_t UrlmonUrlRequest::Cache::SizeRemaining() {
-  size_t size = Size();
-  size_t pos = CurrentPos();
-  size_t size_remaining = 0;
-
-  if (size) {
-    DCHECK(pos <= size);
-    size_remaining = size - pos;
-  }
-  return size_remaining;
-}
-
-void UrlmonUrlRequest::Cache::Clear() {
-  if (!stream_) {
-    NOTREACHED();
-    return;
-  }
-
-  HRESULT hr = stream_->SetSize(kUnsignedZero);
-  DCHECK(SUCCEEDED(hr));
+size_t UrlmonUrlRequest::Cache::Size() const {
+  return cache_.size();
 }
 
 bool UrlmonUrlRequest::Cache::Read(IStream* dest, size_t size,
                                    size_t* bytes_copied) {
-  if (!dest || !size) {
+  if (!dest || !size || !is_valid()) {
     NOTREACHED();
     return false;
   }
 
-  // Copy the data and clear cache if there is no more data to copy.
-  ULARGE_INTEGER size_to_copy = {size, 0};
-  ULARGE_INTEGER size_written = {0};
-  stream_->CopyTo(dest, size_to_copy, NULL, &size_written);
+  // Copy the data to the destination stream and remove it from our cache.
+  size_t size_written = 0;
+  size_t bytes_to_write = (size <= Size() ? size : Size());
 
-  if (size_written.LowPart && bytes_copied)
-    *bytes_copied = size_written.LowPart;
+  dest->Write(&cache_[0], bytes_to_write,
+              reinterpret_cast<unsigned long*>(&size_written));
+  DCHECK(size_written == bytes_to_write);
 
-  if (!SizeRemaining()) {
-    Clear();
-    stream_->Seek(kZero, STREAM_SEEK_SET, NULL);
-  }
+  cache_.erase(cache_.begin(), cache_.begin() + bytes_to_write);
 
-  return (size_written.LowPart != 0);
+  if (bytes_copied)
+    *bytes_copied = size_written;
+
+  return (size_written != 0);
 }
 
 bool UrlmonUrlRequest::Cache::Append(IStream* source,
@@ -866,9 +820,6 @@ bool UrlmonUrlRequest::Cache::Append(IStream* source,
     return false;
   }
 
-  size_t current_pos = CurrentPos();
-  stream_->Seek(kZero, STREAM_SEEK_END, NULL);
-
   HRESULT hr = S_OK;
   while (SUCCEEDED(hr)) {
     DWORD chunk_read = 0;  // NOLINT
@@ -877,24 +828,14 @@ bool UrlmonUrlRequest::Cache::Append(IStream* source,
     if (!chunk_read)
       break;
 
-    DWORD chunk_written = 0;  // NOLINT
-    stream_->Write(read_buffer_, chunk_read, &chunk_written);
-    DCHECK_EQ(chunk_read, chunk_written);
+    std::copy(read_buffer_, read_buffer_ + chunk_read,
+              back_inserter(cache_));
 
     if (bytes_copied)
-      *bytes_copied += chunk_written;
+      *bytes_copied += chunk_read;
   }
 
-  LARGE_INTEGER last_read_position = {current_pos, 0};
-  stream_->Seek(last_read_position, STREAM_SEEK_SET, NULL);
   return SUCCEEDED(hr);
-}
-
-bool UrlmonUrlRequest::Cache::Create() {
-  DCHECK(stream_ == NULL);
-  bool ret = SUCCEEDED(CreateStreamOnHGlobal(NULL, TRUE, stream_.Receive()));
-  DCHECK(ret && stream_);
-  return ret;
 }
 
 net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {

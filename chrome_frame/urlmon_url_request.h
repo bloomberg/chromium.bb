@@ -215,24 +215,22 @@ END_MSG_MAP()
   // size less than 2GB
   class Cache {
    public:
-    bool Create();
-
     // Adds data to the end of the cache.
     bool Append(IStream* source, size_t* bytes_copied);
 
     // Reads from the cache.
     bool Read(IStream* dest, size_t size, size_t* bytes_copied);
 
-    size_t Size();
-    size_t CurrentPos();
-    size_t SizeRemaining();
-    void Clear();
+    // Returns the size of the cache.
+    size_t Size() const;
+
+    // Returns true if the cache has valid data.
     bool is_valid() const {
-      return (stream_ != NULL);
+      return Size() != 0;
     }
 
    protected:
-    ScopedComPtr<IStream> stream_;
+    std::vector<byte> cache_;
     char read_buffer_[kCopyChunkSize];
   };
 
