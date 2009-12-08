@@ -32,6 +32,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "webkit/tools/pepper_test_plugin/event_handler.h"
 #include "webkit/tools/pepper_test_plugin/test_object.h"
 
 NPNetscapeFuncs* browser;
@@ -56,12 +57,14 @@ static const NPUTF8* plugin_property_identifier_names[NUM_PROPERTY_IDENTIFIERS] 
 
 enum {
   ID_TEST_GET_PROPERTY = 0,
+  ID_SET_TEXT_BOX,
   NUM_METHOD_IDENTIFIERS
 };
 
 static NPIdentifier plugin_method_identifiers[NUM_METHOD_IDENTIFIERS];
 static const NPUTF8* plugin_method_identifier_names[NUM_METHOD_IDENTIFIERS] = {
   "testGetProperty",
+  "setTextBox",
 };
 
 void EnsureIdentifiersInitialized() {
@@ -150,8 +153,13 @@ bool PluginInvoke(NPObject* header,
                   const NPVariant* args, uint32 arg_count,
                   NPVariant* result) {
   PluginObject* plugin = reinterpret_cast<PluginObject*>(header);
-  if (name == plugin_method_identifiers[ID_TEST_GET_PROPERTY])
+  if (name == plugin_method_identifiers[ID_TEST_GET_PROPERTY]) {
     return TestGetProperty(plugin, args, arg_count, result);
+  } else if (name == plugin_method_identifiers[ID_SET_TEXT_BOX]) {
+    if (1 == arg_count && NPVARIANT_IS_OBJECT(args[0])) {
+      return event_handler->set_text_box(NPVARIANT_TO_OBJECT(args[0]));
+    }
+  }
 
   return false;
 }

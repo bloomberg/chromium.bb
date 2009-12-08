@@ -31,6 +31,8 @@
         'plugin_object.h',
         'test_object.cc',
         'test_object.h',
+        'event_handler.cc',
+        'event_handler.h'
       ],
       'run_as': {
         'working_directory': '.',

@@ -1,7 +1,38 @@
-<body style="background-image:url(http://www.google.com/intl/en_ALL/images/logo.gif); background-repeat:repeat;">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title> Pepper Plugin Demo </title>
+<script type="text/javascript">
+var event_box;
 
-This page embeds a file declared as the pepper test plugins MIME type so that it will get loaded for testing.
+var addLine = function(line) {
+  event_box.innerHTML = line + '<br>' + event_box.innerHTML;
+}
+
+var runScripts = function() {
+  event_box = document.getElementById("event_text_box");;
+  var plugin_obj = document.getElementById("plugin");
+  addLine('<b>Event log</b>');
+  plugin_obj.setTextBox(addLine);
+}
+</script>
+</head>
+
+<body style="background-image:url(http://www.google.com/intl/en_ALL/images/logo.gif); background-repeat:repeat;" onload="runScripts()">
+
 <p>
-<embed type="pepper-application/x-pepper-test-plugin" width="400" height="400"/>
+This page embeds a file declared as the pepper test plugins MIME type so that it will get loaded for testing.
+</p>
+<table>
+<tr>
+<td valign="top" width="50%">
+<object id="plugin" type="pepper-application/x-pepper-test-plugin" width="400" height="400" />
+</td>
+<td valign="top" style="background-color:Silver" width="50%">
+<div id="event_text_box" style="width:400px; height:400px; overflow:auto">
+</div>
+</td>
+</tr>
+</table>
 
 </body>
+</html>

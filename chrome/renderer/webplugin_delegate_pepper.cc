@@ -93,6 +93,9 @@ bool WebPluginDelegatePepper::Initialize(
   // retreived via NPN_GetValue of NPNVnetscapeWindow.
   instance_->set_window_handle(parent_);
 
+  // This is a windowless plugin, so set it to have a NULL handle.
+  plugin_->SetWindow(NULL);
+
   plugin_url_ = url.spec();
 
   return true;
@@ -568,13 +571,14 @@ bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
     case NPEventType_KeyDown:
     case NPEventType_KeyUp:
       BuildKeyEvent(&event, &npevent);
+      break;
     case NPEventType_Char:
       BuildCharEvent(&event, &npevent);
       break;
     case NPEventType_Minimize:
     case NPEventType_Focus:
     case NPEventType_Device:
-      NOTIMPLEMENTED();
+      // NOTIMPLEMENTED();
       break;
   }
   return instance()->NPP_HandleEvent(&npevent) != 0;

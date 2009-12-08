@@ -37,6 +37,7 @@
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
+#include "webkit/tools/pepper_test_plugin/event_handler.h"
 
 #ifdef WIN32
 #define NPAPI WINAPI
@@ -169,6 +170,7 @@ NPError NPP_New(NPMIMEType pluginType,
     PluginObject* obj = reinterpret_cast<PluginObject*>(
         browser->createobject(instance, PluginObject::GetPluginClass()));
     instance->pdata = obj;
+    event_handler = new EventHandler(instance);
   }
 
   return NPERR_NO_ERROR;
@@ -222,7 +224,7 @@ void NPP_Print(NPP instance, NPPrint* platformPrint) {
 }
 
 int16 NPP_HandleEvent(NPP instance, void* event) {
-  return 0;
+  return event_handler->handle(event);
 }
 
 void NPP_URLNotify(NPP instance, const char* url, NPReason reason,
