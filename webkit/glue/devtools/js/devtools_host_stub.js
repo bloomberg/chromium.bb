@@ -13,11 +13,6 @@ if (!window['RemoteDebuggerAgent']) {
  * @constructor
  */
 RemoteDebuggerAgentStub = function() {
-  this.activeProfilerModules_ =
-      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_NONE;
-  this.profileLogPos_ = 0;
-  this.heapProfSample_ = 0;
-  this.heapProfLog_ = '';
 };
 
 
@@ -26,59 +21,20 @@ RemoteDebuggerAgentStub.prototype.GetContextId = function() {
 };
 
 
-RemoteDebuggerAgentStub.prototype.StopProfiling = function(modules) {
-  this.activeProfilerModules_ &= ~modules;
+/**
+ * @constructor
+ */
+RemoteProfilerAgentStub = function() {
 };
 
 
-RemoteDebuggerAgentStub.prototype.StartProfiling = function(modules) {
-  var profModules = devtools.DebuggerAgent.ProfilerModules;
-  if (modules & profModules.PROFILER_MODULE_HEAP_SNAPSHOT) {
-    if (modules & profModules.PROFILER_MODULE_HEAP_STATS) {
-      this.heapProfLog_ +=
-          'heap-sample-begin,"Heap","allocated",' +
-              (new Date()).getTime() + '\n' +
-          'heap-sample-stats,"Heap","allocated",10000,1000\n';
-      this.heapProfLog_ +=
-          'heap-sample-item,STRING_TYPE,100,1000\n' +
-          'heap-sample-item,CODE_TYPE,10,200\n' +
-          'heap-sample-item,MAP_TYPE,20,350\n';
-      this.heapProfLog_ += RemoteDebuggerAgentStub.HeapSamples[this.heapProfSample_++];
-      this.heapProfSample_ %= RemoteDebuggerAgentStub.HeapSamples.length;
-      this.heapProfLog_ +=
-          'heap-sample-end,"Heap","allocated"\n';
-    }
-  } else {
-    this.activeProfilerModules_ |= modules;
-  }
+RemoteProfilerAgentStub.prototype.GetActiveProfilerModules = function() {
+  ProfilerStubHelper.GetInstance().GetActiveProfilerModules();
 };
 
 
-RemoteDebuggerAgentStub.prototype.GetActiveProfilerModules = function() {
-  var self = this;
-  setTimeout(function() {
-      RemoteDebuggerAgent.DidGetActiveProfilerModules(
-          self.activeProfilerModules_);
-  }, 100);
-};
-
-
-RemoteDebuggerAgentStub.prototype.GetNextLogLines = function() {
-  var profModules = devtools.DebuggerAgent.ProfilerModules;
-  var logLines = '';
-  if (this.activeProfilerModules_ & profModules.PROFILER_MODULE_CPU) {
-    if (this.profileLogPos_ < RemoteDebuggerAgentStub.ProfilerLogBuffer.length) {
-      this.profileLogPos_ += RemoteDebuggerAgentStub.ProfilerLogBuffer.length;
-      logLines += RemoteDebuggerAgentStub.ProfilerLogBuffer;
-    }
-  }
-  if (this.heapProfLog_) {
-    logLines += this.heapProfLog_;
-    this.heapProfLog_ = '';
-  }
-  setTimeout(function() {
-    RemoteDebuggerAgent.DidGetNextLogLines(logLines);
-  }, 100);
+RemoteProfilerAgentStub.prototype.GetLogLines = function(pos) {
+  ProfilerStubHelper.GetInstance().GetLogLines(pos);
 };
 
 
@@ -101,7 +57,76 @@ RemoteToolsAgentStub.prototype.ExecuteVoidJavaScript = function() {
 };
 
 
-RemoteDebuggerAgentStub.ProfilerLogBuffer =
+/**
+ * @constructor
+ */
+ProfilerStubHelper = function() {
+  this.activeProfilerModules_ =
+      devtools.ProfilerAgent.ProfilerModules.PROFILER_MODULE_NONE;
+  this.heapProfSample_ = 0;
+  this.log_ = '';
+};
+
+
+ProfilerStubHelper.GetInstance = function() {
+  if (!ProfilerStubHelper.instance_) {
+    ProfilerStubHelper.instance_ = new ProfilerStubHelper();
+  }
+  return ProfilerStubHelper.instance_;
+};
+
+
+ProfilerStubHelper.prototype.StopProfiling = function(modules) {
+  this.activeProfilerModules_ &= ~modules;
+};
+
+
+ProfilerStubHelper.prototype.StartProfiling = function(modules) {
+  var profModules = devtools.ProfilerAgent.ProfilerModules;
+  if (modules & profModules.PROFILER_MODULE_HEAP_SNAPSHOT) {
+    if (modules & profModules.PROFILER_MODULE_HEAP_STATS) {
+      this.log_ +=
+          'heap-sample-begin,"Heap","allocated",' +
+              (new Date()).getTime() + '\n' +
+          'heap-sample-stats,"Heap","allocated",10000,1000\n';
+      this.log_ +=
+          'heap-sample-item,STRING_TYPE,100,1000\n' +
+          'heap-sample-item,CODE_TYPE,10,200\n' +
+          'heap-sample-item,MAP_TYPE,20,350\n';
+      this.log_ +=
+          ProfilerStubHelper.HeapSamples[this.heapProfSample_++];
+      this.heapProfSample_ %= ProfilerStubHelper.HeapSamples.length;
+      this.log_ +=
+          'heap-sample-end,"Heap","allocated"\n';
+    }
+  } else {
+    if (modules & profModules.PROFILER_MODULE_CPU) {
+      this.log_ += ProfilerStubHelper.ProfilerLogBuffer;
+    }
+    this.activeProfilerModules_ |= modules;
+  }
+};
+
+
+ProfilerStubHelper.prototype.GetActiveProfilerModules = function() {
+  var self = this;
+  setTimeout(function() {
+      RemoteProfilerAgent.DidGetActiveProfilerModules(
+          self.activeProfilerModules_);
+  }, 100);
+};
+
+
+ProfilerStubHelper.prototype.GetLogLines = function(pos) {
+  var profModules = devtools.ProfilerAgent.ProfilerModules;
+  var logLines = this.log_.substr(pos);
+  setTimeout(function() {
+    RemoteProfilerAgent.DidGetLogLines(pos + logLines.length, logLines);
+  }, 100);
+};
+
+
+ProfilerStubHelper.ProfilerLogBuffer =
   'profiler,begin,1\n' +
   'profiler,resume\n' +
   'code-creation,LazyCompile,0x1000,256,"test1 http://aaa.js:1"\n' +
@@ -118,7 +143,7 @@ RemoteDebuggerAgentStub.ProfilerLogBuffer =
   'profiler,pause\n';
 
 
-RemoteDebuggerAgentStub.HeapSamples = [
+ProfilerStubHelper.HeapSamples = [
   'heap-js-cons-item,foo,1,100\n' +
   'heap-js-cons-item,bar,20,2000\n' +
   'heap-js-cons-item,Object,5,100\n' +
@@ -191,6 +216,17 @@ RemoteDebuggerCommandExecutorStub.prototype.DebuggerCommand = function(cmd) {
         '"sourceLength":244,"scriptType":2,"compilationType":0,"context":{' +
         '"ref":0}}],"refs":[{"handle":0,"type":"context","data":"page,3}],"' +
         '"running":false}');
+  } else if (cmd.indexOf('"command":"profile"') != -1) {
+    var cmdObj = JSON.parse(cmd);
+    if (cmdObj.arguments.command == 'resume') {
+      ProfilerStubHelper.GetInstance().StartProfiling(
+          parseInt(cmdObj.arguments.modules));
+    } else if (cmdObj.arguments.command == 'pause') {
+      ProfilerStubHelper.GetInstance().StopProfiling(
+          parseInt(cmdObj.arguments.modules));
+    } else {
+      debugPrint('Unexpected profile command: ' + cmdObj.arguments.command);
+    }
   } else {
     debugPrint('Unexpected command: ' + cmd);
   }
@@ -230,6 +266,7 @@ DevToolsHostStub.prototype.setSetting = function() {
 window['RemoteDebuggerAgent'] = new RemoteDebuggerAgentStub();
 window['RemoteDebuggerCommandExecutor'] =
     new RemoteDebuggerCommandExecutorStub();
+window['RemoteProfilerAgent'] = new RemoteProfilerAgentStub();
 window['RemoteToolsAgent'] = new RemoteToolsAgentStub();
 InspectorFrontendHost = new DevToolsHostStub();
 

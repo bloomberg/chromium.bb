@@ -9,19 +9,7 @@
 
 #define DEBUGGER_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
   /* Requests global context id of the inspected tab. */ \
-  METHOD0(GetContextId) \
-  \
-  /* Starts profiling. */ \
-  METHOD1(StartProfiling, int /* flags */)     \
-  \
-  /* Stops profiling. */ \
-  METHOD1(StopProfiling, int /* flags */)     \
-  \
-  /* Requests current profiler state. */ \
-  METHOD0(GetActiveProfilerModules)       \
-  \
-  /* Retrieves next portion of profiler log. */ \
-  METHOD0(GetNextLogLines)
+  METHOD0(GetContextId)
 
 DEFINE_RPC_CLASS(DebuggerAgent, DEBUGGER_AGENT_STRUCT)
 
@@ -29,13 +17,7 @@ DEFINE_RPC_CLASS(DebuggerAgent, DEBUGGER_AGENT_STRUCT)
   METHOD1(DebuggerOutput, String /* output text */) \
   \
   /* Pushes debugger context id into the client. */ \
-  METHOD1(SetContextId, int /* context id */) \
-  \
-  /* Response to GetActiveProfilerModules. */ \
-  METHOD1(DidGetActiveProfilerModules, int /* flags */) \
-  \
-  /* Response to GetNextLogLines. */ \
-  METHOD1(DidGetNextLogLines, String /* log */)
+  METHOD1(SetContextId, int /* context id */)
 
 DEFINE_RPC_CLASS(DebuggerAgentDelegate, DEBUGGER_AGENT_DELEGATE_STRUCT)
 
