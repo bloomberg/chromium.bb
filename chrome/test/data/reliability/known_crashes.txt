@@ -141,6 +141,3 @@ REGEX : ^malloc$
 
 # 29149
 PREFIX: malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
-
-# 29565
-PREFIX: v8::internal::fastcodegenerator::visitdeclaration___v8::internal::fastcodegenerator::visitdeclarations___v8::internal::fastcodegenerator::generate___v8::internal::fastcodegenerator::makecode___v8::internal::makecode
