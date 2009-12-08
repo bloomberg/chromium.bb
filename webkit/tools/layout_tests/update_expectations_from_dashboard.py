@@ -284,8 +284,10 @@ class ExpectationsUpdater(test_expectations.TestExpectationsFile):
 
     comment_lines = []
     removed_test_on_previous_line = False
+    lineno = 0
     for line in self._GetIterableExpectations():
-      test, options, expectations = self.ParseExpectationsLine(line)
+      lineno += 1
+      test, options, expectations = self.ParseExpectationsLine(line, lineno)
 
       # If there are no updates for this test, then output the line unmodified.
       if (test not in update_json):

@@ -350,8 +350,10 @@ class TestExpectationsFile:
 
     tests_removed = 0
     tests_updated = 0
+    lineno = 0
     for line in f_orig:
-      action = self._GetPlatformUpdateAction(line, tests, platform)
+      lineno += 1
+      action = self._GetPlatformUpdateAction(line, lineno, tests, platform)
       if action == NO_CHANGE:
         # Save the original line back to the file
         logging.debug('No change to test: %s', line)
@@ -403,7 +405,7 @@ class TestExpectationsFile:
     os.rename(new_file, self._path)
     return True
 
-  def ParseExpectationsLine(self, line):
+  def ParseExpectationsLine(self, line, lineno):
     """Parses a line from test_expectations.txt and returns a tuple with the
     test path, options as a list, expectations as a list."""
     line = StripComments(line)
@@ -427,7 +429,7 @@ class TestExpectationsFile:
 
     return (test, options, expectations)
 
-  def _GetPlatformUpdateAction(self, line, tests, platform):
+  def _GetPlatformUpdateAction(self, line, lineno, tests, platform):
     """Check the platform option and return the action needs to be taken.
 
     Args:
@@ -441,7 +443,7 @@ class TestExpectationsFile:
       REMOVE_PLATFORM: remove this platform option from the test.
       ADD_PLATFORMS_EXCEPT_THIS: add all the platforms except this one.
     """
-    test, options, expectations = self.ParseExpectationsLine(line)
+    test, options, expectations = self.ParseExpectationsLine(line, lineno)
     if not test or test not in tests:
       return NO_CHANGE
 
@@ -537,7 +539,8 @@ class TestExpectationsFile:
     for line in expectations:
       lineno += 1
 
-      test_list_path, options, expectations = self.ParseExpectationsLine(line)
+      test_list_path, options, expectations = \
+        self.ParseExpectationsLine(line, lineno)
       if not expectations:
         continue
 
