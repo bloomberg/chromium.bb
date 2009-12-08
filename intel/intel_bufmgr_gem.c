@@ -950,6 +950,7 @@ int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 					   MAP_SHARED, bufmgr_gem->fd,
 					   mmap_arg.offset);
 		if (bo_gem->gtt_virtual == MAP_FAILED) {
+			bo_gem->gtt_virtual = NULL;
 			ret = -errno;
 			fprintf(stderr,
 				"%s:%d: Error mapping buffer %d (%s): %s .\n",
