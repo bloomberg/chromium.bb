@@ -16,6 +16,7 @@ import tempfile
 import time
 import urllib
 
+import http_server_base
 import path_utils
 
 # So we can import httpd_utils below to make ui_tests happy.
@@ -29,7 +30,7 @@ def RemoveLogFiles(folder, starts_with):
       full_path = os.path.join(folder, file)
       os.remove(full_path)
 
-class Lighttpd:
+class Lighttpd(http_server_base.HttpServerBase):
   # Webkit tests
   try:
     _webkit_tests = path_utils.PathFromBase('third_party', 'WebKit',
@@ -84,12 +85,13 @@ class Lighttpd:
     )
 
 
-  def __init__(self, output_dir, background=False, port=None, root=None,
-               register_cygwin=None, run_background=None):
+  def __init__(self, output_dir, num_workers=None, background=False, port=None,
+               root=None, register_cygwin=None, run_background=None):
     """Args:
       output_dir: the absolute path to the layout test result directory
     """
     self._output_dir = output_dir
+    self._num_workers = num_workers
     self._process = None
     self._port = port
     self._root = root
@@ -138,6 +140,10 @@ class Lighttpd:
     # Setup log files
     f.write(('server.errorlog = "%s"\n'
              'accesslog.filename = "%s"\n\n') % (error_log, access_log))
+
+    # Setup the number of worker processes to spawn.
+    if self._num_workers:
+      f.write('server.max-worker = %s' % self._num_workers)
 
     # Setup upload folders. Upload folder is to hold temporary upload files
     # and also POST data. This is used to support XHR layout tests that does
@@ -215,20 +221,14 @@ class Lighttpd:
     self._process = subprocess.Popen(start_cmd, env=env)
 
     # Wait for server to start.
-    time.sleep(3)
-
-    # Ensure that the server is running on all the desired ports.
-    for mapping in mappings:
-      url = 'http%s://127.0.0.1:%d/' % ('sslcert' in mapping and 's' or '',
-                                        mapping['port'])
-      if not google.httpd_utils.UrlIsAlive(url):
-        raise google.httpd_utils.HttpdNotStarted('Failed to start httpd on ',
-                                                 'port %s' %
-                                                 str(mapping['port']))
+    self.mappings = mappings
+    server_started = self.WaitForAction(self.IsServerRunningOnAllPorts)
 
     # Our process terminated already
-    if self._process.returncode != None:
+    if not server_started or self._process.returncode != None:
       raise google.httpd_utils.HttpdNotStarted('Failed to start httpd.')
+
+    logging.debug("Server successfully started")
 
   # TODO(deanm): Find a nicer way to shutdown cleanly.  Our log files are
   # probably not being flushed, etc... why doesn't our python have os.kill ?
@@ -236,16 +236,11 @@ class Lighttpd:
     if not force and not self.IsRunning():
       return
 
-    logging.debug('Shutting down http server')
     path_utils.ShutDownHTTPServer(self._process)
 
     if self._process:
       self._process.wait()
       self._process = None
-
-    # Wait a bit to make sure the ports are free'd up
-    time.sleep(2)
-
 
 if '__main__' == __name__:
   # Provide some command line params for starting/stopping the http server
