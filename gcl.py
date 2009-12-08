@@ -715,6 +715,13 @@ def GenerateDiff(files, root=None):
   else:
     os.chdir(root)
 
+  # If the user specified a custom diff command in their svn config file,
+  # then it'll be used when we do svn diff, which we don't want to happen
+  # since we want the unified diff.  Using --diff-cmd=diff doesn't always
+  # work, since they can have another diff executable in their path that
+  # gives different line endings.  So we use a bogus temp directory as the
+  # config directory, which gets around these problems.
+  bogus_dir = tempfile.mkdtemp()
   diff = []
   for filename in files:
     # TODO(maruel): Use SVN.DiffItem().
@@ -722,19 +729,6 @@ def GenerateDiff(files, root=None):
     # when the file is deleted.
     if SVN.CaptureInfo(filename).get('Node Kind') == 'directory':
       continue
-    # If the user specified a custom diff command in their svn config file,
-    # then it'll be used when we do svn diff, which we don't want to happen
-    # since we want the unified diff.  Using --diff-cmd=diff doesn't always
-    # work, since they can have another diff executable in their path that
-    # gives different line endings.  So we use a bogus temp directory as the
-    # config directory, which gets around these problems.
-    if sys.platform.startswith("win"):
-      parent_dir = tempfile.gettempdir()
-    else:
-      parent_dir = sys.path[0]  # tempdir is not secure.
-    bogus_dir = os.path.join(parent_dir, "temp_svn_config")
-    if not os.path.exists(bogus_dir):
-      os.mkdir(bogus_dir)
     output = RunShell(["svn", "diff", "--config-dir", bogus_dir, filename])
     if output:
       diff.append(output)
@@ -745,6 +739,7 @@ def GenerateDiff(files, root=None):
     else:
       # The file is not modified anymore. It should be removed from the set.
       pass
+  shutil.rmtree(bogus_dir)
   os.chdir(previous_cwd)
   return "".join(diff)
 

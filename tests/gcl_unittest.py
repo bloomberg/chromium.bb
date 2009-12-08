@@ -41,7 +41,8 @@ class GclUnittest(GclTestsBase):
         'OptionallyDoPresubmitChecks', 'PresubmitCL', 'REPOSITORY_ROOT',
         'ReadFile', 'RunShell', 'RunShellWithReturnCode', 'SVN',
         'SendToRietveld', 'TryChange', 'UnknownFiles', 'UploadCL', 'Warn',
-        'WriteFile', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
+        'WriteFile',
+        'breakpad', 'gclient_utils', 'getpass', 'main', 'os', 'random', 're',
         'shutil', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
         'urllib2',
     ]
