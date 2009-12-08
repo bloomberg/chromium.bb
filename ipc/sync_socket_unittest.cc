@@ -137,7 +137,6 @@ class SyncSocketServerListener : public IPC::Channel::Listener {
     EXPECT_EQ(sync_socket.Send(static_cast<const void*>(kHelloString),
                                kHelloStringLength), kHelloStringLength);
     IPC::Message* msg = new MsgClassResponse(kHelloString);
-    EXPECT_NE(msg, reinterpret_cast<IPC::Message*>(NULL));
     EXPECT_TRUE(chan_->Send(msg));
   }
 
@@ -198,7 +197,6 @@ class SyncSocketClientListener : public IPC::Channel::Listener {
     // After receiving from the socket there should be no bytes left.
     EXPECT_EQ(0, socket_->Peek());
     IPC::Message* msg = new MsgClassShutdown();
-    EXPECT_NE(msg, reinterpret_cast<IPC::Message*>(NULL));
     EXPECT_TRUE(chan_->Send(msg));
     MessageLoop::current()->Quit();
   }
@@ -242,7 +240,6 @@ TEST_F(SyncSocketTest, SanityTest) {
   base::FileDescriptor filedesc(target_handle, false);
   IPC::Message* msg = new MsgClassSetHandle(filedesc);
 #endif  // defined(OS_WIN)
-  EXPECT_NE(msg, reinterpret_cast<IPC::Message*>(NULL));
   EXPECT_TRUE(chan.Send(msg));
   // Use the current thread as the I/O thread.
   MessageLoop::current()->Run();
