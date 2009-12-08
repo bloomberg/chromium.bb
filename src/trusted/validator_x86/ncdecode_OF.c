@@ -111,7 +111,8 @@ void Define0FOpcodes() {
    */
   DefineOpcode(0x1F, NACLi_386,
                InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
-               InstFlag(OperandSize_v),
+               InstFlag(OperandSize_v) | InstFlag(IgnorePrefixDATA16) |
+               InstFlag(IgnorePrefixSEGCS),
                InstNop);
   DefineOperand(Opcode0, OpFlag(OperandExtendsOpcode));
 

@@ -50,7 +50,7 @@
 #define MAX_BYTES_PER_X86_INSTRUCTION 15
 
 /* Defines integer to represent sets of possible opcode flags */
-typedef uint32_t OpcodeFlags;
+typedef uint64_t OpcodeFlags;
 
 /* Converts an OpcodeFlagEnum to the corresponding bit in OpcodeFlags. */
 #define InstFlag(x) (((OpcodeFlags) 1) << (x))

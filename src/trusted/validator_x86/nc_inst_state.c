@@ -70,6 +70,7 @@ static void NcInstStateInit(NcInstIter* iter, NcInstState* state) {
   state->length_limit = (uint8_t) limit;
   DEBUG(printf("length limit = %"PRIu8"\n", state->length_limit));
   state->num_prefix_bytes = 0;
+  state->num_prefix_66 = 0;
   state->rexprefix = 0;
   state->prefix_mask = 0;
   state->opcode = NULL;
@@ -138,6 +139,9 @@ static Bool ConsumePrefixBytes(NcInstState* state) {
     DEBUG(printf("Consume prefix[%d]: %02"PRIx8" => %"PRIx32"\n",
                  i, next_byte, prefix_form));
     state->prefix_mask |= prefix_form;
+    if (kPrefixDATA16 == prefix_form) {
+      ++state->num_prefix_66;
+    }
     ++state->num_prefix_bytes;
     ++state->length;
     DEBUG(printf("  prefix mask: %08"PRIx32"\n", state->prefix_mask));
@@ -393,9 +397,10 @@ static Bool ConsumeAndCheckAddressSize(NcInstState* state) {
 
 /* Returns true if the instruction requires a ModRm bytes. */
 static Bool InstructionRequiresModRm(NcInstState* state) {
-  return state->opcode->flags &
-      (InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeInModRm) |
-       InstFlag(ModRmLessThanC0ForX87Inst));
+  return
+      ((OpcodeFlag) 0) != (state->opcode->flags &
+               (InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeInModRm) |
+                InstFlag(ModRmLessThanC0ForX87Inst)));
 }
 
 /* Consume the Mod/Rm byte of the instruction, if applicable.
@@ -812,6 +817,16 @@ void DecodeInstruction(
     /* Don't allow more than one (non-REX) prefix. */
     int num_prefix_bytes = state->num_prefix_bytes;
     if (state->rexprefix) --num_prefix_bytes;
+
+    /* Don't count prefix bytes that explicitly state to ignore,
+     * such as the nop instruction.
+     */
+    if (state->opcode->flags & InstFlag(IgnorePrefixDATA16)) {
+      if (state->num_prefix_66 > 1) {
+        num_prefix_bytes -= state->num_prefix_66;
+      }
+    }
+
     if (num_prefix_bytes > 1) {
       state->is_nacl_legal = FALSE;
     }
@@ -827,12 +842,16 @@ void DecodeInstruction(
     }
     if (NACL_TARGET_SUBARCH == 64) {
       /* Don't allow CS, DS, ES, or SS prefix overrides,
-       * since it has no effect.
+       * since it has no effect, unless explicitly stated
+       * otherwise.
        */
       if (state->prefix_mask &
           (kPrefixSEGCS | kPrefixSEGSS | kPrefixSEGES |
            kPrefixSEGDS)) {
-        state->is_nacl_legal = FALSE;
+        if ((OpcodeFlags)0 ==
+            (state->opcode->flags & InstFlag(IgnorePrefixSEGCS))) {
+          state->is_nacl_legal = FALSE;
+        }
       }
     }
   }

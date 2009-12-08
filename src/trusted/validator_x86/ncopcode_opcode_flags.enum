@@ -102,3 +102,11 @@ OperandSizeForce64
 # sse instructions, where prefix 66 is being used to define Mmx or Xmm
 # registers, instead of operand size.
 OperandSizeIgnore66
+
+# Ignore multiple 66 prefices when counting the number of prefices allowed
+# in NACL.
+IgnorePrefixDATA16
+
+# Ignore Prefix SEGCS when counting the number of prefices allowed
+# in NACL.
+IgnorePrefixSEGCS
