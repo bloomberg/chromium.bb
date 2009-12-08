@@ -356,17 +356,11 @@ void TabContentsViewMac::Observe(NotificationType type,
 }
 
 - (BOOL)processKeyboardEvent:(NativeWebKeyboardEvent*)wkEvent {
-  if (wkEvent->skip_in_browser)
+  if (wkEvent->skip_in_browser || wkEvent->type == WebKit::WebInputEvent::Char)
     return NO;
 
   NSEvent* event = wkEvent->os_event;
-
-  if (!event) {
-    // Char events are synthesized and do not contain a real event. We are not
-    // interested in them anyway.
-    DCHECK(wkEvent->type == WebKit::WebInputEvent::Char);
-    return NO;
-  }
+  DCHECK(event != NULL);
 
   // If this tab is no longer active, its window will be |nil|. In that case,
   // best ignore the event.

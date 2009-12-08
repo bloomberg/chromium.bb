@@ -703,9 +703,9 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
         lastKeyPressedEvent_.get() != theEvent &&
         [[theEvent characters] length] > 0 &&
         renderWidgetHostView_->render_widget_host_) {
-      NativeWebKeyboardEvent event([[theEvent characters] characterAtIndex:0],
-                                   ToWebKitModifiers([theEvent modifierFlags]),
-                                   base::Time::Now().ToDoubleT());
+      // Just fabricate a Char event by changing the type of the RawKeyDown
+      // event, to retain all necessary informations, such as unmodifiedText.
+      event.type = WebKit::WebInputEvent::Char;
       // We fire menu items on keydown, we don't want to activate menu items
       // twice.
       event.skip_in_browser = true;
@@ -1352,8 +1352,13 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // TODO(hbono): need to handle more commands?
   if (selector == @selector(insertNewline:)) {
     lastKeyPressedEvent_.reset([[NSApp currentEvent] retain]);
-    NativeWebKeyboardEvent event('\r', renderWidgetHostView_->im_modifiers_,
-                                 base::Time::Now().ToDoubleT());
+    // Create the Char event from the NSEvent object, so that we can retain
+    // necessary informations, especially unmodifiedText.
+    NativeWebKeyboardEvent event(lastKeyPressedEvent_.get());
+    event.type = WebKit::WebInputEvent::Char;
+    event.text[0] = '\r';
+    event.text[1] = 0;
+    event.skip_in_browser = true;
     renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
   }
 }
@@ -1373,9 +1378,13 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   NSString* im_text = isAttributedString ? [string string] : string;
   if (!renderWidgetHostView_->im_composing_ && [im_text length] == 1) {
     lastKeyPressedEvent_.reset([[NSApp currentEvent] retain]);
-    NativeWebKeyboardEvent event([im_text characterAtIndex:0],
-                                 renderWidgetHostView_->im_modifiers_,
-                                 base::Time::Now().ToDoubleT());
+    // Create the Char event from the NSEvent object, so that we can retain
+    // necessary informations, especially unmodifiedText.
+    NativeWebKeyboardEvent event(lastKeyPressedEvent_.get());
+    event.type = WebKit::WebInputEvent::Char;
+    event.text[0] = [im_text characterAtIndex:0];
+    event.text[1] = 0;
+    event.skip_in_browser = true;
     renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
   } else {
     renderWidgetHostView_->render_widget_host_->ImeConfirmComposition(
