@@ -251,98 +251,129 @@
 <div id="pageData-showSideNav" class="pageData">false</div>
 
 <style>
-#pics {
-  margin:1em;
+cs {
   border:none;
+  margin:0;
 }
 
 #pics td {
-  text-align:center;
-  width:33%!important;
-  border:none;
-  padding:0 1em;
-  font-size:90%;
+  padding:0 1em 0 0;
 }
 
 #pics img {
-  width:180px;
-  height:85px;
   border:none;
 }
 </style>
 
-<div id="pageData-title" class="pageData">Developer Documentation</div>
+<table class="columns" style="margin:0">
 
-<h3>Hello There!</h3>
+<tbody><tr>
+<td>
+<h3>What are Google Chrome Extensions?</h3>
 
 <p>
 <em>Extensions</em> are small software programs
 that can modify and enhance the functionality of Google Chrome.
-</p>
-
-<p>
-You write them using web technologies like
+You write them using web technologies such as
 HTML, JavaScript, and CSS.
-So if you know how to write web pages,
-you already know most of what
-you need to know to write extensions.
 </p>
 
 <p>
-Here are some examples of what you can build with extensions:
-<!-- [PENDING: improve * actions screenshots, so there are fewer unnecessary differences between them.] -->
+Here are some examples of extensions:
 </p>
 
-<table id="pics">
-  <tbody><tr>
-    <td valign="top">
-      <b>Page actions</b><br>
-      <a href="pageAction.html"><img src="images/index/page_action.png" width="180"></a>
-      <br>
-      Display small icons in the address bar, but only for specific pages
-    </td>
-    <td valign="top">
-      <b>Browser actions</b><br>
-      <a href="browserAction.html"><img src="images/index/browser_action.png" width="240"></a>
-      <br>
-      Display small icons in the toolbar,
-      optionally with a custom popup
-    </td>
-    <td valign="top">
-      <b>Content scripts</b><br>
-      <a href="content_scripts.html"><img src="images/index/content_script.png" width="180"></a>
-      <br>
-      Modify the look and behavior of web pages
-    </td>
-  </tr>
+<table class="columns" id="pics">
+<tbody><tr>
+  <td>
+    <img src="images/index/gmail.png" width="150" height="79">
+  </td>
+  <td>
+      <p>
+      <b><a href="samples.html#gmail">Google Mail Checker</a></b><br>
+      Uses a <em>browser action</em>
+      (icon in the toolbar)
+      to display how many unread messages
+      are in your Gmail inbox.
+      Click the icon to go to your inbox.
+      </p>
+  </td>
+</tr>
+
+<tr>
+  <td>
+    <img src="images/index/news.png" width="150" height="79">
+  </td>
+  <td>
+      <p>
+      <b><a href="samples.html#news">News Reader</a></b><br>
+      Features a browser action that, when clicked,
+      shows a popup summarizing the top news items.
+      </p>
+  </td>
+</tr>
+
+<tr>
+  <td>
+    <img src="images/index/rss.png" width="150" height="79">
+  </td>
+  <td>
+      <p>
+      <b><a href="samples.html#subscribe_page_action">Subscribe in Feed Reader</a></b><br>
+      Uses a <em>page action</em>
+      (icon in the address bar)
+      and <em>content script</em>
+      (code injected into a web page)
+      to let you subscribe to a feed in the current web page.
+      </p>
+  </td>
+</tr>
 </tbody></table>
+<br>
 
 <p>
-This website contains all the information
-you need to build extensions.
-Start with one of these sections:
+To keep up with the latest news on extensions, read the
+<a href="http://blog.chromium.org/">Chromium blog</a> and the
+<a href="http://chrome.blogspot.com/">Google Chrome blog</a>,
+and subscribe to the
+<a href="http://groups.google.com/group/chromium-extensions">chromium-extensions group</a>.
+
 </p>
 
-<ul>
-  <li>
-    <a href="getstarted.html">Getting Started</a>:
-    Build a simple "Hello, World" extension in about 5 minutes
-    </li>
-  <li>
-    <a href="overview.html">Overview</a>:
-    Learn about the fundamental design points of
-    the extension system
-    </li>
-  <li>
-    <a href="devguide.html">Developer's Guide</a>:
-    Get detailed information on using each feature and API
-    </li>
-</ul>
+</td>
+
+<td style="width:330px">
+<h3>How do I start?</h3>
 
 <p>
-Also check out the discussion group:
-<a href="http://groups.google.com/group/chromium-extensions">chromium-extensions</a>
+</p><ol>
+  <li>
+    Follow the
+    <a href="getstarted.html">Getting Started tutorial</a>
+  </li>
+  <li>
+    Read the
+    <a href="overview.html">Overview</a>
+  </li>
+  <li>
+    <a href="devguide.html">Write</a> and
+    <a href="tut_debugging.html">debug</a>
+    your extension
+  </li>
+  <li>
+    Submit your extension to the
+    <a href="https://chrome.google.com/extensions">gallery</a>
+  </li>
+</ol>
+<p></p>
+
+<h3>Featured videos</h3>
+
+<p>
+<object width="300" height="250"><param name="movie" value="http://www.youtube.com/p/CA101D6A85FE9D4B&amp;hl=en_US&amp;fs=1"><param name="allowFullScreen" value="true"><param name="allowscriptaccess" value="always"><embed src="http://www.youtube.com/p/CA101D6A85FE9D4B&amp;hl=en_US&amp;fs=1" type="application/x-shockwave-flash" width="300" height="250" allowscriptaccess="always" allowfullscreen="true"></object>
 </p>
+</td>
+</tr>
+</tbody></table>
 </div>
 
         <!-- API PAGE -->
