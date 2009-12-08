@@ -450,3 +450,13 @@
    fun:_ZN14ProfileManager10GetProfileERK8FilePath
    fun:_ZN14ProfileManager17GetDefaultProfileERK8FilePath
 }
+{
+   bug_29681
+   Memcheck:Leak
+   ...
+   fun:CSBackupSetItemExcluded
+   fun:_ZN8mac_util22SetFileBackupExclusionERK8FilePathb
+   fun:_ZN7history15HistoryDatabase4InitERK8FilePathS3_
+   fun:_ZN7history14HistoryBackend8InitImplEv
+   fun:_ZN7history14HistoryBackend4InitEb
+}
