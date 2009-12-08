@@ -35,7 +35,8 @@ void XmlReader::GenericErrorCallback(void* context, const char* msg, ...) {
   va_start(args, msg);
 
   XmlReader* reader = static_cast<XmlReader*>(context);
-  reader->errors_.append(StringPrintf(msg, args));
+  reader->errors_.append(StringPrintV(msg, args));
+  va_end(args);
 }
 
 bool XmlReader::Load(const std::string& input) {
