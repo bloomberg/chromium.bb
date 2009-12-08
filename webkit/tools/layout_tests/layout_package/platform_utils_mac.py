@@ -73,6 +73,15 @@ def TestShellPath(target):
   return path_utils.PathFromBase('xcodebuild', target, 'TestShell.app',
                                  'Contents', 'MacOS','TestShell')
 
+def ApacheExecutablePath():
+  """Returns the executable path to start Apache"""
+  return os.path.join("/usr", "sbin", "httpd")
+
+def ApacheConfigFilePath():
+  """Returns the path to Apache config file"""
+  return path_utils.PathFromBase("third_party", "WebKit", "LayoutTests", "http",
+      "conf", "apache2-httpd.conf")
+
 def LigHTTPdExecutablePath():
   """Returns the executable path to start LigHTTPd"""
   return path_utils.PathFromBase('third_party', 'lighttpd', 'mac',
@@ -104,9 +113,9 @@ def ShutDownHTTPServer(server_process):
     #   killall: illegal option -- T
     # Use of the earlier -TERM placement is just fine on 10.5.
     null = open("/dev/null");
-    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'],
+    subprocess.call(['killall', '-KILL', '-u', os.getenv('USER'), 'lighttpd'],
                     stderr=null)
-    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'httpd'],
+    subprocess.call(['killall', '-KILL', '-u', os.getenv('USER'), 'httpd'],
                     stderr=null)
     null.close()
   else:

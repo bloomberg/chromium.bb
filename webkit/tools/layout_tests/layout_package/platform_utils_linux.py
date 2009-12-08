@@ -31,6 +31,19 @@ def BaselineSearchPath(all_versions=False):
           path_utils.WebKitBaselinePath('win'),
           path_utils.WebKitBaselinePath('mac')]
 
+def ApacheExecutablePath():
+  """Returns the executable path to start Apache"""
+  path = os.path.join("/usr", "sbin", "apache2")
+  if os.path.exists(path):
+    return path
+  print "Unable to fine Apache executable %s" % path
+  _MissingApache()
+
+def ApacheConfigFilePath():
+  """Returns the path to Apache config file"""
+  return path_utils.PathFromBase("third_party", "WebKit", "LayoutTests", "http",
+      "conf", "apache2-debian-httpd.conf")
+
 def LigHTTPdExecutablePath():
   """Returns the executable path to start LigHTTPd"""
   binpath = "/usr/sbin/lighttpd"
@@ -113,7 +126,12 @@ def ShutDownHTTPServer(server_process):
   if server_process is None:
     # TODO(mmoss) This isn't ideal, since it could conflict with lighttpd
     # processes not started by http_server.py, but good enough for now.
-    subprocess.call(['killall', '-u', os.getenv('USER'), '-TERM', 'lighttpd'])
+    null = open("/dev/null");
+    subprocess.call(['killall', '-KILL', '-u', os.getenv('USER'), 'lighttpd'],
+                    stderr=null)
+    subprocess.call(['killall', '-KILL', '-u', os.getenv('USER'), 'apache2'],
+                    stderr=null)
+    null.close()
   else:
     os.kill(server_process.pid, signal.SIGKILL)
 
@@ -137,6 +155,13 @@ def KillAllTestShells():
 
 def _MissingLigHTTPd():
   print 'Please install using: "sudo apt-get install lighttpd php5-cgi"'
+  print 'For complete Linux build requirements, please see:'
+  print 'http://code.google.com/p/chromium/wiki/LinuxBuildInstructions'
+  sys.exit(1)
+
+def _MissingApache():
+  print ('Please install using: "sudo apt-get install apache2 '
+      'libapache2-mod-php5"')
   print 'For complete Linux build requirements, please see:'
   print 'http://code.google.com/p/chromium/wiki/LinuxBuildInstructions'
   sys.exit(1)

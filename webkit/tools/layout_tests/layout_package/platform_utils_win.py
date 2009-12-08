@@ -88,6 +88,16 @@ def TestShellPath(target):
   """
   return _FindBinary(target, 'test_shell.exe')
 
+def ApacheExecutablePath():
+  """Returns the executable path to start Apache"""
+  return path_utils.PathFromBase('third_party', 'cygwin', "usr", "sbin",
+      "httpd.exe")
+
+def ApacheConfigFilePath():
+  """Returns the path to Apache config file"""
+  return path_utils.PathFromBase("third_party", "WebKit", "LayoutTests", "http",
+      "conf", "cygwin-httpd.conf")
+
 def LigHTTPdExecutablePath():
   """Returns the executable path to start LigHTTPd"""
   return path_utils.PathFromBase('third_party', 'lighttpd', 'win',

@@ -1210,7 +1210,7 @@ def main(options, args):
       options.target = "Release"
 
   if not options.use_apache:
-    options.use_apache = sys.platform == 'darwin'
+    options.use_apache = sys.platform in ('darwin', 'linux2')
 
   if options.results_directory.startswith("/"):
     # Assume it's an absolute path and normalize.

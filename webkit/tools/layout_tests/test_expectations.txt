@@ -2966,11 +2966,13 @@ BUG28301 : LayoutTests/media/media-captions.html = TIMEOUT
 BUG28317 : LayoutTests/fast/css/color-correction-on-background-image.html = FAIL
 BUG28317 : LayoutTests/fast/css/color-correction-untagged-images.html = FAIL
 
-// Started failing with move from Lighttpd to Apache on Mac.
+// Started failing with move from Lighttpd to Apache.
 // Since we have some bots on Lighttpd and some on Apache, mark it as flaky for
 // now. Once we decide on one or the other, then we can address these tests.
-BUG_OJAN MAC : LayoutTests/http/tests/loading/text-content-type-with-binary-extension.html = TEXT PASS
+BUG_OJAN MAC LINUX : LayoutTests/http/tests/loading/text-content-type-with-binary-extension.html = TEXT PASS
 BUG_OJAN MAC : LayoutTests/http/tests/xmlhttprequest/web-apps/012.html = TEXT PASS
+BUG_OJAN LINUX : LayoutTests/http/tests/xmlhttprequest/cache-override.html = TEXT PASS
+BUG_OJAN LINUX : LayoutTests/svg/custom/stop-crash.svg = CRASH
 
 // Started failing when we started sharding the http and fast directories.
 // Likely it's because this test depends on some other http test running before

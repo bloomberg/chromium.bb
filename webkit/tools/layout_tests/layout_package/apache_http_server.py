@@ -10,8 +10,6 @@ import os
 import subprocess
 import sys
 
-import google.httpd_utils
-
 import http_server_base
 import path_utils
 import platform_utils
@@ -41,7 +39,7 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
     mime_types_path = os.path.join(test_dir, "http", "conf", "mime.types")
     cert_file = os.path.join(test_dir, "http", "conf", "webkit-httpd.pem")
 
-    cmd = [os.path.join("/usr", "sbin", "httpd"),
+    cmd = [platform_utils.ApacheExecutablePath(),
         '-f', self._GetApacheConfigFilePath(test_dir, output_dir),
         '-C', "DocumentRoot %s" % os.path.join(test_dir, "http", "tests"),
         '-c', "Alias /js-test-resources %s" % js_test_resources_dir,
@@ -63,9 +61,8 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
       test_dir: absolute path to the LayoutTests directory.
       output_dir: absolute path to the layout test results directory.
     """
-    conf_file_name = "apache2-httpd.conf"
-    httpd_config = os.path.join(test_dir, "http", "conf", conf_file_name)
-    httpd_config_copy = os.path.join(output_dir, conf_file_name)
+    httpd_config = platform_utils.ApacheConfigFilePath()
+    httpd_config_copy = os.path.join(output_dir, "httpd.conf")
     main_document_root = os.path.join(path_utils.LayoutTestsDir(),
         "LayoutTests", "http", "tests")
     chrome_document_root = path_utils.PathFromBase('webkit', 'data',
@@ -97,7 +94,9 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
   def _StartHttpdProcess(self):
     """Starts the httpd process and returns whether there were errors."""
     self._httpd_proc = subprocess.Popen(self._start_cmd, stderr=subprocess.PIPE)
-    if len(self._httpd_proc.stderr.read()):
+    err = self._httpd_proc.stderr.read()
+    if len(err):
+      logging.debug(err)
       return False
     return True
 
@@ -114,7 +113,7 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
     if server_started:
       logging.debug("Server successfully started")
     else:
-      raise google.httpd_utils.HttpdNotStarted('Failed to start httpd')
+      raise Exception('Failed to start http server')
 
   def Stop(self):
     """Stops the apache http server."""
