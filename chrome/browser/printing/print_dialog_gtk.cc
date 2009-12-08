@@ -78,7 +78,7 @@ PrintDialogGtk::PrintDialogGtk(const FilePath& path_to_pdf)
   dialog_ = gtk_print_unix_dialog_new(NULL, parent);
   g_signal_connect(dialog_, "response", G_CALLBACK(OnResponseThunk), this);
 
-  gtk_widget_show_all(dialog_);
+  gtk_widget_show(dialog_);
 }
 
 PrintDialogGtk::~PrintDialogGtk() {
