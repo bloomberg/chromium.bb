@@ -18,7 +18,7 @@ import time
 # access to simplejson, we do the best we can.
 try:
   import simplejson
-except: ImportError:
+except ImportError:
   try:
     import path_utils
     sys.path.append(path_utils.PathFromBase('third_party'))
