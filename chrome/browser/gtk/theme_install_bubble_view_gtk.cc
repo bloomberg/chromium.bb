@@ -97,6 +97,10 @@ void ThemeInstallBubbleViewGtk::InitWidgets() {
   gtk_widget_modify_fg(label, GTK_STATE_NORMAL, &gfx::kGdkWhite);
   gtk_container_add(GTK_CONTAINER(widget_), label);
 
+  // We need to show the label so we'll know the widget's actual size when we
+  // call MoveWindow().
+  gtk_widget_show_all(label);
+
   bool composited = false;
   if (gtk_util::IsScreenComposited()) {
     composited = true;
