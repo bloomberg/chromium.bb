@@ -3057,10 +3057,6 @@ BUG29239 : LayoutTests/fast/css/variables/misplaced-import-test.html = FAIL
 BUG29339 WIN MAC : LayoutTests/plugins/embed-attributes-setting.html = CRASH FAIL
 BUG29344 MAC LINUX : LayoutTests/svg/text/text-text-07-t.svg = FAIL
 
-BUG_ATWILSON MAC : LayoutTests/fast/borders/block-mask-overlay-image.html = FAIL
-BUG_ATWILSON : LayoutTests/fast/block/positioning/complex-percentage-height.html = FAIL
-BUG_ATWILSON : LayoutTests/fast/lists/item-not-in-list-line-wrapping.html = FAIL
-BUG_ATWILSON MAC : LayoutTests/fast/text/international/hindi-whitespace.html = FAIL
 
 // Failures from WebKit merge 51642:51681
 BUG_29393 : LayoutTests/fast/loader/stateobjects/document-destroyed-navigate-back-with-fragment-scroll.html = TIMEOUT
@@ -3073,10 +3069,8 @@ BUG_29393 : LayoutTests/fast/loader/stateobjects/pushstate-object-types.html = T
 BUG_29393 : LayoutTests/fast/loader/stateobjects/pushstate-then-replacestate.html = TIMEOUT
 BUG_29393 : LayoutTests/fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html = TIMEOUT
 BUG_29393 : LayoutTests/fast/loader/stateobjects/replacestate-then-pushstate.html = TIMEOUT
+BUG_29653 : LayoutTests/accessibility/aria-scrollbar-role.html = TEXT
 
-BUG_ATWILSON : LayoutTests/accessibility/aria-scrollbar-role.html = TEXT
-BUG_ATWILSON : LayoutTests/http/tests/security/cross-frame-access-enumeration.html = TEXT
-BUG_ATWILSON : LayoutTests/fast/repaint/selection-gap-overflow-scroll.html = IMAGE
 
 // Failures introduced by USE_NEW_BUILDER in Skia.
 BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/canvas/set-colors.html = TEXT
