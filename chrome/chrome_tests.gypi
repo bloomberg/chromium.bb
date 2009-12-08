@@ -24,15 +24,8 @@
       'browser/views/browser_views_accessibility_browsertest.cc',
     ],
     'browser_tests_sources_exclude_on_mac': [
-      'browser/extensions/extension_bookmarks_apitest.cc',
-      'browser/extensions/extension_history_apitest.cc',
-      'browser/extensions/extension_javascript_url_apitest.cc',
-      'browser/extensions/extension_messages_apitest.cc',
+      # These fail to compile because they seem to drag in views headers.
       'browser/extensions/extension_browsertests_misc.cc',
-      'browser/extensions/extension_override_apitest.cc',
-      'browser/extensions/extension_toolstrip_apitest.cc',
-      'browser/extensions/isolated_world_apitest.cc',
-      # Uses views headers
       'browser/extensions/page_action_apitest.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.
