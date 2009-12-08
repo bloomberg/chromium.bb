@@ -35,6 +35,10 @@
   return observer_.get();
 }
 
+- (NSTableView*)tableView {
+  return tableView_;
+}
+
 @end
 
 // TODO(rsesek): Figure out a good way to test this class (crbug.com/21640).
@@ -49,7 +53,8 @@ class KeywordEditorCocoaControllerTest : public CocoaTest {
         static_cast<TestingProfile*>(browser_helper_.profile());
     profile->CreateTemplateURLModel();
 
-    controller_ = [[FakeKeywordEditorController alloc] initWithProfile:profile];
+    controller_ =
+        [[FakeKeywordEditorController alloc] initWithProfile:profile];
   }
 
   virtual void TearDown() {
@@ -130,6 +135,86 @@ TEST_F(KeywordEditorCocoaControllerTest, ShowKeywordEditor) {
   EXPECT_TRUE(sharedInstance != newSharedInstance);
   EXPECT_EQ(CountKeywordEditors(), 1U);
   [newSharedInstance close];
+}
+
+TEST_F(KeywordEditorCocoaControllerTest, IndexInModelForRowMixed) {
+  [controller_ window];  // Force |-awakeFromNib|.
+  TemplateURLModel* template_model = [controller_ controller]->url_model();
+
+  // Add a default engine.
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL(L"http://test1/{searchTerms}", 0, 0);
+  t_url->set_keyword(L"test1");
+  t_url->set_short_name(L"Test1");
+  t_url->set_show_in_default_list(true);
+  template_model->Add(t_url);
+
+  // Add a non-default engine.
+  t_url = new TemplateURL();
+  t_url->SetURL(L"http://test2/{searchTerms}", 0, 0);
+  t_url->set_keyword(L"test2");
+  t_url->set_short_name(L"Test2");
+  t_url->set_show_in_default_list(false);
+  template_model->Add(t_url);
+
+  // Two headers with a single row underneath each.
+  NSTableView* table = [controller_ tableView];
+  [table reloadData];
+  ASSERT_EQ(4, [[controller_ tableView] numberOfRows]);
+
+  // Index 0 is the group header, index 1 should be the first engine.
+  ASSERT_EQ(0, [controller_ indexInModelForRow:1]);
+
+  // Index 2 should be the group header, so index 3 should be the non-default
+  // engine.
+  ASSERT_EQ(1, [controller_ indexInModelForRow:3]);
+
+  ASSERT_TRUE([controller_ tableView:table isGroupRow:0]);
+  ASSERT_FALSE([controller_ tableView:table isGroupRow:1]);
+  ASSERT_TRUE([controller_ tableView:table isGroupRow:2]);
+  ASSERT_FALSE([controller_ tableView:table isGroupRow:3]);
+
+  ASSERT_FALSE([controller_ tableView:table shouldSelectRow:0]);
+  ASSERT_TRUE([controller_ tableView:table shouldSelectRow:1]);
+  ASSERT_FALSE([controller_ tableView:table shouldSelectRow:2]);
+  ASSERT_TRUE([controller_ tableView:table shouldSelectRow:3]);
+}
+
+TEST_F(KeywordEditorCocoaControllerTest, IndexInModelForDefault) {
+  [controller_ window];  // Force |-awakeFromNib|.
+  TemplateURLModel* template_model = [controller_ controller]->url_model();
+
+  // Add 2 default engines.
+  TemplateURL* t_url = new TemplateURL();
+  t_url->SetURL(L"http://test1/{searchTerms}", 0, 0);
+  t_url->set_keyword(L"test1");
+  t_url->set_short_name(L"Test1");
+  t_url->set_show_in_default_list(true);
+  template_model->Add(t_url);
+
+  t_url = new TemplateURL();
+  t_url->SetURL(L"http://test2/{searchTerms}", 0, 0);
+  t_url->set_keyword(L"test2");
+  t_url->set_short_name(L"Test2");
+  t_url->set_show_in_default_list(true);
+  template_model->Add(t_url);
+
+  // One header and two rows.
+  NSTableView* table = [controller_ tableView];
+  [table reloadData];
+  ASSERT_EQ(3, [[controller_ tableView] numberOfRows]);
+
+  // Index 0 is the group header, index 1 should be the first engine.
+  ASSERT_EQ(0, [controller_ indexInModelForRow:1]);
+  ASSERT_EQ(1, [controller_ indexInModelForRow:2]);
+
+  ASSERT_TRUE([controller_ tableView:table isGroupRow:0]);
+  ASSERT_FALSE([controller_ tableView:table isGroupRow:1]);
+  ASSERT_FALSE([controller_ tableView:table isGroupRow:2]);
+
+  ASSERT_FALSE([controller_ tableView:table shouldSelectRow:0]);
+  ASSERT_TRUE([controller_ tableView:table shouldSelectRow:1]);
+  ASSERT_TRUE([controller_ tableView:table shouldSelectRow:2]);
 }
 
 }  // namespace

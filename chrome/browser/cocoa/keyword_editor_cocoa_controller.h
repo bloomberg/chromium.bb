@@ -64,6 +64,8 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
   IBOutlet NSButton* removeButton_;
   IBOutlet NSButton* makeDefaultButton_;
 
+  scoped_nsobject<NSTextFieldCell> groupCell_;
+
   Profile* profile_;  // weak
   scoped_ptr<KeywordEditorController> controller_;
   scoped_ptr<KeywordEditorModelObserver> observer_;
@@ -95,5 +97,9 @@ class KeywordEditorModelObserver : public TemplateURLModelObserver,
 // Returns a reference to the shared instance for the given profile,
 // or nil if there is none.
 + (KeywordEditorCocoaController*)sharedInstanceForProfile:(Profile*)profile;
+
+// Converts a row index in our table view (which has group header rows) into
+// one in the |controller_|'s model, which does not have them.
+- (int)indexInModelForRow:(NSUInteger)row;
 
 @end
