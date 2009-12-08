@@ -45,7 +45,7 @@ class PrintedPage : public base::RefCountedThreadSafe<PrintedPage> {
   // job.
   const gfx::Size page_size_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PrintedPage);
+  DISALLOW_COPY_AND_ASSIGN(PrintedPage);
 };
 
 }  // namespace printing

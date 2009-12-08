@@ -35,9 +35,8 @@ void GetPrinterHelper(HANDLE printer, int level, scoped_array<uint8>* buffer) {
 
 namespace printing {
 
-class PrintingContext::CallbackHandler
-    : public IPrintDialogCallback,
-      public IObjectWithSite {
+class PrintingContext::CallbackHandler : public IPrintDialogCallback,
+                                         public IObjectWithSite {
  public:
   CallbackHandler(PrintingContext& owner, HWND owner_hwnd)
       : owner_(owner),
@@ -134,7 +133,7 @@ class PrintingContext::CallbackHandler
   HWND owner_hwnd_;
   IPrintDialogServices* services_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(CallbackHandler);
+  DISALLOW_COPY_AND_ASSIGN(CallbackHandler);
 };
 
 PrintingContext::PrintingContext()

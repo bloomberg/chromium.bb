@@ -103,7 +103,7 @@ class Emf {
   // Valid when generating EMF data through a virtual HDC.
   HDC hdc_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Emf);
+  DISALLOW_COPY_AND_ASSIGN(Emf);
 };
 
 struct Emf::EnumerationContext {
@@ -173,7 +173,7 @@ class Emf::Enumerator {
 
   EnumerationContext context_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(Enumerator);
+  DISALLOW_COPY_AND_ASSIGN(Enumerator);
 };
 
 }  // namespace printing

@@ -115,7 +115,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
   // Contains all the mutable stuff. All this stuff MUST be accessed with the
   // lock held.
   struct Mutable {
-    Mutable(PrintedPagesSource* source);
+    explicit Mutable(PrintedPagesSource* source);
 
     // Source that generates the PrintedPage's (i.e. a TabContents). It will be
     // set back to NULL if the source is deleted before this object.
@@ -190,7 +190,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
   // All the immutable members.
   const Immutable immutable_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PrintedDocument);
+  DISALLOW_COPY_AND_ASSIGN(PrintedDocument);
 };
 
 }  // namespace printing

@@ -53,7 +53,7 @@ class DisableFontSmoothing {
  private:
   bool enable_again_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(DisableFontSmoothing);
+  DISALLOW_COPY_AND_ASSIGN(DisableFontSmoothing);
 };
 
 }  // namespace

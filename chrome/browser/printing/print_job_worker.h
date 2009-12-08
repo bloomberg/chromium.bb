@@ -103,7 +103,7 @@ class PrintJobWorker : public base::Thread {
   // Current page number to print.
   PageNumber page_number_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PrintJobWorker);
+  DISALLOW_COPY_AND_ASSIGN(PrintJobWorker);
 };
 
 }  // namespace printing

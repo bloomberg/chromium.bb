@@ -60,7 +60,7 @@ class PrintJobManager : public NotificationObserver {
   // Current print jobs that are active.
   PrintJobs current_jobs_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PrintJobManager);
+  DISALLOW_COPY_AND_ASSIGN(PrintJobManager);
 };
 
 }  // namespace printing

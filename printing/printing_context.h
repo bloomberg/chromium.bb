@@ -168,7 +168,7 @@ class PrintingContext {
   // Did the user cancel the print job.
   volatile bool abort_printing_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(PrintingContext);
+  DISALLOW_COPY_AND_ASSIGN(PrintingContext);
 };
 
 }  // namespace printing
