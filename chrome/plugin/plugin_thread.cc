@@ -194,52 +194,6 @@ bool GetPluginFinderURL(std::string* plugin_finder_url) {
   return true;
 }
 
-#if defined(OS_MACOSX)
-__attribute__((visibility("default")))
-void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds,
-                                       bool modal) {
-  PluginThread* plugin_thread = PluginThread::current();
-  if (plugin_thread) {
-    gfx::Rect window_bounds(bounds);
-    plugin_thread->Send(
-        new PluginProcessHostMsg_PluginSelectWindow(window_id, window_bounds,
-                                                    modal));
-  }
-}
-
-__attribute__((visibility("default")))
-void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
-                                     bool modal) {
-  PluginThread* plugin_thread = PluginThread::current();
-  if (plugin_thread) {
-    gfx::Rect window_bounds(bounds);
-    plugin_thread->Send(
-        new PluginProcessHostMsg_PluginShowWindow(window_id, window_bounds,
-                                                  modal));
-  }
-}
-
-__attribute__((visibility("default")))
-void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds) {
-  PluginThread* plugin_thread = PluginThread::current();
-  if (plugin_thread) {
-    gfx::Rect window_bounds(bounds);
-    plugin_thread->Send(
-        new PluginProcessHostMsg_PluginHideWindow(window_id, window_bounds));
-  }
-}
-
-__attribute__((visibility("default")))
-void NotifyBrowserOfPluginDisposeWindow(uint32 window_id, CGRect bounds) {
-  PluginThread* plugin_thread = PluginThread::current();
-  if (plugin_thread) {
-    gfx::Rect window_bounds(bounds);
-    plugin_thread->Send(
-        new PluginProcessHostMsg_PluginDisposeWindow(window_id, window_bounds));
-  }
-}
-#endif
-
 bool IsDefaultPluginEnabled() {
 #if defined(OS_WIN)
   return true;

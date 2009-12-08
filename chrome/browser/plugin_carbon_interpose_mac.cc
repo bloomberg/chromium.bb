@@ -5,77 +5,10 @@
 #include <Carbon/Carbon.h>
 
 #include "base/gfx/rect.h"
+#include "chrome/plugin/plugin_interpose_util_mac.h"
 #include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"
 
-namespace webkit_glue {
-
-void NotifyBrowserOfPluginSelectWindow(uint32 window_id, CGRect bounds,
-                                       bool modal);
-void NotifyBrowserOfPluginShowWindow(uint32 window_id, CGRect bounds,
-                                     bool modal);
-void NotifyBrowserOfPluginHideWindow(uint32 window_id, CGRect bounds);
-void NotifyBrowserOfPluginDisposeWindow(uint32 window_id, CGRect bounds);
-
-}  // namespace webkit_glue
-
-// The process that was frontmost when a plugin created a new window; generally
-// we expect this to be the browser UI process.
-static ProcessSerialNumber g_saved_front_process = { 0, 0 };
-
-// Bring the plugin process to the front so that the user can see it.
-// TODO: Make this an IPC to order the plugin process above the browser
-// process but not necessarily the frontmost.
-static void SwitchToPluginProcess() {
-  ProcessSerialNumber this_process, front_process;
-  if (GetCurrentProcess(&this_process) != noErr)
-    return;
-  if (GetFrontProcess(&front_process) != noErr)
-    return;
-  Boolean matched = false;
-  if (SameProcess(&this_process, &front_process, &matched) != noErr)
-    return;
-  if (!matched) {
-    g_saved_front_process = front_process;
-    SetFrontProcess(&this_process);
-  }
-}
-
-// If the plugin process is still the front process, bring the prior
-// front process (normally this will be the browser process) back to
-// the front.
-// TODO: Make this an IPC message so that the browser can properly
-// reactivate the window.
-static void SwitchToSavedProcess() {
-  ProcessSerialNumber this_process, front_process;
-  if (GetCurrentProcess(&this_process) != noErr)
-    return;
-  if (GetFrontProcess(&front_process) != noErr)
-    return;
-  Boolean matched = false;
-  if (SameProcess(&this_process, &front_process, &matched) != noErr)
-    return;
-  if (matched) {
-    SetFrontProcess(&g_saved_front_process);
-  }
-}
-
-// Checks to see if there are any plugin-opened windows still showing, and if
-// not reactivates the saved process.
-// Should be called after any window has been closed.
-static void MaybeReactivateSavedProcess() {
-  bool window_is_visible = false;
-  WindowRef window = GetWindowList();
-  while (window != NULL) {
-    if (IsWindowVisible(window)) {
-      window_is_visible = true;
-      break;
-    }
-    window = GetNextWindow(window);
-  }
-
-  if (!window_is_visible)
-    SwitchToSavedProcess();
-}
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
 // Returns true if the given window is modal.
 static bool IsModalWindow(WindowRef window) {
@@ -90,6 +23,39 @@ static bool IsContainingWindowActive(const WebPluginDelegateImpl* delegate) {
   // active window; for now we just lie and always say yes so plugins don't
   // throw events away.
   return true;
+}
+
+static CGRect CGRectForWindow(WindowRef window) {
+  CGRect bounds = { { 0, 0 }, { 0, 0 } };
+  HIWindowGetBounds(window, kWindowContentRgn, kHICoordSpace72DPIGlobal,
+                    &bounds);
+  return bounds;
+}
+
+struct WindowInfo {
+  uint32 window_id;
+  CGRect bounds;
+  WindowInfo(WindowRef window) {
+    window_id = HIWindowGetCGWindowID(window);
+    bounds = CGRectForWindow(window);
+  }
+};
+
+static void OnPluginWindowClosed(const WindowInfo& window_info) {
+  mac_plugin_interposing::NotifyBrowserOfPluginHideWindow(window_info.window_id,
+                                                          window_info.bounds);
+}
+
+static void OnPluginWindowShown(WindowRef window) {
+  mac_plugin_interposing::NotifyBrowserOfPluginShowWindow(
+      HIWindowGetCGWindowID(window), CGRectForWindow(window),
+      IsModalWindow(window));
+}
+
+static void OnPluginWindowSelected(WindowRef window) {
+  mac_plugin_interposing::NotifyBrowserOfPluginSelectWindow(
+      HIWindowGetCGWindowID(window), CGRectForWindow(window),
+      IsModalWindow(window));
 }
 
 #pragma mark -
@@ -110,52 +76,53 @@ static Boolean ChromePluginIsWindowHilited(WindowRef window) {
                   : IsWindowHilited(window);
 }
 
-static CGRect CGRectForWindow(WindowRef window) {
-  CGRect bounds = { { 0, 0 }, { 0, 0 } };
-  HIWindowGetBounds(window, kWindowContentRgn, kHICoordSpace72DPIGlobal,
-                    &bounds);
-  return bounds;
-}
-
 static void ChromePluginSelectWindow(WindowRef window) {
-  SwitchToPluginProcess();
+  mac_plugin_interposing::SwitchToPluginProcess();
   SelectWindow(window);
-  webkit_glue::NotifyBrowserOfPluginSelectWindow(HIWindowGetCGWindowID(window),
-                                                 CGRectForWindow(window),
-                                                 IsModalWindow(window));
+  OnPluginWindowSelected(window);
 }
 
 static void ChromePluginShowWindow(WindowRef window) {
-  SwitchToPluginProcess();
+  mac_plugin_interposing::SwitchToPluginProcess();
   ShowWindow(window);
-  webkit_glue::NotifyBrowserOfPluginShowWindow(HIWindowGetCGWindowID(window),
-                                               CGRectForWindow(window),
-                                               IsModalWindow(window));
+  OnPluginWindowShown(window);
 }
 
 static void ChromePluginDisposeWindow(WindowRef window) {
-  CGWindowID window_id = HIWindowGetCGWindowID(window);
-  CGRect window_rect = CGRectForWindow(window);
+  WindowInfo window_info(window);
   DisposeWindow(window);
-  webkit_glue::NotifyBrowserOfPluginDisposeWindow(window_id, window_rect);
-  MaybeReactivateSavedProcess();
+  OnPluginWindowClosed(window_info);
 }
 
 static void ChromePluginHideWindow(WindowRef window) {
-  CGWindowID window_id = HIWindowGetCGWindowID(window);
-  CGRect window_rect = CGRectForWindow(window);
+  WindowInfo window_info(window);
   HideWindow(window);
-  webkit_glue::NotifyBrowserOfPluginHideWindow(window_id, window_rect);
-  MaybeReactivateSavedProcess();
+  OnPluginWindowClosed(window_info);
+}
+
+static void ChromePluginShowHide(WindowRef window, Boolean show) {
+  if (show) {
+    mac_plugin_interposing::SwitchToPluginProcess();
+    ShowHide(window, show);
+    OnPluginWindowShown(window);
+  } else {
+    WindowInfo window_info(window);
+    ShowHide(window, show);
+    OnPluginWindowClosed(window_info);
+  }
+}
+
+static void ChromePluginReleaseWindow(WindowRef window) {
+  WindowInfo window_info(window);
+  ReleaseWindow(window);
+  OnPluginWindowClosed(window_info);
 }
 
 static void ChromePluginDisposeDialog(DialogRef dialog) {
   WindowRef window = GetDialogWindow(dialog);
-  CGWindowID window_id = HIWindowGetCGWindowID(window);
-  CGRect window_rect = CGRectForWindow(window);
+  WindowInfo window_info(window);
   DisposeDialog(dialog);
-  webkit_glue::NotifyBrowserOfPluginDisposeWindow(window_id, window_rect);
-  MaybeReactivateSavedProcess();
+  OnPluginWindowClosed(window_info);
 }
 
 #pragma mark -
@@ -175,7 +142,9 @@ __attribute__((used)) static const interpose_substitution substitutions[]
   INTERPOSE_FUNCTION(IsWindowHilited),
   INTERPOSE_FUNCTION(SelectWindow),
   INTERPOSE_FUNCTION(ShowWindow),
+  INTERPOSE_FUNCTION(ShowHide),
   INTERPOSE_FUNCTION(DisposeWindow),
   INTERPOSE_FUNCTION(HideWindow),
+  INTERPOSE_FUNCTION(ReleaseWindow),
   INTERPOSE_FUNCTION(DisposeDialog),
 };

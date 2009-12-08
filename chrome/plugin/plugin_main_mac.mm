@@ -5,6 +5,7 @@
 #include "base/chrome_application_mac.h"
 #include "base/string_util.h"
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
+#include "chrome/plugin/plugin_interpose_util_mac.h"
 
 void TrimInterposeEnvironment() {
   const char* interpose_list =
@@ -39,4 +40,6 @@ void TrimInterposeEnvironment() {
 
 void InitializeChromeApplication() {
   [CrApplication sharedApplication];
+
+  mac_plugin_interposing::SetUpCocoaInterposing();
 }

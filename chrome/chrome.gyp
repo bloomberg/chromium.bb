@@ -747,6 +747,8 @@
         'plugin/plugin_channel.h',
         'plugin/plugin_channel_base.cc',
         'plugin/plugin_channel_base.h',
+        'plugin/plugin_interpose_util_mac.mm',
+        'plugin/plugin_interpose_util_mac.h',
         'plugin/plugin_main.cc',
         'plugin/plugin_main_mac.mm',
         'plugin/plugin_thread.cc',

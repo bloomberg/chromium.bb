@@ -479,8 +479,6 @@ void PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
                         OnPluginShowWindow)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginHideWindow,
                         OnPluginHideWindow)
-    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginDisposeWindow,
-                        OnPluginDisposeWindow)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginReceivedFocus,
                         OnPluginReceivedFocus)
 #endif

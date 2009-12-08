@@ -156,11 +156,6 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
                        uint32 /* window ID */,
                        gfx::Rect /* window rect */)
 
-  // Notifies the browser that the plugin has disposed of a window.
-  IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginDisposeWindow,
-                       uint32 /* window ID */,
-                       gfx::Rect /* window rect */)
-
   // Notifies the browser that a plugin instance has received keyboard focus
   IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginReceivedFocus,
                        uint32 /* process ID */,

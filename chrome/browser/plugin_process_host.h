@@ -128,7 +128,6 @@ class PluginProcessHost : public ChildProcessHost,
   void OnPluginShowWindow(uint32 window_id, gfx::Rect window_rect,
                           bool modal);
   void OnPluginHideWindow(uint32 window_id, gfx::Rect window_rect);
-  void OnPluginDisposeWindow(uint32 window_id, gfx::Rect window_rect);
   void OnPluginReceivedFocus(int process_id, int instance_id);
 #endif
 

@@ -48,22 +48,43 @@ void PluginProcessHost::OnPluginShowWindow(uint32 window_id,
   }
 }
 
+// Must be called on the UI thread.
+// If plugin_pid is -1, the browser will be the active process on return,
+// otherwise that process will be given focus back before this function returns.
+static void ReleasePluginFullScreen(pid_t plugin_pid) {
+  // Releasing full screen only works if we are the frontmost process; grab
+  // focus, but give it back to the plugin process if requested.
+  mac_util::ActivateProcess(base::GetCurrentProcId());
+  mac_util::ReleaseFullScreen();
+  if (plugin_pid != -1) {
+    mac_util::ActivateProcess(plugin_pid);
+  }
+}
+
 void PluginProcessHost::OnPluginHideWindow(uint32 window_id,
                                            gfx::Rect window_rect) {
+  bool had_windows = !plugin_visible_windows_set_.empty();
   plugin_visible_windows_set_.erase(window_id);
+  bool browser_needs_activation = had_windows &&
+      plugin_visible_windows_set_.empty();
+
   plugin_modal_windows_set_.erase(window_id);
   if (plugin_fullscreen_windows_set_.find(window_id) !=
       plugin_fullscreen_windows_set_.end()) {
     plugin_fullscreen_windows_set_.erase(window_id);
+    pid_t plugin_pid = browser_needs_activation ? -1 : handle();
+    browser_needs_activation = false;
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableFunction(mac_util::ReleaseFullScreen));
+        NewRunnableFunction(ReleasePluginFullScreen, plugin_pid));
   }
-}
 
-void PluginProcessHost::OnPluginDisposeWindow(uint32 window_id,
-                                              gfx::Rect window_rect) {
-  OnPluginHideWindow(window_id, window_rect);
+  if (browser_needs_activation) {
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(mac_util::ActivateProcess,
+                            base::GetCurrentProcId()));
+  }
 }
 
 void PluginProcessHost::OnAppActivation() {
