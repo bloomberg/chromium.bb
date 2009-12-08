@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This file is here so other GLES2 related files can have a common set of
-// includes where appropriate.
+// This file implements a standalone executable demo of using GLES2 over
+// command buffers. This code is temporary as the setup that happens
+// here is in a state of flux. Eventually there will be several versions of
+// setup, one for trusted code, one for pepper, one for NaCl, and maybe others.
 
 #include <windows.h>
 #include <windowsx.h>
 #include <shellapi.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "base/at_exit.h"
+#include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"
 #include "base/scoped_ptr.h"
@@ -192,6 +196,10 @@ void* SetupWindow() {
 
 int main(int argc, const char** argv) {
   const int32 kCommandBufferSize = 1024 * 1024;
+
+  base::AtExitManager at_exit_manager;
+  MessageLoopForUI message_loop;
+
   GLES2Demo* demo = new GLES2Demo();
 
   void* hwnd = SetupWindow();
