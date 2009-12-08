@@ -30,6 +30,19 @@ class ClipboardTest : public PlatformTest {
 typedef PlatformTest ClipboardTest;
 #endif  // defined(OS_WIN)
 
+namespace {
+
+bool ClipboardContentsIsExpected(const string16& copied_markup,
+                                 const string16& pasted_markup) {
+#if defined(OS_LINUX)
+  return pasted_markup.find(copied_markup) != string16::npos;
+#else
+  return copied_markup == pasted_markup;
+#endif
+}
+
+} // namespace
+
 TEST_F(ClipboardTest, ClearTest) {
   Clipboard clipboard;
 
@@ -85,7 +98,7 @@ TEST_F(ClipboardTest, HTMLTest) {
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
                                           Clipboard::BUFFER_STANDARD));
   clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &markup_result, &url_result);
-  EXPECT_EQ(markup, markup_result);
+  EXPECT_TRUE(ClipboardContentsIsExpected(markup, markup_result));
 #if defined(OS_WIN)
   // TODO(playmobil): It's not clear that non windows clipboards need to support
   // this.
@@ -108,7 +121,7 @@ TEST_F(ClipboardTest, TrickyHTMLTest) {
   EXPECT_TRUE(clipboard.IsFormatAvailable(Clipboard::GetHtmlFormatType(),
                                           Clipboard::BUFFER_STANDARD));
   clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &markup_result, &url_result);
-  EXPECT_EQ(markup, markup_result);
+  EXPECT_TRUE(ClipboardContentsIsExpected(markup, markup_result));
 #if defined(OS_WIN)
   // TODO(playmobil): It's not clear that non windows clipboards need to support
   // this.
@@ -158,7 +171,7 @@ TEST_F(ClipboardTest, MultiFormatTest) {
   EXPECT_TRUE(clipboard.IsFormatAvailable(
       Clipboard::GetPlainTextFormatType(), Clipboard::BUFFER_STANDARD));
   clipboard.ReadHTML(Clipboard::BUFFER_STANDARD, &markup_result, &url_result);
-  EXPECT_EQ(markup, markup_result);
+  EXPECT_TRUE(ClipboardContentsIsExpected(markup, markup_result));
 #if defined(OS_WIN)
   // TODO(playmobil): It's not clear that non windows clipboards need to support
   // this.

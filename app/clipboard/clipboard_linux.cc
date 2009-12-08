@@ -166,11 +166,17 @@ void Clipboard::WriteHTML(const char* markup_data,
                           size_t markup_len,
                           const char* url_data,
                           size_t url_len) {
-  // TODO(estade): might not want to ignore |url_data|
-  char* data = new char[markup_len];
-  memcpy(data, markup_data, markup_len);
+  // TODO(estade): We need to expand relative links with |url_data|.
+  static const char* html_prefix = "<meta http-equiv=\"content-type\" "
+                                   "content=\"text/html; charset=utf-8\">";
+  int html_prefix_len = strlen(html_prefix);
+  int total_len = html_prefix_len + markup_len;
 
-  InsertMapping(kMimeHtml, data, markup_len);
+  char* data = new char[total_len];
+  snprintf(data, total_len, "%s", html_prefix);
+  memcpy(data + html_prefix_len, markup_data, markup_len);
+
+  InsertMapping(kMimeHtml, data, total_len);
 }
 
 // Write an extra flavor that signifies WebKit was the last to modify the
