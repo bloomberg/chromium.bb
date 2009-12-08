@@ -34,6 +34,7 @@
     'ffmpeg_variant%': '<(target_arch)',
 
     'use_system_ffmpeg%': 0,
+    'use_system_yasm%': 0,
 
     # Locations for generated artifacts.
     'shared_generated_dir': '<(SHARED_INTERMEDIATE_DIR)/third_party/ffmpeg',
@@ -338,8 +339,19 @@
         {
           'target_name': 'assemble_ffmpeg_asm',
           'type': 'none',
-          'dependencies': [
-            '../yasm/yasm.gyp:yasm#host',
+          'conditions': [
+            ['use_system_yasm==0', {
+              'dependencies': [
+                '../yasm/yasm.gyp:yasm#host',
+              ],
+              'variables': {
+                'yasm_path': '<(PRODUCT_DIR)/yasm',
+              },
+            },{  # use_system_yasm!=0
+              'variables': {
+                'yasm_path': '<!(which yasm)',
+              },
+            }],
           ],
           'sources': [
             # The FFmpeg yasm files.
@@ -405,12 +417,12 @@
               ],
               'rule_name': 'assemble',
               'extension': 'asm',
-              'inputs': [ '<(PRODUCT_DIR)/yasm', ],
+              'inputs': [ '<(yasm_path)', ],
               'outputs': [
                 '<(shared_generated_dir)/<(RULE_INPUT_ROOT).o',
               ],
               'action': [
-                '<(PRODUCT_DIR)/yasm',
+                '<(yasm_path)',
                 '-f', '<(obj_format)',
                 '<@(yasm_flags)',
                 '-I', 'source/patched-ffmpeg-mt/libavcodec/x86/',
