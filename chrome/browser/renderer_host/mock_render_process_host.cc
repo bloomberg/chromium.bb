@@ -41,10 +41,6 @@ void MockRenderProcessHost::ReceivedBadMessage(uint32 msg_type) {
   ++bad_msg_count_;
 }
 
-void MockRenderProcessHost::PolicyViolated(const std::string& policy_name) {
-  NOTIMPLEMENTED();
-}
-
 void MockRenderProcessHost::WidgetRestored() {
 }
 

@@ -15,11 +15,15 @@ TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        RenderViewHostDelegate* delegate,
                                        int routing_id)
     : RenderViewHost(instance, delegate, routing_id),
-      render_view_created_(false) {
+      render_view_created_(false),
+      delete_counter_(NULL) {
   set_view(new TestRenderWidgetHostView(this));
 }
 
 TestRenderViewHost::~TestRenderViewHost() {
+  if (delete_counter_)
+    ++*delete_counter_;
+
   // Since this isn't a traditional view, we have to delete it.
   delete view();
 }

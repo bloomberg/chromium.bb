@@ -73,6 +73,11 @@ class ExtensionsService
   // The name of the file that the current active version number is stored in.
   static const char* kCurrentVersionFileName;
 
+  // Determine if a given extension download should be treated as if it came
+  // from the gallery.
+  static bool IsDownloadFromGallery(const GURL& download_url,
+                                    const GURL& referrer_url);
+
   ExtensionsService(Profile* profile,
                     const CommandLine* command_line,
                     PrefService* prefs,

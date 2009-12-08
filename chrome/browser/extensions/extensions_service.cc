@@ -81,6 +81,26 @@ class InstalledExtensionSet {
 const char* ExtensionsService::kInstallDirectoryName = "Extensions";
 const char* ExtensionsService::kCurrentVersionFileName = "Current Version";
 
+// static
+bool ExtensionsService::IsDownloadFromGallery(const GURL& download_url,
+                                              const GURL& referrer_url) {
+  if (StartsWithASCII(download_url.spec(),
+                      extension_urls::kMiniGalleryDownloadPrefix, false) &&
+      StartsWithASCII(referrer_url.spec(),
+                      extension_urls::kMiniGalleryBrowsePrefix, false)) {
+    return true;
+  }
+
+  if (StartsWithASCII(download_url.spec(),
+                      extension_urls::kGalleryDownloadPrefix, false) &&
+      StartsWithASCII(referrer_url.spec(),
+                      extension_urls::kGalleryBrowsePrefix, false)) {
+    return true;
+  }
+
+  return false;
+}
+
 ExtensionsService::ExtensionsService(Profile* profile,
                                      const CommandLine* command_line,
                                      PrefService* prefs,

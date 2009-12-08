@@ -7,8 +7,6 @@
 #include "chrome/browser/browsing_instance.h"
 #include "chrome/browser/dom_ui/dom_ui_factory.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/notification_service.h"
 #include "net/base/registry_controlled_domain.h"
@@ -117,16 +115,6 @@ GURL SiteInstance::GetSiteForURL(const GURL& url) {
   // URLs with no host should have an empty site.
   GURL site;
 
-  // Hack warning: Extension gallery URLs are special-cased here. Extension
-  // gallery pages are granted special privileges to install extensions without
-  // a warning dialog. It is important that no other URLs share the render
-  // with these privileges. However, since the gallery is a sub-domain of
-  // google.com, the SiteInstance is specially treated to avoid having other
-  // google.com subdomains be grouped with it. Generalizing this kind of special
-  // case in the future seems desirable if we come upon another similar need.
-  if (Extension::IsGalleryURL(url))
-    return GURL(extension_urls::kGalleryBrowsePrefix);
-
   // TODO(creis): For many protocols, we should just treat the scheme as the
   // site, since there is no host.  e.g., file:, about:, chrome:
 
@@ -176,10 +164,6 @@ bool SiteInstance::IsSameWebSite(const GURL& url1, const GURL& url2) {
   if (url1.scheme() != url2.scheme())
     return false;
 
-  // Hack. Special case Extension gallery URLs. See note in GetSiteForURL().
-  if (Extension::IsGalleryURL(url1) || Extension::IsGalleryURL(url2))
-    return Extension::IsGalleryURL(url1) && Extension::IsGalleryURL(url2);
-
   return net::RegistryControlledDomainService::SameDomainOrHost(url1, url2);
 }
 
@@ -194,9 +178,6 @@ RenderProcessHost::Type SiteInstance::GetRendererType() {
 
   if (DOMUIFactory::HasDOMUIScheme(site_))
     return RenderProcessHost::TYPE_DOMUI;
-
-  if (Extension::IsGalleryURL(site_))
-    return RenderProcessHost::TYPE_EXTENSION_GALLERY;
 
   return RenderProcessHost::TYPE_NORMAL;
 }

@@ -13,10 +13,6 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
@@ -212,38 +208,6 @@ class TabContentsTest : public RenderViewHostTestHarness {
   ChromeThread ui_thread_;
 };
 
-// Used to block until a navigation completes.
-class RenderViewHostDeletedObserver : public NotificationObserver {
- public:
-  RenderViewHostDeletedObserver(TabContents* contents,
-                                RenderViewHost* render_view_host)
-      : render_view_host_(render_view_host),
-        deleted_(false) {
-    registrar_.Add(this, NotificationType::RENDER_VIEW_HOST_DELETED,
-                   Source<TabContents>(contents));
-  }
-
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details) {
-    if (type == NotificationType::RENDER_VIEW_HOST_DELETED &&
-        render_view_host_ == Details<RenderViewHost>(details).ptr()) {
-      deleted_ = true;
-    }
-  }
-
-  bool deleted() { return deleted_; }
-
- private:
-  NotificationRegistrar registrar_;
-
-  RenderViewHost* render_view_host_;
-
-  bool deleted_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderViewHostDeletedObserver);
-};
-
 // Test to make sure that title updates get stripped of whitespace.
 TEST_F(TabContentsTest, UpdateTitle) {
   ViewHostMsg_FrameNavigate_Params params;
@@ -313,7 +277,8 @@ TEST_F(TabContentsTest, SimpleNavigation) {
 TEST_F(TabContentsTest, CrossSiteBoundaries) {
   contents()->transition_cross_site = true;
   TestRenderViewHost* orig_rvh = rvh();
-  RenderViewHostDeletedObserver orig_rvh_deleted_observer(contents(), orig_rvh);
+  int orig_rvh_delete_count = 0;
+  orig_rvh->set_delete_counter(&orig_rvh_delete_count);
   SiteInstance* instance1 = contents()->GetSiteInstance();
 
   // Navigate to URL.  First URL should use first RenderViewHost.
@@ -331,8 +296,8 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   controller().LoadURL(url2, GURL(), PageTransition::TYPED);
   EXPECT_TRUE(contents()->cross_navigation_pending());
   TestRenderViewHost* pending_rvh = contents()->pending_rvh();
-  RenderViewHostDeletedObserver pending_rvh_deleted_observer(contents(),
-                                                             pending_rvh);
+  int pending_rvh_delete_count = 0;
+  pending_rvh->set_delete_counter(&pending_rvh_delete_count);
 
   // DidNavigate from the pending page
   ViewHostMsg_FrameNavigate_Params params2;
@@ -344,7 +309,7 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   EXPECT_EQ(pending_rvh, contents()->render_view_host());
   EXPECT_NE(instance1, instance2);
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
-  EXPECT_TRUE(orig_rvh_deleted_observer.deleted());
+  EXPECT_EQ(orig_rvh_delete_count, 1);
 
   // Going back should switch SiteInstances again.  The first SiteInstance is
   // stored in the NavigationEntry, so it should be the same as at the start.
@@ -356,66 +321,8 @@ TEST_F(TabContentsTest, CrossSiteBoundaries) {
   contents()->TestDidNavigate(goback_rvh, params1);
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_EQ(goback_rvh, contents()->render_view_host());
-  EXPECT_TRUE(pending_rvh_deleted_observer.deleted());
+  EXPECT_EQ(pending_rvh_delete_count, 1);
   EXPECT_EQ(instance1, contents()->GetSiteInstance());
-}
-
-// Test that extension gallery URLs are isolated into their own SiteInstance
-// (distinct, in particular, from other other *.google.com domains).
-TEST_F(TabContentsTest, IsolateGalleryURLs) {
-  contents()->transition_cross_site = true;
-  TestRenderViewHost* orig_rvh = rvh();
-  RenderViewHostDeletedObserver orig_rvh_deleted_observer(contents(), orig_rvh);
-  SiteInstance* instance1 = contents()->GetSiteInstance();
-
-  // Navigate to first non-gallery URL.
-  const GURL url("https://calendar.google.com");
-  controller().LoadURL(url, GURL(), PageTransition::TYPED);
-  ViewHostMsg_FrameNavigate_Params params1;
-  InitNavigateParams(&params1, 1, url);
-  contents()->TestDidNavigate(orig_rvh, params1);
-
-  EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(orig_rvh, contents()->render_view_host());
-
-  // Navigate to gallery browser url.
-  const GURL url2(extension_urls::kGalleryBrowsePrefix);
-  controller().LoadURL(url2, GURL(), PageTransition::TYPED);
-  EXPECT_TRUE(contents()->cross_navigation_pending());
-  TestRenderViewHost* pending_rvh = contents()->pending_rvh();
-  RenderViewHostDeletedObserver pending_rvh_deleted_observer(contents(),
-                                                             pending_rvh);
-
-  ViewHostMsg_FrameNavigate_Params params2;
-  InitNavigateParams(&params2, 1, url2);
-  contents()->TestDidNavigate(pending_rvh, params2);
-  SiteInstance* instance2 = contents()->GetSiteInstance();
-
-  EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(pending_rvh, contents()->render_view_host());
-  EXPECT_NE(instance1, instance2);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
-  EXPECT_TRUE(orig_rvh_deleted_observer.deleted());
-
-  // Navigate again to another non-gallery google url
-  const GURL url3("https://mail.google.com");
-  controller().LoadURL(url3, GURL(), PageTransition::TYPED);
-  EXPECT_TRUE(contents()->cross_navigation_pending());
-  TestRenderViewHost* pending_rvh2 = contents()->pending_rvh();
-
-  ViewHostMsg_FrameNavigate_Params params3;
-  InitNavigateParams(&params3, 1, url3);
-  contents()->TestDidNavigate(pending_rvh2, params3);
-  SiteInstance* instance3 = contents()->GetSiteInstance();
-
-  EXPECT_FALSE(contents()->cross_navigation_pending());
-  EXPECT_EQ(pending_rvh2, contents()->render_view_host());
-  EXPECT_NE(instance2, instance3);
-  // TODO(creis): This should actually be EXPECT_EQ. see crbug.com/29146.
-  // e.g. This first and third instances *should* be the same.
-  EXPECT_NE(instance1, instance3);
-  EXPECT_TRUE(contents()->pending_rvh() == NULL);
-  EXPECT_TRUE(pending_rvh_deleted_observer.deleted());
 }
 
 // Test that navigating across a site boundary after a crash creates a new
@@ -423,7 +330,8 @@ TEST_F(TabContentsTest, IsolateGalleryURLs) {
 TEST_F(TabContentsTest, CrossSiteBoundariesAfterCrash) {
   contents()->transition_cross_site = true;
   TestRenderViewHost* orig_rvh = rvh();
-  RenderViewHostDeletedObserver orig_rvh_deleted_observer(contents(), orig_rvh);
+  int orig_rvh_delete_count = 0;
+  orig_rvh->set_delete_counter(&orig_rvh_delete_count);
   SiteInstance* instance1 = contents()->GetSiteInstance();
 
   // Navigate to URL.  First URL should use first RenderViewHost.
@@ -446,7 +354,7 @@ TEST_F(TabContentsTest, CrossSiteBoundariesAfterCrash) {
   EXPECT_FALSE(contents()->cross_navigation_pending());
   EXPECT_TRUE(contents()->pending_rvh() == NULL);
   EXPECT_NE(orig_rvh, new_rvh);
-  EXPECT_TRUE(orig_rvh_deleted_observer.deleted());
+  EXPECT_EQ(orig_rvh_delete_count, 1);
 
   // DidNavigate from the new page
   ViewHostMsg_FrameNavigate_Params params2;

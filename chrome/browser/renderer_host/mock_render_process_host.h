@@ -39,7 +39,6 @@ class MockRenderProcessHost : public RenderProcessHost {
                                const base::TimeDelta& max_delay,
                                IPC::Message* msg);
   virtual void ReceivedBadMessage(uint32 msg_type);
-  virtual void PolicyViolated(const std::string& policy_name);
   virtual void WidgetRestored();
   virtual void WidgetHidden();
   virtual void ViewCreated();

@@ -38,16 +38,12 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // We classify renderers according to their highest privilege, and try
   // to group pages into renderers with similar privileges.
-  // Note: it may be possible for a renderer to have both DOMUI and EXTENSION
-  // privileges, in which case we call it an "extension" renderer.
-  // TYPE_EXTENSION_GALLERY should never be TYPE_DOMUI and/or TYPE_EXTENSION
-  // as well.
+  // Note: it may be possible for a renderer to have multiple privileges,
+  // in which case we call it an "extension" renderer.
   enum Type {
-    TYPE_NORMAL,           // Normal renderer, no extra privileges.
-    TYPE_EXTENSION_GALLERY, // Renderer with silent extension installation
-                           // privileges.
-    TYPE_DOMUI,            // Renderer with DOMUI privileges, like New Tab.
-    TYPE_EXTENSION         // Renderer with extension privileges.
+    TYPE_NORMAL,     // Normal renderer, no extra privileges.
+    TYPE_DOMUI,      // Renderer with DOMUI privileges, like New Tab.
+    TYPE_EXTENSION,  // Renderer with extension privileges.
   };
 
   // Details for RENDERER_PROCESS_CLOSED notifications.
@@ -178,9 +174,6 @@ class RenderProcessHost : public IPC::Channel::Sender,
 
   // Called when a received message cannot be decoded.
   virtual void ReceivedBadMessage(uint32 msg_type) = 0;
-
-  // Called when a renderer security policy is violated.
-  virtual void PolicyViolated(const std::string& policy_name) = 0;
 
   // Track the count of visible widgets. Called by listeners to register and
   // unregister visibility.
