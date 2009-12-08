@@ -184,7 +184,8 @@ class PageCyclerTest : public UITest {
     test_path = test_path.Append(FILE_PATH_LITERAL("data"));
     test_path = test_path.Append(FILE_PATH_LITERAL("page_cycler"));
     test_path = test_path.AppendASCII(name);
-    ASSERT_TRUE(file_util::PathExists(test_path)) << "Missing test data";
+    ASSERT_TRUE(file_util::PathExists(test_path)) << "Missing test data"
+                                                  << test_path.value();
 
 #if defined(OS_MACOSX)
     PopulateUBC(test_path);

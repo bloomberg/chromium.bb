@@ -241,6 +241,25 @@ bool ClientConnectToFifo(const std::string &pipe_name, int* client_socket) {
   return true;
 }
 
+bool SocketWriteErrorIsRecoverable() {
+#if defined(OS_MACOSX)
+  // On OS X if sendmsg() is trying to send fds between processes and there
+  // isn't enough room in the output buffer to send the fd structure over
+  // atomically then EMSGSIZE is returned.
+  //
+  // EMSGSIZE presents a problem since the system APIs can only call us when
+  // there's room in the socket buffer and not when there is "enough" room.
+  //
+  // The current behavior is to return to the event loop when EMSGSIZE is
+  // received and hopefull service another FD.  This is however still
+  // technically a busy wait since the event loop will call us right back until
+  // the receiver has read enough data to allow passing the FD over atomically.
+  return errno == EAGAIN || errno == EMSGSIZE;
+#else
+  return errno == EAGAIN;
+#endif
+}
+
 }  // namespace
 //------------------------------------------------------------------------------
 
@@ -815,7 +834,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
     if (bytes_written > 0)
       msg->file_descriptor_set()->CommitAll();
 
-    if (bytes_written < 0 && errno != EAGAIN) {
+    if (bytes_written < 0 && !SocketWriteErrorIsRecoverable()) {
 #if defined(OS_MACOSX)
       // On OSX writing to a pipe with no listener returns EPERM.
       if (errno == EPERM) {
@@ -830,13 +849,7 @@ bool Channel::ChannelImpl::ProcessOutgoingMessages() {
       PLOG(ERROR) << "pipe error on "
                   << fd_written
                   << " Currently writing message of size:"
-                  << msg->size()
-                  << " msgh.msg_iovlen:"
-                  << msgh.msg_iovlen
-                  << " amt_to_write: "
-                  << amt_to_write
-                  << " num FDs to send:"
-                  << msg->file_descriptor_set()->size();
+                  << msg->size();
       return false;
     }
 
