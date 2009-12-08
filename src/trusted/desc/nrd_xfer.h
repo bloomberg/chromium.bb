@@ -60,6 +60,7 @@
 
 /* in lieu of sys/types for int32_t */
 #include "native_client/src/include/portability.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"

@@ -42,8 +42,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include "native_client/src/shared/imc/nacl_imc_c.h"
-
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nrd_all_modules.h"

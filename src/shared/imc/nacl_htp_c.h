@@ -40,7 +40,13 @@
 #define NATIVE_CLIENT_SRC_SHARED_IMC_NACL_HTP_C_H_
 
 #ifdef __native_client__
-#include <nacl/nacl_imc_c.h>
+/**
+ * TODO(ilewis): uncomment this line once we make it safe to include
+ * nacl_imc_c.h from untrusted code.
+ *
+ * #include <nacl/nacl_imc_c.h>
+ */
+
 #else
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #endif  /* __native_client__ */
