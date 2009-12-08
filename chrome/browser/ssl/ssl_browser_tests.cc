@@ -223,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
 // TODO(jcampan|oshima): On linux/views, the WaitForLoadStop call
 // below sometimes waits forever because LOAD_STOP notification can
-// happen before WaitLorLoadStop is called. Marking this test as Fleaky.
+// happen before WaitLorLoadStop is called. Marking this test as Flaky.
 // See http://crbug/28098.
 #define TestHTTPSErrorWithNoNavEntry FLAKY_TestHTTPSErrorWithNoNavEntry
 #endif

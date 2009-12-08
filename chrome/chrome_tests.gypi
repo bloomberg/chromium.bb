@@ -4,42 +4,6 @@
 
 {
   'variables' : {
-    'browser_tests_sources': [
-      'browser/autocomplete/autocomplete_browsertest.cc',
-      'browser/browser_browsertest.cc',
-      'browser/browser_init_browsertest.cc',
-      'browser/crash_recovery_browsertest.cc',
-      'browser/download/save_page_browsertest.cc',
-      'browser/extensions/autoupdate_interceptor.cc',
-      'browser/extensions/autoupdate_interceptor.h',
-      'browser/extensions/browser_action_apitest.cc',
-      'browser/extensions/content_script_all_frames_apitest.cc',
-      'browser/extensions/cross_origin_xhr_apitest.cc',
-      'browser/extensions/execute_script_apitest.cc',
-      'browser/extensions/extension_apitest.cc',
-      'browser/extensions/extension_apitest.h',
-      'browser/extensions/extension_bookmarks_apitest.cc',
-      'browser/extensions/extension_history_apitest.cc',
-      'browser/extensions/extension_javascript_url_apitest.cc',
-      'browser/extensions/extension_messages_apitest.cc',
-      'browser/extensions/extension_browsertest.cc',
-      'browser/extensions/extension_browsertest.h',
-      'browser/extensions/extension_browsertests_misc.cc',
-      'browser/extensions/extension_override_apitest.cc',
-      'browser/extensions/extension_toolstrip_apitest.cc',
-      'browser/extensions/isolated_world_apitest.cc',
-      'browser/extensions/page_action_apitest.cc',
-      'browser/extensions/stubs_apitest.cc',
-      'browser/gtk/bookmark_manager_browsertest.cc',
-      'browser/net/cookie_policy_browsertest.cc',
-      'browser/net/ftp_browsertest.cc',
-      'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
-      'browser/ssl/ssl_browser_tests.cc',
-      'browser/task_manager_browsertest.cc',
-    ],
-    'browser_tests_sources_gtk_specific': [
-      'browser/gtk/view_id_util_browsertest.cc',
-    ],
     'browser_tests_sources_views_specific': [
       'browser/views/find_bar_host_browsertest.cc',
     ],
@@ -70,17 +34,12 @@
       'browser/extensions/extension_history_apitest.cc',
       'browser/extensions/extension_javascript_url_apitest.cc',
       'browser/extensions/extension_messages_apitest.cc',
-      'browser/extensions/extension_browsertest.cc',
-      'browser/extensions/extension_browsertest.h',
       'browser/extensions/extension_browsertests_misc.cc',
       'browser/extensions/extension_override_apitest.cc',
       'browser/extensions/extension_toolstrip_apitest.cc',
       'browser/extensions/isolated_world_apitest.cc',
       'browser/extensions/page_action_apitest.cc',
       'browser/extensions/stubs_apitest.cc',
-      'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
-      'browser/ssl/ssl_browser_tests.cc',
-      'browser/task_manager_browsertest.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [
@@ -123,7 +82,7 @@
         'browser/browser.h',
         'browser/cocoa/browser_test_helper.h',
         # TODO:  these should live here but are currently used by
-        # production code code in libbrowser (above).
+        # production code code in libbrowser (in chrome.gyp).
         #'browser/net/url_request_mock_http_job.cc',
         #'browser/net/url_request_mock_http_job.h',
         'browser/net/url_request_mock_net_error_job.cc',
@@ -324,6 +283,7 @@
         '..',
       ],
       'sources': [
+        'app/breakpad_mac_stubs.mm',
         'app/chrome_main_uitest.cc',
         'browser/browser_encoding_uitest.cc',
         'browser/browser_uitest.cc',
@@ -391,9 +351,6 @@
           ],
         }],
         ['OS=="mac"', {
-          'sources': [
-            'app/breakpad_mac_stubs.mm',
-          ],
           'sources!': [
             # TODO(port)
             'app/chrome_main_uitest.cc',
@@ -1090,6 +1047,8 @@
       ],
       'defines': [ 'ALLOW_IN_PROC_BROWSER_TEST' ],
       'sources': [
+        # Test support sources
+        'app/breakpad_mac_stubs.mm',
         'test/in_process_browser_test.cc',
         'test/in_process_browser_test.h',
         'test/test_launcher/out_of_proc_test_runner.cc',
@@ -1097,9 +1056,38 @@
         'test/test_launcher/test_runner.h',
         'test/test_launcher/run_all_unittests.cc',
         'test/unit/chrome_test_suite.h',
-        # browser_tests_sources is defined in 'variables' at the top of the
-        # file.
-        '<@(browser_tests_sources)',
+        # Actual test sources
+        'browser/autocomplete/autocomplete_browsertest.cc',
+        'browser/browser_browsertest.cc',
+        'browser/browser_init_browsertest.cc',
+        'browser/crash_recovery_browsertest.cc',
+        'browser/download/save_page_browsertest.cc',
+        'browser/extensions/autoupdate_interceptor.cc',
+        'browser/extensions/autoupdate_interceptor.h',
+        'browser/extensions/browser_action_apitest.cc',
+        'browser/extensions/content_script_all_frames_apitest.cc',
+        'browser/extensions/cross_origin_xhr_apitest.cc',
+        'browser/extensions/execute_script_apitest.cc',
+        'browser/extensions/extension_apitest.cc',
+        'browser/extensions/extension_apitest.h',
+        'browser/extensions/extension_bookmarks_apitest.cc',
+        'browser/extensions/extension_history_apitest.cc',
+        'browser/extensions/extension_javascript_url_apitest.cc',
+        'browser/extensions/extension_messages_apitest.cc',
+        'browser/extensions/extension_browsertest.cc',
+        'browser/extensions/extension_browsertest.h',
+        'browser/extensions/extension_browsertests_misc.cc',
+        'browser/extensions/extension_override_apitest.cc',
+        'browser/extensions/extension_toolstrip_apitest.cc',
+        'browser/extensions/isolated_world_apitest.cc',
+        'browser/extensions/page_action_apitest.cc',
+        'browser/extensions/stubs_apitest.cc',
+        'browser/gtk/bookmark_manager_browsertest.cc',
+        'browser/net/cookie_policy_browsertest.cc',
+        'browser/net/ftp_browsertest.cc',
+        'browser/privacy_blacklist/blacklist_manager_browsertest.cc',
+        'browser/ssl/ssl_browser_tests.cc',
+        'browser/task_manager_browsertest.cc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -1151,13 +1139,10 @@
         }],
         ['OS=="linux" and toolkit_views==0', {
           'sources': [
-            '<@(browser_tests_sources_gtk_specific)',
+            'browser/gtk/view_id_util_browsertest.cc',
           ],
         }],
         ['OS=="mac"', {
-          'sources': [
-            'app/breakpad_mac_stubs.mm',
-          ],
           'sources!': [
             '<@(browser_tests_sources_exclude_on_mac)',
           ],
@@ -1429,14 +1414,14 @@
         '_USE_32BIT_TIME_T',
       ],
       'dependencies': [
-       'common',
-       'debugger',
-       '../skia/skia.gyp:skia',
-       '../testing/gtest.gyp:gtest',
-       '../third_party/libjingle/libjingle.gyp:libjingle',
-       'syncapi',
-       'sync_proto',
-       'test_support_unit',
+        'common',
+        'debugger',
+        '../skia/skia.gyp:skia',
+        '../testing/gtest.gyp:gtest',
+        '../third_party/libjingle/libjingle.gyp:libjingle',
+        'syncapi',
+        'sync_proto',
+        'test_support_unit',
       ],
       'conditions': [
         ['OS=="win"', {
