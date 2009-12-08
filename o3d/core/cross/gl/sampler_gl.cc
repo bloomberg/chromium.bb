@@ -144,6 +144,13 @@ void SamplerGL::SetTextureAndStates(CGparameter cg_param) {
     }
   }
 
+  if (!renderer_->SafeToBindTexture(texture_object)) {
+    O3D_ERROR(renderer_->service_locator())
+        << "Attempt to bind texture, " << texture_object->name()
+        << " when drawing to same texture as a RenderSurface";
+    texture_object = renderer_->error_texture();
+  }
+
   GLuint handle = static_cast<GLuint>(reinterpret_cast<intptr_t>(
       texture_object->GetTextureHandle()));
   if (handle) {

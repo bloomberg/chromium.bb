@@ -128,6 +128,7 @@ D3DTEXTUREFILTERTYPE D3DMipFilter(Sampler::FilterType o3d_mag_filter) {
 
 void SamplerD3D9::SetTextureAndStates(int sampler_unit) {
   DLOG_ASSERT(d3d_device_);
+  DLOG_ASSERT(renderer_);
 
   // First get the d3d texture and set it.
   Texture* texture_object = texture();
@@ -138,6 +139,13 @@ void SamplerD3D9::SetTextureAndStates(int sampler_unit) {
           << "Missing texture for sampler " << name();
       texture_object = renderer_->fallback_error_texture();
     }
+  }
+
+  if (!renderer_->SafeToBindTexture(texture_object)) {
+    O3D_ERROR(renderer_->service_locator())
+        << "Attempt to bind texture, " << texture_object->name()
+        << " when drawing to same texture as a RenderSurface";
+    texture_object = renderer_->error_texture();
   }
 
   IDirect3DBaseTexture9* d3d_texture =
