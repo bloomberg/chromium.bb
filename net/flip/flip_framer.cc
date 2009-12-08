@@ -9,7 +9,11 @@
 #include "flip_frame_builder.h"
 #include "flip_bitmasks.h"
 
+#if defined(USE_SYSTEM_ZLIB)
+#include <zlib.h>
+#else
 #include "third_party/zlib/zlib.h"
+#endif
 
 namespace flip {
 
