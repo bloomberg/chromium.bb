@@ -7,7 +7,6 @@ the try server by either writting to a svn repository or by directly connecting
 to the server by HTTP.
 """
 
-
 import datetime
 import getpass
 import logging
@@ -19,6 +18,8 @@ import subprocess
 import sys
 import tempfile
 import urllib
+
+import breakpad
 
 import gcl
 import scm
