@@ -19,7 +19,6 @@
 #include <set>
 #include <string>
 
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/browser/net/dns_host_info.h"
 #include "chrome/browser/net/referrer.h"
@@ -37,11 +36,12 @@ namespace chrome_browser_net {
 typedef chrome_common_net::NameList NameList;
 typedef std::map<std::string, DnsHostInfo> Results;
 
+// Note that DNS master is not thread safe, and must only be called from
+// the IO thread. Failure to do so will result in a DCHECK at runtime.
 class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
  public:
   // |max_concurrent| specifies how many concurrent (parallel) prefetches will
-  // be performed. Host lookups will be issued on the IO thread, using the
-  // |host_resolver| instance.
+  // be performed. Host lookups will be issued through |host_resolver|.
   DnsMaster(net::HostResolver* host_resolver,
             TimeDelta max_queue_delay_ms, size_t max_concurrent);
 
@@ -71,7 +71,9 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
 
   // Record details of a navigation so that we can preresolve the host name
   // ahead of time the next time the users navigates to the indicated host.
-  void NonlinkNavigation(const GURL& referrer, DnsHostInfo* navigation_info);
+  // TODO(eroman): can this be a const& instead?
+  void NonlinkNavigation(const GURL& referrer,
+                         const DnsHostInfo* navigation_info);
 
   // Dump HTML table containing list of referrers for about:dns.
   void GetHtmlReferrerLists(std::string* output);
@@ -95,6 +97,11 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // list, as constructed by SerializeReferrers(), and add all the identified
   // values into the current referrer list.
   void DeserializeReferrers(const ListValue& referral_list);
+
+  void DeserializeReferrersThenDelete(ListValue* referral_list) {
+    DeserializeReferrers(*referral_list);
+    delete referral_list;
+  }
 
   // For unit test code only.
   size_t max_concurrent_lookups() const { return max_concurrent_lookups_; }
@@ -149,7 +156,6 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // Only for testing. Returns true if hostname has been successfully resolved
   // (name found).
   bool WasFound(const std::string& hostname) {
-    AutoLock auto_lock(lock_);
     return (results_.find(hostname) != results_.end()) &&
             results_[hostname].was_found();
   }
@@ -157,7 +163,6 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // Only for testing. Return how long was the resolution
   // or DnsHostInfo::kNullDuration if it hasn't been resolved yet.
   base::TimeDelta GetResolutionDuration(const std::string& hostname) {
-    AutoLock auto_lock(lock_);
     if (results_.find(hostname) == results_.end())
       return DnsHostInfo::kNullDuration;
     return results_[hostname].resolve_duration();
@@ -171,16 +176,14 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
                         const std::string& hostname, bool found);
 
   // Underlying method for both async and synchronous lookup to update state.
-  void PrelockedLookupFinished(LookupRequest* request,
-                               const std::string& hostname,
-                               bool found);
+  void LookupFinished(LookupRequest* request,
+                      const std::string& hostname,
+                      bool found);
 
-  // "PreLocked" means that the caller has already Acquired lock_ in the
-  // following method names.
   // Queue hostname for resolution.  If queueing was done, return the pointer
   // to the queued instance, otherwise return NULL.
-  DnsHostInfo* PreLockedResolve(const std::string& hostname,
-                                DnsHostInfo::ResolutionMotivation motivation);
+  DnsHostInfo* AppendToResolutionQueue(const std::string& hostname,
+      DnsHostInfo::ResolutionMotivation motivation);
 
   // Check to see if too much queuing delay has been noted for the given info,
   // which indicates that there is "congestion" or growing delay in handling the
@@ -194,14 +197,11 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // will greatly reduce the number of resolutions done, but it will assure that
   // any resolutions that are done, are in a timely and hence potentially
   // helpful manner.
-  bool PreLockedCongestionControlPerformed(DnsHostInfo* info);
+  bool CongestionControlPerformed(DnsHostInfo* info);
 
   // Take lookup requests from work_queue_ and tell HostResolver to look them up
   // asynchronously, provided we don't exceed concurrent resolution limit.
-  void PreLockedScheduleLookups();
-
-  // Synchronize access to variables listed below.
-  Lock lock_;
+  void StartSomeQueuedResolutions();
 
   // work_queue_ holds a list of names we need to look up.
   HostNameQueue work_queue_;
@@ -235,8 +235,7 @@ class DnsMaster : public base::RefCountedThreadSafe<DnsMaster> {
   // reduction mode, and discard all queued (but not yet assigned) resolutions.
   const TimeDelta max_queue_delay_;
 
-  // The host resovler we warm DNS entries for. The resolver (which is not
-  // thread safe) should be accessed only on the IO thread.
+  // The host resovler we warm DNS entries for.
   scoped_refptr<net::HostResolver> host_resolver_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsMaster);

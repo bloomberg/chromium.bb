@@ -12,8 +12,10 @@
 #include "base/stats_counters.h"
 #include "base/string_util.h"
 #include "base/thread.h"
+#include "base/waitable_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/net/dns_host_info.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profile.h"
@@ -61,10 +63,12 @@ static bool on_the_record_switch = true;
 
 // Enable/disable Dns prefetch activity (either via command line, or via pref).
 void EnableDnsPrefetch(bool enable) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   dns_prefetch_enabled = enable;
 }
 
 void OnTheRecord(bool enable) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (on_the_record_switch == enable)
     return;
   on_the_record_switch = enable;
@@ -83,26 +87,39 @@ void RegisterUserPrefs(PrefService* user_prefs) {
 
 // When enabled, we use the following instance to service all requests in the
 // browser process.
-static DnsMaster* dns_master;
+static DnsMaster* dns_master = NULL;
 
 // This API is only used in the browser process.
 // It is called from an IPC message originating in the renderer.  It currently
 // includes both Page-Scan, and Link-Hover prefetching.
 // TODO(jar): Separate out link-hover prefetching, and page-scan results.
 void DnsPrefetchList(const NameList& hostnames) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DnsPrefetchMotivatedList(hostnames, DnsHostInfo::PAGE_SCAN_MOTIVATED);
 }
 
 static void DnsPrefetchMotivatedList(
     const NameList& hostnames,
     DnsHostInfo::ResolutionMotivation motivation) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI) ||
+         ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!dns_prefetch_enabled || NULL == dns_master)
     return;
-  dns_master->ResolveList(hostnames, motivation);
+
+  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
+    dns_master->ResolveList(hostnames, motivation);
+  } else {
+    ChromeThread::PostTask(
+        ChromeThread::IO,
+        FROM_HERE,
+        NewRunnableMethod(dns_master,
+                          &DnsMaster::ResolveList, hostnames, motivation));
+  }
 }
 
 // This API is used by the autocomplete popup box (where URLs are typed).
 void DnsPrefetchUrl(const GURL& url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!dns_prefetch_enabled  || NULL == dns_master)
     return;
   if (url.is_valid())
@@ -111,9 +128,15 @@ void DnsPrefetchUrl(const GURL& url) {
 
 static void DnsMotivatedPrefetch(const std::string& hostname,
                                  DnsHostInfo::ResolutionMotivation motivation) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!dns_prefetch_enabled || NULL == dns_master || !hostname.size())
     return;
-  dns_master->Resolve(hostname, motivation);
+
+  ChromeThread::PostTask(
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(dns_master,
+                        &DnsMaster::Resolve, hostname, motivation));
 }
 
 //------------------------------------------------------------------------------
@@ -127,6 +150,7 @@ static void DnsMotivatedPrefetch(const std::string& hostname,
 // for which the navigation_info is supplied.
 static bool AccruePrefetchBenefits(const GURL& referrer,
                                    DnsHostInfo* navigation_info) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!dns_prefetch_enabled || NULL == dns_master)
     return false;
   return dns_master->AccruePrefetchBenefits(referrer, navigation_info);
@@ -135,6 +159,7 @@ static bool AccruePrefetchBenefits(const GURL& referrer,
 // When we navigate, we may know in advance some other domains that will need to
 // be resolved.  This function initiates those side effects.
 static void NavigatingTo(const std::string& host_name) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!dns_prefetch_enabled || NULL == dns_master)
     return;
   dns_master->NavigatingTo(host_name);
@@ -145,13 +170,11 @@ static void NavigatingTo(const std::string& host_name) {
 typedef std::map<int, DnsHostInfo> ObservedResolutionMap;
 
 // There will only be one instance ever created of the following Observer
-// class.  As a result, we get away with using static members for data local
-// to that instance (to better comply with a google style guide exemption).
+// class. The PrefetchObserver lives on the IO thread, and intercepts DNS
+// resolutions made by the network stack.
 class PrefetchObserver : public net::HostResolver::Observer {
  public:
-  PrefetchObserver();
-  ~PrefetchObserver();
-
+  // net::HostResolver::Observer implementation:
   virtual void OnStartResolution(
       int request_id,
       const net::HostResolver::RequestInfo& request_info);
@@ -163,22 +186,16 @@ class PrefetchObserver : public net::HostResolver::Observer {
       int request_id,
       const net::HostResolver::RequestInfo& request_info);
 
-  static void DnsGetFirstResolutionsHtml(std::string* output);
-  static void SaveStartupListAsPref(PrefService* local_state);
+  void DnsGetFirstResolutionsHtml(std::string* output);
+  void GetInitialDnsResolutionList(ListValue* startup_list);
 
  private:
-  static void StartupListAppend(const DnsHostInfo& navigation_info);
+  void StartupListAppend(const DnsHostInfo& navigation_info);
 
-  // We avoid using member variables to better comply with the style guide.
-  // We had permission to instantiate only a very minimal class as a global
-  // data item, so we avoid putting members in that class.
-  // There is really only one instance of this class, and it would have been
-  // much simpler to use member variables than these static members.
-  static Lock* lock;
   // Map of pending resolutions seen by observer.
-  static ObservedResolutionMap* resolutions;
+  ObservedResolutionMap resolutions_;
   // List of the first N hostname resolutions observed in this run.
-  static Results* first_resolutions;
+  Results first_resolutions_;
   // The number of hostnames we'll save for prefetching at next startup.
   static const size_t kStartupResolutionCount = 10;
 };
@@ -186,26 +203,10 @@ class PrefetchObserver : public net::HostResolver::Observer {
 //------------------------------------------------------------------------------
 // Member definitions for above Observer class.
 
-PrefetchObserver::PrefetchObserver() {
-  DCHECK(!lock && !resolutions && !first_resolutions);
-  lock = new Lock;
-  resolutions = new ObservedResolutionMap;
-  first_resolutions = new Results;
-}
-
-PrefetchObserver::~PrefetchObserver() {
-  DCHECK(lock && resolutions && first_resolutions);
-  delete first_resolutions;
-  first_resolutions = NULL;
-  delete resolutions;
-  resolutions = NULL;
-  delete lock;
-  lock = NULL;
-}
-
 void PrefetchObserver::OnStartResolution(
     int request_id,
     const net::HostResolver::RequestInfo& request_info) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (request_info.is_speculative())
     return;  // One of our own requests.
   DCHECK_NE(0U, request_info.hostname().length());
@@ -213,31 +214,31 @@ void PrefetchObserver::OnStartResolution(
   navigation_info.SetHostname(request_info.hostname());
   navigation_info.SetStartedState();
 
-  AutoLock auto_lock(*lock);
   // This entry will be deleted either by OnFinishResolutionWithStatus(), or
   // by  OnCancelResolution().
-  (*resolutions)[request_id] = navigation_info;
+  resolutions_[request_id] = navigation_info;
 }
 
 void PrefetchObserver::OnFinishResolutionWithStatus(
     int request_id,
     bool was_resolved,
     const net::HostResolver::RequestInfo& request_info) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (request_info.is_speculative())
     return;  // One of our own requests.
   DnsHostInfo navigation_info;
   size_t startup_count = 0;
   {
-    AutoLock auto_lock(*lock);
-    ObservedResolutionMap::iterator it = resolutions->find(request_id);
-    if (resolutions->end() == it) {
+    ObservedResolutionMap::iterator it = resolutions_.find(request_id);
+    if (resolutions_.end() == it) {
       DCHECK(false);
       return;
     }
     navigation_info = it->second;
-    resolutions->erase(it);
-    startup_count = first_resolutions->size();
+    resolutions_.erase(it);
+    startup_count = first_resolutions_.size();
   }
+
   navigation_info.SetFinishedState(was_resolved);  // Get timing info
   AccruePrefetchBenefits(request_info.referrer(), &navigation_info);
 
@@ -257,58 +258,52 @@ void PrefetchObserver::OnFinishResolutionWithStatus(
 void PrefetchObserver::OnCancelResolution(
     int request_id,
     const net::HostResolver::RequestInfo& request_info) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (request_info.is_speculative())
     return;  // One of our own requests.
 
   // Remove the entry from |resolutions| that was added by OnStartResolution().
-  AutoLock auto_lock(*lock);
-  ObservedResolutionMap::iterator it = resolutions->find(request_id);
-  if (resolutions->end() == it) {
+  ObservedResolutionMap::iterator it = resolutions_.find(request_id);
+  if (resolutions_.end() == it) {
     DCHECK(false);
     return;
   }
-  resolutions->erase(it);
+  resolutions_.erase(it);
 }
 
-// static
 void PrefetchObserver::StartupListAppend(const DnsHostInfo& navigation_info) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   if (!on_the_record_switch || NULL == dns_master)
     return;
-  AutoLock auto_lock(*lock);
-  if (kStartupResolutionCount <= first_resolutions->size())
+  if (kStartupResolutionCount <= first_resolutions_.size())
     return;  // Someone just added the last item.
   std::string host_name = navigation_info.hostname();
-  if (first_resolutions->find(host_name) != first_resolutions->end())
+  if (first_resolutions_.find(host_name) != first_resolutions_.end())
     return;  // We already have this hostname listed.
-  (*first_resolutions)[host_name] = navigation_info;
+  first_resolutions_[host_name] = navigation_info;
 }
 
-// static
-void PrefetchObserver::SaveStartupListAsPref(PrefService* local_state) {
-  ListValue* startup_list =
-      local_state->GetMutableList(prefs::kDnsStartupPrefetchList);
-
+void PrefetchObserver::GetInitialDnsResolutionList(ListValue* startup_list) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(startup_list);
-  if (!startup_list)
-    return;
   startup_list->Clear();
   DCHECK_EQ(0u, startup_list->GetSize());
-  AutoLock auto_lock(*lock);
-  for (Results::iterator it = first_resolutions->begin();
-       it != first_resolutions->end();
+  for (Results::iterator it = first_resolutions_.begin();
+       it != first_resolutions_.end();
        it++) {
     const std::string hostname = it->first;
     startup_list->Append(Value::CreateStringValue(hostname));
   }
 }
 
-// static
 void PrefetchObserver::DnsGetFirstResolutionsHtml(std::string* output) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   DnsHostInfo::DnsInfoTable resolution_list;
   {
-    AutoLock auto_lock(*lock);
-    for (Results::iterator it(first_resolutions->begin());
-         it != first_resolutions->end();
+    for (Results::iterator it(first_resolutions_.begin());
+         it != first_resolutions_.end();
          it++) {
       resolution_list.push_back(it->second);
     }
@@ -317,15 +312,9 @@ void PrefetchObserver::DnsGetFirstResolutionsHtml(std::string* output) {
       "Future startups will prefetch DNS records for ", false, output);
 }
 
-// static
-Lock* PrefetchObserver::lock = NULL;
-// static
-ObservedResolutionMap* PrefetchObserver::resolutions = NULL;
-// static
-Results* PrefetchObserver::first_resolutions = NULL;
-
 //------------------------------------------------------------------------------
 // Support observer to detect opening and closing of OffTheRecord windows.
+// This object lives on the UI thread.
 
 class OffTheRecordObserver : public NotificationObserver {
  public:
@@ -345,24 +334,18 @@ class OffTheRecordObserver : public NotificationObserver {
       case NotificationType::BROWSER_OPENED:
         if (!Source<Browser>(source)->profile()->IsOffTheRecord())
           break;
-        {
-          AutoLock lock(lock_);
-          ++count_off_the_record_windows_;
-        }
+        ++count_off_the_record_windows_;
         OnTheRecord(false);
         break;
 
       case NotificationType::BROWSER_CLOSED:
         if (!Source<Browser>(source)->profile()->IsOffTheRecord())
-          break;  // Ignore ordinary windows.
-        {
-          AutoLock lock(lock_);
-          DCHECK_LT(0, count_off_the_record_windows_);
-          if (0 >= count_off_the_record_windows_)  // Defensive coding.
-            break;
-          if (--count_off_the_record_windows_)
-            break;  // Still some windows are incognito.
-        }  // Release lock.
+        break;  // Ignore ordinary windows.
+        DCHECK_LT(0, count_off_the_record_windows_);
+        if (0 >= count_off_the_record_windows_)  // Defensive coding.
+          break;
+        if (--count_off_the_record_windows_)
+          break;  // Still some windows are incognito.
         OnTheRecord(true);
         break;
 
@@ -373,11 +356,10 @@ class OffTheRecordObserver : public NotificationObserver {
 
  private:
   friend struct DefaultSingletonTraits<OffTheRecordObserver>;
-  OffTheRecordObserver() : lock_(), count_off_the_record_windows_(0) { }
-  ~OffTheRecordObserver() { }
+  OffTheRecordObserver() : count_off_the_record_windows_(0) {}
+  ~OffTheRecordObserver() {}
 
   NotificationRegistrar registrar_;
-  Lock lock_;
   int count_off_the_record_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(OffTheRecordObserver);
@@ -389,6 +371,8 @@ class OffTheRecordObserver : public NotificationObserver {
 
 // Provide global support for the about:dns page.
 void DnsPrefetchGetHtmlInfo(std::string* output) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   output->append("<html><head><title>About DNS</title>"
                  // We'd like the following no-cache... but it doesn't work.
                  // "<META HTTP-EQUIV=\"Pragma\" CONTENT=\"no-cache\">"
@@ -400,7 +384,7 @@ void DnsPrefetchGetHtmlInfo(std::string* output) {
       output->append("Incognito mode is active in a window.");
     } else {
       dns_master->GetHtmlInfo(output);
-      PrefetchObserver::DnsGetFirstResolutionsHtml(output);
+      Singleton<PrefetchObserver>::get()->DnsGetFirstResolutionsHtml(output);
       dns_master->GetHtmlReferrerLists(output);
     }
   }
@@ -411,13 +395,9 @@ void DnsPrefetchGetHtmlInfo(std::string* output) {
 // This section intializes and tears down global DNS prefetch services.
 //------------------------------------------------------------------------------
 
-// Note: We have explicit permission to create the following global static
-// object (in opposition to Google style rules). By making it a static, we
-// can ensure its deletion.
-static PrefetchObserver dns_resolution_observer;
-
 void InitDnsPrefetch(TimeDelta max_queue_delay, size_t max_concurrent,
                      PrefService* user_prefs) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Use a large shutdown time so that UI tests (that instigate lookups, and
   // then try to shutdown the browser) don't instigate the CHECK about
   // "some slaves have not finished"
@@ -444,17 +424,19 @@ void InitDnsPrefetch(TimeDelta max_queue_delay, size_t max_concurrent,
     // TODO(eroman): really this should be called from IO thread (since that is
     // where the host resolver lives). Since this occurs before requests have
     // started it is not a race yet.
-    GetGlobalHostResolver()->AddObserver(&dns_resolution_observer);
+    GetGlobalHostResolver()->AddObserver(Singleton<PrefetchObserver>::get());
   }
 }
 
 void EnsureDnsPrefetchShutdown() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
   if (NULL != dns_master) {
     dns_master->Shutdown();
 
     // Stop observing DNS resolutions. Note that dns_master holds a reference
     // to the global host resolver, so is guaranteed to be live.
-    global_host_resolver->RemoveObserver(&dns_resolution_observer);
+    global_host_resolver->RemoveObserver(Singleton<PrefetchObserver>::get());
   }
 
   if (global_host_resolver) {
@@ -476,9 +458,15 @@ void FreeDnsPrefetchResources() {
 }
 
 static void DiscardAllPrefetchState() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   if (!dns_master)
     return;
-  dns_master->DiscardAllResults();
+
+  ChromeThread::PostTask(
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(dns_master,
+                        &DnsMaster::DiscardAllResults));
 }
 
 //------------------------------------------------------------------------------
@@ -510,14 +498,53 @@ net::HostResolver* GetGlobalHostResolver() {
 // Functions to handle saving of hostnames from one session to the next, to
 // expedite startup times.
 
-void SaveHostNamesForNextStartup(PrefService* local_state) {
-  if (!dns_prefetch_enabled)
+static void SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread(
+    ListValue* startup_list,
+    ListValue* referral_list,
+    base::WaitableEvent* completion) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  if (NULL == dns_master) {
+    completion->Signal();
     return;
-  PrefetchObserver::SaveStartupListAsPref(local_state);
+  }
+
+  Singleton<PrefetchObserver>::get()->GetInitialDnsResolutionList(startup_list);
+
+  // TODO(jar): Trimming should be done more regularly, such as every 48 hours
+  // of physical time, or perhaps after 48 hours of running (excluding time
+  // between sessions possibly).
+  // For now, we'll just trim at shutdown.
+  dns_master->TrimReferrers();
+  dns_master->SerializeReferrers(referral_list);
+
+  completion->Signal();
 }
 
-void DnsPrefetchHostNamesAtStartup(PrefService* user_prefs,
-                                   PrefService* local_state) {
+void SaveDnsPrefetchStateForNextStartupAndTrim(PrefService* prefs) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  if (!dns_prefetch_enabled || dns_master == NULL)
+    return;
+
+  base::WaitableEvent completion(true, false);
+
+  bool posted = ChromeThread::PostTask(
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableFunction(SaveDnsPrefetchStateForNextStartupAndTrimOnIOThread,
+                          prefs->GetMutableList(prefs::kDnsStartupPrefetchList),
+                          prefs->GetMutableList(prefs::kDnsHostReferralList),
+                          &completion));
+
+  DCHECK(posted);
+  if (posted)
+    completion.Wait();
+}
+
+static void DnsPrefetchHostNamesAtStartup(PrefService* user_prefs,
+                                          PrefService* local_state) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   NameList hostnames;
   // Prefetch DNS for hostnames we learned about during last session.
   // This may catch secondary hostnames, pulled in by the homepages.  It will
@@ -559,26 +586,24 @@ void DnsPrefetchHostNamesAtStartup(PrefService* user_prefs,
 // prefetch of names (probably) used in subresources when the major resource is
 // navigated towards.
 
-void SaveSubresourceReferrers(PrefService* local_state) {
+static void RestoreSubresourceReferrers(PrefService* local_state) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   if (NULL == dns_master)
     return;
   ListValue* referral_list =
       local_state->GetMutableList(prefs::kDnsHostReferralList);
-  dns_master->SerializeReferrers(referral_list);
-}
 
-void RestoreSubresourceReferrers(PrefService* local_state) {
-  if (NULL == dns_master)
-    return;
-  ListValue* referral_list =
-      local_state->GetMutableList(prefs::kDnsHostReferralList);
-  dns_master->DeserializeReferrers(*referral_list);
-}
+  // Deleted after deserialization has completed on IO thread.
+  ListValue* referral_list_copy =
+      static_cast<ListValue*>(referral_list->DeepCopy());
 
-void TrimSubresourceReferrers() {
-  if (NULL == dns_master)
-    return;
-  dns_master->TrimReferrers();
+  ChromeThread::PostTask(
+      ChromeThread::IO,
+      FROM_HERE,
+      NewRunnableMethod(dns_master,
+                        &DnsMaster::DeserializeReferrersThenDelete,
+                        referral_list_copy));
 }
 
 //------------------------------------------------------------------------------
@@ -587,6 +612,7 @@ void TrimSubresourceReferrers() {
 
 DnsPrefetcherInit::DnsPrefetcherInit(PrefService* user_prefs,
                                      PrefService* local_state) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   // Set up a field trial to see what disabling DNS pre-resolution does to
   // latency of page loads.
   FieldTrial::Probability kDivisor = 100;
@@ -635,8 +661,8 @@ DnsPrefetcherInit::DnsPrefetcherInit(PrefService* user_prefs,
     DCHECK(!dns_master);
     InitDnsPrefetch(max_queueing_delay, max_concurrent, user_prefs);
     DCHECK(dns_master);  // Will be checked in destructor.
-    chrome_browser_net::DnsPrefetchHostNamesAtStartup(user_prefs, local_state);
-    chrome_browser_net::RestoreSubresourceReferrers(local_state);
+    DnsPrefetchHostNamesAtStartup(user_prefs, local_state);
+    RestoreSubresourceReferrers(local_state);
   }
 }
 

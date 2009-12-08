@@ -55,18 +55,7 @@ void DnsPrefetchUrl(const GURL& url);
 void DnsPrefetchGetHtmlInfo(std::string* output);
 
 //------------------------------------------------------------------------------
-// Save the hostnames actually used at the start of this session to prefetch
-// during the next startup.
-void SaveHostNamesForNextStartup(PrefService* local_state);
-void DnsPrefetchHostNamesAtStartup(PrefService* user_prefs,
-                                   PrefService* local_state);
-
-// Functions to save and restore sub-resource references.
-void SaveSubresourceReferrers(PrefService* local_state);
-void RestoreSubresourceReferrers(PrefService* local_state);
-void TrimSubresourceReferrers();
-
-//------------------------------------------------------------------------------
+void SaveDnsPrefetchStateForNextStartupAndTrim(PrefService* prefs);
 // Helper class to handle global init and shutdown.
 class DnsPrefetcherInit {
  public:

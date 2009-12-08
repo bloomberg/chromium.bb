@@ -210,11 +210,55 @@ std::string AboutOSCredits() {
 }
 #endif
 
-std::string AboutDns() {
-  std::string data;
-  chrome_browser_net::DnsPrefetchGetHtmlInfo(&data);
-  return data;
-}
+// AboutDnsHandler bounces the request back to the IO thread to collect
+// the DNS information.
+class AboutDnsHandler : public base::RefCountedThreadSafe<AboutDnsHandler> {
+ public:
+  static void Start(AboutSource* source, int request_id) {
+    scoped_refptr<AboutDnsHandler> handler =
+        new AboutDnsHandler(source, request_id);
+    handler->StartOnUIThread();
+  }
+
+ private:
+  AboutDnsHandler(AboutSource* source, int request_id)
+      : source_(source),
+        request_id_(request_id) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  }
+
+  // Calls FinishOnUIThread() on completion.
+  void StartOnUIThread() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    ChromeThread::PostTask(
+        ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this, &AboutDnsHandler::StartOnIOThread));
+  }
+
+  void StartOnIOThread() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+    std::string data;
+    chrome_browser_net::DnsPrefetchGetHtmlInfo(&data);
+
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &AboutDnsHandler::FinishOnUIThread, data));
+  }
+
+  void FinishOnUIThread(const std::string& data) {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    source_->FinishDataRequest(data, request_id_);
+  }
+
+  // Where the results are fed to.
+  scoped_refptr<AboutSource> source_;
+
+  // ID identifying the request.
+  int request_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(AboutDnsHandler);
+};
 
 #if defined(USE_TCMALLOC)
 std::string AboutTcmalloc(const std::string& query) {
@@ -619,7 +663,8 @@ void AboutSource::StartDataRequest(const std::string& path_raw,
 
   std::string response;
   if (path == kDnsPath) {
-    response = AboutDns();
+    AboutDnsHandler::Start(this, request_id);
+    return;
   } else if (path == kHistogramsPath) {
     response = AboutHistograms(info);
   } else if (path == kMemoryPath) {
