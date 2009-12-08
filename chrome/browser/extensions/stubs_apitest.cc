@@ -6,7 +6,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/ui_test_utils.h"
 
-#if defined(OS_WIN)  // TODO(asargent) get this working on linux
 // Tests that we throw errors when you try using extension APIs that aren't
 // supported in content scripts.
 //
@@ -27,4 +26,3 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Stubs) {
   ResultCatcher catcher;
   ASSERT_TRUE(catcher.GetNextResult());
 }
-#endif

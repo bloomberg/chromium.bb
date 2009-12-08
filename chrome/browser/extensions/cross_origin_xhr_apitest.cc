@@ -4,6 +4,11 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#if defined(OS_MACOSX)
+// http://crbug.com/29711
+#define CrossOriginXHR DISABLED_CrossOriginXHR
+#endif
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, CrossOriginXHR) {
   host_resolver()->AddRule("*.com", "127.0.0.1");
   StartHTTPServer();

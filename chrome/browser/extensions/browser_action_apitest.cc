@@ -137,6 +137,13 @@ class BrowserActionTest : public ExtensionApiTest {
 #endif
 };
 
+#if defined(OS_MACOSX)
+// http://crbug.com/29709 port to Mac
+#define Basic DISABLED_Basic
+#define DynamicBrowserAction DISABLED_DynamicBrowserAction
+#define TabSpecificBrowserActionState DISABLED_TabSpecificBrowserActionState
+#endif
+
 IN_PROC_BROWSER_TEST_F(BrowserActionTest, Basic) {
   StartHTTPServer();
   ASSERT_TRUE(RunExtensionTest("browser_action")) << message_;
@@ -234,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionTest, TabSpecificBrowserActionState) {
   EXPECT_EQ("hi!", GetTooltip(0));
 }
 
-// TODO(estade): port to Linux.
+// TODO(estade): http://crbug.com/29710 port to Mac & Linux
 #if defined(OS_WIN)
 IN_PROC_BROWSER_TEST_F(BrowserActionTest, BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("popup")));
@@ -292,4 +299,4 @@ IN_PROC_BROWSER_TEST_F(BrowserActionTest, BrowserActionPopup) {
   browser_actions->HidePopup();
   EXPECT_TRUE(browser_actions->TestGetPopup() == NULL);
 }
-#endif
+#endif  // defined(OS_WIN)

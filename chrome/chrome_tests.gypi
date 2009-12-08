@@ -24,12 +24,6 @@
       'browser/views/browser_views_accessibility_browsertest.cc',
     ],
     'browser_tests_sources_exclude_on_mac': [
-      'browser/extensions/browser_action_apitest.cc',
-      'browser/extensions/content_script_all_frames_apitest.cc',
-      'browser/extensions/cross_origin_xhr_apitest.cc',
-      'browser/extensions/execute_script_apitest.cc',
-      'browser/extensions/extension_apitest.cc',
-      'browser/extensions/extension_apitest.h',
       'browser/extensions/extension_bookmarks_apitest.cc',
       'browser/extensions/extension_history_apitest.cc',
       'browser/extensions/extension_javascript_url_apitest.cc',
@@ -38,8 +32,8 @@
       'browser/extensions/extension_override_apitest.cc',
       'browser/extensions/extension_toolstrip_apitest.cc',
       'browser/extensions/isolated_world_apitest.cc',
+      # Uses views headers
       'browser/extensions/page_action_apitest.cc',
-      'browser/extensions/stubs_apitest.cc',
     ],
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [
