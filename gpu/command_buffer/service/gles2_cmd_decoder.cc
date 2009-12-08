@@ -921,7 +921,22 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
 
 parse_error::ParseError GLES2DecoderImpl::HandleReadPixels(
     uint32 immediate_data_size, const gles2::ReadPixels& c) {
-  // TODO(gman): Implement.
+  GLint x = c.x;
+  GLint y = c.y;
+  GLsizei width = c.width;
+  GLsizei height = c.height;
+  GLenum format = c.format;
+  GLenum type = c.type;
+  uint32 pixels_size = GLES2Util::ComputeImageDataSize(
+      width, height, format, type, pack_alignment_);
+  void* pixels = GetSharedMemoryAs<void*>(
+      c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
+  parse_error::ParseError result = ValidateReadPixels(
+      this, immediate_data_size, x, y, width, height, format, type, pixels);
+  if (result != parse_error::kParseNoError) {
+    return result;
+  }
+  glReadPixels(x, y, width, height, format, type, pixels);
   return parse_error::kParseNoError;
 }
 

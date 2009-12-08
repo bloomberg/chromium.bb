@@ -28,6 +28,12 @@ class GLES2Implementation {
       void* transfer_buffer,
       int32 transfer_buffer_id);
 
+  // The GLES2CmdHelper being used by this GLES2Implementation. You can use
+  // this to issue cmds at a lower level for certain kinds of optimization.
+  GLES2CmdHelper* helper() const {
+    return helper_;
+  }
+
   // Include the auto-generated part of this class. We split this because
   // it means we can easily edit the non-auto generated parts right here in
   // this file instead of having to edit some template or the code generator.
