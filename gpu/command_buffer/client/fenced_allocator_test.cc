@@ -40,16 +40,12 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
-#include "gpu/np_utils/np_browser_stub.h"
-#include "gpu/np_utils/np_object_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace command_buffer {
 
 using command_buffer::CommandBufferService;
 using command_buffer::GPUProcessor;
-using np_utils::NPCreateObject;
-using np_utils::NPObjectPointer;
 using testing::Return;
 using testing::Mock;
 using testing::Truly;
@@ -73,7 +69,7 @@ class BaseFencedAllocatorTest : public testing::Test {
         .WillRepeatedly(DoAll(Invoke(api_mock_.get(), &AsyncAPIMock::SetToken),
                               Return(parse_error::kParseNoError)));
 
-    ::base::SharedMemory* ring_buffer = new ::base::SharedMemory;
+    base::SharedMemory* ring_buffer = new base::SharedMemory;
     ring_buffer->Create(std::wstring(), false, false, 1024);
     ring_buffer->Map(1024);
 
@@ -104,7 +100,6 @@ class BaseFencedAllocatorTest : public testing::Test {
 
   base::AtExitManager at_exit_manager_;
   MessageLoop message_loop_;
-  np_utils::StubNPBrowser browser_;
   scoped_ptr<AsyncAPIMock> api_mock_;
   scoped_ptr<CommandBufferService> command_buffer_;
   command_buffer::CommandParser* parser_;

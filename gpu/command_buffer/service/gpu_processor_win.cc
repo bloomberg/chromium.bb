@@ -10,9 +10,8 @@ using ::base::SharedMemory;
 
 namespace command_buffer {
 
-GPUProcessor::GPUProcessor(NPP npp, CommandBuffer* command_buffer)
-    : npp_(npp),
-      command_buffer_(command_buffer),
+GPUProcessor::GPUProcessor(CommandBuffer* command_buffer)
+    : command_buffer_(command_buffer),
       commands_per_update_(100) {
   DCHECK(command_buffer);
   decoder_.reset(gles2::GLES2Decoder::Create());
@@ -23,8 +22,7 @@ GPUProcessor::GPUProcessor(CommandBuffer* command_buffer,
                            gles2::GLES2Decoder* decoder,
                            CommandParser* parser,
                            int commands_per_update)
-    : npp_(NULL),
-      command_buffer_(command_buffer),
+    : command_buffer_(command_buffer),
       commands_per_update_(commands_per_update) {
   DCHECK(command_buffer);
   decoder_.reset(decoder);

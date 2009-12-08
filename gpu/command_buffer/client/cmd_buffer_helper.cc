@@ -34,14 +34,10 @@
 
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/common/command_buffer.h"
-#include "gpu/np_utils/np_utils.h"
 
 namespace command_buffer {
 
 using command_buffer::CommandBuffer;
-using np_utils::NPBrowser;
-using np_utils::NPInvoke;
-using np_utils::NPObjectPointer;
 
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),

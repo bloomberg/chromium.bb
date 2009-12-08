@@ -8,7 +8,6 @@
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/np_utils/np_browser_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -34,12 +33,6 @@ class GPUProcessorTest : public testing::Test {
     buffer_ = static_cast<int32*>(shared_memory_->memory());
 
     memset(buffer_, 0, kRingBufferSize);
-
-    // Don't mock PluginThreadAsyncCall. Have it schedule the task.
-    ON_CALL(mock_browser_, PluginThreadAsyncCall(_, _, _))
-      .WillByDefault(
-          Invoke(&mock_browser_,
-                 &np_utils::MockNPBrowser::ConcretePluginThreadAsyncCall));
 
     command_buffer_.reset(new MockCommandBuffer);
     ON_CALL(*command_buffer_.get(), GetRingBuffer())
@@ -72,7 +65,6 @@ class GPUProcessorTest : public testing::Test {
 
   base::AtExitManager at_exit_manager;
   MessageLoop message_loop;
-  np_utils::MockNPBrowser mock_browser_;
   scoped_ptr<MockCommandBuffer> command_buffer_;
   scoped_ptr<::base::SharedMemory> shared_memory_;
   int32* buffer_;

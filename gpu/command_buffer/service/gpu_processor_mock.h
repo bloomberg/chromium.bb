@@ -13,7 +13,7 @@ namespace command_buffer {
 class MockGPUProcessor : public GPUProcessor {
  public:
   explicit MockGPUProcessor(CommandBuffer* command_buffer)
-      : GPUProcessor(NULL, command_buffer) {
+      : GPUProcessor(command_buffer) {
   }
 
 #if defined(OS_WIN)

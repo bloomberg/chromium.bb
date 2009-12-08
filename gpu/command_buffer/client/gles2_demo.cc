@@ -15,7 +15,6 @@
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/np_utils/np_utils.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/gles2_demo_c.h"
@@ -31,7 +30,7 @@ class GLES2Demo {
  public:
   GLES2Demo();
 
-  bool GLES2Demo::Setup(NPP npp, void* hwnd, int32 size);
+  bool GLES2Demo::Setup(void* hwnd, int32 size);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLES2Demo);
@@ -40,7 +39,7 @@ class GLES2Demo {
 GLES2Demo::GLES2Demo() {
 }
 
-bool GLES2Demo::Setup(NPP npp, void* hwnd, int32 size) {
+bool GLES2Demo::Setup(void* hwnd, int32 size) {
   scoped_ptr<SharedMemory> ring_buffer(new SharedMemory);
   if (!ring_buffer->Create(std::wstring(), false, false, size)) {
     return NULL;
@@ -56,7 +55,7 @@ bool GLES2Demo::Setup(NPP npp, void* hwnd, int32 size) {
   }
 
   scoped_refptr<GPUProcessor> gpu_processor(
-      new GPUProcessor(npp, command_buffer.get()));
+      new GPUProcessor(command_buffer.get()));
   if (!gpu_processor->Initialize(reinterpret_cast<HWND>(hwnd))) {
     return NULL;
   }
@@ -201,7 +200,7 @@ int main(int argc, const char** argv) {
     return EXIT_FAILURE;
   }
 
-  demo->Setup(NULL, hwnd, kCommandBufferSize);
+  demo->Setup(hwnd, kCommandBufferSize);
 
   ProcessMessages(hwnd);
 

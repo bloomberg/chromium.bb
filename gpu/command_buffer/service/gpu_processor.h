@@ -12,7 +12,6 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/np_utils/np_object_pointer.h"
 
 namespace command_buffer {
 
@@ -21,7 +20,7 @@ namespace command_buffer {
 class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
                      public command_buffer::CommandBufferEngine {
  public:
-  GPUProcessor(NPP npp, CommandBuffer* command_buffer);
+  explicit GPUProcessor(CommandBuffer* command_buffer);
 
   // This constructor is for unit tests.
   GPUProcessor(CommandBuffer* command_buffer,
@@ -57,8 +56,6 @@ class GPUProcessor : public ::base::RefCounted<GPUProcessor>,
   virtual void set_token(int32 token);
 
  private:
-  NPP npp_;
-
   // The GPUProcessor holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the GPUProcessor and holds a strong reference to it
   // through the ProcessCommands callback.

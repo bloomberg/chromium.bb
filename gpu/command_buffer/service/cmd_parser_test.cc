@@ -155,7 +155,7 @@ TEST_F(CommandParserTest, TestMultipleCommands) {
 
   CommandBufferOffset put_cmd2 = put;
   header.size = 2;
-  header.command = 2121;
+  header.command = 876;
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 3434;
 
@@ -166,7 +166,7 @@ TEST_F(CommandParserTest, TestMultipleCommands) {
   param_array[0].value_int32 = 5151;
   AddDoCommandExpect(parse_error::kParseNoError, 789, 1, param_array);
   param_array[1].value_int32 = 3434;
-  AddDoCommandExpect(parse_error::kParseNoError, 2121, 1,
+  AddDoCommandExpect(parse_error::kParseNoError, 876, 1,
                      param_array+1);
 
   EXPECT_EQ(parse_error::kParseNoError, parser->ProcessCommand());
@@ -177,12 +177,12 @@ TEST_F(CommandParserTest, TestMultipleCommands) {
 
   // add 2 commands again, test with ProcessAllCommands()
   header.size = 2;
-  header.command = 4545;
+  header.command = 123;
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 5656;
 
   header.size = 2;
-  header.command = 6767;
+  header.command = 321;
   buffer()[put++].value_header = header;
   buffer()[put++].value_int32 = 7878;
 
@@ -190,9 +190,9 @@ TEST_F(CommandParserTest, TestMultipleCommands) {
   EXPECT_EQ(put, parser->put());
 
   param_array[0].value_int32 = 5656;
-  AddDoCommandExpect(parse_error::kParseNoError, 4545, 1, param_array);
+  AddDoCommandExpect(parse_error::kParseNoError, 123, 1, param_array);
   param_array[1].value_int32 = 7878;
-  AddDoCommandExpect(parse_error::kParseNoError, 6767, 1,
+  AddDoCommandExpect(parse_error::kParseNoError, 321, 1,
                      param_array+1);
 
   EXPECT_EQ(parse_error::kParseNoError, parser->ProcessAllCommands());

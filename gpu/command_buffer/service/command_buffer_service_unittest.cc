@@ -4,16 +4,10 @@
 
 #include "base/thread.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
-#include "gpu/np_utils/np_browser_mock.h"
-#include "gpu/np_utils/dynamic_np_object.h"
-#include "gpu/np_utils/np_object_mock.h"
-#include "gpu/np_utils/np_object_pointer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::SharedMemory;
-using np_utils::NPCreateObject;
-using np_utils::NPObjectPointer;
 using testing::_;
 using testing::DoAll;
 using testing::Return;
@@ -28,7 +22,6 @@ class CommandBufferServiceTest : public testing::Test {
     command_buffer_.reset(new CommandBufferService);
   }
 
-  np_utils::MockNPBrowser mock_browser_;
   scoped_ptr<CommandBufferService> command_buffer_;
 };
 

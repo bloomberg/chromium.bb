@@ -2,22 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/message_loop.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
-#include "gpu/np_utils/np_browser.h"
 
 using ::base::SharedMemory;
-using np_utils::NPBrowser;
 
 namespace command_buffer {
 
 GPUProcessor::~GPUProcessor() {
 }
-
-namespace {
-void InvokeProcessCommands(void* data) {
-  static_cast<GPUProcessor*>(data)->ProcessCommands();
-}
-}  // namespace anonymous
 
 void GPUProcessor::ProcessCommands() {
   if (command_buffer_->GetErrorStatus())
@@ -48,7 +41,8 @@ void GPUProcessor::ProcessCommands() {
   command_buffer_->SetGetOffset(static_cast<int32>(parser_->get()));
 
   if (!parser_->IsEmpty()) {
-    NPBrowser::get()->PluginThreadAsyncCall(npp_, InvokeProcessCommands, this);
+    MessageLoop::current()->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &GPUProcessor::ProcessCommands));
   }
 }
 
