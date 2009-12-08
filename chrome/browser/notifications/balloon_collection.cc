@@ -76,6 +76,19 @@ bool BalloonCollectionImpl::HasSpace() const {
   return current_max_size < max_allowed_size - max_balloon_size;
 }
 
+void BalloonCollectionImpl::ResizeBalloon(Balloon* balloon,
+                                          const gfx::Size& size) {
+  // restrict to the min & max sizes
+  gfx::Size real_size(
+      std::max(Layout::min_balloon_width(),
+          std::min(Layout::max_balloon_width(), size.width())),
+      std::max(Layout::min_balloon_height(),
+          std::min(Layout::max_balloon_height(), size.height())));
+
+  balloon->set_content_size(real_size);
+  PositionBalloons(true);
+}
+
 void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
   // We want to free the balloon when finished.
   scoped_ptr<Balloon> closed(source);
@@ -95,7 +108,7 @@ void BalloonCollectionImpl::OnBalloonClosed(Balloon* source) {
 void BalloonCollectionImpl::PositionBalloons(bool reposition) {
   gfx::Point origin = layout_.GetLayoutOrigin();
   for (Balloons::iterator it = balloons_.begin(); it != balloons_.end(); ++it) {
-    gfx::Point upper_left = layout_.NextPosition((*it)->size(), &origin);
+    gfx::Point upper_left = layout_.NextPosition((*it)->GetViewSize(), &origin);
     (*it)->SetPosition(upper_left, reposition);
   }
 }

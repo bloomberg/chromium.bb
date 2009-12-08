@@ -17,6 +17,7 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "views/widget/widget.h"
 #include "views/widget/widget_win.h"
@@ -47,6 +48,11 @@ void BalloonViewHost::Close(RenderViewHost* render_view_host) {
   balloon_->CloseByScript();
 }
 
+void BalloonViewHost::RenderViewCreated(RenderViewHost* render_view_host) {
+  render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
+      render_view_host->routing_id()));
+}
+
 void BalloonViewHost::RendererReady(RenderViewHost* /* render_view_host */) {
   should_notify_on_disconnect_ = true;
   NotificationService::current()->Notify(
@@ -73,10 +79,10 @@ void BalloonViewHost::CreateNewWindow(int route_id) {
 }
 
 void BalloonViewHost::ShowCreatedWindow(int route_id,
-                       WindowOpenDisposition disposition,
-                       const gfx::Rect& initial_pos,
-                       bool user_gesture,
-                       const GURL& creator_url) {
+                                        WindowOpenDisposition disposition,
+                                        const gfx::Rect& initial_pos,
+                                        bool user_gesture,
+                                        const GURL& creator_url) {
   // Don't allow pop-ups from notifications.
   if (disposition == NEW_POPUP)
     return;
@@ -86,6 +92,10 @@ void BalloonViewHost::ShowCreatedWindow(int route_id,
     Browser* browser = BrowserList::GetLastActive();
     browser->AddTabContents(contents, disposition, initial_pos, user_gesture);
   }
+}
+
+void BalloonViewHost::UpdatePreferredSize(const gfx::Size& new_size) {
+  balloon_->SetContentPreferredSize(new_size);
 }
 
 void BalloonViewHost::Init(gfx::NativeView parent_hwnd) {

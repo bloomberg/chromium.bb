@@ -20,6 +20,7 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "views/controls/button/menu_button.h"
+#include "views/controls/label.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/view.h"
 
@@ -52,6 +53,7 @@ class BalloonViewImpl : public BalloonView,
   void Show(Balloon* balloon);
   void RepositionToBalloon();
   void Close(bool by_user);
+  gfx::Size GetSize() const;
 
  private:
   // views::View interface.
@@ -109,6 +111,13 @@ class BalloonViewImpl : public BalloonView,
   // The height of the part of the frame around the balloon.
   int GetBalloonFrameHeight() const;
 
+  int GetTotalWidth() const;
+  int GetTotalHeight() const;
+
+  gfx::Rect GetCloseButtonBounds() const;
+  gfx::Rect GetOptionsMenuBounds() const;
+  gfx::Rect GetLabelBounds() const;
+
   // Where the balloon contents should be placed with respect to the top left
   // of the frame.
   gfx::Point GetContentsOffset() const;
@@ -139,6 +148,9 @@ class BalloonViewImpl : public BalloonView,
 
   // Pointer to sub-view is owned by the View sub-class.
   views::TextButton* close_button_;
+
+  // Pointer to sub-view is owned by View class.
+  views::Label* source_label_;
 
   // Listener for clicks on the close button.
   scoped_ptr<views::ButtonListener> close_button_listener_;

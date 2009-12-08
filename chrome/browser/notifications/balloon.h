@@ -17,6 +17,7 @@
 #include "chrome/browser/notifications/notification.h"
 
 class Balloon;
+class BalloonCollection;
 class Profile;
 class SiteInstance;
 
@@ -33,23 +34,17 @@ class BalloonView {
 
   // Close the view.
   virtual void Close(bool by_user) = 0;
+
+  // The total size of the view.
+  virtual gfx::Size GetSize() const = 0;
 };
 
 // Represents a Notification on the screen.
 class Balloon {
  public:
-  class BalloonCloseListener {
-   public:
-    virtual ~BalloonCloseListener() {}
-
-    // Called when a balloon is closed.
-    virtual void OnBalloonClosed(Balloon* source) = 0;
-  };
-
-  // |listener| may be null in unit tests w/o actual UI.
   Balloon(const Notification& notification,
           Profile* profile,
-          BalloonCloseListener* listener);
+          BalloonCollection* collection);
   virtual ~Balloon();
 
   const Notification& notification() const { return notification_; }
@@ -58,12 +53,20 @@ class Balloon {
   const gfx::Point& position() const { return position_; }
   void SetPosition(const gfx::Point& upper_left, bool reposition);
 
-  const gfx::Size& size() const { return size_; }
-  void set_size(const gfx::Size& size) { size_ = size; }
+  const gfx::Size& content_size() const { return content_size_; }
+  void set_content_size(const gfx::Size& size) { content_size_ = size; }
+
+  // Request a new content size for this balloon.  This will get passed
+  // to the balloon collection for checking against available space and
+  // min/max restrictions.
+  void SetContentPreferredSize(const gfx::Size& size);
 
   // Provides a view for this balloon.  Ownership transfers
   // to this object.
   void set_view(BalloonView* balloon_view);
+
+  // Returns the viewing size for the balloon (content + frame).
+  gfx::Size GetViewSize() const { return balloon_view_->GetSize(); }
 
   // Shows the balloon.
   virtual void Show();
@@ -82,15 +85,15 @@ class Balloon {
   // The notification being shown in this balloon.
   Notification notification_;
 
-  // A listener to be called when the balloon closes.
-  BalloonCloseListener* close_listener_;
+  // The collection that this balloon belongs to.  Non-owned pointer.
+  BalloonCollection* collection_;
 
   // The actual UI element for the balloon.
   scoped_ptr<BalloonView> balloon_view_;
 
   // Position and size of the balloon on the screen.
   gfx::Point position_;
-  gfx::Size size_;
+  gfx::Size content_size_;
 
   DISALLOW_COPY_AND_ASSIGN(Balloon);
 };

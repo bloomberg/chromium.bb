@@ -10,10 +10,10 @@
 #include "chrome/browser/renderer_host/site_instance.h"
 
 Balloon::Balloon(const Notification& notification, Profile* profile,
-                 BalloonCloseListener* listener)
+                 BalloonCollection* collection)
     : profile_(profile),
       notification_(notification),
-      close_listener_(listener) {
+      collection_(collection) {
 }
 
 Balloon::~Balloon() {
@@ -23,6 +23,10 @@ void Balloon::SetPosition(const gfx::Point& upper_left, bool reposition) {
   position_ = upper_left;
   if (reposition && balloon_view_.get())
     balloon_view_->RepositionToBalloon();
+}
+
+void Balloon::SetContentPreferredSize(const gfx::Size& size) {
+  collection_->ResizeBalloon(this, size);
 }
 
 void Balloon::set_view(BalloonView* balloon_view) {
@@ -38,8 +42,7 @@ void Balloon::Show() {
 
 void Balloon::OnClose(bool by_user) {
   notification_.Close(by_user);
-  if (close_listener_)
-    close_listener_->OnBalloonClosed(this);
+  collection_->OnBalloonClosed(this);
 }
 
 void Balloon::CloseByScript() {

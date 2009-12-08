@@ -45,6 +45,7 @@ class MockBalloonView : public BalloonView {
   void Show(Balloon* balloon) {}
   void RepositionToBalloon() {}
   void Close(bool by_user) { balloon_->OnClose(by_user); }
+  gfx::Size GetSize() const { return balloon_->content_size(); }
 
  private:
   // Non-owned pointer.
@@ -79,8 +80,9 @@ class MockBalloonCollection : public BalloonCollectionImpl {
   // Returns the highest y-coordinate of all the balloons in the collection.
   int UppermostVerticalPosition();
 
-  // Returns the minimum height of a balloon.
+  // Returns the height bounds of a balloon.
   int MinHeight() { return Layout::min_balloon_height(); }
+  int MaxHeight() { return Layout::max_balloon_height(); }
 
  private:
   std::set<Balloon*> balloons_;

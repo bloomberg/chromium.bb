@@ -43,6 +43,7 @@ class BalloonViewHost : public views::NativeViewHost,
     return balloon_->notification().content_url();
   }
   virtual void Close(RenderViewHost* render_view_host);
+  virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual void RendererReady(RenderViewHost* render_view_host);
   virtual void RendererGone(RenderViewHost* render_view_host);
   virtual void UpdateTitle(RenderViewHost* /* render_view_host */,
@@ -82,8 +83,10 @@ class BalloonViewHost : public views::NativeViewHost,
   }
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
-  virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
-  virtual RendererPreferences GetRendererPrefs() const { return RendererPreferences();  }
+  virtual void UpdatePreferredSize(const gfx::Size& pref_size);
+  virtual RendererPreferences GetRendererPrefs() const {
+    return RendererPreferences();
+  }
 
   // Accessors.
   RenderViewHost* render_view_host() const { return render_view_host_; }

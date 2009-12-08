@@ -34,7 +34,7 @@ Balloon* BalloonCollectionImpl::MakeBalloon(const Notification& notification,
   Balloon* balloon = new Balloon(notification, profile, this);
   balloon->set_view(new BalloonViewImpl());
   gfx::Size size(layout_.min_balloon_width(), layout_.min_balloon_height());
-  balloon->set_size(size);
+  balloon->set_content_size(size);
   return balloon;
 }
 

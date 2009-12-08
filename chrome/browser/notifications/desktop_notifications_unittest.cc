@@ -70,8 +70,8 @@ int MockBalloonCollection::UppermostVerticalPosition() {
   return min;
 }
 
-DesktopNotificationsTest::DesktopNotificationsTest() :
-    ui_thread_(ChromeThread::UI, &message_loop_) {
+DesktopNotificationsTest::DesktopNotificationsTest()
+    : ui_thread_(ChromeThread::UI, &message_loop_) {
 }
 
 DesktopNotificationsTest::~DesktopNotificationsTest() {
@@ -181,6 +181,41 @@ TEST_F(DesktopNotificationsTest, TestPositioning) {
     last_top = top;
   }
 
+  EXPECT_EQ(expected_log, log_output_);
+}
+
+TEST_F(DesktopNotificationsTest, TestVariableSize) {
+  std::string expected_log;
+  // Create some toasts.  After each but the first, make sure there
+  // is a minimum separation between the toasts.
+  int last_top = 0;
+  EXPECT_TRUE(service_->ShowDesktopNotificationText(
+      GURL("http://long.google.com"), GURL("/icon.png"),
+      ASCIIToUTF16("Really Really Really Really Really Really "
+          "Really Really Really Really Really Really "
+          "Really Really Really Really Really Really Really Long Title"),
+      ASCIIToUTF16("Text"),
+      0, 0, DesktopNotificationService::PageNotification, 0));
+  expected_log.append("notification displayed\n");
+  EXPECT_TRUE(service_->ShowDesktopNotificationText(
+      GURL("http://short.google.com"), GURL("/icon.png"),
+      ASCIIToUTF16("Short title"), ASCIIToUTF16("Text"),
+      0, 0, DesktopNotificationService::PageNotification, 1));
+  expected_log.append("notification displayed\n");
+
+  std::set<Balloon*>& balloons = balloon_collection_->balloons();
+  std::set<Balloon*>::iterator iter;
+  for (iter = balloons.begin(); iter != balloons.end(); ++iter) {
+    if ((*iter)->notification().origin_url().host() == "long.google.com") {
+      EXPECT_GE((*iter)->GetViewSize().height(),
+                balloon_collection_->MinHeight());
+      EXPECT_LE((*iter)->GetViewSize().height(),
+                balloon_collection_->MaxHeight());
+    } else {
+      EXPECT_EQ((*iter)->GetViewSize().height(),
+                balloon_collection_->MinHeight());
+    }
+  }
   EXPECT_EQ(expected_log, log_output_);
 }
 #endif

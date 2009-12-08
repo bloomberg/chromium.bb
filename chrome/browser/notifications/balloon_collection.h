@@ -32,14 +32,19 @@ class BalloonCollection {
 
   // Is there room to add another notification?
   virtual bool HasSpace() const = 0;
+
+  // Request the resizing of a balloon.
+  virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size) = 0;
+
+  // Inform the collection that a balloon was closed.
+  virtual void OnBalloonClosed(Balloon* source) = 0;
 };
 
 // A balloon collection represents a set of notification balloons being
 // shown on the screen.  It positions new notifications according to
 // a layout, and monitors for balloons being closed, which it reports
 // up to its parent, the notification UI manager.
-class BalloonCollectionImpl : public BalloonCollection,
-                              public Balloon::BalloonCloseListener {
+class BalloonCollectionImpl : public BalloonCollection {
  public:
   class BalloonSpaceChangeListener {
    public:
@@ -65,8 +70,7 @@ class BalloonCollectionImpl : public BalloonCollection,
                    Profile* profile);
   virtual bool Remove(const Notification& notification);
   virtual bool HasSpace() const;
-
-  // Balloon::BalloonCloseListener interface
+  virtual void ResizeBalloon(Balloon* balloon, const gfx::Size& size);
   virtual void OnBalloonClosed(Balloon* source);
 
  protected:
@@ -117,10 +121,10 @@ class BalloonCollectionImpl : public BalloonCollection,
       VERTICALLY_FROM_BOTTOM_RIGHT
     };
 
-    // Minimum and maximum size of balloon
+    // Minimum and maximum size of balloon content.
     static const int kBalloonMinWidth = 300;
     static const int kBalloonMaxWidth = 300;
-    static const int kBalloonMinHeight = 90;
+    static const int kBalloonMinHeight = 48;
     static const int kBalloonMaxHeight = 120;
 
     static Placement placement_;
