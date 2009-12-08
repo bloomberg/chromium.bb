@@ -26,7 +26,7 @@ GPUPluginObject::GPUPluginObject(NPP npp)
     : npp_(npp),
       status_(kWaitingForNew),
       command_buffer_(new CommandBufferService),
-      processor_(new GPUProcessor(npp, command_buffer_.get())) {
+      processor_(new GPUProcessor(command_buffer_.get())) {
   memset(&window_, 0, sizeof(window_));
 }
 
