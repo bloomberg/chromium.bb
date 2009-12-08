@@ -564,6 +564,73 @@ function getParameters(symbol) {
 }
 
 /**
+ * Generates an HTML class hierarchy.
+ * @param {!Array.<!Symbol>} classes Class to make hierarchy from.
+ * @return {string} HTML hierarchical list of classes.
+ */
+function getClassHierarchyHTML(classes) {
+  var classTree = {};
+
+  for (var cc = 0; cc < classes.length; ++cc) {
+    var thisClass = classes[cc];
+    var stack = [thisClass];
+    while (thisClass.inheritsFrom !== undefined &&
+           thisClass.inheritsFrom.length > 0) {
+      var parentName = thisClass.inheritsFrom[0];
+      thisClass = getSymbol(parentName);
+      stack.push(thisClass);
+    }
+
+    var node = classTree;
+    for (var ii = stack.length - 1; ii >= 0; --ii) {
+      var thisClass = stack[ii];
+      var className = thisClass.alias;
+      if (!node[className]) {
+        node[className] = { };
+      }
+      node = node[className];
+    }
+  }
+
+  return addParts(classTree, '');
+
+  /**
+   * Recursively creates hierarchical list of classes.
+   * @param {!Object} node A hash of class names to derived classes.
+   * @param {string} prefix Prefix to put in front of each line.
+   */
+  function addParts(node, prefix) {
+    var output = '';
+    var names = [];
+    for (var name in node) {
+      names.push(name);
+    }
+    if (names.length > 0) {
+      output += prefix + '<ul>\n';
+      names = names.sort();
+      for (var kk = 0; kk < names.length; ++kk) {
+        var name = names[kk];
+        var shortName = name;
+        var period = name.lastIndexOf('.');
+        if (period >= 0) {
+          shortName = name.substr(period + 1);
+        }
+        output += prefix + '<li><a href="/apis/o3d/docs/reference/' +
+                  getBaseURL() +
+                  getLinkToClassByAlias(name) +
+                  '">' +
+                  hyphenateWord(shortName, 16, '-<br/>') +
+                  '</a>';
+        output += addParts(node[name], prefix + '  ') + '\n';
+        output += prefix + '</li>\n';
+      }
+      output += prefix + '</ul>\n';
+    }
+    return output;
+  }
+}
+
+/**
  * Returns whether or not the symbol is deprecated.  Apparently jsdoctoolkit is
  * supposed to extract this info for us but it's not so we have to do it
  * manually.

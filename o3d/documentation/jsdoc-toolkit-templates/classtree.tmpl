@@ -8,12 +8,8 @@
     </ul>
   </li>
   <li><a href="/apis/o3d/docs/reference/{+getBaseURL()+}annotated.html">Classes</a>
-    <ul>
       {! var allClasses = data.filter(function($){return !$.isNamespace}).sort(makeSortby("alias")); !}
-      <for each="thisClass" in="allClasses">
-      <li><a href="/apis/o3d/docs/reference/{+getBaseURL()+}{+getLinkToClassByAlias(thisClass.alias)+}">{+hyphenateWord(thisClass.name, 16, '-<br/>')+}</a></li>
-      </for>
-    </ul>
+      {+getClassHierarchyHTML(allClasses)+}
   </li>
 </ul>
 
