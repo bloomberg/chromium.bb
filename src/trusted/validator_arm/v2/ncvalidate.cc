@@ -21,7 +21,12 @@ using nacl_arm_dec::kRegisterStack;
 using std::vector;
 
 class EarlyExitProblemSink : public nacl_arm_val::ProblemSink {
+ private:
+  bool problems_;
+
  public:
+  EarlyExitProblemSink() : nacl_arm_val::ProblemSink(), problems_(false) {}
+
   virtual void report_problem(uint32_t vaddr,
                               nacl_arm_dec::SafetyLevel safety,
                               const std::string &problem_code,
@@ -30,9 +35,11 @@ class EarlyExitProblemSink : public nacl_arm_val::ProblemSink {
     UNREFERENCED_PARAMETER(safety);
     UNREFERENCED_PARAMETER(problem_code);
     UNREFERENCED_PARAMETER(ref_vaddr);
+
+    problems_ = true;
   }
   virtual bool should_continue() {
-    return false;
+    return !problems_;
   }
 };
 
