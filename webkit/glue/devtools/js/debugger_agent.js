@@ -17,10 +17,6 @@ devtools.DebuggerAgent = function() {
       goog.bind(this.handleDebuggerOutput_, this);
   RemoteDebuggerAgent.SetContextId =
       goog.bind(this.setContextId_, this);
-  RemoteDebuggerAgent.DidGetActiveProfilerModules =
-      goog.bind(this.didGetActiveProfilerModules_, this);
-  RemoteDebuggerAgent.DidGetNextLogLines =
-      goog.bind(this.didGetNextLogLines_, this);
 
   /**
    * Id of the inspected page global context. It is used for filtering scripts.
@@ -90,31 +86,6 @@ devtools.DebuggerAgent = function() {
   this.pendingBacktraceResponseHandler_ = null;
 
   /**
-   * Active profiler modules flags.
-   * @type {number}
-   */
-  this.activeProfilerModules_ =
-      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_NONE;
-
-  /**
-   * Interval for polling profiler state.
-   * @type {number}
-   */
-  this.getActiveProfilerModulesInterval_ = null;
-
-  /**
-   * Whether log contents retrieval must be forced next time.
-   * @type {boolean}
-   */
-  this.forceGetLogLines_ = false;
-
-  /**
-   * Profiler processor instance.
-   * @type {devtools.profiler.Processor}
-   */
-  this.profilerProcessor_ = new devtools.profiler.Processor();
-
-  /**
    * Container of all breakpoints set using resource URL. These breakpoints
    * survive page reload. Breakpoints set by script id(for scripts that don't
    * have URLs) are stored in ScriptInfo objects.
@@ -145,19 +116,6 @@ devtools.DebuggerAgent.ScopeType = {
 
 
 /**
- * A copy of enum from include/v8.h
- * @enum {number}
- */
-devtools.DebuggerAgent.ProfilerModules = {
-  PROFILER_MODULE_NONE: 0,
-  PROFILER_MODULE_CPU: 1,
-  PROFILER_MODULE_HEAP_STATS: 1 << 1,
-  PROFILER_MODULE_JS_CONSTRUCTORS: 1 << 2,
-  PROFILER_MODULE_HEAP_SNAPSHOT: 1 << 16
-};
-
-
-/**
  * Resets debugger agent to its initial state.
  */
 devtools.DebuggerAgent.prototype.reset = function() {
@@ -171,10 +129,6 @@ devtools.DebuggerAgent.prototype.reset = function() {
   this.requestNumberToBreakpointInfo_ = {};
   this.callFrames_ = [];
   this.requestSeqToCallback_ = {};
-
-  // Profiler isn't reset because it contains no data that is
-  // specific for a particular V8 instance. All such data is
-  // managed by an agent on the Render's side.
 };
 
 
@@ -668,77 +622,6 @@ devtools.DebuggerAgent.prototype.resolveCompletionsOnFrame = function(
 
 
 /**
- * Sets up callbacks that deal with profiles processing.
- */
-devtools.DebuggerAgent.prototype.setupProfilerProcessorCallbacks = function() {
-  // A temporary icon indicating that the profile is being processed.
-  var processingIcon = new WebInspector.SidebarTreeElement(
-      'profile-sidebar-tree-item',
-      WebInspector.UIString('Processing...'),
-      '', null, false);
-  var profilesSidebar = WebInspector.panels.profiles.getProfileType(
-      WebInspector.CPUProfileType.TypeId).treeElement;
-
-  this.profilerProcessor_.setCallbacks(
-      function onProfileProcessingStarted() {
-        // Set visually empty string. Subtitle hiding is done via styles
-        // manipulation which doesn't play well with dynamic append / removal.
-        processingIcon.subtitle = ' ';
-        profilesSidebar.appendChild(processingIcon);
-      },
-      function onProfileProcessingStatus(ticksCount) {
-        processingIcon.subtitle =
-            WebInspector.UIString('%d ticks processed', ticksCount);
-      },
-      function onProfileProcessingFinished(profile) {
-        profilesSidebar.removeChild(processingIcon);
-        profile.typeId = WebInspector.CPUProfileType.TypeId;
-        InspectorBackend.addFullProfile(profile);
-        WebInspector.addProfileHeader(profile);
-        // If no profile is currently shown, show the new one.
-        var profilesPanel = WebInspector.panels.profiles;
-        if (!profilesPanel.visibleView) {
-          profilesPanel.showProfile(profile);
-        }
-      }
-  );
-};
-
-
-/**
- * Initializes profiling state.
- */
-devtools.DebuggerAgent.prototype.initializeProfiling = function() {
-  this.setupProfilerProcessorCallbacks();
-  this.forceGetLogLines_ = true;
-  this.getActiveProfilerModulesInterval_ = setInterval(
-        function() { RemoteDebuggerAgent.GetActiveProfilerModules(); }, 1000);
-};
-
-
-/**
- * Starts profiling.
- * @param {number} modules List of modules to enable.
- */
-devtools.DebuggerAgent.prototype.startProfiling = function(modules) {
-  RemoteDebuggerAgent.StartProfiling(modules);
-  if (modules &
-      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_HEAP_SNAPSHOT) {
-    // Active modules will not change, instead, a snapshot will be logged.
-    RemoteDebuggerAgent.GetNextLogLines();
-  }
-};
-
-
-/**
- * Stops profiling.
- */
-devtools.DebuggerAgent.prototype.stopProfiling = function(modules) {
-  RemoteDebuggerAgent.StopProfiling(modules);
-};
-
-
-/**
  * @param{number} scriptId
  * @return {string} Type of the context of the script with specified id.
  */
@@ -1037,43 +920,6 @@ devtools.DebuggerAgent.prototype.handleAfterCompileEvent_ = function(msg) {
     return;
   }
   this.addScriptInfo_(script, msg);
-};
-
-
-/**
- * Handles current profiler status.
- * @param {number} modules List of active (started) modules.
- */
-devtools.DebuggerAgent.prototype.didGetActiveProfilerModules_ = function(
-    modules) {
-  var profModules = devtools.DebuggerAgent.ProfilerModules;
-  var profModuleNone = profModules.PROFILER_MODULE_NONE;
-  if (this.forceGetLogLines_ ||
-      (modules != profModuleNone &&
-      this.activeProfilerModules_ == profModuleNone)) {
-    this.forceGetLogLines_ = false;
-    // Start to query log data.
-    RemoteDebuggerAgent.GetNextLogLines();
-  }
-  this.activeProfilerModules_ = modules;
-  // Update buttons.
-  WebInspector.setRecordingProfile(modules & profModules.PROFILER_MODULE_CPU);
-};
-
-
-/**
- * Handles a portion of a profiler log retrieved by GetNextLogLines call.
- * @param {string} log A portion of profiler log.
- */
-devtools.DebuggerAgent.prototype.didGetNextLogLines_ = function(log) {
-  if (log.length > 0) {
-    this.profilerProcessor_.processLogChunk(log);
-  } else if (this.activeProfilerModules_ ==
-      devtools.DebuggerAgent.ProfilerModules.PROFILER_MODULE_NONE) {
-    // No new data and profiling is stopped---suspend log reading.
-    return;
-  }
-  setTimeout(function() { RemoteDebuggerAgent.GetNextLogLines(); }, 500);
 };
 
 

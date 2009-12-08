@@ -33,6 +33,7 @@
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent.h"
 #include "webkit/glue/devtools/devtools_rpc_js.h"
+#include "webkit/glue/devtools/profiler_agent.h"
 #include "webkit/glue/devtools/tools_agent.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webdevtoolsfrontend_impl.h"
@@ -57,6 +58,8 @@ static v8::Local<v8::String> ToV8String(const String& s) {
 
 DEFINE_RPC_JS_BOUND_OBJ(DebuggerAgent, DEBUGGER_AGENT_STRUCT,
     DebuggerAgentDelegate, DEBUGGER_AGENT_DELEGATE_STRUCT)
+DEFINE_RPC_JS_BOUND_OBJ(ProfilerAgent, PROFILER_AGENT_STRUCT,
+    ProfilerAgentDelegate, PROFILER_AGENT_DELEGATE_STRUCT)
 DEFINE_RPC_JS_BOUND_OBJ(ToolsAgent, TOOLS_AGENT_STRUCT,
     ToolsAgentDelegate, TOOLS_AGENT_DELEGATE_STRUCT)
 
@@ -134,6 +137,8 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
 
   debugger_agent_obj_.set(new JsDebuggerAgentBoundObj(
       this, frame_context, "RemoteDebuggerAgent"));
+  profiler_agent_obj_.set(new JsProfilerAgentBoundObj(
+      this, frame_context, "RemoteProfilerAgent"));
   tools_agent_obj_.set(
       new JsToolsAgentBoundObj(this, frame_context, "RemoteToolsAgent"));
 
