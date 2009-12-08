@@ -1,0 +1,2 @@
+# See ttp://code.google.com/p/chromium-os/issues/detail?id=954
+SysInfoTest.GoogleChromeOSVersionNumbers

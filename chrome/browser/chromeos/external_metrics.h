@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
@@ -23,6 +24,7 @@ namespace chromeos {
 class ExternalMetrics : public base::RefCountedThreadSafe<ExternalMetrics> {
   FRIEND_TEST(ExternalMetricsTest, ParseExternalMetricsFile);
   friend class base::RefCountedThreadSafe<ExternalMetrics>;
+  friend class scoped_ptr<ExternalMetrics>;
 
  public:
   ExternalMetrics() {}
