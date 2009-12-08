@@ -11,10 +11,20 @@ import os
 import re
 import sys
 import time
-import path_utils
 
-sys.path.append(path_utils.PathFromBase('third_party'))
-import simplejson
+#
+# we do this to be able to export the expectations as a JSON file, which
+# we only need in some cases; since we can't always assume we have
+# access to simplejson, we do the best we can.
+try:
+  import simplejson
+except: ImportError:
+  try:
+    import path_utils
+    sys.path.append(path_utils.PathFromBase('third_party'))
+    import simplejson
+  except ImportError:
+    pass
 
 # Test expectation and modifier constants.
 (PASS, FAIL, TEXT, IMAGE, IMAGE_PLUS_TEXT, TIMEOUT, CRASH, SKIP, WONTFIX,
@@ -26,11 +36,12 @@ import simplejson
 class TestExpectations:
   TEST_LIST = "test_expectations.txt"
 
-  def __init__(self, tests, directory, platform, is_debug_mode, is_lint_mode):
+  def __init__(self, tests, directory, platform, is_debug_mode, is_lint_mode,
+      standalone=False):
     """Reads the test expectations files from the given directory."""
     path = os.path.join(directory, self.TEST_LIST)
     self._expected_failures = TestExpectationsFile(path, tests, platform,
-        is_debug_mode, is_lint_mode)
+        is_debug_mode, is_lint_mode, standalone=standalone, base_dir=directory)
 
   # TODO(ojan): Allow for removing skipped tests when getting the list of tests
   # to run, but not when getting metrics.
@@ -45,6 +56,9 @@ class TestExpectations:
             self._expected_failures.GetTestSet(REBASELINE, IMAGE) |
             self._expected_failures.GetTestSet(REBASELINE, TEXT) |
             self._expected_failures.GetTestSet(REBASELINE, IMAGE_PLUS_TEXT))
+
+  def GetOptions(self, test):
+    return self._expected_failures.GetOptions(test)
 
   def GetExpectations(self, test):
     return self._expected_failures.GetExpectations(test)
@@ -209,7 +223,8 @@ class TestExpectationsFile:
 
 
   def __init__(self, path, full_test_list, platform, is_debug_mode,
-      is_lint_mode, expectations_as_str=None, suppress_errors=False):
+      is_lint_mode, expectations_as_str=None, suppress_errors=False,
+      standalone=False, base_dir=None):
     """
     path: The path to the expectation file. An error is thrown if a test is
         listed more than once.
@@ -221,11 +236,16 @@ class TestExpectationsFile:
     expectations_as_str: Contents of the expectations file. Used instead of
         the path. This makes unittesting sane.
     suppress_errors: Whether to suppress lint errors.
+    standalone: Whether we don't have filesystem access to the test files
+    base_dir: "fake" directory to use as the root of the tree if
+        standalone==True
     """
 
     self._path = path
     self._expectations_as_str = expectations_as_str
     self._is_lint_mode = is_lint_mode
+    self._standalone = standalone
+    self._base_dir = base_dir
     self._full_test_list = full_test_list
     self._suppress_errors = suppress_errors
     self._errors = []
@@ -309,6 +329,9 @@ class TestExpectationsFile:
 
   def GetTestsWithTimeline(self, timeline):
     return self._timeline_to_tests[timeline]
+
+  def GetOptions(self, test):
+    return self._test_to_options[test]
 
   def HasModifier(self, test, modifier):
     return test in self._modifier_to_tests[modifier]
@@ -434,6 +457,7 @@ class TestExpectationsFile:
 
     Args:
       line: current line in test expectations file.
+      lineno: current line number of line
       tests: list of tests that need to update..
       platform: which platform option to remove.
 
@@ -540,7 +564,7 @@ class TestExpectationsFile:
       lineno += 1
 
       test_list_path, options, expectations = \
-        self.ParseExpectationsLine(line, lineno)
+          self.ParseExpectationsLine(line, lineno)
       if not expectations:
         continue
 
@@ -560,13 +584,11 @@ class TestExpectationsFile:
             'If it times out indefinitely, then it should be just timeout.',
             test_list_path)
 
-      full_path = os.path.join(path_utils.LayoutTestsDir(test_list_path),
-                               test_list_path)
-      full_path = os.path.normpath(full_path)
+      full_path = self._ExpandPath(test_list_path)
       # WebKit's way of skipping tests is to add a -disabled suffix.
       # So we should consider the path existing if the path or the -disabled
       # version exists.
-      if not os.path.exists(full_path) and not \
+      if not self._standalone and os.path.exists(full_path) and not \
         os.path.exists(full_path + '-disabled'):
         # Log a non fatal error here since you hit this case any time you
         # update test_expectations.txt without syncing the LayoutTests
@@ -620,20 +642,39 @@ class TestExpectationsFile:
     return result
 
   def _ExpandTests(self, test_list_path):
-    # Convert the test specification to an absolute, normalized
-    # path and make sure directories end with the OS path separator.
-    path = os.path.join(path_utils.LayoutTestsDir(test_list_path),
-                        test_list_path)
-    path = os.path.normpath(path)
-    if os.path.isdir(path): path = os.path.join(path, '')
-    # This is kind of slow - O(n*m) - since this is called for all
-    # entries in the test lists. It has not been a performance
-    # issue so far. Maybe we should re-measure the time spent reading
-    # in the test lists?
+    """Converts the list of tests into an absolute, normalized path
+    and ensures directories end with the path separator."""
+    path = self._ExpandPath(test_list_path)
+    if self._standalone:
+      # If we can't check the filesystem to see if this is a directory,
+      # we assume that files w/o an extension are directories. This may or
+      # may not end up biting us.
+      if os.path.splitext(path)[1] == '':
+        path = os.path.join(path, '')
+    else:
+      if os.path.isdir(path): path = os.path.join(path, '')
+      # This is kind of slow - O(n*m) - since this is called for all
+      # entries in the test lists. It has not been a performance
+      # issue so far. Maybe we should re-measure the time spent reading
+      # in the test lists?
     result = []
     for test in self._full_test_list:
       if test.startswith(path): result.append(test)
     return result
+
+  def _ExpandPath(self, path):
+    """Expands a relative path to an absolute path rooted at either the
+    WebKit LayoutTests directory or the chrome layout tests directories."""
+    if self._standalone:
+      base_dir = self._base_dir
+    else:
+      base_dir = path_utils.PathFromBase()
+    if path and path.find("LayoutTests") == -1:
+      full_path = os.path.join(base_dir, 'webkit', 'data', 'layout_tests', path)
+    else:
+      full_path = os.path.join(base_dir, 'third_party', 'WebKit', path)
+    full_path = os.path.normpath(full_path)
+    return full_path
 
   def _AddTests(self, tests, expectations, test_list_path, lineno, modifiers,
                 options):
