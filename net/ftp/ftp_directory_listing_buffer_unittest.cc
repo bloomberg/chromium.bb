@@ -28,6 +28,8 @@ TEST(FtpDirectoryListingBufferTest, Parse) {
     "dir-listing-ls-8",
     "dir-listing-ls-9",
     "dir-listing-ls-10",
+    "dir-listing-ls-11",
+    "dir-listing-ls-12",
     "dir-listing-netware-1",
     "dir-listing-netware-2",
     "dir-listing-vms-1",
