@@ -3,8 +3,41 @@
 <script>
 var globalValue = "I am not 42.";
 
+// Some helper functions that track the focus state of a form on the toolbar.
+var formFocused = false;
+function onFormFocused() {
+  formFocused = true;
+}
+
+function onFormBlurred() {
+  formFocused = false;
+}
+
 window.onload = function() {
   chrome.test.runTests([
+    function showNoFocusShift() {
+      var entryForm = document.getElementById("entryForm").focus();
+      chrome.test.assertTrue(formFocused);
+
+      // Validate that displaying a pop-up with the giveFocus parameter assigned
+      // to false does not touch the focus setting of the input field.
+      var showDetails = {
+        "relativeTo": document.getElementById("anchorHere"),
+        "giveFocus": false
+      };
+
+      // The focus should also remain untouched during closing of the popup.
+      chrome.test.listenOnce(chrome.experimental.popup.onClosed, function(){
+        chrome.test.assertTrue(formFocused);
+      });
+
+      chrome.experimental.popup.show("toolband_popup.html",
+                                     showDetails,
+                                     chrome.test.callbackPass(function() {
+        chrome.test.assertTrue(formFocused);
+        chrome.experimental.extension.getPopupView().close();
+      }));
+    },
     function noPopup() {
       chrome.test.assertTrue(
           undefined === chrome.experimental.extension.getPopupView(),
@@ -14,7 +47,7 @@ window.onload = function() {
     function noParentWindow() {
       chrome.test.assertTrue(
           undefined === chrome.experimental.popup.getParentWindow(),
-          "Parent );
+          "Parent window accessible outside of popup view.");
       chrome.test.succeed();
     },
     function show() {
@@ -39,7 +72,6 @@ window.onload = function() {
       chrome.test.assertEq(42, popupView.theAnswer());
       chrome.test.succeed();
     },
-
     function accessHost() {
       var popupView = chrome.experimental.extension.getPopupView();
       chrome.test.assertTrue(popupView != undefined,
@@ -52,13 +84,12 @@ window.onload = function() {
       chrome.test.assertEq(42, globalValue);
       chrome.test.succeed();
     },
-
     function closePopup() {
       chrome.test.listenOnce(chrome.experimental.popup.onClosed, function(){
         // TODO(twiz):  getPopupView() should return undefined, but, due to
-        // shut-down races, it is sometimes still defined.  See BUG
-        //chrome.test.assertTrue(
-        //    chrome.experimental.extension.getPopupView() == undefined);
+        // shut-down races, it is sometimes still defined.  See BUG 27658.
+        // chrome.test.assertTrue(
+        //     chrome.experimental.extension.getPopupView() == undefined);
       });
       chrome.experimental.extension.getPopupView().close();
     }
@@ -70,5 +101,8 @@ window.onload = function() {
 <div>
 <span id="anchorHere">TEST</span>
 </div>
+<form>
+<input id="entryForm" onfocus="onFormFocused();" onblur="onFormBlurred();"/>
+</form>
 </body>
 </html>

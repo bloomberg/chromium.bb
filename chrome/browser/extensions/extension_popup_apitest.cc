@@ -10,5 +10,7 @@
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_Popup) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExtensionToolstrips);
   ASSERT_TRUE(RunExtensionTest("popup_api")) << message_;
 }

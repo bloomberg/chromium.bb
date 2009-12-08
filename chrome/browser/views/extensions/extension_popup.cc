@@ -29,12 +29,14 @@ const int ExtensionPopup::kMaxHeight = 600;
 ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                Widget* frame,
                                const gfx::Rect& relative_to,
-                               BubbleBorder::ArrowLocation arrow_location)
+                               BubbleBorder::ArrowLocation arrow_location,
+                               bool activate_on_show)
     : BrowserBubble(host->view(),
                     frame,
                     gfx::Point()),
       relative_to_(relative_to),
-      extension_host_(host) {
+      extension_host_(host),
+      activate_on_show_(activate_on_show) {
   host->view()->SetContainer(this);
   registrar_.Add(this,
                  NotificationType::EXTENSION_HOST_DID_STOP_LOADING,
@@ -56,6 +58,10 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
   border_view_->set_background(new BubbleBackground(border_));
   border_view_->set_border(border_);
   border_widget_->SetContentsView(border_view_);
+
+  // Ensure that the popup contents are always displayed ontop of the border
+  // widget.
+  border_widget_->MoveAbove(popup_);
 }
 
 ExtensionPopup::~ExtensionPopup() {
@@ -68,7 +74,7 @@ void ExtensionPopup::Hide() {
   border_widget_->Hide();
 }
 
-void ExtensionPopup::Show() {
+void ExtensionPopup::Show(bool activate) {
   if (visible())
     return;
 
@@ -80,7 +86,7 @@ void ExtensionPopup::Show() {
 
   // Show the border first, then the popup overlaid on top.
   border_widget_->Show();
-  BrowserBubble::Show(true);
+  BrowserBubble::Show(activate);
 }
 
 void ExtensionPopup::ResizeToView() {
@@ -118,7 +124,7 @@ void ExtensionPopup::Observe(NotificationType type,
     // Once we receive did stop loading, the content will be complete and
     // the width will have been computed.  Now it's safe to show.
     if (extension_host_.get() == Details<ExtensionHost>(details).ptr())
-      Show();
+      Show(activate_on_show_);
   } else {
     NOTREACHED() << L"Received unexpected notification";
   }
@@ -138,7 +144,8 @@ void ExtensionPopup::OnExtensionPreferredSizeChanged(ExtensionView* view) {
 ExtensionPopup* ExtensionPopup::Show(
     const GURL& url, Browser* browser,
     const gfx::Rect& relative_to,
-    BubbleBorder::ArrowLocation arrow_location) {
+    BubbleBorder::ArrowLocation arrow_location,
+    bool activate_on_show) {
   ExtensionProcessManager* manager =
       browser->profile()->GetExtensionProcessManager();
   DCHECK(manager);
@@ -149,12 +156,12 @@ ExtensionPopup* ExtensionPopup::Show(
   views::Widget* frame = BrowserView::GetBrowserViewForNativeWindow(
       browser->window()->GetNativeHandle())->GetWidget();
   ExtensionPopup* popup = new ExtensionPopup(host, frame, relative_to,
-                                             arrow_location);
+                                             arrow_location, activate_on_show);
 
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
   if (host->did_stop_loading())
-    popup->Show();
+    popup->Show(activate_on_show);
 
   return popup;
 }

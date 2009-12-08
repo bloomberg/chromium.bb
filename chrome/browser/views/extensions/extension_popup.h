@@ -29,18 +29,20 @@ class ExtensionPopup : public BrowserBubble,
   // by value of |arrow_location| remains fixed during popup resizes.
   // If |arrow_location| is BOTTOM_*, then the popup 'pops up', otherwise
   // the popup 'drops down'.
+  // Pass |activate_on_show| as true to activate the popup window.
   //
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
   static ExtensionPopup* Show(const GURL& url, Browser* browser,
                               const gfx::Rect& relative_to,
-                              BubbleBorder::ArrowLocation arrow_location);
+                              BubbleBorder::ArrowLocation arrow_location,
+                              bool activate_on_show);
 
   ExtensionHost* host() const { return extension_host_.get(); }
 
   // BrowserBubble overrides.
   virtual void Hide();
-  virtual void Show();
+  virtual void Show(bool activate);
   virtual void ResizeToView();
 
   // NotificationObserver overrides.
@@ -63,13 +65,17 @@ class ExtensionPopup : public BrowserBubble,
   ExtensionPopup(ExtensionHost* host,
                  views::Widget* frame,
                  const gfx::Rect& relative_to,
-                 BubbleBorder::ArrowLocation);
+                 BubbleBorder::ArrowLocation arrow_location,
+                 bool activate_on_show);
 
   // The area on the screen that the popup should be positioned relative to.
   gfx::Rect relative_to_;
 
   // The contained host for the view.
   scoped_ptr<ExtensionHost> extension_host_;
+
+  // Flag used to indicate if the pop-up should be activated upon first display.
+  bool activate_on_show_;
 
   NotificationRegistrar registrar_;
 

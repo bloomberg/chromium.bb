@@ -42,6 +42,8 @@ const wchar_t kWidthKey[] = L"width";
 const wchar_t kHeightKey[] = L"height";
 const wchar_t kTopKey[] = L"top";
 const wchar_t kLeftKey[] = L"left";
+const wchar_t kGiveFocusKey[] = L"giveFocus";
+const wchar_t kDomAnchorKey[] = L"domAnchor";
 
 };  // namespace
 
@@ -81,8 +83,12 @@ bool PopupShowFunction::RunImpl() {
   std::string url_string;
   EXTENSION_FUNCTION_VALIDATE(args->GetString(0, &url_string));
 
+  DictionaryValue* show_details = NULL;
+  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &show_details));
+
   DictionaryValue* dom_anchor = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &dom_anchor));
+  EXTENSION_FUNCTION_VALIDATE(show_details->GetDictionary(kDomAnchorKey,
+                                                          &dom_anchor));
 
   int dom_top, dom_left;
   EXTENSION_FUNCTION_VALIDATE(dom_anchor->GetInteger(kTopKey,
@@ -97,6 +103,13 @@ bool PopupShowFunction::RunImpl() {
                                                      &dom_height));
   EXTENSION_FUNCTION_VALIDATE(dom_top >= 0 && dom_left >= 0 &&
                               dom_width >= 0 && dom_height >= 0);
+
+  // The default behaviour is to give the focus to the pop-up window.
+  bool give_focus = true;
+  if (show_details->HasKey(kGiveFocusKey)) {
+    EXTENSION_FUNCTION_VALIDATE(show_details->GetBoolean(kGiveFocusKey,
+                                                         &give_focus));
+  }
 
   GURL url = dispatcher()->url().Resolve(url_string);
   if (!url.is_valid()) {
@@ -127,7 +140,7 @@ bool PopupShowFunction::RunImpl() {
       (NULL != dispatcher()->GetExtensionHost()) ? BubbleBorder::BOTTOM_LEFT :
                                                    BubbleBorder::TOP_LEFT;
   popup_ = ExtensionPopup::Show(url, dispatcher()->GetBrowser(), rect,
-                                arrow_location);
+                                arrow_location, give_focus);
 
   ExtensionPopupHost* popup_host = dispatcher()->GetPopupHost();
   DCHECK(popup_host);

@@ -379,7 +379,8 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     popup_ = ExtensionPopup::Show(browser_action->popup_url(),
                                   toolbar_->browser(),
                                   rect,
-                                  BubbleBorder::TOP_RIGHT);
+                                  BubbleBorder::TOP_RIGHT,
+                                  true);  // Activate the popup window.
     popup_->set_delegate(this);
     popup_button_ = button;
     popup_button_->PopupDidShow();

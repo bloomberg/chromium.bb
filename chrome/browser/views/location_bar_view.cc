@@ -1351,8 +1351,11 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
     gfx::Rect rect = parent->bounds();
     rect.set_x(origin.x());
     rect.set_y(origin.y());
-    popup_ = ExtensionPopup::Show(page_action_->popup_url(), browser, rect,
-                                  BubbleBorder::TOP_RIGHT);
+    popup_ = ExtensionPopup::Show(page_action_->popup_url(),
+                                  browser,
+                                  rect,
+                                  BubbleBorder::TOP_RIGHT,
+                                  true);  // Activate the popup window.
     popup_->set_delegate(this);
   } else {
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(

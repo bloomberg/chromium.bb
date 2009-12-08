@@ -1668,6 +1668,11 @@
                 "additionalProperties": { "type": "any" },
                 "isInstanceOf": "HTMLElement",
                 "description": "A HTML DOM object to which the pop-up's position will be made relative."
+              },
+              "giveFocus": {
+                "type": "boolean",
+                "description": "Pass true to give the focus to the popup window.  The default behaviour is true.",
+                "optional": true
               }
             }
           },

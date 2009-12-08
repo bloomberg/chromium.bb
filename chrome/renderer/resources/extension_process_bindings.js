@@ -425,19 +425,31 @@ var chrome = chrome || {};
         this.definition.parameters[0],
         {
           type: "object",
-          name: "domAnchor",
+          name: "showDetails",
           properties: {
-            top: { type: "integer", minimum: 0 },
-            left: { type: "integer", minimum: 0 },
-            width: { type: "integer", minimum: 0 },
-            height: { type: "integer", minimum: 0 }
+            domAnchor: {
+              type: "object",
+              properties: {
+                top: { type: "integer", minimum: 0 },
+                left: { type: "integer", minimum: 0 },
+                width: { type: "integer", minimum: 0 },
+                height: { type: "integer", minimum: 0 }
+              }
+            },
+            giveFocus: {
+              type: "boolean",
+              optional: true
+            }
           }
         },
         this.definition.parameters[2]
       ];
       return sendRequest(this.name,
                          [url,
-                          getAbsoluteRect(showDetails.relativeTo),
+                          {
+                            domAnchor: getAbsoluteRect(showDetails.relativeTo),
+                            giveFocus: showDetails.giveFocus
+                          },
                           callback],
                          internalSchema);
     }
