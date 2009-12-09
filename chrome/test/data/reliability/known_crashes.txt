@@ -146,3 +146,5 @@ PREFIX: malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::pluginin
 PREFIX: webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::processmessagehelper
 PREFIX: malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write___npapi::pluginstream::trywritetoplugin___
 
+# 29759
+PREFIX: webcore::imageeventsender::dispatchpendingevents
