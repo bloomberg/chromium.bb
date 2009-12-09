@@ -87,6 +87,8 @@ class SimpleMenuModel : public MenuModel {
   // returns what it's passed.
   virtual int FlipIndex(int index) const { return index; }
 
+  Delegate* delegate() { return delegate_; }
+
  private:
   struct Item {
     int command_id;

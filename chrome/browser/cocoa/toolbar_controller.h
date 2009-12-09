@@ -25,7 +25,10 @@ class CommandUpdater;
 class LocationBar;
 class LocationBarViewMac;
 @class MenuButton;
+@class MenuController;
+class PageMenuModel;
 namespace ToolbarControllerInternal {
+class MenuDelegate;
 class PrefObserverBridge;
 }
 class Profile;
@@ -51,6 +54,13 @@ class ToolbarModel;
   scoped_nsobject<BackForwardMenuController> backMenuController_;
   scoped_nsobject<BackForwardMenuController> forwardMenuController_;
   scoped_nsobject<BrowserActionsController> browserActionsController_;
+
+  // Lazily-instantiated model, controller, and delegate for the menu on the
+  // page button. If it's visible, these will be non-null, but they are not
+  // reaped when the button is hidden once it is initially shown.
+  scoped_ptr<PageMenuModel> pageMenuModel_;
+  scoped_nsobject<MenuController> pageMenuController_;
+  scoped_ptr<ToolbarControllerInternal::MenuDelegate> pageMenuDelegate_;
 
   // Used for monitoring the optional toolbar button prefs.
   scoped_ptr<ToolbarControllerInternal::PrefObserverBridge> prefObserver_;
@@ -86,7 +96,6 @@ class ToolbarModel;
   IBOutlet MenuButton* pageButton_;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
-  IBOutlet NSMenu* encodingMenu_;
   IBOutlet NSView* browserActionContainerView_;
 }
 

@@ -11,6 +11,7 @@
 #include "base/gfx/rect.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/bubble_positioner.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
@@ -21,7 +22,9 @@
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
 #import "chrome/browser/cocoa/menu_button.h"
+#import "chrome/browser/cocoa/menu_controller.h"
 #import "chrome/browser/cocoa/toolbar_view.h"
+#include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/toolbar_model.h"
@@ -81,11 +84,40 @@ class BubblePositionerMac : public BubblePositioner {
 
 namespace ToolbarControllerInternal {
 
+// A C++ delegate that handles enabling/disabling menu items and handling when
+// a menu command is chosen.
+class MenuDelegate : public menus::SimpleMenuModel::Delegate {
+ public:
+  explicit MenuDelegate(Browser* browser)
+      : browser_(browser) { }
+
+  // Overridden from menus::SimpleMenuModel::Delegate
+  virtual bool IsCommandIdChecked(int command_id) const {
+    if (command_id == IDC_SHOW_BOOKMARK_BAR) {
+      return browser_->profile()->GetPrefs()->GetBoolean(
+          prefs::kShowBookmarkBar);
+    }
+    return false;
+  }
+  virtual bool IsCommandIdEnabled(int command_id) const {
+    return browser_->command_updater()->IsCommandEnabled(command_id);
+  }
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) { return false; }
+  virtual void ExecuteCommand(int command_id) {
+    browser_->ExecuteCommand(command_id);
+  }
+
+ private:
+  Browser* browser_;
+};
+
 // A C++ class registered for changes in preferences. Bridges the
 // notification back to the ToolbarController.
 class PrefObserverBridge : public NotificationObserver {
  public:
-  PrefObserverBridge(ToolbarController* controller)
+  explicit PrefObserverBridge(ToolbarController* controller)
       : controller_(controller) { }
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -221,8 +253,6 @@ class PrefObserverBridge : public NotificationObserver {
   // We want a dynamic tooltip on the go button, so tell the go button to ask
   // use for the tooltip
   [goButton_ addToolTipRect:[goButton_ bounds] owner:self userData:nil];
-
-  EncodingMenuControllerDelegate::BuildEncodingMenu(profile_, encodingMenu_);
 }
 
 - (void)mouseExited:(NSEvent*)theEvent {
@@ -389,7 +419,7 @@ class PrefObserverBridge : public NotificationObserver {
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
             homeButton_, starButton_, goButton_, pageButton_, wrenchButton_,
-            locationBar_, encodingMenu_, browserActionContainerView_, nil];
+            locationBar_, browserActionContainerView_, nil];
 }
 
 // Moves |rect| to the right by |delta|, keeping the right side fixed by
@@ -433,6 +463,20 @@ class PrefObserverBridge : public NotificationObserver {
   [homeButton_ setHidden:hide];
 }
 
+// Lazily install the menus on the page and wrench buttons. Calling this
+// repeatedly is inexpensive so it can be done every time the buttons are shown.
+- (void)installPageWrenchMenus {
+  if (pageMenuModel_.get())
+    return;
+  pageMenuDelegate_.reset(
+      new ToolbarControllerInternal::MenuDelegate(browser_));
+  pageMenuModel_.reset(new PageMenuModel(pageMenuDelegate_.get(), browser_));
+  pageMenuController_.reset(
+      [[MenuController alloc] initWithModel:pageMenuModel_.get()
+                              useWithPopUpButtonCell:YES]);
+  [pageButton_ setAttachedMenu:[pageMenuController_ menu]];
+}
+
 // Show or hide the page and wrench buttons based on the pref.
 - (void)showOptionalPageWrenchButtons {
   // Ignore this message if only showing the URL bar.
@@ -440,6 +484,8 @@ class PrefObserverBridge : public NotificationObserver {
     return;
   DCHECK([pageButton_ isHidden] == [wrenchButton_ isHidden]);
   BOOL hide = showPageOptionButtons_.GetValue() ? NO : YES;
+  if (!hide)
+    [self installPageWrenchMenus];
   if (hide == [pageButton_ isHidden])
     return;  // Nothing to do, view state matches pref state.
 

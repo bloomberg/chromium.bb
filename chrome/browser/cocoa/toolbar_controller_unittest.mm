@@ -44,7 +44,7 @@ class ToolbarControllerTest : public CocoaTest {
   // |-toolbarViews| method.
   enum {
     kBackIndex, kForwardIndex, kReloadIndex, kHomeIndex, kStarIndex, kGoIndex,
-    kPageIndex, kWrenchIndex, kLocationIndex, kEncodingMenuIndex,
+    kPageIndex, kWrenchIndex, kLocationIndex,
     kBrowserActionContainerViewIndex
   };
 
@@ -281,15 +281,6 @@ TEST_F(ToolbarControllerTest, HoverButtonForEvent) {
   scoped_nsobject<GradientButtonCell> cell([[GradientButtonCell alloc] init]);
   [button setCell:cell.get()];
   EXPECT_TRUE([bar_ hoverButtonForEvent:nil]);
-}
-
-TEST_F(ToolbarControllerTest, PopulateEncodingMenu) {
-  NSMenu* encodings = [[bar_ toolbarViews] objectAtIndex:kEncodingMenuIndex];
-
-  // Can't check item strings because of localization, but the nib has zero
-  // items so check that we at least populated the menu with something at
-  // startup.
-  EXPECT_NE(0, [encodings numberOfItems]);
 }
 
 }  // namespace

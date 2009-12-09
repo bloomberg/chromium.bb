@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/page_menu_model.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/browser/views/accessible_toolbar_view.h"
 #include "chrome/browser/views/go_button.h"
@@ -31,39 +32,6 @@ class ToolbarStarToggle;
 namespace views {
 class Menu2;
 }
-
-// A menu model that builds the contents of an encoding menu.
-class EncodingMenuModel : public menus::SimpleMenuModel,
-                          public menus::SimpleMenuModel::Delegate {
- public:
-  explicit EncodingMenuModel(Browser* browser);
-  virtual ~EncodingMenuModel() {}
-
-  // Overridden from menus::SimpleMenuModel::Delegate:
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
-
- private:
-  void Build();
-
-  Browser* browser_;
-
-  DISALLOW_COPY_AND_ASSIGN(EncodingMenuModel);
-};
-
-class ZoomMenuModel : public menus::SimpleMenuModel {
- public:
-  explicit ZoomMenuModel(menus::SimpleMenuModel::Delegate* delegate);
-  virtual ~ZoomMenuModel() {}
-
- private:
-  void Build();
-
-  DISALLOW_COPY_AND_ASSIGN(ZoomMenuModel);
-};
 
 // The Browser Window's toolbar.
 class ToolbarView : public AccessibleToolbarView,
@@ -175,12 +143,6 @@ class ToolbarView : public AccessibleToolbarView,
   void RunPageMenu(const gfx::Point& pt);
   void RunAppMenu(const gfx::Point& pt);
 
-  void CreatePageMenu();
-  void CreateZoomMenuContents();
-  void CreateEncodingMenuContents();
-#if defined(OS_WIN)
-  void CreateDevToolsMenuContents();
-#endif
   void CreateAppMenu();
 
   // Types of display mode this toolbar can have.
@@ -228,10 +190,7 @@ class ToolbarView : public AccessibleToolbarView,
   DisplayMode display_mode_;
 
   // The contents of the various menus.
-  scoped_ptr<menus::SimpleMenuModel> page_menu_contents_;
-  scoped_ptr<ZoomMenuModel> zoom_menu_contents_;
-  scoped_ptr<EncodingMenuModel> encoding_menu_contents_;
-  scoped_ptr<menus::SimpleMenuModel> devtools_menu_contents_;
+  scoped_ptr<PageMenuModel> page_menu_model_;
   scoped_ptr<menus::SimpleMenuModel> app_menu_contents_;
 
   // TODO(beng): build these into MenuButton.
