@@ -2286,7 +2286,7 @@ diff -uNr gcc-4.4.2.orig/gcc/gcc.c gcc-4.4.2/gcc/gcc.c
    programname = p;
  
 +#ifdef __CYGWIN__
-+  {/* We must add our own dir to PATH to make cygwin1.dll discoverable */
++  {/* We must add our own dir to PATH to make cygwin1.dll discoverable.
 +    * We need this PATH trick only for programs that exec other programs,
 +    * namely the GCC driver.*/
 +  const char *path;

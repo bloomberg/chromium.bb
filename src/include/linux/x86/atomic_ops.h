@@ -94,7 +94,7 @@ static inline AtomicWord AtomicIncrement(volatile AtomicWord* ptr,
  * so we need to copy the preceding methods for Atomic32.
  */
 
-#if defined(__x86_64__)
+#if defined(__x86_64__) && !defined(__native_client__)
 
 inline Atomic32 CompareAndSwap(volatile Atomic32* ptr,
                                Atomic32 old_value,
