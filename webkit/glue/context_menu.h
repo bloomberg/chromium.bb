@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "base/string_util.h"
 #include "googleurl/src/gurl.h"
+#include "webkit/glue/webmenuitem.h"
+
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 
 // Parameters structure for ViewHostMsg_ContextMenu.
@@ -81,6 +83,8 @@ struct ContextMenuParams {
   // The character encoding of the frame on which the menu is invoked.
   std::string frame_charset;
 
+  std::vector<WebMenuItem> custom_items;
+
   ContextMenuParams() {}
 
   ContextMenuParams(const WebKit::WebContextMenuData& data)
@@ -99,7 +103,10 @@ struct ContextMenuParams {
         is_editable(data.isEditable),
         edit_flags(data.editFlags),
         security_info(data.securityInfo),
-        frame_charset(data.frameEncoding.utf8()) {}
+        frame_charset(data.frameEncoding.utf8()) {
+    for (size_t i = 0; i < data.customItems.size(); ++i)
+      custom_items.push_back(WebMenuItem(data.customItems[i]));
+  }
 };
 
 #endif  // WEBKIT_GLUE_CONTEXT_MENU_H_

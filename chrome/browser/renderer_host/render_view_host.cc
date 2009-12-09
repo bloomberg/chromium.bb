@@ -1757,6 +1757,14 @@ void RenderViewHost::ViewTypeChanged(ViewType::Type type) {
   Send(new ViewMsg_NotifyRenderViewType(routing_id(), type));
 }
 
+void RenderViewHost::UpdateBrowserWindowId(int window_id) {
+  Send(new ViewMsg_UpdateBrowserWindowId(routing_id(), window_id));
+}
+
+void RenderViewHost::PerformCustomContextMenuAction(unsigned action) {
+  Send(new ViewMsg_CustomContextMenuAction(routing_id(), action));
+}
+
 void RenderViewHost::OnExtensionPostMessage(
     int port_id, const std::string& message) {
   if (process()->profile()->GetExtensionMessageService()) {
@@ -1776,8 +1784,4 @@ void RenderViewHost::OnAccessibilityFocusChange(int acc_obj_id) {
 
 void RenderViewHost::OnCSSInserted() {
   delegate_->DidInsertCSS();
-}
-
-void RenderViewHost::UpdateBrowserWindowId(int window_id) {
-  Send(new ViewMsg_UpdateBrowserWindowId(routing_id(), window_id));
 }

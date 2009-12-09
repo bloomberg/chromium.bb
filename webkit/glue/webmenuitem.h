@@ -6,27 +6,33 @@
 #define WEBMENUITEM_H_
 
 #include "base/string16.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebPopupMenuInfo.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMenuItemInfo.h"
 
-// Container for information about entries in an HTML select popup menu.
+// Container for information about entries in an HTML select popup menu and
+// custom entries of the context menu.
 struct WebMenuItem {
   enum Type {
-    OPTION    = WebKit::WebPopupMenuInfo::Item::Option,
-    GROUP     = WebKit::WebPopupMenuInfo::Item::Group,
-    SEPARATOR = WebKit::WebPopupMenuInfo::Item::Separator
+    OPTION    = WebKit::WebMenuItemInfo::Option,
+    CHECKABLE_OPTION = WebKit::WebMenuItemInfo::CheckableOption,
+    GROUP     = WebKit::WebMenuItemInfo::Group,
+    SEPARATOR = WebKit::WebMenuItemInfo::Separator
   };
 
   string16 label;
   Type type;
+  unsigned action;
   bool enabled;
+  bool checked;
 
-  WebMenuItem() : type(OPTION), enabled(false) {
+  WebMenuItem() : type(OPTION), action(0), enabled(false), checked(false) {
   }
 
-  WebMenuItem(const WebKit::WebPopupMenuInfo::Item& item)
+  WebMenuItem(const WebKit::WebMenuItemInfo& item)
       : label(item.label),
         type(static_cast<Type>(item.type)),
-        enabled(item.enabled) {
+        action(item.action),
+        enabled(item.enabled),
+        checked(item.checked) {
   }
 };
 

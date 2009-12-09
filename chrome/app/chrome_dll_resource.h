@@ -245,3 +245,7 @@
 #define IDC_HISTORY_MENU                46000     // OSX only
 #define IDC_HISTORY_MENU_VISITED        46100     // OSX only
 #define IDC_HISTORY_MENU_CLOSED         46200     // OSX only
+
+// Custom context menu entries
+#define IDC_CONTENT_CONTEXT_CUSTOM_FIRST 47000
+#define IDC_CONTENT_CONTEXT_CUSTOM_LAST  48000

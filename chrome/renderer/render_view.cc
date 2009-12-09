@@ -505,9 +505,11 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
-                        OnSetEditCommandsForNextKeyEvent);
+                        OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCode,
                         OnExecuteCode)
+    IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
+                        OnCustomContextMenuAction)
 
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(RenderWidget::OnMessageReceived(message))
@@ -3165,6 +3167,10 @@ void RenderView::OnUpdateWebPreferences(const WebPreferences& prefs) {
 
 void RenderView::OnSetAltErrorPageURL(const GURL& url) {
   alternate_error_page_url_ = url;
+}
+
+void RenderView::OnCustomContextMenuAction(unsigned action) {
+  webview()->performCustomContextMenuAction(action);
 }
 
 void RenderView::OnInstallMissingPlugin() {

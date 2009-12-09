@@ -674,6 +674,9 @@ class RenderView : public RenderWidget,
   // accordingly, etc.).
   void OnSetActive(bool active);
 
+  // Execute custom context menu action.
+  void OnCustomContextMenuAction(unsigned action);
+
   // Exposes the DOMAutomationController object that allows JS to send
   // information to the browser process.
   void BindDOMAutomationController(WebKit::WebFrame* webframe);

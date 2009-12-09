@@ -7,6 +7,8 @@
 
 #include <string>
 
+#include "ContextMenuSelectionHandler.h"
+
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
@@ -17,6 +19,7 @@
 #include "webkit/glue/devtools/devtools_rpc.h"
 
 namespace WebCore {
+class ContextMenuItem;
 class Node;
 class Page;
 class String;
@@ -62,11 +65,44 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
       const WebKit::WebDevToolsMessageData& data);
 
  private:
+  class MenuSelectionHandler : public WebCore::ContextMenuSelectionHandler {
+   public:
+    static PassRefPtr<MenuSelectionHandler> create(
+        WebDevToolsFrontendImpl* frontend_host) {
+      return adoptRef(new MenuSelectionHandler(frontend_host));
+    }
+
+    virtual ~MenuSelectionHandler() {}
+
+    void disconnect() { frontend_host_ = 0; }
+
+    virtual void contextMenuItemSelected(WebCore::ContextMenuItem* item) {
+      if (frontend_host_)
+        frontend_host_->ContextMenuItemSelected(item);
+    }
+
+    virtual void contextMenuCleared() {
+      if (frontend_host_)
+        frontend_host_->ContextMenuCleared();
+    }
+
+   private:
+    MenuSelectionHandler(WebDevToolsFrontendImpl* frontend_host)
+          : frontend_host_(frontend_host) {}
+    WebDevToolsFrontendImpl* frontend_host_;
+  };
+
   void AddResourceSourceToFrame(int resource_id,
                                 String mime_type,
                                 WebCore::Node* frame);
 
   void ExecuteScript(const Vector<String>& v);
+  void DispatchOnWebInspector(const String& method, const String& param);
+
+  friend class MenuSelectionHandler;
+  void ContextMenuItemSelected(WebCore::ContextMenuItem* menu_item);
+  void ContextMenuCleared();
+
   static v8::Handle<v8::Value> JsReset(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsAddSourceToFrame(const v8::Arguments& args);
   static v8::Handle<v8::Value> JsAddResourceSourceToFrame(
@@ -93,6 +129,8 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
       const v8::Arguments& args);
   static v8::Handle<v8::Value> JsWindowUnloading(
       const v8::Arguments& args);
+  static v8::Handle<v8::Value> JsShowContextMenu(
+      const v8::Arguments& args);
 
   WebKit::WebViewImpl* web_view_impl_;
   WebKit::WebDevToolsFrontendClient* client_;
@@ -105,6 +143,7 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   Vector<Vector<String> > pending_incoming_messages_;
   OwnPtr<BoundObject> dev_tools_host_;
   OwnPtr<ToolsAgentNativeDelegateImpl> tools_agent_native_delegate_impl_;
+  RefPtr<MenuSelectionHandler> menu_selection_handler_;
 };
 
 #endif  // WEBKIT_GLUE_WEBDEVTOOLSFRONTEND_IMPL_H_

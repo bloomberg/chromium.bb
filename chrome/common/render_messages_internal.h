@@ -865,6 +865,9 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_CONTROL1(ViewMsg_SpellChecker_EnableAutoSpellCorrect,
                        bool /* enable */)
 
+  // Executes custom context menu action that was provided from WebKit.
+  IPC_MESSAGE_ROUTED1(ViewMsg_CustomContextMenuAction,
+                      unsigned /* action */)
 IPC_END_MESSAGES(View)
 
 

@@ -76,6 +76,7 @@ class RenderViewContextMenu {
   Profile* profile_;
 
  private:
+  bool AppendCustomItems();
   void AppendDeveloperItems();
   void AppendLinkItems();
   void AppendImageItems();

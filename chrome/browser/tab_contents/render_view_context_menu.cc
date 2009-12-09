@@ -32,6 +32,7 @@
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
+#include "webkit/glue/webmenuitem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
 
@@ -59,6 +60,11 @@ void RenderViewContextMenu::Init() {
 void RenderViewContextMenu::InitMenu() {
   bool has_link = !params_.link_url.is_empty();
   bool has_selection = !params_.selection_text.empty();
+
+  if (AppendCustomItems()) {
+    AppendDeveloperItems();
+    return;
+  }
 
   // When no special node or text is selected and selection has no link,
   // show page items.
@@ -103,6 +109,17 @@ void RenderViewContextMenu::InitMenu() {
     AppendSearchProvider();
 
   AppendDeveloperItems();
+}
+
+bool RenderViewContextMenu::AppendCustomItems() {
+  std::vector<WebMenuItem>& custom_items = params_.custom_items;
+  for (size_t i = 0; i < custom_items.size(); ++i) {
+    DCHECK(IDC_CONTENT_CONTEXT_CUSTOM_FIRST + custom_items[i].action <
+        IDC_CONTENT_CONTEXT_CUSTOM_LAST);
+    AppendMenuItem(custom_items[i].action + IDC_CONTENT_CONTEXT_CUSTOM_FIRST,
+                   custom_items[i].label);
+  }
+  return custom_items.size() > 0;
 }
 
 void RenderViewContextMenu::AppendDeveloperItems() {
@@ -317,6 +334,18 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     return profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
   }
 
+  // Process custom actions range.
+  if ((id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST) &&
+      (id < IDC_CONTENT_CONTEXT_CUSTOM_LAST)) {
+    unsigned action = id - IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
+    for (size_t i = 0; i < params_.custom_items.size(); ++i) {
+      if (params_.custom_items[i].action == action)
+        return params_.custom_items[i].enabled;
+    }
+    NOTREACHED();
+    return false;
+  }
+
   switch (id) {
     case IDS_CONTENT_CONTEXT_BACK:
       return source_tab_contents_->controller().CanGoBack();
@@ -506,7 +535,15 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
           profile_->GetPrefs(), NULL);
       dictionary_language.SetValue(ASCIIToWide(languages[language_number]));
     }
+    return;
+  }
 
+  // Process custom actions range.
+  if ((id >= IDC_CONTENT_CONTEXT_CUSTOM_FIRST) &&
+      (id < IDC_CONTENT_CONTEXT_CUSTOM_LAST)) {
+    unsigned action = id - IDC_CONTENT_CONTEXT_CUSTOM_FIRST;
+    source_tab_contents_->render_view_host()->
+        PerformCustomContextMenuAction(action);
     return;
   }
 

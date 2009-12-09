@@ -6,8 +6,11 @@
 
 #include <string>
 
+#include "ContextMenuController.h"
+#include "ContextMenuItem.h"
 #include "Document.h"
 #include "DOMWindow.h"
+#include "Event.h"
 #include "Frame.h"
 #include "InspectorBackend.h"
 #include "InspectorController.h"
@@ -19,6 +22,7 @@
 #include "Settings.h"
 #include "V8Binding.h"
 #include "V8CustomBinding.h"
+#include "V8DOMWrapper.h"
 #include "V8Proxy.h"
 #include "V8Utilities.h"
 #include <wtf/OwnPtr.h>
@@ -131,6 +135,8 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       client_(client),
       application_locale_(application_locale),
       loaded_(false) {
+  menu_selection_handler_ = MenuSelectionHandler::create(this);
+
   WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
   v8::HandleScope scope;
   v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
@@ -204,10 +210,14 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
   dev_tools_host_->AddProtoFunction(
       "windowUnloading",
       WebDevToolsFrontendImpl::JsWindowUnloading);
+  dev_tools_host_->AddProtoFunction(
+      "showContextMenu",
+      WebDevToolsFrontendImpl::JsShowContextMenu);
   dev_tools_host_->Build();
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
+  menu_selection_handler_->disconnect();
 }
 
 void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
@@ -274,6 +284,30 @@ void WebDevToolsFrontendImpl::ExecuteScript(const Vector<String>& v) {
   function->Call(frame_context->Global(), 5, args);
 }
 
+void WebDevToolsFrontendImpl::DispatchOnWebInspector(
+    const String& methodName, const String& param) {
+  WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
+  v8::HandleScope scope;
+  v8::Handle<v8::Context> frame_context = V8Proxy::context(frame->frame());
+  v8::Context::Scope context_scope(frame_context);
+
+  v8::Handle<v8::Value> web_inspector =
+      frame_context->Global()->Get(v8::String::New("WebInspector"));
+  ASSERT(web_inspector->IsObject());
+  v8::Handle<v8::Object> web_inspector_obj =
+      v8::Handle<v8::Object>::Cast(web_inspector);
+
+  v8::Handle<v8::Value> method =
+      web_inspector_obj->Get(ToV8String(methodName));
+  ASSERT(method->IsFunction());
+  v8::Handle<v8::Function> method_func = v8::Handle<v8::Function>::Cast(method);
+  v8::Handle<v8::Value> args[] = {
+    ToV8String(param)
+  };
+  method_func->Call(frame_context->Global(), 1, args);
+}
+
+
 void WebDevToolsFrontendImpl::SendRpcMessage(const String& class_name,
                                            const String& method_name,
                                            const String& param1,
@@ -285,6 +319,17 @@ void WebDevToolsFrontendImpl::SendRpcMessage(const String& class_name,
       webkit_glue::StringToWebString(param1),
       webkit_glue::StringToWebString(param2),
       webkit_glue::StringToWebString(param3));
+}
+
+void WebDevToolsFrontendImpl::ContextMenuItemSelected(
+    ContextMenuItem* item) {
+  int item_number = item->action() - ContextMenuItemBaseCustomTag;
+  DispatchOnWebInspector("contextMenuItemSelected",
+                         String::number(item_number));
+}
+
+void WebDevToolsFrontendImpl::ContextMenuCleared() {
+  DispatchOnWebInspector("contextMenuCleared", "");
 }
 
 // static
@@ -445,14 +490,12 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerCommand(
 // static
 v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsSetting(
     const v8::Arguments& args) {
-  //TODO(pfeldman): Implement this.
   return v8::Undefined();
 }
 
 // static
 v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsSetSetting(
     const v8::Arguments& args) {
-  //TODO(pfeldman): Implement this.
   return v8::Undefined();
 }
 
@@ -469,5 +512,52 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsDebuggerPauseScript(
 v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsWindowUnloading(
     const v8::Arguments& args) {
   //TODO(pfeldman): Implement this.
+  return v8::Undefined();
+}
+
+// static
+v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsShowContextMenu(
+    const v8::Arguments& args) {
+
+  if (args.Length() < 2)
+    return v8::Undefined();
+
+  v8::Local<v8::Object> event_wrapper = v8::Local<v8::Object>::Cast(args[0]);
+  if (V8DOMWrapper::domWrapperType(event_wrapper) != V8ClassIndex::EVENT)
+    return v8::Undefined();
+
+  Event* event = V8DOMWrapper::convertDOMWrapperToNative<Event>(event_wrapper);
+  if (!args[1]->IsArray())
+    return v8::Undefined();
+
+  v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(args[1]);
+  Vector<ContextMenuItem> items;
+
+  for (size_t i = 0; i < array->Length(); ++i) {
+    v8::Local<v8::Object> item = v8::Local<v8::Object>::Cast(
+        array->Get(v8::Integer::New(i)));
+    v8::Local<v8::Value> label = item->Get(v8::String::New("label"));
+    v8::Local<v8::Value> id = item->Get(v8::String::New("id"));
+    if (label->IsUndefined() || id->IsUndefined()) {
+      items.append(ContextMenuItem(SeparatorType,
+                                   ContextMenuItemTagNoAction,
+                                   String()));
+    } else {
+      ContextMenuAction typedId = static_cast<ContextMenuAction>(
+          ContextMenuItemBaseCustomTag + id->ToInt32()->Value());
+      items.append(ContextMenuItem(ActionType,
+                                   typedId,
+                                   toWebCoreStringWithNullCheck(label)));
+    }
+  }
+
+  WebDevToolsFrontendImpl* frontend = static_cast<WebDevToolsFrontendImpl*>(
+      v8::External::Cast(*args.Data())->Value());
+
+  ContextMenuController* menu_controller = frontend->web_view_impl_->page()->
+      contextMenuController();
+  menu_controller->showContextMenu(event,
+                                   items,
+                                   frontend->menu_selection_handler_);
   return v8::Undefined();
 }

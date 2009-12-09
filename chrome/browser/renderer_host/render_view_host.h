@@ -438,6 +438,9 @@ class RenderViewHost : public RenderWidgetHost,
   // Tell renderer which browser window it is being attached to.
   void UpdateBrowserWindowId(int window_id);
 
+  // Tell render view that custom context action has been selected.
+  void PerformCustomContextMenuAction(unsigned action);
+
  protected:
   // RenderWidgetHost protected overrides.
   virtual bool ShouldSendToRenderer(const NativeWebKeyboardEvent& event);

@@ -951,6 +951,7 @@ struct ParamTraits<ContextMenuParams> {
     WriteParam(m, p.edit_flags);
     WriteParam(m, p.security_info);
     WriteParam(m, p.frame_charset);
+    WriteParam(m, p.custom_items);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -970,7 +971,8 @@ struct ParamTraits<ContextMenuParams> {
       ReadParam(m, iter, &p->is_editable) &&
       ReadParam(m, iter, &p->edit_flags) &&
       ReadParam(m, iter, &p->security_info) &&
-      ReadParam(m, iter, &p->frame_charset);
+      ReadParam(m, iter, &p->frame_charset) &&
+      ReadParam(m, iter, &p->custom_items);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<ContextMenuParams>");
@@ -2002,12 +2004,16 @@ struct ParamTraits<WebMenuItem> {
     WriteParam(m, p.label);
     WriteParam(m, p.type);
     WriteParam(m, p.enabled);
+    WriteParam(m, p.checked);
+    WriteParam(m, p.action);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
         ReadParam(m, iter, &p->label) &&
         ReadParam(m, iter, &p->type) &&
-        ReadParam(m, iter, &p->enabled);
+        ReadParam(m, iter, &p->enabled) &&
+        ReadParam(m, iter, &p->checked) &&
+        ReadParam(m, iter, &p->action);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -2016,6 +2022,10 @@ struct ParamTraits<WebMenuItem> {
     LogParam(p.type, l);
     l->append(L", ");
     LogParam(p.enabled, l);
+    l->append(L", ");
+    LogParam(p.checked, l);
+    l->append(L", ");
+    LogParam(p.action, l);
     l->append(L")");
   }
 };
