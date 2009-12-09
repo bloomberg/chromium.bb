@@ -770,12 +770,12 @@ void TaskManagerModel::OnJobRemoved(URLRequestJob* job) {
 }
 
 void TaskManagerModel::OnJobDone(URLRequestJob* job,
-                                 const URLRequestStatus& status) {
+                                      const URLRequestStatus& status) {
 }
 
 void TaskManagerModel::OnJobRedirect(URLRequestJob* job,
-                                     const GURL& location,
-                                     int status_code) {
+                                          const GURL& location,
+                                          int status_code) {
 }
 
 void TaskManagerModel::OnBytesRead(URLRequestJob* job, int byte_count) {

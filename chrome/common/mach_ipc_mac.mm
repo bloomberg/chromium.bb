@@ -213,10 +213,10 @@ ReceivePort::ReceivePort() {
   if (init_result_ != KERN_SUCCESS)
     return;
 
-  init_result_ = mach_port_insert_right(current_task,
-                                        port_,
-                                        port_,
-                                        MACH_MSG_TYPE_MAKE_SEND);
+  init_result_ =   mach_port_insert_right(current_task,
+                                          port_,
+                                          port_,
+                                          MACH_MSG_TYPE_MAKE_SEND);
 }
 
 //==============================================================================

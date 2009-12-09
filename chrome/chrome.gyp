@@ -521,8 +521,6 @@
         'common/logging_chrome.cc',
         'common/logging_chrome.h',
         'common/main_function_params.h',
-        'common/mach_ipc_mac.h',
-        'common/mach_ipc_mac.mm',
         'common/message_router.cc',
         'common/message_router.h',
         'common/mru_cache.h',

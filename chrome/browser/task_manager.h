@@ -46,15 +46,6 @@ class TaskManager {
     virtual std::wstring GetTitle() const = 0;
     virtual SkBitmap GetIcon() const = 0;
     virtual base::ProcessHandle GetProcess() const = 0;
-#if defined(OS_MACOSX)
-    // TODO(thakis): All the providers need to get these somewhere (child
-    // processes need to IPC them to us via mach IPC at some point).
-    // TODO(thakis): TMM needs to hand this on to ProcessMetrics.
-    // TODO(thakis): ProcessMetrics then needs to call mach data collection apis
-    // if it has the mach ports it needs.
-    virtual mach_port_t GetMachHostPort() const { return 0; };
-    virtual mach_port_t GetMachTaskPort() const { return 0; };
-#endif
 
     virtual bool ReportsCacheStats() const { return false; }
     virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const {
