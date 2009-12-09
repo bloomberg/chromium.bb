@@ -291,7 +291,6 @@ void RenderThread::OnExtensionSetAPIPermissions(
 
   // This is called when starting a new extension page, so start the idle
   // handler ticking.
-  DCHECK(is_extension_process());
   ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayS);
 }
 
