@@ -16,7 +16,6 @@
 #include "views/examples/message_box_example.h"
 #include "views/examples/radio_button_example.h"
 #include "views/examples/scroll_view_example.h"
-#include "views/examples/slider_example.h"
 #include "views/examples/tabbed_pane_example.h"
 #if defined(OS_WIN)
 // TableView and TableView2 are not yet ported to Linux.
@@ -80,7 +79,7 @@ void ExamplesMain::Run() {
   layout->AddView(status_label_);
 
   views::Window* window =
-      views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 750, 300), this);
+      views::Window::CreateChromeWindow(NULL, gfx::Rect(0, 0, 700, 300), this);
 
   examples::TextfieldExample textfield_example(this);
   tabbed_pane->AddTab(textfield_example.GetExampleTitle(),
@@ -123,10 +122,6 @@ void ExamplesMain::Run() {
   examples::WidgetExample widget_example(this);
   tabbed_pane->AddTab(widget_example.GetExampleTitle(),
                       widget_example.GetExampleView());
-
-  examples::SliderExample slider_example(this);
-  tabbed_pane->AddTab(slider_example.GetExampleTitle(),
-                      slider_example.GetExampleView());
 
   window->Show();
   views::AcceleratorHandler accelerator_handler;
