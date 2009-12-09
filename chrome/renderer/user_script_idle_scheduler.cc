@@ -37,11 +37,16 @@ void UserScriptIdleScheduler::Cancel() {
 }
 
 void UserScriptIdleScheduler::MaybeRun() {
-  if (!view_)
+  if (!view_ || has_run())
     return;
+
+  // Note: we must set this before calling OnUserScriptIdleTriggered, because
+  // that may result in a synchronous call back into MaybeRun if there is a
+  // pending task currently in the queue.
+  // http://code.google.com/p/chromium/issues/detail?id=29644
+  has_run_ = true;
 
   DCHECK(frame_);
   view_->OnUserScriptIdleTriggered(frame_);
   Cancel();
-  has_run_ = true;
 }
