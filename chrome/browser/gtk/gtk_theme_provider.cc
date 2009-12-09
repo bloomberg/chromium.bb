@@ -176,6 +176,95 @@ GdkColor GtkThemeProvider::GetBorderColor() const {
   return color;
 }
 
+void GtkThemeProvider::GetScrollbarColors(GdkColor* thumb_active_color,
+                                          GdkColor* thumb_inactive_color,
+                                          GdkColor* track_color,
+                                          bool use_gtk_theme) {
+  if (!use_gtk_theme) {
+    // If using the default non-GTK colors, pick some reasonable choices of
+    // different greys.
+    thumb_active_color->pixel   = 0;
+    thumb_active_color->red     = 64250;
+    thumb_active_color->green   = 63736;
+    thumb_active_color->blue    = 62965;
+    thumb_inactive_color->pixel = 0;
+    thumb_inactive_color->red   = 61680;
+    thumb_inactive_color->green = 60395;
+    thumb_inactive_color->blue  = 58853;
+    track_color->pixel          = 0;
+    track_color->red            = 58339;
+    track_color->green          = 56797;
+    track_color->blue           = 55512;
+    return;
+  }
+
+  // Create window containing scrollbar elements
+  GtkWidget* window    = gtk_window_new(GTK_WINDOW_POPUP);
+  GtkWidget* fixed     = gtk_fixed_new();
+  GtkWidget* scrollbar = gtk_hscrollbar_new(NULL);
+  gtk_container_add(GTK_CONTAINER(window), fixed);
+  gtk_container_add(GTK_CONTAINER(fixed),  scrollbar);
+  gtk_widget_realize(window);
+  gtk_widget_realize(scrollbar);
+
+  // Draw scrollbar thumb part and track into offscreen image
+  int kWidth        = 100;
+  int kHeight       = 20;
+  GtkStyle*  style  = gtk_rc_get_style(scrollbar);
+  GdkPixmap* pm     = gdk_pixmap_new(window->window, kWidth, kHeight, -1);
+  GdkRectangle rect = { 0, 0, kWidth, kHeight };
+  unsigned char data[3*kWidth*kHeight];
+  for (int i = 0; i < 3; ++i) {
+    if (i < 2) {
+      // Thumb part
+      gtk_paint_slider(style, pm,
+                       i == 0 ? GTK_STATE_PRELIGHT : GTK_STATE_NORMAL,
+                       GTK_SHADOW_OUT, &rect, scrollbar, "slider", 0, 0,
+                       kWidth, kHeight, GTK_ORIENTATION_HORIZONTAL);
+    } else {
+      // Track
+      gtk_paint_box(style, pm, GTK_STATE_ACTIVE, GTK_SHADOW_IN, &rect,
+                    scrollbar, "trough-upper", 0, 0, kWidth, kHeight);
+    }
+    GdkPixbuf* pb = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB,
+                                             FALSE, 8, kWidth, kHeight,
+                                             3*kWidth, 0, 0);
+    gdk_pixbuf_get_from_drawable(pb, pm, NULL, 0, 0, 0, 0, kWidth, kHeight);
+
+    // Sample pixels
+    int components[3] = { 0 };
+    for (int y = 2; y < kHeight-2; ++y) {
+      for (int c = 0; c < 3; ++c) {
+        // Sample a vertical slice of pixels at about one-thirds from the
+        // left edge. This allows us to avoid any fixed graphics that might be
+        // located at the edges or in the center of the scrollbar.
+        // Each pixel is made up of a red, green, and blue component; taking up
+        // a total of three bytes.
+        components[c] += data[3*(kWidth/3 + y*kWidth) + c];
+      }
+    }
+    GdkColor* color = i == 0 ? thumb_active_color :
+                      i == 1 ? thumb_inactive_color :
+                               track_color;
+    color->pixel = 0;
+    // We sampled pixels across the full height of the image, ignoring a two
+    // pixel border. In some themes, the border has a completely different
+    // color which we do not want to factor into our average color computation.
+    //
+    // We now need to scale the colors from the 0..255 range, to the wider
+    // 0..65535 range, and we need to actually compute the average color; so,
+    // we divide by the total number of pixels in the sample.
+    color->red   = components[0] * 65535 / (255*(kHeight-4));
+    color->green = components[1] * 65535 / (255*(kHeight-4));
+    color->blue  = components[2] * 65535 / (255*(kHeight-4));
+
+    g_object_unref(pb);
+  }
+  g_object_unref(pm);
+
+  gtk_widget_destroy(window);
+}
+
 CairoCachedSurface* GtkThemeProvider::GetSurfaceNamed(
     int id, GtkWidget* widget_on_display) {
   GdkDisplay* display = gtk_widget_get_display(widget_on_display);

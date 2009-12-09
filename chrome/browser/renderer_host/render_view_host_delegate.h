@@ -528,7 +528,7 @@ class RenderViewHostDelegate {
 
   // Return a dummy RendererPreferences object that will be used by the renderer
   // associated with the owning RenderViewHost.
-  virtual RendererPreferences GetRendererPrefs() const = 0;
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const = 0;
 
   // Returns a WebPreferences object that will be used by the renderer
   // associated with the owning render view host.

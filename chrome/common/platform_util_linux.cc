@@ -8,8 +8,8 @@
 
 #include "base/file_util.h"
 #include "base/process_util.h"
-#include "base/singleton.h"
 #include "base/string_util.h"
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/process_watcher.h"
 #include "googleurl/src/gurl.h"
@@ -86,16 +86,6 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   gtk_window_set_title(GTK_WINDOW(dialog), UTF16ToUTF8(title).c_str());
   g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   gtk_widget_show_all(dialog);
-}
-
-RendererPreferences GetInitedRendererPreferences() {
-  RendererPreferences* prefs = Singleton<RendererPreferences>::get();
-  static bool inited = false;
-  if (!inited) {
-    gtk_util::InitRendererPrefsFromGtkSettings(prefs);
-    inited = true;
-  }
-  return *prefs;
 }
 
 }  // namespace platform_util

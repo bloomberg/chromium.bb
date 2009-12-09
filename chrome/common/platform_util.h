@@ -7,7 +7,6 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/string16.h"
-#include "chrome/common/renderer_preferences.h"
 
 class FilePath;
 class GURL;
@@ -44,8 +43,6 @@ bool IsVisible(gfx::NativeView view);
 void SimpleErrorBox(gfx::NativeWindow parent,
                     const string16& title,
                     const string16& message);
-
-RendererPreferences GetInitedRendererPreferences();
 
 }
 
