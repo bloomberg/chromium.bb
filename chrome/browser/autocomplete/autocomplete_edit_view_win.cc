@@ -617,26 +617,6 @@ void AutocompleteEditViewWin::SetUserText(const std::wstring& text,
 
 void AutocompleteEditViewWin::SetWindowTextAndCaretPos(const std::wstring& text,
                                                        size_t caret_pos) {
-  HIMC imm_context = ImmGetContext(m_hWnd);
-  if (imm_context) {
-    // In Windows Vista, SetWindowText() automatically cancels any ongoing
-    // IME composition, and updates the text of the underlying edit control.
-    // In Windows XP, however, SetWindowText() gets applied to the IME
-    // composition string if it exists, and doesn't update the underlying edit
-    // control. To avoid this, we force the IME to cancel any outstanding
-    // compositions here.  This is harmless in Vista and in cases where the IME
-    // isn't composing.
-
-    // NOTE: We MUST ignore messages like WM_IME_COMPOSITION that may be sent as
-    // a result of doing this.  Until the SetWindowText() call below, the
-    // underlying edit (on XP) has out-of-date text in it; for problems this can
-    // cause, see OnImeComposition().
-    ignore_ime_messages_ = true;
-    ImmNotifyIME(imm_context, NI_COMPOSITIONSTR, CPS_CANCEL, 0);
-    ImmReleaseContext(m_hWnd, imm_context);
-    ignore_ime_messages_ = false;
-  }
-
   SetWindowText(text.c_str());
   PlaceCaretAt(caret_pos);
 }
@@ -803,9 +783,6 @@ bool AutocompleteEditViewWin::OnInlineAutocompleteTextMaybeChanged(
     return false;
 
   ScopedFreeze freeze(this, GetTextObjectModel());
-  // NOTE: We don't need the IME composition hack in SetWindowTextAndCaretPos()
-  // here, because UpdatePopup() disables inline autocomplete when a
-  // composition is in progress, thus preventing us from reaching this code.
   SetWindowText(display_text.c_str());
   // Set a reversed selection to keep the caret in the same position, which
   // avoids scrolling the user's text.
@@ -1716,6 +1693,20 @@ void AutocompleteEditViewWin::OnSetFocus(HWND focus_wnd) {
   }
 
   SetMsgHandled(false);
+}
+
+LRESULT AutocompleteEditViewWin::OnSetText(const wchar_t* text) {
+  // Ignore all IME messages while we process this WM_SETTEXT message.
+  // When SetWindowText() is called while an IME is composing text, the IME
+  // calls SendMessage() to send a WM_IME_COMPOSITION message. When we receive
+  // this WM_IME_COMPOSITION message, we update the omnibox and may call
+  // SetWindowText() again. To stop this recursive message-handler call, we
+  // stop updating the omnibox while we process a WM_SETTEXT message.
+  // We wouldn't need to do this update anyway, because either we're in the
+  // middle of updating the omnibox already or the caller of SetWindowText()
+  // is going to update the omnibox next.
+  AutoReset auto_reset_ignore_ime_messages(&ignore_ime_messages_, true);
+  return DefWindowProc(WM_SETTEXT, 0, reinterpret_cast<LPARAM>(text));
 }
 
 void AutocompleteEditViewWin::OnSysChar(TCHAR ch,
