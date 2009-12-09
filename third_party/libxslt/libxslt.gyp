@@ -8,8 +8,13 @@
       ['OS=="linux" or OS=="freebsd"', {'os_include': 'linux'}],
       ['OS=="mac"', {'os_include': 'mac'}],
       ['OS=="win"', {'os_include': 'win32'}],
+      [ 'OS=="linux"', {
+        # Link to system .so since we already use it due to GTK.
+        'use_system_libxslt%': 1,
+      }, {  # OS!="linux"
+        'use_system_libxslt%': 0,
+      }],
     ],
-    'use_system_libxslt%': 0,
   },
   'targets': [
     {
