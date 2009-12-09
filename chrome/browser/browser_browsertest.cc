@@ -106,10 +106,12 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, Title) {
 
 #if defined(OS_MACOSX)
 // http://crbug.com//29424
-#define JavascriptAlertActivatesTab DISABLED_JavascriptAlertActivatesTab
+#define MAYBE_JavascriptAlertActivatesTab DISABLED_JavascriptAlertActivatesTab
+#else
+#define MAYBE_JavascriptAlertActivatesTab JavascriptAlertActivatesTab
 #endif
 
-IN_PROC_BROWSER_TEST_F(BrowserTest, JavascriptAlertActivatesTab) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_JavascriptAlertActivatesTab) {
   GURL url(ui_test_utils::GetTestUrl(L".", L"title1.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED,
@@ -151,12 +153,14 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
 
 #if defined(OS_MACOSX)
 // http://crbug.com//29424
-#define ReloadThenCancelBeforeUnload DISABLED_ReloadThenCancelBeforeUnload
+#define MAYBE_ReloadThenCancelBeforeUnload DISABLED_ReloadThenCancelBeforeUnload
+#else
+#define MAYBE_ReloadThenCancelBeforeUnload ReloadThenCancelBeforeUnload
 #endif
 
 // Test for crbug.com/22004.  Reloading a page with a before unload handler and
 // then canceling the dialog should not leave the throbber spinning.
-IN_PROC_BROWSER_TEST_F(BrowserTest, ReloadThenCancelBeforeUnload) {
+IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_ReloadThenCancelBeforeUnload) {
   GURL url("data:text/html," + BEFORE_UNLOAD_HTML);
   ui_test_utils::NavigateToURL(browser(), url);
 

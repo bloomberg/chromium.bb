@@ -139,12 +139,16 @@ class BrowserActionTest : public ExtensionApiTest {
 
 #if defined(OS_MACOSX)
 // http://crbug.com/29709 port to Mac
-#define Basic DISABLED_Basic
-#define DynamicBrowserAction DISABLED_DynamicBrowserAction
-#define TabSpecificBrowserActionState DISABLED_TabSpecificBrowserActionState
+#define MAYBE_Basic DISABLED_Basic
+#define MAYBE_DynamicBrowserAction DISABLED_DynamicBrowserAction
+#define MAYBE_TabSpecificBrowserActionState DISABLED_TabSpecificBrowserActionState
+#else
+#define MAYBE_Basic Basic
+#define MAYBE_DynamicBrowserAction DynamicBrowserAction
+#define MAYBE_TabSpecificBrowserActionState TabSpecificBrowserActionState
 #endif
 
-IN_PROC_BROWSER_TEST_F(BrowserActionTest, Basic) {
+IN_PROC_BROWSER_TEST_F(BrowserActionTest, MAYBE_Basic) {
   StartHTTPServer();
   ASSERT_TRUE(RunExtensionTest("browser_action")) << message_;
 
@@ -185,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionTest, Basic) {
   ASSERT_TRUE(result);
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionTest, DynamicBrowserAction) {
+IN_PROC_BROWSER_TEST_F(BrowserActionTest, MAYBE_DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action_no_icon")) << message_;
 
   // Test that there is a browser action in the toolbar and that it has no icon.
@@ -214,7 +218,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionTest, DynamicBrowserAction) {
   // TODO(aa): Would be nice here to actually compare that the pixels change.
 }
 
-IN_PROC_BROWSER_TEST_F(BrowserActionTest, TabSpecificBrowserActionState) {
+IN_PROC_BROWSER_TEST_F(BrowserActionTest, MAYBE_TabSpecificBrowserActionState) {
   ASSERT_TRUE(RunExtensionTest("browser_action_tab_specific_state")) <<
       message_;
 

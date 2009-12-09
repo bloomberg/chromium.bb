@@ -23,12 +23,6 @@
       'browser/renderer_host/test/render_view_host_manager_browsertest.cc',
       'browser/views/browser_views_accessibility_browsertest.cc',
     ],
-    'browser_tests_sources_exclude_on_mac': [
-      # These fail to compile because they seem to drag in views headers.
-      #
-      'browser/extensions/extension_browsertests_misc.cc',
-      'browser/extensions/page_action_apitest.cc',
-    ],
     # TODO(jcampan): move these vars to views.gyp.
     'views_unit_tests_sources': [
       '../views/view_unittest.cc',
@@ -1134,7 +1128,9 @@
         }],
         ['OS=="mac"', {
           'sources!': [
-            '<@(browser_tests_sources_exclude_on_mac)',
+            # This fails to compile because it seem to drag in views headers.
+            # http://crbug.com/29895
+            'browser/extensions/page_action_apitest.cc',
           ],
           # TODO(mark): We really want this for all non-static library
           # targets, but when we tried to pull it up to the common.gypi

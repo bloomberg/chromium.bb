@@ -18,9 +18,9 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/extensions/extension_shelf.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #endif
 
-#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/notification_service.h"
@@ -84,6 +84,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
   EXPECT_TRUE(result);
 
 #if defined(OS_WIN)
+  // http://crbug.com/29896 - tabs.detectLanguage is Windows only
+
   // Test for compact language detection API. First navigate to a (static) html
   // file with a French sentence. Then, run the test API in toolstrip1.html to
   // actually call the language detection API through the existing extension,
@@ -100,7 +102,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Toolstrip) {
 #endif
 }
 
-#if defined(OS_WIN)  // TODO(port) -- enable
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
   FilePath extension_test_data_dir = test_data_dir_.AppendASCII("good").
       AppendASCII("Extensions").AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj").
@@ -139,9 +140,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ExtensionViews) {
       host->render_view_host(), L"", L"testgetExtensionTabsAPI()", &result);
   EXPECT_TRUE(result);
 }
-#endif  // defined(OS_WIN)
 
-#if defined(OS_WIN)  // TODO(port) -- enable
+#if defined(TOOLKIT_VIEWS)
+// http://crbug.com/29897 - for other UI toolkits?
+
 // Tests that the ExtensionShelf initializes properly, notices that
 // an extension loaded and has a view available, and then sets that up
 // properly.
@@ -164,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, Shelf) {
   EXPECT_EQ(shelf->GetChildViewCount(), 2);
   EXPECT_NE(shelf->GetPreferredSize().height(), 0);
 }
-#endif  // defined(OS_WIN)
+#endif  // defined(TOOLKIT_VIEWS)
 
 // Tests that installing and uninstalling extensions don't crash with an
 // incognito window open.
@@ -210,9 +212,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
   EXPECT_TRUE(result);
 }
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_MACOSX)
+// http://crbug.com/29898 LocationBarViewMac has a bunch of unimpl apis that
+// keep these from working
+#define MAYBE_PageAction DISABLED_PageAction
+#define MAYBE_UnloadPageAction DISABLED_UnloadPageAction
+#define MAYBE_TitleLocalizationBrowserAction DISABLED_TitleLocalizationBrowserAction
+#define MAYBE_TitleLocalizationPageAction DISABLED_TitleLocalizationPageAction
+#else
+#define MAYBE_PageAction PageAction
+#define MAYBE_UnloadPageAction UnloadPageAction
+#define MAYBE_TitleLocalizationBrowserAction TitleLocalizationBrowserAction
+#define MAYBE_TitleLocalizationPageAction TitleLocalizationPageAction
+#endif
+
 // Tests that we can load page actions in the Omnibox.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PageAction) {
   HTTPTestServer* server = StartHTTPServer();
 
   // This page action will not show an icon, since it doesn't specify one but
@@ -240,7 +255,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
 }
 
 // Tests that the location bar forgets about unloaded page actions.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_UnloadPageAction) {
   HTTPTestServer* server = StartHTTPServer();
 
   FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
@@ -259,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
 
 // Tests that tooltips of a browser action icon can be specified using UTF8.
 // See http://crbug.com/25349.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_TitleLocalizationBrowserAction) {
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized"));
   ASSERT_TRUE(LoadExtension(extension_path));
@@ -280,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
 
 // Tests that tooltips of a page action icon can be specified using UTF8.
 // See http://crbug.com/25349.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_TitleLocalizationPageAction) {
   HTTPTestServer* server = StartHTTPServer();
 
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
@@ -305,7 +320,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   EXPECT_STREQ(WideToUTF8(L"Hreggvi\u00F0ur").c_str(),
                extension->page_action()->GetTitle(tab_id).c_str());
 }
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
 
 GURL GetFeedUrl(HTTPTestServer* server, const std::wstring& feed_page) {
   static GURL base_url = server->TestServerPageW(kSubscribePage);
@@ -463,7 +477,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
                     "Not a valid feed.");
 }
 
-#if defined(OS_WIN)  // TODO(port) - enable.
 // Tests that message passing between extensions and tabs works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
   ASSERT_TRUE(LoadExtension(
@@ -505,7 +518,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingExtensionTab) {
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
 }
-#endif  // defined(OS_WIN)
 
 // Tests that an error raised during an async function still fires
 // the callback, but sets chrome.extension.lastError.
@@ -524,7 +536,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   EXPECT_TRUE(result);
 }
 
-#if defined(OS_WIN)  // TODO(port) - enable.
 // Tests that message passing between extensions and content scripts works.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
   HTTPTestServer* server = StartHTTPServer();
@@ -583,7 +594,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MessagingContentScript) {
       host->render_view_host(), L"", L"testDisconnectOnClose()", &result);
   EXPECT_TRUE(result);
 }
-#endif  // defined(OS_WIN)
 
 // TODO(mpcomplete): reenable after figuring it out.
 #if 0
@@ -747,11 +757,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenNoPrivileges) {
   EXPECT_FALSE(result);
 }
 
+#if !defined(OS_WIN)
+// TODO(mpcomplete): http://crbug.com/29900 need cross platform plugin support.
+#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
+#else
+#define MAYBE_PluginLoadUnload PluginLoadUnload
+#endif
+
 // Tests that a renderer's plugin list is properly updated when we load and
 // unload an extension that contains a plugin.
-// TODO(mpcomplete): need cross platform plugin support.
-#if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginLoadUnload) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
   FilePath extension_dir =
       test_data_dir_.AppendASCII("uitest").AppendASCII("plugins");
 
@@ -796,7 +811,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginLoadUnload) {
       tab->render_view_host(), L"", L"testPluginWorks()", &result);
   EXPECT_FALSE(result);
 }
-#endif
 
 // Tests extension autoupdate.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, AutoUpdate) {
