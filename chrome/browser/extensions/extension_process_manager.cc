@@ -5,6 +5,9 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 
 #include "chrome/browser/browsing_instance.h"
+#if defined(OS_MACOSX)
+#include "chrome/browser/extensions/extension_host_mac.h"
+#endif
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
@@ -59,7 +62,12 @@ ExtensionHost* ExtensionProcessManager::CreateView(Extension* extension,
   DCHECK(extension);
   DCHECK(browser);
   ExtensionHost* host =
+#if defined(OS_MACOSX)
+      new ExtensionHostMac(extension, GetSiteInstanceForURL(url), url,
+                           view_type);
+#else
       new ExtensionHost(extension, GetSiteInstanceForURL(url), url, view_type);
+#endif
   host->CreateView(browser);
   OnExtensionHostCreated(host, false);
   return host;
@@ -104,8 +112,14 @@ ExtensionHost* ExtensionProcessManager::CreatePopup(const GURL& url,
 ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
     Extension* extension, const GURL& url) {
   ExtensionHost* host =
+#if defined(OS_MACOSX)
+      new ExtensionHostMac(extension, GetSiteInstanceForURL(url), url,
+                           ViewType::EXTENSION_BACKGROUND_PAGE);
+#else
       new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
                         ViewType::EXTENSION_BACKGROUND_PAGE);
+#endif
+
   host->CreateRenderViewSoon(NULL);  // create a RenderViewHost with no view
   OnExtensionHostCreated(host, true);
   return host;

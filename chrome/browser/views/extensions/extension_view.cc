@@ -13,8 +13,6 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_win.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
-#elif defined(OS_MACOSX)
-#include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 #endif
 
 ExtensionView::ExtensionView(ExtensionHost* host, Browser* browser)

@@ -450,8 +450,13 @@ void ExtensionHost::CreateNewWindow(int route_id) {
 }
 
 void ExtensionHost::CreateNewWidget(int route_id, bool activatable) {
-  delegate_view_helper_.CreateNewWidget(route_id, activatable,
-                                        site_instance()->GetProcess());
+  CreateNewWidgetInternal(route_id, activatable);
+}
+
+RenderWidgetHostView* ExtensionHost::CreateNewWidgetInternal(int route_id,
+                                                             bool activatable) {
+  return delegate_view_helper_.CreateNewWidget(route_id, activatable,
+                                               site_instance()->GetProcess());
 }
 
 void ExtensionHost::ShowCreatedWindow(int route_id,
@@ -472,8 +477,13 @@ void ExtensionHost::ShowCreatedWindow(int route_id,
 
 void ExtensionHost::ShowCreatedWidget(int route_id,
                                       const gfx::Rect& initial_pos) {
-  RenderWidgetHostView* widget_host_view =
-      delegate_view_helper_.GetCreatedWidget(route_id);
+  ShowCreatedWidgetInternal(delegate_view_helper_.GetCreatedWidget(route_id),
+                            initial_pos);
+}
+
+void ExtensionHost::ShowCreatedWidgetInternal(
+    RenderWidgetHostView* widget_host_view,
+    const gfx::Rect& initial_pos) {
   Browser *browser = GetBrowser();
   DCHECK(browser);
   if (!browser)

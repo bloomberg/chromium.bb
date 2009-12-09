@@ -159,6 +159,20 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   virtual TabContents* AsTabContents() { return NULL; }
   virtual ExtensionHost* AsExtensionHost() { return this; }
 
+ protected:
+  // Internal functions used to support the CreateNewWidget() method. If a
+  // platform requires plugging into widget creation at a lower level, then a
+  // subclass might want to override these functions, but otherwise they should
+  // be fine just implementing RenderWidgetHostView::InitAsPopup().
+  //
+  // The Create function returns the newly created widget so it can be
+  // associated with the given route. When the widget needs to be shown later,
+  // we'll look it up again and pass the object to the Show functions rather
+  // than the route ID.
+  virtual RenderWidgetHostView* CreateNewWidgetInternal(int route_id,
+                                                        bool activatable);
+  virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
+                                         const gfx::Rect& initial_pos);
  private:
   friend class ProcessCreationQueue;
 

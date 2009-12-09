@@ -658,6 +658,8 @@
         'browser/extensions/extension_history_api_constants.h',
         'browser/extensions/extension_host.cc',
         'browser/extensions/extension_host.h',
+        'browser/extensions/extension_host_mac.h',
+        'browser/extensions/extension_host_mac.mm',
         'browser/extensions/extension_i18n_api.cc',
         'browser/extensions/extension_i18n_api.h',
         'browser/extensions/extension_install_ui.cc',
@@ -2264,6 +2266,8 @@
                 # Other excluded stuff.
                 ['exclude', '^browser/autocomplete/autocomplete_popup_view_gtk.cc'],
                 ['exclude', '^browser/autocomplete/autocomplete_popup_view_gtk.h'],
+                ['exclude', '^browser/extensions/extension_host_mac.h'],
+                ['exclude', '^browser/extensions/extension_host_mac.mm'],
                 ['exclude', '^browser/extensions/external_registry_extension_provider_win.cc'],
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.cc'],
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.h'],
