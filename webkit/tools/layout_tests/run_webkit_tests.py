@@ -50,6 +50,9 @@ from test_types import image_diff
 from test_types import test_type_base
 from test_types import text_diff
 
+sys.path.append(path_utils.PathFromBase('third_party'))
+import simplejson
+
 TestExpectationsFile = test_expectations.TestExpectationsFile
 
 class TestInfo:
@@ -396,8 +399,7 @@ class TestRunner:
     tests_by_dir = {}
     for test_file in test_files:
       directory = self._GetDirForTestFile(test_file)
-      if directory not in tests_by_dir:
-        tests_by_dir[directory] = []
+      tests_by_dir.setdefault(directory, [])
       tests_by_dir[directory].append(self._GetTestInfoForFile(test_file))
 
     # Sort by the number of tests in the dir so that the ones with the most
@@ -613,31 +615,18 @@ class TestRunner:
     thread_timings, test_timings, individual_test_timings = (
         self._RunTests(test_shell_binary, self._test_files_list,
                        result_summary))
-    original_results_by_test, original_results_by_type = self._CompareResults(
-        result_summary)
-    final_results_by_test = original_results_by_test
-    final_results_by_type = original_results_by_type
 
     # We exclude the crashes from the list of results to retry, because
     # we want to treat even a potentially flaky crash as an error.
-    failed_results_by_test, failed_results_by_type = self._OnlyFailures(
-        original_results_by_test, include_crashes=False)
-    num_passes = len(original_results_by_test) - len(failed_results_by_test)
-
+    failures = self._GetFailures(result_summary, include_crashes=False)
     retries = 0
-    while (retries < self.NUM_RETRY_ON_UNEXPECTED_FAILURE and
-        len(failed_results_by_test)):
-      logging.info("Retrying %d unexpected failure(s)" %
-                   len(failed_results_by_test))
+    retry_summary = result_summary
+    while (retries < self.NUM_RETRY_ON_UNEXPECTED_FAILURE and len(failures)):
+      logging.info("Retrying %d unexpected failure(s)" % len(failures))
       retries += 1
-      retry_summary = ResultSummary(self._expectations,
-                                    failed_results_by_test.keys())
-      self._RunTests(test_shell_binary, failed_results_by_test.keys(),
-                     retry_summary)
-      final_results_by_test, final_results_by_type = self._CompareResults(
-          retry_summary)
-      failed_results_by_test, failed_results_by_type = self._OnlyFailures(
-          final_results_by_test, include_crashes=True)
+      retry_summary = ResultSummary(self._expectations, failures.keys())
+      self._RunTests(test_shell_binary, failures.keys(), retry_summary)
+      failures = self._GetFailures(retry_summary, include_crashes=True)
 
     self._StopLayoutTestHelper(layout_test_helper_proc)
 
@@ -659,18 +648,17 @@ class TestRunner:
     self._PrintTimingStatistics(test_timings, individual_test_timings,
                                 result_summary)
 
-    self._PrintUnexpectedResults(original_results_by_test,
-                                 original_results_by_type,
-                                 final_results_by_test,
-                                 final_results_by_type)
+    unexpected_results = self._SummarizeUnexpectedResults(result_summary,
+        retry_summary)
 
     # Write summaries to stdout.
+    self._PrintUnexpectedResults(unexpected_results)
+
     # The summaries should include flaky tests, so use the original summary,
     # not the final one.
     self._PrintResultSummary(result_summary, sys.stdout)
-
-    if self._options.verbose:
-      self._WriteJSONFiles(result_summary, individual_test_timings);
+    self._WriteJSONFiles(unexpected_results, result_summary,
+                         individual_test_timings)
 
     # Write the same data to a log file.
     out_filename = os.path.join(self._options.results_directory, "score.txt")
@@ -686,9 +674,10 @@ class TestRunner:
 
     sys.stdout.flush()
     sys.stderr.flush()
+
     # Ignore flaky failures and unexpected passes so we don't turn the
     # bot red for those.
-    return len(failed_results_by_test)
+    return unexpected_results['num_regressions']
 
   def _UpdateSummary(self, result_summary):
     """Update the summary while running tests."""
@@ -700,49 +689,124 @@ class TestRunner:
       except Queue.Empty:
         return
 
-  def _CompareResults(self, result_summary):
-    """Determine if the results in this test run are unexpected.
-
-    Returns:
-      A dict of files -> results and a dict of results -> sets of files
-    """
-    results_by_test = {}
-    results_by_type = {}
-    for result in TestExpectationsFile.EXPECTATIONS.values():
-      results_by_type[result] = set()
-    for test, result in result_summary.unexpected_results.iteritems():
-      results_by_test[test] = result
-      results_by_type[result].add(test)
-    return results_by_test, results_by_type
-
-  def _OnlyFailures(self, results_by_test, include_crashes):
+  def _GetFailures(self, result_summary, include_crashes):
     """Filters a dict of results and returns only the failures.
 
     Args:
-      results_by_test: a dict of files -> results
+      result_summary: the results of the test run
       include_crashes: whether crashes are included in the output.
         We use False when finding the list of failures to retry
         to see if the results were flaky. Although the crashes may also be
         flaky, we treat them as if they aren't so that they're not ignored.
     Returns:
-      a dict of files -> results and results -> sets of files.
+      a dict of files -> results
     """
-    failed_results_by_test = {}
-    failed_results_by_type = {}
-    for test, result in results_by_test.iteritems():
+    failed_results = {}
+    for test, result in result_summary.unexpected_results.iteritems():
       if (result == test_expectations.PASS or
           result == test_expectations.CRASH and not include_crashes):
         continue
+      failed_results[test] = result
 
-      failed_results_by_test[test] = result
-      if result in failed_results_by_type:
-        failed_results_by_type.add(test)
+    return failed_results
+
+  def _SummarizeUnexpectedResults(self, result_summary, retry_summary):
+    """Summarize any unexpected results as a dict.
+
+    TODO(dpranke): split this data structure into a separate class?
+
+    Args:
+      result_summary: summary object from initial test runs
+      retry_summary: summary object from final test run of retried tests
+    Returns:
+      A dictionary containing a summary of the unexpected results from the
+      run, with the following fields:
+        'version': a version indicator (1 in this version)
+        'fixable': # of fixable tests (NOW - PASS)
+        'skipped': # of skipped tests (NOW & SKIPPED)
+        'num_regressions': # of non-flaky failures
+        'num_flaky': # of flaky failures
+        'num_passes': # of unexpected passes
+        'tests': a dict of tests -> { 'expected' : '...', 'actual' : '...' }
+    """
+    results = {}
+    results['version'] = 1
+
+    tbe = result_summary.tests_by_expectation
+    tbt = result_summary.tests_by_timeline
+    results['fixable'] = len(tbt[test_expectations.NOW] -
+                             tbe[test_expectations.PASS])
+    results['skipped'] = len(tbt[test_expectations.NOW] &
+                             tbe[test_expectations.SKIP])
+
+    num_passes = 0
+    num_flaky = 0
+    num_regressions = 0
+    keywords = {}
+    for k, v in TestExpectationsFile.EXPECTATIONS.iteritems():
+      keywords[v] = k.upper()
+
+    tests = {}
+    for filename, result in result_summary.unexpected_results.iteritems():
+      # Note that if a test crashed in the original run, we ignore whether or
+      # not it crashed when we retried it (if we retried it), and always
+      # consider the result not flaky.
+      test = path_utils.RelativeTestFilename(filename)
+      expected = self._expectations.GetExpectationsString(filename)
+      actual = [keywords[result]]
+
+      if result == test_expectations.PASS:
+        num_passes += 1
+      elif result == test_expectations.CRASH:
+        num_regressions += 1
       else:
-        failed_results_by_type = set([test])
-    return failed_results_by_test, failed_results_by_type
+        if filename not in retry_summary.unexpected_results:
+          actual.extend(
+              self._expectations.GetExpectationsString(filename).split(" "))
+          num_flaky += 1
+        else:
+          retry_result = retry_summary.unexpected_results[filename]
+          if result != retry_result:
+            actual.append(keywords[retry_result])
+            num_flaky += 1
+          else:
+            num_regressions += 1
 
-  def _WriteJSONFiles(self, result_summary, individual_test_timings):
+      tests[test] = {}
+      tests[test]['expected'] = expected
+      tests[test]['actual'] = " ".join(actual)
+
+    results['tests'] = tests
+    results['num_passes'] = num_passes
+    results['num_flaky'] = num_flaky
+    results['num_regressions'] = num_regressions
+
+    return results
+
+  def _WriteJSONFiles(self, unexpected_results, result_summary,
+                      individual_test_timings):
+    """Writes the results of the test run as JSON files into the results dir.
+
+    There are three different files written into the results dir:
+      unexpected_results.json: A short list of any unexpected results. This
+        is used by the buildbots to display results.
+      expectations.json: This is used by the flakiness dashboard.
+      results.json: A full list of the results - used by the flakiness
+        dashboard and the aggregate results dashboard.
+
+    Args:
+      unexpected_results: dict of unexpected results
+      result_summary: full summary object
+      individual_test_timings: list of test times (used by the flakiness
+        dashboard).
+    """
     logging.debug("Writing JSON files in %s." % self._options.results_directory)
+    unexpected_file = open(os.path.join(self._options.results_directory,
+        "unexpected_results.json"), "w")
+    unexpected_file.write(simplejson.dumps(unexpected_results, sort_keys=True,
+        indent=2))
+    unexpected_file.close()
+
     # Write a json file of the test_expectations.txt file for the layout tests
     # dashboard.
     expectations_file = open(os.path.join(self._options.results_directory,
@@ -962,6 +1026,7 @@ class TestRunner:
        len(result_summary.tests_by_expectation[test_expectations.PASS] &
            result_summary.tests_by_timeline[timeline]))
     output.write("=> %s (%d):\n" % (heading, not_passing))
+
     for result in TestExpectationsFile.EXPECTATION_ORDER:
       if result == test_expectations.PASS:
         continue
@@ -975,154 +1040,68 @@ class TestRunner:
                      (len(results), plural[len(results) != 1], pct,
                       desc[len(results) != 1]))
 
-  def _PrintUnexpectedResults(self, original_results_by_test,
-                              original_results_by_type,
-                              final_results_by_test,
-                              final_results_by_type):
-    """Print unexpected results (regressions) to stdout and a file.
+  def _PrintUnexpectedResults(self, unexpected_results):
+    """Prints any unexpected results in a human-readable form to stdout."""
+    passes = {}
+    flaky = {}
+    regressions = {}
 
-    Args:
-      original_results_by_test: dict mapping tests -> results for the first
-        (original) test run
-      original_results_by_type: dict mapping results -> sets of tests for the
-        first test run
-      final_results_by_test: dict of tests->results after the retries
-        eliminated any flakiness
-      final_results_by_type: dict of results->tests after the retries
-        eliminated any flakiness
-    """
-    print "-" * 78
-    print
-    flaky_results_by_type = {}
-    non_flaky_results_by_type = {}
+    for test, results in unexpected_results['tests'].iteritems():
+      actual = results['actual'].split(" ")
+      expected = results['expected'].split(" ")
 
-    for test, result in original_results_by_test.iteritems():
-      # Note that if a test crashed in the original run, we ignore whether or
-      # not it crashed when we retried it (if we retried it), and always
-      # consider the result "not flaky".
-      if (result == test_expectations.PASS or
-          result == test_expectations.CRASH or
-          (test in final_results_by_test and
-           result == final_results_by_test[test])):
-        if result in non_flaky_results_by_type:
-          non_flaky_results_by_type[result].add(test)
+      if actual == ['PASS']:
+        if 'CRASH' in expected:
+          _AddToDictOfLists(passes, 'Expected to crash, but passed', test)
+        elif 'TIMEOUT' in expected:
+          _AddToDictOfLists(passes, 'Expected to timeout, but passed', test)
         else:
-          non_flaky_results_by_type[result] = set([test])
+          _AddToDictOfLists(passes, 'Expected to fail, but passed', test)
+      elif len(actual) > 1:
+        # We group flaky tests by the first actual result we got.
+        _AddToDictOfLists(flaky, actual[0], test)
       else:
-        if result in flaky_results_by_type:
-          flaky_results_by_type[result].add(test)
-        else:
-          flaky_results_by_type[result] = set([test])
+        _AddToDictOfLists(regressions, results['actual'], test)
 
-    self._PrintUnexpectedResultsByType(non_flaky_results_by_type, False,
-                                       sys.stdout)
-    self._PrintUnexpectedResultsByType(flaky_results_by_type, True, sys.stdout)
+    if len(passes):
+      for key, tests in passes.iteritems():
+        print "%s: (%d)" % (key, len(tests))
+        tests.sort()
+        for test in tests:
+          print "  %s" % test
+        print
 
-    out_filename = os.path.join(self._options.results_directory,
-                                "regressions.txt")
-    output_file = open(out_filename, "w")
-    self._PrintUnexpectedResultsByType(non_flaky_results_by_type, False,
-                                       output_file)
-    output_file.close()
+    if len(flaky):
+      descriptions = TestExpectationsFile.EXPECTATION_DESCRIPTIONS
+      for key, tests in flaky.iteritems():
+        result = TestExpectationsFile.EXPECTATIONS[key.lower()]
+        print "Unexpected flakiness: %s (%d)" % (
+          descriptions[result][1], len(tests))
+        tests.sort()
 
-    print "-" * 78
+        for test in tests:
+          actual = unexpected_results['tests'][test]['actual'].split(" ")
+          expected = unexpected_results['tests'][test]['expected'].split(" ")
+          result = TestExpectationsFile.EXPECTATIONS[key.lower()]
+          new_expectations_list = list(set(actual) | set(expected))
+          print "  %s = %s" % (test, " ".join(new_expectations_list))
+        print
 
-  def _PrintUnexpectedResultsByType(self, results_by_type, is_flaky, output):
-    """Helper method to print a set of unexpected results to an output stream
-    sorted by the result type.
+    if len(regressions):
+      descriptions = TestExpectationsFile.EXPECTATION_DESCRIPTIONS
+      for key, tests in regressions.iteritems():
+        result = TestExpectationsFile.EXPECTATIONS[key.lower()]
+        print "Regressions: Unexpected %s : (%d)" % (
+          descriptions[result][1], len(tests))
+        tests.sort()
+        for test in tests:
+          print "  %s = %s" % (test, key)
+        print
+      print
 
-    Args:
-      results_by_type: dict(result_type -> list of files)
-      is_flaky: where these results flaky or not (changes the output)
-      output: stream to write output to
-    """
-    descriptions = TestExpectationsFile.EXPECTATION_DESCRIPTIONS
-    keywords = {}
-    for k, v in TestExpectationsFile.EXPECTATIONS.iteritems():
-      keywords[v] = k.upper()
-
-    for result in TestExpectationsFile.EXPECTATION_ORDER:
-      if result in results_by_type:
-        self._PrintUnexpectedResultSet(output, results_by_type[result],
-                                       is_flaky, descriptions[result][1],
-                                       keywords[result])
-
-  def _PrintUnexpectedResultSet(self, output, filenames, is_flaky,
-                                header_text, keyword):
-    """A helper method to print one set of results (all of the same type)
-    to a stream.
-
-    Args:
-      output: a stream or file object to write() to
-      filenames: a list of absolute filenames
-      header_text: a string to display before the list of filenames
-      keyword: expectation keyword
-    """
-    filenames = list(filenames)
-    filenames.sort()
-    if not is_flaky and keyword == 'PASS':
-      self._PrintUnexpectedPasses(output, filenames)
-      return
-
-    if is_flaky:
-      prefix = "Unexpected flakiness:"
-    else:
-      prefix = "Regressions: Unexpected"
-    output.write("%s %s (%d):\n" % (prefix, header_text, len(filenames)))
-    for filename in filenames:
-      flaky_text = ""
-      if is_flaky:
-        flaky_text = " " + self._expectations.GetExpectationsString(filename)
-
-      filename = path_utils.RelativeTestFilename(filename)
-      output.write("  %s = %s%s\n" % (filename, keyword, flaky_text))
-    output.write("\n")
-
-  def _PrintUnexpectedPasses(self, output, filenames):
-    """Prints the list of files that passed unexpectedly.
-
-    TODO(dpranke): This routine is a bit of a hack, since it's not clear
-    what the best way to output this is. Each unexpected pass might have
-    multiple expected results, and printing all the combinations would
-    be pretty clunky. For now we sort them into three buckets, crashes,
-    timeouts, and everything else.
-
-    Args:
-      output: a stream to write to
-      filenames: list of files that passed
-    """
-    crashes = []
-    timeouts = []
-    failures = []
-    for filename in filenames:
-      expectations = self._expectations.GetExpectations(filename)
-      if test_expectations.CRASH in expectations:
-        crashes.append(filename)
-      elif test_expectations.TIMEOUT in expectations:
-        timeouts.append(filename)
-      else:
-        failures.append(filename)
-
-    self._PrintPassSet(output, "crash", crashes)
-    self._PrintPassSet(output, "timeout", timeouts)
-    self._PrintPassSet(output, "fail", failures)
-
-  def _PrintPassSet(self, output, expected_str, filenames):
-    """Print a set of unexpected passes.
-
-    Args:
-      output: stream to write to
-      expected_str: worst expectation for the given file
-      filenames: list of files in that set
-    """
-    if len(filenames):
-      filenames.sort()
-      output.write("Expected to %s, but passed: (%d)\n" %
-                   (expected_str, len(filenames)))
-      for filename in filenames:
-        filename = path_utils.RelativeTestFilename(filename)
-        output.write("  %s\n" % filename)
-      output.write("\n")
+    if len(unexpected_results['tests']):
+      print ""
+      print "-" * 78
 
   def _WriteResultsHtmlFile(self, result_summary):
     """Write results.html which is a summary of tests that failed.
@@ -1134,13 +1113,12 @@ class TestRunner:
       True if any results were written (since expected failures may be omitted)
     """
     # test failures
-    failures = result_summary.failures
-    failed_results_by_test, failed_results_by_type = self._OnlyFailures(
-        result_summary.unexpected_results, include_crashes=True)
     if self._options.full_results_html:
-      test_files = failures.keys()
+      test_files = result_summary.failures.keys()
     else:
-      test_files = failed_results_by_test.keys()
+      unexpected_failures = self._GetFailures(result_summary,
+          include_crashes=True)
+      test_files = unexpected_failures.keys()
     if not len(test_files):
       return False
 
@@ -1158,8 +1136,7 @@ class TestRunner:
 
     test_files.sort()
     for test_file in test_files:
-      if test_file in failures: test_failures = failures[test_file]
-      else: test_failures = []  # unexpected passes
+      test_failures = result_summary.failures.get(test_file, [])
       out_file.write("<p><a href='%s'>%s</a><br />\n"
                      % (path_utils.FilenameToUri(test_file),
                         path_utils.RelativeTestFilename(test_file)))
@@ -1180,6 +1157,9 @@ class TestRunner:
     subprocess.Popen([path_utils.TestShellPath(self._options.target),
                       path_utils.FilenameToUri(results_filename)])
 
+
+def _AddToDictOfLists(dict, key, value):
+  dict.setdefault(key, []).append(value)
 
 def ReadTestFiles(files):
   tests = []
