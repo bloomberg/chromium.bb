@@ -3657,3 +3657,7 @@ BUG29737 WIN : LayoutTests/svg/filters/subRegion-two-effects.svg = TEXT
 
 // More Webkit Roll to r51875 - rebaseline needed i think
 BUG_MICHAELN : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
+
+// WebKit Roll to r51915
+BUG29928 LayoutTests/websocket/tests/sub-protocol-with-space.html = TEXT
+BUG29930 LayoutTests/fast/loader/input-element-page-cache-crash.html = TIMEOUT
