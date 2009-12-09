@@ -15,7 +15,7 @@ function findFeeds() {
   var feeds = [];
   var item;
   while (item = result.iterateNext())
-    feeds.push(item.href);
+    feeds.push({"href": item.href, "title": item.title});
 
   // Notify the extension of the feed URLs we found.
   chrome.extension.connect().postMessage(feeds);
