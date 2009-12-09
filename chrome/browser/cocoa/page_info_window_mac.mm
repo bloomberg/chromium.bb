@@ -76,13 +76,12 @@ void PageInfoWindowMac::ShowCertDialog(int) {
   }
   CFArrayAppendValue(certificates, cert_mac);
 
-  CFArrayRef ca_certs = cert->GetIntermediateCertificates();
-  if (ca_certs) {
-    // Server certificate must be first in the array; subsequent certificates
-    // in the chain can be in any order.
-    CFArrayAppendArray(certificates, ca_certs,
-                       CFRangeMake(0, CFArrayGetCount(ca_certs)));
-  }
+  // Server certificate must be first in the array; subsequent certificates
+  // in the chain can be in any order.
+  const std::vector<SecCertificateRef>& ca_certs =
+      cert->GetIntermediateCertificates();
+  for (size_t i = 0; i < ca_certs.size(); ++i)
+    CFArrayAppendValue(certificates, ca_certs[i]);
 
   [[SFCertificatePanel sharedCertificatePanel]
       beginSheetForWindow:[controller_ window]
