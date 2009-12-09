@@ -313,9 +313,6 @@ const char kIncognito[]                     = "incognito";
 // Runs the Native Client inside the renderer process.
 const char kInternalNaCl[]                  = "internal-nacl";
 
-// Runs a trusted Pepper plugin inside the renderer process.
-const char kInternalPepper[]                = "internal-pepper";
-
 // Specifies the flags passed to JS engine
 const char kJavaScriptFlags[]               = "js-flags";
 

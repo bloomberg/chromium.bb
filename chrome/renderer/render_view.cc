@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#if defined(ENABLE_PEPPER)
+#define PEPPER_APIS_ENABLED
+#endif
+
 #include "chrome/renderer/render_view.h"
 
 #include <algorithm>
@@ -2637,36 +2641,24 @@ webkit_glue::WebPluginDelegate* RenderView::CreatePluginDelegate(
   else
     mime_type_to_use = &mime_type;
 
-  bool use_pepper_host = false;
-  bool in_process_plugin = RenderProcess::current()->in_process_plugins();
-  // Check for trusted Pepper plugins.
+#if defined(PEPPER_APIS_ENABLED)
   const char kPepperPrefix[] = "pepper-";
   if (StartsWithASCII(*mime_type_to_use, kPepperPrefix, true)) {
-    if (CommandLine::ForCurrentProcess()->
-            HasSwitch(switches::kInternalPepper)) {
-      in_process_plugin = true;
-      use_pepper_host = true;
-    } else {
-      // In process Pepper plugins must be explicitly enabled.
-      return NULL;
-    }
+    return WebPluginDelegatePepper::Create(
+        path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
   }
-  // Check for Native Client modules.
+#endif
+
+  bool in_process_plugin = RenderProcess::current()->in_process_plugins();
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInternalNaCl)) {
     if (mime_type == "application/x-nacl-srpc") {
       in_process_plugin = true;
-      use_pepper_host = true;
     }
   }
   if (in_process_plugin) {
 #if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
-    if (use_pepper_host) {
-      return WebPluginDelegatePepper::Create(
-          path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
-    } else {
-      return WebPluginDelegateImpl::Create(
-          path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
-    }
+    return WebPluginDelegateImpl::Create(
+        path, *mime_type_to_use, gfx::NativeViewFromId(host_window_));
 #else
     NOTIMPLEMENTED();
     return NULL;

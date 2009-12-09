@@ -517,7 +517,6 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     switches::kSimpleDataSource,
     switches::kEnableBenchmarking,
     switches::kInternalNaCl,
-    switches::kInternalPepper,
     switches::kDisableByteRangeSupport,
     switches::kDisableDatabases,
     switches::kDisableDesktopNotifications,

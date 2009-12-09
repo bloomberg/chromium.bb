@@ -129,8 +129,8 @@ class WebPlugin {
                                        bool defer) = 0;
 
   // Gets the WebPluginDelegate that implements the interface.
-  // This API is only for use with Pepper, and is only overridden
-  // by in-renderer implementations.
+  // This API is only for use with Pepper, and hence only with
+  // in renderer process plugins.
   virtual WebPluginDelegate* delegate() { return NULL; }
 };
 

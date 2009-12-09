@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <string>
 
-#include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "webkit/tools/pepper_test_plugin/plugin_object.h"
@@ -128,11 +127,11 @@ int EventHandler::handle(void* event) {
       str += StringPrintf(": mod %x, text: ",
                           npevent->u.character.modifier);
       size_t i;
-      for (i = 0; i < arraysize(npevent->u.character.text); ++i) {
+      for (i = 0; i < ARRAYSIZE(npevent->u.character.text); ++i) {
         str += StringPrintf("%x ", npevent->u.character.text[i]);
       }
       str += ", unmod: ";
-      for (i = 0; i < arraysize(npevent->u.character.unmodifiedText); ++i) {
+      for (i = 0; i < ARRAYSIZE(npevent->u.character.unmodifiedText); ++i) {
           str += StringPrintf("%x ", npevent->u.character.unmodifiedText[i]);
       }
       break;
