@@ -19,7 +19,8 @@
 // bottleneck to use the platform methods (e.g. Keychain on the Mac, Gnome
 // Keyring / KWallet on Linux). That's going to take a massive change in its
 // API... see:
-// http://code.google.com/p/chromium/issues/detail?id=8205 (Linux)
+//   http://code.google.com/p/chromium/issues/detail?id=25404 (Linux)
+// but the (possibly-now-unused) Mac encryptor stub code needs to die too.
 #include "chrome/browser/password_manager/encryptor.h"
 
 using webkit_glue::FormField;

@@ -25,8 +25,7 @@ bool Encryptor::DecryptString16(const std::string& ciphertext,
 bool Encryptor::EncryptString(const std::string& plaintext,
                               std::string* ciphertext) {
   // This doesn't actually encrypt, we need to work on the Encryptor API.
-  // http://code.google.com/p/chromium/issues/detail?id=8205
-  NOTIMPLEMENTED();
+  // http://code.google.com/p/chromium/issues/detail?id=25404
 
   // this does a copy
   ciphertext->assign(plaintext.data(), plaintext.length());
@@ -36,8 +35,7 @@ bool Encryptor::EncryptString(const std::string& plaintext,
 bool Encryptor::DecryptString(const std::string& ciphertext,
                               std::string* plaintext) {
   // This doesn't actually decrypt, we need to work on the Encryptor API.
-  // http://code.google.com/p/chromium/issues/detail?id=8205
-  NOTIMPLEMENTED();
+  // http://code.google.com/p/chromium/issues/detail?id=25404
 
   plaintext->assign(ciphertext.data(), ciphertext.length());
   return true;
