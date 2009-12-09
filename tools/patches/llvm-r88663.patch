@@ -169,7 +169,20 @@ Index: lib/Target/ARM/ARMInstrInfo.td
    let Inst{7-4}   = 0b0001;
    let Inst{19-8}  = 0b111111111111;
    let Inst{27-20} = 0b00010010;
-@@ -678,20 +687,29 @@
+@@ -654,7 +663,11 @@
+ 
+ // Indirect branches
+ let isBranch = 1, isTerminator = 1, isBarrier = 1, isIndirectBranch = 1 in {
+-  def BRIND : AXI<(outs), (ins GPR:$dst), BrMiscFrm, IIC_Br, "bx\t$dst",
++    // @LOCALMOD-START
++    //  def BRIND : AXI<(outs), (ins GPR:$dst), BrMiscFrm, IIC_Br, "bx\t$dst",
++    def BRIND : AXI<(outs), (ins GPR:$dst), BrMiscFrm, IIC_Br,
++    "sfi_indirect_jump_preamble $dst\n\tbx\t$dst",
++    // @LOCALMOD-END
+                   [(brind GPR:$dst)]> {
+     let Inst{7-4}   = 0b0001;
+     let Inst{19-8}  = 0b111111111111;
+@@ -678,20 +691,29 @@
            D16, D17, D18, D19, D20, D21, D22, D23,
            D24, D25, D26, D27, D28, D29, D30, D31, CPSR, FPSCR] in {
    def BL  : ABXI<0b1011, (outs), (ins i32imm:$func, variable_ops),
@@ -197,24 +210,25 @@ Index: lib/Target/ARM/ARMInstrInfo.td
 -                IIC_Br, "blx\t$func",
 +// @LOCALMOD-START
 +//                IIC_Br, "blx\t$func",
-+                IIC_Br, "sfi_call_preamble\n\tblx\t$func",
++                IIC_Br, "sfi_indirect_call_preamble $func\n\tblx\t$func",
 +// @LOCALMOD-END
                  [(ARMcall GPR:$func)]>,
              Requires<[IsARM, HasV5T, IsNotDarwin]> {
      let Inst{7-4}   = 0b0011;
-@@ -701,7 +719,10 @@
+@@ -701,7 +723,11 @@
  
    // ARMv4T
    def BX : ABXIx2<(outs), (ins GPR:$func, variable_ops),
 -                  IIC_Br, "mov\tlr, pc\n\tbx\t$func",
 +// @LOCALMOD-START
 +//                  IIC_Br, "mov\tlr, pc\n\tbx\t$func",
++// TODO(robertm): this does not quite work
 +                  IIC_Br, "sfi_call_preamble\n\tmov\tlr, pc\n\tbx\t$func",
 +// @LOCALMOD-END
                    [(ARMcall_nolink GPR:$func)]>,
             Requires<[IsARM, IsNotDarwin]> {
      let Inst{7-4}   = 0b0001;
-@@ -717,19 +738,28 @@
+@@ -717,19 +743,28 @@
            D16, D17, D18, D19, D20, D21, D22, D23,
            D24, D25, D26, D27, D28, D29, D30, D31, CPSR, FPSCR] in {
    def BLr9  : ABXI<0b1011, (outs), (ins i32imm:$func, variable_ops),
@@ -241,24 +255,25 @@ Index: lib/Target/ARM/ARMInstrInfo.td
 -                IIC_Br, "blx\t$func",
 +// @LOCALMOD-START
 +//                IIC_Br, "blx\t$func",
-+                IIC_Br, "sfi_call_preamble\n\tblx\t$func",
++                IIC_Br, "sfi_indirect_call_preamble $func\n\tblx\t$func",
 +// @LOCALMOD-END
                  [(ARMcall GPR:$func)]>, Requires<[IsARM, HasV5T, IsDarwin]> {
      let Inst{7-4}   = 0b0011;
      let Inst{19-8}  = 0b111111111111;
-@@ -738,7 +768,10 @@
+@@ -738,7 +773,11 @@
  
    // ARMv4T
    def BXr9 : ABXIx2<(outs), (ins GPR:$func, variable_ops),
 -                  IIC_Br, "mov\tlr, pc\n\tbx\t$func",
 +// @LOCALMOD-START
 +//                  IIC_Br, "mov\tlr, pc\n\tbx\t$func",
++// TODO(robertm): this does not quite work
 +                  IIC_Br, "sfi_call_preamble\n\tmov\tlr, pc\n\tbx\t$func",
 +// @LOCALMOD-END
                    [(ARMcall_nolink GPR:$func)]>, Requires<[IsARM, IsDarwin]> {
      let Inst{7-4}   = 0b0001;
      let Inst{19-8}  = 0b111111111111;
-@@ -874,23 +907,36 @@
+@@ -874,23 +913,36 @@
  
  // Store
  def STR  : AI2stw<(outs), (ins GPR:$src, addrmode2:$addr), StFrm, IIC_iStorer,
@@ -299,7 +314,7 @@ Index: lib/Target/ARM/ARMInstrInfo.td
  
  // Indexed stores
  def STR_PRE  : AI2stwpr<(outs GPR:$base_wb),
-@@ -948,7 +994,11 @@
+@@ -948,7 +1000,11 @@
  let mayStore = 1, hasExtraSrcRegAllocReq = 1 in
  def STM : AXI4st<(outs),
                 (ins addrmode4:$addr, pred:$p, reglist:$wb, variable_ops),
@@ -312,7 +327,7 @@ Index: lib/Target/ARM/ARMInstrInfo.td
                 []>;
  
  //===----------------------------------------------------------------------===//
-@@ -1087,6 +1137,17 @@
+@@ -1087,6 +1143,17 @@
  defm SUB  : AsI1_bin_irs<0b0010, "sub",
                           BinOpFrag<(sub  node:$LHS, node:$RHS)>>;
  
@@ -330,7 +345,7 @@ Index: lib/Target/ARM/ARMInstrInfo.td
  // ADD and SUB with 's' bit set.
  defm ADDS : AI1_bin_s_irs<0b0100, "adds",
                            BinOpFrag<(addc node:$LHS, node:$RHS)>, 1>;
-@@ -1551,7 +1612,10 @@
+@@ -1551,7 +1618,10 @@
  let isCall = 1,
    Defs = [R0, R12, LR, CPSR] in {
    def TPsoft : ABXI<0b1011, (outs), (ins), IIC_Br,
@@ -718,7 +733,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
    for (unsigned i = 0, e = JTBBs.size(); i != e; ++i) {
      MachineBasicBlock *MBB = JTBBs[i];
      bool isNew = JTSets.insert(MBB);
-@@ -1158,6 +1318,252 @@
+@@ -1158,6 +1318,253 @@
  
      // FIXME: Should we signal R9 usage?
    }
@@ -732,11 +747,12 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +  O << " @ ========================================\n";
 +  // NOTE: this macro does bundle alignment as follows
 +  //       if current bundle pos is X emit pX data items of value "val"
++  // NOTE: that pos will be one of: 0,4,8,12
 +  //
 +  O <<
 +    "\t.macro sfi_long_based_on_pos p0 p1 p2 p3 val\n"
-+    "\t.set  pos, (. - XmagicX) % 16\n"
-+    "\t.fill (((\\p3<<12)|(\\p2<<8)|(\\p1<<4)|\\p0)>>pos) & 15, 4, \\val\n"
++    "\t.set pos, (. - XmagicX) % 16\n"
++    "\t.fill  (((\\p3<<12)|(\\p2<<8)|(\\p1<<4)|\\p0)>>pos) & 15, 4, \\val\n"
 +    "\t.endm\n"
 +    "\n\n";
 +
@@ -788,7 +804,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
 +  } else {
 +    O <<
 +      "\t.macro sfi_data_mask reg cond\n"
-+      "\tbic\\cond \\reg, \\reg, #0x80000000\n"
++      "\tbic\\cond \\reg, \\reg, #0xc0000000\n"
 +      "\t.endm\n"
 +      "\n\n";
 +
@@ -971,7 +987,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  void ARMAsmPrinter::PrintGlobalVariable(const GlobalVariable* GVar) {
-@@ -1345,6 +1751,7 @@
+@@ -1345,6 +1752,7 @@
      // generates code that does this, it is always safe to set.
      OutStreamer.EmitAssemblerFlag(MCStreamer::SubsectionsViaSymbols);
    }
@@ -979,7 +995,7 @@ Index: lib/Target/ARM/AsmPrinter/ARMAsmPrinter.cpp
  }
  
  //===----------------------------------------------------------------------===//
-@@ -1519,4 +1926,3 @@
+@@ -1519,4 +1927,3 @@
    TargetRegistry::RegisterMCInstPrinter(TheARMTarget, createARMMCInstPrinter);
    TargetRegistry::RegisterMCInstPrinter(TheThumbTarget, createARMMCInstPrinter);
  }
