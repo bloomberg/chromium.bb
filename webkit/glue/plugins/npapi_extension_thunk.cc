@@ -9,9 +9,7 @@
 #include "webkit/glue/plugins/plugin_instance.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/webplugin_delegate.h"
-//#include "third_party/npapi/bindings/npruntime.h"
 
-#if defined(ENABLE_PEPPER)
 
 // FindInstance()
 // Finds a PluginInstance from an NPP.
@@ -245,18 +243,3 @@ NPError GetPepperExtensionsFunctions(void* value) {
 }
 
 }  // namespace NPAPI
-
-#else  // Not compiling with pepper support
-
-namespace NPAPI {
-
-// This NOP function implements the getter for the extensions when the
-// extensions aren't available.
-NPError GetPepperExtensionsFunctions(void* value) {
-  return NPERR_GENERIC_ERROR;
-}
-
-}  // namespace NPAPI
-
-#endif  // defined(ENABLE_PEPPER)
-

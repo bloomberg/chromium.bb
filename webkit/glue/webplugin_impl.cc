@@ -212,6 +212,9 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
   if (!plugin_delegate)
     return NULL;
 
+  // Set the delegate pointer before Initialize to allow Pepper
+  // plugins to access to delegate functions during initialization.
+  delegate_ = plugin_delegate;
   // Set the container before Initialize because the plugin may
   // synchronously call NPN_GetValue to get its container during its
   // initialization.
@@ -225,7 +228,6 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
 
   if (!actual_mime_type.empty())
     mime_type_ = actual_mime_type;
-  delegate_ = plugin_delegate;
 
   return true;
 }

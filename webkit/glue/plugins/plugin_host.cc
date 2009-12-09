@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Pepper API support should be turned on for this module.
-#define PEPPER_APIS_ENABLED
-
 #include "webkit/glue/plugins/plugin_host.h"
 
 #include "base/file_util.h"
@@ -802,9 +799,16 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       break;
     }
   #endif  // OS_MACOSX
-    case NPNVPepperExtensions:
-      rv = NPAPI::GetPepperExtensionsFunctions(value);
+    case NPNVPepperExtensions: {
+      scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+      if (plugin->webplugin()->delegate() != NULL) {
+        // Delegate is only set for in-renderer Pepper plugins.
+        rv = NPAPI::GetPepperExtensionsFunctions(value);
+      } else {
+        rv = NPERR_GENERIC_ERROR;
+      }
       break;
+    }
     default:
       DLOG(INFO) << "NPN_GetValue(" << variable << ") is not implemented yet.";
       break;

@@ -148,7 +148,7 @@
         ],
       },
       'conditions': [
-        ['enable_pepper==1', {
+        ['enable_gpu==1', {
           'dependencies': [
             '../gpu/gpu.gyp:gpu_plugin',
           ],
