@@ -25,6 +25,7 @@
     ],
     'browser_tests_sources_exclude_on_mac': [
       # These fail to compile because they seem to drag in views headers.
+      #
       'browser/extensions/extension_browsertests_misc.cc',
       'browser/extensions/page_action_apitest.cc',
     ],
