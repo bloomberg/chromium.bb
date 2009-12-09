@@ -47,6 +47,10 @@ const wchar_t kDevChannelName[] = L"-dev";
 
 const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
 
+// Indicates that we are running in a test environment, where execptions, etc
+// are handled by the chrome test crash server.
+const wchar_t kChromeFrameHeadlessMode[] = L"ChromeFrameHeadlessMode";
+
 HRESULT UtilRegisterTypeLib(HINSTANCE tlb_instance,
                             LPCOLESTR index,
                             bool for_current_user_only) {
@@ -546,6 +550,31 @@ bool GetConfigBool(bool default_value, const wchar_t* value_name) {
   return (value != FALSE);
 }
 
+bool SetConfigInt(const wchar_t* value_name, int value) {
+  RegKey config_key;
+  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
+                      KEY_SET_VALUE)) {
+    if (config_key.WriteValue(value_name, value)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool SetConfigBool(const wchar_t* value_name, bool value) {
+  return SetConfigInt(value_name, value);
+}
+
+bool DeleteConfigValue(const wchar_t* value_name) {
+  RegKey config_key;
+  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
+                      KEY_WRITE)) {
+    return config_key.DeleteValue(value_name);
+  }
+  return false;
+}
+
 bool IsOptInUrl(const wchar_t* url) {
   RegKey config_key;
   if (!config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey, KEY_READ))
@@ -667,3 +696,9 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
 
   return is_non_top_level_request;
 }
+
+bool IsHeadlessMode() {
+  bool headless = GetConfigBool(false, kChromeFrameHeadlessMode);
+  return headless;
+}
+

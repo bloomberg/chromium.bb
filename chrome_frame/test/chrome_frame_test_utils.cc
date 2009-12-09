@@ -16,6 +16,7 @@
 #include "base/string_util.h"
 #include "base/win_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome_frame_test {
@@ -621,6 +622,244 @@ bool LowIntegrityToken::IsImpersonated() {
     ::CloseHandle(token);
 
   return false;
+}
+
+HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
+  if (!web_browser)
+    return E_INVALIDARG;
+
+  HRESULT hr = S_OK;
+  DWORD cocreate_flags = CLSCTX_LOCAL_SERVER;
+  chrome_frame_test::LowIntegrityToken token;
+  // Vista has a bug which manifests itself when a medium integrity process
+  // launches a COM server like IE which runs in protected mode due to UAC.
+  // This causes the IWebBrowser2 interface which is returned to be useless,
+  // i.e it does not receive any events, etc. Our workaround for this is
+  // to impersonate a low integrity token and then launch IE.
+  if (win_util::GetWinVersion() == win_util::WINVERSION_VISTA) {
+    // Create medium integrity browser that will launch IE broker.
+    ScopedComPtr<IWebBrowser2> medium_integrity_browser;
+    hr = medium_integrity_browser.CreateInstance(CLSID_InternetExplorer, NULL,
+                                                 CLSCTX_LOCAL_SERVER);
+    if (FAILED(hr))
+      return hr;
+    medium_integrity_browser->Quit();
+    // Broker remains alive.
+    if (!token.Impersonate()) {
+      hr = HRESULT_FROM_WIN32(GetLastError());
+      return hr;
+    }
+
+    cocreate_flags |= CLSCTX_ENABLE_CLOAKING;
+  }
+
+  hr = ::CoCreateInstance(CLSID_InternetExplorer, NULL,
+                          cocreate_flags, IID_IWebBrowser2,
+                          reinterpret_cast<void**>(web_browser));
+  // ~LowIntegrityToken() will switch integrity back to medium.
+  return hr;
+}
+
+_ATL_FUNC_INFO WebBrowserEventSink::kNavigateErrorInfo = {
+  CC_STDCALL, VT_EMPTY, 5, {
+    VT_DISPATCH,
+    VT_VARIANT | VT_BYREF,
+    VT_VARIANT | VT_BYREF,
+    VT_VARIANT | VT_BYREF,
+    VT_BOOL | VT_BYREF,
+  }
+};
+
+_ATL_FUNC_INFO WebBrowserEventSink::kNavigateComplete2Info = {
+  CC_STDCALL, VT_EMPTY, 2, {
+    VT_DISPATCH,
+    VT_VARIANT | VT_BYREF
+  }
+};
+
+_ATL_FUNC_INFO WebBrowserEventSink::kBeforeNavigate2Info = {
+  CC_STDCALL, VT_EMPTY, 7, {
+    VT_DISPATCH,
+    VT_VARIANT | VT_BYREF,
+    VT_VARIANT | VT_BYREF,
+    VT_VARIANT | VT_BYREF,
+    VT_VARIANT | VT_BYREF,
+    VT_VARIANT | VT_BYREF,
+    VT_BOOL | VT_BYREF
+  }
+};
+
+_ATL_FUNC_INFO WebBrowserEventSink::kNewWindow3Info = {
+  CC_STDCALL, VT_EMPTY, 5, {
+    VT_DISPATCH | VT_BYREF,
+    VT_BOOL | VT_BYREF,
+    VT_UINT,
+    VT_BSTR,
+    VT_BSTR
+  }
+};
+
+_ATL_FUNC_INFO WebBrowserEventSink::kVoidMethodInfo = {
+    CC_STDCALL, VT_EMPTY, 0, {NULL}};
+
+_ATL_FUNC_INFO WebBrowserEventSink::kDocumentCompleteInfo = {
+  CC_STDCALL, VT_EMPTY, 2, {
+    VT_DISPATCH,
+    VT_VARIANT | VT_BYREF
+  }
+};
+
+// WebBrowserEventSink member defines
+void WebBrowserEventSink::Uninitialize() {
+  DisconnectFromChromeFrame();
+  if (web_browser2_.get()) {
+    DispEventUnadvise(web_browser2_);
+    web_browser2_->Quit();
+    web_browser2_.Release();
+  }
+}
+
+STDMETHODIMP WebBrowserEventSink::OnBeforeNavigate2Internal(
+    IDispatch* dispatch, VARIANT* url, VARIANT* flags,
+    VARIANT* target_frame_name, VARIANT* post_data, VARIANT* headers,
+    VARIANT_BOOL* cancel) {
+  DLOG(INFO) << __FUNCTION__;
+  // Reset any existing reference to chrome frame since this is a new
+  // navigation.
+  chrome_frame_ = NULL;
+  return OnBeforeNavigate2(dispatch, url, flags, target_frame_name,
+                           post_data, headers, cancel);
+}
+
+STDMETHODIMP_(void) WebBrowserEventSink::OnNavigateComplete2Internal(
+    IDispatch* dispatch, VARIANT* url) {
+  DLOG(INFO) << __FUNCTION__;
+  ConnectToChromeFrame();
+  OnNavigateComplete2(dispatch, url);
+}
+
+STDMETHODIMP_(void) WebBrowserEventSink::OnDocumentCompleteInternal(
+    IDispatch* dispatch, VARIANT* url) {
+  DLOG(INFO) << __FUNCTION__;
+  OnDocumentComplete(dispatch, url);
+}
+
+HRESULT WebBrowserEventSink::OnLoadInternal(const VARIANT* param) {
+  DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
+  OnLoad(param->bstrVal);
+  return S_OK;
+}
+
+HRESULT WebBrowserEventSink::OnLoadErrorInternal(const VARIANT* param) {
+  DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
+  OnLoadError(param->bstrVal);
+  return S_OK;
+}
+
+HRESULT WebBrowserEventSink::OnMessageInternal(const VARIANT* param) {
+  DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
+  OnMessage(param->bstrVal);
+  return S_OK;
+}
+
+HRESULT WebBrowserEventSink::LaunchIEAndNavigate(
+    const std::wstring& navigate_url) {
+  HRESULT hr = LaunchIEAsComServer(web_browser2_.Receive());
+  EXPECT_EQ(S_OK, hr);
+  if (hr == S_OK) {
+    web_browser2_->put_Visible(VARIANT_TRUE);
+    hr = DispEventAdvise(web_browser2_, &DIID_DWebBrowserEvents2);
+    EXPECT_TRUE(hr == S_OK);
+    hr = Navigate(navigate_url);
+  }
+  return hr;
+}
+
+HRESULT WebBrowserEventSink::Navigate(const std::wstring& navigate_url) {
+  VARIANT empty = ScopedVariant::kEmptyVariant;
+  ScopedVariant url;
+  url.Set(navigate_url.c_str());
+
+  HRESULT hr = S_OK;
+  hr = web_browser2_->Navigate2(url.AsInput(), &empty, &empty, &empty, &empty);
+  EXPECT_TRUE(hr == S_OK);
+  return hr;
+}
+
+void WebBrowserEventSink::SetFocusToChrome() {
+  chrome_frame_test::SetKeyboardFocusToWindow(
+      GetAttachedChromeRendererWindow(), 1, 1);
+}
+
+void WebBrowserEventSink::SendInputToChrome(
+    const std::string& input_string) {
+  chrome_frame_test::SendInputToWindow(
+      GetAttachedChromeRendererWindow(), input_string);
+}
+
+void WebBrowserEventSink::ConnectToChromeFrame() {
+  DCHECK(web_browser2_);
+  ScopedComPtr<IShellBrowser> shell_browser;
+  DoQueryService(SID_STopLevelBrowser, web_browser2_,
+                 shell_browser.Receive());
+
+  if (shell_browser) {
+    ScopedComPtr<IShellView> shell_view;
+    shell_browser->QueryActiveShellView(shell_view.Receive());
+    if (shell_view) {
+      shell_view->GetItemObject(SVGIO_BACKGROUND, __uuidof(IChromeFrame),
+           reinterpret_cast<void**>(chrome_frame_.Receive()));
+    }
+
+    if (chrome_frame_) {
+      ScopedVariant onmessage(onmessage_.ToDispatch());
+      ScopedVariant onloaderror(onloaderror_.ToDispatch());
+      ScopedVariant onload(onload_.ToDispatch());
+      EXPECT_HRESULT_SUCCEEDED(chrome_frame_->put_onmessage(onmessage));
+      EXPECT_HRESULT_SUCCEEDED(chrome_frame_->put_onloaderror(onloaderror));
+      EXPECT_HRESULT_SUCCEEDED(chrome_frame_->put_onload(onload));
+    }
+  }
+}
+
+void WebBrowserEventSink::DisconnectFromChromeFrame() {
+  if (chrome_frame_) {
+    ScopedVariant dummy(static_cast<IDispatch*>(NULL));
+    chrome_frame_->put_onmessage(dummy);
+    chrome_frame_->put_onload(dummy);
+    chrome_frame_->put_onloaderror(dummy);
+    chrome_frame_.Release();
+  }
+}
+
+HWND WebBrowserEventSink::GetAttachedChromeRendererWindow() {
+  DCHECK(chrome_frame_);
+  HWND renderer_window = NULL;
+  ScopedComPtr<IOleWindow> ole_window;
+  ole_window.QueryFrom(chrome_frame_);
+  EXPECT_TRUE(ole_window.get());
+
+  if (ole_window) {
+    HWND activex_window = NULL;
+    ole_window->GetWindow(&activex_window);
+    EXPECT_TRUE(IsWindow(activex_window));
+
+    // chrome tab window is the first (and the only) child of activex
+    HWND chrome_tab_window = GetWindow(activex_window, GW_CHILD);
+    EXPECT_TRUE(IsWindow(chrome_tab_window));
+    renderer_window = GetWindow(chrome_tab_window, GW_CHILD);
+  }
+
+  DCHECK(IsWindow(renderer_window));
+  return renderer_window;
+}
+
+HRESULT WebBrowserEventSink::SetWebBrowser(IWebBrowser2* web_browser2) {
+  DCHECK(web_browser2_.get() == NULL);
+  web_browser2_ = web_browser2;
+  web_browser2_->put_Visible(VARIANT_TRUE);
+  HRESULT hr = DispEventAdvise(web_browser2_, &DIID_DWebBrowserEvents2);
+  return hr;
 }
 
 }  // namespace chrome_frame_test

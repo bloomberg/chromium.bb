@@ -181,6 +181,19 @@ bool GetConfigBool(bool default_value, const wchar_t* value_name);
 // Gets an integer configuration value from the registry.
 int GetConfigInt(int default_value, const wchar_t* value_name);
 
+// Sets an integer configuration value in the registry.
+bool SetConfigInt(const wchar_t* value_name, int value);
+
+// Sets a boolean integer configuration value in the registry.
+bool SetConfigBool(const wchar_t* value_name, bool value);
+
+// Deletes the configuration value passed in.
+bool DeleteConfigValue(const wchar_t* value_name);
+
+// Returns true if we are running in headless mode in which case we need to
+// gather crash dumps, etc to send them to the crash server.
+bool IsHeadlessMode();
+
 // Check if this url is opting into Chrome Frame based on static settings.
 bool IsOptInUrl(const wchar_t* url);
 
@@ -277,5 +290,7 @@ STDMETHODIMP QueryInterfaceIfDelegateSupports(void* obj, REFIID iid,
 // Queries the delegated COM object for an interface, bypassing the wrapper.
 #define COM_INTERFACE_BLIND_DELEGATE() \
     COM_INTERFACE_ENTRY_FUNC_BLIND(0, CheckOutgoingInterface<_ComMapClass>)
+
+extern const wchar_t kChromeFrameHeadlessMode[];
 
 #endif  // CHROME_FRAME_UTILS_H_

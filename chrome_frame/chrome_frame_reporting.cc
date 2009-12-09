@@ -11,6 +11,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome_frame/chrome_frame_reporting.h"
+#include "chrome_frame/utils.h"
 
 // Well known SID for the system principal.
 const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
@@ -46,11 +47,13 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* dll_path) {
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 bool InitializeCrashReporting() {
-  // We want to use the Google Update crash reporting. We need to check if the
-  // user allows it first.
-  if (!GoogleUpdateSettings::GetCollectStatsConsent())
-    return true;
-
+  // In headless mode we want crashes to be reported back.
+  if (!IsHeadlessMode()) {
+    // We want to use the Google Update crash reporting. We need to check if the
+    // user allows it first.
+    if (!GoogleUpdateSettings::GetCollectStatsConsent())
+      return true;
+  }
   // Build the pipe name. It can be either:
   // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
   // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"

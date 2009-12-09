@@ -5,10 +5,25 @@
 #ifndef CHROME_FRAME_TEST_CHROME_FRAME_TEST_UTILS_H_
 #define CHROME_FRAME_TEST_CHROME_FRAME_TEST_UTILS_H_
 
+#include <atlbase.h>
+#include <atlcom.h>
+#include <string>
+#include <exdisp.h>
+#include <exdispid.h>
+#include <mshtml.h>
+#include <shlguid.h>
+#include <shobjidl.h>
 #include <windows.h>
 
 #include "base/basictypes.h"
+#include "base/message_loop.h"
 #include "base/process_util.h"
+#include "base/scoped_comptr_win.h"
+#include "base/scoped_variant_win.h"
+
+#include "chrome_frame/test_utils.h"
+// Include without path to make GYP build see it.
+#include "chrome_tab.h"  // NOLINT
 
 namespace chrome_frame_test {
 
@@ -88,6 +103,179 @@ class LowIntegrityToken {
  protected:
   static bool IsImpersonated();
   bool impersonated_;
+};
+
+// MessageLoopForUI wrapper that runs only for a limited time.
+// We need a UI message loop in the main thread.
+class TimedMsgLoop {
+ public:
+  void RunFor(int seconds) {
+    QuitAfter(seconds);
+    loop_.MessageLoop::Run();
+  }
+
+  void PostDelayedTask(
+    const tracked_objects::Location& from_here, Task* task, int64 delay_ms) {
+      loop_.PostDelayedTask(from_here, task, delay_ms);
+  }
+
+  void Quit() {
+    loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
+  }
+
+  void QuitAfter(int seconds) {
+    loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, 1000 * seconds);
+  }
+
+  MessageLoopForUI loop_;
+};
+
+// Launches IE as a COM server and returns the corresponding IWebBrowser2
+// interface pointer.
+// Returns S_OK on success.
+HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser);
+
+#ifndef DISPID_NEWPROCESS
+#define DISPID_NEWPROCESS  284
+#endif  // DISPID_NEWPROCESS
+
+// This class sets up event sinks to the IWebBrowser interface. Currently it
+// subscribes to the following events:-
+// 1. DISPID_BEFORENAVIGATE2
+// 2. DISPID_NAVIGATEERROR
+// 3. DISPID_NAVIGATECOMPLETE2
+// 4. DISPID_NEWWINDOW3
+// 5. DISPID_DOCUMENTCOMPLETE
+// Other events can be subscribed to on an if needed basis.
+class WebBrowserEventSink
+    : public CComObjectRootEx<CComMultiThreadModel>,
+      public IDispEventSimpleImpl<0, WebBrowserEventSink,
+                                  &DIID_DWebBrowserEvents2> {
+ public:
+  typedef IDispEventSimpleImpl<0, WebBrowserEventSink,
+                               &DIID_DWebBrowserEvents2> DispEventsImpl;
+  WebBrowserEventSink()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(
+          onmessage_(this, &WebBrowserEventSink::OnMessageInternal)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          onloaderror_(this, &WebBrowserEventSink::OnLoadErrorInternal)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          onload_(this, &WebBrowserEventSink::OnLoadInternal)) {
+  }
+
+  ~WebBrowserEventSink() {
+    Uninitialize();
+  }
+
+  void Uninitialize();
+
+  // Helper function to launch IE and navigate to a URL.
+  // Returns S_OK on success, S_FALSE if the test was not run, other
+  // errors on failure.
+  HRESULT LaunchIEAndNavigate(const std::wstring& navigate_url);
+
+  virtual HRESULT Navigate(const std::wstring& navigate_url);
+
+  // Set input focus to chrome frame window.
+  void SetFocusToChrome();
+
+  // Send keyboard input to the renderer window hosted in chrome using
+  // SendInput API
+  void SendInputToChrome(const std::string& input_string);
+
+BEGIN_COM_MAP(WebBrowserEventSink)
+END_COM_MAP()
+
+BEGIN_SINK_MAP(WebBrowserEventSink)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2,
+                  OnBeforeNavigate2Internal, &kBeforeNavigate2Info)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_DOWNLOADBEGIN,
+                  OnDownloadBegin, &kVoidMethodInfo)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATECOMPLETE2,
+                  OnNavigateComplete2Internal, &kNavigateComplete2Info)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATEERROR,
+                  OnNavigateError, &kNavigateErrorInfo)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NEWWINDOW3,
+                  OnNewWindow3, &kNewWindow3Info)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE,
+                  OnDocumentCompleteInternal, &kDocumentCompleteInfo)
+END_SINK_MAP()
+
+  STDMETHOD_(void, OnNavigateError)(IDispatch* dispatch, VARIANT* url,
+                                    VARIANT* frame_name, VARIANT* status_code,
+                                    VARIANT* cancel) {
+    DLOG(INFO) << __FUNCTION__;
+  }
+
+  STDMETHOD(OnBeforeNavigate2)(IDispatch* dispatch, VARIANT* url, VARIANT*
+                               flags, VARIANT* target_frame_name,
+                               VARIANT* post_data, VARIANT* headers,
+                               VARIANT_BOOL* cancel) {
+    return S_OK;
+  }
+
+  STDMETHOD(OnBeforeNavigate2Internal)(IDispatch* dispatch, VARIANT* url,
+                                       VARIANT* flags,
+                                       VARIANT* target_frame_name,
+                                       VARIANT* post_data, VARIANT* headers,
+                                       VARIANT_BOOL* cancel);
+  STDMETHOD_(void, OnDownloadBegin)() {}
+  STDMETHOD_(void, OnNavigateComplete2Internal)(IDispatch* dispatch,
+                                                VARIANT* url);
+  STDMETHOD_(void, OnNavigateComplete2)(IDispatch* dispatch, VARIANT* url) {}
+  STDMETHOD_(void, OnNewWindow3)(IDispatch** dispatch, VARIANT_BOOL* Cancel,
+                                 DWORD flags, BSTR url_context, BSTR url) {}
+
+  STDMETHOD_(void, OnDocumentCompleteInternal)(IDispatch* dispatch,
+                                               VARIANT* url);
+
+  STDMETHOD_(void, OnDocumentComplete)(IDispatch* dispatch,
+                                       VARIANT* url) {}
+#ifdef _DEBUG
+  STDMETHOD(Invoke)(DISPID dispid, REFIID riid,
+    LCID lcid, WORD flags, DISPPARAMS* params, VARIANT* result,
+    EXCEPINFO* except_info, UINT* arg_error) {
+    DLOG(INFO) << __FUNCTION__ << L" disp id :"  << dispid;
+    return DispEventsImpl::Invoke(dispid, riid, lcid, flags, params, result,
+                                  except_info, arg_error);
+  }
+#endif  // _DEBUG
+
+  // Chrome frame callbacks
+  virtual void OnLoad(const wchar_t* url) {}
+  virtual void OnLoadError(const wchar_t* url) {}
+  virtual void OnMessage(const wchar_t* message) {}
+
+  IWebBrowser2* web_browser2() {
+    return web_browser2_.get();
+  }
+
+  HRESULT SetWebBrowser(IWebBrowser2* web_browser2);
+
+ protected:
+  // IChromeFrame callbacks
+  HRESULT OnLoadInternal(const VARIANT* param);
+  HRESULT OnLoadErrorInternal(const VARIANT* param);
+  HRESULT OnMessageInternal(const VARIANT* param);
+
+  void ConnectToChromeFrame();
+  void DisconnectFromChromeFrame();
+  HWND GetAttachedChromeRendererWindow();
+
+ public:
+  ScopedComPtr<IWebBrowser2> web_browser2_;
+  ScopedComPtr<IChromeFrame> chrome_frame_;
+  DispCallback<WebBrowserEventSink> onmessage_;
+  DispCallback<WebBrowserEventSink> onloaderror_;
+  DispCallback<WebBrowserEventSink> onload_;
+
+ protected:
+  static _ATL_FUNC_INFO kBeforeNavigate2Info;
+  static _ATL_FUNC_INFO kNavigateComplete2Info;
+  static _ATL_FUNC_INFO kNavigateErrorInfo;
+  static _ATL_FUNC_INFO kNewWindow3Info;
+  static _ATL_FUNC_INFO kVoidMethodInfo;
+  static _ATL_FUNC_INFO kDocumentCompleteInfo;
 };
 
 }  // namespace chrome_frame_test

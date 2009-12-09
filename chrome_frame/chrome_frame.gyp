@@ -446,6 +446,8 @@
         'test/net/test_automation_provider.h',
         'test/net/test_automation_resource_message_filter.cc',
         'test/net/test_automation_resource_message_filter.h',
+        'chrome_tab.h',
+        'chrome_tab.idl',
       ],
       'include_dirs': [
         # To allow including "chrome_tab.h"
@@ -459,6 +461,59 @@
             '../chrome/installer/installer.gyp:installer_util',
             '../google_update/google_update.gyp:google_update',
             '../chrome/installer/installer.gyp:installer_util',
+          ]
+        }],
+      ],
+    },
+
+    {
+      'target_name': 'chrome_frame_reliability_tests',
+      'type': 'executable',
+      'dependencies': [
+        '../build/temp_gyp/googleurl.gyp:googleurl',
+        '../chrome/chrome.gyp:browser',
+        '../chrome/chrome.gyp:utility',
+        '../testing/gtest.gyp:gtest',
+        '../base/allocator/allocator.gyp:allocator',
+        'chrome_frame_npapi',
+        'chrome_frame_strings',
+      ],
+      'sources': [
+        'test/reliability/run_all_unittests.cc',
+        'test/reliability/page_load_test.cc',
+        'test/reliability/page_load_test.h',
+        'test/reliability/reliability_test_suite.h',
+        'test/chrome_frame_test_utils.cc',
+        'test/chrome_frame_test_utils.h',
+        'chrome_tab.h',
+        'chrome_tab.idl',
+        '../base/test/test_file_util_win.cc',
+        '../chrome/test/ui/ui_test.cc',
+        '../chrome/test/ui/ui_test_suite.cc',
+        '../chrome/test/ui/ui_test_suite.h',
+        '../chrome/test/chrome_process_util_win.cc',
+        '../chrome/test/chrome_process_util.cc',
+        '../chrome/test/chrome_process_util.h',
+        '../chrome/test/chrome_process_util_win.cc',
+      ],
+      'include_dirs': [
+        # To allow including "chrome_tab.h"
+        '<(INTERMEDIATE_DIR)',
+      ],
+      'resource_include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'sources': [
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_resources.rc',
+            '<(SHARED_INTERMEDIATE_DIR)/chrome_frame/chrome_frame_strings.rc',
+          ],
+          'dependencies': [
+            # TODO(slightlyoff): Get automation targets working on OS X
+            '../chrome/chrome.gyp:automation',
+            '../chrome/installer/installer.gyp:installer_util',
+            '../google_update/google_update.gyp:google_update',
           ]
         }],
       ],

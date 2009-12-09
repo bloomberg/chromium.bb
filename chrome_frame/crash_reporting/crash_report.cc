@@ -1,3 +1,4 @@
+
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -10,10 +11,13 @@
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome_frame/crash_reporting/vectored_handler.h"
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"
+#include "chrome_frame/utils.h"
 
 namespace {
 // TODO(joshia): factor out common code with chrome used for crash reporting
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
+const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
+
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 
 __declspec(naked)
@@ -56,6 +60,15 @@ class Win32VEHTraits : public VEHTraitsBase {
 
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
+std::wstring GetCrashServerPipeName(const std::wstring& user_sid) {
+  if (IsHeadlessMode())
+    return kChromePipeName;
+
+  std::wstring pipe_name = kGoogleUpdatePipeName;
+  pipe_name += user_sid;
+  return pipe_name;
+}
+
 bool InitializeVectoredCrashReporting(
     bool full_dump,
     const wchar_t* user_sid,
@@ -66,8 +79,7 @@ bool InitializeVectoredCrashReporting(
   if (g_breakpad)
     return true;
 
-  std::wstring pipe_name(kGoogleUpdatePipeName);
-  pipe_name += user_sid;
+  std::wstring pipe_name = GetCrashServerPipeName(user_sid);
 
   if (dump_path.empty()) {
     return false;
