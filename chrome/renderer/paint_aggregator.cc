@@ -28,6 +28,12 @@
 // we will tolerate before downgrading the scroll into a repaint.
 static const float kMaxRedundantPaintToScrollArea = 0.8f;
 
+// The maximum number of paint rects.  If we exceed this limit, then we'll
+// start combining paint rects (see CombinePaintRects).  This limiting is
+// important since the WebKit code associated with deciding what to paint given
+// a paint rect can be significant.
+static const size_t kMaxPaintRects = 10;
+
 gfx::Rect PaintAggregator::PendingUpdate::GetScrollDamage() const {
   // Should only be scrolling in one direction at a time.
   DCHECK(!(scroll_delta.x() && scroll_delta.y()));
@@ -94,16 +100,8 @@ void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
     }
   }
 
-  // Add a non-overlapping paint.  TODO(darin): Limit the size of this vector?
+  // Add a non-overlapping paint.
   update_.paint_rects.push_back(rect);
-
-  // Track how large the paint_rects vector grows during an invalidation
-  // sequence.  Note: A subsequent invalidation may end up being combined
-  // with all existing paints, which means that tracking the size of
-  // paint_rects at the time when GetPendingUpdate() is called may mask
-  // certain performance problems.
-  HISTOGRAM_COUNTS_10000("MPArch.RW_IntermediatePaintRectCount",
-                          update_.paint_rects.size());
 
   // If the new paint overlaps with a scroll, then it forces an invalidation of
   // the scroll.  If the new paint is contained by a scroll, then trim off the
@@ -118,6 +116,17 @@ void PaintAggregator::InvalidateRect(const gfx::Rect& rect) {
         update_.paint_rects.erase(update_.paint_rects.end() - 1);
     }
   }
+
+  if (update_.paint_rects.size() > kMaxPaintRects)
+    CombinePaintRects();
+
+  // Track how large the paint_rects vector grows during an invalidation
+  // sequence.  Note: A subsequent invalidation may end up being combined
+  // with all existing paints, which means that tracking the size of
+  // paint_rects at the time when GetPendingUpdate() is called may mask
+  // certain performance problems.
+  HISTOGRAM_COUNTS_100("MPArch.RW_IntermediatePaintRectCount",
+                       update_.paint_rects.size());
 }
 
 void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
@@ -209,4 +218,34 @@ void PaintAggregator::InvalidateScrollRect() {
   update_.scroll_rect = gfx::Rect();
   update_.scroll_delta = gfx::Point();
   InvalidateRect(scroll_rect);
+}
+
+void PaintAggregator::CombinePaintRects() {
+  // Combine paint rects down to at most two rects: one inside the scroll_rect
+  // and one outside the scroll_rect.  If there is no scroll_rect, then just
+  // use the smallest bounding box for all paint rects.
+  //
+  // NOTE: This is a fairly simple algorithm.  We could get fancier by only
+  // combining two rects to get us under the kMaxPaintRects limit, but if we
+  // reach this method then it means we're hitting a rare case, so there's no
+  // need to over-optimize it.
+  //
+  if (update_.scroll_rect.IsEmpty()) {
+    gfx::Rect bounds = update_.GetPaintBounds();
+    update_.paint_rects.clear();
+    update_.paint_rects.push_back(bounds);
+  } else {
+    gfx::Rect inner, outer;
+    for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
+      const gfx::Rect& existing_rect = update_.paint_rects[i];
+      if (update_.scroll_rect.Contains(existing_rect)) {
+        inner = inner.Union(existing_rect);
+      } else {
+        outer = outer.Union(existing_rect);
+      }
+    }
+    update_.paint_rects.clear();
+    update_.paint_rects.push_back(inner);
+    update_.paint_rects.push_back(outer);
+  }
 }

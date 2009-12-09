@@ -50,6 +50,7 @@ class PaintAggregator {
   gfx::Rect ScrollPaintRect(const gfx::Rect& paint_rect, int dx, int dy) const;
   bool ShouldInvalidateScrollRect(const gfx::Rect& rect) const;
   void InvalidateScrollRect();
+  void CombinePaintRects();
 
   PendingUpdate update_;
 };
