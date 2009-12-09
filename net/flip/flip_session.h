@@ -33,6 +33,7 @@ class HttpNetworkSession;
 class HttpRequestInfo;
 class HttpResponseInfo;
 class LoadLog;
+class SSLInfo;
 
 class FlipSession : public base::RefCounted<FlipSession>,
                     public flip::FlipFramerVisitorInterface {
@@ -149,6 +150,8 @@ class FlipSession : public base::RefCounted<FlipSession>,
   // list), returns NULL otherwise.
   scoped_refptr<FlipStream> GetPushStream(const std::string& url);
 
+  void GetSSLInfo(SSLInfo* ssl_info);
+
   // Callbacks for the Flip session.
   CompletionCallbackImpl<FlipSession> connect_callback_;
   CompletionCallbackImpl<FlipSession> ssl_connect_callback_;
@@ -201,6 +204,9 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // Flag if we have a pending message scheduled for WriteSocket.
   bool delayed_write_pending_;
+
+  // Flag if we're using an SSL connection for this FlipSession.
+  bool is_secure_;
 
   // Flip Frame state.
   flip::FlipFramer flip_framer_;

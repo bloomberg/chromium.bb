@@ -178,6 +178,7 @@ FlipSession::FlipSession(const std::string& host, HttpNetworkSession* session)
       stream_hi_water_mark_(1),  // Always start at 1 for the first stream id.
       write_pending_(false),
       delayed_write_pending_(false),
+      is_secure_(false),
       error_(OK),
       state_(IDLE) {
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
@@ -406,6 +407,7 @@ void FlipSession::OnTCPConnect(int result) {
     socket = session_->socket_factory()->CreateSSLClientSocket(
         socket, "" /* request_->url.HostNoBrackets() */ , ssl_config_);
     connection_.set_socket(socket);
+    is_secure_ = true;
     // TODO(willchan): Plumb LoadLog into FLIP code.
     int status = connection_.socket()->Connect(&ssl_connect_callback_, NULL);
     if (status != ERR_IO_PENDING)
@@ -721,6 +723,14 @@ scoped_refptr<FlipStream> FlipSession::GetPushStream(const std::string& path) {
   return stream;
 }
 
+void FlipSession::GetSSLInfo(SSLInfo* ssl_info) {
+  if (is_secure_) {
+    SSLClientSocket* ssl_socket =
+        reinterpret_cast<SSLClientSocket*>(connection_.socket());
+    ssl_socket->GetSSLInfo(ssl_info);
+  }
+}
+
 void FlipSession::OnError(flip::FlipFramer* framer) {
   LOG(ERROR) << "FlipSession error: " << framer->error_code();
   CloseSession(net::ERR_UNEXPECTED);
@@ -807,6 +817,7 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
   // is a bit rigid for its http (non-flip) design.
   HttpResponseInfo response;
   if (FlipHeadersToHttpResponse(*headers, &response)) {
+    GetSSLInfo(&response.ssl_info);
     stream->OnResponseReceived(response);
   } else {
     stream->OnClose(ERR_INVALID_RESPONSE);
@@ -830,7 +841,7 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
     return;
   }
 
-  LOG(INFO) << "FLIP SYN_REPLY RESPONSE HEADERS for stream: " << stream_id; 
+  LOG(INFO) << "FLIP SYN_REPLY RESPONSE HEADERS for stream: " << stream_id;
   DumpFlipHeaders(*headers);
 
   // We record content declared as being pushed so that we don't
@@ -865,6 +876,7 @@ void FlipSession::OnSynReply(const flip::FlipSynReplyControlFrame* frame,
   CHECK(stream->stream_id() == stream_id);
   HttpResponseInfo response;
   if (FlipHeadersToHttpResponse(*headers, &response)) {
+    GetSSLInfo(&response.ssl_info);
     stream->OnResponseReceived(response);
   } else {
     stream->OnClose(ERR_INVALID_RESPONSE);
