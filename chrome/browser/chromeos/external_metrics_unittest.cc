@@ -6,7 +6,6 @@
 #include <sys/file.h>
 
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,19 +28,19 @@ static void SendMessage(const char* path, const char* name, const char* value) {
   close(fd);
 }
 
-static scoped_ptr<std::string> received_name;
-static scoped_ptr<std::string> received_value;
-static int received_count = 0;
+const char* received_name = NULL;
+const char* received_value = NULL;
+int received_count = 0;
 
 static void ReceiveMessage(const char* name, const char* value) {
-  received_name.reset(new std::string(name));
-  received_value.reset(new std::string(value));
+  received_name = name;
+  received_value = value;
   received_count++;
 }
 
 static void CheckMessage(const char* name, const char* value, int count) {
-  EXPECT_EQ(*received_name.get(), name);
-  EXPECT_EQ(*received_value.get(), value);
+  EXPECT_EQ(0, strcmp(received_name, name));
+  EXPECT_EQ(0, strcmp(received_value, value));
   EXPECT_EQ(received_count, count);
 }
 
@@ -58,8 +57,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
   int32 i;
   const char* path = "/tmp/.chromeos-metrics";
 
-  scoped_ptr<chromeos::ExternalMetrics>
-      external_metrics(new chromeos::ExternalMetrics());
+  chromeos::ExternalMetrics* external_metrics = new chromeos::ExternalMetrics();
   external_metrics->SetRecorder(&ReceiveMessage);
 
   EXPECT_TRUE(unlink(path) == 0 || errno == ENOENT);
