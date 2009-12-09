@@ -100,7 +100,7 @@ typedef enum {
   NPMouseButton_None    = -1,
   NPMouseButton_Left    = 0,
   NPMouseButton_Middle  = 1,
-  NPMouseButton_Right   = 2,
+  NPMouseButton_Right   = 2
 } NPMouseButtons;
 
 typedef enum {
