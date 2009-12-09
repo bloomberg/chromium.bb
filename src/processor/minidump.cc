@@ -50,6 +50,8 @@ typedef SSIZE_T ssize_t;
 #endif  // _WIN32
 
 #include <cassert>
+#include <fstream>
+#include <iostream>
 #include <limits>
 #include <map>
 #include <vector>
@@ -66,6 +68,8 @@ typedef SSIZE_T ssize_t;
 namespace google_breakpad {
 
 
+using std::istream;
+using std::ifstream;
 using std::numeric_limits;
 using std::vector;
 
@@ -3331,35 +3335,44 @@ Minidump::Minidump(const string& path)
       directory_(NULL),
       stream_map_(new MinidumpStreamMap()),
       path_(path),
-      fd_(-1),
+      stream_(NULL),
       swap_(false),
       valid_(false) {
 }
 
+Minidump::Minidump(istream& stream)
+    : header_(),
+      directory_(NULL),
+      stream_map_(new MinidumpStreamMap()),
+      path_(),
+      stream_(&stream),
+      swap_(false),
+      valid_(false) {
+}
 
 Minidump::~Minidump() {
+  if (stream_) {
+    BPLOG(INFO) << "Minidump closing minidump";
+  }
+  if (!path_.empty()) {
+    delete stream_;
+  }
   delete directory_;
   delete stream_map_;
-  if (fd_ != -1) {
-    BPLOG(INFO) << "Minidump closing minidump on fd " << fd_;
-    close(fd_);
-  }
 }
 
 
 bool Minidump::Open() {
-  if (fd_ != -1) {
-    BPLOG(INFO) << "Minidump reopening minidump " << path_ << " on fd " << fd_;
+  if (stream_ != NULL) {
+    BPLOG(INFO) << "Minidump reopening minidump " << path_;
 
     // The file is already open.  Seek to the beginning, which is the position
     // the file would be at if it were opened anew.
     return SeekSet(0);
   }
 
-  // O_BINARY is useful (and defined) on Windows.  On other platforms, it's
-  // useless, and because it's defined as 0 above, harmless.
-  fd_ = open(path_.c_str(), O_RDONLY | O_BINARY);
-  if (fd_ == -1) {
+  stream_ = new ifstream(path_.c_str(), std::ios::in | std::ios::binary);
+  if (!stream_ || !stream_->good()) {
     string error_string;
     int error_code = ErrnoString(&error_string);
     BPLOG(ERROR) << "Minidump could not open minidump " << path_ <<
@@ -3367,7 +3380,7 @@ bool Minidump::Open() {
     return false;
   }
 
-  BPLOG(INFO) << "Minidump opened minidump " << path_ << " on fd " << fd_;
+  BPLOG(INFO) << "Minidump opened minidump " << path_;
   return true;
 }
 
@@ -3617,10 +3630,12 @@ const MDRawDirectory* Minidump::GetDirectoryEntryAtIndex(unsigned int index)
 
 bool Minidump::ReadBytes(void* bytes, size_t count) {
   // Can't check valid_ because Read needs to call this method before
-  // validity can be determined.  The only member that this method
-  // depends on is mFD, and an unset or invalid fd may generate an
-  // error but should not cause a crash.
-  ssize_t bytes_read = read(fd_, bytes, count);
+  // validity can be determined.
+  if (!stream_) {
+    return false;
+  }
+  stream_->read(static_cast<char*>(bytes), count);
+  size_t bytes_read = stream_->gcount();
   if (static_cast<size_t>(bytes_read) != count) {
     if (bytes_read == -1) {
       string error_string;
@@ -3637,21 +3652,26 @@ bool Minidump::ReadBytes(void* bytes, size_t count) {
 
 bool Minidump::SeekSet(off_t offset) {
   // Can't check valid_ because Read needs to call this method before
-  // validity can be determined.  The only member that this method
-  // depends on is mFD, and an unset or invalid fd may generate an
-  // error but should not cause a crash.
-  off_t sought = lseek(fd_, offset, SEEK_SET);
-  if (sought != offset) {
-    if (sought == -1) {
-      string error_string;
-      int error_code = ErrnoString(&error_string);
-      BPLOG(ERROR) << "SeekSet: error " << error_code << ": " << error_string;
-    } else {
-      BPLOG(ERROR) << "SeekSet: sought " << sought << "/" << offset;
-    }
+  // validity can be determined.
+  if (!stream_) {
+    return false;
+  }
+  stream_->seekg(offset, std::ios_base::beg);
+  if (!stream_->good()) {
+    string error_string;
+    int error_code = ErrnoString(&error_string);
+    BPLOG(ERROR) << "SeekSet: error " << error_code << ": " << error_string;
     return false;
   }
   return true;
+}
+
+off_t Minidump::Tell() {
+  if (!valid_ || !stream_) {
+    return (off_t)-1;
+  }
+
+  return stream_->tellg();
 }
 
 

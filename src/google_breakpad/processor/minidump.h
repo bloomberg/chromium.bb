@@ -81,6 +81,7 @@
 
 #include <unistd.h>
 
+#include <iostream>
 #include <map>
 #include <string>
 #include <vector>
@@ -796,9 +797,14 @@ class Minidump {
  public:
   // path is the pathname of a file containing the minidump.
   explicit Minidump(const string& path);
+  // input is an istream wrapping minidump data. Minidump holds a
+  // weak pointer to input, and the caller must ensure that the stream
+  // is valid as long as the Minidump object is.
+  explicit Minidump(std::istream& input);
 
   virtual ~Minidump();
 
+  // path may be empty if the minidump was not opened from a file
   virtual string path() const {
     return path_;
   }
@@ -854,7 +860,7 @@ class Minidump {
   bool SeekSet(off_t offset);
 
   // Returns the current position of the minidump file.
-  off_t Tell() { return valid_ ? lseek(fd_, 0, SEEK_CUR) : (off_t)-1; }
+  off_t Tell();
 
   // The next 2 methods are medium-level I/O routines.
 
@@ -925,11 +931,12 @@ class Minidump {
   MinidumpStreamMap*        stream_map_;
 
   // The pathname of the minidump file to process, set in the constructor.
+  // This may be empty if the minidump was opened directly from a stream.
   const string              path_;
 
-  // The file descriptor for all file I/O.  Used by ReadBytes and SeekSet.
-  // Set based on the |path_| member by Open, which is called by Read.
-  int                       fd_;
+  // The stream for all file I/O.  Used by ReadBytes and SeekSet.
+  // Set based on the path in Open, or directly in the constructor.
+  std::istream*             stream_;
 
   // swap_ is true if the minidump file should be byte-swapped.  If the
   // minidump was produced by a CPU that is other-endian than the CPU
