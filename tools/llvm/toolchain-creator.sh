@@ -3,9 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 #
-#@ This script build the arm SDK.
-#@ It must be run from the native_client/ directory.
-
+#@ This script build the arm untrusted SDK.
+#@ NOTE: It must be run from the native_client/ directory.
+#@ NOTE: you should also source: set_arm_(un)trusted_toolchain.sh
 ######################################################################
 # Config
 ######################################################################
@@ -13,18 +13,21 @@
 set -o nounset
 set -o errexit
 
-readonly CS_TARBALL=arm-2007q3-51-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
-readonly LLVM_BUILD_SCRIPT=tools/llvm/build-install-linux.sh
 
-CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package1787/public/arm-none-linux-gnueabi/${CS_TARBALL}
+# NOTE: gcc and llvm have to be synchronized
+#       we have chosen toolchains which both are based on gcc-4.2.1
 
-# TODO(robertm): temporarily use /usr/local/crosstool2 to not conflict
-#                with the working toolchain in /usr/local/crosstool
-export INSTALL_ROOT=/usr/local/crosstool2
-export CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}
+readonly CS_URL=http://www.codesourcery.com/sgpp/lite/arm/portal/package1787/public/arm-none-linux-gnueabi/arm-2007q3-51-arm-none-linux-gnueabi-i686-pc-linux-gnu.tar.bz2
+
+export INSTALL_ROOT=/usr/local/crosstool-untrusted
 export LLVM_PKG_PATH=$(readlink -f ../third_party/llvm)
 export LLVM_SVN_REV=88663
 export LLVMGCC_SVN_REV=88663
+
+export TMP=/tmp/crosstool-untrusted
+export CODE_SOURCERY_PKG_PATH=${INSTALL_ROOT}/codesourcery
+
+readonly LLVM_BUILD_SCRIPT=${TMP}/build-install-linux.sh
 
 ######################################################################
 # Helper
@@ -46,6 +49,19 @@ SubBanner() {
 
 Usage() {
   egrep "^#@" $0 | cut --bytes=3-
+}
+
+
+DownloadOrCopy() {
+  if [[ -f "$2" ]] ; then
+    echo "$2 already in place"
+  elif [[ $1 =~  'http://' ]] ; then
+    SubBanner "downloading from $1"
+    wget $1 -O $2
+  else
+    SubBanner "copying from $1"
+    cp $1 $2
+  fi
 }
 
 ######################################################################
@@ -76,36 +92,25 @@ ClearInstallDir() {
 CreateTarBall() {
   local tarball=$1
   Banner "creating tar ball ${tarball}"
-  tar cfz ${tarball} -C ${INSTALL_ROOT} .
+  tar jcf ${tarball} -C ${INSTALL_ROOT} .
 }
 
 
 # try to keep the tarball small
 PruneDirs() {
-  local CS=${INSTALL_ROOT}/codesourcery
-  Banner "pruning tree"
-
-  rm     ${INSTALL_ROOT}/arm-none-linux-gnueabi/llvm/lib/lib*.a
-  rm -rf ${CS}/arm-2007q3/share
-  # TODO(robertm): investigate these
-  #  rm -rf ${CS}/arm-2007q3/arm-none-linux-gnueabi/lib
-  #  rm -rf ${CS}/arm-2007q3/arm-none-linux-gnueabi/libc/armv4t
-  rm -rf ${CS}/arm-2007q3/arm-none-linux-gnueabi/libc/thumb2
+  local CS_ROOT=${INSTALL_ROOT}/codesourcery/arm-2007q3
+  Banner "pruning code sourcery tree"
+  SubBanner "Size before: $(du -msc  ${CS_ROOT})"
+  rm -rf ${CS_ROOT}/share
+  rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/libc
+  SubBanner "Size after: $(du -msc  ${CS_ROOT})"
 }
 
 
-# Download the codesourcery tarball or use a local copy when available.
 DownloadOrCopyCodeSourceryTarball() {
-  if [[ -f "${CODE_SOURCERY_PKG_PATH}/${CS_TARBALL}" ]] ; then
-     echo "code sourcery tarball already in place"
-     exit 0
-  fi
-  Banner "downloading code sourcer tarball from ${CS_URL}"
-  if [[ ${CS_TARBALL} ==  "http://*" ]] ; then
-    wget ${CS_URL} -O ${CODE_SOURCERY_PKG_PATH}/${CS_TARBALL}
-  else
-    cp ${CS_URL} ${CODE_SOURCERY_PKG_PATH}/${CS_TARBALL}
-  fi
+  local tarball="${TMP}/${CS_URL##*/}"
+  DownloadOrCopy ${CS_URL} ${tarball}
+  ln -s ${tarball} ${CODE_SOURCERY_PKG_PATH}
 }
 
 
@@ -163,22 +168,6 @@ UntarPatchConfigureAndBuildSfiLlc() {
 }
 
 
-InstallTrustedLinkerScript() {
-  local trusted_ld_script=${INSTALL_ROOT}/codesourcery/ld_script_arm_trusted
-  local ld=${INSTALL_ROOT}/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ld
-  # We are using the output of "ld --verbose" which contains
-  # the linker script delimited by "=========".
-  # We are changing the image start address to 70000000
-  # to move the sel_ldr and other images "out of the way"
-  Banner "installing trusted linker script to ${trusted_ld_script}"
-
-  ${ld} --verbose |\
-      grep -A 10000 "=======" |\
-      grep -v "=======" |\
-      sed -e 's/00008000/70000000/g' > ${trusted_ld_script}
-}
-
-
 # We need to adjust the start address and aligment of nacl arm modules
 InstallUntrustedLinkerScript() {
    Banner "installing untrusted ld script"
@@ -221,7 +210,7 @@ InstallDriver() {
 InstallNewlibAndNaClRuntime() {
   Banner "building and installing nacl runtime"
   SubBanner "building newib"
-   # TODO(robertm)
+  # TODO(robertm): add this
   SubBanner "building extra sdk libs"
   ./scons MODE=nacl_extra_sdk platform=arm sdl_mode=none sdl=none naclsdk_mode=manual naclsdk_validate=0 extra_sdk_clean extra_sdk_update_header install_libpthread extra_sdk_update
   cp -r src/third_party/nacl_sdk/arm-newlib ${INSTALL_ROOT}
@@ -231,6 +220,11 @@ InstallNewlibAndNaClRuntime() {
 InstallExamples() {
   Banner "installing examples into ${INSTALL_ROOT}/examples"
   cp -r  tools/llvm/arm_examples ${INSTALL_ROOT}/examples
+}
+
+
+BuildNewLib() {
+  echo
 }
 
 ######################################################################
@@ -254,29 +248,37 @@ if [ $MODE} = 'help' ] ; then
 fi
 
 #@
-#@ make_tarball <tarball>
+#@ untrusted_sdk <tarball>
 #@
-#@   create sdk tarball
-if [ ${MODE} = 'make_tarball' ] ; then
+#@   create untrusted sdk tarball
+if [ ${MODE} = 'untrusted_sdk' ] ; then
+  mkdir -p ${TMP}
   PathSanityCheck
   ClearInstallDir
   DownloadOrCopyCodeSourceryTarball
   ExtractLlvmBuildScript
   ConfigureAndBuildLlvm
   UntarPatchConfigureAndBuildSfiLlc
-  # TODO(robertm): install missing libs + headers
-  InstallTrustedLinkerScript
-  InstallUntrustedLinkerScript
   InstallNewlibAndNaClRuntime
+  InstallUntrustedLinkerScript
   InstallMiscTools
   InstallDriver
+  # TODO(cbiffle): sandboxed libgcc build
+  # FIXME(robertm)
   InstallExamples
   PruneDirs
-  # TODO(robertm): install qemu
   CreateTarBall $1
   exit 0
 fi
 
+#@
+#@ download-cs
+#@
+#@   download codesourcery toolchain
+if [ ${MODE} = 'download-cs' ] ; then
+  DownloadOrCopyCodeSourceryTarball
+  exit 0
+fi
 
 #@
 #@ llc-sfi
@@ -286,3 +288,26 @@ if [ ${MODE} = 'llc-sfi' ] ; then
   UntarPatchConfigureAndBuildSfiLlc
   exit 0
 fi
+
+#@
+#@ llvm-gcc
+#@
+#@   install llvm-gcc toolchain
+if [ ${MODE} = 'llvm-gcc' ] ; then
+  ExtractLlvmBuildScript
+  ConfigureAndBuildLlvm
+  exit 0
+fi
+
+#@
+#@ newlib-etc
+#@
+#@   install newlib-etc
+if [ ${MODE} = 'newlib-etc' ] ; then
+  InstallNewlibAndNaClRuntime
+  exit 0
+fi
+
+
+echo "ERROR: unknown mode ${MODE}"
+exit -1
