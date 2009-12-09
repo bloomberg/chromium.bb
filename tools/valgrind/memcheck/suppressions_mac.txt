@@ -460,3 +460,13 @@
    fun:_ZN7history14HistoryBackend8InitImplEv
    fun:_ZN7history14HistoryBackend4InitEb
 }
+{
+   bug_29681
+   Memcheck:Addr2
+   ...
+   fun:CSBackupSetItemExcluded
+   fun:_ZN8mac_util22SetFileBackupExclusionERK8FilePathb
+   fun:_ZN7history15HistoryDatabase4InitERK8FilePathS3_
+   fun:_ZN7history14HistoryBackend8InitImplEv
+   fun:_ZN7history14HistoryBackend4InitEb
+}
