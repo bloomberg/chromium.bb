@@ -252,6 +252,8 @@ def generate(env):
     _SetEnvForX86Sdk(env, _GetNaclSdkRoot(env, sdk_mode))
   elif sdk_mode.startswith('custom64:'):
     _SetEnvForX86Sdk64(env, _GetNaclSdkRoot(env, sdk_mode))
+  else:
+    _SetEnvForX86Sdk(env, _GetNaclSdkRoot(env, sdk_mode))
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
 
