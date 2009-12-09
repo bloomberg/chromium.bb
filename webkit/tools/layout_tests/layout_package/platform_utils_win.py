@@ -5,6 +5,7 @@
 """This is the Linux implementation of the layout_package.platform_utils
    package. This file should only be imported by that package."""
 
+import os
 import path_utils
 import subprocess
 import sys
@@ -27,6 +28,11 @@ def PlatformVersion():
   if winver[0] == 5 and (winver[1] == 1 or winver[1] == 2):
     return '-xp'
   return ''
+
+def GetNumCores():
+  """Returns the number of cores on the machine. For hyperthreaded machines,
+  this will be double the number of actual processors."""
+  return int(os.environ.get('NUMBER_OF_PROCESSORS', 1))
 
 def BaselineSearchPath(all_versions=False):
   """Returns the list of directories to search for baselines/results, in

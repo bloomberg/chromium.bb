@@ -40,6 +40,7 @@ from layout_package import test_expectations
 from layout_package import http_server
 from layout_package import json_results_generator
 from layout_package import path_utils
+from layout_package import platform_utils
 from layout_package import test_failures
 from layout_package import test_shell_thread
 from layout_package import test_files
@@ -138,6 +139,11 @@ class TestRunner:
 
     self._shardable_directories = ['chrome', 'LayoutTests', 'pending', 'fast',
         'svg']
+
+    # The http tests are very stable on the mac. Experiment with sharding
+    # the http directories to see if it considerably increases flakiness.
+    if sys.platform == 'darwin':
+      self._shardable_directories.extend(['http', 'tests'])
 
     self._websocket_server = websocket_server.PyWebSocket(
         options.results_directory)
@@ -1236,20 +1242,8 @@ def main(options, args):
   options.platform = path_utils.PlatformName(options.platform)
 
   if not options.num_test_shells:
-    cpus = 1
-    if sys.platform in ('win32', 'cygwin'):
-      cpus = int(os.environ.get('NUMBER_OF_PROCESSORS', 1))
-    elif (hasattr(os, "sysconf") and
-          os.sysconf_names.has_key("SC_NPROCESSORS_ONLN")):
-      # Linux & Unix:
-      ncpus = os.sysconf("SC_NPROCESSORS_ONLN")
-      if isinstance(ncpus, int) and ncpus > 0:
-        cpus = ncpus
-    elif sys.platform in ('darwin'): # OSX:
-      cpus = int(os.popen2("sysctl -n hw.ncpu")[1].read())
-
-    # TODO(ojan): Use cpus+1 once we flesh out the flakiness.
-    options.num_test_shells = cpus
+    # TODO(ojan): Investigate perf/flakiness impact of using numcores + 1.
+    options.num_test_shells = platform_utils.GetNumCores()
 
   logging.info("Running %s test_shells in parallel" % options.num_test_shells)
 

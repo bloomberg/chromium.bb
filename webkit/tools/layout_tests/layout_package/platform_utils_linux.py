@@ -23,6 +23,14 @@ def PlatformVersion():
   minor versions, it returns ''."""
   return ''
 
+def GetNumCores():
+  """Returns the number of cores on the machine. For hyperthreaded machines,
+  this will be double the number of actual processors."""
+  num_cores = os.sysconf("SC_NPROCESSORS_ONLN")
+  if isinstance(num_cores, int) and num_cores > 0:
+    return num_cores
+  return 1
+
 def BaselineSearchPath(all_versions=False):
   """Returns the list of directories to search for baselines/results, in
   order of preference. Paths are relative to the top of the source tree."""

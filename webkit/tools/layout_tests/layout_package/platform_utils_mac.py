@@ -36,6 +36,11 @@ def PlatformVersion():
 
   return ''
 
+def GetNumCores():
+  """Returns the number of cores on the machine. For hyperthreaded machines,
+  this will be double the number of actual processors."""
+  return int(os.popen2("sysctl -n hw.ncpu")[1].read())
+
 # TODO: We should add leopard and snowleopard to the list of paths to check
 # once we start running the tests from snowleopard.
 def BaselineSearchPath(all_versions=False):
