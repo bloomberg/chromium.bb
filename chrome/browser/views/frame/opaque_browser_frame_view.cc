@@ -945,8 +945,14 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
   close_button_->SetVisible(!is_maximized);
   if (is_maximized) {
     // Set the bounds of the minimize button so that we don't have to change
-    // other places that rely on the bounds.
-    minimize_button_->SetBounds(RightEdge(), 0, 0, 0);
+    // other places that rely on the bounds. Put it slightly to the right
+    // of the edge of the view, so that when we remove the spacing it lines
+    // up with the edge.
+    minimize_button_->SetBounds(
+        RightEdge() + kNewTabCaptionMaximizedSpacing,
+        0,
+        0,
+        0);
     return;
   }
 #endif
