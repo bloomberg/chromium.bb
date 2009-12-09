@@ -140,11 +140,11 @@ PREFIX : webcore::rendertextcontrol::calcheight___webcore::rendertextcontrolsing
 REGEX : ^malloc$
 
 # 29149
-PREFIX: malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
+PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
 
 # 29758
-PREFIX: webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::processmessagehelper
-PREFIX: malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write___npapi::pluginstream::trywritetoplugin___
+PREFIX : webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::processmessagehelper
+PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write___npapi::pluginstream::trywritetoplugin___
 
 # 29759
-PREFIX: webcore::imageeventsender::dispatchpendingevents
+PREFIX : webcore::imageeventsender::dispatchpendingevents
