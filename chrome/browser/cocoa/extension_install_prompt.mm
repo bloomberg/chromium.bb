@@ -20,7 +20,7 @@ class Profile;
 
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const std::wstring& warning_text, bool is_uninstall) {
+    const string16& warning_text, bool is_uninstall) {
   NSAlert* alert = [[[NSAlert alloc] init] autorelease];
 
   NSButton* continueButton = [alert addButtonWithTitle:l10n_util::GetNSString(
@@ -38,7 +38,7 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
        is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_HEADING :
                       IDS_EXTENSION_INSTALL_PROMPT_HEADING,
        UTF8ToUTF16(extension->name()))];
-  [alert setInformativeText:base::SysWideToNSString(warning_text)];
+  [alert setInformativeText:base::SysUTF16ToNSString(warning_text)];
   [alert setAlertStyle:NSWarningAlertStyle];
   [alert setIcon:gfx::SkBitmapToNSImage(*icon)];
 

@@ -39,12 +39,12 @@ class ExtensionInstallUI {
                                          Delegate* delegate,
                                          Extension* extension,
                                          SkBitmap* install_icon,
-                                         const std::wstring& warning_text);
+                                         const string16& warning_text);
   static void ShowExtensionUninstallPrompt(Profile* profile,
                                            Delegate* delegate,
                                            Extension* extension,
                                            SkBitmap* install_icon,
-                                           const std::wstring& warning_text);
+                                           const string16& warning_text);
 
   explicit ExtensionInstallUI(Profile* profile);
 
@@ -88,7 +88,7 @@ class ExtensionInstallUI {
   // NOTE: The implementations of this function is platform-specific.
   static void ShowExtensionInstallUIPromptImpl(
       Profile* profile, Delegate* delegate, Extension* extension,
-      SkBitmap* icon, const std::wstring& warning_text, bool is_uninstall);
+      SkBitmap* icon, const string16& warning_text, bool is_uninstall);
 
   Profile* profile_;
   MessageLoop* ui_loop_;

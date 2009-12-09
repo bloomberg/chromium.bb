@@ -51,7 +51,7 @@ void OnDialogResponse(GtkDialog* dialog, int response_id,
 void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
                              Extension *extension,
                              ExtensionInstallUI::Delegate *delegate,
-                             const std::string& warning_text,
+                             const string16& warning_text,
                              bool is_uninstall) {
   // Build the dialog.
   int title_id = is_uninstall ? IDS_EXTENSION_UNINSTALL_PROMPT_TITLE :
@@ -95,7 +95,7 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
   gtk_label_set_selectable(GTK_LABEL(heading_label), TRUE);
   gtk_box_pack_start(GTK_BOX(right_column_area), heading_label, TRUE, TRUE, 0);
 
-  GtkWidget* warning_label = gtk_label_new(warning_text.c_str());
+  GtkWidget* warning_label = gtk_label_new(UTF16ToUTF8(warning_text).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(warning_label), TRUE);
   gtk_widget_set_size_request(warning_label, kRightColumnWidth, -1);
   gtk_misc_set_alignment(GTK_MISC(warning_label), 0.0, 0.5);
@@ -111,7 +111,7 @@ void ShowInstallPromptDialog(GtkWindow* parent, SkBitmap* skia_icon,
 
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const std::wstring& warning_text, bool is_uninstall) {
+    const string16& warning_text, bool is_uninstall) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIProceed();
@@ -125,7 +125,6 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     return;
   }
 
-  std::string warning_ascii = WideToASCII(warning_text);
   ShowInstallPromptDialog(browser_window->window(), icon, extension,
-      delegate, warning_ascii, is_uninstall);
+      delegate, warning_text, is_uninstall);
 }

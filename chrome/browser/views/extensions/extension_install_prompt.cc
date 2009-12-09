@@ -157,7 +157,7 @@ class InstallDialogContent : public views::View, public views::DialogDelegate {
 // static
 void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
     Profile* profile, Delegate* delegate, Extension* extension, SkBitmap* icon,
-    const std::wstring& warning_text, bool is_uninstall) {
+    const string16& warning_text, bool is_uninstall) {
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
   if (!browser) {
     delegate->InstallUIProceed();
@@ -172,5 +172,6 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
 
   views::Window::CreateChromeWindow(window->GetNativeHandle(), gfx::Rect(),
       new InstallDialogContent(delegate, extension, icon,
-                               warning_text, is_uninstall))->Show();
+                               UTF16ToWideHack(warning_text),
+                               is_uninstall))->Show();
 }
