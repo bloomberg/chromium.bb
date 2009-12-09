@@ -110,12 +110,6 @@ class WebResourceService::UnpackerClient
     bool use_utility_process =
         web_resource_service_->resource_dispatcher_host_ != NULL &&
         !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-
-#if defined(OS_LINUX)
-    // TODO(port): Don't use a utility process on linux (crbug.com/22703).
-    use_utility_process = false;
-#endif
-
     if (use_utility_process) {
       ChromeThread::ID thread_id;
       CHECK(ChromeThread::GetCurrentThreadIdentifier(&thread_id));

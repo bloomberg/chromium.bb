@@ -64,12 +64,6 @@ void SandboxedExtensionUnpacker::Start() {
   // UtilityProcessHost should handle it for us. (http://crbug.com/19192)
   bool use_utility_process = rdh_ &&
       !CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess);
-
-#if defined(OS_LINUX)
-    // TODO(port): Don't use a utility process on linux (crbug.com/22703).
-    use_utility_process = false;
-#endif
-
   if (use_utility_process) {
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,

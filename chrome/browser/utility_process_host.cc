@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_switches.h"
@@ -55,13 +56,6 @@ FilePath UtilityProcessHost::GetUtilityProcessCmd() {
 }
 
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
-#if defined(OS_LINUX)
-  // TODO(port): We should not reach here on Linux (crbug.com/22703).
-  // (crbug.com/23837) covers enabling this on Linux.
-  NOTREACHED();
-  return false;
-#endif
-
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
   set_name(L"utility process");
@@ -80,9 +74,10 @@ bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
                                   switches::kUtilityProcess);
   cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
                                   ASCIIToWide(channel_id()));
-  // Pass on the browser locale.
+  // Pass on the browser locale.  TODO(tony): This touches the disk and
+  // checks for locale dlls/pak files.  It shouldn't need to.
   std::string locale = l10n_util::GetApplicationLocale(L"");
-  cmd_line->AppendSwitchWithValue(switches::kLang, ASCIIToWide(locale));
+  cmd_line->AppendSwitchWithValue(switches::kLang, locale);
 
   SetCrashReporterCommandLine(cmd_line);
 
