@@ -2739,9 +2739,6 @@ BUG21411 WIN RELEASE : LayoutTests/svg/dom/SVGScriptElement/script-load-and-erro
 // Fails because we don't support layoutTestController.addUserStyleSheet().
 BUG21439 : LayoutTests/userscripts/simple-stylesheet.html = FAIL
 
-// New test added in r48318 (GoogleURL bug)
-BUG21764 : LayoutTests/fast/forms/ValidityState-typeMismatch-url.html = FAIL
-
 // WK roll to 48371
 BUG21841 MAC DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
 BUG21841 WIN DEBUG : LayoutTests/plugins/destroy-during-npp-new.html = CRASH PASS
