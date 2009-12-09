@@ -24,6 +24,7 @@ class String;
 
 namespace WebKit {
 class WebViewImpl;
+struct WebDevToolsMessageData;
 }
 
 class BoundObject;
@@ -57,6 +58,8 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
                                         const WebKit::WebString& param1,
                                         const WebKit::WebString& param2,
                                         const WebKit::WebString& param3);
+  virtual void dispatchMessageFromAgent(
+      const WebKit::WebDevToolsMessageData& data);
 
  private:
   void AddResourceSourceToFrame(int resource_id,

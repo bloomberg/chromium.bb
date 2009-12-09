@@ -239,6 +239,11 @@ void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
   ExecuteScript(v);
 }
 
+void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
+    const WebKit::WebDevToolsMessageData& data) {
+  // Stub.
+}
+
 void WebDevToolsFrontendImpl::AddResourceSourceToFrame(int resource_id,
                                                      String mime_type,
                                                      Node* frame) {

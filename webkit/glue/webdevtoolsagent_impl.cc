@@ -319,6 +319,11 @@ void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
   }
 }
 
+void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
+     const WebKit::WebDevToolsMessageData& data) {
+  // Stub.
+}
+
 void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point) {
   web_view_impl_->inspectElementAt(point);
 }

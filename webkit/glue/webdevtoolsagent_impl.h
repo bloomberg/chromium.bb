@@ -32,6 +32,7 @@ class WebURLRequest;
 class WebURLResponse;
 class WebViewImpl;
 struct WebURLError;
+struct WebDevToolsMessageData;
 }
 
 class BoundObject;
@@ -76,6 +77,8 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
       const WebKit::WebString& param1,
       const WebKit::WebString& param2,
       const WebKit::WebString& param3);
+  virtual void dispatchMessageFromFrontend(
+      const WebKit::WebDevToolsMessageData& data);
   virtual void inspectElementAt(const WebKit::WebPoint& point);
   virtual void setRuntimeFeatureEnabled(const WebKit::WebString& feature,
                                         bool enabled);
