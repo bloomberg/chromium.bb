@@ -49,7 +49,18 @@ class WidgetExample : public ExampleBase, public views::ButtonListener {
         views::Widget::NotTransparent,
         views::Widget::AcceptEvents,
         views::Widget::DeleteOnDestroy);
-      popup_widget_->Init(NULL, gfx::Rect(100, 100, 200, 300));
+
+      // Compute where to place the popup widget.
+      // We'll place it right below the create_button_.
+      gfx::Point point = create_button_->GetPosition();
+      // The position in point is relative to the parent. Make it absolute.
+      views::View::ConvertPointToScreen(create_button_, &point);
+      // Add the height of create_button_.
+      point.Offset(0, create_button_->size().height());
+      gfx::Rect bounds(point.x(), point.y(), 200, 300);
+
+      // Initialize the popup widget with the computed bounds.
+      popup_widget_->Init(NULL, bounds);
 
       // Add a button to close the popup widget.
       close_button_ = new views::TextButton(this, L"Close");
