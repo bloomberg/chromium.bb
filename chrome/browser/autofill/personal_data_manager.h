@@ -7,6 +7,9 @@
 
 #include <vector>
 
+#include "base/string16.h"
+#include "chrome/browser/autofill/field_types.h"
+
 class AutoFillManager;
 class FormStructure;
 
@@ -22,9 +25,13 @@ class PersonalDataManager {
   // has not previously been prompted, the user will be asked if he would like
   // to import the data. If the user selects yes, a profile will be created
   // with all of the information from recognized fields.
-  virtual bool ImportFormData(
-    const std::vector<FormStructure*>& form_structures,
-    AutoFillManager* autofill_manager);
+  bool ImportFormData(const std::vector<FormStructure*>& form_structures,
+                      AutoFillManager* autofill_manager);
+
+  // Gets the possible field types for the given text, determined by matching
+  // the text with all known personal information and returning matching types.
+  void GetPossibleFieldTypes(const string16& text,
+                             FieldTypeSet* possible_types);
 
  private:
   // Make sure that only Profile can create an instance of PersonalDataManager.

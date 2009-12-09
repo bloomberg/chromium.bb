@@ -87,6 +87,8 @@
         'browser/autofill/autofill_type.cc',
         'browser/autofill/autofill_type.h',
         'browser/autofill/field_types.h',
+        'browser/autofill/form_field.cc',
+        'browser/autofill/form_field.h',
         'browser/autofill/form_structure.cc',
         'browser/autofill/form_structure.h',
         'browser/autofill/personal_data_manager.cc',

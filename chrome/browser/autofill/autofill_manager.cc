@@ -37,13 +37,28 @@ void AutoFillManager::FormFieldValuesSubmitted(
   if (!upload_form_structure_->IsAutoFillable())
     return;
 
-  // TODO(jhawkins): Determine possible field types.
+  // Determine the possible field types.
+  DeterminePossibleFieldTypes(upload_form_structure_.get());
 
   if (!personal_data_->ImportFormData(form_structures_, this))
     return;
 
   // Ask the user for permission to save form information.
   infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
+}
+
+void AutoFillManager::DeterminePossibleFieldTypes(
+    FormStructure* form_structure) {
+  // TODO(jhawkins): Update field text.
+
+  form_structure->GetHeuristicAutoFillTypes();
+
+  for (size_t i = 0; i < form_structure->field_count(); i++) {
+    const AutoFillField* field = form_structure->field(i);
+    FieldTypeSet field_types;
+    personal_data_->GetPossibleFieldTypes(field->value(), &field_types);
+    form_structure->set_possible_types(i, field_types);
+  }
 }
 
 void AutoFillManager::SaveFormData() {

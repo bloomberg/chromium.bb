@@ -25,8 +25,28 @@ static std::string Hash32Bit(const std::string& str) {
 
 }  // namespace
 
-AutoFillField::AutoFillField(const webkit_glue::FormField& field)
-    : webkit_glue::FormField(field) {
+AutoFillField::AutoFillField()
+    : server_type_(NO_SERVER_DATA),
+      heuristic_type_(UNKNOWN_TYPE) {
+}
+
+AutoFillField::AutoFillField(const webkit_glue::FormField& field,
+                             const string16& unique_name)
+    : webkit_glue::FormField(field),
+      unique_name_(unique_name),
+      server_type_(NO_SERVER_DATA),
+      heuristic_type_(UNKNOWN_TYPE) {
+}
+
+AutoFillFieldType AutoFillField::type() const {
+  if (server_type_ != NO_SERVER_DATA)
+    return server_type_;
+
+  return heuristic_type_;
+}
+
+bool AutoFillField::IsEmpty() const {
+  return value().empty();
 }
 
 std::string AutoFillField::FieldSignature() const {
@@ -34,4 +54,12 @@ std::string AutoFillField::FieldSignature() const {
   std::string type = UTF16ToUTF8(html_input_type());
   std::string field_string = field_name + "&" + type;
   return Hash32Bit(field_string);
+}
+
+void AutoFillField::set_heuristic_type(const AutoFillFieldType& type) {
+  DCHECK(type >= 0 && type < MAX_VALID_FIELD_TYPE);
+  if (type >= 0 && type < MAX_VALID_FIELD_TYPE)
+    heuristic_type_ = type;
+  else
+    heuristic_type_ = UNKNOWN_TYPE;
 }

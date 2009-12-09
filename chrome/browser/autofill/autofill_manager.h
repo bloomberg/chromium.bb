@@ -30,6 +30,10 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill {
   virtual void FormFieldValuesSubmitted(
       const webkit_glue::FormFieldValues& form);
 
+  // Uses heuristics and existing personal data to determine the possible field
+  // types.
+  void DeterminePossibleFieldTypes(FormStructure* form_structure);
+
   // Saves the form data to the web database.
   void SaveFormData();
 

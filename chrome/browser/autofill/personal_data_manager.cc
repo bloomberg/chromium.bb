@@ -16,5 +16,9 @@ bool PersonalDataManager::ImportFormData(
   return true;
 }
 
+void PersonalDataManager::GetPossibleFieldTypes(const string16& text,
+                                                FieldTypeSet* possible_types) {
+}
+
 PersonalDataManager::PersonalDataManager() {
 }
