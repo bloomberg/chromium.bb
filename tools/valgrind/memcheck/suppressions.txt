@@ -1889,11 +1889,3 @@
    fun:_ZN3net22FlipNetworkTransaction6DoLoopEi
    fun:_ZN3net22FlipNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
 }
-{
-   bug_29675
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_Z11BrowserMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
-}

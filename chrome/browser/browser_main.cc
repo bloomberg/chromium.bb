@@ -171,7 +171,6 @@ void SIGCHLDHandler(int signal) {
 }
 
 int g_shutdown_pipe_write_fd = -1;
-int g_shutdown_pipe_read_fd = -1;
 
 // Common code between SIG{HUP, INT, TERM}Handler.
 void GracefulShutdownHandler(int signal) {
@@ -182,7 +181,6 @@ void GracefulShutdownHandler(int signal) {
   CHECK(sigaction(signal, &action, NULL) == 0);
 
   RAW_CHECK(g_shutdown_pipe_write_fd != -1);
-  RAW_CHECK(g_shutdown_pipe_read_fd != -1);
   size_t bytes_written = 0;
   do {
     int rv = HANDLE_EINTR(
@@ -248,36 +246,40 @@ void ShutdownDetector::ThreadMain() {
       NOTREACHED() << "Unexpected error: " << strerror(errno);
       break;
     } else if (ret == 0) {
-      NOTREACHED() << "Unexpected closure of shutdown pipe.";
+      // Normal shutdown.
       break;
     }
     bytes_read += ret;
   } while (bytes_read < sizeof(signal));
 
-  LOG(INFO) << "Handling shutdown for signal " << signal << ".";
+  if (bytes_read == sizeof(signal)) {
+    LOG(INFO) << "Handling shutdown for signal " << signal << ".";
 
-  if (!ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit))) {
-    // Without a UI thread to post the exit task to, there aren't many
-    // options.  Raise the signal again.  The default handler will pick it up
-    // and cause an ungraceful exit.
-    LOG(WARNING) << "No UI thread, exiting ungracefully.";
-    kill(getpid(), signal);
+    if (!ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(BrowserList::CloseAllBrowsersAndExit))) {
+      // Without a UI thread to post the exit task to, there aren't many
+      // options.  Raise the signal again.  The default handler will pick it up
+      // and cause an ungraceful exit.
+      LOG(WARNING) << "No UI thread, exiting ungracefully.";
+      PLOG_IF(ERROR, raise(signal) != 0) << "Failed to raise signal";
 
-    // The signal may be handled on another thread.  Give that a chance to
-    // happen.
-    sleep(3);
+      // The signal may be handled on another thread.  Give that a chance to
+      // happen.
+      sleep(3);
 
-    // We really should be dead by now.  For whatever reason, we're not. Exit
-    // immediately, with the exit status set to the signal number with bit 8
-    // set.  On the systems that we care about, this exit status is what is
-    // normally used to indicate an exit by this signal's default handler.
-    // This mechanism isn't a de jure standard, but even in the worst case, it
-    // should at least result in an immediate exit.
-    LOG(WARNING) << "Still here, exiting really ungracefully.";
-    _exit(signal | (1 << 7));
+      // We really should be dead by now.  For whatever reason, we're not. Exit
+      // immediately, with the exit status set to the signal number with bit 8
+      // set.  On the systems that we care about, this exit status is what is
+      // normally used to indicate an exit by this signal's default handler.
+      // This mechanism isn't a de jure standard, but even in the worst case, it
+      // should at least result in an immediate exit.
+      LOG(WARNING) << "Still here, exiting really ungracefully.";
+      _exit(signal | (1 << 7));
+    }
   }
+
+  delete this;
 }
 
 // Sets the file descriptor soft limit to |max_descriptors| or the OS hard
@@ -421,16 +423,23 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_POSIX)
   int pipefd[2];
   int ret = pipe(pipefd);
+  PlatformThreadHandle shutdown_detector_thread;
   if (ret < 0) {
     PLOG(DFATAL) << "Failed to create pipe";
   } else {
-    g_shutdown_pipe_read_fd = pipefd[0];
-    g_shutdown_pipe_write_fd = pipefd[1];
     const size_t kShutdownDetectorThreadStackSize = 4096;
-    if (!PlatformThread::CreateNonJoinable(
+    if (PlatformThread::Create(
         kShutdownDetectorThreadStackSize,
-        new ShutdownDetector(g_shutdown_pipe_read_fd))) {
+        new ShutdownDetector(pipefd[0]),
+        &shutdown_detector_thread)) {
+      // Successfully spawned shutdown detector thread.
+      g_shutdown_pipe_write_fd = pipefd[1];
+    } else {
       LOG(DFATAL) << "Failed to create shutdown detector task.";
+      ret = HANDLE_EINTR(close(pipefd[0]));
+      PLOG_IF(ERROR, ret != 0) << "Failed to close shutdown read pipe";
+      ret = HANDLE_EINTR(close(pipefd[1]));
+      PLOG_IF(ERROR, ret != 0) << "Failed to close shutdown write pipe";
     }
   }
 #endif  // defined(OS_POSIX)
@@ -963,6 +972,15 @@ int BrowserMain(const MainFunctionParams& parameters) {
     }
   }
   chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Stop();
+
+#if defined(OS_POSIX)
+  // If we initialized the shutdown pipe, then close it.
+  if (g_shutdown_pipe_write_fd != -1) {
+    ret = HANDLE_EINTR(close(g_shutdown_pipe_write_fd));
+    g_shutdown_pipe_write_fd = -1;
+    PLOG_IF(ERROR, ret != 0) << "Failed to close";
+  }
+#endif // defined(OS_POSIX)
 
   process_singleton.Cleanup();
 
