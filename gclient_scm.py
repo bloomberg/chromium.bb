@@ -187,6 +187,8 @@ class GitWrapper(SCMWrapper, scm.GIT):
 
   def _Run(self, args, cwd=None, checkrc=True, redirect_stdout=True):
     # TODO(maruel): Merge with Capture?
+    if cwd is None:
+        cwd = self.checkout_path
     stdout=None
     if redirect_stdout:
       stdout=subprocess.PIPE
@@ -195,10 +197,10 @@ class GitWrapper(SCMWrapper, scm.GIT):
     cmd = [self.COMMAND]
     cmd.extend(args)
     sp = subprocess.Popen(cmd, cwd=cwd, stdout=stdout)
+    output = sp.communicate()[0]
     if checkrc and sp.returncode:
       raise gclient_utils.Error('git command %s returned %d' %
                                 (args[0], sp.returncode))
-    output = sp.communicate()[0]
     if output is not None:
       return output.strip()
 
