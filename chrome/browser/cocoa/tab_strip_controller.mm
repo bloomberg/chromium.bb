@@ -1493,10 +1493,12 @@ private:
   // Either insert a new tab or open in a current tab.
   switch (disposition) {
     case NEW_FOREGROUND_TAB:
+      UserMetrics::RecordAction("Tab_DropURLBetweenTabs", browser_->profile());
       browser_->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, index,
                               true, NULL);
       break;
     case CURRENT_TAB:
+      UserMetrics::RecordAction("Tab_DropURLOnTab", browser_->profile());
       tabStripModel_->GetTabContentsAt(index)->OpenURL(url, GURL(), CURRENT_TAB,
                                                        PageTransition::TYPED);
       tabStripModel_->SelectTabContentsAt(index, true);
