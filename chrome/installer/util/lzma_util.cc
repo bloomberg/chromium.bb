@@ -172,13 +172,13 @@ DWORD LzmaUtil::UnPack(const std::wstring& location,
 
     // If archive entry is directory create it and move on to the next entry.
     if (f->IsDirectory) {
-      file_util::CreateDirectory(wfileName);
+      file_util::CreateDirectory(FilePath(wfileName));
       continue;
     }
 
     HANDLE hFile;
     std::wstring directory = file_util::GetDirectoryFromPath(wfileName);
-    file_util::CreateDirectory(directory);
+    file_util::CreateDirectory(FilePath(directory));
 
     hFile = CreateFile(wfileName.c_str(), GENERIC_WRITE, 0, NULL,
                        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);

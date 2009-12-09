@@ -391,12 +391,6 @@ void FindBarGtk::AudibleAlert() {
 }
 
 gfx::Rect FindBarGtk::GetDialogPosition(gfx::Rect avoid_overlapping_rect) {
-  // TODO(estade): Logic for the positioning of the find bar might do better
-  // to share more code with Windows. Currently though they do some things we
-  // don't worry about, such as considering the state of the bookmark bar on
-  // the NTP. I've tried to stick as close to the windows function as possible
-  // here to make it easy to possibly unfork this down the road.
-
   bool ltr = l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT;
   // 15 is the size of the scrollbar, copied from ScrollbarThemeChromium.
   // The height is not used.

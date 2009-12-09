@@ -218,10 +218,6 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
 
   name_label_ = gtk_label_new(NULL);
 
-  // TODO(estade): This is at best an educated guess, since we don't actually
-  // use gfx::Font() to draw the text. This is why we need to add so
-  // much padding when we set the size request. We need to either use gfx::Font
-  // or somehow extend TextElider.
   UpdateNameLabel();
 
   status_label_ = gtk_label_new(NULL);
@@ -532,6 +528,10 @@ void DownloadItemGtk::LoadIcon() {
 }
 
 void DownloadItemGtk::UpdateNameLabel() {
+  // TODO(estade): This is at best an educated guess, since we don't actually
+  // use gfx::Font() to draw the text. This is why we need to add so
+  // much padding when we set the size request. We need to either use gfx::Font
+  // or somehow extend TextElider.
   std::wstring elided_filename = gfx::ElideFilename(
       get_download()->GetFileName(),
       gfx::Font(), kTextWidth);

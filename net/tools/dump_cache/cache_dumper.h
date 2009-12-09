@@ -57,7 +57,7 @@ class CacheDumper : public CacheDumpWriter {
 class DiskDumper : public CacheDumpWriter {
  public:
   DiskDumper(const std::wstring& path) : path_(path), entry_(NULL) {
-    file_util::CreateDirectory(path);
+    file_util::CreateDirectory(FilePath(path));
   };
   virtual bool CreateEntry(const std::string& key, disk_cache::Entry** entry);
   virtual bool WriteEntry(disk_cache::Entry* entry, int stream, int offset,

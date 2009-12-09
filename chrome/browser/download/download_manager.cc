@@ -500,15 +500,10 @@ bool DownloadManager::Init(Profile* profile) {
 
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs, NULL);
 
-  // This variable is needed to resolve which CreateDirectory we want to point
-  // to. Without it, the NewRunnableFunction cannot resolve the ambiguity.
-  // TODO(estade): when file_util::CreateDirectory(wstring) is removed,
-  // get rid of |CreateDirectoryPtr|.
-  bool (*CreateDirectoryPtr)(const FilePath&) = &file_util::CreateDirectory;
   // Ensure that the download directory specified in the preferences exists.
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
-      NewRunnableFunction(CreateDirectoryPtr, download_path()));
+      NewRunnableFunction(&file_util::CreateDirectory, download_path()));
 
   // We use this to determine possibly dangerous downloads.
   download_util::InitializeExeTypes(&exe_types_);
