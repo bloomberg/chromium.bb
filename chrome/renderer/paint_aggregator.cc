@@ -32,7 +32,7 @@ static const float kMaxRedundantPaintToScrollArea = 0.8f;
 // start combining paint rects (see CombinePaintRects).  This limiting is
 // important since the WebKit code associated with deciding what to paint given
 // a paint rect can be significant.
-static const size_t kMaxPaintRects = 10;
+static const size_t kMaxPaintRects = 5;
 
 gfx::Rect PaintAggregator::PendingUpdate::GetScrollDamage() const {
   // Should only be scrolling in one direction at a time.
