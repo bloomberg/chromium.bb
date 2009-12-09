@@ -656,6 +656,12 @@ static bool NPCocoaEventFromWebKeyboardEvent(const WebKeyboardEvent& event,
                                              NPCocoaEvent *np_cocoa_event) {
   np_cocoa_event->data.key.keyCode = event.nativeKeyCode;
 
+  np_cocoa_event->data.key.characters = reinterpret_cast<NPNSString*>(
+      [NSString stringWithFormat:@"%S", event.text]);
+  np_cocoa_event->data.key.charactersIgnoringModifiers =
+      reinterpret_cast<NPNSString*>(
+          [NSString stringWithFormat:@"%S", event.unmodifiedText]);
+
   if (event.modifiers & WebInputEvent::ControlKey)
     np_cocoa_event->data.key.modifierFlags |= controlKey;
   if (event.modifiers & WebInputEvent::ShiftKey)
