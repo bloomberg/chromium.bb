@@ -46,7 +46,7 @@ typedef int32_t Atomic32;
  * different AtomicWord sizes on x86_64 and 32-bit platforms.
  * This macro is undefined after its last use, below.
  */
-#if defined(__x86_64__)
+#if defined(__x86_64__) && !defined(__native_client__)
 #define ATOMICOPS_WORD_SUFFIX "q"
 #else
 #define ATOMICOPS_WORD_SUFFIX "l"
