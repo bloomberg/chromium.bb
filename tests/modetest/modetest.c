@@ -51,6 +51,7 @@
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 #include "intel_bufmgr.h"
+#include "i915_drm.h"
 
 #ifdef HAVE_CAIRO
 #include <math.h>
@@ -661,6 +662,23 @@ void usage(char *name)
 
 #define dump_resource(res) if (res) dump_##res()
 
+static int page_flipping_supported(int fd)
+{
+	int ret, value;
+	struct drm_i915_getparam gp;
+
+	gp.param = I915_PARAM_HAS_PAGEFLIPPING;
+	gp.value = &value;
+
+	ret = drmCommandWriteRead(fd, DRM_I915_GETPARAM, &gp, sizeof(gp));
+	if (ret) {
+		fprintf(stderr, "drm_i915_getparam: %m\n");
+		return 0;
+	}
+
+	return gp.value;
+}
+
 int main(int argc, char **argv)
 {
 	int c;
@@ -723,6 +741,11 @@ int main(int argc, char **argv)
 			printf("success.\n");
 			break;
 		}
+	}
+
+	if (test_vsync && !page_flipping_supported(fd)) {
+		fprintf(stderr, "page flipping not supported by drm.\n");
+		return -1;
 	}
 
 	if (i == ARRAY_SIZE(modules)) {
