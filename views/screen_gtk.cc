@@ -4,6 +4,7 @@
 
 #include "views/screen.h"
 
+#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
@@ -25,9 +26,33 @@ gfx::Rect static GetPrimaryMonitorBounds() {
                                       gdk_atom_intern("CARDINAL", FALSE),
                                       0, 0xFF, false, NULL, NULL, &data_len,
                                       &raw_data);
+  int top_left_x = 0;
+  int top_left_y = 0;
+  int width = 0;
+  int height = 0;
+
+  if (success) {
+    glong* data = reinterpret_cast<glong*>(raw_data);
+    top_left_x = data[0];
+    top_left_y = data[1];
+    width = data[2];
+    height = data[3];
+  } else {
+    // If there's no window manager, we can ask X for Monitor info directly.
+    XWindowAttributes attributes;
+    Status status = XGetWindowAttributes(gdk_x11_get_default_xdisplay(),
+                                         gdk_x11_get_default_root_xwindow(),
+                                         &attributes);
+    if (status) {
+      top_left_x = attributes.x;
+      top_left_y = attributes.y;
+      width = attributes.width;
+      height = attributes.height;
+      success = true;
+    }
+  }
   DCHECK(success);
-  glong* data = reinterpret_cast<glong*>(raw_data);
-  return gfx::Rect(data[0], data[1], data[0] + data[2], data[1] + data[3]);
+  return gfx::Rect(top_left_x, top_left_y, width, height);
 }
 
 // static
