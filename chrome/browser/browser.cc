@@ -390,8 +390,8 @@ std::wstring Browser::GetWindowPlacementKey() const {
 }
 
 bool Browser::ShouldSaveWindowPlacement() const {
-  // We don't save window position for popups.
-  return (type() & TYPE_POPUP) == 0;
+  // Only save the window placement of popups if they are restored.
+  return (type() & TYPE_POPUP) == 0 || browser_defaults::kRestorePopups;
 }
 
 void Browser::SaveWindowPlacement(const gfx::Rect& bounds, bool maximized) {
