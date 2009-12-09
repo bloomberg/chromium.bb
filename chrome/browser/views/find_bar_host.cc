@@ -5,6 +5,7 @@
 #include "chrome/browser/views/find_bar_host.h"
 
 #include "app/gfx/path.h"
+#include "app/gfx/scrollbar_size.h"
 #include "app/slide_animation.h"
 #include "base/keyboard_codes.h"
 #include "base/scoped_handle.h"
@@ -19,7 +20,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "views/focus/external_focus_tracker.h"
 #include "views/focus/view_storage.h"
-#include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
@@ -218,10 +218,8 @@ void FindBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
   // TODO(brettw) this constant is evil. This is the amount of room we've added
   // to the window size, when we set the region, it can change the size.
   static const int kAddedWidth = 7;
-  int difference = (new_pos.right() - kAddedWidth) -
-                   widget_bounds.width() -
-                   views::NativeScrollBar::GetVerticalScrollBarWidth() +
-                   1;
+  int difference = new_pos.right() - kAddedWidth - widget_bounds.width() -
+      gfx::scrollbar_size() + 1;
   if (difference > 0) {
     Path::Point exclude[4];
     exclude[0].x = max_x - difference;  // Top left corner.

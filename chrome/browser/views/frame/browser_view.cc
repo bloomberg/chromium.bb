@@ -10,6 +10,7 @@
 
 #include "app/drag_drop_types.h"
 #include "app/gfx/canvas.h"
+#include "app/gfx/scrollbar_size.h"
 #include "app/l10n_util.h"
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
@@ -79,7 +80,6 @@
 #include "app/win_util.h"
 #include "chrome/browser/jumplist.h"
 #include "chrome/browser/views/theme_install_bubble_view.h"
-#include "views/controls/scrollbar/native_scroll_bar.h"
 #elif defined(OS_LINUX)
 #include "chrome/browser/views/accelerator_table_gtk.h"
 #include "views/window/hit_test.h"
@@ -231,8 +231,8 @@ class ResizeCorner : public views::View {
   static gfx::Size GetSize() {
     // This is disabled until we find what makes us slower when we let
     // WebKit know that we have a resizer rect...
-    // return gfx::Size(views::NativeScrollBar::GetVerticalScrollBarWidth(),
-    //     views::NativeScrollBar::GetHorizontalScrollBarHeight());
+    // int scrollbar_thickness = gfx::scrollbar_size();
+    // return gfx::Size(scrollbar_thickness, scrollbar_thickness);
     return gfx::Size();
   }
 
@@ -553,12 +553,7 @@ gfx::Rect BrowserView::GetFindBarBoundingBox() const {
 
   // Finally decrease the width of the bounding box by the width of the vertical
   // scroll bar.
-#if defined(OS_WIN)
-  int scrollbar_width = views::NativeScrollBar::GetVerticalScrollBarWidth();
-#else
-  // This matches the value in ScrollbarThemeChromium::scrollbarThickness.
-  int scrollbar_width = 15;
-#endif
+  int scrollbar_width = gfx::scrollbar_size();
   bounding_box.set_width(std::max(0, bounding_box.width() - scrollbar_width));
   if (UILayoutIsRightToLeft())
     bounding_box.set_x(bounding_box.x() + scrollbar_width);

@@ -142,6 +142,8 @@
         'gfx/path_gtk.cc',
         'gfx/path_win.cc',
         'gfx/path.h',
+        'gfx/scrollbar_size.cc',
+        'gfx/scrollbar_size.h',
         'gfx/skbitmap_operations.cc',
         'gfx/skbitmap_operations.h',
         'gfx/text_elider.cc',

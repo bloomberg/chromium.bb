@@ -11,6 +11,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/path.h"
+#include "app/gfx/scrollbar_size.h"
 #include "app/l10n_util.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
@@ -25,7 +26,6 @@
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
-#include "views/controls/scrollbar/native_scroll_bar.h"
 #include "views/screen.h"
 
 #if defined(OS_WIN)
@@ -499,10 +499,8 @@ void BlockedPopupContainerViewViews::SetPosition() {
   // vertical scroll bar is visible, and not care about covering up
   // the horizontal scroll bar. Fixing this is half of
   // http://b/1118139.
-  gfx::Point anchor_point(
-      parent_size.width() -
-          views::NativeScrollBar::GetVerticalScrollBarWidth(),
-      parent_size.height());
+  gfx::Point anchor_point(parent_size.width() - gfx::scrollbar_size(),
+                          parent_size.height());
 
   gfx::Size size = container_view_->GetPreferredSize();
   int base_x = anchor_point.x() - size.width();
