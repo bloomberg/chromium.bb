@@ -903,7 +903,7 @@ class TabContents : public PageNavigator,
   virtual void PageHasOSDD(RenderViewHost* render_view_host,
                            int32 page_id, const GURL& url, bool autodetected);
   virtual GURL GetAlternateErrorPageURL() const;
-  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
+  virtual RendererPreferences GetRendererPrefs() const;
   virtual WebPreferences GetWebkitPrefs();
   virtual void OnJSOutOfMemory();
   virtual void OnCrossSiteResponse(int new_render_process_host_id,

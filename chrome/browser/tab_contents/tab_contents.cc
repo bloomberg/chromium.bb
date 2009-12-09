@@ -45,7 +45,6 @@
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
-#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/interstitial_page.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
@@ -260,8 +259,7 @@ TabContents::TabContents(Profile* profile,
       last_javascript_message_dismissal_(),
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
-      renderer_preferences_(
-        renderer_preferences_util::GetInitedRendererPreferences(profile)),
+      renderer_preferences_(platform_util::GetInitedRendererPreferences()),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI) {
 #if defined(OS_CHROMEOS)
   // Make sure the thumbnailer is started before starting the render manager.
@@ -1884,7 +1882,7 @@ RenderViewHostDelegate::AutoFill* TabContents::GetAutoFillDelegate() {
   return autofill_manager_.get();
 }
 
-RendererPreferences TabContents::GetRendererPrefs(Profile* profile) const {
+RendererPreferences TabContents::GetRendererPrefs() const {
   return renderer_preferences_;
 }
 

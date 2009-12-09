@@ -13,7 +13,6 @@
 #include "app/resource_bundle.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/renderer_preferences.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -419,8 +418,7 @@ GtkWidget* IndentWidget(GtkWidget* content) {
   return content_alignment;
 }
 
-void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs,
-                                      bool use_gtk_theme) {
+void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs) {
   DCHECK(prefs);
 
   gint antialias = 0;
@@ -476,24 +474,6 @@ void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs,
   GdkColor color = style->bg[GTK_STATE_SELECTED];
   prefs->focus_ring_color =
       SkColorSetRGB(color.red / 257, color.green / 257, color.blue / 257);
-
-  GdkColor thumb_active_color, thumb_inactive_color, track_color;
-  GtkThemeProvider::GetScrollbarColors(&thumb_active_color,
-                                       &thumb_inactive_color,
-                                       &track_color,
-                                       use_gtk_theme);
-  prefs->thumb_active_color =
-      SkColorSetRGB(thumb_active_color.red   / 257,
-                    thumb_active_color.green / 257,
-                    thumb_active_color.blue  / 257);
-  prefs->thumb_inactive_color =
-      SkColorSetRGB(thumb_inactive_color.red   / 257,
-                    thumb_inactive_color.green / 257,
-                    thumb_inactive_color.blue  / 257);
-  prefs->track_color =
-      SkColorSetRGB(track_color.red   / 257,
-                    track_color.green / 257,
-                    track_color.blue  / 257);
 
   if (hint_style)
     g_free(hint_style);

@@ -20,9 +20,9 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "chrome/common/platform_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -245,7 +245,7 @@ void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
 }
 
 RendererPreferences MainMenu::GetRendererPrefs() const {
-  return renderer_preferences_util::GetInitedRendererPreferences();
+  return platform_util::GetInitedRendererPreferences();
 }
 
 void MainMenu::CreateNewWindow(int route_id) {

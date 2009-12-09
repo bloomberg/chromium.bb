@@ -1559,9 +1559,6 @@ struct ParamTraits<RendererPreferences> {
     WriteParam(m, static_cast<int>(p.hinting));
     WriteParam(m, static_cast<int>(p.subpixel_rendering));
     WriteParam(m, p.focus_ring_color);
-    WriteParam(m, p.thumb_active_color);
-    WriteParam(m, p.thumb_inactive_color);
-    WriteParam(m, p.track_color);
     WriteParam(m, p.browser_handles_top_level_requests);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -1586,15 +1583,6 @@ struct ParamTraits<RendererPreferences> {
     if (!ReadParam(m, iter, &focus_ring_color))
       return false;
     p->focus_ring_color = focus_ring_color;
-
-    int thumb_active_color, thumb_inactive_color, track_color;
-    if (!ReadParam(m, iter, &thumb_active_color) ||
-        !ReadParam(m, iter, &thumb_inactive_color) ||
-        !ReadParam(m, iter, &track_color))
-      return false;
-    p->thumb_active_color = thumb_active_color;
-    p->thumb_inactive_color = thumb_inactive_color;
-    p->track_color = track_color;
 
     if (!ReadParam(m, iter, &p->browser_handles_top_level_requests))
       return false;

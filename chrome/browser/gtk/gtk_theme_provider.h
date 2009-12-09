@@ -65,13 +65,6 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // label. Used for borders between GTK stuff and the webcontent.
   GdkColor GetBorderColor() const;
 
-  // This method returns averages of the thumb part and of the track colors.
-  // Used when rendering scrollbars.
-  static void GetScrollbarColors(GdkColor* thumb_active_color,
-                                 GdkColor* thumb_inactive_color,
-                                 GdkColor* track_color,
-                                 bool use_gtk_theme);
-
   // Expose the inner label. Only used for testing.
   GtkWidget* fake_label() { return fake_label_.get(); }
 

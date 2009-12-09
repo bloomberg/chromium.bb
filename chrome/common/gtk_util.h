@@ -158,8 +158,7 @@ GtkWidget* IndentWidget(GtkWidget* content);
 
 // Initialize the font settings in |prefs| (used when creating new renderers)
 // based on GtkSettings (which itself comes from XSETTINGS).
-void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs,
-                                      bool use_gtk_theme);
+void InitRendererPrefsFromGtkSettings(RendererPreferences* prefs);
 
 // Get the current location of the mouse cursor relative to the screen.
 gfx::Point ScreenPoint(GtkWidget* widget);

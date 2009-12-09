@@ -27,12 +27,12 @@
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/site_instance.h"
-#include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/view_types.h"
@@ -415,8 +415,8 @@ void ExtensionHost::Close(RenderViewHost* render_view_host) {
   }
 }
 
-RendererPreferences ExtensionHost::GetRendererPrefs(Profile* profile) const {
-  return renderer_preferences_util::GetInitedRendererPreferences(profile);
+RendererPreferences ExtensionHost::GetRendererPrefs() const {
+  return platform_util::GetInitedRendererPreferences();
 }
 
 WebPreferences ExtensionHost::GetWebkitPrefs() {
