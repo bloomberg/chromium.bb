@@ -2781,7 +2781,7 @@ BUG24331 LINUX : LayoutTests/svg/text/text-tselect-02-f.svg = FAIL
 BUG_JPARENT LINUX DEBUG SLOW : LayoutTests/fast/frames/calculate-fixed.html = PASS
 
 // Started failing for no apparent reason at r28124, and IMAGE+TEXT diffs started at r51875
-BUG23972 LINUX : LayoutTests/fast/forms/form-element-geometry.html = IMAGE+TEXT
+BUG23972 LINUX : LayoutTests/fast/forms/form-element-geometry.html = TEXT
 
 // Flaky timeouts first appearing at r27764 (webkit 48947)
 BUG9798 RELEASE : LayoutTests/http/tests/cookies/multiple-cookies.html = TIMEOUT PASS
