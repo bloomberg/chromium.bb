@@ -601,7 +601,7 @@
     }
     this._timer = setTimeout(
                     hitch(this, 'errback', new Error('timeout')), 
-                    (timeout || 1000)
+                    (timeout || 10000)
                   );
     this.silentlyCancelled = false;
   };
@@ -781,7 +781,7 @@
     var fired = this.fired;
     var res = this.results[fired];
     var cb = null;
-    while ((chain.length > 0) && (this.paused == 0)) {
+    while ((chain.length) && (!this.paused)) {
       var f = chain.shift()[fired];
       if (!f) {
         continue;
@@ -1196,8 +1196,12 @@
 
   RPC.prototype._postMessageBacklog = function() {
     if (this._open) {
-      forEach(this._msgBacklog, this._postMessage, this);
-      this._msgBacklog = [];
+      // forEach(this._msgBacklog, this._postMessage, this);
+      // this._msgBacklog = [];
+      while (this._msgBacklog.length) {
+        var msg = this._msgBacklog.shift();
+        this._postMessage(msg);
+      }
     }
   };
 
@@ -1210,16 +1214,7 @@
     }
   };
 
-  // currently no-ops. We may need them in the future
-  // RPC.prototype._doWithAck_load = function() { };
-  // RPC.prototype._doWithAck_init = function() { };
-
   RPC.prototype._doWithAck = function(what) {
-    var f = this['_doWithAck_' + what];
-    if (f) {
-      f.call(this);
-    }
-
     this._postMessage('doWithAckCallback:' + what, what == 'load');
   };
 
