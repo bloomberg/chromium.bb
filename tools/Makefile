@@ -435,28 +435,28 @@ gdb: BUILD/stamp-gdb
 ##################################################################
 nc_threads: ALWAYS
 	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
 	 MODE=nacl_extra_sdk install_libpthread --verbose
 
 # The copy of the header files first is a hack.
 # TODO(sehr): fix the missing dependencies in the SDK library build.
 nacl_libraries_nocpp: ALWAYS
 	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
 	 MODE=nacl_extra_sdk extra_sdk_update_header nocpp=yes --verbose \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
 	 MODE=nacl_extra_sdk extra_sdk_update nocpp=yes --verbose
 
 nacl_libraries: ALWAYS
 	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
 	 MODE=nacl_extra_sdk extra_sdk_update_header --verbose \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
 	 MODE=nacl_extra_sdk extra_sdk_update --verbose
 
 sdk_minimal_test: ALWAYS
 	cd .. && \
-	 ./$(SCONS) naclsdk_mode=custom:$(SDKLOC_NATIVE)/$(SDKNAME) \
+	 ./$(SCONS) naclsdk_mode=custom$(subst nacl,,$(CROSSARCH)):$(SDKLOC_NATIVE)/$(SDKNAME) \
 	 MODE=nacl sdk_minimal_test --verbose
 
 

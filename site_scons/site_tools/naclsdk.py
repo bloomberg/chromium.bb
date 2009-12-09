@@ -84,6 +84,9 @@ def _GetNaclSdkRoot(env, sdk_mode):
   elif sdk_mode.startswith('custom:'):
     return os.path.abspath(sdk_mode[len('custom:'):])
 
+  elif sdk_mode.startswith('custom64:'):
+    return os.path.abspath(sdk_mode[len('custom64:'):])
+
   else:
     print 'unknown sdk mode [%s]' % sdk_mode
     assert 0
@@ -142,6 +145,25 @@ def _SetEnvForX86Sdk(env, sdk_path):
               # NOTE: use g++ for linking so we can handle c AND c++
               LINK='nacl-g++',
               RANLIB='nacl-ranlib',
+              )
+
+
+def _SetEnvForX86Sdk64(env, sdk_path):
+  # NOTE: attempts to eliminate this PATH setting and use
+  #       absolute path have been futile
+  env.PrependENVPath('PATH', sdk_path + '/bin')
+
+  env.Replace(# replace hader and lib paths
+              NACL_SDK_INCLUDE=sdk_path + '/nacl64/include',
+              NACL_SDK_LIB=sdk_path + '/nacl64/lib',
+              # Replace the normal unix tools with the NaCl ones.
+              CC='nacl64-gcc',
+              CXX='nacl64-g++',
+              AR='nacl64-ar',
+              AS='nacl64-as',
+              # NOTE: use g++ for linking so we can handle c AND c++
+              LINK='nacl64-g++',
+              RANLIB='nacl64-ranlib',
               )
 
 
@@ -226,8 +248,10 @@ def generate(env):
   # Determine where to get the SDK from.
   if sdk_mode == 'manual':
     _SetEnvForSdkManually(env)
-  else:
+  elif sdk_mode.startswith('custom:'):
     _SetEnvForX86Sdk(env, _GetNaclSdkRoot(env, sdk_mode))
+  elif sdk_mode.startswith('custom64:'):
+    _SetEnvForX86Sdk64(env, _GetNaclSdkRoot(env, sdk_mode))
 
   env.Prepend(LIBPATH='${NACL_SDK_LIB}')
 
