@@ -439,10 +439,6 @@ void GoogleChromeDistribution::LaunchUserExperiment(
   if ((installer_util::NEW_VERSION_UPDATED != status) || system_install)
     return;
 
-  // If user has not opted-in for usage stats  we don't do the experiments.
-  if (!GoogleUpdateSettings::GetCollectStatsConsent())
-    return;
-
   // currently only two equal experiment groups. 90% get the welcome back url.
   int flavor = (base::RandDouble() > 0.1) ? 0 : 1;
 
