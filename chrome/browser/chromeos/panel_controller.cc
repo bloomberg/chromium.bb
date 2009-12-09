@@ -108,6 +108,8 @@ void PanelController::Init(const gfx::Rect window_bounds) {
 
   title_window_ = new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   title_window_->Init(NULL, title_bounds);
+  gtk_widget_set_size_request(title_window_->GetNativeView(),
+                              title_bounds.width(), title_bounds.height());
   title_ = title_window_->GetNativeView();
   title_xid_ = x11_util::GetX11WindowFromGtkWidget(title_);
 

@@ -741,9 +741,9 @@ void BrowserView::Show() {
                           std::max(min_split_size, split_offset));
   contents_split_->set_divider_offset(split_offset);
 
-  frame_->GetWindow()->Show();
-
   browser_extender_->Show();
+
+  frame_->GetWindow()->Show();
 }
 
 void BrowserView::SetBounds(const gfx::Rect& bounds) {
