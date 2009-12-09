@@ -129,6 +129,10 @@ static BOOL recentShownUserActionFailedStatus = NO;
 
 #if defined(GOOGLE_CHROME_BUILD)
   NSString* version = chromeVersion;
+  NSString* channel = [bundle objectForInfoDictionaryKey:@"KSChannelID"];
+  if (!channel)
+    channel = @"stable";
+  version = [NSString stringWithFormat:@"%@ %@", version, channel];
 #else  // GOOGLE_CHROME_BUILD
   // The format string is not localized, but this is how the displayed version
   // is built on Windows too.
