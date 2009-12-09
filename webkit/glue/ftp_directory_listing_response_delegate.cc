@@ -144,10 +144,13 @@ void FtpDirectoryListingResponseDelegate::OnReceivedData(const char* data,
 void FtpDirectoryListingResponseDelegate::OnCompletedRequest() {
   if (!parser_fallback_) {
     if (buffer_.ProcessRemainingData() == net::OK) {
+      if (buffer_.EntryAvailable()) {
+        // Only log the server type if we got enough data to reliably detect it.
+        net::UpdateFtpServerTypeHistograms(buffer_.GetServerType());
+      }
       while (buffer_.EntryAvailable())
         AppendEntryToResponseBuffer(buffer_.PopEntry());
       SendResponseBufferToClient();
-      net::UpdateFtpServerTypeHistograms(buffer_.GetServerType());
       return;
     }
     parser_fallback_ = true;
