@@ -15,6 +15,7 @@
 
 // Well known SID for the system principal.
 const wchar_t kSystemPrincipalSid[] = L"S-1-5-18";
+const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 
 // Returns the custom info structure based on the dll in parameter
 google_breakpad::CustomClientInfo* GetCustomInfo(const wchar_t* dll_path) {
@@ -48,19 +49,30 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 bool InitializeCrashReporting() {
   // In headless mode we want crashes to be reported back.
-  if (!IsHeadlessMode()) {
-    // We want to use the Google Update crash reporting. We need to check if the
-    // user allows it first.
-    if (!GoogleUpdateSettings::GetCollectStatsConsent())
+  bool always_take_dump = IsHeadlessMode();
+  // We want to use the Google Update crash reporting. We need to check if the
+  // user allows it first.
+  if (!always_take_dump && !GoogleUpdateSettings::GetCollectStatsConsent())
       return true;
+
+  // Get the alternate dump directory. We use the temp path.
+  FilePath temp_directory;
+  if (!file_util::GetTempDir(&temp_directory) || temp_directory.empty()) {
+    return false;
   }
-  // Build the pipe name. It can be either:
-  // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
-  // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
+
   wchar_t dll_path[MAX_PATH * 2] = {0};
   GetModuleFileName(reinterpret_cast<HMODULE>(&__ImageBase), dll_path,
                     arraysize(dll_path));
 
+  if (always_take_dump) {
+    return InitializeVectoredCrashReportingWithPipeName(true, kChromePipeName,
+      temp_directory.value(), GetCustomInfo(dll_path));
+  }
+
+  // Build the pipe name. It can be either:
+  // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
+  // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
   std::wstring user_sid;
   if (InstallUtil::IsPerUserInstall(dll_path)) {
     if (!win_util::GetUserSidString(&user_sid)) {
@@ -68,12 +80,6 @@ bool InitializeCrashReporting() {
     }
   } else {
     user_sid = kSystemPrincipalSid;
-  }
-
-  // Get the alternate dump directory. We use the temp path.
-  FilePath temp_directory;
-  if (!file_util::GetTempDir(&temp_directory) || temp_directory.empty()) {
-    return false;
   }
 
   return InitializeVectoredCrashReporting(false, user_sid.c_str(),

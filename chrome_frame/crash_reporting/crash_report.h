@@ -16,6 +16,13 @@ bool InitializeVectoredCrashReporting(
     const wchar_t* user_sid,
     const std::wstring& dump_path,
     google_breakpad::CustomClientInfo* client_info);
+
+bool InitializeVectoredCrashReportingWithPipeName(
+    bool full_dump,
+    const wchar_t* pipe_name,
+    const std::wstring& dump_path,
+    google_breakpad::CustomClientInfo* client_info);
+
 bool ShutdownVectoredCrashReporting();
 
 #endif  // CHROME_FRAME_CRASH_REPORTING_CRASH_REPORT_H_

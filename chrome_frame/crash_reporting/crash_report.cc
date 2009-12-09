@@ -11,12 +11,10 @@
 #include "breakpad/src/client/windows/handler/exception_handler.h"
 #include "chrome_frame/crash_reporting/vectored_handler.h"
 #include "chrome_frame/crash_reporting/vectored_handler-impl.h"
-#include "chrome_frame/utils.h"
 
 namespace {
 // TODO(joshia): factor out common code with chrome used for crash reporting
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
-const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 
 google_breakpad::ExceptionHandler* g_breakpad = NULL;
 
@@ -61,25 +59,18 @@ class Win32VEHTraits : public VEHTraitsBase {
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 std::wstring GetCrashServerPipeName(const std::wstring& user_sid) {
-  if (IsHeadlessMode())
-    return kChromePipeName;
-
   std::wstring pipe_name = kGoogleUpdatePipeName;
   pipe_name += user_sid;
   return pipe_name;
 }
 
-bool InitializeVectoredCrashReporting(
+bool InitializeVectoredCrashReportingWithPipeName(
     bool full_dump,
-    const wchar_t* user_sid,
+    const wchar_t* pipe_name,
     const std::wstring& dump_path,
     google_breakpad::CustomClientInfo* client_info) {
-  DCHECK(user_sid);
-  DCHECK(client_info);
   if (g_breakpad)
     return true;
-
-  std::wstring pipe_name = GetCrashServerPipeName(user_sid);
 
   if (dump_path.empty()) {
     return false;
@@ -90,7 +81,7 @@ bool InitializeVectoredCrashReporting(
       dump_path, NULL, NULL, NULL,
       google_breakpad::ExceptionHandler::HANDLER_INVALID_PARAMETER |
       google_breakpad::ExceptionHandler::HANDLER_PURECALL, dump_type,
-      pipe_name.c_str(), client_info);
+      pipe_name, client_info);
 
   if (g_breakpad) {
     // Find current module boundaries.
@@ -103,6 +94,22 @@ bool InitializeVectoredCrashReporting(
   }
 
   return g_breakpad != NULL;
+}
+
+bool InitializeVectoredCrashReporting(
+    bool full_dump,
+    const wchar_t* user_sid,
+    const std::wstring& dump_path,
+    google_breakpad::CustomClientInfo* client_info) {
+  DCHECK(user_sid);
+  DCHECK(client_info);
+
+  std::wstring pipe_name = GetCrashServerPipeName(user_sid);
+
+  return InitializeVectoredCrashReportingWithPipeName(full_dump,
+                                                      pipe_name.c_str(),
+                                                      dump_path,
+                                                      client_info);
 }
 
 bool ShutdownVectoredCrashReporting() {
