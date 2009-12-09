@@ -70,37 +70,18 @@
           'target_name': 'ffmpegsumo',
           'type': 'shared_library',
           'sources': [
-            'source/patched-ffmpeg-mt/libavcodec/aac.c',
-            'source/patched-ffmpeg-mt/libavcodec/aac_ac3_parser.c',
-            'source/patched-ffmpeg-mt/libavcodec/aac_parser.c',
-            'source/patched-ffmpeg-mt/libavcodec/aactab.c',
             'source/patched-ffmpeg-mt/libavcodec/allcodecs.c',
             'source/patched-ffmpeg-mt/libavcodec/audioconvert.c',
             'source/patched-ffmpeg-mt/libavcodec/avpacket.c',
             'source/patched-ffmpeg-mt/libavcodec/bitstream.c',
             'source/patched-ffmpeg-mt/libavcodec/bitstream_filter.c',
-            'source/patched-ffmpeg-mt/libavcodec/cabac.c',
             'source/patched-ffmpeg-mt/libavcodec/dsputil.c',
-            'source/patched-ffmpeg-mt/libavcodec/error_resilience.c',
             'source/patched-ffmpeg-mt/libavcodec/eval.c',
             'source/patched-ffmpeg-mt/libavcodec/faanidct.c',
             'source/patched-ffmpeg-mt/libavcodec/fft.c',
-            'source/patched-ffmpeg-mt/libavcodec/golomb.c',
-            'source/patched-ffmpeg-mt/libavcodec/h264.c',
-            'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
-            'source/patched-ffmpeg-mt/libavcodec/h264_parser.c',
-            'source/patched-ffmpeg-mt/libavcodec/h264idct.c',
-            'source/patched-ffmpeg-mt/libavcodec/h264pred.c',
             'source/patched-ffmpeg-mt/libavcodec/imgconvert.c',
             'source/patched-ffmpeg-mt/libavcodec/jrevdct.c',
             'source/patched-ffmpeg-mt/libavcodec/mdct.c',
-            'source/patched-ffmpeg-mt/libavcodec/mpeg4audio.c',
-            'source/patched-ffmpeg-mt/libavcodec/mpegaudio.c',
-            'source/patched-ffmpeg-mt/libavcodec/mpegaudio_parser.c',
-            'source/patched-ffmpeg-mt/libavcodec/mpegaudiodata.c',
-            'source/patched-ffmpeg-mt/libavcodec/mpegaudiodec.c',
-            'source/patched-ffmpeg-mt/libavcodec/mpegaudiodecheader.c',
-            'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c',
             'source/patched-ffmpeg-mt/libavcodec/opt.c',
             'source/patched-ffmpeg-mt/libavcodec/options.c',
             'source/patched-ffmpeg-mt/libavcodec/parser.c',
@@ -120,12 +101,8 @@
             'source/patched-ffmpeg-mt/libavformat/avio.c',
             'source/patched-ffmpeg-mt/libavformat/aviobuf.c',
             'source/patched-ffmpeg-mt/libavformat/cutils.c',
-            'source/patched-ffmpeg-mt/libavformat/id3v2.c',
-            'source/patched-ffmpeg-mt/libavformat/isom.c',
             'source/patched-ffmpeg-mt/libavformat/metadata.c',
             'source/patched-ffmpeg-mt/libavformat/metadata_compat.c',
-            'source/patched-ffmpeg-mt/libavformat/mov.c',
-            'source/patched-ffmpeg-mt/libavformat/mp3.c',
             'source/patched-ffmpeg-mt/libavformat/oggdec.c',
             'source/patched-ffmpeg-mt/libavformat/oggparseogm.c',
             'source/patched-ffmpeg-mt/libavformat/oggparsetheora.c',
@@ -142,7 +119,6 @@
             'source/patched-ffmpeg-mt/libavutil/mathematics.c',
             'source/patched-ffmpeg-mt/libavutil/mem.c',
             'source/patched-ffmpeg-mt/libavutil/rational.c',
-
             # Config file for the OS and architecture.
             'source/config/<(ffmpeg_branding)/<(OS)/<(target_arch)/config.h',
           ],
@@ -158,10 +134,8 @@
             '-fomit-frame-pointer',
           ],
           'conditions': [
-            ['ffmpeg_branding!="Chrome"', {
-              'sources!': [
-                # Exclude files that should only be used if doing a branded
-                # Google Chrome build.
+            ['ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS"', {
+              'sources': [
                 'source/patched-ffmpeg-mt/libavcodec/aac.c',
                 'source/patched-ffmpeg-mt/libavcodec/aac_ac3_parser.c',
                 'source/patched-ffmpeg-mt/libavcodec/aac_parser.c',
@@ -186,6 +160,37 @@
                 'source/patched-ffmpeg-mt/libavformat/mp3.c',
               ],
             }],  # ffmpeg_branding
+            ['ffmpeg_branding=="ChromeOS"', {
+              'sources': [
+		'source/patched-ffmpeg-mt/libavcodec/h263.c',
+                'source/patched-ffmpeg-mt/libavcodec/h263dec.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
+                'source/patched-ffmpeg-mt/libavcodec/intrax8.c',
+                'source/patched-ffmpeg-mt/libavcodec/intrax8dsp.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpeg12data.c',
+                # TODO(fbarchard): add mpeg4 bsf
+                #'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c',
+		'source/patched-ffmpeg-mt/libavcodec/mpeg4video_parser.c',
+                'source/patched-ffmpeg-mt/libavcodec/msmpeg4.c',
+                'source/patched-ffmpeg-mt/libavcodec/msmpeg4data.c',
+                'source/patched-ffmpeg-mt/libavcodec/pcm.c',
+                'source/patched-ffmpeg-mt/libavcodec/vc1.c',
+                'source/patched-ffmpeg-mt/libavcodec/vc1data.c',
+                'source/patched-ffmpeg-mt/libavcodec/vc1dsp.c',
+                'source/patched-ffmpeg-mt/libavcodec/wma.c',
+                'source/patched-ffmpeg-mt/libavcodec/wmadec.c',
+                'source/patched-ffmpeg-mt/libavcodec/wmv2.c',
+                'source/patched-ffmpeg-mt/libavcodec/wmv2dec.c',
+                'source/patched-ffmpeg-mt/libavformat/asf.c',
+                'source/patched-ffmpeg-mt/libavformat/asfcrypt.c',
+                'source/patched-ffmpeg-mt/libavformat/asfdec.c',
+                'source/patched-ffmpeg-mt/libavformat/avidec.c',
+                'source/patched-ffmpeg-mt/libavformat/raw.c',
+                'source/patched-ffmpeg-mt/libavformat/wav.c',
+                'source/patched-ffmpeg-mt/libavutil/des.c',
+                'source/patched-ffmpeg-mt/libavutil/rc4.c',
+              ],
+            }],  # ffmpeg_branding
             ['target_arch=="ia32" or target_arch=="x64"', {
               'dependencies': [
                 'make_ffmpeg_asm_lib',
@@ -205,6 +210,16 @@
                 'source/patched-ffmpeg-mt/libavcodec/x86/simple_idct_mmx.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/vp3dsp_mmx.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/vp3dsp_sse2.c',
+              ],
+            }],
+            ['(target_arch=="ia32" or target_arch=="x64") and ' +
+	        'ffmpeg_branding=="ChromeOS"', {
+              'dependencies': [
+                'make_ffmpeg_asm_lib',
+              ],
+              'sources': [
+                'source/patched-ffmpeg-mt/libavcodec/x86/dsputil_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/vc1dsp_mmx.c',
               ],
             }],
             ['target_arch=="x64"', {
