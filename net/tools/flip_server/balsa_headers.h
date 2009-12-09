@@ -789,13 +789,8 @@ class BalsaHeaders {
 
   void CopyFrom(const BalsaHeaders& other);
 
-  // Exists until it is allowable to turn on header-order
-  // computation in the X-Google-GFE-Frontline-Info header, instead
-  // of requiring GFEv2 to output in the same header order in
-  // which it has received data.
   // TODO(fenix): remove this function and rename all occurances
-  // of it in the code to AppendHeader when the condition above
-  // has been satisified.
+  // of it in the code to AppendHeader...
   void HackHeader(const StringPiece& key, const StringPiece& value);
 
   // Same as AppendToHeader, except that it will attempt to preserve
