@@ -665,6 +665,9 @@ const char kCookiePipe[]                    = "cookie-pipe";
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";
 
+// Enable experimental Chrome-as-a-login-manager behavior.
+const char kLoginManager[]                  = "login-manager";
+
 // Attempts to load libcros and validate it, then exits. A nonzero return code
 // means the library could not be loaded correctly.
 const char kTestLoadLibcros[]               = "test-load-libcros";

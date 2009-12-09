@@ -14,6 +14,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 
 namespace chromeos {
 
@@ -28,9 +29,9 @@ namespace chromeos {
 
 class PipeReader {
  public:
-  explicit PipeReader(const std::string& pipe_name)
+  explicit PipeReader(const FilePath& pipe_name)
       : pipe_(NULL),
-        pipe_name_(pipe_name) {
+        pipe_name_(pipe_name.value()) {
   }
   virtual ~PipeReader() {
     if (pipe_)

@@ -331,6 +331,8 @@
         <include name="IDR_ABOUT_BACKGROUND" file="chromium/about_background.png" type="BINDATA" />
         <include name="IDR_ABOUT_BACKGROUND_RTL" file="chromium/about_background_rtl.png" type="BINDATA" />
         <include name="IDR_ABOUT_BACKGROUND_COLOR" file="chromium/about_background_color.png" type="BINDATA" />
+        <include name="IDR_LOGIN_BACKGROUND" file="chromium/login_background.png" type="BINDATA" />
+        <include name="IDR_LOGIN_PANEL" file="chromium/login_panel.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO" file="chromium/product_logo.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_WHITE" file="chromium/product_logo_white.png" type="BINDATA" />
         <include name="IDR_PRODUCT_LOGO_16" file="chromium/product_logo_16.png" type="BINDATA" />
