@@ -30,98 +30,6 @@
 #define PB_BUFMGR_DWORDS   (4096 / 2)
 #define PB_MIN_USER_DWORDS  2048
 
-static uint32_t
-nouveau_pushbuf_calc_reloc(struct drm_nouveau_gem_pushbuf_bo *pbbo,
-			   struct drm_nouveau_gem_pushbuf_reloc *r)
-{
-	uint32_t push = 0;
-
-	if (r->flags & NOUVEAU_GEM_RELOC_LOW)
-		push = (pbbo->presumed_offset + r->data);
-	else
-	if (r->flags & NOUVEAU_GEM_RELOC_HIGH)
-		push = (pbbo->presumed_offset + r->data) >> 32;
-	else
-		push = r->data;
-
-	if (r->flags & NOUVEAU_GEM_RELOC_OR) {
-		if (pbbo->presumed_domain & NOUVEAU_GEM_DOMAIN_VRAM)
-			push |= r->vor;
-		else
-			push |= r->tor;
-	}
-
-	return push;
-}
-
-int
-nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
-			   struct nouveau_bo *bo, uint32_t data, uint32_t data2,
-			   uint32_t flags, uint32_t vor, uint32_t tor)
-{
-	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(chan->pushbuf);
-	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
-	struct drm_nouveau_gem_pushbuf_reloc *r;
-	struct drm_nouveau_gem_pushbuf_bo *pbbo;
-	uint32_t domains = 0;
-
-	if (nvpb->nr_relocs >= NOUVEAU_GEM_MAX_RELOCS) {
-		fprintf(stderr, "too many relocs!!\n");
-		return -ENOMEM;
-	}
-
-	if (nvbo->user && (flags & NOUVEAU_BO_WR)) {
-		fprintf(stderr, "write to user buffer!!\n");
-		return -EINVAL;
-	}
-
-	pbbo = nouveau_bo_emit_buffer(chan, bo);
-	if (!pbbo) {
-		fprintf(stderr, "buffer emit fail :(\n");
-		return -ENOMEM;
-	}
-
-	nvbo->pending_refcnt++;
-
-	if (flags & NOUVEAU_BO_VRAM)
-		domains |= NOUVEAU_GEM_DOMAIN_VRAM;
-	if (flags & NOUVEAU_BO_GART)
-		domains |= NOUVEAU_GEM_DOMAIN_GART;
-
-	if (!(pbbo->valid_domains & domains)) {
-		fprintf(stderr, "no valid domains remain!\n");
-		return -EINVAL;
-	}
-	pbbo->valid_domains &= domains;
-
-	assert(flags & NOUVEAU_BO_RDWR);
-	if (flags & NOUVEAU_BO_RD) {
-		pbbo->read_domains |= domains;
-	}
-	if (flags & NOUVEAU_BO_WR) {
-		pbbo->write_domains |= domains;
-		nvbo->write_marker = 1;
-	}
-
-	r = nvpb->relocs + nvpb->nr_relocs++;
-	r->bo_index = pbbo - nvpb->buffers;
-	r->reloc_index = (uint32_t *)ptr - nvpb->pushbuf;
-	r->flags = 0;
-	if (flags & NOUVEAU_BO_LOW)
-		r->flags |= NOUVEAU_GEM_RELOC_LOW;
-	if (flags & NOUVEAU_BO_HIGH)
-		r->flags |= NOUVEAU_GEM_RELOC_HIGH;
-	if (flags & NOUVEAU_BO_OR)
-		r->flags |= NOUVEAU_GEM_RELOC_OR;
-	r->data = data;
-	r->vor = vor;
-	r->tor = tor;
-
-	*(uint32_t *)ptr = (flags & NOUVEAU_BO_DUMMY) ? 0 :
-		nouveau_pushbuf_calc_reloc(pbbo, r);
-	return 0;
-}
-
 static int
 nouveau_pushbuf_space_call(struct nouveau_channel *chan, unsigned min)
 {
@@ -408,4 +316,95 @@ nouveau_pushbuf_marker_undo(struct nouveau_channel *chan)
 	nvpb->marker = 0;
 }
 
+static uint32_t
+nouveau_pushbuf_calc_reloc(struct drm_nouveau_gem_pushbuf_bo *pbbo,
+			   struct drm_nouveau_gem_pushbuf_reloc *r)
+{
+	uint32_t push = 0;
+
+	if (r->flags & NOUVEAU_GEM_RELOC_LOW)
+		push = (pbbo->presumed_offset + r->data);
+	else
+	if (r->flags & NOUVEAU_GEM_RELOC_HIGH)
+		push = (pbbo->presumed_offset + r->data) >> 32;
+	else
+		push = r->data;
+
+	if (r->flags & NOUVEAU_GEM_RELOC_OR) {
+		if (pbbo->presumed_domain & NOUVEAU_GEM_DOMAIN_VRAM)
+			push |= r->vor;
+		else
+			push |= r->tor;
+	}
+
+	return push;
+}
+
+int
+nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
+			   struct nouveau_bo *bo, uint32_t data, uint32_t data2,
+			   uint32_t flags, uint32_t vor, uint32_t tor)
+{
+	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(chan->pushbuf);
+	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
+	struct drm_nouveau_gem_pushbuf_reloc *r;
+	struct drm_nouveau_gem_pushbuf_bo *pbbo;
+	uint32_t domains = 0;
+
+	if (nvpb->nr_relocs >= NOUVEAU_GEM_MAX_RELOCS) {
+		fprintf(stderr, "too many relocs!!\n");
+		return -ENOMEM;
+	}
+
+	if (nvbo->user && (flags & NOUVEAU_BO_WR)) {
+		fprintf(stderr, "write to user buffer!!\n");
+		return -EINVAL;
+	}
+
+	pbbo = nouveau_bo_emit_buffer(chan, bo);
+	if (!pbbo) {
+		fprintf(stderr, "buffer emit fail :(\n");
+		return -ENOMEM;
+	}
+
+	nvbo->pending_refcnt++;
+
+	if (flags & NOUVEAU_BO_VRAM)
+		domains |= NOUVEAU_GEM_DOMAIN_VRAM;
+	if (flags & NOUVEAU_BO_GART)
+		domains |= NOUVEAU_GEM_DOMAIN_GART;
+
+	if (!(pbbo->valid_domains & domains)) {
+		fprintf(stderr, "no valid domains remain!\n");
+		return -EINVAL;
+	}
+	pbbo->valid_domains &= domains;
+
+	assert(flags & NOUVEAU_BO_RDWR);
+	if (flags & NOUVEAU_BO_RD) {
+		pbbo->read_domains |= domains;
+	}
+	if (flags & NOUVEAU_BO_WR) {
+		pbbo->write_domains |= domains;
+		nvbo->write_marker = 1;
+	}
+
+	r = nvpb->relocs + nvpb->nr_relocs++;
+	r->bo_index = pbbo - nvpb->buffers;
+	r->reloc_index = (uint32_t *)ptr - nvpb->pushbuf;
+	r->flags = 0;
+	if (flags & NOUVEAU_BO_LOW)
+		r->flags |= NOUVEAU_GEM_RELOC_LOW;
+	if (flags & NOUVEAU_BO_HIGH)
+		r->flags |= NOUVEAU_GEM_RELOC_HIGH;
+	if (flags & NOUVEAU_BO_OR)
+		r->flags |= NOUVEAU_GEM_RELOC_OR;
+	r->data = data;
+	r->vor = vor;
+	r->tor = tor;
+
+	*(uint32_t *)ptr = (flags & NOUVEAU_BO_DUMMY) ? 0 :
+		nouveau_pushbuf_calc_reloc(pbbo, r);
+	return 0;
+}
 
