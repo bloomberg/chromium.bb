@@ -170,7 +170,7 @@ Mmx_E_Operand
 # Like G_Operand, but uses MMX registers instead.
 Mmx_G_Operand
 
-Like E_Operand, but uses XMM registers instead.
+# Like E_Operand, but uses XMM registers instead.
 Xmm_E_Operand
 
 # Like G_Operand, but uses XMM registers instead.
