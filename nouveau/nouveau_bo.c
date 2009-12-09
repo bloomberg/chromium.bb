@@ -29,7 +29,6 @@
 #include <assert.h>
 
 #include <sys/mman.h>
-#include <sys/ioctl.h>
 
 #include "nouveau_private.h"
 
@@ -106,7 +105,7 @@ nouveau_bo_kfree(struct nouveau_bo_priv *nvbo)
 
 	req.handle = nvbo->handle;
 	nvbo->handle = 0;
-	ioctl(nvdev->fd, DRM_IOCTL_GEM_CLOSE, &req);
+	drmIoctl(nvdev->fd, DRM_IOCTL_GEM_CLOSE, &req);
 }
 
 static int
@@ -290,7 +289,7 @@ nouveau_bo_handle_get(struct nouveau_bo *bo, uint32_t *handle)
 			return ret;
 
 		req.handle = nvbo->handle;
-		ret = ioctl(nvdev->fd, DRM_IOCTL_GEM_FLINK, &req);
+		ret = drmIoctl(nvdev->fd, DRM_IOCTL_GEM_FLINK, &req);
 		if (ret) {
 			nouveau_bo_kfree(nvbo);
 			return ret;
@@ -313,7 +312,7 @@ nouveau_bo_handle_ref(struct nouveau_device *dev, uint32_t handle,
 	int ret;
 
 	req.name = handle;
-	ret = ioctl(nvdev->fd, DRM_IOCTL_GEM_OPEN, &req);
+	ret = drmIoctl(nvdev->fd, DRM_IOCTL_GEM_OPEN, &req);
 	if (ret) {
 		nouveau_bo_ref(NULL, bo);
 		return ret;
