@@ -62,6 +62,10 @@
 #include "app/win_util.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/mach_broker_mac.h"
+#endif
+
 using WebKit::WebCache;
 
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -836,6 +840,11 @@ void BrowserRenderProcessHost::OnChannelError() {
   }
 
   ClearTransportDIBCache();
+
+#if defined(OS_MACOSX)
+  if (child_process_.get())
+    MachBroker::instance()->Invalidate(child_process_->GetHandle());
+#endif
 
   // this object is not deleted at this point and may be reused later.
   // TODO(darin): clean this up

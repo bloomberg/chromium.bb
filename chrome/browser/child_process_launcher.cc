@@ -27,6 +27,99 @@
 #include "base/global_descriptors_posix.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "ipc/ipc_switches.h"
+#include "chrome/browser/mach_broker_mac.h"
+#include "chrome/common/mach_ipc_mac.h"
+#endif
+
+#if defined(OS_MACOSX)
+class MachTask : public Task {
+ public:
+  MachTask(std::string channel_name, mach_port_t* task, mach_port_t* host)
+      : task_(task), host_(host) {
+    // TODO(thakis): Move some place central
+    const std::string kMachChannelPrefix = "com.Google.Chrome";
+    std::string channel = kMachChannelPrefix + channel_name;
+
+    // This creates our named server port -- needs to happen on the current
+    // thread.
+printf("Creating receive port %s\n", channel.c_str());
+    port_.reset(new ReceivePort(channel.c_str()));
+  }
+
+  virtual void Run() {
+    // TODO(thakis): Move some place central
+    const int kMachPortMessageID = 57;
+
+    const int kMachPortMessageReceiveWaitMs = 1000;
+
+
+
+    //ReceivePort receivePort(channel_name.c_str());
+
+    // TODO(thakis): time histogram between creation and port reception?
+    MachReceiveMessage message;
+    kern_return_t result = port_->WaitForMessage(
+        &message, kMachPortMessageReceiveWaitMs);
+    if (result == KERN_SUCCESS) {
+      CHECK(kMachPortMessageID == message.GetMessageID());
+      CHECK(2 == message.GetDescriptorCount());
+
+      // TODO(thakis): Constants for the indices?
+      *task_ = message.GetTranslatedPort(0);
+      *host_ = message.GetTranslatedPort(1);
+      printf("yay\n");
+    } else {
+      // TODO(thakis): Log somewhere?
+      printf("nay\n");
+    }
+  }
+
+ private:
+  scoped_ptr<ReceivePort> port_;
+  mach_port_t* task_;
+  mach_port_t* host_;
+};
+
+class MachTask2 : public Task {
+ public:
+  MachTask2(mach_port_t task, mach_port_t host, base::ProcessHandle pid)
+      : task_(task), host_(host), pid_(pid) {}
+
+  virtual void Run() {
+    MachBroker::instance()->RegisterPid(
+        pid_,
+        MachBroker::MachInfo().SetTask(task_).SetHost(host_));
+  }
+ private:
+  mach_port_t task_;
+  mach_port_t host_;
+  base::ProcessHandle pid_;
+};
+
+class MachThread : public base::Thread {
+ public:
+  MachThread() : base::Thread("MachThread"), task_(0), host_(0) {}
+
+  void DoIt(const std::string& channel_name) {
+    DCHECK(message_loop());
+    message_loop()->PostTask(FROM_HERE,
+                             new MachTask(channel_name, &task_, &host_));
+  }
+
+  void DoIt2(base::ProcessHandle pid) {
+    DCHECK(message_loop());
+    message_loop()->PostTask(FROM_HERE,
+                             new MachTask2(task_, host_, pid));
+  }
+
+ private:
+  mach_port_t task_;
+  mach_port_t host_;
+};
+#endif
+
 // Having the functionality of ChildProcessLauncher be in an internal
 // ref counted object allows us to automatically terminate the process when the
 // parent class destructs, while still holding on to state that we need.
@@ -160,9 +253,25 @@ class ChildProcessLauncher::Context
       }
 #endif  // defined(OS_LINUX)
 
+#if defined(OS_MACOSX)
+      // TODO(thakis): Possibly somewhere else?
+      // (then again, the fds duping stuff is here too, so maybe it's ok)
+
+      MachThread mach_thread;
+      CHECK(mach_thread.Start());
+      mach_thread.DoIt(
+          cmd_line->GetSwitchValueASCII(switches::kProcessChannelID));
+#endif
+
+
       // Actually launch the app.
       if (!base::LaunchApp(cmd_line->argv(), env, fds_to_map, false, &handle))
         handle = base::kNullProcessHandle;
+
+#if defined(OS_MACOSX)
+      // TODO(thakis): Check |handle| first.
+      mach_thread.DoIt2(handle);
+#endif
     }
 #endif
 

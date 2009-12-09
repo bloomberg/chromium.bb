@@ -167,8 +167,9 @@ class MachMessage {
   bool AddDescriptor(const MachMsgPortDescriptor &desc);
 
   int GetDescriptorCount() const {
-                                   return storage_->body.msgh_descriptor_count;
-                                 }
+    return storage_->body.msgh_descriptor_count;
+  }
+
   MachMsgPortDescriptor *GetDescriptor(int n);
 
   // Convenience method which gets the mach port described by the descriptor

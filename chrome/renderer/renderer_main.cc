@@ -32,6 +32,12 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "ipc/ipc_switches.h"
+#include "base/thread.h"
+#include "chrome/common/mach_ipc_mac.h"
+#endif
+
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
 static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
@@ -50,6 +56,54 @@ static void HandleRendererErrorTestParameters(const CommandLine& command_line) {
     ChildProcess::WaitForDebugger(L"Renderer");
   }
 }
+
+#if defined(OS_MACOSX)
+class MachSendTask : public Task {
+ public:
+  MachSendTask(const std::string& channel_name) : channel_name_(channel_name) {}
+
+  virtual void Run() {
+    // TODO(thakis): Put these somewhere central.
+    const int kMachPortMessageID = 57;
+    const std::string kMachChannelPrefix = "com.Google.Chrome";
+
+    const int kMachPortMessageSendWaitMs = 5000;
+    std::string channel_name = kMachChannelPrefix + channel_name_;
+printf("Creating send port %s\n", channel_name.c_str());
+    MachPortSender sender(channel_name.c_str());
+    MachSendMessage message(kMachPortMessageID);
+
+    // add some ports to be translated for us
+    message.AddDescriptor(mach_task_self());
+    message.AddDescriptor(mach_host_self());
+
+    kern_return_t result = sender.SendMessage(message,
+        kMachPortMessageSendWaitMs);
+
+    // TODO(thakis): Log error somewhere? (don't printf in any case :-P)
+    fprintf(stderr, "send result: %lu\n", (unsigned long)result);
+    if (result != KERN_SUCCESS)
+      fprintf(stderr, "(Failed :-( )\n");
+  }
+ private:
+  std::string channel_name_;
+};
+
+class MachSendThread : public base::Thread {
+ public:
+  MachSendThread() : base::Thread("MachSendThread") {}
+
+  void DoIt() {
+    DCHECK(message_loop());
+    std::string name = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kProcessChannelID);
+printf("main thread: %s\n", name.c_str());
+    message_loop()->PostTask(
+        FROM_HERE,
+        new MachSendTask(name));
+  }
+};
+#endif
 
 // mainline routine for running as the Renderer process
 int RendererMain(const MainFunctionParams& parameters) {
@@ -74,6 +128,14 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   StatsScope<StatsCounterTimer>
       startup_timer(chrome::Counters::renderer_main());
+
+#if defined(OS_MACOSX)
+  {
+    MachSendThread mach_thread;
+    CHECK(mach_thread.Start());
+    mach_thread.DoIt();
+  }
+#endif
 
 #if defined(OS_MACOSX)
   // As long as we use Cocoa in the renderer (for the forseeable future as of
