@@ -498,7 +498,7 @@ HistoryView.prototype.displayResults_ = function() {
               localStrings.getString('cont')));
         }
 
-        var link = createElementWithClassName('button', 'delete-day');
+        var link = createElementWithClassName('div', 'delete-day');
         link.time = page.time.toString();
         link.onclick = deleteDay;
         link.appendChild(
