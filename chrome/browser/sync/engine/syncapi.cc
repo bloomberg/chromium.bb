@@ -1435,7 +1435,13 @@ void SyncManager::SyncInternal::HandleAuthWatcherEvent(
             event.auth_results->captcha_token, captcha,
             GURL(event.auth_results->auth_error_url)));
         return;
+      } else if (event.auth_results->auth_error ==
+                 browser_sync::ConnectionUnavailable) {
+        auth_problem_ = AuthError::CONNECTION_FAILED;
+      } else {
+        auth_problem_ = AuthError::INVALID_GAIA_CREDENTIALS;
       }
+      break;
     case AuthWatcherEvent::SERVICE_AUTH_FAILED:  // Expired GAIA credentials.
       auth_problem_ = AuthError::INVALID_GAIA_CREDENTIALS;
       break;
