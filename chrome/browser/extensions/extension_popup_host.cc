@@ -18,11 +18,30 @@
 #include "chrome/common/notification_type.h"
 
 
+ExtensionPopupHost::PopupDelegate::~PopupDelegate() {
+  // If the PopupDelegate is being torn down, then make sure to reset the
+  // cached pointer in the host to prevent access to a stale pointer.
+  if (popup_host_.get())
+    popup_host_->RevokeDelegate();
+}
+
 ExtensionPopupHost* ExtensionPopupHost::PopupDelegate::popup_host() {
   if (!popup_host_.get())
     popup_host_.reset(new ExtensionPopupHost(this));
 
   return popup_host_.get();
+}
+
+Profile* ExtensionPopupHost::PopupDelegate::GetProfile() {
+  // If there is a browser present, return the profile associated with it.
+  // When hosting a view in an ExternalTabContainer, it is possible to have
+  // no Browser instance.
+  Browser* browser = GetBrowser();
+  if (browser) {
+    return browser->profile();
+  }
+
+  return NULL;
 }
 
 ExtensionPopupHost::ExtensionPopupHost(PopupDelegate* delegate)
@@ -35,8 +54,10 @@ ExtensionPopupHost::ExtensionPopupHost(PopupDelegate* delegate)
 
   // Listen for view close requests, so that we can dismiss a hosted pop-up
   // view, if necessary.
+  Profile* profile = delegate_->GetProfile();
+  DCHECK(profile);
   registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 Source<Profile>(delegate_->GetBrowser()->profile()));
+                 Source<Profile>(profile));
 }
 
 ExtensionPopupHost::~ExtensionPopupHost() {
@@ -88,9 +109,11 @@ void ExtensionPopupHost::DismissPopup() {
     delete child_popup_;
     child_popup_ = NULL;
 
-    PopupEventRouter::OnPopupClosed(
-        delegate_->GetBrowser()->profile(),
-        delegate_->GetRenderViewHost()->routing_id());
+    if (delegate_) {
+      PopupEventRouter::OnPopupClosed(
+          delegate_->GetProfile(),
+          delegate_->GetRenderViewHost()->routing_id());
+    }
   }
 #endif  // defined(TOOLKIT_VIEWS)
 }

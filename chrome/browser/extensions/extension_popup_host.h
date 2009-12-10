@@ -36,12 +36,14 @@ class ExtensionPopupHost :  // NOLINT
   class PopupDelegate {
    public:
     PopupDelegate() {}
-    virtual ~PopupDelegate() {}
-    virtual Browser* GetBrowser() = 0;
+    virtual ~PopupDelegate();
+    virtual Browser* GetBrowser() const = 0;
     virtual RenderViewHost* GetRenderViewHost() = 0;
+    virtual Profile* GetProfile();
 
     // Constructs, or returns the existing ExtensionPopupHost instance.
     ExtensionPopupHost* popup_host();
+
    private:
     scoped_ptr<ExtensionPopupHost> popup_host_;
 
@@ -50,6 +52,8 @@ class ExtensionPopupHost :  // NOLINT
 
   explicit ExtensionPopupHost(PopupDelegate* delegate);
   virtual ~ExtensionPopupHost();
+
+  void RevokeDelegate() { delegate_ = NULL; }
 
   // Dismiss the hosted pop-up, if one is present.
   void DismissPopup();

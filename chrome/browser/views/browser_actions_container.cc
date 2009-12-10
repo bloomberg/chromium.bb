@@ -8,6 +8,8 @@
 #include "app/resource_bundle.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extension_tabs_module.h"
@@ -376,8 +378,13 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     gfx::Rect rect = button->bounds();
     rect.set_x(origin.x());
     rect.set_y(origin.y());
+
+    gfx::NativeWindow frame_window =
+        toolbar_->browser()->window()->GetNativeHandle();
     popup_ = ExtensionPopup::Show(browser_action->popup_url(),
                                   toolbar_->browser(),
+                                  toolbar_->browser()->profile(),
+                                  frame_window,
                                   rect,
                                   BubbleBorder::TOP_RIGHT,
                                   true);  // Activate the popup window.

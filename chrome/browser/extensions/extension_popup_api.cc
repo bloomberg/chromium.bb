@@ -139,8 +139,12 @@ bool PopupShowFunction::RunImpl() {
   BubbleBorder::ArrowLocation arrow_location =
       (NULL != dispatcher()->GetExtensionHost()) ? BubbleBorder::BOTTOM_LEFT :
                                                    BubbleBorder::TOP_LEFT;
-  popup_ = ExtensionPopup::Show(url, dispatcher()->GetBrowser(), rect,
-                                arrow_location, give_focus);
+  popup_ = ExtensionPopup::Show(url, dispatcher()->GetBrowser(),
+                                dispatcher()->profile(),
+                                dispatcher()->GetFrameNativeWindow(),
+                                rect,
+                                arrow_location,
+                                give_focus);
 
   ExtensionPopupHost* popup_host = dispatcher()->GetPopupHost();
   DCHECK(popup_host);

@@ -115,6 +115,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   virtual bool IsExternalTabContainer() const {
     return true;
   };
+  virtual gfx::NativeWindow GetFrameNativeWindow();
 
   virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
@@ -128,6 +129,8 @@ class ExternalTabContainer : public TabContentsDelegate,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
+
+  virtual Browser* GetBrowser() { return browser_.get(); }
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -159,6 +162,9 @@ class ExternalTabContainer : public TabContentsDelegate,
   // automation client.
   void SetEnableExtensionAutomation(
       const std::vector<std::string>& functions_enabled);
+
+  // Overridden from views::WidgetWin:
+  virtual views::Window* GetWindow();
 
  protected:
   // Overridden from views::WidgetWin:

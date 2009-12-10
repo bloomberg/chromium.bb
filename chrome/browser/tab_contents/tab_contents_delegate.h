@@ -16,6 +16,7 @@
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/window_open_disposition.h"
 
+class Browser;
 class DownloadItem;
 class ExtensionFunctionDispatcher;
 class GURL;
@@ -250,6 +251,12 @@ class TabContentsDelegate {
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id) {
   }
+
+  // Returns the browser in which the tab contents is being displayed.
+  virtual Browser* GetBrowser() { return NULL; }
+
+  // Returns the widget framing the view containing the tab contents.
+  virtual gfx::NativeWindow GetFrameNativeWindow() { return NULL; }
 
  protected:
   ~TabContentsDelegate() {}

@@ -575,6 +575,7 @@ class Browser : public TabStripModelDelegate,
   virtual bool ShouldAddNavigationsToHistory() const;
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id);
+  virtual Browser* GetBrowser() { return this; }
 
   // Overridden from SelectFileDialog::Listener:
   virtual void FileSelected(const FilePath& path, int index, void* params);

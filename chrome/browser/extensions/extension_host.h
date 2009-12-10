@@ -65,7 +65,10 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   void* view() const { return NULL; }
 #endif
 
-  // Create an ExtensionView and tie it to this host and |browser|.
+  // Create an ExtensionView and tie it to this host and |browser|.  Note NULL
+  // is a valid argument for |browser|.  Extension views may be bound to
+  // tab-contents hosted in ExternalTabContainer objects, which do not
+  // instantiate Browser objects.
   void CreateView(Browser* browser);
 
   Extension* extension() { return extension_; }
@@ -187,7 +190,7 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   // If this ExtensionHost has a view, this returns the Browser that view is a
   // part of.  If this is a global background page, we use the active Browser
   // instead.
-  virtual Browser* GetBrowser();
+  virtual Browser* GetBrowser() const;
   virtual ExtensionHost* GetExtensionHost() { return this; }
 
   // ExtensionPopupHost::Delegate

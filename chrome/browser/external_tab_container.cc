@@ -385,6 +385,10 @@ void ExternalTabContainer::ForwardMessageToExternalHost(
   }
 }
 
+gfx::NativeWindow ExternalTabContainer::GetFrameNativeWindow() {
+  return hwnd();
+}
+
 bool ExternalTabContainer::TakeFocus(bool reverse) {
   if (automation_) {
     automation_->Send(new AutomationMsg_TabbedOut(0, tab_handle_,
@@ -675,6 +679,11 @@ void ExternalTabContainer::SetEnableExtensionAutomation(
     AutomationExtensionFunction::Disable();
     enabled_extension_automation_ = false;
   }
+}
+
+// ExternalTabContainer instances do not have a window.
+views::Window* ExternalTabContainer::GetWindow() {
+  return NULL;
 }
 
 void ExternalTabContainer::Navigate(const GURL& url, const GURL& referrer) {

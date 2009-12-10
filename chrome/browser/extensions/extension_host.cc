@@ -549,7 +549,7 @@ void ExtensionHost::HandleMouseLeave() {
 #endif
 }
 
-Browser* ExtensionHost::GetBrowser() {
+Browser* ExtensionHost::GetBrowser() const {
   if (view_.get())
     return view_->browser();
 
@@ -604,16 +604,19 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
 }
 
 int ExtensionHost::GetBrowserWindowID() const {
+  // Hosts not attached to any browser window have an id of -1.  This includes
+  // those mentioned below, and background pages.
   int window_id = -1;
   if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
       extension_host_type_ == ViewType::EXTENSION_MOLE ||
       extension_host_type_ == ViewType::EXTENSION_POPUP) {
-    window_id = ExtensionTabUtil::GetWindowId(
-        const_cast<ExtensionHost* >(this)->GetBrowser());
-  } else if (extension_host_type_ == ViewType::EXTENSION_BACKGROUND_PAGE) {
-    // Background page is not attached to any browser window, so pass -1.
-    window_id = -1;
-  } else {
+    // If the host is bound to a browser, then extract its window id.
+    // Extensions hosted in ExternalTabContainer objects may not have
+    // an associated browser.
+    Browser* browser = GetBrowser();
+    if (browser)
+      window_id = ExtensionTabUtil::GetWindowId(browser);
+  } else if (extension_host_type_ != ViewType::EXTENSION_BACKGROUND_PAGE) {
     NOTREACHED();
   }
   return window_id;

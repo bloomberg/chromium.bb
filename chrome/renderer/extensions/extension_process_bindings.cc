@@ -147,9 +147,20 @@ class ExtensionViewAccumulator : public RenderViewVisitor {
     if (extension_id != extension_id_)
       return true;
 
-    if (browser_window_id_ != -1 &&
-        render_view->browser_window_id() != browser_window_id_)
-      return true;
+    // If we are searching for a pop-up, it may be the case that the pop-up
+    // is not attached to a browser window instance.  (It is hosted in a
+    // ExternalTabContainer.)  If so, then bypass validation of
+    // same-browser-window origin.
+    // TODO(twiz):  The browser window id of the views visited should always
+    // match that of the arguments to the accumulator.
+    // See bug:  http://crbug.com/29646
+    if (!(view_type_ == ViewType::EXTENSION_POPUP &&
+          render_view->browser_window_id() == -1)) {
+      if (browser_window_id_ != -1 &&
+          render_view->browser_window_id() != browser_window_id_) {
+        return true;
+      }
+    }
 
     v8::Local<v8::Context> context =
         render_view->webview()->mainFrame()->mainWorldScriptContext();

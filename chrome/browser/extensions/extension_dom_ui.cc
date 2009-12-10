@@ -63,8 +63,31 @@ void ExtensionDOMUI::ProcessDOMUIMessage(const std::string& message,
                                                 has_callback);
 }
 
-Browser* ExtensionDOMUI::GetBrowser() {
-  return static_cast<Browser*>(tab_contents()->delegate());
+Browser* ExtensionDOMUI::GetBrowser() const {
+  TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
+  if (tab_contents_delegate)
+    return tab_contents_delegate->GetBrowser();
+  return NULL;
+}
+
+Profile* ExtensionDOMUI::GetProfile() {
+  return DOMUI::GetProfile();
+}
+
+gfx::NativeWindow ExtensionDOMUI::GetFrameNativeWindow() {
+  gfx::NativeWindow native_window =
+      ExtensionFunctionDispatcher::Delegate::GetFrameNativeWindow();
+
+  // If there was no window associated with the function dispatcher delegate,
+  // then this DOMUI may be hosted in an ExternalTabContainer, and a framing
+  // window will be accessible through the tab_contents.
+  if (!native_window) {
+    TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
+    if (tab_contents_delegate)
+      native_window = tab_contents_delegate->GetFrameNativeWindow();
+  }
+
+  return native_window;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

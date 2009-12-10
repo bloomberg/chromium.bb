@@ -7,6 +7,8 @@
 #include "base/process_util.h"
 #include "base/singleton.h"
 #include "base/values.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/extensions/execute_code_in_tab_function.h"
 #include "chrome/browser/extensions/extension_bookmarks_module.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
@@ -181,6 +183,20 @@ ExtensionFunction* FactoryRegistry::NewFunction(const std::string& name) {
 
 };  // namespace
 
+// ExtensionFunctionDispatcher::Delegate ---------------------------------------
+
+gfx::NativeWindow ExtensionFunctionDispatcher::Delegate::
+    GetFrameNativeWindow() {
+  Browser* browser = GetBrowser();
+  // If a browser is bound to this dispatcher, then return the widget hosting
+  // the window.  Extensions hosted in ExternalTabContainer objects may not
+  // have a running browser instance.
+  if (browser)
+    return browser->window()->GetNativeHandle();
+
+  return NULL;
+}
+
 // ExtensionFunctionDispatcher -------------------------------------------------
 
 void ExtensionFunctionDispatcher::GetAllFunctionNames(
@@ -317,4 +333,8 @@ void ExtensionFunctionDispatcher::HandleBadMessage(ExtensionFunction* api) {
 
 Profile* ExtensionFunctionDispatcher::profile() {
   return render_view_host_->process()->profile();
+}
+
+gfx::NativeWindow ExtensionFunctionDispatcher::GetFrameNativeWindow() {
+  return delegate_ ? delegate_->GetFrameNativeWindow() : NULL;
 }

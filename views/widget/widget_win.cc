@@ -470,7 +470,9 @@ void WidgetWin::OnCommand(UINT notification_code, int command_id, HWND window) {
 }
 
 LRESULT WidgetWin::OnCreate(CREATESTRUCT* create_struct) {
-  SetNativeWindowProperty(kWidgetKey, this);
+  // Widget::GetWidgetFromNativeView expects the contents of this property
+  // to be of type Widget, so the cast is necessary.
+  SetNativeWindowProperty(kWidgetKey, static_cast<Widget*>(this));
   return 0;
 }
 

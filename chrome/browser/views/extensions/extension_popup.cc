@@ -5,6 +5,7 @@
 #include "chrome/browser/views/extensions/extension_popup.h"
 
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -27,7 +28,7 @@ const int ExtensionPopup::kMaxWidth = 800;
 const int ExtensionPopup::kMaxHeight = 600;
 
 ExtensionPopup::ExtensionPopup(ExtensionHost* host,
-                               Widget* frame,
+                               views::Widget* frame,
                                const gfx::Rect& relative_to,
                                BubbleBorder::ArrowLocation arrow_location,
                                bool activate_on_show)
@@ -79,7 +80,8 @@ void ExtensionPopup::Show(bool activate) {
     return;
 
 #if defined(OS_WIN)
-  frame_->GetWindow()->DisableInactiveRendering();
+  if (frame_->GetWindow())
+    frame_->GetWindow()->DisableInactiveRendering();
 #endif
 
   ResizeToView();
@@ -142,20 +144,32 @@ void ExtensionPopup::OnExtensionPreferredSizeChanged(ExtensionView* view) {
 
 // static
 ExtensionPopup* ExtensionPopup::Show(
-    const GURL& url, Browser* browser,
+    const GURL& url,
+    Browser* browser,
+    Profile* profile,
+    gfx::NativeWindow frame_window,
     const gfx::Rect& relative_to,
     BubbleBorder::ArrowLocation arrow_location,
     bool activate_on_show) {
-  ExtensionProcessManager* manager =
-      browser->profile()->GetExtensionProcessManager();
+  DCHECK(profile);
+  DCHECK(frame_window);
+  ExtensionProcessManager* manager = profile->GetExtensionProcessManager();
   DCHECK(manager);
   if (!manager)
     return NULL;
 
+  // If no Browser instance was given, attempt to look up one matching the given
+  // profile.
+  if (!browser)
+    browser = BrowserList::FindBrowserWithProfile(profile);
+
+  Widget* frame_widget = Widget::GetWidgetFromNativeWindow(frame_window);
+  DCHECK(frame_widget);
+  if (!frame_widget)
+    return NULL;
+
   ExtensionHost* host = manager->CreatePopup(url, browser);
-  views::Widget* frame = BrowserView::GetBrowserViewForNativeWindow(
-      browser->window()->GetNativeHandle())->GetWidget();
-  ExtensionPopup* popup = new ExtensionPopup(host, frame, relative_to,
+  ExtensionPopup* popup = new ExtensionPopup(host, frame_widget, relative_to,
                                              arrow_location, activate_on_show);
 
   // If the host had somehow finished loading, then we'd miss the notification

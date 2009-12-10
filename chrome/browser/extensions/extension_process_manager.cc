@@ -52,6 +52,7 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
+  CloseBackgroundHosts();
   DCHECK(background_hosts_.empty());
 }
 
@@ -60,7 +61,8 @@ ExtensionHost* ExtensionProcessManager::CreateView(Extension* extension,
                                                    Browser* browser,
                                                    ViewType::Type view_type) {
   DCHECK(extension);
-  DCHECK(browser);
+  // A NULL browser may only be given for pop-up views.
+  DCHECK(browser || (!browser && view_type == ViewType::EXTENSION_POPUP));
   ExtensionHost* host =
 #if defined(OS_MACOSX)
       new ExtensionHostMac(extension, GetSiteInstanceForURL(url), url,
@@ -76,7 +78,8 @@ ExtensionHost* ExtensionProcessManager::CreateView(Extension* extension,
 ExtensionHost* ExtensionProcessManager::CreateView(const GURL& url,
                                                    Browser* browser,
                                                    ViewType::Type view_type) {
-  DCHECK(browser);
+  // A NULL browser may only be given for pop-up views.
+  DCHECK(browser || (!browser && view_type == ViewType::EXTENSION_POPUP));
   ExtensionsService* service =
     browsing_instance_->profile()->GetExtensionsService();
   if (service) {

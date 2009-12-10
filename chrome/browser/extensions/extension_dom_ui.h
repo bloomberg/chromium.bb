@@ -40,11 +40,13 @@ class ExtensionDOMUI
                                    bool has_callback);
 
   // ExtensionFunctionDispatcher::Delegate
-  virtual Browser* GetBrowser();
+  virtual Browser* GetBrowser() const;
   virtual ExtensionDOMUI* GetExtensionDOMUI() { return this; }
+  virtual gfx::NativeWindow GetFrameNativeWindow();
 
   // ExtensionPopupHost::Delegate
   virtual RenderViewHost* GetRenderViewHost();
+  virtual Profile* GetProfile();
 
   // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url, Profile* profile);

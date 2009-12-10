@@ -17,6 +17,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/alternate_nav_url_fetcher.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -1335,6 +1336,7 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
     Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
     if (!browser)
       browser = BrowserList::FindBrowserWithProfile(profile_);
+    DCHECK(browser);
 
     bool popup_showing = popup_ != NULL;
 
@@ -1351,8 +1353,11 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
     gfx::Rect rect = parent->bounds();
     rect.set_x(origin.x());
     rect.set_y(origin.y());
+
     popup_ = ExtensionPopup::Show(page_action_->popup_url(),
                                   browser,
+                                  browser->profile(),
+                                  browser->window()->GetNativeHandle(),
                                   rect,
                                   BubbleBorder::TOP_RIGHT,
                                   true);  // Activate the popup window.

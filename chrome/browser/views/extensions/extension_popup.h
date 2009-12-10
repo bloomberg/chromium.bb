@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 #define CHROME_BROWSER_VIEWS_EXTENSIONS_EXTENSION_POPUP_H_
 
+#include "app/gfx/native_widget_types.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/extensions/extension_view.h"
@@ -15,6 +16,11 @@
 
 class Browser;
 class ExtensionHost;
+class Profile;
+
+namespace views {
+class Widget;
+}
 
 class ExtensionPopup : public BrowserBubble,
                        public NotificationObserver,
@@ -24,6 +30,12 @@ class ExtensionPopup : public BrowserBubble,
 
   // Create and show a popup with |url| positioned adjacent to |relative_to| in
   // screen coordinates.
+  // |browser| is the browser to which the pop-up will be attached.  NULL is a
+  // valid parameter for pop-ups not associated with a browser.
+  // |profile| is the user profile instance associated with the popup.  A
+  // non NULL value must be given.
+  // |frame_window| is the native window that hosts the view inside which the
+  // popup will be anchored.
   // The positioning of the pop-up is determined by |arrow_location| according
   // to the following logic:  The popup is anchored so that the corner indicated
   // by value of |arrow_location| remains fixed during popup resizes.
@@ -34,6 +46,8 @@ class ExtensionPopup : public BrowserBubble,
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
   static ExtensionPopup* Show(const GURL& url, Browser* browser,
+                              Profile* profile,
+                              gfx::NativeWindow frame_window,
                               const gfx::Rect& relative_to,
                               BubbleBorder::ArrowLocation arrow_location,
                               bool activate_on_show);

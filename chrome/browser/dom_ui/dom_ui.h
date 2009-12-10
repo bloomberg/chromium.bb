@@ -111,7 +111,7 @@ class DOMUI {
 
   ThemeProvider* GetThemeProvider() const;
 
-  TabContents* tab_contents() { return tab_contents_; }
+  TabContents* tab_contents() const { return tab_contents_; }
 
   Profile* GetProfile();
 

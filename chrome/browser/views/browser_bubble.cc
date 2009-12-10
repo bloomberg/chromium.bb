@@ -9,6 +9,21 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
+namespace {
+
+BrowserView* GetBrowserViewFromFrame(views::Widget* frame) {
+  BrowserView* browser_view = NULL;
+  views::Window* window = frame->GetWindow();
+  if (window) {
+    browser_view = BrowserView::GetBrowserViewForNativeWindow(
+        window->GetNativeWindow());
+    DCHECK(browser_view);
+  }
+  return browser_view;
+}
+
+}  // namespace
+
 BrowserBubble::BrowserBubble(views::View* view, views::Widget* frame,
                              const gfx::Point& origin)
     : frame_(frame),
@@ -39,8 +54,8 @@ void BrowserBubble::DetachFromBrowser() {
   if (!attached_)
     return;
   attached_ = false;
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
-      frame_->GetWindow()->GetNativeWindow());
+
+  BrowserView* browser_view = GetBrowserViewFromFrame(frame_);
   if (browser_view)
     browser_view->DetachBrowserBubble(this);
 }
@@ -49,13 +64,12 @@ void BrowserBubble::AttachToBrowser() {
   DCHECK(!attached_);
   if (attached_)
     return;
-  BrowserView* browser_view = BrowserView::GetBrowserViewForNativeWindow(
-      frame_->GetWindow()->GetNativeWindow());
-  DCHECK(browser_view);
-  if (browser_view) {
+
+  BrowserView* browser_view = GetBrowserViewFromFrame(frame_);
+  if (browser_view)
     browser_view->AttachBrowserBubble(this);
-    attached_ = true;
-  }
+
+  attached_ = true;
 }
 
 void BrowserBubble::BrowserWindowMoved() {

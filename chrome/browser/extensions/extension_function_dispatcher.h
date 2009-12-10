@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 
@@ -33,7 +34,12 @@ class ExtensionFunctionDispatcher {
  public:
   class Delegate {
    public:
-    virtual Browser* GetBrowser() = 0;
+    virtual Browser* GetBrowser() const = 0;
+
+    // Returns the gfx::NativeWindow that contains the view hosting the
+    // environment in which the function dispatcher resides.
+    virtual gfx::NativeWindow GetFrameNativeWindow();
+
     virtual ExtensionHost* GetExtensionHost() { return NULL; }
     virtual ExtensionDOMUI* GetExtensionDOMUI() { return NULL; }
   };
@@ -93,6 +99,12 @@ class ExtensionFunctionDispatcher {
   // Gets the ExtensionDOMUI associated with this object.  In the case of
   // non-tab-hosted extension pages, this will return NULL.
   ExtensionDOMUI* GetExtensionDOMUI();
+
+  // Returns the gfx::NativeWindow that frames the view of the extension
+  // containing the function dispatcher.  This may return NULL.  Refer to the
+  // ExtensionFunctionDispatcher::Delegate::GetFrameNativeWindow()
+  // implementation for an explanation.
+  gfx::NativeWindow GetFrameNativeWindow();
 
   // Gets the extension the function is being invoked by. This should not ever
   // return NULL.
