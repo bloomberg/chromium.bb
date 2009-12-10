@@ -271,3 +271,20 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, CommandCreateAppShortcut) {
   ui_test_utils::NavigateToURL(browser(), blank_url);
   EXPECT_FALSE(command_updater->IsCommandEnabled(IDC_CREATE_SHORTCUTS));
 }
+
+// Test RenderView correctly send back favicon url for web page that redirects
+// to an anchor in javascript body.onload handler.
+IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
+  static const wchar_t kDocRoot[] = L"chrome/test/data";
+  scoped_refptr<HTTPTestServer> server(
+        HTTPTestServer::CreateServer(kDocRoot, NULL));
+  ASSERT_TRUE(NULL != server.get());
+  GURL url(server->TestServerPage("files/onload_redirect_to_anchor.html"));
+  GURL expected_favicon_url(server->TestServerPage("files/test.png"));
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  NavigationEntry* entry = browser()->GetSelectedTabContents()->
+      controller().GetActiveEntry();
+  EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
+}
