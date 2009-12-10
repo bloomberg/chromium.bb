@@ -2,20 +2,6 @@
 # Chromium
 
 {
-  bug_21468
-  ThreadSanitizer:Race
-  ...
-  fun:*net*DirectoryLister*
-}
-
-{
-  bug_22520
-  ThreadSanitizer:Race
-  fun:*CancelableRequestBase*
-  fun:*CancelableRequest*
-}
-
-{
   bug_23245, bug_25385 (1)
   ThreadSanitizer:Race
   fun:*base*Thread*ThreadMain*
@@ -58,19 +44,6 @@
   bug_25915
   ThreadSanitizer:Race
   fun:*browser_sync*BookmarkModelWorker*
-}
-
-{
-  bug_28559 (1)
-  ThreadSanitizer:Race
-  fun:*SafeBrowsingService*GetDatabase*
-}
-
-{
-  bug_28559 (2)
-  ThreadSanitizer:Race
-  fun:*SafeBrowsingService*database_available*
-  fun:*SafeBrowsingService*MakeDatabaseAvailable*
 }
 
 # The race happens during enumeration of ChromeThreads.
