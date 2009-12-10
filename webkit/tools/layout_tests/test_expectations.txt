@@ -3075,6 +3075,7 @@ BUG29393 : LayoutTests/fast/loader/stateobjects/pushstate-then-replacestate.html
 BUG29393 : LayoutTests/fast/loader/stateobjects/pushstate-with-fragment-urls-and-hashchange.html = TIMEOUT
 BUG29393 : LayoutTests/fast/loader/stateobjects/replacestate-then-pushstate.html = TIMEOUT
 BUG29653 : LayoutTests/accessibility/aria-scrollbar-role.html = TEXT
+BUG29944 WIN : LayoutTests/websocket/tests/unicode.html = TEXT PASS
 
 
 // Failures introduced by USE_NEW_BUILDER in Skia.
@@ -3085,6 +3086,7 @@ BUG_AJWONG : LayoutTests/fast/js/string-property-deletion.html = TEXT
 BUG_AJWONG : LayoutTests/svg/carto.net/selectionlist.svg = IMAGE PASS
 BUG_AJWONG WIN : chrome/fast/forms/basic-selects.html = IMAGE
 BUG_AJWONG WIN :LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
+BUG29943 WIN : LayoutTests/websocket/tests/send.html = TEXT PASS
 
 // Failures from Webkit merger 51724 -> 51772
 BUG_AJWONG: LayoutTests/http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html = TEXT
@@ -3655,3 +3657,4 @@ BUG_MICHAELN : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
 // WebKit Roll to r51915
 BUG29928 : LayoutTests/websocket/tests/sub-protocol-with-space.html = TEXT
 BUG29930 : LayoutTests/fast/loader/input-element-page-cache-crash.html = TIMEOUT
+
