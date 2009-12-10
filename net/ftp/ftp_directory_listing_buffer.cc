@@ -9,6 +9,7 @@
 #include "base/string_util.h"
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_directory_listing_parser_ls.h"
+#include "net/ftp/ftp_directory_listing_parser_mlsd.h"
 #include "net/ftp/ftp_directory_listing_parser_netware.h"
 #include "net/ftp/ftp_directory_listing_parser_vms.h"
 #include "net/ftp/ftp_directory_listing_parser_windows.h"
@@ -45,6 +46,7 @@ namespace net {
 FtpDirectoryListingBuffer::FtpDirectoryListingBuffer()
     : current_parser_(NULL) {
   parsers_.insert(new FtpDirectoryListingParserLs());
+  parsers_.insert(new FtpDirectoryListingParserMlsd());
   parsers_.insert(new FtpDirectoryListingParserNetware());
   parsers_.insert(new FtpDirectoryListingParserVms());
   parsers_.insert(new FtpDirectoryListingParserWindows());
