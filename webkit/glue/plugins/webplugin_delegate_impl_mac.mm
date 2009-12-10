@@ -20,6 +20,7 @@
 #include "webkit/default_plugin/plugin_impl.h"
 #include "webkit/glue/glue_util.h"
 #include "webkit/glue/webplugin.h"
+#include "webkit/glue/plugins/coregraphics_private_symbols_mac.h"
 #include "webkit/glue/plugins/fake_plugin_window_tracker_mac.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -76,7 +77,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       plugin_(NULL),
       instance_(instance),
       parent_(containing_view),
-      qd_world_(0),
       quirks_(0),
       null_event_factory_(this),
       waiting_to_die_(false),
@@ -109,12 +109,6 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
   delegates->erase(this);
-#ifndef NP_NO_QUICKDRAW
-  if (qd_port_.port) {
-    DisposeGWorld(qd_port_.port);
-    DisposeGWorld(qd_world_);
-  }
-#endif
 }
 
 void WebPluginDelegateImpl::PluginDestroyed() {
@@ -123,7 +117,7 @@ void WebPluginDelegateImpl::PluginDestroyed() {
 
   if (instance_->event_model() == NPEventModelCarbon) {
     if (PluginDrawingModel() == NPDrawingModelQuickDraw) {
-      // Tell the plugin it should stop drawing into the GWorld (which will go
+      // Tell the plugin it should stop drawing into the window (which will go
       // away when the next idle event arrives).
       window_.x = 0;
       window_.y = 0;
@@ -164,6 +158,8 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
   SetWindowBounds(reinterpret_cast<WindowRef>(cg_context_.window),
                   kWindowContentRgn, &window_bounds);
+  qd_port_.port =
+      GetWindowPort(reinterpret_cast<WindowRef>(cg_context_.window));
 
   switch (PluginDrawingModel()) {
 #ifndef NP_NO_QUICKDRAW
@@ -195,38 +191,12 @@ void WebPluginDelegateImpl::PlatformDestroyInstance() {
 }
 
 void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
-  // Flash on the Mac apparently caches the context from the struct it recieves
-  // in NPP_SetWindow, and continue to use it even when the contents of the
+  // Flash on the Mac apparently caches the context from the struct it receives
+  // in NPP_SetWindow, and continues to use it even when the contents of the
   // struct have changed, so we need to call NPP_SetWindow again if the context
   // changes.
   if (context != cg_context_.context) {
     cg_context_.context = context;
-#ifndef NP_NO_QUICKDRAW
-    if (PluginDrawingModel() == NPDrawingModelQuickDraw) {
-      if (qd_port_.port) {
-        DisposeGWorld(qd_port_.port);
-        DisposeGWorld(qd_world_);
-        qd_port_.port = NULL;
-        qd_world_ = NULL;
-      }
-      Rect window_bounds = {
-        0, 0, window_rect_.height(), window_rect_.width()
-      };
-      // Create a GWorld pointing at the same bits as our CGContextRef
-      NewGWorldFromPtr(&qd_world_, k32BGRAPixelFormat, &window_bounds,
-          NULL, NULL, 0,
-          static_cast<Ptr>(CGBitmapContextGetData(context)),
-          static_cast<SInt32>(CGBitmapContextGetBytesPerRow(context)));
-      // Create a GWorld for the plugin to paint into whenever it wants
-      NewGWorld(&qd_port_.port, k32ARGBPixelFormat, &window_bounds,
-          NULL, NULL, kNativeEndianPixMap);
-      SetGWorld(qd_port_.port, NULL);
-      // Fill with black
-      ForeColor(blackColor);
-      BackColor(whiteColor);
-      PaintRect(&window_bounds);
-    }
-#endif
     WindowlessSetWindow(true);
   }
 }
@@ -300,28 +270,19 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
       // Plugins using the QuickDraw drawing model do not restrict their
       // drawing to update events the way that CoreGraphics-based plugins
       // do.  When we are asked to paint, we therefore just copy from the
-      // plugin's persistent offscreen GWorld into our shared memory bitmap
-      // context.
-      Rect window_bounds = {
-        0, 0, window_rect_.height(), window_rect_.width()
-      };
-      PixMapHandle plugin_pixmap = GetGWorldPixMap(qd_port_.port);
-      if (LockPixels(plugin_pixmap)) {
-        PixMapHandle shared_pixmap = GetGWorldPixMap(qd_world_);
-        if (LockPixels(shared_pixmap)) {
-          SetGWorld(qd_world_, NULL);
-          // Set foreground and background colors to avoid "colorizing" the
-          // image.
-          ForeColor(blackColor);
-          BackColor(whiteColor);
-          CopyBits(reinterpret_cast<BitMap*>(*plugin_pixmap),
-                   reinterpret_cast<BitMap*>(*shared_pixmap),
-                   &window_bounds, &window_bounds, srcCopy, NULL);
-          UnlockPixels(shared_pixmap);
-        }
-        UnlockPixels(plugin_pixmap);
-      }
-      break;
+      // plugin's hidden window into our shared memory bitmap context.
+      CGRect window_bounds = CGRectMake(0, 0,
+                                        window_rect_.width(),
+                                        window_rect_.height());
+      CGWindowID window_id = HIWindowGetCGWindowID(
+          reinterpret_cast<WindowRef>(cg_context_.window));
+      CGContextSaveGState(context);
+      CGContextTranslateCTM(context, 0, window_rect_.height());
+      CGContextScaleCTM(context, 1.0, -1.0);
+      CGContextCopyWindowCaptureContentsToRect(context, window_bounds,
+                                               _CGSDefaultConnection(),
+                                               window_id, 0);
+      CGContextRestoreGState(context);
     }
 #endif
     case NPDrawingModelCoreGraphics: {
@@ -746,33 +707,36 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
   switch (PluginDrawingModel()) {
 #ifndef NP_NO_QUICKDRAW
     case NPDrawingModelQuickDraw:
-      SetGWorld(qd_port_.port, NULL);
-      ret = instance()->NPP_HandleEvent(&np_event) != 0;
+      SetPort(qd_port_.port);
       break;
 #endif
     case NPDrawingModelCoreGraphics:
       CGContextSaveGState(cg_context_.context);
-      switch (instance()->event_model()) {
-#ifndef NP_NO_CARBON
-        case NPEventModelCarbon:
-          // Send the event to the plugin.
-          ret = instance()->NPP_HandleEvent(&np_event) != 0;
-          break;
-#endif
-        case NPEventModelCocoa: {
-          NPCocoaEvent np_cocoa_event;
-          if (!NPCocoaEventFromWebInputEvent(event, &np_cocoa_event)) {
-            LOG(WARNING) << "NPCocoaEventFromWebInputEvent failed";
-            return false;
-          }
-          ret = instance()->NPP_HandleEvent(
-              reinterpret_cast<NPEvent*>(&np_cocoa_event)) != 0;
-          break;
-        }
-      }
-      CGContextRestoreGState(cg_context_.context);
       break;
   }
+
+  switch (instance()->event_model()) {
+#ifndef NP_NO_CARBON
+    case NPEventModelCarbon:
+      // Send the event to the plugin.
+      ret = instance()->NPP_HandleEvent(&np_event) != 0;
+      break;
+#endif
+    case NPEventModelCocoa: {
+      NPCocoaEvent np_cocoa_event;
+      if (!NPCocoaEventFromWebInputEvent(event, &np_cocoa_event)) {
+        LOG(WARNING) << "NPCocoaEventFromWebInputEvent failed";
+        return false;
+      }
+      ret = instance()->NPP_HandleEvent(
+          reinterpret_cast<NPEvent*>(&np_cocoa_event)) != 0;
+      break;
+    }
+  }
+
+  if (PluginDrawingModel() == NPDrawingModelCoreGraphics)
+    CGContextRestoreGState(cg_context_.context);
+
   return ret;
 }
 
@@ -823,7 +787,7 @@ void WebPluginDelegateImpl::OnNullEvent() {
 #ifndef NP_NO_QUICKDRAW
   // Quickdraw-based plugins can draw at any time, so tell the renderer to
   // repaint.
-  // TODO: only do this if the contents of the offscreen GWorld has changed,
+  // TODO: only do this if the contents of the offscreen window has changed,
   // so as not to spam the renderer with an unchanging image.
   if (PluginDrawingModel() == NPDrawingModelQuickDraw)
     instance()->webplugin()->Invalidate();
