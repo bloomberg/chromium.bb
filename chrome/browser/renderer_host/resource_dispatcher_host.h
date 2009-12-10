@@ -23,6 +23,7 @@
 #include "base/timer.h"
 #include "chrome/common/child_process_info.h"
 #include "chrome/browser/privacy_blacklist/blocked_response.h"
+#include "chrome/browser/renderer_host/resource_queue.h"
 #include "ipc/ipc_message.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/resource_type.h"
@@ -41,6 +42,7 @@ class SSLClientAuthHandler;
 class UserScriptListener;
 class URLRequestContext;
 class WebKitThread;
+struct GlobalRequestID;
 struct ViewHostMsg_Resource_Request;
 struct ViewMsg_ClosePage_Params;
 
@@ -84,25 +86,6 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
     virtual void OnReceivedRedirect(ResourceDispatcherHost* resource_dispatcher,
                                     URLRequest* request,
                                     const GURL& new_url) = 0;
-  };
-
-  // Uniquely identifies a URLRequest.
-  struct GlobalRequestID {
-    GlobalRequestID() : child_id(-1), request_id(-1) {
-    }
-    GlobalRequestID(int child_id, int request_id)
-        : child_id(child_id),
-          request_id(request_id) {
-    }
-
-    int child_id;
-    int request_id;
-
-    bool operator<(const GlobalRequestID& other) const {
-      if (child_id == other.child_id)
-        return request_id < other.request_id;
-      return child_id < other.child_id;
-    }
   };
 
   ResourceDispatcherHost();
@@ -249,7 +232,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   void RemoveObserver(Observer* obs);
 
   // Retrieves a URLRequest.  Must be called from the IO thread.
-  URLRequest* GetURLRequest(GlobalRequestID request_id) const;
+  URLRequest* GetURLRequest(const GlobalRequestID& request_id) const;
 
   // Notifies our observers that a request has been cancelled.
   void NotifyResponseCompleted(URLRequest* request, int process_unique_id);
@@ -413,6 +396,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // A timer that periodically calls UpdateLoadStates while pending_requests_
   // is not empty.
   base::RepeatingTimer<ResourceDispatcherHost> update_load_states_timer_;
+
+  // Handles the resource requests from the moment we want to start them.
+  ResourceQueue resource_queue_;
 
   // We own the download file writing thread and manager
   scoped_refptr<DownloadFileManager> download_file_manager_;

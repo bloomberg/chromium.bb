@@ -8,6 +8,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"
@@ -21,8 +22,7 @@ DownloadResourceHandler::DownloadResourceHandler(ResourceDispatcherHost* rdh,
                                                  URLRequest* request,
                                                  bool save_as)
     : download_id_(-1),
-      global_id_(ResourceDispatcherHost::GlobalRequestID(render_process_host_id,
-                                                         request_id)),
+      global_id_(render_process_host_id, request_id),
       render_view_id_(render_view_id),
       url_(url),
       content_length_(0),

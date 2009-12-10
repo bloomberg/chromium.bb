@@ -34,9 +34,11 @@
 #include "chrome/browser/renderer_host/buffered_resource_handler.h"
 #include "chrome/browser/renderer_host/cross_site_resource_handler.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
+#include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "chrome/browser/renderer_host/resource_queue.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_handler.h"
 #include "chrome/browser/renderer_host/save_file_resource_handler.h"
@@ -247,8 +249,7 @@ ResourceDispatcherHost::ResourceDispatcherHost()
       download_request_manager_(new DownloadRequestManager()),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           save_file_manager_(new SaveFileManager(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(user_script_listener_(
-          new UserScriptListener(this))),
+      user_script_listener_(new UserScriptListener(&resource_queue_)),
       safe_browsing_(new SafeBrowsingService),
       socket_stream_dispatcher_host_(new SocketStreamDispatcherHost),
       webkit_thread_(new WebKitThread),
@@ -258,6 +259,9 @@ ResourceDispatcherHost::ResourceDispatcherHost()
       max_outstanding_requests_cost_per_process_(
           kMaxOutstandingRequestsCostPerProcess),
       receiver_(NULL) {
+  ResourceQueue::DelegateSet resource_queue_delegates;
+  resource_queue_delegates.insert(user_script_listener_.get());
+  resource_queue_.Initialize(resource_queue_delegates);
 }
 
 ResourceDispatcherHost::~ResourceDispatcherHost() {
@@ -280,8 +284,6 @@ ResourceDispatcherHost::~ResourceDispatcherHost() {
        iter != ids.end(); ++iter) {
     CancelBlockedRequestsForRoute(iter->first, iter->second);
   }
-
-  user_script_listener_->OnResourceDispatcherHostGone();
 }
 
 void ResourceDispatcherHost::Initialize() {
@@ -307,6 +309,7 @@ void ResourceDispatcherHost::SetRequestInfo(
 void ResourceDispatcherHost::OnShutdown() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   is_shutdown_ = true;
+  resource_queue_.Shutdown();
   STLDeleteValues(&pending_requests_);
   // Make sure we shutdown the timer now, otherwise by the time our destructor
   // runs if the timer is still running the Task is deleted twice (once by
@@ -1002,9 +1005,10 @@ void ResourceDispatcherHost::RemovePendingRequest(
   IncrementOutstandingRequestsMemoryCost(-1 * info->memory_cost(),
                                          info->child_id());
 
-  // Notify the login handler that this request object is going away.
+  // Notify interested parties that the request object is going away.
   if (info && info->login_handler())
     info->login_handler()->OnRequestCancelled();
+  resource_queue_.RemoveRequest(iter->first);
 
   delete iter->second;
   pending_requests_.erase(iter);
@@ -1307,12 +1311,7 @@ void ResourceDispatcherHost::BeginRequestInternal(URLRequest* request) {
 
   GlobalRequestID global_id(info->child_id(), info->request_id());
   pending_requests_[global_id] = request;
-  if (!user_script_listener_->ShouldStartRequest(request)) {
-    // This request depends on some user scripts that haven't loaded yet.  The
-    // UserScriptListener will resume the request when they're ready.
-    return;
-  }
-  request->Start();
+  resource_queue_.AddRequest(request, *info);
 
   // Make sure we have the load state monitor running
   if (!update_load_states_timer_.IsRunning()) {
@@ -1535,7 +1534,7 @@ void ResourceDispatcherHost::RemoveObserver(Observer* obs) {
 }
 
 URLRequest* ResourceDispatcherHost::GetURLRequest(
-    GlobalRequestID request_id) const {
+    const GlobalRequestID& request_id) const {
   // This should be running in the IO loop.
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 

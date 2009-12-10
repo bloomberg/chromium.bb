@@ -8,8 +8,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/io_buffer.h"
 
@@ -105,8 +107,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(int request_id,
   has_started_response_ = true;
 
   // Look up the request and associated info.
-  ResourceDispatcherHost::GlobalRequestID global_id(render_process_host_id_,
-                                                    request_id);
+  GlobalRequestID global_id(render_process_host_id_, request_id);
   URLRequest* request = rdh_->GetURLRequest(global_id);
   if (!request) {
     DLOG(WARNING) << "Request wasn't found";
@@ -172,8 +173,7 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
         // so that the error message (e.g., 404) can be displayed to the user.
         // Also continue with the logic below to remember that we completed
         // during the cross-site transition.
-        ResourceDispatcherHost::GlobalRequestID global_id(
-            render_process_host_id_, request_id);
+        GlobalRequestID global_id(render_process_host_id_, request_id);
         StartCrossSiteTransition(request_id, NULL, global_id);
       }
     }
@@ -197,8 +197,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
   in_cross_site_transition_ = false;
 
   // Find the request for this response.
-  ResourceDispatcherHost::GlobalRequestID global_id(render_process_host_id_,
-                                                    request_id_);
+  GlobalRequestID global_id(render_process_host_id_, request_id_);
   URLRequest* request = rdh_->GetURLRequest(global_id);
   if (!request) {
     DLOG(WARNING) << "Resuming a request that wasn't found";
@@ -238,7 +237,7 @@ void CrossSiteResourceHandler::ResumeResponse() {
 void CrossSiteResourceHandler::StartCrossSiteTransition(
     int request_id,
     ResourceResponse* response,
-    ResourceDispatcherHost::GlobalRequestID global_id) {
+    const GlobalRequestID& global_id) {
   in_cross_site_transition_ = true;
   request_id_ = request_id;
   response_ = response;

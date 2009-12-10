@@ -7,15 +7,16 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "net/url_request/url_request.h"
 
-UserScriptListener::UserScriptListener(ResourceDispatcherHost* rdh)
-    : resource_dispatcher_host_(rdh),
+UserScriptListener::UserScriptListener(ResourceQueue* resource_queue)
+    : resource_queue_(resource_queue),
       user_scripts_ready_(false) {
-  DCHECK(resource_dispatcher_host_);
+  DCHECK(resource_queue_);
 
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                  NotificationService::AllSources());
@@ -25,41 +26,38 @@ UserScriptListener::UserScriptListener(ResourceDispatcherHost* rdh)
                  NotificationService::AllSources());
 }
 
-bool UserScriptListener::ShouldStartRequest(URLRequest* request) {
+bool UserScriptListener::ShouldDelayRequest(
+    URLRequest* request,
+    const ResourceDispatcherHostRequestInfo& request_info,
+    const GlobalRequestID& request_id) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   // If it's a frame load, then we need to check the URL against the list of
   // user scripts to see if we need to wait.
-  ResourceDispatcherHostRequestInfo* info =
-    ResourceDispatcherHost::InfoForRequest(request);
-  DCHECK(info);
-
-  if (info->resource_type() != ResourceType::MAIN_FRAME &&
-      info->resource_type() != ResourceType::SUB_FRAME) {
-    return true;
+  if (request_info.resource_type() != ResourceType::MAIN_FRAME &&
+      request_info.resource_type() != ResourceType::SUB_FRAME) {
+    return false;
   }
 
   if (user_scripts_ready_)
-    return true;
+    return false;
 
-  // User scripts aren't ready yet. If one of them wants to inject into this
-  // request, we'll need to wait for it before we can start this request.
-  bool found_match = false;
   for (URLPatterns::iterator it = url_patterns_.begin();
        it != url_patterns_.end(); ++it) {
     if ((*it).MatchesUrl(request->url())) {
-      found_match = true;
-      break;
+      // One of the user scripts wants to inject into this request, but the
+      // script isn't ready yet. Delay the request.
+      delayed_request_ids_.push_front(request_id);
+      return true;
     }
   }
 
-  if (!found_match)
-    return true;
-
-  // Queue this request up.
-  delayed_request_ids_.push_front(ResourceDispatcherHost::GlobalRequestID(
-      info->child_id(), info->request_id()));
   return false;
+}
+
+void UserScriptListener::WillShutdownResourceQueue() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  resource_queue_ = NULL;
 }
 
 void UserScriptListener::StartDelayedRequests() {
@@ -67,15 +65,10 @@ void UserScriptListener::StartDelayedRequests() {
 
   user_scripts_ready_ = true;
 
-  if (resource_dispatcher_host_) {
+  if (resource_queue_) {
     for (DelayedRequests::iterator it = delayed_request_ids_.begin();
          it != delayed_request_ids_.end(); ++it) {
-      URLRequest* request = resource_dispatcher_host_->GetURLRequest(*it);
-      if (request) {
-        // The request shouldn't have started (SUCCESS is the initial state).
-        DCHECK(request->status().status() == URLRequestStatus::SUCCESS);
-        request->Start();
-      }
+      resource_queue_->StartDelayedRequest(this, *it);
     }
   }
 

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/renderer_host/download_resource_handler.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "net/base/io_buffer.h"
 
 DownloadThrottlingResourceHandler::DownloadThrottlingResourceHandler(

@@ -7,9 +7,13 @@
 
 #include <string>
 
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "base/timer.h"
+#include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_handler.h"
 
+class DownloadFileManager;
+class ResourceDispatcherHost;
+class URLRequest;
 struct DownloadBuffer;
 
 // Forwards data to the download thread.
@@ -57,7 +61,7 @@ class DownloadResourceHandler : public ResourceHandler {
   void StartPauseTimer();
 
   int download_id_;
-  ResourceDispatcherHost::GlobalRequestID global_id_;
+  GlobalRequestID global_id_;
   int render_view_id_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   std::string content_disposition_;

@@ -148,6 +148,7 @@ class ResourceDispatcherHostTest : public testing::Test,
  public:
   ResourceDispatcherHostTest()
       : Receiver(ChildProcessInfo::RENDER_PROCESS, -1),
+        ui_thread_(ChromeThread::UI, &message_loop_),
         io_thread_(ChromeThread::IO, &message_loop_),
         old_factory_(NULL) {
     set_handle(base::GetCurrentProcessHandle());
@@ -175,6 +176,7 @@ class ResourceDispatcherHostTest : public testing::Test,
                                         &ResourceDispatcherHostTest::Factory);
     EnsureTestSchemeIsAllowed();
   }
+
   virtual void TearDown() {
     URLRequest::RegisterProtocolFactory("test", NULL);
     if (!scheme_.empty())
@@ -245,6 +247,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   }
 
   MessageLoopForIO message_loop_;
+  ChromeThread ui_thread_;
   ChromeThread io_thread_;
   ResourceDispatcherHost host_;
   ResourceIPCAccumulator accum_;

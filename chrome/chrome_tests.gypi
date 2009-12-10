@@ -738,6 +738,7 @@
         'browser/renderer_host/audio_renderer_host_unittest.cc',
         'browser/renderer_host/render_widget_host_unittest.cc',
         'browser/renderer_host/resource_dispatcher_host_unittest.cc',
+        'browser/renderer_host/resource_queue_unittest.cc',
         'browser/renderer_host/test/render_view_host_unittest.cc',
         'browser/renderer_host/test/site_instance_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',

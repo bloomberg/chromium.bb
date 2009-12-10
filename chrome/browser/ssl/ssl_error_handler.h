@@ -9,12 +9,13 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/ssl/ssl_manager.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/common/filter_policy.h"
 #include "googleurl/src/gurl.h"
 #include "webkit/glue/resource_type.h"
 
+class ResourceDispatcherHost;
 class SSLCertErrorHandler;
 class TabContents;
 class URLRequest;
@@ -113,7 +114,7 @@ class SSLErrorHandler : public base::RefCountedThreadSafe<SSLErrorHandler> {
 
   // The id of the URLRequest associated with this object.
   // Should only be accessed from the IO thread.
-  ResourceDispatcherHost::GlobalRequestID request_id_;
+  GlobalRequestID request_id_;
 
   // The ResourceDispatcherHost we are associated with.
   ResourceDispatcherHost* resource_dispatcher_host_;
