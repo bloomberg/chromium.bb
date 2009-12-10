@@ -61,6 +61,8 @@ struct WebPreferences {
 
   bool experimental_webgl_enabled;
 
+  bool geolocation_enabled;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.
@@ -98,7 +100,8 @@ struct WebPreferences {
         tabs_to_links(true),
         user_style_sheet_enabled(false),
         allow_universal_access_from_file_urls(false),
-        experimental_webgl_enabled(false) {
+        experimental_webgl_enabled(false),
+        geolocation_enabled(false) {
   }
 
   void Apply(WebKit::WebView* web_view) const;

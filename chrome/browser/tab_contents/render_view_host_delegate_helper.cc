@@ -187,6 +187,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       command_line.HasSwitch(switches::kEnableExperimentalWebGL);
     web_prefs.site_specific_quirks_enabled =
       !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
+    web_prefs.geolocation_enabled =
+      command_line.HasSwitch(switches::kEnableGeolocation);
   }
 
   web_prefs.uses_universal_detector =

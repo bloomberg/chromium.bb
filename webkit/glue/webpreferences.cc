@@ -84,6 +84,10 @@ void WebPreferences::Apply(WebView* web_view) const {
   // and support is compiled in.
   settings->setExperimentalWebGLEnabled(experimental_webgl_enabled);
 
+  // Enable geolocation support if requested on command line and support is
+  // compiled in.
+  settings->setGeolocationEnabled(geolocation_enabled);
+
   // Web inspector settings need to be passed in differently.
   web_view->setInspectorSettings(WebString::fromUTF8(inspector_settings));
 
