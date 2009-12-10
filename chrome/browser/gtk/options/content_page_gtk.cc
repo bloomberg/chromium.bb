@@ -333,6 +333,8 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
                      FALSE, 0);
   gtk_container_add(GTK_CONTAINER(sync_action_link_background_),
                     sync_action_link_);
+  gtk_widget_set_no_show_all(sync_action_link_background_, TRUE);
+  gtk_widget_hide(sync_action_link_background_);
 
   // Add the sync button into its own horizontal box so it does not
   // depend on the spacing above.
@@ -372,9 +374,9 @@ void ContentPageGtk::UpdateSyncControls() {
   gtk_chrome_link_button_set_label(GTK_CHROME_LINK_BUTTON(sync_action_link_),
                                    UTF16ToUTF8(link_label).c_str());
   if (link_label.empty()) {
-    gtk_widget_hide(sync_action_link_);
+    gtk_widget_hide(sync_action_link_background_);
   } else {
-    gtk_widget_show(sync_action_link_);
+    gtk_widget_show(sync_action_link_background_);
   }
   if (status_has_error) {
     gtk_widget_modify_bg(sync_status_label_background_, GTK_STATE_NORMAL,
