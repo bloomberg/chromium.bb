@@ -20,6 +20,13 @@
 #include "ipc/ipc_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+// http://crbug.com/29994
+#if defined(OS_CHROMEOS)
+#define MAYBE_NTPViewSource DISABLED_NTPViewSource
+#else
+#define MAYBE_NTPViewSource NTPViewSource
+#endif
+
 using webkit_glue::PasswordForm;
 
 static void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
@@ -221,7 +228,7 @@ TEST_F(TabContentsTest, UpdateTitle) {
 }
 
 // Test view source mode for the new tabs page.
-TEST_F(TabContentsTest, NTPViewSource) {
+TEST_F(TabContentsTest, MAYBE_NTPViewSource) {
   const char kUrl[] = "view-source:chrome://newtab/";
   const GURL kGURL(kUrl);
 
