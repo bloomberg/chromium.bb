@@ -68,7 +68,7 @@ void ProfileSyncService::Initialize() {
 
   if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
     StartUp();  // We always start sync for Chrome OS.
 #endif
   } else {
@@ -112,7 +112,7 @@ void ProfileSyncService::ClearPreferences() {
   pref_service->ScheduleSavePersistentPrefs();
 }
 
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
 // The domain and name of the LSID cookie which we use to bootstrap the sync
 // authentication in chromeos.
 const char kLsidCookieDomain[] = "www.google.com";
@@ -120,7 +120,7 @@ const char kLsidCookieName[]   = "LSID";
 #endif
 
 std::string ProfileSyncService::GetLsidForAuthBootstraping() {
-#if defined(CHROMEOS)
+#if defined(OS_CHROMEOS)
   // If we're running inside Chrome OS, bootstrap the sync authentication by
   // using the LSID cookie provided by the Chrome OS login manager.
   net::CookieMonster::CookieList cookies = profile()->GetRequestContext()->
