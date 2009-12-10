@@ -231,7 +231,10 @@ class Lighttpd(http_server_base.HttpServerBase):
     if not force and not self.IsRunning():
       return
 
-    path_utils.ShutDownHTTPServer(self._process)
+    httpd_pid = None
+    if self._process:
+      httpd_pid = self._process.pid
+    path_utils.ShutDownHTTPServer(httpd_pid)
 
     if self._process:
       self._process.wait()

@@ -118,11 +118,11 @@ def LigHTTPdPHPPath():
   return path_utils.PathFromBase('third_party', 'lighttpd', 'win', 'php5',
                                  'php-cgi.exe')
 
-def ShutDownHTTPServer(server_process):
+def ShutDownHTTPServer(server_pid):
   """Shut down the lighttpd web server. Blocks until it's fully shut down.
 
   Args:
-    server_process: The subprocess object representing the running server.
+    server_pid: The process ID of the running server.
         Unused in this implementation of the method.
   """
   subprocess.Popen(('taskkill.exe', '/f', '/im', 'LightTPD.exe'),

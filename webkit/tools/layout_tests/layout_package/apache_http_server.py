@@ -32,7 +32,13 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
 
     # The upstream .conf file assumed the existence of /tmp/WebKit for placing
     # apache files like the lock file there.
-    path_utils.MaybeMakeDirectory(os.path.join("/tmp", "WebKit"))
+    self._runtime_path = os.path.join("/tmp", "WebKit")
+    path_utils.MaybeMakeDirectory(self._runtime_path)
+
+    # The PID returned when Apache is started goes away (due to dropping
+    # privileges?). The proper controlling PID is written to a file in the
+    # apache runtime directory.
+    self._pid_file = os.path.join(self._runtime_path, 'httpd.pid')
 
     test_dir = path_utils.PathFromBase('third_party', 'WebKit',
         'LayoutTests')
@@ -120,4 +126,7 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
   def Stop(self):
     """Stops the apache http server."""
     logging.debug("Shutting down any running http servers")
-    path_utils.ShutDownHTTPServer(self._httpd_proc)
+    httpd_pid = None
+    if os.path.exists(self._pid_file):
+      httpd_pid = int(open(self._pid_file).readline())
+    path_utils.ShutDownHTTPServer(httpd_pid)

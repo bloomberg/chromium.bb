@@ -101,14 +101,14 @@ def LigHTTPdPHPPath():
   return path_utils.PathFromBase('third_party', 'lighttpd', 'mac', 'bin',
                                  'php-cgi')
 
-def ShutDownHTTPServer(server_process):
+def ShutDownHTTPServer(server_pid):
   """Shut down the lighttpd web server. Blocks until it's fully shut down.
 
     Args:
-      server_process: The subprocess object representing the running server
+      server_pid: The process ID of the running server.
   """
-  # server_process is not set when "http_server.py stop" is run manually.
-  if server_process is None:
+  # server_pid is not set when "http_server.py stop" is run manually.
+  if server_pid is None:
     # TODO(mmoss) This isn't ideal, since it could conflict with lighttpd
     # processes not started by http_server.py, but good enough for now.
 
@@ -118,13 +118,13 @@ def ShutDownHTTPServer(server_process):
     #   killall: illegal option -- T
     # Use of the earlier -TERM placement is just fine on 10.5.
     null = open("/dev/null");
-    subprocess.call(['killall', '-KILL', '-u', os.getenv('USER'), 'lighttpd'],
+    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'],
                     stderr=null)
-    subprocess.call(['killall', '-KILL', '-u', os.getenv('USER'), 'httpd'],
+    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'httpd'],
                     stderr=null)
     null.close()
   else:
-    os.kill(server_process.pid, signal.SIGKILL)
+    os.kill(server_pid, signal.SIGTERM)
 
 def KillProcess(pid):
   """Forcefully kill the process.

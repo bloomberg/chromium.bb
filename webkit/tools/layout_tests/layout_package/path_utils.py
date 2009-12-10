@@ -355,8 +355,8 @@ def LayoutTestHelperPath(target):
 def FuzzyMatchPath():
   return platform_utils.FuzzyMatchPath()
 
-def ShutDownHTTPServer(server_process):
-  return platform_utils.ShutDownHTTPServer(server_process)
+def ShutDownHTTPServer(server_pid):
+  return platform_utils.ShutDownHTTPServer(server_pid)
 
 def KillAllTestShells():
   platform_utils.KillAllTestShells()

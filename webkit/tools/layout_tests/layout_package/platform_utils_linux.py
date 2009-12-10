@@ -124,24 +124,25 @@ def FuzzyMatchPath():
   """Return the path to the fuzzy matcher binary."""
   return path_utils.PathFromBase('third_party', 'fuzzymatch', 'fuzzymatch')
 
-def ShutDownHTTPServer(server_process):
+def ShutDownHTTPServer(server_pid):
   """Shut down the lighttpd web server. Blocks until it's fully shut down.
 
   Args:
-    server_process: The subprocess object representing the running server
+    server_pid: The process ID of the running server.
   """
-  # server_process is not set when "http_server.py stop" is run manually.
-  if server_process is None:
-    # TODO(mmoss) This isn't ideal, since it could conflict with lighttpd
-    # processes not started by http_server.py, but good enough for now.
+  # server_pid is not set when "http_server.py stop" is run manually.
+  if server_pid is None:
+    # This isn't ideal, since it could conflict with web server processes not
+    # started by http_server.py, but good enough for now.
     null = open("/dev/null");
-    subprocess.call(['killall', '-KILL', '-u', os.getenv('USER'), 'lighttpd'],
+    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'lighttpd'],
                     stderr=null)
-    subprocess.call(['killall', '-KILL', '-u', os.getenv('USER'), 'apache2'],
+    subprocess.call(['killall', '-TERM', '-u', os.getenv('USER'), 'apache2'],
                     stderr=null)
     null.close()
   else:
-    os.kill(server_process.pid, signal.SIGKILL)
+    os.kill(server_pid, signal.SIGTERM)
+    #TODO(mmoss) Maybe throw in a SIGKILL just to be sure?
 
 def KillProcess(pid):
   """Forcefully kill the process.
