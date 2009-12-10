@@ -2684,7 +2684,7 @@ BUG18116 : LayoutTests/fast/dom/prototype-inheritance-2.html = FAIL
 // Flaky.  Timing?
 BUG18584 LINUX WIN : LayoutTests/animations/change-one-anim.html = FAIL PASS
 BUG18584 WIN DEBUG : LayoutTests/animations/play-state.html = FAIL PASS
-BUG18584 LINUX WIN : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
+BUG18584 LINUX DEBUG : LayoutTests/transitions/shorthand-transitions.html = FAIL PASS
 BUG18584 WIN DEBUG : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
 BUG18584 LINUX : LayoutTests/animations/combo-transform-translate+scale.html = FAIL PASS
 
