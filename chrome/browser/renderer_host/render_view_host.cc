@@ -207,7 +207,7 @@ bool RenderViewHost::CreateRenderView(
   }
 
   Send(new ViewMsg_New(GetNativeViewId(),
-                       delegate_->GetRendererPrefs(),
+                       delegate_->GetRendererPrefs(process()->profile()),
                        webkit_prefs,
                        routing_id()));
 
@@ -234,7 +234,8 @@ bool RenderViewHost::IsRenderViewLive() const {
 
 void RenderViewHost::SyncRendererPrefs() {
   Send(new ViewMsg_SetRendererPrefs(routing_id(),
-                                    delegate_->GetRendererPrefs()));
+                                    delegate_->GetRendererPrefs(
+                                        process()->profile())));
 }
 
 void RenderViewHost::Navigate(const ViewMsg_Navigate_Params& params) {

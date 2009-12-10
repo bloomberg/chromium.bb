@@ -84,8 +84,4 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   [alert runModal];
 }
 
-RendererPreferences GetInitedRendererPreferences() {
-  return RendererPreferences();
-}
-
 }  // namespace platform_util

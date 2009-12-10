@@ -1335,6 +1335,8 @@
         'browser/renderer_host/web_cache_manager.h',
         'browser/renderer_host/x509_user_cert_resource_handler.cc',
         'browser/renderer_host/x509_user_cert_resource_handler.h',
+        'browser/renderer_preferences_util.cc',
+        'browser/renderer_preferences_util.h',
         'browser/rlz/rlz.cc',
         'browser/rlz/rlz.h',
         'browser/safe_browsing/bloom_filter.cc',

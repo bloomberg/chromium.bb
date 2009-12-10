@@ -51,6 +51,12 @@ struct RendererPreferences {
   // The color of the focus ring. Currently only used on Linux.
   SkColor focus_ring_color;
 
+  // The color of different parts of the scrollbar. Currently only used on
+  // Linux.
+  SkColor thumb_active_color;
+  SkColor thumb_inactive_color;
+  SkColor track_color;
+
   // Browser wants a look at all top level requests
   bool browser_handles_top_level_requests;
 
@@ -61,6 +67,9 @@ struct RendererPreferences {
         subpixel_rendering(
             RENDERER_PREFERENCES_SUBPIXEL_RENDERING_SYSTEM_DEFAULT),
         focus_ring_color(0),
+        thumb_active_color(0),
+        thumb_inactive_color(0),
+        track_color(0),
         browser_handles_top_level_requests(false) {
   }
 };

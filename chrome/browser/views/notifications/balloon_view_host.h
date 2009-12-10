@@ -83,7 +83,7 @@ class BalloonViewHost : public views::NativeViewHost,
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size);
-  virtual RendererPreferences GetRendererPrefs() const {
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const {
     return RendererPreferences();
   }
 

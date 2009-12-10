@@ -3224,6 +3224,12 @@ void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
+
+  if (webview())
+    webview()->setScrollbarColors(
+        renderer_prefs.thumb_inactive_color,
+        renderer_prefs.thumb_active_color,
+        renderer_prefs.track_color);
 #endif
 }
 

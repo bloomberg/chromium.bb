@@ -23,6 +23,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/bindings_policy.h"
 #if defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/gtk_util.h"
 #endif
 #include "chrome/common/notification_service.h"
@@ -144,7 +145,8 @@ InterstitialPage::InterstitialPage(TabContents* tab,
   DCHECK(new_navigation || !tab->controller().pending_entry());
 
 #if defined(TOOLKIT_GTK)
-  gtk_util::InitRendererPrefsFromGtkSettings(&renderer_preferences_);
+  gtk_util::InitRendererPrefsFromGtkSettings(&renderer_preferences_,
+      GtkThemeProvider::GetFrom(tab->profile())->UseGtkTheme());
 #endif
 }
 
