@@ -311,7 +311,7 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   // not leaked.
   scoped_ptr<base::NativeLibraryStruct> native_library(
       base::LoadNativeLibrary(filename));
-  if (native_library->type != base::BUNDLE)
+  if (!native_library.get() || native_library->type != base::BUNDLE)
     return false;
   scoped_cftyperef<CFBundleRef> bundle(native_library->bundle);
   if (!bundle)
