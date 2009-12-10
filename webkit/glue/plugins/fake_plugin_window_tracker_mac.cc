@@ -26,7 +26,7 @@ WindowRef FakePluginWindowTracker::GenerateFakeWindowForDelegate(
   Rect window_bounds = { 0, 0, 100, 100 };
   WindowRef new_ref = NULL;
   if (CreateNewWindow(kDocumentWindowClass,
-                      kWindowNoTitleBarAttribute,
+                      kWindowStandardDocumentAttributes,
                       &window_bounds,
                       &new_ref) == noErr) {
     CFDictionaryAddValue(window_to_delegate_map_, new_ref, delegate);
