@@ -49,18 +49,10 @@ TEST(CancellationFlagTest, DoubleSetTest) {
   ASSERT_TRUE(flag.IsSet());
 }
 
-#if defined(OS_WIN)
-#define DISABLED_ON_WIN(x) DISABLED_##x
-#else
-#define DISABLED_ON_WIN(x) x
-#endif
-
-// CancellationFlag should die on a DCHECK if Set() is called from
-// other thread.
-// This test isn't Windows-friendly yet since ASSERT_DEATH doesn't catch tests
-// failed on DCHECK. See http://crbug.com/24885 for the details.
-TEST(CancellationFlagTest, DISABLED_ON_WIN(SetOnDifferentThreadDeathTest)) {
+TEST(CancellationFlagTest, SetOnDifferentThreadDeathTest) {
   // Checks that Set() can't be called from any other thread.
+  // CancellationFlag should die on a DCHECK if Set() is called from
+  // other thread.
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   Thread t("CancellationFlagTest.SetOnDifferentThreadDeathTest");
   ASSERT_TRUE(t.Start());
