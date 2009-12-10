@@ -475,11 +475,17 @@ build:
 	# We need libnacl.a for gfortran, but we don't have a c++ yet
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries_nocpp
 	$(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gcc
+	# gdb only works with nacl, not with nacl64... yet
+ifeq ($(CROSSARCH), nacl)
 	case $$(BUILD/binutils-$(BINUTILS_VERSION)/config.guess) in \
 	*-linux*) $(MAKE) -f $(THISMAKEFILE) BUILD/stamp-gdb ;; \
 	esac
+endif
 	$(MAKE) -f $(THISMAKEFILE) nacl_libraries
+	# Don't run tests till loader is not ready
+ifeq ($(CROSSARCH), nacl)
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
+endif
 ifeq ($(PLATFORM), Cygwin17)
 	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
 	  $(DESTDIR)$(SDKROOT)/libexec

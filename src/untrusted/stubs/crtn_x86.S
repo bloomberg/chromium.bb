@@ -35,9 +35,18 @@
          */
         .section .init
         .p2align NACLENTRYALIGN,0x90
+#if defined(__x86_64__)
+        movq %rbp, %rsp
+        popq %rbp
+        movl %ebp,%ebp
+        addq %r15,%rbp
+        popq %r11
+        nacljmp %r11d,%r15
+#else
         leave
-        pop %ecx
+        popl %ecx
         nacljmp %ecx
+#endif
         .p2align NACLENTRYALIGN,0xf4
 
         /*
@@ -45,11 +54,20 @@
          */
         .section .fini
         .p2align NACLENTRYALIGN,0x90
-        pop %ecx
-        pop %ebx
+#if defined(__x86_64__)
+        movq %rbp, %rsp
+        popq %rbp
+        movl %ebp,%ebp
+        addq %r15,%rbp
+        popq %r11
+        nacljmp %r11d,%r15
+#else
+        popl %ecx
+        popl %ebx
         leave
-        pop %ecx
+        popl %ecx
         nacljmp %ecx
+#endif
         .p2align NACLENTRYALIGN,0xf4
 
         .text

@@ -39,8 +39,13 @@
         .p2align NACLENTRYALIGN
         .global _init
 _init:
+#if defined(__x86_64__)
+        pushq  %rbp
+        movq   %rsp, %rbp
+#else
         pushl  %ebp
         movl   %esp, %ebp
+#endif
         /*
          * The code that follows will be appended by the linker, and will not
          * be aligned individually, so we need to align it.
@@ -56,8 +61,13 @@ _init:
         .p2align NACLENTRYALIGN
         .global _fini
 _fini:
-        push   %ebp
+#if defined(__x86_64__)
+        pushq  %rbp
+        movq   %rsp, %rbp
+#else
+        pushl  %ebp
         movl   %esp, %ebp
+#endif
         /*
          * The code that follows will be appended by the linker, and will not
          * be aligned individually, so we need to align it.
