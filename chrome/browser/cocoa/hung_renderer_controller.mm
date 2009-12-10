@@ -43,6 +43,7 @@ HungRendererController* g_instance = NULL;
 
 - (void)dealloc {
   DCHECK(!g_instance);
+  [tableView_ setDataSource:nil];
   [super dealloc];
 }
 
@@ -90,19 +91,14 @@ HungRendererController* g_instance = NULL;
   [self close];
 }
 
-- (int)numberOfRowsInTableView:(NSTableView *)aTableView {
-  return hungRenderers_.size();
+- (NSInteger)numberOfRowsInTableView:(NSTableView *)aTableView {
+  return [hungTitles_ count];
 }
 
 - (id)tableView:(NSTableView*)aTableView
       objectValueForTableColumn:(NSTableColumn*)column
-            row:(int)rowIndex {
-  // TODO(rohitrao): Add favicons.
-  TabContents* contents = hungRenderers_[rowIndex];
-  string16 title = contents->GetTitle();
-  if (!title.empty())
-    return base::SysUTF16ToNSString(title);
-  return l10n_util::GetNSStringWithFixup(IDS_TAB_UNTITLED_TITLE);
+            row:(NSInteger)rowIndex {
+  return [hungTitles_ objectAtIndex:rowIndex];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -118,11 +114,20 @@ HungRendererController* g_instance = NULL;
 - (void)showForTabContents:(TabContents*)contents {
   DCHECK(contents);
   hungContents_ = contents;
-  hungRenderers_.clear();
+  scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->process() == hungContents_->process())
-      hungRenderers_.push_back(*it);
+    if (it->process() == hungContents_->process()) {
+      // TODO(rohitrao): Add favicons.
+      const string16 title = (*it)->GetTitle();
+      if (title.empty()) {
+        [titles addObject:
+                  l10n_util::GetNSStringWithFixup(IDS_TAB_UNTITLED_TITLE)];
+      } else {
+        [titles addObject:base::SysUTF16ToNSString(title)];
+      }
+    }
   }
+  hungTitles_.reset([titles copy]);
   [tableView_ reloadData];
 
   [[self window] center];
@@ -168,4 +173,3 @@ void HideForTabContents(TabContents* contents) {
 }
 
 }  // namespace hung_renderer_dialog
-

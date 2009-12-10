@@ -185,7 +185,7 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
 - (void)dealloc {
   controller_->table_model()->SetObserver(NULL);
   controller_->url_model()->RemoveObserver(observer_.get());
-  [tableView_ setTarget:nil];
+  [tableView_ setDataSource:nil];
   observer_.reset();
   [super dealloc];
 }
