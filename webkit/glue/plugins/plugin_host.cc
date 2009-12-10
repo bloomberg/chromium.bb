@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Pepper API support should be turned on for this module.
-#define PEPPER_APIS_ENABLED
-
 #include "webkit/glue/plugins/plugin_host.h"
 
 #include "base/file_util.h"
@@ -803,6 +800,10 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
     }
   #endif  // OS_MACOSX
     case NPNVPepperExtensions:
+      // Available for any plugin that attempts to get it.
+      // If the plugin is not started in a Pepper implementation, it
+      // will likely fail when it tries to use any of the functions
+      // attached to the extension vector.
       rv = NPAPI::GetPepperExtensionsFunctions(value);
       break;
     default:

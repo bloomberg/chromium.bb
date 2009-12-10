@@ -12,9 +12,6 @@
       'include_dirs': [
         '../../..',  # Root of Chrome Checkout
       ],
-      'defines': [
-        'PEPPER_APIS_ENABLED',
-      ],
       'conditions': [
         ['OS=="win"', {
           'product_name': 'pepper_test_plugin',
