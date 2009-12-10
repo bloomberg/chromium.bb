@@ -12,18 +12,6 @@
 #include "ipc/ipc_message.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// http://crbug.com/29994
-#if defined(OS_CHROMEOS)
-#define MAYBE_NewTabPageProcesses DISABLED_NewTabPageProcesses
-#define MAYBE_AlwaysSendEnableViewSourceMode \
-        DISABLED_AlwaysSendEnableViewSourceMode
-#define MAYBE_DOMUI DISABLED_DOMUI
-#else
-#define MAYBE_NewTabPageProcesses NewTabPageProcesses
-#define MAYBE_AlwaysSendEnableViewSourceMode AlwaysSendEnableViewSourceMode
-#define MAYBE_DOMUI DOMUI
-#endif
-
 class RenderViewHostManagerTest : public RenderViewHostTestHarness {
  public:
   void NavigateActiveAndCommit(const GURL& url) {
@@ -42,7 +30,7 @@ class RenderViewHostManagerTest : public RenderViewHostTestHarness {
 // then do that same thing in another tab, that the two resulting pages have
 // different SiteInstances, BrowsingInstances, and RenderProcessHosts. This is
 // a regression test for bug 9364.
-TEST_F(RenderViewHostManagerTest, MAYBE_NewTabPageProcesses) {
+TEST_F(RenderViewHostManagerTest, NewTabPageProcesses) {
   ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   GURL ntp(chrome::kChromeUINewTabURL);
   GURL dest("http://www.google.com/");
@@ -90,7 +78,7 @@ TEST_F(RenderViewHostManagerTest, MAYBE_NewTabPageProcesses) {
 // mode. See WebFrameImpl::DidFail(). We check by this test that
 // EnableViewSourceMode message is sent on every navigation regardless
 // RenderView is being newly created or reused.
-TEST_F(RenderViewHostManagerTest, MAYBE_AlwaysSendEnableViewSourceMode) {
+TEST_F(RenderViewHostManagerTest, AlwaysSendEnableViewSourceMode) {
   ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   const GURL kNtpUrl(chrome::kChromeUINewTabURL);
   const GURL kUrl("view-source:http://foo");
@@ -241,7 +229,7 @@ TEST_F(RenderViewHostManagerTest, Navigate) {
 }
 
 // Tests DOMUI creation.
-TEST_F(RenderViewHostManagerTest, MAYBE_DOMUI) {
+TEST_F(RenderViewHostManagerTest, DOMUI) {
   ChromeThread ui_thread(ChromeThread::UI, MessageLoop::current());
   SiteInstance* instance = SiteInstance::CreateSiteInstance(profile_.get());
 

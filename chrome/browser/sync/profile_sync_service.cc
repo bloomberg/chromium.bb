@@ -69,7 +69,8 @@ void ProfileSyncService::Initialize() {
   if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
 #if defined(OS_CHROMEOS)
-    StartUp();  // We always start sync for Chrome OS.
+    if (profile()->GetRequestContext())
+      StartUp();  // We always start sync for Chrome OS.
 #endif
   } else {
     StartUp();
@@ -114,7 +115,7 @@ void ProfileSyncService::ClearPreferences() {
 
 #if defined(OS_CHROMEOS)
 // The domain and name of the LSID cookie which we use to bootstrap the sync
-// authentication in chromeos.
+// authentication in Chrome OS.
 const char kLsidCookieDomain[] = "www.google.com";
 const char kLsidCookieName[]   = "LSID";
 #endif

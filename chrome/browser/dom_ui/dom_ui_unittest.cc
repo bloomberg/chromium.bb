@@ -7,17 +7,6 @@
 #include "chrome/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// http://crbug.com/29994
-#if defined(OS_CHROMEOS)
-#define MAYBE_DOMUIToStandard DISABLED_DOMUIToStandard
-#define MAYBE_DOMUIToDOMUI DISABLED_DOMUIToDOMUI
-#define MAYBE_StandardToDOMUI DISABLED_StandardToDOMUI
-#else
-#define MAYBE_DOMUIToStandard DOMUIToStandard
-#define MAYBE_DOMUIToDOMUI DOMUIToDOMUI
-#define MAYBE_StandardToDOMUI StandardToDOMUI
-#endif
-
 class DOMUITest : public RenderViewHostTestHarness {
  public:
   DOMUITest() : ui_thread_(ChromeThread::UI, MessageLoop::current()) {}
@@ -94,7 +83,7 @@ class DOMUITest : public RenderViewHostTestHarness {
 // Tests that the New Tab Page flags are correctly set and propogated by
 // TabContents when we first navigate to a DOM UI page, then to a standard
 // non-DOM-UI page.
-TEST_F(DOMUITest, MAYBE_DOMUIToStandard) {
+TEST_F(DOMUITest, DOMUIToStandard) {
   // The sync service must be created to host the sync NTP advertisement.
   profile_->CreateProfileSyncService();
 
@@ -109,7 +98,7 @@ TEST_F(DOMUITest, MAYBE_DOMUIToStandard) {
   DoNavigationTest(&contents2, 101);
 }
 
-TEST_F(DOMUITest, MAYBE_DOMUIToDOMUI) {
+TEST_F(DOMUITest, DOMUIToDOMUI) {
   // The sync service must be created to host the sync NTP advertisement.
   profile_->CreateProfileSyncService();
 
@@ -129,7 +118,7 @@ TEST_F(DOMUITest, MAYBE_DOMUIToDOMUI) {
   EXPECT_TRUE(contents()->FocusLocationBarByDefault());
 }
 
-TEST_F(DOMUITest, MAYBE_StandardToDOMUI) {
+TEST_F(DOMUITest, StandardToDOMUI) {
   // Start a pending navigation to a regular page.
   GURL std_url("http://google.com/");
 
