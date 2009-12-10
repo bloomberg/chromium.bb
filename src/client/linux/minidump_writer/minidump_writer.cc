@@ -437,7 +437,7 @@ class MinidumpWriter {
       // we used the actual state of the thread we would find it running in the
       // signal handler with the alternative stack, which would be deeply
       // unhelpful.
-      if (thread.thread_id == crashing_tid_) {
+      if ((pid_t)thread.thread_id == crashing_tid_) {
         const void* stack;
         size_t stack_len;
         if (!dumper_.GetStackInfo(&stack, &stack_len, GetStackPointer()))
