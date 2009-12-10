@@ -112,6 +112,15 @@
               '../build/linux/system.gyp:gtk',
            ],
         }],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
       ],
     },
   ],

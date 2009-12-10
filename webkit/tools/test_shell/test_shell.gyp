@@ -291,12 +291,11 @@
         }],
         ['OS=="linux"', {
           'conditions': [
-            [ 'linux_use_tcmalloc==1', {
-                'dependencies': [
-                  '../../../base/allocator/allocator.gyp:allocator',
-                ],
-              },
-            ],
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../../../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
           'dependencies': [
             '../../../build/linux/system.gyp:gtk',
@@ -476,6 +475,15 @@
             '../../../skia/ext/vector_canvas_unittest.cc',
             '../webcore_unit_tests/UniscribeHelper_unittest.cpp',
             '../webcore_unit_tests/TransparencyWin_unittest.cpp',
+          ],
+        }],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../../../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
           ],
         }],
       ],

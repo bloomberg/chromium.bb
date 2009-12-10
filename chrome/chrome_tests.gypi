@@ -387,6 +387,15 @@
             'test/ui/sandbox_uitests.cc',
           ],
         }],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
       ],
     },
     {
@@ -1001,6 +1010,15 @@
             'common/net/url_util_unittest.cc',
           ],
         }],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
       ],
     },
     {
@@ -1142,6 +1160,15 @@
             ],
           },
         }],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
       ],  # conditions
     },  # target browser_tests
     {
@@ -1182,6 +1209,15 @@
             '<(allocator_target)',
           ],
         },],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }],
       ],
     },
     {

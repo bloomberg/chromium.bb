@@ -63,6 +63,15 @@
             '../views/views.gyp:views',
           ],
         }],
+        ['OS=="linux" or OS=="freebsd"', {
+          'conditions': [
+            ['linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        }]
       ],
     },
   ],
