@@ -136,6 +136,7 @@ LocationBarViewGtk::LocationBarViewGtk(
 LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should have be children of / owned by the alignment.
   hbox_.Destroy();
+  page_action_hbox_.Destroy();
 }
 
 void LocationBarViewGtk::Init(bool popup_window_mode) {
@@ -254,10 +255,11 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
                    FALSE, FALSE, 0);
 
-  page_action_hbox_ = gtk_hbox_new(FALSE, kInnerPadding);
-  gtk_widget_set_name(page_action_hbox_,
+  page_action_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
+  gtk_widget_set_name(page_action_hbox_.get(),
                       "chrome-page-action-hbox");
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), page_action_hbox_.get(),
+                   FALSE, FALSE, 0);
 
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
@@ -426,7 +428,7 @@ void LocationBarViewGtk::UpdatePageActions() {
     for (size_t i = 0; i < page_actions.size(); ++i) {
       page_action_views_.push_back(
           new PageActionViewGtk(this, profile_, page_actions[i]));
-      gtk_box_pack_end(GTK_BOX(page_action_hbox_),
+      gtk_box_pack_end(GTK_BOX(page_action_hbox_.get()),
                        page_action_views_[i]->widget(), FALSE, FALSE, 0);
     }
   }
@@ -442,9 +444,9 @@ void LocationBarViewGtk::UpdatePageActions() {
   // If there are no visible page actions, hide the hbox too, so that it does
   // not affect the padding in the location bar.
   if (PageActionVisibleCount())
-    gtk_widget_show(page_action_hbox_);
+    gtk_widget_show(page_action_hbox_.get());
   else
-    gtk_widget_hide(page_action_hbox_);
+    gtk_widget_hide(page_action_hbox_.get());
 }
 
 void LocationBarViewGtk::InvalidatePageActions() {
@@ -461,8 +463,8 @@ void LocationBarViewGtk::Revert() {
 
 int LocationBarViewGtk::PageActionVisibleCount() {
   int count = 0;
-  gtk_container_foreach(GTK_CONTAINER(page_action_hbox_), CountVisibleWidgets,
-                        &count);
+  gtk_container_foreach(GTK_CONTAINER(page_action_hbox_.get()),
+                        CountVisibleWidgets, &count);
   return count;
 }
 

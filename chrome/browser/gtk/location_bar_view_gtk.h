@@ -206,7 +206,7 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* info_label_;
 
   // Extension page action icons.
-  GtkWidget* page_action_hbox_;
+  OwnedWidgetGtk page_action_hbox_;
   ScopedVector<PageActionViewGtk> page_action_views_;
 
   // Area on the left shown when in tab to search mode.
