@@ -13,6 +13,7 @@ how to use this.
 """
 
 import os
+import re
 import subprocess
 import sys
 
@@ -31,12 +32,43 @@ def GetWebKitRev():
   execfile('DEPS', {}, locals)
   return locals['vars']['webkit_revision']
 
-def FindSVNRev(rev):
+def FindSVNRev(target_rev):
   """Map an SVN revision to a git hash.
   Like 'git svn find-rev' but without the git-svn bits."""
-  # We find r123 by grepping for a line with "git-svn-id: blahblahblah@123".
-  return RunGit(['rev-list', '-n', '1', '--grep=^git-svn-id: .*trunk@%s ' % rev,
-                 'origin'])
+
+  # We iterate through the commit log looking for "git-svn-id" lines,
+  # which contain the SVN revision of that commit.  We can stop once
+  # we've found our target (or hit a revision number lower than what
+  # we're looking for, indicating not found).
+
+  target_rev = int(target_rev)
+
+  # regexp matching the "commit" line from the log.
+  commit_re = re.compile(r'^commit ([a-f\d]{40})$')
+  # regexp matching the git-svn line from the log.
+  git_svn_re = re.compile(r'^\s+git-svn-id: [^@]+@(\d+) ')
+
+  log = subprocess.Popen(['git', 'log', '--no-color', '--first-parent',
+                          '--pretty=medium', 'origin'],
+                         stdout=subprocess.PIPE)
+  for line in log.stdout:
+    match = commit_re.match(line)
+    if match:
+      commit = match.group(1)
+      continue
+    match = git_svn_re.match(line)
+    if match:
+      rev = int(match.group(1))
+      if rev <= target_rev:
+        log.stdout.close()  # Break pipe.
+        if rev == target_rev:
+          return commit
+        else:
+          return None
+
+  print "Error: reached end of log without finding commit info."
+  print "Something has likely gone horribly wrong."
+  return None
 
 def UpdateGClientBranch(webkit_rev):
   """Update the magic gclient branch to point at |webkit_rev|.
@@ -70,7 +102,7 @@ def UpdateCurrentCheckoutIfAppropriate():
     return
 
   if subprocess.call(['git', 'diff-index', '--exit-code', '--shortstat',
-	              'HEAD']):
+                      'HEAD']):
     print "Resetting tree state to new revision."
     subprocess.check_call(['git', 'reset', '--hard'])
 
