@@ -245,6 +245,37 @@ static void SetUpGLibLogHandler() {
                       NULL);
   }
 }
+
+static void AdjustLinuxOOMScore(const std::string& process_type) {
+  const int kMiscScore = 7;
+  const int kPluginScore = 10;
+  int score = -1;
+
+  if (process_type == switches::kPluginProcess) {
+    score = kPluginScore;
+  } else if (process_type == switches::kUtilityProcess ||
+             process_type == switches::kWorkerProcess) {
+    score = kMiscScore;
+  } else if (process_type == switches::kProfileImportProcess) {
+    NOTIMPLEMENTED();
+#ifndef DISABLE_NACL
+  } else if (process_type == switches::kNaClProcess) {
+    score = kPluginScore;
+#endif
+  } else if (process_type == switches::kZygoteProcess ||
+             process_type.empty()) {
+    // Pass - browser / zygote process stays at 0.
+  } else if (process_type == switches::kExtensionProcess ||
+             process_type == switches::kRendererProcess) {
+    // Set in chrome/browser/zygote_host_linux.cc.
+    NOTREACHED() << "process type " << process_type
+                 << "should go through the zygote.";
+  } else {
+    NOTREACHED() << "Unknown process type";
+  }
+  if (score > -1)
+    base::AdjustOOMScore(base::GetCurrentProcId(), score);
+}
 #endif  // defined(OS_LINUX)
 
 // Register the invalid param handler and pure call handler to be able to
@@ -600,6 +631,12 @@ int ChromeMain(int argc, char** argv) {
 
   MainFunctionParams main_params(parsed_command_line, sandbox_wrapper,
                                  &autorelease_pool);
+
+  // Note: If you are adding a new process type below, be sure to adjust the
+  // AdjustLinuxOOMScore function too.
+#if defined(OS_LINUX)
+  AdjustLinuxOOMScore(process_type);
+#endif
 
   // TODO(port): turn on these main() functions as they've been de-winified.
   int rv = -1;

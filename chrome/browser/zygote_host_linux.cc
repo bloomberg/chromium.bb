@@ -49,7 +49,8 @@ static void SaveSUIDUnsafeEnvironmentVariables() {
 
 ZygoteHost::ZygoteHost()
     : pid_(-1),
-      init_(false) {
+      init_(false),
+      using_suid_sandbox_(false) {
 }
 
 ZygoteHost::~ZygoteHost() {
@@ -100,24 +101,23 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     cmd_line.AppendSwitch(switches::kEnableSeccompSandbox);
   }
 
-  const char* sandbox_binary = sandbox_cmd.c_str();
+  sandbox_binary_ = sandbox_cmd.c_str();
   struct stat st;
 
-  bool using_suid_sandbox = false;
-  if (!sandbox_cmd.empty() && stat(sandbox_binary, &st) == 0) {
-    if (access(sandbox_binary, X_OK) == 0 &&
+  if (!sandbox_cmd.empty() && stat(sandbox_binary_.c_str(), &st) == 0) {
+    if (access(sandbox_binary_.c_str(), X_OK) == 0 &&
         (st.st_uid == 0) &&
         (st.st_mode & S_ISUID) &&
         (st.st_mode & S_IXOTH)) {
-      using_suid_sandbox = true;
-      cmd_line.PrependWrapper(ASCIIToWide(sandbox_binary));
+      using_suid_sandbox_ = true;
+      cmd_line.PrependWrapper(ASCIIToWide(sandbox_binary_.c_str()));
 
       SaveSUIDUnsafeEnvironmentVariables();
     } else {
       LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
                     "configured correctly. Rather than run without sandboxing "
                     "I'm aborting now. You need to make sure that "
-                 << sandbox_binary << " is mode 4755 and owned by root.";
+                 << sandbox_binary_ << " is mode 4755 and owned by root.";
     }
   }
 
@@ -127,7 +127,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   fds_to_map.push_back(std::make_pair(sfd, 5));
 
   int dummy_fd = -1;
-  if (using_suid_sandbox) {
+  if (using_suid_sandbox_) {
     dummy_fd = socket(PF_UNIX, SOCK_DGRAM, 0);
     CHECK(dummy_fd >= 0);
     fds_to_map.push_back(std::make_pair(dummy_fd, 7));
@@ -137,7 +137,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
   base::LaunchApp(cmd_line.argv(), fds_to_map, false, &process);
   CHECK(process != -1) << "Failed to launch zygote process";
 
-  if (using_suid_sandbox) {
+  if (using_suid_sandbox_) {
     // In the SUID sandbox, the real zygote is forked from the sandbox.
     // We need to look for it.
     // But first, wait for the zygote to tell us it's running.
@@ -156,7 +156,7 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
     if (base::FileDescriptorGetInode(&inode, dummy_fd)) {
       close(dummy_fd);
       std::vector<std::string> get_inode_cmdline;
-      get_inode_cmdline.push_back(sandbox_binary);
+      get_inode_cmdline.push_back(sandbox_binary_);
       get_inode_cmdline.push_back(base::kFindInodeSwitch);
       get_inode_cmdline.push_back(Int64ToString(inode));
       CommandLine get_inode_cmd(get_inode_cmdline);
@@ -206,6 +206,25 @@ pid_t ZygoteHost::ForkRenderer(
   pid_t pid;
   if (HANDLE_EINTR(read(control_fd_, &pid, sizeof(pid))) != sizeof(pid))
     return base::kNullProcessHandle;
+
+  const int kRendererScore = 5;
+  if (using_suid_sandbox_) {
+    base::ProcessHandle sandbox_helper_process;
+    base::file_handle_mapping_vector dummy_map;
+    std::vector<std::string> adj_oom_score_cmdline;
+
+    adj_oom_score_cmdline.push_back(sandbox_binary_);
+    adj_oom_score_cmdline.push_back(base::kAdjustOOMScoreSwitch);
+    adj_oom_score_cmdline.push_back(Int64ToString(pid));
+    adj_oom_score_cmdline.push_back(IntToString(kRendererScore));
+    CommandLine adj_oom_score_cmd(adj_oom_score_cmdline);
+    if (base::LaunchApp(adj_oom_score_cmdline, dummy_map, false,
+                        &sandbox_helper_process)) {
+      ProcessWatcher::EnsureProcessGetsReaped(sandbox_helper_process);
+    }
+  } else {
+    base::AdjustOOMScore(pid, kRendererScore);
+  }
 
   return pid;
 }

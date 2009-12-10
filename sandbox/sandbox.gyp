@@ -12,6 +12,8 @@
           'sources': [
             'linux/suid/linux_util.c',
             'linux/suid/linux_util.h',
+            'linux/suid/process_util.h',
+            'linux/suid/process_util_linux.c',
             'linux/suid/sandbox.c',
           ],
           'cflags': [

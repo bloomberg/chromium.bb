@@ -26,6 +26,7 @@
 #include <unistd.h>
 
 #include "linux_util.h"
+#include "process_util.h"
 #include "suid_unsafe_environment_variables.h"
 
 #if !defined(CLONE_NEWPID)
@@ -309,7 +310,7 @@ int main(int argc, char **argv) {
   // when you call it with --find-inode INODE_NUMBER.
   if (argc == 3 && (0 == strcmp(argv[1], kFindInodeSwitch))) {
     pid_t pid;
-    char *endptr;
+    char* endptr;
     ino_t inode = strtoull(argv[2], &endptr, 10);
     if (inode == ULLONG_MAX || *endptr)
       return 1;
@@ -317,6 +318,19 @@ int main(int argc, char **argv) {
       return 1;
     printf("%d\n", pid);
     return 0;
+  }
+  // Likewise, we cannot adjust /proc/pid/oom_adj for sandboxed renderers
+  // because those files are owned by root. So we need another helper here.
+  if (argc == 4 && (0 == strcmp(argv[1], kAdjustOOMScoreSwitch))) {
+    char* endptr;
+    int score;
+    pid_t pid = strtoul(argv[2], &endptr, 10);
+    if (pid == ULONG_MAX || *endptr)
+      return 1;
+    score = strtol(argv[3], &endptr, 10);
+    if (score == LONG_MAX || score == LONG_MIN || *endptr)
+      return 1;
+    return AdjustOOMScore(pid, score);
   }
 
   if (!MoveToNewPIDNamespace())

@@ -55,6 +55,8 @@ class ZygoteHost {
   int control_fd_;  // the socket to the zygote
   pid_t pid_;
   bool init_;
+  bool using_suid_sandbox_;
+  std::string sandbox_binary_;
 };
 
 #endif  // CHROME_BROWSER_ZYGOTE_HOST_LINUX_H_
