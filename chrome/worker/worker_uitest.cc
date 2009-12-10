@@ -146,6 +146,12 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
 
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], false);
+
+  // Navigate away from to a blank page so that any workers are cleaned up. This
+  // helps leaks trackers do a better job of reporting.
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  GURL about_url(std::string("file://localhost/"));
+  ASSERT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)

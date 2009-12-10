@@ -533,6 +533,15 @@
    fun:_ZN12ChromeThread10DeleteSoonI23ExtensionMessageServiceEEbNS_2IDERKN15tracked_objects8LocationEPT_
    fun:_ZN12ChromeThread14DeleteOnThreadILNS_2IDE0EE8DestructI23ExtensionMessageServiceEEvPT_
 }
+{
+   # This is an on demand initialization which is done and then intentionally
+   # kept around (not freed) while the process is running.
+   intentional_WebCore_XMLNames_init_leak
+   Memcheck:Leak
+   ...
+   fun:_ZN7WebCore8XMLNames4initEv
+   ...
+}
 
 #-----------------------------------------------------------------------
 # 3. Suppressions for real chromium bugs that are not yet fixed.
@@ -715,17 +724,6 @@
    fun:gtk_im_context_set_cursor_location
    ...
    fun:gtk_widget_size_allocate
-}
-{
-   bug_16324
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN7WebCore14newUCharVectorEj
-   fun:_ZN7WebCore10StringImplC1EPKcjj
-   fun:_ZN7WebCore17CStringTranslator9translateERPNS_10StringImplERKPKcj
-   ...
-   fun:_ZN7WebCore12parseUASheetERKNS_6StringE
 }
 {
    bug_16326
@@ -1181,58 +1179,6 @@
    fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
-}
-{
-   bug_26966
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
-   fun:_ZN7WebCore10StringImpl6createEPKcj
-   fun:_ZN7WebCore10StringImpl6createEPKc
-   fun:_ZN7WebCore17CStringTranslator9translateERPNS_10StringImplERKPKcj
-   fun:_ZN3WTF24HashSetTranslatorAdapterIPN7WebCore10StringImplENS_10HashTraitsIS3_EEPKcNS1_17CStringTranslatorEE9translateERS3_RKS7_SC_j
-   fun:_ZN3WTF9HashTableIPN7WebCore10StringImplES3_NS_17IdentityExtractorIS3_EENS1_10StringHashENS_10HashTraitsIS3_EES8_E18addPassingHashCodeIPKcSC_NS_24HashSetTranslatorAdapterIS3_S8_SC_NS1_17CStringTranslatorEEEEESt4pairINS_17HashTableIteratorIS3_S3_S5_S6_S8_S8_EEbERKT_RKT0_
-   fun:_ZN3WTF7HashSetIPN7WebCore10StringImplENS1_10StringHashENS_10HashTraitsIS3_EEE3addIPKcNS1_17CStringTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS3_S3_NS_17IdentityExtractorIS3_EES4_S6_S6_EES3_EEbERKT_
-   fun:_ZN7WebCore12AtomicString3addEPKc
-   fun:_ZN7WebCore12AtomicStringC1EPKc
-   fun:_ZN7WebCore8XMLNames4initEv
-   fun:_ZN7WebCore5FrameC1EPNS_4PageEPNS_21HTMLFrameOwnerElementEPNS_17FrameLoaderClientE
-   fun:_ZN7WebCore5Frame6createEPNS_4PageEPNS_21HTMLFrameOwnerElementEPNS_17FrameLoaderClientE
-   fun:_ZN6WebKit12WebFrameImpl21initializeAsMainFrameEPNS_11WebViewImplE
-   fun:_ZN6WebKit11WebViewImpl19initializeMainFrameEPNS_14WebFrameClientE
-   fun:_ZN10RenderView4InitEiiRK19RendererPreferencesPN4base14RefCountedDataIiEEi
-   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiiRK19RendererPreferencesRK14WebPreferencesPN4base14RefCountedDataIiEEi
-   fun:_ZN12RenderThread15OnCreateNewViewEiRK19RendererPreferencesRK14WebPreferencesi
-   fun:_Z16DispatchToMethodI12RenderThreadMS0_FviRK19RendererPreferencesRK14WebPreferencesiEiS1_S4_iEvPT_T0_RK6Tuple4IT1_T2_T3_T4_E
-   fun:_ZN3IPC16MessageWithTupleI6Tuple4Ii19RendererPreferences14WebPreferencesiEE8DispatchI12RenderThreadMS7_FviRKS2_RKS3_iEEEbPKNS_7MessageEPT_T0_
-   fun:_ZN12RenderThread24OnControlMessageReceivedERKN3IPC7MessageE
-}
-{
-   bug_26966_2
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
-   fun:_ZN7WebCore10StringImpl6createEPKcj
-   fun:_ZN7WebCore10StringImpl6createEPKc
-   fun:_ZN7WebCore17CStringTranslator9translateERPNS_10StringImplERKPKcj
-   fun:_ZN3WTF24HashSetTranslatorAdapterIPN7WebCore10StringImplENS_10HashTraitsIS3_EEPKcNS1_17CStringTranslatorEE9translateERS3_RKS7_SC_j
-   fun:_ZN3WTF9HashTableIPN7WebCore10StringImplES3_NS_17IdentityExtractorIS3_EENS1_10StringHashENS_10HashTraitsIS3_EES8_E18addPassingHashCodeIPKcSC_NS_24HashSetTranslatorAdapterIS3_S8_SC_NS1_17CStringTranslatorEEEEESt4pairINS_17HashTableIteratorIS3_S3_S5_S6_S8_S8_EEbERKT_RKT0_
-   fun:_ZN3WTF7HashSetIPN7WebCore10StringImplENS1_10StringHashENS_10HashTraitsIS3_EEE3addIPKcNS1_17CStringTranslatorEEESt4pairINS_24HashTableIteratorAdapterINS_9HashTableIS3_S3_NS_17IdentityExtractorIS3_EES4_S6_S6_EES3_EEbERKT_
-   fun:_ZN7WebCore12AtomicString3addEPKc
-   fun:_ZN7WebCore12AtomicStringC1EPKc
-   fun:_ZN7WebCore10EventNamesC1Ev
-   fun:_ZN7WebCore16ThreadGlobalDataC1Ev
-   fun:_ZN3WTF14ThreadSpecificIN7WebCore16ThreadGlobalDataEEcvPS2_Ev
-   fun:_ZN3WTF14ThreadSpecificIN7WebCore16ThreadGlobalDataEEdeEv
-   fun:_ZN7WebCore16threadGlobalDataEv
-   fun:_ZN7WebCore10StringImpl5emptyEv
-   fun:_ZN7WebCore12AtomicString3addEPKc
-   fun:_ZN7WebCore12AtomicStringC1EPKc
-   fun:_ZN7WebCore12AtomicString4initEv
-   fun:_ZN6WebKit10initializeEPNS_12WebKitClientE
-   fun:_ZN12RenderThread23EnsureWebKitInitializedEv
 }
 {
    bug_27313
