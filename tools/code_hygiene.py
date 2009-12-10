@@ -219,9 +219,8 @@ class TrailingWhiteSpaceChecker(GenericRegexChecker):
     GenericRegexChecker.__init__(self, r' $')
     return
 
-  def FileFilter(self, unused_filename):
-    # check all files
-    return 1
+  def FileFilter(self, filename):
+    return (not filename.endswith('.patch'))
 
 
 class CarriageReturnChecker(GenericRegexChecker):
