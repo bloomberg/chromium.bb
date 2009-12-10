@@ -290,15 +290,6 @@ printing::PrintJobManager* BrowserProcessImpl::print_job_manager() {
   return print_job_manager_.get();
 }
 
-const std::string& BrowserProcessImpl::GetApplicationLocale() {
-  DCHECK(CalledOnValidThread());
-  if (locale_.empty()) {
-    locale_ = l10n_util::GetApplicationLocale(
-        local_state()->GetString(prefs::kApplicationLocale));
-  }
-  return locale_;
-}
-
 void BrowserProcessImpl::CreateResourceDispatcherHost() {
   DCHECK(!created_resource_dispatcher_host_ &&
          resource_dispatcher_host_.get() == NULL);

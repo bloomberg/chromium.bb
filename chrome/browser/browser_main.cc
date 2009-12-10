@@ -559,15 +559,20 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   // If we're running tests (ui_task is non-null), then the ResourceBundle
   // has already been initialized.
-  // Mac starts it earlier in Platform::WillInitializeMainMessageLoop (because
-  // it is needed when loading the MainMenu.nib and the language doesn't depend
-  // on anything since it comes from Cocoa.
-#if !defined(OS_MACOSX)
-  if (!parameters.ui_task) {
-    ResourceBundle::InitSharedInstance(
+  if (parameters.ui_task) {
+    g_browser_process->set_application_locale("en-US");
+  } else {
+    // Mac starts it earlier in Platform::WillInitializeMainMessageLoop (because
+    // it is needed when loading the MainMenu.nib and the language doesn't depend
+    // on anything since it comes from Cocoa.
+#if defined(OS_MACOSX)
+    g_browser_process->set_application_locale(l10n_util::GetLocaleOverride());
+#else
+    std::string app_locale = ResourceBundle::InitSharedInstance(
         local_state->GetString(prefs::kApplicationLocale));
-  }
+    g_browser_process->set_application_locale(app_locale);
 #endif  // !defined(OS_MACOSX)
+  }
 
 #if defined(OS_LINUX)
   gtk_util::SetDefaultWindowIcon();

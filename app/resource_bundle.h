@@ -63,10 +63,11 @@ class ResourceBundle {
     LargeFont,
   };
 
-  // Initialize the ResourceBundle for this process.
+  // Initialize the ResourceBundle for this process.  Returns the language
+  // selected.
   // NOTE: Mac ignores this and always loads up resources for the language
   // defined by the Cocoa UI (ie-NSBundle does the langange work).
-  static void InitSharedInstance(const std::wstring& pref_locale);
+  static std::string InitSharedInstance(const std::wstring& pref_locale);
 
   // Delete the ResourceBundle for this process if it exists.
   static void CleanupSharedInstance();
@@ -169,8 +170,8 @@ class ResourceBundle {
 #endif
 
   // Try to load the main resources and the locale specific strings from an
-  // external data module.
-  void LoadResources(const std::wstring& pref_locale);
+  // external data module.  Returns the locale that is loaded.
+  std::string LoadResources(const std::wstring& pref_locale);
 
   // Initialize all the gfx::Font members if they haven't yet been initialized.
   void LoadFontsIfNecessary();
@@ -183,7 +184,7 @@ class ResourceBundle {
 
   // Returns the full pathname of the locale file to load.  May return an empty
   // string if no locale data files are found.
-  static FilePath GetLocaleFilePath(const std::wstring& pref_locale);
+  static FilePath GetLocaleFilePath(const std::string& app_locale);
 
   // Returns a handle to bytes from the resource |module|, without doing any
   // processing or interpretation of the resource. Returns whether we

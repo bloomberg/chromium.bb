@@ -192,24 +192,4 @@ ExtensionMessageBundle* LoadMessageCatalogs(
   return ExtensionMessageBundle::Create(catalogs, error);
 }
 
-void GetL10nRelativePaths(const FilePath& relative_resource_path,
-                          std::vector<FilePath>* l10n_paths) {
-  DCHECK(NULL != l10n_paths);
-
-  std::string* current_locale = GetProcessLocale();
-  if (current_locale->empty())
-    *current_locale = l10n_util::GetApplicationLocale(L"");
-
-  std::vector<std::string> locales;
-  GetParentLocales(*current_locale, &locales);
-
-  FilePath locale_relative_path;
-  for (size_t i = 0; i < locales.size(); ++i) {
-    l10n_paths->push_back(locale_relative_path
-        .AppendASCII(Extension::kLocaleFolder)
-        .AppendASCII(locales[i])
-        .Append(relative_resource_path));
-  }
-}
-
 }  // namespace extension_l10n_util

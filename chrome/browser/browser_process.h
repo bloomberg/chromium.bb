@@ -125,6 +125,7 @@ class BrowserProcess {
 
   // Returns the locale used by the application.
   virtual const std::string& GetApplicationLocale() = 0;
+  virtual void set_application_locale(const std::string& locale) = 0;
 
   DownloadRequestManager* download_request_manager();
 

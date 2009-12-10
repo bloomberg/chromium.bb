@@ -29,8 +29,8 @@ FilePath ResourceBundle::GetResourcesFilePath() {
 }
 
 // static
-FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
-  DLOG_IF(WARNING, !pref_locale.empty())
+FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
+  DLOG_IF(WARNING, !app_locale.empty())
       << "ignoring requested locale in favor of NSBundle's selection";
   return GetResourcesPakFilePath(@"locale");
 }

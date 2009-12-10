@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/privacy_blacklist/blacklist_io.h"
@@ -414,9 +415,7 @@ ExtensionMessageBundle* LoadLocaleInfo(const FilePath& extension_path,
     return NULL;
   }
 
-  // We can't call g_browser_process->GetApplicationLocale() since we are not
-  // on the main thread.
-  static std::string app_locale = l10n_util::GetApplicationLocale(L"");
+  std::string app_locale = g_browser_process->GetApplicationLocale();
   if (locales.find(app_locale) == locales.end())
     app_locale = "";
   ExtensionMessageBundle* message_bundle =

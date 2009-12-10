@@ -31,11 +31,12 @@ const SkColor ResourceBundle::toolbar_separator_color =
      SkColorSetRGB(182, 186, 192);
 
 /* static */
-void ResourceBundle::InitSharedInstance(const std::wstring& pref_locale) {
+std::string ResourceBundle::InitSharedInstance(
+    const std::wstring& pref_locale) {
   DCHECK(g_shared_instance_ == NULL) << "ResourceBundle initialized twice";
   g_shared_instance_ = new ResourceBundle();
 
-  g_shared_instance_->LoadResources(pref_locale);
+  return g_shared_instance_->LoadResources(pref_locale);
 }
 
 /* static */

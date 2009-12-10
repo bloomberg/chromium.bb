@@ -194,7 +194,13 @@ class BrowserProcessImpl : public BrowserProcess, public NonThreadSafe {
     return google_url_tracker_.get();
   }
 
-  virtual const std::string& GetApplicationLocale();
+  virtual const std::string& GetApplicationLocale() {
+    DCHECK(!locale_.empty());
+    return locale_;
+  }
+  virtual void set_application_locale(const std::string& locale) {
+    locale_ = locale;
+  }
 
   virtual base::WaitableEvent* shutdown_event() {
     return shutdown_event_.get();

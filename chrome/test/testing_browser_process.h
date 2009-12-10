@@ -139,6 +139,7 @@ class TestingBrowserProcess : public BrowserProcess {
       value = new std::string("en");
     return *value;
   }
+  virtual void set_application_locale(const std::string& app_locale) {}
 
   virtual base::WaitableEvent* shutdown_event() {
     return shutdown_event_.get();

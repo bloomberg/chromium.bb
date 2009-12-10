@@ -5,6 +5,7 @@
 #include "app/resource_bundle.h"
 
 #include "app/gfx/font.h"
+#include "app/l10n_util.h"
 #include "base/data_pack.h"
 #include "base/logging.h"
 #include "base/string16.h"
@@ -79,7 +80,7 @@ string16 ResourceBundle::GetLocalizedString(int message_id) {
   return msg;
 }
 
-void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
+std::string ResourceBundle::LoadResources(const std::wstring& pref_locale) {
   DCHECK(!resources_data_) << "chrome.pak already loaded";
   FilePath resources_file_path = GetResourcesFilePath();
   DCHECK(!resources_file_path.empty()) << "chrome.pak not found";
@@ -87,12 +88,14 @@ void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
   DCHECK(resources_data_) << "failed to load chrome.pak";
 
   DCHECK(!locale_resources_data_) << "locale.pak already loaded";
-  FilePath locale_file_path = GetLocaleFilePath(pref_locale);
+  std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+  FilePath locale_file_path = GetLocaleFilePath(app_locale);
   if (locale_file_path.empty()) {
     // It's possible that there is no locale.pak.
     NOTREACHED();
-    return;
+    return std::string();
   }
   locale_resources_data_ = LoadResourcesDataPak(locale_file_path);
   DCHECK(locale_resources_data_) << "failed to load locale.pak";
+  return app_locale;
 }

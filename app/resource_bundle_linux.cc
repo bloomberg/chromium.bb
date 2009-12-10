@@ -74,12 +74,11 @@ FilePath ResourceBundle::GetResourcesFilePath() {
 }
 
 // static
-FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
+FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   FilePath locale_file_path;
   PathService::Get(app::DIR_LOCALES, &locale_file_path);
   if (locale_file_path.empty())
     return locale_file_path;
-  const std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   if (app_locale.empty())
     return FilePath();
   locale_file_path = locale_file_path.AppendASCII(app_locale + ".pak");

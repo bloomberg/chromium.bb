@@ -27,7 +27,7 @@
 #include "unicode/uchar.h"
 
 #if defined(OS_MACOSX)
-#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #endif  // OS_MACOSX
 
 class FilePath;

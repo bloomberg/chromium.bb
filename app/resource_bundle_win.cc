@@ -38,17 +38,18 @@ ResourceBundle::~ResourceBundle() {
   }
 }
 
-void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
+std::string ResourceBundle::LoadResources(const std::wstring& pref_locale) {
   // As a convenience, set resources_data_ to the current resource module.
   resources_data_ = _AtlBaseModule.GetResourceInstance();
 
   DCHECK(NULL == locale_resources_data_) << "locale dll already loaded";
-  const FilePath& locale_path = GetLocaleFilePath(pref_locale);
+  std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
+  const FilePath& locale_path = GetLocaleFilePath(app_locale);
   if (locale_path.value().empty()) {
     // It's possible that there are no locale dlls found, in which case we just
     // return.
     NOTREACHED();
-    return;
+    return std::string();
   }
 
   // The dll should only have resources, not executable code.
@@ -56,14 +57,14 @@ void ResourceBundle::LoadResources(const std::wstring& pref_locale) {
                                          GetDataDllLoadFlags());
   DCHECK(locale_resources_data_ != NULL) <<
       "unable to load generated resources";
+  return app_locale;
 }
 
 // static
-FilePath ResourceBundle::GetLocaleFilePath(const std::wstring& pref_locale) {
+FilePath ResourceBundle::GetLocaleFilePath(const std::string& app_locale) {
   FilePath locale_path;
   PathService::Get(app::DIR_LOCALES, &locale_path);
 
-  const std::string app_locale = l10n_util::GetApplicationLocale(pref_locale);
   if (app_locale.empty())
     return FilePath();
 
