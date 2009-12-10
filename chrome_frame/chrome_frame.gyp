@@ -766,7 +766,7 @@
             '<(version_path)',
           ],
           'outputs': [
-            'chrome_tab_version.rc',
+            '<(INTERMEDIATE_DIR)/chrome_tab_version.rc',
           ],
           'action': [
             'python',
