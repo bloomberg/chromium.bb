@@ -634,7 +634,9 @@ bool IsValidUrlScheme(const std::wstring& url, bool is_privileged) {
       return false;
   }
 
-  if (is_privileged && crack_url.SchemeIs(chrome::kExtensionScheme))
+  if (is_privileged &&
+      (crack_url.SchemeIs(chrome::kDataScheme) ||
+       crack_url.SchemeIs(chrome::kExtensionScheme)))
     return true;
 
   if (StartsWith(url, kChromeAttachExternalTabPrefix, false))
