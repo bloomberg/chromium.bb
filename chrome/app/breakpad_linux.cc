@@ -38,6 +38,7 @@
 static const char kUploadURL[] =
     "https://clients2.google.com/cr/report";
 
+static bool is_crash_reporter_enabled = false;
 static uint64_t uptime = 0;
 
 // Writes the value |v| as 16 hex characters to the memory pointed at by
@@ -682,6 +683,7 @@ static bool CrashDoneUpload(const char* dump_path,
 }
 
 void EnableCrashDumping(const bool unattended) {
+  is_crash_reporter_enabled = true;
   if (unattended) {
     FilePath dumps_path("/tmp");
     PathService::Get(chrome::DIR_CRASH_DUMPS, &dumps_path);
@@ -760,6 +762,7 @@ NonBrowserCrashHandler(const void* crash_context, size_t crash_context_size,
 
 void EnableNonBrowserCrashDumping() {
   const int fd = Singleton<base::GlobalDescriptors>()->Get(kCrashDumpSignal);
+  is_crash_reporter_enabled = true;
   // We deliberately leak this object.
   google_breakpad::ExceptionHandler* handler =
       new google_breakpad::ExceptionHandler("" /* unused */, NULL, NULL,
@@ -806,4 +809,8 @@ void InitCrashReporter() {
     uptime = timeval_to_ms(&tv);
   else
     uptime = 0;
+}
+
+bool IsCrashReporterEnabled() {
+  return is_crash_reporter_enabled;
 }

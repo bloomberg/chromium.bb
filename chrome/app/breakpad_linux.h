@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 extern void InitCrashReporter();
+bool IsCrashReporterEnabled();
 
 static const size_t kMaxActiveURLSize = 1024;
 static const size_t kGuidSize = 32;  // 128 bits = 32 chars in hex.
