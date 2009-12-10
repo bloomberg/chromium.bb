@@ -90,6 +90,10 @@ TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
+#if defined(OS_LINUX)
+#define IncognitoSharedWorkers FLAKY_IncognitoSharedWorkers
+#endif
+
 // Incognito windows should not share workers with non-incognito windows
 TEST_F(WorkerTest, IncognitoSharedWorkers) {
   // Load a non-incognito tab and have it create a shared worker
