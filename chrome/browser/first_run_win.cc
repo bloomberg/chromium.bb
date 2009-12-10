@@ -207,8 +207,10 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       *ping_delay = 90;
     }
   }
-  if (homepage_defined)
-    prefs->GetBoolean(prefs::kHomePage, homepage_defined);
+  if (homepage_defined) {
+    std::string not_used;
+    *homepage_defined = prefs->GetString(prefs::kHomePage, &not_used);
+  }
 
   bool value = false;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
