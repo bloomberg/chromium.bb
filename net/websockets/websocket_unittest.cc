@@ -14,6 +14,7 @@
 #include "net/url_request/url_request_unittest.h"
 #include "net/websockets/websocket.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
 struct WebSocketEvent {
@@ -324,6 +325,131 @@ TEST_F(WebSocketTest, ProcessFrameDataForUnterminatedString) {
   }
 
   websocket->DetachDelegate();
+}
+
+TEST(WebSocketRequestTest, is_secure_false) {
+  WebSocket::Request request(GURL("ws://example.com/demo"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             NULL);
+  EXPECT_FALSE(request.is_secure());
+}
+
+TEST(WebSocketRequestTest, is_secure_true) {
+  // wss:// is secure.
+  WebSocket::Request request(GURL("wss://example.com/demo"),
+                             "sample",
+                             "http://example.com",
+                             "wss://example.com/demo",
+                             NULL);
+  EXPECT_TRUE(request.is_secure());
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_Simple) {
+  WebSocket::Request request(GURL("ws://example.com/demo"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             NULL);
+  EXPECT_EQ("GET /demo HTTP/1.1\r\n"
+            "Upgrade: WebSocket\r\n"
+            "Connection: Upgrade\r\n"
+            "Host: example.com\r\n"
+            "Origin: http://example.com\r\n"
+            "WebSocket-Protocol: sample\r\n"
+            "\r\n",
+            request.CreateClientHandshakeMessage());
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_PathAndQuery) {
+  WebSocket::Request request(GURL("ws://example.com/Test?q=xxx&p=%20"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             NULL);
+  // Path and query should be preserved as-is.
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("GET /Test?q=xxx&p=%20 HTTP/1.1\r\n"));
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_Host) {
+  WebSocket::Request request(GURL("ws://Example.Com/demo"),
+                             "sample",
+                             "http://Example.Com",
+                             "ws://Example.Com/demo",
+                             NULL);
+  // Host should be lowercased
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("Host: example.com\r\n"));
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("Origin: http://example.com\r\n"));
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_TrimPort80) {
+  WebSocket::Request request(GURL("ws://example.com:80/demo"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             NULL);
+  // :80 should be trimmed as it's the default port for ws://.
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("Host: example.com\r\n"));
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_TrimPort443) {
+  WebSocket::Request request(GURL("wss://example.com:443/demo"),
+                             "sample",
+                             "http://example.com",
+                             "wss://example.com/demo",
+                             NULL);
+  // :443 should be trimmed as it's the default port for wss://.
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("Host: example.com\r\n"));
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_NonDefaultPortForWs) {
+  WebSocket::Request request(GURL("ws://example.com:8080/demo"),
+                             "sample",
+                             "http://example.com",
+                             "wss://example.com/demo",
+                             NULL);
+  // :8080 should be preserved as it's not the default port for ws://.
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("Host: example.com:8080\r\n"));
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_NonDefaultPortForWss) {
+  WebSocket::Request request(GURL("wss://example.com:4443/demo"),
+                             "sample",
+                             "http://example.com",
+                             "wss://example.com/demo",
+                             NULL);
+  // :4443 should be preserved as it's not the default port for wss://.
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("Host: example.com:4443\r\n"));
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_WsBut443) {
+  WebSocket::Request request(GURL("ws://example.com:443/demo"),
+                             "sample",
+                             "http://example.com",
+                             "ws://example.com/demo",
+                             NULL);
+  // :443 should be preserved as it's not the default port for ws://.
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("Host: example.com:443\r\n"));
+}
+
+TEST(WebSocketRequestTest, CreateClientHandshakeMessage_WssBut80) {
+  WebSocket::Request request(GURL("wss://example.com:80/demo"),
+                             "sample",
+                             "http://example.com",
+                             "wss://example.com/demo",
+                             NULL);
+  // :80 should be preserved as it's not the default port for wss://.
+  EXPECT_THAT(request.CreateClientHandshakeMessage(),
+              testing::HasSubstr("Host: example.com:80\r\n"));
 }
 
 }  // namespace net

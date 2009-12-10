@@ -119,7 +119,10 @@ void WebSocket::OnConnected(SocketStream* socket_stream,
   read_consumed_len_ = 0;
 
   DCHECK(!current_write_buf_);
-  pending_write_bufs_.push_back(CreateClientHandshakeMessage());
+  const std::string msg = request_->CreateClientHandshakeMessage();
+  IOBufferWithSize* buf = new IOBufferWithSize(msg.size());
+  memcpy(buf->data(), msg.data(), msg.size());
+  pending_write_bufs_.push_back(buf);
   origin_loop_->PostTask(FROM_HERE,
                          NewRunnableMethod(this, &WebSocket::SendPending));
 }
@@ -155,22 +158,22 @@ void WebSocket::OnError(const SocketStream* socket_stream, int error) {
                          NewRunnableMethod(this, &WebSocket::DoError, error));
 }
 
-IOBufferWithSize* WebSocket::CreateClientHandshakeMessage() const {
+std::string WebSocket::Request::CreateClientHandshakeMessage() const {
   std::string msg;
   msg = "GET ";
-  msg += request_->url().path();
-  if (request_->url().has_query()) {
+  msg += url_.path();
+  if (url_.has_query()) {
     msg += "?";
-    msg += request_->url().query();
+    msg += url_.query();
   }
   msg += " HTTP/1.1\r\n";
   msg += kUpgradeHeader;
   msg += kConnectionHeader;
   msg += "Host: ";
-  msg += StringToLowerASCII(request_->url().host());
-  if (request_->url().has_port()) {
-    bool secure = request_->is_secure();
-    int port = request_->url().EffectiveIntPort();
+  msg += StringToLowerASCII(url_.host());
+  if (url_.has_port()) {
+    bool secure = is_secure();
+    int port = url_.EffectiveIntPort();
     if ((!secure &&
          port != kWebSocketPort && port != url_parse::PORT_UNSPECIFIED) ||
         (secure &&
@@ -181,18 +184,23 @@ IOBufferWithSize* WebSocket::CreateClientHandshakeMessage() const {
   }
   msg += "\r\n";
   msg += "Origin: ";
-  msg += StringToLowerASCII(request_->origin());
+  // It's OK to lowercase the origin as the Origin header does not contain
+  // the path or query portions, as per
+  // http://tools.ietf.org/html/draft-abarth-origin-00.
+  //
+  // TODO(satorux): Should we trim the port portion here if it's 80 for
+  // http:// or 443 for https:// ? Or can we assume it's done by the
+  // client of the library?
+  msg += StringToLowerASCII(origin_);
   msg += "\r\n";
-  if (!request_->protocol().empty()) {
+  if (!protocol_.empty()) {
     msg += "WebSocket-Protocol: ";
-    msg += request_->protocol();
+    msg += protocol_;
     msg += "\r\n";
   }
   // TODO(ukai): Add cookie if necessary.
   msg += "\r\n";
-  IOBufferWithSize* buf = new IOBufferWithSize(msg.size());
-  memcpy(buf->data(), msg.data(), msg.size());
-  return buf;
+  return msg;
 }
 
 int WebSocket::CheckHandshake() {

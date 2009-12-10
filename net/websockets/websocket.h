@@ -95,6 +95,9 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
       return client_socket_factory_;
     }
 
+    // Creates the client handshake message from |this|.
+    std::string CreateClientHandshakeMessage() const;
+
    private:
     GURL url_;
     std::string protocol_;
@@ -153,9 +156,6 @@ class WebSocket : public base::RefCountedThreadSafe<WebSocket>,
 
   friend class base::RefCountedThreadSafe<WebSocket>;
   virtual ~WebSocket();
-
-  // Creates client handshake mssage based on |request_|.
-  IOBufferWithSize* CreateClientHandshakeMessage() const;
 
   // Checks handshake.
   // Prerequisite: Server handshake message is received in |current_read_buf_|.
