@@ -258,6 +258,7 @@
         'glue/media/simple_data_source.h',
         'glue/media/video_renderer_impl.cc',
         'glue/media/video_renderer_impl.h',
+        'glue/plugins/coregraphics_private_symbols_mac.h',
         'glue/plugins/nphostapi.h',
         'glue/plugins/fake_plugin_window_tracker_mac.h',
         'glue/plugins/fake_plugin_window_tracker_mac.cc',
