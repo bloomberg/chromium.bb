@@ -103,15 +103,11 @@ void Canvas::DrawText(const String& text,
                       float x,
                       float y,
                       CanvasPaint* paint) {
-#ifndef OS_LINUX
   sk_canvas_.drawText(text.c_str(),
                       text.length(),
                       SkFloatToScalar(x),
                       SkFloatToScalar(y),
                       paint->GetNativePaint());
-#else
-  O3D_ERROR(service_locator()) << "Text is not yet supported on Linux";
-#endif
 }
 
 void Canvas::DrawTextOnPath(const String& text,
@@ -119,7 +115,6 @@ void Canvas::DrawTextOnPath(const String& text,
                             float horizontal_offset,
                             float vertical_offset,
                             CanvasPaint* paint) {
-#ifndef OS_LINUX
   unsigned int size = positions.size();
   if (size < 2) {
     O3D_ERROR(service_locator()) << "Must provide at least two positions"
@@ -143,9 +138,6 @@ void Canvas::DrawTextOnPath(const String& text,
                               SkFloatToScalar(horizontal_offset),
                               SkFloatToScalar(vertical_offset),
                               nativePaint);
-#else
-  O3D_ERROR(service_locator()) << "Text is not yet supported on Linux";
-#endif
 }
 
 void Canvas::DrawBitmap(Texture2D* texture2d,

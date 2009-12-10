@@ -157,7 +157,6 @@ StrokeDrawLooper::StrokeDrawLooper(SkFlattenableReadBuffer& buffer) {
 
 O3D_DEFN_CLASS(CanvasPaint, ParamObject);
 
-#ifndef OS_LINUX
 static SkPaint::Align ToSKAlign(CanvasPaint::TextAlign align) {
   switch (align) {
     case CanvasPaint::LEFT:
@@ -170,7 +169,6 @@ static SkPaint::Align ToSKAlign(CanvasPaint::TextAlign align) {
       return SkPaint::kLeft_Align;
   }
 }
-#endif  // OS_LINUX
 
 CanvasPaint::CanvasPaint(ServiceLocator* service_locator)
     : ParamObject(service_locator),
@@ -216,7 +214,6 @@ void CanvasPaint::UpdateNativePaint() {
       sk_paint_.setLooper(NULL);
     }
 
-#ifndef OS_LINUX
     sk_paint_.setTextSize(SkFloatToScalar(text_size_));
 
     // TODO: Verify that there's visual parity between fonts on all
@@ -227,9 +224,10 @@ void CanvasPaint::UpdateNativePaint() {
     SkTypeface* tf = SkTypeface::CreateFromName(
         text_typeface_.c_str(),
         static_cast<SkTypeface::Style>(text_style_));
-    sk_paint_.setTypeface(tf);
-    tf->unref();
-#endif
+    if (tf) {
+      sk_paint_.setTypeface(tf);
+      tf->unref();
+    }
 
     if (shader_) {
       sk_paint_.setShader(shader_->GetNativeShader());
@@ -237,9 +235,7 @@ void CanvasPaint::UpdateNativePaint() {
       sk_paint_.setShader(NULL);
     }
 
-#ifndef OS_LINUX
     sk_paint_.setTextAlign(ToSKAlign(text_align_));
-#endif
 
     needs_update_ = false;
   }
@@ -248,7 +244,6 @@ void CanvasPaint::UpdateNativePaint() {
 CanvasFontMetrics CanvasPaint::GetFontMetrics() {
   CanvasFontMetrics ret;
 
-#ifndef OS_LINUX
   SkPaint::FontMetrics metrics;
   GetNativePaint().getFontMetrics(&metrics);
 
@@ -257,28 +252,15 @@ CanvasFontMetrics CanvasPaint::GetFontMetrics() {
   ret.set_descent(metrics.fDescent);
   ret.set_leading(metrics.fLeading);
   ret.set_top(metrics.fTop);
-#else
-  O3D_ERROR(service_locator()) << "Text is not yet supported on Linux";
-  ret.set_top(0.f);
-  ret.set_ascent(0.f);
-  ret.set_descent(0.f);
-  ret.set_bottom(0.f);
-  ret.set_leading(0.f);
-#endif
 
   return ret;
 }
 
 Float4 CanvasPaint::MeasureText(const String& text) {
-#ifndef OS_LINUX
   SkRect bounds;
   GetNativePaint().measureText(text.c_str(), text.size(), &bounds);
 
   return Float4(bounds.fLeft, bounds.fTop, bounds.fRight, bounds.fBottom);
-#else
-  O3D_ERROR(service_locator()) << "Text is not yet supported on Linux";
-  return Float4(0.f, 0.f, 0.f, 0.f);
-#endif
 }
 
 ObjectBase::Ref CanvasPaint::Create(ServiceLocator* service_locator) {
