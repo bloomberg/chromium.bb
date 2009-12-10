@@ -217,12 +217,15 @@ class HostResolverCacheSubSection : public SubSection {
       return;
     }
 
-    out->append(StringPrintf("<ul><li>Size: %" PRIuS "</li>"
-                             "<li>Capacity: %" PRIuS "</li>"
-                             "<li>Time to live (ms): %" PRIuS "</li></ul>",
-                             host_cache->size(),
-                             host_cache->max_entries(),
-                             host_cache->cache_duration_ms()));
+    out->append(StringPrintf(
+          "<ul><li>Size: %" PRIuS "</li>"
+          "<li>Capacity: %" PRIuS "</li>"
+          "<li>Time to live (ms) for success entries: %" PRId64"</li>"
+          "<li>Time to live (ms) for failure entries: %" PRId64"</li></ul>",
+          host_cache->size(),
+          host_cache->max_entries(),
+          host_cache->success_entry_ttl().InMilliseconds(),
+          host_cache->failure_entry_ttl().InMilliseconds()));
 
     out->append("<table border=1>"
                 "<tr>"

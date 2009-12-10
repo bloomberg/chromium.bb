@@ -446,8 +446,13 @@ int main(int argc, char** argv) {
     }
   }
 
+  net::HostCache* cache = new net::HostCache(
+      options.cache_size,
+      base::TimeDelta::FromMilliseconds(options.cache_ttl),
+      base::TimeDelta::FromSeconds(0));
+
   scoped_refptr<net::HostResolver> host_resolver(
-      new net::HostResolverImpl(NULL, options.cache_size, options.cache_ttl));
+      new net::HostResolverImpl(NULL, cache));
   ResolverInvoker invoker(host_resolver.get());
   invoker.ResolveAll(hosts_and_times, options.async);
 
