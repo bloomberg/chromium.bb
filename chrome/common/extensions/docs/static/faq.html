@@ -1,9 +1,178 @@
-<div id="pageData-name" class="pageData">FAQ</div>
+<div id="pageData-name" class="pageData">Frequently Asked Questions</div>
 
-<!--
-<div id="pageData-showTOC" class="pageData">true</div>
--->
 
+<!-- <div id="pageData-showTOC" class="pageData">true</div> -->
+<div id="faq-TOC">
+<h4>General</h4>
+      <ul>
+        <li><a href="#faq-gen-01">What are Google Chrome Extensions?</a></li>
+        <li><a href="#faq-gen-02">What technologies are used to write extensions for Google Chrome?</a></li>
+        <li><a href="#faq-gen-03">Are extensions fetched from the web every time the browser is loaded?</a></li>
+      </ul>
+<h4>Development</h4>
+      <ul>
+        <li><a href="#faq-dev-01">How can I set up Google Chrome for extension development?</a></li>
+        <li><a href="#faq-dev-02">Can I make cross-domain Ajax requests in an extension?</a></li>
+        <li><a href="#faq-dev-03">Can I use 3rd party web services in my extension?</a></li>
+        <li><a href="#faq-dev-04">Can I use OAuth in my extensions?</a></li>
+        <li><a href="#faq-dev-05">What UI controls can I create for my extension?</a></li>
+        <li><a href="#faq-dev-06">Can I load DLLs in my extension?</a></li>
+        <li><a href="#faq-dev-07">Can Google Chrome Extensions encode/decode JSON data?</a></li>
+        <li><a href="#faq-dev-08">Can I store data locally in my extension?</a></li>
+        <li><a href="#faq-dev-09">How much data can I store in localStorage?</a></li>
+        <li><a href="#faq-dev-10">Can I create an options menu for my application?</a></li>
+        <li><a href="#faq-dev-11">Can two extensions communicate with each other?</a></li>
+        <li><a href="#faq-dev-12">What debugging tools are available to extension developers?</a></li>
+        <li><a href="#faq-dev-13">Can extensions use Google Analytics?</a></li>
+      </ul>
+</div>
+
+<h2>General</h2>
+
+<h3 id="faq-gen-01">What are Google Chrome Extensions?</h3>
 <p>
-This page will give answers to frequently asked questions.
+  Google Chrome Extensions are applications that run inside the Google
+  Chrome browser and provide additional functionality, integration with third
+  party websites or services, and customized browsing experiences.
 </p>
+
+<h3 id="faq-gen-02">What technologies are used to write extensions for Google Chrome?</h3>
+<p>
+  Google Chrome Extensions are written using the same standard web
+  technologies that developers use to create websites. HTML is used as a
+  content markup language, CSS is used for styling, and JavaScript for
+  scripting. Because Google Chrome supports HTML5 and CSS3, developers can
+  use the latest open web technologies such as canvas and CSS animations in
+  their extensions. Extensions also have access to several
+  <a href="http://code.google.com/chrome/extensions/api_other.html">JavaScript APIs</a>
+  that help perform functions like JSON encoding and interacting with the
+  browser.
+</p>
+
+
+<h3 id="faq-gen-03">Are extensions fetched from the web every time the browser is loaded?</h3>
+<p>
+  Extensions are downloaded by the Google Chrome browser upon install, and
+  are subsequently run off of the local disk in order to speed up
+  performance. However, if a new version of the extension is pushed online,
+  it will be automatically downloaded in the background to any users who
+  have the extension installed. Extensions may also make requests for remote
+  content at any time, in order to interact with a web service or pull new
+  content from the web.
+</p>
+
+
+<h2>Development</h2>
+
+
+<h3 id="faq-dev-01">How can I set up Google Chrome for extension development?</h3>
+<p>
+  As long as you are using a version of Google Chrome that supports
+  extensions, you already have everything you need to start writing an
+  extension of your own. Select "Extensions" from the Tools menu
+  <img style="vertical-align: middle;" src="images/toolsmenu.gif" /> (or from
+  the window menu on Mac) and click "Developer Mode". From there, you can load
+  an unpacked directory of files as if it were a packaged extension, reload
+  extensions, and more. For a complete tutorial, please view
+  <a href="http://code.google.com/chrome/extensions/getstarted.html">this getting started guide</a>.
+</p>
+
+<h3 id="faq-dev-02">Can I make cross-domain Ajax requests in an extension?</h3>
+<p>
+  Yes. Extensions can make cross-domain requests.  See
+  <a href="http://code.google.com/chrome/extensions/xhr.html">this page</a>
+  for more information.
+</p>
+
+<h3 id="faq-dev-03">Can I use 3rd party web services in my extension?</h3>
+<p>
+  Yes. Google Chrome Extensions are capable of making cross-domain Ajax
+  requests, so they can call remote APIs directly. APIs which provide data
+  in JSON format are particularly easy to use.
+</p>
+
+<h3 id="faq-dev-04">Can I use OAuth in my extensions?</h3>
+<p>
+  Absolutely, there are extensions which use OAuth to access remote data
+  APIs. Most developers find it convenient to use a
+  <a href="http://unitedheroes.net/OAuthSimple/js/OAuthSimple.js">JavaScript OAuth library</a>
+  in order to simplify the process of signing OAuth requests.
+</p>
+
+<h3 id="faq-dev-05">What UI controls can I create for my extension?</h3>
+<p>
+  Extensions use HTML and CSS to define their user interfaces, so you can use
+  standard form controls to build your UI, or style the interface with CSS,
+  as you would a web page.  Additionally, your extension may add buttons
+  to the Google Chrome browser itself.  See
+  <a href="http://code.google.com/chrome/extensions/browserAction.html">browser actions</a>
+  and
+  <a href="http://code.google.com/chrome/extensions/pageAction.html">page actions</a>
+  for more information.
+</p>
+
+<h3 id="faq-dev-06">Can I load DLLs in my extension?</h3>
+<p>
+  Yes, using the
+  <a href="http://code.google.com/chrome/extensions/trunk/npapi.html">NPAPI interface</a>.
+  Because of the possibility for abuse, though, we will review your extension
+  before hosting it in the Google Chrome Extensions gallery.
+</p>
+
+<h3 id="faq-dev-07">Can Google Chrome Extensions encode/decode JSON data?</h3>
+<p>
+  Yes, because V8 (Google Chrome's JavaScript engine) supports
+  JSON.stringify and JSON.parse natively, you may use these functions in your
+  extensions
+  <a href="http://json.org/js.html">as described here</a> without including
+  any additional JSON libraries in your code.
+</p>
+
+<h3 id="faq-dev-08">Can I store data locally in my extension?</h3>
+<p>
+  Yes, extensions can use <a href="http://dev.w3.org/html5/webstorage/">localStorage</a>
+  to store string data permanently. Using Google Chrome's built-in JSON
+  functions, you can store complex data structures in localStorage.  For
+  extensions which have the need to execute SQL queries on their stored data,
+  Google Chrome implements
+  <a href="http://dev.w3.org/html5/webdatabase/">client side SQL databases</a>
+  which may be used as well.
+</p>
+
+<h3 id="faq-dev-09">How much data can I store in localStorage?</h3>
+<p>
+  Extensions can store up to 5MB of data in localStorage.
+</p>
+
+<h3 id="faq-dev-10">Can I create an options menu for my application?</h3>
+<p>
+  You can let users set options for your extension by creating an
+  <a href="http://code.google.com/chrome/extensions/trunk/options.html">options page</a>
+  which is a simple HTML page that will be loaded when a user clicks the
+  "options" button for your extension. This page can read and write settings
+  to localStorage, or even send options to a web server so that they can be
+  persisted across browsers.
+</p>
+
+<h3 id="faq-dev-11">Can two extensions communicate with each other?</h3>
+<p>
+  Extensions may pass messages to other extensions. See the
+  <a href="http://code.google.com/chrome/extensions/trunk/messaging.html#external">message passing documentation</a>
+  for more information.
+</p>
+
+<h3 id="faq-dev-12">What debugging tools are available to extension developers?</h3>
+<p>
+  Google Chrome's built-in developer tools can be used to debug extensions
+  as well as web pages. See this
+  <a href="http://code.google.com/chrome/extensions/tut_debugging.html ">tutorial on debugging extensions</a>
+  for more information.
+</p>
+
+<h3 id="faq-dev-13">Can extensions use Google Analytics?</h3>
+<p>
+  Yes, since extensions are built just like websites, they can use
+  <a href="http://www.google.com/analytics/">Google Analytics</a> to track
+  usage.
+</p>
+
