@@ -817,7 +817,7 @@ static Time GetFirstCookieAccessDate(net::CookieMonster* cm) {
   return all_cookies.front().second.LastAccessDate();
 }
 
-static const int kLastAccessThresholdMilliseconds = 20;
+static const int kLastAccessThresholdMilliseconds = 200;
 
 TEST(CookieMonsterTest, TestLastAccess) {
   GURL url_google(kUrlGoogle);
