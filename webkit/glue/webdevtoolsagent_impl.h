@@ -79,8 +79,12 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
   virtual void dispatchMessageFromFrontend(
       const WebKit::WebDevToolsMessageData& data);
   virtual void inspectElementAt(const WebKit::WebPoint& point);
+  virtual void evaluateInWebInspector(long call_id,
+                                      const WebKit::WebString& script);
   virtual void setRuntimeFeatureEnabled(const WebKit::WebString& feature,
                                         bool enabled);
+  virtual void setTimelineProfilingEnabled(bool enable);
+
   virtual void identifierForInitialRequest(
       unsigned long resourceId,
       WebKit::WebFrame* frame,

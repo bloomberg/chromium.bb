@@ -14,6 +14,7 @@ devtools.InspectorBackendImpl = function() {
   this.installInspectorControllerDelegate_('clearMessages');
   this.installInspectorControllerDelegate_('copyNode');
   this.installInspectorControllerDelegate_('deleteCookie');
+  this.installInspectorControllerDelegate_('didEvaluateForTestInFrontend');
   this.installInspectorControllerDelegate_('disableResourceTracking');
   this.installInspectorControllerDelegate_('disableTimeline');
   this.installInspectorControllerDelegate_('enableResourceTracking');

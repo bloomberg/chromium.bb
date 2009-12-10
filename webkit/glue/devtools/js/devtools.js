@@ -483,6 +483,23 @@ WebInspector.ElementsPanel.prototype._nodeSearchButtonClicked = function(
 })();
 
 
+// We need to have a place for postponed tasks
+// which should be executed when all the messages between agent and frontend
+// are processed.
+
+WebInspector.runAfterPendingDispatchesQueue = [];
+
+WebInspector.runAfterPendingDispatches = function(callback) {
+  this.runAfterPendingDispatchesQueue.push(callback);
+};
+
+WebInspector.queuesAreEmpty = function() {
+  var copy = this.runAfterPendingDispatchesQueue.slice();
+  this.runAfterPendingDispatchesQueue = [];
+  for (var i = 0; i < copy.length; ++i)
+    copy[i].call(this);
+};
+
 (function() {
 var originalAddToFrame = InspectorFrontendHost.addResourceSourceToFrame;
 InspectorFrontendHost.addResourceSourceToFrame = function(identifier, element) {

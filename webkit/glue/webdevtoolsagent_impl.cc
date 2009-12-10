@@ -333,11 +333,7 @@ void WebDevToolsAgentImpl::setRuntimeFeatureEnabled(const WebString& wfeature,
   if (feature == kApuAgentFeatureName) {
     setApuAgentEnabled(enabled);
   } else if (feature == kTimelineFeatureName) {
-    InspectorController* ic = web_view_impl_->page()->inspectorController();
-    if (enabled)
-      ic->startTimelineProfiler();
-    else
-      ic->stopTimelineProfiler();
+    setTimelineProfilingEnabled(enabled);
   } else if (feature == kResourceTrackingFeatureName) {
     InspectorController* ic = web_view_impl_->page()->inspectorController();
     if (enabled)
@@ -599,6 +595,21 @@ void WebDevToolsAgentImpl::didFailLoading(unsigned long resourceId,
   ResourceError resource_error;
   if (InspectorController* ic = GetInspectorController())
     ic->didFailLoading(resourceId, resource_error);
+}
+
+void WebDevToolsAgentImpl::evaluateInWebInspector(long call_id,
+                                                  const WebString& script) {
+  InspectorController* ic = GetInspectorController();
+  ic->evaluateForTestInFrontend(call_id,
+                                webkit_glue::WebStringToString(script));
+}
+
+void WebDevToolsAgentImpl::setTimelineProfilingEnabled(bool enabled) {
+  InspectorController* ic = GetInspectorController();
+  if (enabled)
+    ic->startTimelineProfiler();
+  else
+    ic->stopTimelineProfiler();
 }
 
 
