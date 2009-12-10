@@ -118,6 +118,8 @@
         'browser/automation/automation_resource_tracker.cc',
         'browser/automation/automation_resource_tracker.h',
         'browser/automation/automation_tab_tracker.h',
+        'browser/automation/chrome_frame_automation_provider.cc',
+        'browser/automation/chrome_frame_automation_provider.h',
         'browser/automation/url_request_automation_job.cc',
         'browser/automation/url_request_automation_job.h',
         'browser/automation/automation_window_tracker.h',

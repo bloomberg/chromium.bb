@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/sys_info.h"
 #include "chrome/browser/automation/automation_provider.h"
+#include "chrome/browser/automation/chrome_frame_automation_provider.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
@@ -813,8 +814,14 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
                  0);
     if (expected_tabs == 0)
       silent_launch = true;
-    CreateAutomationProvider<AutomationProvider>(automation_channel_id,
-                                                 profile, expected_tabs);
+
+    if (command_line.HasSwitch(switches::kChromeFrame)) {
+      CreateAutomationProvider<ChromeFrameAutomationProvider>(
+          automation_channel_id, profile, expected_tabs);
+    } else {
+      CreateAutomationProvider<AutomationProvider>(automation_channel_id,
+                                                   profile, expected_tabs);
+    }
   }
 
   if (command_line.HasSwitch(switches::kUseFlip)) {
