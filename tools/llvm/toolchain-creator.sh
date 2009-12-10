@@ -98,12 +98,18 @@ CreateTarBall() {
 
 # try to keep the tarball small
 PruneDirs() {
-  local CS_ROOT=${INSTALL_ROOT}/codesourcery/arm-2007q3
   Banner "pruning code sourcery tree"
+  local CS_ROOT=${INSTALL_ROOT}/codesourcery/arm-2007q3
   SubBanner "Size before: $(du -msc  ${CS_ROOT})"
   rm -rf ${CS_ROOT}/share
   rm -rf ${CS_ROOT}/arm-none-linux-gnueabi/libc
   SubBanner "Size after: $(du -msc  ${CS_ROOT})"
+
+  Banner "pruning llvm sourcery tree"
+  local LLVM_ROOT=${INSTALL_ROOT}/arm-none-linux-gnueabi
+  SubBanner "Size before: $(du -msc  ${LLVM_ROOT})"
+  rm  ${LLVM_ROOT}/llvm/lib/lib*.a
+  SubBanner "Size after: $(du -msc  ${LLVM_ROOT})"
 }
 
 
@@ -201,7 +207,7 @@ InstallDriver() {
   for s in gcc sfigcc g++ sfig++ ; do
     local t="llvm-fake-$s"
     echo "$t"
-    ln -s llvm-fake.py ${INSTALL_ROOT}/arm-none-linux-gnueabi/$t
+    ln -fs llvm-fake.py ${INSTALL_ROOT}/arm-none-linux-gnueabi/$t
   done
 }
 
@@ -210,8 +216,11 @@ InstallDriver() {
 InstallNewlibAndNaClRuntime() {
   Banner "building and installing nacl runtime"
   SubBanner "building newib"
-  # TODO(robertm): add this
+  rm -rf src/third_party/nacl_sdk/arm-newlib/
+  tools/llvm/setup_arm_newlib.sh
+
   SubBanner "building extra sdk libs"
+  rm -rf scons-out/nacl_extra_sdk-arm/
   ./scons MODE=nacl_extra_sdk platform=arm sdl_mode=none sdl=none naclsdk_mode=manual naclsdk_validate=0 extra_sdk_clean extra_sdk_update_header install_libpthread extra_sdk_update
   cp -r src/third_party/nacl_sdk/arm-newlib ${INSTALL_ROOT}
 }
@@ -219,7 +228,8 @@ InstallNewlibAndNaClRuntime() {
 
 InstallExamples() {
   Banner "installing examples into ${INSTALL_ROOT}/examples"
-  cp -r  tools/llvm/arm_examples ${INSTALL_ROOT}/examples
+  rm -rf  ${INSTALL_ROOT}/examples/
+  cp -r  tools/llvm/arm_examples ${INSTALL_ROOT}/examples/
 }
 
 
@@ -251,6 +261,7 @@ fi
 #@ untrusted_sdk <tarball>
 #@
 #@   create untrusted sdk tarball
+#@   This is the primary function of this script.
 if [ ${MODE} = 'untrusted_sdk' ] ; then
   mkdir -p ${TMP}
   PathSanityCheck
@@ -261,10 +272,13 @@ if [ ${MODE} = 'untrusted_sdk' ] ; then
   UntarPatchConfigureAndBuildSfiLlc
   InstallNewlibAndNaClRuntime
   InstallUntrustedLinkerScript
-  InstallMiscTools
   InstallDriver
   # TODO(cbiffle): sandboxed libgcc build
-  # FIXME(robertm)
+  source tools/llvm/setup_arm_untrusted_toolchain.sh
+  InstallNewlibAndNaClRuntime
+
+  source tools/llvm/setup_arm_trusted_toolchain.sh
+  InstallMiscTools
   InstallExamples
   PruneDirs
   CreateTarBall $1
@@ -304,10 +318,57 @@ fi
 #@
 #@   install newlib-etc
 if [ ${MODE} = 'newlib-etc' ] ; then
+  source tools/llvm/setup_arm_untrusted_toolchain.sh
   InstallNewlibAndNaClRuntime
   exit 0
 fi
 
+#@
+#@ misc-tools
+#@
+#@   install misc tools
+if [ ${MODE} = 'misc-tools' ] ; then
+  source tools/llvm/setup_arm_trusted_toolchain.sh
+  InstallMiscTools
+  exit 0
+fi
+
+#@
+#@ driver
+#@
+#@   install misc tools
+if [ ${MODE} = 'driver' ] ; then
+  InstallDriver
+  exit 0
+fi
+
+#@
+#@ prune
+#@
+#@   prune tree to make tarball smaller
+if [ ${MODE} = 'prune' ] ; then
+  PruneDirs
+  exit 0
+fi
+
+#@
+#@ examples
+#@
+#@   add examples
+if [ ${MODE} = 'examples' ] ; then
+  InstallExamples
+  exit 0
+fi
+
+
+#@
+#@ tar <tarball>
+#@
+#@   tar everything up
+if [ ${MODE} = 'tar' ] ; then
+  CreateTarBall $1
+  exit 0
+fi
 
 echo "ERROR: unknown mode ${MODE}"
 exit -1

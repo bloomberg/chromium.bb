@@ -16,7 +16,7 @@ import sys
 # this for manual debugging of this script only
 VERBOSE = 0
 
-BASE = '/usr/local/crosstool'
+BASE = '/usr/local/crosstool-untrusted'
 
 
 LLVM_GCC_ASSEMBLER_FLAGS = ['-march=armv6',

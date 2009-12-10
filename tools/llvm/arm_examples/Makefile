@@ -6,12 +6,13 @@
 # ======================================================================
 # Boilerplate
 # ======================================================================
-SDK_ROOT=/usr/local/crosstool
+SDK_ROOT=/usr/local/crosstool-untrusted
 
 SEL_LDR=$(SDK_ROOT)/tools-arm/sel_ldr
 
-QEMU_SCRIPT=$(SDK_ROOT)/qemu-arm/qemu_tool.sh
+QEMU_SCRIPT=/usr/local/crosstool-trusted/qemu_tool.sh
 
+# TODO: move most of these flags into llvm-fake.py
 NACL_CC=$(SDK_ROOT)/arm-none-linux-gnueabi/llvm-fake-sfigcc \
         -std=gnu99 \
         -Wall \
