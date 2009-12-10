@@ -14,6 +14,7 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "media/base/buffers.h"
+#include "media/base/callback.h"
 #include "media/base/filters.h"
 #include "media/base/filter_host.h"
 
@@ -55,17 +56,6 @@ class DecoderBase : public Decoder {
         NewRunnableMethod(this, &DecoderBase::ReadTask, read_callback));
   }
 
-  void OnReadComplete(Buffer* buffer) {
-    // Little bit of magic here to get NewRunnableMethod() to generate a Task
-    // that holds onto a reference via scoped_refptr<>.
-    //
-    // TODO(scherkus): change the callback format to pass a scoped_refptr<> or
-    // better yet see if we can get away with not using reference counting.
-    scoped_refptr<Buffer> buffer_ref = buffer;
-    this->message_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &DecoderBase::ReadCompleteTask, buffer_ref));
-  }
-
  protected:
   DecoderBase()
       : pending_reads_(0),
@@ -89,6 +79,12 @@ class DecoderBase : public Decoder {
     }
   }
 
+  // TODO(ajwong): All these "Task*" used as completion callbacks should be
+  // FilterCallbacks.  However, since NewCallback() cannot prebind parameters,
+  // we use NewRunnableMethod() instead which causes an unfortunate refcount.
+  // We should move stoyan's Mutant code into base/task.h and turn these
+  // back into FilterCallbacks.
+
   // Method that must be implemented by the derived class.  Called from within
   // the DecoderBase::Initialize() method before any reads are submitted to
   // the demuxer stream.  Returns true if successful, otherwise false indicates
@@ -96,32 +92,46 @@ class DecoderBase : public Decoder {
   // InitializationComplete() method.  If this method returns true, then the
   // base class will call the host to complete initialization.  During this
   // call, the derived class must fill in the media_format_ member.
-  virtual bool OnInitialize(DemuxerStream* demuxer_stream) = 0;
+  virtual void DoInitialize(DemuxerStream* demuxer_stream, bool* success,
+                            Task* done_cb) = 0;
 
   // Method that may be implemented by the derived class if desired.  It will
   // be called from within the MediaFilter::Stop() method prior to stopping the
   // base class.
-  virtual void OnStop() {}
+  //
+  // TODO(ajwong): Make this asynchronous.
+  virtual void DoStop() {}
 
   // Derived class can implement this method and perform seeking logic prior
   // to the base class.
-  virtual void OnSeek(base::TimeDelta time) {}
+  virtual void DoSeek(base::TimeDelta time, Task* done_cb) = 0;
 
   // Method that must be implemented by the derived class.  If the decode
   // operation produces one or more outputs, the derived class should call
   // the EnequeueResult() method from within this method.
-  virtual void OnDecode(Buffer* input) = 0;
+  virtual void DoDecode(Buffer* input, Task* done_cb) = 0;
 
   MediaFormat media_format_;
 
  private:
   bool IsStopped() { return state_ == kStopped; }
 
+  void OnReadComplete(Buffer* buffer) {
+    // Little bit of magic here to get NewRunnableMethod() to generate a Task
+    // that holds onto a reference via scoped_refptr<>.
+    //
+    // TODO(scherkus): change the callback format to pass a scoped_refptr<> or
+    // better yet see if we can get away with not using reference counting.
+    scoped_refptr<Buffer> buffer_ref = buffer;
+    this->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(this, &DecoderBase::ReadCompleteTask, buffer_ref));
+  }
+
   void StopTask() {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
 
     // Delegate to the subclass first.
-    OnStop();
+    DoStop();
 
     // Throw away all buffers in all queues.
     result_queue_.clear();
@@ -133,7 +143,6 @@ class DecoderBase : public Decoder {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
     DCHECK_EQ(0u, pending_reads_) << "Pending reads should have completed";
     DCHECK(read_queue_.empty()) << "Read requests should be empty";
-    scoped_ptr<FilterCallback> c(callback);
 
     // Delegate to the subclass first.
     //
@@ -142,8 +151,11 @@ class DecoderBase : public Decoder {
     // either flush their buffers here or wait for IsDiscontinuous().  I'm
     // inclined to say that they should still wait for IsDiscontinuous() so they
     // don't have duplicated logic for Seek() and actual discontinuous frames.
-    OnSeek(time);
+    DoSeek(time,
+           NewRunnableMethod(this, &DecoderBase::OnSeekComplete, callback));
+  }
 
+  void OnSeekComplete(FilterCallback* callback) {
     // Flush our decoded results.  We'll set a boolean that we can DCHECK to
     // verify our assertion that the first buffer received after a Seek() should
     // always be discontinuous.
@@ -158,20 +170,30 @@ class DecoderBase : public Decoder {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
     CHECK(kUninitialized == state_);
     CHECK(!demuxer_stream_);
-    scoped_ptr<FilterCallback> c(callback);
     demuxer_stream_ = demuxer_stream;
 
-    // Delegate to subclass first.
-    if (!OnInitialize(demuxer_stream_)) {
-      this->host()->SetError(PIPELINE_ERROR_DECODE);
-      callback->Run();
-      return;
-    }
+    bool* success = new bool;
+    DoInitialize(demuxer_stream,
+                 success,
+                 NewRunnableMethod(this, &DecoderBase::OnInitializeComplete,
+                                   success, callback));
+  }
 
-    // TODO(scherkus): subclass shouldn't mutate superclass media format.
-    DCHECK(!media_format_.empty()) << "Subclass did not set media_format_";
-    state_ = kInitialized;
-    callback->Run();
+  void OnInitializeComplete(bool* success, FilterCallback* done_cb) {
+    // Note: The done_runner must be declared *last* to ensure proper
+    // destruction order.
+    scoped_ptr<bool> success_deleter(success);
+    AutoCallbackRunner done_runner(done_cb);
+
+    DCHECK_EQ(MessageLoop::current(), this->message_loop());
+    // Delegate to subclass first.
+    if (!*success) {
+      this->host()->SetError(PIPELINE_ERROR_DECODE);
+    } else {
+      // TODO(scherkus): subclass shouldn't mutate superclass media format.
+      DCHECK(!media_format_.empty()) << "Subclass did not set media_format_";
+      state_ = kInitialized;
+    }
   }
 
   void ReadTask(ReadCallback* read_callback) {
@@ -210,8 +232,10 @@ class DecoderBase : public Decoder {
     }
 
     // Decode the frame right away.
-    OnDecode(buffer);
+    DoDecode(buffer, NewRunnableMethod(this, &DecoderBase::OnDecodeComplete));
+  }
 
+  void OnDecodeComplete() {
     // Attempt to fulfill a pending read callback and schedule additional reads
     // if necessary.
     FulfillPendingRead();
