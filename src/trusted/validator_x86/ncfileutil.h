@@ -69,9 +69,7 @@ typedef struct {
 ncfile *nc_loadfile_depending(const char* filename, int nc_rules);
 
 /* Loads the given filename into memory, applying native client rules. */
-static INLINE ncfile *nc_loadfile(const char *filename) {
-  return nc_loadfile_depending(filename, 1);
-}
+ncfile *nc_loadfile(const char *filename);
 
 void nc_freefile(ncfile* ncf);
 

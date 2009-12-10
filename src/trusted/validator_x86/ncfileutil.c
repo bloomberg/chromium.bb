@@ -259,6 +259,11 @@ ncfile *nc_loadfile_depending(const char *filename, int nc_rules) {
   return ncf;
 }
 
+ncfile *nc_loadfile(const char *filename) {
+  return nc_loadfile_depending(filename, 1);
+}
+
+
 void nc_freefile(ncfile *ncf) {
   if (ncf->data != NULL) free(ncf->data);
   free(ncf);
