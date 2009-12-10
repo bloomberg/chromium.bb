@@ -52,6 +52,10 @@ FilePath DatabaseUtil::GetFullFilePathForVfsFile(
     full_path = FilePath::FromWStringHack(
         full_path.ToWStringHack() + UTF16ToWide(sqlite_suffix));
   }
+  // Watch out for directory traversal attempts from a compromised renderer.
+  if (full_path.value().find(FILE_PATH_LITERAL("..")) !=
+          FilePath::StringType::npos)
+    return FilePath();
   return full_path;
 }
 
