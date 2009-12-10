@@ -276,10 +276,9 @@ void ExtensionsService::EnableExtension(const std::string& extension_id) {
 
 void ExtensionsService::DisableExtension(const std::string& extension_id) {
   Extension* extension = GetExtensionByIdInternal(extension_id, true, false);
-  if (!extension) {
-    NOTREACHED() << "Trying to disable an extension that isn't enabled.";
+  // The extension may have been disabled already.
+  if (!extension)
     return;
-  }
 
   // Remember that we disabled it, unless it's temporary.
   if (extension->location() != Extension::LOAD)

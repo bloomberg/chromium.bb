@@ -193,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionTest, MAYBE_DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action_no_icon")) << message_;
 
   // Test that there is a browser action in the toolbar and that it has no icon.
-  ASSERT_EQ(1, NumberOfBrowserActions());
+  EXPECT_EQ(1, NumberOfBrowserActions());
   EXPECT_TRUE(IsIconNull(0));
 
   // Tell the extension to update the icon using setIcon({imageData:...}).

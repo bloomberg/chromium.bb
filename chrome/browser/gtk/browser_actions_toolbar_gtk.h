@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_GTK_BROWSER_ACTIONS_TOOLBAR_GTK_H_
 #define CHROME_BROWSER_GTK_BROWSER_ACTIONS_TOOLBAR_GTK_H_
 
+#include <gtk/gtk.h>
+
 #include <map>
 #include <string>
 
@@ -39,15 +41,18 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   void Update();
 
  private:
+  friend class BrowserActionButton;
+
+  // Initialize drag and drop.
+  void SetupDrags();
+
   // Query the extensions service for all extensions with browser actions,
   // and create the UI for them.
   void CreateAllButtons();
 
   // Create the UI for a single browser action. This will stick the button
   // at the end of the toolbar.
-  // TODO(estade): is this OK, or does it need to place it in a specific
-  // location on the toolbar?
-  void CreateButtonForExtension(Extension* extension);
+  void CreateButtonForExtension(Extension* extension, int index);
 
   // Delete resources associated with UI for a browser action.
   void RemoveButtonForExtension(Extension* extension);
@@ -59,6 +64,27 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   // ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);
+  virtual void BrowserActionMoved(Extension* extension, int index);
+
+  // Called by the BrowserActionButton in response to drag-begin.
+  void DragStarted(BrowserActionButton* button, GdkDragContext* drag_context);
+
+  static gboolean OnDragMotionThunk(GtkWidget* widget,
+                                    GdkDragContext* drag_context,
+                                    gint x, gint y, guint time,
+                                    BrowserActionsToolbarGtk* toolbar) {
+    return toolbar->OnDragMotion(widget, drag_context, x, y, time);
+  }
+  gboolean OnDragMotion(GtkWidget* widget,
+                        GdkDragContext* drag_context,
+                        gint x, gint y, guint time);
+
+  static void OnDragEndThunk(GtkWidget* button,
+                             GdkDragContext* drag_context,
+                             BrowserActionsToolbarGtk* toolbar) {
+    toolbar->OnDragEnd(button, drag_context);
+  }
+  void OnDragEnd(GtkWidget* button, GdkDragContext* drag_context);
 
   Browser* browser_;
 
@@ -67,6 +93,12 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   ExtensionToolbarModel* model_;
 
   OwnedWidgetGtk hbox_;
+
+  // The button that is currently being dragged, or NULL.
+  BrowserActionButton* drag_button_;
+
+  // The new position of the button in the drag, or -1.
+  int drop_index_;
 
   // Map from extension ID to BrowserActionButton, which is a wrapper for
   // a chrome button and related functionality. There should be one entry

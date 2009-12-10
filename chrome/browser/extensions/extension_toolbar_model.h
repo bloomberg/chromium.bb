@@ -28,10 +28,15 @@ class ExtensionToolbarModel : public NotificationObserver {
 
     // The browser action button for |extension| should no longer show.
     virtual void BrowserActionRemoved(Extension* extension) {}
+
+    // The browser action button for |extension| has been moved to |index|.
+    virtual void BrowserActionMoved(Extension* extension, int index) {}
   };
 
+  // Functions called by the view.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+  void MoveBrowserAction(Extension* extension, int index);
 
   ExtensionList::iterator begin() {
     return toolitems_.begin();
@@ -61,4 +66,5 @@ class ExtensionToolbarModel : public NotificationObserver {
 
   NotificationRegistrar registrar_;
 };
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TOOLBAR_MODEL_H_

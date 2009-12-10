@@ -96,6 +96,22 @@ class GdkCursorCache {
   std::map<GdkCursorType, GdkCursor*> cursor_cache_;
 };
 
+// Expose event handler for a container that simply suppresses the default
+// drawing and propagates the expose event to the container's children.
+gboolean PaintNoBackground(GtkWidget* widget,
+                           GdkEventExpose* event,
+                           gpointer unused) {
+  GList* children = gtk_container_get_children(GTK_CONTAINER(widget));
+  for (GList* item = children; item; item = item->next) {
+    gtk_container_propagate_expose(GTK_CONTAINER(widget),
+                                   GTK_WIDGET(item->data),
+                                   event);
+  }
+  g_list_free(children);
+
+  return TRUE;
+}
+
 }  // namespace
 
 namespace event_utils {
@@ -617,6 +633,11 @@ void ApplyMessageDialogQuirks(GtkWidget* dialog) {
     if (base::DESKTOP_ENVIRONMENT_KDE3 == GetDesktopEnvironment(env.get()))
       gtk_window_set_skip_taskbar_hint(GTK_WINDOW(dialog), FALSE);
   }
+}
+
+void SuppressDefaultPainting(GtkWidget* container) {
+  g_signal_connect(container, "expose-event",
+                   G_CALLBACK(PaintNoBackground), NULL);
 }
 
 }  // namespace gtk_util

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/gtk/browser_actions_toolbar_gtk.h"
 
-#include <gtk/gtk.h>
 #include <vector>
 
 #include "app/gfx/canvas_paint.h"
@@ -26,13 +25,28 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 
+namespace {
+
 // The size of each button on the toolbar.
-static const int kButtonSize = 29;
+const int kButtonSize = 29;
 
 // The padding between browser action buttons. Visually, the actual number of
 // "empty" (non-drawing) pixels is this value + 2 when adjacent browser icons
 // use their maximum allowed size.
-static const int kBrowserActionButtonPadding = 3;
+const int kButtonPadding = 3;
+
+const char* kDragTarget = "application/x-chrome-browseraction";
+
+GtkTargetEntry GetDragTargetEntry() {
+  static std::string drag_target_string(kDragTarget);
+  GtkTargetEntry drag_target;
+  drag_target.target = const_cast<char*>(drag_target_string.c_str());
+  drag_target.flags = GTK_TARGET_SAME_APP;
+  drag_target.info = 0;
+  return drag_target;
+}
+
+}  // namespace
 
 class BrowserActionButton : public NotificationObserver,
                             public ImageLoadingTracker::Observer {
@@ -61,11 +75,12 @@ class BrowserActionButton : public NotificationObserver,
                     Extension::kBrowserActionIconMaxSize));
     }
 
-    // We need to hook up extension popups here. http://crbug.com/23897
     g_signal_connect(button_.get(), "clicked",
                      G_CALLBACK(OnButtonClicked), this);
     g_signal_connect_after(button_.get(), "expose-event",
                            G_CALLBACK(OnExposeEvent), this);
+    g_signal_connect(button_.get(), "drag-begin",
+                     G_CALLBACK(&OnDragBegin), this);
 
     registrar_.Add(this, NotificationType::EXTENSION_BROWSER_ACTION_UPDATED,
                    Source<ExtensionAction>(extension->browser_action()));
@@ -90,6 +105,9 @@ class BrowserActionButton : public NotificationObserver,
 
   GtkWidget* widget() { return button_.get(); }
 
+  Extension* extension() { return extension_; }
+
+  // NotificationObserver implementation.
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details) {
@@ -148,16 +166,16 @@ class BrowserActionButton : public NotificationObserver,
   }
 
   static void OnButtonClicked(GtkWidget* widget, BrowserActionButton* action) {
-   if (action->extension_->browser_action()->has_popup()) {
-     ExtensionPopupGtk::Show(
-         action->extension_->browser_action()->popup_url(),
-         action->toolbar_->browser(),
-         gtk_util::GetWidgetRectRelativeToToplevel(widget));
-   } else {
-     ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-         action->toolbar_->browser()->profile(), action->extension_->id(),
-         action->toolbar_->browser());
-   }
+    if (action->extension_->browser_action()->has_popup()) {
+      ExtensionPopupGtk::Show(
+          action->extension_->browser_action()->popup_url(),
+          action->toolbar_->browser(),
+          gtk_util::GetWidgetRectRelativeToToplevel(widget));
+    } else {
+      ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
+          action->toolbar_->browser()->profile(), action->extension_->id(),
+          action->toolbar_->browser());
+    }
   }
 
   static gboolean OnExposeEvent(GtkWidget* widget,
@@ -175,6 +193,15 @@ class BrowserActionButton : public NotificationObserver,
     gfx::Rect bounding_rect(widget->allocation);
     action->PaintBadge(&canvas, bounding_rect, tab_id);
     return FALSE;
+  }
+
+  static void OnDragBegin(GtkWidget* widget,
+                          GdkDragContext* drag_context,
+                          BrowserActionButton* button) {
+    // Simply pass along the notification to the toolbar. The point of this
+    // function is to tell the toolbar which BrowserActionButton initiated the
+    // drag.
+    button->toolbar_->DragStarted(button, drag_context);
   }
 
   // The toolbar containing this button.
@@ -204,14 +231,18 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
     : browser_(browser),
       profile_(browser->profile()),
       model_(NULL),
-      hbox_(gtk_hbox_new(FALSE, kBrowserActionButtonPadding)) {
+      hbox_(gtk_hbox_new(FALSE, kButtonPadding)),
+      drag_button_(NULL),
+      drop_index_(-1) {
   ExtensionsService* extension_service = profile_->GetExtensionsService();
   // The |extension_service| can be NULL in Incognito.
-  if (extension_service) {
-    model_ = extension_service->toolbar_model();
-    model_->AddObserver(this);
-    CreateAllButtons();
-  }
+  if (!extension_service)
+    return;
+
+  model_ = extension_service->toolbar_model();
+  model_->AddObserver(this);
+  SetupDrags();
+  CreateAllButtons();
 }
 
 BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
@@ -235,20 +266,41 @@ void BrowserActionsToolbarGtk::Update() {
   }
 }
 
+void BrowserActionsToolbarGtk::SetupDrags() {
+  GtkTargetEntry drag_target = GetDragTargetEntry();
+  gtk_drag_dest_set(widget(), GTK_DEST_DEFAULT_DROP, &drag_target, 1,
+                    GDK_ACTION_MOVE);
+
+  g_signal_connect(widget(), "drag-motion",
+                   G_CALLBACK(OnDragMotionThunk), this);
+}
+
 void BrowserActionsToolbarGtk::CreateAllButtons() {
+  extension_button_map_.clear();
+
+  int i = 0;
   for (ExtensionList::iterator iter = model_->begin();
        iter != model_->end(); ++iter) {
-    CreateButtonForExtension(*iter);
+    CreateButtonForExtension(*iter, i++);
   }
 }
 
-void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension) {
+void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
+                                                        int index) {
   RemoveButtonForExtension(extension);
   linked_ptr<BrowserActionButton> button(
       new BrowserActionButton(this, extension));
-  gtk_box_pack_end(GTK_BOX(hbox_.get()), button->widget(), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), button->widget(), FALSE, FALSE, 0);
+  gtk_box_reorder_child(GTK_BOX(hbox_.get()), button->widget(), index);
   gtk_widget_show(button->widget());
   extension_button_map_[extension->id()] = button;
+
+  GtkTargetEntry drag_target = GetDragTargetEntry();
+  gtk_drag_source_set(button->widget(), GDK_BUTTON1_MASK, &drag_target, 1,
+                      GDK_ACTION_MOVE);
+  // We ignore whether the drag was a "success" or "failure" in Gtk's opinion.
+  g_signal_connect(button->widget(), "drag-end",
+                   G_CALLBACK(&OnDragEndThunk), this);
 
   UpdateVisibility();
 }
@@ -267,10 +319,68 @@ void BrowserActionsToolbarGtk::UpdateVisibility() {
 
 void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
                                                   int index) {
-  // TODO(estade): respect |index|.
-  CreateButtonForExtension(extension);
+  CreateButtonForExtension(extension, index);
 }
 
 void BrowserActionsToolbarGtk::BrowserActionRemoved(Extension* extension) {
+  if (drag_button_ != NULL) {
+    // Break the current drag.
+    gtk_grab_remove(widget());
+
+    // Re-generate the toolbar to clean up unfinished drag business (i.e., we
+    // may have re-ordered some buttons; this will put them back where they
+    // belong).
+    CreateAllButtons();
+  }
+
   RemoveButtonForExtension(extension);
+}
+
+void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
+                                                  int index) {
+  // We initiated this move action, and have already moved the button.
+  if (drag_button_ != NULL)
+    return;
+
+  BrowserActionButton* button = extension_button_map_[extension->id()].get();
+  if (!button) {
+    NOTREACHED();
+    return;
+  }
+
+  gtk_box_reorder_child(GTK_BOX(hbox_.get()), button->widget(), index);
+}
+
+void BrowserActionsToolbarGtk::DragStarted(BrowserActionButton* button,
+                                           GdkDragContext* drag_context) {
+  // No representation of the widget following the cursor.
+  GdkPixbuf* pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, 1, 1);
+  gtk_drag_set_icon_pixbuf(drag_context, pixbuf, 0, 0);
+  g_object_unref(pixbuf);
+
+  DCHECK(!drag_button_);
+  drag_button_ = button;
+}
+
+gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
+                                                GdkDragContext* drag_context,
+                                                gint x, gint y, guint time) {
+  drop_index_ = x < kButtonSize ? 0 : x / (kButtonSize + kButtonPadding);
+  // We will go ahead and reorder the child in order to provide visual feedback
+  // to the user. We don't inform the model that it has moved until the drag
+  // ends.
+  gtk_box_reorder_child(GTK_BOX(hbox_.get()), drag_button_->widget(),
+                        drop_index_);
+
+  gdk_drag_status(drag_context, GDK_ACTION_MOVE, time);
+  return TRUE;
+}
+
+void BrowserActionsToolbarGtk::OnDragEnd(GtkWidget* button,
+                                         GdkDragContext* drag_context) {
+  if (drop_index_ != -1)
+    model_->MoveBrowserAction(drag_button_->extension(), drop_index_);
+
+  drag_button_ = NULL;
+  drop_index_ = -1;
 }

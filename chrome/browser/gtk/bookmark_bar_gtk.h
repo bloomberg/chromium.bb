@@ -228,8 +228,6 @@ class BookmarkBarGtk : public AnimationDelegate,
                               BookmarkBarGtk* bar);
 
   // GtkToolbar callbacks.
-  static gboolean OnToolbarExpose(GtkWidget* widget, GdkEventExpose* event,
-                                  BookmarkBarGtk* window);
   static gboolean OnToolbarDragMotion(GtkToolbar* toolbar,
                                       GdkDragContext* context,
                                       gint x,

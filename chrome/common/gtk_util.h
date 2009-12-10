@@ -203,6 +203,15 @@ gfx::Rect GetWidgetRectRelativeToToplevel(GtkWidget* widget);
 // gtk_message_dialog_new.
 void ApplyMessageDialogQuirks(GtkWidget* dialog);
 
+// Don't allow the widget to paint anything, and instead propagate the expose
+// to its children. This is similar to calling
+//
+//   gtk_widget_set_app_paintable(container, TRUE);
+//
+// except that it will always work, and it should be called after any custom
+// expose events are connected.
+void SuppressDefaultPainting(GtkWidget* container);
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

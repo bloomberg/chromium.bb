@@ -235,9 +235,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
   bookmark_toolbar_.Own(gtk_toolbar_new());
   SetToolBarStyle();
   gtk_widget_set_name(bookmark_toolbar_.get(), "chrome-bookmark-toolbar");
-  gtk_widget_set_app_paintable(bookmark_toolbar_.get(), TRUE);
-  g_signal_connect(bookmark_toolbar_.get(), "expose-event",
-                   G_CALLBACK(&OnToolbarExpose), this);
+  gtk_util::SuppressDefaultPainting(bookmark_toolbar_.get());
   g_signal_connect(bookmark_toolbar_.get(), "size-allocate",
                    G_CALLBACK(&OnToolbarSizeAllocate), this);
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), bookmark_toolbar_.get(),
@@ -971,23 +969,6 @@ void BookmarkBarGtk::OnButtonDragGet(GtkWidget* widget, GdkDragContext* context,
 void BookmarkBarGtk::OnFolderClicked(GtkWidget* sender,
                                      BookmarkBarGtk* bar) {
   bar->PopupForButton(sender);
-}
-
-// static
-gboolean BookmarkBarGtk::OnToolbarExpose(GtkWidget* widget,
-                                         GdkEventExpose* event,
-                                         BookmarkBarGtk* bar) {
-  // A GtkToolbar's expose handler first draws a box. We don't want that so we
-  // need to propagate the expose event to all the container's children.
-  GList* children = gtk_container_get_children(GTK_CONTAINER(widget));
-  for (GList* item = children; item; item = item->next) {
-    gtk_container_propagate_expose(GTK_CONTAINER(widget),
-                                   GTK_WIDGET(item->data),
-                                   event);
-  }
-  g_list_free(children);
-
-  return TRUE;
 }
 
 // static

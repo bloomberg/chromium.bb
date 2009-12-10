@@ -33,6 +33,35 @@ void ExtensionToolbarModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void ExtensionToolbarModel::MoveBrowserAction(Extension* extension,
+                                              int index) {
+  ExtensionList::iterator pos = std::find(begin(), end(), extension);
+  if (pos == end()) {
+    NOTREACHED();
+    return;
+  }
+  toolitems_.erase(pos);
+
+  int i = 0;
+  bool inserted = false;
+  for (ExtensionList::iterator iter = begin(); iter != end(); ++iter, ++i) {
+    if (i == index) {
+      toolitems_.insert(pos, extension);
+      inserted = true;
+      break;
+    }
+  }
+
+  if (!inserted) {
+    DCHECK_EQ(index, static_cast<int>(toolitems_.size()));
+    index = toolitems_.size();
+
+    toolitems_.push_back(extension);
+  }
+
+  FOR_EACH_OBSERVER(Observer, observers_, BrowserActionMoved(extension, index));
+}
+
 void ExtensionToolbarModel::Observe(NotificationType type,
                                     const NotificationSource& source,
                                     const NotificationDetails& details) {
