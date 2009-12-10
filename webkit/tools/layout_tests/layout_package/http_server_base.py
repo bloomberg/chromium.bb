@@ -4,6 +4,7 @@
 
 """Base class with common routines between the Apache and Lighttpd servers."""
 
+import logging
 import time
 import urllib
 
@@ -31,8 +32,9 @@ class HttpServerBase(object):
 
       try:
         response = urllib.urlopen(url)
-        # Server is up and responding.
+        logging.debug("Server running at %s" % url)
       except IOError:
+        logging.debug("Server NOT running at %s" % url)
         return False
 
     return True

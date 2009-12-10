@@ -26,6 +26,7 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
     self.mappings = [
       {'port': 8000},
       {'port': 8080},
+      {'port': 8081},
       {'port': 8443, 'sslcert': True}
     ]
 
@@ -108,6 +109,7 @@ class LayoutTestApacheHttpd(http_server_base.HttpServerBase):
     logging.debug("Starting apache http server")
     server_started = self.WaitForAction(self._StartHttpdProcess)
     if server_started:
+      logging.debug("Apache started. Testing ports")
       server_started = self.WaitForAction(self.IsServerRunningOnAllPorts)
 
     if server_started:
