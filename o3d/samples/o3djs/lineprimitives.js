@@ -352,7 +352,7 @@ o3djs.lineprimitives.createLineRingVertices = function(
 
   // Connect the vertices by simple lines.
   for (var i = 0; i < subdivisions; i++) {
-    vertexInfo.addLine(i, (i+1));
+    vertexInfo.addLine(i, i+1);
   }
 
   if (opt_matrix) {
@@ -364,13 +364,16 @@ o3djs.lineprimitives.createLineRingVertices = function(
 /**
  * Creates a ring.
  * The ring is a circle in the XZ plane, centered at the origin.
- * The created ring has a position stream only and can therefore only be
- * used with appropriate shaders.
+ * The created ring has position, normal, and 1-D texcoord streams.
+ * The normals point outwards from the center of the ring.
+ * The texture coordinates are based on angle about the center.
  *
  * @param {!o3d.Pack} pack Pack to create ring elements in.
  * @param {!o3d.Material} material Material to use.
  * @param {number} radius Radius of the ring.
  * @param {number} subdivisions Number of steps around the ring.
+ * @param {number} maxTexCoord 1-D texture coordinates will range from 0 to
+ *     this value, based on angle about the center.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply all
  *     the vertices.
  * @return {!o3d.Shape} The created ring.
@@ -380,10 +383,12 @@ o3djs.lineprimitives.createLineRing = function(
     material,
     radius,
     subdivisions,
+    maxTexCoord,
     opt_matrix) {
   var vertexInfo = o3djs.lineprimitives.createLineRingVertices(
       radius,
       subdivisions,
+      maxTexCoord,
       opt_matrix);
 
   return vertexInfo.createShape(pack, material);
