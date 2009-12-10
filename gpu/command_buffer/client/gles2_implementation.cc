@@ -12,6 +12,11 @@
 namespace command_buffer {
 namespace gles2 {
 
+// A 32-bit and 64-bit compatible way of converting a pointer to a GLuint.
+static GLuint ToGLuint(const void* ptr) {
+  return static_cast<GLuint>(reinterpret_cast<size_t>(ptr));
+}
+
 GLES2Implementation::GLES2Implementation(
       GLES2CmdHelper* helper,
       size_t transfer_buffer_size,
@@ -50,7 +55,7 @@ void GLES2Implementation::WaitForCmd() {
 
 void GLES2Implementation::DrawElements(
     GLenum mode, GLsizei count, GLenum type, const void* indices) {
-  helper_->DrawElements(mode, count, type, reinterpret_cast<GLuint>(indices));
+  helper_->DrawElements(mode, count, type, ToGLuint(indices));
 }
 
 GLint GLES2Implementation::GetAttribLocation(
@@ -88,7 +93,7 @@ void GLES2Implementation::VertexAttribPointer(
     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr) {
   helper_->VertexAttribPointer(index, size, type, normalized, stride,
-                               reinterpret_cast<GLuint>(ptr));
+                               ToGLuint(ptr));
 }
 
 void GLES2Implementation::ShaderSource(
@@ -249,5 +254,3 @@ void GLES2Implementation::TexSubImage2D(
 
 }  // namespace gles2
 }  // namespace command_buffer
-
-

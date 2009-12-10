@@ -37,7 +37,7 @@
 
 #include <GL/glx.h>
 #include "base/basictypes.h"
-#include "gpu/command_buffer/common/cross/logging.h"
+#include "gpu/command_buffer/common/logging.h"
 
 namespace command_buffer {
 

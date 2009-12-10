@@ -42,7 +42,7 @@
 #endif
 #include <build/build_config.h>
 
-#define GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES 1
 
 // Define this for extra GL error debugging (slower).
 // #define GL_ERROR_DEBUGGING

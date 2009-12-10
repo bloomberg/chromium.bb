@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/command_buffer_service.h"
 
+#include <limits>
+
 using ::base::SharedMemory;
 
 namespace command_buffer {
@@ -82,10 +84,10 @@ int32 CommandBufferService::CreateTransferBuffer(size_t size) {
 
   if (unused_registered_object_elements_.empty()) {
     // Check we haven't exceeded the range that fits in a 32-bit integer.
-    int32 handle = static_cast<int32>(registered_objects_.size());
-    if (handle != registered_objects_.size())
+    if (registered_objects_.size() > std::numeric_limits<uint32>::max())
       return -1;
 
+    int32 handle = static_cast<int32>(registered_objects_.size());
     registered_objects_.push_back(buffer);
     return handle;
   }

@@ -243,8 +243,8 @@
         ['OS == "linux"',
           {
             'sources': [
-              'command_buffer/service/linux/x_utils.cc',
-              'command_buffer/service/linux/x_utils.h',
+              'command_buffer/service/x_utils.cc',
+              'command_buffer/service/x_utils.h',
             ],
           },
         ],

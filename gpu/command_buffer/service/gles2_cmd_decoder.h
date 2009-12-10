@@ -8,7 +8,9 @@
 #define O3D_COMMAND_BUFFER_SERVICE_CROSS_GLES2_CMD_DECODER_H
 
 #include <build/build_config.h>
-#ifdef OS_WIN
+#if defined(OS_LINUX)
+#include "gpu/command_buffer/service/x_utils.h"
+#elif defined(OS_WIN)
 #include <windows.h>
 #endif
 #include "gpu/command_buffer/service/common_decoder.h"
@@ -81,4 +83,3 @@ class GLES2Decoder : public CommonDecoder {
 }  // namespace command_buffer
 
 #endif  // O3D_COMMAND_BUFFER_SERVICE_CROSS_GLES2_CMD_DECODER_H
-

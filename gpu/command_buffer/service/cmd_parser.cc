@@ -74,7 +74,7 @@ parse_error::ParseError CommandParser::ProcessCommand() {
     return parse_error::kParseInvalidSize;
   }
 
-  if (header.size + get > entry_count_) {
+  if (static_cast<size_t>(header.size + get) > entry_count_) {
     DLOG(INFO) << "Error: get offset out of bounds";
     return parse_error::kParseOutOfBounds;
   }

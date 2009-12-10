@@ -33,8 +33,8 @@
 // This class implements the XWindowWrapper class.
 
 #include "gpu/command_buffer/service/precompile.h"
-#include "gpu/command_buffer/common/cross/logging.h"
-#include "gpu/command_buffer/service/linux/x_utils.h"
+#include "gpu/command_buffer/common/logging.h"
+#include "gpu/command_buffer/service/x_utils.h"
 
 namespace command_buffer {
 
