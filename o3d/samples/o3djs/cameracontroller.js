@@ -46,6 +46,46 @@ o3djs.require('o3djs.math');
 o3djs.cameracontroller = o3djs.cameracontroller || {};
 
 /**
+ * The possible modes that a CameraController can be in.
+ * One of these is usually set when a mouse button is pressed down,
+ * and then NONE is set when the mouse button is released.
+ * When the mouse is moved, the DragMode determines what effect the mouse move
+ * has on the camera parameters (such as position and orientation).
+ * If the DragMode is NONE, mouse moves have no effect.
+ * @enum {number}
+ */
+o3djs.cameracontroller.DragMode = {
+  /**
+   * Dragging the mouse has no effect.
+   */
+  NONE: 0,
+  /**
+   * Dragging left or right changes rotationAngle,
+   * dragging up or down changes heightAngle.
+   */
+  SPIN_ABOUT_CENTER: 1,
+  /**
+   * Dragging up or down changes the backpedal.
+   */
+  DOLLY_IN_OUT: 2,
+  /**
+   * Dragging up or down changes the fieldOfViewAngle.
+   */
+  ZOOM_IN_OUT: 3,
+  /**
+   * Dragging up or down changes the amount of perspective.
+   * Perspective is focused on the centerPos.
+   * If backpedal is negative or zero, there is no effect.
+   */
+  DOLLY_ZOOM: 4,
+  /**
+   * Dragging moves the centerPos around the plane perpendicular to
+   * the camera view direction.
+   */
+  MOVE_CENTER_IN_VIEW_PLANE: 5,
+};
+
+/**
  * Creates a CameraController.
  * @param {!o3djs.math.Vector3} centerPos The position that the camera is
  *     looking at and rotating around; or if backpedal is zero, the location
@@ -56,8 +96,12 @@ o3djs.cameracontroller = o3djs.cameracontroller || {};
  *     (about the x axis that passes through the centerPos). In radians.
  * @param {number} rotationAngle The angle the camera rotates left or right
  *     (about the y axis that passes through the centerPos). In radians.
+ * @param {number} fieldOfViewAngle The vertical angle of the viewing frustum.
+ *     In radians, between 0 and PI/2. This does not affect the view matrix,
+ *     but it can still be useful to let the CameraController control the
+ *     field of view.
  * @param {function(!o3djs.cameracontroller.CameraController): void}
- *     opt_onchange Pointer to a callback to call when the camera changes.
+ *     opt_onChange Pointer to a callback to call when the camera changes.
  * @return {!o3djs.cameracontroller.CameraController} The created
  *     CameraController.
  */
@@ -65,16 +109,27 @@ o3djs.cameracontroller.createCameraController = function(centerPos,
                                                          backpedal,
                                                          heightAngle,
                                                          rotationAngle,
-                                                         opt_onchange) {
+                                                         fieldOfViewAngle,
+                                                         opt_onChange) {
   return new o3djs.cameracontroller.CameraController(centerPos,
                                                      backpedal,
                                                      heightAngle,
                                                      rotationAngle,
-                                                     opt_onchange);
+                                                     fieldOfViewAngle,
+                                                     opt_onChange);
 };
 
 /**
  * Class to hold user-controlled camera information and handle user events.
+ * It can control and output a view matrix, and can also control some aspects
+ * of a projection matrix.
+ *
+ * Most of the parameters it controls affect the view matrix, and it can
+ * generate a view matrix based on its parameters.
+ * It can also control certain parameters that affect the projection matrix,
+ * such as field of view. Rather than deal with all the parameters needed for
+ * a projection matrix, this class leaves generation of the projection matrix
+ * up to the user code, and simply exposes the parameters it has.
  * @constructor
  * @param {!o3djs.math.Vector3} centerPos The position that the camera is
  *     looking at and rotating around; or if backpedal is zero, the location
@@ -85,14 +140,18 @@ o3djs.cameracontroller.createCameraController = function(centerPos,
  *     (about the x axis that passes through the centerPos). In radians.
  * @param {number} rotationAngle The angle the camera rotates left or right
  *     (about the y axis that passes through the centerPos). In radians.
+ * @param {number} fieldOfViewAngle The vertical angle of the viewing frustum.
+ *     In radians, between 0 and PI/2. This does not affect the view matrix,
+ *     but it can still be useful to let this class control the field of view.
  * @param {function(!o3djs.cameracontroller.CameraController): void}
- *     opt_onchange Pointer to a callback to call when the camera changes.
+ *     opt_onChange Pointer to a callback to call when the camera changes.
  */
 o3djs.cameracontroller.CameraController = function(centerPos,
                                                    backpedal,
                                                    heightAngle,
                                                    rotationAngle,
-                                                   opt_onchange) {
+                                                   fieldOfViewAngle,
+                                                   opt_onChange) {
   /**
    * The position that the camera is looking at and rotating around.
    * Or if backpedal is zero, the location of the camera. In world space.
@@ -118,19 +177,28 @@ o3djs.cameracontroller.CameraController = function(centerPos,
    */
   this.rotationAngle = rotationAngle;
 
+  /**
+   * The vertical angle of the perspective viewing frustum.
+   * In radians, between 0 and PI/2. This does not affect the view matrix.
+   * The user code can access this value and use it to construct a
+   * projection matrix, or it can simply ignore it.
+   * @type {number}
+   */
+  this.fieldOfViewAngle = fieldOfViewAngle;
+
 
   /**
    * Points to a callback to call when the camera changes.
    * @type {function(!o3djs.cameracontroller.CameraController): void}
    */
-  this.onchange = opt_onchange || null;
+  this.onChange = opt_onChange || null;
 
   /**
-   * Whether the mouse is currently being dragged to control the camera.
+   * The current mouse-drag mode, ie what happens when you move the mouse.
    * @private
-   * @type {boolean}
+   * @type {o3djs.cameracontroller.DragMode}
    */
-  this.dragging_ = false;
+  this.dragMode_ = o3djs.cameracontroller.DragMode.NONE;
 
   /**
    * The last X coordinate of the mouse.
@@ -146,18 +214,48 @@ o3djs.cameracontroller.CameraController = function(centerPos,
    */
   this.mouseY_ = 0;
 
+
+  // Some variables to control how quickly the camera changes when you
+  // move the mouse a certain distance. Feel free to modify these.
+  // Mouse pixels are converted into arbitrary "units" (for lack of
+  // a better term), and then "units" are converted into an angle,
+  // or a distance, etc as the case may be.
+
   /**
-   * Controls how quickly the mouse moves the camera.
+   * Controls how quickly the mouse moves the camera (in general).
+   * Used to convert pixels into "units".
    * @type {number}
    */
-  this.dragScaleFactor = 300.0;
+  this.pixelsPerUnit = 300.0;
+
+  /**
+   * Controls how quickly the mouse affects rotation angles.
+   * Used to convert "units" into radians.
+   * @type {number}
+   */
+  this.radiansPerUnit = 1.0;
+
+  /**
+   * Controls how quickly the mouse affects camera translation.
+   * Used to convert "units" into world space units of distance.
+   * @type {number}
+   */
+  this.distancePerUnit = 10.0;
+
+  /**
+   * Controls how quickly the mouse affects zooming.
+   * Used to convert "units" into zoom factor.
+   * @type {number}
+   */
+  this.zoomPerUnit = 1.0;
 };
 
 /**
  * Calculates the view matrix for this camera.
  * @return {!o3djs.math.Matrix4} The view matrix.
  */
-o3djs.cameracontroller.CameraController.prototype.calculateViewMatrix = function() {
+o3djs.cameracontroller.CameraController.prototype.calculateViewMatrix =
+    function() {
   var matrix4 = o3djs.math.matrix4;
   var view = matrix4.translation(o3djs.math.negativeVector(this.centerPos));
   view = matrix4.mul(view, matrix4.rotationY(this.rotationAngle));
@@ -167,42 +265,67 @@ o3djs.cameracontroller.CameraController.prototype.calculateViewMatrix = function
 };
 
 /**
- * Method which should be called by end user code upon receiving a
- * mouse-down event.
- * @param {!o3d.Event} ev The event.
+ * Change the current mouse-drag mode, ie what happens when you move the mouse.
+ * Usually you would set it to something when a mouse button is pressed down,
+ * and then set it to NONE when the button is released.
+ * @param {o3djs.cameracontroller.DragMode} dragMode The new DragMode.
+ * @param {number} x The current mouse X coordinate.
+ * @param {number} y The current mouse Y coordinate.
  */
-o3djs.cameracontroller.CameraController.prototype.mousedown = function(ev) {
-  this.dragging_ = true;
-  this.mouseX_ = ev.x;
-  this.mouseY_ = ev.y;
-};
-
-/**
- * Method which should be called by end user code upon receiving a
- * mouse-up event.
- * @param {!o3d.Event} ev The event.
- */
-o3djs.cameracontroller.CameraController.prototype.mouseup = function(ev) {
-  this.dragging_ = false;
+o3djs.cameracontroller.CameraController.prototype.setDragMode =
+    function(dragMode, x, y) {
+  this.dragMode_ = dragMode;
+  this.mouseX_ = x;
+  this.mouseY_ = y;
 };
 
 /**
  * Method which should be called by end user code upon receiving a
  * mouse-move event.
- * @param {!o3d.Event} ev The event.
+ * @param {number} x The new mouse X coordinate.
+ * @param {number} y The new mouse Y coordinate.
  */
-o3djs.cameracontroller.CameraController.prototype.mousemove = function(ev) {
-  if (this.dragging_) {
-    var curX = ev.x;
-    var curY = ev.y;
-    var deltaX = (curX - this.mouseX_) / this.dragScaleFactor;
-    var deltaY = (curY - this.mouseY_) / this.dragScaleFactor;
-    this.mouseX_ = curX;
-    this.mouseY_ = curY;
-    this.rotationAngle += deltaX;
-    this.heightAngle += deltaY;
-    if (this.onchange != null) {
-      this.onchange(this);
+o3djs.cameracontroller.CameraController.prototype.mouseMoved = function(x, y) {
+  var deltaX = (x - this.mouseX_) / this.pixelsPerUnit;
+  var deltaY = (y - this.mouseY_) / this.pixelsPerUnit;
+  this.mouseX_ = x;
+  this.mouseY_ = y;
+
+  if (this.dragMode_ == o3djs.cameracontroller.DragMode.SPIN_ABOUT_CENTER) {
+    this.rotationAngle += deltaX * this.radiansPerUnit;
+    this.heightAngle += deltaY * this.radiansPerUnit;
+  }
+  if (this.dragMode_ == o3djs.cameracontroller.DragMode.DOLLY_IN_OUT) {
+    this.backpedal += deltaY * this.distancePerUnit;
+  }
+  if (this.dragMode_ == o3djs.cameracontroller.DragMode.ZOOM_IN_OUT) {
+    var width = Math.tan(this.fieldOfViewAngle);
+    width *= Math.pow(2, deltaY * this.zoomPerUnit);
+    this.fieldOfViewAngle = Math.atan(width);
+  }
+  if (this.dragMode_ == o3djs.cameracontroller.DragMode.DOLLY_ZOOM) {
+    if (this.backpedal > 0) {
+      var oldWidth = Math.tan(this.fieldOfViewAngle);
+      this.fieldOfViewAngle += deltaY * this.radiansPerUnit;
+      this.fieldOfViewAngle = Math.min(this.fieldOfViewAngle, 0.98 * Math.PI/2);
+      this.fieldOfViewAngle = Math.max(this.fieldOfViewAngle, 0.02 * Math.PI/2);
+      var newWidth = Math.tan(this.fieldOfViewAngle);
+      this.backpedal *= oldWidth / newWidth;
     }
+  }
+  if (this.dragMode_ ==
+      o3djs.cameracontroller.DragMode.MOVE_CENTER_IN_VIEW_PLANE) {
+    var matrix4 = o3djs.math.matrix4;
+    var translationVector = [-deltaX * this.distancePerUnit,
+                              deltaY * this.distancePerUnit, 0];
+    var inverseViewMatrix = matrix4.inverse(this.calculateViewMatrix());
+    translationVector = matrix4.transformDirection(
+        inverseViewMatrix, translationVector);
+    this.centerPos = o3djs.math.addVector(this.centerPos, translationVector);
+  }
+
+  if (this.onChange != null &&
+      this.dragMode_ != o3djs.cameracontroller.DragMode.NONE) {
+    this.onChange(this);
   }
 };

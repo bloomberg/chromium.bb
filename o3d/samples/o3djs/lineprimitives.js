@@ -312,11 +312,14 @@ o3djs.lineprimitives.createLineSphere = function(
 /**
  * Creates ring vertices.
  * The ring is a circle in the XZ plane, centered at the origin.
- * The created ring has a position stream and a normal stream.
+ * The created ring has position, normal, and 1-D texcoord streams.
  * The normals point outwards from the center of the ring.
+ * The texture coordinates are based on angle about the center.
  *
  * @param {number} radius Radius of the ring.
  * @param {number} subdivisions Number of steps around the ring.
+ * @param {number} maxTexCoord 1-D texture coordinates will range from 0 to
+ *     this value, based on angle about the center.
  * @param {!o3djs.math.Matrix4} opt_matrix A matrix by which to multiply all
  *     the vertices.
  * @return {!o3djs.lineprimitives.LineVertexInfo} The created ring vertices.
@@ -324,6 +327,7 @@ o3djs.lineprimitives.createLineSphere = function(
 o3djs.lineprimitives.createLineRingVertices = function(
     radius,
     subdivisions,
+    maxTexCoord,
     opt_matrix) {
   if (subdivisions < 3) {
     throw Error('subdivisions must be >= 3');
@@ -334,18 +338,21 @@ o3djs.lineprimitives.createLineRingVertices = function(
       3, o3djs.base.o3d.Stream.POSITION);
   var normalStream = vertexInfo.addStream(
       3, o3djs.base.o3d.Stream.NORMAL);
+  var texCoordStream = vertexInfo.addStream(
+      1, o3djs.base.o3d.Stream.TEXCOORD, 0);
 
   // Generate the individual vertices in our vertex buffer.
-  for (var i = 0; i < subdivisions; i++) {
+  for (var i = 0; i <= subdivisions; i++) {
     var theta = 2 * Math.PI * i / subdivisions;
     positionStream.addElement(radius * Math.cos(theta), 0,
                               radius * Math.sin(theta));
     normalStream.addElement(Math.cos(theta), 0, Math.sin(theta));
+    texCoordStream.addElement(maxTexCoord * i / subdivisions);
   }
 
   // Connect the vertices by simple lines.
   for (var i = 0; i < subdivisions; i++) {
-    vertexInfo.addLine(i, (i+1) % subdivisions);
+    vertexInfo.addLine(i, (i+1));
   }
 
   if (opt_matrix) {

@@ -477,6 +477,9 @@ o3djs.manipulators.Manager = function(pack,
   var state = this.viewInfo.zOrderedState;
   state.getStateParam('ZComparisonFunction').value =
       o3djs.base.o3d.State.CMP_GREATER;
+  // Disable depth writing, otherwise the second pass will have a
+  // screwed up depth buffer, and will draw when it shouldn't.
+  state.getStateParam('ZWriteEnable').value = false;
 
   // Swap the priorities of the DrawPasses so they get drawn in the
   // opposite order
@@ -492,6 +495,13 @@ o3djs.manipulators.Manager = function(pack,
   // draw them again with normal zBuffering test so that the parts that are not
   // obscured get drawn as normal. This allows the obscured parts
   // of the manipulators to be rendered with a different material.
+
+  // POTENTIAL PROBLEM: Since we reverse the depth comparison function (and
+  // disable depth writing) for the obscured rendering pass, those objects will
+  // not have their proper faces showing. So they will look wrong unless we use
+  // a constant shader. One possible solution would be to set the stencil
+  // buffer to indicate obscured/unobscured, so that we are free to use the
+  // depth buffer normally.
 
   /**
    * The DrawList we use to render manipulators that are unobscured by the main
@@ -607,7 +617,7 @@ o3djs.manipulators.Manager.prototype.createConstantMaterial_ =
  * Gets the constant material used for manipulators.
  * @return {!o3d.Material} A material.
  */
-o3djs.manipulators.Manager.prototype.getConstantMaterial = function() {
+o3djs.manipulators.Manager.prototype.getUnobscuredConstantMaterial = function() {
   return this.constantMaterial_;
 };
 
@@ -623,11 +633,12 @@ o3djs.manipulators.Manager.prototype.getObscuredConstantMaterial = function() {
  * Gets the material used for the line ring manipulators.
  * @return {!o3d.Material} A material.
  */
-o3djs.manipulators.Manager.prototype.getLineRingMaterial = function() {
+o3djs.manipulators.Manager.prototype.getUnobscuredLineRingMaterial =
+    function() {
   if (!this.lineRingMaterial_) {
     this.lineRingMaterial_ = o3djs.manipulators.createLineRingMaterial(
         this.pack, this.unobscuredDrawList_,
-        [1, 1, 1, 1], [1, 1, 1, 0.4]);
+        [1, 1, 1, 1], [1, 1, 1, 0.6], false);
   }
   return this.lineRingMaterial_;
 };
@@ -640,7 +651,7 @@ o3djs.manipulators.Manager.prototype.getObscuredLineRingMaterial = function() {
   if (!this.obscuredLineRingMaterial_) {
     this.obscuredLineRingMaterial_ = o3djs.manipulators.createLineRingMaterial(
         this.pack, this.obscuredDrawList_,
-        [1, 0, 0, 1], [1, 1, 1, 0.4]);  // TODO(gman): Pick a color.
+        [1, 1, 1, 0.5], [1, 1, 1, 0.3], true);
   }
   return this.obscuredLineRingMaterial_;
 };
@@ -1279,7 +1290,7 @@ o3djs.manipulators.Translate1 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.getConstantMaterial();
+  var material = manager.getUnobscuredConstantMaterial();
 
   var shape = manager.translate1Shape_;
   if (!shape) {
@@ -1386,7 +1397,7 @@ o3djs.manipulators.Translate2 = function(manager) {
   o3djs.manipulators.Manip.call(this, manager);
 
   var pack = manager.pack;
-  var material = manager.getConstantMaterial();
+  var material = manager.getUnobscuredConstantMaterial();
 
   var shape = manager.Translate2Shape_;
   if (!shape) {
@@ -1508,7 +1519,7 @@ o3djs.manipulators.Rotate1 = function(manager) {
         16,
         6,
         o3djs.math.matrix4.rotationZ(Math.PI / 2));
-    pickShape = verts.createShape(pack, manager.getConstantMaterial());
+    pickShape = verts.createShape(pack, manager.getUnobscuredConstantMaterial());
     manager.Rotate1PickShape_ = pickShape;
   }
 
@@ -1517,10 +1528,12 @@ o3djs.manipulators.Rotate1 = function(manager) {
     // Create the line geometry for displaying the manipulator, which looks like
     // a ring centered at the origin, with the X axis as its vertical axis.
     var verts = o3djs.lineprimitives.createLineRingVertices(
-        1.0,
-        32,
-        o3djs.math.matrix4.rotationZ(Math.PI / 2));
-    visibleShape = verts.createShape(pack, manager.getLineRingMaterial());
+        1.0,  // radius
+        32,   // subdivisions
+        120,  // maxTexCoord (this determines the number of stipples)
+        o3djs.math.matrix4.rotationZ(Math.PI / 2));  // opt_matrix
+    visibleShape = verts.createShape(pack,
+                                     manager.getUnobscuredLineRingMaterial());
     // Add a second DrawElement to this shape to draw it a second time
     // with a different material when it's obscured.
     visibleShape.createDrawElements(
@@ -1655,54 +1668,72 @@ o3djs.manipulators.Rotate1.prototype.drag = function(startPoint,
 // TODO(simonrad): Find a better place for these?
 
 /**
- * The name of the Rotate1 manipulator's line ring effect.
- * @type {string}
+ * Returns an effect string for the Rotate1 manipulator's line ring.
+ * @private
+ * @param {boolean} enableStipple Whether line stippling should be enabled
+ *     in the shader.
+ * @return {string} The created shader source / effect string.
  */
-o3djs.manipulators.LINE_RING_EFFECT_NAME =
-    'o3djs.manipulators.lineRingEffect';
-
-/**
- * An effect string for the Rotate1 manipulator's line ring.
- * @type {string}
- */
-o3djs.manipulators.LINE_RING_FXSTRING = '' +
-    'float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
-    'float4x4 worldViewProjectionInverseTranspose :\n' +
-    '    WORLDVIEWPROJECTIONINVERSETRANSPOSE;\n' +
-    'float4 color1;\n' +
-    'float4 color2;\n' +
-    'float4 emissive; // Used for highlighting.\n' +
-    '\n' +
-    'struct VertexShaderInput {\n' +
-    '  float4 position : POSITION;\n' +
-    '  float4 normal : NORMAL;\n' +
-    '};\n' +
-    '\n' +
-    'struct PixelShaderInput {\n' +
-    '  float4 position : POSITION;\n' +
-    '  float3 normal : TEXCOORD0;\n' +
-    '};\n' +
-    '\n' +
-    'PixelShaderInput vertexShaderFunction(VertexShaderInput input) {\n' +
-    '  PixelShaderInput output;\n' +
-    '\n' +
-    '  output.position = mul(input.position, worldViewProjection);\n' +
-    '  output.normal = mul(input.normal,\n' +
-    '                      worldViewProjectionInverseTranspose).xyz;\n' +
-    '  return output;\n' +
-    '}\n' +
-    '\n' +
-    'float4 pixelShaderFunction(PixelShaderInput input): COLOR {\n' +
-    '  if (input.normal.z < 0) {\n' +
-    '    return color1 * emissive;\n' +
-    '  } else {\n' +
-    '    return color2 * emissive;\n' +
-    '  }\n' +
-    '}\n' +
-    '\n' +
-    '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
-    '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
-    '// #o3d MatrixLoadOrder RowMajor\n';
+o3djs.manipulators.getLineRingFXString_ = function(enableStipple) {
+  var stippleCode = '';
+  if (enableStipple) {
+    stippleCode = '' +
+        '  // Use the texCoord to do stippling.\n' +
+        '  if (input.texCoord.x % 2 > 1) return float4(0, 0, 0, 0);\n';
+  }
+  return '' +
+      'float4x4 worldViewProjection : WORLDVIEWPROJECTION;\n' +
+      '// NOTE: We transform the normals through the\n' +
+      '// worldViewProjectionInverseTranspose instead of the\n' +
+      '// worldViewInverseTranspose. The projection matrix warps the\n' +
+      '// normals in strange ways. One result of this is that the "front\n' +
+      '// face" color of the ring can extend around more than 50% of the\n' +
+      '// ring. This may be good or bad. If we dont include the projection\n' +
+      '// matrix, we always get a 50% split, but we do not account for\n' +
+      '// perspective. An alternative would be to get a little more\n' +
+      '// complicated, using the positions of the camera and the center\n' +
+      '// of the ring.\n' +
+      'float4x4 worldViewProjectionInverseTranspose :\n' +
+      '    WORLDVIEWPROJECTIONINVERSETRANSPOSE;\n' +
+      'float4 color1;\n' +
+      'float4 color2;\n' +
+      'float4 emissive; // Used for highlighting.\n' +
+      '\n' +
+      'struct VertexShaderInput {\n' +
+      '  float4 position : POSITION;\n' +
+      '  float4 normal : NORMAL;\n' +
+      '  float1 texCoord : TEXCOORD0;\n' +
+      '};\n' +
+      '\n' +
+      'struct PixelShaderInput {\n' +
+      '  float4 position : POSITION;\n' +
+      '  float3 normal : TEXCOORD0;\n' +
+      '  float1 texCoord : TEXCOORD1;\n' +
+      '};\n' +
+      '\n' +
+      'PixelShaderInput vertexShaderFunction(VertexShaderInput input) {\n' +
+      '  PixelShaderInput output;\n' +
+      '\n' +
+      '  output.position = mul(input.position, worldViewProjection);\n' +
+      '  output.normal = mul(input.normal,\n' +
+      '                      worldViewProjectionInverseTranspose).xyz;\n' +
+      '  output.texCoord = input.texCoord;\n' +
+      '  return output;\n' +
+      '}\n' +
+      '\n' +
+      'float4 pixelShaderFunction(PixelShaderInput input): COLOR {\n' +
+      stippleCode +
+      '  if (input.normal.z < 0) {\n' +
+      '    return color1 * emissive; // Front face of the ring.\n' +
+      '  } else {\n' +
+      '    return color2 * emissive; // Back face of the ring.\n' +
+      '  }\n' +
+      '}\n' +
+      '\n' +
+      '// #o3d VertexShaderEntryPoint vertexShaderFunction\n' +
+      '// #o3d PixelShaderEntryPoint pixelShaderFunction\n' +
+      '// #o3d MatrixLoadOrder RowMajor\n';
+};
 
 /**
  * Creates the Rotate1 manipulator's line ring material.
@@ -1712,16 +1743,19 @@ o3djs.manipulators.LINE_RING_FXSTRING = '' +
  *     the material is created.
  * @param {!o3djs.math.Vector4} color1 A color in the format [r, g, b, a].
  * @param {!o3djs.math.Vector4} color2 A color in the format [r, g, b, a].
+ * @param {boolean} enableStipple Whether line stippling should be enabled
+ *     in the shader.
  * @return {!o3d.Material} The created material.
  */
 o3djs.manipulators.createLineRingMaterial = function(pack,
                                                      drawList,
                                                      color1,
-                                                     color2) {
+                                                     color2,
+                                                     enableStipple) {
   var material = pack.createObject('Material');
   material.effect = pack.createObject('Effect');
-  material.effect.loadFromFXString(o3djs.manipulators.LINE_RING_FXSTRING);
-  material.effect.name = o3djs.manipulators.LINE_RING_EFFECT_NAME;
+  material.effect.loadFromFXString(
+      o3djs.manipulators.getLineRingFXString_(enableStipple));
   material.drawList = drawList;
   material.createParam('color1', 'ParamFloat4').value = color1;
   material.createParam('color2', 'ParamFloat4').value = color2;
@@ -1736,6 +1770,7 @@ o3djs.manipulators.createLineRingMaterial = function(pack,
   material.state.getStateParam('AlphaTestEnable').value = true;
   material.state.getStateParam('AlphaComparisonFunction').value =
       o3djs.base.o3d.State.CMP_GREATER;
+  material.state.getStateParam('AlphaReference').value = 0;
 
   return material;
 };

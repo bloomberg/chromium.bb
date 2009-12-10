@@ -111,9 +111,22 @@ function main(clientElements) {
 }
 
 function onMouseDown(e) {
-  if(e.button == 2) {
-    g_cameraController.mousedown(e);
-  } else {
+  if(e.button == 2 && !e.shiftKey && !e.ctrlKey) {
+    g_cameraController.setDragMode(
+        o3djs.cameracontroller.DragMode.SPIN_ABOUT_CENTER, e.x, e.y);
+  } else if(e.button == 2 && e.shiftKey && !e.ctrlKey) {
+    g_cameraController.setDragMode(
+        o3djs.cameracontroller.DragMode.ZOOM_IN_OUT, e.x, e.y);
+  } else if(e.button == 2 && !e.shiftKey && e.ctrlKey) {
+    g_cameraController.setDragMode(
+        o3djs.cameracontroller.DragMode.DOLLY_IN_OUT, e.x, e.y);
+  } else if(e.button == 2 && e.shiftKey && e.ctrlKey) {
+    g_cameraController.setDragMode(
+        o3djs.cameracontroller.DragMode.DOLLY_ZOOM, e.x, e.y);
+  } else if(e.button == 1) {
+    g_cameraController.setDragMode(
+        o3djs.cameracontroller.DragMode.MOVE_CENTER_IN_VIEW_PLANE, e.x, e.y);
+  } else if(e.button == 0) {
     g_manager.mousedown(e.x, e.y,
                         g_mainViewInfo.drawContext.view,
                         g_mainViewInfo.drawContext.projection,
@@ -123,8 +136,12 @@ function onMouseDown(e) {
 }
 
 function onMouseMove(e) {
-  g_cameraController.mousemove(e);
-  g_mainViewInfo.drawContext.view = g_cameraController.calculateViewMatrix();
+  g_cameraController.mouseMoved(e.x, e.y);
+
+  // You can call this function here, or pass it to the CameraController
+  // as the onChange callback.
+  //updateViewAndProjectionMatrices();
+
   g_manager.mousemove(e.x, e.y,
                       g_mainViewInfo.drawContext.view,
                       g_mainViewInfo.drawContext.projection,
@@ -134,12 +151,11 @@ function onMouseMove(e) {
 }
 
 function onMouseUp(e) {
-  if(e.button == 2) {
-    g_cameraController.mouseup(e);
-  } else {
-    g_manager.mouseup();
-    g_manager.updateInactiveManipulators();
-  }
+  g_cameraController.setDragMode(
+      o3djs.cameracontroller.DragMode.NONE, e.x, e.y);
+
+  g_manager.mouseup();
+  g_manager.updateInactiveManipulators();
 }
 
 /**
@@ -168,20 +184,27 @@ function initGlobals(clientElements) {
  * Sets up reasonable view and projection matrices.
  */
 function initContext() {
+  // Set up our CameraController.
+  g_cameraController = o3djs.cameracontroller.createCameraController(
+      [0, 2, 0],            // centerPos
+      23,                   // backpedal
+      0,                    // heightAngle
+      0,                    // rotationAngle
+      g_math.degToRad(15),  // fieldOfViewAngle
+      updateViewAndProjectionMatrices); // opt_onChange
+
+  updateViewAndProjectionMatrices();
+}
+
+function updateViewAndProjectionMatrices() {
+  g_mainViewInfo.drawContext.view = g_cameraController.calculateViewMatrix();
+
   // Set up a perspective transformation for the projection.
   g_mainViewInfo.drawContext.projection = g_math.matrix4.perspective(
-      g_math.degToRad(30),  // 30 degree frustum.
+      g_cameraController.fieldOfViewAngle * 2,  // Frustum angle.
       g_o3dElement.clientWidth / g_o3dElement.clientHeight, // Aspect ratio.
-      1,                    // Near plane.
-      5000);                // Far plane.
-
-  // Set up our view transformation using our CameraController.
-  g_cameraController = o3djs.cameracontroller.createCameraController(
-      [0, 2, 0], // centerPos
-      23,        // backpedal
-      0,         // heightAngle
-      0);        // rotationAngle
-  g_mainViewInfo.drawContext.view = g_cameraController.calculateViewMatrix();
+      1,                                        // Near plane.
+      5000);                                    // Far plane.
 }
 
 /**
