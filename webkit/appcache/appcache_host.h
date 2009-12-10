@@ -178,6 +178,7 @@ class AppCacheHost : public AppCacheStorage::Delegate,
   FRIEND_TEST(AppCacheHostTest, FailedCacheLoad);
   FRIEND_TEST(AppCacheHostTest, FailedGroupLoad);
   FRIEND_TEST(AppCacheHostTest, SetSwappableCache);
+  FRIEND_TEST(AppCacheGroupTest, QueueUpdate);
   DISALLOW_COPY_AND_ASSIGN(AppCacheHost);
 };
 

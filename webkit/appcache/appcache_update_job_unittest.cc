@@ -1890,6 +1890,52 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
+  void QueueMasterEntryTest() {
+    ASSERT_EQ(MessageLoop::TYPE_IO, MessageLoop::current()->type());
+
+    MakeService();
+    group_ = new AppCacheGroup(
+        service_.get(), http_server_->TestServerPage("files/manifest1"), 111);
+    AppCacheUpdateJob* update = new AppCacheUpdateJob(service_.get(), group_);
+    group_->update_job_ = update;
+
+    // Pretend update job has been running and is about to terminate.
+    group_->update_status_ = AppCacheGroup::DOWNLOADING;
+    update->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+    EXPECT_TRUE(update->IsTerminating());
+
+    // Start an update. Should be queued.
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(1, frontend);
+    host->new_master_entry_url_ =
+        http_server_->TestServerPage("files/explicit2");
+    update->StartUpdate(host, host->new_master_entry_url_);
+    EXPECT_TRUE(update->pending_master_entries_.empty());
+    EXPECT_FALSE(group_->queued_updates_.empty());
+
+    // Delete update, causing it to finish, which should trigger a new update
+    // for the queued host and master entry after a delay.
+    delete update;
+    EXPECT_TRUE(group_->restart_update_task_);
+
+    // Set up checks for when queued update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = true;
+    tested_manifest_ = MANIFEST1;
+    expect_extra_entries_.insert(AppCache::EntryMap::value_type(
+        host->new_master_entry_url_, AppCacheEntry(AppCacheEntry::MASTER)));
+    MockFrontend::HostIds ids1(1, host->host_id());
+    frontend->AddExpectedEvent(ids1, CHECKING_EVENT);
+    frontend->AddExpectedEvent(ids1, DOWNLOADING_EVENT);
+    frontend->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids1, PROGRESS_EVENT);
+    frontend->AddExpectedEvent(ids1, CACHED_EVENT);
+
+    // Group status will be IDLE so cannot call WaitForUpdateToFinish.
+    group_->AddUpdateObserver(this);
+  }
+
   void WaitForUpdateToFinish() {
     if (group_->update_status() == AppCacheGroup::IDLE)
       UpdateFinished();
@@ -2456,6 +2502,10 @@ TEST_F(AppCacheUpdateJobTest, StartUpdateMidNoUpdate) {
 
 TEST_F(AppCacheUpdateJobTest, StartUpdateMidDownload) {
   RunTestOnIOThread(&AppCacheUpdateJobTest::StartUpdateMidDownloadTest);
+}
+
+TEST_F(AppCacheUpdateJobTest, QueueMasterEntry) {
+  RunTestOnIOThread(&AppCacheUpdateJobTest::QueueMasterEntryTest);
 }
 
 }  // namespace appcache

@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/message_loop.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_service.h"
@@ -14,6 +15,24 @@
 #include "webkit/appcache/appcache_update_job.h"
 
 namespace appcache {
+
+class AppCacheGroup;
+
+// Use this helper class because we cannot make AppCacheGroup a derived class
+// of AppCacheHost::Observer as it would create a circular dependency between
+// AppCacheHost and AppCacheGroup.
+class AppCacheGroup::HostObserver : public AppCacheHost::Observer {
+ public:
+  explicit HostObserver(AppCacheGroup* group) : group_(group) {}
+
+  // Methods for AppCacheHost::Observer.
+  void OnCacheSelectionComplete(AppCacheHost* host) {}  // N/A
+  void OnDestructionImminent(AppCacheHost* host) {
+    group_->HostDestructionImminent(host);
+  }
+ private:
+  AppCacheGroup* group_;
+};
 
 AppCacheGroup::AppCacheGroup(AppCacheService* service,
                              const GURL& manifest_url,
@@ -24,13 +43,17 @@ AppCacheGroup::AppCacheGroup(AppCacheService* service,
       is_obsolete_(false),
       newest_complete_cache_(NULL),
       update_job_(NULL),
-      service_(service) {
+      service_(service),
+      restart_update_task_(NULL) {
   service_->storage()->working_set()->AddGroup(this);
+  host_observer_.reset(new HostObserver(this));
 }
 
 AppCacheGroup::~AppCacheGroup() {
   DCHECK(old_caches_.empty());
   DCHECK(!newest_complete_cache_);
+  DCHECK(!restart_update_task_);
+  DCHECK(queued_updates_.empty());
 
   if (update_job_)
     delete update_job_;
@@ -40,11 +63,18 @@ AppCacheGroup::~AppCacheGroup() {
 }
 
 void AppCacheGroup::AddUpdateObserver(UpdateObserver* observer) {
-  observers_.AddObserver(observer);
+  // If observer being added is a host that has been queued for later update,
+  // add observer to a different observer list.
+  AppCacheHost* host = static_cast<AppCacheHost*>(observer);
+  if (queued_updates_.find(host) != queued_updates_.end())
+    queued_observers_.AddObserver(observer);
+  else
+    observers_.AddObserver(observer);
 }
 
 void AppCacheGroup::RemoveUpdateObserver(UpdateObserver* observer) {
   observers_.RemoveObserver(observer);
+  queued_observers_.RemoveObserver(observer);
 }
 
 void AppCacheGroup::AddCache(AppCache* complete_cache) {
@@ -97,6 +127,79 @@ void AppCacheGroup::StartUpdateWithNewMasterEntry(
     update_job_ = new AppCacheUpdateJob(service_, this);
 
   update_job_->StartUpdate(host, new_master_resource);
+
+  // Run queued update immediately as an update has been started manually.
+  if (restart_update_task_) {
+    restart_update_task_->Cancel();
+    restart_update_task_ = NULL;
+    RunQueuedUpdates();
+  }
+}
+
+void AppCacheGroup::QueueUpdate(AppCacheHost* host,
+                                const GURL& new_master_resource) {
+  DCHECK(update_job_ && host && !new_master_resource.is_empty());
+  queued_updates_.insert(QueuedUpdates::value_type(host, new_master_resource));
+
+  // Need to know when host is destroyed.
+  host->AddObserver(host_observer_.get());
+
+  // If host is already observing for updates, move host to queued observers
+  // list so that host is not notified when the current update completes.
+  if (FindObserver(host, observers_)) {
+    observers_.RemoveObserver(host);
+    queued_observers_.AddObserver(host);
+  }
+}
+
+void AppCacheGroup::RunQueuedUpdates() {
+  if (restart_update_task_)
+    restart_update_task_ = NULL;
+
+  if (queued_updates_.empty())
+    return;
+
+  QueuedUpdates updates_to_run;
+  queued_updates_.swap(updates_to_run);
+  DCHECK(queued_updates_.empty());
+
+  for (QueuedUpdates::iterator it = updates_to_run.begin();
+       it != updates_to_run.end(); ++it) {
+    AppCacheHost* host = it->first;
+    host->RemoveObserver(host_observer_.get());
+    if (FindObserver(host, queued_observers_)) {
+      queued_observers_.RemoveObserver(host);
+      observers_.AddObserver(host);
+    }
+    StartUpdateWithNewMasterEntry(host, it->second);
+  }
+}
+
+bool AppCacheGroup::FindObserver(UpdateObserver* find_me,
+    const ObserverList<UpdateObserver>& observer_list) {
+  ObserverList<UpdateObserver>::Iterator it(observer_list);
+  UpdateObserver* obs;
+  while ((obs = it.GetNext()) != NULL) {
+    if (obs == find_me)
+      return true;
+  }
+  return false;
+}
+
+void AppCacheGroup::ScheduleUpdateRestart(int delay_ms) {
+  DCHECK(!restart_update_task_);
+  restart_update_task_ =
+    NewRunnableMethod(this, &AppCacheGroup::RunQueuedUpdates);
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, restart_update_task_,
+                                          delay_ms);
+}
+
+void AppCacheGroup::HostDestructionImminent(AppCacheHost* host) {
+  queued_updates_.erase(host);
+  if (queued_updates_.empty() && restart_update_task_) {
+    restart_update_task_->Cancel();
+    restart_update_task_ = NULL;
+  }
 }
 
 void AppCacheGroup::SetUpdateStatus(UpdateStatus status) {
@@ -109,7 +212,17 @@ void AppCacheGroup::SetUpdateStatus(UpdateStatus status) {
     DCHECK(update_job_);
   } else {
     update_job_ = NULL;
+
+    // Check member variable before notifying observers about update finishing.
+    // Observers may remove reference to group, causing group to be deleted
+    // after the notifications. If there are queued updates, then the group
+    // will continue to exist.
+    bool restart_update = !queued_updates_.empty();
+
     FOR_EACH_OBSERVER(UpdateObserver, observers_, OnUpdateComplete(this));
+
+    if (restart_update)
+      ScheduleUpdateRestart(kUpdateRestartDelayMs);
   }
 }
 

@@ -56,6 +56,21 @@ class TestUpdateObserver : public AppCacheGroup::UpdateObserver {
   bool group_has_cache_;
 };
 
+class TestAppCacheHost : public AppCacheHost {
+ public:
+  TestAppCacheHost(int host_id, AppCacheFrontend* frontend,
+                   AppCacheService* service)
+      : AppCacheHost(host_id, frontend, service),
+        update_completed_(false) {
+  }
+
+  virtual void OnUpdateComplete(AppCacheGroup* group) {
+    update_completed_ = true;
+  }
+
+  bool update_completed_;
+};
+
 class AppCacheGroupTest : public testing::Test {
 };
 
@@ -206,6 +221,54 @@ TEST(AppCacheGroupTest, CancelUpdate) {
   group = NULL;  // causes group to be deleted
   EXPECT_TRUE(observer.update_completed_);
   EXPECT_FALSE(observer.group_has_cache_);
+}
+
+TEST(AppCacheGroupTest, QueueUpdate) {
+  MockAppCacheService service;
+  scoped_refptr<AppCacheGroup> group =
+      new AppCacheGroup(&service, GURL("http://foo.com"), 111);
+
+  // Set state to checking to prevent update job from executing fetches.
+  group->update_status_ = AppCacheGroup::CHECKING;
+  group->StartUpdate();
+  EXPECT_TRUE(group->update_job_);
+
+  // Pretend group's update job is terminating so that next update is queued.
+  group->update_job_->internal_state_ = AppCacheUpdateJob::REFETCH_MANIFEST;
+  EXPECT_TRUE(group->update_job_->IsTerminating());
+
+  TestAppCacheFrontend frontend;
+  TestAppCacheHost host(1, &frontend, &service);
+  host.new_master_entry_url_ = GURL("http://foo.com/bar.txt");
+  group->StartUpdateWithNewMasterEntry(&host, host.new_master_entry_url_);
+  EXPECT_FALSE(group->queued_updates_.empty());
+
+  group->AddUpdateObserver(&host);
+  EXPECT_FALSE(group->FindObserver(&host, group->observers_));
+  EXPECT_TRUE(group->FindObserver(&host, group->queued_observers_));
+
+  // Delete update to cause it to complete. Verify no update complete notice
+  // sent to host.
+  delete group->update_job_;
+  EXPECT_EQ(AppCacheGroup::IDLE, group->update_status_);
+  EXPECT_TRUE(group->restart_update_task_);
+  EXPECT_FALSE(host.update_completed_);
+
+  // Start another update. Cancels task and will run queued updates.
+  group->update_status_ = AppCacheGroup::CHECKING;  // prevent actual fetches
+  group->StartUpdate();
+  EXPECT_TRUE(group->update_job_);
+  EXPECT_FALSE(group->restart_update_task_);
+  EXPECT_TRUE(group->queued_updates_.empty());
+  EXPECT_FALSE(group->update_job_->pending_master_entries_.empty());
+  EXPECT_FALSE(group->FindObserver(&host, group->queued_observers_));
+  EXPECT_TRUE(group->FindObserver(&host, group->observers_));
+
+  // Delete update to cause it to complete. Verify host is notified.
+  delete group->update_job_;
+  EXPECT_EQ(AppCacheGroup::IDLE, group->update_status_);
+  EXPECT_FALSE(group->restart_update_task_);
+  EXPECT_TRUE(host.update_completed_);
 }
 
 }  // namespace appcache

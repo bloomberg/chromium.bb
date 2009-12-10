@@ -15,6 +15,7 @@
 #include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_host.h"
 #include "webkit/appcache/appcache_interfaces.h"
@@ -234,6 +235,7 @@ class AppCacheUpdateJob : public URLRequest::Delegate,
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_write_callback_;
   net::CompletionCallbackImpl<AppCacheUpdateJob> manifest_data_read_callback_;
 
+  FRIEND_TEST(AppCacheGroupTest, QueueUpdate);
   DISALLOW_COPY_AND_ASSIGN(AppCacheUpdateJob);
 };
 

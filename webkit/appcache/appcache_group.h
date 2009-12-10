@@ -5,10 +5,13 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_GROUP_H_
 #define WEBKIT_APPCACHE_APPCACHE_GROUP_H_
 
+#include <map>
 #include <vector>
 
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -18,6 +21,7 @@ class AppCache;
 class AppCacheHost;
 class AppCacheService;
 class AppCacheUpdateJob;
+class HostObserver;
 
 // Collection of application caches identified by the same manifest URL.
 // A group exists as long as it is in use by a host or is being updated.
@@ -76,6 +80,8 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
                                      const GURL& new_master_resource);
 
  private:
+  class HostObserver;
+
   friend class AppCacheUpdateJob;
   friend class AppCacheUpdateJobTest;
   friend class base::RefCounted<AppCacheGroup>;
@@ -84,11 +90,22 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   ~AppCacheGroup();
 
   typedef std::vector<AppCache*> Caches;
+  typedef std::map<AppCacheHost*, GURL> QueuedUpdates;
+
+  static const int kUpdateRestartDelayMs = 1000;
 
   AppCacheUpdateJob* update_job() { return update_job_; }
   void SetUpdateStatus(UpdateStatus status);
 
   const Caches& old_caches() const { return old_caches_; }
+
+  // Update cannot be processed at this time. Queue it for a later run.
+  void QueueUpdate(AppCacheHost* host, const GURL& new_master_resource);
+  void RunQueuedUpdates();
+  bool FindObserver(UpdateObserver* find_me,
+                    const ObserverList<UpdateObserver>& observer_list);
+  void ScheduleUpdateRestart(int delay_ms);
+  void HostDestructionImminent(AppCacheHost* host);
 
   const int64 group_id_;
   const GURL manifest_url_;
@@ -110,8 +127,15 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   // List of objects observing this group.
   ObserverList<UpdateObserver> observers_;
 
+  // Updates that have been queued for the next run.
+  QueuedUpdates queued_updates_;
+  ObserverList<UpdateObserver> queued_observers_;
+  CancelableTask* restart_update_task_;
+  scoped_ptr<HostObserver> host_observer_;
+
   FRIEND_TEST(AppCacheGroupTest, StartUpdate);
   FRIEND_TEST(AppCacheGroupTest, CancelUpdate);
+  FRIEND_TEST(AppCacheGroupTest, QueueUpdate);
   FRIEND_TEST(AppCacheUpdateJobTest, AlreadyChecking);
   FRIEND_TEST(AppCacheUpdateJobTest, AlreadyDownloading);
   DISALLOW_COPY_AND_ASSIGN(AppCacheGroup);

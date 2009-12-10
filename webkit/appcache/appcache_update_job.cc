@@ -142,7 +142,7 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
 
     // Cannot add more to this update if already terminating.
     if (IsTerminating()) {
-      // TODO(jennb): requeue in group
+      group_->QueueUpdate(host, new_master_resource);
       return;
     }
 
