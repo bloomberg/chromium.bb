@@ -2462,7 +2462,6 @@ BUG9798 WIN : LayoutTests/http/tests/security/cross-frame-access-protocol-explic
 BUG9798 WIN DEBUG : LayoutTests/http/tests/security/cross-frame-access-protocol.html = FAIL PASS
 BUG9798 RELEASE : LayoutTests/http/tests/security/dataURL/xss-DENIED-from-data-url-in-foreign-domain-subframe.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/security/xssAuditor/javascript-link-HTML-entities.html = TIMEOUT PASS
-BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-header.html = TIMEOUT PASS
 BUG9798 MAC WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS TIMEOUT
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html = PASS TIMEOUT
 BUG9798 SLOW WIN DEBUG : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = PASS
@@ -2470,7 +2469,6 @@ BUG9798 RELEASE : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOU
 BUG9798 MAC DEBUG : LayoutTests/http/tests/xmlhttprequest/basic-auth.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/encode-request-url-2.html = TIMEOUT PASS
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/null-auth.php = TIMEOUT PASS
-BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/referer.html = TIMEOUT PASS
 BUG9797 BUG9798 WIN RELEASE SLOW : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = PASS
 // Occasionally times out. Not just slow.
 BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/state-after-network-error.html = TIMEOUT PASS
@@ -2484,7 +2482,6 @@ BUG9798 LINUX DEBUG SLOW : LayoutTests/tables/mozilla/bugs/45621.html = FAIL
 BUG9798 LINUX DEBUG : LayoutTests/transitions/mask-transitions.html = FAIL PASS
 BUG9798 LINUX : LayoutTests/transitions/shorthand-border-transitions.html = FAIL PASS
 BUG9798 SLOW LINUX RELEASE : LayoutTests/transitions/transition-timing-function.html = PASS
-BUG9798 MAC RELEASE : LayoutTests/http/tests/xmlhttprequest/cross-origin-cookie-storage.html = PASS TIMEOUT
 // This test definitely times out (i.e. is not just slow).
 BUG9798 MAC WIN RELEASE : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS TIMEOUT
 BUG9798 SLOW LINUX RELEASE : LayoutTests/http/tests/xmlhttprequest/small-chunks-response-text.html = PASS
@@ -2955,7 +2952,6 @@ BUG28057 WIN DEBUG : LayoutTests/dom/html/level2/html/HTMLElement95.html = PASS 
 BUG28074 MAC : LayoutTests/http/tests/loading/redirect-with-no-location-crash.html = PASS TIMEOUT
 BUG28077 MAC : LayoutTests/plugins/netscape-invoke-default.html = PASS FAIL
 BUG28079 LINUX : LayoutTests/http/tests/misc/uncacheable-script-repeated.html = PASS TIMEOUT
-BUG28080 MAC : LayoutTests/http/tests/xmlhttprequest/cross-origin-authorization.html = PASS TIMEOUT
 BUG28092 WIN : LayoutTests/http/tests/xmlhttprequest/redirect-cross-origin-post.html = PASS FAIL
 BUG28095 MAC : LayoutTests/http/tests/cookies/simple-cookies-expired.html = PASS TIMEOUT
 
@@ -3057,7 +3053,6 @@ BUG29164 WIN LINUX MAC : LayoutTests/fast/frames/sandboxed-iframe-plugins.html =
 
 // New failures from WebKit merge 51581:51584
 BUG29167 MAC : LayoutTests/plugins/window-open.html = TEXT PASS
-BUG29167 MAC : LayoutTests/svg/W3C-SVG-1.1/painting-marker-01-f.svg = TEXT PASS
 BUG29167 MAC : LayoutTests/fast/dom/replaceChild.html = IMAGE PASS
 
 // Failure from WebKit merge 51607:51613 (51608 is the cause)
@@ -3088,7 +3083,6 @@ BUG_SENORBLANCO WIN LINUX : LayoutTests/fast/canvas/set-colors.html = TEXT
 // Failures from WebKit merge 51711:51724
 BUG_AJWONG : LayoutTests/fast/js/string-property-deletion.html = TEXT
 BUG_AJWONG : LayoutTests/svg/carto.net/selectionlist.svg = IMAGE PASS
-BUG_AJWONG : LayoutTests/tables/mozilla/bugs/bug15933.html = IMAGE PASS
 BUG_AJWONG WIN : chrome/fast/forms/basic-selects.html = IMAGE
 BUG_AJWONG WIN :LayoutTests/fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
 
