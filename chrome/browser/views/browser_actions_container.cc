@@ -302,6 +302,10 @@ void BrowserActionsContainer::RemoveBrowserAction(Extension* extension) {
   if (!extension->browser_action())
     return;
 
+  if (popup_ && popup_->host()->extension() == extension) {
+    HidePopup();
+  }
+
   for (std::vector<BrowserActionView*>::iterator iter =
        browser_action_views_.begin(); iter != browser_action_views_.end();
        ++iter) {

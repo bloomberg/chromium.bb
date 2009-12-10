@@ -166,7 +166,21 @@ var chrome = chrome || {};
     // JSON.stringify doesn't support a root object which is undefined.
     if (request.args === undefined)
       request.args = null;
+
+    // Some javascript libraries (e.g. prototype.js version <= 1.6) add a toJSON
+    // serializer function on Array.prototype that is incompatible with our
+    // native JSON library, causing incorrect deserialization in the C++ side of
+    // StartRequest. We work around that here by temporarily removing the toJSON
+    // function.
+    var arrayToJsonTmp;
+    if (Array.prototype.toJSON) {
+      arrayToJsonTmp = Array.prototype.toJSON;
+      Array.prototype.toJSON = null;
+    }
     var sargs = JSON.stringify(request.args);
+    if (arrayToJsonTmp) {
+      Array.prototype.toJSON = arrayToJsonTmp;
+    }
     var requestId = GetNextRequestId();
     requests[requestId] = request;
     return StartRequest(functionName, sargs, requestId,
