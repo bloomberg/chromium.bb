@@ -441,10 +441,11 @@ void ShowChromeFrameContextMenu() {
 }
 
 void SetKeyboardFocusToWindow(HWND window, int x, int y) {
-  if (!IsTopLevelWindow(window)) {
-    window = GetAncestor(window, GA_ROOT);
+  HWND top_level_window = window;
+  if (!IsTopLevelWindow(top_level_window)) {
+    top_level_window = GetAncestor(window, GA_ROOT);
   }
-  ForceSetForegroundWindow(window);
+  ForceSetForegroundWindow(top_level_window);
 
   POINT cursor_position = {130, 130};
   ClientToScreen(window, &cursor_position);
