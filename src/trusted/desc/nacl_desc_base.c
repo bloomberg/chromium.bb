@@ -432,7 +432,7 @@ int NaClDescBroadcastNotImplemented(struct NaClDesc         *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
+ssize_t NaClDescSendMsgNotImplemented(struct NaClDesc            *vself,
                                   struct NaClDescEffector        *effp,
                                   struct NaClMessageHeader const *dgram,
                                   int                            flags) {
@@ -446,7 +446,7 @@ int NaClDescSendMsgNotImplemented(struct NaClDesc                *vself,
   return -NACL_ABI_EINVAL;
 }
 
-int NaClDescRecvMsgNotImplemented(struct NaClDesc           *vself,
+ssize_t NaClDescRecvMsgNotImplemented(struct NaClDesc       *vself,
                                   struct NaClDescEffector   *effp,
                                   struct NaClMessageHeader  *dgram,
                                   int                       flags) {

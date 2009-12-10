@@ -108,13 +108,13 @@ struct HtpHeader {
 // the runtime behavior of this function is the same as SendDatagram() for
 // MessageHeader.
 // On success, SendDatagram() returns the number of bytes sent.
-int SendDatagram(HtpHandle socket, const HtpHeader* message, int flags);
+ssize_t SendDatagram(HtpHandle socket, const HtpHeader* message, int flags);
 
 // Receives a message from a socket.  Except for the fact that HtpHeader is
 // used, the runtime behavior of this function is the same as ReceiveDatagram()
 // for MessageHeader.
 // On success, ReceiveDatagram() returns the number of bytes received.
-int ReceiveDatagram(HtpHandle socket, HtpHeader* message, int flags);
+ssize_t ReceiveDatagram(HtpHandle socket, HtpHeader* message, int flags);
 
 // Closes a sel_ldr compatible NaCl descriptor.
 int Close(HtpHandle handle);

@@ -1498,7 +1498,7 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
   struct NaClDesc           *kern_desc[NACL_ABI_IMC_USER_DESC_MAX];
   struct NaClImcTypedMsgHdr kern_msg_hdr;
   struct NaClDesc           *ndp;
-  size_t                    i;
+  ssize_t                   i;
 
   NaClLog(3,
           ("Entered NaClCommonSysImc_Sendmsg(0x%08"PRIxPTR", %d,"
@@ -1649,14 +1649,14 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
   int                       retval = -NACL_ABI_EINVAL;
   uintptr_t                 sysaddr;
   struct NaClImcMsgHdr      *kern_nimhp;
-  size_t                    i;
+  ssize_t                   i;
   struct NaClDesc           *ndp;
   struct NaClImcMsgHdr      kern_nimh;
   struct NaClImcMsgIoVec    kern_iov[NACL_ABI_IMC_IOVEC_MAX];
   int                       *kern_descv;
   struct NaClImcTypedMsgHdr recv_hdr;
   struct NaClDesc           *new_desc[NACL_ABI_IMC_DESC_MAX];
-  size_t                    num_user_desc;
+  ssize_t                   num_user_desc;
 
   NaClLog(3,
           ("Entered NaClCommonSysImc_RecvMsg(0x%08"PRIxPTR", %d,"
@@ -1797,10 +1797,11 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
   /* copy out updated desc count, flags */
  cleanup:
   if (retval < 0) {
-    for (i = 0; i < NACL_ARRAY_SIZE(new_desc); ++i) {
-      if (NULL != new_desc[i]) {
-        NaClDescUnref(new_desc[i]);
-        new_desc[i] = NULL;
+    size_t j = 0;
+    for (j = 0; j < NACL_ARRAY_SIZE(new_desc); ++j) {
+      if (NULL != new_desc[j]) {
+        NaClDescUnref(new_desc[j]);
+        new_desc[j] = NULL;
       }
     }
   }
