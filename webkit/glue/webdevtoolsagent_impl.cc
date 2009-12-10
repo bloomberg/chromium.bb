@@ -194,7 +194,6 @@ void WebDevToolsAgentImpl::detach() {
   ic->close();
   DisposeUtilityContext();
   inspector_frontend_script_state_.clear();
-  devtools_agent_host_.set(NULL);
   debugger_agent_impl_.set(NULL);
   attached_ = false;
   apu_agent_enabled_ = false;
@@ -363,18 +362,17 @@ void WebDevToolsAgentImpl::SendRpcMessage(
 }
 
 void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
-  devtools_agent_host_.set(
-      new BoundObject(utility_context_, this, "DevToolsAgentHost"));
-  devtools_agent_host_->AddProtoFunction(
+  BoundObject devtools_agent_host(utility_context_, this, "DevToolsAgentHost");
+  devtools_agent_host.AddProtoFunction(
       "dispatch",
       WebDevToolsAgentImpl::JsDispatchOnClient);
-  devtools_agent_host_->AddProtoFunction(
+  devtools_agent_host.AddProtoFunction(
       "dispatchToApu",
       WebDevToolsAgentImpl::JsDispatchToApu);
-  devtools_agent_host_->AddProtoFunction(
+  devtools_agent_host.AddProtoFunction(
       "runtimeFeatureStateChanged",
       WebDevToolsAgentImpl::JsOnRuntimeFeatureStateChanged);
-  devtools_agent_host_->Build();
+  devtools_agent_host.Build();
 
   v8::HandleScope scope;
   v8::Context::Scope utility_scope(utility_context_);

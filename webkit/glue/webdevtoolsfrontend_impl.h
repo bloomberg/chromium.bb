@@ -30,7 +30,6 @@ class WebViewImpl;
 struct WebDevToolsMessageData;
 }
 
-class BoundObject;
 class JsDebuggerAgentBoundObj;
 class JsNetAgentBoundObj;
 class JsProfilerAgentBoundObj;
@@ -135,13 +134,11 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   WebKit::WebViewImpl* web_view_impl_;
   WebKit::WebDevToolsFrontendClient* client_;
   String application_locale_;
-  OwnPtr<BoundObject> debugger_command_executor_obj_;
   OwnPtr<JsDebuggerAgentBoundObj> debugger_agent_obj_;
   OwnPtr<JsProfilerAgentBoundObj> profiler_agent_obj_;
   OwnPtr<JsToolsAgentBoundObj> tools_agent_obj_;
   bool loaded_;
   Vector<Vector<String> > pending_incoming_messages_;
-  OwnPtr<BoundObject> dev_tools_host_;
   OwnPtr<ToolsAgentNativeDelegateImpl> tools_agent_native_delegate_impl_;
   RefPtr<MenuSelectionHandler> menu_selection_handler_;
 };

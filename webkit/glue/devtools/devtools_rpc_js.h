@@ -20,16 +20,16 @@
 // JS RPC binds and stubs
 
 #define TOOLS_RPC_JS_BIND_METHOD0(Method) \
-  bound_obj_->AddProtoFunction(#Method, OCLASS::Js##Method);
+  bound_obj.AddProtoFunction(#Method, OCLASS::Js##Method);
 
 #define TOOLS_RPC_JS_BIND_METHOD1(Method, T1) \
-  bound_obj_->AddProtoFunction(#Method, OCLASS::Js##Method);
+  bound_obj.AddProtoFunction(#Method, OCLASS::Js##Method);
 
 #define TOOLS_RPC_JS_BIND_METHOD2(Method, T1, T2) \
-  bound_obj_->AddProtoFunction(#Method, OCLASS::Js##Method);
+  bound_obj.AddProtoFunction(#Method, OCLASS::Js##Method);
 
 #define TOOLS_RPC_JS_BIND_METHOD3(Method, T1, T2, T3) \
-  bound_obj_->AddProtoFunction(#Method, OCLASS::Js##Method);
+  bound_obj.AddProtoFunction(#Method, OCLASS::Js##Method);
 
 #define TOOLS_RPC_JS_STUB_METHOD0(Method) \
   static v8::Handle<v8::Value> Js##Method(const v8::Arguments& args) { \
@@ -76,13 +76,13 @@ class Js##Class##BoundObj : public Class##Stub { \
                       v8::Handle<v8::Context> context, \
                       const char* classname) \
       : Class##Stub(rpc_delegate) { \
-    bound_obj_.set(new BoundObject(context, this, classname)); \
+    BoundObject bound_obj(context, this, classname); \
     STRUCT( \
         TOOLS_RPC_JS_BIND_METHOD0, \
         TOOLS_RPC_JS_BIND_METHOD1, \
         TOOLS_RPC_JS_BIND_METHOD2, \
         TOOLS_RPC_JS_BIND_METHOD3) \
-    bound_obj_->Build(); \
+    bound_obj.Build(); \
   } \
   virtual ~Js##Class##BoundObj() {} \
   typedef Js##Class##BoundObj OCLASS; \
@@ -105,7 +105,6 @@ class Js##Class##BoundObj : public Class##Stub { \
         param2, \
         param3); \
   } \
-  OwnPtr<BoundObject> bound_obj_; \
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_JS_H_

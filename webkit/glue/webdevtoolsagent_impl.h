@@ -35,7 +35,6 @@ struct WebURLError;
 struct WebDevToolsMessageData;
 }
 
-class BoundObject;
 class DebuggerAgentDelegateStub;
 class DebuggerAgentImpl;
 class Value;
@@ -144,7 +143,6 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
   // TODO(pfeldman): This should not be needed once GC styles issue is fixed
   // for matching rules.
   v8::Persistent<v8::Context> utility_context_;
-  OwnPtr<BoundObject> devtools_agent_host_;
   OwnPtr<WebCore::ScriptState> inspector_frontend_script_state_;
 };
 

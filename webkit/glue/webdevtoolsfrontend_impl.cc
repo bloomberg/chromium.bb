@@ -149,71 +149,69 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       new JsToolsAgentBoundObj(this, frame_context, "RemoteToolsAgent"));
 
   // Debugger commands should be sent using special method.
-  debugger_command_executor_obj_.set(
-      new BoundObject(frame_context, this, "RemoteDebuggerCommandExecutor"));
-  debugger_command_executor_obj_->AddProtoFunction(
+  BoundObject debugger_command_executor_obj(frame_context, this,
+                                            "RemoteDebuggerCommandExecutor");
+  debugger_command_executor_obj.AddProtoFunction(
       "DebuggerCommand",
       WebDevToolsFrontendImpl::JsDebuggerCommand);
-  debugger_command_executor_obj_->AddProtoFunction(
+  debugger_command_executor_obj.AddProtoFunction(
       "DebuggerPauseScript",
       WebDevToolsFrontendImpl::JsDebuggerPauseScript);
-  debugger_command_executor_obj_->Build();
+  debugger_command_executor_obj.Build();
 
-  dev_tools_host_.set(new BoundObject(frame_context,
-                                      this,
-                                      "InspectorFrontendHost"));
-  dev_tools_host_->AddProtoFunction(
+  BoundObject dev_tools_host(frame_context, this, "InspectorFrontendHost");
+  dev_tools_host.AddProtoFunction(
       "reset",
       WebDevToolsFrontendImpl::JsReset);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "addSourceToFrame",
       WebDevToolsFrontendImpl::JsAddSourceToFrame);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "addResourceSourceToFrame",
       WebDevToolsFrontendImpl::JsAddResourceSourceToFrame);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "loaded",
       WebDevToolsFrontendImpl::JsLoaded);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "search",
       WebCore::V8Custom::v8InspectorFrontendHostSearchCallback);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "platform",
       WebDevToolsFrontendImpl::JsPlatform);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "port",
       WebDevToolsFrontendImpl::JsPort);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "activateWindow",
       WebDevToolsFrontendImpl::JsActivateWindow);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "closeWindow",
       WebDevToolsFrontendImpl::JsCloseWindow);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "attach",
       WebDevToolsFrontendImpl::JsDockWindow);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "detach",
       WebDevToolsFrontendImpl::JsUndockWindow);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "localizedStringsURL",
       WebDevToolsFrontendImpl::JsLocalizedStringsURL);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "hiddenPanels",
       WebDevToolsFrontendImpl::JsHiddenPanels);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "setting",
       WebDevToolsFrontendImpl::JsSetting);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "setSetting",
       WebDevToolsFrontendImpl::JsSetSetting);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "windowUnloading",
       WebDevToolsFrontendImpl::JsWindowUnloading);
-  dev_tools_host_->AddProtoFunction(
+  dev_tools_host.AddProtoFunction(
       "showContextMenu",
       WebDevToolsFrontendImpl::JsShowContextMenu);
-  dev_tools_host_->Build();
+  dev_tools_host.Build();
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {

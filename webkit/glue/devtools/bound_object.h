@@ -9,8 +9,9 @@
 
 #include "v8.h"
 
-// BoundObject lets you map JavaScript method calls and property accesses
-// directly to C++ method calls and V8 variable access.
+// BoundObject is a helper class that lets you map JavaScript method calls
+// directly to C++ method calls. It should be destroyed once JS object is
+// built.
 class BoundObject : public Noncopyable {
  public:
   BoundObject(v8::Handle<v8::Context> context,
@@ -22,11 +23,11 @@ class BoundObject : public Noncopyable {
   void Build();
 
  private:
+  v8::HandleScope handle_scope_;
   const char* object_name_;
   v8::Handle<v8::Context> context_;
   v8::Persistent<v8::FunctionTemplate> host_template_;
-  v8::Persistent<v8::External> v8_this_;
-  v8::Persistent<v8::Object> bound_object_;
+  void* v8_this_;
 };
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_BOUND_OBJECT_H_

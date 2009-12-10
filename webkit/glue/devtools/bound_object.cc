@@ -12,11 +12,9 @@ BoundObject::BoundObject(
     void* v8_this,
     const char* object_name)
     : object_name_(object_name),
-      context_(context) {
-  v8::HandleScope scope;
+      context_(context),
+      v8_this_(v8_this) {
   v8::Context::Scope context_scope(context);
-  v8_this_ = v8::Persistent<v8::External>::New(v8::External::New(v8_this));
-
   v8::Local<v8::FunctionTemplate> local_template =
       v8::FunctionTemplate::New(WebCore::V8Proxy::checkNewLegal);
   host_template_ = v8::Persistent<v8::FunctionTemplate>::New(local_template);
@@ -24,34 +22,31 @@ BoundObject::BoundObject(
 }
 
 BoundObject::~BoundObject() {
-  bound_object_.Dispose();
   host_template_.Dispose();
-  v8_this_.Dispose();
 }
 
 void BoundObject::AddProtoFunction(
     const char* name,
     v8::InvocationCallback callback) {
-  v8::HandleScope scope;
+  v8::Context::Scope context_scope(context_);
   v8::Local<v8::Signature> signature = v8::Signature::New(host_template_);
   v8::Local<v8::ObjectTemplate> proto = host_template_->PrototypeTemplate();
+  v8::Local<v8::External> v8_this = v8::External::New(v8_this_);
   proto->Set(
       v8::String::New(name),
       v8::FunctionTemplate::New(
           callback,
-          v8_this_,
+          v8_this,
           signature),
       static_cast<v8::PropertyAttribute>(v8::DontDelete));
 }
 
 void BoundObject::Build() {
-  v8::HandleScope scope;
-  v8::Context::Scope frame_scope(context_);
-
+  v8::Context::Scope context_scope(context_);
   v8::Local<v8::Function> constructor = host_template_->GetFunction();
-  bound_object_ = v8::Persistent<v8::Object>::New(
-      WebCore::SafeAllocation::newInstance(constructor));
+  v8::Local<v8::Object> bound_object =
+      WebCore::SafeAllocation::newInstance(constructor);
 
   v8::Handle<v8::Object> global = context_->Global();
-  global->Set(v8::String::New(object_name_), bound_object_);
+  global->Set(v8::String::New(object_name_), bound_object);
 }
