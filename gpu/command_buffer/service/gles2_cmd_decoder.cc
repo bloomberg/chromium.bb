@@ -31,15 +31,6 @@ RETURN_TYPE GetImmediateDataAs(const COMMAND_TYPE& pod) {
   return static_cast<RETURN_TYPE>(const_cast<void*>(AddressAfterStruct(pod)));
 }
 
-// Returns the size in bytes of the data of an Immediate command, a command with
-// its data inline in the command buffer.
-template <typename T>
-unsigned int ImmediateDataSize(uint32 arg_count) {
-  return static_cast<unsigned int>(
-      (arg_count + 1 - ComputeNumEntries(sizeof(T))) *
-      sizeof(CommandBufferEntry));  // NOLINT
-}
-
 // Checks if there is enough immediate data.
 template<typename T>
 bool CheckImmediateDataSize(
@@ -248,13 +239,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
  private:
   bool InitPlatformSpecific();
   bool InitGlew();
-
-  // Typed version of GetAddressAndCheckSize.
-  template <typename T>
-  T GetSharedMemoryAs(unsigned int shm_id, unsigned int offset,
-                      unsigned int size) {
-    return static_cast<T>(GetAddressAndCheckSize(shm_id, offset, size));
-  }
 
   // Template to help call glGenXXX functions.
   template <void gl_gen_function(GLsizei, GLuint*)>

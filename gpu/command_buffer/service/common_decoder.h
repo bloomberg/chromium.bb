@@ -32,6 +32,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_CROSS_COMMON_DECODER_H_
 
+#include <map>
+#include "base/linked_ptr.h"
+#include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
 
 namespace command_buffer {
@@ -43,6 +46,65 @@ class CommandBufferEngine;
 class CommonDecoder : public AsyncAPIInterface {
  public:
   typedef parse_error::ParseError ParseError;
+
+  // A bucket is a buffer to help collect memory across a command buffer. When
+  // creating a command buffer implementation of an existing API, sometimes that
+  // API has functions that take a pointer to data.  A good example is OpenGL's
+  // glBufferData. Because the data is separated between client and service,
+  // there are 2 ways to get this data across. 1 is to put all the data in
+  // shared memory. The problem with this is the data can be arbitarily large
+  // and the host OS may not support that much shared memory. Another solution
+  // is to shuffle memory across a little bit at a time, collecting it on the
+  // service side and when it is all there then call glBufferData. Buckets
+  // implement this second solution. Using the common commands, SetBucketSize,
+  // SetBucketData, SetBucketDataImmediate the client can fill a bucket. It can
+  // then call a command that uses that bucket (like BufferDataBucket in the
+  // GLES2 command buffer implementation).
+  //
+  // If you are designing an API from scratch you can avoid this need for
+  // Buckets by making your API always take an offset and a size
+  // similar to glBufferSubData.
+  //
+  // Buckets also help pass strings to/from the service. To return a string of
+  // arbitary size, the service puts the string in a bucket. The client can
+  // then query the size of a bucket and request sections of the bucket to
+  // be passed across shared memory.
+  class Bucket {
+   public:
+    Bucket() : size_(0) {
+    }
+
+    size_t size() const {
+      return size_;
+    }
+
+    // Gets a pointer to a section the bucket. Returns NULL if offset or size is
+    // out of range.
+    const void* GetData(size_t offset, size_t size) const;
+
+    template <typename T>
+    T GetDataAs(size_t offset, size_t size) const {
+      return reinterpret_cast<T>(GetData(offset, size));
+    }
+
+    // Sets the size of the bucket.
+    void SetSize(size_t size);
+
+    // Sets a part of the bucket.
+    // Returns false if offset or size is out of range.
+    bool SetData(const void* src, size_t offset, size_t size);
+
+   private:
+    bool OffsetSizeValid(size_t offset, size_t size) const {
+      size_t temp = offset + size;
+      return temp <= size_ && temp >= offset;
+    }
+
+    size_t size_;
+    scoped_array<int8> data_;
+
+    DISALLOW_COPY_AND_ASSIGN(Bucket);
+  };
 
   CommonDecoder() : engine_(NULL) {
   }
@@ -83,15 +145,25 @@ class CommonDecoder : public AsyncAPIInterface {
                                unsigned int offset,
                                unsigned int size);
 
+  // Typed version of GetAddressAndCheckSize.
+  template <typename T>
+  T GetSharedMemoryAs(unsigned int shm_id, unsigned int offset,
+                      unsigned int size) {
+    return static_cast<T>(GetAddressAndCheckSize(shm_id, offset, size));
+  }
+
   // Gets an name for a common command.
   const char* GetCommonCommandName(cmd::CommandId command_id) const;
+
+  // Gets a bucket. Returns NULL if the bucket does not exist.
+  Bucket* GetBucket(uint32 bucket_id) const;
 
  private:
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define COMMON_COMMAND_BUFFER_CMD_OP(name)             \
      parse_error::ParseError Handle ## name(             \
-       unsigned int arg_count,                           \
+       uint32 immediate_data_size,                       \
        const cmd::name& args);                           \
 
   COMMON_COMMAND_BUFFER_CMDS(COMMON_COMMAND_BUFFER_CMD_OP)
@@ -99,6 +171,9 @@ class CommonDecoder : public AsyncAPIInterface {
   #undef COMMON_COMMAND_BUFFER_CMD_OP
 
   CommandBufferEngine* engine_;
+
+  typedef std::map<uint32, linked_ptr<Bucket> > BucketMap;
+  BucketMap buckets_;
 };
 
 }  // namespace command_buffer
