@@ -254,5 +254,29 @@ bool SetFileBackupExclusion(const FilePath& file_path, bool exclude) {
   return success;
 }
 
+CFTypeRef GetValueFromDictionary(CFDictionaryRef dict,
+                                 CFStringRef key,
+                                 CFTypeID expected_type) {
+  CFTypeRef value = CFDictionaryGetValue(dict, key);
+  if (!value)
+    return value;
+
+  if (CFGetTypeID(value) != expected_type) {
+    scoped_cftyperef<CFStringRef> expected_type_ref(
+        CFCopyTypeIDDescription(expected_type));
+    scoped_cftyperef<CFStringRef> actual_type_ref(
+        CFCopyTypeIDDescription(CFGetTypeID(value)));
+    LOG(WARNING) << "Expected value for key "
+                 << base::SysCFStringRefToUTF8(key)
+                 << " to be "
+                 << base::SysCFStringRefToUTF8(expected_type_ref)
+                 << " but it was "
+                 << base::SysCFStringRefToUTF8(actual_type_ref)
+                 << " instead";
+    return NULL;
+  }
+
+  return value;
+}
 
 }  // namespace mac_util

@@ -92,6 +92,12 @@ FilePath GetAppBundlePath(const FilePath& exec_name);
 // Set the Time Machine exclusion property for the given file.
 bool SetFileBackupExclusion(const FilePath& file_path, bool exclude);
 
+// Utility function to pull out a value from a dictionary, check its type, and
+// return it.  Returns NULL if the key is not present or of the wrong type.
+CFTypeRef GetValueFromDictionary(CFDictionaryRef dict,
+                                 CFStringRef key,
+                                 CFTypeID expected_type);
+
 }  // namespace mac_util
 
 #endif  // BASE_MAC_UTIL_H_

@@ -9,6 +9,7 @@
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/scoped_cftyperef.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -124,4 +125,20 @@ TEST_F(MacUtilTest, TestExcludeFileFromBackups) {
   // Un-exclude the file.
   EXPECT_TRUE(mac_util::SetFileBackupExclusion(file_path, false));
   EXPECT_FALSE(CSBackupIsItemExcluded((CFURLRef)fileURL, &excludeByPath));
+}
+
+TEST_F(MacUtilTest, TestGetValueFromDictionary) {
+  scoped_cftyperef<CFMutableDictionaryRef> dict(
+      CFDictionaryCreateMutable(0, 0,
+                                &kCFTypeDictionaryKeyCallBacks,
+                                &kCFTypeDictionaryValueCallBacks));
+  CFDictionarySetValue(dict.get(), CFSTR("key"), CFSTR("value"));
+
+  EXPECT_TRUE(CFEqual(CFSTR("value"),
+                      mac_util::GetValueFromDictionary(
+                          dict, CFSTR("key"), CFStringGetTypeID())));
+  EXPECT_FALSE(mac_util::GetValueFromDictionary(
+                   dict, CFSTR("key"), CFNumberGetTypeID()));
+  EXPECT_FALSE(mac_util::GetValueFromDictionary(
+                   dict, CFSTR("no-exist"), CFStringGetTypeID()));
 }
