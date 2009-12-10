@@ -114,6 +114,9 @@ bool GetBrowserVersionInfo(int *returned_major,
 
 void ReleaseSafariBrowserWindow(void* browserWindow) {
   NSWindow* cocoaWindow = (NSWindow*) browserWindow;
+  // Retain the WindowRef so it doesn't go away when we release the
+  // NSWindow copy we made.
+  CFRetain([cocoaWindow windowRef]);
   [cocoaWindow release];
 }
 
@@ -124,6 +127,9 @@ void* SafariBrowserWindowForWindowRef(WindowRef theWindow) {
       if (strcmp(object_getClassName(cocoaWindow), "BrowserWindow") == 0) {
         return cocoaWindow;
       } else {
+        // Retain the WindowRef so it doesn't go away when we release the
+        // NSWindow copy we made.
+        CFRetain(theWindow);
         [cocoaWindow release];
       }
     }
@@ -150,6 +156,11 @@ void* SelectedTabForSafariBrowserWindow(void* browserWindow) {
 // ie DetectTabHiding is now returning false, it restores the surface to the
 // previous state.
 void ManageSafariTabSwitching(PluginObject* obj) {
+  // This is only needed when we are using an AGL context and need to hide
+  // and show it.
+  if (!obj->mac_agl_context_)
+    return;
+
   if (obj->DetectTabHiding()) {
     if (!obj->mac_surface_hidden_) {
       obj->mac_surface_hidden_ = true;
