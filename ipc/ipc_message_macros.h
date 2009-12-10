@@ -25,7 +25,7 @@
 //
 //
 // A caller can also send a synchronous message, while the receiver can respond
-// at a later time.  This is transparent from the sender's size.  The receiver
+// at a later time.  This is transparent from the sender's side.  The receiver
 // needs to use a different handler that takes in a IPC::Message* as the output
 // type, stash the message, and when it has the data it can Send the message.
 //
