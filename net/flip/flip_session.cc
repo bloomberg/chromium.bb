@@ -386,7 +386,8 @@ void FlipSession::OnTCPConnect(int result) {
   LOG(INFO) << "Flip socket connected (result=" << result << ")";
 
   if (result != net::OK) {
-    CloseSession(static_cast<net::Error>(result));
+    DCHECK_LT(result, 0);
+    CloseSessionOnError(static_cast<net::Error>(result));
     return;
   }
 
@@ -439,8 +440,8 @@ void FlipSession::OnSSLConnect(int result) {
     WriteSocketLater();
     ReadSocket();
   } else {
-    DCHECK(result <= 0);  // It should be an error, not a byte count.
-    CloseSession(static_cast<net::Error>(result));
+    DCHECK_LT(result, 0);  // It should be an error, not a byte count.
+    CloseSessionOnError(static_cast<net::Error>(result));
   }
 }
 
@@ -455,7 +456,10 @@ void FlipSession::OnReadComplete(int bytes_read) {
 
   if (bytes_read <= 0) {
     // Session is tearing down.
-    CloseSession(static_cast<net::Error>(bytes_read));
+    net::Error error = static_cast<net::Error>(bytes_read);
+    if (error == OK)
+      error = ERR_CONNECTION_CLOSED;
+    CloseSessionOnError(error);
     return;
   }
 
@@ -518,7 +522,7 @@ void FlipSession::OnWriteComplete(int result) {
     in_flight_write_.release();
 
     // The stream is now errored.  Close it down.
-    CloseSession(static_cast<net::Error>(result));
+    CloseSessionOnError(static_cast<net::Error>(result));
   }
 }
 
@@ -663,8 +667,9 @@ int FlipSession::GetNewStreamId() {
   return id;
 }
 
-void FlipSession::CloseSession(net::Error err) {
-  LOG(INFO) << "Flip::CloseSession(" << err << ")";
+void FlipSession::CloseSessionOnError(net::Error err) {
+  DCHECK_LT(err, OK);
+  LOG(INFO) << "Flip::CloseSessionOnError(" << err << ")";
 
   // Don't close twice.  This can occur because we can have both
   // a read and a write outstanding, and each can complete with
@@ -733,7 +738,7 @@ void FlipSession::GetSSLInfo(SSLInfo* ssl_info) {
 
 void FlipSession::OnError(flip::FlipFramer* framer) {
   LOG(ERROR) << "FlipSession error: " << framer->error_code();
-  CloseSession(net::ERR_UNEXPECTED);
+  CloseSessionOnError(net::ERR_UNEXPECTED);
 }
 
 void FlipSession::OnStreamFrameData(flip::FlipStreamId stream_id,

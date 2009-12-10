@@ -139,7 +139,9 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
   // Closes this session.  This will close all active streams and mark
   // the session as permanently closed.
-  void CloseSession(net::Error err);
+  // |err| should not be OK; this function is intended to be called on
+  // error.
+  void CloseSessionOnError(net::Error err);
 
   // Track active streams in the active stream list.
   void ActivateStream(FlipStream* stream);
