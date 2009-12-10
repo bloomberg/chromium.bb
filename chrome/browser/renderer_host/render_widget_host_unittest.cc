@@ -124,8 +124,10 @@ class MockRenderWidgetHost : public RenderWidgetHost {
  public:
   MockRenderWidgetHost(RenderProcessHost* process, int routing_id)
       : RenderWidgetHost(process, routing_id),
+        prehandle_keyboard_event_(false),
+        prehandle_keyboard_event_called_(false),
+        prehandle_keyboard_event_type_(WebInputEvent::Undefined),
         unhandled_keyboard_event_called_(false),
-        handle_unhandled_keyboard_event_(false),
         unhandled_keyboard_event_type_(WebInputEvent::Undefined) {
   }
 
@@ -139,20 +141,37 @@ class MockRenderWidgetHost : public RenderWidgetHost {
     return unhandled_keyboard_event_type_;
   }
 
-  void set_handle_unhandled_keyboard_event(bool handle) {
-    handle_unhandled_keyboard_event_ = handle;
+  bool prehandle_keyboard_event_called() const {
+    return prehandle_keyboard_event_called_;
+  }
+
+  WebInputEvent::Type prehandle_keyboard_event_type() const {
+    return prehandle_keyboard_event_type_;
+  }
+
+  void set_prehandle_keyboard_event(bool handle) {
+    prehandle_keyboard_event_ = handle;
   }
 
  protected:
-  virtual bool UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut) {
+    prehandle_keyboard_event_type_ = event.type;
+    prehandle_keyboard_event_called_ = true;
+    return prehandle_keyboard_event_;
+  }
+
+  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {
     unhandled_keyboard_event_type_ = event.type;
     unhandled_keyboard_event_called_ = true;
-    return handle_unhandled_keyboard_event_;
   }
 
  private:
+  bool prehandle_keyboard_event_;
+  bool prehandle_keyboard_event_called_;
+  WebInputEvent::Type prehandle_keyboard_event_type_;
+
   bool unhandled_keyboard_event_called_;
-  bool handle_unhandled_keyboard_event_;
   WebInputEvent::Type unhandled_keyboard_event_type_;
 };
 
@@ -496,75 +515,25 @@ TEST_F(RenderWidgetHostTest, IgnoreKeyEventsHandledByRenderer) {
   EXPECT_FALSE(host_->unhandled_keyboard_event_called());
 }
 
-TEST_F(RenderWidgetHostTest, DontSuppressNextCharEventsNoPending) {
+TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
+  // Simluate the situation that the browser handled the key down event during
+  // pre-handle phrase.
+  host_->set_prehandle_keyboard_event(true);
+  process_->sink().ClearMessages();
+
   // Simulate a keyboard event.
   SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
 
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
+  EXPECT_TRUE(host_->prehandle_keyboard_event_called());
+  EXPECT_EQ(WebInputEvent::RawKeyDown, host_->prehandle_keyboard_event_type());
 
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::RawKeyDown, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::RawKeyDown, host_->unhandled_keyboard_event_type());
-
-  // Forward the Char event.
-  SimulateKeyboardEvent(WebInputEvent::Char);
-
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::Char, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::Char, host_->unhandled_keyboard_event_type());
-
-  // Forward the KeyUp event.
-  SimulateKeyboardEvent(WebInputEvent::KeyUp);
-
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::KeyUp, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::KeyUp, host_->unhandled_keyboard_event_type());
-}
-
-TEST_F(RenderWidgetHostTest, SuppressNextCharEventsNoPending) {
-  // Simulate a keyboard event.
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
-
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Simluate the situation that the browser handled the key down event.
-  host_->set_handle_unhandled_keyboard_event(true);
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::RawKeyDown, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::RawKeyDown, host_->unhandled_keyboard_event_type());
-
-  // Forward the Char event.
-  SimulateKeyboardEvent(WebInputEvent::Char);
-
-  // Make sure the Char event is suppressed.
+  // Make sure the RawKeyDown event is not sent to the renderer.
   EXPECT_EQ(0U, process_->sink().message_count());
 
-  // Forward another Char event.
+  // The browser won't pre-handle a Char event.
+  host_->set_prehandle_keyboard_event(false);
+
+  // Forward the Char event.
   SimulateKeyboardEvent(WebInputEvent::Char);
 
   // Make sure the Char event is suppressed.
@@ -573,105 +542,7 @@ TEST_F(RenderWidgetHostTest, SuppressNextCharEventsNoPending) {
   // Forward the KeyUp event.
   SimulateKeyboardEvent(WebInputEvent::KeyUp);
 
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // The browser does not handle KeyUp events.
-  host_->set_handle_unhandled_keyboard_event(false);
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::KeyUp, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::KeyUp, host_->unhandled_keyboard_event_type());
-}
-
-TEST_F(RenderWidgetHostTest, DontSuppressNextCharEventsPending) {
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
-
-  // Make sure we sent the input event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Forward the Char event before receiving the ACK of previous KeyDown event.
-  SimulateKeyboardEvent(WebInputEvent::Char);
-
-  // Make sure the Char event is pending.
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Forward the KeyUp event before receiving the ACK of previous KeyDown event.
-  SimulateKeyboardEvent(WebInputEvent::KeyUp);
-
-  // Make sure the KeyUp event is pending.
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Send the simulated response of the KeyDown event from the renderer back.
-  SendInputEventACK(WebInputEvent::RawKeyDown, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::RawKeyDown, host_->unhandled_keyboard_event_type());
-
-  // Make sure both pending Char and KeyUp were sent to the renderer.
-  EXPECT_EQ(2U, process_->sink().message_count());
-  EXPECT_EQ(ViewMsg_HandleInputEvent::ID,
-            process_->sink().GetMessageAt(0)->type());
-  EXPECT_EQ(ViewMsg_HandleInputEvent::ID,
-            process_->sink().GetMessageAt(1)->type());
-  process_->sink().ClearMessages();
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::Char, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::Char, host_->unhandled_keyboard_event_type());
-
-  // Send the simulated response from the renderer back.
-  SendInputEventACK(WebInputEvent::KeyUp, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::KeyUp, host_->unhandled_keyboard_event_type());
-}
-
-TEST_F(RenderWidgetHostTest, SuppressNextCharEventsPending) {
-  SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
-
-  // Make sure we sent the KeyDown event to the renderer.
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  // Forward the Char event before receiving the ACK of previous KeyDown event.
-  SimulateKeyboardEvent(WebInputEvent::Char);
-
-  // Make sure the Char event is pending.
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Forward another Char event before receiving the ACK of previous KeyDown
-  // event.
-  SimulateKeyboardEvent(WebInputEvent::Char);
-
-  // Make sure the Char event is pending.
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Forward the KeyUp event before receiving the ACK of previous KeyDown event.
-  SimulateKeyboardEvent(WebInputEvent::KeyUp);
-
-  // Make sure the KeyUp event is pending.
-  EXPECT_EQ(0U, process_->sink().message_count());
-
-  // Simluate the situation that the browser handled the key down event.
-  host_->set_handle_unhandled_keyboard_event(true);
-
-  // Send the simulated response of the KeyDown event from the renderer back.
-  SendInputEventACK(WebInputEvent::RawKeyDown, false);
-
-  EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-  EXPECT_EQ(WebInputEvent::RawKeyDown, host_->unhandled_keyboard_event_type());
-
-  // Make sure only pending KeyUp was sent to the renderer.
+  // Make sure only KeyUp was sent to the renderer.
   EXPECT_EQ(1U, process_->sink().message_count());
   EXPECT_EQ(ViewMsg_HandleInputEvent::ID,
             process_->sink().GetMessageAt(0)->type());
@@ -682,52 +553,4 @@ TEST_F(RenderWidgetHostTest, SuppressNextCharEventsPending) {
 
   EXPECT_TRUE(host_->unhandled_keyboard_event_called());
   EXPECT_EQ(WebInputEvent::KeyUp, host_->unhandled_keyboard_event_type());
-}
-
-TEST_F(RenderWidgetHostTest, ManyKeyEventsPending) {
-  process_->sink().ClearMessages();
-
-  for (int i = 0; i < 10; ++i) {
-    // Forward a KeyDown event.
-    SimulateKeyboardEvent(WebInputEvent::RawKeyDown);
-
-    // Forward a Char event before receiving the ACK of previous KeyDown event.
-    SimulateKeyboardEvent(WebInputEvent::Char);
-
-    // Forward a KeyUp event before receiving the ACK of previous KeyDown event.
-    SimulateKeyboardEvent(WebInputEvent::KeyUp);
-  }
-
-  // Make sure only the first KeyDown event was sent to the renderer. All others
-  // are pending.
-  EXPECT_EQ(1U, process_->sink().message_count());
-  EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
-                  ViewMsg_HandleInputEvent::ID));
-  process_->sink().ClearMessages();
-
-  for (int i = 0; i < 10; ++i) {
-    // Send the simulated response of the KeyDown event from the renderer back.
-    SendInputEventACK(WebInputEvent::RawKeyDown, false);
-    EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-    EXPECT_EQ(WebInputEvent::RawKeyDown,
-              host_->unhandled_keyboard_event_type());
-
-    // Make sure the following pending Char, KeyUp and KeyDown event were sent
-    // to the renderer.
-    if (i < 9)
-      EXPECT_EQ(3U, process_->sink().message_count());
-    else
-      EXPECT_EQ(2U, process_->sink().message_count());
-    process_->sink().ClearMessages();
-
-    // Send the simulated response of the Char event from the renderer back.
-    SendInputEventACK(WebInputEvent::Char, false);
-    EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-    EXPECT_EQ(WebInputEvent::Char, host_->unhandled_keyboard_event_type());
-
-    // Send the simulated response of the KeyUp event from the renderer back.
-    SendInputEventACK(WebInputEvent::KeyUp, false);
-    EXPECT_TRUE(host_->unhandled_keyboard_event_called());
-    EXPECT_EQ(WebInputEvent::KeyUp, host_->unhandled_keyboard_event_type());
-  }
 }

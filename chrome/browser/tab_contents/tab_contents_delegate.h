@@ -222,18 +222,18 @@ class TabContentsDelegate {
                             bool show_history) {
   }
 
-  // Returns whether the event is a reserved keyboard shortcut that should not
-  // be sent to the renderer.
-  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
+  // Allows delegates to handle keyboard events before sending to the renderer.
+  // Returns true if the |event| was handled. Otherwise, if the |event| would be
+  // handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
+  // |*is_keyboard_shortcut| should be set to true.
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut) {
     return false;
   }
 
   // Allows delegates to handle unhandled keyboard messages coming back from
   // the renderer.
-  // Returns true if the keyboard message was handled.
-  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-    return false;
-  }
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}

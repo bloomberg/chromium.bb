@@ -50,7 +50,11 @@ class TestBrowserWindow : public BrowserWindow {
   virtual void FocusToolbar() {}
   virtual void ShowPageMenu() {}
   virtual void ShowAppMenu() {}
-  virtual int GetCommandId(const NativeWebKeyboardEvent& event) { return -1; }
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut) {
+    return false;
+  }
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents) {}
 #if defined(TOOLKIT_VIEWS)
   virtual void ToggleCompactNavigationBar() {}

@@ -47,7 +47,6 @@ TabContentsView* TabContentsView::Create(TabContents* tab_contents) {
 
 TabContentsViewWin::TabContentsViewWin(TabContents* tab_contents)
     : TabContentsView(tab_contents),
-      ignore_next_char_event_(false),
       focus_manager_(NULL),
       close_tab_after_drag_ends_(false),
       sad_tab_(NULL) {
@@ -360,71 +359,6 @@ void TabContentsViewWin::TakeFocus(bool reverse) {
     if (focus_manager)
       focus_manager->AdvanceFocus(reverse);
   }
-}
-
-bool TabContentsViewWin::HandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event) {
-  // Previous calls to TranslateMessage can generate CHAR events as well as
-  // RAW_KEY_DOWN events, even if the latter triggered an accelerator.  In these
-  // cases, we discard the CHAR events.
-  if (event.type == WebInputEvent::Char && ignore_next_char_event_) {
-    ignore_next_char_event_ = false;
-    return true;
-  }
-  ignore_next_char_event_ = false;
-
-  // The renderer returned a keyboard event it did not process. This may be
-  // a keyboard shortcut that we have to process.
-  if (event.type == WebInputEvent::RawKeyDown) {
-    views::FocusManager* focus_manager =
-        views::FocusManager::GetFocusManagerForNativeView(GetNativeView());
-    // We may not have a focus_manager at this point (if the tab has been
-    // switched by the time this message returned).
-    if (focus_manager) {
-      views::Accelerator accelerator(
-          win_util::WinToKeyboardCode(event.windowsKeyCode),
-          (event.modifiers & WebInputEvent::ShiftKey) ==
-              WebInputEvent::ShiftKey,
-          (event.modifiers & WebInputEvent::ControlKey) ==
-              WebInputEvent::ControlKey,
-          (event.modifiers & WebInputEvent::AltKey) ==
-              WebInputEvent::AltKey);
-
-      // This is tricky: we want to set ignore_next_char_event_ if
-      // ProcessAccelerator returns true. But ProcessAccelerator might delete
-      // |this| if the accelerator is a "close tab" one. So we speculatively
-      // set the flag and fix it if no event was handled.
-      ignore_next_char_event_ = true;
-      if (focus_manager->ProcessAccelerator(accelerator)) {
-        // DANGER: |this| could be deleted now!
-        return true;
-      } else {
-        // ProcessAccelerator didn't handle the accelerator, so we know both
-        // that |this| is still valid, and that we didn't want to set the flag.
-        ignore_next_char_event_ = false;
-      }
-    }
-  }
-
-  if (tab_contents()->delegate() &&
-      tab_contents()->delegate()->HandleKeyboardEvent(event)) {
-    // At this point the only tab contents delegate which handles a keyboard
-    // event is ChromeFrame. When the message comes back from ChromeFrame it
-    // is DefWindowProc'ed. We return false here on the same lines as below:-
-    return false;
-  }
-
-  // Any unhandled keyboard/character messages should be defproced.
-  // This allows stuff like Alt+F4, etc to work correctly.
-  DefWindowProc(event.os_event.hwnd, event.os_event.message,
-                event.os_event.wParam, event.os_event.lParam);
-
-  // DefWindowProc() always returns 0, which means it handled the event.
-  // But actually DefWindowProc() will only handle very few system key strokes,
-  // such as F10, Alt+Tab, Alt+F4, Alt+Esc, etc.
-  // So returning false here is just ok for most cases.
-  // Reference: http://msdn.microsoft.com/en-us/library/ms646267(VS.85).aspx
-  return false;
 }
 
 views::FocusManager* TabContentsViewWin::GetFocusManager() {

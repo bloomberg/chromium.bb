@@ -163,12 +163,11 @@ class MainMenu : public RenderViewHostDelegate,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation) {}
   virtual void GotFocus() {}
   virtual void TakeFocus(bool reverse) {}
-  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut) {
     return false;
   }
-  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-    return false;
-  }
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {}
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}

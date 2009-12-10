@@ -117,7 +117,9 @@ class ExternalTabContainer : public TabContentsDelegate,
   };
   virtual gfx::NativeWindow GetFrameNativeWindow();
 
-  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   virtual bool TakeFocus(bool reverse);
 

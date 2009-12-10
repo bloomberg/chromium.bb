@@ -67,7 +67,8 @@ RenderWidget::RenderWidget(RenderThreadBase* render_thread, bool activatable)
       ime_control_updated_(false),
       ime_control_busy_(false),
       activatable_(activatable),
-      pending_window_rect_count_(0) {
+      pending_window_rect_count_(0),
+      suppress_next_char_events_(false) {
   RenderProcess::current()->AddRefProcess();
   DCHECK(render_thread_);
 }
@@ -304,9 +305,24 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
 
   const WebInputEvent* input_event =
       reinterpret_cast<const WebInputEvent*>(data);
+
+  bool is_keyboard_shortcut = false;
+  // is_keyboard_shortcut flag is only available for RawKeyDown events.
+  if (input_event->type == WebInputEvent::RawKeyDown)
+    message.ReadBool(&iter, &is_keyboard_shortcut);
+
   bool processed = false;
-  if (webwidget_)
-    processed = webwidget_->handleInputEvent(*input_event);
+  if (input_event->type != WebInputEvent::Char || !suppress_next_char_events_) {
+    suppress_next_char_events_ = false;
+    if (webwidget_)
+      processed = webwidget_->handleInputEvent(*input_event);
+  }
+
+  // If this RawKeyDown event corresponds to a browser keyboard shortcut and
+  // it's not processed by webkit, then we need to suppress the upcoming Char
+  // events.
+  if (!processed && is_keyboard_shortcut)
+    suppress_next_char_events_ = true;
 
   IPC::Message* response = new ViewHostMsg_HandleInputEvent_ACK(routing_id_);
   response->WriteInt(input_event->type);
@@ -323,9 +339,7 @@ void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {
 
   handling_input_event_ = false;
 
-  WebInputEvent::Type type = input_event->type;
-  if (type == WebInputEvent::RawKeyDown || type == WebInputEvent::KeyDown ||
-      type == WebInputEvent::KeyUp || type == WebInputEvent::Char)
+  if (WebInputEvent::isKeyboardEventType(input_event->type))
     DidHandleKeyEvent();
 }
 

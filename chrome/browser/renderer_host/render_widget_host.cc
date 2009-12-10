@@ -51,9 +51,6 @@ static const int kPaintMsgTimeoutMS = 40;
 // How long to wait before we consider a renderer hung.
 static const int kHungRendererDelayMs = 20000;
 
-// How long a PaintRect_ACK message can be postponed at most, in milliseconds.
-static const int kPaintACKMsgMaxPostponedDurationMS = 1000;
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHost
 
@@ -76,10 +73,7 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
       text_direction_updated_(false),
       text_direction_(WebKit::WebTextDirectionLeftToRight),
       text_direction_canceled_(false),
-      pending_key_events_(0),
-      suppress_next_char_events_(false),
-      paint_ack_postponed_(false),
-      death_flag_(NULL) {
+      suppress_next_char_events_(false) {
   if (routing_id_ == MSG_ROUTING_NONE)
     routing_id_ = process_->GetNextRoutingID();
 
@@ -90,10 +84,6 @@ RenderWidgetHost::RenderWidgetHost(RenderProcessHost* process,
 }
 
 RenderWidgetHost::~RenderWidgetHost() {
-  // Force the method that destroys this object to exit immediately.
-  if (death_flag_)
-    *death_flag_ = true;
-
   // Clear our current or cached backing store if either remains.
   BackingStoreManager::RemoveBackingStore(this);
 
@@ -375,7 +365,7 @@ void RenderWidgetHost::ForwardMouseEvent(const WebMouseEvent& mouse_event) {
     OnUserGesture();
   }
 
-  ForwardInputEvent(mouse_event, sizeof(WebMouseEvent));
+  ForwardInputEvent(mouse_event, sizeof(WebMouseEvent), false);
 }
 
 void RenderWidgetHost::ForwardWheelEvent(
@@ -383,7 +373,7 @@ void RenderWidgetHost::ForwardWheelEvent(
   if (process_->ignore_input_events())
     return;
 
-  ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent));
+  ForwardInputEvent(wheel_event, sizeof(WebMouseWheelEvent), false);
 }
 
 void RenderWidgetHost::ForwardKeyboardEvent(
@@ -400,67 +390,36 @@ void RenderWidgetHost::ForwardKeyboardEvent(
   // Double check the type to make sure caller hasn't sent us nonsense that
   // will mess up our key queue.
   if (WebInputEvent::isKeyboardEventType(key_event.type)) {
-    // Don't add this key to the queue if we have no way to send the message...
-    if (!process_->HasConnection())
-      return;
-
-    // To help understand following logic, please refer to the comments
-    // explaining |pending_key_events_| and |suppress_next_char_events_|
-    // members. And the comments in OnMsgInputEventAck() method, which contains
-    // the bottom half of the logic.
-    //
-    // There are to different situations for us to handle key events:
-    // 1. After sending a key event to the renderer, we receive its ACK message
-    // from the renderer before sending the next key event.
-    // In this case, there is always no more than 1 key event in |key_queue_|,
-    // and we send the key event one by one in this method, except that a
-    // sequence of Char events may be suppressed directly if the preceding
-    // RawKeyDown event was handled as an accelerator key in the browser.
-    //
-    // 2. We get the next key event before receving the previous one's ACK
-    // message from the renderer.
-    // In this case, when we get a key event, the previous key event is still in
-    // |keq_queue_| waiting for being handled in OnMsgInputEventAck() method.
-    // Then we need handle following cases differently:
-    //   1) If we get a Char event, then the previous key event in |key_queue_|
-    //   waiting for ACK must be a RawKeyDown event. Then we need keep this Char
-    //   event in |key_queue_| rather than sending it immediately, because we
-    //   can't determine if we should send it to the renderer or just suppress
-    //   it, until we receive the preceding RawKeyDown event's ACK message.
-    //   We increase the count of |pending_key_events_| to help remember this
-    //   Char event is not sent to the renderer yet.
-    //   2) If there is already one or more key event pending in |key_queue_|
-    //   (|pending_key_events_| > 0), we can not send a new key event
-    //   immediately no matter what type it is. Otherwise the key events will be
-    //   in wrong order. In this case we just keep them in |key_queue_| and
-    //   increase |pending_key_events_| to remember them.
-    //
-    // Then all pending key events in |key_queue_| will be handled properly in
-    // OnMsgInputEventAck() method. Please refer to that method for details.
-
-    // Tab switching/closing accelerators aren't sent to the renderer to avoid a
-    // hung/malicious renderer from interfering.
-    if (!ShouldSendToRenderer(key_event)) {
-      if (key_event.type == WebKeyboardEvent::RawKeyDown)
-        suppress_next_char_events_ = true;
-      UnhandledKeyboardEvent(key_event);
-      // We might be deleted now.
-      return;
-    }
-
-    bool is_char = (key_event.type == WebKeyboardEvent::Char);
-
-    // Handle the first situation mentioned above.
     if (suppress_next_char_events_) {
       // If preceding RawKeyDown event was handled by the browser, then we need
       // suppress all Char events generated by it. Please note that, one
       // RawKeyDown event may generate multiple Char events, so we can't reset
       // |suppress_next_char_events_| until we get a KeyUp or a RawKeyDown.
-      if (is_char)
+      if (key_event.type == WebKeyboardEvent::Char)
         return;
       // We get a KeyUp or a RawKeyDown event.
       suppress_next_char_events_ = false;
     }
+
+    // We need to set |suppress_next_char_events_| to true if
+    // PreHandleKeyboardEvent() returns true, but |this| may already be
+    // destroyed at that time. So set |suppress_next_char_events_| true here,
+    // then revert it afterwards when necessary.
+    if (key_event.type == WebKeyboardEvent::RawKeyDown)
+      suppress_next_char_events_ = true;
+
+    bool is_keyboard_shortcut = false;
+    // Tab switching/closing accelerators aren't sent to the renderer to avoid a
+    // hung/malicious renderer from interfering.
+    if (PreHandleKeyboardEvent(key_event, &is_keyboard_shortcut))
+      return;
+
+    if (key_event.type == WebKeyboardEvent::RawKeyDown)
+      suppress_next_char_events_ = false;
+
+    // Don't add this key to the queue if we have no way to send the message...
+    if (!process_->HasConnection())
+      return;
 
     // Put all WebKeyboardEvent objects in a queue since we can't trust the
     // renderer and we need to give something to the UnhandledInputEvent
@@ -468,36 +427,15 @@ void RenderWidgetHost::ForwardKeyboardEvent(
     key_queue_.push_back(key_event);
     HISTOGRAM_COUNTS_100("Renderer.KeyboardQueueSize", key_queue_.size());
 
-    // Handle the second situation mentioned above.
-    size_t key_queue_size = key_queue_.size();
-    if ((is_char && key_queue_size > 1) || pending_key_events_) {
-      // The event is not send to the renderer, increase |pending_key_events_|
-      // to remember it.
-      ++pending_key_events_;
-
-      // Some sanity checks.
-      // At least one key event in the front of |key_queue_| has been sent to
-      // the renderer, otherwise we won't be able to get any ACK back from the
-      // renderer.
-      DCHECK(key_queue_size > pending_key_events_);
-      // Char events must be preceded by RawKeyDown events.
-      // TODO(suzhe): verify it on all platforms.
-      DCHECK(key_queue_[key_queue_size - pending_key_events_ - 1].type ==
-             WebKeyboardEvent::RawKeyDown);
-      // The first pending key event must be a Char event. Other key events must
-      // already be sent to the renderer at this point.
-      DCHECK(key_queue_[key_queue_size - pending_key_events_].type ==
-             WebKeyboardEvent::Char);
-    } else {
-      // Fall into the first situation, so we can send the event immediately.
-      // Only forward the non-native portions of our event.
-      ForwardInputEvent(key_event, sizeof(WebKeyboardEvent));
-    }
+    // Only forward the non-native portions of our event.
+    ForwardInputEvent(key_event, sizeof(WebKeyboardEvent),
+                      is_keyboard_shortcut);
   }
 }
 
 void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
-                                         int event_size) {
+                                         int event_size,
+                                         bool is_keyboard_shortcut) {
   if (!process_->HasConnection())
     return;
 
@@ -506,6 +444,9 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
   IPC::Message* message = new ViewMsg_HandleInputEvent(routing_id_);
   message->WriteData(
       reinterpret_cast<const char*>(&input_event), event_size);
+  // |is_keyboard_shortcut| only makes sense for RawKeyDown events.
+  if (input_event.type == WebInputEvent::RawKeyDown)
+    message->WriteBool(is_keyboard_shortcut);
   input_event_start_time_ = TimeTicks::Now();
   Send(message);
 
@@ -539,13 +480,11 @@ void RenderWidgetHost::RendererExited() {
 
   // Must reset these to ensure that keyboard events work with a new renderer.
   key_queue_.clear();
-  pending_key_events_ = 0;
   suppress_next_char_events_ = false;
 
   // Reset some fields in preparation for recovering from a crash.
   resize_ack_pending_ = false;
   repaint_ack_pending_ = false;
-  paint_ack_postponed_ = false;
 
   in_flight_size_.SetSize(0, 0);
   current_size_.SetSize(0, 0);
@@ -681,10 +620,6 @@ void RenderWidgetHost::OnMsgRequestMove(const gfx::Rect& pos) {
 
 void RenderWidgetHost::OnMsgPaintRect(
     const ViewHostMsg_PaintRect_Params& params) {
-  // We shouldn't receive PaintRect message when the last PaintRect_ACK has not
-  // been sent to the renderer yet.
-  DCHECK(!paint_ack_postponed_);
-
   TimeTicks paint_start = TimeTicks::Now();
 
   // Update our knowledge of the RenderWidget's size.
@@ -732,16 +667,7 @@ void RenderWidgetHost::OnMsgPaintRect(
   // This must be done AFTER we're done painting with the bitmap supplied by the
   // renderer. This ACK is a signal to the renderer that the backing store can
   // be re-used, so the bitmap may be invalid after this call.
-  //
-  // Postpone the ACK message until all pending key events have been sent to the
-  // renderer, so that the renderer can process the updates caused by the key
-  // events in batch.
-  if (pending_key_events_ > 0) {
-    paint_ack_postponed_ = true;
-    paint_ack_postponed_time_ = TimeTicks::Now();
-  } else {
-    Send(new ViewMsg_PaintRect_ACK(routing_id_));
-  }
+  Send(new ViewMsg_PaintRect_ACK(routing_id_));
 
   // We don't need to update the view if the view is hidden. We must do this
   // early return after the ACK is sent, however, or the renderer will not send
@@ -1009,92 +935,20 @@ void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {
                << "the renderer. (" << key_queue_.front().type << " vs. "
                << type << "). Ignoring event.";
 
-    // Something must be wrong. |key_queue_| must be cleared here to make sure
-    // the feedback loop for sending upcoming keyboard events can be resumed
-    // correctly.
+    // Something must be wrong. Clear the |key_queue_| and
+    // |suppress_next_char_events_| so that we can resume from the error.
     key_queue_.clear();
-    pending_key_events_ = 0;
     suppress_next_char_events_ = false;
   } else {
-    // Track if |this| is destroyed or not.
-    bool is_dead = false;
-    death_flag_ = &is_dead;
-
     NativeWebKeyboardEvent front_item = key_queue_.front();
     key_queue_.pop_front();
 
-    bool processed_by_browser = false;
     if (!processed) {
-      processed_by_browser = UnhandledKeyboardEvent(front_item);
+      UnhandledKeyboardEvent(front_item);
 
       // WARNING: This RenderWidgetHost can be deallocated at this point
       // (i.e.  in the case of Ctrl+W, where the call to
       // UnhandledKeyboardEvent destroys this RenderWidgetHost).
     }
-
-    // This RenderWidgetHost was already deallocated, we can't do anything
-    // from now on, including resetting |death_flag_|. So just return.
-    if (is_dead)
-      return;
-
-    // Reset |death_flag_| to NULL, otherwise it'll point to an invalid memory
-    // address after returning from this method.
-    death_flag_ = NULL;
-
-    // Suppress the following Char events if the RawKeyDown event was handled
-    // by the browser rather than the renderer.
-    if (front_item.type == WebKeyboardEvent::RawKeyDown)
-      suppress_next_char_events_ = processed_by_browser;
-
-    // If more than one key events in |key_queue_| were already sent to the
-    // renderer but haven't got ACK messages yet, we must wait for ACK
-    // messages of these key events before sending more key events to the
-    // renderer.
-    if (pending_key_events_ && key_queue_.size() == pending_key_events_) {
-      size_t i = 0;
-      if (suppress_next_char_events_) {
-        // Suppress the sequence of pending Char events if preceding
-        // RawKeyDown event was handled by the browser.
-        while (pending_key_events_ &&
-               key_queue_[0].type == WebKeyboardEvent::Char) {
-          --pending_key_events_;
-          key_queue_.pop_front();
-        }
-      } else {
-        // Otherwise, send these pending Char events to the renderer.
-        // Note: we can't remove them from |key_queue_|, as we still need to
-        // wait for their ACK messages from the renderer.
-        while (pending_key_events_ &&
-               key_queue_[i].type == WebKeyboardEvent::Char) {
-          --pending_key_events_;
-          ForwardInputEvent(key_queue_[i++], sizeof(WebKeyboardEvent));
-        }
-      }
-
-      // Reset |suppress_next_char_events_| if there is still one or more
-      // pending KeyUp or RawKeyDown events in the queue.
-      // We can't reset it if there is no pending event anymore, because we
-      // don't know if the following event is a Char event or not.
-      if (pending_key_events_)
-        suppress_next_char_events_ = false;
-
-      // We can safely send following pending KeyUp and RawKeyDown events to
-      // the renderer, until we meet another Char event.
-      while (pending_key_events_ &&
-             key_queue_[i].type != WebKeyboardEvent::Char) {
-        --pending_key_events_;
-        ForwardInputEvent(key_queue_[i++], sizeof(WebKeyboardEvent));
-      }
-    }
-  }
-
-  // Send the pending PaintRect_ACK message after sending all pending key
-  // events or after a certain duration, so that the renderer can process
-  // the updates caused by the key events in batch.
-  if (paint_ack_postponed_ && (pending_key_events_ == 0 ||
-      (TimeTicks::Now() - paint_ack_postponed_time_).InMilliseconds() >
-      kPaintACKMsgMaxPostponedDurationMS)) {
-    paint_ack_postponed_ = false;
-    Send(new ViewMsg_PaintRect_ACK(routing_id_));
   }
 }

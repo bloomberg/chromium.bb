@@ -54,9 +54,6 @@ class BrowserWindowGtk : public BrowserWindow,
   explicit BrowserWindowGtk(Browser* browser);
   virtual ~BrowserWindowGtk();
 
-  // Process a keyboard event which was not handled by webkit.
-  bool HandleKeyboardEvent(GdkEventKey* event);
-
   // Overridden from BrowserWindow
   virtual void Show();
   virtual void SetBounds(const gfx::Rect& bounds);
@@ -121,7 +118,9 @@ class BrowserWindowGtk : public BrowserWindow,
                             bool show_history);
   virtual void ShowPageMenu();
   virtual void ShowAppMenu();
-  virtual int GetCommandId(const NativeWebKeyboardEvent& event);
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
 
   // Overridden from NotificationObserver:
@@ -279,19 +278,26 @@ class BrowserWindowGtk : public BrowserWindow,
   // border during an expose.
   static void DrawContentShadow(cairo_t* cr, BrowserWindowGtk* window);
 
+  // Callback for accelerator activation. |user_data| stores the command id
+  // of the matched accelerator.
   static gboolean OnGtkAccelerator(GtkAccelGroup* accel_group,
                                    GObject* acceleratable,
                                    guint keyval,
                                    GdkModifierType modifier,
-                                   BrowserWindowGtk* browser_window);
+                                   void* user_data);
+
+  // Key press event callback.
+  static gboolean OnKeyPress(GtkWidget* widget,
+                             GdkEventKey* event,
+                             BrowserWindowGtk* window);
 
   // Mouse move and mouse button press callbacks.
   static gboolean OnMouseMoveEvent(GtkWidget* widget,
                                    GdkEventMotion* event,
-                                   BrowserWindowGtk* browser);
+                                   BrowserWindowGtk* window);
   static gboolean OnButtonPressEvent(GtkWidget* widget,
                                      GdkEventButton* event,
-                                     BrowserWindowGtk* browser);
+                                     BrowserWindowGtk* window);
 
   // Maps and Unmaps the xid of |widget| to |window|.
   static void MainWindowMapped(GtkWidget* widget, BrowserWindowGtk* window);
@@ -300,13 +306,14 @@ class BrowserWindowGtk : public BrowserWindow,
   // Tracks focus state of browser.
   static gboolean OnFocusIn(GtkWidget* widget,
                             GdkEventFocus* event,
-                            BrowserWindowGtk* browser);
+                            BrowserWindowGtk* window);
   static gboolean OnFocusOut(GtkWidget* widget,
                              GdkEventFocus* event,
-                             BrowserWindowGtk* browser);
+                             BrowserWindowGtk* window);
 
   // A small shim for browser_->ExecuteCommand.
-  void ExecuteBrowserCommand(int id);
+  // Returns true if the command was executed.
+  bool ExecuteBrowserCommand(int id);
 
   // Callback for the loading animation(s) associated with this window.
   void LoadingAnimationCallback();

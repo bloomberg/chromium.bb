@@ -519,20 +519,24 @@ void ExtensionHost::GotFocus() {
 void ExtensionHost::TakeFocus(bool reverse) {
 }
 
-bool ExtensionHost::IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
+bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                           bool* is_keyboard_shortcut) {
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP &&
+      event.windowsKeyCode == base::VKEY_ESCAPE) {
+    DCHECK(is_keyboard_shortcut != NULL);
+    *is_keyboard_shortcut = true;
+  }
   return false;
 }
 
-bool ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
   if (extension_host_type_ == ViewType::EXTENSION_POPUP &&
       event.windowsKeyCode == base::VKEY_ESCAPE) {
     NotificationService::current()->Notify(
         NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
         Source<Profile>(profile_),
         Details<ExtensionHost>(this));
-    return true;
   }
-  return false;
 }
 
 void ExtensionHost::HandleMouseEvent() {

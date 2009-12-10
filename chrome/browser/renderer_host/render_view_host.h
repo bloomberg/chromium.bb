@@ -443,8 +443,9 @@ class RenderViewHost : public RenderWidgetHost,
 
  protected:
   // RenderWidgetHost protected overrides.
-  virtual bool ShouldSendToRenderer(const NativeWebKeyboardEvent& event);
-  virtual bool UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void OnUserGesture();
   virtual void NotifyRendererUnresponsive();
   virtual void NotifyRendererResponsive();

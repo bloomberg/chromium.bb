@@ -4,6 +4,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/gfx/rect.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
@@ -13,6 +14,7 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
+#import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"
@@ -368,6 +370,34 @@ void BrowserWindowCocoa::ShowAppMenu() {
   // No-op. Mac doesn't support showing the menus via alt keys.
 }
 
+bool BrowserWindowCocoa::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
+  if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char)
+    return false;
+
+  DCHECK(event.os_event != NULL);
+  int id = GetCommandId(event);
+  if (id == -1)
+    return false;
+
+  if (browser_->IsReservedCommand(id))
+    return HandleKeyboardEventInternal(event.os_event);
+
+  DCHECK(is_keyboard_shortcut != NULL);
+  *is_keyboard_shortcut = true;
+
+  return false;
+}
+
+void BrowserWindowCocoa::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char)
+    return;
+
+  DCHECK(event.os_event != NULL);
+  HandleKeyboardEventInternal(event.os_event);
+}
+
 @interface MenuWalker : NSObject
 + (NSMenuItem*)itemForKeyEquivalent:(NSEvent*)key
                                menu:(NSMenu*)menu;
@@ -409,9 +439,13 @@ int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
 
   // "Close window" doesn't use the |commandDispatch:| mechanism. Menu items
   // that do not correspond to IDC_ constants need no special treatment however,
-  // as they can't be blacklisted in |Browser::IsReservedAccelerator()| anyhow.
+  // as they can't be blacklisted in |Browser::IsReservedCommand()| anyhow.
   if (item && [item action] == @selector(performClose:))
     return IDC_CLOSE_WINDOW;
+
+  // "Exit" doesn't use the |commandDispatch:| mechanism either.
+  if (item && [item action] == @selector(terminate:))
+    return IDC_EXIT;
 
   // Look in secondary keyboard shortcuts.
   NSUInteger modifiers = [event.os_event modifierFlags];
@@ -432,6 +466,31 @@ int BrowserWindowCocoa::GetCommandId(const NativeWebKeyboardEvent& event) {
     return cmdNum;
 
   return -1;
+}
+
+bool BrowserWindowCocoa::HandleKeyboardEventInternal(NSEvent* event) {
+  ChromeEventProcessingWindow* event_window =
+      static_cast<ChromeEventProcessingWindow*>(window_);
+  DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
+
+  // Do not fire shortcuts on key up.
+  if ([event type] == NSKeyDown) {
+    // Send the event to the menu before sending it to the browser/window
+    // shortcut handling, so that if a user configures cmd-left to mean
+    // "previous tab", it takes precedence over the built-in "history back"
+    // binding. Other than that, the |redispatchEvent| call would take care of
+    // invoking the original menu item shortcut as well.
+    if ([[NSApp mainMenu] performKeyEquivalent:event])
+      return true;
+
+    if ([event_window handleExtraBrowserKeyboardShortcut:event])
+      return true;
+
+    if ([event_window handleExtraWindowKeyboardShortcut:event])
+      return true;
+  }
+
+  return [event_window redispatchEvent:event];
 }
 
 void BrowserWindowCocoa::ShowCreateShortcutsDialog(TabContents* tab_contents) {

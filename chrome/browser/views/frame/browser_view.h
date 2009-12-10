@@ -279,7 +279,9 @@ class BrowserView : public BrowserWindow,
                             bool show_history);
   virtual void ShowAppMenu();
   virtual void ShowPageMenu();
-  virtual int GetCommandId(const NativeWebKeyboardEvent& event);
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
 #if defined(TOOLKIT_VIEWS)
   virtual void ToggleCompactNavigationBar();

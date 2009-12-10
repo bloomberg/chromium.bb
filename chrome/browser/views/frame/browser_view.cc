@@ -1225,7 +1225,25 @@ void BrowserView::ShowAppMenu() {
   toolbar_->app_menu()->Activate();
 }
 
-int BrowserView::GetCommandId(const NativeWebKeyboardEvent& event) {
+bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                         bool* is_keyboard_shortcut) {
+  if (event.type != WebKit::WebInputEvent::RawKeyDown)
+    return false;
+
+#if defined(OS_WIN)
+  // As Alt+F4 is the close-app keyboard shortcut, it needs processing
+  // immediately.
+  if (event.windowsKeyCode == base::VKEY_F4 &&
+      event.modifiers == NativeWebKeyboardEvent::AltKey) {
+    DefWindowProc(event.os_event.hwnd, event.os_event.message,
+                  event.os_event.wParam, event.os_event.lParam);
+    return true;
+  }
+#endif
+
+  views::FocusManager* focus_manager = GetFocusManager();
+  DCHECK(focus_manager);
+
   views::Accelerator accelerator(
       static_cast<base::KeyboardCode>(event.windowsKeyCode),
       (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
@@ -1235,12 +1253,68 @@ int BrowserView::GetCommandId(const NativeWebKeyboardEvent& event) {
       (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
           NativeWebKeyboardEvent::AltKey);
 
-  std::map<views::Accelerator, int>::const_iterator iter =
-      accelerator_table_.find(accelerator);
-  if (iter == accelerator_table_.end())
-    return -1;
+  // We first find out the browser command associated to the |event|.
+  // Then if the command is a reserved one, and should be processed
+  // immediately according to the |event|, the command will be executed
+  // immediately. Otherwise we just set |*is_keyboard_shortcut| properly and
+  // return false.
 
-  return iter->second;
+  // This piece of code is based on the fact that accelerators registered
+  // into the |focus_manager| may only trigger a browser command execution.
+  //
+  // Here we need to retrieve the command id (if any) associated to the
+  // keyboard event. Instead of looking up the command id in the
+  // |accelerator_table_| by ourselves, we block the command execution of
+  // the |browser_| object then send the keyboard event to the
+  // |focus_manager| as if we are activating an accelerator key.
+  // Then we can retrieve the command id from the |browser_| object.
+  browser_->SetBlockCommandExecution(true);
+  focus_manager->ProcessAccelerator(accelerator);
+  int id = browser_->GetLastBlockedCommand(NULL);
+  browser_->SetBlockCommandExecution(false);
+
+  if (id == -1)
+    return false;
+
+  if (browser_->IsReservedCommand(id)) {
+    // TODO(suzhe): For Linux, should we send things like Ctrl+w, Ctrl+n
+    // to the renderer first, just like what
+    // BrowserWindowGtk::HandleKeyboardEvent() does?
+    // Executing the command may cause |this| object to be destroyed.
+    browser_->ExecuteCommand(id);
+    return true;
+  }
+
+  DCHECK(is_keyboard_shortcut != NULL);
+  *is_keyboard_shortcut = true;
+
+  return false;
+}
+
+void BrowserView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  if (event.type == WebKit::WebInputEvent::RawKeyDown) {
+    views::FocusManager* focus_manager = GetFocusManager();
+    DCHECK(focus_manager);
+
+    views::Accelerator accelerator(
+        static_cast<base::KeyboardCode>(event.windowsKeyCode),
+        (event.modifiers & NativeWebKeyboardEvent::ShiftKey) ==
+            NativeWebKeyboardEvent::ShiftKey,
+        (event.modifiers & NativeWebKeyboardEvent::ControlKey) ==
+            NativeWebKeyboardEvent::ControlKey,
+        (event.modifiers & NativeWebKeyboardEvent::AltKey) ==
+            NativeWebKeyboardEvent::AltKey);
+
+    if (focus_manager->ProcessAccelerator(accelerator))
+      return;
+  }
+
+#if defined(OS_WIN)
+  // Any unhandled keyboard/character messages should be defproced.
+  // This allows stuff like F10, etc to work correctly.
+  DefWindowProc(event.os_event.hwnd, event.os_event.message,
+                  event.os_event.wParam, event.os_event.lParam);
+#endif
 }
 
 #if defined(TOOLKIT_VIEWS)

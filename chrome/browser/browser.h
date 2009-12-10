@@ -468,6 +468,22 @@ class Browser : public TabStripModelDelegate,
   // Calls ExecuteCommandWithDisposition with the given disposition.
   void ExecuteCommandWithDisposition(int id, WindowOpenDisposition);
 
+  // Returns whether the |id| is a reserved command, whose keyboard shortcuts
+  // should not be sent to the renderer.
+  bool IsReservedCommand(int id);
+
+  // Sets if command execution shall be blocked. If |block| is true then
+  // following calls to ExecuteCommand() or ExecuteCommandWithDisposition()
+  // method will not execute the command, and the last blocked command will be
+  // recorded for retrieval.
+  void SetBlockCommandExecution(bool block);
+
+  // Gets the last blocked command after calling SetBlockCommandExecution(true).
+  // Returns the command id or -1 if there is no command blocked. The
+  // disposition type of the command will be stored in |*disposition| if it's
+  // not null.
+  int GetLastBlockedCommand(WindowOpenDisposition* disposition);
+
   // Interface implementations ////////////////////////////////////////////////
 
   // Overridden from PageNavigator
@@ -570,7 +586,9 @@ class Browser : public TabStripModelDelegate,
                             const GURL& url,
                             const NavigationEntry::SSLStatus& ssl,
                             bool show_history);
-  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                        bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
   virtual bool ShouldAddNavigationsToHistory() const;
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
@@ -823,6 +841,15 @@ class Browser : public TabStripModelDelegate,
 
   // Keep track of the encoding auto detect pref.
   BooleanPrefMember encoding_auto_detect_;
+
+  // Indicates if command execution is blocked.
+  bool block_command_execution_;
+
+  // Stores the last blocked command id when |block_command_execution_| is true.
+  int last_blocked_command_id_;
+
+  // Stores the disposition type of the last blocked command.
+  WindowOpenDisposition last_blocked_command_disposition_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

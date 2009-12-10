@@ -151,7 +151,10 @@ IPC_BEGIN_MESSAGES(View)
   // This signals the render view that it can send another ScrollRect message.
   IPC_MESSAGE_ROUTED0(ViewMsg_ScrollRect_ACK)
 
-  // Message payload is a blob that should be cast to WebInputEvent
+  // Message payload includes:
+  // 1. A blob that should be cast to WebInputEvent
+  // 2. An optional boolean value indicating if a RawKeyDown event is associated
+  //    to a keyboard shortcut of the browser.
   IPC_MESSAGE_ROUTED0(ViewMsg_HandleInputEvent)
 
   // This message notifies the renderer that the next key event is bound to one

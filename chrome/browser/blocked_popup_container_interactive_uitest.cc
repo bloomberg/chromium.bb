@@ -283,7 +283,7 @@ TEST_F(BrowserInteractiveTest, ReserveKeyboardAccelerators) {
 #if !defined(OS_MACOSX)  // see BrowserWindowCocoa::GetCommandId
   ASSERT_TRUE(browser->ActivateTab(1));
   ASSERT_TRUE(window->SimulateOSKeyPress(
-      base::VKEY_W, views::Event::EF_CONTROL_DOWN));
+      base::VKEY_F4, views::Event::EF_CONTROL_DOWN));
   ASSERT_TRUE(browser->WaitForTabCountToBecome(1, action_max_timeout_ms()));
 #endif
 }

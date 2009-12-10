@@ -267,9 +267,17 @@ class BrowserWindow {
   // Shows the app menu (for accessibility).
   virtual void ShowAppMenu() = 0;
 
-  // Returns the id of the keyboard accelerator associated with the given
-  // keyboard event if one exists, otherwise -1.
-  virtual int GetCommandId(const NativeWebKeyboardEvent& event) = 0;
+  // Allows the BrowserWindow object to handle the specified keyboard event
+  // before sending it to the renderer.
+  // Returns true if the |event| was handled. Otherwise, if the |event| would
+  // be handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
+  // |*is_keyboard_shortcut| should be set to true.
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut) = 0;
+
+  // Allows the BrowserWindow object to handle the specified keyboard event,
+  // if the renderer did not process it.
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event) = 0;
 
   // Shows the create web app shortcut dialog box.
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents) = 0;

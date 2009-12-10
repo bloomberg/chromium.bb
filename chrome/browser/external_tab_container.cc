@@ -459,12 +459,15 @@ bool ExternalTabContainer::ExecuteContextMenuCommand(int command) {
   return true;
 }
 
-bool ExternalTabContainer::HandleKeyboardEvent(
+bool ExternalTabContainer::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
+  return false;
+}
+
+void ExternalTabContainer::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
-  return ProcessUnhandledKeyStroke(event.os_event.hwnd,
-                                   event.os_event.message,
-                                   event.os_event.wParam,
-                                   event.os_event.lParam);
+  ProcessUnhandledKeyStroke(event.os_event.hwnd, event.os_event.message,
+                            event.os_event.wParam, event.os_event.lParam);
 }
 
 void ExternalTabContainer::ShowHtmlDialog(HtmlDialogUIDelegate* delegate,
@@ -716,4 +719,3 @@ void ExternalTabContainer::InitializeAutomationRequestContext(
   DCHECK(request_context_.get() != NULL);
   tab_contents_->set_request_context(request_context_.get());
 }
-

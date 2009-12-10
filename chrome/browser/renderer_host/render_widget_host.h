@@ -345,8 +345,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
 
  protected:
   // Internal implementation of the public Forward*Event() methods.
-  void ForwardInputEvent(
-      const WebKit::WebInputEvent& input_event, int event_size);
+  void ForwardInputEvent(const WebKit::WebInputEvent& input_event,
+                         int event_size, bool is_keyboard_shortcut);
 
   // Called when we receive a notification indicating that the renderer
   // process has gone. This will reset our state so that our state will be
@@ -357,18 +357,20 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // This is used for various IPC messages, including plugins.
   gfx::NativeViewId GetNativeViewId();
 
-  // Called when an InputEvent is received to check if the event should be sent
-  // to the renderer or not.
-  virtual bool ShouldSendToRenderer(const NativeWebKeyboardEvent& event) {
-    return true;
-  }
-
-  // Called when we an InputEvent was not processed by the renderer. This is
-  // overridden by RenderView to send upwards to its delegate.
-  // Returns true if the event was handled by its delegate.
-  virtual bool UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  // Called to handled a keyboard event before sending it to the renderer.
+  // This is overridden by RenderView to send upwards to its delegate.
+  // Returns true if the event was handled, and then the keyboard event will
+  // not be sent to the renderer anymore. Otherwise, if the |event| would
+  // be handled in HandleKeyboardEvent() method as a normal keyboard shortcut,
+  // |*is_keyboard_shortcut| should be set to true.
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut) {
     return false;
   }
+
+  // Called when a keyboard event was not processed by the renderer. This is
+  // overridden by RenderView to send upwards to its delegate.
+  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   // Notification that the user has made some kind of input that could
   // perform an action. The render view host overrides this to forward the
@@ -541,7 +543,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // A queue of keyboard events. We can't trust data from the renderer so we
   // stuff key events into a queue and pop them out on ACK, feeding our copy
   // back to whatever unhandled handler instead of the returned version.
-  // See the description of |pending_key_events_| below for more details.
   KeyQueue key_queue_;
 
   // Set when we update the text direction of the selected input element.
@@ -552,19 +553,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // This flag also ignores succeeding update requests until we call
   // NotifyTextDirection().
   bool text_direction_canceled_;
-
-  // How many key events in |key_queue_| are not sent to the renderer yet,
-  // counted from the back of |key_queue_|.
-  // In order to suppress a Char event when necessary (see the description of
-  // |suppress_next_char_events_| below), we can't just send it to the
-  // renderer as soon as we get it. Instead, we need wait for the result of
-  // preceding RawKeyDown event back from the renderer, and then decide how to
-  // process the pending Char events according to the result.
-  // So if we get one or more Char events before receiving the result of
-  // preceding RawKeyDown event, we need keep them in |key_queue_|. And in
-  // order to keep the order the key events, all following key events must be
-  // pending until the pending Char events got processed.
-  size_t pending_key_events_;
 
   // Indicates if the next sequence of Char events should be suppressed or not.
   // System may translate a RawKeyDown event into zero or more Char events,
@@ -580,23 +568,6 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
-
-  // True if the PaintRect_ACK message for the last PaintRect message is still
-  // not sent yet. This is used for optimizing the painting overhead when there
-  // are many pending key events in the queue.
-  bool paint_ack_postponed_;
-
-  // The time when a PaintRect_ACK message is postponed, so that we can send the
-  // message after a certain duration.
-  base::TimeTicks paint_ack_postponed_time_;
-
-  // During the call to some methods, eg. OnMsgInputEventAck, this
-  // RenderWidgetHost object may be destroyed before executing some code that
-  // still want to access this object. To avoid this situation, |death_flag_|
-  // shall be pointed to a local variable in the method, and then |*death_flag_|
-  // will be set to true when destroying this RenderWidgetHost object, then the
-  // method shall exit immediately when |*death_flag_| becomes true.
-  bool* death_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };

@@ -17,6 +17,7 @@
 #include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/gfx/rect.h"
+#include "base/keyboard_codes.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -204,10 +205,6 @@ const struct AcceleratorMapping {
   { GDK_Page_Up, IDC_MOVE_TAB_PREVIOUS,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_Page_Up, IDC_SELECT_PREVIOUS_TAB, GDK_CONTROL_MASK },
-  { GDK_t, IDC_NEW_TAB, GDK_CONTROL_MASK },
-  { GDK_n, IDC_NEW_WINDOW, GDK_CONTROL_MASK },
-  { GDK_n, IDC_NEW_INCOGNITO_WINDOW,
-    GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_w, IDC_CLOSE_TAB, GDK_CONTROL_MASK },
   { GDK_t, IDC_RESTORE_TAB,
     GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
@@ -317,8 +314,6 @@ const struct AcceleratorMapping {
 
 #if defined(OS_CHROMEOS)
 
-namespace {
-
 // This draws the spacer below the tab strip when we're using the compact
 // location bar (i.e. no location bar). This basically duplicates the painting
 // that the tab strip would have done for this region so that it blends
@@ -352,8 +347,6 @@ gboolean OnCompactNavSpacerExpose(GtkWidget* widget,
   return FALSE;
 }
 
-}  // namespace
-
 // Callback from GTK when the user clicks the main menu button.
 static void OnMainMenuButtonClicked(GtkWidget* widget,
                                     BrowserWindowGtk* browser) {
@@ -362,27 +355,12 @@ static void OnMainMenuButtonClicked(GtkWidget* widget,
 
 #endif  // OS_CHROMEOS
 
-int GetCommandId(guint accel_key, GdkModifierType modifier) {
-  // Bug 9806: If capslock is on, we will get a capital letter as accel_key.
-  accel_key = gdk_keyval_to_lower(accel_key);
+// Get the command ids of the key combinations that are not valid gtk
+// accelerators.
+int GetCustomCommandId(GdkEventKey* event) {
   // Filter modifier to only include accelerator modifiers.
-  modifier = static_cast<GdkModifierType>(
-      modifier & gtk_accelerator_get_default_mod_mask());
-  for (size_t i = 0; i < arraysize(kAcceleratorMap); ++i) {
-    if (kAcceleratorMap[i].keyval == accel_key &&
-        kAcceleratorMap[i].modifier_type == modifier)
-      return kAcceleratorMap[i].command_id;
-  }
-
-  return -1;
-}
-
-int GetCustomCommandId(guint keyval, GdkModifierType modifier) {
-  // Filter modifier to only include accelerator modifiers.
-  modifier = static_cast<GdkModifierType>(
-      modifier & gtk_accelerator_get_default_mod_mask());
-
-  switch (keyval) {
+  guint modifier = event->state & gtk_accelerator_get_default_mod_mask();
+  switch (event->keyval) {
     // Gtk doesn't allow GDK_Tab or GDK_ISO_Left_Tab to be an accelerator (see
     // gtk_accelerator_valid), so we need to handle these accelerators
     // manually.
@@ -405,84 +383,32 @@ int GetCustomCommandId(guint keyval, GdkModifierType modifier) {
   return -1;
 }
 
-// An event handler for key press events.  We need to special case key
-// combinations that are not valid gtk accelerators.  This function returns
-// TRUE if it can handle the key press.
-gboolean HandleCustomAccelerator(guint keyval, GdkModifierType modifier,
-                                 Browser* browser) {
-  int command = GetCustomCommandId(keyval, modifier);
-  if (command == -1)
-    return FALSE;
-
-  browser->ExecuteCommand(command);
-  return TRUE;
-}
-
-// Handle accelerators that we don't want the native widget to be able to
-// override.
-gboolean PreHandleAccelerator(guint keyval, GdkModifierType modifier,
-                              Browser* browser) {
+// Get the command ids of the accelerators that we don't want the native widget
+// to be able to override.
+int GetPreHandleCommandId(GdkEventKey* event) {
   // Filter modifier to only include accelerator modifiers.
-  modifier = static_cast<GdkModifierType>(
-      modifier & gtk_accelerator_get_default_mod_mask());
-  switch (keyval) {
+  guint modifier = event->state & gtk_accelerator_get_default_mod_mask();
+  switch (event->keyval) {
     case GDK_Page_Down:
       if (GDK_CONTROL_MASK == modifier) {
-        browser->ExecuteCommand(IDC_SELECT_NEXT_TAB);
-        return TRUE;
+        return IDC_SELECT_NEXT_TAB;
       } else if ((GDK_CONTROL_MASK | GDK_SHIFT_MASK) == modifier) {
-        browser->ExecuteCommand(IDC_MOVE_TAB_NEXT);
-        return TRUE;
+        return IDC_MOVE_TAB_NEXT;
       }
       break;
 
     case GDK_Page_Up:
       if (GDK_CONTROL_MASK == modifier) {
-        browser->ExecuteCommand(IDC_SELECT_PREVIOUS_TAB);
-        return TRUE;
+        return IDC_SELECT_PREVIOUS_TAB;
       } else if ((GDK_CONTROL_MASK | GDK_SHIFT_MASK) == modifier) {
-        browser->ExecuteCommand(IDC_MOVE_TAB_PREVIOUS);
-        return TRUE;
+        return IDC_MOVE_TAB_PREVIOUS;
       }
       break;
 
     default:
       break;
   }
-  return FALSE;
-}
-
-// Let the focused widget have first crack at the key event so we don't
-// override their accelerators.
-gboolean OnKeyPress(GtkWindow* window, GdkEventKey* event, Browser* browser) {
-  // If a widget besides the native view is focused, we have to try to handle
-  // the custom accelerators before letting it handle them.
-  TabContents* current_tab_contents =
-      browser->tabstrip_model()->GetSelectedTabContents();
-  // The current tab might not have a render view if it crashed.
-  if (!current_tab_contents || !current_tab_contents->GetContentNativeView() ||
-      !gtk_widget_is_focus(current_tab_contents->GetContentNativeView())) {
-    if (HandleCustomAccelerator(event->keyval,
-        GdkModifierType(event->state), browser) ||
-        PreHandleAccelerator(event->keyval,
-        GdkModifierType(event->state), browser)) {
-      return TRUE;
-    }
-
-    // Propagate the key event to child widget first, so we don't override their
-    // accelerators.
-    if (!gtk_window_propagate_key_event(window, event)) {
-      if (!gtk_window_activate_key(window, event)) {
-        gtk_bindings_activate_event(GTK_OBJECT(window), event);
-      }
-    }
-  } else {
-    bool rv = gtk_window_propagate_key_event(window, event);
-    DCHECK(rv);
-  }
-
-  // Prevents the default handler from handling this event.
-  return TRUE;
+  return -1;
 }
 
 GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
@@ -528,6 +454,31 @@ void SetWindowSize(GtkWindow* window, int width, int height) {
   }
 }
 
+GQuark GetBrowserWindowQuarkKey() {
+  static GQuark quark = g_quark_from_static_string(kBrowserWindowKey);
+  return quark;
+}
+
+// Checks if a reserved accelerator key should be processed immediately, rather
+// than being sent to the renderer first.
+bool ShouldExecuteReservedCommandImmediately(
+    const NativeWebKeyboardEvent& event, int command_id) {
+  // IDC_EXIT is now only bound to Ctrl+Shift+q, so we should always execute it
+  // immediately.
+  if (command_id == IDC_EXIT)
+    return true;
+
+  // Keys like Ctrl+w, Ctrl+n, etc. should always be sent to the renderer first,
+  // otherwise some web apps or the Emacs key bindings may not work correctly.
+  int vkey = event.windowsKeyCode;
+  if ((vkey >= base::VKEY_0 && vkey <= base::VKEY_9) ||
+      (vkey >= base::VKEY_A && vkey <= base::VKEY_Z))
+    return false;
+
+  // All other reserved accelerators should be processed immediately.
+  return true;
+}
+
 }  // namespace
 
 std::map<XID, GtkWindow*> BrowserWindowGtk::xid_map_;
@@ -557,7 +508,7 @@ BrowserWindowGtk::BrowserWindowGtk(Browser* browser)
       browser_->profile()->GetPrefs(), this);
 
   window_ = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-  g_object_set_data(G_OBJECT(window_), kBrowserWindowKey, this);
+  g_object_set_qdata(G_OBJECT(window_), GetBrowserWindowQuarkKey(), this);
   gtk_widget_add_events(GTK_WIDGET(window_), GDK_BUTTON_PRESS_MASK |
                                              GDK_POINTER_MOTION_MASK);
 
@@ -599,21 +550,6 @@ BrowserWindowGtk::~BrowserWindowGtk() {
     gdk_cursor_unref(frame_cursor_);
     frame_cursor_ = NULL;
   }
-}
-
-bool BrowserWindowGtk::HandleKeyboardEvent(GdkEventKey* event) {
-  // Handles a key event in following sequence:
-  // 1. Our special key accelerators, such as ctrl-tab, etc.
-  // 2. Gtk mnemonics and accelerators.
-  // This sequence matches the default key press handler of GtkWindow.
-  //
-  // It's not necessary to care about the keyboard layout, as
-  // gtk_window_activate_key() takes care of it automatically.
-  if (!HandleCustomAccelerator(event->keyval, GdkModifierType(event->state),
-                               browser_.get())) {
-    return gtk_window_activate_key(window_, event);
-  }
-  return true;
 }
 
 gboolean BrowserWindowGtk::OnCustomFrameExpose(GtkWidget* widget,
@@ -1209,16 +1145,90 @@ void BrowserWindowGtk::ShowAppMenu() {
   // BrowserToolbarGtk.
 }
 
-int BrowserWindowGtk::GetCommandId(const NativeWebKeyboardEvent& event) {
-  if (!event.os_event)
-    return -1;
+bool BrowserWindowGtk::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
+  GdkEventKey* os_event = event.os_event;
 
-  guint keyval = event.os_event->keyval;
-  GdkModifierType modifier = GdkModifierType(event.os_event->state);
-  int command = ::GetCommandId(keyval, modifier);
-  if (command == -1)
-    command = GetCustomCommandId(keyval, modifier);
-  return command;
+  if (!os_event || event.type != WebKit::WebInputEvent::RawKeyDown)
+    return false;
+
+  // We first find out the browser command associated to the |event|.
+  // Then if the command is a reserved one, and should be processed immediately
+  // according to the |event|, the command will be executed immediately.
+  // Otherwise we just set |*is_keyboard_shortcut| properly and return false.
+
+  // First check if it's a custom accelerator.
+  int id = GetCustomCommandId(os_event);
+
+  // Then check if it's a predefined accelerator bound to the window.
+  if (id == -1) {
+    // This piece of code is based on the fact that calling
+    // gtk_window_activate_key() method against |window_| may only trigger a
+    // browser command execution, by matching either a global accelerator
+    // defined in above |kAcceleratorMap| or the accelerator key of a menu
+    // item defined in chrome/browser/gtk/standard_menus.cc.
+    //
+    // Here we need to retrieve the command id (if any) associated to the
+    // keyboard event. Instead of looking up the command id in above
+    // |kAcceleratorMap| table by ourselves, we block the command execution of
+    // the |browser_| object then send the keyboard event to the |window_| by
+    // calling gtk_window_activate_key() method, as if we are activating an
+    // accelerator key. Then we can retrieve the command id from the
+    // |browser_| object.
+    //
+    // Pros of this approach:
+    // 1. We can handle accelerators defined not only in above
+    //    |kAcceleratorMap| table, but also those in standard_menus.cc.
+    // 2. We don't need to care about keyboard layout problem, as
+    //    gtk_window_activate_key() method handles it for us.
+    //
+    // Cons:
+    // 1. The logic is a little complicated.
+    // 2. We should be careful not to introduce any accelerators that trigger
+    //    customized code instead of browser commands.
+    browser_->SetBlockCommandExecution(true);
+    gtk_window_activate_key(window_, os_event);
+    // We don't need to care about the WindowOpenDisposition value,
+    // because all commands executed in this path use the default value.
+    id = browser_->GetLastBlockedCommand(NULL);
+    browser_->SetBlockCommandExecution(false);
+  }
+
+  if (id == -1)
+    return false;
+
+  if (browser_->IsReservedCommand(id) &&
+      ShouldExecuteReservedCommandImmediately(event, id)) {
+    // Executing the command may cause |this| object to be destroyed.
+    return ExecuteBrowserCommand(id);
+  }
+
+  // The |event| is a keyboard shortcut.
+  DCHECK(is_keyboard_shortcut != NULL);
+  *is_keyboard_shortcut = true;
+
+  return false;
+}
+
+void BrowserWindowGtk::HandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  GdkEventKey* os_event = event.os_event;
+
+  if (!os_event || event.type != WebKit::WebInputEvent::RawKeyDown)
+    return;
+
+  // Handles a key event in following sequence:
+  // 1. Our special key accelerators, such as ctrl-tab, etc.
+  // 2. Gtk accelerators.
+  // This sequence matches the default key press handler of GtkWindow.
+  //
+  // It's not necessary to care about the keyboard layout, as
+  // gtk_window_activate_key() takes care of it automatically.
+  int id = GetCustomCommandId(os_event);
+  if (id != -1)
+    ExecuteBrowserCommand(id);
+  else
+    gtk_window_activate_key(window_, os_event);
 }
 
 void BrowserWindowGtk::ShowCreateShortcutsDialog(TabContents* tab_contents) {
@@ -1544,7 +1554,7 @@ BrowserWindowGtk* BrowserWindowGtk::GetBrowserWindowForNativeWindow(
     gfx::NativeWindow window) {
   if (window) {
     return static_cast<BrowserWindowGtk*>(
-        g_object_get_data(G_OBJECT(window), kBrowserWindowKey));
+        g_object_get_qdata(G_OBJECT(window), GetBrowserWindowQuarkKey()));
   }
 
   return NULL;
@@ -1628,7 +1638,7 @@ void BrowserWindowGtk::ConnectHandlersToSignals() {
   g_signal_connect(window_, "unmap",
                      G_CALLBACK(MainWindowUnMapped), this);
   g_signal_connect(window_, "key-press-event",
-                   G_CALLBACK(OnKeyPress), browser_.get());
+                   G_CALLBACK(OnKeyPress), this);
   g_signal_connect(window_, "motion-notify-event",
                    G_CALLBACK(OnMouseMoveEvent), this);
   g_signal_connect(window_, "button-press-event",
@@ -1946,7 +1956,8 @@ void BrowserWindowGtk::ConnectAccelerators() {
         kAcceleratorMap[i].keyval,
         kAcceleratorMap[i].modifier_type,
         GtkAccelFlags(0),
-        g_cclosure_new(G_CALLBACK(OnGtkAccelerator), this, NULL));
+        g_cclosure_new(G_CALLBACK(OnGtkAccelerator),
+                       GINT_TO_POINTER(kAcceleratorMap[i].command_id), NULL));
   }
 }
 
@@ -1995,53 +2006,88 @@ gboolean BrowserWindowGtk::OnGtkAccelerator(GtkAccelGroup* accel_group,
                                             GObject* acceleratable,
                                             guint keyval,
                                             GdkModifierType modifier,
-                                            BrowserWindowGtk* browser_window) {
-  int command_id = ::GetCommandId(keyval, modifier);
-  DCHECK_NE(command_id, -1);
-  browser_window->ExecuteBrowserCommand(command_id);
+                                            void* user_data) {
+  int command_id = GPOINTER_TO_INT(user_data);
+  BrowserWindowGtk* browser_window =
+      GetBrowserWindowForNativeWindow(GTK_WINDOW(acceleratable));
+  DCHECK(browser_window != NULL);
+  return browser_window->ExecuteBrowserCommand(command_id);
+}
 
+// static
+// Let the focused widget have first crack at the key event so we don't
+// override their accelerators.
+gboolean BrowserWindowGtk::OnKeyPress(
+    GtkWidget* widget, GdkEventKey* event, BrowserWindowGtk* window) {
+  // If a widget besides the native view is focused, we have to try to handle
+  // the custom accelerators before letting it handle them.
+  TabContents* current_tab_contents =
+      window->browser()->tabstrip_model()->GetSelectedTabContents();
+  // The current tab might not have a render view if it crashed.
+  if (!current_tab_contents || !current_tab_contents->GetContentNativeView() ||
+      !gtk_widget_is_focus(current_tab_contents->GetContentNativeView())) {
+    int command_id = GetCustomCommandId(event);
+    if (command_id == -1)
+      command_id = GetPreHandleCommandId(event);
+
+    if (command_id != -1 && window->ExecuteBrowserCommand(command_id))
+      return TRUE;
+
+    // Propagate the key event to child widget first, so we don't override their
+    // accelerators.
+    if (!gtk_window_propagate_key_event(GTK_WINDOW(widget), event)) {
+      if (!gtk_window_activate_key(GTK_WINDOW(widget), event)) {
+        gtk_bindings_activate_event(GTK_OBJECT(widget), event);
+      }
+    }
+  } else {
+    bool rv = gtk_window_propagate_key_event(GTK_WINDOW(widget), event);
+    DCHECK(rv);
+  }
+
+  // Prevents the default handler from handling this event.
   return TRUE;
 }
 
 // static
 gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
-    GdkEventMotion* event, BrowserWindowGtk* browser) {
+    GdkEventMotion* event, BrowserWindowGtk* window) {
   // This method is used to update the mouse cursor when over the edge of the
   // custom frame.  If the custom frame is off or we're over some other widget,
   // do nothing.
-  if (!browser->UseCustomFrame() || event->window != widget->window) {
+  if (!window->UseCustomFrame() || event->window != widget->window) {
     // Reset the cursor.
-    if (browser->frame_cursor_) {
-      gdk_cursor_unref(browser->frame_cursor_);
-      browser->frame_cursor_ = NULL;
-      gdk_window_set_cursor(GTK_WIDGET(browser->window_)->window, NULL);
+    if (window->frame_cursor_) {
+      gdk_cursor_unref(window->frame_cursor_);
+      window->frame_cursor_ = NULL;
+      gdk_window_set_cursor(GTK_WIDGET(window->window_)->window, NULL);
     }
     return FALSE;
   }
 
   // Update the cursor if we're on the custom frame border.
   GdkWindowEdge edge;
-  bool has_hit_edge = browser->GetWindowEdge(static_cast<int>(event->x),
+  bool has_hit_edge = window->GetWindowEdge(static_cast<int>(event->x),
       static_cast<int>(event->y), &edge);
   GdkCursorType new_cursor = GDK_LAST_CURSOR;
   if (has_hit_edge)
     new_cursor = GdkWindowEdgeToGdkCursorType(edge);
 
   GdkCursorType last_cursor = GDK_LAST_CURSOR;
-  if (browser->frame_cursor_)
-    last_cursor = browser->frame_cursor_->type;
+  if (window->frame_cursor_)
+    last_cursor = window->frame_cursor_->type;
 
   if (last_cursor != new_cursor) {
-    if (browser->frame_cursor_) {
-      gdk_cursor_unref(browser->frame_cursor_);
-      browser->frame_cursor_ = NULL;
+    if (window->frame_cursor_) {
+      gdk_cursor_unref(window->frame_cursor_);
+      window->frame_cursor_ = NULL;
     }
     if (has_hit_edge) {
-      browser->frame_cursor_ = gtk_util::GetCursor(new_cursor);
-      gdk_window_set_cursor(GTK_WIDGET(browser->window_)->window,
-                            browser->frame_cursor_);
+      window->frame_cursor_ = gtk_util::GetCursor(new_cursor);
+      gdk_window_set_cursor(GTK_WIDGET(window->window_)->window,
+                            window->frame_cursor_);
     } else {
-      gdk_window_set_cursor(GTK_WIDGET(browser->window_)->window, NULL);
+      gdk_window_set_cursor(GTK_WIDGET(window->window_)->window, NULL);
     }
   }
   return FALSE;
@@ -2049,15 +2095,15 @@ gboolean BrowserWindowGtk::OnMouseMoveEvent(GtkWidget* widget,
 
 // static
 gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
-    GdkEventButton* event, BrowserWindowGtk* browser) {
+    GdkEventButton* event, BrowserWindowGtk* window) {
   // Handle back/forward.
   // TODO(jhawkins): Investigate the possibility of the button numbers being
   // different for other mice.
   if (event->button == 8) {
-    browser->browser_->GoBack(CURRENT_TAB);
+    window->browser_->GoBack(CURRENT_TAB);
     return TRUE;
   } else if (event->button == 9) {
-    browser->browser_->GoForward(CURRENT_TAB);
+    window->browser_->GoForward(CURRENT_TAB);
     return TRUE;
   }
 
@@ -2066,36 +2112,36 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
 
   // Make the button press coordinate relative to the browser window.
   int win_x, win_y;
-  gdk_window_get_origin(GTK_WIDGET(browser->window_)->window, &win_x, &win_y);
+  gdk_window_get_origin(GTK_WIDGET(window->window_)->window, &win_x, &win_y);
 
   GdkWindowEdge edge;
   gfx::Point point(static_cast<int>(event->x_root - win_x),
                    static_cast<int>(event->y_root - win_y));
-  bool has_hit_edge = browser->GetWindowEdge(point.x(), point.y(), &edge);
+  bool has_hit_edge = window->GetWindowEdge(point.x(), point.y(), &edge);
 
   // Ignore clicks that are in/below the browser toolbar.
-  GtkWidget* toolbar = browser->toolbar_->widget();
+  GtkWidget* toolbar = window->toolbar_->widget();
   if (!GTK_WIDGET_VISIBLE(toolbar)) {
     // If the toolbar is not showing, use the location of web contents as the
     // boundary of where to ignore clicks.
-    toolbar = browser->render_area_vbox_;
+    toolbar = window->render_area_vbox_;
   }
   gint toolbar_y;
   gtk_widget_get_pointer(toolbar, NULL, &toolbar_y);
-  bool has_hit_titlebar = !browser->IsFullscreen() && (toolbar_y < 0)
+  bool has_hit_titlebar = !window->IsFullscreen() && (toolbar_y < 0)
       && !has_hit_edge;
   if (event->button == 1) {
     if (GDK_BUTTON_PRESS == event->type) {
-      guint32 last_click_time = browser->last_click_time_;
-      gfx::Point last_click_position = browser->last_click_position_;
-      browser->last_click_time_ = event->time;
-      browser->last_click_position_ = gfx::Point(static_cast<int>(event->x),
+      guint32 last_click_time = window->last_click_time_;
+      gfx::Point last_click_position = window->last_click_position_;
+      window->last_click_time_ = event->time;
+      window->last_click_position_ = gfx::Point(static_cast<int>(event->x),
                                                  static_cast<int>(event->y));
 
       // Raise the window after a click on either the titlebar or the border to
       // match the behavior of most window managers.
       if (has_hit_titlebar || has_hit_edge)
-        gdk_window_raise(GTK_WIDGET(browser->window_)->window);
+        gdk_window_raise(GTK_WIDGET(window->window_)->window);
 
       if (has_hit_titlebar) {
         // We want to start a move when the user single clicks, but not start a
@@ -2121,14 +2167,14 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
         if (click_time > static_cast<guint32>(double_click_time) ||
             click_move_x > double_click_distance ||
             click_move_y > double_click_distance) {
-          gtk_window_begin_move_drag(browser->window_, event->button,
+          gtk_window_begin_move_drag(window->window_, event->button,
                                      static_cast<gint>(event->x_root),
                                      static_cast<gint>(event->y_root),
                                      event->time);
           return TRUE;
         }
       } else if (has_hit_edge) {
-        gtk_window_begin_resize_drag(browser->window_, edge, event->button,
+        gtk_window_begin_resize_drag(window->window_, edge, event->button,
                                      static_cast<gint>(event->x_root),
                                      static_cast<gint>(event->y_root),
                                      event->time);
@@ -2137,22 +2183,22 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
     } else if (GDK_2BUTTON_PRESS == event->type) {
       if (has_hit_titlebar) {
         // Maximize/restore on double click.
-        if (browser->IsMaximized()) {
-          browser->UnMaximize();
+        if (window->IsMaximized()) {
+          window->UnMaximize();
         } else {
-          gtk_window_maximize(browser->window_);
+          gtk_window_maximize(window->window_);
         }
         return TRUE;
       }
     }
   } else if (event->button == 2) {
     if (has_hit_titlebar || has_hit_edge) {
-      gdk_window_lower(GTK_WIDGET(browser->window_)->window);
+      gdk_window_lower(GTK_WIDGET(window->window_)->window);
     }
     return TRUE;
   } else if (event->button == 3) {
     if (has_hit_titlebar) {
-      browser->titlebar_->ShowContextMenu();
+      window->titlebar_->ShowContextMenu();
       return TRUE;
     }
   }
@@ -2180,11 +2226,11 @@ void BrowserWindowGtk::MainWindowUnMapped(GtkWidget* widget,
 // static
 gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
                                      GdkEventFocus* event,
-                                     BrowserWindowGtk* browser) {
-  BrowserList::SetLastActive(browser->browser_.get());
+                                     BrowserWindowGtk* window) {
+  BrowserList::SetLastActive(window->browser_.get());
 #if defined(OS_CHROMEOS)
-  if (browser->panel_controller_) {
-    browser->panel_controller_->OnFocusIn();
+  if (window->panel_controller_) {
+    window->panel_controller_->OnFocusIn();
   }
 #endif
   return FALSE;
@@ -2193,18 +2239,21 @@ gboolean BrowserWindowGtk::OnFocusIn(GtkWidget* widget,
 // static
 gboolean BrowserWindowGtk::OnFocusOut(GtkWidget* widget,
                                       GdkEventFocus* event,
-                                      BrowserWindowGtk* browser) {
+                                      BrowserWindowGtk* window) {
 #if defined(OS_CHROMEOS)
-  if (browser->panel_controller_) {
-    browser->panel_controller_->OnFocusOut();
+  if (window->panel_controller_) {
+    window->panel_controller_->OnFocusOut();
   }
 #endif
   return FALSE;
 }
 
-void BrowserWindowGtk::ExecuteBrowserCommand(int id) {
-  if (browser_->command_updater()->IsCommandEnabled(id))
+bool BrowserWindowGtk::ExecuteBrowserCommand(int id) {
+  if (browser_->command_updater()->IsCommandEnabled(id)) {
     browser_->ExecuteCommand(id);
+    return true;
+  }
+  return false;
 }
 
 void BrowserWindowGtk::ShowSupportedWindowFeatures() {

@@ -98,8 +98,9 @@ class InterstitialPage::InterstitialPageRVHViewDelegate
   virtual void UpdateDragCursor(WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
-  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
-  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void HandleMouseEvent();
   virtual void HandleMouseLeave();
   virtual void OnFindReply(int request_id,
@@ -586,17 +587,18 @@ void InterstitialPage::InterstitialPageRVHViewDelegate::TakeFocus(
     interstitial_page_->tab()->GetViewDelegate()->TakeFocus(reverse);
 }
 
-bool InterstitialPage::InterstitialPageRVHViewDelegate::IsReservedAccelerator(
-    const NativeWebKeyboardEvent& event) {
+bool InterstitialPage::InterstitialPageRVHViewDelegate::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
+  if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
+    return interstitial_page_->tab()->GetViewDelegate()->PreHandleKeyboardEvent(
+        event, is_keyboard_shortcut);
   return false;
 }
 
-bool InterstitialPage::InterstitialPageRVHViewDelegate::HandleKeyboardEvent(
+void InterstitialPage::InterstitialPageRVHViewDelegate::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (interstitial_page_->tab() && interstitial_page_->tab()->GetViewDelegate())
-    return interstitial_page_->tab()->GetViewDelegate()->
-        HandleKeyboardEvent(event);
-  return false;
+    interstitial_page_->tab()->GetViewDelegate()->HandleKeyboardEvent(event);
 }
 
 void InterstitialPage::InterstitialPageRVHViewDelegate::HandleMouseEvent() {

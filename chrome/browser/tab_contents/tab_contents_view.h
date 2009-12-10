@@ -115,6 +115,17 @@ class TabContentsView : public RenderViewHostDelegate::View {
   // invoked, SetInitialFocus is invoked.
   virtual void RestoreFocus() = 0;
 
+  // Keyboard events forwarding from the RenderViewHost.
+  // The default implementation just forward the events to the
+  // TabContentsDelegate object.
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+
+  // Keyboard events forwarding from the RenderViewHost.
+  // The default implementation just forward the events to the
+  // TabContentsDelegate object.
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+
   // Simple mouse event forwarding from the RenderViewHost.
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
@@ -175,7 +186,6 @@ class TabContentsView : public RenderViewHostDelegate::View {
                                  bool user_gesture,
                                  const GURL& creator_url);
   virtual void ShowCreatedWidget(int route_id, const gfx::Rect& initial_pos);
-  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
 
   // The TabContents whose contents we display.
   TabContents* tab_contents_;

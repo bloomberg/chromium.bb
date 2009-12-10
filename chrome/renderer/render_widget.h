@@ -316,6 +316,9 @@ class RenderWidget : public IPC::Channel::Listener,
 
   scoped_ptr<IPC::Message> pending_input_event_ack_;
 
+  // Indicates if the next sequence of Char events should be suppressed or not.
+  bool suppress_next_char_events_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };
 

@@ -140,7 +140,10 @@ Browser::Browser(Type type, Profile* profile)
       is_attempting_to_close_browser_(false),
       cancel_download_confirmation_state_(NOT_PROMPTED),
       maximized_state_(MAXIMIZED_STATE_DEFAULT),
-      method_factory_(this) {
+      method_factory_(this),
+      block_command_execution_(false),
+      last_blocked_command_id_(-1),
+      last_blocked_command_disposition_(CURRENT_TAB) {
   tabstrip_model_.AddObserver(this);
 
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
@@ -1402,6 +1405,16 @@ void Browser::ExecuteCommandWithDisposition(
 
   DCHECK(command_updater_.IsCommandEnabled(id)) << "Invalid/disabled command";
 
+  // If command execution is blocked then just record the command and return.
+  if (block_command_execution_) {
+    // We actually only allow no more than one blocked command, otherwise some
+    // commands maybe lost.
+    DCHECK(last_blocked_command_id_ == -1);
+    last_blocked_command_id_ = id;
+    last_blocked_command_disposition_ = disposition;
+    return;
+  }
+
   // The order of commands in this switch statement must match the function
   // declaration order in browser.h!
   switch (id) {
@@ -1561,6 +1574,33 @@ void Browser::ExecuteCommandWithDisposition(
       LOG(WARNING) << "Received Unimplemented Command: " << id;
       break;
   }
+}
+
+bool Browser::IsReservedCommand(int command_id) {
+  return command_id == IDC_CLOSE_TAB ||
+         command_id == IDC_CLOSE_POPUPS ||
+         command_id == IDC_CLOSE_WINDOW ||
+         command_id == IDC_NEW_INCOGNITO_WINDOW ||
+         command_id == IDC_NEW_TAB ||
+         command_id == IDC_NEW_WINDOW ||
+         command_id == IDC_RESTORE_TAB ||
+         command_id == IDC_SELECT_NEXT_TAB ||
+         command_id == IDC_SELECT_PREVIOUS_TAB ||
+         command_id == IDC_EXIT;
+}
+
+void Browser::SetBlockCommandExecution(bool block) {
+  block_command_execution_ = block;
+  if (block) {
+    last_blocked_command_id_ = -1;
+    last_blocked_command_disposition_ = CURRENT_TAB;
+  }
+}
+
+int Browser::GetLastBlockedCommand(WindowOpenDisposition* disposition) {
+  if (disposition)
+    *disposition = last_blocked_command_disposition_;
+  return last_blocked_command_id_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2197,25 +2237,13 @@ void Browser::ShowPageInfo(Profile* profile,
   window()->ShowPageInfo(profile, url, ssl, show_history);
 }
 
-bool Browser::IsReservedAccelerator(const NativeWebKeyboardEvent& event) {
-  // Other platforms don't send close-app keyboard shortcuts to apps first.
-#if defined(OS_WIN)
-  if ((event.modifiers & NativeWebKeyboardEvent::AltKey) &&
-      event.windowsKeyCode == VK_F4) {
-    return true;
-  }
-#endif
+bool Browser::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                     bool* is_keyboard_shortcut) {
+  return window()->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
+}
 
-  int command_id = window()->GetCommandId(event);
-  return command_id == IDC_CLOSE_TAB ||
-         command_id == IDC_CLOSE_POPUPS ||
-         command_id == IDC_CLOSE_WINDOW ||
-         command_id == IDC_NEW_INCOGNITO_WINDOW ||
-         command_id == IDC_NEW_TAB ||
-         command_id == IDC_NEW_WINDOW ||
-         command_id == IDC_RESTORE_TAB ||
-         command_id == IDC_SELECT_NEXT_TAB ||
-         command_id == IDC_SELECT_PREVIOUS_TAB;
+void Browser::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  window()->HandleKeyboardEvent(event);
 }
 
 void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {

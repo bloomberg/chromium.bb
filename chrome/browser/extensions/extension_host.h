@@ -140,8 +140,9 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
-  virtual bool IsReservedAccelerator(const NativeWebKeyboardEvent& event);
-  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void HandleMouseEvent();
   virtual void HandleMouseLeave();
   virtual void UpdatePreferredSize(const gfx::Size& new_size);

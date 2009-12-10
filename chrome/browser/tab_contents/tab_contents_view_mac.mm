@@ -47,7 +47,6 @@ COMPILE_ASSERT_MATCHING_ENUM(DragOperationEvery);
 
 @interface TabContentsViewCocoa (Private)
 - (id)initWithTabContentsViewMac:(TabContentsViewMac*)w;
-- (BOOL)processKeyboardEvent:(NativeWebKeyboardEvent*)event;
 - (void)registerDragTypes;
 - (void)setCurrentDragOperation:(NSDragOperation)operation;
 - (void)startDragWithDropData:(const WebDropData&)dropData
@@ -231,12 +230,6 @@ void TabContentsViewMac::TakeFocus(bool reverse) {
   }
 }
 
-bool TabContentsViewMac::HandleKeyboardEvent(
-    const NativeWebKeyboardEvent& event) {
-  return [cocoa_view_.get() processKeyboardEvent:
-      const_cast<NativeWebKeyboardEvent*>(&event)] == YES;
-}
-
 void TabContentsViewMac::ShowContextMenu(const ContextMenuParams& params) {
   RenderViewContextMenuMac menu(tab_contents(),
                                 params,
@@ -353,48 +346,6 @@ void TabContentsViewMac::Observe(NotificationType type,
 
 - (TabContents*)tabContents {
   return tabContentsView_->tab_contents();
-}
-
-- (BOOL)processKeyboardEvent:(NativeWebKeyboardEvent*)wkEvent {
-  if (wkEvent->skip_in_browser || wkEvent->type == WebKit::WebInputEvent::Char)
-    return NO;
-
-  NSEvent* event = wkEvent->os_event;
-  DCHECK(event != NULL);
-
-  // If this tab is no longer active, its window will be |nil|. In that case,
-  // best ignore the event.
-  if (![self window])
-    return NO;
-  ChromeEventProcessingWindow* window =
-      (ChromeEventProcessingWindow*)[self window];
-  DCHECK([window isKindOfClass:[ChromeEventProcessingWindow class]]);
-
-  // Do not fire shortcuts on key up.
-  if ([event type] == NSKeyDown) {
-    // Send the event to the menu before sending it to the browser/window
-    // shortcut handling, so that if a user configures cmd-left to mean
-    // "previous tab", it takes precedence over the built-in "history back"
-    // binding. Other than that, the |redispatchEvent| call would take care of
-    // invoking the original menu item shortcut as well.
-    if ([[NSApp mainMenu] performKeyEquivalent:event])
-      return YES;
-
-    if ([window handleExtraBrowserKeyboardShortcut:event])
-      return YES;
-    if ([window handleExtraWindowKeyboardShortcut:event])
-      return YES;
-  }
-
-  // We need to re-dispatch the event, so that it is sent to the menu or other
-  // cocoa mechanisms (such as the cmd-` handler).
-  RenderWidgetHostViewCocoa* rwhv = static_cast<RenderWidgetHostViewCocoa*>(
-      tabContentsView_->GetContentNativeView());
-  DCHECK([rwhv isKindOfClass:[RenderWidgetHostViewCocoa class]]);
-  [rwhv setIgnoreKeyEvents:YES];
-  BOOL eventHandled = [window redispatchEvent:event];
-  [rwhv setIgnoreKeyEvents:NO];
-  return eventHandled;
 }
 
 - (void)mouseEvent:(NSEvent *)theEvent {

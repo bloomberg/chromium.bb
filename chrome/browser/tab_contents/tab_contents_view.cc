@@ -58,10 +58,16 @@ void TabContentsView::ShowCreatedWidget(int route_id,
   ShowCreatedWidgetInternal(widget_host_view, initial_pos);
 }
 
-bool TabContentsView::IsReservedAccelerator(
-    const NativeWebKeyboardEvent& event) {
-  return tab_contents()->delegate() &&
-         tab_contents()->delegate()->IsReservedAccelerator(event);
+bool TabContentsView::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
+  return tab_contents_->delegate() &&
+    tab_contents_->delegate()->PreHandleKeyboardEvent(
+        event, is_keyboard_shortcut);
+}
+
+void TabContentsView::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->HandleKeyboardEvent(event);
 }
 
 RenderWidgetHostView* TabContentsView::CreateNewWidgetInternal(

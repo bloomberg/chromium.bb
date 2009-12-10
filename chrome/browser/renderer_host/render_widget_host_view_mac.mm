@@ -589,14 +589,7 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
     renderWidgetHostView_->render_widget_host_->ForwardMouseEvent(event);
 }
 
-- (void)setIgnoreKeyEvents:(BOOL)ignorekeyEvents {
-  ignoreKeyEvents_ = ignorekeyEvents;
-}
-
 - (BOOL)performKeyEquivalent:(NSEvent*)theEvent {
-  if (ignoreKeyEvents_)
-    return NO;
-
   // |performKeyEquivalent:| is sent to all views of a window, not only down the
   // responder chain (cf. "Handling Key Equivalents" in
   // http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/EventOverview/HandlingKeyEvents/HandlingKeyEvents.html
@@ -642,9 +635,6 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
 }
 
 - (void)keyEvent:(NSEvent *)theEvent wasKeyEquivalent:(BOOL)equiv {
-  if (ignoreKeyEvents_)
-    return;
-
   DCHECK([theEvent type] != NSKeyDown ||
          !equiv == !([theEvent modifierFlags] & NSCommandKeyMask));
 

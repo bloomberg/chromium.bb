@@ -58,7 +58,6 @@ class TabContentsViewWin : public TabContentsView,
   virtual void UpdateDragCursor(WebKit::WebDragOperation operation);
   virtual void GotFocus();
   virtual void TakeFocus(bool reverse);
-  virtual bool HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
 
   // WidgetWin overridde.
   virtual views::FocusManager* GetFocusManager();
@@ -108,9 +107,6 @@ class TabContentsViewWin : public TabContentsView,
   // Used to render the sad tab. This will be non-NULL only when the sad tab is
   // visible.
   SadTabView* sad_tab_;
-
-  // Whether to ignore the next CHAR keyboard event.
-  bool ignore_next_char_event_;
 
   // The id used in the ViewStorage to store the last focused view.
   int last_focused_view_storage_id_;

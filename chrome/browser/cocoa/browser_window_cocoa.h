@@ -91,7 +91,9 @@ class BrowserWindowCocoa : public BrowserWindow,
                             bool show_history);
   virtual void ShowPageMenu();
   virtual void ShowAppMenu();
-  virtual int GetCommandId(const NativeWebKeyboardEvent& event);
+  virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
+                                      bool* is_keyboard_shortcut);
+  virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowCreateShortcutsDialog(TabContents* tab_contents);
 
   // Overridden from NotificationObserver
@@ -109,6 +111,9 @@ class BrowserWindowCocoa : public BrowserWindow,
   virtual void DestroyBrowser();
 
  private:
+  int GetCommandId(const NativeWebKeyboardEvent& event);
+  bool HandleKeyboardEventInternal(NSEvent* event);
+
   NotificationRegistrar registrar_;
   NSWindow* window_;  // weak, owned by controller
   Browser* browser_;  // weak, owned by controller

@@ -1477,20 +1477,17 @@ void RenderViewHost::OnUserMetricsRecordAction(const std::string& action) {
   UserMetrics::RecordComputedAction(action.c_str(), process()->profile());
 }
 
-bool RenderViewHost::ShouldSendToRenderer(const NativeWebKeyboardEvent& event) {
+bool RenderViewHost::PreHandleKeyboardEvent(
+    const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (!view)
-    return true;
-  return !view->IsReservedAccelerator(event);
+  return view && view->PreHandleKeyboardEvent(event, is_keyboard_shortcut);
 }
 
-bool RenderViewHost::UnhandledKeyboardEvent(
+void RenderViewHost::UnhandledKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   RenderViewHostDelegate::View* view = delegate_->GetViewDelegate();
-  if (view) {
-    return view->HandleKeyboardEvent(event);
-  }
-  return false;
+  if (view)
+    view->HandleKeyboardEvent(event);
 }
 
 void RenderViewHost::OnUserGesture() {
