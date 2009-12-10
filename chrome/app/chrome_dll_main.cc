@@ -32,6 +32,7 @@
 #endif
 
 #include "app/app_paths.h"
+#include "app/app_switches.h"
 #include "app/resource_bundle.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -329,11 +330,6 @@ void EnableHeapProfiler(const CommandLine& parsed_command_line) {
 }
 
 void CommonSubprocessInit() {
-  // Initialize ResourceBundle which handles files loaded from external
-  // sources.  The language should have been passed in to us from the
-  // browser process as a command line flag.
-  ResourceBundle::InitSharedInstance(std::wstring());
-
 #if defined(OS_WIN)
   // HACK: Let Windows know that we have started.  This is needed to suppress
   // the IDC_APPSTARTING cursor from being displayed for a prolonged period
@@ -342,6 +338,22 @@ void CommonSubprocessInit() {
   MSG msg;
   PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
 #endif
+}
+
+// Returns true if this subprocess type needs the ResourceBundle initialized
+// and resources loaded.
+bool SubprocessNeedsResourceBundle(const std::string& process_type) {
+  return
+#if defined(OS_WIN)
+      // Windows needs resources for the default/null plugin.
+      process_type == switches::kPluginProcess ||
+#endif
+#if defined(OS_LINUX)
+      // The zygote process opens the resources for the renderers.
+      process_type == switches::kZygoteProcess ||
+#endif
+      process_type == switches::kRendererProcess ||
+      process_type == switches::kExtensionProcess;
 }
 
 }  // namespace
@@ -611,10 +623,19 @@ int ChromeMain(int argc, char** argv) {
   }
 #endif  // NDEBUG
 
+  if (SubprocessNeedsResourceBundle(process_type)) {
+    // Initialize ResourceBundle which handles files loaded from external
+    // sources.  The language should have been passed in to us from the
+    // browser process as a command line flag.
+    DCHECK(parsed_command_line.HasSwitch(switches::kLang) ||
+           process_type == switches::kZygoteProcess);
+    ResourceBundle::InitSharedInstance(std::wstring());
+  }
+
   if (!process_type.empty())
     CommonSubprocessInit();
 
-#if defined (OS_MACOSX)
+#if defined(OS_MACOSX)
   // On OS X the renderer sandbox needs to be initialized later in the startup
   // sequence in RendererMainPlatformDelegate::PlatformInitialize().
   if (process_type != switches::kRendererProcess &&
@@ -651,7 +672,7 @@ int ChromeMain(int argc, char** argv) {
   } else if (process_type == switches::kUtilityProcess) {
     rv = UtilityMain(main_params);
   } else if (process_type == switches::kProfileImportProcess) {
-#if defined (OS_MACOSX)
+#if defined(OS_MACOSX)
     rv = ProfileImportMain(main_params);
 #else
     // TODO(port): Use OOP profile import - http://crbug.com/22142 .
@@ -727,9 +748,8 @@ int ChromeMain(int argc, char** argv) {
     NOTREACHED() << "Unknown process type";
   }
 
-  if (!process_type.empty()) {
+  if (SubprocessNeedsResourceBundle(process_type))
     ResourceBundle::CleanupSharedInstance();
-  }
 
 #if defined(OS_WIN)
 #ifdef _CRTDBG_MAP_ALLOC
