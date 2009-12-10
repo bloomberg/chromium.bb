@@ -30,32 +30,26 @@
 
 Import('env')
 
+env.Prepend(CPPDEFINES = ['XP_UNIX'])
 
-env.Append(CPPDEFINES=['XP_UNIX'])
-env.FilterOut(CCFLAGS=['-Wswitch-enum'])
-
-env.ComponentLibrary('google_nacl_npruntime',
-                     ['device2d.cc',
-                      'naclnp_util.cc',
-                      'npbridge.cc',
-                      'npextensions.cc',
-                      'npn_gate.cc',
-                      'npnavigator.cc',
-                      'npobject_proxy.cc',
-                      'npobject_stub.cc',
-                      'nprpc.cc',
-                      ])
-
-headers = [
-  'nacl_npapi.h',
-  '$SOURCE_ROOT/third_party/npapi/bindings/npapi.h',
-  '$SOURCE_ROOT/third_party/npapi/bindings/npruntime.h',
-  '$SOURCE_ROOT/third_party/npapi/bindings/npapi_extensions.h',
-  '$SOURCE_ROOT/native_client/src/third_party/npapi/files/include/npupp.h',
+nacl_npplugin_test_inputs = [
+  'event_handler.cc',
+  'main.cc',
+  'plugin_object.cc',
+  'test_object.cc',
 ]
 
-header_install = env.AddHeaderToSdk(headers)
-env.AddLibraryToSdk(['google_nacl_npruntime'])
+# TODO: should this link against the sdk version of google_nacl_npruntime?
+env.ComponentProgram('pepper_plugin.nexe', nacl_npplugin_test_inputs,
+                     EXTRA_LIBS=['google_nacl_imc',
+                                 'google_nacl_npruntime',
+                                 'pthread',
+                                 'srpc'])
 
-# because nacl_npapi.h imports headers from the sdk
-env.Requires('google_nacl_npruntime', header_install)
+
+# Note that the html is required to run this program.
+env.Publish('pepper_plugin.nexe', 'run', [
+    'pepper_plugin.html',
+    'nacl.png',
+  ]
+)

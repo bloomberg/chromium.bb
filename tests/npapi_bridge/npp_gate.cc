@@ -99,6 +99,10 @@ NPObject* NPP_GetScriptableInstance(NPP instance) {
   return object;
 }
 
+int16_t NPP_HandleEvent(NPP instance, void* event) {
+  return 0;
+}
+
 NPError NPP_SetWindow(NPP instance, NPWindow* window) {
   printf("NPP_SetWindow\n");
   if (instance == NULL) {

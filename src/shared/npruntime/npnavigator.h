@@ -153,6 +153,10 @@ class NPNavigator : public NPBridge {
   static NaClSrpcError GetScriptableInstance(NaClSrpcChannel* channel,
                                              NaClSrpcArg** inputs,
                                              NaClSrpcArg** outputs);
+  // Processes NPP_HandleEvent() request from the plugin (Pepper only).
+  static NaClSrpcError HandleEvent(NaClSrpcChannel* channel,
+                                   NaClSrpcArg** inputs,
+                                   NaClSrpcArg** outputs);
   // Processes NPP_URLNotify() request from the plugin.
   static NaClSrpcError URLNotify(NaClSrpcChannel* channel,
                                  NaClSrpcArg** inputs,

@@ -920,6 +920,7 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
           'tests/nthread_nice/nacl.scons',
           'tests/null/nacl.scons',
           'tests/nullptr/nacl.scons',
+          'tests/pepper_plugin/nacl.scons',
           'tests/srpc/nacl.scons',
           'tests/srpc_hw/nacl.scons',
           'tests/srpc_without_pthread/nacl.scons',

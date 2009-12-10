@@ -110,3 +110,7 @@ int main(int argc, char **argv) {
   printf("PASS\n");
   return 0;
 }
+
+int16_t NPP_HandleEvent(NPP instance, void* event) {
+  return 0;
+}

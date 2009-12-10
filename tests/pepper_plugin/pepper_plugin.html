@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--
+Copyright (c) 2009 The Native Client Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<head>
+<title> Pepper Plugin Demo </title>
+<script type="text/javascript">
+var event_box;
+
+var addLine = function(line) {
+  event_box.innerHTML = line + '<br>' + event_box.innerHTML;
+}
+
+var runScripts = function() {
+  event_box = document.getElementById("event_text_box");;
+  var plugin_obj = document.getElementById("plugin");
+  addLine('<b>Event log</b>');
+  plugin_obj.setTextBox(addLine);
+}
+</script>
+</head>
+
+<body style="background-image:url(nacl.png); background-repeat:repeat;"
+      onload="runScripts()">
+
+<p>
+This page embeds a NaCl module for testing Pepper.
+</p>
+<table>
+<tr>
+<td valign="top" width="50%">
+  <embed id="plugin" type="application/x-nacl-srpc" src="pepper_plugin.nexe"
+         width="400" height="400" />
+</td>
+<td valign="top" style="background-color:Silver" width="50%">
+<div id="event_text_box" style="width:400px; height:400px; overflow:auto">
+</div>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -45,6 +45,7 @@
 #include "native_client/src/shared/npruntime/npcapability.h"
 #include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
 
 namespace nacl {
 
@@ -148,6 +149,7 @@ NACL_SRPC_METHOD_ARRAY(NPNavigator::srpc_methods) = {
   { "NPP_New:siiCC:i", New },
   { "NPP_Destroy:i:i", Destroy },
   { "NPP_GetScriptableInstance:i:C", GetScriptableInstance },
+  { "NPP_HandleEvent:iC:i", HandleEvent },
   { "NPP_URLNotify:ihi:", URLNotify },
   { "NPN_DoAsyncCall:i", DoAsyncCall },
   // Exported from NPObjectStub
@@ -337,6 +339,22 @@ NaClSrpcError NPNavigator::GetScriptableInstance(NaClSrpcChannel* channel,
   DebugPrintf("    set up rpcarg\n");
   ret.PutCapability(capability);
   DebugPrintf("    put the capability\n");
+  return NACL_SRPC_RESULT_OK;
+}
+
+// inputs:
+// (int) npp
+// (char[]) NPPepperEvent structure
+// outputs:
+// (int) return from invoking NPP_HandleEvent
+NaClSrpcError NPNavigator::HandleEvent(NaClSrpcChannel* channel,
+                                       NaClSrpcArg** inputs,
+                                       NaClSrpcArg** outputs) {
+  NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[0]->u.ival), false);
+  NPPepperEvent* event =
+      reinterpret_cast<NPPepperEvent*>(inputs[1]->u.caval.carr);
+  DebugPrintf("NPP_HandleEvent(npp %p, %p)\n", npp, event);
+  outputs[0]->u.ival = NPP_HandleEvent(npp, reinterpret_cast<void*>(event));
   return NACL_SRPC_RESULT_OK;
 }
 

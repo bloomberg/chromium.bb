@@ -42,6 +42,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/plugin/origin.h"
+#include "third_party/npapi/bindings/npapi_extensions.h"
 
 namespace nacl {
 
@@ -605,10 +606,21 @@ NPError NPModule::GetValue(NPP npp, NPPVariable variable, void *value) {
 }
 
 int16_t NPModule::HandleEvent(NPP npp, void* event) {
-  UNREFERENCED_PARAMETER(npp);
-  UNREFERENCED_PARAMETER(event);
-  // TODO(sehr): Need to make an RPC to pass the event.
-  return 0;
+  static const uint32_t kEventSize =
+      static_cast<uint32_t>(sizeof(NPPepperEvent));
+  int32_t return_int16;
+
+  NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
+                                              "NPP_HandleEvent",
+                                              NPBridge::NppToInt(npp),
+                                              reinterpret_cast<char*>(event),
+                                              kEventSize,
+                                              &return_int16);
+  if (NACL_SRPC_RESULT_OK == retval) {
+    return static_cast<int16_t>(return_int16 & 0xffff);
+  } else {
+    return -1;
+  }
 }
 
 NPObject* NPModule::GetScriptableInstance(NPP npp) {

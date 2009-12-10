@@ -31,7 +31,6 @@
 
 
 #include "native_client/src/trusted/plugin/srpc/srpc.h"
-#include "native_client/src/include/nacl_macros.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -39,6 +38,7 @@
 #include <string>
 #include <set>
 
+#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 
 #include "native_client/src/shared/npruntime/npmodule.h"
@@ -294,10 +294,14 @@ int16_t SRPC_Plugin::HandleEvent(void* param) {
   int16_t ret;
   dprintf(("SRPC_Plugin::HandleEvent(%p, %p)\n", static_cast<void*>(this),
            static_cast<void*>(param)));
-  if (video_) {
-    ret = video_->HandleEvent(param);
+  if (NULL == module_) {
+    if (video_) {
+      ret = video_->HandleEvent(param);
+    } else {
+      ret = 0;
+    }
   } else {
-    ret = 0;
+    return module_->HandleEvent(npp_, param);
   }
   return ret;
 }
