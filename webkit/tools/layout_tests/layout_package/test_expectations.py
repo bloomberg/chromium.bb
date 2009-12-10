@@ -26,11 +26,12 @@ import simplejson
 class TestExpectations:
   TEST_LIST = "test_expectations.txt"
 
-  def __init__(self, tests, directory, platform, is_debug_mode, is_lint_mode):
+  def __init__(self, tests, directory, platform, is_debug_mode, is_lint_mode,
+      tests_are_present=True):
     """Reads the test expectations files from the given directory."""
     path = os.path.join(directory, self.TEST_LIST)
     self._expected_failures = TestExpectationsFile(path, tests, platform,
-        is_debug_mode, is_lint_mode)
+        is_debug_mode, is_lint_mode, tests_are_present=tests_are_present)
 
   # TODO(ojan): Allow for removing skipped tests when getting the list of tests
   # to run, but not when getting metrics.
@@ -45,6 +46,9 @@ class TestExpectations:
             self._expected_failures.GetTestSet(REBASELINE, IMAGE) |
             self._expected_failures.GetTestSet(REBASELINE, TEXT) |
             self._expected_failures.GetTestSet(REBASELINE, IMAGE_PLUS_TEXT))
+
+  def GetOptions(self, test):
+    return self._expected_failures.GetOptions(test)
 
   def GetExpectations(self, test):
     return self._expected_failures.GetExpectations(test)
@@ -209,7 +213,8 @@ class TestExpectationsFile:
 
 
   def __init__(self, path, full_test_list, platform, is_debug_mode,
-      is_lint_mode, expectations_as_str=None, suppress_errors=False):
+      is_lint_mode, expectations_as_str=None, suppress_errors=False,
+      tests_are_present=True):
     """
     path: The path to the expectation file. An error is thrown if a test is
         listed more than once.
@@ -221,11 +226,15 @@ class TestExpectationsFile:
     expectations_as_str: Contents of the expectations file. Used instead of
         the path. This makes unittesting sane.
     suppress_errors: Whether to suppress lint errors.
+    tests_are_present: Whether the test files are present in the local
+        filesystem. The LTTF Dashboard uses False here to avoid having to
+        keep a local copy of the tree.
     """
 
     self._path = path
     self._expectations_as_str = expectations_as_str
     self._is_lint_mode = is_lint_mode
+    self._tests_are_present = tests_are_present
     self._full_test_list = full_test_list
     self._suppress_errors = suppress_errors
     self._errors = []
@@ -309,6 +318,11 @@ class TestExpectationsFile:
 
   def GetTestsWithTimeline(self, timeline):
     return self._timeline_to_tests[timeline]
+
+  def GetOptions(self, test):
+    """This returns the entire set of options for the given test (the modifiers
+    plus the BUGXXXX identifier. This is used by the LTTF dashboard."""
+    return self._test_to_options[test]
 
   def HasModifier(self, test, modifier):
     return test in self._modifier_to_tests[modifier]
@@ -434,6 +448,7 @@ class TestExpectationsFile:
 
     Args:
       line: current line in test expectations file.
+      lineno: current line number of line
       tests: list of tests that need to update..
       platform: which platform option to remove.
 
@@ -540,7 +555,7 @@ class TestExpectationsFile:
       lineno += 1
 
       test_list_path, options, expectations = \
-        self.ParseExpectationsLine(line, lineno)
+          self.ParseExpectationsLine(line, lineno)
       if not expectations:
         continue
 
@@ -566,7 +581,7 @@ class TestExpectationsFile:
       # WebKit's way of skipping tests is to add a -disabled suffix.
       # So we should consider the path existing if the path or the -disabled
       # version exists.
-      if not os.path.exists(full_path) and not \
+      if self._tests_are_present and not os.path.exists(full_path) and not \
         os.path.exists(full_path + '-disabled'):
         # Log a non fatal error here since you hit this case any time you
         # update test_expectations.txt without syncing the LayoutTests
@@ -620,20 +635,31 @@ class TestExpectationsFile:
     return result
 
   def _ExpandTests(self, test_list_path):
-    # Convert the test specification to an absolute, normalized
-    # path and make sure directories end with the OS path separator.
+    """Convert the test specification to an absolute, normalized
+    # path and make sure directories end with the OS path separator."""
     path = os.path.join(path_utils.LayoutTestsDir(test_list_path),
                         test_list_path)
     path = os.path.normpath(path)
-    if os.path.isdir(path): path = os.path.join(path, '')
-    # This is kind of slow - O(n*m) - since this is called for all
-    # entries in the test lists. It has not been a performance
-    # issue so far. Maybe we should re-measure the time spent reading
-    # in the test lists?
+    path = self._FixDir(path)
+
     result = []
     for test in self._full_test_list:
       if test.startswith(path): result.append(test)
     return result
+
+  def _FixDir(self, path):
+    """Check to see if the path points to a directory, and if so, append
+    the directory separator if necessary."""
+    if self._tests_are_present:
+      if os.path.isdir(path):
+        path = os.path.join(path, '')
+    else:
+      # If we can't check the filesystem to see if this is a directory,
+      # we assume that files w/o an extension are directories.
+      # TODO(dpranke): What happens w/ LayoutTests/css2.1 ?
+      if os.path.splitext(path)[1] == '':
+        path = os.path.join(path, '')
+    return path
 
   def _AddTests(self, tests, expectations, test_list_path, lineno, modifiers,
                 options):
