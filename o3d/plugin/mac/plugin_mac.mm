@@ -113,11 +113,15 @@ bool GetBrowserVersionInfo(int *returned_major,
 
 
 void ReleaseSafariBrowserWindow(void* browserWindow) {
-  NSWindow* cocoaWindow = (NSWindow*) browserWindow;
-  // Retain the WindowRef so it doesn't go away when we release the
-  // NSWindow copy we made.
-  CFRetain([cocoaWindow windowRef]);
-  [cocoaWindow release];
+  if (browserWindow) {
+    NSWindow* cocoaWindow = (NSWindow*) browserWindow;
+    // Retain the WindowRef so it doesn't go away when we release the
+    // NSWindow copy we made.
+    WindowRef theWindow = (WindowRef)[cocoaWindow windowRef];
+    if (theWindow)
+      CFRetain(theWindow);
+    [cocoaWindow release];
+  }
 }
 
 void* SafariBrowserWindowForWindowRef(WindowRef theWindow) {
