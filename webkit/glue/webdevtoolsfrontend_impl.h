@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "ContextMenuSelectionHandler.h"
-
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
@@ -60,7 +58,8 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
       const WebKit::WebDevToolsMessageData& data);
 
  private:
-  class MenuSelectionHandler : public WebCore::ContextMenuSelectionHandler {
+/* Uncomment once breaking API changes upstream land.
+   class MenuSelectionHandler : public WebCore::ContextMenuSelectionHandler {
    public:
     static PassRefPtr<MenuSelectionHandler> create(
         WebDevToolsFrontendImpl* frontend_host) {
@@ -86,7 +85,7 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
           : frontend_host_(frontend_host) {}
     WebDevToolsFrontendImpl* frontend_host_;
   };
-
+*/
   void AddResourceSourceToFrame(int resource_id,
                                 String mime_type,
                                 WebCore::Node* frame);
@@ -94,7 +93,7 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   void ExecuteScript(const Vector<String>& v);
   void DispatchOnWebInspector(const String& method, const String& param);
 
-  friend class MenuSelectionHandler;
+  // friend class MenuSelectionHandler;
   void ContextMenuItemSelected(WebCore::ContextMenuItem* menu_item);
   void ContextMenuCleared();
 
@@ -136,7 +135,7 @@ class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend,
   bool loaded_;
   Vector<Vector<String> > pending_incoming_messages_;
   OwnPtr<ToolsAgentNativeDelegateImpl> tools_agent_native_delegate_impl_;
-  RefPtr<MenuSelectionHandler> menu_selection_handler_;
+//  RefPtr<MenuSelectionHandler> menu_selection_handler_;
 };
 
 #endif  // WEBKIT_GLUE_WEBDEVTOOLSFRONTEND_IMPL_H_

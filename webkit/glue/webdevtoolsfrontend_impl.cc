@@ -136,7 +136,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
       client_(client),
       application_locale_(application_locale),
       loaded_(false) {
-  menu_selection_handler_ = MenuSelectionHandler::create(this);
+  // menu_selection_handler_ = MenuSelectionHandler::create(this);
 
   WebFrameImpl* frame = web_view_impl_->mainFrameImpl();
   v8::HandleScope scope;
@@ -216,7 +216,7 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
-  menu_selection_handler_->disconnect();
+  // menu_selection_handler_->disconnect();
 }
 
 // TODO(yurys): this method is deprecated and will go away soon, use
@@ -501,8 +501,9 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsWindowUnloading(
 
 // static
 v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsShowContextMenu(
-    const v8::Arguments& args) {
-
+    const v8::Arguments&) {
+/*
+  TODO: Uncomment once new ContextMenu API lands upstream.
   if (args.Length() < 2)
     return v8::Undefined();
 
@@ -543,5 +544,6 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::JsShowContextMenu(
   menu_controller->showContextMenu(event,
                                    items,
                                    frontend->menu_selection_handler_);
+*/
   return v8::Undefined();
 }
