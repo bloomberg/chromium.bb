@@ -115,7 +115,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
     if args:
       raise gclient_utils.Error("Unsupported argument(s): %s" % ",".join(args))
 
-    self._CheckMinVersion("1.6.1")
+    self._CheckMinVersion("1.6")
 
     url, revision = gclient_utils.SplitUrlRevision(self.url)
     rev_str = ""
@@ -188,8 +188,13 @@ class GitWrapper(SCMWrapper, scm.GIT):
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
   def _CheckMinVersion(self, min_version):
+    def only_int(val):
+      if val.isdigit():
+        return int(val)
+      else:
+        return 0
     version = self._Run(['--version']).split()[-1]
-    version_list = map(int, version.split('.'))
+    version_list = map(only_int, version.split('.'))
     min_version_list = map(int, min_version.split('.'))
     for min_ver in min_version_list:
       ver = version_list.pop(0)
