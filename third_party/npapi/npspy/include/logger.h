@@ -42,7 +42,7 @@
 #include "format.h"
 #include "logfile.h"
 
-#define TOTAL_NUMBER_OF_API_CALLS 37
+#define TOTAL_NUMBER_OF_API_CALLS 60
 #define DEFAULT_LOG_FILE_NAME "spylog.txt"
 
 class Logger
@@ -74,7 +74,7 @@ public:
   // platform dependent virtuals
   virtual BOOL platformInit() = 0;
   virtual void platformShut() = 0;
-  virtual void dumpStringToMainWindow(char * string) = 0;
+  virtual void dumpStringToMainWindow(const std::string& string) = 0;
 
   void setOnTop(BOOL ontop);
   void setToFile(BOOL tofile, char * filename);

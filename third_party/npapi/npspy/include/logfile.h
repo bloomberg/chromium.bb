@@ -38,6 +38,8 @@
 #ifndef __LOGFILE_H__
 #define __LOGFILE_H__
 
+#include <string>
+
 class CLogFile
 {
 private:
@@ -50,7 +52,7 @@ public:
 
   BOOL create(char * filename, BOOL delete_existing = FALSE);
   void close();
-  DWORD write(char * buf);
+  DWORD write(const std::string& buf);
   void flush();
 };
 

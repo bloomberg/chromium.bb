@@ -38,6 +38,8 @@
 #ifndef __LOGGRERW_H__
 #define __LOGGRERW_H__
 
+#include <string>
+
 #include "logger.h"
 
 class LoggerWin : public Logger
@@ -55,7 +57,7 @@ public:
 
   BOOL platformInit();
   void platformShut();
-  void dumpStringToMainWindow(char * string);
+  void dumpStringToMainWindow(const std::string& string);
 
   void onDestroyWindow();
   void onClear();

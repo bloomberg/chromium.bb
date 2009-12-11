@@ -383,283 +383,254 @@ void NPN_ForceRedraw(NPP instance)
 
 NPIdentifier NPN_GetStringIdentifier(const NPUTF8 *name)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_GetStringIdentifier %s", name);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_get_string_identifier, (DWORD)name);
 
   NPIdentifier rv = NPNFuncs.getstringidentifier(name);
 
-  sprintf(msg, "--Return: 0x%x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_get_string_identifier, (DWORD)(rv));
 
   return rv;
 }
 
 bool NPN_Enumerate(NPP id, NPObject* obj, NPIdentifier** identifier, uint32_t*val)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_Enumerate");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_enumerate);
 
   bool rv = NPNFuncs.enumerate(id, obj, identifier, val);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_enumerate, rv);
 
   return rv;
 }
 
-bool NPN_PopPopupsEnabledState(NPP)
+bool NPN_PopPopupsEnabledState(NPP id)
 {
-    logger->logMessage("Undefined function");
-  return 0;
+  if(logger)
+    logger->logCall(action_npn_pop_popups_enabled_state, (DWORD)id);
+
+  bool rv = NPNFuncs.poppopupsenabledstate(id);
+
+  if(logger)
+    logger->logReturn(action_npn_pop_popups_enabled_state, rv);
+
+  return rv;
 }
 
-bool NPN_PushPopupsEnabledState(NPP, NPBool)
+bool NPN_PushPopupsEnabledState(NPP id, NPBool enabled)
 {
-    logger->logMessage("Undefined function");
-  return 0;
+  if(logger)
+    logger->logCall(action_npn_push_popups_enabled_state, (DWORD)id);
+
+  bool rv = NPNFuncs.pushpopupsenabledstate(id, enabled);
+
+  if(logger)
+    logger->logReturn(action_npn_push_popups_enabled_state, rv);
+
+  return rv;
 }
 
 void NPN_SetException(NPObject*obj, const NPUTF8*message)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_SetException");
-  logger->logMessage(message);
+  if(logger)
+    logger->logCall(action_npn_set_exception, (DWORD)message);
 
-  NPNFuncs.setexception(obj,msg);
-  
-  sprintf(msg, "--Return.");
-  logger->logMessage(msg);
+  NPNFuncs.setexception(obj,message);
 }
 
 void NPN_ReleaseVariantValue(NPVariant*variant)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_ReleaseVariantValue");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_release_variant_value, (DWORD)variant);
 
   NPNFuncs.releasevariantvalue(variant);
-
-  sprintf(msg, "--Return.");
-  logger->logMessage(msg);}
+}
 
 bool NPN_HasMethod(NPP id, NPObject* object, NPIdentifier identifier)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_HasMethod");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_has_method, (DWORD)identifier);
 
   bool rv = NPNFuncs.hasmethod(id, object, identifier);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_has_method, rv);
 
   return rv;
 }
 
 bool NPN_HasProperty(NPP id, NPObject* object, NPIdentifier identifier)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_HasProperty");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_has_property, (DWORD)identifier);
 
   bool rv = NPNFuncs.hasmethod(id, object, identifier);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_has_property, rv);
 
   return rv;
 }
 
 bool NPN_RemoveProperty(NPP id, NPObject* object, NPIdentifier identifier)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_RemoveProperty");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_remove_property, (DWORD)identifier);
 
   bool rv = NPNFuncs.hasmethod(id, object, identifier);
-
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
 
   return rv;
 }
 
 bool NPN_SetProperty(NPP id, NPObject* obj, NPIdentifier identifier, const NPVariant *variant)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_SetProperty");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_set_property, (DWORD)identifier);
 
   bool rv = NPNFuncs.setproperty(id, obj, identifier, variant);
-
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
 
   return rv;
 }
 
 bool NPN_GetProperty(NPP id, NPObject* obj, NPIdentifier identifier, NPVariant *variant)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_GetProperty");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_get_property, (DWORD)identifier);
 
   bool rv = NPNFuncs.getproperty(id, obj, identifier, variant);
-
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
 
   return rv;
 }
 
 bool NPN_Evaluate(NPP id, NPObject* obj, NPString* str, NPVariant* variant)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_Evaluate");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_evaluate, (DWORD)str);
 
   bool rv = NPNFuncs.evaluate(id, obj, str, variant);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_evaluate, rv);
 
   return rv;
 }
 
 bool NPN_InvokeDefault(NPP id, NPObject* obj, const NPVariant* args, uint32_t count, NPVariant*result)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_InvokeDefault");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_invoke_default, (DWORD)obj);
 
   bool rv = NPNFuncs.invokeDefault(id, obj, args, count, result);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_invoke_default, rv);
 
   return rv;
 }
 
 bool NPN_Invoke(NPP id, NPObject* obj, NPIdentifier identifier, const NPVariant *args, uint32_t count, NPVariant*result)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_Invoke");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_invoke, (DWORD)obj);
 
   bool rv = NPNFuncs.invoke(id, obj, identifier, args, count, result);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_invoke, rv);
 
   return rv;
 }
 
 void NPN_ReleaseObject(NPObject *obj) 
 {
-  char msg[1024];
-  sprintf(msg, "NPN_ReleaseObject");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_release_object, (DWORD)obj);
 
   NPNFuncs.releaseobject(obj);
-
-  sprintf(msg, "--Return.");
-  logger->logMessage(msg);
 }
 
 NPObject *NPN_RetainObject(NPObject* obj)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_RetainObject");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_retain_object, (DWORD)obj);
 
   NPObject *rv = NPNFuncs.retainobject(obj);
-
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
 
   return rv;
 }
 
 NPObject* NPN_CreateObject(NPP id, NPClass *cl)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_CreateObject");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_create_object, (DWORD)cl);
   
   NPObject *rv = NPNFuncs.createobject(id, cl);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_create_object, (DWORD)rv);
 
   return rv;
 }
 
 int32_t NPN_IntFromIdentifier(NPIdentifier identifier)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_IntFromIdentifier");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_int_from_identifier, (DWORD)identifier);
 
   int32_t rv = NPNFuncs.intfromidentifier(identifier);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_int_from_identifier, rv);
 
   return rv;
 }
 
 NPUTF8 *NPN_UTF8FromIdentifier(NPIdentifier identifier)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_Enumerate");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_utf8_from_identifier, (DWORD)identifier);
 
   NPUTF8 *rv = NPNFuncs.utf8fromidentifier(identifier);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_utf8_from_identifier, 1234567890);
 
   return rv;
 }
 
 bool NPN_IdentifierIsString(NPIdentifier identifier)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_IdentifierIsString");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_identifier_is_string, (DWORD)identifier);
 
   bool rv = NPNFuncs.identifierisstring(identifier);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_identifier_is_string, rv);
 
   return rv;
 }
 
 NPIdentifier NPN_GetIntIdentifier(int32_t value)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_GetIntIdentifier");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_get_int_identifer, (DWORD)value);
 
   NPIdentifier rv = NPNFuncs.getintidentifier(value);
 
-  sprintf(msg, "--Return: %x", rv);
-  logger->logMessage(msg);
+  if(logger)
+    logger->logReturn(action_npn_get_int_identifer, (DWORD)rv);
 
   return rv;
 }
 
 void NPN_GetStringIdentifiers(const NPUTF8 **names, int32_t count, NPIdentifier *identifiers)
 {
-  char msg[1024];
-  sprintf(msg, "NPN_GetStringIdentifiers");
-  logger->logMessage(msg);
+  if(logger)
+    logger->logCall(action_npn_get_string_identifiers);
 
   NPNFuncs.getstringidentifiers(names, count, identifiers);
-
-  sprintf(msg, "--Return.");
-  logger->logMessage(msg);
 }

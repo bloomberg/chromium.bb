@@ -72,9 +72,9 @@ void CLogFile::close()
   }
 }
 
-DWORD CLogFile::write(char * buf)
+DWORD CLogFile::write(const std::string& buf)
 {
-  return XP_WriteFile(hFile, buf, strlen(buf));
+  return XP_WriteFile(hFile, buf.c_str(), buf.length());
 }
 
 void CLogFile::flush()

@@ -35,12 +35,158 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#include <string>
+#include <vector>
+#include <errno.h>
+
+
 #include "xp.h"
 
 #include "format.h"
 #include "logger.h"
 
 extern Logger * logger;
+
+////////////////////////////////////////////////////////////////////////////////
+// From Google Chrome's string_util.cc
+
+// It's possible for functions that use a va_list, such as StringPrintf, to
+// invalidate the data in it upon use.  The fix is to make a copy of the
+// structure before using it and use that copy instead.  va_copy is provided
+// for this purpose.  MSVC does not provide va_copy, so define an
+// implementation here.  It is not guaranteed that assignment is a copy, so the
+// StringUtil.__GNUC__ unit test tests this capability.
+#if defined(COMPILER_GCC)
+#define GG_VA_COPY(a, b) (va_copy(a, b))
+#elif defined(_MSC_VER)
+#define GG_VA_COPY(a, b) (a = b)
+#endif
+
+
+// The arraysize(arr) macro returns the # of elements in an array arr.
+// The expression is a compile-time constant, and therefore can be
+// used in defining new arrays, for example.  If you use arraysize on
+// a pointer by mistake, you will get a compile-time error.
+//
+// One caveat is that arraysize() doesn't accept any array of an
+// anonymous type or a type defined inside a function.  In these rare
+// cases, you have to use the unsafe ARRAYSIZE_UNSAFE() macro below.  This is
+// due to a limitation in C++'s template system.  The limitation might
+// eventually be removed, but it hasn't happened yet.
+
+// This template function declaration is used in defining arraysize.
+// Note that the function doesn't need an implementation, as we only
+// use its type.
+template <typename T, size_t N>
+char (&ArraySizeHelper(T (&array)[N]))[N];
+
+// That gcc wants both of these prototypes seems mysterious. VC, for
+// its part, can't decide which to use (another mystery). Matching of
+// template overloads: the final frontier.
+#ifndef _MSC_VER
+template <typename T, size_t N>
+char (&ArraySizeHelper(const T (&array)[N]))[N];
+#endif
+
+#define arraysize(array) (sizeof(ArraySizeHelper(array)))
+
+#if defined(_WIN32)
+inline int vsnprintf(char* buffer, size_t size,
+                     const char* format, va_list arguments) {
+  int length = vsnprintf_s(buffer, size, size - 1, format, arguments);
+  if (length < 0)
+    return _vscprintf(format, arguments);
+  return length;
+}
+#else
+inline int vsnprintf(char* buffer, size_t size,
+                     const char* format, va_list arguments) {
+  return ::vsnprintf(buffer, size, format, arguments);
+}
+#endif
+
+
+// Templatized backend for StringPrintF/StringAppendF. This does not finalize
+// the va_list, the caller is expected to do that.
+template <class StringType>
+static void StringAppendVT(StringType* dst,
+                           const typename StringType::value_type* format,
+                           va_list ap) {
+  // First try with a small fixed size buffer.
+  // This buffer size should be kept in sync with StringUtilTest.GrowBoundary
+  // and StringUtilTest.StringPrintfBounds.
+  typename StringType::value_type stack_buf[1024];
+
+  va_list ap_copy;
+  GG_VA_COPY(ap_copy, ap);
+
+#if !defined(_WIN32)
+  errno = 0;
+#endif
+  int result = vsnprintf(stack_buf, arraysize(stack_buf), format, ap_copy);
+  va_end(ap_copy);
+
+  if (result >= 0 && result < static_cast<int>(arraysize(stack_buf))) {
+    // It fit.
+    dst->append(stack_buf, result);
+    return;
+  }
+
+  // Repeatedly increase buffer size until it fits.
+  int mem_length = arraysize(stack_buf);
+  while (true) {
+    if (result < 0) {
+#if !defined(_WIN32)
+      // On Windows, vsnprintf always returns the number of characters in a
+      // fully-formatted string, so if we reach this point, something else is
+      // wrong and no amount of buffer-doubling is going to fix it.
+      if (errno != 0 && errno != EOVERFLOW)
+#endif
+      {
+        // If an error other than overflow occurred, it's never going to work.
+        return;
+      }
+      // Try doubling the buffer size.
+      mem_length *= 2;
+    } else {
+      // We need exactly "result + 1" characters.
+      mem_length = result + 1;
+    }
+
+    if (mem_length > 32 * 1024 * 1024) {
+      // That should be plenty, don't try anything larger.  This protects
+      // against huge allocations when using vsnprintf implementations that
+      // return -1 for reasons other than overflow without setting errno.
+      return;
+    }
+
+    std::vector<typename StringType::value_type> mem_buf(mem_length);
+
+    // NOTE: You can only use a va_list once.  Since we're in a while loop, we
+    // need to make a new copy each time so we don't use up the original.
+    GG_VA_COPY(ap_copy, ap);
+    result = vsnprintf(&mem_buf[0], mem_length, format, ap_copy);
+    va_end(ap_copy);
+
+    if ((result >= 0) && (result < mem_length)) {
+      // It fit.
+      dst->append(&mem_buf[0], result);
+      return;
+    }
+  }
+}
+
+std::string StringPrintf(const char* format, ...) {
+  va_list ap;
+  va_start(ap, format);
+  std::string result;
+  StringAppendVT(&result, format, ap);
+  va_end(ap);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 
 char * FormatNPAPIError(int iError)
 {
@@ -548,10 +694,8 @@ void freeLogItemStruct(LogItemStruct * lis)
     delete lis;
 }
 
-int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
+void formatLogItem(LogItemStruct * plis, std::string* output, BOOL bDOSStyle)
 {
-  int iRet = 0;
-  static char szString[1024];
   static char szEOL[8];
   static char szEOI[256];
   static char szEndOfItem[] = "";
@@ -568,8 +712,6 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
     //strcpy(szEOI, szEndOfItem);
     //strcat(szEOI, "\n");
   }
-
-  szOutput[0] = '\0';
 
   DWORD dw1 = plis->arg1.dwArg;
   DWORD dw2 = plis->arg2.dwArg;
@@ -594,22 +736,22 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
     // NPN action
     case action_npn_version:
       if((plis->arg1.pData != NULL)&&(plis->arg2.pData != NULL)&&(plis->arg3.pData != NULL)&&(plis->arg4.pData != NULL))
-        sprintf(szString, "NPN_Version(%#08lx, %#08lx, %#08lx, %#08lx)%s", dw1,dw2,dw3,dw4,szEOL);
+        *output = StringPrintf("NPN_Version(%#08lx, %#08lx, %#08lx, %#08lx)", dw1,dw2,dw3,dw4);
       else
-        sprintf(szString, "NPN_Version(%#08lx, %#08lx, %#08lx, %#08lx)%s", dw1,dw2,dw3,dw4,szEOL);
+        *output = StringPrintf("NPN_Version(%#08lx, %#08lx, %#08lx, %#08lx)", dw1,dw2,dw3,dw4);
       break;
     case action_npn_get_url_notify:
     {
       FormatPCHARArgument(sz2, sizeof(sz2), &plis->arg2);
       FormatPCHARArgument(sz3, sizeof(sz3), &plis->arg3);
-      sprintf(szString, "NPN_GetURLNotify(%#08lx, %s, %s, %#08lx)%s", dw1,sz2,sz3,dw4,szEOL);
+      *output = StringPrintf("NPN_GetURLNotify(%#08lx, %s, %s, %#08lx)", dw1,sz2,sz3,dw4);
       break;
     }
     case action_npn_get_url:
     {
       FormatPCHARArgument(sz2, sizeof(sz2), &plis->arg2);
       FormatPCHARArgument(sz3, sizeof(sz3), &plis->arg3);
-      sprintf(szString, "NPN_GetURL(%#08lx, %s, %s)%s", dw1,sz2,sz3,szEOL);
+      *output = StringPrintf("NPN_GetURL(%#08lx, %s, %s)", dw1,sz2,sz3);
       break;
     }
     case action_npn_post_url_notify:
@@ -619,8 +761,8 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
       FormatPCHARArgument(sz5, sizeof(sz5), &plis->arg5);
       FormatBOOLArgument(sz6, sizeof(sz6), &plis->arg6);
 
-      sprintf(szString, "NPN_PostURLNotify(%#08lx, %s, %s, %li, %s, %s, %#08lx)%s", 
-               dw1,sz2,sz3,(uint32)dw4,sz5,sz6,dw7,szEOL);
+      *output = StringPrintf("NPN_PostURLNotify(%#08lx, %s, %s, %li, %s, %s, %#08lx)", 
+               dw1,sz2,sz3,(uint32)dw4,sz5,sz6,dw7);
       break;
     }
     case action_npn_post_url:
@@ -630,8 +772,8 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
       FormatPCHARArgument(sz5, sizeof(sz5), &plis->arg5);
       FormatBOOLArgument(sz6, sizeof(sz6), &plis->arg6);
 
-      sprintf(szString, "NPN_PostURL(%#08lx, %s, %s, %li, %s, %s)%s", 
-               dw1,sz2,sz3,(uint32)dw4,sz5,sz6,szEOL);
+      *output = StringPrintf("NPN_PostURL(%#08lx, %s, %s, %li, %s, %s)", 
+               dw1,sz2,sz3,(uint32)dw4,sz5,sz6);
       break;
     }
     case action_npn_new_stream:
@@ -639,53 +781,53 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
       FormatPCHARArgument(sz2, sizeof(sz2), &plis->arg2);
       FormatPCHARArgument(sz3, sizeof(sz3), &plis->arg3);
       if(plis->arg4.pData != NULL)
-        sprintf(szString, "NPN_NewStream(%#08lx, %s, %s, %#08lx(%#08lx))%s", 
-                 dw1, sz2,sz3,dw4,*(DWORD *)plis->arg4.pData,szEOL);
+        *output = StringPrintf("NPN_NewStream(%#08lx, %s, %s, %#08lx(%#08lx))", 
+                 dw1, sz2,sz3,dw4,*(DWORD *)plis->arg4.pData);
       else
-        sprintf(szString, "NPN_NewStream(%#08lx, \"%s\", \"%s\", %#08lx)%s", dw1, sz2,sz3,dw4,szEOL);
+        *output = StringPrintf("NPN_NewStream(%#08lx, \"%s\", \"%s\", %#08lx)", dw1, sz2,sz3,dw4);
       break;
     }
     case action_npn_destroy_stream:
-      sprintf(szString, "NPN_DestroyStream(%#08lx, %#08lx, %s)%s", dw1,dw2,FormatNPAPIReason((int)dw3),szEOL);
+      *output = StringPrintf("NPN_DestroyStream(%#08lx, %#08lx, %s)", dw1,dw2,FormatNPAPIReason((int)dw3));
       break;
     case action_npn_request_read:
-      sprintf(szString, "NPN_RequestRead(%#08lx, %#08lx)%s", dw1, dw2, szEOL);
+      *output = StringPrintf("NPN_RequestRead(%#08lx, %#08lx)", dw1, dw2);
       break;
     case action_npn_write:
     {
       FormatPCHARArgument(sz4, sizeof(sz4), &plis->arg4);
-      sprintf(szString, "NPN_Write(%#08lx, %#08lx, %li, %s)%s", dw1, dw2, (int32)dw3, sz4, szEOL);
+      *output = StringPrintf("NPN_Write(%#08lx, %#08lx, %li, %s)", dw1, dw2, (int32)dw3, sz4);
       break;
     }
     case action_npn_status:
     {
       FormatPCHARArgument(sz2, sizeof(sz2), &plis->arg2);
-      sprintf(szString, "NPN_Status(%#08lx, %s)%s", dw1, sz2, szEOL);
+      *output = StringPrintf("NPN_Status(%#08lx, %s)", dw1, sz2);
       break;
     }
     case action_npn_user_agent:
-      sprintf(szString, "NPN_UserAgent(%#08lx)%s", dw1, szEOL);
+      *output = StringPrintf("NPN_UserAgent(%#08lx)", dw1);
       break;
     case action_npn_mem_alloc:
-      sprintf(szString, "NPN_MemAlloc(%li)%s", dw1, szEOL);
+      *output = StringPrintf("NPN_MemAlloc(%li)", dw1);
       break;
     case action_npn_mem_free:
-      sprintf(szString, "NPN_MemFree(%#08lx)%s", dw1,szEOL);
+      *output = StringPrintf("NPN_MemFree(%#08lx)", dw1);
       break;
     case action_npn_mem_flush:
-      sprintf(szString, "NPN_MemFlush(%li)%s", dw1, szEOL);
+      *output = StringPrintf("NPN_MemFlush(%li)", dw1);
       break;
     case action_npn_reload_plugins:
     {
       FormatBOOLArgument(sz1, sizeof(sz1), &plis->arg1);
-      sprintf(szString, "NPN_ReloadPlugins(%s)%s", sz1,szEOL);
+      *output = StringPrintf("NPN_ReloadPlugins(%s)", sz1);
       break;
     }
     case action_npn_get_java_env:
-      sprintf(szString, "NPN_GetJavaEnv()%s", szEOL);
+      *output = StringPrintf("NPN_GetJavaEnv()");
       break;
     case action_npn_get_java_peer:
-      sprintf(szString, "NPN_GetJavaPeer(%#08lx)%s", dw1, szEOL);
+      *output = StringPrintf("NPN_GetJavaPeer(%#08lx)", dw1);
       break;
     case action_npn_get_value:
     {
@@ -695,19 +837,19 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
         case NPNVxtAppContext:
         case NPNVnetscapeWindow:
           if(dw3 != 0L)
-            sprintf(szString, "NPN_GetValue(%#08lx, %s, %#08lx(%#08lx))%s",dw1,FormatNPNVariable((NPNVariable)dw2),dw3,*(DWORD *)dw3,szEOL);
+            *output = StringPrintf("NPN_GetValue(%#08lx, %s, %#08lx(%#08lx))",dw1,FormatNPNVariable((NPNVariable)dw2),dw3,*(DWORD *)dw3);
           else
-            sprintf(szString, "NPN_GetValue(%#08lx, %s, %#08lx)%s",dw1,FormatNPNVariable((NPNVariable)dw2),dw3,szEOL);
+            *output = StringPrintf("NPN_GetValue(%#08lx, %s, %#08lx)",dw1,FormatNPNVariable((NPNVariable)dw2),dw3);
           break;
         case NPNVjavascriptEnabledBool:
         case NPNVasdEnabledBool:
         case NPNVisOfflineBool:
           if(dw3 != 0L)
-            sprintf(szString, "NPN_GetValue(%#08lx, %s, %#08lx(%s))%s",
+            *output = StringPrintf("NPN_GetValue(%#08lx, %s, %#08lx(%s))",
                      dw1,FormatNPNVariable((NPNVariable)dw2),dw3,
-                     (((NPBool)*(DWORD *)dw3) == TRUE) ? "TRUE" : "FALSE", szEOL);
+                     (((NPBool)*(DWORD *)dw3) == TRUE) ? "TRUE" : "FALSE");
           else
-            sprintf(szString, "NPN_GetValue(%#08lx, %s, %#08lx)%s",dw1,FormatNPNVariable((NPNVariable)dw2),dw3,szEOL);
+            *output = StringPrintf("NPN_GetValue(%#08lx, %s, %#08lx)",dw1,FormatNPNVariable((NPNVariable)dw2),dw3);
           break;
         default:
           break;
@@ -719,13 +861,13 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
       if(((NPPVariable)dw2 == NPPVpluginNameString) || ((NPPVariable)dw2 == NPPVpluginDescriptionString))
       {
         FormatPCHARArgument(sz3, sizeof(sz3), &plis->arg3);
-        sprintf(szString, "NPN_SetValue(%#08lx, %s, %s)%s", dw1,FormatNPPVariable((NPPVariable)dw2),sz3,szEOL);
+        *output = StringPrintf("NPN_SetValue(%#08lx, %s, %s)", dw1,FormatNPPVariable((NPPVariable)dw2),sz3);
       }
       else if(((NPPVariable)dw2 == NPPVpluginWindowBool) || ((NPPVariable)dw2 == NPPVpluginTransparentBool))
       {
         FormatPBOOLArgument(sz3, sizeof(sz3), &plis->arg3);
-        sprintf(szString, "NPN_SetValue(%#08lx, %s, %s)%s", 
-                 dw1,FormatNPPVariable((NPPVariable)dw2),sz3,szEOL);
+        *output = StringPrintf("NPN_SetValue(%#08lx, %s, %s)", 
+                 dw1,FormatNPPVariable((NPPVariable)dw2),sz3);
       }
       else if((NPPVariable)dw2 == NPPVpluginWindowSize)
       {
@@ -733,15 +875,15 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
         {
           int32 iWidth = ((NPSize *)plis->arg3.pData)->width;
           int32 iHeight = ((NPSize *)plis->arg3.pData)->height;
-          sprintf(szString, "NPN_SetValue(%#08lx, %s, %#08lx(%li,%li))%s", 
-                   dw1,FormatNPPVariable((NPPVariable)dw2),dw3,iWidth,iHeight,szEOL);
+          *output = StringPrintf("NPN_SetValue(%#08lx, %s, %#08lx(%li,%li))", 
+                   dw1,FormatNPPVariable((NPPVariable)dw2),dw3,iWidth,iHeight);
         }
         else
-          sprintf(szString, "NPN_SetValue(%#08lx, %s, %#08lx(?,?))%s", 
-                   dw1,FormatNPPVariable((NPPVariable)dw2),dw3,szEOL);
+          *output = StringPrintf("NPN_SetValue(%#08lx, %s, %#08lx(?,?))", 
+                   dw1,FormatNPPVariable((NPPVariable)dw2),dw3);
       }
       else
-        sprintf(szString, "NPN_SetValue(%#08lx, %s, %#08lx(What is it?))%s", dw1,FormatNPPVariable((NPPVariable)dw2),dw3,szEOL);
+        *output = StringPrintf("NPN_SetValue(%#08lx, %s, %#08lx(What is it?))", dw1,FormatNPPVariable((NPPVariable)dw2),dw3);
       break;
     case action_npn_invalidate_rect:
     {
@@ -751,17 +893,77 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
         uint16 left   = ((NPRect *)plis->arg2.pData)->left;
         uint16 bottom = ((NPRect *)plis->arg2.pData)->bottom;
         uint16 right  = ((NPRect *)plis->arg2.pData)->right;
-        sprintf(szString, "NPN_InvalidateRect(%#08lx, %#08lx(%u,%u;%u,%u)%s", dw1,dw2,top,left,bottom,right,szEOL);
+        *output = StringPrintf("NPN_InvalidateRect(%#08lx, %#08lx(%u,%u;%u,%u)", dw1,dw2,top,left,bottom,right);
       }
       else
-        sprintf(szString, "NPN_InvalidateRect(%#08lx, %#08lx(?,?,?,?)%s", dw1,dw2,szEOL);
+        *output = StringPrintf("NPN_InvalidateRect(%#08lx, %#08lx(?,?,?,?)", dw1,dw2);
       break;
     }
     case action_npn_invalidate_region:
-      sprintf(szString, "NPN_InvalidateRegion(%#08lx, %#08lx)%s", dw1,dw2,szEOL);
+      *output = StringPrintf("NPN_InvalidateRegion(%#08lx, %#08lx)", dw1,dw2);
       break;
     case action_npn_force_redraw:
-      sprintf(szString, "NPN_ForceRedraw(%#08lx)%s", dw1,szEOL);
+      *output = StringPrintf("NPN_ForceRedraw(%#08lx)", dw1);
+      break;
+    case action_npn_enumerate:
+      *output = StringPrintf("NPN_Enumerate()");
+      break;
+    case action_npn_pop_popups_enabled_state:
+      *output = StringPrintf("NPN_PopPopupsEnabledState()");
+      break;
+    case action_npn_push_popups_enabled_state:
+      *output = StringPrintf("NPN_PushPopupsEnabledState()");
+      break;
+    case action_npn_set_exception:
+      *output = StringPrintf("NPN_SetException(%s)", dw1);
+      break;
+    case action_npn_has_method:
+      *output = StringPrintf("NPN_HasMethod(%d)", dw1);
+      break;
+    case action_npn_has_property:
+      *output = StringPrintf("NPN_HasProperty(%d)", dw1);
+      break;
+    case action_npn_remove_property:
+      *output = StringPrintf("NPN_RemoveProperty(%d)", dw1);
+      break;
+    case action_npn_set_property:
+      *output = StringPrintf("NPN_SetProperty(%d)", dw1);
+      break;
+    case action_npn_get_property:
+      *output = StringPrintf("NPN_GetProperty(%d)", dw1);
+      break;
+    case action_npn_evaluate:
+      *output = StringPrintf("NPN_Evaluate(%s)", dw1);
+      break;
+    case action_npn_invoke_default:
+      *output = StringPrintf("NPN_InvokeDefault(%#08lx)", dw1);
+      break;
+    case action_npn_invoke:
+      *output = StringPrintf("NPN_Invoke(%#08lx)", dw1);
+      break;
+    case action_npn_release_object:
+      *output = StringPrintf("NPN_ReleaseObject(%d)", dw1);
+      break;
+    case action_npn_retain_object:
+      *output = StringPrintf("NPN_RetainObject(%d)", dw1);
+      break;
+    case action_npn_create_object:
+      *output = StringPrintf("NPN_CreateObject(%#08lx)", dw1);
+      break;
+    case action_npn_int_from_identifier:
+      *output = StringPrintf("NPN_IntFromIdentifier(%d)", dw1);
+      break;
+    case action_npn_utf8_from_identifier:
+      *output = StringPrintf("NPN_UTF8FromIdentifier(%d)", dw1);
+      break;
+    case action_npn_identifier_is_string:
+      *output = StringPrintf("NPN_IdentifierIsString(%d)", dw1);
+      break;
+    case action_npn_get_int_identifer:
+      *output = StringPrintf("NPN_GetIntIdentifier(%d)", dw1);
+      break;
+    case action_npn_get_string_identifiers:
+      *output = StringPrintf("NPN_GetStringIdentifier()");
       break;
 
     // NPP action
@@ -780,12 +982,12 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
           strcpy(szMode, "[Invalid mode]");
           break;
       }
-      sprintf(szString, "NPP_New(\"%s\", %#08lx, %s, %i, %#08lx, %#08lx, %#08lx)%s", 
-               (char *)dw1,dw2,szMode,(int)dw4,dw5,dw6,dw7,szEOL);
+      *output = StringPrintf("NPP_New(\"%s\", %#08lx, %s, %i, %#08lx, %#08lx, %#08lx)", 
+               (char *)dw1,dw2,szMode,(int)dw4,dw5,dw6,dw7);
       break;
     }
     case action_npp_destroy:
-      sprintf(szString, "NPP_Destroy(%#08lx, %#08lx(%#08lx))%s", dw1, dw2, *(DWORD *)plis->arg2.pData,szEOL);
+      *output = StringPrintf("NPP_Destroy(%#08lx, %#08lx(%#08lx))", dw1, dw2, *(DWORD *)plis->arg2.pData);
       break;
     case action_npp_set_window:
     {
@@ -816,10 +1018,10 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
                  ((NPWindow*)plis->arg2.pData)->clipRect.left, 
                  ((NPWindow*)plis->arg2.pData)->clipRect.bottom, 
                  ((NPWindow*)plis->arg2.pData)->clipRect.right, szType);
-        sprintf(szString, "NPP_SetWindow(%#08lx, %#08lx)%s%s%s", dw1,dw2," ",szWindow,szEOL);
+        *output = StringPrintf("NPP_SetWindow(%#08lx, %#08lx) %s", dw1,dw2,szWindow);
       }
       else
-        sprintf(szString, "NPP_SetWindow(%#08lx, %#08lx)%s", dw1,dw2,szEOL);
+        *output = StringPrintf("NPP_SetWindow(%#08lx, %#08lx)", dw1,dw2);
 
       break;
     }
@@ -841,57 +1043,55 @@ int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle)
           break;
       }
       FormatPCHARArgument(sz2, sizeof(sz2), &plis->arg2);
-      sprintf(szString, "NPP_NewStream(%#08lx, %s, %#08lx (%s), %s, %s)%s", dw1, sz2, dw3, 
-               ((NPStream*)dw3)->url, ((NPBool)dw4 == TRUE) ? "TRUE" : "FALSE", sz5, szEOL);
+      *output = StringPrintf("NPP_NewStream(%#08lx, %s, %#08lx (%s), %s, %s)", dw1, sz2, dw3, 
+               ((NPStream*)dw3)->url, ((NPBool)dw4 == TRUE) ? "TRUE" : "FALSE", sz5);
       break;
     }
     case action_npp_destroy_stream:
-      sprintf(szString, "NPP_DestroyStream(%#08lx, %#08lx, %s)%s", dw1,dw2,FormatNPAPIReason((int)dw3),szEOL);
+      *output = StringPrintf("NPP_DestroyStream(%#08lx, %#08lx, %s)", dw1,dw2,FormatNPAPIReason((int)dw3));
       break;
     case action_npp_stream_as_file:
       FormatPCHARArgument(sz3, sizeof(sz3), &plis->arg3);
-      sprintf(szString, "NPP_StreamAsFile(%#08lx, %#08lx, %s)%s", dw1,dw2,sz3,szEOL);
+      *output = StringPrintf("NPP_StreamAsFile(%#08lx, %#08lx, %s)", dw1,dw2,sz3);
       break;
     case action_npp_write_ready:
-      sprintf(szString, "NPP_WriteReady(%#08lx, %#08lx)%s", dw1,dw2,szEOL);
+      *output = StringPrintf("NPP_WriteReady(%#08lx, %#08lx)", dw1,dw2);
       break;
     case action_npp_write:
     {
       FormatPCHARArgument(sz5, sizeof(sz5), &plis->arg5);
-      sprintf(szString, "NPP_Write(%#08lx, %#08lx, %li, %li, %s))%s",dw1,dw2,dw3,dw4,sz5,szEOL);
+      *output = StringPrintf("NPP_Write(%#08lx, %#08lx, %li, %li, %s))",dw1,dw2,dw3,dw4,sz5);
       break;
     }
     case action_npp_print:
-      sprintf(szString, "NPP_Print(%#08lx, %#08lx)%s", dw1, dw2,szEOL);
+      *output = StringPrintf("NPP_Print(%#08lx, %#08lx)", dw1, dw2);
       break;
     case action_npp_handle_event:
     {
       NPEvent *event = (NPEvent*)dw2;
-      sprintf(szString, "NPP_HandleEvent(%#08lx, %#08lx {event=%d, wParam=%#08lx lParam=%#08lx)%s", dw1,dw2,event->event, event->wParam, event->lParam, szEOL);
+      *output = StringPrintf("NPP_HandleEvent(%#08lx, %#08lx {event=%d, wParam=%#08lx lParam=%#08lx)", dw1,dw2,event->event, event->wParam, event->lParam);
       break;
     }
     case action_npp_url_notify:
     {
       FormatPCHARArgument(sz2, sizeof(sz2), &plis->arg2);
-      sprintf(szString, "NPP_URLNotify(%#08lx, %s, %s, %#08lx)%s", dw1,sz2,FormatNPAPIReason((int)dw3),dw4,szEOL);
+      *output = StringPrintf("NPP_URLNotify(%#08lx, %s, %s, %#08lx)", dw1,sz2,FormatNPAPIReason((int)dw3),dw4);
       break;
     }
     case action_npp_get_java_class:
-      sprintf(szString, "NPP_GetJavaClass()%s",szEOL);
+      *output = StringPrintf("NPP_GetJavaClass()");
       break;
     case action_npp_get_value:
-      sprintf(szString, "NPP_GetValue(%#08lx, %s, %#08lx)%s", dw1,FormatNPPVariable((NPPVariable)dw2),dw3,szEOL);
+      *output = StringPrintf("NPP_GetValue(%#08lx, %s, %#08lx)", dw1,FormatNPPVariable((NPPVariable)dw2),dw3);
       break;
     case action_npp_set_value:
-      sprintf(szString, "NPP_SetValue(%#08lx, %s, %#08lx)%s", dw1,FormatNPNVariable((NPNVariable)dw2),dw3,szEOL);
+      *output = StringPrintf("NPP_SetValue(%#08lx, %s, %#08lx)", dw1,FormatNPNVariable((NPNVariable)dw2),dw3);
       break;
 
     default:
-      sprintf(szString, "Unknown action%s",szEOL);
+      *output = StringPrintf("Unknown action");
       break;
   }
-  strcat(szOutput, szString);
-  strcat(szOutput, szEOI);
-  iRet = strlen(szString) + strlen(szEOI) + 1;
-  return iRet;
+  *output += szEOL;
+  *output += szEOI;
 }

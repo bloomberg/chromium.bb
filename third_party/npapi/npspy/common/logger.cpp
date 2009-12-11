@@ -35,6 +35,8 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+#include <string>
+
 #include "xp.h"
 
 #include "logger.h"
@@ -304,20 +306,20 @@ void Logger::logCall(NPAPI_Action action, DWORD dw1, DWORD dw2, DWORD dw3, DWORD
   if(isMuted(action))
     return;
 
-  static char szLog[512];
+  std::string log;
 
   LogItemStruct * lis = makeLogItemStruct(action, dw1, dw2, dw3, dw4, dw5, dw6, dw7);
-  int iLength = formatLogItem(lis, szLog, TRUE);
+  formatLogItem(lis, &log, TRUE);
   freeLogItemStruct(lis);
 
   if(bToConsole)
-    printf("%s", szLog);
+    printf("%s", log.c_str());
   
   if(bToFile)
-    filer.write(szLog);
+    filer.write(log);
 
   if(bToWindow)
-    dumpStringToMainWindow(szLog);
+    dumpStringToMainWindow(log);
 }
 
 void Logger::logMessage(const char *msg)

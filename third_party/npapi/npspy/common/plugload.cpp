@@ -108,6 +108,7 @@ XP_HLIB LoadRealPlugin(char * mimetype)
 
   directories.push_back(szFileName);
   directories.push_back("C:\\Windows\\System32\\Macromed\\Flash");
+  directories.push_back("C:\\Windows\\SysWOW64\\Macromed\\Flash");
 
   for (size_t i = 0; i < directories.size(); ++i) {
     std::string search_path = directories[i];
@@ -116,7 +117,7 @@ XP_HLIB LoadRealPlugin(char * mimetype)
     if(handle == INVALID_HANDLE_VALUE) 
     {
       FindClose(handle);
-      return NULL;
+      continue;
     }
 
     DWORD versize = 0L;

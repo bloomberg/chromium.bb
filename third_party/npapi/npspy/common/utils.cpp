@@ -97,7 +97,7 @@ void XP_CloseFile(XP_HFILE hFile)
   }
 }
 
-DWORD XP_WriteFile(XP_HFILE hFile, void * pBuf, int iSize)
+DWORD XP_WriteFile(XP_HFILE hFile, const void * pBuf, int iSize)
 {
 #ifdef XP_WIN
   DWORD dwRet;

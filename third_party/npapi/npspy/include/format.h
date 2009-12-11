@@ -38,6 +38,7 @@
 #ifndef __FORMAT_H__
 #define __FORMAT_H__
 
+#include <string>
 #include "npapi.h"
 
 typedef enum
@@ -65,6 +66,28 @@ typedef enum
   action_npn_invalidate_rect,
   action_npn_invalidate_region,
   action_npn_force_redraw,
+  action_npn_enumerate,
+  action_npn_pop_popups_enabled_state,
+  action_npn_push_popups_enabled_state,
+  action_npn_set_exception,
+  action_npn_release_variant_value,
+  action_npn_has_method,
+  action_npn_has_property,
+  action_npn_remove_property,
+  action_npn_set_property,
+  action_npn_get_property,
+  action_npn_evaluate,
+  action_npn_invoke_default,
+  action_npn_invoke,
+  action_npn_release_object,
+  action_npn_retain_object,
+  action_npn_create_object,
+  action_npn_int_from_identifier,
+  action_npn_utf8_from_identifier,
+  action_npn_identifier_is_string,
+  action_npn_get_int_identifer,
+  action_npn_get_string_identifier,
+  action_npn_get_string_identifiers,
 
   action_npp_new,
   action_npp_destroy,
@@ -128,6 +151,6 @@ LogItemStruct * makeLogItemStruct(NPAPI_Action action,
                                   DWORD dw1, DWORD dw2, DWORD dw3, DWORD dw4,
                                   DWORD dw5, DWORD dw6, DWORD dw7, BOOL bShort = FALSE);
 void freeLogItemStruct(LogItemStruct * lis);
-int formatLogItem(LogItemStruct * plis, char * szOutput, BOOL bDOSStyle = FALSE);
+void formatLogItem(LogItemStruct * plis, std::string * szOutput, BOOL bDOSStyle = FALSE);
 
 #endif // __LOGHLP_H__

@@ -151,36 +151,32 @@ void LoggerWin::onDestroyWindow()
   hWnd = NULL;
 }
 
-void LoggerWin::dumpStringToMainWindow(char * string)
+void LoggerWin::dumpStringToMainWindow(const std::string& string)
 {
-  bool free_string = false;
+  const char* output = string.c_str();
+  std::string temp_string;
   // listboxes don't want <CR> and <LF> so cut them off if any. The order is important.
-  char * p = strrchr(string, '\n');
-  if(p) {
+  size_t newline = string.find('\n');
+  if(newline != std::string::npos) {
     // make copy of string since it might be a constant
-    char* temp = string;
-    string = (char*)malloc(strlen(temp) + 1);
-    strcpy(string, temp);
-    free_string = true;
+    temp_string = string;
 
-    p = strrchr(string, '\n');
+    char* p = strrchr(const_cast<char*>(temp_string.c_str()), '\n');
     *p = '\0';
 
-    p = strrchr(string, '\r');
+    p = strrchr(const_cast<char*>(temp_string.c_str()), '\r');
     if(p)
       *p = '\0';
+    output = temp_string.c_str();
   }
 
   HWND hWndOutput = GetDlgItem(hWnd, IDC_MAIN_OUTPUT);
-  ListBox_AddString(hWndOutput, string);
+  ListBox_AddString(hWndOutput, output);
   int count = ListBox_GetCount(hWndOutput);
   if(count == 32767)
     ListBox_ResetContent(hWndOutput);
   ListBox_SetCaretIndex(hWndOutput, count - 1);
   UpdateWindow(hWndOutput);
-
-  if (free_string)
-    free(string);
 }
 
 void LoggerWin::onClear()
