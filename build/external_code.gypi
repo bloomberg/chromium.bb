@@ -4,7 +4,7 @@
 
 {
   'conditions': [
-    [ 'OS=="linux"', {
+    [ 'OS=="linux" or OS=="freebsd"', {
       'target_defaults': {
         'cflags!': [
           '-Wall',
