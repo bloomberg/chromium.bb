@@ -49,6 +49,10 @@ ExtensionProcessManager::ExtensionProcessManager(Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_CLOSED,
                  NotificationService::AllSources());
+#if defined(OS_MACOSX)
+  registrar_.Add(this, NotificationType::APP_TERMINATING,
+                 NotificationService::AllSources());
+#endif
 }
 
 ExtensionProcessManager::~ExtensionProcessManager() {
@@ -246,12 +250,22 @@ void ExtensionProcessManager::Observe(NotificationType type,
     case NotificationType::BROWSER_CLOSED: {
       // Close background hosts when the last browser is closed so that they
       // have time to shutdown various objects on different threads. Our
-      // destructor is called too late in the shutdown sequence.
+      // destructor is called too late in the shutdown sequence. This will never
+      // occur on Mac. See the APP_TERMINATING case below.
       bool app_closing = *Details<bool>(details).ptr();
       if (app_closing)
         CloseBackgroundHosts();
       break;
     }
+
+#if defined(OS_MACOSX)
+    case NotificationType::APP_TERMINATING: {
+      // This is a Mac-specific notification since app_closing will never be
+      // true in the BROWSER_CLOSED case.
+      CloseBackgroundHosts();
+      break;
+    }
+#endif
 
     default:
       NOTREACHED();
