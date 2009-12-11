@@ -973,6 +973,7 @@
             '<@(chromium_dependencies)',
             # Needed for chrome_dll_main.cc #include of gtk/gtk.h
             '../build/linux/system.gyp:gtk',
+            'packed_resources',
           ],
           'sources': [
             'app/chrome_dll_main.cc',
@@ -981,8 +982,7 @@
           'copies': [
             {
               'destination': '<(PRODUCT_DIR)',
-              'files': ['<(INTERMEDIATE_DIR)/repack/chrome.pak',
-                        'tools/build/linux/chrome-wrapper',
+              'files': ['tools/build/linux/chrome-wrapper',
                         '../third_party/xdg-utils/scripts/xdg-settings',
                         ],
               # The wrapper script above may need to generate a .desktop file,
@@ -993,12 +993,6 @@
                 }, { # else: 'branding!="Chrome"
                   'files': ['app/theme/chromium/product_logo_48.png']
                 }],
-              ],
-            },
-            {
-              'destination': '<(PRODUCT_DIR)/locales',
-              'files': [
-                '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
               ],
             },
           ],
@@ -1344,70 +1338,6 @@
             'app/chrome_exe_main.cc',
             'app/client_util.cc',
           ]
-        }],
-        ['OS=="linux" or OS=="freebsd"', {
-          'variables': {
-            'repack_path': '../tools/data_pack/repack.py',
-          },
-          'actions': [
-            # TODO(mark): These actions are duplicated for the Mac in the
-            # chrome_dll target.  Can they be unified?
-            {
-              'action_name': 'repack_chrome',
-              'variables': {
-                'pak_inputs': [
-                  '<(grit_out_dir)/browser_resources.pak',
-                  '<(grit_out_dir)/common_resources.pak',
-                  '<(grit_out_dir)/renderer_resources.pak',
-                  '<(grit_out_dir)/theme_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
-                  '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
-                ],
-              },
-              'inputs': [
-                '<(repack_path)',
-                '<@(pak_inputs)',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/repack/chrome.pak',
-              ],
-              'action': ['python', '<(repack_path)', '<@(_outputs)',
-                         '<@(pak_inputs)'],
-            },
-            {
-              'action_name': 'repack_locales',
-              'variables': {
-                'conditions': [
-                  ['branding=="Chrome"', {
-                    'branding_flag': ['-b', 'google_chrome',],
-                  }, {  # else: branding!="Chrome"
-                    'branding_flag': ['-b', 'chromium',],
-                  }],
-                ],
-              },
-              'inputs': [
-                'tools/build/repack_locales.py',
-                # NOTE: Ideally the common command args would be shared amongst
-                # inputs/outputs/action, but the args include shell variables
-                # which need to be passed intact, and command expansion wants
-                # to expand the shell variables. Adding the explicit quoting
-                # here was the only way it seemed to work.
-                '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
-              ],
-              'outputs': [
-                '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
-              ],
-              'action': [
-                '<@(repack_locales_cmd)',
-                '<@(branding_flag)',
-                '-g', '<(grit_out_dir)',
-                '-s', '<(SHARED_INTERMEDIATE_DIR)',
-                '-x', '<(INTERMEDIATE_DIR)',
-                '<@(locales)',
-              ],
-            },
-          ],
         }],
       ],
     },
@@ -2687,6 +2617,93 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
+    ['OS=="linux" or OS=="freebsd"', {
+      'targets': [{
+        'target_name': 'packed_resources',
+        'type': 'none',
+        'variables': {
+          'repack_path': '../tools/data_pack/repack.py',
+        },
+        'actions': [
+          # TODO(mark): These actions are duplicated for the Mac in the
+          # chrome_dll target.  Can they be unified?
+          #
+          # Mac needs 'process_outputs_as_mac_bundle_resources' to be set,
+          # and the option is only effective when the target type is native
+          # binary. Hence we cannot build the Mac bundle resources here.
+          {
+            'action_name': 'repack_chrome',
+            'variables': {
+              'pak_inputs': [
+                '<(grit_out_dir)/browser_resources.pak',
+                '<(grit_out_dir)/common_resources.pak',
+                '<(grit_out_dir)/renderer_resources.pak',
+                '<(grit_out_dir)/theme_resources.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/app/app_resources/app_resources.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.pak',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_resources.pak',
+              ],
+            },
+            'inputs': [
+              '<(repack_path)',
+              '<@(pak_inputs)',
+            ],
+            'outputs': [
+              '<(INTERMEDIATE_DIR)/repack/chrome.pak',
+            ],
+            'action': ['python', '<(repack_path)', '<@(_outputs)',
+                       '<@(pak_inputs)'],
+          },
+          {
+            'action_name': 'repack_locales',
+            'variables': {
+              'conditions': [
+                ['branding=="Chrome"', {
+                  'branding_flag': ['-b', 'google_chrome',],
+                }, {  # else: branding!="Chrome"
+                  'branding_flag': ['-b', 'chromium',],
+                }],
+              ],
+            },
+            'inputs': [
+              'tools/build/repack_locales.py',
+              # NOTE: Ideally the common command args would be shared amongst
+              # inputs/outputs/action, but the args include shell variables
+              # which need to be passed intact, and command expansion wants
+              # to expand the shell variables. Adding the explicit quoting
+              # here was the only way it seemed to work.
+              '>!@(<(repack_locales_cmd) -i <(branding_flag) -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+            ],
+            'outputs': [
+              '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+            ],
+            'action': [
+              '<@(repack_locales_cmd)',
+              '<@(branding_flag)',
+              '-g', '<(grit_out_dir)',
+              '-s', '<(SHARED_INTERMEDIATE_DIR)',
+              '-x', '<(INTERMEDIATE_DIR)',
+              '<@(locales)',
+            ],
+          },
+        ],
+        # We'll install the resource files to the product directory.
+        'copies': [
+          {
+            'destination': '<(PRODUCT_DIR)/locales',
+            'files': [
+              '>!@(<(repack_locales_cmd) -o -g \'<(grit_out_dir)\' -s \'<(SHARED_INTERMEDIATE_DIR)\' -x \'<(INTERMEDIATE_DIR)\' <(locales))',
+            ],
+          },
+          {
+            'destination': '<(PRODUCT_DIR)',
+            'files': [
+              '<(INTERMEDIATE_DIR)/repack/chrome.pak'
+            ],
+          },
+        ],
+      }],  # targets
+    }],  # OS=="linux" or OS=="freebsd"
   ],  # 'conditions'
 }
 
