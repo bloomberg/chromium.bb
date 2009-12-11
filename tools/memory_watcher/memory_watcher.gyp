@@ -9,7 +9,7 @@
       'type': 'shared_library',
       'msvs_guid': '3BD81303-4E14-4559-AA69-B30C3BAB08DD',
       'dependencies': [
-        '../../app/app.gyp:*',
+        '../../app/app.gyp:app_base',
         '../../base/base.gyp:base',
       ],
       'defines': [
