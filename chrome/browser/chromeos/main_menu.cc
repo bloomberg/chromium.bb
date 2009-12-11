@@ -244,9 +244,8 @@ void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
   rwhv_->SetSize(rwhv_size);
 }
 
-RendererPreferences MainMenu::GetRendererPrefs() const {
-  return renderer_preferences_util::GetInitedRendererPreferences(
-      browser_->profile());
+RendererPreferences MainMenu::GetRendererPrefs(Profile* profile) const {
+  return renderer_preferences_util::GetInitedRendererPreferences(profile);
 }
 
 void MainMenu::CreateNewWindow(int route_id) {

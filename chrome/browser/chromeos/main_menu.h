@@ -145,7 +145,7 @@ class MainMenu : public RenderViewHostDelegate,
     return this;
   }
   virtual void RequestMove(const gfx::Rect& new_bounds);
-  virtual RendererPreferences GetRendererPrefs() const;
+  virtual RendererPreferences GetRendererPrefs(Profile* profile) const;
 
   // RenderViewHostDelegate::View overrides.
   virtual void CreateNewWindow(int route_id);
