@@ -3118,6 +3118,7 @@ BUG29748 LINUX : LayoutTests/http/tests/navigation/error404-frames.html = IMAGE
 BUG29748 LINUX : LayoutTests/http/tests/navigation/post-frames.html = IMAGE
 BUG29748 LINUX : LayoutTests/http/tests/navigation/postredirect-frames.html = IMAGE
 BUG29748 LINUX : LayoutTests/media/video-controls-rendering.html = IMAGE
+BUG29748 LINUX : LayoutTests/svg/css/stars-with-shadow.html = IMAGE
 BUG29748 LINUX : LayoutTests/tables/mozilla/bugs/bug137388-2.html = IMAGE
 BUG29748 LINUX : LayoutTests/tables/mozilla/bugs/bug2479-1.html = IMAGE
 BUG29748 LINUX : LayoutTests/tables/mozilla/bugs/bug2479-4.html = IMAGE
