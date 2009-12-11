@@ -636,7 +636,7 @@ class TestExpectationsFile:
 
   def _ExpandTests(self, test_list_path):
     """Convert the test specification to an absolute, normalized
-    # path and make sure directories end with the OS path separator."""
+    path and make sure directories end with the OS path separator."""
     path = os.path.join(path_utils.LayoutTestsDir(test_list_path),
                         test_list_path)
     path = os.path.normpath(path)
