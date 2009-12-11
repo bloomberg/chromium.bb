@@ -11,7 +11,6 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsFrontend.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
 using WebKit::WebDevToolsFrontend;
@@ -48,9 +47,17 @@ bool DevToolsClient::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DevToolsClient::sendMessageToAgent(
-      const WebKit::WebDevToolsMessageData& data) {
-  Send(DevToolsAgentMsg_RpcMessage(DevToolsMessageData(data)));
+void DevToolsClient::sendMessageToAgent(const WebString& class_name,
+                                        const WebString& method_name,
+                                        const WebString& param1,
+                                        const WebString& param2,
+                                        const WebString& param3) {
+  Send(DevToolsAgentMsg_RpcMessage(
+      class_name.utf8(),
+      method_name.utf8(),
+      param1.utf8(),
+      param2.utf8(),
+      param3.utf8()));
 }
 
 void DevToolsClient::sendDebuggerCommandToAgent(const WebString& command) {
@@ -81,7 +88,15 @@ void DevToolsClient::undockWindow() {
       render_view_->routing_id()));
 }
 
-void DevToolsClient::OnRpcMessage(const DevToolsMessageData& data) {
+void DevToolsClient::OnRpcMessage(const std::string& class_name,
+                                  const std::string& method_name,
+                                  const std::string& param1,
+                                  const std::string& param2,
+                                  const std::string& param3) {
   web_tools_frontend_->dispatchMessageFromAgent(
-      data.ToWebDevToolsMessageData());
+      WebString::fromUTF8(class_name),
+      WebString::fromUTF8(method_name),
+      WebString::fromUTF8(param1),
+      WebString::fromUTF8(param2),
+      WebString::fromUTF8(param3));
 }

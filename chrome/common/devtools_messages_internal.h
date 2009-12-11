@@ -43,15 +43,18 @@
 // This file describes developer tools message types.
 
 #include "ipc/ipc_message_macros.h"
-#include "webkit/glue/devtools/devtools_message_data.h"
 
 // These are messages sent from DevToolsAgent to DevToolsClient through the
 // browser.
 IPC_BEGIN_MESSAGES(DevToolsClient)
 
   // Sends glue-level Rpc message to the client.
-  IPC_MESSAGE_CONTROL1(DevToolsClientMsg_RpcMessage,
-                       DevToolsMessageData /* message data */)
+  IPC_MESSAGE_CONTROL5(DevToolsClientMsg_RpcMessage,
+                       std::string /* class_name */,
+                       std::string /* method_name */,
+                       std::string /* p1 */,
+                       std::string /* p2 */,
+                       std::string /* p3 */)
 
 IPC_END_MESSAGES(DevToolsClient)
 
@@ -69,8 +72,12 @@ IPC_BEGIN_MESSAGES(DevToolsAgent)
   IPC_MESSAGE_CONTROL0(DevToolsAgentMsg_Detach)
 
   // Sends glue-level Rpc message to the agent.
-  IPC_MESSAGE_CONTROL1(DevToolsAgentMsg_RpcMessage,
-                       DevToolsMessageData /* message data */)
+  IPC_MESSAGE_CONTROL5(DevToolsAgentMsg_RpcMessage,
+                       std::string /* class_name */,
+                       std::string /* method_name */,
+                       std::string /* p1 */,
+                       std::string /* p2 */,
+                       std::string /* p3 */)
 
   // Send debugger command to the debugger agent. Debugger commands should
   // be handled on IO thread(while all other devtools messages are handled in

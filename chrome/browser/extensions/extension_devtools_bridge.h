@@ -13,7 +13,6 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 
 class Profile;
-struct DevToolsMessageData;
 
 // This class is a DevToolsClientHost that fires extension events.
 class ExtensionDevToolsBridge : public DevToolsClientHost {
@@ -32,7 +31,11 @@ class ExtensionDevToolsBridge : public DevToolsClientHost {
   virtual void SendMessageToClient(const IPC::Message& msg);
 
  private:
-  void OnRpcMessage(const DevToolsMessageData& data);
+  void OnRpcMessage(const std::string& class_name,
+                    const std::string& message_name,
+                    const std::string& param1,
+                    const std::string& param2,
+                    const std::string& param3);
 
   // ID of the tab we are monitoring.
   int tab_id_;

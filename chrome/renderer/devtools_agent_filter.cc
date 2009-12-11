@@ -11,9 +11,7 @@
 #include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "webkit/glue/devtools/devtools_message_data.h"
 
 using WebKit::WebDevToolsAgent;
 using WebKit::WebString;
@@ -64,15 +62,32 @@ void DevToolsAgentFilter::OnDebuggerPauseScript() {
   WebDevToolsAgent::debuggerPauseScript();
 }
 
-void DevToolsAgentFilter::OnRpcMessage(const DevToolsMessageData& data) {
+void DevToolsAgentFilter::OnRpcMessage(const std::string& class_name,
+                                       const std::string& method_name,
+                                       const std::string& param1,
+                                       const std::string& param2,
+                                       const std::string& param3) {
   message_handled_ = WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
-      data.ToWebDevToolsMessageData());
+      WebString::fromUTF8(class_name),
+      WebString::fromUTF8(method_name),
+      WebString::fromUTF8(param1),
+      WebString::fromUTF8(param2),
+      WebString::fromUTF8(param3));
 }
 
 // static
-void DevToolsAgentFilter::SendRpcMessage(const DevToolsMessageData& data) {
+void DevToolsAgentFilter::SendRpcMessage(const std::string& class_name,
+                                         const std::string& method_name,
+                                         const std::string& param1,
+                                         const std::string& param2,
+                                         const std::string& param3) {
   IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
       current_routing_id_,
-      DevToolsClientMsg_RpcMessage(data));
+      DevToolsClientMsg_RpcMessage(
+          class_name,
+          method_name,
+          param1,
+          param2,
+          param3));
   channel_->Send(m);
 }

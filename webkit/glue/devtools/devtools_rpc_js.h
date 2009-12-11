@@ -33,25 +33,36 @@
 
 #define TOOLS_RPC_JS_STUB_METHOD0(Method) \
   static v8::Handle<v8::Value> Js##Method(const v8::Arguments& args) { \
-    SendRpcMessageFromJs(#Method, args, 0); \
+    SendRpcMessage(v8::External::Cast(*args.Data())->Value(), \
+                   #Method, "", "", ""); \
     return v8::Undefined(); \
   }
 
 #define TOOLS_RPC_JS_STUB_METHOD1(Method, T1) \
   static v8::Handle<v8::Value> Js##Method(const v8::Arguments& args) { \
-    SendRpcMessageFromJs(#Method, args, 1); \
+    SendRpcMessage(v8::External::Cast(*args.Data())->Value(), \
+                   #Method, \
+                   WebCore::toWebCoreStringWithNullCheck(args[0]), "", ""); \
     return v8::Undefined(); \
   }
 
 #define TOOLS_RPC_JS_STUB_METHOD2(Method, T1, T2) \
   static v8::Handle<v8::Value> Js##Method(const v8::Arguments& args) { \
-    SendRpcMessageFromJs(#Method, args, 2); \
+    SendRpcMessage(v8::External::Cast(*args.Data())->Value(), \
+                   #Method, \
+                   WebCore::toWebCoreStringWithNullCheck(args[0]), \
+                   WebCore::toWebCoreStringWithNullCheck(args[1]), \
+                   ""); \
     return v8::Undefined(); \
   }
 
 #define TOOLS_RPC_JS_STUB_METHOD3(Method, T1, T2, T3) \
   static v8::Handle<v8::Value> Js##Method(const v8::Arguments& args) { \
-    SendRpcMessageFromJs(#Method, args, 3); \
+    SendRpcMessage(v8::External::Cast(*args.Data())->Value(), \
+                   #Method, \
+                   WebCore::toWebCoreStringWithNullCheck(args[0]), \
+                   WebCore::toWebCoreStringWithNullCheck(args[1]), \
+                   WebCore::toWebCoreStringWithNullCheck(args[2])); \
     return v8::Undefined(); \
   }
 
@@ -81,16 +92,18 @@ class Js##Class##BoundObj : public Class##Stub { \
       TOOLS_RPC_JS_STUB_METHOD2, \
       TOOLS_RPC_JS_STUB_METHOD3) \
  private: \
-  static void SendRpcMessageFromJs(const char* method, \
-                                   const v8::Arguments& js_arguments, \
-                                   size_t args_count) { \
-    Vector<String> args(args_count); \
-    for (size_t i = 0; i < args_count; i++) { \
-      args[i].swap(WebCore::toWebCoreStringWithNullCheck(js_arguments[i])); \
-    } \
-    void* self_ptr = v8::External::Cast(*js_arguments.Data())->Value(); \
+  static void SendRpcMessage(void* self_ptr, \
+                             const char* method, \
+                             const String& param1, \
+                             const String& param2, \
+                             const String& param3) { \
     Js##Class##BoundObj* self = static_cast<Js##Class##BoundObj*>(self_ptr); \
-    self->SendRpcMessage(#Class, method, args); \
+    self->delegate_->SendRpcMessage( \
+        #Class, \
+        method, \
+        param1, \
+        param2, \
+        param3); \
   } \
 };
 
