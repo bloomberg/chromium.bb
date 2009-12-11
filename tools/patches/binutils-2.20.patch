@@ -887,6 +887,18 @@ diff -uNr binutils-2.20.orig/gas/Makefile.in binutils-2.20/gas/Makefile.in
  tc-ns32k.o: config/tc-ns32k.c
  @am__fastdepCC_TRUE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT tc-ns32k.o -MD -MP -MF $(DEPDIR)/tc-ns32k.Tpo -c -o tc-ns32k.o `test -f 'config/tc-ns32k.c' || echo '$(srcdir)/'`config/tc-ns32k.c
  @am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/tc-ns32k.Tpo $(DEPDIR)/tc-ns32k.Po
+diff -uNr binutils-2.20.orig/gas/config/tc-i386-intel.c binutils-2.20/gas/config/tc-i386-intel.c
+--- binutils-2.20.orig/gas/config/tc-i386-intel.c	2009-09-14 13:43:27.000000000 +0200
++++ binutils-2.20/gas/config/tc-i386-intel.c	2009-12-11 14:03:39.000000000 +0100
+@@ -559,7 +559,7 @@
+ 	  else if (!got_a_float)
+ 	    {
+ 	      if (flag_code == CODE_16BIT)
+-		add_prefix (DATA_PREFIX_OPCODE);
++		add_prefix (DATA_PREFIX_OPCODE, 1);
+ 	      suffix = LONG_DOUBLE_MNEM_SUFFIX;
+ 	    }
+ 	  else
 diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i386.c
 --- binutils-2.20.orig/gas/config/tc-i386.c	2009-09-14 13:43:27.000000000 +0200
 +++ binutils-2.20/gas/config/tc-i386.c	2009-11-23 13:58:30.000000000 +0100
@@ -937,6 +949,24 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  /* Interface to relax_segment.
     There are 3 major relax states for 386 jump insns because the
     different types of jumps add different sizes to frags when we're
+@@ -1782,7 +1801,7 @@
+    class already exists, 1 if non rep/repne added, 2 if rep/repne
+    added.  */
+ static int
+-add_prefix (unsigned int prefix)
++add_prefix (unsigned int prefix, int dublicate_are_errors)
+ {
+   int ret = 1;
+   unsigned int q;
+@@ -1842,7 +1861,7 @@
+ 	++i.prefixes;
+       i.prefix[q] |= prefix;
+     }
+-  else
++  else if (dublicate_are_errors)
+     as_bad (_("same type of prefix used twice"));
+ 
+   return ret;
 @@ -2117,6 +2136,34 @@
    else
      as_fatal (_("Unknown architecture"));
@@ -993,7 +1023,150 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  }
  
  void
-@@ -3416,6 +3469,12 @@
+@@ -2799,6 +2852,11 @@
+    machine dependent instruction.  This function is supposed to emit
+    the frags/bytes it assembles to.  */
+ 
++/* Sometimes we defer processing of "prefix" command to correctly combine them.
++   If this varible is not zero then we already have initialized information in
++   "i" and should not clean it */
++int single_standalone_prefix = 0;
++
+ void
+ md_assemble (char *line)
+ {
+@@ -2807,7 +2865,8 @@
+   const insn_template *t;
+ 
+   /* Initialize globals.  */
+-  memset (&i, '\0', sizeof (i));
++  if (!single_standalone_prefix)
++    memset (&i, '\0', sizeof (i));
+   for (j = 0; j < MAX_OPERANDS; j++)
+     i.reloc[j] = NO_RELOC;
+   memset (disp_expressions, '\0', sizeof (disp_expressions));
+@@ -2819,7 +2878,7 @@
+      start of a (possibly prefixed) mnemonic.  */
+ 
+   line = parse_insn (line, mnemonic);
+-  if (line == NULL)
++  if (line == NULL || single_standalone_prefix)
+     return;
+ 
+   line = parse_operands (line, mnemonic);
+@@ -2897,7 +2956,7 @@
+     }
+ 
+   if (i.tm.opcode_modifier.fwait)
+-    if (!add_prefix (FWAIT_OPCODE))
++    if (!add_prefix (FWAIT_OPCODE, 1))
+       return;
+ 
+   /* Check string instruction segment overrides.  */
+@@ -3012,7 +3071,7 @@
+     }
+ 
+   if (i.rex != 0)
+-    add_prefix (REX_OPCODE | i.rex);
++    add_prefix (REX_OPCODE | i.rex, 1);
+ 
+   /* We are ready to output the insn.  */
+   output_insn ();
+@@ -3027,6 +3086,8 @@
+   int supported;
+   const insn_template *t;
+   char *dot_p = NULL;
++  single_standalone_prefix = 0;
++  int standalone_prefix;
+ 
+   /* Non-zero if we found a prefix only acceptable with string insns.  */
+   const char *expecting_string_instruction = NULL;
+@@ -3068,11 +3129,11 @@
+       /* Look up instruction (or prefix) via hash table.  */
+       current_templates = (const templates *) hash_find (op_hash, mnemonic);
+ 
+-      if (*l != END_OF_INSN
+-	  && (!is_space_char (*l) || l[1] != END_OF_INSN)
+-	  && current_templates
++      if (current_templates
+ 	  && current_templates->start->opcode_modifier.isprefix)
+ 	{
++	  standalone_prefix = (*l == END_OF_INSN)
++			      || (is_space_char (*l) && l[1] == END_OF_INSN);
+ 	  if (!cpu_flags_check_cpu64 (current_templates->start->cpu_flags))
+ 	    {
+ 	      as_bad ((flag_code != CODE_64BIT
+@@ -3083,7 +3144,8 @@
+ 	    }
+ 	  /* If we are in 16-bit mode, do not allow addr16 or data16.
+ 	     Similarly, in 32-bit mode, do not allow addr32 or data32.  */
+-	  if ((current_templates->start->opcode_modifier.size16
++	  if (!standalone_prefix
++	      && (current_templates->start->opcode_modifier.size16
+ 	       || current_templates->start->opcode_modifier.size32)
+ 	      && flag_code != CODE_64BIT
+ 	      && (current_templates->start->opcode_modifier.size32
+@@ -3093,17 +3155,35 @@
+ 		      current_templates->start->name);
+ 	      return NULL;
+ 	    }
+-	  /* Add prefix, checking for repeated prefixes.  */
+-	  switch (add_prefix (current_templates->start->base_opcode))
++	  if (standalone_prefix)
+ 	    {
+-	    case 0:
+-	      return NULL;
+-	    case 2:
+-	      expecting_string_instruction = current_templates->start->name;
++	      /* Add prefix, checking for repeated prefixes.  */
++	      switch (add_prefix (current_templates->start->base_opcode, 0))
++		{
++		  /* Duplicated prefix - process as standalone instruction */
++		  case 0:
++		    return l;
++		  case 1:
++		  case 2:
++		    single_standalone_prefix = 1;
++		    break;
++		}
+ 	      break;
+ 	    }
+-	  /* Skip past PREFIX_SEPARATOR and reset token_start.  */
+-	  token_start = ++l;
++	  else
++	    {
++	      /* Add prefix, checking for repeated prefixes.  */
++	      switch (add_prefix (current_templates->start->base_opcode, 1))
++		{
++		  case 0:
++		    return NULL;
++		  case 2:
++		    expecting_string_instruction = current_templates->start->name;
++		    break;
++		}
++	      /* Skip past PREFIX_SEPARATOR and reset token_start.  */
++	      token_start = ++l;
++	    }
+ 	}
+       else
+ 	break;
+@@ -3183,13 +3263,13 @@
+ 	{
+ 	  if (l[2] == 't')
+ 	    {
+-	      if (!add_prefix (DS_PREFIX_OPCODE))
++	      if (!add_prefix (DS_PREFIX_OPCODE, 1))
+ 		return NULL;
+ 	      l += 3;
+ 	    }
+ 	  else if (l[2] == 'n')
+ 	    {
+-	      if (!add_prefix (CS_PREFIX_OPCODE))
++	      if (!add_prefix (CS_PREFIX_OPCODE, 1))
+ 		return NULL;
+ 	      l += 3;
+ 	    }
+@@ -3416,6 +3496,12 @@
    if (i.mem_operands == 2)
      {
        const seg_entry *temp_seg;
@@ -1006,7 +1179,43 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
        temp_seg = i.seg[0];
        i.seg[0] = i.seg[1];
        i.seg[1] = temp_seg;
-@@ -5560,19 +5619,123 @@
+@@ -4250,7 +4336,7 @@
+ 	       && i.op->regs[0].reg_type.bitfield.reg16)
+ 	      || (flag_code != CODE_32BIT
+ 		  && i.op->regs[0].reg_type.bitfield.reg32))
+-	    if (!add_prefix (ADDR_PREFIX_OPCODE))
++	    if (!add_prefix (ADDR_PREFIX_OPCODE, 1))
+ 	      return 0;
+ 	}
+       else if (i.suffix != QWORD_MNEM_SUFFIX
+@@ -4266,7 +4352,7 @@
+ 	  if (i.tm.opcode_modifier.jumpbyte) /* jcxz, loop */
+ 	    prefix = ADDR_PREFIX_OPCODE;
+ 
+-	  if (!add_prefix (prefix))
++	  if (!add_prefix (prefix, 1))
+ 	    return 0;
+ 	}
+ 
+@@ -4850,7 +4936,7 @@
+      always be used.  */
+   if ((i.seg[0]) && (i.seg[0] != default_seg))
+     {
+-      if (!add_prefix (i.seg[0]->seg_prefix))
++      if (!add_prefix (i.seg[0]->seg_prefix, 1))
+ 	return 0;
+     }
+   return 1;
+@@ -5048,7 +5134,7 @@
+ 	      && !i.types[1].bitfield.control)
+ 	    abort ();
+ 	  i.rex &= ~(REX_R | REX_B);
+-	  add_prefix (LOCK_PREFIX_OPCODE);
++	  add_prefix (LOCK_PREFIX_OPCODE, 1);
+ 	}
+     }
+   else
+@@ -5560,19 +5646,123 @@
  }
  
  static void
@@ -1131,7 +1340,20 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5624,6 +5787,25 @@
+@@ -5612,10 +5802,10 @@
+ 		      if (prefix != REPE_PREFIX_OPCODE
+ 			  || (i.prefix[LOCKREP_PREFIX]
+ 			      != REPE_PREFIX_OPCODE))
+-			add_prefix (prefix);
++			add_prefix (prefix, 1);
+ 		    }
+ 		  else
+-		    add_prefix (prefix);
++		    add_prefix (prefix, 1);
+ 		}
+ 	      break;
+ 	    case 1:
+@@ -5624,6 +5814,25 @@
  	      abort ();
  	    }
  
@@ -1157,7 +1379,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  	  /* The prefix bytes.  */
  	  for (j = ARRAY_SIZE (i.prefix), q = i.prefix; j > 0; j--, q++)
  	    if (*q)
-@@ -5700,10 +5882,18 @@
+@@ -5700,10 +5909,18 @@
  	}
  
        if (i.disp_operands)
@@ -1176,7 +1398,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
      }
  
  #ifdef DEBUG386
-@@ -5712,6 +5902,74 @@
+@@ -5712,6 +5929,74 @@
        pi ("" /*line*/, &i);
      }
  #endif /* DEBUG386  */
@@ -1251,7 +1473,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  }
  
  /* Return the size of the displacement operand N.  */
-@@ -6858,8 +7116,44 @@
+@@ -6858,8 +7143,44 @@
      }
    else if (*op_string == REGISTER_PREFIX)
      {
@@ -1298,7 +1520,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
      }
    else if (*op_string == IMMEDIATE_PREFIX)
      {
-@@ -7725,6 +8019,8 @@
+@@ -7725,6 +8046,8 @@
  #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
  #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
  #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
@@ -1307,7 +1529,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
  
  struct option md_longopts[] =
  {
-@@ -7743,6 +8039,8 @@
+@@ -7743,6 +8066,8 @@
    {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
    {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
    {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
@@ -1316,7 +1538,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
    {NULL, no_argument, NULL, 0}
  };
  size_t md_longopts_size = sizeof (md_longopts);
-@@ -7953,6 +8251,20 @@
+@@ -7953,6 +8278,20 @@
  	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
        break;
  
@@ -1337,7 +1559,7 @@ diff -uNr binutils-2.20.orig/gas/config/tc-i386.c binutils-2.20/gas/config/tc-i3
      default:
        return 0;
      }
-@@ -8597,4 +8909,19 @@
+@@ -8597,4 +8936,19 @@
        bss_section = saved_bss_section;
      }
  }
