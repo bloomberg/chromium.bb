@@ -3574,7 +3574,6 @@ BUG29737 LINUX : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feMerge-wrong-input.svg = TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/feTile.svg = TEXT
-BUG29737 LINUX : LayoutTests/svg/filters/shadow-on-rect-with-filter.svg = TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/subRegion-one-effect.svg = TEXT
 BUG29737 LINUX : LayoutTests/svg/filters/subRegion-two-effects.svg = TEXT
 
@@ -3618,7 +3617,6 @@ BUG29737 MAC : LayoutTests/svg/filters/feMerge.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feOffset.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/feTile.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/shadow-on-filter.svg = IMAGE+TEXT
-BUG29737 MAC : LayoutTests/svg/filters/shadow-on-rect-with-filter.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/subRegion-in-userSpace.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/subRegion-one-effect.svg = IMAGE+TEXT
 BUG29737 MAC : LayoutTests/svg/filters/subRegion-two-effects.svg = IMAGE+TEXT
@@ -3647,7 +3645,6 @@ BUG29737 WIN : LayoutTests/svg/dom/operatorAttribute.html = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/feDisplacementMap.svg = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/feMerge-wrong-input.svg = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/feTile.svg = TEXT
-BUG29737 WIN : LayoutTests/svg/filters/shadow-on-rect-with-filter.svg = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/subRegion-one-effect.svg = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/subRegion-two-effects.svg = TEXT
 
@@ -3658,3 +3655,22 @@ BUG_MICHAELN : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
 BUG29928 : LayoutTests/websocket/tests/sub-protocol-with-space.html = TEXT
 BUG29930 : LayoutTests/fast/loader/input-element-page-cache-crash.html = TIMEOUT
 
+// Was first marked as (WIN: TEXT, LINUX: TEXT,  MAC: IMAGE+TEXT) by
+// roll r51875, and then after http://trac.webkit.org/changeset/51936 the
+// shadows broke so IMAGE failure was added to WIN/LINUX.
+BUG30048_and_29737 : LayoutTests/svg/filters/shadow-on-rect-with-filter.svg = IMAGE+TEXT
+
+// Broke due to changes to shadow compositing, courtesy of:
+// http://trac.webkit.org/changeset/51936:
+BUG30048 : LayoutTests/svg/css/arrow-with-shadow.svg = IMAGE
+BUG30048 : LayoutTests/svg/css/circle-in-mask-with-shadow.svg = IMAGE
+BUG30048 : LayoutTests/svg/css/group-with-shadow.svg = IMAGE
+BUG30048 : LayoutTests/svg/css/path-with-shadow.svg = IMAGE
+BUG30048 WIN MAC : LayoutTests/svg/css/stars-with-shadow.html = IMAGE
+
+// New tests courtesy of: http://trac.webkit.org/changeset/51936:
+BUG30048 : LayoutTests/svg/css/composite-shadow-example.html = IMAGE
+BUG30048 : LayoutTests/svg/css/composite-shadow-with-opacity.html = IMAGE
+
+// Broke with http://trac.webkit.org/changeset/51939
+BUG30049 : LayoutTests/platform/win/editing/selection/doubleclick-should-not-expand-across-lines.html = TEXT MISSING
