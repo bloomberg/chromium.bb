@@ -14,12 +14,14 @@
 #include "base/thread.h"
 #include "base/time.h"
 #include "base/values.h"
+#include "base/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/jstemplate_builder.h"
@@ -38,7 +40,11 @@ static const int kMaxSearchResults = 100;
 static const std::wstring kPropertyPath = L"path";
 static const std::wstring kPropertyTitle = L"title";
 static const std::wstring kPropertyDirectory = L"isDirectory";
-
+static const std::string kPicasawebUserPrefix =
+    "http://picasaweb.google.com/data/feed/api/user/";
+static const std::string kPicasawebDefault = "/albumid/default";
+static const std::string kPicasawebDropBox = "/DropBox";
+static const std::string kPicasawebBaseUrl = "http://picasaweb.google.com/";
 
 class FileBrowseUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
@@ -59,9 +65,13 @@ class FileBrowseUIHTMLSource : public ChromeURLDataManager::DataSource {
   DISALLOW_COPY_AND_ASSIGN(FileBrowseUIHTMLSource);
 };
 
+class TaskProxy;
+
 // The handler for Javascript messages related to the "filebrowse" view.
 class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
-                          public DOMMessageHandler {
+                          public DOMMessageHandler,
+                          public base::SupportsWeakPtr<FilebrowseHandler>,
+                          public URLFetcher::Delegate {
  public:
   FilebrowseHandler();
   virtual ~FilebrowseHandler();
@@ -77,15 +87,28 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   // Callback for the "getRoots" message.
   void HandleGetRoots(const Value* value);
 
+  void OnURLFetchComplete(const URLFetcher* source,
+                          const GURL& url,
+                          const URLRequestStatus& status,
+                          int response_code,
+                          const ResponseCookies& cookies,
+                          const std::string& data);
+
   // Callback for the "getChildren" message.
   void HandleGetChildren(const Value* value);
 
   // Callback for the "getMetadata" message.
   void HandleGetMetadata(const Value* value);
 
-  // Callback for the "openNewWindow" message.
+ // Callback for the "openNewWindow" message.
   void OpenNewFullWindow(const Value* value);
   void OpenNewPopupWindow(const Value* value);
+
+  // Callback for the "uploadToPicasaweb" message.
+  void UploadToPicasaweb(const Value* value);
+
+  void ReadInFile();
+  void FireUploadComplete();
 
  private:
 
@@ -94,10 +117,35 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   scoped_ptr<ListValue> filelist_value_;
   FilePath currentpath_;
   Profile* profile_;
+  std::string current_file_contents_;
+  std::string current_file_uploaded_;
+  int upload_response_code_;
+  TaskProxy* CurrentTask_;
   scoped_refptr<net::DirectoryLister> lister_;
 
   DISALLOW_COPY_AND_ASSIGN(FilebrowseHandler);
 };
+
+class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
+ public:
+  TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler)
+      : handler_(handler) {}
+  void ReadInFileProxy() {
+    if (handler_) {
+      handler_->ReadInFile();
+    }
+  }
+
+  void FireUploadCompleteProxy() {
+    if (handler_) {
+      handler_->FireUploadComplete();
+    }
+  }
+ private:
+  base::WeakPtr<FilebrowseHandler> handler_;
+  friend class base::RefCountedThreadSafe<TaskProxy>;
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -173,12 +221,52 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::OpenNewPopupWindow));
   dom_ui_->RegisterMessageCallback("openNewFullWindow",
       NewCallback(this, &FilebrowseHandler::OpenNewFullWindow));
+  dom_ui_->RegisterMessageCallback("uploadToPicasaweb",
+      NewCallback(this, &FilebrowseHandler::UploadToPicasaweb));
+}
+
+void FilebrowseHandler::FireUploadComplete() {
+  DictionaryValue info_value;
+  info_value.SetString(L"path", current_file_uploaded_);
+
+  std::string username;
+  username = getenv("CHROMEOS_USER");
+
+  if (username.empty()) {
+    LOG(ERROR) << "Unable to get username";
+    return;
+  }
+  int location = username.find_first_of('@',0);
+  if (location <= 0) {
+    LOG(ERROR) << "Username not formatted correctly";
+    return;
+  }
+  username = username.erase(username.find_first_of('@',0));
+  std::string picture_url;
+  picture_url = kPicasawebBaseUrl;
+  picture_url += username;
+  picture_url += kPicasawebDropBox;
+  info_value.SetString(L"url", picture_url);
+  info_value.SetInteger(L"status_code", upload_response_code_);
+  dom_ui_->CallJavascriptFunction(L"uploadComplete", info_value);
+}
+
+void FilebrowseHandler::OnURLFetchComplete(const URLFetcher* source,
+                                           const GURL& url,
+                                           const URLRequestStatus& status,
+                                           int response_code,
+                                           const ResponseCookies& cookies,
+                                           const std::string& data) {
+  upload_response_code_ = response_code;
+
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(CurrentTask_, &TaskProxy::FireUploadCompleteProxy));
 }
 
 void FilebrowseHandler::HandleGetRoots(const Value* value) {
   ListValue results_value;
   DictionaryValue info_value;
-
   DictionaryValue* page_value = new DictionaryValue();
   // TODO(dhg): add other entries, make this more general
   page_value->SetString(kPropertyPath, "/home/chronos");
@@ -187,9 +275,9 @@ void FilebrowseHandler::HandleGetRoots(const Value* value) {
 
   results_value.Append(page_value);
 
-  info_value.SetString(L"call", "getRoots");
+  info_value.SetString(L"functionCall", "getRoots");
 
-  dom_ui_->CallJavascriptFunction(L"fileBrowseResult",
+  dom_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, results_value);
 }
 
@@ -238,6 +326,85 @@ void FilebrowseHandler::OpenNewWindow(const Value* value, bool popup) {
     LOG(ERROR) << "Wasn't able to get the List if requested files.";
     return;
   }
+}
+
+void FilebrowseHandler::ReadInFile() {
+#if defined(OS_CHROMEOS)
+  // Get the users username
+  std::string username;
+  username = getenv("CHROMEOS_USER");
+
+  if (username.empty()) {
+    LOG(ERROR) << "Unable to get username";
+    return;
+  }
+  int location = username.find_first_of('@',0);
+  if (location <= 0) {
+    LOG(ERROR) << "Username not formatted correctly";
+    return;
+  }
+  username = username.erase(username.find_first_of('@',0));
+  std::string url = kPicasawebUserPrefix;
+  url += username;
+  url += kPicasawebDefault;
+
+  FilePath currentpath;
+  currentpath = FilePath(current_file_uploaded_);
+  // Get the filename
+  std::string filename;
+  filename = currentpath.BaseName().value();
+  std::string filecontents;
+  if (!file_util::ReadFileToString(currentpath, &filecontents)) {
+    LOG(ERROR) << "Unable to read this file:" << currentpath.value();
+    return;
+  }
+
+  URLFetcher* fetcher = URLFetcher::Create(0,
+                                           GURL(url),
+                                           URLFetcher::POST,
+                                           this);
+  fetcher->set_upload_data("image/jpeg", filecontents);
+
+  // Set the filename on the server
+  std::string slug = "Slug: ";
+  slug += filename;
+  fetcher->set_extra_request_headers(slug);
+  fetcher->set_request_context(Profile::GetDefaultRequestContext());
+  fetcher->Start();
+#endif
+}
+
+// This is just a prototype for allowing generic uploads to various sites
+// TODO(dhg): Remove this and implement general upload.
+void FilebrowseHandler::UploadToPicasaweb(const Value* value) {
+  std::string path;
+#if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    Value* list_member;
+
+    // Get search string.
+    if (list_value->Get(0, &list_member) &&
+        list_member->GetType() == Value::TYPE_STRING) {
+      const StringValue* string_value =
+          static_cast<const StringValue*>(list_member);
+      string_value->GetAsString(&path);
+    }
+
+  } else {
+    LOG(ERROR) << "Wasn't able to get the List if requested files.";
+    return;
+  }
+  current_file_uploaded_ = path;
+  //  ReadInFile();
+  TaskProxy* task = new TaskProxy(AsWeakPtr());
+  task->AddRef();
+  CurrentTask_ = task;
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(
+          task, &TaskProxy::ReadInFileProxy));
+#endif
 }
 
 void FilebrowseHandler::HandleGetChildren(const Value* value) {
@@ -298,9 +465,9 @@ void FilebrowseHandler::OnListFile(
 
 void FilebrowseHandler::OnListDone(int error) {
   DictionaryValue info_value;
-  info_value.SetString(L"call", "getChildren");
+  info_value.SetString(L"functionCall", "getChildren");
   info_value.SetString(kPropertyPath, currentpath_.value());
-  dom_ui_->CallJavascriptFunction(L"fileBrowseResult",
+  dom_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, *(filelist_value_.get()));
 }
 
@@ -314,7 +481,8 @@ void FilebrowseHandler::HandleGetMetadata(const Value* value) {
 ////////////////////////////////////////////////////////////////////////////////
 
 FileBrowseUI::FileBrowseUI(TabContents* contents) : DOMUI(contents) {
-  AddMessageHandler((new FilebrowseHandler())->Attach(this));
+  FilebrowseHandler* handler = new FilebrowseHandler();
+  AddMessageHandler((handler)->Attach(this));
   FileBrowseUIHTMLSource* html_source = new FileBrowseUIHTMLSource();
 
   // Set up the chrome://filebrowse/ source.

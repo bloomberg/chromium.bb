@@ -15,7 +15,11 @@ div.header {
   position: absolute;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  background-image: -webkit-gradient(linear, 0% 0%, 0% 90%, from(rgb(239, 242, 249)), to(rgba(201, 212, 245, 1)));
+  background-image: -webkit-gradient(linear,
+                                     0% 0%,
+                                     0% 90%,
+                                     from(rgb(239, 242, 249)),
+                                     to(rgba(201, 212, 245, 1)));
   border-bottom-color: #999;
   border-bottom-width: 1px;
   color: black;
@@ -61,10 +65,45 @@ li.filebrowserow div.icon {
   width: 10px;
 }
 
+.uploadicon {
+  background: url('../../app/theme/filebrowse_upload.png');
+  position: absolute;
+  right: 0;
+  top: 5px;
+  height: 100%;
+  width: 12px;
+  margin-left: 5px;
+  margin-top: 5px;
+  background-repeat: no-repeat;
+  cursor:pointer;
+}
+
+.uploadcomplete {
+  height: 100%;
+  position: absolute;
+  right: 0;
+  top: 5px;
+  height: 100%;
+  width: 70px;
+  margin-left: 5px;
+  margin-top: 5px;
+}
+
+.uploadprogress {
+  position: absolute;
+  right: 0;
+  top: 5px;
+  height: 100%;
+  width: 12px;
+  margin-left: 5px;
+  margin-top: 5px;
+  background-repeat: no-repeat;
+}
+
 li.filebrowserow {
   border-bottom: 1px solid #f7f7f7;
   padding: 8px 5px 5px 54px;
-  overflow: hidden;
+/*  overflow: hidden; */
   font-size:.8em;
   font-family: helvetica;
   position: relative;
@@ -79,7 +118,8 @@ li.filebrowserow span.name {
 div.title {
   text-align: center;
   position: relative;
-  font-size: 18px;
+  font-size: .8em;
+  font-weight: bold;
   padding-top: 10px;
 }
 
@@ -154,6 +194,37 @@ div.container {
   height: 100%;
 }
 
+.uploadmenu {
+  top: 0;
+  right: 0;
+  width: 100px;
+  height: 70px;
+  position: absolute;
+  display: none;
+  z-index: 999;
+  background: white;
+  border: 1px solid black;
+  padding: 5px;
+}
+
+.uploadmenuitem {
+  width: 100%;
+  height: 20px;
+  text-align: left;
+  cursor: pointer;
+  left: 0;
+  color: blue;
+  text-decoration: underline;
+}
+
+.uploadmenuitemdisabled {
+  width: 100%;
+  height: 20px;
+  text-align: left;
+  color: gray;
+  left: 0;
+}
+
 a:hover {
   color: #3874be;
   text-decoration: underline;
@@ -172,43 +243,46 @@ function $(o) {
 
 var pathArray = [];
 var currentNode = -1;
+var foundImages = [];
+var currentImageMenu = '';
 
-var goBackInList = function() {
+function goBackInList() {
   if (currentNode > 0) {
     currentNode--;
     getDataForPath(pathArray[currentNode]);
   }
 };
 
-var goForwardInList = function() {
+function goForwardInList() {
   if (currentNode < (pathArray.length - 1)) {
     currentNode++;
     getDataForPath(pathArray[currentNode]);
   }
 };
 
-function fileBrowseResult(info, results) {
-   if (info.call == 'getRoots' || info.call == 'getChildren') {
+function browseFileResult(info, results) {
+   if (info.functionCall == 'getRoots' ||
+       info.functionCall == 'getChildren') {
      currentNode++;
-     createNewList(' ', results);
+     createNewList('Removeable Media', results);
    }
 }
 
-var pathIsVideoFile = function(path) {
+function pathIsVideoFile(path) {
   return /\.(mp4|ogg|mpg|avi)$/i.test(path);
 };
 
-var pathIsAudioFile = function(path) {
+function pathIsAudioFile(path) {
   return /\.(mp3|m4a)$/i.test(path);
 };
 
-var pathIsImageFile = function(path) {
-  return /\.(jpg|png)$/i.test(path);
+function pathIsImageFile(path) {
+  return /\.(jpg|png|gif)$/i.test(path);
 };
 
 
-var setUpForPlayback = function(path) {
-   mediapath = 'file://' + path;
+function setUpForPlayback(path) {
+   var mediapath = 'file://' + path;
    var header = $('header');
    document.body.removeChild(header);
    var main = $('main');
@@ -230,7 +304,7 @@ var setUpForPlayback = function(path) {
    main.appendChild(element);
 };
 
-var getClassForPath = function(path, isDirectory) {
+function getClassForPath(path, isDirectory) {
   if (isDirectory) {
     return 'icon iconfolder';
   } else if (pathIsImageFile(path)) {
@@ -243,7 +317,7 @@ var getClassForPath = function(path, isDirectory) {
   return 'icon iconfile';
 };
 
-var getDataForPath = function(path) {
+function getDataForPath(path) {
   if (path == 'roots' ) {
     chrome.send('getRoots', []);
   } else {
@@ -272,7 +346,7 @@ function load() {
   }
 };
 
-var decend = function(path) {
+function descend(path) {
   if (pathArray.length <currentNode) {
     pathArray = pathArray.slice(0, currentNode);
   }
@@ -289,22 +363,61 @@ function showImage(path) {
   chrome.send('openNewFullWindow', ['file://' + path]);
 };
 
+function clearImageMenus() {
+  if (foundImages[currentImageMenu]) {
+    var element = foundImages[currentImageMenu];
+    element.firstChild.style.display = 'none';
+    currentImageMenu = '';
+  }
+};
+
+function uploadImage(path) {
+  if (foundImages[path]) {
+    var element = foundImages[path];
+    element.onclick = undefined;
+    element.className = 'uploadprogress';
+  }
+  chrome.send('uploadToPicasaweb', [path]);
+};
+
+function showMenu(path) {
+  if (foundImages[path]) {
+    clearImageMenus();
+    var element = foundImages[path];
+    element.firstChild.style.display = 'block';
+    currentImageMenu = path;
+  }
+  window.event.stopPropagation();
+}
+
+function uploadComplete(result) {
+  if (foundImages[result.path]) {
+    var element = foundImages[result.path];
+    element.className = 'uploadcomplete';
+    if (result.status_code == 201) {
+      element.innerHTML = '<a href=' + result.url + '>Uploaded</a>';
+    } else {
+      element.textContent = 'Error';
+    }
+  }
+};
+
 // TODO(dhg): Do not use javascript: href, use onclick instead
-var createHrefForItem = function(path, isDirectory) {
+function createHrefForItem(path, isDirectory) {
   if (isDirectory) {
-    return 'javascript:decend("'+path+'");';
+    return 'javascript:descend("' + path + '");';
   } if (pathIsAudioFile(path)) {
-    return 'javascript:playMediaFile("'+path+'");';
+    return 'javascript:playMediaFile("' + path + '");';
   } if (pathIsVideoFile(path)) {
-    return 'javascript:playMediaFile("'+path+'");';
+    return 'javascript:playMediaFile("' + path + '");';
   } if (pathIsImageFile(path)) {
-    return 'javascript:showImage("'+path+'");';
+    return 'javascript:showImage("' + path + '");';
   } else {
     return '';
   }
 };
 
-var createNewItem = function(title, path, isDirectory) {
+function createNewItem(title, path, isDirectory) {
   var element = document.createElement('li');
   element.className = 'filebrowserow';
 
@@ -328,16 +441,40 @@ var createNewItem = function(title, path, isDirectory) {
     rightarrow.innerHTML = '&raquo;';
     rightarrow.className = 'rightarrow';
     element.appendChild(rightarrow);
+  } else if (pathIsImageFile(path)) {
+    var uploadicon = document.createElement('div');
+    var uploadmenu = document.createElement('div');
+    uploadmenu.className = 'uploadmenu';
+    var picasaitem = document.createElement('div');
+    var flikritem = document.createElement('div');
+    var emailitem = document.createElement('div');
+    picasaitem.textContent = 'Picasa Web';
+    flikritem.textContent = 'Flikr';
+    emailitem.textContent = 'Email';
+    picasaitem.className = 'uploadmenuitem';
+    flikritem.className = 'uploadmenuitemdisabled';
+    emailitem.className = 'uploadmenuitemdisabled';
+    picasaitem.onclick = new Function('uploadImage("' + path + '")');
+    uploadmenu.appendChild(picasaitem);
+    uploadmenu.appendChild(flikritem);
+    uploadmenu.appendChild(emailitem);
+    uploadicon.align = 'right';
+    uploadicon.className = 'uploadicon';
+    uploadicon.onclick = new Function('showMenu("' + path + '")');
+    uploadicon.appendChild(uploadmenu);
+    element.appendChild(uploadicon);
+    // Doing this so that we can change it when we get events
+    foundImages[path] = uploadicon;
   }
 
   return element;
 };
 
-var clearChildren = function(element) {
+function clearChildren(element) {
   element.innerHTML = '';
 };
 
-var createNewList = function(title, results) {
+function createNewList(title, results) {
   var list = document.createElement('ul');
   list.className = 'filebrowselist';
   var header = $('currenttitle');
@@ -354,7 +491,7 @@ var createNewList = function(title, results) {
 };
 
 </script>
-<body onload="load();">
+<body onload="load();" onclick='clearImageMenus()'>
 <div id='header' class='header'>
   <div id='back' class='backbutton controlbutton' onclick='goBackInList();return false;'>
     <img src="../../app/theme/filebrowse_back.png" width='100%' height='100%'>
