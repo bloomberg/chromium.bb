@@ -51,14 +51,19 @@
 #define WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_H_
 
 #include "PlatformString.h"
+#include "Vector.h"
 
 #include <wtf/Noncopyable.h>
+
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
+#include "webkit/glue/glue_util.h"
 
 namespace WebCore {
 class String;
 }
 
 using WebCore::String;
+using WTF::Vector;
 
 ///////////////////////////////////////////////////////
 // RPC dispatch macro
@@ -130,37 +135,35 @@ struct RpcTypeTrait<String> {
 
 #define TOOLS_RPC_STUB_METHOD0(Method) \
   virtual void Method() { \
-    this->delegate_->SendRpcMessage(class_name, #Method); \
+    Vector<String> args; \
+    this->SendRpcMessage(class_name, #Method, args); \
   }
 
 #define TOOLS_RPC_STUB_METHOD1(Method, T1) \
   virtual void Method(RpcTypeTrait<T1>::ApiType t1) { \
-    this->delegate_->SendRpcMessage( \
-        class_name, \
-        #Method, \
-        RpcTypeTrait<T1>::ToString(t1)); \
+    Vector<String> args(1); \
+    args[0].swap(RpcTypeTrait<T1>::ToString(t1)); \
+    this->SendRpcMessage(class_name, #Method, args); \
   }
 
 #define TOOLS_RPC_STUB_METHOD2(Method, T1, T2) \
   virtual void Method(RpcTypeTrait<T1>::ApiType t1, \
                       RpcTypeTrait<T2>::ApiType t2) { \
-    this->delegate_->SendRpcMessage( \
-        class_name, \
-        #Method, \
-        RpcTypeTrait<T1>::ToString(t1), \
-        RpcTypeTrait<T2>::ToString(t2)); \
+    Vector<String> args(2); \
+    args[0].swap(RpcTypeTrait<T1>::ToString(t1)); \
+    args[1].swap(RpcTypeTrait<T2>::ToString(t2)); \
+    this->SendRpcMessage(class_name, #Method, args); \
   }
 
 #define TOOLS_RPC_STUB_METHOD3(Method, T1, T2, T3) \
   virtual void Method(RpcTypeTrait<T1>::ApiType t1, \
                       RpcTypeTrait<T2>::ApiType t2, \
                       RpcTypeTrait<T3>::ApiType t3) { \
-    this->delegate_->SendRpcMessage( \
-        class_name, \
-        #Method, \
-        RpcTypeTrait<T1>::ToString(t1), \
-        RpcTypeTrait<T2>::ToString(t2), \
-        RpcTypeTrait<T3>::ToString(t3)); \
+    Vector<String> args(3); \
+    args[0].swap(RpcTypeTrait<T1>::ToString(t1)); \
+    args[1].swap(RpcTypeTrait<T2>::ToString(t2)); \
+    args[2].swap(RpcTypeTrait<T3>::ToString(t3)); \
+    this->SendRpcMessage(class_name, #Method, args); \
   }
 
 ///////////////////////////////////////////////////////
@@ -174,15 +177,15 @@ if (method_name == #Method) { \
 
 #define TOOLS_RPC_DISPATCH1(Method, T1) \
 if (method_name == #Method) { \
-  delegate->Method(RpcTypeTrait<T1>::Parse(p1)); \
+  delegate->Method(RpcTypeTrait<T1>::Parse(args[0])); \
   return true; \
 }
 
 #define TOOLS_RPC_DISPATCH2(Method, T1, T2) \
 if (method_name == #Method) { \
   delegate->Method( \
-      RpcTypeTrait<T1>::Parse(p1), \
-      RpcTypeTrait<T2>::Parse(p2) \
+      RpcTypeTrait<T1>::Parse(args[0]), \
+      RpcTypeTrait<T2>::Parse(args[1]) \
   ); \
   return true; \
 }
@@ -190,9 +193,9 @@ if (method_name == #Method) { \
 #define TOOLS_RPC_DISPATCH3(Method, T1, T2, T3) \
 if (method_name == #Method) { \
   delegate->Method( \
-      RpcTypeTrait<T1>::Parse(p1), \
-      RpcTypeTrait<T2>::Parse(p2), \
-      RpcTypeTrait<T3>::Parse(p3) \
+      RpcTypeTrait<T1>::Parse(args[0]), \
+      RpcTypeTrait<T2>::Parse(args[1]), \
+      RpcTypeTrait<T3>::Parse(args[2]) \
   ); \
   return true; \
 }
@@ -239,13 +242,15 @@ class Class##Dispatch : public Noncopyable { \
   virtual ~Class##Dispatch() {} \
   \
   static bool Dispatch(Class* delegate, \
-                       const WebCore::String& class_name, \
-                       const WebCore::String& method_name, \
-                       const WebCore::String& p1, \
-                       const WebCore::String& p2, \
-                       const WebCore::String& p3) { \
+                       const WebKit::WebDevToolsMessageData& data) { \
+    String class_name = webkit_glue::WebStringToString(data.className); \
     if (class_name != #Class) { \
       return false; \
+    } \
+    String method_name = webkit_glue::WebStringToString(data.methodName); \
+    Vector<String> args; \
+    for (size_t i = 0; i < data.arguments.size(); i++) { \
+      args.append(webkit_glue::WebStringToString(data.arguments[i])); \
     } \
     typedef Class CLASS; \
     STRUCT( \
@@ -265,11 +270,8 @@ class DevToolsRpc {
    public:
     Delegate() {}
     virtual ~Delegate() {}
-    virtual void SendRpcMessage(const WebCore::String& class_name,
-                                const WebCore::String& method_name,
-                                const WebCore::String& p1 = "",
-                                const WebCore::String& p2 = "",
-                                const WebCore::String& p3 = "") = 0;
+    virtual void SendRpcMessage(
+        const WebKit::WebDevToolsMessageData& data) = 0;
   };
 
   explicit DevToolsRpc(Delegate* delegate)
@@ -277,6 +279,20 @@ class DevToolsRpc {
   virtual ~DevToolsRpc() {};
 
  protected:
+  void SendRpcMessage(const String& class_name,
+                      const String& method_name,
+                      const Vector<String>& args) {
+    WebKit::WebVector<WebKit::WebString> web_args(args.size());
+    for (size_t i = 0; i < args.size(); i++) {
+      web_args[i] = webkit_glue::StringToWebString(args[i]);
+    }
+    WebKit::WebDevToolsMessageData data;
+    data.className = webkit_glue::StringToWebString(class_name);
+    data.methodName = webkit_glue::StringToWebString(method_name);
+    data.arguments.swap(web_args);
+    this->delegate_->SendRpcMessage(data);
+  }
+
   Delegate* delegate_;
 };
 

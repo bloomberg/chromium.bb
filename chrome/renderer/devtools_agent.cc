@@ -9,13 +9,16 @@
 #include "chrome/renderer/devtools_agent_filter.h"
 #include "chrome/renderer/render_view.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgent.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "webkit/glue/devtools/devtools_message_data.h"
 #include "webkit/glue/glue_util.h"
 
 using WebKit::WebDevToolsAgent;
 using WebKit::WebPoint;
 using WebKit::WebString;
+using WebKit::WebVector;
 using WebKit::WebView;
 
 // static
@@ -53,19 +56,11 @@ bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void DevToolsAgent::sendMessageToFrontend(const WebString& class_name,
-                                          const WebString& method_name,
-                                          const WebString& param1,
-                                          const WebString& param2,
-                                          const WebString& param3) {
+void DevToolsAgent::sendMessageToFrontend(
+    const WebKit::WebDevToolsMessageData& data) {
   IPC::Message* m = new ViewHostMsg_ForwardToDevToolsClient(
       routing_id_,
-      DevToolsClientMsg_RpcMessage(
-          class_name.utf8(),
-          method_name.utf8(),
-          param1.utf8(),
-          param2.utf8(),
-          param3.utf8()));
+      DevToolsClientMsg_RpcMessage(DevToolsMessageData(data)));
   render_view_->Send(m);
 }
 
@@ -113,19 +108,10 @@ void DevToolsAgent::OnDetach() {
   }
 }
 
-void DevToolsAgent::OnRpcMessage(const std::string& class_name,
-                                 const std::string& method_name,
-                                 const std::string& param1,
-                                 const std::string& param2,
-                                 const std::string& param3) {
+void DevToolsAgent::OnRpcMessage(const DevToolsMessageData& data) {
   WebDevToolsAgent* web_agent = GetWebAgent();
   if (web_agent) {
-    web_agent->dispatchMessageFromFrontend(
-        WebString::fromUTF8(class_name),
-        WebString::fromUTF8(method_name),
-        WebString::fromUTF8(param1),
-        WebString::fromUTF8(param2),
-        WebString::fromUTF8(param3));
+    web_agent->dispatchMessageFromFrontend(data.ToWebDevToolsMessageData());
   }
 }
 
@@ -155,15 +141,6 @@ WebDevToolsAgent* DevToolsAgent::GetWebAgent() {
 
 // static
 void WebKit::WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(
-    const WebString& class_name,
-    const WebString& method_name,
-    const WebString& param1,
-    const WebString& param2,
-    const WebString& param3) {
-    DevToolsAgentFilter::SendRpcMessage(
-        class_name.utf8(),
-        method_name.utf8(),
-        param1.utf8(),
-        param2.utf8(),
-        param3.utf8());
+    const WebDevToolsMessageData& data) {
+    DevToolsAgentFilter::SendRpcMessage(DevToolsMessageData(data));
 }

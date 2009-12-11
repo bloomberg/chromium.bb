@@ -21,6 +21,8 @@ namespace WebKit {
 class WebDevToolsFrontend;
 }
 
+struct DevToolsMessageData;
+
 // Developer tools UI end of communication channel between the render process of
 // the page being inspected and tools UI renderer process. All messages will
 // go through browser process. On the side of the inspected page there's
@@ -37,11 +39,8 @@ class DevToolsClient : public WebKit::WebDevToolsFrontendClient {
   bool OnMessageReceived(const IPC::Message& message);
 
   // WebDevToolsFrontendClient implementation
-  virtual void sendMessageToAgent(const WebKit::WebString& class_name,
-                                  const WebKit::WebString& method_name,
-                                  const WebKit::WebString& param1,
-                                  const WebKit::WebString& param2,
-                                  const WebKit::WebString& param3);
+  virtual void sendMessageToAgent(
+      const WebKit::WebDevToolsMessageData& data);
   virtual void sendDebuggerCommandToAgent(const WebKit::WebString& command);
   virtual void sendDebuggerPauseScript();
 
@@ -51,11 +50,7 @@ class DevToolsClient : public WebKit::WebDevToolsFrontendClient {
   virtual void undockWindow();
 
  private:
-  void OnRpcMessage(const std::string& class_name,
-                    const std::string& method_name,
-                    const std::string& param1,
-                    const std::string& param2,
-                    const std::string& param3);
+  void OnRpcMessage(const DevToolsMessageData& data);
 
   // Sends message to DevToolsAgent.
   void Send(const IPC::Message& tools_agent_message);

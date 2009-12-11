@@ -21,6 +21,7 @@ class WebDevToolsAgent;
 }
 
 class RenderView;
+struct DevToolsMessageData;
 
 // DevToolsAgent belongs to the inspectable RenderView and provides Glue's
 // agents with the communication capabilities. All messages from/to Glue's
@@ -37,11 +38,9 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
   virtual bool OnMessageReceived(const IPC::Message& message);
 
   // WebDevToolsAgentClient implementation
-  virtual void sendMessageToFrontend(const WebKit::WebString& class_name,
-                                     const WebKit::WebString& method_name,
-                                     const WebKit::WebString& param1,
-                                     const WebKit::WebString& param2,
-                                     const WebKit::WebString& param3);
+  virtual void sendMessageToFrontend(
+      const WebKit::WebDevToolsMessageData& data);
+
   virtual int hostIdentifier();
   virtual void forceRepaint();
   virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,
@@ -59,11 +58,7 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
 
   void OnAttach(const std::vector<std::string>& runtime_features);
   void OnDetach();
-  void OnRpcMessage(const std::string& class_name,
-                    const std::string& method_name,
-                    const std::string& param1,
-                    const std::string& param2,
-                    const std::string& param3);
+  void OnRpcMessage(const DevToolsMessageData& data);
   void OnInspectElement(int x, int y);
   void OnSetApuAgentEnabled(bool enabled);
 
