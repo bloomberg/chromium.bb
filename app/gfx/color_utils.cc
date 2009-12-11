@@ -95,11 +95,13 @@ void SkColorToHSL(SkColor c, HSL* hsl) {
     double dr = (((vmax - r) / 6.0) + (delta / 2.0)) / delta;
     double dg = (((vmax - g) / 6.0) + (delta / 2.0)) / delta;
     double db = (((vmax - b) / 6.0) + (delta / 2.0)) / delta;
-    if (r == vmax)
+    // We need to compare for the max value because comparing vmax to r,
+    // g or b can sometimes result in values overflowing registers.
+    if (r >= g && r >= b)
       hsl->h = db - dg;
-    else if (g == vmax)
+    else if (g >= r && g >= b)
       hsl->h = (1.0 / 3.0) + dr - db;
-    else  // (b == vmax)
+    else  // (b >= r && b >= g)
       hsl->h = (2.0 / 3.0) + dg - dr;
 
     if (hsl->h < 0.0)

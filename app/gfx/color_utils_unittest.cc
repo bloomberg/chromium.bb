@@ -36,3 +36,14 @@ TEST(ColorUtils, HSLToSkColorWithAlpha) {
   EXPECT_EQ(SkColorGetB(red), SkColorGetB(result));
 }
 
+TEST(ColorUtils, ColorToHSLRegisterSpill) {
+  // In a opt build on Linux, this was causing a register spill on my laptop
+  // (Pentium M) when converting from SkColor to HSL.
+  SkColor input = SkColorSetARGB(255, 206, 154, 89);
+  color_utils::HSL hsl = { -1, -1, -1 };
+  SkColor result = color_utils::HSLShift(input, hsl);
+  EXPECT_EQ(255U, SkColorGetA(result));
+  EXPECT_EQ(206U, SkColorGetR(result));
+  EXPECT_EQ(153U, SkColorGetG(result));
+  EXPECT_EQ(88U, SkColorGetB(result));
+}
