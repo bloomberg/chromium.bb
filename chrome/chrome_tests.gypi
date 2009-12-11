@@ -1791,7 +1791,7 @@
           ],  # 'actions'
         },
       ]
-    }],
+    }],  # 'coverage!=0'
   ],  # 'conditions'
 }
 
