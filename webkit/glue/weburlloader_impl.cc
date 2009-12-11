@@ -105,10 +105,18 @@ ResourceType::Type FromTargetType(WebURLRequest::TargetType type) {
   switch (type) {
     case WebURLRequest::TargetIsMainFrame:
       return ResourceType::MAIN_FRAME;
-    case WebURLRequest::TargetIsSubFrame:
+    case WebURLRequest::TargetIsSubframe:
       return ResourceType::SUB_FRAME;
-    case WebURLRequest::TargetIsSubResource:
+    case WebURLRequest::TargetIsSubresource:
       return ResourceType::SUB_RESOURCE;
+    case WebURLRequest::TargetIsStyleSheet:
+      return ResourceType::STYLESHEET;
+    case WebURLRequest::TargetIsScript:
+      return ResourceType::SCRIPT;
+    case WebURLRequest::TargetIsFontResource:
+      return ResourceType::FONT_RESOURCE;
+    case WebURLRequest::TargetIsImage:
+      return ResourceType::IMAGE;
     case WebURLRequest::TargetIsObject:
       return ResourceType::OBJECT;
     case WebURLRequest::TargetIsMedia:
