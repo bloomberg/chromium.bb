@@ -143,7 +143,8 @@ Browser::Browser(Type type, Profile* profile)
       method_factory_(this),
       block_command_execution_(false),
       last_blocked_command_id_(-1),
-      last_blocked_command_disposition_(CURRENT_TAB) {
+      last_blocked_command_disposition_(CURRENT_TAB),
+      pending_web_app_action_(NONE) {
   tabstrip_model_.AddObserver(this);
 
   registrar_.Add(this, NotificationType::SSL_VISIBLE_STATE_CHANGED,
@@ -348,6 +349,13 @@ void Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
   // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
   //                focus explicitly.
   tab_contents->view()->SetInitialFocus();
+
+  // Set UPDATE_SHORTCUT as the pending web app action. This action is picked
+  // up in LoadingStateChanged to schedule a GetApplicationInfo. And when
+  // the web app info is available, TabContents notifies Browser via
+  // OnDidGetApplicationInfo, which calls web_app::UpdateShortcutForTabContents
+  // when it sees UPDATE_SHORTCUT as pending web app action.
+  browser->pending_web_app_action_ = UPDATE_SHORTCUT;
 }
 
 #if defined(OS_MACOSX)
@@ -1176,6 +1184,10 @@ void Browser::OpenCreateShortcutsDialog() {
   NavigationEntry* entry = current_tab->controller().GetLastCommittedEntry();
   if (!entry)
     return;
+
+  // RVH's GetApplicationInfo should not be called before it returns.
+  DCHECK(pending_web_app_action_ == NONE);
+  pending_web_app_action_ = CREATE_SHORTCUT;
 
   // Start fetching web app info for CreateApplicatoinShortcut dialog and
   // show the dialog when the data is available in OnDidGetApplicationInfo.
@@ -2030,6 +2042,18 @@ void Browser::LoadingStateChanged(TabContents* source) {
     UpdateStopGoState(source->is_loading(), false);
     if (GetStatusBubble())
       GetStatusBubble()->SetStatus(GetSelectedTabContents()->GetStatusText());
+
+    if (!source->is_loading() &&
+        pending_web_app_action_ == UPDATE_SHORTCUT) {
+      // Schedule a shortcut update when web application info is available.
+      NavigationEntry* entry = source->controller().GetLastCommittedEntry();
+      if (entry) {
+        source->render_view_host()->GetApplicationInfo(entry->page_id());
+      } else {
+        pending_web_app_action_ = NONE;
+        NOTREACHED();
+      }
+    }
   }
 }
 
@@ -2265,7 +2289,21 @@ void Browser::OnDidGetApplicationInfo(TabContents* tab_contents,
   if (!entry || (entry->page_id() != page_id))
     return;
 
-  window()->ShowCreateShortcutsDialog(current_tab);
+  switch (pending_web_app_action_) {
+    case CREATE_SHORTCUT: {
+      window()->ShowCreateShortcutsDialog(current_tab);
+      break;
+    }
+    case UPDATE_SHORTCUT: {
+      web_app::UpdateShortcutForTabContents(current_tab);
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
+  }
+
+  pending_web_app_action_ = NONE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

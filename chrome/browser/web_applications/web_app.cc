@@ -4,15 +4,27 @@
 
 #include "chrome/browser/web_applications/web_app.h"
 
+#if defined(OS_WIN)
+#include <ShellAPI.h>
+#endif  // defined(OS_WIN)
+
 #include "base/file_util.h"
+#include "base/md5.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/thread.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
+#include "webkit/glue/dom_operations.h"
 
 #if defined(OS_WIN)
 #include "app/gfx/icon_util.h"
@@ -20,6 +32,8 @@
 #endif  // defined(OS_WIN)
 
 namespace {
+
+const FilePath::CharType kIconChecksumFileExt[] = FILE_PATH_LITERAL(".ico.md5");
 
 // Returns true if |ch| is in visible ASCII range and not one of
 // "/ \ : * ? " < > | ; ,".
@@ -88,6 +102,80 @@ FilePath GetWebAppDataDirectory(const FilePath& root_dir,
   return root_dir.Append(GetWebAppDir(url));
 }
 
+// Predicator for sorting images from largest to smallest.
+bool IconPrecedes(
+    const webkit_glue::WebApplicationInfo::IconInfo& left,
+    const webkit_glue::WebApplicationInfo::IconInfo& right) {
+  return left.width < right.width;
+}
+
+// Calculates image checksum using MD5.
+void GetImageCheckSum(const SkBitmap& image, MD5Digest* digest) {
+  DCHECK(digest);
+
+  SkAutoLockPixels image_lock(image);
+  MD5Sum(image.getPixels(), image.getSize(), digest);
+}
+
+#if defined(OS_WIN)
+// Saves |image| as an |icon_file| with the checksum.
+bool SaveIconWithCheckSum(const FilePath& icon_file, const SkBitmap& image) {
+  if (!IconUtil::CreateIconFileFromSkBitmap(image, icon_file.value()))
+    return false;
+
+  MD5Digest digest;
+  GetImageCheckSum(image, &digest);
+
+  FilePath cheksum_file(icon_file.ReplaceExtension(kIconChecksumFileExt));
+  return file_util::WriteFile(cheksum_file,
+                              reinterpret_cast<const char*>(&digest),
+                              sizeof(digest)) == sizeof(digest);
+}
+
+// Returns true if |icon_file| is missing or different from |image|.
+bool ShouldUpdateIcon(const FilePath& icon_file, const SkBitmap& image) {
+  FilePath checksum_file(icon_file.ReplaceExtension(kIconChecksumFileExt));
+
+  // Returns true if icon_file or checksum file is missing.
+  if (!file_util::PathExists(icon_file) ||
+      !file_util::PathExists(checksum_file))
+    return true;
+
+  MD5Digest persisted_image_checksum;
+  if (sizeof(persisted_image_checksum) != file_util::ReadFile(checksum_file,
+                      reinterpret_cast<char*>(&persisted_image_checksum),
+                      sizeof(persisted_image_checksum)))
+    return true;
+
+  MD5Digest downloaded_image_checksum;
+  GetImageCheckSum(image, &downloaded_image_checksum);
+
+  // Update icon if checksums are not equal.
+  return memcmp(&persisted_image_checksum, &downloaded_image_checksum,
+                sizeof(MD5Digest)) != 0;
+}
+
+// Saves |image| to |icon_file| if the file is outdated and refresh shell's
+// icon cache to ensure correct icon is displayed. Returns true if icon_file
+// is up to date or successfully updated.
+bool CheckAndSaveIcon(const FilePath& icon_file, const SkBitmap& image) {
+  if (ShouldUpdateIcon(icon_file, image)) {
+    if (SaveIconWithCheckSum(icon_file, image)) {
+      // Refresh shell's icon cache. This call is quite disruptive as user would
+      // see explorer rebuilding the icon cache. It would be great that we find
+      // a better way to achieve this.
+      SHChangeNotify(SHCNE_ASSOCCHANGED, SHCNF_IDLIST | SHCNF_FLUSHNOWAIT,
+                     NULL, NULL);
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+#endif  // defined(OS_WIN)
+
 // Represents a task that creates web application shortcut. This runs on
 // file thread and schedules the callback (if any) on the calling thread
 // when finished (either success or failure).
@@ -122,7 +210,7 @@ class CreateShortcutTask : public Task {
   // Returns true if shortcut is created successfully.
   bool CreateShortcut();
 
-  // Path to store persisted data for web_app.
+  // Path to store persisted data for web app.
   FilePath web_app_path_;
 
   // Our copy of short cut data.
@@ -131,6 +219,8 @@ class CreateShortcutTask : public Task {
   // Callback when task is finished.
   web_app::CreateShortcutCallback* callback_;
   MessageLoop* message_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(CreateShortcutTask);
 };
 
 CreateShortcutTask::CreateShortcutTask(
@@ -176,7 +266,7 @@ bool CreateShortcutTask::CreateShortcut() {
       NULL
     }, {
       shortcut_info_.create_in_quick_launch_bar,
-      // For Win7, create_in_quick_launch_bar means pining to taskbar. Use
+      // For Win7, create_in_quick_launch_bar means pinning to taskbar. Use
       // base::PATH_START as a flag for this case.
       (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7) ?
           base::PATH_START : base::DIR_APP_DATA,
@@ -236,8 +326,7 @@ bool CreateShortcutTask::CreateShortcut() {
   // Creates an ico file to use with shortcut.
   FilePath icon_file = web_app_path_.Append(file_name).ReplaceExtension(
       FILE_PATH_LITERAL(".ico"));
-  if (!IconUtil::CreateIconFileFromSkBitmap(shortcut_info_.favicon,
-                                            icon_file.value())) {
+  if (!CheckAndSaveIcon(icon_file, shortcut_info_.favicon)) {
     NOTREACHED();
     return false;
   }
@@ -288,7 +377,240 @@ bool CreateShortcutTask::CreateShortcut() {
 #endif
 }
 
+#if defined(OS_WIN)
+// UpdateShortcutWorker holds all context data needed for update shortcut.
+// It schedules a pre-update check to find all shortcuts that needs to be
+// updated. If there are such shortcuts, it schedules icon download and
+// update them when icons are downloaded. It observes TAB_CLOSING notification
+// and cancels all the work when the underlying tab is closing.
+class UpdateShortcutWorker : public NotificationObserver {
+ public:
+  explicit UpdateShortcutWorker(TabContents* tab_contents);
+
+  void Run();
+
+ private:
+  // Overridden from NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+  // Downloads icon via TabContents.
+  void DownloadIcon();
+
+  // Callback when icon downloaded.
+  void OnIconDownloaded(int download_id, bool errored, const SkBitmap& image);
+
+  // Checks if shortcuts exists on desktop, start menu and quick launch.
+  void CheckExistingShortcuts();
+
+  // Update shortcut files and icons.
+  void UpdateShortcuts();
+  void UpdateShortcutsOnFileThread();
+
+  // Callback after shortcuts are updated.
+  void OnShortcutsUpdated(bool);
+
+  // Deletes the worker on UI thread where it gets created.
+  void DeleteMe();
+  void DeleteMeOnUIThread();
+
+  NotificationRegistrar registrar_;
+
+  // Underlying TabContents whose shortcuts will be updated.
+  TabContents* tab_contents_;
+
+  // Icons info from tab_contents_'s web app data.
+  web_app::IconInfoList unprocessed_icons_;
+
+  // Cached shortcut data from the tab_contents_.
+  ShellIntegration::ShortcutInfo shortcut_info_;
+
+  // Root dir of web app data.
+  FilePath root_dir_;
+
+  // File name of shortcut/ico file based on app title.
+  FilePath file_name_;
+
+  // Existing shortcuts.
+  std::vector<FilePath> shortcut_files_;
+
+  DISALLOW_COPY_AND_ASSIGN(UpdateShortcutWorker);
+};
+
+UpdateShortcutWorker::UpdateShortcutWorker(TabContents* tab_contents)
+    : tab_contents_(tab_contents),
+      root_dir_(web_app::GetDataDir(tab_contents->profile())) {
+  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
+  web_app::GetIconsInfo(tab_contents_->web_app_info(), &unprocessed_icons_);
+  file_name_ = GetSanitizedFileName(shortcut_info_.title);
+
+  registrar_.Add(this, NotificationType::TAB_CLOSING,
+                 Source<NavigationController>(&tab_contents_->controller()));
+}
+
+void UpdateShortcutWorker::Run() {
+  // Starting by downloading app icon.
+  DownloadIcon();
+}
+
+void UpdateShortcutWorker::Observe(NotificationType type,
+                                   const NotificationSource& source,
+                                   const NotificationDetails& details) {
+  if (type == NotificationType::TAB_CLOSING &&
+      Source<NavigationController>(source).ptr() ==
+        &tab_contents_->controller()) {
+    // Underlying tab is closing.
+    tab_contents_ = NULL;
+  }
+}
+
+void UpdateShortcutWorker::DownloadIcon() {
+  // FetchIcon must run on UI thread because it relies on TabContents
+  // to download the icon.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  if (tab_contents_ == NULL) {
+    DeleteMe();  // We are done if underlying TabContents is gone.
+    return;
+  }
+
+  if (unprocessed_icons_.empty()) {
+    // No app icon. Just use the favicon from TabContents.
+    UpdateShortcuts();
+    return;
+  }
+
+  tab_contents_->fav_icon_helper().DownloadImage(
+      unprocessed_icons_.back().url,
+      std::max(unprocessed_icons_.back().width,
+               unprocessed_icons_.back().height),
+      NewCallback(this, &UpdateShortcutWorker::OnIconDownloaded));
+  unprocessed_icons_.pop_back();
+}
+
+void UpdateShortcutWorker::OnIconDownloaded(int download_id,
+                                            bool errored,
+                                            const SkBitmap& image) {
+  if (tab_contents_ == NULL) {
+    DeleteMe();  // We are done if underlying TabContents is gone.
+    return;
+  }
+
+  if (!errored && !image.isNull()) {
+    // Update icon with download image and update shortcut.
+    shortcut_info_.favicon = image;
+    UpdateShortcuts();
+  } else {
+    // Try the next icon otherwise.
+    DownloadIcon();
+  }
+}
+
+void UpdateShortcutWorker::CheckExistingShortcuts() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  // Locations to check to shortcut_paths.
+  struct {
+    bool& use_this_location;
+    int location_id;
+    const wchar_t* sub_dir;
+  } locations[] = {
+    {
+      shortcut_info_.create_on_desktop,
+      chrome::DIR_USER_DESKTOP,
+      NULL
+    }, {
+      shortcut_info_.create_in_applications_menu,
+      base::DIR_START_MENU,
+      NULL
+    }, {
+      shortcut_info_.create_in_quick_launch_bar,
+      // For Win7, create_in_quick_launch_bar means pinning to taskbar.
+      base::DIR_APP_DATA,
+      (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7) ?
+          L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\TaskBar" :
+          L"Microsoft\\Internet Explorer\\Quick Launch"
+    }
+  };
+
+  for (int i = 0; i < arraysize(locations); ++i) {
+    locations[i].use_this_location = false;
+
+    FilePath path;
+    if (!PathService::Get(locations[i].location_id, &path)) {
+      NOTREACHED();
+      continue;
+    }
+
+    if (locations[i].sub_dir != NULL)
+      path = path.Append(locations[i].sub_dir);
+
+    FilePath shortcut_file = path.Append(file_name_).
+        ReplaceExtension(FILE_PATH_LITERAL(".lnk"));
+    if (file_util::PathExists(shortcut_file)) {
+      locations[i].use_this_location = true;
+      shortcut_files_.push_back(shortcut_file);
+    }
+  }
+}
+
+void UpdateShortcutWorker::UpdateShortcuts() {
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+      &UpdateShortcutWorker::UpdateShortcutsOnFileThread));
+}
+
+void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  FilePath web_app_path = GetWebAppDataDirectory(root_dir_, shortcut_info_.url);
+  FilePath icon_file = web_app_path.Append(file_name_).ReplaceExtension(
+      FILE_PATH_LITERAL(".ico"));
+  CheckAndSaveIcon(icon_file, shortcut_info_.favicon);
+
+  CheckExistingShortcuts();
+  if (shortcut_files_.empty()) {
+    // No shortcuts to update.
+    OnShortcutsUpdated(true);
+  } else {
+    // Re-create shortcuts to make sure application url, name and description
+    // are up to date
+    web_app::CreateShortcut(root_dir_, shortcut_info_,
+        NewCallback(this, &UpdateShortcutWorker::OnShortcutsUpdated));
+  }
+}
+
+void UpdateShortcutWorker::OnShortcutsUpdated(bool) {
+  DeleteMe();  // We are done.
+}
+
+void UpdateShortcutWorker::DeleteMe() {
+  if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    DeleteMeOnUIThread();
+  } else {
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &UpdateShortcutWorker::DeleteMeOnUIThread));
+  }
+}
+
+void UpdateShortcutWorker::DeleteMeOnUIThread() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  delete this;
+}
+#endif  // defined(OS_WIN)
+
 };  // namespace
+
+#if defined(OS_WIN)
+// Allows UpdateShortcutWorker without adding refcounting. UpdateShortcutWorker
+// manages its own life time and will delete itself when it's done.
+template <>
+struct RunnableMethodTraits<UpdateShortcutWorker> {
+  void RetainCallee(UpdateShortcutWorker* worker) {}
+  void ReleaseCallee(UpdateShortcutWorker* worker) {}
+};
+#endif  // defined(OS_WIN)
 
 namespace web_app {
 
@@ -304,7 +626,7 @@ void CreateShortcut(
     const FilePath& data_dir,
     const ShellIntegration::ShortcutInfo& shortcut_info,
     CreateShortcutCallback* callback) {
-  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
       new CreateShortcutTask(data_dir, shortcut_info, callback));
 }
 
@@ -322,6 +644,51 @@ bool IsValidUrl(const GURL& url) {
   }
 
   return false;
+}
+
+FilePath GetDataDir(Profile* profile) {
+  DCHECK(profile);
+  return profile->GetPath().Append(chrome::kWebAppDirname);
+}
+
+void GetIconsInfo(const webkit_glue::WebApplicationInfo& app_info,
+                  IconInfoList* icons) {
+  DCHECK(icons);
+
+  icons->clear();
+  for (size_t i = 0; i < app_info.icons.size(); ++i) {
+    // We only take square shaped icons (i.e. width == height).
+    if (app_info.icons[i].width == app_info.icons[i].height) {
+      icons->push_back(app_info.icons[i]);
+    }
+  }
+
+  std::sort(icons->begin(), icons->end(), &IconPrecedes);
+}
+
+void GetShortcutInfoForTab(TabContents* tab_contents,
+                           ShellIntegration::ShortcutInfo* info) {
+  DCHECK(info);  // Must provide a valid info.
+
+  const webkit_glue::WebApplicationInfo& app_info =
+      tab_contents->web_app_info();
+
+  info->url = app_info.app_url.is_empty() ? tab_contents->GetURL() :
+                                            app_info.app_url;
+  info->title = app_info.title.empty() ?
+      (tab_contents->GetTitle().empty() ? UTF8ToUTF16(info->url.spec()) :
+                                          tab_contents->GetTitle()) :
+      app_info.title;
+  info->description = app_info.description;
+  info->favicon = tab_contents->GetFavIcon();
+}
+
+void UpdateShortcutForTabContents(TabContents* tab_contents) {
+#if defined(OS_WIN)
+  // UpdateShortcutWorker will delete itself when it's done.
+  UpdateShortcutWorker* worker = new UpdateShortcutWorker(tab_contents);
+  worker->Run();
+#endif  // defined(OS_WIN)
 }
 
 };  // namespace web_app

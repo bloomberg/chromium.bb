@@ -175,6 +175,11 @@ class TabContents : public PageNavigator,
     return view_.get();
   }
 
+  // Returns the FavIconHelper of this TabContents.
+  FavIconHelper& fav_icon_helper() {
+    return fav_icon_helper_;
+  }
+
 #ifdef UNIT_TEST
   // Expose the render manager for testing.
   RenderViewHostManager* render_manager() { return &render_manager_; }
@@ -993,11 +998,6 @@ class TabContents : public PageNavigator,
 
   // SavePackage, lazily created.
   scoped_refptr<SavePackage> save_package_;
-
-  // Tracks our pending CancelableRequests. This maps pending requests to
-  // page IDs so that we know whether a given callback still applies. The
-  // page ID -1 means no page ID was set.
-  CancelableRequestConsumerT<int32, -1> cancelable_consumer_;
 
   // FormFieldHistoryManager, lazily created.
   scoped_ptr<FormFieldHistoryManager> form_field_history_manager_;

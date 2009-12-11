@@ -851,6 +851,18 @@ class Browser : public TabStripModelDelegate,
   // Stores the disposition type of the last blocked command.
   WindowOpenDisposition last_blocked_command_disposition_;
 
+  // Different types of action when web app info is available.
+  // OnDidGetApplicationInfo uses this to dispatch calls.
+  enum WebAppAction {
+    NONE,             // No action at all.
+    CREATE_SHORTCUT,  // Bring up create application shortcut dialog.
+    UPDATE_SHORTCUT   // Update icon for app shortcut.
+  };
+
+  // Which deferred action to perform when OnDidGetApplicationInfo is notified
+  // from a TabContents. Currently, only one pending action is allowed.
+  WebAppAction pending_web_app_action_;
+
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };
 

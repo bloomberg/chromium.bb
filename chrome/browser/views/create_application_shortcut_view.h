@@ -8,13 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "views/controls/label.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/glue/dom_operations.h"
 
 namespace views {
 class Checkbox;
@@ -30,8 +28,7 @@ class TabContents;
 // the shortcut for given web app.
 class CreateApplicationShortcutView : public views::View,
                                       public views::DialogDelegate,
-                                      public views::ButtonListener,
-                                      public URLFetcher::Delegate {
+                                      public views::ButtonListener {
  public:
   explicit CreateApplicationShortcutView(TabContents* tab_contents);
   virtual ~CreateApplicationShortcutView();
@@ -59,26 +56,16 @@ class CreateApplicationShortcutView : public views::View,
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // URLFetcher::Delegate
-  virtual void OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data);
-
  private:
-  typedef std::vector<webkit_glue::WebApplicationInfo::IconInfo> IconInfoList;
-
   // Adds a new check-box as a child to the view.
   views::Checkbox* AddCheckbox(const std::wstring& text, bool checked);
-
-  // Set icons info from passed-in WebApplicationInfo.
-  void SetIconsInfo(const IconInfoList& icons);
 
   // Fetch the largest unprocessed icon.
   // The first largest icon downloaded and decoded successfully will be used.
   void FetchIcon();
+
+  // Callback of icon download.
+  void OnIconDownloaded(bool errored, const SkBitmap& image);
 
   // TabContents of the page that we want to create shortcut.
   TabContents* tab_contents_;
@@ -90,23 +77,15 @@ class CreateApplicationShortcutView : public views::View,
   views::Checkbox* menu_check_box_;
   views::Checkbox* quick_launch_check_box_;
 
-  // Target url of the app shortcut.
-  GURL url_;
-
-  // Title of the app shortcut.
-  string16 title_;
-
-  // Description of the app shortcut.
-  string16 description_;
-
-  // Icon of the app shortcut.
-  SkBitmap icon_;
+  // Target shortcut info.
+  ShellIntegration::ShortcutInfo shortcut_info_;
 
   // Unprocessed icons from the WebApplicationInfo passed in.
-  IconInfoList unprocessed_icons_;
+  web_app::IconInfoList unprocessed_icons_;
 
-  // Icon fetcher.
-  scoped_ptr<URLFetcher> icon_fetcher_;
+  // Pending app icon download tracked by us.
+  class IconDownloadCallbackFunctor;
+  IconDownloadCallbackFunctor* pending_download_;
 
   DISALLOW_COPY_AND_ASSIGN(CreateApplicationShortcutView);
 };

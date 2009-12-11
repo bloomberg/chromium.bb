@@ -8,6 +8,10 @@
 #include "base/file_path.h"
 #include "base/task.h"
 #include "chrome/browser/shell_integration.h"
+#include "webkit/glue/dom_operations.h"
+
+class Profile;
+class TabContents;
 
 namespace web_app {
 
@@ -32,6 +36,26 @@ void CreateShortcut(
 
 // Returns true if given url is a valid web app url.
 bool IsValidUrl(const GURL& url);
+
+// Returns data dir for web apps for given profile.
+FilePath GetDataDir(Profile* profile);
+
+// Extracts icons info from web app data. Take only square shaped icons and
+// sort them from smallest to largest.
+typedef std::vector<webkit_glue::WebApplicationInfo::IconInfo> IconInfoList;
+void GetIconsInfo(const webkit_glue::WebApplicationInfo& app_info,
+                  IconInfoList* icons);
+
+// Extracts shortcut info of given TabContents.
+void GetShortcutInfoForTab(TabContents* tab_contents,
+                           ShellIntegration::ShortcutInfo* info);
+
+// Updates web app shortcut of the TabContents. This function checks and
+// updates web app icon and shortcuts if needed. For icon, the check is based
+// on MD5 hash of icon image. For shortcuts, it checks the desktop, start menu
+// and quick launch (as well as pinned shortcut) for shortcut and only
+// updates (recreates) them if they exits.
+void UpdateShortcutForTabContents(TabContents* tab_contents);
 
 };  // namespace web_app
 

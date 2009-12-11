@@ -67,36 +67,35 @@ class TabContents;
 class FavIconHelper : public RenderViewHostDelegate::FavIcon {
  public:
   explicit FavIconHelper(TabContents* tab_contents);
+  virtual ~FavIconHelper();
 
   // Initiates loading the favicon for the specified url.
   void FetchFavIcon(const GURL& url);
 
-  // Sets the image data for the favicon. This is invoked asynchronously after
-  // we request the TabContents to download the favicon.
-  void SetFavIcon(int download_id,
-                  const GURL& icon_url,
-                  const SkBitmap& image);
-
-  // Invoked when a request to download the favicon failed.
-  void FavIconDownloadFailed(int download_id);
-
-  // Converts the image data to an SkBitmap and sets it on the NavigationEntry.
-  // If the TabContents has a delegate, it is notified of the new favicon
-  // (INVALIDATE_FAVICON).
-  void UpdateFavIcon(NavigationEntry* entry,
-                     const std::vector<unsigned char>& data);
-  void UpdateFavIcon(NavigationEntry* entry, const SkBitmap& image);
+  // Initiates loading an image from given |image_url|. Returns a download id
+  // for caller to track the request. When download completes, |callback| is
+  // called with the three params: the download_id, a boolean flag to indicate
+  // whether the download succeeds and a SkBitmap as the downloaded image.
+  // Note that |image_size| is a hint for images with multiple sizes. The
+  // downloaded image is not resized to the given image_size. If 0 is passed,
+  // the first frame of the image is returned.
+  typedef Callback3<int, bool, const SkBitmap&>::Type ImageDownloadCallback;
+  int DownloadImage(const GURL& image_url, int image_size,
+                    ImageDownloadCallback* callback);
 
  private:
   struct DownloadRequest {
     DownloadRequest() {}
     DownloadRequest(const GURL& url,
-                    const GURL& fav_icon_url)
+                    const GURL& image_url,
+                    ImageDownloadCallback* callback)
         : url(url),
-          fav_icon_url(fav_icon_url) { }
+          image_url(image_url),
+          callback(callback) { }
 
     GURL url;
-    GURL fav_icon_url;
+    GURL image_url;
+    ImageDownloadCallback* callback;
   };
 
   // RenderViewHostDelegate::Favicon implementation.
@@ -138,7 +137,19 @@ class FavIconHelper : public RenderViewHostDelegate::FavIcon {
 
   // Schedules a download for the specified entry. This adds the request to
   // download_requests_.
-  void ScheduleDownload(NavigationEntry* entry);
+  int ScheduleDownload(const GURL& url, const GURL& image_url, int image_size,
+                       ImageDownloadCallback* callback);
+
+  // Sets the image data for the favicon. This is invoked asynchronously after
+  // we request the TabContents to download the favicon.
+  void SetFavIcon(const GURL& url, const GURL& icon_url, const SkBitmap& image);
+
+  // Converts the image data to an SkBitmap and sets it on the NavigationEntry.
+  // If the TabContents has a delegate, it is notified of the new favicon
+  // (INVALIDATE_FAVICON).
+  void UpdateFavIcon(NavigationEntry* entry,
+                     const std::vector<unsigned char>& data);
+  void UpdateFavIcon(NavigationEntry* entry, const SkBitmap& image);
 
   // Scales the image such that either the width and/or height is 16 pixels
   // wide. Does nothing if the image is empty.

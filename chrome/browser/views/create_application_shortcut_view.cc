@@ -35,12 +35,6 @@ namespace {
 
 const int kAppIconSize = 32;
 
-bool IconPrecedes(
-    const webkit_glue::WebApplicationInfo::IconInfo& left,
-    const webkit_glue::WebApplicationInfo::IconInfo& right) {
-  return left.width < right.width;
-}
-
 // AppInfoView shows the application icon and title.
 class AppInfoView : public views::View {
  public:
@@ -203,37 +197,52 @@ void ShowCreateShortcutsDialog(gfx::NativeWindow parent_window,
 
 };  // namespace browser
 
+class CreateApplicationShortcutView::IconDownloadCallbackFunctor {
+ public:
+  explicit IconDownloadCallbackFunctor(CreateApplicationShortcutView* owner)
+      : owner_(owner) {
+  }
+
+  void Run(int download_id, bool errored, const SkBitmap& image) {
+    if (owner_)
+      owner_->OnIconDownloaded(errored, image);
+    delete this;
+  }
+
+  void Cancel() {
+    owner_ = NULL;
+  }
+
+ private:
+  CreateApplicationShortcutView* owner_;
+};
+
 CreateApplicationShortcutView::CreateApplicationShortcutView(
     TabContents* tab_contents)
-    : tab_contents_(tab_contents) {
+    : tab_contents_(tab_contents),
+      pending_download_(NULL) {
   Init();
 }
 
 CreateApplicationShortcutView::~CreateApplicationShortcutView() {
+  if (pending_download_)
+    pending_download_->Cancel();
 }
 
 void CreateApplicationShortcutView::Init() {
   // Prepare data
+  web_app::GetShortcutInfoForTab(tab_contents_, &shortcut_info_);
+
   const webkit_glue::WebApplicationInfo& app_info =
       tab_contents_->web_app_info();
-
-  url_ = app_info.app_url.is_empty() ? tab_contents_->GetURL() :
-                                       app_info.app_url;
-  title_ = app_info.title.empty() ? tab_contents_->GetTitle() :
-                                    app_info.title;
-  description_ = app_info.description;
-
-  icon_ = tab_contents_->GetFavIcon();
   if (!app_info.icons.empty()) {
-    SetIconsInfo(app_info.icons);
+    web_app::GetIconsInfo(app_info, &unprocessed_icons_);
     FetchIcon();
   }
 
-  if (title_.empty())
-    title_ = UTF8ToUTF16(url_.spec());
-
   // Create controls
-  app_info_ = new AppInfoView(title_, description_, icon_);
+  app_info_ = new AppInfoView(shortcut_info_.title, shortcut_info_.description,
+                              shortcut_info_.favicon);
   create_shortcuts_label_ = new views::Label(
       l10n_util::GetString(IDS_CREATE_SHORTCUTS_LABEL));
   create_shortcuts_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -359,27 +368,22 @@ bool CreateApplicationShortcutView::Accept() {
     return false;
   }
 
-  ShellIntegration::ShortcutInfo shortcut_info;
-  shortcut_info.url = url_;
-  shortcut_info.title = title_;
-  shortcut_info.description = description_;
-  shortcut_info.favicon = icon_;
-  shortcut_info.create_on_desktop = desktop_check_box_->checked();
-  shortcut_info.create_in_applications_menu = menu_check_box_ == NULL ? false :
+  shortcut_info_.create_on_desktop = desktop_check_box_->checked();
+  shortcut_info_.create_in_applications_menu = menu_check_box_ == NULL ? false :
       menu_check_box_->checked();
 
 #if defined(OS_WIN)
-  shortcut_info.create_in_quick_launch_bar = quick_launch_check_box_ == NULL ?
+  shortcut_info_.create_in_quick_launch_bar = quick_launch_check_box_ == NULL ?
       NULL : quick_launch_check_box_->checked();
 #elif defined(OS_POSIX)
   // Create shortcut in Mac dock or as Linux (gnome/kde) application launcher
   // are not implemented yet.
-  shortcut_info.create_in_quick_launch_bar = false;
+  shortcut_info_.create_in_quick_launch_bar = false;
 #endif
 
-  web_app::CreateShortcut(
-    tab_contents_->profile()->GetPath().Append(chrome::kWebAppDirname),
-    shortcut_info, NULL);
+  web_app::CreateShortcut(web_app::GetDataDir(tab_contents_->profile()),
+                          shortcut_info_,
+                          NULL);
 
   if (tab_contents_->delegate())
     tab_contents_->delegate()->ConvertContentsToApplication(tab_contents_);
@@ -398,39 +402,25 @@ views::Checkbox* CreateApplicationShortcutView::AddCheckbox(
   return checkbox;
 }
 
-void CreateApplicationShortcutView::SetIconsInfo(const IconInfoList& icons) {
-  unprocessed_icons_.clear();
-  for (size_t i = 0; i < icons.size(); ++i) {
-    // We only take square shaped icons (i.e. width == height).
-    if (icons[i].width == icons[i].height) {
-      unprocessed_icons_.push_back(icons[i]);
-    }
-  }
-
-  std::sort(unprocessed_icons_.begin(), unprocessed_icons_.end(),
-            &IconPrecedes);
-}
-
 void CreateApplicationShortcutView::FetchIcon() {
   // There should only be fetch job at a time.
-  DCHECK(icon_fetcher_ == NULL);
+  DCHECK(pending_download_ == NULL);
 
   if (unprocessed_icons_.empty()) {
     // No icons to fetch.
     return;
   }
 
-  icon_fetcher_.reset(new URLFetcher(unprocessed_icons_.back().url,
-                                     URLFetcher::GET,
-                                     this));
-  DCHECK(icon_fetcher_.get() != NULL);
-  unprocessed_icons_.pop_back();
+  pending_download_ = new IconDownloadCallbackFunctor(this);
+  DCHECK(pending_download_);
 
-  icon_fetcher_->set_load_flags(icon_fetcher_->load_flags() |
-                                net::LOAD_IS_DOWNLOAD);
-  icon_fetcher_->set_request_context(
-      tab_contents_->profile()->GetRequestContext());
-  icon_fetcher_->Start();
+  tab_contents_->fav_icon_helper().DownloadImage(
+      unprocessed_icons_.back().url,
+      std::max(unprocessed_icons_.back().width,
+               unprocessed_icons_.back().height),
+      NewCallback(pending_download_, &IconDownloadCallbackFunctor::Run));
+
+  unprocessed_icons_.pop_back();
 }
 
 void CreateApplicationShortcutView::ButtonPressed(views::Button* sender,
@@ -450,27 +440,14 @@ void CreateApplicationShortcutView::ButtonPressed(views::Button* sender,
   GetDialogClientView()->UpdateDialogButtons();
 }
 
-void CreateApplicationShortcutView::OnURLFetchComplete(const URLFetcher* source,
-                                  const GURL& url,
-                                  const URLRequestStatus& status,
-                                  int response_code,
-                                  const ResponseCookies& cookies,
-                                  const std::string& data) {
-  // Delete the fetcher on this function's exit.
-  scoped_ptr<URLFetcher> clean_up_fetcher(icon_fetcher_.release());
+void CreateApplicationShortcutView::OnIconDownloaded(bool errored,
+                                                     const SkBitmap& image) {
+  pending_download_ = NULL;
 
-  bool success = status.is_success() && (response_code == 200) && !data.empty();
-
-  if (success) {
-    success = gfx::PNGCodec::Decode(
-        reinterpret_cast<const unsigned char*>(data.c_str()),
-        data.size(),
-        &icon_);
-
-    if (success)
-      static_cast<AppInfoView*>(app_info_)->UpdateIcon(icon_);
-  }
-
-  if (!success)
+  if (!errored && !image.isNull()) {
+    shortcut_info_.favicon = image;
+    static_cast<AppInfoView*>(app_info_)->UpdateIcon(shortcut_info_.favicon);
+  } else {
     FetchIcon();
+  }
 }
