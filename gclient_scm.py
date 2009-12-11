@@ -193,7 +193,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
         return int(val)
       else:
         return 0
-    version = self._Run(['--version']).split()[-1]
+    version = self._Run(['--version'], cwd='.').split()[-1]
     version_list = map(only_int, version.split('.'))
     min_version_list = map(int, min_version.split('.'))
     for min_ver in min_version_list:
