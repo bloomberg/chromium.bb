@@ -101,11 +101,7 @@ class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
       const WebKit::WebURLError& error);
 
   // DevToolsRpc::Delegate implementation.
-  void SendRpcMessage(const WebCore::String& class_name,
-                      const WebCore::String& method_name,
-                      const WebCore::String& param1,
-                      const WebCore::String& param2,
-                      const WebCore::String& param3);
+  virtual void SendRpcMessage(const WebKit::WebDevToolsMessageData& data);
 
   void ForceRepaint();
 

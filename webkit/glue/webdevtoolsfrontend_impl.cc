@@ -36,6 +36,7 @@
 #include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/debugger_agent.h"
+#include "webkit/glue/devtools/devtools_message_data.h"
 #include "webkit/glue/devtools/devtools_rpc_js.h"
 #include "webkit/glue/devtools/profiler_agent.h"
 #include "webkit/glue/devtools/tools_agent.h"
@@ -218,38 +219,34 @@ WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl() {
   menu_selection_handler_->disconnect();
 }
 
+// TODO(yurys): this method is deprecated and will go away soon, use
+// overloaded method with WebDevToolsMessageData argument instead.
 void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
       const WebString& class_name,
       const WebString& method_name,
       const WebString& param1,
       const WebString& param2,
       const WebString& param3) {
+  ASSERT_NOT_REACHED();
+}
+
+void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
+    const WebKit::WebDevToolsMessageData& data) {
   if (ToolsAgentNativeDelegateDispatch::Dispatch(
           tools_agent_native_delegate_impl_.get(),
-          webkit_glue::WebStringToString(class_name),
-          webkit_glue::WebStringToString(method_name),
-          webkit_glue::WebStringToString(param1),
-          webkit_glue::WebStringToString(param2),
-          webkit_glue::WebStringToString(param3))) {
+          data)) {
     return;
   }
-
   Vector<String> v;
-  v.append(webkit_glue::WebStringToString(class_name));
-  v.append(webkit_glue::WebStringToString(method_name));
-  v.append(webkit_glue::WebStringToString(param1));
-  v.append(webkit_glue::WebStringToString(param2));
-  v.append(webkit_glue::WebStringToString(param3));
+  v.append(webkit_glue::WebStringToString(data.className));
+  v.append(webkit_glue::WebStringToString(data.methodName));
+  for (size_t i = 0; i < data.arguments.size(); i++)
+    v.append(webkit_glue::WebStringToString(data.arguments[i]));
   if (!loaded_) {
     pending_incoming_messages_.append(v);
     return;
   }
   ExecuteScript(v);
-}
-
-void WebDevToolsFrontendImpl::dispatchMessageFromAgent(
-    const WebKit::WebDevToolsMessageData& data) {
-  // Stub.
 }
 
 void WebDevToolsFrontendImpl::AddResourceSourceToFrame(int resource_id,
@@ -271,15 +268,12 @@ void WebDevToolsFrontendImpl::ExecuteScript(const Vector<String>& v) {
   v8::Handle<v8::Value> dispatch_function =
       frame_context->Global()->Get(v8::String::New("devtools$$dispatch"));
   ASSERT(dispatch_function->IsFunction());
-  v8::Handle<v8::Function> function = v8::Handle<v8::Function>::Cast(dispatch_function);
-  v8::Handle<v8::Value> args[] = {
-    ToV8String(v.at(0)),
-    ToV8String(v.at(1)),
-    ToV8String(v.at(2)),
-    ToV8String(v.at(3)),
-    ToV8String(v.at(4)),
-  };
-  function->Call(frame_context->Global(), 5, args);
+  v8::Handle<v8::Function> function =
+      v8::Handle<v8::Function>::Cast(dispatch_function);
+  Vector< v8::Handle<v8::Value> > args;
+  for (size_t i = 0; i < v.size(); i++)
+    args.append(ToV8String(v.at(i)));
+  function->Call(frame_context->Global(), args.size(), args.data());
 }
 
 void WebDevToolsFrontendImpl::DispatchOnWebInspector(
@@ -306,17 +300,9 @@ void WebDevToolsFrontendImpl::DispatchOnWebInspector(
 }
 
 
-void WebDevToolsFrontendImpl::SendRpcMessage(const String& class_name,
-                                           const String& method_name,
-                                           const String& param1,
-                                           const String& param2,
-                                           const String& param3) {
-  client_->sendMessageToAgent(
-      webkit_glue::StringToWebString(class_name),
-      webkit_glue::StringToWebString(method_name),
-      webkit_glue::StringToWebString(param1),
-      webkit_glue::StringToWebString(param2),
-      webkit_glue::StringToWebString(param3));
+void WebDevToolsFrontendImpl::SendRpcMessage(
+    const WebKit::WebDevToolsMessageData& data) {
+  client_->sendMessageToAgent(data);
 }
 
 void WebDevToolsFrontendImpl::ContextMenuItemSelected(

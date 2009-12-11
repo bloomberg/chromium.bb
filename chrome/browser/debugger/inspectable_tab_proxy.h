@@ -15,6 +15,7 @@ class DebuggerRemoteService;
 class DevToolsClientHost;
 class DevToolsClientHostImpl;
 class NavigationController;
+struct DevToolsMessageData;
 
 // Proxies debugged tabs' NavigationControllers using their UIDs.
 // Keeps track of tabs being debugged so that we can detach from
@@ -81,11 +82,7 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
 
  private:
   // Message handling routines
-  void OnRpcMessage(const std::string& class_name,
-                    const std::string& message_name,
-                    const std::string& param1,
-                    const std::string& param2,
-                    const std::string& param3);
+  void OnRpcMessage(const DevToolsMessageData& data);
   void DebuggerOutput(const std::string& msg);
   void FrameNavigate(const std::string& url);
   void TabClosed();

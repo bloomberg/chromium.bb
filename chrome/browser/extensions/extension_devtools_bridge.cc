@@ -80,16 +80,12 @@ void ExtensionDevToolsBridge::SendMessageToClient(const IPC::Message& msg) {
 static const char kApuAgentClassName[] = "ApuAgentDelegate";
 static const char kApuPageEventMessageName[] = "DispatchToApu";
 
-void ExtensionDevToolsBridge::OnRpcMessage(const std::string& class_name,
-                                           const std::string& message_name,
-                                           const std::string& param1,
-                                           const std::string& param2,
-                                           const std::string& param3) {
+void ExtensionDevToolsBridge::OnRpcMessage(const DevToolsMessageData& data) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
-  if (class_name == kApuAgentClassName
-      && message_name == kApuPageEventMessageName) {
-    std::string json = StringPrintf("[%s]", param1.c_str());
+  if (data.class_name == kApuAgentClassName
+      && data.method_name == kApuPageEventMessageName) {
+    std::string json = StringPrintf("[%s]", data.arguments[0].c_str());
     profile_->GetExtensionMessageService()->DispatchEventToRenderers(
         on_page_event_name_, json);
   }

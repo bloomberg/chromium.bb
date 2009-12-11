@@ -237,8 +237,6 @@
         # those in the test subdirectory and those with unittest in in their
         # names.
         'glue/devtools/apu_agent_delegate.h',
-        'glue/devtools/devtools_rpc.h',
-        'glue/devtools/devtools_rpc_js.h',
         'glue/devtools/bound_object.cc',
         'glue/devtools/bound_object.h',
         'glue/devtools/debugger_agent.h',
@@ -246,6 +244,10 @@
         'glue/devtools/debugger_agent_impl.h',
         'glue/devtools/debugger_agent_manager.cc',
         'glue/devtools/debugger_agent_manager.h',
+        'glue/devtools/devtools_message_data.cc',
+        'glue/devtools/devtools_message_data.h',
+        'glue/devtools/devtools_rpc.h',
+        'glue/devtools/devtools_rpc_js.h',
         'glue/devtools/profiler_agent.h',
         'glue/devtools/profiler_agent_impl.cc',
         'glue/devtools/profiler_agent_impl.h',

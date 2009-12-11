@@ -30,6 +30,7 @@
 
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsAgentClient.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -68,6 +69,7 @@ using WebCore::V8DOMWrapper;
 using WebCore::V8Proxy;
 using WebKit::WebDataSource;
 using WebKit::WebDevToolsAgentClient;
+using WebKit::WebDevToolsMessageData;
 using WebKit::WebFrame;
 using WebKit::WebFrameImpl;
 using WebKit::WebPoint;
@@ -117,17 +119,9 @@ class IoRpcDelegate : public DevToolsRpc::Delegate {
  public:
   IoRpcDelegate() {}
   virtual ~IoRpcDelegate() {}
-  virtual void SendRpcMessage(const String& class_name,
-                              const String& method_name,
-                              const String& p1,
-                              const String& p2,
-                              const String& p3) {
-    WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(
-        webkit_glue::StringToWebString(class_name),
-        webkit_glue::StringToWebString(method_name),
-        webkit_glue::StringToWebString(p1),
-        webkit_glue::StringToWebString(p2),
-        webkit_glue::StringToWebString(p3));
+  virtual void SendRpcMessage(
+      const WebKit::WebDevToolsMessageData& data) {
+    WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(data);
   }
 
  private:
@@ -286,19 +280,20 @@ void WebDevToolsAgentImpl::GetResourceContent(
   tools_agent_native_delegate_stub_->DidGetResourceContent(call_id, content);
 }
 
+// TODO(yurys): this method is deprecated and will go away soon, use
+// overloaded method with WebDevToolsMessageData argument instead.
 void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
     const WebString& class_name,
     const WebString& method_name,
     const WebString& param1,
     const WebString& param2,
     const WebString& param3) {
-  if (ToolsAgentDispatch::Dispatch(
-      this,
-      webkit_glue::WebStringToString(class_name),
-      webkit_glue::WebStringToString(method_name),
-      webkit_glue::WebStringToString(param1),
-      webkit_glue::WebStringToString(param2),
-      webkit_glue::WebStringToString(param3))) {
+  ASSERT_NOT_REACHED();
+}
+
+void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
+    const WebDevToolsMessageData& data) {
+  if (ToolsAgentDispatch::Dispatch(this, data)) {
     return;
   }
 
@@ -307,20 +302,9 @@ void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
   }
 
   if (debugger_agent_impl_.get() &&
-      DebuggerAgentDispatch::Dispatch(
-          debugger_agent_impl_.get(),
-          webkit_glue::WebStringToString(class_name),
-          webkit_glue::WebStringToString(method_name),
-          webkit_glue::WebStringToString(param1),
-          webkit_glue::WebStringToString(param2),
-          webkit_glue::WebStringToString(param3))) {
+      DebuggerAgentDispatch::Dispatch(debugger_agent_impl_.get(), data)) {
     return;
   }
-}
-
-void WebDevToolsAgentImpl::dispatchMessageFromFrontend(
-     const WebKit::WebDevToolsMessageData& data) {
-  // Stub.
 }
 
 void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& point) {
@@ -344,17 +328,8 @@ void WebDevToolsAgentImpl::setRuntimeFeatureEnabled(const WebString& wfeature,
 }
 
 void WebDevToolsAgentImpl::SendRpcMessage(
-    const String& class_name,
-    const String& method_name,
-    const String& param1,
-    const String& param2,
-    const String& param3) {
-  client_->sendMessageToFrontend(
-      webkit_glue::StringToWebString(class_name),
-      webkit_glue::StringToWebString(method_name),
-      webkit_glue::StringToWebString(param1),
-      webkit_glue::StringToWebString(param2),
-      webkit_glue::StringToWebString(param3));
+    const WebKit::WebDevToolsMessageData& data) {
+  client_->sendMessageToFrontend(data);
 }
 
 void WebDevToolsAgentImpl::InitDevToolsAgentHost() {
@@ -640,6 +615,8 @@ void WebDevToolsAgent::setMessageLoopDispatchHandler(
   DebuggerAgentManager::SetMessageLoopDispatchHandler(handler);
 }
 
+// TODO(yurys): this method is deprecated and will go away soon, use
+// overloaded method with WebDevToolsMessageData argument instead.
 // static
 bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
     const WebString& className,
@@ -647,16 +624,27 @@ bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
     const WebString& param1,
     const WebString& param2,
     const WebString& param3) {
+  WebKit::WebVector<WebString> arguments(static_cast<size_t>(3));
+  arguments[0] = param1;
+  arguments[1] = param2;
+  arguments[2] = param3;
+
+  WebDevToolsMessageData data;
+  data.className = className;
+  data.methodName = methodName;
+  data.arguments.swap(arguments);
+  // Delegate to overloaded method. This method will go away soon.
+  return WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(data);
+}
+
+// static
+bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
+    const WebDevToolsMessageData& data) {
   IoRpcDelegate transport;
   ProfilerAgentDelegateStub stub(&transport);
   ProfilerAgentImpl agent(&stub);
-  return ProfilerAgentDispatch::Dispatch(
-      &agent,
-      webkit_glue::WebStringToString(className),
-      webkit_glue::WebStringToString(methodName),
-      webkit_glue::WebStringToString(param1),
-      webkit_glue::WebStringToString(param2),
-      webkit_glue::WebStringToString(param3));
+  return ProfilerAgentDispatch::Dispatch(&agent, data);
 }
+
 
 } // namespace WebKit
