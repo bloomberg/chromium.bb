@@ -280,6 +280,8 @@ void CookiesView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == remove_button_) {
     cookies_tree_->RemoveSelectedItems();
+    if (cookies_tree_model_->GetRoot()->GetChildCount() == 0)
+      UpdateForEmptyState();
   } else if (sender == remove_all_button_) {
     cookies_tree_model_->DeleteAllCookies();
     UpdateForEmptyState();
@@ -401,6 +403,8 @@ CookiesView::CookiesView(Profile* profile)
 
 void CookiesView::UpdateSearchResults() {
   cookies_tree_model_->UpdateSearchResults(search_field_->text());
+  remove_button_->SetEnabled(cookies_tree_model_->GetRoot()->
+      GetTotalNodeCount() > 1);
   remove_all_button_->SetEnabled(cookies_tree_model_->GetRoot()->
       GetTotalNodeCount() > 1);
 }
