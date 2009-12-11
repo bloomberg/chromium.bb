@@ -47,7 +47,7 @@ static ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
 }
 
 // Tests for the experimental timeline extensions API.
-IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, TimelineApi) {
+IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, DISABLED_TimelineApi) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("devtools").AppendASCII("timeline_api")));
 
