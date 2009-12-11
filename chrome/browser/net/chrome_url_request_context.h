@@ -212,9 +212,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_cookie_policy_type(net::CookiePolicy::Type type) {
     cookie_policy_.set_type(type);
   }
-  void set_strict_transport_security_state(
-      net::StrictTransportSecurityState* state) {
-    strict_transport_security_state_ = state;
+  void set_transport_security_state(
+      net::TransportSecurityState* state) {
+    transport_security_state_ = state;
   }
   void set_ssl_config_service(net::SSLConfigService* service) {
     ssl_config_service_ = service;
@@ -317,7 +317,7 @@ class ChromeURLRequestContextFactory {
   FilePath user_script_dir_path_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<BlacklistManager> blacklist_manager_;
-  net::StrictTransportSecurityState* strict_transport_security_state_;
+  net::TransportSecurityState* transport_security_state_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
 
   FilePath profile_dir_path_;

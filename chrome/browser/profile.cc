@@ -27,7 +27,7 @@
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/spellcheck_host.h"
-#include "chrome/browser/strict_transport_security_persister.h"
+#include "chrome/browser/transport_security_persister.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
@@ -59,7 +59,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "grit/locale_settings.h"
-#include "net/base/strict_transport_security_state.h"
+#include "net/base/transport_security_state.h"
 #include "webkit/database/database_tracker.h"
 
 #if defined(OS_LINUX)
@@ -273,13 +273,13 @@ class OffTheRecordProfileImpl : public Profile,
     return ssl_host_state_.get();
   }
 
-  virtual net::StrictTransportSecurityState* GetStrictTransportSecurityState() {
-    if (!strict_transport_security_state_.get()) {
-      strict_transport_security_state_ =
-          new net::StrictTransportSecurityState();
+  virtual net::TransportSecurityState* GetTransportSecurityState() {
+    if (!transport_security_state_.get()) {
+      transport_security_state_ =
+          new net::TransportSecurityState();
     }
 
-    return strict_transport_security_state_.get();
+    return transport_security_state_.get();
   }
 
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) {
@@ -551,9 +551,9 @@ class OffTheRecordProfileImpl : public Profile,
   // the user visited while OTR.
   scoped_ptr<SSLHostState> ssl_host_state_;
 
-  // The StrictTransportSecurityState that only stores enabled sites in memory.
-  scoped_refptr<net::StrictTransportSecurityState>
-      strict_transport_security_state_;
+  // The TransportSecurityState that only stores enabled sites in memory.
+  scoped_refptr<net::TransportSecurityState>
+      transport_security_state_;
 
   // Time we were started.
   Time start_time_;
@@ -855,17 +855,17 @@ SSLHostState* ProfileImpl::GetSSLHostState() {
   return ssl_host_state_.get();
 }
 
-net::StrictTransportSecurityState*
-    ProfileImpl::GetStrictTransportSecurityState() {
-  if (!strict_transport_security_state_.get()) {
-    strict_transport_security_state_ = new net::StrictTransportSecurityState();
-    strict_transport_security_persister_ =
-        new StrictTransportSecurityPersister();
-    strict_transport_security_persister_->Initialize(
-        strict_transport_security_state_.get(), path_);
+net::TransportSecurityState*
+    ProfileImpl::GetTransportSecurityState() {
+  if (!transport_security_state_.get()) {
+    transport_security_state_ = new net::TransportSecurityState();
+    transport_security_persister_ =
+        new TransportSecurityPersister();
+    transport_security_persister_->Initialize(
+        transport_security_state_.get(), path_);
   }
 
-  return strict_transport_security_state_.get();
+  return transport_security_state_.get();
 }
 
 PrefService* ProfileImpl::GetPrefs() {

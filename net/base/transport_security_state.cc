@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/strict_transport_security_state.h"
+#include "net/base/transport_security_state.h"
 
 #include "base/base64.h"
 #include "base/json/json_reader.h"
@@ -18,28 +18,12 @@
 
 namespace net {
 
-StrictTransportSecurityState::StrictTransportSecurityState()
+TransportSecurityState::TransportSecurityState()
     : delegate_(NULL) {
 }
 
-void StrictTransportSecurityState::DidReceiveHeader(const GURL& url,
-                                                    const std::string& value) {
-  int max_age;
-  bool include_subdomains;
-
-  if (!ParseHeader(value, &max_age, &include_subdomains))
-    return;
-
-  base::Time current_time(base::Time::Now());
-  base::TimeDelta max_age_delta = base::TimeDelta::FromSeconds(max_age);
-  base::Time expiry = current_time + max_age_delta;
-
-  EnableHost(url.host(), expiry, include_subdomains);
-}
-
-void StrictTransportSecurityState::EnableHost(const std::string& host,
-                                              base::Time expiry,
-                                              bool include_subdomains) {
+void TransportSecurityState::EnableHost(const std::string& host,
+                                        const DomainState& state) {
   const std::string canonicalised_host = CanonicaliseHost(host);
   if (canonicalised_host.empty())
     return;
@@ -48,12 +32,12 @@ void StrictTransportSecurityState::EnableHost(const std::string& host,
 
   AutoLock lock(lock_);
 
-  State state = {expiry, include_subdomains};
   enabled_hosts_[std::string(hashed, sizeof(hashed))] = state;
   DirtyNotify();
 }
 
-bool StrictTransportSecurityState::IsEnabledForHost(const std::string& host) {
+bool TransportSecurityState::IsEnabledForHost(DomainState* result,
+                                              const std::string& host) {
   const std::string canonicalised_host = CanonicaliseHost(host);
   if (canonicalised_host.empty())
     return false;
@@ -66,7 +50,7 @@ bool StrictTransportSecurityState::IsEnabledForHost(const std::string& host) {
 
     base::SHA256HashString(&canonicalised_host[i], &hashed_domain,
                            sizeof(hashed_domain));
-    std::map<std::string, State>::iterator j =
+    std::map<std::string, DomainState>::iterator j =
         enabled_hosts_.find(std::string(hashed_domain, sizeof(hashed_domain)));
     if (j == enabled_hosts_.end())
       continue;
@@ -76,6 +60,8 @@ bool StrictTransportSecurityState::IsEnabledForHost(const std::string& host) {
       DirtyNotify();
       continue;
     }
+
+    *result = j->second;
 
     // If we matched the domain exactly, it doesn't matter what the value of
     // include_subdomains is.
@@ -90,9 +76,9 @@ bool StrictTransportSecurityState::IsEnabledForHost(const std::string& host) {
 
 // "Strict-Transport-Security" ":"
 //     "max-age" "=" delta-seconds [ ";" "includeSubDomains" ]
-bool StrictTransportSecurityState::ParseHeader(const std::string& value,
-                                               int* max_age,
-                                               bool* include_subdomains) {
+bool TransportSecurityState::ParseHeader(const std::string& value,
+                                         int* max_age,
+                                         bool* include_subdomains) {
   DCHECK(max_age);
   DCHECK(include_subdomains);
 
@@ -187,8 +173,8 @@ bool StrictTransportSecurityState::ParseHeader(const std::string& value,
   }
 }
 
-void StrictTransportSecurityState::SetDelegate(
-    StrictTransportSecurityState::Delegate* delegate) {
+void TransportSecurityState::SetDelegate(
+    TransportSecurityState::Delegate* delegate) {
   AutoLock lock(lock_);
 
   delegate_ = delegate;
@@ -215,15 +201,31 @@ static std::string ExternalStringToHashedDomain(const std::wstring& external) {
   return out;
 }
 
-bool StrictTransportSecurityState::Serialise(std::string* output) {
+bool TransportSecurityState::Serialise(std::string* output) {
   AutoLock lock(lock_);
 
   DictionaryValue toplevel;
-  for (std::map<std::string, State>::const_iterator
+  for (std::map<std::string, DomainState>::const_iterator
        i = enabled_hosts_.begin(); i != enabled_hosts_.end(); ++i) {
     DictionaryValue* state = new DictionaryValue;
     state->SetBoolean(L"include_subdomains", i->second.include_subdomains);
     state->SetReal(L"expiry", i->second.expiry.ToDoubleT());
+
+    switch (i->second.mode) {
+      case DomainState::MODE_STRICT:
+        state->SetString(L"mode", "strict");
+        break;
+      case DomainState::MODE_OPPORTUNISTIC:
+        state->SetString(L"mode", "opportunistic");
+        break;
+      case DomainState::MODE_SPDY_ONLY:
+        state->SetString(L"mode", "spdy-only");
+        break;
+      default:
+        NOTREACHED() << "DomainState with unknown mode";
+        delete state;
+        continue;
+    }
 
     toplevel.Set(HashedDomainToExternalString(i->first), state);
   }
@@ -232,7 +234,7 @@ bool StrictTransportSecurityState::Serialise(std::string* output) {
   return true;
 }
 
-bool StrictTransportSecurityState::Deserialise(const std::string& input) {
+bool TransportSecurityState::Deserialise(const std::string& input) {
   AutoLock lock(lock_);
 
   enabled_hosts_.clear();
@@ -252,10 +254,25 @@ bool StrictTransportSecurityState::Deserialise(const std::string& input) {
       continue;
 
     bool include_subdomains;
+    std::string mode_string;
     double expiry;
 
     if (!state->GetBoolean(L"include_subdomains", &include_subdomains) ||
+        !state->GetString(L"mode", &mode_string) ||
         !state->GetReal(L"expiry", &expiry)) {
+      continue;
+    }
+
+    DomainState::Mode mode;
+    if (mode_string == "strict") {
+      mode = DomainState::MODE_STRICT;
+    } else if (mode_string == "opportunistic") {
+      mode = DomainState::MODE_OPPORTUNISTIC;
+    } else if (mode_string == "spdy-only") {
+      mode = DomainState::MODE_SPDY_ONLY;
+    } else {
+      LOG(WARNING) << "Unknown TransportSecurityState mode string found: "
+                   << mode_string;
       continue;
     }
 
@@ -267,21 +284,23 @@ bool StrictTransportSecurityState::Deserialise(const std::string& input) {
     if (hashed.empty())
       continue;
 
-    State new_state = { expiry_time, include_subdomains };
+    DomainState new_state;
+    new_state.mode = mode;
+    new_state.expiry = expiry_time;
+    new_state.include_subdomains = include_subdomains;
     enabled_hosts_[hashed] = new_state;
   }
 
   return true;
 }
 
-void StrictTransportSecurityState::DirtyNotify() {
+void TransportSecurityState::DirtyNotify() {
   if (delegate_)
     delegate_->StateIsDirty(this);
 }
 
 // static
-std::string StrictTransportSecurityState::CanonicaliseHost(
-    const std::string& host) {
+std::string TransportSecurityState::CanonicaliseHost(const std::string& host) {
   // We cannot perform the operations as detailed in the spec here as |host|
   // has already undergone IDN processing before it reached us. Thus, we check
   // that there are no invalid characters in the host and lowercase the result.

@@ -22,7 +22,7 @@
 #endif
 
 namespace net {
-class StrictTransportSecurityState;
+class TransportSecurityState;
 class SSLConfigService;
 }
 
@@ -55,7 +55,7 @@ class SessionService;
 class SpellCheckHost;
 class SSLConfigServiceManager;
 class SSLHostState;
-class StrictTransportSecurityPersister;
+class TransportSecurityPersister;
 class SQLitePersistentCookieStore;
 class TabRestoreService;
 class TemplateURLFetcher;
@@ -174,11 +174,11 @@ class Profile {
   // called.
   virtual SSLHostState* GetSSLHostState() = 0;
 
-  // Retrieves a pointer to the StrictTransportSecurityState associated with
-  // this profile.  The StrictTransportSecurityState is lazily created the
+  // Retrieves a pointer to the TransportSecurityState associated with
+  // this profile.  The TransportSecurityState is lazily created the
   // first time that this method is called.
-  virtual net::StrictTransportSecurityState*
-      GetStrictTransportSecurityState() = 0;
+  virtual net::TransportSecurityState*
+      GetTransportSecurityState() = 0;
 
   // Retrieves a pointer to the FaviconService associated with this
   // profile.  The FaviconService is lazily created the first time
@@ -408,7 +408,7 @@ class ProfileImpl : public Profile,
   virtual VisitedLinkMaster* GetVisitedLinkMaster();
   virtual UserScriptMaster* GetUserScriptMaster();
   virtual SSLHostState* GetSSLHostState();
-  virtual net::StrictTransportSecurityState* GetStrictTransportSecurityState();
+  virtual net::TransportSecurityState* GetTransportSecurityState();
   virtual ExtensionsService* GetExtensionsService();
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager();
   virtual ExtensionProcessManager* GetExtensionProcessManager();
@@ -499,10 +499,10 @@ class ProfileImpl : public Profile,
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionMessageService> extension_message_service_;
   scoped_ptr<SSLHostState> ssl_host_state_;
-  scoped_refptr<net::StrictTransportSecurityState>
-      strict_transport_security_state_;
-  scoped_refptr<StrictTransportSecurityPersister>
-      strict_transport_security_persister_;
+  scoped_refptr<net::TransportSecurityState>
+      transport_security_state_;
+  scoped_refptr<TransportSecurityPersister>
+      transport_security_persister_;
   scoped_ptr<PrefService> prefs_;
   scoped_refptr<ThumbnailStore> thumbnail_store_;
   scoped_ptr<TemplateURLFetcher> template_url_fetcher_;

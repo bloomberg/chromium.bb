@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/strict_transport_security_persister.h"
+#include "chrome/browser/transport_security_persister.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -10,29 +10,29 @@
 #include "base/path_service.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/common/chrome_paths.h"
-#include "net/base/strict_transport_security_state.h"
+#include "net/base/transport_security_state.h"
 
-StrictTransportSecurityPersister::StrictTransportSecurityPersister()
+TransportSecurityPersister::TransportSecurityPersister()
     : state_is_dirty_(false) {
 }
 
-StrictTransportSecurityPersister::~StrictTransportSecurityPersister() {
-  strict_transport_security_state_->SetDelegate(NULL);
+TransportSecurityPersister::~TransportSecurityPersister() {
+  transport_security_state_->SetDelegate(NULL);
 }
 
-void StrictTransportSecurityPersister::Initialize(
-    net::StrictTransportSecurityState* state, const FilePath& profile_path) {
-  strict_transport_security_state_ = state;
+void TransportSecurityPersister::Initialize(
+    net::TransportSecurityState* state, const FilePath& profile_path) {
+  transport_security_state_ = state;
   state_file_ =
-      profile_path.Append(FILE_PATH_LITERAL("StrictTransportSecurity"));
+      profile_path.Append(FILE_PATH_LITERAL("TransportSecurity"));
   state->SetDelegate(this);
 
   Task* task = NewRunnableMethod(this,
-      &StrictTransportSecurityPersister::LoadState);
+      &TransportSecurityPersister::LoadState);
   ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE, task, 1000);
 }
 
-void StrictTransportSecurityPersister::LoadState() {
+void TransportSecurityPersister::LoadState() {
   AutoLock locked_(lock_);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
@@ -40,26 +40,26 @@ void StrictTransportSecurityPersister::LoadState() {
   if (!file_util::ReadFileToString(state_file_, &state))
     return;
 
-  strict_transport_security_state_->Deserialise(state);
+  transport_security_state_->Deserialise(state);
 }
 
-void StrictTransportSecurityPersister::StateIsDirty(
-    net::StrictTransportSecurityState* state) {
+void TransportSecurityPersister::StateIsDirty(
+    net::TransportSecurityState* state) {
   // Runs on arbitary thread, may not block nor reenter
-  // |strict_transport_security_state_|.
+  // |transport_security_state_|.
   AutoLock locked_(lock_);
-  DCHECK(state == strict_transport_security_state_);
+  DCHECK(state == transport_security_state_);
 
   if (state_is_dirty_)
     return;  // we already have a serialisation scheduled
 
   Task* task = NewRunnableMethod(this,
-      &StrictTransportSecurityPersister::SerialiseState);
+      &TransportSecurityPersister::SerialiseState);
   ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE, task, 1000);
   state_is_dirty_ = true;
 }
 
-void StrictTransportSecurityPersister::SerialiseState() {
+void TransportSecurityPersister::SerialiseState() {
   AutoLock locked_(lock_);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
@@ -67,7 +67,7 @@ void StrictTransportSecurityPersister::SerialiseState() {
   state_is_dirty_ = false;
 
   std::string state;
-  if (!strict_transport_security_state_->Serialise(&state))
+  if (!transport_security_state_->Serialise(&state))
     return;
 
   file_util::WriteFile(state_file_, state.data(), state.size());

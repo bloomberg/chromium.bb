@@ -38,7 +38,7 @@ class AutomationURLRequestContext : public ChromeURLRequestContext {
     http_transaction_factory_ = NULL;
     ftp_transaction_factory_ = NULL;
     cookie_store_ = NULL;
-    strict_transport_security_state_ = NULL;
+    transport_security_state_ = NULL;
   }
 
   scoped_refptr<ChromeURLRequestContext> original_context_;

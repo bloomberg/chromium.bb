@@ -750,7 +750,7 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   ftp_transaction_factory_ = other->ftp_transaction_factory_;
   cookie_store_ = other->cookie_store_;
   cookie_policy_.set_type(other->cookie_policy_.type());
-  strict_transport_security_state_ = other->strict_transport_security_state_;
+  transport_security_state_ = other->transport_security_state_;
   accept_language_ = other->accept_language_;
   accept_charset_ = other->accept_charset_;
   referrer_charset_ = other->referrer_charset_;
@@ -835,7 +835,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   blacklist_manager_ = profile->GetBlacklistManager();
 
   // TODO(eroman): this doesn't look safe; sharing between IO and UI threads!
-  strict_transport_security_state_ = profile->GetStrictTransportSecurityState();
+  transport_security_state_ = profile->GetTransportSecurityState();
 
   if (profile->GetExtensionsService()) {
     const ExtensionList* extensions =
@@ -872,8 +872,8 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_user_script_dir_path(user_script_dir_path_);
   context->set_host_zoom_map(host_zoom_map_);
   context->set_blacklist_manager(blacklist_manager_.get());
-  context->set_strict_transport_security_state(
-      strict_transport_security_state_);
+  context->set_transport_security_state(
+      transport_security_state_);
   context->set_ssl_config_service(ssl_config_service_);
 }
 
