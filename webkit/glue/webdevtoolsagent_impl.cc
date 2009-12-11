@@ -615,28 +615,6 @@ void WebDevToolsAgent::setMessageLoopDispatchHandler(
   DebuggerAgentManager::SetMessageLoopDispatchHandler(handler);
 }
 
-// TODO(yurys): this method is deprecated and will go away soon, use
-// overloaded method with WebDevToolsMessageData argument instead.
-// static
-bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
-    const WebString& className,
-    const WebString& methodName,
-    const WebString& param1,
-    const WebString& param2,
-    const WebString& param3) {
-  WebKit::WebVector<WebString> arguments(static_cast<size_t>(3));
-  arguments[0] = param1;
-  arguments[1] = param2;
-  arguments[2] = param3;
-
-  WebDevToolsMessageData data;
-  data.className = className;
-  data.methodName = methodName;
-  data.arguments.swap(arguments);
-  // Delegate to overloaded method. This method will go away soon.
-  return WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(data);
-}
-
 // static
 bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(
     const WebDevToolsMessageData& data) {
