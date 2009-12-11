@@ -1,6 +1,6 @@
 // Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE entry.
+// found in the LICENSE file.
 
 #include "chrome/browser/sync/util/extensions_activity_monitor.h"
 
@@ -19,14 +19,14 @@ namespace keys = extension_manifest_keys;
 
 namespace {
 
-const FilePath::CharType kTestExtensionPath1[] = 
+const FilePath::CharType kTestExtensionPath1[] =
 #if defined(OS_POSIX)
     FILE_PATH_LITERAL("/testextension1");
 #elif defined(OS_WIN)
     FILE_PATH_LITERAL("c:\\testextension1");
 #endif
 
-const FilePath::CharType kTestExtensionPath2[] = 
+const FilePath::CharType kTestExtensionPath2[] =
 #if defined(OS_POSIX)
     FILE_PATH_LITERAL("/testextension2");
 #elif defined(OS_WIN)
