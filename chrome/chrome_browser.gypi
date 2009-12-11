@@ -2302,7 +2302,7 @@
               'dependencies': [
                 '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
                 '../third_party/protobuf2/protobuf.gyp:protoc#host',
-                '../third_party/cros/cros_api.gyp:cros_api',
+                'browser/chromeos/cros_api.gyp:cros_api',
                 '../views/views.gyp:views',
               ],
               'actions': [
