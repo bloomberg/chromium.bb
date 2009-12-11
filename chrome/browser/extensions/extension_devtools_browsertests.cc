@@ -85,6 +85,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDevToolsBrowserTest, DISABLED_TimelineApi) {
   DevToolsMessageData message_data;
   message_data.class_name = "ApuAgentDelegate";
   message_data.method_name = "DispatchToApu";
+  message_data.arguments.push_back("");
   DevToolsClientMsg_RpcMessage pageEventMessage(message_data);
   devtools_client_host->SendMessageToClient(pageEventMessage);
   ui_test_utils::ExecuteJavaScriptAndExtractBool(
