@@ -10,7 +10,7 @@
 
 #include "base/gfx/size.h"
 #include "base/pickle.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard)
     : clipboard_(clipboard) {

@@ -7,7 +7,7 @@
 #include <string>
 
 #include "base/pickle.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"

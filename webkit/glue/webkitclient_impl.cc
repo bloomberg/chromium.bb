@@ -12,7 +12,7 @@
 #include "base/process_util.h"
 #include "base/platform_file.h"
 #include "base/stats_counters.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/trace_event.h"
 #include "grit/webkit_resources.h"
 #include "grit/webkit_strings.h"

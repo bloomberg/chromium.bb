@@ -4,9 +4,9 @@
 
 #include "app/gtk_dnd_util.h"
 
-#include "base/string_util.h"
 #include "base/logging.h"
 #include "base/pickle.h"
+#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 
 static const int kBitsPerByte = 8;

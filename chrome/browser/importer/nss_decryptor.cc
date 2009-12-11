@@ -14,7 +14,7 @@
 #endif  // defined(OS_LINUX)
 
 #include "base/base64.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "webkit/glue/password_form.h"
 
 using webkit_glue::PasswordForm;

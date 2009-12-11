@@ -6,7 +6,7 @@
 
 #include <windows.h>
 #include <wincrypt.h>
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 
 #pragma comment(lib, "crypt32.lib")
 

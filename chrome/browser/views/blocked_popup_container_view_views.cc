@@ -16,7 +16,6 @@
 #include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
-#include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

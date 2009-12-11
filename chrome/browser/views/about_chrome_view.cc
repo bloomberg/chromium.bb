@@ -10,7 +10,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_version_info.h"
-#include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/common/chrome_constants.h"
