@@ -3027,7 +3027,6 @@ BUG28905 WONTFIX SKIP : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
 
 // New failures from merge 51412:51455.
 BUG28916 MAC : LayoutTests/editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
-BUG_HAMAJI WIN LINUX : LayoutTests/editing/selection/last-empty-inline.html = TEXT
 
 // Flaky test from r51224:r51237 roll.
 BUG28918 DEBUG : LayoutTests/storage/domstorage/localstorage/iframe-events.html = CRASH PASS
