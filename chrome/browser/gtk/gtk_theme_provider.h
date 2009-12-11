@@ -40,9 +40,6 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // Sets that we aren't using the system theme, then calls
   // BrowserThemeProvider's implementation.
   virtual void Init(Profile* profile);
-  virtual SkBitmap* GetBitmapNamed(int id) const;
-  virtual SkColor GetColor(int id) const;
-  virtual bool HasCustomImage(int id) const;
   virtual void SetTheme(Extension* extension);
   virtual void UseDefaultTheme();
   virtual void SetNativeTheme();
@@ -89,16 +86,23 @@ class GtkThemeProvider : public BrowserThemeProvider,
   static GdkPixbuf* GetFolderIcon(bool native);
   static GdkPixbuf* GetDefaultFavicon(bool native);
 
- private:
-  typedef std::map<int, SkColor> ColorMap;
-  typedef std::map<int, color_utils::HSL> TintMap;
-  typedef std::map<int, SkBitmap*> ImageCache;
+ protected:
+  // Possibly creates a theme specific version of theme_toolbar_default.
+  // (minimally acceptable version right now, which is just a fill of the bg
+  // color; this should instead invoke gtk_draw_box(...) for complex theme
+  // engines.)
+  virtual SkBitmap* LoadThemeBitmap(int id) const;
 
+ private:
   // Load theme data from preferences, possibly picking colors from GTK.
   virtual void LoadThemePrefs();
 
   // Let all the browser views know that themes have changed.
   virtual void NotifyThemeChanged();
+
+  // If use_gtk_ is true, completely ignores this call. Otherwise passes it to
+  // the superclass.
+  virtual void SaveThemeBitmap(const std::string resource_name, int id) const;
 
   // Additionally frees the CairoCachedSurfaces.
   virtual void FreePlatformCaches();
@@ -111,26 +115,15 @@ class GtkThemeProvider : public BrowserThemeProvider,
   void LoadGtkValues();
 
   // Sets the underlying theme colors/tints from a GTK color.
-  void SetThemeColorFromGtk(int id, GdkColor* color);
-  void SetThemeTintFromGtk(int id, GdkColor* color);
-  void BuildTintedFrameColor(int color_id, int tint_id);
-  void SetTintToExactColor(int id, GdkColor* color);
+  void SetThemeColorFromGtk(const char* id, GdkColor* color);
+  void SetThemeTintFromGtk(const char* id, GdkColor* color,
+                           const color_utils::HSL& default_tint);
 
   // Split out from FreePlatformCaches so it can be called in our destructor;
   // FreePlatformCaches() is called from the BrowserThemeProvider's destructor,
   // but by the time ~BrowserThemeProvider() is run, the vtable no longer
   // points to GtkThemeProvider's version.
   void FreePerDisplaySurfaces();
-
-  // Lazily generates each bitmap used in the gtk theme.
-  SkBitmap* GenerateGtkThemeBitmap(int id) const;
-
-  // Tints IDR_THEME_FRAME based based on |tint_id|. Used during lazy
-  // generation of the gtk theme bitmaps.
-  SkBitmap* GenerateFrameImage(int tint_id) const;
-
-  // Takes the base frame image |base_id| and tints it with |tint_id|.
-  SkBitmap* GenerateTabImage(int base_id) const;
 
   // A notification from the GtkChromeButton GObject destructor that we should
   // remove it from our internal list.
@@ -148,15 +141,6 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // A list of all GtkChromeButton instances. We hold on to these to notify
   // them of theme changes.
   std::vector<GtkWidget*> chrome_buttons_;
-
-  // Tints and colors calculated by LoadGtkValues() that are given to the
-  // caller while |use_gtk_| is true.
-  ColorMap colors_;
-  TintMap tints_;
-
-  // Image cache of lazily created images, created when requested by
-  // GetBitmapNamed().
-  mutable ImageCache gtk_images_;
 
   // Cairo surfaces for each GdkDisplay.
   typedef std::map<int, CairoCachedSurface*> CairoCachedSurfaceMap;

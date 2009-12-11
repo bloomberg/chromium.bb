@@ -8,7 +8,6 @@
 
 #include "app/gfx/color_utils.h"
 #include "base/logging.h"
-#include "chrome/browser/browser_theme_pack.h"
 #include "skia/ext/skia_utils_mac.h"
 
 namespace {
@@ -76,8 +75,9 @@ NSColor* BrowserThemeProvider::GetNSColor(int id) const {
   if (nscolor_iter != nscolor_cache_.end())
     return nscolor_iter->second;
 
-  SkColor sk_color;
-  if (theme_pack_.get() && theme_pack_->GetColor(id, &sk_color)) {
+  ColorMap::const_iterator color_iter = colors_.find(GetColorKey(id));
+  if (color_iter != colors_.end()) {
+    const SkColor& sk_color = color_iter->second;
     NSColor* color = [NSColor
         colorWithCalibratedRed:SkColorGetR(sk_color)/255.0
                          green:SkColorGetG(sk_color)/255.0
@@ -102,8 +102,9 @@ NSColor* BrowserThemeProvider::GetNSColorTint(int id) const {
   if (nscolor_iter != nscolor_cache_.end())
     return nscolor_iter->second;
 
-  color_utils::HSL tint;
-  if (theme_pack_.get() && theme_pack_->GetTint(id, &tint)) {
+  TintMap::const_iterator tint_iter = tints_.find(GetTintKey(id));
+  if (tint_iter != tints_.end()) {
+    color_utils::HSL tint = tint_iter->second;
     CGFloat hue, saturation, brightness;
     HSLToHSB(tint, &hue, &saturation, &brightness);
 

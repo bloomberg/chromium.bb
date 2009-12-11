@@ -526,7 +526,6 @@
         'browser/bookmarks/bookmark_table_model_unittest.cc',
         'browser/bookmarks/bookmark_utils_unittest.cc',
         'browser/browser_commands_unittest.cc',
-        'browser/browser_theme_pack_unittest.cc',
         'browser/browser_theme_provider_unittest.cc',
         'browser/browser_unittest.cc',
         'browser/chrome_browser_application_mac_unittest.mm',

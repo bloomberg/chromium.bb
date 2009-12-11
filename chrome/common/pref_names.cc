@@ -250,7 +250,6 @@ const wchar_t kPrintingPageFooterRight[] = L"printing.page.footer.right";
 // GTK specific preference on whether we should match the system GTK theme.
 const wchar_t kUsesSystemTheme[] = L"extensions.theme.use_system";
 #endif
-const wchar_t kCurrentThemePackFilename[] = L"extensions.theme.pack";
 const wchar_t kCurrentThemeID[] = L"extensions.theme.id";
 const wchar_t kCurrentThemeImages[] = L"extensions.theme.images";
 const wchar_t kCurrentThemeColors[] = L"extensions.theme.colors";

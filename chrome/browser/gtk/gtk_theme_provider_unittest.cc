@@ -35,6 +35,11 @@ class GtkThemeProviderTest : public testing::Test {
     provider_ = GtkThemeProvider::GetFrom(&profile_);
   }
 
+  void UseThemeProvider(GtkThemeProvider* provider) {
+    profile_.UseThemeProvider(provider);
+    provider_ = GtkThemeProvider::GetFrom(&profile_);
+  }
+
  protected:
   TestingProfile profile_;
 
@@ -46,11 +51,42 @@ TEST_F(GtkThemeProviderTest, DefaultValues) {
   BuildProvider();
 
   // Test that we get the default theme colors back when in normal mode.
-  for (int i = BrowserThemeProvider::COLOR_FRAME;
-       i <= BrowserThemeProvider::COLOR_BUTTON_BACKGROUND; ++i) {
-    EXPECT_EQ(provider_->GetColor(i), BrowserThemeProvider::GetDefaultColor(i))
-        << "Wrong default color for " << i;
-  }
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_FRAME),
+            BrowserThemeProvider::kDefaultColorFrame);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_FRAME_INACTIVE),
+            BrowserThemeProvider::kDefaultColorFrameInactive);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_FRAME_INCOGNITO),
+            BrowserThemeProvider::kDefaultColorFrameIncognito);
+  EXPECT_EQ(provider_->GetColor(
+      BrowserThemeProvider::COLOR_FRAME_INCOGNITO_INACTIVE),
+      BrowserThemeProvider::kDefaultColorFrameIncognitoInactive);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_TOOLBAR),
+            BrowserThemeProvider::kDefaultColorToolbar);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
+            BrowserThemeProvider::kDefaultColorTabText);
+  EXPECT_EQ(provider_->GetColor(
+      BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT),
+      BrowserThemeProvider::kDefaultColorBackgroundTabText);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT),
+            BrowserThemeProvider::kDefaultColorBookmarkText);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_NTP_BACKGROUND),
+            BrowserThemeProvider::kDefaultColorNTPBackground);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_NTP_TEXT),
+            BrowserThemeProvider::kDefaultColorNTPText);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_NTP_LINK),
+            BrowserThemeProvider::kDefaultColorNTPLink);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_NTP_HEADER),
+            BrowserThemeProvider::kDefaultColorNTPHeader);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION),
+            BrowserThemeProvider::kDefaultColorNTPSection);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_TEXT),
+            BrowserThemeProvider::kDefaultColorNTPSectionText);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_NTP_SECTION_LINK),
+            BrowserThemeProvider::kDefaultColorNTPSectionLink);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_CONTROL_BACKGROUND),
+            BrowserThemeProvider::kDefaultColorControlBackground);
+  EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND),
+            BrowserThemeProvider::kDefaultColorButtonBackground);
 }
 
 TEST_F(GtkThemeProviderTest, UsingGtkValues) {
@@ -67,4 +103,33 @@ TEST_F(GtkThemeProviderTest, UsingGtkValues) {
   GdkColor label_color = label_style->text[GTK_STATE_NORMAL];
   EXPECT_EQ(provider_->GetColor(BrowserThemeProvider::COLOR_TAB_TEXT),
             GdkToSkColor(&label_color));
+}
+
+// Helper class to GtkThemeProviderTest.UsingGtkFrame.
+class ImageVerifierGtkThemeProvider : public GtkThemeProvider {
+ public:
+  ImageVerifierGtkThemeProvider() : theme_toolbar_(NULL) { }
+
+  virtual SkBitmap* LoadThemeBitmap(int id) const {
+    if (id != IDR_THEME_TOOLBAR)
+      return GtkThemeProvider::LoadThemeBitmap(id);
+    theme_toolbar_ = GtkThemeProvider::LoadThemeBitmap(id);
+    return theme_toolbar_;
+  }
+
+  mutable SkBitmap* theme_toolbar_;
+};
+
+TEST_F(GtkThemeProviderTest, InjectsToolbar) {
+  SetUseGtkTheme(true);
+  ImageVerifierGtkThemeProvider* verifier_provider =
+      new ImageVerifierGtkThemeProvider;
+  UseThemeProvider(verifier_provider);
+
+  // Make sure the image we get from the public BrowserThemeProvider interface
+  // is the one we injected through GtkThemeProvider.
+  SkBitmap* image = provider_->GetBitmapNamed(IDR_THEME_TOOLBAR);
+  EXPECT_TRUE(verifier_provider->theme_toolbar_);
+  EXPECT_TRUE(image);
+  EXPECT_EQ(verifier_provider->theme_toolbar_, image);
 }

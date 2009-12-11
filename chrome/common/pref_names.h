@@ -101,7 +101,6 @@ extern const wchar_t kPrintingPageFooterRight[];
 #if defined(OS_LINUX)
 extern const wchar_t kUsesSystemTheme[];
 #endif
-extern const wchar_t kCurrentThemePackFilename[];
 extern const wchar_t kCurrentThemeID[];
 extern const wchar_t kCurrentThemeImages[];
 extern const wchar_t kCurrentThemeColors[];
