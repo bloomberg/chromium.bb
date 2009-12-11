@@ -3238,17 +3238,15 @@ BUG29737 WIN : LayoutTests/svg/filters/feTile.svg = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/subRegion-one-effect.svg = TEXT
 BUG29737 WIN : LayoutTests/svg/filters/subRegion-two-effects.svg = TEXT
 
-// More Webkit Roll to r51875 - rebaseline needed i think
-BUG_MICHAELN : LayoutTests/websocket/tests/bad-sub-protocol.html = TEXT
 
 // WebKit Roll to r51915
-BUG29928 : LayoutTests/websocket/tests/sub-protocol-with-space.html = TEXT
-BUG29930 : LayoutTests/fast/loader/input-element-page-cache-crash.html = TIMEOUT
+BUG29928 SKIP : LayoutTests/websocket/tests/sub-protocol-with-space.html = TEXT
+BUG29930 SLOW : LayoutTests/fast/loader/input-element-page-cache-crash.html = PASS
 
 // Was first marked as (WIN: TEXT, LINUX: TEXT,  MAC: IMAGE+TEXT) by
 // roll r51875, and then after http://trac.webkit.org/changeset/51936 the
 // shadows broke so IMAGE failure was added to WIN/LINUX.
-BUG30048_and_29737 : LayoutTests/svg/filters/shadow-on-rect-with-filter.svg = IMAGE+TEXT
+BUG30048 BUG29737 : LayoutTests/svg/filters/shadow-on-rect-with-filter.svg = IMAGE+TEXT
 
 // Broke due to changes to shadow compositing, courtesy of:
 // http://trac.webkit.org/changeset/51936:
