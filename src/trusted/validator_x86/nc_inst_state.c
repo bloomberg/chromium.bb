@@ -822,7 +822,7 @@ void DecodeInstruction(
      * such as the nop instruction.
      */
     if (state->opcode->flags & InstFlag(IgnorePrefixDATA16)) {
-      if (state->num_prefix_66 > 1) {
+      if (state->num_prefix_66 > 0) {
         num_prefix_bytes -= state->num_prefix_66;
       }
     }
