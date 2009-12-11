@@ -155,6 +155,12 @@ void PaintAggregator::ScrollRect(int dx, int dy, const gfx::Rect& clip_rect) {
   update_.scroll_rect = clip_rect;
   update_.scroll_delta.Offset(dx, dy);
 
+  // We might have just wiped out a pre-existing scroll.
+  if (update_.scroll_delta == gfx::Point()) {
+    update_.scroll_rect = gfx::Rect();
+    return;
+  }
+
   // Adjust any contained paint rects and check for any overlapping paints.
   for (size_t i = 0; i < update_.paint_rects.size(); ++i) {
     if (update_.scroll_rect.Contains(update_.paint_rects[i])) {

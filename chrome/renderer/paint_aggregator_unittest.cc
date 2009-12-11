@@ -87,6 +87,21 @@ TEST(PaintAggregator, DoubleOverlappingScroll) {
   EXPECT_EQ(expected_damage, resulting_damage);
 }
 
+TEST(PaintAggregator, NegatingScroll) {
+  PaintAggregator greg;
+
+  // Scroll twice in opposite directions by equal amounts.  The result
+  // should be no scrolling.
+
+  gfx::Rect rect(1, 2, 3, 4);
+  gfx::Point delta1(1, 0);
+  gfx::Point delta2(-1, 0);
+  greg.ScrollRect(delta1.x(), delta1.y(), rect);
+  greg.ScrollRect(delta2.x(), delta2.y(), rect);
+
+  EXPECT_FALSE(greg.HasPendingUpdate());
+}
+
 TEST(PaintAggregator, DiagonalScroll) {
   PaintAggregator greg;
 
