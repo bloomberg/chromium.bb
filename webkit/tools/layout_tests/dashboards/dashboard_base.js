@@ -319,11 +319,15 @@ function setQueryParameter(var_args) {
   for (var i = 0; i < arguments.length; i += 2) {
     currentState[arguments[i]] = arguments[i + 1];
   }
-  window.location.replace(getPermaLinkURL());
+  // Note: We use window.location.hash rather that window.location.replace
+  // because of bugs in Chrome where extra entries were getting created
+  // when back button was pressed and full page navigation was occuring.
+  // TODO: file those bugs.
+  window.location.hash = getPermaLinkURLHash();
 }
 
-function getPermaLinkURL() {
-  return window.location.pathname + '#' + joinParameters(currentState);
+function getPermaLinkURLHash() {
+  return '#' + joinParameters(currentState);
 }
 
 function joinParameters(stateObject) {
@@ -370,6 +374,41 @@ function showPopup(e, html) {
   }
   y = Math.max(0, y);
   popup.style.top = y + document.body.scrollTop + 'px';
+}
+
+/**
+ * Create a new function with some of its arguements
+ * pre-filled.
+ * Taken from goog.partial in the Closure library.
+ * @param {Function} fn A function to partially apply.
+ * @param {...*} var_args Additional arguments that are partially
+ *     applied to fn.
+ * @return {!Function} A partially-applied form of the function bind() was
+ *     invoked as a method of.
+ */
+function partial(fn, var_args) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return function() {
+    // Prepend the bound arguments to the current arguments.
+    var newArgs = Array.prototype.slice.call(arguments);
+    newArgs.unshift.apply(newArgs, args);
+    return fn.apply(this, newArgs);
+  };
+};
+
+/**
+ * Returns the keys of the object/map/hash.
+ * Taken from goog.object.getKeys in the Closure library.
+ *
+ * @param {Object} obj The object from which to get the keys.
+ * @return {!Array.<string>} Array of property keys.
+ */
+function getKeys(obj) {
+  var res = [];
+  for (var key in obj) {
+    res.push(key);
+  }
+  return res;
 }
 
 appendJSONScriptElements();

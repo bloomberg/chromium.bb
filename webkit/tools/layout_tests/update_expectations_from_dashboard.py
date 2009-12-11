@@ -9,7 +9,7 @@ and apply them to test_expectations.txt.
 Usage:
 1. Go to http://src.chromium.org/viewvc/chrome/trunk/src/webkit/tools/layout_tests/flakiness_dashboard.html#expectationsUpdate=true
 2. Copy-paste that JSON into a local file.
-3. python update_expectations_from_dashboard.py --update-json-file path/to/local/file
+3. python update_expectations_from_dashboard.py path/to/local/file
 """
 
 import logging

@@ -359,7 +359,8 @@
         return true;
 
       case 'maxResults':
-        validateParameter(currentState, key, value,
+      case 'updateIndex':
+        validateParameter(currentState, key, Number(value),
             function() {
               return value.match(/^\d+$/);
             });
@@ -397,7 +398,8 @@
     showWontFixSkip: false,
     showSlow: false,
     showSkipped: false,
-    expectationsUpdate: false
+    expectationsUpdate: false,
+    updateIndex: 0
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -418,6 +420,8 @@
   // Maps test path to an array of {builder, testResults} objects.
   var testToResultsMap = {};
   var numFlakyTestsPerBuilder = {};
+  // Tests that the user wants to update expectations for.
+  var confirmedTests = {};
 
   function createResultsObjectForTest(test, builder) {
     return {
@@ -1511,28 +1515,89 @@
       }
     }
 
-    var confirmedTests = {};
-    var NUM_UPDATES_BEFORE_BREAK = 20;
-    var i = 0;
-    for (test in testsNeedingUpdate) {
-      i++
-      // To maintain sanity when doing updates, give a chance to break out of
-      // the confirm loop every once in a while.
-      if (!(i % NUM_UPDATES_BEFORE_BREAK)) {
-        if (!confirm('Processed ' + i +
-                ' updates. Continue processing updates?'))
-          break;
-      }
+    var keys = getKeys(testsNeedingUpdate);
+    showUpdateInfoForTest(testsNeedingUpdate, keys);
+  }
 
-      document.body.innerHTML = getHTMLForIndividulTestOnAllBuilders(test);
-      var confirmStr = 'Include this update?\n' +
-          JSON.stringify(testsNeedingUpdate[test], null, 4);
-      if (confirm(confirmStr)) {
-        confirmedTests[test] = testsNeedingUpdate[test];
-      }
+  /**
+   * Show the test results and the json for differing expectations, and
+   * allow the user to include or exclude this update.
+   *
+   * @param {Object} testsNeedingUpdate Tests that need updating.
+   * @param {Array.<string>} keys Keys into the testNeedingUpdate object.
+   */
+  function showUpdateInfoForTest(testsNeedingUpdate, keys) {
+    var test = keys[currentState.updateIndex];
+    document.body.innerHTML = '<b>' + test + '</b><br><br>';
+
+    var buttonRegion = document.createElement('div');
+    var includeBtn = document.createElement('input');
+    includeBtn.type = 'button';
+    includeBtn.value = 'include';
+    includeBtn.addEventListener('click',
+        partial(handleUpdate, true, testsNeedingUpdate, keys),
+        false);
+    buttonRegion.appendChild(includeBtn);
+
+    var excludeBtn = document.createElement('input');
+    excludeBtn.type = 'button';
+    excludeBtn.value = 'exclude';
+    excludeBtn.addEventListener('click',
+        partial(handleUpdate, false, testsNeedingUpdate, keys),
+        false);
+    buttonRegion.appendChild(excludeBtn);
+
+    var doneBtn = document.createElement('input');
+    doneBtn.type = 'button';
+    doneBtn.value = 'done';
+    doneBtn.addEventListener('click', finishUpdate, false);
+    buttonRegion.appendChild(doneBtn);
+
+    document.body.appendChild(buttonRegion);
+
+    var confirmStr = JSON.stringify(testsNeedingUpdate[test], null, 4);
+
+    var pre = document.createElement('pre');
+    pre.innerHTML = confirmStr;
+    document.body.appendChild(pre);
+    var div = document.createElement('div');
+    div.innerHTML = getHTMLForIndividulTestOnAllBuilders(test);
+    document.body.appendChild(div);
+  }
+
+
+  /**
+   * When the user has finished selecting expectations to update, provide them
+   * with json to copy over.
+   * TODO(jparent): This could also probably spit out instructinos on what to
+   *     do next.
+   */
+  function finishUpdate() {
+    document.body.innerHTML = JSON.stringify(confirmedTests);
+  }
+
+  /**
+   * Handle user click on either "include" or "exclude" buttons.
+   * @param {boolean} isAccepted Whether the user accepted this update.
+   * @param {Object} testsNeedingUpdate Tests that need updating.
+   * @param {Array.<string>} keys Keys into the testNeedingUpdate object.
+   *
+   */
+  function handleUpdate(isAccepted, testsNeedingUpdate, keys) {
+    var test = keys[currentState.updateIndex];
+    if (isAccepted) {
+      confirmedTests[test] = testsNeedingUpdate[test];
+    } else if (confirmedTests[test]) {
+      delete confirmedTests[test];
     }
 
-    document.body.innerHTML = JSON.stringify(confirmedTests);
+    setState("updateIndex", currentState.updateIndex + 1);
+
+    if (currentState.updateIndex < keys.length) {
+      showUpdateInfoForTest(testsNeedingUpdate, keys);
+    } else {
+      finishUpdate();
+    }
   }
 
   function getHTMLForIndividulTestOnAllBuilders(test) {
