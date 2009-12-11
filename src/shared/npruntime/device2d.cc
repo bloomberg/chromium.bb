@@ -21,6 +21,13 @@
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
 namespace {
+static const int kInvalidDesc = -1;
+
+struct Device2DImpl {
+  int shared_memory_desc;
+  size_t size;
+  int sync_socket_desc;
+};
 
 static NPError QueryCapability(NPP instance,
                                int32 capability,
@@ -40,11 +47,15 @@ static NPError InitializeContext(NPP instance,
                                  const NPDeviceConfig* config,
                                  NPDeviceContext* context) {
   NPDeviceContext2D* context2d = reinterpret_cast<NPDeviceContext2D*>(context);
-  static const int kInvalidHandle = -1;
-  int desc = kInvalidHandle;
+  int shm_desc = kInvalidDesc;
+  int sync_desc = kInvalidDesc;
   void* map_addr = MAP_FAILED;
+  Device2DImpl* impl = NULL;
   int stride;
 
+  // Initialize the context structure.
+  context2d->reserved = NULL;
+  context2d->region = NULL;
   // NOTE: The config struct is empty, so don't do anything with it.
 
   // Make the SRPC to request the setup for the context.
@@ -54,8 +65,9 @@ static NPError InitializeContext(NPP instance,
       NaClSrpcInvokeByName(channel,
                            "Device2DInitialize",
                            nacl::NPNavigator::GetPluginNPP(instance),
-                           &desc,
-                           &stride);
+                           &shm_desc,
+                           &stride,
+                           &sync_desc);
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -63,29 +75,43 @@ static NPError InitializeContext(NPP instance,
   struct stat st;
   size_t size;
 
-  if (0 != fstat(desc, &st)) {
+  if (0 != fstat(shm_desc, &st)) {
     goto cleanup;
   }
-  size = (size_t) st.st_size;
+  size = static_cast<size_t>(st.st_size);
   // Map the shared memory region.
-  map_addr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, desc, 0);
+  map_addr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_desc, 0);
   if (MAP_FAILED == map_addr) {
     goto cleanup;
   }
   // Set the context structure.
-  // TODO(sehr): remove the the whole u.graphicsRgba name.
-  context2d->u.graphicsRgba.region = map_addr;
-  context2d->u.graphicsRgba.stride = stride;
-  context2d->u.graphicsRgba.dirty.left = 0;
-  context2d->u.graphicsRgba.dirty.top = 0;
-  context2d->u.graphicsRgba.dirty.right = 0;
-  context2d->u.graphicsRgba.dirty.bottom = 0;
+  impl = new(std::nothrow) Device2DImpl;
+  if (NULL == impl) {
+    goto cleanup;
+  }
+  impl->shared_memory_desc = shm_desc;
+  impl->size = size;
+  impl->sync_socket_desc = sync_desc;
+  context2d->reserved = impl;
+  context2d->region = map_addr;
+  context2d->stride = stride;
+  context2d->dirty.left = 0;
+  context2d->dirty.top = 0;
+  context2d->dirty.right = 0;
+  context2d->dirty.bottom = 0;
   return NPERR_NO_ERROR;
 
 cleanup:
-  if (kInvalidHandle != desc) {
-    close(desc);
+  if (MAP_FAILED != map_addr) {
+    munmap(map_addr, size);
   }
+  if (kInvalidDesc != shm_desc) {
+    close(shm_desc);
+  }
+  if (kInvalidDesc != sync_desc) {
+    close(sync_desc);
+  }
+  delete impl;
   return NPERR_GENERIC_ERROR;
 }
 
@@ -107,23 +133,55 @@ static NPError FlushContext(NPP instance,
                             NPDeviceContext* context,
                             NPDeviceFlushContextCallbackPtr callback,
                             void* userData) {
-  // Make the SRPC to request the setup for the context.
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
-  NaClSrpcChannel* channel = nav->channel();
-  NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device2DFlush",
-                           nacl::NPNavigator::GetPluginNPP(instance));
-  if (NACL_SRPC_RESULT_OK != retval) {
+  NPDeviceContext2D* context2d = reinterpret_cast<NPDeviceContext2D*>(context);
+  Device2DImpl* impl = NULL;
+  // If the context wasn't initialized, return an error.
+  if (NULL == context2d->reserved) {
     return NPERR_GENERIC_ERROR;
+  }
+  impl = reinterpret_cast<Device2DImpl*>(context2d->reserved);
+  // Write on the sync socket to signal a flush.
+  const char buf[] = { 'a' };
+  if (sizeof(buf) != write(impl->sync_socket_desc,
+                           reinterpret_cast<const void*>(buf),
+                           sizeof(buf))) {
+    return NPERR_GENERIC_ERROR;
+  }
+  // Blocking read on the sync socket to wait before invoking the callback.
+  char read_buf[1];
+  if (sizeof(read_buf) != read(impl->sync_socket_desc,
+                               reinterpret_cast<void*>(read_buf),
+                               sizeof(read_buf))) {
+    return NPERR_GENERIC_ERROR;
+  }
+  // Invoke the callback.
+  // TODO(sehr): the callback seems to be invoked from the wrong place.
+  if (NULL != callback) {
+    (*callback)(instance, context2d, NPERR_NO_ERROR, userData);
   }
   return NPERR_NO_ERROR;
 }
 
-static NPError DestroyContext(NPP instance,
-                              NPDeviceContext* context) {
-  // We're leaving the shared memory mapped and the descriptor open here.
-  // TODO(sehr): unmap and close the shared memory descriptor.
+static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
+  NPDeviceContext2D* context2d = reinterpret_cast<NPDeviceContext2D*>(context);
+  Device2DImpl* impl = NULL;
+  // If the context wasn't initialized, return an error.
+  if (NULL == context2d->reserved) {
+    return NPERR_GENERIC_ERROR;
+  }
+  impl = reinterpret_cast<Device2DImpl*>(context2d->reserved);
+  // Unmap the region.
+  if (NULL != context2d->region) {
+    munmap(context2d->region, impl->size);
+  }
+  // Close the shared memory descriptor.
+  if (kInvalidDesc != impl->shared_memory_desc) {
+    close(impl->shared_memory_desc);
+  }
+  // Close the sync socket descriptor
+  if (kInvalidDesc != impl->sync_socket_desc) {
+    close(impl->sync_socket_desc);
+  }
   return NPERR_NO_ERROR;
 }
 

@@ -36,6 +36,7 @@
 #include <stdlib.h>
 
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
+#include "native_client/src/shared/npruntime/npextensions.h"
 #include "native_client/src/shared/npruntime/npnavigator.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
@@ -63,12 +64,43 @@ NPError NPN_GetValue(NPP instance, NPNVariable variable, void* value) {
   if (NULL == instance) {
     return NPERR_INVALID_INSTANCE_ERROR;
   }
-  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
-  if (NULL == navigator) {
-    return NPERR_INVALID_INSTANCE_ERROR;
+  nacl::NPNavigator* navigator;
+  switch (variable) {
+    case NPNVjavascriptEnabledBool:
+    case NPNVSupportsWindowless:
+      *reinterpret_cast<NPBool*>(value) = TRUE;
+      return NPERR_NO_ERROR;
+
+    case NPNVSupportsXEmbedBool:
+      *reinterpret_cast<NPBool*>(value) = FALSE;
+      return NPERR_NO_ERROR;
+
+    case NPNVisOfflineBool:
+    case NPNVprivateModeBool:
+    case NPNVWindowNPObject:
+    case NPNVPluginElementNPObject:
+      navigator = nacl::NPNavigator::GetNavigator();
+      if (NULL == navigator) {
+        return NPERR_INVALID_INSTANCE_ERROR;
+      }
+      return navigator->GetValue(instance, variable, value);
+
+    case NPNVPepperExtensions:
+      *reinterpret_cast<struct NPExtensions**>(value) =
+          const_cast<struct NPExtensions*>(nacl::GetNPExtensions());
+      return NPERR_NO_ERROR;
+
+    case NPNVxDisplay:
+    case NPNVxtAppContext:
+    case NPNVnetscapeWindow:
+    case NPNVasdEnabledBool:
+    case NPNVserviceManager:
+    case NPNVDOMElement:
+    case NPNVDOMWindow:
+    case NPNVToolkit:
+    default:
+      return NPERR_INVALID_PARAM;
   }
-  return navigator->GetValue(instance, variable, value);
-  return NPERR_INVALID_PARAM;
 }
 
 NPIdentifier NPN_GetStringIdentifier(const NPUTF8* name) {
