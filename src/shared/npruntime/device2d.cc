@@ -7,6 +7,7 @@
 #include "native_client/src/shared/npruntime/device2d.h"
 
 #include <stdlib.h>
+#include <unistd.h>
 #include <inttypes.h>
 #include <nacl/nacl_inttypes.h>
 #include <sys/types.h>
