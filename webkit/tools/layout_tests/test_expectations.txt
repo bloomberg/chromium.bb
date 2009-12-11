@@ -3268,3 +3268,7 @@ BUG30081 : LayoutTests/storage/close-during-stress-test.html = CRASH PASS
 
 // Flaky crash.
 BUG30174 : LayoutTests/media/video-source-type.html = CRASH PASS
+
+// Flaky crash.
+BUG30082 : LayoutTests/storage/open-database-while-transaction-in-progress.html = CRASH PASS
+
