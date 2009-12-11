@@ -151,12 +151,7 @@ void BrowserList::AddBrowser(Browser* browser) {
 void BrowserList::RemoveBrowser(Browser* browser) {
   RemoveBrowserFrom(browser, &last_active_browsers_);
 
-  bool close_app = false;
-  // Since closing all windows does not indicate quitting the application on
-  // Mac, don't check the condition based on the number of browser windows.
-#if defined(OS_WIN) || defined(OS_LINUX)
-  close_app = (browsers_.size() == 1);
-#endif
+  bool close_app = (browsers_.size() == 1);
   NotificationService::current()->Notify(
       NotificationType::BROWSER_CLOSED,
       Source<Browser>(browser), Details<bool>(&close_app));

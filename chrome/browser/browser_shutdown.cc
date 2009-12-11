@@ -24,7 +24,6 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/chrome_plugin_lib.h"
@@ -91,11 +90,6 @@ FilePath GetShutdownMsPath() {
 #endif
 
 void Shutdown() {
-#if defined(OS_MACOSX)
-  NotificationService::current()->Notify(NotificationType::APP_TERMINATING,
-                                         NotificationService::AllSources(),
-                                         NotificationService::NoDetails());
-#endif
   // Unload plugins. This needs to happen on the IO thread.
   ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
