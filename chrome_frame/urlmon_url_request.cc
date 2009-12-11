@@ -481,6 +481,13 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   DCHECK(worker_thread_ != NULL);
   DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
 
+  if (!binding_) {
+    DCHECK(redirect_url_.empty() == false);
+    DLOG(WARNING) << __FUNCTION__
+                  << ": Ignoring as the binding was aborted due to a redirect";
+    return S_OK;
+  }
+
   std::string raw_headers = WideToUTF8(response_headers);
 
   // Security check for frame busting headers. We don't honor the headers

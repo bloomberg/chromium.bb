@@ -226,6 +226,13 @@ bool URLRequestAutomationJob::MayFilterMessage(const IPC::Message& message,
 }
 
 void URLRequestAutomationJob::OnMessage(const IPC::Message& message) {
+  if (!request_) {
+    NOTREACHED() << __FUNCTION__
+                 << ": Unexpected request received for job:"
+                 << id();
+    return;
+  }
+
   IPC_BEGIN_MESSAGE_MAP(URLRequestAutomationJob, message)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestStarted, OnRequestStarted)
     IPC_MESSAGE_HANDLER(AutomationMsg_RequestData, OnDataAvailable)
