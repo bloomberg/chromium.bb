@@ -115,6 +115,8 @@ class GitWrapper(SCMWrapper, scm.GIT):
     if args:
       raise gclient_utils.Error("Unsupported argument(s): %s" % ",".join(args))
 
+    self._CheckMinVersion("1.6.1")
+
     url, revision = gclient_utils.SplitUrlRevision(self.url)
     rev_str = ""
     if options.revision:
@@ -184,6 +186,18 @@ class GitWrapper(SCMWrapper, scm.GIT):
       self._Run(['diff', '--name-status', merge_base], redirect_stdout=False)
       files = self._Run(['diff', '--name-only', merge_base]).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+
+  def _CheckMinVersion(self, min_version):
+    version = self._Run(['--version']).split()[-1]
+    version_list = map(int, version.split('.'))
+    min_version_list = map(int, min_version.split('.'))
+    for min_ver in min_version_list:
+      ver = version_list.pop(0)
+      if min_ver > ver:
+        raise gclient_utils.Error('git version %s < minimum required %s' %
+                                  (version, min_version))
+      elif min_ver < ver:
+        return
 
   def _Run(self, args, cwd=None, checkrc=True, redirect_stdout=True):
     # TODO(maruel): Merge with Capture?
