@@ -276,7 +276,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
 
   SkBitmap bitmap;
   bitmap.setConfig(SkBitmap::kARGB_8888_Config, window.width, window.height);
-  bitmap.setPixels(context.u.graphicsRgba.region);
+  bitmap.setPixels(context.region);
 
   SkCanvas canvas(bitmap);
   DrawSampleBitmap(canvas, window.width, window.height);

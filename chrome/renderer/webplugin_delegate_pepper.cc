@@ -272,13 +272,13 @@ NPError WebPluginDelegatePepper::Device2DInitializeContext(
 
   // Save the canvas to the output context structure and save the
   // OpenPaintContext for future reference.
-  context->u.graphicsRgba.region = plugin_bitmap.getAddr32(0, 0);
-  context->u.graphicsRgba.stride = width * kBytesPerPixel;
-  context->u.graphicsRgba.dirty.left = 0;
-  context->u.graphicsRgba.dirty.top = 0;
-  context->u.graphicsRgba.dirty.right = width;
-  context->u.graphicsRgba.dirty.bottom = height;
-  open_paint_contexts_[context->u.graphicsRgba.region] =
+  context->region = plugin_bitmap.getAddr32(0, 0);
+  context->stride = width * kBytesPerPixel;
+  context->dirty.left = 0;
+  context->dirty.top = 0;
+  context->dirty.right = width;
+  context->dirty.bottom = height;
+  open_paint_contexts_[context->region] =
       linked_ptr<OpenPaintContext>(paint_context.release());
   return NPERR_NO_ERROR;
 }
@@ -304,7 +304,7 @@ NPError WebPluginDelegatePepper::Device2DFlushContext(
     void* user_data) {
   // Get the bitmap data associated with the incoming context.
   OpenPaintContextMap::iterator found = open_paint_contexts_.find(
-      context->u.graphicsRgba.region);
+      context->region);
   if (found == open_paint_contexts_.end())
     return NPERR_INVALID_PARAM;  // TODO(brettw) call callback.
 
@@ -316,14 +316,14 @@ NPError WebPluginDelegatePepper::Device2DFlushContext(
   // updated by actually taking ownership of the buffer and not telling the
   // plugin we're done using it. This wat we can avoid the copy when the entire
   // canvas has been updated.
-  SkIRect src_rect = { context->u.graphicsRgba.dirty.left,
-                       context->u.graphicsRgba.dirty.top,
-                       context->u.graphicsRgba.dirty.right,
-                       context->u.graphicsRgba.dirty.bottom };
-  SkRect dest_rect = { SkIntToScalar(context->u.graphicsRgba.dirty.left),
-                       SkIntToScalar(context->u.graphicsRgba.dirty.top),
-                       SkIntToScalar(context->u.graphicsRgba.dirty.right),
-                       SkIntToScalar(context->u.graphicsRgba.dirty.bottom) };
+  SkIRect src_rect = { context->dirty.left,
+                       context->dirty.top,
+                       context->dirty.right,
+                       context->dirty.bottom };
+  SkRect dest_rect = { SkIntToScalar(context->dirty.left),
+                       SkIntToScalar(context->dirty.top),
+                       SkIntToScalar(context->dirty.right),
+                       SkIntToScalar(context->dirty.bottom) };
   SkCanvas committed_canvas(committed_bitmap_);
 
   // We want to replace the contents of the bitmap rather than blend.
@@ -350,7 +350,7 @@ NPError WebPluginDelegatePepper::Device2DFlushContext(
 NPError WebPluginDelegatePepper::Device2DDestroyContext(
     NPDeviceContext2D* context) {
   OpenPaintContextMap::iterator found = open_paint_contexts_.find(
-      context->u.graphicsRgba.region);
+      context->region);
   if (found == open_paint_contexts_.end())
     return NPERR_INVALID_PARAM;
 

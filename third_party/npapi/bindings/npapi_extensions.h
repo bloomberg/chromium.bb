@@ -203,24 +203,21 @@ typedef struct _NPDeviceContext2DConfig {
 
 typedef struct _NPDeviceContext2D
 {
-  union {
-    struct {
-      void* region;
-      int32 stride;
+  void* reserved;
+  void* region;
+  int32 stride;
 
-      /* The dirty region that the plugin has painted into the buffer. This
-       * will be initialized to the size of the plugin image in
-       * initializeRenderContextPtr. The plugin can change the values to only
-       * update portions of the image.
-       */
-      struct {
-        int32 left;
-        int32 top;
-        int32 right;
-        int32 bottom;
-      } dirty;
-    } graphicsRgba;
-  } u;
+  /* The dirty region that the plugin has painted into the buffer. This
+   * will be initialized to the size of the plugin image in
+   * initializeContextPtr. The plugin can change the values to only
+   * update portions of the image.
+   */
+  struct {
+    int32 left;
+    int32 top;
+    int32 right;
+    int32 bottom;
+  } dirty;
 } NPDeviceContext2D;
 
 /* 3D -----------------------------------------------------------------------*/
@@ -232,6 +229,7 @@ typedef struct _NPDeviceContext3DConfig {
 
 typedef struct _NPDeviceContext3D
 {
+  void* reserved;
   void* buffer;
   int32 bufferLength;
 } NPDeviceContext3D;
