@@ -14,9 +14,14 @@ function findFeeds() {
 
   var feeds = [];
   var item;
-  while (item = result.iterateNext())
+  var count = 0;
+  while (item = result.iterateNext()) {
     feeds.push({"href": item.href, "title": item.title});
+    ++count;
+  }
 
-  // Notify the extension of the feed URLs we found.
-  chrome.extension.connect().postMessage(feeds);
+  if (count > 0) {
+    // Notify the extension of the feed URLs we found.
+    chrome.extension.connect().postMessage(feeds);
+  }
 }
