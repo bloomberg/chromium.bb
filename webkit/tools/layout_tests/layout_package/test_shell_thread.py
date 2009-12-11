@@ -97,7 +97,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target, output_dir):
   if len(extra_lines):
     extra = "".join(extra_lines)
     if crash:
-      logging.info("Stacktrace for %s:\n%s" % (test_string, extra))
+      logging.debug("Stacktrace for %s:\n%s" % (test_string, extra))
       # Strip off "file://" since RelativeTestFilename expects filesystem paths.
       filename = os.path.join(output_dir,
           path_utils.RelativeTestFilename(test_string[7:]))
@@ -105,7 +105,7 @@ def ProcessOutput(proc, test_info, test_types, test_args, target, output_dir):
       path_utils.MaybeMakeDirectory(os.path.split(filename)[0])
       open(filename, "wb").write(extra)
     else:
-      logging.warning("Previous test output extra lines after dump:\n%s" %
+      logging.debug("Previous test output extra lines after dump:\n%s" %
           extra)
 
   # Check the output and save the results.
@@ -335,8 +335,8 @@ class TestShellThread(threading.Thread):
           batch_count = 0
         # Print the error message(s).
         error_str = '\n'.join(['  ' + f.Message() for f in failures])
-        logging.error("%s failed:\n%s" %
-                      (path_utils.RelativeTestFilename(filename), error_str))
+        logging.debug("%s failed:\n%s" %
+              (path_utils.RelativeTestFilename(filename), error_str))
       else:
         logging.debug(path_utils.RelativeTestFilename(filename) + " passed")
       self._result_queue.put((filename, failures))
@@ -447,7 +447,11 @@ class TestShellThread(threading.Thread):
       self._test_shell_proc.stdout.close()
       if self._test_shell_proc.stderr:
         self._test_shell_proc.stderr.close()
-      if sys.platform not in ('win32', 'cygwin'):
+      if (sys.platform not in ('win32', 'cygwin') and
+          not self._test_shell_proc.poll()):
         # Closing stdin/stdout/stderr hangs sometimes on OS X.
-        subprocess.Popen(["kill", "-9", str(self._test_shell_proc.pid)])
+        null = open("/dev/null", "w")
+        subprocess.Popen(["kill", "-9", str(self._test_shell_proc.pid)],
+            stderr=null)
+        null.close()
       self._test_shell_proc = None

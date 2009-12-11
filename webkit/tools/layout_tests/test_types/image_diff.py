@@ -126,6 +126,7 @@ class ImageDiff(test_type_base.TestTypeBase):
     expected_png_file = path_utils.ExpectedFilename(filename, '.png')
 
     if test_args.show_sources:
+      logging.debug('Using %s' % expected_hash_file)
       logging.debug('Using %s' % expected_png_file)
 
     try:
