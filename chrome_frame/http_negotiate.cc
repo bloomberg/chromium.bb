@@ -234,28 +234,38 @@ HRESULT HttpNegotiatePatch::ReportProgress(
   if (status_code == BINDSTATUS_MIMETYPEAVAILABLE ||
       status_code == BINDSTATUS_VERIFIEDMIMETYPEAVAILABLE ||
       status_code == LOCAL_BINDSTATUS_SERVER_MIMETYPEAVAILABLE) {
-    bool is_top_level_request = !IsSubFrameRequest(me);
+    bool render_in_chrome_frame = false;
 
-    if (is_top_level_request) {
-      // Check to see if we need to alter the mime type that gets reported
-      // by inspecting the raw header information:
-      ScopedComPtr<IWinInetHttpInfo> win_inet_http_info;
-      HRESULT hr = win_inet_http_info.QueryFrom(me);
+    // Check if this is a top level browser request that should be
+    // rendered in CF.
+    ScopedComPtr<IBrowserService> browser;
+    DoQueryService(IID_IShellBrowser, me, browser.Receive());
+    if (browser) {
+      render_in_chrome_frame = CheckForCFNavigation(browser, true);
+    }
 
-      // Try slightly harder if we couldn't QI directly.
-      if (!win_inet_http_info || FAILED(hr)) {
-        hr = DoQueryService(IID_IWinInetHttpInfo, me,
-                            win_inet_http_info.Receive());
-      }
+    if (!render_in_chrome_frame) {
+      bool is_top_level_request = !IsSubFrameRequest(me);
 
-      // Note that it has been observed that getting an IWinInetHttpInfo will
-      // fail if we are loading a page like about:blank that isn't loaded via
-      // wininet.
-      if (win_inet_http_info) {
-        // We have headers: check to see if the server is requesting CF via
-        // the X-UA-Compatible: chrome=1 HTTP header.
-        std::string headers(GetRawHttpHeaders(win_inet_http_info));
-        if (net::HttpUtil::HasHeader(headers, kUACompatibleHttpHeader)) {
+      if (is_top_level_request) {
+        // Check to see if we need to alter the mime type that gets reported
+        // by inspecting the raw header information:
+        ScopedComPtr<IWinInetHttpInfo> win_inet_http_info;
+        HRESULT hr = win_inet_http_info.QueryFrom(me);
+
+        // Try slightly harder if we couldn't QI directly.
+        if (!win_inet_http_info || FAILED(hr)) {
+          hr = DoQueryService(IID_IWinInetHttpInfo, me,
+                              win_inet_http_info.Receive());
+        }
+
+        // Note that it has been observed that getting an IWinInetHttpInfo will
+        // fail if we are loading a page like about:blank that isn't loaded via
+        // wininet.
+        if (win_inet_http_info) {
+          // We have headers: check to see if the server is requesting CF via
+          // the X-UA-Compatible: chrome=1 HTTP header.
+          std::string headers(GetRawHttpHeaders(win_inet_http_info));
           net::HttpUtil::HeadersIterator it(headers.begin(), headers.end(),
                                             "\r\n");
           while (it.GetNext()) {
@@ -263,13 +273,17 @@ HRESULT HttpNegotiatePatch::ReportProgress(
                                      kUACompatibleHttpHeader)) {
                 std::string ua_value(StringToLowerASCII(it.values()));
                 if (ua_value.find("chrome=1") != std::string::npos) {
-                  status_text = kChromeMimeType;
+                  render_in_chrome_frame = true;
                   break;
                 }
             }
           }
         }
       }
+    }
+
+    if (render_in_chrome_frame) {
+      status_text = kChromeMimeType;
     }
   }
 

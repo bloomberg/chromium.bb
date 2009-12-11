@@ -8,6 +8,8 @@
 #ifndef CHROME_FRAME_EXTRA_SYSTEM_APIS_H_
 #define CHROME_FRAME_EXTRA_SYSTEM_APIS_H_
 
+#include <mshtml.h>
+
 // This is an interface provided by the WebBrowser object. It allows us to
 // notify the browser of navigation events. MSDN documents this interface
 // (see http://msdn2.microsoft.com/en-us/library/aa752109(VS.85).aspx)

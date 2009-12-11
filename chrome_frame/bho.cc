@@ -156,92 +156,59 @@ HRESULT Bho::FinalConstruct() {
 void Bho::FinalRelease() {
 }
 
-HRESULT STDMETHODCALLTYPE Bho::OnHttpEquiv(
-    IBrowserService_OnHttpEquiv_Fn original_httpequiv,
+HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
     IBrowserService* browser, IShellView* shell_view, BOOL done,
     VARIANT* in_arg, VARIANT* out_arg) {
-  if (!done && in_arg && (VT_BSTR == V_VT(in_arg))) {
+  // OnHttpEquiv is invoked for meta tags within sub frames as well.
+  // We want to switch renderers only for the top level frame.
+  bool is_top_level = (browser->GetBrowserIndex() == -1);
+
+  // OnHttpEquiv with 'done' set to TRUE is called for all pages.
+  // 0 or more calls with done set to FALSE are made.
+  // When done is FALSE, the current moniker may not represent the page
+  // being navigated to so we always have to wait for done to be TRUE
+  // before re-initiating the navigation.
+
+  if (done) {
+    if (CheckForCFNavigation(browser, false)) {
+      ScopedComPtr<IOleObject> mshtml_ole_object;
+      HRESULT hr = shell_view->GetItemObject(SVGIO_BACKGROUND, IID_IOleObject,
+          reinterpret_cast<void**>(mshtml_ole_object.Receive()));
+      DCHECK(FAILED(hr) || mshtml_ole_object != NULL);
+      if (mshtml_ole_object) {
+        ScopedComPtr<IMoniker> moniker;
+        hr = mshtml_ole_object->GetMoniker(OLEGETMONIKER_ONLYIFTHERE,
+            OLEWHICHMK_OBJFULL, moniker.Receive());
+        DCHECK(FAILED(hr) || moniker != NULL);
+        if (moniker) {
+          DLOG(INFO) << "Navigating in CF";
+          ScopedComPtr<IBindCtx> bind_context;
+          // This bind context will be discarded by IE and a new one
+          // constructed, so it's OK to create a sync bind context.
+          ::CreateBindCtx(0, bind_context.Receive());
+          DCHECK(bind_context);
+          hr = NavigateBrowserToMoniker(browser, moniker, bind_context);
+        } else {
+          DLOG(ERROR) << "Couldn't get the current moniker";
+        }
+      }
+
+      if (FAILED(hr)) {
+        NOTREACHED();
+        // Lower the flag.
+        CheckForCFNavigation(browser, true);
+      } else {
+        // The navigate-in-gcf flag will be cleared in
+        // HttpNegotiatePatch::ReportProgress when the mime type is reported.
+      }
+    }
+  } else if (is_top_level && in_arg && VT_BSTR == V_VT(in_arg)) {
     if (StrStrI(V_BSTR(in_arg), kChromeContentPrefix)) {
-      // OnHttpEquiv is invoked for meta tags within sub frames as well.
-      // We want to switch renderers only for the top level frame. Since
-      // the same |browser| and |shell_view| are passed in to OnHttpEquiv
-      // even for sub iframes, we determine if this is the top one by
-      // checking if there are any sub frames created or not.
-      ScopedComPtr<IWebBrowser2> web_browser2;
-      DoQueryService(SID_SWebBrowserApp, browser, web_browser2.Receive());
-      if (web_browser2 && !HasSubFrames(web_browser2))
-        SwitchRenderer(web_browser2, browser, shell_view, V_BSTR(in_arg));
+      MarkBrowserOnThreadForCFNavigation(browser);
     }
   }
 
   return original_httpequiv(browser, shell_view, done, in_arg, out_arg);
-}
-
-bool Bho::HasSubFrames(IWebBrowser2* web_browser2) {
-  bool has_sub_frames = false;
-  ScopedComPtr<IDispatch> doc_dispatch;
-  if (web_browser2) {
-    HRESULT hr = web_browser2->get_Document(doc_dispatch.Receive());
-    DCHECK(SUCCEEDED(hr) && doc_dispatch) <<
-        "web_browser2->get_Document failed. Error: " << hr;
-    ScopedComPtr<IOleContainer> container;
-    if (SUCCEEDED(hr) && doc_dispatch) {
-      container.QueryFrom(doc_dispatch);
-      ScopedComPtr<IEnumUnknown> enumerator;
-      if (container) {
-        container->EnumObjects(OLECONTF_EMBEDDINGS, enumerator.Receive());
-        ScopedComPtr<IUnknown> unk;
-        ULONG items_retrieved = 0;
-        if (enumerator)
-          enumerator->Next(1, unk.Receive(), &items_retrieved);
-        has_sub_frames = (items_retrieved != 0);
-      }
-    }
-  }
-
-  return has_sub_frames;
-}
-
-HRESULT Bho::SwitchRenderer(IWebBrowser2* web_browser2,
-    IBrowserService* browser, IShellView* shell_view,
-    const wchar_t* meta_tag) {
-  DCHECK(web_browser2 && browser && shell_view && meta_tag);
-
-  // Get access to the mshtml instance and the moniker
-  ScopedComPtr<IOleObject> mshtml_ole_object;
-  HRESULT hr = shell_view->GetItemObject(SVGIO_BACKGROUND, IID_IOleObject,
-      reinterpret_cast<void**>(mshtml_ole_object.Receive()));
-  if (!mshtml_ole_object) {
-    NOTREACHED() << "shell_view->GetItemObject failed. Error: " << hr;
-    return hr;
-  }
-
-  std::wstring url;
-  ScopedComPtr<IMoniker> moniker;
-  hr = mshtml_ole_object->GetMoniker(OLEGETMONIKER_ONLYIFTHERE,
-                                     OLEWHICHMK_OBJFULL, moniker.Receive());
-  DCHECK(moniker) << "mshtml_ole_object->GetMoniker failed. Error: " << hr;
-
-  if (moniker)
-    hr = GetUrlFromMoniker(moniker, NULL, &url);
-
-  DCHECK(!url.empty()) << "GetUrlFromMoniker failed. Error: " << hr;
-  DCHECK(!StartsWith(url, kChromeProtocolPrefix, false));
-
-  if (!url.empty()) {
-    url.insert(0, kChromeProtocolPrefix);
-    // Navigate to new url
-    VARIANT empty = ScopedVariant::kEmptyVariant;
-    VARIANT flags = { VT_I4 };
-    V_I4(&flags) = 0;
-    ScopedVariant url_var(url.c_str());
-    hr = web_browser2->Navigate2(url_var.AsInput(), &flags, &empty, &empty,
-                                 &empty);
-    DCHECK(SUCCEEDED(hr)) << "web_browser2->Navigate2 failed. Error: " << hr
-        << std::endl << "Url: " << url;
-  }
-
-  return S_OK;
 }
 
 Bho* Bho::GetCurrentThreadBhoInstance() {

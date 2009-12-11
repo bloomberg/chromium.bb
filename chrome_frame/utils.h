@@ -7,7 +7,8 @@
 
 #include <atlbase.h>
 #include <string>
-#include <UrlMon.h>
+#include <shdeprecated.h>
+#include <urlmon.h>
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -214,6 +215,19 @@ HRESULT DoQueryService(const IID& service_id, IUnknown* unk, T** service) {
 // Get url (display name) from a moniker, |bind_context| is optional
 HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
                           std::wstring* url);
+
+// Navigates an IWebBrowser2 object to a moniker.
+HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
+                                 IBindCtx* bind_ctx);
+
+// Raises a flag on the current thread (using TLS) to indicate that an
+// in-progress navigation should be rendered in chrome frame.
+void MarkBrowserOnThreadForCFNavigation(IBrowserService* browser);
+
+// Checks if this browser instance has been marked as currently navigating
+// to a CF document.  If clear_flag is set to true, the tls flag is cleared but
+// only if the browser has been marked.
+bool CheckForCFNavigation(IBrowserService* browser, bool clear_flag);
 
 // Returns true if the URL passed in is something which can be handled by
 // Chrome. If this function returns false then we should fail the navigation.

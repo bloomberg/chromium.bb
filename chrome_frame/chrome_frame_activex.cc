@@ -4,7 +4,6 @@
 
 #include "chrome_frame/chrome_frame_activex.h"
 
-#include <shdeprecated.h>  // for IBrowserService2
 #include <wininet.h>
 
 #include <algorithm>

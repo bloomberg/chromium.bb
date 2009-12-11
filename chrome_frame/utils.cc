@@ -7,21 +7,23 @@
 #include <shlobj.h>
 #include <wininet.h>
 
-#include "chrome_frame/html_utils.h"
-#include "chrome_frame/utils.h"
-
 #include "base/file_util.h"
 #include "base/file_version_info.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
+#include "base/scoped_variant_win.h"
 #include "base/string_util.h"
+#include "base/thread_local.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
+#include "chrome_frame/extra_system_apis.h"
+#include "chrome_frame/html_utils.h"
+#include "chrome_frame/utils.h"
 #include "googleurl/src/gurl.h"
 #include "grit/chrome_frame_resources.h"
-#include "chrome_frame/resource.h"
 
 // Note that these values are all lower case and are compared to
 // lower-case-transformed values.
@@ -50,6 +52,17 @@ const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
 // Indicates that we are running in a test environment, where execptions, etc
 // are handled by the chrome test crash server.
 const wchar_t kChromeFrameHeadlessMode[] = L"ChromeFrameHeadlessMode";
+
+namespace {
+
+// A flag used to signal when an active browser instance on the current thread
+// is loading a Chrome Frame document.  There's no reference stored with the
+// pointer so it should not be dereferenced and used for comparison against a
+// living instance only.
+base::LazyInstance<base::ThreadLocalPointer<IBrowserService> >
+    g_tls_browser_for_cf_navigation(base::LINKER_INITIALIZED);
+
+}  // end anonymous namespace
 
 HRESULT UtilRegisterTypeLib(HINSTANCE tlb_instance,
                             LPCOLESTR index,
@@ -591,25 +604,97 @@ bool IsOptInUrl(const wchar_t* url) {
   return false;
 }
 
-HRESULT GetUrlFromMoniker(IMoniker* moniker, IBindCtx* bind_context,
-                          std::wstring* url) {
-  if (!moniker || !url) {
-    NOTREACHED();
-    return E_INVALIDARG;
-  }
+HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
+                                 IBindCtx* bind_ctx) {
+  DCHECK(browser);
+  DCHECK(moniker);
+  DCHECK(bind_ctx);
 
-  ScopedComPtr<IBindCtx> temp_bind_context;
-  if (!bind_context) {
-    CreateBindCtx(0, temp_bind_context.Receive());
-    bind_context = temp_bind_context;
-  }
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  HRESULT hr = DoQueryService(SID_SWebBrowserApp, browser,
+                              web_browser2.Receive());
+  DCHECK(web_browser2);
+  DLOG_IF(WARNING, FAILED(hr)) << StringPrintf(L"SWebBrowserApp 0x%08X", hr);
+  if (FAILED(hr))
+    return hr;
 
-  CComHeapPtr<WCHAR> display_name;
-  HRESULT hr = moniker->GetDisplayName(bind_context, NULL, &display_name);
-  if (display_name)
-    *url = display_name;
+  // Create a new bind context that's not associated with our callback.
+  // Calling RevokeBindStatusCallback doesn't disassociate the callback with
+  // the bind context in IE7.  The returned bind context has the same
+  // implementation of GetRunningObjectTable as the bind context we held which
+  // basically delegates to ole32's GetRunningObjectTable.  The object table
+  // is then used to determine if the moniker is already running and via
+  // that mechanism is associated with the same internet request as has already
+  // been issued.
+
+  // TODO(tommi): See if we can get HlinkSimpleNavigateToMoniker to work
+  // instead.  Looks like we'll need to support IHTMLDocument2 (get_URL in
+  // particular), access to IWebBrowser2 etc.
+  // HlinkSimpleNavigateToMoniker(moniker, url, NULL, host, bind_context,
+  //                              NULL, 0, 0);
+
+  ScopedComPtr<IUriContainer> uri_container;
+  hr = uri_container.QueryFrom(moniker);
+
+  if (uri_container) {
+    // IE7 and IE8.
+    ScopedComPtr<IWebBrowserPriv2IE7> browser_priv2_ie7;
+    ScopedComPtr<IWebBrowserPriv2IE8> browser_priv2_ie8;
+    IWebBrowserPriv2IE7* common_browser_priv2 = NULL;
+    if (SUCCEEDED(hr = browser_priv2_ie7.QueryFrom(web_browser2))) {
+      common_browser_priv2 = browser_priv2_ie7;
+    } else if (SUCCEEDED(hr = browser_priv2_ie8.QueryFrom(web_browser2))) {
+      common_browser_priv2 =
+          reinterpret_cast<IWebBrowserPriv2IE7*>(browser_priv2_ie8.get());
+    }
+
+    DCHECK(common_browser_priv2);
+
+    if (common_browser_priv2) {
+      ScopedComPtr<IUri> uri_obj;
+      uri_container->GetIUri(uri_obj.Receive());
+      DCHECK(uri_obj);
+      hr = common_browser_priv2->NavigateWithBindCtx2(uri_obj, NULL, NULL, NULL,
+                                                      NULL, bind_ctx, NULL);
+      DLOG_IF(WARNING, FAILED(hr))
+          << StringPrintf(L"NavigateWithBindCtx2 0x%08X", hr);
+    }
+  } else {
+    // IE6
+    LPOLESTR url = NULL;
+    if (SUCCEEDED(hr = moniker->GetDisplayName(bind_ctx, NULL, &url))) {
+      DLOG(INFO) << __FUNCTION__ << " " << url;
+      ScopedComPtr<IWebBrowserPriv> browser_priv;
+      if (SUCCEEDED(hr = browser_priv.QueryFrom(web_browser2))) {
+        ScopedVariant var_url(url);
+        hr = browser_priv->NavigateWithBindCtx(var_url.AsInput(), NULL, NULL,
+                                               NULL, NULL, bind_ctx, NULL);
+        DLOG_IF(WARNING, FAILED(hr))
+            << StringPrintf(L"NavigateWithBindCtx 0x%08X", hr);
+      } else {
+        NOTREACHED();
+      }
+      ::CoTaskMemFree(url);
+    } else {
+      DLOG(ERROR) << StringPrintf("GetDisplayName: 0x%08X", hr);
+    }
+  }
 
   return hr;
+}
+
+void MarkBrowserOnThreadForCFNavigation(IBrowserService* browser) {
+  DCHECK(browser != NULL);
+  DCHECK(g_tls_browser_for_cf_navigation.Pointer()->Get() == NULL);
+  g_tls_browser_for_cf_navigation.Pointer()->Set(browser);
+}
+
+bool CheckForCFNavigation(IBrowserService* browser, bool clear_flag) {
+  DCHECK(browser);
+  bool ret = (g_tls_browser_for_cf_navigation.Pointer()->Get() == browser);
+  if (ret && clear_flag)
+    g_tls_browser_for_cf_navigation.Pointer()->Set(NULL);
+  return ret;
 }
 
 bool IsValidUrlScheme(const std::wstring& url, bool is_privileged) {

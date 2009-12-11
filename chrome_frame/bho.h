@@ -100,10 +100,7 @@ END_SINK_MAP()
 
  protected:
   bool PatchProtocolHandler(const CLSID& handler_clsid);
-  static bool HasSubFrames(IWebBrowser2* web_browser2);
-  static HRESULT SwitchRenderer(IWebBrowser2* web_browser2,
-      IBrowserService* browser, IShellView* shell_view,
-      const wchar_t* meta_tag);
+
   std::string referrer_;
 
   static base::LazyInstance<base::ThreadLocalPointer<Bho> >
