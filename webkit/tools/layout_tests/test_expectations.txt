@@ -268,6 +268,8 @@ WONTFIX : LayoutTests/platform/mac = FAIL PASS TIMEOUT
 WONTFIX : LayoutTests/platform/mac-leopard = FAIL PASS
 WONTFIX : LayoutTests/platform/mac-tiger = FAIL PASS
 WONTFIX : LayoutTests/platform/qt = FAIL PASS
+WONTFIX SKIP : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
+
 WONTFIX LINUX MAC : LayoutTests/platform/win = FAIL PASS
 
 // This is a Safari specific test to make WebKit behave like AppKit on the Mac.
@@ -822,9 +824,6 @@ BUG10278 LINUX : LayoutTests/fast/css/font-face-unicode-range.html = FAIL
 // post-beta, but the bug is here:
 // https://bugs.webkit.org/show_bug.cgi?id=16644 , and it's unclear
 // what the resolution was.
-// window-property-shadowing-name.html has also been affected by
-// r8532 and now fails.
-BUG10279 : LayoutTests/fast/dom/Window/window-property-shadowing-name.html = TIMEOUT
 BUG10279 : LayoutTests/fast/js/var-declarations-shadowing.html = FAIL
 
 // Implement full JSON support in V8
@@ -2754,9 +2753,6 @@ BUG22526 : LayoutTests/http/tests/security/xss-DENIED-defineProperty.html = TIME
 // WebKit merge 48500:48585, due to newly added support for MathML.
 BUG22554 SKIP : LayoutTests/mathml = FAIL
 
-// WebKit update 48766:48796
-BUG24174 : LayoutTests/fast/dom/Attr/access-after-element-destruction.html = FAIL
-
 // WebKit update 48796:48820
 BUG23956 WIN LINUX : LayoutTests/fast/dom/Element/getBoundingClientRect.html = FAIL
 BUG23956 WIN LINUX : LayoutTests/fast/dom/Range/getBoundingClientRect.html = FAIL
@@ -2789,11 +2785,6 @@ BUG24063 : LayoutTests/fast/dom/Window/window-postmessage-clone.html = FAIL
 // Got slow with V8 update to 1.3.15. Debug logging perhaps?
 BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-implicit-length-limit.html = PASS
 BUG24182 DEBUG SLOW : LayoutTests/fast/forms/input-maxlength.html = PASS
-
-// Failing after r28267
-BUG24116 DEBUG : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
-BUG24116 LINUX MAC RELEASE : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
-BUG24116 SLOW WIN RELEASE : LayoutTests/http/tests/loading/gmail-assert-on-load.html = FAIL
 
 // Failing at WebKit Linux (dbg)(3) build 7795
 BUG24119 LINUX DEBUG : LayoutTests/tables/mozilla/bugs/bug1220.html = PASS FAIL
@@ -3021,10 +3012,6 @@ BUG29737 WIN LINUX MAC : LayoutTests/svg/filters/filterRes.svg = IMAGE+TEXT
 // New tests. Failures from merge 51210:51325.
 BUG28646 : LayoutTests/editing/selection/transformed-selection-rects.html = FAIL
 
-// New failures from merge 51406:51410.
-BUG28905 : LayoutTests/http/tests/security/isolatedWorld/world-reuse.html = FAIL
-BUG28905 WONTFIX SKIP : LayoutTests/plugins/qt-qwidget-plugin.html = FAIL
-
 // New failures from merge 51412:51455.
 BUG28916 MAC : LayoutTests/editing/pasteboard/paste-xml.xhtml = IMAGE+TEXT
 
@@ -3058,7 +3045,6 @@ BUG29167 MAC : LayoutTests/fast/dom/replaceChild.html = IMAGE PASS
 BUG29239 : LayoutTests/fast/css/variables/misplaced-import-test.html = FAIL
 
 // Failures from WebKit merge 51618:51642
-BUG29339 WIN MAC : LayoutTests/plugins/embed-attributes-setting.html = CRASH FAIL
 BUG29344 MAC LINUX : LayoutTests/svg/text/text-text-07-t.svg = FAIL
 
 
