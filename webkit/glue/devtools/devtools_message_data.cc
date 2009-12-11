@@ -29,3 +29,4 @@ WebKit::WebDevToolsMessageData
   result.arguments.swap(web_args);
   return result;
 }
+
