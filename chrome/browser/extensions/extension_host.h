@@ -104,6 +104,7 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
+  virtual void RenderViewGone(RenderViewHost* render_view_host);
   virtual void DidNavigate(RenderViewHost* render_view_host,
                            const ViewHostMsg_FrameNavigate_Params& params);
   virtual void DidStopLoading();

@@ -131,8 +131,6 @@ ExtensionHost::ExtensionHost(Extension* extension, SiteInstance* site_instance,
   // to the task manager then.
   registrar_.Add(this, NotificationType::RENDERER_PROCESS_CREATED,
                  Source<RenderProcessHost>(render_process_host()));
-  registrar_.Add(this, NotificationType::RENDERER_PROCESS_CLOSED,
-                 Source<RenderProcessHost>(render_process_host()));
 }
 
 ExtensionHost::~ExtensionHost() {
@@ -233,19 +231,6 @@ void ExtensionHost::Observe(NotificationType type,
         NotificationType::EXTENSION_PROCESS_CREATED,
         Source<Profile>(profile_),
         Details<ExtensionHost>(this));
-  } else if (type == NotificationType::RENDERER_PROCESS_CLOSED) {
-    Details<RenderProcessHost::RendererClosedDetails> closed_details =
-        static_cast<Details<RenderProcessHost::RendererClosedDetails> >(
-            details);
-    DCHECK(closed_details->was_extension_renderer);
-    if (!closed_details->did_crash)
-      return;
-
-    LOG(INFO) << "Sending EXTENSION_PROCESS_CRASHED for " + extension_->name();
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PROCESS_CRASHED,
-        Source<Profile>(profile_),
-        Details<ExtensionHost>(this));
   } else {
     NOTREACHED();
   }
@@ -254,6 +239,15 @@ void ExtensionHost::Observe(NotificationType type,
 void ExtensionHost::UpdatePreferredSize(const gfx::Size& new_size) {
   if (view_.get())
     view_->UpdatePreferredSize(new_size);
+}
+
+void ExtensionHost::RenderViewGone(RenderViewHost* render_view_host) {
+  LOG(INFO) << "Sending EXTENSION_PROCESS_CRASHED for " + extension_->name();
+  DCHECK_EQ(render_view_host_, render_view_host);
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_PROCESS_CRASHED,
+      Source<Profile>(profile_),
+      Details<ExtensionHost>(this));
 }
 
 void ExtensionHost::DidNavigate(RenderViewHost* render_view_host,
