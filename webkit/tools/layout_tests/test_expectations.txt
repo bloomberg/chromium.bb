@@ -405,7 +405,7 @@ WONTFIX : LayoutTests/fast/js/global-constructors.html = FAIL
 WONTFIX : LayoutTests/fast/js/global-recursion-on-full-stack.html = FAIL
 
 // Our DOM Storage implementation doesn't use WebKit's private browsing feature (even for incognito mode).
-WONTFIX : LayoutTests/storage/domstorage/localstorage/private-browsing-affects-storage.html = FAIL
+BUG30081 : LayoutTests/storage/domstorage/localstorage/private-browsing-affects-storage.html = CRASH FAIL
 WONTFIX : LayoutTests/storage/domstorage/sessionstorage/private-browsing-affects-storage.html = FAIL
 
 // These tests propagate auth credentials back to the renderer, which we
@@ -683,7 +683,7 @@ BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-seta
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/onstorage-attribute-setwindow.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/sessionstorage/string-conversion.html = FAIL
 BUG4360 : LayoutTests/storage/domstorage/documentURI.html = FAIL
-BUG4360 : LayoutTests/storage/domstorage/complex-values.html = FAIL
+BUG4360_and_BUG30081 : LayoutTests/storage/domstorage/complex-values.html = FAIL CRASH
 BUG4360 : LayoutTests/http/tests/loading/deleted-host-in-resource-load-delegate-callback.html = TIMEOUT
 
 // HTML5 DB layout tests
@@ -3262,3 +3262,6 @@ BUG30048 : LayoutTests/svg/css/composite-shadow-with-opacity.html = IMAGE
 
 // Broke with http://trac.webkit.org/changeset/51939
 BUG30049 : LayoutTests/platform/win/editing/selection/doubleclick-should-not-expand-across-lines.html = TEXT MISSING
+
+// Flaky crash.
+BUG30081 : LayoutTests/storage/close-during-stress-test.html = CRASH PASS
