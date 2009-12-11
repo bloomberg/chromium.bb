@@ -3,25 +3,14 @@
 #define FFMPEG_CONFIG_H
 #define FFMPEG_CONFIGURATION "--disable-ffmpeg --disable-ffplay --disable-ffserver --enable-shared --disable-static --disable-debug --enable-pthreads --disable-network --disable-encoders --disable-decoders --disable-hwaccels --disable-muxers --disable-demuxers --disable-parsers --disable-bsfs --disable-protocols --disable-devices --disable-filters --enable-decoder=theora --enable-decoder=vorbis --enable-demuxer=ogg --prefix=/tmp/dummy --enable-cross-compile --arch=arm --enable-armv6t2 --extra-cflags='-march=armv7-a -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp'"
 #define FFMPEG_DATADIR "/tmp/dummy/share/ffmpeg"
-#define CC_TYPE "gcc"
-#define CC_VERSION __VERSION__
-#define restrict restrict
-#define ASMALIGN(ZEROBITS) ".align " #ZEROBITS "\n\t"
-#define EXTERN_PREFIX ""
-#define EXTERN_ASM
 #define ARCH_ALPHA 0
 #define ARCH_ARM 1
-#define ARCH_AVR32 0
-#define ARCH_AVR32_AP 0
-#define ARCH_AVR32_UC 0
 #define ARCH_BFIN 0
 #define ARCH_IA64 0
 #define ARCH_M68K 0
 #define ARCH_MIPS 0
-#define ARCH_MIPS64 0
 #define ARCH_PARISC 0
 #define ARCH_PPC 0
-#define ARCH_PPC64 0
 #define ARCH_S390 0
 #define ARCH_SH4 0
 #define ARCH_SPARC 0
@@ -40,7 +29,7 @@
 #define HAVE_MMI 0
 #define HAVE_MMX 0
 #define HAVE_MMX2 0
-#define HAVE_NEON 0
+#define HAVE_NEON 1
 #define HAVE_PPC4XX 0
 #define HAVE_SSE 0
 #define HAVE_SSSE3 0
@@ -49,12 +38,10 @@
 #define HAVE_OS2THREADS 0
 #define HAVE_PTHREADS 1
 #define HAVE_W32THREADS 0
-#define HAVE_ALSA_ASOUNDLIB_H 0
+#define HAVE_ALSA_ASOUNDLIB_H 1
 #define HAVE_ALTIVEC_H 0
 #define HAVE_ARPA_INET_H 0
-#define HAVE_ATTRIBUTE_PACKED 1
-#define HAVE_BIGENDIAN 0
-#define HAVE_BSWAP 0
+#define HAVE_BSWAP 1
 #define HAVE_CLOSESOCKET 0
 #define HAVE_CMOV 0
 #define HAVE_CONIO_H 0
@@ -78,23 +65,21 @@
 #define HAVE_GETRUSAGE 1
 #define HAVE_INET_ATON 1
 #define HAVE_INLINE_ASM 1
-#define HAVE_ISATTY 1
 #define HAVE_LDBRX 0
 #define HAVE_LIBDC1394_1 0
 #define HAVE_LIBDC1394_2 0
 #define HAVE_LLRINT 1
-#define HAVE_LOG2 1
-#define HAVE_LOONGSON 0
 #define HAVE_LRINT 1
 #define HAVE_LRINTF 1
-#define HAVE_LZO1X_999_COMPRESS 0
+#define HAVE_LZO1X_999_COMPRESS 1
 #define HAVE_MACHINE_IOCTL_BT848_H 0
 #define HAVE_MACHINE_IOCTL_METEOR_H 0
 #define HAVE_MALLOC_H 1
 #define HAVE_MEMALIGN 1
 #define HAVE_MKSTEMP 1
-#define HAVE_PLD 1
+#define HAVE_PLD 0
 #define HAVE_POSIX_MEMALIGN 1
+#define HAVE_PPC64 0
 #define HAVE_ROUND 1
 #define HAVE_ROUNDF 1
 #define HAVE_SDL 0
@@ -108,16 +93,15 @@
 #define HAVE_SYS_SELECT_H 1
 #define HAVE_SYS_SOUNDCARD_H 1
 #define HAVE_SYS_VIDEOIO_H 0
-#define HAVE_TEN_OPERANDS 0
+#define HAVE_TEN_OPERANDS 1
 #define HAVE_TERMIOS_H 1
 #define HAVE_THREADS 1
 #define HAVE_TRUNCF 1
-#define HAVE_VFP_ARGS 0
 #define HAVE_VIRTUALALLOC 0
 #define HAVE_WINSOCK2_H 0
 #define HAVE_XFORM_ASM 0
 #define HAVE_YASM 0
-#define CONFIG_BSFS 0
+#define CONFIG_BSFS 1
 #define CONFIG_DECODERS 1
 #define CONFIG_DEMUXERS 1
 #define CONFIG_ENCODERS 0

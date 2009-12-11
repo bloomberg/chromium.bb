@@ -158,12 +158,12 @@
             }],  # ffmpeg_branding
             ['ffmpeg_branding=="ChromeOS"', {
               'sources': [
-		'source/patched-ffmpeg-mt/libavcodec/h263.c',
+                'source/patched-ffmpeg-mt/libavcodec/h263.c',
                 'source/patched-ffmpeg-mt/libavcodec/h263dec.c',
                 'source/patched-ffmpeg-mt/libavcodec/intrax8.c',
                 'source/patched-ffmpeg-mt/libavcodec/intrax8dsp.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpeg12data.c',
-		'source/patched-ffmpeg-mt/libavcodec/mpeg4video_parser.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_parser.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4data.c',
                 'source/patched-ffmpeg-mt/libavcodec/pcm.c',
@@ -184,11 +184,6 @@
                 'source/patched-ffmpeg-mt/libavutil/rc4.c',
               ],
             }],  # ffmpeg_branding
-            ['ffmpeg_branding=="ChromeOS" and target_arch=="arm"', {
-              'sources': [
-                'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
-              ],
-            }],  # ffmpeg_branding target_arch arm
             ['target_arch=="ia32" or target_arch=="x64"', {
               'dependencies': [
                 'make_ffmpeg_asm_lib',
@@ -207,8 +202,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/x86/vp3dsp_sse2.c',
               ],
             }],
-            ['(target_arch=="ia32" or target_arch=="x64") and ' +
-	        '(ffmpeg_branding=="ChromeOS" or ffmpeg_branding=="Chrome")', {
+            ['(target_arch=="ia32" or target_arch=="x64") and (ffmpeg_branding=="ChromeOS" or ffmpeg_branding=="Chrome")', {
               'dependencies': [
                 'make_ffmpeg_asm_lib',
               ],
@@ -216,8 +210,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/x86/mpegvideo_mmx.c',
               ],
             }],
-            ['(target_arch=="ia32" or target_arch=="x64") and ' +
-	        'ffmpeg_branding=="ChromeOS"', {
+            ['(target_arch=="ia32" or target_arch=="x64") and ffmpeg_branding=="ChromeOS"', {
               'dependencies': [
                 'make_ffmpeg_asm_lib',
               ],
@@ -259,7 +252,24 @@
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv6.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
               ],
-            }],  # target_arch=="arm"
+            }],  # target_arch=="arm" 
+            ['target_arch=="arm" and (ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS")', {
+              'sources': [
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon_s.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_neon.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/h264idct_neon.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_arm.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te_s.S',
+              ],
+            }],
+           ['target_arch=="arm" and ffmpeg_branding=="ChromeOS"', {
+              'sources': [
+                'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c',
+              ],
+            }],  # target_arch=="arm" and ffmpeg_branding=="ChromeOS"
             ['OS=="linux" or OS=="freebsd"', {
               'defines': [
                 '_ISOC99_SOURCE',
