@@ -27,7 +27,9 @@ ThemeInstalledInfoBarDelegate::ThemeInstalledInfoBarDelegate(
 
 void ThemeInstalledInfoBarDelegate::InfoBarClosed() {
   ExtensionsService* service = profile_->GetExtensionsService();
-  if (service) {
+  // Only delete the theme if we've installed a new theme and not the same
+  // theme on top of the current one.
+  if (service && previous_theme_id_ != new_theme_id_) {
     std::string uninstall_id;
     if (was_canceled_)
       uninstall_id = new_theme_id_;

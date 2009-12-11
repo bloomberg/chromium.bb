@@ -5,24 +5,20 @@
 #include "base/data_pack.h"
 
 #include "base/file_path.h"
+#include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string_piece.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class DataPackTest : public testing::Test {
- public:
-  DataPackTest() {
-    PathService::Get(base::DIR_SOURCE_ROOT, &data_path_);
-    data_path_ = data_path_.Append(
+TEST(DataPackTest, Load) {
+  FilePath data_path;
+  PathService::Get(base::DIR_SOURCE_ROOT, &data_path);
+  data_path = data_path.Append(
         FILE_PATH_LITERAL("base/data/data_pack_unittest/sample.pak"));
-  }
 
-  FilePath data_path_;
-};
-
-TEST_F(DataPackTest, Load) {
   base::DataPack pack;
-  ASSERT_TRUE(pack.Load(data_path_));
+  ASSERT_TRUE(pack.Load(data_path));
 
   base::StringPiece data;
   ASSERT_TRUE(pack.GetStringPiece(4, &data));
@@ -38,4 +34,40 @@ TEST_F(DataPackTest, Load) {
 
   // Try looking up an invalid key.
   ASSERT_FALSE(pack.GetStringPiece(140, &data));
+}
+
+TEST(DataPackTest, Write) {
+  ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  FilePath file = dir.path().Append(FILE_PATH_LITERAL("data.pak"));
+
+  std::string one("one");
+  std::string two("two");
+  std::string three("three");
+  std::string four("four");
+  std::string fifteen("fifteen");
+
+  std::map<uint32, base::StringPiece> resources;
+  resources.insert(std::make_pair(1, base::StringPiece(one)));
+  resources.insert(std::make_pair(2, base::StringPiece(two)));
+  resources.insert(std::make_pair(15, base::StringPiece(fifteen)));
+  resources.insert(std::make_pair(3, base::StringPiece(three)));
+  resources.insert(std::make_pair(4, base::StringPiece(four)));
+  ASSERT_TRUE(base::DataPack::WritePack(file, resources));
+
+  // Now try to read the data back in.
+  base::DataPack pack;
+  ASSERT_TRUE(pack.Load(file));
+
+  base::StringPiece data;
+  ASSERT_TRUE(pack.GetStringPiece(1, &data));
+  EXPECT_EQ(one, data);
+  ASSERT_TRUE(pack.GetStringPiece(2, &data));
+  EXPECT_EQ(two, data);
+  ASSERT_TRUE(pack.GetStringPiece(3, &data));
+  EXPECT_EQ(three, data);
+  ASSERT_TRUE(pack.GetStringPiece(4, &data));
+  EXPECT_EQ(four, data);
+  ASSERT_TRUE(pack.GetStringPiece(15, &data));
+  EXPECT_EQ(fifteen, data);
 }
