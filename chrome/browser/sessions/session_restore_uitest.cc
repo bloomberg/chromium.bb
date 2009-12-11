@@ -86,6 +86,16 @@ class SessionRestoreUITest : public UITest {
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreUITest);
 };
 
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// This test is flaky on linux/views builds.
+// See http://crbug.com/28808.
+#define NormalAndPopup FLAKY_NormalAndPopup
+#define Basic FLAKY_Basic
+#define TwoTabsSecondSelected FLAKY_TwoTabsSecondSelected
+#define RestoresForwardAndBackwardNavs FLAKY_RestoresForwardAndBackwardNavs
+#endif
+
+
 TEST_F(SessionRestoreUITest, Basic) {
   NavigateToURL(url1_);
   NavigateToURL(url2_);
@@ -253,12 +263,6 @@ TEST_F(SessionRestoreUITest, ClosedTabStaysClosed) {
 
   ASSERT_TRUE(GetActiveTabURL() == url1_);
 }
-
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// This test is flaky on linux/views builds.
-// See http://crbug.com/28808.
-#define NormalAndPopup FLAKY_NormalAndPopup
-#endif
 
 // Creates a tabbed browser and popup and makes sure we restore both.
 TEST_F(SessionRestoreUITest, NormalAndPopup) {
