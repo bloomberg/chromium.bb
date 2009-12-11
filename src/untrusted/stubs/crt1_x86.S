@@ -30,6 +30,7 @@
  */
 
 /* Native Client crt0 startup code */
+/* FIXME(khim): split x86 and x86-64 version */
 
         .data
         .globl environ
@@ -113,7 +114,11 @@ _start:
          * environ is initiallly set to point to the same location as envp.
          * setenv, etc., may change this pointer later.
          */
+#if defined(__x86_64__)
+        movl    %ebx, environ(%rip)
+#else
         movl    %ebx, environ
+#endif
 
         /*
          * Align the stack 0mod16, for SSE2
