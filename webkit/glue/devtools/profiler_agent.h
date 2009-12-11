@@ -10,7 +10,7 @@
 // Profiler agent provides API for retrieving profiler data.
 // These methods are handled on the IO thread, so profiler can
 // operate while a script on a page performs heavy work.
-#define PROFILER_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
+#define PROFILER_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4, METHOD5) \
   /* Requests current profiler state. */                          \
   METHOD0(GetActiveProfilerModules)                               \
                                                                   \
@@ -19,7 +19,7 @@
 
 DEFINE_RPC_CLASS(ProfilerAgent, PROFILER_AGENT_STRUCT)
 
-#define PROFILER_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
+#define PROFILER_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4, METHOD5) \
   /* Response to GetActiveProfilerModules. */                           \
   METHOD1(DidGetActiveProfilerModules, int /* flags */)                 \
                                                                         \

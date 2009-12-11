@@ -7,7 +7,7 @@
 
 #include "webkit/glue/devtools/devtools_rpc.h"
 
-#define APU_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
+#define APU_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, MEHTOD4, METHOD5) \
   /* Sends a json object to apu. */ \
   METHOD1(DispatchToApu, String /* data */)
 

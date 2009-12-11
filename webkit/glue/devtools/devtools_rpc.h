@@ -130,6 +130,19 @@ struct RpcTypeTrait<String> {
                       RpcTypeTrait<T2>::ApiType t2, \
                       RpcTypeTrait<T3>::ApiType t3) = 0;
 
+#define TOOLS_RPC_API_METHOD4(Method, T1, T2, T3, T4) \
+  virtual void Method(RpcTypeTrait<T1>::ApiType t1, \
+                      RpcTypeTrait<T2>::ApiType t2, \
+                      RpcTypeTrait<T3>::ApiType t3, \
+                      RpcTypeTrait<T4>::ApiType t4) = 0;
+
+#define TOOLS_RPC_API_METHOD5(Method, T1, T2, T3, T4, T5) \
+  virtual void Method(RpcTypeTrait<T1>::ApiType t1, \
+                      RpcTypeTrait<T2>::ApiType t2, \
+                      RpcTypeTrait<T3>::ApiType t3, \
+                      RpcTypeTrait<T4>::ApiType t4, \
+                      RpcTypeTrait<T5>::ApiType t5) = 0;
+
 ///////////////////////////////////////////////////////
 // RPC stub method implementations
 
@@ -163,6 +176,34 @@ struct RpcTypeTrait<String> {
     args[0] = RpcTypeTrait<T1>::ToString(t1); \
     args[1] = RpcTypeTrait<T2>::ToString(t2); \
     args[2] = RpcTypeTrait<T3>::ToString(t3); \
+    this->SendRpcMessage(class_name, #Method, args); \
+  }
+
+#define TOOLS_RPC_STUB_METHOD4(Method, T1, T2, T3, T4) \
+  virtual void Method(RpcTypeTrait<T1>::ApiType t1, \
+                      RpcTypeTrait<T2>::ApiType t2, \
+                      RpcTypeTrait<T3>::ApiType t3, \
+                      RpcTypeTrait<T4>::ApiType t4) { \
+    Vector<String> args(4); \
+    args[0] = RpcTypeTrait<T1>::ToString(t1); \
+    args[1] = RpcTypeTrait<T2>::ToString(t2); \
+    args[2] = RpcTypeTrait<T3>::ToString(t3); \
+    args[3] = RpcTypeTrait<T4>::ToString(t4); \
+    this->SendRpcMessage(class_name, #Method, args); \
+  }
+
+#define TOOLS_RPC_STUB_METHOD5(Method, T1, T2, T3, T4, T5) \
+  virtual void Method(RpcTypeTrait<T1>::ApiType t1, \
+                      RpcTypeTrait<T2>::ApiType t2, \
+                      RpcTypeTrait<T3>::ApiType t3, \
+                      RpcTypeTrait<T4>::ApiType t4, \
+                      RpcTypeTrait<T5>::ApiType t5) { \
+    Vector<String> args(5); \
+    args[0] = RpcTypeTrait<T1>::ToString(t1); \
+    args[1] = RpcTypeTrait<T2>::ToString(t2); \
+    args[2] = RpcTypeTrait<T3>::ToString(t3); \
+    args[3] = RpcTypeTrait<T4>::ToString(t4); \
+    args[4] = RpcTypeTrait<T5>::ToString(t5); \
     this->SendRpcMessage(class_name, #Method, args); \
   }
 
@@ -200,6 +241,29 @@ if (method_name == #Method) { \
   return true; \
 }
 
+#define TOOLS_RPC_DISPATCH4(Method, T1, T2, T3, T4) \
+if (method_name == #Method) { \
+  delegate->Method( \
+      RpcTypeTrait<T1>::Parse(args[0]), \
+      RpcTypeTrait<T2>::Parse(args[1]), \
+      RpcTypeTrait<T3>::Parse(args[2]), \
+      RpcTypeTrait<T4>::Parse(args[3]) \
+  ); \
+  return true; \
+}
+
+#define TOOLS_RPC_DISPATCH5(Method, T1, T2, T3, T4, T5) \
+if (method_name == #Method) { \
+  delegate->Method( \
+      RpcTypeTrait<T1>::Parse(args[0]), \
+      RpcTypeTrait<T2>::Parse(args[1]), \
+      RpcTypeTrait<T3>::Parse(args[2]), \
+      RpcTypeTrait<T4>::Parse(args[3]), \
+      RpcTypeTrait<T5>::Parse(args[4]) \
+  ); \
+  return true; \
+}
+
 #define TOOLS_END_RPC_DISPATCH() \
 }
 
@@ -218,7 +282,9 @@ class Class : public Noncopyable {\
       TOOLS_RPC_API_METHOD0, \
       TOOLS_RPC_API_METHOD1, \
       TOOLS_RPC_API_METHOD2, \
-      TOOLS_RPC_API_METHOD3) \
+      TOOLS_RPC_API_METHOD3, \
+      TOOLS_RPC_API_METHOD4, \
+      TOOLS_RPC_API_METHOD5) \
   WebCore::String class_name; \
 }; \
 \
@@ -233,7 +299,9 @@ class Class##Stub \
       TOOLS_RPC_STUB_METHOD0, \
       TOOLS_RPC_STUB_METHOD1, \
       TOOLS_RPC_STUB_METHOD2, \
-      TOOLS_RPC_STUB_METHOD3) \
+      TOOLS_RPC_STUB_METHOD3, \
+      TOOLS_RPC_STUB_METHOD4, \
+      TOOLS_RPC_STUB_METHOD5) \
 }; \
 \
 class Class##Dispatch : public Noncopyable { \
@@ -257,7 +325,9 @@ class Class##Dispatch : public Noncopyable { \
         TOOLS_RPC_DISPATCH0, \
         TOOLS_RPC_DISPATCH1, \
         TOOLS_RPC_DISPATCH2, \
-        TOOLS_RPC_DISPATCH3) \
+        TOOLS_RPC_DISPATCH3, \
+        TOOLS_RPC_DISPATCH4, \
+        TOOLS_RPC_DISPATCH5) \
     return false; \
   } \
 };

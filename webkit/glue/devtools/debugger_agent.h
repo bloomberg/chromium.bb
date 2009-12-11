@@ -7,13 +7,13 @@
 
 #include "webkit/glue/devtools/devtools_rpc.h"
 
-#define DEBUGGER_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
+#define DEBUGGER_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4, METHOD5) \
   /* Requests global context id of the inspected tab. */ \
   METHOD0(GetContextId)
 
 DEFINE_RPC_CLASS(DebuggerAgent, DEBUGGER_AGENT_STRUCT)
 
-#define DEBUGGER_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3) \
+#define DEBUGGER_AGENT_DELEGATE_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4, METHOD5) \
   METHOD1(DebuggerOutput, String /* output text */) \
   \
   /* Pushes debugger context id into the client. */ \

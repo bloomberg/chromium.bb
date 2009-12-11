@@ -31,6 +31,12 @@
 #define TOOLS_RPC_JS_BIND_METHOD3(Method, T1, T2, T3) \
   bound_obj.AddProtoFunction(#Method, OCLASS::Js##Method);
 
+#define TOOLS_RPC_JS_BIND_METHOD4(Method, T1, T2, T3, T4) \
+  bound_obj.AddProtoFunction(#Method, OCLASS::Js##Method);
+
+#define TOOLS_RPC_JS_BIND_METHOD5(Method, T1, T2, T3, T4, T5) \
+  bound_obj.AddProtoFunction(#Method, OCLASS::Js##Method);
+
 #define TOOLS_RPC_JS_STUB_METHOD0(Method) \
   static v8::Handle<v8::Value> Js##Method(const v8::Arguments& args) { \
     SendRpcMessageFromJs(#Method, args, 0); \
@@ -55,6 +61,18 @@
     return v8::Undefined(); \
   }
 
+#define TOOLS_RPC_JS_STUB_METHOD4(Method, T1, T2, T3, T4) \
+  static v8::Handle<v8::Value> Js##Method(const v8::Arguments& args) { \
+    SendRpcMessageFromJs(#Method, args, 4); \
+    return v8::Undefined(); \
+  }
+
+#define TOOLS_RPC_JS_STUB_METHOD5(Method, T1, T2, T3, T4, T5) \
+  static v8::Handle<v8::Value> Js##Method(const v8::Arguments& args) { \
+    SendRpcMessageFromJs(#Method, args, 5); \
+    return v8::Undefined(); \
+  }
+
 ///////////////////////////////////////////////////////
 // JS RPC main obj macro
 
@@ -70,7 +88,9 @@ class Js##Class##BoundObj : public Class##Stub { \
         TOOLS_RPC_JS_BIND_METHOD0, \
         TOOLS_RPC_JS_BIND_METHOD1, \
         TOOLS_RPC_JS_BIND_METHOD2, \
-        TOOLS_RPC_JS_BIND_METHOD3) \
+        TOOLS_RPC_JS_BIND_METHOD3, \
+        TOOLS_RPC_JS_BIND_METHOD4, \
+        TOOLS_RPC_JS_BIND_METHOD5) \
     bound_obj.Build(); \
   } \
   virtual ~Js##Class##BoundObj() {} \
@@ -79,7 +99,9 @@ class Js##Class##BoundObj : public Class##Stub { \
       TOOLS_RPC_JS_STUB_METHOD0, \
       TOOLS_RPC_JS_STUB_METHOD1, \
       TOOLS_RPC_JS_STUB_METHOD2, \
-      TOOLS_RPC_JS_STUB_METHOD3) \
+      TOOLS_RPC_JS_STUB_METHOD3, \
+      TOOLS_RPC_JS_STUB_METHOD4, \
+      TOOLS_RPC_JS_STUB_METHOD5) \
  private: \
   static void SendRpcMessageFromJs(const char* method, \
                                    const v8::Arguments& js_arguments, \
