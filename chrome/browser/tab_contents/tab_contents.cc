@@ -246,7 +246,6 @@ TabContents::TabContents(Profile* profile,
       find_ui_active_(false),
       find_op_aborted_(false),
       current_find_request_id_(find_request_id_counter_++),
-      find_text_(),
       last_search_case_sensitive_(false),
       last_search_prepopulate_text_(NULL),
       last_search_result_(),
@@ -1020,10 +1019,14 @@ void TabContents::StartFinding(string16 search_string,
   // If search_string is empty, it means FindNext was pressed with a keyboard
   // shortcut so unless we have something to search for we return early.
   if (search_string.empty() && find_text_.empty()) {
-    if (last_search_prepopulate_text_->empty())
+    // Try the last thing we searched for on this tab, then the last thing
+    // searched for on any tab.
+    if (!previous_find_text_.empty())
+      search_string = previous_find_text_;
+    else if (!last_search_prepopulate_text_->empty())
+      search_string = *last_search_prepopulate_text_;
+    else
       return;
-    // Try whatever we searched for last in any tab.
-    search_string = *last_search_prepopulate_text_;
   }
 
   // Keep track of the previous search.
@@ -1061,6 +1064,7 @@ void TabContents::StopFinding(bool clear_selection) {
   // by the user, but the UI has not been dismissed.
   if (!clear_selection)
     find_ui_active_ = false;
+  previous_find_text_ = find_text_;
   find_text_.clear();
   find_op_aborted_ = true;
   last_search_result_ = FindNotificationDetails();

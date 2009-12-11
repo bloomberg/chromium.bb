@@ -765,3 +765,38 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, RestartSearchFromF3) {
   EXPECT_EQ(1, FindInPageWchar(tab, L"", kFwd, kIgnoreCase, &ordinal));
   EXPECT_EQ(1, ordinal);
 }
+
+// When re-opening the find bar with F3, the find bar should be re-populated
+// with the last search from the same tab rather than the last overall search.
+// http://crbug.com/30006
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, PreferPreviousSearch) {
+  HTTPTestServer* server = StartHTTPServer();
+
+  DropdownBarHost::disable_animations_during_testing_ = true;
+
+  // First we navigate to any page.
+  GURL url = server->TestServerPageW(kSimplePage);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Find "Default".
+  int ordinal = 0;
+  TabContents* tab1 = browser()->GetSelectedTabContents();
+  EXPECT_EQ(1, FindInPageWchar(tab1, L"Default", kFwd, kIgnoreCase, &ordinal));
+
+  // Create a second tab.
+  browser()->AddTabWithURL(url, GURL(), PageTransition::TYPED, true, -1,
+      false, NULL);
+  browser()->SelectTabContentsAt(1, false);
+  TabContents* tab2 = browser()->GetSelectedTabContents();
+  EXPECT_NE(tab1, tab2);
+
+  // Find "given".
+  FindInPageWchar(tab2, L"given", kFwd, kIgnoreCase, &ordinal);
+
+  // Switch back to first tab.
+  browser()->SelectTabContentsAt(0, false);
+  browser()->GetFindBarController()->EndFindSession();
+  // Simulate F3.
+  ui_test_utils::FindInPage(tab1, string16(), kFwd, kIgnoreCase, &ordinal);
+  EXPECT_EQ(tab1->find_text(), WideToUTF16(L"Default"));
+}

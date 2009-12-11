@@ -172,16 +172,12 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
   bool have_valid_range =
       result.number_of_matches() != -1 && result.active_match_ordinal() != -1;
 
-  // If we don't have any results and something was passed in, then that means
-  // someone pressed F3 while the Find box was closed. In that case we need to
-  // repopulate the Find box with what was passed in.
-  string16 search_string = find_text_->text();
-  if (search_string.empty() && !find_text.empty()) {
+  if (find_text_->text() != find_text) {
     find_text_->SetText(find_text);
     find_text_->SelectAll();
   }
 
-  if (!search_string.empty() && have_valid_range) {
+  if (!find_text.empty() && have_valid_range) {
     match_count_text_->SetText(
         l10n_util::GetStringF(IDS_FIND_IN_PAGE_COUNT,
                               IntToWString(result.active_match_ordinal()),
@@ -192,7 +188,7 @@ void FindBarView::UpdateForResult(const FindNotificationDetails& result,
     match_count_text_->SetText(std::wstring());
   }
 
-  if (search_string.empty() || result.number_of_matches() > 0 ||
+  if (find_text.empty() || result.number_of_matches() > 0 ||
       !have_valid_range) {
     // If there was no text entered or there were results, the match_count label
     // should have a normal background color. We also reset the background if

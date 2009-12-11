@@ -333,12 +333,12 @@ void FindBarGtk::MoveWindowIfNecessary(const gfx::Rect& selection_rect,
 }
 
 void FindBarGtk::SetFindText(const string16& find_text) {
-  std::string text_entry_utf8 = UTF16ToUTF8(find_text);
+  std::string find_text_utf8 = UTF16ToUTF8(find_text);
 
   // Ignore the "changed" signal handler because programatically setting the
   // text should not fire a "changed" event.
   ignore_changed_signal_ = true;
-  gtk_entry_set_text(GTK_ENTRY(text_entry_), text_entry_utf8.c_str());
+  gtk_entry_set_text(GTK_ENTRY(text_entry_), find_text_utf8.c_str());
   ignore_changed_signal_ = false;
 }
 
@@ -356,20 +356,17 @@ void FindBarGtk::UpdateUIForFindResult(const FindNotificationDetails& result,
   if (result.number_of_matches() > 0)
     focus_store_.Store(NULL);
 
-  std::string text_entry_utf8 = UTF16ToUTF8(find_text);
+  std::string find_text_utf8 = UTF16ToUTF8(find_text);
   bool have_valid_range =
       result.number_of_matches() != -1 && result.active_match_ordinal() != -1;
 
-  // If we don't have any results and something was passed in, then that means
-  // someone pressed F3 while the Find box was closed. In that case we need to
-  // repopulate the Find box with what was passed in.
-  std::string search_string(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
-  if (search_string.empty() && !text_entry_utf8.empty()) {
+  std::string entry_text(gtk_entry_get_text(GTK_ENTRY(text_entry_)));
+  if (entry_text != find_text_utf8) {
     SetFindText(find_text);
     gtk_entry_select_region(GTK_ENTRY(text_entry_), 0, -1);
   }
 
-  if (!search_string.empty() && have_valid_range) {
+  if (!find_text.empty() && have_valid_range) {
     gtk_label_set_text(GTK_LABEL(match_count_label_),
         l10n_util::GetStringFUTF8(IDS_FIND_IN_PAGE_COUNT,
             IntToString16(result.active_match_ordinal()),
