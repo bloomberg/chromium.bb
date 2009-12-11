@@ -277,6 +277,11 @@ static Bool MemOffsetMatchesBaseIndex(ExprNodeVector* vector,
  *    lea %REG64-B, [%RBASE + %REG64-A]
  *    jmp %REG64-B
  *
+ * Or:
+ *    and %REG32-A, MASK
+ *    add %REG64-A, %RBASE
+ *    jmp %REG64-A
+ *
  * where MASK is all 1/s except for the alignment mask bits, which must be zero.
  *
  * REG32 is the corresponding 32-bit register that whose value will get zero
@@ -304,16 +309,18 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
                                       JumpSets* jump_sets) {
   uint8_t mask;
   NcInstState* and_inst;
-  NcInstState* lea_inst;
+  NcInstState* middle_inst;
   Opcode* and_opcode;
-  Opcode* lea_opcode;
+  Opcode* middle_opcode;
   int op_1, op_2;
-  OperandKind and_reg, lea_reg, jump_reg;
+  OperandKind and_reg, and_64_reg, jump_reg, middle_reg;
   ExprNodeVector* nodes;
   ExprNode* node;
   jump_reg = GetNodeRegister(reg);
 
-  /* Do the following block exactly once. */
+  /* Do the following block exactly once. Use loop so that "break" can
+   * be used for premature exit of block.
+   */
   do {
     /* Check and in 3 instruction sequence. */
     if (!NcInstIterHasLookbackState(iter, 2)) break;
@@ -329,6 +336,8 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
     node = &nodes->node[op_1];
     if (ExprRegister != node->kind) break;
     and_reg = GetNodeRegister(node);
+    and_64_reg = NcGet64For32BitRegister(and_reg);
+    if (RegUnknown == and_64_reg) break;
 
     /* Check that the mask is ok. */
     mask = (uint8_t) (~state->alignment_mask);
@@ -336,32 +345,46 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
     node = &nodes->node[op_2];
     if (ExprConstant != node->kind || mask != node->value) break;
 
-    /* Check lea in 3 instruction sequence. */
-    lea_inst = NcInstIterGetLookbackState(iter, 1);
-    lea_opcode = NcInstStateOpcode(lea_inst);
-    if (InstLea != lea_opcode->name) break;
+    /* Check middle (i.e. lea/add) instruction in 3 instruction sequence. */
+    middle_inst = NcInstIterGetLookbackState(iter, 1);
+    middle_opcode = NcInstStateOpcode(middle_inst);
 
-    /* Extract the values of the two operands for the lea. */
-    if (!ExtractBinaryOperandIndices(lea_inst, &op_1, &op_2)) break;
+    /* Extract the values of the two operands for the lea/add instruction. */
+    if (!ExtractBinaryOperandIndices(middle_inst, &op_1, &op_2)) break;
 
-    /* Extract the destination register of the lea, and compare to
-     * the jump register.
+    /* Extract the destination register of the lea/and, and verify that
+     * it is a register.
      */
-    nodes = NcInstStateNodeVector(lea_inst);
+    nodes = NcInstStateNodeVector(middle_inst);
     node = &nodes->node[op_1];
     if (ExprRegister != node->kind) break;
-    lea_reg = GetNodeRegister(node);
-    if (lea_reg != jump_reg) break;
 
-    /* Check that we have [%RBASE + %REG64-A]. */
-    node = &nodes->node[op_2];
-    if (ExprMemOffset != node->kind ||
-        !MemOffsetMatchesBaseIndex(nodes, op_2, state->base_register,
-                                   NcGet64For32BitRegister(and_reg)))
+    /* Compare the middle destination register to the jump register. */
+    middle_reg = GetNodeRegister(node);
+    if (middle_reg != jump_reg) break;
+
+    if (InstLea == middle_opcode->name) {
+      /* Check that we have [%RBASE + %REG64-A] as second argument to lea */
+      node = &nodes->node[op_2];
+      if (ExprMemOffset != node->kind ||
+          !MemOffsetMatchesBaseIndex(nodes, op_2, state->base_register,
+                                     and_64_reg)) {
+        break;
+      }
+    } else if (InstAdd == middle_opcode->name) {
+      /* Check that the jump register is the 64-bit version of the
+       * and register.
+       */
+      if (jump_reg != and_64_reg) break;
+
+      /* Check that we have %RBASE as second argument to add. */
+      if (GetNodeVectorRegister(nodes, op_2) != state->base_register) break;
+    } else {
       break;
+    }
 
     /* If reached, indirect jump is properly masked. */
-    NcMarkInstructionJumpIllegal(state, lea_inst);
+    NcMarkInstructionJumpIllegal(state, middle_inst);
     NcMarkInstructionJumpIllegal(state, inst);
     return;
   } while(0);
