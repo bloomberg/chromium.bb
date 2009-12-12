@@ -257,7 +257,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   const std::wstring source_label_text = l10n_util::GetStringF(
       IDS_NOTIFICATION_BALLOON_SOURCE_LABEL,
-      balloon_->notification().display_source());
+      balloon->notification().display_source());
   const std::wstring options_text =
       l10n_util::GetString(IDS_NOTIFICATION_OPTIONS_MENU_LABEL);
   const std::wstring dismiss_text =
