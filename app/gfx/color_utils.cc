@@ -48,7 +48,7 @@ int GetLumaForColor(SkColor* color) {
   return std::max(std::min(luma, 255), 0);
 }
 
-// Next three functions' formulas from:
+// Next two functions' formulas from:
 // http://www.w3.org/TR/WCAG20/#relativeluminancedef
 // http://www.w3.org/TR/WCAG20/#contrast-ratiodef
 
@@ -65,12 +65,6 @@ SkColor LumaInvertColor(const SkColor& color) {
   return HSLToSkColor(hsl, 255);
 }
 
-double RelativeLuminance(SkColor color) {
-  return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
-      (0.7152 * ConvertSRGB(SkColorGetG(color))) +
-      (0.0722 * ConvertSRGB(SkColorGetB(color))) + 0.05;
-}
-
 double ContrastRatio(double foreground_luminance, double background_luminance) {
   // NOTE: Only pass in numbers obtained from RelativeLuminance(), since those
   // are guaranteed to be > 0 and thus not cause a divide-by-zero error here.
@@ -82,6 +76,12 @@ double ContrastRatio(double foreground_luminance, double background_luminance) {
 }  // namespace
 
 // ----------------------------------------------------------------------------
+
+double RelativeLuminance(SkColor color) {
+  return (0.2126 * ConvertSRGB(SkColorGetR(color))) +
+      (0.7152 * ConvertSRGB(SkColorGetG(color))) +
+      (0.0722 * ConvertSRGB(SkColorGetB(color))) + 0.05;
+}
 
 void SkColorToHSL(SkColor c, HSL* hsl) {
   double r = static_cast<double>(SkColorGetR(c)) / 255.0;

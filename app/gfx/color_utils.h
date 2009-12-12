@@ -18,6 +18,9 @@ struct HSL {
   double l;
 };
 
+// Calculated according to http://www.w3.org/TR/WCAG20/#relativeluminancedef
+double RelativeLuminance(SkColor color);
+
 // Note: these transformations assume sRGB as the source color space
 void SkColorToHSL(SkColor c, HSL* hsl);
 SkColor HSLToSkColor(const HSL& hsl, SkAlpha alpha);

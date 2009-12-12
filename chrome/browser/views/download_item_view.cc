@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/color_utils.h"
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -66,6 +67,11 @@ static const int kCompleteAnimationDurationMs = 2500;
 // How long we keep the item disabled after the user clicked it to open the
 // downloaded item.
 static const int kDisabledOnOpenDuration = 3000;
+
+// Darken light-on-dark download status text by 20% before drawing, thus
+// creating a "muted" version of title text for both dark-on-light and
+// light-on-dark themes.
+static const double kDownloadItemLuminanceMod = 0.8;
 
 // DownloadShelfContextMenuWin -------------------------------------------------
 
@@ -523,6 +529,31 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
   if (center_width <= 0)
     return;
 
+  // Draw status before button image to effectively lighten text.
+  if (!IsDangerousMode()) {
+    if (show_status_text_) {
+      int mirrored_x = MirroredXWithWidthInsideView(
+          download_util::kSmallProgressIconSize, kTextWidth);
+      // Add font_.height() to compensate for title, which is drawn later.
+      int y = box_y_ + kVerticalPadding + font_.height() +
+              kVerticalTextPadding;
+      SkColor file_name_color = GetThemeProvider()->GetColor(
+          BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+      // If text is light-on-dark, lightening it alone will do nothing.
+      // Therefore we mute luminance a wee bit before drawing in this case.
+      if (color_utils::RelativeLuminance(file_name_color) > 0.5)
+          file_name_color = SkColorSetRGB(
+              static_cast<int>(kDownloadItemLuminanceMod *
+                               SkColorGetR(file_name_color)),
+              static_cast<int>(kDownloadItemLuminanceMod *
+                               SkColorGetG(file_name_color)),
+              static_cast<int>(kDownloadItemLuminanceMod *
+                               SkColorGetB(file_name_color)));
+      canvas->DrawStringInt(status_text_, font_, file_name_color,
+                            mirrored_x, y, kTextWidth, font_.height());
+    }
+  }
+
   // Paint the background images.
   int x = kLeftPadding;
   bool rtl_ui = UILayoutIsRightToLeft();
@@ -643,28 +674,14 @@ void DownloadItemView::Paint(gfx::Canvas* canvas) {
         download_util::kSmallProgressIconSize, kTextWidth);
     SkColor file_name_color = GetThemeProvider()->GetColor(
         BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    if (show_status_text_) {
-      int y = box_y_ + kVerticalPadding;
+    int y = box_y_ + (show_status_text_ ? kVerticalPadding :
+                                          (box_height_ - font_.height()) / 2);
 
-      // Draw the file's name.
-      canvas->DrawStringInt(filename, font_,
-                            IsEnabled() ? file_name_color :
-                                          kFileNameDisabledColor,
-                            mirrored_x, y, kTextWidth, font_.height());
-
-      y += font_.height() + kVerticalTextPadding;
-
-      canvas->DrawStringInt(status_text_, font_, kStatusColor, mirrored_x, y,
-                            kTextWidth, font_.height());
-    } else {
-      int y = box_y_ + (box_height_ - font_.height()) / 2;
-
-      // Draw the file's name.
-      canvas->DrawStringInt(filename, font_,
-                            IsEnabled() ? file_name_color :
-                                          kFileNameDisabledColor,
-                            mirrored_x, y, kTextWidth, font_.height());
-    }
+    // Draw the file's name.
+    canvas->DrawStringInt(filename, font_,
+                          IsEnabled() ? file_name_color :
+                                        kFileNameDisabledColor,
+                          mirrored_x, y, kTextWidth, font_.height());
   }
 
   // Paint the icon.
