@@ -38,6 +38,7 @@ class RequestTracker {
   };
 
   typedef std::vector<RecentRequestInfo> RecentRequestInfoList;
+  typedef bool (*RecentRequestsFilterFunc)(const GURL&);
 
   // The maximum number of entries for |graveyard_|.
   static const size_t kMaxGraveyardSize;
@@ -45,7 +46,7 @@ class RequestTracker {
   // The maximum size of URLs to stuff into RecentRequestInfo.
   static const size_t kMaxGraveyardURLSize;
 
-  RequestTracker() : next_graveyard_index_(0) {}
+  RequestTracker() : next_graveyard_index_(0), graveyard_filter_func_(NULL) {}
   ~RequestTracker() {}
 
   // Returns a list of Requests that are alive.
@@ -82,6 +83,7 @@ class RequestTracker {
   void Add(Request* request) {
     live_instances_.Append(&request->request_tracker_node_);
   }
+
   void Remove(Request* request) {
     // Remove from |live_instances_|.
     request->request_tracker_node_.RemoveFromList();
@@ -92,11 +94,28 @@ class RequestTracker {
     const std::string& spec = info.original_url.possibly_invalid_spec();
     if (spec.size() > kMaxGraveyardURLSize)
       info.original_url = GURL(spec.substr(0, kMaxGraveyardURLSize));
-    // Add into |graveyard_|.
-    InsertIntoGraveyard(info);
+
+    if (ShouldInsertIntoGraveyard(info)) {
+      // Add into |graveyard_|.
+      InsertIntoGraveyard(info);
+    }
+  }
+
+  // This function lets you exclude requests from being saved to the graveyard.
+  // The graveyard is a circular buffer of the most recently completed
+  // requests.  Pass NULL turn off filtering. Otherwise pass in a function
+  // returns false to exclude requests, true otherwise.
+  void SetGraveyardFilter(RecentRequestsFilterFunc filter_func) {
+    graveyard_filter_func_ = filter_func;
   }
 
  private:
+  bool ShouldInsertIntoGraveyard(const RecentRequestInfo& info) {
+    if (!graveyard_filter_func_)
+      return true;
+    return graveyard_filter_func_(info.original_url);
+  }
+
   void InsertIntoGraveyard(const RecentRequestInfo& info) {
     if (graveyard_.size() < kMaxGraveyardSize) {
       // Still growing to maximum capacity.
@@ -113,6 +132,7 @@ class RequestTracker {
 
   size_t next_graveyard_index_;
   RecentRequestInfoList graveyard_;
+  RecentRequestsFilterFunc graveyard_filter_func_;
 };
 
 template<typename Request>

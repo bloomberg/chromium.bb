@@ -632,6 +632,8 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 
 ChromeURLRequestContext::ChromeURLRequestContext() {
   CheckCurrentlyOnIOThread();
+  url_request_tracker()->SetGraveyardFilter(
+      &ChromeURLRequestContext::ShouldTrackRequest);
 }
 
 ChromeURLRequestContext::~ChromeURLRequestContext() {
@@ -789,6 +791,12 @@ void ChromeURLRequestContext::OnDefaultCharsetChange(
   referrer_charset_ = default_charset;
   accept_charset_ =
       net::HttpUtil::GenerateAcceptCharsetHeader(default_charset);
+}
+
+// static
+bool ChromeURLRequestContext::ShouldTrackRequest(const GURL& url) {
+  // Exclude "chrome://" URLs from our recent requests circular buffer.
+  return !url.SchemeIs("chrome");
 }
 
 // ----------------------------------------------------------------------------

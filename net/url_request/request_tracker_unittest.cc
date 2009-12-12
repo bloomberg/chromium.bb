@@ -150,4 +150,42 @@ TEST(URLRequestTrackerTest, TrackingInvalidURL) {
   EXPECT_FALSE(tracker.GetRecentlyDeceased()[0].original_url.is_valid());
 }
 
+bool ShouldRequestBeAddedToGraveyard(const GURL& url) {
+  return !url.SchemeIs("chrome") && !url.SchemeIs("data");
+}
+
+// Check that we can exclude "chrome://" URLs and "data:" URLs from being
+// saved into the recent requests list (graveyard), by using a filter.
+TEST(RequestTrackerTest, GraveyardCanBeFiltered) {
+  RequestTracker<TestRequest> tracker;
+
+  tracker.SetGraveyardFilter(ShouldRequestBeAddedToGraveyard);
+
+  // This will be excluded.
+  TestRequest req1(GURL("chrome://dontcare"));
+  tracker.Add(&req1);
+  tracker.Remove(&req1);
+
+  // This will be be added to graveyard.
+  TestRequest req2(GURL("chrome2://dontcare"));
+  tracker.Add(&req2);
+  tracker.Remove(&req2);
+
+  // This will be be added to graveyard.
+  TestRequest req3(GURL("http://foo"));
+  tracker.Add(&req3);
+  tracker.Remove(&req3);
+
+  // This will be be excluded.
+  TestRequest req4(GURL("data:sup"));
+  tracker.Add(&req4);
+  tracker.Remove(&req4);
+
+  ASSERT_EQ(2u, tracker.GetRecentlyDeceased().size());
+  EXPECT_EQ("chrome2://dontcare/",
+            tracker.GetRecentlyDeceased()[0].original_url.spec());
+  EXPECT_EQ("http://foo/",
+            tracker.GetRecentlyDeceased()[1].original_url.spec());
+}
+
 }  // namespace

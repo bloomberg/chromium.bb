@@ -279,6 +279,10 @@ class ChromeURLRequestContext : public URLRequestContext {
   bool is_off_the_record_;
 
  private:
+  // Filter for url_request_tracker(), that prevents "chrome://" requests from
+  // being tracked by "about:net-internals".
+  static bool ShouldTrackRequest(const GURL& url);
+
   DISALLOW_COPY_AND_ASSIGN(ChromeURLRequestContext);
 };
 
