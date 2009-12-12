@@ -141,8 +141,13 @@ def ShutDownHTTPServer(server_pid):
                     stderr=null)
     null.close()
   else:
-    os.kill(server_pid, signal.SIGTERM)
-    #TODO(mmoss) Maybe throw in a SIGKILL just to be sure?
+    try:
+      os.kill(server_pid, signal.SIGTERM)
+      #TODO(mmoss) Maybe throw in a SIGKILL just to be sure?
+    except OSError:
+      # Sometimes we get a bad PID (e.g. from a stale httpd.pid file), so if
+      # kill fails on the given PID, just try to 'killall' web servers.
+      ShutDownHTTPServer(None)
 
 def KillProcess(pid):
   """Forcefully kill the process.
