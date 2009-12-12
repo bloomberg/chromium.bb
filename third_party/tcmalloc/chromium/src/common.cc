@@ -205,4 +205,8 @@ void* MetaDataAlloc(size_t bytes) {
 
 uint64_t metadata_system_bytes() { return metadata_system_bytes_; }
 
+void increment_metadata_system_bytes(size_t bytes) {
+  metadata_system_bytes_ += bytes;
+}
+
 }  // namespace tcmalloc

@@ -55,6 +55,8 @@ namespace tcmalloc {
 // -------------------------------------------------------------------------
 
 // We use PageMap2<> for 32-bit and PageMap3<> for 64-bit machines.
+// ...except...
+// On Windows, we use TCMalloc_PageMap1_LazyCommit<> for 32-bit machines.
 // We also use a simple one-level cache for hot PageID-to-sizeclass mappings,
 // because sometimes the sizeclass is all the information we need.
 
@@ -65,10 +67,15 @@ template <int BITS> class MapSelector {
   typedef PackedCache<BITS-kPageShift, uint64_t> CacheType;
 };
 
-// A two-level map for 32-bit machines
 template <> class MapSelector<32> {
  public:
+#ifdef WIN32
+// A flat map for 32-bit machines (with lazy commit of memory).
+  typedef TCMalloc_PageMap1_LazyCommit<32-kPageShift> Type;
+#else
+  // A two-level map for 32-bit machines
   typedef TCMalloc_PageMap2<32-kPageShift> Type;
+#endif
   typedef PackedCache<32-kPageShift, uint16_t> CacheType;
 };
 

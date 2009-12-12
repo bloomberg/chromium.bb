@@ -183,6 +183,10 @@ void* MetaDataAlloc(size_t bytes);
 // Requires pageheap_lock is held.
 uint64_t metadata_system_bytes();
 
+// Adjust metadata_system_bytes to indicate that bytes are actually committed.
+// Requires pageheap_lock is held.
+void increment_metadata_system_bytes(size_t bytes);
+
 // size/depth are made the same size as a pointer so that some generic
 // code below can conveniently cast them back and forth to void*.
 static const int kMaxStackDepth = 31;
