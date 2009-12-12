@@ -19,13 +19,6 @@
 //   Interleave synchronous and asynchronous lookups.
 //   Specify the address family.
 
-#include "build/build_config.h"
-
-#if defined(OS_WIN)
-#include <ws2tcpip.h>
-#else
-#include <netdb.h>
-#endif
 #include <stdio.h>
 #include <string>
 
@@ -43,6 +36,7 @@
 #include "net/base/host_resolver_impl.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/sys_addrinfo.h"
 
 struct FlagName {
   int flag;

@@ -4,12 +4,6 @@
 
 #include "net/url_request/url_request_view_net_internals_job.h"
 
-#if defined(OS_WIN)
-#include <ws2tcpip.h>
-#else
-#include <netdb.h>
-#endif
-
 #include <sstream>
 
 #include "base/format_macros.h"
@@ -20,6 +14,7 @@
 #include "net/base/load_log_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/sys_addrinfo.h"
 #include "net/proxy/proxy_service.h"
 #include "net/socket_stream/socket_stream.h"
 #include "net/url_request/url_request.h"
