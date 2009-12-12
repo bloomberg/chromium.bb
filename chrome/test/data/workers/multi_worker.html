@@ -13,7 +13,7 @@ var completed_worker_count = 0;
 var total_workers = 4;
 
 function createWorker(base) {
-  var worker = new Worker("worker_common.js");
+  var worker = getWorker("worker_common.js");
   for (var i = 0; i < 100; i++) {
     worker.postMessage("eval " + base + "+" + i);
     expected_total += base + i;

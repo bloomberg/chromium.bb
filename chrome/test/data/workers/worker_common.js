@@ -1,3 +1,14 @@
+if (!self.postMessage) {
+  // This is a shared worker - mimic dedicated worker APIs
+  onconnect = function(event) {
+    event.ports[0].onmessage = function(e) {
+      self.onmessage(e);
+    };
+    self.postMessage = function(msg, ports) {
+      event.ports[0].postMessage(msg, ports);
+    };
+  };
+}
 onmessage = function(evt) {
   if (evt.data == "ping")
     postMessage("pong");

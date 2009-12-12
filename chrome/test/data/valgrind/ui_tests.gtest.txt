@@ -14,6 +14,10 @@ UnloadTest.BrowserCloseInfiniteBeforeUnloadAlert
 # See http://crbug.com/25917 and http://crbug.com/22608
 WorkerTest.LimitTotal
 
+# Occasionally fails under valgrind (http://crbug.com/28445)
+WorkerTest.SingleWorker
+WorkerTest.WorkerXhrHttpLayoutTests
+
 # Don't run reference tests under Valgrind
 # On the Mac, they don't have symbols, even, so suppressions don't work
 # They probably don't have ThreadSanitizer annotations TODO(timurrrr): check

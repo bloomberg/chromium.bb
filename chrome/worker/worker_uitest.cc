@@ -77,17 +77,20 @@ class WorkerTest : public UILayoutTest {
 };
 
 
-#if defined(OS_LINUX)
-// Fails running under valgrind, http://crbug.com/28445
-#define SingleWorker DISABLED_SingleWorker
-#endif
-
 TEST_F(WorkerTest, SingleWorker) {
   RunTest(L"single_worker.html");
 }
 
 TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
+}
+
+TEST_F(WorkerTest, SingleSharedWorker) {
+  RunTest(L"single_worker.html?shared=true");
+}
+
+TEST_F(WorkerTest, MultipleSharedWorkers) {
+  RunTest(L"multi_worker.html?shared=true");
 }
 
 #if defined(OS_LINUX)
@@ -103,7 +106,7 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
 }
 
 #if defined(OS_LINUX) || defined (OS_MACOSX)
-#define WorkerFastLayoutTests DISABLED_WorkerFastLayoutTests
+#define WorkerFastLayoutTests FLAKY_WorkerFastLayoutTests
 #endif
 
 TEST_F(WorkerTest, WorkerFastLayoutTests) {
@@ -162,7 +165,7 @@ TEST_F(WorkerTest, WorkerFastLayoutTests) {
 // http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
 // generated on the windows try bots.
 // http://crbug.com/28445 - flakiness on mac
-#define SharedWorkerFastLayoutTests DISABLED_SharedWorkerFastLayoutTests
+#define SharedWorkerFastLayoutTests FLAKY_SharedWorkerFastLayoutTests
 #endif
 
 #if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
@@ -246,11 +249,6 @@ TEST_F(WorkerTest, WorkerHttpLayoutTests) {
   StopHttpServer();
 }
 
-#if defined(OS_LINUX)
-// Fails running under valgrind http://crbug.com/28445
-#define WorkerXhrHttpLayoutTests DISABLED_WorkerXhrHttpLayoutTests
-#endif
-
 TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
@@ -326,10 +324,6 @@ TEST_F(WorkerTest, MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], false);
 }
 
-// Disable LimitPerPage on Linux. Seems to work on Mac though:
-// http://code.google.com/p/chromium/issues/detail?id=22608
-#if !defined(OS_LINUX)
-// This test fails after WebKit merge 49414:49432. (BUG=24652)
 TEST_F(WorkerTest, LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
@@ -341,12 +335,8 @@ TEST_F(WorkerTest, LimitPerPage) {
 
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
-#endif
 
-#if defined(OS_LINUX)
-// Fails (crashes) on Linux Tests: http://crbug.com/28445
-#define LimitTotal DISABLED_LimitTotal
-#elif defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_MACOSX)
 // Doesn't crash, but on Mac it sometimes fails for a few runs in a row,
 // http://crbug.com/28445
 #define LimitTotal FLAKY_LimitTotal
