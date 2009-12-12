@@ -214,8 +214,10 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
       OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
       ignore_redirect_stop_binding_error_ = true;
       DCHECK(binding_ != NULL);
-      binding_->Abort();
-      binding_ = NULL;
+      if (binding_) {
+        binding_->Abort();
+        binding_ = NULL;
+      }
       return E_ABORT;
     }
 
@@ -244,6 +246,15 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     status_.set_status(URLRequestStatus::SUCCESS);
     status_.set_os_error(0);
     ReleaseBindings();
+    // In most cases we receive the end request notification from Chrome.
+    // However at times requests can complete without us receiving any
+    // data. In this case we need to inform Chrome that this request has been
+    // completed to prevent Chrome from waiting forever for data for this
+    // request.
+    if (pending_read_size_) {
+      pending_read_size_ = 0;
+      OnResponseEnd(status_);
+    }
   }
 
   return S_OK;
@@ -332,6 +343,7 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
     cached_data_.Read(&send_stream, pending_read_size_, &pending_read_size_);
     DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
         " - size read: " << pending_read_size_;
+    pending_read_size_ = 0;
   } else {
     DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
         " - waiting for remote read";
