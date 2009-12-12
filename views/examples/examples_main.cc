@@ -56,8 +56,6 @@ void ExamplesMain::Run() {
 
   icu_util::Initialize();
 
-  // This requires chrome to be built first right now.
-  // TODO(oshima): fix build to include resource file.
   ResourceBundle::InitSharedInstance(L"en-US");
 
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);

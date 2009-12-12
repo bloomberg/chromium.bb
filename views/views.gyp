@@ -374,6 +374,7 @@
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../chrome/chrome.gyp:packed_resources',
           ],
         },
         ],
