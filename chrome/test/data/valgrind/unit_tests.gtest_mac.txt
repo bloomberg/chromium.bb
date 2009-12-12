@@ -5,3 +5,7 @@ IPCSyncChannelTest.*
 # http://crbug.com/21890
 WebDropTargetTest.URL
 WebDropTargetTest.Data
+
+# Following test fails on valgrind.
+# See http://crbug.com/29598.
+AutocompleteTextFieldEditorTest.CutCopyTest
