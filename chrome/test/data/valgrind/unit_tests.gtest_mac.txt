@@ -9,3 +9,12 @@ WebDropTargetTest.Data
 # Following test fails on valgrind.
 # See http://crbug.com/29598.
 AutocompleteTextFieldEditorTest.CutCopyTest
+BookmarkBubbleControllerTest.TestNewParentSameName
+BookmarkEditorControllerTreeTest.RenameBookmarkInPlace
+BookmarkEditorControllerTreeTest.ChangeBookmarkURLInPlace
+BookmarkEditorControllerTreeTest.ChangeBookmarkGroup
+BookmarkEditorControllerTreeTest.ChangeNameAndBookmarkGroup
+DownloadUtilTest.AddFileToPasteboardTest
+FindPasteboardTest.ReadingFromPboardUpdatesFindText
+FindPasteboardTest.SendsNotificationWhenTextChanges
+RenderViewTest.MacTestCmdUp
